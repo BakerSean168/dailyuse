@@ -11,7 +11,8 @@ import {
   RecurrenceEndConditionType,
 } from '@dailyuse/contracts/task';
 import { ImportanceLevel, UrgencyLevel, PriorityLevel } from '@dailyuse/contracts/shared';
-import { AggregateRoot, calculatePriority } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils';
+import { calculatePriority } from '../../schedule/calculators/priority-calculator';
 import {
   TaskTimeConfig,
   RecurrenceRule,

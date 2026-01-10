@@ -8,7 +8,7 @@ export type Range = {
 
 export type Recurrence = number | Range | string;
 export type RecurrenceSegment = Recurrence | Recurrence[];
-export interface RecurrenceRule {
+export interface CronRecurrenceRule {
   date?: RecurrenceSegment | undefined;
   dayOfWeek?: RecurrenceSegment | undefined;
   hour?: RecurrenceSegment | undefined;
@@ -18,6 +18,9 @@ export interface RecurrenceRule {
   year?: RecurrenceSegment | undefined;
   tz?: Timezone | undefined;
 }
+
+// For backward compatibility
+export type RecurrenceRule = CronRecurrenceRule;
 
 /**
  * 将 RecurrenceRule 转为简明中文描述

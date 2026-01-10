@@ -1,3 +1,3 @@
 // Schedule calculators - business logic for priority and recurrence
 export * from './priority-calculator';
-export * from './recurrence';
+export { recurrenceRuleToText, type CronRecurrenceRule } from './recurrence';

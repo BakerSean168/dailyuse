@@ -8,18 +8,15 @@
   ],
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc",
+      "executor": "nx:run-commands",
       "outputs": [
-        "{options.outputPath}"
+        "{projectRoot}/dist"
       ],
       "options": {
-        "outputPath": "dist/packages/patterns",
-        "main": "packages/patterns/src/index.ts",
-        "tsConfig": "packages/patterns/tsconfig.lib.json",
-        "assets": [
-          "packages/patterns/*.md"
-        ]
-      }
+        "command": "tsup",
+        "cwd": "packages/patterns"
+      },
+      "dependsOn": ["^build"]
     }
   }
 }
