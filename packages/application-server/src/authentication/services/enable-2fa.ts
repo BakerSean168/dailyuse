@@ -7,20 +7,7 @@
 import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import type { Enable2FARequest, Enable2FAResponseDTO } from '@dailyuse/contracts/authentication';
-import { eventBus } from '@dailyuse/utils';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Enable 2FA Input
- */
-export interface Enable2FAInput extends Enable2FARequest {
-  accountUuid: string;
-}
-
-/**
- * Enable 2FA Output
- */
-export interface Enable2FAOutput extends Enable2FAResponseDTO {}
 
 /**
  * Enable 2FA Service
@@ -63,9 +50,9 @@ export class Enable2FA {
   /**
    * 执行启用 2FA
    */
-  async execute(input: Enable2FAInput): Promise<Enable2FAOutput> {
+  async execute(accountUuid: string, _input?: Enable2FARequest): Promise<Enable2FAResponseDTO> {
     // 1. 查找凭证
-    const credential = await this.credentialRepository.findByAccountUuid(input.accountUuid);
+    const credential = await this.credentialRepository.findByAccountUuid(accountUuid);
     if (!credential) {
       throw new Error('Credential not found');
     }
@@ -80,7 +67,7 @@ export class Enable2FA {
     const backupCodes = credential.twoFactor?.backupCodes ?? [];
 
     // 4. 生成 QR Code URL (placeholder - 实际应使用 otpauth URL)
-    const qrCode = this.generateQRCodeUrl(input.accountUuid, secret);
+    const qrCode = this.generateQRCodeUrl(accountUuid, secret);
 
     // 5. 保存凭证
     await this.credentialRepository.save(credential);
@@ -100,9 +87,3 @@ export class Enable2FA {
     return `otpauth://totp/DailyUse:${accountUuid}?secret=${secret}&issuer=DailyUse`;
   }
 }
-
-/**
- * 便捷函数
- */
-export const enable2FA = (input: Enable2FAInput): Promise<Enable2FAOutput> =>
-  Enable2FA.getInstance().execute(input);

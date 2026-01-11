@@ -5,26 +5,11 @@
  */
 
 import type { IReminderTemplateRepository, ReminderTemplate } from '@dailyuse/domain-server/reminder';
-import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import type {
+  QueryReminderTemplatesRequest,
+  ReminderTemplateListDTO,
+} from '@dailyuse/contracts/reminder';
 import { ReminderContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface ListReminderTemplatesInput {
-  accountUuid: string;
-  groupUuid?: string;
-  activeOnly?: boolean;
-  includeHistory?: boolean;
-}
-
-/**
- * Service Output
- */
-export interface ListReminderTemplatesOutput {
-  templates: ReminderTemplateClientDTO[];
-  total: number;
-}
 
 /**
  * List Reminder Templates Service
@@ -61,18 +46,18 @@ export class ListReminderTemplates {
     ListReminderTemplates.instance = undefined as unknown as ListReminderTemplates;
   }
 
-  async execute(input: ListReminderTemplatesInput): Promise<ListReminderTemplatesOutput> {
+  async execute(accountUuid: string, query?: QueryReminderTemplatesRequest): Promise<ReminderTemplateListDTO> {
     let templates: ReminderTemplate[];
 
-    if (input.groupUuid) {
-      templates = await this.templateRepository.findByGroupUuid(input.groupUuid, {
-        includeHistory: input.includeHistory,
+    if (query?.groupUuid) {
+      templates = await this.templateRepository.findByGroupUuid(query.groupUuid, {
+        includeHistory: false,
       });
-    } else if (input.activeOnly) {
-      templates = await this.templateRepository.findActive(input.accountUuid);
+    } else if (query?.effectiveEnabled) {
+      templates = await this.templateRepository.findActive(accountUuid);
     } else {
-      templates = await this.templateRepository.findByAccountUuid(input.accountUuid, {
-        includeHistory: input.includeHistory,
+      templates = await this.templateRepository.findByAccountUuid(accountUuid, {
+        includeHistory: false,
       });
     }
 
@@ -82,9 +67,3 @@ export class ListReminderTemplates {
     };
   }
 }
-
-/**
- * 便捷函数：列出提醒模板
- */
-export const listReminderTemplates = (input: ListReminderTemplatesInput): Promise<ListReminderTemplatesOutput> =>
-  ListReminderTemplates.getInstance().execute(input);

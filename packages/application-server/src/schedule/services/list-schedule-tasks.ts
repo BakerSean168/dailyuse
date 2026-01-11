@@ -5,25 +5,11 @@
  */
 
 import type { IScheduleTaskRepository } from '@dailyuse/domain-server/schedule';
-import type { ScheduleTaskClientDTO, SourceModule } from '@dailyuse/contracts/schedule';
+import type {
+  ScheduleTaskClientDTO,
+  ScheduleTaskQueryParamsDTO,
+} from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface ListScheduleTasksInput {
-  accountUuid?: string;
-  sourceModule?: SourceModule;
-  sourceEntityId?: string;
-}
-
-/**
- * Service Output
- */
-export interface ListScheduleTasksOutput {
-  tasks: ScheduleTaskClientDTO[];
-  total: number;
-}
 
 /**
  * List Schedule Tasks Service
@@ -60,18 +46,16 @@ export class ListScheduleTasks {
     ListScheduleTasks.instance = undefined as unknown as ListScheduleTasks;
   }
 
-  async execute(input: ListScheduleTasksInput): Promise<ListScheduleTasksOutput> {
+  async execute(accountUuid: string, query?: ScheduleTaskQueryParamsDTO): Promise<{ tasks: ScheduleTaskClientDTO[]; total: number }> {
     let tasks;
 
-    if (input.sourceModule && input.sourceEntityId) {
+    if (query?.sourceModule && query?.sourceEntityId) {
       tasks = await this.taskRepository.findBySourceEntity(
-        input.sourceModule,
-        input.sourceEntityId,
+        query.sourceModule,
+        query.sourceEntityId,
       );
-    } else if (input.accountUuid) {
-      tasks = await this.taskRepository.findByAccountUuid(input.accountUuid);
     } else {
-      throw new Error('Either accountUuid or sourceModule+sourceEntityId must be provided');
+      tasks = await this.taskRepository.findByAccountUuid(accountUuid);
     }
 
     return {
@@ -80,9 +64,3 @@ export class ListScheduleTasks {
     };
   }
 }
-
-/**
- * 便捷函数：列出调度任务
- */
-export const listScheduleTasks = (input: ListScheduleTasksInput): Promise<ListScheduleTasksOutput> =>
-  ListScheduleTasks.getInstance().execute(input);

@@ -10,18 +10,6 @@ import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
 import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Get Quota Input
- */
-export interface GetQuotaInput {
-  accountUuid: string;
-}
-
-/**
- * Get Quota Output
- */
-export type GetQuotaOutput = QuotaResponse;
-
-/**
  * Get Quota Service
  */
 export class GetQuota {
@@ -47,8 +35,8 @@ export class GetQuota {
     GetQuota.instance = undefined as unknown as GetQuota;
   }
 
-  async execute(input: GetQuotaInput): Promise<GetQuotaOutput> {
-    const quota = await this.quotaRepository.findByAccountUuid(input.accountUuid);
+  async execute(accountUuid: string): Promise<QuotaResponse> {
+    const quota = await this.quotaRepository.findByAccountUuid(accountUuid);
 
     if (!quota) {
       // 返回默认配额
@@ -57,7 +45,7 @@ export class GetQuota {
       return {
         quota: {
           uuid: '',
-          accountUuid: input.accountUuid,
+          accountUuid,
           quotaLimit: 1000,
           currentUsage: 0,
           resetPeriod: QuotaResetPeriod.MONTHLY,
@@ -84,6 +72,3 @@ export class GetQuota {
     };
   }
 }
-
-export const getQuota = (input: GetQuotaInput): Promise<GetQuotaOutput> =>
-  GetQuota.getInstance().execute(input);

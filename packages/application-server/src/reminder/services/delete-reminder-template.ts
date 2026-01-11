@@ -9,21 +9,6 @@ import { eventBus } from '@dailyuse/utils';
 import { ReminderContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Service Input
- */
-export interface DeleteReminderTemplateInput {
-  uuid: string;
-  accountUuid: string;
-}
-
-/**
- * Service Output
- */
-export interface DeleteReminderTemplateOutput {
-  success: boolean;
-}
-
-/**
  * Delete Reminder Template Service
  */
 export class DeleteReminderTemplate {
@@ -58,22 +43,22 @@ export class DeleteReminderTemplate {
     DeleteReminderTemplate.instance = undefined as unknown as DeleteReminderTemplate;
   }
 
-  async execute(input: DeleteReminderTemplateInput): Promise<DeleteReminderTemplateOutput> {
-    const template = await this.templateRepository.findById(input.uuid);
+  async execute(uuid: string, accountUuid: string): Promise<void> {
+    const template = await this.templateRepository.findById(uuid);
     if (!template) {
-      return { success: true }; // 幂等性
+      return; // 幂等性
     }
 
     // 直接通过仓储删除
-    await this.templateRepository.delete(input.uuid);
+    await this.templateRepository.delete(uuid);
 
     // 发布删除事件
     try {
       await eventBus.publish({
         eventType: 'reminder.template.deleted',
         payload: {
-          reminderUuid: input.uuid,
-          accountUuid: input.accountUuid,
+          reminderUuid: uuid,
+          accountUuid: accountUuid,
           deletedAt: Date.now(),
         },
         timestamp: Date.now(),
@@ -81,13 +66,5 @@ export class DeleteReminderTemplate {
     } catch (error) {
       console.error(`❌ [DeleteReminderTemplate] 发布删除事件失败:`, error);
     }
-
-    return { success: true };
   }
 }
-
-/**
- * 便捷函数：删除提醒模板
- */
-export const deleteReminderTemplate = (input: DeleteReminderTemplateInput): Promise<DeleteReminderTemplateOutput> =>
-  DeleteReminderTemplate.getInstance().execute(input);

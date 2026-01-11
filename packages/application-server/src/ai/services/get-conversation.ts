@@ -9,19 +9,6 @@ import type { ConversationResponse } from '@dailyuse/contracts/ai';
 import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Get Conversation Input
- */
-export interface GetConversationInput {
-  uuid: string;
-  accountUuid: string;
-}
-
-/**
- * Get Conversation Output
- */
-export type GetConversationOutput = ConversationResponse;
-
-/**
  * Get Conversation Service
  */
 export class GetConversation {
@@ -47,14 +34,14 @@ export class GetConversation {
     GetConversation.instance = undefined as unknown as GetConversation;
   }
 
-  async execute(input: GetConversationInput): Promise<GetConversationOutput> {
-    const conversation = await this.conversationRepository.findByUuid(input.uuid);
+  async execute(uuid: string, accountUuid: string): Promise<ConversationResponse> {
+    const conversation = await this.conversationRepository.findByUuid(uuid);
 
     if (!conversation) {
       throw new Error('Conversation not found');
     }
 
-    if (conversation.accountUuid !== input.accountUuid) {
+    if (conversation.accountUuid !== accountUuid) {
       throw new Error('Not authorized to access this conversation');
     }
 
@@ -63,6 +50,3 @@ export class GetConversation {
     };
   }
 }
-
-export const getConversation = (input: GetConversationInput): Promise<GetConversationOutput> =>
-  GetConversation.getInstance().execute(input);

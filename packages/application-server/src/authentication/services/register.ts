@@ -11,26 +11,6 @@ import { eventBus } from '@dailyuse/utils';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Register Input
- */
-export interface RegisterInput extends RegisterRequest {
-  /** 哈希后的密码（由调用方负责哈希） */
-  hashedPassword?: string;
-}
-
-/**
- * Register Output
- */
-export interface RegisterOutput {
-  tokens: AuthTokens;
-  user: {
-    uuid: string;
-    email: string;
-    username: string;
-  };
-}
-
-/**
  * Register Service
  */
 export class Register {
@@ -78,7 +58,7 @@ export class Register {
   /**
    * 执行注册
    */
-  async execute(input: RegisterInput): Promise<RegisterOutput> {
+  async execute(input: RegisterRequest & { hashedPassword?: string }): Promise<{ tokens: AuthTokens; user: { uuid: string; email: string; username: string } }> {
     // 1. 验证输入
     this.validateInput(input);
 
@@ -151,7 +131,7 @@ export class Register {
     };
   }
 
-  private validateInput(input: RegisterInput): void {
+  private validateInput(input: RegisterRequest): void {
     if (!input.email?.trim()) {
       throw new Error('Email is required');
     }
@@ -188,9 +168,3 @@ export class Register {
     }
   }
 }
-
-/**
- * 便捷函数
- */
-export const register = (input: RegisterInput): Promise<RegisterOutput> =>
-  Register.getInstance().execute(input);

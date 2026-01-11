@@ -9,27 +9,6 @@ import type { ApiKeyCredentialClientDTO } from '@dailyuse/contracts/authenticati
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * List API Keys Input
- */
-export interface ListApiKeysInput {
-  accountUuid: string;
-}
-
-/**
- * List API Keys Output
- */
-export interface ListApiKeysOutput {
-  apiKeys: Array<{
-    keyId: string;
-    name: string;
-    lastUsedAt?: number;
-    createdAt: number;
-    expiresAt?: number;
-    scopes: string[];
-  }>;
-}
-
-/**
  * List API Keys Service
  */
 export class ListApiKeys {
@@ -67,9 +46,9 @@ export class ListApiKeys {
   /**
    * 执行获取 API Key 列表
    */
-  async execute(input: ListApiKeysInput): Promise<ListApiKeysOutput> {
+  async execute(accountUuid: string): Promise<{ apiKeys: Array<{ keyId: string; name: string; lastUsedAt?: number; createdAt: number; expiresAt?: number; scopes: string[] }> }> {
     // 1. 查找凭证
-    const credential = await this.credentialRepository.findByAccountUuid(input.accountUuid);
+    const credential = await this.credentialRepository.findByAccountUuid(accountUuid);
     if (!credential) {
       return { apiKeys: [] };
     }
@@ -89,9 +68,3 @@ export class ListApiKeys {
     };
   }
 }
-
-/**
- * 便捷函数
- */
-export const listApiKeys = (input: ListApiKeysInput): Promise<ListApiKeysOutput> =>
-  ListApiKeys.getInstance().execute(input);

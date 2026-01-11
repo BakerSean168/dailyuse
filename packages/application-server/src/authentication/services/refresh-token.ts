@@ -9,18 +9,6 @@ import type { RefreshTokenRequest, AuthTokens } from '@dailyuse/contracts/authen
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Refresh Token Input
- */
-export interface RefreshTokenInput extends RefreshTokenRequest {}
-
-/**
- * Refresh Token Output
- */
-export interface RefreshTokenOutput {
-  tokens: AuthTokens;
-}
-
-/**
  * Refresh Token Service
  */
 export class RefreshToken {
@@ -58,7 +46,7 @@ export class RefreshToken {
   /**
    * 执行令牌刷新
    */
-  async execute(input: RefreshTokenInput): Promise<RefreshTokenOutput> {
+  async execute(input: RefreshTokenRequest): Promise<{ tokens: AuthTokens }> {
     // 1. 查找会话
     const session = await this.sessionRepository.findByRefreshToken(input.refreshToken);
     if (!session) {
@@ -90,9 +78,3 @@ export class RefreshToken {
     };
   }
 }
-
-/**
- * 便捷函数
- */
-export const refreshToken = (input: RefreshTokenInput): Promise<RefreshTokenOutput> =>
-  RefreshToken.getInstance().execute(input);

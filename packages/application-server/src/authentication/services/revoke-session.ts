@@ -10,13 +10,6 @@ import { eventBus } from '@dailyuse/utils';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Revoke Session Input
- */
-export interface RevokeSessionInput extends RevokeSessionRequest {
-  accountUuid: string;
-}
-
-/**
  * Revoke Session Service
  */
 export class RevokeSession {
@@ -54,7 +47,7 @@ export class RevokeSession {
   /**
    * 执行撤销会话
    */
-  async execute(input: RevokeSessionInput): Promise<void> {
+  async execute(accountUuid: string, input: RevokeSessionRequest): Promise<void> {
     // 1. 查找会话（使用 sessionId）
     const session = await this.sessionRepository.findByUuid(input.sessionId);
     if (!session) {
@@ -62,7 +55,7 @@ export class RevokeSession {
     }
 
     // 2. 验证权限
-    if (session.accountUuid !== input.accountUuid) {
+    if (session.accountUuid !== accountUuid) {
       throw new Error('Not authorized to revoke this session');
     }
 
@@ -79,9 +72,3 @@ export class RevokeSession {
     });
   }
 }
-
-/**
- * 便捷函数
- */
-export const revokeSession = (input: RevokeSessionInput): Promise<void> =>
-  RevokeSession.getInstance().execute(input);

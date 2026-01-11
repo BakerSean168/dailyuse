@@ -42,6 +42,7 @@ import type {
   NotificationActionServerDTO,
   ChannelResponseServerDTO,
   ChannelErrorServerDTO,
+  CreateNotificationRequest,
 } from '@dailyuse/contracts/notification';
 import { NotificationChannelType } from '@dailyuse/contracts/notification';
 import { NotificationContainer } from '@dailyuse/infrastructure-server';
@@ -246,30 +247,6 @@ function toNotificationPreferenceClientDTO(
 }
 
 /**
- * 创建通知输入
- */
-export interface CreateNotificationInput {
-  accountUuid: string;
-  title: string;
-  content: string;
-  type: NotificationType;
-  category: NotificationCategory;
-  relatedEntityType?: RelatedEntityType;
-  relatedEntityUuid?: string;
-  channels?: NotificationChannelType[];
-}
-
-/**
- * 渠道偏好设置
- */
-export interface ChannelPreferences {
-  inApp?: boolean;
-  push?: boolean;
-  email?: boolean;
-  sms?: boolean;
-}
-
-/**
  * Notification Service
  */
 export class NotificationService {
@@ -331,7 +308,7 @@ export class NotificationService {
 
   // ===== 通知操作 =====
 
-  async createNotification(params: CreateNotificationInput): Promise<NotificationClientDTO> {
+  async createNotification(params: CreateNotificationRequest): Promise<NotificationClientDTO> {
     const notification = await this.domainService.createAndSendNotification(params);
     return toNotificationClientDTO(notification.toServerDTO());
   }
@@ -349,7 +326,7 @@ export class NotificationService {
   }
 
   async sendBulkNotifications(
-    notificationsData: CreateNotificationInput[],
+    notificationsData: CreateNotificationRequest[],
   ): Promise<NotificationClientDTO[]> {
     const notifications = await this.domainService.sendBulkNotifications(notificationsData);
     return notifications.map((n) => toNotificationClientDTO(n.toServerDTO()));
@@ -445,7 +422,12 @@ export class NotificationService {
   async updatePreference(
     accountUuid: string,
     updates: Partial<{
-      channelPreferences: ChannelPreferences;
+      channelPreferences: {
+        inApp?: boolean;
+        push?: boolean;
+        email?: boolean;
+        sms?: boolean;
+      };
       categoryPreferences: Record<NotificationCategory, Partial<CategoryPreferenceServerDTO>>;
       doNotDisturbConfig: Partial<DoNotDisturbConfigServerDTO>;
     }>,
@@ -485,37 +467,3 @@ export class NotificationService {
     return toNotificationPreferenceClientDTO(preference.toServerDTO());
   }
 }
-
-// ===== 便捷函数 =====
-
-export const createNotification = (input: CreateNotificationInput) =>
-  NotificationService.getInstance().createNotification(input);
-
-export const getNotification = (uuid: string, options?: { includeChildren?: boolean }) =>
-  NotificationService.getInstance().getNotification(uuid, options);
-
-export const getUserNotifications = (
-  accountUuid: string,
-  options?: { includeRead?: boolean; limit?: number; offset?: number },
-) => NotificationService.getInstance().getUserNotifications(accountUuid, options);
-
-export const getUnreadNotifications = (accountUuid: string, options?: { limit?: number }) =>
-  NotificationService.getInstance().getUnreadNotifications(accountUuid, options);
-
-export const getUnreadCount = (accountUuid: string) =>
-  NotificationService.getInstance().getUnreadCount(accountUuid);
-
-export const markAsRead = (uuid: string) =>
-  NotificationService.getInstance().markAsRead(uuid);
-
-export const markAllAsRead = (accountUuid: string) =>
-  NotificationService.getInstance().markAllAsRead(accountUuid);
-
-export const deleteNotification = (uuid: string, soft = true) =>
-  NotificationService.getInstance().deleteNotification(uuid, soft);
-
-export const getPreference = (accountUuid: string) =>
-  NotificationService.getInstance().getPreference(accountUuid);
-
-export const getOrCreatePreference = (accountUuid: string) =>
-  NotificationService.getInstance().getOrCreatePreference(accountUuid);

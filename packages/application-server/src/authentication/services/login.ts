@@ -11,23 +11,6 @@ import { eventBus } from '@dailyuse/utils';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Login Input
- */
-export interface LoginInput extends LoginRequest {}
-
-/**
- * Login Output
- */
-export interface LoginOutput {
-  tokens: AuthTokens;
-  user: {
-    uuid: string;
-    identifier: string;
-  };
-  requiresTwoFactor?: boolean;
-}
-
-/**
  * Login Service
  */
 export class Login {
@@ -75,7 +58,7 @@ export class Login {
   /**
    * 执行登录
    */
-  async execute(input: LoginInput): Promise<LoginOutput> {
+  async execute(input: LoginRequest): Promise<{ tokens: AuthTokens; user: { uuid: string; identifier: string }; requiresTwoFactor?: boolean }> {
     // 1. 验证输入
     this.validateInput(input);
 
@@ -131,7 +114,7 @@ export class Login {
     };
   }
 
-  private validateInput(input: LoginInput): void {
+  private validateInput(input: LoginRequest): void {
     if (!input.identifier?.trim()) {
       throw new Error('Identifier is required');
     }
@@ -152,9 +135,3 @@ export class Login {
     }
   }
 }
-
-/**
- * 便捷函数
- */
-export const login = (input: LoginInput): Promise<LoginOutput> =>
-  Login.getInstance().execute(input);

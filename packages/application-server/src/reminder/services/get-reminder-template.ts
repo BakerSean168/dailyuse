@@ -9,20 +9,6 @@ import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { ReminderContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Service Input
- */
-export interface GetReminderTemplateInput {
-  uuid: string;
-}
-
-/**
- * Service Output
- */
-export interface GetReminderTemplateOutput {
-  template: ReminderTemplateClientDTO | null;
-}
-
-/**
  * Get Reminder Template Service
  */
 export class GetReminderTemplate {
@@ -57,17 +43,8 @@ export class GetReminderTemplate {
     GetReminderTemplate.instance = undefined as unknown as GetReminderTemplate;
   }
 
-  async execute(input: GetReminderTemplateInput): Promise<GetReminderTemplateOutput> {
-    const template = await this.templateRepository.findById(input.uuid);
-
-    return {
-      template: template ? template.toClientDTO() : null,
-    };
+  async execute(uuid: string): Promise<ReminderTemplateClientDTO | null> {
+    const template = await this.templateRepository.findById(uuid);
+    return template ? template.toClientDTO() : null;
   }
 }
-
-/**
- * 便捷函数：获取提醒模板
- */
-export const getReminderTemplate = (input: GetReminderTemplateInput): Promise<GetReminderTemplateOutput> =>
-  GetReminderTemplate.getInstance().execute(input);

@@ -11,33 +11,9 @@ import type {
 import { ScheduleDomainService } from '@dailyuse/domain-server/schedule';
 import type {
   ScheduleTaskClientDTO,
-  ScheduleConfigServerDTO,
-  RetryPolicyServerDTO,
-  SourceModule,
+  CreateScheduleTaskRequest,
 } from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface CreateScheduleTaskInput {
-  accountUuid: string;
-  name: string;
-  description?: string;
-  sourceModule: SourceModule;
-  sourceEntityId: string;
-  schedule: ScheduleConfigServerDTO;
-  retryConfig?: RetryPolicyServerDTO;
-  payload?: Record<string, unknown>;
-  tags?: string[];
-}
-
-/**
- * Service Output
- */
-export interface CreateScheduleTaskOutput {
-  task: ScheduleTaskClientDTO;
-}
 
 /**
  * Create Schedule Task Service
@@ -84,17 +60,8 @@ export class CreateScheduleTask {
     CreateScheduleTask.instance = undefined as unknown as CreateScheduleTask;
   }
 
-  async execute(input: CreateScheduleTaskInput): Promise<CreateScheduleTaskOutput> {
-    const task = await this.domainService.createScheduleTask(input);
-
-    return {
-      task: task.toClientDTO(),
-    };
+  async execute(accountUuid: string, input: CreateScheduleTaskRequest): Promise<ScheduleTaskClientDTO> {
+    const task = await this.domainService.createScheduleTask({ accountUuid, ...input });
+    return task.toClientDTO();
   }
 }
-
-/**
- * 便捷函数：创建调度任务
- */
-export const createScheduleTask = (input: CreateScheduleTaskInput): Promise<CreateScheduleTaskOutput> =>
-  CreateScheduleTask.getInstance().execute(input);

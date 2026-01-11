@@ -9,23 +9,6 @@ import type { AuthSessionClientDTO } from '@dailyuse/contracts/authentication';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Get Active Sessions Input
- */
-export interface GetActiveSessionsInput {
-  accountUuid: string;
-  skip?: number;
-  take?: number;
-}
-
-/**
- * Get Active Sessions Output
- */
-export interface GetActiveSessionsOutput {
-  sessions: AuthSessionClientDTO[];
-  total: number;
-}
-
-/**
  * Get Active Sessions Service
  */
 export class GetActiveSessions {
@@ -63,11 +46,11 @@ export class GetActiveSessions {
   /**
    * 执行获取活跃会话
    */
-  async execute(input: GetActiveSessionsInput): Promise<GetActiveSessionsOutput> {
+  async execute(accountUuid: string, options?: { skip?: number; take?: number }): Promise<{ sessions: AuthSessionClientDTO[]; total: number }> {
     // 1. 查找会话
     const sessions = await this.sessionRepository.findByAccountUuid(
-      input.accountUuid,
-      { skip: input.skip, take: input.take },
+      accountUuid,
+      { skip: options?.skip, take: options?.take },
     );
 
     // 2. 过滤活跃会话（status === 'ACTIVE' 且未过期）
@@ -82,9 +65,3 @@ export class GetActiveSessions {
     };
   }
 }
-
-/**
- * 便捷函数
- */
-export const getActiveSessions = (input: GetActiveSessionsInput): Promise<GetActiveSessionsOutput> =>
-  GetActiveSessions.getInstance().execute(input);

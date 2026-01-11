@@ -9,20 +9,6 @@ import type { ConversationListResponse } from '@dailyuse/contracts/ai';
 import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * List Conversations Input
- */
-export interface ListConversationsInput {
-  accountUuid: string;
-  limit?: number;
-  offset?: number;
-}
-
-/**
- * List Conversations Output
- */
-export type ListConversationsOutput = ConversationListResponse;
-
-/**
  * List Conversations Service
  */
 export class ListConversations {
@@ -48,12 +34,9 @@ export class ListConversations {
     ListConversations.instance = undefined as unknown as ListConversations;
   }
 
-  async execute(input: ListConversationsInput): Promise<ListConversationsOutput> {
-    const limit = input.limit ?? 20;
-    const offset = input.offset ?? 0;
-
+  async execute(accountUuid: string, limit = 20, offset = 0): Promise<ConversationListResponse> {
     const conversations = await this.conversationRepository.findRecent(
-      input.accountUuid,
+      accountUuid,
       limit,
       offset,
     );
@@ -64,6 +47,3 @@ export class ListConversations {
     };
   }
 }
-
-export const listConversations = (input: ListConversationsInput): Promise<ListConversationsOutput> =>
-  ListConversations.getInstance().execute(input);

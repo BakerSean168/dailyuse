@@ -11,11 +11,6 @@ import { eventBus } from '@dailyuse/utils';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Reset Password Input
- */
-export interface ResetPasswordInput extends ResetPasswordRequest {}
-
-/**
  * Reset Password Service
  */
 export class ResetPassword {
@@ -56,7 +51,7 @@ export class ResetPassword {
   /**
    * 执行密码重置
    */
-  async execute(input: ResetPasswordInput): Promise<void> {
+  async execute(input: ResetPasswordRequest): Promise<void> {
     // 1. 验证输入
     this.validateInput(input);
 
@@ -114,7 +109,7 @@ export class ResetPassword {
     return password;
   }
 
-  private validateInput(input: ResetPasswordInput): void {
+  private validateInput(input: ResetPasswordRequest): void {
     if (!input.token) {
       throw new Error('Reset token is required');
     }
@@ -126,9 +121,3 @@ export class ResetPassword {
     }
   }
 }
-
-/**
- * 便捷函数
- */
-export const resetPassword = (input: ResetPasswordInput): Promise<void> =>
-  ResetPassword.getInstance().execute(input);

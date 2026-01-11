@@ -10,14 +10,6 @@ import { eventBus } from '@dailyuse/utils';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Revoke All Sessions Input
- */
-export interface RevokeAllSessionsInput extends RevokeAllSessionsRequest {
-  accountUuid: string;
-  currentSessionUuid?: string; // 可选保留当前会话
-}
-
-/**
  * Revoke All Sessions Service
  */
 export class RevokeAllSessions {
@@ -55,14 +47,14 @@ export class RevokeAllSessions {
   /**
    * 执行撤销所有会话
    */
-  async execute(input: RevokeAllSessionsInput): Promise<number> {
+  async execute(accountUuid: string, options?: RevokeAllSessionsRequest & { currentSessionUuid?: string }): Promise<number> {
     // 1. 查找所有会话
-    const sessions = await this.sessionRepository.findByAccountUuid(input.accountUuid);
+    const sessions = await this.sessionRepository.findByAccountUuid(accountUuid);
 
     // 2. 撤销除当前会话外的所有会话
     let revokedCount = 0;
     for (const session of sessions) {
-      if (input.currentSessionUuid && session.uuid === input.currentSessionUuid) {
+      if (options?.currentSessionUuid && session.uuid === options.currentSessionUuid) {
         continue; // 跳过当前会话
       }
       if (session.status === 'ACTIVE') {
@@ -74,17 +66,11 @@ export class RevokeAllSessions {
 
     // 3. 发布事件
     await eventBus.emit('AllSessionsRevoked', {
-      accountUuid: input.accountUuid,
+      accountUuid,
       revokedCount,
-      excludedSessionUuid: input.currentSessionUuid,
+      excludedSessionUuid: options?.currentSessionUuid,
     });
 
     return revokedCount;
   }
 }
-
-/**
- * 便捷函数
- */
-export const revokeAllSessions = (input: RevokeAllSessionsInput): Promise<number> =>
-  RevokeAllSessions.getInstance().execute(input);

@@ -11,13 +11,6 @@ import { eventBus } from '@dailyuse/utils';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Change Password Input
- */
-export interface ChangePasswordInput extends ChangePasswordRequest {
-  accountUuid: string;
-}
-
-/**
  * Change Password Service
  */
 export class ChangePassword {
@@ -58,12 +51,12 @@ export class ChangePassword {
   /**
    * 执行密码修改
    */
-  async execute(input: ChangePasswordInput): Promise<void> {
+  async execute(accountUuid: string, input: ChangePasswordRequest): Promise<void> {
     // 1. 验证输入
     this.validateInput(input);
 
     // 2. 查找凭证
-    const credential = await this.credentialRepository.findByAccountUuid(input.accountUuid);
+    const credential = await this.credentialRepository.findByAccountUuid(accountUuid);
     if (!credential) {
       throw new Error('Credential not found');
     }
@@ -103,7 +96,7 @@ export class ChangePassword {
     return password;
   }
 
-  private validateInput(input: ChangePasswordInput): void {
+  private validateInput(input: ChangePasswordRequest): void {
     if (!input.oldPassword) {
       throw new Error('Current password is required');
     }
@@ -124,9 +117,3 @@ export class ChangePassword {
     }
   }
 }
-
-/**
- * 便捷函数
- */
-export const changePassword = (input: ChangePasswordInput): Promise<void> =>
-  ChangePassword.getInstance().execute(input);

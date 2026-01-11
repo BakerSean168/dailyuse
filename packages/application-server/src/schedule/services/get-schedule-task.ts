@@ -9,20 +9,6 @@ import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Service Input
- */
-export interface GetScheduleTaskInput {
-  uuid: string;
-}
-
-/**
- * Service Output
- */
-export interface GetScheduleTaskOutput {
-  task: ScheduleTaskClientDTO | null;
-}
-
-/**
  * Get Schedule Task Service
  */
 export class GetScheduleTask {
@@ -57,17 +43,8 @@ export class GetScheduleTask {
     GetScheduleTask.instance = undefined as unknown as GetScheduleTask;
   }
 
-  async execute(input: GetScheduleTaskInput): Promise<GetScheduleTaskOutput> {
-    const task = await this.taskRepository.findByUuid(input.uuid);
-
-    return {
-      task: task ? task.toClientDTO() : null,
-    };
+  async execute(uuid: string): Promise<ScheduleTaskClientDTO | null> {
+    const task = await this.taskRepository.findByUuid(uuid);
+    return task ? task.toClientDTO() : null;
   }
 }
-
-/**
- * 便捷函数：获取调度任务
- */
-export const getScheduleTask = (input: GetScheduleTaskInput): Promise<GetScheduleTaskOutput> =>
-  GetScheduleTask.getInstance().execute(input);

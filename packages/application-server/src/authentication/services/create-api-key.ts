@@ -11,18 +11,6 @@ import { eventBus } from '@dailyuse/utils';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Create API Key Input
- */
-export interface CreateApiKeyInput extends CreateApiKeyRequest {
-  accountUuid: string;
-}
-
-/**
- * Create API Key Output
- */
-export interface CreateApiKeyOutput extends CreateApiKeyResponseDTO {}
-
-/**
  * Create API Key Service
  */
 export class CreateApiKey {
@@ -63,14 +51,14 @@ export class CreateApiKey {
   /**
    * 执行创建 API Key
    */
-  async execute(input: CreateApiKeyInput): Promise<CreateApiKeyOutput> {
+  async execute(accountUuid: string, input: CreateApiKeyRequest): Promise<CreateApiKeyResponseDTO> {
     // 1. 验证输入
     if (!input.name?.trim()) {
       throw new Error('API key name is required');
     }
 
     // 2. 查找凭证
-    const credential = await this.credentialRepository.findByAccountUuid(input.accountUuid);
+    const credential = await this.credentialRepository.findByAccountUuid(accountUuid);
     if (!credential) {
       throw new Error('Credential not found');
     }
@@ -84,7 +72,7 @@ export class CreateApiKey {
 
     // 5. 发布事件
     await eventBus.emit('ApiKeyCreated', {
-      accountUuid: input.accountUuid,
+      accountUuid,
       keyId: apiKeyCredential.uuid,
       name: input.name,
     });
@@ -98,9 +86,3 @@ export class CreateApiKey {
     };
   }
 }
-
-/**
- * 便捷函数
- */
-export const createApiKey = (input: CreateApiKeyInput): Promise<CreateApiKeyOutput> =>
-  CreateApiKey.getInstance().execute(input);

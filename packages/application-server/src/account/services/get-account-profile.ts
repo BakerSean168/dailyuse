@@ -9,20 +9,6 @@ import type { AccountClientDTO } from '@dailyuse/contracts/account';
 import { AccountContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Service Input
- */
-export interface GetAccountProfileInput {
-  accountUuid: string;
-}
-
-/**
- * Service Output
- */
-export interface GetAccountProfileOutput {
-  account: AccountClientDTO | null;
-}
-
-/**
  * Get Account Profile Service
  */
 export class GetAccountProfile {
@@ -57,17 +43,8 @@ export class GetAccountProfile {
     GetAccountProfile.instance = undefined as unknown as GetAccountProfile;
   }
 
-  async execute(input: GetAccountProfileInput): Promise<GetAccountProfileOutput> {
-    const account = await this.accountRepository.findById(input.accountUuid);
-
-    return {
-      account: account ? account.toClientDTO() : null,
-    };
+  async execute(accountUuid: string): Promise<AccountClientDTO | null> {
+    const account = await this.accountRepository.findById(accountUuid);
+    return account ? account.toClientDTO() : null;
   }
 }
-
-/**
- * 便捷函数：获取账户资料
- */
-export const getAccountProfile = (input: GetAccountProfileInput): Promise<GetAccountProfileOutput> =>
-  GetAccountProfile.getInstance().execute(input);

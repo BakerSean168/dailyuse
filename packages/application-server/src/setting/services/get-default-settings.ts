@@ -8,13 +8,6 @@ import { UserSetting } from '@dailyuse/domain-server/setting';
 import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 
 /**
- * Get Default Settings Output
- */
-export interface GetDefaultSettingsOutput {
-  setting: UserSettingClientDTO;
-}
-
-/**
  * Get Default Settings
  */
 export class GetDefaultSettings {
@@ -50,14 +43,8 @@ export class GetDefaultSettings {
   /**
    * 执行用例
    */
-  execute(): GetDefaultSettingsOutput {
+  execute(): UserSettingClientDTO {
     const defaultSetting = UserSetting.create({ accountUuid: 'temp-uuid' });
-    return { setting: defaultSetting.toClientDTO() };
+    return defaultSetting.toClientDTO();
   }
 }
-
-/**
- * 便捷函数
- */
-export const getDefaultSettings = (): GetDefaultSettingsOutput =>
-  GetDefaultSettings.getInstance().execute();

@@ -8,20 +8,6 @@ import type { IUserSettingRepository } from '@dailyuse/domain-server/setting';
 import { SettingContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Export Settings Input
- */
-export interface ExportSettingsInput {
-  accountUuid: string;
-}
-
-/**
- * Export Settings Output
- */
-export interface ExportSettingsOutput {
-  data: Record<string, any>;
-}
-
-/**
  * Export Settings
  */
 export class ExportSettings {
@@ -59,9 +45,7 @@ export class ExportSettings {
   /**
    * 执行用例
    */
-  async execute(input: ExportSettingsInput): Promise<ExportSettingsOutput> {
-    const { accountUuid } = input;
-
+  async execute(accountUuid: string): Promise<Record<string, any>> {
     const setting = await this.userSettingRepository.findByAccountUuid(accountUuid);
 
     if (!setting) {
@@ -71,18 +55,10 @@ export class ExportSettings {
     const dto = setting.toServerDTO();
 
     return {
-      data: {
-        version: '1.0.0',
-        exportedAt: new Date().toISOString(),
-        accountUuid: accountUuid,
-        settings: dto,
-      },
+      version: '1.0.0',
+      exportedAt: new Date().toISOString(),
+      accountUuid: accountUuid,
+      settings: dto,
     };
   }
 }
-
-/**
- * 便捷函数
- */
-export const exportSettings = (input: ExportSettingsInput): Promise<ExportSettingsOutput> =>
-  ExportSettings.getInstance().execute(input);

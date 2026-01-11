@@ -8,30 +8,9 @@ import type { IAccountRepository } from '@dailyuse/domain-server/account';
 import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
 import { AccountDomainService } from '@dailyuse/domain-server/account';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
-import type { AccountClientDTO } from '@dailyuse/contracts/account';
+import type { AccountClientDTO, CreateAccountRequest } from '@dailyuse/contracts/account';
 import { eventBus } from '@dailyuse/utils';
 import { AccountContainer, AuthContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface RegisterAccountInput {
-  username: string;
-  email: string;
-  password: string;
-  displayName?: string;
-  timezone?: string;
-  language?: string;
-}
-
-/**
- * Service Output
- */
-export interface RegisterAccountOutput {
-  success: boolean;
-  account: AccountClientDTO;
-  message: string;
-}
 
 /**
  * Register Account Service
@@ -81,7 +60,7 @@ export class RegisterAccount {
     RegisterAccount.instance = undefined as unknown as RegisterAccount;
   }
 
-  async execute(input: RegisterAccountInput): Promise<RegisterAccountOutput> {
+  async execute(input: CreateAccountRequest & { password: string }): Promise<AccountClientDTO> {
     // 1. 验证唯一性
     const existingByUsername = await this.accountRepository.findByUsername(input.username);
     if (existingByUsername) {
@@ -126,16 +105,6 @@ export class RegisterAccount {
       await eventBus.publish(event);
     }
 
-    return {
-      success: true,
-      account: account.toClientDTO(),
-      message: '注册成功',
-    };
+    return account.toClientDTO();
   }
 }
-
-/**
- * 便捷函数：注册账户
- */
-export const registerAccount = (input: RegisterAccountInput): Promise<RegisterAccountOutput> =>
-  RegisterAccount.getInstance().execute(input);

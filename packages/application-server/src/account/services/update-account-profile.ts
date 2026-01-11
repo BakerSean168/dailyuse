@@ -5,27 +5,8 @@
  */
 
 import type { IAccountRepository } from '@dailyuse/domain-server/account';
-import type { AccountClientDTO } from '@dailyuse/contracts/account';
+import type { AccountClientDTO, UpdateAccountProfileRequest } from '@dailyuse/contracts/account';
 import { AccountContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface UpdateAccountProfileInput {
-  accountUuid: string;
-  nickname?: string;
-  avatarUrl?: string;
-  bio?: string;
-  locale?: string;
-  timezone?: string;
-}
-
-/**
- * Service Output
- */
-export interface UpdateAccountProfileOutput {
-  account: AccountClientDTO;
-}
 
 /**
  * Update Account Profile Service
@@ -62,31 +43,23 @@ export class UpdateAccountProfile {
     UpdateAccountProfile.instance = undefined as unknown as UpdateAccountProfile;
   }
 
-  async execute(input: UpdateAccountProfileInput): Promise<UpdateAccountProfileOutput> {
-    const account = await this.accountRepository.findById(input.accountUuid);
+  async execute(accountUuid: string, input: UpdateAccountProfileRequest): Promise<AccountClientDTO> {
+    const account = await this.accountRepository.findById(accountUuid);
     if (!account) {
-      throw new Error(`Account ${input.accountUuid} not found`);
+      throw new Error(`Account ${accountUuid} not found`);
     }
 
     // 使用 Account 的 updateProfile 方法
     account.updateProfile({
-      displayName: input.nickname,
-      avatar: input.avatarUrl,
+      displayName: input.displayName,
+      avatar: input.avatar,
       bio: input.bio,
       timezone: input.timezone,
-      language: input.locale,
+      language: input.language,
     });
 
     await this.accountRepository.save(account);
 
-    return {
-      account: account.toClientDTO(),
-    };
+    return account.toClientDTO();
   }
 }
-
-/**
- * 便捷函数：更新账户资料
- */
-export const updateAccountProfile = (input: UpdateAccountProfileInput): Promise<UpdateAccountProfileOutput> =>
-  UpdateAccountProfile.getInstance().execute(input);

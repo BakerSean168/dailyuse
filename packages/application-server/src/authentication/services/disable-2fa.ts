@@ -11,13 +11,6 @@ import { eventBus } from '@dailyuse/utils';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Disable 2FA Input
- */
-export interface Disable2FAInput extends Disable2FARequest {
-  accountUuid: string;
-}
-
-/**
  * Disable 2FA Service
  */
 export class Disable2FA {
@@ -58,14 +51,14 @@ export class Disable2FA {
   /**
    * 执行禁用 2FA
    */
-  async execute(input: Disable2FAInput): Promise<void> {
+  async execute(accountUuid: string, input: Disable2FARequest): Promise<void> {
     // 1. 验证输入
     if (!input.password) {
       throw new Error('Password is required');
     }
 
     // 2. 查找凭证
-    const credential = await this.credentialRepository.findByAccountUuid(input.accountUuid);
+    const credential = await this.credentialRepository.findByAccountUuid(accountUuid);
     if (!credential) {
       throw new Error('Credential not found');
     }
@@ -97,9 +90,3 @@ export class Disable2FA {
     return password;
   }
 }
-
-/**
- * 便捷函数
- */
-export const disable2FA = (input: Disable2FAInput): Promise<void> =>
-  Disable2FA.getInstance().execute(input);

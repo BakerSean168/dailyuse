@@ -13,22 +13,6 @@ import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Service Input
- */
-export interface FindDueTasksInput {
-  beforeTime: Date;
-  limit?: number;
-}
-
-/**
- * Service Output
- */
-export interface FindDueTasksOutput {
-  tasks: ScheduleTaskClientDTO[];
-  total: number;
-}
-
-/**
  * Find Due Tasks Service
  */
 export class FindDueTasks {
@@ -73,11 +57,8 @@ export class FindDueTasks {
     FindDueTasks.instance = undefined as unknown as FindDueTasks;
   }
 
-  async execute(input: FindDueTasksInput): Promise<FindDueTasksOutput> {
-    const tasks = await this.domainService.findDueTasksForExecution(
-      input.beforeTime,
-      input.limit,
-    );
+  async execute(beforeTime: Date, limit?: number): Promise<{ tasks: ScheduleTaskClientDTO[]; total: number }> {
+    const tasks = await this.domainService.findDueTasksForExecution(beforeTime, limit);
 
     return {
       tasks: tasks.map((task) => task.toClientDTO()),
@@ -85,9 +66,3 @@ export class FindDueTasks {
     };
   }
 }
-
-/**
- * 便捷函数：查找到期任务
- */
-export const findDueTasks = (input: FindDueTasksInput): Promise<FindDueTasksOutput> =>
-  FindDueTasks.getInstance().execute(input);

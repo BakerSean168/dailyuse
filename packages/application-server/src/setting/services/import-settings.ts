@@ -6,28 +6,9 @@
 
 import type { IUserSettingRepository } from '@dailyuse/domain-server/setting';
 import { UserSetting } from '@dailyuse/domain-server/setting';
-import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
+import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 import { SettingContainer } from '@dailyuse/infrastructure-server';
-import { UpdateUserSetting, type UpdateUserSettingDTO } from './update-user-setting';
-
-/**
- * Import Settings Input
- */
-export interface ImportSettingsInput {
-  accountUuid: string;
-  data: Record<string, any>;
-  options?: {
-    merge?: boolean;
-    validate?: boolean;
-  };
-}
-
-/**
- * Import Settings Output
- */
-export interface ImportSettingsOutput {
-  setting: UserSettingClientDTO;
-}
+import { UpdateUserSetting } from './update-user-setting';
 
 /**
  * Import Settings
@@ -67,8 +48,11 @@ export class ImportSettings {
   /**
    * 执行用例
    */
-  async execute(input: ImportSettingsInput): Promise<ImportSettingsOutput> {
-    const { accountUuid, data, options } = input;
+  async execute(
+    accountUuid: string,
+    data: Record<string, any>,
+    options?: { merge?: boolean; validate?: boolean },
+  ): Promise<UserSettingClientDTO> {
     const { merge = false, validate = true } = options || {};
 
     if (validate) {
@@ -78,11 +62,10 @@ export class ImportSettings {
     const importedSettings = data.settings;
 
     if (merge) {
-      const result = await UpdateUserSetting.getInstance().execute({
+      return await UpdateUserSetting.getInstance().execute(
         accountUuid,
-        updates: importedSettings as UpdateUserSettingDTO,
-      });
-      return { setting: result.setting };
+        importedSettings as Omit<UpdateUserSettingRequest, 'uuid'>,
+      );
     } else {
       let setting = await this.userSettingRepository.findByAccountUuid(accountUuid);
 
@@ -97,7 +80,7 @@ export class ImportSettings {
       });
 
       await this.userSettingRepository.save(newSetting);
-      return { setting: newSetting.toClientDTO() };
+      return newSetting.toClientDTO();
     }
   }
 
@@ -128,9 +111,3 @@ export class ImportSettings {
     }
   }
 }
-
-/**
- * 便捷函数
- */
-export const importSettings = (input: ImportSettingsInput): Promise<ImportSettingsOutput> =>
-  ImportSettings.getInstance().execute(input);

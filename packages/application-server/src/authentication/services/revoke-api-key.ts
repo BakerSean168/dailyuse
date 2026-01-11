@@ -10,13 +10,6 @@ import { eventBus } from '@dailyuse/utils';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Revoke API Key Input
- */
-export interface RevokeApiKeyInput extends RevokeApiKeyRequest {
-  accountUuid: string;
-}
-
-/**
  * Revoke API Key Service
  */
 export class RevokeApiKey {
@@ -54,9 +47,9 @@ export class RevokeApiKey {
   /**
    * 执行撤销 API Key
    */
-  async execute(input: RevokeApiKeyInput): Promise<void> {
+  async execute(accountUuid: string, input: RevokeApiKeyRequest): Promise<void> {
     // 1. 查找凭证
-    const credential = await this.credentialRepository.findByAccountUuid(input.accountUuid);
+    const credential = await this.credentialRepository.findByAccountUuid(accountUuid);
     if (!credential) {
       throw new Error('Credential not found');
     }
@@ -69,14 +62,8 @@ export class RevokeApiKey {
 
     // 4. 发布事件
     await eventBus.emit('ApiKeyRevoked', {
-      accountUuid: input.accountUuid,
+      accountUuid,
       keyId: input.apiKeyId,
     });
   }
 }
-
-/**
- * 便捷函数
- */
-export const revokeApiKey = (input: RevokeApiKeyInput): Promise<void> =>
-  RevokeApiKey.getInstance().execute(input);

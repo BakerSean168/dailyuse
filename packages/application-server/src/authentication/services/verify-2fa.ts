@@ -11,13 +11,6 @@ import { eventBus } from '@dailyuse/utils';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Verify 2FA Input
- */
-export interface Verify2FAInput extends Verify2FARequest {
-  accountUuid: string;
-}
-
-/**
  * Verify 2FA Service
  */
 export class Verify2FA {
@@ -58,14 +51,14 @@ export class Verify2FA {
   /**
    * 执行 2FA 验证
    */
-  async execute(input: Verify2FAInput): Promise<void> {
+  async execute(accountUuid: string, input: Verify2FARequest): Promise<void> {
     // 1. 验证输入
     if (!input.code?.trim()) {
       throw new Error('2FA code is required');
     }
 
     // 2. 查找凭证
-    const credential = await this.credentialRepository.findByAccountUuid(input.accountUuid);
+    const credential = await this.credentialRepository.findByAccountUuid(accountUuid);
     if (!credential) {
       throw new Error('Credential not found');
     }
@@ -93,9 +86,3 @@ export class Verify2FA {
     });
   }
 }
-
-/**
- * 便捷函数
- */
-export const verify2FA = (input: Verify2FAInput): Promise<void> =>
-  Verify2FA.getInstance().execute(input);

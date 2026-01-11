@@ -9,20 +9,6 @@ import type { AIProviderConfigClientDTO } from '@dailyuse/contracts/ai';
 import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * List Providers Input
- */
-export interface ListProvidersInput {
-  accountUuid: string;
-}
-
-/**
- * List Providers Output
- */
-export interface ListProvidersOutput {
-  providers: AIProviderConfigClientDTO[];
-}
-
-/**
  * List Providers Service
  */
 export class ListProviders {
@@ -48,14 +34,11 @@ export class ListProviders {
     ListProviders.instance = undefined as unknown as ListProviders;
   }
 
-  async execute(input: ListProvidersInput): Promise<ListProvidersOutput> {
-    const providers = await this.providerRepository.findByAccountUuid(input.accountUuid);
+  async execute(accountUuid: string): Promise<{ providers: AIProviderConfigClientDTO[] }> {
+    const providers = await this.providerRepository.findByAccountUuid(accountUuid);
 
     return {
       providers: providers.map((p: any) => (typeof p.toClientDTO === 'function' ? p.toClientDTO() : p)),
     };
   }
 }
-
-export const listProviders = (input: ListProvidersInput): Promise<ListProvidersOutput> =>
-  ListProviders.getInstance().execute(input);

@@ -12,20 +12,6 @@ import { ScheduleDomainService } from '@dailyuse/domain-server/schedule';
 import { ScheduleContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Service Input
- */
-export interface ResumeScheduleTaskInput {
-  uuid: string;
-}
-
-/**
- * Service Output
- */
-export interface ResumeScheduleTaskOutput {
-  success: boolean;
-}
-
-/**
  * Resume Schedule Task Service
  */
 export class ResumeScheduleTask {
@@ -70,15 +56,7 @@ export class ResumeScheduleTask {
     ResumeScheduleTask.instance = undefined as unknown as ResumeScheduleTask;
   }
 
-  async execute(input: ResumeScheduleTaskInput): Promise<ResumeScheduleTaskOutput> {
-    await this.domainService.resumeScheduleTask(input.uuid);
-
-    return { success: true };
+  async execute(uuid: string): Promise<void> {
+    await this.domainService.resumeScheduleTask(uuid);
   }
 }
-
-/**
- * 便捷函数：恢复调度任务
- */
-export const resumeScheduleTask = (input: ResumeScheduleTaskInput): Promise<ResumeScheduleTaskOutput> =>
-  ResumeScheduleTask.getInstance().execute(input);

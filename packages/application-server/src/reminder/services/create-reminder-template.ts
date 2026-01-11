@@ -12,43 +12,10 @@ import type {
 import { ReminderDomainService } from '@dailyuse/domain-server/reminder';
 import type {
   ReminderTemplateClientDTO,
-  ReminderType,
-  TriggerConfigServerDTO,
-  ActiveTimeConfigServerDTO,
-  NotificationConfigServerDTO,
-  RecurrenceConfigServerDTO,
-  ActiveHoursConfigServerDTO,
+  CreateReminderTemplateRequest,
 } from '@dailyuse/contracts/reminder';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { eventBus } from '@dailyuse/utils';
 import { ReminderContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface CreateReminderTemplateInput {
-  accountUuid: string;
-  title: string;
-  type: ReminderType;
-  trigger: TriggerConfigServerDTO;
-  activeTime: ActiveTimeConfigServerDTO;
-  notificationConfig: NotificationConfigServerDTO;
-  description?: string;
-  recurrence?: RecurrenceConfigServerDTO;
-  activeHours?: ActiveHoursConfigServerDTO;
-  importanceLevel?: ImportanceLevel;
-  tags?: string[];
-  color?: string;
-  icon?: string;
-  groupUuid?: string;
-}
-
-/**
- * Service Output
- */
-export interface CreateReminderTemplateOutput {
-  template: ReminderTemplateClientDTO;
-}
 
 /**
  * Create Reminder Template Service
@@ -102,8 +69,8 @@ export class CreateReminderTemplate {
     CreateReminderTemplate.instance = undefined as unknown as CreateReminderTemplate;
   }
 
-  async execute(input: CreateReminderTemplateInput): Promise<CreateReminderTemplateOutput> {
-    const template = await this.domainService.createReminderTemplate(input);
+  async execute(accountUuid: string, input: CreateReminderTemplateRequest): Promise<ReminderTemplateClientDTO> {
+    const template = await this.domainService.createReminderTemplate({ accountUuid, ...input });
 
     // 发布领域事件
     const events = template.getDomainEvents();
@@ -118,14 +85,6 @@ export class CreateReminderTemplate {
       });
     }
 
-    return {
-      template: template.toClientDTO(),
-    };
+    return template.toClientDTO();
   }
 }
-
-/**
- * 便捷函数：创建提醒模板
- */
-export const createReminderTemplate = (input: CreateReminderTemplateInput): Promise<CreateReminderTemplateOutput> =>
-  CreateReminderTemplate.getInstance().execute(input);

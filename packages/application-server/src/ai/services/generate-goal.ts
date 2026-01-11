@@ -10,18 +10,6 @@ import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Generate Goal Input
- */
-export interface GenerateGoalInput extends GenerateGoalRequest {
-  accountUuid: string;
-}
-
-/**
- * Generate Goal Output
- */
-export type GenerateGoalOutput = GenerateGoalResponse;
-
-/**
  * Generate Goal Service
  */
 export class GenerateGoal {
@@ -54,9 +42,9 @@ export class GenerateGoal {
     GenerateGoal.instance = undefined as unknown as GenerateGoal;
   }
 
-  async execute(input: GenerateGoalInput): Promise<GenerateGoalOutput> {
+  async execute(accountUuid: string, input: GenerateGoalRequest): Promise<GenerateGoalResponse> {
     // 1. 获取 AI Provider（使用 findByAccountUuid）
-    const providers = await this.providerRepository.findByAccountUuid(input.accountUuid);
+    const providers = await this.providerRepository.findByAccountUuid(accountUuid);
     const provider = providers.find((p: any) => p.isDefault) || providers[0];
     if (!provider) {
       throw new Error('No AI provider configured');
@@ -93,6 +81,3 @@ export class GenerateGoal {
     };
   }
 }
-
-export const generateGoal = (input: GenerateGoalInput): Promise<GenerateGoalOutput> =>
-  GenerateGoal.getInstance().execute(input);

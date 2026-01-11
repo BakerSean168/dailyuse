@@ -11,18 +11,6 @@ import { eventBus } from '@dailyuse/utils';
 import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Create Conversation Input
- */
-export interface CreateConversationInput extends CreateConversationRequest {
-  accountUuid: string;
-}
-
-/**
- * Create Conversation Output
- */
-export type CreateConversationOutput = ConversationResponse;
-
-/**
  * Create Conversation Service
  */
 export class CreateConversation {
@@ -48,10 +36,10 @@ export class CreateConversation {
     CreateConversation.instance = undefined as unknown as CreateConversation;
   }
 
-  async execute(input: CreateConversationInput): Promise<CreateConversationOutput> {
+  async execute(accountUuid: string, input: CreateConversationRequest): Promise<ConversationResponse> {
     // 1. 创建对话
     const conversation = AIConversation.create({
-      accountUuid: input.accountUuid,
+      accountUuid,
       title: input.title || 'New Conversation',
     });
 
@@ -69,6 +57,3 @@ export class CreateConversation {
     };
   }
 }
-
-export const createConversation = (input: CreateConversationInput): Promise<CreateConversationOutput> =>
-  CreateConversation.getInstance().execute(input);

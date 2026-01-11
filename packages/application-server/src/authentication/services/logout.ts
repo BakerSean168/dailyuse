@@ -10,14 +10,6 @@ import { eventBus } from '@dailyuse/utils';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Logout Input
- */
-export interface LogoutInput extends LogoutRequest {
-  /** 当前用户的账户 UUID */
-  accountUuid: string;
-}
-
-/**
  * Logout Service
  */
 export class Logout {
@@ -55,10 +47,10 @@ export class Logout {
   /**
    * 执行登出
    */
-  async execute(input: LogoutInput): Promise<void> {
+  async execute(accountUuid: string, input: LogoutRequest): Promise<void> {
     // 1. 如果登出所有会话
     if (input.allSessions) {
-      const sessions = await this.sessionRepository.findByAccountUuid(input.accountUuid);
+      const sessions = await this.sessionRepository.findByAccountUuid(accountUuid);
       for (const session of sessions) {
         if (session.status === 'ACTIVE') {
           session.revoke();
@@ -90,8 +82,3 @@ export class Logout {
     }
   }
 }
-
-/**
- * 便捷函数
- */
-export const logout = (input: LogoutInput): Promise<void> => Logout.getInstance().execute(input);

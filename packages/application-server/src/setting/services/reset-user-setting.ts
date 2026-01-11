@@ -10,20 +10,6 @@ import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 import { SettingContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Reset User Setting Input
- */
-export interface ResetUserSettingInput {
-  accountUuid: string;
-}
-
-/**
- * Reset User Setting Output
- */
-export interface ResetUserSettingOutput {
-  setting: UserSettingClientDTO;
-}
-
-/**
  * Reset User Setting
  */
 export class ResetUserSetting {
@@ -61,9 +47,7 @@ export class ResetUserSetting {
   /**
    * 执行用例
    */
-  async execute(input: ResetUserSettingInput): Promise<ResetUserSettingOutput> {
-    const { accountUuid } = input;
-
+  async execute(accountUuid: string): Promise<UserSettingClientDTO> {
     const setting = await this.userSettingRepository.findByAccountUuid(accountUuid);
 
     if (!setting) {
@@ -74,12 +58,6 @@ export class ResetUserSetting {
     (newSetting as any)._uuid = setting.uuid;
 
     await this.userSettingRepository.save(newSetting);
-    return { setting: newSetting.toClientDTO() };
+    return newSetting.toClientDTO();
   }
 }
-
-/**
- * 便捷函数
- */
-export const resetUserSetting = (input: ResetUserSettingInput): Promise<ResetUserSettingOutput> =>
-  ResetUserSetting.getInstance().execute(input);

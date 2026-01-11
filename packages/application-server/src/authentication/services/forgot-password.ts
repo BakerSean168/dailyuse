@@ -11,11 +11,6 @@ import { eventBus } from '@dailyuse/utils';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Forgot Password Input
- */
-export interface ForgotPasswordInput extends ForgotPasswordRequest {}
-
-/**
  * Forgot Password Service
  */
 export class ForgotPassword {
@@ -56,7 +51,7 @@ export class ForgotPassword {
   /**
    * 执行忘记密码流程
    */
-  async execute(input: ForgotPasswordInput): Promise<void> {
+  async execute(input: ForgotPasswordRequest): Promise<void> {
     // 1. 验证输入
     if (!input.email?.trim()) {
       throw new Error('Email is required');
@@ -89,9 +84,3 @@ export class ForgotPassword {
     return `reset_${Date.now()}_${Math.random().toString(36).substring(2)}`;
   }
 }
-
-/**
- * 便捷函数
- */
-export const forgotPassword = (input: ForgotPasswordInput): Promise<void> =>
-  ForgotPassword.getInstance().execute(input);

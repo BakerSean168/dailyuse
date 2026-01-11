@@ -12,18 +12,6 @@ import { eventBus } from '@dailyuse/utils';
 import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Send Message Input
- */
-export interface SendMessageInput extends SendMessageRequest {
-  accountUuid: string;
-}
-
-/**
- * Send Message Output
- */
-export type SendMessageOutput = MessageResponse;
-
-/**
  * Send Message Service
  */
 export class SendMessage {
@@ -49,14 +37,14 @@ export class SendMessage {
     SendMessage.instance = undefined as unknown as SendMessage;
   }
 
-  async execute(input: SendMessageInput): Promise<SendMessageOutput> {
+  async execute(accountUuid: string, input: SendMessageRequest): Promise<MessageResponse> {
     // 1. 获取对话
     const conversation = await this.conversationRepository.findByUuid(input.conversationUuid);
     if (!conversation) {
       throw new Error('Conversation not found');
     }
 
-    if (conversation.accountUuid !== input.accountUuid) {
+    if (conversation.accountUuid !== accountUuid) {
       throw new Error('Not authorized');
     }
 
@@ -84,6 +72,3 @@ export class SendMessage {
     };
   }
 }
-
-export const sendMessage = (input: SendMessageInput): Promise<SendMessageOutput> =>
-  SendMessage.getInstance().execute(input);

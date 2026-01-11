@@ -12,20 +12,6 @@ import { ScheduleDomainService } from '@dailyuse/domain-server/schedule';
 import { ScheduleContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Service Input
- */
-export interface DeleteScheduleTaskInput {
-  uuid: string;
-}
-
-/**
- * Service Output
- */
-export interface DeleteScheduleTaskOutput {
-  success: boolean;
-}
-
-/**
  * Delete Schedule Task Service
  */
 export class DeleteScheduleTask {
@@ -70,15 +56,7 @@ export class DeleteScheduleTask {
     DeleteScheduleTask.instance = undefined as unknown as DeleteScheduleTask;
   }
 
-  async execute(input: DeleteScheduleTaskInput): Promise<DeleteScheduleTaskOutput> {
-    await this.domainService.deleteScheduleTask(input.uuid);
-
-    return { success: true };
+  async execute(uuid: string): Promise<void> {
+    await this.domainService.deleteScheduleTask(uuid);
   }
 }
-
-/**
- * 便捷函数：删除调度任务
- */
-export const deleteScheduleTask = (input: DeleteScheduleTaskInput): Promise<DeleteScheduleTaskOutput> =>
-  DeleteScheduleTask.getInstance().execute(input);

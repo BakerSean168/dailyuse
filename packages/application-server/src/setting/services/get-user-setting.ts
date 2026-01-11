@@ -10,20 +10,6 @@ import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 import { SettingContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Get User Setting Input
- */
-export interface GetUserSettingInput {
-  accountUuid: string;
-}
-
-/**
- * Get User Setting Output
- */
-export interface GetUserSettingOutput {
-  setting: UserSettingClientDTO;
-}
-
-/**
  * Get User Setting
  */
 export class GetUserSetting {
@@ -61,9 +47,7 @@ export class GetUserSetting {
   /**
    * 执行用例
    */
-  async execute(input: GetUserSettingInput): Promise<GetUserSettingOutput> {
-    const { accountUuid } = input;
-
+  async execute(accountUuid: string): Promise<UserSettingClientDTO> {
     let setting = await this.userSettingRepository.findByAccountUuid(accountUuid);
 
     if (!setting) {
@@ -71,12 +55,6 @@ export class GetUserSetting {
       await this.userSettingRepository.save(setting);
     }
 
-    return { setting: setting.toClientDTO() };
+    return setting.toClientDTO();
   }
 }
-
-/**
- * 便捷函数
- */
-export const getUserSetting = (input: GetUserSettingInput): Promise<GetUserSettingOutput> =>
-  GetUserSetting.getInstance().execute(input);
