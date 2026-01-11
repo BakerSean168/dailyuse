@@ -6,9 +6,8 @@
  */
 
 import { InitializationManager, InitializationPhase, createLogger } from '@dailyuse/utils';
-import { registerGoalIpcHandlers } from './ipc/goal.ipc-handlers';
-import { registerGoalFolderIpcHandlers } from './ipc/goal-folder.ipc-handlers';
-import { registerGoalStatisticsIpcHandlers } from './ipc/goal-statistics.ipc-handlers';
+import { goalIPCHandler } from './ipc/goal-ipc-handler';
+import { goalFolderIPCHandler } from './ipc/goal-folder.ipc-handlers';
 
 const logger = createLogger('GoalModule');
 
@@ -22,10 +21,12 @@ export function registerGoalModule(): void {
     initialize: async () => {
       logger.info('[Goal] Initializing Goal module...');
 
-      // Register all IPC handlers
-      registerGoalIpcHandlers();
-      registerGoalFolderIpcHandlers();
-      registerGoalStatisticsIpcHandlers();
+      // IPC handlers are automatically registered in their constructors
+      // We just need to ensure the instances are created (which happens at import)
+      logger.info('[Goal] IPC handlers registered:', {
+        goalHandler: !!goalIPCHandler,
+        goalFolderHandler: !!goalFolderIPCHandler,
+      });
 
       logger.info('[Goal] Goal module initialized successfully');
     },

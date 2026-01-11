@@ -6,23 +6,8 @@
 
 import type { IDashboardConfigRepository } from '@dailyuse/domain-server/dashboard';
 import { DashboardConfig } from '@dailyuse/domain-server/dashboard';
-import type { WidgetConfigData } from '@dailyuse/contracts/dashboard';
+import type { UpdateWidgetConfigRequest, WidgetConfigResponse } from '@dailyuse/contracts/dashboard';
 import { DashboardContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Update Widget Config Input
- */
-export interface UpdateWidgetConfigInput {
-  accountUuid: string;
-  configs: Partial<WidgetConfigData>;
-}
-
-/**
- * Update Widget Config Output
- */
-export interface UpdateWidgetConfigOutput {
-  widgetConfig: WidgetConfigData;
-}
 
 /**
  * Update Widget Config
@@ -63,8 +48,8 @@ export class UpdateWidgetConfig {
    * 执行用例
    * 采用部分更新策略（合并）
    */
-  async execute(input: UpdateWidgetConfigInput): Promise<UpdateWidgetConfigOutput> {
-    const { accountUuid, configs } = input;
+  async execute(accountUuid: string, input: UpdateWidgetConfigRequest): Promise<WidgetConfigResponse> {
+    const { configs } = input;
 
     try {
       let config = await this.configRepository.findByAccountUuid(accountUuid);
@@ -86,10 +71,3 @@ export class UpdateWidgetConfig {
     }
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateWidgetConfig = (
-  input: UpdateWidgetConfigInput,
-): Promise<UpdateWidgetConfigOutput> => UpdateWidgetConfig.getInstance().execute(input);

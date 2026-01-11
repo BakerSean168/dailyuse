@@ -30,6 +30,17 @@ export type {
 // ============ Legacy (保持向后兼容) ============
 export type { DashboardSummary, DashboardStatisticsClientDTO } from './DashboardStatisticsClient';
 
+// ============ API Requests/Responses ============
+export type {
+  GetDashboardStatisticsRequest,
+  DashboardStatisticsResponse,
+  GetWidgetConfigRequest,
+  WidgetConfigResponse,
+  UpdateWidgetConfigRequest,
+  ResetWidgetConfigRequest,
+  InvalidateCacheRequest,
+} from './api-requests';
+
 // ============ Widget Type enum ============
 /**
  * Widget 类型枚举

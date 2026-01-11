@@ -34,7 +34,7 @@ export interface IScheduleTaskApiClient {
   /**
    * 获取调度任务列表
    */
-  getTasks(): Promise<ScheduleTaskClientDTO[]>;
+  getTasks(): Promise<{ tasks: ScheduleTaskClientDTO[]; total: number }>;
 
   /**
    * 获取调度任务详情

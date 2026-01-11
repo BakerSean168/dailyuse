@@ -28,7 +28,7 @@ const REMINDER_CHANNELS = {
   // Template CRUD
   CREATE_TEMPLATE: 'reminder:template:create',
   GET_TEMPLATE: 'reminder:template:get',
-  GET_TEMPLATES: 'reminder:template:get-all',
+  GET_TEMPLATES: 'reminder:template:list',
   GET_USER_TEMPLATES: 'reminder:template:get-by-user',
   UPDATE_TEMPLATE: 'reminder:template:update',
   DELETE_TEMPLATE: 'reminder:template:delete',
@@ -40,7 +40,7 @@ const REMINDER_CHANNELS = {
   // Group CRUD
   CREATE_GROUP: 'reminder:group:create',
   GET_GROUP: 'reminder:group:get',
-  GET_GROUPS: 'reminder:group:get-all',
+  GET_GROUPS: 'reminder:group:list',
   GET_USER_GROUPS: 'reminder:group:get-by-user',
   UPDATE_GROUP: 'reminder:group:update',
   DELETE_GROUP: 'reminder:group:delete',

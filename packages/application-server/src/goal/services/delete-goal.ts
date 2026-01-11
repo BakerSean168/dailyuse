@@ -10,33 +10,6 @@ import { eventBus } from '@dailyuse/utils';
 import { GoalContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Delete Goal Input
- */
-export interface DeleteGoalInput {
-  uuid: string;
-}
-
-/**
- * Delete Goal Output
- */
-export interface DeleteGoalOutput {
-  success: boolean;
-}
-
-/**
- * Check Dependencies Output
- */
-export interface CheckDependenciesOutput {
-  hasKeyResults: boolean;
-  keyResultCount: number;
-  hasReviews: boolean;
-  reviewCount: number;
-  hasTaskLinks: boolean;
-  canDelete: boolean;
-  warnings: string[];
-}
-
-/**
  * Delete Goal Service
  */
 export class DeleteGoal {
@@ -74,7 +47,15 @@ export class DeleteGoal {
   /**
    * 检查目标依赖项
    */
-  async checkDependencies(uuid: string): Promise<CheckDependenciesOutput> {
+  async checkDependencies(uuid: string): Promise<{
+    hasKeyResults: boolean;
+    keyResultCount: number;
+    hasReviews: boolean;
+    reviewCount: number;
+    hasTaskLinks: boolean;
+    canDelete: boolean;
+    warnings: string[];
+  }> {
     const goal = await this.goalRepository.findById(uuid, { includeChildren: true });
     if (!goal) {
       throw new Error(`Goal not found: ${uuid}`);
@@ -109,17 +90,15 @@ export class DeleteGoal {
   /**
    * 执行软删除
    */
-  async execute(input: DeleteGoalInput): Promise<DeleteGoalOutput> {
-    const goal = await this.goalRepository.findById(input.uuid, { includeChildren: true });
+  async execute(uuid: string): Promise<void> {
+    const goal = await this.goalRepository.findById(uuid, { includeChildren: true });
     if (!goal) {
-      throw new Error(`Goal not found: ${input.uuid}`);
+      throw new Error(`Goal not found: ${uuid}`);
     }
 
     goal.softDelete();
     await this.goalRepository.save(goal);
     await this.publishEvents(goal);
-
-    return { success: true };
   }
 
   private async publishEvents(goal: Goal): Promise<void> {
@@ -133,5 +112,5 @@ export class DeleteGoal {
 /**
  * 便捷函数：删除目标
  */
-export const deleteGoal = (input: DeleteGoalInput): Promise<DeleteGoalOutput> =>
-  DeleteGoal.getInstance().execute(input);
+export const deleteGoal = (uuid: string): Promise<void> =>
+  DeleteGoal.getInstance().execute(uuid);

@@ -13,25 +13,9 @@ import type {
   ITaskTemplateRepository,
   ITaskInstanceRepository,
 } from '@dailyuse/domain-server/task';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskTemplateResponse } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import { TaskContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface PauseTaskTemplateInput {
-  uuid: string;
-  reason?: string;
-}
-
-/**
- * Service Output
- */
-export interface PauseTaskTemplateOutput {
-  template: TaskTemplateClientDTO;
-  instancesSkipped: number;
-}
 
 /**
  * Pause Task Template Service
@@ -75,10 +59,10 @@ export class PauseTaskTemplate {
     PauseTaskTemplate.instance = undefined as unknown as PauseTaskTemplate;
   }
 
-  async execute(input: PauseTaskTemplateInput): Promise<PauseTaskTemplateOutput> {
-    const template = await this.templateRepository.findByUuid(input.uuid);
+  async execute(uuid: string, reason?: string): Promise<{ template: TaskTemplateClientDTO; instancesSkipped: number }> {
+    const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
-      throw new Error(`TaskTemplate ${input.uuid} not found`);
+      throw new Error(`TaskTemplate ${uuid} not found`);
     }
 
     // 1. 暂停模板状态
@@ -86,7 +70,7 @@ export class PauseTaskTemplate {
     await this.templateRepository.save(template);
 
     // 2. 处理未完成的任务实例
-    const instancesSkipped = await this.handleInstancesOnPause(input.uuid);
+    const instancesSkipped = await this.handleInstancesOnPause(uuid);
 
     // 3. 发布暂停事件
     try {
@@ -96,7 +80,7 @@ export class PauseTaskTemplate {
           taskTemplateUuid: template.uuid,
           accountUuid: template.accountUuid,
           pausedAt: Date.now(),
-          reason: input.reason || '用户手动暂停',
+          reason: reason || '用户手动暂停',
         },
         timestamp: Date.now(),
       });
@@ -136,9 +120,3 @@ export class PauseTaskTemplate {
     }
   }
 }
-
-/**
- * 便捷函数：暂停任务模板
- */
-export const pauseTaskTemplate = (input: PauseTaskTemplateInput): Promise<PauseTaskTemplateOutput> =>
-  PauseTaskTemplate.getInstance().execute(input);

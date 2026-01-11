@@ -23,9 +23,11 @@ import { initializeDatabase, startMemoryCleanup } from './database';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers } from './utils';
 import { configureMainProcessDependencies } from './di';
 import { registerAllModules, initializeAllModules } from './modules';
+import { initializeIPCHandlers } from './modules/ipc-registry';
 import { initSyncManager } from './services';
 import { registerAppLifecycleHandlers } from './lifecycle';
 import { initializeEventListeners } from './events/initialize-event-listeners';
+import { initializeContainers } from './modules/infrastructure';
 
 /**
  * @function initializeApp
@@ -46,29 +48,37 @@ async function initializeApp(): Promise<void> {
   const db = initializeDatabase();
   console.log('[App] Database initialized');
 
-  // 2. EPIC-004: 初始化同步管理器
+  // 2. 初始化DI容器（注册所有Repository）
+  await initializeContainers();
+  console.log('[App] DI containers initialized');
+
+  // 3. EPIC-004: 初始化同步管理器
   initSyncManager(db);
   console.log('[App] Sync manager initialized');
 
-  // 3. 配置依赖注入（核心模块立即加载，非核心懒加载）
+  // 4. 配置依赖注入（核心模块立即加载，非核心懒加载）
   configureMainProcessDependencies();
   console.log('[App] DI configured');
 
-  // 4. EPIC-010: 注册所有模块
+  // 6. EPIC-010: 注册所有模块
   registerAllModules();
   console.log('[App] All modules registered');
 
-  // 5. EPIC-010: 初始化所有模块（按 priority 顺序）
+  // 7. EPIC-010: 初始化所有模块（按 priority 顺序）
   const moduleResult = await initializeAllModules();
   console.log(`[App] All modules initialized: ${moduleResult.success ? 'SUCCESS' : 'FAILED'} (${moduleResult.duration}ms)`);
   if (!moduleResult.success) {
     console.error('[App] Failed modules:', moduleResult.failedModules);
   }
 
-  // 6. 初始化事件监听器
+  // 8. 初始化事件监听器
   await initializeEventListeners();
   console.log('[App] Event listeners initialized');
 
+  // 9. 启动数据库内存清理定时器
+  startMemoryCleanup();
+
+  // 10
   // 7. 启动数据库内存清理定时器
   startMemoryCleanup();
 

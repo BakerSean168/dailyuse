@@ -5,23 +5,12 @@
  */
 
 import type { ITaskInstanceRepository } from '@dailyuse/domain-server/task';
-import type { TaskInstanceClientDTO } from '@dailyuse/contracts/task';
+import type {
+  TaskInstanceClientDTO,
+  SkipTaskInstanceRequest,
+  TaskInstanceResponse,
+} from '@dailyuse/contracts/task';
 import { TaskContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface SkipTaskInstanceInput {
-  uuid: string;
-  reason?: string;
-}
-
-/**
- * Service Output
- */
-export interface SkipTaskInstanceOutput {
-  instance: TaskInstanceClientDTO;
-}
 
 /**
  * Skip Task Instance Service
@@ -58,17 +47,17 @@ export class SkipTaskInstance {
     SkipTaskInstance.instance = undefined as unknown as SkipTaskInstance;
   }
 
-  async execute(input: SkipTaskInstanceInput): Promise<SkipTaskInstanceOutput> {
-    const instance = await this.instanceRepository.findByUuid(input.uuid);
+  async execute(uuid: string, request?: SkipTaskInstanceRequest): Promise<TaskInstanceResponse> {
+    const instance = await this.instanceRepository.findByUuid(uuid);
     if (!instance) {
-      throw new Error(`TaskInstance ${input.uuid} not found`);
+      throw new Error(`TaskInstance ${uuid} not found`);
     }
 
     if (!instance.canSkip()) {
       throw new Error('Cannot skip this task instance');
     }
 
-    instance.skip(input.reason);
+    instance.skip(request?.reason);
     await this.instanceRepository.save(instance);
 
     return {
@@ -76,9 +65,3 @@ export class SkipTaskInstance {
     };
   }
 }
-
-/**
- * 便捷函数：跳过任务实例
- */
-export const skipTaskInstance = (input: SkipTaskInstanceInput): Promise<SkipTaskInstanceOutput> =>
-  SkipTaskInstance.getInstance().execute(input);

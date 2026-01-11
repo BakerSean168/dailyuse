@@ -5,23 +5,8 @@
  */
 
 import type { ITaskTemplateRepository } from '@dailyuse/domain-server/task';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskTemplateResponse } from '@dailyuse/contracts/task';
 import { TaskContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface GetTaskTemplateInput {
-  uuid: string;
-  includeChildren?: boolean;
-}
-
-/**
- * Service Output
- */
-export interface GetTaskTemplateOutput {
-  template: TaskTemplateClientDTO | null;
-}
 
 /**
  * Get Task Template Service
@@ -58,21 +43,13 @@ export class GetTaskTemplate {
     GetTaskTemplate.instance = undefined as unknown as GetTaskTemplate;
   }
 
-  async execute(input: GetTaskTemplateInput): Promise<GetTaskTemplateOutput> {
-    const { uuid, includeChildren = false } = input;
-
+  async execute(uuid: string, includeChildren = false): Promise<TaskTemplateResponse> {
     const template = includeChildren
       ? await this.templateRepository.findByUuidWithChildren(uuid)
       : await this.templateRepository.findByUuid(uuid);
 
     return {
-      template: template ? template.toClientDTO(includeChildren) : null,
+      template: template ? template.toClientDTO(includeChildren) : (null as unknown as TaskTemplateClientDTO),
     };
   }
 }
-
-/**
- * 便捷函数：获取任务模板
- */
-export const getTaskTemplate = (input: GetTaskTemplateInput): Promise<GetTaskTemplateOutput> =>
-  GetTaskTemplate.getInstance().execute(input);

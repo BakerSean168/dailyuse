@@ -6,23 +6,9 @@
 
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { Goal } from '@dailyuse/domain-server/goal';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalResponse } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
 import { GoalContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Activate Goal Input
- */
-export interface ActivateGoalInput {
-  uuid: string;
-}
-
-/**
- * Activate Goal Output
- */
-export interface ActivateGoalOutput {
-  goal: GoalClientDTO;
-}
 
 /**
  * Activate Goal Service
@@ -59,10 +45,10 @@ export class ActivateGoal {
     ActivateGoal.instance = undefined as unknown as ActivateGoal;
   }
 
-  async execute(input: ActivateGoalInput): Promise<ActivateGoalOutput> {
-    const goal = await this.goalRepository.findById(input.uuid);
+  async execute(uuid: string): Promise<GoalResponse> {
+    const goal = await this.goalRepository.findById(uuid);
     if (!goal) {
-      throw new Error(`Goal not found: ${input.uuid}`);
+      throw new Error(`Goal not found: ${uuid}`);
     }
 
     goal.activate();
@@ -85,5 +71,5 @@ export class ActivateGoal {
 /**
  * 便捷函数：激活目标
  */
-export const activateGoal = (input: ActivateGoalInput): Promise<ActivateGoalOutput> =>
-  ActivateGoal.getInstance().execute(input);
+export const activateGoal = (uuid: string): Promise<GoalResponse> =>
+  ActivateGoal.getInstance().execute(uuid);

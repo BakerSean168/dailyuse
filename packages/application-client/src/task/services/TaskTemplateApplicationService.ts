@@ -69,8 +69,8 @@ export class TaskTemplateApplicationService {
     status?: string;
     goalUuid?: string;
   }): Promise<TaskTemplate[]> {
-    const templates = await this.apiClient.getTaskTemplates(params);
-    return templates.map((dto: TaskTemplateClientDTO) => TaskTemplate.fromClientDTO(dto));
+    const response = await this.apiClient.getTaskTemplates(params);
+    return response.templates.map((dto: TaskTemplateClientDTO) => TaskTemplate.fromClientDTO(dto));
   }
 
   /**

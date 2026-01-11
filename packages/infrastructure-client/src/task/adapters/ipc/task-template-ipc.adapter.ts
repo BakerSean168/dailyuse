@@ -39,7 +39,7 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     importance?: string;
     urgency?: string;
     tags?: string[];
-  }): Promise<TaskTemplateClientDTO[]> {
+  }): Promise<{ templates: TaskTemplateClientDTO[]; total: number }> {
     return this.electronApi.invoke('task-template:list', params);
   }
 

@@ -58,8 +58,8 @@ export class ListTaskTemplates {
    * 执行用例
    */
   async execute(input: ListTaskTemplatesInput = {}): Promise<TaskTemplate[]> {
-    const templates = await this.apiClient.getTaskTemplates(input);
-    return templates.map((dto: TaskTemplateClientDTO) => TaskTemplate.fromClientDTO(dto));
+    const response = await this.apiClient.getTaskTemplates(input);
+    return response.templates.map((dto: TaskTemplateClientDTO) => TaskTemplate.fromClientDTO(dto));
   }
 }
 

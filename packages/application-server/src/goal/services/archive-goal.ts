@@ -6,23 +6,9 @@
 
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { Goal } from '@dailyuse/domain-server/goal';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalResponse } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
 import { GoalContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Archive Goal Input
- */
-export interface ArchiveGoalInput {
-  uuid: string;
-}
-
-/**
- * Archive Goal Output
- */
-export interface ArchiveGoalOutput {
-  goal: GoalClientDTO;
-}
 
 /**
  * Archive Goal Service
@@ -59,10 +45,10 @@ export class ArchiveGoal {
     ArchiveGoal.instance = undefined as unknown as ArchiveGoal;
   }
 
-  async execute(input: ArchiveGoalInput): Promise<ArchiveGoalOutput> {
-    const goal = await this.goalRepository.findById(input.uuid);
+  async execute(uuid: string): Promise<GoalResponse> {
+    const goal = await this.goalRepository.findById(uuid);
     if (!goal) {
-      throw new Error(`Goal not found: ${input.uuid}`);
+      throw new Error(`Goal not found: ${uuid}`);
     }
 
     goal.archive();
@@ -85,5 +71,5 @@ export class ArchiveGoal {
 /**
  * 便捷函数：归档目标
  */
-export const archiveGoal = (input: ArchiveGoalInput): Promise<ArchiveGoalOutput> =>
-  ArchiveGoal.getInstance().execute(input);
+export const archiveGoal = (uuid: string): Promise<GoalResponse> =>
+  ArchiveGoal.getInstance().execute(uuid);

@@ -75,8 +75,8 @@ export class TaskApplicationService {
    * @returns 返回 Entity 对象数组
    */
   async listTemplates(): Promise<TaskTemplate[]> {
-    const dtos = await listTaskTemplates();
-    return dtos.map(dto => TaskTemplate.fromClientDTO(dto));
+    const response = await listTaskTemplates();
+    return response.templates.map(dto => TaskTemplate.fromClientDTO(dto));
   }
 
   /**

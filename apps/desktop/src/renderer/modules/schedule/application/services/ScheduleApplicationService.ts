@@ -76,8 +76,10 @@ export class ScheduleApplicationService {
    * @returns 返回 Entity 对象数组
    */
   async listScheduleTasks(): Promise<ScheduleTask[]> {
-    const dtos = await listScheduleTasks();
-    return dtos.map(dto => ScheduleTask.fromClientDTO(dto));
+    const response = await listScheduleTasks();
+    // listScheduleTasks返回 {tasks: DTO[], total: number}
+    const tasks = Array.isArray(response) ? response : (response as any)?.tasks || [];
+    return tasks.map(dto => ScheduleTask.fromClientDTO(dto));
   }
 
   /**

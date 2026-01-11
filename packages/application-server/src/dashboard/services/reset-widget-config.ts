@@ -6,22 +6,8 @@
 
 import type { IDashboardConfigRepository } from '@dailyuse/domain-server/dashboard';
 import { DashboardConfig } from '@dailyuse/domain-server/dashboard';
-import type { WidgetConfigData } from '@dailyuse/contracts/dashboard';
+import type { WidgetConfigResponse } from '@dailyuse/contracts/dashboard';
 import { DashboardContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Reset Widget Config Input
- */
-export interface ResetWidgetConfigInput {
-  accountUuid: string;
-}
-
-/**
- * Reset Widget Config Output
- */
-export interface ResetWidgetConfigOutput {
-  widgetConfig: WidgetConfigData;
-}
 
 /**
  * Reset Widget Config
@@ -61,9 +47,7 @@ export class ResetWidgetConfig {
   /**
    * 执行用例
    */
-  async execute(input: ResetWidgetConfigInput): Promise<ResetWidgetConfigOutput> {
-    const { accountUuid } = input;
-
+  async execute(accountUuid: string): Promise<WidgetConfigResponse> {
     try {
       let config = await this.configRepository.findByAccountUuid(accountUuid);
 
@@ -84,10 +68,3 @@ export class ResetWidgetConfig {
     }
   }
 }
-
-/**
- * 便捷函数
- */
-export const resetWidgetConfig = (
-  input: ResetWidgetConfigInput,
-): Promise<ResetWidgetConfigOutput> => ResetWidgetConfig.getInstance().execute(input);

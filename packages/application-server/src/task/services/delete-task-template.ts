@@ -9,21 +9,6 @@ import { eventBus } from '@dailyuse/utils';
 import { TaskContainer } from '@dailyuse/infrastructure-server';
 
 /**
- * Service Input
- */
-export interface DeleteTaskTemplateInput {
-  uuid: string;
-  soft?: boolean; // 是否软删除
-}
-
-/**
- * Service Output
- */
-export interface DeleteTaskTemplateOutput {
-  success: boolean;
-}
-
-/**
  * Delete Task Template Service
  */
 export class DeleteTaskTemplate {
@@ -58,17 +43,17 @@ export class DeleteTaskTemplate {
     DeleteTaskTemplate.instance = undefined as unknown as DeleteTaskTemplate;
   }
 
-  async execute(input: DeleteTaskTemplateInput): Promise<DeleteTaskTemplateOutput> {
-    const template = await this.templateRepository.findByUuid(input.uuid);
+  async execute(uuid: string, soft = false): Promise<{ success: boolean }> {
+    const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
       // 幂等性：如果模板不存在，直接返回成功
       return { success: true };
     }
 
-    if (input.soft) {
-      await this.templateRepository.softDelete(input.uuid);
+    if (soft) {
+      await this.templateRepository.softDelete(uuid);
     } else {
-      await this.templateRepository.delete(input.uuid);
+      await this.templateRepository.delete(uuid);
     }
 
     // 发布删除事件
@@ -76,7 +61,7 @@ export class DeleteTaskTemplate {
       await eventBus.publish({
         eventType: 'task.template.deleted',
         payload: {
-          taskTemplateUuid: input.uuid,
+          taskTemplateUuid: uuid,
           accountUuid: template.accountUuid,
           deletedAt: Date.now(),
         },
@@ -89,9 +74,3 @@ export class DeleteTaskTemplate {
     return { success: true };
   }
 }
-
-/**
- * 便捷函数：删除任务模板
- */
-export const deleteTaskTemplate = (input: DeleteTaskTemplateInput): Promise<DeleteTaskTemplateOutput> =>
-  DeleteTaskTemplate.getInstance().execute(input);

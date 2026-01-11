@@ -12,7 +12,7 @@ import { TaskStatistics } from '@dailyuse/domain-server/task';
 import { GoalStatistics } from '@dailyuse/domain-server/goal';
 import { ReminderStatistics } from '@dailyuse/domain-server/reminder';
 import { ScheduleStatistics } from '@dailyuse/domain-server/schedule';
-import type { DashboardStatisticsClientDTO } from '@dailyuse/contracts/dashboard';
+import type { DashboardStatisticsResponse, DashboardStatisticsClientDTO } from '@dailyuse/contracts/dashboard';
 import type { TaskStatisticsClientDTO } from '@dailyuse/contracts/task';
 import type { GoalStatisticsClientDTO } from '@dailyuse/contracts/goal';
 import type { ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
@@ -25,20 +25,6 @@ import {
   ScheduleContainer,
   type IStatisticsCacheService,
 } from '@dailyuse/infrastructure-server';
-
-/**
- * Get Dashboard Statistics Input
- */
-export interface GetDashboardStatisticsInput {
-  accountUuid: string;
-}
-
-/**
- * Get Dashboard Statistics Output
- */
-export interface GetDashboardStatisticsOutput {
-  statistics: DashboardStatisticsClientDTO;
-}
 
 /**
  * Get Dashboard Statistics
@@ -107,8 +93,7 @@ export class GetDashboardStatistics {
   /**
    * 执行用例
    */
-  async execute(input: GetDashboardStatisticsInput): Promise<GetDashboardStatisticsOutput> {
-    const { accountUuid } = input;
+  async execute(accountUuid: string): Promise<DashboardStatisticsResponse> {
     const startTime = Date.now();
     console.log(`[GetDashboardStatistics] 开始获取账户 ${accountUuid} 的统计数据`);
 
@@ -283,10 +268,3 @@ export class GetDashboardStatistics {
     return Math.round(average * 100) / 100;
   }
 }
-
-/**
- * 便捷函数
- */
-export const getDashboardStatistics = (
-  input: GetDashboardStatisticsInput,
-): Promise<GetDashboardStatisticsOutput> => GetDashboardStatistics.getInstance().execute(input);

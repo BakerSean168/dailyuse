@@ -5,25 +5,11 @@
  */
 
 import type { ITaskInstanceRepository } from '@dailyuse/domain-server/task';
-import type { TaskInstanceClientDTO } from '@dailyuse/contracts/task';
+import type {
+  TaskInstanceClientDTO,
+  TaskInstancesResponse,
+} from '@dailyuse/contracts/task';
 import { TaskContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface GetTaskInstancesByDateRangeInput {
-  accountUuid: string;
-  startDate: number;
-  endDate: number;
-}
-
-/**
- * Service Output
- */
-export interface GetTaskInstancesByDateRangeOutput {
-  instances: TaskInstanceClientDTO[];
-  total: number;
-}
 
 /**
  * Get Task Instances By Date Range Service
@@ -60,11 +46,11 @@ export class GetTaskInstancesByDateRange {
     GetTaskInstancesByDateRange.instance = undefined as unknown as GetTaskInstancesByDateRange;
   }
 
-  async execute(input: GetTaskInstancesByDateRangeInput): Promise<GetTaskInstancesByDateRangeOutput> {
+  async execute(accountUuid: string, startDate: number, endDate: number): Promise<TaskInstancesResponse> {
     const instances = await this.instanceRepository.findByDateRange(
-      input.accountUuid,
-      input.startDate,
-      input.endDate,
+      accountUuid,
+      startDate,
+      endDate,
     );
 
     return {
@@ -73,9 +59,3 @@ export class GetTaskInstancesByDateRange {
     };
   }
 }
-
-/**
- * 便捷函数：按日期范围获取任务实例
- */
-export const getTaskInstancesByDateRange = (input: GetTaskInstancesByDateRangeInput): Promise<GetTaskInstancesByDateRangeOutput> =>
-  GetTaskInstancesByDateRange.getInstance().execute(input);

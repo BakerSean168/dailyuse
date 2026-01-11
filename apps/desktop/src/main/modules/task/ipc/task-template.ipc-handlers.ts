@@ -53,16 +53,13 @@ export class TaskTemplateIPCHandler extends BaseIPCHandler {
      * @description 列出任务模板
      * Channel Name: task-template:list
      * Payload: params (ListTaskTemplatesInput)
-     * Return: TaskTemplate[]
+     * Return: { templates: TaskTemplate[], total: number }
      * Security: Requires authentication
      */
     ipcMain.handle('task-template:list', async (_, params) => {
       return this.handleRequest(
         'task-template:list',
-        async () => {
-          const result = await this.taskService.listTemplates(params);
-          return result.templates || result;
-        },
+        () => this.taskService.listTemplates(params),
         { accountUuid: params?.accountUuid },
       );
     });

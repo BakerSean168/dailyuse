@@ -5,40 +5,9 @@
  */
 
 import type { ITaskTemplateRepository, TaskFilters } from '@dailyuse/domain-server/task';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskDashboardResponse } from '@dailyuse/contracts/task';
 import { TaskType } from '@dailyuse/contracts/task';
 import { TaskContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface GetTaskDashboardInput {
-  accountUuid: string;
-}
-
-/**
- * Dashboard statistics
- */
-export interface TaskDashboardStatistics {
-  totalActive: number;
-  totalCompleted: number;
-  totalOverdue: number;
-  totalBlocked: number;
-  completionRate: number;
-}
-
-/**
- * Service Output
- */
-export interface GetTaskDashboardOutput {
-  todayTasks: TaskTemplateClientDTO[];
-  overdueTasks: TaskTemplateClientDTO[];
-  blockedTasks: TaskTemplateClientDTO[];
-  upcomingTasks: TaskTemplateClientDTO[];
-  highPriorityTasks: TaskTemplateClientDTO[];
-  recentCompleted: TaskTemplateClientDTO[];
-  statistics: TaskDashboardStatistics;
-}
 
 /**
  * Get Task Dashboard Service
@@ -75,8 +44,7 @@ export class GetTaskDashboard {
     GetTaskDashboard.instance = undefined as unknown as GetTaskDashboard;
   }
 
-  async execute(input: GetTaskDashboardInput): Promise<GetTaskDashboardOutput> {
-    const { accountUuid } = input;
+  async execute(accountUuid: string): Promise<TaskDashboardResponse> {
 
     // 并行查询所有数据
     const [
@@ -105,18 +73,17 @@ export class GetTaskDashboard {
         : 0;
 
     return {
-      todayTasks: today,
-      overdueTasks: overdue,
-      blockedTasks: blocked,
-      upcomingTasks: upcoming,
-      highPriorityTasks: highPriority,
-      recentCompleted,
-      statistics: {
-        totalActive,
-        totalCompleted,
-        totalOverdue: overdue.length,
-        totalBlocked: blocked.length,
-        completionRate,
+      todayTasks: today as any,
+      overdueTasks: overdue as any,
+      upcomingTasks: upcoming as any,
+      highPriorityTasks: highPriority as any,
+      blockedTasks: blocked as any,
+      summary: {
+        totalTasks: totalActive + totalCompleted,
+        completedToday: totalCompleted,
+        overdue: overdue.length,
+        upcoming: upcoming.length,
+        highPriority: highPriority.length,
       },
     };
   }
@@ -164,9 +131,3 @@ export class GetTaskDashboard {
     return await this.templateRepository.countTasks(accountUuid, filters);
   }
 }
-
-/**
- * 便捷函数：获取任务仪表板
- */
-export const getTaskDashboard = (input: GetTaskDashboardInput): Promise<GetTaskDashboardOutput> =>
-  GetTaskDashboard.getInstance().execute(input);

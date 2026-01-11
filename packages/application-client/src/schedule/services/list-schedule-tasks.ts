@@ -46,13 +46,18 @@ export class ListScheduleTasks {
   /**
    * 执行用例
    */
-  async execute(): Promise<ScheduleTaskClientDTO[]> {
-    return this.apiClient.getTasks();
+  async execute(): Promise<{ tasks: ScheduleTaskClientDTO[]; total: number }> {
+    const result = await this.apiClient.getTasks();
+    // 如果返回的是数组，包装成响应对象
+    if (Array.isArray(result)) {
+      return { tasks: result, total: result.length };
+    }
+    return result;
   }
 }
 
 /**
  * 便捷函数
  */
-export const listScheduleTasks = (): Promise<ScheduleTaskClientDTO[]> =>
+export const listScheduleTasks = (): Promise<{ tasks: ScheduleTaskClientDTO[]; total: number }> =>
   ListScheduleTasks.getInstance().execute();

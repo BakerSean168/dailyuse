@@ -6,35 +6,9 @@
 
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalDomainService, Goal } from '@dailyuse/domain-server/goal';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import type { UpdateGoalRequest, GoalResponse } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
 import { GoalContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Update Goal Input
- */
-export interface UpdateGoalInput {
-  uuid: string;
-  title?: string;
-  description?: string;
-  importance?: ImportanceLevel;
-  urgency?: UrgencyLevel;
-  category?: string;
-  deadline?: number;
-  tags?: string[];
-  metadata?: unknown;
-  color?: string;
-  feasibilityAnalysis?: string;
-  motivation?: string;
-}
-
-/**
- * Update Goal Output
- */
-export interface UpdateGoalOutput {
-  goal: GoalClientDTO;
-}
 
 /**
  * Update Goal Service
@@ -74,16 +48,15 @@ export class UpdateGoal {
     UpdateGoal.instance = undefined as unknown as UpdateGoal;
   }
 
-  async execute(input: UpdateGoalInput): Promise<UpdateGoalOutput> {
+  async execute(uuid: string, input: UpdateGoalRequest): Promise<GoalResponse> {
     // 1. 查询目标
-    const goal = await this.goalRepository.findById(input.uuid);
+    const goal = await this.goalRepository.findById(uuid);
     if (!goal) {
-      throw new Error(`Goal not found: ${input.uuid}`);
+      throw new Error(`Goal not found: ${uuid}`);
     }
 
     // 2. 委托领域服务更新
-    const { uuid, ...updates } = input;
-    this.domainService.updateGoalBasicInfo(goal, updates);
+    this.domainService.updateGoalBasicInfo(goal, input);
 
     // 3. 持久化
     await this.goalRepository.save(goal);
@@ -108,5 +81,5 @@ export class UpdateGoal {
 /**
  * 便捷函数：更新目标
  */
-export const updateGoal = (input: UpdateGoalInput): Promise<UpdateGoalOutput> =>
-  UpdateGoal.getInstance().execute(input);
+export const updateGoal = (uuid: string, input: UpdateGoalRequest): Promise<GoalResponse> =>
+  UpdateGoal.getInstance().execute(uuid, input);

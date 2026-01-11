@@ -6,22 +6,8 @@
 
 import type { IDashboardConfigRepository } from '@dailyuse/domain-server/dashboard';
 import { DashboardConfig } from '@dailyuse/domain-server/dashboard';
-import type { WidgetConfigData } from '@dailyuse/contracts/dashboard';
+import type { WidgetConfigResponse } from '@dailyuse/contracts/dashboard';
 import { DashboardContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Get Widget Config Input
- */
-export interface GetWidgetConfigInput {
-  accountUuid: string;
-}
-
-/**
- * Get Widget Config Output
- */
-export interface GetWidgetConfigOutput {
-  widgetConfig: WidgetConfigData;
-}
 
 /**
  * Get Widget Config
@@ -62,9 +48,7 @@ export class GetWidgetConfig {
    * 执行用例
    * 如果用户没有配置，创建并保存默认配置
    */
-  async execute(input: GetWidgetConfigInput): Promise<GetWidgetConfigOutput> {
-    const { accountUuid } = input;
-
+  async execute(accountUuid: string): Promise<WidgetConfigResponse> {
     try {
       const config = await this.configRepository.findByAccountUuid(accountUuid);
 
@@ -91,9 +75,3 @@ export class GetWidgetConfig {
     }
   }
 }
-
-/**
- * 便捷函数
- */
-export const getWidgetConfig = (input: GetWidgetConfigInput): Promise<GetWidgetConfigOutput> =>
-  GetWidgetConfig.getInstance().execute(input);

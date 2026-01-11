@@ -6,23 +6,9 @@
 
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { Goal } from '@dailyuse/domain-server/goal';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalResponse } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
 import { GoalContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Complete Goal Input
- */
-export interface CompleteGoalInput {
-  uuid: string;
-}
-
-/**
- * Complete Goal Output
- */
-export interface CompleteGoalOutput {
-  goal: GoalClientDTO;
-}
 
 /**
  * Complete Goal Service
@@ -59,10 +45,10 @@ export class CompleteGoal {
     CompleteGoal.instance = undefined as unknown as CompleteGoal;
   }
 
-  async execute(input: CompleteGoalInput): Promise<CompleteGoalOutput> {
-    const goal = await this.goalRepository.findById(input.uuid);
+  async execute(uuid: string): Promise<GoalResponse> {
+    const goal = await this.goalRepository.findById(uuid);
     if (!goal) {
-      throw new Error(`Goal not found: ${input.uuid}`);
+      throw new Error(`Goal not found: ${uuid}`);
     }
 
     goal.complete();
@@ -85,5 +71,5 @@ export class CompleteGoal {
 /**
  * 便捷函数：完成目标
  */
-export const completeGoal = (input: CompleteGoalInput): Promise<CompleteGoalOutput> =>
-  CompleteGoal.getInstance().execute(input);
+export const completeGoal = (uuid: string): Promise<GoalResponse> =>
+  CompleteGoal.getInstance().execute(uuid);

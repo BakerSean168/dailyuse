@@ -17,7 +17,7 @@ import type {
  * Goal Folder IPC Adapter
  */
 export class GoalFolderIpcAdapter implements IGoalFolderApiClient {
-  private readonly channel = 'goalFolder';
+  private readonly channel = 'goal-folder';
 
   constructor(private readonly ipcClient: IpcClient) {}
 

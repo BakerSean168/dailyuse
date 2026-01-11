@@ -5,23 +5,8 @@
  */
 
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalResponse } from '@dailyuse/contracts/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Get Goal Input
- */
-export interface GetGoalInput {
-  uuid: string;
-  includeChildren?: boolean;
-}
-
-/**
- * Get Goal Output
- */
-export interface GetGoalOutput {
-  goal: GoalClientDTO | null;
-}
 
 /**
  * Get Goal Service
@@ -58,13 +43,17 @@ export class GetGoal {
     GetGoal.instance = undefined as unknown as GetGoal;
   }
 
-  async execute(input: GetGoalInput): Promise<GetGoalOutput> {
-    const goal = await this.goalRepository.findById(input.uuid, {
-      includeChildren: input.includeChildren,
+  async execute(uuid: string, includeChildren?: boolean): Promise<GoalResponse | null> {
+    const goal = await this.goalRepository.findById(uuid, {
+      includeChildren,
     });
 
+    if (!goal) {
+      return null;
+    }
+
     return {
-      goal: goal ? goal.toClientDTO(true) : null,
+      goal: goal.toClientDTO(true),
     };
   }
 }
@@ -72,5 +61,5 @@ export class GetGoal {
 /**
  * 便捷函数：获取目标
  */
-export const getGoal = (input: GetGoalInput): Promise<GetGoalOutput> =>
-  GetGoal.getInstance().execute(input);
+export const getGoal = (uuid: string, includeChildren?: boolean): Promise<GoalResponse | null> =>
+  GetGoal.getInstance().execute(uuid, includeChildren);

@@ -19,6 +19,7 @@ import {
   archiveGoalService,
   completeGoalService,
   getGoalStatisticsService,
+  listGoalFoldersService,
 } from './services';
 
 /**
@@ -71,5 +72,16 @@ export class GoalDesktopApplicationService {
 
   async getGoalStatistics(accountUuid?: string) {
     return getGoalStatisticsService(accountUuid);
+  }
+
+  // ===== Goal Folders =====
+
+  async listFolders(params?: {
+    accountUuid?: string;
+    page?: number;
+    limit?: number;
+    parentUuid?: string | null;
+  }) {
+    return listGoalFoldersService(params);
   }
 }

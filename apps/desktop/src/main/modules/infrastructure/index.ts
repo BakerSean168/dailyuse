@@ -23,31 +23,79 @@ const logger = createLogger('Infrastructure');
 /**
  * Initializes all Dependency Injection Containers.
  *
- * Sets up the database connection path and prepares the containers for use.
- * NOTE: This is currently a placeholder and will be fully implemented when the Prisma integration is complete.
+ * Sets up the database connection and registers all SQLite repositories.
  * 
  * @returns {Promise<void>} Resolves when initialization is complete.
  */
 export async function initializeContainers(): Promise<void> {
-  const userDataPath = app.getPath('userData');
-  const dbPath = path.join(userDataPath, 'dailyuse.db');
-
-  logger.info('Initializing containers', { dbPath });
+  logger.info('Initializing DI containers...');
 
   try {
-    // TODO: Initialize Prisma client
-    // const prisma = new PrismaClient({ datasources: { db: { url: `file:${dbPath}` } } });
+    // 导入SQLite Repository实现
+    const {
+      SqliteGoalRepository,
+      SqliteGoalFolderRepository,
+      SqliteGoalStatisticsRepository,
+      SqliteTaskTemplateRepository,
+      SqliteTaskInstanceRepository,
+      SqliteTaskStatisticsRepository,
+      SqliteScheduleTaskRepository,
+      SqliteScheduleStatisticsRepository,
+      SqliteReminderTemplateRepository,
+      SqliteReminderGroupRepository,
+      SqliteReminderStatisticsRepository,
+      SqliteAIConversationRepository,
+      SqliteAIGenerationTaskRepository,
+      SqliteAIUsageQuotaRepository,
+      SqliteAIProviderConfigRepository,
+    } = await import('../../di/sqlite-adapters');
+
+    // ========== Goal Container ==========
+    GoalContainer.getInstance()
+      .registerGoalRepository(new SqliteGoalRepository())
+      .registerGoalFolderRepository(new SqliteGoalFolderRepository())
+      .registerStatisticsRepository(new SqliteGoalStatisticsRepository());
     
-    // TODO: Create and register all repositories
-    // GoalContainer.getInstance()
-    //   .registerGoalRepository(new GoalPrismaRepository(prisma))
-    //   .registerKeyResultRepository(new KeyResultPrismaRepository(prisma));
+    logger.info('✅ Goal Container initialized');
+
+    // ========== Task Container ==========
+    TaskContainer.getInstance()
+      .registerTemplateRepository(new SqliteTaskTemplateRepository())
+      .registerInstanceRepository(new SqliteTaskInstanceRepository())
+      .registerStatisticsRepository(new SqliteTaskStatisticsRepository());
     
-    // TaskContainer.getInstance()
-    //   .registerTemplateRepository(new TaskTemplatePrismaRepository(prisma))
-    //   .registerInstanceRepository(new TaskInstancePrismaRepository(prisma));
+    logger.info('✅ Task Container initialized');
+
+    // ========== Schedule Container ==========
+    ScheduleContainer.getInstance()
+      .registerScheduleTaskRepository(new SqliteScheduleTaskRepository())
+      .registerStatisticsRepository(new SqliteScheduleStatisticsRepository());
     
-    // etc...
+    logger.info('✅ Schedule Container initialized');
+
+    // ========== Reminder Container ==========
+    ReminderContainer.getInstance()
+      .registerTemplateRepository(new SqliteReminderTemplateRepository())
+      .registerGroupRepository(new SqliteReminderGroupRepository())
+      .registerStatisticsRepository(new SqliteReminderStatisticsRepository());
+    
+    logger.info('✅ Reminder Container initialized');
+
+    // ========== AI Container ==========
+    AIContainer.getInstance()
+      .registerConversationRepository(new SqliteAIConversationRepository())
+      .registerGenerationTaskRepository(new SqliteAIGenerationTaskRepository())
+      .registerUsageQuotaRepository(new SqliteAIUsageQuotaRepository())
+      .registerProviderConfigRepository(new SqliteAIProviderConfigRepository());
+    
+    logger.info('✅ AI Container initialized');
+
+    logger.info('🎉 All DI containers initialized successfully');
+  } catch (error) {
+    logger.error('Failed to initialize containers:', error);
+    throw error;
+  }
+}
 
     logger.info('Container initialization placeholder - TODO: implement with Prisma');
   } catch (error) {

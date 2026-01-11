@@ -76,7 +76,18 @@ export class ReminderApplicationService {
   }
 
   async listReminderTemplates(params?: ListReminderTemplatesParams): Promise<ListReminderTemplatesResult> {
-    return listReminderTemplates(params);
+    const result = await listReminderTemplates(params);
+    // 确保返回正确的结构
+    if (!result || !result.templates) {
+      return {
+        templates: [],
+        total: 0,
+        page: params?.page || 1,
+        pageSize: params?.pageSize || 20,
+        hasMore: false,
+      };
+    }
+    return result;
   }
 
   async getUserTemplates(accountUuid: string) {

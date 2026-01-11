@@ -17,41 +17,12 @@ import {
   TaskInstanceGenerationService,
 } from '@dailyuse/domain-server/task';
 import type {
-  TaskTimeConfigServerDTO,
-  RecurrenceRuleServerDTO,
-  TaskReminderConfigServerDTO,
   TaskTemplateClientDTO,
+  CreateTaskTemplateRequest,
 } from '@dailyuse/contracts/task';
-import { TaskType, TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import { TaskContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface CreateTaskTemplateInput {
-  accountUuid: string;
-  title: string;
-  description?: string;
-  taskType: TaskType;
-  timeConfig: TaskTimeConfigServerDTO;
-  recurrenceRule?: RecurrenceRuleServerDTO;
-  reminderConfig?: TaskReminderConfigServerDTO;
-  importance?: ImportanceLevel;
-  urgency?: UrgencyLevel;
-  folderUuid?: string;
-  tags?: string[];
-  color?: string;
-}
-
-/**
- * Service Output
- */
-export interface CreateTaskTemplateOutput {
-  template: TaskTemplateClientDTO;
-  instanceCount: number;
-}
 
 /**
  * Create Task Template Service
@@ -98,30 +69,30 @@ export class CreateTaskTemplate {
     CreateTaskTemplate.instance = undefined as unknown as CreateTaskTemplate;
   }
 
-  async execute(input: CreateTaskTemplateInput): Promise<CreateTaskTemplateOutput> {
+  async execute(request: CreateTaskTemplateRequest): Promise<{ template: TaskTemplateClientDTO; instanceCount: number }> {
     // 转换值对象
-    const timeConfig = TaskTimeConfig.fromServerDTO(input.timeConfig);
-    const recurrenceRule = input.recurrenceRule
-      ? RecurrenceRule.fromServerDTO(input.recurrenceRule)
+    const timeConfig = TaskTimeConfig.fromServerDTO(request.timeConfig);
+    const recurrenceRule = request.recurrenceRule
+      ? RecurrenceRule.fromServerDTO(request.recurrenceRule)
       : undefined;
-    const reminderConfig = input.reminderConfig
-      ? TaskReminderConfig.fromServerDTO(input.reminderConfig)
+    const reminderConfig = request.reminderConfig
+      ? TaskReminderConfig.fromServerDTO(request.reminderConfig)
       : undefined;
 
     // 使用领域模型的工厂方法创建
     const template = TaskTemplate.create({
-      accountUuid: input.accountUuid,
-      title: input.title,
-      description: input.description,
-      taskType: input.taskType,
+      accountUuid: request.accountUuid,
+      title: request.title,
+      description: request.description,
+      taskType: request.taskType,
       timeConfig,
       recurrenceRule,
       reminderConfig,
-      importance: input.importance,
-      urgency: input.urgency,
-      folderUuid: input.folderUuid,
-      tags: input.tags,
-      color: input.color,
+      importance: request.importance,
+      urgency: request.urgency,
+      folderUuid: request.folderUuid,
+      tags: request.tags,
+      color: request.color,
     });
 
     // 保存到仓储
@@ -174,9 +145,3 @@ export class CreateTaskTemplate {
     }
   }
 }
-
-/**
- * 便捷函数：创建任务模板
- */
-export const createTaskTemplate = (input: CreateTaskTemplateInput): Promise<CreateTaskTemplateOutput> =>
-  CreateTaskTemplate.getInstance().execute(input);

@@ -287,6 +287,17 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
   }
 
   /**
+   * 更新排序顺序
+   */
+  public updateSortOrder(sortOrder: number): void {
+    if (sortOrder < 0) {
+      throw new Error('Sort order cannot be negative');
+    }
+    this._sortOrder = sortOrder;
+    this._updatedAt = Date.now();
+  }
+
+  /**
    * 更新统计信息
    */
   public updateStatistics(goalCount: number, completedCount: number): void {
@@ -346,14 +357,6 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
     if (!this._deletedAt) return;
 
     this._deletedAt = null;
-    this._updatedAt = Date.now();
-  }
-
-  /**
-   * 更新排序
-   */
-  public updateSortOrder(sortOrder: number): void {
-    this._sortOrder = sortOrder;
     this._updatedAt = Date.now();
   }
 

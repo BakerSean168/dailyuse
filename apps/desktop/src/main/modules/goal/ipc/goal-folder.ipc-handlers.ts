@@ -40,18 +40,15 @@ export class GoalFolderIPCHandler extends BaseIPCHandler {
     /**
      * @description 列出目标文件夹
      * Channel Name: goal-folder:list
-     * Payload: accountUuid (string)
-     * Return: { success: boolean, data: GoalFolder[] }
+     * Payload: params (ListGoalFoldersInput)
+     * Return: GoalFolderListResponse
      * Security: Requires authentication
      */
-    ipcMain.handle('goal-folder:list', async (_, accountUuid) => {
+    ipcMain.handle('goal-folder:list', async (_, params) => {
       return this.handleRequest(
         'goal-folder:list',
-        async () => {
-          // TODO: 实现或映射到实际的 listFolders 方法
-          return { success: true, data: [] };
-        },
-        { accountUuid },
+        () => this.goalService.listFolders(params),
+        { accountUuid: params?.accountUuid },
       );
     });
 

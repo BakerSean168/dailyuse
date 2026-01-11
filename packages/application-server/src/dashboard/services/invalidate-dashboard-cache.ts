@@ -7,13 +7,6 @@
 import { DashboardContainer, type IStatisticsCacheService } from '@dailyuse/infrastructure-server';
 
 /**
- * Invalidate Dashboard Cache Input
- */
-export interface InvalidateDashboardCacheInput {
-  accountUuid: string;
-}
-
-/**
  * Invalidate Dashboard Cache
  */
 export class InvalidateDashboardCache {
@@ -51,15 +44,8 @@ export class InvalidateDashboardCache {
   /**
    * 执行用例
    */
-  async execute(input: InvalidateDashboardCacheInput): Promise<void> {
-    const { accountUuid } = input;
+  async execute(accountUuid: string): Promise<void> {
     console.log(`[InvalidateDashboardCache] 失效账户 ${accountUuid} 的缓存`);
     await this.cacheService.invalidate(accountUuid);
   }
 }
-
-/**
- * 便捷函数
- */
-export const invalidateDashboardCache = (input: InvalidateDashboardCacheInput): Promise<void> =>
-  InvalidateDashboardCache.getInstance().execute(input);

@@ -11,26 +11,11 @@ import type {
 import type {
   TaskInstanceClientDTO,
   TaskInstanceCompletedEvent,
+  CompleteTaskInstanceRequest,
+  TaskInstanceResponse,
 } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import { TaskContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface CompleteTaskInstanceInput {
-  uuid: string;
-  duration?: number;
-  note?: string;
-  rating?: number;
-}
-
-/**
- * Service Output
- */
-export interface CompleteTaskInstanceOutput {
-  instance: TaskInstanceClientDTO;
-}
 
 /**
  * Complete Task Instance Service
@@ -74,10 +59,10 @@ export class CompleteTaskInstance {
     CompleteTaskInstance.instance = undefined as unknown as CompleteTaskInstance;
   }
 
-  async execute(input: CompleteTaskInstanceInput): Promise<CompleteTaskInstanceOutput> {
-    const instance = await this.instanceRepository.findByUuid(input.uuid);
+  async execute(uuid: string, request?: CompleteTaskInstanceRequest): Promise<TaskInstanceResponse> {
+    const instance = await this.instanceRepository.findByUuid(uuid);
     if (!instance) {
-      throw new Error(`TaskInstance ${input.uuid} not found`);
+      throw new Error(`TaskInstance ${uuid} not found`);
     }
 
     if (!instance.canComplete()) {
@@ -85,7 +70,7 @@ export class CompleteTaskInstance {
     }
 
     // 标记为完成
-    instance.complete(input.duration, input.note, input.rating);
+    instance.complete(request?.duration, request?.note, request?.rating);
     await this.instanceRepository.save(instance);
 
     // 发布事件
@@ -133,9 +118,3 @@ export class CompleteTaskInstance {
     }
   }
 }
-
-/**
- * 便捷函数：完成任务实例
- */
-export const completeTaskInstance = (input: CompleteTaskInstanceInput): Promise<CompleteTaskInstanceOutput> =>
-  CompleteTaskInstance.getInstance().execute(input);

@@ -8,75 +8,32 @@
  * - Each service is a class with a single `execute` method
  * - Dependencies are injected via constructor
  * - Returns DTOs, not domain objects
+ * - 类型定义请从 @dailyuse/contracts/goal 导入
  */
 
 // ============================================================
 // Services
 // ============================================================
 
-export {
-  CreateGoal,
-  createGoal,
-  type CreateGoalInput,
-  type CreateGoalOutput,
-} from './create-goal';
+export { CreateGoal } from './create-goal';
+export { GetGoal } from './get-goal';
+export { ListGoals } from './list-goals';
+export { UpdateGoal } from './update-goal';
+export { DeleteGoal } from './delete-goal';
+export { ArchiveGoal } from './archive-goal';
+export { ActivateGoal } from './activate-goal';
+export { CompleteGoal } from './complete-goal';
+export { SearchGoals } from './search-goals';
 
-export {
-  GetGoal,
-  getGoal,
-  type GetGoalInput,
-  type GetGoalOutput,
-} from './get-goal';
+// ============================================================
+// GoalFolder Services
+// ============================================================
 
-export {
-  ListGoals,
-  listGoals,
-  type ListGoalsInput,
-  type ListGoalsOutput,
-} from './list-goals';
-
-export {
-  UpdateGoal,
-  updateGoal,
-  type UpdateGoalInput,
-  type UpdateGoalOutput,
-} from './update-goal';
-
-export {
-  DeleteGoal,
-  deleteGoal,
-  type DeleteGoalInput,
-  type DeleteGoalOutput,
-  type CheckDependenciesOutput,
-} from './delete-goal';
-
-export {
-  ArchiveGoal,
-  archiveGoal,
-  type ArchiveGoalInput,
-  type ArchiveGoalOutput,
-} from './archive-goal';
-
-export {
-  ActivateGoal,
-  activateGoal,
-  type ActivateGoalInput,
-  type ActivateGoalOutput,
-} from './activate-goal';
-
-export {
-  CompleteGoal,
-  completeGoal,
-  type CompleteGoalInput,
-  type CompleteGoalOutput,
-} from './complete-goal';
-
-export {
-  SearchGoals,
-  searchGoals,
-  type SearchGoalsInput,
-  type SearchGoalsOutput,
-} from './search-goals';
+export { ListGoalFolders } from './list-goal-folders';
+export { CreateGoalFolder } from './create-goal-folder';
+export { GetGoalFolder } from './get-goal-folder';
+export { UpdateGoalFolder } from './update-goal-folder';
+export { DeleteGoalFolder } from './delete-goal-folder';
 
 // ============================================================
 // Legacy: GoalApplicationService (保留向后兼容)

@@ -6,26 +6,8 @@
 
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { Goal } from '@dailyuse/domain-server/goal';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { QueryGoalsRequest, GoalsResponse } from '@dailyuse/contracts/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * List Goals Input
- */
-export interface ListGoalsInput {
-  accountUuid: string;
-  includeChildren?: boolean;
-  status?: string;
-  folderUuid?: string;
-}
-
-/**
- * List Goals Output
- */
-export interface ListGoalsOutput {
-  goals: GoalClientDTO[];
-  total: number;
-}
 
 /**
  * List Goals Service
@@ -62,16 +44,18 @@ export class ListGoals {
     ListGoals.instance = undefined as unknown as ListGoals;
   }
 
-  async execute(input: ListGoalsInput): Promise<ListGoalsOutput> {
+  async execute(input: QueryGoalsRequest): Promise<GoalsResponse> {
     const goals = await this.goalRepository.findByAccountUuid(input.accountUuid, {
-      includeChildren: input.includeChildren,
-      status: input.status,
+      includeChildren: input.includeKeyResults,
+      status: input.status?.[0],
       folderUuid: input.folderUuid,
     });
 
     return {
       goals: goals.map((g: Goal) => g.toClientDTO(true)),
       total: goals.length,
+      page: input.page ?? 1,
+      pageSize: input.pageSize ?? goals.length,
     };
   }
 }
@@ -79,5 +63,5 @@ export class ListGoals {
 /**
  * 便捷函数：列出目标
  */
-export const listGoals = (input: ListGoalsInput): Promise<ListGoalsOutput> =>
+export const listGoals = (input: QueryGoalsRequest): Promise<GoalsResponse> =>
   ListGoals.getInstance().execute(input);

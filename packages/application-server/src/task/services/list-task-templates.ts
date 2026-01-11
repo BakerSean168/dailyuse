@@ -11,30 +11,14 @@ import type {
   TaskTemplate,
 } from '@dailyuse/domain-server/task';
 import { TaskInstanceGenerationService } from '@dailyuse/domain-server/task';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type {
+  TaskTemplateClientDTO,
+  QueryTaskTemplatesRequest,
+  TaskTemplatesResponse,
+} from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import { TaskContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface ListTaskTemplatesInput {
-  accountUuid: string;
-  status?: TaskTemplateStatus;
-  folderUuid?: string;
-  goalUuid?: string;
-  tags?: string[];
-  activeOnly?: boolean;
-}
-
-/**
- * Service Output
- */
-export interface ListTaskTemplatesOutput {
-  templates: TaskTemplateClientDTO[];
-  total: number;
-}
 
 /**
  * List Task Templates Service
@@ -81,22 +65,20 @@ export class ListTaskTemplates {
     ListTaskTemplates.instance = undefined as unknown as ListTaskTemplates;
   }
 
-  async execute(input: ListTaskTemplatesInput): Promise<ListTaskTemplatesOutput> {
+  async execute(request: QueryTaskTemplatesRequest): Promise<TaskTemplatesResponse> {
     let templates: TaskTemplate[];
 
     // 根据不同条件查询
-    if (input.status) {
-      templates = await this.templateRepository.findByStatus(input.accountUuid, input.status);
-    } else if (input.folderUuid) {
-      templates = await this.templateRepository.findByFolder(input.folderUuid);
-    } else if (input.goalUuid) {
-      templates = await this.templateRepository.findByGoal(input.goalUuid);
-    } else if (input.tags && input.tags.length > 0) {
-      templates = await this.templateRepository.findByTags(input.accountUuid, input.tags);
-    } else if (input.activeOnly) {
-      templates = await this.templateRepository.findActiveTemplates(input.accountUuid);
+    if (request.status && request.status.length > 0) {
+      templates = await this.templateRepository.findByStatus(request.accountUuid, request.status[0]);
+    } else if (request.folderUuid) {
+      templates = await this.templateRepository.findByFolder(request.folderUuid);
+    } else if (request.goalUuid) {
+      templates = await this.templateRepository.findByGoal(request.goalUuid);
+    } else if (request.tags && request.tags.length > 0) {
+      templates = await this.templateRepository.findByTags(request.accountUuid, request.tags);
     } else {
-      templates = await this.templateRepository.findByAccount(input.accountUuid);
+      templates = await this.templateRepository.findByAccount(request.accountUuid);
     }
 
     // 自动检查并补充每个 ACTIVE 模板的实例（异步执行，不阻塞）
@@ -143,9 +125,3 @@ export class ListTaskTemplates {
     }
   }
 }
-
-/**
- * 便捷函数：列出任务模板
- */
-export const listTaskTemplates = (input: ListTaskTemplatesInput): Promise<ListTaskTemplatesOutput> =>
-  ListTaskTemplates.getInstance().execute(input);

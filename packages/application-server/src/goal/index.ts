@@ -3,6 +3,8 @@
  *
  * Provides services for goal management on the server side.
  * Each service orchestrates domain objects and repositories.
+ * 
+ * 类型定义请从 @dailyuse/contracts/goal 导入
  */
 
 // ============================================================
@@ -14,52 +16,22 @@ export { GoalContainer } from '@dailyuse/infrastructure-server';
 // Services (按用例划分)
 // ============================================================
 export {
-  // Create
+  // Goal Services
   CreateGoal,
-  createGoal,
-  type CreateGoalInput,
-  type CreateGoalOutput,
-  // Get
   GetGoal,
-  getGoal,
-  type GetGoalInput,
-  type GetGoalOutput,
-  // List
   ListGoals,
-  listGoals,
-  type ListGoalsInput,
-  type ListGoalsOutput,
-  // Update
   UpdateGoal,
-  updateGoal,
-  type UpdateGoalInput,
-  type UpdateGoalOutput,
-  // Delete
   DeleteGoal,
-  deleteGoal,
-  type DeleteGoalInput,
-  type DeleteGoalOutput,
-  type CheckDependenciesOutput,
-  // Archive
   ArchiveGoal,
-  archiveGoal,
-  type ArchiveGoalInput,
-  type ArchiveGoalOutput,
-  // Activate
   ActivateGoal,
-  activateGoal,
-  type ActivateGoalInput,
-  type ActivateGoalOutput,
-  // Complete
   CompleteGoal,
-  completeGoal,
-  type CompleteGoalInput,
-  type CompleteGoalOutput,
-  // Search
   SearchGoals,
-  searchGoals,
-  type SearchGoalsInput,
-  type SearchGoalsOutput,
+  // GoalFolder Services
+  ListGoalFolders,
+  CreateGoalFolder,
+  GetGoalFolder,
+  UpdateGoalFolder,
+  DeleteGoalFolder,
   // Legacy (向后兼容)
   GoalApplicationService,
   createGoalApplicationService,

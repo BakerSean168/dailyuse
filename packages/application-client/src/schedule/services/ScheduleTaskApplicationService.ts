@@ -38,7 +38,7 @@ export class ScheduleTaskApplicationService {
   /**
    * 获取所有调度任务
    */
-  async getTasks(): Promise<ScheduleTaskClientDTO[]> {
+  async getTasks(): Promise<{ tasks: ScheduleTaskClientDTO[]; total: number }> {
     return this.apiClient.getTasks();
   }
 

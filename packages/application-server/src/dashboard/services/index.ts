@@ -2,13 +2,14 @@
  * Dashboard Services Index
  *
  * 导出所有 Dashboard 模块的 Services
+ * 类型定义请从 @dailyuse/contracts/dashboard 导入
  */
 
 // ===== Widget Config =====
-export * from './get-widget-config';
-export * from './update-widget-config';
-export * from './reset-widget-config';
+export { GetWidgetConfig } from './get-widget-config';
+export { UpdateWidgetConfig } from './update-widget-config';
+export { ResetWidgetConfig } from './reset-widget-config';
 
 // ===== Statistics =====
-export * from './get-dashboard-statistics';
-export * from './invalidate-dashboard-cache';
+export { GetDashboardStatistics } from './get-dashboard-statistics';
+export { InvalidateDashboardCache } from './invalidate-dashboard-cache';

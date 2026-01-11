@@ -39,7 +39,7 @@ export interface ITaskTemplateApiClient {
     importance?: string;
     urgency?: string;
     tags?: string[];
-  }): Promise<TaskTemplateClientDTO[]>;
+  }): Promise<{ templates: TaskTemplateClientDTO[]; total: number }>;
 
   /**
    * 获取任务模板详情

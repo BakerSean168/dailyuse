@@ -41,7 +41,7 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     importance?: string;
     urgency?: string;
     tags?: string[];
-  }): Promise<TaskTemplateClientDTO[]> {
+  }): Promise<{ templates: TaskTemplateClientDTO[]; total: number }> {
     return this.httpClient.get(this.baseUrl, { params });
   }
 

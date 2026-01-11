@@ -34,7 +34,7 @@ export class ScheduleTaskHttpAdapter implements IScheduleTaskApiClient {
     return this.httpClient.post(`${this.baseUrl}/tasks/batch`, { tasks });
   }
 
-  async getTasks(): Promise<ScheduleTaskClientDTO[]> {
+  async getTasks(): Promise<{ tasks: ScheduleTaskClientDTO[]; total: number }> {
     return this.httpClient.get(`${this.baseUrl}/tasks`);
   }
 

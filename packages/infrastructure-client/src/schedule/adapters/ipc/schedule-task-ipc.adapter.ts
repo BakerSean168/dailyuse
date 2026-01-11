@@ -20,7 +20,7 @@ const SCHEDULE_TASK_CHANNELS = {
   // CRUD
   CREATE_TASK: 'schedule:task:create',
   CREATE_TASKS_BATCH: 'schedule:task:create-batch',
-  GET_TASKS: 'schedule:task:get-all',
+  GET_TASKS: 'schedule:task:list',
   GET_TASK_BY_ID: 'schedule:task:get-by-id',
   GET_DUE_TASKS: 'schedule:task:get-due',
   GET_TASK_BY_SOURCE: 'schedule:task:get-by-source',
@@ -66,7 +66,7 @@ export class ScheduleTaskIpcAdapter implements IScheduleTaskApiClient {
     return this.ipcApi.invoke(SCHEDULE_TASK_CHANNELS.CREATE_TASKS_BATCH, tasks);
   }
 
-  async getTasks(): Promise<ScheduleTaskClientDTO[]> {
+  async getTasks(): Promise<{ tasks: ScheduleTaskClientDTO[]; total: number }> {
     return this.ipcApi.invoke(SCHEDULE_TASK_CHANNELS.GET_TASKS);
   }
 

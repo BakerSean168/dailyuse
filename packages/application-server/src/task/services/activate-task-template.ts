@@ -13,24 +13,9 @@ import type {
   ITaskInstanceRepository,
 } from '@dailyuse/domain-server/task';
 import { TaskInstanceGenerationService } from '@dailyuse/domain-server/task';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskTemplateResponse } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import { TaskContainer } from '@dailyuse/infrastructure-server';
-
-/**
- * Service Input
- */
-export interface ActivateTaskTemplateInput {
-  uuid: string;
-}
-
-/**
- * Service Output
- */
-export interface ActivateTaskTemplateOutput {
-  template: TaskTemplateClientDTO;
-  instancesGenerated: number;
-}
 
 /**
  * Activate Task Template Service
@@ -77,10 +62,10 @@ export class ActivateTaskTemplate {
     ActivateTaskTemplate.instance = undefined as unknown as ActivateTaskTemplate;
   }
 
-  async execute(input: ActivateTaskTemplateInput): Promise<ActivateTaskTemplateOutput> {
-    const template = await this.templateRepository.findByUuid(input.uuid);
+  async execute(uuid: string): Promise<{ template: TaskTemplateClientDTO; instancesGenerated: number }> {
+    const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
-      throw new Error(`TaskTemplate ${input.uuid} not found`);
+      throw new Error(`TaskTemplate ${uuid} not found`);
     }
 
     // 1. 激活模板状态
@@ -120,9 +105,3 @@ export class ActivateTaskTemplate {
     };
   }
 }
-
-/**
- * 便捷函数：激活任务模板
- */
-export const activateTaskTemplate = (input: ActivateTaskTemplateInput): Promise<ActivateTaskTemplateOutput> =>
-  ActivateTaskTemplate.getInstance().execute(input);
