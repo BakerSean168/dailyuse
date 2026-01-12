@@ -49,9 +49,3 @@ export class GetTodayCompletionRate {
     return this.apiClient.getTodayCompletionRate(accountUuid);
   }
 }
-
-/**
- * 便捷函数
- */
-export const getTodayCompletionRate = (accountUuid: string): Promise<number> =>
-  GetTodayCompletionRate.getInstance().execute(accountUuid);

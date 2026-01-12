@@ -8,8 +8,6 @@ import type { ForgotPasswordRequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface ForgotPasswordInput extends ForgotPasswordRequest {}
-
 /**
  * Forgot Password Use Case
  */
@@ -48,13 +46,7 @@ export class ForgotPassword {
   /**
    * 执行用例
    */
-  async execute(input: ForgotPasswordInput): Promise<void> {
+  async execute(input: ForgotPasswordRequest): Promise<void> {
     return this.apiClient.forgotPassword(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const forgotPassword = (input: ForgotPasswordInput): Promise<void> =>
-  ForgotPassword.getInstance().execute(input);

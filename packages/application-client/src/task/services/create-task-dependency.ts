@@ -13,11 +13,6 @@ import { eventBus } from '@dailyuse/utils';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 import { TaskDependencyEvents } from './task-dependency-events';
 
-export interface CreateTaskDependencyInput {
-  taskUuid: string;
-  request: CreateTaskDependencyRequest;
-}
-
 /**
  * Create Task Dependency
  */
@@ -56,13 +51,13 @@ export class CreateTaskDependency {
   /**
    * 执行用例
    */
-  async execute(input: CreateTaskDependencyInput): Promise<TaskDependencyClientDTO> {
-    const dependency = await this.apiClient.createDependency(input.taskUuid, input.request);
+  async execute(taskUuid: string, request: CreateTaskDependencyRequest): Promise<TaskDependencyClientDTO> {
+    const dependency = await this.apiClient.createDependency(taskUuid, request);
 
     eventBus.emit(TaskDependencyEvents.DEPENDENCY_CREATED, {
-      taskUuid: input.taskUuid,
+      taskUuid,
       dependencyUuid: dependency.uuid,
-      predecessorTaskUuid: input.request.predecessorTaskUuid,
+      predecessorTaskUuid: request.predecessorTaskUuid,
       reason: TaskDependencyEvents.DEPENDENCY_CREATED,
       timestamp: Date.now(),
     });
@@ -70,10 +65,3 @@ export class CreateTaskDependency {
     return dependency;
   }
 }
-
-/**
- * 便捷函数
- */
-export const createTaskDependency = (
-  input: CreateTaskDependencyInput,
-): Promise<TaskDependencyClientDTO> => CreateTaskDependency.getInstance().execute(input);

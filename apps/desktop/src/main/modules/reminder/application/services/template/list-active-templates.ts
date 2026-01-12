@@ -2,7 +2,7 @@
  * List Active Reminder Templates Service
  */
 
-import { listReminderTemplates } from '@dailyuse/application-server';
+import { ListReminderTemplates } from '@dailyuse/application-server';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { createLogger } from '@dailyuse/utils';
 
@@ -15,7 +15,7 @@ export async function listActiveTemplatesService(
   total: number;
 }> {
   logger.debug('Listing active reminder templates', { accountUuid });
-  const result = await listReminderTemplates({ accountUuid, activeOnly: true });
+  const result = await ListReminderTemplates.getInstance().execute(accountUuid, { effectiveEnabled: true });
   return {
     templates: result.templates,
     total: result.total,

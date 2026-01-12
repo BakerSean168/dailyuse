@@ -4,17 +4,9 @@
  * 取消订阅用例
  */
 
-import type { SubscriptionDTO, CancelSubscriptionRequestDTO } from '@dailyuse/contracts/account';
+import type { SubscriptionDTO, CancelSubscriptionRequest } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
-
-/**
- * Cancel Subscription Input
- */
-export interface CancelSubscriptionInput {
-  accountId: string;
-  request?: CancelSubscriptionRequestDTO;
-}
 
 /**
  * Cancel Subscription
@@ -54,13 +46,7 @@ export class CancelSubscription {
   /**
    * 执行用例
    */
-  async execute(input: CancelSubscriptionInput): Promise<SubscriptionDTO> {
-    return this.apiClient.cancelSubscription(input.accountId, input.request);
+  async execute(accountId: string, request?: CancelSubscriptionRequest): Promise<SubscriptionDTO> {
+    return this.apiClient.cancelSubscription(accountId, request);
   }
 }
-
-/**
- * 便捷函数
- */
-export const cancelSubscription = (input: CancelSubscriptionInput): Promise<SubscriptionDTO> =>
-  CancelSubscription.getInstance().execute(input);

@@ -97,13 +97,6 @@ export async function initializeContainers(): Promise<void> {
   }
 }
 
-    logger.info('Container initialization placeholder - TODO: implement with Prisma');
-  } catch (error) {
-    logger.error('Failed to initialize containers', error);
-    throw error;
-  }
-}
-
 /**
  * Closes all container resources, specifically database connections.
  *

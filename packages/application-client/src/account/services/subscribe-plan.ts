@@ -4,17 +4,9 @@
  * 订阅计划用例
  */
 
-import type { SubscriptionDTO, SubscribePlanRequestDTO } from '@dailyuse/contracts/account';
+import type { SubscriptionDTO, SubscribePlanRequest } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
-
-/**
- * Subscribe Plan Input
- */
-export interface SubscribePlanInput {
-  accountId: string;
-  request: SubscribePlanRequestDTO;
-}
 
 /**
  * Subscribe Plan
@@ -54,13 +46,7 @@ export class SubscribePlan {
   /**
    * 执行用例
    */
-  async execute(input: SubscribePlanInput): Promise<SubscriptionDTO> {
-    return this.apiClient.subscribePlan(input.accountId, input.request);
+  async execute(accountId: string, request: SubscribePlanRequest): Promise<SubscriptionDTO> {
+    return this.apiClient.subscribePlan(accountId, request);
   }
 }
-
-/**
- * 便捷函数
- */
-export const subscribePlan = (input: SubscribePlanInput): Promise<SubscriptionDTO> =>
-  SubscribePlan.getInstance().execute(input);

@@ -11,11 +11,6 @@ import { TaskInstance } from '@dailyuse/domain-client/task';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 import { TaskEvents } from './task-events';
 
-export interface GenerateTaskInstancesInput {
-  templateUuid: string;
-  toDate: number;
-}
-
 /**
  * Generate Task Instances
  */
@@ -54,25 +49,19 @@ export class GenerateTaskInstances {
   /**
    * 执行用例
    */
-  async execute(input: GenerateTaskInstancesInput): Promise<TaskInstance[]> {
+  async execute(templateUuid: string, toDate: number): Promise<TaskInstance[]> {
     const request: GenerateInstancesRequest = {
-      templateUuid: input.templateUuid,
-      toDate: input.toDate,
+      templateUuid,
+      toDate,
     };
-    const instanceDTOs = await this.apiClient.generateInstances(input.templateUuid, request);
+    const instanceDTOs = await this.apiClient.generateInstances(templateUuid, request);
     const instances = instanceDTOs.map(dto => TaskInstance.fromClientDTO(dto));
 
     eventBus.emit(TaskEvents.INSTANCES_GENERATED, {
-      templateUuid: input.templateUuid,
+      templateUuid,
       instances
     });
 
     return instances;
   }
 }
-
-/**
- * 便捷函数
- */
-export const generateTaskInstances = (input: GenerateTaskInstancesInput): Promise<TaskInstance[]> =>
-  GenerateTaskInstances.getInstance().execute(input);

@@ -1,4 +1,4 @@
-import { findDueTasks } from '@dailyuse/application-server';
+import { FindDueTasks } from '@dailyuse/application-server';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { createLogger } from '@dailyuse/utils';
 
@@ -10,9 +10,8 @@ export async function findDueTasksService(params?: {
   tasks: ScheduleTaskClientDTO[];
   total: number;
 }> {
-  const result = await findDueTasks({
-    beforeTime: params?.beforeTime || new Date(),
-  });
+  const beforeTime = params?.beforeTime || new Date();
+  const result = await FindDueTasks.getInstance().execute(beforeTime);
   return {
     tasks: result.tasks,
     total: result.total,

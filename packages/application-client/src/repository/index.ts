@@ -8,4 +8,19 @@
  * - Search functionality
  */
 
-export * from './services';
+export {
+  // Repository
+  ListRepositories,
+  GetRepository,
+  GetFileTree,
+  SearchResources,
+  
+  // Folder
+  CreateFolder,
+  GetFolderContents,
+  DeleteFolder,
+  
+  // Resource
+  GetResource,
+  DeleteResource,
+} from './services';

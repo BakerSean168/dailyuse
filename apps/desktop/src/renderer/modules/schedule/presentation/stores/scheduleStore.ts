@@ -181,10 +181,7 @@ export const useScheduleStore = create<ScheduleStore>()(
         
         try {
           // 使用 ApplicationService 更新日程事件
-          const result = await scheduleApplicationService.updateScheduleEvent({
-            uuid: id,
-            data: dto,
-          });
+          const result = await scheduleApplicationService.updateScheduleEvent(id, dto);
           
           get().updateSchedule(id, result);
           return result;

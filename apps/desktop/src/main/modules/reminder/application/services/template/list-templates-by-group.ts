@@ -2,7 +2,7 @@
  * List Reminder Templates By Group Service
  */
 
-import { listReminderTemplates } from '@dailyuse/application-server';
+import { ListReminderTemplates } from '@dailyuse/application-server';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { createLogger } from '@dailyuse/utils';
 
@@ -16,7 +16,7 @@ export async function listTemplatesByGroupService(
   total: number;
 }> {
   logger.debug('Listing reminder templates by group', { groupUuid, accountUuid });
-  const result = await listReminderTemplates({ accountUuid, groupUuid });
+  const result = await ListReminderTemplates.getInstance().execute(accountUuid, { groupUuid });
   return {
     templates: result.templates,
     total: result.total,

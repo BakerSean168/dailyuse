@@ -13,8 +13,25 @@ import { useState, useCallback, useEffect } from 'react';
 import { useGoalStore } from '../stores/goalStore';
 import { goalApplicationService } from '../../application/services';
 import type { Goal } from '@dailyuse/domain-client/goal';
-import type { UpdateGoalRequest } from '@dailyuse/contracts/goal';
-import type { CreateGoalInput, SearchGoalsInput, CloneGoalInput } from '@dailyuse/application-client';
+import type { CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+
+/** Search goals input type */
+type SearchGoalsInput = {
+  keywords?: string;
+  status?: string;
+  dirUuid?: string;
+  page?: number;
+  limit?: number;
+};
+
+/** Clone goal input type */
+type CloneGoalInput = {
+  goalUuid: string;
+  name?: string;
+  description?: string;
+  includeKeyResults?: boolean;
+  includeRecords?: boolean;
+};
 
 // ===== Types =====
 
@@ -31,7 +48,7 @@ export interface UseGoalReturn {
   searchGoals: (input: SearchGoalsInput) => Promise<void>;
 
   // Mutations
-  createGoal: (input: CreateGoalInput) => Promise<Goal>;
+  createGoal: (input: CreateGoalRequest) => Promise<Goal>;
   updateGoal: (uuid: string, request: UpdateGoalRequest) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
 
@@ -106,7 +123,7 @@ export function useGoal(): UseGoalReturn {
 
   // ===== Mutations =====
 
-  const createGoal = useCallback(async (input: CreateGoalInput): Promise<Goal> => {
+  const createGoal = useCallback(async (input: CreateGoalRequest): Promise<Goal> => {
     storeSetLoading(true);
     storeSetError(null);
 
@@ -225,7 +242,8 @@ export function useGoal(): UseGoalReturn {
 
   const cloneGoal = useCallback(async (input: CloneGoalInput): Promise<void> => {
     try {
-      const goal = await goalApplicationService.cloneGoal(input);
+      const { goalUuid, ...options } = input;
+      const goal = await goalApplicationService.cloneGoal(goalUuid, options);
       storeAddGoal(goal);
     } catch (e) {
       storeSetError(e instanceof Error ? e.message : '克隆目标失败');

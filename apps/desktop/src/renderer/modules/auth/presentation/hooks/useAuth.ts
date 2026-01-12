@@ -10,16 +10,14 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  login as loginUseCase,
-  register as registerUseCase,
-  logout as logoutUseCase,
-  forgotPassword as forgotPasswordUseCase,
-  resetPassword as resetPasswordUseCase,
-  changePassword as changePasswordUseCase,
-  type LoginInput,
-  type RegisterInput,
+  Login,
+  Register,
+  Logout,
+  ForgotPassword,
+  ResetPassword,
+  ChangePassword,
 } from '@dailyuse/application-client';
-import type { LoginResponseDTO } from '@dailyuse/contracts/authentication';
+import type { LoginRequest, RegisterRequest, LoginResponseDTO } from '@dailyuse/contracts/authentication';
 
 // ============ Types ============
 
@@ -116,12 +114,12 @@ export function useAuth() {
 
   // Login
   const login = useCallback(
-    async (credentials: LoginInput) => {
+    async (credentials: LoginRequest) => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
         // 使用 application-client Use Case
-        const response = await loginUseCase(credentials);
+        const response = await Login.getInstance().execute(credentials);
 
         // Save tokens
         saveTokens(response);
@@ -175,7 +173,7 @@ export function useAuth() {
 
       try {
         // 使用 application-client Use Case
-        const response = await registerUseCase({
+        const response = await Register.getInstance().execute({
           email: request.email,
           password: request.password,
           username: request.username || request.email.split('@')[0],
@@ -207,7 +205,7 @@ export function useAuth() {
 
     try {
       // 使用 application-client Use Case
-      await logoutUseCase({});
+      await Logout.getInstance().execute({});
     } catch (e) {
       console.warn('[useAuth] Logout API call failed:', e);
     } finally {
@@ -229,7 +227,7 @@ export function useAuth() {
 
     try {
       // 使用 application-client Use Case
-      await forgotPasswordUseCase({ email });
+      await ForgotPassword.getInstance().execute({ email });
       setState((prev) => ({ ...prev, loading: false }));
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '发送重置邮件失败';
@@ -249,7 +247,7 @@ export function useAuth() {
 
       try {
         // 使用 application-client Use Case
-        await resetPasswordUseCase({ token, newPassword, confirmPassword: newPassword });
+        await ResetPassword.getInstance().execute({ token, newPassword, confirmPassword: newPassword });
         setState((prev) => ({ ...prev, loading: false }));
         navigate('/login');
       } catch (e) {
@@ -272,7 +270,7 @@ export function useAuth() {
 
       try {
         // 使用 application-client Use Case
-        await changePasswordUseCase({ oldPassword: currentPassword, newPassword, confirmPassword: newPassword });
+        await ChangePassword.getInstance().execute({ oldPassword: currentPassword, newPassword, confirmPassword: newPassword });
         setState((prev) => ({ ...prev, loading: false }));
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : '修改密码失败';

@@ -11,14 +11,6 @@ import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleEventEvents, type ScheduleEventRefreshEvent } from './schedule-events';
 
 /**
- * Update Schedule Event Input
- */
-export interface UpdateScheduleEventInput {
-  uuid: string;
-  data: UpdateScheduleRequest;
-}
-
-/**
  * Update Schedule Event
  */
 export class UpdateScheduleEvent {
@@ -56,8 +48,8 @@ export class UpdateScheduleEvent {
   /**
    * 执行用例
    */
-  async execute(input: UpdateScheduleEventInput): Promise<ScheduleClientDTO> {
-    const schedule = await this.apiClient.updateSchedule(input.uuid, input.data);
+  async execute(uuid: string, data: UpdateScheduleRequest): Promise<ScheduleClientDTO> {
+    const schedule = await this.apiClient.updateSchedule(uuid, data);
 
     this.publishEvent(schedule.uuid, ScheduleEventEvents.SCHEDULE_UPDATED);
 
@@ -77,9 +69,3 @@ export class UpdateScheduleEvent {
     eventBus.emit(eventName, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateScheduleEvent = (input: UpdateScheduleEventInput): Promise<ScheduleClientDTO> =>
-  UpdateScheduleEvent.getInstance().execute(input);

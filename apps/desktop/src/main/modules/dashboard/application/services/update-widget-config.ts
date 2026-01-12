@@ -1,8 +1,4 @@
-import {
-  UpdateWidgetConfig,
-  type UpdateWidgetConfigInput,
-  type UpdateWidgetConfigOutput,
-} from '@dailyuse/application-server';
+import { UpdateWidgetConfig } from '@dailyuse/application-server';
 import type { WidgetConfigData } from '@dailyuse/contracts/dashboard';
 import { createLogger } from '@dailyuse/utils';
 
@@ -14,9 +10,6 @@ export async function updateWidgetConfigService(
 ): Promise<WidgetConfigData> {
   logger.debug('Updating widget config', { accountUuid });
   const updateWidgetConfigService = UpdateWidgetConfig.getInstance();
-  const result = await updateWidgetConfigService.execute({
-    accountUuid,
-    configs,
-  });
+  const result = await updateWidgetConfigService.execute(accountUuid, { configs });
   return result.widgetConfig;
 }

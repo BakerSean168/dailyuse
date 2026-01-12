@@ -4,17 +4,9 @@
  * 更新账户偏好用例
  */
 
-import type { AccountDTO, UpdateAccountPreferencesRequestDTO } from '@dailyuse/contracts/account';
+import type { AccountDTO, UpdateAccountPreferencesRequest } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
-
-/**
- * Update Account Preferences Input
- */
-export interface UpdateAccountPreferencesInput {
-  accountId: string;
-  request: UpdateAccountPreferencesRequestDTO;
-}
 
 /**
  * Update Account Preferences
@@ -54,13 +46,7 @@ export class UpdateAccountPreferences {
   /**
    * 执行用例
    */
-  async execute(input: UpdateAccountPreferencesInput): Promise<AccountDTO> {
-    return this.apiClient.updatePreferences(input.accountId, input.request);
+  async execute(accountId: string, request: UpdateAccountPreferencesRequest): Promise<AccountDTO> {
+    return this.apiClient.updatePreferences(accountId, request);
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateAccountPreferences = (input: UpdateAccountPreferencesInput): Promise<AccountDTO> =>
-  UpdateAccountPreferences.getInstance().execute(input);

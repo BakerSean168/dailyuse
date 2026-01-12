@@ -8,31 +8,6 @@ import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Generate Key Results Input
- */
-export interface GenerateKeyResultsInput {
-  goalTitle: string;
-  goalDescription?: string;
-  startDate: number;
-  endDate: number;
-  goalContext?: string;
-}
-
-/**
- * Generate Key Results Output
- */
-export interface GenerateKeyResultsOutput {
-  keyResults: Array<{
-    title: string;
-    description?: string;
-    targetValue?: number;
-    unit?: string;
-  }>;
-  tokenUsage: unknown;
-  generatedAt: number;
-}
-
-/**
  * Generate Key Results
  */
 export class GenerateKeyResults {
@@ -70,13 +45,22 @@ export class GenerateKeyResults {
   /**
    * 执行用例
    */
-  async execute(input: GenerateKeyResultsInput): Promise<GenerateKeyResultsOutput> {
-    return this.apiClient.generateKeyResults(input);
+  async execute(params: {
+    goalTitle: string;
+    goalDescription?: string;
+    startDate: number;
+    endDate: number;
+    goalContext?: string;
+  }): Promise<{
+    keyResults: Array<{
+      title: string;
+      description?: string;
+      targetValue?: number;
+      unit?: string;
+    }>;
+    tokenUsage: unknown;
+    generatedAt: number;
+  }> {
+    return this.apiClient.generateKeyResults(params);
   }
 }
-
-/**
- * 便捷函数
- */
-export const generateKeyResults = (input: GenerateKeyResultsInput): Promise<GenerateKeyResultsOutput> =>
-  GenerateKeyResults.getInstance().execute(input);

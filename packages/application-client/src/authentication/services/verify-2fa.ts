@@ -8,8 +8,6 @@ import type { Verify2FARequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface Verify2FAInput extends Verify2FARequest {}
-
 /**
  * Verify 2FA Use Case
  */
@@ -48,13 +46,7 @@ export class Verify2FA {
   /**
    * 执行用例
    */
-  async execute(input: Verify2FAInput): Promise<void> {
+  async execute(input: Verify2FARequest): Promise<void> {
     return this.apiClient.verify2FA(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const verify2FA = (input: Verify2FAInput): Promise<void> =>
-  Verify2FA.getInstance().execute(input);

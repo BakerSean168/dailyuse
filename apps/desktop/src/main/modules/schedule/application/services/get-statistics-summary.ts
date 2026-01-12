@@ -1,4 +1,4 @@
-import { listScheduleTasks } from '@dailyuse/application-server';
+import { ListScheduleTasks } from '@dailyuse/application-server';
 import type { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import { createLogger } from '@dailyuse/utils';
 
@@ -10,7 +10,7 @@ export async function getStatisticsSummaryService(accountUuid?: string): Promise
   completed: number;
   overdue: number;
 }> {
-  const result = await listScheduleTasks({ accountUuid: accountUuid || 'default' });
+  const result = await ListScheduleTasks.getInstance().execute(accountUuid || 'default');
 
   const activeStatus: ScheduleTaskStatus = 'active' as ScheduleTaskStatus;
   const completedStatus: ScheduleTaskStatus = 'completed' as ScheduleTaskStatus;

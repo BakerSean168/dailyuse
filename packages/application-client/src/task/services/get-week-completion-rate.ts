@@ -49,9 +49,3 @@ export class GetWeekCompletionRate {
     return this.apiClient.getWeekCompletionRate(accountUuid);
   }
 }
-
-/**
- * 便捷函数
- */
-export const getWeekCompletionRate = (accountUuid: string): Promise<number> =>
-  GetWeekCompletionRate.getInstance().execute(accountUuid);

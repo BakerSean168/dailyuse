@@ -2,10 +2,10 @@
  * Update Goal Service
  */
 
-import { updateGoal, type UpdateGoalInput } from '@dailyuse/application-server';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import { UpdateGoal } from '@dailyuse/application-server';
+import type { UpdateGoalRequest, GoalClientDTO } from '@dailyuse/contracts/goal';
 
-export async function updateGoalService(uuid: string, params: Omit<UpdateGoalInput, 'uuid'>): Promise<GoalClientDTO> {
-  const result = await updateGoal({ uuid, ...params });
+export async function updateGoalService(uuid: string, params: UpdateGoalRequest): Promise<GoalClientDTO> {
+  const result = await UpdateGoal.getInstance().execute(uuid, params);
   return result.goal;
 }

@@ -8,8 +8,6 @@ import type { CreateApiKeyRequest, CreateApiKeyResponseDTO } from '@dailyuse/con
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface CreateApiKeyInput extends CreateApiKeyRequest {}
-
 /**
  * Create API Key Use Case
  */
@@ -48,13 +46,7 @@ export class CreateApiKey {
   /**
    * 执行用例
    */
-  async execute(input: CreateApiKeyInput): Promise<CreateApiKeyResponseDTO> {
+  async execute(input: CreateApiKeyRequest): Promise<CreateApiKeyResponseDTO> {
     return this.apiClient.createApiKey(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const createApiKey = (input: CreateApiKeyInput): Promise<CreateApiKeyResponseDTO> =>
-  CreateApiKey.getInstance().execute(input);

@@ -57,9 +57,3 @@ export class SkipTaskInstance {
     return instance;
   }
 }
-
-/**
- * 便捷函数
- */
-export const skipTaskInstance = (uuid: string): Promise<TaskInstance> =>
-  SkipTaskInstance.getInstance().execute(uuid);

@@ -9,17 +9,6 @@ import type { GoalRecordsResponse } from '@dailyuse/contracts/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Get Goal Records By Key Result Input
- */
-export interface GetGoalRecordsByKeyResultInput {
-  goalUuid: string;
-  keyResultUuid: string;
-  page?: number;
-  limit?: number;
-  dateRange?: { start?: string; end?: string };
-}
-
-/**
  * Get Goal Records By Key Result
  */
 export class GetGoalRecordsByKeyResult {
@@ -57,18 +46,15 @@ export class GetGoalRecordsByKeyResult {
   /**
    * 执行用例
    */
-  async execute(input: GetGoalRecordsByKeyResultInput): Promise<GoalRecordsResponse> {
-    const { goalUuid, keyResultUuid, ...params } = input;
+  async execute(
+    goalUuid: string,
+    keyResultUuid: string,
+    params?: {
+      page?: number;
+      limit?: number;
+      dateRange?: { start?: string; end?: string };
+    },
+  ): Promise<GoalRecordsResponse> {
     return this.apiClient.getGoalRecordsByKeyResult(goalUuid, keyResultUuid, params);
   }
 }
-
-/**
- * 便捷函数
- */
-export const getGoalRecordsByKeyResult = (
-  goalUuid: string,
-  keyResultUuid: string,
-  params?: { page?: number; limit?: number; dateRange?: { start?: string; end?: string } },
-): Promise<GoalRecordsResponse> =>
-  GetGoalRecordsByKeyResult.getInstance().execute({ goalUuid, keyResultUuid, ...params });

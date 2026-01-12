@@ -38,10 +38,3 @@ export class GetFocusStatistics {
     return this.apiClient.getStatistics(goalUuid);
   }
 }
-
-/**
- * Convenience function
- */
-export async function getFocusStatistics(goalUuid?: string): Promise<FocusStatisticsDTO> {
-  return GetFocusStatistics.getInstance().execute(goalUuid);
-}

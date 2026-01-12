@@ -6,7 +6,7 @@
 
 import { useState, useCallback } from 'react';
 import { taskApplicationService } from '../../application/services';
-import type { GetTaskStatisticsInput } from '@dailyuse/application-client';
+import type { GetTaskStatisticsRequest } from '@dailyuse/contracts/task';
 
 // ===== Types =====
 
@@ -20,7 +20,7 @@ export interface TaskStatisticsState {
 }
 
 export interface UseTaskStatisticsReturn extends TaskStatisticsState {
-  loadStatistics: (input: GetTaskStatisticsInput) => Promise<void>;
+  loadStatistics: (input: GetTaskStatisticsRequest) => Promise<void>;
   loadTodayRate: (accountUuid: string) => Promise<void>;
   loadWeekRate: (accountUuid: string) => Promise<void>;
   loadEfficiencyTrend: (accountUuid: string) => Promise<void>;
@@ -39,7 +39,7 @@ export function useTaskStatistics(): UseTaskStatisticsReturn {
     error: null,
   });
 
-  const loadStatistics = useCallback(async (input: GetTaskStatisticsInput) => {
+  const loadStatistics = useCallback(async (input: GetTaskStatisticsRequest) => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {

@@ -5,8 +5,14 @@
  * 实际逻辑分散在独立的 use case 文件中
  */
 
-import type { CreateTaskTemplateInput, ListTaskTemplatesInput, CreateOneTimeTaskInput, GetTaskDashboardOutput } from '@dailyuse/application-server';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
+import type {
+  TaskTemplateClientDTO,
+  TaskInstanceClientDTO,
+  CreateTaskTemplateRequest,
+  QueryTaskTemplatesRequest,
+  CreateOneTimeTaskRequest,
+  TaskDashboardResponse,
+} from '@dailyuse/contracts/task';
 
 // Import all use cases
 import {
@@ -42,11 +48,11 @@ import { getDashboardUseCase } from './services/dashboard';
 export class TaskDesktopApplicationService {
   // ===== Task Template =====
 
-  async createTemplate(input: CreateTaskTemplateInput): Promise<TaskTemplateClientDTO> {
+  async createTemplate(input: CreateTaskTemplateRequest): Promise<TaskTemplateClientDTO> {
     return createTemplateUseCase(input);
   }
 
-  async createOneTimeTask(input: CreateOneTimeTaskInput): Promise<TaskTemplateClientDTO> {
+  async createOneTimeTask(input: CreateOneTimeTaskRequest): Promise<TaskTemplateClientDTO> {
     return createOneTimeTaskUseCase(input);
   }
 
@@ -54,14 +60,14 @@ export class TaskDesktopApplicationService {
     return getTemplateUseCase(uuid);
   }
 
-  async listTemplates(params: ListTaskTemplatesInput): Promise<{
+  async listTemplates(params: QueryTaskTemplatesRequest): Promise<{
     templates: TaskTemplateClientDTO[];
     total: number;
   }> {
     return listTemplatesUseCase(params);
   }
 
-  async updateTemplate(uuid: string, updates: Partial<CreateTaskTemplateInput>): Promise<TaskTemplateClientDTO> {
+  async updateTemplate(uuid: string, updates: Partial<CreateTaskTemplateRequest>): Promise<TaskTemplateClientDTO> {
     return updateTemplateUseCase(uuid, updates);
   }
 
@@ -118,11 +124,11 @@ export class TaskDesktopApplicationService {
   }
 
   async listInstancesByDateRange(
+    accountUuid: string,
     startDate: number,
-    endDate: number,
-    accountUuid: string
+    endDate: number
   ): Promise<{ instances: TaskInstanceClientDTO[]; total: number }> {
-    return listInstancesByDateRangeUseCase(startDate, endDate, accountUuid);
+    return listInstancesByDateRangeUseCase(accountUuid, startDate, endDate);
   }
 
   async listInstancesByTemplate(templateUuid: string): Promise<{
@@ -142,19 +148,19 @@ export class TaskDesktopApplicationService {
     const dayEnd = new Date(date);
     dayEnd.setHours(23, 59, 59, 999);
 
-    return listInstancesByDateRangeUseCase(dayStart.getTime(), dayEnd.getTime(), accountUuid);
+    return listInstancesByDateRangeUseCase(accountUuid, dayStart.getTime(), dayEnd.getTime());
   }
 
   // ===== Dashboard =====
 
-  async getDashboard(accountUuid: string): Promise<GetTaskDashboardOutput> {
+  async getDashboard(accountUuid: string): Promise<TaskDashboardResponse> {
     return getDashboardUseCase(accountUuid);
   }
 
   // ===== Batch Operations (Placeholder) =====
 
   async batchUpdateTemplates(
-    updates: Array<{ uuid: string; changes: Partial<CreateTaskTemplateInput> }>
+    updates: Array<{ uuid: string; changes: Partial<CreateTaskTemplateRequest> }>
   ): Promise<{ success: boolean; count: number }> {
     let count = 0;
     for (const update of updates) {

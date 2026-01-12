@@ -9,14 +9,6 @@ import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Get Due Tasks Input
- */
-export interface GetDueTasksInput {
-  beforeTime?: string;
-  limit?: number;
-}
-
-/**
  * Get Due Tasks
  */
 export class GetDueTasks {
@@ -54,13 +46,7 @@ export class GetDueTasks {
   /**
    * 执行用例
    */
-  async execute(input?: GetDueTasksInput): Promise<ScheduleTaskClientDTO[]> {
-    return this.apiClient.getDueTasks(input);
+  async execute(beforeTime?: string, limit?: number): Promise<ScheduleTaskClientDTO[]> {
+    return this.apiClient.getDueTasks({ beforeTime, limit });
   }
 }
-
-/**
- * 便捷函数
- */
-export const getDueTasks = (input?: GetDueTasksInput): Promise<ScheduleTaskClientDTO[]> =>
-  GetDueTasks.getInstance().execute(input);

@@ -8,8 +8,6 @@ import type { ResetPasswordRequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface ResetPasswordInput extends ResetPasswordRequest {}
-
 /**
  * Reset Password Use Case
  */
@@ -48,13 +46,7 @@ export class ResetPassword {
   /**
    * 执行用例
    */
-  async execute(input: ResetPasswordInput): Promise<void> {
+  async execute(input: ResetPasswordRequest): Promise<void> {
     return this.apiClient.resetPassword(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const resetPassword = (input: ResetPasswordInput): Promise<void> =>
-  ResetPassword.getInstance().execute(input);

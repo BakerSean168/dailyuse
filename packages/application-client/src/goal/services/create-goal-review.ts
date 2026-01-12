@@ -11,14 +11,6 @@ import { GoalEvents, type GoalAggregateRefreshEvent, type GoalAggregateRefreshRe
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Create Goal Review Input
- */
-export interface CreateGoalReviewInput {
-  goalUuid: string;
-  request: CreateGoalReviewRequest;
-}
-
-/**
  * Create Goal Review
  */
 export class CreateGoalReview {
@@ -56,8 +48,10 @@ export class CreateGoalReview {
   /**
    * 执行用例
    */
-  async execute(input: CreateGoalReviewInput): Promise<GoalReviewClientDTO> {
-    const { goalUuid, request } = input;
+  async execute(
+    goalUuid: string,
+    request: CreateGoalReviewRequest,
+  ): Promise<GoalReviewClientDTO> {
     const data = await this.apiClient.createGoalReview(goalUuid, request);
 
     this.publishGoalRefreshEvent(goalUuid, 'goal-review-created', {
@@ -84,12 +78,3 @@ export class CreateGoalReview {
     eventBus.emit(GoalEvents.AGGREGATE_REFRESH, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const createGoalReview = (
-  goalUuid: string,
-  request: CreateGoalReviewRequest,
-): Promise<GoalReviewClientDTO> =>
-  CreateGoalReview.getInstance().execute({ goalUuid, request });

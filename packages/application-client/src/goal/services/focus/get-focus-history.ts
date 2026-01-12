@@ -9,11 +9,6 @@ import type { FocusHistoryDTO, GetFocusHistoryRequest } from '@dailyuse/contract
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Get Focus History Input
- */
-export type GetFocusHistoryInput = GetFocusHistoryRequest;
-
-/**
  * Get Focus History Use Case
  */
 export class GetFocusHistory {
@@ -39,8 +34,8 @@ export class GetFocusHistory {
     GetFocusHistory.instance = undefined as unknown as GetFocusHistory;
   }
 
-  async execute(input?: GetFocusHistoryInput): Promise<FocusHistoryDTO> {
-    return this.apiClient.getHistory(input || {});
+  async execute(request?: GetFocusHistoryRequest): Promise<FocusHistoryDTO> {
+    return this.apiClient.getHistory(request || {});
   }
 
   /**
@@ -56,19 +51,4 @@ export class GetFocusHistory {
   async getWeekHistory(goalUuid?: string): Promise<FocusHistoryDTO> {
     return this.apiClient.getWeekHistory(goalUuid);
   }
-}
-
-/**
- * Convenience functions
- */
-export async function getFocusHistory(input?: GetFocusHistoryInput): Promise<FocusHistoryDTO> {
-  return GetFocusHistory.getInstance().execute(input);
-}
-
-export async function getTodayFocusHistory(goalUuid?: string): Promise<FocusHistoryDTO> {
-  return GetFocusHistory.getInstance().getTodayHistory(goalUuid);
-}
-
-export async function getWeekFocusHistory(goalUuid?: string): Promise<FocusHistoryDTO> {
-  return GetFocusHistory.getInstance().getWeekHistory(goalUuid);
 }

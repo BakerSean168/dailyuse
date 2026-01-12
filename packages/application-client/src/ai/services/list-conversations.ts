@@ -5,26 +5,8 @@
  */
 
 import type { IAIConversationApiClient } from '@dailyuse/infrastructure-client';
-import type { ConversationListResponse } from '@dailyuse/contracts/ai';
 import { AIConversation } from '@dailyuse/domain-client/ai';
 import { AIContainer } from '@dailyuse/infrastructure-client';
-
-/**
- * List Conversations Input
- */
-export interface ListConversationsInput {
-  page?: number;
-  pageSize?: number;
-  status?: string;
-}
-
-/**
- * List Conversations Output
- */
-export interface ListConversationsOutput {
-  conversations: AIConversation[];
-  total: number;
-}
 
 /**
  * List Conversations
@@ -64,17 +46,11 @@ export class ListConversations {
   /**
    * 执行用例
    */
-  async execute(input: ListConversationsInput = {}): Promise<ListConversationsOutput> {
-    const response = await this.apiClient.getConversations(input);
+  async execute(params: { page?: number; pageSize?: number; status?: string } = {}): Promise<{ conversations: AIConversation[]; total: number }> {
+    const response = await this.apiClient.getConversations(params);
     return {
       conversations: response.conversations.map((dto) => AIConversation.fromClientDTO(dto)),
       total: response.total,
     };
   }
 }
-
-/**
- * 便捷函数
- */
-export const listConversations = (input?: ListConversationsInput): Promise<ListConversationsOutput> =>
-  ListConversations.getInstance().execute(input);

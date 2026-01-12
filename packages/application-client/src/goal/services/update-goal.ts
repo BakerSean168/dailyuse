@@ -10,14 +10,6 @@ import { Goal } from '@dailyuse/domain-client/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Update Goal Input
- */
-export interface UpdateGoalInput {
-  uuid: string;
-  request: UpdateGoalRequest;
-}
-
-/**
  * Update Goal
  */
 export class UpdateGoal {
@@ -55,15 +47,8 @@ export class UpdateGoal {
   /**
    * 执行用例
    */
-  async execute(input: UpdateGoalInput): Promise<Goal> {
-    const { uuid, request } = input;
+  async execute(uuid: string, request: UpdateGoalRequest): Promise<Goal> {
     const data = await this.apiClient.updateGoal(uuid, request);
     return Goal.fromClientDTO(data);
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateGoal = (uuid: string, request: UpdateGoalRequest): Promise<Goal> =>
-  UpdateGoal.getInstance().execute({ uuid, request });

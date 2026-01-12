@@ -12,14 +12,6 @@ import { ReminderContainer } from '@dailyuse/infrastructure-client';
 import { ReminderTemplateEvents, type ReminderTemplateRefreshEvent } from './reminder-events';
 
 /**
- * Update Reminder Template Input
- */
-export interface UpdateReminderTemplateInput {
-  uuid: string;
-  request: UpdateReminderTemplateRequest;
-}
-
-/**
  * Update Reminder Template
  */
 export class UpdateReminderTemplate {
@@ -57,8 +49,8 @@ export class UpdateReminderTemplate {
   /**
    * 执行用例
    */
-  async execute(input: UpdateReminderTemplateInput): Promise<ReminderTemplate> {
-    const templateDTO = await this.apiClient.updateReminderTemplate(input.uuid, input.request);
+  async execute(uuid: string, request: UpdateReminderTemplateRequest): Promise<ReminderTemplate> {
+    const templateDTO = await this.apiClient.updateReminderTemplate(uuid, request);
     const template = ReminderTemplate.fromClientDTO(templateDTO);
 
     this.publishEvent(template.uuid, ReminderTemplateEvents.TEMPLATE_UPDATED);
@@ -79,9 +71,3 @@ export class UpdateReminderTemplate {
     eventBus.emit(eventName, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateReminderTemplate = (input: UpdateReminderTemplateInput): Promise<ReminderTemplate> =>
-  UpdateReminderTemplate.getInstance().execute(input);

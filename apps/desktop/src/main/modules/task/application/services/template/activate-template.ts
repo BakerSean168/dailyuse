@@ -2,10 +2,10 @@
  * Activate Task Template Use Case
  */
 
-import { activateTaskTemplate } from '@dailyuse/application-server';
+import { ActivateTaskTemplate } from '@dailyuse/application-server';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 
 export async function activateTemplateUseCase(uuid: string): Promise<TaskTemplateClientDTO> {
-  const result = await activateTaskTemplate({ uuid });
+  const result = await ActivateTaskTemplate.getInstance().execute(uuid);
   return result.template;
 }

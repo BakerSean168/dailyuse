@@ -8,13 +8,6 @@ import type { INotificationApiClient } from '@dailyuse/infrastructure-client';
 import { NotificationContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Delete Notification Output
- */
-export interface DeleteNotificationOutput {
-  success: boolean;
-}
-
-/**
  * Delete Notification
  */
 export class DeleteNotification {
@@ -52,13 +45,7 @@ export class DeleteNotification {
   /**
    * 执行用例
    */
-  async execute(uuid: string): Promise<DeleteNotificationOutput> {
+  async execute(uuid: string): Promise<{ success: boolean }> {
     return this.apiClient.deleteNotification(uuid);
   }
 }
-
-/**
- * 便捷函数
- */
-export const deleteNotification = (uuid: string): Promise<DeleteNotificationOutput> =>
-  DeleteNotification.getInstance().execute(uuid);

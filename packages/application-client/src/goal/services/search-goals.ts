@@ -10,29 +10,6 @@ import { Goal } from '@dailyuse/domain-client/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Search Goals Input
- */
-export interface SearchGoalsInput {
-  keywords?: string;
-  status?: string;
-  dirUuid?: string;
-  page?: number;
-  limit?: number;
-}
-
-/**
- * Search Goals Output
- */
-export interface SearchGoalsOutput {
-  goals: Goal[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-  };
-}
-
-/**
  * Search Goals
  */
 export class SearchGoals {
@@ -70,13 +47,22 @@ export class SearchGoals {
   /**
    * 执行用例
    */
-  async execute(input: SearchGoalsInput = {}): Promise<SearchGoalsOutput> {
+  async execute(params?: {
+    keywords?: string;
+    status?: string;
+    dirUuid?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    goals: Goal[];
+    pagination: { page: number; limit: number; total: number };
+  }> {
     const response = await this.apiClient.searchGoals({
-      query: input.keywords || '',
-      status: input.status,
-      dirUuid: input.dirUuid,
-      page: input.page,
-      limit: input.limit,
+      query: params?.keywords || '',
+      status: params?.status,
+      dirUuid: params?.dirUuid,
+      page: params?.page,
+      limit: params?.limit,
     });
 
     const goals = (response.goals || []).map((goalData: GoalClientDTO) =>
@@ -93,9 +79,3 @@ export class SearchGoals {
     };
   }
 }
-
-/**
- * 便捷函数
- */
-export const searchGoals = (input: SearchGoalsInput = {}): Promise<SearchGoalsOutput> =>
-  SearchGoals.getInstance().execute(input);

@@ -95,7 +95,7 @@ export function ReminderTemplateView() {
     
     try {
       for (const templateUuid of selectedTemplates) {
-        await reminderApplicationService.moveTemplateToGroup({ templateUuid, targetGroupUuid: groupUuid });
+        await reminderApplicationService.moveTemplateToGroup(templateUuid, groupUuid);
       }
       setSelectedTemplates(new Set());
       loadData();

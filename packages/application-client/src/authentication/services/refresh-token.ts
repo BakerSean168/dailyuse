@@ -8,8 +8,6 @@ import type { RefreshTokenRequest, RefreshTokenResponseDTO } from '@dailyuse/con
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface RefreshTokenInput extends RefreshTokenRequest {}
-
 /**
  * Refresh Token Use Case
  */
@@ -48,13 +46,7 @@ export class RefreshToken {
   /**
    * 执行用例
    */
-  async execute(input: RefreshTokenInput): Promise<RefreshTokenResponseDTO> {
+  async execute(input: RefreshTokenRequest): Promise<RefreshTokenResponseDTO> {
     return this.apiClient.refreshToken(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const refreshToken = (input: RefreshTokenInput): Promise<RefreshTokenResponseDTO> =>
-  RefreshToken.getInstance().execute(input);

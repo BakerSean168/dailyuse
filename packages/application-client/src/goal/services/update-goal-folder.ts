@@ -10,14 +10,6 @@ import { GoalFolder } from '@dailyuse/domain-client/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Update Goal Folder Input
- */
-export interface UpdateGoalFolderInput {
-  uuid: string;
-  request: UpdateGoalFolderRequest;
-}
-
-/**
  * Update Goal Folder
  */
 export class UpdateGoalFolder {
@@ -55,15 +47,8 @@ export class UpdateGoalFolder {
   /**
    * 执行用例
    */
-  async execute(input: UpdateGoalFolderInput): Promise<GoalFolder> {
-    const { uuid, request } = input;
+  async execute(uuid: string, request: UpdateGoalFolderRequest): Promise<GoalFolder> {
     const data = await this.apiClient.updateGoalFolder(uuid, request);
     return GoalFolder.fromClientDTO(data);
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateGoalFolder = (uuid: string, request: UpdateGoalFolderRequest): Promise<GoalFolder> =>
-  UpdateGoalFolder.getInstance().execute({ uuid, request });

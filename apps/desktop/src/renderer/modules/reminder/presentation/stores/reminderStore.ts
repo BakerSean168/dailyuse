@@ -243,7 +243,7 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
           const result = await reminderApplicationService.listReminderTemplates();
           
           // DTO 转换为 Entity
-          const entities = result.templates.map(dto => ReminderTemplate.fromClientDTO(dto));
+          const entities = result.templates.map((dto: Parameters<typeof ReminderTemplate.fromClientDTO>[0]) => ReminderTemplate.fromClientDTO(dto));
           setReminders(entities);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch reminders';
@@ -264,7 +264,7 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
           const result = await reminderApplicationService.listReminderGroups();
           
           // DTO 转换为 Entity
-          const entities = result.groups.map(dto => ReminderGroup.fromClientDTO(dto));
+          const entities = result.groups.map((dto: Parameters<typeof ReminderGroup.fromClientDTO>[0]) => ReminderGroup.fromClientDTO(dto));
           setGroups(entities);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch reminder groups';

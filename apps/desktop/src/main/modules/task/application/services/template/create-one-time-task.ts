@@ -2,14 +2,19 @@
  * Create One Time Task Use Case
  */
 
-import { createOneTimeTask, type CreateOneTimeTaskInput } from '@dailyuse/application-server';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import { CreateTaskTemplate } from '@dailyuse/application-server';
+import type { TaskTemplateClientDTO, CreateOneTimeTaskRequest } from '@dailyuse/contracts/task';
+import { TaskType } from '@dailyuse/contracts/task';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('CreateOneTimeTaskUseCase');
 
-export async function createOneTimeTaskUseCase(input: CreateOneTimeTaskInput): Promise<TaskTemplateClientDTO> {
+export async function createOneTimeTaskUseCase(input: CreateOneTimeTaskRequest): Promise<TaskTemplateClientDTO> {
   logger.debug('Creating one-time task', { title: input.title });
-  const result = await createOneTimeTask(input);
-  return result.task;
+  // Use CreateTaskTemplate with ONE_TIME task type
+  const result = await CreateTaskTemplate.getInstance().execute({
+    ...input,
+    taskType: TaskType.ONE_TIME,
+  } as any);
+  return result.template as TaskTemplateClientDTO;
 }

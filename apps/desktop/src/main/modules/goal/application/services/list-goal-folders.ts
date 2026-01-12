@@ -14,7 +14,7 @@ import type { QueryGoalFoldersRequest, GoalFoldersResponse } from '@dailyuse/con
  * 不需要HTTP请求，直接访问本地SQLite数据库
  */
 export async function listGoalFoldersService(
-  params: QueryGoalFoldersRequest = { accountUuid: 'default-account' },
+  params: QueryGoalFoldersRequest,
 ): Promise<GoalFoldersResponse> {
   return ListGoalFolders.getInstance().execute(params);
 }

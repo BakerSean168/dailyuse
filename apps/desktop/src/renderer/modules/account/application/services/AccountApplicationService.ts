@@ -10,24 +10,38 @@
  */
 
 import {
-  // Use Cases
-  getMyProfile,
-  updateMyProfile,
-  changeMyPassword,
-  updateAccountPreferences,
-  getAccountById,
-  getSubscription,
-  getAccountStats,
-  // Types
-  type UpdateMyProfileInput,
-  type ChangeMyPasswordInput,
+  // Service Classes
+  GetMyProfile,
+  UpdateMyProfile,
+  ChangeMyPassword,
+  UpdateAccountPreferences,
+  GetAccountById,
+  GetSubscription,
+  GetAccountStats,
 } from '@dailyuse/application-client';
 import type {
   AccountDTO,
   SubscriptionDTO,
   UpdateAccountPreferencesRequestDTO,
   AccountStatsResponseDTO,
+  UpdateAccountProfileRequestDTO,
 } from '@dailyuse/contracts/account';
+
+/**
+ * Change My Password Request
+ */
+export interface ChangeMyPasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+/**
+ * Change My Password Result
+ */
+export interface ChangeMyPasswordResult {
+  success: boolean;
+  message: string;
+}
 
 /**
  * Account Application Service
@@ -52,21 +66,21 @@ export class AccountApplicationService {
    * 获取当前用户资料
    */
   async getMyProfile(): Promise<AccountDTO> {
-    return getMyProfile();
+    return GetMyProfile.getInstance().execute();
   }
 
   /**
    * 更新当前用户资料
    */
-  async updateMyProfile(input: UpdateMyProfileInput): Promise<AccountDTO> {
-    return updateMyProfile(input);
+  async updateMyProfile(input: UpdateAccountProfileRequestDTO): Promise<AccountDTO> {
+    return UpdateMyProfile.getInstance().execute(input);
   }
 
   /**
    * 修改密码
    */
-  async changeMyPassword(input: ChangeMyPasswordInput): Promise<{ success: boolean; message: string }> {
-    return changeMyPassword(input);
+  async changeMyPassword(input: ChangeMyPasswordRequest): Promise<ChangeMyPasswordResult> {
+    return ChangeMyPassword.getInstance().execute(input);
   }
 
   /**
@@ -74,7 +88,7 @@ export class AccountApplicationService {
    */
   async getAccountById(accountId: string): Promise<AccountDTO | null> {
     try {
-      return await getAccountById(accountId);
+      return await GetAccountById.getInstance().execute(accountId);
     } catch {
       return null;
     }
@@ -89,7 +103,7 @@ export class AccountApplicationService {
     accountId: string,
     request: UpdateAccountPreferencesRequestDTO,
   ): Promise<AccountDTO> {
-    return updateAccountPreferences({ accountId, request });
+    return UpdateAccountPreferences.getInstance().execute(accountId, request);
   }
 
   // ===== Subscription =====
@@ -99,7 +113,7 @@ export class AccountApplicationService {
    */
   async getSubscription(accountId: string): Promise<SubscriptionDTO | null> {
     try {
-      const result = await getSubscription(accountId);
+      const result = await GetSubscription.getInstance().execute(accountId);
       return result;
     } catch {
       return null;
@@ -113,7 +127,7 @@ export class AccountApplicationService {
    */
   async getAccountStats(): Promise<AccountStatsResponseDTO | null> {
     try {
-      return await getAccountStats();
+      return await GetAccountStats.getInstance().execute();
     } catch {
       return null;
     }

@@ -14,15 +14,11 @@
  */
 
 import {
-  // Account Use Cases
-  getAccountProfile,
-  updateAccountProfile,
-  type GetAccountProfileOutput,
-  type UpdateAccountProfileInput,
-  type UpdateAccountProfileOutput,
+  GetAccountProfile,
+  UpdateAccountProfile,
 } from '@dailyuse/application-server';
 
-import type { AccountClientDTO } from '@dailyuse/contracts/account';
+import type { AccountClientDTO, UpdateAccountProfileRequest } from '@dailyuse/contracts/account';
 import { createLogger, type ILogger } from '@dailyuse/utils';
 
 // ===== Types =====
@@ -153,8 +149,8 @@ export class AccountDesktopApplicationService {
 
     // 在线模式：使用 Use Case
     try {
-      const result = await getAccountProfile({ accountUuid: uuid });
-      return result.account;
+      const account = await GetAccountProfile.getInstance().execute(uuid);
+      return account;
     } catch (error) {
       this.logger.warn('Failed to get account from server', { uuid, error });
       return null;
@@ -166,7 +162,7 @@ export class AccountDesktopApplicationService {
    */
   async updateAccount(
     uuid: string,
-    input: Partial<Omit<UpdateAccountProfileInput, 'accountUuid'>>,
+    input: UpdateAccountProfileRequest,
   ): Promise<AccountClientDTO | LocalDesktopUser | null> {
     this.logger.debug('Updating account', { uuid });
 
@@ -174,14 +170,14 @@ export class AccountDesktopApplicationService {
     if (uuid === 'local-user') {
       return {
         ...LOCAL_DESKTOP_USER,
-        name: input.nickname || LOCAL_DESKTOP_USER.name,
+        name: input.displayName || LOCAL_DESKTOP_USER.name,
       };
     }
 
     // 在线模式：使用 Use Case
     try {
-      const result = await updateAccountProfile({ accountUuid: uuid, ...input });
-      return result.account;
+      const account = await UpdateAccountProfile.getInstance().execute(uuid, input);
+      return account;
     } catch (error) {
       this.logger.error('Failed to update account', { uuid, error });
       return null;
@@ -267,13 +263,13 @@ export class AccountDesktopApplicationService {
 
   /**
    * 获取用户资料
-   * @returns Use Case output 或 null
+   * @returns AccountClientDTO 或 null
    */
-  async getProfile(uuid: string): Promise<GetAccountProfileOutput | null> {
+  async getProfile(uuid: string): Promise<AccountClientDTO | null> {
     this.logger.debug('Getting profile', { uuid });
 
     try {
-      return await getAccountProfile({ accountUuid: uuid });
+      return await GetAccountProfile.getInstance().execute(uuid);
     } catch (error) {
       this.logger.warn('Failed to get profile', { uuid, error });
       return null;
@@ -282,16 +278,16 @@ export class AccountDesktopApplicationService {
 
   /**
    * 更新用户资料
-   * @returns Use Case output 或 null
+   * @returns AccountClientDTO 或 null
    */
   async updateProfile(
     uuid: string,
-    input: Partial<Omit<UpdateAccountProfileInput, 'accountUuid'>>,
-  ): Promise<UpdateAccountProfileOutput | null> {
+    input: Partial<UpdateAccountProfileRequest>,
+  ): Promise<AccountClientDTO | null> {
     this.logger.debug('Updating profile', { uuid });
 
     try {
-      return await updateAccountProfile({ accountUuid: uuid, ...input });
+      return await UpdateAccountProfile.getInstance().execute(uuid, input as UpdateAccountProfileRequest);
     } catch (error) {
       this.logger.error('Failed to update profile', { uuid, error });
       return null;

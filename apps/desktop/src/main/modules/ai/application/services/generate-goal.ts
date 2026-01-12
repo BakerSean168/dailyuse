@@ -1,16 +1,13 @@
-import {
-  generateGoal,
-  type GenerateGoalOutput,
-  type GenerateGoalInput,
-} from '@dailyuse/application-server';
+import { GenerateGoal } from '@dailyuse/application-server';
+import type { GenerateGoalRequest, GenerateGoalResponse } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('generateGoalService');
 
 export async function generateGoalService(
   accountUuid: string,
-  input: Omit<GenerateGoalInput, 'accountUuid'>,
-): Promise<GenerateGoalOutput> {
+  input: GenerateGoalRequest,
+): Promise<GenerateGoalResponse> {
   logger.debug('Generating goal', { accountUuid });
-  return generateGoal({ accountUuid, ...input });
+  return GenerateGoal.getInstance().execute(accountUuid, input);
 }

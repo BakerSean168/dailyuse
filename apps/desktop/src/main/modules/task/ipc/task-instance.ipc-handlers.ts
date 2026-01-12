@@ -197,7 +197,7 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
     ipcMain.handle('task-instance:list-by-range', async (_, payload: { startDate: number; endDate: number; accountUuid: string }) => {
       return this.handleRequest(
         'task-instance:list-by-range',
-        () => this.taskService.listInstancesByDateRange(payload.startDate, payload.endDate, payload.accountUuid),
+        () => this.taskService.listInstancesByDateRange(payload.accountUuid, payload.startDate, payload.endDate),
         { accountUuid: payload.accountUuid },
       );
     });

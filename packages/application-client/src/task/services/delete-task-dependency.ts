@@ -9,11 +9,6 @@ import { eventBus } from '@dailyuse/utils';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 import { TaskDependencyEvents } from './task-dependency-events';
 
-export interface DeleteTaskDependencyInput {
-  uuid: string;
-  taskUuid: string;
-}
-
 /**
  * Delete Task Dependency
  */
@@ -52,20 +47,14 @@ export class DeleteTaskDependency {
   /**
    * 执行用例
    */
-  async execute(input: DeleteTaskDependencyInput): Promise<void> {
-    await this.apiClient.deleteDependency(input.uuid);
+  async execute(uuid: string, taskUuid: string): Promise<void> {
+    await this.apiClient.deleteDependency(uuid);
 
     eventBus.emit(TaskDependencyEvents.DEPENDENCY_DELETED, {
-      taskUuid: input.taskUuid,
-      dependencyUuid: input.uuid,
+      taskUuid,
+      dependencyUuid: uuid,
       reason: TaskDependencyEvents.DEPENDENCY_DELETED,
       timestamp: Date.now(),
     });
   }
 }
-
-/**
- * 便捷函数
- */
-export const deleteTaskDependency = (input: DeleteTaskDependencyInput): Promise<void> =>
-  DeleteTaskDependency.getInstance().execute(input);

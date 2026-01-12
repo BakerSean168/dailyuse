@@ -8,9 +8,9 @@ import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Change My Password Input
+ * Change My Password Request
  */
-export interface ChangeMyPasswordInput {
+export interface ChangeMyPasswordRequest {
   currentPassword: string;
   newPassword: string;
 }
@@ -61,13 +61,7 @@ export class ChangeMyPassword {
   /**
    * 执行用例
    */
-  async execute(input: ChangeMyPasswordInput): Promise<ChangeMyPasswordResult> {
-    return this.apiClient.changeMyPassword(input);
+  async execute(request: ChangeMyPasswordRequest): Promise<ChangeMyPasswordResult> {
+    return this.apiClient.changeMyPassword(request);
   }
 }
-
-/**
- * 便捷函数
- */
-export const changeMyPassword = (input: ChangeMyPasswordInput): Promise<ChangeMyPasswordResult> =>
-  ChangeMyPassword.getInstance().execute(input);

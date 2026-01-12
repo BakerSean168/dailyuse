@@ -8,12 +8,6 @@ import type { ITaskTemplateApiClient } from '@dailyuse/infrastructure-client';
 import { TaskInstance } from '@dailyuse/domain-client/task';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 
-export interface GetInstancesByDateRangeInput {
-  templateUuid: string;
-  from: number;
-  to: number;
-}
-
 /**
  * Get Task Instances By Date Range
  */
@@ -52,18 +46,12 @@ export class GetInstancesByDateRange {
   /**
    * 执行用例
    */
-  async execute(input: GetInstancesByDateRangeInput): Promise<TaskInstance[]> {
+  async execute(templateUuid: string, from: number, to: number): Promise<TaskInstance[]> {
     const instanceDTOs = await this.apiClient.getInstancesByDateRange(
-      input.templateUuid,
-      input.from,
-      input.to
+      templateUuid,
+      from,
+      to
     );
     return instanceDTOs.map(dto => TaskInstance.fromClientDTO(dto));
   }
 }
-
-/**
- * 便捷函数
- */
-export const getInstancesByDateRange = (input: GetInstancesByDateRangeInput): Promise<TaskInstance[]> =>
-  GetInstancesByDateRange.getInstance().execute(input);

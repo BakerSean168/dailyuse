@@ -12,14 +12,6 @@ import {
   ResetWidgetConfig,
   InvalidateDashboardCache,
   DashboardContainer,
-  type GetDashboardStatisticsInput,
-  type GetDashboardStatisticsOutput,
-  type GetWidgetConfigInput,
-  type GetWidgetConfigOutput,
-  type UpdateWidgetConfigInput,
-  type UpdateWidgetConfigOutput,
-  type ResetWidgetConfigInput,
-  type ResetWidgetConfigOutput,
 } from '@dailyuse/application-server';
 
 import type {
@@ -119,7 +111,7 @@ export class DashboardDesktopApplicationService {
    */
   async getStatistics(accountUuid: string): Promise<DashboardStatisticsClientDTO> {
     logger.debug('Getting dashboard statistics', { accountUuid });
-    const result = await this.getStatisticsService().execute({ accountUuid });
+    const result = await this.getStatisticsService().execute(accountUuid);
     return result.statistics;
   }
 
@@ -130,7 +122,7 @@ export class DashboardDesktopApplicationService {
     logger.debug('Invalidating dashboard cache', { accountUuid });
     const container = DashboardContainer.getInstance();
     if (container.hasCacheService()) {
-      await InvalidateDashboardCache.getInstance().execute({ accountUuid });
+      await InvalidateDashboardCache.getInstance().execute(accountUuid);
     }
   }
 
@@ -141,7 +133,7 @@ export class DashboardDesktopApplicationService {
    */
   async getWidgetConfig(accountUuid: string): Promise<WidgetConfigData> {
     logger.debug('Getting widget config', { accountUuid });
-    const result = await this.getWidgetService().execute({ accountUuid });
+    const result = await this.getWidgetService().execute(accountUuid);
     return result.widgetConfig;
   }
 
@@ -153,10 +145,7 @@ export class DashboardDesktopApplicationService {
     configs: Partial<WidgetConfigData>,
   ): Promise<WidgetConfigData> {
     logger.debug('Updating widget config', { accountUuid });
-    const result = await this.getUpdateWidgetService().execute({
-      accountUuid,
-      configs,
-    });
+    const result = await this.getUpdateWidgetService().execute(accountUuid, { configs });
     return result.widgetConfig;
   }
 
@@ -165,7 +154,7 @@ export class DashboardDesktopApplicationService {
    */
   async resetWidgetConfig(accountUuid: string): Promise<WidgetConfigData> {
     logger.debug('Resetting widget config', { accountUuid });
-    const result = await this.getResetWidgetService().execute({ accountUuid });
+    const result = await this.getResetWidgetService().execute(accountUuid);
     return result.widgetConfig;
   }
 

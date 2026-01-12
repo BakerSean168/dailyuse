@@ -11,14 +11,6 @@ import { TaskContainer } from '@dailyuse/infrastructure-client';
 import { TaskEvents, type TaskTemplateRefreshEvent } from './task-events';
 
 /**
- * Activate Task Template Output
- */
-export interface ActivateTaskTemplateOutput {
-  template: TaskTemplate;
-  instances: TaskInstance[];
-}
-
-/**
  * Activate Task Template
  */
 export class ActivateTaskTemplate {
@@ -56,7 +48,10 @@ export class ActivateTaskTemplate {
   /**
    * 执行用例
    */
-  async execute(uuid: string): Promise<ActivateTaskTemplateOutput> {
+  async execute(uuid: string): Promise<{
+    template: TaskTemplate;
+    instances: TaskInstance[];
+  }> {
     // 激活模板
     await this.apiClient.activateTaskTemplate(uuid);
 
@@ -90,9 +85,3 @@ export class ActivateTaskTemplate {
     eventBus.emit(eventName, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const activateTaskTemplate = (uuid: string): Promise<ActivateTaskTemplateOutput> =>
-  ActivateTaskTemplate.getInstance().execute(uuid);

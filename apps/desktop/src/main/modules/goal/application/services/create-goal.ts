@@ -2,14 +2,14 @@
  * Create Goal Service
  */
 
-import { createGoal, type CreateGoalInput } from '@dailyuse/application-server';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import { CreateGoal } from '@dailyuse/application-server';
+import type { CreateGoalRequest, GoalClientDTO } from '@dailyuse/contracts/goal';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('CreateGoalService');
 
-export async function createGoalService(params: CreateGoalInput): Promise<GoalClientDTO> {
+export async function createGoalService(accountUuid: string, params: CreateGoalRequest): Promise<GoalClientDTO> {
   logger.debug('Creating goal', { title: params.title });
-  const result = await createGoal(params);
+  const result = await CreateGoal.getInstance().execute(accountUuid, params);
   return result.goal;
 }

@@ -9,11 +9,20 @@ import { scheduleApplicationService } from '../../application/services';
 import type { ScheduleClientDTO } from '../stores/scheduleStore';
 import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
 import type {
-  CreateScheduleTaskInput,
-  CompleteScheduleTaskInput,
-  CancelScheduleTaskInput,
-  GetSchedulesByTimeRangeInput,
-} from '@dailyuse/application-client';
+  CreateScheduleTaskRequest,
+  GetSchedulesByTimeRangeRequest,
+} from '@dailyuse/contracts/schedule';
+
+// Local input types for hook interface
+export interface CompleteScheduleTaskInput {
+  taskUuid: string;
+  reason?: string;
+}
+
+export interface CancelScheduleTaskInput {
+  taskUuid: string;
+  reason?: string;
+}
 
 // ===== Types =====
 
@@ -32,7 +41,7 @@ export interface UseScheduleReturn extends ScheduleState {
   getTask: (id: string) => Promise<ScheduleTask | null>;
 
   // Task Mutations
-  createTask: (input: CreateScheduleTaskInput) => Promise<ScheduleTask>;
+  createTask: (input: CreateScheduleTaskRequest) => Promise<ScheduleTask>;
   pauseTask: (id: string) => Promise<void>;
   resumeTask: (id: string) => Promise<void>;
   completeTask: (input: CompleteScheduleTaskInput) => Promise<void>;
@@ -40,7 +49,7 @@ export interface UseScheduleReturn extends ScheduleState {
   deleteTask: (id: string) => Promise<void>;
 
   // Event Query
-  getEventsByTimeRange: (input: GetSchedulesByTimeRangeInput) => Promise<ScheduleClientDTO[]>;
+  getEventsByTimeRange: (input: GetSchedulesByTimeRangeRequest) => Promise<ScheduleClientDTO[]>;
 
   // Selection
   selectTask: (task: ScheduleTask | null) => void;
@@ -83,7 +92,7 @@ export function useSchedule(): UseScheduleReturn {
 
   // ===== Task Mutations =====
 
-  const createTask = useCallback(async (input: CreateScheduleTaskInput) => {
+  const createTask = useCallback(async (input: CreateScheduleTaskRequest) => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
@@ -143,7 +152,7 @@ export function useSchedule(): UseScheduleReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      await scheduleApplicationService.completeScheduleTask(input);
+      await scheduleApplicationService.completeScheduleTask(input.taskUuid, input.reason);
       // Reload tasks after complete
       const tasks = await scheduleApplicationService.listScheduleTasks();
       setState((prev) => ({
@@ -162,7 +171,7 @@ export function useSchedule(): UseScheduleReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      await scheduleApplicationService.cancelScheduleTask(input);
+      await scheduleApplicationService.cancelScheduleTask(input.taskUuid, input.reason);
       // Reload tasks after cancel
       const tasks = await scheduleApplicationService.listScheduleTasks();
       setState((prev) => ({
@@ -197,7 +206,7 @@ export function useSchedule(): UseScheduleReturn {
 
   // ===== Event Query =====
 
-  const getEventsByTimeRange = useCallback(async (input: GetSchedulesByTimeRangeInput): Promise<ScheduleClientDTO[]> => {
+  const getEventsByTimeRange = useCallback(async (input: GetSchedulesByTimeRangeRequest): Promise<ScheduleClientDTO[]> => {
     // 将 application service 返回的类型转换为本地类型
     const result = await scheduleApplicationService.getSchedulesByTimeRange(input);
     return result as unknown as ScheduleClientDTO[];

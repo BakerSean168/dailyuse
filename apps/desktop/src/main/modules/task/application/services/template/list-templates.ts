@@ -2,15 +2,15 @@
  * List Task Templates Use Case
  */
 
-import { listTaskTemplates, type ListTaskTemplatesInput } from '@dailyuse/application-server';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import { ListTaskTemplates } from '@dailyuse/application-server';
+import type { TaskTemplateClientDTO, QueryTaskTemplatesRequest } from '@dailyuse/contracts/task';
 
 export async function listTemplatesUseCase(
-  params: ListTaskTemplatesInput
+  params: QueryTaskTemplatesRequest
 ): Promise<{ templates: TaskTemplateClientDTO[]; total: number }> {
-  const result = await listTaskTemplates(params);
+  const result = await ListTaskTemplates.getInstance().execute(params);
   return {
-    templates: result.templates,
+    templates: result.templates as TaskTemplateClientDTO[],
     total: result.total,
   };
 }

@@ -13,8 +13,7 @@ import { useCallback, useEffect } from 'react';
 import { useGoalStore } from '../stores/goalStore';
 import { goalApplicationService } from '../../application/services';
 import type { GoalFolder } from '@dailyuse/domain-client/goal';
-import type { UpdateGoalFolderRequest } from '@dailyuse/contracts/goal';
-import type { CreateGoalFolderInput } from '@dailyuse/application-client';
+import type { CreateGoalFolderRequest, UpdateGoalFolderRequest } from '@dailyuse/contracts/goal';
 
 // ===== Types =====
 
@@ -29,7 +28,7 @@ export interface UseGoalFolderReturn {
   getFolder: (id: string) => Promise<GoalFolder | null>;
 
   // Mutations
-  createFolder: (input: CreateGoalFolderInput) => Promise<GoalFolder>;
+  createFolder: (input: CreateGoalFolderRequest) => Promise<GoalFolder>;
   updateFolder: (uuid: string, request: UpdateGoalFolderRequest) => Promise<void>;
   deleteFolder: (id: string) => Promise<void>;
 
@@ -85,7 +84,7 @@ export function useGoalFolder(): UseGoalFolderReturn {
 
   // ===== Mutations =====
 
-  const createFolder = useCallback(async (input: CreateGoalFolderInput): Promise<GoalFolder> => {
+  const createFolder = useCallback(async (input: CreateGoalFolderRequest): Promise<GoalFolder> => {
     storeSetLoading(true);
     storeSetError(null);
 

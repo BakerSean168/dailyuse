@@ -8,8 +8,6 @@ import type { RevokeTrustedDeviceRequest } from '@dailyuse/contracts/authenticat
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface RevokeTrustedDeviceInput extends RevokeTrustedDeviceRequest {}
-
 /**
  * Revoke Trusted Device Use Case
  */
@@ -48,13 +46,7 @@ export class RevokeTrustedDevice {
   /**
    * 执行用例
    */
-  async execute(input: RevokeTrustedDeviceInput): Promise<void> {
+  async execute(input: RevokeTrustedDeviceRequest): Promise<void> {
     return this.apiClient.revokeTrustedDevice(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const revokeTrustedDevice = (input: RevokeTrustedDeviceInput): Promise<void> =>
-  RevokeTrustedDevice.getInstance().execute(input);

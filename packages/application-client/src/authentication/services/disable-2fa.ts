@@ -8,8 +8,6 @@ import type { Disable2FARequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface Disable2FAInput extends Disable2FARequest {}
-
 /**
  * Disable 2FA Use Case
  */
@@ -48,13 +46,7 @@ export class Disable2FA {
   /**
    * 执行用例
    */
-  async execute(input: Disable2FAInput): Promise<void> {
+  async execute(input: Disable2FARequest): Promise<void> {
     return this.apiClient.disable2FA(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const disable2FA = (input: Disable2FAInput): Promise<void> =>
-  Disable2FA.getInstance().execute(input);

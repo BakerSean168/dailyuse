@@ -1,4 +1,4 @@
-import { getConversation } from '@dailyuse/application-server';
+import { GetConversation } from '@dailyuse/application-server';
 import type { MessageClientDTO } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 
@@ -11,10 +11,7 @@ export async function listMessagesService(
 ): Promise<{ messages: MessageClientDTO[]; total: number }> {
   logger.debug('Listing messages', { accountUuid, conversationUuid });
   // Get conversation with messages
-  const result = await getConversation({
-    accountUuid,
-    uuid: conversationUuid,
-  });
+  const result = await GetConversation.getInstance().execute(conversationUuid, accountUuid);
   const messages = result.conversation?.messages || [];
   return { messages, total: messages.length };
 }

@@ -17,106 +17,27 @@ export {
 
 // ===== Profile Use Cases =====
 
-// Get My Profile
-export { GetMyProfile, getMyProfile } from './get-my-profile';
-
-// Update My Profile
-export {
-  UpdateMyProfile,
-  updateMyProfile,
-  type UpdateMyProfileInput,
-} from './update-my-profile';
-
-// Change My Password
-export {
-  ChangeMyPassword,
-  changeMyPassword,
-  type ChangeMyPasswordInput,
-  type ChangeMyPasswordResult,
-} from './change-my-password';
-
-// Get Account By Id
-export { GetAccountById, getAccountById } from './get-account-by-id';
-
-// Update Account Profile
-export {
-  UpdateAccountProfile,
-  updateAccountProfile,
-  type UpdateAccountProfileInput,
-} from './update-account-profile';
-
-// Update Account Preferences
-export {
-  UpdateAccountPreferences,
-  updateAccountPreferences,
-  type UpdateAccountPreferencesInput,
-} from './update-account-preferences';
-
-// Update Email
-export {
-  UpdateEmail,
-  updateEmail,
-  type UpdateEmailInput,
-} from './update-email';
-
-// Verify Email
-export {
-  VerifyEmail,
-  verifyEmail,
-  type VerifyEmailInput,
-} from './verify-email';
-
-// Update Phone
-export {
-  UpdatePhone,
-  updatePhone,
-  type UpdatePhoneInput,
-} from './update-phone';
-
-// Verify Phone
-export {
-  VerifyPhone,
-  verifyPhone,
-  type VerifyPhoneInput,
-} from './verify-phone';
-
-// Deactivate Account
-export { DeactivateAccount, deactivateAccount } from './deactivate-account';
-
-// Activate Account
-export { ActivateAccount, activateAccount } from './activate-account';
-
-// Delete Account
-export { DeleteAccount, deleteAccount } from './delete-account';
-
-// Get Account History
-export {
-  GetAccountHistory,
-  getAccountHistory,
-  type GetAccountHistoryInput,
-} from './get-account-history';
+export { GetMyProfile } from './get-my-profile';
+export { UpdateMyProfile } from './update-my-profile';
+export { ChangeMyPassword } from './change-my-password';
+export { GetAccountById } from './get-account-by-id';
+export { UpdateAccountProfile } from './update-account-profile';
+export { UpdateAccountPreferences } from './update-account-preferences';
+export { UpdateEmail } from './update-email';
+export { VerifyEmail } from './verify-email';
+export { UpdatePhone } from './update-phone';
+export { VerifyPhone } from './verify-phone';
+export { DeactivateAccount } from './deactivate-account';
+export { ActivateAccount } from './activate-account';
+export { DeleteAccount } from './delete-account';
+export { GetAccountHistory } from './get-account-history';
 
 // ===== Subscription Use Cases =====
 
-// Get Subscription
-export { GetSubscription, getSubscription } from './get-subscription';
-
-// Subscribe Plan
-export {
-  SubscribePlan,
-  subscribePlan,
-  type SubscribePlanInput,
-} from './subscribe-plan';
-
-// Cancel Subscription
-export {
-  CancelSubscription,
-  cancelSubscription,
-  type CancelSubscriptionInput,
-} from './cancel-subscription';
-
-// Get Account Stats
-export { GetAccountStats, getAccountStats } from './get-account-stats';
+export { GetSubscription } from './get-subscription';
+export { SubscribePlan } from './subscribe-plan';
+export { CancelSubscription } from './cancel-subscription';
+export { GetAccountStats } from './get-account-stats';
 
 // ===== Legacy exports for backward compatibility (deprecated) =====
 

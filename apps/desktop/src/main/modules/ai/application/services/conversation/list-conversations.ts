@@ -1,7 +1,5 @@
-import {
-  listConversations,
-  type ListConversationsOutput,
-} from '@dailyuse/application-server';
+import { ListConversations } from '@dailyuse/application-server';
+import type { ConversationListResponse } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('listConversationsService');
@@ -9,10 +7,11 @@ const logger = createLogger('listConversationsService');
 export async function listConversationsService(
   accountUuid: string,
   options?: { limit?: number; offset?: number; archived?: boolean },
-): Promise<ListConversationsOutput> {
+): Promise<ConversationListResponse> {
   logger.debug('Listing conversations', { accountUuid, options });
-  return listConversations({
+  return ListConversations.getInstance().execute(
     accountUuid,
-    ...options,
-  });
+    options?.limit ?? 20,
+    options?.offset ?? 0,
+  );
 }

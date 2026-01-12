@@ -4,17 +4,9 @@
  * 验证手机号用例
  */
 
-import type { AccountDTO, VerifyPhoneRequestDTO } from '@dailyuse/contracts/account';
+import type { AccountDTO, VerifyPhoneRequest } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
-
-/**
- * Verify Phone Input
- */
-export interface VerifyPhoneInput {
-  accountId: string;
-  request: VerifyPhoneRequestDTO;
-}
 
 /**
  * Verify Phone
@@ -54,13 +46,7 @@ export class VerifyPhone {
   /**
    * 执行用例
    */
-  async execute(input: VerifyPhoneInput): Promise<AccountDTO> {
-    return this.apiClient.verifyPhone(input.accountId, input.request);
+  async execute(accountId: string, request: VerifyPhoneRequest): Promise<AccountDTO> {
+    return this.apiClient.verifyPhone(accountId, request);
   }
 }
-
-/**
- * 便捷函数
- */
-export const verifyPhone = (input: VerifyPhoneInput): Promise<AccountDTO> =>
-  VerifyPhone.getInstance().execute(input);

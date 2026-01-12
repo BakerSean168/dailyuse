@@ -70,9 +70,3 @@ export class PauseTaskTemplate {
     eventBus.emit(eventName, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const pauseTaskTemplate = (uuid: string): Promise<TaskTemplate> =>
-  PauseTaskTemplate.getInstance().execute(uuid);

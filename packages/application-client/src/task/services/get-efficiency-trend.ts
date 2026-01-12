@@ -7,6 +7,9 @@
 import type { ITaskStatisticsApiClient } from '@dailyuse/infrastructure-client';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 
+/**
+ * Efficiency trend type
+ */
 export type EfficiencyTrend = 'UP' | 'DOWN' | 'STABLE';
 
 /**
@@ -51,9 +54,3 @@ export class GetEfficiencyTrend {
     return this.apiClient.getEfficiencyTrend(accountUuid);
   }
 }
-
-/**
- * 便捷函数
- */
-export const getEfficiencyTrend = (accountUuid: string): Promise<EfficiencyTrend> =>
-  GetEfficiencyTrend.getInstance().execute(accountUuid);

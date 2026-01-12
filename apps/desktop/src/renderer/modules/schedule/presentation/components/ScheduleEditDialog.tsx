@@ -53,13 +53,11 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     setError(null);
     try {
       setLoading(true);
-      await scheduleApplicationService.updateTaskMetadata({
-        taskUuid: task.uuid,
-        metadata: {
-          tagsToAdd: [newTag.trim()],
-        },
+      const newTags = [...tags, newTag.trim()];
+      await scheduleApplicationService.updateTaskMetadata(task.uuid, {
+        tags: newTags,
       });
-      setTags([...tags, newTag.trim()]);
+      setTags(newTags);
       setNewTag('');
       onUpdated();
     } catch (err) {
@@ -73,13 +71,11 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     setError(null);
     try {
       setLoading(true);
-      await scheduleApplicationService.updateTaskMetadata({
-        taskUuid: task.uuid,
-        metadata: {
-          tagsToRemove: [tagToRemove],
-        },
+      const newTags = tags.filter(t => t !== tagToRemove);
+      await scheduleApplicationService.updateTaskMetadata(task.uuid, {
+        tags: newTags,
       });
-      setTags(tags.filter(t => t !== tagToRemove));
+      setTags(newTags);
       onUpdated();
     } catch (err) {
       setError(err instanceof Error ? err.message : '移除标签失败');
@@ -92,7 +88,7 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     setError(null);
     try {
       setLoading(true);
-      await scheduleApplicationService.completeScheduleTask({ taskUuid: task.uuid, reason: '用户手动完成' });
+      await scheduleApplicationService.completeScheduleTask(task.uuid, '用户手动完成');
       onUpdated();
       onClose();
     } catch (err) {
@@ -106,7 +102,7 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     setError(null);
     try {
       setLoading(true);
-      await scheduleApplicationService.cancelScheduleTask({ taskUuid: task.uuid, reason: '用户手动取消' });
+      await scheduleApplicationService.cancelScheduleTask(task.uuid, '用户手动取消');
       onUpdated();
       onClose();
     } catch (err) {

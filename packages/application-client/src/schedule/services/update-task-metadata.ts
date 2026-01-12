@@ -8,18 +8,7 @@ import type { IScheduleTaskApiClient } from '@dailyuse/infrastructure-client';
 import { eventBus } from '@dailyuse/utils';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleTaskEvents, type ScheduleTaskRefreshEvent } from './schedule-events';
-
-/**
- * Update Task Metadata Input
- */
-export interface UpdateTaskMetadataInput {
-  taskUuid: string;
-  metadata: {
-    payload?: unknown;
-    tagsToAdd?: string[];
-    tagsToRemove?: string[];
-  };
-}
+import type { UpdateTaskMetadataRequest } from '@dailyuse/contracts/schedule';
 
 /**
  * Update Task Metadata
@@ -59,10 +48,10 @@ export class UpdateTaskMetadata {
   /**
    * 执行用例
    */
-  async execute(input: UpdateTaskMetadataInput): Promise<void> {
-    await this.apiClient.updateTaskMetadata(input.taskUuid, input.metadata);
+  async execute(taskUuid: string, metadata: UpdateTaskMetadataRequest): Promise<void> {
+    await this.apiClient.updateTaskMetadata(taskUuid, metadata);
 
-    this.publishEvent(input.taskUuid, ScheduleTaskEvents.METADATA_UPDATED, input.metadata);
+    this.publishEvent(taskUuid, ScheduleTaskEvents.METADATA_UPDATED, metadata as Record<string, unknown>);
   }
 
   /**
@@ -78,9 +67,3 @@ export class UpdateTaskMetadata {
     eventBus.emit(eventName, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateTaskMetadata = (input: UpdateTaskMetadataInput): Promise<void> =>
-  UpdateTaskMetadata.getInstance().execute(input);

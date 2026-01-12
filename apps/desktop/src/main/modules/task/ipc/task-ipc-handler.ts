@@ -6,7 +6,7 @@
 import { ipcMain } from 'electron';
 import { BaseIPCHandler } from '../../shared/application/base-ipc-handler';
 import { TaskDesktopApplicationService } from '../application/TaskDesktopApplicationService';
-import type { CreateTaskTemplateInput } from '@dailyuse/application-server';
+import type { CreateTaskTemplateRequest } from '@dailyuse/contracts/task';
 
 export class TaskIPCHandler extends BaseIPCHandler {
   private taskService: TaskDesktopApplicationService;
@@ -25,7 +25,7 @@ export class TaskIPCHandler extends BaseIPCHandler {
      * Return: TaskTemplate
      * Security: Requires authentication
      */
-    ipcMain.handle('task:create-template', async (event, input: CreateTaskTemplateInput) => {
+    ipcMain.handle('task:create-template', async (event, input: CreateTaskTemplateRequest) => {
       return this.handleRequest(
         'task:create-template',
         () => this.taskService.createTemplate(input),

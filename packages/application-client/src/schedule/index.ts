@@ -7,5 +7,58 @@
 // Container
 export { ScheduleContainer } from '@dailyuse/infrastructure-client';
 
-// Services (all use cases and legacy services)
-export * from './services';
+// Services
+export {
+  // Events
+  ScheduleTaskEvents,
+  ScheduleEventEvents,
+  type ScheduleTaskRefreshEvent,
+  type ScheduleEventRefreshEvent,
+  type ScheduleConflictEvent,
+  
+  // Schedule Task Use Cases
+  CreateScheduleTask,
+  CreateScheduleTasksBatch,
+  ListScheduleTasks,
+  GetScheduleTask,
+  GetDueTasks,
+  GetTaskBySource,
+  PauseScheduleTask,
+  ResumeScheduleTask,
+  CompleteScheduleTask,
+  CancelScheduleTask,
+  DeleteScheduleTask,
+  DeleteScheduleTasksBatch,
+  UpdateTaskMetadata,
+  GetScheduleStatistics,
+  GetModuleStatistics,
+  GetAllModuleStatistics,
+  RecalculateStatistics,
+  ResetStatistics,
+  DeleteStatistics,
+  
+  // Schedule Event Use Cases
+  CreateScheduleEvent,
+  GetScheduleEvent,
+  ListSchedulesByAccount,
+  GetSchedulesByTimeRange,
+  UpdateScheduleEvent,
+  DeleteScheduleEvent,
+  GetScheduleConflicts,
+  
+  // Schedule Conflict Use Cases
+  DetectConflicts,
+  CreateScheduleWithConflict,
+  ResolveConflict,
+  
+  // Legacy exports (deprecated)
+  ScheduleEventApplicationService,
+  createScheduleEventApplicationService,
+  ScheduleConflictApplicationService,
+  createScheduleConflictApplicationService,
+  type DetectConflictsParams,
+  type CreateScheduleResult,
+  type LegacyResolveConflictResult,
+  ScheduleTaskApplicationService,
+  createScheduleTaskApplicationService,
+} from './services';

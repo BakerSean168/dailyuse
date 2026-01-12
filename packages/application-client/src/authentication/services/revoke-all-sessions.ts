@@ -8,8 +8,6 @@ import type { RevokeAllSessionsRequest } from '@dailyuse/contracts/authenticatio
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface RevokeAllSessionsInput extends RevokeAllSessionsRequest {}
-
 /**
  * Revoke All Sessions Use Case
  */
@@ -48,13 +46,7 @@ export class RevokeAllSessions {
   /**
    * 执行用例
    */
-  async execute(input?: RevokeAllSessionsInput): Promise<void> {
+  async execute(input?: RevokeAllSessionsRequest): Promise<void> {
     return this.apiClient.revokeAllSessions(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const revokeAllSessions = (input?: RevokeAllSessionsInput): Promise<void> =>
-  RevokeAllSessions.getInstance().execute(input);

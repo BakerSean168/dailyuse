@@ -10,14 +10,6 @@ import { Goal } from '@dailyuse/domain-client/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Get Goal Aggregate View Output
- */
-export interface GetGoalAggregateViewOutput {
-  goal: Goal;
-  rawResponse: GoalAggregateViewResponse;
-}
-
-/**
  * Get Goal Aggregate View
  */
 export class GetGoalAggregateView {
@@ -55,7 +47,10 @@ export class GetGoalAggregateView {
   /**
    * 执行用例
    */
-  async execute(goalUuid: string): Promise<GetGoalAggregateViewOutput> {
+  async execute(goalUuid: string): Promise<{
+    goal: Goal;
+    rawResponse: GoalAggregateViewResponse;
+  }> {
     const data = await this.apiClient.getGoalAggregateView(goalUuid);
     const goal = Goal.fromClientDTO(data.goal as GoalClientDTO);
 
@@ -65,9 +60,3 @@ export class GetGoalAggregateView {
     };
   }
 }
-
-/**
- * 便捷函数
- */
-export const getGoalAggregateView = (goalUuid: string): Promise<GetGoalAggregateViewOutput> =>
-  GetGoalAggregateView.getInstance().execute(goalUuid);

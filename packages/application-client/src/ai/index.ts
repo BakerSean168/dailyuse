@@ -10,6 +10,36 @@
  * - Provider configuration
  */
 
-export * from './services';
+export {
+  // Conversation
+  CreateConversation,
+  ListConversations,
+  GetConversation,
+  UpdateConversation,
+  DeleteConversation,
+  CloseConversation,
+  ArchiveConversation,
+  
+  // Message
+  SendMessage,
+  ListMessages,
+  DeleteMessage,
+  StreamChat,
+  
+  // Generation
+  GenerateGoal,
+  GenerateGoalWithKeyResults,
+  AIGenerateKeyResults,
+  
+  // Quota
+  GetQuota,
+  CheckQuotaAvailability,
+  
+  // Provider
+  ListProviders,
+  CreateProvider,
+  TestProviderConnection,
+  SetDefaultProvider,
+} from './services';
 export * from './interfaces/IAIService';
 export { AIServiceFactory } from './AIServiceFactory';

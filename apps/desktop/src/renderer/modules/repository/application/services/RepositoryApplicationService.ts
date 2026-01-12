@@ -6,22 +6,20 @@
  */
 
 import {
-  listRepositories,
-  getRepository,
-  getFileTree,
-  searchResources,
-  createFolder,
-  getFolderContents,
-  deleteFolder,
-  getResource,
-  deleteResource,
-  type SearchResourcesInput,
-  type CreateFolderInput,
-  type GetFolderContentsOutput,
+  ListRepositories,
+  GetRepository,
+  GetFileTree,
+  SearchResources,
+  CreateFolder,
+  GetFolderContents,
+  DeleteFolder,
+  GetResource,
+  DeleteResource,
 } from '@dailyuse/application-client';
 import {
   RepositoryContainer,
   type CreateRepositoryRequest,
+  type CreateFolderRequest,
 } from '@dailyuse/infrastructure-client';
 import type {
   RepositoryClientDTO,
@@ -48,14 +46,14 @@ export class RepositoryApplicationService {
    * 获取仓库列表
    */
   listRepositories() {
-    return listRepositories();
+    return ListRepositories.getInstance().execute();
   }
 
   /**
    * 获取单个仓库
    */
   getRepository(repositoryUuid: string) {
-    return getRepository(repositoryUuid);
+    return GetRepository.getInstance().execute(repositoryUuid);
   }
 
   /**
@@ -76,14 +74,14 @@ export class RepositoryApplicationService {
    * 获取文件树
    */
   getFileTree(repositoryUuid: string) {
-    return getFileTree(repositoryUuid);
+    return GetFileTree.getInstance().execute(repositoryUuid);
   }
 
   /**
    * 搜索资源
    */
-  searchResources(input: SearchResourcesInput) {
-    return searchResources(input);
+  searchResources(input: SearchRequest) {
+    return SearchResources.getInstance().execute(input);
   }
 
   /**
@@ -98,15 +96,15 @@ export class RepositoryApplicationService {
   /**
    * 创建文件夹
    */
-  createFolder(input: CreateFolderInput) {
-    return createFolder(input);
+  createFolder(input: CreateFolderRequest) {
+    return CreateFolder.getInstance().execute(input);
   }
 
   /**
    * 获取文件夹内容
    */
-  getFolderContents(folderUuid: string): Promise<GetFolderContentsOutput> {
-    return getFolderContents(folderUuid);
+  getFolderContents(folderUuid: string) {
+    return GetFolderContents.getInstance().execute(folderUuid);
   }
 
   /**
@@ -127,7 +125,7 @@ export class RepositoryApplicationService {
    * 删除文件夹
    */
   deleteFolder(folderUuid: string) {
-    return deleteFolder(folderUuid);
+    return DeleteFolder.getInstance().execute(folderUuid);
   }
 
   // ===== Resource Operations =====
@@ -136,7 +134,7 @@ export class RepositoryApplicationService {
    * 获取资源
    */
   getResource(resourceUuid: string) {
-    return getResource(resourceUuid);
+    return GetResource.getInstance().execute(resourceUuid);
   }
 
   /**
@@ -157,7 +155,7 @@ export class RepositoryApplicationService {
    * 删除资源
    */
   deleteResource(resourceUuid: string) {
-    return deleteResource(resourceUuid);
+    return DeleteResource.getInstance().execute(resourceUuid);
   }
 }
 

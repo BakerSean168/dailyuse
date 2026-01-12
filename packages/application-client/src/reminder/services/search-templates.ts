@@ -9,14 +9,6 @@ import { ReminderTemplate } from '@dailyuse/domain-client/reminder';
 import { ReminderContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Search Templates Input
- */
-export interface SearchTemplatesInput {
-  accountUuid: string;
-  query: string;
-}
-
-/**
  * Search Templates
  */
 export class SearchTemplates {
@@ -54,14 +46,8 @@ export class SearchTemplates {
   /**
    * 执行用例
    */
-  async execute(input: SearchTemplatesInput): Promise<ReminderTemplate[]> {
-    const templateDTOs = await this.apiClient.searchTemplates(input.accountUuid, input.query);
+  async execute(accountUuid: string, query: string): Promise<ReminderTemplate[]> {
+    const templateDTOs = await this.apiClient.searchTemplates(accountUuid, query);
     return templateDTOs.map((dto) => ReminderTemplate.fromClientDTO(dto));
   }
 }
-
-/**
- * 便捷函数
- */
-export const searchTemplates = (input: SearchTemplatesInput): Promise<ReminderTemplate[]> =>
-  SearchTemplates.getInstance().execute(input);

@@ -9,11 +9,6 @@ import type { FocusSessionClientDTO, StartFocusRequest } from '@dailyuse/contrac
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Start Focus Session Input
- */
-export type StartFocusSessionInput = StartFocusRequest;
-
-/**
  * Start Focus Session Use Case
  */
 export class StartFocusSession {
@@ -51,14 +46,7 @@ export class StartFocusSession {
   /**
    * 执行用例
    */
-  async execute(input: StartFocusSessionInput): Promise<FocusSessionClientDTO> {
-    return this.apiClient.startSession(input);
+  async execute(request: StartFocusRequest): Promise<FocusSessionClientDTO> {
+    return this.apiClient.startSession(request);
   }
-}
-
-/**
- * Convenience function
- */
-export async function startFocusSession(input: StartFocusSessionInput): Promise<FocusSessionClientDTO> {
-  return StartFocusSession.getInstance().execute(input);
 }

@@ -53,9 +53,3 @@ export class DeleteTaskInstance {
     eventBus.emit(TaskInstanceEvents.INSTANCE_DELETED, { uuid });
   }
 }
-
-/**
- * 便捷函数
- */
-export const deleteTaskInstance = (uuid: string): Promise<void> =>
-  DeleteTaskInstance.getInstance().execute(uuid);

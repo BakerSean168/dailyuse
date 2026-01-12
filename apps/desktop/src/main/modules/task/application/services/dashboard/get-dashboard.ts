@@ -2,8 +2,9 @@
  * Get Task Dashboard Use Case
  */
 
-import { getTaskDashboard, type GetTaskDashboardOutput } from '@dailyuse/application-server';
+import { GetTaskDashboard } from '@dailyuse/application-server';
+import type { TaskDashboardResponse } from '@dailyuse/contracts/task';
 
-export async function getDashboardUseCase(accountUuid: string): Promise<GetTaskDashboardOutput> {
-  return getTaskDashboard({ accountUuid });
+export async function getDashboardUseCase(accountUuid: string): Promise<TaskDashboardResponse> {
+  return GetTaskDashboard.getInstance().execute(accountUuid);
 }

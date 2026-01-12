@@ -4,17 +4,9 @@
  * 更新账户资料用例
  */
 
-import type { AccountDTO, UpdateAccountProfileRequestDTO } from '@dailyuse/contracts/account';
+import type { AccountDTO, UpdateAccountProfileRequest } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
-
-/**
- * Update Account Profile Input
- */
-export interface UpdateAccountProfileInput {
-  accountId: string;
-  request: UpdateAccountProfileRequestDTO;
-}
 
 /**
  * Update Account Profile
@@ -54,13 +46,7 @@ export class UpdateAccountProfile {
   /**
    * 执行用例
    */
-  async execute(input: UpdateAccountProfileInput): Promise<AccountDTO> {
-    return this.apiClient.updateProfile(input.accountId, input.request);
+  async execute(accountId: string, request: UpdateAccountProfileRequest): Promise<AccountDTO> {
+    return this.apiClient.updateProfile(accountId, request);
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateAccountProfile = (input: UpdateAccountProfileInput): Promise<AccountDTO> =>
-  UpdateAccountProfile.getInstance().execute(input);

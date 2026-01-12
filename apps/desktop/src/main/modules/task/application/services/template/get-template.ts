@@ -2,10 +2,10 @@
  * Get Task Template Use Case
  */
 
-import { getTaskTemplate } from '@dailyuse/application-server';
+import { GetTaskTemplate } from '@dailyuse/application-server';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 
 export async function getTemplateUseCase(uuid: string): Promise<TaskTemplateClientDTO | null> {
-  const result = await getTaskTemplate({ uuid });
-  return result.template;
+  const result = await GetTaskTemplate.getInstance().execute(uuid);
+  return result.template as TaskTemplateClientDTO | null;
 }

@@ -7,6 +7,6 @@ export async function invalidateCacheService(accountUuid: string): Promise<void>
   logger.debug('Invalidating dashboard cache', { accountUuid });
   const container = DashboardContainer.getInstance();
   if (container.hasCacheService()) {
-    await InvalidateDashboardCache.getInstance().execute({ accountUuid });
+    await InvalidateDashboardCache.getInstance().execute(accountUuid);
   }
 }

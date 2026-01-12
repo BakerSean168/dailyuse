@@ -15,14 +15,6 @@ import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleEventEvents, type ScheduleEventRefreshEvent } from './schedule-events';
 
 /**
- * Resolve Conflict Input
- */
-export interface ResolveConflictInput {
-  scheduleUuid: string;
-  request: ResolveConflictRequest;
-}
-
-/**
  * Resolve Conflict Result
  */
 export interface ResolveConflictResult {
@@ -74,8 +66,8 @@ export class ResolveConflict {
   /**
    * 执行用例
    */
-  async execute(input: ResolveConflictInput): Promise<ResolveConflictResult> {
-    const result = await this.apiClient.resolveConflict(input.scheduleUuid, input.request);
+  async execute(scheduleUuid: string, request: ResolveConflictRequest): Promise<ResolveConflictResult> {
+    const result = await this.apiClient.resolveConflict(scheduleUuid, request);
 
     this.publishEvent(result.schedule.uuid, ScheduleEventEvents.CONFLICT_RESOLVED, {
       strategy: result.applied.strategy,
@@ -98,9 +90,3 @@ export class ResolveConflict {
     eventBus.emit(eventName, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const resolveConflict = (input: ResolveConflictInput): Promise<ResolveConflictResult> =>
-  ResolveConflict.getInstance().execute(input);

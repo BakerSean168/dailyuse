@@ -76,7 +76,7 @@ export function ScheduleListView() {
 
   const handleCompleteTask = async (taskUuid: string) => {
     try {
-      await scheduleApplicationService.completeScheduleTask({ taskUuid });
+      await scheduleApplicationService.completeScheduleTask(taskUuid);
       loadTasks();
     } catch (err) {
       console.error('[ScheduleListView] Failed to complete task:', err);

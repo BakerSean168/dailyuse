@@ -38,10 +38,3 @@ export class GetFocusStatus {
     return this.apiClient.getStatus();
   }
 }
-
-/**
- * Convenience function
- */
-export async function getFocusStatus(): Promise<FocusStatusDTO> {
-  return GetFocusStatus.getInstance().execute();
-}

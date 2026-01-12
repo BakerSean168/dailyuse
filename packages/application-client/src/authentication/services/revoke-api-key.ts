@@ -8,8 +8,6 @@ import type { RevokeApiKeyRequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface RevokeApiKeyInput extends RevokeApiKeyRequest {}
-
 /**
  * Revoke API Key Use Case
  */
@@ -48,13 +46,7 @@ export class RevokeApiKey {
   /**
    * 执行用例
    */
-  async execute(input: RevokeApiKeyInput): Promise<void> {
+  async execute(input: RevokeApiKeyRequest): Promise<void> {
     return this.apiClient.revokeApiKey(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const revokeApiKey = (input: RevokeApiKeyInput): Promise<void> =>
-  RevokeApiKey.getInstance().execute(input);

@@ -1,9 +1,9 @@
-import { resumeScheduleTask } from '@dailyuse/application-server';
+import { ResumeScheduleTask } from '@dailyuse/application-server';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('resumeTaskService');
 
 export async function resumeTaskService(uuid: string): Promise<{ success: boolean }> {
-  const result = await resumeScheduleTask({ uuid });
-  return { success: result.success };
+  await ResumeScheduleTask.getInstance().execute(uuid);
+  return { success: true };
 }

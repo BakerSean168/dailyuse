@@ -6,8 +6,11 @@
 
 import { useState, useCallback } from 'react';
 import { aiApplicationService } from '../../application/services';
-import type { CreateProviderInput, TestProviderConnectionInput } from '@dailyuse/application-client';
-import type { AIProviderType } from '@dailyuse/contracts/ai';
+import type { CreateAIProviderRequest, TestAIProviderConnectionRequest, AIProviderType } from '@dailyuse/contracts/ai';
+
+// Type aliases for backward compatibility
+type CreateProviderInput = CreateAIProviderRequest;
+type TestProviderConnectionInput = TestAIProviderConnectionRequest;
 
 // 使用推断类型
 type AIProvider = Awaited<ReturnType<typeof aiApplicationService.listProviders>>[number];

@@ -7,10 +7,14 @@
 import { useState, useCallback } from 'react';
 import { aiApplicationService } from '../../application/services';
 import type {
-  CreateConversationInput,
-  ListConversationsInput,
-  SendMessageInput,
-} from '@dailyuse/application-client';
+  CreateConversationRequest,
+  SendMessageRequest,
+} from '@dailyuse/contracts/ai';
+
+// Local type aliases for consistency with hook interface
+type CreateConversationInput = CreateConversationRequest;
+type ListConversationsInput = { page?: number; pageSize?: number; status?: string };
+type SendMessageInput = SendMessageRequest;
 
 // 使用推断类型，避免与 contracts 类型不匹配
 type AIConversation = Awaited<ReturnType<typeof aiApplicationService.createConversation>>;
@@ -107,7 +111,7 @@ export function useAIConversation(): UseAIConversationReturn {
     try {
       const [conversation, messagesResult] = await Promise.all([
         aiApplicationService.getConversation(conversationUuid),
-        aiApplicationService.listMessages({ conversationUuid }),
+        aiApplicationService.listMessages(conversationUuid),
       ]);
       setState(prev => ({
         ...prev,
@@ -129,7 +133,7 @@ export function useAIConversation(): UseAIConversationReturn {
    */
   const updateConversation = useCallback(async (uuid: string, title: string) => {
     try {
-      const updated = await aiApplicationService.updateConversation({ uuid, title });
+      const updated = await aiApplicationService.updateConversation(uuid, { title });
       setState(prev => ({
         ...prev,
         conversations: prev.conversations.map(c =>

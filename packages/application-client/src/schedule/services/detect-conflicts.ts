@@ -11,16 +11,6 @@ import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleEventEvents, type ScheduleConflictEvent } from './schedule-events';
 
 /**
- * Detect Conflicts Input
- */
-export interface DetectConflictsInput {
-  userId: string;
-  startTime: number;
-  endTime: number;
-  excludeUuid?: string;
-}
-
-/**
  * Detect Conflicts
  */
 export class DetectConflicts {
@@ -58,12 +48,17 @@ export class DetectConflicts {
   /**
    * 执行用例
    */
-  async execute(input: DetectConflictsInput): Promise<ConflictDetectionResult> {
-    const result = await this.apiClient.detectConflicts(input);
+  async execute(
+    userId: string,
+    startTime: number,
+    endTime: number,
+    excludeUuid?: string,
+  ): Promise<ConflictDetectionResult> {
+    const result = await this.apiClient.detectConflicts({ userId, startTime, endTime, excludeUuid });
 
     if (result.hasConflict) {
       this.publishConflictEvent(
-        input.excludeUuid || 'new',
+        excludeUuid || 'new',
         result.conflicts.map(c => c.scheduleUuid),
       );
     }
@@ -84,9 +79,3 @@ export class DetectConflicts {
     eventBus.emit(ScheduleEventEvents.CONFLICT_DETECTED, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const detectConflicts = (input: DetectConflictsInput): Promise<ConflictDetectionResult> =>
-  DetectConflicts.getInstance().execute(input);

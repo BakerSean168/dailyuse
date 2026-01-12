@@ -1,4 +1,4 @@
-import { NotificationService, type ChannelPreferences } from '@dailyuse/application-server';
+import { NotificationService } from '@dailyuse/application-server';
 import type {
   NotificationPreferenceClientDTO,
   NotificationCategory,
@@ -12,7 +12,12 @@ const logger = createLogger('updatePreferenceService');
 export async function updatePreferenceService(
   accountUuid: string,
   updates: Partial<{
-    channelPreferences: ChannelPreferences;
+    channelPreferences: {
+      inApp?: boolean;
+      push?: boolean;
+      email?: boolean;
+      sms?: boolean;
+    };
     categoryPreferences: Record<NotificationCategory, Partial<CategoryPreferenceServerDTO>>;
     doNotDisturbConfig: Partial<DoNotDisturbConfigServerDTO>;
   }>,

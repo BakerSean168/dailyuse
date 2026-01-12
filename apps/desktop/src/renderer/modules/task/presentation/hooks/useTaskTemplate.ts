@@ -13,8 +13,7 @@ import { useCallback, useEffect } from 'react';
 import { useTaskStore } from '../stores/taskStore';
 import { taskApplicationService } from '../../application/services';
 import type { TaskTemplate } from '@dailyuse/domain-client/task';
-import type { UpdateTaskTemplateRequest } from '@dailyuse/contracts/task';
-import type { CreateTaskTemplateInput } from '@dailyuse/application-client';
+import type { UpdateTaskTemplateRequest, CreateTaskTemplateRequest } from '@dailyuse/contracts/task';
 
 // ===== Types =====
 
@@ -30,7 +29,7 @@ export interface UseTaskTemplateReturn {
   getTemplate: (id: string) => Promise<TaskTemplate | null>;
   
   // Mutations
-  createTemplate: (input: CreateTaskTemplateInput) => Promise<TaskTemplate>;
+  createTemplate: (input: CreateTaskTemplateRequest) => Promise<TaskTemplate>;
   updateTemplate: (uuid: string, request: UpdateTaskTemplateRequest) => Promise<void>;
   deleteTemplate: (id: string) => Promise<void>;
   
@@ -96,7 +95,7 @@ export function useTaskTemplate(): UseTaskTemplateReturn {
 
   // ===== Mutations =====
 
-  const createTemplate = useCallback(async (input: CreateTaskTemplateInput): Promise<TaskTemplate> => {
+  const createTemplate = useCallback(async (input: CreateTaskTemplateRequest): Promise<TaskTemplate> => {
     storeSetLoading(true);
     storeSetError(null);
 

@@ -6,44 +6,71 @@
 
 import {
   // Reminder Template Use Cases
-  createReminderTemplate,
-  getReminderTemplate,
-  listReminderTemplates,
-  getUserTemplates,
-  updateReminderTemplate,
-  deleteReminderTemplate,
-  toggleTemplateEnabled,
-  moveTemplateToGroup,
-  searchTemplates,
-  getTemplateScheduleStatus,
-  getUpcomingReminders,
+  CreateReminderTemplate,
+  GetReminderTemplate,
+  ListReminderTemplates,
+  GetUserTemplates,
+  UpdateReminderTemplate,
+  DeleteReminderTemplate,
+  ToggleTemplateEnabled,
+  MoveTemplateToGroup,
+  SearchTemplates,
+  GetTemplateScheduleStatus,
+  GetUpcomingReminders,
   // Reminder Group Use Cases
-  createReminderGroup,
-  getReminderGroup,
-  listReminderGroups,
-  getUserReminderGroups,
-  updateReminderGroup,
-  deleteReminderGroup,
-  toggleReminderGroupStatus,
-  toggleReminderGroupControlMode,
+  CreateReminderGroup,
+  GetReminderGroup,
+  ListReminderGroups,
+  GetUserReminderGroups,
+  UpdateReminderGroup,
+  DeleteReminderGroup,
+  ToggleReminderGroupStatus,
+  ToggleReminderGroupControlMode,
   // Statistics
-  getReminderStatistics,
-  // Types
-  type CreateReminderTemplateInput,
-  type UpdateReminderTemplateInput,
-  type ListReminderTemplatesParams,
-  type ListReminderTemplatesResult,
-  type MoveTemplateToGroupInput,
-  type SearchTemplatesInput,
-  type GetUpcomingRemindersParams,
-  type CreateReminderGroupInput,
-  type UpdateReminderGroupInput,
-  type ListReminderGroupsParams,
-  type ListReminderGroupsResult,
+  GetReminderStatistics,
 } from '@dailyuse/application-client';
+
+// Local type definitions (not re-exported from main index)
+export interface ListReminderTemplatesParams {
+  page?: number;
+  pageSize?: number;
+  status?: string;
+  type?: string;
+  groupUuid?: string;
+  tags?: string[];
+}
+
+export interface ListReminderTemplatesResult {
+  templates: ReminderTemplateClientDTO[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+}
+
+export interface GetUpcomingRemindersParams {
+  limit?: number;
+  hoursAhead?: number;
+}
+
+export interface ListReminderGroupsParams {
+  page?: number;
+  pageSize?: number;
+}
+
+export interface ListReminderGroupsResult {
+  groups: ReminderGroupClientDTO[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
+  CreateReminderTemplateRequest,
+  UpdateReminderTemplateRequest,
+  CreateReminderGroupRequest,
+  UpdateReminderGroupRequest,
 } from '@dailyuse/contracts/reminder';
 
 /**
@@ -63,20 +90,22 @@ export class ReminderApplicationService {
 
   // ===== Reminder Template Operations =====
 
-  async createReminderTemplate(input: CreateReminderTemplateInput): Promise<ReminderTemplateClientDTO> {
-    return createReminderTemplate(input);
+  async createReminderTemplate(input: CreateReminderTemplateRequest): Promise<ReminderTemplateClientDTO> {
+    const template = await CreateReminderTemplate.getInstance().execute(input);
+    return template.toClientDTO();
   }
 
   async getReminderTemplate(templateId: string): Promise<ReminderTemplateClientDTO | null> {
     try {
-      return await getReminderTemplate(templateId);
+      const template = await GetReminderTemplate.getInstance().execute(templateId);
+      return template.toClientDTO();
     } catch {
       return null;
     }
   }
 
   async listReminderTemplates(params?: ListReminderTemplatesParams): Promise<ListReminderTemplatesResult> {
-    const result = await listReminderTemplates(params);
+    const result = await ListReminderTemplates.getInstance().execute(params);
     // 确保返回正确的结构
     if (!result || !result.templates) {
       return {
@@ -91,79 +120,88 @@ export class ReminderApplicationService {
   }
 
   async getUserTemplates(accountUuid: string) {
-    return getUserTemplates(accountUuid);
+    return GetUserTemplates.getInstance().execute(accountUuid);
   }
 
-  async updateReminderTemplate(input: UpdateReminderTemplateInput): Promise<ReminderTemplateClientDTO> {
-    return updateReminderTemplate(input);
+  async updateReminderTemplate(templateId: string, input: UpdateReminderTemplateRequest): Promise<ReminderTemplateClientDTO> {
+    const template = await UpdateReminderTemplate.getInstance().execute(templateId, input);
+    return template.toClientDTO();
   }
 
   async deleteReminderTemplate(templateId: string): Promise<void> {
-    return deleteReminderTemplate(templateId);
+    return DeleteReminderTemplate.getInstance().execute(templateId);
   }
 
   async toggleTemplateEnabled(templateId: string): Promise<ReminderTemplateClientDTO> {
-    return toggleTemplateEnabled(templateId);
+    const template = await ToggleTemplateEnabled.getInstance().execute(templateId);
+    return template.toClientDTO();
   }
 
-  async moveTemplateToGroup(input: MoveTemplateToGroupInput): Promise<ReminderTemplateClientDTO> {
-    return moveTemplateToGroup(input);
+  async moveTemplateToGroup(templateUuid: string, targetGroupUuid: string | null): Promise<ReminderTemplateClientDTO> {
+    const template = await MoveTemplateToGroup.getInstance().execute(templateUuid, targetGroupUuid);
+    return template.toClientDTO();
   }
 
-  async searchTemplates(input: SearchTemplatesInput): Promise<ReminderTemplateClientDTO[]> {
-    return searchTemplates(input);
+  async searchTemplates(accountUuid: string, query: string): Promise<ReminderTemplateClientDTO[]> {
+    const templates = await SearchTemplates.getInstance().execute(accountUuid, query);
+    return templates.map(t => t.toClientDTO());
   }
 
   async getTemplateScheduleStatus(templateId: string) {
-    return getTemplateScheduleStatus(templateId);
+    return GetTemplateScheduleStatus.getInstance().execute(templateId);
   }
 
   async getUpcomingReminders(params?: GetUpcomingRemindersParams) {
-    return getUpcomingReminders(params);
+    return GetUpcomingReminders.getInstance().execute(params);
   }
 
   // ===== Reminder Group Operations =====
 
-  async createReminderGroup(input: CreateReminderGroupInput): Promise<ReminderGroupClientDTO> {
-    return createReminderGroup(input);
+  async createReminderGroup(input: CreateReminderGroupRequest): Promise<ReminderGroupClientDTO> {
+    const group = await CreateReminderGroup.getInstance().execute(input);
+    return group.toClientDTO();
   }
 
   async getReminderGroup(groupId: string): Promise<ReminderGroupClientDTO | null> {
     try {
-      return await getReminderGroup(groupId);
+      const group = await GetReminderGroup.getInstance().execute(groupId);
+      return group.toClientDTO();
     } catch {
       return null;
     }
   }
 
   async listReminderGroups(params?: ListReminderGroupsParams): Promise<ListReminderGroupsResult> {
-    return listReminderGroups(params);
+    return ListReminderGroups.getInstance().execute(params);
   }
 
   async getUserReminderGroups(accountUuid: string) {
-    return getUserReminderGroups(accountUuid);
+    return GetUserReminderGroups.getInstance().execute(accountUuid);
   }
 
-  async updateReminderGroup(input: UpdateReminderGroupInput): Promise<ReminderGroupClientDTO> {
-    return updateReminderGroup(input);
+  async updateReminderGroup(groupId: string, input: UpdateReminderGroupRequest): Promise<ReminderGroupClientDTO> {
+    const group = await UpdateReminderGroup.getInstance().execute(groupId, input);
+    return group.toClientDTO();
   }
 
   async deleteReminderGroup(groupId: string): Promise<void> {
-    return deleteReminderGroup(groupId);
+    return DeleteReminderGroup.getInstance().execute(groupId);
   }
 
   async toggleReminderGroupStatus(groupId: string): Promise<ReminderGroupClientDTO> {
-    return toggleReminderGroupStatus(groupId);
+    const group = await ToggleReminderGroupStatus.getInstance().execute(groupId);
+    return group.toClientDTO();
   }
 
   async toggleReminderGroupControlMode(groupId: string): Promise<ReminderGroupClientDTO> {
-    return toggleReminderGroupControlMode(groupId);
+    const group = await ToggleReminderGroupControlMode.getInstance().execute(groupId);
+    return group.toClientDTO();
   }
 
   // ===== Statistics =====
 
   async getReminderStatistics(accountUuid: string) {
-    return getReminderStatistics(accountUuid);
+    return GetReminderStatistics.getInstance().execute(accountUuid);
   }
 }
 

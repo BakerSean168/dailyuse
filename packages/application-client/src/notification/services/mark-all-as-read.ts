@@ -8,14 +8,6 @@ import type { INotificationApiClient } from '@dailyuse/infrastructure-client';
 import { NotificationContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Mark All As Read Output
- */
-export interface MarkAllAsReadOutput {
-  success: boolean;
-  count: number;
-}
-
-/**
  * Mark All As Read
  */
 export class MarkAllAsRead {
@@ -53,13 +45,7 @@ export class MarkAllAsRead {
   /**
    * 执行用例
    */
-  async execute(): Promise<MarkAllAsReadOutput> {
+  async execute(): Promise<{ success: boolean; count: number }> {
     return this.apiClient.markAllAsRead();
   }
 }
-
-/**
- * 便捷函数
- */
-export const markAllAsRead = (): Promise<MarkAllAsReadOutput> =>
-  MarkAllAsRead.getInstance().execute();

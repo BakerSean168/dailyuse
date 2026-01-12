@@ -66,9 +66,3 @@ export class DeleteTaskTemplate {
     eventBus.emit(eventName, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const deleteTaskTemplate = (uuid: string): Promise<void> =>
-  DeleteTaskTemplate.getInstance().execute(uuid);

@@ -11,17 +11,6 @@ import { GoalEvents, type GoalAggregateRefreshEvent, type GoalAggregateRefreshRe
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Batch Update Key Result Weights Input
- */
-export interface BatchUpdateKeyResultWeightsInput {
-  goalUuid: string;
-  updates: Array<{
-    keyResultUuid: string;
-    weight: number;
-  }>;
-}
-
-/**
  * Batch Update Key Result Weights
  */
 export class BatchUpdateKeyResultWeights {
@@ -59,8 +48,10 @@ export class BatchUpdateKeyResultWeights {
   /**
    * 执行用例
    */
-  async execute(input: BatchUpdateKeyResultWeightsInput): Promise<KeyResultsResponse> {
-    const { goalUuid, updates } = input;
+  async execute(
+    goalUuid: string,
+    updates: Array<{ keyResultUuid: string; weight: number }>,
+  ): Promise<KeyResultsResponse> {
     const data = await this.apiClient.batchUpdateKeyResultWeights(goalUuid, { updates });
 
     this.publishGoalRefreshEvent(goalUuid, 'key-result-updated', {});
@@ -85,12 +76,3 @@ export class BatchUpdateKeyResultWeights {
     eventBus.emit(GoalEvents.AGGREGATE_REFRESH, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const batchUpdateKeyResultWeights = (
-  goalUuid: string,
-  updates: Array<{ keyResultUuid: string; weight: number }>,
-): Promise<KeyResultsResponse> =>
-  BatchUpdateKeyResultWeights.getInstance().execute({ goalUuid, updates });

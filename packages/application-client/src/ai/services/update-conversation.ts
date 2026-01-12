@@ -10,13 +10,6 @@ import { AIConversation } from '@dailyuse/domain-client/ai';
 import { AIContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Update Conversation Input
- */
-export interface UpdateConversationInput extends UpdateConversationRequest {
-  uuid: string;
-}
-
-/**
  * Update Conversation
  */
 export class UpdateConversation {
@@ -54,15 +47,8 @@ export class UpdateConversation {
   /**
    * 执行用例
    */
-  async execute(input: UpdateConversationInput): Promise<AIConversation> {
-    const { uuid, ...request } = input;
+  async execute(uuid: string, request: UpdateConversationRequest): Promise<AIConversation> {
     const data = await this.apiClient.updateConversation(uuid, request);
     return AIConversation.fromClientDTO(data);
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateConversation = (input: UpdateConversationInput): Promise<AIConversation> =>
-  UpdateConversation.getInstance().execute(input);

@@ -83,7 +83,7 @@ export function ReminderEditDialog({ template, onClose, onUpdated }: ReminderEdi
             },
       };
 
-      await reminderApplicationService.updateReminderTemplate({ uuid: template.uuid, request });
+      await reminderApplicationService.updateReminderTemplate(template.uuid, request);
       onUpdated();
     } catch (err) {
       setError(err instanceof Error ? err.message : '更新失败');

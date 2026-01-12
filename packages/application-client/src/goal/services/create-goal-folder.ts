@@ -10,11 +10,6 @@ import { GoalFolder } from '@dailyuse/domain-client/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Create Goal Folder Input
- */
-export type CreateGoalFolderInput = CreateGoalFolderRequest;
-
-/**
  * Create Goal Folder
  */
 export class CreateGoalFolder {
@@ -52,14 +47,8 @@ export class CreateGoalFolder {
   /**
    * 执行用例
    */
-  async execute(input: CreateGoalFolderInput): Promise<GoalFolder> {
-    const folderData = await this.apiClient.createGoalFolder(input);
+  async execute(request: CreateGoalFolderRequest): Promise<GoalFolder> {
+    const folderData = await this.apiClient.createGoalFolder(request);
     return GoalFolder.fromClientDTO(folderData);
   }
 }
-
-/**
- * 便捷函数
- */
-export const createGoalFolder = (input: CreateGoalFolderInput): Promise<GoalFolder> =>
-  CreateGoalFolder.getInstance().execute(input);

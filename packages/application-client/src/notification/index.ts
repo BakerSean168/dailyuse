@@ -8,4 +8,13 @@
 export { NotificationContainer } from '@dailyuse/infrastructure-client';
 
 // Services
-export * from './services';
+export {
+  CreateNotification,
+  FindNotifications,
+  FindNotificationByUuid,
+  MarkAsRead,
+  MarkAllAsRead,
+  DeleteNotification,
+  BatchDeleteNotifications,
+  GetUnreadCount,
+} from './services';

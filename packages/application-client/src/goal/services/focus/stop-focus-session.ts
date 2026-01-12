@@ -9,13 +9,6 @@ import type { FocusSessionClientDTO } from '@dailyuse/contracts/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Stop Focus Session Input
- */
-export interface StopFocusSessionInput {
-  notes?: string;
-}
-
-/**
  * Stop Focus Session Use Case
  */
 export class StopFocusSession {
@@ -41,14 +34,7 @@ export class StopFocusSession {
     StopFocusSession.instance = undefined as unknown as StopFocusSession;
   }
 
-  async execute(input?: StopFocusSessionInput): Promise<FocusSessionClientDTO | null> {
-    return this.apiClient.stopSession(input?.notes);
+  async execute(notes?: string): Promise<FocusSessionClientDTO | null> {
+    return this.apiClient.stopSession(notes);
   }
-}
-
-/**
- * Convenience function
- */
-export async function stopFocusSession(input?: StopFocusSessionInput): Promise<FocusSessionClientDTO | null> {
-  return StopFocusSession.getInstance().execute(input);
 }

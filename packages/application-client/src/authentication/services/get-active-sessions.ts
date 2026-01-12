@@ -8,8 +8,6 @@ import type { GetActiveSessionsRequest, ActiveSessionsResponseDTO } from '@daily
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface GetActiveSessionsInput extends GetActiveSessionsRequest {}
-
 /**
  * Get Active Sessions Use Case
  */
@@ -48,13 +46,7 @@ export class GetActiveSessions {
   /**
    * 执行用例
    */
-  async execute(input?: GetActiveSessionsInput): Promise<ActiveSessionsResponseDTO> {
+  async execute(input?: GetActiveSessionsRequest): Promise<ActiveSessionsResponseDTO> {
     return this.apiClient.getActiveSessions(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const getActiveSessions = (input?: GetActiveSessionsInput): Promise<ActiveSessionsResponseDTO> =>
-  GetActiveSessions.getInstance().execute(input);

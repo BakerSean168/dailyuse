@@ -51,9 +51,3 @@ export class GetTaskTemplate {
     return TaskTemplate.fromClientDTO(templateDTO);
   }
 }
-
-/**
- * 便捷函数
- */
-export const getTaskTemplate = (uuid: string, includeChildren = false): Promise<TaskTemplate> =>
-  GetTaskTemplate.getInstance().execute(uuid, includeChildren);

@@ -6,7 +6,7 @@
 import { ipcMain } from 'electron';
 import { BaseIPCHandler } from '../../shared/application/base-ipc-handler';
 import { NotificationDesktopApplicationService } from '../application/NotificationDesktopApplicationService';
-import type { CreateNotificationInput } from '@dailyuse/application-server';
+import type { CreateNotificationRequest } from '@dailyuse/contracts/notification';
 
 export class NotificationIPCHandler extends BaseIPCHandler {
   private notificationService: NotificationDesktopApplicationService;
@@ -19,7 +19,7 @@ export class NotificationIPCHandler extends BaseIPCHandler {
 
   private registerHandlers(): void {
     // 创建通知
-    ipcMain.handle('notification:create', async (event, input: CreateNotificationInput) => {
+    ipcMain.handle('notification:create', async (event, input: CreateNotificationRequest) => {
       return this.handleRequest(
         'notification:create',
         () => this.notificationService.create(input),

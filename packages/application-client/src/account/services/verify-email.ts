@@ -4,17 +4,9 @@
  * 验证邮箱用例
  */
 
-import type { AccountDTO, VerifyEmailRequestDTO } from '@dailyuse/contracts/account';
+import type { AccountDTO, VerifyEmailRequest } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
-
-/**
- * Verify Email Input
- */
-export interface VerifyEmailInput {
-  accountId: string;
-  request: VerifyEmailRequestDTO;
-}
 
 /**
  * Verify Email
@@ -54,13 +46,7 @@ export class VerifyEmail {
   /**
    * 执行用例
    */
-  async execute(input: VerifyEmailInput): Promise<AccountDTO> {
-    return this.apiClient.verifyEmail(input.accountId, input.request);
+  async execute(accountId: string, request: VerifyEmailRequest): Promise<AccountDTO> {
+    return this.apiClient.verifyEmail(accountId, request);
   }
 }
-
-/**
- * 便捷函数
- */
-export const verifyEmail = (input: VerifyEmailInput): Promise<AccountDTO> =>
-  VerifyEmail.getInstance().execute(input);

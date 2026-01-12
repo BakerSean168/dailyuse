@@ -11,14 +11,6 @@ import { ReminderContainer } from '@dailyuse/infrastructure-client';
 import { ReminderTemplateEvents, type ReminderTemplateRefreshEvent } from './reminder-events';
 
 /**
- * Move Template To Group Input
- */
-export interface MoveTemplateToGroupInput {
-  templateUuid: string;
-  targetGroupUuid: string | null;
-}
-
-/**
  * Move Template To Group
  */
 export class MoveTemplateToGroup {
@@ -56,12 +48,12 @@ export class MoveTemplateToGroup {
   /**
    * 执行用例
    */
-  async execute(input: MoveTemplateToGroupInput): Promise<ReminderTemplate> {
-    const templateDTO = await this.apiClient.moveTemplateToGroup(input.templateUuid, input.targetGroupUuid);
+  async execute(templateUuid: string, targetGroupUuid: string | null): Promise<ReminderTemplate> {
+    const templateDTO = await this.apiClient.moveTemplateToGroup(templateUuid, targetGroupUuid);
     const template = ReminderTemplate.fromClientDTO(templateDTO);
 
     this.publishEvent(template.uuid, ReminderTemplateEvents.TEMPLATE_MOVED, {
-      targetGroupUuid: input.targetGroupUuid,
+      targetGroupUuid,
     });
 
     return template;
@@ -80,9 +72,3 @@ export class MoveTemplateToGroup {
     eventBus.emit(eventName, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const moveTemplateToGroup = (input: MoveTemplateToGroupInput): Promise<ReminderTemplate> =>
-  MoveTemplateToGroup.getInstance().execute(input);

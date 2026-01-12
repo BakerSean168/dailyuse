@@ -50,9 +50,3 @@ export class GetDependencyChain {
     return this.apiClient.getDependencyChain(taskUuid);
   }
 }
-
-/**
- * 便捷函数
- */
-export const getDependencyChain = (taskUuid: string): Promise<DependencyChainClientDTO> =>
-  GetDependencyChain.getInstance().execute(taskUuid);

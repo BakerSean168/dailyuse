@@ -49,9 +49,3 @@ export class UpdateCompletionStats {
     await this.apiClient.updateCompletionStats(accountUuid);
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateCompletionStats = (accountUuid: string): Promise<void> =>
-  UpdateCompletionStats.getInstance().execute(accountUuid);

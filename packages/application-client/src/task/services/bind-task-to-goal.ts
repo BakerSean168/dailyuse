@@ -11,13 +11,6 @@ import { TaskTemplate } from '@dailyuse/domain-client/task';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 import { TaskEvents } from './task-events';
 
-export interface BindTaskToGoalInput {
-  templateUuid: string;
-  goalUuid: string;
-  keyResultUuid?: string;
-  incrementValue?: number;
-}
-
 /**
  * Bind Task Template To Goal
  */
@@ -56,28 +49,27 @@ export class BindTaskToGoal {
   /**
    * 执行用例
    */
-  async execute(input: BindTaskToGoalInput): Promise<TaskTemplate> {
+  async execute(
+    templateUuid: string,
+    goalUuid: string,
+    keyResultUuid?: string,
+    incrementValue?: number,
+  ): Promise<TaskTemplate> {
     const request: BindToGoalRequest = {
-      goalUuid: input.goalUuid,
-      keyResultUuid: input.keyResultUuid,
-      incrementValue: input.incrementValue,
+      goalUuid,
+      keyResultUuid,
+      incrementValue,
     };
-    const templateDTO = await this.apiClient.bindToGoal(input.templateUuid, request);
+    const templateDTO = await this.apiClient.bindToGoal(templateUuid, request);
     const template = TaskTemplate.fromClientDTO(templateDTO);
 
     eventBus.emit(TaskEvents.BOUND_TO_GOAL, {
-      templateUuid: input.templateUuid,
-      goalUuid: input.goalUuid,
-      keyResultUuid: input.keyResultUuid,
+      templateUuid,
+      goalUuid,
+      keyResultUuid,
       template
     });
 
     return template;
   }
 }
-
-/**
- * 便捷函数
- */
-export const bindTaskToGoal = (input: BindTaskToGoalInput): Promise<TaskTemplate> =>
-  BindTaskToGoal.getInstance().execute(input);

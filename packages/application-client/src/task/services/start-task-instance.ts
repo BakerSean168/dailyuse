@@ -57,9 +57,3 @@ export class StartTaskInstance {
     return instance;
   }
 }
-
-/**
- * 便捷函数
- */
-export const startTaskInstance = (uuid: string): Promise<TaskInstance> =>
-  StartTaskInstance.getInstance().execute(uuid);

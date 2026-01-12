@@ -8,15 +8,13 @@
  */
 
 import {
-  startFocusSession,
-  pauseFocusSession,
-  resumeFocusSession,
-  stopFocusSession,
-  getFocusStatus,
-  getFocusHistory,
-  getTodayFocusHistory,
-  getWeekFocusHistory,
-  getFocusStatistics,
+  StartFocusSession,
+  PauseFocusSession,
+  ResumeFocusSession,
+  StopFocusSession,
+  GetFocusStatus,
+  GetFocusHistory,
+  GetFocusStatistics,
 } from '@dailyuse/application-client';
 import type {
   FocusSessionClientDTO,
@@ -37,63 +35,63 @@ export class FocusApplicationService {
    * 开始专注会话
    */
   async startSession(request: StartFocusRequest): Promise<FocusSessionClientDTO> {
-    return startFocusSession(request);
+    return StartFocusSession.getInstance().execute(request);
   }
 
   /**
    * 暂停当前会话
    */
   async pauseSession(): Promise<FocusSessionClientDTO> {
-    return pauseFocusSession();
+    return PauseFocusSession.getInstance().execute();
   }
 
   /**
    * 恢复暂停的会话
    */
   async resumeSession(): Promise<FocusSessionClientDTO> {
-    return resumeFocusSession();
+    return ResumeFocusSession.getInstance().execute();
   }
 
   /**
    * 停止当前会话
    */
   async stopSession(notes?: string): Promise<FocusSessionClientDTO | null> {
-    return stopFocusSession({ notes });
+    return StopFocusSession.getInstance().execute(notes);
   }
 
   /**
    * 获取当前专注状态
    */
   async getStatus(): Promise<FocusStatusDTO> {
-    return getFocusStatus();
+    return GetFocusStatus.getInstance().execute();
   }
 
   /**
    * 获取专注历史
    */
   async getHistory(request?: GetFocusHistoryRequest): Promise<FocusHistoryDTO> {
-    return getFocusHistory(request);
+    return GetFocusHistory.getInstance().execute(request);
   }
 
   /**
    * 获取今日专注历史
    */
   async getTodayHistory(goalUuid?: string): Promise<FocusHistoryDTO> {
-    return getTodayFocusHistory(goalUuid);
+    return GetFocusHistory.getInstance().getTodayHistory(goalUuid);
   }
 
   /**
    * 获取本周专注历史
    */
   async getWeekHistory(goalUuid?: string): Promise<FocusHistoryDTO> {
-    return getWeekFocusHistory(goalUuid);
+    return GetFocusHistory.getInstance().getWeekHistory(goalUuid);
   }
 
   /**
    * 获取专注统计
    */
   async getStatistics(goalUuid?: string): Promise<FocusStatisticsDTO> {
-    return getFocusStatistics(goalUuid);
+    return GetFocusStatistics.getInstance().execute(goalUuid);
   }
 }
 

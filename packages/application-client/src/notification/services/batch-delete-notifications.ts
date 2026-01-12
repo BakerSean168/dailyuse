@@ -8,14 +8,6 @@ import type { INotificationApiClient } from '@dailyuse/infrastructure-client';
 import { NotificationContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Batch Delete Notifications Output
- */
-export interface BatchDeleteNotificationsOutput {
-  success: boolean;
-  count: number;
-}
-
-/**
  * Batch Delete Notifications
  */
 export class BatchDeleteNotifications {
@@ -53,13 +45,7 @@ export class BatchDeleteNotifications {
   /**
    * 执行用例
    */
-  async execute(uuids: string[]): Promise<BatchDeleteNotificationsOutput> {
+  async execute(uuids: string[]): Promise<{ success: boolean; count: number }> {
     return this.apiClient.batchDeleteNotifications(uuids);
   }
 }
-
-/**
- * 便捷函数
- */
-export const batchDeleteNotifications = (uuids: string[]): Promise<BatchDeleteNotificationsOutput> =>
-  BatchDeleteNotifications.getInstance().execute(uuids);

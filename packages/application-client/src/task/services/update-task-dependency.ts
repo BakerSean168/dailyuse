@@ -13,12 +13,6 @@ import { eventBus } from '@dailyuse/utils';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 import { TaskDependencyEvents } from './task-dependency-events';
 
-export interface UpdateTaskDependencyInput {
-  uuid: string;
-  taskUuid: string;
-  request: UpdateTaskDependencyRequest;
-}
-
 /**
  * Update Task Dependency
  */
@@ -57,12 +51,16 @@ export class UpdateTaskDependency {
   /**
    * 执行用例
    */
-  async execute(input: UpdateTaskDependencyInput): Promise<TaskDependencyClientDTO> {
-    const dependency = await this.apiClient.updateDependency(input.uuid, input.request);
+  async execute(
+    uuid: string,
+    taskUuid: string,
+    request: UpdateTaskDependencyRequest,
+  ): Promise<TaskDependencyClientDTO> {
+    const dependency = await this.apiClient.updateDependency(uuid, request);
 
     eventBus.emit(TaskDependencyEvents.DEPENDENCY_UPDATED, {
-      taskUuid: input.taskUuid,
-      dependencyUuid: input.uuid,
+      taskUuid,
+      dependencyUuid: uuid,
       reason: TaskDependencyEvents.DEPENDENCY_UPDATED,
       timestamp: Date.now(),
     });
@@ -70,10 +68,3 @@ export class UpdateTaskDependency {
     return dependency;
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateTaskDependency = (
-  input: UpdateTaskDependencyInput,
-): Promise<TaskDependencyClientDTO> => UpdateTaskDependency.getInstance().execute(input);

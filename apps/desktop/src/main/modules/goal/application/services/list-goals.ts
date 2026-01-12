@@ -2,22 +2,22 @@
  * List Goals Service
  */
 
-import { listGoals, type ListGoalsInput } from '@dailyuse/application-server';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import { ListGoals } from '@dailyuse/application-server';
+import type { QueryGoalsRequest, GoalClientDTO, GoalStatus } from '@dailyuse/contracts/goal';
 
 export async function listGoalsService(params: {
   accountUuid?: string;
-  status?: string;
+  status?: GoalStatus | GoalStatus[];
   folderUuid?: string;
   includeChildren?: boolean;
 }): Promise<{ goals: GoalClientDTO[]; total: number }> {
-  const input: ListGoalsInput = {
+  const input: QueryGoalsRequest = {
     accountUuid: params.accountUuid || 'default',
-    status: params.status,
+    status: params.status ? (Array.isArray(params.status) ? params.status : [params.status]) : undefined,
     folderUuid: params.folderUuid,
-    includeChildren: params.includeChildren,
+    includeKeyResults: params.includeChildren,
   };
 
-  const result = await listGoals(input);
+  const result = await ListGoals.getInstance().execute(input);
   return { goals: result.goals, total: result.total };
 }

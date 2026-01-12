@@ -51,9 +51,3 @@ export class ArchiveTaskTemplate {
     return TaskTemplate.fromClientDTO(templateDTO);
   }
 }
-
-/**
- * 便捷函数
- */
-export const archiveTaskTemplate = (uuid: string): Promise<TaskTemplate> =>
-  ArchiveTaskTemplate.getInstance().execute(uuid);

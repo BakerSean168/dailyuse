@@ -8,8 +8,6 @@ import type { TrustDeviceRequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface TrustDeviceInput extends TrustDeviceRequest {}
-
 /**
  * Trust Device Use Case
  */
@@ -48,13 +46,7 @@ export class TrustDevice {
   /**
    * 执行用例
    */
-  async execute(input: TrustDeviceInput): Promise<void> {
+  async execute(input: TrustDeviceRequest): Promise<void> {
     return this.apiClient.trustDevice(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const trustDevice = (input: TrustDeviceInput): Promise<void> =>
-  TrustDevice.getInstance().execute(input);

@@ -1,4 +1,4 @@
-import { listConversations } from '@dailyuse/application-server';
+import { ListConversations } from '@dailyuse/application-server';
 import type { AIConversationClientDTO } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 
@@ -11,7 +11,11 @@ export async function searchConversationsService(
 ): Promise<{ conversations: AIConversationClientDTO[]; total: number }> {
   logger.debug('Searching conversations', { accountUuid, query });
   // TODO: Implement search in application-server
-  const result = await listConversations({ accountUuid, ...options });
+  const result = await ListConversations.getInstance().execute(
+    accountUuid,
+    options?.limit ?? 20,
+    options?.offset ?? 0,
+  );
   const filtered = result.conversations.filter(
     (c) => c.title?.toLowerCase().includes(query.toLowerCase()),
   );

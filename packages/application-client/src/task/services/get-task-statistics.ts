@@ -8,11 +8,6 @@ import type { ITaskStatisticsApiClient } from '@dailyuse/infrastructure-client';
 import type { TaskStatisticsServerDTO } from '@dailyuse/contracts/task';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 
-export interface GetTaskStatisticsInput {
-  accountUuid: string;
-  forceRecalculate?: boolean;
-}
-
 /**
  * Get Task Statistics
  */
@@ -51,13 +46,7 @@ export class GetTaskStatistics {
   /**
    * 执行用例
    */
-  async execute(input: GetTaskStatisticsInput): Promise<TaskStatisticsServerDTO> {
-    return this.apiClient.getTaskStatistics(input.accountUuid, input.forceRecalculate ?? false);
+  async execute(accountUuid: string, forceRecalculate = false): Promise<TaskStatisticsServerDTO> {
+    return this.apiClient.getTaskStatistics(accountUuid, forceRecalculate);
   }
 }
-
-/**
- * 便捷函数
- */
-export const getTaskStatistics = (input: GetTaskStatisticsInput): Promise<TaskStatisticsServerDTO> =>
-  GetTaskStatistics.getInstance().execute(input);

@@ -9,14 +9,11 @@ import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Get Account History Input
+ * Get Account History Params
  */
-export interface GetAccountHistoryInput {
-  accountId: string;
-  params?: {
-    page?: number;
-    limit?: number;
-  };
+export interface GetAccountHistoryParams {
+  page?: number;
+  limit?: number;
 }
 
 /**
@@ -57,13 +54,7 @@ export class GetAccountHistory {
   /**
    * 执行用例
    */
-  async execute(input: GetAccountHistoryInput): Promise<AccountHistoryListResponseDTO> {
-    return this.apiClient.getAccountHistory(input.accountId, input.params);
+  async execute(accountId: string, params?: GetAccountHistoryParams): Promise<AccountHistoryListResponseDTO> {
+    return this.apiClient.getAccountHistory(accountId, params);
   }
 }
-
-/**
- * 便捷函数
- */
-export const getAccountHistory = (input: GetAccountHistoryInput): Promise<AccountHistoryListResponseDTO> =>
-  GetAccountHistory.getInstance().execute(input);

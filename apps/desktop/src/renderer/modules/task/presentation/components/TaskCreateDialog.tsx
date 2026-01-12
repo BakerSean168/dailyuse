@@ -8,7 +8,7 @@
  */
 
 import { useState } from 'react';
-import type { CreateTaskTemplateInput } from '@dailyuse/application-client';
+import type { CreateTaskTemplateRequest } from '@dailyuse/contracts/task';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { TaskType, TimeType } from '@dailyuse/contracts/task';
 import { useTaskTemplate } from '../hooks/useTaskTemplate';
@@ -42,8 +42,8 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
       setIsSubmitting(true);
       setError(null);
 
-      // 构建符合 application-client 类型的输入
-      const input: CreateTaskTemplateInput = {
+      // 构建符合 contracts 类型的输入
+      const input: CreateTaskTemplateRequest = {
         accountUuid: 'local-user', // Desktop 本地用户
         title: title.trim(),
         description: description.trim() || undefined,

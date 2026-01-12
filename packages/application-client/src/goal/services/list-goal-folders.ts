@@ -10,15 +10,6 @@ import { GoalFolder } from '@dailyuse/domain-client/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * List Goal Folders Input
- */
-export interface ListGoalFoldersInput {
-  page?: number;
-  limit?: number;
-  parentUuid?: string | null;
-}
-
-/**
  * List Goal Folders
  */
 export class ListGoalFolders {
@@ -56,16 +47,14 @@ export class ListGoalFolders {
   /**
    * 执行用例
    */
-  async execute(input: ListGoalFoldersInput = {}): Promise<GoalFolder[]> {
-    const response = await this.apiClient.getGoalFolders(input);
+  async execute(params?: {
+    page?: number;
+    limit?: number;
+    parentUuid?: string | null;
+  }): Promise<GoalFolder[]> {
+    const response = await this.apiClient.getGoalFolders(params);
     return response.folders.map((folderData: GoalFolderClientDTO) =>
       GoalFolder.fromClientDTO(folderData),
     );
   }
 }
-
-/**
- * 便捷函数
- */
-export const listGoalFolders = (input: ListGoalFoldersInput = {}): Promise<GoalFolder[]> =>
-  ListGoalFolders.getInstance().execute(input);

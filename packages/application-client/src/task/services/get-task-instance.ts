@@ -51,9 +51,3 @@ export class GetTaskInstance {
     return TaskInstance.fromClientDTO(instanceDTO);
   }
 }
-
-/**
- * 便捷函数
- */
-export const getTaskInstance = (uuid: string): Promise<TaskInstance> =>
-  GetTaskInstance.getInstance().execute(uuid);

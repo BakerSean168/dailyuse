@@ -2,25 +2,19 @@
  * List Reminder Templates Service
  */
 
-import {
-  listReminderTemplates,
-  type ListReminderTemplatesInput,
-} from '@dailyuse/application-server';
-import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import { ListReminderTemplates } from '@dailyuse/application-server';
+import type { ReminderTemplateClientDTO, QueryReminderTemplatesRequest } from '@dailyuse/contracts/reminder';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('listTemplatesService');
 
 export async function listTemplatesService(
-  params: ListReminderTemplatesInput,
+  accountUuid: string,
+  params?: QueryReminderTemplatesRequest,
 ): Promise<{
   templates: ReminderTemplateClientDTO[];
   total: number;
 }> {
-  logger.debug('Listing reminder templates', { params });
-  const result = await listReminderTemplates(params);
-  return {
-    templates: result.templates,
-    total: result.total,
-  };
+  logger.debug('Listing reminder templates', { accountUuid, params });
+  return ListReminderTemplates.getInstance().execute(accountUuid, params);
 }

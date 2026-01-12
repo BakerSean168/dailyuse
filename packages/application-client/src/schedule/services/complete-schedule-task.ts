@@ -10,14 +10,6 @@ import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleTaskEvents, type ScheduleTaskRefreshEvent } from './schedule-events';
 
 /**
- * Complete Schedule Task Input
- */
-export interface CompleteScheduleTaskInput {
-  taskUuid: string;
-  reason?: string;
-}
-
-/**
  * Complete Schedule Task
  */
 export class CompleteScheduleTask {
@@ -55,10 +47,10 @@ export class CompleteScheduleTask {
   /**
    * 执行用例
    */
-  async execute(input: CompleteScheduleTaskInput): Promise<void> {
-    await this.apiClient.completeTask(input.taskUuid, input.reason);
+  async execute(taskUuid: string, reason?: string): Promise<void> {
+    await this.apiClient.completeTask(taskUuid, reason);
 
-    this.publishEvent(input.taskUuid, ScheduleTaskEvents.TASK_COMPLETED, { reason: input.reason });
+    this.publishEvent(taskUuid, ScheduleTaskEvents.TASK_COMPLETED, { reason });
   }
 
   /**
@@ -74,9 +66,3 @@ export class CompleteScheduleTask {
     eventBus.emit(eventName, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const completeScheduleTask = (input: CompleteScheduleTaskInput): Promise<void> =>
-  CompleteScheduleTask.getInstance().execute(input);

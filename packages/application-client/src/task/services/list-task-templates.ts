@@ -10,16 +10,6 @@ import { TaskTemplate } from '@dailyuse/domain-client/task';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * List Task Templates Input
- */
-export interface ListTaskTemplatesInput {
-  page?: number;
-  limit?: number;
-  status?: string;
-  goalUuid?: string;
-}
-
-/**
  * List Task Templates
  */
 export class ListTaskTemplates {
@@ -57,14 +47,13 @@ export class ListTaskTemplates {
   /**
    * 执行用例
    */
-  async execute(input: ListTaskTemplatesInput = {}): Promise<TaskTemplate[]> {
-    const response = await this.apiClient.getTaskTemplates(input);
+  async execute(params: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    goalUuid?: string;
+  } = {}): Promise<TaskTemplate[]> {
+    const response = await this.apiClient.getTaskTemplates(params);
     return response.templates.map((dto: TaskTemplateClientDTO) => TaskTemplate.fromClientDTO(dto));
   }
 }
-
-/**
- * 便捷函数
- */
-export const listTaskTemplates = (input: ListTaskTemplatesInput = {}): Promise<TaskTemplate[]> =>
-  ListTaskTemplates.getInstance().execute(input);

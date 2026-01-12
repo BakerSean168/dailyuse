@@ -6,22 +6,36 @@
  */
 
 import {
-  createNotification,
-  findNotifications,
-  findNotificationByUuid,
-  markAsRead,
-  markAllAsRead,
-  deleteNotification,
-  batchDeleteNotifications,
-  getUnreadCount,
-  type CreateNotificationInput,
-  type FindNotificationsInput,
-  type MarkAllAsReadOutput,
-  type DeleteNotificationOutput,
-  type BatchDeleteNotificationsOutput,
-  type GetUnreadCountOutput,
+  CreateNotification,
+  FindNotifications,
+  FindNotificationByUuid,
+  MarkAsRead,
+  MarkAllAsRead,
+  DeleteNotification,
+  BatchDeleteNotifications,
+  GetUnreadCount,
 } from '@dailyuse/application-client';
-import type { NotificationListResponse } from '@dailyuse/infrastructure-client';
+import type {
+  NotificationListResponse,
+  CreateNotificationRequest,
+  QueryNotificationsRequest,
+  UnreadCountResponse,
+} from '@dailyuse/infrastructure-client';
+
+/** Find notifications input type alias */
+type FindNotificationsInput = QueryNotificationsRequest;
+
+/** Mark all as read output type */
+type MarkAllAsReadOutput = { success: boolean; count: number };
+
+/** Delete notification output type */
+type DeleteNotificationOutput = { success: boolean };
+
+/** Batch delete notifications output type */
+type BatchDeleteNotificationsOutput = { success: boolean; count: number };
+
+/** Get unread count output type alias */
+type GetUnreadCountOutput = UnreadCountResponse;
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 
 /**
@@ -33,57 +47,57 @@ export class NotificationApplicationService {
   /**
    * 创建通知
    */
-  async createNotification(input: CreateNotificationInput): Promise<NotificationClientDTO> {
-    return createNotification(input);
+  async createNotification(input: CreateNotificationRequest): Promise<NotificationClientDTO> {
+    return CreateNotification.getInstance().execute(input);
   }
 
   /**
    * 查找通知列表
    */
   async findNotifications(input?: FindNotificationsInput): Promise<NotificationListResponse> {
-    return findNotifications(input);
+    return FindNotifications.getInstance().execute(input);
   }
 
   /**
    * 根据 UUID 查找通知
    */
   async findNotificationByUuid(uuid: string): Promise<NotificationClientDTO | null> {
-    return findNotificationByUuid(uuid);
+    return FindNotificationByUuid.getInstance().execute(uuid);
   }
 
   /**
    * 标记为已读
    */
   async markAsRead(uuid: string): Promise<NotificationClientDTO> {
-    return markAsRead(uuid);
+    return MarkAsRead.getInstance().execute(uuid);
   }
 
   /**
    * 标记全部为已读
    */
   async markAllAsRead(): Promise<MarkAllAsReadOutput> {
-    return markAllAsRead();
+    return MarkAllAsRead.getInstance().execute();
   }
 
   /**
    * 删除通知
    */
   async deleteNotification(uuid: string): Promise<DeleteNotificationOutput> {
-    return deleteNotification(uuid);
+    return DeleteNotification.getInstance().execute(uuid);
   }
 
   /**
    * 批量删除通知
    */
   async batchDeleteNotifications(uuids: string[]): Promise<BatchDeleteNotificationsOutput> {
-    return batchDeleteNotifications(uuids);
+    return BatchDeleteNotifications.getInstance().execute(uuids);
   }
 
   /**
    * 获取未读数量
    */
   async getUnreadCount(): Promise<GetUnreadCountOutput> {
-    return getUnreadCount();
+    return GetUnreadCount.getInstance().execute();
   }
 }
 

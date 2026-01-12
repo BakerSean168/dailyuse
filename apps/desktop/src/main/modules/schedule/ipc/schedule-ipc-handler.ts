@@ -6,7 +6,7 @@
 import { ipcMain } from 'electron';
 import { BaseIPCHandler } from '../../shared/application/base-ipc-handler';
 import { ScheduleDesktopApplicationService } from '../application/ScheduleDesktopApplicationService';
-import type { CreateScheduleTaskInput, ListScheduleTasksInput } from '@dailyuse/application-server';
+import type { CreateScheduleTaskRequest, ScheduleTaskQueryParamsDTO } from '@dailyuse/contracts/schedule';
 
 export class ScheduleIPCHandler extends BaseIPCHandler {
   private scheduleService: ScheduleDesktopApplicationService;
@@ -19,11 +19,11 @@ export class ScheduleIPCHandler extends BaseIPCHandler {
 
   private registerHandlers(): void {
     // 创建计划任务
-    ipcMain.handle('schedule:create-task', async (event, input: CreateScheduleTaskInput) => {
+    ipcMain.handle('schedule:create-task', async (event, payload: { accountUuid: string; input: CreateScheduleTaskRequest }) => {
       return this.handleRequest(
         'schedule:create-task',
-        () => this.scheduleService.createTask(input),
-        { accountUuid: input.accountUuid },
+        () => this.scheduleService.createTask(payload.accountUuid, payload.input),
+        { accountUuid: payload.accountUuid },
       );
     });
 
@@ -36,11 +36,11 @@ export class ScheduleIPCHandler extends BaseIPCHandler {
     });
 
     // 列出计划任务
-    ipcMain.handle('schedule:list-tasks', async (event, params?: ListScheduleTasksInput) => {
+    ipcMain.handle('schedule:list-tasks', async (event, params?: ScheduleTaskQueryParamsDTO) => {
       return this.handleRequest(
         'schedule:list-tasks',
         () => this.scheduleService.listTasks(params),
-        { accountUuid: params?.accountUuid },
+        { accountUuid: (params as any)?.accountUuid },
       );
     });
 

@@ -1,4 +1,4 @@
-import { listScheduleTasks } from '@dailyuse/application-server';
+import { ListScheduleTasks } from '@dailyuse/application-server';
 import type { ScheduleTaskClientDTO, ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import { createLogger } from '@dailyuse/utils';
 
@@ -11,7 +11,7 @@ export async function getUpcomingService(
   tasks: ScheduleTaskClientDTO[];
   total: number;
 }> {
-  const result = await listScheduleTasks({ accountUuid: accountUuid || 'default' });
+  const result = await ListScheduleTasks.getInstance().execute(accountUuid || 'default');
   const now = Date.now();
   const endDate = now + days * 24 * 60 * 60 * 1000;
 

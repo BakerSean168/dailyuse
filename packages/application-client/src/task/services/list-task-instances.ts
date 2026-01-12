@@ -8,15 +8,6 @@ import type { ITaskInstanceApiClient } from '@dailyuse/infrastructure-client';
 import { TaskInstance } from '@dailyuse/domain-client/task';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 
-export interface ListTaskInstancesParams {
-  page?: number;
-  limit?: number;
-  templateUuid?: string;
-  status?: string;
-  startDate?: number;
-  endDate?: number;
-}
-
 /**
  * List Task Instances
  */
@@ -55,14 +46,15 @@ export class ListTaskInstances {
   /**
    * 执行用例
    */
-  async execute(params?: ListTaskInstancesParams): Promise<TaskInstance[]> {
+  async execute(params?: {
+    page?: number;
+    limit?: number;
+    templateUuid?: string;
+    status?: string;
+    startDate?: number;
+    endDate?: number;
+  }): Promise<TaskInstance[]> {
     const instanceDTOs = await this.apiClient.getTaskInstances(params);
     return instanceDTOs.map(dto => TaskInstance.fromClientDTO(dto));
   }
 }
-
-/**
- * 便捷函数
- */
-export const listTaskInstances = (params?: ListTaskInstancesParams): Promise<TaskInstance[]> =>
-  ListTaskInstances.getInstance().execute(params);

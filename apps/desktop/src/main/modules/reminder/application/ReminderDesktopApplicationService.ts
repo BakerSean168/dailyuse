@@ -27,13 +27,11 @@ import {
 } from './services';
 
 import type {
-  CreateReminderTemplateInput,
-  ListReminderTemplatesInput,
-} from '@dailyuse/application-server';
-import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
   ReminderStatisticsClientDTO,
+  CreateReminderTemplateRequest,
+  QueryReminderTemplatesRequest,
 } from '@dailyuse/contracts/reminder';
 import { createLogger } from '@dailyuse/utils';
 
@@ -46,19 +44,19 @@ export class ReminderDesktopApplicationService {
 
   // ===== Reminder Template =====
 
-  async createTemplate(input: CreateReminderTemplateInput): Promise<ReminderTemplateClientDTO> {
-    return createTemplateService(input);
+  async createTemplate(accountUuid: string, input: CreateReminderTemplateRequest): Promise<ReminderTemplateClientDTO> {
+    return createTemplateService(accountUuid, input);
   }
 
   async getTemplate(uuid: string): Promise<ReminderTemplateClientDTO | null> {
     return getTemplateService(uuid);
   }
 
-  async listTemplates(params: ListReminderTemplatesInput): Promise<{
+  async listTemplates(accountUuid: string, params?: QueryReminderTemplatesRequest): Promise<{
     templates: ReminderTemplateClientDTO[];
     total: number;
   }> {
-    return listTemplatesService(params);
+    return listTemplatesService(accountUuid, params);
   }
 
   async updateTemplate(

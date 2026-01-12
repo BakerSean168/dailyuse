@@ -10,24 +10,24 @@
  */
 
 import {
-  // Use Cases
-  login,
-  logout,
-  register,
-  forgotPassword,
-  resetPassword,
-  changePassword,
-  refreshToken,
-  // Types
-  type LoginInput,
-  type RegisterInput,
-  type ResetPasswordInput,
-  type ChangePasswordInput,
+  // Use Case Services
+  Login,
+  Logout,
+  Register,
+  ForgotPassword,
+  ResetPassword,
+  ChangePassword,
+  RefreshToken,
 } from '@dailyuse/application-client';
-import type { LoginResponseDTO, RegisterRequestDTO } from '@dailyuse/contracts/authentication';
-
-// RegisterResponse type
-type RegisterResponse = { success: boolean; message?: string };
+import type {
+  LoginRequest,
+  RegisterRequest,
+  ResetPasswordRequest,
+  ChangePasswordRequest,
+  LoginResponseDTO,
+  RefreshTokenResponseDTO,
+} from '@dailyuse/contracts/authentication';
+import type { RegisterResponse } from '@dailyuse/infrastructure-client';
 
 // ===== Local Storage Keys =====
 
@@ -60,8 +60,8 @@ export class AuthApplicationService {
   /**
    * 登录
    */
-  async login(input: LoginInput): Promise<LoginResponseDTO> {
-    const response = await login(input);
+  async login(input: LoginRequest): Promise<LoginResponseDTO> {
+    const response = await Login.getInstance().execute(input);
     this.saveTokens(response);
     return response;
   }
@@ -69,8 +69,8 @@ export class AuthApplicationService {
   /**
    * 注册
    */
-  async register(input: RegisterInput): Promise<RegisterResponse> {
-    return register(input);
+  async register(input: RegisterRequest): Promise<RegisterResponse> {
+    return Register.getInstance().execute(input);
   }
 
   /**
@@ -78,7 +78,7 @@ export class AuthApplicationService {
    */
   async logout(): Promise<void> {
     try {
-      await logout({});
+      await Logout.getInstance().execute({});
     } catch (e) {
       console.warn('[AuthService] Logout API call failed:', e);
     } finally {
@@ -92,21 +92,21 @@ export class AuthApplicationService {
    * 忘记密码
    */
   async forgotPassword(email: string): Promise<void> {
-    await forgotPassword({ email });
+    await ForgotPassword.getInstance().execute({ email });
   }
 
   /**
    * 重置密码
    */
-  async resetPassword(input: ResetPasswordInput): Promise<void> {
-    await resetPassword(input);
+  async resetPassword(input: ResetPasswordRequest): Promise<void> {
+    await ResetPassword.getInstance().execute(input);
   }
 
   /**
    * 修改密码
    */
-  async changePassword(input: ChangePasswordInput): Promise<void> {
-    await changePassword(input);
+  async changePassword(input: ChangePasswordRequest): Promise<void> {
+    await ChangePassword.getInstance().execute(input);
   }
 
   // ===== Token Management =====
@@ -114,15 +114,15 @@ export class AuthApplicationService {
   /**
    * 刷新 Token
    */
-  async refreshAccessToken(): Promise<LoginResponseDTO | null> {
+  async refreshAccessToken(): Promise<RefreshTokenResponseDTO | null> {
     const storedRefreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
     if (!storedRefreshToken) {
       return null;
     }
 
     try {
-      const response = await refreshToken({ refreshToken: storedRefreshToken });
-      this.saveTokens(response);
+      const response = await RefreshToken.getInstance().execute({ refreshToken: storedRefreshToken });
+      this.saveTokens(response as LoginResponseDTO);
       return response;
     } catch {
       this.clearTokens();

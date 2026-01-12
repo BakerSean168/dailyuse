@@ -6,7 +6,8 @@
 import { ipcMain } from 'electron';
 import { BaseIPCHandler } from '../../shared/application/base-ipc-handler';
 import { GoalDesktopApplicationService } from '../application/GoalDesktopApplicationService';
-import type { CreateGoalInput, UpdateGoalInput } from '@dailyuse/application-server';
+import type { CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@dailyuse/contracts/goal';
 
 export class GoalIPCHandler extends BaseIPCHandler {
   private goalService: GoalDesktopApplicationService;
@@ -21,15 +22,15 @@ export class GoalIPCHandler extends BaseIPCHandler {
     /**
      * @description 创建目标
      * Channel Name: goal:create
-     * Payload: params (CreateGoalInput)
+     * Payload: { accountUuid: string; params: CreateGoalRequest }
      * Return: Goal
      * Security: Requires authentication
      */
-    ipcMain.handle('goal:create', async (event, params: CreateGoalInput) => {
+    ipcMain.handle('goal:create', async (event, payload: { accountUuid: string; params: CreateGoalRequest }) => {
       return this.handleRequest(
         'goal:create',
-        () => this.goalService.createGoal(params),
-        { accountUuid: params.accountUuid },
+        () => this.goalService.createGoal(payload.accountUuid, payload.params),
+        { accountUuid: payload.accountUuid },
       );
     });
 
@@ -54,7 +55,7 @@ export class GoalIPCHandler extends BaseIPCHandler {
      * Return: Goal[]
      * Security: Requires authentication
      */
-    ipcMain.handle('goal:list', async (event, params: { accountUuid?: string; status?: string; folderUuid?: string; includeChildren?: boolean }) => {
+    ipcMain.handle('goal:list', async (event, params: { accountUuid?: string; status?: GoalStatus[]; folderUuid?: string; includeChildren?: boolean }) => {
       return this.handleRequest(
         'goal:list',
         () => this.goalService.listGoals(params),
@@ -65,11 +66,11 @@ export class GoalIPCHandler extends BaseIPCHandler {
     /**
      * @description 更新目标
      * Channel Name: goal:update
-     * Payload: { uuid: string; params: UpdateGoalInput }
+     * Payload: { uuid: string; params: UpdateGoalRequest }
      * Return: Goal
      * Security: Requires authentication
      */
-    ipcMain.handle('goal:update', async (event, payload: { uuid: string; params: UpdateGoalInput }) => {
+    ipcMain.handle('goal:update', async (event, payload: { uuid: string; params: UpdateGoalRequest }) => {
       return this.handleRequest(
         'goal:update',
         () => this.goalService.updateGoal(payload.uuid, payload.params),

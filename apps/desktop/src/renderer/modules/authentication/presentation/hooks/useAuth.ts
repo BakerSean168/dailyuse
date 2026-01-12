@@ -14,7 +14,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApplicationService } from '../../application/services';
-import type { LoginInput, RegisterInput } from '@dailyuse/application-client';
+import type { LoginRequest, RegisterRequest } from '@dailyuse/contracts/authentication';
 
 // ===== Types =====
 
@@ -35,8 +35,8 @@ export interface AuthState {
 
 export interface UseAuthReturn extends AuthState {
   // Actions
-  login: (credentials: LoginInput) => Promise<void>;
-  register: (request: RegisterInput) => Promise<void>;
+  login: (credentials: LoginRequest) => Promise<void>;
+  register: (request: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
@@ -77,7 +77,7 @@ export function useAuth(): UseAuthReturn {
    * 登录
    */
   const login = useCallback(
-    async (credentials: LoginInput) => {
+    async (credentials: LoginRequest) => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
@@ -117,7 +117,7 @@ export function useAuth(): UseAuthReturn {
    * 注册
    */
   const register = useCallback(
-    async (request: RegisterInput) => {
+    async (request: RegisterRequest) => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {

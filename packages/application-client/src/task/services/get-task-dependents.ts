@@ -50,9 +50,3 @@ export class GetTaskDependents {
     return this.apiClient.getDependents(taskUuid);
   }
 }
-
-/**
- * 便捷函数
- */
-export const getTaskDependents = (taskUuid: string): Promise<TaskDependencyClientDTO[]> =>
-  GetTaskDependents.getInstance().execute(taskUuid);

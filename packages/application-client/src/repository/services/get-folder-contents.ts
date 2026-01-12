@@ -9,14 +9,6 @@ import type { FolderClientDTO, ResourceClientDTO } from '@dailyuse/contracts/rep
 import { RepositoryContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Get Folder Contents Output
- */
-export interface GetFolderContentsOutput {
-  folders: FolderClientDTO[];
-  resources: ResourceClientDTO[];
-}
-
-/**
  * Get Folder Contents
  */
 export class GetFolderContents {
@@ -42,10 +34,7 @@ export class GetFolderContents {
     GetFolderContents.instance = undefined as unknown as GetFolderContents;
   }
 
-  async execute(folderUuid: string): Promise<GetFolderContentsOutput> {
+  async execute(folderUuid: string): Promise<{ folders: FolderClientDTO[]; resources: ResourceClientDTO[] }> {
     return this.apiClient.getFolderContents(folderUuid);
   }
 }
-
-export const getFolderContents = (folderUuid: string): Promise<GetFolderContentsOutput> =>
-  GetFolderContents.getInstance().execute(folderUuid);

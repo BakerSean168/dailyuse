@@ -7,9 +7,13 @@
 import { useState, useCallback } from 'react';
 import { aiApplicationService } from '../../application/services';
 import type {
-  GenerateGoalInput,
-  GenerateGoalWithKeyResultsInput,
-} from '@dailyuse/application-client';
+  GenerateGoalRequest,
+  GenerateGoalWithKRsRequest,
+} from '@dailyuse/contracts/ai';
+
+// Local type aliases for consistency with hook interface
+type GenerateGoalInput = GenerateGoalRequest;
+type GenerateGoalWithKeyResultsInput = GenerateGoalWithKRsRequest;
 
 // 使用推断类型
 type GenerateGoalResult = Awaited<ReturnType<typeof aiApplicationService.generateGoal>>;

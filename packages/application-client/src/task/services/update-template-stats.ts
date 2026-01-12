@@ -49,9 +49,3 @@ export class UpdateTemplateStats {
     await this.apiClient.updateTemplateStats(accountUuid);
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateTemplateStats = (accountUuid: string): Promise<void> =>
-  UpdateTemplateStats.getInstance().execute(accountUuid);

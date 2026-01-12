@@ -26,10 +26,10 @@ import {
 } from './services';
 
 import type {
-  CreateScheduleTaskInput,
-  ListScheduleTasksInput,
-} from '@dailyuse/application-server';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+  ScheduleTaskClientDTO,
+  CreateScheduleTaskRequest,
+  ScheduleTaskQueryParamsDTO,
+} from '@dailyuse/contracts/schedule';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ScheduleDesktopAppService');
@@ -41,15 +41,15 @@ export class ScheduleDesktopApplicationService {
 
   // ===== Schedule Task =====
 
-  async createTask(input: CreateScheduleTaskInput): Promise<ScheduleTaskClientDTO> {
-    return createTaskService(input);
+  async createTask(accountUuid: string, input: CreateScheduleTaskRequest): Promise<ScheduleTaskClientDTO> {
+    return createTaskService(accountUuid, input);
   }
 
   async getTask(uuid: string): Promise<ScheduleTaskClientDTO | null> {
     return getTaskService(uuid);
   }
 
-  async listTasks(params?: ListScheduleTasksInput): Promise<{
+  async listTasks(params?: ScheduleTaskQueryParamsDTO): Promise<{
     tasks: ScheduleTaskClientDTO[];
     total: number;
   }> {

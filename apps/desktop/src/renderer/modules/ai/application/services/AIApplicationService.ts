@@ -7,47 +7,44 @@
 
 import {
   // Conversation
-  createConversation,
-  listConversations,
-  getConversation,
-  updateConversation,
-  deleteConversation,
-  closeConversation,
-  archiveConversation,
+  CreateConversation,
+  ListConversations,
+  GetConversation,
+  UpdateConversation,
+  DeleteConversation,
+  CloseConversation,
+  ArchiveConversation,
   // Message
-  sendMessage,
-  listMessages,
-  deleteMessage,
-  streamChat,
+  SendMessage,
+  ListMessages,
+  DeleteMessage,
+  StreamChat,
   // Generation
-  generateGoal,
-  generateGoalWithKeyResults,
-  aiGenerateKeyResults,
+  GenerateGoal,
+  GenerateGoalWithKeyResults,
+  AIGenerateKeyResults,
   // Quota
-  getQuota,
-  checkQuotaAvailability,
+  GetQuota,
+  CheckQuotaAvailability,
   // Provider
-  listProviders,
-  createProvider,
-  testProviderConnection,
-  setDefaultProvider,
-  // Types
-  type CreateConversationInput,
-  type ListConversationsInput,
-  type ListConversationsOutput,
-  type UpdateConversationInput,
-  type SendMessageInput,
-  type ListMessagesInput,
-  type ListMessagesOutput,
-  type StreamChatInput,
-  type GenerateGoalInput,
-  type GenerateGoalWithKeyResultsInput,
-  type CreateProviderInput,
-  type TestProviderConnectionInput,
+  ListProviders,
+  CreateProvider,
+  TestProviderConnection,
+  SetDefaultProvider,
 } from '@dailyuse/application-client';
 
+import type {
+  CreateConversationRequest,
+  UpdateConversationRequest,
+  SendMessageRequest,
+  ChatStreamRequest,
+  GenerateGoalRequest,
+  GenerateGoalWithKRsRequest,
+  CreateAIProviderRequest,
+  TestAIProviderConnectionRequest,
+  UpdateAIProviderRequest,
+} from '@dailyuse/contracts/ai';
 import { AIContainer } from '@dailyuse/infrastructure-client';
-import type { UpdateAIProviderRequest } from '@dailyuse/contracts/ai';
 
 /**
  * AI 应用服务
@@ -61,50 +58,50 @@ export class AIApplicationService {
   /**
    * 创建对话
    */
-  createConversation(input: CreateConversationInput) {
-    return createConversation(input);
+  createConversation(input: CreateConversationRequest) {
+    return CreateConversation.getInstance().execute(input);
   }
 
   /**
    * 获取对话列表
    */
-  listConversations(input?: ListConversationsInput): Promise<ListConversationsOutput> {
-    return listConversations(input);
+  listConversations(input?: { page?: number; pageSize?: number; status?: string }) {
+    return ListConversations.getInstance().execute(input);
   }
 
   /**
    * 获取单个对话
    */
   getConversation(conversationUuid: string) {
-    return getConversation(conversationUuid);
+    return GetConversation.getInstance().execute(conversationUuid);
   }
 
   /**
    * 更新对话
    */
-  updateConversation(input: UpdateConversationInput) {
-    return updateConversation(input);
+  updateConversation(conversationUuid: string, request: UpdateConversationRequest) {
+    return UpdateConversation.getInstance().execute(conversationUuid, request);
   }
 
   /**
    * 删除对话
    */
   deleteConversation(conversationUuid: string) {
-    return deleteConversation(conversationUuid);
+    return DeleteConversation.getInstance().execute(conversationUuid);
   }
 
   /**
    * 关闭对话
    */
   closeConversation(conversationUuid: string) {
-    return closeConversation(conversationUuid);
+    return CloseConversation.getInstance().execute(conversationUuid);
   }
 
   /**
    * 归档对话
    */
   archiveConversation(conversationUuid: string) {
-    return archiveConversation(conversationUuid);
+    return ArchiveConversation.getInstance().execute(conversationUuid);
   }
 
   // ===== Message Operations =====
@@ -112,29 +109,29 @@ export class AIApplicationService {
   /**
    * 发送消息
    */
-  sendMessage(input: SendMessageInput) {
-    return sendMessage(input);
+  sendMessage(input: SendMessageRequest) {
+    return SendMessage.getInstance().execute(input);
   }
 
   /**
    * 获取消息列表
    */
-  listMessages(input: ListMessagesInput): Promise<ListMessagesOutput> {
-    return listMessages(input);
+  listMessages(conversationUuid: string, params?: { page?: number; pageSize?: number }) {
+    return ListMessages.getInstance().execute(conversationUuid, params);
   }
 
   /**
    * 删除消息
    */
   deleteMessage(messageUuid: string) {
-    return deleteMessage(messageUuid);
+    return DeleteMessage.getInstance().execute(messageUuid);
   }
 
   /**
    * 流式聊天
    */
-  streamChat(input: StreamChatInput) {
-    return streamChat(input);
+  streamChat(input: ChatStreamRequest) {
+    return StreamChat.getInstance().execute(input);
   }
 
   // ===== Generation Operations =====
@@ -142,22 +139,22 @@ export class AIApplicationService {
   /**
    * 生成目标
    */
-  generateGoal(input: GenerateGoalInput) {
-    return generateGoal(input);
+  generateGoal(input: GenerateGoalRequest) {
+    return GenerateGoal.getInstance().execute(input);
   }
 
   /**
    * 生成目标和关键结果
    */
-  generateGoalWithKeyResults(input: GenerateGoalWithKeyResultsInput) {
-    return generateGoalWithKeyResults(input);
+  generateGoalWithKeyResults(input: GenerateGoalWithKRsRequest) {
+    return GenerateGoalWithKeyResults.getInstance().execute(input);
   }
 
   /**
    * 生成关键结果
    */
-  generateKeyResults(goalDescription: string) {
-    return aiGenerateKeyResults(goalDescription);
+  generateKeyResults(goalUuid: string) {
+    return AIGenerateKeyResults.getInstance().execute(goalUuid);
   }
 
   // ===== Quota Operations =====
@@ -166,7 +163,7 @@ export class AIApplicationService {
    * 获取配额信息
    */
   getQuota() {
-    return getQuota();
+    return GetQuota.getInstance().execute();
   }
 
   /**
@@ -174,7 +171,7 @@ export class AIApplicationService {
    * @param tokensNeeded 需要的 token 数量
    */
   checkQuotaAvailability(tokensNeeded: number) {
-    return checkQuotaAvailability(tokensNeeded);
+    return CheckQuotaAvailability.getInstance().execute(tokensNeeded);
   }
 
   // ===== Provider Operations =====
@@ -183,28 +180,28 @@ export class AIApplicationService {
    * 获取 AI 提供商列表
    */
   listProviders() {
-    return listProviders();
+    return ListProviders.getInstance().execute();
   }
 
   /**
    * 创建 AI 提供商
    */
-  createProvider(input: CreateProviderInput) {
-    return createProvider(input);
+  createProvider(input: CreateAIProviderRequest) {
+    return CreateProvider.getInstance().execute(input);
   }
 
   /**
    * 测试提供商连接
    */
-  testProviderConnection(input: TestProviderConnectionInput) {
-    return testProviderConnection(input);
+  testProviderConnection(input: TestAIProviderConnectionRequest) {
+    return TestProviderConnection.getInstance().execute(input);
   }
 
   /**
    * 设置默认提供商
    */
   setDefaultProvider(providerUuid: string) {
-    return setDefaultProvider(providerUuid);
+    return SetDefaultProvider.getInstance().execute(providerUuid);
   }
 
   // ===== Provider Extended Operations (via infrastructure-client) =====

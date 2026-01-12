@@ -9,14 +9,6 @@ import type { ScheduleTaskClientDTO, SourceModule } from '@dailyuse/contracts/sc
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Get Task By Source Input
- */
-export interface GetTaskBySourceInput {
-  sourceModule: SourceModule;
-  sourceEntityId: string;
-}
-
-/**
  * Get Task By Source
  */
 export class GetTaskBySource {
@@ -54,13 +46,7 @@ export class GetTaskBySource {
   /**
    * 执行用例
    */
-  async execute(input: GetTaskBySourceInput): Promise<ScheduleTaskClientDTO[]> {
-    return this.apiClient.getTaskBySource(input.sourceModule, input.sourceEntityId);
+  async execute(sourceModule: SourceModule, sourceEntityId: string): Promise<ScheduleTaskClientDTO[]> {
+    return this.apiClient.getTaskBySource(sourceModule, sourceEntityId);
   }
 }
-
-/**
- * 便捷函数
- */
-export const getTaskBySource = (input: GetTaskBySourceInput): Promise<ScheduleTaskClientDTO[]> =>
-  GetTaskBySource.getInstance().execute(input);

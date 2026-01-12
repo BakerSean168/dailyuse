@@ -8,8 +8,6 @@ import type { Enable2FARequest, Enable2FAResponseDTO } from '@dailyuse/contracts
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface Enable2FAInput extends Enable2FARequest {}
-
 /**
  * Enable 2FA Use Case
  */
@@ -48,13 +46,7 @@ export class Enable2FA {
   /**
    * 执行用例
    */
-  async execute(input: Enable2FAInput): Promise<Enable2FAResponseDTO> {
+  async execute(input: Enable2FARequest): Promise<Enable2FAResponseDTO> {
     return this.apiClient.enable2FA(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const enable2FA = (input: Enable2FAInput): Promise<Enable2FAResponseDTO> =>
-  Enable2FA.getInstance().execute(input);

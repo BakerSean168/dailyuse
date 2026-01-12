@@ -9,13 +9,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  getMyProfile,
-  updateMyProfile,
-  updateAccountPreferences,
-  changeMyPassword,
-  type UpdateMyProfileInput,
+  GetMyProfile,
+  UpdateMyProfile,
+  UpdateAccountPreferences,
+  ChangeMyPassword,
 } from '@dailyuse/application-client';
-import type { AccountDTO, UpdateAccountPreferencesRequestDTO } from '@dailyuse/contracts/account';
+import type { AccountDTO, UpdateAccountPreferencesRequestDTO, UpdateAccountProfileRequestDTO } from '@dailyuse/contracts/account';
 
 interface AccountState {
   account: AccountDTO | null;
@@ -26,7 +25,7 @@ interface AccountState {
 interface UseAccountReturn extends AccountState {
   // Profile
   loadProfile: () => Promise<void>;
-  updateProfile: (request: UpdateMyProfileInput) => Promise<void>;
+  updateProfile: (request: UpdateAccountProfileRequestDTO) => Promise<void>;
   
   // Preferences
   updatePreferences: (request: UpdateAccountPreferencesRequestDTO) => Promise<void>;
@@ -51,8 +50,8 @@ export function useAccount(): UseAccountReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      // 使用 application-client Use Case
-      const account = await getMyProfile();
+      // 使用 application-client Service Class
+      const account = await GetMyProfile.getInstance().execute();
       setState((prev) => ({ ...prev, account, loading: false }));
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '加载账户失败';
@@ -66,12 +65,12 @@ export function useAccount(): UseAccountReturn {
 
   // Update profile
   const updateProfileFn = useCallback(
-    async (request: UpdateMyProfileInput) => {
+    async (request: UpdateAccountProfileRequestDTO) => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        // 使用 application-client Use Case
-        const account = await updateMyProfile(request);
+        // 使用 application-client Service Class
+        const account = await UpdateMyProfile.getInstance().execute(request);
         setState((prev) => ({ ...prev, account, loading: false }));
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : '更新资料失败';
@@ -100,11 +99,11 @@ export function useAccount(): UseAccountReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        // 使用 application-client Use Case
-        const account = await updateAccountPreferences({
-          accountId: state.account.uuid,
+        // 使用 application-client Service Class
+        const account = await UpdateAccountPreferences.getInstance().execute(
+          state.account.uuid,
           request,
-        });
+        );
         setState((prev) => ({ ...prev, account, loading: false }));
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : '更新偏好设置失败';
@@ -125,8 +124,8 @@ export function useAccount(): UseAccountReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        // 使用 application-client Use Case
-        await changeMyPassword({ currentPassword, newPassword });
+        // 使用 application-client Service Class
+        await ChangeMyPassword.getInstance().execute({ currentPassword, newPassword });
         setState((prev) => ({ ...prev, loading: false }));
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : '修改密码失败';

@@ -11,8 +11,6 @@ import type { RegisterRequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient, RegisterResponse } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface RegisterInput extends RegisterRequest {}
-
 /**
  * Register Use Case
  */
@@ -51,13 +49,7 @@ export class Register {
   /**
    * 执行用例
    */
-  async execute(input: RegisterInput): Promise<RegisterResponse> {
+  async execute(input: RegisterRequest): Promise<RegisterResponse> {
     return this.apiClient.register(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const register = (input: RegisterInput): Promise<RegisterResponse> =>
-  Register.getInstance().execute(input);

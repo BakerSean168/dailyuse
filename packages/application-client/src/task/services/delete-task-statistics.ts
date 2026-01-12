@@ -49,9 +49,3 @@ export class DeleteTaskStatistics {
     await this.apiClient.deleteTaskStatistics(accountUuid);
   }
 }
-
-/**
- * 便捷函数
- */
-export const deleteTaskStatistics = (accountUuid: string): Promise<void> =>
-  DeleteTaskStatistics.getInstance().execute(accountUuid);

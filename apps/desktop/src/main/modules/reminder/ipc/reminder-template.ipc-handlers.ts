@@ -8,7 +8,7 @@
 import { ipcMain } from 'electron';
 import { BaseIPCHandler } from '../../shared/application/base-ipc-handler';
 import { ReminderDesktopApplicationService } from '../application/ReminderDesktopApplicationService';
-import type { CreateReminderTemplateInput, ListReminderTemplatesInput } from '@dailyuse/application-server';
+import type { CreateReminderTemplateRequest, QueryReminderTemplatesRequest } from '@dailyuse/contracts/reminder';
 
 export class ReminderTemplateIPCHandler extends BaseIPCHandler {
   private reminderService: ReminderDesktopApplicationService;
@@ -23,9 +23,9 @@ export class ReminderTemplateIPCHandler extends BaseIPCHandler {
     // 创建提醒模板
     ipcMain.handle(
       'reminder:template:create',
-      async (_, input: CreateReminderTemplateInput) => {
+      async (_, accountUuid: string, input: CreateReminderTemplateRequest) => {
         return this.handleRequest('reminder:template:create', () =>
-          this.reminderService.createTemplate(input),
+          this.reminderService.createTemplate(accountUuid, input),
         );
       },
     );
@@ -40,9 +40,9 @@ export class ReminderTemplateIPCHandler extends BaseIPCHandler {
     // 列出提醒模板
     ipcMain.handle(
       'reminder:template:list',
-      async (_, params: ListReminderTemplatesInput) => {
+      async (_, accountUuid: string, params?: QueryReminderTemplatesRequest) => {
         return this.handleRequest('reminder:template:list', () =>
-          this.reminderService.listTemplates(params),
+          this.reminderService.listTemplates(accountUuid, params),
         );
       },
     );

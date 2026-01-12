@@ -8,8 +8,6 @@ import type { ChangePasswordRequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface ChangePasswordInput extends ChangePasswordRequest {}
-
 /**
  * Change Password Use Case
  */
@@ -48,13 +46,7 @@ export class ChangePassword {
   /**
    * 执行用例
    */
-  async execute(input: ChangePasswordInput): Promise<void> {
+  async execute(input: ChangePasswordRequest): Promise<void> {
     return this.apiClient.changePassword(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const changePassword = (input: ChangePasswordInput): Promise<void> =>
-  ChangePassword.getInstance().execute(input);

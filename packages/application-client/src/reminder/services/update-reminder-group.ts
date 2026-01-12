@@ -12,14 +12,6 @@ import { ReminderContainer } from '@dailyuse/infrastructure-client';
 import { ReminderGroupEvents, type ReminderGroupRefreshEvent } from './reminder-events';
 
 /**
- * Update Reminder Group Input
- */
-export interface UpdateReminderGroupInput {
-  uuid: string;
-  request: UpdateReminderGroupRequest;
-}
-
-/**
  * Update Reminder Group
  */
 export class UpdateReminderGroup {
@@ -57,8 +49,8 @@ export class UpdateReminderGroup {
   /**
    * 执行用例
    */
-  async execute(input: UpdateReminderGroupInput): Promise<ReminderGroup> {
-    const groupDTO = await this.apiClient.updateReminderGroup(input.uuid, input.request);
+  async execute(uuid: string, request: UpdateReminderGroupRequest): Promise<ReminderGroup> {
+    const groupDTO = await this.apiClient.updateReminderGroup(uuid, request);
     const group = ReminderGroup.fromClientDTO(groupDTO);
 
     this.publishEvent(group.uuid, ReminderGroupEvents.GROUP_UPDATED);
@@ -79,9 +71,3 @@ export class UpdateReminderGroup {
     eventBus.emit(eventName, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateReminderGroup = (input: UpdateReminderGroupInput): Promise<ReminderGroup> =>
-  UpdateReminderGroup.getInstance().execute(input);

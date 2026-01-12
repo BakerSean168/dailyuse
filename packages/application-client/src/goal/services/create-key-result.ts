@@ -11,14 +11,6 @@ import { GoalEvents, type GoalAggregateRefreshEvent, type GoalAggregateRefreshRe
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Create Key Result Input
- */
-export interface CreateKeyResultInput {
-  goalUuid: string;
-  request: Omit<AddKeyResultRequest, 'goalUuid'>;
-}
-
-/**
  * Create Key Result
  */
 export class CreateKeyResult {
@@ -56,8 +48,10 @@ export class CreateKeyResult {
   /**
    * 执行用例
    */
-  async execute(input: CreateKeyResultInput): Promise<KeyResultClientDTO> {
-    const { goalUuid, request } = input;
+  async execute(
+    goalUuid: string,
+    request: Omit<AddKeyResultRequest, 'goalUuid'>,
+  ): Promise<KeyResultClientDTO> {
     const data = await this.apiClient.addKeyResultForGoal(goalUuid, request);
 
     this.publishGoalRefreshEvent(goalUuid, 'key-result-created', {
@@ -84,12 +78,3 @@ export class CreateKeyResult {
     eventBus.emit(GoalEvents.AGGREGATE_REFRESH, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const createKeyResult = (
-  goalUuid: string,
-  request: Omit<AddKeyResultRequest, 'goalUuid'>,
-): Promise<KeyResultClientDTO> =>
-  CreateKeyResult.getInstance().execute({ goalUuid, request });

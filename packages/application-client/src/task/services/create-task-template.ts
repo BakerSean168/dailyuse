@@ -12,11 +12,6 @@ import { TaskContainer } from '@dailyuse/infrastructure-client';
 import { TaskEvents, type TaskTemplateRefreshEvent } from './task-events';
 
 /**
- * Create Task Template Input
- */
-export type CreateTaskTemplateInput = CreateTaskTemplateRequest;
-
-/**
  * Create Task Template
  */
 export class CreateTaskTemplate {
@@ -54,8 +49,8 @@ export class CreateTaskTemplate {
   /**
    * 执行用例
    */
-  async execute(input: CreateTaskTemplateInput): Promise<TaskTemplate> {
-    const templateDTO = await this.apiClient.createTaskTemplate(input);
+  async execute(request: CreateTaskTemplateRequest): Promise<TaskTemplate> {
+    const templateDTO = await this.apiClient.createTaskTemplate(request);
     const template = TaskTemplate.fromClientDTO(templateDTO);
 
     this.publishEvent(template.uuid, TaskEvents.TEMPLATE_CREATED);
@@ -76,9 +71,3 @@ export class CreateTaskTemplate {
     eventBus.emit(eventName, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const createTaskTemplate = (input: CreateTaskTemplateInput): Promise<TaskTemplate> =>
-  CreateTaskTemplate.getInstance().execute(input);

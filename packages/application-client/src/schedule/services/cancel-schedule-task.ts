@@ -10,14 +10,6 @@ import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleTaskEvents, type ScheduleTaskRefreshEvent } from './schedule-events';
 
 /**
- * Cancel Schedule Task Input
- */
-export interface CancelScheduleTaskInput {
-  taskUuid: string;
-  reason?: string;
-}
-
-/**
  * Cancel Schedule Task
  */
 export class CancelScheduleTask {
@@ -55,10 +47,10 @@ export class CancelScheduleTask {
   /**
    * 执行用例
    */
-  async execute(input: CancelScheduleTaskInput): Promise<void> {
-    await this.apiClient.cancelTask(input.taskUuid, input.reason);
+  async execute(taskUuid: string, reason?: string): Promise<void> {
+    await this.apiClient.cancelTask(taskUuid, reason);
 
-    this.publishEvent(input.taskUuid, ScheduleTaskEvents.TASK_CANCELLED, { reason: input.reason });
+    this.publishEvent(taskUuid, ScheduleTaskEvents.TASK_CANCELLED, { reason });
   }
 
   /**
@@ -74,9 +66,3 @@ export class CancelScheduleTask {
     eventBus.emit(eventName, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const cancelScheduleTask = (input: CancelScheduleTaskInput): Promise<void> =>
-  CancelScheduleTask.getInstance().execute(input);

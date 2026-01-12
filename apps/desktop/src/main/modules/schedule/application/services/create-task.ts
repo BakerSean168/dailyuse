@@ -1,16 +1,14 @@
-import {
-  createScheduleTask,
-  type CreateScheduleTaskInput,
-} from '@dailyuse/application-server';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import { CreateScheduleTask } from '@dailyuse/application-server';
+import type { ScheduleTaskClientDTO, CreateScheduleTaskRequest } from '@dailyuse/contracts/schedule';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('createTaskService');
 
 export async function createTaskService(
-  input: CreateScheduleTaskInput,
+  accountUuid: string,
+  input: CreateScheduleTaskRequest,
 ): Promise<ScheduleTaskClientDTO> {
-  logger.debug('Creating schedule task', { name: input.name });
-  const result = await createScheduleTask(input);
-  return result.task;
+  logger.debug('Creating schedule task', { name: input.name, accountUuid });
+  const result = await CreateScheduleTask.getInstance().execute(accountUuid, input);
+  return result;
 }

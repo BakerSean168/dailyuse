@@ -1,15 +1,12 @@
-import {
-  createNotification,
-  type CreateNotificationInput,
-} from '@dailyuse/application-server';
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import { NotificationService } from '@dailyuse/application-server';
+import type { CreateNotificationRequest, NotificationClientDTO } from '@dailyuse/contracts/notification';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('createNotificationService');
 
 export async function createNotificationService(
-  input: CreateNotificationInput,
+  input: CreateNotificationRequest,
 ): Promise<NotificationClientDTO> {
   logger.debug('Creating notification', { title: input.title });
-  return createNotification(input);
+  return NotificationService.getInstance().createNotification(input);
 }

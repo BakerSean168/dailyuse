@@ -4,17 +4,9 @@
  * 更新手机号用例
  */
 
-import type { AccountDTO, UpdatePhoneRequestDTO } from '@dailyuse/contracts/account';
+import type { AccountDTO, UpdatePhoneRequest } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
-
-/**
- * Update Phone Input
- */
-export interface UpdatePhoneInput {
-  accountId: string;
-  request: UpdatePhoneRequestDTO;
-}
 
 /**
  * Update Phone
@@ -54,13 +46,7 @@ export class UpdatePhone {
   /**
    * 执行用例
    */
-  async execute(input: UpdatePhoneInput): Promise<AccountDTO> {
-    return this.apiClient.updatePhone(input.accountId, input.request);
+  async execute(accountId: string, request: UpdatePhoneRequest): Promise<AccountDTO> {
+    return this.apiClient.updatePhone(accountId, request);
   }
 }
-
-/**
- * 便捷函数
- */
-export const updatePhone = (input: UpdatePhoneInput): Promise<AccountDTO> =>
-  UpdatePhone.getInstance().execute(input);

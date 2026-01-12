@@ -111,7 +111,7 @@ export function useAI(): UseAIReturn {
 
     try {
       const conversation = await aiApplicationService.getConversation(uuid);
-      const messagesResponse = await aiApplicationService.listMessages({ conversationUuid: uuid, pageSize: 100 });
+      const messagesResponse = await aiApplicationService.listMessages(uuid, { pageSize: 100 });
 
       // Convert to ChatMessage format
       const chatMessages: ChatMessage[] = (messagesResponse.messages || []).map(

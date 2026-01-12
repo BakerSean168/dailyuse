@@ -1,5 +1,4 @@
-import { getAccountProfile } from '@dailyuse/application-server';
-import type { GetAccountProfileOutput } from '@dailyuse/application-server';
+import { GetAccountProfile } from '@dailyuse/application-server';
 import type { AccountClientDTO } from '@dailyuse/contracts/account';
 import { createLogger } from '@dailyuse/utils';
 
@@ -7,6 +6,5 @@ const logger = createLogger('getProfileService');
 
 export async function getProfileService(accountUuid: string): Promise<AccountClientDTO | null> {
   logger.debug('Getting account profile', { accountUuid });
-  const result = await getAccountProfile({ accountUuid });
-  return result.account;
+  return GetAccountProfile.getInstance().execute(accountUuid);
 }

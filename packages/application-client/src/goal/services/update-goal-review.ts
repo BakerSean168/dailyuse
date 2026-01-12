@@ -5,19 +5,10 @@
  */
 
 import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
-import type { GoalReviewClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalReviewClientDTO, UpdateGoalReviewRequest } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
 import { GoalEvents, type GoalAggregateRefreshEvent, type GoalAggregateRefreshReason } from '@dailyuse/contracts/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
-
-/**
- * Update Goal Review Input
- */
-export interface UpdateGoalReviewInput {
-  goalUuid: string;
-  reviewUuid: string;
-  request: Partial<GoalReviewClientDTO>;
-}
 
 /**
  * Update Goal Review
@@ -57,8 +48,11 @@ export class UpdateGoalReview {
   /**
    * 执行用例
    */
-  async execute(input: UpdateGoalReviewInput): Promise<GoalReviewClientDTO> {
-    const { goalUuid, reviewUuid, request } = input;
+  async execute(
+    goalUuid: string,
+    reviewUuid: string,
+    request: UpdateGoalReviewRequest,
+  ): Promise<GoalReviewClientDTO> {
     const data = await this.apiClient.updateGoalReview(goalUuid, reviewUuid, request);
 
     this.publishGoalRefreshEvent(goalUuid, 'goal-review-updated', {
@@ -85,13 +79,3 @@ export class UpdateGoalReview {
     eventBus.emit(GoalEvents.AGGREGATE_REFRESH, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateGoalReview = (
-  goalUuid: string,
-  reviewUuid: string,
-  request: Partial<GoalReviewClientDTO>,
-): Promise<GoalReviewClientDTO> =>
-  UpdateGoalReview.getInstance().execute({ goalUuid, reviewUuid, request });

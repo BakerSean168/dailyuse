@@ -22,10 +22,7 @@ import {
   getStatisticsSummaryService,
 } from './services';
 
-import type {
-  CreateNotificationInput,
-  ChannelPreferences,
-} from '@dailyuse/application-server';
+import type { CreateNotificationRequest } from '@dailyuse/contracts/notification';
 import type {
   NotificationClientDTO,
   NotificationPreferenceClientDTO,
@@ -42,7 +39,7 @@ export class NotificationDesktopApplicationService {
     // Container should be initialized by infrastructure module
   }
 
-  async create(input: CreateNotificationInput): Promise<NotificationClientDTO> {
+  async create(input: CreateNotificationRequest): Promise<NotificationClientDTO> {
     return createNotificationService(input);
   }
 
@@ -93,7 +90,7 @@ export class NotificationDesktopApplicationService {
   async updatePreference(
     accountUuid: string,
     updates: Partial<{
-      channelPreferences: ChannelPreferences;
+      channelPreferences: { inApp?: boolean; push?: boolean; email?: boolean; sms?: boolean };
       categoryPreferences: Record<NotificationCategory, Partial<CategoryPreferenceServerDTO>>;
       doNotDisturbConfig: Partial<DoNotDisturbConfigServerDTO>;
     }>,

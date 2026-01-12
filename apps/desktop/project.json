@@ -6,20 +6,20 @@
   "tags": ["scope:desktop", "type:app", "platform:electron"],
   "targets": {
     "build": {
-      "executor": "@nx/vite:build",
-      "outputs": ["{workspaceRoot}/apps/desktop/dist"],
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/apps/desktop/dist", "{workspaceRoot}/apps/desktop/dist-electron"],
       "defaultConfiguration": "production",
       "dependsOn": ["^build"],
       "options": {
-        "outputPath": "apps/desktop/dist",
-        "configFile": "apps/desktop/vite.config.ts"
+        "command": "vite build",
+        "cwd": "apps/desktop"
       },
       "configurations": {
         "development": {
-          "mode": "development"
+          "command": "vite build --mode development"
         },
         "production": {
-          "mode": "production"
+          "command": "vite build --mode production"
         }
       }
     },

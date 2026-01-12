@@ -10,30 +10,6 @@ import { Goal } from '@dailyuse/domain-client/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * List Goals Input
- */
-export interface ListGoalsInput {
-  page?: number;
-  limit?: number;
-  status?: string;
-  dirUuid?: string;
-  startDate?: string;
-  endDate?: string;
-}
-
-/**
- * List Goals Output
- */
-export interface ListGoalsOutput {
-  goals: Goal[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-  };
-}
-
-/**
  * List Goals
  */
 export class ListGoals {
@@ -71,9 +47,19 @@ export class ListGoals {
   /**
    * 执行用例
    */
-  async execute(input: ListGoalsInput = {}): Promise<ListGoalsOutput> {
+  async execute(params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    dirUuid?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<{
+    goals: Goal[];
+    pagination: { page: number; limit: number; total: number };
+  }> {
     const goalsData = await this.apiClient.getGoals({
-      ...input,
+      ...params,
       includeChildren: true,
     });
 
@@ -91,9 +77,3 @@ export class ListGoals {
     };
   }
 }
-
-/**
- * 便捷函数
- */
-export const listGoals = (input: ListGoalsInput = {}): Promise<ListGoalsOutput> =>
-  ListGoals.getInstance().execute(input);

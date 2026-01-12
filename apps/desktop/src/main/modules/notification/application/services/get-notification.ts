@@ -1,4 +1,4 @@
-import { getNotification } from '@dailyuse/application-server';
+import { NotificationService } from '@dailyuse/application-server';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import { createLogger } from '@dailyuse/utils';
 
@@ -8,5 +8,5 @@ export async function getNotificationService(
   uuid: string,
   includeChildren = false,
 ): Promise<NotificationClientDTO | null> {
-  return getNotification(uuid, { includeChildren });
+  return NotificationService.getInstance().getNotification(uuid, { includeChildren });
 }

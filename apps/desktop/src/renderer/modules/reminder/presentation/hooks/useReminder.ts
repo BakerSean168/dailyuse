@@ -6,14 +6,21 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { reminderApplicationService } from '../../application/services';
-import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
 import type {
-  CreateReminderTemplateInput,
-  UpdateReminderTemplateInput,
-  SearchTemplatesInput,
-  CreateReminderGroupInput,
-  UpdateReminderGroupInput,
-} from '@dailyuse/application-client';
+  ReminderTemplateClientDTO,
+  ReminderGroupClientDTO,
+  CreateReminderTemplateRequest,
+  UpdateReminderTemplateRequest,
+  CreateReminderGroupRequest,
+  UpdateReminderGroupRequest,
+} from '@dailyuse/contracts/reminder';
+
+// Type aliases for backward compatibility
+type CreateReminderTemplateInput = CreateReminderTemplateRequest;
+type UpdateReminderTemplateInput = { uuid: string; request: UpdateReminderTemplateRequest };
+type SearchTemplatesInput = { accountUuid: string; query: string };
+type CreateReminderGroupInput = CreateReminderGroupRequest;
+type UpdateReminderGroupInput = { uuid: string; request: UpdateReminderGroupRequest };
 
 // ===== Types =====
 
@@ -87,7 +94,7 @@ export function useReminder(): UseReminderReturn {
   }, []);
 
   const searchTemplatesFn = useCallback(async (input: SearchTemplatesInput) => {
-    return reminderApplicationService.searchTemplates(input);
+    return reminderApplicationService.searchTemplates(input.accountUuid, input.query);
   }, []);
 
   // ===== Template Mutations =====
@@ -114,7 +121,7 @@ export function useReminder(): UseReminderReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const template = await reminderApplicationService.updateReminderTemplate(input);
+      const template = await reminderApplicationService.updateReminderTemplate(input.uuid, input.request);
       setState((prev) => ({
         ...prev,
         templates: prev.templates.map((t) => (t.uuid === input.uuid ? template : t)),
@@ -205,7 +212,7 @@ export function useReminder(): UseReminderReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const group = await reminderApplicationService.updateReminderGroup(input);
+      const group = await reminderApplicationService.updateReminderGroup(input.uuid, input.request);
       setState((prev) => ({
         ...prev,
         groups: prev.groups.map((g) => (g.uuid === input.uuid ? group : g)),

@@ -13,28 +13,22 @@
  * - Desktop 离线模式不支持大部分认证功能
  */
 
-import {
-  // Authentication Use Cases (for future online mode)
-  // login,
-  // logout,
-  // refreshToken,
-  // changePassword,
-  // enable2FA,
-  // verify2FA,
-  // disable2FA,
-  // getActiveSessions,
-  // revokeSession,
-  // revokeAllSessions,
-  // createApiKey,
-  // listApiKeys,
-  // revokeApiKey,
-  type LoginInput,
-  type LoginOutput,
-  type Enable2FAOutput,
-  type GetActiveSessionsOutput,
-  type CreateApiKeyOutput,
-  type ListApiKeysOutput,
-} from '@dailyuse/application-server';
+// Note: Authentication Use Cases are commented out for future online mode
+// import {
+//   Login,
+//   Logout,
+//   RefreshToken,
+//   ChangePassword,
+//   Enable2FA,
+//   Verify2FA,
+//   Disable2FA,
+//   GetActiveSessions,
+//   RevokeSession,
+//   RevokeAllSessions,
+//   CreateApiKey,
+//   ListApiKeys,
+//   RevokeApiKey,
+// } from '@dailyuse/application-server';
 
 import { createLogger, type ILogger } from '@dailyuse/utils';
 

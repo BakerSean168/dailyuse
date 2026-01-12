@@ -8,8 +8,6 @@ import type { LogoutRequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
-export interface LogoutInput extends LogoutRequest {}
-
 /**
  * Logout Use Case
  */
@@ -48,13 +46,7 @@ export class Logout {
   /**
    * 执行用例
    */
-  async execute(input?: LogoutInput): Promise<void> {
+  async execute(input?: LogoutRequest): Promise<void> {
     return this.apiClient.logout(input);
   }
 }
-
-/**
- * 便捷函数
- */
-export const logout = (input?: LogoutInput): Promise<void> =>
-  Logout.getInstance().execute(input);

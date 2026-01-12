@@ -2,19 +2,16 @@
  * Create Reminder Template Service
  */
 
-import {
-  createReminderTemplate,
-  type CreateReminderTemplateInput,
-} from '@dailyuse/application-server';
-import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import { CreateReminderTemplate } from '@dailyuse/application-server';
+import type { ReminderTemplateClientDTO, CreateReminderTemplateRequest } from '@dailyuse/contracts/reminder';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('createTemplateService');
 
 export async function createTemplateService(
-  input: CreateReminderTemplateInput,
+  accountUuid: string,
+  input: CreateReminderTemplateRequest,
 ): Promise<ReminderTemplateClientDTO> {
   logger.debug('Creating reminder template', { title: input.title });
-  const result = await createReminderTemplate(input);
-  return result.template;
+  return CreateReminderTemplate.getInstance().execute(accountUuid, input);
 }

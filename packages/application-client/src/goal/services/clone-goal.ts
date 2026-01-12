@@ -9,17 +9,6 @@ import { Goal } from '@dailyuse/domain-client/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Clone Goal Input
- */
-export interface CloneGoalInput {
-  goalUuid: string;
-  name?: string;
-  description?: string;
-  includeKeyResults?: boolean;
-  includeRecords?: boolean;
-}
-
-/**
  * Clone Goal
  */
 export class CloneGoal {
@@ -57,15 +46,16 @@ export class CloneGoal {
   /**
    * 执行用例
    */
-  async execute(input: CloneGoalInput): Promise<Goal> {
-    const { goalUuid, ...request } = input;
-    const data = await this.apiClient.cloneGoal(goalUuid, request);
+  async execute(
+    goalUuid: string,
+    options: {
+      name?: string;
+      description?: string;
+      includeKeyResults?: boolean;
+      includeRecords?: boolean;
+    } = {},
+  ): Promise<Goal> {
+    const data = await this.apiClient.cloneGoal(goalUuid, options);
     return Goal.fromClientDTO(data);
   }
 }
-
-/**
- * 便捷函数
- */
-export const cloneGoal = (input: CloneGoalInput): Promise<Goal> =>
-  CloneGoal.getInstance().execute(input);

@@ -38,10 +38,3 @@ export class ResumeFocusSession {
     return this.apiClient.resumeSession();
   }
 }
-
-/**
- * Convenience function
- */
-export async function resumeFocusSession(): Promise<FocusSessionClientDTO> {
-  return ResumeFocusSession.getInstance().execute();
-}

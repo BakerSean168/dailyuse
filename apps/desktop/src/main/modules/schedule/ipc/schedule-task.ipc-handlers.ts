@@ -9,7 +9,7 @@
 import { ipcMain } from 'electron';
 import { BaseIPCHandler } from '../../shared/application/base-ipc-handler';
 import { ScheduleDesktopApplicationService } from '../application/ScheduleDesktopApplicationService';
-import type { CreateScheduleTaskInput } from '@dailyuse/application-server';
+import type { CreateScheduleTaskRequest } from '@dailyuse/contracts/schedule';
 
 export class ScheduleTaskIPCHandler extends BaseIPCHandler {
   private scheduleService: ScheduleDesktopApplicationService;
@@ -22,11 +22,11 @@ export class ScheduleTaskIPCHandler extends BaseIPCHandler {
 
   private registerHandlers(): void {
     // 创建调度任务
-    ipcMain.handle('schedule:task:create', async (_, input: CreateScheduleTaskInput) => {
+    ipcMain.handle('schedule:task:create', async (_, payload: { accountUuid: string; input: CreateScheduleTaskRequest }) => {
       return this.handleRequest(
         'schedule:task:create',
-        () => this.scheduleService.createTask(input),
-        { accountUuid: (input as any).accountUuid },
+        () => this.scheduleService.createTask(payload.accountUuid, payload.input),
+        { accountUuid: payload.accountUuid },
       );
     });
 

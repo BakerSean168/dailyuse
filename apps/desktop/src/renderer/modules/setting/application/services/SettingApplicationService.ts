@@ -6,19 +6,19 @@
  */
 
 import {
-  getUserSettings,
-  updateAppearance,
-  updateLocale,
-  resetUserSettings,
-  getAppConfig,
-  exportSettings,
-  importSettings,
-  type UpdateAppearanceInput,
-  type UpdateLocaleInput,
+  GetUserSettings,
+  UpdateAppearance,
+  UpdateLocale,
+  ResetUserSettings,
+  GetAppConfig,
+  ExportSettings,
+  ImportSettings,
 } from '@dailyuse/application-client';
 import type {
   UserSettingClientDTO,
   AppConfigClientDTO,
+  UpdateAppearanceRequest,
+  UpdateLocaleRequest,
 } from '@dailyuse/contracts/setting';
 
 /**
@@ -33,28 +33,28 @@ export class SettingApplicationService {
    * 获取用户设置
    */
   async getUserSettings(): Promise<UserSettingClientDTO> {
-    return getUserSettings();
+    return GetUserSettings.getInstance().execute();
   }
 
   /**
    * 更新外观设置
    */
-  async updateAppearance(input: UpdateAppearanceInput): Promise<UserSettingClientDTO> {
-    return updateAppearance(input);
+  async updateAppearance(input: UpdateAppearanceRequest): Promise<UserSettingClientDTO> {
+    return UpdateAppearance.getInstance().execute(input);
   }
 
   /**
    * 更新语言设置
    */
-  async updateLocale(input: UpdateLocaleInput): Promise<UserSettingClientDTO> {
-    return updateLocale(input);
+  async updateLocale(input: UpdateLocaleRequest): Promise<UserSettingClientDTO> {
+    return UpdateLocale.getInstance().execute(input);
   }
 
   /**
    * 重置用户设置
    */
   async resetUserSettings(): Promise<UserSettingClientDTO> {
-    return resetUserSettings();
+    return ResetUserSettings.getInstance().execute();
   }
 
   // ===== App Config =====
@@ -63,7 +63,7 @@ export class SettingApplicationService {
    * 获取应用配置
    */
   async getAppConfig(): Promise<AppConfigClientDTO> {
-    return getAppConfig();
+    return GetAppConfig.getInstance().execute();
   }
 
   // ===== Import/Export =====
@@ -73,7 +73,7 @@ export class SettingApplicationService {
    * 返回 JSON 字符串
    */
   async exportSettings(): Promise<string> {
-    return exportSettings();
+    return ExportSettings.getInstance().execute();
   }
 
   /**
@@ -81,7 +81,7 @@ export class SettingApplicationService {
    * 返回导入后的用户设置
    */
   async importSettings(data: string): Promise<UserSettingClientDTO> {
-    return importSettings(data);
+    return ImportSettings.getInstance().execute(data);
   }
 }
 

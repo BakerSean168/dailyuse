@@ -9,23 +9,6 @@ import { AIMessage } from '@dailyuse/domain-client/ai';
 import { AIContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * List Messages Input
- */
-export interface ListMessagesInput {
-  conversationUuid: string;
-  page?: number;
-  pageSize?: number;
-}
-
-/**
- * List Messages Output
- */
-export interface ListMessagesOutput {
-  messages: AIMessage[];
-  total: number;
-}
-
-/**
  * List Messages
  */
 export class ListMessages {
@@ -63,8 +46,7 @@ export class ListMessages {
   /**
    * 执行用例
    */
-  async execute(input: ListMessagesInput): Promise<ListMessagesOutput> {
-    const { conversationUuid, ...params } = input;
+  async execute(conversationUuid: string, params: { page?: number; pageSize?: number } = {}): Promise<{ messages: AIMessage[]; total: number }> {
     const response = await this.apiClient.getMessages(conversationUuid, params);
     return {
       messages: response.messages.map((dto) => AIMessage.fromClientDTO(dto)),
@@ -72,9 +54,3 @@ export class ListMessages {
     };
   }
 }
-
-/**
- * 便捷函数
- */
-export const listMessages = (input: ListMessagesInput): Promise<ListMessagesOutput> =>
-  ListMessages.getInstance().execute(input);

@@ -4,17 +4,9 @@
  * 更新邮箱用例
  */
 
-import type { AccountDTO, UpdateEmailRequestDTO } from '@dailyuse/contracts/account';
+import type { AccountDTO, UpdateEmailRequest } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
-
-/**
- * Update Email Input
- */
-export interface UpdateEmailInput {
-  accountId: string;
-  request: UpdateEmailRequestDTO;
-}
 
 /**
  * Update Email
@@ -54,13 +46,7 @@ export class UpdateEmail {
   /**
    * 执行用例
    */
-  async execute(input: UpdateEmailInput): Promise<AccountDTO> {
-    return this.apiClient.updateEmail(input.accountId, input.request);
+  async execute(accountId: string, request: UpdateEmailRequest): Promise<AccountDTO> {
+    return this.apiClient.updateEmail(accountId, request);
   }
 }
-
-/**
- * 便捷函数
- */
-export const updateEmail = (input: UpdateEmailInput): Promise<AccountDTO> =>
-  UpdateEmail.getInstance().execute(input);

@@ -10,11 +10,6 @@ import { TaskInstance } from '@dailyuse/domain-client/task';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 import { TaskInstanceEvents } from './task-events';
 
-export interface CheckExpiredInstancesResult {
-  count: number;
-  instances: TaskInstance[];
-}
-
 /**
  * Check Expired Task Instances
  */
@@ -53,7 +48,7 @@ export class CheckExpiredInstances {
   /**
    * 执行用例
    */
-  async execute(): Promise<CheckExpiredInstancesResult> {
+  async execute(): Promise<{ count: number; instances: TaskInstance[] }> {
     const result = await this.apiClient.checkExpiredInstances();
     const instances = result.instances.map(dto => TaskInstance.fromClientDTO(dto));
 
@@ -67,9 +62,3 @@ export class CheckExpiredInstances {
     };
   }
 }
-
-/**
- * 便捷函数
- */
-export const checkExpiredInstances = (): Promise<CheckExpiredInstancesResult> =>
-  CheckExpiredInstances.getInstance().execute();

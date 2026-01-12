@@ -10,11 +10,6 @@ import { Goal } from '@dailyuse/domain-client/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Create Goal Input
- */
-export type CreateGoalInput = CreateGoalRequest;
-
-/**
  * Create Goal
  */
 export class CreateGoal {
@@ -52,14 +47,8 @@ export class CreateGoal {
   /**
    * 执行用例
    */
-  async execute(input: CreateGoalInput): Promise<Goal> {
-    const goalData = await this.apiClient.createGoal(input);
+  async execute(request: CreateGoalRequest): Promise<Goal> {
+    const goalData = await this.apiClient.createGoal(request);
     return Goal.fromClientDTO(goalData);
   }
 }
-
-/**
- * 便捷函数
- */
-export const createGoal = (input: CreateGoalInput): Promise<Goal> =>
-  CreateGoal.getInstance().execute(input);

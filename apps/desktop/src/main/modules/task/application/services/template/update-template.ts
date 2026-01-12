@@ -3,12 +3,11 @@
  */
 
 import { TaskContainer } from '@dailyuse/infrastructure-server';
-import type { CreateTaskTemplateInput } from '@dailyuse/application-server';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, CreateTaskTemplateRequest } from '@dailyuse/contracts/task';
 
 export async function updateTemplateUseCase(
   uuid: string,
-  updates: Partial<CreateTaskTemplateInput>
+  updates: Partial<CreateTaskTemplateRequest>
 ): Promise<TaskTemplateClientDTO> {
   const container = TaskContainer.getInstance();
   const repo = container.getTemplateRepository();

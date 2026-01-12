@@ -53,10 +53,3 @@ export class ValidateTaskDependency {
     return this.apiClient.validateDependency(request);
   }
 }
-
-/**
- * 便捷函数
- */
-export const validateTaskDependency = (
-  request: ValidateDependencyRequest,
-): Promise<ValidateDependencyResponse> => ValidateTaskDependency.getInstance().execute(request);

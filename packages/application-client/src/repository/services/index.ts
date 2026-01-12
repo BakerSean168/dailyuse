@@ -3,19 +3,16 @@
  */
 
 // Repository
-export { ListRepositories, listRepositories } from './list-repositories';
-export { GetRepository, getRepository } from './get-repository';
-export { GetFileTree, getFileTree } from './get-file-tree';
-export { SearchResources, searchResources } from './search-resources';
-export type { SearchResourcesInput } from './search-resources';
+export { ListRepositories } from './list-repositories';
+export { GetRepository } from './get-repository';
+export { GetFileTree } from './get-file-tree';
+export { SearchResources } from './search-resources';
 
 // Folder
-export { CreateFolder, createFolder } from './create-folder';
-export type { CreateFolderInput } from './create-folder';
-export { GetFolderContents, getFolderContents } from './get-folder-contents';
-export type { GetFolderContentsOutput } from './get-folder-contents';
-export { DeleteFolder, deleteFolder } from './delete-folder';
+export { CreateFolder } from './create-folder';
+export { GetFolderContents } from './get-folder-contents';
+export { DeleteFolder } from './delete-folder';
 
 // Resource
-export { GetResource, getResource } from './get-resource';
-export { DeleteResource, deleteResource } from './delete-resource';
+export { GetResource } from './get-resource';
+export { DeleteResource } from './delete-resource';

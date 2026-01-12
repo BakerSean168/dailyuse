@@ -5,8 +5,8 @@
  * 实际逻辑分散在独立的 service 文件中
  */
 
-import type { CreateGoalInput, UpdateGoalInput } from '@dailyuse/application-server';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { CreateGoalRequest, UpdateGoalRequest, GoalClientDTO } from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@dailyuse/contracts/goal';
 
 // Import all services
 import {
@@ -29,8 +29,8 @@ import {
 export class GoalDesktopApplicationService {
   // ===== Goal CRUD =====
 
-  async createGoal(params: CreateGoalInput): Promise<GoalClientDTO> {
-    return createGoalService(params);
+  async createGoal(accountUuid: string, params: CreateGoalRequest): Promise<GoalClientDTO> {
+    return createGoalService(accountUuid, params);
   }
 
   async getGoal(uuid: string, includeChildren = true): Promise<GoalClientDTO | null> {
@@ -39,14 +39,14 @@ export class GoalDesktopApplicationService {
 
   async listGoals(params: {
     accountUuid?: string;
-    status?: string;
+    status?: GoalStatus[];
     folderUuid?: string;
     includeChildren?: boolean;
   }): Promise<{ goals: GoalClientDTO[]; total: number }> {
     return listGoalsService(params);
   }
 
-  async updateGoal(uuid: string, params: UpdateGoalInput): Promise<GoalClientDTO> {
+  async updateGoal(uuid: string, params: UpdateGoalRequest): Promise<GoalClientDTO> {
     return updateGoalService(uuid, params);
   }
 
@@ -82,6 +82,9 @@ export class GoalDesktopApplicationService {
     limit?: number;
     parentUuid?: string | null;
   }) {
-    return listGoalFoldersService(params);
+    return listGoalFoldersService({
+      accountUuid: params?.accountUuid || 'default-account',
+      parentFolderUuid: params?.parentUuid ?? undefined,
+    });
   }
 }

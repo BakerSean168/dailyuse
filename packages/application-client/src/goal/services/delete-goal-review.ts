@@ -10,14 +10,6 @@ import { GoalEvents, type GoalAggregateRefreshEvent, type GoalAggregateRefreshRe
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
- * Delete Goal Review Input
- */
-export interface DeleteGoalReviewInput {
-  goalUuid: string;
-  reviewUuid: string;
-}
-
-/**
  * Delete Goal Review
  */
 export class DeleteGoalReview {
@@ -55,8 +47,7 @@ export class DeleteGoalReview {
   /**
    * 执行用例
    */
-  async execute(input: DeleteGoalReviewInput): Promise<void> {
-    const { goalUuid, reviewUuid } = input;
+  async execute(goalUuid: string, reviewUuid: string): Promise<void> {
     await this.apiClient.deleteGoalReview(goalUuid, reviewUuid);
 
     this.publishGoalRefreshEvent(goalUuid, 'goal-review-deleted', {
@@ -81,9 +72,3 @@ export class DeleteGoalReview {
     eventBus.emit(GoalEvents.AGGREGATE_REFRESH, event);
   }
 }
-
-/**
- * 便捷函数
- */
-export const deleteGoalReview = (goalUuid: string, reviewUuid: string): Promise<void> =>
-  DeleteGoalReview.getInstance().execute({ goalUuid, reviewUuid });

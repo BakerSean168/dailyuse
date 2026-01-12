@@ -60,9 +60,3 @@ export class UnbindTaskFromGoal {
     return template;
   }
 }
-
-/**
- * 便捷函数
- */
-export const unbindTaskFromGoal = (uuid: string): Promise<TaskTemplate> =>
-  UnbindTaskFromGoal.getInstance().execute(uuid);

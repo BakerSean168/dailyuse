@@ -2,10 +2,10 @@
  * Archive Goal Service
  */
 
-import { archiveGoal } from '@dailyuse/application-server';
+import { ArchiveGoal } from '@dailyuse/application-server';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 
 export async function archiveGoalService(uuid: string): Promise<GoalClientDTO> {
-  const result = await archiveGoal({ uuid });
+  const result = await ArchiveGoal.getInstance().execute(uuid);
   return result.goal;
 }
