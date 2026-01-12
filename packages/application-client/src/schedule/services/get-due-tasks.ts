@@ -2,11 +2,13 @@
  * Get Due Tasks
  *
  * 获取到期任务用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IScheduleTaskApiClient } from '@dailyuse/infrastructure-client';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
+import { ScheduleTask } from '@dailyuse/domain-client/schedule';
 
 /**
  * Get Due Tasks
@@ -45,8 +47,10 @@ export class GetDueTasks {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象数组
    */
-  async execute(beforeTime?: string, limit?: number): Promise<ScheduleTaskClientDTO[]> {
-    return this.apiClient.getDueTasks({ beforeTime, limit });
+  async execute(beforeTime?: string, limit?: number): Promise<ScheduleTask[]> {
+    const dtos = await this.apiClient.getDueTasks({ beforeTime, limit });
+    return dtos.map(dto => ScheduleTask.fromClientDTO(dto));
   }
 }

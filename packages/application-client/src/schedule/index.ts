@@ -50,15 +50,4 @@ export {
   DetectConflicts,
   CreateScheduleWithConflict,
   ResolveConflict,
-  
-  // Legacy exports (deprecated)
-  ScheduleEventApplicationService,
-  createScheduleEventApplicationService,
-  ScheduleConflictApplicationService,
-  createScheduleConflictApplicationService,
-  type DetectConflictsParams,
-  type CreateScheduleResult,
-  type LegacyResolveConflictResult,
-  ScheduleTaskApplicationService,
-  createScheduleTaskApplicationService,
 } from './services';

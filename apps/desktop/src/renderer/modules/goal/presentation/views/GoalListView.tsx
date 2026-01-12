@@ -6,8 +6,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
-import { GoalFolder as GoalFolderEntity } from '@dailyuse/domain-client/goal';
-import type { GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 import { useGoal, useGoalFolder } from '../hooks';
 import { GoalCard } from '../components/GoalCard';
 import { GoalCreateDialog } from '../components/GoalCreateDialog';
@@ -49,13 +47,9 @@ export function GoalListView() {
     loadGoals();
   };
 
-  // 处理文件夹选择，将 DTO 转换为 Entity
-  const handleFolderSelect = useCallback((folder: GoalFolderClientDTO | null) => {
-    if (folder) {
-      setSelectedFolder(GoalFolderEntity.fromClientDTO(folder));
-    } else {
-      setSelectedFolder(null);
-    }
+  // 处理文件夹选择 - hooks 已返回实体对象，无需转换
+  const handleFolderSelect = useCallback((folder: GoalFolder | null) => {
+    setSelectedFolder(folder);
   }, []);
 
   // 过滤目标

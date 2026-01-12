@@ -4,9 +4,9 @@
  * 根据 UUID 获取通知详情用例
  */
 
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import type { INotificationApiClient } from '@dailyuse/infrastructure-client';
 import { NotificationContainer } from '@dailyuse/infrastructure-client';
+import { NotificationClient } from '@dailyuse/domain-client/notification';
 
 /**
  * Find Notification By Uuid
@@ -46,13 +46,14 @@ export class FindNotificationByUuid {
   /**
    * 执行用例
    */
-  async execute(uuid: string): Promise<NotificationClientDTO> {
-    return this.apiClient.findNotificationByUuid(uuid);
+  async execute(uuid: string): Promise<NotificationClient> {
+    const dto = await this.apiClient.findNotificationByUuid(uuid);
+    return NotificationClient.fromClientDTO(dto);
   }
 }
 
 /**
  * 便捷函数
  */
-export const findNotificationByUuid = (uuid: string): Promise<NotificationClientDTO> =>
+export const findNotificationByUuid = (uuid: string): Promise<NotificationClient> =>
   FindNotificationByUuid.getInstance().execute(uuid);

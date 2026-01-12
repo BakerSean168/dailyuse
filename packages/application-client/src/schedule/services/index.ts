@@ -51,26 +51,3 @@ export { GetScheduleConflicts } from './get-schedule-conflicts';
 export { DetectConflicts } from './detect-conflicts';
 export { CreateScheduleWithConflict } from './create-schedule-with-conflict';
 export { ResolveConflict } from './resolve-conflict';
-
-// ===== Legacy exports for backward compatibility (deprecated) =====
-
-// Schedule Event Service
-export {
-  ScheduleEventApplicationService,
-  createScheduleEventApplicationService,
-} from './ScheduleEventApplicationService';
-
-// Schedule Conflict Service
-export {
-  ScheduleConflictApplicationService,
-  createScheduleConflictApplicationService,
-  type DetectConflictsParams,
-  type CreateScheduleResult,
-  type ResolveConflictResult as LegacyResolveConflictResult,
-} from './ScheduleConflictApplicationService';
-
-// Schedule Task Service
-export {
-  ScheduleTaskApplicationService,
-  createScheduleTaskApplicationService,
-} from './ScheduleTaskApplicationService';

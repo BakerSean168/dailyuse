@@ -3,6 +3,7 @@
  *
  * 通知模块应用服务层
  * 封装 @dailyuse/application-client 的 Notification Use Cases
+ * application-client 已返回 Entity 对象，直接透传即可
  */
 
 import {
@@ -14,16 +15,20 @@ import {
   DeleteNotification,
   BatchDeleteNotifications,
   GetUnreadCount,
+  type FindNotificationsOutput,
 } from '@dailyuse/application-client';
 import type {
-  NotificationListResponse,
   CreateNotificationRequest,
   QueryNotificationsRequest,
   UnreadCountResponse,
 } from '@dailyuse/infrastructure-client';
+import type { NotificationClient } from '@dailyuse/domain-client/notification';
 
 /** Find notifications input type alias */
 type FindNotificationsInput = QueryNotificationsRequest;
+
+/** Notification list response with Entity objects - re-export from application-client */
+export type NotificationListResponse = FindNotificationsOutput;
 
 /** Mark all as read output type */
 type MarkAllAsReadOutput = { success: boolean; count: number };
@@ -36,23 +41,25 @@ type BatchDeleteNotificationsOutput = { success: boolean; count: number };
 
 /** Get unread count output type alias */
 type GetUnreadCountOutput = UnreadCountResponse;
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 
 /**
  * 通知应用服务
  *
  * 提供通知相关的所有业务操作
+ * application-client 已返回 Entity 对象，直接透传
  */
 export class NotificationApplicationService {
   /**
    * 创建通知
+   * @returns NotificationClient Entity
    */
-  async createNotification(input: CreateNotificationRequest): Promise<NotificationClientDTO> {
+  async createNotification(input: CreateNotificationRequest): Promise<NotificationClient> {
     return CreateNotification.getInstance().execute(input);
   }
 
   /**
    * 查找通知列表
+   * @returns 包含 NotificationClient Entity 数组的响应
    */
   async findNotifications(input?: FindNotificationsInput): Promise<NotificationListResponse> {
     return FindNotifications.getInstance().execute(input);
@@ -60,15 +67,17 @@ export class NotificationApplicationService {
 
   /**
    * 根据 UUID 查找通知
+   * @returns NotificationClient Entity 或 null
    */
-  async findNotificationByUuid(uuid: string): Promise<NotificationClientDTO | null> {
+  async findNotificationByUuid(uuid: string): Promise<NotificationClient> {
     return FindNotificationByUuid.getInstance().execute(uuid);
   }
 
   /**
    * 标记为已读
+   * @returns 更新后的 NotificationClient Entity
    */
-  async markAsRead(uuid: string): Promise<NotificationClientDTO> {
+  async markAsRead(uuid: string): Promise<NotificationClient> {
     return MarkAsRead.getInstance().execute(uuid);
   }
 

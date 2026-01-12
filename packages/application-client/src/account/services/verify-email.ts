@@ -4,9 +4,10 @@
  * 验证邮箱用例
  */
 
-import type { AccountDTO, VerifyEmailRequest } from '@dailyuse/contracts/account';
+import type { VerifyEmailRequest } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
+import { Account } from '@dailyuse/domain-client/account';
 
 /**
  * Verify Email
@@ -45,8 +46,10 @@ export class VerifyEmail {
 
   /**
    * 执行用例
+   * @returns Account Entity
    */
-  async execute(accountId: string, request: VerifyEmailRequest): Promise<AccountDTO> {
-    return this.apiClient.verifyEmail(accountId, request);
+  async execute(accountId: string, request: VerifyEmailRequest): Promise<Account> {
+    const dto = await this.apiClient.verifyEmail(accountId, request);
+    return Account.fromClientDTO(dto);
   }
 }

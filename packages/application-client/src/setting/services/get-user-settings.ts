@@ -5,8 +5,8 @@
  */
 
 import type { ISettingApiClient } from '@dailyuse/infrastructure-client';
-import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 import { SettingContainer } from '@dailyuse/infrastructure-client';
+import { UserSetting } from '@dailyuse/domain-client/setting';
 
 /**
  * Get User Settings
@@ -34,10 +34,11 @@ export class GetUserSettings {
     GetUserSettings.instance = undefined as unknown as GetUserSettings;
   }
 
-  async execute(): Promise<UserSettingClientDTO> {
-    return this.apiClient.getUserSettings();
+  async execute(): Promise<UserSetting> {
+    const dto = await this.apiClient.getUserSettings();
+    return UserSetting.fromClientDTO(dto);
   }
 }
 
-export const getUserSettings = (): Promise<UserSettingClientDTO> =>
+export const getUserSettings = (): Promise<UserSetting> =>
   GetUserSettings.getInstance().execute();

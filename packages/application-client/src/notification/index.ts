@@ -17,4 +17,5 @@ export {
   DeleteNotification,
   BatchDeleteNotifications,
   GetUnreadCount,
+  type FindNotificationsOutput,
 } from './services';

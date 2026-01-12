@@ -68,7 +68,7 @@ export {
 
 // ==================== Schedule 模块 ====================
 // 聚合根
-export { ScheduleTask } from './schedule/aggregates';
+export { Schedule, ScheduleTask } from './schedule/aggregates';
 
 // 实体
 export * from './schedule/entities';

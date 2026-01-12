@@ -2,11 +2,13 @@
  * Get Schedule Event
  *
  * 获取日程事件详情用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IScheduleEventApiClient } from '@dailyuse/infrastructure-client';
-import type { ScheduleClientDTO } from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
+import { Schedule } from '@dailyuse/domain-client/schedule';
 
 /**
  * Get Schedule Event
@@ -45,14 +47,16 @@ export class GetScheduleEvent {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
-  async execute(uuid: string): Promise<ScheduleClientDTO> {
-    return this.apiClient.getSchedule(uuid);
+  async execute(uuid: string): Promise<Schedule> {
+    const dto = await this.apiClient.getSchedule(uuid);
+    return Schedule.fromClientDTO(dto);
   }
 }
 
 /**
  * 便捷函数
  */
-export const getScheduleEvent = (uuid: string): Promise<ScheduleClientDTO> =>
+export const getScheduleEvent = (uuid: string): Promise<Schedule> =>
   GetScheduleEvent.getInstance().execute(uuid);

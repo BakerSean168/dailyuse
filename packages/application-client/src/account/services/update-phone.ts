@@ -2,11 +2,14 @@
  * Update Phone
  *
  * 更新手机号用例
+ * 
+ * **返回 Entity 对象**
  */
 
-import type { AccountDTO, UpdatePhoneRequest } from '@dailyuse/contracts/account';
+import type { UpdatePhoneRequest } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
+import { Account } from '@dailyuse/domain-client/account';
 
 /**
  * Update Phone
@@ -45,8 +48,10 @@ export class UpdatePhone {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
-  async execute(accountId: string, request: UpdatePhoneRequest): Promise<AccountDTO> {
-    return this.apiClient.updatePhone(accountId, request);
+  async execute(accountId: string, request: UpdatePhoneRequest): Promise<Account> {
+    const dto = await this.apiClient.updatePhone(accountId, request);
+    return Account.fromClientDTO(dto);
   }
 }

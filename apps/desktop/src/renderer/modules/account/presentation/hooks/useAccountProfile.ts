@@ -6,11 +6,11 @@
 
 import { useState, useCallback } from 'react';
 import { accountApplicationService } from '../../application/services';
-import type { AccountDTO, AccountStatsResponseDTO } from '@dailyuse/contracts/account';
+import type { AccountClientDTO, AccountStatsResponseDTO } from '@dailyuse/contracts/account';
 
 export interface UseAccountProfileReturn {
   // State
-  profile: AccountDTO | null;
+  profile: AccountClientDTO | null;
   stats: AccountStatsResponseDTO | null;
   loading: boolean;
   error: string | null;
@@ -21,7 +21,7 @@ export interface UseAccountProfileReturn {
 }
 
 export function useAccountProfile(): UseAccountProfileReturn {
-  const [profile, setProfile] = useState<AccountDTO | null>(null);
+  const [profile, setProfile] = useState<AccountClientDTO | null>(null);
   const [stats, setStats] = useState<AccountStatsResponseDTO | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +32,8 @@ export function useAccountProfile(): UseAccountProfileReturn {
 
     try {
       const result = await accountApplicationService.getAccountById(accountId);
-      setProfile(result);
+      // Convert Entity to DTO for storage
+      setProfile(result ? result.toClientDTO() : null);
     } catch (e) {
       setError(e instanceof Error ? e.message : '加载资料失败');
     } finally {

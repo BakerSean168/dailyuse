@@ -30,7 +30,7 @@ export * from './reminder';
 export * from './account';
 
 // Authentication module
-export * from './authentication/services';
+export * from './authentication';
 
 // Notification module
 export * from './notification';

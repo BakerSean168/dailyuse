@@ -2,11 +2,13 @@
  * Get Key Results
  *
  * 获取目标的关键结果列表用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
-import type { KeyResultsResponse } from '@dailyuse/contracts/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
+import { KeyResult } from '@dailyuse/domain-client/goal';
 
 /**
  * Get Key Results
@@ -45,14 +47,18 @@ export class GetKeyResults {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象数组
    */
-  async execute(goalUuid: string): Promise<KeyResultsResponse> {
-    return this.apiClient.getKeyResultsByGoal(goalUuid);
+  async execute(goalUuid: string): Promise<{ keyResults: KeyResult[] }> {
+    const response = await this.apiClient.getKeyResultsByGoal(goalUuid);
+    return {
+      keyResults: response.keyResults.map(dto => KeyResult.fromServerDTO(dto)),
+    };
   }
 }
 
 /**
  * 便捷函数
  */
-export const getKeyResults = (goalUuid: string): Promise<KeyResultsResponse> =>
+export const getKeyResults = (goalUuid: string): Promise<{ keyResults: KeyResult[] }> =>
   GetKeyResults.getInstance().execute(goalUuid);

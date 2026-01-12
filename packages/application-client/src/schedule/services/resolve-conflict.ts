@@ -2,23 +2,25 @@
  * Resolve Conflict
  *
  * 解决日程冲突用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IScheduleEventApiClient } from '@dailyuse/infrastructure-client';
 import type {
-  ScheduleClientDTO,
   ConflictDetectionResult,
   ResolveConflictRequest,
 } from '@dailyuse/contracts/schedule';
 import { eventBus } from '@dailyuse/utils';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleEventEvents, type ScheduleEventRefreshEvent } from './schedule-events';
+import { Schedule } from '@dailyuse/domain-client/schedule';
 
 /**
  * Resolve Conflict Result
  */
 export interface ResolveConflictResult {
-  schedule: ScheduleClientDTO;
+  schedule: Schedule;
   conflicts: ConflictDetectionResult;
   applied: {
     strategy: string;
@@ -65,6 +67,7 @@ export class ResolveConflict {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
   async execute(scheduleUuid: string, request: ResolveConflictRequest): Promise<ResolveConflictResult> {
     const result = await this.apiClient.resolveConflict(scheduleUuid, request);
@@ -74,7 +77,11 @@ export class ResolveConflict {
       changes: result.applied.changes,
     });
 
-    return result;
+    return {
+      schedule: Schedule.fromClientDTO(result.schedule),
+      conflicts: result.conflicts,
+      applied: result.applied,
+    };
   }
 
   /**

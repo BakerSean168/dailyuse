@@ -2,11 +2,14 @@
  * Get Schedules By Time Range
  *
  * 获取指定时间范围内的日程事件用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IScheduleEventApiClient } from '@dailyuse/infrastructure-client';
-import type { ScheduleClientDTO, GetSchedulesByTimeRangeRequest } from '@dailyuse/contracts/schedule';
+import type { GetSchedulesByTimeRangeRequest } from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
+import { Schedule } from '@dailyuse/domain-client/schedule';
 
 /**
  * Get Schedules By Time Range Input
@@ -50,14 +53,16 @@ export class GetSchedulesByTimeRange {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象数组
    */
-  async execute(input: GetSchedulesByTimeRangeInput): Promise<ScheduleClientDTO[]> {
-    return this.apiClient.getSchedulesByTimeRange(input);
+  async execute(input: GetSchedulesByTimeRangeInput): Promise<Schedule[]> {
+    const dtos = await this.apiClient.getSchedulesByTimeRange(input);
+    return dtos.map(dto => Schedule.fromClientDTO(dto));
   }
 }
 
 /**
  * 便捷函数
  */
-export const getSchedulesByTimeRange = (input: GetSchedulesByTimeRangeInput): Promise<ScheduleClientDTO[]> =>
+export const getSchedulesByTimeRange = (input: GetSchedulesByTimeRangeInput): Promise<Schedule[]> =>
   GetSchedulesByTimeRange.getInstance().execute(input);

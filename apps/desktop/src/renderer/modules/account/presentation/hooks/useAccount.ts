@@ -5,6 +5,7 @@
  * Story-008: Auth & Account UI
  * 
  * 使用 @dailyuse/application-client 的 Use Case 实现 DDD 架构
+ * application-client 已返回 Entity 对象
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -14,10 +15,11 @@ import {
   UpdateAccountPreferences,
   ChangeMyPassword,
 } from '@dailyuse/application-client';
-import type { AccountDTO, UpdateAccountPreferencesRequestDTO, UpdateAccountProfileRequestDTO } from '@dailyuse/contracts/account';
+import type { UpdateAccountPreferencesRequestDTO, UpdateAccountProfileRequestDTO } from '@dailyuse/contracts/account';
+import type { Account } from '@dailyuse/domain-client/account';
 
 interface AccountState {
-  account: AccountDTO | null;
+  account: Account | null;
   loading: boolean;
   error: string | null;
 }

@@ -5,8 +5,8 @@
  */
 
 import type { IDashboardApiClient } from '@dailyuse/infrastructure-client';
-import type { DashboardConfigClientDTO } from '@dailyuse/contracts/dashboard';
 import { DashboardContainer } from '@dailyuse/infrastructure-client';
+import { DashboardConfig } from '@dailyuse/domain-client/dashboard';
 
 /**
  * Reset Dashboard Config
@@ -46,13 +46,14 @@ export class ResetDashboardConfig {
   /**
    * 执行用例
    */
-  async execute(): Promise<DashboardConfigClientDTO> {
-    return this.apiClient.resetConfig();
+  async execute(): Promise<DashboardConfig> {
+    const dto = await this.apiClient.resetConfig();
+    return DashboardConfig.fromDTO(dto);
   }
 }
 
 /**
  * 便捷函数
  */
-export const resetDashboardConfig = (): Promise<DashboardConfigClientDTO> =>
+export const resetDashboardConfig = (): Promise<DashboardConfig> =>
   ResetDashboardConfig.getInstance().execute();

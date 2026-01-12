@@ -7,14 +7,25 @@
 import type {
   INotificationApiClient,
   QueryNotificationsRequest,
-  NotificationListResponse,
 } from '@dailyuse/infrastructure-client';
 import { NotificationContainer } from '@dailyuse/infrastructure-client';
+import { NotificationClient } from '@dailyuse/domain-client/notification';
 
 /**
  * Find Notifications Input
  */
 export type FindNotificationsInput = QueryNotificationsRequest;
+
+/**
+ * Find Notifications Output
+ */
+export interface FindNotificationsOutput {
+  notifications: NotificationClient[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+}
 
 /**
  * Find Notifications
@@ -54,13 +65,20 @@ export class FindNotifications {
   /**
    * 执行用例
    */
-  async execute(input: FindNotificationsInput = {}): Promise<NotificationListResponse> {
-    return this.apiClient.findNotifications(input);
+  async execute(input: FindNotificationsInput = {}): Promise<FindNotificationsOutput> {
+    const response = await this.apiClient.findNotifications(input);
+    return {
+      notifications: response.notifications.map((dto) => NotificationClient.fromClientDTO(dto)),
+      total: response.total,
+      page: response.page,
+      pageSize: response.pageSize,
+      hasMore: response.hasMore,
+    };
   }
 }
 
 /**
  * 便捷函数
  */
-export const findNotifications = (input: FindNotificationsInput = {}): Promise<NotificationListResponse> =>
+export const findNotifications = (input: FindNotificationsInput = {}): Promise<FindNotificationsOutput> =>
   FindNotifications.getInstance().execute(input);

@@ -5,8 +5,8 @@
  */
 
 import type { IDashboardApiClient } from '@dailyuse/infrastructure-client';
-import type { DashboardConfigClientDTO } from '@dailyuse/contracts/dashboard';
 import { DashboardContainer } from '@dailyuse/infrastructure-client';
+import { DashboardConfig } from '@dailyuse/domain-client/dashboard';
 
 /**
  * Get Dashboard Config
@@ -46,13 +46,14 @@ export class GetDashboardConfig {
   /**
    * 执行用例
    */
-  async execute(): Promise<DashboardConfigClientDTO> {
-    return this.apiClient.getConfig();
+  async execute(): Promise<DashboardConfig> {
+    const dto = await this.apiClient.getConfig();
+    return DashboardConfig.fromDTO(dto);
   }
 }
 
 /**
  * 便捷函数
  */
-export const getDashboardConfig = (): Promise<DashboardConfigClientDTO> =>
+export const getDashboardConfig = (): Promise<DashboardConfig> =>
   GetDashboardConfig.getInstance().execute();

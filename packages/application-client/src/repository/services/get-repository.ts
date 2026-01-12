@@ -5,8 +5,8 @@
  */
 
 import type { IRepositoryApiClient } from '@dailyuse/infrastructure-client';
-import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
 import { RepositoryContainer } from '@dailyuse/infrastructure-client';
+import { Repository } from '@dailyuse/domain-client/repository';
 
 /**
  * Get Repository
@@ -34,10 +34,11 @@ export class GetRepository {
     GetRepository.instance = undefined as unknown as GetRepository;
   }
 
-  async execute(uuid: string): Promise<RepositoryClientDTO> {
-    return this.apiClient.getRepositoryById(uuid);
+  async execute(uuid: string): Promise<Repository> {
+    const dto = await this.apiClient.getRepositoryById(uuid);
+    return Repository.fromClientDTO(dto);
   }
 }
 
-export const getRepository = (uuid: string): Promise<RepositoryClientDTO> =>
+export const getRepository = (uuid: string): Promise<Repository> =>
   GetRepository.getInstance().execute(uuid);

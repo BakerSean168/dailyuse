@@ -2,11 +2,13 @@
  * Get Goal Reviews
  *
  * 获取目标的所有复盘用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
-import type { GoalReviewsResponse } from '@dailyuse/contracts/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
+import { GoalReview } from '@dailyuse/domain-client/goal';
 
 /**
  * Get Goal Reviews
@@ -45,14 +47,18 @@ export class GetGoalReviews {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象数组
    */
-  async execute(goalUuid: string): Promise<GoalReviewsResponse> {
-    return this.apiClient.getGoalReviewsByGoal(goalUuid);
+  async execute(goalUuid: string): Promise<{ reviews: GoalReview[] }> {
+    const response = await this.apiClient.getGoalReviewsByGoal(goalUuid);
+    return {
+      reviews: response.reviews.map(dto => GoalReview.fromServerDTO(dto)),
+    };
   }
 }
 
 /**
  * 便捷函数
  */
-export const getGoalReviews = (goalUuid: string): Promise<GoalReviewsResponse> =>
+export const getGoalReviews = (goalUuid: string): Promise<{ reviews: GoalReview[] }> =>
   GetGoalReviews.getInstance().execute(goalUuid);

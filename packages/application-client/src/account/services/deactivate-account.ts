@@ -2,11 +2,13 @@
  * Deactivate Account
  *
  * 停用账户用例
+ * 
+ * **返回 Entity 对象**
  */
 
-import type { AccountDTO } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
+import { Account } from '@dailyuse/domain-client/account';
 
 /**
  * Deactivate Account
@@ -45,14 +47,16 @@ export class DeactivateAccount {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
-  async execute(accountId: string): Promise<AccountDTO> {
-    return this.apiClient.deactivateAccount(accountId);
+  async execute(accountId: string): Promise<Account> {
+    const dto = await this.apiClient.deactivateAccount(accountId);
+    return Account.fromClientDTO(dto);
   }
 }
 
 /**
  * 便捷函数
  */
-export const deactivateAccount = (accountId: string): Promise<AccountDTO> =>
+export const deactivateAccount = (accountId: string): Promise<Account> =>
   DeactivateAccount.getInstance().execute(accountId);

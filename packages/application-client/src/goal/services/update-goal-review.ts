@@ -2,13 +2,16 @@
  * Update Goal Review
  *
  * 更新目标复盘用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
-import type { GoalReviewClientDTO, UpdateGoalReviewRequest } from '@dailyuse/contracts/goal';
+import type { UpdateGoalReviewRequest } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
 import { GoalEvents, type GoalAggregateRefreshEvent, type GoalAggregateRefreshReason } from '@dailyuse/contracts/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
+import { GoalReview } from '@dailyuse/domain-client/goal';
 
 /**
  * Update Goal Review
@@ -47,19 +50,20 @@ export class UpdateGoalReview {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
   async execute(
     goalUuid: string,
     reviewUuid: string,
     request: UpdateGoalReviewRequest,
-  ): Promise<GoalReviewClientDTO> {
-    const data = await this.apiClient.updateGoalReview(goalUuid, reviewUuid, request);
+  ): Promise<GoalReview> {
+    const dto = await this.apiClient.updateGoalReview(goalUuid, reviewUuid, request);
 
     this.publishGoalRefreshEvent(goalUuid, 'goal-review-updated', {
       reviewUuid,
     });
 
-    return data;
+    return GoalReview.fromClientDTO(dto);
   }
 
   /**

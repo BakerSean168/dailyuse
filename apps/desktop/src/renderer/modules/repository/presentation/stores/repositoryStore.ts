@@ -354,10 +354,8 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
             setLoading(true);
             setError(null);
             
-            const repositoryDTOs = await repositoryApplicationService.listRepositories();
-            // 将 DTO 转换为 Entity
-            const repositories = repositoryDTOs.map(dto => Repository.fromClientDTO(dto));
-            
+            // application-client 已返回 Entity 对象，无需转换
+            const repositories = await repositoryApplicationService.listRepositories();
             setRepositories(repositories);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to fetch repositories';

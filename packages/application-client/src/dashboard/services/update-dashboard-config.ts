@@ -7,6 +7,7 @@
 import type { IDashboardApiClient } from '@dailyuse/infrastructure-client';
 import type { DashboardConfigClientDTO } from '@dailyuse/contracts/dashboard';
 import { DashboardContainer } from '@dailyuse/infrastructure-client';
+import { DashboardConfig } from '@dailyuse/domain-client/dashboard';
 
 /**
  * Update Dashboard Config Input
@@ -51,8 +52,9 @@ export class UpdateDashboardConfig {
   /**
    * 执行用例
    */
-  async execute(input: UpdateDashboardConfigInput): Promise<DashboardConfigClientDTO> {
-    return this.apiClient.updateConfig(input);
+  async execute(input: UpdateDashboardConfigInput): Promise<DashboardConfig> {
+    const dto = await this.apiClient.updateConfig(input);
+    return DashboardConfig.fromDTO(dto);
   }
 }
 
@@ -61,5 +63,5 @@ export class UpdateDashboardConfig {
  */
 export const updateDashboardConfig = (
   input: UpdateDashboardConfigInput,
-): Promise<DashboardConfigClientDTO> =>
+): Promise<DashboardConfig> =>
   UpdateDashboardConfig.getInstance().execute(input);

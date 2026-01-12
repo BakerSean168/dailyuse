@@ -5,8 +5,9 @@
  */
 
 import type { ISettingApiClient } from '@dailyuse/infrastructure-client';
-import type { UserSettingClientDTO, UpdateAppearanceRequest } from '@dailyuse/contracts/setting';
+import type { UpdateAppearanceRequest } from '@dailyuse/contracts/setting';
 import { SettingContainer } from '@dailyuse/infrastructure-client';
+import { UserSetting } from '@dailyuse/domain-client/setting';
 
 /**
  * Update Appearance Input
@@ -39,10 +40,11 @@ export class UpdateAppearance {
     UpdateAppearance.instance = undefined as unknown as UpdateAppearance;
   }
 
-  async execute(input: UpdateAppearanceInput): Promise<UserSettingClientDTO> {
-    return this.apiClient.updateAppearance(input);
+  async execute(input: UpdateAppearanceInput): Promise<UserSetting> {
+    const dto = await this.apiClient.updateAppearance(input);
+    return UserSetting.fromClientDTO(dto);
   }
 }
 
-export const updateAppearance = (input: UpdateAppearanceInput): Promise<UserSettingClientDTO> =>
+export const updateAppearance = (input: UpdateAppearanceInput): Promise<UserSetting> =>
   UpdateAppearance.getInstance().execute(input);

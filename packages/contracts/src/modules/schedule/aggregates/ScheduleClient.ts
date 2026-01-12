@@ -8,6 +8,10 @@
  * @since Story 9.1 (EPIC-SCHEDULE-001)
  */
 
+import type { ScheduleServerDTO } from './ScheduleServer';
+
+// ============ DTO 定义 ============
+
 export interface ScheduleClientDTO {
   /**
    * Unique identifier for the schedule
@@ -78,4 +82,106 @@ export interface ScheduleClientDTO {
    * Last update timestamp (Unix timestamp in milliseconds)
    */
   readonly updatedAt: number;
+}
+
+// ============ 实体接口 ============
+
+/**
+ * Schedule 聚合根 - Client 接口
+ */
+export interface ScheduleClient {
+  // 基础属性
+  uuid: string;
+  accountUuid: string;
+  title: string;
+  description: string | null;
+  startTime: number;
+  endTime: number;
+  duration: number;
+  hasConflict: boolean;
+  conflictingSchedules: readonly string[] | null;
+  priority: number | null;
+  location: string | null;
+  attendees: readonly string[] | null;
+  createdAt: number;
+  updatedAt: number;
+
+  // UI 辅助属性
+  durationDisplay: string;
+  startTimeFormatted: string;
+  endTimeFormatted: string;
+  timeRangeDisplay: string;
+  priorityDisplay: string;
+  priorityColor: string;
+  conflictDisplay: string;
+  conflictColor: string;
+  attendeeCount: number;
+  attendeesDisplay: string;
+  formattedCreatedAt: string;
+  formattedUpdatedAt: string;
+
+  // ===== 业务方法 =====
+
+  // 状态检查
+  isOngoing(): boolean;
+  isPast(): boolean;
+  isUpcoming(withinMinutes?: number): boolean;
+  isToday(): boolean;
+  hasConflicts(): boolean;
+  getConflictCount(): number;
+  hasLocation(): boolean;
+  hasAttendees(): boolean;
+  overlaps(startTime: number, endTime: number): boolean;
+  getOverlapDuration(startTime: number, endTime: number): number;
+
+  // ===== 转换方法 (To) =====
+
+  /**
+   * 转换为 Server DTO
+   */
+  toServerDTO(): ScheduleServerDTO;
+
+  /**
+   * 转换为 Client DTO
+   */
+  toClientDTO(): ScheduleClientDTO;
+
+  /**
+   * 克隆当前实体（用于编辑表单）
+   */
+  clone(): ScheduleClient;
+}
+
+/**
+ * Schedule 静态工厂方法接口
+ */
+export interface ScheduleClientStatic {
+  /**
+   * 从 Server DTO 创建客户端实体
+   */
+  fromServerDTO(dto: ScheduleServerDTO): ScheduleClient;
+
+  /**
+   * 从 Client DTO 创建客户端实体
+   */
+  fromClientDTO(dto: ScheduleClientDTO): ScheduleClient;
+
+  /**
+   * 创建空实例（用于新建表单）
+   */
+  forCreate(accountUuid: string): ScheduleClient;
+
+  /**
+   * 创建新的 Schedule
+   */
+  create(params: {
+    accountUuid: string;
+    title: string;
+    description?: string;
+    startTime: number;
+    endTime: number;
+    priority?: number;
+    location?: string;
+    attendees?: string[];
+  }): ScheduleClient;
 }

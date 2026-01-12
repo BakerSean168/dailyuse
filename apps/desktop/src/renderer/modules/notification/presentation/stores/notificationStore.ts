@@ -54,14 +54,13 @@ export const useNotificationStore = create<NotificationStore>()(
       ...initialState,
       
       addNotification: (notification) => {
-        // 使用 application service 创建通知
+        // 使用 application service 创建通知 - 已返回 Entity 对象
         notificationApplicationService.createNotification({
           title: notification.title,
           content: notification.content,
           type: notification.type,
-        }).then((dto) => {
-          // 转换 DTO 为 Entity
-          const newNotification = NotificationClient.fromClientDTO(dto);
+        }).then((newNotification) => {
+          // application-client 已返回 Entity，无需转换
           set((state) => ({
             notifications: [newNotification, ...state.notifications],
             unreadCount: state.unreadCount + 1,

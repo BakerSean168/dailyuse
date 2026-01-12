@@ -2,11 +2,13 @@
  * List Schedule Tasks
  *
  * 获取调度任务列表用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IScheduleTaskApiClient } from '@dailyuse/infrastructure-client';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
+import { ScheduleTask } from '@dailyuse/domain-client/schedule';
 
 /**
  * List Schedule Tasks
@@ -45,19 +47,22 @@ export class ListScheduleTasks {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象数组
    */
-  async execute(): Promise<{ tasks: ScheduleTaskClientDTO[]; total: number }> {
+  async execute(): Promise<{ tasks: ScheduleTask[]; total: number }> {
     const result = await this.apiClient.getTasks();
     // 如果返回的是数组，包装成响应对象
-    if (Array.isArray(result)) {
-      return { tasks: result, total: result.length };
-    }
-    return result;
+    const dtos = Array.isArray(result) ? result : result.tasks;
+    const total = Array.isArray(result) ? result.length : result.total;
+    return { 
+      tasks: dtos.map(dto => ScheduleTask.fromClientDTO(dto)), 
+      total 
+    };
   }
 }
 
 /**
  * 便捷函数
  */
-export const listScheduleTasks = (): Promise<{ tasks: ScheduleTaskClientDTO[]; total: number }> =>
+export const listScheduleTasks = (): Promise<{ tasks: ScheduleTask[]; total: number }> =>
   ListScheduleTasks.getInstance().execute();

@@ -2,11 +2,14 @@
  * Update Email
  *
  * 更新邮箱用例
+ * 
+ * **返回 Entity 对象**
  */
 
-import type { AccountDTO, UpdateEmailRequest } from '@dailyuse/contracts/account';
+import type { UpdateEmailRequest } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
+import { Account } from '@dailyuse/domain-client/account';
 
 /**
  * Update Email
@@ -45,8 +48,10 @@ export class UpdateEmail {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
-  async execute(accountId: string, request: UpdateEmailRequest): Promise<AccountDTO> {
-    return this.apiClient.updateEmail(accountId, request);
+  async execute(accountId: string, request: UpdateEmailRequest): Promise<Account> {
+    const dto = await this.apiClient.updateEmail(accountId, request);
+    return Account.fromClientDTO(dto);
   }
 }

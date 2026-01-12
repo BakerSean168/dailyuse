@@ -2,13 +2,16 @@
  * Create Goal Record
  *
  * 创建目标记录用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
-import type { GoalRecordClientDTO, CreateGoalRecordRequest } from '@dailyuse/contracts/goal';
+import type { CreateGoalRecordRequest } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
 import { GoalEvents, type GoalAggregateRefreshEvent, type GoalAggregateRefreshReason } from '@dailyuse/contracts/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
+import { GoalRecord } from '@dailyuse/domain-client/goal';
 
 /**
  * Create Goal Record
@@ -47,20 +50,21 @@ export class CreateGoalRecord {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
   async execute(
     goalUuid: string,
     keyResultUuid: string,
     request: CreateGoalRecordRequest,
-  ): Promise<GoalRecordClientDTO> {
-    const data = await this.apiClient.createGoalRecord(goalUuid, keyResultUuid, request);
+  ): Promise<GoalRecord> {
+    const dto = await this.apiClient.createGoalRecord(goalUuid, keyResultUuid, request);
 
     this.publishGoalRefreshEvent(goalUuid, 'goal-record-created', {
       keyResultUuid,
-      goalRecordUuid: data.uuid,
+      goalRecordUuid: dto.uuid,
     });
 
-    return data;
+    return GoalRecord.fromClientDTO(dto);
   }
 
   /**

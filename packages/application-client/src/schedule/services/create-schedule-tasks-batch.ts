@@ -2,16 +2,16 @@
  * Create Schedule Tasks Batch
  *
  * 批量创建调度任务用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IScheduleTaskApiClient } from '@dailyuse/infrastructure-client';
-import type {
-  ScheduleTaskClientDTO,
-  CreateScheduleTaskRequest,
-} from '@dailyuse/contracts/schedule';
+import type { CreateScheduleTaskRequest } from '@dailyuse/contracts/schedule';
 import { eventBus } from '@dailyuse/utils';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleTaskEvents, type ScheduleTaskRefreshEvent } from './schedule-events';
+import { ScheduleTask } from '@dailyuse/domain-client/schedule';
 
 /**
  * Create Schedule Tasks Batch Input
@@ -55,13 +55,14 @@ export class CreateScheduleTasksBatch {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象数组
    */
-  async execute(input: CreateScheduleTasksBatchInput): Promise<ScheduleTaskClientDTO[]> {
-    const tasks = await this.apiClient.createTasksBatch(input);
+  async execute(input: CreateScheduleTasksBatchInput): Promise<ScheduleTask[]> {
+    const dtos = await this.apiClient.createTasksBatch(input);
 
-    this.publishEvent(tasks.map(t => t.uuid), ScheduleTaskEvents.TASKS_BATCH_CREATED);
+    this.publishEvent(dtos.map(t => t.uuid), ScheduleTaskEvents.TASKS_BATCH_CREATED);
 
-    return tasks;
+    return dtos.map(dto => ScheduleTask.fromClientDTO(dto));
   }
 
   /**
@@ -81,5 +82,5 @@ export class CreateScheduleTasksBatch {
 /**
  * 便捷函数
  */
-export const createScheduleTasksBatch = (input: CreateScheduleTasksBatchInput): Promise<ScheduleTaskClientDTO[]> =>
+export const createScheduleTasksBatch = (input: CreateScheduleTasksBatchInput): Promise<ScheduleTask[]> =>
   CreateScheduleTasksBatch.getInstance().execute(input);

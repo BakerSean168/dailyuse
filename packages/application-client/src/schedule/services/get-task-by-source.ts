@@ -2,11 +2,14 @@
  * Get Task By Source
  *
  * 根据来源获取任务用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IScheduleTaskApiClient } from '@dailyuse/infrastructure-client';
-import type { ScheduleTaskClientDTO, SourceModule } from '@dailyuse/contracts/schedule';
+import type { SourceModule } from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
+import { ScheduleTask } from '@dailyuse/domain-client/schedule';
 
 /**
  * Get Task By Source
@@ -45,8 +48,10 @@ export class GetTaskBySource {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象数组
    */
-  async execute(sourceModule: SourceModule, sourceEntityId: string): Promise<ScheduleTaskClientDTO[]> {
-    return this.apiClient.getTaskBySource(sourceModule, sourceEntityId);
+  async execute(sourceModule: SourceModule, sourceEntityId: string): Promise<ScheduleTask[]> {
+    const dtos = await this.apiClient.getTaskBySource(sourceModule, sourceEntityId);
+    return dtos.map(dto => ScheduleTask.fromClientDTO(dto));
   }
 }

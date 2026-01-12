@@ -2,13 +2,16 @@
  * Create Schedule Event
  *
  * 创建日程事件用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IScheduleEventApiClient } from '@dailyuse/infrastructure-client';
-import type { ScheduleClientDTO, CreateScheduleRequest } from '@dailyuse/contracts/schedule';
+import type { CreateScheduleRequest } from '@dailyuse/contracts/schedule';
 import { eventBus } from '@dailyuse/utils';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleEventEvents, type ScheduleEventRefreshEvent } from './schedule-events';
+import { Schedule } from '@dailyuse/domain-client/schedule';
 
 /**
  * Create Schedule Event Input
@@ -52,13 +55,14 @@ export class CreateScheduleEvent {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
-  async execute(input: CreateScheduleEventInput): Promise<ScheduleClientDTO> {
-    const schedule = await this.apiClient.createSchedule(input);
+  async execute(input: CreateScheduleEventInput): Promise<Schedule> {
+    const dto = await this.apiClient.createSchedule(input);
 
-    this.publishEvent(schedule.uuid, ScheduleEventEvents.SCHEDULE_CREATED);
+    this.publishEvent(dto.uuid, ScheduleEventEvents.SCHEDULE_CREATED);
 
-    return schedule;
+    return Schedule.fromClientDTO(dto);
   }
 
   /**
@@ -78,5 +82,5 @@ export class CreateScheduleEvent {
 /**
  * 便捷函数
  */
-export const createScheduleEvent = (input: CreateScheduleEventInput): Promise<ScheduleClientDTO> =>
+export const createScheduleEvent = (input: CreateScheduleEventInput): Promise<Schedule> =>
   CreateScheduleEvent.getInstance().execute(input);

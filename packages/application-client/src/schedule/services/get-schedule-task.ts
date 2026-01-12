@@ -2,11 +2,13 @@
  * Get Schedule Task
  *
  * 获取调度任务详情用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IScheduleTaskApiClient } from '@dailyuse/infrastructure-client';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
+import { ScheduleTask } from '@dailyuse/domain-client/schedule';
 
 /**
  * Get Schedule Task
@@ -45,14 +47,16 @@ export class GetScheduleTask {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
-  async execute(taskUuid: string): Promise<ScheduleTaskClientDTO> {
-    return this.apiClient.getTaskById(taskUuid);
+  async execute(taskUuid: string): Promise<ScheduleTask> {
+    const dto = await this.apiClient.getTaskById(taskUuid);
+    return ScheduleTask.fromClientDTO(dto);
   }
 }
 
 /**
  * 便捷函数
  */
-export const getScheduleTask = (taskUuid: string): Promise<ScheduleTaskClientDTO> =>
+export const getScheduleTask = (taskUuid: string): Promise<ScheduleTask> =>
   GetScheduleTask.getInstance().execute(taskUuid);

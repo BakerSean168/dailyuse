@@ -3,7 +3,7 @@
  */
 
 export { CreateNotification } from './create-notification';
-export { FindNotifications } from './find-notifications';
+export { FindNotifications, type FindNotificationsOutput } from './find-notifications';
 export { FindNotificationByUuid } from './find-notification-by-uuid';
 export { MarkAsRead } from './mark-as-read';
 export { MarkAllAsRead } from './mark-all-as-read';

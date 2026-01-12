@@ -135,7 +135,7 @@ export type {
 
 export type { ScheduleServerDTO } from './aggregates/ScheduleServer';
 
-export type { ScheduleClientDTO } from './aggregates/ScheduleClient';
+export type { ScheduleClientDTO, ScheduleClient, ScheduleClientStatic } from './aggregates/ScheduleClient';
 
 // ============ Conflict Detection (Story 9.1) ============
 export type {

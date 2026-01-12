@@ -2,11 +2,14 @@
  * Update My Profile
  *
  * 更新当前用户资料用例
+ * 
+ * **返回 Entity 对象**
  */
 
-import type { AccountDTO, UpdateAccountProfileRequestDTO } from '@dailyuse/contracts/account';
+import type { UpdateAccountProfileRequestDTO } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
+import { Account } from '@dailyuse/domain-client/account';
 
 /**
  * Update My Profile Input
@@ -50,14 +53,16 @@ export class UpdateMyProfile {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
-  async execute(request: UpdateMyProfileInput): Promise<AccountDTO> {
-    return this.apiClient.updateMyProfile(request);
+  async execute(request: UpdateMyProfileInput): Promise<Account> {
+    const dto = await this.apiClient.updateMyProfile(request);
+    return Account.fromClientDTO(dto);
   }
 }
 
 /**
  * 便捷函数
  */
-export const updateMyProfile = (request: UpdateMyProfileInput): Promise<AccountDTO> =>
+export const updateMyProfile = (request: UpdateMyProfileInput): Promise<Account> =>
   UpdateMyProfile.getInstance().execute(request);

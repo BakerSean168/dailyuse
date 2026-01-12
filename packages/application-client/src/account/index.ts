@@ -36,10 +36,4 @@ export {
   SubscribePlan,
   CancelSubscription,
   GetAccountStats,
-  
-  // Legacy exports (deprecated)
-  AccountProfileApplicationService,
-  createAccountProfileApplicationService,
-  AccountSubscriptionApplicationService,
-  createAccountSubscriptionApplicationService,
 } from './services';

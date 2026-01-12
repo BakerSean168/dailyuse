@@ -3,9 +3,7 @@
  *
  * 目标应用服务 - 渲染进程
  * 
- * EPIC-015 重构: 添加 DTO→Entity 转换
- * - 所有返回值使用 Entity 类型
- * - 使用 Entity.fromClientDTO() 进行转换
+ * 简化版: application-client 服务已返回 Entity 对象，直接透传即可
  */
 
 import {
@@ -41,7 +39,7 @@ import {
   CreateGoalReview,
   UpdateGoalReview,
   DeleteGoalReview,
-} from '@dailyuse/application-client';
+} from '@dailyuse/application-client/goal';
 import type {
   CreateGoalRequest,
   UpdateGoalRequest,
@@ -53,6 +51,13 @@ import type {
   CreateGoalReviewRequest,
   UpdateGoalReviewRequest,
 } from '@dailyuse/contracts/goal';
+import type { 
+  Goal, 
+  GoalFolder,
+  KeyResult,
+  GoalRecord,
+  GoalReview,
+} from '@dailyuse/domain-client/goal';
 
 /** Clone goal options (inline type matching CloneGoal service) */
 type CloneGoalOptions = {
@@ -70,13 +75,6 @@ type SearchGoalsInput = {
   page?: number;
   limit?: number;
 };
-import { 
-  Goal, 
-  GoalFolder,
-  KeyResult,
-  GoalRecord,
-  GoalReview,
-} from '@dailyuse/domain-client/goal';
 
 /**
  * Goal Application Service
@@ -96,29 +94,23 @@ export class GoalApplicationService {
   // ===== Goal Operations =====
 
   async listGoals(): Promise<{ goals: Goal[] }> {
-    const response = await ListGoals.getInstance().execute();
-    return {
-      goals: response.goals.map(dto => Goal.fromClientDTO(dto)),
-    };
+    return ListGoals.getInstance().execute();
   }
 
   async getGoal(goalId: string): Promise<Goal | null> {
     try {
-      const dto = await GetGoal.getInstance().execute(goalId);
-      return Goal.fromClientDTO(dto);
+      return await GetGoal.getInstance().execute(goalId);
     } catch {
       return null;
     }
   }
 
   async createGoal(input: CreateGoalRequest): Promise<Goal> {
-    const dto = await CreateGoal.getInstance().execute(input);
-    return Goal.fromClientDTO(dto);
+    return CreateGoal.getInstance().execute(input);
   }
 
   async updateGoal(uuid: string, request: UpdateGoalRequest): Promise<Goal> {
-    const dto = await UpdateGoal.getInstance().execute(uuid, request);
-    return Goal.fromClientDTO(dto);
+    return UpdateGoal.getInstance().execute(uuid, request);
   }
 
   async deleteGoal(goalId: string): Promise<void> {
@@ -126,53 +118,42 @@ export class GoalApplicationService {
   }
 
   async activateGoal(goalId: string): Promise<Goal> {
-    const dto = await ActivateGoal.getInstance().execute(goalId);
-    return Goal.fromClientDTO(dto);
+    return ActivateGoal.getInstance().execute(goalId);
   }
 
   async pauseGoal(goalId: string): Promise<Goal> {
-    const dto = await PauseGoal.getInstance().execute(goalId);
-    return Goal.fromClientDTO(dto);
+    return PauseGoal.getInstance().execute(goalId);
   }
 
   async completeGoal(goalId: string): Promise<Goal> {
-    const dto = await CompleteGoal.getInstance().execute(goalId);
-    return Goal.fromClientDTO(dto);
+    return CompleteGoal.getInstance().execute(goalId);
   }
 
   async archiveGoal(goalId: string): Promise<Goal> {
-    const dto = await ArchiveGoal.getInstance().execute(goalId);
-    return Goal.fromClientDTO(dto);
+    return ArchiveGoal.getInstance().execute(goalId);
   }
 
   async cloneGoal(goalUuid: string, options?: CloneGoalOptions): Promise<Goal> {
-    const dto = await CloneGoal.getInstance().execute(goalUuid, options || {});
-    return Goal.fromClientDTO(dto);
+    return CloneGoal.getInstance().execute(goalUuid, options || {});
   }
 
   async searchGoals(input: SearchGoalsInput): Promise<{ goals: Goal[]; pagination: { page: number; limit: number; total: number } }> {
-    const response = await SearchGoals.getInstance().execute(input);
-    return {
-      goals: response.goals,
-      pagination: response.pagination,
-    };
+    return SearchGoals.getInstance().execute(input);
   }
 
   // ===== Key Result Operations =====
 
   async getKeyResults(goalId: string): Promise<KeyResult[]> {
     const response = await GetKeyResults.getInstance().execute(goalId);
-    return response.keyResults.map(dto => KeyResult.fromServerDTO(dto));
+    return response.keyResults;
   }
 
   async createKeyResult(goalUuid: string, request: Omit<AddKeyResultRequest, 'goalUuid'>): Promise<KeyResult> {
-    const dto = await CreateKeyResult.getInstance().execute(goalUuid, request);
-    return KeyResult.fromClientDTO(dto);
+    return CreateKeyResult.getInstance().execute(goalUuid, request);
   }
 
   async updateKeyResult(goalUuid: string, keyResultUuid: string, request: UpdateKeyResultRequest): Promise<KeyResult> {
-    const dto = await UpdateKeyResult.getInstance().execute(goalUuid, keyResultUuid, request);
-    return KeyResult.fromClientDTO(dto);
+    return UpdateKeyResult.getInstance().execute(goalUuid, keyResultUuid, request);
   }
 
   async deleteKeyResult(goalUuid: string, keyResultUuid: string): Promise<void> {
@@ -182,27 +163,23 @@ export class GoalApplicationService {
   // ===== Folder Operations =====
 
   async listFolders(): Promise<GoalFolder[]> {
-    const dtos = await ListGoalFolders.getInstance().execute();
-    return dtos.map(dto => GoalFolder.fromClientDTO(dto));
+    return ListGoalFolders.getInstance().execute();
   }
 
   async getFolder(folderId: string): Promise<GoalFolder | null> {
     try {
-      const dto = await GetGoalFolder.getInstance().execute(folderId);
-      return GoalFolder.fromClientDTO(dto);
+      return await GetGoalFolder.getInstance().execute(folderId);
     } catch {
       return null;
     }
   }
 
   async createFolder(input: CreateGoalFolderRequest): Promise<GoalFolder> {
-    const dto = await CreateGoalFolder.getInstance().execute(input);
-    return GoalFolder.fromClientDTO(dto);
+    return CreateGoalFolder.getInstance().execute(input);
   }
 
   async updateFolder(uuid: string, request: UpdateGoalFolderRequest): Promise<GoalFolder> {
-    const dto = await UpdateGoalFolder.getInstance().execute(uuid, request);
-    return GoalFolder.fromClientDTO(dto);
+    return UpdateGoalFolder.getInstance().execute(uuid, request);
   }
 
   async deleteFolder(folderId: string): Promise<void> {
@@ -212,16 +189,11 @@ export class GoalApplicationService {
   // ===== Record Operations =====
 
   async getRecordsByGoal(goalId: string, params?: { page?: number; limit?: number; dateRange?: { start?: string; end?: string } }): Promise<{ records: GoalRecord[]; total: number }> {
-    const response = await GetGoalRecordsByGoal.getInstance().execute(goalId, params);
-    return {
-      records: response.records.map(dto => GoalRecord.fromClientDTO(dto)),
-      total: response.total,
-    };
+    return GetGoalRecordsByGoal.getInstance().execute(goalId, params);
   }
 
   async createRecord(goalUuid: string, keyResultUuid: string, request: CreateGoalRecordRequest): Promise<GoalRecord> {
-    const dto = await CreateGoalRecord.getInstance().execute(goalUuid, keyResultUuid, request);
-    return GoalRecord.fromClientDTO(dto);
+    return CreateGoalRecord.getInstance().execute(goalUuid, keyResultUuid, request);
   }
 
   async deleteRecord(goalUuid: string, keyResultUuid: string, recordUuid: string): Promise<void> {
@@ -232,18 +204,15 @@ export class GoalApplicationService {
 
   async getReviews(goalUuid: string): Promise<GoalReview[]> {
     const response = await GetGoalReviews.getInstance().execute(goalUuid);
-    // 转换为 Entity 类型
-    return (response.reviews as any[]).map(dto => GoalReview.fromClientDTO(dto));
+    return response.reviews;
   }
 
   async createReview(goalUuid: string, request: CreateGoalReviewRequest): Promise<GoalReview> {
-    const dto = await CreateGoalReview.getInstance().execute(goalUuid, request);
-    return GoalReview.fromClientDTO(dto as any);
+    return CreateGoalReview.getInstance().execute(goalUuid, request);
   }
 
   async updateReview(goalUuid: string, reviewUuid: string, request: UpdateGoalReviewRequest): Promise<GoalReview> {
-    const dto = await UpdateGoalReview.getInstance().execute(goalUuid, reviewUuid, request);
-    return GoalReview.fromClientDTO(dto as any);
+    return UpdateGoalReview.getInstance().execute(goalUuid, reviewUuid, request);
   }
 
   async deleteReview(goalUuid: string, reviewUuid: string): Promise<void> {

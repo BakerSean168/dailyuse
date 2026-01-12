@@ -4,9 +4,9 @@
  * 标记通知为已读用例
  */
 
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import type { INotificationApiClient } from '@dailyuse/infrastructure-client';
 import { NotificationContainer } from '@dailyuse/infrastructure-client';
+import { NotificationClient } from '@dailyuse/domain-client/notification';
 
 /**
  * Mark As Read
@@ -45,14 +45,16 @@ export class MarkAsRead {
 
   /**
    * 执行用例
+   * @returns NotificationClient Entity
    */
-  async execute(uuid: string): Promise<NotificationClientDTO> {
-    return this.apiClient.markAsRead(uuid);
+  async execute(uuid: string): Promise<NotificationClient> {
+    const dto = await this.apiClient.markAsRead(uuid);
+    return NotificationClient.fromClientDTO(dto);
   }
 }
 
 /**
  * 便捷函数
  */
-export const markAsRead = (uuid: string): Promise<NotificationClientDTO> =>
+export const markAsRead = (uuid: string): Promise<NotificationClient> =>
   MarkAsRead.getInstance().execute(uuid);

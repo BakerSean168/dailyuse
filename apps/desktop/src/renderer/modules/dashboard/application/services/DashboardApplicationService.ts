@@ -3,6 +3,7 @@
  *
  * This service acts as a facade for dashboard-related operations in the renderer process.
  * It interfaces with the `@dailyuse/application-client` layer to communicate with the main process.
+ * application-client 已返回 Entity 对象，直接透传
  *
  * @module renderer/modules/dashboard/application/services
  */
@@ -18,10 +19,8 @@ import {
   // Types
   type UpdateDashboardConfigInput,
 } from '@dailyuse/application-client';
-import type {
-  DashboardStatisticsClientDTO,
-  DashboardConfigClientDTO,
-} from '@dailyuse/contracts/dashboard';
+import type { DashboardStatisticsClientDTO } from '@dailyuse/contracts/dashboard';
+import type { DashboardConfig } from '@dailyuse/domain-client/dashboard';
 
 /**
  * Service class for managing Dashboard data and configuration.
@@ -69,9 +68,9 @@ export class DashboardApplicationService {
   /**
    * Retrieves the current dashboard configuration.
    *
-   * @returns {Promise<DashboardConfigClientDTO>} A promise that resolves to the configuration DTO.
+   * @returns {Promise<DashboardConfig>} A promise that resolves to the configuration Entity.
    */
-  async getDashboardConfig(): Promise<DashboardConfigClientDTO> {
+  async getDashboardConfig(): Promise<DashboardConfig> {
     return getDashboardConfig();
   }
 
@@ -79,18 +78,18 @@ export class DashboardApplicationService {
    * Updates the dashboard configuration.
    *
    * @param {UpdateDashboardConfigInput} input - The partial configuration to update.
-   * @returns {Promise<DashboardConfigClientDTO>} A promise that resolves to the updated configuration DTO.
+   * @returns {Promise<DashboardConfig>} A promise that resolves to the updated configuration Entity.
    */
-  async updateDashboardConfig(input: UpdateDashboardConfigInput): Promise<DashboardConfigClientDTO> {
+  async updateDashboardConfig(input: UpdateDashboardConfigInput): Promise<DashboardConfig> {
     return updateDashboardConfig(input);
   }
 
   /**
    * Resets the dashboard configuration to its default state.
    *
-   * @returns {Promise<DashboardConfigClientDTO>} A promise that resolves to the default configuration DTO.
+   * @returns {Promise<DashboardConfig>} A promise that resolves to the default configuration Entity.
    */
-  async resetDashboardConfig(): Promise<DashboardConfigClientDTO> {
+  async resetDashboardConfig(): Promise<DashboardConfig> {
     return resetDashboardConfig();
   }
 }

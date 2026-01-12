@@ -4,9 +4,10 @@
  * 更新账户偏好用例
  */
 
-import type { AccountDTO, UpdateAccountPreferencesRequest } from '@dailyuse/contracts/account';
+import type { UpdateAccountPreferencesRequest } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
+import { Account } from '@dailyuse/domain-client/account';
 
 /**
  * Update Account Preferences
@@ -45,8 +46,10 @@ export class UpdateAccountPreferences {
 
   /**
    * 执行用例
+   * @returns Account Entity
    */
-  async execute(accountId: string, request: UpdateAccountPreferencesRequest): Promise<AccountDTO> {
-    return this.apiClient.updatePreferences(accountId, request);
+  async execute(accountId: string, request: UpdateAccountPreferencesRequest): Promise<Account> {
+    const dto = await this.apiClient.updatePreferences(accountId, request);
+    return Account.fromClientDTO(dto);
   }
 }

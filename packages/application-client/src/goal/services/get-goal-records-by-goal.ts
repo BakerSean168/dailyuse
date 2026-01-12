@@ -2,11 +2,13 @@
  * Get Goal Records By Goal
  *
  * 获取目标的所有记录用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
-import type { GoalRecordsResponse } from '@dailyuse/contracts/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
+import { GoalRecord } from '@dailyuse/domain-client/goal';
 
 /**
  * Get Goal Records By Goal
@@ -45,6 +47,7 @@ export class GetGoalRecordsByGoal {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象数组
    */
   async execute(
     goalUuid: string,
@@ -53,7 +56,11 @@ export class GetGoalRecordsByGoal {
       limit?: number;
       dateRange?: { start?: string; end?: string };
     },
-  ): Promise<GoalRecordsResponse> {
-    return this.apiClient.getGoalRecordsByGoal(goalUuid, params);
+  ): Promise<{ records: GoalRecord[]; total: number }> {
+    const response = await this.apiClient.getGoalRecordsByGoal(goalUuid, params);
+    return {
+      records: response.records.map(dto => GoalRecord.fromClientDTO(dto)),
+      total: response.total,
+    };
   }
 }

@@ -2,11 +2,13 @@
  * List Schedules By Account
  *
  * 获取账户的所有日程事件用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IScheduleEventApiClient } from '@dailyuse/infrastructure-client';
-import type { ScheduleClientDTO } from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
+import { Schedule } from '@dailyuse/domain-client/schedule';
 
 /**
  * List Schedules By Account
@@ -45,14 +47,16 @@ export class ListSchedulesByAccount {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象数组
    */
-  async execute(): Promise<ScheduleClientDTO[]> {
-    return this.apiClient.getSchedulesByAccount();
+  async execute(): Promise<Schedule[]> {
+    const dtos = await this.apiClient.getSchedulesByAccount();
+    return dtos.map(dto => Schedule.fromClientDTO(dto));
   }
 }
 
 /**
  * 便捷函数
  */
-export const listSchedulesByAccount = (): Promise<ScheduleClientDTO[]> =>
+export const listSchedulesByAccount = (): Promise<Schedule[]> =>
   ListSchedulesByAccount.getInstance().execute();

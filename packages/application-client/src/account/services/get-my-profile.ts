@@ -2,11 +2,13 @@
  * Get My Profile
  *
  * 获取当前用户资料用例
+ * 
+ * **返回 Entity 对象**
  */
 
-import type { AccountDTO } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
+import { Account } from '@dailyuse/domain-client/account';
 
 /**
  * Get My Profile
@@ -45,14 +47,16 @@ export class GetMyProfile {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
-  async execute(): Promise<AccountDTO> {
-    return this.apiClient.getMyProfile();
+  async execute(): Promise<Account> {
+    const dto = await this.apiClient.getMyProfile();
+    return Account.fromClientDTO(dto);
   }
 }
 
 /**
  * 便捷函数
  */
-export const getMyProfile = (): Promise<AccountDTO> =>
+export const getMyProfile = (): Promise<Account> =>
   GetMyProfile.getInstance().execute();

@@ -5,8 +5,9 @@
  */
 
 import type { ISettingApiClient } from '@dailyuse/infrastructure-client';
-import type { UserSettingClientDTO, UpdateLocaleRequest } from '@dailyuse/contracts/setting';
+import type { UpdateLocaleRequest } from '@dailyuse/contracts/setting';
 import { SettingContainer } from '@dailyuse/infrastructure-client';
+import { UserSetting } from '@dailyuse/domain-client/setting';
 
 /**
  * Update Locale Input
@@ -39,10 +40,11 @@ export class UpdateLocale {
     UpdateLocale.instance = undefined as unknown as UpdateLocale;
   }
 
-  async execute(input: UpdateLocaleInput): Promise<UserSettingClientDTO> {
-    return this.apiClient.updateLocale(input);
+  async execute(input: UpdateLocaleInput): Promise<UserSetting> {
+    const dto = await this.apiClient.updateLocale(input);
+    return UserSetting.fromClientDTO(dto);
   }
 }
 
-export const updateLocale = (input: UpdateLocaleInput): Promise<UserSettingClientDTO> =>
+export const updateLocale = (input: UpdateLocaleInput): Promise<UserSetting> =>
   UpdateLocale.getInstance().execute(input);

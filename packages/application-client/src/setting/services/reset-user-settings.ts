@@ -5,8 +5,8 @@
  */
 
 import type { ISettingApiClient } from '@dailyuse/infrastructure-client';
-import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 import { SettingContainer } from '@dailyuse/infrastructure-client';
+import { UserSetting } from '@dailyuse/domain-client/setting';
 
 /**
  * Reset User Settings
@@ -34,10 +34,11 @@ export class ResetUserSettings {
     ResetUserSettings.instance = undefined as unknown as ResetUserSettings;
   }
 
-  async execute(): Promise<UserSettingClientDTO> {
-    return this.apiClient.resetUserSettings();
+  async execute(): Promise<UserSetting> {
+    const dto = await this.apiClient.resetUserSettings();
+    return UserSetting.fromClientDTO(dto);
   }
 }
 
-export const resetUserSettings = (): Promise<UserSettingClientDTO> =>
+export const resetUserSettings = (): Promise<UserSetting> =>
   ResetUserSettings.getInstance().execute();

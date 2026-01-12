@@ -2,13 +2,16 @@
  * Update Key Result
  *
  * 更新关键结果用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
-import type { KeyResultClientDTO, UpdateKeyResultRequest } from '@dailyuse/contracts/goal';
+import type { UpdateKeyResultRequest } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
 import { GoalEvents, type GoalAggregateRefreshEvent, type GoalAggregateRefreshReason } from '@dailyuse/contracts/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
+import { KeyResult } from '@dailyuse/domain-client/goal';
 
 /**
  * Update Key Result
@@ -47,19 +50,20 @@ export class UpdateKeyResult {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
   async execute(
     goalUuid: string,
     keyResultUuid: string,
     request: UpdateKeyResultRequest,
-  ): Promise<KeyResultClientDTO> {
-    const data = await this.apiClient.updateKeyResultForGoal(goalUuid, keyResultUuid, request);
+  ): Promise<KeyResult> {
+    const dto = await this.apiClient.updateKeyResultForGoal(goalUuid, keyResultUuid, request);
 
     this.publishGoalRefreshEvent(goalUuid, 'key-result-updated', {
       keyResultUuid,
     });
 
-    return data;
+    return KeyResult.fromClientDTO(dto);
   }
 
   /**

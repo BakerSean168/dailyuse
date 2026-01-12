@@ -4,9 +4,10 @@
  * 验证手机号用例
  */
 
-import type { AccountDTO, VerifyPhoneRequest } from '@dailyuse/contracts/account';
+import type { VerifyPhoneRequest } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
+import { Account } from '@dailyuse/domain-client/account';
 
 /**
  * Verify Phone
@@ -45,8 +46,10 @@ export class VerifyPhone {
 
   /**
    * 执行用例
+   * @returns Account Entity
    */
-  async execute(accountId: string, request: VerifyPhoneRequest): Promise<AccountDTO> {
-    return this.apiClient.verifyPhone(accountId, request);
+  async execute(accountId: string, request: VerifyPhoneRequest): Promise<Account> {
+    const dto = await this.apiClient.verifyPhone(accountId, request);
+    return Account.fromClientDTO(dto);
   }
 }

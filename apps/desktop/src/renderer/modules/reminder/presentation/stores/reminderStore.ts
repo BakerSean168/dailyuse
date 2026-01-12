@@ -239,12 +239,9 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
           setLoading(true);
           setError(null);
           
-          // 使用 ApplicationService 获取提醒
+          // 使用 ApplicationService 获取提醒 - 已返回 Entity 对象
           const result = await reminderApplicationService.listReminderTemplates();
-          
-          // DTO 转换为 Entity
-          const entities = result.templates.map((dto: Parameters<typeof ReminderTemplate.fromClientDTO>[0]) => ReminderTemplate.fromClientDTO(dto));
-          setReminders(entities);
+          setReminders(result.templates);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch reminders';
           setError(message);
@@ -260,12 +257,9 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
         try {
           setLoading(true);
           
-          // 使用 ApplicationService 获取分组
+          // 使用 ApplicationService 获取分组 - 已返回 Entity 对象
           const result = await reminderApplicationService.listReminderGroups();
-          
-          // DTO 转换为 Entity
-          const entities = result.groups.map((dto: Parameters<typeof ReminderGroup.fromClientDTO>[0]) => ReminderGroup.fromClientDTO(dto));
-          setGroups(entities);
+          setGroups(result.groups);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch reminder groups';
           setError(message);
@@ -281,12 +275,9 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
         try {
           setLoading(true);
           
-          // 使用 ApplicationService 延迟提醒
+          // 使用 ApplicationService 延迟提醒 - 已返回 Entity 对象
           // TODO: ApplicationService 暂不支持 snooze，使用 toggle 作为临时方案
-          const result = await reminderApplicationService.toggleTemplateEnabled(id);
-          
-          // DTO 转换为 Entity 后更新状态
-          const entity = ReminderTemplate.fromClientDTO(result);
+          const entity = await reminderApplicationService.toggleTemplateEnabled(id);
           updateReminder(id, entity);
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to snooze reminder');
@@ -302,12 +293,9 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
         try {
           setLoading(true);
           
-          // 使用 ApplicationService 解除提醒
+          // 使用 ApplicationService 解除提醒 - 已返回 Entity 对象
           // TODO: ApplicationService 暂不支持 dismiss，使用 toggle 作为临时方案
-          const result = await reminderApplicationService.toggleTemplateEnabled(id);
-          
-          // DTO 转换为 Entity 后更新状态
-          const entity = ReminderTemplate.fromClientDTO(result);
+          const entity = await reminderApplicationService.toggleTemplateEnabled(id);
           updateReminder(id, entity);
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to dismiss reminder');
@@ -325,11 +313,8 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
         try {
           setLoading(true);
           
-          // 使用 ApplicationService 切换启用状态
-          const result = await reminderApplicationService.toggleTemplateEnabled(id);
-          
-          // DTO 转换为 Entity 后更新状态
-          const entity = ReminderTemplate.fromClientDTO(result);
+          // 使用 ApplicationService 切换启用状态 - 已返回 Entity 对象
+          const entity = await reminderApplicationService.toggleTemplateEnabled(id);
           updateReminder(id, entity);
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to toggle reminder');

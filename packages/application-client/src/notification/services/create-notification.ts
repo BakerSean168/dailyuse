@@ -4,12 +4,12 @@
  * 创建通知用例
  */
 
-import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import type {
   INotificationApiClient,
   CreateNotificationRequest,
 } from '@dailyuse/infrastructure-client';
 import { NotificationContainer } from '@dailyuse/infrastructure-client';
+import { NotificationClient } from '@dailyuse/domain-client/notification';
 
 /**
  * Create Notification Input
@@ -54,13 +54,14 @@ export class CreateNotification {
   /**
    * 执行用例
    */
-  async execute(input: CreateNotificationInput): Promise<NotificationClientDTO> {
-    return this.apiClient.createNotification(input);
+  async execute(input: CreateNotificationInput): Promise<NotificationClient> {
+    const dto = await this.apiClient.createNotification(input);
+    return NotificationClient.fromClientDTO(dto);
   }
 }
 
 /**
  * 便捷函数
  */
-export const createNotification = (input: CreateNotificationInput): Promise<NotificationClientDTO> =>
+export const createNotification = (input: CreateNotificationInput): Promise<NotificationClient> =>
   CreateNotification.getInstance().execute(input);

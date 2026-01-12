@@ -3,6 +3,7 @@
  *
  * AI 模块应用服务层
  * 封装 @dailyuse/application-client 的 AI Use Cases
+ * 返回 Entity 对象（AIConversation, AIMessage）而非 DTO
  */
 
 import {
@@ -38,69 +39,84 @@ import type {
   UpdateConversationRequest,
   SendMessageRequest,
   ChatStreamRequest,
+  ChatStreamChunk,
   GenerateGoalRequest,
   GenerateGoalWithKRsRequest,
+  GenerateGoalResponse,
+  GenerateGoalWithKRsResponse,
+  GenerateKeyResultsResponse,
   CreateAIProviderRequest,
   TestAIProviderConnectionRequest,
+  TestAIProviderConnectionResponse,
   UpdateAIProviderRequest,
+  AIProviderConfigClientDTO,
+  AIProviderConfigSummary,
+  AIUsageQuotaClientDTO,
 } from '@dailyuse/contracts/ai';
+import { AIConversation, AIMessage } from '@dailyuse/domain-client/ai';
 import { AIContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * AI 应用服务
  *
  * 提供 AI 相关的所有业务操作
- * 返回类型与 @dailyuse/application-client 保持一致
+ * 返回 Entity 对象（AIConversation, AIMessage）以支持领域方法
  */
 export class AIApplicationService {
   // ===== Conversation Operations =====
 
   /**
    * 创建对话
+   * @returns AIConversation Entity
    */
-  createConversation(input: CreateConversationRequest) {
+  createConversation(input: CreateConversationRequest): Promise<AIConversation> {
     return CreateConversation.getInstance().execute(input);
   }
 
   /**
    * 获取对话列表
+   * @returns 包含 AIConversation Entity 数组的响应
    */
-  listConversations(input?: { page?: number; pageSize?: number; status?: string }) {
+  listConversations(input?: { page?: number; pageSize?: number; status?: string }): Promise<{ conversations: AIConversation[]; total: number }> {
     return ListConversations.getInstance().execute(input);
   }
 
   /**
    * 获取单个对话
+   * @returns AIConversation Entity
    */
-  getConversation(conversationUuid: string) {
+  getConversation(conversationUuid: string): Promise<AIConversation> {
     return GetConversation.getInstance().execute(conversationUuid);
   }
 
   /**
    * 更新对话
+   * @returns 更新后的 AIConversation Entity
    */
-  updateConversation(conversationUuid: string, request: UpdateConversationRequest) {
+  updateConversation(conversationUuid: string, request: UpdateConversationRequest): Promise<AIConversation> {
     return UpdateConversation.getInstance().execute(conversationUuid, request);
   }
 
   /**
    * 删除对话
    */
-  deleteConversation(conversationUuid: string) {
+  deleteConversation(conversationUuid: string): Promise<void> {
     return DeleteConversation.getInstance().execute(conversationUuid);
   }
 
   /**
    * 关闭对话
+   * @returns 更新后的 AIConversation Entity
    */
-  closeConversation(conversationUuid: string) {
+  closeConversation(conversationUuid: string): Promise<AIConversation> {
     return CloseConversation.getInstance().execute(conversationUuid);
   }
 
   /**
    * 归档对话
+   * @returns 更新后的 AIConversation Entity
    */
-  archiveConversation(conversationUuid: string) {
+  archiveConversation(conversationUuid: string): Promise<AIConversation> {
     return ArchiveConversation.getInstance().execute(conversationUuid);
   }
 
@@ -108,29 +124,32 @@ export class AIApplicationService {
 
   /**
    * 发送消息
+   * @returns AIMessage Entity
    */
-  sendMessage(input: SendMessageRequest) {
+  sendMessage(input: SendMessageRequest): Promise<AIMessage> {
     return SendMessage.getInstance().execute(input);
   }
 
   /**
    * 获取消息列表
+   * @returns 包含 AIMessage Entity 数组的响应
    */
-  listMessages(conversationUuid: string, params?: { page?: number; pageSize?: number }) {
+  listMessages(conversationUuid: string, params?: { page?: number; pageSize?: number }): Promise<{ messages: AIMessage[]; total: number }> {
     return ListMessages.getInstance().execute(conversationUuid, params);
   }
 
   /**
    * 删除消息
    */
-  deleteMessage(messageUuid: string) {
+  deleteMessage(messageUuid: string): Promise<void> {
     return DeleteMessage.getInstance().execute(messageUuid);
   }
 
   /**
    * 流式聊天
+   * @returns 流式响应生成器
    */
-  streamChat(input: ChatStreamRequest) {
+  streamChat(input: ChatStreamRequest): AsyncGenerator<ChatStreamChunk, void, unknown> {
     return StreamChat.getInstance().execute(input);
   }
 
@@ -139,21 +158,21 @@ export class AIApplicationService {
   /**
    * 生成目标
    */
-  generateGoal(input: GenerateGoalRequest) {
+  generateGoal(input: GenerateGoalRequest): Promise<GenerateGoalResponse> {
     return GenerateGoal.getInstance().execute(input);
   }
 
   /**
    * 生成目标和关键结果
    */
-  generateGoalWithKeyResults(input: GenerateGoalWithKRsRequest) {
+  generateGoalWithKeyResults(input: GenerateGoalWithKRsRequest): Promise<GenerateGoalWithKRsResponse> {
     return GenerateGoalWithKeyResults.getInstance().execute(input);
   }
 
   /**
    * 生成关键结果
    */
-  generateKeyResults(goalUuid: string) {
+  generateKeyResults(goalUuid: string): Promise<GenerateKeyResultsResponse> {
     return AIGenerateKeyResults.getInstance().execute(goalUuid);
   }
 
@@ -162,7 +181,7 @@ export class AIApplicationService {
   /**
    * 获取配额信息
    */
-  getQuota() {
+  getQuota(): Promise<AIUsageQuotaClientDTO> {
     return GetQuota.getInstance().execute();
   }
 
@@ -170,7 +189,7 @@ export class AIApplicationService {
    * 检查配额可用性
    * @param tokensNeeded 需要的 token 数量
    */
-  checkQuotaAvailability(tokensNeeded: number) {
+  checkQuotaAvailability(tokensNeeded: number): Promise<boolean> {
     return CheckQuotaAvailability.getInstance().execute(tokensNeeded);
   }
 
@@ -179,28 +198,28 @@ export class AIApplicationService {
   /**
    * 获取 AI 提供商列表
    */
-  listProviders() {
+  listProviders(): Promise<AIProviderConfigSummary[]> {
     return ListProviders.getInstance().execute();
   }
 
   /**
    * 创建 AI 提供商
    */
-  createProvider(input: CreateAIProviderRequest) {
+  createProvider(input: CreateAIProviderRequest): Promise<AIProviderConfigClientDTO> {
     return CreateProvider.getInstance().execute(input);
   }
 
   /**
    * 测试提供商连接
    */
-  testProviderConnection(input: TestAIProviderConnectionRequest) {
+  testProviderConnection(input: TestAIProviderConnectionRequest): Promise<TestAIProviderConnectionResponse> {
     return TestProviderConnection.getInstance().execute(input);
   }
 
   /**
    * 设置默认提供商
    */
-  setDefaultProvider(providerUuid: string) {
+  setDefaultProvider(providerUuid: string): Promise<void> {
     return SetDefaultProvider.getInstance().execute(providerUuid);
   }
 

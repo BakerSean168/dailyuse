@@ -2,11 +2,13 @@
  * Activate Account
  *
  * 激活账户用例
+ * 
+ * **返回 Entity 对象**
  */
 
-import type { AccountDTO } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
+import { Account } from '@dailyuse/domain-client/account';
 
 /**
  * Activate Account
@@ -45,14 +47,16 @@ export class ActivateAccount {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
-  async execute(accountId: string): Promise<AccountDTO> {
-    return this.apiClient.activateAccount(accountId);
+  async execute(accountId: string): Promise<Account> {
+    const dto = await this.apiClient.activateAccount(accountId);
+    return Account.fromClientDTO(dto);
   }
 }
 
 /**
  * 便捷函数
  */
-export const activateAccount = (accountId: string): Promise<AccountDTO> =>
+export const activateAccount = (accountId: string): Promise<Account> =>
   ActivateAccount.getInstance().execute(accountId);

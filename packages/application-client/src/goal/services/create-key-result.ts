@@ -2,13 +2,16 @@
  * Create Key Result
  *
  * 为目标创建关键结果用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
-import type { KeyResultClientDTO, AddKeyResultRequest } from '@dailyuse/contracts/goal';
+import type { AddKeyResultRequest } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
 import { GoalEvents, type GoalAggregateRefreshEvent, type GoalAggregateRefreshReason } from '@dailyuse/contracts/goal';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
+import { KeyResult } from '@dailyuse/domain-client/goal';
 
 /**
  * Create Key Result
@@ -47,18 +50,19 @@ export class CreateKeyResult {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
   async execute(
     goalUuid: string,
     request: Omit<AddKeyResultRequest, 'goalUuid'>,
-  ): Promise<KeyResultClientDTO> {
-    const data = await this.apiClient.addKeyResultForGoal(goalUuid, request);
+  ): Promise<KeyResult> {
+    const dto = await this.apiClient.addKeyResultForGoal(goalUuid, request);
 
     this.publishGoalRefreshEvent(goalUuid, 'key-result-created', {
-      keyResultUuid: data.uuid,
+      keyResultUuid: dto.uuid,
     });
 
-    return data;
+    return KeyResult.fromClientDTO(dto);
   }
 
   /**

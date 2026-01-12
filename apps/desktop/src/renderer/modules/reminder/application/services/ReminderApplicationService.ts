@@ -29,6 +29,7 @@ import {
   // Statistics
   GetReminderStatistics,
 } from '@dailyuse/application-client';
+import { ReminderTemplate, ReminderGroup } from '@dailyuse/domain-client/reminder';
 
 // Local type definitions (not re-exported from main index)
 export interface ListReminderTemplatesParams {
@@ -41,7 +42,7 @@ export interface ListReminderTemplatesParams {
 }
 
 export interface ListReminderTemplatesResult {
-  templates: ReminderTemplateClientDTO[];
+  templates: ReminderTemplate[];
   total: number;
   page: number;
   pageSize: number;
@@ -59,14 +60,12 @@ export interface ListReminderGroupsParams {
 }
 
 export interface ListReminderGroupsResult {
-  groups: ReminderGroupClientDTO[];
+  groups: ReminderGroup[];
   total: number;
   page: number;
   pageSize: number;
 }
 import type {
-  ReminderTemplateClientDTO,
-  ReminderGroupClientDTO,
   CreateReminderTemplateRequest,
   UpdateReminderTemplateRequest,
   CreateReminderGroupRequest,
@@ -90,15 +89,13 @@ export class ReminderApplicationService {
 
   // ===== Reminder Template Operations =====
 
-  async createReminderTemplate(input: CreateReminderTemplateRequest): Promise<ReminderTemplateClientDTO> {
-    const template = await CreateReminderTemplate.getInstance().execute(input);
-    return template.toClientDTO();
+  async createReminderTemplate(input: CreateReminderTemplateRequest): Promise<ReminderTemplate> {
+    return CreateReminderTemplate.getInstance().execute(input);
   }
 
-  async getReminderTemplate(templateId: string): Promise<ReminderTemplateClientDTO | null> {
+  async getReminderTemplate(templateId: string): Promise<ReminderTemplate | null> {
     try {
-      const template = await GetReminderTemplate.getInstance().execute(templateId);
-      return template.toClientDTO();
+      return await GetReminderTemplate.getInstance().execute(templateId);
     } catch {
       return null;
     }
@@ -123,28 +120,24 @@ export class ReminderApplicationService {
     return GetUserTemplates.getInstance().execute(accountUuid);
   }
 
-  async updateReminderTemplate(templateId: string, input: UpdateReminderTemplateRequest): Promise<ReminderTemplateClientDTO> {
-    const template = await UpdateReminderTemplate.getInstance().execute(templateId, input);
-    return template.toClientDTO();
+  async updateReminderTemplate(templateId: string, input: UpdateReminderTemplateRequest): Promise<ReminderTemplate> {
+    return UpdateReminderTemplate.getInstance().execute(templateId, input);
   }
 
   async deleteReminderTemplate(templateId: string): Promise<void> {
     return DeleteReminderTemplate.getInstance().execute(templateId);
   }
 
-  async toggleTemplateEnabled(templateId: string): Promise<ReminderTemplateClientDTO> {
-    const template = await ToggleTemplateEnabled.getInstance().execute(templateId);
-    return template.toClientDTO();
+  async toggleTemplateEnabled(templateId: string): Promise<ReminderTemplate> {
+    return ToggleTemplateEnabled.getInstance().execute(templateId);
   }
 
-  async moveTemplateToGroup(templateUuid: string, targetGroupUuid: string | null): Promise<ReminderTemplateClientDTO> {
-    const template = await MoveTemplateToGroup.getInstance().execute(templateUuid, targetGroupUuid);
-    return template.toClientDTO();
+  async moveTemplateToGroup(templateUuid: string, targetGroupUuid: string | null): Promise<ReminderTemplate> {
+    return MoveTemplateToGroup.getInstance().execute(templateUuid, targetGroupUuid);
   }
 
-  async searchTemplates(accountUuid: string, query: string): Promise<ReminderTemplateClientDTO[]> {
-    const templates = await SearchTemplates.getInstance().execute(accountUuid, query);
-    return templates.map(t => t.toClientDTO());
+  async searchTemplates(accountUuid: string, query: string): Promise<ReminderTemplate[]> {
+    return SearchTemplates.getInstance().execute(accountUuid, query);
   }
 
   async getTemplateScheduleStatus(templateId: string) {
@@ -157,15 +150,13 @@ export class ReminderApplicationService {
 
   // ===== Reminder Group Operations =====
 
-  async createReminderGroup(input: CreateReminderGroupRequest): Promise<ReminderGroupClientDTO> {
-    const group = await CreateReminderGroup.getInstance().execute(input);
-    return group.toClientDTO();
+  async createReminderGroup(input: CreateReminderGroupRequest): Promise<ReminderGroup> {
+    return CreateReminderGroup.getInstance().execute(input);
   }
 
-  async getReminderGroup(groupId: string): Promise<ReminderGroupClientDTO | null> {
+  async getReminderGroup(groupId: string): Promise<ReminderGroup | null> {
     try {
-      const group = await GetReminderGroup.getInstance().execute(groupId);
-      return group.toClientDTO();
+      return await GetReminderGroup.getInstance().execute(groupId);
     } catch {
       return null;
     }
@@ -179,23 +170,20 @@ export class ReminderApplicationService {
     return GetUserReminderGroups.getInstance().execute(accountUuid);
   }
 
-  async updateReminderGroup(groupId: string, input: UpdateReminderGroupRequest): Promise<ReminderGroupClientDTO> {
-    const group = await UpdateReminderGroup.getInstance().execute(groupId, input);
-    return group.toClientDTO();
+  async updateReminderGroup(groupId: string, input: UpdateReminderGroupRequest): Promise<ReminderGroup> {
+    return UpdateReminderGroup.getInstance().execute(groupId, input);
   }
 
   async deleteReminderGroup(groupId: string): Promise<void> {
     return DeleteReminderGroup.getInstance().execute(groupId);
   }
 
-  async toggleReminderGroupStatus(groupId: string): Promise<ReminderGroupClientDTO> {
-    const group = await ToggleReminderGroupStatus.getInstance().execute(groupId);
-    return group.toClientDTO();
+  async toggleReminderGroupStatus(groupId: string): Promise<ReminderGroup> {
+    return ToggleReminderGroupStatus.getInstance().execute(groupId);
   }
 
-  async toggleReminderGroupControlMode(groupId: string): Promise<ReminderGroupClientDTO> {
-    const group = await ToggleReminderGroupControlMode.getInstance().execute(groupId);
-    return group.toClientDTO();
+  async toggleReminderGroupControlMode(groupId: string): Promise<ReminderGroup> {
+    return ToggleReminderGroupControlMode.getInstance().execute(groupId);
   }
 
   // ===== Statistics =====

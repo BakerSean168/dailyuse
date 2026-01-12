@@ -15,7 +15,7 @@ import {
   GetFocusStatus,
   GetFocusHistory,
   GetFocusStatistics,
-} from '@dailyuse/application-client';
+} from '@dailyuse/application-client/goal';
 import type {
   FocusSessionClientDTO,
   FocusStatusDTO,

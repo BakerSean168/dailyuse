@@ -2,11 +2,14 @@
  * Update Account Profile
  *
  * 更新账户资料用例
+ * 
+ * **返回 Entity 对象**
  */
 
-import type { AccountDTO, UpdateAccountProfileRequest } from '@dailyuse/contracts/account';
+import type { UpdateAccountProfileRequest } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
+import { Account } from '@dailyuse/domain-client/account';
 
 /**
  * Update Account Profile
@@ -45,8 +48,10 @@ export class UpdateAccountProfile {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
-  async execute(accountId: string, request: UpdateAccountProfileRequest): Promise<AccountDTO> {
-    return this.apiClient.updateProfile(accountId, request);
+  async execute(accountId: string, request: UpdateAccountProfileRequest): Promise<Account> {
+    const dto = await this.apiClient.updateProfile(accountId, request);
+    return Account.fromClientDTO(dto);
   }
 }

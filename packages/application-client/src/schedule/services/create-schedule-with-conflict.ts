@@ -2,17 +2,19 @@
  * Create Schedule With Conflict
  *
  * 创建日程（带冲突检测）用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IScheduleEventApiClient } from '@dailyuse/infrastructure-client';
 import type {
-  ScheduleClientDTO,
   CreateScheduleRequest,
   ConflictDetectionResult,
 } from '@dailyuse/contracts/schedule';
 import { eventBus } from '@dailyuse/utils';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleEventEvents, type ScheduleEventRefreshEvent, type ScheduleConflictEvent } from './schedule-events';
+import { Schedule } from '@dailyuse/domain-client/schedule';
 
 /**
  * Create Schedule With Conflict Input
@@ -23,7 +25,7 @@ export type CreateScheduleWithConflictInput = CreateScheduleRequest;
  * Create Schedule With Conflict Result
  */
 export interface CreateScheduleWithConflictResult {
-  schedule: ScheduleClientDTO;
+  schedule: Schedule;
   conflicts?: ConflictDetectionResult;
 }
 
@@ -64,6 +66,7 @@ export class CreateScheduleWithConflict {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
   async execute(input: CreateScheduleWithConflictInput): Promise<CreateScheduleWithConflictResult> {
     const result = await this.apiClient.createScheduleWithConflictDetection(input);
@@ -77,7 +80,10 @@ export class CreateScheduleWithConflict {
       );
     }
 
-    return result;
+    return {
+      schedule: Schedule.fromClientDTO(result.schedule),
+      conflicts: result.conflicts,
+    };
   }
 
   /**

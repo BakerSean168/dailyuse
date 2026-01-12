@@ -2,16 +2,16 @@
  * Create Schedule Task
  *
  * 创建调度任务用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IScheduleTaskApiClient } from '@dailyuse/infrastructure-client';
-import type {
-  ScheduleTaskClientDTO,
-  CreateScheduleTaskRequest,
-} from '@dailyuse/contracts/schedule';
+import type { CreateScheduleTaskRequest } from '@dailyuse/contracts/schedule';
 import { eventBus } from '@dailyuse/utils';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleTaskEvents, type ScheduleTaskRefreshEvent } from './schedule-events';
+import { ScheduleTask } from '@dailyuse/domain-client/schedule';
 
 /**
  * Create Schedule Task Input
@@ -55,13 +55,14 @@ export class CreateScheduleTask {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
-  async execute(input: CreateScheduleTaskInput): Promise<ScheduleTaskClientDTO> {
-    const task = await this.apiClient.createTask(input);
+  async execute(input: CreateScheduleTaskInput): Promise<ScheduleTask> {
+    const dto = await this.apiClient.createTask(input);
 
-    this.publishEvent(task.uuid, ScheduleTaskEvents.TASK_CREATED);
+    this.publishEvent(dto.uuid, ScheduleTaskEvents.TASK_CREATED);
 
-    return task;
+    return ScheduleTask.fromClientDTO(dto);
   }
 
   /**
@@ -81,5 +82,5 @@ export class CreateScheduleTask {
 /**
  * 便捷函数
  */
-export const createScheduleTask = (input: CreateScheduleTaskInput): Promise<ScheduleTaskClientDTO> =>
+export const createScheduleTask = (input: CreateScheduleTaskInput): Promise<ScheduleTask> =>
   CreateScheduleTask.getInstance().execute(input);

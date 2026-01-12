@@ -38,15 +38,3 @@ export { GetSubscription } from './get-subscription';
 export { SubscribePlan } from './subscribe-plan';
 export { CancelSubscription } from './cancel-subscription';
 export { GetAccountStats } from './get-account-stats';
-
-// ===== Legacy exports for backward compatibility (deprecated) =====
-
-export {
-  AccountProfileApplicationService,
-  createAccountProfileApplicationService,
-} from './AccountProfileApplicationService';
-
-export {
-  AccountSubscriptionApplicationService,
-  createAccountSubscriptionApplicationService,
-} from './AccountSubscriptionApplicationService';

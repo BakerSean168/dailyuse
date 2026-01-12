@@ -2,13 +2,16 @@
  * Update Schedule Event
  *
  * 更新日程事件用例
+ * 
+ * **返回 Entity 对象**
  */
 
 import type { IScheduleEventApiClient } from '@dailyuse/infrastructure-client';
-import type { ScheduleClientDTO, UpdateScheduleRequest } from '@dailyuse/contracts/schedule';
+import type { UpdateScheduleRequest } from '@dailyuse/contracts/schedule';
 import { eventBus } from '@dailyuse/utils';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleEventEvents, type ScheduleEventRefreshEvent } from './schedule-events';
+import { Schedule } from '@dailyuse/domain-client/schedule';
 
 /**
  * Update Schedule Event
@@ -47,13 +50,14 @@ export class UpdateScheduleEvent {
 
   /**
    * 执行用例
+   * @returns 返回 Entity 对象
    */
-  async execute(uuid: string, data: UpdateScheduleRequest): Promise<ScheduleClientDTO> {
-    const schedule = await this.apiClient.updateSchedule(uuid, data);
+  async execute(uuid: string, data: UpdateScheduleRequest): Promise<Schedule> {
+    const dto = await this.apiClient.updateSchedule(uuid, data);
 
-    this.publishEvent(schedule.uuid, ScheduleEventEvents.SCHEDULE_UPDATED);
+    this.publishEvent(dto.uuid, ScheduleEventEvents.SCHEDULE_UPDATED);
 
-    return schedule;
+    return Schedule.fromClientDTO(dto);
   }
 
   /**
