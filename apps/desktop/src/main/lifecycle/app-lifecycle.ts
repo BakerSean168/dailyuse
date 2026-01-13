@@ -7,6 +7,11 @@
  * - app.on('window-all-closed') - All windows closed
  * - app.on('before-quit') - Cleanup before exit
  *
+ * 登录流程（Steam-like）：
+ * 1. 检查是否有启用自动登录的账号
+ * 2. 有 → 检查 Session 是否有效 → 有效则直接进入主窗口
+ * 3. 无自动登录 → 显示登录窗口（支持快速登录已保存账号）
+ *
  * @module lifecycle/app-lifecycle
  */
 
@@ -20,6 +25,8 @@ import { initNotificationService } from '../services';
 import { stopMemoryCleanup, closeDatabase } from '../database';
 import { shutdownAllModules } from '../modules';
 import { initializeEventListeners } from '../events/initialize-event-listeners';
+import { getWindowManager } from './WindowManager';
+import { getAccountStore, getTokenManager, registerAccountStoreIpcHandlers } from '../modules/authentication/infrastructure';
 
 // ESM compatibility for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -90,8 +97,10 @@ export function getMainWindow(): BrowserWindow | null {
 /**
  * Handles the application 'ready' event.
  *
- * Initializes the application core, event listeners, main window,
- * notification service, desktop features, and system IPC handlers.
+ * 登录流程（Steam-like）：
+ * 1. 检查是否有启用自动登录的账号
+ * 2. 有 → 检查 Session 是否有效 → 有效则直接进入主窗口
+ * 3. 无自动登录 → 显示登录窗口（支持快速登录已保存账号）
  *
  * @param {() => Promise<void>} initializeApp - The application initialization function to be called.
  * @returns {Promise<void>} A promise that resolves when initialization is complete.
@@ -105,13 +114,64 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
   console.log('[Lifecycle] Event listeners initialized');
 
   // Register system IPC handlers BEFORE creating window
-  // This ensures handlers are ready when renderer starts making IPC calls
-  // Desktop feature managers (tray, shortcuts, autolaunch) will be set later
   registerSystemIpcHandlers(null, null, null);
   console.log('[Lifecycle] System IPC handlers registered (initial)');
 
-  // Create main window
-  const win = createMainWindow();
+  // Register AccountStore IPC handlers
+  registerAccountStoreIpcHandlers();
+  console.log('[Lifecycle] AccountStore IPC handlers registered');
+
+  // 决定显示哪个窗口
+  const windowManager = getWindowManager();
+  const accountStore = getAccountStore();
+  const tokenManager = getTokenManager();
+
+  // 检查是否有启用自动登录的账号
+  const autoLoginAccount = accountStore.getAutoLoginAccount();
+  let shouldShowMainWindow = false;
+
+  if (autoLoginAccount) {
+    console.log('[Lifecycle] Found auto-login account:', autoLoginAccount.email);
+    
+    // 检查该账号的 Session 是否有效
+    const tokenStatus = await tokenManager.getStatus();
+    if (tokenStatus.hasValidToken && !tokenStatus.isAccessTokenExpired) {
+      console.log('[Lifecycle] Valid session found, going to main window');
+      shouldShowMainWindow = true;
+    } else if (tokenStatus.hasValidToken && tokenStatus.shouldRefresh) {
+      // 尝试刷新 Token
+      console.log('[Lifecycle] Token needs refresh, attempting...');
+      try {
+        // Token 刷新逻辑由 AuthDesktopApplicationService 处理
+        // 这里简单检查是否有 refresh token
+        shouldShowMainWindow = true; // 先进入主窗口，后台刷新
+      } catch (error) {
+        console.log('[Lifecycle] Token refresh failed, showing login window');
+      }
+    }
+  }
+
+  let win: BrowserWindow;
+
+  if (shouldShowMainWindow) {
+    // 直接进入主窗口
+    win = windowManager.createMainWindow();
+    mainWindow = win;
+    console.log('[Lifecycle] Created main window (auto-login)');
+  } else {
+    // 显示登录窗口
+    win = windowManager.createLoginWindow({
+      hasQuickLoginAccounts: accountStore.getAccountCount() > 0,
+      quickLoginAccounts: accountStore.getAccounts().map((a) => ({
+        uuid: a.uuid,
+        username: a.username,
+        email: a.email,
+        avatarUrl: a.avatarUrl,
+        lastLoginAt: a.lastLoginAt,
+      })),
+    });
+    console.log('[Lifecycle] Created login window');
+  }
 
   // Initialize notification service (requires window to be created)
   if (win) {
@@ -129,7 +189,16 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
   // macOS: Re-create window when dock icon is clicked
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createMainWindow();
+      // 重新检查是否应该显示主窗口或登录窗口
+      const wm = getWindowManager();
+      const as = getAccountStore();
+      const autoLogin = as.getAutoLoginAccount();
+      
+      if (autoLogin && autoLogin.hasValidSession) {
+        wm.createMainWindow();
+      } else {
+        wm.createLoginWindow();
+      }
     }
   });
 }

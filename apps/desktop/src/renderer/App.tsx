@@ -54,6 +54,11 @@ const AccountView = lazy(() =>
   import('./views/account').then((m) => ({ default: m.default }))
 );
 
+// Login View (standalone, frameless window)
+const LoginView = lazy(() =>
+  import('./views/login').then((m) => ({ default: m.LoginView }))
+);
+
 /**
  * Loading skeleton component displayed while routes are being lazily loaded.
  */
@@ -83,6 +88,17 @@ export function App() {
   return (
     <HashRouter>
       <Routes>
+        {/* Login route - standalone window without Layout */}
+        <Route
+          path="/login"
+          element={
+            <Suspense fallback={<div className="h-screen bg-slate-900" />}>
+              <LoginView />
+            </Suspense>
+          }
+        />
+        
+        {/* Main app routes with Layout */}
         <Route path="/" element={<Layout />}>
           <Route
             index

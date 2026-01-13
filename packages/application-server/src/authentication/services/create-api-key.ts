@@ -6,7 +6,7 @@
 
 import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
-import type { CreateApiKeyRequest, CreateApiKeyResponseDTO } from '@dailyuse/contracts/authentication';
+import type { CreateApiKeyRequest, CreateApiKeyResponse } from '@dailyuse/contracts/authentication';
 import { eventBus } from '@dailyuse/utils';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
@@ -51,7 +51,7 @@ export class CreateApiKey {
   /**
    * 执行创建 API Key
    */
-  async execute(accountUuid: string, input: CreateApiKeyRequest): Promise<CreateApiKeyResponseDTO> {
+  async execute(accountUuid: string, input: CreateApiKeyRequest): Promise<CreateApiKeyResponse> {
     // 1. 验证输入
     if (!input.name?.trim()) {
       throw new Error('API key name is required');

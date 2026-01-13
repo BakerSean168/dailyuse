@@ -12,38 +12,28 @@
 
 import { net, powerMonitor } from 'electron';
 import { createLogger, type ILogger } from '@dailyuse/utils';
+import type { 
+  NetworkStatus, 
+  NetworkStateChangeEvent, 
+  NetworkCheckConfig 
+} from '@dailyuse/contracts/authentication';
 import { EventEmitter } from 'events';
 
-/**
- * 网络状态
- */
-export type NetworkStatus = 'online' | 'offline' | 'unknown';
+// Re-export for convenience
+export type { NetworkStatus, NetworkStateChangeEvent, NetworkCheckConfig };
 
 /**
- * 网络状态变化事件
+ * NetworkStateManager 配置（内部使用，扩展基础配置）
  */
-export interface NetworkStateChangeEvent {
-  status: NetworkStatus;
-  previousStatus: NetworkStatus;
-  timestamp: number;
-}
-
-/**
- * NetworkStateManager 配置
- */
-export interface NetworkStateManagerConfig {
-  /** 检查间隔（毫秒） */
-  checkInterval?: number;
-  /** API 健康检查 URL */
-  healthCheckUrl?: string;
-  /** 启用定期健康检查 */
-  enableHealthCheck?: boolean;
+export interface NetworkStateManagerConfig extends NetworkCheckConfig {
+  // 可添加 Desktop 特有的配置项
 }
 
 const DEFAULT_CONFIG: Required<NetworkStateManagerConfig> = {
   checkInterval: 30000, // 30 秒
   healthCheckUrl: '', // 可配置
   enableHealthCheck: false,
+  timeout: 5000,
 };
 
 /**

@@ -4,7 +4,7 @@
  * 用户登录用例
  */
 
-import type { LoginRequest, LoginResponseDTO } from '@dailyuse/contracts/authentication';
+import type { LoginRequest, LoginResponse } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
@@ -46,7 +46,7 @@ export class Login {
   /**
    * 执行用例
    */
-  async execute(input: LoginRequest): Promise<LoginResponseDTO> {
+  async execute(input: LoginRequest): Promise<LoginResponse> {
     return this.apiClient.login(input);
   }
 }

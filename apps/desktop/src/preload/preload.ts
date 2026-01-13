@@ -188,6 +188,7 @@ const ALLOWED_CHANNELS = [
   'auth:login',
   'auth:register',
   'auth:logout',
+  'auth:get-status',
   'auth:refresh-token',
   'auth:forgot-password',
   'auth:reset-password',
@@ -337,6 +338,43 @@ const ALLOWED_CHANNELS = [
   'sync:device:getInfo',
   'sync:device:rename',
   'sync:device:list',
+
+  // Window Management (Login/Main)
+  'window:transition-to-main',
+  'window:transition-to-login',
+  'window:minimize-login',
+  'window:close-login',
+
+  // Auth - Account Storage
+  'auth:update-last-login',
+  'auth:remove-saved-account',
+  'auth:get-quick-login-accounts',
+
+  // GitHub Gist Sync
+  'sync:github:connect',
+  'sync:github:disconnect',
+  'sync:github:get-status',
+  'sync:github:push',
+  'sync:github:pull',
+  'sync:github:full-sync',
+  'sync:github:get-user',
+  'sync:github:set-token',
+
+  // Data Import/Export
+  'sync:export-data',
+  'sync:import-data',
+  'sync:get-export-preview',
+
+  // Sync Coordinator
+  'sync:trigger',
+  'sync:force-full',
+  'sync:get-coordinator-status',
+
+  // Data Migration / Backup
+  'sync:backup:create',
+  'sync:backup:list',
+  'sync:backup:restore',
+  'sync:backup:delete',
 ] as const;
 
 /**

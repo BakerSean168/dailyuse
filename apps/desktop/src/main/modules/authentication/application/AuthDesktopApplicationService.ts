@@ -23,6 +23,14 @@ import type {
   AuthOperationResult,
   AutoLoginResult as ContractAutoLoginResult,
   SessionRestoreResult as ContractSessionRestoreResult,
+  // Import shared types from contracts
+  UserInfo,
+  SessionInfo,
+  DeviceInfo,
+  TwoFactorStatus,
+  ApiKeyInfo,
+  AuthStatus,
+  EmailLoginCredentials,
 } from '@dailyuse/contracts/authentication';
 import {
   TokenManager,
@@ -35,21 +43,24 @@ import {
 } from '../infrastructure';
 
 // Re-export from contracts for convenience
-export type { AuthOperationResult };
+export type { 
+  AuthOperationResult,
+  UserInfo,
+  SessionInfo,
+  DeviceInfo,
+  TwoFactorStatus,
+  ApiKeyInfo,
+  AuthStatus,
+  EmailLoginCredentials,
+};
 
-// ===== Types =====
+// Alias for backward compatibility
+export type LoginCredentials = EmailLoginCredentials;
+
+// ===== Extended Types (Desktop specific) =====
 
 /**
- * 登录凭据
- */
-export interface LoginCredentials {
-  email: string;
-  password: string;
-  rememberMe?: boolean;
-}
-
-/**
- * 注册请求
+ * 注册请求（简化版，Desktop 专用）
  */
 export interface RegisterRequest {
   email: string;
@@ -58,84 +69,14 @@ export interface RegisterRequest {
 }
 
 /**
- * 用户信息
- */
-export interface UserInfo {
-  uuid: string;
-  username?: string;
-  email?: string;
-  displayName?: string;
-}
-
-/**
- * 2FA 状态
- */
-export interface TwoFactorStatus {
-  enabled: boolean;
-  method: string | null;
-}
-
-/**
- * API Key 信息
- */
-export interface ApiKeyInfo {
-  uuid: string;
-  name: string;
-  scopes: string[];
-  createdAt: string;
-  lastUsedAt?: string;
-}
-
-/**
- * Session 信息
- */
-export interface SessionInfo {
-  uuid: string;
-  deviceName: string;
-  deviceType: string;
-  ipAddress: string;
-  createdAt: string;
-  lastActiveAt: string;
-  expiresAt: string;
-  isCurrentSession: boolean;
-}
-
-/**
- * Device 信息
- */
-export interface DeviceInfo {
-  uuid: string;
-  name: string;
-  type: string;
-  os?: string;
-  fingerprint?: string;
-}
-
-/**
- * 认证状态
- */
-export interface AuthStatus {
-  /** 是否已认证 */
-  authenticated: boolean;
-  /** 认证模式 */
-  mode: AuthMode;
-  /** 用户信息 */
-  user: UserInfo | null;
-  /** 会话信息 */
-  session: SessionInfo | null;
-  /** Token 状态 */
-  tokenStatus: TokenStatus | null;
-}
-
-/**
- * 自动登录结果（扩展 Contract 类型）
+ * 自动登录结果（扩展 Contract 类型，包含领域对象）
  */
 export interface AutoLoginResult extends ContractAutoLoginResult {
   session?: AuthSession;
 }
 
 /**
- * 会话恢复结果
+ * 会话恢复结果（扩展 Contract 类型）
  */
 export interface SessionRestoreResult extends ContractSessionRestoreResult {
   hasValidSession: boolean;

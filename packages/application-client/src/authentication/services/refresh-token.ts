@@ -4,7 +4,7 @@
  * 刷新访问令牌用例
  */
 
-import type { RefreshTokenRequest, RefreshTokenResponseDTO } from '@dailyuse/contracts/authentication';
+import type { RefreshTokenRequest, RefreshTokenResponse } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
@@ -46,7 +46,7 @@ export class RefreshToken {
   /**
    * 执行用例
    */
-  async execute(input: RefreshTokenRequest): Promise<RefreshTokenResponseDTO> {
+  async execute(input: RefreshTokenRequest): Promise<RefreshTokenResponse> {
     return this.apiClient.refreshToken(input);
   }
 }

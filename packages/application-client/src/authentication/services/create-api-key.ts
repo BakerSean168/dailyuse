@@ -4,7 +4,7 @@
  * 创建 API Key 用例
  */
 
-import type { CreateApiKeyRequest, CreateApiKeyResponseDTO } from '@dailyuse/contracts/authentication';
+import type { CreateApiKeyRequest, CreateApiKeyResponse } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
@@ -46,7 +46,7 @@ export class CreateApiKey {
   /**
    * 执行用例
    */
-  async execute(input: CreateApiKeyRequest): Promise<CreateApiKeyResponseDTO> {
+  async execute(input: CreateApiKeyRequest): Promise<CreateApiKeyResponse> {
     return this.apiClient.createApiKey(input);
   }
 }

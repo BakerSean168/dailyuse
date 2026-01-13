@@ -69,6 +69,10 @@
     "./shared": {
       "types": "./dist/shared/index.d.ts",
       "import": "./dist/shared/index.js"
+    },
+    "./sync": {
+      "types": "./dist/modules/sync/index.d.ts",
+      "import": "./dist/modules/sync/index.js"
     }
   },
   "dependencies": {

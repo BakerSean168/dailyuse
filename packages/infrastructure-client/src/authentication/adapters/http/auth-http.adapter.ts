@@ -7,29 +7,29 @@
 import type { IAuthApiClient, RegisterResponse } from '../../ports/auth-api-client.port';
 import type {
   LoginRequest,
-  LoginResponseDTO,
+  LoginResponse,
   RegisterRequest,
   LogoutRequest,
   RefreshTokenRequest,
-  RefreshTokenResponseDTO,
+  RefreshTokenResponse,
   ForgotPasswordRequest,
   ResetPasswordRequest,
   ChangePasswordRequest,
   Enable2FARequest,
-  Enable2FAResponseDTO,
+  Enable2FAResponse,
   Disable2FARequest,
   Verify2FARequest,
   CreateApiKeyRequest,
-  CreateApiKeyResponseDTO,
-  ApiKeyListResponseDTO,
+  CreateApiKeyResponse,
+  ApiKeyListResponse,
   RevokeApiKeyRequest,
   GetActiveSessionsRequest,
-  ActiveSessionsResponseDTO,
+  ActiveSessionsResponse,
   RevokeSessionRequest,
   RevokeAllSessionsRequest,
   TrustDeviceRequest,
   RevokeTrustedDeviceRequest,
-  TrustedDevicesResponseDTO,
+  TrustedDevicesResponse,
 } from '@dailyuse/contracts/authentication';
 import type { IHttpClient } from '../../../shared/http-client.types';
 
@@ -52,7 +52,7 @@ export class AuthHttpAdapter implements IAuthApiClient {
 
   // ===== 认证核心功能 =====
 
-  async login(request: LoginRequest): Promise<LoginResponseDTO> {
+  async login(request: LoginRequest): Promise<LoginResponse> {
     return this.publicClient.post(`${this.baseUrl}/login`, request);
   }
 
@@ -71,7 +71,7 @@ export class AuthHttpAdapter implements IAuthApiClient {
     await this.httpClient.post(`${this.baseUrl}/logout`, request);
   }
 
-  async refreshToken(request: RefreshTokenRequest): Promise<RefreshTokenResponseDTO> {
+  async refreshToken(request: RefreshTokenRequest): Promise<RefreshTokenResponse> {
     return this.httpClient.post(`${this.baseUrl}/refresh-token`, request);
   }
 
@@ -91,7 +91,7 @@ export class AuthHttpAdapter implements IAuthApiClient {
 
   // ===== 两步验证 =====
 
-  async enable2FA(request: Enable2FARequest): Promise<Enable2FAResponseDTO> {
+  async enable2FA(request: Enable2FARequest): Promise<Enable2FAResponse> {
     return this.httpClient.post(`${this.baseUrl}/2fa/enable`, request);
   }
 
@@ -105,11 +105,11 @@ export class AuthHttpAdapter implements IAuthApiClient {
 
   // ===== API Key 管理 =====
 
-  async createApiKey(request: CreateApiKeyRequest): Promise<CreateApiKeyResponseDTO> {
+  async createApiKey(request: CreateApiKeyRequest): Promise<CreateApiKeyResponse> {
     return this.httpClient.post(`${this.baseUrl}/api-keys`, request);
   }
 
-  async getApiKeys(): Promise<ApiKeyListResponseDTO> {
+  async getApiKeys(): Promise<ApiKeyListResponse> {
     return this.httpClient.get(`${this.baseUrl}/api-keys`);
   }
 
@@ -119,7 +119,7 @@ export class AuthHttpAdapter implements IAuthApiClient {
 
   // ===== 会话管理 =====
 
-  async getActiveSessions(request?: GetActiveSessionsRequest): Promise<ActiveSessionsResponseDTO> {
+  async getActiveSessions(request?: GetActiveSessionsRequest): Promise<ActiveSessionsResponse> {
     return this.httpClient.get(`${this.baseUrl}/sessions`, {
       params: request as unknown as Record<string, unknown>,
     });
@@ -143,7 +143,7 @@ export class AuthHttpAdapter implements IAuthApiClient {
     await this.httpClient.delete(`${this.baseUrl}/devices/${request.deviceId}`);
   }
 
-  async getTrustedDevices(): Promise<TrustedDevicesResponseDTO> {
+  async getTrustedDevices(): Promise<TrustedDevicesResponse> {
     return this.httpClient.get(`${this.baseUrl}/devices/trusted`);
   }
 }

@@ -31,6 +31,7 @@ export default createTsupConfig({
     'src/modules/notification/index.ts',
     'src/modules/ai/index.ts',
     'src/modules/dashboard/index.ts',
+    'src/modules/sync/index.ts',
     // 其他模块入口
     'src/document.contracts.ts',
     'src/response/index.ts',

@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { GitHubSyncSettings } from './GitHubSyncSettings';
 
 interface AppSettings {
   theme: 'light' | 'dark' | 'auto';
@@ -247,60 +248,8 @@ export default function SettingsView() {
 
       {/* Sync Settings */}
       {activeTab === 'sync' && (
-        <div className="space-y-6 max-w-2xl">
-          {/* Auto Sync */}
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div>
-              <p className="font-medium">自动同步</p>
-              <p className="text-sm text-muted-foreground">
-                自动同步数据到云端
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.autoSync}
-                onChange={(e) => handleSettingChange('autoSync', e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary" />
-            </label>
-          </div>
-
-          {/* Sync Interval */}
-          <div className="space-y-3">
-            <label className="block text-sm font-medium">同步间隔</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                value={settings.syncInterval}
-                onChange={(e) =>
-                  handleSettingChange('syncInterval', parseInt(e.target.value) || 30)
-                }
-                min="5"
-                max="120"
-                disabled={!settings.autoSync}
-                className="px-4 py-2 border rounded-md bg-background w-24"
-              />
-              <span className="text-muted-foreground">分钟</span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              自动同步的频率
-            </p>
-          </div>
-
-          {/* Manual Sync Button */}
-          <button className="w-full px-4 py-2 border rounded-md hover:bg-secondary transition-colors">
-            🔄 立即同步
-          </button>
-
-          {/* Sync Status */}
-          <div className="p-4 bg-card border rounded-lg">
-            <p className="text-sm font-medium">同步状态</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              最后同步：2024年12月11日 14:30
-            </p>
-          </div>
+        <div className="max-w-2xl">
+          <GitHubSyncSettings />
         </div>
       )}
 

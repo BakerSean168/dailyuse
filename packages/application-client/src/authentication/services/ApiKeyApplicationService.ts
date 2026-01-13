@@ -9,8 +9,8 @@
 
 import type {
   CreateApiKeyRequest,
-  CreateApiKeyResponseDTO,
-  ApiKeyListResponseDTO,
+  CreateApiKeyResponse,
+  ApiKeyListResponse,
   RevokeApiKeyRequest,
 } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
@@ -21,14 +21,14 @@ export class ApiKeyApplicationService {
   /**
    * 创建 API Key
    */
-  async createApiKey(request: CreateApiKeyRequest): Promise<CreateApiKeyResponseDTO> {
+  async createApiKey(request: CreateApiKeyRequest): Promise<CreateApiKeyResponse> {
     return this.authApiClient.createApiKey(request);
   }
 
   /**
    * 获取 API Key 列表
    */
-  async getApiKeys(): Promise<ApiKeyListResponseDTO> {
+  async getApiKeys(): Promise<ApiKeyListResponse> {
     return this.authApiClient.getApiKeys();
   }
 

@@ -10,6 +10,7 @@
 
 import { NavLink, Outlet } from 'react-router-dom';
 import { SyncStatusIndicator } from './SyncStatusIndicator';
+import { AccountStatusIndicator } from './AccountStatusIndicator';
 
 /**
  * Navigation item configuration.
@@ -38,7 +39,8 @@ export function Layout() {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className="w-64 border-r bg-card">
+      <aside className="w-64 border-r bg-card flex flex-col">
+        {/* Header with logo and sync status */}
         <div className="p-4 border-b flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold">DailyUse</h1>
@@ -47,7 +49,9 @@ export function Layout() {
           {/* EPIC-004: Sync Status Indicator */}
           <SyncStatusIndicator />
         </div>
-        <nav className="p-2">
+
+        {/* Navigation */}
+        <nav className="p-2 flex-1">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
@@ -66,6 +70,11 @@ export function Layout() {
             </NavLink>
           ))}
         </nav>
+
+        {/* Account Status (bottom of sidebar) */}
+        <div className="p-3 border-t">
+          <AccountStatusIndicator />
+        </div>
       </aside>
 
       {/* Main Content */}

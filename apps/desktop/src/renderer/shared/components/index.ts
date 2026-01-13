@@ -42,3 +42,6 @@ export {
 export { SyncStatusIndicator } from './SyncStatusIndicator';
 export { ConflictResolverDialog } from './ConflictResolverDialog';
 export { SyncConfigWizard } from './SyncConfigWizard';
+
+// EPIC-004: Account Status Components
+export { AccountStatusIndicator } from './AccountStatusIndicator';

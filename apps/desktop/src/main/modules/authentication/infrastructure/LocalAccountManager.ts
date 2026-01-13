@@ -10,44 +10,19 @@
  */
 
 import { createLogger, generateUUID, type ILogger } from '@dailyuse/utils';
+import type { LocalAccount, LocalAccountData } from '@dailyuse/contracts/authentication';
 import { app } from 'electron';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 
-/**
- * 本地账户类型
- */
-export interface LocalAccount {
-  /** 账户 UUID */
-  uuid: string;
-  /** 账户类型 */
-  type: 'LOCAL';
-  /** 用户名 */
-  username: string;
-  /** 邮箱（占位） */
-  email: string;
-  /** 显示名称 */
-  displayName?: string;
-  /** 头像路径 */
-  avatarPath?: string;
-  /** 关联的云账户 UUID */
-  cloudAccountUuid?: string;
-  /** 是否在线 */
-  isOnline: boolean;
-  /** 创建时间 */
-  createdAt: number;
-  /** 更新时间 */
-  updatedAt: number;
-}
+// Re-export for convenience
+export type { LocalAccount, LocalAccountData };
 
 /**
- * 本地账户文件结构
+ * 本地账户文件结构（内部使用）
  */
-interface LocalAccountFile {
-  version: number;
-  account: LocalAccount;
-}
+type LocalAccountFile = LocalAccountData;
 
 const ACCOUNT_FILE_VERSION = 1;
 const ACCOUNT_FILE_NAME = 'local-account.json';

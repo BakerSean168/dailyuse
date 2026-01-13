@@ -6,7 +6,7 @@
 
 import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
-import type { Enable2FARequest, Enable2FAResponseDTO } from '@dailyuse/contracts/authentication';
+import type { Enable2FARequest, Enable2FAResponse } from '@dailyuse/contracts/authentication';
 import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
@@ -50,7 +50,7 @@ export class Enable2FA {
   /**
    * 执行启用 2FA
    */
-  async execute(accountUuid: string, _input?: Enable2FARequest): Promise<Enable2FAResponseDTO> {
+  async execute(accountUuid: string, _input?: Enable2FARequest): Promise<Enable2FAResponse> {
     // 1. 查找凭证
     const credential = await this.credentialRepository.findByAccountUuid(accountUuid);
     if (!credential) {

@@ -12,7 +12,7 @@ import type {
   ResetPasswordRequest,
   ChangePasswordRequest,
   Enable2FARequest,
-  Enable2FAResponseDTO,
+  Enable2FAResponse,
   Disable2FARequest,
   Verify2FARequest,
 } from '@dailyuse/contracts/authentication';
@@ -49,7 +49,7 @@ export class PasswordApplicationService {
   /**
    * 启用两步验证
    */
-  async enable2FA(request: Enable2FARequest): Promise<Enable2FAResponseDTO> {
+  async enable2FA(request: Enable2FARequest): Promise<Enable2FAResponse> {
     return this.authApiClient.enable2FA(request);
   }
 

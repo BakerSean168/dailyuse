@@ -4,7 +4,7 @@
  * 获取 API Key 列表用例
  */
 
-import type { ApiKeyListResponseDTO } from '@dailyuse/contracts/authentication';
+import type { ApiKeyListResponse } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
@@ -46,7 +46,7 @@ export class ListApiKeys {
   /**
    * 执行用例
    */
-  async execute(): Promise<ApiKeyListResponseDTO> {
+  async execute(): Promise<ApiKeyListResponse> {
     return this.apiClient.getApiKeys();
   }
 }
@@ -54,5 +54,5 @@ export class ListApiKeys {
 /**
  * 便捷函数
  */
-export const listApiKeys = (): Promise<ApiKeyListResponseDTO> =>
+export const listApiKeys = (): Promise<ApiKeyListResponse> =>
   ListApiKeys.getInstance().execute();

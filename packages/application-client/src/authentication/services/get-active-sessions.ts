@@ -4,7 +4,7 @@
  * 获取活跃会话列表用例
  */
 
-import type { GetActiveSessionsRequest, ActiveSessionsResponseDTO } from '@dailyuse/contracts/authentication';
+import type { GetActiveSessionsRequest, ActiveSessionsResponse } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
@@ -46,7 +46,7 @@ export class GetActiveSessions {
   /**
    * 执行用例
    */
-  async execute(input?: GetActiveSessionsRequest): Promise<ActiveSessionsResponseDTO> {
+  async execute(input?: GetActiveSessionsRequest): Promise<ActiveSessionsResponse> {
     return this.apiClient.getActiveSessions(input);
   }
 }

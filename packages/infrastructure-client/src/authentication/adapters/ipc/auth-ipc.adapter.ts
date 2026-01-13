@@ -7,29 +7,29 @@
 import type { IAuthApiClient, RegisterResponse } from '../../ports/auth-api-client.port';
 import type {
   LoginRequest,
-  LoginResponseDTO,
+  LoginResponse,
   RegisterRequest,
   LogoutRequest,
   RefreshTokenRequest,
-  RefreshTokenResponseDTO,
+  RefreshTokenResponse,
   ForgotPasswordRequest,
   ResetPasswordRequest,
   ChangePasswordRequest,
   Enable2FARequest,
-  Enable2FAResponseDTO,
+  Enable2FAResponse,
   Disable2FARequest,
   Verify2FARequest,
   CreateApiKeyRequest,
-  CreateApiKeyResponseDTO,
-  ApiKeyListResponseDTO,
+  CreateApiKeyResponse,
+  ApiKeyListResponse,
   RevokeApiKeyRequest,
   GetActiveSessionsRequest,
-  ActiveSessionsResponseDTO,
+  ActiveSessionsResponse,
   RevokeSessionRequest,
   RevokeAllSessionsRequest,
   TrustDeviceRequest,
   RevokeTrustedDeviceRequest,
-  TrustedDevicesResponseDTO,
+  TrustedDevicesResponse,
 } from '@dailyuse/contracts/authentication';
 
 /**
@@ -80,7 +80,7 @@ export class AuthIpcAdapter implements IAuthApiClient {
 
   // ===== 认证核心功能 =====
 
-  async login(request: LoginRequest): Promise<LoginResponseDTO> {
+  async login(request: LoginRequest): Promise<LoginResponse> {
     return this.ipcApi.invoke(AUTH_CHANNELS.LOGIN, request);
   }
 
@@ -92,7 +92,7 @@ export class AuthIpcAdapter implements IAuthApiClient {
     await this.ipcApi.invoke(AUTH_CHANNELS.LOGOUT, request);
   }
 
-  async refreshToken(request: RefreshTokenRequest): Promise<RefreshTokenResponseDTO> {
+  async refreshToken(request: RefreshTokenRequest): Promise<RefreshTokenResponse> {
     return this.ipcApi.invoke(AUTH_CHANNELS.REFRESH_TOKEN, request);
   }
 
@@ -112,7 +112,7 @@ export class AuthIpcAdapter implements IAuthApiClient {
 
   // ===== 两步验证 =====
 
-  async enable2FA(request: Enable2FARequest): Promise<Enable2FAResponseDTO> {
+  async enable2FA(request: Enable2FARequest): Promise<Enable2FAResponse> {
     return this.ipcApi.invoke(AUTH_CHANNELS.ENABLE_2FA, request);
   }
 
@@ -126,11 +126,11 @@ export class AuthIpcAdapter implements IAuthApiClient {
 
   // ===== API Key 管理 =====
 
-  async createApiKey(request: CreateApiKeyRequest): Promise<CreateApiKeyResponseDTO> {
+  async createApiKey(request: CreateApiKeyRequest): Promise<CreateApiKeyResponse> {
     return this.ipcApi.invoke(AUTH_CHANNELS.CREATE_API_KEY, request);
   }
 
-  async getApiKeys(): Promise<ApiKeyListResponseDTO> {
+  async getApiKeys(): Promise<ApiKeyListResponse> {
     return this.ipcApi.invoke(AUTH_CHANNELS.GET_API_KEYS);
   }
 
@@ -140,7 +140,7 @@ export class AuthIpcAdapter implements IAuthApiClient {
 
   // ===== 会话管理 =====
 
-  async getActiveSessions(request?: GetActiveSessionsRequest): Promise<ActiveSessionsResponseDTO> {
+  async getActiveSessions(request?: GetActiveSessionsRequest): Promise<ActiveSessionsResponse> {
     return this.ipcApi.invoke(AUTH_CHANNELS.GET_SESSIONS, request);
   }
 
@@ -162,7 +162,7 @@ export class AuthIpcAdapter implements IAuthApiClient {
     await this.ipcApi.invoke(AUTH_CHANNELS.REVOKE_DEVICE, request);
   }
 
-  async getTrustedDevices(): Promise<TrustedDevicesResponseDTO> {
+  async getTrustedDevices(): Promise<TrustedDevicesResponse> {
     return this.ipcApi.invoke(AUTH_CHANNELS.GET_TRUSTED_DEVICES);
   }
 }

@@ -7,29 +7,29 @@
 
 import type {
   LoginRequest,
-  LoginResponseDTO,
+  LoginResponse,
   RegisterRequest,
   LogoutRequest,
   RefreshTokenRequest,
-  RefreshTokenResponseDTO,
+  RefreshTokenResponse,
   ForgotPasswordRequest,
   ResetPasswordRequest,
   ChangePasswordRequest,
   Enable2FARequest,
-  Enable2FAResponseDTO,
+  Enable2FAResponse,
   Disable2FARequest,
   Verify2FARequest,
   CreateApiKeyRequest,
-  CreateApiKeyResponseDTO,
-  ApiKeyListResponseDTO,
+  CreateApiKeyResponse,
+  ApiKeyListResponse,
   RevokeApiKeyRequest,
   GetActiveSessionsRequest,
-  ActiveSessionsResponseDTO,
+  ActiveSessionsResponse,
   RevokeSessionRequest,
   RevokeAllSessionsRequest,
   TrustDeviceRequest,
   RevokeTrustedDeviceRequest,
-  TrustedDevicesResponseDTO,
+  TrustedDevicesResponse,
 } from '@dailyuse/contracts/authentication';
 
 /**
@@ -52,7 +52,7 @@ export interface IAuthApiClient {
   /**
    * 登录
    */
-  login(request: LoginRequest): Promise<LoginResponseDTO>;
+  login(request: LoginRequest): Promise<LoginResponse>;
 
   /**
    * 注册
@@ -67,7 +67,7 @@ export interface IAuthApiClient {
   /**
    * 刷新令牌
    */
-  refreshToken(request: RefreshTokenRequest): Promise<RefreshTokenResponseDTO>;
+  refreshToken(request: RefreshTokenRequest): Promise<RefreshTokenResponse>;
 
   // ===== 密码管理 =====
 
@@ -91,7 +91,7 @@ export interface IAuthApiClient {
   /**
    * 启用两步验证
    */
-  enable2FA(request: Enable2FARequest): Promise<Enable2FAResponseDTO>;
+  enable2FA(request: Enable2FARequest): Promise<Enable2FAResponse>;
 
   /**
    * 禁用两步验证
@@ -108,12 +108,12 @@ export interface IAuthApiClient {
   /**
    * 创建 API Key
    */
-  createApiKey(request: CreateApiKeyRequest): Promise<CreateApiKeyResponseDTO>;
+  createApiKey(request: CreateApiKeyRequest): Promise<CreateApiKeyResponse>;
 
   /**
    * 获取 API Key 列表
    */
-  getApiKeys(): Promise<ApiKeyListResponseDTO>;
+  getApiKeys(): Promise<ApiKeyListResponse>;
 
   /**
    * 撤销 API Key
@@ -125,7 +125,7 @@ export interface IAuthApiClient {
   /**
    * 获取活跃会话列表
    */
-  getActiveSessions(request?: GetActiveSessionsRequest): Promise<ActiveSessionsResponseDTO>;
+  getActiveSessions(request?: GetActiveSessionsRequest): Promise<ActiveSessionsResponse>;
 
   /**
    * 撤销会话
@@ -152,5 +152,5 @@ export interface IAuthApiClient {
   /**
    * 获取受信任设备列表
    */
-  getTrustedDevices(): Promise<TrustedDevicesResponseDTO>;
+  getTrustedDevices(): Promise<TrustedDevicesResponse>;
 }

@@ -9,10 +9,10 @@
 
 import type {
   GetActiveSessionsRequest,
-  ActiveSessionsResponseDTO,
+  ActiveSessionsResponse,
   RevokeSessionRequest,
   RevokeAllSessionsRequest,
-  TrustedDevicesResponseDTO,
+  TrustedDevicesResponse,
   TrustDeviceRequest,
   RevokeTrustedDeviceRequest,
 } from '@dailyuse/contracts/authentication';
@@ -26,7 +26,7 @@ export class SessionApplicationService {
   /**
    * 获取活跃会话列表
    */
-  async getActiveSessions(request?: GetActiveSessionsRequest): Promise<ActiveSessionsResponseDTO> {
+  async getActiveSessions(request?: GetActiveSessionsRequest): Promise<ActiveSessionsResponse> {
     return this.authApiClient.getActiveSessions(request);
   }
 
@@ -49,7 +49,7 @@ export class SessionApplicationService {
   /**
    * 获取受信任设备列表
    */
-  async getTrustedDevices(): Promise<TrustedDevicesResponseDTO> {
+  async getTrustedDevices(): Promise<TrustedDevicesResponse> {
     return this.authApiClient.getTrustedDevices();
   }
 

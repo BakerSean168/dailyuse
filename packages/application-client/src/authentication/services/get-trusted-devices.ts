@@ -4,7 +4,7 @@
  * 获取受信任设备列表用例
  */
 
-import type { TrustedDevicesResponseDTO } from '@dailyuse/contracts/authentication';
+import type { TrustedDevicesResponse } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 import { AuthContainer } from '@dailyuse/infrastructure-client';
 
@@ -46,7 +46,7 @@ export class GetTrustedDevices {
   /**
    * 执行用例
    */
-  async execute(): Promise<TrustedDevicesResponseDTO> {
+  async execute(): Promise<TrustedDevicesResponse> {
     return this.apiClient.getTrustedDevices();
   }
 }
@@ -54,5 +54,5 @@ export class GetTrustedDevices {
 /**
  * 便捷函数
  */
-export const getTrustedDevices = (): Promise<TrustedDevicesResponseDTO> =>
+export const getTrustedDevices = (): Promise<TrustedDevicesResponse> =>
   GetTrustedDevices.getInstance().execute();

@@ -10,10 +10,10 @@
 
 import type {
   LoginRequest,
-  LoginResponseDTO,
+  LoginResponse,
   LogoutRequest,
   RefreshTokenRequest,
-  RefreshTokenResponseDTO,
+  RefreshTokenResponse,
 } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 
@@ -23,7 +23,7 @@ export class LoginApplicationService {
   /**
    * 用户登录
    */
-  async login(request: LoginRequest): Promise<LoginResponseDTO> {
+  async login(request: LoginRequest): Promise<LoginResponse> {
     return this.authApiClient.login(request);
   }
 
@@ -37,7 +37,7 @@ export class LoginApplicationService {
   /**
    * 刷新访问令牌
    */
-  async refreshToken(request: RefreshTokenRequest): Promise<RefreshTokenResponseDTO> {
+  async refreshToken(request: RefreshTokenRequest): Promise<RefreshTokenResponse> {
     return this.authApiClient.refreshToken(request);
   }
 }

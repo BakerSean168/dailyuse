@@ -720,58 +720,64 @@ async syncPull() {
 ### Phase 1: 基础架构 (Week 1-2)
 
 **Sprint 1.1: 数据库 Schema**
-- [ ] 创建本地数据库表（accounts, sessions, auth_credentials）
-- [ ] 编写数据库迁移脚本
-- [ ] 实现 Repository 层
+- [x] 创建本地数据库表（accounts, sessions, auth_credentials）
+- [x] 编写数据库迁移脚本
+- [x] 实现 Repository 层
 
 **Sprint 1.2: Token 管理**
-- [ ] 实现 TokenManager（加密存储、解密读取）
-- [ ] 实现 SessionManager（Session CRUD）
-- [ ] 实现 Token 自动刷新逻辑
+- [x] 实现 TokenManager（加密存储、解密读取）
+- [x] 实现 SessionManager（Session CRUD）
+- [x] 实现 Token 自动刷新逻辑
 
 ---
 
 ### Phase 2: 认证功能 (Week 3-4)
 
 **Sprint 2.1: 本地账户**
-- [ ] 实现 LocalAccountManager
-- [ ] 首次启动自动创建本地账户
-- [ ] 本地账户持久化
+- [x] 实现 LocalAccountManager
+- [x] 首次启动自动创建本地账户
+- [x] 本地账户持久化
 
 **Sprint 2.2: 在线认证**
-- [ ] 实现注册接口调用
-- [ ] 实现登录接口调用
-- [ ] 实现登出逻辑
-- [ ] 实现自动登录
+- [x] 实现注册接口调用
+- [x] 实现登录接口调用
+- [x] 实现登出逻辑
+- [x] 实现自动登录
 
 ---
 
 ### Phase 3: UI 实现 (Week 5-6)
 
 **Sprint 3.1: 登录/注册界面**
-- [ ] 设计登录界面
-- [ ] 设计注册界面
-- [ ] 实现表单验证
-- [ ] 实现错误提示
+- [x] 设计登录界面
+- [x] 设计注册界面
+- [x] 实现表单验证
+- [x] 实现错误提示
 
 **Sprint 3.2: 账户状态指示器**
-- [ ] 实现离线/在线状态显示
-- [ ] 实现同步进度显示
-- [ ] 实现账户信息展示
+- [x] 实现离线/在线状态显示
+- [x] 实现同步进度显示
+- [x] 实现账户信息展示
 
 ---
 
 ### Phase 4: 同步功能 (Week 7-8)
 
 **Sprint 4.1: 数据迁移**
-- [ ] 本地数据迁移到云账户
-- [ ] 云端数据下载到本地
-- [ ] 冲突检测与解决
+- [x] 本地数据迁移到云账户 (DataMigrationService)
+- [x] 云端数据下载到本地 (DataCollector.applyData)
+- [ ] 冲突检测与解决 (部分实现)
 
 **Sprint 4.2: 后台同步**
-- [ ] 实现 SyncManager
-- [ ] 实现增量同步
-- [ ] 实现网络状态监听
+- [x] 实现 SyncManager
+- [x] 实现 GitHub Gist 同步提供者
+- [x] 实现同步 IPC 通道
+- [x] 实现同步设置 UI
+- [x] 实现增量同步 (SyncChangeTracker, SyncCoordinator)
+- [x] 实现网络状态监听 (NetworkStateManager 集成)
+- [x] 实现数据收集器 (DataCollector)
+- [x] 实现数据导入/导出 (DataExportImportService)
+- [x] 实现数据备份与恢复 (DataMigrationService)
 
 ---
 
