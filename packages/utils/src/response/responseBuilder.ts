@@ -17,6 +17,11 @@ import { newId } from '../shared/uuid';
 /**
  * 响应构建器类
  * 提供便捷的方法来构建标准化的API响应
+ *
+ * @deprecated 请使用 `@dailyuse/contracts/result` 中的 HttpResponseBuilder 替代。
+ * 新代码应使用 Result Pattern 实现响应处理。
+ *
+ * @see {@link @dailyuse/contracts/result} 新的 Result Pattern 模块
  */
 export class ResponseBuilder {
   private options: ResponseBuilderOptions;

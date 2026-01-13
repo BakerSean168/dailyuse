@@ -279,6 +279,8 @@ export {
   type ICacheStorage,
   LocalStorageAdapter,
   MemoryCacheAdapter,
+  createIpcClient,
+  getElectronAPI,
 } from './shared';
 
 // ============================================================

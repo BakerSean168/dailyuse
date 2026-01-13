@@ -9,7 +9,7 @@
  * - 移除内部 useState，统一使用 Store 状态
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useGoalStore } from '../stores/goalStore';
 import { goalApplicationService } from '../../application/services';
 import type { Goal } from '@dailyuse/domain-client/goal';
@@ -70,186 +70,190 @@ export interface UseGoalReturn {
 // ===== Hook Implementation =====
 
 export function useGoal(): UseGoalReturn {
-  // ===== Store State =====
+  // ===== Store State (只订阅数据，不订阅 actions) =====
   const goals = useGoalStore((state) => state.goals);
   const loading = useGoalStore((state) => state.isLoading);
   const error = useGoalStore((state) => state.error);
 
-  // ===== Store Actions =====
-  const storeSetGoals = useGoalStore((state) => state.setGoals);
-  const storeAddGoal = useGoalStore((state) => state.addGoal);
-  const storeUpdateGoal = useGoalStore((state) => state.updateGoal);
-  const storeRemoveGoal = useGoalStore((state) => state.removeGoal);
-  const storeFetchGoals = useGoalStore((state) => state.fetchGoals);
-  const storeSetLoading = useGoalStore((state) => state.setLoading);
-  const storeSetError = useGoalStore((state) => state.setError);
-
-  // ===== Store Selectors =====
-  const getGoalById = useGoalStore((state) => state.getGoalById);
-
   // ===== Local Selection State (不需要全局共享) =====
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
+  
+  // 使用 ref 保存 selectedGoal，避免在 useCallback 依赖中使用导致函数重建
+  const selectedGoalRef = useRef<Goal | null>(null);
+  selectedGoalRef.current = selectedGoal;
 
   // ===== Query =====
+  // 所有 useCallback 使用空依赖，在函数内部调用 getState() 获取最新 store
 
   const loadGoals = useCallback(async () => {
-    await storeFetchGoals();
-  }, [storeFetchGoals]);
+    const store = useGoalStore.getState();
+    await store.fetchGoals();
+  }, []);
 
   const getGoal = useCallback(async (id: string): Promise<Goal | null> => {
+    const store = useGoalStore.getState();
     // 先从 Store 查找
-    const cached = getGoalById(id);
+    const cached = store.getGoalById(id);
     if (cached) return cached;
     
     // Store 中没有则从 API 获取
     return goalApplicationService.getGoal(id);
-  }, [getGoalById]);
+  }, []);
 
   const searchGoalsFn = useCallback(async (input: SearchGoalsInput) => {
-    storeSetLoading(true);
-    storeSetError(null);
+    const store = useGoalStore.getState();
+    store.setLoading(true);
+    store.setError(null);
     
     try {
       const result = await goalApplicationService.searchGoals(input);
-      storeSetGoals(result.goals);
-      storeSetLoading(false);
+      store.setGoals(result.goals);
+      store.setLoading(false);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '搜索目标失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
+      store.setError(errorMessage);
+      store.setLoading(false);
       throw e;
     }
-  }, [storeSetGoals, storeSetLoading, storeSetError]);
+  }, []);
 
   // ===== Mutations =====
 
   const createGoal = useCallback(async (input: CreateGoalRequest): Promise<Goal> => {
-    storeSetLoading(true);
-    storeSetError(null);
+    const store = useGoalStore.getState();
+    store.setLoading(true);
+    store.setError(null);
 
     try {
       const goal = await goalApplicationService.createGoal(input);
-      storeAddGoal(goal);
-      storeSetLoading(false);
+      store.addGoal(goal);
+      store.setLoading(false);
       return goal;
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '创建目标失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
+      store.setError(errorMessage);
+      store.setLoading(false);
       throw e;
     }
-  }, [storeAddGoal, storeSetLoading, storeSetError]);
+  }, []);
 
   const updateGoal = useCallback(async (uuid: string, request: UpdateGoalRequest): Promise<void> => {
-    storeSetLoading(true);
-    storeSetError(null);
+    const store = useGoalStore.getState();
+    store.setLoading(true);
+    store.setError(null);
 
     try {
       const goal = await goalApplicationService.updateGoal(uuid, request);
-      storeUpdateGoal(uuid, goal);
+      store.updateGoal(uuid, goal);
       
       // 如果更新的是当前选中的目标，更新选择状态
-      if (selectedGoal?.uuid === uuid) {
+      if (selectedGoalRef.current?.uuid === uuid) {
         setSelectedGoal(goal);
       }
-      storeSetLoading(false);
+      store.setLoading(false);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '更新目标失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
+      store.setError(errorMessage);
+      store.setLoading(false);
       throw e;
     }
-  }, [storeUpdateGoal, storeSetLoading, storeSetError, selectedGoal]);
+  }, []); // 空依赖，使用 ref 访问 selectedGoal
 
   const deleteGoal = useCallback(async (id: string): Promise<void> => {
-    storeSetLoading(true);
-    storeSetError(null);
+    const store = useGoalStore.getState();
+    store.setLoading(true);
+    store.setError(null);
 
     try {
       await goalApplicationService.deleteGoal(id);
-      storeRemoveGoal(id);
+      store.removeGoal(id);
       
       // 如果删除的是当前选中的目标，清除选择
-      if (selectedGoal?.uuid === id) {
+      if (selectedGoalRef.current?.uuid === id) {
         setSelectedGoal(null);
       }
-      storeSetLoading(false);
+      store.setLoading(false);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '删除目标失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
+      store.setError(errorMessage);
+      store.setLoading(false);
       throw e;
     }
-  }, [storeRemoveGoal, storeSetLoading, storeSetError, selectedGoal]);
+  }, []); // 空依赖，使用 ref 访问 selectedGoal
 
   // ===== Status Changes =====
 
   const activateGoal = useCallback(async (id: string): Promise<void> => {
+    const store = useGoalStore.getState();
     try {
       const goal = await goalApplicationService.activateGoal(id);
-      storeUpdateGoal(id, goal);
+      store.updateGoal(id, goal);
       
-      if (selectedGoal?.uuid === id) {
+      if (selectedGoalRef.current?.uuid === id) {
         setSelectedGoal(goal);
       }
     } catch (e) {
-      storeSetError(e instanceof Error ? e.message : '激活目标失败');
+      store.setError(e instanceof Error ? e.message : '激活目标失败');
       throw e;
     }
-  }, [storeUpdateGoal, storeSetError, selectedGoal]);
+  }, []); // 空依赖
 
   const pauseGoal = useCallback(async (id: string): Promise<void> => {
+    const store = useGoalStore.getState();
     try {
       const goal = await goalApplicationService.pauseGoal(id);
-      storeUpdateGoal(id, goal);
+      store.updateGoal(id, goal);
       
-      if (selectedGoal?.uuid === id) {
+      if (selectedGoalRef.current?.uuid === id) {
         setSelectedGoal(goal);
       }
     } catch (e) {
-      storeSetError(e instanceof Error ? e.message : '暂停目标失败');
+      store.setError(e instanceof Error ? e.message : '暂停目标失败');
       throw e;
     }
-  }, [storeUpdateGoal, storeSetError, selectedGoal]);
+  }, []); // 空依赖
 
   const completeGoal = useCallback(async (id: string): Promise<void> => {
+    const store = useGoalStore.getState();
     try {
       const goal = await goalApplicationService.completeGoal(id);
-      storeUpdateGoal(id, goal);
+      store.updateGoal(id, goal);
       
-      if (selectedGoal?.uuid === id) {
+      if (selectedGoalRef.current?.uuid === id) {
         setSelectedGoal(goal);
       }
     } catch (e) {
-      storeSetError(e instanceof Error ? e.message : '完成目标失败');
+      store.setError(e instanceof Error ? e.message : '完成目标失败');
       throw e;
     }
-  }, [storeUpdateGoal, storeSetError, selectedGoal]);
+  }, []); // 空依赖
 
   const archiveGoal = useCallback(async (id: string): Promise<void> => {
+    const store = useGoalStore.getState();
     try {
       const goal = await goalApplicationService.archiveGoal(id);
-      storeUpdateGoal(id, goal);
+      store.updateGoal(id, goal);
       
-      if (selectedGoal?.uuid === id) {
+      if (selectedGoalRef.current?.uuid === id) {
         setSelectedGoal(goal);
       }
     } catch (e) {
-      storeSetError(e instanceof Error ? e.message : '归档目标失败');
+      store.setError(e instanceof Error ? e.message : '归档目标失败');
       throw e;
     }
-  }, [storeUpdateGoal, storeSetError, selectedGoal]);
+  }, []); // 空依赖
 
   const cloneGoal = useCallback(async (input: CloneGoalInput): Promise<void> => {
+    const store = useGoalStore.getState();
     try {
       const { goalUuid, ...options } = input;
       const goal = await goalApplicationService.cloneGoal(goalUuid, options);
-      storeAddGoal(goal);
+      store.addGoal(goal);
     } catch (e) {
-      storeSetError(e instanceof Error ? e.message : '克隆目标失败');
+      store.setError(e instanceof Error ? e.message : '克隆目标失败');
       throw e;
     }
-  }, [storeAddGoal, storeSetError]);
+  }, []);
 
   // ===== Selection =====
 
@@ -260,18 +264,15 @@ export function useGoal(): UseGoalReturn {
   // ===== Utilities =====
 
   const clearError = useCallback(() => {
-    storeSetError(null);
-  }, [storeSetError]);
+    useGoalStore.getState().setError(null);
+  }, []);
 
   const refresh = useCallback(async () => {
-    await loadGoals();
-  }, [loadGoals]);
+    await useGoalStore.getState().fetchGoals();
+  }, []); // 空依赖，不依赖 loadGoals
 
-  // ===== Effects =====
-
-  useEffect(() => {
-    loadGoals();
-  }, [loadGoals]);
+  // 不再自动加载 - 让组件自己决定何时加载
+  // 数据通过 goalStore 共享，只需加载一次
 
   // ===== Return =====
 

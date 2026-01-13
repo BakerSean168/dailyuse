@@ -9,7 +9,7 @@
  * 4. 模板创建/编辑入口
  */
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import type { TaskTemplateClientDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@dailyuse/ui-shadcn';
@@ -113,10 +113,13 @@ export function TaskManagementView({
     archiveTemplate,
   } = useTaskTemplate();
 
-  // 初始加载
+  // 初始加载 - 使用 ref 防止重复加载
+  const initializedRef = useRef(false);
   useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
     loadTemplates();
-  }, [loadTemplates]);
+  }, []);
 
   // 过滤模板
   const filteredTemplates = useMemo(() => {

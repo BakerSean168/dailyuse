@@ -8,14 +8,12 @@
  * - 备份 (Backup)：本地数据备份/恢复
  * - 导入/导出 (Import/Export)：数据迁移
  *
+ * 注意: IPC handlers 已在 ipc-registry.ts 中自动注册
+ *
  * @module repository
  */
 
 import { InitializationManager, InitializationPhase, createLogger } from '@dailyuse/utils';
-import {
-  registerRepositoryIpcHandlers,
-  unregisterRepositoryIpcHandlers,
-} from './ipc/repository.ipc-handlers';
 
 const logger = createLogger('RepositoryModule');
 
@@ -37,8 +35,7 @@ export function registerRepositoryModule(): void {
       logger.info('Initializing Repository module...');
 
       try {
-        // Register IPC handlers
-        registerRepositoryIpcHandlers();
+        // IPC handlers 已在 ipc-registry.ts 中自动注册
 
         logger.info('Repository module initialized successfully');
       } catch (error) {
@@ -51,8 +48,7 @@ export function registerRepositoryModule(): void {
       logger.info('Cleaning up Repository module...');
 
       try {
-        // Unregister IPC handlers
-        unregisterRepositoryIpcHandlers();
+        // IPC handlers 的清理由 ipc-registry 统一管理
 
         logger.info('Repository module cleaned up successfully');
       } catch (error) {

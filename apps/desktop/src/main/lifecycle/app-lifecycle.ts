@@ -104,6 +104,12 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
   await initializeEventListeners();
   console.log('[Lifecycle] Event listeners initialized');
 
+  // Register system IPC handlers BEFORE creating window
+  // This ensures handlers are ready when renderer starts making IPC calls
+  // Desktop feature managers (tray, shortcuts, autolaunch) will be set later
+  registerSystemIpcHandlers(null, null, null);
+  console.log('[Lifecycle] System IPC handlers registered (initial)');
+
   // Create main window
   const win = createMainWindow();
 
@@ -115,13 +121,9 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
     // Initialize desktop features
     await initializeDesktopFeatures(win);
 
-    // Register system IPC handlers (requires managers)
-    registerSystemIpcHandlers(
-      getTrayManager(),
-      getShortcutManager(),
-      getAutoLaunchManager()
-    );
-    console.log('[Lifecycle] System IPC handlers registered');
+    // Update system handlers with desktop feature managers
+    // Note: Handlers that need these managers will get them lazily
+    console.log('[Lifecycle] Desktop features initialized');
   }
 
   // macOS: Re-create window when dock icon is clicked

@@ -4,7 +4,7 @@
  * 目标文件夹管理组件 - 创建、编辑、删除文件夹
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { GoalFolder } from '@dailyuse/domain-client/goal';
 import { useGoalFolder } from '../hooks';
 
@@ -28,7 +28,7 @@ export function GoalFolderManager({
   const [isSaving, setIsSaving] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
-  // 使用 useGoalFolder hook
+  // 使用 useGoalFolder hook - 内部会自动加载数据
   const { 
     folders, 
     loading, 
@@ -42,21 +42,22 @@ export function GoalFolderManager({
   // 合并错误状态
   const error = localError || hookError;
 
+  // 使用 ref 保存函数引用，避免循环依赖
+  const loadFoldersRef = useRef(loadFoldersAction);
+  loadFoldersRef.current = loadFoldersAction;
+
   const loadFolders = useCallback(async () => {
     try {
       setLocalError(null);
-      await loadFoldersAction();
+      await loadFoldersRef.current();
     } catch (err) {
       console.error('[GoalFolderManager] Failed to load folders:', err);
       setLocalError('加载文件夹失败');
     }
-  }, [loadFoldersAction]);
+  }, []); // 空依赖，使用 ref
 
-  useEffect(() => {
-    if (open) {
-      loadFolders();
-    }
-  }, [open, loadFolders]);
+  // 不再自动加载 - folders 数据由 GoalListView 在初始化时加载
+  // GoalFolderManager 只是读取和操作已有的数据
 
   const handleCreate = async () => {
     if (!newFolderName.trim()) return;
@@ -70,7 +71,7 @@ export function GoalFolderManager({
       setNewFolderName('');
       setNewFolderDescription('');
       setIsCreating(false);
-      loadFolders();
+      // createFolder 已更新 store，无需再调 loadFolders
     } catch (err) {
       console.error('[GoalFolderManager] Failed to create folder:', err);
       setLocalError('创建文件夹失败');
@@ -91,7 +92,7 @@ export function GoalFolderManager({
       setEditingFolder(null);
       setNewFolderName('');
       setNewFolderDescription('');
-      loadFolders();
+      // updateFolder 已更新 store，无需再调 loadFolders
     } catch (err) {
       console.error('[GoalFolderManager] Failed to update folder:', err);
       setLocalError('更新文件夹失败');
@@ -106,7 +107,7 @@ export function GoalFolderManager({
 
     try {
       await deleteFolder(folder.uuid);
-      loadFolders();
+      // deleteFolder 已更新 store，无需再调 loadFolders
     } catch (err) {
       console.error('[GoalFolderManager] Failed to delete folder:', err);
       setLocalError('删除文件夹失败');

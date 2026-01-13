@@ -3,33 +3,34 @@
  * 提供统一的 IPC 请求处理、错误处理和响应格式
  * 
  * 功能：
- * - 统一的 IPC 响应格式
+ * - 统一的 IPC 响应格式（使用 Result Pattern）
  * - 自动错误处理和转换
  * - 请求验证和授权
  * - 日志记录
  * - 性能监控
+ * 
+ * @see {@link @dailyuse/contracts/result} Result Pattern 核心模块
  */
 
 import { createLogger, type ILogger } from '@dailyuse/utils';
+import {
+  type Result,
+  type IpcResult,
+  ok,
+  fail,
+  ResultCode,
+  ResultErrors,
+  toIpcResult,
+} from '@dailyuse/contracts/result';
 import { ServiceError } from './service-decorators';
 
 /**
- * 统一的 IPC 响应格式
+ * IPC 响应格式
+ * 
+ * 使用 Result Pattern 的 IpcResult 类型
+ * @see {@link IpcResult}
  */
-export interface IPCResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: any;
-    statusCode?: number;
-  };
-  meta?: {
-    duration: number;
-    timestamp: number;
-  };
-}
+export type { IpcResult as IPCResponse };
 
 /**
  * IPC 处理器基类
@@ -46,12 +47,14 @@ export abstract class BaseIPCHandler {
   /**
    * 处理 IPC 请求
    * 包装错误处理、日志和性能监控
+   * 
+   * 返回 IpcResult 格式，与 Result Pattern 兼容
    */
   protected async handleRequest<T>(
     channel: string,
     fn: () => Promise<T>,
     context?: { accountUuid?: string; userId?: string },
-  ): Promise<IPCResponse<T>> {
+  ): Promise<IpcResult<T>> {
     const startTime = performance.now();
     const startMs = Date.now();
 
@@ -60,7 +63,7 @@ export abstract class BaseIPCHandler {
         accountUuid: context?.accountUuid,
       });
 
-      const result = await fn();
+      const data = await fn();
 
       const duration = performance.now() - startTime;
 
@@ -70,14 +73,12 @@ export abstract class BaseIPCHandler {
         accountUuid: context?.accountUuid,
       });
 
-      return {
-        success: true,
-        data: result,
-        meta: {
-          duration: Math.round(duration),
-          timestamp: startMs,
-        },
-      };
+      // 使用 Result Pattern 构建成功响应
+      const result: Result<T> = ok(data);
+      return toIpcResult(result, {
+        duration: Math.round(duration),
+        timestamp: startMs,
+      });
     } catch (error) {
       const duration = performance.now() - startTime;
 
@@ -89,51 +90,26 @@ export abstract class BaseIPCHandler {
         accountUuid: context?.accountUuid,
       });
 
-      // 处理服务错误
+      // 使用 Result Pattern 构建错误响应
+      let result: Result<T>;
+
       if (error instanceof ServiceError) {
-        return {
-          success: false,
-          error: {
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            statusCode: error.statusCode,
-          },
-          meta: {
-            duration: Math.round(duration),
-            timestamp: startMs,
-          },
-        };
+        result = fail(ResultErrors.custom(
+          error.code,
+          error.message,
+          error.statusCode || ResultCode.INTERNAL_ERROR,
+          error.details,
+        ));
+      } else if (error instanceof Error) {
+        result = fail(ResultErrors.internalError(error.message || 'Internal server error'));
+      } else {
+        result = fail(ResultErrors.unknownError('An unknown error occurred'));
       }
 
-      // 处理通用错误
-      if (error instanceof Error) {
-        return {
-          success: false,
-          error: {
-            code: 'INTERNAL_ERROR',
-            message: error.message || 'Internal server error',
-            statusCode: 500,
-          },
-          meta: {
-            duration: Math.round(duration),
-            timestamp: startMs,
-          },
-        };
-      }
-
-      return {
-        success: false,
-        error: {
-          code: 'UNKNOWN_ERROR',
-          message: 'An unknown error occurred',
-          statusCode: 500,
-        },
-        meta: {
-          duration: Math.round(duration),
-          timestamp: startMs,
-        },
-      };
+      return toIpcResult(result, {
+        duration: Math.round(duration),
+        timestamp: startMs,
+      });
     }
   }
 

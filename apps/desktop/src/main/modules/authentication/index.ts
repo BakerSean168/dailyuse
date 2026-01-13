@@ -14,11 +14,6 @@
  */
 
 import { InitializationManager, InitializationPhase, createLogger } from '@dailyuse/utils';
-import {
-  registerAuthIpcHandlers,
-  unregisterAuthIpcHandlers,
-  getAuthIpcChannels,
-} from './ipc/auth.ipc-handlers';
 
 const logger = createLogger('AuthenticationModule');
 
@@ -26,6 +21,8 @@ const logger = createLogger('AuthenticationModule');
  * 注册 Authentication 模块到初始化管理器
  *
  * Priority: 135 (after Account module)
+ * 
+ * 注意：IPC handlers 的注册由 ipc-registry.ts 统一管理
  */
 export function registerAuthenticationModule(): void {
   logger.info('Registering Authentication module...');
@@ -39,10 +36,8 @@ export function registerAuthenticationModule(): void {
       logger.info('Initializing Authentication module...');
 
       try {
-        registerAuthIpcHandlers();
-
-        const channels = getAuthIpcChannels();
-        logger.info(`Authentication module initialized successfully (${channels.length} IPC channels)`);
+        // IPC handlers 由 ipc-registry.ts 统一注册
+        logger.info('Authentication module initialized successfully');
       } catch (error) {
         logger.error('Failed to initialize Authentication module', error);
         throw error;
@@ -53,7 +48,7 @@ export function registerAuthenticationModule(): void {
       logger.info('Cleaning up Authentication module...');
 
       try {
-        unregisterAuthIpcHandlers();
+        // IPC handlers 的清理由 ipc-registry 统一管理
         logger.info('Authentication module cleaned up successfully');
       } catch (error) {
         logger.error('Failed to cleanup Authentication module', error);

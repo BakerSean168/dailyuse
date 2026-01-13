@@ -10,15 +10,15 @@ import type {
   CompleteTaskInstanceRequest,
   SkipTaskInstanceRequest,
 } from '@dailyuse/contracts/task';
-import type { ElectronAPI } from '../../../shared/ipc-client.types';
+import type { IpcClient } from '../../../shared/ipc-client.types';
 
 /**
  * TaskInstanceIpcAdapter
  *
- * IPC 实现的任务实例 API 客户端（用于 Electron 桌面应用）
+ * IPC 实现的任务实�?API 客户端（用于 Electron 桌面应用�?
  */
 export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
-  constructor(private readonly electronApi: ElectronAPI) {}
+  constructor(private readonly ipcClient: IpcClient) {}
 
   // ===== Task Instance CRUD =====
 
@@ -30,35 +30,35 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
     startDate?: number;
     endDate?: number;
   }): Promise<TaskInstanceClientDTO[]> {
-    return this.electronApi.invoke('task-instance:list', params);
+    return this.ipcClient.invoke('task-instance:list', params);
   }
 
   async getTaskInstanceById(uuid: string): Promise<TaskInstanceClientDTO> {
-    return this.electronApi.invoke('task-instance:get', { uuid });
+    return this.ipcClient.invoke('task-instance:get', { uuid });
   }
 
   async deleteTaskInstance(uuid: string): Promise<void> {
-    await this.electronApi.invoke('task-instance:delete', { uuid });
+    await this.ipcClient.invoke('task-instance:delete', { uuid });
   }
 
-  // ===== Task Instance 状态管理 =====
+  // ===== Task Instance 状态管�?=====
 
   async startTaskInstance(uuid: string): Promise<TaskInstanceClientDTO> {
-    return this.electronApi.invoke('task-instance:start', { uuid });
+    return this.ipcClient.invoke('task-instance:start', { uuid });
   }
 
   async completeTaskInstance(
     uuid: string,
     request?: CompleteTaskInstanceRequest,
   ): Promise<TaskInstanceClientDTO> {
-    return this.electronApi.invoke('task-instance:complete', { uuid, request });
+    return this.ipcClient.invoke('task-instance:complete', { uuid, request });
   }
 
   async skipTaskInstance(
     uuid: string,
     request?: SkipTaskInstanceRequest,
   ): Promise<TaskInstanceClientDTO> {
-    return this.electronApi.invoke('task-instance:skip', { uuid, request });
+    return this.ipcClient.invoke('task-instance:skip', { uuid, request });
   }
 
   // ===== 批量操作 =====
@@ -67,13 +67,13 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
     count: number;
     instances: TaskInstanceClientDTO[];
   }> {
-    return this.electronApi.invoke('task-instance:check-expired');
+    return this.ipcClient.invoke('task-instance:check-expired');
   }
 }
 
 /**
  * Factory function to create TaskInstanceIpcAdapter
  */
-export function createTaskInstanceIpcAdapter(electronApi: ElectronAPI): TaskInstanceIpcAdapter {
-  return new TaskInstanceIpcAdapter(electronApi);
+export function createTaskInstanceIpcAdapter(ipcClient: IpcClient): TaskInstanceIpcAdapter {
+  return new TaskInstanceIpcAdapter(ipcClient);
 }

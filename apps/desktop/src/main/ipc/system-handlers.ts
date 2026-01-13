@@ -476,9 +476,15 @@ function registerSyncHandlers(): void {
   });
 }
 
+// Flag to prevent duplicate handler registration
+let systemHandlersRegistered = false;
+
 /**
  * @function registerSystemIpcHandlers
  * @description Registers all system-level IPC handlers.
+ * 
+ * This function is idempotent - calling it multiple times is safe.
+ * Handlers are only registered once on the first call.
  *
  * @param {TrayManager | null} trayManager - The tray manager instance.
  * @param {ShortcutManager | null} shortcutManager - The shortcut manager instance.
@@ -489,6 +495,13 @@ export function registerSystemIpcHandlers(
   shortcutManager: ShortcutManager | null,
   autoLaunchManager: AutoLaunchManager | null
 ): void {
+  // Prevent duplicate registration
+  if (systemHandlersRegistered) {
+    console.log('[SystemHandlers] Already registered, skipping...');
+    return;
+  }
+  systemHandlersRegistered = true;
+
   // ========== App Info Channels ==========
   registerAppInfoHandlers();
 

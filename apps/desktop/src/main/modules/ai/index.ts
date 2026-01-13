@@ -9,12 +9,13 @@
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import { createLogger } from '@dailyuse/utils';
 
-import { registerAIIpcHandlers, unregisterAIIpcHandlers } from './ipc/ai.ipc-handlers';
-
 const logger = createLogger('AIModule');
 
 /**
  * 注册 AI 模块到 InitializationManager
+ * 
+ * 注意：IPC handlers 的注册由 ipc-registry.ts 统一管理，
+ * 此模块仅负责初始化阶段的日志记录
  */
 export function registerAIModule(): void {
   const manager = InitializationManager.getInstance();
@@ -25,18 +26,12 @@ export function registerAIModule(): void {
     priority: 120, // AI 模块优先级（在 Dashboard 之后）
     initialize: async () => {
       logger.info('Initializing AI module...');
-
-      // 注册所有 IPC handlers
-      registerAIIpcHandlers();
-
+      // IPC handlers 由 ipc-registry.ts 统一注册
       logger.info('AI module initialized (27 IPC channels)');
     },
     cleanup: async () => {
       logger.info('Cleaning up AI module...');
-
-      // 注销所有 IPC handlers
-      unregisterAIIpcHandlers();
-
+      // IPC handlers 的清理由 ipc-registry 统一管理
       logger.info('AI module cleanup complete');
     },
   });

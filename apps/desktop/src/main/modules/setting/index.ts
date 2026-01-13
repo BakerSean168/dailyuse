@@ -12,10 +12,6 @@
  */
 
 import { InitializationManager, InitializationPhase, createLogger } from '@dailyuse/utils';
-import {
-  registerSettingIpcHandlers,
-  unregisterSettingIpcHandlers,
-} from './ipc/setting.ipc-handlers';
 
 const logger = createLogger('SettingModule');
 
@@ -24,6 +20,8 @@ const logger = createLogger('SettingModule');
  *
  * Priority: 150 (after Repository module)
  * Dependencies: infrastructure (10)
+ * 
+ * 注意：IPC handlers 的注册由 ipc-registry.ts 统一管理
  */
 export function registerSettingModule(): void {
   logger.info('Registering Setting module...');
@@ -37,9 +35,7 @@ export function registerSettingModule(): void {
       logger.info('Initializing Setting module...');
 
       try {
-        // Register IPC handlers
-        registerSettingIpcHandlers();
-
+        // IPC handlers 由 ipc-registry.ts 统一注册
         logger.info('Setting module initialized successfully');
       } catch (error) {
         logger.error('Failed to initialize Setting module', error);
@@ -51,8 +47,7 @@ export function registerSettingModule(): void {
       logger.info('Cleaning up Setting module...');
 
       try {
-        // Unregister IPC handlers
-        unregisterSettingIpcHandlers();
+        // IPC handlers 的清理由 ipc-registry 统一管理
 
         logger.info('Setting module cleaned up successfully');
       } catch (error) {

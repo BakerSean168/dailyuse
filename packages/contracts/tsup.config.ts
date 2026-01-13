@@ -34,6 +34,7 @@ export default createTsupConfig({
     // 其他模块入口
     'src/document.contracts.ts',
     'src/response/index.ts',
+    'src/result/index.ts',
     'src/shared/index.ts',
   ],
 });

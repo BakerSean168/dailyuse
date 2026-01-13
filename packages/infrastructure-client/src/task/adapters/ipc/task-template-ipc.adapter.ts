@@ -14,20 +14,20 @@ import type {
   GenerateInstancesRequest,
   BindToGoalRequest,
 } from '@dailyuse/contracts/task';
-import type { ElectronAPI } from '../../../shared/ipc-client.types';
+import type { IpcClient } from '../../../shared/ipc-client.types';
 
 /**
  * TaskTemplateIpcAdapter
  *
- * IPC 实现的任务模板 API 客户端（用于 Electron 桌面应用）
+ * IPC 实现的任务模�?API 客户端（用于 Electron 桌面应用�?
  */
 export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
-  constructor(private readonly electronApi: ElectronAPI) {}
+  constructor(private readonly ipcClient: IpcClient) {}
 
   // ===== Task Template CRUD =====
 
   async createTaskTemplate(request: CreateTaskTemplateRequest): Promise<TaskTemplateClientDTO> {
-    return this.electronApi.invoke('task-template:create', request);
+    return this.ipcClient.invoke('task-template:create', request);
   }
 
   async getTaskTemplates(params?: {
@@ -40,39 +40,39 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     urgency?: string;
     tags?: string[];
   }): Promise<{ templates: TaskTemplateClientDTO[]; total: number }> {
-    return this.electronApi.invoke('task-template:list', params);
+    return this.ipcClient.invoke('task-template:list', params);
   }
 
   async getTaskTemplateById(
     uuid: string,
     includeChildren = false,
   ): Promise<TaskTemplateClientDTO> {
-    return this.electronApi.invoke('task-template:get', { uuid, includeChildren });
+    return this.ipcClient.invoke('task-template:get', { uuid, includeChildren });
   }
 
   async updateTaskTemplate(
     uuid: string,
     request: UpdateTaskTemplateRequest,
   ): Promise<TaskTemplateClientDTO> {
-    return this.electronApi.invoke('task-template:update', { uuid, ...request });
+    return this.ipcClient.invoke('task-template:update', { uuid, ...request });
   }
 
   async deleteTaskTemplate(uuid: string): Promise<void> {
-    await this.electronApi.invoke('task-template:delete', { uuid });
+    await this.ipcClient.invoke('task-template:delete', { uuid });
   }
 
-  // ===== Task Template 状态管理 =====
+  // ===== Task Template 状态管�?=====
 
   async activateTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {
-    return this.electronApi.invoke('task-template:activate', { uuid });
+    return this.ipcClient.invoke('task-template:activate', { uuid });
   }
 
   async pauseTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {
-    return this.electronApi.invoke('task-template:pause', { uuid });
+    return this.ipcClient.invoke('task-template:pause', { uuid });
   }
 
   async archiveTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {
-    return this.electronApi.invoke('task-template:archive', { uuid });
+    return this.ipcClient.invoke('task-template:archive', { uuid });
   }
 
   // ===== 聚合根控制：任务实例管理 =====
@@ -81,7 +81,7 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     templateUuid: string,
     request: GenerateInstancesRequest,
   ): Promise<TaskInstanceClientDTO[]> {
-    return this.electronApi.invoke('task-template:generate-instances', {
+    return this.ipcClient.invoke('task-template:generate-instances', {
       templateUuid,
       request,
     });
@@ -92,7 +92,7 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     from: number,
     to: number,
   ): Promise<TaskInstanceClientDTO[]> {
-    return this.electronApi.invoke('task-template:get-instances', {
+    return this.ipcClient.invoke('task-template:get-instances', {
       templateUuid,
       from,
       to,
@@ -105,20 +105,20 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     templateUuid: string,
     request: BindToGoalRequest,
   ): Promise<TaskTemplateClientDTO> {
-    return this.electronApi.invoke('task-template:bind-goal', {
+    return this.ipcClient.invoke('task-template:bind-goal', {
       templateUuid,
       request,
     });
   }
 
   async unbindFromGoal(templateUuid: string): Promise<TaskTemplateClientDTO> {
-    return this.electronApi.invoke('task-template:unbind-goal', { templateUuid });
+    return this.ipcClient.invoke('task-template:unbind-goal', { templateUuid });
   }
 }
 
 /**
  * Factory function to create TaskTemplateIpcAdapter
  */
-export function createTaskTemplateIpcAdapter(electronApi: ElectronAPI): TaskTemplateIpcAdapter {
-  return new TaskTemplateIpcAdapter(electronApi);
+export function createTaskTemplateIpcAdapter(ipcClient: IpcClient): TaskTemplateIpcAdapter {
+  return new TaskTemplateIpcAdapter(ipcClient);
 }

@@ -6,6 +6,7 @@
  */
 
 import type { ElectronAPI } from '../../shared';
+import { createIpcClient } from '../../shared';
 import {
   GoalContainer,
   GoalIpcAdapter,
@@ -46,57 +47,60 @@ import { SettingContainer, SettingIpcAdapter } from '../../setting';
  * @param electronApi - Electron API（暴露给渲染进程的 API）
  */
 export function configureDesktopDependencies(electronApi: ElectronAPI): void {
+  // 创建 IPC 客户端包装器，自动处理 IpcResult 解包
+  const ipcClient = createIpcClient();
+
   // Goal Module
   GoalContainer.getInstance()
-    .registerApiClient(new GoalIpcAdapter(electronApi))
-    .registerFolderApiClient(new GoalFolderIpcAdapter(electronApi))
-    .registerFocusApiClient(new GoalFocusIpcAdapter(electronApi));
+    .registerApiClient(new GoalIpcAdapter(ipcClient))
+    .registerFolderApiClient(new GoalFolderIpcAdapter(ipcClient))
+    .registerFocusApiClient(new GoalFocusIpcAdapter(ipcClient));
 
   // Task Module
   TaskContainer.getInstance()
-    .registerTemplateApiClient(new TaskTemplateIpcAdapter(electronApi))
-    .registerInstanceApiClient(new TaskInstanceIpcAdapter(electronApi))
-    .registerDependencyApiClient(new TaskDependencyIpcAdapter(electronApi))
-    .registerStatisticsApiClient(new TaskStatisticsIpcAdapter(electronApi));
+    .registerTemplateApiClient(new TaskTemplateIpcAdapter(ipcClient))
+    .registerInstanceApiClient(new TaskInstanceIpcAdapter(ipcClient))
+    .registerDependencyApiClient(new TaskDependencyIpcAdapter(ipcClient))
+    .registerStatisticsApiClient(new TaskStatisticsIpcAdapter(ipcClient));
 
   // Schedule Module
   ScheduleContainer.getInstance()
-    .registerTaskApiClient(new ScheduleTaskIpcAdapter(electronApi))
-    .registerEventApiClient(new ScheduleEventIpcAdapter(electronApi));
+    .registerTaskApiClient(new ScheduleTaskIpcAdapter(ipcClient))
+    .registerEventApiClient(new ScheduleEventIpcAdapter(ipcClient));
 
   // Reminder Module
   ReminderContainer.getInstance()
-    .registerApiClient(new ReminderIpcAdapter(electronApi));
+    .registerApiClient(new ReminderIpcAdapter(ipcClient));
 
   // Account Module
   AccountContainer.getInstance()
-    .registerApiClient(new AccountIpcAdapter(electronApi));
+    .registerApiClient(new AccountIpcAdapter(ipcClient));
 
   // Authentication Module
   AuthContainer.getInstance()
-    .registerApiClient(new AuthIpcAdapter(electronApi));
+    .registerApiClient(new AuthIpcAdapter(ipcClient));
 
   // Notification Module
   NotificationContainer.getInstance()
-    .registerApiClient(new NotificationIpcAdapter(electronApi));
+    .registerApiClient(new NotificationIpcAdapter(ipcClient));
 
   // AI Module
   AIContainer.getInstance()
-    .registerConversationApiClient(new AIConversationIpcAdapter(electronApi))
-    .registerMessageApiClient(new AIMessageIpcAdapter(electronApi))
-    .registerGenerationTaskApiClient(new AIGenerationTaskIpcAdapter(electronApi))
-    .registerUsageQuotaApiClient(new AIUsageQuotaIpcAdapter(electronApi))
-    .registerProviderConfigApiClient(new AIProviderConfigIpcAdapter(electronApi));
+    .registerConversationApiClient(new AIConversationIpcAdapter(ipcClient))
+    .registerMessageApiClient(new AIMessageIpcAdapter(ipcClient))
+    .registerGenerationTaskApiClient(new AIGenerationTaskIpcAdapter(ipcClient))
+    .registerUsageQuotaApiClient(new AIUsageQuotaIpcAdapter(ipcClient))
+    .registerProviderConfigApiClient(new AIProviderConfigIpcAdapter(ipcClient));
 
   // Dashboard Module
   DashboardContainer.getInstance()
-    .registerApiClient(new DashboardIpcAdapter(electronApi));
+    .registerApiClient(new DashboardIpcAdapter(ipcClient));
 
   // Repository Module
   RepositoryContainer.getInstance()
-    .registerApiClient(new RepositoryIpcAdapter(electronApi));
+    .registerApiClient(new RepositoryIpcAdapter(ipcClient));
 
   // Setting Module
   SettingContainer.getInstance()
-    .registerApiClient(new SettingIpcAdapter(electronApi));
+    .registerApiClient(new SettingIpcAdapter(ipcClient));
 }

@@ -4,13 +4,13 @@
  * 调度模块入口
  * - 注册 InitializationManager 任务
  * - 统一管理 Schedule 模块的初始化和清理
+ * 
+ * 注意: IPC handlers 已在 ipc-registry.ts 中通过 ScheduleTaskIPCHandler/ScheduleStatisticsIPCHandler 类自动注册
+ *       不需要在此处重复注册
  */
 
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import { createLogger } from '@dailyuse/utils';
-
-import { registerScheduleTaskIpcHandlers, unregisterScheduleTaskIpcHandlers } from './ipc/schedule-task.ipc-handlers';
-import { registerScheduleStatisticsIpcHandlers, unregisterScheduleStatisticsIpcHandlers } from './ipc/schedule-statistics.ipc-handlers';
 
 const logger = createLogger('ScheduleModule');
 
@@ -27,18 +27,16 @@ export function registerScheduleModule(): void {
     initialize: async () => {
       logger.info('Initializing Schedule module...');
 
-      // 注册所有 IPC handlers
-      registerScheduleTaskIpcHandlers();
-      registerScheduleStatisticsIpcHandlers();
+      // IPC handlers 已在 ipc-registry.ts 中自动注册
+      // 此处仅用于其他初始化逻辑（如事件监听器、定时任务等）
 
-      logger.info('Schedule module initialized (13 IPC channels)');
+      logger.info('Schedule module initialized');
     },
     cleanup: async () => {
       logger.info('Cleaning up Schedule module...');
 
-      // 注销所有 IPC handlers
-      unregisterScheduleTaskIpcHandlers();
-      unregisterScheduleStatisticsIpcHandlers();
+      // IPC handlers 的清理由 ipc-registry 统一管理
+      // 此处仅用于其他清理逻辑
 
       logger.info('Schedule module cleanup complete');
     },

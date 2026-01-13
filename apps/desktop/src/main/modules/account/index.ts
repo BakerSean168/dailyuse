@@ -14,11 +14,6 @@
  */
 
 import { InitializationManager, InitializationPhase, createLogger } from '@dailyuse/utils';
-import {
-  registerAccountIpcHandlers,
-  unregisterAccountIpcHandlers,
-  getAccountIpcChannels,
-} from './ipc/account.ipc-handlers';
 
 const logger = createLogger('AccountModule');
 
@@ -26,6 +21,8 @@ const logger = createLogger('AccountModule');
  * 注册 Account 模块到初始化管理器
  *
  * Priority: 130 (after AI module)
+ * 
+ * 注意：IPC handlers 的注册由 ipc-registry.ts 统一管理
  */
 export function registerAccountModule(): void {
   logger.info('Registering Account module...');
@@ -39,10 +36,8 @@ export function registerAccountModule(): void {
       logger.info('Initializing Account module...');
 
       try {
-        registerAccountIpcHandlers();
-
-        const channels = getAccountIpcChannels();
-        logger.info(`Account module initialized successfully (${channels.length} IPC channels)`);
+        // IPC handlers 由 ipc-registry.ts 统一注册
+        logger.info('Account module initialized successfully');
       } catch (error) {
         logger.error('Failed to initialize Account module', error);
         throw error;
@@ -53,7 +48,7 @@ export function registerAccountModule(): void {
       logger.info('Cleaning up Account module...');
 
       try {
-        unregisterAccountIpcHandlers();
+        // IPC handlers 的清理由 ipc-registry 统一管理
         logger.info('Account module cleaned up successfully');
       } catch (error) {
         logger.error('Failed to cleanup Account module', error);

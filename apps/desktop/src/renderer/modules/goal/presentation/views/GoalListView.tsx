@@ -4,7 +4,7 @@
  * 目标列表视图 - 显示所有目标及其状态
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
 import { useGoal, useGoalFolder } from '../hooks';
 import { GoalCard } from '../components/GoalCard';
@@ -21,26 +21,56 @@ export function GoalListView() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   // 视图模式: grid(网格) / list(列表，支持虚拟滚动)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  // 防止重复加载
+  const initializedRef = useRef(false);
 
   // 使用 hooks 获取数据
   const { goals, loading, error, loadGoals: fetchGoals, searchGoals } = useGoal();
-  const { loadFolders } = useGoalFolder();
+  const { folders, loadFolders } = useGoalFolder();
 
+  // 使用 ref 保存函数引用，避免 useEffect 依赖循环
+  const fetchGoalsRef = useRef(fetchGoals);
+  fetchGoalsRef.current = fetchGoals;
+  const loadFoldersRef = useRef(loadFolders);
+  loadFoldersRef.current = loadFolders;
+  const searchGoalsRef = useRef(searchGoals);
+  searchGoalsRef.current = searchGoals;
+
+  // 组件挂载时加载一次数据
+  useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+    
+    // 加载 goals 和 folders
+    fetchGoalsRef.current().catch((err) => {
+      console.error('[GoalListView] Failed to load goals:', err);
+    });
+    loadFoldersRef.current().catch((err) => {
+      console.error('[GoalListView] Failed to load folders:', err);
+    });
+  }, []);
+
+  // 手动刷新函数 - 用于按钮点击等场景
   const loadGoals = useCallback(async () => {
     try {
       if (selectedFolder?.uuid) {
-        await searchGoals({ dirUuid: selectedFolder.uuid });
+        await searchGoalsRef.current({ dirUuid: selectedFolder.uuid });
       } else {
-        await fetchGoals();
+        await fetchGoalsRef.current();
       }
     } catch (err) {
       console.error('[GoalListView] Failed to load goals:', err);
     }
-  }, [fetchGoals, searchGoals, selectedFolder]);
+  }, [selectedFolder]);
 
+  // 当选择的文件夹改变时，重新加载 goals
   useEffect(() => {
-    loadGoals();
-  }, [loadGoals]);
+    if (selectedFolder?.uuid) {
+      searchGoalsRef.current({ dirUuid: selectedFolder.uuid }).catch((err) => {
+        console.error('[GoalListView] Failed to load goals for folder:', err);
+      });
+    }
+  }, [selectedFolder?.uuid]); // 只依赖 uuid
 
   const handleGoalCreated = () => {
     setShowCreateDialog(false);

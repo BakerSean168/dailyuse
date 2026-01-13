@@ -9,6 +9,10 @@ export type { HttpClient, IHttpClient, HttpClientConfig } from './http-client.ty
 
 // IPC Client Types
 export type { IpcClient, ElectronAPI } from './ipc-client.types';
+export { createIpcClient, getElectronAPI } from './ipc-client.types';
+
+// IPC Result Unwrap Utility
+export { unwrapIpcResult } from './ipc-result-unwrap';
 
 // Storage Types
 export type { IStorage, ICacheStorage } from './storage';

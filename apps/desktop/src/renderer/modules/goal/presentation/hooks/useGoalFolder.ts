@@ -40,114 +40,118 @@ export interface UseGoalFolderReturn {
 // ===== Hook Implementation =====
 
 export function useGoalFolder(): UseGoalFolderReturn {
-  // ===== Store State =====
+  // ===== Store State (只订阅数据，不订阅 actions) =====
   const folders = useGoalStore((state) => state.folders);
   const loading = useGoalStore((state) => state.isLoading);
   const error = useGoalStore((state) => state.error);
 
-  // ===== Store Actions =====
-  const storeSetFolders = useGoalStore((state) => state.setFolders);
-  const storeAddFolder = useGoalStore((state) => state.addFolder);
-  const storeUpdateFolder = useGoalStore((state) => state.updateFolder);
-  const storeRemoveFolder = useGoalStore((state) => state.removeFolder);
-  const storeSetLoading = useGoalStore((state) => state.setLoading);
-  const storeSetError = useGoalStore((state) => state.setError);
-
-  // ===== Store Selectors =====
-  const getFolderById = useGoalStore((state) => state.getFolderById);
-
   // ===== Query =====
+  // 所有 useCallback 使用空依赖，在函数内部调用 getState() 获取最新 store
 
   const loadFolders = useCallback(async () => {
-    storeSetLoading(true);
-    storeSetError(null);
+    const store = useGoalStore.getState();
+    store.setLoading(true);
+    store.setError(null);
 
     try {
       const result = await goalApplicationService.listFolders();
-      storeSetFolders(result);
-      storeSetLoading(false);
+      store.setFolders(result);
+      store.setLoading(false);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '加载文件夹失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
+      store.setError(errorMessage);
+      store.setLoading(false);
     }
-  }, [storeSetFolders, storeSetLoading, storeSetError]);
+  }, []); // 空依赖，函数内部获取 store
 
   const getFolder = useCallback(async (id: string): Promise<GoalFolder | null> => {
+    const store = useGoalStore.getState();
     // 先从 Store 查找
-    const cached = getFolderById(id);
+    const cached = store.getFolderById(id);
     if (cached) return cached;
     
     // Store 中没有则从 API 获取
     return goalApplicationService.getFolder(id);
-  }, [getFolderById]);
+  }, []); // 空依赖
 
   // ===== Mutations =====
 
   const createFolder = useCallback(async (input: CreateGoalFolderRequest): Promise<GoalFolder> => {
-    storeSetLoading(true);
-    storeSetError(null);
+    const store = useGoalStore.getState();
+    store.setLoading(true);
+    store.setError(null);
 
     try {
       const folder = await goalApplicationService.createFolder(input);
-      storeAddFolder(folder);
-      storeSetLoading(false);
+      store.addFolder(folder);
+      store.setLoading(false);
       return folder;
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '创建文件夹失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
+      store.setError(errorMessage);
+      store.setLoading(false);
       throw e;
     }
-  }, [storeAddFolder, storeSetLoading, storeSetError]);
+  }, []);
 
   const updateFolder = useCallback(async (uuid: string, request: UpdateGoalFolderRequest): Promise<void> => {
-    storeSetLoading(true);
-    storeSetError(null);
+    const store = useGoalStore.getState();
+    store.setLoading(true);
+    store.setError(null);
 
     try {
       const folder = await goalApplicationService.updateFolder(uuid, request);
-      storeUpdateFolder(uuid, folder);
-      storeSetLoading(false);
+      store.updateFolder(uuid, folder);
+      store.setLoading(false);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '更新文件夹失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
+      store.setError(errorMessage);
+      store.setLoading(false);
       throw e;
     }
-  }, [storeUpdateFolder, storeSetLoading, storeSetError]);
+  }, []);
 
   const deleteFolder = useCallback(async (id: string): Promise<void> => {
-    storeSetLoading(true);
-    storeSetError(null);
+    const store = useGoalStore.getState();
+    store.setLoading(true);
+    store.setError(null);
 
     try {
       await goalApplicationService.deleteFolder(id);
-      storeRemoveFolder(id);
-      storeSetLoading(false);
+      store.removeFolder(id);
+      store.setLoading(false);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '删除文件夹失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
+      store.setError(errorMessage);
+      store.setLoading(false);
       throw e;
     }
-  }, [storeRemoveFolder, storeSetLoading, storeSetError]);
+  }, []);
 
   // ===== Utilities =====
 
   const clearError = useCallback(() => {
-    storeSetError(null);
-  }, [storeSetError]);
+    useGoalStore.getState().setError(null);
+  }, []);
 
   const refresh = useCallback(async () => {
-    await loadFolders();
-  }, [loadFolders]);
+    const store = useGoalStore.getState();
+    store.setLoading(true);
+    store.setError(null);
 
-  // ===== Effects =====
+    try {
+      const result = await goalApplicationService.listFolders();
+      store.setFolders(result);
+      store.setLoading(false);
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : '加载文件夹失败';
+      store.setError(errorMessage);
+      store.setLoading(false);
+    }
+  }, []); // 空依赖，不依赖 loadFolders
 
-  useEffect(() => {
-    loadFolders();
-  }, [loadFolders]);
+  // 不再自动加载 - 让组件自己决定何时加载
+  // 数据通过 goalStore 共享，只需加载一次
 
   // ===== Return =====
 

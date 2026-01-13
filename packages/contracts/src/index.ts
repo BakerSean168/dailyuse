@@ -32,34 +32,94 @@
  * - @dailyuse/contracts/document   - 文档模块
  * - @dailyuse/contracts/ai         - AI模块
  * - @dailyuse/contracts/dashboard  - 仪表盘模块
- * - @dailyuse/contracts/response   - 响应系统
+ * - @dailyuse/contracts/response   - 响应系统（旧，保留兼容）
+ * - @dailyuse/contracts/result     - Result Pattern (新，推荐)
  * - @dailyuse/contracts/shared     - 共享类型
  */
 
 // ============================================================
-// 响应系统（最常用，保留在根入口以便快速访问）
+// 响应系统（旧版，保留向后兼容，新代码请使用 result）
 // ============================================================
 export {
-  ResponseCode,
   ResponseStatus,
   ResponseSeverity,
-  ResponseBuilder,
-  createResponseBuilder,
-  getHttpStatusCode,
-  isClientError,
-  isServerError,
 } from './response';
 
 export type {
   ErrorDetail,
   PaginationInfo,
   BaseResponse,
-  SuccessResponse,
-  ErrorResponse,
   ApiErrorResponse,
-  ApiResponse,
   TResponse,
   ResponseBuilderOptions,
   ListResponse,
   BatchResponse,
 } from './response';
+
+// ============================================================
+// Result Pattern（Protocol Agnostic 统一结果类型，推荐）
+// ============================================================
+export {
+  // Core types
+  ResultCode,
+  // Constructors
+  ok,
+  fail,
+  error,
+  // Type guards
+  isOk,
+  isFail,
+  // Utilities
+  unwrap,
+  unwrapOr,
+  map,
+  mapError,
+  flatMap,
+  tryCatch,
+  tryCatchSync,
+  // Pagination
+  okPaged,
+  // Batch
+  okBatch,
+  // Error factories
+  ResultErrors,
+  // IPC adapters
+  toIpcResult,
+  fromIpcResult,
+  createIpcHandler,
+  createIpcClientWrapper,
+  // HTTP adapters
+  toHttpResponse,
+  fromHttpResponse,
+  getHttpStatusCode,
+  errorCodeToHttpStatus,
+  HttpResponseBuilder,
+  createHttpResponseBuilder,
+  ResultCodeToHttpStatus,
+  isClientError,
+  isServerError,
+  // Legacy compatibility
+  ResponseCode,
+  ResponseBuilder,
+  createResponseBuilder,
+} from './result';
+
+export type {
+  Result,
+  SuccessResult,
+  FailureResult,
+  ResultError,
+  ResultErrorDetail,
+  ResultMeta,
+  AsyncResult,
+  PageInfo,
+  PagedList,
+  BatchResult,
+  IpcResult,
+  HttpResponse,
+  HttpResponseOptions,
+  // Legacy compatibility
+  ApiResponse,
+  SuccessResponse,
+  ErrorResponse,
+} from './result';

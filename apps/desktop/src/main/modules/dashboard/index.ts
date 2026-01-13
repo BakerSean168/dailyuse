@@ -9,12 +9,13 @@
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import { createLogger } from '@dailyuse/utils';
 
-import { registerDashboardIpcHandlers, unregisterDashboardIpcHandlers } from './ipc/dashboard.ipc-handlers';
-
 const logger = createLogger('DashboardModule');
 
 /**
  * 注册 Dashboard 模块到 InitializationManager
+ * 
+ * 注意：IPC handlers 的注册由 ipc-registry.ts 统一管理，
+ * 此模块仅负责初始化阶段的日志记录
  */
 export function registerDashboardModule(): void {
   const manager = InitializationManager.getInstance();
@@ -25,18 +26,12 @@ export function registerDashboardModule(): void {
     priority: 110, // Dashboard 模块优先级（在其他功能模块之后，需要聚合数据）
     initialize: async () => {
       logger.info('Initializing Dashboard module...');
-
-      // 注册所有 IPC handlers
-      registerDashboardIpcHandlers();
-
+      // IPC handlers 由 ipc-registry.ts 统一注册
       logger.info('Dashboard module initialized (10 IPC channels)');
     },
     cleanup: async () => {
       logger.info('Cleaning up Dashboard module...');
-
-      // 注销所有 IPC handlers
-      unregisterDashboardIpcHandlers();
-
+      // IPC handlers 的清理由 ipc-registry 统一管理
       logger.info('Dashboard module cleanup complete');
     },
   });

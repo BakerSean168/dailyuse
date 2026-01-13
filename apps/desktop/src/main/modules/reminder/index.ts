@@ -4,14 +4,12 @@
  * 提醒模块入口
  * - 注册 InitializationManager 任务
  * - 统一管理 Reminder 模块的初始化和清理
+ * 
+ * 注意: IPC handlers 已在 ipc-registry.ts 中自动注册
  */
 
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import { createLogger } from '@dailyuse/utils';
-
-import { registerReminderTemplateIpcHandlers, unregisterReminderTemplateIpcHandlers } from './ipc/reminder-template.ipc-handlers';
-import { registerReminderGroupIpcHandlers, unregisterReminderGroupIpcHandlers } from './ipc/reminder-group.ipc-handlers';
-import { registerReminderStatisticsIpcHandlers, unregisterReminderStatisticsIpcHandlers } from './ipc/reminder-statistics.ipc-handlers';
 
 const logger = createLogger('ReminderModule');
 
@@ -28,20 +26,14 @@ export function registerReminderModule(): void {
     initialize: async () => {
       logger.info('Initializing Reminder module...');
 
-      // 注册所有 IPC handlers
-      registerReminderTemplateIpcHandlers();
-      registerReminderGroupIpcHandlers();
-      registerReminderStatisticsIpcHandlers();
+      // IPC handlers 已在 ipc-registry.ts 中自动注册
 
-      logger.info('Reminder module initialized (16 IPC channels)');
+      logger.info('Reminder module initialized');
     },
     cleanup: async () => {
       logger.info('Cleaning up Reminder module...');
 
-      // 注销所有 IPC handlers
-      unregisterReminderTemplateIpcHandlers();
-      unregisterReminderGroupIpcHandlers();
-      unregisterReminderStatisticsIpcHandlers();
+      // IPC handlers 的清理由 ipc-registry 统一管理
 
       logger.info('Reminder module cleanup complete');
     },

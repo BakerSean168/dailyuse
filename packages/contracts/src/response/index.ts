@@ -2,10 +2,16 @@
  * 响应系统类型定义
  * 提供统一的API响应格式和错误处理机制
  *
- * 使用指南：
- * 1. 前端：axios 拦截器自动处理 success/code/message，只返回 data
- * 2. 后端：使用 ResponseBuilder 构建标准响应
- * 3. 类型安全：所有响应都符合 ApiResponse<T> 类型
+ * @deprecated 请使用 `@dailyuse/contracts/result` 模块替代。
+ * 新代码应使用 Result Pattern 实现协议无关的响应处理。
+ * 此模块将在后续版本中移除。
+ *
+ * 迁移指南：
+ * - ResponseCode → ResultCode
+ * - ResponseBuilder → HttpResponseBuilder (HTTP) 或 toIpcResult (IPC)
+ * - SuccessResponse/ErrorResponse → 使用 ok()/fail() 创建 Result
+ *
+ * @see {@link @dailyuse/contracts/result} 新的 Result Pattern 模块
  */
 
 import { getHttpStatusCode } from './statusCodes';

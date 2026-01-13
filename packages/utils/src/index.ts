@@ -6,7 +6,8 @@
  * - domain/     DDD 基础类（Entity, AggregateRoot, ValueObject, EventBus）
  * - errors/     错误处理
  * - validation/ 验证工具
- * - response/   HTTP 响应工具
+ * - result/     Result Pattern 工具（新）
+ * - response/   HTTP 响应工具（旧，保留兼容）
  * - frontend/   前端专用工具
  * - logger/     日志系统
  */
@@ -23,7 +24,10 @@ export * from './errors/index';
 // 验证工具
 export * from './validation/index';
 
-// HTTP 响应工具
+// Result Pattern 工具（新）
+export * from './result/index';
+
+// HTTP 响应工具（旧，保留兼容）
 export * from './response/index';
 
 // 前端工具
