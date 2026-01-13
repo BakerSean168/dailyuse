@@ -42,6 +42,18 @@ const AIAssistantView = lazy(() =>
   import('./views/ai').then((m) => ({ default: m.default }))
 );
 
+const RepositoryView = lazy(() =>
+  import('./views/repository').then((m) => ({ default: m.default }))
+);
+
+const EditorView = lazy(() =>
+  import('./views/editor').then((m) => ({ default: m.default }))
+);
+
+const AccountView = lazy(() =>
+  import('./views/account').then((m) => ({ default: m.default }))
+);
+
 /**
  * Loading skeleton component displayed while routes are being lazily loaded.
  */
@@ -125,6 +137,30 @@ export function App() {
             element={
               <Suspense fallback={<RouteLoadingSkeleton />}>
                 <AIAssistantView />
+              </Suspense>
+            }
+          />
+          <Route
+            path="repository"
+            element={
+              <Suspense fallback={<RouteLoadingSkeleton />}>
+                <RepositoryView />
+              </Suspense>
+            }
+          />
+          <Route
+            path="editor"
+            element={
+              <Suspense fallback={<RouteLoadingSkeleton />}>
+                <EditorView />
+              </Suspense>
+            }
+          />
+          <Route
+            path="account"
+            element={
+              <Suspense fallback={<RouteLoadingSkeleton />}>
+                <AccountView />
               </Suspense>
             }
           />

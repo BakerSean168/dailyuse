@@ -11,9 +11,12 @@
  * - Session 会话管理
  * - API Key 管理
  * - Device 设备管理
+ * - 网络状态监控
  */
 
 import { InitializationManager, InitializationPhase, createLogger } from '@dailyuse/utils';
+import { getNetworkStateManager, getLocalAccountManager } from './infrastructure';
+import { getAuthService } from './ipc/auth.ipc-handlers';
 
 const logger = createLogger('AuthenticationModule');
 
@@ -21,6 +24,12 @@ const logger = createLogger('AuthenticationModule');
  * 注册 Authentication 模块到初始化管理器
  *
  * Priority: 135 (after Account module)
+ * 
+ * 初始化流程：
+ * 1. 初始化 NetworkStateManager
+ * 2. 初始化 AuthDesktopApplicationService
+ * 3. 尝试恢复会话 / 自动登录
+ * 4. 设置网络状态回调
  * 
  * 注意：IPC handlers 的注册由 ipc-registry.ts 统一管理
  */
@@ -36,11 +45,69 @@ export function registerAuthenticationModule(): void {
       logger.info('Initializing Authentication module...');
 
       try {
-        // IPC handlers 由 ipc-registry.ts 统一注册
-        logger.info('Authentication module initialized successfully');
+        // 1. 初始化本地账户管理器（确保首次启动有本地账户）
+        const localAccountManager = getLocalAccountManager(logger);
+        const localAccount = await localAccountManager.initialize();
+        logger.info('LocalAccountManager initialized', {
+          uuid: localAccount.uuid,
+          username: localAccount.username,
+        });
+
+        // 2. 初始化网络状态管理器
+        const networkManager = getNetworkStateManager({}, logger);
+        await networkManager.initialize();
+        logger.info('NetworkStateManager initialized', {
+          isOnline: networkManager.isOnline(),
+        });
+
+        // 3. 获取认证服务并初始化
+        const authService = getAuthService();
+        const result = await authService.initialize();
+
+        if (result.hasValidSession) {
+          logger.info('Session restored successfully', {
+            accountUuid: result.accountUuid,
+            sessionUuid: result.sessionUuid,
+          });
+          // 更新本地账户在线状态
+          await localAccountManager.setOnlineStatus(true);
+        } else if (result.needsReLogin) {
+          logger.info('No valid session, user needs to login');
+        } else if (result.needsRefresh) {
+          logger.info('Session needs refresh');
+          // 尝试自动刷新
+          const refreshResult = await authService.refreshToken();
+          if (refreshResult.success) {
+            logger.info('Token refreshed successfully');
+            await localAccountManager.setOnlineStatus(true);
+          }
+        }
+
+        // 4. 设置网络状态回调
+        networkManager.setOnOnline(async () => {
+          logger.info('Network online - attempting token refresh');
+          try {
+            const refreshResult = await authService.refreshToken();
+            if (refreshResult.success) {
+              await localAccountManager.setOnlineStatus(true);
+            }
+          } catch (error) {
+            logger.warn('Failed to refresh token on network restore', { error });
+          }
+        });
+
+        networkManager.setOnOffline(async () => {
+          logger.info('Network offline - switching to offline mode');
+          await localAccountManager.setOnlineStatus(false);
+        });
+
+        logger.info('Authentication module initialized successfully', {
+          hasSession: result.hasValidSession,
+          networkStatus: networkManager.getStatus(),
+        });
       } catch (error) {
         logger.error('Failed to initialize Authentication module', error);
-        throw error;
+        // 不抛出错误，认证失败不应阻止应用启动
       }
     },
 
@@ -48,7 +115,14 @@ export function registerAuthenticationModule(): void {
       logger.info('Cleaning up Authentication module...');
 
       try {
-        // IPC handlers 的清理由 ipc-registry 统一管理
+        // 清理认证服务
+        const authService = getAuthService();
+        authService.cleanup();
+
+        // 清理网络状态管理器
+        const networkManager = getNetworkStateManager();
+        networkManager.cleanup();
+
         logger.info('Authentication module cleaned up successfully');
       } catch (error) {
         logger.error('Failed to cleanup Authentication module', error);
@@ -79,3 +153,17 @@ export {
   unregisterAuthIpcHandlers,
   getAuthIpcChannels,
 } from './ipc/auth.ipc-handlers';
+
+// ===== Re-export Infrastructure =====
+export {
+  TokenManager,
+  getTokenManager,
+  SessionManager,
+  createSessionManager,
+  NetworkStateManager,
+  getNetworkStateManager,
+  LocalAccountManager,
+  getLocalAccountManager,
+  type NetworkStatus,
+  type LocalAccount,
+} from './infrastructure';

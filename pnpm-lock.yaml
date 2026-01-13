@@ -442,6 +442,9 @@ importers:
       lucide-react:
         specifier: ^0.560.0
         version: 0.560.0(react@19.2.1)
+      node-machine-id:
+        specifier: 1.1.12
+        version: 1.1.12
       react:
         specifier: ^19.2.1
         version: 19.2.1
@@ -910,13 +913,12 @@ importers:
 
   packages/patterns:
     dependencies:
-      tslib:
-        specifier: ^2.3.0
-        version: 2.8.1
-    devDependencies:
       '@dailyuse/contracts':
         specifier: workspace:*
         version: link:../contracts
+      tslib:
+        specifier: ^2.3.0
+        version: 2.8.1
 
   packages/sync-client:
     dependencies:

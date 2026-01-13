@@ -3,8 +3,8 @@
  *
  * 认证应用服务 - 渲染进程
  *
- * 职责：
- * - 调用 @dailyuse/application-client 的 Auth Use Cases
+ * 职责�?
+ * - 调用 @dailyuse/application-client �?Auth Use Cases
  * - 管理 Token 存储
  * - 不包含业务逻辑
  */
@@ -24,8 +24,8 @@ import type {
   RegisterRequest,
   ResetPasswordRequest,
   ChangePasswordRequest,
-  LoginResponseDTO,
-  RefreshTokenResponseDTO,
+  LoginResponse,
+  RefreshTokenResponse,
 } from '@dailyuse/contracts/authentication';
 import type { RegisterResponse } from '@dailyuse/infrastructure-client';
 
@@ -60,7 +60,7 @@ export class AuthApplicationService {
   /**
    * 登录
    */
-  async login(input: LoginRequest): Promise<LoginResponseDTO> {
+  async login(input: LoginRequest): Promise<LoginResponse> {
     const response = await Login.getInstance().execute(input);
     this.saveTokens(response);
     return response;
@@ -114,7 +114,7 @@ export class AuthApplicationService {
   /**
    * 刷新 Token
    */
-  async refreshAccessToken(): Promise<RefreshTokenResponseDTO | null> {
+  async refreshAccessToken(): Promise<RefreshTokenResponse | null> {
     const storedRefreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
     if (!storedRefreshToken) {
       return null;
@@ -122,7 +122,7 @@ export class AuthApplicationService {
 
     try {
       const response = await RefreshToken.getInstance().execute({ refreshToken: storedRefreshToken });
-      this.saveTokens(response as LoginResponseDTO);
+      this.saveTokens(response as LoginResponse);
       return response;
     } catch {
       this.clearTokens();
@@ -131,7 +131,7 @@ export class AuthApplicationService {
   }
 
   /**
-   * 检查 Token 是否有效
+   * 检�?Token 是否有效
    */
   isTokenValid(): boolean {
     const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
@@ -141,7 +141,7 @@ export class AuthApplicationService {
   }
 
   /**
-   * 获取存储的用户信息
+   * 获取存储的用户信�?
    */
   getStoredUser<T>(): T | null {
     const userJson = localStorage.getItem(STORAGE_KEYS.USER);
@@ -162,8 +162,10 @@ export class AuthApplicationService {
 
   // ===== Private Methods =====
 
-  private saveTokens(response: LoginResponseDTO): void {
-    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.accessToken);
+  private saveTokens(response: LoginResponse): void {
+    if (response.accessToken) {
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.accessToken);
+    }
     if (response.refreshToken) {
       localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refreshToken);
     }
@@ -183,3 +185,4 @@ export class AuthApplicationService {
 
 // 导出单例实例
 export const authApplicationService = AuthApplicationService.getInstance();
+

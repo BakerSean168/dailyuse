@@ -139,48 +139,42 @@ export type {
 export type {
   AuthTokens,
   LoginRequest,
-  LoginResponseDTO,
+  LoginResponse,
   RegisterRequest,
   RefreshTokenRequest,
-  RefreshTokenResponseDTO,
+  RefreshTokenResponse,
   LogoutRequest,
   ChangePasswordRequest,
   ResetPasswordRequest,
   ForgotPasswordRequest,
   Enable2FARequest,
-  Enable2FAResponseDTO,
+  Enable2FAResponse,
   Verify2FARequest,
   Disable2FARequest,
   CreateApiKeyRequest,
-  CreateApiKeyResponseDTO,
+  CreateApiKeyResponse,
   RevokeApiKeyRequest,
-  ApiKeyListResponseDTO,
+  ApiKeyListResponse,
   GetActiveSessionsRequest,
-  ActiveSessionsResponseDTO,
+  ActiveSessionsResponse,
   RevokeSessionRequest,
   RevokeAllSessionsRequest,
   TrustDeviceRequest,
   RevokeTrustedDeviceRequest,
-  TrustedDevicesResponseDTO,
+  TrustedDevicesResponse,
   SessionQueryParams,
   CredentialQueryParams,
+  // Token/Session 管理类型（多端通用）
+  TokenStorageData,
+  SaveTokenRequest,
+  TokenRefreshResult,
+  TokenStatus,
+  SessionRestoreResult,
+  AutoLoginResult,
+  AuthMode,
+  AuthStatusDTO,
+  SessionStatusDTO,
+  RefreshSessionRequest,
+  RefreshSessionResponse,
+  AuthOperationResult,
 } from './api-requests';
-
-// ============ DTO Aliases (for backward compatibility) ============
-// Web 应用使用 *RequestDTO 命名，提供别名兼容
-export type { LoginRequest as LoginRequestDTO } from './api-requests';
-export type { RegisterRequest as RegisterRequestDTO } from './api-requests';
-export type { LogoutRequest as LogoutRequestDTO } from './api-requests';
-export type { ChangePasswordRequest as ChangePasswordRequestDTO } from './api-requests';
-export type { ResetPasswordRequest as ResetPasswordRequestDTO } from './api-requests';
-export type { ForgotPasswordRequest as ForgotPasswordRequestDTO } from './api-requests';
-export type { Enable2FARequest as Enable2FARequestDTO } from './api-requests';
-export type { Verify2FARequest as Verify2FARequestDTO } from './api-requests';
-export type { Disable2FARequest as Disable2FARequestDTO } from './api-requests';
-export type { CreateApiKeyRequest as CreateApiKeyRequestDTO } from './api-requests';
-export type { RevokeApiKeyRequest as RevokeApiKeyRequestDTO } from './api-requests';
-export type { GetActiveSessionsRequest as GetActiveSessionsRequestDTO } from './api-requests';
-export type { RevokeSessionRequest as RevokeSessionRequestDTO } from './api-requests';
-export type { RevokeAllSessionsRequest as RevokeAllSessionsRequestDTO } from './api-requests';
-export type { TrustDeviceRequest as TrustDeviceRequestDTO } from './api-requests';
-export type { RevokeTrustedDeviceRequest as RevokeTrustedDeviceRequestDTO } from './api-requests';

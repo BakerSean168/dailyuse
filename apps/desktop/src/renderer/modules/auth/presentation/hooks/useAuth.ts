@@ -1,10 +1,10 @@
 /**
  * useAuth Hook
  *
- * 认证逻辑钩子 - 管理登录状态、Token 和用户信息
+ * 认证逻辑钩子 - 管理登录状态、Token 和用户信�?
  * Story-008: Auth & Account UI
  * 
- * 使用 @dailyuse/application-client 的 Use Case 实现 DDD 架构
+ * 使用 @dailyuse/application-client �?Use Case 实现 DDD 架构
  */
 
 import { useState, useCallback, useEffect } from 'react';
@@ -17,7 +17,7 @@ import {
   ResetPassword,
   ChangePassword,
 } from '@dailyuse/application-client';
-import type { LoginRequest, RegisterRequest, LoginResponseDTO } from '@dailyuse/contracts/authentication';
+import type { LoginRequest, RegisterRequest, LoginResponse } from '@dailyuse/contracts/authentication';
 
 // ============ Types ============
 
@@ -47,8 +47,10 @@ const STORAGE_KEYS = {
 
 // ============ Token Storage Helpers ============
 
-function saveTokens(response: LoginResponseDTO) {
-  localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.accessToken);
+function saveTokens(response: LoginResponse) {
+  if (response.accessToken) {
+    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.accessToken);
+  }
   if (response.refreshToken) {
     localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refreshToken);
   }
@@ -124,8 +126,8 @@ export function useAuth() {
         // Save tokens
         saveTokens(response);
 
-        // Update state - LoginResponseDTO 不包含用户信息
-        // 用户信息需要从另一个 API 获取（如 AccountContainer）
+        // Update state - LoginResponse 不包含用户信�?
+        // 用户信息需要从另一�?API 获取（如 AccountContainer�?
         const user: AuthUser = {
           uuid: response.sessionId || '',
           email: credentials.identifier,
@@ -134,7 +136,7 @@ export function useAuth() {
           avatarUrl: undefined,
         };
 
-        // 保存用户信息到 localStorage
+        // 保存用户信息�?localStorage
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
 
         setState({
@@ -310,3 +312,4 @@ export function useAuth() {
 }
 
 export default useAuth;
+

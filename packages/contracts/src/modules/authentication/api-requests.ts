@@ -50,19 +50,27 @@ export interface LoginRequest {
 /**
  * 登录响应
  */
-export interface LoginResponseDTO {
+export interface LoginResponse {
+  /** 操作是否成功 */
+  success: boolean;
   /** 访问令牌 */
-  accessToken: string;
-  /** 刷新令牌（已废弃 - 现在存储在 httpOnly Cookie 中，不再返回给前端） */
+  accessToken?: string;
+  /** 刷新令牌 */
   refreshToken?: string;
   /** 访问令牌过期时间戳 (ms) */
-  accessTokenExpiresAt: number;
-  /** 刷新令牌过期时间戳 (ms)（已废弃 - Refresh Token 现在存储在 Cookie 中） */
+  accessTokenExpiresAt?: number;
+  /** 刷新令牌过期时间戳 (ms) */
   refreshTokenExpiresAt?: number;
+  /** 过期时间（秒） */
+  expiresIn?: number;
   /** 会话 ID */
   sessionId?: string;
+  /** 账户 UUID */
+  accountUuid?: string;
   /** 是否需要两步验证 */
   requiresTwoFactor?: boolean;
+  /** 错误信息 */
+  error?: string;
 }
 
 /**
@@ -99,7 +107,7 @@ export interface RefreshTokenRequest {
 /**
  * 刷新令牌响应
  */
-export interface RefreshTokenResponseDTO {
+export interface RefreshTokenResponse {
   /** 新访问令牌 */
   accessToken: string;
   /** 新刷新令牌（已废弃 - 现在通过 httpOnly Cookie 自动更新） */
@@ -167,7 +175,7 @@ export interface Enable2FARequest {
 /**
  * 启用两步验证响应
  */
-export interface Enable2FAResponseDTO {
+export interface Enable2FAResponse {
   /** 密钥 (用于 TOTP) */
   secret?: string;
   /** 二维码 URL (用于 TOTP) */
@@ -215,7 +223,7 @@ export interface CreateApiKeyRequest {
 /**
  * 创建 API Key 响应
  */
-export interface CreateApiKeyResponseDTO {
+export interface CreateApiKeyResponse {
   /** API Key ID */
   id: string;
   /** API Key (明文, 只返回一次) */
@@ -239,7 +247,7 @@ export interface RevokeApiKeyRequest {
 /**
  * API Key 列表响应
  */
-export interface ApiKeyListResponseDTO {
+export interface ApiKeyListResponse {
   keys: Array<{
     id: string;
     name: string;
@@ -266,7 +274,7 @@ export interface GetActiveSessionsRequest {
 /**
  * 活跃会话响应
  */
-export interface ActiveSessionsResponseDTO {
+export interface ActiveSessionsResponse {
   sessions: Array<{
     id: string;
     deviceName?: string;
@@ -323,7 +331,7 @@ export interface RevokeTrustedDeviceRequest {
 /**
  * 受信任设备列表响应
  */
-export interface TrustedDevicesResponseDTO {
+export interface TrustedDevicesResponse {
   devices: Array<{
     deviceId: string;
     deviceName?: string;
@@ -372,3 +380,202 @@ export interface CredentialQueryParams {
   /** 每页数量 */
   pageSize?: number;
 }
+
+// ============ Token 管理类型（多端通用） ============
+
+/**
+ * Token 存储数据
+ * 用于本地持久化存储的 Token 完整信息
+ */
+export interface TokenStorageData {
+  /** Access Token */
+  accessToken: string;
+  /** Refresh Token */
+  refreshToken: string;
+  /** Access Token 过期时间戳 (ms) */
+  accessTokenExpiresAt: number;
+  /** Refresh Token 过期时间戳 (ms) */
+  refreshTokenExpiresAt: number;
+  /** 关联的账户 UUID */
+  accountUuid: string;
+  /** 关联的会话 UUID */
+  sessionUuid: string;
+  /** 创建时间 */
+  createdAt: number;
+  /** 更新时间 */
+  updatedAt: number;
+}
+
+/**
+ * Token 保存请求
+ */
+export interface SaveTokenRequest {
+  accessToken: string;
+  refreshToken: string;
+  /** Access Token 有效期（秒） */
+  accessTokenExpiresIn: number;
+  /** Refresh Token 有效期（秒），默认 30 天 */
+  refreshTokenExpiresIn?: number;
+  accountUuid: string;
+  sessionUuid: string;
+}
+
+/**
+ * Token 刷新结果
+ */
+export interface TokenRefreshResult {
+  success: boolean;
+  accessToken?: string;
+  expiresAt?: number;
+  error?: string;
+}
+
+/**
+ * Token 状态
+ */
+export interface TokenStatus {
+  /** 是否有有效的 Token（Refresh Token 未过期） */
+  hasValidToken: boolean;
+  /** Access Token 是否过期 */
+  isAccessTokenExpired: boolean;
+  /** Refresh Token 是否过期 */
+  isRefreshTokenExpired: boolean;
+  /** 是否需要刷新（提前 10 分钟） */
+  shouldRefresh: boolean;
+  /** Access Token 剩余时间（毫秒） */
+  accessTokenRemainingMs: number;
+  /** Refresh Token 剩余时间（毫秒） */
+  refreshTokenRemainingMs: number;
+  /** 账户 UUID */
+  accountUuid?: string;
+  /** 会话 UUID */
+  sessionUuid?: string;
+}
+
+// ============ 会话管理类型（多端通用） ============
+
+/**
+ * 会话恢复结果
+ */
+export interface SessionRestoreResult {
+  success: boolean;
+  /** 恢复的会话 UUID */
+  sessionUuid?: string;
+  /** 账户 UUID */
+  accountUuid?: string;
+  /** 是否需要刷新 Token */
+  needsRefresh?: boolean;
+  /** 是否需要重新登录 */
+  needsReLogin?: boolean;
+  error?: string;
+}
+
+/**
+ * 自动登录结果
+ */
+export interface AutoLoginResult {
+  success: boolean;
+  /** 是否已认证 */
+  authenticated: boolean;
+  /** 账户 UUID */
+  accountUuid?: string;
+  /** 会话 UUID */
+  sessionUuid?: string;
+  /** 是否是新创建的会话 */
+  isNewSession?: boolean;
+  error?: string;
+}
+
+/**
+ * 认证模式
+ */
+export type AuthMode = 'ONLINE' | 'OFFLINE' | 'LOCAL';
+
+/**
+ * 认证状态
+ */
+export interface AuthStatusDTO {
+  /** 是否已认证 */
+  authenticated: boolean;
+  /** 认证模式 */
+  mode: AuthMode;
+  /** 用户信息 */
+  user: {
+    uuid: string;
+    username?: string;
+    email?: string;
+    displayName?: string;
+  } | null;
+  /** 会话信息 */
+  session: {
+    uuid: string;
+    deviceName: string;
+    deviceType: string;
+    ipAddress: string;
+    createdAt: string;
+    lastActiveAt: string;
+    expiresAt: string;
+    isCurrentSession: boolean;
+  } | null;
+  /** Token 状态 */
+  tokenStatus: TokenStatus | null;
+}
+
+/**
+ * 会话状态（详细）
+ */
+export interface SessionStatusDTO {
+  /** 是否有活跃会话 */
+  hasActiveSession: boolean;
+  /** 当前会话 UUID */
+  sessionUuid?: string;
+  /** 关联账户 UUID */
+  accountUuid?: string;
+  /** Token 状态 */
+  tokenStatus: TokenStatus;
+  /** 设备信息 */
+  device: {
+    deviceId: string;
+    deviceType: DeviceType;
+    os: string;
+    osVersion: string;
+    appVersion: string;
+    deviceName: string;
+    deviceFingerprint: string;
+  };
+  /** 最后活动时间 */
+  lastActivityAt?: number;
+  /** 会话创建时间 */
+  sessionCreatedAt?: number;
+  /** 会话过期时间 */
+  sessionExpiresAt?: number;
+}
+
+/**
+ * 刷新会话请求
+ */
+export interface RefreshSessionRequest {
+  refreshToken: string;
+  sessionUuid: string;
+}
+
+/**
+ * 刷新会话响应
+ */
+export interface RefreshSessionResponse {
+  success: boolean;
+  accessToken?: string;
+  refreshToken?: string;
+  expiresIn?: number;
+  error?: string;
+}
+
+/**
+ * 通用认证操作结果
+ */
+export interface AuthOperationResult {
+  success: boolean;
+  error?: string;
+  data?: unknown;
+}
+

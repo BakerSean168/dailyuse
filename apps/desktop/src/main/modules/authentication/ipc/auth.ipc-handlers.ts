@@ -8,6 +8,7 @@
  * - 统一的错误处理和日志记录
  * - 极简的 handler 定义
  * - 清晰的 channel 列表
+ * - 支持 TokenManager 和 SessionManager 集成
  */
 
 import { createLogger } from '@dailyuse/utils';
@@ -23,12 +24,19 @@ import {
   type ApiKeyInfo,
   type SessionInfo,
   type DeviceInfo,
+  type AutoLoginResult,
+  type SessionRestoreResult,
 } from '../application/AuthDesktopApplicationService';
+import type { TokenStatus } from '../infrastructure';
+import type { SessionStatus } from '../infrastructure';
+import { SqliteAuthSessionRepository } from '../../../di/sqlite-adapters/auth-session.sqlite-repository';
+import { SqliteAuthCredentialRepository } from '../../../di/sqlite-adapters/auth-credential.sqlite-repository';
 
 const logger = createLogger('AuthIpcHandlers');
 
 // 惰性初始化的服务实例
 let service: AuthDesktopApplicationService | null = null;
+let isRepositoriesInjected = false;
 
 function getService(): AuthDesktopApplicationService {
   if (!service) {
@@ -37,8 +45,94 @@ function getService(): AuthDesktopApplicationService {
   return service;
 }
 
+/**
+ * 确保 Repositories 已注入
+ */
+function ensureRepositoriesInjected(): void {
+  if (isRepositoriesInjected) {
+    return;
+  }
+
+  const svc = getService();
+  const sessionRepo = new SqliteAuthSessionRepository();
+  const credentialRepo = new SqliteAuthCredentialRepository();
+  svc.setRepositories(sessionRepo, credentialRepo);
+  isRepositoriesInjected = true;
+  logger.info('Repositories injected to AuthDesktopApplicationService');
+}
+
 // 创建模块 IPC handler 注册器
 const { handle, register, getChannels } = createModuleIpcHandlers('Auth', logger);
+
+// ============================================
+// Initialization & Auto-Login Handlers (NEW)
+// ============================================
+
+/**
+ * @description 初始化认证服务（应用启动时调用）
+ * Channel Name: auth:initialize
+ * Payload: void
+ * Return: SessionRestoreResult { success, hasValidSession, accountUuid?, needsRefresh?, needsReLogin? }
+ * Security: None
+ */
+handle<void, SessionRestoreResult>(
+  'auth:initialize',
+  async () => {
+    ensureRepositoriesInjected();
+    return getService().initialize();
+  },
+);
+
+/**
+ * @description 自动登录（使用存储的 Token）
+ * Channel Name: auth:auto-login
+ * Payload: void
+ * Return: AutoLoginResult { success, authenticated, accountUuid?, sessionUuid?, needsReLogin? }
+ * Security: None
+ */
+handle<void, AutoLoginResult>(
+  'auth:auto-login',
+  async () => {
+    ensureRepositoriesInjected();
+    return getService().autoLogin();
+  },
+);
+
+/**
+ * @description 获取 Token 状态
+ * Channel Name: auth:token-status
+ * Payload: void
+ * Return: TokenStatus { hasValidToken, isAccessTokenExpired, shouldRefresh, ... }
+ * Security: None
+ */
+handle<void, TokenStatus>(
+  'auth:token-status',
+  () => getService().getTokenStatus(),
+);
+
+/**
+ * @description 获取会话状态
+ * Channel Name: auth:session-status
+ * Payload: void
+ * Return: SessionStatus | null
+ * Security: None
+ */
+handle<void, SessionStatus | null>(
+  'auth:session-status',
+  () => getService().getSessionStatus(),
+);
+
+/**
+ * @description 清理过期会话
+ * Channel Name: auth:cleanup-sessions
+ * Payload: void
+ * Return: number (清理的会话数量)
+ * Security: Requires authentication
+ */
+handle<void, number>(
+  'auth:cleanup-sessions',
+  () => getService().cleanupExpiredSessions(),
+);
 
 // ============================================
 // Core Auth Handlers
@@ -47,25 +141,31 @@ const { handle, register, getChannels } = createModuleIpcHandlers('Auth', logger
 /**
  * @description 用户登录
  * Channel Name: auth:login
- * Payload: LoginCredentials { email, password }
- * Return: AuthOperationResult { success, user?, token?, error? }
+ * Payload: LoginCredentials { email, password, rememberMe? }
+ * Return: AuthOperationResult { success, error?, data? }
  * Security: None
  */
 handle<LoginCredentials, AuthOperationResult>(
   'auth:login',
-  (credentials) => getService().login(credentials),
+  (credentials) => {
+    ensureRepositoriesInjected();
+    return getService().login(credentials);
+  },
 );
 
 /**
  * @description 用户注册
  * Channel Name: auth:register
  * Payload: RegisterRequest { email, password, username }
- * Return: AuthOperationResult { success, user?, token?, error? }
+ * Return: AuthOperationResult { success, error? }
  * Security: None
  */
 handle<RegisterRequest, AuthOperationResult>(
   'auth:register',
-  (request) => getService().register(request),
+  (request) => {
+    ensureRepositoriesInjected();
+    return getService().register(request);
+  },
 );
 
 /**
@@ -84,7 +184,7 @@ handle<void, AuthOperationResult>(
  * @description 刷新访问令牌
  * Channel Name: auth:refresh-token
  * Payload: void
- * Return: AuthOperationResult { success, token? }
+ * Return: AuthOperationResult { success, data?: { accessToken, expiresIn } }
  * Security: Requires valid refresh token
  */
 handle<void, AuthOperationResult>(
@@ -96,10 +196,10 @@ handle<void, AuthOperationResult>(
  * @description 验证令牌有效性
  * Channel Name: auth:verify-token
  * Payload: string (token)
- * Return: { valid: boolean }
+ * Return: { valid: boolean, error?: string }
  * Security: None
  */
-handle<string, { valid: boolean }>(
+handle<string, { valid: boolean; error?: string }>(
   'auth:verify-token',
   (token) => getService().verifyToken(token),
 );
@@ -108,7 +208,7 @@ handle<string, { valid: boolean }>(
  * @description 获取当前认证状态
  * Channel Name: auth:get-status
  * Payload: void
- * Return: AuthStatus { isAuthenticated, user?, is2FAEnabled }
+ * Return: AuthStatus { authenticated, mode, user?, session?, tokenStatus? }
  * Security: None
  */
 handle<void, AuthStatus>(
@@ -354,7 +454,14 @@ export function unregisterAuthIpcHandlers(): void {
   const { removeIpcHandlers } = require('../../../utils');
   logger.info('Unregistering Auth IPC handlers...');
   removeIpcHandlers(getChannels());
-  service = null;
+
+  // 清理服务
+  if (service) {
+    service.cleanup();
+    service = null;
+  }
+  isRepositoriesInjected = false;
+
   logger.info('Auth IPC handlers unregistered');
 }
 
@@ -363,4 +470,12 @@ export function unregisterAuthIpcHandlers(): void {
  */
 export function getAuthIpcChannels(): string[] {
   return getChannels();
+}
+
+/**
+ * 获取认证服务实例（供初始化模块使用）
+ */
+export function getAuthService(): AuthDesktopApplicationService {
+  ensureRepositoriesInjected();
+  return getService();
 }

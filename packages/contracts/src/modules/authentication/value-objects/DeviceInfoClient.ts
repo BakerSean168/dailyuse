@@ -14,7 +14,11 @@ export interface DeviceInfoClientDTO {
   deviceType: 'BROWSER' | 'DESKTOP' | 'MOBILE' | 'TABLET' | 'API' | 'UNKNOWN';
   deviceName?: string | null;
   os?: string | null;
+  /** 操作系统版本 */
+  osVersion?: string | null;
   browser?: string | null;
+  /** 应用版本（Desktop/Mobile） */
+  appVersion?: string | null;
   ipAddress?: string | null;
   location?: {
     country?: string | null;
@@ -34,7 +38,11 @@ export interface DeviceInfoClient {
   deviceType: 'BROWSER' | 'DESKTOP' | 'MOBILE' | 'TABLET' | 'API' | 'UNKNOWN';
   deviceName?: string | null;
   os?: string | null;
+  /** 操作系统版本 */
+  osVersion?: string | null;
   browser?: string | null;
+  /** 应用版本（Desktop/Mobile） */
+  appVersion?: string | null;
   ipAddress?: string | null;
   location?: {
     country?: string | null;
