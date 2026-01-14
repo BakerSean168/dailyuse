@@ -41,6 +41,14 @@ export class AuthIPCHandler extends BaseIPCHandler {
       );
     });
 
+    // 进入离线模式
+    ipcMain.handle('auth:enter-offline-mode', async () => {
+      return this.handleRequest(
+        'auth:enter-offline-mode',
+        () => this.authService.enterOfflineMode(),
+      );
+    });
+
     // 获取认证状态
     ipcMain.handle('auth:get-status', async () => {
       return this.handleRequest(

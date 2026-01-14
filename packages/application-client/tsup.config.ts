@@ -14,6 +14,7 @@ export default defineConfig({
     'src/repository/index.ts',
     'src/schedule/index.ts',
     'src/setting/index.ts',
+    'src/sync/index.ts',
     'src/task/index.ts',
   ],
   format: ['esm'],

@@ -37,3 +37,6 @@ export * from './ai/index.js';
 
 // Dashboard 模块
 export * from './dashboard/index.js';
+
+// Sync 模块
+export * from './sync/index.js';

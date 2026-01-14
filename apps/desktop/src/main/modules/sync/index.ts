@@ -3,20 +3,16 @@
  * 同步模块 - 桌面端主进程
  *
  * 负责数据同步功能：
- * - 同步管理器 (SyncManager)
- * - 同步提供者 (GitHub Gist, WebDAV, etc.)
- * - 数据导入/导出
+ * - 同步应用服务 (SyncDesktopApplicationService)
+ * - IPC 处理器 (SyncIPCHandlerV2)
  */
 
-// Infrastructure
-export * from './infrastructure';
+// Application
+export * from './application';
 
 // IPC Handlers
 export {
-  registerSyncIpcHandlers,
-  unregisterSyncIpcHandlers,
-  configureGitHubGistProvider,
+  SyncIPCHandlerV2,
+  getSyncIPCHandlerV2,
+  resetSyncIPCHandlerV2,
 } from './ipc';
-
-// Application Service (to be added)
-// export * from './application';

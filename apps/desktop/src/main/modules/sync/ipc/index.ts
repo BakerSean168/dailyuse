@@ -3,8 +3,9 @@
  * 同步 IPC 模块导出
  */
 
+// IPC Handlers (SyncIpcChannels based)
 export {
-  registerSyncIpcHandlers,
-  unregisterSyncIpcHandlers,
-  configureGitHubGistProvider,
-} from './SyncIpcHandlers';
+  SyncIPCHandlerV2,
+  getSyncIPCHandlerV2,
+  resetSyncIPCHandlerV2,
+} from './SyncIpcHandlersV2';

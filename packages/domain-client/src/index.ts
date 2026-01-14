@@ -155,3 +155,22 @@ export { WidgetConfig } from './dashboard/value-objects/WidgetConfig';
 // ==================== AI 模块 ====================
 export { AIConversation } from './ai/aggregates/AIConversation';
 export { AIMessage } from './ai/entities/AIMessage';
+
+// ==================== Sync 模块 ====================
+// 聚合根
+export { SyncSession } from './sync/aggregates/SyncSession';
+export { SyncProfile } from './sync/aggregates/SyncProfile';
+export { SyncState } from './sync/aggregates/SyncState';
+
+// 实体
+export { SyncConflict } from './sync/entities/SyncConflict';
+export { PendingChange } from './sync/entities/PendingChange';
+
+// 值对象
+export {
+  SyncVersion,
+  EntityReference,
+  SyncProfileConfig,
+  SyncSessionStats,
+  ConflictResolution,
+} from './sync/value-objects';

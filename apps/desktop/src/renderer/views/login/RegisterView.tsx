@@ -249,15 +249,28 @@ export function RegisterView({ onSwitchToLogin, onRegisterSuccess }: RegisterVie
     ? '用户名至少 3 个字符' : undefined;
   const emailError = touched.email && email.length > 0 && !isValidEmail(email) 
     ? '请输入有效的邮箱地址' : undefined;
-  const passwordError = touched.password && password.length > 0 && password.length < 8 
-    ? '密码至少 8 个字符' : undefined;
+  // 密码验证：服务器要求至少8位，包含大写字母和特殊字符
+  const getPasswordError = () => {
+    if (!touched.password || password.length === 0) return undefined;
+    if (password.length < 8) return '密码至少 8 个字符';
+    if (!/[A-Z]/.test(password)) return '密码需包含至少一个大写字母';
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return '密码需包含至少一个特殊字符';
+    return undefined;
+  };
+  const passwordError = getPasswordError();
   const confirmPasswordError = touched.confirmPassword && confirmPassword.length > 0 && confirmPassword !== password 
     ? '两次输入的密码不一致' : undefined;
+
+  // 密码是否满足服务器要求
+  const isPasswordValid = 
+    password.length >= 8 &&
+    /[A-Z]/.test(password) &&
+    /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
   const isFormValid = 
     username.length >= 3 &&
     isValidEmail(email) &&
-    password.length >= 8 &&
+    isPasswordValid &&
     password === confirmPassword &&
     agreeTerms;
 
@@ -350,6 +363,7 @@ export function RegisterView({ onSwitchToLogin, onRegisterSuccess }: RegisterVie
               value={password}
               onChange={(v) => { setPassword(v); setTouched(t => ({ ...t, password: true })); }}
               error={passwordError}
+              hint="至少8位，包含大写字母和特殊字符"
               rightElement={
                 <button 
                   onClick={() => setShowPassword(!showPassword)}

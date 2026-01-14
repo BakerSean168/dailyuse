@@ -30,6 +30,7 @@ export default createTsupConfig({
     'src/dashboard/index.ts',
     'src/editor/index.ts',
     'src/ai/index.ts',
+    'src/sync/index.ts',
   ],
   external: ['@dailyuse/contracts', '@dailyuse/utils'],
   // 启用 DTS 生成

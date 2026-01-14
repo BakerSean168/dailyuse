@@ -17,9 +17,7 @@ import {
   type Result,
   type IpcResult,
   ok,
-  fail,
-  ResultCode,
-  ResultErrors,
+  error as resultError,
   toIpcResult,
 } from '@dailyuse/contracts/result';
 import { ServiceError } from './service-decorators';
@@ -74,42 +72,39 @@ export abstract class BaseIPCHandler {
       });
 
       // 使用 Result Pattern 构建成功响应
-      const result: Result<T> = ok(data);
-      return toIpcResult(result, {
+      const result: Result<T> = ok(data, {
         duration: Math.round(duration),
         timestamp: startMs,
       });
-    } catch (error) {
+      return toIpcResult(result);
+    } catch (err) {
       const duration = performance.now() - startTime;
 
       this.logger.error(`IPC request failed: ${channel}`, {
-        error: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : undefined,
+        error: err instanceof Error ? err.message : String(err),
+        errorStack: err instanceof Error ? err.stack : undefined,
         duration: `${duration.toFixed(2)}ms`,
         durationMs: Math.round(duration),
         accountUuid: context?.accountUuid,
       });
 
       // 使用 Result Pattern 构建错误响应
-      let result: Result<T>;
-
-      if (error instanceof ServiceError) {
-        result = fail(ResultErrors.custom(
-          error.code,
-          error.message,
-          error.statusCode || ResultCode.INTERNAL_ERROR,
-          error.details,
-        ));
-      } else if (error instanceof Error) {
-        result = fail(ResultErrors.internalError(error.message || 'Internal server error'));
-      } else {
-        result = fail(ResultErrors.unknownError('An unknown error occurred'));
-      }
-
-      return toIpcResult(result, {
+      const meta = {
         duration: Math.round(duration),
         timestamp: startMs,
-      });
+      };
+
+      let result: Result<T>;
+
+      if (err instanceof ServiceError) {
+        result = resultError(err.code, err.message, err.details, meta);
+      } else if (err instanceof Error) {
+        result = resultError('INTERNAL_ERROR', err.message || 'Internal server error', undefined, meta);
+      } else {
+        result = resultError('UNKNOWN_ERROR', 'An unknown error occurred', undefined, meta);
+      }
+
+      return toIpcResult(result);
     }
   }
 

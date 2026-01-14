@@ -46,3 +46,6 @@ export * from './authentication';
 
 // AI module
 export * from './ai';
+
+// Sync module
+export * from './sync';

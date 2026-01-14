@@ -230,19 +230,107 @@ export class AuthDesktopApplicationService {
   async register(request: RegisterRequest): Promise<AuthOperationResult> {
     this.logger.info('Register attempt', { email: request.email });
 
-    // TODO: 实现在线注册
-    // 目前返回离线模式提示
-    if (this.authMode === 'LOCAL') {
+    try {
+      // 使用 API 服务器进行在线注册
+      const { getApiBaseUrl } = require('../../../utils/api-config');
+      const apiBaseUrl = getApiBaseUrl();
+      
+      this.logger.info('Calling register API', { apiBaseUrl });
+      
+      const response = await fetch(`${apiBaseUrl}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: request.email,
+          password: request.password,
+          username: request.username,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        this.logger.error('Registration failed', { status: response.status, data });
+        return {
+          success: false,
+          error: data.message || data.error || `注册失败 (${response.status})`,
+        };
+      }
+
+      this.logger.info('Registration successful', { email: request.email });
+
+      // 注册成功后自动登录
+      if (data.accessToken) {
+        await this.tokenManager.saveTokens({
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          accessTokenExpiresIn: data.expiresIn || 3600, // 默认 1 小时
+          accountUuid: data.accountUuid || data.user?.uuid || '',
+          sessionUuid: data.sessionUuid || crypto.randomUUID(),
+        });
+        this.authMode = 'ONLINE';
+      }
+
+      return {
+        success: true,
+        data: {
+          accountUuid: data.accountUuid || data.user?.uuid,
+          message: '注册成功',
+        },
+      };
+    } catch (error) {
+      this.logger.error('Registration request failed', { error });
+      
+      // 网络错误提示
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          error: '无法连接到服务器，请检查网络连接',
+        };
+      }
+      
       return {
         success: false,
-        error: 'Online registration not available in local mode. Please connect to the server first.',
+        error: error instanceof Error ? error.message : '注册失败，请稍后重试',
       };
     }
+  }
 
-    return {
-      success: false,
-      error: 'Registration not implemented yet',
-    };
+  /**
+   * 进入离线模式
+   * @description 使用本地账户，无需网络连接
+   */
+  async enterOfflineMode(): Promise<AuthOperationResult> {
+    this.logger.info('Entering offline mode');
+
+    try {
+      // 获取或创建本地账户
+      const { getLocalAccountManager } = require('../infrastructure/LocalAccountManager');
+      const localAccountManager = getLocalAccountManager();
+      
+      const localAccount = await localAccountManager.initialize();
+      
+      this.authMode = 'LOCAL';
+      
+      this.logger.info('Offline mode activated', { accountUuid: localAccount.uuid });
+      
+      return {
+        success: true,
+        data: {
+          accountUuid: localAccount.uuid,
+          mode: 'LOCAL',
+          message: '已进入离线模式',
+        },
+      };
+    } catch (error) {
+      this.logger.error('Failed to enter offline mode', { error });
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '进入离线模式失败',
+      };
+    }
   }
 
   /**

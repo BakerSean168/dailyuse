@@ -35,6 +35,7 @@ import { ReminderStatisticsIPCHandler } from './reminder/ipc/reminder-statistics
 import { accountIPCHandler } from './account/ipc/account-ipc-handler';
 import { authIPCHandler } from './authentication/ipc/auth-ipc-handler';
 import { SettingIPCHandler } from './setting/ipc/setting.ipc-handlers';
+import { getSyncIPCHandlerV2 } from './sync';
 
 const logger = createLogger('IPCRegistry');
 
@@ -63,6 +64,7 @@ export const ipcHandlers = {
   account: accountIPCHandler,
   auth: authIPCHandler,
   setting: new SettingIPCHandler(),
+  sync: getSyncIPCHandlerV2(),
 };
 
 /**
@@ -124,4 +126,5 @@ export {
   accountIPCHandler,
   authIPCHandler,
   SettingIPCHandler,
+  getSyncIPCHandlerV2,
 };

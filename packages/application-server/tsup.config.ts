@@ -14,6 +14,7 @@ export default defineConfig({
     'src/notification/index.ts',
     'src/authentication/index.ts',
     'src/ai/index.ts',
+    'src/sync/index.ts',
   ],
   format: ['esm'],
   dts: true,

@@ -50,6 +50,9 @@ export * from './setting';
 // Focus module (Pomodoro, Focus Mode, Audio, Rest Reminders)
 export * from './focus';
 
+// Sync module (Cloud sync, Conflict resolution, Import/Export)
+export * from './sync';
+
 // Habit module - temporarily disabled due to test cleanup
 // export * from './habit';
 

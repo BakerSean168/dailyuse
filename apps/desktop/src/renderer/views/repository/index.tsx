@@ -5,5 +5,5 @@ export { RepositoryListView } from '../../modules/repository/presentation/views/
 export { RepositoryDetailView } from '../../modules/repository/presentation/views/RepositoryDetailView';
 export { RepositoryExplorer } from '../../modules/repository/presentation/views/RepositoryExplorer';
 
-// Default export for lazy loading
-export { RepositoryExplorer as default } from '../../modules/repository/presentation/views/RepositoryExplorer';
+// Default export for lazy loading (use the self-contained list view)
+export { RepositoryListView as default } from '../../modules/repository/presentation/views/RepositoryListView';

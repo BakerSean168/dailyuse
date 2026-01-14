@@ -479,7 +479,23 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
 
   // 离线模式
   const handleOfflineMode = useCallback(async () => {
-    await window.electronAPI?.invoke('window:transition-to-main');
+    try {
+      // 先调用进入离线模式的接口
+      const result = await window.electronAPI?.invoke<{ success: boolean; error?: string }>('auth:enter-offline-mode');
+      
+      if (result?.success) {
+        // 成功后跳转到主窗口
+        await window.electronAPI?.invoke('window:transition-to-main');
+      } else {
+        console.error('Failed to enter offline mode:', result?.error);
+        // 即使失败也尝试跳转（兼容旧逻辑）
+        await window.electronAPI?.invoke('window:transition-to-main');
+      }
+    } catch (error) {
+      console.error('Error entering offline mode:', error);
+      // 出错也尝试跳转
+      await window.electronAPI?.invoke('window:transition-to-main');
+    }
   }, []);
 
   return (

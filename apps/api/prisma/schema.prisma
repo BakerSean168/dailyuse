@@ -61,9 +61,11 @@ model account {
   aiUsageQuota                   aiUsageQuota?
   aiProviderConfig               aiProviderConfig[]
   dashboardConfig                dashboardConfig?
-  // EPIC-005: Sync Relations
-  syncDevices                    syncDevice[]
+  // EPIC-005: Sync Module Relations
+  syncProfiles                   syncProfile[]
+  syncSessions                   syncSession[]
   syncConflicts                  syncConflict[]
+  pendingChanges                 pendingChange[]
 
   @@index([createdAt])
   @@index([email])
@@ -1495,125 +1497,132 @@ model dashboardConfig {
   @@map("dashboard_configs")
 }
 
-// ========== EPIC-005: Sync Service Models ==========
+// ========== EPIC-005: Sync Module Models (DDD) ==========
 
-/// 同步事件表 (Event Sourcing 核心表)
-/// 记录所有变更的完整历史记录（不可变）
-model syncEvent {
-  id              BigInt   @id @default(autoincrement())
-  eventId         String   @unique @map("event_id") @db.Uuid
-  accountUuid     String   @map("account_uuid")
-  deviceId        String   @map("device_id") @db.Uuid
-  entityType      String   @map("entity_type") @db.VarChar(50)
-  entityId        String   @map("entity_id") @db.Uuid
-  operation       String   @db.VarChar(20) // create/update/delete
-  payload         Json // 变更内容 (差异或全量)
-  baseVersion     BigInt   @map("base_version")
-  newVersion      BigInt   @map("new_version")
-  clientTimestamp BigInt   @map("client_timestamp")
-  serverTimestamp DateTime @default(now()) @map("server_timestamp")
-
-  // 索引优化
-  @@index([accountUuid, newVersion])
-  @@index([accountUuid, entityType, entityId])
-  @@index([deviceId])
-  @@index([serverTimestamp])
-  @@map("sync_events")
-}
-
-/// 实体版本表 (物化当前状态)
-/// 用于快速读取实体的最新状态，避免重放所有事件
-model entityVersion {
-  id             String   @id @default(uuid()) @db.Uuid
-  accountUuid    String   @map("account_uuid")
-  entityType     String   @map("entity_type") @db.VarChar(50)
-  entityId       String   @map("entity_id") @db.Uuid
-  currentVersion BigInt   @default(1) @map("current_version")
-  currentData    Json     @map("current_data")
-  isDeleted      Boolean  @default(false) @map("is_deleted")
-  lastModifiedBy String?  @map("last_modified_by") @db.Uuid
-  lastModifiedAt DateTime @default(now()) @map("last_modified_at")
-  createdAt      DateTime @default(now()) @map("created_at")
-
-  // 唯一约束
-  @@unique([accountUuid, entityType, entityId])
-  // 索引优化
-  @@index([accountUuid, entityType])
-  @@index([accountUuid, currentVersion])
-  @@index([isDeleted])
-  @@map("entity_versions")
-}
-
-/// 设备注册表
-/// 记录用户的已登录设备信息
-model syncDevice {
-  id              String    @id @default(uuid()) @db.Uuid
-  accountUuid     String    @map("account_uuid")
-  deviceId        String    @unique @map("device_id") @db.Uuid
-  deviceName      String    @map("device_name") @db.VarChar(100)
-  platform        String    @db.VarChar(20) // windows/macos/linux/web/ios/android
-  appVersion      String?   @map("app_version") @db.VarChar(20)
-  lastSyncVersion BigInt    @default(0) @map("last_sync_version")
-  lastSyncAt      DateTime? @map("last_sync_at")
-  lastSeenAt      DateTime  @default(now()) @map("last_seen_at")
-  pushToken       String?   @map("push_token")
-  isActive        Boolean   @default(true) @map("is_active")
-  createdAt       DateTime  @default(now()) @map("created_at")
-
-  // 关系
-  account    account      @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
-  syncCursor syncCursor[]
-
-  // 索引优化
-  @@index([accountUuid])
-  @@index([isActive])
-  @@index([lastSeenAt])
-  @@map("sync_devices")
-}
-
-/// 同步游标表
-/// 记录每个设备的同步进度
-model syncCursor {
-  id                String   @id @default(uuid()) @db.Uuid
+/// 同步配置文件表
+/// 存储用户的同步配置（GitHub Gist、WebDAV 等）
+model syncProfile {
+  uuid              String   @id @db.Uuid
   accountUuid       String   @map("account_uuid")
-  deviceId          String   @map("device_id") @db.Uuid
-  lastSyncedEventId BigInt   @default(0) @map("last_synced_event_id")
-  lastSyncedAt      DateTime @default(now()) @map("last_synced_at")
+  name              String   @db.VarChar(100)
+  description       String?  @db.VarChar(500)
+  providerType      String   @map("provider_type") @db.VarChar(30) // GITHUB_GIST/WEBDAV/CUSTOM_SERVER/LOCAL_FILE
+  providerConfigJson String  @map("provider_config_json") @db.Text // JSON: 提供者配置
+  syncConfigJson    String   @map("sync_config_json") @db.Text // JSON: 同步配置
+  isDefault         Boolean  @default(false) @map("is_default")
+  isActive          Boolean  @default(true) @map("is_active")
+  isConnected       Boolean  @default(false) @map("is_connected")
+  lastSyncAt        BigInt?  @map("last_sync_at")
+  lastSyncVersionJson String? @map("last_sync_version_json") @db.Text // JSON: 最后同步版本
+  lastSyncResult    String?  @map("last_sync_result") @db.VarChar(20) // success/failed/partial
+  historyStatsJson  String   @default("{}") @map("history_stats_json") @db.Text // JSON: 历史统计
+  createdAt         BigInt   @map("created_at")
+  updatedAt         BigInt   @map("updated_at")
 
   // 关系
-  device syncDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  account  account       @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  sessions syncSession[]
 
-  // 唯一约束
-  @@unique([accountUuid, deviceId])
   // 索引
-  @@index([deviceId])
-  @@map("sync_cursors")
+  @@index([accountUuid])
+  @@index([accountUuid, isActive])
+  @@index([accountUuid, isDefault])
+  @@map("sync_profiles")
+}
+
+/// 同步会话表
+/// 记录每次同步操作的完整信息
+model syncSession {
+  uuid              String   @id @db.Uuid
+  accountUuid       String   @map("account_uuid")
+  profileId         String   @map("profile_id") @db.Uuid
+  status            String   @db.VarChar(20) // PENDING/COLLECTING/SYNCING/CONFLICTED/COMPLETED/FAILED/CANCELLED
+  direction         String   @db.VarChar(20) // PUSH/PULL/BIDIRECTIONAL
+  strategy          String   @db.VarChar(20) // FULL/INCREMENTAL/AUTO
+  triggerType       String   @map("trigger_type") @db.VarChar(30) // MANUAL/AUTO_SCHEDULED/ON_CHANGE/ON_STARTUP/ON_NETWORK_RESTORE
+  triggerDeviceJson String   @map("trigger_device_json") @db.Text // JSON: 触发设备信息
+  startVersionJson  String   @map("start_version_json") @db.Text // JSON: 开始版本
+  endVersionJson    String?  @map("end_version_json") @db.Text // JSON: 结束版本
+  localSnapshotId   String?  @map("local_snapshot_id") @db.Uuid
+  remoteSnapshotId  String?  @map("remote_snapshot_id") @db.Uuid
+  statisticsJson    String?  @map("statistics_json") @db.Text // JSON: 统计信息
+  errorJson         String?  @map("error_json") @db.Text // JSON: 错误信息
+  canRetry          Boolean  @default(true) @map("can_retry")
+  retryCount        Int      @default(0) @map("retry_count")
+  createdAt         BigInt   @map("created_at")
+  startedAt         BigInt?  @map("started_at")
+  completedAt       BigInt?  @map("completed_at")
+  updatedAt         BigInt   @map("updated_at")
+
+  // 关系
+  account   account        @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  profile   syncProfile    @relation(fields: [profileId], references: [uuid], onDelete: Cascade)
+  conflicts syncConflict[]
+
+  // 索引
+  @@index([accountUuid])
+  @@index([profileId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("sync_sessions")
 }
 
 /// 同步冲突表
-/// 记录同步过程中检测到的冲突及其解决方案
+/// 记录同步过程中检测到的冲突
 model syncConflict {
-  id                 String    @id @default(uuid()) @db.Uuid
-  accountUuid        String    @map("account_uuid")
-  entityType         String    @map("entity_type") @db.VarChar(50)
-  entityId           String    @map("entity_id") @db.Uuid
-  localEventId       String    @map("local_event_id") @db.Uuid
-  serverVersion      BigInt    @map("server_version")
-  localData          Json      @map("local_data")
-  serverData         Json      @map("server_data")
-  conflictingFields  String[]  @map("conflicting_fields")
-  resolutionStrategy String?   @map("resolution_strategy") @db.VarChar(20) // local/remote/merge/manual
-  resolvedData       Json?     @map("resolved_data")
-  resolvedAt         DateTime? @map("resolved_at")
-  resolvedByDevice   String?   @map("resolved_by_device") @db.Uuid
-  createdAt          DateTime  @default(now()) @map("created_at")
+  uuid              String   @id @db.Uuid
+  accountUuid       String   @map("account_uuid")
+  sessionId         String   @map("session_id") @db.Uuid
+  entityType        String   @map("entity_type") @db.VarChar(50) // GOAL/KEY_RESULT/TASK/etc.
+  entityUuid        String   @map("entity_uuid") @db.Uuid
+  entityName        String?  @map("entity_name") @db.VarChar(200)
+  conflictType      String   @map("conflict_type") @db.VarChar(20) // update-update/update-delete/delete-update
+  localVersionJson  String   @map("local_version_json") @db.Text // JSON: 本地版本
+  localDataJson     String   @map("local_data_json") @db.Text // JSON: 本地数据
+  remoteVersionJson String   @map("remote_version_json") @db.Text // JSON: 远程版本
+  remoteDataJson    String   @map("remote_data_json") @db.Text // JSON: 远程数据
+  status            String   @db.VarChar(20) // UNRESOLVED/RESOLVED/IGNORED
+  autoResolvable    Boolean  @default(false) @map("auto_resolvable")
+  resolutionJson    String?  @map("resolution_json") @db.Text // JSON: 解决方案
+  createdAt         BigInt   @map("created_at")
+  updatedAt         BigInt   @map("updated_at")
+
+  // 关系
+  account account     @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  session syncSession @relation(fields: [sessionId], references: [uuid], onDelete: Cascade)
+
+  // 索引
+  @@index([accountUuid])
+  @@index([sessionId])
+  @@index([status])
+  @@index([entityType, entityUuid])
+  @@map("sync_conflicts")
+}
+
+/// 待同步变更表
+/// 记录本地尚未同步到远程的变更
+model pendingChange {
+  uuid              String   @id @db.Uuid
+  accountUuid       String   @map("account_uuid")
+  entityType        String   @map("entity_type") @db.VarChar(50) // GOAL/KEY_RESULT/TASK/etc.
+  entityUuid        String   @map("entity_uuid") @db.Uuid
+  entityName        String?  @map("entity_name") @db.VarChar(200)
+  operation         String   @db.VarChar(20) // CREATE/UPDATE/DELETE/RESTORE
+  beforeDataJson    String?  @map("before_data_json") @db.Text // JSON: 变更前数据
+  afterDataJson     String?  @map("after_data_json") @db.Text // JSON: 变更后数据
+  versionJson       String   @map("version_json") @db.Text // JSON: 版本信息
+  isSynced          Boolean  @default(false) @map("is_synced")
+  syncedInSession   String?  @map("synced_in_session") @db.Uuid
+  createdAt         BigInt   @map("created_at")
+  syncedAt          BigInt?  @map("synced_at")
 
   // 关系
   account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
-  // 索引优化
+  // 索引
   @@index([accountUuid])
-  @@index([accountUuid, entityType, entityId])
-  @@index([resolvedAt])
-  @@map("sync_conflicts")
+  @@index([accountUuid, isSynced])
+  @@index([entityType, entityUuid])
+  @@index([createdAt])
+  @@map("pending_changes")
 }

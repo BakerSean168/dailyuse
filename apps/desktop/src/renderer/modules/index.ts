@@ -168,3 +168,26 @@ export {
 // Module Initialization
 // ============================================================
 export { initializeModules, type ModuleInitializationResult } from './initialization';
+
+// ============================================================
+// Sync Module
+// ============================================================
+export {
+  // Application Service
+  SyncRendererService,
+  getSyncService,
+  // Hooks
+  useSyncStatus,
+  useSync,
+  useSyncProfiles,
+  useSyncConflicts,
+  // Components
+  SyncStatusIndicator,
+  SyncProfileCard,
+  SyncConflictItem,
+  // Types
+  type UseSyncStatusResult,
+  type UseSyncOperationsResult,
+  type UseSyncProfilesResult,
+  type UseSyncConflictsResult,
+} from './sync';

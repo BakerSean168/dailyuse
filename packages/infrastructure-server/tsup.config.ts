@@ -15,6 +15,7 @@ export default defineConfig({
     'src/dashboard/index.ts',
     'src/repository/index.ts',
     'src/setting/index.ts',
+    'src/sync/index.ts',
     'src/shared/index.ts',
   ],
   format: ['esm'],

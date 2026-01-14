@@ -193,6 +193,7 @@ const ALLOWED_CHANNELS = [
   'auth:forgot-password',
   'auth:reset-password',
   'auth:change-password',
+  'auth:enter-offline-mode',
   'auth:2fa:enable',
   'auth:2fa:disable',
   'auth:2fa:verify',

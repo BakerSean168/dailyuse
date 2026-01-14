@@ -58,6 +58,10 @@
     "./ai": {
       "types": "./dist/ai/index.d.ts",
       "import": "./dist/ai/index.js"
+    },
+    "./sync": {
+      "types": "./dist/sync/index.d.ts",
+      "import": "./dist/sync/index.js"
     }
   },
   "dependencies": {

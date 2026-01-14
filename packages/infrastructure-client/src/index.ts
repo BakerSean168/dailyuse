@@ -267,6 +267,19 @@ export {
 } from './setting';
 
 // ============================================================
+// Sync Module
+// ============================================================
+export {
+  // Container
+  SyncContainer,
+  SyncContainerKeys,
+  // Ports
+  type ISyncApiClient,
+  // IPC Adapters
+  SyncIpcAdapter,
+} from './sync';
+
+// ============================================================
 // Shared (Types and Utilities)
 // ============================================================
 export {

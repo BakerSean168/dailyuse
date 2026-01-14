@@ -22,6 +22,10 @@
     "./adapters/memory": {
       "types": "./dist/adapters/memory/index.d.ts",
       "import": "./dist/adapters/memory/index.js"
+    },
+    "./sync": {
+      "types": "./dist/sync/index.d.ts",
+      "import": "./dist/sync/index.js"
     }
   },
   "dependencies": {
