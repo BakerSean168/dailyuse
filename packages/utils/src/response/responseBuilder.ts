@@ -53,7 +53,7 @@ export class ResponseBuilder {
     return {
       code: 200,
       status: ResponseStatus.SUCCESS,
-      success: true,
+      ok: true,
       message,
       data,
       pagination,
@@ -97,7 +97,7 @@ export class ResponseBuilder {
     return {
       code: codeMap[status] || ResponseCode.INTERNAL_ERROR,
       status,
-      success: false,
+      ok: false,
       message,
       severity: options.severity || ResponseSeverity.ERROR,
       errorCode: options.errorCode,

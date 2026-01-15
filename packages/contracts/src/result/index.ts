@@ -450,3 +450,27 @@ export {
   type ErrorResponse,
 } from './http';
 
+// ============================================================================
+// Re-export Action Result Types
+// ============================================================================
+
+export {
+  // Types
+  type ActionResult,
+  type ActionResultWithData,
+  type CountResult,
+  type BatchActionResult,
+  type BatchFailure,
+  type DeleteResult,
+  type ValidationResult,
+  type SyncResult,
+  type ImportExportResult,
+  // Factory Functions
+  actionOk,
+  actionFail,
+  countResult,
+  batchActionResult,
+  // Type Guards
+  isActionOk,
+  isActionFail,
+} from './action';

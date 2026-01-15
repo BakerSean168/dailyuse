@@ -19,10 +19,12 @@ import { ok, fail, isOk } from './index';
 /**
  * HTTP 响应格式
  * 在 Result 基础上添加 HTTP 特有的字段
+ * 
+ * 注意：使用 `ok` 而非 `success`，与 Result/IpcResult 保持一致
  */
 export interface HttpResponse<T = unknown> {
-  /** 是否成功 */
-  success: boolean;
+  /** 是否成功（与 Result/IpcResult 统一使用 ok） */
+  ok: boolean;
   /** HTTP 状态码 */
   code: number;
   /** 响应消息 */
@@ -133,7 +135,7 @@ export function toHttpResponse<T>(
 
   if (isOk(result)) {
     return {
-      success: true,
+      ok: true,
       code: 200,
       message: options.message ?? '操作成功',
       data: result.data,
@@ -147,7 +149,7 @@ export function toHttpResponse<T>(
   const httpStatus = errorCodeToHttpStatus(result.error.code);
 
   return {
-    success: false,
+    ok: false,
     code: httpStatus,
     message: result.error.message,
     error: {
@@ -172,7 +174,7 @@ export function fromHttpResponse<T>(response: HttpResponse<T>): Result<T, Result
     timestamp: response.timestamp,
   };
 
-  if (response.success && response.data !== undefined) {
+  if (response.ok && response.data !== undefined) {
     return ok(response.data, meta);
   }
 
@@ -329,10 +331,10 @@ export const ResponseCode = ResultCode;
 export type ApiResponse<T = unknown> = HttpResponse<T>;
 
 /** @deprecated 使用 HttpResponse */
-export type SuccessResponse<T = unknown> = HttpResponse<T> & { success: true };
+export type SuccessResponse<T = unknown> = HttpResponse<T> & { ok: true };
 
 /** @deprecated 使用 HttpResponse */
-export type ErrorResponse = HttpResponse<never> & { success: false };
+export type ErrorResponse = HttpResponse<never> & { ok: false };
 
 /** @deprecated 使用 HttpResponseBuilder */
 export const ResponseBuilder = HttpResponseBuilder;

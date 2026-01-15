@@ -12,6 +12,7 @@ import type {
   UnreadCountResponse,
 } from '../../ports/notification-api-client.port';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
 
 /**
  * IPC channel definitions for Notification operations
@@ -58,15 +59,15 @@ export class NotificationIpcAdapter implements INotificationApiClient {
     return this.ipcApi.invoke(NOTIFICATION_CHANNELS.MARK_AS_READ, uuid);
   }
 
-  async markAllAsRead(): Promise<{ success: boolean; count: number }> {
+  async markAllAsRead(): Promise<CountResult> {
     return this.ipcApi.invoke(NOTIFICATION_CHANNELS.MARK_ALL_AS_READ);
   }
 
-  async deleteNotification(uuid: string): Promise<{ success: boolean }> {
+  async deleteNotification(uuid: string): Promise<ActionResult> {
     return this.ipcApi.invoke(NOTIFICATION_CHANNELS.DELETE, uuid);
   }
 
-  async batchDeleteNotifications(uuids: string[]): Promise<{ success: boolean; count: number }> {
+  async batchDeleteNotifications(uuids: string[]): Promise<CountResult> {
     return this.ipcApi.invoke(NOTIFICATION_CHANNELS.BATCH_DELETE, uuids);
   }
 

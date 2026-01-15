@@ -433,19 +433,27 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
     setError(null);
 
     try {
-      const result = await window.electronAPI?.invoke<{ success: boolean; error?: string }>('auth:login', {
+      // 统一的 IpcResult 格式: { ok: boolean; data?: T; error?: { code, message } }
+      const result = await window.electronAPI?.invoke<{
+        ok: boolean;
+        data?: { accountUuid: string; sessionUuid: string };
+        error?: { code: string; message: string };
+      }>('auth:login', {
         email,
         password,
         rememberMe: autoLogin,
       });
 
-      if (result?.success) {
+      if (result?.ok) {
         // 登录成功，切换到主窗口
         await window.electronAPI?.invoke('window:transition-to-main');
       } else {
-        setError(result?.error || '登录失败，请检查邮箱和密码');
+        // 显示错误信息
+        const errorMessage = result?.error?.message || '登录失败，请检查邮箱和密码';
+        setError(errorMessage);
       }
     } catch (err) {
+      console.error('Login error:', err);
       setError('登录请求失败，请稍后重试');
     } finally {
       setLoading(false);
@@ -480,21 +488,23 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
   // 离线模式
   const handleOfflineMode = useCallback(async () => {
     try {
-      // 先调用进入离线模式的接口
-      const result = await window.electronAPI?.invoke<{ success: boolean; error?: string }>('auth:enter-offline-mode');
+      // 统一的 IpcResult 格式: { ok: boolean; data?: T; error?: { code, message } }
+      const result = await window.electronAPI?.invoke<{
+        ok: boolean;
+        data?: { accountUuid: string; mode: string; message: string };
+        error?: { code: string; message: string };
+      }>('auth:enter-offline-mode');
       
-      if (result?.success) {
+      if (result?.ok) {
         // 成功后跳转到主窗口
         await window.electronAPI?.invoke('window:transition-to-main');
       } else {
-        console.error('Failed to enter offline mode:', result?.error);
-        // 即使失败也尝试跳转（兼容旧逻辑）
-        await window.electronAPI?.invoke('window:transition-to-main');
+        console.error('Error entering offline mode:', result?.error?.message);
+        setError(result?.error?.message || '进入离线模式失败');
       }
     } catch (error) {
       console.error('Error entering offline mode:', error);
-      // 出错也尝试跳转
-      await window.electronAPI?.invoke('window:transition-to-main');
+      setError('进入离线模式时发生错误');
     }
   }, []);
 

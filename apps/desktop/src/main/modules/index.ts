@@ -83,7 +83,7 @@ export function registerAllModules(): void {
  * @returns {Promise<Object>} An object containing the success status, any failed modules, and the total duration.
  */
 export async function initializeAllModules(): Promise<{
-  success: boolean;
+  ok: boolean;
   failedModules: string[];
   duration: number;
 }> {
@@ -99,7 +99,7 @@ export async function initializeAllModules(): Promise<{
     logger.info('All modules initialized successfully', { duration: `${duration}ms` });
     
     return {
-      success: true,
+      ok: true,
       failedModules: [],
       duration,
     };
@@ -108,7 +108,7 @@ export async function initializeAllModules(): Promise<{
     logger.error('Module initialization failed', error);
     
     return {
-      success: false,
+      ok: false,
       failedModules: ['initialization-error'],
       duration,
     };

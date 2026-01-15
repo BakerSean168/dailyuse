@@ -52,7 +52,7 @@ export interface LoginRequest {
  */
 export interface LoginResponse {
   /** 操作是否成功 */
-  success: boolean;
+  ok: boolean;
   /** 访问令牌 */
   accessToken?: string;
   /** 刷新令牌 */
@@ -424,7 +424,7 @@ export interface SaveTokenRequest {
  * Token 刷新结果
  */
 export interface TokenRefreshResult {
-  success: boolean;
+  ok: boolean;
   accessToken?: string;
   expiresAt?: number;
   error?: string;
@@ -458,7 +458,7 @@ export interface TokenStatus {
  * 会话恢复结果
  */
 export interface SessionRestoreResult {
-  success: boolean;
+  ok: boolean;
   /** 恢复的会话 UUID */
   sessionUuid?: string;
   /** 账户 UUID */
@@ -474,7 +474,7 @@ export interface SessionRestoreResult {
  * 自动登录结果
  */
 export interface AutoLoginResult {
-  success: boolean;
+  ok: boolean;
   /** 是否已认证 */
   authenticated: boolean;
   /** 账户 UUID */
@@ -563,7 +563,7 @@ export interface RefreshSessionRequest {
  * 刷新会话响应
  */
 export interface RefreshSessionResponse {
-  success: boolean;
+  ok: boolean;
   accessToken?: string;
   refreshToken?: string;
   expiresIn?: number;
@@ -574,7 +574,7 @@ export interface RefreshSessionResponse {
  * 通用认证操作结果
  */
 export interface AuthOperationResult {
-  success: boolean;
+  ok: boolean;
   error?: string;
   data?: unknown;
 }

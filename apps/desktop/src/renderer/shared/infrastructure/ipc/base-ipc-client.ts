@@ -388,7 +388,7 @@ export class BaseIPCClient implements IIPCClient {
           isResolved = true;
           if (timeoutId) clearTimeout(timeoutId);
 
-          if (typedResponse.success) {
+          if (typedResponse.ok) {
             resolve(typedResponse.data as T);
           } else if (typedResponse.error) {
             reject(createIPCError(typedResponse.error, channel));

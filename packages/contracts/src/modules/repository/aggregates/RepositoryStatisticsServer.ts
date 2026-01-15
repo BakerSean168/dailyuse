@@ -59,7 +59,7 @@ export interface RecalculateStatisticsRequest {
  * 重新计算统计响应
  */
 export interface RecalculateStatisticsResponse {
-  success: boolean;
+  ok: boolean;
   statistics: RepositoryStatisticsServerDTO;
   recalculatedAt: number;
   message?: string;

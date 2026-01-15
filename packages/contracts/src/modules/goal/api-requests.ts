@@ -445,7 +445,7 @@ export interface RecalculateGoalStatisticsRequest {
  * 重新计算统计响应
  */
 export interface RecalculateGoalStatisticsResponse {
-  success: boolean;
+  ok: boolean;
   message: string;
   statistics: GoalStatisticsServerDTO;
 }
@@ -461,7 +461,7 @@ export interface InitializeGoalStatisticsRequest {
  * 初始化统计响应
  */
 export interface InitializeGoalStatisticsResponse {
-  success: boolean;
+  ok: boolean;
   message: string;
   statistics: GoalStatisticsServerDTO;
 }

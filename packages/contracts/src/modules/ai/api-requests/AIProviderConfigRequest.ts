@@ -59,7 +59,7 @@ export interface TestAIProviderConnectionRequest {
  */
 export interface TestAIProviderConnectionResponse {
   /** 是否连接成功 */
-  success: boolean;
+  ok: boolean;
   /** 消息（成功或错误信息） */
   message: string;
   /** 可用模型列表（成功时返回） */
@@ -93,7 +93,7 @@ export interface RefreshProviderModelsRequest {
  */
 export interface RefreshProviderModelsResponse {
   /** 是否成功 */
-  success: boolean;
+  ok: boolean;
   /** 更新后的模型列表 */
   models: Array<{
     id: string;

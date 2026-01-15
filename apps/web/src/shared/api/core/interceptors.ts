@@ -319,8 +319,8 @@ export class InterceptorManager {
           return response;
         }
 
-        // 检查 success 字段
-        if (apiResponse.success === false) {
+        // 检查 ok 字段
+        if (apiResponse.ok === false) {
           const errorResponse = apiResponse as ErrorResponse;
           LogManager.warn('业务逻辑错误', {
             code: errorResponse.code,
@@ -489,7 +489,7 @@ export class InterceptorManager {
       const apiResponse = response.data;
       
       // 检查 API 响应是否成功
-      if (!apiResponse || apiResponse.success !== true) {
+      if (!apiResponse || apiResponse.ok !== true) {
         const errorMessage = apiResponse?.message || 'Token 刷新失败';
         LogManager.error('Token refresh API returned error', { apiResponse });
         throw new Error(errorMessage);

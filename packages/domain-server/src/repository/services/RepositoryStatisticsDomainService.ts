@@ -71,7 +71,7 @@ export class RepositoryStatisticsDomainService {
       await this.statisticsRepository.save(statistics);
       
       return {
-        success: true,
+        ok: true,
         message: 'Statistics recalculated successfully',
         statistics: statistics.toClientDTO(),
         recalculatedAt: Date.now(),
@@ -92,7 +92,7 @@ export class RepositoryStatisticsDomainService {
         updatedAt: 0,
       };
       return {
-        success: false,
+        ok: false,
         message: error instanceof Error ? error.message : 'Unknown error',
         statistics: defaultStats,
         recalculatedAt: Date.now(),

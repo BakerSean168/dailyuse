@@ -62,7 +62,7 @@ export const useSearchStore = defineStore('repository-search', () => {
         pageSize: options.pageSize || 50,
       });
 
-      if (response.success && response.data) {
+      if (response.ok && response.data) {
         const data = response.data as SearchResponse;
         results.value = data.results;
         totalResults.value = data.totalResults;

@@ -404,7 +404,7 @@ async function handleDelete() {
 
 async function handleTestConnection(uuid: string) {
     const result = await testConnection(uuid);
-    if (result.success) {
+    if (result.ok) {
         showMessage(`连接成功！延迟: ${result.latencyMs}ms`, 'success');
     } else {
         showMessage(`连接失败: ${result.error}`, 'error');

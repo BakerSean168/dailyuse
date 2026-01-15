@@ -144,7 +144,7 @@ export class CrossPlatformEventBus {
 
       // 响应处理器
       const responseHandler = (response: {
-        success: boolean;
+        ok: boolean;
         data: TResponse;
         error: string | null;
       }) => {
@@ -152,7 +152,7 @@ export class CrossPlatformEventBus {
         clearTimeout(timeoutHandle);
         this.pendingRequests.delete(requestId);
 
-        if (response.success) {
+        if (response.ok) {
           console.log(`📨 [CrossPlatformEventBus] 收到成功响应: ${requestType} (${requestId})`);
           resolve(response.data);
         } else {
@@ -331,7 +331,7 @@ export interface IUnifiedEvent {
  */
 export interface IRequestResponse<TRequest = any, TResponse = any> {
   requestId: string;
-  success: boolean;
+  ok: boolean;
   data?: TResponse;
   error?: string;
   request?: TRequest;

@@ -6,6 +6,7 @@
 
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 import { AccountContainer } from '@dailyuse/infrastructure-client';
+import type { ActionResult } from '@dailyuse/contracts/result';
 
 /**
  * Change My Password Request
@@ -17,11 +18,9 @@ export interface ChangeMyPasswordRequest {
 
 /**
  * Change My Password Result
+ * @deprecated 使用 ActionResult 代替
  */
-export interface ChangeMyPasswordResult {
-  success: boolean;
-  message: string;
-}
+export type ChangeMyPasswordResult = ActionResult;
 
 /**
  * Change My Password

@@ -85,8 +85,8 @@ export class AutoUpdateIPCClient extends BaseIPCClient {
    * Download the available update
    */
   async downloadUpdate(): Promise<boolean> {
-    const result = await this.invoke<{ success: boolean }>('auto-update:download');
-    return result?.success ?? false;
+    const result = await this.invoke<{ ok: boolean }>('auto-update:download');
+    return result?.ok ?? false;
   }
 
   /**

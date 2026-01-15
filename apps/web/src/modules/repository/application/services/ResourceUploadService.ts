@@ -187,7 +187,7 @@ export async function uploadResource(
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           const response = JSON.parse(xhr.responseText);
-          if (response.success) {
+          if (response.ok) {
             resolve(response.data);
           } else {
             reject(new Error(response.message || '上传失败'));

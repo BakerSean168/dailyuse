@@ -22,6 +22,7 @@ import type {
   SubscribePlanRequestDTO,
   CancelSubscriptionRequestDTO,
 } from '@dailyuse/contracts/account';
+import type { ActionResult } from '@dailyuse/contracts/result';
 
 /**
  * IAccountApiClient
@@ -65,11 +66,12 @@ export interface IAccountApiClient {
 
   /**
    * 修改当前用户密码
+   * @returns ActionResult 操作结果，包含成功/失败消息
    */
   changeMyPassword(request: {
     currentPassword: string;
     newPassword: string;
-  }): Promise<{ success: boolean; message: string }>;
+  }): Promise<ActionResult>;
 
   // ===== 账户资料管理 =====
 

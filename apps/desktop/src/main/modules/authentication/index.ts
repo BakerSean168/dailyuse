@@ -77,7 +77,7 @@ export function registerAuthenticationModule(): void {
           logger.info('Session needs refresh');
           // 尝试自动刷新
           const refreshResult = await authService.refreshToken();
-          if (refreshResult.success) {
+          if (refreshResult.ok) {
             logger.info('Token refreshed successfully');
             await localAccountManager.setOnlineStatus(true);
           }
@@ -88,7 +88,7 @@ export function registerAuthenticationModule(): void {
           logger.info('Network online - attempting token refresh');
           try {
             const refreshResult = await authService.refreshToken();
-            if (refreshResult.success) {
+            if (refreshResult.ok) {
               await localAccountManager.setOnlineStatus(true);
             }
           } catch (error) {

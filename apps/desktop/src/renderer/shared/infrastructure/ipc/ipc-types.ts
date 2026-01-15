@@ -10,7 +10,7 @@
  * IPC 响应基础接口
  */
 export interface IPCResponse<T = unknown> {
-  success: boolean;
+  ok: boolean;
   data?: T;
   error?: IPCErrorData;
 }
@@ -60,7 +60,7 @@ export interface BatchRequestItem<T = unknown> {
  */
 export interface BatchResponseItem<T = unknown> {
   /** 是否成功 */
-  success: boolean;
+  ok: boolean;
   /** 响应数据 */
   data?: T;
   /** 错误信息 */

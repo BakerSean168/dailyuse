@@ -223,7 +223,7 @@ export class IPCLogger {
     requests: BatchRequestItem[],
     results: BatchResponseItem[]
   ): void {
-    const successCount = results.filter(r => r.success).length;
+    const successCount = results.filter(r => r.ok).length;
     const failCount = results.length - successCount;
 
     this.log({

@@ -117,17 +117,17 @@ export function AISettingsView() {
         {testResult && (
           <div
             className={`mb-4 p-3 rounded-md text-sm flex items-center justify-between ${
-              testResult.success
+              testResult.ok
                 ? 'bg-green-50 border border-green-200 text-green-700'
                 : 'bg-red-50 border border-red-200 text-red-700'
             }`}
           >
             <span>
-              {testResult.success ? '✅' : '❌'} {testResult.message}
+              {testResult.ok ? '✅' : '❌'} {testResult.message}
             </span>
             <button
               onClick={clearTestResult}
-              className={testResult.success ? 'text-green-500' : 'text-red-500'}
+              className={testResult.ok ? 'text-green-500' : 'text-red-500'}
             >
               ✕
             </button>

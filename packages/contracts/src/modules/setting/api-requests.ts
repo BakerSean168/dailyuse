@@ -96,7 +96,7 @@ export interface ResetSettingsRequest {
  * 设置响应
  */
 export interface SettingResponse {
-  success: boolean;
+  ok: boolean;
   data?: SettingServerDTO;
   error?: {
     code: string;
@@ -108,7 +108,7 @@ export interface SettingResponse {
  * 设置列表响应
  */
 export interface SettingsListResponse {
-  success: boolean;
+  ok: boolean;
   data?: SettingServerDTO[];
   total?: number;
   error?: {
@@ -186,7 +186,7 @@ export interface UpdateAppConfigRequest {
  * 应用配置响应
  */
 export interface AppConfigResponse {
-  success: boolean;
+  ok: boolean;
   data?: AppConfigServerDTO;
   error?: {
     code: string;
@@ -290,7 +290,7 @@ export interface UpdateUserSettingRequest {
  * 用户设置响应
  */
 export interface UserSettingResponse {
-  success: boolean;
+  ok: boolean;
   data?: UserSettingServerDTO;
   error?: {
     code: string;
@@ -383,7 +383,7 @@ export interface BatchDeleteSettingsRequest {
  * 批量操作响应
  */
 export interface BatchOperationResponse {
-  success: boolean;
+  ok: boolean;
   data?: {
     succeeded: string[];
     failed: Array<{
@@ -414,7 +414,7 @@ export interface SyncSettingsRequest {
  * 同步设置响应
  */
 export interface SyncSettingsResponse {
-  success: boolean;
+  ok: boolean;
   data?: {
     synced: SettingServerDTO[];
     conflicts: Array<{
@@ -447,7 +447,7 @@ export interface GetSettingHistoryRequest {
  * 设置历史响应
  */
 export interface SettingHistoryResponse {
-  success: boolean;
+  ok: boolean;
   data?: Array<{
     uuid: string;
     settingUuid: string;

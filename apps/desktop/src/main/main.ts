@@ -66,8 +66,8 @@ async function initializeApp(): Promise<void> {
 
   // 7. EPIC-010: 初始化所有模块（按 priority 顺序）
   const moduleResult = await initializeAllModules();
-  console.log(`[App] All modules initialized: ${moduleResult.success ? 'SUCCESS' : 'FAILED'} (${moduleResult.duration}ms)`);
-  if (!moduleResult.success) {
+  console.log(`[App] All modules initialized: ${moduleResult.ok ? 'SUCCESS' : 'FAILED'} (${moduleResult.duration}ms)`);
+  if (!moduleResult.ok) {
     console.error('[App] Failed modules:', moduleResult.failedModules);
   }
 

@@ -18,7 +18,7 @@ import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/c
  * 最佳实践：只返回必要信息，减少网络传输
  */
 export interface SettingUpdateResponse {
-  success: boolean;
+  ok: boolean;
   updatedAt: number;
   /** 可选：只包含被更新的字段，用于前端验证 */
   updated?: Partial<UpdateUserSettingRequest>;

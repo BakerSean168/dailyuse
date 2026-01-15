@@ -39,7 +39,7 @@ export interface ITriggerReminderParams {
  */
 export interface ITriggerReminderResult {
   /** 是否成功 */
-  success: boolean;
+  ok: boolean;
   /** 触发结果类型 */
   result: TriggerResult;
   /** 触发时间 */
@@ -79,7 +79,7 @@ export class ReminderTriggerService {
     const isEnabled = await this.controlService.isTemplateEffectivelyEnabled(template);
     if (!isEnabled) {
       return {
-        success: false,
+        ok: false,
         result: TriggerResult.SKIPPED,
         triggerTime,
         nextTriggerTime: null,
@@ -106,7 +106,7 @@ export class ReminderTriggerService {
     await this.updateStatistics(template.accountUuid, TriggerResult.SUCCESS);
 
     return {
-      success: true,
+      ok: true,
       result: TriggerResult.SUCCESS,
       triggerTime,
       nextTriggerTime,
@@ -165,7 +165,7 @@ export class ReminderTriggerService {
         results.push(result);
       } catch (error) {
         results.push({
-          success: false,
+          ok: false,
           result: TriggerResult.FAILED,
           triggerTime: param.triggerTime || Date.now(),
           nextTriggerTime: null,

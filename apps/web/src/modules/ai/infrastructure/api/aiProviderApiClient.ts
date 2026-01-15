@@ -27,7 +27,7 @@ export type AIProviderListResponse = AIProviderConfigClientDTO[];
 export type AIProviderResponse = AIProviderConfigClientDTO;
 
 export interface TestConnectionResponse {
-  success: boolean;
+  ok: boolean;
   latencyMs?: number;
   error?: string;
 }
@@ -37,7 +37,7 @@ export interface TestConnectionResponse {
  */
 export interface FetchModelsResponse {
   models: AIModelInfo[];
-  success: boolean;
+  ok: boolean;
   error?: string;
 }
 
@@ -127,7 +127,7 @@ export class AIProviderApiClient {
    */
   async fetchModels(request: FetchModelsRequest): Promise<FetchModelsResponse> {
     const data = await apiClient.post<FetchModelsResponse>(`${this.baseUrl}/fetch-models`, request);
-    return data || { models: [], success: false, error: 'No response' };
+    return data || { models: [], ok: false, error: 'No response' };
   }
 }
 

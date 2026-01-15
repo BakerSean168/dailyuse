@@ -6,6 +6,7 @@
 
 import type { INotificationApiClient } from '@dailyuse/infrastructure-client';
 import { NotificationContainer } from '@dailyuse/infrastructure-client';
+import type { CountResult } from '@dailyuse/contracts/result';
 
 /**
  * Mark All As Read
@@ -45,7 +46,7 @@ export class MarkAllAsRead {
   /**
    * 执行用例
    */
-  async execute(): Promise<{ success: boolean; count: number }> {
+  async execute(): Promise<CountResult> {
     return this.apiClient.markAllAsRead();
   }
 }

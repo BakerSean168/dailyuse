@@ -81,7 +81,7 @@ export class AIProviderApplicationService {
   async testConnection(uuid: string): Promise<TestConnectionResponse> {
     logger.info('Testing AI provider connection', { uuid });
     const result = await aiProviderApiClient.testConnection(uuid);
-    logger.info('AI provider connection tested', { uuid, success: result.success });
+    logger.info('AI provider connection tested', { uuid, ok: result.ok });
     return result;
   }
 

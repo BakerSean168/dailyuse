@@ -210,7 +210,7 @@ export class AIAdapterFactory {
     apiKey: string;
     defaultModel?: string;
   }): Promise<{
-    success: boolean;
+    ok: boolean;
     message: string;
     latencyMs?: number;
   }> {
@@ -242,20 +242,20 @@ export class AIAdapterFactory {
 
       if (isHealthy) {
         return {
-          success: true,
+          ok: true,
           message: 'Connection successful',
           latencyMs,
         };
       } else {
         return {
-          success: false,
+          ok: false,
           message: 'Health check failed',
           latencyMs,
         };
       }
     } catch (error) {
       return {
-        success: false,
+        ok: false,
         message: error instanceof Error ? error.message : 'Unknown error',
         latencyMs: Date.now() - startTime,
       };

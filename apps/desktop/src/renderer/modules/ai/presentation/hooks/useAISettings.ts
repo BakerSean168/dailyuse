@@ -20,7 +20,7 @@ interface AISettingsState {
   loading: boolean;
   testing: boolean;
   error: string | null;
-  testResult: { success: boolean; message: string } | null;
+  testResult: { ok: boolean; message: string } | null;
 }
 
 interface UseAISettingsReturn extends AISettingsState {
@@ -209,8 +209,8 @@ export function useAISettings(): UseAISettingsReturn {
         ...prev,
         testing: false,
         testResult: {
-          success: result.success,
-          message: result.message || (result.success ? '连接成功' : '连接失败'),
+          ok: result.ok,
+          message: result.message || (result.ok ? '连接成功' : '连接失败'),
         },
       }));
     } catch (e) {
@@ -218,7 +218,7 @@ export function useAISettings(): UseAISettingsReturn {
       setState((prev) => ({
         ...prev,
         testing: false,
-        testResult: { success: false, message: errorMessage },
+        testResult: { ok: false, message: errorMessage },
       }));
     }
   }, []);

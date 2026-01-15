@@ -258,7 +258,7 @@ export class SyncDesktopApplicationService {
 
   async exportData(_request: ExportDataRequest): Promise<ExportDataResponse> {
     return {
-      success: false,
+      ok: false,
       error: 'Not implemented: data export',
       statistics: {},
       fileSize: 0,
@@ -267,7 +267,7 @@ export class SyncDesktopApplicationService {
 
   async importData(_request: ImportDataRequest): Promise<ImportDataResponse> {
     return {
-      success: false,
+      ok: false,
       error: 'Not implemented: data import',
       imported: {},
       skipped: 0,

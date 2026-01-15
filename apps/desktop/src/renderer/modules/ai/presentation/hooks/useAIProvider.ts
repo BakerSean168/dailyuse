@@ -120,8 +120,8 @@ export function useAIProvider(): UseAIProviderReturn {
     try {
       const result = await aiApplicationService.testProviderConnection(input);
       setState(prev => ({ ...prev, testing: false }));
-      // 返回测试结果的 success 字段
-      return result.success ?? false;
+      // 返回测试结果的 ok 字段
+      return result.ok ?? false;
     } catch (error) {
       setState(prev => ({
         ...prev,

@@ -173,7 +173,7 @@ export type ReminderStatisticsDTO = ReminderStatisticsClientDTO;
  * 启用/暂停操作响应
  */
 export interface ReminderOperationResponseDTO {
-  success: boolean;
+  ok: boolean;
   message?: string;
   affectedCount?: number;
 }
@@ -182,7 +182,7 @@ export interface ReminderOperationResponseDTO {
  * 触发操作响应
  */
 export interface ReminderTriggerResponseDTO {
-  success: boolean;
+  ok: boolean;
   triggeredAt: number;
   nextTriggerAt?: number | null;
   message?: string;

@@ -22,6 +22,7 @@ import type {
   SubscribePlanRequestDTO,
   CancelSubscriptionRequestDTO,
 } from '@dailyuse/contracts/account';
+import type { ActionResult } from '@dailyuse/contracts/result';
 
 /**
  * IPC channel definitions for Account operations
@@ -103,7 +104,7 @@ export class AccountIpcAdapter implements IAccountApiClient {
   async changeMyPassword(request: {
     currentPassword: string;
     newPassword: string;
-  }): Promise<{ success: boolean; message: string }> {
+  }): Promise<ActionResult> {
     return this.ipcApi.invoke(ACCOUNT_CHANNELS.CHANGE_MY_PASSWORD, request);
   }
 

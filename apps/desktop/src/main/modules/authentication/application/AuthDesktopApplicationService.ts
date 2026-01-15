@@ -12,15 +12,27 @@
  * - TokenManager 负责 Token 加密存储
  * - SessionManager 负责会话生命周期管理
  * - Desktop 支持离线模式和在线模式切换
+ *
+ * 响应格式说明：
+ * - 所有方法返回 IpcResult<T> 格式（使用 ok/fail）
+ * - 成功: { ok: true, data: T }
+ * - 失败: { ok: false, error: { code, message } }
  */
 
 import { createLogger, type ILogger } from '@dailyuse/utils';
 import type { IAuthSessionRepository, IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
 import type { AuthSession } from '@dailyuse/domain-server/authentication';
+import {
+  // Result Pattern - 统一响应格式
+  type IpcResult,
+  toIpcResult,
+  ok,
+  fail,
+  type ResultError,
+} from '@dailyuse/contracts/result';
 import type {
   AuthMode,
   TokenStatus,
-  AuthOperationResult,
   AutoLoginResult as ContractAutoLoginResult,
   SessionRestoreResult as ContractSessionRestoreResult,
   // Import shared types from contracts
@@ -44,7 +56,7 @@ import {
 
 // Re-export from contracts for convenience
 export type { 
-  AuthOperationResult,
+  IpcResult,
   UserInfo,
   SessionInfo,
   DeviceInfo,
@@ -53,6 +65,7 @@ export type {
   AuthStatus,
   EmailLoginCredentials,
 };
+export { toIpcResult, ok, fail };
 
 // Alias for backward compatibility
 export type LoginCredentials = EmailLoginCredentials;
@@ -151,7 +164,7 @@ export class AuthDesktopApplicationService {
     if (!this.sessionManager) {
       this.logger.warn('SessionManager not available, running in minimal mode');
       this.isInitialized = true;
-      return { success: true, hasValidSession: false };
+      return { ok: true, hasValidSession: false };
     }
 
     try {
@@ -159,13 +172,13 @@ export class AuthDesktopApplicationService {
 
       this.isInitialized = true;
       this.logger.info('AuthDesktopApplicationService initialized', {
-        hasSession: result.success,
+        hasSession: result.ok,
         accountUuid: result.accountUuid,
       });
 
       return {
-        success: true,
-        hasValidSession: result.success,
+        ok: true,
+        hasValidSession: result.ok,
         accountUuid: result.accountUuid,
         sessionUuid: result.session?.uuid,
         needsRefresh: result.needsRefresh,
@@ -175,7 +188,7 @@ export class AuthDesktopApplicationService {
       this.logger.error('Failed to initialize', { error });
       this.isInitialized = true;
       return {
-        success: false,
+        ok: false,
         hasValidSession: false,
         error: String(error),
         needsReLogin: true,
@@ -189,12 +202,13 @@ export class AuthDesktopApplicationService {
 
   /**
    * 登录
+   * @returns IpcResult<LoginData> - 统一的响应格式
    */
-  async login(credentials: LoginCredentials): Promise<AuthOperationResult> {
+  async login(credentials: LoginCredentials): Promise<IpcResult<{ accountUuid: string; sessionUuid: string }>> {
     this.logger.info('Login attempt', { email: credentials.email });
 
     if (!this.sessionManager) {
-      return { success: false, error: 'Authentication service not initialized' };
+      return toIpcResult(fail({ code: 'NOT_INITIALIZED', message: '认证服务未初始化' }));
     }
 
     try {
@@ -204,30 +218,34 @@ export class AuthDesktopApplicationService {
         rememberMe: credentials.rememberMe,
       });
 
-      if (result.success) {
+      if (result.ok) {
         this.authMode = 'LOCAL'; // 或根据实际情况设置为 ONLINE
         this.logger.info('Login successful', { accountUuid: result.accountUuid });
+        return toIpcResult(ok({
+          accountUuid: result.accountUuid!,
+          sessionUuid: result.sessionId!,
+        }));
       }
 
-      return {
-        success: result.success,
-        error: result.error,
-        data: result.success ? {
-          accountUuid: result.accountUuid,
-          sessionUuid: result.sessionId,
-        } : undefined,
-      };
+      return toIpcResult(fail({ 
+        code: 'LOGIN_FAILED', 
+        message: result.error || '登录失败' 
+      }));
     } catch (error) {
       this.logger.error('Login failed', { error });
-      return { success: false, error: String(error) };
+      return toIpcResult(fail({ 
+        code: 'LOGIN_ERROR', 
+        message: error instanceof Error ? error.message : '登录失败' 
+      }));
     }
   }
 
   /**
    * 注册
    * @description 在线模式注册新账户
+   * @returns IpcResult<RegisterData> - 统一的响应格式
    */
-  async register(request: RegisterRequest): Promise<AuthOperationResult> {
+  async register(request: RegisterRequest): Promise<IpcResult<{ accountUuid: string; message: string }>> {
     this.logger.info('Register attempt', { email: request.email });
 
     try {
@@ -253,10 +271,10 @@ export class AuthDesktopApplicationService {
 
       if (!response.ok) {
         this.logger.error('Registration failed', { status: response.status, data });
-        return {
-          success: false,
-          error: data.message || data.error || `注册失败 (${response.status})`,
-        };
+        return toIpcResult(fail({
+          code: 'REGISTER_FAILED',
+          message: data.message || data.error || `注册失败 (${response.status})`,
+        }));
       }
 
       this.logger.info('Registration successful', { email: request.email });
@@ -273,36 +291,34 @@ export class AuthDesktopApplicationService {
         this.authMode = 'ONLINE';
       }
 
-      return {
-        success: true,
-        data: {
-          accountUuid: data.accountUuid || data.user?.uuid,
-          message: '注册成功',
-        },
-      };
+      return toIpcResult(ok({
+        accountUuid: data.accountUuid || data.user?.uuid,
+        message: '注册成功',
+      }));
     } catch (error) {
       this.logger.error('Registration request failed', { error });
       
       // 网络错误提示
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        return {
-          success: false,
-          error: '无法连接到服务器，请检查网络连接',
-        };
+        return toIpcResult(fail({
+          code: 'NETWORK_ERROR',
+          message: '无法连接到服务器，请检查网络连接',
+        }));
       }
       
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : '注册失败，请稍后重试',
-      };
+      return toIpcResult(fail({
+        code: 'REGISTER_ERROR',
+        message: error instanceof Error ? error.message : '注册失败，请稍后重试',
+      }));
     }
   }
 
   /**
    * 进入离线模式
    * @description 使用本地账户，无需网络连接
+   * @returns IpcResult<OfflineModeData> - 统一的响应格式
    */
-  async enterOfflineMode(): Promise<AuthOperationResult> {
+  async enterOfflineMode(): Promise<IpcResult<{ accountUuid: string; mode: string; message: string }>> {
     this.logger.info('Entering offline mode');
 
     try {
@@ -316,42 +332,43 @@ export class AuthDesktopApplicationService {
       
       this.logger.info('Offline mode activated', { accountUuid: localAccount.uuid });
       
-      return {
-        success: true,
-        data: {
-          accountUuid: localAccount.uuid,
-          mode: 'LOCAL',
-          message: '已进入离线模式',
-        },
-      };
+      return toIpcResult(ok({
+        accountUuid: localAccount.uuid,
+        mode: 'LOCAL',
+        message: '已进入离线模式',
+      }));
     } catch (error) {
       this.logger.error('Failed to enter offline mode', { error });
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : '进入离线模式失败',
-      };
+      return toIpcResult(fail({
+        code: 'OFFLINE_MODE_ERROR',
+        message: error instanceof Error ? error.message : '进入离线模式失败',
+      }));
     }
   }
 
   /**
    * 登出
+   * @returns IpcResult<void> - 统一的响应格式
    */
-  async logout(): Promise<AuthOperationResult> {
+  async logout(): Promise<IpcResult<void>> {
     this.logger.info('Logout');
 
     if (!this.sessionManager) {
       // 至少清除 Token
       await this.tokenManager.clearTokens();
-      return { success: true };
+      return toIpcResult(ok(undefined));
     }
 
     try {
       const result = await this.sessionManager.logout();
       this.authMode = 'LOCAL';
-      return result;
+      if (result.ok) {
+        return toIpcResult(ok(undefined));
+      }
+      return toIpcResult(fail({ code: 'LOGOUT_FAILED', message: result.error || '登出失败' }));
     } catch (error) {
       this.logger.error('Logout failed', { error });
-      return { success: false, error: String(error) };
+      return toIpcResult(fail({ code: 'LOGOUT_ERROR', message: String(error) }));
     }
   }
 
@@ -364,48 +381,48 @@ export class AuthDesktopApplicationService {
     this.logger.info('Auto login attempt');
 
     if (!this.sessionManager) {
-      return { success: false, authenticated: false, error: 'Service not initialized' };
+      return { ok: false, authenticated: false, error: 'Service not initialized' };
     }
 
     try {
       const result = await this.sessionManager.autoLogin();
 
       return {
-        success: result.success,
-        authenticated: result.success,
+        ok: result.ok,
+        authenticated: result.ok,
         accountUuid: result.accountUuid,
         sessionUuid: result.session?.uuid,
         error: result.error,
       };
     } catch (error) {
       this.logger.error('Auto login failed', { error });
-      return { success: false, authenticated: false, error: String(error) };
+      return { ok: false, authenticated: false, error: String(error) };
     }
   }
 
   /**
    * 刷新令牌
+   * @returns IpcResult<RefreshData> - 统一的响应格式
    */
-  async refreshToken(): Promise<AuthOperationResult> {
+  async refreshToken(): Promise<IpcResult<{ accessToken: string; expiresIn: number }>> {
     this.logger.info('Refresh token');
 
     if (!this.sessionManager) {
-      return { success: false, error: 'Service not initialized' };
+      return toIpcResult(fail({ code: 'NOT_INITIALIZED', message: '服务未初始化' }));
     }
 
     try {
       const result = await this.sessionManager.refreshSession();
-      return {
-        success: result.success,
-        error: result.error,
-        data: result.success ? {
-          accessToken: result.accessToken,
-          expiresIn: result.expiresIn,
-        } : undefined,
-      };
+      if (result.ok) {
+        return toIpcResult(ok({
+          accessToken: result.accessToken!,
+          expiresIn: result.expiresIn!,
+        }));
+      }
+      return toIpcResult(fail({ code: 'REFRESH_FAILED', message: result.error || '刷新失败' }));
     } catch (error) {
       this.logger.error('Refresh token failed', { error });
-      return { success: false, error: String(error) };
+      return toIpcResult(fail({ code: 'REFRESH_ERROR', message: String(error) }));
     }
   }
 
@@ -487,31 +504,31 @@ export class AuthDesktopApplicationService {
    * 启用双因素认证
    * @description 仅在线模式可用
    */
-  async enable2FA(method: string): Promise<AuthOperationResult> {
+  async enable2FA(method: string): Promise<IpcResult<{ qrCodeUrl?: string; secret?: string }>> {
     this.logger.debug('Enable 2FA', { method });
 
     if (this.authMode === 'LOCAL') {
-      return { success: false, error: '2FA requires online mode' };
+      return toIpcResult(fail({ code: 'ONLINE_REQUIRED', message: '2FA 需要在线模式' }));
     }
 
     // TODO: 实现在线 2FA
-    return { success: false, error: '2FA not implemented yet' };
+    return toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: '2FA 功能尚未实现' }));
   }
 
   /**
    * 禁用双因素认证
    */
-  async disable2FA(): Promise<AuthOperationResult> {
+  async disable2FA(): Promise<IpcResult<void>> {
     this.logger.debug('Disable 2FA');
-    return { success: false, error: '2FA not implemented yet' };
+    return toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: '2FA 功能尚未实现' }));
   }
 
   /**
    * 验证双因素认证
    */
-  async verify2FA(code: string): Promise<AuthOperationResult> {
+  async verify2FA(code: string): Promise<IpcResult<void>> {
     this.logger.debug('Verify 2FA');
-    return { success: false, error: '2FA not implemented yet' };
+    return toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: '2FA 功能尚未实现' }));
   }
 
   /**
@@ -559,9 +576,9 @@ export class AuthDesktopApplicationService {
   /**
    * 撤销 API Key
    */
-  async revokeApiKey(keyId: string): Promise<AuthOperationResult> {
+  async revokeApiKey(keyId: string): Promise<IpcResult<void>> {
     this.logger.debug('Revoke API key', { keyId });
-    return { success: false, error: 'API keys not implemented yet' };
+    return toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: 'API Key 功能尚未实现' }));
   }
 
   /**
@@ -637,57 +654,57 @@ export class AuthDesktopApplicationService {
   /**
    * 撤销会话
    */
-  async revokeSession(sessionId: string): Promise<AuthOperationResult> {
+  async revokeSession(sessionId: string): Promise<IpcResult<void>> {
     this.logger.debug('Revoke session', { sessionId });
 
     if (!this.sessionRepository) {
-      return { success: false, error: 'Service not initialized' };
+      return toIpcResult(fail({ code: 'NOT_INITIALIZED', message: '服务未初始化' }));
     }
 
     try {
       const session = await this.sessionRepository.findByUuid(sessionId);
       if (!session) {
-        return { success: false, error: 'Session not found' };
+        return toIpcResult(fail({ code: 'NOT_FOUND', message: '会话不存在' }));
       }
 
       // 不能撤销当前会话
       const currentSession = this.sessionManager?.getCurrentSession();
       if (currentSession && session.uuid === currentSession.uuid) {
-        return { success: false, error: 'Cannot revoke current session, use logout instead' };
+        return toIpcResult(fail({ code: 'INVALID_OPERATION', message: '无法撤销当前会话，请使用登出' }));
       }
 
       session.revoke();
       await this.sessionRepository.save(session);
 
       this.logger.info('Session revoked', { sessionId });
-      return { success: true };
+      return toIpcResult(ok(undefined));
     } catch (error) {
       this.logger.error('Failed to revoke session', { error });
-      return { success: false, error: String(error) };
+      return toIpcResult(fail({ code: 'REVOKE_ERROR', message: String(error) }));
     }
   }
 
   /**
    * 撤销所有会话
    */
-  async revokeAllSessions(): Promise<{ success: boolean; count: number }> {
+  async revokeAllSessions(): Promise<{ ok: boolean; count: number }> {
     this.logger.debug('Revoke all sessions');
 
     if (!this.sessionManager) {
-      return { success: false, count: 0 };
+      return { ok: false, count: 0 };
     }
 
     try {
       const currentSession = this.sessionManager.getCurrentSession();
       if (!currentSession) {
-        return { success: true, count: 0 };
+        return { ok: true, count: 0 };
       }
 
       const count = await this.sessionManager.cleanupOtherSessions(currentSession.accountUuid);
-      return { success: true, count };
+      return { ok: true, count };
     } catch (error) {
       this.logger.error('Failed to revoke all sessions', { error });
-      return { success: false, count: 0 };
+      return { ok: false, count: 0 };
     }
   }
 
@@ -744,26 +761,26 @@ export class AuthDesktopApplicationService {
   /**
    * 撤销设备
    */
-  async revokeDevice(deviceId: string): Promise<AuthOperationResult> {
+  async revokeDevice(deviceId: string): Promise<IpcResult<void>> {
     this.logger.debug('Revoke device', { deviceId });
 
     const currentDevice = this.sessionManager?.getDeviceInfo();
     if (currentDevice && deviceId === currentDevice.deviceId) {
-      return { success: false, error: 'Cannot revoke current device' };
+      return toIpcResult(fail({ code: 'INVALID_OPERATION', message: '无法撤销当前设备' }));
     }
 
     // TODO: 实现跨设备撤销
-    return { success: false, error: 'Device revocation not implemented for other devices' };
+    return toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: '跨设备撤销尚未实现' }));
   }
 
   /**
    * 重命名设备
    */
-  async renameDevice(deviceId: string, name: string): Promise<AuthOperationResult> {
+  async renameDevice(deviceId: string, name: string): Promise<IpcResult<void>> {
     this.logger.debug('Rename device', { deviceId, name });
 
     // TODO: 持久化设备名称
-    return { success: true };
+    return toIpcResult(ok(undefined));
   }
 
   // ============================================

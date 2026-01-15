@@ -332,13 +332,13 @@ export class TokenManager {
    */
   async triggerRefresh(): Promise<TokenRefreshResult> {
     if (!this.refreshCallback) {
-      return { success: false, error: 'No refresh callback registered' };
+      return { ok: false, error: 'No refresh callback registered' };
     }
 
     this.logger.info('Triggering token refresh');
     const result = await this.refreshCallback();
 
-    if (result.success && result.accessToken && result.expiresAt) {
+    if (result.ok && result.accessToken && result.expiresAt) {
       const expiresIn = Math.floor((result.expiresAt - Date.now()) / 1000);
       await this.updateAccessToken(result.accessToken, expiresIn);
       this.scheduleNextRefresh();

@@ -156,7 +156,7 @@ export const useUserSettingStore = defineStore(
       try {
         const response = await updateUserSettings(updates);
         
-        if (response.success && settings.value) {
+        if (response.ok && settings.value) {
           // 【轻量级更新】只更新 updatedAt，不替换整个对象
           settings.value.updatedAt = response.updatedAt;
           console.log('✅ 设置已保存（轻量级响应）');
@@ -188,7 +188,7 @@ export const useUserSettingStore = defineStore(
       updateTimer = setTimeout(async () => {
         try {
           const response = await updateUserSettings(updates);
-          if (response.success && settings.value) {
+          if (response.ok && settings.value) {
             settings.value.updatedAt = response.updatedAt;
           }
         } catch (err: any) {
@@ -270,7 +270,7 @@ export const useUserSettingStore = defineStore(
         });
 
         // 【轻量级响应】只更新 updatedAt，不替换整个对象
-        if (response.success && settings.value) {
+        if (response.ok && settings.value) {
           settings.value.updatedAt = response.updatedAt;
           console.log('✅ [Store] 外观设置已保存到服务器');
         } else {
@@ -323,7 +323,7 @@ export const useUserSettingStore = defineStore(
           locale: updates,  // 👈 只发送变化的字段
         });
 
-        if (response.success && settings.value) {
+        if (response.ok && settings.value) {
           settings.value.updatedAt = response.updatedAt;
           console.log('✅ [Store] 区域设置已保存');
         } else {
@@ -364,7 +364,7 @@ export const useUserSettingStore = defineStore(
           workflow: updates,  // 👈 只发送变化的字段
         });
 
-        if (response.success && settings.value) {
+        if (response.ok && settings.value) {
           settings.value.updatedAt = response.updatedAt;
           console.log('✅ [Store] 工作流设置已保存');
         } else {
@@ -405,7 +405,7 @@ export const useUserSettingStore = defineStore(
           shortcuts: updates,  // 👈 只发送变化的字段
         });
 
-        if (response.success && settings.value) {
+        if (response.ok && settings.value) {
           settings.value.updatedAt = response.updatedAt;
           console.log('✅ [Store] 快捷键设置已保存');
         } else {
@@ -446,7 +446,7 @@ export const useUserSettingStore = defineStore(
           privacy: updates,  // 👈 只发送变化的字段
         });
 
-        if (response.success && settings.value) {
+        if (response.ok && settings.value) {
           settings.value.updatedAt = response.updatedAt;
           console.log('✅ [Store] 隐私设置已保存');
         } else {

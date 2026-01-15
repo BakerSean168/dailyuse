@@ -178,7 +178,7 @@ export interface ExportDataRequest {
 }
 
 export interface ExportDataResponse {
-  success: boolean;
+  ok: boolean;
   filePath?: string;
   statistics: Record<string, number>;
   fileSize: number;
@@ -193,7 +193,7 @@ export interface ImportDataRequest {
 }
 
 export interface ImportDataResponse {
-  success: boolean;
+  ok: boolean;
   imported: Record<string, number>;
   skipped: number;
   overwritten: number;

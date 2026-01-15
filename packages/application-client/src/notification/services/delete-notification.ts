@@ -6,6 +6,7 @@
 
 import type { INotificationApiClient } from '@dailyuse/infrastructure-client';
 import { NotificationContainer } from '@dailyuse/infrastructure-client';
+import type { ActionResult } from '@dailyuse/contracts/result';
 
 /**
  * Delete Notification
@@ -45,7 +46,7 @@ export class DeleteNotification {
   /**
    * 执行用例
    */
-  async execute(uuid: string): Promise<{ success: boolean }> {
+  async execute(uuid: string): Promise<ActionResult> {
     return this.apiClient.deleteNotification(uuid);
   }
 }

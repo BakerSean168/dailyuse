@@ -23,6 +23,7 @@ import type {
   CancelSubscriptionRequestDTO,
 } from '@dailyuse/contracts/account';
 import type { IHttpClient } from '../../../shared/http-client.types';
+import type { ActionResult } from '@dailyuse/contracts/result';
 
 /**
  * AccountHttpAdapter
@@ -67,7 +68,7 @@ export class AccountHttpAdapter implements IAccountApiClient {
   async changeMyPassword(request: {
     currentPassword: string;
     newPassword: string;
-  }): Promise<{ success: boolean; message: string }> {
+  }): Promise<ActionResult> {
     return this.httpClient.put(`${this.baseUrl}/me/password`, request);
   }
 

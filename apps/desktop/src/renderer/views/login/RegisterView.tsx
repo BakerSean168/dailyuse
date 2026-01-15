@@ -281,20 +281,28 @@ export function RegisterView({ onSwitchToLogin, onRegisterSuccess }: RegisterVie
     setError(null);
 
     try {
-      const result = await window.electronAPI?.invoke<{ success: boolean; error?: string }>('auth:register', {
+      // 统一的 IpcResult 格式: { ok: boolean; data?: T; error?: { code, message } }
+      const result = await window.electronAPI?.invoke<{
+        ok: boolean;
+        data?: { accountUuid: string; message: string };
+        error?: { code: string; message: string };
+      }>('auth:register', {
         username,
         email,
         password,
       });
 
-      if (result?.success) {
+      if (result?.ok) {
         // 注册成功，切换到主窗口
         onRegisterSuccess?.();
         await window.electronAPI?.invoke('window:transition-to-main');
       } else {
-        setError(result?.error || '注册失败，请稍后重试');
+        // 显示错误信息
+        const errorMessage = result?.error?.message || '注册失败，请稍后重试';
+        setError(errorMessage);
       }
     } catch (err) {
+      console.error('Registration error:', err);
       setError('注册请求失败，请检查网络连接');
     } finally {
       setLoading(false);

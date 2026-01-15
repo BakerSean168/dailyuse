@@ -62,7 +62,7 @@ export class AuthHttpAdapter implements IAuthApiClient {
       request,
     );
     return {
-      success: true,
+      ok: true,
       ...response,
     };
   }

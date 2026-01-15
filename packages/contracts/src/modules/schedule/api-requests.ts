@@ -315,7 +315,7 @@ export interface ModuleStatsResponseDTO {
  * 操作成功响应
  */
 export interface ScheduleOperationSuccessResponseDTO {
-  readonly success: boolean;
+  readonly ok: boolean;
   readonly message: string;
   readonly data?: any;
 }
@@ -324,7 +324,7 @@ export interface ScheduleOperationSuccessResponseDTO {
  * 错误响应
  */
 export interface ScheduleErrorResponseDTO {
-  readonly success: false;
+  readonly ok: false;
   readonly error: string;
   readonly code?: string;
   readonly details?: any;

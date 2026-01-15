@@ -462,7 +462,7 @@ const debouncedValidateCredentials = useDebounceFn(async () => {
             apiKey: formData.apiKey,
         });
 
-        if (result.success) {
+        if (result.ok) {
             availableModels.value = result.models;
             modelsFetched.value = true;
             validationStatus.value = 'success';
@@ -711,7 +711,7 @@ async function handleFetchModels() {
             apiKey: formData.apiKey,
         });
 
-        if (result.success) {
+        if (result.ok) {
             availableModels.value = result.models;
             modelsFetched.value = true;
             validationStatus.value = 'success';

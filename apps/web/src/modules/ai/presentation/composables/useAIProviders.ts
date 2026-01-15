@@ -18,7 +18,7 @@ import type {
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 interface TestConnectionResult {
-  success: boolean;
+  ok: boolean;
   latencyMs?: number;
   error?: string;
 }
@@ -168,7 +168,7 @@ export function useAIProviders(): UseAIProvidersReturn {
       error.value = null;
 
       const response = await aiProviderApplicationService.testConnection(uuid);
-      if (response.success) {
+      if (response.ok) {
         showSuccess('连接测试成功');
       }
       return response;
@@ -176,7 +176,7 @@ export function useAIProviders(): UseAIProvidersReturn {
       const errorMsg = err.message || '连接测试失败';
       error.value = errorMsg;
       showError(errorMsg);
-      return { success: false, error: errorMsg };
+      return { ok: false, error: errorMsg };
     } finally {
       testingProviderUuid.value = null;
     }

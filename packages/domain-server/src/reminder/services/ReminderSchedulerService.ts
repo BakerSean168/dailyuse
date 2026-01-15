@@ -279,7 +279,7 @@ export class ReminderSchedulerService {
           await this.templateRepository.save(template);
 
           results.push({
-            success: true,
+            ok: true,
             result: TriggerResult.SKIPPED,
             triggerTime: template.getNextTriggerTime() || Date.now(),
             nextTriggerTime,
@@ -295,7 +295,7 @@ export class ReminderSchedulerService {
           await this.templateRepository.save(template);
 
           results.push({
-            success: true,
+            ok: true,
             result: TriggerResult.SKIPPED,
             triggerTime: Date.now(),
             nextTriggerTime,

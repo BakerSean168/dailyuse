@@ -335,11 +335,11 @@ export class ApiClient implements IApiClient {
       return responseData as T;
     }
 
-    // 检查是否为标准的API响应格式 { code, success, data, message, ... }
-    if (responseData && typeof responseData === 'object' && 'success' in responseData) {
+    // 检查是否为标准的API响应格式 { code, ok, data, message, ... }
+    if (responseData && typeof responseData === 'object' && 'ok' in responseData) {
       const apiResponse = responseData as ApiResponse<any>;
 
-      if (apiResponse.success === true) {
+      if (apiResponse.ok === true) {
         const successResponse = apiResponse as SuccessResponse<any>;
 
         // 策略2: 返回完整响应（包含 data、message、timestamp）

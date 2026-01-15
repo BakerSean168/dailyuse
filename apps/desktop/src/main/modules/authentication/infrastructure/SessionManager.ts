@@ -134,7 +134,7 @@ export class SessionManager {
     if (this.isInitialized) {
       this.logger.warn('SessionManager already initialized');
       return {
-        success: true,
+        ok: true,
         session: this.currentSession ?? undefined,
         accountUuid: this.currentSession?.accountUuid,
       };
@@ -150,14 +150,14 @@ export class SessionManager {
     const restoreResult = await this.restoreSession();
 
     // 3. 如果有有效会话，启动自动刷新
-    if (restoreResult.success && this.currentSession) {
+    if (restoreResult.ok && this.currentSession) {
       this.startAutoRefresh();
       this.startActivityTracking();
     }
 
     this.isInitialized = true;
     this.logger.info('SessionManager initialized', {
-      hasSession: restoreResult.success,
+      hasSession: restoreResult.ok,
       accountUuid: restoreResult.accountUuid,
     });
 
@@ -194,7 +194,7 @@ export class SessionManager {
       const tokenData = await this.tokenManager.loadTokens();
       if (!tokenData) {
         this.logger.info('No tokens found, no session to restore');
-        return { success: false, needsReLogin: true };
+        return { ok: false, needsReLogin: true };
       }
 
       // 2. 检�?Refresh Token 是否过期
@@ -202,7 +202,7 @@ export class SessionManager {
       if (now > tokenData.refreshTokenExpiresAt) {
         this.logger.info('Refresh token expired, need re-login');
         await this.tokenManager.clearTokens();
-        return { success: false, needsReLogin: true };
+        return { ok: false, needsReLogin: true };
       }
 
       // 3. 查找会话记录
@@ -214,7 +214,7 @@ export class SessionManager {
         if (activeSessions.length === 0) {
           this.logger.info('No active sessions found for account');
           await this.tokenManager.clearTokens();
-          return { success: false, needsReLogin: true };
+          return { ok: false, needsReLogin: true };
         }
         // 使用最近的活跃会话
         this.currentSession = activeSessions[0];
@@ -223,7 +223,7 @@ export class SessionManager {
         if (!session.isValid()) {
           this.logger.info('Session is invalid (revoked/expired)');
           await this.tokenManager.clearTokens();
-          return { success: false, needsReLogin: true };
+          return { ok: false, needsReLogin: true };
         }
         this.currentSession = session;
       }
@@ -241,14 +241,14 @@ export class SessionManager {
       });
 
       return {
-        success: true,
+        ok: true,
         session: this.currentSession,
         accountUuid: this.currentSession.accountUuid,
         needsRefresh,
       };
     } catch (error) {
       this.logger.error('Failed to restore session', { error });
-      return { success: false, error: String(error), needsReLogin: true };
+      return { ok: false, error: String(error), needsReLogin: true };
     }
   }
 
@@ -269,22 +269,22 @@ export class SessionManager {
       // 1. 检�?Token
       const tokenData = await this.tokenManager.loadTokens();
       if (!tokenData) {
-        return { success: false, authenticated: false, error: 'No tokens available' };
+        return { ok: false, authenticated: false, error: 'No tokens available' };
       }
 
-      // 2. 检�?Refresh Token 是否过期
+      // 2. 检查 Refresh Token 是否过期
       if (Date.now() > tokenData.refreshTokenExpiresAt) {
         this.logger.info('Refresh token expired');
         await this.tokenManager.clearTokens();
-        return { success: false, authenticated: false, error: 'Refresh token expired' };
+        return { ok: false, authenticated: false, error: 'Refresh token expired' };
       }
 
-      // 3. 如果 Access Token 仍然有效，直接恢复会�?
+      // 3. 如果 Access Token 仍然有效，直接恢复会话
       if (Date.now() < tokenData.accessTokenExpiresAt) {
         const restoreResult = await this.restoreSession();
-        if (restoreResult.success) {
+        if (restoreResult.ok) {
           return {
-            success: true,
+            ok: true,
             authenticated: true,
             session: restoreResult.session,
             accountUuid: restoreResult.accountUuid,
@@ -295,12 +295,12 @@ export class SessionManager {
 
       // 4. 需要刷�?Token
       const refreshResult = await this.refreshSession();
-      if (!refreshResult.success) {
-        return { success: false, authenticated: false, error: refreshResult.error };
+      if (!refreshResult.ok) {
+        return { ok: false, authenticated: false, error: refreshResult.error };
       }
 
       return {
-        success: true,
+        ok: true,
         authenticated: true,
         session: this.currentSession ?? undefined,
         accountUuid: this.currentSession?.accountUuid,
@@ -308,7 +308,7 @@ export class SessionManager {
       };
     } catch (error) {
       this.logger.error('Auto login failed', { error });
-      return { success: false, authenticated: false, error: String(error) };
+      return { ok: false, authenticated: false, error: String(error) };
     }
   }
 
@@ -325,10 +325,10 @@ export class SessionManager {
     try {
       const tokenData = await this.tokenManager.loadTokens();
       if (!tokenData) {
-        return { success: false, error: 'No tokens to refresh' };
+        return { ok: false, error: 'No tokens to refresh' };
       }
 
-      // 如果没有 API 回调，使用本地刷�?
+      // 如果没有 API 回调，使用本地刷新
       if (!this.apiRefreshToken) {
         return await this.localRefresh(tokenData);
       }
@@ -339,7 +339,7 @@ export class SessionManager {
         sessionUuid: tokenData.sessionUuid,
       });
 
-      if (result.success && result.accessToken) {
+      if (result.ok && result.accessToken) {
         // 更新 Token
         await this.tokenManager.updateAccessToken(result.accessToken, result.expiresIn ?? 3600);
 
@@ -360,7 +360,7 @@ export class SessionManager {
       return result;
     } catch (error) {
       this.logger.error('Failed to refresh session', { error });
-      return { success: false, error: String(error) };
+      return { ok: false, error: String(error) };
     }
   }
 
@@ -383,7 +383,7 @@ export class SessionManager {
     }
 
     return {
-      success: true,
+      ok: true,
       accessToken: tokenData.accessToken,
       expiresIn: newExpiresIn,
     };
@@ -403,7 +403,7 @@ export class SessionManager {
       // 如果�?API 回调，使用远程登�?
       if (this.apiLogin) {
         const result = await this.apiLogin(request);
-        if (result.success && result.accessToken && result.refreshToken) {
+        if (result.ok && result.accessToken && result.refreshToken) {
           // 保存 Token
           await this.tokenManager.saveTokens({
             accessToken: result.accessToken,
@@ -429,7 +429,7 @@ export class SessionManager {
       return await this.localLogin(request);
     } catch (error) {
       this.logger.error('Login failed', { error });
-      return { success: false, error: String(error) };
+      return { ok: false, error: String(error) };
     }
   }
 
@@ -483,7 +483,7 @@ export class SessionManager {
     this.logger.info('Local login successful', { accountUuid: session.accountUuid });
 
     return {
-      success: true,
+      ok: true,
       sessionId: session.uuid,
       accessToken: session.accessToken,
       accountUuid: session.accountUuid,
@@ -494,7 +494,7 @@ export class SessionManager {
   /**
    * 登出
    */
-  async logout(): Promise<{ success: boolean; error?: string }> {
+  async logout(): Promise<{ ok: boolean; error?: string }> {
     this.logger.info('Logout');
 
     try {
@@ -515,10 +515,10 @@ export class SessionManager {
       this.currentSession = null;
 
       this.logger.info('Logout successful');
-      return { success: true };
+      return { ok: true };
     } catch (error) {
       this.logger.error('Logout failed', { error });
-      return { success: false, error: String(error) };
+      return { ok: false, error: String(error) };
     }
   }
 
@@ -661,7 +661,7 @@ export class SessionManager {
     this.tokenManager.startAutoRefresh(async () => {
       const result = await this.refreshSession();
       return {
-        success: result.success,
+        ok: result.ok,
         accessToken: result.accessToken,
         expiresAt: result.expiresIn ? Date.now() + result.expiresIn * 1000 : undefined,
         error: result.error,

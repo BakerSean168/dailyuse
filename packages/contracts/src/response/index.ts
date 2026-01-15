@@ -132,7 +132,7 @@ export interface BaseResponse {
   /** 响应业务状态码 */
   code: ResponseCode;
   /** 是否成功 */
-  success: boolean;
+  ok: boolean;
   /** 响应消息 */
   message: string;
   /** 响应时间戳 */
@@ -147,7 +147,7 @@ export interface BaseResponse {
  */
 export interface SuccessResponse<T = any> extends BaseResponse {
   code: typeof ResponseCode.SUCCESS;
-  success: true;
+  ok: true;
   /** 响应状态字符串（向后兼容） */
   status?: ResponseStatus;
   /** 响应数据 */
@@ -169,7 +169,7 @@ export interface SuccessResponse<T = any> extends BaseResponse {
  * 用于返回错误信息
  */
 export interface ErrorResponse extends BaseResponse {
-  success: false;
+  ok: false;
   /** 响应状态字符串（向后兼容） */
   status?: ResponseStatus;
   /** 错误严重级别（可选） */
@@ -250,7 +250,7 @@ export class ResponseBuilder {
   success<T>(data: T, message = '操作成功'): SuccessResponse<T> {
     return {
       code: ResponseCode.SUCCESS,
-      success: true,
+      ok: true,
       message,
       data,
       timestamp: Date.now(),
@@ -268,7 +268,7 @@ export class ResponseBuilder {
   ): SuccessResponse<T> {
     return {
       code: ResponseCode.SUCCESS,
-      success: true,
+      ok: true,
       message,
       data,
       pagination,
@@ -289,7 +289,7 @@ export class ResponseBuilder {
   ): ErrorResponse {
     const response: ErrorResponse = {
       code,
-      success: false,
+      ok: false,
       message,
       timestamp: Date.now(),
       traceId: this.options.traceId,

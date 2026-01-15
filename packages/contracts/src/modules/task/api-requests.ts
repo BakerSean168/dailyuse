@@ -282,7 +282,7 @@ export interface RecalculateTaskStatisticsRequest {
  * 重新计算统计响应
  */
 export interface RecalculateTaskStatisticsResponse {
-  success: boolean;
+  ok: boolean;
   message: string;
   statistics: TaskStatisticsServerDTO;
 }

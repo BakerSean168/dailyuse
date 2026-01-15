@@ -227,20 +227,20 @@ export class AIProviderConfigService {
 
       // 如果连接成功，尝试获取模型列表
       let models: AIModelInfo[] = [];
-      if (result.success) {
+      if (result.ok) {
         models = await this.fetchModels(request.providerType, request.baseUrl, request.apiKey);
       }
 
       return {
-        success: result.success,
-        message: result.success ? 'Connection successful' : result.message,
+        ok: result.ok,
+        message: result.ok ? 'Connection successful' : result.message,
         models: models.map((m) => ({ id: m.id, name: m.name, description: m.description })),
         latencyMs: Date.now() - startTime,
       };
     } catch (error) {
       logger.error('Provider connection test failed', { error });
       return {
-        success: false,
+        ok: false,
         message: error instanceof Error ? error.message : 'Connection test failed',
         latencyMs: Date.now() - startTime,
       };

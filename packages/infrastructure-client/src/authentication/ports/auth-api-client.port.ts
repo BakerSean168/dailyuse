@@ -36,7 +36,7 @@ import type {
  * 注册响应
  */
 export interface RegisterResponse {
-  success: boolean;
+  ok: boolean;
   account?: unknown;
   message?: string;
 }

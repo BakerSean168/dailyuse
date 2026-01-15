@@ -13,6 +13,7 @@ import type {
 } from '../../ports/notification-api-client.port';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import type { IHttpClient } from '../../../shared/http-client.types';
+import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
 
 /**
  * NotificationHttpAdapter
@@ -42,15 +43,15 @@ export class NotificationHttpAdapter implements INotificationApiClient {
     return this.httpClient.patch(`${this.baseUrl}/${uuid}/read`);
   }
 
-  async markAllAsRead(): Promise<{ success: boolean; count: number }> {
+  async markAllAsRead(): Promise<CountResult> {
     return this.httpClient.patch(`${this.baseUrl}/read-all`);
   }
 
-  async deleteNotification(uuid: string): Promise<{ success: boolean }> {
+  async deleteNotification(uuid: string): Promise<ActionResult> {
     return this.httpClient.delete(`${this.baseUrl}/${uuid}`);
   }
 
-  async batchDeleteNotifications(uuids: string[]): Promise<{ success: boolean; count: number }> {
+  async batchDeleteNotifications(uuids: string[]): Promise<CountResult> {
     return this.httpClient.post(`${this.baseUrl}/batch-delete`, { uuids });
   }
 

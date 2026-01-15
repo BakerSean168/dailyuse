@@ -44,7 +44,7 @@ interface GitHubSyncStatus {
  * 同步结果
  */
 interface SyncResult {
-  success: boolean;
+  ok: boolean;
   operation: string;
   syncedCount: number;
   conflictCount: number;
@@ -83,11 +83,11 @@ export function GitHubSyncSettings() {
     setError(null);
 
     try {
-      const result = await electronAPI.invoke<{ success: boolean; error?: string }>(
+      const result = await electronAPI.invoke<{ ok: boolean; error?: string }>(
         'sync:github:connect'
       );
 
-      if (result.success) {
+      if (result.ok) {
         await loadStatus();
       } else {
         setError(result.error || '连接失败');
@@ -135,7 +135,7 @@ export function GitHubSyncSettings() {
       const result = await electronAPI.invoke<SyncResult>(channel);
       setLastResult(result);
 
-      if (!result.success) {
+      if (!result.ok) {
         setError(result.error || '同步失败');
       }
 
@@ -352,12 +352,12 @@ export function GitHubSyncSettings() {
           {lastResult && (
             <div
               className={`p-4 rounded-lg ${
-                lastResult.success
+                lastResult.ok
                   ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                   : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
               }`}
             >
-              {lastResult.success ? (
+              {lastResult.ok ? (
                 <p>
                   ✅ 同步成功！已同步 {lastResult.syncedCount} 个项目
                 </p>

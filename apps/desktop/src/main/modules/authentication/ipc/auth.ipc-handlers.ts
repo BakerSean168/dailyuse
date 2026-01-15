@@ -13,12 +13,12 @@
 
 import { createLogger } from '@dailyuse/utils';
 import { createModuleIpcHandlers } from '../../../utils';
+import type { IpcResult, CountResult } from '@dailyuse/contracts/result';
 import {
   AuthDesktopApplicationService,
   createAuthDesktopApplicationService,
   type LoginCredentials,
   type RegisterRequest,
-  type AuthOperationResult,
   type AuthStatus,
   type TwoFactorStatus,
   type ApiKeyInfo,
@@ -142,10 +142,10 @@ handle<void, number>(
  * @description 用户登录
  * Channel Name: auth:login
  * Payload: LoginCredentials { email, password, rememberMe? }
- * Return: AuthOperationResult { success, error?, data? }
+ * Return: IpcResult<{ accountUuid, sessionUuid }> - 统一格式 { ok, data?, error? }
  * Security: None
  */
-handle<LoginCredentials, AuthOperationResult>(
+handle<LoginCredentials, IpcResult<{ accountUuid: string; sessionUuid: string }>>(
   'auth:login',
   (credentials) => {
     ensureRepositoriesInjected();
@@ -157,10 +157,10 @@ handle<LoginCredentials, AuthOperationResult>(
  * @description 用户注册
  * Channel Name: auth:register
  * Payload: RegisterRequest { email, password, username }
- * Return: AuthOperationResult { success, error? }
+ * Return: IpcResult<{ accountUuid, message }> - 统一格式 { ok, data?, error? }
  * Security: None
  */
-handle<RegisterRequest, AuthOperationResult>(
+handle<RegisterRequest, IpcResult<{ accountUuid: string; message: string }>>(
   'auth:register',
   (request) => {
     ensureRepositoriesInjected();
@@ -172,10 +172,10 @@ handle<RegisterRequest, AuthOperationResult>(
  * @description 用户登出
  * Channel Name: auth:logout
  * Payload: void
- * Return: AuthOperationResult { success }
+ * Return: IpcResult<void> - 统一格式 { ok, error? }
  * Security: Requires authentication
  */
-handle<void, AuthOperationResult>(
+handle<void, IpcResult<void>>(
   'auth:logout',
   () => getService().logout(),
 );
@@ -184,12 +184,27 @@ handle<void, AuthOperationResult>(
  * @description 刷新访问令牌
  * Channel Name: auth:refresh-token
  * Payload: void
- * Return: AuthOperationResult { success, data?: { accessToken, expiresIn } }
+ * Return: IpcResult<{ accessToken, expiresIn }> - 统一格式 { ok, data?, error? }
  * Security: Requires valid refresh token
  */
-handle<void, AuthOperationResult>(
+handle<void, IpcResult<{ accessToken: string; expiresIn: number }>>(
   'auth:refresh-token',
   () => getService().refreshToken(),
+);
+
+/**
+ * @description 进入离线模式
+ * Channel Name: auth:enter-offline-mode
+ * Payload: void
+ * Return: IpcResult<{ accountUuid, mode, message }> - 统一格式 { ok, data?, error? }
+ * Security: None
+ */
+handle<void, IpcResult<{ accountUuid: string; mode: string; message: string }>>(
+  'auth:enter-offline-mode',
+  () => {
+    ensureRepositoriesInjected();
+    return getService().enterOfflineMode();
+  },
 );
 
 /**
@@ -224,10 +239,10 @@ handle<void, AuthStatus>(
  * @description 启用双因素认证
  * Channel Name: auth:2fa:enable
  * Payload: string (method, e.g. 'totp')
- * Return: AuthOperationResult { success, qrCodeUrl?, secret? }
+ * Return: IpcResult<{ qrCodeUrl?, secret? }> - 统一格式 { ok, data?, error? }
  * Security: Requires authentication
  */
-handle<string, AuthOperationResult>(
+handle<string, IpcResult<{ qrCodeUrl?: string; secret?: string }>>(
   'auth:2fa:enable',
   (method) => getService().enable2FA(method || 'totp'),
 );
@@ -236,10 +251,10 @@ handle<string, AuthOperationResult>(
  * @description 禁用双因素认证
  * Channel Name: auth:2fa:disable
  * Payload: void
- * Return: AuthOperationResult { success }
+ * Return: IpcResult<void> - 统一格式 { ok, error? }
  * Security: Requires authentication
  */
-handle<void, AuthOperationResult>(
+handle<void, IpcResult<void>>(
   'auth:2fa:disable',
   () => getService().disable2FA(),
 );
@@ -248,10 +263,10 @@ handle<void, AuthOperationResult>(
  * @description 验证双因素认证代码
  * Channel Name: auth:2fa:verify
  * Payload: string (code)
- * Return: AuthOperationResult { success }
+ * Return: IpcResult<void> - 统一格式 { ok, error? }
  * Security: Requires authentication
  */
-handle<string, AuthOperationResult>(
+handle<string, IpcResult<void>>(
   'auth:2fa:verify',
   (code) => getService().verify2FA(code),
 );
@@ -312,10 +327,10 @@ handle<void, { apiKeys: ApiKeyInfo[]; total: number }>(
  * @description 撤销 API 密钥
  * Channel Name: auth:api-key:revoke
  * Payload: string (keyId)
- * Return: AuthOperationResult { success }
+ * Return: IpcResult<void> - 统一格式 { ok, error? }
  * Security: Requires authentication
  */
-handle<string, AuthOperationResult>(
+handle<string, IpcResult<void>>(
   'auth:api-key:revoke',
   (keyId) => getService().revokeApiKey(keyId),
 );
@@ -364,10 +379,10 @@ handle<void, SessionInfo | null>(
  * @description 撤销指定会话
  * Channel Name: auth:session:revoke
  * Payload: string (sessionId)
- * Return: AuthOperationResult { success }
+ * Return: IpcResult<void> - 统一格式 { ok, error? }
  * Security: Requires authentication
  */
-handle<string, AuthOperationResult>(
+handle<string, IpcResult<void>>(
   'auth:session:revoke',
   (sessionId) => getService().revokeSession(sessionId),
 );
@@ -376,10 +391,10 @@ handle<string, AuthOperationResult>(
  * @description 撤销所有会话
  * Channel Name: auth:session:revoke-all
  * Payload: void
- * Return: { success: boolean; count: number }
+ * Return: CountResult - 受影响的会话数量
  * Security: Requires authentication
  */
-handle<void, { success: boolean; count: number }>(
+handle<void, CountResult>(
   'auth:session:revoke-all',
   () => getService().revokeAllSessions(),
 );
@@ -416,10 +431,10 @@ handle<void, DeviceInfo>(
  * @description 移除设备（登出该设备）
  * Channel Name: auth:device:revoke
  * Payload: string (deviceId)
- * Return: AuthOperationResult { success }
+ * Return: IpcResult<void> - 统一格式 { ok, error? }
  * Security: Requires authentication
  */
-handle<string, AuthOperationResult>(
+handle<string, IpcResult<void>>(
   'auth:device:revoke',
   (deviceId) => getService().revokeDevice(deviceId),
 );
@@ -428,10 +443,10 @@ handle<string, AuthOperationResult>(
  * @description 重命名设备
  * Channel Name: auth:device:rename
  * Payload: { deviceId: string; name: string }
- * Return: AuthOperationResult { success }
+ * Return: IpcResult<void> - 统一格式 { ok, error? }
  * Security: Requires authentication
  */
-handle<{ deviceId: string; name: string }, AuthOperationResult>(
+handle<{ deviceId: string; name: string }, IpcResult<void>>(
   'auth:device:rename',
   ({ deviceId, name }) => getService().renameDevice(deviceId, name),
 );

@@ -6,6 +6,7 @@
 
 import type { INotificationApiClient } from '@dailyuse/infrastructure-client';
 import { NotificationContainer } from '@dailyuse/infrastructure-client';
+import type { CountResult } from '@dailyuse/contracts/result';
 
 /**
  * Batch Delete Notifications
@@ -45,7 +46,7 @@ export class BatchDeleteNotifications {
   /**
    * 执行用例
    */
-  async execute(uuids: string[]): Promise<{ success: boolean; count: number }> {
+  async execute(uuids: string[]): Promise<CountResult> {
     return this.apiClient.batchDeleteNotifications(uuids);
   }
 }

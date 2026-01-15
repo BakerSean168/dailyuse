@@ -7,6 +7,7 @@
 import type {
   NotificationClientDTO,
 } from '@dailyuse/contracts/notification';
+import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
 
 /**
  * 创建通知请求
@@ -77,18 +78,21 @@ export interface INotificationApiClient {
 
   /**
    * 标记所有通知为已读
+   * @returns CountResult 包含受影响的通知数量
    */
-  markAllAsRead(): Promise<{ success: boolean; count: number }>;
+  markAllAsRead(): Promise<CountResult>;
 
   /**
    * 删除通知
+   * @returns ActionResult 操作结果
    */
-  deleteNotification(uuid: string): Promise<{ success: boolean }>;
+  deleteNotification(uuid: string): Promise<ActionResult>;
 
   /**
    * 批量删除通知
+   * @returns CountResult 包含删除的通知数量
    */
-  batchDeleteNotifications(uuids: string[]): Promise<{ success: boolean; count: number }>;
+  batchDeleteNotifications(uuids: string[]): Promise<CountResult>;
 
   /**
    * 获取未读数量
