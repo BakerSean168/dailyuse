@@ -23,7 +23,6 @@ import type {
 
 // 导入共享类型
 import { ImportanceLevel } from '../../../shared/importance';
-import { UrgencyLevel } from '../../../shared/urgency';
 
 // ============ DTO 定义 ============
 
@@ -40,7 +39,6 @@ export interface TaskTemplateClientDTO {
   recurrenceRule?: RecurrenceRuleClientDTO | null;
   reminderConfig?: TaskReminderConfigClientDTO | null;
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
   goalBinding?: TaskGoalBindingClientDTO | null;
   folderUuid?: string | null;
   tags: string[];
@@ -58,7 +56,6 @@ export interface TaskTemplateClientDTO {
   timeDisplayText: string | null; // null for ONE_TIME tasks
   recurrenceText?: string | null;
   importanceText: string;
-  urgencyText: string;
   statusText: string;
   hasReminder: boolean;
   reminderText?: string | null;
@@ -91,7 +88,6 @@ export interface TaskTemplateServerDTO {
   
   // === 通用属性 ===
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
   tags: string[];
   color?: string | null;
   status: TaskTemplateStatus;
@@ -163,7 +159,6 @@ export interface TaskTemplatePersistenceDTO {
 
   // === 通用属性 ===
   importance: string; // 'vital' | 'important' | 'moderate' | 'minor' | 'trivial'
-  urgency: string; // 'critical' | 'high' | 'medium' | 'low' | 'none'
   tags: string; // JSON array
   color?: string | null;
   status: string;
@@ -212,7 +207,6 @@ export interface TaskTemplateServer {
   recurrenceRule?: RecurrenceRuleServer | null;
   reminderConfig?: TaskReminderConfigServer | null;
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
   goalBinding?: TaskGoalBindingServer | null;
   folderUuid?: string | null;
   tags: string[];

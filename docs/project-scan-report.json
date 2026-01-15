@@ -1,452 +1,103 @@
 {
-  "scanMetadata": {
-    "scanDate": "2025-12-16T10:30:00Z",
-    "scanLevel": "exhaustive",
-    "workflowMode": "full_rescan",
-    "documentationVersion": "2.0.0",
-    "generatedBy": "BMAD Analyst Agent",
-    "documentationComplete": true
+  "workflow_version": "1.2.0",
+  "timestamps": {
+    "started": "2026-01-15T07:20:00.000Z",
+    "last_updated": "2026-01-15T07:20:00.000Z"
   },
+  "mode": "full_rescan",
+  "scan_level": "exhaustive",
+  "project_root": "d:\\home\\projects\\dailyuse",
+  "output_folder": "d:\\home\\projects\\dailyuse\\docs",
   "projectInfo": {
-    "name": "DailyUse",
-    "version": "0.1.10",
-    "description": "智能个人效率管理平台 - 跨平台生产力工具",
-    "repository": {
-      "type": "monorepo",
-      "manager": "nx",
-      "nxVersion": "21.4.1"
-    },
-    "packageManager": {
-      "name": "pnpm",
-      "version": "10.18.3"
-    },
-    "nodeVersion": "22+"
+    "repositoryType": "monorepo",
+    "partsCount": 3
   },
-  "repositoryStructure": {
-    "type": "monorepo",
-    "workspaceConfig": "pnpm-workspace.yaml",
-    "parts": [
-      {
-        "partId": "api",
-        "path": "apps/api",
-        "projectType": "backend",
-        "packageName": "@dailyuse/api",
-        "entryPoints": ["src/index.ts", "src/app.ts"],
-        "technologies": {
-          "runtime": "Node.js 22+",
-          "framework": "Express 5.2.1",
-          "database": "PostgreSQL + Prisma 6.17.1",
-          "authentication": "JWT (jsonwebtoken 9.0.2)",
-          "validation": "Zod 4.1.13",
-          "buildTool": "tsup 8.5.0"
-        },
-        "modules": [
-          "account", "ai", "authentication", "dashboard", "editor",
-          "goal", "metrics", "notification", "reminder", "repository",
-          "schedule", "setting", "system", "task"
-        ]
+  "project_types": [
+    {
+      "part_id": "api",
+      "path": "apps/api",
+      "project_type_id": "backend",
+      "display_name": "API Server"
+    },
+    {
+      "part_id": "desktop",
+      "path": "apps/desktop",
+      "project_type_id": "desktop",
+      "display_name": "Desktop App"
+    },
+    {
+      "part_id": "web",
+      "path": "apps/web",
+      "project_type_id": "web",
+      "display_name": "Web App"
+    }
+  ],
+  "current_step": "step_13",
+  "completed_steps": [
+    {
+      "step": "step_1",
+      "status": "completed",
+      "timestamp": "2026-01-15T07:22:00.000Z",
+      "summary": "Classified as monorepo with 3 parts (api, desktop, web)"
+    },
+    {
+      "step": "step_2",
+      "status": "completed",
+      "timestamp": "2026-01-15T07:28:00.000Z",
+      "summary": "User Context: Ignore outdated PRD. Focus on docs/architecture and docs/standards."
+    },
+    {
+      "step": "step_3",
+      "status": "completed",
+      "timestamp": "2026-01-15T07:30:00.000Z",
+      "summary": "Tech: API(Express/Prisma), Desktop(Electron/React), Web(Vue3/Vuetify)"
+    },
+    {
+      "step": "step_4",
+      "status": "completed",
+      "timestamp": "2026-01-15T07:35:00.000Z",
+      "summary": "Exhaustive scans completed for API, Desktop, and Web. Validated consistency with architecture docs."
+    },
+    {
+      "step": "step_12",
+      "status": "completed",
+      "timestamp": "2026-01-15T07:38:00.000Z",
+      "summary": "Generated docs/index.md and source-code-scan-findings.md"
+    }
+  ],
+  "findings": {
+    "project_classification": "Monorepo with Backend (Node/Prisma), Desktop (Electron/React), and Web (Vue3) components.",
+    "existing_documentation": "High density of documentation found. Key assets: docs/prd.md, docs/packages-*.md, apps/desktop/docs/IPC_ARCHITECTURE.md, and numerous module-level READMEs.",
+    "user_context": "Ignore docs/prd.md (incomplete). Focus on docs/architecture and docs/standards (architecture & code standards) despite being incomplete.",
+    "technology_stack": {
+      "api": {
+        "framework": "Express 5.2.1",
+        "language": "TypeScript (Node.js)",
+        "database": "PostgreSQL, Redis (ioredis)",
+        "orm": "Prisma 6.17.1",
+        "dependencies": "zod, jsonwebtoken, swagger-ui-express"
       },
-      {
-        "partId": "web",
-        "path": "apps/web",
-        "projectType": "web",
-        "packageName": "@dailyuse/web",
-        "entryPoints": ["src/main.ts"],
-        "technologies": {
-          "framework": "Vue 3.4.21",
-          "uiLibrary": "Vuetify 3.11.3",
-          "stateManagement": "Pinia 3.0.3",
-          "routing": "Vue Router 4",
-          "i18n": "vue-i18n 11.1.9",
-          "httpClient": "Axios 1.9.0",
-          "richTextEditor": ["TipTap 3", "Milkdown", "Monaco Editor"],
-          "charts": "ECharts + vue-echarts",
-          "buildTool": "Vite 7.1.7"
-        },
-        "modules": [
-          "account", "ai", "app", "authentication", "dashboard", "editor",
-          "goal", "notification", "reminder", "repository", "schedule",
-          "setting", "task", "theme"
-        ]
+      "desktop": {
+        "framework": "Electron 39.2.6, React 19.2.1",
+        "language": "TypeScript",
+        "database": "SQLite (better-sqlite3)",
+        "state_management": "Zustand",
+        "ui_library": "Tailwind CSS, Lucide React, Framer Motion"
       },
-      {
-        "partId": "desktop",
-        "path": "apps/desktop",
-        "projectType": "desktop",
-        "packageName": "@dailyuse/desktop",
-        "entryPoints": ["src/main/main.ts", "src/renderer/main.tsx"],
-        "technologies": {
-          "desktopFramework": "Electron 39.2.6",
-          "rendererFramework": "React 19.2.1",
-          "uiLibrary": "shadcn/ui + Radix UI + TailwindCSS",
-          "stateManagement": "Zustand 5.0.9",
-          "localDatabase": "better-sqlite3 11.10.0",
-          "routing": "React Router 7",
-          "buildTool": "Vite + electron-builder"
-        },
-        "mainProcessModules": [
-          "account", "ai", "authentication", "auto-update", "autolaunch",
-          "dashboard", "editor", "goal", "infrastructure", "notification",
-          "reminder", "repository", "schedule", "setting", "shortcuts",
-          "task", "tray", "window"
-        ],
-        "rendererModules": [
-          "account", "ai", "auth", "authentication", "auto-update",
-          "dashboard", "editor", "focus", "goal", "initialization",
-          "notification", "reminder", "repository", "schedule",
-          "setting", "settings", "task"
-        ]
+      "web": {
+        "framework": "Vue 3",
+        "language": "TypeScript",
+        "state_management": "Pinia",
+        "ui_library": "Vuetify"
       }
-    ],
-    "sharedPackages": [
-      {
-        "packageId": "contracts",
-        "path": "packages/contracts",
-        "packageName": "@dailyuse/contracts",
-        "purpose": "TypeScript 类型定义和接口契约",
-        "modules": [
-          "account", "ai", "authentication", "common", "dashboard",
-          "editor", "goal", "notification", "reminder", "repository",
-          "schedule", "setting", "task"
-        ],
-        "exports": ["DTOs", "Enums", "Interfaces", "ResponseBuilder"]
-      },
-      {
-        "packageId": "domain-server",
-        "path": "packages/domain-server",
-        "packageName": "@dailyuse/domain-server",
-        "purpose": "服务端 DDD 领域层 - 聚合根和领域服务",
-        "modules": [
-          "account", "ai", "authentication", "dashboard", "editor",
-          "goal", "notification", "reminder", "repository", "schedule",
-          "setting", "task"
-        ]
-      },
-      {
-        "packageId": "domain-client",
-        "path": "packages/domain-client",
-        "packageName": "@dailyuse/domain-client",
-        "purpose": "客户端 DDD 领域层 - 实体类和业务逻辑",
-        "modules": [
-          "account", "ai", "authentication", "dashboard", "editor",
-          "goal", "notification", "reminder", "repository", "schedule",
-          "setting", "task"
-        ]
-      },
-      {
-        "packageId": "application-server",
-        "path": "packages/application-server",
-        "packageName": "@dailyuse/application-server",
-        "purpose": "服务端应用服务层",
-        "modules": [
-          "account", "ai", "authentication", "dashboard", "goal",
-          "notification", "reminder", "repository", "schedule",
-          "setting", "task"
-        ]
-      },
-      {
-        "packageId": "application-client",
-        "path": "packages/application-client",
-        "packageName": "@dailyuse/application-client",
-        "purpose": "客户端应用服务层"
-      },
-      {
-        "packageId": "infrastructure-server",
-        "path": "packages/infrastructure-server",
-        "packageName": "@dailyuse/infrastructure-server",
-        "purpose": "服务端基础设施层 - DI Container、Repository 实现",
-        "modules": [
-          "account", "ai", "authentication", "dashboard", "goal",
-          "notification", "reminder", "repository", "schedule",
-          "setting", "shared", "task"
-        ]
-      },
-      {
-        "packageId": "infrastructure-client",
-        "path": "packages/infrastructure-client",
-        "packageName": "@dailyuse/infrastructure-client",
-        "purpose": "客户端基础设施层 - IPC Client、Container"
-      },
-      {
-        "packageId": "ui-vue",
-        "path": "packages/ui-vue",
-        "packageName": "@dailyuse/ui-vue",
-        "purpose": "Vue 3 共享组件和 Composables"
-      },
-      {
-        "packageId": "ui-vuetify",
-        "path": "packages/ui-vuetify",
-        "packageName": "@dailyuse/ui-vuetify",
-        "purpose": "Vuetify 3 组件封装"
-      },
-      {
-        "packageId": "ui-react",
-        "path": "packages/ui-react",
-        "packageName": "@dailyuse/ui-react",
-        "purpose": "React 共享 Hooks"
-      },
-      {
-        "packageId": "ui-shadcn",
-        "path": "packages/ui-shadcn",
-        "packageName": "@dailyuse/ui-shadcn",
-        "purpose": "shadcn/ui 组件封装"
-      },
-      {
-        "packageId": "ui-core",
-        "path": "packages/ui-core",
-        "packageName": "@dailyuse/ui-core",
-        "purpose": "框架无关的 UI 工具"
-      },
-      {
-        "packageId": "utils",
-        "path": "packages/utils",
-        "packageName": "@dailyuse/utils",
-        "purpose": "跨应用共享工具函数",
-        "exports": ["Logger", "EventBus", "InitializationManager", "UUID", "Validation"]
-      },
-      {
-        "packageId": "assets",
-        "path": "packages/assets",
-        "packageName": "@dailyuse/assets",
-        "purpose": "共享静态资源（Logo、Icons）"
-      },
-      {
-        "packageId": "sync-client",
-        "path": "packages/sync-client",
-        "packageName": "@dailyuse/sync-client",
-        "purpose": "离线同步客户端"
-      },
-      {
-        "packageId": "test-utils",
-        "path": "packages/test-utils",
-        "packageName": "@dailyuse/test-utils",
-        "purpose": "测试工具和 Mock"
-      }
-    ]
-  },
-  "dataModels": {
-    "ormTechnology": "Prisma 6.17.1",
-    "schemaPath": "apps/api/prisma/schema.prisma",
-    "schemaSize": "1620 lines",
-    "primaryDatabase": "PostgreSQL",
-    "desktopDatabase": "SQLite (better-sqlite3)",
-    "coreEntities": [
-      {
-        "name": "account",
-        "description": "用户账户聚合根",
-        "relatedEntities": ["authCredential", "authSession", "userSetting"]
-      },
-      {
-        "name": "goal",
-        "description": "OKR 目标聚合根",
-        "relatedEntities": ["keyResult", "goalRecord", "goalReview", "goalFolder", "focusSession"]
-      },
-      {
-        "name": "taskTemplate",
-        "description": "任务模板聚合根",
-        "relatedEntities": ["taskInstance", "taskDependency", "taskStatistic"]
-      },
-      {
-        "name": "reminderTemplate",
-        "description": "提醒模板聚合根",
-        "relatedEntities": ["reminderInstance", "reminderGroup", "reminderResponse"]
-      },
-      {
-        "name": "schedule",
-        "description": "日程聚合根",
-        "relatedEntities": ["scheduleTask", "scheduleExecution"]
-      },
-      {
-        "name": "repository",
-        "description": "知识仓库聚合根",
-        "relatedEntities": ["resource", "folder", "repositoryResource"]
-      },
-      {
-        "name": "document",
-        "description": "文档聚合根",
-        "relatedEntities": ["document_version", "document_link"]
-      },
-      {
-        "name": "aiConversation",
-        "description": "AI 对话聚合根",
-        "relatedEntities": ["aiMessage", "aiGenerationTask", "aiUsageQuota", "aiProviderConfig"]
-      },
-      {
-        "name": "notification",
-        "description": "通知聚合根",
-        "relatedEntities": ["notificationChannel", "notificationHistory", "notificationTemplate"]
-      },
-      {
-        "name": "setting",
-        "description": "设置聚合根",
-        "relatedEntities": ["settingGroup", "settingItem"]
-      }
-    ],
-    "syncEntities": [
-      "syncEvent", "entityVersion", "syncDevice", "syncCursor", "syncConflict"
-    ]
-  },
-  "apiContracts": {
-    "apiStyle": "RESTful",
-    "baseUrl": "/api/v1",
-    "authMethod": "JWT Bearer Token",
-    "documentation": "Swagger/OpenAPI",
-    "endpoints": {
-      "authentication": ["/auth/login", "/auth/register", "/auth/refresh", "/auth/logout"],
-      "account": ["/accounts", "/accounts/:uuid"],
-      "goal": ["/goals", "/goals/:uuid", "/goal-folders", "/weight-snapshots"],
-      "task": ["/tasks", "/tasks/:uuid"],
-      "reminder": ["/reminders", "/reminders/:uuid", "/reminder-groups"],
-      "schedule": ["/schedules", "/schedules/:uuid"],
-      "repository": ["/editor", "/editor/workspaces", "/editor/documents"],
-      "notification": ["/notifications", "/notifications/sse/*"],
-      "ai": ["/ai/chat", "/ai/conversations", "/ai/generate/*"],
-      "dashboard": ["/dashboard/config", "/dashboard/stats"],
-      "setting": ["/settings", "/settings/:key"]
-    }
-  },
-  "architecturePatterns": {
-    "overall": "DDD (Domain-Driven Design)",
-    "layering": {
-      "presentation": "Views/Components → Stores",
-      "application": "Application Services → Use Cases",
-      "domain": "Entities → Aggregates → Domain Services",
-      "infrastructure": "Repositories → External Services"
     },
-    "communication": {
-      "webToApi": "REST API (Axios)",
-      "desktopIpc": "Electron IPC (invoke/handle pattern)",
-      "realtime": "Server-Sent Events (SSE)"
-    },
-    "stateManagement": {
-      "web": "Pinia (Vue) + persistedstate",
-      "desktop": "Zustand (React) + immer + persist"
-    },
-    "dependencyInjection": {
-      "server": "Manual DI with Container pattern",
-      "client": "Service Locator pattern"
-    }
+    "architecture_validation": "Code base strongly aligns with DDD and Layered Architecture documents. Desktop app reuses server-side domain logic extensively.",
+    "documentation_status": "Index generated. Architecture and Standards prioritized."
   },
-  "existingDocumentation": {
-    "total": 50,
-    "categories": {
-      "architecture": [
-        "system-overview.md",
-        "api-architecture.md",
-        "web-architecture.md",
-        "desktop-architecture.md",
-        "integration-architecture.md",
-        "ddd-type-architecture.md",
-        "zustand-store-pattern.md"
-      ],
-      "adr": [
-        "001-use-nx-monorepo.md",
-        "002-ddd-pattern.md",
-        "003-event-driven-architecture.md",
-        "004-electron-desktop-architecture.md",
-        "ADR-005-ui-package-multi-framework.md",
-        "ADR-006-desktop-ipc-communication.md",
-        "ADR-007-API-CONSISTENCY.md"
-      ],
-      "guides": [
-        "installation.md",
-        "project-structure.md",
-        "quick-start.md",
-        "NX_USAGE_GUIDE.md",
-        "TSCONFIG_MONOREPO_BEST_PRACTICES.md"
-      ],
-      "modules": [
-        "goal/", "task/", "reminder/", "schedule/",
-        "repository/", "ai/", "notification/", "authentication/"
-      ],
-      "businessFlows": [
-        "goal-reminder-flow.md",
-        "reminder-flow.md",
-        "schedule-flow.md"
-      ]
-    }
-  },
-  "testingInfrastructure": {
-    "unitTesting": {
-      "framework": "Vitest",
-      "configFiles": ["vitest.config.ts", "vitest.shared.ts", "vitest.workspace.ts"]
-    },
-    "e2eTesting": {
-      "framework": "Playwright",
-      "configFile": "apps/web/playwright.config.ts"
-    },
-    "integrationTesting": {
-      "framework": "Vitest",
-      "configFile": "apps/api/vitest.integration.config.ts"
-    },
-    "benchmarking": {
-      "framework": "Vitest Bench",
-      "configFile": "apps/web/vitest.bench.config.ts"
-    }
-  },
-  "devOpsConfig": {
-    "containerization": {
-      "dockerCompose": ["docker-compose.yml", "docker-compose.test.yml"]
-    },
-    "linting": {
-      "eslint": "eslint.config.ts",
-      "typescript": ["tsconfig.json", "tsconfig.base.json"]
-    },
-    "buildTools": {
-      "nx": "nx.json",
-      "vite": "vite.config.ts (per app)"
-    }
-  },
-  "businessDomain": {
-    "primaryDomain": "个人效率管理",
-    "features": [
-      {
-        "name": "OKR 目标管理",
-        "description": "目标设定、关键结果跟踪、进度可视化",
-        "modules": ["goal", "keyResult", "focusSession"]
-      },
-      {
-        "name": "任务管理",
-        "description": "一次性和循环任务、依赖关系、GTD 集成",
-        "modules": ["task", "taskTemplate", "taskInstance"]
-      },
-      {
-        "name": "智能提醒",
-        "description": "多类型提醒、智能频率调整、响应分析",
-        "modules": ["reminder", "reminderTemplate", "reminderResponse"]
-      },
-      {
-        "name": "日程管理",
-        "description": "日程创建、冲突检测、调度执行",
-        "modules": ["schedule", "scheduleTask"]
-      },
-      {
-        "name": "知识仓库",
-        "description": "Obsidian 风格知识管理、双向链接、文件夹树",
-        "modules": ["repository", "resource", "folder", "document"]
-      },
-      {
-        "name": "AI 助手",
-        "description": "对话、目标生成、知识文档生成",
-        "modules": ["aiConversation", "aiGenerationTask", "aiProviderConfig"]
-      },
-      {
-        "name": "仪表盘",
-        "description": "可配置 Widget、数据汇总、可视化",
-        "modules": ["dashboard", "dashboardConfig"]
-      },
-      {
-        "name": "离线同步",
-        "description": "Event Sourcing 同步、冲突解决",
-        "modules": ["syncEvent", "entityVersion", "syncDevice"]
-      }
-    ]
-  },
-  "nextDocumentationTasks": [
-    "Update index.md with current structure",
-    "Generate source-tree-analysis.md",
-    "Update API contracts documentation",
-    "Create development-instructions.md",
-    "Update architecture diagrams"
-  ]
+  "outputs_generated": [
+    "project-scan-report.json",
+    "docs/index.md",
+    "docs/source-code-scan-findings.md"
+  ],
+  "resume_instructions": "Starting from step 1"
 }

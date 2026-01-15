@@ -36,6 +36,13 @@ ADR (Architecture Decision Record) 是一种记录软件架构决策的轻量级
 | [ADR-006](./ADR-006-desktop-ipc-communication.md) | Desktop IPC 通信架构与依赖注入集成 | 2025-12-06 | ✅ 已采纳 |
 | [ADR-007](./ADR-007-API-CONSISTENCY.md) | API 一致性规范 | 2025-12-10 | ✅ 已采纳 |
 | [ADR-007b](./ADR-007-main-process-sqlite-access.md) | 主进程 SQLite 访问模式 | 2025-12-10 | ✅ 已采纳 |
+| [ADR-008](./ADR-008-standard-api-response-format.md) | **API Response Format (Standard)** | 2026-01-15 | ✅ 已采纳 |
+| [ADR-009](./ADR-009-standard-clean-architecture-layers.md) | **Clean Architecture Layers (Standard)** | 2026-01-15 | ✅ 已采纳 |
+| [ADR-010](./ADR-010-standard-centralized-contracts.md) | **Centralized Contracts (Standard)** | 2026-01-15 | ✅ 已采纳 |
+| [ADR-011](./ADR-011-standard-naming-conventions.md) | **Naming Conventions (Standard)** | 2026-01-15 | ✅ 已采纳 |
+| [ADR-012](./ADR-012-standard-error-handling.md) | **Error Handling (Standard)** | 2026-01-15 | ✅ 已采纳 |
+| [ADR-013](./ADR-013-standard-testing-strategy.md) | **Testing Strategy (Standard)** | 2026-01-15 | ✅ 已采纳 |
+| [ADR-014](./ADR-014-standard-typescript-guidelines.md) | **TypeScript Guidelines (Standard)** | 2026-01-15 | ✅ 已采纳 |
 
 ### 提议中 (Proposed)
 

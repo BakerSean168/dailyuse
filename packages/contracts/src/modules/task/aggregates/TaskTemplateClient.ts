@@ -5,7 +5,6 @@
 import type { TaskTemplateServerDTO } from './TaskTemplateServer';
 import type { TaskType, TaskTemplateStatus } from '../enums';
 import { ImportanceLevel } from '../../../shared/importance';
-import { UrgencyLevel } from '../../../shared/urgency';
 import type {
   TaskTimeConfigClient,
   TaskTimeConfigClientDTO,
@@ -28,7 +27,6 @@ export interface TaskTemplateClientDTO {
   recurrenceRule?: any | null;
   reminderConfig?: any | null;
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
   goalBinding?: any | null;
   folderUuid?: string | null;
   tags: string[];
@@ -64,7 +62,6 @@ export interface TaskTemplateClientDTO {
   timeDisplayText: string | null; // null for ONE_TIME tasks
   recurrenceText?: string | null;
   importanceText: string;
-  urgencyText: string;
   statusText: string;
   hasReminder: boolean;
   reminderText?: string | null;
@@ -88,7 +85,6 @@ export interface TaskTemplateClient {
   recurrenceRule?: RecurrenceRuleClient | null;
   reminderConfig?: TaskReminderConfigClient | null;
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
   goalBinding?: TaskGoalBindingClient | null;
   folderUuid?: string | null;
   tags: string[];
@@ -105,7 +101,6 @@ export interface TaskTemplateClient {
   timeDisplayText: string | null; // null for ONE_TIME tasks
   recurrenceText?: string | null;
   importanceText: string;
-  urgencyText: string;
   statusText: string;
   hasReminder: boolean;
   reminderText?: string | null;
@@ -121,7 +116,6 @@ export interface TaskTemplateClient {
   getDisplayTitle(): string;
   getStatusBadge(): { text: string; color: string };
   getImportanceBadge(): { text: string; color: string };
-  getUrgencyBadge(): { text: string; color: string };
   getTimeDisplay(): string;
   getRecurrenceDisplay(): string;
   canEdit(): boolean;
