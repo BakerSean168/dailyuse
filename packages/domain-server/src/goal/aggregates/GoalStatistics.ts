@@ -8,7 +8,7 @@
  * - 确保统计数据的一致性
  */
 
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
 import type {
   GoalServerDTO,
@@ -38,7 +38,6 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
   private _completedKeyResults: number;
   private _averageProgress: number;
   private _goalsByImportance: Record<string, number>;
-  private _goalsByUrgency: Record<string, number>;
   private _goalsByCategory: Record<string, number>;
   private _goalsByStatus: Record<string, number>;
   private _goalsCreatedThisWeek: number;
@@ -61,7 +60,6 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
     completedKeyResults?: number;
     averageProgress?: number;
     goalsByImportance?: Record<string, number>;
-    goalsByUrgency?: Record<string, number>;
     goalsByCategory?: Record<string, number>;
     goalsByStatus?: Record<string, number>;
     goalsCreatedThisWeek?: number;
@@ -83,7 +81,6 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
     this._completedKeyResults = params.completedKeyResults ?? 0;
     this._averageProgress = params.averageProgress ?? 0;
     this._goalsByImportance = params.goalsByImportance ?? {};
-    this._goalsByUrgency = params.goalsByUrgency ?? {};
     this._goalsByCategory = params.goalsByCategory ?? {};
     this._goalsByStatus = params.goalsByStatus ?? {};
     this._goalsCreatedThisWeek = params.goalsCreatedThisWeek ?? 0;
@@ -125,9 +122,6 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
   }
   public get goalsByImportance(): Record<string, number> {
     return { ...this._goalsByImportance };
-  }
-  public get goalsByUrgency(): Record<string, number> {
-    return { ...this._goalsByUrgency };
   }
   public get goalsByCategory(): Record<string, number> {
     return { ...this._goalsByCategory };
@@ -178,7 +172,6 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       completedKeyResults: 0,
       averageProgress: 0,
       goalsByImportance: {},
-      goalsByUrgency: {},
       goalsByCategory: {},
       goalsByStatus: {},
       goalsCreatedThisWeek: 0,
@@ -213,7 +206,6 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       completedKeyResults: dto.completedKeyResults,
       averageProgress: dto.averageProgress,
       goalsByImportance: dto.goalsByImportance,
-      goalsByUrgency: dto.goalsByUrgency,
       goalsByCategory: dto.goalsByCategory,
       goalsByStatus: dto.goalsByStatus,
       goalsCreatedThisWeek: dto.goalsCreatedThisWeek,
@@ -241,7 +233,6 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       completedKeyResults: dto.completedKeyResults,
       averageProgress: dto.averageProgress,
       goalsByImportance: JSON.parse(dto.goalsByImportance) as Record<string, number>,
-      goalsByUrgency: JSON.parse(dto.goalsByUrgency) as Record<string, number>,
       goalsByCategory: JSON.parse(dto.goalsByCategory) as Record<string, number>,
       goalsByStatus: JSON.parse(dto.goalsByStatus) as Record<string, number>,
       goalsCreatedThisWeek: dto.goalsCreatedThisWeek,
@@ -275,7 +266,6 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
     this._totalKeyResults = 0;
     this._completedKeyResults = 0;
     this._goalsByImportance = {};
-    this._goalsByUrgency = {};
     this._goalsByCategory = {};
     this._goalsByStatus = {};
     this._goalsCreatedThisWeek = 0;
@@ -319,8 +309,8 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       this._goalsByImportance[goal.importance] =
         (this._goalsByImportance[goal.importance] || 0) + 1;
 
-      // 按紧急性统计
-      this._goalsByUrgency[goal.urgency] = (this._goalsByUrgency[goal.urgency] || 0) + 1;
+      // 按紧急性统计 - REMOVED: urgency 字段已移除
+      // this._goalsByUrgency[goal.urgency] = (this._goalsByUrgency[goal.urgency] || 0) + 1;
 
       // 按分类统计
       if (goal.category) {
@@ -454,7 +444,6 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       completedKeyResults: this._completedKeyResults,
       averageProgress: this._averageProgress,
       goalsByImportance: { ...this._goalsByImportance },
-      goalsByUrgency: { ...this._goalsByUrgency },
       goalsByCategory: { ...this._goalsByCategory },
       goalsByStatus: { ...this._goalsByStatus },
       goalsCreatedThisWeek: this._goalsCreatedThisWeek,
@@ -494,7 +483,6 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       completedKeyResults: this._completedKeyResults,
       averageProgress: this._averageProgress,
       goalsByImportance: { ...this._goalsByImportance },
-      goalsByUrgency: { ...this._goalsByUrgency },
       goalsByCategory: { ...this._goalsByCategory },
       goalsByStatus: { ...this._goalsByStatus },
       goalsCreatedThisWeek: this._goalsCreatedThisWeek,
@@ -529,7 +517,6 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       completedKeyResults: this._completedKeyResults,
       averageProgress: this._averageProgress,
       goalsByImportance: JSON.stringify(this._goalsByImportance),
-      goalsByUrgency: JSON.stringify(this._goalsByUrgency),
       goalsByCategory: JSON.stringify(this._goalsByCategory),
       goalsByStatus: JSON.stringify(this._goalsByStatus),
       goalsCreatedThisWeek: this._goalsCreatedThisWeek,
@@ -554,12 +541,6 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
     if (event.payload.importance) {
       const key = event.payload.importance;
       this._goalsByImportance[key] = (this._goalsByImportance[key] || 0) + 1;
-    }
-
-    // 更新按紧急度统计
-    if (event.payload.urgency) {
-      const key = event.payload.urgency;
-      this._goalsByUrgency[key] = (this._goalsByUrgency[key] || 0) + 1;
     }
 
     // 更新按分类统计
@@ -603,12 +584,6 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
     if (event.payload.importance) {
       const key = event.payload.importance;
       this._goalsByImportance[key] = Math.max(0, (this._goalsByImportance[key] || 0) - 1);
-    }
-
-    // 更新按紧急度统计
-    if (event.payload.urgency) {
-      const key = event.payload.urgency;
-      this._goalsByUrgency[key] = Math.max(0, (this._goalsByUrgency[key] || 0) - 1);
     }
 
     // 更新按分类统计

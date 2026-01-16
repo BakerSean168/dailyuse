@@ -30,7 +30,6 @@ export class GoalStatistics
   private _completedKeyResults: number;
   private _averageProgress: number;
   private _goalsByImportance: Record<string, number>;
-  private _goalsByUrgency: Record<string, number>;
   private _goalsByCategory: Record<string, number>;
   private _goalsByStatus: Record<string, number>;
   private _goalsCreatedThisWeek: number;
@@ -52,7 +51,6 @@ export class GoalStatistics
     completedKeyResults: number,
     averageProgress: number,
     goalsByImportance: Record<string, number>,
-    goalsByUrgency: Record<string, number>,
     goalsByCategory: Record<string, number>,
     goalsByStatus: Record<string, number>,
     goalsCreatedThisWeek: number,
@@ -74,7 +72,6 @@ export class GoalStatistics
     this._completedKeyResults = completedKeyResults;
     this._averageProgress = averageProgress;
     this._goalsByImportance = goalsByImportance;
-    this._goalsByUrgency = goalsByUrgency;
     this._goalsByCategory = goalsByCategory;
     this._goalsByStatus = goalsByStatus;
     this._goalsCreatedThisWeek = goalsCreatedThisWeek;
@@ -126,10 +123,6 @@ export class GoalStatistics
 
   get goalsByImportance(): Record<string, number> {
     return { ...this._goalsByImportance };
-  }
-
-  get goalsByUrgency(): Record<string, number> {
-    return { ...this._goalsByUrgency };
   }
 
   get goalsByCategory(): Record<string, number> {
@@ -334,7 +327,6 @@ export class GoalStatistics
       completedKeyResults: this._completedKeyResults,
       averageProgress: this._averageProgress,
       goalsByImportance: this._goalsByImportance,
-      goalsByUrgency: this._goalsByUrgency,
       goalsByCategory: this._goalsByCategory,
       goalsByStatus: this._goalsByStatus,
       goalsCreatedThisWeek: this._goalsCreatedThisWeek,
@@ -359,7 +351,6 @@ export class GoalStatistics
       completedKeyResults: this._completedKeyResults,
       averageProgress: this._averageProgress,
       goalsByImportance: this._goalsByImportance,
-      goalsByUrgency: this._goalsByUrgency,
       goalsByCategory: this._goalsByCategory,
       goalsByStatus: this._goalsByStatus,
       goalsCreatedThisWeek: this._goalsCreatedThisWeek,
@@ -393,7 +384,6 @@ export class GoalStatistics
       0, // completedKeyResults
       0, // averageProgress
       {}, // goalsByImportance
-      {}, // goalsByUrgency
       {}, // goalsByCategory
       {}, // goalsByStatus
       0, // goalsCreatedThisWeek
@@ -418,7 +408,6 @@ export class GoalStatistics
       dto.completedKeyResults,
       dto.averageProgress,
       dto.goalsByImportance,
-      dto.goalsByUrgency,
       dto.goalsByCategory,
       dto.goalsByStatus,
       dto.goalsCreatedThisWeek,
@@ -443,7 +432,6 @@ export class GoalStatistics
       dto.completedKeyResults,
       dto.averageProgress,
       dto.goalsByImportance,
-      dto.goalsByUrgency,
       dto.goalsByCategory,
       dto.goalsByStatus,
       dto.goalsCreatedThisWeek,

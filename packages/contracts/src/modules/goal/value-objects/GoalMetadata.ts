@@ -3,7 +3,7 @@
  * 目标元数据值对象
  */
 
-import type { ImportanceLevel, UrgencyLevel } from '../../../shared/index';
+import type { ImportanceLevel } from '../../../shared/index';
 
 // ============ 接口定义 ============
 
@@ -12,7 +12,7 @@ import type { ImportanceLevel, UrgencyLevel } from '../../../shared/index';
  */
 export interface IGoalMetadataServer {
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
+  // urgency: UrgencyLevel; // REMOVED
   category?: string | null;
   tags: string[];
 
@@ -28,7 +28,8 @@ export interface IGoalMetadataServer {
   ): IGoalMetadataServer;
 
   // 业务方法
-  getPriority(): number; // 计算优先级分数（importance + urgency）
+  /** @deprecated 优先级现在由 GoalPriorityCalculator 域服务计算 */
+  getPriority(): number;
   hasTag(tag: string): boolean;
   addTag(tag: string): IGoalMetadataServer;
   removeTag(tag: string): IGoalMetadataServer;
@@ -44,14 +45,19 @@ export interface IGoalMetadataServer {
  */
 export interface IGoalMetadataClient {
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
+  // urgency: UrgencyLevel; // REMOVED
   category?: string | null;
   tags: string[];
 
   // UI 辅助属性
   importanceText: string; // "非常重要" / "重要" / "一般" / "不重要"
-  urgencyText: string; // "非常紧急" / "紧急" / "一般" / "不紧急"
-  priorityLevel: 'HIGH' | 'MEDIUM' | 'LOW'; // 综合优先级
+  // urgencyText: string; // REMOVED
+  /** 动态优先级分数 (0-100) */
+  priority: number;
+  /** 优先级级别 */
+  priorityLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  /** 优先级显示文本 */
+  priorityText: string;
   priorityBadgeColor: string; // 优先级徽章颜色
   categoryDisplay: string; // 分类显示文本，如果为空则显示"未分类"
   tagsDisplay: string; // 标签显示文本，如 "标签1, 标签2"
@@ -73,7 +79,7 @@ export interface IGoalMetadataClient {
  */
 export interface GoalMetadataServerDTO {
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
+  // urgency: UrgencyLevel; // REMOVED
   category?: string | null;
   tags: string[];
 }
@@ -83,12 +89,14 @@ export interface GoalMetadataServerDTO {
  */
 export interface GoalMetadataClientDTO {
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
+  // urgency: UrgencyLevel; // REMOVED
   category?: string | null;
   tags: string[];
   importanceText: string;
-  urgencyText: string;
-  priorityLevel: 'HIGH' | 'MEDIUM' | 'LOW';
+  // urgencyText: string; // REMOVED
+  priority: number;
+  priorityLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  priorityText: string;
   priorityBadgeColor: string;
   categoryDisplay: string;
   tagsDisplay: string;
@@ -99,7 +107,7 @@ export interface GoalMetadataClientDTO {
  */
 export interface GoalMetadataPersistenceDTO {
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
+  // urgency: UrgencyLevel; // REMOVED
   category?: string | null;
   tags: string; // JSON string: JSON.stringify(string[])
 }

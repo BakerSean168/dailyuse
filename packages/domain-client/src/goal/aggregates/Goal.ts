@@ -12,10 +12,15 @@ import type {
   GoalServerDTO,
   GoalTimeRangeSummary,
 } from '@dailyuse/contracts/goal';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
 import { GoalReminderConfig } from '../value-objects';
 import { KeyResult, GoalReview } from '../entities';
+
+// Priority calculation constants (aligned with domain-server)
+const IMPORTANCE_WEIGHT = 0.6;
+const TIME_WEIGHT = 0.4;
+const OVERDUE_BOOST = 50;
 
 const DAY_MS = 1000 * 60 * 60 * 24;
 const DEFAULT_DURATION = 30 * DAY_MS;
@@ -29,7 +34,6 @@ export class Goal extends AggregateRoot implements GoalClient {
   private _motivation?: string | null; // 实现动机
   private _status: GoalStatus;
   private _importance: ImportanceLevel;
-  private _urgency: UrgencyLevel;
   private _category?: string | null;
   private _tags: string[];
   private _startDate?: number | null;
@@ -58,7 +62,6 @@ export class Goal extends AggregateRoot implements GoalClient {
     motivation?: string | null;
     status: GoalStatus;
     importance: ImportanceLevel;
-    urgency: UrgencyLevel;
     category?: string | null;
     tags?: string[];
     startDate?: number | null;
@@ -84,7 +87,6 @@ export class Goal extends AggregateRoot implements GoalClient {
     this._motivation = params.motivation;
     this._status = params.status;
     this._importance = params.importance;
-    this._urgency = params.urgency;
     this._category = params.category;
     this._tags = params.tags ?? [];
     this._startDate = params.startDate;
@@ -129,9 +131,6 @@ export class Goal extends AggregateRoot implements GoalClient {
   }
   public get importance(): ImportanceLevel {
     return this._importance;
-  }
-  public get urgency(): UrgencyLevel {
-    return this._urgency;
   }
   public get category(): string | null | undefined {
     return this._category;
@@ -225,26 +224,69 @@ export class Goal extends AggregateRoot implements GoalClient {
     return this._importance || '未知';
   }
 
-  public get urgencyText(): string {
-    return this._urgency || '未知';
+  /**
+   * 计算动态优先级 (0-100)
+   * 基于 importance 和 targetDate
+   */
+  private calculatePriority(): number {
+    const importanceMap: Record<ImportanceLevel, number> = {
+      [ImportanceLevel.Vital]: 5,
+      [ImportanceLevel.Important]: 4,
+      [ImportanceLevel.Moderate]: 3,
+      [ImportanceLevel.Minor]: 2,
+      [ImportanceLevel.Trivial]: 1,
+    };
+    const importanceValue = importanceMap[this._importance] ?? 3;
+    const importanceWeight = importanceValue * 20 * IMPORTANCE_WEIGHT;
+
+    if (!this._targetDate) {
+      return Math.round(importanceWeight + 5);
+    }
+
+    const now = Date.now();
+    const daysRemaining = Math.ceil((this._targetDate - now) / (1000 * 60 * 60 * 24));
+
+    if (daysRemaining < 0) {
+      return Math.min(100, Math.round(importanceWeight + OVERDUE_BOOST));
+    }
+
+    const timeUrgency = Math.min(100, 100 / (1 + daysRemaining / 7));
+    const timeWeight = timeUrgency * TIME_WEIGHT;
+
+    return Math.min(100, Math.max(0, Math.round(importanceWeight + timeWeight)));
   }
 
+  /**
+   * 动态优先级值 (0-100)
+   */
+  public get priority(): number {
+    return this.calculatePriority();
+  }
+
+  /**
+   * 优先级级别
+   */
+  public get priorityLevel(): 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' {
+    const p = this.priority;
+    if (p >= 80) return 'CRITICAL';
+    if (p >= 60) return 'HIGH';
+    if (p >= 40) return 'MEDIUM';
+    return 'LOW';
+  }
+
+  /**
+   * 优先级文本
+   */
+  public get priorityText(): string {
+    const levelMap = { CRITICAL: '紧急', HIGH: '高', MEDIUM: '中', LOW: '低' };
+    return levelMap[this.priorityLevel];
+  }
+
+  /**
+   * 优先级分数 (使用 priority 值)
+   */
   public get priorityScore(): number {
-    const ImportanceLevelMap = {
-      [ImportanceLevel.Trivial]: 1,
-      [ImportanceLevel.Minor]: 2,
-      [ImportanceLevel.Moderate]: 3,
-      [ImportanceLevel.Important]: 4,
-      [ImportanceLevel.Vital]: 5,
-    };
-    const UrgencyLevelMap = {
-      [UrgencyLevel.None]: 1,
-      [UrgencyLevel.Low]: 2,
-      [UrgencyLevel.Medium]: 3,
-      [UrgencyLevel.High]: 4,
-      [UrgencyLevel.Critical]: 5,
-    };
-    return (ImportanceLevelMap[this._importance] || 0) + (UrgencyLevelMap[this._urgency] || 0);
+    return this.priority;
   }
 
   public get keyResultCount(): number {
@@ -442,11 +484,6 @@ export class Goal extends AggregateRoot implements GoalClient {
     this._updatedAt = Date.now();
   }
 
-  public updateUrgency(urgency: UrgencyLevel): void {
-    this._urgency = urgency;
-    this._updatedAt = Date.now();
-  }
-
   public updateCategory(category: string | null): void {
     this._category = category;
     this._updatedAt = Date.now();
@@ -593,10 +630,14 @@ export class Goal extends AggregateRoot implements GoalClient {
   }
 
   public getPriorityBadge(): { text: string; color: string } {
-    const score = this.priorityScore;
-    if (score >= 7) return { text: '高优先级', color: 'red' };
-    if (score >= 5) return { text: '中优先级', color: 'amber' };
-    return { text: '低优先级', color: 'blue' };
+    const level = this.priorityLevel;
+    const badges: Record<string, { text: string; color: string }> = {
+      CRITICAL: { text: '紧急', color: 'red' },
+      HIGH: { text: '高优先级', color: 'orange' },
+      MEDIUM: { text: '中优先级', color: 'amber' },
+      LOW: { text: '低优先级', color: 'blue' },
+    };
+    return badges[level];
   }
 
   public getProgressText(): string {
@@ -665,7 +706,6 @@ export class Goal extends AggregateRoot implements GoalClient {
       description: this._description,
       status: this._status,
       importance: this._importance,
-      urgency: this._urgency,
       category: this._category,
       tags: [...this._tags],
       startDate: this._startDate,
@@ -696,7 +736,6 @@ export class Goal extends AggregateRoot implements GoalClient {
       motivation: this._motivation,
       status: this._status,
       importance: this._importance,
-      urgency: this._urgency,
       category: this._category,
       tags: [...this._tags],
       startDate: this._startDate,
@@ -720,8 +759,9 @@ export class Goal extends AggregateRoot implements GoalClient {
       daysRemaining: this.daysRemaining,
       statusText: this.statusText,
       importanceText: this.importanceText,
-      urgencyText: this.urgencyText,
-      priorityScore: this.priorityScore,
+      priority: this.priority,
+      priorityLevel: this.priorityLevel,
+      priorityText: this.priorityText,
       keyResultCount: this.keyResultCount,
       completedKeyResultCount: this.completedKeyResultCount,
       reviewCount: this.reviewCount,
@@ -743,7 +783,6 @@ export class Goal extends AggregateRoot implements GoalClient {
     title: string;
     description?: string;
     importance: ImportanceLevel;
-    urgency: UrgencyLevel;
     category?: string;
     tags?: string[];
     startDate?: number;
@@ -759,7 +798,6 @@ export class Goal extends AggregateRoot implements GoalClient {
       description: params.description,
       status: GoalStatus.DRAFT,
       importance: params.importance,
-      urgency: params.urgency,
       category: params.category,
       tags: params.tags,
       startDate: params.startDate,
@@ -783,7 +821,6 @@ export class Goal extends AggregateRoot implements GoalClient {
       title: '',
       status: GoalStatus.DRAFT,
       importance: ImportanceLevel.Moderate,
-      urgency: UrgencyLevel.Medium,
       sortOrder: 0,
       createdAt: now,
       updatedAt: now,
@@ -801,7 +838,6 @@ export class Goal extends AggregateRoot implements GoalClient {
       motivation: dto.motivation,
       status: dto.status,
       importance: dto.importance,
-      urgency: dto.urgency,
       category: dto.category,
       tags: dto.tags,
       startDate: dto.startDate,
@@ -833,7 +869,6 @@ export class Goal extends AggregateRoot implements GoalClient {
       motivation: dto.motivation,
       status: dto.status,
       importance: dto.importance,
-      urgency: dto.urgency,
       category: dto.category,
       tags: dto.tags,
       startDate: dto.startDate,

@@ -1,4 +1,4 @@
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { Goal } from '../aggregates/Goal';
 import { GoalReminderConfig } from '../value-objects/GoalReminderConfig';
 import { GoalStatus } from '@dailyuse/contracts/goal';
@@ -37,7 +37,7 @@ export class GoalDomainService {
       title: string;
       description?: string;
       importance?: ImportanceLevel;
-      urgency?: UrgencyLevel;
+      // urgency?: UrgencyLevel; // REMOVED - priority is now computed
       category?: string;
       tags?: string[];
       startDate?: number;
@@ -99,7 +99,7 @@ export class GoalDomainService {
       title?: string;
       description?: string;
       importance?: ImportanceLevel;
-      urgency?: UrgencyLevel;
+      // urgency?: UrgencyLevel; // REMOVED
       category?: string;
       color?: string;
       feasibilityAnalysis?: string;

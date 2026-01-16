@@ -2,7 +2,7 @@ import { eventBus, type DomainEvent } from '@dailyuse/utils';
 import { GoalStatisticsApplicationService } from './GoalStatisticsApplicationService';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { Goal } from '@dailyuse/domain-server/goal';
 
 /**
@@ -45,7 +45,6 @@ export class GoalEventPublisher {
           timestamp: event.occurredOn.getTime(),
           payload: {
             importance: goal.importance,
-            urgency: goal.urgency,
             category: goal.category ?? undefined,
             newStatus: goal.status,
           },
@@ -65,9 +64,8 @@ export class GoalEventPublisher {
           return;
         }
 
-        const { importance, urgency, category, status } = event.payload as {
+        const { importance, category, status } = event.payload as {
           importance: ImportanceLevel;
-          urgency: UrgencyLevel;
           category?: string;
           status: GoalStatus;
         };
@@ -78,7 +76,6 @@ export class GoalEventPublisher {
           timestamp: event.occurredOn.getTime(),
           payload: {
             importance,
-            urgency,
             category,
             previousStatus: status,
           },

@@ -11,7 +11,7 @@ import type {
   KeyResultPersistenceDTO,
   GoalStatus,
 } from '@dailyuse/contracts/goal';
-import type { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { getDatabase, transaction } from '../../database';
 
 /**
@@ -68,7 +68,7 @@ export class SqliteGoalRepository implements IGoalRepository {
           dto.motivation,
           dto.status,
           dto.importance,
-          dto.urgency,
+          'medium',  // urgency column kept for DB compatibility
           dto.category,
           dto.tags, // 已经是 JSON string
           dto.startDate,
@@ -102,7 +102,7 @@ export class SqliteGoalRepository implements IGoalRepository {
           dto.motivation,
           dto.status,
           dto.importance,
-          dto.urgency,
+          'medium',  // urgency column kept for DB compatibility, default value
           dto.category,
           dto.tags, // 已经是 JSON string
           dto.startDate,
@@ -341,7 +341,6 @@ export class SqliteGoalRepository implements IGoalRepository {
       motivation: row.motivation,
       status: row.status as GoalStatus,
       importance: row.importance as ImportanceLevel,
-      urgency: row.urgency as UrgencyLevel,
       category: row.category,
       tags: row.tags ?? '[]',
       startDate: row.start_date,
@@ -371,7 +370,6 @@ interface GoalRow {
   motivation: string | null;
   status: string;
   importance: string;
-  urgency: string;
   category: string | null;
   tags: string | null;
   start_date: number | null;

@@ -114,7 +114,7 @@ export class GoalStatisticsDomainService {
         timestamp: goal.createdAt || Date.now(),
         payload: {
           importance: goal.importance,
-          urgency: goal.urgency,
+          // urgency removed - priority is now computed
           category: goal.category || undefined,
           newStatus: goal.status as GoalStatus,
         },

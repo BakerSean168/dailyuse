@@ -43,10 +43,11 @@ import type {
   ProgressBreakdown,
   ReminderTrigger,
 } from '@dailyuse/contracts/goal';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { KeyResult } from '../entities/KeyResult';
 import { GoalReview } from '../entities/GoalReview';
 import { GoalReminderConfig, KeyResultWeightSnapshot, KeyResultNotFoundInGoalError } from '../value-objects';
+import { calculateGoalPriority, mapPriorityToLevel, mapPriorityToText } from '../services/goal-priority-calculator.service';
 
 // 类型别名（从命名空间导入）
 
@@ -66,7 +67,7 @@ export class Goal extends AggregateRoot implements GoalServer {
   private _motivation: string | null; // 实现动机
   private _status: GoalStatus;
   private _importance: ImportanceLevel;
-  private _urgency: UrgencyLevel;
+  // private _urgency: UrgencyLevel; // REMOVED - priority 现在是计算属性
   private _category: string | null;
   private _tags: string[];
   private _startDate: number | null;
@@ -97,7 +98,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     motivation?: string | null;
     status: GoalStatus;
     importance: ImportanceLevel;
-    urgency: UrgencyLevel;
+    // urgency: UrgencyLevel; // REMOVED
     category?: string | null;
     tags: string[];
     startDate?: number | null;
@@ -121,7 +122,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     this._motivation = params.motivation ?? null;
     this._status = params.status;
     this._importance = params.importance;
-    this._urgency = params.urgency;
+    // this._urgency = params.urgency; // REMOVED
     this._category = params.category ?? null;
     this._tags = params.tags;
     this._startDate = params.startDate ?? null;
@@ -168,9 +169,30 @@ export class Goal extends AggregateRoot implements GoalServer {
   public get importance(): ImportanceLevel {
     return this._importance;
   }
-  public get urgency(): UrgencyLevel {
-    return this._urgency;
+  
+  /**
+   * 计算属性：动态优先级分数 (0-100)
+   * 基于 importance 和 targetDate 计算
+   */
+  public get priority(): number {
+    const targetDate = this._targetDate ? new Date(this._targetDate) : null;
+    return calculateGoalPriority(this._importance, targetDate, new Date());
   }
+  
+  /**
+   * 计算属性：优先级级别
+   */
+  public get priorityLevel(): 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' {
+    return mapPriorityToLevel(this.priority);
+  }
+  
+  /**
+   * 计算属性：优先级显示文本
+   */
+  public get priorityText(): string {
+    return mapPriorityToText(this.priority);
+  }
+  
   public get category(): string | null {
     return this._category;
   }
@@ -233,7 +255,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     feasibilityAnalysis?: string;
     motivation?: string;
     importance?: ImportanceLevel;
-    urgency?: UrgencyLevel;
+    // urgency?: UrgencyLevel; // REMOVED
     category?: string;
     tags?: string[];
     startDate?: number;
@@ -260,7 +282,7 @@ export class Goal extends AggregateRoot implements GoalServer {
       motivation: params.motivation?.trim() || null,
       status: 'ACTIVE' as GoalStatus,
       importance: params.importance ?? ('MEDIUM' as ImportanceLevel),
-      urgency: params.urgency ?? ('MEDIUM' as UrgencyLevel),
+      // urgency removed - priority is now computed
       category: params.category?.trim() || null,
       tags: params.tags ?? [],
       startDate: params.startDate ?? null,
@@ -300,7 +322,7 @@ export class Goal extends AggregateRoot implements GoalServer {
       description: dto.description ?? null,
       status: dto.status,
       importance: dto.importance,
-      urgency: dto.urgency,
+      // urgency: dto.urgency, // REMOVED
       category: dto.category ?? null,
       tags: dto.tags,
       startDate: dto.startDate ?? null,
@@ -348,7 +370,7 @@ export class Goal extends AggregateRoot implements GoalServer {
       motivation: dto.motivation ?? null,
       status: dto.status,
       importance: dto.importance,
-      urgency: dto.urgency,
+      // urgency: dto.urgency, // REMOVED
       category: dto.category ?? null,
       tags,
       startDate: dto.startDate ?? null,
@@ -374,7 +396,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     title?: string;
     description?: string;
     importance?: ImportanceLevel;
-    urgency?: UrgencyLevel;
+    // urgency?: UrgencyLevel; // REMOVED
     category?: string;
     color?: string;
     feasibilityAnalysis?: string;
@@ -405,11 +427,7 @@ export class Goal extends AggregateRoot implements GoalServer {
       changes.push('importance');
     }
 
-    if (params.urgency !== undefined && params.urgency !== this._urgency) {
-      previousData.urgency = this._urgency;
-      this._urgency = params.urgency;
-      changes.push('urgency');
-    }
+    // urgency update removed - priority is now computed
 
     if (params.category !== undefined && params.category !== this._category) {
       previousData.category = this._category;
@@ -1206,10 +1224,10 @@ export class Goal extends AggregateRoot implements GoalServer {
   }
 
   /**
-   * 是否为高优先级（高重要性 + 高紧急性）
+   * 是否为高优先级（高重要性）
    */
   public isHighPriority(): boolean {
-    return this._importance === ImportanceLevel.Important && this._urgency === UrgencyLevel.High;
+    return this.priority >= 60; // HIGH or CRITICAL
   }
 
   /**
@@ -1230,30 +1248,10 @@ export class Goal extends AggregateRoot implements GoalServer {
 
   /**
    * 获取优先级得分
+   * @deprecated 使用 priority getter 替代
    */
   public getPriorityScore(): number {
-    // 根据重要性和紧急性计算优先级得分
-    const importanceScores = {
-      [ImportanceLevel.Vital]: 5,
-      [ImportanceLevel.Important]: 4,
-      [ImportanceLevel.Moderate]: 3,
-      [ImportanceLevel.Minor]: 2,
-      [ImportanceLevel.Trivial]: 1,
-    };
-
-    const urgencyScores = {
-      [UrgencyLevel.Critical]: 5,
-      [UrgencyLevel.High]: 4,
-      [UrgencyLevel.Medium]: 3,
-      [UrgencyLevel.Low]: 2,
-      [UrgencyLevel.None]: 1,
-    };
-
-    const importanceScore = importanceScores[this._importance] || 0;
-    const urgencyScore = urgencyScores[this._urgency] || 0;
-
-    // 优先级得分 = 重要性得分 * 2 + 紧急性得分
-    return importanceScore * 2 + urgencyScore;
+    return this.priority;
   }
 
   // ===== DTO 转换 =====
@@ -1278,7 +1276,7 @@ export class Goal extends AggregateRoot implements GoalServer {
       description: this._description,
       status: this._status,
       importance: this._importance,
-      urgency: this._urgency,
+      // urgency removed - use priority instead
       category: this._category,
       tags: [...this._tags],
       startDate: this._startDate,
@@ -1303,14 +1301,16 @@ export class Goal extends AggregateRoot implements GoalServer {
       isDeleted: !!this._deletedAt,
       isOverdue: this.isOverdue(),
       daysRemaining: this.getDaysRemaining(),
-      priorityScore: this.getPriorityScore(),
+      priority: this.priority,
+      priorityText: this.priorityText,
+      priorityLevel: this.priorityLevel,
       keyResultCount: this._keyResults.length,
       completedKeyResultCount: this._keyResults.filter((kr) => kr.isCompleted()).length,
       reviewCount: this._reviews.length,
       // Add missing properties
       statusText: this._status, // Placeholder
       importanceText: this._importance, // Placeholder
-      urgencyText: this._urgency, // Placeholder
+      // urgencyText removed
       hasActiveReminders: !!this._reminderConfig?.enabled,
       reminderSummary: null, // Placeholder
       weightedProgress: progress,
@@ -1338,7 +1338,8 @@ export class Goal extends AggregateRoot implements GoalServer {
       motivation: this._motivation,
       status: this._status,
       importance: this._importance,
-      urgency: this._urgency,
+      // urgency removed - priority is computed
+      priority: this.priority,
       category: this._category,
       tags: [...this._tags],
       startDate: this._startDate,
@@ -1377,7 +1378,7 @@ export class Goal extends AggregateRoot implements GoalServer {
       motivation: this._motivation,
       status: this._status,
       importance: this._importance,
-      urgency: this._urgency,
+      // urgency removed - priority is computed at runtime
       category: this._category,
       tags: JSON.stringify(this._tags),
       startDate: this._startDate,

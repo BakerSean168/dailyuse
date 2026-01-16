@@ -2,7 +2,7 @@
  * Goal Aggregate Root - Server Interface
  * 目标聚合根 - 服务端接口
  */
-import type { ImportanceLevel, UrgencyLevel } from '../../../shared/index';
+import type { ImportanceLevel } from '../../../shared/index';
 import type { GoalStatus } from '../enums';
 import type { KeyResultServer, KeyResultServerDTO } from '../entities/KeyResultServer';
 import type { GoalReviewServer, GoalReviewServerDTO } from '../entities/GoalReviewServer';
@@ -27,7 +27,8 @@ export interface GoalServerDTO {
   motivation?: string | null; // 实现动机
   status: GoalStatus;
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
+  /** @deprecated urgency 已移除，使用 priority 计算字段 */
+  // urgency: UrgencyLevel; // REMOVED
   category?: string | null;
   tags: string[];
   startDate?: number | null; // epoch ms
@@ -41,6 +42,9 @@ export interface GoalServerDTO {
   createdAt: number; // epoch ms
   updatedAt: number; // epoch ms
   deletedAt?: number | null; // epoch ms
+  
+  /** 计算属性：动态优先级分数 (0-100)，基于 importance + targetDate 计算 */
+  priority?: number;
 
   // ===== 子实体 DTO (聚合根包含子实体) =====
   keyResults?: KeyResultServerDTO[] | null; // 关键结果列表（可选加载）
@@ -62,7 +66,7 @@ export interface GoalPersistenceDTO {
   motivation?: string | null; // 实现动机
   status: GoalStatus;
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
+  // urgency: UrgencyLevel; // REMOVED - 不再持久化
   category?: string | null;
   tags: string; // JSON string
   startDate?: number | null;
@@ -221,7 +225,13 @@ export interface GoalServer {
   description?: string | null;
   status: GoalStatus;
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
+  // urgency: UrgencyLevel; // REMOVED - priority is computed
+  /** 计算属性：动态优先级分数 (0-100) */
+  priority: number;
+  /** 计算属性：优先级级别 */
+  priorityLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  /** 计算属性：优先级显示文本 */
+  priorityText: string;
   category?: string | null;
   tags: string[];
   startDate?: number | null;
@@ -440,7 +450,7 @@ export interface GoalServerStatic {
     title: string;
     description?: string;
     importance: ImportanceLevel;
-    urgency: UrgencyLevel;
+    // urgency: UrgencyLevel; // REMOVED - priority is computed from importance + targetDate
     category?: string;
     tags?: string[];
     startDate?: number;

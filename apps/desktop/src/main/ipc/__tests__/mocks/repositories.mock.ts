@@ -7,7 +7,7 @@
 import { vi } from 'vitest';
 import type { Goal } from '@dailyuse/domain-server/goal';
 import type { GoalServerDTO, GoalStatus } from '@dailyuse/contracts/goal';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 // ===== Goal Repository Mock =====
 
@@ -156,7 +156,7 @@ export function createMockGoalDTO(overrides: Partial<GoalServerDTO> = {}): GoalS
     description: 'Test goal description',
     status: 'ACTIVE' as GoalStatus,
     importance: ImportanceLevel.Moderate,
-    urgency: UrgencyLevel.Medium,
+    // urgency: UrgencyLevel.Medium, // REMOVED - priority now computed from importance + targetDate
     category: null,
     color: null,
     startDate: null,

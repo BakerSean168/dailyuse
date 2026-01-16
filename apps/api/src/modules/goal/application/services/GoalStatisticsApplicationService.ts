@@ -194,7 +194,6 @@ export class GoalStatisticsApplicationService {
           completedKeyResults: 0,
           averageProgress: 0,
           goalsByImportance: {},
-          goalsByUrgency: {},
           goalsByCategory: {},
           goalsByStatus: {},
           goalsCreatedThisWeek: 0,

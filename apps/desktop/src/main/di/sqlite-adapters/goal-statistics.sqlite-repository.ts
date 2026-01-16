@@ -72,7 +72,7 @@ export class SqliteGoalStatisticsRepository implements IGoalStatisticsRepository
         dto.completedKeyResults,
         dto.averageProgress,
         dto.goalsByImportance,
-        dto.goalsByUrgency,
+        '{}',  // goals_by_urgency kept for DB compatibility
         dto.goalsByCategory,
         dto.goalsByStatus,
         dto.goalsCreatedThisWeek,
@@ -105,7 +105,7 @@ export class SqliteGoalStatisticsRepository implements IGoalStatisticsRepository
         dto.completedKeyResults,
         dto.averageProgress,
         dto.goalsByImportance,
-        dto.goalsByUrgency,
+        '{}',  // goals_by_urgency kept for DB compatibility
         dto.goalsByCategory,
         dto.goalsByStatus,
         dto.goalsCreatedThisWeek,
@@ -155,7 +155,6 @@ export class SqliteGoalStatisticsRepository implements IGoalStatisticsRepository
       completedKeyResults: row.completed_key_results,
       averageProgress: row.average_progress,
       goalsByImportance: row.goals_by_importance,
-      goalsByUrgency: row.goals_by_urgency,
       goalsByCategory: row.goals_by_category,
       goalsByStatus: row.goals_by_status,
       goalsCreatedThisWeek: row.goals_created_this_week,
@@ -180,7 +179,6 @@ interface GoalStatisticsRow {
   completed_key_results: number;
   average_progress: number;
   goals_by_importance: string;
-  goals_by_urgency: string;
   goals_by_category: string;
   goals_by_status: string;
   goals_created_this_week: number;

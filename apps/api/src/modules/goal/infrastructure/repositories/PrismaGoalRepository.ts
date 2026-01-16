@@ -62,7 +62,7 @@ export class PrismaGoalRepository implements IGoalRepository {
       motivation: data.motivation, // 新字段
       status: data.status as GoalStatus,
       importance: this.reverseImportanceMap[data.importance],
-      urgency: this.reverseUrgencyMap[data.urgency],
+      // urgency: removed - priority now computed from importance + targetDate
       category: data.category,
       tags: data.tags ?? '[]',
       startDate: data.startDate ? data.startDate.getTime() : null, // Prisma camelCase
@@ -188,7 +188,7 @@ export class PrismaGoalRepository implements IGoalRepository {
       description: persistence.description,
       status: persistence.status,
       importance: this.importanceMap[persistence.importance],
-      urgency: this.urgencyMap[persistence.urgency],
+      // urgency: removed - priority now computed from importance + targetDate
       category: persistence.category,
       tags: persistence.tags,
       startDate: persistence.startDate ? new Date(persistence.startDate) : null,

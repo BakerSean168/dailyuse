@@ -294,7 +294,7 @@ export class GoalApiClient {
 
   /**
    * AI 生成关键结果
-   * Epic 2 API: 使用 startDate/endDate 替代 category/importance/urgency
+   * Epic 2 API: 使用 startDate/endDate 替代 category/importance (urgency 已移除，priority 由后端计算)
    */
   async generateKeyResults(request: {
     goalTitle: string;

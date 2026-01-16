@@ -20,7 +20,7 @@ import type {
   GoalRecordClientDTO,
 } from './entities';
 import type { GoalStatus, FolderType, KeyResultValueType, AggregationMethod } from './enums';
-import type { ImportanceLevel, UrgencyLevel } from '../../shared/index';
+import type { ImportanceLevel } from '../../shared/index';
 import type { BatchOperationResponseDTO } from '../../shared/dtos';
 
 // ============ Goal 请求/响应 ============
@@ -36,7 +36,7 @@ export interface CreateGoalRequest {
   feasibilityAnalysis?: string; // 可行性分析
   motivation?: string; // 实现动机
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
+  // urgency: UrgencyLevel; // REMOVED - priority 现在是计算属性
   category?: string;
   tags?: string[];
   startDate?: number;
@@ -57,7 +57,7 @@ export interface UpdateGoalRequest {
   feasibilityAnalysis?: string; // 可行性分析
   motivation?: string; // 实现动机
   importance?: ImportanceLevel;
-  urgency?: UrgencyLevel;
+  // urgency?: UrgencyLevel; // REMOVED
   category?: string;
   tags?: string[];
   startDate?: number;
@@ -73,7 +73,7 @@ export interface QueryGoalsRequest {
   accountUuid: string;
   status?: GoalStatus[];
   importance?: ImportanceLevel[];
-  urgency?: UrgencyLevel[];
+  // urgency?: UrgencyLevel[]; // REMOVED
   category?: string;
   tags?: string[];
   folderUuid?: string;
@@ -424,7 +424,7 @@ export interface GoalStatisticsUpdateEvent {
     previousStatus?: GoalStatus;
     newStatus?: GoalStatus;
     importance?: ImportanceLevel;
-    urgency?: UrgencyLevel;
+    // urgency?: UrgencyLevel; // REMOVED
     category?: string;
     keyResultCount?: number;
     rating?: number;

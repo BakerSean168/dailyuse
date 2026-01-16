@@ -251,7 +251,7 @@ import { useGoalStore } from '../../stores/goalStore';
 import { Goal, KeyResult } from '@dailyuse/domain-client/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { useGoalManagement } from '../../composables/useGoalManagement';
 import { useKeyResult } from '../../composables/useKeyResult';
 import { useMessage } from '@dailyuse/ui-vuetify';
@@ -277,7 +277,6 @@ const prefillData = ref<{
   motivation?: string;
   feasibilityAnalysis?: string;
   importance?: ImportanceLevel;
-  urgency?: UrgencyLevel;
   tags?: string[];
   suggestedStartDate?: number;
   suggestedEndDate?: number;
@@ -500,9 +499,6 @@ watch(
           if (prefillData.value.importance !== undefined) {
             goalModel.value.updateImportance(prefillData.value.importance as ImportanceLevel);
           }
-          if (prefillData.value.urgency !== undefined) {
-            goalModel.value.updateUrgency(prefillData.value.urgency as UrgencyLevel);
-          }
           if (prefillData.value.tags?.length) {
             goalModel.value.updateTags(prefillData.value.tags);
           }
@@ -647,13 +643,6 @@ const importanceLevel = computed({
   },
 });
 
-const urgencyLevel = computed({
-  get: () => goalModel.value?.urgency || UrgencyLevel.Medium,
-  set: (val: UrgencyLevel) => {
-    goalModel.value?.updateUrgency(val);
-  },
-});
-
 // 日期格式化
 const minDate = computed(() => {
   const today = new Date();
@@ -728,7 +717,6 @@ const handleSave = async () => {
         feasibilityAnalysis: goalModel.value.feasibilityAnalysis ?? undefined,
         motivation: goalModel.value.motivation ?? undefined,
         importance: goalModel.value.importance,
-        urgency: goalModel.value.urgency,
         category: goalModel.value.category ?? undefined,
         tags: goalModel.value.tags,
         startDate: goalModel.value.startDate ?? undefined,
@@ -759,7 +747,6 @@ const handleSave = async () => {
         feasibilityAnalysis: goalModel.value.feasibilityAnalysis ?? undefined,
         motivation: goalModel.value.motivation ?? undefined,
         importance: goalModel.value.importance,
-        urgency: goalModel.value.urgency,
         category: goalModel.value.category ?? undefined,
         tags: goalModel.value.tags,
         startDate: goalModel.value.startDate ?? undefined,

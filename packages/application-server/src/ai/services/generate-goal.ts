@@ -6,7 +6,7 @@
 
 import type { IAIGenerationTaskRepository, IAIProviderConfigRepository } from '@dailyuse/domain-server/ai';
 import type { GenerateGoalRequest, GenerateGoalResponse, GoalCategory } from '@dailyuse/contracts/ai';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
@@ -67,7 +67,7 @@ export class GenerateGoal {
         suggestedStartDate: input.timeframe?.startDate || now,
         suggestedEndDate: input.timeframe?.endDate || oneMonthLater,
         importance: ImportanceLevel.Important,
-        urgency: UrgencyLevel.Medium,
+        // urgency: UrgencyLevel.Medium, // REMOVED - priority is now computed
         tags: [],
       },
       tokenUsage: {

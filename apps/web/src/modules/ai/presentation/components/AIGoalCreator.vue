@@ -95,17 +95,12 @@
                                 <p class="text-body-2">{{ generatedGoal.motivation }}</p>
                             </div>
 
-                            <!-- 重要性和紧急性 -->
+                            <!-- 重要性 (priority 由后端根据 importance + targetDate 计算) -->
                             <div class="d-flex ga-4 mb-4">
                                 <div>
                                     <div class="text-caption text-medium-emphasis">重要性</div>
                                     <v-rating :model-value="generatedGoal?.importance || 0" readonly density="compact"
                                         size="small" :length="4" color="primary" active-color="primary" />
-                                </div>
-                                <div>
-                                    <div class="text-caption text-medium-emphasis">紧急性</div>
-                                    <v-rating :model-value="generatedGoal?.urgency || 0" readonly density="compact"
-                                        size="small" :length="4" color="warning" active-color="warning" />
                                 </div>
                             </div>
 

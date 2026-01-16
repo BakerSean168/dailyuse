@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import type { Goal } from '@dailyuse/domain-client/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { useGoal } from '../hooks';
 
 interface GoalDetailDialogProps {
@@ -179,39 +179,20 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
               </div>
 
               {/* 优先级信息 */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">重要程度</label>
-                  <div>
-                    <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
-                      goal.importance === ImportanceLevel.Vital ? 'bg-red-100 text-red-800' :
-                      goal.importance === ImportanceLevel.Important ? 'bg-orange-100 text-orange-800' :
-                      goal.importance === ImportanceLevel.Moderate ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {goal.importance === ImportanceLevel.Vital && '极其重要'}
-                      {goal.importance === ImportanceLevel.Important && '重要'}
-                      {goal.importance === ImportanceLevel.Moderate && '一般'}
-                      {goal.importance === ImportanceLevel.Minor && '不重要'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">紧急程度</label>
-                  <div>
-                    <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
-                      goal.urgency === UrgencyLevel.Critical ? 'bg-red-100 text-red-800' :
-                      goal.urgency === UrgencyLevel.High ? 'bg-orange-100 text-orange-800' :
-                      goal.urgency === UrgencyLevel.Medium ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {goal.urgency === UrgencyLevel.Critical && '非常紧急'}
-                      {goal.urgency === UrgencyLevel.High && '紧急'}
-                      {goal.urgency === UrgencyLevel.Medium && '一般'}
-                      {goal.urgency === UrgencyLevel.Low && '不紧急'}
-                    </span>
-                  </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">重要程度</label>
+                <div>
+                  <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
+                    goal.importance === ImportanceLevel.Vital ? 'bg-red-100 text-red-800' :
+                    goal.importance === ImportanceLevel.Important ? 'bg-orange-100 text-orange-800' :
+                    goal.importance === ImportanceLevel.Moderate ? 'bg-blue-100 text-blue-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {goal.importance === ImportanceLevel.Vital && '极其重要'}
+                    {goal.importance === ImportanceLevel.Important && '重要'}
+                    {goal.importance === ImportanceLevel.Moderate && '一般'}
+                    {goal.importance === ImportanceLevel.Minor && '不重要'}
+                  </span>
                 </div>
               </div>
 

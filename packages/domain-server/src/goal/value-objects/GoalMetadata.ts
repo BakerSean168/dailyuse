@@ -4,7 +4,7 @@
  */
 
 import type { GoalMetadataPersistenceDTO, GoalMetadataServerDTO } from '@dailyuse/contracts/goal';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ValueObject } from '@dailyuse/utils';
 
 // 类型别名
@@ -20,20 +20,20 @@ import { ValueObject } from '@dailyuse/utils';
  */
 export class GoalMetadata extends ValueObject {
   public readonly importance: ImportanceLevel;
-  public readonly urgency: UrgencyLevel;
+  // urgency removed - priority is now computed by GoalPriorityCalculator
   public readonly category: string | null;
   public readonly tags: string[];
 
   constructor(params: {
     importance: ImportanceLevel;
-    urgency: UrgencyLevel;
+    // urgency: UrgencyLevel; // REMOVED
     category?: string | null;
     tags?: string[];
   }) {
     super();
 
     this.importance = params.importance;
-    this.urgency = params.urgency;
+    // this.urgency removed
     this.category = params.category ?? null;
     this.tags = [...(params.tags ?? [])];
 
@@ -48,14 +48,14 @@ export class GoalMetadata extends ValueObject {
   public with(
     changes: Partial<{
       importance: ImportanceLevel;
-      urgency: UrgencyLevel;
+      // urgency: UrgencyLevel; // REMOVED
       category: string | null;
       tags: string[];
     }>,
   ): GoalMetadata {
     return new GoalMetadata({
       importance: changes.importance ?? this.importance,
-      urgency: changes.urgency ?? this.urgency,
+      // urgency removed
       category: changes.category ?? this.category,
       tags: changes.tags ?? this.tags,
     });
@@ -71,7 +71,7 @@ export class GoalMetadata extends ValueObject {
 
     return (
       this.importance === other.importance &&
-      this.urgency === other.urgency &&
+      // urgency removed from equality check
       this.category === other.category &&
       this.arraysEqual(this.tags, other.tags)
     );
@@ -83,13 +83,13 @@ export class GoalMetadata extends ValueObject {
   }
 
   /**
-   * 计算优先级分数（importance + urgency）
-   * 根据枚举值计算数字分数
+   * 计算优先级分数（基于 importance）
+   * @deprecated 使用 GoalPriorityCalculator 服务替代
    */
   public getPriority(): number {
     const importanceScore = this.getImportanceScore();
-    const urgencyScore = this.getUrgencyScore();
-    return importanceScore + urgencyScore;
+    // 简化计算：只使用 importance
+    return importanceScore * 10; // 返回 10-50 范围
   }
 
   /**
@@ -106,19 +106,7 @@ export class GoalMetadata extends ValueObject {
     return scores[this.importance] || 0;
   }
 
-  /**
-   * 获取紧急性分数
-   */
-  private getUrgencyScore(): number {
-    const scores: Record<UrgencyLevel, number> = {
-      [UrgencyLevel.Critical]: 5,
-      [UrgencyLevel.High]: 4,
-      [UrgencyLevel.Medium]: 3,
-      [UrgencyLevel.Low]: 2,
-      [UrgencyLevel.None]: 1,
-    };
-    return scores[this.urgency] || 0;
-  }
+  // getUrgencyScore removed - priority is now computed by GoalPriorityCalculator
 
   /**
    * 检查是否有指定标签
@@ -153,7 +141,7 @@ export class GoalMetadata extends ValueObject {
   public toServerDTO(): GoalMetadataServerDTO {
     return {
       importance: this.importance,
-      urgency: this.urgency,
+      // urgency removed
       category: this.category,
       tags: [...this.tags],
     };
@@ -163,7 +151,11 @@ export class GoalMetadata extends ValueObject {
    * 从 Server DTO 创建值对象
    */
   public static fromServerDTO(dto: GoalMetadataServerDTO): GoalMetadata {
-    return new GoalMetadata(dto);
+    return new GoalMetadata({
+      importance: dto.importance,
+      category: dto.category ?? null,
+      tags: dto.tags ?? [],
+    });
   }
 
   /**
@@ -172,7 +164,7 @@ export class GoalMetadata extends ValueObject {
   public toPersistenceDTO(): GoalMetadataPersistenceDTO {
     return {
       importance: this.importance,
-      urgency: this.urgency,
+      // urgency removed
       category: this.category,
       tags: JSON.stringify(this.tags),
     };
@@ -184,7 +176,7 @@ export class GoalMetadata extends ValueObject {
   public static fromPersistenceDTO(dto: GoalMetadataPersistenceDTO): GoalMetadata {
     return new GoalMetadata({
       importance: dto.importance,
-      urgency: dto.urgency,
+      // urgency removed
       category: dto.category ?? null,
       tags: JSON.parse(dto.tags) as string[],
     });
@@ -196,7 +188,7 @@ export class GoalMetadata extends ValueObject {
   public static createDefault(): GoalMetadata {
     return new GoalMetadata({
       importance: ImportanceLevel.Moderate,
-      urgency: UrgencyLevel.Medium,
+      // urgency removed
       category: null,
       tags: [],
     });

@@ -16,7 +16,7 @@ import type {
   CreateGoalRequest,
   UpdateGoalRequest,
 } from '@dailyuse/contracts/goal';
-import type { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
 import { goalApplicationService } from '../../application/services';
 
@@ -45,7 +45,6 @@ export interface GoalFilters {
   status?: GoalStatus[];
   folderId?: string | null;
   importance?: ImportanceLevel[];
-  urgency?: UrgencyLevel[];
   searchQuery?: string;
   dateRange?: {
     start: Date | null;
@@ -117,7 +116,6 @@ const defaultFilters: GoalFilters = {
   status: undefined,
   folderId: undefined,
   importance: undefined,
-  urgency: undefined,
   searchQuery: '',
   dateRange: undefined,
 };
@@ -389,10 +387,6 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
           
           if (filters.importance?.length) {
             filtered = filtered.filter(g => filters.importance!.includes(g.importance));
-          }
-          
-          if (filters.urgency?.length) {
-            filtered = filtered.filter(g => filters.urgency!.includes(g.urgency));
           }
           
           if (filters.searchQuery) {

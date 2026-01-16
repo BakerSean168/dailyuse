@@ -26,7 +26,7 @@ export interface GoalStatisticsClientDTO {
   completedKeyResults: number;
   averageProgress: number;
   goalsByImportance: Record<string, number>;
-  goalsByUrgency: Record<string, number>;
+  // goalsByUrgency: Record<string, number>; // REMOVED
   goalsByCategory: Record<string, number>;
   goalsByStatus: Record<string, number>;
   goalsCreatedThisWeek: number;
@@ -62,7 +62,7 @@ export interface GoalStatisticsClient {
   completedKeyResults: number;
   averageProgress: number;
   goalsByImportance: Record<string, number>;
-  goalsByUrgency: Record<string, number>;
+  // goalsByUrgency: Record<string, number>; // REMOVED
   goalsByCategory: Record<string, number>;
   goalsByStatus: Record<string, number>;
   goalsCreatedThisWeek: number;

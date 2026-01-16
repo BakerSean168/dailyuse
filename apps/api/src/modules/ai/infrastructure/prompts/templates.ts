@@ -59,7 +59,6 @@ export const GENERATE_GOAL_PROMPT: PromptTemplate = {
   "suggestedStartDate": 1700000000000,
   "suggestedEndDate": 1703000000000,
   "importance": "moderate",
-  "urgency": "medium",
   "tags": ["标签1", "标签2", "标签3"],
   "feasibilityAnalysis": "可行性分析...",
   "aiInsights": "AI 对目标的理解和建议...",
@@ -78,7 +77,7 @@ export const GENERATE_GOAL_PROMPT: PromptTemplate = {
 - 仅返回 JSON 对象，不要包含任何 markdown 代码块或其他文字
 - keyResults 字段仅在请求中 includeKeyResults=true 时才包含
 - 如果时间范围为 "unlimited" 或无期限，suggestedEndDate 可以设为 null 或不包含
-- importance 和 urgency 必须使用指定的枚举字符串值，不能使用数字`,
+- importance 必须使用指定的枚举字符串值，不能使用数字`,
 
   user: (context) => {
     const { 

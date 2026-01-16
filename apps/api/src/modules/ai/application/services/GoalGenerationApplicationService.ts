@@ -471,11 +471,6 @@ export class GoalGenerationApplicationService {
     if (!draft.importance || typeof draft.importance !== 'string' || !validImportance.includes(draft.importance)) {
       throw new Error(`Generated goal must have valid importance (one of: ${validImportance.join(', ')})`);
     }
-    // 验证 urgency 是合法的枚举值
-    const validUrgency = ['critical', 'high', 'medium', 'low', 'none'];
-    if (!draft.urgency || typeof draft.urgency !== 'string' || !validUrgency.includes(draft.urgency)) {
-      throw new Error(`Generated goal must have valid urgency (one of: ${validUrgency.join(', ')})`);
-    }
     if (!Array.isArray(draft.tags)) {
       throw new Error('Generated goal must have tags array');
     }

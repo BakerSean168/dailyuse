@@ -43,7 +43,7 @@ export interface GoalStatisticsServerDTO {
   completedKeyResults: number;
   averageProgress: number; // 平均进度 0-100
   goalsByImportance: Record<string, number>;
-  goalsByUrgency: Record<string, number>;
+  // goalsByUrgency: Record<string, number>; // REMOVED
   goalsByCategory: Record<string, number>;
   goalsByStatus: Record<string, number>;
   goalsCreatedThisWeek: number;
@@ -70,7 +70,7 @@ export interface GoalStatisticsPersistenceDTO {
   completedKeyResults: number;
   averageProgress: number;
   goalsByImportance: string; // JSON string
-  goalsByUrgency: string; // JSON string
+  // goalsByUrgency: string; // REMOVED - JSON string
   goalsByCategory: string; // JSON string
   goalsByStatus: string; // JSON string
   goalsCreatedThisWeek: number;
@@ -114,7 +114,7 @@ export interface GoalStatisticsServer {
   completedKeyResults: number;
   averageProgress: number;
   goalsByImportance: Record<string, number>;
-  goalsByUrgency: Record<string, number>;
+  // goalsByUrgency: Record<string, number>; // REMOVED
   goalsByCategory: Record<string, number>;
   goalsByStatus: Record<string, number>;
   goalsCreatedThisWeek: number;

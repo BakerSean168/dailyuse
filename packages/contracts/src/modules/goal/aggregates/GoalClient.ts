@@ -2,7 +2,7 @@
  * Goal Aggregate Root - Client Interface
  * 目标聚合根 - 客户端接口
  */
-import type { ImportanceLevel, UrgencyLevel } from '../../../shared/index';
+import type { ImportanceLevel } from '../../../shared/index';
 import type { GoalStatus } from '../enums';
 import type { GoalServerDTO } from './GoalServer';
 import type { KeyResultClient, KeyResultClientDTO } from '../entities/KeyResultClient';
@@ -35,7 +35,7 @@ export interface GoalClientDTO {
   motivation?: string | null; // 实现动机
   status: GoalStatus;
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
+  // urgency: UrgencyLevel; // REMOVED
   category?: string | null;
   tags: string[];
   startDate?: number | null;
@@ -63,8 +63,13 @@ export interface GoalClientDTO {
   daysRemaining?: number | null;
   statusText: string;
   importanceText: string;
-  urgencyText: string;
-  priorityScore: number;
+  // urgencyText: string; // REMOVED
+  /** 动态优先级分数 (0-100)，基于 importance + targetDate 计算 */
+  priority: number;
+  /** 优先级显示文本，如 '紧急' / '高' / '中' / '低' */
+  priorityText: string;
+  /** 优先级级别，用于 UI 颜色显示 */
+  priorityLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   keyResultCount: number;
   completedKeyResultCount: number;
   reviewCount: number;
@@ -95,7 +100,7 @@ export interface GoalClient {
   motivation?: string | null; // 实现动机
   status: GoalStatus;
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
+  // urgency: UrgencyLevel; // REMOVED
   category?: string | null;
   tags: string[];
   startDate?: number | null;
@@ -121,8 +126,13 @@ export interface GoalClient {
   daysRemaining?: number | null;
   statusText: string;
   importanceText: string;
-  urgencyText: string;
-  priorityScore: number;
+  // urgencyText: string; // REMOVED
+  /** 动态优先级分数 (0-100) */
+  priority: number;
+  /** 优先级显示文本 */
+  priorityText: string;
+  /** 优先级级别 */
+  priorityLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   keyResultCount: number;
   completedKeyResultCount: number;
   reviewCount: number;
@@ -351,7 +361,7 @@ export interface GoalClientStatic {
     title: string;
     description?: string;
     importance: ImportanceLevel;
-    urgency: UrgencyLevel;
+    // urgency: UrgencyLevel; // REMOVED
     category?: string;
     tags?: string[];
     startDate?: number;

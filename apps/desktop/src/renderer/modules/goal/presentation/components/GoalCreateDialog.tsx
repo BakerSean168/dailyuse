@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { goalApplicationService } from '../../application/services/GoalApplicationService';
 import type { CreateGoalRequest } from '@dailyuse/contracts/goal';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 interface GoalCreateDialogProps {
   open: boolean;
@@ -20,7 +20,6 @@ export function GoalCreateDialog({ open, onClose, onCreated }: GoalCreateDialogP
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [importance, setImportance] = useState<ImportanceLevel>(ImportanceLevel.Moderate);
-  const [urgency, setUrgency] = useState<UrgencyLevel>(UrgencyLevel.Medium);
   const [targetDate, setTargetDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +41,6 @@ export function GoalCreateDialog({ open, onClose, onCreated }: GoalCreateDialogP
         title: title.trim(),
         description: description.trim() || undefined,
         importance,
-        urgency,
         targetDate: targetDate ? new Date(targetDate).getTime() : undefined,
       };
       
@@ -100,38 +98,21 @@ export function GoalCreateDialog({ open, onClose, onCreated }: GoalCreateDialogP
             />
           </div>
 
-          {/* Importance & Urgency */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">重要性</label>
-              <select
-                value={importance}
-                onChange={(e) => setImportance(e.target.value as ImportanceLevel)}
-                className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                disabled={isSubmitting}
-              >
-                <option value={ImportanceLevel.Trivial}>无关紧要</option>
-                <option value={ImportanceLevel.Minor}>不太重要</option>
-                <option value={ImportanceLevel.Moderate}>中等重要</option>
-                <option value={ImportanceLevel.Important}>非常重要</option>
-                <option value={ImportanceLevel.Vital}>极其重要</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">紧急度</label>
-              <select
-                value={urgency}
-                onChange={(e) => setUrgency(e.target.value as UrgencyLevel)}
-                className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                disabled={isSubmitting}
-              >
-                <option value={UrgencyLevel.None}>无期限</option>
-                <option value={UrgencyLevel.Low}>低度紧急</option>
-                <option value={UrgencyLevel.Medium}>中等紧急</option>
-                <option value={UrgencyLevel.High}>高度紧急</option>
-                <option value={UrgencyLevel.Critical}>非常紧急</option>
-              </select>
-            </div>
+          {/* Importance */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">重要性</label>
+            <select
+              value={importance}
+              onChange={(e) => setImportance(e.target.value as ImportanceLevel)}
+              className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+              disabled={isSubmitting}
+            >
+              <option value={ImportanceLevel.Trivial}>无关紧要</option>
+              <option value={ImportanceLevel.Minor}>不太重要</option>
+              <option value={ImportanceLevel.Moderate}>中等重要</option>
+              <option value={ImportanceLevel.Important}>非常重要</option>
+              <option value={ImportanceLevel.Vital}>极其重要</option>
+            </select>
           </div>
 
           {/* Target Date */}

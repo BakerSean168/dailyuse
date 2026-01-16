@@ -84,7 +84,8 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
         goalTitle: goal.title,
         triggerTypes: activeTriggers.map((t) => t.type),
         importance: goal.importance,
-        urgency: goal.urgency,
+        // urgency: goal.urgency, // REMOVED - priority is now computed
+        priority: goal.priority, // 使用计算属性
         upcomingTriggerDates: this.calculateUpcomingTriggerDates(goal, activeTriggers),
       },
     });
@@ -206,36 +207,28 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
 
   /**
    * 计算任务优先级
-   * 基于 Goal 的重要性和紧急程度
+   * 基于 Goal 的动态 priority 计算属性（0-100）
    */
   private calculatePriority(goal: GoalServerDTO): TaskPriority {
-    // 根据重要性和紧急程度映射到任务优先级
-    const { importance, urgency } = goal;
+    // 使用 Goal 的计算优先级属性进行映射
+    const priority = goal.priority ?? 0;
 
-    // Vital + Critical/High = URGENT
-    if (importance === 'vital' && (urgency === 'critical' || urgency === 'high')) {
+    // priority >= 80: URGENT (CRITICAL level)
+    if (priority >= 80) {
       return TaskPriority.URGENT;
     }
 
-    // Important + Critical/High = HIGH
-    // Vital + Medium = HIGH
-    if (
-      (importance === 'important' && (urgency === 'critical' || urgency === 'high')) ||
-      (importance === 'vital' && urgency === 'medium')
-    ) {
+    // priority >= 60: HIGH
+    if (priority >= 60) {
       return TaskPriority.HIGH;
     }
 
-    // Moderate + High/Medium = NORMAL
-    // Important + Medium/Low = NORMAL
-    if (
-      (importance === 'moderate' && (urgency === 'high' || urgency === 'medium')) ||
-      (importance === 'important' && (urgency === 'medium' || urgency === 'low'))
-    ) {
+    // priority >= 40: NORMAL (MEDIUM level)
+    if (priority >= 40) {
       return TaskPriority.NORMAL;
     }
 
-    // 其他情况 = LOW
+    // priority < 40: LOW
     return TaskPriority.LOW;
   }
 
@@ -249,7 +242,7 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
     const tags: string[] = [
       'goal-reminder',
       `importance:${goal.importance}`,
-      `urgency:${goal.urgency}`,
+      `priority:${goal.priority ?? 0}`, // 使用计算属性 priority
     ];
 
     // 添加触发器类型标签

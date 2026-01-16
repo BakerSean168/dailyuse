@@ -15,7 +15,7 @@
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalDomainService, Goal } from '@dailyuse/domain-server/goal';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { eventBus } from '@dailyuse/utils';
 
 /**
@@ -36,7 +36,7 @@ export interface CreateGoalParams {
   title: string;
   description?: string;
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
+  // urgency: UrgencyLevel; // REMOVED - priority is now computed from importance + targetDate
   parentGoalUuid?: string;
   folderUuid?: string;
   startDate?: number;
@@ -63,7 +63,7 @@ export interface UpdateGoalParams {
   title?: string;
   description?: string;
   importance?: ImportanceLevel;
-  urgency?: UrgencyLevel;
+  // urgency?: UrgencyLevel; // REMOVED
   category?: string;
   deadline?: number;
   tags?: string[];
