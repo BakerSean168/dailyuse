@@ -12,14 +12,8 @@
             variant="outlined" required />
         </v-col>
 
-        <!-- 紧急性 -->
-        <v-col cols="12" md="6">
-          <v-select v-model="urgency" label="紧急性" :items="urgencyOptions" item-title="title" item-value="value"
-            variant="outlined" required />
-        </v-col>
-
-        <!-- 任务标签 -->
-        <v-col cols="12" md="6">
+        <!-- 任务标签 (Story 2.3: 占满整行，因为紧急性已移除) -->
+        <v-col cols="12">
           <v-combobox v-model="tags" label="任务标签" variant="outlined" multiple chips closable-chips
             :items="tagSuggestions" prepend-inner-icon="mdi-tag-multiple-outline" hint="按回车键添加新标签" persistent-hint />
         </v-col>
@@ -31,7 +25,7 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import type { TaskTemplate } from '@dailyuse/domain-client/task';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 interface Props {
   modelValue: TaskTemplate;
@@ -72,19 +66,6 @@ const importanceOptions = [
   { title: '无关紧要', value: ImportanceLevel.Trivial, subtitle: '纯粹消遣，如游戏娱乐' },
 ];
 
-// 紧急性选项
-const urgencyOptions = [
-  {
-    title: '非常紧急',
-    value: UrgencyLevel.Critical,
-    subtitle: '需要立即处理，如药物提醒、紧急会议',
-  },
-  { title: '高度紧急', value: UrgencyLevel.High, subtitle: '今天必须处理，如当天截止的工作任务' },
-  { title: '中等紧急', value: UrgencyLevel.Medium, subtitle: '近期需要处理，如本周需要完成的报告' },
-  { title: '低度紧急', value: UrgencyLevel.Low, subtitle: '可以稍后处理，如长期学习计划' },
-  { title: '无期限', value: UrgencyLevel.None, subtitle: '没有具体时间要求，如兴趣学习、休闲活动' },
-];
-
 // 标签建议
 const tagSuggestions = [
   '重要',
@@ -115,16 +96,6 @@ const importance = computed({
   },
 });
 
-// 紧急性
-const urgency = computed({
-  get: () => props.modelValue.urgency,
-  set: (value: UrgencyLevel) => {
-    updateTemplate((template) => {
-      template.updateUrgency(value);
-    });
-  },
-});
-
 // 标签
 const tags = computed({
   get: () => props.modelValue.tags || [],
@@ -135,14 +106,14 @@ const tags = computed({
   },
 });
 
-// 简单验证
+// Story 2.3: 简化验证 - 仅检查 importance（紧急性已移除）
 const isValid = computed(() => {
-  return Boolean(importance.value && urgency.value);
+  return Boolean(importance.value);
 });
 
-// 监听验证状态变化
+// 监听验证状态变化 - Story 2.3: 仅监听 importance
 watch(
-  () => [importance.value, urgency.value],
+  () => importance.value,
   () => {
     emit('update:validation', isValid.value);
   },

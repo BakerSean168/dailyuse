@@ -9,7 +9,7 @@
 
 import { useState } from 'react';
 import type { CreateTaskTemplateRequest } from '@dailyuse/contracts/task';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { TaskType, TimeType } from '@dailyuse/contracts/task';
 import { useTaskTemplate } from '../hooks/useTaskTemplate';
 
@@ -23,7 +23,6 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [importance, setImportance] = useState<ImportanceLevel>(ImportanceLevel.Moderate);
-  const [urgency, setUrgency] = useState<UrgencyLevel>(UrgencyLevel.Medium);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,6 +42,7 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
       setError(null);
 
       // 构建符合 contracts 类型的输入
+      // Story 2.3: urgency 已移除 - Priority 由后端根据 importance 和 dueDate 自动计算
       const input: CreateTaskTemplateRequest = {
         accountUuid: 'local-user', // Desktop 本地用户
         title: title.trim(),
@@ -52,7 +52,6 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
           timeType: TimeType.ALL_DAY,
         },
         importance,
-        urgency,
       };
       
       await createTemplate(input);
@@ -109,38 +108,21 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
             />
           </div>
 
-          {/* Importance & Urgency */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">重要性</label>
-              <select
-                value={importance}
-                onChange={(e) => setImportance(e.target.value as ImportanceLevel)}
-                className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                disabled={isSubmitting}
-              >
-                <option value={ImportanceLevel.Trivial}>无关紧要</option>
-                <option value={ImportanceLevel.Minor}>不太重要</option>
-                <option value={ImportanceLevel.Moderate}>中等重要</option>
-                <option value={ImportanceLevel.Important}>非常重要</option>
-                <option value={ImportanceLevel.Vital}>极其重要</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">紧急性</label>
-              <select
-                value={urgency}
-                onChange={(e) => setUrgency(e.target.value as UrgencyLevel)}
-                className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                disabled={isSubmitting}
-              >
-                <option value={UrgencyLevel.None}>无期限</option>
-                <option value={UrgencyLevel.Low}>低度紧急</option>
-                <option value={UrgencyLevel.Medium}>中等紧急</option>
-                <option value={UrgencyLevel.High}>高度紧急</option>
-                <option value={UrgencyLevel.Critical}>非常紧急</option>
-              </select>
-            </div>
+          {/* Importance */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">重要性</label>
+            <select
+              value={importance}
+              onChange={(e) => setImportance(e.target.value as ImportanceLevel)}
+              className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+              disabled={isSubmitting}
+            >
+              <option value={ImportanceLevel.Trivial}>无关紧要</option>
+              <option value={ImportanceLevel.Minor}>不太重要</option>
+              <option value={ImportanceLevel.Moderate}>中等重要</option>
+              <option value={ImportanceLevel.Important}>非常重要</option>
+              <option value={ImportanceLevel.Vital}>极其重要</option>
+            </select>
           </div>
 
           {/* Error */}

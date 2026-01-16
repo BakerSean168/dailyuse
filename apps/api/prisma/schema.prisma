@@ -418,7 +418,7 @@ model goal {
   title                   String
   description             String?
   status                  String                    @default("pending")
-  importance              Int                       @default(2)
+  importance              String                    @default("moderate") // ImportanceLevel
   urgency                 Int                       @default(2)
   category                String?
   tags                    String?
@@ -1186,8 +1186,7 @@ model taskTemplate {
   description String?
   taskType    String  @map("task_type") // 'ONE_TIME' | 'RECURRING'
   status      String
-  importance  Int // ImportanceLevel (0-4)
-  urgency     Int // UrgencyLevel (0-4)
+  importance  String @default("moderate") // ImportanceLevel: vital | important | moderate | minor | trivial
   color       String?
   tags        String // JSON: string[]
   folderUuid  String? @map("folder_uuid")
@@ -1269,7 +1268,6 @@ model taskTemplate {
   @@index([taskType])
   @@index([status])
   @@index([importance])
-  @@index([urgency])
   @@index([goalUuid])
   @@index([keyResultUuid])
   @@index([parentTaskUuid])

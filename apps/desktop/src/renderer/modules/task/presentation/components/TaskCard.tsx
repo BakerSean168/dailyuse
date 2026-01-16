@@ -7,6 +7,11 @@
  * - Props 接受 TaskTemplate Entity
  * - 使用 useTaskTemplate Hook 进行状态操作
  * - 利用 Entity 的 getter 方法（isActive, isPaused, isArchived）
+ * 
+ * Story 2.4: 优先级视觉化
+ * - 根据 priority 分数应用背景色和边框颜色
+ * - 添加优先级指示符 icon（⚡/⬆️）
+ * - 支持 light/dark 主题
  */
 
 import { useState } from 'react';
@@ -89,6 +94,68 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
     None: 'bg-gray-100 text-gray-600',
   };
 
+  /**
+   * Story 2.4: Priority visualization helper functions
+   * Returns priority level: 'high' | 'medium' | 'low'
+   * High (>=80): Red - demands immediate attention
+   * Medium (60-79): Amber - notable but not urgent
+   * Low (<60): Gray - normal priority
+   */
+  const getPriorityLevel = (priority: number | undefined): string => {
+    if (!priority) return 'low';
+    if (priority >= 80) return 'high';
+    if (priority >= 60) return 'medium';
+    return 'low';
+  };
+
+  /**
+   * Get CSS classes for priority-based card styling
+   */
+  const getPriorityClasses = (priority: number | undefined): string => {
+    const level = getPriorityLevel(priority);
+    const baseClasses = 'border-l-4 transition-all';
+    
+    if (level === 'high') {
+      return `${baseClasses} border-l-red-600 bg-red-50 dark:bg-red-900/20 dark:border-l-red-400`;
+    } else if (level === 'medium') {
+      return `${baseClasses} border-l-amber-500 bg-amber-50 dark:bg-amber-900/20 dark:border-l-amber-400`;
+    } else {
+      return `${baseClasses} border-l-gray-400 bg-gray-50 dark:bg-gray-900/20 dark:border-l-gray-400`;
+    }
+  };
+
+  /**
+   * Get priority indicator icon
+   * 90+: ⚡ (critical)
+   * 80-89: ⬆️ (important)
+   */
+  const getPriorityIcon = (priority: number | undefined): string | null => {
+    if (!priority) return null;
+    if (priority >= 90) return '⚡';
+    if (priority >= 80) return '⬆️';
+    return null;
+  };
+
+  /**
+   * Get priority chip color
+   */
+  const getPriorityChipColor = (priority: number | undefined): string => {
+    if (!priority) return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
+    if (priority >= 80) return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200';
+    if (priority >= 60) return 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-200';
+    return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
+  };
+
+  /**
+   * Get animation class for priority indicator
+   */
+  const getPriorityAnimation = (priority: number | undefined): string => {
+    if (!priority) return '';
+    if (priority >= 90) return 'animate-pulse'; // critical
+    if (priority >= 80) return 'opacity-90'; // high
+    return '';
+  };
+
   const handleDetailClose = () => {
     setShowDetail(false);
   };
@@ -111,6 +178,7 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
       className={`
         rounded-lg border bg-card p-4 space-y-3 transition-all cursor-pointer
         hover:shadow-md hover:border-primary/50
+        ${getPriorityClasses(template.priority)}
         ${isUpdating ? 'opacity-50 pointer-events-none' : ''}
       `}
       onClick={handleCardClick}
@@ -118,7 +186,15 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-foreground truncate">{template.title}</h3>
+          <div className="flex items-center gap-2">
+            {/* Priority Indicator Icon - Story 2.4 */}
+            {getPriorityIcon(template.priority) && (
+              <span className={`text-lg ${getPriorityAnimation(template.priority)}`}>
+                {getPriorityIcon(template.priority)}
+              </span>
+            )}
+            <h3 className="font-semibold text-foreground truncate">{template.title}</h3>
+          </div>
           {template.description && (
             <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
               {template.description}
@@ -137,9 +213,11 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
             ⚡ {template.importanceText ?? template.importance}
           </span>
         )}
-        {template.urgency && template.urgency !== UrgencyLevel.None && (
-          <span className={`px-1.5 py-0.5 text-xs rounded ${urgencyColors[template.urgency] ?? 'bg-gray-100'}`}>
-            🔥 {template.urgencyText ?? template.urgency}
+        {/* Story 2.3: Urgency removed - Priority now computed automatically */}
+        {/* Story 2.4: Add Priority Score Chip */}
+        {template.priority !== undefined && (
+          <span className={`px-1.5 py-0.5 text-xs rounded ${getPriorityChipColor(template.priority)}`}>
+            🔥 {Math.round(template.priority)}/100
           </span>
         )}
       </div>

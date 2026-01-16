@@ -37,8 +37,7 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
       reminderConfigUnit: data.reminderConfigUnit,
       reminderConfigChannel: data.reminderConfigChannel,
       importance: data.importance,
-      urgency: data.urgency,
-      // Flattened goalBinding fields (RECURRING 任务 - 旧版本)
+      // Flattened goalBinding fields (RECURRING 任务 - 旧版�?
       goalBindingGoalUuid: data.goalBindingGoalUuid,
       goalBindingKeyResultUuid: data.goalBindingKeyResultUuid,
       goalBindingIncrementValue: data.goalBindingIncrementValue,
@@ -51,7 +50,7 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
       createdAt: data.createdAt.getTime(),
       updatedAt: data.updatedAt.getTime(),
       deletedAt: data.deletedAt?.getTime() ?? null,
-      // ONE_TIME 任务新字段
+      // ONE_TIME 任务新字�?
       goalUuid: data.goalUuid,
       keyResultUuid: data.keyResultUuid,
       parentTaskUuid: data.parentTaskUuid,
@@ -86,15 +85,7 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
     return date.getTime();
   }
 
-  private importanceToNumber(importance: string): number {
-    const map: Record<string, number> = { LOW: 1, MEDIUM: 2, HIGH: 3 };
-    return map[importance] ?? 2;
-  }
 
-  private urgencyToNumber(urgency: string): number {
-    const map: Record<string, number> = { LOW: 1, MEDIUM: 2, HIGH: 3 };
-    return map[urgency] ?? 2;
-  }
 
   async save(template: TaskTemplate): Promise<void> {
     const persistence = template.toPersistenceDTO();
@@ -137,9 +128,8 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
           reminderConfigTimeOffsetMinutes: persistence.reminderConfigTimeOffsetMinutes,
           reminderConfigUnit: persistence.reminderConfigUnit,
           reminderConfigChannel: persistence.reminderConfigChannel,
-          importance: this.importanceToNumber(persistence.importance),
-          urgency: this.urgencyToNumber(persistence.urgency),
-          // Flattened goalBinding fields (RECURRING - 旧版本)
+          importance: persistence.importance,
+          // Flattened goalBinding fields (RECURRING - 旧版�?
           goalBindingGoalUuid: persistence.goalBindingGoalUuid,
           goalBindingKeyResultUuid: persistence.goalBindingKeyResultUuid,
           goalBindingIncrementValue: persistence.goalBindingIncrementValue,
@@ -152,7 +142,7 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
           createdAt: this.toDate(persistence.createdAt) ?? new Date(),
           updatedAt: this.toDate(persistence.updatedAt) ?? new Date(),
           deletedAt: this.toDate(persistence.deletedAt) ?? undefined,
-          // ONE_TIME 任务新字段
+          // ONE_TIME 任务新字�?
           goalUuid: persistence.goalUuid,
           keyResultUuid: persistence.keyResultUuid,
           parentTaskUuid: persistence.parentTaskUuid,
@@ -188,9 +178,8 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
           reminderConfigTimeOffsetMinutes: persistence.reminderConfigTimeOffsetMinutes,
           reminderConfigUnit: persistence.reminderConfigUnit,
           reminderConfigChannel: persistence.reminderConfigChannel,
-          importance: this.importanceToNumber(persistence.importance),
-          urgency: this.urgencyToNumber(persistence.urgency),
-          // Flattened goalBinding fields (RECURRING - 旧版本)
+          importance: persistence.importance,
+          // Flattened goalBinding fields (RECURRING - 旧版�?
           goalBindingGoalUuid: persistence.goalBindingGoalUuid,
           goalBindingKeyResultUuid: persistence.goalBindingKeyResultUuid,
           goalBindingIncrementValue: persistence.goalBindingIncrementValue,
@@ -202,7 +191,7 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
           generateAheadDays: persistence.generateAheadDays,
           updatedAt: this.toDate(persistence.updatedAt) ?? new Date(),
           deletedAt: this.toDate(persistence.deletedAt) ?? undefined,
-          // ONE_TIME 任务新字段
+          // ONE_TIME 任务新字�?
           goalUuid: persistence.goalUuid,
           keyResultUuid: persistence.keyResultUuid,
           parentTaskUuid: persistence.parentTaskUuid,
@@ -341,7 +330,7 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
         await tx.taskInstance.deleteMany({ where: { templateUuid: uuid } });
         // 删除历史记录
         await tx.taskTemplateHistory.deleteMany({ where: { templateUuid: uuid } });
-        // 最后删除模板本身
+        // 最后删除模板本�?
         await tx.taskTemplate.delete({ where: { uuid } });
       })
     );
@@ -441,7 +430,7 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
     const templates = await this.prisma.taskTemplate.findMany({
       where: {
         taskType: 'ONE_TIME',
-        goalUuid, // 新字段
+        goalUuid, // 新字�?
         deletedAt: null,
       },
       orderBy: { dueDate: 'asc' },
@@ -491,7 +480,7 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
   }
 
   async findTasksSortedByPriority(accountUuid: string, limit?: number): Promise<TaskTemplate[]> {
-    // 获取所有 ONE_TIME 任务
+    // 获取所�?ONE_TIME 任务
     const templates = await this.prisma.taskTemplate.findMany({
       where: {
         accountUuid,
@@ -501,7 +490,7 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
       },
     });
 
-    // 转换为实体并计算优先级
+    // 转换为实体并计算优先�?
     const tasksWithPriority = templates.map((t) => {
       const task = this.mapToEntity(t);
       const priority = task.getPriority();

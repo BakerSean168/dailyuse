@@ -18,6 +18,7 @@ import { CompletionRecord } from '../../value-objects/CompletionRecord';
 import { SkipRecord } from '../../value-objects/SkipRecord';
 import type { CompletionRecordServerDTO, SkipRecordServerDTO, TaskInstancePersistenceDTO, TaskInstanceServerDTO } from '@dailyuse/contracts/task';
 import { TimeType } from '@dailyuse/contracts/task';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 describe('TaskInstance Aggregate', () => {
   // ==================== 测试数据 ====================
@@ -47,6 +48,7 @@ describe('TaskInstance Aggregate', () => {
           accountUuid: mockAccountUuid,
           instanceDate: mockInstanceDate,
           timeConfig: createTestTimeConfig(),
+          importance: ImportanceLevel.Important,
         });
 
         expect(instance.uuid).toBeDefined();
@@ -71,6 +73,7 @@ describe('TaskInstance Aggregate', () => {
           accountUuid: mockAccountUuid,
           instanceDate: mockInstanceDate,
           timeConfig: createTestTimeConfig(),
+          importance: ImportanceLevel.Important,
         });
 
         const instance2 = TaskInstance.create({
@@ -78,6 +81,7 @@ describe('TaskInstance Aggregate', () => {
           accountUuid: mockAccountUuid,
           instanceDate: mockInstanceDate,
           timeConfig: createTestTimeConfig(),
+          importance: ImportanceLevel.Important,
         });
 
         expect(instance1.uuid).not.toBe(instance2.uuid);
@@ -90,6 +94,7 @@ describe('TaskInstance Aggregate', () => {
           accountUuid: mockAccountUuid,
           instanceDate: mockInstanceDate,
           timeConfig: createTestTimeConfig(),
+          importance: ImportanceLevel.Important,
         });
         const afterCreate = Date.now();
 
@@ -231,6 +236,7 @@ describe('TaskInstance Aggregate', () => {
         accountUuid: mockAccountUuid,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
+        importance: ImportanceLevel.Important,
       });
     });
 
@@ -458,6 +464,7 @@ describe('TaskInstance Aggregate', () => {
         accountUuid: mockAccountUuid,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
+        importance: ImportanceLevel.Important,
       });
     });
 
@@ -561,6 +568,7 @@ describe('TaskInstance Aggregate', () => {
           accountUuid: mockAccountUuid,
           instanceDate: Date.now() - 86400000 - 1000, // 超过1天 + 1秒
           timeConfig: createTestTimeConfig(),
+          importance: ImportanceLevel.Important,
         });
 
         expect(overdueInstance.status).toBe('PENDING');
@@ -573,6 +581,7 @@ describe('TaskInstance Aggregate', () => {
           accountUuid: mockAccountUuid,
           instanceDate: Date.now() - 86400000 - 1000,
           timeConfig: createTestTimeConfig(),
+          importance: ImportanceLevel.Important,
         });
 
         overdueInstance.start();
@@ -586,6 +595,7 @@ describe('TaskInstance Aggregate', () => {
           accountUuid: mockAccountUuid,
           instanceDate: Date.now(),
           timeConfig: createTestTimeConfig(),
+          importance: ImportanceLevel.Important,
         });
 
         expect(freshInstance.status).toBe('PENDING');
@@ -598,6 +608,7 @@ describe('TaskInstance Aggregate', () => {
           accountUuid: mockAccountUuid,
           instanceDate: Date.now() - 86400000 - 1000,
           timeConfig: createTestTimeConfig(),
+          importance: ImportanceLevel.Important,
         });
 
         overdueInstance.complete();
@@ -611,6 +622,7 @@ describe('TaskInstance Aggregate', () => {
           accountUuid: mockAccountUuid,
           instanceDate: Date.now() - 86400000 - 1000,
           timeConfig: createTestTimeConfig(),
+          importance: ImportanceLevel.Important,
         });
 
         overdueInstance.skip();
@@ -624,6 +636,7 @@ describe('TaskInstance Aggregate', () => {
           accountUuid: mockAccountUuid,
           instanceDate: Date.now() - 86400000 - 1000,
           timeConfig: createTestTimeConfig(),
+          importance: ImportanceLevel.Important,
         });
 
         overdueInstance.markExpired();
@@ -643,6 +656,7 @@ describe('TaskInstance Aggregate', () => {
         accountUuid: mockAccountUuid,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
+        importance: ImportanceLevel.Important,
       });
     });
 
@@ -655,6 +669,8 @@ describe('TaskInstance Aggregate', () => {
         expect(dto.accountUuid).toBe(mockAccountUuid);
         expect(dto.instanceDate).toBe(mockInstanceDate);
         expect(dto.status).toBe('PENDING');
+        expect(dto.importance).toBe(ImportanceLevel.Important);
+        expect(dto.priority).toBeUndefined();
         expect(dto.timeConfig).toBeDefined();
         expect(dto.completionRecord).toBeNull();
         expect(dto.skipRecord).toBeNull();
@@ -762,6 +778,7 @@ describe('TaskInstance Aggregate', () => {
         expect(dto.templateUuid).toBe(mockTemplateUuid);
         expect(dto.accountUuid).toBe(mockAccountUuid);
         expect(dto.status).toBe('PENDING');
+        expect(dto.importance).toBe(ImportanceLevel.Important);
         expect(typeof dto.timeConfig).toBe('string');
         expect(dto.completionRecord).toBeNull();
         expect(dto.skipRecord).toBeNull();
@@ -797,6 +814,7 @@ describe('TaskInstance Aggregate', () => {
         accountUuid: mockAccountUuid,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
+        importance: ImportanceLevel.Important,
       });
     });
 
@@ -895,6 +913,7 @@ describe('TaskInstance Aggregate', () => {
         accountUuid: mockAccountUuid,
         instanceDate: mockInstanceDate,
         timeConfig: allDayTimeConfig,
+        importance: ImportanceLevel.Important,
       });
 
       expect(instance.timeConfig.timeType).toBe('ALL_DAY');
@@ -906,6 +925,7 @@ describe('TaskInstance Aggregate', () => {
         accountUuid: mockAccountUuid,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
+        importance: ImportanceLevel.Important,
       });
 
       original.complete(3600000, 'Test', 5);
@@ -924,6 +944,7 @@ describe('TaskInstance Aggregate', () => {
         accountUuid: mockAccountUuid,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
+        importance: ImportanceLevel.Important,
       });
 
       original.skip('Busy');
@@ -942,6 +963,7 @@ describe('TaskInstance Aggregate', () => {
         accountUuid: mockAccountUuid,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
+        importance: ImportanceLevel.Important,
       });
 
       testInstance.complete(3600000);
@@ -957,6 +979,7 @@ describe('TaskInstance Aggregate', () => {
         accountUuid: mockAccountUuid,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
+        importance: ImportanceLevel.Important,
       });
 
       testInstance.start();

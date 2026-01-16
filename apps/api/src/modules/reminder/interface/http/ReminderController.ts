@@ -4,11 +4,13 @@ import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/respons
 import { 
   createLogger,
   DomainError,
+  isDomainError,
+} from '@dailyuse/utils';
+import {
   ReminderTemplateNotFoundError,
   ReminderTemplateMethodMissingError,
   ReminderTemplateUpdateError,
-  isDomainError,
-} from '@dailyuse/utils';
+} from '../../errors/ReminderErrors';
 import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 
 const logger = createLogger('ReminderController');

@@ -19,6 +19,7 @@ export class PrismaTaskInstanceRepository implements ITaskInstanceRepository {
       accountUuid: data.accountUuid,
       instanceDate: Number(data.instanceDate),
       timeConfig: data.timeConfig,
+      importance: data.importance || 'Moderate',
       status: data.status,
       completionRecord: data.completionRecord,
       skipRecord: data.skipRecord,

@@ -14,9 +14,9 @@ export interface TaskForDAG {
   title: string;
   description?: string | null;
   status: string; // TaskInstanceStatus or TaskTemplateStatus
-  priority?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  priorityLevel?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  priorityScore?: number; // 0-100 由后端计算
   importance?: string;
-  urgency?: string;
   estimatedMinutes?: number | null;
   dueDate?: string;
   tags?: string[];
@@ -33,9 +33,9 @@ export function taskTemplateToDAG(template: TaskTemplateClientDTO): TaskForDAG {
     title: template.title,
     description: template.description,
     status: template.status,
-    priority: mapImportanceUrgencyToPriority(template.importance, template.urgency),
+    priorityLevel: mapPriorityScoreToLevel(template.priority),
+    priorityScore: template.priority,
     importance: template.importance,
-    urgency: template.urgency,
     estimatedMinutes: extractEstimatedMinutes(template.timeConfig),
     tags: template.tags,
   };
@@ -53,11 +53,11 @@ export function taskInstanceToDAG(
     title: template?.title || `Task ${instance.uuid.slice(0, 8)}`,
     description: template?.description,
     status: instance.status,
-    priority: template
-      ? mapImportanceUrgencyToPriority(template.importance, template.urgency)
+    priorityLevel: template
+      ? mapPriorityScoreToLevel(template.priority)
       : 'MEDIUM',
+    priorityScore: template?.priority,
     importance: template?.importance,
-    urgency: template?.urgency,
     estimatedMinutes: extractEstimatedMinutes(instance.timeConfig),
     tags: template?.tags || [],
     templateUuid: instance.templateUuid,
@@ -66,22 +66,18 @@ export function taskInstanceToDAG(
 }
 
 /**
- * 从 importance 和 urgency 映射到 priority
+ * 将优先级分数 (0-100) 映射到优先级级别
+ * 基于 Story 1.3 的算法
  */
-function mapImportanceUrgencyToPriority(
-  importance: string,
-  urgency: string,
+function mapPriorityScoreToLevel(
+  priorityScore?: number,
 ): 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' {
-  // 紧急且重要 -> CRITICAL
-  if (importance === 'HIGH' && urgency === 'HIGH') return 'CRITICAL';
-
-  // 重要或紧急 -> HIGH
-  if (importance === 'HIGH' || urgency === 'HIGH') return 'HIGH';
-
-  // 中等 -> MEDIUM
-  if (importance === 'MEDIUM' || urgency === 'MEDIUM') return 'MEDIUM';
-
-  // 其他 -> LOW
+  if (priorityScore === undefined || priorityScore === null) return 'MEDIUM';
+  
+  // 优先级分数映射
+  if (priorityScore >= 80) return 'CRITICAL';
+  if (priorityScore >= 60) return 'HIGH';
+  if (priorityScore >= 40) return 'MEDIUM';
   return 'LOW';
 }
 
@@ -111,6 +107,7 @@ export interface TaskForWidget {
   description?: string | null;
   status: string;
   priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  priorityScore?: number;
   scheduledTime?: number | null;
   dueDate?: number | null;
   templateUuid: string;
@@ -131,8 +128,9 @@ export function taskInstanceToWidget(
     description: template?.description,
     status: instance.status,
     priority: template
-      ? mapImportanceUrgencyToPriority(template.importance, template.urgency)
+      ? mapPriorityScoreToLevel(template.priority)
       : 'MEDIUM',
+    priorityScore: template?.priority,
     scheduledTime: instance.timeConfig?.timePoint ?? null,
     dueDate: template?.dueDate ?? null,
     templateUuid: instance.templateUuid,

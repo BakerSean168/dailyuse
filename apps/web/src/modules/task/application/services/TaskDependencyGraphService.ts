@@ -137,7 +137,7 @@ export class TaskDependencyGraphService {
       const status = taskDependencyStatus.get(task.uuid) || 'PENDING';
       const color = this.getTaskColor(task, status);
       const symbolSize = this.calculateNodeSize(task);
-      const priority = task.priority || 'MEDIUM';
+      const priority = task.priorityLevel || 'MEDIUM';
 
       return {
         id: task.uuid,
@@ -171,7 +171,7 @@ export class TaskDependencyGraphService {
           uuid: task.uuid,
           title: task.title,
           status: task.status,
-          priority: task.priority,
+          priority: task.priorityLevel,
           estimatedMinutes: task.estimatedMinutes,
           dueDate: task.dueDate,
           tags: task.tags || [],
@@ -292,7 +292,7 @@ export class TaskDependencyGraphService {
     let baseSize = 50;
 
     // 根据优先级调整大小
-    const priority = task.priority || 'MEDIUM';
+    const priority = task.priorityLevel || 'MEDIUM';
     if (priority === 'CRITICAL') baseSize += 20;
     else if (priority === 'HIGH') baseSize += 10;
 

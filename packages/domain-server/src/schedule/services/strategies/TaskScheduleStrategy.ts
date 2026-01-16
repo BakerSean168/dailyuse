@@ -96,7 +96,6 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
         recurrenceFrequency: recurrenceRule.frequency,
         reminderTriggers: reminderConfig.triggers,
         importance: task.importance,
-        urgency: task.urgency,
       },
     });
 
@@ -252,35 +251,28 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
 
   /**
    * 计算任务优先级
-   * 基于 Task 的重要性和紧急程度
+   * 基于 Task 的重要性（importance）
+   * Note: urgency已在Story 1.1中移除，现在只使用importance
    */
   private calculatePriority(task: TaskTemplateServerDTO): TaskPriority {
-    const { importance, urgency } = task;
+    const { importance } = task;
 
-    // Vital + Critical/High = URGENT
-    if (importance === 'vital' && (urgency === 'critical' || urgency === 'high')) {
+    // Vital = URGENT
+    if (importance === 'vital') {
       return TaskPriority.URGENT;
     }
 
-    // Important + Critical/High = HIGH
-    // Vital + Medium = HIGH
-    if (
-      (importance === 'important' && (urgency === 'critical' || urgency === 'high')) ||
-      (importance === 'vital' && urgency === 'medium')
-    ) {
+    // Important = HIGH
+    if (importance === 'important') {
       return TaskPriority.HIGH;
     }
 
-    // Moderate + High/Medium = NORMAL
-    // Important + Medium/Low = NORMAL
-    if (
-      (importance === 'moderate' && (urgency === 'high' || urgency === 'medium')) ||
-      (importance === 'important' && (urgency === 'medium' || urgency === 'low'))
-    ) {
+    // Moderate = NORMAL
+    if (importance === 'moderate') {
       return TaskPriority.NORMAL;
     }
 
-    // 其他情况 = LOW
+    // Minor/Trivial = LOW
     return TaskPriority.LOW;
   }
 
@@ -291,7 +283,6 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
     const tags: string[] = [
       'task-reminder',
       `importance:${task.importance}`,
-      `urgency:${task.urgency}`,
       `frequency:${task.recurrenceRule?.frequency}`,
     ];
 

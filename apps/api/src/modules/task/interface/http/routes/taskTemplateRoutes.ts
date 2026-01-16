@@ -275,16 +275,30 @@ router.post('/:id/unbind-goal', TaskTemplateController.unbindFromGoal);
  *   get:
  *     tags: [Task Templates]
  *     summary: 获取任务模板列表
- *     description: 获取用户的所有任务模板
+ *     description: 获取用户的所有任务模板 (Story 2.5: 支持 sortBy 和 filterBy 参数)
  *     security:
  *       - bearerAuth: []
  *     parameters:
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [priority, dueDate, createdAt, importance]
+ *           default: priority
+ *         description: '(Story 2.5) 排序字段: priority (默认) | dueDate | createdAt | importance'
+ *       - in: query
+ *         name: filterBy
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: '(Story 2.5) 过滤条件: importance:vital|important|moderate|minor|trivial, status:active|completed|blocked|cancelled, dueDate:overdue|today|upcoming|noDueDate (可多个，AND关系)'
  *       - in: query
  *         name: status
  *         schema:
  *           type: string
  *           enum: [ACTIVE, PAUSED, ARCHIVED, DELETED]
- *         description: 按状态过滤
+ *         description: 按状态过滤 (已弃用, 改用 filterBy=status:*)
  *       - in: query
  *         name: folderUuid
  *         schema:
@@ -303,6 +317,8 @@ router.post('/:id/unbind-goal', TaskTemplateController.unbindFromGoal);
  *     responses:
  *       200:
  *         description: 成功返回任务模板列表
+ *       400:
+ *         description: 参数无效 (Story 2.5)
  */
 router.post('/', TaskTemplateController.createTaskTemplate);
 router.get('/', TaskTemplateController.getTaskTemplates);

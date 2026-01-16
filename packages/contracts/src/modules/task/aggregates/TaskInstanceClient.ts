@@ -4,6 +4,7 @@
 
 import type { TaskInstanceServerDTO } from './TaskInstanceServer';
 import type { TaskInstanceStatus } from '../enums';
+import { ImportanceLevel } from '../../../shared/importance';
 import type {
   TaskTimeConfigClient,
   TaskTimeConfigClientDTO,
@@ -19,6 +20,18 @@ export interface TaskInstanceClientDTO {
   accountUuid: string;
   instanceDate: number;
   timeConfig: TaskTimeConfigClientDTO;
+  /**
+   * 任务重要性级别 (继承自 TaskTemplate)
+   * Story 1.1+: 用户设置的重要性，用于优先级计算
+   */
+  importance?: ImportanceLevel;
+  /**
+   * 优先级分数 (0-100)
+   * 由系统根据 importance + dueDate 动态计算
+   * @readonly 此字段不能直接修改，计算由 Application Layer 负责
+   * @computed 基于 Story 1.3 算法计算得出
+   */
+  priority?: number;
   status: TaskInstanceStatus;
   completionRecord?: CompletionRecordClientDTO | null;
   skipRecord?: SkipRecordClientDTO | null;
@@ -47,6 +60,18 @@ export interface TaskInstanceClient {
   accountUuid: string;
   instanceDate: number;
   timeConfig: TaskTimeConfigClient;
+  /**
+   * 任务重要性级别 (继承自 TaskTemplate)
+   * Story 1.1+: 用户设置的重要性，用于优先级计算
+   */
+  importance?: ImportanceLevel;
+  /**
+   * 优先级分数 (0-100)
+   * 由系统根据 importance + dueDate 动态计算
+   * @readonly 此字段不能直接修改，计算由 Application Layer 负责
+   * @computed 基于 Story 1.3 算法计算得出
+   */
+  priority?: number;
   status: TaskInstanceStatus;
   completionRecord?: CompletionRecordClient | null;
   skipRecord?: SkipRecordClient | null;

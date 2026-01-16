@@ -407,7 +407,7 @@ watch(isOpen, (newVal) => {
 });
 
 // Watch search query with debounce
-let searchTimeout: NodeJS.Timeout;
+let searchTimeout: ReturnType<typeof setTimeout>;
 watch(searchQuery, (newQuery) => {
   clearTimeout(searchTimeout);
   selectedIndex.value = 0;

@@ -4,15 +4,15 @@ import type {
   LoginRequest,
   RegisterRequest,
   AuthTokens,
-  ActiveSessionsResponseDTO,
-  ApiKeyListResponseDTO,
-  TrustedDevicesResponseDTO,
+  ActiveSessionsResponse,
+  ApiKeyListResponse,
+  TrustedDevicesResponse,
 } from '@dailyuse/contracts/authentication';
 
 // 使用 DTO 类型
-type SessionDTO = ActiveSessionsResponseDTO['sessions'][0];
-type ApiKeyDTO = ApiKeyListResponseDTO['keys'][0];
-type TrustedDeviceDTO = TrustedDevicesResponseDTO['devices'][0];
+type SessionDTO = ActiveSessionsResponse['sessions'][0];
+type ApiKeyDTO = ApiKeyListResponse['keys'][0];
+type TrustedDeviceDTO = TrustedDevicesResponse['devices'][0];
 
 /**
  * Auth Store - 状态管理
@@ -146,7 +146,7 @@ export const useAuthStore = defineStore('auth', () => {
    * 移除会话
    */
   function removeSession(sessionId: string) {
-    activeSessions.value = activeSessions.value.filter((s) => s.id !== sessionId);
+    activeSessions.value = activeSessions.value.filter((s: SessionDTO) => s.id !== sessionId);
   }
 
   /**
@@ -178,7 +178,7 @@ export const useAuthStore = defineStore('auth', () => {
    * 移除 API Key
    */
   function removeApiKey(keyId: string) {
-    apiKeys.value = apiKeys.value.filter((k) => k.id !== keyId);
+    apiKeys.value = apiKeys.value.filter((k: ApiKeyDTO) => k.id !== keyId);
   }
 
   // ===== 设备管理 =====
@@ -201,7 +201,7 @@ export const useAuthStore = defineStore('auth', () => {
    * 移除受信任设备
    */
   function removeTrustedDevice(deviceId: string) {
-    trustedDevices.value = trustedDevices.value.filter((d) => d.deviceId !== deviceId);
+    trustedDevices.value = trustedDevices.value.filter((d: TrustedDeviceDTO) => d.deviceId !== deviceId);
   }
 
   // ===== 两步验证管理 =====

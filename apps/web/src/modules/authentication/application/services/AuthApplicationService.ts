@@ -1,7 +1,7 @@
 import type {
   AuthTokens,
   LoginRequest,
-  LoginResponseDTO,
+  LoginResponse,
   ChangePasswordRequest,
   AuthSessionClientDTO,
   DeviceInfoClientDTO,
@@ -16,6 +16,7 @@ import { useAuthenticationStore } from '../../presentation/stores/authentication
 // Type aliases for cleaner code
 type LoginRequestDTO = LoginRequest;
 type ChangePasswordRequestDTO = ChangePasswordRequest;
+type LoginResponseDTO = LoginResponse;
 
 /**
  * @class AuthApplicationService

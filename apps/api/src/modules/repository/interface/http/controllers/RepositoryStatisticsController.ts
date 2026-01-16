@@ -19,7 +19,7 @@ export class RepositoryStatisticsController {
   private static responseBuilder = createResponseBuilder();
 
   /**
-   * 获取应用服务实例（懒加载）
+   * 获取应用服务实例（懒加载�?
    */
   private static async getStatisticsService(): Promise<RepositoryStatisticsApplicationService> {
     if (!RepositoryStatisticsController.statisticsService) {
@@ -51,7 +51,7 @@ export class RepositoryStatisticsController {
   }
 
   /**
-   * 获取账户的统计信息
+   * 获取账户的统计信�?
    * @route GET /api/repositories/statistics
    */
   static async getStatistics(req: Request, res: Response): Promise<Response> {
@@ -150,7 +150,7 @@ export class RepositoryStatisticsController {
   }
 
   /**
-   * 重新计算账户的统计信息
+   * 重新计算账户的统计信�?
    * @route POST /api/repositories/statistics/recalculate
    */
   static async recalculateStatistics(req: Request, res: Response): Promise<Response> {
@@ -167,7 +167,7 @@ export class RepositoryStatisticsController {
         force,
       });
 
-      if (result.success) {
+      if (result.ok) {
         logger.info('Statistics recalculated successfully', { accountUuid });
         return RepositoryStatisticsController.responseBuilder.sendSuccess(
           res,
@@ -214,7 +214,7 @@ export class RepositoryStatisticsController {
   }
 
   /**
-   * 删除账户的统计信息
+   * 删除账户的统计信�?
    * @route DELETE /api/repositories/statistics
    */
   static async deleteStatistics(req: Request, res: Response): Promise<Response> {

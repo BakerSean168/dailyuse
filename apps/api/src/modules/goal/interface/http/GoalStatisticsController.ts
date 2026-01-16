@@ -1,6 +1,6 @@
 /**
  * @file GoalStatisticsController.ts
- * @description 目标统计控制器，处理目标统计相关的 HTTP 请求。
+ * @description 目标统计控制器，处理目标统计相关�?HTTP 请求�?
  * @date 2025-01-22
  */
 
@@ -21,17 +21,17 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('GoalStatisticsController');
 
 /**
- * Goal 统计控制器。
+ * Goal 统计控制器�?
  *
  * @remarks
- * 负责处理 Goal 统计相关的 HTTP 请求。
+ * 负责处理 Goal 统计相关�?HTTP 请求�?
  */
 export class GoalStatisticsController {
   private static statisticsService: GoalStatisticsApplicationService | null = null;
   private static responseBuilder = createResponseBuilder();
 
   /**
-   * 获取应用服务实例（懒加载）。
+   * 获取应用服务实例（懒加载）�?
    */
   private static async getStatisticsService(): Promise<GoalStatisticsApplicationService> {
     if (!GoalStatisticsController.statisticsService) {
@@ -42,7 +42,7 @@ export class GoalStatisticsController {
   }
 
   /**
-   * 从请求中提取用户账户UUID。
+   * 从请求中提取用户账户UUID�?
    *
    * @param req - Express Request 对象
    * @returns {string} 账户 UUID
@@ -67,7 +67,7 @@ export class GoalStatisticsController {
   }
 
   /**
-   * 获取账户的目标统计信息。
+   * 获取账户的目标统计信息�?
    *
    * @route GET /api/goals/statistics
    *
@@ -122,13 +122,13 @@ export class GoalStatisticsController {
   }
 
   /**
-   * 初始化账户的目标统计信息。
+   * 初始化账户的目标统计信息�?
    *
    * @route POST /api/goals/statistics/initialize
    *
    * @param req - Express Request 对象
    * @param res - Express Response 对象
-   * @returns {Promise<Response>} 初始化结果响应
+   * @returns {Promise<Response>} 初始化结果响�?
    */
   static async initializeStatistics(req: Request, res: Response): Promise<Response> {
     try {
@@ -139,7 +139,7 @@ export class GoalStatisticsController {
 
       const result = await service.initializeStatistics({ accountUuid });
 
-      if (result.success) {
+      if (result.ok) {
         logger.info('Goal statistics initialized successfully', { accountUuid });
         return GoalStatisticsController.responseBuilder.sendSuccess(
           res,
@@ -186,7 +186,7 @@ export class GoalStatisticsController {
   }
 
   /**
-   * 重新计算账户的目标统计信息。
+   * 重新计算账户的目标统计信息�?
    *
    * @route POST /api/goals/statistics/recalculate
    *
@@ -208,7 +208,7 @@ export class GoalStatisticsController {
         force,
       });
 
-      if (result.success) {
+      if (result.ok) {
         logger.info('Goal statistics recalculated successfully', { accountUuid });
         return GoalStatisticsController.responseBuilder.sendSuccess(
           res,
@@ -255,7 +255,7 @@ export class GoalStatisticsController {
   }
 
   /**
-   * 删除账户的目标统计信息（主要用于测试）。
+   * 删除账户的目标统计信息（主要用于测试）�?
    *
    * @route DELETE /api/goals/statistics
    *

@@ -145,7 +145,7 @@ export async function createTestGoals(accountUuid: string, count: number = 3) {
         accountUuid,
         title: `Test Goal ${i + 1}`,
         description: `Test goal description ${i + 1}`,
-        importance: 3, // 3 = IMPORTANT (Int type in schema)
+        importance: 'Important', // String type in schema
         urgency: 3, // 3 = URGENT (Int type in schema)
         status: 'IN_PROGRESS',
         createdAt: new Date(),

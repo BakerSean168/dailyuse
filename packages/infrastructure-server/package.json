@@ -26,6 +26,14 @@
     "./sync": {
       "types": "./dist/sync/index.d.ts",
       "import": "./dist/sync/index.js"
+    },
+    "./task": {
+      "types": "./dist/task/index.d.ts",
+      "import": "./dist/task/index.js"
+    },
+    "./goal": {
+      "types": "./dist/goal/index.d.ts",
+      "import": "./dist/goal/index.js"
     }
   },
   "dependencies": {

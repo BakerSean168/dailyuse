@@ -159,7 +159,7 @@ const emit = defineEmits<{
 // ==================== State ====================
 
 const speedOptions = [0.5, 1, 2] as const;
-let playInterval: NodeJS.Timeout | null = null;
+let playInterval: ReturnType<typeof setInterval> | null = null;
 
 // ==================== Computed ====================
 

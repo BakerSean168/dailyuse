@@ -203,6 +203,19 @@ export class TaskTemplateApiClient {
     });
     return data;
   }
+
+  /**
+   * 获取按优先级排序的任务列表
+   * Story 2.2: 前端 API 集成
+   * 从后端获取已按优先级排序的任务列表，包含 priority 字段
+   * @param limit 可选，限制返回的任务数量
+   */
+  async getTasksWithPrioritySorting(params?: {
+    limit?: number;
+  }): Promise<TaskTemplateClientDTO[]> {
+    const data = await apiClient.get(`${this.baseUrl}/by-priority`, { params });
+    return data;
+  }
 }
 
 /**

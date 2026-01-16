@@ -86,8 +86,8 @@
                 <template #append>
                   <div class="d-flex align-center gap-2">
                     <!-- 优先级标签 -->
-                    <v-chip v-if="task.priority" :color="getPriorityColor(task.priority)" size="small" variant="flat">
-                      {{ task.priority }}
+                    <v-chip v-if="task.priorityLevel" :color="getPriorityColor(task.priorityLevel)" size="small" variant="flat">
+                      {{ task.priorityLevel }}
                     </v-chip>
 
                     <!-- 状态标签 -->
@@ -187,7 +187,7 @@ const filteredTasks = computed(() => {
 
   // 优先级筛选
   if (filterPriority.value) {
-    result = result.filter((task: TaskClientDTO) => task.priority === filterPriority.value);
+    result = result.filter((task: TaskClientDTO) => task.priorityLevel === filterPriority.value);
   }
 
   // 搜索

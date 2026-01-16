@@ -220,6 +220,33 @@ export const useTaskStore = defineStore('task', {
           .sort((a, b) => a.instanceDate - b.instanceDate); // 按日期排序
       },
 
+    /**
+     * Story 2.2: 获取按优先级排序的任务模板
+     * 返回具有 priority 字段的任务列表，已按优先级从高到低排序
+     * 注意: priority 字段由后端计算并返回，已在服务端排序
+     */
+    getTaskTemplatesSortedByPriority(state): Array<TaskTemplate & { priority?: number }> {
+      return state.taskTemplates
+        .map((template) => {
+          if (template instanceof TaskTemplate) {
+            return template;
+          } else {
+            return TaskTemplate.fromClientDTO(template as any);
+          }
+        })
+        .sort((a, b) => {
+          // 如果都有 priority 字段，按 priority 降序排列
+          if (a.priority != null && b.priority != null) {
+            return b.priority - a.priority;
+          }
+          // 如果只有一个有 priority，有 priority 的排在前面
+          if (a.priority != null) return -1;
+          if (b.priority != null) return 1;
+          // 都没有 priority 则保持原顺序
+          return 0;
+        });
+    },
+
     // ===== 统计信息 =====
 
     /**

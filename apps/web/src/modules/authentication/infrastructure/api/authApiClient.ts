@@ -1,48 +1,55 @@
 import { apiClient, publicApiClient } from '@/shared/api/instances';
 import type {
   LoginRequest,
-  LoginResponseDTO,
+  LoginResponse,
   RegisterRequest,
   LogoutRequest,
   RefreshTokenRequest,
-  RefreshTokenResponseDTO,
+  RefreshTokenResponse,
   ForgotPasswordRequest,
   ResetPasswordRequest,
   ChangePasswordRequest,
   Enable2FARequest,
-  Enable2FAResponseDTO,
+  Enable2FAResponse,
   Disable2FARequest,
   Verify2FARequest,
   CreateApiKeyRequest,
-  CreateApiKeyResponseDTO,
-  ApiKeyListResponseDTO,
+  CreateApiKeyResponse,
+  ApiKeyListResponse,
   RevokeApiKeyRequest,
   GetActiveSessionsRequest,
-  ActiveSessionsResponseDTO,
+  ActiveSessionsResponse,
   RevokeSessionRequest,
   RevokeAllSessionsRequest,
   TrustDeviceRequest,
   RevokeTrustedDeviceRequest,
-  TrustedDevicesResponseDTO,
+  TrustedDevicesResponse,
 } from '@dailyuse/contracts/authentication';
 
 // Type aliases for backward compatibility
 type LoginRequestDTO = LoginRequest;
+type LoginResponseDTO = LoginResponse;
 type RegisterRequestDTO = RegisterRequest;
 type LogoutRequestDTO = LogoutRequest;
 type RefreshTokenRequestDTO = RefreshTokenRequest;
+type RefreshTokenResponseDTO = RefreshTokenResponse;
 type ForgotPasswordRequestDTO = ForgotPasswordRequest;
 type ResetPasswordRequestDTO = ResetPasswordRequest;
 type ChangePasswordRequestDTO = ChangePasswordRequest;
 type Enable2FARequestDTO = Enable2FARequest;
+type Enable2FAResponseDTO = Enable2FAResponse;
 type Disable2FARequestDTO = Disable2FARequest;
 type Verify2FARequestDTO = Verify2FARequest;
 type CreateApiKeyRequestDTO = CreateApiKeyRequest;
+type CreateApiKeyResponseDTO = CreateApiKeyResponse;
+type ApiKeyListResponseDTO = ApiKeyListResponse;
 type RevokeApiKeyRequestDTO = RevokeApiKeyRequest;
 type GetActiveSessionsRequestDTO = GetActiveSessionsRequest;
+type ActiveSessionsResponseDTO = ActiveSessionsResponse;
 type RevokeSessionRequestDTO = RevokeSessionRequest;
 type RevokeAllSessionsRequestDTO = RevokeAllSessionsRequest;
 type TrustDeviceRequestDTO = TrustDeviceRequest;
+type TrustedDevicesResponseDTO = TrustedDevicesResponse;
 type RevokeTrustedDeviceRequestDTO = RevokeTrustedDeviceRequest;
 
 /**

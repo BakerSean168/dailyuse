@@ -8,7 +8,7 @@ import type {
   ResetPasswordRequest,
   ChangePasswordRequest,
   Enable2FARequest,
-  Enable2FAResponseDTO,
+  Enable2FAResponse,
   Disable2FARequest,
   Verify2FARequest,
 } from '@dailyuse/contracts/authentication';
@@ -20,6 +20,7 @@ type ForgotPasswordRequestDTO = ForgotPasswordRequest;
 type ResetPasswordRequestDTO = ResetPasswordRequest;
 type ChangePasswordRequestDTO = ChangePasswordRequest;
 type Enable2FARequestDTO = Enable2FARequest;
+type Enable2FAResponseDTO = Enable2FAResponse;
 type Disable2FARequestDTO = Disable2FARequest;
 type Verify2FARequestDTO = Verify2FARequest;
 

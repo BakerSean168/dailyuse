@@ -709,19 +709,19 @@ export class InterceptorManager {
 
     // 如果是业务逻辑错误（来自我们的 API）
     if ((error as any).isBusinessError && response?.data) {
-      return response.data as ErrorResponse;
+      return response.data as unknown as ErrorResponse;
     }
 
     // 如果是我们自己的API错误格式，直接返回
-    if (response?.data && typeof response.data === 'object' && 'success' in response.data) {
-      return response.data as ErrorResponse;
+    if (response?.data && typeof response.data === 'object' && ('success' in response.data || 'ok' in response.data)) {
+      return response.data as unknown as ErrorResponse;
     }
 
     // 转换为标准错误格式
     const errorMessage = this.getErrorMessage(error);
     return {
+      ok: false,
       code: this.getErrorCode(error),
-      success: false,
       message: errorMessage,
       timestamp: Date.now(),
       errors: [

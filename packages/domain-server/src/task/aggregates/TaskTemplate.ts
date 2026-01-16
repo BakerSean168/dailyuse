@@ -1,6 +1,6 @@
 /**
- * TaskTemplate 聚合根实现 (Server)
- * 任务模板 - 聚合根
+ * TaskTemplate 聚合根实�?(Server)
+ * 任务模板 - 聚合�?
  */
 
 import type { TaskTemplateClientDTO, TaskTemplatePersistenceDTO, TaskTemplateServer, TaskTemplateServerDTO } from '@dailyuse/contracts/task';
@@ -10,9 +10,9 @@ import {
   TaskTemplateStatus,
   RecurrenceEndConditionType,
 } from '@dailyuse/contracts/task';
-import { ImportanceLevel, UrgencyLevel, PriorityLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel, PriorityLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
-import { calculatePriority } from '../../schedule/calculators/priority-calculator';
+import { calculateTaskPriority } from '../services/priority-calculator.service';
 import {
   TaskTimeConfig,
   RecurrenceRule,
@@ -32,14 +32,14 @@ import {
 } from '../value-objects/TaskErrors';
 
 /**
- * TaskTemplate 聚合根
+ * TaskTemplate 聚合�?
  *
  * DDD 聚合根职责：
- * - 管理任务模板的生命周期
- * - 管理任务实例的生成
+ * - 管理任务模板的生命周�?
+ * - 管理任务实例的生�?
  * - 管理历史记录
  * - 执行业务规则
- * - 是事务边界
+ * - 是事务边�?
  */
 export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   // ===== 通用字段 =====
@@ -48,18 +48,17 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   private _description: string | null;
   private _taskType: TaskType; // 'ONE_TIME' | 'RECURRING'
   private _importance: ImportanceLevel;
-  private _urgency: UrgencyLevel;
   private _tags: string[];
   private _color: string | null;
   private _status: TaskTemplateStatus;
   private _folderUuid: string | null;
 
-  // ===== Goal/KR 关联（通用） =====
+  // ===== Goal/KR 关联（通用�?=====
   private _goalUuid: string | null;
   private _keyResultUuid: string | null;
   private _goalBinding: TaskGoalBinding | null; // 仅循环任务的高级绑定
 
-  // ===== 子任务支持（通用） =====
+  // ===== 子任务支持（通用�?=====
   private _parentTaskUuid: string | null;
 
   // ===== 循环任务专用字段 =====
@@ -69,7 +68,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   private _lastGeneratedDate: number | null;
   private _generateAheadDays: number | null;
 
-  // ===== 一次性任务专用字段 =====
+  // ===== 一次性任务专用字�?=====
   private _startDate: number | null;
   private _dueDate: number | null;
   private _completedAt: number | null;
@@ -77,7 +76,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   private _actualMinutes: number | null;
   private _note: string | null;
 
-  // ===== 依赖关系（通用） =====
+  // ===== 依赖关系（通用�?=====
   private _dependencyStatus: string; // 'NONE' | 'WAITING' | 'READY' | 'BLOCKED'
   private _isBlocked: boolean;
   private _blockingReason: string | null;
@@ -87,11 +86,11 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   private _updatedAt: number;
   private _deletedAt: number | null;
 
-  // ===== 子实体集合 =====
+  // ===== 子实体集�?=====
   private _history: TaskTemplateHistory[];
-  private _instances: TaskInstance[]; // 仅 RECURRING 使用
+  private _instances: TaskInstance[]; // �?RECURRING 使用
 
-  // ===== 构造函数（私有，通过工厂方法创建） =====
+  // ===== 构造函数（私有，通过工厂方法创建�?=====
   private constructor(props: TaskTemplateProps, uuid?: string) {
     super(uuid || AggregateRoot.generateUUID());
 
@@ -101,7 +100,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     this._description = props.description ?? null;
     this._taskType = props.taskType;
     this._importance = props.importance;
-    this._urgency = props.urgency;
     this._tags = props.tags;
     this._color = props.color ?? null;
     this._status = props.status;
@@ -112,7 +110,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     this._keyResultUuid = props.keyResultUuid ?? null;
     this._goalBinding = props.goalBinding ?? null;
 
-    // 子任务支持
+    // 子任务支�?
     this._parentTaskUuid = props.parentTaskUuid ?? null;
 
     // 循环任务专用
@@ -122,7 +120,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     this._lastGeneratedDate = props.lastGeneratedDate ?? null;
     this._generateAheadDays = props.generateAheadDays ?? null;
 
-    // 一次性任务专用
+    // 一次性任务专�?
     this._startDate = props.startDate ?? null;
     this._dueDate = props.dueDate ?? null;
     this._completedAt = props.completedAt ?? null;
@@ -140,12 +138,12 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     this._updatedAt = props.updatedAt;
     this._deletedAt = props.deletedAt ?? null;
 
-    // 子实体
+    // 子实�?
     this._history = [];
     this._instances = [];
   }
 
-  // ===== Getter 属性 =====
+  // ===== Getter 属�?=====
   public override get uuid(): string {
     return this._uuid;
   }
@@ -182,10 +180,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     return this._importance;
   }
 
-  public get urgency(): UrgencyLevel {
-    return this._urgency;
-  }
-
   public get goalBinding(): TaskGoalBinding | null {
     return this._goalBinding;
   }
@@ -214,7 +208,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     return this._generateAheadDays;
   }
 
-  // === 新增 Getter（一次性任务和通用） ===
+  // === 新增 Getter（一次性任务和通用�?===
 
   public get goalUuid(): string | null {
     return this._goalUuid;
@@ -313,7 +307,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
 
     if (this._taskType === TaskType.ONE_TIME) {
       // 单次任务：只要有 startDate 就生成实例（不限制日期范围）
-      // 原因：单次任务可能在未来很远的日期，用户仍然需要看到
+      // 原因：单次任务可能在未来很远的日期，用户仍然需要看�?
       if (this._timeConfig?.startDate) {
         // 检查是否已经生成过（避免重复生成）
         const alreadyGenerated = this._instances.some(
@@ -326,13 +320,14 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
             accountUuid: this._accountUuid,
             instanceDate: this._timeConfig.startDate,
             timeConfig: this._timeConfig,
+            importance: this._importance,
           });
           instances.push(instance);
           this._instances.push(instance);
         }
       }
     } else if (this._taskType === TaskType.RECURRING && this._recurrenceRule && this._timeConfig) {
-      // 重复任务：根据重复规则生成多个实例（限制在日期范围内）
+      // 重复任务：根据重复规则生成多个实例（限制在日期范围内�?
       let currentDate = fromDate;
       while (currentDate <= toDate) {
         if (this.shouldGenerateInstance(currentDate)) {
@@ -341,11 +336,12 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
             accountUuid: this._accountUuid,
             instanceDate: currentDate,
             timeConfig: this._timeConfig,
+            importance: this._importance,
           });
           instances.push(instance);
           this._instances.push(instance);
         }
-        // 移动到下一天
+        // 移动到下一�?
         currentDate += 86400000;
       }
     }
@@ -359,7 +355,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 获取指定日期的任务实例
+   * 获取指定日期的任务实�?
    */
   public getInstanceForDate(date: number): TaskInstance | null {
     return (
@@ -372,7 +368,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 判断是否应该在指定日期生成实例
+   * 判断是否应该在指定日期生成实�?
    */
   public shouldGenerateInstance(date: number): boolean {
     if (this._status !== 'ACTIVE') {
@@ -380,25 +376,25 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     }
 
     if (this._taskType === 'ONE_TIME') {
-      return false; // 单次任务不在此判断
+      return false; // 单次任务不在此判�?
     }
 
     if (!this._recurrenceRule) {
       return false;
     }
 
-    // 检查是否在重复规则的有效期内
+    // 检查是否在重复规则的有效期�?
     if (this._recurrenceRule.endDate && date > this._recurrenceRule.endDate) {
       return false;
     }
 
-    // 检查频率
+    // 检查频�?
     const rule = this._recurrenceRule;
     const dateObj = new Date(date);
 
     switch (rule.frequency) {
       case 'DAILY':
-        return true; // 每天都生成
+        return true; // 每天都生�?
 
       case 'WEEKLY':
         // 检查是否在指定的星期几
@@ -406,12 +402,12 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
         return rule.daysOfWeek.includes(dayOfWeek as any);
 
       case 'MONTHLY':
-        // 每月的指定日期
-        // 这里简化处理，实际应该更复杂
+        // 每月的指定日�?
+        // 这里简化处理，实际应该更复�?
         return true;
 
       case 'YEARLY':
-        // 每年的指定日期
+        // 每年的指定日�?
         return true;
 
       default:
@@ -419,10 +415,10 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     }
   }
 
-  // ===== 状态管理方法 =====
+  // ===== 状态管理方�?=====
 
   /**
-   * 激活模板
+   * 激活模�?
    */
   public activate(): void {
     if (this._status === 'DELETED') {
@@ -480,7 +476,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 软删除模板
+   * 软删除模�?
    */
   public softDelete(): void {
     if (this._status === 'DELETED') {
@@ -513,15 +509,15 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     this.addHistory('restored');
   }
 
-  // ===== 一次性任务状态管理方法 =====
-  // NOTE: 这些方法已废弃。根据新架构，单次任务也应该通过 TaskInstance 来管理状态。
-  // TaskTemplate 只负责模板管理（ACTIVE/PAUSED/ARCHIVED/DELETED）。
-  // 保留这些方法只是为了向后兼容，未来应该移除。
+  // ===== 一次性任务状态管理方�?=====
+  // NOTE: 这些方法已废弃。根据新架构，单次任务也应该通过 TaskInstance 来管理状态�?
+  // TaskTemplate 只负责模板管理（ACTIVE/PAUSED/ARCHIVED/DELETED）�?
+  // 保留这些方法只是为了向后兼容，未来应该移除�?
 
   // ===== 时间规则方法 =====
 
   /**
-   * 判断模板在指定日期是否活跃
+   * 判断模板在指定日期是否活�?
    */
   public isActiveOnDate(date: number): boolean {
     if (this._status !== TaskTemplateStatus.ACTIVE) {
@@ -544,7 +540,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 获取指定日期之后的下一次发生时间
+   * 获取指定日期之后的下一次发生时�?
    */
   public getNextOccurrence(afterDate: number): number | null {
     if (this._status !== TaskTemplateStatus.ACTIVE) {
@@ -562,11 +558,11 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       return null;
     }
 
-    // 简化实现：返回下一天（实际应该根据重复规则计算）
+    // 简化实现：返回下一天（实际应该根据重复规则计算�?
     return afterDate + 86400000;
   }
 
-  // ===== 一次性任务时间管理方法 =====
+  // ===== 一次性任务时间管理方�?=====
 
   /**
    * 更新标题
@@ -596,7 +592,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 更新开始时间 (ONE_TIME)
+   * 更新开始时�?(ONE_TIME)
    */
   public updateStartDate(newStartDate: number | null): void {
     if (this._taskType !== 'ONE_TIME') {
@@ -694,7 +690,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   /**
    * 更新重复规则的结束条件（使用枚举类型和默认值）
    * @param endConditionType 结束条件类型
-   * @param customValue 自定义值（日期时间戳或重复次数）
+   * @param customValue 自定义值（日期时间戳或重复次数�?
    */
   public updateRecurrenceEndCondition(
     endConditionType: RecurrenceEndConditionType,
@@ -720,19 +716,19 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
 
     switch (endConditionType) {
       case RecurrenceEndConditionType.NEVER:
-        // 永不结束：清空 endDate 和 occurrences
+        // 永不结束：清�?endDate �?occurrences
         updatedRule = this._recurrenceRule.withNeverEnd();
         break;
 
       case RecurrenceEndConditionType.END_DATE:
-        // 指定日期结束：使用提供的日期，如果没有则默认为 30 天后
+        // 指定日期结束：使用提供的日期，如果没有则默认�?30 天后
         const endDate = customValue ?? Date.now() + 30 * 86400000; // 默认 30 天后
         updatedRule = this._recurrenceRule.withEndDate(endDate);
         break;
 
       case RecurrenceEndConditionType.OCCURRENCES:
-        // 指定次数结束：使用提供的次数，如果没有则默认为 10 次
-        const occurrences = customValue ?? 10; // 默认 10 次
+        // 指定次数结束：使用提供的次数，如果没有则默认�?10 �?
+        const occurrences = customValue ?? 10; // 默认 10 �?
         updatedRule = this._recurrenceRule.withOccurrences(occurrences);
         break;
 
@@ -768,15 +764,13 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 更新优先级
+   * 更新优先�?
    */
-  public updatePriority(newImportance: ImportanceLevel, newUrgency: UrgencyLevel): void {
+  public updatePriority(newImportance: ImportanceLevel): void {
     const oldImportance = this._importance;
-    const oldUrgency = this._urgency;
     this._importance = newImportance;
-    this._urgency = newUrgency;
     this._updatedAt = Date.now();
-    this.addHistory('priority_updated', { oldImportance, oldUrgency, newImportance, newUrgency });
+    this.addHistory('priority_updated', { oldImportance, newImportance });
   }
 
   /**
@@ -856,7 +850,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 获取距离截止日期的天数 (ONE_TIME)
+   * 获取距离截止日期的天�?(ONE_TIME)
    */
   public getDaysUntilDue(): number | null {
     if (this._taskType !== TaskType.ONE_TIME) {
@@ -873,21 +867,21 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   // ===== 提醒方法 =====
 
   /**
-   * 是否有提醒
+   * 是否有提�?
    */
   public hasReminder(): boolean {
     return this._reminderConfig !== null && this._reminderConfig.enabled;
   }
 
   /**
-   * 获取指定实例日期的提醒时间
+   * 获取指定实例日期的提醒时�?
    */
   public getReminderTime(instanceDate: number): number | null {
     if (!this.hasReminder() || !this._reminderConfig) {
       return null;
     }
 
-    // 简化实现：返回实例日期前1小时
+    // 简化实现：返回实例日期�?小时
     // 实际应该根据提醒配置计算
     return instanceDate - 3600000;
   }
@@ -895,7 +889,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   // ===== 目标绑定方法 =====
 
   /**
-   * 绑定到目标
+   * 绑定到目�?
    */
   public bindToGoal(goalUuid: string, keyResultUuid: string, incrementValue: number): void {
     // Validate parameters
@@ -950,14 +944,14 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 是否绑定到目标
+   * 是否绑定到目�?
    */
   public isLinkedToGoal(): boolean {
     return this._goalBinding !== null;
   }
 
   /**
-   * 绑定到目标 (ONE_TIME) - 新版本支持新字段
+   * 绑定到目�?(ONE_TIME) - 新版本支持新字段
    */
   public linkToGoal(goalUuid: string, keyResultUuid?: string): void {
     if (this._taskType !== 'ONE_TIME') {
@@ -1006,10 +1000,10 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     this.addHistory('unlinked_from_goal', { oldGoalUuid, oldKeyResultUuid });
   }
 
-  // ===== 子任务管理方法 (ONE_TIME) =====
+  // ===== 子任务管理方�?(ONE_TIME) =====
 
   /**
-   * 添加子任务
+   * 添加子任�?
    */
   public addSubtask(subtaskUuid: string): void {
     if (this._taskType !== 'ONE_TIME') {
@@ -1025,7 +1019,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 移除子任务
+   * 移除子任�?
    */
   public removeSubtask(subtaskUuid: string): void {
     if (this._taskType !== 'ONE_TIME') {
@@ -1053,32 +1047,60 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     return this._parentTaskUuid;
   }
 
-  // ===== 优先级计算方法 (ONE_TIME) =====
+  // ===== 优先级计算方�?(ONE_TIME) =====
 
   /**
-   * 获取优先级 (使用 utils 中的计算器)
+   * 获取优先级等级和分数 (Story 1.2)
+   * 
+   * 使用纯函数 calculateTaskPriority 计算优先级分数，基于：
+   * - Importance（重要性）：Task 实体固有属性
+   * - Due Date（截止日期）：用于计算时间紧急程度
+   * - Current Time（当前时间）：基准时间点
+   * 
+   * 对于一次性任务：根据分数映射到 5 级优先级等级
+   * 对于循环任务：返回最低优先级
    */
   public getPriority(): { level: PriorityLevel; score: number } {
     if (this._taskType !== TaskType.ONE_TIME) {
       return { level: PriorityLevel.Low, score: 0 };
     }
-    const result = calculatePriority({
-      importance: this._importance,
-      urgency: this._urgency,
-      dueDate: this._dueDate,
-    });
-    return { level: result.level, score: result.score };
+    
+    const currentTime = new Date();
+    const dueDateObj = this._dueDate ? new Date(this._dueDate) : null;
+    
+    const score = calculateTaskPriority(this._importance, dueDateObj, currentTime);
+    const level = this.scoreToPriorityLevel(score);
+    
+    return { level, score };
   }
 
   /**
-   * 获取优先级分数
+   * 将优先级分数映射到优先级等级
+   * 
+   * 分数范围：[0, 100]
+   * - [80, 100]: Critical（紧急）- 需要立即处理
+   * - [60, 80): High（高）- 今天必须处理
+   * - [40, 60): Medium（中）- 近期需要处理
+   * - [20, 40): Low（低）- 可以稍后处理
+   * - [0, 20): None（无）- 无具体时间要求
+   */
+  private scoreToPriorityLevel(score: number): PriorityLevel {
+    if (score >= 80) return PriorityLevel.Critical;
+    if (score >= 60) return PriorityLevel.High;
+    if (score >= 40) return PriorityLevel.Medium;
+    if (score >= 20) return PriorityLevel.Low;
+    return PriorityLevel.None;
+  }
+
+  /**
+   * 获取优先级分�?
    */
   public getPriorityScore(): number {
     return this.getPriority().score;
   }
 
   /**
-   * 获取优先级等级
+   * 获取优先级等�?
    */
   public getPriorityLevel(): PriorityLevel {
     return this.getPriority().level;
@@ -1108,7 +1130,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 标记为就绪 (解除依赖阻塞)
+   * 标记为就�?(解除依赖阻塞)
    */
   public markAsReady(): void {
     if (this._taskType !== 'ONE_TIME') {
@@ -1126,7 +1148,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 更新依赖状态
+   * 更新依赖状�?
    */
   public updateDependencyStatus(status: 'PENDING' | 'READY' | 'BLOCKED'): void {
     if (this._taskType !== 'ONE_TIME') {
@@ -1157,7 +1179,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     this._updatedAt = Date.now();
   }
 
-  // ===== 子实体管理方法 =====
+  // ===== 子实体管理方�?=====
 
   /**
    * 创建实例
@@ -1193,6 +1215,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       accountUuid: this._accountUuid,
       instanceDate: params.instanceDate,
       timeConfig: this._timeConfig,
+      importance: this._importance,
     });
     this._instances.push(instance);
     this._updatedAt = Date.now();
@@ -1226,7 +1249,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 获取所有实例
+   * 获取所有实�?
    */
   public getAllInstances(): TaskInstance[] {
     return [...this._instances];
@@ -1245,7 +1268,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       recurrenceRule: this._recurrenceRule?.toServerDTO() ?? null,
       reminderConfig: this._reminderConfig?.toServerDTO() ?? null,
       importance: this._importance,
-      urgency: this._urgency,
       goalBinding: this._goalBinding?.toServerDTO() ?? null,
       folderUuid: this._folderUuid,
       tags: [...this._tags],
@@ -1256,7 +1278,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       deletedAt: this._deletedAt,
-      // ONE_TIME 任务新字段
+      // ONE_TIME 任务新字�?
       goalUuid: this._goalUuid,
       keyResultUuid: this._keyResultUuid,
       parentTaskUuid: this._parentTaskUuid,
@@ -1293,7 +1315,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       recurrenceRule: this._recurrenceRule?.toClientDTO() ?? null,
       reminderConfig: this._reminderConfig?.toClientDTO() ?? null,
       importance: this._importance,
-      urgency: this._urgency,
       goalBinding: this._goalBinding?.toClientDTO() ?? null,
       folderUuid: this._folderUuid,
       tags: [...this._tags],
@@ -1304,7 +1325,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       deletedAt: this._deletedAt,
-      // ONE_TIME 任务新字段
+      // ONE_TIME 任务新字�?
       goalUuid: this._goalUuid,
       keyResultUuid: this._keyResultUuid,
       parentTaskUuid: this._parentTaskUuid,
@@ -1324,7 +1345,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       timeDisplayText: this._timeConfig?.toClientDTO()?.displayText ?? null,
       recurrenceText: this._recurrenceRule?.toClientDTO().recurrenceDisplayText ?? null,
       importanceText: this.getImportanceText(),
-      urgencyText: this.getUrgencyText(),
       statusText: this.getStatusText(),
       hasReminder: this.hasReminder(),
       reminderText: this._reminderConfig?.toClientDTO().reminderSummary ?? null,
@@ -1336,7 +1356,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       completionRate,
       formattedCreatedAt: new Date(this._createdAt).toLocaleString('zh-CN'),
       formattedUpdatedAt: new Date(this._updatedAt).toLocaleString('zh-CN'),
-      // ONE_TIME 任务额外的展示字段
+      // ONE_TIME 任务额外的展示字�?
       priorityLevel: priority?.level ?? null,
       priorityScore: priority?.score ?? null,
       isOverdue: this._taskType === 'ONE_TIME' ? this.isOverdue() : null,
@@ -1355,7 +1375,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       // Flattened timeConfig (RECURRING 任务专用)
       timeConfigType: this._timeConfig?.timeType as 'POINT' | 'RANGE' | 'ALL_DAY' | undefined,
       timeConfigStartTime: this._timeConfig?.startDate,
-      timeConfigEndTime: null, // endDate 已移除 - 结束日期属于重复规则
+      timeConfigEndTime: null, // endDate 已移�?- 结束日期属于重复规则
       timeConfigDurationMinutes:
         this._timeConfig?.timeRange &&
         this._timeConfig.timeRange.end &&
@@ -1381,9 +1401,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       reminderConfigChannel: this._reminderConfig ? 'PUSH' : undefined,
 
       importance: this._importance, // Store as string: 'vital', 'important', etc.
-      urgency: this._urgency, // Store as string: 'critical', 'high', etc.
-
-      // Flattened goal_binding (RECURRING 任务专用 - 旧版本)
+      // Flattened goal_binding (RECURRING 任务专用 - 旧版�?
       goalBindingGoalUuid: this._goalBinding?.goalUuid,
       goalBindingKeyResultUuid: this._goalBinding?.keyResultUuid,
       goalBindingIncrementValue: this._goalBinding?.incrementValue,
@@ -1398,7 +1416,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       updatedAt: this._updatedAt,
       deletedAt: this._deletedAt,
 
-      // ONE_TIME 任务新字段
+      // ONE_TIME 任务新字�?
       goalUuid: this._goalUuid,
       keyResultUuid: this._keyResultUuid,
       parentTaskUuid: this._parentTaskUuid,
@@ -1417,14 +1435,13 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   // ===== 工厂方法 =====
 
   /**
-   * 创建一次性任务 (便捷工厂方法)
+   * 创建一次性任�?(便捷工厂方法)
    */
   public static createOneTimeTask(params: {
     accountUuid: string;
     title: string;
     description?: string;
     importance?: ImportanceLevel;
-    urgency?: UrgencyLevel;
     startDate?: number;
     dueDate?: number;
     estimatedMinutes?: number;
@@ -1443,7 +1460,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       description: params.description || null,
       taskType: TaskType.ONE_TIME,
       importance: params.importance ?? ImportanceLevel.Moderate,
-      urgency: params.urgency ?? UrgencyLevel.Medium,
       tags: params.tags ?? [],
       color: params.color || null,
       status: TaskTemplateStatus.ACTIVE, // Use ACTIVE instead of TODO
@@ -1467,7 +1483,10 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 创建循环任务 (便捷工厂方法)
+   * 创建循环任务（便捷工厂方法）
+   * 
+   * Story 1.1+1.2：已移除 urgency 参数
+   * 循环任务的优先级不通过 getPriority() 计算（返回最低优先级）
    */
   public static createRecurringTask(params: {
     accountUuid: string;
@@ -1477,7 +1496,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     recurrenceRule: RecurrenceRule;
     reminderConfig?: TaskReminderConfig;
     importance?: ImportanceLevel;
-    urgency?: UrgencyLevel;
     folderUuid?: string;
     tags?: string[];
     color?: string;
@@ -1493,7 +1511,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       recurrenceRule: params.recurrenceRule,
       reminderConfig: params.reminderConfig || null,
       importance: params.importance ?? ImportanceLevel.Moderate,
-      urgency: params.urgency ?? UrgencyLevel.Medium,
       goalBinding: null,
       folderUuid: params.folderUuid || null,
       tags: params.tags ?? [],
@@ -1509,7 +1526,10 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 创建新的任务模板 (通用工厂方法 - 保留向后兼容)
+   * 创建新的任务模板（通用工厂方法，保留向后兼容）
+   * 
+   * 支持一次性任务和循环任务的统一创建接口
+   * Story 1.1+1.2：urgency 已移除，优先级改为时间感知的计算
    */
   public static create(params: {
     accountUuid: string;
@@ -1520,7 +1540,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     recurrenceRule?: RecurrenceRule;
     reminderConfig?: TaskReminderConfig;
     importance?: ImportanceLevel;
-    urgency?: UrgencyLevel;
     folderUuid?: string;
     tags?: string[];
     color?: string;
@@ -1559,7 +1578,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       recurrenceRule: params.recurrenceRule,
       reminderConfig: params.reminderConfig,
       importance: params.importance ?? ImportanceLevel.Moderate,
-      urgency: params.urgency ?? UrgencyLevel.Medium,
       goalBinding: null, // Initialize as null
       folderUuid: params.folderUuid,
       tags: params.tags ?? [],
@@ -1575,7 +1593,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 从 ServerDTO 恢复
+   * �?ServerDTO 恢复
    */
   public static fromServerDTO(dto: TaskTemplateServerDTO): TaskTemplate {
     const template = new TaskTemplate(
@@ -1592,7 +1610,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
           ? TaskReminderConfig.fromServerDTO(dto.reminderConfig)
           : null,
         importance: dto.importance,
-        urgency: dto.urgency,
         goalBinding: dto.goalBinding ? TaskGoalBinding.fromServerDTO(dto.goalBinding) : null,
         folderUuid: dto.folderUuid,
         tags: dto.tags,
@@ -1603,7 +1620,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
         createdAt: dto.createdAt,
         updatedAt: dto.updatedAt,
         deletedAt: dto.deletedAt,
-        // ONE_TIME 任务新字段
+        // ONE_TIME 任务新字�?
         goalUuid: dto.goalUuid,
         keyResultUuid: dto.keyResultUuid,
         parentTaskUuid: dto.parentTaskUuid,
@@ -1634,13 +1651,13 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   }
 
   /**
-   * 从 PersistenceDTO 恢复
+   * �?PersistenceDTO 恢复
    */
   public static fromPersistenceDTO(dto: TaskTemplatePersistenceDTO): TaskTemplate {
     const timeConfig = new TaskTimeConfig({
       timeType: dto.timeConfigType as TimeType,
       startDate: dto.timeConfigStartTime,
-      // endDate 已移除 - 结束日期属于重复规则，不属于时间配置
+      // endDate 已移�?- 结束日期属于重复规则，不属于时间配置
     });
 
     let recurrenceRule = null;
@@ -1689,7 +1706,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       recurrenceRule,
       reminderConfig,
       importance: dto.importance as ImportanceLevel, // Now stored as string
-      urgency: dto.urgency as UrgencyLevel, // Now stored as string
       goalBinding,
       folderUuid: dto.folderUuid,
       tags,
@@ -1700,7 +1716,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
-      // ONE_TIME 任务新字段
+      // ONE_TIME 任务新字�?
       goalUuid: dto.goalUuid,
       keyResultUuid: dto.keyResultUuid,
       parentTaskUuid: dto.parentTaskUuid,
@@ -1738,17 +1754,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     return map[this._importance];
   }
 
-  private getUrgencyText(): string {
-    const map: Record<UrgencyLevel, string> = {
-      [UrgencyLevel.Critical]: '非常紧急',
-      [UrgencyLevel.High]: '高度紧急',
-      [UrgencyLevel.Medium]: '中等紧急',
-      [UrgencyLevel.Low]: '低度紧急',
-      [UrgencyLevel.None]: '无期限',
-    };
-    return map[this._urgency];
-  }
-
   private getStatusText(): string {
     const map: Record<TaskTemplateStatus, string> = {
       ACTIVE: '活跃',
@@ -1761,13 +1766,12 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
 }
 
 interface TaskTemplateProps {
-  // === 通用属性 ===
+  // === 通用属�?===
   accountUuid: string;
   title: string;
   description?: string | null;
   taskType: TaskType; // 'ONE_TIME' | 'RECURRING'
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
   tags: string[];
   color?: string | null;
   status: TaskTemplateStatus;
@@ -1778,7 +1782,7 @@ interface TaskTemplateProps {
   keyResultUuid?: string | null;
   goalBinding?: TaskGoalBinding | null;
 
-  // === 子任务支持 ===
+  // === 子任务支�?===
   parentTaskUuid?: string | null;
 
   // === 循环任务专用 ===
@@ -1788,7 +1792,7 @@ interface TaskTemplateProps {
   lastGeneratedDate?: number | null;
   generateAheadDays?: number | null;
 
-  // === 一次性任务专用 ===
+  // === 一次性任务专�?===
   startDate?: number | null;
   dueDate?: number | null;
   completedAt?: number | null;
@@ -1806,3 +1810,7 @@ interface TaskTemplateProps {
   updatedAt: number;
   deletedAt?: number | null;
 }
+
+
+
+

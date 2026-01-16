@@ -88,6 +88,13 @@ export interface TaskTemplateServerDTO {
   
   // === 通用属性 ===
   importance: ImportanceLevel;
+  /**
+   * 优先级分数 (0-100)
+   * 由系统根据 importance + dueDate 动态计算
+   * @readonly 此字段不能直接修改，计算由 Application Layer 负责
+   * @computed 基于 Story 1.3 算法计算得出
+   */
+  priority?: number;
   tags: string[];
   color?: string | null;
   status: TaskTemplateStatus;

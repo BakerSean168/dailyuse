@@ -20,10 +20,10 @@ import type {
   TaskTemplateServerDTO,
   TaskInstanceServerDTO,
   TaskTemplateClientDTO,
-  TaskTemplateHistoryServerDTO,
+  TaskTemplateHistoryClientDTO,
   TaskInstanceClientDTO,
 } from '@dailyuse/contracts/task';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { eventBus } from '@dailyuse/utils';
 
 /**
@@ -95,7 +95,6 @@ export class TaskTemplateApplicationService {
     recurrenceRule?: RecurrenceRuleServerDTO;
     reminderConfig?: TaskReminderConfigServerDTO;
     importance?: ImportanceLevel;
-    urgency?: UrgencyLevel;
     folderUuid?: string;
     tags?: string[];
     color?: string;
@@ -123,7 +122,6 @@ export class TaskTemplateApplicationService {
       recurrenceRule,
       reminderConfig,
       importance: params.importance,
-      urgency: params.urgency,
       folderUuid: params.folderUuid,
       tags: params.tags,
       color: params.color,
@@ -410,7 +408,6 @@ export class TaskTemplateApplicationService {
       recurrenceRule?: RecurrenceRuleServerDTO;
       reminderConfig?: TaskReminderConfigServerDTO;
       importance?: ImportanceLevel;
-      urgency?: UrgencyLevel;
       folderUuid?: string;
       tags?: string[];
       color?: string;
@@ -690,7 +687,7 @@ export class TaskTemplateApplicationService {
   async generateInstances(
     uuid: string,
     toDate?: number,
-  ): Promise<TaskInstanceServerDTO[]> {
+  ): Promise<TaskInstanceClientDTO[]> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
       throw new Error(`TaskTemplate ${uuid} not found`);
@@ -734,7 +731,6 @@ export class TaskTemplateApplicationService {
     title: string;
     description?: string;
     importance?: ImportanceLevel;
-    urgency?: UrgencyLevel;
     startDate?: number;
     dueDate?: number;
     estimatedMinutes?: number;
@@ -752,7 +748,6 @@ export class TaskTemplateApplicationService {
       title: params.title,
       description: params.description,
       importance: params.importance,
-      urgency: params.urgency,
       startDate: params.startDate,
       dueDate: params.dueDate,
       estimatedMinutes: params.estimatedMinutes,
@@ -849,7 +844,6 @@ export class TaskTemplateApplicationService {
       startDate?: number;
       dueDate?: number;
       importance?: ImportanceLevel;
-      urgency?: UrgencyLevel;
       estimatedMinutes?: number;
       tags?: string[];
       color?: string;
@@ -874,8 +868,8 @@ export class TaskTemplateApplicationService {
     if (updates.dueDate !== undefined) {
       task.updateDueDate(updates.dueDate);
     }
-    if (updates.importance !== undefined || updates.urgency !== undefined) {
-      task.updatePriority(updates.importance ?? task.importance, updates.urgency ?? task.urgency);
+    if (updates.importance !== undefined) {
+      task.updatePriority(updates.importance);
     }
     if (updates.estimatedMinutes !== undefined) {
       task.updateEstimatedTime(updates.estimatedMinutes);
@@ -898,13 +892,13 @@ export class TaskTemplateApplicationService {
   /**
    * 获取任务历史记录
    */
-  async getTaskHistory(uuid: string): Promise<TaskTemplateHistoryServerDTO[]> {
+  async getTaskHistory(uuid: string): Promise<TaskTemplateHistoryClientDTO[]> {
     const task = await this.templateRepository.findByUuidWithChildren(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
     }
 
-    return task.history.map((h) => h.toServerDTO());
+    return task.history.map((h) => h.toClientDTO());
   }
 
   // ===== ONE_TIME 任务查询 =====
@@ -1012,7 +1006,6 @@ export class TaskTemplateApplicationService {
       title: string;
       description?: string;
       importance?: ImportanceLevel;
-      urgency?: UrgencyLevel;
       dueDate?: number;
       estimatedMinutes?: number;
     },
@@ -1029,7 +1022,6 @@ export class TaskTemplateApplicationService {
       title: params.title,
       description: params.description,
       importance: params.importance,
-      urgency: params.urgency,
       dueDate: params.dueDate,
       estimatedMinutes: params.estimatedMinutes,
       parentTaskUuid: parentUuid,
@@ -1166,7 +1158,6 @@ export class TaskTemplateApplicationService {
       title: string;
       description?: string;
       importance?: ImportanceLevel;
-      urgency?: UrgencyLevel;
       dueDate?: number;
       estimatedMinutes?: number;
       goalUuid?: string;
@@ -1179,7 +1170,6 @@ export class TaskTemplateApplicationService {
         title: params.title,
         description: params.description,
         importance: params.importance,
-        urgency: params.urgency,
         dueDate: params.dueDate,
         estimatedMinutes: params.estimatedMinutes,
         goalUuid: params.goalUuid,

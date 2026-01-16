@@ -58,7 +58,9 @@ export type TaskSortOption =
   | 'instanceDate_asc' 
   | 'instanceDate_desc' 
   | 'createdAt_desc' 
-  | 'createdAt_asc';
+  | 'createdAt_asc'
+  | 'priority_desc'
+  | 'priority_asc';
 
 // ============ Actions Interface ============
 export interface TaskActions {
@@ -115,6 +117,10 @@ export interface TaskSelectors {
   getActiveTemplates: () => TaskTemplate[];
   getPausedTemplates: () => TaskTemplate[];
   getArchivedTemplates: () => TaskTemplate[];
+  /**
+   * Story 2.2: 获取按优先级排序的任务模板
+   */
+  getTemplatesSortedByPriority: () => TaskTemplate[];
 }
 
 // ============ Initial State ============
@@ -440,6 +446,25 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
       getArchivedTemplates: () => {
         const { templates } = get();
         return templates.filter(t => t.isArchived);
+      },
+
+      /**
+       * Story 2.2: 获取按优先级排序的任务模板
+       * 返回已按优先级排序的模板列表（高优先级在前）
+       */
+      getTemplatesSortedByPriority: () => {
+        const { templates } = get();
+        return templates.sort((a, b) => {
+          // 如果都有 priority 字段，按 priority 降序排列
+          if (a.priority != null && b.priority != null) {
+            return b.priority - a.priority;
+          }
+          // 如果只有一个有 priority，有 priority 的排在前面
+          if (a.priority != null) return -1;
+          if (b.priority != null) return 1;
+          // 都没有 priority 则按创建时间排序
+          return b.createdAt - a.createdAt;
+        });
       },
     }),
     {

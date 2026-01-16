@@ -41,21 +41,21 @@ story_location: _bmad-output/implementation-artifacts
 
 development_status:
   # Epic 1: Dynamic Priority Foundation
-  epic-1: in-progress
-  1-1-update-task-entity-remove-old-fields-add-importance: ready-for-dev
-  1-2-create-priority-calculator-domain-service: backlog
-  1-3-implement-priority-calculation-algorithm-importance-time-weight: backlog
-  1-4-update-task-dto-and-api-contract-priority-as-read-only-computed-field: backlog
-  1-5-integrate-priority-calculation-in-application-layer-task-query-service: backlog
-  1-6-database-migration-remove-old-fields-add-importance-column: backlog
+  epic-1: done
+  1-1-update-task-entity-remove-old-fields-add-importance: done
+  1-2-create-priority-calculator-domain-service: done
+  1-3-implement-priority-calculation-algorithm-importance-time-weight: done
+  1-4-update-task-dto-and-api-contract-priority-as-read-only-computed-field: done
+  1-5-integrate-priority-calculation-in-application-layer-task-query-service: done
+  1-6-database-migration-remove-old-fields-add-importance-column: done
   epic-1-retrospective: optional
 
   # Epic 2: Intelligent Sorting & UX
-  epic-2: backlog
-  2-1-implement-task-list-in-memory-sorting-logic-get-tasks-with-priority-sorting: backlog
-  2-2-frontend-api-integration-get-sorted-task-list: backlog
-  2-3-remove-urgency-and-priority-input-fields-from-task-form: backlog
-  2-4-task-list-visual-optimization-priority-based-color-and-sorting-hint: backlog
-  2-5-support-sorting-parameters-and-filter-options-backend-extension: backlog
-  2-6-performance-test-and-optimization-ensure-sorting-does-not-block: backlog
+  epic-2: done
+  2-1-implement-task-list-in-memory-sorting-logic-get-tasks-with-priority-sorting: done
+  2-2-frontend-api-integration-get-sorted-task-list: done
+  2-3-remove-urgency-and-priority-input-fields-from-task-form: done
+  2-4-task-list-visual-optimization-priority-based-color-and-sorting-hint: done
+  2-5-support-sorting-parameters-and-filter-options-backend-extension: done
+  2-6-performance-test-and-optimization-ensure-sorting-does-not-block: done
   epic-2-retrospective: optional

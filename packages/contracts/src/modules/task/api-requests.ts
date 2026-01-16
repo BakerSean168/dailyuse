@@ -29,13 +29,14 @@ import type {
   TaskInstanceStatus,
   DependencyType,
 } from './enums';
-import type { ImportanceLevel, UrgencyLevel } from '../../shared/index';
+import type { ImportanceLevel } from '../../shared/index';
 import type { BatchOperationResponseDTO } from '../../shared/dtos';
 
 // ============ TaskTemplate 请求/响应 ============
 
 /**
  * 创建任务模板请求
+ * Story 2.3: urgency 已移除 - Priority 由后端根据 importance 和 dueDate 自动计算
  */
 export interface CreateTaskTemplateRequest {
   accountUuid: string;
@@ -46,7 +47,6 @@ export interface CreateTaskTemplateRequest {
   recurrenceRule?: RecurrenceRuleServerDTO;
   reminderConfig?: TaskReminderConfigServerDTO;
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
   goalBinding?: TaskGoalBindingServerDTO;
   folderUuid?: string;
   tags?: string[];
@@ -56,6 +56,7 @@ export interface CreateTaskTemplateRequest {
 
 /**
  * 更新任务模板请求
+ * Story 2.3: urgency 已移除 - Priority 由后端根据 importance 和 dueDate 自动计算
  */
 export interface UpdateTaskTemplateRequest {
   title?: string;
@@ -64,7 +65,6 @@ export interface UpdateTaskTemplateRequest {
   recurrenceRule?: RecurrenceRuleServerDTO;
   reminderConfig?: TaskReminderConfigServerDTO;
   importance?: ImportanceLevel;
-  urgency?: UrgencyLevel;
   folderUuid?: string;
   tags?: string[];
   color?: string;
@@ -73,13 +73,13 @@ export interface UpdateTaskTemplateRequest {
 
 /**
  * 查询任务模板请求
+ * Story 2.3: urgency 查询参数已移除
  */
 export interface QueryTaskTemplatesRequest {
   accountUuid: string;
   status?: TaskTemplateStatus[];
   taskType?: TaskType[];
   importance?: ImportanceLevel[];
-  urgency?: UrgencyLevel[];
   folderUuid?: string;
   goalUuid?: string;
   tags?: string[];
@@ -468,7 +468,6 @@ export interface TaskStatisticsUpdateEvent {
     newStatus?: TaskTemplateStatus | TaskInstanceStatus;
     taskType?: TaskType;
     importance?: ImportanceLevel;
-    urgency?: UrgencyLevel;
     duration?: number;
     rating?: number;
     [key: string]: any;

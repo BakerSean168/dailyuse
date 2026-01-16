@@ -11,7 +11,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { TaskTemplate } from '@dailyuse/domain-client/task';
 import type { UpdateTaskTemplateRequest } from '@dailyuse/contracts/task';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { TimeEstimationCard } from '../../../../shared/components/task/TimeEstimationCard';
 import type { TimeEstimate } from '@dailyuse/contracts/goal';
 import { useTaskTemplate } from '../hooks/useTaskTemplate';
@@ -38,7 +38,6 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editImportance, setEditImportance] = useState<ImportanceLevel>(ImportanceLevel.Moderate);
-  const [editUrgency, setEditUrgency] = useState<UrgencyLevel>(UrgencyLevel.Medium);
 
   // 使用 Hook 进行数据操作
   const { getTemplate, updateTemplate, deleteTemplate } = useTaskTemplate();
@@ -56,7 +55,6 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
         setEditTitle(result.title);
         setEditDescription(result.description ?? '');
         setEditImportance(result.importance);
-        setEditUrgency(result.urgency);
       }
     } catch (err) {
       console.error('[TaskDetailDialog] Failed to load template:', err);
@@ -81,11 +79,11 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
       setError(null);
       
       // 构建符合 contracts 类型的请求
+      // Story 2.3: urgency 已移除 - Priority 由后端根据 importance 和 dueDate 自动计算
       const request: UpdateTaskTemplateRequest = {
         title: editTitle,
         description: editDescription || undefined,
         importance: editImportance,
-        urgency: editUrgency,
       };
       
       await updateTemplate(template.uuid, request);
@@ -123,7 +121,6 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
       setEditTitle(template.title);
       setEditDescription(template.description ?? '');
       setEditImportance(template.importance);
-      setEditUrgency(template.urgency);
     }
     setIsEditing(false);
   };
@@ -252,44 +249,24 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
                 )}
               </div>
 
-              {/* Importance & Urgency */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">重要性</label>
-                  {isEditing ? (
-                    <select
-                      value={editImportance}
-                      onChange={(e) => setEditImportance(e.target.value as ImportanceLevel)}
-                      className="w-full p-2 border rounded-md"
-                    >
-                      <option value={ImportanceLevel.Trivial}>无关紧要</option>
-                      <option value={ImportanceLevel.Minor}>不太重要</option>
-                      <option value={ImportanceLevel.Moderate}>中</option>
-                      <option value={ImportanceLevel.Important}>重要</option>
-                      <option value={ImportanceLevel.Vital}>极其重要</option>
-                    </select>
-                  ) : (
-                    <div className="text-muted-foreground">{template.importanceText}</div>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">紧急度</label>
-                  {isEditing ? (
-                    <select
-                      value={editUrgency}
-                      onChange={(e) => setEditUrgency(e.target.value as UrgencyLevel)}
-                      className="w-full p-2 border rounded-md"
-                    >
-                      <option value={UrgencyLevel.None}>无期限</option>
-                      <option value={UrgencyLevel.Low}>低</option>
-                      <option value={UrgencyLevel.Medium}>中</option>
-                      <option value={UrgencyLevel.High}>高</option>
-                      <option value={UrgencyLevel.Critical}>紧急</option>
-                    </select>
-                  ) : (
-                    <div className="text-muted-foreground">{template.urgencyText}</div>
-                  )}
-                </div>
+              {/* Importance */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">重要性</label>
+                {isEditing ? (
+                  <select
+                    value={editImportance}
+                    onChange={(e) => setEditImportance(e.target.value as ImportanceLevel)}
+                    className="w-full p-2 border rounded-md"
+                  >
+                    <option value={ImportanceLevel.Trivial}>无关紧要</option>
+                    <option value={ImportanceLevel.Minor}>不太重要</option>
+                    <option value={ImportanceLevel.Moderate}>中</option>
+                    <option value={ImportanceLevel.Important}>重要</option>
+                    <option value={ImportanceLevel.Vital}>极其重要</option>
+                  </select>
+                ) : (
+                  <div className="text-muted-foreground">{template.importanceText}</div>
+                )}
               </div>
 
               {/* Estimated Time with AI Card */}

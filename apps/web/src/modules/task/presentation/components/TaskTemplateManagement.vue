@@ -185,7 +185,19 @@ const filteredTemplates = computed(() => {
     return template.status === currentStatus.value;
   });
 
-  return filtered;
+  // Story 2.2: 按优先级排序 (如果有 priority 字段)
+  // 后端已提供优先级字段，这里通过 priority 字段进行排序
+  return filtered.sort((a, b) => {
+    // 如果都有 priority 字段，按降序排列 (优先级越高越靠前)
+    if (a.priority != null && b.priority != null) {
+      return b.priority - a.priority;
+    }
+    // 如果只有一个有 priority，有 priority 的排在前面
+    if (a.priority != null) return -1;
+    if (b.priority != null) return 1;
+    // 都没有 priority 则保持原顺序
+    return 0;
+  });
 });
 
 // 工具方法

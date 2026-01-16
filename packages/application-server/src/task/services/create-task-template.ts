@@ -89,7 +89,6 @@ export class CreateTaskTemplate {
       recurrenceRule,
       reminderConfig,
       importance: request.importance,
-      urgency: request.urgency,
       folderUuid: request.folderUuid,
       tags: request.tags,
       color: request.color,

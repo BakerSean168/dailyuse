@@ -236,7 +236,8 @@ const loadDemoData = () => {
       title: '需求分析',
       description: '收集和分析项目需求',
       status: 'COMPLETED',
-      priority: 'HIGH',
+      priorityLevel: 'HIGH',
+      priorityScore: 80,
       estimatedMinutes: 240,
     },
     {
@@ -244,7 +245,8 @@ const loadDemoData = () => {
       title: '系统设计',
       description: '设计系统架构和数据库',
       status: 'COMPLETED',
-      priority: 'HIGH',
+      priorityLevel: 'HIGH',
+      priorityScore: 80,
       estimatedMinutes: 480,
     },
     {
@@ -252,7 +254,8 @@ const loadDemoData = () => {
       title: '前端开发',
       description: '开发用户界面',
       status: 'IN_PROGRESS',
-      priority: 'MEDIUM',
+      priorityLevel: 'MEDIUM',
+      priorityScore: 50,
       estimatedMinutes: 960,
     },
     {
@@ -260,7 +263,8 @@ const loadDemoData = () => {
       title: '后端开发',
       description: '开发API和业务逻辑',
       status: 'READY',
-      priority: 'MEDIUM',
+      priorityLevel: 'MEDIUM',
+      priorityScore: 50,
       estimatedMinutes: 960,
     },
     {
@@ -268,7 +272,8 @@ const loadDemoData = () => {
       title: '测试',
       description: '单元测试和集成测试',
       status: 'BLOCKED',
-      priority: 'HIGH',
+      priorityLevel: 'HIGH',
+      priorityScore: 75,
       estimatedMinutes: 480,
     },
     {
@@ -276,7 +281,8 @@ const loadDemoData = () => {
       title: '部署',
       description: '部署到生产环境',
       status: 'BLOCKED',
-      priority: 'CRITICAL',
+      priorityLevel: 'CRITICAL',
+      priorityScore: 95,
       estimatedMinutes: 120,
     },
   ] as TaskForDAG[];

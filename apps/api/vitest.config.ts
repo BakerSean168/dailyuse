@@ -19,7 +19,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./src/test/setup.ts'], // 使用轻量 setup（无需数据库）
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts}'],
+    include: ['src/**/*.{test,spec,bench}.{js,mjs,cjs,ts,mts,cts}'],
     exclude: [
       'node_modules',
       'dist',

@@ -5,7 +5,7 @@
 
 import type { TaskTemplateClient, TaskTemplateClientDTO, TaskTemplateServerDTO } from '@dailyuse/contracts/task';
 import { TimeType, TaskType, TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
 import {
   TaskTimeConfig,
@@ -25,7 +25,12 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
   private _recurrenceRule?: RecurrenceRule | null;
   private _reminderConfig?: TaskReminderConfig | null;
   private _importance: ImportanceLevel;
-  private _urgency: UrgencyLevel;
+  /**
+   * 优先级分数 (0-100)
+   * 由系统根据 importance + dueDate 动态计算
+   * @readonly 此字段不能直接修改，由后端计算
+   */
+  private _priority?: number;
   private _goalBinding?: TaskGoalBinding | null;
   private _folderUuid?: string | null;
   private _tags: string[];
@@ -51,7 +56,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
     recurrenceRule?: RecurrenceRule | null;
     reminderConfig?: TaskReminderConfig | null;
     importance: ImportanceLevel;
-    urgency: UrgencyLevel;
+    priority?: number;
     goalBinding?: TaskGoalBinding | null;
     folderUuid?: string | null;
     tags?: string[];
@@ -74,7 +79,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
     this._recurrenceRule = params.recurrenceRule;
     this._reminderConfig = params.reminderConfig;
     this._importance = params.importance;
-    this._urgency = params.urgency;
+    this._priority = params.priority;
     this._goalBinding = params.goalBinding;
     this._folderUuid = params.folderUuid;
     this._tags = params.tags ?? [];
@@ -117,8 +122,12 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
   public get importance(): ImportanceLevel {
     return this._importance;
   }
-  public get urgency(): UrgencyLevel {
-    return this._urgency;
+  /**
+   * 获取优先级分数 (0-100)
+   * 由后端根据 importance + dueDate 动态计算
+   */
+  public get priority(): number | undefined {
+    return this._priority;
   }
   public get goalBinding(): TaskGoalBinding | null | undefined {
     return this._goalBinding;
@@ -190,16 +199,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
     return map[this._importance];
   }
 
-  public get urgencyText(): string {
-    const map: Record<UrgencyLevel, string> = {
-      [UrgencyLevel.Critical]: '非常紧急',
-      [UrgencyLevel.High]: '高度紧急',
-      [UrgencyLevel.Medium]: '中等紧急',
-      [UrgencyLevel.Low]: '低度紧急',
-      [UrgencyLevel.None]: '无期限',
-    };
-    return map[this._urgency];
-  }
 
   public get statusText(): string {
     const map: Record<TaskTemplateStatus, string> = {
@@ -302,20 +301,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
     return {
       text: this.importanceText,
       color: colors[this._importance],
-    };
-  }
-
-  public getUrgencyBadge(): { text: string; color: string } {
-    const colors: Record<UrgencyLevel, string> = {
-      [UrgencyLevel.Critical]: 'red',
-      [UrgencyLevel.High]: 'orange',
-      [UrgencyLevel.Medium]: 'blue',
-      [UrgencyLevel.Low]: 'gray',
-      [UrgencyLevel.None]: 'lightgray',
-    };
-    return {
-      text: this.urgencyText,
-      color: colors[this._urgency],
     };
   }
 
@@ -512,14 +497,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
     this._updatedAt = Date.now();
   }
 
-  public updateUrgency(urgency: UrgencyLevel): void {
-    if (!this.canEdit()) {
-      throw new Error('Cannot update archived or deleted template');
-    }
-    this._urgency = urgency;
-    this._updatedAt = Date.now();
-  }
-
   public updateTags(tags: string[]): void {
     if (!this.canEdit()) {
       throw new Error('Cannot update archived or deleted template');
@@ -591,7 +568,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
       recurrenceRule: this._recurrenceRule?.toClientDTO() ?? null,
       reminderConfig: this._reminderConfig?.toClientDTO() ?? null,
       importance: this._importance,
-      urgency: this._urgency,
+      priority: this._priority,
       goalBinding: this._goalBinding?.toClientDTO() ?? null,
       folderUuid: this._folderUuid,
       tags: [...this._tags],
@@ -609,7 +586,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
       timeDisplayText: this.timeDisplayText,
       recurrenceText: this.recurrenceText,
       importanceText: this.importanceText,
-      urgencyText: this.urgencyText,
       statusText: this.statusText,
       hasReminder: this.hasReminder,
       reminderText: this.reminderText,
@@ -635,7 +611,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
       recurrenceRule: this._recurrenceRule?.toServerDTO() ?? null,
       reminderConfig: this._reminderConfig?.toServerDTO() ?? null,
       importance: this._importance,
-      urgency: this._urgency,
       goalBinding: this._goalBinding?.toServerDTO() ?? null,
       folderUuid: this._folderUuid,
       tags: [...this._tags],
@@ -671,7 +646,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
         ? TaskReminderConfig.fromClientDTO(dto.reminderConfig)
         : null,
       importance: dto.importance,
-      urgency: dto.urgency,
+      priority: dto.priority,
       goalBinding: dto.goalBinding ? TaskGoalBinding.fromClientDTO(dto.goalBinding) : null,
       folderUuid: dto.folderUuid,
       tags: dto.tags,
@@ -711,7 +686,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
         ? TaskReminderConfig.fromServerDTO(dto.reminderConfig)
         : null,
       importance: dto.importance,
-      urgency: dto.urgency,
+      priority: dto.priority,
       goalBinding: dto.goalBinding ? TaskGoalBinding.fromServerDTO(dto.goalBinding) : null,
       folderUuid: dto.folderUuid,
       tags: dto.tags,
@@ -768,7 +743,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
         hasDateRange: false, // 指的是 timeRange 是否有值
       }),
       importance: ImportanceLevel.Moderate,
-      urgency: UrgencyLevel.Medium,
       tags: [],
       status: TaskTemplateStatus.ACTIVE,
       generateAheadDays: 7,
@@ -806,7 +780,6 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
       recurrenceRule: params.recurrenceRule,
       reminderConfig: params.reminderConfig,
       importance: params.importance || ImportanceLevel.Moderate,
-      urgency: params.urgency || UrgencyLevel.Medium,
       goalBinding: params.goalBinding,
       folderUuid: params.folderUuid,
       tags: params.tags || [],

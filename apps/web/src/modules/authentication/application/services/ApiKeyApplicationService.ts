@@ -5,8 +5,8 @@
 
 import type {
   CreateApiKeyRequest,
-  CreateApiKeyResponseDTO,
-  ApiKeyListResponseDTO,
+  CreateApiKeyResponse,
+  ApiKeyListResponse,
   RevokeApiKeyRequest,
 } from '@dailyuse/contracts/authentication';
 import { useAuthStore } from '../../presentation/stores/authStore';
@@ -15,6 +15,8 @@ import { authApiClient } from '../../infrastructure/api/authApiClient';
 // Type aliases
 type CreateApiKeyRequestDTO = CreateApiKeyRequest;
 type RevokeApiKeyRequestDTO = RevokeApiKeyRequest;
+type CreateApiKeyResponseDTO = CreateApiKeyResponse;
+type ApiKeyListResponseDTO = ApiKeyListResponse;
 
 export class ApiKeyApplicationService {
   private static instance: ApiKeyApplicationService;

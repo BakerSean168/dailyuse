@@ -4,7 +4,8 @@
  */
 
 import type { TaskInstanceClientDTO, TaskInstancePersistenceDTO, TaskInstanceServer, TaskInstanceServerDTO } from '@dailyuse/contracts/task';
-import { TaskInstanceStatus } from '@dailyuse/contracts/task';
+import { TaskInstanceStatus, TimeType } from '@dailyuse/contracts/task';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
 import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../value-objects';
 
@@ -23,6 +24,8 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
   private _accountUuid: string;
   private _instanceDate: number;
   private _timeConfig: TaskTimeConfig;
+  private _importance: ImportanceLevel;
+  private _priority?: number;
   private _status: TaskInstanceStatus;
   private _completionRecord: CompletionRecord | null;
   private _skipRecord: SkipRecord | null;
@@ -39,6 +42,8 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
     accountUuid: string;
     instanceDate: number;
     timeConfig: TaskTimeConfig;
+    importance: ImportanceLevel;
+    priority?: number;
     status: TaskInstanceStatus;
     completionRecord?: CompletionRecord | null;
     skipRecord?: SkipRecord | null;
@@ -53,6 +58,8 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
     this._accountUuid = params.accountUuid;
     this._instanceDate = params.instanceDate;
     this._timeConfig = params.timeConfig;
+    this._importance = params.importance;
+    this._priority = params.priority;
     this._status = params.status;
     this._completionRecord = params.completionRecord ?? null;
     this._skipRecord = params.skipRecord ?? null;
@@ -82,6 +89,32 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
 
   public get timeConfig(): TaskTimeConfig {
     return this._timeConfig;
+  }
+
+  public get importance(): ImportanceLevel {
+    return this._importance;
+  }
+
+  public get priority(): number | undefined {
+    return this._priority;
+  }
+
+  /**
+   * 获取任务实例的截止时间（根据 timeConfig 计算）
+   * Story 1.5: 用于优先级计算
+   */
+  public get dueDate(): number | null {
+    if (this._timeConfig.timeType === TimeType.TIME_POINT) {
+      return this._timeConfig.timePoint;
+    } else if (this._timeConfig.timeType === TimeType.TIME_RANGE) {
+      return this._timeConfig.timeRange?.end ?? null;
+    } else {
+      // 全天任务截止到 instanceDate 当天结束 (23:59:59)
+      // instanceDate 通常是当天的 00:00:00 (本地时间或 UTC?)
+      // 假设 instanceDate 是该日的起始时间(UTC 0点 或 Local 0点)
+      // 如果没有更好的信息，就使用 instanceDate + 1 天
+      return this._instanceDate + 86400000 - 1; 
+    }
   }
 
   public get status(): TaskInstanceStatus {
@@ -229,6 +262,8 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
       accountUuid: this._accountUuid,
       instanceDate: this._instanceDate,
       timeConfig: this._timeConfig.toServerDTO(),
+      importance: this._importance,
+      priority: this._priority,
       status: this._status,
       completionRecord: this._completionRecord?.toServerDTO() ?? null,
       skipRecord: this._skipRecord?.toServerDTO() ?? null,
@@ -256,6 +291,8 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
       accountUuid: this._accountUuid,
       instanceDate: this._instanceDate,
       timeConfig: this._timeConfig.toClientDTO(),
+      importance: this._importance,
+      priority: this._priority,
       status: this._status,
       completionRecord: this._completionRecord?.toClientDTO() ?? null,
       skipRecord: this._skipRecord?.toClientDTO() ?? null,
@@ -286,6 +323,8 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
       accountUuid: this._accountUuid,
       instanceDate: this._instanceDate,
       timeConfig: JSON.stringify(this._timeConfig.toPersistenceDTO()),
+      importance: this._importance,
+      priority: this._priority,
       status: this._status,
       completionRecord: this._completionRecord
         ? JSON.stringify(this._completionRecord.toPersistenceDTO())
@@ -312,6 +351,7 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
     accountUuid: string;
     instanceDate: number;
     timeConfig: TaskTimeConfig;
+    importance: ImportanceLevel;
   }): TaskInstance {
     const now = Date.now();
     const instance = new TaskInstance({
@@ -319,6 +359,7 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
       accountUuid: params.accountUuid,
       instanceDate: params.instanceDate,
       timeConfig: params.timeConfig,
+      importance: params.importance,
       status: 'PENDING' as TaskInstanceStatus,
       createdAt: now,
       updatedAt: now,
@@ -337,6 +378,8 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
       accountUuid: dto.accountUuid,
       instanceDate: dto.instanceDate,
       timeConfig: TaskTimeConfig.fromServerDTO(dto.timeConfig),
+      importance: dto.importance,
+      priority: dto.priority,
       status: dto.status,
       completionRecord: dto.completionRecord
         ? CompletionRecord.fromServerDTO(dto.completionRecord, dto.uuid)
@@ -360,6 +403,8 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
       accountUuid: dto.accountUuid,
       instanceDate: dto.instanceDate,
       timeConfig: TaskTimeConfig.fromPersistenceDTO(JSON.parse(dto.timeConfig as string)),
+      importance: dto.importance as ImportanceLevel,
+      priority: dto.priority,
       status: dto.status as TaskInstanceStatus,
       completionRecord: dto.completionRecord
         ? CompletionRecord.fromPersistenceDTO(JSON.parse(dto.completionRecord as string))

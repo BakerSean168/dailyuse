@@ -21,3 +21,11 @@ export { GetTaskInstancesByDateRange } from './get-task-instances-by-date-range'
 
 // ===== Dashboard Services =====
 export { GetTaskDashboard } from './get-task-dashboard';
+
+// ===== Query Services (with Priority Calculation) =====
+export { 
+  TaskQueryService,
+  enrichWithPriority,
+  enrichMultipleWithPriority,
+  extractDueDate,
+} from './task-query.service';

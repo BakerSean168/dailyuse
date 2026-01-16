@@ -242,3 +242,12 @@ export type {
   BatchCancelTasksRequest,
   LinkTaskToGoalRequest,
 } from './api-requests';
+
+// ============ Query Types (Story 2.5) ============
+export { TaskSortBy, TaskFilterBy } from './queries';
+export type {
+  QueryTasksRequest,
+  TasksListResponse,
+  GetTasksWithPriorityRequest,
+  GetTasksWithSortingAndFilteringRequest,
+} from './queries';

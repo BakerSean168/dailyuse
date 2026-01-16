@@ -27,6 +27,13 @@ export interface TaskTemplateClientDTO {
   recurrenceRule?: any | null;
   reminderConfig?: any | null;
   importance: ImportanceLevel;
+  /**
+   * 优先级分数 (0-100)
+   * 由系统根据 importance + dueDate 动态计算
+   * @readonly 此字段不能直接修改，计算由 Application Layer 负责
+   * @computed 基于 Story 1.3 算法计算得出
+   */
+  priority?: number;
   goalBinding?: any | null;
   folderUuid?: string | null;
   tags: string[];
@@ -85,6 +92,13 @@ export interface TaskTemplateClient {
   recurrenceRule?: RecurrenceRuleClient | null;
   reminderConfig?: TaskReminderConfigClient | null;
   importance: ImportanceLevel;
+  /**
+   * 优先级分数 (0-100)
+   * 由系统根据 importance + dueDate 动态计算
+   * @readonly 此字段不能直接修改，计算由 Application Layer 负责
+   * @computed 基于 Story 1.3 算法计算得出
+   */
+  priority?: number;
   goalBinding?: TaskGoalBindingClient | null;
   folderUuid?: string | null;
   tags: string[];

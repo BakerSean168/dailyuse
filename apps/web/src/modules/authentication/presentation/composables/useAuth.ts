@@ -21,31 +21,51 @@ import type {
   LoginRequest,
   RegisterRequest,
   AuthTokens,
-  LoginResponseDTO,
-  RegisterRequestDTO,
-  LogoutRequestDTO,
-  ForgotPasswordRequestDTO,
-  ResetPasswordRequestDTO,
-  ChangePasswordRequestDTO,
-  Enable2FARequestDTO,
-  Enable2FAResponseDTO,
-  Disable2FARequestDTO,
-  Verify2FARequestDTO,
-  GetActiveSessionsRequestDTO,
-  ActiveSessionsResponseDTO,
-  RevokeSessionRequestDTO,
-  RevokeAllSessionsRequestDTO,
-  TrustedDevicesResponseDTO,
-  TrustDeviceRequestDTO,
-  RevokeTrustedDeviceRequestDTO,
-  CreateApiKeyRequestDTO,
-  CreateApiKeyResponseDTO,
-  ApiKeyListResponseDTO,
-  RevokeApiKeyRequestDTO,
+  LoginResponse,
+  LogoutRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  ChangePasswordRequest,
+  Enable2FARequest,
+  Enable2FAResponse,
+  Disable2FARequest,
+  Verify2FARequest,
+  GetActiveSessionsRequest,
+  ActiveSessionsResponse,
+  RevokeSessionRequest,
+  RevokeAllSessionsRequest,
+  TrustedDevicesResponse,
+  TrustDeviceRequest,
+  RevokeTrustedDeviceRequest,
+  CreateApiKeyRequest,
+  CreateApiKeyResponse,
+  ApiKeyListResponse,
+  RevokeApiKeyRequest,
 } from '@dailyuse/contracts/authentication';
 
 // Type aliases for DTO naming convention
 type LoginRequestDTO = LoginRequest;
+type LoginResponseDTO = LoginResponse;
+type RegisterRequestDTO = RegisterRequest;
+type LogoutRequestDTO = LogoutRequest;
+type ForgotPasswordRequestDTO = ForgotPasswordRequest;
+type ResetPasswordRequestDTO = ResetPasswordRequest;
+type ChangePasswordRequestDTO = ChangePasswordRequest;
+type Enable2FARequestDTO = Enable2FARequest;
+type Enable2FAResponseDTO = Enable2FAResponse;
+type Disable2FARequestDTO = Disable2FARequest;
+type Verify2FARequestDTO = Verify2FARequest;
+type GetActiveSessionsRequestDTO = GetActiveSessionsRequest;
+type ActiveSessionsResponseDTO = ActiveSessionsResponse;
+type RevokeSessionRequestDTO = RevokeSessionRequest;
+type RevokeAllSessionsRequestDTO = RevokeAllSessionsRequest;
+type TrustedDevicesResponseDTO = TrustedDevicesResponse;
+type TrustDeviceRequestDTO = TrustDeviceRequest;
+type RevokeTrustedDeviceRequestDTO = RevokeTrustedDeviceRequest;
+type CreateApiKeyRequestDTO = CreateApiKeyRequest;
+type CreateApiKeyResponseDTO = CreateApiKeyResponse;
+type ApiKeyListResponseDTO = ApiKeyListResponse;
+type RevokeApiKeyRequestDTO = RevokeApiKeyRequest;
 
 export function useAuth() {
   const authStore = useAuthStore();

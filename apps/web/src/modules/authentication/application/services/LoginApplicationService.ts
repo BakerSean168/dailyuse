@@ -5,7 +5,7 @@
 
 import type {
   LoginRequest,
-  LoginResponseDTO,
+  LoginResponse,
   LogoutRequest,
 } from '@dailyuse/contracts/authentication';
 import { useAuthStore } from '../../presentation/stores/authStore';
@@ -16,6 +16,7 @@ import { accountApiClient } from '../../../account/infrastructure/api/accountApi
 // Type aliases
 type LoginRequestDTO = LoginRequest;
 type LogoutRequestDTO = LogoutRequest;
+type LoginResponseDTO = LoginResponse;
 
 export class LoginApplicationService {
   private static instance: LoginApplicationService;
@@ -67,14 +68,18 @@ export class LoginApplicationService {
       const response = await authApiClient.login(request);
 
       // 保存tokens和会话信息
-      this.authStore.setAccessToken(response.accessToken);
+      if (response.accessToken) {
+        this.authStore.setAccessToken(response.accessToken);
+      }
       if (response.refreshToken) {
         this.authStore.setRefreshToken(response.refreshToken);
       }
-      if (response.sessionId) {
+      if (response.sessionId != null) {
         this.authStore.setCurrentSessionId(response.sessionId);
       }
-      this.authStore.setTokenExpiresAt(response.accessTokenExpiresAt);
+      if (response.accessTokenExpiresAt != null) {
+        this.authStore.setTokenExpiresAt(response.accessTokenExpiresAt);
+      }
 
       // 🔧 修复: 登录成功后获取并设置用户信息到 AccountStore
       try {

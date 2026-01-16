@@ -5,3 +5,4 @@
 export { TaskInstanceGenerationService } from './TaskInstanceGenerationService';
 export { TaskExpirationService } from './TaskExpirationService';
 export { TaskDependencyService } from './TaskDependencyService';
+export { calculateTaskPriority } from './priority-calculator.service';

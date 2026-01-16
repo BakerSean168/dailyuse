@@ -5,6 +5,7 @@
 
 import type { TaskInstanceClient, TaskInstanceClientDTO, TaskInstanceServerDTO } from '@dailyuse/contracts/task';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
 import { TaskTimeConfig } from '../value-objects/TaskTimeConfig';
 import { CompletionRecord } from '../value-objects/CompletionRecord';
@@ -15,6 +16,7 @@ export class TaskInstance extends AggregateRoot implements TaskInstance {
   private _accountUuid: string;
   private _instanceDate: number;
   private _timeConfig: TaskTimeConfig;
+  private _importance?: ImportanceLevel;
   private _status: TaskInstanceStatus;
   private _completionRecord?: CompletionRecord | null;
   private _skipRecord?: SkipRecord | null;
@@ -30,6 +32,7 @@ export class TaskInstance extends AggregateRoot implements TaskInstance {
     accountUuid: string;
     instanceDate: number;
     timeConfig: TaskTimeConfig;
+    importance?: ImportanceLevel;
     status: TaskInstanceStatus;
     completionRecord?: CompletionRecord | null;
     skipRecord?: SkipRecord | null;
@@ -44,6 +47,7 @@ export class TaskInstance extends AggregateRoot implements TaskInstance {
     this._accountUuid = params.accountUuid;
     this._instanceDate = params.instanceDate;
     this._timeConfig = params.timeConfig;
+    this._importance = params.importance;
     this._status = params.status;
     this._completionRecord = params.completionRecord;
     this._skipRecord = params.skipRecord;
@@ -69,6 +73,9 @@ export class TaskInstance extends AggregateRoot implements TaskInstance {
   }
   public get timeConfig(): TaskTimeConfig {
     return this._timeConfig;
+  }
+  public get importance(): ImportanceLevel | undefined {
+    return this._importance;
   }
   public get status(): TaskInstanceStatus {
     return this._status;
@@ -206,6 +213,7 @@ export class TaskInstance extends AggregateRoot implements TaskInstance {
       accountUuid: this._accountUuid,
       instanceDate: this._instanceDate,
       timeConfig: this._timeConfig.toClientDTO(),
+      importance: this._importance,
       status: this._status,
       completionRecord: this._completionRecord?.toClientDTO() ?? null,
       skipRecord: this._skipRecord?.toClientDTO() ?? null,
@@ -236,6 +244,7 @@ export class TaskInstance extends AggregateRoot implements TaskInstance {
       accountUuid: this._accountUuid,
       instanceDate: this._instanceDate,
       timeConfig: this._timeConfig.toServerDTO(),
+      importance: this._importance ?? ImportanceLevel.Moderate,
       status: this._status,
       completionRecord: this._completionRecord?.toServerDTO() ?? null,
       skipRecord: this._skipRecord?.toServerDTO() ?? null,
@@ -255,6 +264,7 @@ export class TaskInstance extends AggregateRoot implements TaskInstance {
       accountUuid: dto.accountUuid,
       instanceDate: dto.instanceDate,
       timeConfig: TaskTimeConfig.fromClientDTO(dto.timeConfig),
+      importance: dto.importance,
       status: dto.status,
       completionRecord: dto.completionRecord
         ? CompletionRecord.fromClientDTO(dto.completionRecord)
@@ -275,6 +285,7 @@ export class TaskInstance extends AggregateRoot implements TaskInstance {
       accountUuid: dto.accountUuid,
       instanceDate: dto.instanceDate,
       timeConfig: TaskTimeConfig.fromServerDTO(dto.timeConfig),
+      importance: dto.importance,
       status: dto.status,
       completionRecord: dto.completionRecord
         ? CompletionRecord.fromServerDTO(dto.completionRecord)

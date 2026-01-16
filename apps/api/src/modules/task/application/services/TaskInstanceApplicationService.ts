@@ -6,7 +6,7 @@ import type {
 import { TaskExpirationService } from '@dailyuse/domain-server/task';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
 import type {
-  TaskInstanceServerDTO,
+  TaskInstanceClientDTO,
   TaskInstanceStatus,
   TaskInstanceCompletedEvent,
 } from '@dailyuse/contracts/task';
@@ -16,11 +16,11 @@ import { eventBus } from '@dailyuse/utils';
  * TaskInstance 应用服务
  * 负责协调领域服务和仓储，处理业务用例
  *
- * 架构职责：
- * - 委托给 DomainService 处理业务逻辑
+ * 架构职责�?
+ * - 委托�?DomainService 处理业务逻辑
  * - 协调多个领域服务
  * - 事务管理
- * - DTO 转换（Domain ↔ Contracts）
+ * - DTO 转换（Domain �?Contracts�?
  */
 export class TaskInstanceApplicationService {
   private static instance: TaskInstanceApplicationService;
@@ -71,7 +71,7 @@ export class TaskInstanceApplicationService {
   /**
    * 获取任务实例详情
    */
-  async getTaskInstance(uuid: string): Promise<TaskInstanceServerDTO | null> {
+  async getTaskInstance(uuid: string): Promise<TaskInstanceClientDTO | null> {
     const instance = await this.instanceRepository.findByUuid(uuid);
     return instance ? instance.toClientDTO() : null;
   }
@@ -81,7 +81,7 @@ export class TaskInstanceApplicationService {
    */
   async getTaskInstancesByAccount(
     accountUuid: string,
-  ): Promise<TaskInstanceServerDTO[]> {
+  ): Promise<TaskInstanceClientDTO[]> {
     const instances = await this.instanceRepository.findByAccount(accountUuid);
     return instances.map((i) => i.toClientDTO());
   }
@@ -91,7 +91,7 @@ export class TaskInstanceApplicationService {
    */
   async getTaskInstancesByTemplate(
     templateUuid: string,
-  ): Promise<TaskInstanceServerDTO[]> {
+  ): Promise<TaskInstanceClientDTO[]> {
     const instances = await this.instanceRepository.findByTemplate(templateUuid);
     return instances.map((i) => i.toClientDTO());
   }
@@ -103,7 +103,7 @@ export class TaskInstanceApplicationService {
     accountUuid: string,
     startDate: number,
     endDate: number,
-  ): Promise<TaskInstanceServerDTO[]> {
+  ): Promise<TaskInstanceClientDTO[]> {
     const instances = await this.instanceRepository.findByDateRange(
       accountUuid,
       startDate,
@@ -113,20 +113,20 @@ export class TaskInstanceApplicationService {
   }
 
   /**
-   * 根据状态获取任务实例
+   * 根据状态获取任务实�?
    */
   async getTaskInstancesByStatus(
     accountUuid: string,
     status: TaskInstanceStatus,
-  ): Promise<TaskInstanceServerDTO[]> {
+  ): Promise<TaskInstanceClientDTO[]> {
     const instances = await this.instanceRepository.findByStatus(accountUuid, status);
     return instances.map((i) => i.toClientDTO());
   }
 
   /**
-   * 开始任务实例
+   * 开始任务实�?
    */
-  async startTaskInstance(uuid: string): Promise<TaskInstanceServerDTO> {
+  async startTaskInstance(uuid: string): Promise<TaskInstanceClientDTO> {
     const instance = await this.instanceRepository.findByUuid(uuid);
     if (!instance) {
       throw new Error(`TaskInstance ${uuid} not found`);
@@ -152,7 +152,7 @@ export class TaskInstanceApplicationService {
       note?: string;
       rating?: number;
     },
-  ): Promise<TaskInstanceServerDTO> {
+  ): Promise<TaskInstanceClientDTO> {
     const instance = await this.instanceRepository.findByUuid(uuid);
     if (!instance) {
       throw new Error(`TaskInstance ${uuid} not found`);
@@ -162,11 +162,11 @@ export class TaskInstanceApplicationService {
       throw new Error('Cannot complete this task instance');
     }
 
-    // 标记为完成
+    // 标记为完�?
     instance.complete(params.duration, params.note, params.rating);
     await this.instanceRepository.save(instance);
 
-    // 🔥 发布事件：任务实例完成
+    // 🔥 发布事件：任务实例完�?
     await this.publishTaskCompletedEvent(instance);
 
     return instance.toClientDTO();
@@ -178,7 +178,7 @@ export class TaskInstanceApplicationService {
   async skipTaskInstance(
     uuid: string,
     reason?: string,
-  ): Promise<TaskInstanceServerDTO> {
+  ): Promise<TaskInstanceClientDTO> {
     const instance = await this.instanceRepository.findByUuid(uuid);
     if (!instance) {
       throw new Error(`TaskInstance ${uuid} not found`);
@@ -195,13 +195,13 @@ export class TaskInstanceApplicationService {
   }
 
   /**
-   * 检查并标记过期的任务实例
+   * 检查并标记过期的任务实�?
    */
-  async checkExpiredInstances(accountUuid: string): Promise<TaskInstanceServerDTO[]> {
+  async checkExpiredInstances(accountUuid: string): Promise<TaskInstanceClientDTO[]> {
     // 1. 查找所有过期的任务实例
     const overdueInstances = await this.instanceRepository.findOverdueInstances(accountUuid);
 
-    // 2. 委托给领域服务标记过期
+    // 2. 委托给领域服务标记过�?
     const expiredInstances = this.expirationService.markExpiredInstances(overdueInstances);
 
     // 3. 保存修改后的实例
@@ -225,7 +225,7 @@ export class TaskInstanceApplicationService {
    */
   private async publishTaskCompletedEvent(instance: TaskInstance): Promise<void> {
     try {
-      // 获取任务模板以获取 goalBinding 和 title 信息
+      // 获取任务模板以获�?goalBinding �?title 信息
       const template = await this.templateRepository.findByUuid(instance.templateUuid);
       if (!template) {
         console.warn(`[TaskInstance] Template not found: ${instance.templateUuid}`);
@@ -235,7 +235,7 @@ export class TaskInstanceApplicationService {
       // 获取完成时间
       const completedAt = instance.completionRecord?.completedAt || Date.now();
 
-      // 构造事件
+      // 构造事�?
       const event: TaskInstanceCompletedEvent = {
         eventType: 'task.instance.completed',
         payload: {
@@ -257,12 +257,12 @@ export class TaskInstanceApplicationService {
       // 发布事件
       await eventBus.publish(event);
 
-      console.log('✅ [TaskInstance] Task completion event published', {
+      console.log('�?[TaskInstance] Task completion event published', {
         taskInstanceUuid: instance.uuid,
         hasGoalBinding: !!template.goalBinding,
       });
     } catch (error) {
-      console.error('❌ [TaskInstance] Failed to publish task completion event', {
+      console.error('�?[TaskInstance] Failed to publish task completion event', {
         error: error instanceof Error ? error.message : String(error),
         taskInstanceUuid: instance.uuid,
       });

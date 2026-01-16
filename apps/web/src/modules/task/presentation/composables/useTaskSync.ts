@@ -270,7 +270,7 @@ export function useTaskSync() {
    */
   const autoRefresh = ref(false);
   const autoRefreshInterval = ref(5 * 60 * 1000); // 默认 5 分钟
-  let refreshTimer: NodeJS.Timeout | null = null;
+  let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
   /**
    * 启动自动刷新

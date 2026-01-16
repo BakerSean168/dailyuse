@@ -348,7 +348,7 @@ const handleSave = async (): Promise<void> => {
           recurrenceRule: formData.taskTemplate.recurrenceRule?.toServerDTO(),
           reminderConfig: formData.taskTemplate.reminderConfig?.toServerDTO(),
           importance: formData.taskTemplate.importance,
-          urgency: formData.taskTemplate.urgency,
+          // Story 2.3: urgency 已移除，priority 由后端根据 importance + dueDate 自动计算
           goalBinding: formData.taskTemplate.goalBinding,
           folderUuid: formData.taskTemplate.folderUuid,
           tags: formData.taskTemplate.tags,
@@ -376,7 +376,7 @@ const handleSave = async (): Promise<void> => {
           recurrenceRule: formData.taskTemplate.recurrenceRule?.toServerDTO(),
           reminderConfig: formData.taskTemplate.reminderConfig?.toServerDTO(),
           importance: formData.taskTemplate.importance,
-          urgency: formData.taskTemplate.urgency,
+          // Story 2.3: urgency 已移除，priority 由后端根据 importance + dueDate 自动计算
           goalBinding: formData.taskTemplate.goalBinding,
           folderUuid: formData.taskTemplate.folderUuid,
           tags: formData.taskTemplate.tags,

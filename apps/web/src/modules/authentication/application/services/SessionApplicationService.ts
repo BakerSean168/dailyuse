@@ -5,10 +5,10 @@
 
 import type {
   GetActiveSessionsRequest,
-  ActiveSessionsResponseDTO,
+  ActiveSessionsResponse,
   RevokeSessionRequest,
   RevokeAllSessionsRequest,
-  TrustedDevicesResponseDTO,
+  TrustedDevicesResponse,
   TrustDeviceRequest,
   RevokeTrustedDeviceRequest,
 } from '@dailyuse/contracts/authentication';
@@ -17,8 +17,10 @@ import { authApiClient } from '../../infrastructure/api/authApiClient';
 
 // Type aliases
 type GetActiveSessionsRequestDTO = GetActiveSessionsRequest;
+type ActiveSessionsResponseDTO = ActiveSessionsResponse;
 type RevokeSessionRequestDTO = RevokeSessionRequest;
 type RevokeAllSessionsRequestDTO = RevokeAllSessionsRequest;
+type TrustedDevicesResponseDTO = TrustedDevicesResponse;
 type TrustDeviceRequestDTO = TrustDeviceRequest;
 type RevokeTrustedDeviceRequestDTO = RevokeTrustedDeviceRequest;
 

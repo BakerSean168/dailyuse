@@ -4,6 +4,7 @@
  */
 
 import type { TaskInstanceStatus } from '../enums';
+import { ImportanceLevel } from '../../../shared/importance';
 import type {
   TaskTimeConfigServer,
   TaskTimeConfigServerDTO,
@@ -58,6 +59,18 @@ export interface TaskInstanceServerDTO {
   accountUuid: string;
   instanceDate: number; // epoch ms
   timeConfig: TaskTimeConfigServerDTO;
+  /**
+   * 任务重要性级别 (继承自 TaskTemplate)
+   * Story 1.1+: 用户设置的重要性，用于优先级计算
+   */
+  importance: ImportanceLevel;
+  /**
+   * 优先级分数 (0-100)
+   * 由系统根据 importance + dueDate 动态计算
+   * @readonly 此字段不能直接修改，计算由 Application Layer 负责
+   * @computed 基于 Story 1.3 算法计算得出
+   */
+  priority?: number;
   status: TaskInstanceStatus;
   completionRecord?: CompletionRecordServerDTO | null;
   skipRecord?: SkipRecordServerDTO | null;
@@ -77,6 +90,8 @@ export interface TaskInstancePersistenceDTO {
   accountUuid: string;
   instanceDate: number;
   timeConfig: string; // JSON
+  importance: string;
+  priority?: number;
   status: string;
   completionRecord?: string | null; // JSON
   skipRecord?: string | null; // JSON
@@ -95,6 +110,8 @@ export interface TaskInstanceServer {
   accountUuid: string;
   instanceDate: number;
   timeConfig: TaskTimeConfigServer;
+  importance: ImportanceLevel;
+  priority?: number;
   status: TaskInstanceStatus;
   completionRecord?: CompletionRecordServer | null;
   skipRecord?: SkipRecordServer | null;

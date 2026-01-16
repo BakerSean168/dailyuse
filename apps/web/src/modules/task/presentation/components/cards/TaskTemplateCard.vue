@@ -1,9 +1,25 @@
 <!-- filepath: d:\myPrograms\DailyUse\src\modules\Task\presentation\components\TaskTemplateCard.vue -->
 <template>
-  <v-card class="template-card" elevation="2" hover>
+  <v-card 
+    class="template-card" 
+    :class="`priority-${getPriorityLevel(template.priority ?? 0)}`"
+    elevation="2" 
+    hover
+  >
     <!-- 卡片头部 -->
     <v-card-title class="template-header">
       <div class="header-content">
+        <!-- Priority Indicator Icon - Story 2.4 -->
+        <div v-if="(template.priority ?? 0) >= 80" class="priority-indicator">
+          <v-icon 
+            :class="getIndicatorClass(template.priority ?? 0)"
+            :color="getIndicatorColor(template.priority ?? 0)"
+            size="medium"
+          >
+            {{ getIndicatorIcon(template.priority ?? 0) }}
+          </v-icon>
+        </div>
+        
         <h3 class="template-title">{{ template.title }}</h3>
         <div class="header-meta">
           <v-chip
@@ -26,14 +42,16 @@
             <v-icon start size="small">mdi-flag</v-icon>
             {{ template.importanceText }}
           </v-chip>
+          <!-- Story 2.3: Urgency chip removed - Priority now computed automatically -->
+          <!-- Priority Score Chip - Story 2.4 -->
           <v-chip
-            :color="getUrgencyColor(template.urgency)"
-            variant="outlined"
+            :color="getPriorityColor(template.priority ?? 0)"
+            variant="tonal"
             size="small"
-            class="urgency-chip ml-2"
+            class="priority-chip ml-2"
           >
-            <v-icon start size="small">mdi-flag</v-icon>
-            {{ template.urgencyText }}
+            <v-icon start size="small">mdi-flame</v-icon>
+            {{ Math.round(template.priority ?? 0) }}/100
           </v-chip>
         </div>
       </div>
@@ -206,6 +224,8 @@ import { UrgencyLevel } from '@dailyuse/contracts/shared';
 // types
 import type { TaskTemplate } from '@dailyuse/domain-client/task';
 import type { Goal, KeyResult } from '@dailyuse/domain-client/goal';
+// styles - Story 2.4
+import '@/styles/priority-colors.css';
 
 // composables
 import { useTaskTemplate } from '../../composables/useTaskTemplate';
@@ -319,6 +339,59 @@ const getUrgencyColor = (urgency: UrgencyLevel) => {
     default:
       return 'default';
   }
+};
+
+/**
+ * Story 2.4: Priority Visualization Functions
+ * ============================================
+ * Returns priority level classification: 'high' | 'medium' | 'low'
+ * High (>=80): Red background/border - demands immediate attention
+ * Medium (60-79): Amber background/border - notable but not urgent
+ * Low (<60): Gray background/border - normal priority
+ */
+const getPriorityLevel = (priority: number): string => {
+  if (priority >= 80) return 'high';
+  if (priority >= 60) return 'medium';
+  return 'low';
+};
+
+/**
+ * Returns Vuetify color for priority chip
+ */
+const getPriorityColor = (priority: number): string => {
+  if (priority >= 80) return 'error'; // red
+  if (priority >= 60) return 'warning'; // amber
+  return 'grey'; // gray
+};
+
+/**
+ * Returns icon for priority indicator
+ * 90+: ⚡ (flash) - critical/on fire
+ * 80-89: ⬆️ (arrow-up) - important
+ */
+const getIndicatorIcon = (priority: number): string => {
+  if (priority >= 90) return 'mdi-flash'; // ⚡
+  if (priority >= 80) return 'mdi-arrow-up'; // ⬆️
+  return 'mdi-pin'; // 📌 (shouldn't show for <80)
+};
+
+/**
+ * Returns color for priority indicator icon
+ */
+const getIndicatorColor = (priority: number): string => {
+  if (priority >= 90) return '#DC2626'; // red-600
+  if (priority >= 80) return '#DC2626'; // red-600
+  return '#F59E0B'; // amber-500
+};
+
+/**
+ * Returns CSS animation class for priority indicator
+ * Faster pulse for critical (>=90), subtle pulse for high (80-89)
+ */
+const getIndicatorClass = (priority: number): string => {
+  if (priority >= 90) return 'pulse-animation'; // faster pulse
+  if (priority >= 80) return 'subtle-pulse'; // subtle pulse
+  return ''; // no animation for medium/low
 };
 
 // 关键结果相关
@@ -613,6 +686,128 @@ const handleResume = () => {
 
   .time-summary {
     text-align: center;
+  }
+}
+
+/**
+ * Story 2.4: Priority-Based Card Styling
+ * ======================================
+ * Cards now have visual priority indicators through:
+ * 1. Left border color (high=red, medium=amber, low=gray)
+ * 2. Background color tint
+ * 3. Icon indicator for high priority tasks
+ * 4. Subtle shadow effect
+ */
+
+/* Priority Card Base Styling */
+.template-card {
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+/* High Priority (>=80) - RED */
+.template-card.priority-high {
+  background: var(--priority-high-bg-light);
+  border-left-color: var(--priority-high-border-light);
+  box-shadow: 0 2px 4px var(--priority-high-shadow-light);
+}
+
+/* Medium Priority (60-79) - AMBER */
+.template-card.priority-medium {
+  background: var(--priority-medium-bg-light);
+  border-left-color: var(--priority-medium-border-light);
+  box-shadow: 0 2px 4px var(--priority-medium-shadow-light);
+}
+
+/* Low Priority (<60) - GRAY */
+.template-card.priority-low {
+  background: var(--priority-low-bg-light);
+  border-left-color: var(--priority-low-border-light);
+  box-shadow: 0 1px 2px var(--priority-low-shadow-light);
+}
+
+/* Dark Theme Adjustments */
+[data-theme="dark"] .template-card.priority-high {
+  background: var(--priority-high-bg-dark);
+  border-left-color: var(--priority-high-border-dark);
+  box-shadow: 0 2px 4px var(--priority-high-shadow-dark);
+}
+
+[data-theme="dark"] .template-card.priority-medium {
+  background: var(--priority-medium-bg-dark);
+  border-left-color: var(--priority-medium-border-dark);
+  box-shadow: 0 2px 4px var(--priority-medium-shadow-dark);
+}
+
+[data-theme="dark"] .template-card.priority-low {
+  background: var(--priority-low-bg-dark);
+  border-left-color: var(--priority-low-border-dark);
+  box-shadow: 0 1px 2px var(--priority-low-shadow-dark);
+}
+
+/* Priority Indicator Icon */
+.priority-indicator {
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Animation Keyframes */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes subtle-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+/* Animation Classes */
+.pulse-animation {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.subtle-pulse {
+  animation: subtle-pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Respect User's Motion Preference */
+@media (prefers-reduced-motion: reduce) {
+  .pulse-animation,
+  .subtle-pulse {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* Responsive Icon Sizing */
+@media (max-width: 600px) {
+  .priority-indicator {
+    margin-right: 4px;
+  }
+
+  .priority-indicator :deep(i) {
+    font-size: 20px !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .priority-indicator {
+    margin-right: 12px;
+  }
+
+  .priority-indicator :deep(i) {
+    font-size: 28px !important;
   }
 }
 </style>

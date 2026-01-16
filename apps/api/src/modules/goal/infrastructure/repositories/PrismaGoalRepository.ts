@@ -9,20 +9,21 @@ import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalReques
 export class PrismaGoalRepository implements IGoalRepository {
   constructor(private prisma: PrismaClient) {}
 
-  private importanceMap: Record<ImportanceLevel, number> = {
-    [ImportanceLevel.Vital]: 4,
-    [ImportanceLevel.Important]: 3,
-    [ImportanceLevel.Moderate]: 2,
-    [ImportanceLevel.Minor]: 1,
-    [ImportanceLevel.Trivial]: 0,
+  // importance 在 Prisma schema 中是 String 类型
+  private importanceMap: Record<ImportanceLevel, string> = {
+    [ImportanceLevel.Vital]: 'Vital',
+    [ImportanceLevel.Important]: 'Important',
+    [ImportanceLevel.Moderate]: 'Moderate',
+    [ImportanceLevel.Minor]: 'Minor',
+    [ImportanceLevel.Trivial]: 'Trivial',
   };
 
-  private reverseImportanceMap: Record<number, ImportanceLevel> = {
-    4: ImportanceLevel.Vital,
-    3: ImportanceLevel.Important,
-    2: ImportanceLevel.Moderate,
-    1: ImportanceLevel.Minor,
-    0: ImportanceLevel.Trivial,
+  private reverseImportanceMap: Record<string, ImportanceLevel> = {
+    'Vital': ImportanceLevel.Vital,
+    'Important': ImportanceLevel.Important,
+    'Moderate': ImportanceLevel.Moderate,
+    'Minor': ImportanceLevel.Minor,
+    'Trivial': ImportanceLevel.Trivial,
   };
 
   private urgencyMap: Record<UrgencyLevel, number> = {

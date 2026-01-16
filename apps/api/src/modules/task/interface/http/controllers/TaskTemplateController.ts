@@ -1,7 +1,10 @@
 import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { TaskTemplateApplicationService } from '../../../application/services/TaskTemplateApplicationService';
+import { TaskQueryValidator } from '../../../application/TaskQueryValidator';
+import { TaskQueryService } from '../../../application/TaskQueryService';
 import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts/response';
+import { TaskSortBy, TaskFilterBy } from '@dailyuse/contracts/task';
 import { createLogger } from '@dailyuse/utils';
 import { isTaskError } from '@dailyuse/domain-server/task';
 
@@ -166,13 +169,65 @@ export class TaskTemplateController {
    * 获取任务模板列表
    * @route GET /api/task-templates
    */
+  /**
+   * 获取任务模板列表
+   * @route GET /api/task-templates
+   * 
+   * Story 2.5: 支持 sortBy 和 filterBy 参数
+   * 
+   * 查询参数:
+   * - sortBy: priority (default) | dueDate | createdAt | importance
+   * - filterBy: importance:vital | status:active | dueDate:overdue (可多个)
+   * 
+   * 示例:
+   * GET /api/task-templates?sortBy=dueDate&filterBy=importance:important&filterBy=status:active
+   */
   static async getTaskTemplates(req: Request, res: Response): Promise<Response> {
     try {
       const accountUuid = TaskTemplateController.extractAccountUuid(req);
+      const { sortBy, filterBy, status, folderUuid, goalUuid, tags } = req.query;
+
+      // Story 2.5: 如果提供了 sortBy 或 filterBy，使用新的查询服务
+      if (sortBy || filterBy) {
+        try {
+          // 验证参数
+          const validatedSortBy = TaskQueryValidator.validateSortBy(sortBy as string | undefined);
+          const validatedFilterBy = TaskQueryValidator.validateFilterBy(
+            filterBy as string | string[] | undefined
+          );
+
+          // 使用新的查询服务
+          const queryService = await TaskQueryService.getInstance();
+          const templates = await queryService.getTasksWithSortingAndFiltering(
+            accountUuid,
+            validatedSortBy || TaskSortBy.PRIORITY,
+            validatedFilterBy,
+            new Date()
+          );
+
+          return TaskTemplateController.responseBuilder.sendSuccess(
+            res,
+            {
+              templates,
+              meta: {
+                count: templates.length,
+                sortedBy: validatedSortBy || TaskSortBy.PRIORITY,
+                filteredBy: validatedFilterBy,
+              },
+            },
+            'Task templates retrieved successfully (sorted & filtered)',
+          );
+        } catch (validationError) {
+          // 参数验证失败
+          return TaskTemplateController.responseBuilder.sendError(res, {
+            code: ResponseCode.BAD_REQUEST,
+            message: validationError instanceof Error ? validationError.message : 'Invalid parameters',
+          });
+        }
+      }
+
+      // 原有的查询逻辑（向后兼容）
       const service = await TaskTemplateController.getTaskTemplateService();
-
-      const { status, folderUuid, goalUuid, tags } = req.query;
-
       let templates;
 
       if (status) {
