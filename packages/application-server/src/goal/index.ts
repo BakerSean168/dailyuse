@@ -49,3 +49,8 @@ export { GoalMapper, type GoalPersistenceDTO } from './mappers';
 // ============================================================
 export { GOAL_EVENT_HANDLERS_PLACEHOLDER } from './event-handlers';
 
+// ============================================================
+// Errors
+// ============================================================
+export * from './errors/weight-snapshot-errors';
+

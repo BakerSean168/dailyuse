@@ -5,14 +5,14 @@
  */
 
 import type { Request, Response } from 'express';
-import { WeightSnapshotApplicationService } from '../../application/services/WeightSnapshotApplicationService';
-import { GoalApplicationService } from '../../application/services/GoalApplicationService';
+import { 
+  WeightSnapshotApplicationService,
+  GoalApplicationService 
+} from '@dailyuse/application-server/goal';
+import { GoalNotFoundError, KeyResultNotFoundError } from '@dailyuse/application-server/goal';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
-import { PrismaWeightSnapshotRepository } from '../../infrastructure/repositories/PrismaWeightSnapshotRepository';
-import { PrismaGoalRepository } from '../../infrastructure/repositories/PrismaGoalRepository';
-import { prisma } from '@/shared/infrastructure/config/prisma';
-import { GoalNotFoundError, KeyResultNotFoundError } from '../../application/errors/WeightSnapshotErrors';
+import { GoalContainer } from '../../infrastructure/di/GoalContainer';
 
 const logger = createLogger('WeightSnapshotController');
 
@@ -36,19 +36,14 @@ export class WeightSnapshotController {
    */
   private static async getSnapshotService(): Promise<WeightSnapshotApplicationService> {
     if (!WeightSnapshotController.snapshotService) {
-      const goalRepo = new PrismaGoalRepository(prisma);
-      const snapshotRepo = new PrismaWeightSnapshotRepository(prisma);
-      WeightSnapshotController.snapshotService = WeightSnapshotApplicationService.getInstance(
-        goalRepo,
-        snapshotRepo,
-      );
+      WeightSnapshotController.snapshotService = GoalContainer.getInstance().getWeightSnapshotApplicationService();
     }
     return WeightSnapshotController.snapshotService;
   }
 
   private static async getGoalService(): Promise<GoalApplicationService> {
     if (!WeightSnapshotController.goalService) {
-      WeightSnapshotController.goalService = await GoalApplicationService.getInstance();
+      WeightSnapshotController.goalService = GoalContainer.getInstance().getGoalApplicationService();
     }
     return WeightSnapshotController.goalService;
   }

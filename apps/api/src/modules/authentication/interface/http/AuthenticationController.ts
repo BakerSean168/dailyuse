@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { AuthenticationApplicationService } from '../../application/services/AuthenticationApplicationService';
+import { Login, Logout, RefreshToken, RevokeAllSessions } from '@dailyuse/application-server/authentication';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 import { isProduction } from '@/shared/infrastructure/config/env.js';
@@ -108,14 +108,38 @@ const generateApiKeySchema = z.object({
  * Authentication 控制器
  */
 export class AuthenticationController {
-  private static authService: AuthenticationApplicationService | null = null;
+  private static loginService: Login | null = null;
+  private static logoutService: Logout | null = null;
+  private static refreshTokenService: RefreshToken | null = null;
+  private static revokeAllSessionsService: RevokeAllSessions | null = null;
   private static responseBuilder = createResponseBuilder();
 
-  private static async getAuthService(): Promise<AuthenticationApplicationService> {
-    if (!AuthenticationController.authService) {
-      AuthenticationController.authService = await AuthenticationApplicationService.getInstance();
+  private static getLoginService(): Login {
+    if (!AuthenticationController.loginService) {
+      AuthenticationController.loginService = Login.getInstance();
     }
-    return AuthenticationController.authService;
+    return AuthenticationController.loginService;
+  }
+
+  private static getLogoutService(): Logout {
+    if (!AuthenticationController.logoutService) {
+      AuthenticationController.logoutService = Logout.getInstance();
+    }
+    return AuthenticationController.logoutService;
+  }
+
+  private static getRefreshTokenService(): RefreshToken {
+    if (!AuthenticationController.refreshTokenService) {
+      AuthenticationController.refreshTokenService = RefreshToken.getInstance();
+    }
+    return AuthenticationController.refreshTokenService;
+  }
+
+  private static getRevokeAllSessionsService(): RevokeAllSessions {
+    if (!AuthenticationController.revokeAllSessionsService) {
+      AuthenticationController.revokeAllSessionsService = RevokeAllSessions.getInstance();
+    }
+    return AuthenticationController.revokeAllSessionsService;
   }
 
   /**
@@ -132,9 +156,9 @@ export class AuthenticationController {
       // ===== 步骤 1: 验证输入 =====
       const validatedData = loginSchema.parse(req.body);
 
-      // ===== 步骤 2: 调用 ApplicationService =====
-      const service = await AuthenticationController.getAuthService();
-      const result = await service.login({
+      // ===== 步骤 2: 调用 Login Use Case (Web API 版本) =====
+      const loginService = AuthenticationController.getLoginService();
+      const result = await loginService.executeForWeb({
         identifier: validatedData.identifier,
         password: validatedData.password,
         deviceInfo: validatedData.deviceInfo,
@@ -229,9 +253,9 @@ export class AuthenticationController {
         });
       }
 
-      // ===== 步骤 2: 调用 ApplicationService =====
-      const service = await AuthenticationController.getAuthService();
-      const result = await service.logout({ accessToken });
+      // ===== 步骤 2: 调用 Logout Use Case (Web API 版本) =====
+      const logoutService = AuthenticationController.getLogoutService();
+      const result = await logoutService.executeForWeb({ accessToken });
 
       // ===== 步骤 3: 返回成功响应 =====
       logger.info('[AuthenticationController] Logout successful');
@@ -284,9 +308,9 @@ export class AuthenticationController {
         });
       }
 
-      // ===== 步骤 2: 调用 ApplicationService =====
-      const service = await AuthenticationController.getAuthService();
-      const result = await service.logoutAll({ accountUuid, accessToken });
+      // ===== 步骤 2: 调用 RevokeAllSessions Use Case (Web API 版本) =====
+      const revokeAllSessionsService = AuthenticationController.getRevokeAllSessionsService();
+      const result = await revokeAllSessionsService.executeForWeb({ accountUuid, accessToken });
 
       // ===== 步骤 3: 返回成功响应 =====
       logger.info('[AuthenticationController] Logout all successful', {
@@ -326,22 +350,58 @@ export class AuthenticationController {
    * 刷新会话
    * @route POST /api/auth/refresh
    * @description 使用 refresh token 刷新 access token
-   * @todo 需要使用 SessionManagementApplicationService
    */
   static async refreshSession(req: Request, res: Response): Promise<Response> {
     try {
       logger.info('[AuthenticationController] Refresh session request received');
 
-      // TODO: 使用 SessionManagementApplicationService.refreshSession()
+      // ===== 步骤 1: 从 Cookie 中提取 refreshToken =====
+      const refreshToken = req.cookies.refreshToken;
+
+      if (!refreshToken) {
+        return AuthenticationController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Refresh token is required',
+        });
+      }
+
+      // ===== 步骤 2: 调用 RefreshToken Use Case (Web API 版本) =====
+      const refreshTokenService = AuthenticationController.getRefreshTokenService();
+      const result = await refreshTokenService.executeForWeb({ refreshToken });
+
+      // ===== 步骤 3: 设置新的 httpOnly Cookie =====
+      res.cookie('refreshToken', result.refreshToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'strict',
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 天
+        path: '/',
+      });
+
+      logger.info('[AuthenticationController] Session refreshed successfully');
+
+      // ===== 步骤 4: 返回成功响应 =====
       return AuthenticationController.responseBuilder.sendSuccess(
         res,
-        null,
-        'Session refresh - Implementation pending',
+        {
+          accessToken: result.accessToken,
+          expiresAt: result.expiresAt,
+        },
+        result.message,
       );
     } catch (error) {
       logger.error('[AuthenticationController] Session refresh failed', {
         error: error instanceof Error ? error.message : String(error),
       });
+
+      if (error instanceof Error) {
+        if (error.message.includes('Invalid') || error.message.includes('expired')) {
+          return AuthenticationController.responseBuilder.sendError(res, {
+            code: ResponseCode.UNAUTHORIZED,
+            message: error.message,
+          });
+        }
+      }
 
       return AuthenticationController.responseBuilder.sendError(res, {
         code: ResponseCode.INTERNAL_ERROR,

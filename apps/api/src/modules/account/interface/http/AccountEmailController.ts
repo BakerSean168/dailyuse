@@ -13,7 +13,7 @@
 
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { AccountEmailApplicationService } from '../../application/services/AccountEmailApplicationService';
+import { AccountEmailApplicationService } from '@dailyuse/application-server/account';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 

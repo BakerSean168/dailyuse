@@ -6,7 +6,8 @@
 
 import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { GoalStatisticsApplicationService } from '../../application/services/GoalStatisticsApplicationService';
+import { GoalStatisticsApplicationService } from '@dailyuse/application-server/goal';
+import { GoalContainer } from '../../infrastructure/di/GoalContainer';
 import {
   type ApiResponse,
   type SuccessResponse,
@@ -27,18 +28,13 @@ const logger = createLogger('GoalStatisticsController');
  * 负责处理 Goal 统计相关�?HTTP 请求�?
  */
 export class GoalStatisticsController {
-  private static statisticsService: GoalStatisticsApplicationService | null = null;
   private static responseBuilder = createResponseBuilder();
 
   /**
    * 获取应用服务实例（懒加载）�?
    */
   private static async getStatisticsService(): Promise<GoalStatisticsApplicationService> {
-    if (!GoalStatisticsController.statisticsService) {
-      GoalStatisticsController.statisticsService =
-        await GoalStatisticsApplicationService.getInstance();
-    }
-    return GoalStatisticsController.statisticsService;
+    return GoalContainer.getInstance().getGoalStatisticsApplicationService();
   }
 
   /**

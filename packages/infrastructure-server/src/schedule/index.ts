@@ -1,17 +1,26 @@
 /**
  * Schedule Module - Infrastructure Server
  *
- * Ports and Adapters for Schedule module persistence.
+ * Repository implementations and DI container for Schedule module persistence.
+ * All repositories implement interfaces defined in @dailyuse/domain-server/schedule
  */
 
-// Container
-export { ScheduleContainer } from './schedule.container';
+// DI Container
+export { ScheduleContainer } from './di/schedule-container';
 
-// Ports (Interfaces)
-export { type IScheduleRepository } from './ports/schedule-repository.port';
+// Repositories (Prisma implementations)
+export {
+  PrismaScheduleRepository,
+  PrismaScheduleExecutionRepository,
+  PrismaScheduleStatisticsRepository,
+  PrismaScheduleTaskRepository,
+} from './repositories';
 
-// Prisma Adapters
-export { SchedulePrismaRepository } from './adapters/prisma/schedule-prisma.repository';
-
-// Memory Adapters
-export { ScheduleMemoryRepository } from './adapters/memory/schedule-memory.repository';
+// Datasources (External integrations)
+export {
+  CronJobManager,
+  BreeExecutionEngine,
+  ScheduleMonitor,
+  PrismaScheduleExecutionMapper,
+  scheduleWorker,
+} from './datasources';

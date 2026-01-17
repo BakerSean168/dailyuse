@@ -13,7 +13,11 @@
 
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { TwoFactorApplicationService } from '../../application/services/TwoFactorApplicationService';
+import { 
+  Enable2FA,
+  Disable2FA,
+  Verify2FA
+} from '@dailyuse/application-server/authentication';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
@@ -59,14 +63,30 @@ const verifyTwoFactorSchema = z.object({
  * Two-Factor Authentication Controller
  */
 export class TwoFactorController {
-  private static twoFactorService: TwoFactorApplicationService | null = null;
+  private static enable2FAService: Enable2FA | null = null;
+  private static disable2FAService: Disable2FA | null = null;
+  private static verify2FAService: Verify2FA | null = null;
   private static responseBuilder = createResponseBuilder();
 
-  private static async getTwoFactorService(): Promise<TwoFactorApplicationService> {
-    if (!TwoFactorController.twoFactorService) {
-      TwoFactorController.twoFactorService = await TwoFactorApplicationService.getInstance();
+  private static getEnable2FAService(): Enable2FA {
+    if (!TwoFactorController.enable2FAService) {
+      TwoFactorController.enable2FAService = Enable2FA.getInstance();
     }
-    return TwoFactorController.twoFactorService;
+    return TwoFactorController.enable2FAService;
+  }
+
+  private static getDisable2FAService(): Disable2FA {
+    if (!TwoFactorController.disable2FAService) {
+      TwoFactorController.disable2FAService = Disable2FA.getInstance();
+    }
+    return TwoFactorController.disable2FAService;
+  }
+
+  private static getVerify2FAService(): Verify2FA {
+    if (!TwoFactorController.verify2FAService) {
+      TwoFactorController.verify2FAService = Verify2FA.getInstance();
+    }
+    return TwoFactorController.verify2FAService;
   }
 
   /**
@@ -84,9 +104,9 @@ export class TwoFactorController {
       // ===== 步骤 1: 验证输入 =====
       const validatedData = enableTwoFactorSchema.parse(req.body);
 
-      // ===== 步骤 2: 调用 ApplicationService =====
-      const service = await TwoFactorController.getTwoFactorService();
-      const result = await service.enableTwoFactor({
+      // ===== 步骤 2: 调用 Enable2FA Use Case =====
+      const enable2FAService = TwoFactorController.getEnable2FAService();
+      const result = await enable2FAService.execute({
         accountUuid: validatedData.accountUuid,
         method: validatedData.method,
         secret: validatedData.secret,
@@ -165,9 +185,9 @@ export class TwoFactorController {
       // ===== 步骤 1: 验证输入 =====
       const validatedData = disableTwoFactorSchema.parse(req.body);
 
-      // ===== 步骤 2: 调用 ApplicationService =====
-      const service = await TwoFactorController.getTwoFactorService();
-      await service.disableTwoFactor({
+      // ===== 步骤 2: 调用 Disable2FA Use Case =====
+      const disable2FAService = TwoFactorController.getDisable2FAService();
+      await disable2FAService.execute({
         accountUuid: validatedData.accountUuid,
         password: validatedData.password,
       });
@@ -242,9 +262,9 @@ export class TwoFactorController {
       // ===== 步骤 1: 验证输入 =====
       const validatedData = verifyTwoFactorSchema.parse(req.body);
 
-      // ===== 步骤 2: 调用 ApplicationService =====
-      const service = await TwoFactorController.getTwoFactorService();
-      const isValid = await service.verifyTwoFactorCode({
+      // ===== 步骤 2: 调用 Verify2FA Use Case =====
+      const verify2FAService = TwoFactorController.getVerify2FAService();
+      const isValid = await verify2FAService.execute({
         accountUuid: validatedData.accountUuid,
         code: validatedData.code,
       });

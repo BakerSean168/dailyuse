@@ -15,3 +15,7 @@ export { GoalPrismaRepository } from './adapters/prisma/goal-prisma.repository';
 
 // Memory Adapters
 export { GoalMemoryRepository } from './adapters/memory/goal-memory.repository';
+
+// Prisma Weight Snapshot
+export { PrismaWeightSnapshotMapper } from './mappers/prisma-weight-snapshot-mapper';
+export { PrismaWeightSnapshotRepository } from './adapters/prisma/weight-snapshot-prisma.repository';

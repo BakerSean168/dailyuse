@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { TaskInstanceApplicationService } from '../../../application/services/TaskInstanceApplicationService';
+import { TaskInstanceApplicationService } from '@dailyuse/application-server/task';
 import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 

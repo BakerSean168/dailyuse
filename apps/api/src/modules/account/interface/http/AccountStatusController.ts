@@ -13,7 +13,7 @@
 
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { AccountStatusApplicationService } from '../../application/services/AccountStatusApplicationService';
+import { AccountStatusApplicationService } from '@dailyuse/application-server/account';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 

@@ -46,3 +46,9 @@ export {
   type UpdateGoalParams,
 } from './GoalApplicationService';
 
+// ============================================================
+// Internal Services
+// ============================================================
+
+export { WeightSnapshotApplicationService } from './weight-snapshot-application.service';
+

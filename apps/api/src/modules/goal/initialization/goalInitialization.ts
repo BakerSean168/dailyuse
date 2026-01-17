@@ -3,8 +3,8 @@ import {
   InitializationPhase,
   type InitializationTask,
 } from '@dailyuse/utils';
-import { GoalEventPublisher } from '../application/services/GoalEventPublisher';
-import { GoalTaskEventHandlers } from '../application/event-handlers/GoalTaskEventHandlers';
+import { GoalContainer } from '../infrastructure/di/GoalContainer';
+import { GoalEventPublisher, GoalTaskEventHandlers } from '@dailyuse/application-server/goal';
 
 /**
  * Goal 模块初始化任务 - 事件发布器
@@ -14,7 +14,8 @@ const goalEventHandlersInitTask: InitializationTask = {
   phase: InitializationPhase.APP_STARTUP,
   priority: 20, // 应用启动后期执行
   initialize: async () => {
-    await GoalEventPublisher.initialize();
+    const container = GoalContainer.getInstance();
+    await GoalEventPublisher.initialize(container.getGoalStatisticsApplicationService());
     console.log('✓ Goal event handlers initialized');
   },
 };
@@ -28,7 +29,8 @@ const goalTaskEventHandlersInitTask: InitializationTask = {
   priority: 21, // 在事件发布器之后初始化
   initialize: async () => {
     const handlers = GoalTaskEventHandlers.getInstance();
-    await handlers.initialize();
+    const container = GoalContainer.getInstance();
+    await handlers.initialize(container.getGoalRecordApplicationService());
     console.log('✓ Goal module task event handlers initialized');
   },
 };

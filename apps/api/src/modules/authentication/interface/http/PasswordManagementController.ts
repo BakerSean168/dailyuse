@@ -13,7 +13,11 @@
 
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { PasswordManagementApplicationService } from '../../application/services/PasswordManagementApplicationService';
+import { 
+  ChangePassword,
+  ForgotPassword,
+  ResetPassword
+} from '@dailyuse/application-server/authentication';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
@@ -57,15 +61,30 @@ const resetPasswordSchema = z.object({
  * Password Management Controller
  */
 export class PasswordManagementController {
-  private static passwordService: PasswordManagementApplicationService | null = null;
+  private static changePasswordService: ChangePassword | null = null;
+  private static forgotPasswordService: ForgotPassword | null = null;
+  private static resetPasswordService: ResetPassword | null = null;
   private static responseBuilder = createResponseBuilder();
 
-  private static async getPasswordService(): Promise<PasswordManagementApplicationService> {
-    if (!PasswordManagementController.passwordService) {
-      PasswordManagementController.passwordService =
-        await PasswordManagementApplicationService.getInstance();
+  private static getChangePasswordService(): ChangePassword {
+    if (!PasswordManagementController.changePasswordService) {
+      PasswordManagementController.changePasswordService = ChangePassword.getInstance();
     }
-    return PasswordManagementController.passwordService;
+    return PasswordManagementController.changePasswordService;
+  }
+
+  private static getForgotPasswordService(): ForgotPassword {
+    if (!PasswordManagementController.forgotPasswordService) {
+      PasswordManagementController.forgotPasswordService = ForgotPassword.getInstance();
+    }
+    return PasswordManagementController.forgotPasswordService;
+  }
+
+  private static getResetPasswordService(): ResetPassword {
+    if (!PasswordManagementController.resetPasswordService) {
+      PasswordManagementController.resetPasswordService = ResetPassword.getInstance();
+    }
+    return PasswordManagementController.resetPasswordService;
   }
 
   /**
@@ -82,9 +101,9 @@ export class PasswordManagementController {
       // ===== 步骤 1: 验证输入 =====
       const validatedData = changePasswordSchema.parse(req.body);
 
-      // ===== 步骤 2: 调用 ApplicationService =====
-      const service = await PasswordManagementController.getPasswordService();
-      const result = await service.changePassword({
+      // ===== 步骤 2: 调用 ChangePassword Use Case =====
+      const changePasswordService = PasswordManagementController.getChangePasswordService();
+      const result = await changePasswordService.execute({
         accountUuid: validatedData.accountUuid,
         currentPassword: validatedData.currentPassword,
         newPassword: validatedData.newPassword,

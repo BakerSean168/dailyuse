@@ -1,17 +1,17 @@
 /**
  * Task Module - Infrastructure Server
  *
- * Ports and Adapters for Task module persistence.
+ * Repository implementations and DI container for Task module persistence.
+ * All repositories implement interfaces defined in @dailyuse/domain-server/task
  */
 
-// Container
-export { TaskContainer } from './task.container';
+// DI Container
+export { TaskContainer } from './di/task-container';
 
-// Ports (Interfaces)
-export { type ITaskRepository } from './ports/task-repository.port';
-
-// Prisma Adapters
-export { TaskPrismaRepository } from './adapters/prisma/task-prisma.repository';
-
-// Memory Adapters
-export { TaskMemoryRepository } from './adapters/memory/task-memory.repository';
+// Repositories (Prisma implementations)
+export {
+  PrismaTaskInstanceRepository,
+  PrismaTaskTemplateRepository,
+  PrismaTaskDependencyRepository,
+  PrismaTaskStatisticsRepository,
+} from './repositories';

@@ -13,7 +13,11 @@
 
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { SessionManagementApplicationService } from '../../application/services/SessionManagementApplicationService';
+import { 
+  GetActiveSessions, 
+  RevokeSession, 
+  RevokeAllSessions 
+} from '@dailyuse/application-server/authentication';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 import { isProduction } from '@/shared/infrastructure/config/env.js';
@@ -64,15 +68,30 @@ const getAccountSessionsSchema = z.object({
  * Session Management Controller
  */
 export class SessionManagementController {
-  private static sessionService: SessionManagementApplicationService | null = null;
+  private static getActiveSessionsService: GetActiveSessions | null = null;
+  private static revokeSessionService: RevokeSession | null = null;
+  private static revokeAllSessionsService: RevokeAllSessions | null = null;
   private static responseBuilder = createResponseBuilder();
 
-  private static async getSessionService(): Promise<SessionManagementApplicationService> {
-    if (!SessionManagementController.sessionService) {
-      SessionManagementController.sessionService =
-        await SessionManagementApplicationService.getInstance();
+  private static getGetActiveSessionsService(): GetActiveSessions {
+    if (!SessionManagementController.getActiveSessionsService) {
+      SessionManagementController.getActiveSessionsService = GetActiveSessions.getInstance();
     }
-    return SessionManagementController.sessionService;
+    return SessionManagementController.getActiveSessionsService;
+  }
+
+  private static getRevokeSessionService(): RevokeSession {
+    if (!SessionManagementController.revokeSessionService) {
+      SessionManagementController.revokeSessionService = RevokeSession.getInstance();
+    }
+    return SessionManagementController.revokeSessionService;
+  }
+
+  private static getRevokeAllSessionsService(): RevokeAllSessions {
+    if (!SessionManagementController.revokeAllSessionsService) {
+      SessionManagementController.revokeAllSessionsService = RevokeAllSessions.getInstance();
+    }
+    return SessionManagementController.revokeAllSessionsService;
   }
 
   /**
@@ -250,11 +269,10 @@ export class SessionManagementController {
         accountUuid,
       });
 
-      // ===== 步骤 2: 调用 ApplicationService =====
-      const service = await SessionManagementController.getSessionService();
-      await service.terminateSession({
-        sessionUuid: validatedData.sessionUuid,
-        accountUuid: validatedData.accountUuid,
+      // ===== 步骤 2: 调用 RevokeSession Use Case =====
+      const revokeSessionService = SessionManagementController.getRevokeSessionService();
+      await revokeSessionService.execute(validatedData.accountUuid, {
+        sessionId: validatedData.sessionUuid,
       });
 
       // ===== 步骤 3: 返回成功响应 =====
@@ -327,11 +345,10 @@ export class SessionManagementController {
       // ===== 步骤 1: 验证输入 =====
       const validatedData = revokeAllSessionsSchema.parse(req.body);
 
-      // ===== 步骤 2: 调用 ApplicationService =====
-      const service = await SessionManagementController.getSessionService();
-      await service.terminateAllSessions({
-        accountUuid: validatedData.accountUuid,
-        exceptSessionUuid: validatedData.exceptSessionUuid,
+      // ===== 步骤 2: 调用 RevokeAllSessions Use Case =====
+      const revokeAllSessionsService = SessionManagementController.getRevokeAllSessionsService();
+      await revokeAllSessionsService.execute(validatedData.accountUuid, {
+        currentSessionUuid: validatedData.exceptSessionUuid,
       });
 
       // ===== 步骤 3: 返回成功响应 =====
@@ -390,29 +407,21 @@ export class SessionManagementController {
         includeExpired: false,
       });
 
-      // ===== 步骤 2: 调用 ApplicationService =====
-      const service = await SessionManagementController.getSessionService();
-      const sessions = await service.getActiveSessions(validatedData.accountUuid);
+      // ===== 步骤 2: 调用 GetActiveSessions Use Case =====
+      const getActiveSessionsService = SessionManagementController.getGetActiveSessionsService();
+      const result = await getActiveSessionsService.execute(validatedData.accountUuid);
 
       // ===== 步骤 3: 返回成功响应 =====
       logger.info('[SessionManagementController] Active sessions retrieved successfully', {
         accountUuid: validatedData.accountUuid,
-        count: sessions.length,
+        count: result.total,
       });
 
       return SessionManagementController.responseBuilder.sendSuccess(
         res,
         {
-          sessions: sessions.map((session) => ({
-            uuid: session.uuid,
-            deviceInfo: session.device,
-            ipAddress: session.ipAddress,
-            location: session.location,
-            createdAt: session.createdAt,
-            lastActivityAt: session.lastActivityAt,
-            expiresAt: session.expiresAt,
-          })),
-          total: sessions.length,
+          sessions: result.sessions,
+          total: result.total,
         },
         'Active sessions retrieved successfully',
         200,

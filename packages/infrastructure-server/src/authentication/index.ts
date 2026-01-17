@@ -8,8 +8,7 @@
 export { AuthContainer } from './auth.container';
 
 // Ports (Interfaces)
-export { type IAuthCredentialRepository, type PrismaTransactionClient } from './ports/auth-credential-repository.port';
-export { type IAuthSessionRepository } from './ports/auth-session-repository.port';
+export type { IAuthCredentialRepository, IAuthSessionRepository, IPasswordEncryptor, PrismaTransactionClient } from './ports';
 
 // Prisma Adapters
 export { AuthCredentialPrismaRepository } from './adapters/prisma/auth-credential-prisma.repository';
@@ -18,3 +17,10 @@ export { AuthSessionPrismaRepository } from './adapters/prisma/auth-session-pris
 // Memory Adapters
 export { AuthCredentialMemoryRepository } from './adapters/memory/auth-credential-memory.repository';
 export { AuthSessionMemoryRepository } from './adapters/memory/auth-session-memory.repository';
+
+// Encryptors
+export { BcryptPasswordEncryptor, createBcryptEncryptor } from './encryptors';
+
+// Strategies
+export { createJwtStrategy, createLocalStrategy } from './strategies';
+export type { JwtStrategyConfig, LocalStrategyConfig } from './strategies';

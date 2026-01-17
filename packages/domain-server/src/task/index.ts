@@ -17,5 +17,8 @@ export * from './repositories';
 // 领域服务
 export * from './services';
 
+// 领域事件
+export * from './events';
+
 // 错误类
 export * from './value-objects/TaskErrors';

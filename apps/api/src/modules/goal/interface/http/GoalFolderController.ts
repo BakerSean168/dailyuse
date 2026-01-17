@@ -6,7 +6,8 @@
 
 import type { Response } from 'express';
 import type { AuthenticatedRequest } from '@/shared/infrastructure/http/middlewares/authMiddleware';
-import { GoalFolderApplicationService } from '../../application/services/GoalFolderApplicationService';
+import { GoalFolderApplicationService } from '@dailyuse/application-server/goal';
+import { GoalContainer } from '../../infrastructure/di/GoalContainer';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
@@ -23,17 +24,13 @@ const logger = createLogger('GoalFolderController');
  * - 异常处理和错误响应
  */
 export class GoalFolderController {
-  private static folderService: GoalFolderApplicationService | null = null;
   private static responseBuilder = createResponseBuilder();
 
   /**
    * 初始化应用服务（延迟加载）。
    */
   private static async getFolderService(): Promise<GoalFolderApplicationService> {
-    if (!GoalFolderController.folderService) {
-      GoalFolderController.folderService = await GoalFolderApplicationService.getInstance();
-    }
-    return GoalFolderController.folderService;
+    return GoalContainer.getInstance().getGoalFolderApplicationService();
   }
 
   /**

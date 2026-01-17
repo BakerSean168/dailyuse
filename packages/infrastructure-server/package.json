@@ -39,10 +39,17 @@
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/domain-server": "workspace:*",
-    "@dailyuse/utils": "workspace:*"
+    "@dailyuse/utils": "workspace:*",
+    "bcryptjs": "^2.4.3",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@prisma/client": "^6.19.1",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/passport-jwt": "^4.0.1",
+    "@types/passport-local": "^1.0.38"
   },
   "files": [
     "dist",

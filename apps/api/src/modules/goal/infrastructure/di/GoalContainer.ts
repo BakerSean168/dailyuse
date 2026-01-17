@@ -4,12 +4,27 @@ import type {
   IFocusSessionRepository,
   IGoalStatisticsRepository,
   IFocusModeRepository,
+  IWeightSnapshotRepository
 } from '@dailyuse/domain-server/goal';
-import { PrismaGoalRepository } from '../repositories/PrismaGoalRepository';
-import { PrismaFocusSessionRepository } from '../repositories/PrismaFocusSessionRepository';
-import { PrismaGoalStatisticsRepository } from '../repositories/PrismaGoalStatisticsRepository';
-import { PrismaGoalFolderRepository } from '../repositories/PrismaGoalFolderRepository';
-import { PrismaFocusModeRepository } from '../repositories/PrismaFocusModeRepository';
+import { 
+  PrismaGoalRepository,
+  PrismaFocusSessionRepository,
+  PrismaGoalStatisticsRepository,
+  PrismaGoalFolderRepository,
+  PrismaFocusModeRepository,
+  PrismaWeightSnapshotRepository
+} from '@dailyuse/infrastructure-server/goal';
+import {
+  GoalApplicationService,
+  GoalFolderApplicationService,
+  GoalStatisticsApplicationService,
+  FocusSessionApplicationService,
+  FocusModeApplicationService,
+  GoalKeyResultApplicationService,
+  GoalRecordApplicationService,
+  GoalReviewApplicationService,
+  WeightSnapshotApplicationService
+} from '@dailyuse/application-server/goal';
 import { prisma } from '@/shared/infrastructure/config/prisma';
 
 /**
@@ -30,6 +45,17 @@ export class GoalContainer {
   private focusSessionRepository?: IFocusSessionRepository;
   private focusModeRepository?: IFocusModeRepository;
   private goalStatisticsRepository?: IGoalStatisticsRepository;
+  private weightSnapshotRepository?: IWeightSnapshotRepository;
+
+  private goalService?: GoalApplicationService;
+  private goalFolderService?: GoalFolderApplicationService;
+  private goalStatisticsService?: GoalStatisticsApplicationService;
+  private focusSessionService?: FocusSessionApplicationService;
+  private focusModeService?: FocusModeApplicationService;
+  private goalKeyResultService?: GoalKeyResultApplicationService;
+  private goalRecordService?: GoalRecordApplicationService;
+  private goalReviewService?: GoalReviewApplicationService;
+  private weightSnapshotService?: WeightSnapshotApplicationService;
 
   private constructor() {}
 
@@ -126,6 +152,128 @@ export class GoalContainer {
   }
 
   /**
+   * 获取权重快照仓储实例（懒加载）
+   */
+  getWeightSnapshotRepository(): IWeightSnapshotRepository {
+    if (!this.weightSnapshotRepository) {
+      this.weightSnapshotRepository = new PrismaWeightSnapshotRepository(prisma);
+    }
+    return this.weightSnapshotRepository;
+  }
+
+  /**
+   * 设置权重快照仓储实例（用于测试）
+   */
+  setWeightSnapshotRepository(repository: IWeightSnapshotRepository): void {
+    this.weightSnapshotRepository = repository;
+  }
+
+  /**
+   * 获取目标应用服务实例
+   */
+  getGoalApplicationService(): GoalApplicationService {
+    if (!this.goalService) {
+      this.goalService = new GoalApplicationService(this.getGoalRepository());
+    }
+    return this.goalService;
+  }
+
+  /**
+   * 获取目标文件夹应用服务实例
+   */
+  getGoalFolderApplicationService(): GoalFolderApplicationService {
+    if (!this.goalFolderService) {
+      this.goalFolderService = new GoalFolderApplicationService(
+        this.getGoalFolderRepository(),
+        this.getGoalRepository()
+      );
+    }
+    return this.goalFolderService;
+  }
+
+  /**
+   * 获取目标统计应用服务实例
+   */
+  getGoalStatisticsApplicationService(): GoalStatisticsApplicationService {
+    if (!this.goalStatisticsService) {
+      this.goalStatisticsService = new GoalStatisticsApplicationService(
+        this.getGoalStatisticsRepository(),
+        this.getGoalRepository()
+      );
+    }
+    return this.goalStatisticsService;
+  }
+
+  /**
+   * 获取专注周期应用服务实例
+   */
+  getFocusSessionApplicationService(): FocusSessionApplicationService {
+    if (!this.focusSessionService) {
+      this.focusSessionService = new FocusSessionApplicationService(
+        this.getFocusSessionRepository(),
+        this.getGoalRepository()
+      );
+    }
+    return this.focusSessionService;
+  }
+
+  /**
+   * 获取专注模式应用服务实例
+   */
+  getFocusModeApplicationService(): FocusModeApplicationService {
+    if (!this.focusModeService) {
+      this.focusModeService = new FocusModeApplicationService(
+        this.getFocusModeRepository(),
+        this.getGoalRepository()
+      );
+    }
+    return this.focusModeService;
+  }
+
+  /**
+   * 获取目标关键结果应用服务实例
+   */
+  getGoalKeyResultApplicationService(): GoalKeyResultApplicationService {
+    if (!this.goalKeyResultService) {
+      this.goalKeyResultService = new GoalKeyResultApplicationService(this.getGoalRepository());
+    }
+    return this.goalKeyResultService;
+  }
+
+  /**
+   * 获取目标记录应用服务实例
+   */
+  getGoalRecordApplicationService(): GoalRecordApplicationService {
+    if (!this.goalRecordService) {
+      this.goalRecordService = new GoalRecordApplicationService(this.getGoalRepository());
+    }
+    return this.goalRecordService;
+  }
+
+  /**
+   * 获取目标回顾应用服务实例
+   */
+  getGoalReviewApplicationService(): GoalReviewApplicationService {
+    if (!this.goalReviewService) {
+      this.goalReviewService = new GoalReviewApplicationService(this.getGoalRepository());
+    }
+    return this.goalReviewService;
+  }
+
+  /**
+   * 获取权重快照应用服务实例
+   */
+  getWeightSnapshotApplicationService(): WeightSnapshotApplicationService {
+    if (!this.weightSnapshotService) {
+      this.weightSnapshotService = new WeightSnapshotApplicationService(
+        this.getGoalRepository(),
+        this.getWeightSnapshotRepository()
+      );
+    }
+    return this.weightSnapshotService;
+  }
+
+  /**
    * 重置容器（用于测试）
    */
   reset(): void {
@@ -134,5 +282,16 @@ export class GoalContainer {
     this.focusSessionRepository = undefined;
     this.focusModeRepository = undefined;
     this.goalStatisticsRepository = undefined;
+    this.weightSnapshotRepository = undefined;
+
+    this.goalService = undefined;
+    this.goalFolderService = undefined;
+    this.goalStatisticsService = undefined;
+    this.focusSessionService = undefined;
+    this.focusModeService = undefined;
+    this.goalKeyResultService = undefined;
+    this.goalRecordService = undefined;
+    this.goalReviewService = undefined;
+    this.weightSnapshotService = undefined;
   }
 }

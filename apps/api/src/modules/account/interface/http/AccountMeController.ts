@@ -9,10 +9,14 @@
  */
 
 import type { Request, Response } from 'express';
-import { AccountProfileApplicationService } from '../../application/services/AccountProfileApplicationService';
-import { AccountDeletionApplicationService } from '../../application/services/AccountDeletionApplicationService';
-import { PasswordManagementApplicationService } from '../../../authentication/application/services/PasswordManagementApplicationService';
-import { SessionManagementApplicationService } from '../../../authentication/application/services/SessionManagementApplicationService';
+import {
+  AccountProfileApplicationService,
+  AccountDeletionApplicationService,
+} from '@dailyuse/application-server/account';
+import {
+  PasswordManagementApplicationService,
+  SessionManagementApplicationService,
+} from '@dailyuse/application-server/authentication';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';

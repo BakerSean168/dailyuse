@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { AccountApplicationService } from '../../application/services/AccountApplicationService';
+import { AccountApplicationService } from '@dailyuse/application-server/account';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 

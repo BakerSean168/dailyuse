@@ -5,18 +5,18 @@
  */
 
 import type { Request, Response } from 'express';
-import { GoalApplicationService } from '../../application/services/GoalApplicationService';
-import { GoalKeyResultApplicationService } from '../../application/services/GoalKeyResultApplicationService';
-import { GoalRecordApplicationService } from '../../application/services/GoalRecordApplicationService';
-import { GoalReviewApplicationService } from '../../application/services/GoalReviewApplicationService';
-import { WeightSnapshotApplicationService } from '../../application/services/WeightSnapshotApplicationService';
+import { 
+  GoalApplicationService,
+  GoalKeyResultApplicationService,
+  GoalRecordApplicationService,
+  GoalReviewApplicationService,
+  WeightSnapshotApplicationService
+} from '@dailyuse/application-server/goal';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import type { GoalServerDTO, GoalClientDTO, GoalAggregateViewResponse } from '@dailyuse/contracts/goal';
 import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
-import { PrismaGoalRepository } from '../../infrastructure/repositories/PrismaGoalRepository';
-import { PrismaWeightSnapshotRepository } from '../../infrastructure/repositories/PrismaWeightSnapshotRepository';
-import { prisma } from '@/shared/infrastructure/config/prisma';
+import { GoalContainer } from '../../infrastructure/di/GoalContainer';
 
 const logger = createLogger('GoalController');
 
@@ -29,11 +29,6 @@ const logger = createLogger('GoalController');
  * 此控制器聚合了多个 ApplicationService 的功能。
  */
 export class GoalController {
-  private static goalService: GoalApplicationService | null = null;
-  private static keyResultService: GoalKeyResultApplicationService | null = null;
-  private static recordService: GoalRecordApplicationService | null = null;
-  private static reviewService: GoalReviewApplicationService | null = null;
-  private static weightSnapshotService: WeightSnapshotApplicationService | null = null;
   private static responseBuilder = createResponseBuilder();
 
   /**
@@ -42,43 +37,23 @@ export class GoalController {
    * @returns {Promise<GoalApplicationService>} 目标应用服务实例
    */
   private static async getGoalService(): Promise<GoalApplicationService> {
-    if (!GoalController.goalService) {
-      GoalController.goalService = await GoalApplicationService.getInstance();
-    }
-    return GoalController.goalService;
+    return GoalContainer.getInstance().getGoalApplicationService();
   }
 
   private static async getKeyResultService(): Promise<GoalKeyResultApplicationService> {
-    if (!GoalController.keyResultService) {
-      GoalController.keyResultService = await GoalKeyResultApplicationService.getInstance();
-    }
-    return GoalController.keyResultService;
+    return GoalContainer.getInstance().getGoalKeyResultApplicationService();
   }
 
   private static async getRecordService(): Promise<GoalRecordApplicationService> {
-    if (!GoalController.recordService) {
-      GoalController.recordService = await GoalRecordApplicationService.getInstance();
-    }
-    return GoalController.recordService;
+    return GoalContainer.getInstance().getGoalRecordApplicationService();
   }
 
   private static async getReviewService(): Promise<GoalReviewApplicationService> {
-    if (!GoalController.reviewService) {
-      GoalController.reviewService = await GoalReviewApplicationService.getInstance();
-    }
-    return GoalController.reviewService;
+    return GoalContainer.getInstance().getGoalReviewApplicationService();
   }
 
   private static async getWeightSnapshotService(): Promise<WeightSnapshotApplicationService> {
-    if (!GoalController.weightSnapshotService) {
-      const goalRepo = new PrismaGoalRepository(prisma);
-      const snapshotRepo = new PrismaWeightSnapshotRepository(prisma);
-      GoalController.weightSnapshotService = WeightSnapshotApplicationService.getInstance(
-        goalRepo,
-        snapshotRepo,
-      );
-    }
-    return GoalController.weightSnapshotService;
+    return GoalContainer.getInstance().getWeightSnapshotApplicationService();
   }
 
   /**

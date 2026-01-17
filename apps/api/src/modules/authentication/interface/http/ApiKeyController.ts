@@ -13,7 +13,11 @@
 
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { ApiKeyApplicationService } from '../../application/services/ApiKeyApplicationService';
+import { 
+  CreateApiKey,
+  RevokeApiKey,
+  ListApiKeys
+} from '@dailyuse/application-server/authentication';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
@@ -59,14 +63,30 @@ const updateApiKeyScopesSchema = z.object({
  * API Key Controller
  */
 export class ApiKeyController {
-  private static apiKeyService: ApiKeyApplicationService | null = null;
+  private static createApiKeyService: CreateApiKey | null = null;
+  private static revokeApiKeyService: RevokeApiKey | null = null;
+  private static listApiKeysService: ListApiKeys | null = null;
   private static responseBuilder = createResponseBuilder();
 
-  private static async getApiKeyService(): Promise<ApiKeyApplicationService> {
-    if (!ApiKeyController.apiKeyService) {
-      ApiKeyController.apiKeyService = await ApiKeyApplicationService.getInstance();
+  private static getCreateApiKeyService(): CreateApiKey {
+    if (!ApiKeyController.createApiKeyService) {
+      ApiKeyController.createApiKeyService = CreateApiKey.getInstance();
     }
-    return ApiKeyController.apiKeyService;
+    return ApiKeyController.createApiKeyService;
+  }
+
+  private static getRevokeApiKeyService(): RevokeApiKey {
+    if (!ApiKeyController.revokeApiKeyService) {
+      ApiKeyController.revokeApiKeyService = RevokeApiKey.getInstance();
+    }
+    return ApiKeyController.revokeApiKeyService;
+  }
+
+  private static getListApiKeysService(): ListApiKeys {
+    if (!ApiKeyController.listApiKeysService) {
+      ApiKeyController.listApiKeysService = ListApiKeys.getInstance();
+    }
+    return ApiKeyController.listApiKeysService;
   }
 
   /**
@@ -84,9 +104,9 @@ export class ApiKeyController {
       // ===== 步骤 1: 验证输入 =====
       const validatedData = createApiKeySchema.parse(req.body);
 
-      // ===== 步骤 2: 调用 ApplicationService =====
-      const service = await ApiKeyController.getApiKeyService();
-      const result = await service.createApiKey({
+      // ===== 步骤 2: 调用 CreateApiKey Use Case =====
+      const createApiKeyService = ApiKeyController.getCreateApiKeyService();
+      const result = await createApiKeyService.execute({
         accountUuid: validatedData.accountUuid,
         name: validatedData.name,
         scopes: validatedData.scopes,
@@ -158,63 +178,27 @@ export class ApiKeyController {
    * 验证 API Key
    * @route POST /api/auth/api-keys/validate
    * @description 验证 API Key 的有效性
+   * @todo 等待 packages 中实现 ValidateApiKey use case
    */
-  static async validateApiKey(req: Request, res: Response): Promise<Response> {
-    try {
-      logger.info('[ApiKeyController] Validate API Key request received');
-
-      // ===== 步骤 1: 验证输入 =====
-      const validatedData = validateApiKeySchema.parse(req.body);
-
-      // ===== 步骤 2: 调用 ApplicationService =====
-      const service = await ApiKeyController.getApiKeyService();
-      const isValid = await service.validateApiKey({
-        apiKey: validatedData.apiKey,
-      });
-
-      // ===== 步骤 3: 返回成功响应 =====
-      logger.info('[ApiKeyController] API Key validation result', { isValid });
-
-      if (isValid) {
-        return ApiKeyController.responseBuilder.sendSuccess(
-          res,
-          {
-            isValid: true,
-            message: 'API Key is valid',
-          },
-          'API Key validated successfully',
-          200,
-        );
-      } else {
-        return ApiKeyController.responseBuilder.sendError(res, {
-          code: ResponseCode.UNAUTHORIZED,
-          message: 'Invalid API Key',
-        });
-      }
-    } catch (error) {
-      logger.error('[ApiKeyController] Validate API Key failed', {
-        error: error instanceof Error ? error.message : String(error),
-      });
-
-      // ===== 步骤 4: 处理错误 =====
-      if (error instanceof z.ZodError) {
-        return ApiKeyController.responseBuilder.sendError(res, {
-          code: ResponseCode.VALIDATION_ERROR,
-          message: 'Validation failed',
-          errors: error.issues.map((err) => ({
-            code: 'VALIDATION_ERROR',
-            field: err.path.join('.'),
-            message: err.message,
-          })),
-        });
-      }
-
-      return ApiKeyController.responseBuilder.sendError(res, {
-        code: ResponseCode.INTERNAL_ERROR,
-        message: 'API Key validation failed',
-      });
-    }
-  }
+  // static async validateApiKey(req: Request, res: Response): Promise<Response> {
+  //   try {
+  //     logger.info('[ApiKeyController] Validate API Key request received');
+  //     // TODO: 实现 ValidateApiKey use case
+  //     return ApiKeyController.responseBuilder.sendSuccess(
+  //       res,
+  //       { isValid: false, message: 'Implementation pending' },
+  //       'Not implemented',
+  //     );
+  //   } catch (error) {
+  //     logger.error('[ApiKeyController] Validate API Key failed', {
+  //       error: error instanceof Error ? error.message : String(error),
+  //     });
+  //     return ApiKeyController.responseBuilder.sendError(res, {
+  //       code: ResponseCode.INTERNAL_ERROR,
+  //       message: 'API Key validation failed',
+  //     });
+  //   }
+  // }
 
   /**
    * 撤销 API Key
@@ -230,9 +214,9 @@ export class ApiKeyController {
       // ===== 步骤 1: 验证输入 =====
       const validatedData = revokeApiKeySchema.parse(req.body);
 
-      // ===== 步骤 2: 调用 ApplicationService =====
-      const service = await ApiKeyController.getApiKeyService();
-      await service.revokeApiKey({
+      // ===== 步骤 2: 调用 RevokeApiKey Use Case =====
+      const revokeApiKeyService = ApiKeyController.getRevokeApiKeyService();
+      await revokeApiKeyService.execute({
         accountUuid: validatedData.accountUuid,
         apiKey: validatedData.apiKey,
       });
@@ -297,80 +281,25 @@ export class ApiKeyController {
    * 更新 API Key 权限
    * @route PATCH /api/auth/api-keys/scopes
    * @description 更新 API Key 的访问权限
+   * @todo 等待 packages 中实现 UpdateApiKeyScopes use case
    */
-  static async updateApiKeyScopes(req: Request, res: Response): Promise<Response> {
-    try {
-      logger.info('[ApiKeyController] Update API Key scopes request received', {
-        accountUuid: req.body.accountUuid,
-      });
-
-      // ===== 步骤 1: 验证输入 =====
-      const validatedData = updateApiKeyScopesSchema.parse(req.body);
-
-      // ===== 步骤 2: 调用 ApplicationService =====
-      const service = await ApiKeyController.getApiKeyService();
-      await service.updateApiKeyScopes({
-        accountUuid: validatedData.accountUuid,
-        apiKey: validatedData.apiKey,
-        scopes: validatedData.scopes,
-      });
-
-      // ===== 步骤 3: 返回成功响应 =====
-      logger.info('[ApiKeyController] API Key scopes updated successfully', {
-        accountUuid: validatedData.accountUuid,
-      });
-
-      return ApiKeyController.responseBuilder.sendSuccess(
-        res,
-        {
-          message: 'API Key scopes updated successfully',
-          scopes: validatedData.scopes,
-        },
-        'API Key scopes updated successfully',
-        200,
-      );
-    } catch (error) {
-      logger.error('[ApiKeyController] Update API Key scopes failed', {
-        error: error instanceof Error ? error.message : String(error),
-      });
-
-      // ===== 步骤 4: 处理错误 =====
-      if (error instanceof z.ZodError) {
-        return ApiKeyController.responseBuilder.sendError(res, {
-          code: ResponseCode.VALIDATION_ERROR,
-          message: 'Validation failed',
-          errors: error.issues.map((err) => ({
-            code: 'VALIDATION_ERROR',
-            field: err.path.join('.'),
-            message: err.message,
-          })),
-        });
-      }
-
-      if (error instanceof Error) {
-        // 凭证未找到
-        if (error.message.includes('Credential not found')) {
-          return ApiKeyController.responseBuilder.sendError(res, {
-            code: ResponseCode.NOT_FOUND,
-            message: 'Credential not found',
-          });
-        }
-
-        // API Key 未找到
-        if (error.message.includes('API key not found')) {
-          return ApiKeyController.responseBuilder.sendError(res, {
-            code: ResponseCode.NOT_FOUND,
-            message: 'API Key not found',
-          });
-        }
-      }
-
-      return ApiKeyController.responseBuilder.sendError(res, {
-        code: ResponseCode.INTERNAL_ERROR,
-        message: 'Update API Key scopes failed',
-      });
-    }
-  }
+  // static async updateApiKeyScopes(req: Request, res: Response): Promise<Response> {
+  //   try {
+  //     logger.info('[ApiKeyController] Update API Key scopes request received');
+  //     // TODO: 实现 UpdateApiKeyScopes use case
+  //     return ApiKeyController.responseBuilder.sendSuccess(
+  //       res,
+  //       { message: 'Implementation pending' },
+  //       'Not implemented',
+  //     );
+  //   } catch (error) {
+  //     logger.error('[ApiKeyController] Update API Key scopes failed');
+  //     return ApiKeyController.responseBuilder.sendError(res, {
+  //       code: ResponseCode.INTERNAL_ERROR,
+  //       message: 'Update API Key scopes failed',
+  //     });
+  //   }
+  // }
 }
 
 

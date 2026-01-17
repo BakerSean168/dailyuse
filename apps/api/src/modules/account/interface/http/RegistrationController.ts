@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { RegistrationApplicationService } from '../../application/services/RegistrationApplicationService';
+import { RegistrationApplicationService } from '@dailyuse/application-server/account';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
