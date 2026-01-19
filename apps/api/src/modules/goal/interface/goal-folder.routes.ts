@@ -9,6 +9,7 @@ import type { Request, Response } from 'express';
 
 const _stubController = (_req: Request, res: Response) => {
   res.status(501).json({ code: 5000, message: 'Not implemented' });
+};
 
 /**
  * GoalFolder 路由
