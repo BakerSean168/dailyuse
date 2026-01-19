@@ -19,12 +19,12 @@
 
 ## 🎯 阻止项目的问题
 
-| 指标 | 当前 | 原因 |
-|------|------|------|
+| 指标                     | 当前    | 原因     |
+| ------------------------ | ------- | -------- |
 | **AC3: TypeScript 编译** | ⚠️ 失败 | 循环导入 |
-| **AC4: 所有测试通过** | ⚠️ 失败 | 无法构建 |
-| **npm run build** | 🔴 失败 | 循环依赖 |
-| **npm run typecheck** | 🔴 失败 | 循环导入 |
+| **AC4: 所有测试通过**    | ⚠️ 失败 | 无法构建 |
+| **npm run build**        | 🔴 失败 | 循环依赖 |
+| **npm run typecheck**    | 🔴 失败 | 循环导入 |
 
 ---
 
@@ -69,19 +69,24 @@ packages/infrastructure-server/src/
 
 export class ScheduleInfrastructureContainer {
   private service?: Service;
-  
-  setService(s: Service) { this.service = s; }
-  getService(): Service { 
+
+  setService(s: Service) {
+    this.service = s;
+  }
+  getService(): Service {
     if (!this.service) throw new Error('Not initialized');
     return this.service;
   }
-  reset() { this.service = undefined; }
+  reset() {
+    this.service = undefined;
+  }
 }
 
 export const container = new ScheduleInfrastructureContainer();
 ```
 
 **需要创建**:
+
 - `schedule/di/schedule-container.ts`
 - `reminder/di/reminder-container.ts`
 - `ai/di/ai-container.ts`
@@ -90,8 +95,9 @@ export const container = new ScheduleInfrastructureContainer();
 #### 2️⃣ 修改 Cron Jobs (5 个文件改动)
 
 **修改前**:
+
 ```typescript
-import { ScheduleTaskExecutor } from '@dailyuse/application-server';  // ❌ 循环!
+import { ScheduleTaskExecutor } from '@dailyuse/application-server'; // ❌ 循环!
 
 class CronJobManager {
   execute() {
@@ -101,6 +107,7 @@ class CronJobManager {
 ```
 
 **修改后**:
+
 ```typescript
 import { scheduleInfrastructureContainer } from '../di/schedule-container';
 
@@ -209,12 +216,12 @@ git push
 
 ## 📚 详细文档
 
-| 文档 | 内容 |
-|------|------|
-| [circular-dependency-analysis.md](circular-dependency-analysis.md) | 详细的问题分析 |
+| 文档                                                                                   | 内容               |
+| -------------------------------------------------------------------------------------- | ------------------ |
+| [circular-dependency-analysis.md](circular-dependency-analysis.md)                     | 详细的问题分析     |
 | [circular-dependency-fix-implementation.md](circular-dependency-fix-implementation.md) | 完整的代码实现指南 |
-| [circular-dependency-fix-verification.md](circular-dependency-fix-verification.md) | 测试验证清单 |
-| [party-mode-discussion-summary.md](party-mode-discussion-summary.md) | 讨论总结和决策 |
+| [circular-dependency-fix-verification.md](circular-dependency-fix-verification.md)     | 测试验证清单       |
+| [party-mode-discussion-summary.md](party-mode-discussion-summary.md)                   | 讨论总结和决策     |
 
 ---
 
@@ -225,7 +232,7 @@ git push
 ```
 问题: Infrastructure 和 Application 相互导入
 方案: 使用容器模式实现注入，打破循环
-步骤: 
+步骤:
 1. 创建 4 个容器类
 2. 修改 5 个 Cron Job 文件
 3. 添加 1 个 Bootstrap 函数
@@ -257,11 +264,11 @@ git push
 
 ## 🔐 风险降低措施
 
-| 风险 | 影响 | 缓解 |
-|------|------|------|
-| Services 未初始化 | 高 | 容器检查 + 清晰错误消息 |
-| 初始化顺序错误 | 中 | 文档 + 日志 |
-| 测试污染 | 中 | cleanup() 函数 |
+| 风险              | 影响 | 缓解                    |
+| ----------------- | ---- | ----------------------- |
+| Services 未初始化 | 高   | 容器检查 + 清晰错误消息 |
+| 初始化顺序错误    | 中   | 文档 + 日志             |
+| 测试污染          | 中   | cleanup() 函数          |
 
 **总体**: 🟢 低风险
 
@@ -311,4 +318,3 @@ git push
 **👤 负责人**: Dev Team
 
 **📅 建议**: 今日开始实施
-

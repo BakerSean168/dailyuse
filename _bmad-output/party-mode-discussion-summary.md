@@ -10,7 +10,8 @@
 
 **参与方**: Dev Team (提出问题) + BMad Master (分析与方案)
 
-**核心问题**: 
+**核心问题**:
+
 ```
 DEV: "项目有循环依赖问题，TypeScript 编译失败，测试无法运行"
      | AC3: TypeScript 编译成功 | ⚠️ 阻止 | 项目级循环依赖问题 |
@@ -37,6 +38,7 @@ infrastructure-server ↔ application-server
 ### 受影响文件 (已确认)
 
 **Infrastructure 中的反向导入** (违反分层架构):
+
 - `packages/infrastructure-server/src/schedule/cron/cron-job-manager.ts`
 - `packages/infrastructure-server/src/schedule/datasources/cron-job-manager.ts`
 - `packages/infrastructure-server/src/reminder/cron/daily-analysis-cron-job.ts`
@@ -50,6 +52,7 @@ infrastructure-server ↔ application-server
 ### 为什么会形成循环依赖?
 
 **分层设计原则**:
+
 ```
 正确的依赖方向:
 Domain → Application → Infrastructure → External
@@ -59,6 +62,7 @@ Infrastructure 不应该导入 Application!
 ```
 
 **实际情况**:
+
 1. **Application 需要 Infrastructure** ✅ (正确)
    - Application Services 使用 Infrastructure 提供的容器、仓储
    - 这是合理的分层关系
@@ -71,12 +75,14 @@ Infrastructure 不应该导入 Application!
 ### 为什么会这样实现?
 
 **可能的设计混淆**:
+
 1. Cron Jobs 确实需要执行业务逻辑 (Application 层职责)
 2. 但 Cron Jobs 本身是 Infrastructure (调度和执行)
 3. 设计者可能认为 "Cron Job 需要 Service，所以直接导入"
 4. 没有意识到这会形成循环依赖
 
 **更好的设计方式**:
+
 - Infrastructure 应该提供 **容器接口**
 - Application 在启动时 **注入 Services**
 - Infrastructure 运行时 **获取已注入的 Services**
@@ -88,12 +94,12 @@ Infrastructure 不应该导入 Application!
 
 ### 方案对比
 
-| 方案 | 工作量 | 复杂度 | 长期适应性 |
-|------|--------|--------|----------|
-| **A: 依赖注入 (推荐)** | ⭐⭐ | ⭐ | ⭐⭐⭐⭐ |
-| **B: 事件驱动** | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ |
-| **C: 提取 Scheduler 包** | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| **D: 调整导入顺序** | ⭐ | ⭐⭐⭐⭐ | 🔴 不稳定 |
+| 方案                     | 工作量 | 复杂度   | 长期适应性 |
+| ------------------------ | ------ | -------- | ---------- |
+| **A: 依赖注入 (推荐)**   | ⭐⭐   | ⭐       | ⭐⭐⭐⭐   |
+| **B: 事件驱动**          | ⭐⭐⭐ | ⭐⭐     | ⭐⭐⭐⭐⭐ |
+| **C: 提取 Scheduler 包** | ⭐⭐⭐ | ⭐⭐⭐   | ⭐⭐⭐⭐⭐ |
+| **D: 调整导入顺序**      | ⭐     | ⭐⭐⭐⭐ | 🔴 不稳定  |
 
 ### BMad 推荐策略: **两阶段解决**
 
@@ -102,6 +108,7 @@ Infrastructure 不应该导入 Application!
 **目标**: 快速解除循环依赖阻止，使项目能编译
 
 **方式**:
+
 ```typescript
 // 创建容器，存储 Application Services 实例
 export const scheduleContainer = new Container();
@@ -114,18 +121,21 @@ const service = scheduleContainer.getService();
 ```
 
 **优点**:
+
 - ✅ 快速实现 (2-3 小时)
 - ✅ 无需大幅重构
 - ✅ 立即解决 AC3 & AC4 阻止
 - ✅ 易于理解和维护
 
 **缺点**:
+
 - ⚠️ 中间产品，不是最终设计
 - ⚠️ 容器仍需手动管理
 
 #### 🔵 **第二阶段 (后续 Sprint)**: 架构优化
 
 **选项 B**: 事件驱动
+
 ```typescript
 // Infrastructure 发送事件: "需要执行任务"
 taskEventEmitter.emit('execute-schedule-task');
@@ -137,6 +147,7 @@ taskEventEmitter.on('execute-schedule-task', () => {
 ```
 
 **选项 C**: Scheduler 包分离
+
 ```typescript
 packages/scheduler/  ← 新包
 ├── src/
@@ -151,22 +162,22 @@ packages/scheduler/  ← 新包
 
 ### 当前阻止的功能
 
-| 功能 | 阻止原因 | 修复后 |
-|------|---------|--------|
-| **TypeScript 编译** | 循环导入 | ✅ 成功 |
-| **构建系统** | 循环依赖检查 | ✅ 正常 |
-| **单元测试** | 无法加载模块 | ✅ 运行 |
-| **CI/CD 管道** | 构建失败 | ✅ 通过 |
-| **部署流程** | 依赖于构建 | ✅ 可部署 |
+| 功能                | 阻止原因     | 修复后    |
+| ------------------- | ------------ | --------- |
+| **TypeScript 编译** | 循环导入     | ✅ 成功   |
+| **构建系统**        | 循环依赖检查 | ✅ 正常   |
+| **单元测试**        | 无法加载模块 | ✅ 运行   |
+| **CI/CD 管道**      | 构建失败     | ✅ 通过   |
+| **部署流程**        | 依赖于构建   | ✅ 可部署 |
 
 ### 修复的风险评估
 
-| 风险 | 影响 | 缓解措施 |
-|------|------|---------|
-| Services 未初始化 | 高 | 容器添加初始化检查 |
-| 初始化顺序错误 | 中 | 清晰的文档和日志 |
-| 测试污染 | 中 | 提供 cleanup 函数 |
-| 性能影响 | 低 | 容器是单例，无性能开销 |
+| 风险              | 影响 | 缓解措施               |
+| ----------------- | ---- | ---------------------- |
+| Services 未初始化 | 高   | 容器添加初始化检查     |
+| 初始化顺序错误    | 中   | 清晰的文档和日志       |
+| 测试污染          | 中   | 提供 cleanup 函数      |
+| 性能影响          | 低   | 容器是单例，无性能开销 |
 
 **总体风险**: 🟢 **低** (采用第一阶段方案)
 
@@ -175,10 +186,12 @@ packages/scheduler/  ← 新包
 ## 🎯 执行建议
 
 ### 第一步: 批准方案
+
 - ✅ 批准第一阶段 (依赖注入) 立即执行
 - ✅ 规划第二阶段 (下一个 Sprint)
 
 ### 第二步: 实施 (2-3 小时)
+
 ```bash
 # 1. 创建 4 个容器类
 # 2. 修改 4 个 Cron Job 文件
@@ -188,6 +201,7 @@ packages/scheduler/  ← 新包
 ```
 
 ### 第三步: 验证
+
 ```bash
 npm run build          # ✅ 应该成功
 npm run typecheck      # ✅ 应该成功
@@ -196,6 +210,7 @@ npm run start          # ✅ 应该启动
 ```
 
 ### 第四步: 提交和部署
+
 ```bash
 git commit -m "fix: resolve circular dependency between application-server and infrastructure-server
 
@@ -240,18 +255,21 @@ git commit -m "fix: resolve circular dependency between application-server and i
 ## 🚀 决策记录
 
 ### 决策 1: 采用依赖注入方案
+
 - **决策**: ✅ 通过
 - **理由**: 快速、低风险、可立即执行
 - **时间**: 立即
 - **所有者**: Dev Team
 
 ### 决策 2: 规划第二阶段优化
+
 - **决策**: ✅ 通过
 - **建议**: 事件驱动架构 + Scheduler 包分离
 - **时间**: 下一个 Sprint
 - **所有者**: Architecture Team
 
 ### 决策 3: 项目标准化
+
 - **决策**: ✅ 建议
 - **建议**: 建立循环依赖检测的 CI/CD 检查
 - **时间**: 配合第二阶段
@@ -276,11 +294,11 @@ git commit -m "fix: resolve circular dependency between application-server and i
 
 ## 📞 相关文档链接
 
-| 文档 | 用途 |
-|------|------|
-| [circular-dependency-analysis.md](circular-dependency-analysis.md) | 详细的问题分析 |
-| [circular-dependency-fix-implementation.md](circular-dependency-fix-implementation.md) | 代码实现指南 |
-| [circular-dependency-fix-verification.md](circular-dependency-fix-verification.md) | 验证测试指南 |
+| 文档                                                                                   | 用途           |
+| -------------------------------------------------------------------------------------- | -------------- |
+| [circular-dependency-analysis.md](circular-dependency-analysis.md)                     | 详细的问题分析 |
+| [circular-dependency-fix-implementation.md](circular-dependency-fix-implementation.md) | 代码实现指南   |
+| [circular-dependency-fix-verification.md](circular-dependency-fix-verification.md)     | 验证测试指南   |
 
 ---
 
@@ -305,4 +323,3 @@ git commit -m "fix: resolve circular dependency between application-server and i
 ---
 
 **Party Mode 讨论完毕** 🎭 | **建议**: **立即执行第一阶段修复** 🚀
-

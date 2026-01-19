@@ -8,12 +8,12 @@
 
 ## 🎯 验证目标
 
-| 目标 | 当前状态 | 修复后状态 |
-|------|---------|----------|
-| **AC3: TypeScript 编译** | ⚠️ 失败 | ✅ 成功 |
-| **AC4: 所有测试通过** | ⚠️ 失败 | ✅ 成功 |
-| **项目级循环依赖** | 🔴 存在 | ✅ 已解决 |
-| **构建系统** | 🔴 非功能 | ✅ 功能正常 |
+| 目标                     | 当前状态  | 修复后状态  |
+| ------------------------ | --------- | ----------- |
+| **AC3: TypeScript 编译** | ⚠️ 失败   | ✅ 成功     |
+| **AC4: 所有测试通过**    | ⚠️ 失败   | ✅ 成功     |
+| **项目级循环依赖**       | 🔴 存在   | ✅ 已解决   |
+| **构建系统**             | 🔴 非功能 | ✅ 功能正常 |
 
 ---
 
@@ -62,6 +62,7 @@ grep -r "from.*application-server" packages/infrastructure-server/src | wc -l
 #### 2.1 创建容器类
 
 **验证步骤**:
+
 ```bash
 # 检查所有容器文件是否存在
 ls -la packages/infrastructure-server/src/*/di/*-container.ts
@@ -74,6 +75,7 @@ ls -la packages/infrastructure-server/src/*/di/*-container.ts
 ```
 
 **代码检查**:
+
 ```typescript
 // 每个容器应该有:
 ✅ 私有字段: private xxxService?: XxxService;
@@ -86,17 +88,19 @@ ls -la packages/infrastructure-server/src/*/di/*-container.ts
 #### 2.2 修改 Cron Jobs
 
 **验证步骤**:
+
 ```bash
 # 检查是否移除了 application-server 导入
 grep -r "from.*application-server" packages/infrastructure-server/src
 
-# 预期: 
+# 预期:
 # - 无输出 (完全移除)
 # 或
 # - 仅在 type import 中出现 (用于类型定义)
 ```
 
 **代码检查**:
+
 ```bash
 # 检查是否添加了容器导入
 grep -r "from.*di/.*-container" packages/infrastructure-server/src
@@ -109,6 +113,7 @@ grep -r "from.*di/.*-container" packages/infrastructure-server/src
 #### 2.3 添加 Bootstrap 初始化
 
 **验证步骤**:
+
 ```bash
 # 检查 bootstrap 文件是否存在
 ls -la packages/application-server/src/bootstrap/infrastructure-injection-bootstrap.ts
@@ -117,6 +122,7 @@ ls -la packages/application-server/src/bootstrap/infrastructure-injection-bootst
 ```
 
 **代码检查**:
+
 ```typescript
 // 应该包含:
 ✅ export async function bootstrapInfrastructureInjection(): Promise<void>
@@ -129,6 +135,7 @@ ls -la packages/application-server/src/bootstrap/infrastructure-injection-bootst
 #### 2.4 修改应用入口点
 
 **验证步骤**:
+
 ```bash
 # 检查主应用是否调用了 bootstrap
 grep -r "bootstrapInfrastructureInjection" packages/application-server/src
@@ -152,6 +159,7 @@ npm run typecheck
 ```
 
 **失败排查**:
+
 ```bash
 # 如果失败，运行详细检查
 npx tsc --diagnostics
@@ -204,6 +212,7 @@ npm run build
 ```
 
 **详细输出**:
+
 ```bash
 # 获取构建详情
 npx nx build --verbose 2>&1 | tee /tmp/build.log
@@ -249,6 +258,7 @@ npx nx serve application-server
 ```
 
 **启动故障排查**:
+
 ```bash
 # 检查是否有初始化错误
 # 常见问题:
@@ -289,6 +299,7 @@ npm run test
 ```
 
 **单个模块测试**:
+
 ```bash
 # 测试 infrastructure-server
 npx nx test infrastructure-server
@@ -383,14 +394,14 @@ npm run test:regression
 
 ## 结果总结
 
-| 项目 | 状态 | 备注 |
-|------|------|------|
-| 代码修改 | ✅ 完成 | 所有文件已修改 |
-| TypeScript 编译 | ✅ 通过 | 无类型错误 |
-| 项目构建 | ✅ 通过 | 无循环依赖警告 |
-| 单元测试 | ✅ 通过 | 100% 成功 |
-| 集成测试 | ✅ 通过 | 所有场景验证 |
-| 运行时验证 | ✅ 通过 | 应用正常启动 |
+| 项目            | 状态    | 备注           |
+| --------------- | ------- | -------------- |
+| 代码修改        | ✅ 完成 | 所有文件已修改 |
+| TypeScript 编译 | ✅ 通过 | 无类型错误     |
+| 项目构建        | ✅ 通过 | 无循环依赖警告 |
+| 单元测试        | ✅ 通过 | 100% 成功      |
+| 集成测试        | ✅ 通过 | 所有场景验证   |
+| 运行时验证      | ✅ 通过 | 应用正常启动   |
 
 ## AC 标准检查
 
@@ -484,8 +495,8 @@ afterEach(() => {
 ---
 
 **验证完成后**, 该修复可以认为是成功的，项目应该能够:
+
 - ✅ 正常编译 (AC3)
 - ✅ 运行测试 (AC4)
 - ✅ 构建生产版本
 - ✅ 正常运行
-

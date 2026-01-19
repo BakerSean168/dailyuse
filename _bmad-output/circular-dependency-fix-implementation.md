@@ -53,10 +53,10 @@ import type { ScheduleTaskExecutor } from '@dailyuse/application-server';
 
 /**
  * Schedule 基础设施容器
- * 
+ *
  * 目的: 在 Infrastructure Layer 中注入 Application Layer 的 Service 实例
  * 这样可以避免 Infrastructure 直接导入 Application (循环依赖问题)
- * 
+ *
  * 初始化流程:
  * 1. Application bootstrap 创建 Service 实例
  * 2. Application bootstrap 调用 scheduleContainer.setScheduleTaskExecutor(instance)
@@ -79,7 +79,7 @@ export class ScheduleInfrastructureContainer {
     if (!this.scheduleTaskExecutor) {
       throw new Error(
         'ScheduleTaskExecutor not initialized. ' +
-        'Make sure scheduleApplicationBootstrap() is called before starting cron jobs.'
+          'Make sure scheduleApplicationBootstrap() is called before starting cron jobs.',
       );
     }
     return this.scheduleTaskExecutor;
@@ -299,10 +299,10 @@ export class FocusModeCronJob {
 ```typescript
 /**
  * Infrastructure Injection Bootstrap
- * 
+ *
  * 目的: 在应用启动时，将 Application Layer Services 注入到 Infrastructure Layer 容器中
  * 这样可以避免循环依赖，同时保持架构的分层设计
- * 
+ *
  * 执行顺序:
  * 1. 应用启动
  * 2. 调用 bootstrapInfrastructureInjection()
@@ -397,6 +397,7 @@ main();
 ## 🧪 验证清单
 
 ### 编译检查
+
 ```bash
 # 检查 TypeScript 编译 (应该无错误)
 npm run typecheck
@@ -409,13 +410,15 @@ npx nx build
 ```
 
 ### 预期输出
+
 ```
 ✅ infrastructure-server:build SUCCESS
-✅ application-server:build SUCCESS  
+✅ application-server:build SUCCESS
 ✅ All projects built successfully
 ```
 
 ### 测试验证
+
 ```bash
 # 运行单元测试
 npm run test
@@ -426,6 +429,7 @@ npx nx test packages/application-server
 ```
 
 ### 依赖检查
+
 ```bash
 # 使用 Nx 检查依赖 (应该显示正确的单向依赖)
 npx nx graph --file=/tmp/deps.json
@@ -440,18 +444,18 @@ grep -r "from.*application-server" packages/infrastructure-server/src
 
 ## 📚 修改影响分析
 
-| 文件 | 类型 | 修改 | 风险 |
-|------|------|------|------|
-| `schedule-container.ts` | 新建 | 创建容器类 | 🟢 低 |
-| `reminder-container.ts` | 新建 | 创建容器类 | 🟢 低 |
-| `ai-container.ts` | 新建 | 创建容器类 | 🟢 低 |
-| `goal-container.ts` | 新建 | 创建容器类 | 🟢 低 |
-| `cron-job-manager.ts` | 修改 | 移除导入，使用容器 | 🟡 中 |
-| `daily-analysis-cron-job.ts` | 修改 | 移除导入，使用容器 | 🟡 中 |
-| `a-i-container.ts` | 修改 | 移除导入，使用容器 | 🟡 中 |
-| `focus-mode-cron-job.ts` | 修改 | 移除导入，使用容器 | 🟡 中 |
-| `infrastructure-injection-bootstrap.ts` | 新建 | 初始化函数 | 🟢 低 |
-| `main.ts` | 修改 | 调用 bootstrap | 🟢 低 |
+| 文件                                    | 类型 | 修改               | 风险  |
+| --------------------------------------- | ---- | ------------------ | ----- |
+| `schedule-container.ts`                 | 新建 | 创建容器类         | 🟢 低 |
+| `reminder-container.ts`                 | 新建 | 创建容器类         | 🟢 低 |
+| `ai-container.ts`                       | 新建 | 创建容器类         | 🟢 低 |
+| `goal-container.ts`                     | 新建 | 创建容器类         | 🟢 低 |
+| `cron-job-manager.ts`                   | 修改 | 移除导入，使用容器 | 🟡 中 |
+| `daily-analysis-cron-job.ts`            | 修改 | 移除导入，使用容器 | 🟡 中 |
+| `a-i-container.ts`                      | 修改 | 移除导入，使用容器 | 🟡 中 |
+| `focus-mode-cron-job.ts`                | 修改 | 移除导入，使用容器 | 🟡 中 |
+| `infrastructure-injection-bootstrap.ts` | 新建 | 初始化函数         | 🟢 低 |
+| `main.ts`                               | 修改 | 调用 bootstrap     | 🟢 低 |
 
 **总体风险**: 🟢 **低** - 所有修改都是局部的，不会影响核心业务逻辑
 
@@ -482,14 +486,14 @@ npm run build
 
 ## 🚀 执行时间表
 
-| 阶段 | 任务 | 预计时间 |
-|------|------|---------|
-| 1 | 创建容器类 (4 个文件) | 30 分钟 |
-| 2 | 修改 Cron Jobs (4 个文件) | 20 分钟 |
-| 3 | 创建 Bootstrap 模块 | 15 分钟 |
-| 4 | 集成测试和验证 | 30 分钟 |
-| 5 | 文档和提交 | 15 分钟 |
-| **总计** | | **~2 小时** |
+| 阶段     | 任务                      | 预计时间    |
+| -------- | ------------------------- | ----------- |
+| 1        | 创建容器类 (4 个文件)     | 30 分钟     |
+| 2        | 修改 Cron Jobs (4 个文件) | 20 分钟     |
+| 3        | 创建 Bootstrap 模块       | 15 分钟     |
+| 4        | 集成测试和验证            | 30 分钟     |
+| 5        | 文档和提交                | 15 分钟     |
+| **总计** |                           | **~2 小时** |
 
 ---
 
@@ -504,4 +508,3 @@ npm run build
 ---
 
 **准备就绪！** 🚀 建议立即实施此方案以解决阻止项目构建的循环依赖问题。
-
