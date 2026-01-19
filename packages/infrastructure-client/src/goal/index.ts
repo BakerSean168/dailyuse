@@ -11,6 +11,9 @@ export {
   type IGoalRepository,
 } from './goal.container';
 
+// Core API Clients (Framework-agnostic)
+export { GoalApiClient, GoalFolderApiClient, type IHttpClient } from './goalApiClient';
+
 // Ports (Interfaces)
 export { type IGoalApiClient } from './ports/goal-api-client.port';
 export { type IGoalFolderApiClient } from './ports/goal-folder-api-client.port';
@@ -33,3 +36,4 @@ export {
   GoalFocusIpcAdapter,
   createGoalFocusIpcAdapter,
 } from './adapters/ipc/goal-focus-ipc.adapter';
+

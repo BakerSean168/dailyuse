@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { notificationApplicationService } from '../../application/services/NotificationApplicationService';
+import { notificationApplicationService } from '@dailyuse/application-client/notification';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 
 /**
@@ -131,9 +131,7 @@ export function useNotification(): UseNotificationReturn {
 
       setState((prev) => ({
         ...prev,
-        notifications: prev.notifications.map((n) =>
-          n.uuid === uuid ? updated : n,
-        ),
+        notifications: prev.notifications.map((n) => (n.uuid === uuid ? updated : n)),
         unreadCount: Math.max(0, prev.unreadCount - 1),
       }));
     } catch (e) {

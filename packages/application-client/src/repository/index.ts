@@ -8,6 +8,9 @@
  * - Search functionality
  */
 
+// Smart Container
+export { RepositoryApplicationService, repositoryApplicationService } from './repository-application.service';
+
 export {
   // Repository
   ListRepositories,

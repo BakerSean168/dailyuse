@@ -3,7 +3,7 @@
  */
 
 import type { GoalStatus } from '../enums';
-import type { ImportanceLevel } from '../../shared';
+import type { ImportanceLevel } from '../../../shared';
 
 /**
  * 统计更新事件

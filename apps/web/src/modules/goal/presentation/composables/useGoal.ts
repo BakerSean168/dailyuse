@@ -32,10 +32,15 @@ import { useGoalManagement } from './useGoalManagement';
 import { useGoalFolder } from './useGoalFolder';
 import { useKeyResult } from './useKeyResult';
 import {
-  goalRecordApplicationService,
-  goalReviewApplicationService,
-  goalSyncApplicationService,
-} from '../../application/services';
+  CreateGoalRecord,
+  GetGoalRecordsByKeyResult,
+  GetGoalRecordsByGoal,
+  DeleteGoalRecord,
+  CreateGoalReview,
+  GetGoalReviews,
+  UpdateGoalReview,
+  DeleteGoalReview,
+} from '@dailyuse/application-client/goal';
 import { getGoalStore } from '../stores/goalStore';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
@@ -210,11 +215,11 @@ export function useGoal() {
     request: CreateGoalRecordRequest,
   ) => {
     try {
-      const response = await goalRecordApplicationService.createGoalRecord(
+      const response = await new CreateGoalRecord().execute({
+        ...request,
         goalUuid,
         keyResultUuid,
-        request,
-      );
+      });
 
       showSuccess('目标记录创建成功');
       return response;
@@ -238,11 +243,7 @@ export function useGoal() {
     },
   ) => {
     try {
-      return await goalRecordApplicationService.getGoalRecordsByKeyResult(
-        goalUuid,
-        keyResultUuid,
-        params,
-      );
+      return await new GetGoalRecordsByKeyResult().execute(goalUuid, keyResultUuid, params);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取关键结果记录失败';
       showError(errorMessage);
@@ -262,7 +263,7 @@ export function useGoal() {
     },
   ) => {
     try {
-      return await goalRecordApplicationService.getGoalRecordsByGoal(goalUuid, params);
+      return await new GetGoalRecordsByGoal().execute(goalUuid, params);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取目标所有记录失败';
       showError(errorMessage);
@@ -277,7 +278,10 @@ export function useGoal() {
    */
   const createGoalReview = async (goalUuid: string, request: CreateGoalReviewRequest) => {
     try {
-      const response = await goalReviewApplicationService.createGoalReview(goalUuid, request);
+      const response = await new CreateGoalReview().execute({
+        ...request,
+        goalUuid,
+      });
       showSuccess('目标复盘创建成功');
       return response;
     } catch (err) {
@@ -292,7 +296,7 @@ export function useGoal() {
    */
   const getGoalReviewsByGoal = async (goalUuid: string) => {
     try {
-      return await goalReviewApplicationService.getGoalReviewsByGoal(goalUuid);
+      return await new GetGoalReviews().execute({ goalUuid });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取目标复盘失败';
       showError(errorMessage);
@@ -309,11 +313,7 @@ export function useGoal() {
     request: Partial<UpdateGoalReviewRequest>,
   ) => {
     try {
-      const response = await goalReviewApplicationService.updateGoalReview(
-        goalUuid,
-        reviewUuid,
-        request,
-      );
+      const response = await new UpdateGoalReview().execute(reviewUuid, request);
       showSuccess('目标复盘更新成功');
       return response;
     } catch (err) {
@@ -328,7 +328,7 @@ export function useGoal() {
    */
   const deleteGoalReview = async (goalUuid: string, reviewUuid: string) => {
     try {
-      await goalReviewApplicationService.deleteGoalReview(goalUuid, reviewUuid);
+      await new DeleteGoalReview().execute(reviewUuid);
       showSuccess('目标复盘删除成功');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '删除目标复盘失败';
@@ -428,7 +428,7 @@ export function useGoal() {
     ];
 
     const start = startCandidates.map(toTimestamp).find((value) => value !== null) ?? null;
-    let end = endCandidates.map(toTimestamp).find((value) => value !== null) ?? null;
+    const end = endCandidates.map(toTimestamp).find((value) => value !== null) ?? null;
 
     if (start && (!end || end <= start)) {
       end = start + DEFAULT_DURATION;
@@ -565,7 +565,3 @@ export function useGoal() {
     clearCurrentEntityState,
   };
 }
-
-
-
-

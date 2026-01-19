@@ -2,16 +2,16 @@
  * useGoal Hook
  *
  * 目标管理 Hook
- * 
+ *
  * EPIC-015 重构: 与 Store 集成，使用 Entity 类型
  * - 使用 useGoalStore 作为唯一数据源
  * - 返回 Entity 类型（Goal）
  * - 移除内部 useState，统一使用 Store 状态
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useGoalStore } from '../stores/goalStore';
-import { goalApplicationService } from '../../application/services';
+import { goalApplicationService } from '@dailyuse/application-client/goal';
 import type { Goal } from '@dailyuse/domain-client/goal';
 import type { CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 
@@ -77,10 +77,14 @@ export function useGoal(): UseGoalReturn {
 
   // ===== Local Selection State (不需要全局共享) =====
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
-  
+
   // 使用 ref 保存 selectedGoal，避免在 useCallback 依赖中使用导致函数重建
   const selectedGoalRef = useRef<Goal | null>(null);
-  selectedGoalRef.current = selectedGoal;
+
+  // 使用 useEffect 安全地更新 ref
+  useEffect(() => {
+    selectedGoalRef.current = selectedGoal;
+  }, [selectedGoal]);
 
   // ===== Query =====
   // 所有 useCallback 使用空依赖，在函数内部调用 getState() 获取最新 store
@@ -95,7 +99,7 @@ export function useGoal(): UseGoalReturn {
     // 先从 Store 查找
     const cached = store.getGoalById(id);
     if (cached) return cached;
-    
+
     // Store 中没有则从 API 获取
     return goalApplicationService.getGoal(id);
   }, []);
@@ -104,7 +108,7 @@ export function useGoal(): UseGoalReturn {
     const store = useGoalStore.getState();
     store.setLoading(true);
     store.setError(null);
-    
+
     try {
       const result = await goalApplicationService.searchGoals(input);
       store.setGoals(result.goals);
@@ -137,27 +141,30 @@ export function useGoal(): UseGoalReturn {
     }
   }, []);
 
-  const updateGoal = useCallback(async (uuid: string, request: UpdateGoalRequest): Promise<void> => {
-    const store = useGoalStore.getState();
-    store.setLoading(true);
-    store.setError(null);
+  const updateGoal = useCallback(
+    async (uuid: string, request: UpdateGoalRequest): Promise<void> => {
+      const store = useGoalStore.getState();
+      store.setLoading(true);
+      store.setError(null);
 
-    try {
-      const goal = await goalApplicationService.updateGoal(uuid, request);
-      store.updateGoal(uuid, goal);
-      
-      // 如果更新的是当前选中的目标，更新选择状态
-      if (selectedGoalRef.current?.uuid === uuid) {
-        setSelectedGoal(goal);
+      try {
+        const goal = await goalApplicationService.updateGoal(uuid, request);
+        store.updateGoal(uuid, goal);
+
+        // 如果更新的是当前选中的目标，更新选择状态
+        if (selectedGoalRef.current?.uuid === uuid) {
+          setSelectedGoal(goal);
+        }
+        store.setLoading(false);
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '更新目标失败';
+        store.setError(errorMessage);
+        store.setLoading(false);
+        throw e;
       }
-      store.setLoading(false);
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '更新目标失败';
-      store.setError(errorMessage);
-      store.setLoading(false);
-      throw e;
-    }
-  }, []); // 空依赖，使用 ref 访问 selectedGoal
+    },
+    [],
+  ); // 空依赖，使用 ref 访问 selectedGoal
 
   const deleteGoal = useCallback(async (id: string): Promise<void> => {
     const store = useGoalStore.getState();
@@ -167,7 +174,7 @@ export function useGoal(): UseGoalReturn {
     try {
       await goalApplicationService.deleteGoal(id);
       store.removeGoal(id);
-      
+
       // 如果删除的是当前选中的目标，清除选择
       if (selectedGoalRef.current?.uuid === id) {
         setSelectedGoal(null);
@@ -188,7 +195,7 @@ export function useGoal(): UseGoalReturn {
     try {
       const goal = await goalApplicationService.activateGoal(id);
       store.updateGoal(id, goal);
-      
+
       if (selectedGoalRef.current?.uuid === id) {
         setSelectedGoal(goal);
       }
@@ -203,7 +210,7 @@ export function useGoal(): UseGoalReturn {
     try {
       const goal = await goalApplicationService.pauseGoal(id);
       store.updateGoal(id, goal);
-      
+
       if (selectedGoalRef.current?.uuid === id) {
         setSelectedGoal(goal);
       }
@@ -218,7 +225,7 @@ export function useGoal(): UseGoalReturn {
     try {
       const goal = await goalApplicationService.completeGoal(id);
       store.updateGoal(id, goal);
-      
+
       if (selectedGoalRef.current?.uuid === id) {
         setSelectedGoal(goal);
       }
@@ -233,7 +240,7 @@ export function useGoal(): UseGoalReturn {
     try {
       const goal = await goalApplicationService.archiveGoal(id);
       store.updateGoal(id, goal);
-      
+
       if (selectedGoalRef.current?.uuid === id) {
         setSelectedGoal(goal);
       }

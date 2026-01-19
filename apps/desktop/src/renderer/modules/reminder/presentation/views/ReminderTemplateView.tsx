@@ -5,12 +5,12 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import type { 
-  ReminderTemplateClientDTO, 
+import type {
+  ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
   CreateReminderGroupRequest,
 } from '@dailyuse/contracts/reminder';
-import { reminderApplicationService } from '../../application/services/ReminderApplicationService';
+import { reminderApplicationService } from '@dailyuse/application-client/reminder';
 
 type ViewTab = 'templates' | 'groups';
 
@@ -20,10 +20,10 @@ export function ReminderTemplateView() {
   const [groups, setGroups] = useState<ReminderGroupClientDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // 批量选择
   const [selectedTemplates, setSelectedTemplates] = useState<Set<string>>(new Set());
-  
+
   // 创建分组对话框
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
@@ -33,12 +33,12 @@ export function ReminderTemplateView() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const [templatesResult, groupsResult] = await Promise.all([
         reminderApplicationService.listReminderTemplates(),
         reminderApplicationService.listReminderGroups(),
       ]);
-      
+
       setTemplates(templatesResult.templates);
       setGroups(groupsResult.groups);
     } catch (err) {
@@ -58,7 +58,7 @@ export function ReminderTemplateView() {
     if (selectedTemplates.size === templates.length) {
       setSelectedTemplates(new Set());
     } else {
-      setSelectedTemplates(new Set(templates.map(t => t.uuid)));
+      setSelectedTemplates(new Set(templates.map((t) => t.uuid)));
     }
   };
 
@@ -74,10 +74,10 @@ export function ReminderTemplateView() {
 
   const handleBatchDelete = async () => {
     if (selectedTemplates.size === 0) return;
-    
+
     const confirmed = confirm(`确定要删除选中的 ${selectedTemplates.size} 个模板吗？`);
     if (!confirmed) return;
-    
+
     try {
       for (const uuid of selectedTemplates) {
         await reminderApplicationService.deleteReminderTemplate(uuid);
@@ -92,7 +92,7 @@ export function ReminderTemplateView() {
 
   const handleBatchMoveToGroup = async (groupUuid: string | null) => {
     if (selectedTemplates.size === 0) return;
-    
+
     try {
       for (const templateUuid of selectedTemplates) {
         await reminderApplicationService.moveTemplateToGroup(templateUuid, groupUuid);
@@ -108,7 +108,7 @@ export function ReminderTemplateView() {
   // 分组操作
   const handleCreateGroup = async () => {
     if (!newGroupName.trim()) return;
-    
+
     try {
       const request: CreateReminderGroupRequest = {
         name: newGroupName.trim(),
@@ -128,7 +128,7 @@ export function ReminderTemplateView() {
   const handleDeleteGroup = async (uuid: string) => {
     const confirmed = confirm('确定要删除此分组吗？分组内的模板将移至未分组。');
     if (!confirmed) return;
-    
+
     try {
       await reminderApplicationService.deleteReminderGroup(uuid);
       loadData();
@@ -148,14 +148,17 @@ export function ReminderTemplateView() {
   };
 
   // 按分组组织模板
-  const templatesByGroup = templates.reduce((acc, template) => {
-    const groupUuid = template.groupUuid || 'ungrouped';
-    if (!acc[groupUuid]) {
-      acc[groupUuid] = [];
-    }
-    acc[groupUuid].push(template);
-    return acc;
-  }, {} as Record<string, ReminderTemplateClientDTO[]>);
+  const templatesByGroup = templates.reduce(
+    (acc, template) => {
+      const groupUuid = template.groupUuid || 'ungrouped';
+      if (!acc[groupUuid]) {
+        acc[groupUuid] = [];
+      }
+      acc[groupUuid].push(template);
+      return acc;
+    },
+    {} as Record<string, ReminderTemplateClientDTO[]>,
+  );
 
   if (loading) {
     return (
@@ -224,9 +227,7 @@ export function ReminderTemplateView() {
       {/* Batch Actions Bar */}
       {activeTab === 'templates' && selectedTemplates.size > 0 && (
         <div className="p-4 bg-muted rounded-lg flex items-center justify-between">
-          <span className="text-sm font-medium">
-            已选择 {selectedTemplates.size} 个模板
-          </span>
+          <span className="text-sm font-medium">已选择 {selectedTemplates.size} 个模板</span>
           <div className="flex gap-2">
             <select
               onChange={(e) => {
@@ -241,7 +242,9 @@ export function ReminderTemplateView() {
               className="px-3 py-1.5 border rounded-md bg-background text-sm"
               defaultValue=""
             >
-              <option value="" disabled>移动到分组...</option>
+              <option value="" disabled>
+                移动到分组...
+              </option>
               <option value="ungrouped">未分组</option>
               {groups.map((group) => (
                 <option key={group.uuid} value={group.uuid}>
@@ -302,11 +305,13 @@ export function ReminderTemplateView() {
                     />
                     <span className="text-lg">{template.icon || '🔔'}</span>
                     <span className="flex-1">{template.title}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      template.effectiveEnabled 
-                        ? 'bg-green-100 text-green-700' 
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full ${
+                        template.effectiveEnabled
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
                       {template.effectiveEnabled ? '启用' : '禁用'}
                     </span>
                   </div>
@@ -321,9 +326,7 @@ export function ReminderTemplateView() {
             return (
               <div key={group.uuid} className="border rounded-lg p-4">
                 <h3 className="font-semibold mb-3 flex items-center gap-2">
-                  <span className={group.enabled ? '' : 'opacity-50'}>
-                    📁 {group.name}
-                  </span>
+                  <span className={group.enabled ? '' : 'opacity-50'}>📁 {group.name}</span>
                   <span className="text-sm font-normal text-muted-foreground">
                     ({groupTemplates.length})
                   </span>
@@ -350,11 +353,13 @@ export function ReminderTemplateView() {
                         />
                         <span className="text-lg">{template.icon || '🔔'}</span>
                         <span className="flex-1">{template.title}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          template.effectiveEnabled 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-gray-100 text-gray-600'
-                        }`}>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full ${
+                            template.effectiveEnabled
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-gray-100 text-gray-600'
+                          }`}
+                        >
                           {template.effectiveEnabled ? '启用' : '禁用'}
                         </span>
                         {template.controlledByGroup && (
@@ -371,9 +376,7 @@ export function ReminderTemplateView() {
           })}
 
           {templates.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              暂无提醒模板
-            </div>
+            <div className="text-center py-12 text-muted-foreground">暂无提醒模板</div>
           )}
         </div>
       )}
@@ -409,9 +412,7 @@ export function ReminderTemplateView() {
                     )}
                     <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
                       <span>{templatesByGroup[group.uuid]?.length || 0} 个模板</span>
-                      {group.controlMode && (
-                        <span className="text-blue-600">分组控制模式</span>
-                      )}
+                      {group.controlMode && <span className="text-blue-600">分组控制模式</span>}
                     </div>
                   </div>
                 </div>
@@ -419,9 +420,7 @@ export function ReminderTemplateView() {
                   <button
                     onClick={() => handleToggleGroupEnabled(group.uuid)}
                     className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
-                      group.enabled 
-                        ? 'hover:bg-yellow-100' 
-                        : 'hover:bg-green-100'
+                      group.enabled ? 'hover:bg-yellow-100' : 'hover:bg-green-100'
                     }`}
                   >
                     {group.enabled ? '⏸️ 禁用' : '▶️ 启用'}

@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
-import { reminderApplicationService } from '../../application/services/ReminderApplicationService';
+import { reminderApplicationService } from '@dailyuse/application-client/reminder';
 import { ReminderCard } from '../components/ReminderCard';
 import { ReminderCreateDialog } from '../components/ReminderCreateDialog';
 import { ReminderEditDialog } from '../components/ReminderEditDialog';
@@ -71,7 +71,7 @@ export function ReminderListView() {
       const query = searchQuery.toLowerCase();
       const matchesTitle = template.title.toLowerCase().includes(query);
       const matchesDesc = template.description?.toLowerCase().includes(query);
-      const matchesTags = template.tags?.some(tag => tag.toLowerCase().includes(query));
+      const matchesTags = template.tags?.some((tag) => tag.toLowerCase().includes(query));
       if (!matchesTitle && !matchesDesc && !matchesTags) return false;
     }
     // 状态过滤
@@ -104,7 +104,7 @@ export function ReminderListView() {
   };
 
   // 获取所有分组
-  const groups = Array.from(new Set(templates.map(t => t.groupUuid).filter(Boolean)));
+  const groups = Array.from(new Set(templates.map((t) => t.groupUuid).filter(Boolean)));
 
   if (loading) {
     return (

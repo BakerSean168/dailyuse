@@ -27,8 +27,7 @@
 
 import { computed } from 'vue';
 import { useAIGenerationStore } from '@/stores/ai/aiGenerationStore';
-import { keyResultApplicationService } from '@/modules/goal/application/services/KeyResultApplicationService';
-import { aiGenerationApplicationService } from '../../application/services';
+import { AIGenerateKeyResults, GetQuota } from '@dailyuse/application-client/ai';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 /**
@@ -103,7 +102,7 @@ export function useAIGeneration() {
       store.clearError();
 
       // 调用 Goal 模块的 ApplicationService (DDD架构)
-      const result = await keyResultApplicationService.generateKeyResults(params);
+      const result = await new AIGenerateKeyResults().execute(params);
 
       // 更新 Store (Note: Epic 2 API returns tokenUsage/generatedAt instead of quota/taskUuid)
       store.addKeyResults(result.keyResults, result.generatedAt.toString());
@@ -212,7 +211,7 @@ export function useAIGeneration() {
       store.setLoadingQuota(true);
       store.clearError();
 
-      const quotaData = await aiGenerationApplicationService.getQuotaStatus();
+      const quotaData = await new GetQuota().execute();
       store.setQuota(quotaData);
 
       return quotaData;

@@ -59,6 +59,31 @@ export interface ITaskTemplateApiClient {
    */
   deleteTaskTemplate(uuid: string): Promise<void>;
 
+  // ===== 方法别名（为了兼容 View 层调用）=====
+
+  /**
+   * 创建任务模板（别名）
+   */
+  create(request: CreateTaskTemplateRequest): Promise<TaskTemplateClientDTO>;
+
+  /**
+   * 根据 UUID 获取任务模板（别名）
+   */
+  getByUuid(uuid: string): Promise<TaskTemplateClientDTO>;
+
+  /**
+   * 更新任务模板（别名）
+   */
+  update(
+    uuid: string,
+    request: UpdateTaskTemplateRequest,
+  ): Promise<TaskTemplateClientDTO>;
+
+  /**
+   * 从后端获取已按优先级排序的任务列表，包含 priority 字段
+   */
+  getTasksWithPrioritySorting(params?: { limit?: number }): Promise<TaskTemplateClientDTO[]>;
+
   // ===== Task Template 状态管理 =====
 
   /**

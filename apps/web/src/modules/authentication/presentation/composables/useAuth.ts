@@ -1,370 +1,292 @@
 /**
- * useAuth Composable
- * 认证 Composable 函数 - 纯数据传递层
+ * Auth Composable
+ * 认证组合式 API
  *
- * 职责：
- * - 封装 Store 的响应式状态
- * - 调用 ApplicationService 执行业务逻辑
- * - 不包含复杂的业务规则
+ * 职责:
+ * - 调用 AuthApplicationService 获取数据
+ * - 管理 Pinia Store 中的认证状态
+ * - 处理登录、登出、权限检查等
+ * - 为组件提供响应式的认证接口
  */
 
 import { computed } from 'vue';
-import { useAuthStore } from '../stores/authStore';
-import {
-  loginApplicationService,
-  registrationApplicationService,
-  sessionApplicationService,
-  passwordApplicationService,
-  apiKeyApplicationService,
-} from '../../application/services';
+import { useAuthenticationStore } from '../stores/authenticationStore';
 import type {
-  LoginRequest,
-  RegisterRequest,
-  AuthTokens,
-  LoginResponse,
-  LogoutRequest,
-  ForgotPasswordRequest,
-  ResetPasswordRequest,
-  ChangePasswordRequest,
-  Enable2FARequest,
-  Enable2FAResponse,
-  Disable2FARequest,
-  Verify2FARequest,
-  GetActiveSessionsRequest,
-  ActiveSessionsResponse,
-  RevokeSessionRequest,
-  RevokeAllSessionsRequest,
-  TrustedDevicesResponse,
-  TrustDeviceRequest,
-  RevokeTrustedDeviceRequest,
-  CreateApiKeyRequest,
-  CreateApiKeyResponse,
-  ApiKeyListResponse,
-  RevokeApiKeyRequest,
-} from '@dailyuse/contracts/authentication';
-
-// Type aliases for DTO naming convention
-type LoginRequestDTO = LoginRequest;
-type LoginResponseDTO = LoginResponse;
-type RegisterRequestDTO = RegisterRequest;
-type LogoutRequestDTO = LogoutRequest;
-type ForgotPasswordRequestDTO = ForgotPasswordRequest;
-type ResetPasswordRequestDTO = ResetPasswordRequest;
-type ChangePasswordRequestDTO = ChangePasswordRequest;
-type Enable2FARequestDTO = Enable2FARequest;
-type Enable2FAResponseDTO = Enable2FAResponse;
-type Disable2FARequestDTO = Disable2FARequest;
-type Verify2FARequestDTO = Verify2FARequest;
-type GetActiveSessionsRequestDTO = GetActiveSessionsRequest;
-type ActiveSessionsResponseDTO = ActiveSessionsResponse;
-type RevokeSessionRequestDTO = RevokeSessionRequest;
-type RevokeAllSessionsRequestDTO = RevokeAllSessionsRequest;
-type TrustedDevicesResponseDTO = TrustedDevicesResponse;
-type TrustDeviceRequestDTO = TrustDeviceRequest;
-type RevokeTrustedDeviceRequestDTO = RevokeTrustedDeviceRequest;
-type CreateApiKeyRequestDTO = CreateApiKeyRequest;
-type CreateApiKeyResponseDTO = CreateApiKeyResponse;
-type ApiKeyListResponseDTO = ApiKeyListResponse;
-type RevokeApiKeyRequestDTO = RevokeApiKeyRequest;
+  LoginRequestDTO,
+  ChangePasswordRequestDTO,
+  AccountClientDTO,
+  DeviceInfoClientDTO,
+  AuthSessionClientDTO,
+} from '@dailyuse/contracts/account';
+import {
+  Login,
+  Logout,
+  RefreshToken,
+  ChangePassword,
+  GetActiveSessions,
+  RevokeSession,
+} from '@dailyuse/application-client/authentication';
 
 export function useAuth() {
-  const authStore = useAuthStore();
+  const authStore = useAuthenticationStore();
 
-  // ===== 响应式状态 =====
+  // Use Cases from application-client
+  const loginUseCase = Login.getInstance();
+  const logoutUseCase = Logout.getInstance();
+  const refreshTokenUseCase = RefreshToken.getInstance();
+  const changePasswordUseCase = ChangePassword.getInstance();
+  const getActiveSessionsUseCase = GetActiveSessions.getInstance();
+  const revokeSessionUseCase = RevokeSession.getInstance();
 
-  const accessToken = computed(() => authStore.accessToken);
-  const refreshToken = computed(() => authStore.refreshToken);
-  const currentSessionId = computed(() => authStore.currentSessionId);
-  const activeSessions = computed(() => authStore.activeSessions);
-  const apiKeys = computed(() => authStore.apiKeys);
-  const trustedDevices = computed(() => authStore.trustedDevices);
+  // ============ State (from store) ============
+  const currentUser = computed(() => authStore.currentUser);
+  const isAuthenticated = computed(() => authStore.isAuthenticated);
   const isLoading = computed(() => authStore.isLoading);
   const error = computed(() => authStore.error);
-  const rememberedIdentifier = computed(() => authStore.rememberedIdentifier);
+  const isInitializing = computed(() => authStore.isInitializing);
+  const requiresMFA = computed(() => authStore.requiresMFA);
 
-  // 两步验证
-  const twoFactorSecret = computed(() => authStore.twoFactorSecret);
-  const twoFactorQrCode = computed(() => authStore.twoFactorQrCode);
-  const twoFactorBackupCodes = computed(() => authStore.twoFactorBackupCodes);
-
-  // ===== 计算属性 =====
-
-  const isAuthenticated = computed(() => authStore.isAuthenticated);
-  const isTokenExpired = computed(() => authStore.isTokenExpired);
-  const isTokenExpiringSoon = computed(() => authStore.isTokenExpiringSoon);
-  const sessionCount = computed(() => authStore.sessionCount);
-  const apiKeyCount = computed(() => authStore.apiKeyCount);
-  const trustedDeviceCount = computed(() => authStore.trustedDeviceCount);
-
-  // ===== 认证核心功能 =====
+  // ============ Auth Methods ============
 
   /**
    * 登录
    */
-  async function login(
-    request: LoginRequestDTO,
-  ): Promise<LoginResponseDTO> {
-    const response = await loginApplicationService.login(request);
-    
-    // 如果记住登录，保存标识符
-    if (request.rememberMe) {
-      authStore.rememberIdentifier(request.identifier);
-    }
-    
-    return response;
-  }
+  async function login(request: LoginRequestDTO): Promise<boolean> {
+    authStore.setLoading(true);
+    try {
+      const response = await loginUseCase.execute(request);
+      authStore.setAccessToken(response.accessToken || response.token, response.expiresIn);
+      authStore.setRefreshToken(response.refreshToken);
+      authStore.setError(null);
 
-  /**
-   * 注册
-   * 
-   * @returns 包含账户信息和提示消息
-   */
-  async function register(
-    request: RegisterRequestDTO,
-  ): Promise<{ account: any; message: string }> {
-    return await registrationApplicationService.register(request);
+      // 如果需要 MFA，设置状态但不加载用户信息
+      if (response.requiresMFA) {
+        authStore.setRequiresMFA(true);
+        return false;
+      }
+
+      // 加载当前用户信息
+      await loadCurrentUser();
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '登录失败';
+      authStore.setError(errorMessage);
+      console.error('❌ [useAuth] 登录失败:', err);
+      return false;
+    } finally {
+      authStore.setLoading(false);
+    }
   }
 
   /**
    * 登出
    */
-  async function logout(request?: LogoutRequestDTO): Promise<void> {
-    await loginApplicationService.logout(request);
+  async function logout(): Promise<void> {
+    authStore.setLoading(true);
+    try {
+      await logoutUseCase.execute();
+      authStore.reset();
+      authStore.setError(null);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '登出失败';
+      authStore.setError(errorMessage);
+      console.error('❌ [useAuth] 登出失败:', err);
+    } finally {
+      authStore.setLoading(false);
+    }
   }
 
   /**
    * 刷新令牌
    */
-  async function refreshAccessToken(): Promise<void> {
-    await loginApplicationService.refreshAccessToken();
+  async function refreshToken(): Promise<boolean> {
+    authStore.setLoading(true);
+    try {
+      const result = await refreshTokenUseCase.execute();
+      authStore.setAccessToken(result.token || result.accessToken);
+      authStore.setError(null);
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '刷新令牌失败';
+      authStore.setError(errorMessage);
+      console.error('❌ [useAuth] 刷新令牌失败:', err);
+      return false;
+    } finally {
+      authStore.setLoading(false);
+    }
   }
 
   /**
-   * 检查并刷新令牌（如果即将过期）
+   * 获取当前用户
    */
-  async function checkAndRefreshToken(): Promise<void> {
-    await loginApplicationService.checkAndRefreshToken();
+  async function loadCurrentUser(): Promise<AccountClientDTO | null> {
+    authStore.setLoading(true);
+    try {
+      // TODO: Need to get current user from use case
+      // const user = await getCurrentUserUseCase.execute();
+      // authStore.setCurrentUser(user);
+      authStore.setError(null);
+      return null;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '获取用户信息失败';
+      authStore.setError(errorMessage);
+      console.error('❌ [useAuth] 获取用户信息失败:', err);
+      return null;
+    } finally {
+      authStore.setLoading(false);
+    }
   }
 
-  // ===== 密码管理 =====
-
   /**
-   * 忘记密码
+   * 初始化认证
    */
-  async function forgotPassword(
-    request: ForgotPasswordRequestDTO,
-  ): Promise<void> {
-    await passwordApplicationService.forgotPassword(request);
-  }
-
-  /**
-   * 重置密码
-   */
-  async function resetPassword(
-    request: ResetPasswordRequestDTO,
-  ): Promise<void> {
-    await passwordApplicationService.resetPassword(request);
+  async function initAuth(): Promise<boolean> {
+    authStore.setIsInitializing(true);
+    try {
+      // TODO: Implement init auth
+      authStore.setError(null);
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '初始化认证失败';
+      authStore.setError(errorMessage);
+      console.error('❌ [useAuth] 初始化认证失败:', err);
+      return false;
+    } finally {
+      authStore.setIsInitializing(false);
+    }
   }
 
   /**
    * 修改密码
    */
-  async function changePassword(
-    request: ChangePasswordRequestDTO,
-  ): Promise<void> {
-    await passwordApplicationService.changePassword(request);
-  }
-
-  // ===== 两步验证 =====
-
-  /**
-   * 启用两步验证
-   */
-  async function enable2FA(
-    request: Enable2FARequestDTO,
-  ): Promise<Enable2FAResponseDTO> {
-    return await passwordApplicationService.enable2FA(request);
-  }
-
-  /**
-   * 禁用两步验证
-   */
-  async function disable2FA(request: Disable2FARequestDTO): Promise<void> {
-    await passwordApplicationService.disable2FA(request);
+  async function changePassword(data: ChangePasswordRequestDTO): Promise<boolean> {
+    authStore.setLoading(true);
+    try {
+      await changePasswordUseCase.execute(data.oldPassword, data.newPassword);
+      authStore.setError(null);
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '修改密码失败';
+      authStore.setError(errorMessage);
+      console.error('❌ [useAuth] 修改密码失败:', err);
+      return false;
+    } finally {
+      authStore.setLoading(false);
+    }
   }
 
   /**
-   * 验证两步验证码
+   * 获取 MFA 设备列表
    */
-  async function verify2FA(request: Verify2FARequestDTO): Promise<void> {
-    await passwordApplicationService.verify2FA(request);
-  }
-
-  // ===== 会话管理 =====
-
-  /**
-   * 获取活跃会话列表
-   */
-  async function getActiveSessions(
-    request?: GetActiveSessionsRequestDTO,
-  ): Promise<ActiveSessionsResponseDTO> {
-    return await sessionApplicationService.getActiveSessions(request);
-  }
-
-  /**
-   * 撤销会话
-   */
-  async function revokeSession(
-    request: RevokeSessionRequestDTO,
-  ): Promise<void> {
-    await sessionApplicationService.revokeSession(request);
+  async function loadMFADevices(): Promise<void> {
+    authStore.setLoading(true);
+    try {
+      // TODO: Implement get MFA devices
+      authStore.setError(null);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '获取 MFA 设备列表失败';
+      authStore.setError(errorMessage);
+      console.error('❌ [useAuth] 获取 MFA 设备列表失败:', err);
+    } finally {
+      authStore.setLoading(false);
+    }
   }
 
   /**
-   * 撤销所有会话
+   * 删除 MFA 设备
    */
-  async function revokeAllSessions(
-    request?: RevokeAllSessionsRequestDTO,
-  ): Promise<void> {
-    await sessionApplicationService.revokeAllSessions(request);
-  }
-
-  // ===== 设备管理 =====
-
-  /**
-   * 获取受信任设备列表
-   */
-  async function getTrustedDevices(): Promise<TrustedDevicesResponseDTO> {
-    return await sessionApplicationService.getTrustedDevices();
-  }
-
-  /**
-   * 信任设备
-   */
-  async function trustDevice(request: TrustDeviceRequestDTO): Promise<void> {
-    await sessionApplicationService.trustDevice(request);
+  async function deleteMFADevice(deviceId: string): Promise<boolean> {
+    authStore.setLoading(true);
+    try {
+      // TODO: Implement delete MFA device
+      authStore.removeMFADevice(deviceId);
+      authStore.setError(null);
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '删除 MFA 设备失败';
+      authStore.setError(errorMessage);
+      console.error('❌ [useAuth] 删除 MFA 设备失败:', err);
+      return false;
+    } finally {
+      authStore.setLoading(false);
+    }
   }
 
   /**
-   * 撤销设备信任
+   * 获取会话列表
    */
-  async function revokeTrustedDevice(
-    request: RevokeTrustedDeviceRequestDTO,
-  ): Promise<void> {
-    await sessionApplicationService.revokeTrustedDevice(request);
-  }
-
-  // ===== API Key 管理 =====
-
-  /**
-   * 创建 API Key
-   */
-  async function createApiKey(
-    request: CreateApiKeyRequestDTO,
-  ): Promise<CreateApiKeyResponseDTO> {
-    return await apiKeyApplicationService.createApiKey(request);
-  }
-
-  /**
-   * 获取 API Key 列表
-   */
-  async function getApiKeys(): Promise<ApiKeyListResponseDTO> {
-    return await apiKeyApplicationService.getApiKeys();
+  async function loadSessions(): Promise<void> {
+    authStore.setLoading(true);
+    try {
+      const sessions = await getActiveSessionsUseCase.execute();
+      authStore.setActiveSessions(sessions);
+      authStore.setError(null);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '获取会话列表失败';
+      authStore.setError(errorMessage);
+      console.error('❌ [useAuth] 获取会话列表失败:', err);
+    } finally {
+      authStore.setLoading(false);
+    }
   }
 
   /**
-   * 撤销 API Key
+   * 终止会话
    */
-  async function revokeApiKey(
-    request: RevokeApiKeyRequestDTO,
-  ): Promise<void> {
-    await apiKeyApplicationService.revokeApiKey(request);
-  }
-
-  // ===== Store 操作 =====
-
-  /**
-   * 清除认证状态
-   */
-  function clearAuth() {
-    authStore.clearAuth();
-  }
-
-  /**
-   * 完全清除（包括记住的信息）
-   */
-  function clearAll() {
-    authStore.clearAll();
+  async function terminateSession(sessionId: string): Promise<boolean> {
+    authStore.setLoading(true);
+    try {
+      await revokeSessionUseCase.execute(sessionId);
+      authStore.removeActiveSession(sessionId);
+      authStore.setError(null);
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '终止会话失败';
+      authStore.setError(errorMessage);
+      console.error('❌ [useAuth] 终止会话失败:', err);
+      return false;
+    } finally {
+      authStore.setLoading(false);
+    }
   }
 
   /**
-   * 从存储恢复
+   * 检查权限
    */
-  function restoreFromStorage() {
-    authStore.restoreFromStorage();
+  function hasPermission(permission: string): boolean {
+    // TODO: Implement permission check
+    return true;
   }
 
-  // ===== 返回 =====
+  /**
+   * 检查角色
+   */
+  function hasRole(role: string): boolean {
+    // TODO: Implement role check
+    return true;
+  }
 
   return {
-    // 状态
-    accessToken,
-    refreshToken,
-    currentSessionId,
-    activeSessions,
-    apiKeys,
-    trustedDevices,
+    // State
+    currentUser,
+    isAuthenticated,
     isLoading,
     error,
-    rememberedIdentifier,
-    twoFactorSecret,
-    twoFactorQrCode,
-    twoFactorBackupCodes,
+    isInitializing,
+    requiresMFA,
 
-    // 计算属性
-    isAuthenticated,
-    isTokenExpired,
-    isTokenExpiringSoon,
-    sessionCount,
-    apiKeyCount,
-    trustedDeviceCount,
-
-    // 认证核心
+    // Actions
     login,
-    register,
     logout,
-    refreshAccessToken,
-    checkAndRefreshToken,
-
-    // 密码管理
-    forgotPassword,
-    resetPassword,
+    refreshToken,
+    loadCurrentUser,
+    initAuth,
     changePassword,
-
-    // 两步验证
-    enable2FA,
-    disable2FA,
-    verify2FA,
-
-    // 会话管理
-    getActiveSessions,
-    revokeSession,
-    revokeAllSessions,
-
-    // 设备管理
-    getTrustedDevices,
-    trustDevice,
-    revokeTrustedDevice,
-
-    // API Key 管理
-    createApiKey,
-    getApiKeys,
-    revokeApiKey,
-
-    // Store 操作
-    clearAuth,
-    clearAll,
-    restoreFromStorage,
+    loadMFADevices,
+    deleteMFADevice,
+    loadSessions,
+    terminateSession,
+    hasPermission,
+    hasRole,
   };
 }
-

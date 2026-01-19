@@ -53,14 +53,14 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2: Web Package Extraction
-  epic-2: backlog
-  2-1-task-application-to-client: backlog
-  2-2-task-infrastructure-to-client: backlog
-  2-3-task-services-refactor: backlog
-  2-4-schedule-module-web-extraction: backlog
-  2-5-goal-module-web-extraction: backlog
-  2-6-remaining-web-modules-batch-extraction: backlog
-  2-7-web-entry-presentation-only: backlog
+  epic-2: in-progress
+  2-1-task-application-to-client: review
+  2-2-task-infrastructure-to-client: review
+  2-3-task-services-refactor: done
+  2-4-schedule-module-web-extraction: done
+  2-5-goal-module-web-extraction: review
+  2-6-remaining-web-modules-batch-extraction: done
+  2-7-web-entry-presentation-only: done
   epic-2-retrospective: optional
 
   # Epic 3: Standards Alignment

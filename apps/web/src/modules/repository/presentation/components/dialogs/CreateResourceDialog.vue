@@ -43,7 +43,9 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import { useResourceStore } from '../../stores/resourceStore';
-import { repositoryApiClient } from '../../../infrastructure/api';
+import { getRepositoryApiClient } from '@dailyuse/infrastructure-client';
+
+const repositoryApiClient = getRepositoryApiClient();
 import { apiClient } from '@/shared/api/instances';
 
 // Props

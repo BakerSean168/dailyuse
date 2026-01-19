@@ -13,7 +13,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authApplicationService } from '../../application/services';
+import { authenticationApplicationService } from '@dailyuse/application-client/authentication';
 import type { LoginRequest, RegisterRequest } from '@dailyuse/contracts/authentication';
 
 // ===== Types =====
@@ -51,8 +51,8 @@ export function useAuth(): UseAuthReturn {
   const navigate = useNavigate();
 
   const [state, setState] = useState<AuthState>({
-    isAuthenticated: authApplicationService.isTokenValid(),
-    user: authApplicationService.getStoredUser<AuthUser>(),
+    isAuthenticated: authenticationApplicationService.isTokenValid(),
+    user: authenticationApplicationService.getStoredUser<AuthUser>(),
     loading: false,
     error: null,
   });
@@ -63,8 +63,8 @@ export function useAuth(): UseAuthReturn {
    * 检查认证状态
    */
   const checkAuth = useCallback(() => {
-    const valid = authApplicationService.isTokenValid();
-    const user = authApplicationService.getStoredUser<AuthUser>();
+    const valid = authenticationApplicationService.isTokenValid();
+    const user = authenticationApplicationService.getStoredUser<AuthUser>();
     setState((prev) => ({
       ...prev,
       isAuthenticated: valid,
@@ -81,7 +81,7 @@ export function useAuth(): UseAuthReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const response = await authApplicationService.login(credentials);
+        const response = await authenticationApplicationService.login(credentials);
 
         // 构建用户信息
         const user: AuthUser = {
@@ -90,7 +90,7 @@ export function useAuth(): UseAuthReturn {
         };
 
         // 保存用户信息
-        authApplicationService.saveUser(user);
+        authenticationApplicationService.saveUser(user);
 
         setState({
           isAuthenticated: true,
@@ -121,7 +121,7 @@ export function useAuth(): UseAuthReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        await authApplicationService.register(request);
+        await authenticationApplicationService.register(request);
         setState((prev) => ({ ...prev, loading: false }));
         navigate('/login');
       } catch (e) {
@@ -143,7 +143,7 @@ export function useAuth(): UseAuthReturn {
   const logout = useCallback(async () => {
     setState((prev) => ({ ...prev, loading: true }));
 
-    await authApplicationService.logout();
+    await authenticationApplicationService.logout();
 
     setState({
       isAuthenticated: false,
@@ -162,7 +162,7 @@ export function useAuth(): UseAuthReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      await authApplicationService.forgotPassword(email);
+      await authenticationApplicationService.forgotPassword(email);
       setState((prev) => ({ ...prev, loading: false }));
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '发送重置邮件失败';
@@ -183,7 +183,7 @@ export function useAuth(): UseAuthReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        await authApplicationService.resetPassword({
+        await authenticationApplicationService.resetPassword({
           token,
           newPassword,
           confirmPassword: newPassword,
@@ -206,29 +206,26 @@ export function useAuth(): UseAuthReturn {
   /**
    * 修改密码
    */
-  const changePassword = useCallback(
-    async (currentPassword: string, newPassword: string) => {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+  const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      try {
-        await authApplicationService.changePassword({
-          oldPassword: currentPassword,
-          newPassword,
-          confirmPassword: newPassword,
-        });
-        setState((prev) => ({ ...prev, loading: false }));
-      } catch (e) {
-        const errorMessage = e instanceof Error ? e.message : '修改密码失败';
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: errorMessage,
-        }));
-        throw e;
-      }
-    },
-    [],
-  );
+    try {
+      await authenticationApplicationService.changePassword({
+        oldPassword: currentPassword,
+        newPassword,
+        confirmPassword: newPassword,
+      });
+      setState((prev) => ({ ...prev, loading: false }));
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : '修改密码失败';
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: errorMessage,
+      }));
+      throw e;
+    }
+  }, []);
 
   /**
    * 清除错误

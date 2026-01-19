@@ -6,7 +6,7 @@
  */
 
 // ===== Application Layer =====
-export { TaskApplicationService, taskApplicationService } from './application/services';
+export { TaskApplicationService, taskApplicationService } from '@dailyuse/application-client/task';
 
 // ===== Presentation Layer =====
 // Hooks
@@ -39,7 +39,7 @@ export interface UseTaskReturn extends TaskState {
 
 /**
  * useTask - 组合 Hook
- * 
+ *
  * 使用 useTaskTemplate 和 useTaskInstance 的组合
  */
 export function useTask(): UseTaskReturn {

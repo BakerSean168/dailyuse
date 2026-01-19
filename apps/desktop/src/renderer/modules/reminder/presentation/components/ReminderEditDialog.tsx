@@ -5,10 +5,13 @@
  */
 
 import { useState, useEffect } from 'react';
-import type { ReminderTemplateClientDTO, UpdateReminderTemplateRequest } from '@dailyuse/contracts/reminder';
+import type {
+  ReminderTemplateClientDTO,
+  UpdateReminderTemplateRequest,
+} from '@dailyuse/contracts/reminder';
 import { ReminderType, TriggerType } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { reminderApplicationService } from '../../application/services/ReminderApplicationService';
+import { reminderApplicationService } from '@dailyuse/application-client/reminder';
 
 interface ReminderEditDialogProps {
   template: ReminderTemplateClientDTO;
@@ -23,14 +26,14 @@ export function ReminderEditDialog({ template, onClose, onUpdated }: ReminderEdi
   const [color, setColor] = useState(template.color || '');
   const [tags, setTags] = useState<string[]>(template.tags || []);
   const [newTag, setNewTag] = useState('');
-  
+
   // 触发器设置
   const [triggerType, setTriggerType] = useState<TriggerType>(
-    template.trigger?.type || TriggerType.FIXED_TIME
+    template.trigger?.type || TriggerType.FIXED_TIME,
   );
   const [triggerTime, setTriggerTime] = useState('09:00');
   const [intervalMinutes, setIntervalMinutes] = useState(60);
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +44,7 @@ export function ReminderEditDialog({ template, onClose, onUpdated }: ReminderEdi
     setImportanceLevel(template.importanceLevel);
     setColor(template.color || '');
     setTags(template.tags || []);
-    
+
     // 解析触发器
     if (template.trigger) {
       setTriggerType(template.trigger.type);
@@ -72,15 +75,16 @@ export function ReminderEditDialog({ template, onClose, onUpdated }: ReminderEdi
         importanceLevel,
         color: color || undefined,
         tags: tags.length > 0 ? tags : undefined,
-        trigger: triggerType === TriggerType.FIXED_TIME
-          ? {
-              type: TriggerType.FIXED_TIME,
-              fixedTime: { time: triggerTime },
-            }
-          : {
-              type: TriggerType.INTERVAL,
-              interval: { minutes: intervalMinutes },
-            },
+        trigger:
+          triggerType === TriggerType.FIXED_TIME
+            ? {
+                type: TriggerType.FIXED_TIME,
+                fixedTime: { time: triggerTime },
+              }
+            : {
+                type: TriggerType.INTERVAL,
+                interval: { minutes: intervalMinutes },
+              },
       };
 
       await reminderApplicationService.updateReminderTemplate(template.uuid, request);
@@ -101,7 +105,7 @@ export function ReminderEditDialog({ template, onClose, onUpdated }: ReminderEdi
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter(t => t !== tagToRemove));
+    setTags(tags.filter((t) => t !== tagToRemove));
   };
 
   const importanceLevels = [
@@ -128,10 +132,7 @@ export function ReminderEditDialog({ template, onClose, onUpdated }: ReminderEdi
       <div className="bg-background border rounded-lg shadow-lg w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">编辑提醒模板</h2>
-          <button
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground"
-          >
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             ✕
           </button>
         </div>
@@ -337,9 +338,7 @@ export function ReminderEditDialog({ template, onClose, onUpdated }: ReminderEdi
 
           {/* Error */}
           {error && (
-            <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">
-              {error}
-            </div>
+            <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">{error}</div>
           )}
 
           {/* Actions */}

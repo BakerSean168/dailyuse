@@ -3,6 +3,12 @@
  * 账户模块客户端实现
  */
 
+// Application Layer - Services
+export {
+  AccountProfileApplicationService,
+  AccountSubscriptionApplicationService,
+} from './application';
+
 // 聚合根
 export { Account } from './aggregates/Account';
 

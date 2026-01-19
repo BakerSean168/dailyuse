@@ -1,348 +1,218 @@
+/**
+ * Authentication Store - Pinia 状态管理
+ *
+ * 管理 Authentication 模块的所有状态
+ * - Vue 3 + Pinia（Web 应用专用）
+ * - 对应 desktop 应用的 Zustand store
+ *
+ * EPIC-018 重构:
+ * - 框架无关的 Service 只返回数据
+ * - Store 在 Composables 中被调用
+ * - Composables 处理 Store 更新和 UI 状态
+ *
+ * @module authentication/presentation/stores
+ */
+
 import { defineStore } from 'pinia';
-import type { AuthTokens, LoginRequest, AuthSessionClientDTO, AuthCredentialClientDTO } from '@dailyuse/contracts/authentication';
-import type { AccountClientDTO } from '@dailyuse/contracts/account';
-import { AuthManager } from '@/shared/api';
-import { AuthCredential, AuthSession } from '@dailyuse/domain-client/authentication';
+import type {
+  AccountClientDTO,
+  AuthSessionClientDTO,
+  TrustedDevicesResponseDTO,
+  DeviceInfoClientDTO,
+} from '@dailyuse/contracts/account';
 
-// MFA 设备临时类型（需要在 contracts 中定义）
-interface DeviceInfoClientDTO {
-  uuid: string;
-  name: string;
-  type: string;
-  isEnabled: boolean;
-  createdAt: number;
-  lastUsedAt?: number;
-}
-
+// ============ State Interface ============
 export interface AuthenticationState {
-  // 用户账户信息
-  account: AccountClientDTO | null;
+  // 当前认证用户
+  currentUser: AccountClientDTO | null;
 
-  // 当前会话（使用聚合根）
-  currentSession: AuthSession | null;
+  // 访问令牌
+  accessToken: string | null;
 
-  // 认证凭证（使用聚合根）
-  credential: AuthCredential | null;
+  // 刷新令牌
+  refreshToken: string | null;
 
-  // MFA 设备
+  // 活动会话列表
+  activeSessions: AuthSessionClientDTO[];
+
+  // 信任的设备
+  trustedDevices: TrustedDevicesResponseDTO | null;
+
+  // MFA 设备列表
   mfaDevices: DeviceInfoClientDTO[];
 
   // UI 状态
   isLoading: boolean;
+  isAuthenticated: boolean;
   error: string | null;
+
+  // 令牌过期时间
+  tokenExpiresAt: number | null;
+
+  // 是否需要 MFA 验证
+  requiresMFA: boolean;
+
+  // 是否正在初始化
+  isInitializing: boolean;
 }
 
+// ============ Store ============
 export const useAuthenticationStore = defineStore('authentication', {
   state: (): AuthenticationState => ({
-    account: null,
-    currentSession: null,
-    credential: null,
+    currentUser: null,
+    accessToken: null,
+    refreshToken: null,
+    activeSessions: [],
+    trustedDevices: null,
     mfaDevices: [],
     isLoading: false,
+    isAuthenticated: false,
     error: null,
+    tokenExpiresAt: null,
+    requiresMFA: false,
+    isInitializing: false,
   }),
 
   getters: {
-    /**
-     * 是否已认证 - 委托给 AuthManager
-     */
-    isAuthenticated: () => AuthManager.isAuthenticated(),
+    // ========== 认证状态 ==========
+    getCurrentUserId: (state) => state.currentUser?.uuid ?? null,
 
-    /**
-     * 获取访问令牌 - 委托给 AuthManager
-     */
-    getAccessToken: () => AuthManager.getAccessToken(),
+    getCurrentUserEmail: (state) => state.currentUser?.email ?? null,
 
-    /**
-     * 获取刷新令牌 - 委托给 AuthManager
-     */
-    getRefreshToken: () => AuthManager.getRefreshToken(),
+    getCurrentUserRole: (state) => state.currentUser?.role ?? null,
 
-    /**
-     * 获取当前账户
-     */
-    getCurrentUser: (state) => state.account,
-
-    /**
-     * 获取用户 UUID
-     */
-    getUserUuid: (state) => state.account?.uuid,
-
-    /**
-     * 获取用户名
-     */
-    getUsername: (state) => state.account?.username,
-
-    /**
-     * 获取当前会话
-     */
-    getCurrentSession: (state) => state.currentSession,
-
-    /**
-     * 会话是否活跃
-     */
-    isSessionActive: (state) => state.currentSession?.isActive() ?? false,
-
-    /**
-     * 会话剩余时间（秒）
-     */
-    sessionSecondsRemaining: (state) => state.currentSession?.getRemainingTime() ?? 0,
-
-    /**
-     * Token 是否即将过期（10分钟内）
-     */
-    isTokenExpiringSoon: () => {
-      const expiry = AuthManager.getTokenExpiry();
-      if (!expiry) return false;
-      return Date.now() > expiry - 10 * 60 * 1000;
+    isTokenExpired: (state) => {
+      if (!state.tokenExpiresAt) return true;
+      return Date.now() >= state.tokenExpiresAt;
     },
 
-    /**
-     * Token 是否已过期 - 委托给 AuthManager
-     */
-    isTokenExpired: () => AuthManager.isTokenExpired(),
-
-    /**
-     * Token 是否需要刷新 - 委托给 AuthManager
-     */
-    needsRefresh: () => AuthManager.needsRefresh(),
-
-    /**
-     * 获取 Token 过期时间
-     */
-    tokenExpiry: () => AuthManager.getTokenExpiry(),
-
-    /**
-     * 获取用户角色
-     * TODO: 需要从授权服务获取
-     */
-    getUserRoles: (state) => [] as string[], // state.account?.roles ?? [],
-
-    /**
-     * 获取用户权限
-     * TODO: 需要从授权服务获取
-     */
-    getUserPermissions: (state) => [] as string[], // state.account?.permissions ?? [],
-
-    /**
-     * 检查是否有指定角色
-     * TODO: 需要从授权服务获取
-     */
-    hasRole: (state) => (role: string) => {
-      return false; // state.account?.roles?.includes(role) ?? false;
+    getTokenExpiresIn: (state) => {
+      if (!state.tokenExpiresAt) return 0;
+      const remaining = state.tokenExpiresAt - Date.now();
+      return Math.max(0, remaining);
     },
 
-    /**
-     * 检查是否有指定权限
-     * TODO: 需要从授权服务获取
-     */
-    hasPermission: (state) => (permission: string) => {
-      return false; // state.account?.permissions?.includes(permission) ?? false;
-    },
+    // ========== MFA 状态 ==========
+    hasMFAEnabled: (state) => (state.mfaDevices?.length ?? 0) > 0,
 
-    /**
-     * 获取 MFA 设备列表
-     */
-    getMFADevices: (state) => state.mfaDevices,
+    getMFADeviceCount: (state) => state.mfaDevices?.length ?? 0,
 
-    /**
-     * 是否启用 MFA
-     */
-    hasMFAEnabled: (state) => state.mfaDevices.some((device) => device.isEnabled),
+    // ========== 会话状态 ==========
+    getActiveSessionCount: (state) => state.activeSessions?.length ?? 0,
 
-    /**
-     * 是否正在加载
-     */
-    getLoading: (state) => state.isLoading,
-
-    /**
-     * 是否正在加载 (兼容 useAuthStore API)
-     */
-    loading: (state) => state.isLoading,
-
-    /**
-     * 获取错误信息
-     */
-    getError: (state) => state.error,
-
-    /**
-     * 访问 token - 兼容旧代码
-     */
-    accessToken: () => AuthManager.getAccessToken(),
-
-    /**
-     * 刷新 token - 兼容旧代码
-     */
-    refreshToken: () => AuthManager.getRefreshToken(),
+    // ========== 设备状态 ==========
+    getTrustedDeviceCount: (state) => state.trustedDevices?.devices?.length ?? 0,
   },
 
   actions: {
-    /**
-     * 设置认证数据（从 LoginResponseDTO 设置）
-     */
-    setAuthData(loginResponse: {
-      user: AccountClientDTO;
-      accessToken: string;
-      refreshToken?: string; // 可选 - 现在存储在 httpOnly Cookie 中
-      expiresIn: number; // 秒
-      tokenType?: string;
-      sessionId?: string;
-    }) {
-      this.account = loginResponse.user;
-
-      // 🔥 将 token 存储到 AuthManager
-      // 注意：refreshToken 现在存储在 httpOnly Cookie 中，不再从响应中返回
-      AuthManager.setTokens(
-        loginResponse.accessToken,
-        undefined, // refreshToken 不再从响应中获取，由后端通过 Cookie 管理
-        undefined,
-        loginResponse.expiresIn,
-      );
+    // ========== User Actions ==========
+    setCurrentUser(user: AccountClientDTO | null) {
+      this.currentUser = user;
+      this.isAuthenticated = user !== null;
     },
 
-    /**
-     * 设置用户信息
-     */
-    setUser(account: AccountClientDTO) {
-      this.account = account;
+    clearCurrentUser() {
+      this.currentUser = null;
+      this.isAuthenticated = false;
     },
 
-    /**
-     * 设置访问令牌 - 委托给 AuthManager
-     */
-    setAccessToken(token: string, expiresIn?: number) {
-      AuthManager.updateAccessToken(token, expiresIn);
+    // ========== Token Actions ==========
+    setAccessToken(token: string | null, expiresIn?: number) {
+      this.accessToken = token;
+      if (expiresIn && token) {
+        this.tokenExpiresAt = Date.now() + expiresIn * 1000;
+      }
     },
 
-    /**
-     * 设置刷新令牌 - 委托给 AuthManager
-     * @deprecated 直接使用 AuthManager.setTokens()
-     */
-    setRefreshToken(token: string) {
-      // 保留为空方法以兼容旧代码
-      console.warn('setRefreshToken is deprecated, use AuthManager.setTokens() instead');
+    setRefreshToken(token: string | null) {
+      this.refreshToken = token;
     },
 
-    /**
-     * 设置当前会话（从 DTO 创建聚合根）
-     */
-    setCurrentSession(sessionDTO: AuthSessionClientDTO) {
-      this.currentSession = AuthSession.fromClientDTO(sessionDTO);
+    clearTokens() {
+      this.accessToken = null;
+      this.refreshToken = null;
+      this.tokenExpiresAt = null;
     },
 
-    /**
-     * 设置当前会话聚合根（直接设置）
-     */
-    setCurrentSessionAggregate(session: AuthSession | null) {
-      this.currentSession = session;
+    // ========== Session Actions ==========
+    setActiveSessions(sessions: AuthSessionClientDTO[]) {
+      this.activeSessions = sessions;
     },
 
-    /**
-     * 设置认证凭证（从 DTO 创建聚合根）
-     */
-    setCredential(credentialDTO: AuthCredentialClientDTO) {
-      this.credential = AuthCredential.fromClientDTO(credentialDTO);
+    clearActiveSessions() {
+      this.activeSessions = [];
     },
 
-    /**
-     * 设置认证凭证聚合根（直接设置）
-     */
-    setCredentialAggregate(credential: AuthCredential | null) {
-      this.credential = credential;
+    removeActiveSession(sessionId: string) {
+      this.activeSessions = this.activeSessions.filter((s) => s.id !== sessionId);
     },
 
-    /**
-     * 设置 MFA 设备列表
-     */
+    // ========== Trusted Devices Actions ==========
+    setTrustedDevices(devices: TrustedDevicesResponseDTO | null) {
+      this.trustedDevices = devices;
+    },
+
+    clearTrustedDevices() {
+      this.trustedDevices = null;
+    },
+
+    removeTrustedDevice(deviceId: string) {
+      if (this.trustedDevices?.devices) {
+        this.trustedDevices.devices = this.trustedDevices.devices.filter(
+          (d: any) => d.id !== deviceId,
+        );
+      }
+    },
+
+    // ========== MFA Actions ==========
     setMFADevices(devices: DeviceInfoClientDTO[]) {
       this.mfaDevices = devices;
     },
 
-    /**
-     * 添加 MFA 设备
-     */
-    addMFADevice(device: DeviceInfoClientDTO) {
-      this.mfaDevices.push(device);
+    clearMFADevices() {
+      this.mfaDevices = [];
     },
 
-    /**
-     * 移除 MFA 设备
-     */
-    removeMFADevice(deviceUuid: string) {
-      this.mfaDevices = this.mfaDevices.filter((d) => d.uuid !== deviceUuid);
+    removeMFADevice(deviceId: string) {
+      this.mfaDevices = this.mfaDevices.filter((d) => d.id !== deviceId);
     },
 
-    /**
-     * 设置加载状态
-     */
+    // ========== Status Actions ==========
     setLoading(loading: boolean) {
       this.isLoading = loading;
     },
 
-    /**
-     * 设置错误信息
-     */
     setError(error: string | null) {
       this.error = error;
     },
 
-    /**
-     * 清除错误信息
-     */
-    clearError() {
-      this.error = null;
+    setRequiresMFA(value: boolean) {
+      this.requiresMFA = value;
     },
 
-    /**
-     * 设置 Tokens (兼容 useAuthStore API) - 委托给 AuthManager
-     */
-    setTokens(tokens: {
-      accessToken: string;
-      refreshToken: string;
-      rememberToken?: string;
-      expiresIn?: number;
-    }) {
-      AuthManager.setTokens(
-        tokens.accessToken,
-        tokens.refreshToken,
-        tokens.rememberToken,
-        tokens.expiresIn,
-      );
+    setIsInitializing(value: boolean) {
+      this.isInitializing = value;
     },
 
-    /**
-     * 清除认证数据 (兼容 useAuthStore API)
-     */
-    clearAuth() {
-      this.logout();
-    },
-
-    /**
-     * 清除认证数据（登出）
-     */
-    logout() {
-      this.account = null;
-      this.currentSession = null;
-      this.credential = null;
+    // ========== Lifecycle ==========
+    reset() {
+      this.currentUser = null;
+      this.accessToken = null;
+      this.refreshToken = null;
+      this.activeSessions = [];
+      this.trustedDevices = null;
       this.mfaDevices = [];
       this.isLoading = false;
+      this.isAuthenticated = false;
       this.error = null;
-
-      // 清除 AuthManager 中的 tokens
-      AuthManager.clearTokens();
+      this.tokenExpiresAt = null;
+      this.requiresMFA = false;
+      this.isInitializing = false;
     },
   },
 
-  // 配置 Pinia 持久化（只持久化用户信息和会话，不持久化 tokens）
-  persist: true,
+  persist: {
+    // 持久化用户偏好和令牌
+    paths: ['accessToken', 'refreshToken', 'currentUser'],
+  },
 });
-
-// ===== 别名导出，向后兼容 =====
-export const useAuthStore = useAuthenticationStore;
-
-// ===== 类型导出 =====
-export type AuthStore = ReturnType<typeof useAuthenticationStore>;
-
-
-
-

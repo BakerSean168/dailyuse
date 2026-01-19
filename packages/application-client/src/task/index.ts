@@ -4,15 +4,27 @@
  * Re-exports all task-related application services.
  */
 
+// ============================================================
+// Smart Container (Single Source of Truth)
+// ============================================================
+export { TaskApplicationService, taskApplicationService } from './task-application.service';
+
 export { TaskContainer } from '@dailyuse/infrastructure-client';
 
 export {
+  // Types
+  type TaskForDAG,
+  type TaskForWidget,
+  taskTemplateToDAG,
+  taskInstanceToDAG,
+  taskInstanceToWidget,
+
   // Events
   TaskEvents,
   TaskInstanceEvents,
   TaskDependencyEvents,
   type TaskDependencyRefreshEvent,
-  
+
   // Task Template Use Cases
   CreateTaskTemplate,
   ListTaskTemplates,
@@ -26,7 +38,7 @@ export {
   GetInstancesByDateRange,
   BindTaskToGoal,
   UnbindTaskFromGoal,
-  
+
   // Task Instance Use Cases
   ListTaskInstances,
   GetTaskInstance,
@@ -35,7 +47,7 @@ export {
   CompleteTaskInstance,
   SkipTaskInstance,
   CheckExpiredInstances,
-  
+
   // Task Dependency Use Cases
   CreateTaskDependency,
   GetTaskDependencies,
@@ -44,7 +56,7 @@ export {
   ValidateTaskDependency,
   UpdateTaskDependency,
   DeleteTaskDependency,
-  
+
   // Task Statistics Use Cases
   GetTaskStatistics,
   RecalculateTaskStatistics,
@@ -55,7 +67,38 @@ export {
   GetTodayCompletionRate,
   GetWeekCompletionRate,
   GetEfficiencyTrend,
-  
+
+  // Integration Services
+  TaskInstanceSyncService,
+  taskInstanceSyncService,
+  TaskScheduleIntegrationService,
+  taskScheduleIntegrationService,
+  type TaskScheduleConfig,
+  type TaskInfo,
+
+  // Utility Services for DAG and dependency management
+  TaskAutoStatusService,
+  taskAutoStatusService,
+  type TaskStatus,
+  type StatusUpdateResult,
+  type TaskReadinessAnalysis,
+  TaskCriticalPathService,
+  taskCriticalPathService,
+  type TaskTiming,
+  type CriticalPathResult,
+  type OptimizationSuggestion,
+  type ProjectTimeline,
+  SuggestionType,
+  type DependencyCreationResult,
+  TaskDependencyDragDropService,
+  type GraphNode,
+  type GraphEdge,
+  type TaskGraph,
+  TaskDependencyGraphService,
+  type ValidationResult,
+  type ValidationError,
+  TaskDependencyValidationService,
+
   // Legacy exports (deprecated)
   TaskTemplateApplicationService,
   createTaskTemplateService,

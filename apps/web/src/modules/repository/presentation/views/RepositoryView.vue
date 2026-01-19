@@ -280,7 +280,9 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRepositoryStore, useFolderStore } from '../stores';
 import { useResourceStore } from '../stores/resourceStore';
-import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClient';
+import { getRepositoryApiClient } from '@dailyuse/infrastructure-client';
+
+const repositoryApiClient = getRepositoryApiClient();
 import { Repository, Folder } from '@dailyuse/domain-client/repository';
 import type { TreeNode } from '@dailyuse/contracts/repository';
 import FilesPanel from '../components/FilesPanel.vue';

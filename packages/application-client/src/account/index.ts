@@ -4,6 +4,12 @@
  * 账户模块 - 负责账户资料、偏好和订阅管理
  */
 
+// Smart Container (Single Source of Truth)
+export {
+  AccountApplicationService,
+  accountApplicationService,
+} from './account-application.service';
+
 // Container
 export { AccountContainer } from '@dailyuse/infrastructure-client';
 
@@ -14,7 +20,7 @@ export {
   AccountSubscriptionEvents,
   type AccountProfileRefreshEvent,
   type AccountSubscriptionRefreshEvent,
-  
+
   // Profile Use Cases
   GetMyProfile,
   UpdateMyProfile,
@@ -30,7 +36,7 @@ export {
   ActivateAccount,
   DeleteAccount,
   GetAccountHistory,
-  
+
   // Subscription Use Cases
   GetSubscription,
   SubscribePlan,

@@ -9,8 +9,8 @@
  */
 
 import { ref, onMounted } from 'vue';
-import { scheduleWebApplicationService } from '../../services/ScheduleWebApplicationService';
-import { scheduleConflictApplicationService } from '../../application';
+import { scheduleApplicationService as scheduleWebApplicationService } from '@dailyuse/application-client/schedule';
+import { scheduleApplicationService as scheduleConflictApplicationService } from '@dailyuse/application-client/schedule';
 import { SourceModule } from '@dailyuse/contracts/schedule';
 import type {
   ScheduleStatisticsClientDTO,
@@ -33,10 +33,7 @@ export function useSchedule() {
   // ===== 状态 =====
   const tasks = ref<ScheduleTask[]>([]);
   const statistics = ref<ScheduleStatisticsClientDTO | null>(null);
-  const moduleStatistics = ref<Record<
-    SourceModule,
-    ModuleStatisticsClientDTO
-  > | null>(null);
+  const moduleStatistics = ref<Record<SourceModule, ModuleStatisticsClientDTO> | null>(null);
   const isLoading = ref(false);
   const isLoadingStats = ref(false);
   const error = ref<string | null>(null);
@@ -421,4 +418,3 @@ export function useSchedule() {
     resolveConflict,
   };
 }
-

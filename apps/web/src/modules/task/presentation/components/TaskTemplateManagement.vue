@@ -152,8 +152,10 @@ import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/cont
 import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
 // composables
-import { taskDependencyApiClient } from '../../infrastructure/api/taskApiClient';
+import { getTaskDependencyApiClient } from '@dailyuse/infrastructure-client';
 import { useTaskTemplate } from '../composables/useTaskTemplate';
+
+const taskDependencyApiClient = getTaskDependencyApiClient();
 
 
 const taskStore = useTaskStore();

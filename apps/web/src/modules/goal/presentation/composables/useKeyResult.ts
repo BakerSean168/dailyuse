@@ -16,7 +16,14 @@ import type {
   AddKeyResultRequest,
   UpdateKeyResultRequest,
 } from '@dailyuse/contracts/goal';
-import { keyResultApplicationService } from '../../application/services';
+import {
+  CreateKeyResult,
+  GetKeyResults,
+  UpdateKeyResult,
+  DeleteKeyResult,
+  BatchUpdateKeyResultWeights,
+  GetProgressBreakdown,
+} from '@dailyuse/application-client/goal';
 import { getGoalStore } from '../stores/goalStore';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
@@ -46,7 +53,7 @@ export function useKeyResult() {
       isOperating.value = true;
       operationError.value = null;
 
-      const result = await keyResultApplicationService.getKeyResultsByGoal(goalUuid);
+      const result = await new GetKeyResults().execute({ goalUuid });
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取关键结果列表失败';
@@ -92,7 +99,10 @@ export function useKeyResult() {
       };
 
       // ✅ Service 返回 DTO，事件驱动刷新 Goal
-      const response = await keyResultApplicationService.createKeyResultForGoal(goalUuid, request);
+      const response = await new CreateKeyResult().execute({
+        ...request,
+        goalUuid,
+      });
 
       showCreateKeyResultDialog.value = false;
       showSuccess('关键结果创建成功');
@@ -121,11 +131,7 @@ export function useKeyResult() {
       operationError.value = null;
 
       // ✅ Service 返回 DTO，事件驱动刷新 Goal
-      const response = await keyResultApplicationService.updateKeyResultForGoal(
-        goalUuid,
-        keyResultUuid,
-        data,
-      );
+      const response = await new UpdateKeyResult().execute(keyResultUuid, data);
 
       showEditKeyResultDialog.value = false;
       editingKeyResult.value = null;
@@ -151,7 +157,7 @@ export function useKeyResult() {
       operationError.value = null;
 
       // ✅ Service 返回 void，事件驱动刷新 Goal
-      await keyResultApplicationService.deleteKeyResultForGoal(goalUuid, keyResultUuid);
+      await new DeleteKeyResult().execute(keyResultUuid);
 
       showSuccess('关键结果删除成功');
     } catch (err) {
@@ -175,7 +181,7 @@ export function useKeyResult() {
       isOperating.value = true;
       operationError.value = null;
 
-      const response = await keyResultApplicationService.batchUpdateKeyResultWeights(goalUuid, {
+      const response = await new BatchUpdateKeyResultWeights().execute(goalUuid, {
         updates,
       });
 
@@ -199,7 +205,7 @@ export function useKeyResult() {
       isOperating.value = true;
       operationError.value = null;
 
-      return await keyResultApplicationService.getProgressBreakdown(goalUuid);
+      return await new GetProgressBreakdown().execute(goalUuid);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取进度详情失败';
       operationError.value = errorMessage;
@@ -239,6 +245,3 @@ export function useKeyResult() {
     clearError,
   };
 }
-
-
-

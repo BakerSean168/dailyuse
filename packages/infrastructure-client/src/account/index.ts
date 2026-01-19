@@ -11,6 +11,9 @@ export {
   type IAccountRepository,
 } from './account.container';
 
+// Core API Clients (Framework-agnostic)
+export { AccountApiClient, type IHttpClient } from './accountApiClient';
+
 // Ports (Interfaces)
 export { type IAccountApiClient } from './ports/account-api-client.port';
 
@@ -25,3 +28,4 @@ export {
   AccountIpcAdapter,
   createAccountIpcAdapter,
 } from './adapters/ipc/account-ipc.adapter';
+

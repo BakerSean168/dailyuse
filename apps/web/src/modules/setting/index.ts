@@ -22,12 +22,10 @@ export { useUserSetting, useUserSettingData } from './presentation/composables/u
 
 // Stores
 export { useUserSettingStore } from './presentation/stores/userSettingStore';
+export { useSettingStore } from './presentation/stores/settingStore';
 
 // ===== Application Layer =====
 export { UserSettingWebApplicationService } from './application/services/UserSettingWebApplicationService';
-
-// ===== Infrastructure Layer =====
-export { userSettingApiClient } from './infrastructure/api/userSettingApiClient';
 
 /**
  * 使用示例：

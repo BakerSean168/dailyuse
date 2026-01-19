@@ -9,10 +9,7 @@ export { TaskContainer } from '@dailyuse/infrastructure-client';
 
 // Events
 export { TaskEvents, TaskInstanceEvents } from './task-events';
-export {
-  TaskDependencyEvents,
-  type TaskDependencyRefreshEvent,
-} from './task-dependency-events';
+export { TaskDependencyEvents, type TaskDependencyRefreshEvent } from './task-dependency-events';
 
 // Task Template Use Cases
 export { CreateTaskTemplate } from './create-task-template';
@@ -56,6 +53,61 @@ export { UpdateCompletionStats } from './update-completion-stats';
 export { GetTodayCompletionRate } from './get-today-completion-rate';
 export { GetWeekCompletionRate } from './get-week-completion-rate';
 export { GetEfficiencyTrend } from './get-efficiency-trend';
+
+// Integration Services
+export { TaskInstanceSyncService, taskInstanceSyncService } from './task-instance-sync.service';
+
+export {
+  TaskScheduleIntegrationService,
+  taskScheduleIntegrationService,
+  type TaskScheduleConfig,
+  type TaskInfo,
+} from './task-schedule-integration.service';
+
+// Utility Services for DAG and dependency management
+export {
+  type TaskForDAG,
+  type TaskForWidget,
+  taskTemplateToDAG,
+  taskInstanceToDAG,
+  taskInstanceToWidget,
+} from '../types/task-dag.types';
+
+export {
+  TaskAutoStatusService,
+  taskAutoStatusService,
+  type TaskStatus,
+  type StatusUpdateResult,
+  type TaskReadinessAnalysis,
+} from './task-auto-status.service';
+
+export {
+  TaskCriticalPathService,
+  taskCriticalPathService,
+  type TaskTiming,
+  type CriticalPathResult,
+  type OptimizationSuggestion,
+  type ProjectTimeline,
+  SuggestionType,
+} from './task-critical-path.service';
+
+export {
+  type DependencyCreationResult,
+  TaskDependencyDragDropService,
+} from './task-dependency-drag-drop.service';
+
+export {
+  type GraphNode,
+  type GraphEdge,
+  type TaskGraph,
+  TaskDependencyGraphService,
+} from './task-dependency-graph.service';
+
+export {
+  type ValidationResult,
+  type ValidationError,
+  TaskDependencyValidationService,
+} from './task-dependency-validation.service';
 
 // Legacy exports for backward compatibility (deprecated)
 export {

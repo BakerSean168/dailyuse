@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { scheduleApplicationService } from '../../application/services';
+import { scheduleApplicationService } from '@dailyuse/application-client/schedule';
 import type { ScheduleClientDTO } from '../stores/scheduleStore';
 import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
 import type {
@@ -206,11 +206,14 @@ export function useSchedule(): UseScheduleReturn {
 
   // ===== Event Query =====
 
-  const getEventsByTimeRange = useCallback(async (input: GetSchedulesByTimeRangeRequest): Promise<ScheduleClientDTO[]> => {
-    // 将 application service 返回的类型转换为本地类型
-    const result = await scheduleApplicationService.getSchedulesByTimeRange(input);
-    return result as unknown as ScheduleClientDTO[];
-  }, []);
+  const getEventsByTimeRange = useCallback(
+    async (input: GetSchedulesByTimeRangeRequest): Promise<ScheduleClientDTO[]> => {
+      // 将 application service 返回的类型转换为本地类型
+      const result = await scheduleApplicationService.getSchedulesByTimeRange(input);
+      return result as unknown as ScheduleClientDTO[];
+    },
+    [],
+  );
 
   // ===== Selection =====
 

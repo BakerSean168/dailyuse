@@ -10,6 +10,9 @@
  * - Provider configuration
  */
 
+// Smart Container
+export { AiApplicationService, aiApplicationService } from './ai-application.service';
+
 export {
   // Conversation
   CreateConversation,

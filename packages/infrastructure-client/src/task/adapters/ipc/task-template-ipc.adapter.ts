@@ -43,10 +43,7 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     return this.ipcClient.invoke('task-template:list', params);
   }
 
-  async getTaskTemplateById(
-    uuid: string,
-    includeChildren = false,
-  ): Promise<TaskTemplateClientDTO> {
+  async getTaskTemplateById(uuid: string, includeChildren = false): Promise<TaskTemplateClientDTO> {
     return this.ipcClient.invoke('task-template:get', { uuid, includeChildren });
   }
 
@@ -60,7 +57,25 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
   async deleteTaskTemplate(uuid: string): Promise<void> {
     await this.ipcClient.invoke('task-template:delete', { uuid });
   }
+  // ===== 方法别名（为了兼容 View 层调用）=====
 
+  async create(request: CreateTaskTemplateRequest): Promise<TaskTemplateClientDTO> {
+    return this.createTaskTemplate(request);
+  }
+
+  async getByUuid(uuid: string): Promise<TaskTemplateClientDTO> {
+    return this.getTaskTemplateById(uuid);
+  }
+
+  async update(uuid: string, request: UpdateTaskTemplateRequest): Promise<TaskTemplateClientDTO> {
+    return this.updateTaskTemplate(uuid, request);
+  }
+
+  // ===== 特殊查询方法 =====
+
+  async getTasksWithPrioritySorting(params?: { limit?: number }): Promise<TaskTemplateClientDTO[]> {
+    return this.ipcClient.invoke('task-template:get-by-priority', { params });
+  }
   // ===== Task Template 状态管�?=====
 
   async activateTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {

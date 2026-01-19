@@ -5,7 +5,7 @@ import type {
   UpdateScheduleRequest,
   GetSchedulesByTimeRangeRequest,
 } from '@dailyuse/contracts/schedule';
-import { scheduleEventApplicationService } from '../../application';
+import { scheduleApplicationService as scheduleEventApplicationService } from '@dailyuse/application-client/schedule';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 /**
@@ -76,7 +76,10 @@ export function useScheduleEvent() {
   /**
    * 获取日程事件详情
    */
-  async function getSchedule(uuid: string, forceRefresh = false): Promise<ScheduleClientDTO | null> {
+  async function getSchedule(
+    uuid: string,
+    forceRefresh = false,
+  ): Promise<ScheduleClientDTO | null> {
     // Cache-first strategy
     if (!forceRefresh && schedules.value.has(uuid)) {
       const cached = schedules.value.get(uuid);
@@ -228,7 +231,7 @@ export function useScheduleEvent() {
    */
   async function loadSchedulesByTimeRange(
     startTime: number,
-    endTime: number
+    endTime: number,
   ): Promise<ScheduleClientDTO[]> {
     return getSchedulesByTimeRange({ startTime, endTime });
   }
@@ -262,4 +265,3 @@ export function useScheduleEvent() {
     clearCache,
   };
 }
-

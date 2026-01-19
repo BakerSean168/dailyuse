@@ -30,17 +30,27 @@ export function GoalListView() {
 
   // 使用 ref 保存函数引用，避免 useEffect 依赖循环
   const fetchGoalsRef = useRef(fetchGoals);
-  fetchGoalsRef.current = fetchGoals;
   const loadFoldersRef = useRef(loadFolders);
-  loadFoldersRef.current = loadFolders;
   const searchGoalsRef = useRef(searchGoals);
-  searchGoalsRef.current = searchGoals;
+
+  // 使用 useEffect 安全地更新这些 refs
+  useEffect(() => {
+    fetchGoalsRef.current = fetchGoals;
+  }, [fetchGoals]);
+
+  useEffect(() => {
+    loadFoldersRef.current = loadFolders;
+  }, [loadFolders]);
+
+  useEffect(() => {
+    searchGoalsRef.current = searchGoals;
+  }, [searchGoals]);
 
   // 组件挂载时加载一次数据
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
-    
+
     // 加载 goals 和 folders
     fetchGoalsRef.current().catch((err) => {
       console.error('[GoalListView] Failed to load goals:', err);
@@ -220,7 +230,10 @@ export function GoalListView() {
           )}
           {(searchQuery || statusFilter !== 'ALL') && (
             <button
-              onClick={() => { setSearchQuery(''); setStatusFilter('ALL'); }}
+              onClick={() => {
+                setSearchQuery('');
+                setStatusFilter('ALL');
+              }}
               className="px-4 py-2 border rounded-md hover:bg-secondary"
             >
               清除筛选
@@ -231,12 +244,7 @@ export function GoalListView() {
         /* 列表视图 - 使用虚拟滚动优化大数据量 */
         <VirtualList
           items={filteredGoals}
-          renderItem={(goal) => (
-            <GoalCard
-              goal={goal}
-              onUpdate={loadGoals}
-            />
-          )}
+          renderItem={(goal) => <GoalCard goal={goal} onUpdate={loadGoals} />}
           getItemKey={(goal) => goal.uuid}
           estimateSize={140}
           threshold={30}
@@ -248,11 +256,7 @@ export function GoalListView() {
         /* 网格视图 */
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredGoals.map((goal) => (
-            <GoalCard
-              key={goal.uuid}
-              goal={goal}
-              onUpdate={loadGoals}
-            />
+            <GoalCard key={goal.uuid} goal={goal} onUpdate={loadGoals} />
           ))}
         </div>
       )}

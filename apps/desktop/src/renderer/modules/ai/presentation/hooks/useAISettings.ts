@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { aiApplicationService } from '../../application/services';
+import { aiApplicationService } from '@dailyuse/application-client/ai';
 import type {
   AIProviderConfigClientDTO,
   AIProviderConfigSummary,
@@ -31,11 +31,11 @@ interface UseAISettingsReturn extends AISettingsState {
   deleteProvider: (uuid: string) => Promise<void>;
   selectProvider: (uuid: string) => Promise<void>;
   setDefaultProvider: (uuid: string) => Promise<void>;
-  
+
   // Testing
   testConnection: (uuid: string) => Promise<void>;
   refreshModels: (uuid: string) => Promise<void>;
-  
+
   // Utilities
   clearError: () => void;
   clearTestResult: () => void;
@@ -73,28 +73,31 @@ export function useAISettings(): UseAISettingsReturn {
   }, []);
 
   // Create provider
-  const createProvider = useCallback(async (request: CreateAIProviderRequest) => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+  const createProvider = useCallback(
+    async (request: CreateAIProviderRequest) => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
 
-    try {
-      const provider = await aiApplicationService.createProvider(request);
-      await loadProviders();
-      setState((prev) => ({
-        ...prev,
-        currentProvider: provider,
-        loading: false,
-      }));
-      return provider;
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '创建服务商失败';
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: errorMessage,
-      }));
-      throw e;
-    }
-  }, [loadProviders]);
+      try {
+        const provider = await aiApplicationService.createProvider(request);
+        await loadProviders();
+        setState((prev) => ({
+          ...prev,
+          currentProvider: provider,
+          loading: false,
+        }));
+        return provider;
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '创建服务商失败';
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          error: errorMessage,
+        }));
+        throw e;
+      }
+    },
+    [loadProviders],
+  );
 
   // Update provider
   const updateProvider = useCallback(
@@ -106,8 +109,7 @@ export function useAISettings(): UseAISettingsReturn {
         await loadProviders();
         setState((prev) => ({
           ...prev,
-          currentProvider:
-            prev.currentProvider?.uuid === uuid ? provider : prev.currentProvider,
+          currentProvider: prev.currentProvider?.uuid === uuid ? provider : prev.currentProvider,
           loading: false,
         }));
       } catch (e) {
@@ -124,31 +126,27 @@ export function useAISettings(): UseAISettingsReturn {
   );
 
   // Delete provider
-  const deleteProvider = useCallback(
-    async (uuid: string) => {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+  const deleteProvider = useCallback(async (uuid: string) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      try {
-        await aiApplicationService.deleteProvider(uuid);
-        setState((prev) => ({
-          ...prev,
-          providers: prev.providers.filter((p) => p.uuid !== uuid),
-          currentProvider:
-            prev.currentProvider?.uuid === uuid ? null : prev.currentProvider,
-          loading: false,
-        }));
-      } catch (e) {
-        const errorMessage = e instanceof Error ? e.message : '删除服务商失败';
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: errorMessage,
-        }));
-        throw e;
-      }
-    },
-    [],
-  );
+    try {
+      await aiApplicationService.deleteProvider(uuid);
+      setState((prev) => ({
+        ...prev,
+        providers: prev.providers.filter((p) => p.uuid !== uuid),
+        currentProvider: prev.currentProvider?.uuid === uuid ? null : prev.currentProvider,
+        loading: false,
+      }));
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : '删除服务商失败';
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: errorMessage,
+      }));
+      throw e;
+    }
+  }, []);
 
   // Select provider (get details)
   const selectProvider = useCallback(async (uuid: string) => {

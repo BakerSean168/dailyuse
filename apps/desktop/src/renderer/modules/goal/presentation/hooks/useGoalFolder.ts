@@ -2,7 +2,7 @@
  * useGoalFolder Hook
  *
  * 目标文件夹管理 Hook
- * 
+ *
  * EPIC-015 重构: 与 Store 集成，使用 Entity 类型
  * - 使用 useGoalStore 作为唯一数据源
  * - 返回 Entity 类型（GoalFolder）
@@ -11,7 +11,7 @@
 
 import { useCallback, useEffect } from 'react';
 import { useGoalStore } from '../stores/goalStore';
-import { goalApplicationService } from '../../application/services';
+import { goalApplicationService } from '@dailyuse/application-client/goal';
 import type { GoalFolder } from '@dailyuse/domain-client/goal';
 import type { CreateGoalFolderRequest, UpdateGoalFolderRequest } from '@dailyuse/contracts/goal';
 
@@ -69,7 +69,7 @@ export function useGoalFolder(): UseGoalFolderReturn {
     // 先从 Store 查找
     const cached = store.getFolderById(id);
     if (cached) return cached;
-    
+
     // Store 中没有则从 API 获取
     return goalApplicationService.getFolder(id);
   }, []); // 空依赖
@@ -94,22 +94,25 @@ export function useGoalFolder(): UseGoalFolderReturn {
     }
   }, []);
 
-  const updateFolder = useCallback(async (uuid: string, request: UpdateGoalFolderRequest): Promise<void> => {
-    const store = useGoalStore.getState();
-    store.setLoading(true);
-    store.setError(null);
+  const updateFolder = useCallback(
+    async (uuid: string, request: UpdateGoalFolderRequest): Promise<void> => {
+      const store = useGoalStore.getState();
+      store.setLoading(true);
+      store.setError(null);
 
-    try {
-      const folder = await goalApplicationService.updateFolder(uuid, request);
-      store.updateFolder(uuid, folder);
-      store.setLoading(false);
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '更新文件夹失败';
-      store.setError(errorMessage);
-      store.setLoading(false);
-      throw e;
-    }
-  }, []);
+      try {
+        const folder = await goalApplicationService.updateFolder(uuid, request);
+        store.updateFolder(uuid, folder);
+        store.setLoading(false);
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '更新文件夹失败';
+        store.setError(errorMessage);
+        store.setLoading(false);
+        throw e;
+      }
+    },
+    [],
+  );
 
   const deleteFolder = useCallback(async (id: string): Promise<void> => {
     const store = useGoalStore.getState();

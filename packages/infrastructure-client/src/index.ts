@@ -27,11 +27,7 @@
 // ============================================================
 // Encryption Module (STORY-044)
 // ============================================================
-export {
-  EncryptionService,
-  type EncryptedData,
-  type KeyDerivationParams,
-} from './encryption';
+export { EncryptionService, type EncryptedData, type KeyDerivationParams } from './encryption';
 
 // ============================================================
 // Goal Module
@@ -307,3 +303,19 @@ export {
   configureWebDependencies,
   configureDesktopDependencies,
 } from './di';
+
+// ============================================================
+// Web Clients (Instances for Web Applications)
+// ============================================================
+export {
+  getAccountApiClient,
+  getReminderApiClient,
+  getAIProviderConfigApiClient,
+  getAIConversationApiClient,
+  getAIMessageApiClient,
+  getTaskTemplateApiClient,
+  getTaskInstanceApiClient,
+  getTaskDependencyApiClient,
+  getGoalApiClient,
+  getRepositoryApiClient,
+} from './web-clients';

@@ -16,7 +16,18 @@
 import { ref, computed, readonly } from 'vue';
 import type { CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import type { Goal } from '@dailyuse/domain-client/goal';
-import { goalManagementApplicationService, goalSyncApplicationService } from '../../application/services';
+import {
+  ListGoals,
+  GetGoal,
+  CreateGoal,
+  UpdateGoal,
+  DeleteGoal,
+  ActivateGoal,
+  PauseGoal,
+  CompleteGoal,
+  ArchiveGoal,
+  GetGoalAggregateView,
+} from '@dailyuse/application-client/goal';
 import { getGoalStore } from '../stores/goalStore';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
@@ -64,7 +75,7 @@ export function useGoalManagement() {
       goalStore.setLoading(true);
 
       // ✅ Service 直接返回实体对象数组
-      const { goals, pagination } = await goalManagementApplicationService.getGoals(params);
+      const { goals, pagination } = await new ListGoals().execute(params);
 
       // ✅ Composable 负责存储到 Store
       goalStore.setGoals(goals);
@@ -99,7 +110,7 @@ export function useGoalManagement() {
       goalStore.setLoading(true);
 
       // ✅ Service 直接返回实体对象
-      const goal = await goalManagementApplicationService.getGoalById(uuid);
+      const goal = await new GetGoal().execute(uuid);
 
       // ✅ Composable 负责存储到 Store
       goalStore.addOrUpdateGoal(goal);
@@ -149,7 +160,7 @@ export function useGoalManagement() {
       goalStore.setLoading(true);
 
       // ✅ Service 直接返回实体对象
-      const goal = await goalManagementApplicationService.createGoal(data);
+      const goal = await new CreateGoal().execute(data);
 
       // ✅ Composable 负责存储到 Store
       goalStore.addOrUpdateGoal(goal);
@@ -180,7 +191,7 @@ export function useGoalManagement() {
       goalStore.setLoading(true);
 
       // ✅ Service 直接返回实体对象
-      const goal = await goalManagementApplicationService.updateGoal(uuid, data);
+      const goal = await new UpdateGoal().execute(uuid, data);
 
       // ✅ Composable 负责更新 Store
       goalStore.addOrUpdateGoal(goal);
@@ -212,7 +223,7 @@ export function useGoalManagement() {
       goalStore.setLoading(true);
 
       // ✅ Service 返回 void 或抛出错误
-      await goalManagementApplicationService.deleteGoal(uuid);
+      await new DeleteGoal().execute(uuid);
 
       // ✅ Composable 负责从 Store 移除
       goalStore.removeGoal(uuid);
@@ -245,7 +256,7 @@ export function useGoalManagement() {
       operationError.value = null;
       goalStore.setLoading(true);
 
-      const goal = await goalManagementApplicationService.activateGoal(uuid);
+      const goal = await new ActivateGoal().execute(uuid);
       goalStore.addOrUpdateGoal(goal);
       showSuccess('目标已激活');
 
@@ -271,7 +282,7 @@ export function useGoalManagement() {
       operationError.value = null;
       goalStore.setLoading(true);
 
-      const goal = await goalManagementApplicationService.pauseGoal(uuid);
+      const goal = await new PauseGoal().execute(uuid);
       goalStore.addOrUpdateGoal(goal);
       showSuccess('目标已暂停');
 
@@ -297,7 +308,7 @@ export function useGoalManagement() {
       operationError.value = null;
       goalStore.setLoading(true);
 
-      const goal = await goalManagementApplicationService.completeGoal(uuid);
+      const goal = await new CompleteGoal().execute(uuid);
       goalStore.addOrUpdateGoal(goal);
       showSuccess('目标已完成');
 
@@ -323,7 +334,7 @@ export function useGoalManagement() {
       operationError.value = null;
       goalStore.setLoading(true);
 
-      const goal = await goalManagementApplicationService.archiveGoal(uuid);
+      const goal = await new ArchiveGoal().execute(uuid);
       goalStore.addOrUpdateGoal(goal);
       showSuccess('目标已归档');
 
@@ -395,7 +406,7 @@ export function useGoalManagement() {
       isOperating.value = true;
       operationError.value = null;
 
-      const { goal, rawResponse } = await goalManagementApplicationService.getGoalAggregateView(goalUuid);
+      const { goal, rawResponse } = await new GetGoalAggregateView().execute(goalUuid);
 
       // 更新 Store
       goalStore.addOrUpdateGoal(goal);
@@ -459,4 +470,3 @@ export function useGoalManagement() {
     clearError,
   };
 }
-

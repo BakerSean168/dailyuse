@@ -7,7 +7,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { scheduleApplicationService } from '../../application/services/ScheduleApplicationService';
+import { scheduleApplicationService } from '@dailyuse/application-client/schedule';
 import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import { ScheduleCard } from '../components/ScheduleCard';
@@ -161,9 +161,7 @@ export function ScheduleListView() {
           <p className="text-muted-foreground">
             共 {stats.total} 个调度任务，{stats.active} 个活跃
             {stats.overdue > 0 && (
-              <span className="text-destructive ml-2">
-                ⚠️ {stats.overdue} 个已过期
-              </span>
+              <span className="text-destructive ml-2">⚠️ {stats.overdue} 个已过期</span>
             )}
           </p>
         </div>
@@ -203,13 +201,15 @@ export function ScheduleListView() {
 
       {/* Calendar View */}
       {viewMode === 'calendar' && (
-        <ScheduleCalendarView 
-          tasks={sortedTasks} 
+        <ScheduleCalendarView
+          tasks={sortedTasks}
           onTaskClick={(task) => setEditingTask(task)}
           onTaskDrop={(task, newDate) => {
             // 显示提示 - 由于API限制，拖拽调整时间功能需要后端支持
             console.log(`[ScheduleListView] Task ${task.name} dropped to ${newDate.toISOString()}`);
-            alert(`拖拽功能预览：将 "${task.name}" 移动到 ${format(newDate, 'yyyy-MM-dd', { locale: zhCN })}\n\n注意：完整的日期调整功能需要后端 API 支持更新任务调度配置。`);
+            alert(
+              `拖拽功能预览：将 "${task.name}" 移动到 ${format(newDate, 'yyyy-MM-dd', { locale: zhCN })}\n\n注意：完整的日期调整功能需要后端 API 支持更新任务调度配置。`,
+            );
           }}
         />
       )}

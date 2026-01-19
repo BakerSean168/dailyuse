@@ -140,7 +140,9 @@ import { storeToRefs } from 'pinia';
 import { useRepositoryStore } from '../../stores/repositoryStore';
 import { useMessage } from '@dailyuse/ui-vuetify';
 import { RepositoryStatus, RepositoryType, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO } from '@dailyuse/contracts/repository';
-import { repositoryManagementService } from '@/modules/repository/application/services/RepositoryManagementApplicationService';
+import { repositoryApplicationService } from '@dailyuse/application-client/repository';
+
+const repositoryManagementService = repositoryApplicationService;
 
 const props = defineProps<{
   modelValue: boolean;

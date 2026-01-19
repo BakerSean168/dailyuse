@@ -1,9 +1,11 @@
 import { ref, computed } from 'vue';
-import type {
-  FocusModeClientDTO,
-  ActivateFocusModeRequest,
-} from '@dailyuse/contracts/goal';
-import { focusModeApplicationService } from '../../application/services';
+import type { FocusModeClientDTO, ActivateFocusModeRequest } from '@dailyuse/contracts/goal';
+import {
+  ActivateFocusMode,
+  DeactivateFocusMode,
+  GetActiveFocusMode,
+  GetFocusModeHistory,
+} from '@dailyuse/application-client/goal';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 /**
@@ -55,7 +57,7 @@ export function useFocusMode() {
       isLoading.value = true;
       error.value = null;
 
-      const focusMode = await focusModeApplicationService.activateFocusMode(request);
+      const focusMode = await new ActivateFocusMode().execute(request);
       activeFocusMode.value = focusMode;
 
       showSuccess('专注模式已启用');
@@ -86,7 +88,7 @@ export function useFocusMode() {
       isLoading.value = true;
       error.value = null;
 
-      const focusMode = await focusModeApplicationService.deactivateFocusMode(targetUuid);
+      const focusMode = await new DeactivateFocusMode().execute(targetUuid);
 
       // 如果关闭的是当前活跃周期，清空状态
       if (activeFocusMode.value?.uuid === targetUuid) {
@@ -226,4 +228,3 @@ export function useFocusMode() {
     clearState,
   };
 }
-

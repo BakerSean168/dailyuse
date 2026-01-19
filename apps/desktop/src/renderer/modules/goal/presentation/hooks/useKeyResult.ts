@@ -2,7 +2,7 @@
  * useKeyResult Hook
  *
  * 关键结果管理 Hook - 处理关键结果的 CRUD 操作
- * 
+ *
  * EPIC-015 重构: 与 Store 集成，使用 Entity 类型
  * - 使用 useGoalStore 作为状态源
  * - 返回 Entity 类型（KeyResult, GoalRecord）
@@ -11,7 +11,7 @@
 
 import { useState, useCallback } from 'react';
 import { useGoalStore } from '../stores/goalStore';
-import { goalApplicationService } from '../../application/services';
+import { goalApplicationService } from '@dailyuse/application-client/goal';
 import type { KeyResult, GoalRecord } from '@dailyuse/domain-client/goal';
 import type {
   AddKeyResultRequest,
@@ -35,11 +35,19 @@ export interface UseKeyResultReturn {
 
   // CRUD Operations
   createKeyResult: (goalUuid: string, data: CreateKeyResultInput) => Promise<KeyResult>;
-  updateKeyResult: (goalUuid: string, keyResultUuid: string, data: UpdateKeyResultInput) => Promise<KeyResult>;
+  updateKeyResult: (
+    goalUuid: string,
+    keyResultUuid: string,
+    data: UpdateKeyResultInput,
+  ) => Promise<KeyResult>;
   deleteKeyResult: (goalUuid: string, keyResultUuid: string) => Promise<void>;
 
   // Record Operations
-  createRecord: (goalUuid: string, keyResultUuid: string, data: CreateRecordInput) => Promise<GoalRecord>;
+  createRecord: (
+    goalUuid: string,
+    keyResultUuid: string,
+    data: CreateRecordInput,
+  ) => Promise<GoalRecord>;
   deleteRecord: (goalUuid: string, keyResultUuid: string, recordUuid: string) => Promise<void>;
 
   // Editing State
@@ -65,121 +73,126 @@ export function useKeyResult(): UseKeyResultReturn {
 
   // ===== CRUD Operations =====
 
-  const createKeyResult = useCallback(async (
-    goalUuid: string,
-    data: CreateKeyResultInput
-  ): Promise<KeyResult> => {
-    storeSetLoading(true);
-    storeSetError(null);
+  const createKeyResult = useCallback(
+    async (goalUuid: string, data: CreateKeyResultInput): Promise<KeyResult> => {
+      storeSetLoading(true);
+      storeSetError(null);
 
-    try {
-      const request = {
-        title: data.title,
-        description: data.description,
-        targetValue: data.targetValue,
-        currentValue: data.currentValue ?? 0,
-        unit: data.unit,
-        weight: data.weight,
-        valueType: data.valueType ?? KeyResultValueType.INCREMENTAL,
-        aggregationMethod: data.aggregationMethod ?? AggregationMethod.SUM,
-      };
+      try {
+        const request = {
+          title: data.title,
+          description: data.description,
+          targetValue: data.targetValue,
+          currentValue: data.currentValue ?? 0,
+          unit: data.unit,
+          weight: data.weight,
+          valueType: data.valueType ?? KeyResultValueType.INCREMENTAL,
+          aggregationMethod: data.aggregationMethod ?? AggregationMethod.SUM,
+        };
 
-      const result = await goalApplicationService.createKeyResult(goalUuid, request);
-      storeSetLoading(false);
-      return result;
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '创建关键结果失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
-      throw e;
-    }
-  }, [storeSetLoading, storeSetError]);
+        const result = await goalApplicationService.createKeyResult(goalUuid, request);
+        storeSetLoading(false);
+        return result;
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '创建关键结果失败';
+        storeSetError(errorMessage);
+        storeSetLoading(false);
+        throw e;
+      }
+    },
+    [storeSetLoading, storeSetError],
+  );
 
-  const updateKeyResult = useCallback(async (
-    goalUuid: string,
-    keyResultUuid: string,
-    data: UpdateKeyResultInput
-  ): Promise<KeyResult> => {
-    storeSetLoading(true);
-    storeSetError(null);
+  const updateKeyResult = useCallback(
+    async (
+      goalUuid: string,
+      keyResultUuid: string,
+      data: UpdateKeyResultInput,
+    ): Promise<KeyResult> => {
+      storeSetLoading(true);
+      storeSetError(null);
 
-    try {
-      const result = await goalApplicationService.updateKeyResult(goalUuid, keyResultUuid, data);
-      setEditingKeyResultState(null);
-      storeSetLoading(false);
-      return result;
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '更新关键结果失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
-      throw e;
-    }
-  }, [storeSetLoading, storeSetError]);
+      try {
+        const result = await goalApplicationService.updateKeyResult(goalUuid, keyResultUuid, data);
+        setEditingKeyResultState(null);
+        storeSetLoading(false);
+        return result;
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '更新关键结果失败';
+        storeSetError(errorMessage);
+        storeSetLoading(false);
+        throw e;
+      }
+    },
+    [storeSetLoading, storeSetError],
+  );
 
-  const deleteKeyResult = useCallback(async (
-    goalUuid: string,
-    keyResultUuid: string
-  ): Promise<void> => {
-    storeSetLoading(true);
-    storeSetError(null);
+  const deleteKeyResult = useCallback(
+    async (goalUuid: string, keyResultUuid: string): Promise<void> => {
+      storeSetLoading(true);
+      storeSetError(null);
 
-    try {
-      await goalApplicationService.deleteKeyResult(goalUuid, keyResultUuid);
-      storeSetLoading(false);
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '删除关键结果失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
-      throw e;
-    }
-  }, [storeSetLoading, storeSetError]);
+      try {
+        await goalApplicationService.deleteKeyResult(goalUuid, keyResultUuid);
+        storeSetLoading(false);
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '删除关键结果失败';
+        storeSetError(errorMessage);
+        storeSetLoading(false);
+        throw e;
+      }
+    },
+    [storeSetLoading, storeSetError],
+  );
 
   // ===== Record Operations =====
 
-  const createRecord = useCallback(async (
-    goalUuid: string,
-    keyResultUuid: string,
-    data: CreateRecordInput
-  ): Promise<GoalRecord> => {
-    storeSetLoading(true);
-    storeSetError(null);
+  const createRecord = useCallback(
+    async (
+      goalUuid: string,
+      keyResultUuid: string,
+      data: CreateRecordInput,
+    ): Promise<GoalRecord> => {
+      storeSetLoading(true);
+      storeSetError(null);
 
-    try {
-      const request = {
-        value: data.value,
-        note: data.note,
-        recordedAt: data.recordedAt ?? Date.now(),
-      };
+      try {
+        const request = {
+          value: data.value,
+          note: data.note,
+          recordedAt: data.recordedAt ?? Date.now(),
+        };
 
-      const result = await goalApplicationService.createRecord(goalUuid, keyResultUuid, request);
-      storeSetLoading(false);
-      return result;
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '创建记录失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
-      throw e;
-    }
-  }, [storeSetLoading, storeSetError]);
+        const result = await goalApplicationService.createRecord(goalUuid, keyResultUuid, request);
+        storeSetLoading(false);
+        return result;
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '创建记录失败';
+        storeSetError(errorMessage);
+        storeSetLoading(false);
+        throw e;
+      }
+    },
+    [storeSetLoading, storeSetError],
+  );
 
-  const deleteRecord = useCallback(async (
-    goalUuid: string,
-    keyResultUuid: string,
-    recordUuid: string
-  ): Promise<void> => {
-    storeSetLoading(true);
-    storeSetError(null);
+  const deleteRecord = useCallback(
+    async (goalUuid: string, keyResultUuid: string, recordUuid: string): Promise<void> => {
+      storeSetLoading(true);
+      storeSetError(null);
 
-    try {
-      await goalApplicationService.deleteRecord(goalUuid, keyResultUuid, recordUuid);
-      storeSetLoading(false);
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '删除记录失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
-      throw e;
-    }
-  }, [storeSetLoading, storeSetError]);
+      try {
+        await goalApplicationService.deleteRecord(goalUuid, keyResultUuid, recordUuid);
+        storeSetLoading(false);
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '删除记录失败';
+        storeSetError(errorMessage);
+        storeSetLoading(false);
+        throw e;
+      }
+    },
+    [storeSetLoading, storeSetError],
+  );
 
   // ===== Editing State =====
 

@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { getSyncService } from '../../application/services';
+import { syncApplicationService } from '@dailyuse/application-client/sync';
 import type {
   SyncConflictClientDTO,
   ResolveConflictRequest,
@@ -30,20 +30,18 @@ export function useSyncConflicts(): UseSyncConflictsResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const service = getSyncService();
-
   const refresh = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await service.listConflicts();
+      const result = await syncApplicationService.listConflicts();
       setConflicts(result.conflicts);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
       setLoading(false);
     }
-  }, [service]);
+  }, []);
 
   useEffect(() => {
     refresh();
@@ -51,10 +49,10 @@ export function useSyncConflicts(): UseSyncConflictsResult {
 
   const resolveConflict = useCallback(
     async (request: ResolveConflictRequest): Promise<void> => {
-      await service.resolve(request);
+      await syncApplicationService.resolve(request);
       await refresh();
     },
-    [service, refresh]
+    [refresh],
   );
 
   const resolveAll = useCallback(
@@ -72,14 +70,14 @@ export function useSyncConflicts(): UseSyncConflictsResult {
           resolvedAt: Date.now(),
           resolvedBy: 'user',
         };
-        await service.resolve({
+        await syncApplicationService.resolve({
           conflictId: conflict.uuid,
           resolution: resolutionDTO,
         });
       }
       await refresh();
     },
-    [service, conflicts, refresh]
+    [conflicts, refresh],
   );
 
   return {

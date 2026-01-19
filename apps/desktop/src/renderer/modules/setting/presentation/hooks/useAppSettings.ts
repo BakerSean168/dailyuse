@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { settingApplicationService } from '../../application/services';
+import { settingApplicationService } from '@dailyuse/application-client/setting';
 import type { UserSettingClientDTO, AppConfigClientDTO } from '@dailyuse/contracts/setting';
 import type { UpdateAppearanceInput, UpdateLocaleInput } from '@dailyuse/application-client';
 
@@ -43,16 +43,16 @@ export function useAppSettings(): UseAppSettingsReturn {
    * 加载用户设置
    */
   const loadSettings = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       const userSettings = await settingApplicationService.getUserSettings();
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         userSettings,
         loading: false,
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         loading: false,
         error: error instanceof Error ? error.message : '加载设置失败',
@@ -64,16 +64,16 @@ export function useAppSettings(): UseAppSettingsReturn {
    * 加载应用配置
    */
   const loadAppConfig = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       const appConfig = await settingApplicationService.getAppConfig();
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         appConfig,
         loading: false,
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         loading: false,
         error: error instanceof Error ? error.message : '加载应用配置失败',
@@ -85,16 +85,16 @@ export function useAppSettings(): UseAppSettingsReturn {
    * 更新外观设置
    */
   const updateAppearance = useCallback(async (input: UpdateAppearanceInput) => {
-    setState(prev => ({ ...prev, saving: true, error: null }));
+    setState((prev) => ({ ...prev, saving: true, error: null }));
     try {
       const userSettings = await settingApplicationService.updateAppearance(input);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         userSettings,
         saving: false,
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         saving: false,
         error: error instanceof Error ? error.message : '更新外观设置失败',
@@ -106,16 +106,16 @@ export function useAppSettings(): UseAppSettingsReturn {
    * 更新语言设置
    */
   const updateLocale = useCallback(async (input: UpdateLocaleInput) => {
-    setState(prev => ({ ...prev, saving: true, error: null }));
+    setState((prev) => ({ ...prev, saving: true, error: null }));
     try {
       const userSettings = await settingApplicationService.updateLocale(input);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         userSettings,
         saving: false,
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         saving: false,
         error: error instanceof Error ? error.message : '更新语言设置失败',
@@ -127,16 +127,16 @@ export function useAppSettings(): UseAppSettingsReturn {
    * 重置设置
    */
   const resetSettings = useCallback(async () => {
-    setState(prev => ({ ...prev, saving: true, error: null }));
+    setState((prev) => ({ ...prev, saving: true, error: null }));
     try {
       const userSettings = await settingApplicationService.resetUserSettings();
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         userSettings,
         saving: false,
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         saving: false,
         error: error instanceof Error ? error.message : '重置设置失败',
@@ -151,7 +151,7 @@ export function useAppSettings(): UseAppSettingsReturn {
     try {
       return await settingApplicationService.exportSettings();
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : '导出设置失败',
       }));
@@ -163,16 +163,16 @@ export function useAppSettings(): UseAppSettingsReturn {
    * 导入设置
    */
   const importSettings = useCallback(async (data: string) => {
-    setState(prev => ({ ...prev, saving: true, error: null }));
+    setState((prev) => ({ ...prev, saving: true, error: null }));
     try {
       const userSettings = await settingApplicationService.importSettings(data);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         userSettings,
         saving: false,
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         saving: false,
         error: error instanceof Error ? error.message : '导入设置失败',

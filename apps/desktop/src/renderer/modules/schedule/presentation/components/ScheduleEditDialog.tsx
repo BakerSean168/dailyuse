@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { scheduleApplicationService } from '../../application/services/ScheduleApplicationService';
+import { scheduleApplicationService } from '@dailyuse/application-client/schedule';
 import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 
@@ -71,7 +71,7 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     setError(null);
     try {
       setLoading(true);
-      const newTags = tags.filter(t => t !== tagToRemove);
+      const newTags = tags.filter((t) => t !== tagToRemove);
       await scheduleApplicationService.updateTaskMetadata(task.uuid, {
         tags: newTags,
       });
@@ -124,10 +124,7 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
       <div className="bg-background border rounded-lg shadow-lg w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">编辑调度任务</h2>
-          <button
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground"
-          >
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             ✕
           </button>
         </div>
@@ -179,8 +176,10 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-sm">
-                    当前状态: 
-                    <span className={`ml-2 font-medium ${enabled ? 'text-green-600' : 'text-yellow-600'}`}>
+                    当前状态:
+                    <span
+                      className={`ml-2 font-medium ${enabled ? 'text-green-600' : 'text-yellow-600'}`}
+                    >
                       {enabled ? '运行中' : '已暂停'}
                     </span>
                   </span>
@@ -189,12 +188,12 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
                   onClick={handleToggleEnabled}
                   disabled={loading}
                   className={`px-4 py-2 rounded-md text-sm transition-colors ${
-                    enabled 
+                    enabled
                       ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
                       : 'bg-green-100 text-green-700 hover:bg-green-200'
                   }`}
                 >
-                  {loading ? '处理中...' : (enabled ? '暂停任务' : '恢复任务')}
+                  {loading ? '处理中...' : enabled ? '暂停任务' : '恢复任务'}
                 </button>
               </div>
             </div>
@@ -277,9 +276,7 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
 
           {/* Error */}
           {error && (
-            <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">
-              {error}
-            </div>
+            <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">{error}</div>
           )}
 
           {/* Close Button */}

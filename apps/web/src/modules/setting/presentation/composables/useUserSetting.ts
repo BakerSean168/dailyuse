@@ -4,7 +4,7 @@
  */
 
 import { ref, computed, onMounted } from 'vue';
-import { UserSettingWebApplicationService } from '../../application/services/UserSettingWebApplicationService';
+import { settingApplicationService as UserSettingWebApplicationService } from '@dailyuse/application-client/setting';
 import { useUserSettingStore } from '../stores/userSettingStore';
 import { useMessage } from '@dailyuse/ui-vuetify';
 import type {
@@ -52,7 +52,13 @@ export function useUserSetting() {
    */
   const themeText = computed(() => {
     const theme = currentTheme.value;
-    return theme === 'AUTO' ? '自动' : theme === 'LIGHT' ? '亮色' : theme === 'DARK' ? '暗色' : '未设置';
+    return theme === 'AUTO'
+      ? '自动'
+      : theme === 'LIGHT'
+        ? '亮色'
+        : theme === 'DARK'
+          ? '暗色'
+          : '未设置';
   });
 
   /**
@@ -156,9 +162,7 @@ export function useUserSetting() {
    * 创建用户设置
    * @deprecated 后端不支持直接创建，请使用 getOrCreateUserSetting
    */
-  const createUserSetting = async (
-    request: CreateUserSettingRequest,
-  ): Promise<void> => {
+  const createUserSetting = async (request: CreateUserSettingRequest): Promise<void> => {
     loading.value = true;
     error.value = '';
 
@@ -203,9 +207,7 @@ export function useUserSetting() {
   /**
    * 更新外观设置
    */
-  const updateAppearance = async (
-    appearance: UpdateAppearanceRequest,
-  ): Promise<void> => {
+  const updateAppearance = async (appearance: UpdateAppearanceRequest): Promise<void> => {
     if (!userSetting.value) {
       message.error('未找到用户设置');
       return;
@@ -255,9 +257,7 @@ export function useUserSetting() {
   /**
    * 更新工作流设置
    */
-  const updateWorkflow = async (
-    workflow: UpdateWorkflowRequest,
-  ): Promise<void> => {
+  const updateWorkflow = async (workflow: UpdateWorkflowRequest): Promise<void> => {
     if (!userSetting.value) {
       message.error('未找到用户设置');
       return;
@@ -307,9 +307,7 @@ export function useUserSetting() {
   /**
    * 更新实验性功能设置
    */
-  const updateExperimental = async (
-    experimental: UpdateExperimentalRequest,
-  ): Promise<void> => {
+  const updateExperimental = async (experimental: UpdateExperimentalRequest): Promise<void> => {
     if (!userSetting.value) {
       message.error('未找到用户设置');
       return;
@@ -521,7 +519,13 @@ export function useUserSettingData() {
     currentLanguage: computed(() => userSettingStore.locale.language),
     themeText: computed(() => {
       const theme = userSettingStore.appearance.theme;
-      return theme === 'AUTO' ? '自动' : theme === 'LIGHT' ? '亮色' : theme === 'DARK' ? '暗色' : '未设置';
+      return theme === 'AUTO'
+        ? '自动'
+        : theme === 'LIGHT'
+          ? '亮色'
+          : theme === 'DARK'
+            ? '暗色'
+            : '未设置';
     }),
     languageText: computed(() => {
       const lang = userSettingStore.locale.language;
@@ -533,4 +537,3 @@ export function useUserSettingData() {
     customShortcuts: computed(() => userSettingStore.shortcuts.custom),
   };
 }
-

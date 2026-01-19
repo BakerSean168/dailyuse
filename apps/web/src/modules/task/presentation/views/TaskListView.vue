@@ -138,13 +138,16 @@ import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 import { taskTemplateToDAG } from '@/modules/task/types/task-dag.types';
 import TaskDAGVisualization from '@/modules/task/presentation/components/dag/TaskDAGVisualization.vue';
 import {
-  taskTemplateApiClient,
-  taskDependencyApiClient,
-} from '@/modules/task/infrastructure/api/taskApiClient';
+  getTaskTemplateApiClient,
+  getTaskDependencyApiClient,
+} from '@dailyuse/infrastructure-client';
 import { taskAutoStatusService } from '@/modules/task/application/services/TaskAutoStatusService';
 
 // 类型别名
 type TaskClientDTO = TaskForDAG;
+
+const taskTemplateApiClient = getTaskTemplateApiClient();
+const taskDependencyApiClient = getTaskDependencyApiClient();
 
 const router = useRouter();
 

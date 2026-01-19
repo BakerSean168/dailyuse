@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { aiApplicationService } from '../../application/services';
+import { aiApplicationService } from '@dailyuse/application-client/ai';
 import type { AIConversation, AIMessage } from '@dailyuse/domain-client/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
 
@@ -121,7 +121,7 @@ export function useAI(): UseAIReturn {
           if (msg.isUserMessage()) role = 'user';
           else if (msg.isAssistantMessage()) role = 'assistant';
           else if (msg.isSystemMessage()) role = 'system';
-          
+
           return {
             id: msg.uuid,
             role,
@@ -154,13 +154,9 @@ export function useAI(): UseAIReturn {
       const closedConversation = await aiApplicationService.closeConversation(uuid);
       setState((prev) => ({
         ...prev,
-        conversations: prev.conversations.map((c) =>
-          c.uuid === uuid ? closedConversation : c,
-        ),
+        conversations: prev.conversations.map((c) => (c.uuid === uuid ? closedConversation : c)),
         currentConversation:
-          prev.currentConversation?.uuid === uuid
-            ? closedConversation
-            : prev.currentConversation,
+          prev.currentConversation?.uuid === uuid ? closedConversation : prev.currentConversation,
       }));
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '关闭对话失败';
@@ -192,116 +188,115 @@ export function useAI(): UseAIReturn {
   }, []);
 
   // Send message
-  const sendMessage = useCallback(async (content: string) => {
-    if (!content.trim()) return;
+  const sendMessage = useCallback(
+    async (content: string) => {
+      if (!content.trim()) return;
 
-    // Abort any existing stream
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    abortControllerRef.current = new AbortController();
-
-    const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content: content.trim(),
-      timestamp: Date.now(),
-    };
-
-    const assistantMessage: ChatMessage = {
-      id: `assistant-${Date.now()}`,
-      role: 'assistant',
-      content: '',
-      timestamp: Date.now(),
-      isStreaming: true,
-    };
-
-    setState((prev) => ({
-      ...prev,
-      messages: [...prev.messages, userMessage, assistantMessage],
-      streaming: true,
-      error: null,
-    }));
-
-    try {
-      // Check if we have a current conversation, if not create one
-      let conversationUuid = state.currentConversation?.uuid;
-      if (!conversationUuid) {
-        const newConversation = await aiApplicationService.createConversation({
-          title: content.slice(0, 50),
-        });
-        conversationUuid = newConversation.uuid;
-        setState((prev) => ({
-          ...prev,
-          currentConversation: newConversation,
-          conversations: [newConversation, ...prev.conversations],
-        }));
+      // Abort any existing stream
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
+      abortControllerRef.current = new AbortController();
 
-      // Try streaming first, fall back to regular send
+      const userMessage: ChatMessage = {
+        id: `user-${Date.now()}`,
+        role: 'user',
+        content: content.trim(),
+        timestamp: Date.now(),
+      };
+
+      const assistantMessage: ChatMessage = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: '',
+        timestamp: Date.now(),
+        isStreaming: true,
+      };
+
+      setState((prev) => ({
+        ...prev,
+        messages: [...prev.messages, userMessage, assistantMessage],
+        streaming: true,
+        error: null,
+      }));
+
       try {
-        const stream = aiApplicationService.streamChat({
-          conversationUuid,
-          message: content.trim(),
-        });
-
-        let fullContent = '';
-        for await (const chunk of stream) {
-          if (abortControllerRef.current?.signal.aborted) break;
-
-          fullContent += chunk.delta || '';
+        // Check if we have a current conversation, if not create one
+        let conversationUuid = state.currentConversation?.uuid;
+        if (!conversationUuid) {
+          const newConversation = await aiApplicationService.createConversation({
+            title: content.slice(0, 50),
+          });
+          conversationUuid = newConversation.uuid;
           setState((prev) => ({
             ...prev,
+            currentConversation: newConversation,
+            conversations: [newConversation, ...prev.conversations],
+          }));
+        }
+
+        // Try streaming first, fall back to regular send
+        try {
+          const stream = aiApplicationService.streamChat({
+            conversationUuid,
+            message: content.trim(),
+          });
+
+          let fullContent = '';
+          for await (const chunk of stream) {
+            if (abortControllerRef.current?.signal.aborted) break;
+
+            fullContent += chunk.delta || '';
+            setState((prev) => ({
+              ...prev,
+              messages: prev.messages.map((msg) =>
+                msg.id === assistantMessage.id ? { ...msg, content: fullContent } : msg,
+              ),
+            }));
+          }
+
+          // Mark streaming complete
+          setState((prev) => ({
+            ...prev,
+            streaming: false,
+            messages: prev.messages.map((msg) =>
+              msg.id === assistantMessage.id ? { ...msg, isStreaming: false } : msg,
+            ),
+          }));
+        } catch {
+          // Fallback to non-streaming
+          const response = await aiApplicationService.sendMessage({
+            conversationUuid,
+            content: content.trim(),
+          });
+
+          setState((prev) => ({
+            ...prev,
+            streaming: false,
             messages: prev.messages.map((msg) =>
               msg.id === assistantMessage.id
-                ? { ...msg, content: fullContent }
+                ? {
+                    ...msg,
+                    id: response.uuid,
+                    content: response.content,
+                    isStreaming: false,
+                  }
                 : msg,
             ),
           }));
         }
-
-        // Mark streaming complete
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '发送消息失败';
         setState((prev) => ({
           ...prev,
           streaming: false,
-          messages: prev.messages.map((msg) =>
-            msg.id === assistantMessage.id
-              ? { ...msg, isStreaming: false }
-              : msg,
-          ),
-        }));
-      } catch {
-        // Fallback to non-streaming
-        const response = await aiApplicationService.sendMessage({
-          conversationUuid,
-          content: content.trim(),
-        });
-
-        setState((prev) => ({
-          ...prev,
-          streaming: false,
-          messages: prev.messages.map((msg) =>
-            msg.id === assistantMessage.id
-              ? {
-                  ...msg,
-                  id: response.uuid,
-                  content: response.content,
-                  isStreaming: false,
-                }
-              : msg,
-          ),
+          error: errorMessage,
+          messages: prev.messages.filter((msg) => msg.id !== assistantMessage.id),
         }));
       }
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '发送消息失败';
-      setState((prev) => ({
-        ...prev,
-        streaming: false,
-        error: errorMessage,
-        messages: prev.messages.filter((msg) => msg.id !== assistantMessage.id),
-      }));
-    }
-  }, [state.currentConversation?.uuid]);
+    },
+    [state.currentConversation?.uuid],
+  );
 
   // Clear messages (new conversation)
   const clearMessages = useCallback(() => {

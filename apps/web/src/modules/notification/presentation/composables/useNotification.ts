@@ -10,7 +10,7 @@
 
 // @ts-nocheck - Some types not yet defined, needs refactoring
 import { ref, computed } from 'vue';
-import { notificationApplicationService } from '../../application/services';
+import { notificationApplicationService } from '@dailyuse/application-client/notification';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import { useWebSocket } from './useWebSocket';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
@@ -202,7 +202,7 @@ export function useNotification() {
    * 处理通知已读
    */
   function handleNotificationRead(data: { uuid: string }) {
-    const notification = notifications.value.find(n => n.uuid === data.uuid);
+    const notification = notifications.value.find((n) => n.uuid === data.uuid);
     if (notification && !notification.isRead) {
       notification.isRead = true;
       notification.readAt = new Date().toISOString();
@@ -214,7 +214,7 @@ export function useNotification() {
    * 处理通知删除
    */
   function handleNotificationDeleted(data: { uuid: string }) {
-    const index = notifications.value.findIndex(n => n.uuid === data.uuid);
+    const index = notifications.value.findIndex((n) => n.uuid === data.uuid);
     if (index !== -1) {
       const notification = notifications.value[index];
       if (!notification.isRead) {
@@ -234,9 +234,7 @@ export function useNotification() {
 
   // Computed
   const hasUnread = computed(() => unreadCount.value > 0);
-  const unreadNotifications = computed(() => 
-    notifications.value.filter(n => !n.isRead)
-  );
+  const unreadNotifications = computed(() => notifications.value.filter((n) => !n.isRead));
 
   return {
     // State
@@ -265,4 +263,3 @@ export function useNotification() {
     disconnect,
   };
 }
-

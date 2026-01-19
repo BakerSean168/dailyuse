@@ -4,8 +4,19 @@
  */
 
 import { ref, computed } from 'vue';
-import type { ReminderGroupClientDTO, CreateReminderGroupRequest, UpdateReminderGroupRequest } from '@dailyuse/contracts/reminder';
-import { reminderGroupApplicationService } from '../../application/services';
+import type {
+  ReminderGroupClientDTO,
+  CreateReminderGroupRequest,
+  UpdateReminderGroupRequest,
+} from '@dailyuse/contracts/reminder';
+import {
+  CreateReminderGroup,
+  ListReminderGroups,
+  GetReminderGroup,
+  UpdateReminderGroup,
+  DeleteReminderGroup,
+  ToggleReminderGroupStatus,
+} from '@dailyuse/application-client/reminder';
 import { getReminderStore } from '../stores/reminderStore';
 import { useMessage } from '@dailyuse/ui-vuetify';
 
@@ -35,7 +46,7 @@ export function useReminderGroup() {
         return reminderStore.reminderGroups;
       }
 
-      const result = await reminderGroupApplicationService.getReminderGroups();
+      const result = await new ListReminderGroups().execute();
       return result.items;
     } catch (error) {
       message.error('获取分组列表失败');
@@ -53,7 +64,7 @@ export function useReminderGroup() {
         if (cached) return cached;
       }
 
-      const group = await reminderGroupApplicationService.getReminderGroup(uuid);
+      const group = await new GetReminderGroup().execute(uuid);
       return group;
     } catch (error) {
       message.error('获取分组详情失败');
@@ -68,7 +79,7 @@ export function useReminderGroup() {
    */
   const createGroup = async (data: CreateReminderGroupRequest) => {
     try {
-      const response = await reminderGroupApplicationService.createReminderGroup(data);
+      const response = await new CreateReminderGroup().execute(data);
       showCreateGroupDialog.value = false;
       message.success('分组创建成功');
       return response;
@@ -81,12 +92,9 @@ export function useReminderGroup() {
   /**
    * 更新分组
    */
-  const updateGroup = async (
-    uuid: string,
-    data: UpdateReminderGroupRequest,
-  ) => {
+  const updateGroup = async (uuid: string, data: UpdateReminderGroupRequest) => {
     try {
-      const response = await reminderGroupApplicationService.updateReminderGroup(uuid, data);
+      const response = await new UpdateReminderGroup().execute(uuid, data);
       showEditGroupDialog.value = false;
       editingGroup.value = null;
       message.success('分组更新成功');
@@ -102,7 +110,7 @@ export function useReminderGroup() {
    */
   const deleteGroup = async (uuid: string) => {
     try {
-      await reminderGroupApplicationService.deleteReminderGroup(uuid);
+      await new DeleteReminderGroup().execute(uuid);
 
       if (currentGroup.value?.uuid === uuid) {
         reminderStore.setSelectedGroup(null);
@@ -120,7 +128,7 @@ export function useReminderGroup() {
    */
   const toggleGroupStatus = async (uuid: string) => {
     try {
-      const response = await reminderGroupApplicationService.toggleReminderGroupStatus(uuid);
+      const response = await new ToggleReminderGroupStatus().execute(uuid);
       message.success(`分组已${response.enabled ? '启用' : '禁用'}`);
       return response;
     } catch (error) {
@@ -148,4 +156,3 @@ export function useReminderGroup() {
     toggleGroupStatus,
   };
 }
-

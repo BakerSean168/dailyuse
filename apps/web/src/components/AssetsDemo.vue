@@ -165,11 +165,13 @@ import { ref, onMounted } from 'vue';
 import { logo, logo128, defaultAvatar } from '@dailyuse/assets/images';
 import { audioService, type SoundType } from '@/services/AudioService';
 import { AuthManager } from '@/shared/api';
-import { reminderApiClient } from '@/modules/reminder/infrastructure/api/reminderApiClient';
+import { getReminderApiClient } from '@dailyuse/infrastructure-client';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { ReminderTemplateClientDTO, CreateReminderTemplateRequest } from '@dailyuse/contracts/reminder';
 import { ReminderType, TriggerType, RecurrenceType, NotificationChannel } from '@dailyuse/contracts/reminder';
 import { generateUUID } from '@dailyuse/utils';
+
+const reminderApiClient = getReminderApiClient();
 
 // Type alias
 type CreateReminderTemplateRequestDTO = CreateReminderTemplateRequest;

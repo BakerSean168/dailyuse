@@ -1,25 +1,37 @@
 /**
  * Task Template Composable
  * 任务模板相关的组合式函数
- * 
+ *
  * 🔄 重构说明（方案 A - 简化版）：
  * - Composable 负责协调 ApplicationService 和 Store
  * - Service 直接返回实体对象或抛出错误（不包装 ServiceResult）
  * - Composable 使用 try/catch 处理错误
  * - 数据流：API → Service(转换) → Composable(存储+通知) → Store → Component
- * 
+ *
  * 📝 错误处理：
  * - axios 拦截器已处理 API 错误，success: false 会抛出 Error
  * - Composable 捕获错误并设置 error 状态 + 全局通知
  */
 
 import { ref, computed, readonly } from 'vue';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClientDTO } from '@dailyuse/contracts/task';
+import type {
+  TaskTemplateClientDTO,
+  TaskInstanceClientDTO,
+  TaskTimeConfigClientDTO,
+} from '@dailyuse/contracts/task';
 import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client/task';
-import { taskTemplateApplicationService } from '../../application/services';
+import {
+  CreateTaskTemplate,
+  ListTaskTemplates,
+  GetTaskTemplate,
+  UpdateTaskTemplate,
+  DeleteTaskTemplate,
+  ActivateTaskTemplate,
+  PauseTaskTemplate,
+  ArchiveTaskTemplate,
+} from '@dailyuse/application-client/task';
 import { useTaskStore } from '../stores/taskStore';
 import { useMessage } from '@dailyuse/ui-vuetify';
-
 
 /**
  * 任务模板管理 Composable
@@ -97,7 +109,7 @@ export function useTaskTemplate() {
       taskStore.setLoading(true);
 
       // ✅ Service 直接返回实体对象
-      const template = await taskTemplateApplicationService.createTaskTemplate(request);
+      const template = await new CreateTaskTemplate().execute(request);
 
       // ✅ Composable 负责存储到 Store
       taskStore.addTaskTemplate(template);
@@ -134,7 +146,7 @@ export function useTaskTemplate() {
       taskStore.setLoading(true);
 
       // ✅ Service 直接返回实体对象数组
-      const templates = await taskTemplateApplicationService.getTaskTemplates(params);
+      const templates = await new ListTaskTemplates().execute(params);
 
       // ✅ Composable 负责存储到 Store
       taskStore.setTaskTemplates(templates);
@@ -168,7 +180,7 @@ export function useTaskTemplate() {
       }
 
       // ✅ Service 直接返回实体对象
-      const template = await taskTemplateApplicationService.getTaskTemplateById(uuid);
+      const template = await new GetTaskTemplate().execute(uuid);
 
       // ✅ Composable 负责存储到 Store
       taskStore.addTaskTemplate(template);
@@ -204,7 +216,7 @@ export function useTaskTemplate() {
       taskStore.setLoading(true);
 
       // ✅ Service 返回 void 或抛出错误
-      await taskTemplateApplicationService.deleteTaskTemplate(uuid);
+      await new DeleteTaskTemplate().execute(uuid);
 
       // ✅ Composable 负责从 Store 移除
       taskStore.removeTaskTemplate(uuid);
@@ -235,16 +247,16 @@ export function useTaskTemplate() {
       taskStore.setLoading(true);
 
       // ✅ Service 返回模板和生成的实例
-      const { template, instances } = await taskTemplateApplicationService.activateTaskTemplate(uuid);
+      const { template, instances } = await new ActivateTaskTemplate().execute(uuid);
 
       // ✅ Composable 负责更新 Store
       taskStore.updateTaskTemplate(uuid, template);
-      
+
       // 同步 instances 到 store
       if (instances.length > 0) {
         taskStore.setTaskInstances(instances);
       }
-      
+
       taskStore.updateLastSyncTime();
 
       // ✅ 全局通知
@@ -273,7 +285,7 @@ export function useTaskTemplate() {
       taskStore.setLoading(true);
 
       // ✅ Service 直接返回实体对象
-      const template = await taskTemplateApplicationService.pauseTaskTemplate(uuid);
+      const template = await new PauseTaskTemplate().execute(uuid);
 
       // ✅ Composable 负责更新 Store
       taskStore.updateTaskTemplate(uuid, template);
@@ -306,7 +318,9 @@ export function useTaskTemplate() {
     limit?: number;
     status?: string;
   }): Promise<never> {
-    throw new Error('searchTaskTemplates is not supported - use fetchTaskTemplates with filters instead');
+    throw new Error(
+      'searchTaskTemplates is not supported - use fetchTaskTemplates with filters instead',
+    );
   }
 
   // ===== 工具方法 =====
@@ -400,4 +414,3 @@ export function useTaskTemplateData() {
     })),
   };
 }
-

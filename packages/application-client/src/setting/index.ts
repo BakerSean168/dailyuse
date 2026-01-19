@@ -7,4 +7,7 @@
  * - Import/Export settings
  */
 
+// Smart Container
+export { SettingApplicationService, settingApplicationService } from './setting-application.service';
+
 export * from './services';

@@ -6,7 +6,10 @@
  */
 
 // ===== Application Layer =====
-export { AccountApplicationService } from './application/services/AccountApplicationService';
+export {
+  AccountApplicationService,
+  accountApplicationService,
+} from '@dailyuse/application-client/account';
 
 // ===== Presentation Layer =====
 // Hooks

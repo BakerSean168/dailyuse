@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { getSyncService } from '../../application/services';
+import { syncApplicationService } from '@dailyuse/application-client/sync';
 import type { SyncStatusResponse } from '@dailyuse/contracts/sync';
 
 export interface UseSyncStatusResult {
@@ -27,7 +27,7 @@ export function useSyncStatus(): UseSyncStatusResult {
     try {
       setLoading(true);
       setError(null);
-      const result = await getSyncService().getStatus();
+      const result = await syncApplicationService.getStatus();
       setStatus(result);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));

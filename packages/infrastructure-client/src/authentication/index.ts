@@ -11,6 +11,9 @@ export {
   type IAuthTokenStorage,
 } from './auth.container';
 
+// Core API Clients (Framework-agnostic)
+export { AuthApiClient, type IHttpClient, type IPublicHttpClient } from './authApiClient';
+
 // Ports (Interfaces)
 export { type IAuthApiClient, type RegisterResponse } from './ports/auth-api-client.port';
 
@@ -25,3 +28,4 @@ export {
   AuthIpcAdapter,
   createAuthIpcAdapter,
 } from './adapters/ipc/auth-ipc.adapter';
+

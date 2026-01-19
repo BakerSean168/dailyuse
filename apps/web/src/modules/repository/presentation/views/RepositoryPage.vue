@@ -183,8 +183,10 @@ import { ref, computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRepositoryStore } from '../stores/repositoryStore';
 import { useMessage, useGlobalLoading } from '@dailyuse/ui-vuetify';
-import { repositoryManagementService } from '../../application/services/RepositoryManagementApplicationService';
-import { resourceManagementService } from '../../application/services/ResourceManagementApplicationService';
+import { repositoryApplicationService } from '@dailyuse/application-client/repository';
+
+const repositoryManagementService = repositoryApplicationService;
+const resourceManagementService = repositoryApplicationService;
 import RepositoryManagementDialog from '../components/dialogs/RepositoryManagementDialog.vue';
 import RepoHeader from '../components/RepoHeader.vue';
 

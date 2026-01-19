@@ -65,6 +65,31 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     await this.httpClient.delete(`${this.baseUrl}/${uuid}`);
   }
 
+  // ===== 方法别名（为了兼容 View 层调用）=====
+
+  async create(request: CreateTaskTemplateRequest): Promise<TaskTemplateClientDTO> {
+    return this.createTaskTemplate(request);
+  }
+
+  async getByUuid(uuid: string): Promise<TaskTemplateClientDTO> {
+    return this.getTaskTemplateById(uuid);
+  }
+
+  async update(
+    uuid: string,
+    request: UpdateTaskTemplateRequest,
+  ): Promise<TaskTemplateClientDTO> {
+    return this.updateTaskTemplate(uuid, request);
+  }
+
+  // ===== 特殊查询方法 =====
+
+  async getTasksWithPrioritySorting(params?: {
+    limit?: number;
+  }): Promise<TaskTemplateClientDTO[]> {
+    return this.httpClient.get(`${this.baseUrl}/by-priority`, { params });
+  }
+
   // ===== Task Template 状态管理 =====
 
   async activateTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {

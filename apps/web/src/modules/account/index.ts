@@ -11,7 +11,7 @@ export * from './infrastructure/api';
 
 // 展示层
 export { useAccountStore } from './presentation/stores/accountStore';
-export { useAccount } from './presentation/composables/useAccount';
+export { useAccountProfile, useAccountSubscription } from './presentation/composables';
 
 // 初始化
 export { registerAccountInitializationTasks } from './initialization/accountInitialization';

@@ -5,8 +5,11 @@
  */
 
 import { useState } from 'react';
-import { scheduleApplicationService } from '../../application/services/ScheduleApplicationService';
-import type { CreateScheduleTaskRequest, ScheduleConfigServerDTO } from '@dailyuse/contracts/schedule';
+import { scheduleApplicationService } from '@dailyuse/application-client/schedule';
+import type {
+  CreateScheduleTaskRequest,
+  ScheduleConfigServerDTO,
+} from '@dailyuse/contracts/schedule';
 import { SourceModule, Timezone } from '@dailyuse/contracts/schedule';
 
 interface ScheduleCreateDialogProps {
@@ -21,12 +24,12 @@ function getCronExpression(type: ScheduleType, scheduledTime?: string): string {
   if (type === 'cron') {
     return '0 9 * * *'; // Default: every day at 9:00
   }
-  
+
   // Parse time from scheduledTime if available
   const date = scheduledTime ? new Date(scheduledTime) : new Date();
   const minute = date.getMinutes();
   const hour = date.getHours();
-  
+
   switch (type) {
     case 'once':
       // For one-time, we use the exact date/time as cron
@@ -75,9 +78,8 @@ export function ScheduleCreateDialog({ onClose, onCreated }: ScheduleCreateDialo
       setLoading(true);
 
       // Build cron expression based on schedule type
-      const finalCronExpression = scheduleType === 'cron' 
-        ? cronExpression 
-        : getCronExpression(scheduleType, scheduledTime);
+      const finalCronExpression =
+        scheduleType === 'cron' ? cronExpression : getCronExpression(scheduleType, scheduledTime);
 
       const scheduleConfig: ScheduleConfigServerDTO = {
         cronExpression: finalCronExpression,
@@ -110,10 +112,7 @@ export function ScheduleCreateDialog({ onClose, onCreated }: ScheduleCreateDialo
       <div className="bg-background border rounded-lg shadow-lg w-full max-w-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">新建调度任务</h2>
-          <button
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground"
-          >
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             ✕
           </button>
         </div>
@@ -206,9 +205,7 @@ export function ScheduleCreateDialog({ onClose, onCreated }: ScheduleCreateDialo
 
           {/* Error */}
           {error && (
-            <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">
-              {error}
-            </div>
+            <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">{error}</div>
           )}
 
           {/* Actions */}

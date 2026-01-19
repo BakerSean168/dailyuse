@@ -9,7 +9,7 @@
 
 import { useCallback } from 'react';
 import { useFocusStore } from '../stores/focusStore';
-import { focusApplicationService } from '../../application/services';
+import { goalApplicationService } from '@dailyuse/application-client/goal';
 import type {
   FocusSessionClientDTO,
   FocusStatusDTO,
@@ -48,7 +48,7 @@ export interface UseFocusReturn {
 // ===== Hook Implementation =====
 
 export function useFocus(): UseFocusReturn {
-  // ===== Store State =====
+  // ===== Store State (只订阅数据，不订阅 actions) =====
   const currentSession = useFocusStore((s) => s.currentSession);
   const isActive = useFocusStore((s) => s.isActive);
   const isPaused = useFocusStore((s) => s.isPaused);
@@ -59,134 +59,128 @@ export function useFocus(): UseFocusReturn {
   const error = useFocusStore((s) => s.error);
   const defaultDuration = useFocusStore((s) => s.defaultDuration);
 
-  // ===== Store Actions =====
-  const setCurrentSession = useFocusStore((s) => s.setCurrentSession);
-  const setRemainingTime = useFocusStore((s) => s.setRemainingTime);
-  const setTodayHistory = useFocusStore((s) => s.setTodayHistory);
-  const setWeekHistory = useFocusStore((s) => s.setWeekHistory);
-  const setLoading = useFocusStore((s) => s.setLoading);
-  const setError = useFocusStore((s) => s.setError);
+  // ===== Query =====
+  // 所有 useCallback 使用空依赖，在函数内部调用 getState() 获取最新 store
 
   // ===== Actions =====
 
   const startFocus = useCallback(
     async (goalUuid: string, duration?: number): Promise<FocusSessionClientDTO> => {
-      setLoading(true);
-      setError(null);
+      const store = useFocusStore.getState();
+      store.setLoading(true);
+      store.setError(null);
 
       try {
-        const session = await focusApplicationService.startSession({
+        const session = await goalApplicationService.startFocusSession({
           goalUuid,
-          durationMinutes: duration ?? defaultDuration,
+          durationMinutes: duration ?? store.defaultDuration,
         });
 
-        setCurrentSession(session);
-        setRemainingTime(session.durationMinutes * 60);
+        store.setCurrentSession(session);
+        store.setRemainingTime(session.durationMinutes * 60);
 
         return session;
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Failed to start focus';
-        setError(message);
+        store.setError(message);
         throw e;
       } finally {
-        setLoading(false);
+        store.setLoading(false);
       }
     },
-    [defaultDuration, setCurrentSession, setRemainingTime, setLoading, setError]
+    [],
   );
 
   const pauseFocus = useCallback(async (): Promise<void> => {
-    setLoading(true);
+    const store = useFocusStore.getState();
+    store.setLoading(true);
 
     try {
-      const session = await focusApplicationService.pauseSession();
-      setCurrentSession(session);
+      const session = await goalApplicationService.pauseFocusSession();
+      store.setCurrentSession(session);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to pause focus');
+      store.setError(e instanceof Error ? e.message : 'Failed to pause focus');
       throw e;
     } finally {
-      setLoading(false);
+      store.setLoading(false);
     }
-  }, [setCurrentSession, setLoading, setError]);
+  }, []);
 
   const resumeFocus = useCallback(async (): Promise<void> => {
-    setLoading(true);
+    const store = useFocusStore.getState();
+    store.setLoading(true);
 
     try {
-      const session = await focusApplicationService.resumeSession();
-      setCurrentSession(session);
+      const session = await goalApplicationService.resumeFocusSession();
+      store.setCurrentSession(session);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to resume focus');
+      store.setError(e instanceof Error ? e.message : 'Failed to resume focus');
       throw e;
     } finally {
-      setLoading(false);
+      store.setLoading(false);
     }
-  }, [setCurrentSession, setLoading, setError]);
+  }, []);
 
-  const stopFocus = useCallback(
-    async (notes?: string): Promise<FocusSessionClientDTO | null> => {
-      setLoading(true);
+  const stopFocus = useCallback(async (notes?: string): Promise<FocusSessionClientDTO | null> => {
+    const store = useFocusStore.getState();
+    store.setLoading(true);
 
-      try {
-        const session = await focusApplicationService.stopSession(notes);
-        setCurrentSession(null);
-        setRemainingTime(null);
-        return session;
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Failed to stop focus');
-        throw e;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [setCurrentSession, setRemainingTime, setLoading, setError]
-  );
+    try {
+      const session = await goalApplicationService.stopFocusSession(notes);
+      store.setCurrentSession(null);
+      store.setRemainingTime(null);
+      return session;
+    } catch (e) {
+      store.setError(e instanceof Error ? e.message : 'Failed to stop focus');
+      throw e;
+    } finally {
+      store.setLoading(false);
+    }
+  }, []);
 
   const refreshStatus = useCallback(async (): Promise<void> => {
+    const store = useFocusStore.getState();
     try {
-      const status: FocusStatusDTO = await focusApplicationService.getStatus();
+      const status: FocusStatusDTO = await goalApplicationService.getFocusStatus();
 
       if (status.session) {
-        setCurrentSession(status.session);
+        store.setCurrentSession(status.session);
         if (status.remainingSeconds !== undefined) {
-          setRemainingTime(status.remainingSeconds);
+          store.setRemainingTime(status.remainingSeconds);
         }
       } else {
-        setCurrentSession(null);
-        setRemainingTime(null);
+        store.setCurrentSession(null);
+        store.setRemainingTime(null);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to refresh status');
+      store.setError(e instanceof Error ? e.message : 'Failed to refresh status');
     }
-  }, [setCurrentSession, setRemainingTime, setError]);
+  }, []);
 
-  const fetchTodayHistory = useCallback(
-    async (goalUuid?: string): Promise<void> => {
-      try {
-        const history = await focusApplicationService.getTodayHistory(goalUuid);
-        setTodayHistory(history);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Failed to fetch today history');
-      }
-    },
-    [setTodayHistory, setError]
-  );
+  const fetchTodayHistory = useCallback(async (goalUuid?: string): Promise<void> => {
+    const store = useFocusStore.getState();
+    try {
+      const history = await goalApplicationService.getFocusHistory({ range: 'today', goalUuid });
+      store.setTodayHistory(history);
+    } catch (e) {
+      store.setError(e instanceof Error ? e.message : 'Failed to fetch today history');
+    }
+  }, []);
 
-  const fetchWeekHistory = useCallback(
-    async (goalUuid?: string): Promise<void> => {
-      try {
-        const history = await focusApplicationService.getWeekHistory(goalUuid);
-        setWeekHistory(history);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Failed to fetch week history');
-      }
-    },
-    [setWeekHistory, setError]
-  );
+  const fetchWeekHistory = useCallback(async (goalUuid?: string): Promise<void> => {
+    const store = useFocusStore.getState();
+    try {
+      const history = await goalApplicationService.getFocusHistory({ range: 'week', goalUuid });
+      store.setWeekHistory(history);
+    } catch (e) {
+      store.setError(e instanceof Error ? e.message : 'Failed to fetch week history');
+    }
+  }, []);
 
   const clearError = useCallback(() => {
-    setError(null);
-  }, [setError]);
+    const store = useFocusStore.getState();
+    store.setError(null);
+  }, []);
 
   return {
     // State

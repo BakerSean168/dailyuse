@@ -4,6 +4,9 @@
  * Re-exports all reminder-related application services.
  */
 
+// Smart Container
+export { ReminderApplicationService, reminderApplicationService } from './reminder-application.service';
+
 export { ReminderContainer } from '@dailyuse/infrastructure-client';
 
 export {

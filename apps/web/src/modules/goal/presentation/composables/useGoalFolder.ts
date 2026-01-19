@@ -12,7 +12,12 @@
 import { ref, computed, readonly } from 'vue';
 import type { CreateGoalFolderRequest, UpdateGoalFolderRequest } from '@dailyuse/contracts/goal';
 import type { GoalFolder } from '@dailyuse/domain-client/goal';
-import { goalFolderApplicationService } from '../../application/services';
+import {
+  CreateGoalFolder,
+  ListGoalFolders,
+  UpdateGoalFolder,
+  DeleteGoalFolder,
+} from '@dailyuse/application-client/goal';
 import { getGoalStore } from '../stores/goalStore';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
@@ -49,7 +54,7 @@ export function useGoalFolder() {
       goalStore.setLoading(true);
 
       // ✅ Service 直接返回实体对象数组
-      const folders = await goalFolderApplicationService.getGoalFolders();
+      const folders = await new ListGoalFolders().execute();
 
       // ✅ Composable 负责存储到 Store
       goalStore.setGoalFolders(folders);
@@ -100,7 +105,7 @@ export function useGoalFolder() {
       goalStore.setLoading(true);
 
       // ✅ Service 直接返回实体对象
-      const folder = await goalFolderApplicationService.createGoalFolder(data);
+      const folder = await new CreateGoalFolder().execute(data);
 
       // ✅ Composable 负责存储到 Store
       goalStore.addOrUpdateGoalFolder(folder);
@@ -131,7 +136,7 @@ export function useGoalFolder() {
       goalStore.setLoading(true);
 
       // ✅ Service 直接返回实体对象
-      const folder = await goalFolderApplicationService.updateGoalFolder(uuid, data);
+      const folder = await new UpdateGoalFolder().execute(uuid, data);
 
       // ✅ Composable 负责更新 Store
       goalStore.addOrUpdateGoalFolder(folder);
@@ -163,7 +168,7 @@ export function useGoalFolder() {
       goalStore.setLoading(true);
 
       // ✅ Service 返回 void 或抛出错误
-      await goalFolderApplicationService.deleteGoalFolder(uuid);
+      await new DeleteGoalFolder().execute(uuid);
 
       // ✅ Composable 负责从 Store 移除
       goalStore.removeGoalFolder(uuid);
@@ -213,4 +218,3 @@ export function useGoalFolder() {
     clearError,
   };
 }
-

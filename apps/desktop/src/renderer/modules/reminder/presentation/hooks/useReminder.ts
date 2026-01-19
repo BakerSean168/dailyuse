@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { reminderApplicationService } from '../../application/services';
+import { reminderApplicationService } from '@dailyuse/application-client/reminder';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
@@ -121,7 +121,10 @@ export function useReminder(): UseReminderReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const template = await reminderApplicationService.updateReminderTemplate(input.uuid, input.request);
+      const template = await reminderApplicationService.updateReminderTemplate(
+        input.uuid,
+        input.request,
+      );
       setState((prev) => ({
         ...prev,
         templates: prev.templates.map((t) => (t.uuid === input.uuid ? template : t)),
@@ -260,9 +263,12 @@ export function useReminder(): UseReminderReturn {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  const refresh = useCallback(async (accountUuid: string) => {
-    await Promise.all([loadTemplates(accountUuid), loadGroups(accountUuid)]);
-  }, [loadTemplates, loadGroups]);
+  const refresh = useCallback(
+    async (accountUuid: string) => {
+      await Promise.all([loadTemplates(accountUuid), loadGroups(accountUuid)]);
+    },
+    [loadTemplates, loadGroups],
+  );
 
   // Note: Auto-loading removed - call loadTemplates/loadGroups manually with accountUuid
 

@@ -1,7 +1,7 @@
 /**
  * Task Statistics Composable
  * 任务统计相关的组合式函数
- * 
+ *
  * 🔄 重构说明（方案 A - 简化版）：
  * - Composable 负责协调 ApplicationService 和 Store
  * - Service 直接返回数据或抛出错误
@@ -9,7 +9,7 @@
  */
 
 import { ref, computed, readonly } from 'vue';
-import { taskStatisticsApplicationService } from '../../application/services';
+import { GetTaskStatistics } from '@dailyuse/application-client/task';
 import { useTaskStore } from '../stores/taskStore';
 import { useMessage } from '@dailyuse/ui-vuetify';
 

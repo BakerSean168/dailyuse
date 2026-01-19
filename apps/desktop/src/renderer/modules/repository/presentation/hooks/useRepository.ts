@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { repositoryApplicationService } from '../../application/services/RepositoryApplicationService';
+import { repositoryApplicationService } from '@dailyuse/application-client/repository';
 import type {
   RepositoryClientDTO,
   FolderClientDTO,
@@ -27,7 +27,11 @@ interface UseRepositoryReturn extends RepositoryState {
   // Repository operations
   loadRepositories: () => Promise<void>;
   selectRepository: (uuid: string) => Promise<void>;
-  createRepository: (name: string, type: string, description?: string) => Promise<RepositoryClientDTO | null>;
+  createRepository: (
+    name: string,
+    type: string,
+    description?: string,
+  ) => Promise<RepositoryClientDTO | null>;
   deleteRepository: (uuid: string) => Promise<void>;
 
   // Folder operations
@@ -83,100 +87,95 @@ export function useRepository(): UseRepositoryReturn {
   }, []);
 
   // Select a repository
-  const selectRepository = useCallback(
-    async (uuid: string) => {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+  const selectRepository = useCallback(async (uuid: string) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      try {
-        const repository = await repositoryApplicationService.getRepository(uuid);
-        const fileTree = await repositoryApplicationService.getFileTree(uuid);
+    try {
+      const repository = await repositoryApplicationService.getRepository(uuid);
+      const fileTree = await repositoryApplicationService.getFileTree(uuid);
 
-        // Extract folders and resources from tree
-        const extractedFolders: FolderClientDTO[] = [];
-        const extractedResources: ResourceClientDTO[] = [];
+      // Extract folders and resources from tree
+      const extractedFolders: FolderClientDTO[] = [];
+      const extractedResources: ResourceClientDTO[] = [];
 
-        // Traverse tree to extract items (simplified - root level only)
-        if (fileTree.tree) {
-          for (const node of fileTree.tree) {
-            if (node.type === 'folder') {
-              extractedFolders.push({
-                uuid: node.uuid,
-                repositoryUuid: node.repositoryUuid,
-                parentUuid: node.parentUuid || undefined,
-                name: node.name,
-                path: node.path,
-              } as FolderClientDTO);
-            }
+      // Traverse tree to extract items (simplified - root level only)
+      if (fileTree.tree) {
+        for (const node of fileTree.tree) {
+          if (node.type === 'folder') {
+            extractedFolders.push({
+              uuid: node.uuid,
+              repositoryUuid: node.repositoryUuid,
+              parentUuid: node.parentUuid || undefined,
+              name: node.name,
+              path: node.path,
+            } as FolderClientDTO);
           }
         }
-
-        setState((prev) => ({
-          ...prev,
-          currentRepository: repository,
-          currentFolder: null,
-          folders: extractedFolders,
-          resources: extractedResources,
-          loading: false,
-        }));
-      } catch (e) {
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: (e as Error).message,
-        }));
       }
-    },
-    []
-  );
+
+      setState((prev) => ({
+        ...prev,
+        currentRepository: repository,
+        currentFolder: null,
+        folders: extractedFolders,
+        resources: extractedResources,
+        loading: false,
+      }));
+    } catch (e) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: (e as Error).message,
+      }));
+    }
+  }, []);
 
   // Create repository
-  const createRepository = useCallback(
-    async (name: string, type: string, description?: string) => {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+  const createRepository = useCallback(async (name: string, type: string, description?: string) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      try {
-        const repository = await repositoryApplicationService.createRepository({ name, type, description });
-        setState((prev) => ({
-          ...prev,
-          repositories: [...prev.repositories, repository],
-          loading: false,
-        }));
-        return repository;
-      } catch (e) {
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: (e as Error).message,
-        }));
-        return null;
-      }
-    },
-    []
-  );
+    try {
+      const repository = await repositoryApplicationService.createRepository({
+        name,
+        type,
+        description,
+      });
+      setState((prev) => ({
+        ...prev,
+        repositories: [...prev.repositories, repository],
+        loading: false,
+      }));
+      return repository;
+    } catch (e) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: (e as Error).message,
+      }));
+      return null;
+    }
+  }, []);
 
   // Delete repository
-  const deleteRepository = useCallback(
-    async (uuid: string) => {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+  const deleteRepository = useCallback(async (uuid: string) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      try {
-        await repositoryApplicationService.deleteRepository(uuid);
-        setState((prev) => ({
-          ...prev,
-          repositories: prev.repositories.filter((r) => r.uuid !== uuid),
-          currentRepository: prev.currentRepository?.uuid === uuid ? null : prev.currentRepository,
-          loading: false,
-        }));
-      } catch (e) {
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: (e as Error).message,
-        }));
-      }
-    },
-    []
-  );
+    try {
+      await repositoryApplicationService.deleteRepository(uuid);
+      setState((prev) => ({
+        ...prev,
+        repositories: prev.repositories.filter((r) => r.uuid !== uuid),
+        currentRepository: prev.currentRepository?.uuid === uuid ? null : prev.currentRepository,
+        loading: false,
+      }));
+    } catch (e) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: (e as Error).message,
+      }));
+    }
+  }, []);
 
   // Select folder
   const selectFolder = useCallback(
@@ -203,7 +202,7 @@ export function useRepository(): UseRepositoryReturn {
         }));
       }
     },
-    [state.folders]
+    [state.folders],
   );
 
   // Create folder
@@ -235,31 +234,28 @@ export function useRepository(): UseRepositoryReturn {
         return null;
       }
     },
-    [state.currentRepository]
+    [state.currentRepository],
   );
 
   // Rename folder
-  const renameFolder = useCallback(
-    async (uuid: string, name: string) => {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+  const renameFolder = useCallback(async (uuid: string, name: string) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      try {
-        const updated = await repositoryApplicationService.renameFolder(uuid, name);
-        setState((prev) => ({
-          ...prev,
-          folders: prev.folders.map((f) => (f.uuid === uuid ? updated : f)),
-          loading: false,
-        }));
-      } catch (e) {
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: (e as Error).message,
-        }));
-      }
-    },
-    []
-  );
+    try {
+      const updated = await repositoryApplicationService.renameFolder(uuid, name);
+      setState((prev) => ({
+        ...prev,
+        folders: prev.folders.map((f) => (f.uuid === uuid ? updated : f)),
+        loading: false,
+      }));
+    } catch (e) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: (e as Error).message,
+      }));
+    }
+  }, []);
 
   // Move folder
   const moveFolder = useCallback(
@@ -282,117 +278,102 @@ export function useRepository(): UseRepositoryReturn {
         }));
       }
     },
-    [state.currentFolder, state.currentRepository, selectFolder, selectRepository]
+    [state.currentFolder, state.currentRepository, selectFolder, selectRepository],
   );
 
   // Delete folder
-  const deleteFolder = useCallback(
-    async (uuid: string) => {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+  const deleteFolder = useCallback(async (uuid: string) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      try {
-        await repositoryApplicationService.deleteFolder(uuid);
-        setState((prev) => ({
-          ...prev,
-          folders: prev.folders.filter((f) => f.uuid !== uuid),
-          loading: false,
-        }));
-      } catch (e) {
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: (e as Error).message,
-        }));
-      }
-    },
-    []
-  );
+    try {
+      await repositoryApplicationService.deleteFolder(uuid);
+      setState((prev) => ({
+        ...prev,
+        folders: prev.folders.filter((f) => f.uuid !== uuid),
+        loading: false,
+      }));
+    } catch (e) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: (e as Error).message,
+      }));
+    }
+  }, []);
 
   // Get resource
-  const getResource = useCallback(
-    async (uuid: string) => {
-      try {
-        return await repositoryApplicationService.getResource(uuid);
-      } catch (e) {
-        setState((prev) => ({
-          ...prev,
-          error: (e as Error).message,
-        }));
-        return null;
-      }
-    },
-    []
-  );
+  const getResource = useCallback(async (uuid: string) => {
+    try {
+      return await repositoryApplicationService.getResource(uuid);
+    } catch (e) {
+      setState((prev) => ({
+        ...prev,
+        error: (e as Error).message,
+      }));
+      return null;
+    }
+  }, []);
 
   // Rename resource
-  const renameResource = useCallback(
-    async (uuid: string, name: string) => {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+  const renameResource = useCallback(async (uuid: string, name: string) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      try {
-        const updated = await repositoryApplicationService.renameResource(uuid, name);
-        setState((prev) => ({
-          ...prev,
-          resources: prev.resources.map((r) => (r.uuid === uuid ? updated : r)),
-          loading: false,
-        }));
-      } catch (e) {
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: (e as Error).message,
-        }));
-      }
-    },
-    []
-  );
+    try {
+      const updated = await repositoryApplicationService.renameResource(uuid, name);
+      setState((prev) => ({
+        ...prev,
+        resources: prev.resources.map((r) => (r.uuid === uuid ? updated : r)),
+        loading: false,
+      }));
+    } catch (e) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: (e as Error).message,
+      }));
+    }
+  }, []);
 
   // Move resource
-  const moveResource = useCallback(
-    async (uuid: string, targetFolderUuid: string) => {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+  const moveResource = useCallback(async (uuid: string, targetFolderUuid: string) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      try {
-        await repositoryApplicationService.moveResource(uuid, targetFolderUuid);
-        // Remove from current list
-        setState((prev) => ({
-          ...prev,
-          resources: prev.resources.filter((r) => r.uuid !== uuid),
-          loading: false,
-        }));
-      } catch (e) {
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: (e as Error).message,
-        }));
-      }
-    },
-    []
-  );
+    try {
+      await repositoryApplicationService.moveResource(uuid, targetFolderUuid);
+      // Remove from current list
+      setState((prev) => ({
+        ...prev,
+        resources: prev.resources.filter((r) => r.uuid !== uuid),
+        loading: false,
+      }));
+    } catch (e) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: (e as Error).message,
+      }));
+    }
+  }, []);
 
   // Delete resource
-  const deleteResource = useCallback(
-    async (uuid: string) => {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+  const deleteResource = useCallback(async (uuid: string) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      try {
-        await repositoryApplicationService.deleteResource(uuid);
-        setState((prev) => ({
-          ...prev,
-          resources: prev.resources.filter((r) => r.uuid !== uuid),
-          loading: false,
-        }));
-      } catch (e) {
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: (e as Error).message,
-        }));
-      }
-    },
-    []
-  );
+    try {
+      await repositoryApplicationService.deleteResource(uuid);
+      setState((prev) => ({
+        ...prev,
+        resources: prev.resources.filter((r) => r.uuid !== uuid),
+        loading: false,
+      }));
+    } catch (e) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: (e as Error).message,
+      }));
+    }
+  }, []);
 
   // Search
   const search = useCallback(
@@ -406,12 +387,20 @@ export function useRepository(): UseRepositoryReturn {
           mode: 'all',
         });
         // Convert SearchResultItems to ResourceClientDTOs
-        return result.results.map((item: { resourceUuid: string; resourceName: string; resourcePath: string; resourceType: string }) => ({
-          uuid: item.resourceUuid,
-          name: item.resourceName,
-          path: item.resourcePath,
-          type: item.resourceType,
-        } as unknown as ResourceClientDTO));
+        return result.results.map(
+          (item: {
+            resourceUuid: string;
+            resourceName: string;
+            resourcePath: string;
+            resourceType: string;
+          }) =>
+            ({
+              uuid: item.resourceUuid,
+              name: item.resourceName,
+              path: item.resourcePath,
+              type: item.resourceType,
+            }) as unknown as ResourceClientDTO,
+        );
       } catch (e) {
         setState((prev) => ({
           ...prev,
@@ -420,7 +409,7 @@ export function useRepository(): UseRepositoryReturn {
         return [];
       }
     },
-    [state.currentRepository]
+    [state.currentRepository],
   );
 
   // Go to root
@@ -439,7 +428,13 @@ export function useRepository(): UseRepositoryReturn {
     } else {
       await loadRepositories();
     }
-  }, [state.currentFolder, state.currentRepository, selectFolder, selectRepository, loadRepositories]);
+  }, [
+    state.currentFolder,
+    state.currentRepository,
+    selectFolder,
+    selectRepository,
+    loadRepositories,
+  ]);
 
   // Initial load
   useEffect(() => {

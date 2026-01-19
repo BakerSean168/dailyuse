@@ -10,3 +10,8 @@ export { MarkAllAsRead } from './mark-all-as-read';
 export { DeleteNotification } from './delete-notification';
 export { BatchDeleteNotifications } from './batch-delete-notifications';
 export { GetUnreadCount } from './get-unread-count';
+
+// Web-specific services
+export { InAppNotificationService } from './InAppNotificationService';
+export { NotificationApplicationService } from './NotificationApplicationService';
+export { NotificationService } from './NotificationService';

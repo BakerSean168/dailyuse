@@ -93,7 +93,9 @@
 import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGeneration';
-import { taskTemplateApiClient } from '@/modules/task/infrastructure/api/taskApiClient';
+import { getTaskTemplateApiClient } from '@dailyuse/infrastructure-client';
+
+const taskTemplateApiClient = getTaskTemplateApiClient();
 import { useMessage } from '@dailyuse/ui-vuetify';
 import { useTaskStore } from '@/modules/task/presentation/stores/taskStore';
 import { TaskType, TimeType } from '@dailyuse/contracts/task';

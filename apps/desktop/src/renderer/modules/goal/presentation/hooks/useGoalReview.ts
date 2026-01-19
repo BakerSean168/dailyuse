@@ -2,7 +2,7 @@
  * useGoalReview Hook
  *
  * 目标复盘管理 Hook - 处理复盘记录的 CRUD 操作
- * 
+ *
  * EPIC-015 重构: 与 Store 集成，使用 Entity 类型
  * - 使用 useGoalStore 作为状态源
  * - 返回 Entity 类型（GoalReview）
@@ -11,12 +11,9 @@
 
 import { useState, useCallback } from 'react';
 import { useGoalStore } from '../stores/goalStore';
-import { goalApplicationService } from '../../application/services';
+import { goalApplicationService } from '@dailyuse/application-client/goal';
 import type { GoalReview } from '@dailyuse/domain-client/goal';
-import type { 
-  CreateGoalReviewRequest,
-  UpdateGoalReviewRequest,
-} from '@dailyuse/contracts/goal';
+import type { CreateGoalReviewRequest, UpdateGoalReviewRequest } from '@dailyuse/contracts/goal';
 
 // ===== Types =====
 
@@ -36,7 +33,11 @@ export interface UseGoalReviewReturn {
 
   // Mutations
   createReview: (goalUuid: string, data: CreateReviewInput) => Promise<GoalReview>;
-  updateReview: (goalUuid: string, reviewUuid: string, data: UpdateReviewInput) => Promise<GoalReview>;
+  updateReview: (
+    goalUuid: string,
+    reviewUuid: string,
+    data: UpdateReviewInput,
+  ) => Promise<GoalReview>;
   deleteReview: (goalUuid: string, reviewUuid: string) => Promise<void>;
 
   // Editing State
@@ -64,85 +65,87 @@ export function useGoalReview(): UseGoalReviewReturn {
 
   // ===== Query =====
 
-  const loadReviews = useCallback(async (goalUuid: string): Promise<GoalReview[]> => {
-    storeSetLoading(true);
-    storeSetError(null);
+  const loadReviews = useCallback(
+    async (goalUuid: string): Promise<GoalReview[]> => {
+      storeSetLoading(true);
+      storeSetError(null);
 
-    try {
-      const result = await goalApplicationService.getReviews(goalUuid);
-      setReviews(result);
-      storeSetLoading(false);
-      return result;
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '加载复盘记录失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
-      throw e;
-    }
-  }, [storeSetLoading, storeSetError]);
+      try {
+        const result = await goalApplicationService.getReviews(goalUuid);
+        setReviews(result);
+        storeSetLoading(false);
+        return result;
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '加载复盘记录失败';
+        storeSetError(errorMessage);
+        storeSetLoading(false);
+        throw e;
+      }
+    },
+    [storeSetLoading, storeSetError],
+  );
 
   // ===== Mutations =====
 
-  const createReview = useCallback(async (
-    goalUuid: string,
-    data: CreateReviewInput
-  ): Promise<GoalReview> => {
-    storeSetLoading(true);
-    storeSetError(null);
+  const createReview = useCallback(
+    async (goalUuid: string, data: CreateReviewInput): Promise<GoalReview> => {
+      storeSetLoading(true);
+      storeSetError(null);
 
-    try {
-      const review = await goalApplicationService.createReview(goalUuid, data);
-      setReviews((prev) => [...prev, review]);
-      storeSetLoading(false);
-      return review;
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '创建复盘失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
-      throw e;
-    }
-  }, [storeSetLoading, storeSetError]);
+      try {
+        const review = await goalApplicationService.createReview(goalUuid, data);
+        setReviews((prev) => [...prev, review]);
+        storeSetLoading(false);
+        return review;
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '创建复盘失败';
+        storeSetError(errorMessage);
+        storeSetLoading(false);
+        throw e;
+      }
+    },
+    [storeSetLoading, storeSetError],
+  );
 
-  const updateReview = useCallback(async (
-    goalUuid: string,
-    reviewUuid: string,
-    data: UpdateReviewInput
-  ): Promise<GoalReview> => {
-    storeSetLoading(true);
-    storeSetError(null);
+  const updateReview = useCallback(
+    async (goalUuid: string, reviewUuid: string, data: UpdateReviewInput): Promise<GoalReview> => {
+      storeSetLoading(true);
+      storeSetError(null);
 
-    try {
-      const review = await goalApplicationService.updateReview(goalUuid, reviewUuid, data);
-      setReviews((prev) => prev.map((r) => (r.uuid === reviewUuid ? review : r)));
-      setEditingReviewState(null);
-      storeSetLoading(false);
-      return review;
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '更新复盘失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
-      throw e;
-    }
-  }, [storeSetLoading, storeSetError]);
+      try {
+        const review = await goalApplicationService.updateReview(goalUuid, reviewUuid, data);
+        setReviews((prev) => prev.map((r) => (r.uuid === reviewUuid ? review : r)));
+        setEditingReviewState(null);
+        storeSetLoading(false);
+        return review;
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '更新复盘失败';
+        storeSetError(errorMessage);
+        storeSetLoading(false);
+        throw e;
+      }
+    },
+    [storeSetLoading, storeSetError],
+  );
 
-  const deleteReview = useCallback(async (
-    goalUuid: string,
-    reviewUuid: string
-  ): Promise<void> => {
-    storeSetLoading(true);
-    storeSetError(null);
+  const deleteReview = useCallback(
+    async (goalUuid: string, reviewUuid: string): Promise<void> => {
+      storeSetLoading(true);
+      storeSetError(null);
 
-    try {
-      await goalApplicationService.deleteReview(goalUuid, reviewUuid);
-      setReviews((prev) => prev.filter((r) => r.uuid !== reviewUuid));
-      storeSetLoading(false);
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '删除复盘失败';
-      storeSetError(errorMessage);
-      storeSetLoading(false);
-      throw e;
-    }
-  }, [storeSetLoading, storeSetError]);
+      try {
+        await goalApplicationService.deleteReview(goalUuid, reviewUuid);
+        setReviews((prev) => prev.filter((r) => r.uuid !== reviewUuid));
+        storeSetLoading(false);
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '删除复盘失败';
+        storeSetError(errorMessage);
+        storeSetLoading(false);
+        throw e;
+      }
+    },
+    [storeSetLoading, storeSetError],
+  );
 
   // ===== Editing State =====
 

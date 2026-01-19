@@ -173,7 +173,9 @@
 import { ref, computed, onMounted } from 'vue';
 import { format, formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
+import { getReminderApiClient } from '@dailyuse/infrastructure-client';
+
+const reminderApiClient = getReminderApiClient();
 
 // ===== Props =====
 interface Props {

@@ -5,11 +5,8 @@
  */
 
 import { useState, useCallback } from 'react';
-import { aiApplicationService } from '../../application/services';
-import type {
-  CreateConversationRequest,
-  SendMessageRequest,
-} from '@dailyuse/contracts/ai';
+import { aiApplicationService } from '@dailyuse/application-client/ai';
+import type { CreateConversationRequest, SendMessageRequest } from '@dailyuse/contracts/ai';
 
 // Local type aliases for consistency with hook interface
 type CreateConversationInput = CreateConversationRequest;
@@ -61,16 +58,16 @@ export function useAIConversation(): UseAIConversationReturn {
    * 加载对话列表
    */
   const loadConversations = useCallback(async (input?: ListConversationsInput) => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       const result = await aiApplicationService.listConversations(input);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         conversations: result.conversations,
         loading: false,
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         loading: false,
         error: error instanceof Error ? error.message : '加载对话失败',
@@ -81,46 +78,49 @@ export function useAIConversation(): UseAIConversationReturn {
   /**
    * 创建对话
    */
-  const createConversation = useCallback(async (input: CreateConversationInput): Promise<AIConversation> => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-    try {
-      const conversation = await aiApplicationService.createConversation(input);
-      setState(prev => ({
-        ...prev,
-        conversations: [conversation, ...prev.conversations],
-        currentConversation: conversation,
-        messages: [],
-        loading: false,
-      }));
-      return conversation;
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: error instanceof Error ? error.message : '创建对话失败',
-      }));
-      throw error;
-    }
-  }, []);
+  const createConversation = useCallback(
+    async (input: CreateConversationInput): Promise<AIConversation> => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+      try {
+        const conversation = await aiApplicationService.createConversation(input);
+        setState((prev) => ({
+          ...prev,
+          conversations: [conversation, ...prev.conversations],
+          currentConversation: conversation,
+          messages: [],
+          loading: false,
+        }));
+        return conversation;
+      } catch (error) {
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          error: error instanceof Error ? error.message : '创建对话失败',
+        }));
+        throw error;
+      }
+    },
+    [],
+  );
 
   /**
    * 选择对话
    */
   const selectConversation = useCallback(async (conversationUuid: string) => {
-    setState(prev => ({ ...prev, loadingMessages: true, error: null }));
+    setState((prev) => ({ ...prev, loadingMessages: true, error: null }));
     try {
       const [conversation, messagesResult] = await Promise.all([
         aiApplicationService.getConversation(conversationUuid),
         aiApplicationService.listMessages(conversationUuid),
       ]);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         currentConversation: conversation,
         messages: messagesResult.messages || [],
         loadingMessages: false,
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         loadingMessages: false,
         error: error instanceof Error ? error.message : '加载对话失败',
@@ -134,17 +134,14 @@ export function useAIConversation(): UseAIConversationReturn {
   const updateConversation = useCallback(async (uuid: string, title: string) => {
     try {
       const updated = await aiApplicationService.updateConversation(uuid, { title });
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        conversations: prev.conversations.map(c =>
-          c.uuid === uuid ? updated : c
-        ),
-        currentConversation: prev.currentConversation?.uuid === uuid
-          ? updated
-          : prev.currentConversation,
+        conversations: prev.conversations.map((c) => (c.uuid === uuid ? updated : c)),
+        currentConversation:
+          prev.currentConversation?.uuid === uuid ? updated : prev.currentConversation,
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : '更新对话失败',
       }));
@@ -157,18 +154,15 @@ export function useAIConversation(): UseAIConversationReturn {
   const deleteConversation = useCallback(async (conversationUuid: string) => {
     try {
       await aiApplicationService.deleteConversation(conversationUuid);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        conversations: prev.conversations.filter(c => c.uuid !== conversationUuid),
-        currentConversation: prev.currentConversation?.uuid === conversationUuid
-          ? null
-          : prev.currentConversation,
-        messages: prev.currentConversation?.uuid === conversationUuid
-          ? []
-          : prev.messages,
+        conversations: prev.conversations.filter((c) => c.uuid !== conversationUuid),
+        currentConversation:
+          prev.currentConversation?.uuid === conversationUuid ? null : prev.currentConversation,
+        messages: prev.currentConversation?.uuid === conversationUuid ? [] : prev.messages,
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : '删除对话失败',
       }));
@@ -181,14 +175,12 @@ export function useAIConversation(): UseAIConversationReturn {
   const closeConversation = useCallback(async (conversationUuid: string) => {
     try {
       const updated = await aiApplicationService.closeConversation(conversationUuid);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        conversations: prev.conversations.map(c =>
-          c.uuid === conversationUuid ? updated : c
-        ),
+        conversations: prev.conversations.map((c) => (c.uuid === conversationUuid ? updated : c)),
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : '关闭对话失败',
       }));
@@ -201,14 +193,12 @@ export function useAIConversation(): UseAIConversationReturn {
   const archiveConversation = useCallback(async (conversationUuid: string) => {
     try {
       const updated = await aiApplicationService.archiveConversation(conversationUuid);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        conversations: prev.conversations.map(c =>
-          c.uuid === conversationUuid ? updated : c
-        ),
+        conversations: prev.conversations.map((c) => (c.uuid === conversationUuid ? updated : c)),
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : '归档对话失败',
       }));
@@ -218,28 +208,31 @@ export function useAIConversation(): UseAIConversationReturn {
   /**
    * 发送消息
    */
-  const sendMessage = useCallback(async (input: Omit<SendMessageInput, 'conversationUuid'>): Promise<AIMessage> => {
-    if (!state.currentConversation) {
-      throw new Error('没有选中的对话');
-    }
-    try {
-      const message = await aiApplicationService.sendMessage({
-        ...input,
-        conversationUuid: state.currentConversation.uuid,
-      });
-      setState(prev => ({
-        ...prev,
-        messages: [...prev.messages, message],
-      }));
-      return message;
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        error: error instanceof Error ? error.message : '发送消息失败',
-      }));
-      throw error;
-    }
-  }, [state.currentConversation]);
+  const sendMessage = useCallback(
+    async (input: Omit<SendMessageInput, 'conversationUuid'>): Promise<AIMessage> => {
+      if (!state.currentConversation) {
+        throw new Error('没有选中的对话');
+      }
+      try {
+        const message = await aiApplicationService.sendMessage({
+          ...input,
+          conversationUuid: state.currentConversation.uuid,
+        });
+        setState((prev) => ({
+          ...prev,
+          messages: [...prev.messages, message],
+        }));
+        return message;
+      } catch (error) {
+        setState((prev) => ({
+          ...prev,
+          error: error instanceof Error ? error.message : '发送消息失败',
+        }));
+        throw error;
+      }
+    },
+    [state.currentConversation],
+  );
 
   /**
    * 删除消息
@@ -247,12 +240,12 @@ export function useAIConversation(): UseAIConversationReturn {
   const deleteMessage = useCallback(async (messageUuid: string) => {
     try {
       await aiApplicationService.deleteMessage(messageUuid);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        messages: prev.messages.filter(m => m.uuid !== messageUuid),
+        messages: prev.messages.filter((m) => m.uuid !== messageUuid),
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : '删除消息失败',
       }));
@@ -263,7 +256,7 @@ export function useAIConversation(): UseAIConversationReturn {
    * 清空当前对话
    */
   const clearCurrentConversation = useCallback(() => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       currentConversation: null,
       messages: [],

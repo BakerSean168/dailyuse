@@ -173,7 +173,7 @@ import ReminderInstanceSidebar from '../components/ReminderInstanceSidebar.vue';
 // Composables
 import { useReminder } from '../composables/useReminder';
 import { useMessage } from '@dailyuse/ui-vuetify';
-import { reminderGroupApplicationService } from '../../application/services';
+import { reminderGroupApplicationService } from '@dailyuse/application-client/reminder';
 
 // 类型导入 - 使用 Contracts DTO
 import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';

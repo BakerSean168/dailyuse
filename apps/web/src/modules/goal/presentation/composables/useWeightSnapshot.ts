@@ -1,6 +1,12 @@
 import { ref, computed, reactive } from 'vue';
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, KeyResultWeightSnapshotServerDTO } from '@dailyuse/contracts/goal';
-import { WeightSnapshotWebApplicationService } from '../../application/services/WeightSnapshotWebApplicationService';
+import type {
+  GoalClientDTO,
+  KeyResultClientDTO,
+  CreateGoalRequest,
+  UpdateGoalRequest,
+  KeyResultWeightSnapshotServerDTO,
+} from '@dailyuse/contracts/goal';
+import { goalApplicationService as WeightSnapshotWebApplicationService } from '@dailyuse/application-client/goal';
 import { getGoalStore } from '../stores/goalStore';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
@@ -267,4 +273,3 @@ export function useWeightSnapshot() {
     hasMorePages,
   };
 }
-

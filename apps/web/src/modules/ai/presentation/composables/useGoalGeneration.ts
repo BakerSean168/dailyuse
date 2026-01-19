@@ -8,7 +8,7 @@
  */
 
 import { ref, type Ref, type ComputedRef } from 'vue';
-import { goalGenerationApplicationService } from '../../application/services/GoalGenerationApplicationService';
+import { GenerateGoal } from '@dailyuse/application-client/ai';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 import type { GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
@@ -61,14 +61,11 @@ export function useGoalGeneration(): UseGoalGenerationReturn {
     generatedGoal.value = null;
 
     try {
-      const response = await goalGenerationApplicationService.generateGoal(
-        params.idea,
-        {
-          context: params.context,
-          providerUuid: params.providerUuid,
-          category: params.category as any,
-        }
-      );
+      const response = await new GenerateGoal().execute(params.idea, {
+        context: params.context,
+        providerUuid: params.providerUuid,
+        category: params.category as any,
+      });
 
       generatedGoal.value = response.goal;
       tokenUsage.value = response.tokenUsage;

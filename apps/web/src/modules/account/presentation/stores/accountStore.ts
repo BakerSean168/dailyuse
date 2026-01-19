@@ -1,332 +1,181 @@
 /**
- * @file accountStore.ts
- * @description 账户 Store。管理当前账户、订阅、历史记录和统计等状态。
- * @author Jules (AI)
+ * Account Store - Pinia 状态管理
+ *
+ * 管理 Account 模块的所有状态
+ * - Vue 3 + Pinia（Web 应用专用）
+ * - 对应 desktop 应用的 Zustand store
+ *
+ * EPIC-018 重构:
+ * - 框架无关的 Service 只返回数据
+ * - Store 在 Composables 中被调用
+ * - Composables 处理 Store 更新和 UI 状态
+ *
+ * @module account/presentation/stores
  */
 
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
 import type {
   AccountDTO,
   SubscriptionDTO,
-  AccountHistoryServerDTO,
+  AccountHistoryDTO,
   AccountStatsResponseDTO,
-  AccountStatus,
-  SubscriptionPlan,
 } from '@dailyuse/contracts/account';
-import { AccountStatus as AccountStatusEnum, SubscriptionPlan as SubscriptionPlanEnum } from '@dailyuse/contracts/account';
+import {
+  AccountStatus as AccountStatusEnum,
+  SubscriptionPlan as SubscriptionPlanEnum,
+} from '@dailyuse/contracts/account';
 
-// 本地类型别名（无需导出，web 应用不生成 .d.ts）
-type AccountHistoryDTO = AccountHistoryServerDTO;
-type AccountStatsDTO = AccountStatsResponseDTO;
+// ============ State Interface ============
+export interface AccountState {
+  // 当前账户
+  currentAccount: AccountDTO | null;
 
-/**
- * Account Store - 状态管理
- * 职责：纯数据存储和缓存管理，不执行业务逻辑
- */
-export const useAccountStore = defineStore('account', () => {
-  // ===== 状态 =====
+  // 订阅信息
+  subscription: SubscriptionDTO | null;
 
-  /** 当前账户 (DTO 数据) */
-  const currentAccount = ref<AccountDTO | null>(null);
+  // 账户历史记录
+  accountHistory: AccountHistoryDTO[];
 
-  /** 订阅信息 (DTO 数据) */
-  const subscription = ref<SubscriptionDTO | null>(null);
+  // 账户统计
+  accountStats: AccountStatsResponseDTO | null;
 
-  /** 账户历史记录 (DTO 数据) */
-  const accountHistory = ref<AccountHistoryDTO[]>([]);
+  // UI 状态
+  isLoading: boolean;
+  error: string | null;
 
-  /** 账户统计 (DTO 数据) */
-  const accountStats = ref<AccountStatsDTO | null>(null);
+  // 已保存的账户列表（多账户支持）
+  savedAccounts: AccountDTO[];
+}
 
-  /** UI 状态: 加载中 */
-  const isLoading = ref(false);
-  /** UI 状态: 错误信息 */
-  const error = ref<string | null>(null);
+// ============ Store ============
+export const useAccountStore = defineStore('account', {
+  state: (): AccountState => ({
+    currentAccount: null,
+    subscription: null,
+    accountHistory: [],
+    accountStats: null,
+    isLoading: false,
+    error: null,
+    savedAccounts: [],
+  }),
 
-  /** 已保存的账户列表（用于记住多个账户） */
-  const savedAccounts = ref<AccountDTO[]>([]);
+  getters: {
+    // ========== 认证状态 ==========
+    isAuthenticated: (state) => state.currentAccount !== null,
 
-  // ===== 计算属性 =====
+    getCurrentAccountUuid: (state) => state.currentAccount?.uuid ?? null,
 
-  /**
-   * 是否已认证
-   */
-  const isAuthenticated = computed(() => !!currentAccount.value);
+    // ========== 账户状态 ==========
+    getAccountStatus: (state) => state.currentAccount?.status ?? null,
 
-  /**
-   * 当前账户 UUID
-   */
-  const currentAccountUuid = computed(() => currentAccount.value?.uuid ?? null);
+    isActiveAccount: (state) => state.currentAccount?.status === AccountStatusEnum.ACTIVE,
 
-  /**
-   * 当前账户状态
-   */
-  const accountStatus = computed(() => currentAccount.value?.status ?? null);
+    isDeactivatedAccount: (state) => state.currentAccount?.status === AccountStatusEnum.INACTIVE,
 
-  /**
-   * 是否为活跃账户
-   */
-  const isActiveAccount = computed(
-    () => currentAccount.value?.status === AccountStatusEnum.ACTIVE,
-  );
+    isSuspendedAccount: (state) => state.currentAccount?.status === AccountStatusEnum.SUSPENDED,
 
-  /**
-   * 是否已停用
-   */
-  const isDeactivatedAccount = computed(
-    () => currentAccount.value?.status === AccountStatusEnum.INACTIVE,
-  );
+    isDeletedAccount: (state) => state.currentAccount?.status === AccountStatusEnum.DELETED,
 
-  /**
-   * 是否已暂停
-   */
-  const isSuspendedAccount = computed(
-    () => currentAccount.value?.status === AccountStatusEnum.SUSPENDED,
-  );
+    // ========== 验证状态 ==========
+    isEmailVerified: (state) => state.currentAccount?.emailVerified ?? false,
 
-  /**
-   * 是否已删除
-   */
-  const isDeletedAccount = computed(
-    () => currentAccount.value?.status === AccountStatusEnum.DELETED,
-  );
+    isPhoneVerified: (state) => state.currentAccount?.phoneVerified ?? false,
 
-  /**
-   * 是否已验证邮箱
-   */
-  const isEmailVerified = computed(() => currentAccount.value?.emailVerified ?? false);
+    isTwoFactorEnabled: (state) => state.currentAccount?.security?.twoFactorEnabled ?? false,
 
-  /**
-   * 是否已验证手机号
-   */
-  const isPhoneVerified = computed(() => currentAccount.value?.phoneVerified ?? false);
+    // ========== 订阅状态 ==========
+    getCurrentSubscriptionPlan: (state) => state.subscription?.plan ?? SubscriptionPlanEnum.FREE,
 
-  /**
-   * 是否启用两步验证
-   */
-  const isTwoFactorEnabled = computed(
-    () => currentAccount.value?.security?.twoFactorEnabled ?? false,
-  );
+    isPremiumUser: (state) => {
+      const plan = state.subscription?.plan;
+      return plan === SubscriptionPlanEnum.PRO || plan === SubscriptionPlanEnum.ENTERPRISE;
+    },
 
-  /**
-   * 当前订阅计划
-   */
-  const currentSubscriptionPlan = computed(
-    () => subscription.value?.plan ?? SubscriptionPlanEnum.FREE,
-  );
+    // ========== 存储状态 ==========
+    getStorageUsagePercentage: (state) => {
+      const storage = state.currentAccount?.storage;
+      if (!storage) return 0;
+      const { used, quota } = storage;
+      if (quota <= 0) return 0;
+      return Math.round((used / quota) * 100);
+    },
 
-  /**
-   * 是否为付费用户
-   */
-  const isPremiumUser = computed(
-    () =>
-      subscription.value?.plan === SubscriptionPlanEnum.PRO ||
-      subscription.value?.plan === SubscriptionPlanEnum.ENTERPRISE,
-  );
+    // ========== 多账户 ==========
+    getRememberedAccounts: (state) => {
+      return state.savedAccounts.filter((account: any) => account.remember);
+    },
+  },
 
-  /**
-   * 存储配额使用百分比
-   */
-  const storageUsagePercentage = computed(() => {
-    if (!currentAccount.value?.storage) return 0;
-    const { used, quota } = currentAccount.value.storage;
-    if (quota <= 0) return 0;
-    return Math.round((used / quota) * 100);
-  });
+  actions: {
+    // ========== Account Actions ==========
+    setCurrentAccount(account: AccountDTO | null) {
+      this.currentAccount = account;
+    },
 
-  /**
-   * 已记住的账户列表
-   */
-  const rememberedAccounts = computed(() =>
-    savedAccounts.value.filter((account) => (account as any).remember),
-  );
+    clearCurrentAccount() {
+      this.currentAccount = null;
+      this.subscription = null;
+      this.accountHistory = [];
+    },
 
-  // ===== 操作方法 =====
+    // ========== Subscription Actions ==========
+    setSubscription(subscription: SubscriptionDTO | null) {
+      this.subscription = subscription;
+    },
 
-  /**
-   * 设置当前账户
-   * @param account 账户对象或 null
-   */
-  function setCurrentAccount(account: AccountDTO | null) {
-    currentAccount.value = account;
+    // ========== History Actions ==========
+    setAccountHistory(history: AccountHistoryDTO[]) {
+      this.accountHistory = history;
+    },
 
-    // 持久化到 localStorage
-    if (account) {
-      localStorage.setItem('currentAccount', JSON.stringify(account));
-    } else {
-      localStorage.removeItem('currentAccount');
-    }
-  }
+    addHistoryRecord(record: AccountHistoryDTO) {
+      this.accountHistory.unshift(record);
+    },
 
-  /**
-   * 清除当前账户
-   */
-  function clearCurrentAccount() {
-    currentAccount.value = null;
-    subscription.value = null;
-    accountHistory.value = [];
-    localStorage.removeItem('currentAccount');
-  }
+    // ========== Stats Actions ==========
+    setAccountStats(stats: AccountStatsResponseDTO | null) {
+      this.accountStats = stats;
+    },
 
-  /**
-   * 设置订阅信息
-   * @param sub 订阅对象
-   */
-  function setSubscription(sub: SubscriptionDTO | null) {
-    subscription.value = sub;
-  }
+    // ========== Status Actions ==========
+    setLoading(loading: boolean) {
+      this.isLoading = loading;
+    },
 
-  /**
-   * 设置账户历史
-   * @param history 历史记录列表
-   */
-  function setAccountHistory(history: AccountHistoryDTO[]) {
-    accountHistory.value = history;
-  }
+    setError(error: string | null) {
+      this.error = error;
+    },
 
-  /**
-   * 添加历史记录
-   * @param record 历史记录项
-   */
-  function addHistoryRecord(record: AccountHistoryDTO) {
-    accountHistory.value.unshift(record);
-  }
+    // ========== Multi-Account Actions ==========
+    setSavedAccounts(accounts: AccountDTO[]) {
+      this.savedAccounts = accounts;
+    },
 
-  /**
-   * 设置账户统计
-   * @param stats 统计对象
-   */
-  function setAccountStats(stats: AccountStatsDTO) {
-    accountStats.value = stats;
-  }
-
-  /**
-   * 设置加载状态
-   * @param loading 是否加载中
-   */
-  function setLoading(loading: boolean) {
-    isLoading.value = loading;
-  }
-
-  /**
-   * 设置错误
-   * @param err 错误信息
-   */
-  function setError(err: string | null) {
-    error.value = err;
-  }
-
-  /**
-   * 保存账户列表
-   * @param accounts 账户列表
-   */
-  function setSavedAccounts(accounts: AccountDTO[]) {
-    savedAccounts.value = accounts;
-    localStorage.setItem('savedAccounts', JSON.stringify(accounts));
-  }
-
-  /**
-   * 添加保存的账户
-   * @param account 账户对象
-   */
-  function addSavedAccount(account: AccountDTO) {
-    const exists = savedAccounts.value.find((acc) => acc.uuid === account.uuid);
-    if (!exists) {
-      savedAccounts.value.push(account);
-      localStorage.setItem('savedAccounts', JSON.stringify(savedAccounts.value));
-    }
-  }
-
-  /**
-   * 移除保存的账户
-   * @param accountUuid 账户UUID
-   */
-  function removeSavedAccount(accountUuid: string) {
-    savedAccounts.value = savedAccounts.value.filter((acc) => acc.uuid !== accountUuid);
-    localStorage.setItem('savedAccounts', JSON.stringify(savedAccounts.value));
-  }
-
-  /**
-   * 从 localStorage 恢复账户信息
-   */
-  function restoreFromStorage() {
-    try {
-      const savedAccount = localStorage.getItem('currentAccount');
-      if (savedAccount) {
-        currentAccount.value = JSON.parse(savedAccount);
+    addSavedAccount(account: AccountDTO) {
+      const exists = this.savedAccounts.find((acc) => acc.uuid === account.uuid);
+      if (!exists) {
+        this.savedAccounts.push(account);
       }
+    },
 
-      const savedAccountsList = localStorage.getItem('savedAccounts');
-      if (savedAccountsList) {
-        savedAccounts.value = JSON.parse(savedAccountsList);
-      }
-    } catch (error) {
-      console.error('Failed to restore account from storage:', error);
-      setError('Failed to restore account data');
-    }
-  }
+    removeSavedAccount(accountUuid: string) {
+      this.savedAccounts = this.savedAccounts.filter((acc) => acc.uuid !== accountUuid);
+    },
 
-  /**
-   * 清除所有数据
-   */
-  function clearAll() {
-    currentAccount.value = null;
-    subscription.value = null;
-    accountHistory.value = [];
-    accountStats.value = null;
-    savedAccounts.value = [];
-    isLoading.value = false;
-    error.value = null;
+    // ========== Lifecycle ==========
+    reset() {
+      this.currentAccount = null;
+      this.subscription = null;
+      this.accountHistory = [];
+      this.accountStats = null;
+      this.isLoading = false;
+      this.error = null;
+      this.savedAccounts = [];
+    },
+  },
 
-    localStorage.removeItem('currentAccount');
-    localStorage.removeItem('savedAccounts');
-  }
-
-  // ===== 初始化 =====
-  // 自动从 localStorage 恢复
-  restoreFromStorage();
-
-  // ===== 返回 =====
-  return {
-    // 状态
-    currentAccount,
-    subscription,
-    accountHistory,
-    accountStats,
-    isLoading,
-    error,
-    savedAccounts,
-
-    // 计算属性
-    isAuthenticated,
-    currentAccountUuid,
-    accountStatus,
-    isActiveAccount,
-    isDeactivatedAccount,
-    isSuspendedAccount,
-    isDeletedAccount,
-    isEmailVerified,
-    isPhoneVerified,
-    isTwoFactorEnabled,
-    currentSubscriptionPlan,
-    isPremiumUser,
-    storageUsagePercentage,
-    rememberedAccounts,
-
-    // 操作方法
-    setCurrentAccount,
-    clearCurrentAccount,
-    setSubscription,
-    setAccountHistory,
-    addHistoryRecord,
-    setAccountStats,
-    setLoading,
-    setError,
-    setSavedAccounts,
-    addSavedAccount,
-    removeSavedAccount,
-    restoreFromStorage,
-    clearAll,
-  };
+  persist: {
+    // 持久化账户偏好，不持久化敏感数据
+    paths: ['savedAccounts'],
+  },
 });

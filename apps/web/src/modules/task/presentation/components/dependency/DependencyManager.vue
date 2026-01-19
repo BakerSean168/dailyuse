@@ -146,8 +146,10 @@ import type {
 } from '@/modules/task/application/services/TaskDependencyValidationService';
 import DependencyValidationDialog from './DependencyValidationDialog.vue';
 import BlockedTaskInfo from './BlockedTaskInfo.vue';
-import { taskDependencyApiClient } from '@/modules/task/infrastructure/api/taskApiClient';
+import { getTaskDependencyApiClient } from '@dailyuse/infrastructure-client';
 import { useAuthentication } from '@/modules/authentication/presentation/composables/useAuthentication';
+
+const taskDependencyApiClient = getTaskDependencyApiClient();
 
 const { user } = useAuthentication();
 

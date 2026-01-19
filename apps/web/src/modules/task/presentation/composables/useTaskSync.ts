@@ -1,19 +1,19 @@
 /**
  * Task Sync Composable
  * 任务数据同步相关的组合式函数
- * 
+ *
  * 🔄 重构说明（方案 A - 简化版）：
  * - Composable 负责协调 ApplicationService 和 Store
  * - Service 直接返回数据或抛出错误
  * - Composable 使用 try/catch 处理错误 + 全局通知
- * 
+ *
  * ⚠️ 特殊说明：
  * - TaskSyncApplicationService 是特殊的，需要直接操作 Store 进行批量同步
  * - 因此 Composable 主要负责调用 Service + 通知用户
  */
 
 import { ref, computed, readonly, onMounted, onBeforeUnmount } from 'vue';
-import { taskSyncApplicationService } from '../../application/services';
+import { taskApplicationService as taskSyncApplicationService } from '@dailyuse/application-client/task';
 import { useTaskStore } from '../stores/taskStore';
 import { useMessage } from '@dailyuse/ui-vuetify';
 
@@ -69,7 +69,7 @@ export function useTaskSync() {
       console.log(
         `✅ [useTaskSync] 同步完成: ${result.templatesCount} 个模板, ${result.instancesCount} 个实例`,
       );
-      
+
       // ✅ 全局通知
       success(`同步完成: ${result.templatesCount} 个模板, ${result.instancesCount} 个实例`);
 
@@ -270,7 +270,7 @@ export function useTaskSync() {
    */
   const autoRefresh = ref(false);
   const autoRefreshInterval = ref(5 * 60 * 1000); // 默认 5 分钟
-  let refreshTimer: ReturnType<typeof setInterval> | null = null;
+  let refreshTimer: NodeJS.Timeout | null = null;
 
   /**
    * 启动自动刷新

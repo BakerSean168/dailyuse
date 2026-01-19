@@ -1,6 +1,6 @@
 /**
  * AI Store - Zustand 状态管理
- * 
+ *
  * 使用 domain-client 中的 Entity 类型存储数据
  * 持久化时转换为 DTO，加载时恢复为 Entity
  */
@@ -9,7 +9,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { AIConversation, AIMessage } from '@dailyuse/domain-client/ai';
 import type { AIConversationClientDTO } from '@dailyuse/contracts/ai';
-import { aiApplicationService } from '../../application/services';
+import { aiApplicationService } from '@dailyuse/application-client/ai';
 
 // ============ Types ============
 export interface AIState {
@@ -59,20 +59,22 @@ export const useAIStore = create<AIStore>()(
 
       setConversations: (conversations) => set({ conversations }),
 
-      addConversation: (conversation) => set((state) => ({
-        conversations: [...state.conversations, conversation],
-      })),
+      addConversation: (conversation) =>
+        set((state) => ({
+          conversations: [...state.conversations, conversation],
+        })),
 
-      updateConversation: (id, conversation) => set((state) => ({
-        conversations: state.conversations.map(c =>
-          c.uuid === id ? conversation : c
-        ),
-      })),
+      updateConversation: (id, conversation) =>
+        set((state) => ({
+          conversations: state.conversations.map((c) => (c.uuid === id ? conversation : c)),
+        })),
 
-      removeConversation: (id) => set((state) => ({
-        conversations: state.conversations.filter(c => c.uuid !== id),
-        activeConversationId: state.activeConversationId === id ? null : state.activeConversationId,
-      })),
+      removeConversation: (id) =>
+        set((state) => ({
+          conversations: state.conversations.filter((c) => c.uuid !== id),
+          activeConversationId:
+            state.activeConversationId === id ? null : state.activeConversationId,
+        })),
 
       setActiveConversationId: (activeConversationId) => set({ activeConversationId }),
       setLoading: (isLoading) => set({ isLoading }),
@@ -141,11 +143,11 @@ export const useAIStore = create<AIStore>()(
       // Selectors
       getActiveConversation: () => {
         const { conversations, activeConversationId } = get();
-        return conversations.find(c => c.uuid === activeConversationId);
+        return conversations.find((c) => c.uuid === activeConversationId);
       },
 
       getConversationById: (id) => {
-        return get().conversations.find(c => c.uuid === id);
+        return get().conversations.find((c) => c.uuid === id);
       },
     }),
     {
@@ -156,18 +158,18 @@ export const useAIStore = create<AIStore>()(
       }),
       partialize: (state) => ({
         // Convert Entities to DTOs for persistence
-        conversations: state.conversations.map(c => c.toClientDTO()),
+        conversations: state.conversations.map((c) => c.toClientDTO()),
         activeConversationId: state.activeConversationId,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
           // Convert DTOs back to Entities after loading from storage
           const rawConversations = state.conversations as unknown as AIConversationClientDTO[];
-          state.conversations = rawConversations.map(dto => AIConversation.fromClientDTO(dto));
+          state.conversations = rawConversations.map((dto) => AIConversation.fromClientDTO(dto));
         }
       },
-    }
-  )
+    },
+  ),
 );
 
 export const useConversations = () => useAIStore((state) => state.conversations);

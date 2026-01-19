@@ -5,8 +5,12 @@
  */
 
 import { useState, useCallback } from 'react';
-import { aiApplicationService } from '../../application/services';
-import type { CreateAIProviderRequest, TestAIProviderConnectionRequest, AIProviderType } from '@dailyuse/contracts/ai';
+import { aiApplicationService } from '@dailyuse/application-client/ai';
+import type {
+  CreateAIProviderRequest,
+  TestAIProviderConnectionRequest,
+  AIProviderType,
+} from '@dailyuse/contracts/ai';
 
 // Type aliases for backward compatibility
 type CreateProviderInput = CreateAIProviderRequest;
@@ -49,16 +53,16 @@ export function useAIProvider(): UseAIProviderReturn {
    * 加载提供商列表
    */
   const loadProviders = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       const providers = await aiApplicationService.listProviders();
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         providers,
         loading: false,
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         loading: false,
         error: error instanceof Error ? error.message : '加载提供商失败',
@@ -70,16 +74,16 @@ export function useAIProvider(): UseAIProviderReturn {
    * 加载配额信息
    */
   const loadQuota = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       const quota = await aiApplicationService.getQuota();
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         quota,
         loading: false,
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         loading: false,
         error: error instanceof Error ? error.message : '加载配额失败',
@@ -91,17 +95,17 @@ export function useAIProvider(): UseAIProviderReturn {
    * 创建提供商
    */
   const createProvider = useCallback(async (input: CreateProviderInput): Promise<AIProvider> => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       const provider = await aiApplicationService.createProvider(input);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         providers: [...prev.providers, provider as AIProvider],
         loading: false,
       }));
       return provider as AIProvider;
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         loading: false,
         error: error instanceof Error ? error.message : '创建提供商失败',
@@ -113,24 +117,25 @@ export function useAIProvider(): UseAIProviderReturn {
   /**
    * 测试连接
    */
-  const testConnection = useCallback(async (
-    input: TestProviderConnectionInput
-  ): Promise<boolean> => {
-    setState(prev => ({ ...prev, testing: true, error: null }));
-    try {
-      const result = await aiApplicationService.testProviderConnection(input);
-      setState(prev => ({ ...prev, testing: false }));
-      // 返回测试结果的 ok 字段
-      return result.ok ?? false;
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        testing: false,
-        error: error instanceof Error ? error.message : '测试连接失败',
-      }));
-      return false;
-    }
-  }, []);
+  const testConnection = useCallback(
+    async (input: TestProviderConnectionInput): Promise<boolean> => {
+      setState((prev) => ({ ...prev, testing: true, error: null }));
+      try {
+        const result = await aiApplicationService.testProviderConnection(input);
+        setState((prev) => ({ ...prev, testing: false }));
+        // 返回测试结果的 ok 字段
+        return result.ok ?? false;
+      } catch (error) {
+        setState((prev) => ({
+          ...prev,
+          testing: false,
+          error: error instanceof Error ? error.message : '测试连接失败',
+        }));
+        return false;
+      }
+    },
+    [],
+  );
 
   /**
    * 设置默认提供商
@@ -138,15 +143,15 @@ export function useAIProvider(): UseAIProviderReturn {
   const setDefaultProvider = useCallback(async (providerUuid: string) => {
     try {
       await aiApplicationService.setDefaultProvider(providerUuid);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        providers: prev.providers.map(p => ({
+        providers: prev.providers.map((p) => ({
           ...p,
           isDefault: p.uuid === providerUuid,
         })),
       }));
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : '设置默认提供商失败',
       }));
@@ -161,7 +166,7 @@ export function useAIProvider(): UseAIProviderReturn {
       const result = await aiApplicationService.checkQuotaAvailability(tokensNeeded);
       return result;
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : '检查配额失败',
       }));

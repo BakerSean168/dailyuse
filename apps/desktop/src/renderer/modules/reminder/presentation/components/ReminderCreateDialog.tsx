@@ -8,7 +8,7 @@ import { useState } from 'react';
 import type { CreateReminderTemplateRequest } from '@dailyuse/contracts/reminder';
 import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { reminderApplicationService } from '../../application/services/ReminderApplicationService';
+import { reminderApplicationService } from '@dailyuse/application-client/reminder';
 
 interface ReminderCreateDialogProps {
   onClose: () => void;
@@ -40,19 +40,23 @@ export function ReminderCreateDialog({ onClose, onCreated }: ReminderCreateDialo
       setLoading(true);
 
       const isInterval = scheduleType === 'interval';
-      
+
       const request: CreateReminderTemplateRequest = {
         title: title.trim(),
         description: description.trim() || undefined,
         type: ReminderType.RECURRING, // All reminders are recurring in simplified version
         trigger: {
           type: isInterval ? TriggerType.INTERVAL : TriggerType.FIXED_TIME,
-          fixedTime: !isInterval ? {
-            time: triggerTime, // "HH:mm" format
-          } : undefined,
-          interval: isInterval ? {
-            minutes: intervalMinutes,
-          } : undefined,
+          fixedTime: !isInterval
+            ? {
+                time: triggerTime, // "HH:mm" format
+              }
+            : undefined,
+          interval: isInterval
+            ? {
+                minutes: intervalMinutes,
+              }
+            : undefined,
         },
         activeTime: {
           activatedAt: Date.now(),
@@ -87,10 +91,7 @@ export function ReminderCreateDialog({ onClose, onCreated }: ReminderCreateDialo
       <div className="bg-background border rounded-lg shadow-lg w-full max-w-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">新建提醒</h2>
-          <button
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground"
-          >
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             ✕
           </button>
         </div>
@@ -179,9 +180,7 @@ export function ReminderCreateDialog({ onClose, onCreated }: ReminderCreateDialo
 
           {/* Error */}
           {error && (
-            <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">
-              {error}
-            </div>
+            <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">{error}</div>
           )}
 
           {/* Actions */}

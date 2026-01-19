@@ -16,3 +16,7 @@ export { DeleteFolder } from './delete-folder';
 // Resource
 export { GetResource } from './get-resource';
 export { DeleteResource } from './delete-resource';
+
+// Additional services
+export { RepositoryGitApplicationService } from './RepositoryGitApplicationService';
+export { RepositorySearchApplicationService } from './RepositorySearchApplicationService';

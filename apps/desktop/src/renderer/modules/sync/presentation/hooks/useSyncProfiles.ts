@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { getSyncService } from '../../application/services';
+import { syncApplicationService } from '@dailyuse/application-client/sync';
 import type {
   SyncProfileClientDTO,
   SyncProfileListResponse,
@@ -38,20 +38,18 @@ export function useSyncProfiles(): UseSyncProfilesResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const service = getSyncService();
-
   const refresh = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await service.listProfiles();
+      const result = await syncApplicationService.listProfiles();
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
       setLoading(false);
     }
-  }, [service]);
+  }, []);
 
   useEffect(() => {
     refresh();
@@ -59,46 +57,46 @@ export function useSyncProfiles(): UseSyncProfilesResult {
 
   const createProfile = useCallback(
     async (request: CreateSyncProfileRequest): Promise<SyncProfileClientDTO> => {
-      const profile = await service.addProfile(request);
+      const profile = await syncApplicationService.addProfile(request);
       await refresh();
       return profile;
     },
-    [service, refresh]
+    [refresh],
   );
 
   const updateProfile = useCallback(
     async (request: UpdateSyncProfileRequest): Promise<SyncProfileClientDTO> => {
-      const profile = await service.editProfile(request);
+      const profile = await syncApplicationService.editProfile(request);
       await refresh();
       return profile;
     },
-    [service, refresh]
+    [refresh],
   );
 
   const deleteProfile = useCallback(
     async (profileId: string): Promise<void> => {
-      await service.removeProfile(profileId);
+      await syncApplicationService.removeProfile(profileId);
       await refresh();
     },
-    [service, refresh]
+    [refresh],
   );
 
   const setDefaultProfile = useCallback(
     async (profileId: string): Promise<SyncProfileClientDTO> => {
-      const profile = await service.setAsDefault(profileId);
+      const profile = await syncApplicationService.setAsDefault(profileId);
       await refresh();
       return profile;
     },
-    [service, refresh]
+    [refresh],
   );
 
   const activateProfile = useCallback(
     async (profileId: string): Promise<SyncProfileClientDTO> => {
-      const profile = await service.activate(profileId);
+      const profile = await syncApplicationService.activate(profileId);
       await refresh();
       return profile;
     },
-    [service, refresh]
+    [refresh],
   );
 
   return {

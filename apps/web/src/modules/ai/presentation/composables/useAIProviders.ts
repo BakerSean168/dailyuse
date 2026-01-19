@@ -9,7 +9,12 @@
  */
 
 import { ref, computed, type Ref, type ComputedRef } from 'vue';
-import { aiProviderApplicationService } from '../../application/services';
+import {
+  ListProviders,
+  CreateProvider,
+  TestProviderConnection,
+  SetDefaultProvider,
+} from '@dailyuse/application-client/ai';
 import type {
   AIProviderConfigClientDTO,
   CreateAIProviderRequest,
@@ -18,7 +23,7 @@ import type {
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 interface TestConnectionResult {
-  ok: boolean;
+  success: boolean;
   latencyMs?: number;
   error?: string;
 }
@@ -80,7 +85,7 @@ export function useAIProviders(): UseAIProvidersReturn {
       loading.value = true;
       error.value = null;
 
-      const response = await aiProviderApplicationService.getProviders();
+      const response = await new ListProviders().execute();
       providers.value = response || [];
     } catch (err: any) {
       error.value = err.message || '加载 AI Provider 失败';
@@ -101,7 +106,7 @@ export function useAIProviders(): UseAIProvidersReturn {
       loading.value = true;
       error.value = null;
 
-      const provider = await aiProviderApplicationService.createProvider(request);
+      const provider = await new CreateProvider().execute(request);
       providers.value.push(provider);
       showSuccess('AI Provider 创建成功');
       return provider;
@@ -167,8 +172,8 @@ export function useAIProviders(): UseAIProvidersReturn {
       testingProviderUuid.value = uuid;
       error.value = null;
 
-      const response = await aiProviderApplicationService.testConnection(uuid);
-      if (response.ok) {
+      const response = await new TestProviderConnection().execute(uuid);
+      if (response.success) {
         showSuccess('连接测试成功');
       }
       return response;
@@ -176,7 +181,7 @@ export function useAIProviders(): UseAIProvidersReturn {
       const errorMsg = err.message || '连接测试失败';
       error.value = errorMsg;
       showError(errorMsg);
-      return { ok: false, error: errorMsg };
+      return { success: false, error: errorMsg };
     } finally {
       testingProviderUuid.value = null;
     }
@@ -190,7 +195,7 @@ export function useAIProviders(): UseAIProvidersReturn {
       loading.value = true;
       error.value = null;
 
-      await aiProviderApplicationService.setDefaultProvider(uuid);
+      await new SetDefaultProvider().execute(uuid);
       // 更新本地状态
       providers.value.forEach((p) => {
         p.isDefault = p.uuid === uuid;

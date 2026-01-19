@@ -1,25 +1,35 @@
 /**
  * Task Instance Composable
  * 任务实例相关的组合式函数
- * 
+ *
  * 🔄 重构说明（方案 A - 简化版）：
  * - Composable 负责协调 ApplicationService 和 Store
  * - Service 直接返回实体对象或抛出错误（不包装 ServiceResult）
  * - Composable 使用 try/catch 处理错误
  * - 数据流：API → Service(转换) → Composable(存储) → Store → Component
- * 
+ *
  * 📝 错误处理：
  * - axios 拦截器已处理 API 错误，success: false 会抛出 Error
  * - Composable 捕获错误并设置 error 状态
  */
 
 import { ref, computed, readonly } from 'vue';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClientDTO } from '@dailyuse/contracts/task';
+import type {
+  TaskTemplateClientDTO,
+  TaskInstanceClientDTO,
+  TaskTimeConfigClientDTO,
+} from '@dailyuse/contracts/task';
 import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client/task';
-import { taskInstanceApplicationService } from '../../application/services';
+import {
+  ListTaskInstances,
+  GetTaskInstance,
+  StartTaskInstance,
+  CompleteTaskInstance,
+  SkipTaskInstance,
+  DeleteTaskInstance,
+} from '@dailyuse/application-client/task';
 import { useTaskStore } from '../stores/taskStore';
 import { useMessage } from '@dailyuse/ui-vuetify';
-
 
 /**
  * 任务实例管理 Composable
@@ -110,7 +120,9 @@ export function useTaskInstance() {
    * @deprecated 后端不支持直接创建实例
    */
   async function createTaskInstance(_request: any): Promise<never> {
-    throw new Error('createTaskInstance is not supported - use TaskTemplate.generateInstances instead');
+    throw new Error(
+      'createTaskInstance is not supported - use TaskTemplate.generateInstances instead',
+    );
   }
 
   /**
@@ -130,11 +142,11 @@ export function useTaskInstance() {
 
       // 缓存中没有，从服务器获取
       // ✅ Service 直接返回实体对象或抛出错误
-      const instance = await taskInstanceApplicationService.getTaskInstanceById(uuid);
+      const instance = await new GetTaskInstance().execute(uuid);
 
       // ✅ Composable 负责存储到 Store
       taskStore.addTaskInstance(instance);
-      
+
       return instance;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取任务实例详情失败';
@@ -154,7 +166,9 @@ export function useTaskInstance() {
    * @deprecated 后端不支持更新实例
    */
   async function updateTaskInstance(_uuid: string, _request: any): Promise<never> {
-    throw new Error('updateTaskInstance is not supported - use start/complete/skip methods instead');
+    throw new Error(
+      'updateTaskInstance is not supported - use start/complete/skip methods instead',
+    );
   }
 
   /**
@@ -167,11 +181,11 @@ export function useTaskInstance() {
       taskStore.setLoading(true);
 
       // ✅ Service 返回 void 或抛出错误
-      await taskInstanceApplicationService.deleteTaskInstance(uuid);
+      await new DeleteTaskInstance().execute(uuid);
 
       // ✅ Composable 负责从 Store 移除
       taskStore.removeTaskInstance(uuid);
-      
+
       // ✅ 全局通知
       success('任务实例已删除');
     } catch (err) {
@@ -199,7 +213,7 @@ export function useTaskInstance() {
       duration?: number;
       note?: string;
       rating?: number;
-    }
+    },
   ) {
     try {
       isOperating.value = true;
@@ -207,14 +221,14 @@ export function useTaskInstance() {
       taskStore.setLoading(true);
 
       // ✅ Service 直接返回实体对象或抛出错误
-      const instance = await taskInstanceApplicationService.completeTaskInstance(uuid, resultData);
+      const instance = await new CompleteTaskInstance().execute(uuid, resultData);
 
       // ✅ Composable 负责更新 Store
       taskStore.updateTaskInstance(uuid, instance);
-      
+
       // ✅ 全局通知
       success('🎉 任务已完成');
-      
+
       return instance;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '完成任务失败';
@@ -400,4 +414,3 @@ export function useTaskInstanceData() {
     })),
   };
 }
-
