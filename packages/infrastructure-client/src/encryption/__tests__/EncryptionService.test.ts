@@ -88,10 +88,10 @@ describe('EncryptionService', () => {
       // 为了能够用相同密码解密，需要使用相同的盐
       const service1 = new EncryptionService(testPassword);
       const encrypted = service1.encrypt(testPlaintext);
-      
+
       // 获取第一个服务的盐值
       const salt = (service1 as any).keyDerivationParams.salt;
-      
+
       // 使用相同密码和盐创建新服务
       const service2 = new EncryptionService(testPassword, salt);
       const decrypted = service2.decrypt(encrypted);
@@ -124,7 +124,7 @@ describe('EncryptionService', () => {
 
       // 篡改加密内容
       const tamperedPayload = Buffer.from(encrypted.encryptedPayload, 'base64');
-      tamperedPayload[0] ^= 0xFF; // 翻转第一个字节
+      tamperedPayload[0] ^= 0xff; // 翻转第一个字节
       const tampered: EncryptedData = {
         ...encrypted,
         encryptedPayload: tamperedPayload.toString('base64'),
@@ -140,7 +140,7 @@ describe('EncryptionService', () => {
 
       // 篡改认证标签
       const tamperedTag = Buffer.from(encrypted.authTag, 'base64');
-      tamperedTag[0] ^= 0xFF;
+      tamperedTag[0] ^= 0xff;
       const tampered: EncryptedData = {
         ...encrypted,
         authTag: tamperedTag.toString('base64'),
@@ -156,7 +156,7 @@ describe('EncryptionService', () => {
 
       // 篡改 IV
       const tamperedIV = Buffer.from(encrypted.iv, 'base64');
-      tamperedIV[0] ^= 0xFF;
+      tamperedIV[0] ^= 0xff;
       const tampered: EncryptedData = {
         ...encrypted,
         iv: tamperedIV.toString('base64'),
@@ -236,9 +236,7 @@ describe('EncryptionService', () => {
     it('should include original size in metadata', () => {
       const encrypted = service.encrypt(testPlaintext);
 
-      expect(encrypted.metadata?.originalSize).toBe(
-        Buffer.from(testPlaintext, 'utf-8').length
-      );
+      expect(encrypted.metadata?.originalSize).toBe(Buffer.from(testPlaintext, 'utf-8').length);
     });
 
     it('should include timestamp in metadata', () => {

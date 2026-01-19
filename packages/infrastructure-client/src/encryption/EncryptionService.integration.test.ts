@@ -95,7 +95,7 @@ describe('EncryptionService - Integration Tests', () => {
       const tampered = {
         ...encrypted,
         encryptedPayload: Buffer.from(
-          Buffer.from(encrypted.encryptedPayload, 'base64').slice(0, -1)
+          Buffer.from(encrypted.encryptedPayload, 'base64').slice(0, -1),
         ).toString('base64'),
       };
 
@@ -246,7 +246,7 @@ describe('EncryptionService - Integration Tests', () => {
       // 加密结果应不同（因为IV不同）
       expect(encrypted1.encryptedPayload).not.toBe(encrypted2.encryptedPayload);
       expect(encrypted1.iv).not.toBe(encrypted2.iv);
-      
+
       // 但解密后应该相同
       expect(service.decrypt(encrypted1)).toBe(plaintext);
       expect(service.decrypt(encrypted2)).toBe(plaintext);
@@ -282,7 +282,7 @@ describe('EncryptionService - Integration Tests', () => {
       }));
 
       const start = performance.now();
-      objects.forEach(obj => {
+      objects.forEach((obj) => {
         service.encrypt(JSON.stringify(obj));
       });
       const end = performance.now();
@@ -324,7 +324,7 @@ describe('EncryptionService - Integration Tests', () => {
     it('并发加密应该产生正确的结果', async () => {
       const plaintexts = Array.from({ length: 50 }, (_, i) => `Data ${i}`);
 
-      const promises = plaintexts.map(async plaintext => {
+      const promises = plaintexts.map(async (plaintext) => {
         const encrypted = service.encrypt(plaintext);
         return { plaintext, encrypted };
       });

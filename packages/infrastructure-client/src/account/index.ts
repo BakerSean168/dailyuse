@@ -18,14 +18,7 @@ export { AccountApiClient, type IHttpClient } from './account-api-client';
 export { type IAccountApiClient } from './ports/account-api-client.port';
 
 // HTTP Adapters
-export {
-  AccountHttpAdapter,
-  createAccountHttpAdapter,
-} from './adapters/http/account-http.adapter';
+export { AccountHttpAdapter, createAccountHttpAdapter } from './adapters/http/account-http.adapter';
 
 // IPC Adapters
-export {
-  AccountIpcAdapter,
-  createAccountIpcAdapter,
-} from './adapters/ipc/account-ipc.adapter';
-
+export { AccountIpcAdapter, createAccountIpcAdapter } from './adapters/ipc/account-ipc.adapter';

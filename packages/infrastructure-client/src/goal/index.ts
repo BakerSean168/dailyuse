@@ -5,11 +5,7 @@
  */
 
 // Container
-export {
-  GoalContainer,
-  GoalDependencyKeys,
-  type IGoalRepository,
-} from './goal.container';
+export { GoalContainer, GoalDependencyKeys, type IGoalRepository } from './goal.container';
 
 // Core API Clients (Framework-agnostic)
 export { GoalApiClient, GoalFolderApiClient, type IHttpClient } from './goal-api-client';
@@ -36,4 +32,3 @@ export {
   GoalFocusIpcAdapter,
   createGoalFocusIpcAdapter,
 } from './adapters/ipc/goal-focus-ipc.adapter';
-
