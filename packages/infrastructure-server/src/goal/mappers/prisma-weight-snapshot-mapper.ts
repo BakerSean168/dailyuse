@@ -119,3 +119,4 @@ export class PrismaWeightSnapshotMapper {
     return prismaSnapshots.map((snapshot) => this.toDomain(snapshot));
   }
 }
+

@@ -17,8 +17,8 @@
 
 import { createLogger, eventBus } from '@dailyuse/utils';
 import { ScheduleTaskEventTypes } from '@dailyuse/contracts/schedule';
-import { TaskReminderScheduleHandler } from './task-reminder-schedule.handler';
-import { TaskEventHandler } from '../services/task-event.handler';
+import { TaskReminderScheduleHandler } from './TaskReminderScheduleHandler';
+import { TaskEventHandler } from '../services/TaskEventHandler';
 
 const logger = createLogger('TaskEventListeners');
 

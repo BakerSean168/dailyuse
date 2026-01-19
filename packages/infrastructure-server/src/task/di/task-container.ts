@@ -5,15 +5,15 @@ import type {
   ITaskStatisticsRepository,
 } from '@dailyuse/domain-server/task';
 import { TaskDependencyService } from '@dailyuse/domain-server/task';
-import { PrismaTaskInstanceRepository } from '../repositories/prisma-task-instance.repository';
-import { PrismaTaskTemplateRepository } from '../repositories/prisma-task-template.repository';
-import { PrismaTaskDependencyRepository } from '../repositories/prisma-task-dependency.repository';
-import { PrismaTaskStatisticsRepository } from '../repositories/prisma-task-statistics.repository';
+import { PrismaTaskInstanceRepository } from '../repositories/PrismaTaskInstanceRepository';
+import { PrismaTaskTemplateRepository } from '../repositories/PrismaTaskTemplateRepository';
+import { PrismaTaskDependencyRepository } from '../repositories/PrismaTaskDependencyRepository';
+import { PrismaTaskStatisticsRepository } from '../repositories/PrismaTaskStatisticsRepository';
 import { prisma } from '@/shared/infrastructure/config/prisma';
 
 /**
  * Task Module DI Container
- * 管理 Task 模块的所有仓储实�?
+ * 管理 Task 模块的所有仓储实例
  */
 export class TaskContainer {
   private static instance: TaskContainer;
@@ -125,4 +125,3 @@ export class TaskContainer {
     this.taskStatisticsRepository = repository;
   }
 }
-

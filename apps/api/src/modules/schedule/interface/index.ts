@@ -3,4 +3,4 @@
  * 调度模块 HTTP 接口统一导出
  */
 
-export { default as scheduleRouter } from './http/routes/scheduleRoutes';
+export { registerScheduleRoutes } from './routes';

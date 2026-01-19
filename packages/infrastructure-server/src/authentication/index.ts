@@ -6,13 +6,21 @@
 
 // Container
 export { AuthContainer } from './auth.container';
+export { AuthenticationContainer } from './di/authentication-container';
 
 // Ports (Interfaces)
-export type { IAuthCredentialRepository, IAuthSessionRepository, IPasswordEncryptor, PrismaTransactionClient } from './ports';
+export type {
+  IAuthCredentialRepository,
+  IAuthSessionRepository,
+  IPasswordEncryptor,
+  PrismaTransactionClient,
+} from './ports';
 
 // Prisma Adapters
 export { AuthCredentialPrismaRepository } from './adapters/prisma/auth-credential-prisma.repository';
 export { AuthSessionPrismaRepository } from './adapters/prisma/auth-session-prisma.repository';
+export { PrismaAuthCredentialRepository } from './repositories/prisma-auth-credential-repository';
+export { PrismaAuthSessionRepository } from './repositories/prisma-auth-session-repository';
 
 // Memory Adapters
 export { AuthCredentialMemoryRepository } from './adapters/memory/auth-credential-memory.repository';

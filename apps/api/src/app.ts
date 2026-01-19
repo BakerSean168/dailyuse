@@ -15,29 +15,30 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
-import accountRouter from './modules/account/interface/http/accountRoutes';
-import authenticationRouter from './modules/authentication/interface/http/authenticationRoutes';
-import taskRouter from './modules/task/interface/http/routes/index';
-import goalRouter from './modules/goal/interface/http/goalRoutes';
-import goalFolderRouter from './modules/goal/interface/http/goalFolderRoutes';
-import weightSnapshotRouter from './modules/goal/interface/http/weightSnapshotRoutes';
-import reminderRouter from './modules/reminder/interface/http/reminderRoutes';
-import reminderGroupRouter from './modules/reminder/interface/http/reminderGroupRoutes';
-import scheduleRouter from './modules/schedule/interface/http/routes/scheduleRoutes';
-import notificationRouter from './modules/notification/interface/http/notificationRoutes';
-import notificationSSERouter from './modules/notification/interface/http/sseRoutes';
-import settingRouter from './modules/setting/interface/http/settingRoutes';
-// import themeRoutes from './modules/theme/interface/http/themeRoutes';
-import editorRouter from './modules/editor/interface/http/routes/editorRoutes';
-import repositoryRouter from './modules/repository/interface/http/routes/repositoryRoutes';
-import metricsRouter from './modules/metrics/interface/http/routes/metricsRoutes';
-import aiRouter from './modules/ai/interface/http/aiRoutes';
-import dashboardRouter from './modules/dashboard/interface/routes';
+import { registerAccountRoutes } from './modules/account/interface';
+import { registerAuthenticationRoutes } from './modules/authentication/interface';
+import { registerTaskRoutes } from './modules/task/interface';
+import { registerGoalRoutes } from './modules/goal/interface';
+import { registerGoalFolderRoutes } from './modules/goal/interface/goal-folder.routes';
+import { registerWeightSnapshotRoutes } from './modules/goal/interface/goal-weight-snapshot.routes';
+import { registerReminderRoutes } from './modules/reminder/interface';
+import { registerScheduleRoutes } from './modules/schedule/interface';
+import { registerNotificationRoutes } from './modules/notification/interface';
+import { registerSSERoutes } from './modules/notification/interface/sseRoutes';
+import { registerSettingRoutes } from './modules/setting/interface';
+import { registerEditorRoutes } from './modules/editor/interface';
+import { registerRepositoryRoutes } from './modules/repository/interface';
+import { registerMetricsRoutes } from './modules/metrics/interface';
+import { registerAIRoutes } from './modules/ai/interface';
+import { registerDashboardRoutes } from './modules/dashboard/interface';
 import crossModuleRouter from './shared/infrastructure/http/routes/crossModuleRoutes';
 import infrastructureRouter from './shared/infrastructure/http/routes/infrastructureRoutes';
 // import syncRouter from './modules/sync/interface/http/syncRoutes'; // TODO: sync module needs to be implemented
 
-import { authMiddleware, optionalAuthMiddleware } from './shared/infrastructure/http/middlewares/index';
+import {
+  authMiddleware,
+  optionalAuthMiddleware,
+} from './shared/infrastructure/http/middlewares/index';
 import { setupSwagger } from './shared/infrastructure/config/swagger';
 import { createLogger } from '@dailyuse/utils';
 import { performanceMiddleware } from './shared/infrastructure/http/middlewares/performance.middleware';
@@ -96,10 +97,10 @@ app.use(performanceMiddleware);
 const api = Router();
 
 // 挂载账户路由到api路由器
-api.use('/accounts', accountRouter);
+api.use('/accounts', registerAccountRoutes());
 
 // 挂载认证路由到 api 路由器 (登录/登出/刷新等) - 不需要认证
-api.use('/auth', authenticationRouter);
+api.use('/auth', registerAuthenticationRoutes());
 
 // 应用认证中间件到需要认证的路由
 // 注意：认证相关的路由（如登录、注册）应该放在认证中间件之前
@@ -107,78 +108,68 @@ api.use('/auth', authenticationRouter);
  * 任务模块
  */
 // 挂载任务管理路由 - 需要认证
-api.use('/tasks', authMiddleware, taskRouter);
+api.use('/tasks', authMiddleware, registerTaskRoutes());
 
 /**
  * 目标模块
  */
 // 挂载目标管理路由 - 需要认证
-api.use('/goals', authMiddleware, goalRouter);
+api.use('/goals', authMiddleware, registerGoalRoutes());
 
 // 挂载目标文件夹管理路由 - 需要认证
-api.use('/goal-folders', authMiddleware, goalFolderRouter);
+api.use('/goal-folders', authMiddleware, registerGoalFolderRoutes());
 
 // 挂载权重快照管理路由 - 需要认证
-api.use('/weight-snapshots', authMiddleware, weightSnapshotRouter);
+api.use('/weight-snapshots', authMiddleware, registerWeightSnapshotRoutes());
 
 /**
  * 提醒模块
  */
 // 挂载提醒管理路由 - 需要认证
-api.use('/reminders', authMiddleware, reminderRouter);
-
-// 挂载提醒分组路由 - 需要认证
-api.use('/reminder-groups', authMiddleware, reminderGroupRouter);
+api.use('/reminders', authMiddleware, registerReminderRoutes());
 
 /**
  * schedule 调度模块
  */
 // 挂载任务调度管理路由 - 需要认证
-api.use('/schedules', authMiddleware, scheduleRouter);
+api.use('/schedules', authMiddleware, registerScheduleRoutes());
 
 /**
  * editor 编辑器模块
  */
 // 挂载编辑器聚合根路由 - 需要认证
-api.use('/editor', authMiddleware, editorRouter);
+api.use('/editor', authMiddleware, registerEditorRoutes());
 
 /**
  * repository 仓储模块 (Epic 10 完整版)
  * 整合 Repository + Resource + Folder + Search + Tags
  */
 // 挂载仓储统一路由 - 需要认证
-api.use('/repositories', authMiddleware, repositoryRouter);
-
+api.use('/repositories', authMiddleware, registerRepositoryRoutes());
 
 /**
  * setting 设置模块
  */
 // 挂载用户设置路由 - 需要认证
-api.use('/settings', authMiddleware, settingRouter);
+api.use('/settings', authMiddleware, registerSettingRoutes());
 
 /**
  * metrics 性能指标模块
  */
 // 挂载性能指标路由 - 需要认证
-api.use('/metrics', authMiddleware, metricsRouter);
+api.use('/metrics', authMiddleware, registerMetricsRoutes());
 
 /**
  * dashboard Dashboard 模块
  */
 // 挂载 Dashboard 统计路由 - 需要认证
-api.use('/dashboard', authMiddleware, dashboardRouter);
+api.use('/dashboard', authMiddleware, registerDashboardRoutes());
 
 /**
  * cross-module 跨模块查询 API
  */
 // 挂载跨模块查询路由 - 需要认证
 api.use('/cross-module', authMiddleware, crossModuleRouter);
-
-/**
- * ai AI生成模块
- */
-// 挂载统一 AI 路由 - 需要认证（包含 chat, conversations, generation, quota）
-api.use('/ai', aiRouter); // authMiddleware 在路由文件内部应用
 
 /**
  * theme 主题模块
@@ -191,10 +182,16 @@ api.use('/ai', aiRouter); // authMiddleware 在路由文件内部应用
  */
 // 挂载通知 SSE 路由 - 使用独立路径避免被 /notifications 路由拦截
 // token 通过 URL 参数传递，路由内部自行验证
-api.use('/sse', notificationSSERouter);
+api.use('/sse', registerSSERoutes());
 
 // 挂载通知管理路由 - 需要认证
-api.use('/notifications', authMiddleware, notificationRouter);
+api.use('/notifications', authMiddleware, registerNotificationRoutes());
+
+/**
+ * ai AI生成模块
+ */
+// 挂载统一 AI 路由 - 需要认证（包含 chat, conversations, generation, quota）
+api.use('/ai', authMiddleware, registerAIRoutes());
 
 /**
  * sync 同步模块
