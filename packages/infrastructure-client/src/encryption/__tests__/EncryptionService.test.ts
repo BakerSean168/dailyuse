@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { EncryptionService } from '../EncryptionService';
+import { EncryptionService } from '../encryption-service';
 import type { EncryptedData } from '../types';
 
 describe('EncryptionService', () => {

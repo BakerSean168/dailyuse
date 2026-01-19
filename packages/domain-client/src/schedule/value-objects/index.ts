@@ -2,7 +2,7 @@
  * Schedule 值对象导出
  */
 
-export { ScheduleConfig } from './ScheduleConfig';
-export { RetryPolicy } from './RetryPolicy';
-export { ExecutionInfo } from './ExecutionInfo';
-export { TaskMetadata } from './TaskMetadata';
+export { ScheduleConfig } from './schedule-config';
+export { RetryPolicy } from './retry-policy';
+export { ExecutionInfo } from './execution-info';
+export { TaskMetadata } from './task-metadata';

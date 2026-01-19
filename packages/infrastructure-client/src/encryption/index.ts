@@ -3,5 +3,5 @@
  * @module @dailyuse/infrastructure-client/encryption
  */
 
-export { EncryptionService } from './EncryptionService';
+export { EncryptionService } from './encryption-service';
 export type { EncryptedData, KeyDerivationParams } from './types';

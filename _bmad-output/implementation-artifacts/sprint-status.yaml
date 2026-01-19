@@ -64,8 +64,8 @@ development_status:
   epic-2-retrospective: optional
 
   # Epic 3: Standards Alignment
-  epic-3: backlog
-  3-1-kebab-case-file-names: backlog
+  epic-3: in-progress
+  3-1-kebab-case-file-names: ready-for-dev
   3-2-remove-interface-i-prefix: backlog
   3-3-replace-default-exports: backlog
   3-4-align-folder-structure: backlog

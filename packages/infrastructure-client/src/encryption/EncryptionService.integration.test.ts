@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { EncryptionService } from './EncryptionService';
+import { EncryptionService } from './encryption-service';
 
 describe('EncryptionService - Integration Tests', () => {
   let service: EncryptionService;

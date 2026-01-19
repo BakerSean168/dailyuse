@@ -12,7 +12,7 @@ export {
 } from './goal.container';
 
 // Core API Clients (Framework-agnostic)
-export { GoalApiClient, GoalFolderApiClient, type IHttpClient } from './goalApiClient';
+export { GoalApiClient, GoalFolderApiClient, type IHttpClient } from './goal-api-client';
 
 // Ports (Interfaces)
 export { type IGoalApiClient } from './ports/goal-api-client.port';

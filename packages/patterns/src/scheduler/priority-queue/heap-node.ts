@@ -4,4 +4,4 @@
  * @module patterns/scheduler
  */
 
-export type { HeapItem } from './MinHeap';
+export type { HeapItem } from './min-heap';

@@ -1,3 +1,3 @@
 // Priority queue data structures
-export * from './MinHeap';
-export * from './HeapNode';
+export * from './min-heap';
+export * from './heap-node';

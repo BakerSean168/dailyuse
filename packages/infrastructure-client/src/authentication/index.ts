@@ -12,7 +12,7 @@ export {
 } from './auth.container';
 
 // Core API Clients (Framework-agnostic)
-export { AuthApiClient, type IHttpClient, type IPublicHttpClient } from './authApiClient';
+export { AuthApiClient, type IHttpClient, type IPublicHttpClient } from './auth-api-client';
 
 // Ports (Interfaces)
 export { type IAuthApiClient, type RegisterResponse } from './ports/auth-api-client.port';
