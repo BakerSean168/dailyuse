@@ -1,6 +1,6 @@
 {
   "name": "@dailyuse/ui-react",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "React hooks wrapping @dailyuse/ui-core headless logic",
   "private": false,
   "type": "module",

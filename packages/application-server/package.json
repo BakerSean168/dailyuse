@@ -1,6 +1,6 @@
 {
   "name": "@dailyuse/application-server",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "DailyUse Server Application Layer - Use Cases and Application Services for API/Desktop main process",
   "type": "module",
   "main": "./dist/index.js",

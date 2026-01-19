@@ -1,6 +1,6 @@
 {
   "name": "@dailyuse/ui-core",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "Framework-agnostic headless UI logic for DailyUse applications",
   "private": false,
   "type": "module",

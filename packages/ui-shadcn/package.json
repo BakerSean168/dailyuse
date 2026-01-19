@@ -1,6 +1,6 @@
 {
   "name": "@dailyuse/ui-shadcn",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "shadcn/ui styled React components for DailyUse Electron desktop application",
   "private": false,
   "type": "module",

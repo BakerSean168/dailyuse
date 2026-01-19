@@ -6,7 +6,7 @@
     "email": "lulouhao@stu.sicau.edu.cn"
   },
   "description": "DailyUse Monorepo - Full-stack productivity suite built with Vue 3, Express, and Nx",
-  "version": "0.1.10",
+  "version": "0.2.0",
   "type": "module",
   "packageManager": "pnpm@10.18.3",
   "engines": {

@@ -1,6 +1,6 @@
 {
   "name": "@dailyuse/application-client",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "DailyUse Client Application Layer - Use Cases and Application Services for Web/Desktop clients",
   "type": "module",
   "main": "./dist/index.js",

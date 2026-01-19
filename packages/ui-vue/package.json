@@ -1,6 +1,6 @@
 {
   "name": "@dailyuse/ui-vue",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "Vue 3 composables wrapping @dailyuse/ui-core headless logic",
   "private": false,
   "type": "module",

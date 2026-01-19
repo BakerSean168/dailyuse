@@ -1,6 +1,6 @@
 {
   "name": "@dailyuse/domain-client",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "Client-side domain models with UI-focused methods",
   "type": "module",
   "main": "dist/index.js",
@@ -78,7 +78,6 @@
       "require": "./dist/sync/index.js"
     }
   },
-
   "dependencies": {
     "@dailyuse/utils": "workspace:*",
     "date-fns": "^4.1.0"
