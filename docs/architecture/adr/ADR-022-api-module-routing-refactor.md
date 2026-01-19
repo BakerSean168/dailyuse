@@ -44,7 +44,6 @@
 modules/
 ├── authentication/
 │   └── interface/
-│       └── http/
 │           ├── authentication-login.routes.ts        (65 行)
 │           ├── authentication-session.routes.ts      (60 行)
 │           ├── authentication-2fa.routes.ts          (50 行)
@@ -53,14 +52,12 @@ modules/
 │           └── index.ts                              (20 行) ← 聚合器
 ├── account/
 │   └── interface/
-│       └── http/
 │           ├── account-profile.routes.ts             (95 行)
 │           ├── account-session.routes.ts             (85 行)
 │           ├── account-deletion.routes.ts            (125 行)
 │           └── index.ts                              (17 行) ← 聚合器
 └── goal/
     └── interface/
-        └── http/
             ├── goal-crud.routes.ts                   (231 行)
             ├── goal-status.routes.ts                 (146 行)
             ├── goal-keyresult.routes.ts              (192 行)
