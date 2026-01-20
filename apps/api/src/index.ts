@@ -10,16 +10,17 @@ import { initializeApp } from './shared/initialization/initializer';
 import { eventBus } from '@dailyuse/utils';
 import { initializeLogger, getStartupInfo } from './shared/infrastructure/config/logger.config';
 import { createLogger } from '@dailyuse/utils';
-import {
-  startFocusModeCronJob,
-  stopFocusModeCronJob,
-} from './modules/goal/infrastructure/cron/focusModeCronJob';
-import {
-  startReminderTriggerCronJob,
-  stopReminderTriggerCronJob,
-} from './modules/reminder/infrastructure/cron/reminderTriggerCronJob';
+// DISABLED: Cron jobs moved to unified cron scheduler in shared/infrastructure/cron
+// import {
+//   startFocusModeCronJob,
+//   stopFocusModeCronJob,
+// } from './modules/goal/infrastructure/cron/focusModeCronJob';
+// import {
+//   startReminderTriggerCronJob,
+//   stopReminderTriggerCronJob,
+// } from './modules/reminder/infrastructure/cron/reminderTriggerCronJob';
 import { registerAllCronJobs, startCronScheduler, stopCronScheduler } from './shared/infrastructure/cron';
-import { registerTaskEventListeners } from './modules/task/application/event-handlers/registerTaskEventListeners';
+import { registerTaskEventListeners } from '@dailyuse/application-server/task';
 
 // 初始化日志系统
 initializeLogger();
@@ -78,26 +79,12 @@ const logger = createLogger('API');
       '⚠️ Schedule module is temporarily disabled - needs refactoring for new cron-based schema',
     );
 
-    // 启动 FocusMode 自动过期调度器
-    startFocusModeCronJob();
-    logger.info('✅ FocusMode cron job started', {
-      schedule: 'Hourly (0 * * * *)',
-      timezone: 'Asia/Shanghai',
-      description: 'Auto-deactivate expired focus cycles',
-    });
-
-    // 启动 Reminder 触发调度器
-    await startReminderTriggerCronJob();
-    logger.info('✅ Reminder trigger cron job started', {
-      schedule: 'Every minute (* * * * *)',
-      description: 'Trigger due reminder templates',
-    });
-
     // 启动统一 Cron 调度器 (Smart Frequency 等)
+    // 包括: DailyAnalysisCronJob, FocusMode, ReminderTrigger 等
     registerAllCronJobs();
     startCronScheduler();
     logger.info('✅ Unified cron scheduler started', {
-      description: 'Smart Frequency Daily Analysis, etc.',
+      description: 'Handles all cron jobs including Focus Mode, Reminder Triggers, and Daily Analysis',
     });
 
     app.listen(env.API_PORT, env.API_HOST, () => {
@@ -111,8 +98,6 @@ const logger = createLogger('API');
 
 process.on('SIGINT', async () => {
   logger.info('Received SIGINT signal, shutting down gracefully...');
-  stopFocusModeCronJob();
-  await stopReminderTriggerCronJob();
   stopCronScheduler();
   await disconnectPrisma();
   logger.info('Database disconnected');
@@ -120,7 +105,6 @@ process.on('SIGINT', async () => {
 });
 process.on('SIGTERM', async () => {
   logger.info('Received SIGTERM signal, shutting down gracefully...');
-  stopFocusModeCronJob();
   stopCronScheduler();
   await disconnectPrisma();
   logger.info('Database disconnected');
