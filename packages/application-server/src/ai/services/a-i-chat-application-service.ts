@@ -1,26 +1,57 @@
-import {
-  AIConversationServer,
-  MessageServer,
-  type IAIConversationRepository,
+/**
+ * AI Chat Application Service
+ *
+ * AI 聊天应用服务 - 管理对话、消息处理、流式响应
+ * 依赖注入模式：所有依赖通过构造函数注入，不直接依赖具体实现
+ */
+
+import type {
+  IAIConversationRepository,
+  IAIAdapter,
+  AIGenerationRequest,
+  AIStreamChunk,
 } from '@dailyuse/domain-server/ai';
-import {
-  type MessageClientDTO,
-  type MessageResponse,
-  MessageRole,
-  GenerationTaskType,
-  AIProvider,
-  AIModel
-} from '@dailyuse/contracts/ai';
+import { AIConversationServer, MessageServer } from '@dailyuse/domain-server/ai';
+import type { MessageClientDTO, MessageResponse } from '@dailyuse/contracts/ai';
+import { MessageRole, GenerationTaskType } from '@dailyuse/contracts/ai';
 import { createLogger, eventBus } from '@dailyuse/utils';
-import type { IAIAdapter, AIGenerationRequest, AIStreamChunk } from '@dailyuse/domain-server/ai';
 
 const logger = createLogger('AIChatApplicationService');
 
+/**
+ * AI Chat Application Service
+ */
 export class AIChatApplicationService {
+  private static instance: AIChatApplicationService | undefined;
+
   constructor(
     private readonly conversationRepository: IAIConversationRepository,
-    private readonly aiAdapter: IAIAdapter
+    private readonly aiAdapter: IAIAdapter,
   ) {}
+
+  /**
+   * 获取服务单例
+   */
+  static getInstance(): AIChatApplicationService {
+    if (!AIChatApplicationService.instance) {
+      throw new Error('AIChatApplicationService not initialized. Call setInstance() first.');
+    }
+    return AIChatApplicationService.instance;
+  }
+
+  /**
+   * 设置服务单例
+   */
+  static setInstance(instance: AIChatApplicationService): void {
+    AIChatApplicationService.instance = instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    AIChatApplicationService.instance = undefined;
+  }
 
   /**
    * Send a message and get a complete response
@@ -30,7 +61,7 @@ export class AIChatApplicationService {
     conversationUuid: string,
     content: string,
     provider?: string,
-    model?: string
+    model?: string,
   ): Promise<MessageResponse> {
     // 1. Validate & Save User Message
     const conversation = await this.validateAndGetConversation(accountUuid, conversationUuid);
@@ -60,7 +91,11 @@ export class AIChatApplicationService {
     }
 
     // 4. Save AI Message
-    const aiMessage = await this.saveMessage(conversation, MessageRole.ASSISTANT, aiResponseContent);
+    const aiMessage = await this.saveMessage(
+      conversation,
+      MessageRole.ASSISTANT,
+      aiResponseContent,
+    );
 
     return {
       message: aiMessage, // Return AI message (or User message? Chat UI usually wants AI reply)
@@ -76,7 +111,7 @@ export class AIChatApplicationService {
     content: string,
     onChunk: (chunk: any) => void,
     provider?: string,
-    model?: string
+    model?: string,
   ): Promise<void> {
     const conversation = await this.validateAndGetConversation(accountUuid, conversationUuid);
     await this.saveMessage(conversation, MessageRole.USER, content);
@@ -96,25 +131,29 @@ export class AIChatApplicationService {
       for await (const chunk of this.aiAdapter.streamText(request)) {
         fullContent = chunk.fullText;
         onChunk({
-            content: chunk.delta,
-            role: MessageRole.ASSISTANT
+          content: chunk.delta,
+          role: MessageRole.ASSISTANT,
         }); // Stream delta to client
       }
-      
+
       // Save full AI message after stream completes
       await this.saveMessage(conversation, MessageRole.ASSISTANT, fullContent);
-      
     } catch (error) {
-       logger.error('AI Stream Failed', error);
-       // Should probably notify client of error
-       throw error;
+      logger.error('AI Stream Failed', error);
+      // Should probably notify client of error
+      throw error;
     }
   }
 
   // --- Helper Methods ---
 
-  private async validateAndGetConversation(accountUuid: string, conversationUuid: string): Promise<AIConversationServer> {
-    const conversation = await this.conversationRepository.findByUuid(conversationUuid, { includeChildren: true });
+  private async validateAndGetConversation(
+    accountUuid: string,
+    conversationUuid: string,
+  ): Promise<AIConversationServer> {
+    const conversation = await this.conversationRepository.findByUuid(conversationUuid, {
+      includeChildren: true,
+    });
     if (!conversation) {
       throw new Error('Conversation not found');
     }
@@ -124,15 +163,19 @@ export class AIChatApplicationService {
     return conversation;
   }
 
-  private async saveMessage(conversation: AIConversationServer, role: MessageRole, content: string): Promise<MessageClientDTO> {
-     const message = MessageServer.create({
+  private async saveMessage(
+    conversation: AIConversationServer,
+    role: MessageRole,
+    content: string,
+  ): Promise<MessageClientDTO> {
+    const message = MessageServer.create({
       conversationUuid: conversation.uuid,
       role,
       content,
     });
     conversation.addMessage(message);
     await this.conversationRepository.save(conversation);
-    
+
     // Emit events
     const events = conversation.getUncommittedDomainEvents();
     for (const event of events) {
@@ -144,24 +187,64 @@ export class AIChatApplicationService {
   }
 
   private async getConversationHistory(conversationUuid: string): Promise<MessageClientDTO[]> {
-      const conversation = await this.conversationRepository.findByUuid(conversationUuid, { includeChildren: true });
-      if(!conversation) return [];
-      // Assuming messages are loaded
-      const messages = conversation.getMessages(); // Method on Aggregate or need to acccess propert?
-      // If messages are private/protected, we rely on Repository `includeChildren` to populate them.
-      // Aggregate root should expose them or we fetch usage DTO.
-      return messages.map(m => m.toClientDTO());
+    const conversation = await this.conversationRepository.findByUuid(conversationUuid, {
+      includeChildren: true,
+    });
+    if (!conversation) return [];
+    // Assuming messages are loaded
+    const messages = conversation.getMessages(); // Method on Aggregate or need to acccess propert?
+    // If messages are private/protected, we rely on Repository `includeChildren` to populate them.
+    // Aggregate root should expose them or we fetch usage DTO.
+    return messages.map((m) => m.toClientDTO());
   }
 
   private formatChatPrompt(history: MessageClientDTO[], newContent: string): string {
-      // Simple formatting. 
-      // Note: Ideally adapter handles structured messages.
-      let prompt = '';
-      for (const msg of history) {
-          prompt += `${msg.role}: ${msg.content}\n`;
-      }
-      // prompt += `user: ${newContent}\n`; // newContent is already in history if we saved it first?
-      // If we saved user message first, it is in history.
-      return prompt;
+    // Simple formatting.
+    // Note: Ideally adapter handles structured messages.
+    let prompt = '';
+    for (const msg of history) {
+      prompt += `${msg.role}: ${msg.content}\n`;
+    }
+    // prompt += `user: ${newContent}\n`; // newContent is already in history if we saved it first?
+    // If we saved user message first, it is in history.
+    return prompt;
   }
 }
+
+/**
+ * 便捷函数：发送消息
+ */
+export const sendMessage = (
+  accountUuid: string,
+  conversationUuid: string,
+  content: string,
+  provider?: string,
+  model?: string,
+): ReturnType<AIChatApplicationService['sendMessage']> =>
+  AIChatApplicationService.getInstance().sendMessage(
+    accountUuid,
+    conversationUuid,
+    content,
+    provider,
+    model,
+  );
+
+/**
+ * 便捷函数：流式发送消息
+ */
+export const sendMessageStream = (
+  accountUuid: string,
+  conversationUuid: string,
+  content: string,
+  onChunk: (chunk: any) => void,
+  provider?: string,
+  model?: string,
+): ReturnType<AIChatApplicationService['sendMessageStream']> =>
+  AIChatApplicationService.getInstance().sendMessageStream(
+    accountUuid,
+    conversationUuid,
+    content,
+    onChunk,
+    provider,
+    model,
+  );

@@ -1,15 +1,11 @@
 /**
  * AI Provider Config Application Service
- * AI 服务提供商配置应用服务
  *
- * 职责（DDD 应用服务层）：
- * - 协调 Provider 配置的 CRUD 操作
- * - 处理 API 连接测试
- * - 管理默认 Provider 状态
- * - DTO 转换
+ * AI 服务提供商配置应用服务 - 管理 Provider 配置的 CRUD、测试、默认状态管理
+ * 依赖注入模式：所有依赖通过构造函数注入，不直接依赖具体实现
  */
 
-import type { IAIProviderConfigRepository } from '@dailyuse/domain-server/ai';
+import type { IAIProviderConfigRepository, IAIAdapter } from '@dailyuse/domain-server/ai';
 import { AIProviderConfigServer } from '@dailyuse/domain-server/ai';
 import type {
   AIProviderConfigServerDTO,
@@ -22,21 +18,48 @@ import type {
 } from '@dailyuse/contracts/ai';
 import { AIProviderType } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
-// import { AIAdapterFactory } from '@dailyuse/infrastructure-server';
-import type { IAIAdapter } from '@dailyuse/domain-server/ai';
 
 const logger = createLogger('AIProviderConfigService');
 
-import { type AIAdapterFactoryFn } from './a-i-provider-switching-service';
+/**
+ * Adapter Factory Function Type
+ */
+export type AIAdapterFactoryFn = (provider: AIProviderConfigServerDTO) => Promise<IAIAdapter>;
 
 /**
  * AI Provider Config Application Service
  */
 export class AIProviderConfigService {
+  private static instance: AIProviderConfigService | undefined;
+
   constructor(
     private readonly providerRepository: IAIProviderConfigRepository,
-    private readonly adapterFactory?: AIAdapterFactoryFn // Optional to allow backward compat if needed, but better specific.
+    private readonly adapterFactory: AIAdapterFactoryFn,
   ) {}
+
+  /**
+   * 获取服务单例
+   */
+  static getInstance(): AIProviderConfigService {
+    if (!AIProviderConfigService.instance) {
+      throw new Error('AIProviderConfigService not initialized. Call setInstance() first.');
+    }
+    return AIProviderConfigService.instance;
+  }
+
+  /**
+   * 设置服务单例
+   */
+  static setInstance(instance: AIProviderConfigService): void {
+    AIProviderConfigService.instance = instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    AIProviderConfigService.instance = undefined;
+  }
 
   /**
    * 创建新的 AI Provider 配置
@@ -226,20 +249,20 @@ export class AIProviderConfigService {
 
     try {
       if (!this.adapterFactory) throw new Error('Adapter Factory not injected');
-      
+
       const tempConfig = {
-          uuid: 'temp',
-          accountUuid: 'temp',
-          name: 'temp',
-          provider: request.providerType,
-          apiKey: request.apiKey,
-          baseUrl: request.baseUrl,
-          isActive: true
+        uuid: 'temp',
+        accountUuid: 'temp',
+        name: 'temp',
+        provider: request.providerType,
+        apiKey: request.apiKey,
+        baseUrl: request.baseUrl,
+        isActive: true,
       } as any;
-      
+
       const adapter = this.adapterFactory(tempConfig);
       const isHealthy = await adapter.healthCheck();
-      
+
       const result = { ok: isHealthy, error: isHealthy ? undefined : 'Health check failed' };
 
       // 如果连接成功，尝试获取模型列表
@@ -419,10 +442,7 @@ export class AIProviderConfigService {
    * 获取 Provider 的 AI 适配器
    * 用于动态切换用户自定义 Provider
    */
-  async getAdapterForProvider(
-    providerUuid: string,
-    accountUuid: string,
-  ): Promise<IAIAdapter> {
+  async getAdapterForProvider(providerUuid: string, accountUuid: string): Promise<IAIAdapter> {
     const provider = await this.providerRepository.findByUuid(providerUuid);
     if (!provider) {
       throw new Error('Provider not found');
@@ -441,4 +461,50 @@ export class AIProviderConfigService {
   }
 }
 
+/**
+ * 便捷函数：创建 Provider
+ */
+export const createProvider = (
+  accountUuid: string,
+  request: CreateAIProviderRequest,
+): ReturnType<AIProviderConfigService['createProvider']> =>
+  AIProviderConfigService.getInstance().createProvider(accountUuid, request);
 
+/**
+ * 便捷函数：更新 Provider
+ */
+export const updateProvider = (
+  uuid: string,
+  request: UpdateAIProviderRequest,
+): ReturnType<AIProviderConfigService['updateProvider']> =>
+  AIProviderConfigService.getInstance().updateProvider(uuid, request);
+
+/**
+ * 便捷函数：删除 Provider
+ */
+export const deleteProvider = (
+  uuid: string,
+): ReturnType<AIProviderConfigService['deleteProvider']> =>
+  AIProviderConfigService.getInstance().deleteProvider(uuid);
+
+/**
+ * 便捷函数：获取 Provider
+ */
+export const getProvider = (uuid: string): ReturnType<AIProviderConfigService['getProvider']> =>
+  AIProviderConfigService.getInstance().getProvider(uuid);
+
+/**
+ * 便捷函数：列出 Providers
+ */
+export const listProviders = (
+  accountUuid: string,
+): ReturnType<AIProviderConfigService['listProviders']> =>
+  AIProviderConfigService.getInstance().listProviders(accountUuid);
+
+/**
+ * 便捷函数：测试连接
+ */
+export const testConnection = (
+  request: TestAIProviderConnectionRequest,
+): ReturnType<AIProviderConfigService['testConnection']> =>
+  AIProviderConfigService.getInstance().testConnection(request);

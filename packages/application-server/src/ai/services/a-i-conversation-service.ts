@@ -1,21 +1,13 @@
 /**
  * AI Conversation Service
- * AI 对话应用服务
  *
- * 职责（DDD 应用服务层）：
- * - 协调对话的 CRUD 操作
- * - 调用领域聚合根的业务方法
- * - 通过仓储持久化
- * - DTO 转换
- *
- * 依赖：
- * - IAIConversationRepository（仓储接口）
- * - AIConversationServer（领域聚合根）
+ * AI 对话应用服务 - 协调对话的 CRUD 操作和状态管理
+ * 依赖注入模式：所有依赖通过构造函数注入，不直接依赖具体实现
  */
 
 import type { IAIConversationRepository } from '@dailyuse/domain-server/ai';
 import { AIConversationServer, MessageServer } from '@dailyuse/domain-server/ai';
-import type { AIConversationServerDTO, AIConversationClientDTO, MessageClientDTO } from '@dailyuse/contracts/ai';
+import type { AIConversationClientDTO, MessageClientDTO } from '@dailyuse/contracts/ai';
 import { MessageRole, ConversationStatus } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 
@@ -25,7 +17,33 @@ const logger = createLogger('AIConversationService');
  * AI Conversation Service
  */
 export class AIConversationService {
-  constructor(private conversationRepository: IAIConversationRepository) {}
+  private static instance: AIConversationService | undefined;
+
+  constructor(private readonly conversationRepository: IAIConversationRepository) {}
+
+  /**
+   * 获取服务单例
+   */
+  static getInstance(): AIConversationService {
+    if (!AIConversationService.instance) {
+      throw new Error('AIConversationService not initialized. Call setInstance() first.');
+    }
+    return AIConversationService.instance;
+  }
+
+  /**
+   * 设置服务单例
+   */
+  static setInstance(instance: AIConversationService): void {
+    AIConversationService.instance = instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    AIConversationService.instance = undefined;
+  }
 
   /**
    * 创建新对话
@@ -253,4 +271,54 @@ export class AIConversationService {
   }
 }
 
+/**
+ * 便捷函数：创建对话
+ */
+export const createConversation = (
+  accountUuid: string,
+  title?: string,
+): ReturnType<AIConversationService['createConversation']> =>
+  AIConversationService.getInstance().createConversation(accountUuid, title);
 
+/**
+ * 便捷函数：获取对话
+ */
+export const getConversation = (
+  conversationUuid: string,
+  includeMessages?: boolean,
+): ReturnType<AIConversationService['getConversation']> =>
+  AIConversationService.getInstance().getConversation(conversationUuid, includeMessages);
+
+/**
+ * 便捷函数：列出对话
+ */
+export const listConversations = (
+  accountUuid: string,
+): ReturnType<AIConversationService['listConversations']> =>
+  AIConversationService.getInstance().listConversations(accountUuid);
+
+/**
+ * 便捷函数：删除对话
+ */
+export const deleteConversation = (
+  conversationUuid: string,
+): ReturnType<AIConversationService['deleteConversation']> =>
+  AIConversationService.getInstance().deleteConversation(conversationUuid);
+
+/**
+ * 便捷函数：更新对话标题
+ */
+export const updateConversationTitle = (
+  conversationUuid: string,
+  title: string,
+): ReturnType<AIConversationService['updateConversationTitle']> =>
+  AIConversationService.getInstance().updateConversationTitle(conversationUuid, title);
+
+/**
+ * 便捷函数：更新对话状态
+ */
+export const updateConversationStatus = (
+  conversationUuid: string,
+  status: ConversationStatus,
+): ReturnType<AIConversationService['updateConversationStatus']> =>
+  AIConversationService.getInstance().updateConversationStatus(conversationUuid, status);

@@ -1,30 +1,16 @@
 /**
  * Goal Generation Application Service
- * 目标生成应用服务
  *
- * 职责（DDD 应用服务层）：
- * - 从用户想法生成 OKR 目标
- * - 生成关键结果（Key Results）
- * - 协调领域服务、基础设施和仓储
- * - 处理事务边界和业务流程
- *
- * 设计原则：
- * - AI Provider 由用户配置，不硬编码任何特定服务商
- * - 通过 AIProviderConfigRepository 动态获取用户配置的 AI Adapter
- * - 支持任意 OpenAI 兼容 API（青牛云、OpenAI、Claude、DeepSeek 等）
- *
- * 依赖：
- * - AIGenerationValidationService（领域服务 - 验证逻辑）
- * - IAIProviderConfigRepository（仓储 - 获取用户的 AI Provider 配置）
- * - QuotaEnforcementService（基础设施 - 配额管理）
- * - IAIUsageQuotaRepository（仓储 - 配额持久化）
+ * 目标生成应用服务 - 从用户想法生成 OKR 目标和关键结果
+ * 依赖注入模式：所有依赖通过构造函数注入，不直接依赖具体实现
  */
 
 import type {
   IAIUsageQuotaRepository,
   IAIProviderConfigRepository,
+  AIGenerationValidationService,
+  IQuotaEnforcementService,
 } from '@dailyuse/domain-server/ai';
-import type { AIGenerationValidationService } from '@dailyuse/domain-server/ai';
 import type {
   AIUsageQuotaServerDTO,
   GeneratedGoalDraft,
@@ -39,21 +25,6 @@ import { randomUUID } from 'crypto';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('GoalGenerationApplicationService');
-
-/**
- * AI Adapter interface - to be provided by infrastructure layer
- */
-export interface BaseAIAdapter {
-  generate(request: AIGenerationRequest): Promise<string>;
-}
-
-/**
- * AI Generation Request interface
- */
-export interface AIGenerationRequest {
-  prompt: string;
-  maxTokens?: number;
-}
 
 /**
  * 生成目标请求参数
@@ -107,31 +78,44 @@ export interface GenerateKeyResultsParams {
 }
 
 /**
- * Quota Enforcement Service interface
- */
-export interface IQuotaEnforcementService {
-  checkQuota(quota: any, amount: number): void;
-  consumeQuota(quota: any, amount: number): any;
-}
-
-/**
  * Goal Generation Application Service
- * 目标生成应用服务
- *
- * 核心设计：
- * - 不绑定任何特定 AI 服务商
- * - 每次调用时根据用户配置动态获取 AI Adapter
- * - 支持用户自由切换 AI 提供商
  */
 export class GoalGenerationApplicationService {
+  private static instance: GoalGenerationApplicationService | undefined;
+
   constructor(
     private readonly validationService: AIGenerationValidationService,
     private readonly providerConfigRepository: IAIProviderConfigRepository,
     private readonly quotaRepository: IAIUsageQuotaRepository,
-    private readonly quotaService: IQuotaEnforcementService,
-    private readonly adapterFactory: any, // AIAdapterFactory
-    private readonly promptTemplate: string,
+    private readonly quotaEnforcementService: IQuotaEnforcementService,
+    private readonly adapterFactory: any, // AIAdapterFactory from domain layer
   ) {}
+
+  /**
+   * 获取服务单例
+   */
+  static getInstance(): GoalGenerationApplicationService {
+    if (!GoalGenerationApplicationService.instance) {
+      throw new Error(
+        'GoalGenerationApplicationService not initialized. Call setInstance() first.',
+      );
+    }
+    return GoalGenerationApplicationService.instance;
+  }
+
+  /**
+   * 设置服务单例
+   */
+  static setInstance(instance: GoalGenerationApplicationService): void {
+    GoalGenerationApplicationService.instance = instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    GoalGenerationApplicationService.instance = undefined;
+  }
 
   /**
    * 获取用户配置的 AI Adapter
@@ -219,7 +203,7 @@ export class GoalGenerationApplicationService {
 
     // 2. 获取配额
     const quota = await this.getOrCreateQuota(accountUuid);
-    this.quotaService.checkQuota(quota, 1);
+    this.quotaEnforcementService.checkQuota(quota, 1);
 
     // 3. 获取用户配置的 AI Adapter
     const { adapter, providerName, modelId } = await this.getAIAdapter(accountUuid, providerUuid);
@@ -281,7 +265,7 @@ export class GoalGenerationApplicationService {
     this.validateGoalDraft(goalDraft);
 
     // 8. 消费配额
-    const updatedQuota = this.quotaService.consumeQuota(quota, 1);
+    const updatedQuota = this.quotaEnforcementService.consumeQuota(quota, 1);
     await this.quotaRepository.save(updatedQuota as any);
 
     // 提取 keyResults（如果存在）
@@ -352,7 +336,7 @@ export class GoalGenerationApplicationService {
 
     // 2. 获取配额
     const quota = await this.getOrCreateQuota(accountUuid);
-    this.quotaService.checkQuota(quota, 1);
+    this.quotaEnforcementService.checkQuota(quota, 1);
 
     // 3. 获取用户配置的 AI Adapter
     const { adapter, providerName, modelId } = await this.getAIAdapter(accountUuid, providerUuid);
@@ -404,7 +388,7 @@ export class GoalGenerationApplicationService {
     this.validationService.validateKeyResultsOutput(keyResults);
 
     // 9. 消费配额
-    const updatedQuota = this.quotaService.consumeQuota(quota, 1);
+    const updatedQuota = this.quotaEnforcementService.consumeQuota(quota, 1);
     await this.quotaRepository.save(updatedQuota as any);
 
     logger.info('Key results generated successfully', {
@@ -517,3 +501,27 @@ export class GoalGenerationApplicationService {
     }
   }
 }
+
+/**
+ * 便捷函数：生成目标
+ */
+export const generateGoal = (
+  params: GenerateGoalParams,
+): ReturnType<GoalGenerationApplicationService['generateGoal']> =>
+  GoalGenerationApplicationService.getInstance().generateGoal(params);
+
+/**
+ * 便捷函数：生成目标和关键结果
+ */
+export const generateGoalWithKRs = (
+  params: GenerateGoalParams,
+): ReturnType<GoalGenerationApplicationService['generateGoalWithKRs']> =>
+  GoalGenerationApplicationService.getInstance().generateGoalWithKRs(params);
+
+/**
+ * 便捷函数：生成关键结果
+ */
+export const generateKeyResults = (
+  params: GenerateKeyResultsParams,
+): ReturnType<GoalGenerationApplicationService['generateKeyResults']> =>
+  GoalGenerationApplicationService.getInstance().generateKeyResults(params);

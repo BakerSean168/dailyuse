@@ -2,11 +2,11 @@
  * Pause Task Template Service
  *
  * 暂停任务模板
- * 业务逻辑�?
+ * 业务逻辑：
  * 1. 修改模板状态为 PAUSED
  * 2. 停止生成新的任务实例
- * 3. 处理已存在的未完成实例（标记�?SKIPPED�?
- * 4. 发布暂停事件，触发提醒调度暂�?
+ * 3. 处理已存在的未完成实例（标记为 SKIPPED）
+ * 4. 发布暂停事件，触发提醒调度暂�?
  */
 
 import type {
@@ -25,13 +25,16 @@ export class PauseTaskTemplate {
     private readonly instanceRepository: ITaskInstanceRepository,
   ) {}
 
-  async execute(uuid: string, reason?: string): Promise<{ template: TaskTemplateClientDTO; instancesSkipped: number }> {
+  async execute(
+    uuid: string,
+    reason?: string,
+  ): Promise<{ template: TaskTemplateClientDTO; instancesSkipped: number }> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
       throw new Error(`TaskTemplate ${uuid} not found`);
     }
 
-    // 1. 暂停模板状�?
+    // 1. 暂停模板状�?
     template.pause();
     await this.templateRepository.save(template);
 
@@ -51,7 +54,7 @@ export class PauseTaskTemplate {
         timestamp: Date.now(),
       });
     } catch (error) {
-      console.error(`�?[PauseTaskTemplate] 发布暂停事件失败:`, error);
+      console.error(`�?[PauseTaskTemplate] 发布暂停事件失败:`, error);
     }
 
     return {
@@ -75,15 +78,14 @@ export class PauseTaskTemplate {
       }
 
       for (const instance of pendingInstances) {
-        instance.skip('模板已暂�?);
+        instance.skip('模板已暂停');
         await this.instanceRepository.save(instance);
       }
 
       return pendingInstances.length;
     } catch (error) {
-      console.error(`�?[PauseTaskTemplate] 处理实例失败:`, error);
+      console.error(`[PauseTaskTemplate] 处理实例失败:`, error);
       return 0;
     }
   }
 }
-

@@ -39,6 +39,7 @@
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/domain-server": "workspace:*",
+    "@dailyuse/application-server": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "bcryptjs": "^2.4.3",
     "passport-jwt": "^4.0.1",

@@ -1,18 +1,10 @@
 /**
  * AI Generation Application Service
- * AI 生成应用服务
  *
- * 职责（DDD 应用服务层）：
- * - 协调领域服务、基础设施和仓储
- * - 处理事务边界和业务流程
- * - DTO 转换
- * - 跨聚合协调
+ * AI 生成应用服务 - 协调领域服务、基础设施和仓储
+ * 处理事务边界、业务流程、DTO 转换和跨聚合协调
  *
- * 依赖：
- * - AIGenerationService（领域服务 - 纯验证逻辑）
- * - BaseAIAdapter（基础设施 - AI 调用）
- * - QuotaEnforcementService（基础设施 - 配额管理）
- * - Repository 接口（持久化）
+ * 依赖注入模式：所有依赖通过构造函数注入，不直接依赖具体实现
  */
 
 import type {
@@ -22,56 +14,74 @@ import type {
   AIGenerationValidationService,
   IKnowledgeGenerationTaskRepository,
   KnowledgeGenerationTask,
+  IAIAdapter,
+  AIGenerationRequest,
+  IQuotaEnforcementService,
+  IAIProviderConfigService,
 } from '@dailyuse/domain-server/ai';
 import {
   createKnowledgeGenerationTask,
   updateTaskProgress,
   completeTask,
   failTask,
+  getPromptTemplate,
+  SUMMARIZATION_PROMPT,
+  GENERATE_GOAL_PROMPT,
 } from '@dailyuse/domain-server/ai';
 import type {
-  AIProviderConfigServerDTO,
-  AIGenerationTaskServerDTO,
   AIUsageQuotaServerDTO,
   AIUsageQuotaClientDTO,
-  AIConversationServerDTO,
   GeneratedGoalDraft,
   GenerateGoalResponse,
   TokenUsageServerDTO,
   SummarizationResultDTO,
 } from '@dailyuse/contracts/ai';
-import { GenerationTaskType, TaskStatus, AIProvider, AIModel } from '@dailyuse/contracts/ai';
+import { GenerationTaskType } from '@dailyuse/contracts/ai';
 import { randomUUID } from 'crypto';
-import { createLogger } from '@dailyuse/utils';
-import type { IAIAdapter, AIGenerationRequest } from '@dailyuse/domain-server/ai';
-import {
-  QuotaEnforcementService,
-  getPromptTemplate,
-  SUMMARIZATION_PROMPT,
-  GENERATE_GOAL_PROMPT,
-} from '@dailyuse/infrastructure-server';
+import { createLogger, eventBus } from '@dailyuse/utils';
 
 const logger = createLogger('AIGenerationApplicationService');
-
-import { AIProviderConfigService } from './a-i-provider-config-service';
 
 /**
  * AI Generation Application Service
  */
 export class AIGenerationApplicationService {
-  private readonly quotaService: QuotaEnforcementService;
+  private static instance: AIGenerationApplicationService | undefined;
 
   constructor(
-    private validationService: AIGenerationValidationService,
-    private aiAdapter: IAIAdapter,
-    private quotaRepository: IAIUsageQuotaRepository,
-    private conversationRepository: IAIConversationRepository,
-    private providerConfigService: AIProviderConfigService,
-    private providerRepository: IAIProviderConfigRepository,
-    private taskRepository?: IKnowledgeGenerationTaskRepository,
-    private documentService?: any, // DocumentApplicationService - 可选依赖避免循环
-  ) {
-    this.quotaService = new QuotaEnforcementService();
+    private readonly validationService: AIGenerationValidationService,
+    private readonly aiAdapter: IAIAdapter,
+    private readonly quotaRepository: IAIUsageQuotaRepository,
+    private readonly conversationRepository: IAIConversationRepository,
+    private readonly quotaEnforcementService: IQuotaEnforcementService,
+    private readonly providerConfigService: IAIProviderConfigService,
+    private readonly providerRepository: IAIProviderConfigRepository,
+    private readonly taskRepository?: IKnowledgeGenerationTaskRepository,
+    private readonly documentService?: any, // DocumentApplicationService - 可选依赖避免循环
+  ) {}
+
+  /**
+   * 获取服务单例
+   */
+  static getInstance(): AIGenerationApplicationService {
+    if (!AIGenerationApplicationService.instance) {
+      throw new Error('AIGenerationApplicationService not initialized. Call setInstance() first.');
+    }
+    return AIGenerationApplicationService.instance;
+  }
+
+  /**
+   * 设置服务单例
+   */
+  static setInstance(instance: AIGenerationApplicationService): void {
+    AIGenerationApplicationService.instance = instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    AIGenerationApplicationService.instance = undefined;
   }
 
   /**
@@ -121,7 +131,7 @@ export class AIGenerationApplicationService {
       };
       await this.quotaRepository.save(quota as any);
     }
-    this.quotaService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
+    this.quotaEnforcementService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
 
     // 3. 获取 AI Adapter
     let adapter: IAIAdapter = this.aiAdapter;
@@ -130,10 +140,8 @@ export class AIGenerationApplicationService {
 
     if (providerUuid) {
       try {
-        adapter = await this.providerConfigService
-          .getAdapterForProvider(providerUuid, accountUuid);
-        const providerConfig = await this.providerRepository
-          .findByUuid(providerUuid);
+        adapter = await this.providerConfigService.getAdapterForProvider(providerUuid, accountUuid);
+        const providerConfig = await this.providerRepository.findByUuid(providerUuid);
         if (providerConfig) {
           providerName = providerConfig.name;
           modelUsed =
@@ -195,7 +203,10 @@ export class AIGenerationApplicationService {
     this.validateGoalDraft(goalDraft);
 
     // 8. 消费配额
-    const updatedQuota = this.quotaService.consumeQuota(quota as AIUsageQuotaServerDTO, 1);
+    const updatedQuota = this.quotaEnforcementService.consumeQuota(
+      quota as AIUsageQuotaServerDTO,
+      1,
+    );
     await this.quotaRepository.save(updatedQuota as any);
 
     logger.info('Goal generated successfully', {
@@ -298,7 +309,7 @@ export class AIGenerationApplicationService {
     }
 
     // 2. 检查配额（基础设施服务）
-    this.quotaService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
+    this.quotaEnforcementService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
 
     // 3. 获取 Prompt 模板（基础设施）
     const template = getPromptTemplate(GenerationTaskType.GOAL_KEY_RESULTS);
@@ -340,7 +351,10 @@ export class AIGenerationApplicationService {
     this.validationService.validateKeyResultsOutput(keyResults);
 
     // 7. 消费配额（基础设施服务）
-    const updatedQuota = this.quotaService.consumeQuota(quota as AIUsageQuotaServerDTO, 1);
+    const updatedQuota = this.quotaEnforcementService.consumeQuota(
+      quota as AIUsageQuotaServerDTO,
+      1,
+    );
 
     // 8. 持久化配额（仓储）
     await this.quotaRepository.save(updatedQuota as any);
@@ -395,7 +409,7 @@ export class AIGenerationApplicationService {
     }
 
     // 2. 检查配额
-    this.quotaService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
+    this.quotaEnforcementService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
 
     // 3. 获取 Prompt 模板
     const template = getPromptTemplate(GenerationTaskType.TASK_TEMPLATES);
@@ -443,7 +457,10 @@ export class AIGenerationApplicationService {
     this.validationService.validateTasksOutput(tasks);
 
     // 7. 消费配额
-    const updatedQuota = this.quotaService.consumeQuota(quota as AIUsageQuotaServerDTO, 1);
+    const updatedQuota = this.quotaEnforcementService.consumeQuota(
+      quota as AIUsageQuotaServerDTO,
+      1,
+    );
     await this.quotaRepository.save(updatedQuota as any);
 
     logger.info('Tasks generated successfully', {
@@ -500,7 +517,7 @@ export class AIGenerationApplicationService {
       } as any;
       await this.quotaRepository.save(quota as AIUsageQuotaServerDTO);
     }
-    this.quotaService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
+    this.quotaEnforcementService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
 
     // Conversation
     let conversation: AIConversationServer | null = null;
@@ -551,7 +568,10 @@ export class AIGenerationApplicationService {
 
       // Consume quota
       const tokensUsed = result.tokenUsage?.totalTokens ?? 1;
-      const updatedQuota = this.quotaService.consumeQuota(quota as AIUsageQuotaServerDTO, 1);
+      const updatedQuota = this.quotaEnforcementService.consumeQuota(
+        quota as AIUsageQuotaServerDTO,
+        1,
+      );
       await this.quotaRepository.save(updatedQuota as any);
       const remaining = updatedQuota.quotaLimit - updatedQuota.currentUsage;
 
@@ -609,7 +629,7 @@ export class AIGenerationApplicationService {
       } as any;
       await this.quotaRepository.save(quota as AIUsageQuotaServerDTO);
     }
-    this.quotaService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
+    this.quotaEnforcementService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
 
     let conversation: AIConversationServer | null = null;
     if (conversationUuid) {
@@ -669,7 +689,10 @@ export class AIGenerationApplicationService {
         (conversation as any).addMessage(assistantMsg);
         await this.conversationRepository.save(conversation as any);
 
-        const updatedQuota = this.quotaService.consumeQuota(quota as AIUsageQuotaServerDTO, 1);
+        const updatedQuota = this.quotaEnforcementService.consumeQuota(
+          quota as AIUsageQuotaServerDTO,
+          1,
+        );
         await this.quotaRepository.save(updatedQuota as any);
 
         callbacks.onComplete({ content: full, tokenUsage: finalTokenUsage });
@@ -764,7 +787,7 @@ export class AIGenerationApplicationService {
     }
 
     // 2. 检查配额
-    this.quotaService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
+    this.quotaEnforcementService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
 
     // 3. 构建 Prompt
     const context = { inputText: text, language, includeActions };
@@ -791,7 +814,10 @@ export class AIGenerationApplicationService {
 
     // 6. 消费配额 (tokensUsed fallback 1)
     const tokensUsed = response.tokenUsage?.totalTokens ?? 1;
-    const updatedQuota = this.quotaService.consumeQuota(quota as AIUsageQuotaServerDTO, 1);
+    const updatedQuota = this.quotaEnforcementService.consumeQuota(
+      quota as AIUsageQuotaServerDTO,
+      1,
+    );
     await this.quotaRepository.save(updatedQuota as any);
 
     // 7. 计算压缩比
@@ -879,7 +905,7 @@ export class AIGenerationApplicationService {
 
     // 估算 token 使用量：每个文档约 2000 tokens
     const estimatedTokens = documentCount * 2000;
-    this.quotaService.checkQuota(quota as AIUsageQuotaServerDTO, estimatedTokens);
+    this.quotaEnforcementService.checkQuota(quota as AIUsageQuotaServerDTO, estimatedTokens);
 
     // 3. 构建提示
     const promptTemplate = getPromptTemplate(GenerationTaskType.KNOWLEDGE_DOCUMENTS);
@@ -926,7 +952,10 @@ export class AIGenerationApplicationService {
 
     // 7. 消费配额
     const tokensUsed = response.tokenUsage?.totalTokens ?? estimatedTokens;
-    const updatedQuota = this.quotaService.consumeQuota(quota as AIUsageQuotaServerDTO, tokensUsed);
+    const updatedQuota = this.quotaEnforcementService.consumeQuota(
+      quota as AIUsageQuotaServerDTO,
+      tokensUsed,
+    );
     await this.quotaRepository.save(updatedQuota as any);
 
     logger.info('Knowledge series generated', {
@@ -1134,3 +1163,43 @@ export class AIGenerationApplicationService {
     return documents;
   }
 }
+
+/**
+ * 便捷函数：生成目标
+ */
+export const generateGoal = (
+  params: Parameters<AIGenerationApplicationService['generateGoal']>[0],
+): ReturnType<AIGenerationApplicationService['generateGoal']> =>
+  AIGenerationApplicationService.getInstance().generateGoal(params);
+
+/**
+ * 便捷函数：生成关键结果
+ */
+export const generateKeyResults = (
+  params: Parameters<AIGenerationApplicationService['generateKeyResults']>[0],
+): ReturnType<AIGenerationApplicationService['generateKeyResults']> =>
+  AIGenerationApplicationService.getInstance().generateKeyResults(params);
+
+/**
+ * 便捷函数：生成任务
+ */
+export const generateTasks = (
+  params: Parameters<AIGenerationApplicationService['generateTasks']>[0],
+): ReturnType<AIGenerationApplicationService['generateTasks']> =>
+  AIGenerationApplicationService.getInstance().generateTasks(params);
+
+/**
+ * 便捷函数：生成文本
+ */
+export const generateText = (
+  request: Parameters<AIGenerationApplicationService['generateText']>[0],
+): ReturnType<AIGenerationApplicationService['generateText']> =>
+  AIGenerationApplicationService.getInstance().generateText(request);
+
+/**
+ * 便捷函数：获取配额状态
+ */
+export const getQuotaStatus = (
+  accountUuid: string,
+): ReturnType<AIGenerationApplicationService['getQuotaStatus']> =>
+  AIGenerationApplicationService.getInstance().getQuotaStatus(accountUuid);

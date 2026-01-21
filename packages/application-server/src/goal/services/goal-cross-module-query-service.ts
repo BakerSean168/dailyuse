@@ -1,10 +1,15 @@
 /**
- * 跨模块查询 API - Goal 模块查询接口
+ * Goal 跨模块查询服务
+ *
  * 为其他模块提供目标和关键结果的查询服务
+ * 依赖注入模式：通过构造函数注入 Goal Repository
  */
 
-import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
-import { GoalStatus } from '@dailyuse/contracts/goal';
+import type { IGoalRepository } from '@dailyuse/domain-server/goal';
+import type { GoalStatus } from '@dailyuse/contracts/goal';
+import { createLogger } from '@dailyuse/utils';
+
+const logger = createLogger('GoalCrossModuleQueryService');
 
 /**
  * 目标绑定选项（供任务模块使用）
@@ -38,15 +43,32 @@ export interface KeyResultBindingOption {
  * Goal 模块跨模块查询服务
  */
 export class GoalCrossModuleQueryService {
-  private static instance: GoalCrossModuleQueryService;
+  private static instance: GoalCrossModuleQueryService | undefined;
 
-  private constructor() {}
+  constructor(private readonly goalRepository: IGoalRepository) {}
 
+  /**
+   * 获取服务单例
+   */
   static getInstance(): GoalCrossModuleQueryService {
-    if (!this.instance) {
-      this.instance = new GoalCrossModuleQueryService();
+    if (!GoalCrossModuleQueryService.instance) {
+      throw new Error('GoalCrossModuleQueryService not initialized. Call setInstance() first.');
     }
-    return this.instance;
+    return GoalCrossModuleQueryService.instance;
+  }
+
+  /**
+   * 设置服务单例
+   */
+  static setInstance(instance: GoalCrossModuleQueryService): void {
+    GoalCrossModuleQueryService.instance = instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    GoalCrossModuleQueryService.instance = undefined;
   }
 
   /**
@@ -58,14 +80,10 @@ export class GoalCrossModuleQueryService {
     accountUuid: string;
     status?: GoalStatus[];
   }): Promise<GoalBindingOption[]> {
-    const { GoalContainer } = await import('@dailyuse/infrastructure-server');
-    const container = GoalContainer.getInstance();
-    const goalRepo = container.getGoalRepository();
-
     // 默认只返回进行中和未开始的目标
     const statusFilter = params.status || ['IN_PROGRESS', 'NOT_STARTED'];
 
-    const goals = await goalRepo.findByAccountUuid(params.accountUuid);
+    const goals = await this.goalRepository.findByAccountUuid(params.accountUuid);
 
     return goals
       .filter((goal: any) => (statusFilter as string[]).includes(goal.status))
@@ -84,11 +102,7 @@ export class GoalCrossModuleQueryService {
    * @param goalUuid 目标 UUID
    */
   async getKeyResultsForTaskBinding(goalUuid: string): Promise<KeyResultBindingOption[]> {
-    const { GoalContainer } = await import('@dailyuse/infrastructure-server');
-    const container = GoalContainer.getInstance();
-    const goalRepo = container.getGoalRepository();
-
-    const goal = await goalRepo.findById(goalUuid);
+    const goal = await this.goalRepository.findById(goalUuid);
     if (!goal) {
       throw new Error(`Goal not found: ${goalUuid}`);
     }
@@ -119,11 +133,7 @@ export class GoalCrossModuleQueryService {
     keyResultUuid: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const { GoalContainer } = await import('@dailyuse/infrastructure-server');
-      const container = GoalContainer.getInstance();
-      const goalRepo = container.getGoalRepository();
-
-      const goal = await goalRepo.findById(goalUuid);
+      const goal = await this.goalRepository.findById(goalUuid);
       if (!goal) {
         return { valid: false, error: `Goal not found: ${goalUuid}` };
       }
@@ -135,6 +145,7 @@ export class GoalCrossModuleQueryService {
 
       return { valid: true };
     } catch (error) {
+      logger.error('Goal binding validation failed', error);
       return {
         valid: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -142,3 +153,28 @@ export class GoalCrossModuleQueryService {
     }
   }
 }
+
+/**
+ * 便捷函数：获取任务绑定的目标列表
+ */
+export const getGoalsForTaskBinding = (
+  params: Parameters<GoalCrossModuleQueryService['getGoalsForTaskBinding']>[0],
+): ReturnType<GoalCrossModuleQueryService['getGoalsForTaskBinding']> =>
+  GoalCrossModuleQueryService.getInstance().getGoalsForTaskBinding(params);
+
+/**
+ * 便捷函数：获取任务绑定的关键结果列表
+ */
+export const getKeyResultsForTaskBinding = (
+  goalUuid: string,
+): ReturnType<GoalCrossModuleQueryService['getKeyResultsForTaskBinding']> =>
+  GoalCrossModuleQueryService.getInstance().getKeyResultsForTaskBinding(goalUuid);
+
+/**
+ * 便捷函数：验证目标绑定
+ */
+export const validateGoalBinding = (
+  goalUuid: string,
+  keyResultUuid: string,
+): ReturnType<GoalCrossModuleQueryService['validateGoalBinding']> =>
+  GoalCrossModuleQueryService.getInstance().validateGoalBinding(goalUuid, keyResultUuid);

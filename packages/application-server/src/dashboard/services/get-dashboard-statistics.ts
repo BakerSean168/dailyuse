@@ -1,38 +1,38 @@
 /**
  * Get Dashboard Statistics
  *
- * 获取 Dashboard 统计数据（带缓存）
+ * 获取 Dashboard 统计数据 - 聚合各模块统计数据
+ * 依赖注入模式：所有仓储和服务通过构造函数注入
  */
 
 import type { ITaskStatisticsRepository } from '@dailyuse/domain-server/task';
 import type { IGoalStatisticsRepository } from '@dailyuse/domain-server/goal';
 import type { IReminderStatisticsRepository } from '@dailyuse/domain-server/reminder';
 import type { IScheduleStatisticsRepository } from '@dailyuse/domain-server/schedule';
+import type { IStatisticsCacheService } from '@dailyuse/domain-server/common';
 import { TaskStatistics } from '@dailyuse/domain-server/task';
 import { GoalStatistics } from '@dailyuse/domain-server/goal';
 import { ReminderStatistics } from '@dailyuse/domain-server/reminder';
 import { ScheduleStatistics } from '@dailyuse/domain-server/schedule';
-import type { DashboardStatisticsResponse, DashboardStatisticsClientDTO } from '@dailyuse/contracts/dashboard';
+import type {
+  DashboardStatisticsResponse,
+  DashboardStatisticsClientDTO,
+} from '@dailyuse/contracts/dashboard';
 import type { TaskStatisticsClientDTO } from '@dailyuse/contracts/task';
 import type { GoalStatisticsClientDTO } from '@dailyuse/contracts/goal';
 import type { ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
 import type { ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
-import {
-  DashboardContainer,
-  TaskContainer,
-  GoalContainer,
-  ReminderContainer,
-  ScheduleContainer,
-  type IStatisticsCacheService,
-} from '@dailyuse/infrastructure-server';
+import { createLogger } from '@dailyuse/utils';
+
+const logger = createLogger('GetDashboardStatistics');
 
 /**
  * Get Dashboard Statistics
  */
 export class GetDashboardStatistics {
-  private static instance: GetDashboardStatistics;
+  private static instance: GetDashboardStatistics | undefined;
 
-  private constructor(
+  constructor(
     private readonly taskStatsRepo: ITaskStatisticsRepository,
     private readonly goalStatsRepo: IGoalStatisticsRepository,
     private readonly reminderStatsRepo: IReminderStatisticsRepository,
@@ -41,53 +41,27 @@ export class GetDashboardStatistics {
   ) {}
 
   /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(
-    taskStatsRepo?: ITaskStatisticsRepository,
-    goalStatsRepo?: IGoalStatisticsRepository,
-    reminderStatsRepo?: IReminderStatisticsRepository,
-    scheduleStatsRepo?: IScheduleStatisticsRepository,
-    cacheService?: IStatisticsCacheService,
-  ): GetDashboardStatistics {
-    const dashboardContainer = DashboardContainer.getInstance();
-    const taskContainer = TaskContainer.getInstance();
-    const goalContainer = GoalContainer.getInstance();
-    const reminderContainer = ReminderContainer.getInstance();
-    const scheduleContainer = ScheduleContainer.getInstance();
-
-    const taskRepo = taskStatsRepo || taskContainer.getStatisticsRepository();
-    const goalRepo = goalStatsRepo || goalContainer.getStatisticsRepository();
-    const reminderRepo = reminderStatsRepo || reminderContainer.getStatisticsRepository();
-    const scheduleRepo = scheduleStatsRepo || scheduleContainer.getStatisticsRepository();
-    const cache = cacheService || (dashboardContainer.hasCacheService() ? dashboardContainer.getStatisticsCacheService() : undefined);
-
-    GetDashboardStatistics.instance = new GetDashboardStatistics(
-      taskRepo,
-      goalRepo,
-      reminderRepo,
-      scheduleRepo,
-      cache,
-    );
-
-    return GetDashboardStatistics.instance;
-  }
-
-  /**
    * 获取服务单例
    */
   static getInstance(): GetDashboardStatistics {
     if (!GetDashboardStatistics.instance) {
-      GetDashboardStatistics.instance = GetDashboardStatistics.createInstance();
+      throw new Error('GetDashboardStatistics not initialized. Call setInstance() first.');
     }
     return GetDashboardStatistics.instance;
+  }
+
+  /**
+   * 设置服务单例
+   */
+  static setInstance(instance: GetDashboardStatistics): void {
+    GetDashboardStatistics.instance = instance;
   }
 
   /**
    * 重置实例（用于测试）
    */
   static resetInstance(): void {
-    GetDashboardStatistics.instance = undefined as unknown as GetDashboardStatistics;
+    GetDashboardStatistics.instance = undefined;
   }
 
   /**
@@ -95,14 +69,14 @@ export class GetDashboardStatistics {
    */
   async execute(accountUuid: string): Promise<DashboardStatisticsResponse> {
     const startTime = Date.now();
-    console.log(`[GetDashboardStatistics] 开始获取账户 ${accountUuid} 的统计数据`);
+    logger.info(`开始获取账户 ${accountUuid} 的统计数据`);
 
     try {
       if (this.cacheService) {
         const cached = await this.cacheService.get<DashboardStatisticsClientDTO>(accountUuid);
         if (cached) {
           const duration = Date.now() - startTime;
-          console.log(`[GetDashboardStatistics] ✅ 缓存命中，耗时 ${duration}ms`);
+          logger.info(`缓存命中，耗时 ${duration}ms`);
           return { statistics: cached };
         }
       }
@@ -114,16 +88,16 @@ export class GetDashboardStatistics {
       }
 
       const duration = Date.now() - startTime;
-      console.log(`[GetDashboardStatistics] 统计聚合完成，耗时 ${duration}ms (目标: ≤100ms)`);
+      logger.info(`统计聚合完成，耗时 ${duration}ms (目标: ≤100ms)`);
 
       if (duration > 100) {
-        console.warn(`[GetDashboardStatistics] ⚠️  响应时间超过目标 (${duration}ms > 100ms)`);
+        logger.warn(`响应时间超过目标 (${duration}ms > 100ms)`);
       }
 
       return { statistics: stats };
     } catch (error) {
       const duration = Date.now() - startTime;
-      console.error(`[GetDashboardStatistics] 统计聚合失败，耗时 ${duration}ms:`, error);
+      logger.error(`统计聚合失败，耗时 ${duration}ms`, error);
       throw new Error(
         `Failed to get dashboard statistics: ${error instanceof Error ? error.message : String(error)}`,
       );
@@ -133,9 +107,7 @@ export class GetDashboardStatistics {
   /**
    * 聚合统计数据（核心逻辑）
    */
-  private async aggregateStatistics(
-    accountUuid: string,
-  ): Promise<DashboardStatisticsClientDTO> {
+  private async aggregateStatistics(accountUuid: string): Promise<DashboardStatisticsClientDTO> {
     const [taskStats, goalStats, reminderStats, scheduleStats] = await Promise.all([
       this.getOrCreateTaskStatistics(accountUuid),
       this.getOrCreateGoalStatistics(accountUuid),
@@ -179,7 +151,7 @@ export class GetDashboardStatistics {
     const stats = await this.taskStatsRepo.findByAccountUuid(accountUuid);
 
     if (!stats) {
-      console.log(`[GetDashboardStatistics] 账户 ${accountUuid} 没有 TaskStatistics，使用默认值`);
+      logger.info(`账户 ${accountUuid} 没有 TaskStatistics，使用默认值`);
       return TaskStatistics.createDefault(accountUuid);
     }
 
@@ -190,7 +162,7 @@ export class GetDashboardStatistics {
     const stats = await this.goalStatsRepo.findByAccountUuid(accountUuid);
 
     if (!stats) {
-      console.log(`[GetDashboardStatistics] 账户 ${accountUuid} 没有 GoalStatistics，使用默认值`);
+      logger.info(`账户 ${accountUuid} 没有 GoalStatistics，使用默认值`);
       return GoalStatistics.createEmpty(accountUuid);
     }
 
@@ -201,9 +173,7 @@ export class GetDashboardStatistics {
     const stats = await this.reminderStatsRepo.findByAccountUuid(accountUuid);
 
     if (!stats) {
-      console.log(
-        `[GetDashboardStatistics] 账户 ${accountUuid} 没有 ReminderStatistics，使用默认值`,
-      );
+      logger.info(`账户 ${accountUuid} 没有 ReminderStatistics，使用默认值`);
       return ReminderStatistics.create({ accountUuid });
     }
 
@@ -214,9 +184,7 @@ export class GetDashboardStatistics {
     const stats = await this.scheduleStatsRepo.findByAccountUuid(accountUuid);
 
     if (!stats) {
-      console.log(
-        `[GetDashboardStatistics] 账户 ${accountUuid} 没有 ScheduleStatistics，使用默认值`,
-      );
+      logger.info(`账户 ${accountUuid} 没有 ScheduleStatistics，使用默认值`);
       return ScheduleStatistics.createEmpty(accountUuid);
     }
 
@@ -268,3 +236,11 @@ export class GetDashboardStatistics {
     return Math.round(average * 100) / 100;
   }
 }
+
+/**
+ * 便捷函数：获取 Dashboard 统计数据
+ */
+export const getDashboardStatistics = (
+  accountUuid: string,
+): ReturnType<GetDashboardStatistics['execute']> =>
+  GetDashboardStatistics.getInstance().execute(accountUuid);
