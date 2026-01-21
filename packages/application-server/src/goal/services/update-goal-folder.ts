@@ -6,7 +6,6 @@
 
 import type { IGoalFolderRepository } from '@dailyuse/domain-server/goal';
 import type { UpdateGoalFolderRequest, GoalFolderResponse } from '@dailyuse/contracts/goal';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Update Goal Folder Service
@@ -19,10 +18,8 @@ export class UpdateGoalFolder {
   /**
    * 创建服务实例（支持依赖注入）
    */
-  static createInstance(goalFolderRepository?: IGoalFolderRepository): UpdateGoalFolder {
-    const container = GoalContainer.getInstance();
-    const repo = goalFolderRepository || container.getGoalFolderRepository();
-    UpdateGoalFolder.instance = new UpdateGoalFolder(repo);
+  static createInstance(goalFolderRepository: IGoalFolderRepository): UpdateGoalFolder {
+    UpdateGoalFolder.instance = new UpdateGoalFolder(goalFolderRepository);
     return UpdateGoalFolder.instance;
   }
 
@@ -31,7 +28,7 @@ export class UpdateGoalFolder {
    */
   static getInstance(): UpdateGoalFolder {
     if (!UpdateGoalFolder.instance) {
-      UpdateGoalFolder.instance = UpdateGoalFolder.createInstance();
+      throw new Error('UpdateGoalFolder instance not initialized. Call createInstance() first.');
     }
     return UpdateGoalFolder.instance;
   }

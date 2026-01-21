@@ -22,7 +22,8 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('AIGenerationRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerGenerationRoutes(): Router {
+
+export function registerGenerationRoutes(service: AIGenerationApplicationService): Router {
   const router: Router = ExpressRouter();
 
   // 所有生成路由需要认证
@@ -62,7 +63,6 @@ export function registerGenerationRoutes(): Router {
    */
   router.post('/goal', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIGenerationApplicationService.getInstance();
       const task = await service.generateGoal(req.user.accountUuid, req.body);
       res.status(202).json(responseBuilder.success(task, 'Goal generation started'));
     } catch (error) {
@@ -109,7 +109,6 @@ export function registerGenerationRoutes(): Router {
    */
   router.post('/key-results', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIGenerationApplicationService.getInstance();
       const task = await service.generateKeyResults(req.user.accountUuid, req.body);
       res.status(202).json(responseBuilder.success(task, 'Key results generation started'));
     } catch (error) {
@@ -155,7 +154,6 @@ export function registerGenerationRoutes(): Router {
    */
   router.post('/tasks', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIGenerationApplicationService.getInstance();
       const task = await service.generateTasks(req.user.accountUuid, req.body);
       res.status(202).json(responseBuilder.success(task, 'Tasks generation started'));
     } catch (error) {
@@ -203,7 +201,6 @@ export function registerGenerationRoutes(): Router {
    */
   router.post('/knowledge', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIGenerationApplicationService.getInstance();
       const task = await service.generateKnowledge(req.user.accountUuid, req.body);
       res.status(202).json(responseBuilder.success(task, 'Knowledge generation started'));
     } catch (error) {
@@ -235,7 +232,6 @@ export function registerGenerationRoutes(): Router {
    */
   router.get('/tasks/:uuid', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIGenerationApplicationService.getInstance();
       const task = await service.getGenerationTaskStatus(req.params.uuid);
       res.json(responseBuilder.success(task, 'Task status retrieved'));
     } catch (error) {
@@ -267,7 +263,6 @@ export function registerGenerationRoutes(): Router {
    */
   router.get('/tasks/:uuid/documents', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIGenerationApplicationService.getInstance();
       const documents = await service.getGeneratedDocuments(req.params.uuid);
       res.json(responseBuilder.success(documents, 'Documents retrieved'));
     } catch (error) {
@@ -275,6 +270,7 @@ export function registerGenerationRoutes(): Router {
       throw error;
     }
   });
+
 
   return router;
 }

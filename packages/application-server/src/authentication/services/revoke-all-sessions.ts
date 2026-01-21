@@ -11,7 +11,6 @@
 import type { IAuthSessionRepository } from '@dailyuse/domain-server/authentication';
 import type { RevokeAllSessionsRequest } from '@dailyuse/contracts/authentication';
 import { eventBus, createLogger } from '@dailyuse/utils';
-import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 const logger = createLogger('RevokeAllSessions');
 
@@ -19,36 +18,7 @@ const logger = createLogger('RevokeAllSessions');
  * Revoke All Sessions Service
  */
 export class RevokeAllSessions {
-  private static instance: RevokeAllSessions;
-
-  private constructor(private readonly sessionRepository: IAuthSessionRepository) {}
-
-  /**
-   * 创建服务实例
-   */
-  static createInstance(sessionRepository?: IAuthSessionRepository): RevokeAllSessions {
-    const container = AuthContainer.getInstance();
-    const repo = sessionRepository || container.getSessionRepository();
-    RevokeAllSessions.instance = new RevokeAllSessions(repo);
-    return RevokeAllSessions.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): RevokeAllSessions {
-    if (!RevokeAllSessions.instance) {
-      RevokeAllSessions.instance = RevokeAllSessions.createInstance();
-    }
-    return RevokeAllSessions.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    RevokeAllSessions.instance = undefined as unknown as RevokeAllSessions;
-  }
+  constructor(private readonly sessionRepository: IAuthSessionRepository) {}
 
   /**
    * 执行撤销所有会话

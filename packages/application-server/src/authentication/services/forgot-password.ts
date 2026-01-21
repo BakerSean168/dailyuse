@@ -8,44 +8,15 @@ import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authenti
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import type { ForgotPasswordRequest } from '@dailyuse/contracts/authentication';
 import { eventBus } from '@dailyuse/utils';
-import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Forgot Password Service
  */
 export class ForgotPassword {
-  private static instance: ForgotPassword;
   private readonly domainService: AuthenticationDomainService;
 
-  private constructor(private readonly credentialRepository: IAuthCredentialRepository) {
+  constructor(private readonly credentialRepository: IAuthCredentialRepository) {
     this.domainService = new AuthenticationDomainService();
-  }
-
-  /**
-   * 创建服务实例
-   */
-  static createInstance(credentialRepository?: IAuthCredentialRepository): ForgotPassword {
-    const container = AuthContainer.getInstance();
-    const repo = credentialRepository || container.getCredentialRepository();
-    ForgotPassword.instance = new ForgotPassword(repo);
-    return ForgotPassword.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): ForgotPassword {
-    if (!ForgotPassword.instance) {
-      ForgotPassword.instance = ForgotPassword.createInstance();
-    }
-    return ForgotPassword.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    ForgotPassword.instance = undefined as unknown as ForgotPassword;
   }
 
   /**

@@ -14,14 +14,15 @@ import type { Router } from 'express';
 import { Router as ExpressRouter } from 'express';
 import type { AuthenticatedRequest } from '../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { authMiddleware } from '../../../shared/infrastructure/http/middlewares/authMiddleware';
-import { SettingApplicationService } from '@dailyuse/application-server';
+import type { SettingApplicationService } from '@dailyuse/application-server/setting';
+// import { SettingApplicationService } from '@dailyuse/application-server';
 import { createResponseBuilder } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('SettingSystemRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerSettingSystemRoutes(): Router {
+export function registerSettingSystemRoutes(settingService: SettingApplicationService): Router {
   const router: Router = ExpressRouter();
 
   router.use(authMiddleware);
@@ -40,8 +41,8 @@ export function registerSettingSystemRoutes(): Router {
    */
   router.get('/', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await SettingApplicationService.getInstance();
-      const systemSettings = await service.getSystemSettings();
+      // const service = await SettingApplicationService.getInstance();
+      const systemSettings = await settingService.getSystemSettings();
       res.json(responseBuilder.success(systemSettings, 'System settings retrieved'));
     } catch (error) {
       logger.error('Get system settings failed:', error);
@@ -83,8 +84,8 @@ export function registerSettingSystemRoutes(): Router {
   router.put('/', async (req: AuthenticatedRequest, res) => {
     try {
       // 在实际实现中应该检查是否是管理员
-      const service = await SettingApplicationService.getInstance();
-      const systemSettings = await service.updateSystemSettings(req.body);
+      // const service = await SettingApplicationService.getInstance();
+      const systemSettings = await settingService.updateSystemSettings(req.body);
       res.json(responseBuilder.success(systemSettings, 'System settings updated'));
     } catch (error) {
       logger.error('Update system settings failed:', error);
@@ -106,8 +107,8 @@ export function registerSettingSystemRoutes(): Router {
    */
   router.get('/defaults', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await SettingApplicationService.getInstance();
-      const defaults = await service.getDefaultSettings();
+      // const service = await SettingApplicationService.getInstance();
+      const defaults = await settingService.getDefaultSettings();
       res.json(responseBuilder.success(defaults, 'Default settings retrieved'));
     } catch (error) {
       logger.error('Get default settings failed:', error);
@@ -129,8 +130,8 @@ export function registerSettingSystemRoutes(): Router {
    */
   router.get('/features', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await SettingApplicationService.getInstance();
-      const features = await service.getFeatureFlags();
+      // const service = await SettingApplicationService.getInstance();
+      const features = await settingService.getFeatureFlags();
       res.json(responseBuilder.success(features, 'Feature flags retrieved'));
     } catch (error) {
       logger.error('Get feature flags failed:', error);
@@ -167,8 +168,8 @@ export function registerSettingSystemRoutes(): Router {
    */
   router.patch('/features', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await SettingApplicationService.getInstance();
-      const updated = await service.updateFeatureFlags(req.body);
+      // const service = await SettingApplicationService.getInstance();
+      const updated = await settingService.updateFeatureFlags(req.body);
       res.json(responseBuilder.success(updated, 'Feature flags updated'));
     } catch (error) {
       logger.error('Update feature flags failed:', error);

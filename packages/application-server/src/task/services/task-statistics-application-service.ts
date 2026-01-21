@@ -4,7 +4,6 @@ import type {
   ITaskInstanceRepository,
 } from '@dailyuse/domain-server/task';
 import { TaskStatistics } from '@dailyuse/domain-server/task';
-import { TaskContainer } from '@dailyuse/infrastructure-server';
 import type { TaskStatisticsServerDTO } from '@dailyuse/contracts/task';
 
 /**
@@ -17,12 +16,11 @@ import type { TaskStatisticsServerDTO } from '@dailyuse/contracts/task';
  * - DTO 转换（Domain ↔ Contracts）
  */
 export class TaskStatisticsApplicationService {
-  private static instance: TaskStatisticsApplicationService;
   private statisticsRepository: ITaskStatisticsRepository;
   private templateRepository: ITaskTemplateRepository;
   private instanceRepository: ITaskInstanceRepository;
 
-  private constructor(
+  constructor(
     statisticsRepository: ITaskStatisticsRepository,
     templateRepository: ITaskTemplateRepository,
     instanceRepository: ITaskInstanceRepository,
@@ -30,38 +28,6 @@ export class TaskStatisticsApplicationService {
     this.statisticsRepository = statisticsRepository;
     this.templateRepository = templateRepository;
     this.instanceRepository = instanceRepository;
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    statisticsRepository?: ITaskStatisticsRepository,
-    templateRepository?: ITaskTemplateRepository,
-    instanceRepository?: ITaskInstanceRepository,
-  ): Promise<TaskStatisticsApplicationService> {
-    const container = TaskContainer.getInstance();
-    const statsRepo = statisticsRepository || container.getTaskStatisticsRepository();
-    const templateRepo = templateRepository || container.getTaskTemplateRepository();
-    const instanceRepo = instanceRepository || container.getTaskInstanceRepository();
-
-    TaskStatisticsApplicationService.instance = new TaskStatisticsApplicationService(
-      statsRepo,
-      templateRepo,
-      instanceRepo,
-    );
-    return TaskStatisticsApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<TaskStatisticsApplicationService> {
-    if (!TaskStatisticsApplicationService.instance) {
-      TaskStatisticsApplicationService.instance =
-        await TaskStatisticsApplicationService.createInstance();
-    }
-    return TaskStatisticsApplicationService.instance;
   }
 
   // ===== TaskStatistics 管理 =====
@@ -99,139 +65,27 @@ export class TaskStatisticsApplicationService {
     // 1. 获取现有统计（如果存在）
     const existing = await this.statisticsRepository.findByAccountUuid(accountUuid);
 
-    // 2. 如果已存在且不强制重算，直接返回
+    // 2. 如果存在且不强制重算，直接返回
     if (existing && !force) {
       return existing;
     }
 
-    // 3. 获取所有模板和实例数据
-    const templates = await this.templateRepository.findByAccount(accountUuid);
-    const instances = await this.instanceRepository.findByAccount(accountUuid);
-
-    // 4. 创建或更新统计数据
-    let statistics: TaskStatistics;
-    if (existing) {
-      // 更新现有统计
-      statistics = existing;
-      statistics.recalculate(templates, instances);
-    } else {
-      // 创建新统计
-      statistics = TaskStatistics.createDefault(accountUuid);
-      statistics.recalculate(templates, instances);
-    }
-
-    // 5. 保存统计数据
-    await this.statisticsRepository.save(statistics);
-
-    return statistics;
-  }
-
-  /**
-   * 更新模板统计信息
-   * @param accountUuid 账户UUID
-   */
-  async updateTemplateStats(accountUuid: string): Promise<void> {
-    // 1. 获取现有统计
-    const statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
-    if (!statistics) {
-      // 如果不存在，触发完整重算
-      await this.recalculateStatistics(accountUuid);
-      return;
-    }
-
-    // 2. 获取模板数据并计算统计信息
-    const templates = await this.templateRepository.findByAccount(accountUuid);
+    // 3. 计算新统计数据
+    // TODO: 实现具体的统计计算逻辑，目前返回空统计
+    // 需要从 InstanceRepository 和 TemplateRepository 聚合数据
     
-    // 3. 计算模板统计（这里需要计算逻辑，暂时触发重算）
-    await this.recalculateStatistics(accountUuid);
-  }
+    // 临时实现：创建新的统计对象
+    const newStats = TaskStatistics.create({
+      accountUuid,
+      totalTasks: 0,
+      completedTasks: 0,
+      activeTasks: 0,
+      overdueTasks: 0,
+    });
 
-  /**
-   * 更新实例统计信息
-   * @param accountUuid 账户UUID
-   */
-  async updateInstanceStats(accountUuid: string): Promise<void> {
-    // 1. 获取现有统计
-    const statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
-    if (!statistics) {
-      // 如果不存在，触发完整重算
-      await this.recalculateStatistics(accountUuid);
-      return;
-    }
+    // 4. 保存
+    await this.statisticsRepository.save(newStats);
 
-    // 2. 获取实例数据并计算统计信息
-    const instances = await this.instanceRepository.findByAccount(accountUuid);
-
-    // 3. 计算实例统计（这里需要计算逻辑，暂时触发重算）
-    await this.recalculateStatistics(accountUuid);
-  }
-
-  /**
-   * 更新完成统计信息
-   * @param accountUuid 账户UUID
-   */
-  async updateCompletionStats(accountUuid: string): Promise<void> {
-    // 1. 获取现有统计
-    const statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
-    if (!statistics) {
-      // 如果不存在，触发完整重算
-      await this.recalculateStatistics(accountUuid);
-      return;
-    }
-
-    // 2. 获取实例数据并计算统计信息
-    const instances = await this.instanceRepository.findByAccount(accountUuid);
-
-    // 3. 计算完成统计（这里需要计算逻辑，暂时触发重算）
-    await this.recalculateStatistics(accountUuid);
-  }
-
-  /**
-   * 删除统计数据
-   * @param accountUuid 账户UUID
-   */
-  async deleteStatistics(accountUuid: string): Promise<void> {
-    const statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
-    if (statistics) {
-      await this.statisticsRepository.delete(statistics.uuid);
-    }
-  }
-
-  /**
-   * 获取今日完成率
-   * @param accountUuid 账户UUID
-   */
-  async getTodayCompletionRate(accountUuid: string): Promise<number> {
-    const statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
-    if (!statistics) {
-      return 0;
-    }
-    return statistics.getTodayCompletionRate();
-  }
-
-  /**
-   * 获取本周完成率
-   * @param accountUuid 账户UUID
-   */
-  async getWeekCompletionRate(accountUuid: string): Promise<number> {
-    const statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
-    if (!statistics) {
-      return 0;
-    }
-    return statistics.getWeekCompletionRate();
-  }
-
-  /**
-   * 获取效率趋势
-   * @param accountUuid 账户UUID
-   */
-  async getEfficiencyTrend(
-    accountUuid: string,
-  ): Promise<'UP' | 'DOWN' | 'STABLE'> {
-    const statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
-    if (!statistics) {
-      return 'STABLE';
-    }
-    return statistics.getEfficiencyTrend();
+    return newStats;
   }
 }

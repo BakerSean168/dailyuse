@@ -15,11 +15,11 @@ export interface SyncProfileQueryOptions {
 export interface ISyncProfileRepository {
   save(profile: SyncProfile): Promise<void>;
   findByUuid(uuid: string): Promise<SyncProfile | null>;
-  findDefault(): Promise<SyncProfile | null>;
-  findAll(): Promise<SyncProfile[]>;
-  findActive(): Promise<SyncProfile[]>;
-  findByQuery(options: SyncProfileQueryOptions): Promise<SyncProfile[]>;
-  count(options?: SyncProfileQueryOptions): Promise<number>;
+  findDefault(accountUuid: string): Promise<SyncProfile | null>;
+  findAll(accountUuid: string): Promise<SyncProfile[]>;
+  findActive(accountUuid: string): Promise<SyncProfile[]>;
+  findByQuery(accountUuid: string, options: SyncProfileQueryOptions): Promise<SyncProfile[]>;
+  count(accountUuid: string, options?: SyncProfileQueryOptions): Promise<number>;
   delete(uuid: string): Promise<void>;
-  existsByName(name: string, excludeUuid?: string): Promise<boolean>;
+  existsByName(accountUuid: string, name: string, excludeUuid?: string): Promise<boolean>;
 }

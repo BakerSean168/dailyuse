@@ -5,7 +5,7 @@
  */
 
 import { CronSchedulerManager } from './CronSchedulerManager';
-import { DailyAnalysisCronJob } from '@/modules/reminder/infrastructure/cron/dailyAnalysisCronJob';
+// import { DailyAnalysisCronJob } from '@/modules/reminder/infrastructure/cron/dailyAnalysisCronJob';
 import { createLogger } from '@dailyuse/utils';
 import { env } from '@/shared/infrastructure/config/env.js';
 
@@ -29,16 +29,17 @@ export function registerAllCronJobs(): void {
    * 
    * 每天凌晨 2:00 执行，分析提醒模板的效果并自动调整频率。
    */
-  scheduler.register({
-    name: 'reminder:daily-analysis',
-    schedule: '0 2 * * *', // 每天凌晨 2:00
-    task: async () => {
-      const job = new DailyAnalysisCronJob();
-      await job.execute();
-    },
-    enabled: env.ENABLE_DAILY_ANALYSIS,
-    timezone: env.TZ,
-  });
+  // TODO: DailyAnalysisCronJob 文件缺失，待重构后恢复
+  // scheduler.register({
+  //   name: 'reminder:daily-analysis',
+  //   schedule: '0 2 * * *', // 每天凌晨 2:00
+  //   task: async () => {
+  //     const job = new DailyAnalysisCronJob();
+  //     await job.execute();
+  //   },
+  //   enabled: env.ENABLE_DAILY_ANALYSIS,
+  //   timezone: env.TZ,
+  // });
 
   // ===== 未来可以在这里添加更多 Jobs =====
 

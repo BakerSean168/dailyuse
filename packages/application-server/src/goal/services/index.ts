@@ -46,6 +46,8 @@ export {
   type UpdateGoalParams,
 } from './GoalApplicationService';
 
+export { GoalKeyResultApplicationService } from './goal-key-result-application-service';
+
 // ============================================================
 // Internal Services
 // ============================================================

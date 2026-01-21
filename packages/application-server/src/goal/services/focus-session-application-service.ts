@@ -1,12 +1,12 @@
 /**
  * @file FocusSessionApplicationService.ts
- * @description 专注会话应用服务，处理专注会话的生命周期管理。
+ * @description 专注会话应用服务，处理专注会话的生命周期管理�?
  * @date 2025-01-22
  */
 
 import type { IFocusSessionRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
 import { FocusSessionDomainService, FocusSession, Goal } from '@dailyuse/domain-server/goal';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
+
 import { GoalStatus, FocusSessionStatus } from '@dailyuse/contracts/goal';
 import { PriorityLevel } from '@dailyuse/contracts/shared';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalRequest, UpdateGoalRequest, FocusSessionClientDTO } from '@dailyuse/contracts/goal';
@@ -14,60 +14,36 @@ import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalReques
 /**
  * FocusSessionApplicationService
  *
- * 编排专注周期的业务用例
+ * 编排专注周期的业务用�?
  */
 export class FocusSessionApplicationService {
-  private static instance: FocusSessionApplicationService;
   private domainService: FocusSessionDomainService;
   private sessionRepository: IFocusSessionRepository;
   private goalRepository: IGoalRepository;
 
-  private constructor(sessionRepository: IFocusSessionRepository, goalRepository: IGoalRepository) {
+  constructor(sessionRepository: IFocusSessionRepository, goalRepository: IGoalRepository) {
     this.domainService = new FocusSessionDomainService();
     this.sessionRepository = sessionRepository;
     this.goalRepository = goalRepository;
   }
 
   /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    sessionRepository?: IFocusSessionRepository,
-    goalRepository?: IGoalRepository,
-  ): Promise<FocusSessionApplicationService> {
-    const container = GoalContainer.getInstance();
-    const sessionRepo = sessionRepository || container.getFocusSessionRepository();
-    const goalRepo = goalRepository || container.getGoalRepository();
-
-    FocusSessionApplicationService.instance = new FocusSessionApplicationService(
-      sessionRepo,
-      goalRepo,
-    );
-    return FocusSessionApplicationService.instance;
-  }
-
-  /**
    * 获取应用服务单例
    */
-  static async getInstance(): Promise<FocusSessionApplicationService> {
-    if (!FocusSessionApplicationService.instance) {
-      FocusSessionApplicationService.instance =
-        await FocusSessionApplicationService.createInstance();
-    }
-    return FocusSessionApplicationService.instance;
-  }
+
+
 
   // ===== 核心业务方法 =====
 
   /**
-   * 创建并开始专注周期
+   * 创建并开始专注周�?
    *
-   * 业务流程：
+   * 业务流程�?
    * 1. 查询已有会话（验证单个活跃会话规则）
    * 2. 查询关联目标（如果指定）
-   * 3. 调用 DomainService 创建聚合根
-   * 4. 立即开始（如果 startImmediately !== false）
-   * 5. 持久化
+   * 3. 调用 DomainService 创建聚合�?
+   * 4. 立即开始（如果 startImmediately !== false�?
+   * 5. 持久�?
    * 6. 返回 ClientDTO
    *
    * @param accountUuid - 账户 UUID
@@ -100,7 +76,7 @@ export class FocusSessionApplicationService {
       this.domainService.validateAssociatedGoal(goal, accountUuid);
     }
 
-    // 3. 调用 DomainService 创建聚合根（不持久化）
+    // 3. 调用 DomainService 创建聚合根（不持久化�?
     const session = this.domainService.createFocusSession(
       {
         accountUuid,
@@ -111,12 +87,12 @@ export class FocusSessionApplicationService {
       goal,
     );
 
-    // 4. 立即开始（如果指定）
+    // 4. 立即开始（如果指定�?
     if (request.startImmediately !== false) {
       session.start();
     }
 
-    // 5. 持久化
+    // 5. 持久�?
     await this.sessionRepository.save(session);
 
     // 6. 发布领域事件（未来实现）
@@ -135,7 +111,7 @@ export class FocusSessionApplicationService {
    */
   async pauseSession(sessionUuid: string, accountUuid: string): Promise<FocusSessionClientDTO> {
     return this.executeSessionAction(sessionUuid, accountUuid, (session) => {
-      // DomainService 验证状态转换
+      // DomainService 验证状态转�?
       this.domainService.validateStateTransition(session.status, 'pause');
       // 聚合根执行业务逻辑
       session.pause();
@@ -187,7 +163,7 @@ export class FocusSessionApplicationService {
    * 获取活跃会话
    *
    * @param accountUuid - 账户 UUID
-   * @returns 活跃会话 ClientDTO，不存在则返回 null
+   * @returns 活跃会话 ClientDTO，不存在则返�?null
    */
   async getActiveSession(accountUuid: string): Promise<FocusSessionClientDTO | null> {
     const session = await this.sessionRepository.findActiveSession(accountUuid);
@@ -234,7 +210,7 @@ export class FocusSessionApplicationService {
   async getSession(sessionUuid: string, accountUuid: string): Promise<FocusSessionClientDTO> {
     const session = await this.sessionRepository.findById(sessionUuid);
     if (!session) {
-      throw new Error('专注周期不存在');
+      throw new Error('专注周期不存�?);
     }
 
     // 验证所有权
@@ -246,7 +222,7 @@ export class FocusSessionApplicationService {
   /**
    * 删除会话
    *
-   * 业务规则：只能删除已完成或已取消的会话
+   * 业务规则：只能删除已完成或已取消的会�?
    *
    * @param sessionUuid - 会话 UUID
    * @param accountUuid - 账户 UUID
@@ -254,7 +230,7 @@ export class FocusSessionApplicationService {
   async deleteSession(sessionUuid: string, accountUuid: string): Promise<void> {
     const session = await this.sessionRepository.findById(sessionUuid);
     if (!session) {
-      throw new Error('专注周期不存在');
+      throw new Error('专注周期不存�?);
     }
 
     // 验证所有权
@@ -290,10 +266,10 @@ export class FocusSessionApplicationService {
     averageFocusMinutes: number;
     completionRate: number;
   }> {
-    // 查询符合条件的所有会话
+    // 查询符合条件的所有会�?
     const sessions = await this.sessionRepository.findByAccountUuid(accountUuid, {
       goalUuid: options?.goalUuid,
-      limit: 1000, // 获取所有会话用于统计
+      limit: 1000, // 获取所有会话用于统�?
     });
 
     // 过滤日期范围（如果指定）
@@ -314,13 +290,13 @@ export class FocusSessionApplicationService {
   // ===== 私有辅助方法 =====
 
   /**
-   * 执行会话操作的通用模板方法（DRY 原则）
+   * 执行会话操作的通用模板方法（DRY 原则�?
    *
-   * 流程：
+   * 流程�?
    * 1. 加载会话
    * 2. 验证所有权
    * 3. 执行操作（由调用方提供）
-   * 4. 持久化
+   * 4. 持久�?
    * 5. 发布事件
    * 6. 返回 ClientDTO
    *
@@ -337,7 +313,7 @@ export class FocusSessionApplicationService {
     // 1. 加载会话
     const session = await this.sessionRepository.findById(sessionUuid);
     if (!session) {
-      throw new Error('专注周期不存在');
+      throw new Error('专注周期不存�?);
     }
 
     // 2. 验证所有权
@@ -346,7 +322,7 @@ export class FocusSessionApplicationService {
     // 3. 执行操作（可能抛出异常）
     action(session);
 
-    // 4. 持久化
+    // 4. 持久�?
     await this.sessionRepository.save(session);
 
     // 5. 发布领域事件（未来实现）

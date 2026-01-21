@@ -7,33 +7,13 @@
 import type { IAIUsageQuotaRepository } from '@dailyuse/domain-server/ai';
 import type { QuotaResponse } from '@dailyuse/contracts/ai';
 import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
-import { AIContainer } from '@dailyuse/infrastructure-server';
+// import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Get Quota Service
  */
 export class GetQuota {
-  private static instance: GetQuota;
-
-  private constructor(private readonly quotaRepository: IAIUsageQuotaRepository) {}
-
-  static createInstance(quotaRepository?: IAIUsageQuotaRepository): GetQuota {
-    const container = AIContainer.getInstance();
-    const repo = quotaRepository || container.getUsageQuotaRepository();
-    GetQuota.instance = new GetQuota(repo);
-    return GetQuota.instance;
-  }
-
-  static getInstance(): GetQuota {
-    if (!GetQuota.instance) {
-      GetQuota.instance = GetQuota.createInstance();
-    }
-    return GetQuota.instance;
-  }
-
-  static resetInstance(): void {
-    GetQuota.instance = undefined as unknown as GetQuota;
-  }
+  constructor(private readonly quotaRepository: IAIUsageQuotaRepository) {}
 
   async execute(accountUuid: string): Promise<QuotaResponse> {
     const quota = await this.quotaRepository.findByAccountUuid(accountUuid);

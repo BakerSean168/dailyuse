@@ -6,7 +6,6 @@
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * List Resources Input
@@ -26,27 +25,8 @@ export interface ListResourcesOutput {
  * List Resources
  */
 export class ListResources {
-  private static instance: ListResources;
 
-  private constructor(private readonly resourceRepository: IResourceRepository) {}
-
-  static createInstance(resourceRepository?: IResourceRepository): ListResources {
-    const container = RepositoryContainer.getInstance();
-    const repo = resourceRepository || container.getResourceRepository();
-    ListResources.instance = new ListResources(repo);
-    return ListResources.instance;
-  }
-
-  static getInstance(): ListResources {
-    if (!ListResources.instance) {
-      ListResources.instance = ListResources.createInstance();
-    }
-    return ListResources.instance;
-  }
-
-  static resetInstance(): void {
-    ListResources.instance = undefined as unknown as ListResources;
-  }
+  constructor(private readonly resourceRepository: IResourceRepository) {}
 
   async execute(input: ListResourcesInput): Promise<ListResourcesOutput> {
     const resources = await this.resourceRepository.findByRepositoryUuid(input.repositoryUuid);
@@ -54,5 +34,3 @@ export class ListResources {
   }
 }
 
-export const listResources = (input: ListResourcesInput): Promise<ListResourcesOutput> =>
-  ListResources.getInstance().execute(input);

@@ -1,11 +1,8 @@
 /**
  * Schedule Application Module (Server)
  *
- * 提供 Schedule 模块的所有 Services 和调度器
+ * 提供 Schedule 模块的所有 Services
  */
-
-// ===== Container (from infrastructure-server) =====
-export { ScheduleContainer } from '@dailyuse/infrastructure-server';
 
 // ===== Services =====
 export * from './services';

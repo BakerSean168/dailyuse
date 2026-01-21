@@ -17,7 +17,6 @@ import type {
   AuthCredential,
 } from '@dailyuse/domain-server/authentication';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-server';
 import { eventBus, createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('TwoFactorApplicationService');
@@ -62,38 +61,12 @@ export interface EnableTwoFactorResponse {
  * 负责双因素认证的核心业务逻辑编排
  */
 export class TwoFactorApplicationService {
-  private static instance: TwoFactorApplicationService;
-
   private credentialRepository: IAuthCredentialRepository;
   private authenticationDomainService: AuthenticationDomainService;
 
-  private constructor(credentialRepository: IAuthCredentialRepository) {
+  constructor(credentialRepository: IAuthCredentialRepository) {
     this.credentialRepository = credentialRepository;
     this.authenticationDomainService = new AuthenticationDomainService();
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    credentialRepository?: IAuthCredentialRepository,
-  ): Promise<TwoFactorApplicationService> {
-    const authContainer = AuthenticationContainer.getInstance();
-
-    const credRepo = credentialRepository || authContainer.getAuthCredentialRepository();
-
-    TwoFactorApplicationService.instance = new TwoFactorApplicationService(credRepo);
-    return TwoFactorApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<TwoFactorApplicationService> {
-    if (!TwoFactorApplicationService.instance) {
-      TwoFactorApplicationService.instance = await TwoFactorApplicationService.createInstance();
-    }
-    return TwoFactorApplicationService.instance;
   }
 
   /**

@@ -4,7 +4,7 @@
  */
 import type { Router as RouterType } from 'express';
 import { Router } from 'express';
-import { ResourceController } from '../controllers/ResourceController';
+// import { ResourceController } from '../controllers/ResourceController';
 import { authMiddleware } from '../../../shared/infrastructure/http/middlewares/authMiddleware';
 import multer from 'multer';
 

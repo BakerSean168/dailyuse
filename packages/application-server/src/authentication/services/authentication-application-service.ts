@@ -22,8 +22,6 @@ import type {
 } from '@dailyuse/domain-server/authentication';
 import type { IAccountRepository, Account } from '@dailyuse/domain-server/account';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-server';
-import { AccountContainer } from '@dailyuse/infrastructure-server';
 import { eventBus, createLogger } from '@dailyuse/utils';
 import { prisma } from '@/shared/infrastructure/config/prisma';
 import { getJwtConfig } from '@/shared/infrastructure/config/env.js';
@@ -80,14 +78,12 @@ export interface LoginResponse {
  * 负责认证流程的核心业务逻辑编排
  */
 export class AuthenticationApplicationService {
-  private static instance: AuthenticationApplicationService;
-
   private credentialRepository: IAuthCredentialRepository;
   private sessionRepository: IAuthSessionRepository;
   private accountRepository: IAccountRepository;
   private authenticationDomainService: AuthenticationDomainService;
 
-  private constructor(
+  constructor(
     credentialRepository: IAuthCredentialRepository,
     sessionRepository: IAuthSessionRepository,
     accountRepository: IAccountRepository,
@@ -96,40 +92,6 @@ export class AuthenticationApplicationService {
     this.sessionRepository = sessionRepository;
     this.accountRepository = accountRepository;
     this.authenticationDomainService = new AuthenticationDomainService();
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    credentialRepository?: IAuthCredentialRepository,
-    sessionRepository?: IAuthSessionRepository,
-    accountRepository?: IAccountRepository,
-  ): Promise<AuthenticationApplicationService> {
-    const authContainer = AuthenticationContainer.getInstance();
-    const accountContainer = AccountContainer.getInstance();
-
-    const credRepo = credentialRepository || authContainer.getAuthCredentialRepository();
-    const sessRepo = sessionRepository || authContainer.getAuthSessionRepository();
-    const accRepo = accountRepository || accountContainer.getAccountRepository();
-
-    AuthenticationApplicationService.instance = new AuthenticationApplicationService(
-      credRepo,
-      sessRepo,
-      accRepo,
-    );
-    return AuthenticationApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<AuthenticationApplicationService> {
-    if (!AuthenticationApplicationService.instance) {
-      AuthenticationApplicationService.instance =
-        await AuthenticationApplicationService.createInstance();
-    }
-    return AuthenticationApplicationService.instance;
   }
 
   /**

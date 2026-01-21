@@ -7,7 +7,6 @@
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';
 import { FolderHierarchyService } from '@dailyuse/domain-server/repository';
 import type { FolderClientDTO } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Rename Folder Input
@@ -28,29 +27,10 @@ export interface RenameFolderOutput {
  * Rename Folder
  */
 export class RenameFolder {
-  private static instance: RenameFolder;
   private hierarchyService: FolderHierarchyService;
 
-  private constructor(private readonly folderRepository: IFolderRepository) {
+  constructor(private readonly folderRepository: IFolderRepository) {
     this.hierarchyService = new FolderHierarchyService();
-  }
-
-  static createInstance(folderRepository?: IFolderRepository): RenameFolder {
-    const container = RepositoryContainer.getInstance();
-    const repo = folderRepository || container.getFolderRepository();
-    RenameFolder.instance = new RenameFolder(repo);
-    return RenameFolder.instance;
-  }
-
-  static getInstance(): RenameFolder {
-    if (!RenameFolder.instance) {
-      RenameFolder.instance = RenameFolder.createInstance();
-    }
-    return RenameFolder.instance;
-  }
-
-  static resetInstance(): void {
-    RenameFolder.instance = undefined as unknown as RenameFolder;
   }
 
   async execute(input: RenameFolderInput): Promise<RenameFolderOutput> {
@@ -71,6 +51,3 @@ export class RenameFolder {
     return { folder: folder.toClientDTO() };
   }
 }
-
-export const renameFolder = (input: RenameFolderInput): Promise<RenameFolderOutput> =>
-  RenameFolder.getInstance().execute(input);

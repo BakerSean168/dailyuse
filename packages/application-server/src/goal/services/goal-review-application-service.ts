@@ -1,5 +1,5 @@
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
+
 import { GoalDomainService } from '@dailyuse/domain-server/goal';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 import { GoalEventPublisher } from './GoalEventPublisher';
@@ -15,24 +15,12 @@ import { GoalEventPublisher } from './GoalEventPublisher';
  * - 删除回顾
  */
 export class GoalReviewApplicationService {
-  private static instance: GoalReviewApplicationService;
   private domainService: GoalDomainService;
   private goalRepository: IGoalRepository;
 
-  private constructor(goalRepository: IGoalRepository) {
+  constructor(goalRepository: IGoalRepository) {
     this.domainService = new GoalDomainService();
     this.goalRepository = goalRepository;
-  }
-
-  /**
-   * 创建应用服务实例
-   */
-  static async createInstance(goalRepository?: IGoalRepository): Promise<GoalReviewApplicationService> {
-    const container = GoalContainer.getInstance();
-    const repo = goalRepository || container.getGoalRepository();
-
-    GoalReviewApplicationService.instance = new GoalReviewApplicationService(repo);
-    return GoalReviewApplicationService.instance;
   }
 
   /**

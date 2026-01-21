@@ -17,7 +17,6 @@ import type {
   AuthCredential,
 } from '@dailyuse/domain-server/authentication';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-server';
 import { eventBus, createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('RememberMeApplicationService');
@@ -61,38 +60,12 @@ export interface CreateRememberMeTokenResponse {
  * 负责记住我功能的核心业务逻辑编排
  */
 export class RememberMeApplicationService {
-  private static instance: RememberMeApplicationService;
-
   private credentialRepository: IAuthCredentialRepository;
   private authenticationDomainService: AuthenticationDomainService;
 
-  private constructor(credentialRepository: IAuthCredentialRepository) {
+  constructor(credentialRepository: IAuthCredentialRepository) {
     this.credentialRepository = credentialRepository;
     this.authenticationDomainService = new AuthenticationDomainService();
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    credentialRepository?: IAuthCredentialRepository,
-  ): Promise<RememberMeApplicationService> {
-    const authContainer = AuthenticationContainer.getInstance();
-
-    const credRepo = credentialRepository || authContainer.getAuthCredentialRepository();
-
-    RememberMeApplicationService.instance = new RememberMeApplicationService(credRepo);
-    return RememberMeApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<RememberMeApplicationService> {
-    if (!RememberMeApplicationService.instance) {
-      RememberMeApplicationService.instance = await RememberMeApplicationService.createInstance();
-    }
-    return RememberMeApplicationService.instance;
   }
 
   /**

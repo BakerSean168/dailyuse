@@ -18,11 +18,11 @@ export interface IPendingChangeRepository {
   save(change: PendingChange): Promise<void>;
   saveMany(changes: PendingChange[]): Promise<void>;
   findByUuid(uuid: string): Promise<PendingChange | null>;
-  findUnsyncedByEntityRef(entityType: SyncableEntityType, entityUuid: string): Promise<PendingChange[]>;
-  findAllUnsynced(limit?: number): Promise<PendingChange[]>;
-  findByQuery(options: PendingChangeQueryOptions): Promise<PendingChange[]>;
-  count(options?: PendingChangeQueryOptions): Promise<number>;
+  findUnsyncedByEntityRef(accountUuid: string, entityType: SyncableEntityType, entityUuid: string): Promise<PendingChange[]>;
+  findAllUnsynced(accountUuid: string, limit?: number): Promise<PendingChange[]>;
+  findByQuery(accountUuid: string, options: PendingChangeQueryOptions): Promise<PendingChange[]>;
+  count(accountUuid: string, options?: PendingChangeQueryOptions): Promise<number>;
   delete(uuid: string): Promise<void>;
   deleteMany(uuids: string[]): Promise<void>;
-  deleteSynced(): Promise<number>;
+  deleteSynced(accountUuid: string): Promise<number>;
 }

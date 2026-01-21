@@ -1,11 +1,11 @@
 /**
  * Notification Template Routes
- * 处理通知模板的管理和自定义
+ * 处睆通知模板的管睆和自定�?
  *
  * 端点:
  * - POST   /api/notifications/templates           - 创建模板
- * - GET    /api/notifications/templates           - 获取模板列表
- * - GET    /api/notifications/templates/:id       - 获取模板详情
+ * - GET    /api/notifications/templates           - 获坖模板列表
+ * - GET    /api/notifications/templates/:id       - 获坖模板详情
  * - PUT    /api/notifications/templates/:id       - 更新模板
  * - DELETE /api/notifications/templates/:id       - 删除模板
  * - POST   /api/notifications/templates/:id/preview - 预览模板
@@ -22,7 +22,7 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('NotificationTemplateRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerNotificationTemplateRoutes(): Router {
+export function registerNotificationTemplateRoutes(service: NotificationTemplateApplicationService): Router {
   const router: Router = ExpressRouter();
 
   router.use(authMiddleware);
@@ -93,13 +93,13 @@ export function registerNotificationTemplateRoutes(): Router {
    *                 type: string
    *     responses:
    *       201:
-   *         description: 模板创建成功
+   *         description: 模板创建戝功
    *       400:
-   *         description: 请求参数错误
+   *         description: 请求坂数错误
    */
   router.post('/', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await NotificationTemplateApplicationService.getInstance();
+
       const template = await service.createTemplate(req.user.accountUuid, req.body);
       res.status(201).json(responseBuilder.success(template, 'Template created'));
     } catch (error) {
@@ -113,7 +113,7 @@ export function registerNotificationTemplateRoutes(): Router {
    * /api/notifications/templates:
    *   get:
    *     tags: [Notification Templates]
-   *     summary: 获取通知模板列表
+   *     summary: 获坖通知模板列表
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -133,11 +133,11 @@ export function registerNotificationTemplateRoutes(): Router {
    *           default: 20
    *     responses:
    *       200:
-   *         description: 成功获取模板列表
+   *         description: 戝功获坖模板列表
    */
   router.get('/', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await NotificationTemplateApplicationService.getInstance();
+
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 20;
       const category = req.query.category as string;
@@ -160,7 +160,7 @@ export function registerNotificationTemplateRoutes(): Router {
    * /api/notifications/templates/{id}:
    *   get:
    *     tags: [Notification Templates]
-   *     summary: 获取模板详情
+   *     summary: 获坖模板详情
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -171,13 +171,13 @@ export function registerNotificationTemplateRoutes(): Router {
    *           type: string
    *     responses:
    *       200:
-   *         description: 成功获取模板
+   *         description: 戝功获坖模板
    *       404:
-   *         description: 模板不存在
+   *         description: 模板丝存�?
    */
   router.get('/:id', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await NotificationTemplateApplicationService.getInstance();
+
       const template = await service.getTemplate(req.params.id);
       res.json(responseBuilder.success(template, 'Template retrieved'));
     } catch (error) {
@@ -219,13 +219,13 @@ export function registerNotificationTemplateRoutes(): Router {
    *                 type: string
    *     responses:
    *       200:
-   *         description: 模板更新成功
+   *         description: 模板更新戝功
    *       404:
-   *         description: 模板不存在
+   *         description: 模板丝存�?
    */
   router.put('/:id', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await NotificationTemplateApplicationService.getInstance();
+
       const updated = await service.updateTemplate(req.params.id, req.body);
       res.json(responseBuilder.success(updated, 'Template updated'));
     } catch (error) {
@@ -250,13 +250,13 @@ export function registerNotificationTemplateRoutes(): Router {
    *           type: string
    *     responses:
    *       200:
-   *         description: 模板删除成功
+   *         description: 模板删除戝功
    *       404:
-   *         description: 模板不存在
+   *         description: 模板丝存�?
    */
   router.delete('/:id', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await NotificationTemplateApplicationService.getInstance();
+
       await service.deleteTemplate(req.params.id);
       res.json(responseBuilder.success(null, 'Template deleted'));
     } catch (error) {
@@ -293,11 +293,11 @@ export function registerNotificationTemplateRoutes(): Router {
    *                 type: object
    *     responses:
    *       200:
-   *         description: 预览成功
+   *         description: 预览戝功
    */
   router.post('/:id/preview', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await NotificationTemplateApplicationService.getInstance();
+
       const preview = await service.previewTemplate(
         req.params.id,
         req.body.channel,

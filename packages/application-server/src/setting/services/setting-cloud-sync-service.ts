@@ -20,26 +20,11 @@ export interface SettingVersion {
 }
 
 export class SettingCloudSyncService {
-  private static instance: SettingCloudSyncService;
   private userSettingRepository: IUserSettingRepository;
   private versionHistory: Map<string, SettingVersion[]> = new Map();
 
-  private constructor(userSettingRepository: IUserSettingRepository) {
+  constructor(userSettingRepository: IUserSettingRepository) {
     this.userSettingRepository = userSettingRepository;
-  }
-
-  static async createInstance(
-    userSettingRepository: IUserSettingRepository,
-  ): Promise<SettingCloudSyncService> {
-    SettingCloudSyncService.instance = new SettingCloudSyncService(userSettingRepository);
-    return SettingCloudSyncService.instance;
-  }
-
-  static async getInstance(): Promise<SettingCloudSyncService> {
-    if (!SettingCloudSyncService.instance) {
-      throw new Error('SettingCloudSyncService not initialized');
-    }
-    return SettingCloudSyncService.instance;
   }
 
   /**

@@ -9,33 +9,13 @@ import { Message } from '@dailyuse/domain-server/ai';
 import type { SendMessageRequest, MessageResponse } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
 import { eventBus } from '@dailyuse/utils';
-import { AIContainer } from '@dailyuse/infrastructure-server';
+// import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Send Message Service
  */
 export class SendMessage {
-  private static instance: SendMessage;
-
-  private constructor(private readonly conversationRepository: IAIConversationRepository) {}
-
-  static createInstance(conversationRepository?: IAIConversationRepository): SendMessage {
-    const container = AIContainer.getInstance();
-    const repo = conversationRepository || container.getConversationRepository();
-    SendMessage.instance = new SendMessage(repo);
-    return SendMessage.instance;
-  }
-
-  static getInstance(): SendMessage {
-    if (!SendMessage.instance) {
-      SendMessage.instance = SendMessage.createInstance();
-    }
-    return SendMessage.instance;
-  }
-
-  static resetInstance(): void {
-    SendMessage.instance = undefined as unknown as SendMessage;
-  }
+  constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
   async execute(accountUuid: string, input: SendMessageRequest): Promise<MessageResponse> {
     // 1. 获取对话

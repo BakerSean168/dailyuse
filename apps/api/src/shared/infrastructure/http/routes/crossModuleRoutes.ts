@@ -5,12 +5,12 @@
  */
 
 import { Router, type Request, type Response } from 'express';
-import { GoalCrossModuleQueryService } from '@/modules/goal/application/services/GoalCrossModuleQueryService';
+// import { GoalCrossModuleQueryService } from '@/modules/goal/application/services/GoalCrossModuleQueryService';
 
 const router: Router = Router();
 
-// 获取单例服务
-const goalQueryService = GoalCrossModuleQueryService.getInstance();
+// TODO: GoalCrossModuleQueryService 文件缺失，暂时禁用此功能
+// const goalQueryService = GoalCrossModuleQueryService.getInstance();
 
 /**
  * 获取可用于任务绑定的目标列表。

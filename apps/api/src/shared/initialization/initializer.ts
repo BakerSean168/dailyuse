@@ -15,7 +15,7 @@ import {
 // 已实现的模块
 import { registerAuthenticationInitializationTasks } from '../../modules/authentication/initialization/authenticationInitialization';
 import { registerGoalInitializationTasks } from '../../modules/goal/initialization/goalInitialization';
-import { registerScheduleInitializationTasks } from '../../modules/schedule/initialization/scheduleInitialization';
+// import { registerScheduleInitializationTasks } from '../../modules/schedule/initialization/scheduleInitialization';
 import { registerDashboardInitializationTasks } from '../../modules/dashboard/initialization/dashboardInitialization';
 import { registerReminderInitializationTasks } from '../../modules/reminder/initialization/reminderInitialization';
 
@@ -68,7 +68,7 @@ export function registerAllInitializationTasks(): void {
   // 注册各模块的任务
   registerAuthenticationInitializationTasks(); // ✅ 已实现（事件处理器）
   registerGoalInitializationTasks(); // ✅ 已实现（Goal 统计事件处理器）
-  registerScheduleInitializationTasks(); // ✅ 已实现（Schedule 事件处理器）
+  // registerScheduleInitializationTasks(); // TODO: scheduleInitialization 文件缺失
   registerDashboardInitializationTasks(); // ✅ 已实现（Dashboard 缓存失效监听器）
   registerReminderInitializationTasks(); // ✅ 新增（Reminder SSE 事件桥接）
 

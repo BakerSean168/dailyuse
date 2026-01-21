@@ -17,8 +17,6 @@ import crypto from 'crypto';
 import type { IAuthSessionRepository, AuthSession } from '@dailyuse/domain-server/authentication';
 import type { IAccountRepository, Account } from '@dailyuse/domain-server/account';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-server';
-import { AccountContainer } from '@dailyuse/infrastructure-server';
 import { eventBus, createLogger } from '@dailyuse/utils';
 import { getJwtConfig } from '@/shared/infrastructure/config/env.js';
 import jwt from 'jsonwebtoken';
@@ -74,13 +72,11 @@ export interface RefreshSessionResponse {
  * 负责会话管理的核心业务逻辑编排
  */
 export class SessionManagementApplicationService {
-  private static instance: SessionManagementApplicationService;
-
   private sessionRepository: IAuthSessionRepository;
   private accountRepository: IAccountRepository;
   private authenticationDomainService: AuthenticationDomainService;
 
-  private constructor(
+  constructor(
     sessionRepository: IAuthSessionRepository,
     accountRepository: IAccountRepository,
   ) {
@@ -89,36 +85,8 @@ export class SessionManagementApplicationService {
     this.authenticationDomainService = new AuthenticationDomainService();
   }
 
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    sessionRepository?: IAuthSessionRepository,
-    accountRepository?: IAccountRepository,
-  ): Promise<SessionManagementApplicationService> {
-    const authContainer = AuthenticationContainer.getInstance();
-    const accountContainer = AccountContainer.getInstance();
 
-    const sessRepo = sessionRepository || authContainer.getAuthSessionRepository();
-    const accRepo = accountRepository || accountContainer.getAccountRepository();
 
-    SessionManagementApplicationService.instance = new SessionManagementApplicationService(
-      sessRepo,
-      accRepo,
-    );
-    return SessionManagementApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<SessionManagementApplicationService> {
-    if (!SessionManagementApplicationService.instance) {
-      SessionManagementApplicationService.instance =
-        await SessionManagementApplicationService.createInstance();
-    }
-    return SessionManagementApplicationService.instance;
-  }
 
   /**
    * 刷新会话主流程

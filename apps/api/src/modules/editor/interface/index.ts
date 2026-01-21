@@ -12,7 +12,7 @@ import type { Router } from 'express';
 import { Router as ExpressRouter } from 'express';
 import { registerEditorConfigRoutes } from './editor-config.routes';
 import { registerEditorThemeRoutes } from './editor-theme.routes';
-import { registerEditorDetailsRoutes } from './http/routes/editorRoutes';
+// import { registerEditorDetailsRoutes } from './http/routes/editorRoutes';
 
 export function registerEditorRoutes(): Router {
   const router: Router = ExpressRouter();
@@ -24,7 +24,7 @@ export function registerEditorRoutes(): Router {
   router.use('/themes', registerEditorThemeRoutes());
 
   // ============ 编辑器主路由 ============
-  router.use('/', registerEditorDetailsRoutes());
+  // router.use('/', registerEditorDetailsRoutes()); // TODO: restore when editorRoutes is implemented
 
   return router;
 }

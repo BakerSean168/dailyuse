@@ -6,6 +6,7 @@
 
 // Container
 export { NotificationContainer } from './notification.container';
+export { NotificationModule } from './notification.module';
 
 // Ports (Interfaces)
 export { type INotificationRepository } from './ports/notification-repository.port';

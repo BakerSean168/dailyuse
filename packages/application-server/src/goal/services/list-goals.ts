@@ -7,7 +7,6 @@
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { Goal } from '@dailyuse/domain-server/goal';
 import type { QueryGoalsRequest, GoalsResponse } from '@dailyuse/contracts/goal';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * List Goals Service
@@ -20,10 +19,8 @@ export class ListGoals {
   /**
    * 创建服务实例（支持依赖注入）
    */
-  static createInstance(goalRepository?: IGoalRepository): ListGoals {
-    const container = GoalContainer.getInstance();
-    const repo = goalRepository || container.getGoalRepository();
-    ListGoals.instance = new ListGoals(repo);
+  static createInstance(goalRepository: IGoalRepository): ListGoals {
+    ListGoals.instance = new ListGoals(goalRepository);
     return ListGoals.instance;
   }
 
@@ -32,7 +29,7 @@ export class ListGoals {
    */
   static getInstance(): ListGoals {
     if (!ListGoals.instance) {
-      ListGoals.instance = ListGoals.createInstance();
+      throw new Error('ListGoals instance not initialized. Call createInstance(repository) first.');
     }
     return ListGoals.instance;
   }

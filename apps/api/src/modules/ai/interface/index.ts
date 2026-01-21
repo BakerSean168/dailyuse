@@ -14,18 +14,23 @@ import { Router as ExpressRouter } from 'express';
 import { registerProviderRoutes } from './ai-provider.routes';
 import { registerGenerationRoutes } from './ai-generation.routes';
 import { registerChatRoutes } from './ai-chat.routes';
+import type { AIModule } from '@dailyuse/infrastructure-server';
 
-export function registerAIRoutes(): Router {
+export function registerAIRoutes(aiModule: AIModule): Router {
   const router: Router = ExpressRouter();
 
   // ============ AI Provider 管理 ============
-  router.use('/providers', registerProviderRoutes());
+  router.use('/providers', registerProviderRoutes(aiModule.providerConfigService));
 
   // ============ AI 生成功能 ============
-  router.use('/generate', registerGenerationRoutes());
+  router.use('/generate', registerGenerationRoutes(aiModule.generationService));
 
   // ============ AI 对话功能 ============
-  router.use('/chat', registerChatRoutes());
+  router.use('/chat', registerChatRoutes(
+    aiModule.chatService,
+    aiModule.conversationService,
+    aiModule.getQuota
+  ));
 
   return router;
 }

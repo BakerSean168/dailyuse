@@ -13,18 +13,14 @@
  * 架构说明：
  * - DomainService：纯领域逻辑，业务规则验证（无副作用）
  * - ApplicationService：编排层，负责持久化、事件发布
- * - Repository：数据访问层，接收事务上下文 tx（待更新）
+ * - Repository：数据访问层
  */
 
 import type {
-  AccountServerDTO,
   AccountClientDTO,
-  CreateAccountRequest,
 } from '@dailyuse/contracts/account';
 import type { IAccountRepository, Account } from '@dailyuse/domain-server/account';
 import { AccountDomainService } from '@dailyuse/domain-server/account';
-import { AccountContainer } from '@dailyuse/infrastructure-server';
-import { prisma } from '@/shared/infrastructure/config/prisma';
 import { eventBus, createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AccountStatusApplicationService');
@@ -64,49 +60,16 @@ export interface AccountResponse {
  * 负责账户状态管理的核心业务逻辑编排
  */
 export class AccountStatusApplicationService {
-  private static instance: AccountStatusApplicationService;
-
   private accountRepository: IAccountRepository;
   private accountDomainService: AccountDomainService;
 
-  private constructor(accountRepository: IAccountRepository) {
+  constructor(accountRepository: IAccountRepository) {
     this.accountRepository = accountRepository;
     this.accountDomainService = new AccountDomainService();
   }
 
   /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    accountRepository?: IAccountRepository,
-  ): Promise<AccountStatusApplicationService> {
-    const accountContainer = AccountContainer.getInstance();
-    const accountRepo = accountRepository || accountContainer.getAccountRepository();
-
-    AccountStatusApplicationService.instance = new AccountStatusApplicationService(accountRepo);
-    return AccountStatusApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<AccountStatusApplicationService> {
-    if (!AccountStatusApplicationService.instance) {
-      AccountStatusApplicationService.instance =
-        await AccountStatusApplicationService.createInstance();
-    }
-    return AccountStatusApplicationService.instance;
-  }
-
-  /**
    * 记录登录主流程
-   *
-   * 步骤：
-   * 1. 查询账户（ApplicationService 负责）
-   * 2. 调用聚合根方法记录登录
-   * 3. 持久化（ApplicationService 负责）
-   * 4. 发布领域事件
-   * 5. 返回 AccountClientDTO
    */
   async recordLogin(request: RecordLoginRequest): Promise<AccountResponse> {
     logger.info('[AccountStatusApplicationService] Recording login', {
@@ -156,13 +119,6 @@ export class AccountStatusApplicationService {
 
   /**
    * 停用账户主流程
-   *
-   * 步骤：
-   * 1. 查询账户
-   * 2. 调用聚合根方法停用账户
-   * 3. 持久化
-   * 4. 发布领域事件
-   * 5. 返回 AccountClientDTO
    */
   async deactivateAccount(request: DeactivateAccountRequest): Promise<AccountResponse> {
     logger.info('[AccountStatusApplicationService] Deactivating account', {
@@ -212,13 +168,6 @@ export class AccountStatusApplicationService {
 
   /**
    * 删除账户主流程（软删除）
-   *
-   * 步骤：
-   * 1. 查询账户
-   * 2. 验证是否可以删除（调用 DomainService）
-   * 3. 调用聚合根方法软删除
-   * 4. 持久化
-   * 5. 发布领域事件
    */
   async deleteAccount(request: DeleteAccountRequest): Promise<AccountResponse> {
     logger.info('[AccountStatusApplicationService] Deleting account', {

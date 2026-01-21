@@ -7,25 +7,14 @@
 import type { IGoalFolderRepository } from '@dailyuse/domain-server/goal';
 import { GoalFolder } from '@dailyuse/domain-server/goal';
 import type { GoalFolderResponse } from '@dailyuse/contracts/goal';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
+
 
 /**
  * Get Goal Folder Service
  */
 export class GetGoalFolder {
-  private static instance: GetGoalFolder;
+  constructor(private readonly goalFolderRepository: IGoalFolderRepository) {}
 
-  private constructor(private readonly goalFolderRepository: IGoalFolderRepository) {}
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(goalFolderRepository?: IGoalFolderRepository): GetGoalFolder {
-    const container = GoalContainer.getInstance();
-    const repo = goalFolderRepository || container.getGoalFolderRepository();
-    GetGoalFolder.instance = new GetGoalFolder(repo);
-    return GetGoalFolder.instance;
-  }
 
   /**
    * 获取服务单例

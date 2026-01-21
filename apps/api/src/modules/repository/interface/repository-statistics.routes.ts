@@ -3,7 +3,7 @@
  * 仓库统计信息管理相关路由定义
  */
 import { Router, type Router as ExpressRouter } from 'express';
-import { RepositoryStatisticsController } from '../controllers/RepositoryStatisticsController';
+// import { RepositoryStatisticsController } from '../controllers/RepositoryStatisticsController';
 
 /**
  * @swagger

@@ -11,7 +11,6 @@ import type {
   RepositoryConfigServerDTO,
 } from '@dailyuse/contracts/repository';
 import { RepositoryType } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Create Repository Input
@@ -36,27 +35,8 @@ export interface CreateRepositoryOutput {
  * Create Repository
  */
 export class CreateRepository {
-  private static instance: CreateRepository;
 
-  private constructor(private readonly repositoryRepository: IRepositoryRepository) {}
-
-  static createInstance(repositoryRepository?: IRepositoryRepository): CreateRepository {
-    const container = RepositoryContainer.getInstance();
-    const repo = repositoryRepository || container.getRepositoryRepository();
-    CreateRepository.instance = new CreateRepository(repo);
-    return CreateRepository.instance;
-  }
-
-  static getInstance(): CreateRepository {
-    if (!CreateRepository.instance) {
-      CreateRepository.instance = CreateRepository.createInstance();
-    }
-    return CreateRepository.instance;
-  }
-
-  static resetInstance(): void {
-    CreateRepository.instance = undefined as unknown as CreateRepository;
-  }
+  constructor(private readonly repositoryRepository: IRepositoryRepository) {}
 
   async execute(input: CreateRepositoryInput): Promise<CreateRepositoryOutput> {
     const repository = Repository.create(input);
@@ -64,6 +44,3 @@ export class CreateRepository {
     return { repository: repository.toClientDTO() };
   }
 }
-
-export const createRepository = (input: CreateRepositoryInput): Promise<CreateRepositoryOutput> =>
-  CreateRepository.getInstance().execute(input);

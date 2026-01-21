@@ -1,7 +1,6 @@
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';
 import { Folder, FolderHierarchyService } from '@dailyuse/domain-server/repository';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, FolderClientDTO, FolderMetadataServerDTO } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Folder 应用服务
@@ -14,34 +13,12 @@ import { RepositoryContainer } from '@dailyuse/infrastructure-server';
  * - 管理文件夹层次结构
  */
 export class FolderApplicationService {
-  private static instance: FolderApplicationService;
   private folderRepository: IFolderRepository;
   private hierarchyService: FolderHierarchyService;
 
-  private constructor(folderRepository: IFolderRepository) {
+  constructor(folderRepository: IFolderRepository) {
     this.folderRepository = folderRepository;
     this.hierarchyService = new FolderHierarchyService();
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static createInstance(folderRepository?: IFolderRepository): FolderApplicationService {
-    const container = RepositoryContainer.getInstance();
-    const repo = folderRepository || container.getFolderRepository();
-
-    FolderApplicationService.instance = new FolderApplicationService(repo);
-    return FolderApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static getInstance(): FolderApplicationService {
-    if (!FolderApplicationService.instance) {
-      FolderApplicationService.instance = FolderApplicationService.createInstance();
-    }
-    return FolderApplicationService.instance;
   }
 
   /**

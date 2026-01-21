@@ -8,25 +8,14 @@ import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { Goal } from '@dailyuse/domain-server/goal';
 import type { GoalResponse } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
+
 
 /**
  * Complete Goal Service
  */
 export class CompleteGoal {
-  private static instance: CompleteGoal;
+  constructor(private readonly goalRepository: IGoalRepository) {}
 
-  private constructor(private readonly goalRepository: IGoalRepository) {}
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(goalRepository?: IGoalRepository): CompleteGoal {
-    const container = GoalContainer.getInstance();
-    const repo = goalRepository || container.getGoalRepository();
-    CompleteGoal.instance = new CompleteGoal(repo);
-    return CompleteGoal.instance;
-  }
 
   /**
    * 获取服务单例

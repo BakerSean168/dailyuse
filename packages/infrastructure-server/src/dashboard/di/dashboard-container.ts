@@ -17,7 +17,7 @@ import type {
   IScheduleStatisticsRepository,
 } from '@dailyuse/domain-server/schedule';
 import type { IDashboardConfigRepository } from '@dailyuse/domain-server/dashboard';
-import { TaskContainer } from '@dailyuse/infrastructure-server';
+import { PrismaTaskStatisticsRepository } from '../../task';
 import { GoalContainer } from '@dailyuse/infrastructure-server';
 import { ReminderContainer } from '@dailyuse/infrastructure-server';
 import { ScheduleContainer } from '@dailyuse/infrastructure-server';
@@ -62,7 +62,7 @@ export class DashboardContainer {
    * @returns {ITaskStatisticsRepository}
    */
   getTaskStatisticsRepository(): ITaskStatisticsRepository {
-    return TaskContainer.getInstance().getTaskStatisticsRepository();
+    return new PrismaTaskStatisticsRepository(prisma);
   }
 
   /**

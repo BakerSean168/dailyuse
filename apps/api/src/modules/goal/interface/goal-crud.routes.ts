@@ -1,13 +1,13 @@
 /**
- * Goal CRUD Routes
- * 处理目标的基本 CRUD 操作 (创建、读取、更新、删除)
+ * Goal CRUD Admin Routes
+ * Manage Goals (Create, Read, Update, Delete)
  *
- * 端点:
- * - GET  /goals                  - 获取当前用户所有目标
- * - POST /goals                  - 创建目标
- * - GET  /goals/:uuid            - 获取目标详情
- * - PUT  /goals/:uuid            - 更新目标
- * - DELETE /goals/:uuid          - 删除目标
+ * Endpoints:
+ * - POST   /goals               - Create Goal
+ * - GET    /goals               - List Goals (with filters)
+ * - GET    /goals/:id           - Get Goal Details
+ * - PUT    /goals/:id           - Update Goal
+ * - DELETE /goals/:id           - Delete Goal
  */
 
 import type { Router } from 'express';
@@ -15,65 +15,21 @@ import { Router as ExpressRouter } from 'express';
 import type { AuthenticatedRequest } from '../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { authMiddleware } from '../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { GoalApplicationService } from '@dailyuse/application-server';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
+import { createResponseBuilder } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
-const logger = createLogger('GoalCrudRoutes');
+const logger = createLogger('GoalRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerCrudRoutes(): Router {
+export function registerCrudRoutes(goalService: GoalApplicationService): Router {
   const router: Router = ExpressRouter();
-
-  /**
-   * @swagger
-   * /api/goals:
-   *   get:
-   *     tags: [Goals]
-   *     summary: 获取当前用户所有目标
-   *     security:
-   *       - bearerAuth: []
-   *     parameters:
-   *       - in: query
-   *         name: limit
-   *         schema:
-   *           type: integer
-   *           default: 100
-   *       - in: query
-   *         name: page
-   *         schema:
-   *           type: integer
-   *           default: 1
-   *       - in: query
-   *         name: includeChildren
-   *         schema:
-   *           type: boolean
-   *           default: false
-   *     responses:
-   *       200:
-   *         description: 成功获取目标列表
-   */
-  router.get('/', authMiddleware, async (req: AuthenticatedRequest, res) => {
-    try {
-      const { limit, page, includeChildren } = req.query;
-      const goalService = await GoalApplicationService.getInstance();
-      const goals = await goalService.getUserGoals(req.user.accountUuid, {
-        limit: Number(limit) || 100,
-        page: Number(page) || 1,
-        includeChildren: includeChildren === 'true',
-      });
-      res.json(responseBuilder.success(goals, 'Goals retrieved'));
-    } catch (error) {
-      logger.error('Get goals failed:', error);
-      throw error;
-    }
-  });
 
   /**
    * @swagger
    * /api/goals:
    *   post:
    *     tags: [Goals]
-   *     summary: 创建目标
+   *     summary: Create a new goal
    *     security:
    *       - bearerAuth: []
    *     requestBody:
@@ -84,12 +40,16 @@ export function registerCrudRoutes(): Router {
    *             type: object
    *             required:
    *               - title
+   *               - description
    *             properties:
    *               title:
    *                 type: string
    *               description:
    *                 type: string
-   *               targetDate:
+   *               startDate:
+   *                 type: string
+   *                 format: date-time
+   *               endDate:
    *                 type: string
    *                 format: date-time
    *               priority:
@@ -97,18 +57,12 @@ export function registerCrudRoutes(): Router {
    *                 enum: [low, medium, high]
    *     responses:
    *       201:
-   *         description: 目标创建成功
-   *       400:
-   *         description: 请求参数错误
+   *         description: Goal created successfully
    */
   router.post('/', authMiddleware, async (req: AuthenticatedRequest, res) => {
     try {
-      const goalService = await GoalApplicationService.getInstance();
-      const goal = await goalService.createGoal({
-        accountUuid: req.user.accountUuid,
-        ...req.body,
-      });
-      res.status(201).json(responseBuilder.success(goal, 'Goal created'));
+      const goal = await goalService.createGoal(req.user!.id, req.body);
+      res.status(201).json(responseBuilder.success(goal, 'Goal created successfully'));
     } catch (error) {
       logger.error('Create goal failed:', error);
       throw error;
@@ -117,34 +71,63 @@ export function registerCrudRoutes(): Router {
 
   /**
    * @swagger
-   * /api/goals/{uuid}:
+   * /api/goals:
    *   get:
    *     tags: [Goals]
-   *     summary: 获取目标详情
+   *     summary: List user goals
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: status
+   *         schema:
+   *           type: string
+   *       - in: query
+   *         name: priority
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: List of goals
+   */
+  router.get('/', authMiddleware, async (req: AuthenticatedRequest, res) => {
+    try {
+      const goals = await goalService.getUserGoals(req.user!.id);
+      res.json(responseBuilder.success(goals));
+    } catch (error) {
+      logger.error('Get goals failed:', error);
+      throw error;
+    }
+  });
+
+  /**
+   * @swagger
+   * /api/goals/{id}:
+   *   get:
+   *     tags: [Goals]
+   *     summary: Get goal details
    *     security:
    *       - bearerAuth: []
    *     parameters:
    *       - in: path
-   *         name: uuid
+   *         name: id
    *         required: true
    *         schema:
    *           type: string
    *     responses:
    *       200:
-   *         description: 成功获取目标详情
+   *         description: Goal details
    *       404:
-   *         description: 目标不存在
+   *         description: Goal not found
    */
-  router.get('/:uuid', authMiddleware, async (req: AuthenticatedRequest, res) => {
+  router.get('/:id', authMiddleware, async (req: AuthenticatedRequest, res) => {
     try {
-      const goalService = await GoalApplicationService.getInstance();
-      const goal = await goalService.getGoal(req.params.uuid);
+      const goal = await goalService.getGoal(req.params.id);
       if (!goal) {
-        return res
-          .status(404)
-          .json(responseBuilder.error(ResponseCode.NOT_FOUND, 'Goal not found'));
+        res.status(404).json(responseBuilder.error(404, 'Goal not found'));
+        return;
       }
-      res.json(responseBuilder.success(goal, 'Goal retrieved'));
+      res.json(responseBuilder.success(goal));
     } catch (error) {
       logger.error('Get goal failed:', error);
       throw error;
@@ -153,45 +136,31 @@ export function registerCrudRoutes(): Router {
 
   /**
    * @swagger
-   * /api/goals/{uuid}:
+   * /api/goals/{id}:
    *   put:
    *     tags: [Goals]
-   *     summary: 更新目标
+   *     summary: Update goal
    *     security:
    *       - bearerAuth: []
    *     parameters:
    *       - in: path
-   *         name: uuid
+   *         name: id
    *         required: true
    *         schema:
    *           type: string
    *     requestBody:
-   *       required: true
    *       content:
    *         application/json:
    *           schema:
    *             type: object
-   *             properties:
-   *               title:
-   *                 type: string
-   *               description:
-   *                 type: string
-   *               targetDate:
-   *                 type: string
-   *                 format: date-time
-   *               priority:
-   *                 type: string
    *     responses:
    *       200:
-   *         description: 目标更新成功
-   *       404:
-   *         description: 目标不存在
+   *         description: Goal updated
    */
-  router.put('/:uuid', authMiddleware, async (req: AuthenticatedRequest, res) => {
+  router.put('/:id', authMiddleware, async (req: AuthenticatedRequest, res) => {
     try {
-      const goalService = await GoalApplicationService.getInstance();
-      const updated = await goalService.updateGoal(req.params.uuid, req.body);
-      res.json(responseBuilder.success(updated, 'Goal updated'));
+      const goal = await goalService.updateGoal(req.params.id, req.body);
+      res.json(responseBuilder.success(goal, 'Goal updated successfully'));
     } catch (error) {
       logger.error('Update goal failed:', error);
       throw error;
@@ -200,29 +169,26 @@ export function registerCrudRoutes(): Router {
 
   /**
    * @swagger
-   * /api/goals/{uuid}:
+   * /api/goals/{id}:
    *   delete:
    *     tags: [Goals]
-   *     summary: 删除目标
+   *     summary: Delete goal
    *     security:
    *       - bearerAuth: []
    *     parameters:
    *       - in: path
-   *         name: uuid
+   *         name: id
    *         required: true
    *         schema:
    *           type: string
    *     responses:
    *       200:
-   *         description: 目标删除成功
-   *       404:
-   *         description: 目标不存在
+   *         description: Goal deleted
    */
-  router.delete('/:uuid', authMiddleware, async (req: AuthenticatedRequest, res) => {
+  router.delete('/:id', authMiddleware, async (req: AuthenticatedRequest, res) => {
     try {
-      const goalService = await GoalApplicationService.getInstance();
-      await goalService.deleteGoal(req.params.uuid);
-      res.json(responseBuilder.success(null, 'Goal deleted'));
+      await goalService.deleteGoal(req.params.id);
+      res.json(responseBuilder.success(null, 'Goal deleted successfully'));
     } catch (error) {
       logger.error('Delete goal failed:', error);
       throw error;

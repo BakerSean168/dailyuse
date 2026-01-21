@@ -1,12 +1,11 @@
 /**
  * Schedule Module - Infrastructure Server
  *
- * Repository implementations and DI container for Schedule module persistence.
- * All repositories implement interfaces defined in @dailyuse/domain-server/schedule
+ * Repository implementations and DI Module for Schedule module.
  */
 
-// DI Container
-export { ScheduleContainer } from './di/schedule-container';
+// Module
+export { ScheduleModule } from './schedule.module';
 
 // Repositories (Prisma implementations)
 export {
@@ -24,3 +23,6 @@ export {
   PrismaScheduleExecutionMapper,
   scheduleWorker,
 } from './datasources';
+
+export { SchedulerBootstrap } from './scheduler-bootstrap';
+

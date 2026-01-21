@@ -8,44 +8,15 @@ import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authenti
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import type { CreateApiKeyRequest, CreateApiKeyResponse } from '@dailyuse/contracts/authentication';
 import { eventBus } from '@dailyuse/utils';
-import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Create API Key Service
  */
 export class CreateApiKey {
-  private static instance: CreateApiKey;
   private readonly domainService: AuthenticationDomainService;
 
-  private constructor(private readonly credentialRepository: IAuthCredentialRepository) {
+  constructor(private readonly credentialRepository: IAuthCredentialRepository) {
     this.domainService = new AuthenticationDomainService();
-  }
-
-  /**
-   * 创建服务实例
-   */
-  static createInstance(credentialRepository?: IAuthCredentialRepository): CreateApiKey {
-    const container = AuthContainer.getInstance();
-    const repo = credentialRepository || container.getCredentialRepository();
-    CreateApiKey.instance = new CreateApiKey(repo);
-    return CreateApiKey.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): CreateApiKey {
-    if (!CreateApiKey.instance) {
-      CreateApiKey.instance = CreateApiKey.createInstance();
-    }
-    return CreateApiKey.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    CreateApiKey.instance = undefined as unknown as CreateApiKey;
   }
 
   /**

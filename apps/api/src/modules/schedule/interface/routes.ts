@@ -17,8 +17,9 @@ import { registerScheduleTaskRoutes } from './schedule-task.routes';
 import { registerScheduleConflictRoutes } from './schedule-conflict.routes';
 import { registerScheduleEventRoutes } from './schedule-event.routes';
 import { registerScheduleStatisticsRoutes } from './schedule-statistics.routes';
+import { ScheduleModule } from '@dailyuse/infrastructure-server';
 
-export function registerScheduleRoutes(): Router {
+export function registerScheduleRoutes(scheduleModule: ScheduleModule): Router {
   const router: Router = ExpressRouter();
 
   // ============ 日程核心路由 ============
@@ -28,7 +29,7 @@ export function registerScheduleRoutes(): Router {
   // PUT    /api/schedules/:id          - 更新日程
   // DELETE /api/schedules/:id          - 删除日程
   // GET    /api/schedules/:id/tasks    - 获取日程任务
-  router.use('/', registerScheduleCoreRoutes());
+  router.use('/', registerScheduleCoreRoutes(scheduleModule.scheduleService, scheduleModule.scheduleEventService));
 
   // ============ 日程任务路由 ============
   // POST   /api/schedules/tasks                    - 创建任务
@@ -40,7 +41,7 @@ export function registerScheduleRoutes(): Router {
   // PATCH  /api/schedules/tasks/:id/resume         - 恢复任务
   // POST   /api/schedules/tasks/:id/complete       - 完成任务
   // POST   /api/schedules/tasks/:id/cancel         - 取消任务
-  router.use('/tasks', registerScheduleTaskRoutes());
+  router.use('/tasks', registerScheduleTaskRoutes(scheduleModule.scheduleService));
 
   // ============ 日程冲突检测路由 ============
   // POST   /api/schedules/conflicts/detect         - 检测冲突
@@ -51,11 +52,11 @@ export function registerScheduleRoutes(): Router {
 
   // ============ 日程事件路由 ============
   // 用户视角的日历事件管理
-  router.use('/events', registerScheduleEventRoutes());
+  router.use('/events', registerScheduleEventRoutes(scheduleModule.scheduleEventService));
 
   // ============ 日程统计路由 ============
   // 统计和分析
-  router.use('/statistics', registerScheduleStatisticsRoutes());
+  router.use('/statistics', registerScheduleStatisticsRoutes(scheduleModule.scheduleStatisticsService));
 
   return router;
 }

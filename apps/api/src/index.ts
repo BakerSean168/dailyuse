@@ -1,26 +1,15 @@
 // 环境配置必须最先加载（包含 dotenv 加载逻辑）
 import { env, isDevelopment, isProduction } from './shared/infrastructure/config/env.js';
 
-import app from './app';
+import { createApp } from './app';
 import { connectPrisma, disconnectPrisma, prisma } from './shared/infrastructure/config/prisma';
 import { initializeApp } from './shared/initialization/initializer';
-// import { ScheduleTaskScheduler } from './modules/schedule/infrastructure/scheduler/ScheduleTaskScheduler'; // DISABLED: Schedule module needs refactoring
-// import { PriorityQueueScheduler } from './modules/schedule/infrastructure/scheduler/PriorityQueueScheduler'; // DISABLED: Schedule module needs refactoring
-// import { sseController } from './modules/schedule/interface/http/SSEController'; // DISABLED: Schedule module needs refactoring
 import { eventBus } from '@dailyuse/utils';
 import { initializeLogger, getStartupInfo } from './shared/infrastructure/config/logger.config';
 import { createLogger } from '@dailyuse/utils';
-// DISABLED: Cron jobs moved to unified cron scheduler in shared/infrastructure/cron
-// import {
-//   startFocusModeCronJob,
-//   stopFocusModeCronJob,
-// } from './modules/goal/infrastructure/cron/focusModeCronJob';
-// import {
-//   startReminderTriggerCronJob,
-//   stopReminderTriggerCronJob,
-// } from './modules/reminder/infrastructure/cron/reminderTriggerCronJob';
 import { registerAllCronJobs, startCronScheduler, stopCronScheduler } from './shared/infrastructure/cron';
 import { registerTaskEventListeners } from '@dailyuse/application-server/task';
+import { GoalModule, AccountModule, TaskModule, ScheduleModule, ReminderModule, NotificationModule, SettingModule, AIModule } from '@dailyuse/infrastructure-server';
 
 // 初始化日志系统
 initializeLogger();
@@ -35,7 +24,7 @@ const logger = createLogger('API');
       logLevel: env.LOG_LEVEL,
     });
 
-    // Try to connect to database, but don't fail if it's unavailable
+    // Try to connect to database
     try {
       await connectPrisma();
       logger.info('Database connected successfully');
@@ -47,44 +36,43 @@ const logger = createLogger('API');
       logger.warn('Performance metrics endpoint will still be available');
     }
 
-    // 🎯 注册事件处理器（事件驱动架构）
-    // registerEventHandlers(prisma, sseController); // DISABLED: Schedule module needs refactoring
-    // logger.info('Event handlers registered successfully');
+    // 🎯 初始化 Infrastructure Module (Composition Root)
+    const goalModule = new GoalModule(prisma);
+    const accountModule = new AccountModule(prisma);
+    const taskModule = new TaskModule(prisma);
+    const scheduleModule = new ScheduleModule(prisma);
+    const reminderModule = new ReminderModule(prisma);
+    const notificationModule = new NotificationModule(prisma);
+    const settingModule = new SettingModule(prisma);
+    const aiModule = new AIModule(prisma);
     
     // 注册 Task 事件监听器
-    registerTaskEventListeners();
+    registerTaskEventListeners(taskModule.taskInstanceRepository);
     logger.info('✅ Task event listeners registered successfully');
 
-    // 启动调度器（优先队列 vs 轮询）
-    // DISABLED: Schedule module needs complete refactoring for new cron-based schema
-    // if (USE_PRIORITY_QUEUE_SCHEDULER) {
-    //   const scheduler = PriorityQueueScheduler.getInstance(prisma, eventBus);
-    //   await scheduler.start();
-    //   logger.info('✅ 优先队列调度器已启动', {
-    //     type: 'PriorityQueue',
-    //     mechanism: 'setTimeout',
-    //     precision: '<100ms',
-    //     status: scheduler.getStatus(),
-    //   });
-    // } else {
-    //   const scheduler = ScheduleTaskScheduler.getInstance(prisma, eventBus);
-    //   scheduler.start();
-    //   logger.info('⚠️  传统轮询调度器已启动（不推荐）', {
-    //     type: 'Polling',
-    //     mechanism: 'cron',
-    //     precision: '0-60s',
-    //   });
-    // }
+    /* 
     logger.warn(
       '⚠️ Schedule module is temporarily disabled - needs refactoring for new cron-based schema',
     );
+    */
 
-    // 启动统一 Cron 调度器 (Smart Frequency 等)
-    // 包括: DailyAnalysisCronJob, FocusMode, ReminderTrigger 等
+    // 启动统一 Cron 调度器
     registerAllCronJobs();
     startCronScheduler();
     logger.info('✅ Unified cron scheduler started', {
       description: 'Handles all cron jobs including Focus Mode, Reminder Triggers, and Daily Analysis',
+    });
+
+    // 🏭 创建 App 并注入依赖
+    const app = createApp({
+      goalModule: goalModule,
+      accountModule: accountModule,
+      taskModule: taskModule,
+      scheduleModule: scheduleModule,
+      reminderModule: reminderModule,
+      notificationModule: notificationModule,
+      settingModule: settingModule,
+      aiModule: aiModule,
     });
 
     app.listen(env.API_PORT, env.API_HOST, () => {

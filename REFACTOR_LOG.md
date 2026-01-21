@@ -70,3 +70,28 @@ Transform \pps/api\ and \pps/web\ into **Pure Containers** by extracting all b
 - **Simplified** GoalController, GoalStatisticsController, GoalFolderController to delegate to GoalContainer.
 - **Fixed** GoalEventPublisher and GoalTaskEventHandlers to be pure classes injected via GoalContainer.
 - **Result**: pps/api is now a thinner container for the Goal module.
+
+### 3. Task Module Refactor & Corruption Fix
+- **Problem**: Circular dependencies via TaskContainer, corrupted (Mojibake) source files in Application Service layer.
+- **Solution**: Applied Pure DI pattern, recreated Services and Repositories, removed TaskContainer.
+- **Status**: [x] Core Refactor Complete
+- **Date**: 2026-01-21
+- **Changes**:
+    - Recreated TaskInstance & TaskTemplate Application Services.
+    - Created TaskModule in infrastructure layer.
+    - Removed global TaskContainer.
+    - Wired API to use Dependency Injection.
+
+
+### 4. Schedule Module Refactor
+- **Problem**: Legacy ScheduleContainer and static factories.
+- **Solution**: Applied Pure DI pattern, created ScheduleModule infrastructure.
+- **Status**: [x] Core Refactor Complete
+- **Date**: 2026-01-21
+- **Changes**:
+    - Refactored ScheduleApplicationService, ScheduleEventApplicationService, ScheduleStatisticsApplicationService.
+    - Created ScheduleModule.
+    - Removed ScheduleContainer.
+    - Wired API routes.
+    - *Note*: Execution services (ScheduleExecutionService) marked for subsequent refactor.
+

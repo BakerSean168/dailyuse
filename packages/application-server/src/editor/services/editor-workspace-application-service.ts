@@ -1,5 +1,4 @@
 import type { IEditorWorkspaceRepository } from '@dailyuse/domain-server/editor';
-import { EditorContainer } from '@dailyuse/infrastructure-server';
 import { EditorWorkspaceDomainService } from '@dailyuse/domain-server/editor';
 import type { 
   DocumentClientDTO,
@@ -25,37 +24,12 @@ import { ProjectType, SplitDirection, TabType } from '@dailyuse/contracts/editor
  * - DTO 转换（Domain ↔ Contracts）
  */
 export class EditorWorkspaceApplicationService {
-  private static instance: EditorWorkspaceApplicationService;
   private domainService: EditorWorkspaceDomainService;
   private repository: IEditorWorkspaceRepository;
 
-  private constructor(repository: IEditorWorkspaceRepository) {
+  constructor(repository: IEditorWorkspaceRepository) {
     this.domainService = new EditorWorkspaceDomainService(repository);
     this.repository = repository;
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    repository?: IEditorWorkspaceRepository,
-  ): Promise<EditorWorkspaceApplicationService> {
-    const container = EditorContainer.getInstance();
-    const repo = repository || container.getEditorWorkspaceRepository();
-
-    EditorWorkspaceApplicationService.instance = new EditorWorkspaceApplicationService(repo);
-    return EditorWorkspaceApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<EditorWorkspaceApplicationService> {
-    if (!EditorWorkspaceApplicationService.instance) {
-      EditorWorkspaceApplicationService.instance =
-        await EditorWorkspaceApplicationService.createInstance();
-    }
-    return EditorWorkspaceApplicationService.instance;
   }
 
   // ===== Workspace 管理 =====

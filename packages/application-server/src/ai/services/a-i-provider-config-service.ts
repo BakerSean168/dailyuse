@@ -22,15 +22,21 @@ import type {
 } from '@dailyuse/contracts/ai';
 import { AIProviderType } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
-import { AIAdapterFactory } from '@dailyuse/infrastructure-server';
+// import { AIAdapterFactory } from '@dailyuse/infrastructure-server';
+import type { IAIAdapter } from '@dailyuse/domain-server/ai';
 
 const logger = createLogger('AIProviderConfigService');
+
+import { type AIAdapterFactoryFn } from './a-i-provider-switching-service';
 
 /**
  * AI Provider Config Application Service
  */
 export class AIProviderConfigService {
-  constructor(private readonly providerRepository: IAIProviderConfigRepository) {}
+  constructor(
+    private readonly providerRepository: IAIProviderConfigRepository,
+    private readonly adapterFactory?: AIAdapterFactoryFn // Optional to allow backward compat if needed, but better specific.
+  ) {}
 
   /**
    * 创建新的 AI Provider 配置
@@ -219,11 +225,22 @@ export class AIProviderConfigService {
     const startTime = Date.now();
 
     try {
-      const result = await AIAdapterFactory.testConnection({
-        providerType: request.providerType,
-        baseUrl: request.baseUrl,
-        apiKey: request.apiKey,
-      });
+      if (!this.adapterFactory) throw new Error('Adapter Factory not injected');
+      
+      const tempConfig = {
+          uuid: 'temp',
+          accountUuid: 'temp',
+          name: 'temp',
+          provider: request.providerType,
+          apiKey: request.apiKey,
+          baseUrl: request.baseUrl,
+          isActive: true
+      } as any;
+      
+      const adapter = this.adapterFactory(tempConfig);
+      const isHealthy = await adapter.healthCheck();
+      
+      const result = { ok: isHealthy, error: isHealthy ? undefined : 'Health check failed' };
 
       // 如果连接成功，尝试获取模型列表
       let models: AIModelInfo[] = [];
@@ -405,7 +422,7 @@ export class AIProviderConfigService {
   async getAdapterForProvider(
     providerUuid: string,
     accountUuid: string,
-  ): Promise<import('../../infrastructure/adapters/BaseAIAdapter').BaseAIAdapter> {
+  ): Promise<IAIAdapter> {
     const provider = await this.providerRepository.findByUuid(providerUuid);
     if (!provider) {
       throw new Error('Provider not found');
@@ -419,7 +436,8 @@ export class AIProviderConfigService {
       throw new Error('Provider is not active');
     }
 
-    return AIAdapterFactory.createFromConfig(provider);
+    if (!this.adapterFactory) throw new Error('Adapter Factory not injected');
+    return this.adapterFactory(provider);
   }
 }
 

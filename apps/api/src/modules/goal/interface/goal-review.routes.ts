@@ -18,7 +18,7 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('GoalReviewRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerReviewRoutes(): Router {
+export function registerReviewRoutes(service: GoalReviewApplicationService): Router {
   const router: Router = ExpressRouter();
 
   /**

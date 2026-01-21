@@ -1,15 +1,15 @@
 /**
  * Notification Core Routes
- * 处理通知的基础 CRUD 操作
+ * 处睆通知的基础 CRUD 擝作
  *
  * 端点:
  * - POST   /api/notifications           - 创建通知
- * - GET    /api/notifications           - 获取通知列表
- * - GET    /api/notifications/:id       - 获取通知详情
+ * - GET    /api/notifications           - 获坖通知列表
+ * - GET    /api/notifications/:id       - 获坖通知详情
  * - PUT    /api/notifications/:id       - 更新通知
  * - DELETE /api/notifications/:id       - 删除通知
- * - PATCH  /api/notifications/:id/read  - 标记为已读
- * - POST   /api/notifications/batch/read - 批量标记已读
+ * - PATCH  /api/notifications/:id/read  - 标记为已�?
+ * - POST   /api/notifications/batch/read - 批針标记已读
  */
 
 import type { Router } from 'express';
@@ -23,7 +23,7 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('NotificationCoreRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerNotificationCoreRoutes(): Router {
+export function registerNotificationCoreRoutes(service: NotificationApplicationService): Router {
   const router: Router = ExpressRouter();
 
   router.use(authMiddleware);
@@ -67,13 +67,13 @@ export function registerNotificationCoreRoutes(): Router {
    *                 format: date-time
    *     responses:
    *       201:
-   *         description: 通知创建成功
+   *         description: 通知创建戝功
    *       400:
-   *         description: 请求参数错误
+   *         description: 请求坂数错误
    */
   router.post('/', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await NotificationApplicationService.getInstance();
+
       const notification = await service.createNotification(req.user.accountUuid, req.body);
       res.status(201).json(responseBuilder.success(notification, 'Notification created'));
     } catch (error) {
@@ -87,7 +87,7 @@ export function registerNotificationCoreRoutes(): Router {
    * /api/notifications:
    *   get:
    *     tags: [Notifications]
-   *     summary: 获取通知列表
+   *     summary: 获坖通知列表
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -111,11 +111,11 @@ export function registerNotificationCoreRoutes(): Router {
    *           default: 20
    *     responses:
    *       200:
-   *         description: 成功获取通知列表
+   *         description: 戝功获坖通知列表
    */
   router.get('/', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await NotificationApplicationService.getInstance();
+
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 20;
       const filters = {
@@ -140,7 +140,7 @@ export function registerNotificationCoreRoutes(): Router {
    * /api/notifications/{id}:
    *   get:
    *     tags: [Notifications]
-   *     summary: 获取通知详情
+   *     summary: 获坖通知详情
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -151,13 +151,13 @@ export function registerNotificationCoreRoutes(): Router {
    *           type: string
    *     responses:
    *       200:
-   *         description: 成功获取通知
+   *         description: 戝功获坖通知
    *       404:
-   *         description: 通知不存在
+   *         description: 通知丝存�?
    */
   router.get('/:id', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await NotificationApplicationService.getInstance();
+
       const notification = await service.getNotification(req.params.id);
       res.json(responseBuilder.success(notification, 'Notification retrieved'));
     } catch (error) {
@@ -200,13 +200,13 @@ export function registerNotificationCoreRoutes(): Router {
    *                 format: date-time
    *     responses:
    *       200:
-   *         description: 通知更新成功
+   *         description: 通知更新戝功
    *       404:
-   *         description: 通知不存在
+   *         description: 通知丝存�?
    */
   router.put('/:id', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await NotificationApplicationService.getInstance();
+
       const updated = await service.updateNotification(req.params.id, req.body);
       res.json(responseBuilder.success(updated, 'Notification updated'));
     } catch (error) {
@@ -231,13 +231,13 @@ export function registerNotificationCoreRoutes(): Router {
    *           type: string
    *     responses:
    *       200:
-   *         description: 通知删除成功
+   *         description: 通知删除戝功
    *       404:
-   *         description: 通知不存在
+   *         description: 通知丝存�?
    */
   router.delete('/:id', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await NotificationApplicationService.getInstance();
+
       await service.deleteNotification(req.params.id);
       res.json(responseBuilder.success(null, 'Notification deleted'));
     } catch (error) {
@@ -251,7 +251,7 @@ export function registerNotificationCoreRoutes(): Router {
    * /api/notifications/{id}/read:
    *   patch:
    *     tags: [Notifications]
-   *     summary: 标记通知为已读
+   *     summary: 标记通知为已�?
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -264,11 +264,11 @@ export function registerNotificationCoreRoutes(): Router {
    *       200:
    *         description: 通知已标记为已读
    *       404:
-   *         description: 通知不存在
+   *         description: 通知丝存�?
    */
   router.patch('/:id/read', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await NotificationApplicationService.getInstance();
+
       const updated = await service.markAsRead(req.params.id);
       res.json(responseBuilder.success(updated, 'Notification marked as read'));
     } catch (error) {
@@ -282,7 +282,7 @@ export function registerNotificationCoreRoutes(): Router {
    * /api/notifications/batch/read:
    *   post:
    *     tags: [Notifications]
-   *     summary: 批量标记通知为已读
+   *     summary: 批針标记通知为已�?
    *     security:
    *       - bearerAuth: []
    *     requestBody:
@@ -300,11 +300,11 @@ export function registerNotificationCoreRoutes(): Router {
    *                   type: string
    *     responses:
    *       200:
-   *         description: 通知已批量标记为已读
+   *         description: 通知已批針标记为已读
    */
   router.post('/batch/read', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await NotificationApplicationService.getInstance();
+
       const result = await service.markBatchAsRead(req.body.ids);
       res.json(responseBuilder.success(result, 'Notifications marked as read'));
     } catch (error) {

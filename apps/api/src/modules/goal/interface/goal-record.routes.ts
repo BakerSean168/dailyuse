@@ -1,10 +1,10 @@
 /**
  * Goal Record Routes
- * 处理目标进展记录 (Goal Record / Progress)
+ * 处睆目标进展记录 (Goal Record / Progress)
  *
  * 端点:
  * - POST /goals/:goalUuid/records    - 创建进展记录
- * - GET  /goals/:goalUuid/records    - 获取进展记录列表
+ * - GET  /goals/:goalUuid/records    - 获坖进展记录列表
  */
 
 import type { Router } from 'express';
@@ -18,7 +18,7 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('GoalRecordRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerRecordRoutes(): Router {
+export function registerRecordRoutes(service: GoalRecordApplicationService): Router {
   const router: Router = ExpressRouter();
 
   /**
@@ -46,7 +46,7 @@ export function registerRecordRoutes(): Router {
    *             properties:
    *               progress:
    *                 type: number
-   *                 description: 进度百分比或数值
+   *                 description: 进度百分比或数�?
    *               notes:
    *                 type: string
    *                 description: 进展备注
@@ -64,9 +64,9 @@ export function registerRecordRoutes(): Router {
    *                   type: string
    *     responses:
    *       201:
-   *         description: 进展记录创建成功
+   *         description: 进展记录创建戝功
    *       400:
-   *         description: 请求参数错误
+   *         description: 请求坂数错误
    */
   router.post('/:goalUuid/records', authMiddleware, async (req: AuthenticatedRequest, res) => {
     try {
@@ -84,7 +84,7 @@ export function registerRecordRoutes(): Router {
    * /api/goals/{goalUuid}/records:
    *   get:
    *     tags: [Goal Records]
-   *     summary: 获取目标进展记录列表
+   *     summary: 获坖目标进展记录列表
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -105,7 +105,7 @@ export function registerRecordRoutes(): Router {
    *           default: 0
    *     responses:
    *       200:
-   *         description: 成功获取进展记录列表
+   *         description: 戝功获坖进展记录列表
    */
   router.get('/:goalUuid/records', authMiddleware, async (req: AuthenticatedRequest, res) => {
     try {

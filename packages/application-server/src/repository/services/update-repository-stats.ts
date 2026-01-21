@@ -9,7 +9,6 @@ import type {
   RepositoryClientDTO,
   RepositoryStatsServerDTO,
 } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Update Repository Stats Input
@@ -30,27 +29,8 @@ export interface UpdateRepositoryStatsOutput {
  * Update Repository Stats
  */
 export class UpdateRepositoryStats {
-  private static instance: UpdateRepositoryStats;
 
-  private constructor(private readonly repositoryRepository: IRepositoryRepository) {}
-
-  static createInstance(repositoryRepository?: IRepositoryRepository): UpdateRepositoryStats {
-    const container = RepositoryContainer.getInstance();
-    const repo = repositoryRepository || container.getRepositoryRepository();
-    UpdateRepositoryStats.instance = new UpdateRepositoryStats(repo);
-    return UpdateRepositoryStats.instance;
-  }
-
-  static getInstance(): UpdateRepositoryStats {
-    if (!UpdateRepositoryStats.instance) {
-      UpdateRepositoryStats.instance = UpdateRepositoryStats.createInstance();
-    }
-    return UpdateRepositoryStats.instance;
-  }
-
-  static resetInstance(): void {
-    UpdateRepositoryStats.instance = undefined as unknown as UpdateRepositoryStats;
-  }
+  constructor(private readonly repositoryRepository: IRepositoryRepository) {}
 
   async execute(input: UpdateRepositoryStatsInput): Promise<UpdateRepositoryStatsOutput> {
     const repository = await this.repositoryRepository.findByUuid(input.uuid);
@@ -64,7 +44,3 @@ export class UpdateRepositoryStats {
     return { repository: repository.toClientDTO() };
   }
 }
-
-export const updateRepositoryStats = (
-  input: UpdateRepositoryStatsInput,
-): Promise<UpdateRepositoryStatsOutput> => UpdateRepositoryStats.getInstance().execute(input);

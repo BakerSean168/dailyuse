@@ -3,7 +3,7 @@ import {
   InitializationPhase,
   type InitializationTask,
 } from '@dailyuse/utils';
-import { DashboardEventListener } from '../application/services/DashboardEventListener';
+// import { DashboardEventListener } from '../application/services/DashboardEventListener';
 
 /**
  * Dashboard 模块初始化任务
@@ -15,7 +15,7 @@ const dashboardEventListenersInitTask: InitializationTask = {
   priority: 35, // 在 Goal(20), Task(20), Reminder(20), Schedule(25) 之后初始化
   initialize: async () => {
     // 注册统计数据缓存失效监听器
-    await DashboardEventListener.initialize();
+    // await DashboardEventListener.initialize();
     console.log('✓ Dashboard event listeners initialized');
   },
 };

@@ -9,7 +9,6 @@ import { Resource } from '@dailyuse/domain-server/repository';
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import { ResourceType } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Create Resource Input
@@ -34,27 +33,8 @@ export interface CreateResourceOutput {
  * Create Resource
  */
 export class CreateResource {
-  private static instance: CreateResource;
 
-  private constructor(private readonly resourceRepository: IResourceRepository) {}
-
-  static createInstance(resourceRepository?: IResourceRepository): CreateResource {
-    const container = RepositoryContainer.getInstance();
-    const repo = resourceRepository || container.getResourceRepository();
-    CreateResource.instance = new CreateResource(repo);
-    return CreateResource.instance;
-  }
-
-  static getInstance(): CreateResource {
-    if (!CreateResource.instance) {
-      CreateResource.instance = CreateResource.createInstance();
-    }
-    return CreateResource.instance;
-  }
-
-  static resetInstance(): void {
-    CreateResource.instance = undefined as unknown as CreateResource;
-  }
+  constructor(private readonly resourceRepository: IResourceRepository) {}
 
   async execute(input: CreateResourceInput): Promise<CreateResourceOutput> {
     const exists = await this.resourceRepository.existsByPath(input.repositoryUuid, input.path);
@@ -80,6 +60,3 @@ export class CreateResource {
     return { resource: resource.toClientDTO() };
   }
 }
-
-export const createResource = (input: CreateResourceInput): Promise<CreateResourceOutput> =>
-  CreateResource.getInstance().execute(input);

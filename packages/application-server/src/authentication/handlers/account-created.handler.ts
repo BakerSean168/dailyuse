@@ -17,11 +17,11 @@
 
 import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-server';
 import { createLogger, eventBus } from '@dailyuse/utils';
 import bcrypt from 'bcryptjs';
 
 const logger = createLogger('AccountCreatedHandler');
+
 
 /**
  * AccountCreated 事件 Payload
@@ -38,26 +38,16 @@ interface AccountCreatedPayload {
  * AccountCreated Event Handler
  */
 export class AccountCreatedHandler {
-  private static instance: AccountCreatedHandler;
   private credentialRepository: IAuthCredentialRepository;
   private authDomainService: AuthenticationDomainService;
 
-  private constructor(credentialRepository: IAuthCredentialRepository) {
+  constructor(credentialRepository: IAuthCredentialRepository) {
     this.credentialRepository = credentialRepository;
     this.authDomainService = new AuthenticationDomainService();
   }
 
-  /**
-   * 获取处理器单例
-   */
-  static getInstance(): AccountCreatedHandler {
-    if (!AccountCreatedHandler.instance) {
-      const container = AuthenticationContainer.getInstance();
-      const credRepo = container.getAuthCredentialRepository();
-      AccountCreatedHandler.instance = new AccountCreatedHandler(credRepo);
-    }
-    return AccountCreatedHandler.instance;
-  }
+
+
 
   /**
    * 处理 account:created 事件

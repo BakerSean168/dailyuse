@@ -4,11 +4,9 @@
  * All application-level services for schedule module
  */
 
-export { ScheduleApplicationService } from './ScheduleApplicationService';
-export { ScheduleBootstrap } from './ScheduleBootstrap';
-export { ScheduleConflictDetectionService } from './ScheduleConflictDetectionService';
-export { ScheduleEventApplicationService } from './ScheduleEventApplicationService';
-export { ScheduleEventPublisher } from './ScheduleEventPublisher';
-export { ScheduleExecutionService } from './ScheduleExecutionService';
-export { ScheduleStatisticsApplicationService } from './ScheduleStatisticsApplicationService';
-export { ScheduleTaskExecutor } from './ScheduleTaskExecutor';
+export { ScheduleApplicationService } from './schedule-application-service';
+export { ScheduleConflictDetectionService } from './schedule-conflict-detection-service';
+export { ScheduleEventApplicationService } from './schedule-event-application-service';
+export { ScheduleStatisticsApplicationService } from './schedule-statistics-application-service';
+export { ScheduleTaskExecutor } from './schedule-task-executor';
+export { ScheduleTaskExecutorAdapter } from './schedule-task-executor-adapter';

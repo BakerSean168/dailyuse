@@ -27,3 +27,12 @@ export { RevokeAllSessions } from './revoke-all-sessions';
 export { CreateApiKey } from './create-api-key';
 export { ListApiKeys } from './list-api-keys';
 export { RevokeApiKey } from './revoke-api-key';
+
+// ============ Application Services ============
+export { AuthenticationApplicationService } from './authentication-application-service';
+export { SessionManagementApplicationService } from './session-management-application-service';
+export { ApiKeyApplicationService } from './api-key-application-service';
+export { TwoFactorApplicationService } from './two-factor-application-service';
+export { PasswordManagementApplicationService } from './password-management-application-service';
+export { RememberMeApplicationService } from './remember-me-application-service';
+

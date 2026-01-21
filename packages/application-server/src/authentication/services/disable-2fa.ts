@@ -8,44 +8,15 @@ import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authenti
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import type { Disable2FARequest } from '@dailyuse/contracts/authentication';
 import { eventBus } from '@dailyuse/utils';
-import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Disable 2FA Service
  */
 export class Disable2FA {
-  private static instance: Disable2FA;
   private readonly domainService: AuthenticationDomainService;
 
-  private constructor(private readonly credentialRepository: IAuthCredentialRepository) {
+  constructor(private readonly credentialRepository: IAuthCredentialRepository) {
     this.domainService = new AuthenticationDomainService();
-  }
-
-  /**
-   * 创建服务实例
-   */
-  static createInstance(credentialRepository?: IAuthCredentialRepository): Disable2FA {
-    const container = AuthContainer.getInstance();
-    const repo = credentialRepository || container.getCredentialRepository();
-    Disable2FA.instance = new Disable2FA(repo);
-    return Disable2FA.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): Disable2FA {
-    if (!Disable2FA.instance) {
-      Disable2FA.instance = Disable2FA.createInstance();
-    }
-    return Disable2FA.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    Disable2FA.instance = undefined as unknown as Disable2FA;
   }
 
   /**

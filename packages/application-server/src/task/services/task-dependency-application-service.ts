@@ -13,7 +13,7 @@ import type {
   ITaskTemplateRepository,
 } from '@dailyuse/domain-server/task';
 import { TaskDependencyService } from '@dailyuse/domain-server/task';
-import { TaskContainer } from '@dailyuse/infrastructure-server';
+// import { TaskContainer } from '@dailyuse/infrastructure-server';
 import type {
   TaskDependencyServerDTO,
   CreateTaskDependencyRequest,
@@ -24,35 +24,18 @@ import type {
 } from '@dailyuse/contracts/task';
 
 export class TaskDependencyApplicationService {
-  private static instance: TaskDependencyApplicationService;
   private dependencyService: TaskDependencyService;
   private dependencyRepository: ITaskDependencyRepository;
   private taskRepository: ITaskTemplateRepository;
 
-  private constructor(
-    dependencyService: TaskDependencyService,
+  constructor(
     dependencyRepository: ITaskDependencyRepository,
     taskRepository: ITaskTemplateRepository,
   ) {
-    this.dependencyService = dependencyService;
     this.dependencyRepository = dependencyRepository;
     this.taskRepository = taskRepository;
+    this.dependencyService = new TaskDependencyService();
   }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    dependencyService?: TaskDependencyService,
-    dependencyRepository?: ITaskDependencyRepository,
-    taskRepository?: ITaskTemplateRepository,
-  ): Promise<TaskDependencyApplicationService> {
-    const container = TaskContainer.getInstance();
-    const depRepo = dependencyRepository || container.getTaskDependencyRepository();
-    const taskRepo = taskRepository || container.getTaskTemplateRepository();
-
-    // 创建领域服务实例
-    const domainService = dependencyService || new TaskDependencyService();
 
     TaskDependencyApplicationService.instance = new TaskDependencyApplicationService(
       domainService,

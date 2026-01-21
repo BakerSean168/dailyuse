@@ -5,7 +5,6 @@
  */
 
 import type { IGoalFolderRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
 import { GoalFolderDomainService, GoalFolder, Goal } from '@dailyuse/domain-server/goal';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 
@@ -39,28 +38,24 @@ export class GoalFolderApplicationService {
    *
    * @param folderRepository - 文件夹仓储
    * @param goalRepository - 目标仓储
-   * @returns {Promise<GoalFolderApplicationService>} 服务实例
+   * @returns {GoalFolderApplicationService} 服务实例
    */
-  static async createInstance(
-    folderRepository?: IGoalFolderRepository,
-    goalRepository?: IGoalRepository,
-  ): Promise<GoalFolderApplicationService> {
-    const container = GoalContainer.getInstance();
-    const folderRepo = folderRepository || container.getGoalFolderRepository();
-    const goalRepo = goalRepository || container.getGoalRepository();
-
-    GoalFolderApplicationService.instance = new GoalFolderApplicationService(folderRepo, goalRepo);
+  static createInstance(
+    folderRepository: IGoalFolderRepository,
+    goalRepository: IGoalRepository,
+  ): GoalFolderApplicationService {
+    GoalFolderApplicationService.instance = new GoalFolderApplicationService(folderRepository, goalRepository);
     return GoalFolderApplicationService.instance;
   }
 
   /**
    * 获取应用服务单例。
    *
-   * @returns {Promise<GoalFolderApplicationService>} 单例实例
+   * @returns {GoalFolderApplicationService} 单例实例
    */
-  static async getInstance(): Promise<GoalFolderApplicationService> {
+  static getInstance(): GoalFolderApplicationService {
     if (!GoalFolderApplicationService.instance) {
-      GoalFolderApplicationService.instance = await GoalFolderApplicationService.createInstance();
+      throw new Error('GoalFolderApplicationService instance not initialized. Call createInstance(folderRepo, goalRepo) first.');
     }
     return GoalFolderApplicationService.instance;
   }

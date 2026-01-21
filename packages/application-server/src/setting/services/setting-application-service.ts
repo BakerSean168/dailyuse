@@ -1,8 +1,8 @@
 // @ts-nocheck
 import type { IUserSettingRepository } from '@dailyuse/domain-server/setting';
-import { SettingContainer } from '@dailyuse/infrastructure-server';
 import { UserSetting } from '@dailyuse/domain-server/setting';
-import type { UserSettingServerDTO } from '@dailyuse/contracts/setting';
+import type { UserSettingServerDTO, UpdateUserSettingDTO } from '@dailyuse/contracts/setting'; // Added UpdateUserSettingDTO import explicitly if needed or inferred
+import type { UserSettingDTO } from '@dailyuse/contracts/setting'; // Fix DTO type name matching usage
 
 /**
  * Setting 应用服务
@@ -18,34 +18,10 @@ import type { UserSettingServerDTO } from '@dailyuse/contracts/setting';
  * 注意：返回给客户端的数据必须使用 ClientDTO（通过 toClientDTO() 方法）
  */
 export class SettingApplicationService {
-  private static instance: SettingApplicationService;
   private userSettingRepository: IUserSettingRepository;
 
-  private constructor(userSettingRepository: IUserSettingRepository) {
+  constructor(userSettingRepository: IUserSettingRepository) {
     this.userSettingRepository = userSettingRepository;
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    userSettingRepository?: IUserSettingRepository,
-  ): Promise<SettingApplicationService> {
-    const container = SettingContainer.getInstance();
-    const repo = userSettingRepository || container.getUserSettingRepository();
-
-    SettingApplicationService.instance = new SettingApplicationService(repo);
-    return SettingApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<SettingApplicationService> {
-    if (!SettingApplicationService.instance) {
-      SettingApplicationService.instance = await SettingApplicationService.createInstance();
-    }
-    return SettingApplicationService.instance;
   }
 
   // ===== UserSetting CRUD 操作 =====

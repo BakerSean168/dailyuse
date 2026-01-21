@@ -22,19 +22,15 @@
  */
 
 import type {
-  AccountServerDTO,
   AccountClientDTO,
-  CreateAccountRequest,
 } from '@dailyuse/contracts/account';
 import type { IAccountRepository } from '@dailyuse/domain-server/account';
 import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
 import { AccountDomainService } from '@dailyuse/domain-server/account';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
-import { AccountContainer } from '@dailyuse/infrastructure-server';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-server';
-import { prisma } from '@/shared/infrastructure/config/prisma';
 import { eventBus, createLogger } from '@dailyuse/utils';
 import bcrypt from 'bcryptjs';
+import type { ITransactionManager } from '../../common/transaction.manager';
 
 const logger = createLogger('RegistrationApplicationService');
 
@@ -66,69 +62,26 @@ export interface RegisterUserResponse {
  * 负责用户注册的核心业务逻辑编排
  */
 export class RegistrationApplicationService {
-  private static instance: RegistrationApplicationService;
-
   private accountRepository: IAccountRepository;
   private accountDomainService: AccountDomainService;
   private credentialRepository: IAuthCredentialRepository;
   private authenticationDomainService: AuthenticationDomainService;
+  private transactionManager: ITransactionManager;
 
-  private constructor(
+  constructor(
     accountRepository: IAccountRepository,
     credentialRepository: IAuthCredentialRepository,
+    transactionManager: ITransactionManager,
   ) {
     this.accountRepository = accountRepository;
     this.accountDomainService = new AccountDomainService();
     this.credentialRepository = credentialRepository;
     this.authenticationDomainService = new AuthenticationDomainService();
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    accountRepository?: IAccountRepository,
-    credentialRepository?: IAuthCredentialRepository,
-  ): Promise<RegistrationApplicationService> {
-    const accountContainer = AccountContainer.getInstance();
-    const authContainer = AuthenticationContainer.getInstance();
-
-    const accountRepo = accountRepository || accountContainer.getAccountRepository();
-    const credRepo = credentialRepository || authContainer.getAuthCredentialRepository();
-
-    RegistrationApplicationService.instance = new RegistrationApplicationService(
-      accountRepo,
-      credRepo,
-    );
-    return RegistrationApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<RegistrationApplicationService> {
-    if (!RegistrationApplicationService.instance) {
-      RegistrationApplicationService.instance =
-        await RegistrationApplicationService.createInstance();
-    }
-    return RegistrationApplicationService.instance;
+    this.transactionManager = transactionManager;
   }
 
   /**
    * 用户注册主流程（Saga 模式 - 保证原子性）
-   *
-   * 步骤：
-   * 1. 输入验证（格式、强度）
-   * 2. 唯一性检查（用户名、邮箱）
-   * 3. 密码加密（bcrypt）
-   * 4. Prisma 事务：创建 Account + AuthCredential（原子性）
-   * 5. 发布 AccountCreated 领域事件（事务成功后）
-   * 6. 返回 AccountClientDTO
-   *
-   * 原子性保证：
-   * - 使用 Prisma.$transaction 包裹所有写操作
-   * - 如果任何一步失败，自动回滚所有变更
-   * - 只有事务成功后才发布领域事件
    */
   async registerUser(request: RegisterUserRequest): Promise<RegisterUserResponse> {
     logger.info('[RegistrationApplicationService] Starting user registration', {
@@ -155,37 +108,33 @@ export class RegistrationApplicationService {
       });
 
       // ===== 步骤 5: 发布领域事件（事务成功后）=====
-      await this.publishDomainEvents(result.account, result.credential, request.password);
-
-      // ===== 步骤 6: 返回 AccountClientDTO =====
-      const accountClientDTO = result.account.toClientDTO();
+      const accountDTO = result.account.toClientDTO();
+      
+      eventBus.publish('account.created', {
+        account: accountDTO,
+        timestamp: new Date().toISOString(), 
+      });
 
       logger.info('[RegistrationApplicationService] User registration successful', {
         accountUuid: result.account.uuid,
-        username: request.username,
       });
 
       return {
         success: true,
-        account: accountClientDTO,
+        account: accountDTO,
         message: 'Registration successful',
       };
-    } catch (error) {
-      logger.error('[RegistrationApplicationService] Registration failed', {
-        username: request.username,
-        email: request.email,
-        error: error instanceof Error ? error.message : String(error),
-      });
+    } catch (error: any) {
+      logger.error('[RegistrationApplicationService] Registration failed', error);
       throw error;
     }
   }
 
   /**
    * 验证注册输入
-   * 包含：用户名格式、邮箱格式、密码强度
    */
   private validateRegistrationInput(request: RegisterUserRequest): void {
-    // 1. 用户名验证：3-20 字符，字母数字下划线
+    // 1. 用户名验证
     const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
     if (!usernameRegex.test(request.username)) {
       throw new Error(
@@ -193,13 +142,13 @@ export class RegistrationApplicationService {
       );
     }
 
-    // 2. 邮箱验证：标准邮箱格式
+    // 2. 邮箱验证
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(request.email)) {
       throw new Error('Invalid email format');
     }
 
-    // 3. 密码强度验证：至少 8 字符，包含大小写字母、数字
+    // 3. 密码强度验证
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(request.password)) {
       throw new Error(
@@ -212,50 +161,27 @@ export class RegistrationApplicationService {
    * 检查用户名和邮箱的唯一性
    */
   private async checkUniqueness(username: string, email: string): Promise<void> {
-    // 检查用户名唯一性
     const existingAccountByUsername = await this.accountRepository.findByUsername(username);
     if (existingAccountByUsername) {
       throw new Error(`Username already exists: ${username}`);
     }
 
-    // 检查邮箱唯一性
     const existingAccountByEmail = await this.accountRepository.findByEmail(email);
     if (existingAccountByEmail) {
-      throw new Error(`Email already exists: ${email}`);
+      throw new Error(`Email already registered: ${email}`);
     }
   }
 
   /**
-   * 密码加密（bcrypt，12 salt rounds）
+   * 密码加密
    */
-  private async hashPassword(plainPassword: string): Promise<string> {
-    const SALT_ROUNDS = 12;
-    const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
-    logger.debug('[RegistrationApplicationService] Password hashed successfully');
-    return hashedPassword;
+  private async hashPassword(password: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10);
+    return bcrypt.hash(password, salt);
   }
 
   /**
-   * 在事务中创建 Account + AuthCredential（保证原子性）
-   *
-   * ✅ 重构后的架构（遵循 DDD 最佳实践）：
-   *
-   * 调用链路：
-   * ApplicationService (事务边界)
-   *   → DomainService.createAccount() - 创建 Account 聚合根（不持久化）
-   *   → Repository.save(account, tx) - 持久化 Account（使用事务上下文）
-   *   → DomainService.createPasswordCredential() - 创建 Credential 聚合根（不持久化）
-   *   → Repository.save(credential, tx) - 持久化 Credential（使用事务上下文）
-   *
-   * 职责分离：
-   * - DomainService：纯领域逻辑，创建聚合根，业务规则验证（无副作用）
-   * - ApplicationService：编排层，负责持久化、事务管理、事件发布
-   * - Repository：数据访问层，接收事务上下文 tx
-   *
-   * 原子性保证：
-   * - 使用 Prisma.$transaction 包裹所有 Repository 操作
-   * - Repository.save() 接收 tx 参数，确保在同一事务中执行
-   * - 如果任何一步失败，自动回滚所有变更
+   * 在事务中创建 Account 和 Credential
    */
   private async createAccountAndCredential(params: {
     username: string;
@@ -265,81 +191,26 @@ export class RegistrationApplicationService {
   }): Promise<{ account: any; credential: any }> {
     const { username, email, displayName, hashedPassword } = params;
 
-    // ✅ 正确的实现：ApplicationService 负责持久化
-    const result = await prisma.$transaction(async (tx: any) => {
-      // 1. 调用 DomainService 创建 Account 聚合根（不持久化）
+    return await this.transactionManager.transaction(async (tx: any) => {
+      // 1. 创建 Account
       const account = this.accountDomainService.createAccount({
         username,
         email,
         displayName,
       });
 
-      logger.debug('[RegistrationApplicationService] Account aggregate created', {
-        accountUuid: account.uuid,
-      });
-
-      // 2. ApplicationService 负责持久化 Account（传递事务上下文 tx）
       await this.accountRepository.save(account, tx);
 
-      logger.debug('[RegistrationApplicationService] Account persisted in transaction', {
+      // 2. 创建 Credential
+      // 注意：CredentialRepository 需要支持 tx 参数
+      const credential = this.authenticationDomainService.createPasswordCredential({
         accountUuid: account.uuid,
+        hashedPassword,
       });
-
-      // ⚠️ 事件驱动架构：AuthCredential 由 AccountCreatedHandler 异步创建
-      // 优势：解耦 Account 和 Authentication 模块，实现最终一致性
-      // const credential = this.authenticationDomainService.createPasswordCredential({
-      //   accountUuid: account.uuid,
-      //   hashedPassword,
-      // });
-      // await this.credentialRepository.save(credential, tx);
-
-      return { account, credential: null };
-    });
-
-    logger.info(
-      '[RegistrationApplicationService] Transaction committed (Account only, Credential via event)',
-      {
-        accountUuid: result.account.uuid,
-      },
-    );
-
-    return result;
-  }
-
-  /**
-   * 发布领域事件（事务成功后）
-   *
-   * 事件订阅者：
-   * - 邮件服务：发送欢迎邮件
-   * - 统计服务：更新用户统计
-   * - 审计服务：记录注册日志
-   */
-  private async publishDomainEvents(
-    account: any,
-    credential: any,
-    plainPassword?: string,
-  ): Promise<void> {
-    // 发布 AccountCreated 事件（包含明文密码供 AccountCreatedHandler 使用）
-    eventBus.publish({
-      eventType: 'account:created',
-      payload: {
-        accountUuid: account.uuid,
-        username: account.username,
-        email: account.email,
-        displayName: account.profile?.displayName || account.username,
-        plainPassword, // 传递明文密码给事件处理器
-      },
-      timestamp: Date.now(),
-      aggregateId: account.uuid,
-      occurredOn: new Date(),
-    });
-
-    // ⚠️ 在事件驱动架构中，Credential 由 AccountCreatedHandler 创建
-    // 因此这里不发布 credential:created 事件
-    // （该事件由 AccountCreatedHandler 在创建 Credential 后发布）
-
-    logger.debug('[RegistrationApplicationService] AccountCreated event published', {
-      accountUuid: account.uuid,
+      
+      await this.credentialRepository.save(credential, tx);
+      
+      return { account, credential };
     });
   }
 }

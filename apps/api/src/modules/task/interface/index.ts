@@ -5,6 +5,7 @@
 
 import type { Router } from 'express';
 import { Router as ExpressRouter } from 'express';
+import { TaskModule } from '@dailyuse/infrastructure-server';
 
 // Task Instance Routes (聚合根和CRUD操作)
 import { registerTaskInstanceStateRoutes } from './task-instance-state.routes';
@@ -27,28 +28,28 @@ import { registerTaskBatchOperationsRoutes } from './task-batch-operations.route
 import { registerTaskDependencyRoutes } from './task-dependency.routes';
 import { registerTaskStatisticsRoutes } from './task-statistics.routes';
 
-export function registerTaskRoutes(): Router {
+export function registerTaskRoutes(taskModule: TaskModule): Router {
   const router: Router = ExpressRouter();
 
   // ============ 任务实例路由 ============
   // 聚合根操作（开始、完成、跳过）
-  router.use('/', registerTaskInstanceStateRoutes());
+  router.use('/', registerTaskInstanceStateRoutes(taskModule.taskInstanceService));
   // 基本CRUD操作（列表、查询、删除）
-  router.use('/', registerTaskInstanceCrudRoutes());
+  router.use('/', registerTaskInstanceCrudRoutes(taskModule.taskInstanceService));
 
   // ============ 任务模板路由 ============
   // 模板CRUD操作
-  router.use('/templates', registerTaskTemplateCrudRoutes());
+  router.use('/templates', registerTaskTemplateCrudRoutes(taskModule.taskTemplateService));
   // 模板状态操作（激活、暂停、归档）
-  router.use('/templates', registerTaskTemplateStateRoutes());
+  router.use('/templates', registerTaskTemplateStateRoutes(taskModule.taskTemplateService));
   // 模板实例生成和管理
-  router.use('/templates', registerTaskTemplateInstancesRoutes());
+  router.use('/templates', registerTaskTemplateInstancesRoutes(taskModule.taskTemplateService, taskModule.taskInstanceService));
   // 模板与目标绑定
-  router.use('/templates', registerTaskTemplateGoalsRoutes());
+  router.use('/templates', registerTaskTemplateGoalsRoutes(taskModule.taskTemplateService));
 
   // ============ 一次性任务路由 ============
   // 基本操作（创建、列表、更新）
-  router.use('/', registerTaskOnetimeRoutes());
+  router.use('/', registerTaskOnetimeRoutes(taskModule.taskTemplateService));
   // 查询操作（日期范围、优先级、仪表板等）
   router.use('/', registerTaskQueriesRoutes());
   // 状态操作（开始、完成、阻塞、取消等）

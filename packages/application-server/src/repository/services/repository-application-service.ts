@@ -2,7 +2,6 @@ import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
 import { Repository } from '@dailyuse/domain-server/repository';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, RepositoryClientDTO, RepositoryConfigServerDTO, RepositoryStatsServerDTO } from '@dailyuse/contracts/repository';
 import { RepositoryType, RepositoryStatus } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Repository 应用服务
@@ -14,34 +13,10 @@ import { RepositoryContainer } from '@dailyuse/infrastructure-server';
  * - 协调业务用例
  */
 export class RepositoryApplicationService {
-  private static instance: RepositoryApplicationService;
   private repositoryRepository: IRepositoryRepository;
 
-  private constructor(repositoryRepository: IRepositoryRepository) {
+  constructor(repositoryRepository: IRepositoryRepository) {
     this.repositoryRepository = repositoryRepository;
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static createInstance(
-    repositoryRepository?: IRepositoryRepository,
-  ): RepositoryApplicationService {
-    const container = RepositoryContainer.getInstance();
-    const repo = repositoryRepository || container.getRepositoryRepository();
-
-    RepositoryApplicationService.instance = new RepositoryApplicationService(repo);
-    return RepositoryApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static getInstance(): RepositoryApplicationService {
-    if (!RepositoryApplicationService.instance) {
-      RepositoryApplicationService.instance = RepositoryApplicationService.createInstance();
-    }
-    return RepositoryApplicationService.instance;
   }
 
   /**

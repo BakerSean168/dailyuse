@@ -16,8 +16,8 @@ export interface ISyncSessionRepository {
   save(session: SyncSession): Promise<void>;
   findByUuid(uuid: string): Promise<SyncSession | null>;
   findLatestByProfileId(profileId: string): Promise<SyncSession | null>;
-  findInProgress(): Promise<SyncSession[]>;
-  findByQuery(options: SyncSessionQueryOptions): Promise<SyncSession[]>;
-  count(options?: SyncSessionQueryOptions): Promise<number>;
+  findInProgress(accountUuid: string): Promise<SyncSession[]>;
+  findByQuery(accountUuid: string, options: SyncSessionQueryOptions): Promise<SyncSession[]>;
+  count(accountUuid: string, options?: SyncSessionQueryOptions): Promise<number>;
   delete(uuid: string): Promise<void>;
 }

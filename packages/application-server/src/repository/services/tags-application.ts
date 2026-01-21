@@ -6,43 +6,14 @@
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 import type { TagStatisticsDto } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Tags Service
  */
 export class TagsService {
-  private static instance: TagsService;
 
-  private constructor(private readonly resourceRepository: IResourceRepository) {}
+  constructor(private readonly resourceRepository: IResourceRepository) {}
 
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(resourceRepository?: IResourceRepository): TagsService {
-    const container = RepositoryContainer.getInstance();
-    const repo = resourceRepository || container.getResourceRepository();
-
-    TagsService.instance = new TagsService(repo);
-    return TagsService.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): TagsService {
-    if (!TagsService.instance) {
-      TagsService.instance = TagsService.createInstance();
-    }
-    return TagsService.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    TagsService.instance = undefined as unknown as TagsService;
-  }
 
   /**
    * 获取仓储的标签统计信息

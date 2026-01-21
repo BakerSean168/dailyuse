@@ -3,17 +3,18 @@ import {
   InitializationPhase,
   type InitializationTask,
 } from '@dailyuse/utils';
-import { ReminderEventHandler } from '../application/event-handlers/ReminderEventHandler';
+// import { ReminderEventHandler } from '../application/event-handlers/ReminderEventHandler';
 
 /**
  * Reminder 模块初始化任务 - 事件桥接器
+ * TODO: 恢复 ReminderEventHandler 实现
  */
 const reminderEventHandlersInitTask: InitializationTask = {
   name: 'reminderEventHandlers',
   phase: InitializationPhase.APP_STARTUP,
   priority: 20,
   initialize: async () => {
-    await ReminderEventHandler.initialize();
+    // await ReminderEventHandler.initialize();
     console.log('✓ Reminder event handlers initialized');
   },
 };

@@ -15,14 +15,15 @@ import type { Router } from 'express';
 import { Router as ExpressRouter } from 'express';
 import type { AuthenticatedRequest } from '../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { authMiddleware } from '../../../shared/infrastructure/http/middlewares/authMiddleware';
-import { SettingApplicationService } from '@dailyuse/application-server';
+import type { SettingApplicationService } from '@dailyuse/application-server/setting';
+// import { SettingApplicationService } from '@dailyuse/application-server'; // Removed implementation import
 import { createResponseBuilder } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('SettingUserRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerSettingUserRoutes(): Router {
+export function registerSettingUserRoutes(settingService: SettingApplicationService): Router {
   const router: Router = ExpressRouter();
 
   router.use(authMiddleware);
@@ -60,8 +61,8 @@ export function registerSettingUserRoutes(): Router {
    */
   router.post('/', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await SettingApplicationService.getInstance();
-      const setting = await service.upsertUserSetting(req.user.accountUuid, req.body);
+      // const service = await SettingApplicationService.getInstance();
+      const setting = await settingService.updateUserSetting(req.user.accountUuid, req.body);
       res.status(201).json(responseBuilder.success(setting, 'User setting updated'));
     } catch (error) {
       logger.error('Update user setting failed:', error);
@@ -83,8 +84,8 @@ export function registerSettingUserRoutes(): Router {
    */
   router.get('/', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await SettingApplicationService.getInstance();
-      const setting = await service.getUserSetting(req.user.accountUuid);
+      // const service = await SettingApplicationService.getInstance();
+      const setting = await settingService.getUserSetting(req.user.accountUuid);
       res.json(responseBuilder.success(setting, 'User setting retrieved'));
     } catch (error) {
       logger.error('Get user setting failed:', error);
@@ -121,8 +122,8 @@ export function registerSettingUserRoutes(): Router {
    */
   router.patch('/preferences', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await SettingApplicationService.getInstance();
-      const setting = await service.updatePreferences(req.user.accountUuid, req.body);
+      // const service = await SettingApplicationService.getInstance();
+      const setting = await settingService.updatePreferences(req.user.accountUuid, req.body);
       res.json(responseBuilder.success(setting, 'Preferences updated'));
     } catch (error) {
       logger.error('Update preferences failed:', error);
@@ -144,8 +145,8 @@ export function registerSettingUserRoutes(): Router {
    */
   router.delete('/reset', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await SettingApplicationService.getInstance();
-      const setting = await service.resetToDefaults(req.user.accountUuid);
+      // const service = await SettingApplicationService.getInstance();
+      const setting = await settingService.resetToDefaults(req.user.accountUuid);
       res.json(responseBuilder.success(setting, 'Settings reset to defaults'));
     } catch (error) {
       logger.error('Reset settings failed:', error);
@@ -179,8 +180,8 @@ export function registerSettingUserRoutes(): Router {
    */
   router.patch('/language', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await SettingApplicationService.getInstance();
-      const setting = await service.updateLanguage(req.user.accountUuid, req.body.language);
+      // const service = await SettingApplicationService.getInstance();
+      const setting = await settingService.updateLanguage(req.user.accountUuid, req.body.language);
       res.json(responseBuilder.success(setting, 'Language updated'));
     } catch (error) {
       logger.error('Update language failed:', error);
@@ -213,8 +214,8 @@ export function registerSettingUserRoutes(): Router {
    */
   router.patch('/timezone', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await SettingApplicationService.getInstance();
-      const setting = await service.updateTimezone(req.user.accountUuid, req.body.timezone);
+      // const service = await SettingApplicationService.getInstance();
+      const setting = await settingService.updateTimezone(req.user.accountUuid, req.body.timezone);
       res.json(responseBuilder.success(setting, 'Timezone updated'));
     } catch (error) {
       logger.error('Update timezone failed:', error);

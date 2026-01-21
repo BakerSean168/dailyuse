@@ -18,6 +18,7 @@
 import type {
   IAIUsageQuotaRepository,
   IAIConversationRepository,
+  IAIProviderConfigRepository,
   AIGenerationValidationService,
   IKnowledgeGenerationTaskRepository,
   KnowledgeGenerationTask,
@@ -42,16 +43,17 @@ import type {
 import { GenerationTaskType, TaskStatus, AIProvider, AIModel } from '@dailyuse/contracts/ai';
 import { randomUUID } from 'crypto';
 import { createLogger } from '@dailyuse/utils';
-import type { BaseAIAdapter, AIGenerationRequest } from '@dailyuse/infrastructure-server';
+import type { IAIAdapter, AIGenerationRequest } from '@dailyuse/domain-server/ai';
 import {
   QuotaEnforcementService,
   getPromptTemplate,
   SUMMARIZATION_PROMPT,
   GENERATE_GOAL_PROMPT,
-  AIContainer,
 } from '@dailyuse/infrastructure-server';
 
 const logger = createLogger('AIGenerationApplicationService');
+
+import { AIProviderConfigService } from './a-i-provider-config-service';
 
 /**
  * AI Generation Application Service
@@ -61,9 +63,11 @@ export class AIGenerationApplicationService {
 
   constructor(
     private validationService: AIGenerationValidationService,
-    private aiAdapter: BaseAIAdapter,
+    private aiAdapter: IAIAdapter,
     private quotaRepository: IAIUsageQuotaRepository,
     private conversationRepository: IAIConversationRepository,
+    private providerConfigService: AIProviderConfigService,
+    private providerRepository: IAIProviderConfigRepository,
     private taskRepository?: IKnowledgeGenerationTaskRepository,
     private documentService?: any, // DocumentApplicationService - 可选依赖避免循环
   ) {
@@ -120,18 +124,15 @@ export class AIGenerationApplicationService {
     this.quotaService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
 
     // 3. 获取 AI Adapter
-    let adapter: BaseAIAdapter = this.aiAdapter;
+    let adapter: IAIAdapter = this.aiAdapter;
     let providerName = 'OpenAI (Default)';
     let modelUsed = 'gpt-4o-mini';
 
     if (providerUuid) {
       try {
-        const container = AIContainer.getInstance();
-        adapter = await container
-          .getProviderConfigService()
+        adapter = await this.providerConfigService
           .getAdapterForProvider(providerUuid, accountUuid);
-        const providerConfig = await container
-          .getProviderConfigRepository()
+        const providerConfig = await this.providerRepository
           .findByUuid(providerUuid);
         if (providerConfig) {
           providerName = providerConfig.name;

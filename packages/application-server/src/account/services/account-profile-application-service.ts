@@ -11,18 +11,14 @@
  * 架构说明：
  * - DomainService：纯领域逻辑，业务规则验证（无副作用）
  * - ApplicationService：编排层，负责持久化、事务管理、事件发布
- * - Repository：数据访问层，接收事务上下文 tx（待更新）
+ * - Repository：数据访问层
  */
 
 import type {
-  AccountServerDTO,
   AccountClientDTO,
-  CreateAccountRequest,
 } from '@dailyuse/contracts/account';
 import type { IAccountRepository, Account } from '@dailyuse/domain-server/account';
 import { AccountDomainService } from '@dailyuse/domain-server/account';
-import { AccountContainer } from '@dailyuse/infrastructure-server';
-import { prisma } from '@/shared/infrastructure/config/prisma';
 import { eventBus, createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AccountProfileApplicationService');
@@ -53,38 +49,12 @@ export interface UpdateProfileResponse {
  * 负责账户资料管理的核心业务逻辑编排
  */
 export class AccountProfileApplicationService {
-  private static instance: AccountProfileApplicationService;
-
   private accountRepository: IAccountRepository;
   private accountDomainService: AccountDomainService;
 
-  private constructor(accountRepository: IAccountRepository) {
+  constructor(accountRepository: IAccountRepository) {
     this.accountRepository = accountRepository;
     this.accountDomainService = new AccountDomainService();
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    accountRepository?: IAccountRepository,
-  ): Promise<AccountProfileApplicationService> {
-    const accountContainer = AccountContainer.getInstance();
-    const accountRepo = accountRepository || accountContainer.getAccountRepository();
-
-    AccountProfileApplicationService.instance = new AccountProfileApplicationService(accountRepo);
-    return AccountProfileApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<AccountProfileApplicationService> {
-    if (!AccountProfileApplicationService.instance) {
-      AccountProfileApplicationService.instance =
-        await AccountProfileApplicationService.createInstance();
-    }
-    return AccountProfileApplicationService.instance;
   }
 
   /**
@@ -122,14 +92,6 @@ export class AccountProfileApplicationService {
 
   /**
    * 更新账户资料主流程
-   *
-   * 步骤：
-   * 1. 查询账户（ApplicationService 负责）
-   * 2. 调用 DomainService 验证业务规则
-   * 3. 修改聚合根
-   * 4. 持久化（ApplicationService 负责）
-   * 5. 发布领域事件
-   * 6. 返回 AccountClientDTO
    */
   async updateProfile(request: UpdateProfileRequest): Promise<UpdateProfileResponse> {
     logger.info('[AccountProfileApplicationService] Starting profile update', {

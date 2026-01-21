@@ -17,9 +17,16 @@ import { registerReminderTemplateRoutes } from './reminder-template.routes';
 import { registerReminderGroupRoutes } from './reminder-group.routes';
 import { registerReminderExecutionRoutes } from './reminder-execution.routes';
 import { registerReminderSearchAnalyticsRoutes } from './reminder-search.routes';
+import { ReminderModule } from '@dailyuse/infrastructure-server';
 
-export function registerReminderRoutes(): Router {
+export function registerReminderRoutes(reminderModule: ReminderModule): Router {
   const router: Router = ExpressRouter();
+
+  const {
+      reminderService,
+      reminderStatisticsService,
+      reminderQueryService
+  } = reminderModule;
 
   // ============ 核心提醒路由 ============
   // POST   /api/reminders           - 创建提醒
@@ -29,7 +36,7 @@ export function registerReminderRoutes(): Router {
   // DELETE /api/reminders/:uuid     - 删除提醒
   // PATCH  /api/reminders/:uuid/enable  - 启用
   // PATCH  /api/reminders/:uuid/disable - 禁用
-  router.use('/', registerReminderCoreRoutes());
+  router.use('/', registerReminderCoreRoutes(reminderService));
 
   // ============ 提醒模板路由 ============
   // POST   /api/reminders/templates       - 创建模板
@@ -37,7 +44,7 @@ export function registerReminderRoutes(): Router {
   // GET    /api/reminders/templates/:uuid - 获取模板详情
   // PUT    /api/reminders/templates/:uuid - 更新模板
   // DELETE /api/reminders/templates/:uuid - 删除模板
-  router.use('/templates', registerReminderTemplateRoutes());
+  router.use('/templates', registerReminderTemplateRoutes(reminderService));
 
   // ============ 提醒分组路由 ============
   // POST   /api/reminders/groups                           - 创建分组
@@ -47,21 +54,21 @@ export function registerReminderRoutes(): Router {
   // DELETE /api/reminders/groups/:uuid                     - 删除分组
   // POST   /api/reminders/groups/:uuid/reminders           - 添加提醒到分组
   // DELETE /api/reminders/groups/:uuid/reminders/:reminderId - 移除提醒
-  router.use('/groups', registerReminderGroupRoutes());
+  router.use('/groups', registerReminderGroupRoutes(reminderService));
 
   // ============ 提醒执行路由 ============
   // GET    /api/reminders/executions       - 获取执行历史
   // POST   /api/reminders/executions       - 手动触发提醒
   // GET    /api/reminders/executions/:uuid - 获取执行详情
   // PUT    /api/reminders/executions/:uuid/status - 更新执行状态
-  router.use('/executions', registerReminderExecutionRoutes());
+  router.use('/executions', registerReminderExecutionRoutes(reminderService));
 
   // ============ 提醒搜索和分析路由 ============
   // GET    /api/reminders/search/query            - 搜索提醒
   // GET    /api/reminders/analytics/statistics    - 获取统计数据
   // GET    /api/reminders/analytics/upcoming      - 即将到来的提醒
   // GET    /api/reminders/analytics/missed        - 错过的提醒
-  router.use('/', registerReminderSearchAnalyticsRoutes());
+  router.use('/', registerReminderSearchAnalyticsRoutes(reminderService, reminderStatisticsService, reminderQueryService));
 
   return router;
 }

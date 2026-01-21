@@ -25,7 +25,6 @@ import {
   type TaskTemplateClientDTO,
 } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { TaskContainer } from '@dailyuse/infrastructure-server/task';
 
 /**
  * 任务查询服务

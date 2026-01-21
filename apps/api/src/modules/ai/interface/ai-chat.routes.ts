@@ -16,14 +16,18 @@ import type { Router } from 'express';
 import { Router as ExpressRouter } from 'express';
 import type { AuthenticatedRequest } from '../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { authMiddleware } from '../../../shared/infrastructure/http/middlewares/authMiddleware';
-import { AIConversationApplicationService } from '@dailyuse/application-server';
+import { AIChatApplicationService, AIConversationService, GetQuota } from '@dailyuse/application-server/ai';
 import { createResponseBuilder } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AIChatRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerChatRoutes(): Router {
+export function registerChatRoutes(
+  chatService: AIChatApplicationService,
+  conversationService: AIConversationService,
+  getQuotaService: GetQuota
+): Router {
   const router: Router = ExpressRouter();
 
   // 所有对话路由需要认证
@@ -69,8 +73,7 @@ export function registerChatRoutes(): Router {
    */
   router.post('/', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIConversationApplicationService.getInstance();
-      const response = await service.sendMessage(
+      const response = await chatService.sendMessage(
         req.user.accountUuid,
         req.body.conversationId,
         req.body.message,
@@ -124,15 +127,13 @@ export function registerChatRoutes(): Router {
    */
   router.post('/stream', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIConversationApplicationService.getInstance();
-
       // 设置 SSE 响应头
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
 
       // 流式发送消息
-      await service.sendMessageStream(
+      await chatService.sendMessageStream(
         req.user.accountUuid,
         req.body.conversationId,
         req.body.message,
@@ -183,11 +184,9 @@ export function registerChatRoutes(): Router {
    */
   router.post('/conversations', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIConversationApplicationService.getInstance();
-      const conversation = await service.createConversation(
+      const conversation = await conversationService.createConversation(
         req.user.accountUuid,
-        req.body.title,
-        req.body.context,
+        req.body.title
       );
       res.status(201).json(responseBuilder.success(conversation, 'Conversation created'));
     } catch (error) {
@@ -223,11 +222,11 @@ export function registerChatRoutes(): Router {
    */
   router.get('/conversations', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIConversationApplicationService.getInstance();
       const limit = Number(req.query.limit) || 20;
       const offset = Number(req.query.offset) || 0;
-      const conversations = await service.getConversationList(req.user.accountUuid, limit, offset);
-      res.json(responseBuilder.success(conversations, 'Conversations retrieved'));
+      const page = Math.floor(offset / limit) + 1;
+      const result = await conversationService.listConversations(req.user.accountUuid, page, limit);
+      res.json(responseBuilder.success(result, 'Conversations retrieved'));
     } catch (error) {
       logger.error('Get conversations failed:', error);
       throw error;
@@ -257,11 +256,17 @@ export function registerChatRoutes(): Router {
    */
   router.get('/conversations/:id', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIConversationApplicationService.getInstance();
-      const conversation = await service.getConversationDetail(req.params.id);
-      res.json(responseBuilder.success(conversation, 'Conversation retrieved'));
+      const conversationEntity = await conversationService.getConversation(req.params.id);
+      if (!conversationEntity) {
+        throw new Error('Conversation not found');
+      }
+      res.json(responseBuilder.success(conversationEntity.toClientDTO(), 'Conversation retrieved'));
     } catch (error) {
       logger.error('Get conversation detail failed:', error);
+      if (error instanceof Error && error.message === 'Conversation not found') {
+          res.status(404).json(responseBuilder.error('Conversation not found'));
+          return;
+      }
       throw error;
     }
   });
@@ -289,8 +294,7 @@ export function registerChatRoutes(): Router {
    */
   router.delete('/conversations/:id', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIConversationApplicationService.getInstance();
-      await service.deleteConversation(req.params.id);
+      await conversationService.deleteConversation(req.params.id);
       res.json(responseBuilder.success(null, 'Conversation deleted'));
     } catch (error) {
       logger.error('Delete conversation failed:', error);
@@ -312,14 +316,4 @@ export function registerChatRoutes(): Router {
    */
   router.get('/quota', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIConversationApplicationService.getInstance();
-      const quota = await service.getQuotaStatus(req.user.accountUuid);
-      res.json(responseBuilder.success(quota, 'Quota status retrieved'));
-    } catch (error) {
-      logger.error('Get quota status failed:', error);
-      throw error;
-    }
-  });
-
-  return router;
-}
+      const quota = await getQuotaService.execute(req.user.accountUuid);

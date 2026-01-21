@@ -5,7 +5,8 @@
  */
 
 // ===== Container (from infrastructure-server) =====
-export { NotificationContainer } from '@dailyuse/infrastructure-server';
+// export { NotificationContainer } from '@dailyuse/infrastructure-server';
+
 
 // ===== Services =====
 export * from './services';

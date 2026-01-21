@@ -7,43 +7,14 @@
 import type { IUserSettingRepository } from '@dailyuse/domain-server/setting';
 import { UserSetting } from '@dailyuse/domain-server/setting';
 import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
-import { SettingContainer } from '@dailyuse/infrastructure-server';
 import { UpdateUserSetting } from './update-user-setting';
 
 /**
  * Import Settings
  */
 export class ImportSettings {
-  private static instance: ImportSettings;
 
-  private constructor(private readonly userSettingRepository: IUserSettingRepository) {}
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(userSettingRepository?: IUserSettingRepository): ImportSettings {
-    const container = SettingContainer.getInstance();
-    const repo = userSettingRepository || container.getUserSettingRepository();
-    ImportSettings.instance = new ImportSettings(repo);
-    return ImportSettings.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): ImportSettings {
-    if (!ImportSettings.instance) {
-      ImportSettings.instance = ImportSettings.createInstance();
-    }
-    return ImportSettings.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    ImportSettings.instance = undefined as unknown as ImportSettings;
-  }
+  constructor(private readonly userSettingRepository: IUserSettingRepository) {}
 
   /**
    * 执行用例
@@ -62,7 +33,7 @@ export class ImportSettings {
     const importedSettings = data.settings;
 
     if (merge) {
-      return await UpdateUserSetting.getInstance().execute(
+      return await new UpdateUserSetting(this.userSettingRepository).execute(
         accountUuid,
         importedSettings as Omit<UpdateUserSettingRequest, 'uuid'>,
       );

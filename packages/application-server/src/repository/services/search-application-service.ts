@@ -5,25 +5,15 @@
  */
 
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, SearchRequest, SearchResponse, SearchResultItem, MatchType } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 import { Resource } from '@dailyuse/domain-server/repository';
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 
 
 export class SearchApplicationService {
-  private static instance: SearchApplicationService;
   private resourceRepository: IResourceRepository;
 
-  private constructor() {
-    const container = RepositoryContainer.getInstance();
-    this.resourceRepository = container.getResourceRepository();
-  }
-
-  static getInstance(): SearchApplicationService {
-    if (!SearchApplicationService.instance) {
-      SearchApplicationService.instance = new SearchApplicationService();
-    }
-    return SearchApplicationService.instance;
+  constructor(resourceRepository: IResourceRepository) {
+    this.resourceRepository = resourceRepository;
   }
 
   /**

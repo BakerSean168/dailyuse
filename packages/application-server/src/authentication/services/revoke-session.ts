@@ -7,42 +7,12 @@
 import type { IAuthSessionRepository } from '@dailyuse/domain-server/authentication';
 import type { RevokeSessionRequest } from '@dailyuse/contracts/authentication';
 import { eventBus } from '@dailyuse/utils';
-import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Revoke Session Service
  */
 export class RevokeSession {
-  private static instance: RevokeSession;
-
-  private constructor(private readonly sessionRepository: IAuthSessionRepository) {}
-
-  /**
-   * 创建服务实例
-   */
-  static createInstance(sessionRepository?: IAuthSessionRepository): RevokeSession {
-    const container = AuthContainer.getInstance();
-    const repo = sessionRepository || container.getSessionRepository();
-    RevokeSession.instance = new RevokeSession(repo);
-    return RevokeSession.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): RevokeSession {
-    if (!RevokeSession.instance) {
-      RevokeSession.instance = RevokeSession.createInstance();
-    }
-    return RevokeSession.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    RevokeSession.instance = undefined as unknown as RevokeSession;
-  }
+  constructor(private readonly sessionRepository: IAuthSessionRepository) {}
 
   /**
    * 执行撤销会话

@@ -9,25 +9,14 @@ import type {
   QueryReminderTemplatesRequest,
   ReminderTemplateListDTO,
 } from '@dailyuse/contracts/reminder';
-import { ReminderContainer } from '@dailyuse/infrastructure-server';
+// import { ReminderContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * List Reminder Templates Service
  */
 export class ListReminderTemplates {
-  private static instance: ListReminderTemplates;
 
-  private constructor(private readonly templateRepository: IReminderTemplateRepository) {}
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(templateRepository?: IReminderTemplateRepository): ListReminderTemplates {
-    const container = ReminderContainer.getInstance();
-    const repo = templateRepository || container.getTemplateRepository();
-    ListReminderTemplates.instance = new ListReminderTemplates(repo);
-    return ListReminderTemplates.instance;
-  }
+  constructor(private readonly templateRepository: IReminderTemplateRepository) {}
 
   /**
    * 获取服务单例

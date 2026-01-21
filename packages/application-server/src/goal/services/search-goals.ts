@@ -7,25 +7,14 @@
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { Goal } from '@dailyuse/domain-server/goal';
 import type { GoalsResponse } from '@dailyuse/contracts/goal';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
+
 
 /**
  * Search Goals Service
  */
 export class SearchGoals {
-  private static instance: SearchGoals;
+  constructor(private readonly goalRepository: IGoalRepository) {}
 
-  private constructor(private readonly goalRepository: IGoalRepository) {}
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(goalRepository?: IGoalRepository): SearchGoals {
-    const container = GoalContainer.getInstance();
-    const repo = goalRepository || container.getGoalRepository();
-    SearchGoals.instance = new SearchGoals(repo);
-    return SearchGoals.instance;
-  }
 
   /**
    * 获取服务单例

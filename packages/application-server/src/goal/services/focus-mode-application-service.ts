@@ -7,7 +7,7 @@
 import type { IFocusModeRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
 import { FocusMode } from '@dailyuse/domain-server/goal';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, HiddenGoalsMode, FocusModeClientDTO } from '@dailyuse/contracts/goal';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
+
 
 /**
  * 启用专注模式参数接口。
@@ -43,43 +43,12 @@ export interface ExtendFocusModeParams {
  * 依赖注入 FocusModeRepository 和 GoalRepository。
  */
 export class FocusModeApplicationService {
-  private static instance: FocusModeApplicationService;
-
-  private constructor(
+  constructor(
     private readonly focusModeRepository: IFocusModeRepository,
     private readonly goalRepository: IGoalRepository,
   ) {}
 
-  /**
-   * 创建应用服务实例（支持依赖注入）。
-   *
-   * @param focusModeRepository - 可选的专注模式仓储
-   * @param goalRepository - 可选的目标仓储
-   * @returns {Promise<FocusModeApplicationService>} 服务实例
-   */
-  static async createInstance(
-    focusModeRepository?: IFocusModeRepository,
-    goalRepository?: IGoalRepository,
-  ): Promise<FocusModeApplicationService> {
-    const container = GoalContainer.getInstance();
-    const focusRepo = focusModeRepository || container.getFocusModeRepository();
-    const goalRepo = goalRepository || container.getGoalRepository();
 
-    FocusModeApplicationService.instance = new FocusModeApplicationService(focusRepo, goalRepo);
-    return FocusModeApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例。
-   *
-   * @returns {Promise<FocusModeApplicationService>} 单例实例
-   */
-  static async getInstance(): Promise<FocusModeApplicationService> {
-    if (!FocusModeApplicationService.instance) {
-      FocusModeApplicationService.instance = await FocusModeApplicationService.createInstance();
-    }
-    return FocusModeApplicationService.instance;
-  }
 
   // ===== 专注模式管理 =====
 

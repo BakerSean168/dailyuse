@@ -8,44 +8,15 @@ import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authenti
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import type { ResetPasswordRequest } from '@dailyuse/contracts/authentication';
 import { eventBus } from '@dailyuse/utils';
-import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Reset Password Service
  */
 export class ResetPassword {
-  private static instance: ResetPassword;
   private readonly domainService: AuthenticationDomainService;
 
-  private constructor(private readonly credentialRepository: IAuthCredentialRepository) {
+  constructor(private readonly credentialRepository: IAuthCredentialRepository) {
     this.domainService = new AuthenticationDomainService();
-  }
-
-  /**
-   * 创建服务实例
-   */
-  static createInstance(credentialRepository?: IAuthCredentialRepository): ResetPassword {
-    const container = AuthContainer.getInstance();
-    const repo = credentialRepository || container.getCredentialRepository();
-    ResetPassword.instance = new ResetPassword(repo);
-    return ResetPassword.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): ResetPassword {
-    if (!ResetPassword.instance) {
-      ResetPassword.instance = ResetPassword.createInstance();
-    }
-    return ResetPassword.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    ResetPassword.instance = undefined as unknown as ResetPassword;
   }
 
   /**

@@ -1,10 +1,10 @@
 /**
  * Goal Search & Statistics Routes
- * 处理目标搜索和统计功能
+ * 处睆目标杜索和统计功�?
  *
  * 端点:
- * - GET /goals/search          - 搜索目标
- * - GET /goals/statistics      - 获取目标统计信息
+ * - GET /goals/search          - 杜索目标
+ * - GET /goals/statistics      - 获坖目标统计信杯
  */
 
 import type { Router } from 'express';
@@ -18,7 +18,7 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('GoalSearchRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerSearchRoutes(): Router {
+export function registerSearchRoutes(goalService: GoalApplicationService): Router {
   const router: Router = ExpressRouter();
 
   /**
@@ -26,7 +26,7 @@ export function registerSearchRoutes(): Router {
    * /api/goals/search:
    *   get:
    *     tags: [Goal Search]
-   *     summary: 搜索目标
+   *     summary: 杜索目标
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -35,7 +35,7 @@ export function registerSearchRoutes(): Router {
    *         required: true
    *         schema:
    *           type: string
-   *         description: 搜索关键词
+   *         description: 杜索关键�?
    *       - in: query
    *         name: status
    *         schema:
@@ -53,9 +53,9 @@ export function registerSearchRoutes(): Router {
    *           default: 50
    *     responses:
    *       200:
-   *         description: 搜索结果
+   *         description: 杜索结果
    *       400:
-   *         description: 搜索关键词为空或无效
+   *         description: 杜索关键话为空或无效
    */
   router.get('/search', authMiddleware, async (req: AuthenticatedRequest, res) => {
     try {
@@ -63,7 +63,7 @@ export function registerSearchRoutes(): Router {
       if (!query) {
         throw new Error('Search query is required');
       }
-      const goalService = await GoalApplicationService.getInstance();
+
       const results = await goalService.searchGoals(req.user.accountUuid, query as string, {
         status: status as string,
         priority: priority as string,
@@ -81,7 +81,7 @@ export function registerSearchRoutes(): Router {
    * /api/goals/statistics:
    *   get:
    *     tags: [Goal Statistics]
-   *     summary: 获取目标统计信息
+   *     summary: 获坖目标统计信杯
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -93,14 +93,14 @@ export function registerSearchRoutes(): Router {
    *           default: month
    *     responses:
    *       200:
-   *         description: 统计信息
+   *         description: 统计信杯
    *       400:
-   *         description: 请求参数错误
+   *         description: 请求坂数错误
    */
   router.get('/statistics', authMiddleware, async (req: AuthenticatedRequest, res) => {
     try {
       const { period } = req.query;
-      const goalService = await GoalApplicationService.getInstance();
+
       const stats = await goalService.getGoalStatistics(req.user.accountUuid, {
         period: (period as string) || 'month',
       });

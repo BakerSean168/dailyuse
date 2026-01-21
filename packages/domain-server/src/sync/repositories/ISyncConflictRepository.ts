@@ -21,11 +21,11 @@ export interface ISyncConflictRepository {
   save(conflict: SyncConflict): Promise<void>;
   saveMany(conflicts: SyncConflict[]): Promise<void>;
   findByUuid(uuid: string): Promise<SyncConflict | null>;
-  findBySessionId(sessionId: string): Promise<SyncConflict[]>;
-  findUnresolved(sessionId?: string): Promise<SyncConflict[]>;
-  findAutoResolvable(sessionId: string): Promise<SyncConflict[]>;
-  findByQuery(options: SyncConflictQueryOptions): Promise<SyncConflict[]>;
-  count(options?: SyncConflictQueryOptions): Promise<number>;
+  findBySessionId(accountUuid: string, sessionId: string): Promise<SyncConflict[]>;
+  findUnresolved(accountUuid: string, sessionId?: string): Promise<SyncConflict[]>;
+  findAutoResolvable(accountUuid: string, sessionId: string): Promise<SyncConflict[]>;
+  findByQuery(accountUuid: string, options: SyncConflictQueryOptions): Promise<SyncConflict[]>;
+  count(accountUuid: string, options?: SyncConflictQueryOptions): Promise<number>;
   delete(uuid: string): Promise<void>;
-  deleteBySessionId(sessionId: string): Promise<number>;
+  deleteBySessionId(accountUuid: string, sessionId: string): Promise<number>;
 }

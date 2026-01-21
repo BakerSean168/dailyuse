@@ -8,7 +8,6 @@ import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalDomainService, Goal } from '@dailyuse/domain-server/goal';
 import type { UpdateGoalRequest, GoalResponse } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Update Goal Service
@@ -24,10 +23,8 @@ export class UpdateGoal {
   /**
    * 创建服务实例（支持依赖注入）
    */
-  static createInstance(goalRepository?: IGoalRepository): UpdateGoal {
-    const container = GoalContainer.getInstance();
-    const repo = goalRepository || container.getGoalRepository();
-    UpdateGoal.instance = new UpdateGoal(repo);
+  static createInstance(goalRepository: IGoalRepository): UpdateGoal {
+    UpdateGoal.instance = new UpdateGoal(goalRepository);
     return UpdateGoal.instance;
   }
 
@@ -36,7 +33,7 @@ export class UpdateGoal {
    */
   static getInstance(): UpdateGoal {
     if (!UpdateGoal.instance) {
-      UpdateGoal.instance = UpdateGoal.createInstance();
+      throw new Error('UpdateGoal instance not initialized. Call createInstance() first.');
     }
     return UpdateGoal.instance;
   }

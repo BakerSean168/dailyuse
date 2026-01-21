@@ -18,14 +18,15 @@ import type { Router } from 'express';
 import { Router as ExpressRouter } from 'express';
 import type { AuthenticatedRequest } from '../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { authMiddleware } from '../../../shared/infrastructure/http/middlewares/authMiddleware';
-import { AIProviderConfigApplicationService } from '@dailyuse/application-server';
+// import { AIProviderConfigApplicationService } from '@dailyuse/application-server';
+import type { AIProviderConfigService } from '@dailyuse/application-server/ai';
 import { createResponseBuilder } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AIProviderRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerProviderRoutes(): Router {
+export function registerProviderRoutes(providerService: AIProviderConfigService): Router {
   const router: Router = ExpressRouter();
 
   // 所有 Provider 路由需要认证
@@ -79,7 +80,7 @@ export function registerProviderRoutes(): Router {
    */
   router.post('/', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIProviderConfigApplicationService.getInstance();
+      const service = providerService;
       const provider = await service.createProvider(req.user.accountUuid, req.body);
       res.status(201).json(responseBuilder.success(provider, 'Provider created successfully'));
     } catch (error) {
@@ -102,7 +103,7 @@ export function registerProviderRoutes(): Router {
    */
   router.get('/', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIProviderConfigApplicationService.getInstance();
+      const service = providerService;
       const providers = await service.getUserProviders(req.user.accountUuid);
       res.json(responseBuilder.success(providers, 'Providers retrieved'));
     } catch (error) {
@@ -133,7 +134,7 @@ export function registerProviderRoutes(): Router {
    */
   router.get('/:uuid', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIProviderConfigApplicationService.getInstance();
+      const service = providerService;
       const provider = await service.getProviderDetail(req.params.uuid);
       res.json(responseBuilder.success(provider, 'Provider retrieved'));
     } catch (error) {
@@ -181,7 +182,7 @@ export function registerProviderRoutes(): Router {
    */
   router.put('/:uuid', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIProviderConfigApplicationService.getInstance();
+      const service = providerService;
       const updated = await service.updateProvider(req.params.uuid, req.body);
       res.json(responseBuilder.success(updated, 'Provider updated'));
     } catch (error) {
@@ -212,7 +213,7 @@ export function registerProviderRoutes(): Router {
    */
   router.delete('/:uuid', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIProviderConfigApplicationService.getInstance();
+      const service = providerService;
       await service.deleteProvider(req.params.uuid);
       res.json(responseBuilder.success(null, 'Provider deleted'));
     } catch (error) {
@@ -243,7 +244,7 @@ export function registerProviderRoutes(): Router {
    */
   router.post('/:uuid/test', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIProviderConfigApplicationService.getInstance();
+      const service = providerService;
       const result = await service.testConnection(req.params.uuid);
       res.json(responseBuilder.success(result, 'Connection test completed'));
     } catch (error) {
@@ -272,7 +273,7 @@ export function registerProviderRoutes(): Router {
    */
   router.post('/:uuid/set-default', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIProviderConfigApplicationService.getInstance();
+      const service = providerService;
       const updated = await service.setDefaultProvider(req.params.uuid);
       res.json(responseBuilder.success(updated, 'Default provider set'));
     } catch (error) {
@@ -311,7 +312,7 @@ export function registerProviderRoutes(): Router {
    */
   router.put('/priorities', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIProviderConfigApplicationService.getInstance();
+      const service = providerService;
       const updated = await service.updatePriorities(req.body.priorities);
       res.json(responseBuilder.success(updated, 'Priorities updated'));
     } catch (error) {
@@ -334,7 +335,7 @@ export function registerProviderRoutes(): Router {
    */
   router.get('/health', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await AIProviderConfigApplicationService.getInstance();
+      const service = providerService;
       const healthStatus = await service.getHealthStatus();
       res.json(responseBuilder.success(healthStatus, 'Health status retrieved'));
     } catch (error) {

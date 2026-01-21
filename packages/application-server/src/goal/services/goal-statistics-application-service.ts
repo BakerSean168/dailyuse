@@ -6,7 +6,6 @@
 
 import type { IGoalStatisticsRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalStatisticsDomainService } from '@dailyuse/domain-server/goal';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
 import type { 
   GoalServerDTO, 
   GoalClientDTO, 
@@ -78,17 +77,13 @@ export class GoalStatisticsApplicationService {
    * @param goalRepository - 可选的目标仓储
    * @returns {Promise<GoalStatisticsApplicationService>} 服务实例
    */
-  static async createInstance(
-    statisticsRepository?: IGoalStatisticsRepository,
-    goalRepository?: IGoalRepository,
-  ): Promise<GoalStatisticsApplicationService> {
-    const container = GoalContainer.getInstance();
-    const statsRepo = statisticsRepository || container.getGoalStatisticsRepository();
-    const goalRepo = goalRepository || container.getGoalRepository();
-
+  static createInstance(
+    statisticsRepository: IGoalStatisticsRepository,
+    goalRepository: IGoalRepository,
+  ): GoalStatisticsApplicationService {
     GoalStatisticsApplicationService.instance = new GoalStatisticsApplicationService(
-      statsRepo,
-      goalRepo,
+      statisticsRepository,
+      goalRepository,
     );
     return GoalStatisticsApplicationService.instance;
   }
@@ -98,10 +93,9 @@ export class GoalStatisticsApplicationService {
    *
    * @returns {Promise<GoalStatisticsApplicationService>} 单例实例
    */
-  static async getInstance(): Promise<GoalStatisticsApplicationService> {
+  static getInstance(): GoalStatisticsApplicationService {
     if (!GoalStatisticsApplicationService.instance) {
-      GoalStatisticsApplicationService.instance =
-        await GoalStatisticsApplicationService.createInstance();
+      throw new Error('GoalStatisticsApplicationService instance not initialized. Call createInstance() first.');
     }
     return GoalStatisticsApplicationService.instance;
   }

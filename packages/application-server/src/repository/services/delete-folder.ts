@@ -5,7 +5,6 @@
  */
 
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Delete Folder Input
@@ -18,27 +17,8 @@ export interface DeleteFolderInput {
  * Delete Folder
  */
 export class DeleteFolder {
-  private static instance: DeleteFolder;
 
-  private constructor(private readonly folderRepository: IFolderRepository) {}
-
-  static createInstance(folderRepository?: IFolderRepository): DeleteFolder {
-    const container = RepositoryContainer.getInstance();
-    const repo = folderRepository || container.getFolderRepository();
-    DeleteFolder.instance = new DeleteFolder(repo);
-    return DeleteFolder.instance;
-  }
-
-  static getInstance(): DeleteFolder {
-    if (!DeleteFolder.instance) {
-      DeleteFolder.instance = DeleteFolder.createInstance();
-    }
-    return DeleteFolder.instance;
-  }
-
-  static resetInstance(): void {
-    DeleteFolder.instance = undefined as unknown as DeleteFolder;
-  }
+  constructor(private readonly folderRepository: IFolderRepository) {}
 
   async execute(input: DeleteFolderInput): Promise<void> {
     const folder = await this.folderRepository.findByUuid(input.uuid);
@@ -65,6 +45,3 @@ export class DeleteFolder {
     }
   }
 }
-
-export const deleteFolder = (input: DeleteFolderInput): Promise<void> =>
-  DeleteFolder.getInstance().execute(input);

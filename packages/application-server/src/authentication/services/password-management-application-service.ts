@@ -18,8 +18,6 @@ import type {
 } from '@dailyuse/domain-server/authentication';
 import type { IAccountRepository, Account } from '@dailyuse/domain-server/account';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-server';
-import { AccountContainer } from '@dailyuse/infrastructure-server';
 import { eventBus, createLogger } from '@dailyuse/utils';
 import bcrypt from 'bcryptjs';
 
@@ -56,50 +54,17 @@ export interface ChangePasswordResponse {
  * 负责密码管理的核心业务逻辑编排
  */
 export class PasswordManagementApplicationService {
-  private static instance: PasswordManagementApplicationService;
-
   private credentialRepository: IAuthCredentialRepository;
   private accountRepository: IAccountRepository;
   private authenticationDomainService: AuthenticationDomainService;
 
-  private constructor(
+  constructor(
     credentialRepository: IAuthCredentialRepository,
     accountRepository: IAccountRepository,
   ) {
     this.credentialRepository = credentialRepository;
     this.accountRepository = accountRepository;
     this.authenticationDomainService = new AuthenticationDomainService();
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    credentialRepository?: IAuthCredentialRepository,
-    accountRepository?: IAccountRepository,
-  ): Promise<PasswordManagementApplicationService> {
-    const authContainer = AuthenticationContainer.getInstance();
-    const accountContainer = AccountContainer.getInstance();
-
-    const credRepo = credentialRepository || authContainer.getAuthCredentialRepository();
-    const accRepo = accountRepository || accountContainer.getAccountRepository();
-
-    PasswordManagementApplicationService.instance = new PasswordManagementApplicationService(
-      credRepo,
-      accRepo,
-    );
-    return PasswordManagementApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<PasswordManagementApplicationService> {
-    if (!PasswordManagementApplicationService.instance) {
-      PasswordManagementApplicationService.instance =
-        await PasswordManagementApplicationService.createInstance();
-    }
-    return PasswordManagementApplicationService.instance;
   }
 
   /**

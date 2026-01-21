@@ -1,11 +1,11 @@
 /**
  * Goal Status Routes
- * 处理目标状态变更操作 (完成、归档、激活)
+ * 处睆目标状思坘更擝�?(完戝〝归档〝激�?
  *
  * 端点:
- * - POST /goals/:uuid/complete  - 完成目标
+ * - POST /goals/:uuid/complete  - 完戝目标
  * - POST /goals/:uuid/archive   - 归档目标
- * - POST /goals/:uuid/activate  - 激活目标
+ * - POST /goals/:uuid/activate  - 激活目�?
  */
 
 import type { Router } from 'express';
@@ -19,7 +19,7 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('GoalStatusRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerStatusRoutes(): Router {
+export function registerStatusRoutes(goalService: GoalApplicationService): Router {
   const router: Router = ExpressRouter();
 
   /**
@@ -27,7 +27,7 @@ export function registerStatusRoutes(): Router {
    * /api/goals/{uuid}/complete:
    *   post:
    *     tags: [Goals]
-   *     summary: 完成目标
+   *     summary: 完戝目标
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -44,16 +44,16 @@ export function registerStatusRoutes(): Router {
    *             properties:
    *               notes:
    *                 type: string
-   *                 description: 完成备注
+   *                 description: 完戝备注
    *     responses:
    *       200:
-   *         description: 目标完成成功
+   *         description: 目标完戝戝功
    *       404:
-   *         description: 目标不存在
+   *         description: 目标丝存�?
    */
   router.post('/:uuid/complete', authMiddleware, async (req: AuthenticatedRequest, res) => {
     try {
-      const goalService = await GoalApplicationService.getInstance();
+
       const goal = await goalService.completeGoal(req.params.uuid, req.body);
       res.json(responseBuilder.success(goal, 'Goal completed'));
     } catch (error) {
@@ -87,13 +87,13 @@ export function registerStatusRoutes(): Router {
    *                 description: 归档原因
    *     responses:
    *       200:
-   *         description: 目标归档成功
+   *         description: 目标归档戝功
    *       404:
-   *         description: 目标不存在
+   *         description: 目标丝存�?
    */
   router.post('/:uuid/archive', authMiddleware, async (req: AuthenticatedRequest, res) => {
     try {
-      const goalService = await GoalApplicationService.getInstance();
+
       const goal = await goalService.archiveGoal(req.params.uuid, req.body);
       res.json(responseBuilder.success(goal, 'Goal archived'));
     } catch (error) {
@@ -107,7 +107,7 @@ export function registerStatusRoutes(): Router {
    * /api/goals/{uuid}/activate:
    *   post:
    *     tags: [Goals]
-   *     summary: 激活目标
+   *     summary: 激活目�?
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -124,16 +124,16 @@ export function registerStatusRoutes(): Router {
    *             properties:
    *               reactivationReason:
    *                 type: string
-   *                 description: 重新激活原因
+   *                 description: 針新激活原�?
    *     responses:
    *       200:
-   *         description: 目标激活成功
+   *         description: 目标激活戝�?
    *       404:
-   *         description: 目标不存在
+   *         description: 目标丝存�?
    */
   router.post('/:uuid/activate', authMiddleware, async (req: AuthenticatedRequest, res) => {
     try {
-      const goalService = await GoalApplicationService.getInstance();
+
       const goal = await goalService.activateGoal(req.params.uuid, req.body);
       res.json(responseBuilder.success(goal, 'Goal activated'));
     } catch (error) {

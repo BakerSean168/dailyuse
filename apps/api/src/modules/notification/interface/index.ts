@@ -15,8 +15,17 @@ import { registerNotificationCoreRoutes } from './notification-core.routes';
 import { registerNotificationChannelRoutes } from './notification-channel.routes';
 import { registerNotificationTemplateRoutes } from './notification-template.routes';
 import { registerSSERoutes } from './sseRoutes';
+import {
+  NotificationApplicationService,
+  NotificationTemplateApplicationService,
+  NotificationChannelApplicationService,
+} from '@dailyuse/application-server';
 
-export function registerNotificationRoutes(): Router {
+export function registerNotificationRoutes(
+  notificationService: NotificationApplicationService,
+  channelService: NotificationChannelApplicationService,
+  templateService: NotificationTemplateApplicationService,
+): Router {
   const router: Router = ExpressRouter();
 
   // ============ 通知核心路由 ============
@@ -27,7 +36,7 @@ export function registerNotificationRoutes(): Router {
   // DELETE /api/notifications/:id          - 删除通知
   // PATCH  /api/notifications/:id/read     - 标记已读
   // POST   /api/notifications/batch/read   - 批量标记已读
-  router.use('/', registerNotificationCoreRoutes());
+  router.use('/', registerNotificationCoreRoutes(notificationService));
 
   // ============ 通知渠道配置路由 ============
   // GET    /api/notifications/channels              - 获取所有渠道
@@ -36,7 +45,7 @@ export function registerNotificationRoutes(): Router {
   // PATCH  /api/notifications/channels/:type/enable - 启用渠道
   // PATCH  /api/notifications/channels/:type/disable - 禁用渠道
   // POST   /api/notifications/channels/:type/verify - 验证渠道
-  router.use('/channels', registerNotificationChannelRoutes());
+  router.use('/channels', registerNotificationChannelRoutes(channelService));
 
   // ============ 通知模板管理路由 ============
   // POST   /api/notifications/templates           - 创建模板
@@ -45,7 +54,7 @@ export function registerNotificationRoutes(): Router {
   // PUT    /api/notifications/templates/:id       - 更新模板
   // DELETE /api/notifications/templates/:id       - 删除模板
   // POST   /api/notifications/templates/:id/preview - 预览模板
-  router.use('/templates', registerNotificationTemplateRoutes());
+  router.use('/templates', registerNotificationTemplateRoutes(templateService));
 
   // ============ 通知 SSE 路由 ============
   // 实时推送通知流

@@ -85,4 +85,10 @@ export interface ITaskInstanceRepository {
     startDate: number,
     endDate: number,
   ): Promise<TaskInstance[]>;
+
+  /**
+   * Remove future pending instances for a template
+   * Used when regenerating instances
+   */
+  deleteFuturePendingInstances(templateUuid: string, fromDate: number): Promise<void>;
 }

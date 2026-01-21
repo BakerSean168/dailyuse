@@ -8,44 +8,15 @@ import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authenti
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import type { Verify2FARequest } from '@dailyuse/contracts/authentication';
 import { eventBus } from '@dailyuse/utils';
-import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Verify 2FA Service
  */
 export class Verify2FA {
-  private static instance: Verify2FA;
   private readonly domainService: AuthenticationDomainService;
 
-  private constructor(private readonly credentialRepository: IAuthCredentialRepository) {
+  constructor(private readonly credentialRepository: IAuthCredentialRepository) {
     this.domainService = new AuthenticationDomainService();
-  }
-
-  /**
-   * 创建服务实例
-   */
-  static createInstance(credentialRepository?: IAuthCredentialRepository): Verify2FA {
-    const container = AuthContainer.getInstance();
-    const repo = credentialRepository || container.getCredentialRepository();
-    Verify2FA.instance = new Verify2FA(repo);
-    return Verify2FA.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): Verify2FA {
-    if (!Verify2FA.instance) {
-      Verify2FA.instance = Verify2FA.createInstance();
-    }
-    return Verify2FA.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    Verify2FA.instance = undefined as unknown as Verify2FA;
   }
 
   /**

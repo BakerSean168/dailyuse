@@ -41,3 +41,6 @@ export * from './services';
 
 // ===== Domain Errors =====
 export * from './errors/AIErrors';
+
+// ===== Interfaces =====
+export * from './interfaces/adapter-types';

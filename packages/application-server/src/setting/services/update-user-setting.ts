@@ -10,42 +10,13 @@ import type {
   UserSettingClientDTO,
   UpdateUserSettingRequest,
 } from '@dailyuse/contracts/setting';
-import { SettingContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Update User Setting
  */
 export class UpdateUserSetting {
-  private static instance: UpdateUserSetting;
 
-  private constructor(private readonly userSettingRepository: IUserSettingRepository) {}
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(userSettingRepository?: IUserSettingRepository): UpdateUserSetting {
-    const container = SettingContainer.getInstance();
-    const repo = userSettingRepository || container.getUserSettingRepository();
-    UpdateUserSetting.instance = new UpdateUserSetting(repo);
-    return UpdateUserSetting.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): UpdateUserSetting {
-    if (!UpdateUserSetting.instance) {
-      UpdateUserSetting.instance = UpdateUserSetting.createInstance();
-    }
-    return UpdateUserSetting.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    UpdateUserSetting.instance = undefined as unknown as UpdateUserSetting;
-  }
+  constructor(private readonly userSettingRepository: IUserSettingRepository) {}
 
   /**
    * 执行用例

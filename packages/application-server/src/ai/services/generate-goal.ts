@@ -7,40 +7,16 @@
 import type { IAIGenerationTaskRepository, IAIProviderConfigRepository } from '@dailyuse/domain-server/ai';
 import type { GenerateGoalRequest, GenerateGoalResponse, GoalCategory } from '@dailyuse/contracts/ai';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { AIContainer } from '@dailyuse/infrastructure-server';
+// import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Generate Goal Service
  */
 export class GenerateGoal {
-  private static instance: GenerateGoal;
-
-  private constructor(
+  constructor(
     private readonly taskRepository: IAIGenerationTaskRepository,
     private readonly providerRepository: IAIProviderConfigRepository,
   ) {}
-
-  static createInstance(
-    taskRepository?: IAIGenerationTaskRepository,
-    providerRepository?: IAIProviderConfigRepository,
-  ): GenerateGoal {
-    const container = AIContainer.getInstance();
-    const taskRepo = taskRepository || container.getGenerationTaskRepository();
-    const providerRepo = providerRepository || container.getProviderConfigRepository();
-    GenerateGoal.instance = new GenerateGoal(taskRepo, providerRepo);
-    return GenerateGoal.instance;
-  }
-
-  static getInstance(): GenerateGoal {
-    if (!GenerateGoal.instance) {
-      GenerateGoal.instance = GenerateGoal.createInstance();
-    }
-    return GenerateGoal.instance;
-  }
-
-  static resetInstance(): void {
-    GenerateGoal.instance = undefined as unknown as GenerateGoal;
-  }
 
   async execute(accountUuid: string, input: GenerateGoalRequest): Promise<GenerateGoalResponse> {
     // 1. 获取 AI Provider（使用 findByAccountUuid）

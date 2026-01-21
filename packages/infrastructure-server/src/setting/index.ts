@@ -6,6 +6,7 @@
 
 // Container
 export { SettingContainer } from './setting.container';
+export { SettingModule } from './setting.module';
 
 // Ports (Interfaces)
 export { type IAppConfigRepository } from './ports/app-config-repository.port';

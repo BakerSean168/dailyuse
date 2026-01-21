@@ -19,13 +19,14 @@ import { createLogger, eventBus } from '@dailyuse/utils';
 import { ScheduleTaskEventTypes } from '@dailyuse/contracts/schedule';
 import { TaskReminderScheduleHandler } from './TaskReminderScheduleHandler';
 import { TaskEventHandler } from '../services/TaskEventHandler';
+import type { ITaskInstanceRepository } from '@dailyuse/domain-server/task';
 
 const logger = createLogger('TaskEventListeners');
 
 /**
  * 注册 Task 事件监听器
  */
-export function registerTaskEventListeners(): void {
+export function registerTaskEventListeners(taskInstanceRepository: ITaskInstanceRepository): void {
   // 初始化 TaskEventHandler（监听实例生成等事件）
   TaskEventHandler.initialize();
   logger.info('✅ TaskEventHandler 已初始化（监听实例生成、模板创建、实例完成事件）');
@@ -46,7 +47,7 @@ export function registerTaskEventListeners(): void {
       });
 
       // 创建事件处理器
-      const handler = new TaskReminderScheduleHandler();
+      const handler = new TaskReminderScheduleHandler(taskInstanceRepository);
       
       // 处理事件
       await handler.handle(event);

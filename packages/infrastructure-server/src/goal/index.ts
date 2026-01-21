@@ -6,6 +6,8 @@
 
 // Container
 export { GoalContainer } from './goal.container';
+export { GoalModule } from './goal.module';
+
 
 // Ports (Interfaces)
 export { type IGoalRepository } from './ports/goal-repository.port';

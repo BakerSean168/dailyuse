@@ -8,11 +8,6 @@
  */
 
 // ============================================================
-// Container (from infrastructure-server)
-// ============================================================
-export { GoalContainer } from '@dailyuse/infrastructure-server';
-
-// ============================================================
 // Services (按用例划分)
 // ============================================================
 export {
@@ -37,6 +32,7 @@ export {
   createGoalApplicationService,
   type CreateGoalParams,
   type UpdateGoalParams,
+  GoalKeyResultApplicationService,
 } from './services';
 
 // ============================================================

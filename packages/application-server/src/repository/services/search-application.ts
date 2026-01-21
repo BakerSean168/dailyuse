@@ -12,43 +12,13 @@ import type {
   SearchResultItem,
   MatchType,
 } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Search Service
  */
 export class SearchService {
-  private static instance: SearchService;
 
-  private constructor(private readonly resourceRepository: IResourceRepository) {}
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(resourceRepository?: IResourceRepository): SearchService {
-    const container = RepositoryContainer.getInstance();
-    const repo = resourceRepository || container.getResourceRepository();
-
-    SearchService.instance = new SearchService(repo);
-    return SearchService.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): SearchService {
-    if (!SearchService.instance) {
-      SearchService.instance = SearchService.createInstance();
-    }
-    return SearchService.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    SearchService.instance = undefined as unknown as SearchService;
-  }
+  constructor(private readonly resourceRepository: IResourceRepository) {}
 
   /**
    * 执行搜索

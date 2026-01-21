@@ -7,7 +7,7 @@
  */
 
 // ===== Container (from infrastructure-server) =====
-export { TaskContainer } from '@dailyuse/infrastructure-server/task';
+// export { TaskContainer } from '@dailyuse/infrastructure-server/task';
 
 // ===== Use Cases (CQRS Commands and Queries) =====
 export {
@@ -21,13 +21,11 @@ export {
   SkipTaskInstance,
   GetTaskInstancesByDateRange,
   GetTaskDashboard,
-} from './usecases';
-
-// ===== Application Services (Complex Orchestration) =====
-export { TaskInstanceApplicationService } from './services/task-instance-application.service';
-export { TaskTemplateApplicationService } from './services/task-template-application.service';
-export { TaskStatisticsApplicationService } from './services/task-statistics-application.service';
-export { TaskDependencyApplicationService } from './services/task-dependency-application.service';
+  TaskInstanceApplicationService,
+  TaskTemplateApplicationService,
+  TaskStatisticsApplicationService,
+  TaskDependencyApplicationService
+} from './services';
 
 // ===== Query Services (Advanced Querying) =====
 export { TaskQueryService } from './queries/task-query.service-api';

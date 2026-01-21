@@ -8,7 +8,6 @@ import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
 import { Repository } from '@dailyuse/domain-server/repository';
 import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
 import { RepositoryStatus } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * List Repositories Input
@@ -29,27 +28,8 @@ export interface ListRepositoriesOutput {
  * List Repositories
  */
 export class ListRepositories {
-  private static instance: ListRepositories;
 
-  private constructor(private readonly repositoryRepository: IRepositoryRepository) {}
-
-  static createInstance(repositoryRepository?: IRepositoryRepository): ListRepositories {
-    const container = RepositoryContainer.getInstance();
-    const repo = repositoryRepository || container.getRepositoryRepository();
-    ListRepositories.instance = new ListRepositories(repo);
-    return ListRepositories.instance;
-  }
-
-  static getInstance(): ListRepositories {
-    if (!ListRepositories.instance) {
-      ListRepositories.instance = ListRepositories.createInstance();
-    }
-    return ListRepositories.instance;
-  }
-
-  static resetInstance(): void {
-    ListRepositories.instance = undefined as unknown as ListRepositories;
-  }
+  constructor(private readonly repositoryRepository: IRepositoryRepository) {}
 
   async execute(input: ListRepositoriesInput): Promise<ListRepositoriesOutput> {
     let repositories: Repository[];
@@ -66,6 +46,3 @@ export class ListRepositories {
     return { repositories: repositories.map((r) => r.toClientDTO()) };
   }
 }
-
-export const listRepositories = (input: ListRepositoriesInput): Promise<ListRepositoriesOutput> =>
-  ListRepositories.getInstance().execute(input);

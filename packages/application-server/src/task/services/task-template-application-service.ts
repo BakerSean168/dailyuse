@@ -11,7 +11,12 @@ import {
   RecurrenceRule,
   TaskReminderConfig,
 } from '@dailyuse/domain-server/task';
-import { TaskContainer } from '@dailyuse/infrastructure-server';
+
+// Cross-module imports
+import type { IScheduleTaskRepository } from '@dailyuse/domain-server/schedule';
+import { ScheduleTaskFactory } from '@dailyuse/domain-server/schedule';
+import { SourceModule } from '@dailyuse/contracts/schedule';
+
 import { TaskType, TaskTemplateStatus } from '@dailyuse/contracts/task';
 import type {
   TaskTimeConfigServerDTO,
@@ -37,47 +42,20 @@ import { eventBus } from '@dailyuse/utils';
  * - DTO 转换（Domain ↔ Contracts）
  */
 export class TaskTemplateApplicationService {
-  private static instance: TaskTemplateApplicationService;
   private generationService: TaskInstanceGenerationService;
   private templateRepository: ITaskTemplateRepository;
   private instanceRepository: ITaskInstanceRepository;
+  private scheduleRepository?: IScheduleTaskRepository;
 
-  private constructor(
+  constructor(
     templateRepository: ITaskTemplateRepository,
     instanceRepository: ITaskInstanceRepository,
+    scheduleRepository?: IScheduleTaskRepository,
   ) {
     this.generationService = new TaskInstanceGenerationService();
     this.templateRepository = templateRepository;
     this.instanceRepository = instanceRepository;
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    templateRepository?: ITaskTemplateRepository,
-    instanceRepository?: ITaskInstanceRepository,
-  ): Promise<TaskTemplateApplicationService> {
-    const container = TaskContainer.getInstance();
-    const templateRepo = templateRepository || container.getTaskTemplateRepository();
-    const instanceRepo = instanceRepository || container.getTaskInstanceRepository();
-
-    TaskTemplateApplicationService.instance = new TaskTemplateApplicationService(
-      templateRepo,
-      instanceRepo,
-    );
-    return TaskTemplateApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<TaskTemplateApplicationService> {
-    if (!TaskTemplateApplicationService.instance) {
-      TaskTemplateApplicationService.instance =
-        await TaskTemplateApplicationService.createInstance();
-    }
-    return TaskTemplateApplicationService.instance;
+    this.scheduleRepository = scheduleRepository;
   }
 
   // ===== TaskTemplate 管理 =====
@@ -221,20 +199,14 @@ export class TaskTemplateApplicationService {
 
   /**
    * 为TaskTemplate创建循环ScheduleTask（用于提醒）
-   *
-   * 策略：
-   * - 只创建1个ScheduleTask（不是100个）
-   * - 使用cron表达式循环触发
-   * - 触发时检查当天的TaskInstance，使用其实际时间
    */
   private async createScheduleTaskForTemplate(template: TaskTemplate): Promise<void> {
-    try {
-      const { ScheduleTaskFactory } = await import('@dailyuse/domain-server');
-      const { SourceModule } = await import('@dailyuse/contracts/schedule');
-      const { ScheduleContainer } = await import(
-        '../../../schedule/infrastructure/di/ScheduleContainer'
-      );
+    if (!this.scheduleRepository) {
+      console.warn(`⚠️ [TaskTemplateApplicationService] ScheduleRepository not injected. Skipping schedule task creation.`);
+      return;
+    }
 
+    try {
       // 创建 ScheduleTaskFactory
       const factory = new ScheduleTaskFactory();
       const templateDTO = template.toServerDTO();
@@ -248,9 +220,7 @@ export class TaskTemplateApplicationService {
       });
 
       // 保存到仓储
-      const container = ScheduleContainer.getInstance();
-      const repository = container.getScheduleTaskRepository();
-      await repository.save(scheduleTask);
+      await this.scheduleRepository.save(scheduleTask);
 
       console.log(
         `✅ [TaskTemplateApplicationService] 为模板 "${template.title}" 创建了循环 ScheduleTask: ${scheduleTask.uuid}`,

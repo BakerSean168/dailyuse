@@ -15,30 +15,34 @@
 
 import { createLogger } from '@dailyuse/utils';
 import { ScheduleTask } from '@dailyuse/domain-server/schedule';
-import { PrismaScheduleTaskRepository } from '@dailyuse/infrastructure-server';
+import { IScheduleTaskRepository } from '@dailyuse/domain-server/schedule';
 import { eventBus } from '@dailyuse/utils';
-import { ScheduleMonitor } from '@dailyuse/infrastructure-server';
-import { ReminderContainer } from '@dailyuse/infrastructure-server';
+// import { ScheduleMonitor } from '@dailyuse/infrastructure-server'; // Removed to avoid circular dependency
 
 const logger = createLogger('ScheduleTaskExecutor');
 
+export interface IScheduleMonitor {
+  recordExecutionStart(taskUuid: string, taskName: string): void;
+  recordExecutionSuccess(taskUuid: string, taskName: string): void;
+  recordExecutionFailure(taskUuid: string, taskName: string, error: Error): void;
+  recordExecutionSkipped(taskUuid: string, taskName: string, reason: string): void;
+}
+
 export class ScheduleTaskExecutor {
-  private static instance: ScheduleTaskExecutor;
-  private repository: PrismaScheduleTaskRepository;
-  private monitor: ScheduleMonitor;
+  private repository: IScheduleTaskRepository;
+  private monitor: IScheduleMonitor;
 
-  private constructor() {
-    const prisma = ReminderContainer.getInstance().getPrismaClient();
-    this.repository = new PrismaScheduleTaskRepository(prisma);
-    this.monitor = ScheduleMonitor.getInstance();
+  constructor(
+    repository: IScheduleTaskRepository,
+    monitor: IScheduleMonitor
+  ) {
+    this.repository = repository;
+    this.monitor = monitor;
   }
 
-  public static getInstance(): ScheduleTaskExecutor {
-    if (!ScheduleTaskExecutor.instance) {
-      ScheduleTaskExecutor.instance = new ScheduleTaskExecutor();
-    }
-    return ScheduleTaskExecutor.instance;
-  }
+  // Removed Singleton Pattern
+  // public static getInstance...
+
 
   /**
    * 查询所有到期的任务

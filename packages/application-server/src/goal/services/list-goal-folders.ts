@@ -7,7 +7,6 @@
 import type { IGoalFolderRepository } from '@dailyuse/domain-server/goal';
 import { GoalFolder } from '@dailyuse/domain-server/goal';
 import type { QueryGoalFoldersRequest, GoalFoldersResponse } from '@dailyuse/contracts/goal';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * List Goal Folders Service
@@ -20,10 +19,8 @@ export class ListGoalFolders {
   /**
    * 创建服务实例（支持依赖注入）
    */
-  static createInstance(goalFolderRepository?: IGoalFolderRepository): ListGoalFolders {
-    const container = GoalContainer.getInstance();
-    const repo = goalFolderRepository || container.getGoalFolderRepository();
-    ListGoalFolders.instance = new ListGoalFolders(repo);
+  static createInstance(goalFolderRepository: IGoalFolderRepository): ListGoalFolders {
+    ListGoalFolders.instance = new ListGoalFolders(goalFolderRepository);
     return ListGoalFolders.instance;
   }
 
@@ -32,7 +29,7 @@ export class ListGoalFolders {
    */
   static getInstance(): ListGoalFolders {
     if (!ListGoalFolders.instance) {
-      ListGoalFolders.instance = ListGoalFolders.createInstance();
+      throw new Error('ListGoalFolders instance not initialized. Call createInstance() first.');
     }
     return ListGoalFolders.instance;
   }

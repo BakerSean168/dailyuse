@@ -6,42 +6,12 @@
 
 import type { IAuthSessionRepository } from '@dailyuse/domain-server/authentication';
 import type { AuthSessionClientDTO } from '@dailyuse/contracts/authentication';
-import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Get Active Sessions Service
  */
 export class GetActiveSessions {
-  private static instance: GetActiveSessions;
-
-  private constructor(private readonly sessionRepository: IAuthSessionRepository) {}
-
-  /**
-   * 创建服务实例
-   */
-  static createInstance(sessionRepository?: IAuthSessionRepository): GetActiveSessions {
-    const container = AuthContainer.getInstance();
-    const repo = sessionRepository || container.getSessionRepository();
-    GetActiveSessions.instance = new GetActiveSessions(repo);
-    return GetActiveSessions.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): GetActiveSessions {
-    if (!GetActiveSessions.instance) {
-      GetActiveSessions.instance = GetActiveSessions.createInstance();
-    }
-    return GetActiveSessions.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    GetActiveSessions.instance = undefined as unknown as GetActiveSessions;
-  }
+  constructor(private readonly sessionRepository: IAuthSessionRepository) {}
 
   /**
    * 执行获取活跃会话

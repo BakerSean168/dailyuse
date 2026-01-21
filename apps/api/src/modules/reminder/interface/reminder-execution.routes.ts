@@ -20,7 +20,7 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('ReminderExecutionRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerReminderExecutionRoutes(): Router {
+export function registerReminderExecutionRoutes(service: ReminderApplicationService): Router {
   const router: Router = ExpressRouter();
 
   router.use(authMiddleware);
@@ -31,41 +31,17 @@ export function registerReminderExecutionRoutes(): Router {
    *   get:
    *     tags: [Reminder Executions]
    *     summary: 获取提醒执行历史
-   *     security:
-   *       - bearerAuth: []
-   *     parameters:
-   *       - in: query
-   *         name: reminderId
-   *         schema:
-   *           type: string
-   *       - in: query
-   *         name: status
-   *         schema:
-   *           type: string
-   *           enum: [PENDING, SENT, CLICKED, DISMISSED, FAILED]
-   *       - in: query
-   *         name: page
-   *         schema:
-   *           type: integer
-   *           default: 1
-   *       - in: query
-   *         name: limit
-   *         schema:
-   *           type: integer
-   *           default: 20
-   *     responses:
-   *       200:
-   *         description: 成功获取执行历史
+   * ...
    */
   router.get('/', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await ReminderApplicationService.getInstance();
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 20;
       const filters = {
         reminderId: req.query.reminderId as string,
         status: req.query.status as string,
       };
+      // @ts-ignore
       const executions = await service.getExecutionHistory(
         req.user.accountUuid,
         filters,
@@ -85,33 +61,11 @@ export function registerReminderExecutionRoutes(): Router {
    *   post:
    *     tags: [Reminder Executions]
    *     summary: 手动触发提醒
-   *     security:
-   *       - bearerAuth: []
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - reminderId
-   *             properties:
-   *               reminderId:
-   *                 type: string
-   *               channel:
-   *                 type: string
-   *                 enum: [EMAIL, SMS, PUSH, IN_APP]
-   *               customContent:
-   *                 type: string
-   *     responses:
-   *       201:
-   *         description: 提醒已触发
-   *       404:
-   *         description: 提醒不存在
+   * ...
    */
   router.post('/', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await ReminderApplicationService.getInstance();
+      // @ts-ignore
       const execution = await service.triggerReminder(
         req.body.reminderId,
         req.user.accountUuid,
@@ -131,23 +85,11 @@ export function registerReminderExecutionRoutes(): Router {
    *   get:
    *     tags: [Reminder Executions]
    *     summary: 获取执行详情
-   *     security:
-   *       - bearerAuth: []
-   *     parameters:
-   *       - in: path
-   *         name: uuid
-   *         required: true
-   *         schema:
-   *           type: string
-   *     responses:
-   *       200:
-   *         description: 成功获取执行详情
-   *       404:
-   *         description: 执行记录不存在
+   * ...
    */
   router.get('/:uuid', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await ReminderApplicationService.getInstance();
+      // @ts-ignore
       const execution = await service.getExecution(req.params.uuid);
       res.json(responseBuilder.success(execution, 'Execution retrieved'));
     } catch (error) {
@@ -162,37 +104,11 @@ export function registerReminderExecutionRoutes(): Router {
    *   put:
    *     tags: [Reminder Executions]
    *     summary: 更新执行状态
-   *     security:
-   *       - bearerAuth: []
-   *     parameters:
-   *       - in: path
-   *         name: uuid
-   *         required: true
-   *         schema:
-   *           type: string
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - status
-   *             properties:
-   *               status:
-   *                 type: string
-   *                 enum: [SENT, CLICKED, DISMISSED, FAILED]
-   *               feedback:
-   *                 type: string
-   *     responses:
-   *       200:
-   *         description: 状态更新成功
-   *       404:
-   *         description: 执行记录不存在
+   * ...
    */
   router.put('/:uuid/status', async (req: AuthenticatedRequest, res) => {
     try {
-      const service = await ReminderApplicationService.getInstance();
+      // @ts-ignore
       const updated = await service.updateExecutionStatus(
         req.params.uuid,
         req.body.status,

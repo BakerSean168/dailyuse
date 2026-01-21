@@ -7,44 +7,15 @@
 import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import type { Enable2FARequest, Enable2FAResponse } from '@dailyuse/contracts/authentication';
-import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Enable 2FA Service
  */
 export class Enable2FA {
-  private static instance: Enable2FA;
   private readonly domainService: AuthenticationDomainService;
 
-  private constructor(private readonly credentialRepository: IAuthCredentialRepository) {
+  constructor(private readonly credentialRepository: IAuthCredentialRepository) {
     this.domainService = new AuthenticationDomainService();
-  }
-
-  /**
-   * 创建服务实例
-   */
-  static createInstance(credentialRepository?: IAuthCredentialRepository): Enable2FA {
-    const container = AuthContainer.getInstance();
-    const repo = credentialRepository || container.getCredentialRepository();
-    Enable2FA.instance = new Enable2FA(repo);
-    return Enable2FA.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): Enable2FA {
-    if (!Enable2FA.instance) {
-      Enable2FA.instance = Enable2FA.createInstance();
-    }
-    return Enable2FA.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    Enable2FA.instance = undefined as unknown as Enable2FA;
   }
 
   /**

@@ -3,7 +3,6 @@ import type {
   IRepositoryRepository,
 } from '@dailyuse/domain-server/repository';
 import { RepositoryStatisticsDomainService } from '@dailyuse/domain-server/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 import type { 
   RepositoryServerDTO, 
   ResourceServerDTO, 
@@ -25,10 +24,9 @@ import type {
  * - DTO 转换（Domain ↔ Contracts）
  */
 export class RepositoryStatisticsApplicationService {
-  private static instance: RepositoryStatisticsApplicationService;
   private domainService: RepositoryStatisticsDomainService;
 
-  private constructor(
+  constructor(
     statisticsRepository: IRepositoryStatisticsRepository,
     repositoryRepository: IRepositoryRepository,
   ) {
@@ -36,35 +34,6 @@ export class RepositoryStatisticsApplicationService {
       statisticsRepository,
       repositoryRepository,
     );
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    statisticsRepository?: IRepositoryStatisticsRepository,
-    repositoryRepository?: IRepositoryRepository,
-  ): Promise<RepositoryStatisticsApplicationService> {
-    const container = RepositoryContainer.getInstance();
-    const statsRepo = statisticsRepository || container.getRepositoryStatisticsRepository();
-    const repoRepo = repositoryRepository || container.getRepositoryAggregateRepository();
-
-    RepositoryStatisticsApplicationService.instance = new RepositoryStatisticsApplicationService(
-      statsRepo,
-      repoRepo,
-    );
-    return RepositoryStatisticsApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<RepositoryStatisticsApplicationService> {
-    if (!RepositoryStatisticsApplicationService.instance) {
-      RepositoryStatisticsApplicationService.instance =
-        await RepositoryStatisticsApplicationService.createInstance();
-    }
-    return RepositoryStatisticsApplicationService.instance;
   }
 
   // ===== 统计查询 =====

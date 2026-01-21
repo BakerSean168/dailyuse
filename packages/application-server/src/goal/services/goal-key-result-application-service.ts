@@ -1,7 +1,6 @@
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
 import { GoalDomainService } from '@dailyuse/domain-server/goal';
-import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { KeyResultValueType, AggregationMethod } from '@dailyuse/contracts/goal';
 import { GoalEventPublisher } from './GoalEventPublisher';
 
@@ -16,34 +15,10 @@ import { GoalEventPublisher } from './GoalEventPublisher';
  * - 删除关键结果
  */
 export class GoalKeyResultApplicationService {
-  private static instance: GoalKeyResultApplicationService;
   private domainService: GoalDomainService;
-  private goalRepository: IGoalRepository;
 
-  private constructor(goalRepository: IGoalRepository) {
+  constructor(private readonly goalRepository: IGoalRepository) {
     this.domainService = new GoalDomainService();
-    this.goalRepository = goalRepository;
-  }
-
-  /**
-   * 创建应用服务实例
-   */
-  static async createInstance(goalRepository?: IGoalRepository): Promise<GoalKeyResultApplicationService> {
-    const container = GoalContainer.getInstance();
-    const repo = goalRepository || container.getGoalRepository();
-
-    GoalKeyResultApplicationService.instance = new GoalKeyResultApplicationService(repo);
-    return GoalKeyResultApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<GoalKeyResultApplicationService> {
-    if (!GoalKeyResultApplicationService.instance) {
-      GoalKeyResultApplicationService.instance = await GoalKeyResultApplicationService.createInstance();
-    }
-    return GoalKeyResultApplicationService.instance;
   }
 
   /**

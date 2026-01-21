@@ -6,7 +6,6 @@
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Get Resource Input
@@ -26,27 +25,8 @@ export interface GetResourceOutput {
  * Get Resource
  */
 export class GetResource {
-  private static instance: GetResource;
 
-  private constructor(private readonly resourceRepository: IResourceRepository) {}
-
-  static createInstance(resourceRepository?: IResourceRepository): GetResource {
-    const container = RepositoryContainer.getInstance();
-    const repo = resourceRepository || container.getResourceRepository();
-    GetResource.instance = new GetResource(repo);
-    return GetResource.instance;
-  }
-
-  static getInstance(): GetResource {
-    if (!GetResource.instance) {
-      GetResource.instance = GetResource.createInstance();
-    }
-    return GetResource.instance;
-  }
-
-  static resetInstance(): void {
-    GetResource.instance = undefined as unknown as GetResource;
-  }
+  constructor(private readonly resourceRepository: IResourceRepository) {}
 
   async execute(input: GetResourceInput): Promise<GetResourceOutput> {
     const resource = await this.resourceRepository.findById(input.uuid);
@@ -54,5 +34,3 @@ export class GetResource {
   }
 }
 
-export const getResource = (input: GetResourceInput): Promise<GetResourceOutput> =>
-  GetResource.getInstance().execute(input);

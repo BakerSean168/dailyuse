@@ -7,7 +7,6 @@
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';
 import { Folder } from '@dailyuse/domain-server/repository';
 import type { FolderClientDTO, FolderMetadataServerDTO } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Create Folder Input
@@ -31,27 +30,8 @@ export interface CreateFolderOutput {
  * Create Folder
  */
 export class CreateFolder {
-  private static instance: CreateFolder;
 
-  private constructor(private readonly folderRepository: IFolderRepository) {}
-
-  static createInstance(folderRepository?: IFolderRepository): CreateFolder {
-    const container = RepositoryContainer.getInstance();
-    const repo = folderRepository || container.getFolderRepository();
-    CreateFolder.instance = new CreateFolder(repo);
-    return CreateFolder.instance;
-  }
-
-  static getInstance(): CreateFolder {
-    if (!CreateFolder.instance) {
-      CreateFolder.instance = CreateFolder.createInstance();
-    }
-    return CreateFolder.instance;
-  }
-
-  static resetInstance(): void {
-    CreateFolder.instance = undefined as unknown as CreateFolder;
-  }
+  constructor(private readonly folderRepository: IFolderRepository) {}
 
   async execute(input: CreateFolderInput): Promise<CreateFolderOutput> {
     let parentPath: string | null = null;
@@ -76,6 +56,3 @@ export class CreateFolder {
     return { folder: folder.toClientDTO() };
   }
 }
-
-export const createFolder = (input: CreateFolderInput): Promise<CreateFolderOutput> =>
-  CreateFolder.getInstance().execute(input);

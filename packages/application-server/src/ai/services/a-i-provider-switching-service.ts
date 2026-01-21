@@ -9,18 +9,19 @@
  * - 健康状态监控
  */
 
-import type { IAIProviderConfigRepository } from '@dailyuse/domain-server/ai';
+import type { IAIProviderConfigRepository, IAIAdapter } from '@dailyuse/domain-server/ai';
 import type { AIProviderConfigServerDTO, AIModelInfo } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
-import { AIAdapterFactory } from '@dailyuse/infrastructure-server';
+// import { AIAdapterFactory } from '@dailyuse/infrastructure-server'; // Removed to break circular dependency
 import type {
-  BaseAIAdapter,
   AIGenerationRequest,
   AIGenerationResponse,
   AIStreamChunk,
-} from '@dailyuse/infrastructure-server';
+} from '@dailyuse/domain-server/ai'; // Updated import source
 
 const logger = createLogger('AIProviderSwitchingService');
+
+export type AIAdapterFactoryFn = (config: AIProviderConfigServerDTO) => IAIAdapter;
 
 /**
  * Provider 健康状态
@@ -83,7 +84,10 @@ export class AIProviderSwitchingService {
    */
   private static readonly UNHEALTHY_COOLDOWN_MS = 2 * 60 * 1000;
 
-  constructor(private readonly providerRepository: IAIProviderConfigRepository) {}
+  constructor(
+    private readonly providerRepository: IAIProviderConfigRepository,
+    private readonly adapterFactory: AIAdapterFactoryFn
+  ) {}
 
   // ===== 优先级管理 =====
 
@@ -177,7 +181,7 @@ export class AIProviderSwitchingService {
       attemptedProviders.push(provider.name);
 
       try {
-        const adapter = AIAdapterFactory.createFromConfig(provider);
+        const adapter = this.adapterFactory(provider);
         const startTime = Date.now();
 
         const result = await adapter.generateText<T>(request);
@@ -283,7 +287,7 @@ export class AIProviderSwitchingService {
       attemptedProviders.push(provider.name);
 
       try {
-        const adapter = AIAdapterFactory.createFromConfig(provider);
+        const adapter = this.adapterFactory(provider);
 
         // 流式生成不能预先测试，返回流让调用方处理
         const stream = adapter.streamText(request);
@@ -541,7 +545,7 @@ export class AIProviderSwitchingService {
     const startTime = Date.now();
 
     try {
-      const adapter = AIAdapterFactory.createFromConfig(provider);
+      const adapter = this.adapterFactory(provider);
       const isHealthy = await adapter.healthCheck();
 
       const status: ProviderHealthStatus = {

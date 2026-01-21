@@ -5,16 +5,14 @@
 
 import { Router, type Router as ExpressRouter } from 'express';
 import type { Request, Response } from 'express';
+import { TaskTemplateApplicationService } from '@dailyuse/application-server/task';
 
-// Stub handler for not-yet-implemented endpoints
-const _stubController = (_req: Request, res: Response) => {
-  res.status(501).json({ code: 5000, message: 'Not implemented' });
-};
+export function registerTaskOnetimeRoutes(service?: TaskTemplateApplicationService): Router {
+  const router: ExpressRouter = Router();
 
-/**
- * One-Time Task 路由配置
- */
-const router: ExpressRouter = Router();
+  const _stubController = (_req: Request, res: Response) => {
+    res.status(501).json({ code: 5000, message: 'Not implemented' });
+  };
 
 /**
  * @swagger
@@ -135,8 +133,33 @@ const router: ExpressRouter = Router();
  *       200:
  *         description: 成功返回任务列表
  */
-router.post('/one-time', _stubController);
-router.get('/one-time', _stubController);
+router.post('/one-time', service ? async (req: Request, res: Response) => {
+    try {
+      const accountUuid = (req as any).user?.accountUuid || req.body.accountUuid;
+      if (!accountUuid) {
+        res.status(401).json({ message: 'Unauthorized: missing account info' });
+        return;
+      }
+      const result = await service.createOneTimeTask({ ...req.body, accountUuid });
+      res.status(201).json(result);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  } : _stubController);
+router.get('/one-time', service ? async (req: Request, res: Response) => {
+    try {
+      const accountUuid = (req as any).user?.accountUuid || req.query.accountUuid;
+      if (!accountUuid) {
+        res.status(401).json({ message: 'Unauthorized: missing account info' });
+        return;
+      }
+      const filters: any = { ...req.query };
+      const result = await service.findOneTimeTasks(accountUuid, filters);
+      res.json(result);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  } : _stubController);
 
 /**
  * @swagger
@@ -192,8 +215,18 @@ router.get('/one-time', _stubController);
  *       404:
  *         description: 任务不存在
  */
-router.patch('/:uuid', _stubController);
+router.patch('/:uuid', service ? async (req: Request, res: Response) => {
+    try {
+      const result = await service.updateOneTimeTask(req.params.uuid, req.body);
+      res.json(result);
+    } catch (error: any) {
+      if (error.message.includes('not found')) {
+        res.status(404).json({ message: error.message });
+      } else {
+        res.status(400).json({ message: error.message });
+      }
+    }
+  } : _stubController);
 
-export function registerTaskOnetimeRoutes(): Router {
   return router;
 }

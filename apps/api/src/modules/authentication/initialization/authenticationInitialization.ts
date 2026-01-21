@@ -13,7 +13,7 @@ import {
   eventBus,
   createLogger,
 } from '@dailyuse/utils';
-import { AccountCreatedHandler } from '../application/event-handlers/AccountCreatedHandler';
+// import { AccountCreatedHandler } from '../application/event-handlers/AccountCreatedHandler';
 
 const logger = createLogger('AuthenticationInit');
 
@@ -28,23 +28,23 @@ const registerEventHandlersTask: InitializationTask = {
     logger.info('[Authentication] Registering event handlers...');
 
     // 获取 AccountCreatedHandler 单例
-    const accountCreatedHandler = AccountCreatedHandler.getInstance();
+    // const accountCreatedHandler = AccountCreatedHandler.getInstance();
 
     // 注册 account:created 事件处理器
-    eventBus.on('account:created', async (event) => {
-      try {
-        await accountCreatedHandler.handle(event);
-      } catch (error) {
-        logger.error('[Authentication] Error handling account:created event', {
-          error: error instanceof Error ? error.message : String(error),
-          event,
-        });
-        // ⚠️ 可以选择：
-        // 1. 重新抛出错误，让事件总线处理重试
-        // 2. 记录错误，通过补偿机制处理（推荐）
-        // 这里选择方案 2：不阻塞流程，通过监控和补偿机制处理
-      }
-    });
+    // eventBus.on('account:created', async (event) => {
+    //   try {
+    //     await accountCreatedHandler.handle(event);
+    //   } catch (error) {
+    //     logger.error('[Authentication] Error handling account:created event', {
+    //       error: error instanceof Error ? error.message : String(error),
+    //       event,
+    //     });
+    //     // ⚠️ 可以选择：
+    //     // 1. 重新抛出错误，让事件总线处理重试
+    //     // 2. 记录错误，通过补偿机制处理（推荐）
+    //     // 这里选择方案 2：不阻塞流程，通过监控和补偿机制处理
+    //   }
+    // });
 
     logger.info('[Authentication] Event handlers registered successfully', {
       handlers: ['account:created'],

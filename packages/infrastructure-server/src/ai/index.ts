@@ -6,6 +6,7 @@
 
 // Container
 export { AIContainer } from './ai.container';
+export { AIModule } from './ai.module';
 
 // Ports (Interfaces)
 export { type IAIConversationRepository, type AIConversationQueryOptions } from './ports/ai-conversation-repository.port';

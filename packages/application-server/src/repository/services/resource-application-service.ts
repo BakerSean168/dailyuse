@@ -6,7 +6,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { Resource } from '@dailyuse/domain-server/repository';
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 import { ResourceType } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 
@@ -20,32 +19,10 @@ import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, ResourceC
  * - 协调业务用例
  */
 export class ResourceApplicationService {
-  private static instance: ResourceApplicationService;
   private resourceRepository: IResourceRepository;
 
-  private constructor(resourceRepository: IResourceRepository) {
+  constructor(resourceRepository: IResourceRepository) {
     this.resourceRepository = resourceRepository;
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static createInstance(resourceRepository?: IResourceRepository): ResourceApplicationService {
-    const container = RepositoryContainer.getInstance();
-    const repo = resourceRepository || container.getResourceRepository();
-
-    ResourceApplicationService.instance = new ResourceApplicationService(repo);
-    return ResourceApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static getInstance(): ResourceApplicationService {
-    if (!ResourceApplicationService.instance) {
-      ResourceApplicationService.instance = ResourceApplicationService.createInstance();
-    }
-    return ResourceApplicationService.instance;
   }
 
   async createResource(params: {

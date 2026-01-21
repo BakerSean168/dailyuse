@@ -8,27 +8,16 @@ import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalDomainService, Goal } from '@dailyuse/domain-server/goal';
 import type { CreateGoalRequest, GoalResponse } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
+
 
 /**
  * Create Goal Service
  */
 export class CreateGoal {
-  private static instance: CreateGoal;
   private readonly domainService: GoalDomainService;
 
-  private constructor(private readonly goalRepository: IGoalRepository) {
+  constructor(private readonly goalRepository: IGoalRepository) {
     this.domainService = new GoalDomainService();
-  }
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(goalRepository?: IGoalRepository): CreateGoal {
-    const container = GoalContainer.getInstance();
-    const repo = goalRepository || container.getGoalRepository();
-    CreateGoal.instance = new CreateGoal(repo);
-    return CreateGoal.instance;
   }
 
   /**

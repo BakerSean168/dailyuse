@@ -1,12 +1,11 @@
 /**
  * Task Module - Infrastructure Server
  *
- * Repository implementations and DI container for Task module persistence.
- * All repositories implement interfaces defined in @dailyuse/domain-server/task
+ * Repository implementations and DI Module for Task module.
  */
 
-// DI Container
-export { TaskContainer } from './di/task-container';
+// Module
+export { TaskModule } from './task.module';
 
 // Repositories (Prisma implementations)
 export {

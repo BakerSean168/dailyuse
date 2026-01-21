@@ -8,44 +8,15 @@ import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authenti
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import type { ChangePasswordRequest } from '@dailyuse/contracts/authentication';
 import { eventBus } from '@dailyuse/utils';
-import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Change Password Service
  */
 export class ChangePassword {
-  private static instance: ChangePassword;
   private readonly domainService: AuthenticationDomainService;
 
-  private constructor(private readonly credentialRepository: IAuthCredentialRepository) {
+  constructor(private readonly credentialRepository: IAuthCredentialRepository) {
     this.domainService = new AuthenticationDomainService();
-  }
-
-  /**
-   * 创建服务实例
-   */
-  static createInstance(credentialRepository?: IAuthCredentialRepository): ChangePassword {
-    const container = AuthContainer.getInstance();
-    const repo = credentialRepository || container.getCredentialRepository();
-    ChangePassword.instance = new ChangePassword(repo);
-    return ChangePassword.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): ChangePassword {
-    if (!ChangePassword.instance) {
-      ChangePassword.instance = ChangePassword.createInstance();
-    }
-    return ChangePassword.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    ChangePassword.instance = undefined as unknown as ChangePassword;
   }
 
   /**

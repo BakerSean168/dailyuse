@@ -17,7 +17,6 @@ import type {
   AuthCredential,
 } from '@dailyuse/domain-server/authentication';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-server';
 import { eventBus, createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ApiKeyApplicationService');
@@ -73,38 +72,12 @@ export interface CreateApiKeyResponse {
  * 负责 API Key 管理的核心业务逻辑编排
  */
 export class ApiKeyApplicationService {
-  private static instance: ApiKeyApplicationService;
-
   private credentialRepository: IAuthCredentialRepository;
   private authenticationDomainService: AuthenticationDomainService;
 
-  private constructor(credentialRepository: IAuthCredentialRepository) {
+  constructor(credentialRepository: IAuthCredentialRepository) {
     this.credentialRepository = credentialRepository;
     this.authenticationDomainService = new AuthenticationDomainService();
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    credentialRepository?: IAuthCredentialRepository,
-  ): Promise<ApiKeyApplicationService> {
-    const authContainer = AuthenticationContainer.getInstance();
-
-    const credRepo = credentialRepository || authContainer.getAuthCredentialRepository();
-
-    ApiKeyApplicationService.instance = new ApiKeyApplicationService(credRepo);
-    return ApiKeyApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<ApiKeyApplicationService> {
-    if (!ApiKeyApplicationService.instance) {
-      ApiKeyApplicationService.instance = await ApiKeyApplicationService.createInstance();
-    }
-    return ApiKeyApplicationService.instance;
   }
 
   /**

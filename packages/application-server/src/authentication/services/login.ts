@@ -13,8 +13,6 @@ import { AuthenticationDomainService, AuthSession, DeviceInfo } from '@dailyuse/
 import type { LoginRequest, AuthTokens } from '@dailyuse/contracts/authentication';
 import type { Account, IAccountRepository } from '@dailyuse/domain-server/account';
 import { eventBus, createLogger } from '@dailyuse/utils';
-import { AuthContainer } from '@dailyuse/infrastructure-server';
-import { AccountContainer } from '@dailyuse/infrastructure-server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -25,10 +23,9 @@ const logger = createLogger('Login');
  * Login Service
  */
 export class Login {
-  private static instance: Login;
   private readonly domainService: AuthenticationDomainService;
 
-  private constructor(
+  constructor(
     private readonly credentialRepository: IAuthCredentialRepository,
     private readonly sessionRepository: IAuthSessionRepository,
     private readonly accountRepository: IAccountRepository,
@@ -36,41 +33,7 @@ export class Login {
     this.domainService = new AuthenticationDomainService();
   }
 
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(
-    credentialRepository?: IAuthCredentialRepository,
-    sessionRepository?: IAuthSessionRepository,
-    accountRepository?: IAccountRepository,
-  ): Login {
-    const authContainer = AuthContainer.getInstance();
-    const accountContainer = AccountContainer.getInstance();
-    
-    const credRepo = credentialRepository || authContainer.getCredentialRepository();
-    const sessRepo = sessionRepository || authContainer.getSessionRepository();
-    const acctRepo = accountRepository || accountContainer.getAccountRepository();
-    
-    Login.instance = new Login(credRepo, sessRepo, acctRepo);
-    return Login.instance;
-  }
 
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): Login {
-    if (!Login.instance) {
-      Login.instance = Login.createInstance();
-    }
-    return Login.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    Login.instance = undefined as unknown as Login;
-  }
 
   /**
    * 执行登录 (Desktop 客户端版本)

@@ -15,16 +15,14 @@ import type {
   RecalculateStatisticsResponse,
   StatisticsUpdateEvent,
 } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Repository Statistics Service
  */
 export class RepositoryStatisticsService {
-  private static instance: RepositoryStatisticsService;
   private domainService: RepositoryStatisticsDomainService;
 
-  private constructor(
+  constructor(
     statisticsRepository: IRepositoryStatisticsRepository,
     repositoryRepository: IRepositoryRepository,
   ) {
@@ -32,35 +30,6 @@ export class RepositoryStatisticsService {
       statisticsRepository,
       repositoryRepository,
     );
-  }
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(
-    statisticsRepository?: IRepositoryStatisticsRepository,
-    repositoryRepository?: IRepositoryRepository,
-  ): RepositoryStatisticsService {
-    const container = RepositoryContainer.getInstance();
-    const statsRepo = statisticsRepository || container.getRepositoryStatisticsRepository();
-    const repoRepo = repositoryRepository || container.getRepositoryAggregateRepository();
-
-    RepositoryStatisticsService.instance = new RepositoryStatisticsService(
-      statsRepo,
-      repoRepo,
-    );
-    return RepositoryStatisticsService.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): RepositoryStatisticsService {
-    if (!RepositoryStatisticsService.instance) {
-      RepositoryStatisticsService.instance =
-        RepositoryStatisticsService.createInstance();
-    }
-    return RepositoryStatisticsService.instance;
   }
 
   /**

@@ -7,25 +7,14 @@
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { Goal } from '@dailyuse/domain-server/goal';
 import { eventBus } from '@dailyuse/utils';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
+
 
 /**
  * Delete Goal Service
  */
 export class DeleteGoal {
-  private static instance: DeleteGoal;
+  constructor(private readonly goalRepository: IGoalRepository) {}
 
-  private constructor(private readonly goalRepository: IGoalRepository) {}
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(goalRepository?: IGoalRepository): DeleteGoal {
-    const container = GoalContainer.getInstance();
-    const repo = goalRepository || container.getGoalRepository();
-    DeleteGoal.instance = new DeleteGoal(repo);
-    return DeleteGoal.instance;
-  }
 
   /**
    * 获取服务单例

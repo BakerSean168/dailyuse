@@ -7,25 +7,10 @@
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagStatisticsDto } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@dailyuse/infrastructure-server';
-
 
 export class TagsApplicationService {
-  private static instance: TagsApplicationService | null = null;
 
   constructor(private readonly resourceRepository: IResourceRepository) {}
-
-  /**
-   * 获取单例实例
-   */
-  static getInstance(): TagsApplicationService {
-    if (!TagsApplicationService.instance) {
-      const container = RepositoryContainer.getInstance();
-      const resourceRepository = container.getResourceRepository();
-      TagsApplicationService.instance = new TagsApplicationService(resourceRepository);
-    }
-    return TagsApplicationService.instance;
-  }
 
   /**
    * 获取仓储的标签统计信息

@@ -15,7 +15,7 @@
 
 import type { DomainEvent } from '@dailyuse/utils';
 import type { TaskType, TaskReminderType, ReminderTimeUnit } from '@dailyuse/contracts/task';
-import { TaskContainer } from '@dailyuse/infrastructure-server/task';
+import type { ITaskInstanceRepository } from '@dailyuse/domain-server/task';
 
 interface ScheduleTaskTriggeredPayload {
   taskUuid: string;
@@ -39,6 +39,8 @@ interface ScheduleTaskTriggeredPayload {
 }
 
 export class TaskReminderScheduleHandler {
+  constructor(private readonly taskInstanceRepository: ITaskInstanceRepository) {}
+
   /**
    * 处理 ScheduleTask 触发事件
    */
@@ -56,10 +58,8 @@ export class TaskReminderScheduleHandler {
     try {
       // 1. 获取今天的 TaskInstance
       const today = new Date().setHours(0, 0, 0, 0);
-      const container = TaskContainer.getInstance();
-      const instanceRepository = container.getTaskInstanceRepository();
       
-      const instances = await instanceRepository.findByTemplateUuidAndDateRange(
+      const instances = await this.taskInstanceRepository.findByTemplateUuidAndDateRange(
         templateUuid,
         today,
         today

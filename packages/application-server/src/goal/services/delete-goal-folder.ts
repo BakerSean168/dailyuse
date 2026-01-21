@@ -5,25 +5,14 @@
  */
 
 import type { IGoalFolderRepository } from '@dailyuse/domain-server/goal';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
+
 
 /**
  * Delete Goal Folder Service
  */
 export class DeleteGoalFolder {
-  private static instance: DeleteGoalFolder;
+  constructor(private readonly goalFolderRepository: IGoalFolderRepository) {}
 
-  private constructor(private readonly goalFolderRepository: IGoalFolderRepository) {}
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(goalFolderRepository?: IGoalFolderRepository): DeleteGoalFolder {
-    const container = GoalContainer.getInstance();
-    const repo = goalFolderRepository || container.getGoalFolderRepository();
-    DeleteGoalFolder.instance = new DeleteGoalFolder(repo);
-    return DeleteGoalFolder.instance;
-  }
 
   /**
    * 获取服务单例

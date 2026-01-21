@@ -8,44 +8,18 @@ import type { IAuthCredentialRepository, IAuthSessionRepository } from '@dailyus
 import { AuthenticationDomainService, DeviceInfo } from '@dailyuse/domain-server/authentication';
 import type { RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
 import { eventBus } from '@dailyuse/utils';
-import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Register Service
  */
 export class Register {
-  private static instance: Register;
   private readonly domainService: AuthenticationDomainService;
 
-  private constructor(
+  constructor(
     private readonly credentialRepository: IAuthCredentialRepository,
     private readonly sessionRepository: IAuthSessionRepository,
   ) {
     this.domainService = new AuthenticationDomainService();
-  }
-
-  /**
-   * 创建服务实例
-   */
-  static createInstance(
-    credentialRepository?: IAuthCredentialRepository,
-    sessionRepository?: IAuthSessionRepository,
-  ): Register {
-    const container = AuthContainer.getInstance();
-    const credRepo = credentialRepository || container.getCredentialRepository();
-    const sessRepo = sessionRepository || container.getSessionRepository();
-    Register.instance = new Register(credRepo, sessRepo);
-    return Register.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): Register {
-    if (!Register.instance) {
-      Register.instance = Register.createInstance();
-    }
-    return Register.instance;
   }
 
   /**

@@ -11,6 +11,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./common": {
+      "types": "./dist/common/index.d.ts",
+      "import": "./dist/common/index.js"
+    },
     "./goal": {
       "types": "./dist/goal/index.d.ts",
       "import": "./dist/goal/index.js"
@@ -55,7 +59,6 @@
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/domain-server": "workspace:*",
-    "@dailyuse/infrastructure-server": "workspace:*",
     "@dailyuse/patterns": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "cron-parser": "^5.4.0",
