@@ -10,44 +10,36 @@
  * 架构位置：应用层（Application Layer）
  */
 
+import type {
+  IScheduleExecutionRepository,
+  IScheduleTaskRepository,
+} from '@dailyuse/domain-server/schedule';
 import { ScheduleTask } from '@dailyuse/domain-server/schedule';
-import { BreeExecutionEngine } from '@dailyuse/infrastructure-server';
-import { ScheduleContainer } from '@dailyuse/infrastructure-server';
-import { isDevelopment, env } from '@/shared/infrastructure/config/env.js';
-import path from 'path';
+
+/**
+ * Execution Engine interface - to be provided by infrastructure layer
+ */
+export interface IExecutionEngine {
+  start(tasks: ScheduleTask[]): Promise<void>;
+  stop(): Promise<void>;
+  addJob(task: ScheduleTask): Promise<void>;
+  removeJob(taskId: string): Promise<void>;
+  pauseJob(taskId: string): Promise<void>;
+  resumeJob(taskId: string): Promise<void>;
+  isEngineRunning(): boolean;
+}
 
 /**
  * 调度执行应用服务（单例）
  */
 export class ScheduleExecutionService {
-  private static instance: ScheduleExecutionService;
-  private executionEngine: BreeExecutionEngine;
-  private container = ScheduleContainer.getInstance();
   private isInitialized = false;
 
-  private constructor() {
-    const executionRepository = this.container.getScheduleExecutionRepository();
-    // 初始化执行引擎
-    this.executionEngine = new BreeExecutionEngine(
-      {
-        workerPath: path.join(__dirname, '../../infrastructure/workers'),
-        verbose: isDevelopment,
-        timezone: env.TZ,
-        workerTimeout: 60000, // 60 秒
-      },
-      executionRepository,
-    );
-  }
-
-  /**
-   * 获取服务实例
-   */
-  static getInstance(): ScheduleExecutionService {
-    if (!ScheduleExecutionService.instance) {
-      ScheduleExecutionService.instance = new ScheduleExecutionService();
-    }
-    return ScheduleExecutionService.instance;
-  }
+  constructor(
+    private readonly executionEngine: IExecutionEngine,
+    private readonly executionRepository: IScheduleExecutionRepository,
+    private readonly taskRepository: IScheduleTaskRepository,
+  ) {}
 
   /**
    * 初始化执行引擎（在应用启动时调用）
@@ -62,8 +54,7 @@ export class ScheduleExecutionService {
       console.log('🚀 Initializing Schedule Execution Engine...');
 
       // 从数据库加载所有活跃的调度任务
-      const taskRepository = this.container.getScheduleTaskRepository();
-      const activeTasks = await taskRepository.findByStatus('active' as any);
+      const activeTasks = await this.taskRepository.findByStatus('active' as any);
 
       console.log(`📊 Found ${activeTasks.length} active schedule tasks`);
 

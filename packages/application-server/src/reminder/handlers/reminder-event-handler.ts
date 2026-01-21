@@ -1,6 +1,8 @@
 import { eventBus, type DomainEvent, Logger } from '@dailyuse/utils';
-import type { ReminderTemplateServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
-import { ReminderContainer } from '@dailyuse/infrastructure-server';
+import type {
+  ReminderTemplateServerDTO,
+  ReminderGroupServerDTO,
+} from '@dailyuse/contracts/reminder';
 
 const logger = new Logger('ReminderEventHandler');
 
@@ -42,21 +44,23 @@ type SSEManager = import('../../../notification/interface/sseRoutes').SSEConnect
 
 export class ReminderEventHandler {
   private static isInitialized = false;
-  private static sseManagerPromise: Promise<SSEManager> | null = null;
+  private static sseManager: SSEManager | null = null;
 
-  static async initialize(): Promise<void> {
+  static async initialize(sseManager: SSEManager): Promise<void> {
     if (this.isInitialized) {
       console.log('⚠️ [ReminderEventHandler] Already initialized, skipping');
       return;
     }
 
+    this.sseManager = sseManager;
+    this.isInitialized = true;
     console.log('🎧 [ReminderEventHandler] Initializing reminder event listeners...');
 
     eventBus.on('reminder.template.created', async (event: DomainEvent) => {
       await this.handleTemplateEvent(event, 'template-created', {
         includeSnapshotFromEvent: true,
       });
-      
+
       // 🔥 创建 ScheduleTask
       await this.createScheduleTaskForReminder(event);
     });
@@ -67,14 +71,14 @@ export class ReminderEventHandler {
 
     eventBus.on('reminder.template.enabled', async (event: DomainEvent) => {
       await this.handleTemplateEvent(event, 'template-enabled');
-      
+
       // 🔥 启用对应的 ScheduleTask
       await this.enableScheduleTaskForReminder(event);
     });
 
     eventBus.on('reminder.template.paused', async (event: DomainEvent) => {
       await this.handleTemplateEvent(event, 'template-paused');
-      
+
       // 🔥 暂停对应的 ScheduleTask
       await this.disableScheduleTaskForReminder(event);
     });
@@ -83,7 +87,7 @@ export class ReminderEventHandler {
       await this.handleTemplateEvent(event, 'template-deleted', {
         skipSnapshot: true,
       });
-      
+
       // 🔥 删除对应的 ScheduleTask
       await this.deleteScheduleTaskForReminder(event);
     });
@@ -146,9 +150,7 @@ export class ReminderEventHandler {
       let templateSnapshot: ReminderTemplateServerDTO | undefined;
 
       if (options?.includeSnapshotFromEvent) {
-        templateSnapshot = rawPayload?.reminder as
-          | ReminderTemplateServerDTO
-          | undefined;
+        templateSnapshot = rawPayload?.reminder as ReminderTemplateServerDTO | undefined;
       }
 
       if (!templateSnapshot) {
@@ -204,7 +206,10 @@ export class ReminderEventHandler {
   ): Promise<ReminderTemplateServerDTO | undefined> {
     try {
       const repo = ReminderContainer.getInstance().getReminderTemplateRepository() as any;
-      const template = typeof repo.findByUuid === 'function' ? await repo.findByUuid(uuid) : await repo.findById(uuid);
+      const template =
+        typeof repo.findByUuid === 'function'
+          ? await repo.findByUuid(uuid)
+          : await repo.findById(uuid);
       return template?.toServerDTO();
     } catch (error) {
       logger.error('[ReminderEventHandler] Failed to fetch template snapshot', { uuid, error });
@@ -253,12 +258,10 @@ export class ReminderEventHandler {
   }
 
   private static async getSseManager(): Promise<SSEManager> {
-    if (!this.sseManagerPromise) {
-      this.sseManagerPromise = import('../../../notification/interface/sseRoutes').then(
-        ({ SSEConnectionManager }) => SSEConnectionManager.getInstance(),
-      );
+    if (!this.sseManager) {
+      throw new Error('ReminderEventHandler not initialized. Call initialize() first.');
     }
-    return this.sseManagerPromise;
+    return this.sseManager;
   }
 
   /**
@@ -266,7 +269,7 @@ export class ReminderEventHandler {
    */
   private static async createScheduleTaskForReminder(event: DomainEvent): Promise<void> {
     const { accountUuid, payload } = event as any;
-    
+
     if (!accountUuid) {
       logger.error('[ReminderEventHandler] Missing accountUuid in reminder.template.created event');
       return;
@@ -278,7 +281,7 @@ export class ReminderEventHandler {
         : undefined;
 
     const reminder = rawPayload?.reminder as ReminderTemplateServerDTO | undefined;
-    
+
     if (!reminder) {
       logger.error('[ReminderEventHandler] Missing reminder in event payload');
       return;
@@ -295,11 +298,12 @@ export class ReminderEventHandler {
     try {
       const { ScheduleTaskFactory } = await import('@dailyuse/domain-server');
       const { SourceModule } = await import('@dailyuse/contracts/schedule');
-      const { ScheduleContainer } = await import('../../../schedule/infrastructure/di/ScheduleContainer');
-      
+      const { ScheduleContainer } =
+        await import('../../../schedule/infrastructure/di/ScheduleContainer');
+
       // 创建 ScheduleTaskFactory
       const factory = new ScheduleTaskFactory();
-      
+
       // 使用 ReminderScheduleStrategy 创建 ScheduleTask
       const scheduleTask = factory.createFromSourceEntity({
         accountUuid,
@@ -307,12 +311,12 @@ export class ReminderEventHandler {
         sourceEntityId: reminder.uuid,
         sourceEntity: reminder, // 使用 ServerDTO
       });
-      
+
       // 保存到仓储
       const container = ScheduleContainer.getInstance();
       const repository = container.getScheduleTaskRepository();
       await repository.save(scheduleTask);
-      
+
       logger.info(`✅ [ReminderEventHandler] 为提醒 "${reminder.title}" 创建了 ScheduleTask`, {
         scheduleTaskUuid: scheduleTask.uuid,
         reminderUuid: reminder.uuid,
@@ -321,19 +325,18 @@ export class ReminderEventHandler {
     } catch (error: any) {
       // 如果是"不需要调度"错误，不报错
       if (error?.name === 'SourceEntityNoScheduleRequiredError') {
-        logger.info(`ℹ️  [ReminderEventHandler] 提醒 "${reminder.title}" 不需要创建 ScheduleTask（未启用或不满足条件）`);
+        logger.info(
+          `ℹ️  [ReminderEventHandler] 提醒 "${reminder.title}" 不需要创建 ScheduleTask（未启用或不满足条件）`,
+        );
         return;
       }
-      
-      logger.error(
-        `❌ [ReminderEventHandler] 为提醒 "${reminder.title}" 创建 ScheduleTask 失败`,
-        {
-          error: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-          reminderUuid: reminder.uuid,
-          accountUuid,
-        }
-      );
+
+      logger.error(`❌ [ReminderEventHandler] 为提醒 "${reminder.title}" 创建 ScheduleTask 失败`, {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        reminderUuid: reminder.uuid,
+        accountUuid,
+      });
       // 不抛出错误，ScheduleTask 创建失败不影响 ReminderTemplate 创建
     }
   }
@@ -343,22 +346,26 @@ export class ReminderEventHandler {
    */
   private static async enableScheduleTaskForReminder(event: DomainEvent): Promise<void> {
     const reminderUuid = event.aggregateId;
-    
+
     try {
-      const { ScheduleContainer } = await import('../../../schedule/infrastructure/di/ScheduleContainer');
+      const { ScheduleContainer } =
+        await import('../../../schedule/infrastructure/di/ScheduleContainer');
       const { SourceModule } = await import('@dailyuse/contracts/schedule');
-      
+
       const container = ScheduleContainer.getInstance();
       const repository = container.getScheduleTaskRepository();
-      
+
       // 查找该 reminder 对应的 ScheduleTask（返回数组）
-      const scheduleTasks = await repository.findBySourceEntity(SourceModule.REMINDER, reminderUuid);
-      
+      const scheduleTasks = await repository.findBySourceEntity(
+        SourceModule.REMINDER,
+        reminderUuid,
+      );
+
       if (scheduleTasks && scheduleTasks.length > 0) {
         for (const scheduleTask of scheduleTasks) {
           scheduleTask.enable();
           await repository.save(scheduleTask);
-          
+
           logger.info('✅ [ReminderEventHandler] 启用了 ScheduleTask', {
             reminderUuid,
             scheduleTaskUuid: scheduleTask.uuid,
@@ -382,22 +389,26 @@ export class ReminderEventHandler {
    */
   private static async disableScheduleTaskForReminder(event: DomainEvent): Promise<void> {
     const reminderUuid = event.aggregateId;
-    
+
     try {
-      const { ScheduleContainer } = await import('../../../schedule/infrastructure/di/ScheduleContainer');
+      const { ScheduleContainer } =
+        await import('../../../schedule/infrastructure/di/ScheduleContainer');
       const { SourceModule } = await import('@dailyuse/contracts/schedule');
-      
+
       const container = ScheduleContainer.getInstance();
       const repository = container.getScheduleTaskRepository();
-      
+
       // 查找该 reminder 对应的 ScheduleTask（返回数组）
-      const scheduleTasks = await repository.findBySourceEntity(SourceModule.REMINDER, reminderUuid);
-      
+      const scheduleTasks = await repository.findBySourceEntity(
+        SourceModule.REMINDER,
+        reminderUuid,
+      );
+
       if (scheduleTasks && scheduleTasks.length > 0) {
         for (const scheduleTask of scheduleTasks) {
           scheduleTask.disable();
           await repository.save(scheduleTask);
-          
+
           logger.info('✅ [ReminderEventHandler] 暂停了 ScheduleTask', {
             reminderUuid,
             scheduleTaskUuid: scheduleTask.uuid,
@@ -421,21 +432,25 @@ export class ReminderEventHandler {
    */
   private static async deleteScheduleTaskForReminder(event: DomainEvent): Promise<void> {
     const reminderUuid = event.aggregateId;
-    
+
     try {
-      const { ScheduleContainer } = await import('../../../schedule/infrastructure/di/ScheduleContainer');
+      const { ScheduleContainer } =
+        await import('../../../schedule/infrastructure/di/ScheduleContainer');
       const { SourceModule } = await import('@dailyuse/contracts/schedule');
-      
+
       const container = ScheduleContainer.getInstance();
       const repository = container.getScheduleTaskRepository();
-      
+
       // 查找该 reminder 对应的 ScheduleTask（返回数组）
-      const scheduleTasks = await repository.findBySourceEntity(SourceModule.REMINDER, reminderUuid);
-      
+      const scheduleTasks = await repository.findBySourceEntity(
+        SourceModule.REMINDER,
+        reminderUuid,
+      );
+
       if (scheduleTasks && scheduleTasks.length > 0) {
         for (const scheduleTask of scheduleTasks) {
           await repository.deleteByUuid(scheduleTask.uuid);
-          
+
           logger.info('✅ [ReminderEventHandler] 删除了 ScheduleTask', {
             reminderUuid,
             scheduleTaskUuid: scheduleTask.uuid,
@@ -454,4 +469,3 @@ export class ReminderEventHandler {
     }
   }
 }
-

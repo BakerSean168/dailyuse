@@ -1,5 +1,5 @@
 import { eventBus, type DomainEvent } from '@dailyuse/utils';
-import { DashboardContainer } from '@dailyuse/infrastructure-server';
+import type { IStatisticsCacheService } from '@dailyuse/domain-server/dashboard';
 
 /**
  * Dashboard 领域事件监听器
@@ -14,7 +14,7 @@ export class DashboardEventListener {
   /**
    * 初始化事件监听器（在应用启动时调用一次）
    */
-  static async initialize(): Promise<void> {
+  static async initialize(cacheService: IStatisticsCacheService): Promise<void> {
     if (this.isInitialized) {
       console.log('⚠️  [DashboardEventListener] Already initialized, skipping...');
       return;
@@ -22,8 +22,7 @@ export class DashboardEventListener {
 
     console.log('🚀 [DashboardEventListener] Initializing Dashboard event listeners...');
 
-    const container = DashboardContainer.getInstance();
-    const cacheService = container.getCacheService();
+    this.isInitialized = true;
 
     // ============ 监听 Task 模块统计更新事件 ============
 

@@ -4,10 +4,13 @@
  * @date 2025-01-22
  */
 
-import type { DashboardContainer } from '@dailyuse/infrastructure-server';
+import type { IDashboardConfigRepository } from '@dailyuse/domain-server/dashboard';
 import { DashboardConfig } from '@dailyuse/domain-server/dashboard';
-import type { DashboardConfigServerDTO, WidgetConfigDTO, WidgetConfigData } from '@dailyuse/contracts/dashboard';
-
+import type {
+  DashboardConfigServerDTO,
+  WidgetConfigDTO,
+  WidgetConfigData,
+} from '@dailyuse/contracts/dashboard';
 
 /**
  * Dashboard 配置应用服务。
@@ -19,7 +22,7 @@ import type { DashboardConfigServerDTO, WidgetConfigDTO, WidgetConfigData } from
  * - 重置配置为默认值
  */
 export class DashboardConfigApplicationService {
-  constructor(private container: DashboardContainer) {}
+  constructor(private configRepository: IDashboardConfigRepository) {}
 
   /**
    * 获取用户的 Widget 配置。
@@ -32,8 +35,7 @@ export class DashboardConfigApplicationService {
    */
   async getWidgetConfig(accountUuid: string): Promise<WidgetConfigData> {
     try {
-      const repository = this.container.getDashboardConfigRepository();
-      const config = await repository.findByAccountUuid(accountUuid);
+      const config = await this.configRepository.findByAccountUuid(accountUuid);
 
       if (config) {
         return config.widgetConfig;
@@ -44,7 +46,7 @@ export class DashboardConfigApplicationService {
         `[DashboardConfigApplicationService] Creating default config for account=${accountUuid}`,
       );
       const defaultConfig = DashboardConfig.createDefault(accountUuid);
-      const savedConfig = await repository.save(defaultConfig);
+      const savedConfig = await this.configRepository.save(defaultConfig);
       console.log(
         `[DashboardConfigApplicationService] Default config saved for account=${accountUuid}`,
         savedConfig.widgetConfig,
@@ -77,10 +79,8 @@ export class DashboardConfigApplicationService {
     configs: Partial<WidgetConfigData>,
   ): Promise<WidgetConfigData> {
     try {
-      const repository = this.container.getDashboardConfigRepository();
-
       // 获取或创建配置
-      let config = await repository.findByAccountUuid(accountUuid);
+      let config = await this.configRepository.findByAccountUuid(accountUuid);
 
       if (!config) {
         // 创建新配置
@@ -91,7 +91,7 @@ export class DashboardConfigApplicationService {
       config.updateWidgetConfig(configs);
 
       // 保存到仓储
-      const savedConfig = await repository.save(config);
+      const savedConfig = await this.configRepository.save(config);
       return savedConfig.widgetConfig;
     } catch (error) {
       console.error(
@@ -110,10 +110,8 @@ export class DashboardConfigApplicationService {
    */
   async resetWidgetConfig(accountUuid: string): Promise<WidgetConfigData> {
     try {
-      const repository = this.container.getDashboardConfigRepository();
-
       // 获取或创建配置
-      let config = await repository.findByAccountUuid(accountUuid);
+      let config = await this.configRepository.findByAccountUuid(accountUuid);
 
       if (!config) {
         config = DashboardConfig.createDefault(accountUuid);
@@ -123,7 +121,7 @@ export class DashboardConfigApplicationService {
       }
 
       // 保存到仓储
-      const savedConfig = await repository.save(config);
+      const savedConfig = await this.configRepository.save(config);
       return savedConfig.widgetConfig;
     } catch (error) {
       console.error(

@@ -15,6 +15,7 @@ import type { ITaskStatisticsRepository } from '@dailyuse/domain-server/task';
 import type { IGoalStatisticsRepository } from '@dailyuse/domain-server/goal';
 import type { IReminderStatisticsRepository } from '@dailyuse/domain-server/reminder';
 import type { IScheduleStatisticsRepository } from '@dailyuse/domain-server/schedule';
+import type { IStatisticsCacheService } from '@dailyuse/domain-server/dashboard';
 import { TaskStatistics } from '@dailyuse/domain-server/task';
 import { GoalStatistics } from '@dailyuse/domain-server/goal';
 import { ReminderStatistics } from '@dailyuse/domain-server/reminder';
@@ -24,57 +25,33 @@ import type { TaskStatisticsClientDTO } from '@dailyuse/contracts/task';
 import type { GoalStatisticsClientDTO } from '@dailyuse/contracts/goal';
 import type { ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
 import type { ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
-import { DashboardContainer, StatisticsCacheService } from '@dailyuse/infrastructure-server';
 
 export class DashboardStatisticsApplicationService {
-  private static instance: DashboardStatisticsApplicationService;
-
-  private constructor(
+  constructor(
     private readonly taskStatsRepo: ITaskStatisticsRepository,
     private readonly goalStatsRepo: IGoalStatisticsRepository,
     private readonly reminderStatsRepo: IReminderStatisticsRepository,
     private readonly scheduleStatsRepo: IScheduleStatisticsRepository,
-    private readonly cacheService: StatisticsCacheService,
+    private readonly cacheService: IStatisticsCacheService,
   ) {}
-
-  /**
-   * 创建应用服务实例（支持依赖注入）
-   */
-  static async createInstance(
-    taskStatsRepo?: ITaskStatisticsRepository,
-    goalStatsRepo?: IGoalStatisticsRepository,
-    reminderStatsRepo?: IReminderStatisticsRepository,
-    scheduleStatsRepo?: IScheduleStatisticsRepository,
-    cacheService?: StatisticsCacheService,
-  ): Promise<DashboardStatisticsApplicationService> {
-    const container = DashboardContainer.getInstance();
-
-    const taskRepo = taskStatsRepo || container.getTaskStatisticsRepository();
-    const goalRepo = goalStatsRepo || container.getGoalStatisticsRepository();
-    const reminderRepo = reminderStatsRepo || container.getReminderStatisticsRepository();
-    const scheduleRepo = scheduleStatsRepo || container.getScheduleStatisticsRepository();
-    const cache = cacheService || container.getCacheService();
-
-    DashboardStatisticsApplicationService.instance = new DashboardStatisticsApplicationService(
-      taskRepo,
-      goalRepo,
-      reminderRepo,
-      scheduleRepo,
-      cache,
-    );
-
-    return DashboardStatisticsApplicationService.instance;
-  }
 
   /**
    * 获取应用服务单例
    */
-  static async getInstance(): Promise<DashboardStatisticsApplicationService> {
-    if (!DashboardStatisticsApplicationService.instance) {
-      DashboardStatisticsApplicationService.instance =
-        await DashboardStatisticsApplicationService.createInstance();
-    }
-    return DashboardStatisticsApplicationService.instance;
+  static getInstance(
+    taskStatsRepo: ITaskStatisticsRepository,
+    goalStatsRepo: IGoalStatisticsRepository,
+    reminderStatsRepo: IReminderStatisticsRepository,
+    scheduleStatsRepo: IScheduleStatisticsRepository,
+    cacheService: IStatisticsCacheService,
+  ): DashboardStatisticsApplicationService {
+    return new DashboardStatisticsApplicationService(
+      taskStatsRepo,
+      goalStatsRepo,
+      reminderStatsRepo,
+      scheduleStatsRepo,
+      cacheService,
+    );
   }
 
   /**

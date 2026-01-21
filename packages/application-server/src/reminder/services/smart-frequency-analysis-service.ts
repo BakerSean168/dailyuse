@@ -1,7 +1,6 @@
 import type { IReminderTemplateRepository } from '@dailyuse/domain-server/reminder';
 import { ResponseMetrics } from '@dailyuse/domain-server/reminder';
 import type { PrismaClient } from '@prisma/client';
-import { ReminderContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * 响应行为类型
@@ -45,51 +44,31 @@ export interface GlobalAnalysisReport {
 
 /**
  * Smart Frequency Analysis Service
- * 
+ *
  * 职责：
  * - 分析用户对提醒的响应模式
  * - 计算效果评分
  * - 生成频率调整建议
  */
 export class SmartFrequencyAnalysisService {
-  private static instance: SmartFrequencyAnalysisService;
-
-  private constructor(
+  constructor(
     private reminderTemplateRepository: IReminderTemplateRepository,
     private prisma: PrismaClient,
   ) {}
 
   /**
-   * 创建服务实例
-   */
-  static async createInstance(
-    reminderTemplateRepository?: IReminderTemplateRepository,
-    prisma?: PrismaClient,
-  ): Promise<SmartFrequencyAnalysisService> {
-    const container = ReminderContainer.getInstance();
-    const templateRepo = reminderTemplateRepository || container.getReminderTemplateRepository();
-    const prismaClient = prisma || container.getPrismaClient();
-
-    SmartFrequencyAnalysisService.instance = new SmartFrequencyAnalysisService(
-      templateRepo,
-      prismaClient,
-    );
-    return SmartFrequencyAnalysisService.instance;
-  }
-
-  /**
    * 获取服务单例
    */
-  static async getInstance(): Promise<SmartFrequencyAnalysisService> {
-    if (!SmartFrequencyAnalysisService.instance) {
-      SmartFrequencyAnalysisService.instance = await SmartFrequencyAnalysisService.createInstance();
-    }
-    return SmartFrequencyAnalysisService.instance;
+  static getInstance(
+    reminderTemplateRepository: IReminderTemplateRepository,
+    prisma: PrismaClient,
+  ): SmartFrequencyAnalysisService {
+    return new SmartFrequencyAnalysisService(reminderTemplateRepository, prisma);
   }
 
   /**
    * 分析单个提醒模板的效果
-   * 
+   *
    * @param templateId - 提醒模板ID
    * @param lookbackDays - 回溯天数，默认30天
    * @returns 响应指标或null（数据不足时）
@@ -111,10 +90,10 @@ export class SmartFrequencyAnalysisService {
 
     // 2. 获取最近N天的响应记录
     const cutoffTime = BigInt(Date.now() - lookbackDays * 24 * 60 * 60 * 1000);
-    
+
     // TODO: 需要运行 Prisma migration 后才能使用 reminderResponse
     // @ts-ignore - reminderResponse 表还未创建,需要运行 migration
-    const responses = await this.prisma.reminderResponse.findMany({
+    const responses = (await this.prisma.reminderResponse.findMany({
       where: {
         templateUuid: templateId,
         timestamp: {
@@ -124,7 +103,7 @@ export class SmartFrequencyAnalysisService {
       orderBy: {
         timestamp: 'desc',
       },
-    }) as ReminderResponseRecord[];
+    })) as ReminderResponseRecord[];
 
     // 3. 数据不足，无法分析
     if (responses.length < 10) {
@@ -152,7 +131,7 @@ export class SmartFrequencyAnalysisService {
 
   /**
    * 分析账户下所有活跃模板
-   * 
+   *
    * @param accountUuid - 账户ID
    * @returns 全局分析报告
    */
@@ -189,8 +168,7 @@ export class SmartFrequencyAnalysisService {
     }
 
     // 3. 计算全局指标
-    const avgClickRate =
-      reports.reduce((sum, r) => sum + r.clickRate, 0) / (reports.length || 1);
+    const avgClickRate = reports.reduce((sum, r) => sum + r.clickRate, 0) / (reports.length || 1);
     const avgEffectivenessScore =
       reports.reduce((sum, r) => sum + r.effectivenessScore, 0) / (reports.length || 1);
 
@@ -211,7 +189,7 @@ export class SmartFrequencyAnalysisService {
 
   /**
    * 计算响应指标
-   * 
+   *
    * @private
    */
   private calculateMetrics(responses: ReminderResponseRecord[]): {
@@ -222,7 +200,9 @@ export class SmartFrequencyAnalysisService {
     effectivenessScore: number;
   } {
     const total = responses.length;
-    const clickedCount = responses.filter((r) => r.action === 'clicked' || r.action === 'completed').length;
+    const clickedCount = responses.filter(
+      (r) => r.action === 'clicked' || r.action === 'completed',
+    ).length;
     const ignoredCount = responses.filter((r) => r.action === 'ignored').length;
     const snoozeCount = responses.filter((r) => r.action === 'snoozed').length;
 
@@ -257,9 +237,9 @@ export class SmartFrequencyAnalysisService {
 
   /**
    * 计算效果评分
-   * 
+   *
    * 公式: (clickRate × 0.5) + ((100 - ignoreRate) × 0.3) + (responsiveness × 0.2)
-   * 
+   *
    * @private
    */
   private calculateEffectivenessScore(
@@ -284,7 +264,7 @@ export class SmartFrequencyAnalysisService {
 
   /**
    * 判断是否需要调整频率
-   * 
+   *
    * @returns 'decrease' | 'increase' | 'no_change'
    */
   shouldAdjustFrequency(
@@ -318,7 +298,7 @@ export class SmartFrequencyAnalysisService {
 
   /**
    * 生成频率调整建议
-   * 
+   *
    * @param templateId - 提醒模板ID
    * @returns 调整建议或null
    */

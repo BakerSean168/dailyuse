@@ -1,6 +1,5 @@
 import type { IReminderTemplateRepository } from '@dailyuse/domain-server/reminder';
 import { FrequencyAdjustment } from '@dailyuse/domain-server/reminder';
-import { ReminderContainer } from '@dailyuse/infrastructure-server';
 import { SmartFrequencyAnalysisService } from './SmartFrequencyAnalysisService';
 
 /**
@@ -17,48 +16,31 @@ export interface AdjustmentResult {
 
 /**
  * Frequency Adjustment Service
- * 
+ *
  * 职责：
  * - 应用频率调整建议
  * - 处理用户确认/拒绝调整
  * - 自动应用调整（当用户启用自动模式时）
  */
 export class FrequencyAdjustmentService {
-  private static instance: FrequencyAdjustmentService;
-
-  private constructor(
+  constructor(
     private reminderTemplateRepository: IReminderTemplateRepository,
     private analysisService: SmartFrequencyAnalysisService,
   ) {}
 
   /**
-   * 创建服务实例
-   */
-  static async createInstance(
-    reminderTemplateRepository?: IReminderTemplateRepository,
-    analysisService?: SmartFrequencyAnalysisService,
-  ): Promise<FrequencyAdjustmentService> {
-    const container = ReminderContainer.getInstance();
-    const templateRepo = reminderTemplateRepository || container.getReminderTemplateRepository();
-    const analysis = analysisService || (await SmartFrequencyAnalysisService.getInstance());
-
-    FrequencyAdjustmentService.instance = new FrequencyAdjustmentService(templateRepo, analysis);
-    return FrequencyAdjustmentService.instance;
-  }
-
-  /**
    * 获取服务单例
    */
-  static async getInstance(): Promise<FrequencyAdjustmentService> {
-    if (!FrequencyAdjustmentService.instance) {
-      FrequencyAdjustmentService.instance = await FrequencyAdjustmentService.createInstance();
-    }
-    return FrequencyAdjustmentService.instance;
+  static getInstance(
+    reminderTemplateRepository: IReminderTemplateRepository,
+    analysisService: SmartFrequencyAnalysisService,
+  ): FrequencyAdjustmentService {
+    return new FrequencyAdjustmentService(reminderTemplateRepository, analysisService);
   }
 
   /**
    * 用户接受调整建议
-   * 
+   *
    * @param templateId - 提醒模板ID
    */
   async acceptAdjustment(templateId: string): Promise<AdjustmentResult> {
@@ -96,7 +78,7 @@ export class FrequencyAdjustmentService {
 
   /**
    * 用户拒绝调整建议
-   * 
+   *
    * @param templateId - 提醒模板ID
    */
   async rejectAdjustment(templateId: string): Promise<void> {
@@ -112,7 +94,7 @@ export class FrequencyAdjustmentService {
 
   /**
    * 自动应用调整（不需要用户确认）
-   * 
+   *
    * @param templateId - 提醒模板ID
    * @param adjustment - 调整建议
    */
@@ -157,7 +139,7 @@ export class FrequencyAdjustmentService {
 
   /**
    * 建议调整但等待用户确认（手动模式）
-   * 
+   *
    * @param templateId - 提醒模板ID
    */
   async suggestAdjustment(templateId: string): Promise<AdjustmentResult | null> {
@@ -195,7 +177,7 @@ export class FrequencyAdjustmentService {
 
   /**
    * 批量处理自动调整
-   * 
+   *
    * @param accountUuid - 账户ID
    * @returns 调整结果列表
    */
@@ -233,10 +215,10 @@ export class FrequencyAdjustmentService {
 
   /**
    * 应用调整到 trigger 配置
-   * 
+   *
    * 注意：这里需要根据实际的 trigger 配置结构来实现
    * 目前暂时作为占位方法
-   * 
+   *
    * @private
    */
   private async applyAdjustment(

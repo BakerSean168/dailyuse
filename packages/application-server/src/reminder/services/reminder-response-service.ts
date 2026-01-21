@@ -1,5 +1,4 @@
 import type { PrismaClient } from '@prisma/client';
-import { ReminderContainer } from '@dailyuse/infrastructure-server';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ReminderResponseService');
@@ -20,40 +19,24 @@ export interface RecordResponseDTO {
 
 /**
  * Reminder Response Service
- * 
+ *
  * 职责：
  * - 记录用户对提醒的响应行为
  * - 为智能频率分析提供数据基础
  */
 export class ReminderResponseService {
-  private static instance: ReminderResponseService;
-
-  private constructor(private prisma: PrismaClient) {}
-
-  /**
-   * 创建服务实例
-   */
-  static async createInstance(prisma?: PrismaClient): Promise<ReminderResponseService> {
-    const container = ReminderContainer.getInstance();
-    const prismaClient = prisma || container.getPrismaClient();
-
-    ReminderResponseService.instance = new ReminderResponseService(prismaClient);
-    return ReminderResponseService.instance;
-  }
+  constructor(private prisma: PrismaClient) {}
 
   /**
    * 获取服务单例
    */
-  static async getInstance(): Promise<ReminderResponseService> {
-    if (!ReminderResponseService.instance) {
-      ReminderResponseService.instance = await ReminderResponseService.createInstance();
-    }
-    return ReminderResponseService.instance;
+  static getInstance(prisma: PrismaClient): ReminderResponseService {
+    return new ReminderResponseService(prisma);
   }
 
   /**
    * 记录响应行为
-   * 
+   *
    * @param dto - 响应记录DTO
    * @returns 创建的记录UUID
    */
@@ -94,7 +77,7 @@ export class ReminderResponseService {
 
   /**
    * 获取模板的响应记录
-   * 
+   *
    * @param templateUuid - 模板UUID
    * @param limit - 返回记录数量限制
    * @returns 响应记录列表
@@ -102,13 +85,15 @@ export class ReminderResponseService {
   async getResponsesByTemplate(
     templateUuid: string,
     limit: number = 100,
-  ): Promise<Array<{
-    uuid: string;
-    action: string;
-    responseTime: number | null;
-    timestamp: bigint;
-    createdAt: Date;
-  }>> {
+  ): Promise<
+    Array<{
+      uuid: string;
+      action: string;
+      responseTime: number | null;
+      timestamp: bigint;
+      createdAt: Date;
+    }>
+  > {
     try {
       // TODO: 需要运行 Prisma migration 后才能使用 reminderResponse
       // @ts-ignore - reminderResponse 表还未创建,需要运行 migration
@@ -134,7 +119,7 @@ export class ReminderResponseService {
 
   /**
    * 删除模板的所有响应记录
-   * 
+   *
    * @param templateUuid - 模板UUID
    * @returns 删除的记录数量
    */
@@ -167,7 +152,7 @@ export class ReminderResponseService {
 
   /**
    * 获取响应统计
-   * 
+   *
    * @param templateUuid - 模板UUID
    * @param lookbackDays - 回溯天数
    * @returns 响应统计信息

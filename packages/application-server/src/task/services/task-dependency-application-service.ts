@@ -37,23 +37,14 @@ export class TaskDependencyApplicationService {
     this.dependencyService = new TaskDependencyService();
   }
 
-    TaskDependencyApplicationService.instance = new TaskDependencyApplicationService(
-      domainService,
-      depRepo,
-      taskRepo,
-    );
-    return TaskDependencyApplicationService.instance;
-  }
-
   /**
-   * 获取应用服务单例
+   * 创建应用服务实例
    */
-  static async getInstance(): Promise<TaskDependencyApplicationService> {
-    if (!TaskDependencyApplicationService.instance) {
-      TaskDependencyApplicationService.instance =
-        await TaskDependencyApplicationService.createInstance();
-    }
-    return TaskDependencyApplicationService.instance;
+  static createInstance(
+    dependencyRepository: ITaskDependencyRepository,
+    taskRepository: ITaskTemplateRepository,
+  ): TaskDependencyApplicationService {
+    return new TaskDependencyApplicationService(dependencyRepository, taskRepository);
   }
 
   /**

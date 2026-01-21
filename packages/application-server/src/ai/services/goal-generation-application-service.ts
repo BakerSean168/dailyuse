@@ -37,15 +37,23 @@ import type {
 import { GenerationTaskType } from '@dailyuse/contracts/ai';
 import { randomUUID } from 'crypto';
 import { createLogger } from '@dailyuse/utils';
-import type { BaseAIAdapter, AIGenerationRequest } from '@dailyuse/infrastructure-server';
-import {
-  AIAdapterFactory,
-  QuotaEnforcementService,
-  GENERATE_GOAL_PROMPT,
-  getPromptTemplate,
-} from '@dailyuse/infrastructure-server';
 
 const logger = createLogger('GoalGenerationApplicationService');
+
+/**
+ * AI Adapter interface - to be provided by infrastructure layer
+ */
+export interface BaseAIAdapter {
+  generate(request: AIGenerationRequest): Promise<string>;
+}
+
+/**
+ * AI Generation Request interface
+ */
+export interface AIGenerationRequest {
+  prompt: string;
+  maxTokens?: number;
+}
 
 /**
  * 生成目标请求参数
@@ -99,6 +107,14 @@ export interface GenerateKeyResultsParams {
 }
 
 /**
+ * Quota Enforcement Service interface
+ */
+export interface IQuotaEnforcementService {
+  checkQuota(quota: any, amount: number): void;
+  consumeQuota(quota: any, amount: number): any;
+}
+
+/**
  * Goal Generation Application Service
  * 目标生成应用服务
  *
@@ -108,15 +124,14 @@ export interface GenerateKeyResultsParams {
  * - 支持用户自由切换 AI 提供商
  */
 export class GoalGenerationApplicationService {
-  private readonly quotaService: QuotaEnforcementService;
-
   constructor(
     private readonly validationService: AIGenerationValidationService,
     private readonly providerConfigRepository: IAIProviderConfigRepository,
     private readonly quotaRepository: IAIUsageQuotaRepository,
-  ) {
-    this.quotaService = new QuotaEnforcementService();
-  }
+    private readonly quotaService: IQuotaEnforcementService,
+    private readonly adapterFactory: any, // AIAdapterFactory
+    private readonly promptTemplate: string,
+  ) {}
 
   /**
    * 获取用户配置的 AI Adapter

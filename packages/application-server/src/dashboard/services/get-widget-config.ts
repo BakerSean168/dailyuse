@@ -7,42 +7,12 @@
 import type { IDashboardConfigRepository } from '@dailyuse/domain-server/dashboard';
 import { DashboardConfig } from '@dailyuse/domain-server/dashboard';
 import type { WidgetConfigResponse } from '@dailyuse/contracts/dashboard';
-import { DashboardContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Get Widget Config
  */
 export class GetWidgetConfig {
-  private static instance: GetWidgetConfig;
-
-  private constructor(private readonly configRepository: IDashboardConfigRepository) {}
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(configRepository?: IDashboardConfigRepository): GetWidgetConfig {
-    const container = DashboardContainer.getInstance();
-    const repo = configRepository || container.getDashboardConfigRepository();
-    GetWidgetConfig.instance = new GetWidgetConfig(repo);
-    return GetWidgetConfig.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): GetWidgetConfig {
-    if (!GetWidgetConfig.instance) {
-      GetWidgetConfig.instance = GetWidgetConfig.createInstance();
-    }
-    return GetWidgetConfig.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    GetWidgetConfig.instance = undefined as unknown as GetWidgetConfig;
-  }
+  constructor(private readonly configRepository: IDashboardConfigRepository) {}
 
   /**
    * 执行用例
