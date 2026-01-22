@@ -1,4 +1,9 @@
-import { GenerationTaskType, AIProvider, AIModel, TokenUsageServerDTO } from '@dailyuse/contracts/ai';
+import {
+  GenerationTaskType,
+  AIProvider,
+  AIModel,
+  type TokenUsageServerDTO,
+} from '@dailyuse/contracts/ai';
 
 export interface AIGenerationRequest {
   taskType: GenerationTaskType;
@@ -18,10 +23,10 @@ export interface AIGenerationResponse<T = unknown> {
 }
 
 export interface AIStreamChunk {
-  delta: string; 
-  fullText: string; 
-  isDone: boolean; 
-  tokenUsage?: TokenUsageServerDTO; 
+  delta: string;
+  fullText: string;
+  isDone: boolean;
+  tokenUsage?: TokenUsageServerDTO;
 }
 
 export interface IAIAdapter {

@@ -9,7 +9,6 @@ import type { ITaskStatisticsRepository } from '@dailyuse/domain-server/task';
 import type { IGoalStatisticsRepository } from '@dailyuse/domain-server/goal';
 import type { IReminderStatisticsRepository } from '@dailyuse/domain-server/reminder';
 import type { IScheduleStatisticsRepository } from '@dailyuse/domain-server/schedule';
-import type { IStatisticsCacheService } from '@dailyuse/domain-server/common';
 import { TaskStatistics } from '@dailyuse/domain-server/task';
 import { GoalStatistics } from '@dailyuse/domain-server/goal';
 import { ReminderStatistics } from '@dailyuse/domain-server/reminder';
@@ -30,8 +29,6 @@ const logger = createLogger('GetDashboardStatistics');
  * Get Dashboard Statistics
  */
 export class GetDashboardStatistics {
-  private static instance: GetDashboardStatistics | undefined;
-
   constructor(
     private readonly taskStatsRepo: ITaskStatisticsRepository,
     private readonly goalStatsRepo: IGoalStatisticsRepository,
@@ -39,30 +36,6 @@ export class GetDashboardStatistics {
     private readonly scheduleStatsRepo: IScheduleStatisticsRepository,
     private readonly cacheService?: IStatisticsCacheService,
   ) {}
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): GetDashboardStatistics {
-    if (!GetDashboardStatistics.instance) {
-      throw new Error('GetDashboardStatistics not initialized. Call setInstance() first.');
-    }
-    return GetDashboardStatistics.instance;
-  }
-
-  /**
-   * 设置服务单例
-   */
-  static setInstance(instance: GetDashboardStatistics): void {
-    GetDashboardStatistics.instance = instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    GetDashboardStatistics.instance = undefined;
-  }
 
   /**
    * 执行用例
@@ -236,11 +209,3 @@ export class GetDashboardStatistics {
     return Math.round(average * 100) / 100;
   }
 }
-
-/**
- * 便捷函数：获取 Dashboard 统计数据
- */
-export const getDashboardStatistics = (
-  accountUuid: string,
-): ReturnType<GetDashboardStatistics['execute']> =>
-  GetDashboardStatistics.getInstance().execute(accountUuid);

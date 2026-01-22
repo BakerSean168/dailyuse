@@ -22,36 +22,10 @@ const logger = createLogger('AIChatApplicationService');
  * AI Chat Application Service
  */
 export class AIChatApplicationService {
-  private static instance: AIChatApplicationService | undefined;
-
   constructor(
     private readonly conversationRepository: IAIConversationRepository,
     private readonly aiAdapter: IAIAdapter,
   ) {}
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): AIChatApplicationService {
-    if (!AIChatApplicationService.instance) {
-      throw new Error('AIChatApplicationService not initialized. Call setInstance() first.');
-    }
-    return AIChatApplicationService.instance;
-  }
-
-  /**
-   * 设置服务单例
-   */
-  static setInstance(instance: AIChatApplicationService): void {
-    AIChatApplicationService.instance = instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    AIChatApplicationService.instance = undefined;
-  }
 
   /**
    * Send a message and get a complete response
@@ -75,9 +49,9 @@ export class AIChatApplicationService {
 
     // 3. Call AI
     const request: AIGenerationRequest = {
-      taskType: GenerationTaskType.CHAT, // Assuming CHAT task type exists or we reuse generic
+      taskType: GenerationTaskType.GENERAL_CHAT,
       prompt: prompt,
-      systemPrompt: conversation.context || 'You are a helpful assistant.',
+      systemPrompt: 'You are a helpful assistant.',
       // provider/model handling would go here if adapter supports dynamic config or we swtich adapter
     };
 
@@ -120,9 +94,9 @@ export class AIChatApplicationService {
     const prompt = this.formatChatPrompt(history, content);
 
     const request: AIGenerationRequest = {
-      taskType: GenerationTaskType.CHAT,
+      taskType: GenerationTaskType.GENERAL_CHAT,
       prompt: prompt,
-      systemPrompt: conversation.context || 'You are a helpful assistant.',
+      systemPrompt: 'You are a helpful assistant.',
     };
 
     let fullContent = '';
@@ -192,10 +166,10 @@ export class AIChatApplicationService {
     });
     if (!conversation) return [];
     // Assuming messages are loaded
-    const messages = conversation.getMessages(); // Method on Aggregate or need to acccess propert?
+    const messages = conversation.getAllMessages?.() || []; // Get all messages from aggregate
     // If messages are private/protected, we rely on Repository `includeChildren` to populate them.
     // Aggregate root should expose them or we fetch usage DTO.
-    return messages.map((m) => m.toClientDTO());
+    return messages.map((m: any) => m.toClientDTO?.() || m);
   }
 
   private formatChatPrompt(history: MessageClientDTO[], newContent: string): string {
@@ -210,41 +184,3 @@ export class AIChatApplicationService {
     return prompt;
   }
 }
-
-/**
- * 便捷函数：发送消息
- */
-export const sendMessage = (
-  accountUuid: string,
-  conversationUuid: string,
-  content: string,
-  provider?: string,
-  model?: string,
-): ReturnType<AIChatApplicationService['sendMessage']> =>
-  AIChatApplicationService.getInstance().sendMessage(
-    accountUuid,
-    conversationUuid,
-    content,
-    provider,
-    model,
-  );
-
-/**
- * 便捷函数：流式发送消息
- */
-export const sendMessageStream = (
-  accountUuid: string,
-  conversationUuid: string,
-  content: string,
-  onChunk: (chunk: any) => void,
-  provider?: string,
-  model?: string,
-): ReturnType<AIChatApplicationService['sendMessageStream']> =>
-  AIChatApplicationService.getInstance().sendMessageStream(
-    accountUuid,
-    conversationUuid,
-    content,
-    onChunk,
-    provider,
-    model,
-  );

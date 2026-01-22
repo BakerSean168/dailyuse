@@ -7,7 +7,7 @@ import { GoalEventPublisher } from './GoalEventPublisher';
 /**
  * GoalReview 应用服务
  * 负责目标回顾的管理
- * 
+ *
  * 职责：
  * - 添加目标回顾
  * - 查询目标回顾历史
@@ -21,16 +21,6 @@ export class GoalReviewApplicationService {
   constructor(goalRepository: IGoalRepository) {
     this.domainService = new GoalDomainService();
     this.goalRepository = goalRepository;
-  }
-
-  /**
-   * 获取应用服务单例
-   */
-  static async getInstance(): Promise<GoalReviewApplicationService> {
-    if (!GoalReviewApplicationService.instance) {
-      GoalReviewApplicationService.instance = await GoalReviewApplicationService.createInstance();
-    }
-    return GoalReviewApplicationService.instance;
   }
 
   /**
@@ -67,4 +57,3 @@ export class GoalReviewApplicationService {
     return goal.toClientDTO();
   }
 }
-

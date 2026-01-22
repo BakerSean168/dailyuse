@@ -86,24 +86,24 @@ export class AccountDeletionApplicationService {
         throw new Error('Account not found');
       }
 
-      if (account.isDeleted) {
+      if (account.status === 'DELETED') {
         throw new Error('Account is already deleted');
       }
 
       // ===== 步骤 3: 验证密码 =====
-      const credential =
-        await this.credentialRepository.findByAccountUuid(account.uuid);
+      const credential = await this.credentialRepository.findByAccountUuid(account.uuid);
       if (!credential) {
         throw new Error('Authentication credential not found');
       }
 
       // 验证密码（bcrypt）
-      // 注意：这里假设 AuthCredential 有 comparePassword 方法或者直接比对
-      // 根据之前的代码猜测，它可能需要重新哈希？或者直接 invoke credential domain logic.
-      // 假设我们有 hash access.
-      // 原代码：const isValid = await bcrypt.compare(request.password, credential.passwordHash);
-      // 我需要确保 credential.passwordHash 是可访问的
-      const isValid = await bcrypt.compare(request.password, credential.passwordHash);
+      // 从 AuthCredential 获取 PasswordCredential
+      const passwordCredential = credential.passwordCredential;
+      if (!passwordCredential) {
+        throw new Error('Password credential not configured');
+      }
+
+      const isValid = await bcrypt.compare(request.password, passwordCredential.hashedPassword);
 
       if (!isValid) {
         throw new Error('Invalid password');
@@ -120,10 +120,7 @@ export class AccountDeletionApplicationService {
         await this.credentialRepository.save(credential, tx);
 
         // c. 注销会话
-        const sessions = await this.sessionRepository.findByAccountUuid(
-          request.accountUuid,
-          tx,
-        );
+        const sessions = await this.sessionRepository.findByAccountUuid(request.accountUuid, tx);
 
         for (const session of sessions) {
           session.revoke();
@@ -143,7 +140,7 @@ export class AccountDeletionApplicationService {
       return {
         success: true,
         message: 'Account deleted successfully',
-        deletedAt: result.account.deletedAt!.getTime(),
+        deletedAt: result.account.deletedAt || Date.now(),
         accountUuid: result.account.uuid,
       };
     } catch (error) {

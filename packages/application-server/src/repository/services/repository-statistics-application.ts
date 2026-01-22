@@ -32,14 +32,6 @@ export class RepositoryStatisticsService {
     );
   }
 
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    RepositoryStatisticsService.instance =
-      undefined as unknown as RepositoryStatisticsService;
-  }
-
   // ===== 统计查询 =====
 
   /**

@@ -6,7 +6,12 @@
 
 import type { IGoalFolderRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalFolderDomainService, GoalFolder, Goal } from '@dailyuse/domain-server/goal';
-import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
+import type {
+  GoalServerDTO,
+  GoalClientDTO,
+  KeyResultServerDTO,
+  GoalFolderClientDTO,
+} from '@dailyuse/contracts/goal';
 
 /**
  * GoalFolder 应用服务。
@@ -22,42 +27,14 @@ import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, GoalFolderClient
  * - 调用 Repository 进行持久化
  */
 export class GoalFolderApplicationService {
-  private static instance: GoalFolderApplicationService;
   private domainService: GoalFolderDomainService;
   private folderRepository: IGoalFolderRepository;
   private goalRepository: IGoalRepository;
 
-  private constructor(folderRepository: IGoalFolderRepository, goalRepository: IGoalRepository) {
+  constructor(folderRepository: IGoalFolderRepository, goalRepository: IGoalRepository) {
     this.domainService = new GoalFolderDomainService();
     this.folderRepository = folderRepository;
     this.goalRepository = goalRepository;
-  }
-
-  /**
-   * 创建应用服务实例（支持依赖注入）。
-   *
-   * @param folderRepository - 文件夹仓储
-   * @param goalRepository - 目标仓储
-   * @returns {GoalFolderApplicationService} 服务实例
-   */
-  static createInstance(
-    folderRepository: IGoalFolderRepository,
-    goalRepository: IGoalRepository,
-  ): GoalFolderApplicationService {
-    GoalFolderApplicationService.instance = new GoalFolderApplicationService(folderRepository, goalRepository);
-    return GoalFolderApplicationService.instance;
-  }
-
-  /**
-   * 获取应用服务单例。
-   *
-   * @returns {GoalFolderApplicationService} 单例实例
-   */
-  static getInstance(): GoalFolderApplicationService {
-    if (!GoalFolderApplicationService.instance) {
-      throw new Error('GoalFolderApplicationService instance not initialized. Call createInstance(folderRepo, goalRepo) first.');
-    }
-    return GoalFolderApplicationService.instance;
   }
 
   // ===== GoalFolder CRUD 操作 =====
@@ -294,10 +271,7 @@ export class GoalFolderApplicationService {
    * @param folderUuid - 目标文件夹 UUID (null 表示根目录)
    * @returns {Promise<GoalClientDTO>} 移动后的目标 DTO
    */
-  async moveGoalToFolder(
-    goalUuid: string,
-    folderUuid: string | null,
-  ): Promise<GoalClientDTO> {
+  async moveGoalToFolder(goalUuid: string, folderUuid: string | null): Promise<GoalClientDTO> {
     // 1. 查询目标
     const goal = await this.goalRepository.findById(goalUuid);
     if (!goal) {

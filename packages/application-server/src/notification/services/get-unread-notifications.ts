@@ -5,9 +5,7 @@
  */
 
 import { NotificationDomainService } from '@dailyuse/domain-server/notification';
-import type {
-  NotificationClientDTO,
-} from '@dailyuse/contracts/notification';
+import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import type {
   NotificationRepository as INotificationRepository,
   NotificationRepository as INotificationTemplateRepository,
@@ -33,23 +31,6 @@ export class GetUnreadNotifications {
     );
   }
 
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): GetUnreadNotifications {
-    if (!GetUnreadNotifications.instance) {
-      GetUnreadNotifications.instance = GetUnreadNotifications.createInstance();
-    }
-    return GetUnreadNotifications.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    GetUnreadNotifications.instance = undefined as unknown as GetUnreadNotifications;
-  }
-
   async execute(
     accountUuid: string,
     options?: { limit?: number },
@@ -62,15 +43,3 @@ export class GetUnreadNotifications {
     return this.domainService.getUnreadCount(accountUuid);
   }
 }
-
-/**
- * 便捷函数：获取未读通知
- */
-export const getUnreadNotifications = (
-  accountUuid: string,
-  options?: { limit?: number },
-): Promise<NotificationClientDTO[]> =>
-  GetUnreadNotifications.getInstance().execute(accountUuid, options);
-
-export const getUnreadNotificationCount = (accountUuid: string): Promise<number> =>
-  GetUnreadNotifications.getInstance().getCount(accountUuid);

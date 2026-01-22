@@ -4,7 +4,11 @@
  */
 
 import { eventBus } from '@dailyuse/utils';
-import type { TaskTemplateServerDTO, TaskInstanceServerDTO, TaskInstanceCompletedEvent } from '@dailyuse/contracts/task';
+import type {
+  TaskTemplateServerDTO,
+  TaskInstanceServerDTO,
+  TaskInstanceCompletedEvent,
+} from '@dailyuse/contracts/task';
 import { GoalRecordApplicationService } from '../services/GoalRecordApplicationService';
 import { createLogger } from '@dailyuse/utils';
 
@@ -14,18 +18,10 @@ const logger = createLogger('GoalTaskEventHandlers');
  * Goal 模块的 Task 事件处理器类
  */
 export class GoalTaskEventHandlers {
-  private static instance: GoalTaskEventHandlers;
   private recordService: GoalRecordApplicationService | null = null;
   private isInitialized = false;
 
-  private constructor() {}
-
-  static getInstance(): GoalTaskEventHandlers {
-    if (!this.instance) {
-      this.instance = new GoalTaskEventHandlers();
-    }
-    return this.instance;
-  }
+  constructor() {}
 
   /**
    * 初始化事件监听器
@@ -39,7 +35,7 @@ export class GoalTaskEventHandlers {
     logger.info('Initializing Goal module task event handlers...');
 
     // 获取 GoalRecordApplicationService 实例
-    this.recordService = await GoalRecordApplicationService.getInstance();
+    this.recordService = new GoalRecordApplicationService(repositoryFactory);
 
     // 监听任务完成事件
     eventBus.on('task.instance.completed', this.handleTaskInstanceCompleted.bind(this));
@@ -52,9 +48,7 @@ export class GoalTaskEventHandlers {
    * 处理任务实例完成事件
    * 当任务实例完成且有关联的目标绑定时，自动创建进度记录
    */
-  private async handleTaskInstanceCompleted(
-    event: TaskInstanceCompletedEvent,
-  ): Promise<void> {
+  private async handleTaskInstanceCompleted(event: TaskInstanceCompletedEvent): Promise<void> {
     const { payload } = event;
     const { goalBinding, title, completedAt, accountUuid } = payload;
 
@@ -73,15 +67,11 @@ export class GoalTaskEventHandlers {
       });
 
       // 创建进度记录
-      await this.recordService!.createGoalRecord(
-        goalBinding.goalUuid,
-        goalBinding.keyResultUuid,
-        {
-          value: goalBinding.incrementValue,
-          note: `完成任务：${title}`,
-          recordedAt: completedAt,
-        },
-      );
+      await this.recordService!.createGoalRecord(goalBinding.goalUuid, goalBinding.keyResultUuid, {
+        value: goalBinding.incrementValue,
+        note: `完成任务：${title}`,
+        recordedAt: completedAt,
+      });
 
       logger.info('✅ Progress record created successfully for task completion');
     } catch (error) {
@@ -115,4 +105,3 @@ export class GoalTaskEventHandlers {
     logger.info('✅ Goal module task event handlers destroyed');
   }
 }
-

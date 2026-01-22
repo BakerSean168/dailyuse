@@ -65,13 +65,14 @@ export class TaskEventHandler {
    */
   private static async handleTaskInstancesGenerated(event: DomainEvent): Promise<void> {
     const { accountUuid, payload } = event;
-    
+
     if (!accountUuid) {
       logger.error('[TaskEventHandler] Missing accountUuid in task.instances.generated event');
       return;
     }
 
-    const { templateUuid, templateTitle, instanceCount, instances, dateRange, strategy } = payload as any;
+    const { templateUuid, templateTitle, instanceCount, instances, dateRange, strategy } =
+      payload as any;
 
     logger.info('📦 [TaskEventHandler] Task instances generated', {
       accountUuid,
@@ -81,45 +82,8 @@ export class TaskEventHandler {
       strategy,
     });
 
-    // 通过 SSE 推送给前端
-    try {
-      const { SSEConnectionManager } = await import('../../../notification/interface/sseRoutes');
-      const sseManager = SSEConnectionManager.getInstance();
-      
-      // 根据策略构建推送数据
-      const pushData: any = {
-        templateUuid,
-        templateTitle,
-        instanceCount,
-        dateRange,
-        strategy, // 'full' 或 'summary'
-        timestamp: new Date().toISOString(),
-      };
-
-      // 如果是完整数据策略，包含实例数据
-      if (strategy === 'full' && instances) {
-        pushData.instances = instances;
-      }
-
-      const sent = sseManager.sendMessage(accountUuid, 'task:instances-generated', pushData);
-
-      if (sent) {
-        logger.info('📤 [SSE推送] task:instances-generated 事件已发送', {
-          accountUuid,
-          templateUuid,
-          instanceCount,
-          strategy,
-          dataSize: strategy === 'full' ? 'full' : 'summary-only',
-        });
-      } else {
-        logger.warn('⚠️ [SSE推送] task:instances-generated 事件发送失败（用户可能未连接）', {
-          accountUuid,
-          templateUuid,
-        });
-      }
-    } catch (error) {
-      logger.error('[TaskEventHandler] Failed to send SSE message:', error);
-    }
+    // TODO: 通过 SSE 推送给前端 - 应该通过事件总线由 infrastructure 层处理
+    // SSE 推送代码已移除，应该在 infrastructure 层通过监听领域事件来实现
   }
 
   /**
@@ -127,7 +91,7 @@ export class TaskEventHandler {
    */
   private static async handleTaskTemplateCreated(event: DomainEvent): Promise<void> {
     const { accountUuid, payload } = event as any;
-    
+
     if (!accountUuid) {
       return;
     }
@@ -137,18 +101,18 @@ export class TaskEventHandler {
       templateUuid: payload.templateUuid,
     });
 
-    // 推送给前端
-    try {
-      const { SSEConnectionManager } = await import('../../../notification/interface/sseRoutes');
-      const sseManager = SSEConnectionManager.getInstance();
-      
-      sseManager.sendMessage(accountUuid, 'task:template-created', {
-        template: payload.template,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (error) {
-      logger.error('[TaskEventHandler] Failed to send SSE message:', error);
-    }
+    // TODO: 推送给前端 - 应该通过事件总线由 infrastructure 层处理
+    // try {
+    //   const { SSEConnectionManager } = await import('../../../notification/interface/sseRoutes');
+    //   const sseManager = SSEConnectionManager.getInstance();
+    //
+    //   sseManager.sendMessage(accountUuid, 'task:template-created', {
+    //     template: payload.template,
+    //     timestamp: new Date().toISOString(),
+    //   });
+    // } catch (error) {
+    //   logger.error('[TaskEventHandler] Failed to send SSE message:', error);
+    // }
   }
 
   /**
@@ -156,7 +120,7 @@ export class TaskEventHandler {
    */
   private static async handleTaskInstanceCompleted(event: DomainEvent): Promise<void> {
     const { accountUuid, payload } = event as any;
-    
+
     if (!accountUuid) {
       return;
     }
@@ -166,18 +130,18 @@ export class TaskEventHandler {
       instanceUuid: payload.instanceUuid,
     });
 
-    // 推送给前端
-    try {
-      const { SSEConnectionManager } = await import('../../../notification/interface/sseRoutes');
-      const sseManager = SSEConnectionManager.getInstance();
-      
-      sseManager.sendMessage(accountUuid, 'task:instance-completed', {
-        instance: payload.instance,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (error) {
-      logger.error('[TaskEventHandler] Failed to send SSE message:', error);
-    }
+    // TODO: 推送给前端 - 应该通过事件总线由 infrastructure 层处理
+    // try {
+    //   const { SSEConnectionManager } = await import('../../../notification/interface/sseRoutes');
+    //   const sseManager = SSEConnectionManager.getInstance();
+    //
+    //   sseManager.sendMessage(accountUuid, 'task:instance-completed', {
+    //     instance: payload.instance,
+    //     timestamp: new Date().toISOString(),
+    //   });
+    // } catch (error) {
+    //   logger.error('[TaskEventHandler] Failed to send SSE message:', error);
+    // }
   }
 
   /**

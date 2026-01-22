@@ -6,30 +6,15 @@
 
 import type { IGoalFolderRepository } from '@dailyuse/domain-server/goal';
 
-
 /**
  * Delete Goal Folder Service
  */
 export class DeleteGoalFolder {
   constructor(private readonly goalFolderRepository: IGoalFolderRepository) {}
 
-
   /**
    * 获取服务单例
    */
-  static getInstance(): DeleteGoalFolder {
-    if (!DeleteGoalFolder.instance) {
-      DeleteGoalFolder.instance = DeleteGoalFolder.createInstance();
-    }
-    return DeleteGoalFolder.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    DeleteGoalFolder.instance = undefined as unknown as DeleteGoalFolder;
-  }
 
   async execute(uuid: string, accountUuid: string): Promise<void> {
     const folder = await this.goalFolderRepository.findById(uuid);

@@ -39,12 +39,7 @@ export { DeleteGoalFolder } from './delete-goal-folder';
 // Legacy: GoalApplicationService (保留向后兼容)
 // ============================================================
 
-export {
-  GoalApplicationService,
-  createGoalApplicationService,
-  type CreateGoalParams,
-  type UpdateGoalParams,
-} from './GoalApplicationService';
+export { GoalApplicationService } from './goal-application-service';
 
 export { GoalKeyResultApplicationService } from './goal-key-result-application-service';
 
@@ -53,4 +48,3 @@ export { GoalKeyResultApplicationService } from './goal-key-result-application-s
 // ============================================================
 
 export { WeightSnapshotApplicationService } from './weight-snapshot-application.service';
-

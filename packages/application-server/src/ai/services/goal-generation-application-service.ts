@@ -81,8 +81,6 @@ export interface GenerateKeyResultsParams {
  * Goal Generation Application Service
  */
 export class GoalGenerationApplicationService {
-  private static instance: GoalGenerationApplicationService | undefined;
-
   constructor(
     private readonly validationService: AIGenerationValidationService,
     private readonly providerConfigRepository: IAIProviderConfigRepository,
@@ -90,14 +88,6 @@ export class GoalGenerationApplicationService {
     private readonly quotaEnforcementService: IQuotaEnforcementService,
     private readonly adapterFactory: any, // AIAdapterFactory from domain layer
   ) {}
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): GoalGenerationApplicationService {
-    if (!GoalGenerationApplicationService.instance) {
-      throw new Error(
-        'GoalGenerationApplicationService not initialized. Call setInstance() first.',
       );
     }
     return GoalGenerationApplicationService.instance;

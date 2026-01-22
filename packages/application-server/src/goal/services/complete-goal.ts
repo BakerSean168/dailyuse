@@ -9,30 +9,11 @@ import { Goal } from '@dailyuse/domain-server/goal';
 import type { GoalResponse } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
 
-
 /**
  * Complete Goal Service
  */
 export class CompleteGoal {
   constructor(private readonly goalRepository: IGoalRepository) {}
-
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): CompleteGoal {
-    if (!CompleteGoal.instance) {
-      CompleteGoal.instance = CompleteGoal.createInstance();
-    }
-    return CompleteGoal.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    CompleteGoal.instance = undefined as unknown as CompleteGoal;
-  }
 
   async execute(uuid: string): Promise<GoalResponse> {
     const goal = await this.goalRepository.findById(uuid);
@@ -56,9 +37,3 @@ export class CompleteGoal {
     }
   }
 }
-
-/**
- * 便捷函数：完成目标
- */
-export const completeGoal = (uuid: string): Promise<GoalResponse> =>
-  CompleteGoal.getInstance().execute(uuid);

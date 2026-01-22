@@ -4,7 +4,10 @@
  * 用户注册应用服务
  */
 
-import type { IAuthCredentialRepository, IAuthSessionRepository } from '@dailyuse/domain-server/authentication';
+import type {
+  IAuthCredentialRepository,
+  IAuthSessionRepository,
+} from '@dailyuse/domain-server/authentication';
 import { AuthenticationDomainService, DeviceInfo } from '@dailyuse/domain-server/authentication';
 import type { RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
 import { eventBus } from '@dailyuse/utils';
@@ -23,16 +26,11 @@ export class Register {
   }
 
   /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    Register.instance = undefined as unknown as Register;
-  }
-
-  /**
    * 执行注册
    */
-  async execute(input: RegisterRequest & { hashedPassword?: string }): Promise<{ tokens: AuthTokens; user: { uuid: string; email: string; username: string } }> {
+  async execute(
+    input: RegisterRequest & { hashedPassword?: string },
+  ): Promise<{ tokens: AuthTokens; user: { uuid: string; email: string; username: string } }> {
     // 1. 验证输入
     this.validateInput(input);
 

@@ -28,24 +28,11 @@ export class StartSync {
     private readonly profileRepository: ISyncProfileRepository,
   ) {}
 
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): StartSync {
-    if (!StartSync.instance) {
-      StartSync.instance = StartSync.createInstance();
-    }
-    return StartSync.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    StartSync.instance = undefined as unknown as StartSync;
-  }
-
-  async execute(accountUuid: string, deviceInfo: DeviceInfoDTO, request: StartSyncRequest): Promise<StartSyncResponse> {
+  async execute(
+    accountUuid: string,
+    deviceInfo: DeviceInfoDTO,
+    request: StartSyncRequest,
+  ): Promise<StartSyncResponse> {
     // 1. 获取配置文件
     let profile: SyncProfile | null = null;
     if (request.profileId) {
@@ -70,12 +57,13 @@ export class StartSync {
 
     // 3. 确定同步参数
     const direction = request.direction ?? profile.syncConfig.direction;
-    const strategy = request.forceFullSync 
-      ? SyncStrategy.FULL 
+    const strategy = request.forceFullSync
+      ? SyncStrategy.FULL
       : (request.strategy ?? SyncStrategy.AUTO);
 
     // 4. 创建起始版本
-    const startVersion = profile.lastSyncVersion ?? SyncVersion.create(deviceInfo.deviceId).toServerDTO();
+    const startVersion =
+      profile.lastSyncVersion ?? SyncVersion.create(deviceInfo.deviceId).toServerDTO();
 
     // 5. 创建会话
     const session = SyncSession.create({
@@ -106,13 +94,3 @@ export class StartSync {
     };
   }
 }
-
-/**
- * 便捷函数：启动同步
- */
-export const startSync = (
-  accountUuid: string,
-  deviceInfo: DeviceInfoDTO,
-  request: StartSyncRequest,
-): Promise<StartSyncResponse> =>
-  StartSync.getInstance().execute(accountUuid, deviceInfo, request);

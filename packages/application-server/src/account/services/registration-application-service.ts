@@ -21,9 +21,7 @@
  * - 其他订阅者（邮件、统计等）：通过事件总线异步通知
  */
 
-import type {
-  AccountClientDTO,
-} from '@dailyuse/contracts/account';
+import type { AccountClientDTO } from '@dailyuse/contracts/account';
 import type { IAccountRepository } from '@dailyuse/domain-server/account';
 import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
 import { AccountDomainService } from '@dailyuse/domain-server/account';
@@ -109,10 +107,13 @@ export class RegistrationApplicationService {
 
       // ===== 步骤 5: 发布领域事件（事务成功后）=====
       const accountDTO = result.account.toClientDTO();
-      
-      eventBus.publish('account.created', {
-        account: accountDTO,
-        timestamp: new Date().toISOString(), 
+
+      eventBus.publish({
+        eventType: 'account.created',
+        payload: {
+          account: accountDTO,
+          timestamp: new Date().toISOString(),
+        },
       });
 
       logger.info('[RegistrationApplicationService] User registration successful', {
@@ -207,9 +208,9 @@ export class RegistrationApplicationService {
         accountUuid: account.uuid,
         hashedPassword,
       });
-      
+
       await this.credentialRepository.save(credential, tx);
-      
+
       return { account, credential };
     });
   }

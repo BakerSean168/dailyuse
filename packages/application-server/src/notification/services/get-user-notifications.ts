@@ -5,9 +5,7 @@
  */
 
 import { NotificationDomainService } from '@dailyuse/domain-server/notification';
-import type {
-  NotificationClientDTO,
-} from '@dailyuse/contracts/notification';
+import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import type {
   NotificationRepository as INotificationRepository,
   NotificationRepository as INotificationTemplateRepository,
@@ -33,23 +31,6 @@ export class GetUserNotifications {
     );
   }
 
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): GetUserNotifications {
-    if (!GetUserNotifications.instance) {
-      GetUserNotifications.instance = GetUserNotifications.createInstance();
-    }
-    return GetUserNotifications.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    GetUserNotifications.instance = undefined as unknown as GetUserNotifications;
-  }
-
   async execute(
     accountUuid: string,
     options?: { includeRead?: boolean; limit?: number; offset?: number },
@@ -58,12 +39,3 @@ export class GetUserNotifications {
     return notifications.map((n) => toNotificationClientDTO(n.toServerDTO()));
   }
 }
-
-/**
- * 便捷函数：获取用户通知
- */
-export const getUserNotifications = (
-  accountUuid: string,
-  options?: { includeRead?: boolean; limit?: number; offset?: number },
-): Promise<NotificationClientDTO[]> =>
-  GetUserNotifications.getInstance().execute(accountUuid, options);

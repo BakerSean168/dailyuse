@@ -29,23 +29,6 @@ export class MarkNotificationAsRead {
     );
   }
 
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): MarkNotificationAsRead {
-    if (!MarkNotificationAsRead.instance) {
-      MarkNotificationAsRead.instance = MarkNotificationAsRead.createInstance();
-    }
-    return MarkNotificationAsRead.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    MarkNotificationAsRead.instance = undefined as unknown as MarkNotificationAsRead;
-  }
-
   async execute(uuid: string): Promise<void> {
     await this.domainService.markAsRead(uuid);
   }
@@ -58,15 +41,3 @@ export class MarkNotificationAsRead {
     await this.domainService.markAllAsRead(accountUuid);
   }
 }
-
-/**
- * 便捷函数：标记通知为已读
- */
-export const markNotificationAsRead = (uuid: string): Promise<void> =>
-  MarkNotificationAsRead.getInstance().execute(uuid);
-
-export const markNotificationsAsRead = (uuids: string[]): Promise<void> =>
-  MarkNotificationAsRead.getInstance().executeMany(uuids);
-
-export const markAllNotificationsAsRead = (accountUuid: string): Promise<void> =>
-  MarkNotificationAsRead.getInstance().executeAll(accountUuid);

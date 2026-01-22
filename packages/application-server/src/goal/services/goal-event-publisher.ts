@@ -1,5 +1,5 @@
 import { eventBus, type DomainEvent } from '@dailyuse/utils';
-import { GoalStatisticsApplicationService } from './GoalStatisticsApplicationService';
+import { GoalStatisticsApplicationService } from './goal-statistics-application-service';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
@@ -383,14 +383,11 @@ export class GoalEventPublisher {
           return;
         }
 
-        console.log(
-          `🎯 [GoalEventPublisher] Task "${title}" completed, updating goal progress`,
-          {
-            goalUuid: goalBinding.goalUuid,
-            keyResultUuid: goalBinding.keyResultUuid,
-            incrementValue: goalBinding.incrementValue,
-          },
-        );
+        console.log(`🎯 [GoalEventPublisher] Task "${title}" completed, updating goal progress`, {
+          goalUuid: goalBinding.goalUuid,
+          keyResultUuid: goalBinding.keyResultUuid,
+          incrementValue: goalBinding.incrementValue,
+        });
 
         // 如果有指定关键结果，通过添加记录来增加进度
         if (goalBinding.keyResultUuid) {
@@ -399,14 +396,10 @@ export class GoalEventPublisher {
           const recordService = await GoalRecordApplicationService.getInstance();
 
           // 创建进度记录（会根据聚合方式自动更新关键结果进度）
-          await recordService.createGoalRecord(
-            goalBinding.goalUuid,
-            goalBinding.keyResultUuid,
-            {
-              value: goalBinding.incrementValue,
-              note: `任务完成: ${title}`,
-            },
-          );
+          await recordService.createGoalRecord(goalBinding.goalUuid, goalBinding.keyResultUuid, {
+            value: goalBinding.incrementValue,
+            note: `任务完成: ${title}`,
+          });
 
           console.log(
             `✅ [GoalEventPublisher] Added progress record for key result ${goalBinding.keyResultUuid} with value ${goalBinding.incrementValue}`,
@@ -476,6 +469,3 @@ export class GoalEventPublisher {
     this.isInitialized = false;
   }
 }
-
-
-

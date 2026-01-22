@@ -14,6 +14,6 @@ export type {
   TaskTemplateResumedEvent,
   TaskTemplateScheduleChangedEvent,
   TaskModuleEvent,
-} from '@dailyuse/contracts/modules/task/events';
+} from '@dailyuse/contracts/task';
 
-export { TaskEventTypes } from '@dailyuse/contracts/modules/task/events';
+export { TaskEventTypes } from '@dailyuse/contracts/task';

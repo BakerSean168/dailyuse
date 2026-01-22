@@ -13,23 +13,6 @@ import { eventBus } from '@dailyuse/utils';
 export class DeleteSyncProfile {
   constructor(private readonly profileRepository: ISyncProfileRepository) {}
 
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): DeleteSyncProfile {
-    if (!DeleteSyncProfile.instance) {
-      DeleteSyncProfile.instance = DeleteSyncProfile.createInstance();
-    }
-    return DeleteSyncProfile.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    DeleteSyncProfile.instance = undefined as unknown as DeleteSyncProfile;
-  }
-
   async execute(accountUuid: string, profileId: string): Promise<void> {
     const profile = await this.profileRepository.findByUuid(profileId);
     if (!profile) {
@@ -49,9 +32,3 @@ export class DeleteSyncProfile {
     });
   }
 }
-
-/**
- * 便捷函数：删除同步配置
- */
-export const deleteSyncProfile = (accountUuid: string, profileId: string): Promise<void> =>
-  DeleteSyncProfile.getInstance().execute(accountUuid, profileId);

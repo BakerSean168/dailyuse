@@ -2,12 +2,12 @@ import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalDomainService } from '@dailyuse/domain-server/goal';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { KeyResultValueType, AggregationMethod } from '@dailyuse/contracts/goal';
-import { GoalEventPublisher } from './GoalEventPublisher';
+import { GoalEventPublisher } from './goal-event-publisher';
 
 /**
  * GoalKeyResult 应用服务
  * 负责关键结果的管理
- * 
+ *
  * 职责：
  * - 添加关键结果
  * - 更新关键结果配置（标题、权重、目标值等）
@@ -133,10 +133,7 @@ export class GoalKeyResultApplicationService {
   /**
    * 删除关键结果
    */
-  async deleteKeyResult(
-    goalUuid: string,
-    keyResultUuid: string,
-  ): Promise<GoalClientDTO> {
+  async deleteKeyResult(goalUuid: string, keyResultUuid: string): Promise<GoalClientDTO> {
     // 1. 查询目标（包含子实体）
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
     if (!goal) {
@@ -156,4 +153,3 @@ export class GoalKeyResultApplicationService {
     return goal.toClientDTO(true);
   }
 }
-

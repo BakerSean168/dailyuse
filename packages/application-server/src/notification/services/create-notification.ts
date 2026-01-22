@@ -43,23 +43,6 @@ export class CreateNotification {
     );
   }
 
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): CreateNotification {
-    if (!CreateNotification.instance) {
-      CreateNotification.instance = CreateNotification.createInstance();
-    }
-    return CreateNotification.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    CreateNotification.instance = undefined as unknown as CreateNotification;
-  }
-
   async execute(params: {
     accountUuid: string;
     title: string;
@@ -124,19 +107,11 @@ export class CreateNotification {
 
         if (channels.includes(ChannelTypeEnum.IN_APP)) {
           sseManager.sendMessage(accountUuid, 'notification:popup-reminder', notificationData);
-          sseManager.sendMessage(
-            accountUuid,
-            'notification:system-notification',
-            notificationData,
-          );
+          sseManager.sendMessage(accountUuid, 'notification:system-notification', notificationData);
         }
 
         if (channels.includes(ChannelTypeEnum.PUSH)) {
-          sseManager.sendMessage(
-            accountUuid,
-            'notification:system-notification',
-            notificationData,
-          );
+          sseManager.sendMessage(accountUuid, 'notification:system-notification', notificationData);
         }
 
         if (clientDTO.metadata?.sound) {
@@ -161,9 +136,3 @@ export class CreateNotification {
     }
   }
 }
-
-/**
- * 便捷函数：创建通知
- */
-export const createNotification = (params: Parameters<CreateNotification['execute']>[0]): Promise<NotificationClientDTO> =>
-  CreateNotification.getInstance().execute(params);

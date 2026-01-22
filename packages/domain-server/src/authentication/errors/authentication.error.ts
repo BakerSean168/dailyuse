@@ -7,7 +7,7 @@
  * 认证错误基类
  */
 export abstract class AuthenticationError extends Error {
-  public readonly name: string;
+  public override readonly name: string;
   public readonly statusCode: number;
 
   constructor(message: string, name: string, statusCode: number = 400) {
@@ -119,7 +119,10 @@ export class TwoFactorAuthenticationError extends AuthenticationError {
 export class WeakPasswordError extends AuthenticationError {
   public readonly requirements: string[];
 
-  constructor(message: string = 'Password does not meet strength requirements', requirements: string[] = []) {
+  constructor(
+    message: string = 'Password does not meet strength requirements',
+    requirements: string[] = [],
+  ) {
     super(message, 'WeakPasswordError', 400);
     this.requirements = requirements;
     Object.setPrototypeOf(this, WeakPasswordError.prototype);

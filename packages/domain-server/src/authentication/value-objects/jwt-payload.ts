@@ -3,7 +3,7 @@
  * JWT 载荷值对象 - 表示解析后的 JWT 载荷中的数据
  */
 
-import type { JwtPayloadServer } from '@dailyuse/contracts/authentication';
+import type { JwtPayloadDTO } from '@dailyuse/contracts/authentication';
 
 /**
  * JWT Payload 值对象
@@ -62,7 +62,7 @@ export class JwtPayload {
    * 检查令牌是否已过期
    */
   public isExpired(nowSeconds?: number): boolean {
-    const now = (nowSeconds ?? Math.floor(Date.now() / 1000));
+    const now = nowSeconds ?? Math.floor(Date.now() / 1000);
     return this.exp < now;
   }
 
@@ -77,14 +77,14 @@ export class JwtPayload {
    * 获取令牌距离过期的剩余秒数
    */
   public getTimeToExpiry(nowSeconds?: number): number {
-    const now = (nowSeconds ?? Math.floor(Date.now() / 1000));
+    const now = nowSeconds ?? Math.floor(Date.now() / 1000);
     return Math.max(0, this.exp - now);
   }
 
   /**
    * 转换为 DTO
    */
-  public toDTO(): JwtPayloadServer {
+  public toDTO(): JwtPayloadDTO {
     return {
       accountUuid: this.accountUuid,
       type: this.type,
@@ -117,7 +117,7 @@ export class JwtPayload {
   /**
    * 从 DTO 创建值对象
    */
-  public static fromDTO(dto: JwtPayloadServer): JwtPayload {
+  public static fromDTO(dto: JwtPayloadDTO): JwtPayload {
     return new JwtPayload({
       accountUuid: dto.accountUuid,
       type: dto.type,

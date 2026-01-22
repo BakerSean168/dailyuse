@@ -5,63 +5,57 @@
  */
 
 // ===== Repository 用例 =====
-export { CreateRepository, createRepository } from './create-repository';
+export { CreateRepository } from './create-repository';
 export type { CreateRepositoryInput } from './create-repository';
 
-export { GetRepository, getRepository } from './get-repository';
+export { GetRepository } from './get-repository';
 
-export { ListRepositories, listRepositories } from './list-repositories';
+export { ListRepositories } from './list-repositories';
 
-export { UpdateRepositoryConfig, updateRepositoryConfig } from './update-repository-config';
+export { UpdateRepositoryConfig } from './update-repository-config';
 export type { UpdateRepositoryConfigInput } from './update-repository-config';
 
-export { UpdateRepositoryStats, updateRepositoryStats } from './update-repository-stats';
+export { UpdateRepositoryStats } from './update-repository-stats';
 export type { UpdateRepositoryStatsInput } from './update-repository-stats';
 
-export { ArchiveRepository, archiveRepository } from './archive-repository';
+export { ArchiveRepository } from './archive-repository';
 
-export { ActivateRepository, activateRepository } from './activate-repository';
+export { ActivateRepository } from './activate-repository';
 
-export { DeleteRepository, deleteRepository } from './delete-repository';
+export { DeleteRepository } from './delete-repository';
 
 // ===== Resource 用例 =====
-export { CreateResource, createResource } from './create-resource';
+export { CreateResource } from './create-resource';
 export type { CreateResourceInput } from './create-resource';
 
-export { GetResource, getResource as getResourceById } from './get-resource';
+export { GetResource } from './get-resource';
 
-export { ListResources, listResources as getResourcesByRepository } from './list-resources';
+export { ListResources } from './list-resources';
 
-export { UpdateResourceContent, updateResourceContent as updateMarkdownContent } from './update-resource-content';
+export { UpdateResourceContent } from './update-resource-content';
 export type { UpdateResourceContentInput } from './update-resource-content';
 
-export { DeleteResource, deleteResource } from './delete-resource';
+export { DeleteResource } from './delete-resource';
 
 // ===== Folder 用例 =====
-export { CreateFolder, createFolder } from './create-folder';
+export { CreateFolder } from './create-folder';
 export type { CreateFolderInput } from './create-folder';
 
-export { GetFolder, getFolder } from './get-folder';
+export { GetFolder } from './get-folder';
 
-export { GetFolderTree, getFolderTree } from './get-folder-tree';
+export { GetFolderTree } from './get-folder-tree';
 
-export { RenameFolder, renameFolder } from './rename-folder';
+export { RenameFolder } from './rename-folder';
 
-export { MoveFolder, moveFolder } from './move-folder';
+export { MoveFolder } from './move-folder';
 
-export { DeleteFolder, deleteFolder } from './delete-folder';
+export { DeleteFolder } from './delete-folder';
 
 // ===== Search Service =====
-export {
-  SearchService,
-  search,
-} from './search-application';
+export { SearchService, search } from './search-application';
 
 // ===== Tags Service =====
-export {
-  TagsService,
-  getTagStatistics,
-} from './tags-application';
+export { TagsService, getTagStatistics } from './tags-application';
 
 // ===== Repository Statistics Service =====
 export {
@@ -73,4 +67,3 @@ export {
   handleStatisticsUpdateEvent,
   deleteStatistics,
 } from './repository-statistics-application';
-

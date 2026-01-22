@@ -23,8 +23,9 @@ import type {
 import type { IAccountRepository, Account } from '@dailyuse/domain-server/account';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import { eventBus, createLogger } from '@dailyuse/utils';
-import { prisma } from '@/shared/infrastructure/config/prisma';
-import { getJwtConfig } from '@/shared/infrastructure/config/env.js';
+// TODO: Remove direct infrastructure dependencies - use dependency injection instead
+// import { prisma } from '@/shared/infrastructure/config/prisma';
+// import { getJwtConfig } from '@/shared/infrastructure/config/env.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -82,16 +83,19 @@ export class AuthenticationApplicationService {
   private sessionRepository: IAuthSessionRepository;
   private accountRepository: IAccountRepository;
   private authenticationDomainService: AuthenticationDomainService;
+  private jwtSecret: string;
 
   constructor(
     credentialRepository: IAuthCredentialRepository,
     sessionRepository: IAuthSessionRepository,
     accountRepository: IAccountRepository,
+    jwtSecret: string = process.env.JWT_SECRET || 'default-secret-change-in-production',
   ) {
     this.credentialRepository = credentialRepository;
     this.sessionRepository = sessionRepository;
     this.accountRepository = accountRepository;
     this.authenticationDomainService = new AuthenticationDomainService();
+    this.jwtSecret = jwtSecret;
   }
 
   /**
@@ -345,7 +349,7 @@ export class AuthenticationApplicationService {
     refreshToken: string;
     expiresAt: number;
   } {
-    const { secret } = getJwtConfig();
+    const secret = this.jwtSecret;
     const accessTokenExpiresIn = 3600; // 1 hour in seconds
     const refreshTokenExpiresIn = 30 * 24 * 3600; // 30 days in seconds（与 AuthSession 一致）
     const expiresAt = Date.now() + accessTokenExpiresIn * 1000; // milliseconds

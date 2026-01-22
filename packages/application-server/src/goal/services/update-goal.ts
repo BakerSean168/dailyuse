@@ -13,36 +13,10 @@ import { eventBus } from '@dailyuse/utils';
  * Update Goal Service
  */
 export class UpdateGoal {
-  private static instance: UpdateGoal;
   private readonly domainService: GoalDomainService;
 
-  private constructor(private readonly goalRepository: IGoalRepository) {
+  constructor(private readonly goalRepository: IGoalRepository) {
     this.domainService = new GoalDomainService();
-  }
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(goalRepository: IGoalRepository): UpdateGoal {
-    UpdateGoal.instance = new UpdateGoal(goalRepository);
-    return UpdateGoal.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): UpdateGoal {
-    if (!UpdateGoal.instance) {
-      throw new Error('UpdateGoal instance not initialized. Call createInstance() first.');
-    }
-    return UpdateGoal.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    UpdateGoal.instance = undefined as unknown as UpdateGoal;
   }
 
   async execute(uuid: string, input: UpdateGoalRequest): Promise<GoalResponse> {
@@ -74,9 +48,3 @@ export class UpdateGoal {
     }
   }
 }
-
-/**
- * 便捷函数：更新目标
- */
-export const updateGoal = (uuid: string, input: UpdateGoalRequest): Promise<GoalResponse> =>
-  UpdateGoal.getInstance().execute(uuid, input);

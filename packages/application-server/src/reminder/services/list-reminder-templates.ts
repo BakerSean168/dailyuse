@@ -4,7 +4,10 @@
  * 获取提醒模板列表
  */
 
-import type { IReminderTemplateRepository, ReminderTemplate } from '@dailyuse/domain-server/reminder';
+import type {
+  IReminderTemplateRepository,
+  ReminderTemplate,
+} from '@dailyuse/domain-server/reminder';
 import type {
   QueryReminderTemplatesRequest,
   ReminderTemplateListDTO,
@@ -15,27 +18,12 @@ import type {
  * List Reminder Templates Service
  */
 export class ListReminderTemplates {
-
   constructor(private readonly templateRepository: IReminderTemplateRepository) {}
 
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): ListReminderTemplates {
-    if (!ListReminderTemplates.instance) {
-      ListReminderTemplates.instance = ListReminderTemplates.createInstance();
-    }
-    return ListReminderTemplates.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    ListReminderTemplates.instance = undefined as unknown as ListReminderTemplates;
-  }
-
-  async execute(accountUuid: string, query?: QueryReminderTemplatesRequest): Promise<ReminderTemplateListDTO> {
+  async execute(
+    accountUuid: string,
+    query?: QueryReminderTemplatesRequest,
+  ): Promise<ReminderTemplateListDTO> {
     let templates: ReminderTemplate[];
 
     if (query?.groupUuid) {

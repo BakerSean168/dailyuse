@@ -14,23 +14,6 @@ import { eventBus } from '@dailyuse/utils';
 export class SetDefaultSyncProfile {
   constructor(private readonly profileRepository: ISyncProfileRepository) {}
 
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): SetDefaultSyncProfile {
-    if (!SetDefaultSyncProfile.instance) {
-      SetDefaultSyncProfile.instance = SetDefaultSyncProfile.createInstance();
-    }
-    return SetDefaultSyncProfile.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    SetDefaultSyncProfile.instance = undefined as unknown as SetDefaultSyncProfile;
-  }
-
   async execute(accountUuid: string, profileId: string): Promise<SyncProfileClientDTO> {
     const profile = await this.profileRepository.findByUuid(profileId);
     if (!profile) {
@@ -56,9 +39,3 @@ export class SetDefaultSyncProfile {
     return profile.toClientDTO();
   }
 }
-
-/**
- * 便捷函数：设置默认同步配置
- */
-export const setDefaultSyncProfile = (accountUuid: string, profileId: string): Promise<SyncProfileClientDTO> =>
-  SetDefaultSyncProfile.getInstance().execute(accountUuid, profileId);

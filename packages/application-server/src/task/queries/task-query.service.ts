@@ -16,10 +16,7 @@ import type {
   ITaskInstanceRepository,
 } from '@dailyuse/domain-server/task';
 import { calculateTaskPriority } from '@dailyuse/domain-server/task';
-import type {
-  TaskTemplateServerDTO,
-  TaskInstanceServerDTO,
-} from '@dailyuse/contracts/task';
+import type { TaskTemplateServerDTO, TaskInstanceServerDTO } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus, TimeType } from '@dailyuse/contracts/task';
 
 /**
@@ -95,43 +92,10 @@ export function enrichMultipleWithPriority<T extends TaskTemplateServerDTO | Tas
  * 集成优先级计算的任务查询服务
  */
 export class TaskQueryService {
-  private static instance: TaskQueryService;
-
-  private constructor(
+  constructor(
     private readonly templateRepository: ITaskTemplateRepository,
     private readonly instanceRepository: ITaskInstanceRepository,
   ) {}
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(
-    templateRepository?: ITaskTemplateRepository,
-    instanceRepository?: ITaskInstanceRepository,
-  ): TaskQueryService {
-    const container = TaskContainer.getInstance();
-    const templateRepo = templateRepository || container.getTemplateRepository();
-    const instanceRepo = instanceRepository || container.getInstanceRepository();
-    TaskQueryService.instance = new TaskQueryService(templateRepo, instanceRepo);
-    return TaskQueryService.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): TaskQueryService {
-    if (!TaskQueryService.instance) {
-      TaskQueryService.instance = TaskQueryService.createInstance();
-    }
-    return TaskQueryService.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    TaskQueryService.instance = undefined as unknown as TaskQueryService;
-  }
 
   /**
    * 获取单个任务模板并计算优先级
@@ -207,7 +171,11 @@ export class TaskQueryService {
     endDate: number,
     currentTime: Date = new Date(),
   ): Promise<Array<TaskInstanceServerDTO & { priority: number }>> {
-    const instances = await this.instanceRepository.findByDateRange(accountUuid, startDate, endDate);
+    const instances = await this.instanceRepository.findByDateRange(
+      accountUuid,
+      startDate,
+      endDate,
+    );
 
     const dtos = instances.map((i) => i.toServerDTO());
     return enrichMultipleWithPriority(dtos, currentTime);

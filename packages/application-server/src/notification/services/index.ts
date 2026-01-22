@@ -15,20 +15,22 @@
 // Notification Services
 // ============================================================
 
-export { CreateNotification, createNotification } from './create-notification';
-export { GetUserNotifications, getUserNotifications } from './get-user-notifications';
-export { GetUnreadNotifications, getUnreadNotifications, getUnreadNotificationCount } from './get-unread-notifications';
-export { MarkNotificationAsRead, markNotificationAsRead, markNotificationsAsRead, markAllNotificationsAsRead } from './mark-notification-as-read';
+export { CreateNotification } from './create-notification';
+export { GetUserNotifications } from './get-user-notifications';
+export { GetUnreadNotifications } from './get-unread-notifications';
+export { MarkNotificationAsRead } from './mark-notification-as-read';
 
 // ============================================================
 // Notification Preference Services
 // ============================================================
 
-export { GetNotificationPreference, getNotificationPreference, getOrCreateNotificationPreference } from './get-notification-preference';
+export { GetNotificationPreference } from './get-notification-preference';
 
 // ============================================================
 // DTO Converters
 // ============================================================
 
-export { toNotificationClientDTO, toNotificationPreferenceClientDTO } from './notification-dto-converters';
-
+export {
+  toNotificationClientDTO,
+  toNotificationPreferenceClientDTO,
+} from './notification-dto-converters';

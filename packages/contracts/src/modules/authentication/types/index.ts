@@ -14,11 +14,7 @@ export type {
 } from './account-storage';
 
 // Network State Types
-export type {
-  NetworkStatus,
-  NetworkStateChangeEvent,
-  NetworkCheckConfig,
-} from './network-state';
+export type { NetworkStatus, NetworkStateChangeEvent, NetworkCheckConfig } from './network-state';
 
 // Auth Status Types
 export type {
@@ -33,3 +29,6 @@ export type {
   LoginCredentials,
   EmailLoginCredentials,
 } from './auth-status';
+
+// JWT Payload Types
+export type { JwtPayloadDTO } from './jwt-payload';

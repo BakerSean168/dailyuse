@@ -61,10 +61,14 @@
     "@dailyuse/domain-server": "workspace:*",
     "@dailyuse/patterns": "workspace:*",
     "@dailyuse/utils": "workspace:*",
+    "bcryptjs": "^2.4.3",
     "cron-parser": "^5.4.0",
+    "jsonwebtoken": "^9.0.2",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/uuid": "^11.0.0",
     "typescript": "^5.9.3"
   },

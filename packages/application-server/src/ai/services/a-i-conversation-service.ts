@@ -17,33 +17,7 @@ const logger = createLogger('AIConversationService');
  * AI Conversation Service
  */
 export class AIConversationService {
-  private static instance: AIConversationService | undefined;
-
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): AIConversationService {
-    if (!AIConversationService.instance) {
-      throw new Error('AIConversationService not initialized. Call setInstance() first.');
-    }
-    return AIConversationService.instance;
-  }
-
-  /**
-   * 设置服务单例
-   */
-  static setInstance(instance: AIConversationService): void {
-    AIConversationService.instance = instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    AIConversationService.instance = undefined;
-  }
 
   /**
    * 创建新对话
@@ -270,55 +244,3 @@ export class AIConversationService {
     }
   }
 }
-
-/**
- * 便捷函数：创建对话
- */
-export const createConversation = (
-  accountUuid: string,
-  title?: string,
-): ReturnType<AIConversationService['createConversation']> =>
-  AIConversationService.getInstance().createConversation(accountUuid, title);
-
-/**
- * 便捷函数：获取对话
- */
-export const getConversation = (
-  conversationUuid: string,
-  includeMessages?: boolean,
-): ReturnType<AIConversationService['getConversation']> =>
-  AIConversationService.getInstance().getConversation(conversationUuid, includeMessages);
-
-/**
- * 便捷函数：列出对话
- */
-export const listConversations = (
-  accountUuid: string,
-): ReturnType<AIConversationService['listConversations']> =>
-  AIConversationService.getInstance().listConversations(accountUuid);
-
-/**
- * 便捷函数：删除对话
- */
-export const deleteConversation = (
-  conversationUuid: string,
-): ReturnType<AIConversationService['deleteConversation']> =>
-  AIConversationService.getInstance().deleteConversation(conversationUuid);
-
-/**
- * 便捷函数：更新对话标题
- */
-export const updateConversationTitle = (
-  conversationUuid: string,
-  title: string,
-): ReturnType<AIConversationService['updateConversationTitle']> =>
-  AIConversationService.getInstance().updateConversationTitle(conversationUuid, title);
-
-/**
- * 便捷函数：更新对话状态
- */
-export const updateConversationStatus = (
-  conversationUuid: string,
-  status: ConversationStatus,
-): ReturnType<AIConversationService['updateConversationStatus']> =>
-  AIConversationService.getInstance().updateConversationStatus(conversationUuid, status);

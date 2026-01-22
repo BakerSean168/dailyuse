@@ -18,7 +18,8 @@ import type { IAuthSessionRepository, AuthSession } from '@dailyuse/domain-serve
 import type { IAccountRepository, Account } from '@dailyuse/domain-server/account';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import { eventBus, createLogger } from '@dailyuse/utils';
-import { getJwtConfig } from '@/shared/infrastructure/config/env.js';
+// TODO: Remove direct infrastructure dependencies - use dependency injection instead
+// import { getJwtConfig } from '@/shared/infrastructure/config/env.js';
 import jwt from 'jsonwebtoken';
 
 const logger = createLogger('SessionManagementApplicationService');
@@ -75,18 +76,18 @@ export class SessionManagementApplicationService {
   private sessionRepository: IAuthSessionRepository;
   private accountRepository: IAccountRepository;
   private authenticationDomainService: AuthenticationDomainService;
+  private jwtSecret: string;
 
   constructor(
     sessionRepository: IAuthSessionRepository,
     accountRepository: IAccountRepository,
+    jwtSecret: string = process.env.JWT_SECRET || 'default-secret-change-in-production',
   ) {
     this.sessionRepository = sessionRepository;
     this.accountRepository = accountRepository;
     this.authenticationDomainService = new AuthenticationDomainService();
+    this.jwtSecret = jwtSecret;
   }
-
-
-
 
   /**
    * 刷新会话主流程
@@ -357,7 +358,7 @@ export class SessionManagementApplicationService {
     refreshToken: string;
     expiresAt: number;
   } {
-    const { secret } = getJwtConfig();
+    const secret = this.jwtSecret;
     const accessTokenExpiresIn = 3600; // 1 hour in seconds
     const refreshTokenExpiresIn = 30 * 24 * 3600; // 30 days in seconds（与 AuthSession 一致）
     const expiresAt = Date.now() + accessTokenExpiresIn * 1000; // milliseconds
@@ -394,7 +395,7 @@ export class SessionManagementApplicationService {
    * 🔥 生成 Refresh Token（独立方法，支持自定义有效期）
    */
   private generateRefreshToken(accountUuid: string, expiresIn: number = 30 * 24 * 3600): string {
-    const { secret } = getJwtConfig();
+    const secret = this.jwtSecret;
     const now = Math.floor(Date.now() / 1000);
 
     // Generate JWT refresh token (longer expiry, different payload)

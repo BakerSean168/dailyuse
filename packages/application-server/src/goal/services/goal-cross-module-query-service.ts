@@ -43,33 +43,7 @@ export interface KeyResultBindingOption {
  * Goal 模块跨模块查询服务
  */
 export class GoalCrossModuleQueryService {
-  private static instance: GoalCrossModuleQueryService | undefined;
-
   constructor(private readonly goalRepository: IGoalRepository) {}
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): GoalCrossModuleQueryService {
-    if (!GoalCrossModuleQueryService.instance) {
-      throw new Error('GoalCrossModuleQueryService not initialized. Call setInstance() first.');
-    }
-    return GoalCrossModuleQueryService.instance;
-  }
-
-  /**
-   * 设置服务单例
-   */
-  static setInstance(instance: GoalCrossModuleQueryService): void {
-    GoalCrossModuleQueryService.instance = instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    GoalCrossModuleQueryService.instance = undefined;
-  }
 
   /**
    * 获取可用于任务绑定的目标列表
@@ -153,28 +127,3 @@ export class GoalCrossModuleQueryService {
     }
   }
 }
-
-/**
- * 便捷函数：获取任务绑定的目标列表
- */
-export const getGoalsForTaskBinding = (
-  params: Parameters<GoalCrossModuleQueryService['getGoalsForTaskBinding']>[0],
-): ReturnType<GoalCrossModuleQueryService['getGoalsForTaskBinding']> =>
-  GoalCrossModuleQueryService.getInstance().getGoalsForTaskBinding(params);
-
-/**
- * 便捷函数：获取任务绑定的关键结果列表
- */
-export const getKeyResultsForTaskBinding = (
-  goalUuid: string,
-): ReturnType<GoalCrossModuleQueryService['getKeyResultsForTaskBinding']> =>
-  GoalCrossModuleQueryService.getInstance().getKeyResultsForTaskBinding(goalUuid);
-
-/**
- * 便捷函数：验证目标绑定
- */
-export const validateGoalBinding = (
-  goalUuid: string,
-  keyResultUuid: string,
-): ReturnType<GoalCrossModuleQueryService['validateGoalBinding']> =>
-  GoalCrossModuleQueryService.getInstance().validateGoalBinding(goalUuid, keyResultUuid);

@@ -12,34 +12,7 @@ import type { QueryGoalsRequest, GoalsResponse } from '@dailyuse/contracts/goal'
  * List Goals Service
  */
 export class ListGoals {
-  private static instance: ListGoals;
-
-  private constructor(private readonly goalRepository: IGoalRepository) {}
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(goalRepository: IGoalRepository): ListGoals {
-    ListGoals.instance = new ListGoals(goalRepository);
-    return ListGoals.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): ListGoals {
-    if (!ListGoals.instance) {
-      throw new Error('ListGoals instance not initialized. Call createInstance(repository) first.');
-    }
-    return ListGoals.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    ListGoals.instance = undefined as unknown as ListGoals;
-  }
+  constructor(private readonly goalRepository: IGoalRepository) {}
 
   async execute(input: QueryGoalsRequest): Promise<GoalsResponse> {
     const goals = await this.goalRepository.findByAccountUuid(input.accountUuid, {
@@ -56,9 +29,3 @@ export class ListGoals {
     };
   }
 }
-
-/**
- * 便捷函数：列出目标
- */
-export const listGoals = (input: QueryGoalsRequest): Promise<GoalsResponse> =>
-  ListGoals.getInstance().execute(input);

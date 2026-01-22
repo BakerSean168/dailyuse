@@ -8,7 +8,7 @@ import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalDomainService, Goal } from '@dailyuse/domain-server/goal';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
-import { GoalEventPublisher } from './GoalEventPublisher';
+import { GoalEventPublisher } from './goal-event-publisher';
 
 /**
  * 目标应用服务。
@@ -117,7 +117,7 @@ export class GoalApplicationService {
   ): Promise<GoalClientDTO[]> {
     const goals = await this.goalRepository.findByAccountUuid(accountUuid, options);
     const dtos = goals.map((g: Goal) => g.toClientDTO(true));
-    
+
     return dtos;
   }
 
@@ -183,11 +183,11 @@ export class GoalApplicationService {
     const reviewCount = reviews.length;
 
     const warnings: string[] = [];
-    
+
     if (keyResultCount > 0) {
       warnings.push(`该目标包含 ${keyResultCount} 个关键结果`);
     }
-    
+
     if (reviewCount > 0) {
       warnings.push(`该目标包含 ${reviewCount} 条复盘记录`);
     }

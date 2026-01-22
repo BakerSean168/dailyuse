@@ -46,8 +46,6 @@ const logger = createLogger('AIGenerationApplicationService');
  * AI Generation Application Service
  */
 export class AIGenerationApplicationService {
-  private static instance: AIGenerationApplicationService | undefined;
-
   constructor(
     private readonly validationService: AIGenerationValidationService,
     private readonly aiAdapter: IAIAdapter,
@@ -59,30 +57,6 @@ export class AIGenerationApplicationService {
     private readonly taskRepository?: IKnowledgeGenerationTaskRepository,
     private readonly documentService?: any, // DocumentApplicationService - 可选依赖避免循环
   ) {}
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): AIGenerationApplicationService {
-    if (!AIGenerationApplicationService.instance) {
-      throw new Error('AIGenerationApplicationService not initialized. Call setInstance() first.');
-    }
-    return AIGenerationApplicationService.instance;
-  }
-
-  /**
-   * 设置服务单例
-   */
-  static setInstance(instance: AIGenerationApplicationService): void {
-    AIGenerationApplicationService.instance = instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    AIGenerationApplicationService.instance = undefined;
-  }
 
   /**
    * 从用户想法生成 OKR 目标（Goal）

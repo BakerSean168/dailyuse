@@ -4,10 +4,7 @@
  * 记录待同步变更的应用服务
  */
 
-import {
-  PendingChange,
-  type IPendingChangeRepository,
-} from '@dailyuse/domain-server/sync';
+import { PendingChange, type IPendingChangeRepository } from '@dailyuse/domain-server/sync';
 import {
   ChangeOperationType,
   type PendingChangeClientDTO,
@@ -35,23 +32,6 @@ export interface RecordChangeParams {
 export class RecordPendingChange {
   constructor(private readonly changeRepository: IPendingChangeRepository) {}
 
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): RecordPendingChange {
-    if (!RecordPendingChange.instance) {
-      RecordPendingChange.instance = RecordPendingChange.createInstance();
-    }
-    return RecordPendingChange.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    RecordPendingChange.instance = undefined as unknown as RecordPendingChange;
-  }
-
   async execute(accountUuid: string, params: RecordChangeParams): Promise<PendingChangeClientDTO> {
     // 1. 检查是否已有相同实体的未同步变更
     const existingChanges = await this.changeRepository.findUnsyncedByEntityRef(
@@ -63,7 +43,7 @@ export class RecordPendingChange {
     // 2. 如果有未同步的创建操作，且当前是更新操作，合并
     if (existingChanges.length > 0 && params.operation === 'UPDATE') {
       const createChange = existingChanges.find(
-        (c: PendingChange) => c.operation === ChangeOperationType.CREATE
+        (c: PendingChange) => c.operation === ChangeOperationType.CREATE,
       );
       if (createChange) {
         await this.changeRepository.delete(createChange.uuid);
@@ -86,7 +66,7 @@ export class RecordPendingChange {
     // 3. 如果有未同步的变更且当前是删除操作
     if (existingChanges.length > 0 && params.operation === 'DELETE') {
       const createChange = existingChanges.find(
-        (c: PendingChange) => c.operation === ChangeOperationType.CREATE
+        (c: PendingChange) => c.operation === ChangeOperationType.CREATE,
       );
       if (createChange) {
         await this.changeRepository.deleteMany(existingChanges.map((c: PendingChange) => c.uuid));
@@ -133,9 +113,3 @@ export class RecordPendingChange {
     return change.toClientDTO();
   }
 }
-
-/**
- * 便捷函数：记录待同步变更
- */
-export const recordPendingChange = (accountUuid: string, params: RecordChangeParams): Promise<PendingChangeClientDTO> =>
-  RecordPendingChange.getInstance().execute(accountUuid, params);

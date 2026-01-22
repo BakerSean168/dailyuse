@@ -16,11 +16,13 @@ import { eventBus } from '@dailyuse/utils';
 export class CreateConversation {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
-  async execute(accountUuid: string, input: CreateConversationRequest): Promise<ConversationResponse> {
+  async execute(
+    accountUuid: string,
+    input: CreateConversationRequest,
+  ): Promise<ConversationResponse> {
     const conversation = AIConversation.create({
       accountUuid,
       title: input.title || 'New Conversation',
-      settings: input.settings,
     });
 
     await this.conversationRepository.save(conversation);
@@ -28,6 +30,8 @@ export class CreateConversation {
     // Publish event
     // await eventBus.publish(new ConversationCreatedEvent(conversation));
 
-    return conversation.toClientDTO();
+    return {
+      conversation: conversation.toClientDTO(),
+    };
   }
 }

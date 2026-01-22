@@ -2,7 +2,7 @@
  * Refresh Token Service
  *
  * 刷新访问令牌应用服务
- * 
+ *
  * 提供两种接口：
  * - execute(): 用于 Desktop 客户端（简化版本）
  * - executeForWeb(): 用于 Web API（JWT token 刷新）
@@ -21,9 +21,6 @@ const logger = createLogger('RefreshToken');
  */
 export class RefreshToken {
   constructor(private readonly sessionRepository: IAuthSessionRepository) {}
-  static resetInstance(): void {
-    RefreshToken.instance = undefined as unknown as RefreshToken;
-  }
 
   /**
    * 执行令牌刷新
@@ -62,7 +59,7 @@ export class RefreshToken {
 
   /**
    * 执行令牌刷新 (Web API 版本 - 从 apps/api 迁移)
-   * 
+   *
    * 使用 JWT refresh token 刷新 access token
    */
   async executeForWeb(params: { refreshToken: string }): Promise<{

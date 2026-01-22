@@ -30,36 +30,10 @@ export type AIAdapterFactoryFn = (provider: AIProviderConfigServerDTO) => Promis
  * AI Provider Config Application Service
  */
 export class AIProviderConfigService {
-  private static instance: AIProviderConfigService | undefined;
-
   constructor(
     private readonly providerRepository: IAIProviderConfigRepository,
     private readonly adapterFactory: AIAdapterFactoryFn,
   ) {}
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): AIProviderConfigService {
-    if (!AIProviderConfigService.instance) {
-      throw new Error('AIProviderConfigService not initialized. Call setInstance() first.');
-    }
-    return AIProviderConfigService.instance;
-  }
-
-  /**
-   * 设置服务单例
-   */
-  static setInstance(instance: AIProviderConfigService): void {
-    AIProviderConfigService.instance = instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    AIProviderConfigService.instance = undefined;
-  }
 
   /**
    * 创建新的 AI Provider 配置

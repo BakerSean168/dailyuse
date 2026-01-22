@@ -8,30 +8,15 @@ import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { Goal } from '@dailyuse/domain-server/goal';
 import { eventBus } from '@dailyuse/utils';
 
-
 /**
  * Delete Goal Service
  */
 export class DeleteGoal {
   constructor(private readonly goalRepository: IGoalRepository) {}
 
-
   /**
    * 获取服务单例
    */
-  static getInstance(): DeleteGoal {
-    if (!DeleteGoal.instance) {
-      DeleteGoal.instance = DeleteGoal.createInstance();
-    }
-    return DeleteGoal.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    DeleteGoal.instance = undefined as unknown as DeleteGoal;
-  }
 
   /**
    * 检查目标依赖项
@@ -97,9 +82,3 @@ export class DeleteGoal {
     }
   }
 }
-
-/**
- * 便捷函数：删除目标
- */
-export const deleteGoal = (uuid: string): Promise<void> =>
-  DeleteGoal.getInstance().execute(uuid);

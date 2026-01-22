@@ -14,23 +14,6 @@ import { SyncProfile } from '@dailyuse/domain-server/sync';
 export class ListSyncProfiles {
   constructor(private readonly profileRepository: ISyncProfileRepository) {}
 
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): ListSyncProfiles {
-    if (!ListSyncProfiles.instance) {
-      ListSyncProfiles.instance = ListSyncProfiles.createInstance();
-    }
-    return ListSyncProfiles.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    ListSyncProfiles.instance = undefined as unknown as ListSyncProfiles;
-  }
-
   async execute(accountUuid: string): Promise<SyncProfileListResponse> {
     const profiles = await this.profileRepository.findAll(accountUuid);
     const defaultProfile = profiles.find((p: SyncProfile) => p.isDefault);
@@ -44,9 +27,3 @@ export class ListSyncProfiles {
     };
   }
 }
-
-/**
- * 便捷函数：列出同步配置
- */
-export const listSyncProfiles = (accountUuid: string): Promise<SyncProfileListResponse> =>
-  ListSyncProfiles.getInstance().execute(accountUuid);

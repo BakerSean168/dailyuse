@@ -4,10 +4,7 @@
  * 记录同步冲突的应用服务
  */
 
-import {
-  SyncConflict,
-  type ISyncConflictRepository,
-} from '@dailyuse/domain-server/sync';
+import { SyncConflict, type ISyncConflictRepository } from '@dailyuse/domain-server/sync';
 import type {
   SyncConflictClientDTO,
   SyncVersionServerDTO,
@@ -36,23 +33,6 @@ export interface CreateConflictParams {
 export class RecordSyncConflict {
   constructor(private readonly conflictRepository: ISyncConflictRepository) {}
 
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): RecordSyncConflict {
-    if (!RecordSyncConflict.instance) {
-      RecordSyncConflict.instance = RecordSyncConflict.createInstance();
-    }
-    return RecordSyncConflict.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    RecordSyncConflict.instance = undefined as unknown as RecordSyncConflict;
-  }
-
   async execute(accountUuid: string, params: CreateConflictParams): Promise<SyncConflictClientDTO> {
     const conflict = SyncConflict.create({
       uuid: crypto.randomUUID(),
@@ -79,9 +59,3 @@ export class RecordSyncConflict {
     return conflict.toClientDTO();
   }
 }
-
-/**
- * 便捷函数：记录同步冲突
- */
-export const recordSyncConflict = (accountUuid: string, params: CreateConflictParams): Promise<SyncConflictClientDTO> =>
-  RecordSyncConflict.getInstance().execute(accountUuid, params);

@@ -9,7 +9,6 @@ import { GoalDomainService, Goal } from '@dailyuse/domain-server/goal';
 import type { CreateGoalRequest, GoalResponse } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
 
-
 /**
  * Create Goal Service
  */
@@ -18,23 +17,6 @@ export class CreateGoal {
 
   constructor(private readonly goalRepository: IGoalRepository) {
     this.domainService = new GoalDomainService();
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): CreateGoal {
-    if (!CreateGoal.instance) {
-      CreateGoal.instance = CreateGoal.createInstance();
-    }
-    return CreateGoal.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    CreateGoal.instance = undefined as unknown as CreateGoal;
   }
 
   async execute(accountUuid: string, input: CreateGoalRequest): Promise<GoalResponse> {
@@ -96,9 +78,3 @@ export class CreateGoal {
     }
   }
 }
-
-/**
- * 便捷函数：创建目标
- */
-export const createGoal = (accountUuid: string, input: CreateGoalRequest): Promise<GoalResponse> =>
-  CreateGoal.getInstance().execute(accountUuid, input);

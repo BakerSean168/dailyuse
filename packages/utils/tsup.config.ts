@@ -17,15 +17,11 @@ const config = baseLibraryConfig('@dailyuse/utils');
 export default {
   ...config,
   entry: ['src/index.ts', 'src/winston.ts', 'src/validation/index.ts'],
-  external: [...(config.external || []), 'winston', 'winston-daily-rotate-file', '@dailyuse/contracts'],
-  dts: {
-    resolve: true,  // ✅ 启用 DTS 生成，自动解析类型路径
-    compilerOptions: {
-      paths: {
-        '@dailyuse/contracts': ['../contracts/src'],
-        '@dailyuse/contracts/*': ['../contracts/src/*'],
-      },
-    },
-  },
+  external: [
+    ...(config.external || []),
+    'winston',
+    'winston-daily-rotate-file',
+    '@dailyuse/contracts',
+  ],
+  dts: true, // ✅ 启用 DTS 生成，让 @dailyuse/contracts 作为外部依赖
 };
-

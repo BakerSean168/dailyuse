@@ -36,25 +36,6 @@ export class DashboardStatisticsApplicationService {
   ) {}
 
   /**
-   * 获取应用服务单例
-   */
-  static getInstance(
-    taskStatsRepo: ITaskStatisticsRepository,
-    goalStatsRepo: IGoalStatisticsRepository,
-    reminderStatsRepo: IReminderStatisticsRepository,
-    scheduleStatsRepo: IScheduleStatisticsRepository,
-    cacheService: IStatisticsCacheService,
-  ): DashboardStatisticsApplicationService {
-    return new DashboardStatisticsApplicationService(
-      taskStatsRepo,
-      goalStatsRepo,
-      reminderStatsRepo,
-      scheduleStatsRepo,
-      cacheService,
-    );
-  }
-
-  /**
    * 获取 Dashboard 统计数据（带缓存）
    */
   async getDashboardStatistics(accountUuid: string): Promise<DashboardStatisticsClientDTO> {

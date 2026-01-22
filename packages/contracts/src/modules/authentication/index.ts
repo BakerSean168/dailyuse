@@ -202,4 +202,6 @@ export type {
   TokenStatusInfo,
   LoginCredentials,
   EmailLoginCredentials,
+  // JWT Payload
+  JwtPayloadDTO,
 } from './types';

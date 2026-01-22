@@ -11,36 +11,13 @@ import type { UpdateGoalFolderRequest, GoalFolderResponse } from '@dailyuse/cont
  * Update Goal Folder Service
  */
 export class UpdateGoalFolder {
-  private static instance: UpdateGoalFolder;
+  constructor(private readonly goalFolderRepository: IGoalFolderRepository) {}
 
-  private constructor(private readonly goalFolderRepository: IGoalFolderRepository) {}
-
-  /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(goalFolderRepository: IGoalFolderRepository): UpdateGoalFolder {
-    UpdateGoalFolder.instance = new UpdateGoalFolder(goalFolderRepository);
-    return UpdateGoalFolder.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): UpdateGoalFolder {
-    if (!UpdateGoalFolder.instance) {
-      throw new Error('UpdateGoalFolder instance not initialized. Call createInstance() first.');
-    }
-    return UpdateGoalFolder.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    UpdateGoalFolder.instance = undefined as unknown as UpdateGoalFolder;
-  }
-
-  async execute(uuid: string, accountUuid: string, input: UpdateGoalFolderRequest): Promise<GoalFolderResponse> {
+  async execute(
+    uuid: string,
+    accountUuid: string,
+    input: UpdateGoalFolderRequest,
+  ): Promise<GoalFolderResponse> {
     const folder = await this.goalFolderRepository.findById(uuid);
 
     if (!folder) {

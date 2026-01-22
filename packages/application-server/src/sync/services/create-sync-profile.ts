@@ -4,14 +4,8 @@
  * 创建同步配置文件的应用服务
  */
 
-import {
-  SyncProfile,
-  type ISyncProfileRepository,
-} from '@dailyuse/domain-server/sync';
-import type {
-  CreateSyncProfileRequest,
-  SyncProfileClientDTO,
-} from '@dailyuse/contracts/sync';
+import { SyncProfile, type ISyncProfileRepository } from '@dailyuse/domain-server/sync';
+import type { CreateSyncProfileRequest, SyncProfileClientDTO } from '@dailyuse/contracts/sync';
 import { eventBus } from '@dailyuse/utils';
 
 /**
@@ -20,24 +14,10 @@ import { eventBus } from '@dailyuse/utils';
 export class CreateSyncProfile {
   constructor(private readonly profileRepository: ISyncProfileRepository) {}
 
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): CreateSyncProfile {
-    if (!CreateSyncProfile.instance) {
-      CreateSyncProfile.instance = CreateSyncProfile.createInstance();
-    }
-    return CreateSyncProfile.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    CreateSyncProfile.instance = undefined as unknown as CreateSyncProfile;
-  }
-
-  async execute(accountUuid: string, request: CreateSyncProfileRequest): Promise<SyncProfileClientDTO> {
+  async execute(
+    accountUuid: string,
+    request: CreateSyncProfileRequest,
+  ): Promise<SyncProfileClientDTO> {
     // 1. 检查名称是否已存在
     const nameExists = await this.profileRepository.existsByName(accountUuid, request.name);
     if (nameExists) {
@@ -80,9 +60,3 @@ export class CreateSyncProfile {
     }
   }
 }
-
-/**
- * 便捷函数：创建同步配置
- */
-export const createSyncProfile = (accountUuid: string, request: CreateSyncProfileRequest): Promise<SyncProfileClientDTO> =>
-  CreateSyncProfile.getInstance().execute(accountUuid, request);

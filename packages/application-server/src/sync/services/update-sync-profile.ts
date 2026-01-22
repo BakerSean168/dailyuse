@@ -19,24 +19,10 @@ import { eventBus } from '@dailyuse/utils';
 export class UpdateSyncProfile {
   constructor(private readonly profileRepository: ISyncProfileRepository) {}
 
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): UpdateSyncProfile {
-    if (!UpdateSyncProfile.instance) {
-      UpdateSyncProfile.instance = UpdateSyncProfile.createInstance();
-    }
-    return UpdateSyncProfile.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    UpdateSyncProfile.instance = undefined as unknown as UpdateSyncProfile;
-  }
-
-  async execute(accountUuid: string, request: UpdateSyncProfileRequest): Promise<SyncProfileClientDTO> {
+  async execute(
+    accountUuid: string,
+    request: UpdateSyncProfileRequest,
+  ): Promise<SyncProfileClientDTO> {
     // 1. 查找配置
     const profile = await this.profileRepository.findByUuid(request.profileId);
     if (!profile) {
@@ -45,7 +31,11 @@ export class UpdateSyncProfile {
 
     // 2. 检查名称唯一性
     if (request.name && request.name !== profile.name) {
-      const nameExists = await this.profileRepository.existsByName(accountUuid, request.name, profile.uuid);
+      const nameExists = await this.profileRepository.existsByName(
+        accountUuid,
+        request.name,
+        profile.uuid,
+      );
       if (nameExists) {
         throw new Error(`同步配置名称 "${request.name}" 已存在`);
       }
@@ -75,9 +65,3 @@ export class UpdateSyncProfile {
     return profile.toClientDTO();
   }
 }
-
-/**
- * 便捷函数：更新同步配置
- */
-export const updateSyncProfile = (accountUuid: string, request: UpdateSyncProfileRequest): Promise<SyncProfileClientDTO> =>
-  UpdateSyncProfile.getInstance().execute(accountUuid, request);
