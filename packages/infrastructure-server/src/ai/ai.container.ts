@@ -1,7 +1,7 @@
 /**
  * AI Container (Server)
  *
- * 依赖注入容器，管理 AI 模块的 repository 实例
+ * 依赖注入容器，管�?AI 模块�?repository 实例
  */
 
 import type { 

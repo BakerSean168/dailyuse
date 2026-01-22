@@ -9,8 +9,8 @@ export class PrismaRepositoryRepository implements IRepositoryRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 将 Prisma 模型映射为领域实体
-   * Prisma 字段为 camelCase
+   * �?Prisma 模型映射为领域实�?
+   * Prisma 字段�?camelCase
    */
   private mapToEntity(data: PrismaRepository): Repository {
     return Repository.fromPersistenceDTO({
@@ -23,8 +23,8 @@ export class PrismaRepositoryRepository implements IRepositoryRepository {
       config: typeof data.config === 'string' ? data.config : JSON.stringify(data.config ?? {}),
       stats: typeof data.stats === 'string' ? data.stats : JSON.stringify(data.stats ?? {}),
       status: data.status as RepositoryStatus,
-      createdAt: Number(data.createdAt), // BigInt → number
-      updatedAt: Number(data.updatedAt), // BigInt → number
+      createdAt: Number(data.createdAt), // BigInt �?number
+      updatedAt: Number(data.updatedAt), // BigInt �?number
     });
   }
 
@@ -35,13 +35,13 @@ export class PrismaRepositoryRepository implements IRepositoryRepository {
       type: persistence.type,
       path: persistence.path,
       description: persistence.description,
-      config: JSON.parse(persistence.config), // string → Json
-      stats: JSON.parse(persistence.stats), // string → Json
+      config: JSON.parse(persistence.config), // string �?Json
+      stats: JSON.parse(persistence.stats), // string �?Json
       status: persistence.status,
-      updatedAt: BigInt(persistence.updatedAt), // number → BigInt
+      updatedAt: BigInt(persistence.updatedAt), // number �?BigInt
     };
 
-    // 检查是否已存在相同的 (accountUuid, path) 组合
+    // 检查是否已存在相同�?(accountUuid, path) 组合
     const existing = await this.prisma.repository.findFirst({
       where: {
         accountUuid: persistence.accountUuid,
@@ -56,12 +56,12 @@ export class PrismaRepositoryRepository implements IRepositoryRepository {
         data,
       });
     } else {
-      // 创建新仓储
+      // 创建新仓�?
       await this.prisma.repository.create({
         data: {
           uuid: persistence.uuid,
           accountUuid: persistence.accountUuid,
-          createdAt: BigInt(persistence.createdAt), // number → BigInt
+          createdAt: BigInt(persistence.createdAt), // number �?BigInt
           ...data,
         },
       });

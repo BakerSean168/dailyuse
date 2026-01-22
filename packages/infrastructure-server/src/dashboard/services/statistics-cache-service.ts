@@ -1,23 +1,23 @@
 /**
  * @file StatisticsCacheService.ts
- * @description 统计数据缓存服务，基于 Redis 实现。
+ * @description 统计数据缓存服务，基�?Redis 实现�?
  * @date 2025-01-22
  */
 
 import Redis from 'ioredis';
 import type { RedisOptions } from 'ioredis';
 import type { DashboardConfigServerDTO, WidgetConfigDTO, DashboardStatisticsClientDTO } from '@dailyuse/contracts/dashboard';
-import { getRedisConfig, env } from '@/shared/infrastructure/config/env.js';
+import { getRedisConfig, env } from '../../shared/config/env';
 
 /**
- * 统计数据缓存服务。
+ * 统计数据缓存服务�?
  *
  * @remarks
- * 负责管理仪表板统计数据的缓存。
- * - 使用 Redis 作为后端存储。
- * - 默认 TTL 为 5 分钟。
- * - 提供缓存读取、写入、失效和批量管理功能。
- * - 具备连接失败重试和错误处理机制。
+ * 负责管理仪表板统计数据的缓存�?
+ * - 使用 Redis 作为后端存储�?
+ * - 默认 TTL �?5 分钟�?
+ * - 提供缓存读取、写入、失效和批量管理功能�?
+ * - 具备连接失败重试和错误处理机制�?
  *
  * 架构层次：Infrastructure Layer
  */
@@ -27,18 +27,18 @@ export class StatisticsCacheService {
   private readonly keyPrefix = 'dashboard:statistics';
 
   constructor(redisUrl?: string) {
-    // 支持两种配置方式：
+    // 支持两种配置方式�?
     // 1. REDIS_URL (完整 URL): redis://:password@host:port/db
     // 2. 分离配置: REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_DB
     const redisConfig = getRedisConfig();
 
     if (redisUrl || env.REDIS_URL) {
-      // 使用 URL 方式 (ioredis 会自动解析 URL)
+      // 使用 URL 方式 (ioredis 会自动解�?URL)
       const url = redisUrl || env.REDIS_URL!;
       this.redis = new Redis(url, {
         retryStrategy: (times: number) => {
           const delay = Math.min(times * 50, 2000);
-          console.warn(`[StatisticsCache] Redis 连接失败，${delay}ms 后重试 (尝试 ${times} 次)`);
+          console.warn(`[StatisticsCache] Redis 连接失败�?{delay}ms 后重�?(尝试 ${times} �?`);
           return delay;
         },
         maxRetriesPerRequest: 3,
@@ -54,7 +54,7 @@ export class StatisticsCacheService {
         db: env.REDIS_DB,
         retryStrategy: (times: number) => {
           const delay = Math.min(times * 50, 2000);
-          console.warn(`[StatisticsCache] Redis 连接失败，${delay}ms 后重试 (尝试 ${times} 次)`);
+          console.warn(`[StatisticsCache] Redis 连接失败�?{delay}ms 后重�?(尝试 ${times} �?`);
           return delay;
         },
         maxRetriesPerRequest: 3,
@@ -64,20 +64,20 @@ export class StatisticsCacheService {
     }
 
     this.redis.on('connect', () => {
-      console.log('[StatisticsCache] ✅ Redis 连接成功');
+      console.log('[StatisticsCache] �?Redis 连接成功');
     });
 
     this.redis.on('error', (error) => {
-      console.error('[StatisticsCache] ❌ Redis 连接错误:', error.message);
+      console.error('[StatisticsCache] �?Redis 连接错误:', error.message);
     });
 
     this.redis.on('reconnecting', () => {
-      console.log('[StatisticsCache] 🔄 Redis 重新连接中...');
+      console.log('[StatisticsCache] 🔄 Redis 重新连接�?..');
     });
   }
 
   /**
-   * 生成缓存键。
+   * 生成缓存键�?
    *
    * @param userId - 用户 ID
    * @returns Redis 键名
@@ -87,10 +87,10 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 获取缓存的统计数据。
+   * 获取缓存的统计数据�?
    *
    * @param userId - 用户 ID
-   * @returns {Promise<DashboardStatisticsClientDTO | null>} 统计数据或 null
+   * @returns {Promise<DashboardStatisticsClientDTO | null>} 统计数据�?null
    */
   async get(userId: string): Promise<DashboardStatisticsClientDTO | null> {
     const key = this.getCacheKey(userId);
@@ -99,11 +99,11 @@ export class StatisticsCacheService {
       const cached = await this.redis.get(key);
 
       if (!cached) {
-        console.log(`[StatisticsCache] 缓存未命中: ${key}`);
+        console.log(`[StatisticsCache] 缓存未命�? ${key}`);
         return null;
       }
 
-      console.log(`[StatisticsCache] ✅ 缓存命中: ${key}`);
+      console.log(`[StatisticsCache] �?缓存命中: ${key}`);
       return JSON.parse(cached);
     } catch (error) {
       console.error(
@@ -115,7 +115,7 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 设置缓存数据。
+   * 设置缓存数据�?
    *
    * @param userId - 用户 ID
    * @param data - 统计数据
@@ -128,7 +128,7 @@ export class StatisticsCacheService {
       const serialized = JSON.stringify(data);
       await this.redis.setex(key, this.ttlSeconds, serialized);
 
-      console.log(`[StatisticsCache] 缓存已设置: ${key} (TTL: ${this.ttlSeconds}s)`);
+      console.log(`[StatisticsCache] 缓存已设�? ${key} (TTL: ${this.ttlSeconds}s)`);
     } catch (error) {
       console.error(
         `[StatisticsCache] 缓存写入失败: ${key}`,
@@ -139,7 +139,7 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 删除缓存数据（主动失效）。
+   * 删除缓存数据（主动失效）�?
    *
    * @param userId - 用户 ID
    * @returns {Promise<void>}
@@ -151,7 +151,7 @@ export class StatisticsCacheService {
       const deleted = await this.redis.del(key);
 
       if (deleted > 0) {
-        console.log(`[StatisticsCache] 🗑️  缓存已失效: ${key}`);
+        console.log(`[StatisticsCache] 🗑�? 缓存已失�? ${key}`);
       } else {
         console.log(`[StatisticsCache] 缓存不存在，无需失效: ${key}`);
       }
@@ -164,7 +164,7 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 批量删除缓存（用于管理操作）。
+   * 批量删除缓存（用于管理操作）�?
    *
    * @param pattern - 键名匹配模式
    * @returns {Promise<number>} 删除的键数量
@@ -179,7 +179,7 @@ export class StatisticsCacheService {
       }
 
       const deleted = await this.redis.del(...keys);
-      console.log(`[StatisticsCache] 🗑️  批量删除 ${deleted} 个缓存键: ${pattern}`);
+      console.log(`[StatisticsCache] 🗑�? 批量删除 ${deleted} 个缓存键: ${pattern}`);
 
       return deleted;
     } catch (error) {
@@ -192,10 +192,10 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 获取缓存的剩余 TTL。
+   * 获取缓存的剩�?TTL�?
    *
    * @param userId - 用户 ID
-   * @returns {Promise<number>} 剩余秒数，-2 表示不存在，-1 表示无过期时间
+   * @returns {Promise<number>} 剩余秒数�?2 表示不存在，-1 表示无过期时�?
    */
   async getTtl(userId: string): Promise<number> {
     const key = this.getCacheKey(userId);
@@ -212,7 +212,7 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 检查 Redis 连接状态。
+   * 检�?Redis 连接状态�?
    *
    * @returns {Promise<boolean>} 是否连接正常
    */
@@ -230,7 +230,7 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 关闭 Redis 连接。
+   * 关闭 Redis 连接�?
    *
    * @returns {Promise<void>}
    */
@@ -240,7 +240,7 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 获取缓存统计信息。
+   * 获取缓存统计信息�?
    *
    * @returns {Promise<object>} 统计信息（键数量、内存使用、连接状态）
    */

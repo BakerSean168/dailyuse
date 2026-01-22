@@ -25,8 +25,24 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('ReminderApplicationService');
 
 /**
- * Reminder Application Service
- * Responsible for coordinating domain services and repositories to handle reminder cases.
+ * @deprecated Use individual services instead
+ * 
+ * Reminder Application Service (Legacy)
+ * This service is deprecated and kept for backward compatibility only.
+ * 
+ * Each operation has been extracted into its own service:
+ * - CreateReminderTemplate: Create new reminder templates
+ * - GetReminderTemplate: Retrieve single reminder template
+ * - ListReminderTemplates: List templates with filtering
+ * - UpdateReminderTemplate: Update existing templates
+ * - DeleteReminderTemplate: Delete templates
+ * 
+ * This approach follows the Single Responsibility Principle and matches the
+ * pattern established in the goal module, making each service easier to test,
+ * maintain, and extend independently.
+ * 
+ * NEW CODE SHOULD NOT USE THIS SERVICE.
+ * Use the individual services exported from index.ts instead.
  */
 export class ReminderApplicationService {
   private domainService: ReminderDomainService;
@@ -59,18 +75,17 @@ export class ReminderApplicationService {
     priority?: ImportanceLevel;
     accountUuid: string;
   }): Promise<ReminderTemplateClientDTO> {
-    const template = await this.domainService.createTemplate({
+    const template = await this.domainService.createReminderTemplate({
       title: params.title,
       description: params.description,
       type: params.type,
-      triggerType: params.triggerType,
-      triggerConfig: params.triggerConfig,
-      activeTimeConfig: params.activeTimeConfig,
-      notificationConfig: params.notificationConfig,
-      recurrenceConfig: params.recurrenceConfig,
-      activeHoursConfig: params.activeHoursConfig,
+      trigger: params.triggerConfig || {} as any,
+      activeTime: params.activeTimeConfig || {} as any,
+      notificationConfig: params.notificationConfig || {} as any,
+      recurrence: params.recurrenceConfig,
+      activeHours: params.activeHoursConfig,
       groupUuid: params.groupUuid,
-      priority: params.priority,
+      importanceLevel: params.priority,
       accountUuid: params.accountUuid,
     });
     
@@ -78,37 +93,46 @@ export class ReminderApplicationService {
   }
 
   async updateReminderTemplate(
-      uuid: string, 
-      request: UpdateReminderTemplateRequest
+    uuid: string, 
+    request: UpdateReminderTemplateRequest
   ): Promise<ReminderTemplateClientDTO> {
-    const template = await this.reminderTemplateRepository.findByUuid(uuid);
+    const template = await this.reminderTemplateRepository.findById(uuid);
     if (!template) {
-        throw new Error(`Reminder Template ${uuid} not found`);
+      throw new Error(`Reminder Template ${uuid} not found`);
     }
 
-    // Map request to domain entity update
-    // Simplified for refactor - ideally delegated to domain or mapped carefully
-    if (request.title !== undefined) template.title = request.title;
-    if (request.description !== undefined) template.description = request.description;
-    
-    // ... map other fields ...
+    // Use domain entity's update method
+    template.update({
+      title: request.title,
+      description: request.description,
+      trigger: request.trigger,
+      activeTime: request.activeTime,
+      notificationConfig: request.notificationConfig,
+      recurrence: request.recurrence,
+      activeHours: request.activeHours,
+      importanceLevel: request.importanceLevel,
+      tags: request.tags,
+      color: request.color,
+      icon: request.icon,
+      groupUuid: request.groupUuid,
+    });
     
     await this.reminderTemplateRepository.save(template);
     return template.toClientDTO();
   }
 
   async deleteReminderTemplate(uuid: string): Promise<void> {
-    await this.reminderTemplateRepository.delete(uuid);
+    await this.domainService.deleteTemplate(uuid);
   }
 
   async getReminderTemplate(uuid: string): Promise<ReminderTemplateClientDTO | null> {
-    const template = await this.reminderTemplateRepository.findByUuid(uuid);
+    const template = await this.reminderTemplateRepository.findById(uuid);
     return template ? template.toClientDTO() : null;
   }
 
   async getReminderTemplatesByAccount(accountUuid: string): Promise<ReminderTemplateClientDTO[]> {
-    const templates = await this.reminderTemplateRepository.findByAccount(accountUuid);
-    return templates.map(t => t.toClientDTO());
+    const templates = await this.reminderTemplateRepository.findByAccountUuid(accountUuid);
+    return templates.map((t: any) => t.toClientDTO());
   }
 
   // ===== Reminder Group Management =====
@@ -132,8 +156,8 @@ export class ReminderApplicationService {
   }
 
   async getReminderGroupsByAccount(accountUuid: string): Promise<ReminderGroupClientDTO[]> {
-    const groups = await this.reminderGroupRepository.findByAccount(accountUuid);
-    return groups.map(g => g.toClientDTO());
+    const groups = await this.reminderGroupRepository.findByAccountUuid(accountUuid);
+    return groups.map((g: any) => g.toClientDTO());
   }
 
 }

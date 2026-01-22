@@ -137,5 +137,5 @@ export class TagsService {
 
 // ===== 便捷函数 =====
 
-export const getTagStatistics = (repositoryUuid: string) =>
-  TagsService.getInstance().getTagStatistics(repositoryUuid);
+export const createTagsService = (resourceRepository: IResourceRepository) =>
+  new TagsService(resourceRepository);

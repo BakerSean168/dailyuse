@@ -1,10 +1,10 @@
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { INotificationPreferenceRepository } from '@dailyuse/domain-server/notification';
 import { NotificationPreference } from '@dailyuse/domain-server/notification';
 
 /**
  * NotificationPreference Prisma 仓储实现
- * 简单聚合根，无子实体
+ * 简单聚合根，无子实�?
  * JSON 字段：category_preferences, doNotDisturb, rateLimits
  */
 export class PrismaNotificationPreferenceRepository implements INotificationPreferenceRepository {

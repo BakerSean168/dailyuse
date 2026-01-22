@@ -4,13 +4,18 @@
  * 失效 Dashboard 缓存
  */
 
-import type { IStatisticsCacheService } from '@dailyuse/domain-server/dashboard';
+/**
+ * Cache service interface
+ */
+interface ICacheService {
+  invalidate(accountUuid: string): Promise<void>;
+}
 
 /**
  * Invalidate Dashboard Cache
  */
 export class InvalidateDashboardCache {
-  constructor(private readonly cacheService: IStatisticsCacheService) {}
+  constructor(private readonly cacheService: ICacheService) {}
 
   /**
    * 执行用例

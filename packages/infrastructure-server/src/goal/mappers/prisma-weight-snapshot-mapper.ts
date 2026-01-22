@@ -1,8 +1,8 @@
 /**
  * Prisma Weight Snapshot Mapper
- * 权重快照 Prisma 映射器
+ * 权重快照 Prisma 映射�?
  *
- * 负责在 Domain 对象和 Prisma 模型之间进行转换。
+ * 负责�?Domain 对象�?Prisma 模型之间进行转换�?
  */
 
 import { KeyResultWeightSnapshot } from '@dailyuse/domain-server/goal';
@@ -11,8 +11,8 @@ import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, SnapshotTrigger 
 
 
 /**
- * Prisma Weight Snapshot 类型 (生成后可用)
- * 注意: 需要在 prisma generate 后才能使用具体类型
+ * Prisma Weight Snapshot 类型 (生成后可�?
+ * 注意: 需要在 prisma generate 后才能使用具体类�?
  */
 type PrismaWeightSnapshot = {
   uuid: string;
@@ -32,18 +32,18 @@ type PrismaWeightSnapshot = {
  * Weight Snapshot Mapper
  *
  * **职责**:
- * - Domain对象 → Prisma模型 (toPrisma)
- * - Prisma模型 → Domain对象 (toDomain)
+ * - Domain对象 �?Prisma模型 (toPrisma)
+ * - Prisma模型 �?Domain对象 (toDomain)
  * - 处理类型转换 (BigInt, Date, etc.)
  */
 export class PrismaWeightSnapshotMapper {
   /**
-   * Domain 转 Prisma Create Input
+   * Domain �?Prisma Create Input
    *
    * **转换规则**:
-   * - snapshotTime: number → BigInt
-   * - createdAt: number | undefined → Date
-   * - reason: string | undefined → string | null
+   * - snapshotTime: number �?BigInt
+   * - createdAt: number | undefined �?Date
+   * - reason: string | undefined �?string | null
    *
    * @param snapshot - Domain层的快照对象
    * @returns Prisma create input数据
@@ -63,21 +63,21 @@ export class PrismaWeightSnapshotMapper {
       oldWeight: snapshot.oldWeight,
       newWeight: snapshot.newWeight,
       weightDelta: snapshot.weightDelta,
-      snapshotTime: BigInt(snapshot.snapshotTime), // number → BigInt
+      snapshotTime: BigInt(snapshot.snapshotTime), // number �?BigInt
       trigger: snapshot.trigger,
-      reason: snapshot.reason ?? null, // undefined → null
+      reason: snapshot.reason ?? null, // undefined �?null
       operatorUuid: snapshot.operatorUuid,
-      createdAt: new Date(snapshot.createdAt ?? Date.now()), // number → Date
+      createdAt: new Date(snapshot.createdAt ?? Date.now()), // number �?Date
     };
   }
 
   /**
-   * Prisma Model 转 Domain Object
+   * Prisma Model �?Domain Object
    *
    * **转换规则**:
-   * - snapshotTime: BigInt → number
-   * - createdAt: Date → number (timestamp)
-   * - reason: string | null → string | undefined
+   * - snapshotTime: BigInt �?number
+   * - createdAt: Date �?number (timestamp)
+   * - reason: string | null �?string | undefined
    *
    * @param prismaSnapshot - Prisma查询结果
    * @returns Domain层的快照对象
@@ -95,16 +95,16 @@ export class PrismaWeightSnapshotMapper {
       prismaSnapshot.keyResultUuid,
       prismaSnapshot.oldWeight,
       prismaSnapshot.newWeight,
-      Number(prismaSnapshot.snapshotTime), // BigInt → number
-      prismaSnapshot.trigger as SnapshotTrigger, // string → SnapshotTrigger
+      Number(prismaSnapshot.snapshotTime), // BigInt �?number
+      prismaSnapshot.trigger as SnapshotTrigger, // string �?SnapshotTrigger
       prismaSnapshot.operatorUuid,
-      prismaSnapshot.reason ?? undefined, // null → undefined
-      prismaSnapshot.createdAt.getTime(), // Date → number (timestamp)
+      prismaSnapshot.reason ?? undefined, // null �?undefined
+      prismaSnapshot.createdAt.getTime(), // Date �?number (timestamp)
     );
   }
 
   /**
-   * 批量转换: Prisma → Domain
+   * 批量转换: Prisma �?Domain
    *
    * @param prismaSnapshots - Prisma查询结果数组
    * @returns Domain对象数组

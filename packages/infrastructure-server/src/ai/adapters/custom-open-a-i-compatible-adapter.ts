@@ -1,12 +1,12 @@
 /**
  * Custom OpenAI Compatible Adapter
- * 自定义 OpenAI 兼容接口适配器
+ * 自定�?OpenAI 兼容接口适配�?
  *
- * 支持：七牛云、Azure OpenAI、其他 OpenAI 兼容 API
+ * 支持：七牛云、Azure OpenAI、其�?OpenAI 兼容 API
  *
- * 依赖：
- * - ai: Vercel AI SDK 核心包
- * - @ai-sdk/openai: OpenAI provider (支持自定义 baseURL)
+ * 依赖�?
+ * - ai: Vercel AI SDK 核心�?
+ * - @ai-sdk/openai: OpenAI provider (支持自定�?baseURL)
  */
 
 import { createOpenAI } from '@ai-sdk/openai';
@@ -18,11 +18,11 @@ import {
   type AIGenerationRequest,
   type AIGenerationResponse,
   type AIStreamChunk,
-} from './BaseAIAdapter';
-import { AIGenerationTimeoutError, AIProviderError } from '../errors/AIErrors';
+} from './base-a-i-adapter';
+import { AIGenerationTimeoutError, AIProviderError } from '../errors/a-i-errors';
 
 /**
- * 自定义 Provider 配置
+ * 自定�?Provider 配置
  */
 export interface CustomProviderConfig {
   /** 提供商名称（用于日志和错误信息） */
@@ -33,15 +33,15 @@ export interface CustomProviderConfig {
   apiKey: string;
   /** 默认模型 ID */
   defaultModel: string;
-  /** 超时时间（毫秒，默认 30000） */
+  /** 超时时间（毫秒，默认 30000�?*/
   timeoutMs?: number;
 }
 
 /**
  * Custom OpenAI Compatible Adapter 实现
  *
- * 用于连接 OpenAI 兼容的第三方服务：
- * - 七牛云 AI: https://openai.qiniu.com/v1
+ * 用于连接 OpenAI 兼容的第三方服务�?
+ * - 七牛�?AI: https://openai.qiniu.com/v1
  * - Azure OpenAI
  * - 其他兼容 API
  */
@@ -59,7 +59,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
     this.modelId = config.defaultModel;
     this.timeoutMs = config.timeoutMs ?? 30000;
 
-    // 创建自定义 OpenAI 兼容 provider
+    // 创建自定�?OpenAI 兼容 provider
     // AI SDK 5.x 默认使用 OpenAI Responses API，对于第三方兼容服务也适用
     this.openai = createOpenAI({
       apiKey: config.apiKey,
@@ -68,7 +68,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 一次性生成文本（带超时和 JSON 解析）
+   * 一次性生成文本（带超时和 JSON 解析�?
    */
   async generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>> {
     try {
@@ -124,7 +124,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 流式生成文本（AsyncGenerator）
+   * 流式生成文本（AsyncGenerator�?
    */
   async *streamText(request: AIGenerationRequest): AsyncGenerator<AIStreamChunk, void, unknown> {
     try {
@@ -175,7 +175,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 健康检查
+   * 健康检�?
    */
   async healthCheck(): Promise<boolean> {
     try {
@@ -191,7 +191,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 获取提供商名称
+   * 获取提供商名�?
    */
   getProviderName(): string {
     return this.providerName;
@@ -224,13 +224,13 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 尝试解析 JSON（支持 Markdown 代码块）
+   * 尝试解析 JSON（支�?Markdown 代码块）
    */
   private tryParseJSON<T>(text: string): T | null {
     try {
       return JSON.parse(text) as T;
     } catch {
-      // 尝试提取 Markdown 代码块中的 JSON
+      // 尝试提取 Markdown 代码块中�?JSON
       const jsonMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
       if (jsonMatch && jsonMatch[1]) {
         try {

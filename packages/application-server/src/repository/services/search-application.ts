@@ -404,5 +404,5 @@ export class SearchService {
 
 // ===== 便捷函数 =====
 
-export const search = (request: SearchRequest) =>
-  SearchService.getInstance().search(request);
+export const createSearchService = (resourceRepository: IResourceRepository) =>
+  new SearchService(resourceRepository);

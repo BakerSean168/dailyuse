@@ -6,28 +6,28 @@ const logger = createLogger('FocusModeCronJob');
 
 /**
  * FocusMode Cron Job
- * 专注周期自动过期调度器
+ * 专注周期自动过期调度�?
  *
- * 职责：
- * - 定时检查并自动失效过期的专注周期
+ * 职责�?
+ * - 定时检查并自动失效过期的专注周�?
  * - 记录执行日志
  * - 处理错误情况
  *
- * 调度频率：每小时执行一次 (cron: '0 * * * *')
- * - 分钟：0（每小时的第 0 分钟）
- * - 小时：*（每小时）
- * - 日期：*（每天）
- * - 月份：*（每月）
- * - 星期：*（每周）
+ * 调度频率：每小时执行一�?(cron: '0 * * * *')
+ * - 分钟�?（每小时的第 0 分钟�?
+ * - 小时�?（每小时�?
+ * - 日期�?（每天）
+ * - 月份�?（每月）
+ * - 星期�?（每周）
  *
- * 使用示例：
+ * 使用示例�?
  * ```typescript
  * import { startFocusModeCronJob, stopFocusModeCronJob } from './focusModeCronJob';
  *
- * // 启动调度器
+ * // 启动调度�?
  * startFocusModeCronJob();
  *
- * // 停止调度器
+ * // 停止调度�?
  * stopFocusModeCronJob();
  * ```
  */
@@ -37,7 +37,7 @@ let focusModeService: FocusModeApplicationService | null = null;
 
 /**
  * 获取 FocusModeApplicationService 单例
- * 延迟加载，避免循环依赖
+ * 延迟加载，避免循环依�?
  */
 async function getFocusModeService(): Promise<FocusModeApplicationService> {
   if (!focusModeService) {
@@ -47,8 +47,8 @@ async function getFocusModeService(): Promise<FocusModeApplicationService> {
 }
 
 /**
- * 执行自动过期检查
- * 由 cron 调度器定时调用
+ * 执行自动过期检�?
+ * �?cron 调度器定时调�?
  */
 async function checkAndDeactivateExpiredFocusModes(): Promise<void> {
   const startTime = Date.now();
@@ -77,7 +77,7 @@ async function checkAndDeactivateExpiredFocusModes(): Promise<void> {
       durationMs: duration,
     });
 
-    // 不抛出错误，避免影响后续的调度执行
+    // 不抛出错误，避免影响后续的调度执�?
   }
 }
 
@@ -94,11 +94,11 @@ export function startFocusModeCronJob(): cron.ScheduledTask {
   }
 
   logger.info('Starting focus mode cron job', {
-    schedule: '0 * * * *', // 每小时执行一次
+    schedule: '0 * * * *', // 每小时执行一�?
     description: 'Check and deactivate expired focus modes',
   });
 
-  // 创建定时任务：每小时执行一次
+  // 创建定时任务：每小时执行一�?
   cronTask = cron.schedule(
     '0 * * * *',
     () => {
@@ -116,7 +116,7 @@ export function startFocusModeCronJob(): cron.ScheduledTask {
 
   logger.info('Focus mode cron job started successfully');
 
-  // 可选：应用启动时立即执行一次检查
+  // 可选：应用启动时立即执行一次检�?
   checkAndDeactivateExpiredFocusModes().catch((error) => {
     logger.error('Failed to run initial focus mode expiration check', error);
   });
@@ -141,7 +141,7 @@ export function stopFocusModeCronJob(): void {
 }
 
 /**
- * 获取 Cron Job 运行状态
+ * 获取 Cron Job 运行状�?
  *
  * @returns 是否正在运行
  */
@@ -150,10 +150,10 @@ export function isFocusModeCronJobRunning(): boolean {
 }
 
 /**
- * 手动触发一次过期检查
+ * 手动触发一次过期检�?
  * 用于测试或管理员手动触发
  *
- * @returns 过期的专注周期数量
+ * @returns 过期的专注周期数�?
  */
 export async function manualCheckExpiredFocusModes(): Promise<number> {
   logger.info('Manual focus mode expiration check triggered');

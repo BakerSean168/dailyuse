@@ -75,13 +75,7 @@ export class TaskStatisticsApplicationService {
     // 需要从 InstanceRepository 和 TemplateRepository 聚合数据
     
     // 临时实现：创建新的统计对象
-    const newStats = TaskStatistics.create({
-      accountUuid,
-      totalTasks: 0,
-      completedTasks: 0,
-      activeTasks: 0,
-      overdueTasks: 0,
-    });
+    const newStats = TaskStatistics.createDefault(accountUuid);
 
     // 4. 保存
     await this.statisticsRepository.save(newStats);

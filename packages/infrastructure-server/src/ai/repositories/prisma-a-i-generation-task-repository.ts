@@ -3,15 +3,15 @@
  * Prisma AI Generation Task Repository
  * Prisma AI 生成任务仓储实现
  *
- * 职责：
- * - 操作 ai_generation_tasks 表
- * - ServerDTO ↔ Prisma Model 映射
- * - 任务查询和历史记录
+ * 职责�?
+ * - 操作 ai_generation_tasks �?
+ * - ServerDTO �?Prisma Model 映射
+ * - 任务查询和历史记�?
  *
- * TODO: 需要数据库 migration 应用后修复类型错误
+ * TODO: 需要数据库 migration 应用后修复类型错�?
  */
 
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { IAIGenerationTaskRepository } from '@dailyuse/domain-server/ai';
 import type { AIGenerationTaskServerDTO } from '@dailyuse/contracts/ai';
 import { GenerationTaskType, TaskStatus } from '@dailyuse/contracts/ai';
@@ -23,7 +23,7 @@ export class PrismaAIGenerationTaskRepository implements IAIGenerationTaskReposi
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 保存任务（UPSERT 语义）
+   * 保存任务（UPSERT 语义�?
    */
   async save(task: AIGenerationTaskServerDTO): Promise<void> {
     await this.prisma.aiGenerationTask.upsert({
@@ -70,7 +70,7 @@ export class PrismaAIGenerationTaskRepository implements IAIGenerationTaskReposi
   }
 
   /**
-   * 根据账户 UUID 查找所有任务
+   * 根据账户 UUID 查找所有任�?
    */
   async findByAccountUuid(accountUuid: string): Promise<AIGenerationTaskServerDTO[]> {
     const records = await this.prisma.aiGenerationTask.findMany({
@@ -97,7 +97,7 @@ export class PrismaAIGenerationTaskRepository implements IAIGenerationTaskReposi
   }
 
   /**
-   * 根据状态查找任务
+   * 根据状态查找任�?
    */
   async findByStatus(
     accountUuid: string,
@@ -130,7 +130,7 @@ export class PrismaAIGenerationTaskRepository implements IAIGenerationTaskReposi
   }
 
   /**
-   * 删除任务（软删除）
+   * 删除任务（软删除�?
    */
   async delete(uuid: string): Promise<void> {
     await this.prisma.aiGenerationTask.update({
@@ -140,7 +140,7 @@ export class PrismaAIGenerationTaskRepository implements IAIGenerationTaskReposi
   }
 
   /**
-   * 检查任务是否存在
+   * 检查任务是否存�?
    */
   async exists(uuid: string): Promise<boolean> {
     const count = await this.prisma.aiGenerationTask.count({
@@ -150,7 +150,7 @@ export class PrismaAIGenerationTaskRepository implements IAIGenerationTaskReposi
   }
 
   /**
-   * 映射：Prisma Model → ServerDTO
+   * 映射：Prisma Model �?ServerDTO
    */
   private toServerDTO(record: any): AIGenerationTaskServerDTO {
     // 映射枚举

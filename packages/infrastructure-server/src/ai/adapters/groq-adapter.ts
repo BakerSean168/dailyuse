@@ -1,11 +1,11 @@
 /**
  * Groq Adapter
- * Groq 超高速推理服务适配器
+ * Groq 超高速推理服务适配�?
  *
- * 特点：
+ * 特点�?
  * - 极快的推理速度（LPU 硬件加速）
  * - 免费额度慷慨
- * - 支持 Llama, Mixtral 等开源模型
+ * - 支持 Llama, Mixtral 等开源模�?
  * - OpenAI 兼容接口
  *
  * @see https://console.groq.com/docs
@@ -20,8 +20,8 @@ import {
   type AIGenerationRequest,
   type AIGenerationResponse,
   type AIStreamChunk,
-} from './BaseAIAdapter';
-import { AIGenerationTimeoutError, AIProviderError } from '../errors/AIErrors';
+} from './base-a-i-adapter';
+import { AIGenerationTimeoutError, AIProviderError } from '../errors/a-i-errors';
 
 /**
  * Groq 配置
@@ -31,14 +31,14 @@ export interface GroqConfig {
   apiKey: string;
   /** 默认模型 ID */
   defaultModel: string;
-  /** 超时时间（毫秒，默认 30000，Groq 很快） */
+  /** 超时时间（毫秒，默认 30000，Groq 很快�?*/
   timeoutMs?: number;
 }
 
 /**
  * Groq Adapter 实现
  *
- * 用法：
+ * 用法�?
  * ```typescript
  * const adapter = new GroqAdapter({
  *   apiKey: 'gsk_xxx',
@@ -50,7 +50,7 @@ export interface GroqConfig {
 export class GroqAdapter extends BaseAIAdapter {
   /** Groq API 基础地址 */
   private static readonly BASE_URL = 'https://api.groq.com/openai/v1';
-  /** 提供商名称 */
+  /** 提供商名�?*/
   private static readonly PROVIDER_NAME = 'Groq';
 
   private readonly openai: ReturnType<typeof createOpenAI>;
@@ -61,7 +61,7 @@ export class GroqAdapter extends BaseAIAdapter {
     super(AIProvider.CUSTOM, config.defaultModel as any);
 
     this.modelId = config.defaultModel;
-    // Groq 推理速度极快，默认超时设置较短
+    // Groq 推理速度极快，默认超时设置较�?
     this.timeoutMs = config.timeoutMs ?? 30000;
 
     this.openai = createOpenAI({
@@ -71,7 +71,7 @@ export class GroqAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 一次性生成文本
+   * 一次性生成文�?
    */
   async generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>> {
     try {
@@ -172,7 +172,7 @@ export class GroqAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 健康检查
+   * 健康检�?
    */
   async healthCheck(): Promise<boolean> {
     try {
@@ -188,7 +188,7 @@ export class GroqAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 获取提供商名称
+   * 获取提供商名�?
    */
   getProviderName(): string {
     return GroqAdapter.PROVIDER_NAME;

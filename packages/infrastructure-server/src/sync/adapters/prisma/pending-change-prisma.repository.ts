@@ -13,7 +13,7 @@ import {
 import type { SyncableEntityType } from '@dailyuse/contracts/sync';
 
 /**
- * 将 Prisma 模型转换为 PersistenceDTO 格式
+ * �?Prisma 模型转换�?PersistenceDTO 格式
  */
 function toPersistenceDTO(record: any) {
   return {

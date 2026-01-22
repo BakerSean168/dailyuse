@@ -52,18 +52,16 @@ export class ScheduleApplicationService {
     description?: string;
     accountUuid: string;
   }): Promise<ScheduleTaskClientDTO> {
-    const task = await this.domainService.createTask({
+    const task = await this.domainService.createScheduleTask({
       name: params.name,
       sourceModule: params.sourceModule,
-      sourceId: params.sourceId,
-      scheduleConfig: params.scheduleConfig,
-      handlerType: params.handlerType,
-      handlerPayload: params.handlerPayload,
-      priority: params.priority,
-      retryPolicy: params.retryPolicy,
-      enabled: params.enabled,
+      sourceEntityId: params.sourceId,
+      schedule: params.scheduleConfig,
+      payload: params.handlerPayload,
       description: params.description,
       accountUuid: params.accountUuid,
+      retryConfig: params.retryPolicy,
+      tags: [],
     });
 
     return task.toClientDTO();
@@ -77,9 +75,7 @@ export class ScheduleApplicationService {
   async updateScheduleTask(
     uuid: string,
     params: {
-      name?: string;
       scheduleConfig?: ScheduleConfigServerDTO;
-      priority?: number;
       retryPolicy?: RetryPolicyServerDTO;
       enabled?: boolean;
       description?: string;
@@ -91,9 +87,9 @@ export class ScheduleApplicationService {
       throw new Error(`Schedule task ${uuid} not found`);
     }
 
-    if (params.name !== undefined) task.name = params.name;
-    if (params.description !== undefined) task.description = params.description;
-    if (params.priority !== undefined) task.priority = params.priority;
+    if (params.description !== undefined) {
+      task.updateMetadata({ description: params.description });
+    }
     if (params.enabled !== undefined) {
       if (params.enabled) {
         task.enable();
@@ -101,16 +97,17 @@ export class ScheduleApplicationService {
         task.disable();
       }
     }
-    
-    // Updates that might require complex logic are delegated to domain service or handled here
-    // For simplicity, we update fields on the aggregate. 
-    // In a full implementation, `domainService.updateTask` might be better.
-    
-    // Note: The previous implementation might have had more logic. 
-    // I am assuming standard update behavior here for the refactor.
-    
-    await this.scheduleTaskRepository.save(task);
+    if (params.scheduleConfig !== undefined) {
+      task.updateSchedule(params.scheduleConfig);
+    }
+    if (params.retryPolicy !== undefined) {
+      task.updateRetryPolicy(params.retryPolicy);
+    }
+    if (params.handlerPayload !== undefined) {
+      task.updatePayload(params.handlerPayload);
+    }
 
+    await this.scheduleTaskRepository.save(task);
     return task.toClientDTO();
   }
 
@@ -123,7 +120,7 @@ export class ScheduleApplicationService {
       throw new Error(`Schedule task ${uuid} not found`);
     }
     // Hard delete or Soft delete depending on requirements
-    await this.scheduleTaskRepository.delete(uuid);
+    await this.scheduleTaskRepository.deleteByUuid(uuid);
   }
 
   /**
@@ -150,11 +147,9 @@ export class ScheduleApplicationService {
     }
     // This connects to the execution engine usually.
     // For this refactor, we focus on the service structure.
-    // Assuming there is an execution mechanism separate or it delegates to a job manager.
-    // The previous implementation used `CronJobManager` directly.
-    // Ideally this service should emit an event or call an injected interface.
-    // Leaving purely domain logic here:
-    task.setNextRunTime(Date.now()); // Force immediate run logic?
+    // The execution is managed by the execution engine/scheduler
+    // For now, just recalculate the next run time
+    task.calculateNextRun();
     await this.scheduleTaskRepository.save(task);
   }
 
@@ -166,18 +161,18 @@ export class ScheduleApplicationService {
   }
 
   async getScheduleTasksByAccount(accountUuid: string): Promise<ScheduleTaskClientDTO[]> {
-    const tasks = await this.scheduleTaskRepository.findByAccount(accountUuid);
-    return tasks.map(t => t.toClientDTO());
+    const tasks = await this.scheduleTaskRepository.findByAccountUuid(accountUuid);
+    return tasks.map((t: any) => t.toClientDTO());
   }
 
   async getScheduleTasksBySource(sourceModule: SourceModule, sourceId: string): Promise<ScheduleTaskClientDTO[]> {
-    const tasks = await this.scheduleTaskRepository.findBySource(sourceModule, sourceId);
-    return tasks.map(t => t.toClientDTO());
+    const tasks = await this.scheduleTaskRepository.findBySourceEntity(sourceModule, sourceId);
+    return tasks.map((t: any) => t.toClientDTO());
   }
   
   async getTasksByStatus(status: ScheduleTaskStatus): Promise<ScheduleTaskClientDTO[]> {
-      const tasks = await this.scheduleTaskRepository.findByStatus(status);
-      return tasks.map(t => t.toClientDTO());
+    const tasks = await this.scheduleTaskRepository.findByStatus(status);
+    return tasks.map((t: any) => t.toClientDTO());
   }
 
   // Helper

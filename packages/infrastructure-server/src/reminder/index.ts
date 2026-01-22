@@ -12,6 +12,7 @@ export {
   PrismaReminderTemplateRepository,
   PrismaReminderGroupRepository,
   PrismaReminderStatisticsRepository,
+  PrismaReminderResponseRepository,
 } from './repositories';
 
 // Container (Legacy support during transition if needed, otherwise removed)

@@ -2,13 +2,13 @@
 /**
  * Reminder Trigger Cron Job
  * 
- * 职责：
+ * 职责�?
  * - 每分钟扫描需要触发的提醒模板
  * - 调用 ReminderSchedulerService 执行触发逻辑
  * - 记录触发历史
  * - 更新下次触发时间
  * 
- * 触发频率：每分钟执行一次
+ * 触发频率：每分钟执行一�?
  * Cron Expression: '* * * * *'
  */
 
@@ -39,7 +39,7 @@ class ReminderTriggerCronJob {
   }
 
   /**
-   * 初始化调度服务
+   * 初始化调度服�?
    */
   private async initialize(): Promise<void> {
     try {
@@ -48,7 +48,7 @@ class ReminderTriggerCronJob {
       const statsRepo = container.getReminderStatisticsRepository();
       const groupRepo = container.getReminderGroupRepository();
       
-      // 创建 ControlService（需要 group repository）
+      // 创建 ControlService（需�?group repository�?
       const controlService = container.getControlService();
       
       // 创建 TriggerService
@@ -81,7 +81,7 @@ class ReminderTriggerCronJob {
       return;
     }
 
-    // 每分钟执行一次
+    // 每分钟执行一�?
     this.cronTask = cron.schedule('* * * * *', async () => {
       await this.execute();
     });
@@ -135,7 +135,7 @@ class ReminderTriggerCronJob {
         duration: `${duration}ms`,
       });
 
-      // 如果有失败的提醒，记录详细信息
+      // 如果有失败的提醒，记录详细信�?
       if (result.failedCount > 0) {
         logger.warn('Some reminders failed to trigger', {
           failedCount: result.failedCount,
@@ -162,7 +162,7 @@ class ReminderTriggerCronJob {
   }
 
   /**
-   * 获取任务状态
+   * 获取任务状�?
    */
   getStatus(): { isRunning: boolean; isScheduled: boolean } {
     return {

@@ -9,7 +9,7 @@ import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalReques
 export class PrismaGoalRepository implements IGoalRepository {
   constructor(private prisma: PrismaClient) {}
 
-  // importance 在 Prisma schema 中是 String 类型
+  // importance �?Prisma schema 中是 String 类型
   private importanceMap: Record<ImportanceLevel, string> = {
     [ImportanceLevel.Vital]: 'Vital',
     [ImportanceLevel.Important]: 'Important',
@@ -43,11 +43,11 @@ export class PrismaGoalRepository implements IGoalRepository {
   };
 
   /**
-   * 将 Prisma 模型映射为领域实体
-   * 注意：Prisma Client 自动将 @map 的字段转换为 camelCase
+   * �?Prisma 模型映射为领域实�?
+   * 注意：Prisma Client 自动�?@map 的字段转换为 camelCase
    */
   private mapToEntity(data: PrismaGoal & { keyResults?: any[]; keyResult?: any[]; goalReview?: any[] }): Goal {
-    console.log('[PrismaGoalRepository.mapToEntity] 开始映射, Goal UUID:', data.uuid);
+    console.log('[PrismaGoalRepository.mapToEntity] 开始映�? Goal UUID:', data.uuid);
     console.log('[PrismaGoalRepository.mapToEntity] data.keyResults:', data.keyResults);
     console.log('[PrismaGoalRepository.mapToEntity] data.keyResult:', data.keyResult);
     console.log('[PrismaGoalRepository.mapToEntity] data.goalReview:', data.goalReview);
@@ -57,9 +57,9 @@ export class PrismaGoalRepository implements IGoalRepository {
       accountUuid: data.accountUuid, // Prisma camelCase
       title: data.title,
       description: data.description,
-      color: data.color, // 新字段
-      feasibilityAnalysis: data.feasibilityAnalysis, // 新字段 (Prisma camelCase)
-      motivation: data.motivation, // 新字段
+      color: data.color, // 新字�?
+      feasibilityAnalysis: data.feasibilityAnalysis, // 新字�?(Prisma camelCase)
+      motivation: data.motivation, // 新字�?
       status: data.status as GoalStatus,
       importance: this.reverseImportanceMap[data.importance],
       // urgency: removed - priority now computed from importance + targetDate
@@ -78,13 +78,13 @@ export class PrismaGoalRepository implements IGoalRepository {
       deletedAt: data.deletedAt ? data.deletedAt.getTime() : null, // Prisma camelCase
     });
 
-    // 恢复 KeyResults（如果有）
-    // ✅ 支持 keyResults 和 keyResult (单复数都支持)
+    // 恢复 KeyResults（如果有�?
+    // �?支持 keyResults �?keyResult (单复数都支持)
     const keyResultsData = data.keyResults || data.keyResult || [];
     console.log('[PrismaGoalRepository.mapToEntity] keyResultsData 长度:', keyResultsData.length);
     
     if (keyResultsData.length > 0) {
-      console.log('[PrismaGoalRepository.mapToEntity] 开始恢复 KeyResults...');
+      console.log('[PrismaGoalRepository.mapToEntity] 开始恢�?KeyResults...');
       for (const krData of keyResultsData) {
         console.log('[PrismaGoalRepository.mapToEntity] KeyResult 原始数据:', {
           uuid: krData.uuid,
@@ -92,7 +92,7 @@ export class PrismaGoalRepository implements IGoalRepository {
           goalRecordCount: krData.goalRecord?.length || 0,
         });
         
-        // ✅ 从数据库扁平化字段构建 KeyResult
+        // �?从数据库扁平化字段构�?KeyResult
         const keyResult = KeyResult.fromServerDTO({
           uuid: krData.uuid,
           goalUuid: data.uuid,
@@ -101,7 +101,7 @@ export class PrismaGoalRepository implements IGoalRepository {
           progress: {
             valueType: krData.valueType as any,
             aggregationMethod: krData.aggregationMethod as any,
-            initialValue: undefined, // 数据库中暂无此字段
+            initialValue: undefined, // 数据库中暂无此字�?
             targetValue: krData.targetValue,
             currentValue: krData.currentValue,
             unit: krData.unit,
@@ -113,15 +113,15 @@ export class PrismaGoalRepository implements IGoalRepository {
           records: null,
         });
         
-        // ✅ 恢复 GoalRecords（如果有）
+        // �?恢复 GoalRecords（如果有�?
         if (krData.goalRecord && krData.goalRecord.length > 0) {
-          console.log(`[PrismaGoalRepository.mapToEntity] 恢复 ${krData.goalRecord.length} 条 GoalRecords...`);
+          console.log(`[PrismaGoalRepository.mapToEntity] 恢复 ${krData.goalRecord.length} �?GoalRecords...`);
           for (const recordData of krData.goalRecord) {
             keyResult.addRecord({
               uuid: recordData.uuid,
               keyResultUuid: krData.uuid,
               goalUuid: data.uuid,
-              value: recordData.value,  // ✅ 本次记录的独立值
+              value: recordData.value,  // �?本次记录的独立�?
               note: recordData.note,
               recordedAt: recordData.recordedAt instanceof Date 
                 ? recordData.recordedAt.getTime() 
@@ -131,7 +131,7 @@ export class PrismaGoalRepository implements IGoalRepository {
                 : recordData.createdAt,
             });
           }
-          console.log(`[PrismaGoalRepository.mapToEntity] ✅ GoalRecords 已恢复`);
+          console.log(`[PrismaGoalRepository.mapToEntity] �?GoalRecords 已恢复`);
         }
         
         goal.addKeyResult(keyResult);
@@ -141,12 +141,12 @@ export class PrismaGoalRepository implements IGoalRepository {
       console.log('[PrismaGoalRepository.mapToEntity] 没有 KeyResults 数据');
     }
 
-    console.log('[PrismaGoalRepository.mapToEntity] Goal 实体的 keyResults 数量:', goal.keyResults?.length || 0);
+    console.log('[PrismaGoalRepository.mapToEntity] Goal 实体�?keyResults 数量:', goal.keyResults?.length || 0);
 
-    // 恢复 GoalReviews（如果有）
+    // 恢复 GoalReviews（如果有�?
     const reviewsData = data.goalReview || [];
     if (reviewsData.length > 0) {
-      console.log(`[PrismaGoalRepository.mapToEntity] 开始恢复 ${reviewsData.length} 条 GoalReviews...`);
+      console.log(`[PrismaGoalRepository.mapToEntity] 开始恢�?${reviewsData.length} �?GoalReviews...`);
       for (const reviewData of reviewsData) {
         const review = GoalReview.fromServerDTO({
           uuid: reviewData.uuid,
@@ -168,7 +168,7 @@ export class PrismaGoalRepository implements IGoalRepository {
         goal.addReview(review);
         console.log(`[PrismaGoalRepository.mapToEntity] GoalReview ${reviewData.uuid} 已添加到 Goal`);
       }
-      console.log(`[PrismaGoalRepository.mapToEntity] ✅ ${reviewsData.length} 条 GoalReviews 已恢复`);
+      console.log(`[PrismaGoalRepository.mapToEntity] �?${reviewsData.length} �?GoalReviews 已恢复`);
     } else {
       console.log('[PrismaGoalRepository.mapToEntity] 没有 GoalReviews 数据');
     }
@@ -178,8 +178,8 @@ export class PrismaGoalRepository implements IGoalRepository {
 
   /**
    * 保存领域实体到数据库
-   * 注意：这里处理 camelCase (PersistenceDTO) → snake_case (数据库) 的映射
-   * 级联保存子实体：KeyResults 和 GoalReviews
+   * 注意：这里处�?camelCase (PersistenceDTO) �?snake_case (数据�? 的映�?
+   * 级联保存子实体：KeyResults �?GoalReviews
    */
   async save(goal: Goal): Promise<void> {
     const persistence = goal.toPersistenceDTO();
@@ -207,24 +207,24 @@ export class PrismaGoalRepository implements IGoalRepository {
       where: { uuid: persistence.uuid },
       create: {
         uuid: persistence.uuid,
-        accountUuid: persistence.accountUuid, // PersistenceDTO → database
-        createdAt: new Date(persistence.createdAt), // PersistenceDTO → database
+        accountUuid: persistence.accountUuid, // PersistenceDTO �?database
+        createdAt: new Date(persistence.createdAt), // PersistenceDTO �?database
         ...data,
       },
       update: data,
     });
 
-    // 级联保存 KeyResults（使用 ServerDTO 获取完整数据）
+    // 级联保存 KeyResults（使�?ServerDTO 获取完整数据�?
     const serverDTO = goal.toServerDTO(true); // includeChildren=true
     if (serverDTO.keyResults && serverDTO.keyResults.length > 0) {
       for (const kr of serverDTO.keyResults) {
-        // 防御性检查: 确保progress对象存在
+        // 防御性检�? 确保progress对象存在
         if (!kr.progress) {
           console.error(`KeyResult ${kr.uuid} has no progress data, skipping save`);
           continue;
         }
 
-        // 防御性检查: 确保progress对象存在
+        // 防御性检�? 确保progress对象存在
         if (!kr.progress) {
           console.error(`KeyResult ${kr.uuid} has no progress data, skipping save`);
           continue;
@@ -239,14 +239,14 @@ export class PrismaGoalRepository implements IGoalRepository {
             valueType: kr.progress.valueType,
             aggregationMethod: kr.progress.aggregationMethod,
             targetValue: kr.progress.targetValue,
-            currentValue: kr.progress.currentValue ?? 0, // ✅ 默认值 0 如果为 null
+            currentValue: kr.progress.currentValue ?? 0, // �?默认�?0 如果�?null
             unit: kr.progress.unit || null,
-            weight: kr.weight ?? 0, // ✅ 添加 weight
+            weight: kr.weight ?? 0, // �?添加 weight
             order: kr.order,
             createdAt: new Date(kr.createdAt),
             updatedAt: new Date(kr.updatedAt),
             goal: {
-              connect: { uuid: goal.uuid }, // 关联现有的 Goal
+              connect: { uuid: goal.uuid }, // 关联现有�?Goal
             },
           },
           update: {
@@ -255,9 +255,9 @@ export class PrismaGoalRepository implements IGoalRepository {
             valueType: kr.progress.valueType,
             aggregationMethod: kr.progress.aggregationMethod,
             targetValue: kr.progress.targetValue,
-            currentValue: kr.progress.currentValue ?? 0, // ✅ 默认值 0 如果为 null
+            currentValue: kr.progress.currentValue ?? 0, // �?默认�?0 如果�?null
             unit: kr.progress.unit || null,
-            weight: kr.weight ?? 0, // ✅ 添加 weight
+            weight: kr.weight ?? 0, // �?添加 weight
             order: kr.order,
             updatedAt: new Date(kr.updatedAt),
           },
@@ -265,22 +265,22 @@ export class PrismaGoalRepository implements IGoalRepository {
 
         // 级联保存 GoalRecords（进度记录）
         if (kr.records && kr.records.length > 0) {
-          console.log(`[PrismaGoalRepository.save] 保存 ${kr.records.length} 条 GoalRecords for KeyResult ${kr.uuid}`);
+          console.log(`[PrismaGoalRepository.save] 保存 ${kr.records.length} �?GoalRecords for KeyResult ${kr.uuid}`);
           for (const record of kr.records) {
             await (this.prisma as any).goalRecord.upsert({
               where: { uuid: record.uuid },
               create: {
                 uuid: record.uuid,
-                value: record.value ?? 0,  // ✅ 本次记录的独立值
+                value: record.value ?? 0,  // �?本次记录的独立�?
                 note: record.note || null,
                 recordedAt: new Date(record.recordedAt),
                 createdAt: new Date(record.createdAt),
                 keyResult: {
-                  connect: { uuid: kr.uuid }, // ✅ 关联现有的 KeyResult
+                  connect: { uuid: kr.uuid }, // �?关联现有�?KeyResult
                 },
               },
               update: {
-                value: record.value ?? 0,  // ✅ 本次记录的独立值
+                value: record.value ?? 0,  // �?本次记录的独立�?
                 note: record.note || null,
                 recordedAt: new Date(record.recordedAt),
               },
@@ -292,7 +292,7 @@ export class PrismaGoalRepository implements IGoalRepository {
 
     // 级联保存 GoalReviews
     if (serverDTO.reviews && serverDTO.reviews.length > 0) {
-      console.log(`[PrismaGoalRepository.save] 保存 ${serverDTO.reviews.length} 条 GoalReviews for Goal ${goal.uuid}`);
+      console.log(`[PrismaGoalRepository.save] 保存 ${serverDTO.reviews.length} �?GoalReviews for Goal ${goal.uuid}`);
       for (const review of serverDTO.reviews) {
         await (this.prisma as any).goalReview.upsert({
           where: { uuid: review.uuid },
@@ -307,7 +307,7 @@ export class PrismaGoalRepository implements IGoalRepository {
             nextSteps: null, // 如果需要可以从 improvements 映射
             rating: review.rating,
             createdAt: new Date(review.createdAt),
-            updatedAt: new Date(review.createdAt), // 初次创建时 updatedAt = createdAt
+            updatedAt: new Date(review.createdAt), // 初次创建�?updatedAt = createdAt
           },
           update: {
             reviewType: review.type,
@@ -316,7 +316,7 @@ export class PrismaGoalRepository implements IGoalRepository {
             challenges: review.challenges || null,
             lessonsLearned: review.improvements || null,
             rating: review.rating,
-            updatedAt: new Date(), // 更新时使用当前时间
+            updatedAt: new Date(), // 更新时使用当前时�?
           },
         });
       }
@@ -328,10 +328,10 @@ export class PrismaGoalRepository implements IGoalRepository {
       ? {
           keyResult: {
             include: {
-              goalRecord: true, // ✅ 包含 KeyResult 的所有 GoalRecords
+              goalRecord: true, // �?包含 KeyResult 的所�?GoalRecords
             },
           },
-          goalReview: true, // ✅ 包含所有 GoalReviews
+          goalReview: true, // �?包含所�?GoalReviews
         }
       : undefined;
 
@@ -371,12 +371,12 @@ export class PrismaGoalRepository implements IGoalRepository {
       where.folderUuid = options.folderUuid;
     }
     
-    // ✅ 添加 include 选项以加载 KeyResults 和 GoalRecords
+    // �?添加 include 选项以加�?KeyResults �?GoalRecords
     const includeOptions = options?.includeChildren
       ? {
           keyResult: {
             include: {
-              goalRecord: true, // ✅ 包含 KeyResult 的所有 GoalRecords
+              goalRecord: true, // �?包含 KeyResult 的所�?GoalRecords
             },
           },
         }
@@ -399,7 +399,7 @@ export class PrismaGoalRepository implements IGoalRepository {
     }
     
     const entities = data.map((d) => this.mapToEntity(d));
-    console.log('[PrismaGoalRepository.findByAccountUuid] 转换后实体数量:', entities.length);
+    console.log('[PrismaGoalRepository.findByAccountUuid] 转换后实体数�?', entities.length);
     console.log('[PrismaGoalRepository.findByAccountUuid] 第一个实体的KeyResults数量:', entities[0]?.keyResults?.length || 0);
     
     return entities;
@@ -407,7 +407,7 @@ export class PrismaGoalRepository implements IGoalRepository {
 
   async findByFolderUuid(folderUuid: string): Promise<Goal[]> {
     const data = await this.prisma.goal.findMany({
-      where: { folderUuid: folderUuid, deletedAt: null }, // Prisma 自动转换为 camelCase
+      where: { folderUuid: folderUuid, deletedAt: null }, // Prisma 自动转换�?camelCase
     });
     return data.map((d) => this.mapToEntity(d));
   }

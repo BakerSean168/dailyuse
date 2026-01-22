@@ -1,12 +1,12 @@
 /**
  * BreeExecutionEngine - Bree 调度引擎实现
  * 
- * 职责：
+ * 职责�?
  * - 实现 IScheduleExecutionEngine 接口
  * - 封装 Bree 库的具体调用
- * - 将 ScheduleTask 转换为 Bree JobOptions
+ * - �?ScheduleTask 转换�?Bree JobOptions
  * 
- * 架构位置：基础设施层（Infrastructure Layer）
+ * 架构位置：基础设施层（Infrastructure Layer�?
  */
 
 import Bree from 'bree';
@@ -81,14 +81,14 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
 
     console.log('🚀 Starting BreeExecutionEngine...');
 
-    // 转换任务为 Bree job 配置
+    // 转换任务�?Bree job 配置
     const jobs: JobOptions[] = tasks.map((task) => this.toJobOptions(task));
 
-    // 初始化 Bree
+    // 初始�?Bree
     this.bree = new Bree({
       root: this.config.workerPath,
       jobs,
-      defaultExtension: 'js', // Worker 会被编译为 JS
+      defaultExtension: 'js', // Worker 会被编译�?JS
       timezone: this.config.timezone ?? 'Asia/Shanghai',
       errorHandler: this.handleError,
       workerMessageHandler: this.handleWorkerMessage,
@@ -112,7 +112,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     await this.bree.start();
     this.isRunning = true;
 
-    console.log(`✅ BreeExecutionEngine started with ${tasks.length} tasks`);
+    console.log(`�?BreeExecutionEngine started with ${tasks.length} tasks`);
   }
 
   /**
@@ -136,7 +136,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     this.isRunning = false;
     this.activeTasks.clear();
 
-    console.log('✅ BreeExecutionEngine stopped');
+    console.log('�?BreeExecutionEngine stopped');
   }
 
   /**
@@ -147,13 +147,13 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
       throw new Error('BreeExecutionEngine is not started');
     }
 
-    // 检查任务状态
+    // 检查任务状�?
     if (task.status !== 'active') {
       console.warn(`⚠️  Task ${task.uuid} is not active, skipping`);
       return;
     }
 
-    // 添加到 Bree
+    // 添加�?Bree
     const jobOptions = this.toJobOptions(task);
     await this.bree.add(jobOptions);
     await this.bree.start(task.uuid);
@@ -161,7 +161,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     // 记录活跃任务
     this.activeTasks.set(task.uuid, task);
 
-    console.log(`✅ Added task ${task.uuid} to execution engine`);
+    console.log(`�?Added task ${task.uuid} to execution engine`);
   }
 
   /**
@@ -172,13 +172,13 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
       throw new Error('BreeExecutionEngine is not started');
     }
 
-    // 从 Bree 移除
+    // �?Bree 移除
     await this.bree.remove(taskId);
 
-    // 从活跃任务移除
+    // 从活跃任务移�?
     this.activeTasks.delete(taskId);
 
-    console.log(`✅ Removed task ${taskId} from execution engine`);
+    console.log(`�?Removed task ${taskId} from execution engine`);
   }
 
   /**
@@ -232,18 +232,18 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
   }
 
   /**
-   * 将 ScheduleTask 转换为 Bree JobOptions
+   * �?ScheduleTask 转换�?Bree JobOptions
    */
   private toJobOptions(task: ScheduleTask): JobOptions {
     const scheduleConfig = task.schedule;
     const retryPolicy = task.retryPolicy;
 
-    // 从 task 中获取 job name（优先使用 metadata payload 的名称，其次任务名称）
+    // �?task 中获�?job name（优先使�?metadata payload 的名称，其次任务名称�?
     const metadata = task.metadata;
     const jobName =
       (metadata.payload && metadata.payload.name) || task.name || task.sourceModule;
 
-    // 构建执行上下文
+    // 构建执行上下�?
     const context = {
       job: {
         name: jobName,
@@ -256,19 +256,19 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
 
     // 基础配置
     const jobOptions: JobOptions = {
-      name: task.uuid, // 使用 task.uuid 作为 bree 的 job name
+      name: task.uuid, // 使用 task.uuid 作为 bree �?job name
       path: path.join(this.config.workerPath, 'schedule-worker.js'),
       worker: {
         workerData: context,
       },
-      timeout: this.config.workerTimeout ?? 60000, // 默认 60 秒
+      timeout: this.config.workerTimeout ?? 60000, // 默认 60 �?
     };
 
     // 调度配置
     const dto = scheduleConfig.toServerDTO();
 
     if (dto.cronExpression) {
-      // Cron 表达式调度
+      // Cron 表达式调�?
       jobOptions.cron = dto.cronExpression;
     }
     // Note: intervalMs and date scheduling are not currently supported in ScheduleConfigServerDTO
@@ -296,11 +296,11 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
   private async handleError(error: Error, workerMetadata?: any): Promise<void> {
     const taskId = workerMetadata?.name;
     if (!taskId) {
-      console.error('❌ Worker error with unknown task:', error);
+      console.error('�?Worker error with unknown task:', error);
       return;
     }
 
-    console.error(`❌ Worker error for task ${taskId}:`, error);
+    console.error(`�?Worker error for task ${taskId}:`, error);
 
     const task = this.activeTasks.get(taskId);
     if (!task) {
@@ -318,7 +318,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
 
     let execution: ScheduleExecution;
 
-    // 检查是否可以重试
+    // 检查是否可以重�?
     if (task.retryPolicy.shouldRetry(currentRetryCount)) {
       const nextRetryCount = currentRetryCount + 1;
       const delay = task.retryPolicy.calculateNextRetryDelay(nextRetryCount);
@@ -341,14 +341,14 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
           ...jobOptions,
           name: retryJobName,
           date: new Date(Date.now() + delay),
-          // 清除 cron 和 interval，确保只执行一次
+          // 清除 cron �?interval，确保只执行一�?
           cron: undefined, 
           interval: undefined,
           worker: {
             ...jobOptions.worker,
             workerData: {
               ...jobOptions.worker.workerData,
-              __retryCount: nextRetryCount, // 传递重试次数
+              __retryCount: nextRetryCount, // 传递重试次�?
             }
           }
         };
@@ -358,7 +358,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
           await this.bree.start(retryJobName);
         }
       } else {
-         console.error(`❌ Cannot retry task ${taskId} because jobOptions.worker is not defined.`);
+         console.error(`�?Cannot retry task ${taskId} because jobOptions.worker is not defined.`);
       }
 
     } else {
@@ -369,7 +369,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
         status: ExecutionStatus.FAILED,
       });
       task.fail(error.message);
-      // TODO: 保存 task 状态
+      // TODO: 保存 task 状�?
     }
     
     execution.markFailed(error.message, duration);
@@ -378,7 +378,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
       await this.executionRepository.save(execution);
       console.log(`💾 Saved ${execution.status} execution record for task ${taskId}`);
     } catch (repoError) {
-      console.error(`❌ Failed to save execution record for task ${taskId}:`, repoError);
+      console.error(`�?Failed to save execution record for task ${taskId}:`, repoError);
     }
 
     this.taskStartTimes.delete(taskId);
@@ -414,7 +414,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
       execution.markSuccess(duration, { result: 'done' });
       task.recordExecution(ExecutionStatus.SUCCESS, duration, { result: 'done' });
     } else {
-      // 如果是其他错误消息
+      // 如果是其他错误消�?
       const errorMessage = message instanceof Error ? message.message : JSON.stringify(message);
       execution.markFailed(errorMessage, duration);
       task.recordExecution(ExecutionStatus.FAILED, duration, undefined, errorMessage);
@@ -423,9 +423,9 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     try {
       await this.executionRepository.save(execution);
       console.log(`💾 Saved execution record for task ${taskId}`);
-      // TODO: 保存 task 状态
+      // TODO: 保存 task 状�?
     } catch (repoError) {
-      console.error(`❌ Failed to save execution record for task ${taskId}:`, repoError);
+      console.error(`�?Failed to save execution record for task ${taskId}:`, repoError);
     }
 
     this.taskStartTimes.delete(taskId);

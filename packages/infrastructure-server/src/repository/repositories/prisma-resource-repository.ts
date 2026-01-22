@@ -1,8 +1,8 @@
 /**
  * Prisma Resource Repository Implementation
- * Resource 实体的 Prisma 仓储实现
+ * Resource 实体�?Prisma 仓储实现
  */
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import { Resource } from '@dailyuse/domain-server/repository';
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO } from '@dailyuse/contracts/repository';

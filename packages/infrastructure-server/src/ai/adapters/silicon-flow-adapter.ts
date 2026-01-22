@@ -1,10 +1,10 @@
 /**
  * SiliconFlow Adapter
- * SiliconFlow 硅基流动高性价比推理平台适配器
+ * SiliconFlow 硅基流动高性价比推理平台适配�?
  *
- * 特点：
- * - 国内服务商，网络延迟低
- * - 支持 DeepSeek, Qwen 等多种模型
+ * 特点�?
+ * - 国内服务商，网络延迟�?
+ * - 支持 DeepSeek, Qwen 等多种模�?
  * - 免费模型可用
  * - OpenAI 兼容接口
  *
@@ -20,8 +20,8 @@ import {
   type AIGenerationRequest,
   type AIGenerationResponse,
   type AIStreamChunk,
-} from './BaseAIAdapter';
-import { AIGenerationTimeoutError, AIProviderError } from '../errors/AIErrors';
+} from './base-a-i-adapter';
+import { AIGenerationTimeoutError, AIProviderError } from '../errors/a-i-errors';
 
 /**
  * SiliconFlow 配置
@@ -31,14 +31,14 @@ export interface SiliconFlowConfig {
   apiKey: string;
   /** 默认模型 ID */
   defaultModel: string;
-  /** 超时时间（毫秒，默认 60000） */
+  /** 超时时间（毫秒，默认 60000�?*/
   timeoutMs?: number;
 }
 
 /**
  * SiliconFlow Adapter 实现
  *
- * 用法：
+ * 用法�?
  * ```typescript
  * const adapter = new SiliconFlowAdapter({
  *   apiKey: 'sk-xxx',
@@ -50,7 +50,7 @@ export interface SiliconFlowConfig {
 export class SiliconFlowAdapter extends BaseAIAdapter {
   /** SiliconFlow API 基础地址 */
   private static readonly BASE_URL = 'https://api.siliconflow.cn/v1';
-  /** 提供商名称 */
+  /** 提供商名�?*/
   private static readonly PROVIDER_NAME = 'SiliconFlow';
 
   private readonly openai: ReturnType<typeof createOpenAI>;
@@ -70,7 +70,7 @@ export class SiliconFlowAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 一次性生成文本
+   * 一次性生成文�?
    */
   async generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>> {
     try {
@@ -171,7 +171,7 @@ export class SiliconFlowAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 健康检查
+   * 健康检�?
    */
   async healthCheck(): Promise<boolean> {
     try {
@@ -187,7 +187,7 @@ export class SiliconFlowAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 获取提供商名称
+   * 获取提供商名�?
    */
   getProviderName(): string {
     return SiliconFlowAdapter.PROVIDER_NAME;

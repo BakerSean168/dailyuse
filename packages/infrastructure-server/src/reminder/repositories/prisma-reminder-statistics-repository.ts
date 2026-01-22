@@ -1,11 +1,11 @@
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { IReminderStatisticsRepository } from '@dailyuse/domain-server/reminder';
 import { ReminderStatistics } from '@dailyuse/domain-server/reminder';
 
 /**
  * ReminderStatistics Prisma 仓储实现
- * 统计聚合根，使用 UPSERT 语义（accountUuid 唯一）
- * 每个账户只有一条统计记录
+ * 统计聚合根，使用 UPSERT 语义（accountUuid 唯一�?
+ * 每个账户只有一条统计记�?
  */
 export class PrismaReminderStatisticsRepository implements IReminderStatisticsRepository {
   constructor(private prisma: PrismaClient) {}

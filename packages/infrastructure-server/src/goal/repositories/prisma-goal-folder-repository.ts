@@ -14,7 +14,7 @@ export class PrismaGoalFolderRepository implements IGoalFolderRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 将 Prisma 模型映射为领域实体
+   * �?Prisma 模型映射为领域实�?
    */
   private mapToEntity(data: PrismaGoalFolder): GoalFolder {
     return GoalFolder.fromPersistenceDTO({
@@ -37,7 +37,7 @@ export class PrismaGoalFolderRepository implements IGoalFolderRepository {
   }
 
   /**
-   * 保存文件夹
+   * 保存文件�?
    */
   async save(folder: GoalFolder): Promise<void> {
     const persistence = folder.toPersistenceDTO();
@@ -77,7 +77,7 @@ export class PrismaGoalFolderRepository implements IGoalFolderRepository {
   }
 
   /**
-   * 根据 UUID 查找文件夹
+   * 根据 UUID 查找文件�?
    */
   async findById(uuid: string): Promise<GoalFolder | null> {
     const data = await this.prisma.goalFolder.findUnique({
@@ -100,7 +100,7 @@ export class PrismaGoalFolderRepository implements IGoalFolderRepository {
   }
 
   /**
-   * 删除文件夹（物理删除）
+   * 删除文件夹（物理删除�?
    */
   async delete(uuid: string): Promise<void> {
     await this.prisma.goalFolder.delete({

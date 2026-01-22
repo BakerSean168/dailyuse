@@ -1,6 +1,6 @@
 import type { IScheduleRepository } from '@dailyuse/domain-server/schedule';
 import { Schedule } from '@dailyuse/domain-server/schedule';
-import type { ScheduleClientDTO, ConflictDetectionResult, EventPriority, RecurrenceRule } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ConflictDetectionResult } from '@dailyuse/contracts/schedule';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ScheduleEventApplicationService');
@@ -27,14 +27,9 @@ export class ScheduleEventApplicationService {
     startTime: number;
     endTime: number;
     description?: string;
-    isAllDay?: boolean;
     location?: string;
-    recurrenceRule?: RecurrenceRule;
-    priority?: EventPriority;
-    color?: string;
-    timezone?: string;
-    reminders?: any[];
-    tags?: string[];
+    priority?: number;
+    attendees?: string[];
   }): Promise<ScheduleClientDTO> {
     const schedule = Schedule.create({
       accountUuid: params.accountUuid,
@@ -42,14 +37,9 @@ export class ScheduleEventApplicationService {
       startTime: params.startTime,
       endTime: params.endTime,
       description: params.description,
-      isAllDay: params.isAllDay,
       location: params.location,
-      recurrenceRule: params.recurrenceRule,
       priority: params.priority,
-      color: params.color,
-      timezone: params.timezone,
-      reminders: params.reminders,
-      tags: params.tags,
+      attendees: params.attendees,
     });
 
     await this.scheduleRepository.save(schedule);
@@ -66,14 +56,9 @@ export class ScheduleEventApplicationService {
       startTime?: number;
       endTime?: number;
       description?: string;
-      isAllDay?: boolean;
       location?: string;
-      recurrenceRule?: RecurrenceRule;
-      priority?: EventPriority;
-      color?: string;
-      timezone?: string;
-      reminders?: any[];
-      tags?: string[];
+      priority?: number;
+      attendees?: string[];
     }
   ): Promise<ScheduleClientDTO> {
     const schedule = await this.scheduleRepository.findByUuid(uuid);
@@ -82,24 +67,14 @@ export class ScheduleEventApplicationService {
     }
 
     if (params.title !== undefined) schedule.updateTitle(params.title);
-    if (params.description !== undefined) schedule.description = params.description;
     
-    // Time updates usually require validation, delegated to domain entity methods ideally
+    // Time updates require validation, delegated to domain entity methods
     if (params.startTime !== undefined || params.endTime !== undefined) {
       schedule.reschedule(
-          params.startTime ?? schedule.startTime, 
-          params.endTime ?? schedule.endTime
+        params.startTime ?? schedule.startTime, 
+        params.endTime ?? schedule.endTime
       );
     }
-
-    if (params.isAllDay !== undefined) schedule.isAllDay = params.isAllDay;
-    if (params.location !== undefined) schedule.location = params.location;
-    if (params.recurrenceRule !== undefined) schedule.recurrenceRule = params.recurrenceRule;
-    if (params.priority !== undefined) schedule.priority = params.priority;
-    if (params.color !== undefined) schedule.color = params.color;
-    if (params.timezone !== undefined) schedule.timezone = params.timezone;
-    if (params.reminders !== undefined) schedule.reminders = params.reminders;
-    if (params.tags !== undefined) schedule.tags = params.tags;
 
     await this.scheduleRepository.save(schedule);
     return schedule.toClientDTO();
@@ -113,7 +88,7 @@ export class ScheduleEventApplicationService {
     if (!schedule) {
       throw new Error(`Schedule event ${uuid} not found`);
     }
-    await this.scheduleRepository.delete(uuid);
+    await this.scheduleRepository.deleteByUuid(uuid);
   }
 
   /**
@@ -132,8 +107,8 @@ export class ScheduleEventApplicationService {
     startTime: number,
     endTime: number
   ): Promise<ScheduleClientDTO[]> {
-    const schedules = await this.scheduleRepository.findByDateRange(accountUuid, startTime, endTime);
-    return schedules.map(s => s.toClientDTO());
+    const schedules = await this.scheduleRepository.findByTimeRange(accountUuid, startTime, endTime);
+    return schedules.map((s: any) => s.toClientDTO());
   }
 }
 

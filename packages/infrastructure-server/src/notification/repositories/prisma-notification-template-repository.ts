@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { NotificationRepository as INotificationTemplateRepository } from '@dailyuse/domain-server/notification';
 import { NotificationTemplate } from '@dailyuse/domain-server/notification';
 import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
@@ -7,7 +7,7 @@ import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@da
 
 /**
  * NotificationTemplate Prisma 仓储实现
- * 简单聚合根，无子实体
+ * 简单聚合根，无子实�?
  * JSON 字段：variables, default_actions
  */
 export class PrismaNotificationTemplateRepository implements INotificationTemplateRepository {

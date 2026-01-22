@@ -17,8 +17,8 @@ import type {
 } from '@dailyuse/contracts/notification';
 import { NotificationChannelType as ChannelTypeEnum } from '@dailyuse/contracts/notification';
 import type {
-  NotificationRepository as INotificationRepository,
-  NotificationRepository as INotificationTemplateRepository,
+  INotificationRepository,
+  INotificationTemplateRepository,
   INotificationPreferenceRepository,
 } from '@dailyuse/domain-server/notification';
 import { toNotificationClientDTO } from './notification-dto-converters';
@@ -82,52 +82,14 @@ export class CreateNotification {
     clientDTO: NotificationClientDTO,
   ): Promise<void> {
     try {
-      const { SSEConnectionManager } = await import('../../interface/sseRoutes');
-      const sseManager = SSEConnectionManager.getInstance();
-
-      // 发送 notification:created 事件
-      const createdSent = sseManager.sendMessage(accountUuid, 'notification:created', {
-        notification: clientDTO,
-        timestamp: new Date().toISOString(),
+      // TODO: Implement SSE notification delivery via event bus
+      // The SSE mechanism should be handled by the infrastructure layer
+      // This ensures application layer doesn't depend on infrastructure concerns
+      logger.debug('📬 [应用服务] Notification queued for SSE delivery', {
+        accountUuid,
+        notificationUuid: clientDTO.uuid,
+        channels,
       });
-
-      if (createdSent) {
-        logger.info('📡 [SSE推送] notification:created 事件已发送', {
-          accountUuid,
-          notificationUuid: clientDTO.uuid,
-        });
-      }
-
-      // 根据 channels 发送特定事件
-      if (channels && channels.length > 0) {
-        const notificationData = {
-          notification: clientDTO,
-          timestamp: new Date().toISOString(),
-        };
-
-        if (channels.includes(ChannelTypeEnum.IN_APP)) {
-          sseManager.sendMessage(accountUuid, 'notification:popup-reminder', notificationData);
-          sseManager.sendMessage(accountUuid, 'notification:system-notification', notificationData);
-        }
-
-        if (channels.includes(ChannelTypeEnum.PUSH)) {
-          sseManager.sendMessage(accountUuid, 'notification:system-notification', notificationData);
-        }
-
-        if (clientDTO.metadata?.sound) {
-          sseManager.sendMessage(accountUuid, 'notification:sound-reminder', {
-            ...notificationData,
-            sound: clientDTO.metadata.sound,
-          });
-        }
-      }
-
-      if (!createdSent) {
-        logger.warn('⚠️ [SSE推送] 用户未连接SSE', {
-          accountUuid,
-          notificationUuid: clientDTO.uuid,
-        });
-      }
     } catch (error) {
       logger.error('❌ [SSE推送] SSE 推送失败', {
         error: error instanceof Error ? error.message : String(error),

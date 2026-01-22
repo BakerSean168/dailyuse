@@ -10,17 +10,17 @@ import { PrismaFocusSessionRepository } from '../repositories/PrismaFocusSession
 import { PrismaGoalStatisticsRepository } from '../repositories/PrismaGoalStatisticsRepository';
 import { PrismaGoalFolderRepository } from '../repositories/PrismaGoalFolderRepository';
 import { PrismaFocusModeRepository } from '../repositories/PrismaFocusModeRepository';
-import { prisma } from '@/shared/infrastructure/config/prisma';
+import { prisma } from '../../shared/config/prisma';
 
 /**
  * Goal 模块依赖注入容器
- * 负责管理领域服务和仓储的实例创建和生命周期
+ * 负责管理领域服务和仓储的实例创建和生命周�?
  *
  * 采用懒加载模式：
- * - 只在首次调用时创建实例
+ * - 只在首次调用时创建实�?
  * - 后续调用返回已有实例（单例）
  *
- * 支持测试替换：
+ * 支持测试替换�?
  * - 允许注入 Mock 仓储用于单元测试
  */
 export class GoalContainer {
@@ -41,7 +41,7 @@ export class GoalContainer {
   }
 
   /**
-   * 获取目标仓储实例（懒加载）
+   * 获取目标仓储实例（懒加载�?
    */
   getGoalRepository(): IGoalRepository {
     if (!this.goalRepository) {
@@ -68,14 +68,14 @@ export class GoalContainer {
   }
 
   /**
-   * 设置文件夹仓储实例（用于测试）
+   * 设置文件夹仓储实例（用于测试�?
    */
   setGoalFolderRepository(repository: IGoalFolderRepository): void {
     this.goalFolderRepository = repository;
   }
 
   /**
-   * 获取专注周期仓储实例（懒加载）
+   * 获取专注周期仓储实例（懒加载�?
    */
   getFocusSessionRepository(): IFocusSessionRepository {
     if (!this.focusSessionRepository) {
@@ -92,7 +92,7 @@ export class GoalContainer {
   }
 
   /**
-   * 获取专注模式仓储实例（懒加载）
+   * 获取专注模式仓储实例（懒加载�?
    */
   getFocusModeRepository(): IFocusModeRepository {
     if (!this.focusModeRepository) {
@@ -109,7 +109,7 @@ export class GoalContainer {
   }
 
   /**
-   * 获取目标统计仓储实例（懒加载）
+   * 获取目标统计仓储实例（懒加载�?
    */
   getGoalStatisticsRepository(): IGoalStatisticsRepository {
     if (!this.goalStatisticsRepository) {

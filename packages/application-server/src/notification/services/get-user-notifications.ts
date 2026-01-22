@@ -7,8 +7,8 @@
 import { NotificationDomainService } from '@dailyuse/domain-server/notification';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import type {
-  NotificationRepository as INotificationRepository,
-  NotificationRepository as INotificationTemplateRepository,
+  INotificationRepository,
+  INotificationTemplateRepository,
   INotificationPreferenceRepository,
 } from '@dailyuse/domain-server/notification';
 import { toNotificationClientDTO } from './notification-dto-converters';

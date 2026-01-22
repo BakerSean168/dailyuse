@@ -2,13 +2,13 @@
  * Prisma AI Conversation Repository
  * Prisma AI 对话仓储实现
  *
- * 职责：
- * - 操作 ai_conversations 和 ai_messages 表
- * - ServerDTO ↔ Prisma Model 映射
+ * 职责�?
+ * - 操作 ai_conversations �?ai_messages �?
+ * - ServerDTO �?Prisma Model 映射
  * - 聚合根模式：级联操作消息
  */
 
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { IAIConversationRepository } from '@dailyuse/domain-server/ai';
 import { AIConversationServer, MessageServer } from '@dailyuse/domain-server/ai';
 import { ConversationStatus } from '@dailyuse/contracts/ai';
@@ -114,7 +114,7 @@ export class PrismaAIConversationRepository implements IAIConversationRepository
   }
 
   /**
-   * 根据账户UUID查找所有对话
+   * 根据账户UUID查找所有对�?
    */
   async findByAccountUuid(
     accountUuid: string,
@@ -146,7 +146,7 @@ export class PrismaAIConversationRepository implements IAIConversationRepository
   }
 
   /**
-   * 软删除对话
+   * 软删除对�?
    */
   async delete(uuid: string): Promise<void> {
     try {
@@ -167,7 +167,7 @@ export class PrismaAIConversationRepository implements IAIConversationRepository
   }
 
   /**
-   * 根据状态查找对话
+   * 根据状态查找对�?
    */
   async findByStatus(
     accountUuid: string,
@@ -229,7 +229,7 @@ export class PrismaAIConversationRepository implements IAIConversationRepository
   }
 
   /**
-   * 检查对话是否存在
+   * 检查对话是否存�?
    */
   async exists(uuid: string): Promise<boolean> {
     try {
@@ -244,10 +244,10 @@ export class PrismaAIConversationRepository implements IAIConversationRepository
   }
 
   /**
-   * 将 Prisma 模型映射为领域聚合根
+   * �?Prisma 模型映射为领域聚合根
    */
   private mapToDomainEntity(data: any): AIConversationServer {
-    // 先构建 ServerDTO
+    // 先构�?ServerDTO
     const dto = {
       uuid: data.uuid,
       accountUuid: data.accountUuid,
@@ -272,7 +272,7 @@ export class PrismaAIConversationRepository implements IAIConversationRepository
         : null,
     };
 
-    // 从 DTO 重建聚合根
+    // �?DTO 重建聚合�?
     return AIConversationServer.fromServerDTO(dto);
   }
 }

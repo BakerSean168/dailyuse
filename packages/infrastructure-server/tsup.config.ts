@@ -24,8 +24,12 @@ export default defineConfig({
   external: [
     '@dailyuse/contracts',
     '@dailyuse/domain-server',
+    '@dailyuse/application-server',
+    '@dailyuse/scheduler-server',
     '@dailyuse/utils',
     '@prisma/client',
+    'bree',
+    'node-cron',
   ],
   sourcemap: true,
 });

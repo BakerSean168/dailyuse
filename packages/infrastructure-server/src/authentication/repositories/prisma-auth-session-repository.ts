@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { authSession as PrismaAuthSession } from '@prisma/client';
 import type {
   IAuthSessionRepository,
@@ -35,7 +35,7 @@ export class PrismaAuthSessionRepository implements IAuthSessionRepository {
       lastActivityAt: data.lastAccessedAt.getTime(),
       history: data.history,
       createdAt: data.createdAt.getTime(),
-      expiresAt: data.refreshTokenExpiresAt.getTime(), // 🔥 修复：使用 refreshTokenExpiresAt（30天）而不是 accessTokenExpiresAt（15分钟）
+      expiresAt: data.refreshTokenExpiresAt.getTime(), // 🔥 修复：使�?refreshTokenExpiresAt�?0天）而不�?accessTokenExpiresAt�?5分钟�?
       revokedAt: data.revokedAt?.getTime(),
     };
     return AuthSession.fromPersistenceDTO(persistenceDTO);
@@ -64,7 +64,7 @@ export class PrismaAuthSessionRepository implements IAuthSessionRepository {
         revokedAt,
       } = persistence;
 
-    // 序列化 JSON 字段
+    // 序列�?JSON 字段
     const device = JSON.stringify({
       deviceId: persistence.deviceId,
       deviceType: persistence.deviceType,
@@ -79,7 +79,7 @@ export class PrismaAuthSessionRepository implements IAuthSessionRepository {
       timezone: persistence.locationTimezone,
     });
 
-    // history 已经在 toPersistenceDTO() 中被序列化为字符串了，直接使用
+    // history 已经�?toPersistenceDTO() 中被序列化为字符串了，直接使�?
     const dataForPrisma = {
       uuid,
       accountUuid,
@@ -192,7 +192,7 @@ export class PrismaAuthSessionRepository implements IAuthSessionRepository {
     accountUuid: string,
     tx?: PrismaTransactionClient,
   ): Promise<AuthSession[]> {
-    // 别名方法，调用 findActiveSessions
+    // 别名方法，调�?findActiveSessions
     return this.findActiveSessions(accountUuid, tx);
   }
 

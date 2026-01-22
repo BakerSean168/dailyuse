@@ -1,12 +1,12 @@
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { IScheduleStatisticsRepository } from '@dailyuse/domain-server/schedule';
 import { ScheduleStatistics } from '@dailyuse/domain-server/schedule';
 
 /**
- * ScheduleStatistics 聚合根 Prisma 仓储实现
+ * ScheduleStatistics 聚合�?Prisma 仓储实现
  * 负责统计数据的持久化
  *
- * 参考 Repository 模块的统计仓储实现模式
+ * 参�?Repository 模块的统计仓储实现模�?
  */
 export class PrismaScheduleStatisticsRepository implements IScheduleStatisticsRepository {
   constructor(private prisma: PrismaClient) {}
@@ -14,7 +14,7 @@ export class PrismaScheduleStatisticsRepository implements IScheduleStatisticsRe
   // ===== 数据映射方法 =====
 
   /**
-   * 将 Prisma 数据映射为 ScheduleStatistics 实体
+   * �?Prisma 数据映射�?ScheduleStatistics 实体
    */
   private mapToEntity(data: any): ScheduleStatistics {
     const moduleStats = data.moduleStats || '{}';
@@ -38,9 +38,9 @@ export class PrismaScheduleStatisticsRepository implements IScheduleStatisticsRe
       avgExecutionDuration: data.avgExecutionDuration,
       minExecutionDuration: data.minExecutionDuration,
       maxExecutionDuration: data.maxExecutionDuration,
-      // 模块统计（JSON string）
+      // 模块统计（JSON string�?
       moduleStatistics: moduleStats,
-      // 时间戳
+      // 时间�?
       lastUpdatedAt: data.lastUpdatedAt?.getTime() || Date.now(),
       createdAt: data.createdAt?.getTime() || Date.now(),
     });
@@ -54,7 +54,7 @@ export class PrismaScheduleStatisticsRepository implements IScheduleStatisticsRe
 
     return {
       accountUuid: dto.accountUuid,
-      // 任务统计（PersistenceDTO 使用 camelCase）
+      // 任务统计（PersistenceDTO 使用 camelCase�?
       totalTasks: dto.totalTasks,
       activeTasks: dto.activeTasks,
       pausedTasks: dto.pausedTasks,
@@ -71,10 +71,10 @@ export class PrismaScheduleStatisticsRepository implements IScheduleStatisticsRe
       avgExecutionDuration: dto.avgExecutionDuration,
       minExecutionDuration: dto.minExecutionDuration,
       maxExecutionDuration: dto.maxExecutionDuration,
-      // 时间戳
+      // 时间�?
       lastUpdatedAt: new Date(dto.lastUpdatedAt),
       createdAt: new Date(dto.createdAt),
-      // 模块统计（JSON string）
+      // 模块统计（JSON string�?
       moduleStatistics: dto.moduleStatistics,
     };
   }
@@ -82,7 +82,7 @@ export class PrismaScheduleStatisticsRepository implements IScheduleStatisticsRe
   // ===== 仓储方法 =====
 
   /**
-   * 保存或更新统计数据（UPSERT）
+   * 保存或更新统计数据（UPSERT�?
    */
   async save(stats: ScheduleStatistics): Promise<void> {
     const data = this.mapToPrisma(stats);
@@ -106,8 +106,8 @@ export class PrismaScheduleStatisticsRepository implements IScheduleStatisticsRe
   }
 
   /**
-   * 获取或创建统计数据
-   * 如果不存在则创建一个初始化的统计对象
+   * 获取或创建统计数�?
+   * 如果不存在则创建一个初始化的统计对�?
    */
   async getOrCreate(accountUuid: string): Promise<ScheduleStatistics> {
     let stats = await this.findByAccountUuid(accountUuid);
@@ -131,7 +131,7 @@ export class PrismaScheduleStatisticsRepository implements IScheduleStatisticsRe
   }
 
   /**
-   * 查询所有统计数据
+   * 查询所有统计数�?
    */
   async findAll(limit?: number, offset?: number): Promise<ScheduleStatistics[]> {
     const data = await this.prisma.scheduleStatistic.findMany({

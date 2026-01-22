@@ -15,7 +15,7 @@
 
 import { createLogger } from '@dailyuse/utils';
 import { ScheduleTask } from '@dailyuse/domain-server/schedule';
-import { IScheduleTaskRepository } from '@dailyuse/domain-server/schedule';
+import type { IScheduleTaskRepository } from '@dailyuse/domain-server/schedule';
 import { eventBus } from '@dailyuse/utils';
 // import { ScheduleMonitor } from '@dailyuse/infrastructure-server'; // Removed to avoid circular dependency
 

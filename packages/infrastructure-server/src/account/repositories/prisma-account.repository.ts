@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type {
   IAccountRepository,
   AccountPrismaTransactionClient as PrismaTransactionClient,
@@ -7,7 +7,7 @@ import { Account } from '@dailyuse/domain-server/account';
 import type { AccountServerDTO } from '@dailyuse/contracts/account';
 
 /**
- * Account 聚合根 Prisma 仓储实现
+ * Account 聚合�?Prisma 仓储实现
  * 负责 Account 及其所有子实体的完整持久化
  */
 export class PrismaAccountRepository implements IAccountRepository {
@@ -16,7 +16,7 @@ export class PrismaAccountRepository implements IAccountRepository {
   // ===== 数据映射方法 =====
 
   /**
-   * 将 Prisma 数据映射为 Account 聚合根实体
+   * �?Prisma 数据映射�?Account 聚合根实�?
    */
   private mapAccountToEntity(data: any): Account {
     return Account.fromPersistenceDTO({

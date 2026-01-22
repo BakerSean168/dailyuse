@@ -6,8 +6,8 @@ export class PrismaFolderRepository implements IFolderRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 将 Prisma 模型映射为领域实体
-   * Prisma 字段为 camelCase
+   * �?Prisma 模型映射为领域实�?
+   * Prisma 字段�?camelCase
    */
   private mapToEntity(data: PrismaFolder): Folder {
     return Folder.fromPersistenceDTO({
@@ -19,8 +19,8 @@ export class PrismaFolderRepository implements IFolderRepository {
       order: data.order,
       isExpanded: data.isExpanded,
       metadata: typeof data.metadata === 'string' ? data.metadata : JSON.stringify(data.metadata ?? {}),
-      createdAt: Number(data.createdAt), // BigInt → number
-      updatedAt: Number(data.updatedAt), // BigInt → number
+      createdAt: Number(data.createdAt), // BigInt �?number
+      updatedAt: Number(data.updatedAt), // BigInt �?number
     });
   }
 
@@ -33,15 +33,15 @@ export class PrismaFolderRepository implements IFolderRepository {
       path: persistence.path,
       order: persistence.order,
       isExpanded: persistence.isExpanded,
-      metadata: JSON.parse(persistence.metadata), // string → Json
-      updatedAt: BigInt(persistence.updatedAt), // number → BigInt
+      metadata: JSON.parse(persistence.metadata), // string �?Json
+      updatedAt: BigInt(persistence.updatedAt), // number �?BigInt
     };
 
     await this.prisma.folder.upsert({
       where: { uuid: persistence.uuid },
       create: {
         uuid: persistence.uuid,
-        createdAt: BigInt(persistence.createdAt), // number → BigInt
+        createdAt: BigInt(persistence.createdAt), // number �?BigInt
         ...data,
       },
       update: data,

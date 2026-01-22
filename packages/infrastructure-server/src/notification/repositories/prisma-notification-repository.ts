@@ -1,19 +1,19 @@
 // @ts-nocheck
 import type { PrismaClient } from '@prisma/client';
-import { prisma } from '@/shared/infrastructure/config/prisma';
+import { prisma } from '../../shared/config/prisma';
 import type { NotificationRepository as INotificationRepository } from '@dailyuse/domain-server/notification';
 import { Notification, NotificationChannel, NotificationHistory } from '@dailyuse/domain-server/notification';
 import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
 
 
 /**
- * Notification 聚合根 Prisma 仓储实现
+ * Notification 聚合�?Prisma 仓储实现
  * 负责 Notification 及其所有子实体的完整持久化
  *
  * 聚合根包含：
- * - Notification (主实体)
- * - NotificationChannel[] (子实体集合)
- * - NotificationHistory[] (子实体集合)
+ * - Notification (主实�?
+ * - NotificationChannel[] (子实体集�?
+ * - NotificationHistory[] (子实体集�?
  * - NotificationAction[] (值对象，JSON存储)
  * - NotificationMetadata (值对象，JSON存储)
  */
@@ -47,7 +47,7 @@ export class PrismaNotificationRepository implements INotificationRepository {
       deletedAt: data.deletedAt?.getTime() ?? null,
     });
 
-    // 加载 NotificationChannel 子实体
+    // 加载 NotificationChannel 子实�?
     if (data.channels) {
       data.channels.forEach((channel: any) => {
         const channelEntity = NotificationChannel.fromPersistenceDTO({
@@ -69,7 +69,7 @@ export class PrismaNotificationRepository implements INotificationRepository {
       });
     }
 
-    // 加载 NotificationHistory 子实体
+    // 加载 NotificationHistory 子实�?
     if (data.history) {
       data.history.forEach((hist: any) => {
         notification.addHistory(hist.action, hist.details ? JSON.parse(hist.details) : null);
@@ -90,7 +90,7 @@ export class PrismaNotificationRepository implements INotificationRepository {
     const persistence = notification.toPersistenceDTO();
 
     await this.prisma.$transaction(async (tx) => {
-      // 1. Upsert Notification 主实体
+      // 1. Upsert Notification 主实�?
       await tx.notification.upsert({
         where: { uuid: persistence.uuid },
         create: {
@@ -136,7 +136,7 @@ export class PrismaNotificationRepository implements INotificationRepository {
         },
       });
 
-      // 2. Upsert NotificationChannel 子实体
+      // 2. Upsert NotificationChannel 子实�?
       const channels = notification.getAllChannels();
       for (const channel of channels) {
         const channelPersistence = channel.toPersistenceDTO();
@@ -164,7 +164,7 @@ export class PrismaNotificationRepository implements INotificationRepository {
         });
       }
 
-      // 3. Upsert NotificationHistory 子实体
+      // 3. Upsert NotificationHistory 子实�?
       const history = notification.getHistory();
       for (const hist of history) {
         const histPersistence = hist.toPersistenceDTO();

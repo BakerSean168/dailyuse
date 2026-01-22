@@ -1,7 +1,7 @@
 /**
  * Dashboard Container (Server)
  *
- * 依赖注入容器，管理 Dashboard 模块的 repository 和缓存服务实例
+ * 依赖注入容器，管�?Dashboard 模块�?repository 和缓存服务实�?
  */
 
 import type { IDashboardConfigRepository } from '@dailyuse/domain-server/dashboard';

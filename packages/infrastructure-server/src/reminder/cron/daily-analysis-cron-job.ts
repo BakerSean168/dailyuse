@@ -3,17 +3,17 @@ import {
   FrequencyAdjustmentService,
 } from '@dailyuse/application-server';
 import { ReminderContainer } from '../di/ReminderContainer';
-import { isDevelopment } from '@/shared/infrastructure/config/env.js';
+import { isDevelopment } from '../../shared/config/env';
 
 /**
  * 每日分析 Cron Job
  *
- * 执行时间：每天凌晨 2:00
+ * 执行时间：每天凌�?2:00
  * Cron 表达式：0 2 * * *
  *
- * 职责：
+ * 职责�?
  * - 分析所有账户的提醒效果
- * - 自动调整低效提醒的频率
+ * - 自动调整低效提醒的频�?
  * - 生成分析报告
  */
 export class DailyAnalysisCronJob {
@@ -21,7 +21,7 @@ export class DailyAnalysisCronJob {
   private adjustmentService!: FrequencyAdjustmentService;
 
   /**
-   * 初始化服务
+   * 初始化服�?
    */
   private async initialize(): Promise<void> {
     this.analysisService = await SmartFrequencyAnalysisService.getInstance();
@@ -38,7 +38,7 @@ export class DailyAnalysisCronJob {
     try {
       await this.initialize();
 
-      // 获取所有活跃账户
+      // 获取所有活跃账�?
       const accountUuids = await this.getAllActiveAccounts();
       console.log(`[DailyAnalysisCronJob] Found ${accountUuids.length} active accounts`);
 
@@ -112,9 +112,9 @@ export class DailyAnalysisCronJob {
   }
 
   /**
-   * 获取所有活跃账户
+   * 获取所有活跃账�?
    *
-   * 定义：最近30天内有至少一个活跃提醒模板的账户
+   * 定义：最�?0天内有至少一个活跃提醒模板的账户
    */
   private async getAllActiveAccounts(): Promise<string[]> {
     const container = ReminderContainer.getInstance();
@@ -122,12 +122,12 @@ export class DailyAnalysisCronJob {
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    // 查询最近30天内有活跃模板的账户
+    // 查询最�?0天内有活跃模板的账户
     const accounts = await prisma.reminderTemplate.findMany({
       where: {
         selfEnabled: true,
         status: 'active',
-        // TODO: 需要运行 Prisma migration 后才能使用 smartFrequencyEnabled
+        // TODO: 需要运�?Prisma migration 后才能使�?smartFrequencyEnabled
         // smartFrequencyEnabled: true,
         createdAt: {
           gte: thirtyDaysAgo,
@@ -145,10 +145,10 @@ export class DailyAnalysisCronJob {
   /**
    * 保存分析报告
    *
-   * TODO: 实现报告持久化
-   * 可以选择：
+   * TODO: 实现报告持久�?
+   * 可以选择�?
    * - 保存到数据库
-   * - 保存到文件系统
+   * - 保存到文件系�?
    * - 发送到监控系统
    */
   private async saveAnalysisReport(report: {
@@ -159,7 +159,7 @@ export class DailyAnalysisCronJob {
     totalAdjustmentsMade: number;
     failedAccounts: string[];
   }): Promise<void> {
-    // TODO: 持久化报告
+    // TODO: 持久化报�?
     console.log('[DailyAnalysisCronJob] Analysis report:', report);
   }
 }
@@ -167,7 +167,7 @@ export class DailyAnalysisCronJob {
 /**
  * Cron Job 注册函数
  *
- * 使用 node-cron 或其他调度器注册此任务
+ * 使用 node-cron 或其他调度器注册此任�?
  *
  * @example
  * ```typescript
@@ -183,11 +183,11 @@ export class DailyAnalysisCronJob {
 export async function registerDailyAnalysisCronJob(): Promise<void> {
   const job = new DailyAnalysisCronJob();
 
-  // TODO: 使用实际的 cron 调度器
-  // 例如：node-cron, bull, agenda 等
+  // TODO: 使用实际�?cron 调度�?
+  // 例如：node-cron, bull, agenda �?
   console.log('[DailyAnalysisCronJob] Registered (schedule: 0 2 * * *)');
 
-  // 开发环境可以手动触发测试
+  // 开发环境可以手动触发测�?
   if (isDevelopment) {
     console.log('[DailyAnalysisCronJob] Development mode - execute manually with: job.execute()');
   }

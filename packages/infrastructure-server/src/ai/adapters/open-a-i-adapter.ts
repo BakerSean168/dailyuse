@@ -1,9 +1,9 @@
 /**
  * OpenAI Adapter
- * OpenAI 提供商适配器（使用 Vercel AI SDK）
+ * OpenAI 提供商适配器（使用 Vercel AI SDK�?
  *
- * 依赖：
- * - ai: Vercel AI SDK 核心包
+ * 依赖�?
+ * - ai: Vercel AI SDK 核心�?
  * - @ai-sdk/openai: OpenAI provider
  */
 
@@ -16,8 +16,8 @@ import {
   type AIGenerationRequest,
   type AIGenerationResponse,
   type AIStreamChunk,
-} from './BaseAIAdapter';
-import { AIGenerationTimeoutError, AIProviderError } from '../errors/AIErrors';
+} from './base-a-i-adapter';
+import { AIGenerationTimeoutError, AIProviderError } from '../errors/a-i-errors';
 
 /**
  * OpenAI Adapter 实现
@@ -33,7 +33,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 一次性生成文本（带超时和 JSON 解析）
+   * 一次性生成文本（带超时和 JSON 解析�?
    */
   async generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>> {
     try {
@@ -88,7 +88,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 流式生成文本（AsyncGenerator）
+   * 流式生成文本（AsyncGenerator�?
    */
   async *streamText(request: AIGenerationRequest): AsyncGenerator<AIStreamChunk, void, unknown> {
     try {
@@ -102,7 +102,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
 
       let fullText = '';
 
-      // 流式输出每个文本块
+      // 流式输出每个文本�?
       for await (const textPart of result.textStream) {
         fullText += textPart;
         yield {
@@ -122,7 +122,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
         totalTokens: usage?.totalTokens ?? (usage?.promptTokens ?? 0) + (usage?.completionTokens ?? 0),
       };
 
-      // 发送最后一个块（标记完成 + token 统计）
+      // 发送最后一个块（标记完�?+ token 统计�?
       yield {
         delta: '',
         fullText,
@@ -139,7 +139,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 健康检查（使用轻量模型测试）
+   * 健康检查（使用轻量模型测试�?
    */
   async healthCheck(): Promise<boolean> {
     try {
@@ -154,7 +154,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 构建完整 Prompt（系统 + 上下文 + 用户）
+   * 构建完整 Prompt（系�?+ 上下�?+ 用户�?
    */
   private buildPrompt(request: AIGenerationRequest): string {
     const parts: string[] = [];
@@ -173,14 +173,14 @@ export class OpenAIAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 尝试解析 JSON（支持 Markdown 代码块）
+   * 尝试解析 JSON（支�?Markdown 代码块）
    */
   private tryParseJSON<T>(text: string): T | null {
     try {
       // 尝试直接解析
       return JSON.parse(text) as T;
     } catch {
-      // 尝试提取 Markdown 代码块中的 JSON
+      // 尝试提取 Markdown 代码块中�?JSON
       const jsonMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
       if (jsonMatch && jsonMatch[1]) {
         try {

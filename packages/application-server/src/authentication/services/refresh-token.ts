@@ -124,7 +124,8 @@ export class RefreshToken {
       );
 
       // 4. 更新会话中的 tokens
-      session.refreshAccessToken(accessToken);
+      const accessTokenExpiresInMinutes = 60; // 1 hour = 60 minutes
+      session.refreshAccessToken(accessToken, accessTokenExpiresInMinutes);
       session.refreshRefreshToken();
 
       // 5. 保存会话

@@ -7,7 +7,7 @@ import type {
 import { PrismaNotificationRepository } from '../repositories/PrismaNotificationRepository';
 import { PrismaNotificationTemplateRepository } from '../repositories/PrismaNotificationTemplateRepository';
 import { PrismaNotificationPreferenceRepository } from '../repositories/PrismaNotificationPreferenceRepository';
-import { prisma } from '@/shared/infrastructure/config/prisma';
+import { prisma } from '../../shared/config/prisma';
 
 /**
  * Notification 依赖注入容器

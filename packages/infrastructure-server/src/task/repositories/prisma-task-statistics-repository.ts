@@ -1,16 +1,16 @@
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { ITaskStatisticsRepository } from '@dailyuse/domain-server/task';
 import { TaskStatistics } from '@dailyuse/domain-server/task';
 
 /**
  * TaskStatistics Prisma 仓储实现
- * 负责 TaskStatistics 聚合根的持久化操作
+ * 负责 TaskStatistics 聚合根的持久化操�?
  */
 export class PrismaTaskStatisticsRepository implements ITaskStatisticsRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 将数据库记录映射为领域实体
+   * 将数据库记录映射为领域实�?
    */
   private mapToEntity(data: any): TaskStatistics {
     return TaskStatistics.fromPersistenceDTO({
@@ -56,7 +56,7 @@ export class PrismaTaskStatisticsRepository implements ITaskStatisticsRepository
   }
 
   /**
-   * 将时间戳转换为 Date 对象
+   * 将时间戳转换�?Date 对象
    */
   private toDate(timestamp: number | null | undefined): Date | null | undefined {
     if (timestamp == null) return timestamp as null | undefined;
@@ -64,7 +64,7 @@ export class PrismaTaskStatisticsRepository implements ITaskStatisticsRepository
   }
 
   /**
-   * 保存或更新统计数据
+   * 保存或更新统计数�?
    */
   async save(statistics: TaskStatistics): Promise<void> {
     const persistence = statistics.toPersistenceDTO();

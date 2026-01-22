@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { IGoalStatisticsRepository } from '@dailyuse/domain-server/goal';
 import { GoalStatistics } from '@dailyuse/domain-server/goal';
 
@@ -7,17 +7,17 @@ import { GoalStatistics } from '@dailyuse/domain-server/goal';
  * GoalStatistics Prisma 仓储实现
  * 负责统计数据的持久化
  *
- * 注意：
- * - GoalStatistics 使用 UPSERT 语义（accountUuid 唯一）
- * - 每个账户只有一条统计记录
+ * 注意�?
+ * - GoalStatistics 使用 UPSERT 语义（accountUuid 唯一�?
+ * - 每个账户只有一条统计记�?
  */
 export class PrismaGoalStatisticsRepository implements IGoalStatisticsRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 保存统计信息（UPSERT 语义）
+   * 保存统计信息（UPSERT 语义�?
    *
-   * 返回更新后的统计聚合根
+   * 返回更新后的统计聚合�?
    */
   async upsert(statistics: GoalStatistics): Promise<GoalStatistics> {
     const persistence = statistics.toPersistenceDTO();
@@ -70,11 +70,11 @@ export class PrismaGoalStatisticsRepository implements IGoalStatisticsRepository
         averageRating: persistence.averageRating,
         lastCalculatedAt: new Date(persistence.lastCalculatedAt),
         updatedAt: new Date(),
-        // createdAt 不更新
+        // createdAt 不更�?
       },
     });
 
-    // 返回更新后的聚合根
+    // 返回更新后的聚合�?
     return GoalStatistics.fromPersistenceDTO({
       accountUuid: record.accountUuid,
       totalGoals: record.totalGoals,
@@ -143,13 +143,13 @@ export class PrismaGoalStatisticsRepository implements IGoalStatisticsRepository
       });
       return true;
     } catch (error) {
-      // 如果记录不存在，Prisma会抛出错误
+      // 如果记录不存在，Prisma会抛出错�?
       return false;
     }
   }
 
   /**
-   * 检查统计是否存在
+   * 检查统计是否存�?
    */
   async exists(accountUuid: string): Promise<boolean> {
     const count = await this.prisma.goalStatistic.count({

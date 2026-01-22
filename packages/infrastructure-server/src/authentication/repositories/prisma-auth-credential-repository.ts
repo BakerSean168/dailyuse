@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { authCredential as PrismaAuthCredential } from '@prisma/client';
 import type {
   IAuthCredentialRepository,
@@ -19,8 +19,8 @@ export class PrismaAuthCredentialRepository implements IAuthCredentialRepository
       const parsedData = JSON.parse(jsonData);
       const parsedMetadata = JSON.parse(metadata);
 
-      // history 字段应该是 JSON 字符串，确保它是字符串格式
-      // 如果是空值，使用默认的空数组字符串
+      // history 字段应该�?JSON 字符串，确保它是字符串格�?
+      // 如果是空值，使用默认的空数组字符�?
       const historyString = history || '[]';
       
       // 🐛 DEBUG: Log all field types before DTO creation
@@ -55,8 +55,8 @@ export class PrismaAuthCredentialRepository implements IAuthCredentialRepository
         }
       };
 
-      // PersistenceDTO 中所有复杂对象字段都应该是 JSON 字符串
-      // 这里需要将已解析的对象转回字符串
+      // PersistenceDTO 中所有复杂对象字段都应该�?JSON 字符�?
+      // 这里需要将已解析的对象转回字符�?
       const persistenceDTO: AuthCredentialPersistenceDTO = {
         ...rest,
         uuid: data.uuid,
@@ -135,8 +135,8 @@ export class PrismaAuthCredentialRepository implements IAuthCredentialRepository
         security,
       });
 
-      // history 已经在 toPersistenceDTO() 中被序列化为字符串
-      // 确保它是字符串格式
+      // history 已经�?toPersistenceDTO() 中被序列化为字符�?
+      // 确保它是字符串格�?
       const historyString = typeof history === 'string' ? history : JSON.stringify(history);
 
       const dataForPrisma = {

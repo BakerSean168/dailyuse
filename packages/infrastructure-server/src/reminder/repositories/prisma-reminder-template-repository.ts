@@ -1,17 +1,17 @@
 // @ts-nocheck
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { IReminderTemplateRepository } from '@dailyuse/domain-server/reminder';
 import { ReminderTemplate, ReminderHistory } from '@dailyuse/domain-server/reminder';
 import { ReminderTemplateStatus } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateServerDTO, ReminderGroupServerDTO, CreateReminderTemplateRequest } from '@dailyuse/contracts/reminder';
 
 /**
- * ReminderTemplate 聚合根 Prisma 仓储实现
+ * ReminderTemplate 聚合�?Prisma 仓储实现
  * 负责 ReminderTemplate 及其所有子实体的完整持久化
  *
  * 聚合根包含：
- * - ReminderTemplate (主实体)
- * - ReminderHistory[] (子实体集合)
+ * - ReminderTemplate (主实�?
+ * - ReminderHistory[] (子实体集�?
  * - 值对象：trigger, recurrence, active_time, active_hours, notification_config, stats (JSON存储)
  */
 export class PrismaReminderTemplateRepository implements IReminderTemplateRepository {
@@ -93,7 +93,7 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
       nextTriggerAt: persistence.nextTriggerAt ? new Date(persistence.nextTriggerAt) : null,
       stats: persistence.stats,
       
-      // Smart Frequency: Response Metrics（扁平化字段，直接来自 persistence DTO）
+      // Smart Frequency: Response Metrics（扁平化字段，直接来�?persistence DTO�?
       clickRate: persistence.clickRate ?? null,
       ignoreRate: persistence.ignoreRate ?? null,
       avgResponseTime: persistence.avgResponseTime ?? null,
@@ -102,7 +102,7 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
       sampleSize: persistence.sampleSize ?? 0,
       lastAnalysisTime: persistence.lastAnalysisTime ?? null,
       
-      // Smart Frequency: Frequency Adjustment（扁平化字段，直接来自 persistence DTO）
+      // Smart Frequency: Frequency Adjustment（扁平化字段，直接来�?persistence DTO�?
       originalInterval: persistence.originalInterval ?? null,
       adjustedInterval: persistence.adjustedInterval ?? null,
       adjustmentReason: persistence.adjustmentReason ?? null,
@@ -164,7 +164,7 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
     return data ? this.mapToEntity(data, options?.includeHistory) : null;
   }
 
-  // 别名方法，与接口保持一致
+  // 别名方法，与接口保持一�?
   async findById(
     uuid: string,
     options?: { includeHistory?: boolean },

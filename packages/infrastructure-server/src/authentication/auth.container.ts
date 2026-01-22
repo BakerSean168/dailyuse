@@ -1,7 +1,7 @@
 /**
  * Authentication Container (Server)
  *
- * 依赖注入容器，管理 Authentication 模块的 repository 实例
+ * 依赖注入容器，管�?Authentication 模块�?repository 实例
  */
 
 import type { 

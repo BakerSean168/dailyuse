@@ -1,12 +1,12 @@
 /**
  * Prisma Schedule Task Repository
- * ScheduleTask 聚合根 Prisma 仓储实现
+ * ScheduleTask 聚合�?Prisma 仓储实现
  *
- * 职责：
+ * 职责�?
  * - 实现 IScheduleTaskRepository 接口
  * - 使用 toPersistenceDTO/fromPersistenceDTO 进行数据转换
  * - 处理 ScheduleExecution 子实体的级联操作
- * - 提供完整的查询和持久化功能
+ * - 提供完整的查询和持久化功�?
  *
  * @implements {IScheduleTaskRepository}
  */
@@ -32,7 +32,7 @@ interface IScheduleTaskQueryOptions {
 
 /**
  * PrismaScheduleTaskRepository
- * 完整的 DDD 仓储实现，无临时适配代码
+ * 完整�?DDD 仓储实现，无临时适配代码
  */
 export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
   constructor(private prisma: PrismaClient) {}
@@ -40,7 +40,7 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
   // ===== 数据转换方法 =====
 
   /**
-   * 从 Prisma 模型转换为 ScheduleTask 聚合根
+   * �?Prisma 模型转换�?ScheduleTask 聚合�?
    * 使用聚合根的 fromPersistenceDTO 方法
    */
   private toDomain(data: any): ScheduleTask {
@@ -54,31 +54,31 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
       sourceEntityId: data.sourceEntityId,
       status: data.status,
       enabled: data.enabled,
-      // ScheduleConfig 扁平化字段
+      // ScheduleConfig 扁平化字�?
       cronExpression: data.cronExpression,
       timezone: data.timezone,
       startDate: data.startDate ? data.startDate.getTime() : null,
       endDate: data.endDate ? data.endDate.getTime() : null,
       maxExecutions: data.maxExecutions,
-      // ExecutionInfo 扁平化字段
+      // ExecutionInfo 扁平化字�?
       nextRunAt: data.nextRunAt ? data.nextRunAt.getTime() : null,
       lastRunAt: data.lastRunAt ? data.lastRunAt.getTime() : null,
       executionCount: data.executionCount,
       lastExecutionStatus: data.lastExecutionStatus,
       lastExecutionDuration: data.lastExecutionDuration,
       consecutiveFailures: data.consecutiveFailures,
-      // RetryPolicy 扁平化字段
+      // RetryPolicy 扁平化字�?
       maxRetries: data.maxRetries,
       initialDelayMs: data.initialDelayMs,
       maxDelayMs: data.maxDelayMs,
       backoffMultiplier: data.backoffMultiplier,
       retryableStatuses: data.retryableStatuses,
-      // TaskMetadata 扁平化字段
+      // TaskMetadata 扁平化字�?
       payload: data.payload,
       tags: data.tags,
       priority: data.priority,
       timeout: data.timeout,
-      // 时间戳
+      // 时间�?
       createdAt: data.createdAt.getTime(),
       updatedAt: data.updatedAt.getTime(),
     };
@@ -86,7 +86,7 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
     // 使用聚合根的 fromPersistenceDTO 方法创建实例
     const task = ScheduleTask.fromPersistenceDTO(persistenceDTO);
 
-    // 恢复执行记录子实体
+    // 恢复执行记录子实�?
     if (data.scheduleExecution && data.scheduleExecution.length > 0) {
       for (const execData of data.scheduleExecution) {
         const execution = ScheduleExecution.fromPersistenceDTO({
@@ -108,7 +108,7 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
   }
 
   /**
-   * 从 ScheduleTask 聚合根转换为 Prisma 持久化数据
+   * �?ScheduleTask 聚合根转换为 Prisma 持久化数�?
    * 使用聚合根的 toPersistenceDTO 方法
    */
   private toPrisma(task: ScheduleTask): any {
@@ -123,31 +123,31 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
       sourceEntityId: dto.sourceEntityId,
       status: dto.status,
       enabled: dto.enabled,
-      // ScheduleConfig 扁平化字段
+      // ScheduleConfig 扁平化字�?
       cronExpression: dto.cronExpression,
       timezone: dto.timezone,
       startDate: dto.startDate ? new Date(dto.startDate) : null,
       endDate: dto.endDate ? new Date(dto.endDate) : null,
       maxExecutions: dto.maxExecutions,
-      // ExecutionInfo 扁平化字段
+      // ExecutionInfo 扁平化字�?
       nextRunAt: dto.nextRunAt ? new Date(dto.nextRunAt) : null,
       lastRunAt: dto.lastRunAt ? new Date(dto.lastRunAt) : null,
       executionCount: dto.executionCount,
       lastExecutionStatus: dto.lastExecutionStatus,
       lastExecutionDuration: dto.lastExecutionDuration,
       consecutiveFailures: dto.consecutiveFailures,
-      // RetryPolicy 扁平化字段
+      // RetryPolicy 扁平化字�?
       maxRetries: dto.maxRetries ?? 3,
       initialDelayMs: dto.initialDelayMs ?? 1000,
       maxDelayMs: dto.maxDelayMs ?? 30000,
       backoffMultiplier: dto.backoffMultiplier ?? 2,
       retryableStatuses: dto.retryableStatuses ?? '[]',
-      // TaskMetadata 扁平化字段
+      // TaskMetadata 扁平化字�?
       payload: typeof dto.payload === 'string' ? dto.payload : JSON.stringify(dto.payload),
       tags: dto.tags,
       priority: dto.priority,
       timeout: dto.timeout,
-      // 时间戳
+      // 时间�?
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
     };
@@ -164,7 +164,7 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
       update: data,
     });
 
-    // 保存执行记录（如果有）
+    // 保存执行记录（如果有�?
     const executions = task.executions;
     if (executions && executions.length > 0) {
       for (const execution of executions) {
@@ -199,7 +199,7 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
       include: {
         scheduleExecution: {
           orderBy: { createdAt: 'desc' },
-          take: 10, // 最近 10 条执行记录
+          take: 10, // 最�?10 条执行记�?
         },
       },
     });
@@ -303,17 +303,17 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
   }
 
   async findDueTasksForExecution(beforeTime: Date, limit?: number): Promise<ScheduleTask[]> {
-    // ✅ 优化完成！现在 nextRunAt 是独立字段，可以直接用 SQL 查询
+    // �?优化完成！现�?nextRunAt 是独立字段，可以直接�?SQL 查询
     const tasks = await this.prisma.scheduleTask.findMany({
       where: {
         enabled: true,
         status: ScheduleTaskStatus.ACTIVE,
         nextRunAt: {
-          lte: beforeTime, // ⭐ 直接 SQL 查询！
+          lte: beforeTime, // �?直接 SQL 查询�?
         },
       },
       orderBy: {
-        nextRunAt: 'asc', // 按执行时间排序
+        nextRunAt: 'asc', // 按执行时间排�?
       },
       take: limit,
       include: {

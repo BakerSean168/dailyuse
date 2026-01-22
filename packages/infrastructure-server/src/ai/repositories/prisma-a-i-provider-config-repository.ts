@@ -1,26 +1,26 @@
 /**
  * Prisma AI Provider Config Repository
- * AI 服务提供商配置仓储实现
+ * AI 服务提供商配置仓储实�?
  *
- * 职责：
- * - 操作 ai_provider_configs 表
- * - ServerDTO ↔ Prisma Model 映射
+ * 职责�?
+ * - 操作 ai_provider_configs �?
+ * - ServerDTO �?Prisma Model 映射
  * - API Key 加密/解密处理
  *
- * 安全说明：
+ * 安全说明�?
  * - API Key 使用 AES-256-GCM 加密存储
- * - 加密密钥从环境变量 AI_PROVIDER_ENCRYPTION_KEY 读取
+ * - 加密密钥从环境变�?AI_PROVIDER_ENCRYPTION_KEY 读取
  */
 
 import type { PrismaClient } from '@prisma/client';
 import type { IAIProviderConfigRepository } from '@dailyuse/domain-server/ai';
 import type { AIProviderConfigServerDTO, AIModelInfo } from '@dailyuse/contracts/ai';
 import { AIProviderType } from '@dailyuse/contracts/ai';
-import { env } from '@/shared/infrastructure/config/env.js';
+import { env } from '../../shared/config/env';
 import crypto from 'crypto';
 
 // 使用 any 类型绕过 Prisma 类型生成延迟问题
-// Prisma client 已包含 aiProviderConfig 模型，但 TypeScript 可能未及时更新
+// Prisma client 已包�?aiProviderConfig 模型，但 TypeScript 可能未及时更�?
 type PrismaClientWithAIProvider = PrismaClient & {
   aiProviderConfig: {
     upsert: (args: any) => Promise<any>;
@@ -49,12 +49,12 @@ export class PrismaAIProviderConfigRepository implements IAIProviderConfigReposi
     // 从环境变量获取加密密钥，如果没有则使用默认密钥（仅开发环境）
     const keyStr = env.AI_PROVIDER_ENCRYPTION_KEY || 'default-dev-key-32-bytes-long!!';
     this.encryptionKey = crypto.scryptSync(keyStr, 'salt', 32);
-    // 类型断言：运行时 Prisma client 已包含 aiProviderConfig
+    // 类型断言：运行时 Prisma client 已包�?aiProviderConfig
     this.prismaWithAI = prisma as PrismaClientWithAIProvider;
   }
 
   /**
-   * 保存配置（UPSERT 语义）
+   * 保存配置（UPSERT 语义�?
    */
   async save(config: AIProviderConfigServerDTO): Promise<void> {
     const encryptedApiKey = this.encryptApiKey(config.apiKey);
@@ -104,7 +104,7 @@ export class PrismaAIProviderConfigRepository implements IAIProviderConfigReposi
   }
 
   /**
-   * 根据账户 UUID 查找所有配置
+   * 根据账户 UUID 查找所有配�?
    */
   async findByAccountUuid(accountUuid: string): Promise<AIProviderConfigServerDTO[]> {
     const records = await this.prismaWithAI.aiProviderConfig.findMany({
@@ -116,7 +116,7 @@ export class PrismaAIProviderConfigRepository implements IAIProviderConfigReposi
   }
 
   /**
-   * 查找账户的默认 Provider
+   * 查找账户的默�?Provider
    */
   async findDefaultByAccountUuid(accountUuid: string): Promise<AIProviderConfigServerDTO | null> {
     const record = await this.prismaWithAI.aiProviderConfig.findFirst({
@@ -154,7 +154,7 @@ export class PrismaAIProviderConfigRepository implements IAIProviderConfigReposi
   }
 
   /**
-   * 检查配置是否存在
+   * 检查配置是否存�?
    */
   async exists(uuid: string): Promise<boolean> {
     const count = await this.prismaWithAI.aiProviderConfig.count({
@@ -164,7 +164,7 @@ export class PrismaAIProviderConfigRepository implements IAIProviderConfigReposi
   }
 
   /**
-   * 取消账户下所有 Provider 的默认状态
+   * 取消账户下所�?Provider 的默认状�?
    */
   async clearDefaultForAccount(accountUuid: string): Promise<void> {
     await this.prismaWithAI.aiProviderConfig.updateMany({
@@ -221,10 +221,10 @@ export class PrismaAIProviderConfigRepository implements IAIProviderConfigReposi
   // ===== 映射方法 =====
 
   /**
-   * 映射：Prisma Model → ServerDTO
+   * 映射：Prisma Model �?ServerDTO
    */
   private toServerDTO(record: any): AIProviderConfigServerDTO {
-    // 映射 providerType 字符串 → 枚举
+    // 映射 providerType 字符�?�?枚举
     let providerType: AIProviderType;
     switch (record.providerType) {
       case 'OPENAI':

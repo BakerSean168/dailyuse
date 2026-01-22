@@ -1,16 +1,16 @@
 import type { IUserSettingRepository } from '@dailyuse/domain-server/setting';
 import { PrismaUserSettingRepository } from '../repositories/PrismaUserSettingRepository';
-import { prisma } from '@/shared/infrastructure/config/prisma';
+import { prisma } from '../../shared/config/prisma';
 
 /**
  * Setting 模块依赖注入容器
- * 负责管理领域服务和仓储的实例创建和生命周期
+ * 负责管理领域服务和仓储的实例创建和生命周�?
  *
  * 采用懒加载模式：
- * - 只在首次调用时创建实例
+ * - 只在首次调用时创建实�?
  * - 后续调用返回已有实例（单例）
  *
- * 支持测试替换：
+ * 支持测试替换�?
  * - 允许注入 Mock 仓储用于单元测试
  */
 export class SettingContainer {
@@ -27,7 +27,7 @@ export class SettingContainer {
   }
 
   /**
-   * 获取用户设置仓储实例（懒加载）
+   * 获取用户设置仓储实例（懒加载�?
    */
   getUserSettingRepository(): IUserSettingRepository {
     if (!this.userSettingRepository) {

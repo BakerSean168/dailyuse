@@ -1,6 +1,6 @@
 /**
  * @file DashboardConfigPrismaRepository.ts
- * @description 仪表板配置 Prisma 仓储实现。
+ * @description 仪表板配�?Prisma 仓储实现�?
  * @date 2025-01-22
  */
 
@@ -10,20 +10,20 @@ import type { IDashboardConfigRepository } from '@dailyuse/domain-server/dashboa
 import type { DashboardConfigServerDTO, WidgetConfigDTO, DashboardConfigPersistenceDTO } from '@dailyuse/contracts/dashboard';
 
 /**
- * Dashboard 配置仓储 Prisma 实现类。
+ * Dashboard 配置仓储 Prisma 实现类�?
  *
  * @remarks
- * 负责 DashboardConfig 聚合根的持久化操作。
- * 处理 JSON 字段（widgetConfig）的序列化。
+ * 负责 DashboardConfig 聚合根的持久化操作�?
+ * 处理 JSON 字段（widgetConfig）的序列化�?
  */
 export class DashboardConfigPrismaRepository implements IDashboardConfigRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 根据账户 UUID 查找配置。
+   * 根据账户 UUID 查找配置�?
    *
    * @param accountUuid - 账户 UUID
-   * @returns {Promise<DashboardConfig | null>} 配置实体或 null
+   * @returns {Promise<DashboardConfig | null>} 配置实体�?null
    */
   async findByAccountUuid(accountUuid: string): Promise<DashboardConfig | null> {
     const config = await this.prisma.dashboardConfig.findUnique({
@@ -34,7 +34,7 @@ export class DashboardConfigPrismaRepository implements IDashboardConfigReposito
       return null;
     }
 
-    // 转换为 Persistence DTO，然后创建聚合根
+    // 转换�?Persistence DTO，然后创建聚合根
     const persistenceDTO: DashboardConfigPersistenceDTO = {
       id: config.id,
       accountUuid: config.accountUuid,
@@ -47,7 +47,7 @@ export class DashboardConfigPrismaRepository implements IDashboardConfigReposito
   }
 
   /**
-   * 保存配置。
+   * 保存配置�?
    *
    * @param config - 配置实体
    * @returns {Promise<DashboardConfig>} 更新后的实体
@@ -55,7 +55,7 @@ export class DashboardConfigPrismaRepository implements IDashboardConfigReposito
   async save(config: DashboardConfig): Promise<DashboardConfig> {
     const persistenceDTO = config.toPersistence();
 
-    // 尝试更新，如果不存在则创建
+    // 尝试更新，如果不存在则创�?
     const result = await this.prisma.dashboardConfig.upsert({
       where: { accountUuid: config.accountUuid },
       create: {
@@ -67,7 +67,7 @@ export class DashboardConfigPrismaRepository implements IDashboardConfigReposito
       },
     });
 
-    // 重新从数据库加载以获取最新状态
+    // 重新从数据库加载以获取最新状�?
     const updatedPersistenceDTO: DashboardConfigPersistenceDTO = {
       id: result.id,
       accountUuid: result.accountUuid,
@@ -80,7 +80,7 @@ export class DashboardConfigPrismaRepository implements IDashboardConfigReposito
   }
 
   /**
-   * 删除配置。
+   * 删除配置�?
    *
    * @param accountUuid - 账户 UUID
    * @returns {Promise<void>}
@@ -92,7 +92,7 @@ export class DashboardConfigPrismaRepository implements IDashboardConfigReposito
   }
 
   /**
-   * 检查配置是否存在。
+   * 检查配置是否存在�?
    *
    * @param accountUuid - 账户 UUID
    * @returns {Promise<boolean>} 是否存在

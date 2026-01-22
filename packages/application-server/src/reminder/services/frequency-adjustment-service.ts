@@ -1,12 +1,17 @@
+/**
+ * Adjust Reminder Frequency Service
+ *
+ * 调整提醒频率
+ */
+
 import type { IReminderTemplateRepository } from '@dailyuse/domain-server/reminder';
-import { FrequencyAdjustment } from '@dailyuse/domain-server/reminder';
-import { SmartFrequencyAnalysisService } from './SmartFrequencyAnalysisService';
+import { eventBus } from '@dailyuse/utils';
 
 /**
  * 调整结果
  */
 export interface AdjustmentResult {
-  templateId: string;
+  templateUuid: string;
   success: boolean;
   originalInterval: number;
   adjustedInterval: number;
@@ -15,39 +20,97 @@ export interface AdjustmentResult {
 }
 
 /**
- * Frequency Adjustment Service
+ * 频率调整请求
+ */
+export interface AdjustFrequencyRequest {
+  templateUuid: string;
+  newInterval: number;
+  reason: string;
+  accountUuid: string;
+}
+
+/**
+ * Adjust Reminder Frequency Service
  *
  * 职责：
  * - 应用频率调整建议
  * - 处理用户确认/拒绝调整
  * - 自动应用调整（当用户启用自动模式时）
  */
-export class FrequencyAdjustmentService {
-  constructor(
-    private reminderTemplateRepository: IReminderTemplateRepository,
-    private analysisService: SmartFrequencyAnalysisService,
-  ) {}
+export class AdjustReminderFrequency {
+  constructor(private readonly templateRepository: IReminderTemplateRepository) {}
 
   /**
-   * 获取服务单例
+   * 接受并应用频率调整
+   *
+   * @param request - 调整请求
+   * @returns 调整结果
    */
-  static getInstance(
-    reminderTemplateRepository: IReminderTemplateRepository,
-    analysisService: SmartFrequencyAnalysisService,
-  ): FrequencyAdjustmentService {
-    return new FrequencyAdjustmentService(reminderTemplateRepository, analysisService);
+  async execute(request: AdjustFrequencyRequest): Promise<AdjustmentResult> {
+    const template = await this.templateRepository.findById(request.templateUuid);
+    if (!template) {
+      throw new Error(`Template ${request.templateUuid} not found`);
+    }
+
+    // Store original interval for comparison
+    const originalInterval = template.recurrenceConfig?.interval || 0;
+
+    // Apply adjustment to template
+    if (template.recurrenceConfig) {
+      template.recurrenceConfig.interval = request.newInterval;
+    }
+
+    // Save updated template
+    await this.templateRepository.save(template);
+
+    // Publish frequency adjusted event
+    await eventBus.publish({
+      eventType: 'reminder.frequency.adjusted',
+      payload: {
+        templateUuid: request.templateUuid,
+        originalInterval,
+        adjustedInterval: request.newInterval,
+        reason: request.reason,
+        accountUuid: request.accountUuid,
+        adjustedAt: Date.now(),
+      },
+      timestamp: Date.now(),
+    });
+
+    return {
+      templateUuid: request.templateUuid,
+      success: true,
+      originalInterval,
+      adjustedInterval: request.newInterval,
+      reason: request.reason,
+      appliedAt: Date.now(),
+    };
   }
 
   /**
-   * 用户接受调整建议
+   * 拒绝频率调整
    *
-   * @param templateId - 提醒模板ID
+   * @param templateUuid - 模板UUID
+   * @param accountUuid - 账户UUID
    */
-  async acceptAdjustment(templateId: string): Promise<AdjustmentResult> {
-    const template = await this.reminderTemplateRepository.findById(templateId);
+  async reject(templateUuid: string, accountUuid: string): Promise<void> {
+    const template = await this.templateRepository.findById(templateUuid);
     if (!template) {
-      throw new Error(`Template ${templateId} not found`);
+      throw new Error(`Template ${templateUuid} not found`);
     }
+
+    // Publish rejection event
+    await eventBus.publish({
+      eventType: 'reminder.frequency.adjustment.rejected',
+      payload: {
+        templateUuid,
+        accountUuid,
+        rejectedAt: Date.now(),
+      },
+      timestamp: Date.now(),
+    });
+  }
+}
 
     // 检查是否有待确认的调整
     if (!template.frequencyAdjustment || template.frequencyAdjustment.userConfirmed) {

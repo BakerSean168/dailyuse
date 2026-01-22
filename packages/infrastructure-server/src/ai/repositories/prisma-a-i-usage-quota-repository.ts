@@ -3,15 +3,15 @@
  * Prisma AI Usage Quota Repository
  * Prisma AI 使用配额仓储实现
  *
- * 职责：
- * - 操作 ai_usage_quotas 表
- * - ServerDTO ↔ Prisma Model 映射
- * - 每个账户只有一条配额记录（accountUuid 唯一）
+ * 职责�?
+ * - 操作 ai_usage_quotas �?
+ * - ServerDTO �?Prisma Model 映射
+ * - 每个账户只有一条配额记录（accountUuid 唯一�?
  *
- * TODO: 需要数据库 migration 应用后修复类型错误
+ * TODO: 需要数据库 migration 应用后修复类型错�?
  */
 
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { IAIUsageQuotaRepository } from '@dailyuse/domain-server/ai';
 import type { AIUsageQuotaServerDTO } from '@dailyuse/contracts/ai';
 import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
@@ -23,7 +23,7 @@ export class PrismaAIUsageQuotaRepository implements IAIUsageQuotaRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 保存配额（UPSERT 语义）
+   * 保存配额（UPSERT 语义�?
    */
   async save(quota: AIUsageQuotaServerDTO): Promise<void> {
     await this.prisma.aiUsageQuota.upsert({
@@ -77,12 +77,12 @@ export class PrismaAIUsageQuotaRepository implements IAIUsageQuotaRepository {
    */
   async createDefaultQuota(accountUuid: string): Promise<AIUsageQuotaServerDTO> {
     const now = Date.now();
-    const nextReset = now + 24 * 60 * 60 * 1000; // 24小时后
+    const nextReset = now + 24 * 60 * 60 * 1000; // 24小时�?
 
     const record = await this.prisma.aiUsageQuota.create({
       data: {
         accountUuid,
-        quotaLimit: 50, // 默认每日 50 次
+        quotaLimit: 50, // 默认每日 50 �?
         currentUsage: 0,
         resetPeriod: 'DAILY',
         lastResetAt: new Date(now),
@@ -103,7 +103,7 @@ export class PrismaAIUsageQuotaRepository implements IAIUsageQuotaRepository {
   }
 
   /**
-   * 检查配额是否存在
+   * 检查配额是否存�?
    */
   async exists(accountUuid: string): Promise<boolean> {
     const count = await this.prisma.aiUsageQuota.count({
@@ -113,10 +113,10 @@ export class PrismaAIUsageQuotaRepository implements IAIUsageQuotaRepository {
   }
 
   /**
-   * 映射：Prisma Model → ServerDTO
+   * 映射：Prisma Model �?ServerDTO
    */
   private toServerDTO(record: any): AIUsageQuotaServerDTO {
-    // 映射数据库字符串 → QuotaResetPeriod 枚举
+    // 映射数据库字符串 �?QuotaResetPeriod 枚举
     let resetPeriod: QuotaResetPeriod;
     switch (record.resetPeriod) {
       case 'DAILY':

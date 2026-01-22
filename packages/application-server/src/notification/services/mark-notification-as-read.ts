@@ -6,8 +6,8 @@
 
 import { NotificationDomainService } from '@dailyuse/domain-server/notification';
 import type {
-  NotificationRepository as INotificationRepository,
-  NotificationRepository as INotificationTemplateRepository,
+  INotificationRepository,
+  INotificationTemplateRepository,
   INotificationPreferenceRepository,
 } from '@dailyuse/domain-server/notification';
 

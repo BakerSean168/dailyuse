@@ -2,7 +2,7 @@
  * Prisma Weight Snapshot Repository Implementation
  * 权重快照仓储 Prisma 实现
  *
- * 负责权重快照的持久化操作。
+ * 负责权重快照的持久化操作�?
  */
 
 import type { PrismaClient } from '@prisma/client';
@@ -17,12 +17,12 @@ import { PrismaWeightSnapshotMapper } from '../mappers/PrismaWeightSnapshotMappe
  * **职责**:
  * - 实现 IWeightSnapshotRepository 接口
  * - 处理所有数据库操作 (CRUD + 查询)
- * - 使用 Mapper 进行 Domain ↔ Prisma 转换
+ * - 使用 Mapper 进行 Domain �?Prisma 转换
  *
- * **查询特性**:
+ * **查询特�?*:
  * - 分页支持 (page, pageSize)
  * - 时间倒序排序 (最新的在前)
- * - 多维度查询 (Goal, KeyResult, TimeRange)
+ * - 多维度查�?(Goal, KeyResult, TimeRange)
  */
 export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -34,7 +34,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
    * **冲突**: UUID 冲突时会抛出 Prisma 错误
    *
    * @param snapshot - Domain快照对象
-   * @throws {PrismaClientKnownRequestError} 当 UUID 冲突时
+   * @throws {PrismaClientKnownRequestError} �?UUID 冲突�?
    *
    * @example
    * ```typescript
@@ -67,13 +67,13 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 查询 Goal 的所有快照
+   * 查询 Goal 的所有快�?
    *
-   * **排序**: 按 snapshotTime 倒序 (最新的在前)
-   * **分页**: 支持 page 和 pageSize 参数
+   * **排序**: �?snapshotTime 倒序 (最新的在前)
+   * **分页**: 支持 page �?pageSize 参数
    *
    * @param goalUuid - Goal UUID
-   * @param page - 页码 (从 1 开始)
+   * @param page - 页码 (�?1 开�?
    * @param pageSize - 每页数量
    * @returns 快照列表和总数
    *
@@ -109,13 +109,13 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 查询 KeyResult 的所有快照
+   * 查询 KeyResult 的所有快�?
    *
-   * **排序**: 按 snapshotTime 倒序 (最新的在前)
-   * **分页**: 支持 page 和 pageSize 参数
+   * **排序**: �?snapshotTime 倒序 (最新的在前)
+   * **分页**: 支持 page �?pageSize 参数
    *
    * @param krUuid - KeyResult UUID
-   * @param page - 页码 (从 1 开始)
+   * @param page - 页码 (�?1 开�?
    * @param pageSize - 每页数量
    * @returns 快照列表和总数
    *
@@ -152,13 +152,13 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   /**
    * 查询时间范围内的快照
    *
-   * **排序**: 按 snapshotTime 升序 (时间线顺序，用于趋势分析)
+   * **排序**: �?snapshotTime 升序 (时间线顺序，用于趋势分析)
    * **边界**: 包含起止时间 (gte, lte)
-   * **分页**: 支持 page 和 pageSize 参数
+   * **分页**: 支持 page �?pageSize 参数
    *
    * @param startTime - 开始时间戳 (ms)
-   * @param endTime - 结束时间戳 (ms)
-   * @param page - 页码 (从 1 开始)
+   * @param endTime - 结束时间�?(ms)
+   * @param page - 页码 (�?1 开�?
    * @param pageSize - 每页数量
    * @returns 快照列表和总数
    *
@@ -181,11 +181,11 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
       this.prisma.keyResultWeightSnapshot.findMany({
         where: {
           snapshotTime: {
-            gte: BigInt(startTime), // number → BigInt 转换
+            gte: BigInt(startTime), // number �?BigInt 转换
             lte: BigInt(endTime),
           },
         },
-        orderBy: { snapshotTime: 'asc' }, // 时间线顺序 (用于趋势图)
+        orderBy: { snapshotTime: 'asc' }, // 时间线顺�?(用于趋势�?
         skip,
         take: pageSize,
       }),
@@ -209,7 +209,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
    * 根据 UUID 查询单个快照
    *
    * @param uuid - 快照 UUID
-   * @returns 快照对象或 null
+   * @returns 快照对象�?null
    *
    * @example
    * ```typescript
@@ -244,7 +244,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 删除 Goal 的所有快照
+   * 删除 Goal 的所有快�?
    *
    * **批量操作**: 使用 deleteMany 批量删除
    * **级联**: Goal 删除时会自动级联删除 (onDelete: Cascade)
@@ -263,7 +263,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 删除 KeyResult 的所有快照
+   * 删除 KeyResult 的所有快�?
    *
    * **批量操作**: 使用 deleteMany 批量删除
    * **级联**: KR 删除时会自动级联删除 (onDelete: Cascade)
@@ -284,12 +284,12 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   /**
    * 删除时间范围内的快照
    *
-   * **用途**: 清理历史数据、数据归档
+   * **用�?*: 清理历史数据、数据归�?
    * **批量操作**: 使用 deleteMany 批量删除
    *
    * @param startTime - 开始时间戳 (ms)
-   * @param endTime - 结束时间戳 (ms)
-   * @returns 删除的记录数量
+   * @param endTime - 结束时间�?(ms)
+   * @returns 删除的记录数�?
    *
    * @example
    * ```typescript

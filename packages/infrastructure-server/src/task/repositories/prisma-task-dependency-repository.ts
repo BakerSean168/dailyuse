@@ -1,10 +1,10 @@
 /**
  * TaskDependency Prisma Repository
  * 任务依赖关系 Prisma 仓储实现
- * 标准 Express/TypeScript 模式 - 移除了 NestJS @Injectable 装饰器
+ * 标准 Express/TypeScript 模式 - 移除�?NestJS @Injectable 装饰�?
  */
 
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { ITaskDependencyRepository } from '@dailyuse/domain-server/task';
 import type {
   TaskDependencyServerDTO,
@@ -13,13 +13,13 @@ import type {
 } from '@dailyuse/contracts/task';
 
 /**
- * Prisma 实现的任务依赖仓储
+ * Prisma 实现的任务依赖仓�?
  */
 export class PrismaTaskDependencyRepository implements ITaskDependencyRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   /**
-   * 将 Prisma 模型转换为 DTO
+   * �?Prisma 模型转换�?DTO
    */
   private mapToDTO(data: any): TaskDependencyServerDTO {
     return {
@@ -63,7 +63,7 @@ export class PrismaTaskDependencyRepository implements ITaskDependencyRepository
   }
 
   /**
-   * 查找指定任务的所有前置依赖（此任务是后续任务）
+   * 查找指定任务的所有前置依赖（此任务是后续任务�?
    */
   async findBySuccessor(taskUuid: string): Promise<TaskDependencyServerDTO[]> {
     const dependencies = await this.prisma.taskDependency.findMany({
@@ -75,7 +75,7 @@ export class PrismaTaskDependencyRepository implements ITaskDependencyRepository
   }
 
   /**
-   * 查找依赖指定任务的所有任务（此任务是前置任务）
+   * 查找依赖指定任务的所有任务（此任务是前置任务�?
    */
   async findByPredecessor(taskUuid: string): Promise<TaskDependencyServerDTO[]> {
     const dependencies = await this.prisma.taskDependency.findMany({
@@ -87,7 +87,7 @@ export class PrismaTaskDependencyRepository implements ITaskDependencyRepository
   }
 
   /**
-   * 查找特定的前置-后续依赖关系
+   * 查找特定的前�?后续依赖关系
    */
   async findByPredecessorAndSuccessor(
     predecessorTaskUuid: string,
@@ -189,7 +189,7 @@ export class PrismaTaskDependencyRepository implements ITaskDependencyRepository
   }
 
   /**
-   * 删除与指定任务相关的所有依赖关系
+   * 删除与指定任务相关的所有依赖关�?
    */
   async deleteByTask(taskUuid: string): Promise<void> {
     await this.prisma.taskDependency.deleteMany({
@@ -215,11 +215,11 @@ export class PrismaTaskDependencyRepository implements ITaskDependencyRepository
   }
 
   /**
-   * 获取账户的所有依赖关系
-   * 通过关联的任务模板获取账户信息
+   * 获取账户的所有依赖关�?
+   * 通过关联的任务模板获取账户信�?
    */
   async findAllByAccount(accountUuid: string): Promise<TaskDependencyServerDTO[]> {
-    // 先获取账户的所有任务模板 UUID
+    // 先获取账户的所有任务模�?UUID
     const templates = await this.prisma.taskTemplate.findMany({
       where: { accountUuid },
       select: { uuid: true },

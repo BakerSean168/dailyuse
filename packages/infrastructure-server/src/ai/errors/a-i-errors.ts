@@ -34,7 +34,7 @@ export class AIQuotaExceededError extends Error {
 }
 
 /**
- * AI 提供商错误
+ * AI 提供商错�?
  */
 export class AIProviderError extends Error {
   public readonly provider: string;

@@ -6,7 +6,7 @@
  * @since Story 9.3 (EPIC-SCHEDULE-001)
  */
 
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { IScheduleRepository } from '@dailyuse/domain-server/schedule';
 import { Schedule } from '@dailyuse/domain-server/schedule';
 
@@ -23,8 +23,8 @@ export class PrismaScheduleRepository implements IScheduleRepository {
       accountUuid: data.accountUuid,
       title: data.title,
       description: data.description,
-      startTime: Number(data.startTime), // BigInt â†’ number (milliseconds)
-      endTime: Number(data.endTime), // BigInt â†’ number (milliseconds)
+      startTime: Number(data.startTime), // BigInt â†?number (milliseconds)
+      endTime: Number(data.endTime), // BigInt â†?number (milliseconds)
       duration: data.duration,
       hasConflict: data.hasConflict,
       conflictingSchedules: data.conflictingSchedules
@@ -33,8 +33,8 @@ export class PrismaScheduleRepository implements IScheduleRepository {
       priority: data.priority,
       location: data.location,
       attendees: data.attendees ? JSON.parse(data.attendees) : undefined,
-      createdAt: data.createdAt.getTime(), // Date â†’ number (milliseconds)
-      updatedAt: data.updatedAt.getTime(), // Date â†’ number (milliseconds)
+      createdAt: data.createdAt.getTime(), // Date â†?number (milliseconds)
+      updatedAt: data.updatedAt.getTime(), // Date â†?number (milliseconds)
     });
   }
 
@@ -49,8 +49,8 @@ export class PrismaScheduleRepository implements IScheduleRepository {
       accountUuid: dto.accountUuid,
       title: dto.title,
       description: dto.description ?? null,
-      startTime: BigInt(dto.startTime), // number â†’ BigInt (milliseconds)
-      endTime: BigInt(dto.endTime), // number â†’ BigInt (milliseconds)
+      startTime: BigInt(dto.startTime), // number â†?BigInt (milliseconds)
+      endTime: BigInt(dto.endTime), // number â†?BigInt (milliseconds)
       duration: dto.duration,
       hasConflict: dto.hasConflict,
       conflictingSchedules: dto.conflictingSchedules && dto.conflictingSchedules.length > 0
@@ -59,8 +59,8 @@ export class PrismaScheduleRepository implements IScheduleRepository {
       priority: dto.priority ?? null,
       location: dto.location ?? null,
       attendees: dto.attendees ? JSON.stringify(dto.attendees) : null,
-      createdAt: new Date(dto.createdAt), // number â†’ Date
-      updatedAt: new Date(dto.updatedAt), // number â†’ Date
+      createdAt: new Date(dto.createdAt), // number â†?Date
+      updatedAt: new Date(dto.updatedAt), // number â†?Date
     };
   }
 

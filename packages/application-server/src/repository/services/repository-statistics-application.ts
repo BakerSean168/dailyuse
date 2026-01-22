@@ -112,20 +112,20 @@ export class RepositoryStatisticsService {
 
 // ===== 便捷函数 =====
 
-export const getOrCreateStatistics = (accountUuid: string) =>
-  RepositoryStatisticsService.getInstance().getOrCreateStatistics(accountUuid);
+export const getOrCreateStatistics = (accountUuid: string, service: RepositoryStatisticsService) =>
+  service.getOrCreateStatistics(accountUuid);
 
-export const getStatistics = (accountUuid: string) =>
-  RepositoryStatisticsService.getInstance().getStatistics(accountUuid);
+export const getStatistics = (accountUuid: string, service: RepositoryStatisticsService) =>
+  service.getStatistics(accountUuid);
 
-export const initializeStatistics = (accountUuid: string) =>
-  RepositoryStatisticsService.getInstance().initializeStatistics(accountUuid);
+export const initializeStatistics = (accountUuid: string, service: RepositoryStatisticsService) =>
+  service.initializeStatistics(accountUuid);
 
-export const recalculateStatistics = (request: RecalculateStatisticsRequest) =>
-  RepositoryStatisticsService.getInstance().recalculateStatistics(request);
+export const recalculateStatistics = (request: RecalculateStatisticsRequest, service: RepositoryStatisticsService) =>
+  service.recalculateStatistics(request);
 
-export const handleStatisticsUpdateEvent = (event: StatisticsUpdateEvent) =>
-  RepositoryStatisticsService.getInstance().handleStatisticsUpdateEvent(event);
+export const handleStatisticsUpdateEvent = (event: StatisticsUpdateEvent, service: RepositoryStatisticsService) =>
+  service.handleStatisticsUpdateEvent(event);
 
-export const deleteStatistics = (accountUuid: string) =>
-  RepositoryStatisticsService.getInstance().deleteStatistics(accountUuid);
+export const deleteStatistics = (accountUuid: string, service: RepositoryStatisticsService) =>
+  service.deleteStatistics(accountUuid);

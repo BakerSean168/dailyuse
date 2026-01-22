@@ -10,7 +10,7 @@ export class PrismaFocusModeRepository implements IFocusModeRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 将 Prisma 模型映射为领域值对象
+   * �?Prisma 模型映射为领域值对�?
    */
   private mapToValueObject(data: PrismaFocusMode): FocusMode {
     return FocusMode.fromServerDTO({
@@ -28,7 +28,7 @@ export class PrismaFocusModeRepository implements IFocusModeRepository {
   }
 
   /**
-   * 保存专注周期（创建或更新）
+   * 保存专注周期（创建或更新�?
    */
   async save(focusMode: FocusMode): Promise<void> {
     const dto = focusMode.toServerDTO();
@@ -69,7 +69,7 @@ export class PrismaFocusModeRepository implements IFocusModeRepository {
   }
 
   /**
-   * 查找账户当前活跃的专注周期
+   * 查找账户当前活跃的专注周�?
    */
   async findActiveByAccountUuid(accountUuid: string): Promise<FocusMode | null> {
     const data = await this.prisma.focusMode.findFirst({
@@ -84,7 +84,7 @@ export class PrismaFocusModeRepository implements IFocusModeRepository {
   }
 
   /**
-   * 查找账户的所有专注周期（包括历史）
+   * 查找账户的所有专注周期（包括历史�?
    */
   async findByAccountUuid(accountUuid: string): Promise<FocusMode[]> {
     const data = await this.prisma.focusMode.findMany({
@@ -96,7 +96,7 @@ export class PrismaFocusModeRepository implements IFocusModeRepository {
   }
 
   /**
-   * 批量失效过期的专注周期
+   * 批量失效过期的专注周�?
    */
   async deactivateExpired(): Promise<number> {
     const currentTime = BigInt(Date.now());

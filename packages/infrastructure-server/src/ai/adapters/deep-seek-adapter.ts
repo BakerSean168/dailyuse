@@ -1,10 +1,10 @@
 /**
  * DeepSeek Adapter
- * DeepSeek 国产高性价比模型适配器
+ * DeepSeek 国产高性价比模型适配�?
  *
- * 特点：
+ * 特点�?
  * - 高性价比，价格优惠
- * - 支持 deepseek-chat, deepseek-coder 等模型
+ * - 支持 deepseek-chat, deepseek-coder 等模�?
  * - 新用户有免费额度
  * - OpenAI 兼容接口
  *
@@ -20,8 +20,8 @@ import {
   type AIGenerationRequest,
   type AIGenerationResponse,
   type AIStreamChunk,
-} from './BaseAIAdapter';
-import { AIGenerationTimeoutError, AIProviderError } from '../errors/AIErrors';
+} from './base-a-i-adapter';
+import { AIGenerationTimeoutError, AIProviderError } from '../errors/a-i-errors';
 
 /**
  * DeepSeek 配置
@@ -31,14 +31,14 @@ export interface DeepSeekConfig {
   apiKey: string;
   /** 默认模型 ID */
   defaultModel: string;
-  /** 超时时间（毫秒，默认 60000） */
+  /** 超时时间（毫秒，默认 60000�?*/
   timeoutMs?: number;
 }
 
 /**
  * DeepSeek Adapter 实现
  *
- * 用法：
+ * 用法�?
  * ```typescript
  * const adapter = new DeepSeekAdapter({
  *   apiKey: 'sk-xxx',
@@ -50,7 +50,7 @@ export interface DeepSeekConfig {
 export class DeepSeekAdapter extends BaseAIAdapter {
   /** DeepSeek API 基础地址 */
   private static readonly BASE_URL = 'https://api.deepseek.com/v1';
-  /** 提供商名称 */
+  /** 提供商名�?*/
   private static readonly PROVIDER_NAME = 'DeepSeek';
 
   private readonly openai: ReturnType<typeof createOpenAI>;
@@ -70,7 +70,7 @@ export class DeepSeekAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 一次性生成文本
+   * 一次性生成文�?
    */
   async generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>> {
     try {
@@ -171,7 +171,7 @@ export class DeepSeekAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 健康检查
+   * 健康检�?
    */
   async healthCheck(): Promise<boolean> {
     try {
@@ -187,7 +187,7 @@ export class DeepSeekAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 获取提供商名称
+   * 获取提供商名�?
    */
   getProviderName(): string {
     return DeepSeekAdapter.PROVIDER_NAME;

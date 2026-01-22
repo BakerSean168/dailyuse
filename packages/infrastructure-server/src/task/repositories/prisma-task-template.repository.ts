@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import type { ITaskTemplateRepository, TaskFilters } from '@dailyuse/domain-server/task';
 import { TaskTemplate, TaskTimeConfig, RecurrenceRule, TaskReminderConfig } from '@dailyuse/domain-server/task';
 import { TaskTemplateStatus, TaskType, ImportanceLevel } from '@dailyuse/contracts/task';

@@ -9,6 +9,7 @@ import type { ITaskStatisticsRepository } from '@dailyuse/domain-server/task';
 import type { IGoalStatisticsRepository } from '@dailyuse/domain-server/goal';
 import type { IReminderStatisticsRepository } from '@dailyuse/domain-server/reminder';
 import type { IScheduleStatisticsRepository } from '@dailyuse/domain-server/schedule';
+
 import { TaskStatistics } from '@dailyuse/domain-server/task';
 import { GoalStatistics } from '@dailyuse/domain-server/goal';
 import { ReminderStatistics } from '@dailyuse/domain-server/reminder';
@@ -26,6 +27,14 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('GetDashboardStatistics');
 
 /**
+ * Cache service interface
+ */
+interface ICacheService {
+  get<T>(accountUuid: string): Promise<T | null>;
+  set(accountUuid: string, data: unknown): Promise<void>;
+}
+
+/**
  * Get Dashboard Statistics
  */
 export class GetDashboardStatistics {
@@ -34,7 +43,7 @@ export class GetDashboardStatistics {
     private readonly goalStatsRepo: IGoalStatisticsRepository,
     private readonly reminderStatsRepo: IReminderStatisticsRepository,
     private readonly scheduleStatsRepo: IScheduleStatisticsRepository,
-    private readonly cacheService?: IStatisticsCacheService,
+    private readonly cacheService?: ICacheService,
   ) {}
 
   /**

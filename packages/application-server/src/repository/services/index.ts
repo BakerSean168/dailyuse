@@ -52,10 +52,10 @@ export { MoveFolder } from './move-folder';
 export { DeleteFolder } from './delete-folder';
 
 // ===== Search Service =====
-export { SearchService, search } from './search-application';
+export { SearchService, createSearchService } from './search-application';
 
 // ===== Tags Service =====
-export { TagsService, getTagStatistics } from './tags-application';
+export { TagsService, createTagsService } from './tags-application';
 
 // ===== Repository Statistics Service =====
 export {

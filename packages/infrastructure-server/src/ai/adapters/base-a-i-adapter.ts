@@ -1,11 +1,11 @@
 /**
  * Base AI Adapter
- * AI 提供商抽象基类
+ * AI 提供商抽象基�?
  *
- * 职责：
+ * 职责�?
  * - 定义 AI 生成的统一接口
  * - 提供超时保护机制
- * - 标准化请求/响应格式
+ * - 标准化请�?响应格式
  */
 
 import type { GenerationTaskType, AIProvider, AIModel, TokenUsageServerDTO } from '@dailyuse/contracts/ai';
@@ -15,11 +15,11 @@ import type { IAIAdapter, AIGenerationRequest, AIGenerationResponse, AIStreamChu
 export { AIGenerationRequest, AIGenerationResponse, AIStreamChunk };
 
 /**
- * Base AI Adapter 抽象类
+ * Base AI Adapter 抽象�?
  */
 export abstract class BaseAIAdapter implements IAIAdapter {
   /**
-   * AI 生成超时时间（10秒）
+   * AI 生成超时时间�?0秒）
    */
   protected static readonly TIMEOUT_MS = 10000;
 
@@ -39,12 +39,12 @@ export abstract class BaseAIAdapter implements IAIAdapter {
   abstract streamText(request: AIGenerationRequest): AsyncGenerator<AIStreamChunk, void, unknown>;
 
   /**
-   * 健康检查
+   * 健康检�?
    */
   abstract healthCheck(): Promise<boolean>;
 
   /**
-   * 获取提供商名称
+   * 获取提供商名�?
    */
   getProvider(): AIProvider {
     return this.provider;

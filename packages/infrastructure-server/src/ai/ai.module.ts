@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import { PrismaAIConversationRepository } from './repositories/prisma-a-i-conversation-repository';
 import { PrismaAIGenerationTaskRepository } from './repositories/prisma-a-i-generation-task-repository';
 import { PrismaAIProviderConfigRepository } from './repositories/prisma-a-i-provider-config-repository';

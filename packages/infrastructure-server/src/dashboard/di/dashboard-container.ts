@@ -1,6 +1,6 @@
 /**
  * @file DashboardContainer.ts
- * @description Dashboard 模块依赖注入容器，管理服务的实例化和生命周期。
+ * @description Dashboard 模块依赖注入容器，管理服务的实例化和生命周期�?
  * @date 2025-01-22
  */
 
@@ -22,21 +22,21 @@ import { GoalContainer } from '@dailyuse/infrastructure-server';
 import { ReminderContainer } from '@dailyuse/infrastructure-server';
 import { ScheduleContainer } from '@dailyuse/infrastructure-server';
 import type { StatisticsCacheService } from '../services/StatisticsCacheService';
-import { prisma } from '@/shared/infrastructure/config/prisma';
+import { prisma } from '../../shared/config/prisma';
 import { DashboardConfigPrismaRepository } from '../repositories/DashboardConfigPrismaRepository';
 import { StatisticsCacheService as CacheServiceImpl } from '../services/StatisticsCacheService';
 
 /**
- * Dashboard 模块依赖注入容器。
+ * Dashboard 模块依赖注入容器�?
  *
  * @remarks
- * 负责管理 Dashboard 相关服务的实例创建和生命周期。
+ * 负责管理 Dashboard 相关服务的实例创建和生命周期�?
  *
  * 采用懒加载模式：
- * - 只在首次调用时创建实例
+ * - 只在首次调用时创建实�?
  * - 后续调用返回已有实例（单例）
  *
- * 支持测试替换：
+ * 支持测试替换�?
  * - 允许注入 Mock 服务用于单元测试
  */
 export class DashboardContainer {
@@ -47,7 +47,7 @@ export class DashboardContainer {
   private constructor() {}
 
   /**
-   * 获取容器单例。
+   * 获取容器单例�?
    * @returns {DashboardContainer}
    */
   static getInstance(): DashboardContainer {
@@ -58,7 +58,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 获取 TaskStatistics 仓储实例。
+   * 获取 TaskStatistics 仓储实例�?
    * @returns {ITaskStatisticsRepository}
    */
   getTaskStatisticsRepository(): ITaskStatisticsRepository {
@@ -66,7 +66,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 获取 GoalStatistics 仓储实例。
+   * 获取 GoalStatistics 仓储实例�?
    * @returns {IGoalStatisticsRepository}
    */
   getGoalStatisticsRepository(): IGoalStatisticsRepository {
@@ -74,7 +74,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 获取 ReminderStatistics 仓储实例。
+   * 获取 ReminderStatistics 仓储实例�?
    * @returns {IReminderStatisticsRepository}
    */
   getReminderStatisticsRepository(): IReminderStatisticsRepository {
@@ -82,7 +82,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 获取 ScheduleStatistics 仓储实例。
+   * 获取 ScheduleStatistics 仓储实例�?
    * @returns {IScheduleStatisticsRepository}
    */
   getScheduleStatisticsRepository(): IScheduleStatisticsRepository {
@@ -90,7 +90,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 获取缓存服务实例（懒加载）。
+   * 获取缓存服务实例（懒加载）�?
    * @returns {StatisticsCacheService}
    */
   getCacheService(): StatisticsCacheService {
@@ -101,7 +101,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 获取 Dashboard 配置仓储实例（懒加载）。
+   * 获取 Dashboard 配置仓储实例（懒加载）�?
    * @returns {IDashboardConfigRepository}
    */
   getDashboardConfigRepository(): IDashboardConfigRepository {
@@ -112,7 +112,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 设置缓存服务实例（用于测试）。
+   * 设置缓存服务实例（用于测试）�?
    * @param service - 缓存服务 Mock 实例
    */
   setCacheService(service: StatisticsCacheService): void {
@@ -120,7 +120,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 重置容器（用于测试）。
+   * 重置容器（用于测试）�?
    */
   reset(): void {
     this.cacheService = undefined;

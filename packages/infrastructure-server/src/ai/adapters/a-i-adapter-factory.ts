@@ -1,26 +1,26 @@
 /**
  * AI Adapter Factory
- * AI 适配器工厂
+ * AI 适配器工�?
  *
- * 职责：
- * - 根据 Provider 配置创建对应的 AI 适配器
+ * 职责�?
+ * - 根据 Provider 配置创建对应�?AI 适配�?
  * - 管理适配器缓存（同一配置复用适配器实例）
  * - 支持动态切换用户自定义 Provider
  */
 
 import { AIProviderType, AIModel } from '@dailyuse/contracts/ai';
 import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
-import { BaseAIAdapter } from './BaseAIAdapter';
-import { OpenAIAdapter } from './OpenAIAdapter';
-import { CustomOpenAICompatibleAdapter } from './CustomOpenAICompatibleAdapter';
-import { OpenRouterAdapter } from './OpenRouterAdapter';
-import { GroqAdapter } from './GroqAdapter';
-import { DeepSeekAdapter } from './DeepSeekAdapter';
-import { SiliconFlowAdapter } from './SiliconFlowAdapter';
-import { env } from '@/shared/infrastructure/config/env.js';
+import { BaseAIAdapter } from './base-a-i-adapter';
+import { OpenAIAdapter } from './open-a-i-adapter';
+import { CustomOpenAICompatibleAdapter } from './custom-open-a-i-compatible-adapter';
+import { OpenRouterAdapter } from './open-router-adapter';
+import { GroqAdapter } from './groq-adapter';
+import { DeepSeekAdapter } from './deep-seek-adapter';
+import { SiliconFlowAdapter } from './silicon-flow-adapter';
+import { env } from '../../shared/config/env';
 
 /**
- * 适配器缓存 Key 生成
+ * 适配器缓�?Key 生成
  */
 function getCacheKey(config: AIProviderConfigServerDTO): string {
   return `${config.uuid}:${config.updatedAt}`;
@@ -29,31 +29,31 @@ function getCacheKey(config: AIProviderConfigServerDTO): string {
 /**
  * AI Adapter Factory
  *
- * 用法：
+ * 用法�?
  * ```typescript
  * const adapter = AIAdapterFactory.createFromConfig(providerConfig);
  * const response = await adapter.generateText(request);
  * ```
  */
 export class AIAdapterFactory {
-  /** 适配器缓存（避免重复创建） */
+  /** 适配器缓存（避免重复创建�?*/
   private static adapterCache = new Map<string, BaseAIAdapter>();
 
-  /** 默认 OpenAI 适配器（使用环境变量配置） */
+  /** 默认 OpenAI 适配器（使用环境变量配置�?*/
   private static defaultAdapter: OpenAIAdapter | null = null;
 
   /**
-   * 从 Provider 配置创建适配器
+   * �?Provider 配置创建适配�?
    */
   static createFromConfig(config: AIProviderConfigServerDTO): BaseAIAdapter {
     const cacheKey = getCacheKey(config);
 
-    // 检查缓存
+    // 检查缓�?
     if (this.adapterCache.has(cacheKey)) {
       return this.adapterCache.get(cacheKey)!;
     }
 
-    // 根据 Provider 类型创建适配器
+    // 根据 Provider 类型创建适配�?
     let adapter: BaseAIAdapter;
 
     switch (config.providerType) {
@@ -77,7 +77,7 @@ export class AIAdapterFactory {
         adapter = new GroqAdapter({
           apiKey: config.apiKey,
           defaultModel: config.defaultModel || 'llama-3.3-70b-versatile',
-          timeoutMs: 30000, // Groq 速度快，超时短
+          timeoutMs: 30000, // Groq 速度快，超时�?
         });
         break;
 
@@ -103,7 +103,7 @@ export class AIAdapterFactory {
           baseUrl: config.baseUrl,
           apiKey: config.apiKey,
           defaultModel: config.defaultModel || 'deepseek-v3',
-          timeoutMs: 60000, // 七牛云可能需要更长超时
+          timeoutMs: 60000, // 七牛云可能需要更长超�?
         });
         break;
 
@@ -118,8 +118,8 @@ export class AIAdapterFactory {
         break;
 
       case AIProviderType.ANTHROPIC:
-        // TODO: 实现 Anthropic 原生适配器（使用 x-api-key 认证）
-        // 暂时使用 OpenAI 兼容模式（如果 API 兼容）
+        // TODO: 实现 Anthropic 原生适配器（使用 x-api-key 认证�?
+        // 暂时使用 OpenAI 兼容模式（如�?API 兼容�?
         adapter = new CustomOpenAICompatibleAdapter({
           providerName: config.name || 'Anthropic',
           baseUrl: config.baseUrl,
@@ -141,7 +141,7 @@ export class AIAdapterFactory {
         break;
     }
 
-    // 缓存适配器
+    // 缓存适配�?
     this.adapterCache.set(cacheKey, adapter);
 
     // 清理过期缓存（保持缓存大小合理）
@@ -156,8 +156,8 @@ export class AIAdapterFactory {
   }
 
   /**
-   * 获取默认 OpenAI 适配器（使用环境变量）
-   * 用于没有用户自定义 Provider 时的回退
+   * 获取默认 OpenAI 适配器（使用环境变量�?
+   * 用于没有用户自定�?Provider 时的回退
    */
   static getDefaultAdapter(): OpenAIAdapter {
     if (!this.defaultAdapter) {
@@ -171,7 +171,7 @@ export class AIAdapterFactory {
   }
 
   /**
-   * 从环境变量创建七牛云适配器
+   * 从环境变量创建七牛云适配�?
    * 用于快速测试七牛云 API
    */
   static getQiniuAdapterFromEnv(): CustomOpenAICompatibleAdapter {
@@ -193,7 +193,7 @@ export class AIAdapterFactory {
   }
 
   /**
-   * 清理适配器缓存
+   * 清理适配器缓�?
    */
   static clearCache(): void {
     this.adapterCache.clear();
@@ -237,7 +237,7 @@ export class AIAdapterFactory {
       const isHealthy = await adapter.healthCheck();
       const latencyMs = Date.now() - startTime;
 
-      // 清理临时适配器
+      // 清理临时适配�?
       this.adapterCache.delete(getCacheKey(tempConfig));
 
       if (isHealthy) {

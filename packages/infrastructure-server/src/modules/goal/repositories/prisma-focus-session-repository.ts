@@ -9,19 +9,19 @@ import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalReques
 /**
  * PrismaFocusSessionRepository
  *
- * Prisma 实现的专注周期仓储
+ * Prisma 实现的专注周期仓�?
  * 负责 FocusSession 聚合根的持久化和查询
  *
- * 映射关系：
- * - Domain Entity (FocusSession) ↔ Persistence DTO ↔ Prisma Model
- * - Prisma Client 自动将 snake_case 字段转换为 camelCase
+ * 映射关系�?
+ * - Domain Entity (FocusSession) �?Persistence DTO �?Prisma Model
+ * - Prisma Client 自动�?snake_case 字段转换�?camelCase
  */
 export class PrismaFocusSessionRepository implements IFocusSessionRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 将 Prisma 模型映射为领域实体
-   * 注意：Prisma Client 自动将 @map 的字段转换为 camelCase
+   * �?Prisma 模型映射为领域实�?
+   * 注意：Prisma Client 自动�?@map 的字段转换为 camelCase
    */
   private mapToEntity(data: PrismaFocusSession): FocusSession {
     return FocusSession.fromPersistenceDTO({
@@ -91,8 +91,8 @@ export class PrismaFocusSessionRepository implements IFocusSessionRepository {
   }
 
   /**
-   * 查找用户的活跃会话（IN_PROGRESS 或 PAUSED）
-   * 业务规则：一个用户同时只能有一个活跃会话
+   * 查找用户的活跃会话（IN_PROGRESS �?PAUSED�?
+   * 业务规则：一个用户同时只能有一个活跃会�?
    */
   async findActiveSession(accountUuid: string): Promise<FocusSession | null> {
     const data = await this.prisma.focusSession.findFirst({
@@ -167,7 +167,7 @@ export class PrismaFocusSessionRepository implements IFocusSessionRepository {
   }
 
   /**
-   * 查找目标关联的所有会话
+   * 查找目标关联的所有会�?
    */
   async findByGoalUuid(
     goalUuid: string,
@@ -210,7 +210,7 @@ export class PrismaFocusSessionRepository implements IFocusSessionRepository {
   }
 
   /**
-   * 检查会话是否存在
+   * 检查会话是否存�?
    */
   async exists(uuid: string): Promise<boolean> {
     const count = await this.prisma.focusSession.count({

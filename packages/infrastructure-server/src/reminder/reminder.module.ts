@@ -1,19 +1,21 @@
-import { PrismaClient } from '@prisma/client';
+import type {  PrismaClient  } from "@prisma/client";
 import {
   PrismaReminderTemplateRepository,
   PrismaReminderGroupRepository,
-  PrismaReminderStatisticsRepository
+  PrismaReminderStatisticsRepository,
+  PrismaReminderResponseRepository,
 } from './repositories';
 import {
   ReminderApplicationService,
   ReminderQueryApplicationService,
-  ReminderStatisticsApplicationService
+  ReminderStatisticsApplicationService,
 } from '@dailyuse/application-server/reminder';
 
 export class ReminderModule {
   public readonly reminderTemplateRepository: PrismaReminderTemplateRepository;
   public readonly reminderGroupRepository: PrismaReminderGroupRepository;
   public readonly reminderStatisticsRepository: PrismaReminderStatisticsRepository;
+  public readonly reminderResponseRepository: PrismaReminderResponseRepository;
 
   public readonly reminderService: ReminderApplicationService;
   public readonly reminderQueryService: ReminderQueryApplicationService;
@@ -24,6 +26,7 @@ export class ReminderModule {
     this.reminderTemplateRepository = new PrismaReminderTemplateRepository(prisma);
     this.reminderGroupRepository = new PrismaReminderGroupRepository(prisma);
     this.reminderStatisticsRepository = new PrismaReminderStatisticsRepository(prisma);
+    this.reminderResponseRepository = new PrismaReminderResponseRepository(prisma);
 
     // 2. Initialize Services
     this.reminderService = new ReminderApplicationService(

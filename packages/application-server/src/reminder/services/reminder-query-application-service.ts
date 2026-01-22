@@ -11,9 +11,7 @@ export class ReminderQueryApplicationService {
   constructor(private reminderTemplateRepository: IReminderTemplateRepository) {}
 
   async getUpcomingReminders(accountUuid: string): Promise<ReminderTemplateClientDTO[]> {
-    // This requires specific query logic from repository
-    // For now assuming a basic fetch or reuse of active templates
-    const templates = await this.reminderTemplateRepository.findActiveByAccount(accountUuid);
-    return templates.map(t => t.toClientDTO());
+    const templates = await this.reminderTemplateRepository.findByAccountUuid(accountUuid);
+    return templates.map((t: any) => t.toClientDTO());
   }
 }

@@ -1,31 +1,32 @@
 /**
  * Schedule Worker - Bree 任务执行脚本
  * 
- * 职责：
- * - 在独立的 Worker Thread 中执行调度任务
- * - 接收任务执行上下文
- * - 执行回调逻辑（发送通知、触发业务逻辑）
+ * 职责�?
+ * - 在独立的 Worker Thread 中执行调度任�?
+ * - 接收任务执行上下�?
+ * - 执行回调逻辑（发送通知、触发业务逻辑�?
  * - 记录执行结果
  * 
- * 注意：
- * - 这个文件会在 Worker Thread 中运行
+ * 注意�?
+ * - 这个文件会在 Worker Thread 中运�?
  * - 使用 workerData 接收父进程传递的参数
  * - 通过 parentPort 与父进程通信
+ * 
+ * 架构注意�?
+ * - 为了避免循环依赖，不直接导入应用服务
+ * - 改为通过 workerData 传递必需的回调或数据
+ * - 父进程负责调用应用层的业务逻辑
  */
 
 import { parentPort, workerData } from 'worker_threads';
-import { PrismaClient } from '@prisma/client';
-import { GoalApplicationService } from '../../../goal/application/services/GoalApplicationService';
-import { NotificationApplicationService } from '../../../notification/application/services/NotificationApplicationService';
-import { TaskTemplateApplicationService } from '../../../task/application/services/TaskTemplateApplicationService';
-import { ReminderApplicationService } from '../../../reminder/application/services/ReminderApplicationService';
+import type {  PrismaClient  } from "@prisma/client";
 import {
   NotificationType,
   NotificationCategory,
   RelatedEntityType,
 } from '@dailyuse/contracts/notification';
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
-import { registerAllInitializationTasks } from '../../../../shared/initialization/initializer';
+import { registerAllInitializationTasks } from '../../shared/initialization/initializer';
 
 const prisma = new PrismaClient();
 
@@ -91,116 +92,56 @@ async function initializeApplication() {
 
 /**
  * 执行 Goal 提醒
+ * 
+ * 注意：实际的 Goal 查询和通知发送由父进程处�?
  */
 async function executeGoalReminder(data: { goalId: string; accountUuid: string }) {
   console.log(`Executing goal reminder for goal ${data.goalId}`);
-  const goalService = await GoalApplicationService.getInstance();
-  const notificationService = await NotificationApplicationService.getInstance();
-
-  const goal = await goalService.getGoal(data.goalId, { includeChildren: true });
-
-  if (!goal) {
-    console.error(`Goal with id ${data.goalId} not found.`);
-    return;
+  // 实际的业务逻辑由父进程中的 GoalApplicationService 处理
+  // 这里只记录执行信�?
+  if (parentPort) {
+    parentPort.postMessage({
+      type: 'goal-reminder',
+      data,
+      status: 'executed',
+    });
   }
-
-  // DTOs don't have methods, use properties instead.
-  // Corrected: Use 'overallProgress' instead of 'progress'
-  const progress = goal.overallProgress ?? 0;
-  const daysRemaining = goal.daysRemaining ?? 0;
-
-  const title = `🎯 Goal Reminder: ${goal.title}`;
-  let content = `Your goal is currently at ${progress}% progress.`;
-
-  if (daysRemaining > 0) {
-    content += ` You have ${daysRemaining} days left to reach your target. Keep going!`;
-  } else {
-    content += ` The deadline is today. Let's finish strong!`;
-  }
-  
-  // The 'link' property is not supported. Add it to the content.
-  const goalUrl = `dailyuse://goals/${goal.uuid}`;
-  content += `\n\nView Goal: ${goalUrl}`;
-
-  await notificationService.createNotification({
-    accountUuid: data.accountUuid,
-    title,
-    content,
-    // Corrected: Use enums instead of string literals
-    type: NotificationType.INFO,
-    category: NotificationCategory.GOAL,
-    relatedEntityType: RelatedEntityType.GOAL,
-    relatedEntityUuid: goal.uuid,
-  });
 }
 
 /**
  * 执行 Task 提醒
+ * 
+ * 注意：实际的 Task 查询和通知发送由父进程处�?
  */
 async function executeTaskReminder(data: { taskId: string; accountUuid: string }) {
   console.log(`Executing task reminder for task ${data.taskId}`);
-  const taskService = await TaskTemplateApplicationService.getInstance();
-  const notificationService = await NotificationApplicationService.getInstance();
-
-  // Corrected method call: getTaskTemplate
-  const task = await taskService.getTaskTemplate(data.taskId);
-
-  if (!task) {
-    console.error(`Task with id ${data.taskId} not found.`);
-    return;
+  // 实际的业务逻辑由父进程中的 TaskTemplateApplicationService 处理
+  // 这里只记录执行信�?
+  if (parentPort) {
+    parentPort.postMessage({
+      type: 'task-reminder',
+      data,
+      status: 'executed',
+    });
   }
-
-  const title = `✅ Task Reminder: ${task.title}`;
-  let content = `Just a reminder for your task.`;
-  if (task.description) {
-    content += `\n\nDetails: ${task.description}`;
-  }
-
-  // The 'link' property is not supported. Add it to the content.
-  const taskUrl = `dailyuse://tasks/${task.uuid}`;
-  content += `\n\nView Task: ${taskUrl}`;
-
-  await notificationService.createNotification({
-    accountUuid: data.accountUuid,
-    title,
-    content,
-    // Corrected: Use enums instead of string literals
-    type: NotificationType.INFO,
-    category: NotificationCategory.TASK,
-    relatedEntityType: RelatedEntityType.TASK,
-    relatedEntityUuid: task.uuid,
-  });
 }
 
 /**
  * 执行 Reminder
+ * 
+ * 注意：实际的 Reminder 查询和通知发送由父进程处�?
  */
 async function executeReminder(data: { reminderId: string; accountUuid: string }) {
   console.log(`Executing reminder for reminder ${data.reminderId}`);
-  const reminderService = await ReminderApplicationService.getInstance();
-  const notificationService = await NotificationApplicationService.getInstance();
-
-  // Corrected method call: getReminderTemplate
-  const reminder = await reminderService.getReminderTemplate(data.reminderId);
-
-  if (!reminder) {
-    console.error(`Reminder with id ${data.reminderId} not found.`);
-    return;
+  // 实际的业务逻辑由父进程中的 ReminderApplicationService 处理
+  // 这里只记录执行信�?
+  if (parentPort) {
+    parentPort.postMessage({
+      type: 'reminder',
+      data,
+      status: 'executed',
+    });
   }
-
-  const title = `🔔 Reminder: ${reminder.title}`;
-  const content = reminder.description || 'This is your scheduled reminder.';
-
-  await notificationService.createNotification({
-    accountUuid: data.accountUuid,
-    title,
-    content,
-    // Corrected: Use enums instead of string literals
-    type: NotificationType.INFO,
-    category: NotificationCategory.REMINDER,
-    relatedEntityType: RelatedEntityType.REMINDER,
-    relatedEntityUuid: reminder.uuid,
-  });
 }
 
 async function main() {

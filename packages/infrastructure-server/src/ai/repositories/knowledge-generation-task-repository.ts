@@ -1,6 +1,6 @@
 /**
  * Knowledge Generation Task Repository Implementation (Story 4.3)
- * Prisma 实现的知识系列生成任务仓储
+ * Prisma 实现的知识系列生成任务仓�?
  */
 
 import type { PrismaClient } from '@prisma/client';

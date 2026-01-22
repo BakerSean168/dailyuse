@@ -1,12 +1,12 @@
 /**
  * OpenRouter Adapter
- * OpenRouter 聚合服务适配器
+ * OpenRouter 聚合服务适配�?
  *
- * 特点：
+ * 特点�?
  * - 支持多家 AI 模型（OpenAI, Anthropic, Google, Meta 等）
  * - 部分模型免费
- * - 统一的 OpenAI 兼容接口
- * - 需要额外的请求头标识应用来源
+ * - 统一�?OpenAI 兼容接口
+ * - 需要额外的请求头标识应用来�?
  *
  * @see https://openrouter.ai/docs
  */
@@ -20,8 +20,8 @@ import {
   type AIGenerationRequest,
   type AIGenerationResponse,
   type AIStreamChunk,
-} from './BaseAIAdapter';
-import { AIGenerationTimeoutError, AIProviderError } from '../errors/AIErrors';
+} from './base-a-i-adapter';
+import { AIGenerationTimeoutError, AIProviderError } from '../errors/a-i-errors';
 
 /**
  * OpenRouter 配置
@@ -31,16 +31,16 @@ export interface OpenRouterConfig {
   apiKey: string;
   /** 默认模型 ID */
   defaultModel: string;
-  /** 应用名称（用于 OpenRouter 统计） */
+  /** 应用名称（用�?OpenRouter 统计�?*/
   appName?: string;
-  /** 超时时间（毫秒，默认 60000） */
+  /** 超时时间（毫秒，默认 60000�?*/
   timeoutMs?: number;
 }
 
 /**
  * OpenRouter Adapter 实现
  *
- * 用法：
+ * 用法�?
  * ```typescript
  * const adapter = new OpenRouterAdapter({
  *   apiKey: 'sk-or-xxx',
@@ -52,7 +52,7 @@ export interface OpenRouterConfig {
 export class OpenRouterAdapter extends BaseAIAdapter {
   /** OpenRouter 基础地址 */
   private static readonly BASE_URL = 'https://openrouter.ai/api/v1';
-  /** 提供商名称 */
+  /** 提供商名�?*/
   private static readonly PROVIDER_NAME = 'OpenRouter';
 
   private readonly openai: ReturnType<typeof createOpenAI>;
@@ -67,7 +67,7 @@ export class OpenRouterAdapter extends BaseAIAdapter {
     this.timeoutMs = config.timeoutMs ?? 60000;
     this.appName = config.appName ?? 'DailyUse';
 
-    // OpenRouter 使用 OpenAI 兼容接口，但需要额外的请求头
+    // OpenRouter 使用 OpenAI 兼容接口，但需要额外的请求�?
     this.openai = createOpenAI({
       apiKey: config.apiKey,
       baseURL: OpenRouterAdapter.BASE_URL,
@@ -80,7 +80,7 @@ export class OpenRouterAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 一次性生成文本（带超时和 JSON 解析）
+   * 一次性生成文本（带超时和 JSON 解析�?
    */
   async generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>> {
     try {
@@ -181,7 +181,7 @@ export class OpenRouterAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 健康检查
+   * 健康检�?
    */
   async healthCheck(): Promise<boolean> {
     try {
@@ -197,7 +197,7 @@ export class OpenRouterAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 获取提供商名称
+   * 获取提供商名�?
    */
   getProviderName(): string {
     return OpenRouterAdapter.PROVIDER_NAME;

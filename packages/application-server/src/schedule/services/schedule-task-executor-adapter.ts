@@ -12,9 +12,15 @@
 
 import { createLogger } from '@dailyuse/utils';
 import { ScheduleTaskExecutor } from './schedule-task-executor';
-import type { ITaskHandler } from '@dailyuse/scheduler-server';
 
 const logger = createLogger('ScheduleTaskExecutorAdapter');
+
+/**
+ * 任务处理器接口（本地定义）
+ */
+export interface ITaskHandler {
+  execute(taskId: string, context?: unknown): Promise<void>;
+}
 
 /**
  * 将 ScheduleTaskExecutor 适配为 ITaskHandler 接口
