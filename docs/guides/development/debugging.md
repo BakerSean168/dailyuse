@@ -6,12 +6,14 @@ tags:
   - troubleshooting
 description: DailyUse调试指南 - 前端、后端、全栈调试技巧与工具
 created: 2025-11-23T16:30:00
-updated: 2025-11-23T16:30:00
+updated: 2025-01-22T00:00:00
 ---
 
 # 🐛 调试指南 (Debugging Guide)
 
 > 高效的调试技巧，快速定位和解决问题
+>
+> **关联标准**: 🏛 [standards/architecture.md](../../standards/architecture.md)
 
 ## 📋 目录
 
@@ -129,26 +131,26 @@ export class GoalService {
 
   async create(dto: CreateGoalDto): Promise<Goal> {
     this.logger.debug(`Creating goal: ${JSON.stringify(dto)}`);
-    
+
     const goal = GoalEntity.create(dto);
     this.logger.debug(`Created goal entity: ${goal.id}`);
-    
+
     const savedGoal = await this.repository.save(goal);
     this.logger.log(`Goal saved successfully: ${savedGoal.id}`);
-    
+
     return savedGoal;
   }
 
   async findById(id: string): Promise<Goal> {
     this.logger.debug(`Finding goal by ID: ${id}`);
-    
+
     const goal = await this.repository.findById(id);
-    
+
     if (!goal) {
       this.logger.warn(`Goal not found: ${id}`);
       throw new NotFoundException(`Goal with ID ${id} not found`);
     }
-    
+
     return goal;
   }
 }
@@ -158,11 +160,11 @@ export class GoalService {
 
 ```typescript
 // 日志级别优先级（从高到低）
-logger.error('错误信息');      // 0 - 错误
-logger.warn('警告信息');       // 1 - 警告
-logger.log('一般信息');        // 2 - 信息
-logger.debug('调试信息');      // 3 - 调试
-logger.verbose('详细信息');    // 4 - 详细
+logger.error('错误信息'); // 0 - 错误
+logger.warn('警告信息'); // 1 - 警告
+logger.log('一般信息'); // 2 - 信息
+logger.debug('调试信息'); // 3 - 调试
+logger.verbose('详细信息'); // 4 - 详细
 ```
 
 **配置日志级别**
@@ -218,14 +220,14 @@ function DebugMethod(target: any, propertyKey: string, descriptor: PropertyDescr
 
   descriptor.value = async function (...args: any[]) {
     console.log(`[DEBUG] Calling ${propertyKey} with args:`, args);
-    
+
     const startTime = Date.now();
     const result = await originalMethod.apply(this, args);
     const endTime = Date.now();
-    
+
     console.log(`[DEBUG] ${propertyKey} returned:`, result);
     console.log(`[DEBUG] ${propertyKey} took ${endTime - startTime}ms`);
-    
+
     return result;
   };
 
@@ -296,10 +298,10 @@ console.trace('Goal created');
 ```typescript
 async function createGoal(dto: CreateGoalDto) {
   console.log('Creating goal:', dto);
-  
+
   // 触发断点
   debugger;
-  
+
   const goal = await api.createGoal(dto);
   return goal;
 }
@@ -463,29 +465,29 @@ const api = axios.create({
 
 // 请求拦截器
 api.interceptors.request.use(
-  config => {
+  (config) => {
     console.log('[API Request]', config.method?.toUpperCase(), config.url);
     console.log('[API Request Data]', config.data);
     return config;
   },
-  error => {
+  (error) => {
     console.error('[API Request Error]', error);
     return Promise.reject(error);
-  }
+  },
 );
 
 // 响应拦截器
 api.interceptors.response.use(
-  response => {
+  (response) => {
     console.log('[API Response]', response.status, response.config.url);
     console.log('[API Response Data]', response.data);
     return response;
   },
-  error => {
+  (error) => {
     console.error('[API Response Error]', error.response?.status, error.config.url);
     console.error('[API Error Data]', error.response?.data);
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
@@ -508,11 +510,11 @@ export class LoggingInterceptor implements NestInterceptor {
     console.log(`[Request Body]`, body);
 
     return next.handle().pipe(
-      tap(data => {
+      tap((data) => {
         const endTime = Date.now();
         console.log(`[Response] ${method} ${url} - ${endTime - startTime}ms`);
         console.log(`[Response Data]`, data);
-      })
+      }),
     );
   }
 }
@@ -532,6 +534,7 @@ pnpm nx run api:prisma-studio
 ```
 
 **功能**:
+
 - 可视化数据表
 - 查询和编辑数据
 - 查看表关系
@@ -621,12 +624,12 @@ function Performance(target: any, propertyKey: string, descriptor: PropertyDescr
     const startTime = performance.now();
     const result = await originalMethod.apply(this, args);
     const endTime = performance.now();
-    
+
     const duration = endTime - startTime;
     if (duration > 100) {
       console.warn(`[Performance] ${propertyKey} took ${duration.toFixed(2)}ms`);
     }
-    
+
     return result;
   };
 
@@ -706,31 +709,31 @@ function onRenderCallback(
 
 ### VS Code扩展
 
-| 扩展 | 用途 |
-|------|------|
-| **Debugger for Chrome** | Chrome调试 |
-| **REST Client** | API测试 |
-| **Prisma** | 数据库调试 |
-| **Vue Language Features (Volar)** | Vue调试 |
-| **Error Lens** | 实时错误显示 |
+| 扩展                              | 用途         |
+| --------------------------------- | ------------ |
+| **Debugger for Chrome**           | Chrome调试   |
+| **REST Client**                   | API测试      |
+| **Prisma**                        | 数据库调试   |
+| **Vue Language Features (Volar)** | Vue调试      |
+| **Error Lens**                    | 实时错误显示 |
 
 ### 浏览器扩展
 
-| 扩展 | 用途 |
-|------|------|
-| **Vue DevTools** | Vue组件调试 |
+| 扩展                      | 用途          |
+| ------------------------- | ------------- |
+| **Vue DevTools**          | Vue组件调试   |
 | **React Developer Tools** | React组件调试 |
-| **Redux DevTools** | 状态管理调试 |
-| **JSON Viewer** | JSON格式化 |
+| **Redux DevTools**        | 状态管理调试  |
+| **JSON Viewer**           | JSON格式化    |
 
 ### 独立工具
 
-| 工具 | 用途 |
-|------|------|
-| **Postman** | API测试 |
-| **Insomnia** | API调试 |
-| **Prisma Studio** | 数据库管理 |
-| **Redis Commander** | Redis调试 |
+| 工具                | 用途       |
+| ------------------- | ---------- |
+| **Postman**         | API测试    |
+| **Insomnia**        | API调试    |
+| **Prisma Studio**   | 数据库管理 |
+| **Redis Commander** | Redis调试  |
 
 ---
 
@@ -764,7 +767,7 @@ import { assert } from 'console';
 function updateGoalStatus(goal: Goal, status: GoalStatus) {
   assert(goal, 'Goal must be provided');
   assert(status in GoalStatus, `Invalid status: ${status}`);
-  
+
   goal.status = status;
 }
 ```

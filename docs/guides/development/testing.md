@@ -8,12 +8,14 @@ tags:
   - playwright
 description: DailyUse测试指南 - 单元测试、集成测试、E2E测试完整实践
 created: 2025-11-23T16:10:00
-updated: 2025-11-23T16:10:00
+updated: 2025-01-22T00:00:00
 ---
 
 # 🧪 测试指南 (Testing Guide)
 
 > 全面的测试策略，保障代码质量和系统稳定性
+>
+> **关联标准**: 📐 [standards/architecture.md](../../standards/architecture.md) | 🔄 [standards/patterns.md](../../standards/patterns.md)
 
 ## 📋 目录
 
@@ -34,21 +36,21 @@ updated: 2025-11-23T16:10:00
         /\
        /  \      E2E Tests (10%)
       /____\     - Playwright
-     /      \    
+     /      \
     /        \   Integration Tests (30%)
    /__________\  - API Tests, Module Tests
-  /            \ 
+  /            \
  /              \ Unit Tests (60%)
 /________________\- Vitest
 ```
 
 ### 测试类型分布
 
-| 测试类型 | 比例 | 工具 | 运行速度 | 覆盖范围 |
-|---------|------|------|---------|---------|
-| **单元测试** | 60% | Vitest | 快 | 函数、类 |
-| **集成测试** | 30% | Vitest + Supertest | 中 | 模块、API |
-| **E2E测试** | 10% | Playwright | 慢 | 完整流程 |
+| 测试类型     | 比例 | 工具               | 运行速度 | 覆盖范围  |
+| ------------ | ---- | ------------------ | -------- | --------- |
+| **单元测试** | 60%  | Vitest             | 快       | 函数、类  |
+| **集成测试** | 30%  | Vitest + Supertest | 中       | 模块、API |
+| **E2E测试**  | 10%  | Playwright         | 慢       | 完整流程  |
 
 ---
 
@@ -123,7 +125,7 @@ describe('GoalEntity', () => {
 
     it('应该生成UUID', () => {
       expect(goal.id).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
       );
     });
 
@@ -159,7 +161,7 @@ describe('GoalEntity', () => {
 
     it('不应该从已完成状态激活', () => {
       goal.complete();
-      
+
       expect(() => goal.activate()).toThrow('Cannot activate completed goal');
     });
   });
@@ -167,7 +169,7 @@ describe('GoalEntity', () => {
   describe('完成目标', () => {
     it('应该设置完成时间', () => {
       goal.complete();
-      
+
       expect(goal.status).toBe('completed');
       expect(goal.completedAt).toBeInstanceOf(Date);
     });
@@ -176,7 +178,7 @@ describe('GoalEntity', () => {
       goal.complete();
 
       const events = goal.getUncommittedEvents();
-      expect(events.some(e => e.eventType === 'goal.completed')).toBe(true);
+      expect(events.some((e) => e.eventType === 'goal.completed')).toBe(true);
     });
   });
 });
@@ -208,9 +210,7 @@ describe('GoalTitle', () => {
 
     it('应该拒绝超长标题', () => {
       const longTitle = 'a'.repeat(201);
-      expect(() => GoalTitle.create(longTitle)).toThrow(
-        'Goal title cannot exceed 200 characters'
-      );
+      expect(() => GoalTitle.create(longTitle)).toThrow('Goal title cannot exceed 200 characters');
     });
   });
 
@@ -276,7 +276,7 @@ describe('GoalService', () => {
       expect(eventBus.publish).toHaveBeenCalledWith(
         expect.objectContaining({
           eventType: 'goal.created',
-        })
+        }),
       );
     });
   });
@@ -295,9 +295,7 @@ describe('GoalService', () => {
     it('目标不存在时应该抛出异常', async () => {
       vi.mocked(repository.findById).mockResolvedValue(null);
 
-      await expect(service.findById('invalid-id')).rejects.toThrow(
-        'Goal not found'
-      );
+      await expect(service.findById('invalid-id')).rejects.toThrow('Goal not found');
     });
   });
 });
@@ -329,7 +327,7 @@ describe('GoalController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     prisma = app.get(PrismaService);
-    
+
     await app.init();
   });
 
@@ -361,10 +359,7 @@ describe('GoalController (e2e)', () => {
     });
 
     it('应该验证必填字段', async () => {
-      await request(app.getHttpServer())
-        .post('/api/goals')
-        .send({})
-        .expect(400);
+      await request(app.getHttpServer()).post('/api/goals').send({}).expect(400);
     });
 
     it('应该验证标题长度', async () => {
@@ -391,9 +386,7 @@ describe('GoalController (e2e)', () => {
         },
       });
 
-      const response = await request(app.getHttpServer())
-        .get(`/api/goals/${goal.id}`)
-        .expect(200);
+      const response = await request(app.getHttpServer()).get(`/api/goals/${goal.id}`).expect(200);
 
       expect(response.body).toMatchObject({
         id: goal.id,
@@ -403,9 +396,7 @@ describe('GoalController (e2e)', () => {
     });
 
     it('目标不存在时应该返回404', async () => {
-      await request(app.getHttpServer())
-        .get('/api/goals/non-existent-id')
-        .expect(404);
+      await request(app.getHttpServer()).get('/api/goals/non-existent-id').expect(404);
     });
   });
 
@@ -442,9 +433,7 @@ describe('GoalController (e2e)', () => {
         },
       });
 
-      await request(app.getHttpServer())
-        .delete(`/api/goals/${goal.id}`)
-        .expect(204);
+      await request(app.getHttpServer()).delete(`/api/goals/${goal.id}`).expect(204);
 
       // 验证已删除
       const deletedGoal = await prisma.goal.findUnique({
@@ -515,7 +504,7 @@ test.describe('目标管理', () => {
     await page.fill('[name="email"]', 'test@example.com');
     await page.fill('[name="password"]', 'password123');
     await page.click('button[type="submit"]');
-    
+
     // 等待跳转到首页
     await page.waitForURL('http://localhost:4200/dashboard');
   });
@@ -653,7 +642,7 @@ test('创建目标 - Page Object模式', async ({ page }) => {
   const goalPage = new GoalPage(page);
   await goalPage.goto();
   await goalPage.createGoal('Learn TypeScript', 'Master TypeScript in 30 days');
-  
+
   const goal = await goalPage.getGoalByTitle('Learn TypeScript');
   await expect(goal).toBeVisible();
 });
@@ -675,12 +664,12 @@ open coverage/index.html
 
 ### 覆盖率标准
 
-| 指标 | 最低要求 | 推荐 |
-|------|---------|------|
-| **语句覆盖率** | 80% | 90% |
-| **分支覆盖率** | 75% | 85% |
-| **函数覆盖率** | 80% | 90% |
-| **行覆盖率** | 80% | 90% |
+| 指标           | 最低要求 | 推荐 |
+| -------------- | -------- | ---- |
+| **语句覆盖率** | 80%      | 90%  |
+| **分支覆盖率** | 75%      | 85%  |
+| **函数覆盖率** | 80%      | 90%  |
+| **行覆盖率**   | 80%      | 90%  |
 
 ### 配置覆盖率阈值
 
@@ -692,12 +681,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
-      exclude: [
-        '**/*.spec.ts',
-        '**/*.e2e-spec.ts',
-        '**/node_modules/**',
-        '**/dist/**',
-      ],
+      exclude: ['**/*.spec.ts', '**/*.e2e-spec.ts', '**/node_modules/**', '**/dist/**'],
       thresholds: {
         statements: 80,
         branches: 75,

@@ -4,18 +4,17 @@ tags:
   - development
   - setup
   - environment
-description: 开发环境完整配置指南
+  - tools
+description: 开发环境完整配置指南 - IDE、工具、Prettier、ESLint配置
 created: 2025-11-23T15:00:00
-updated: 2025-11-23T15:00:00
+updated: 2025-01-22T00:00:00
 ---
 
 # 🛠 开发环境配置
 
 配置高效的 DailyUse 开发环境，包括编辑器、工具和插件。
 
-## 📋 前提条件
-
-在开始之前，请确保已完成 [[../getting-started/installation|安装指南]]。
+> **关联标准**: 🏷️ [standards/naming.md](../../standards/naming.md) | 📐 [standards/tech-stack.md](../../standards/tech-stack.md)
 
 ---
 
@@ -25,24 +24,24 @@ updated: 2025-11-23T15:00:00
 
 #### 必需扩展
 
-| 扩展 | 用途 | 安装 |
-|------|------|------|
-| **Volar** | Vue 3 语言支持 | `Vue.volar` |
-| **TypeScript Vue Plugin** | Vue TS 支持 | `Vue.vscode-typescript-vue-plugin` |
-| **ESLint** | 代码检查 | `dbaeumer.vscode-eslint` |
-| **Prettier** | 代码格式化 | `esbenp.prettier-vscode` |
-| **Nx Console** | Nx 可视化工具 | `nrwl.angular-console` |
+| 扩展                      | 用途           | 安装                               |
+| ------------------------- | -------------- | ---------------------------------- |
+| **Volar**                 | Vue 3 语言支持 | `Vue.volar`                        |
+| **TypeScript Vue Plugin** | Vue TS 支持    | `Vue.vscode-typescript-vue-plugin` |
+| **ESLint**                | 代码检查       | `dbaeumer.vscode-eslint`           |
+| **Prettier**              | 代码格式化     | `esbenp.prettier-vscode`           |
+| **Nx Console**            | Nx 可视化工具  | `nrwl.angular-console`             |
 
 #### 推荐扩展
 
-| 扩展 | 用途 |
-|------|------|
-| **Prisma** | Prisma 语法高亮 |
-| **GitLens** | Git 增强 |
-| **Error Lens** | 错误实时显示 |
-| **Better Comments** | 注释增强 |
-| **Todo Tree** | TODO 标记 |
-| **Code Spell Checker** | 拼写检查 |
+| 扩展                   | 用途            |
+| ---------------------- | --------------- |
+| **Prisma**             | Prisma 语法高亮 |
+| **GitLens**            | Git 增强        |
+| **Error Lens**         | 错误实时显示    |
+| **Better Comments**    | 注释增强        |
+| **Todo Tree**          | TODO 标记       |
+| **Code Spell Checker** | 拼写检查        |
 
 #### 一键安装扩展
 
@@ -81,13 +80,7 @@ code --install-extension usernamehw.errorlens
   "vue.server.hybridMode": true,
 
   // ESLint 设置
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact",
-    "vue"
-  ],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact", "vue"],
 
   // 文件关联
   "files.associations": {
@@ -252,6 +245,7 @@ pnpm nx run api:prisma-studio
 **下载**: https://dbeaver.io/
 
 **连接配置**:
+
 ```
 Host: localhost
 Port: 5432
@@ -275,6 +269,7 @@ PostgreSQL 官方管理工具。
 **下载**: https://www.postman.com/
 
 **导入集合**:
+
 ```bash
 # 项目根目录
 tools/postman/DailyUse.postman_collection.json
@@ -312,6 +307,7 @@ Authorization: Bearer {{token}}
 **Windows/Mac**: https://www.docker.com/products/docker-desktop
 
 **Linux**:
+
 ```bash
 curl -fsSL https://get.docker.com -o get-docker.sh
 sh get-docker.sh
@@ -457,12 +453,12 @@ DATABASE_URL="postgresql://...?schema=public&connection_limit=5&query_logging=tr
 
 ## 📚 浏览器扩展
 
-| 扩展 | 用途 |
-|------|------|
-| **Vue DevTools** | Vue 组件调试 |
-| **Redux DevTools** | 状态管理调试（如使用 Pinia DevTools） |
-| **JSON Viewer** | JSON 格式化 |
-| **React Developer Tools** | React 调试（Desktop 应用） |
+| 扩展                      | 用途                                  |
+| ------------------------- | ------------------------------------- |
+| **Vue DevTools**          | Vue 组件调试                          |
+| **Redux DevTools**        | 状态管理调试（如使用 Pinia DevTools） |
+| **JSON Viewer**           | JSON 格式化                           |
+| **React Developer Tools** | React 调试（Desktop 应用）            |
 
 ---
 

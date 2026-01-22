@@ -6,24 +6,40 @@ tags:
   - typescript
   - vue
   - nestjs
-description: DailyUse项目代码规范 - TypeScript、Vue 3、NestJS编码规范
+  - architecture
+description: DailyUse项目代码规范 - TypeScript、Vue 3、NestJS编码规范与架构最佳实践
 created: 2025-11-23T16:00:00
-updated: 2025-11-23T16:00:00
+updated: 2025-01-22T00:00:00
 ---
 
 # 📝 代码规范 (Coding Standards)
 
 > 统一的代码风格，提升代码质量和可维护性
+>
+> **关联标准**: 📐 [standards/naming.md](../../standards/naming.md) | 🏛 [standards/architecture.md](../../standards/architecture.md) | 🔄 [standards/patterns.md](../../standards/patterns.md)
 
 ## 📋 目录
 
+- [🚨 核心规则](#-核心规则)
 - [通用规范](#通用规范)
 - [TypeScript规范](#typescript规范)
 - [Vue 3规范](#vue-3规范)
 - [NestJS规范](#nestjs规范)
 - [命名约定](#命名约定)
+- [架构与分层](#架构与分层)
 - [注释规范](#注释规范)
-- [Git提交规范](#git提交规范)
+
+---
+
+## 🚨 核心规则
+
+> 详细说明见 [standards/patterns.md](../../standards/patterns.md)
+
+| 规则              | 说明                                   | 详情                                                                                 |
+| ----------------- | -------------------------------------- | ------------------------------------------------------------------------------------ |
+| **1️⃣ 类型集中化** | 所有共享类型放在 `@dailyuse/contracts` | [查看详情](../../standards/patterns.md#rule-1-type-centralization-dailyusecontracts) |
+| **2️⃣ API响应**    | 使用 `ok: boolean`                     | [查看详情](../../standards/patterns.md#rule-2-api-response-format)                   |
+| **3️⃣ 层隔离**     | Domain 不导入 Infrastructure           | [查看详情](../../standards/patterns.md#rule-3-layer-isolation)                       |
 
 ---
 
@@ -427,72 +443,45 @@ export class CreateGoalDto {
 
 ## 📛 命名约定
 
-### 文件命名
+> 详细规范见 [standards/naming.md](../../standards/naming.md)
 
-| 类型 | 命名规则 | 示例 |
-|------|---------|------|
-| **组件** | PascalCase | `GoalCard.vue` |
-| **服务** | kebab-case + `.service.ts` | `goal.service.ts` |
-| **实体** | kebab-case + `.entity.ts` | `goal.entity.ts` |
-| **DTO** | kebab-case + `.dto.ts` | `create-goal.dto.ts` |
-| **接口** | kebab-case + `.interface.ts` | `goal-repository.interface.ts` |
-| **类型** | kebab-case + `.type.ts` | `goal-status.type.ts` |
+### 快速参考
 
-### 变量命名
+| 实体     | 风格                 |
+| -------- | -------------------- |
+| 类名     | PascalCase           |
+| 方法名   | camelCase            |
+| 变量名   | camelCase            |
+| 常量     | SCREAMING_SNAKE      |
+| 文件名   | kebab-case           |
+| 接口名   | PascalCase (无I前缀) |
+| 组件文件 | PascalCase           |
+| 文件夹名 | kebab-case           |
 
-```typescript
-// ✅ Good - camelCase
-const goalTitle = 'My Goal';
-const isActive = true;
-const userList = [];
+**[查看完整详情和所有例子](../../standards/naming.md)**
 
-// ❌ Bad
-const GoalTitle = 'My Goal';  // PascalCase
-const is_active = true;        // snake_case
-const UserList = [];           // PascalCase
-```
+---
 
-### 常量命名
+## 🏗 架构与分层
 
-```typescript
-// ✅ Good - UPPER_SNAKE_CASE
-export const MAX_GOAL_TITLE_LENGTH = 200;
-export const DEFAULT_PAGE_SIZE = 20;
+> 参考 [standards/architecture.md](../../standards/architecture.md)
 
-// ❌ Bad
-export const maxGoalTitleLength = 200;
-```
+### 架构层级关系
 
-### 类命名
+---
 
-```typescript
-// ✅ Good - PascalCase
-export class GoalService {}
-export class UserRepository {}
+## 🏗 架构与分层
 
-// ❌ Bad
-export class goalService {}
-export class user_repository {}
-```
+> 详细规范见 [standards/architecture.md](../../standards/architecture.md)
 
-### 接口命名
+**核心原则**:
 
-```typescript
-// ✅ Good - PascalCase (不使用I前缀)
-export interface Goal {
-  id: string;
-  title: string;
-}
+- 🏛 **Domain** (核心业务) → 不导入任何外层
+- 📦 **Application** (用例层) → 只依赖 Domain 和 Contracts
+- 🔧 **Infrastructure** (实现) → 实现 Domain 中定义的接口
+- 💻 **UI** (表现层) → 调用 Application 的服务
 
-export interface GoalRepository {
-  findById(id: string): Promise<Goal>;
-}
-
-// ❌ Bad - 使用I前缀
-export interface IGoal {
-  id: string;
-}
-```
+**[查看完整的依赖规则和代码示例](../../standards/architecture.md)**
 
 ---
 
@@ -502,14 +491,14 @@ export interface IGoal {
 
 #### ✅ 为公共API添加JSDoc
 
-```typescript
+````typescript
 /**
  * 创建新目标
- * 
+ *
  * @param dto - 创建目标的数据传输对象
  * @returns 创建的目标实体
  * @throws {BadRequestException} 当目标数据无效时抛出
- * 
+ *
  * @example
  * ```typescript
  * const goal = await goalService.create({
@@ -521,7 +510,7 @@ export interface IGoal {
 async create(dto: CreateGoalDto): Promise<Goal> {
   // ...
 }
-```
+````
 
 ### 代码注释
 
@@ -564,16 +553,16 @@ const componentCache = new WeakMap();
 
 ### Type类型
 
-| Type | 描述 | 示例 |
-|------|------|------|
-| `feat` | 新功能 | `feat(goal): 添加目标归档功能` |
-| `fix` | Bug修复 | `fix(task): 修复任务状态更新问题` |
-| `docs` | 文档更新 | `docs(readme): 更新安装指南` |
-| `style` | 代码格式 | `style(goal): 格式化代码` |
-| `refactor` | 重构 | `refactor(goal): 重构目标服务` |
-| `perf` | 性能优化 | `perf(query): 优化目标查询性能` |
-| `test` | 测试 | `test(goal): 添加目标创建测试` |
-| `chore` | 构建/工具 | `chore(deps): 升级依赖版本` |
+| Type       | 描述      | 示例                              |
+| ---------- | --------- | --------------------------------- |
+| `feat`     | 新功能    | `feat(goal): 添加目标归档功能`    |
+| `fix`      | Bug修复   | `fix(task): 修复任务状态更新问题` |
+| `docs`     | 文档更新  | `docs(readme): 更新安装指南`      |
+| `style`    | 代码格式  | `style(goal): 格式化代码`         |
+| `refactor` | 重构      | `refactor(goal): 重构目标服务`    |
+| `perf`     | 性能优化  | `perf(query): 优化目标查询性能`   |
+| `test`     | 测试      | `test(goal): 添加目标创建测试`    |
+| `chore`    | 构建/工具 | `chore(deps): 升级依赖版本`       |
 
 ### 示例
 

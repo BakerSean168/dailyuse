@@ -7,12 +7,14 @@ tags:
   - version-control
 description: DailyUse Git工作流 - 分支策略、提交规范、协作流程
 created: 2025-11-23T16:20:00
-updated: 2025-11-23T16:20:00
+updated: 2025-01-22T00:00:00
 ---
 
 # 🌿 Git工作流 (Git Workflow)
 
 > 规范的Git工作流，高效的团队协作
+>
+> **关联标准**: 📐 [standards/naming.md](../../standards/naming.md) | 参考Conventional Commits规范
 
 ## 📋 目录
 
@@ -40,13 +42,13 @@ main (受保护)
 
 ### 分支类型
 
-| 分支类型 | 命名格式 | 用途 | 示例 |
-|---------|---------|------|------|
-| **main** | `main` | 生产分支，始终可部署 | `main` |
-| **feature** | `feature/<描述>` | 新功能开发 | `feature/goal-archive` |
-| **bugfix** | `bugfix/<描述>` | Bug修复 | `bugfix/task-status-error` |
-| **hotfix** | `hotfix/<描述>` | 紧急修复 | `hotfix/security-patch` |
-| **refactor** | `refactor/<描述>` | 代码重构 | `refactor/goal-service` |
+| 分支类型     | 命名格式          | 用途                 | 示例                       |
+| ------------ | ----------------- | -------------------- | -------------------------- |
+| **main**     | `main`            | 生产分支，始终可部署 | `main`                     |
+| **feature**  | `feature/<描述>`  | 新功能开发           | `feature/goal-archive`     |
+| **bugfix**   | `bugfix/<描述>`   | Bug修复              | `bugfix/task-status-error` |
+| **hotfix**   | `hotfix/<描述>`   | 紧急修复             | `hotfix/security-patch`    |
+| **refactor** | `refactor/<描述>` | 代码重构             | `refactor/goal-service`    |
 
 ### 分支保护
 
@@ -77,19 +79,19 @@ main (受保护)
 
 ### Type类型
 
-| Type | Emoji | 描述 | 影响版本 |
-|------|-------|------|---------|
-| `feat` | ✨ | 新功能 | Minor |
-| `fix` | 🐛 | Bug修复 | Patch |
-| `docs` | 📝 | 文档更新 | - |
-| `style` | 💄 | 代码格式（不影响功能） | - |
-| `refactor` | ♻️ | 重构（不新增功能，不修复Bug） | - |
-| `perf` | ⚡ | 性能优化 | Patch |
-| `test` | ✅ | 测试相关 | - |
-| `build` | 📦 | 构建系统/依赖更新 | - |
-| `ci` | 👷 | CI配置更新 | - |
-| `chore` | 🔧 | 其他杂项 | - |
-| `revert` | ⏪ | 回滚提交 | - |
+| Type       | Emoji | 描述                          | 影响版本 |
+| ---------- | ----- | ----------------------------- | -------- |
+| `feat`     | ✨    | 新功能                        | Minor    |
+| `fix`      | 🐛    | Bug修复                       | Patch    |
+| `docs`     | 📝    | 文档更新                      | -        |
+| `style`    | 💄    | 代码格式（不影响功能）        | -        |
+| `refactor` | ♻️    | 重构（不新增功能，不修复Bug） | -        |
+| `perf`     | ⚡    | 性能优化                      | Patch    |
+| `test`     | ✅    | 测试相关                      | -        |
+| `build`    | 📦    | 构建系统/依赖更新             | -        |
+| `ci`       | 👷    | CI配置更新                    | -        |
+| `chore`    | 🔧    | 其他杂项                      | -        |
+| `revert`   | ⏪    | 回滚提交                      | -        |
 
 ### Scope范围
 
@@ -406,16 +408,17 @@ Closes #(issue编号)
 
 ### 审查意见模板
 
-```markdown
+````markdown
 #### 必须修改 (MUST) 🔴
 
 - [ ] **安全问题**: 未验证用户权限
+
   ```typescript
   // 当前代码
   async deleteGoal(id: string) {
     await this.repository.delete(id);
   }
-  
+
   // 建议修改
   async deleteGoal(id: string, userId: string) {
     const goal = await this.repository.findById(id);
@@ -425,6 +428,7 @@ Closes #(issue编号)
     await this.repository.delete(id);
   }
   ```
+````
 
 #### 建议修改 (SHOULD) 🟡
 
@@ -436,7 +440,8 @@ Closes #(issue编号)
 #### 可选优化 (COULD) 🟢
 
 - [ ] **性能优化**: 可以使用缓存提升查询性能
-```
+
+````
 
 ---
 
@@ -454,7 +459,7 @@ git commit --amend --no-edit
 
 # 推送修改（如果已推送）
 git push --force-with-lease
-```
+````
 
 ### 如何合并多个提交？
 
@@ -658,10 +663,7 @@ temp/
     "lint-staged": "^13.0.0"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ]
+    "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"]
   }
 }
 ```
