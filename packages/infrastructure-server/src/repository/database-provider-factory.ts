@@ -10,7 +10,7 @@
  * - Web 前端使用 IndexedDB（未来）
  */
 
-import type { RepositoryContainer } from './di/repository-container';
+import type { RepositoryContainer } from './di/repository-container-v2';
 import type {
   IRepositoryRepository,
   IResourceRepository,
@@ -112,11 +112,12 @@ export class DatabaseProviderFactory {
       require('./providers/prisma-provider').PrismaProviderInitializer,
     );
 
-    // SQLite 提供者将动态导入以避免循环依赖
-    DatabaseProviderFactory.registerProvider(
-      DatabaseProvider.SQLITE,
-      require('./providers/sqlite-provider').SqliteProviderInitializer,
-    );
+    // SQLite 提供者已移至 infrastructure-desktop 包
+    // 不在此处注册以避免循环依赖
+    // DatabaseProviderFactory.registerProvider(
+    //   DatabaseProvider.SQLITE,
+    //   require('./providers/sqlite-provider').SqliteProviderInitializer,
+    // );
 
     // Memory 提供者用于测试
     DatabaseProviderFactory.registerProvider(

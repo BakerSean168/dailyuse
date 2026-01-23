@@ -57,7 +57,7 @@ export class AIModule {
     this.conversationService = new AIConversationService(this.conversationRepository);
     this.providerConfigService = new AIProviderConfigService(
       this.providerConfigRepository,
-      (config) => AIAdapterFactory.createFromConfig(config)
+      (config: any) => AIAdapterFactory.createFromConfig(config)
     );
 
     // Generation Service Dependencies
@@ -67,13 +67,12 @@ export class AIModule {
 
     this.generationService = new AIGenerationApplicationService(
       validationService,
-      defaultAdapter,
-      this.usageQuotaRepository,
       this.conversationRepository,
-      this.providerConfigService,
+      this.usageQuotaRepository,
+      this.quotaEnforcementService,
+      defaultAdapter,
       this.providerConfigRepository,
       this.generationTaskRepository,
-      undefined // DocumentService
     );
 
     this.chatService = new AIChatApplicationService(this.conversationRepository, defaultAdapter);

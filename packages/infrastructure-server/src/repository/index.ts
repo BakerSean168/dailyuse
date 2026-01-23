@@ -28,7 +28,8 @@ export {
 // Provider Initializers
 export { PrismaProviderInitializer } from './providers/prisma-provider';
 export { MemoryProviderInitializer } from './providers/memory-provider';
-export { SqliteProviderInitializer } from './providers/sqlite-provider';
+// SQLite provider has been moved to @dailyuse/infrastructure-desktop
+// export { SqliteProviderInitializer } from './providers/sqlite-provider';
 
 // Prisma Adapters
 export { FolderPrismaRepository } from './adapters/prisma/folder-prisma.repository';

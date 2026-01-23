@@ -101,6 +101,7 @@
     "@dailyuse/domain-server": "workspace:*",
     "@dailyuse/ui-vuetify": "workspace:*",
     "@dailyuse/utils": "workspace:*",
+    "@prisma/client": "6.19.1",
     "@types/multer": "2.0.0",
     "@types/node-cron": "^3.0.11",
     "@types/swagger-jsdoc": "^6.0.4",

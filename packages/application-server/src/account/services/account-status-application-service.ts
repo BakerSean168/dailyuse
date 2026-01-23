@@ -40,9 +40,10 @@ export interface DeactivateAccountRequest {
 }
 
 /**
- * 删除账户请求接口
+ * Delete account request interface for status service
+ * NOTE: Renamed to avoid conflict with account-deletion-application-service.DeleteAccountRequest
  */
-export interface DeleteAccountRequest {
+export interface DeleteAccountStatusRequest {
   accountUuid: string;
 }
 
@@ -169,7 +170,7 @@ export class AccountStatusApplicationService {
   /**
    * 删除账户主流程（软删除）
    */
-  async deleteAccount(request: DeleteAccountRequest): Promise<AccountResponse> {
+  async deleteAccount(request: DeleteAccountStatusRequest): Promise<AccountResponse> {
     logger.info('[AccountStatusApplicationService] Deleting account', {
       accountUuid: request.accountUuid,
     });

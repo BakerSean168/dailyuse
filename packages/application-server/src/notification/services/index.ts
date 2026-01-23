@@ -12,6 +12,16 @@
  */
 
 // ============================================================
+// Notification Application Services
+// ============================================================
+
+export {
+  NotificationApplicationService,
+  NotificationTemplateApplicationService,
+  NotificationChannelApplicationService,
+} from './notification-application-services';
+
+// ============================================================
 // Notification Services
 // ============================================================
 

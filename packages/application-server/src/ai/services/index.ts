@@ -17,9 +17,14 @@ export { GetQuota } from './get-quota';
 
 // ============ Generation ============
 export { GenerateGoal } from './generate-goal';
+export { AIGenerationApplicationService } from './a-i-generation-application-service';
+export { GoalGenerationApplicationService } from './goal-generation-application-service';
 
 // ============ Provider ============
 export { ListProviders } from './list-providers';
+export { AIProviderConfigService } from './a-i-provider-config-service';
+export { AIProviderSwitchingService } from './a-i-provider-switching-service';
 
 // ============ Chat ============
 export { AIChatApplicationService } from './a-i-chat-application-service';
+

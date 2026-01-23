@@ -123,6 +123,6 @@ export {
   healthCheckDesktopRepositories,
 } from './repository/initialization/initialize-desktop';
 
-// ===== Re-export from infrastructure-server for convenience =====
-export { RepositoryContainer } from '../infrastructure-server/src/repository';
-export type { IProviderInitializer } from '../infrastructure-server/src/repository';
+// ===== Re-export from infrastructure-server for convenience (Types Only) =====
+// 只导出类型，避免循环依赖。实现通过 RepositoryContainer.getInstance() 在运行时获取
+export type { IProviderInitializer } from '@dailyuse/infrastructure-server/repository';

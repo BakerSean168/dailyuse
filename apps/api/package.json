@@ -40,12 +40,12 @@
     "lint:fix": "eslint . --ext .ts,.tsx --fix"
   },
   "dependencies": {
+    "@dailyuse/application-server": "workspace:*",
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/domain-server": "workspace:*",
-    "@dailyuse/utils": "workspace:*",
-    "@dailyuse/application-server": "workspace:*",
     "@dailyuse/infrastructure-server": "workspace:*",
-    "@prisma/client": "^6.19.1",
+    "@dailyuse/utils": "workspace:*",
+    "@prisma/client": "^6.19.0",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "bcryptjs": "^3.0.3",

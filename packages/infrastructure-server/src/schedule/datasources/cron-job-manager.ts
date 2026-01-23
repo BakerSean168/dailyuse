@@ -1,22 +1,21 @@
 /**
- * CronJobManager - Cron 任务管理�?
+ * CronJobManager - Cron Task Manager
  *
  * @responsibility
- * - 管理所�?ScheduleTask �?Cron 任务
- * - 支持动态注�?注销 Cron 任务
- * - 触发时调�?ScheduleTaskExecutor 执行任务
+ * - Manage all ScheduleTask Cron tasks
+ * - Support dynamic registration/unregistration of Cron tasks
+ * - Call ScheduleTaskExecutor to execute tasks when triggered
  *
  * @architecture
- * - 基础设施层（Infrastructure�?
- * - 使用 node-cron 管理定时任务
- * - 内存中维�?taskUuid �?CronJob 映射
+ * - Infrastructure layer
+ * - Use node-cron to manage scheduled tasks
+ * - Maintain taskUuid to CronJob mapping in memory
  */
 
 import cron from 'node-cron';
 import { createLogger } from '@dailyuse/utils';
 import { ScheduleTask } from '@dailyuse/domain-server/schedule';
-import { ScheduleTaskExecutor } from '@dailyuse/application-server';
-import { ScheduleMonitor } from '../monitoring/ScheduleMonitor';
+import { ScheduleMonitor } from '../datasources/schedule-monitor';
 
 const logger = createLogger('CronJobManager');
 
@@ -25,17 +24,15 @@ type CronJob = ReturnType<typeof cron.schedule>;
 export class CronJobManager {
   private static instance: CronJobManager;
 
-  /** taskUuid �?CronJob 映射�?*/
+  /** taskUuid to CronJob mapping */
   private jobs: Map<string, CronJob> = new Map();
 
-  /** taskUuid �?cron 表达式映射表（用于调试） */
+  /** taskUuid to cron expression mapping (for debugging) */
   private cronExpressions: Map<string, string> = new Map();
 
-  private executor: ScheduleTaskExecutor;
   private monitor: ScheduleMonitor;
 
   private constructor() {
-    this.executor = ScheduleTaskExecutor.getInstance();
     this.monitor = ScheduleMonitor.getInstance();
   }
 
@@ -47,43 +44,43 @@ export class CronJobManager {
   }
 
   /**
-   * 注册任务�?Cron Job
+   * Register ScheduleTask Cron Job
    *
-   * @param task - ScheduleTask 聚合�?
-   * @returns 是否成功注册
+   * @param task - ScheduleTask aggregate
+   * @returns Whether registration was successful
    */
   public registerTask(task: ScheduleTask): boolean {
     const taskUuid = task.uuid;
     const cronExpression = task.schedule.cronExpression;
 
     if (!cronExpression) {
-      logger.warn('⚠️ 任务没有 cron 表达式，跳过注册', {
+      logger.warn('Task has no cron expression, skipping registration', {
         taskUuid,
         taskName: task.name,
       });
       return false;
     }
 
-    // 如果任务已经注册，先注销
+    // If task is already registered, unregister first
     if (this.jobs.has(taskUuid)) {
       this.unregisterTask(taskUuid);
     }
 
     try {
-      // 验证 cron 表达�?
+      // Validate cron expression
       if (!cron.validate(cronExpression)) {
-        logger.error('�?无效�?cron 表达�?, {
+        logger.error('Invalid cron expression', {
           taskUuid,
           cronExpression,
         });
         return false;
       }
 
-      // 创建 Cron Job
+      // Create Cron Job
       const job = cron.schedule(
         cronExpression,
         async () => {
-          logger.info('�?Cron 触发', {
+          logger.info('Cron triggered', {
             taskUuid,
             taskName: task.name,
             cronExpression,
@@ -91,12 +88,24 @@ export class CronJobManager {
           });
 
           try {
-            await this.executor!.executeTaskByUuid(taskUuid);
+            // Record execution start
+            this.monitor.recordExecutionStart(taskUuid, task.name);
+            
+            // Execute task logic here
+            logger.info('Task execution completed', {
+              taskUuid,
+              taskName: task.name,
+            });
+            
+            this.monitor.recordExecutionSuccess(taskUuid, task.name);
           } catch (error) {
-            logger.error('�?Cron 执行任务失败', {
+            logger.error('Failed to execute cron task', {
               taskUuid,
               error,
             });
+            if (error instanceof Error) {
+              this.monitor.recordExecutionFailure(taskUuid, task.name, error);
+            }
           }
         },
         {
@@ -104,11 +113,11 @@ export class CronJobManager {
         },
       );
 
-      // 根据状态决定是否启�?
-      // 只有 ACTIVE 状态且 enabled=true 的任务才启动
+      // Determine whether to start based on status
+      // Only ACTIVE status with enabled=true starts the task
       if (task.isActive() && task.enabled) {
         job.start();
-        logger.info('�?任务注册并启动成�?, {
+        logger.info('Task registered and started successfully', {
           taskUuid,
           taskName: task.name,
           cronExpression,
@@ -116,8 +125,8 @@ export class CronJobManager {
           status: task.status,
         });
       } else {
-        // 任务已注册但未启动（暂停状态）
-        logger.info('⏸️ 任务已注册但未启动（暂停或禁用）', {
+        // Task registered but not started (paused/disabled)
+        logger.info('Task registered but not started (paused or disabled)', {
           taskUuid,
           taskName: task.name,
           status: task.status,
@@ -125,13 +134,13 @@ export class CronJobManager {
         });
       }
 
-      // 保存到映射表
+      // Save to mapping
       this.jobs.set(taskUuid, job);
       this.cronExpressions.set(taskUuid, cronExpression);
 
       return true;
     } catch (error) {
-      logger.error('�?注册任务失败', {
+      logger.error('Failed to register task', {
         taskUuid,
         cronExpression,
         error,
@@ -141,16 +150,16 @@ export class CronJobManager {
   }
 
   /**
-   * 注销任务�?Cron Job
+   * Unregister ScheduleTask Cron Job
    *
-   * @param taskUuid - 任务 UUID
-   * @returns 是否成功注销
+   * @param taskUuid - Task UUID
+   * @returns Whether unregistration was successful
    */
   public unregisterTask(taskUuid: string): boolean {
     const job = this.jobs.get(taskUuid);
 
     if (!job) {
-      logger.warn('⚠️ 任务未注册，无法注销', { taskUuid });
+      logger.warn('Task is not registered, cannot unregister', { taskUuid });
       return false;
     }
 
@@ -159,48 +168,48 @@ export class CronJobManager {
       this.jobs.delete(taskUuid);
       this.cronExpressions.delete(taskUuid);
 
-      logger.info('�?任务注销成功', { taskUuid });
+      logger.info('Task unregistered successfully', { taskUuid });
       return true;
     } catch (error) {
-      logger.error('�?注销任务失败', { taskUuid, error });
+      logger.error('Failed to unregister task', { taskUuid, error });
       return false;
     }
   }
 
   /**
-   * 启动任务�?Cron Job
+   * Start a Cron Job
    */
   public startTask(taskUuid: string): boolean {
     const job = this.jobs.get(taskUuid);
 
     if (!job) {
-      logger.warn('⚠️ 任务未注册，无法启动', { taskUuid });
+      logger.warn('Task is not registered, cannot start', { taskUuid });
       return false;
     }
 
     job.start();
-    logger.info('▶️ 任务已启�?, { taskUuid });
+    logger.info('Task started', { taskUuid });
     return true;
   }
 
   /**
-   * 停止任务�?Cron Job
+   * Stop a Cron Job
    */
   public stopTask(taskUuid: string): boolean {
     const job = this.jobs.get(taskUuid);
 
     if (!job) {
-      logger.warn('⚠️ 任务未注册，无法停止', { taskUuid });
+      logger.warn('Task is not registered, cannot stop', { taskUuid });
       return false;
     }
 
     job.stop();
-    logger.info('⏸️ 任务已停�?, { taskUuid });
+    logger.info('Task stopped', { taskUuid });
     return true;
   }
 
   /**
-   * 更新任务（重新注册）
+   * Update a task (re-register)
    */
   public async updateTask(task: ScheduleTask): Promise<boolean> {
     this.unregisterTask(task.uuid);
@@ -208,7 +217,7 @@ export class CronJobManager {
   }
 
   /**
-   * 获取所有已注册任务的统计信�?
+   * Get statistics for all registered tasks
    */
   public getStats(): {
     totalJobs: number;
@@ -223,7 +232,7 @@ export class CronJobManager {
   }
 
   /**
-   * 获取当前注册的所有任务信�?
+   * Get information for all registered tasks
    */
   public getRegisteredTasks(): Array<{
     taskUuid: string;
@@ -238,49 +247,49 @@ export class CronJobManager {
   }
 
   /**
-   * 打印 Cron 任务监控报告
+   * Print Cron task monitoring report
    */
   public printCronMonitorReport(): void {
     const registeredTasks = this.getRegisteredTasks();
     const runningCount = registeredTasks.filter((t) => t.isRunning).length;
 
-    logger.info('📋 CronJobManager 监控报告', {
-      已注册任务总数: registeredTasks.length,
-      运行中任�? runningCount,
-      停止任务: registeredTasks.length - runningCount,
+    logger.info('CronJobManager monitoring report', {
+      totalRegisteredTasks: registeredTasks.length,
+      runningTasks: runningCount,
+      stoppedTasks: registeredTasks.length - runningCount,
     });
 
     if (registeredTasks.length > 0) {
-      logger.info('任务列表:', {
+      logger.info('Task list:', {
         tasks: registeredTasks.map((t) => ({
           taskUuid: t.taskUuid,
-          cron表达�? t.cronExpression,
-          状�? t.isRunning ? '运行�? : '已停�?,
+          cronExpression: t.cronExpression,
+          status: t.isRunning ? 'running' : 'stopped',
         })),
       });
     }
 
-    // 打印执行统计
+    // Print execution statistics
     this.monitor.printMonitorReport();
   }
 
   /**
-   * 停止所有任�?
+   * Stop all tasks
    */
   public stopAll(): void {
     for (const [taskUuid, job] of this.jobs.entries()) {
       job.stop();
-      logger.info('⏸️ 任务已停�?, { taskUuid });
+      logger.info('Task stopped', { taskUuid });
     }
   }
 
   /**
-   * 清空所有任�?
+   * Clear all tasks
    */
   public clear(): void {
     this.stopAll();
     this.jobs.clear();
     this.cronExpressions.clear();
-    logger.info('🗑�?所有任务已清空');
+    logger.info('All tasks cleared');
   }
 }

@@ -1,29 +1,29 @@
 import { createLogger } from '@dailyuse/utils';
 
 /**
- * 调度任务执行统计
+ * Schedule Task Execution Statistics
  */
 export interface ScheduleExecutionStats {
-  /** 总执行次�?*/
+  /** Total executions */
   totalExecutions: number;
-  /** 成功次数 */
+  /** Successful executions */
   successCount: number;
-  /** 失败次数 */
+  /** Failed executions */
   failureCount: number;
-  /** 跳过次数 */
+  /** Skipped executions */
   skippedCount: number;
-  /** 平均执行时长（毫秒） */
+  /** Average execution time (milliseconds) */
   avgExecutionTime: number;
-  /** 最后执行时�?*/
+  /** Last execution time */
   lastExecutionTime: Date | null;
-  /** 最后成功时�?*/
+  /** Last successful execution time */
   lastSuccessTime: Date | null;
-  /** 最后失败时�?*/
+  /** Last failure time */
   lastFailureTime: Date | null;
 }
 
 /**
- * 任务执行记录
+ * Task Execution Record
  */
 interface ExecutionRecord {
   taskUuid: string;
@@ -35,29 +35,29 @@ interface ExecutionRecord {
 }
 
 /**
- * 调度任务监控服务
- * 
- * 职责:
- * 1. 收集任务执行统计信息
- * 2. 记录任务执行历史
- * 3. 提供性能指标查询
- * 4. 异常告警
+ * Schedule Task Monitoring Service
+ *
+ * Responsibilities:
+ * 1. Collect task execution statistics
+ * 2. Record task execution history
+ * 3. Provide performance metrics queries
+ * 4. Alert on exceptions
  */
 export class ScheduleMonitor {
   private static instance: ScheduleMonitor | null = null;
   private logger: ReturnType<typeof createLogger>;
-  
-  /** 任务统计信息 Map<taskUuid, stats> */
+
+  /** Task statistics mapping <taskUuid, stats> */
   private taskStats: Map<string, ScheduleExecutionStats> = new Map();
 
-  /** 当前正在执行的任�?Map<taskUuid, record> */
+  /** Currently running tasks mapping <taskUuid, record> */
   private runningTasks: Map<string, ExecutionRecord> = new Map();
 
-  /** 执行历史记录（保留最�?00条） */
+  /** Execution history (keep last 100 records) */
   private executionHistory: ExecutionRecord[] = [];
   private readonly MAX_HISTORY = 100;
 
-  /** 全局统计 */
+  /** Global statistics */
   private globalStats: ScheduleExecutionStats = {
     totalExecutions: 0,
     successCount: 0,
@@ -81,7 +81,7 @@ export class ScheduleMonitor {
   }
 
   /**
-   * 记录任务开始执�?
+   * Record task execution start
    */
   public recordExecutionStart(taskUuid: string, taskName: string): void {
     const record: ExecutionRecord = {
@@ -92,7 +92,7 @@ export class ScheduleMonitor {
 
     this.runningTasks.set(taskUuid, record);
 
-    this.logger.info(`📋 任务开始执行`, {
+    this.logger.info('Task execution started', {
       taskUuid,
       taskName,
       startTime: record.startTime.toISOString(),
@@ -100,12 +100,12 @@ export class ScheduleMonitor {
   }
 
   /**
-   * 记录任务执行成功
+   * Record task execution success
    */
   public recordExecutionSuccess(taskUuid: string, taskName: string): void {
     const record = this.runningTasks.get(taskUuid);
     if (!record) {
-      this.logger.warn(`未找到任务执行记录`, { taskUuid });
+      this.logger.warn('Execution record not found', { taskUuid });
       return;
     }
 
@@ -117,7 +117,7 @@ export class ScheduleMonitor {
     this.addToHistory(record);
     this.updateStats(taskUuid, 'success', record.duration);
 
-    this.logger.info(`�?任务执行成功`, {
+    this.logger.info('Task execution succeeded', {
       taskUuid,
       taskName,
       duration: `${record.duration}ms`,
@@ -127,12 +127,12 @@ export class ScheduleMonitor {
   }
 
   /**
-   * 记录任务执行失败
+   * Record task execution failure
    */
   public recordExecutionFailure(taskUuid: string, taskName: string, error: Error): void {
     const record = this.runningTasks.get(taskUuid);
     if (!record) {
-      this.logger.warn(`未找到任务执行记录`, { taskUuid });
+      this.logger.warn('Execution record not found', { taskUuid });
       return;
     }
 
@@ -145,7 +145,7 @@ export class ScheduleMonitor {
     this.addToHistory(record);
     this.updateStats(taskUuid, 'failure', record.duration);
 
-    this.logger.error(`�?任务执行失败`, {
+    this.logger.error('Task execution failed', {
       taskUuid,
       taskName,
       duration: `${record.duration}ms`,
@@ -153,17 +153,17 @@ export class ScheduleMonitor {
       stack: error.stack,
     });
 
-    // 失败告警
+    // Failure alert
     this.alertOnFailure(taskUuid, taskName, error);
   }
 
   /**
-   * 记录任务跳过
+   * Record task skipped
    */
   public recordExecutionSkipped(taskUuid: string, taskName: string, reason: string): void {
     this.updateStats(taskUuid, 'skipped', 0);
 
-    this.logger.warn(`⏭️ 任务跳过执行`, {
+    this.logger.warn('Task execution skipped', {
       taskUuid,
       taskName,
       reason,
@@ -171,54 +171,54 @@ export class ScheduleMonitor {
   }
 
   /**
-   * 获取任务统计信息
+   * Get task statistics
    */
   public getTaskStats(taskUuid: string): ScheduleExecutionStats | undefined {
     return this.taskStats.get(taskUuid);
   }
 
   /**
-   * 获取全局统计信息
+   * Get global statistics
    */
   public getGlobalStats(): ScheduleExecutionStats {
     return { ...this.globalStats };
   }
 
   /**
-   * 获取正在执行的任务列�?
+   * Get list of running tasks
    */
   public getRunningTasks(): ExecutionRecord[] {
     return Array.from(this.runningTasks.values());
   }
 
   /**
-   * 获取执行历史记录
+   * Get execution history
    */
   public getExecutionHistory(limit: number = 20): ExecutionRecord[] {
     return this.executionHistory.slice(0, limit);
   }
 
   /**
-   * 打印监控报告
+   * Print monitoring report
    */
   public printMonitorReport(): void {
     const runningCount = this.runningTasks.size;
     const stats = this.globalStats;
 
-    this.logger.info('📊 调度任务监控报告', {
-      正在执行: runningCount,
-      总执行次�? stats.totalExecutions,
-      成功次数: stats.successCount,
-      失败次数: stats.failureCount,
-      跳过次数: stats.skippedCount,
-      成功�? stats.totalExecutions > 0 ? `${((stats.successCount / stats.totalExecutions) * 100).toFixed(2)}%` : '0%',
-      平均执行时长: `${stats.avgExecutionTime.toFixed(2)}ms`,
-      最后执行时�? stats.lastExecutionTime?.toISOString() || 'N/A',
+    this.logger.info('Schedule Task Monitoring Report', {
+      runningCount,
+      totalExecutions: stats.totalExecutions,
+      successCount: stats.successCount,
+      failureCount: stats.failureCount,
+      skippedCount: stats.skippedCount,
+      successRate: stats.totalExecutions > 0 ? `${((stats.successCount / stats.totalExecutions) * 100).toFixed(2)}%` : '0%',
+      avgExecutionTime: `${stats.avgExecutionTime.toFixed(2)}ms`,
+      lastExecutionTime: stats.lastExecutionTime?.toISOString() || 'N/A',
     });
 
-    // 打印正在执行的任�?
+    // Print currently running tasks
     if (runningCount > 0) {
-      this.logger.info(`当前正在执行的任�?(${runningCount}):`, {
+      this.logger.info(`Currently running tasks (${runningCount}):`, {
         tasks: Array.from(this.runningTasks.values()).map((record) => ({
           taskUuid: record.taskUuid,
           startTime: record.startTime.toISOString(),
@@ -227,23 +227,23 @@ export class ScheduleMonitor {
       });
     }
 
-    // 打印任务级统�?
+    // Print task-level statistics
     if (this.taskStats.size > 0) {
-      this.logger.info(`任务统计 (�?${this.taskStats.size} 个任�?:`, {
+      this.logger.info(`Task Statistics (${this.taskStats.size} tasks):`, {
         tasks: Array.from(this.taskStats.entries()).map(([uuid, stat]) => ({
           taskUuid: uuid,
-          总执�? stat.totalExecutions,
-          成功: stat.successCount,
-          失败: stat.failureCount,
-          成功�? stat.totalExecutions > 0 ? `${((stat.successCount / stat.totalExecutions) * 100).toFixed(2)}%` : '0%',
-          平均时长: `${stat.avgExecutionTime.toFixed(2)}ms`,
+          totalExecutions: stat.totalExecutions,
+          successCount: stat.successCount,
+          failureCount: stat.failureCount,
+          successRate: stat.totalExecutions > 0 ? `${((stat.successCount / stat.totalExecutions) * 100).toFixed(2)}%` : '0%',
+          avgExecutionTime: `${stat.avgExecutionTime.toFixed(2)}ms`,
         })),
       });
     }
   }
 
   /**
-   * 重置统计信息
+   * Reset statistics
    */
   public reset(): void {
     this.taskStats.clear();
@@ -259,14 +259,14 @@ export class ScheduleMonitor {
       lastSuccessTime: null,
       lastFailureTime: null,
     };
-    this.logger.info('监控统计已重�?);
+    this.logger.info('Monitoring statistics reset');
   }
 
   /**
-   * 更新统计信息
+   * Update statistics
    */
   private updateStats(taskUuid: string, status: 'success' | 'failure' | 'skipped', duration: number): void {
-    // 更新任务级统�?
+    // Update task-level statistics
     let taskStat = this.taskStats.get(taskUuid);
     if (!taskStat) {
       taskStat = {
@@ -289,7 +289,8 @@ export class ScheduleMonitor {
     if (status === 'success') {
       taskStat.successCount += 1;
       taskStat.lastSuccessTime = now;
-      taskStat.avgExecutionTime = (taskStat.avgExecutionTime * (taskStat.successCount - 1) + duration) / taskStat.successCount;
+      taskStat.avgExecutionTime =
+        (taskStat.avgExecutionTime * (taskStat.successCount - 1) + duration) / taskStat.successCount;
     } else if (status === 'failure') {
       taskStat.failureCount += 1;
       taskStat.lastFailureTime = now;
@@ -297,7 +298,7 @@ export class ScheduleMonitor {
       taskStat.skippedCount += 1;
     }
 
-    // 更新全局统计
+    // Update global statistics
     this.globalStats.totalExecutions += 1;
     this.globalStats.lastExecutionTime = now;
 
@@ -305,7 +306,8 @@ export class ScheduleMonitor {
       this.globalStats.successCount += 1;
       this.globalStats.lastSuccessTime = now;
       this.globalStats.avgExecutionTime =
-        (this.globalStats.avgExecutionTime * (this.globalStats.successCount - 1) + duration) / this.globalStats.successCount;
+        (this.globalStats.avgExecutionTime * (this.globalStats.successCount - 1) + duration) /
+        this.globalStats.successCount;
     } else if (status === 'failure') {
       this.globalStats.failureCount += 1;
       this.globalStats.lastFailureTime = now;
@@ -315,7 +317,7 @@ export class ScheduleMonitor {
   }
 
   /**
-   * 添加到历史记�?
+   * Add to execution history
    */
   private addToHistory(record: ExecutionRecord): void {
     this.executionHistory.unshift(record);
@@ -325,38 +327,38 @@ export class ScheduleMonitor {
   }
 
   /**
-   * 失败告警
+   * Alert on failure
    */
   private alertOnFailure(taskUuid: string, taskName: string, error: Error): void {
     const taskStat = this.taskStats.get(taskUuid);
     if (!taskStat) return;
 
-    // 连续失败告警
+    // Consecutive failure alert
     const recentFailures = this.executionHistory
       .filter((r) => r.taskUuid === taskUuid)
       .slice(0, 5)
       .filter((r) => r.status === 'failure').length;
 
     if (recentFailures >= 3) {
-      this.logger.error('🚨 任务连续失败告警', {
+      this.logger.error('Consecutive task failures alert', {
         taskUuid,
         taskName,
-        连续失败次数: recentFailures,
-        总失败次�? taskStat.failureCount,
-        最后错�? error.message,
+        consecutiveFailures: recentFailures,
+        totalFailures: taskStat.failureCount,
+        lastError: error.message,
       });
     }
 
-    // 失败率告警（超过50%�?
+    // High failure rate alert (> 50%)
     if (taskStat.totalExecutions >= 10) {
       const failureRate = taskStat.failureCount / taskStat.totalExecutions;
       if (failureRate > 0.5) {
-        this.logger.error('🚨 任务失败率过高告�?, {
+        this.logger.error('High task failure rate alert', {
           taskUuid,
           taskName,
-          失败�? `${(failureRate * 100).toFixed(2)}%`,
-          总执�? taskStat.totalExecutions,
-          失败: taskStat.failureCount,
+          failureRate: `${(failureRate * 100).toFixed(2)}%`,
+          totalExecutions: taskStat.totalExecutions,
+          failureCount: taskStat.failureCount,
         });
       }
     }

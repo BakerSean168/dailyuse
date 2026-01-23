@@ -3,11 +3,301 @@
  * 桌面应用的 SQLite 数据库提供者
  *
  * 负责统一注册所有 44 个 SQLite 仓储到 RepositoryContainer
+ * 使用依赖注入模式避免循环依赖
  */
 
 import type Database from 'better-sqlite3';
-import { RepositoryContainer } from '../../../infrastructure-server/src/repository';
-import type { IProviderInitializer } from '../../../infrastructure-server/src/repository';
+import type { IProviderInitializer } from '@dailyuse/infrastructure-server/repository';
+
+// Repository Module
+import { SqliteRepositoryRepository } from '../repositories/sqlite-repository.repository';
+import { SqliteResourceRepository } from '../repositories/sqlite-resource.repository';
+import { SqliteFolderRepository } from '../repositories/sqlite-folder.repository';
+import { SqliteRepositoryStatisticsRepository } from '../repositories/sqlite-repository-statistics.repository';
+
+// Task Module
+import { SqliteTaskInstanceRepository } from '../../task/repositories/sqlite-task-instance.repository';
+import { SqliteTaskTemplateRepository } from '../../task/repositories/sqlite-task-template.repository';
+import { SqliteTaskDependencyRepository } from '../../task/repositories/sqlite-task-dependency.repository';
+import { SqliteTaskStatisticsRepository } from '../../task/repositories/sqlite-task-statistics.repository';
+
+// Goal Module
+import { SqliteGoalRepository } from '../../goal/repositories/sqlite-goal.repository';
+import { SqliteGoalStatisticsRepository } from '../../goal/repositories/sqlite-goal-statistics.repository';
+import { SqliteGoalFolderRepository } from '../../goal/repositories/sqlite-goal-folder.repository';
+import { SqliteFocusSessionRepository } from '../../goal/repositories/sqlite-focus-session.repository';
+import { SqliteFocusModeRepository } from '../../goal/repositories/sqlite-focus-mode.repository';
+import { SqliteWeightSnapshotRepository } from '../../goal/repositories/sqlite-weight-snapshot.repository';
+
+// Schedule Module
+import { SqliteScheduleRepository } from '../../schedule/repositories/sqlite-schedule.repository';
+import { SqliteScheduleTaskRepository } from '../../schedule/repositories/sqlite-schedule-task.repository';
+import { SqliteScheduleExecutionRepository } from '../../schedule/repositories/sqlite-schedule-execution.repository';
+import { SqliteScheduleStatisticsRepository } from '../../schedule/repositories/sqlite-schedule-statistics.repository';
+
+// Reminder Module
+import { SqliteReminderRepository } from '../../reminder/repositories/sqlite-reminder.repository';
+import { SqliteReminderResponseRepository } from '../../reminder/repositories/sqlite-reminder-response.repository';
+import { SqliteReminderStatisticsRepository } from '../../reminder/repositories/sqlite-reminder-statistics.repository';
+import { SqliteReminderGroupRepository } from '../../reminder/repositories/sqlite-reminder-group.repository';
+import { SqliteReminderTemplateRepository } from '../../reminder/repositories/sqlite-reminder-template.repository';
+
+// Notification Module
+import { SqliteNotificationRepository } from '../../notification/repositories/sqlite-notification.repository';
+import { SqliteNotificationTemplateRepository } from '../../notification/repositories/sqlite-notification-template.repository';
+import { SqliteNotificationPreferenceRepository } from '../../notification/repositories/sqlite-notification-preference.repository';
+
+// Editor Module
+import { SqliteEditorSessionRepository } from '../../editor/repositories/sqlite-editor-session.repository';
+import { SqliteLinkedResourceRepository } from '../../editor/repositories/sqlite-linked-resource.repository';
+import { SqliteSearchEngineRepository } from '../../editor/repositories/sqlite-search-engine.repository';
+import { SqliteEditorWorkspaceRepository } from '../../editor/repositories/sqlite-editor-workspace.repository';
+import { SqliteEditorTabRepository } from '../../editor/repositories/sqlite-editor-tab.repository';
+import { SqliteEditorGroupRepository } from '../../editor/repositories/sqlite-editor-group.repository';
+import { SqliteDocumentVersionRepository } from '../../editor/repositories/sqlite-document-version.repository';
+import { SqliteDocumentRepository } from '../../editor/repositories/sqlite-document.repository';
+
+// Authentication Module
+import { SqliteAuthSessionRepository } from '../../authentication/repositories/sqlite-auth-session.repository';
+import { SqliteAuthCredentialRepository } from '../../authentication/repositories/sqlite-auth-credential.repository';
+
+// Dashboard Module
+import { SqliteDashboardConfigRepository } from '../../dashboard/repositories/sqlite-dashboard-config.repository';
+
+// AI Module
+import { SqliteAIGenerationTaskRepository } from '../../ai/repositories/sqlite-ai-generation-task.repository';
+import { SqliteKnowledgeGenerationTaskRepository } from '../../ai/repositories/sqlite-knowledge-generation-task.repository';
+import { SqliteAIConversationRepository } from '../../ai/repositories/sqlite-ai-conversation.repository';
+import { SqliteAIUsageQuotaRepository } from '../../ai/repositories/sqlite-ai-usage-quota.repository';
+import { SqliteAIProviderConfigRepository } from '../../ai/repositories/sqlite-ai-provider-config.repository';
+
+// Account Module
+import { SqliteAccountRepository } from '../../account/repositories/sqlite-account.repository';
+
+// Sync Module
+import { SqliteSyncConflictRepository } from '../../sync/repositories/sqlite-sync-conflict.repository';
+import { SqliteSyncSessionRepository } from '../../sync/repositories/sqlite-sync-session.repository';
+import { SqliteSyncProfileRepository } from '../../sync/repositories/sqlite-sync-profile.repository';
+import { SqlitePendingChangeRepository } from '../../sync/repositories/sqlite-pending-change.repository';
+
+// Setting Module
+import { SqliteAppConfigRepository } from '../../setting/repositories/sqlite-app-config.repository';
+import { SqliteSettingRepository } from '../../setting/repositories/sqlite-setting.repository';
+import { SqliteUserSettingRepository } from '../../setting/repositories/sqlite-user-setting.repository';
+
+/**
+ * Desktop Provider Initializer
+ * 注册所有 44 个 SQLite 仓储到容器
+ *
+ * 使用依赖注入：RepositoryContainer 通过构造函数参数传入
+ * 这样可以避免循环依赖
+ */
+export class DesktopProviderInitializer implements IProviderInitializer {
+  constructor(
+    private db: Database.Database,
+    private container: any // RepositoryContainer 通过注入传入
+  ) {}
+
+  /**
+   * 初始化 - 注册所有仓储
+   */
+  async initialize(): Promise<void> {
+    // Repository Module (4)
+    this.container.registerRepositoryRepository(
+      new SqliteRepositoryRepository(this.db)
+    );
+    this.container.registerResourceRepository(
+      new SqliteResourceRepository(this.db)
+    );
+    this.container.registerFolderRepository(
+      new SqliteFolderRepository(this.db)
+    );
+    this.container.registerRepositoryStatisticsRepository(
+      new SqliteRepositoryStatisticsRepository(this.db)
+    );
+
+    // Task Module (4)
+    this.container.registerTaskInstanceRepository(
+      new SqliteTaskInstanceRepository(this.db)
+    );
+    this.container.registerTaskTemplateRepository(
+      new SqliteTaskTemplateRepository(this.db)
+    );
+    this.container.registerTaskDependencyRepository(
+      new SqliteTaskDependencyRepository(this.db)
+    );
+    this.container.registerTaskStatisticsRepository(
+      new SqliteTaskStatisticsRepository(this.db)
+    );
+
+    // Goal Module (6)
+    this.container.registerGoalRepository(
+      new SqliteGoalRepository(this.db)
+    );
+    this.container.registerGoalStatisticsRepository(
+      new SqliteGoalStatisticsRepository(this.db)
+    );
+    this.container.registerGoalFolderRepository(
+      new SqliteGoalFolderRepository(this.db)
+    );
+    this.container.registerFocusSessionRepository(
+      new SqliteFocusSessionRepository(this.db)
+    );
+    this.container.registerFocusModeRepository(
+      new SqliteFocusModeRepository(this.db)
+    );
+    this.container.registerWeightSnapshotRepository(
+      new SqliteWeightSnapshotRepository(this.db)
+    );
+
+    // Schedule Module (4)
+    this.container.registerScheduleRepository(
+      new SqliteScheduleRepository(this.db)
+    );
+    this.container.registerScheduleTaskRepository(
+      new SqliteScheduleTaskRepository(this.db)
+    );
+    this.container.registerScheduleExecutionRepository(
+      new SqliteScheduleExecutionRepository(this.db)
+    );
+    this.container.registerScheduleStatisticsRepository(
+      new SqliteScheduleStatisticsRepository(this.db)
+    );
+
+    // Reminder Module (5)
+    this.container.registerReminderRepository(
+      new SqliteReminderRepository(this.db)
+    );
+    this.container.registerReminderResponseRepository(
+      new SqliteReminderResponseRepository(this.db)
+    );
+    this.container.registerReminderStatisticsRepository(
+      new SqliteReminderStatisticsRepository(this.db)
+    );
+    this.container.registerReminderGroupRepository(
+      new SqliteReminderGroupRepository(this.db)
+    );
+    this.container.registerReminderTemplateRepository(
+      new SqliteReminderTemplateRepository(this.db)
+    );
+
+    // Notification Module (3)
+    this.container.registerNotificationRepository(
+      new SqliteNotificationRepository(this.db)
+    );
+    this.container.registerNotificationTemplateRepository(
+      new SqliteNotificationTemplateRepository(this.db)
+    );
+    this.container.registerNotificationPreferenceRepository(
+      new SqliteNotificationPreferenceRepository(this.db)
+    );
+
+    // Editor Module (8)
+    this.container.registerEditorSessionRepository(
+      new SqliteEditorSessionRepository(this.db)
+    );
+    this.container.registerLinkedResourceRepository(
+      new SqliteLinkedResourceRepository(this.db)
+    );
+    this.container.registerSearchEngineRepository(
+      new SqliteSearchEngineRepository(this.db)
+    );
+    this.container.registerEditorWorkspaceRepository(
+      new SqliteEditorWorkspaceRepository(this.db)
+    );
+    this.container.registerEditorTabRepository(
+      new SqliteEditorTabRepository(this.db)
+    );
+    this.container.registerEditorGroupRepository(
+      new SqliteEditorGroupRepository(this.db)
+    );
+    this.container.registerDocumentVersionRepository(
+      new SqliteDocumentVersionRepository(this.db)
+    );
+    this.container.registerDocumentRepository(
+      new SqliteDocumentRepository(this.db)
+    );
+
+    // Authentication Module (2)
+    this.container.registerAuthSessionRepository(
+      new SqliteAuthSessionRepository(this.db)
+    );
+    this.container.registerAuthCredentialRepository(
+      new SqliteAuthCredentialRepository(this.db)
+    );
+
+    // Dashboard Module (1)
+    this.container.registerDashboardConfigRepository(
+      new SqliteDashboardConfigRepository(this.db)
+    );
+
+    // AI Module (5)
+    this.container.registerAIGenerationTaskRepository(
+      new SqliteAIGenerationTaskRepository(this.db)
+    );
+    this.container.registerKnowledgeGenerationTaskRepository(
+      new SqliteKnowledgeGenerationTaskRepository(this.db)
+    );
+    this.container.registerAIConversationRepository(
+      new SqliteAIConversationRepository(this.db)
+    );
+    this.container.registerAIUsageQuotaRepository(
+      new SqliteAIUsageQuotaRepository(this.db)
+    );
+    this.container.registerAIProviderConfigRepository(
+      new SqliteAIProviderConfigRepository(this.db)
+    );
+
+    // Account Module (1)
+    this.container.registerAccountRepository(
+      new SqliteAccountRepository(this.db)
+    );
+
+    // Sync Module (4)
+    this.container.registerSyncConflictRepository(
+      new SqliteSyncConflictRepository(this.db)
+    );
+    this.container.registerSyncSessionRepository(
+      new SqliteSyncSessionRepository(this.db)
+    );
+    this.container.registerSyncProfileRepository(
+      new SqliteSyncProfileRepository(this.db)
+    );
+    this.container.registerPendingChangeRepository(
+      new SqlitePendingChangeRepository(this.db)
+    );
+
+    // Setting Module (3)
+    this.container.registerAppConfigRepository(
+      new SqliteAppConfigRepository(this.db)
+    );
+    this.container.registerSettingRepository(
+      new SqliteSettingRepository(this.db)
+    );
+    this.container.registerUserSettingRepository(
+      new SqliteUserSettingRepository(this.db)
+    );
+  }
+
+  /**
+   * Cleanup - 关闭数据库连接
+   */
+  async cleanup(): Promise<void> {
+    this.db.close();
+  }
+
+  /**
+   * Health Check
+   */
+  async healthCheck(): Promise<boolean> {
+    try {
+      const result = this.db.prepare('SELECT 1').get();
+      return !!result;
+    } catch {
+      return false;
+    }
+  }
+}
 
 // Repository Module
 import { SqliteRepositoryRepository } from '../repositories/sqlite-repository.repository';

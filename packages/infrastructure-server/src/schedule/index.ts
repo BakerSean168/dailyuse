@@ -21,7 +21,6 @@ export {
   BreeExecutionEngine,
   ScheduleMonitor,
   PrismaScheduleExecutionMapper,
-  scheduleWorker,
 } from './datasources';
 
 export { SchedulerBootstrap } from './scheduler-bootstrap';
