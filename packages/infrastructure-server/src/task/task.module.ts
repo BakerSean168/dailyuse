@@ -1,12 +1,12 @@
 import type {  PrismaClient  } from "@prisma/client";
 import {
-  PrismaTaskInstanceRepository,
-  PrismaTaskTemplateRepository,
-  PrismaTaskDependencyRepository,
-  PrismaTaskStatisticsRepository
-} from './repositories';
+  TaskInstancePrismaRepository,
+  TaskTemplatePrismaRepository,
+  TaskDependencyPrismaRepository,
+  TaskStatisticsPrismaRepository
+} from './adapters/prisma';
 // Import Schedule Repo
-import { PrismaScheduleTaskRepository } from '../schedule/repositories';
+import { ScheduleTaskPrismaRepository } from '../schedule/adapters/prisma';
 
 import {
   TaskInstanceApplicationService,
@@ -16,11 +16,11 @@ import {
 } from '@dailyuse/application-server/task';
 
 export class TaskModule {
-  public readonly taskInstanceRepository: PrismaTaskInstanceRepository;
-  public readonly taskTemplateRepository: PrismaTaskTemplateRepository;
-  public readonly taskDependencyRepository: PrismaTaskDependencyRepository;
-  public readonly taskStatisticsRepository: PrismaTaskStatisticsRepository;
-  public readonly scheduleTaskRepository: PrismaScheduleTaskRepository;
+  public readonly taskInstanceRepository: TaskInstancePrismaRepository;
+  public readonly taskTemplateRepository: TaskTemplatePrismaRepository;
+  public readonly taskDependencyRepository: TaskDependencyPrismaRepository;
+  public readonly taskStatisticsRepository: TaskStatisticsPrismaRepository;
+  public readonly scheduleTaskRepository: ScheduleTaskPrismaRepository;
 
   public readonly taskInstanceService: TaskInstanceApplicationService;
   public readonly taskTemplateService: TaskTemplateApplicationService;
@@ -29,11 +29,11 @@ export class TaskModule {
 
   constructor(prisma: PrismaClient) {
     // 1. Initialize Repositories
-    this.taskInstanceRepository = new PrismaTaskInstanceRepository(prisma);
-    this.taskTemplateRepository = new PrismaTaskTemplateRepository(prisma);
-    this.taskDependencyRepository = new PrismaTaskDependencyRepository(prisma);
-    this.taskStatisticsRepository = new PrismaTaskStatisticsRepository(prisma);
-    this.scheduleTaskRepository = new PrismaScheduleTaskRepository(prisma);
+    this.taskInstanceRepository = new TaskInstancePrismaRepository(prisma);
+    this.taskTemplateRepository = new TaskTemplatePrismaRepository(prisma);
+    this.taskDependencyRepository = new TaskDependencyPrismaRepository(prisma);
+    this.taskStatisticsRepository = new TaskStatisticsPrismaRepository(prisma);
+    this.scheduleTaskRepository = new ScheduleTaskPrismaRepository(prisma);
 
     // 2. Initialize Services (Pure DI)
     this.taskInstanceService = new TaskInstanceApplicationService(

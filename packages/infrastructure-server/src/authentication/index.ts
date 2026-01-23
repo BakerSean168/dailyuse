@@ -19,8 +19,6 @@ export type {
 // Prisma Adapters
 export { AuthCredentialPrismaRepository } from './adapters/prisma/auth-credential-prisma.repository';
 export { AuthSessionPrismaRepository } from './adapters/prisma/auth-session-prisma.repository';
-export { PrismaAuthCredentialRepository } from './repositories/prisma-auth-credential-repository';
-export { PrismaAuthSessionRepository } from './repositories/prisma-auth-session-repository';
 
 // Memory Adapters
 export { AuthCredentialMemoryRepository } from './adapters/memory/auth-credential-memory.repository';

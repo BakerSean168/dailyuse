@@ -29,8 +29,7 @@ import {
 } from '../application/AuthDesktopApplicationService';
 import type { TokenStatus } from '../infrastructure';
 import type { SessionStatus } from '../infrastructure';
-import { SqliteAuthSessionRepository } from '../../../di/sqlite-adapters/auth-session.sqlite-repository';
-import { SqliteAuthCredentialRepository } from '../../../di/sqlite-adapters/auth-credential.sqlite-repository';
+import { SqliteAuthSessionRepository, SqliteAuthCredentialRepository } from '@dailyuse/infrastructure-server';
 
 const logger = createLogger('AuthIpcHandlers');
 

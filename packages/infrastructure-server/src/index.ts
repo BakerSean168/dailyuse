@@ -20,8 +20,16 @@
  *
  * Each module provides:
  * - Ports: Repository interface definitions
- * - Adapters: Prisma (PostgreSQL/SQLite) and Memory (testing) implementations
+ * - Adapters: Prisma (PostgreSQL) and SQLite (Desktop) implementations
+ * - DI Container: Factory and container classes for dependency injection
+ *
+ * Initialization:
+ * - For API: use initializePrismaDataSource()
+ * - For Desktop: use initializeSQLiteDataSource(db)
  */
+
+// Bootstrap and Configuration
+export { initializePrismaDataSource, initializeSQLiteDataSource, initializeWithConfig, getDataSourceManager } from './bootstrap';
 
 // Modules
 export * from './goal';
@@ -39,3 +47,4 @@ export * from './sync';
 
 // Shared
 export * from './shared';
+

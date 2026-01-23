@@ -2,8 +2,8 @@ import type {
   IAuthCredentialRepository,
   IAuthSessionRepository,
 } from '@dailyuse/domain-server/authentication';
-import { PrismaAuthCredentialRepository } from '../repositories/prisma-auth-credential-repository';
-import { PrismaAuthSessionRepository } from '../repositories/prisma-auth-session-repository';
+import { AuthCredentialPrismaRepository } from '../adapters/prisma/auth-credential-prisma.repository';
+import { AuthSessionPrismaRepository } from '../adapters/prisma/auth-session-prisma.repository';
 import { prisma } from '../../shared/config/prisma';
 
 /**
@@ -25,14 +25,14 @@ export class AuthenticationContainer {
 
   getAuthCredentialRepository(): IAuthCredentialRepository {
     if (!this.credentialRepository) {
-      this.credentialRepository = new PrismaAuthCredentialRepository(prisma);
+      this.credentialRepository = new AuthCredentialPrismaRepository(prisma);
     }
     return this.credentialRepository;
   }
 
   getAuthSessionRepository(): IAuthSessionRepository {
     if (!this.sessionRepository) {
-      this.sessionRepository = new PrismaAuthSessionRepository(prisma);
+      this.sessionRepository = new AuthSessionPrismaRepository(prisma);
     }
     return this.sessionRepository;
   }
@@ -51,3 +51,4 @@ export class AuthenticationContainer {
     this.sessionRepository = null;
   }
 }
+

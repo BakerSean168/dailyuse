@@ -17,7 +17,7 @@ import { createLogger } from '@dailyuse/utils';
 import { BreeScheduler } from '@dailyuse/scheduler-server';
 import type { IScheduler } from '@dailyuse/scheduler-server';
 import { ScheduleTaskExecutorAdapter, ScheduleTaskExecutor } from '@dailyuse/application-server';
-import { PrismaScheduleTaskRepository } from './repositories/prisma-schedule-task-repository';
+import { ScheduleTaskPrismaRepository } from './adapters/prisma/schedule-task-prisma.repository';
 import type { PrismaClient } from '@prisma/client';
 import { ScheduleMonitor } from './monitoring/ScheduleMonitor';
 
@@ -35,13 +35,13 @@ const logger = createLogger('SchedulerBootstrap');
 export class SchedulerBootstrap {
   private static instance: SchedulerBootstrap;
   private scheduler: IScheduler;
-  private repository: PrismaScheduleTaskRepository;
+  private repository: ScheduleTaskPrismaRepository;
   private handler: ScheduleTaskExecutorAdapter;
   private initialized = false;
 
   private constructor(prisma: PrismaClient) {
-    // 初始化依�?
-    this.repository = new PrismaScheduleTaskRepository(prisma);
+    // 初始化依赖
+    this.repository = new ScheduleTaskPrismaRepository(prisma);
     const monitor = ScheduleMonitor.getInstance();
     const executor = new ScheduleTaskExecutor(this.repository, monitor);
     this.handler = new ScheduleTaskExecutorAdapter(executor);

@@ -4,24 +4,23 @@ import type {
   IFocusSessionRepository,
   IGoalStatisticsRepository,
   IFocusModeRepository,
+  IWeightSnapshotRepository,
+  IKeyResultRepository,
 } from '@dailyuse/domain-server/goal';
 import { PrismaGoalRepository } from '../repositories/PrismaGoalRepository';
 import { PrismaFocusSessionRepository } from '../repositories/PrismaFocusSessionRepository';
 import { PrismaGoalStatisticsRepository } from '../repositories/PrismaGoalStatisticsRepository';
 import { PrismaGoalFolderRepository } from '../repositories/PrismaGoalFolderRepository';
 import { PrismaFocusModeRepository } from '../repositories/PrismaFocusModeRepository';
+import { DataSourceManager } from '../../shared/config/data-source-manager';
 import { prisma } from '../../shared/config/prisma';
 
 /**
- * Goal 模块依赖注入容器
- * 负责管理领域服务和仓储的实例创建和生命周�?
+ * Goal Module DI Container
+ * Manages repository instances for Goal domain
  *
- * 采用懒加载模式：
- * - 只在首次调用时创建实�?
- * - 后续调用返回已有实例（单例）
- *
- * 支持测试替换�?
- * - 允许注入 Mock 仓储用于单元测试
+ * Supports both Prisma (API) and SQLite (Desktop) data sources
+ * Uses factory pattern to create appropriate implementations
  */
 export class GoalContainer {
   private static instance: GoalContainer;
@@ -41,7 +40,7 @@ export class GoalContainer {
   }
 
   /**
-   * 获取目标仓储实例（懒加载�?
+   * Get goal repository instance (lazy load with caching)
    */
   getGoalRepository(): IGoalRepository {
     if (!this.goalRepository) {
@@ -51,14 +50,14 @@ export class GoalContainer {
   }
 
   /**
-   * 设置目标仓储实例（用于测试）
+   * Set goal repository (for testing)
    */
   setGoalRepository(repository: IGoalRepository): void {
     this.goalRepository = repository;
   }
 
   /**
-   * 获取文件夹仓储实例（懒加载）
+   * Get goal folder repository (lazy load with caching)
    */
   getGoalFolderRepository(): IGoalFolderRepository {
     if (!this.goalFolderRepository) {
@@ -68,14 +67,14 @@ export class GoalContainer {
   }
 
   /**
-   * 设置文件夹仓储实例（用于测试�?
+   * Set goal folder repository (for testing)
    */
   setGoalFolderRepository(repository: IGoalFolderRepository): void {
     this.goalFolderRepository = repository;
   }
 
   /**
-   * 获取专注周期仓储实例（懒加载�?
+   * Get focus session repository (lazy load with caching)
    */
   getFocusSessionRepository(): IFocusSessionRepository {
     if (!this.focusSessionRepository) {
@@ -85,14 +84,14 @@ export class GoalContainer {
   }
 
   /**
-   * 设置专注周期仓储实例（用于测试）
+   * Set focus session repository (for testing)
    */
   setFocusSessionRepository(repository: IFocusSessionRepository): void {
     this.focusSessionRepository = repository;
   }
 
   /**
-   * 获取专注模式仓储实例（懒加载�?
+   * Get focus mode repository (lazy load with caching)
    */
   getFocusModeRepository(): IFocusModeRepository {
     if (!this.focusModeRepository) {
@@ -102,14 +101,14 @@ export class GoalContainer {
   }
 
   /**
-   * 设置专注模式仓储实例（用于测试）
+   * Set focus mode repository (for testing)
    */
   setFocusModeRepository(repository: IFocusModeRepository): void {
     this.focusModeRepository = repository;
   }
 
   /**
-   * 获取目标统计仓储实例（懒加载�?
+   * Get goal statistics repository (lazy load with caching)
    */
   getGoalStatisticsRepository(): IGoalStatisticsRepository {
     if (!this.goalStatisticsRepository) {
@@ -119,14 +118,14 @@ export class GoalContainer {
   }
 
   /**
-   * 设置目标统计仓储实例（用于测试）
+   * Set goal statistics repository (for testing)
    */
   setGoalStatisticsRepository(repository: IGoalStatisticsRepository): void {
     this.goalStatisticsRepository = repository;
   }
 
   /**
-   * 重置容器（用于测试）
+   * Reset container (for testing)
    */
   reset(): void {
     this.goalRepository = undefined;
@@ -136,3 +135,4 @@ export class GoalContainer {
     this.goalStatisticsRepository = undefined;
   }
 }
+

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Repository Container (Server)
  *
- * 依赖注入容器，管理所有模块的 repository 实例
+ * 渚濊禆娉ㄥ叆瀹瑰櫒锛岀鐞嗘墍鏈夋ā鍧楃殑 repository 瀹炰緥
  */
 
 import type {
@@ -31,7 +31,6 @@ import type {
   IScheduleStatisticsRepository,
 } from '@dailyuse/domain-server/schedule';
 import type {
-  IReminderRepository,
   IReminderResponseRepository,
   IReminderStatisticsRepository,
   IReminderGroupRepository,
@@ -82,24 +81,24 @@ import type {
 } from '@dailyuse/domain-server/setting';
 
 /**
- * 所有模块的依赖注入容器
+ * 鎵€鏈夋ā鍧楃殑渚濊禆娉ㄥ叆瀹瑰櫒
  */
 export class RepositoryContainer {
   private static instance: RepositoryContainer;
 
-  // ===== Repository 模块 =====
+  // ===== Repository 妯″潡 =====
   private repositoryRepository: IRepositoryRepository | null = null;
   private resourceRepository: IResourceRepository | null = null;
   private folderRepository: IFolderRepository | null = null;
   private repositoryStatisticsRepository: IRepositoryStatisticsRepository | null = null;
 
-  // ===== Task 模块 =====
+  // ===== Task 妯″潡 =====
   private taskInstanceRepository: ITaskInstanceRepository | null = null;
   private taskTemplateRepository: ITaskTemplateRepository | null = null;
   private taskDependencyRepository: ITaskDependencyRepository | null = null;
   private taskStatisticsRepository: ITaskStatisticsRepository | null = null;
 
-  // ===== Goal 模块 =====
+  // ===== Goal 妯″潡 =====
   private goalRepository: IGoalRepository | null = null;
   private goalStatisticsRepository: IGoalStatisticsRepository | null = null;
   private goalFolderRepository: IGoalFolderRepository | null = null;
@@ -107,25 +106,25 @@ export class RepositoryContainer {
   private focusModeRepository: IFocusModeRepository | null = null;
   private weightSnapshotRepository: IWeightSnapshotRepository | null = null;
 
-  // ===== Schedule 模块 =====
+  // ===== Schedule 妯″潡 =====
   private scheduleRepository: IScheduleRepository | null = null;
   private scheduleTaskRepository: IScheduleTaskRepository | null = null;
   private scheduleExecutionRepository: IScheduleExecutionRepository | null = null;
   private scheduleStatisticsRepository: IScheduleStatisticsRepository | null = null;
 
-  // ===== Reminder 模块 =====
-  private reminderRepository: IReminderRepository | null = null;
+  // ===== Reminder 妯″潡 =====
+  private reminderRepository: IReminderGroupRepository | null = null;
   private reminderResponseRepository: IReminderResponseRepository | null = null;
   private reminderStatisticsRepository: IReminderStatisticsRepository | null = null;
   private reminderGroupRepository: IReminderGroupRepository | null = null;
   private reminderTemplateRepository: IReminderTemplateRepository | null = null;
 
-  // ===== Notification 模块 =====
+  // ===== Notification 妯″潡 =====
   private notificationRepository: INotificationRepository | null = null;
   private notificationTemplateRepository: INotificationTemplateRepository | null = null;
   private notificationPreferenceRepository: INotificationPreferenceRepository | null = null;
 
-  // ===== Editor 模块 =====
+  // ===== Editor 妯″潡 =====
   private editorSessionRepository: IEditorSessionRepository | null = null;
   private linkedResourceRepository: ILinkedResourceRepository | null = null;
   private searchEngineRepository: ISearchEngineRepository | null = null;
@@ -135,30 +134,30 @@ export class RepositoryContainer {
   private documentVersionRepository: IDocumentVersionRepository | null = null;
   private documentRepository: IDocumentRepository | null = null;
 
-  // ===== Authentication 模块 =====
+  // ===== Authentication 妯″潡 =====
   private authSessionRepository: IAuthSessionRepository | null = null;
   private authCredentialRepository: IAuthCredentialRepository | null = null;
 
-  // ===== Dashboard 模块 =====
+  // ===== Dashboard 妯″潡 =====
   private dashboardConfigRepository: IDashboardConfigRepository | null = null;
 
-  // ===== AI 模块 =====
+  // ===== AI 妯″潡 =====
   private aiGenerationTaskRepository: IAIGenerationTaskRepository | null = null;
   private knowledgeGenerationTaskRepository: IKnowledgeGenerationTaskRepository | null = null;
   private aiConversationRepository: IAIConversationRepository | null = null;
   private aiUsageQuotaRepository: IAIUsageQuotaRepository | null = null;
   private aiProviderConfigRepository: IAIProviderConfigRepository | null = null;
 
-  // ===== Account 模块 =====
+  // ===== Account 妯″潡 =====
   private accountRepository: IAccountRepository | null = null;
 
-  // ===== Sync 模块 =====
+  // ===== Sync 妯″潡 =====
   private syncConflictRepository: ISyncConflictRepository | null = null;
   private syncSessionRepository: ISyncSessionRepository | null = null;
   private syncProfileRepository: ISyncProfileRepository | null = null;
   private pendingChangeRepository: IPendingChangeRepository | null = null;
 
-  // ===== Setting 模块 =====
+  // ===== Setting 妯″潡 =====
   private appConfigRepository: IAppConfigRepository | null = null;
   private settingRepository: ISettingRepository | null = null;
   private userSettingRepository: IUserSettingRepository | null = null;
@@ -166,7 +165,7 @@ export class RepositoryContainer {
   private constructor() {}
 
   /**
-   * 获取容器单例
+   * 鑾峰彇瀹瑰櫒鍗曚緥
    */
   static getInstance(): RepositoryContainer {
     if (!RepositoryContainer.instance) {
@@ -176,13 +175,13 @@ export class RepositoryContainer {
   }
 
   /**
-   * 重置容器（用于测试）
+   * 閲嶇疆瀹瑰櫒锛堢敤浜庢祴璇曪級
    */
   static resetInstance(): void {
     RepositoryContainer.instance = new RepositoryContainer();
   }
 
-  // ===== Repository 模块 =====
+  // ===== Repository 妯″潡 =====
 
   registerRepositoryRepository(repository: IRepositoryRepository): this {
     this.repositoryRepository = repository;
@@ -232,7 +231,7 @@ export class RepositoryContainer {
     return this.repositoryStatisticsRepository;
   }
 
-  // ===== Task 模块 =====
+  // ===== Task 妯″潡 =====
 
   registerTaskInstanceRepository(repository: ITaskInstanceRepository): this {
     this.taskInstanceRepository = repository;
@@ -282,7 +281,7 @@ export class RepositoryContainer {
     return this.taskStatisticsRepository;
   }
 
-  // ===== Goal 模块 =====
+  // ===== Goal 妯″潡 =====
 
   registerGoalRepository(repository: IGoalRepository): this {
     this.goalRepository = repository;
@@ -356,7 +355,7 @@ export class RepositoryContainer {
     return this.weightSnapshotRepository;
   }
 
-  // ===== Schedule 模块 =====
+  // ===== Schedule 妯″潡 =====
 
   registerScheduleRepository(repository: IScheduleRepository): this {
     this.scheduleRepository = repository;
@@ -406,14 +405,14 @@ export class RepositoryContainer {
     return this.scheduleStatisticsRepository;
   }
 
-  // ===== Reminder 模块 =====
+  // ===== Reminder 妯″潡 =====
 
-  registerReminderRepository(repository: IReminderRepository): this {
+  registerReminderRepository(repository: IReminderGroupRepository): this {
     this.reminderRepository = repository;
     return this;
   }
 
-  getReminderRepository(): IReminderRepository {
+  getReminderRepository(): IReminderGroupRepository {
     if (!this.reminderRepository) {
       throw new Error('ReminderRepository not registered.');
     }
@@ -468,7 +467,7 @@ export class RepositoryContainer {
     return this.reminderTemplateRepository;
   }
 
-  // ===== Notification 模块 =====
+  // ===== Notification 妯″潡 =====
 
   registerNotificationRepository(repository: INotificationRepository): this {
     this.notificationRepository = repository;
@@ -506,7 +505,7 @@ export class RepositoryContainer {
     return this.notificationPreferenceRepository;
   }
 
-  // ===== Editor 模块 =====
+  // ===== Editor 妯″潡 =====
 
   registerEditorSessionRepository(repository: IEditorSessionRepository): this {
     this.editorSessionRepository = repository;
@@ -604,7 +603,7 @@ export class RepositoryContainer {
     return this.documentRepository;
   }
 
-  // ===== Authentication 模块 =====
+  // ===== Authentication 妯″潡 =====
 
   registerAuthSessionRepository(repository: IAuthSessionRepository): this {
     this.authSessionRepository = repository;
@@ -630,7 +629,7 @@ export class RepositoryContainer {
     return this.authCredentialRepository;
   }
 
-  // ===== Dashboard 模块 =====
+  // ===== Dashboard 妯″潡 =====
 
   registerDashboardConfigRepository(repository: IDashboardConfigRepository): this {
     this.dashboardConfigRepository = repository;
@@ -644,7 +643,7 @@ export class RepositoryContainer {
     return this.dashboardConfigRepository;
   }
 
-  // ===== AI 模块 =====
+  // ===== AI 妯″潡 =====
 
   registerAIGenerationTaskRepository(repository: IAIGenerationTaskRepository): this {
     this.aiGenerationTaskRepository = repository;
@@ -706,7 +705,7 @@ export class RepositoryContainer {
     return this.aiProviderConfigRepository;
   }
 
-  // ===== Account 模块 =====
+  // ===== Account 妯″潡 =====
 
   registerAccountRepository(repository: IAccountRepository): this {
     this.accountRepository = repository;
@@ -720,7 +719,7 @@ export class RepositoryContainer {
     return this.accountRepository;
   }
 
-  // ===== Sync 模块 =====
+  // ===== Sync 妯″潡 =====
 
   registerSyncConflictRepository(repository: ISyncConflictRepository): this {
     this.syncConflictRepository = repository;
@@ -770,7 +769,7 @@ export class RepositoryContainer {
     return this.pendingChangeRepository;
   }
 
-  // ===== Setting 模块 =====
+  // ===== Setting 妯″潡 =====
 
   registerAppConfigRepository(repository: IAppConfigRepository): this {
     this.appConfigRepository = repository;
@@ -808,7 +807,7 @@ export class RepositoryContainer {
     return this.userSettingRepository;
   }
 
-  // ===== 别名方法（兼容性） =====
+  // ===== 鍒悕鏂规硶锛堝吋瀹规€э級 =====
 
   getRepositoryAggregateRepository(): IRepositoryRepository {
     return this.getRepositoryRepository();
@@ -825,19 +824,19 @@ export class RepositoryContainer {
   }
 
   clear(): void {
-    // ===== Repository 模块 =====
+    // ===== Repository 妯″潡 =====
     this.repositoryRepository = null;
     this.resourceRepository = null;
     this.folderRepository = null;
     this.repositoryStatisticsRepository = null;
 
-    // ===== Task 模块 =====
+    // ===== Task 妯″潡 =====
     this.taskInstanceRepository = null;
     this.taskTemplateRepository = null;
     this.taskDependencyRepository = null;
     this.taskStatisticsRepository = null;
 
-    // ===== Goal 模块 =====
+    // ===== Goal 妯″潡 =====
     this.goalRepository = null;
     this.goalStatisticsRepository = null;
     this.goalFolderRepository = null;
@@ -845,25 +844,25 @@ export class RepositoryContainer {
     this.focusModeRepository = null;
     this.weightSnapshotRepository = null;
 
-    // ===== Schedule 模块 =====
+    // ===== Schedule 妯″潡 =====
     this.scheduleRepository = null;
     this.scheduleTaskRepository = null;
     this.scheduleExecutionRepository = null;
     this.scheduleStatisticsRepository = null;
 
-    // ===== Reminder 模块 =====
+    // ===== Reminder 妯″潡 =====
     this.reminderRepository = null;
     this.reminderResponseRepository = null;
     this.reminderStatisticsRepository = null;
     this.reminderGroupRepository = null;
     this.reminderTemplateRepository = null;
 
-    // ===== Notification 模块 =====
+    // ===== Notification 妯″潡 =====
     this.notificationRepository = null;
     this.notificationTemplateRepository = null;
     this.notificationPreferenceRepository = null;
 
-    // ===== Editor 模块 =====
+    // ===== Editor 妯″潡 =====
     this.editorSessionRepository = null;
     this.linkedResourceRepository = null;
     this.searchEngineRepository = null;
@@ -873,32 +872,34 @@ export class RepositoryContainer {
     this.documentVersionRepository = null;
     this.documentRepository = null;
 
-    // ===== Authentication 模块 =====
+    // ===== Authentication 妯″潡 =====
     this.authSessionRepository = null;
     this.authCredentialRepository = null;
 
-    // ===== Dashboard 模块 =====
+    // ===== Dashboard 妯″潡 =====
     this.dashboardConfigRepository = null;
 
-    // ===== AI 模块 =====
+    // ===== AI 妯″潡 =====
     this.aiGenerationTaskRepository = null;
     this.knowledgeGenerationTaskRepository = null;
     this.aiConversationRepository = null;
     this.aiUsageQuotaRepository = null;
     this.aiProviderConfigRepository = null;
 
-    // ===== Account 模块 =====
+    // ===== Account 妯″潡 =====
     this.accountRepository = null;
 
-    // ===== Sync 模块 =====
+    // ===== Sync 妯″潡 =====
     this.syncConflictRepository = null;
     this.syncSessionRepository = null;
     this.syncProfileRepository = null;
     this.pendingChangeRepository = null;
 
-    // ===== Setting 模块 =====
+    // ===== Setting 妯″潡 =====
     this.appConfigRepository = null;
     this.settingRepository = null;
     this.userSettingRepository = null;
   }
 }
+
+

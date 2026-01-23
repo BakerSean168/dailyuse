@@ -1,7 +1,5 @@
 /**
- * Shared Infrastructure Types
- *
- * Common types and utilities used across all server modules.
+ * Shared Configuration and Utilities
  */
 
-export type { IRepository } from './repository';
+export * from './config/sqlite-database';

@@ -67,3 +67,4 @@ export class NotificationContainer {
     this.preferenceRepository = null;
   }
 }
+

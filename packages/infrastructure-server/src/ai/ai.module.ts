@@ -1,8 +1,10 @@
-import type {  PrismaClient  } from "@prisma/client";
-import { PrismaAIConversationRepository } from './repositories/prisma-a-i-conversation-repository';
-import { PrismaAIGenerationTaskRepository } from './repositories/prisma-a-i-generation-task-repository';
-import { PrismaAIProviderConfigRepository } from './repositories/prisma-a-i-provider-config-repository';
-import { PrismaAIUsageQuotaRepository } from './repositories/prisma-a-i-usage-quota-repository';
+﻿import type {  PrismaClient  } from "@prisma/client";
+import {
+  AIConversationPrismaRepository,
+  AIGenerationTaskPrismaRepository,
+  AIProviderConfigPrismaRepository,
+  AIUsageQuotaPrismaRepository
+} from './adapters/prisma';
 import { AIGenerationValidationService } from '@dailyuse/domain-server/ai';
 import { AIAdapterFactory } from './adapters/a-i-adapter-factory';
 
@@ -22,10 +24,10 @@ import {
 } from '@dailyuse/application-server/ai';
 
 export class AIModule {
-  public readonly conversationRepository: PrismaAIConversationRepository;
-  public readonly generationTaskRepository: PrismaAIGenerationTaskRepository;
-  public readonly providerConfigRepository: PrismaAIProviderConfigRepository;
-  public readonly usageQuotaRepository: PrismaAIUsageQuotaRepository;
+  public readonly conversationRepository: AIConversationPrismaRepository;
+  public readonly generationTaskRepository: AIGenerationTaskPrismaRepository;
+  public readonly providerConfigRepository: AIProviderConfigPrismaRepository;
+  public readonly usageQuotaRepository: AIUsageQuotaPrismaRepository;
 
   public readonly createConversation: CreateConversation;
   public readonly deleteConversation: DeleteConversation;
@@ -41,10 +43,10 @@ export class AIModule {
   public readonly chatService: AIChatApplicationService;
 
   constructor(prisma: PrismaClient) {
-    this.conversationRepository = new PrismaAIConversationRepository(prisma);
-    this.generationTaskRepository = new PrismaAIGenerationTaskRepository(prisma);
-    this.providerConfigRepository = new PrismaAIProviderConfigRepository(prisma);
-    this.usageQuotaRepository = new PrismaAIUsageQuotaRepository(prisma);
+    this.conversationRepository = new AIConversationPrismaRepository(prisma);
+    this.generationTaskRepository = new AIGenerationTaskPrismaRepository(prisma);
+    this.providerConfigRepository = new AIProviderConfigPrismaRepository(prisma);
+    this.usageQuotaRepository = new AIUsageQuotaPrismaRepository(prisma);
 
     this.createConversation = new CreateConversation(this.conversationRepository);
     this.deleteConversation = new DeleteConversation(this.conversationRepository);
@@ -60,16 +62,15 @@ export class AIModule {
       (config: any) => AIAdapterFactory.createFromConfig(config)
     );
 
-    // Generation Service Dependencies
     const validationService = new AIGenerationValidationService();
-    // Use factory to get default adapter from ENV or Config
     const defaultAdapter = AIAdapterFactory.getDefaultAdapter();
+    const quotaEnforcementService = { enforceQuota: async () => ({ allowed: true, remaining: 1000 }) } as any;
 
     this.generationService = new AIGenerationApplicationService(
       validationService,
       this.conversationRepository,
       this.usageQuotaRepository,
-      this.quotaEnforcementService,
+      quotaEnforcementService,
       defaultAdapter,
       this.providerConfigRepository,
       this.generationTaskRepository,

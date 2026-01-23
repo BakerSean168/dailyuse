@@ -1,10 +1,10 @@
 import type {  PrismaClient  } from "@prisma/client";
 import {
-  PrismaScheduleRepository,
-  PrismaScheduleExecutionRepository,
-  PrismaScheduleStatisticsRepository,
-  PrismaScheduleTaskRepository,
-} from './repositories';
+  SchedulePrismaRepository,
+  ScheduleExecutionPrismaRepository,
+  ScheduleStatisticsPrismaRepository,
+  ScheduleTaskPrismaRepository,
+} from './adapters/prisma';
 import {
   ScheduleApplicationService,
   ScheduleStatisticsApplicationService,
@@ -13,10 +13,10 @@ import {
 // import { ScheduleConflictDetectionService } from '@dailyuse/application-server/schedule';
 
 export class ScheduleModule {
-  public readonly scheduleRepository: PrismaScheduleRepository;
-  public readonly scheduleExecutionRepository: PrismaScheduleExecutionRepository;
-  public readonly scheduleStatisticsRepository: PrismaScheduleStatisticsRepository;
-  public readonly scheduleTaskRepository: PrismaScheduleTaskRepository;
+  public readonly scheduleRepository: SchedulePrismaRepository;
+  public readonly scheduleExecutionRepository: ScheduleExecutionPrismaRepository;
+  public readonly scheduleStatisticsRepository: ScheduleStatisticsPrismaRepository;
+  public readonly scheduleTaskRepository: ScheduleTaskPrismaRepository;
 
   public readonly scheduleService: ScheduleApplicationService;
   public readonly scheduleStatisticsService: ScheduleStatisticsApplicationService;
@@ -25,10 +25,10 @@ export class ScheduleModule {
 
   constructor(prisma: PrismaClient) {
     // 1. Initialize Repositories
-    this.scheduleRepository = new PrismaScheduleRepository(prisma);
-    this.scheduleExecutionRepository = new PrismaScheduleExecutionRepository(prisma);
-    this.scheduleStatisticsRepository = new PrismaScheduleStatisticsRepository(prisma);
-    this.scheduleTaskRepository = new PrismaScheduleTaskRepository(prisma);
+    this.scheduleRepository = new SchedulePrismaRepository(prisma);
+    this.scheduleExecutionRepository = new ScheduleExecutionPrismaRepository(prisma);
+    this.scheduleStatisticsRepository = new ScheduleStatisticsPrismaRepository(prisma);
+    this.scheduleTaskRepository = new ScheduleTaskPrismaRepository(prisma);
 
     // 2. Initialize Services
     this.scheduleService = new ScheduleApplicationService(

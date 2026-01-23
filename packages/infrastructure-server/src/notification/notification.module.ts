@@ -1,9 +1,9 @@
-import type {  PrismaClient  } from "@prisma/client";
+﻿import type {  PrismaClient  } from "@prisma/client";
 import {
-  PrismaNotificationRepository,
-  PrismaNotificationPreferenceRepository,
-  PrismaNotificationTemplateRepository
-} from './repositories';
+  NotificationPrismaRepository,
+  NotificationPreferencePrismaRepository,
+  NotificationTemplatePrismaRepository
+} from './adapters/prisma';
 import {
   NotificationApplicationService,
   NotificationTemplateApplicationService,
@@ -11,9 +11,9 @@ import {
 } from '@dailyuse/application-server/notification';
 
 export class NotificationModule {
-  public readonly notificationRepository: PrismaNotificationRepository;
-  public readonly notificationPreferenceRepository: PrismaNotificationPreferenceRepository;
-  public readonly notificationTemplateRepository: PrismaNotificationTemplateRepository;
+  public readonly notificationRepository: NotificationPrismaRepository;
+  public readonly notificationPreferenceRepository: NotificationPreferencePrismaRepository;
+  public readonly notificationTemplateRepository: NotificationTemplatePrismaRepository;
 
   public readonly notificationService: NotificationApplicationService;
   public readonly notificationTemplateService: NotificationTemplateApplicationService;
@@ -21,21 +21,13 @@ export class NotificationModule {
 
   constructor(prisma: PrismaClient) {
     // 1. Initialize Repositories
-    this.notificationRepository = new PrismaNotificationRepository(prisma);
-    this.notificationPreferenceRepository = new PrismaNotificationPreferenceRepository(prisma);
-    this.notificationTemplateRepository = new PrismaNotificationTemplateRepository(prisma);
+    this.notificationRepository = new NotificationPrismaRepository(prisma);
+    this.notificationPreferenceRepository = new NotificationPreferencePrismaRepository(prisma);
+    this.notificationTemplateRepository = new NotificationTemplatePrismaRepository(prisma);
 
     // 2. Initialize Services
-    this.notificationService = new NotificationApplicationService(
-      this.notificationRepository,
-      this.notificationPreferenceRepository,
-      this.notificationTemplateRepository
-    );
-
-    this.notificationTemplateService = new NotificationTemplateApplicationService(
-      this.notificationTemplateRepository
-    );
-
+    this.notificationService = new NotificationApplicationService();
+    this.notificationTemplateService = new NotificationTemplateApplicationService();
     this.notificationChannelService = new NotificationChannelApplicationService();
   }
 }

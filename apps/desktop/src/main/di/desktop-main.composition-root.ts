@@ -30,36 +30,40 @@ import {
   DashboardContainer,
   RepositoryContainer,
   SettingContainer,
-} from '@dailyuse/infrastructure-server';
-
-import { registerLazyModule, ensureModuleLoaded, preloadModules } from './lazy-module-loader';
-
-import {
+  // SQLite Adapters (imported from infrastructure-server)
   // Goal
   SqliteGoalRepository,
   SqliteGoalFolderRepository,
   SqliteGoalStatisticsRepository,
+  SqliteFocusModeRepository,
+  SqliteFocusSessionRepository,
+  SqliteWeightSnapshotRepository,
   // Account
   SqliteAccountRepository,
   // Auth
   SqliteAuthCredentialRepository,
   SqliteAuthSessionRepository,
   // Task
-  SqliteTaskTemplateRepository,
   SqliteTaskInstanceRepository,
+  SqliteTaskTemplateRepository,
+  SqliteTaskDependencyRepository,
   SqliteTaskStatisticsRepository,
   // Schedule
+  SqliteScheduleRepository,
   SqliteScheduleTaskRepository,
+  SqliteScheduleExecutionRepository,
   SqliteScheduleStatisticsRepository,
   // Reminder
-  SqliteReminderTemplateRepository,
   SqliteReminderGroupRepository,
+  SqliteReminderTemplateRepository,
   SqliteReminderStatisticsRepository,
+  SqliteReminderResponseRepository,
   // AI
   SqliteAIConversationRepository,
   SqliteAIGenerationTaskRepository,
   SqliteAIUsageQuotaRepository,
   SqliteAIProviderConfigRepository,
+  SqliteKnowledgeGenerationTaskRepository,
   // Notification
   SqliteNotificationRepository,
   SqliteNotificationPreferenceRepository,
@@ -75,7 +79,23 @@ import {
   SqliteAppConfigRepository,
   SqliteSettingRepository,
   SqliteUserSettingRepository,
-} from './sqlite-adapters';
+  // Sync
+  SqliteSyncSessionRepository,
+  SqliteSyncProfileRepository,
+  SqliteSyncConflictRepository,
+  SqlitePendingChangeRepository,
+  // Editor
+  SqliteDocumentRepository,
+  SqliteDocumentVersionRepository,
+  SqliteEditorWorkspaceRepository,
+  SqliteEditorGroupRepository,
+  SqliteEditorTabRepository,
+  SqliteEditorSessionRepository,
+  SqliteLinkedResourceRepository,
+  SqliteSearchEngineRepository,
+} from '@dailyuse/infrastructure-server';
+
+import { registerLazyModule, ensureModuleLoaded, preloadModules } from './lazy-module-loader';
 
 /**
  * Configures dependency injection for all main process modules.

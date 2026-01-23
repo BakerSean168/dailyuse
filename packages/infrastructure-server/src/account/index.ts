@@ -2,16 +2,21 @@
  * Account Module - Infrastructure Server
  *
  * Ports and Adapters for Account module persistence.
+ * Supports both Prisma (API) and SQLite (Desktop) data sources.
  */
 
 // Ports (Interfaces)
-export { type IAccountRepository } from './ports/account-repository.port';
+export type { IAccountRepository } from '@dailyuse/domain-server/account';
 
 // Prisma Adapters
 export { AccountPrismaRepository } from './adapters/prisma/account-prisma.repository';
-export { PrismaAccountRepository } from './repositories/prisma-account.repository';
+
+// SQLite Adapters
+export { SqliteAccountRepository } from './adapters/sqlite/account-sqlite.repository';
 
 // Memory Adapters
 export { AccountMemoryRepository } from './adapters/memory/account-memory.repository';
 
-export * from './account.module';
+// DI Container and Factory
+export { AccountContainer } from './di/account-container';
+export { AccountRepositoryFactory, AccountStatusRepositoryFactory } from './di/account-repository.factory';

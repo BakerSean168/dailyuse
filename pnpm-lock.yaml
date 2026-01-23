@@ -964,9 +964,15 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
+      '@prisma/client':
+        specifier: ^6.19.1
+        version: 6.19.1(prisma@6.19.1(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
+      better-sqlite3:
+        specifier: ^11.8.0
+        version: 11.10.0
       passport-jwt:
         specifier: ^4.0.1
         version: 4.0.1
@@ -974,18 +980,21 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
     devDependencies:
-      '@prisma/client':
-        specifier: ^6.19.1
-        version: 6.19.1(prisma@7.1.0(@types/react@19.2.7)(better-sqlite3@12.5.0)(magicast@0.3.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.9.3))(typescript@5.9.3)
       '@types/bcryptjs':
         specifier: ^2.4.6
         version: 2.4.6
+      '@types/better-sqlite3':
+        specifier: ^7.6.11
+        version: 7.6.13
       '@types/passport-jwt':
         specifier: ^4.0.1
         version: 4.0.1
       '@types/passport-local':
         specifier: ^1.0.38
         version: 1.0.38
+      prisma:
+        specifier: ^6.19.1
+        version: 6.19.1(magicast@0.3.5)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3

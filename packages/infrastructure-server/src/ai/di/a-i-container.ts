@@ -2,15 +2,15 @@
  * AI Module DI Container
  * AI 模块依赖注入容器
  *
- * 职责�?
+ * 职责�?
  * - 管理服务实例生命周期
- * - 提供统一的依赖注入接�?
+ * - 提供统一的依赖注入接�?
  * - 单例模式
  *
- * 架构说明�?
- * - 领域服务�?@dailyuse/domain-server 导入（纯验证逻辑�?
- * - 基础设施服务从本�?infrastructure/ 导入（Adapter、Quota、Prompts�?
- * - 应用服务协调所有依�?
+ * 架构说明�?
+ * - 领域服务�?@dailyuse/domain-server 导入（纯验证逻辑�?
+ * - 基础设施服务从本�?infrastructure/ 导入（Adapter、Quota、Prompts�?
+ * - 应用服务协调所有依�?
  */
 
 import type { PrismaClient } from '@prisma/client';
@@ -49,7 +49,7 @@ export class AIContainer {
   private aiAdapter?: BaseAIAdapter;
 
   private constructor() {
-    // 使用全局共享�?Prisma 实例（已在应用启动时连接�?
+    // 使用全局共享�?Prisma 实例（已在应用启动时连接�?
     this.prisma = prisma;
   }
 
@@ -104,21 +104,21 @@ export class AIContainer {
   }
 
   /**
-   * 获取 AI Adapter（基础设施�?
+   * 获取 AI Adapter（基础设施�?
    *
-   * 注意：这个方法仅用于需要快速获取一�?AI Adapter 的场�?
-   * 对于用户相关�?AI 调用，应该使�?getProviderConfigService().getAdapterForProvider()
+   * 注意：这个方法仅用于需要快速获取一�?AI Adapter 的场�?
+   * 对于用户相关�?AI 调用，应该使�?getProviderConfigService().getAdapterForProvider()
    *
-   * @deprecated 使用 getProviderConfigService().getAdapterForProvider() 获取指定用户 Provider �?Adapter
+   * @deprecated 使用 getProviderConfigService().getAdapterForProvider() 获取指定用户 Provider �?Adapter
    */
   getAIAdapter(): BaseAIAdapter {
     if (!this.aiAdapter) {
-      // 尝试从环境变量创建一个临时适配�?
-      // 优先使用青牛云配置，因为它不依赖特定�?OpenAI API
+      // 尝试从环境变量创建一个临时适配�?
+      // 优先使用青牛云配置，因为它不依赖特定�?OpenAI API
       try {
         this.aiAdapter = AIAdapterFactory.getQiniuAdapterFromEnv();
       } catch {
-        // 如果青牛云配置不存在，尝试默�?OpenAI
+        // 如果青牛云配置不存在，尝试默�?OpenAI
         try {
           this.aiAdapter = AIAdapterFactory.getDefaultAdapter();
         } catch {
@@ -144,7 +144,7 @@ export class AIContainer {
   }
 
   /**
-   * 获取 Provider Switching Service（智能切�?+ 故障转移�?
+   * 获取 Provider Switching Service（智能切�?+ 故障转移�?
    */
   getProviderSwitchingService(): AIProviderSwitchingService {
     if (!this.providerSwitchingService) {
@@ -155,7 +155,7 @@ export class AIContainer {
   }
 
   /**
-   * 获取 AIGenerationValidationService（领域服�?- 纯验证）
+   * 获取 AIGenerationValidationService（领域服�?- 纯验证）
    */
   getValidationService(): AIGenerationValidationService {
     if (!this.validationService) {
@@ -178,7 +178,7 @@ export class AIContainer {
   /**
    * 获取 GoalGenerationApplicationService（目标生成服务）
    *
-   * 注意：此服务不再绑定固定�?AI Adapter
+   * 注意：此服务不再绑定固定�?AI Adapter
    * 每次调用时会根据用户配置动态获取对应的 AI Provider
    */
   getGoalGenerationService(): GoalGenerationApplicationService {
@@ -215,7 +215,7 @@ export class AIContainer {
         quotaRepository,
         conversationRepository,
         taskRepository,
-        null, // documentService - 避免循环依赖，稍后设�?
+        null, // documentService - 避免循环依赖，稍后设�?
       );
     }
 
@@ -227,7 +227,7 @@ export class AIContainer {
    * 注意：不断开 Prisma 连接，因为使用的是全局共享实例
    */
   async dispose(): Promise<void> {
-    // 清理服务实例缓存，但不断开 Prisma 连接（由应用全局管理�?
+    // 清理服务实例缓存，但不断开 Prisma 连接（由应用全局管理�?
     this.applicationService = undefined;
     this.conversationService = undefined;
     this.providerConfigService = undefined;
@@ -241,3 +241,4 @@ export class AIContainer {
     this.aiAdapter = undefined;
   }
 }
+

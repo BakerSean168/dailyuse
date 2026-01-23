@@ -4,7 +4,7 @@ import { prisma } from '../../shared/config/prisma';
 
 /**
  * Editor Module DI Container
- * 管理 Editor 模块的所有仓储实�?
+ * 管理 Editor 模块的所有仓储实�?
  */
 export class EditorContainer {
   private static instance: EditorContainer;
@@ -23,7 +23,7 @@ export class EditorContainer {
   }
 
   /**
-   * 获取 EditorWorkspace 聚合根仓�?
+   * 获取 EditorWorkspace 聚合根仓�?
    * 使用懒加载，第一次访问时创建实例
    */
   getEditorWorkspaceRepository(): IEditorWorkspaceRepository {
@@ -34,9 +34,10 @@ export class EditorContainer {
   }
 
   /**
-   * 设置 EditorWorkspace 聚合根仓储（用于测试�?
+   * 设置 EditorWorkspace 聚合根仓储（用于测试�?
    */
   setEditorWorkspaceRepository(repository: IEditorWorkspaceRepository): void {
     this.editorWorkspaceRepository = repository;
   }
 }
+
