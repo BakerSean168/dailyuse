@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Update Repository Stats
  *
- * 更新仓储统计
+ * 鏇存柊浠撳偍缁熻
  */
 
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
@@ -44,3 +44,4 @@ export class UpdateRepositoryStats {
     return { repository: repository.toClientDTO() };
   }
 }
+

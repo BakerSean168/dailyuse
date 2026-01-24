@@ -1,6 +1,6 @@
 /**
  * SQLite NotificationTemplate Repository Implementation
- * 通知模板的 SQLite 仓储实现
+ * 閫氱煡妯℃澘鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,13 +15,13 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
 
     const stmt = this.db.prepare(`
       INSERT INTO notification_templates (
-        uuid, name, category, type, content, is_active, created_at, updated_at
+        uuid, name, category, type, content, is_active, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         name = excluded.name,
         content = excluded.content,
         is_active = excluded.is_active,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
@@ -31,8 +31,8 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
       dto.type,
       dto.content,
       dto.is_active ? 1 : 0,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -49,8 +49,8 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
       type: row.type,
       content: row.content,
       is_active: row.is_active === 1,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -62,7 +62,7 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
       query += ` WHERE is_active = 1`;
     }
 
-    query += ` ORDER BY created_at DESC`;
+    query += ` ORDER BY createdAt DESC`;
 
     const stmt = this.db.prepare(query);
     const rows = stmt.all(...params) as any[];
@@ -75,8 +75,8 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
         type: row.type,
         content: row.content,
         is_active: row.is_active === 1,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -96,8 +96,8 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
       type: row.type,
       content: row.content,
       is_active: row.is_active === 1,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -112,7 +112,7 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
       query += ` AND is_active = 1`;
     }
 
-    query += ` ORDER BY created_at DESC`;
+    query += ` ORDER BY createdAt DESC`;
 
     const stmt = this.db.prepare(query);
     const rows = stmt.all(...params) as any[];
@@ -125,8 +125,8 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
         type: row.type,
         content: row.content,
         is_active: row.is_active === 1,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -136,3 +136,4 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
     stmt.run(uuid);
   }
 }
+

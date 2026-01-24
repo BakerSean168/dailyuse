@@ -7,7 +7,7 @@ import { AuthSessionPrismaRepository } from '../adapters/prisma/auth-session-pri
 import { prisma } from '../../shared/config/prisma';
 
 /**
- * Authentication 依赖注入容器
+ * Authentication 渚濊禆娉ㄥ叆瀹瑰櫒
  */
 export class AuthenticationContainer {
   private static instance: AuthenticationContainer;

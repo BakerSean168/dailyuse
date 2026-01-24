@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   IRepositoryStatisticsRepository,
   IRepositoryRepository,
 } from '@dailyuse/domain-server/repository';
@@ -14,14 +14,14 @@ import type {
 } from '@dailyuse/contracts/repository';
 
 /**
- * RepositoryStatistics 应用服务
- * 负责协调统计相关的领域服务，处理业务用例
+ * RepositoryStatistics 搴旂敤鏈嶅姟
+ * 璐熻矗鍗忚皟缁熻鐩稿叧鐨勯鍩熸湇鍔★紝澶勭悊涓氬姟鐢ㄤ緥
  *
- * 架构职责：
- * - 委托给 DomainService 处理业务逻辑
- * - 协调多个领域服务
- * - 事务管理
- * - DTO 转换（Domain ↔ Contracts）
+ * 鏋舵瀯鑱岃矗锛?
+ * - 濮旀墭缁?DomainService 澶勭悊涓氬姟閫昏緫
+ * - 鍗忚皟澶氫釜棰嗗煙鏈嶅姟
+ * - 浜嬪姟绠＄悊
+ * - DTO 杞崲锛圖omain 鈫?Contracts锛?
  */
 export class RepositoryStatisticsApplicationService {
   private domainService: RepositoryStatisticsDomainService;
@@ -36,108 +36,109 @@ export class RepositoryStatisticsApplicationService {
     );
   }
 
-  // ===== 统计查询 =====
+  // ===== 缁熻鏌ヨ =====
 
   /**
-   * 获取账户的统计信息（不存在则自动创建）
+   * 鑾峰彇璐︽埛鐨勭粺璁′俊鎭紙涓嶅瓨鍦ㄥ垯鑷姩鍒涘缓锛?
    */
   async getOrCreateStatistics(
     accountUuid: string,
   ): Promise<RepositoryStatisticsServerDTO> {
-    // 委托给领域服务处理
+    // 濮旀墭缁欓鍩熸湇鍔″鐞?
     const statistics = await this.domainService.getOrCreateStatistics(accountUuid);
 
-    // 转换为 DTO
+    // 杞崲涓?DTO
     return statistics.toClientDTO();
   }
 
   /**
-   * 获取账户的统计信息（不自动创建）
+   * 鑾峰彇璐︽埛鐨勭粺璁′俊鎭紙涓嶈嚜鍔ㄥ垱寤猴級
    */
   async getStatistics(
     accountUuid: string,
   ): Promise<RepositoryStatisticsServerDTO | null> {
-    // 委托给领域服务处理
+    // 濮旀墭缁欓鍩熸湇鍔″鐞?
     const statistics = await this.domainService.getStatistics(accountUuid);
 
     return statistics ? statistics.toClientDTO() : null;
   }
 
   /**
-   * 初始化统计信息
+   * 鍒濆鍖栫粺璁′俊鎭?
    */
   async initializeStatistics(
     accountUuid: string,
   ): Promise<RepositoryStatisticsServerDTO> {
-    // 委托给领域服务处理
+    // 濮旀墭缁欓鍩熸湇鍔″鐞?
     const statistics = await this.domainService.initializeStatistics(accountUuid);
 
-    // 转换为 DTO
+    // 杞崲涓?DTO
     return statistics.toClientDTO();
   }
 
   /**
-   * 重新计算统计信息
+   * 閲嶆柊璁＄畻缁熻淇℃伅
    */
   async recalculateStatistics(
     request: RecalculateStatisticsRequest,
   ): Promise<RecalculateStatisticsResponse> {
-    // 委托给领域服务处理（Response 已经是 DTO 格式）
+    // 濮旀墭缁欓鍩熸湇鍔″鐞嗭紙Response 宸茬粡鏄?DTO 鏍煎紡锛?
     return await this.domainService.recalculateStatistics(request);
   }
 
   /**
-   * 处理统计更新事件
+   * 澶勭悊缁熻鏇存柊浜嬩欢
    */
   async handleStatisticsUpdateEvent(
     event: StatisticsUpdateEvent,
   ): Promise<void> {
-    // 委托给领域服务处理
+    // 濮旀墭缁欓鍩熸湇鍔″鐞?
     await this.domainService.handleStatisticsUpdateEvent(event);
   }
 
   /**
-   * 删除统计信息
+   * 鍒犻櫎缁熻淇℃伅
    */
   async deleteStatistics(accountUuid: string): Promise<void> {
-    // 委托给领域服务处理
+    // 濮旀墭缁欓鍩熸湇鍔″鐞?
     await this.domainService.deleteStatistics(accountUuid);
   }
 
   /**
-   * 批量获取多个账户的统计
+   * 鎵归噺鑾峰彇澶氫釜璐︽埛鐨勭粺璁?
    */
   async getStatisticsByAccountUuids(
     accountUuids: string[],
   ): Promise<RepositoryStatisticsServerDTO[]> {
-    // 委托给领域服务处理
+    // 濮旀墭缁欓鍩熸湇鍔″鐞?
     const statisticsList = await this.domainService.getStatisticsByAccountUuids(accountUuids);
 
-    // 转换为 DTO 数组
+    // 杞崲涓?DTO 鏁扮粍
     return statisticsList.map((stats) => stats.toClientDTO());
   }
 
   /**
-   * 获取所有账户的统计（分页）
+   * 鑾峰彇鎵€鏈夎处鎴风殑缁熻锛堝垎椤碉級
    */
   async getAllStatistics(options?: {
     skip?: number;
     take?: number;
   }): Promise<RepositoryStatisticsServerDTO[]> {
-    // 委托给领域服务处理
+    // 濮旀墭缁欓鍩熸湇鍔″鐞?
     const statisticsList = await this.domainService.getAllStatistics(options);
 
-    // 转换为 DTO 数组
+    // 杞崲涓?DTO 鏁扮粍
     return statisticsList.map((stats) => stats.toClientDTO());
   }
 
   /**
-   * 统计账户总数
+   * 缁熻璐︽埛鎬绘暟
    */
   async countStatistics(): Promise<number> {
-    // 委托给领域服务处理
+    // 濮旀墭缁欓鍩熸湇鍔″鐞?
     return await this.domainService.countStatistics();
   }
 }
+
 
 

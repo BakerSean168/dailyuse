@@ -61,10 +61,10 @@ export interface ReminderStatisticsServerDTO {
 export interface ReminderStatisticsPersistenceDTO {
   uuid: string;
   accountUuid: string;
-  template_stats: string; // JSON string
-  group_stats: string; // JSON string
-  trigger_stats: string; // JSON string
-  calculated_at: number;
+  templateStats: string; // JSON string
+  groupStats: string; // JSON string
+  triggerStats: string; // JSON string
+  calculatedAt: number;
 }
 
 // ============ 领域事件 ============

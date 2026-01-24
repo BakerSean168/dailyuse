@@ -1,6 +1,6 @@
 /**
  * SQLite Document Repository Implementation
- * 文档的 SQLite 仓储实现
+ * 鏂囨。鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -24,14 +24,14 @@ export class SqliteDocumentRepository implements IDocumentRepository {
       file_size: row.file_size,
       index_status: row.index_status as IndexStatus,
       last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findByWorkspaceUuid(workspaceUuid: string): Promise<Document[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM documents WHERE workspace_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM documents WHERE workspace_uuid = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(workspaceUuid) as any[];
 
@@ -54,14 +54,14 @@ export class SqliteDocumentRepository implements IDocumentRepository {
       file_size: row.file_size,
       index_status: row.index_status as IndexStatus,
       last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findByContentHash(contentHash: string): Promise<Document[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM documents WHERE content_hash = ? ORDER BY created_at DESC`
+      `SELECT * FROM documents WHERE content_hash = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(contentHash) as any[];
 
@@ -70,7 +70,7 @@ export class SqliteDocumentRepository implements IDocumentRepository {
 
   async findDocumentsNeedingIndex(workspaceUuid: string): Promise<Document[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM documents WHERE workspace_uuid = ? AND index_status IN ('OUTDATED', 'FAILED') ORDER BY updated_at ASC`
+      `SELECT * FROM documents WHERE workspace_uuid = ? AND index_status IN ('OUTDATED', 'FAILED') ORDER BY updatedAt ASC`
     );
     const rows = stmt.all(workspaceUuid) as any[];
 
@@ -79,7 +79,7 @@ export class SqliteDocumentRepository implements IDocumentRepository {
 
   async findByIndexStatus(workspaceUuid: string, status: IndexStatus): Promise<Document[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM documents WHERE workspace_uuid = ? AND index_status = ? ORDER BY created_at DESC`
+      `SELECT * FROM documents WHERE workspace_uuid = ? AND index_status = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(workspaceUuid, status) as any[];
 
@@ -88,7 +88,7 @@ export class SqliteDocumentRepository implements IDocumentRepository {
 
   async findRecentlyModified(workspaceUuid: string, limit: number): Promise<Document[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM documents WHERE workspace_uuid = ? ORDER BY updated_at DESC LIMIT ?`
+      `SELECT * FROM documents WHERE workspace_uuid = ? ORDER BY updatedAt DESC LIMIT ?`
     );
     const rows = stmt.all(workspaceUuid, limit) as any[];
 
@@ -101,14 +101,14 @@ export class SqliteDocumentRepository implements IDocumentRepository {
     const stmt = this.db.prepare(`
       INSERT INTO documents (
         uuid, workspace_uuid, path, content_hash, file_size, index_status,
-        last_indexed_at, created_at, updated_at
+        last_indexed_at, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         content_hash = excluded.content_hash,
         file_size = excluded.file_size,
         index_status = excluded.index_status,
         last_indexed_at = excluded.last_indexed_at,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
@@ -119,8 +119,8 @@ export class SqliteDocumentRepository implements IDocumentRepository {
       dto.file_size,
       dto.index_status,
       dto.last_indexed_at ? dto.last_indexed_at.getTime() : null,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -138,8 +138,9 @@ export class SqliteDocumentRepository implements IDocumentRepository {
       file_size: row.file_size,
       index_status: row.index_status as IndexStatus,
       last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 }
+

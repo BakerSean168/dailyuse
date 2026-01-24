@@ -1,6 +1,6 @@
 /**
  * SQLite TaskStatistics Repository Implementation
- * 任务统计的 SQLite 仓储实现
+ * 浠诲姟缁熻鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,24 +15,24 @@ export class SqliteTaskStatisticsRepository implements ITaskStatisticsRepository
 
     const stmt = this.db.prepare(`
       INSERT INTO task_statistics (
-        uuid, account_uuid, total_count, completed_count, overdue_count,
-        created_at, updated_at
+        uuid, accountUuid, total_count, completed_count, overdue_count,
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         total_count = excluded.total_count,
         completed_count = excluded.completed_count,
         overdue_count = excluded.overdue_count,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       dto.total_count,
       dto.completed_count,
       dto.overdue_count,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -44,18 +44,18 @@ export class SqliteTaskStatisticsRepository implements ITaskStatisticsRepository
 
     return TaskStatistics.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       total_count: row.total_count,
       completed_count: row.completed_count,
       overdue_count: row.overdue_count,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findByAccountUuid(accountUuid: string): Promise<TaskStatistics | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_statistics WHERE account_uuid = ? LIMIT 1`
+      `SELECT * FROM task_statistics WHERE accountUuid = ? LIMIT 1`
     );
     const row = stmt.get(accountUuid) as any;
 
@@ -63,12 +63,12 @@ export class SqliteTaskStatisticsRepository implements ITaskStatisticsRepository
 
     return TaskStatistics.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       total_count: row.total_count,
       completed_count: row.completed_count,
       overdue_count: row.overdue_count,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -80,14 +80,14 @@ export class SqliteTaskStatisticsRepository implements ITaskStatisticsRepository
   async saveBatch(statisticsList: TaskStatistics[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO task_statistics (
-        uuid, account_uuid, total_count, completed_count, overdue_count,
-        created_at, updated_at
+        uuid, accountUuid, total_count, completed_count, overdue_count,
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         total_count = excluded.total_count,
         completed_count = excluded.completed_count,
         overdue_count = excluded.overdue_count,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     const transaction = this.db.transaction((stats: TaskStatistics[]) => {
@@ -95,12 +95,12 @@ export class SqliteTaskStatisticsRepository implements ITaskStatisticsRepository
         const dto = stat.toPersistenceDTO();
         insertStmt.run(
           dto.uuid,
-          dto.account_uuid,
+          dto.accountUuid,
           dto.total_count,
           dto.completed_count,
           dto.overdue_count,
-          dto.created_at,
-          dto.updated_at,
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -108,3 +108,4 @@ export class SqliteTaskStatisticsRepository implements ITaskStatisticsRepository
     transaction(statisticsList);
   }
 }
+

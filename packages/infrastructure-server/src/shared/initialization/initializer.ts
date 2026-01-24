@@ -1,10 +1,10 @@
 /**
  * Initialization Manager for Infrastructure Server
- * 基础设施服务器初始化管理�?
+ * 鍩虹璁炬柦鏈嶅姟鍣ㄥ垵濮嬪寲绠＄悊锟?
  *
- * 职责�?
- * - 注册基础设施层的初始化任�?
- * - 管理应用启动和关闭流�?
+ * 鑱岃矗锟?
+ * - 娉ㄥ唽鍩虹璁炬柦灞傜殑鍒濆鍖栦换锟?
+ * - 绠＄悊搴旂敤鍚姩鍜屽叧闂祦锟?
  *
  * @module Shared/Initialization
  */
@@ -12,7 +12,7 @@
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 
 /**
- * 注册基础设施层的所有初始化任务
+ * 娉ㄥ唽鍩虹璁炬柦灞傜殑鎵€鏈夊垵濮嬪寲浠诲姟
  */
 export function registerAllInitializationTasks(): void {
   const manager = InitializationManager.getInstance();
@@ -21,23 +21,23 @@ export function registerAllInitializationTasks(): void {
 }
 
 /**
- * 应用启动时的初始�?
+ * 搴旂敤鍚姩鏃剁殑鍒濆锟?
  */
 export async function initializeApp(): Promise<void> {
   console.log('Starting infrastructure application initialization...');
 
-  // 注册所有初始化任务
+  // 娉ㄥ唽鎵€鏈夊垵濮嬪寲浠诲姟
   registerAllInitializationTasks();
 
-  // 执行应用启动阶段的初始化
+  // 鎵ц搴旂敤鍚姩闃舵鐨勫垵濮嬪寲
   const manager = InitializationManager.getInstance();
   await manager.executePhase(InitializationPhase.APP_STARTUP);
 
-  console.log('�?Infrastructure application initialization completed');
+  console.log('锟?Infrastructure application initialization completed');
 }
 
 /**
- * 应用关闭时的清理
+ * 搴旂敤鍏抽棴鏃剁殑娓呯悊
  */
 export async function cleanupApp(): Promise<void> {
   console.log('Cleaning up infrastructure application...');
@@ -46,11 +46,11 @@ export async function cleanupApp(): Promise<void> {
   await manager.cleanupPhase(InitializationPhase.USER_LOGIN);
   await manager.cleanupPhase(InitializationPhase.APP_STARTUP);
 
-  console.log('�?Infrastructure application cleanup completed');
+  console.log('锟?Infrastructure application cleanup completed');
 }
 
 /**
- * 检查特定任务是否已完成
+ * 妫€鏌ョ壒瀹氫换鍔℃槸鍚﹀凡瀹屾垚
  */
 export function isTaskCompleted(taskName: string): boolean {
   const manager = InitializationManager.getInstance();

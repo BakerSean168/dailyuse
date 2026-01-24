@@ -1,12 +1,12 @@
 /**
  * Groq Adapter
- * Groq 超高速推理服务适配�?
+ * Groq 瓒呴珮閫熸帹鐞嗘湇鍔￠€傞厤锟?
  *
- * 特点�?
- * - 极快的推理速度（LPU 硬件加速）
- * - 免费额度慷慨
- * - 支持 Llama, Mixtral 等开源模�?
- * - OpenAI 兼容接口
+ * 鐗圭偣锟?
+ * - 鏋佸揩鐨勬帹鐞嗛€熷害锛圠PU 纭欢鍔犻€燂級
+ * - 鍏嶈垂棰濆害鎱锋叏
+ * - 鏀寔 Llama, Mixtral 绛夊紑婧愭ā锟?
+ * - OpenAI 鍏煎鎺ュ彛
  *
  * @see https://console.groq.com/docs
  */
@@ -24,21 +24,21 @@ import {
 import { AIGenerationTimeoutError, AIProviderError } from '../errors/a-i-errors';
 
 /**
- * Groq 配置
+ * Groq 閰嶇疆
  */
 export interface GroqConfig {
   /** API Key */
   apiKey: string;
-  /** 默认模型 ID */
+  /** 榛樿妯″瀷 ID */
   defaultModel: string;
-  /** 超时时间（毫秒，默认 30000，Groq 很快�?*/
+  /** 瓒呮椂鏃堕棿锛堟绉掞紝榛樿 30000锛孏roq 寰堝揩锟?*/
   timeoutMs?: number;
 }
 
 /**
- * Groq Adapter 实现
+ * Groq Adapter 瀹炵幇
  *
- * 用法�?
+ * 鐢ㄦ硶锟?
  * ```typescript
  * const adapter = new GroqAdapter({
  *   apiKey: 'gsk_xxx',
@@ -48,9 +48,9 @@ export interface GroqConfig {
  * ```
  */
 export class GroqAdapter extends BaseAIAdapter {
-  /** Groq API 基础地址 */
+  /** Groq API 鍩虹鍦板潃 */
   private static readonly BASE_URL = 'https://api.groq.com/openai/v1';
-  /** 提供商名�?*/
+  /** 鎻愪緵鍟嗗悕锟?*/
   private static readonly PROVIDER_NAME = 'Groq';
 
   private readonly openai: ReturnType<typeof createOpenAI>;
@@ -61,7 +61,7 @@ export class GroqAdapter extends BaseAIAdapter {
     super(AIProvider.CUSTOM, config.defaultModel as any);
 
     this.modelId = config.defaultModel;
-    // Groq 推理速度极快，默认超时设置较�?
+    // Groq 鎺ㄧ悊閫熷害鏋佸揩锛岄粯璁よ秴鏃惰缃緝锟?
     this.timeoutMs = config.timeoutMs ?? 30000;
 
     this.openai = createOpenAI({
@@ -71,7 +71,7 @@ export class GroqAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 一次性生成文�?
+   * 涓€娆℃€х敓鎴愭枃锟?
    */
   async generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>> {
     try {
@@ -122,7 +122,7 @@ export class GroqAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 流式生成文本
+   * 娴佸紡鐢熸垚鏂囨湰
    */
   async *streamText(request: AIGenerationRequest): AsyncGenerator<AIStreamChunk, void, unknown> {
     try {
@@ -172,7 +172,7 @@ export class GroqAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 健康检�?
+   * 鍋ュ悍妫€锟?
    */
   async healthCheck(): Promise<boolean> {
     try {
@@ -188,21 +188,21 @@ export class GroqAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 获取提供商名�?
+   * 鑾峰彇鎻愪緵鍟嗗悕锟?
    */
   getProviderName(): string {
     return GroqAdapter.PROVIDER_NAME;
   }
 
   /**
-   * 获取模型 ID
+   * 鑾峰彇妯″瀷 ID
    */
   getModelId(): string {
     return this.modelId;
   }
 
   /**
-   * 构建完整 Prompt
+   * 鏋勫缓瀹屾暣 Prompt
    */
   private buildPrompt(request: AIGenerationRequest): string {
     const parts: string[] = [];
@@ -221,7 +221,7 @@ export class GroqAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 尝试解析 JSON
+   * 灏濊瘯瑙ｆ瀽 JSON
    */
   private tryParseJSON<T>(text: string): T | null {
     try {

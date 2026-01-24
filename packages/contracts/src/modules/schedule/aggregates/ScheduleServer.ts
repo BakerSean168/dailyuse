@@ -20,9 +20,9 @@ export interface ScheduleServerDTO {
   readonly accountUuid: string;
 
   /**
-   * Schedule title/summary (e.g., "Team Meeting", "Dentist Appointment")
+   * Schedule name/summary (e.g., "Team Meeting", "Dentist Appointment")
    */
-  readonly title: string;
+  readonly name: string;
 
   /**
    * Optional detailed description

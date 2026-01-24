@@ -1,12 +1,12 @@
 /**
- * BreeExecutionEngine - Bree 调度引擎实现
+ * BreeExecutionEngine - Bree 璋冨害寮曟搸瀹炵幇
  * 
- * 职责�?
- * - 实现 IScheduleExecutionEngine 接口
- * - 封装 Bree 库的具体调用
- * - �?ScheduleTask 转换�?Bree JobOptions
+ * 鑱岃矗锛?
+ * - 瀹炵幇 IScheduleExecutionEngine 鎺ュ彛
+ * - 灏佽 Bree 搴撶殑鍏蜂綋璋冪敤
+ * - 灏?ScheduleTask 杞崲涓?Bree JobOptions
  * 
- * 架构位置：基础设施层（Infrastructure Layer�?
+ * 鏋舵瀯浣嶇疆锛氬熀纭€璁炬柦灞傦紙Infrastructure Layer锛?
  */
 
 import Bree from 'bree';
@@ -22,32 +22,32 @@ import {
 import { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 /**
- * Bree 执行引擎配置
+ * Bree 鎵ц寮曟搸閰嶇疆
  */
 export interface BreeExecutionEngineConfig {
   /**
-   * Worker 脚本目录路径
+   * Worker 鑴氭湰鐩綍璺緞
    */
   workerPath: string;
 
   /**
-   * 是否启用详细日志
+   * 鏄惁鍚敤璇︾粏鏃ュ織
    */
   verbose?: boolean;
 
   /**
-   * 默认时区
+   * 榛樿鏃跺尯
    */
   timezone?: string;
 
   /**
-   * Worker 超时时间（毫秒）
+   * Worker 瓒呮椂鏃堕棿锛堟绉掞級
    */
   workerTimeout?: number;
 }
 
 /**
- * BreeExecutionEngine - Bree 调度引擎实现
+ * BreeExecutionEngine - Bree 璋冨害寮曟搸瀹炵幇
  */
 export class BreeExecutionEngine implements IScheduleExecutionEngine {
   private bree: Bree | null = null;
@@ -71,24 +71,24 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
   }
 
   /**
-   * 初始化并启动调度引擎
+   * 鍒濆鍖栧苟鍚姩璋冨害寮曟搸
    */
   async start(tasks: ScheduleTask[]): Promise<void> {
     if (this.isRunning) {
-      console.warn('⚠️  BreeExecutionEngine is already running');
+      console.warn('鈿狅笍  BreeExecutionEngine is already running');
       return;
     }
 
-    console.log('🚀 Starting BreeExecutionEngine...');
+    console.log('馃殌 Starting BreeExecutionEngine...');
 
-    // 转换任务�?Bree job 配置
+    // 杞崲浠诲姟涓?Bree job 閰嶇疆
     const jobs: JobOptions[] = tasks.map((task) => this.toJobOptions(task));
 
-    // 初始�?Bree
+    // 鍒濆鍖?Bree
     this.bree = new Bree({
       root: this.config.workerPath,
       jobs,
-      defaultExtension: 'js', // Worker 会被编译�?JS
+      defaultExtension: 'js', // Worker 浼氳缂栬瘧涓?JS
       timezone: this.config.timezone ?? 'Asia/Shanghai',
       errorHandler: this.handleError,
       workerMessageHandler: this.handleWorkerMessage,
@@ -102,31 +102,31 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
       outputWorkerMetadata: true,
     });
 
-    // 绑定 'worker created' 事件
+    // 缁戝畾 'worker created' 浜嬩欢
     this.bree.on('worker created', this.handleTaskStart);
 
-    // 记录活跃任务
+    // 璁板綍娲昏穬浠诲姟
     tasks.forEach((task) => this.activeTasks.set(task.uuid, task));
 
-    // 启动引擎
+    // 鍚姩寮曟搸
     await this.bree.start();
     this.isRunning = true;
 
-    console.log(`�?BreeExecutionEngine started with ${tasks.length} tasks`);
+    console.log(`鉁?BreeExecutionEngine started with ${tasks.length} tasks`);
   }
 
   /**
-   * 停止调度引擎
+   * 鍋滄璋冨害寮曟搸
    */
   async stop(): Promise<void> {
     if (!this.isRunning || !this.bree) {
-      console.warn('⚠️  BreeExecutionEngine is not running');
+      console.warn('鈿狅笍  BreeExecutionEngine is not running');
       return;
     }
 
-    console.log('⏹️  Stopping BreeExecutionEngine...');
+    console.log('鈴癸笍  Stopping BreeExecutionEngine...');
 
-    // 解绑事件
+    // 瑙ｇ粦浜嬩欢
     if (this.bree) {
       this.bree.off('worker created', this.handleTaskStart);
     }
@@ -136,53 +136,53 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     this.isRunning = false;
     this.activeTasks.clear();
 
-    console.log('�?BreeExecutionEngine stopped');
+    console.log('鉁?BreeExecutionEngine stopped');
   }
 
   /**
-   * 添加新的调度任务
+   * 娣诲姞鏂扮殑璋冨害浠诲姟
    */
   async addTask(task: ScheduleTask): Promise<void> {
     if (!this.bree) {
       throw new Error('BreeExecutionEngine is not started');
     }
 
-    // 检查任务状�?
+    // 妫€鏌ヤ换鍔＄姸鎬?
     if (task.status !== 'active') {
-      console.warn(`⚠️  Task ${task.uuid} is not active, skipping`);
+      console.warn(`鈿狅笍  Task ${task.uuid} is not active, skipping`);
       return;
     }
 
-    // 添加�?Bree
+    // 娣诲姞鍒?Bree
     const jobOptions = this.toJobOptions(task);
     await this.bree.add(jobOptions);
     await this.bree.start(task.uuid);
 
-    // 记录活跃任务
+    // 璁板綍娲昏穬浠诲姟
     this.activeTasks.set(task.uuid, task);
 
-    console.log(`�?Added task ${task.uuid} to execution engine`);
+    console.log(`鉁?Added task ${task.uuid} to execution engine`);
   }
 
   /**
-   * 移除调度任务
+   * 绉婚櫎璋冨害浠诲姟
    */
   async removeTask(taskId: string): Promise<void> {
     if (!this.bree) {
       throw new Error('BreeExecutionEngine is not started');
     }
 
-    // �?Bree 移除
+    // 浠?Bree 绉婚櫎
     await this.bree.remove(taskId);
 
-    // 从活跃任务移�?
+    // 浠庢椿璺冧换鍔＄Щ闄?
     this.activeTasks.delete(taskId);
 
-    console.log(`�?Removed task ${taskId} from execution engine`);
+    console.log(`鉁?Removed task ${taskId} from execution engine`);
   }
 
   /**
-   * 暂停任务
+   * 鏆傚仠浠诲姟
    */
   async pauseTask(taskId: string): Promise<void> {
     if (!this.bree) {
@@ -190,11 +190,11 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     }
 
     await this.bree.stop(taskId);
-    console.log(`⏸️  Paused task ${taskId}`);
+    console.log(`鈴革笍  Paused task ${taskId}`);
   }
 
   /**
-   * 恢复任务
+   * 鎭㈠浠诲姟
    */
   async resumeTask(taskId: string): Promise<void> {
     if (!this.bree) {
@@ -202,11 +202,11 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     }
 
     await this.bree.start(taskId);
-    console.log(`▶️  Resumed task ${taskId}`);
+    console.log(`鈻讹笍  Resumed task ${taskId}`);
   }
 
   /**
-   * 立即执行任务（忽略调度时间）
+   * 绔嬪嵆鎵ц浠诲姟锛堝拷鐣ヨ皟搴︽椂闂达級
    */
   async runTask(taskId: string): Promise<void> {
     if (!this.bree) {
@@ -214,36 +214,36 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     }
 
     await this.bree.run(taskId);
-    console.log(`🏃 Manually triggered task ${taskId}`);
+    console.log(`馃弮 Manually triggered task ${taskId}`);
   }
 
   /**
-   * 获取活跃任务列表
+   * 鑾峰彇娲昏穬浠诲姟鍒楄〃
    */
   getActiveTasks(): ScheduleTask[] {
     return Array.from(this.activeTasks.values());
   }
 
   /**
-   * 检查引擎是否运行中
+   * 妫€鏌ュ紩鎿庢槸鍚﹁繍琛屼腑
    */
   isEngineRunning(): boolean {
     return this.isRunning;
   }
 
   /**
-   * �?ScheduleTask 转换�?Bree JobOptions
+   * 灏?ScheduleTask 杞崲涓?Bree JobOptions
    */
   private toJobOptions(task: ScheduleTask): JobOptions {
     const scheduleConfig = task.schedule;
     const retryPolicy = task.retryPolicy;
 
-    // �?task 中获�?job name（优先使�?metadata payload 的名称，其次任务名称�?
+    // 浠?task 涓幏鍙?job name锛堜紭鍏堜娇鐢?metadata payload 鐨勫悕绉帮紝鍏舵浠诲姟鍚嶇О锛?
     const metadata = task.metadata;
     const jobName =
       (metadata.payload && metadata.payload.name) || task.name || task.sourceModule;
 
-    // 构建执行上下�?
+    // 鏋勫缓鎵ц涓婁笅鏂?
     const context = {
       job: {
         name: jobName,
@@ -254,27 +254,27 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
       },
     };
 
-    // 基础配置
+    // 鍩虹閰嶇疆
     const jobOptions: JobOptions = {
-      name: task.uuid, // 使用 task.uuid 作为 bree �?job name
+      name: task.uuid, // 浣跨敤 task.uuid 浣滀负 bree 鐨?job name
       path: path.join(this.config.workerPath, 'schedule-worker.js'),
       worker: {
         workerData: context,
       },
-      timeout: this.config.workerTimeout ?? 60000, // 默认 60 �?
+      timeout: this.config.workerTimeout ?? 60000, // 榛樿 60 绉?
     };
 
-    // 调度配置
+    // 璋冨害閰嶇疆
     const dto = scheduleConfig.toServerDTO();
 
     if (dto.cronExpression) {
-      // Cron 表达式调�?
+      // Cron 琛ㄨ揪寮忚皟搴?
       jobOptions.cron = dto.cronExpression;
     }
     // Note: intervalMs and date scheduling are not currently supported in ScheduleConfigServerDTO
     // They would need to be added to the contracts if needed
 
-    // 时区
+    // 鏃跺尯
     if (dto.timezone) {
       jobOptions.timezone = dto.timezone;
     }
@@ -283,24 +283,24 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
   }
 
   /**
-   * 处理任务启动
+   * 澶勭悊浠诲姟鍚姩
    */
   private handleTaskStart(workerName: string): void {
     this.taskStartTimes.set(workerName, Date.now());
-    console.log(`🚀 Worker for task ${workerName} created.`);
+    console.log(`馃殌 Worker for task ${workerName} created.`);
   }
 
   /**
-   * 处理 Worker 错误
+   * 澶勭悊 Worker 閿欒
    */
   private async handleError(error: Error, workerMetadata?: any): Promise<void> {
     const taskId = workerMetadata?.name;
     if (!taskId) {
-      console.error('�?Worker error with unknown task:', error);
+      console.error('鉂?Worker error with unknown task:', error);
       return;
     }
 
-    console.error(`�?Worker error for task ${taskId}:`, error);
+    console.error(`鉂?Worker error for task ${taskId}:`, error);
 
     const task = this.activeTasks.get(taskId);
     if (!task) {
@@ -311,19 +311,19 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     const startTime = this.taskStartTimes.get(taskId) ?? Date.now();
     const duration = Date.now() - startTime;
 
-    // 获取上一次的执行记录
+    // 鑾峰彇涓婁竴娆＄殑鎵ц璁板綍
     const previousExecutions = await this.executionRepository.findByTaskUuid(taskId);
     const lastExecution = previousExecutions.sort((a, b) => b.executionTime - a.executionTime)[0];
     const currentRetryCount = lastExecution ? lastExecution.retryCount : 0;
 
     let execution: ScheduleExecution;
 
-    // 检查是否可以重�?
+    // 妫€鏌ユ槸鍚﹀彲浠ラ噸璇?
     if (task.retryPolicy.shouldRetry(currentRetryCount)) {
       const nextRetryCount = currentRetryCount + 1;
       const delay = task.retryPolicy.calculateNextRetryDelay(nextRetryCount);
       
-      console.log(`🔁 Task ${taskId} failed. Retrying in ${delay}ms (attempt ${nextRetryCount}).`);
+      console.log(`馃攣 Task ${taskId} failed. Retrying in ${delay}ms (attempt ${nextRetryCount}).`);
 
       execution = ScheduleExecution.create({
         taskUuid: taskId,
@@ -332,7 +332,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
       });
       execution.incrementRetry(); // This will set retryCount to 1 on first retry
       
-      // 创建一个一次性的重试任务
+      // 鍒涘缓涓€涓竴娆℃€х殑閲嶈瘯浠诲姟
       const retryJobName = `${taskId}-retry-${nextRetryCount}-${Date.now()}`;
       const jobOptions = this.toJobOptions(task);
       
@@ -341,14 +341,14 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
           ...jobOptions,
           name: retryJobName,
           date: new Date(Date.now() + delay),
-          // 清除 cron �?interval，确保只执行一�?
+          // 娓呴櫎 cron 鍜?interval锛岀‘淇濆彧鎵ц涓€娆?
           cron: undefined, 
           interval: undefined,
           worker: {
             ...jobOptions.worker,
             workerData: {
               ...jobOptions.worker.workerData,
-              __retryCount: nextRetryCount, // 传递重试次�?
+              __retryCount: nextRetryCount, // 浼犻€掗噸璇曟鏁?
             }
           }
         };
@@ -358,39 +358,39 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
           await this.bree.start(retryJobName);
         }
       } else {
-         console.error(`�?Cannot retry task ${taskId} because jobOptions.worker is not defined.`);
+         console.error(`鉂?Cannot retry task ${taskId} because jobOptions.worker is not defined.`);
       }
 
     } else {
-      console.log(`🚫 Max retries reached for task ${taskId}. Marking as FAILED.`);
+      console.log(`馃毇 Max retries reached for task ${taskId}. Marking as FAILED.`);
       execution = ScheduleExecution.create({
         taskUuid: taskId,
         executionTime: startTime,
         status: ExecutionStatus.FAILED,
       });
       task.fail(error.message);
-      // TODO: 保存 task 状�?
+      // TODO: 淇濆瓨 task 鐘舵€?
     }
     
     execution.markFailed(error.message, duration);
 
     try {
       await this.executionRepository.save(execution);
-      console.log(`💾 Saved ${execution.status} execution record for task ${taskId}`);
+      console.log(`馃捑 Saved ${execution.status} execution record for task ${taskId}`);
     } catch (repoError) {
-      console.error(`�?Failed to save execution record for task ${taskId}:`, repoError);
+      console.error(`鉂?Failed to save execution record for task ${taskId}:`, repoError);
     }
 
     this.taskStartTimes.delete(taskId);
   }
 
   /**
-   * 处理 Worker 消息
+   * 澶勭悊 Worker 娑堟伅
    */
   private async handleWorkerMessage(message: any, workerMetadata?: any): Promise<void> {
     const taskId = workerMetadata?.name;
     if (!taskId) {
-      console.error('📨 Worker message from unknown task:', message);
+      console.error('馃摠 Worker message from unknown task:', message);
       return;
     }
 
@@ -400,7 +400,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
       return;
     }
 
-    console.log(`📨 Worker message for task ${taskId}:`, message);
+    console.log(`馃摠 Worker message for task ${taskId}:`, message);
 
     const startTime = this.taskStartTimes.get(taskId) ?? Date.now();
     const duration = Date.now() - startTime;
@@ -414,7 +414,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
       execution.markSuccess(duration, { result: 'done' });
       task.recordExecution(ExecutionStatus.SUCCESS, duration, { result: 'done' });
     } else {
-      // 如果是其他错误消�?
+      // 濡傛灉鏄叾浠栭敊璇秷鎭?
       const errorMessage = message instanceof Error ? message.message : JSON.stringify(message);
       execution.markFailed(errorMessage, duration);
       task.recordExecution(ExecutionStatus.FAILED, duration, undefined, errorMessage);
@@ -422,10 +422,10 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
 
     try {
       await this.executionRepository.save(execution);
-      console.log(`💾 Saved execution record for task ${taskId}`);
-      // TODO: 保存 task 状�?
+      console.log(`馃捑 Saved execution record for task ${taskId}`);
+      // TODO: 淇濆瓨 task 鐘舵€?
     } catch (repoError) {
-      console.error(`�?Failed to save execution record for task ${taskId}:`, repoError);
+      console.error(`鉂?Failed to save execution record for task ${taskId}:`, repoError);
     }
 
     this.taskStartTimes.delete(taskId);

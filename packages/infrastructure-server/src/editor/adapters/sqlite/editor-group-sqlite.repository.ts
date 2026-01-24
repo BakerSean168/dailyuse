@@ -1,6 +1,6 @@
 /**
  * SQLite EditorGroup Repository Implementation
- * 编辑器分组的 SQLite 仓储实现
+ * 缂栬緫鍣ㄥ垎缁勭殑 SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -20,8 +20,8 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
       uuid: row.uuid,
       session_uuid: row.session_uuid,
       group_index: row.group_index,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -36,8 +36,8 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
         uuid: row.uuid,
         session_uuid: row.session_uuid,
         group_index: row.group_index,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -54,8 +54,8 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
       uuid: row.uuid,
       session_uuid: row.session_uuid,
       group_index: row.group_index,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -64,19 +64,19 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO editor_groups (
-        uuid, session_uuid, group_index, created_at, updated_at
+        uuid, session_uuid, group_index, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         group_index = excluded.group_index,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
       dto.session_uuid,
       dto.group_index,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -88,11 +88,11 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
   async saveBatch(groups: EditorGroup[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO editor_groups (
-        uuid, session_uuid, group_index, created_at, updated_at
+        uuid, session_uuid, group_index, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         group_index = excluded.group_index,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     const transaction = this.db.transaction((items: EditorGroup[]) => {
@@ -102,8 +102,8 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
           dto.uuid,
           dto.session_uuid,
           dto.group_index,
-          dto.created_at,
-          dto.updated_at,
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -116,3 +116,4 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
     stmt.run(sessionUuid);
   }
 }
+

@@ -80,10 +80,6 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistorySe
       action: this._action,
       changes: this._changes,
       createdAt: this._createdAt,
-      actionText: this.getActionText(),
-      formattedCreatedAt: this.getFormattedCreatedAt(),
-      hasChanges: this._changes !== null && Object.keys(this._changes).length > 0,
-      changesSummary: this.getChangesSummary(),
     };
   }
 
@@ -133,46 +129,5 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistorySe
     });
   }
 
-  /**
-   * 辅助方法（用于 ClientDTO）
-   */
-  private getActionText(): string {
-    const actionMap: Record<string, string> = {
-      created: '创建',
-      updated: '更新',
-      paused: '暂停',
-      resumed: '恢复',
-      archived: '归档',
-      deleted: '删除',
-    };
-    return actionMap[this._action] || this._action;
-  }
-
-  private getFormattedCreatedAt(): string {
-    return new Date(this._createdAt).toLocaleString('zh-CN');
-  }
-
-  private getChangesSummary(): string | null {
-    if (!this._changes || Object.keys(this._changes).length === 0) {
-      return null;
-    }
-
-    const changes: string[] = [];
-    for (const [key, value] of Object.entries(this._changes)) {
-      const keyMap: Record<string, string> = {
-        title: '标题',
-        description: '描述',
-        importance: '重要程度',
-        urgency: '紧急程度',
-        status: '状态',
-        timeConfig: '时间配置',
-        recurrenceRule: '重复规则',
-        reminderConfig: '提醒配置',
-      };
-      const displayKey = keyMap[key] || key;
-      changes.push(`${displayKey}已变更`);
-    }
-
-    return changes.join('、');
-  }
+  // Display text fields moved to frontend i18n
 }

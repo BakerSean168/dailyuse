@@ -12,7 +12,7 @@ import type { MessageClient, MessageClientDTO } from '../entities/MessageClient'
 export interface AIConversationClientDTO {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   status: ConversationStatus;
   messageCount: number;
   lastMessageAt?: number | null;
@@ -39,7 +39,7 @@ export interface AIConversationClient {
   // 基础属性
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   status: ConversationStatus;
   messageCount: number;
   lastMessageAt?: number | null;

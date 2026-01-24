@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Delete Resource
  *
- * 删除资源
+ * 鍒犻櫎璧勬簮
  */
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
@@ -30,3 +30,4 @@ export class DeleteResource {
     await this.resourceRepository.save(resource);
   }
 }
+

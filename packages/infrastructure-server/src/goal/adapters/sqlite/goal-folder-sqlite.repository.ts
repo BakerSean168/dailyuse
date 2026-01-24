@@ -1,6 +1,6 @@
 /**
  * SQLite GoalFolder Repository Implementation
- * 目标文件夹的 SQLite 仓储实现
+ * 鐩爣鏂囦欢澶圭殑 SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,21 +15,21 @@ export class SqliteGoalFolderRepository implements IGoalFolderRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO goal_folders (
-        uuid, account_uuid, name, description, created_at, updated_at
+        uuid, accountUuid, name, description, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         name = excluded.name,
         description = excluded.description,
-        updated_at = excluded.updated_at
+        updatedAt = excluded\.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto\.accountUuid,
       dto.name,
       dto.description || null,
-      dto.created_at,
-      dto.updated_at,
+      dto\.createdAt,
+      dto\.updatedAt,
     );
   }
 
@@ -41,28 +41,28 @@ export class SqliteGoalFolderRepository implements IGoalFolderRepository {
 
     return GoalFolder.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row\.accountUuid,
       name: row.name,
       description: row.description,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row\.createdAt),
+      updatedAt: new Date(row\.updatedAt),
     });
   }
 
   async findByAccountUuid(accountUuid: string): Promise<GoalFolder[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM goal_folders WHERE account_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM goal_folders WHERE accountUuid = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(accountUuid) as any[];
 
     return rows.map((row) =>
       GoalFolder.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row\.accountUuid,
         name: row.name,
         description: row.description,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row\.createdAt),
+        updatedAt: new Date(row\.updatedAt),
       })
     );
   }
@@ -77,3 +77,5 @@ export class SqliteGoalFolderRepository implements IGoalFolderRepository {
     return stmt.get(uuid) !== undefined;
   }
 }
+
+

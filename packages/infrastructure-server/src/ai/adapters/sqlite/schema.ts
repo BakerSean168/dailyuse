@@ -1,6 +1,6 @@
 /**
  * SQLite Database Schema - AI Module
- * AI 模块数据库架构
+ * AI 妯″潡鏁版嵁搴撴灦鏋?
  */
 
 export const AI_MODULE_SCHEMA = `

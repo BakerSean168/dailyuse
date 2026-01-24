@@ -1,6 +1,6 @@
 /**
  * SQLite AppConfig Repository Implementation
- * 应用配置的 SQLite 仓储实现
+ * 搴旂敤閰嶇疆鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,12 +15,12 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO app_configs (
-        uuid, key, value, description, created_at, updated_at
+        uuid, key, value, description, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         value = excluded.value,
         description = excluded.description,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
@@ -28,8 +28,8 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
       dto.key,
       JSON.stringify(dto.value),
       dto.description || null,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -44,8 +44,8 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
       key: row.key,
       value: JSON.parse(row.value),
       description: row.description,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -60,8 +60,8 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
       key: row.key,
       value: JSON.parse(row.value),
       description: row.description,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -75,8 +75,8 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
         key: row.key,
         value: JSON.parse(row.value),
         description: row.description,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -96,3 +96,4 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
     return stmt.get(uuid) !== undefined;
   }
 }
+

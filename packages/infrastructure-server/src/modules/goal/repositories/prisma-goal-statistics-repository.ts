@@ -4,20 +4,20 @@ import type { IGoalStatisticsRepository } from '@dailyuse/domain-server/goal';
 import { GoalStatistics } from '@dailyuse/domain-server/goal';
 
 /**
- * GoalStatistics Prisma 仓储实现
- * 负责统计数据的持久化
+ * GoalStatistics Prisma 浠撳偍瀹炵幇
+ * 璐熻矗缁熻鏁版嵁鐨勬寔涔呭寲
  *
- * 注意�?
- * - GoalStatistics 使用 UPSERT 语义（accountUuid 唯一�?
- * - 每个账户只有一条统计记�?
+ * 娉ㄦ剰锛?
+ * - GoalStatistics 浣跨敤 UPSERT 璇箟锛坅ccountUuid 鍞竴锛?
+ * - 姣忎釜璐︽埛鍙湁涓€鏉＄粺璁¤褰?
  */
 export class PrismaGoalStatisticsRepository implements IGoalStatisticsRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 保存统计信息（UPSERT 语义�?
+   * 淇濆瓨缁熻淇℃伅锛圲PSERT 璇箟锛?
    *
-   * 返回更新后的统计聚合�?
+   * 杩斿洖鏇存柊鍚庣殑缁熻鑱氬悎鏍?
    */
   async upsert(statistics: GoalStatistics): Promise<GoalStatistics> {
     const persistence = statistics.toPersistenceDTO();
@@ -70,11 +70,11 @@ export class PrismaGoalStatisticsRepository implements IGoalStatisticsRepository
         averageRating: persistence.averageRating,
         lastCalculatedAt: new Date(persistence.lastCalculatedAt),
         updatedAt: new Date(),
-        // createdAt 不更�?
+        // createdAt 涓嶆洿鏂?
       },
     });
 
-    // 返回更新后的聚合�?
+    // 杩斿洖鏇存柊鍚庣殑鑱氬悎鏍?
     return GoalStatistics.fromPersistenceDTO({
       accountUuid: record.accountUuid,
       totalGoals: record.totalGoals,
@@ -99,7 +99,7 @@ export class PrismaGoalStatisticsRepository implements IGoalStatisticsRepository
   }
 
   /**
-   * 通过账户 UUID 查找统计
+   * 閫氳繃璐︽埛 UUID 鏌ユ壘缁熻
    */
   async findByAccountUuid(accountUuid: string): Promise<GoalStatistics | null> {
     const record = await this.prisma.goalStatistic.findUnique({
@@ -134,7 +134,7 @@ export class PrismaGoalStatisticsRepository implements IGoalStatisticsRepository
   }
 
   /**
-   * 删除统计
+   * 鍒犻櫎缁熻
    */
   async delete(accountUuid: string): Promise<boolean> {
     try {
@@ -143,13 +143,13 @@ export class PrismaGoalStatisticsRepository implements IGoalStatisticsRepository
       });
       return true;
     } catch (error) {
-      // 如果记录不存在，Prisma会抛出错�?
+      // 濡傛灉璁板綍涓嶅瓨鍦紝Prisma浼氭姏鍑洪敊璇?
       return false;
     }
   }
 
   /**
-   * 检查统计是否存�?
+   * 妫€鏌ョ粺璁℃槸鍚﹀瓨鍦?
    */
   async exists(accountUuid: string): Promise<boolean> {
     const count = await this.prisma.goalStatistic.count({

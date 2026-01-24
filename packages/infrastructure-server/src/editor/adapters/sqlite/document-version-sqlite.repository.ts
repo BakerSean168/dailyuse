@@ -1,6 +1,6 @@
 /**
  * SQLite DocumentVersion Repository Implementation
- * 文档版本的 SQLite 仓储实现
+ * 鏂囨。鐗堟湰鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -22,8 +22,8 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
       version_number: row.version_number,
       change_type: row.change_type as VersionChangeType,
       content: row.content,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -50,8 +50,8 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
       version_number: row.version_number,
       change_type: row.change_type as VersionChangeType,
       content: row.content,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -72,8 +72,8 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
       version_number: row.version_number,
       change_type: row.change_type as VersionChangeType,
       content: row.content,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -92,7 +92,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
     endTime: number,
   ): Promise<DocumentVersion[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM document_versions WHERE document_uuid = ? AND created_at >= ? AND created_at <= ? ORDER BY version_number ASC`
+      `SELECT * FROM document_versions WHERE document_uuid = ? AND createdAt >= ? AND createdAt <= ? ORDER BY version_number ASC`
     );
     const rows = stmt.all(documentUuid, startTime, endTime) as any[];
 
@@ -105,11 +105,11 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
     const stmt = this.db.prepare(`
       INSERT INTO document_versions (
         uuid, document_uuid, version_number, change_type, content,
-        created_at, updated_at
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         content = excluded.content,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
@@ -118,8 +118,8 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
       dto.version_number,
       dto.change_type,
       dto.content,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -130,7 +130,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
 
   async deleteOlderThan(documentUuid: string, beforeTime: number): Promise<void> {
     const stmt = this.db.prepare(
-      `DELETE FROM document_versions WHERE document_uuid = ? AND created_at < ?`
+      `DELETE FROM document_versions WHERE document_uuid = ? AND createdAt < ?`
     );
     stmt.run(documentUuid, beforeTime);
   }
@@ -142,8 +142,9 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
       version_number: row.version_number,
       change_type: row.change_type as VersionChangeType,
       content: row.content,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 }
+

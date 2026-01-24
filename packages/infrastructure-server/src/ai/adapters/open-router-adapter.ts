@@ -1,12 +1,12 @@
 /**
  * OpenRouter Adapter
- * OpenRouter 聚合服务适配�?
+ * OpenRouter 鑱氬悎鏈嶅姟閫傞厤锟?
  *
- * 特点�?
- * - 支持多家 AI 模型（OpenAI, Anthropic, Google, Meta 等）
- * - 部分模型免费
- * - 统一�?OpenAI 兼容接口
- * - 需要额外的请求头标识应用来�?
+ * 鐗圭偣锟?
+ * - 鏀寔澶氬 AI 妯″瀷锛圤penAI, Anthropic, Google, Meta 绛夛級
+ * - 閮ㄥ垎妯″瀷鍏嶈垂
+ * - 缁熶竴锟?OpenAI 鍏煎鎺ュ彛
+ * - 闇€瑕侀澶栫殑璇锋眰澶存爣璇嗗簲鐢ㄦ潵锟?
  *
  * @see https://openrouter.ai/docs
  */
@@ -24,23 +24,23 @@ import {
 import { AIGenerationTimeoutError, AIProviderError } from '../errors/a-i-errors';
 
 /**
- * OpenRouter 配置
+ * OpenRouter 閰嶇疆
  */
 export interface OpenRouterConfig {
   /** API Key */
   apiKey: string;
-  /** 默认模型 ID */
+  /** 榛樿妯″瀷 ID */
   defaultModel: string;
-  /** 应用名称（用�?OpenRouter 统计�?*/
+  /** 搴旂敤鍚嶇О锛堢敤锟?OpenRouter 缁熻锟?*/
   appName?: string;
-  /** 超时时间（毫秒，默认 60000�?*/
+  /** 瓒呮椂鏃堕棿锛堟绉掞紝榛樿 60000锟?*/
   timeoutMs?: number;
 }
 
 /**
- * OpenRouter Adapter 实现
+ * OpenRouter Adapter 瀹炵幇
  *
- * 用法�?
+ * 鐢ㄦ硶锟?
  * ```typescript
  * const adapter = new OpenRouterAdapter({
  *   apiKey: 'sk-or-xxx',
@@ -50,9 +50,9 @@ export interface OpenRouterConfig {
  * ```
  */
 export class OpenRouterAdapter extends BaseAIAdapter {
-  /** OpenRouter 基础地址 */
+  /** OpenRouter 鍩虹鍦板潃 */
   private static readonly BASE_URL = 'https://openrouter.ai/api/v1';
-  /** 提供商名�?*/
+  /** 鎻愪緵鍟嗗悕锟?*/
   private static readonly PROVIDER_NAME = 'OpenRouter';
 
   private readonly openai: ReturnType<typeof createOpenAI>;
@@ -67,11 +67,11 @@ export class OpenRouterAdapter extends BaseAIAdapter {
     this.timeoutMs = config.timeoutMs ?? 60000;
     this.appName = config.appName ?? 'DailyUse';
 
-    // OpenRouter 使用 OpenAI 兼容接口，但需要额外的请求�?
+    // OpenRouter 浣跨敤 OpenAI 鍏煎鎺ュ彛锛屼絾闇€瑕侀澶栫殑璇锋眰锟?
     this.openai = createOpenAI({
       apiKey: config.apiKey,
       baseURL: OpenRouterAdapter.BASE_URL,
-      // OpenRouter 推荐的请求头
+      // OpenRouter 鎺ㄨ崘鐨勮姹傚ご
       headers: {
         'HTTP-Referer': 'https://github.com/BakerSean168/DailyUse',
         'X-Title': this.appName,
@@ -80,7 +80,7 @@ export class OpenRouterAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 一次性生成文本（带超时和 JSON 解析�?
+   * 涓€娆℃€х敓鎴愭枃鏈紙甯﹁秴鏃跺拰 JSON 瑙ｆ瀽锟?
    */
   async generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>> {
     try {
@@ -131,7 +131,7 @@ export class OpenRouterAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 流式生成文本
+   * 娴佸紡鐢熸垚鏂囨湰
    */
   async *streamText(request: AIGenerationRequest): AsyncGenerator<AIStreamChunk, void, unknown> {
     try {
@@ -181,7 +181,7 @@ export class OpenRouterAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 健康检�?
+   * 鍋ュ悍妫€锟?
    */
   async healthCheck(): Promise<boolean> {
     try {
@@ -197,21 +197,21 @@ export class OpenRouterAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 获取提供商名�?
+   * 鑾峰彇鎻愪緵鍟嗗悕锟?
    */
   getProviderName(): string {
     return OpenRouterAdapter.PROVIDER_NAME;
   }
 
   /**
-   * 获取模型 ID
+   * 鑾峰彇妯″瀷 ID
    */
   getModelId(): string {
     return this.modelId;
   }
 
   /**
-   * 构建完整 Prompt
+   * 鏋勫缓瀹屾暣 Prompt
    */
   private buildPrompt(request: AIGenerationRequest): string {
     const parts: string[] = [];
@@ -230,7 +230,7 @@ export class OpenRouterAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 尝试解析 JSON
+   * 灏濊瘯瑙ｆ瀽 JSON
    */
   private tryParseJSON<T>(text: string): T | null {
     try {

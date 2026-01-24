@@ -1,6 +1,6 @@
 /**
  * SQLite TaskInstance Repository Implementation
- * 任务实例的 SQLite 仓储实现
+ * 浠诲姟瀹炰緥鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -16,37 +16,37 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO task_instances (
-        uuid, template_uuid, account_uuid, scheduled_date, status,
-        completed_at, created_at, updated_at
+        uuid, template_uuid, accountUuid, scheduled_date, status,
+        completedAt, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         status = excluded.status,
-        completed_at = excluded.completed_at,
-        updated_at = excluded.updated_at
+        completedAt = excluded.completedAt,
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
       dto.template_uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       dto.scheduled_date,
       dto.status,
-      dto.completed_at || null,
-      dto.created_at,
-      dto.updated_at,
+      dto.completedAt || null,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
   async saveMany(instances: TaskInstance[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO task_instances (
-        uuid, template_uuid, account_uuid, scheduled_date, status,
-        completed_at, created_at, updated_at
+        uuid, template_uuid, accountUuid, scheduled_date, status,
+        completedAt, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         status = excluded.status,
-        completed_at = excluded.completed_at,
-        updated_at = excluded.updated_at
+        completedAt = excluded.completedAt,
+        updatedAt = excluded.updatedAt
     `);
 
     const transaction = this.db.transaction((items: TaskInstance[]) => {
@@ -55,12 +55,12 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
         insertStmt.run(
           dto.uuid,
           dto.template_uuid,
-          dto.account_uuid,
+          dto.accountUuid,
           dto.scheduled_date,
           dto.status,
-          dto.completed_at || null,
-          dto.created_at,
-          dto.updated_at,
+          dto.completedAt || null,
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -77,12 +77,12 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
     return TaskInstance.fromPersistenceDTO({
       uuid: row.uuid,
       template_uuid: row.template_uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       scheduled_date: row.scheduled_date,
       status: row.status as TaskInstanceStatus,
-      completed_at: row.completed_at ? new Date(row.completed_at) : null,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      completed_at: row.completedAt ? new Date(row.completedAt) : null,
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -96,19 +96,19 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
       TaskInstance.fromPersistenceDTO({
         uuid: row.uuid,
         template_uuid: row.template_uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         scheduled_date: row.scheduled_date,
         status: row.status as TaskInstanceStatus,
-        completed_at: row.completed_at ? new Date(row.completed_at) : null,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        completed_at: row.completedAt ? new Date(row.completedAt) : null,
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
 
   async findByAccount(accountUuid: string): Promise<TaskInstance[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_instances WHERE account_uuid = ? ORDER BY scheduled_date DESC`
+      `SELECT * FROM task_instances WHERE accountUuid = ? ORDER BY scheduled_date DESC`
     );
     const rows = stmt.all(accountUuid) as any[];
 
@@ -116,12 +116,12 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
       TaskInstance.fromPersistenceDTO({
         uuid: row.uuid,
         template_uuid: row.template_uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         scheduled_date: row.scheduled_date,
         status: row.status as TaskInstanceStatus,
-        completed_at: row.completed_at ? new Date(row.completed_at) : null,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        completed_at: row.completedAt ? new Date(row.completedAt) : null,
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -129,7 +129,7 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
   async findByDateRange(accountUuid: string, startDate: number, endDate: number): Promise<TaskInstance[]> {
     const stmt = this.db.prepare(`
       SELECT * FROM task_instances
-      WHERE account_uuid = ? AND scheduled_date >= ? AND scheduled_date <= ?
+      WHERE accountUuid = ? AND scheduled_date >= ? AND scheduled_date <= ?
       ORDER BY scheduled_date ASC
     `);
     const rows = stmt.all(accountUuid, startDate, endDate) as any[];
@@ -138,19 +138,19 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
       TaskInstance.fromPersistenceDTO({
         uuid: row.uuid,
         template_uuid: row.template_uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         scheduled_date: row.scheduled_date,
         status: row.status as TaskInstanceStatus,
-        completed_at: row.completed_at ? new Date(row.completed_at) : null,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        completed_at: row.completedAt ? new Date(row.completedAt) : null,
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
 
   async findByStatus(accountUuid: string, status: TaskInstanceStatus): Promise<TaskInstance[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_instances WHERE account_uuid = ? AND status = ? ORDER BY scheduled_date DESC`
+      `SELECT * FROM task_instances WHERE accountUuid = ? AND status = ? ORDER BY scheduled_date DESC`
     );
     const rows = stmt.all(accountUuid, status) as any[];
 
@@ -158,12 +158,12 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
       TaskInstance.fromPersistenceDTO({
         uuid: row.uuid,
         template_uuid: row.template_uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         scheduled_date: row.scheduled_date,
         status: row.status as TaskInstanceStatus,
-        completed_at: row.completed_at ? new Date(row.completed_at) : null,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        completed_at: row.completedAt ? new Date(row.completedAt) : null,
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -172,7 +172,7 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
     const now = Date.now();
     const stmt = this.db.prepare(`
       SELECT * FROM task_instances
-      WHERE account_uuid = ? AND status != 'COMPLETED' AND scheduled_date < ?
+      WHERE accountUuid = ? AND status != 'COMPLETED' AND scheduled_date < ?
       ORDER BY scheduled_date ASC
     `);
     const rows = stmt.all(accountUuid, now) as any[];
@@ -181,12 +181,12 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
       TaskInstance.fromPersistenceDTO({
         uuid: row.uuid,
         template_uuid: row.template_uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         scheduled_date: row.scheduled_date,
         status: row.status as TaskInstanceStatus,
-        completed_at: row.completed_at ? new Date(row.completed_at) : null,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        completed_at: row.completedAt ? new Date(row.completedAt) : null,
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -232,12 +232,12 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
       TaskInstance.fromPersistenceDTO({
         uuid: row.uuid,
         template_uuid: row.template_uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         scheduled_date: row.scheduled_date,
         status: row.status as TaskInstanceStatus,
-        completed_at: row.completed_at ? new Date(row.completed_at) : null,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        completed_at: row.completedAt ? new Date(row.completedAt) : null,
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -250,3 +250,4 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
     stmt.run(templateUuid, fromDate);
   }
 }
+

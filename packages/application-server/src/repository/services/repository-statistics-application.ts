@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Repository Statistics Service
  *
- * 仓储统计相关的应用服务
+ * 浠撳偍缁熻鐩稿叧鐨勫簲鐢ㄦ湇鍔?
  */
 
 import type {
@@ -32,10 +32,10 @@ export class RepositoryStatisticsService {
     );
   }
 
-  // ===== 统计查询 =====
+  // ===== 缁熻鏌ヨ =====
 
   /**
-   * 获取账户的统计信息（不存在则自动创建）
+   * 鑾峰彇璐︽埛鐨勭粺璁′俊鎭紙涓嶅瓨鍦ㄥ垯鑷姩鍒涘缓锛?
    */
   async getOrCreateStatistics(accountUuid: string): Promise<RepositoryStatisticsServerDTO> {
     const statistics = await this.domainService.getOrCreateStatistics(accountUuid);
@@ -43,7 +43,7 @@ export class RepositoryStatisticsService {
   }
 
   /**
-   * 获取账户的统计信息（不自动创建）
+   * 鑾峰彇璐︽埛鐨勭粺璁′俊鎭紙涓嶈嚜鍔ㄥ垱寤猴級
    */
   async getStatistics(accountUuid: string): Promise<RepositoryStatisticsServerDTO | null> {
     const statistics = await this.domainService.getStatistics(accountUuid);
@@ -51,7 +51,7 @@ export class RepositoryStatisticsService {
   }
 
   /**
-   * 初始化统计信息
+   * 鍒濆鍖栫粺璁′俊鎭?
    */
   async initializeStatistics(accountUuid: string): Promise<RepositoryStatisticsServerDTO> {
     const statistics = await this.domainService.initializeStatistics(accountUuid);
@@ -59,7 +59,7 @@ export class RepositoryStatisticsService {
   }
 
   /**
-   * 重新计算统计信息
+   * 閲嶆柊璁＄畻缁熻淇℃伅
    */
   async recalculateStatistics(
     request: RecalculateStatisticsRequest,
@@ -68,21 +68,21 @@ export class RepositoryStatisticsService {
   }
 
   /**
-   * 处理统计更新事件
+   * 澶勭悊缁熻鏇存柊浜嬩欢
    */
   async handleStatisticsUpdateEvent(event: StatisticsUpdateEvent): Promise<void> {
     await this.domainService.handleStatisticsUpdateEvent(event);
   }
 
   /**
-   * 删除统计信息
+   * 鍒犻櫎缁熻淇℃伅
    */
   async deleteStatistics(accountUuid: string): Promise<void> {
     await this.domainService.deleteStatistics(accountUuid);
   }
 
   /**
-   * 批量获取多个账户的统计
+   * 鎵归噺鑾峰彇澶氫釜璐︽埛鐨勭粺璁?
    */
   async getStatisticsByAccountUuids(
     accountUuids: string[],
@@ -92,7 +92,7 @@ export class RepositoryStatisticsService {
   }
 
   /**
-   * 获取所有账户的统计（分页）
+   * 鑾峰彇鎵€鏈夎处鎴风殑缁熻锛堝垎椤碉級
    */
   async getAllStatistics(options?: {
     skip?: number;
@@ -103,14 +103,14 @@ export class RepositoryStatisticsService {
   }
 
   /**
-   * 统计账户总数
+   * 缁熻璐︽埛鎬绘暟
    */
   async countStatistics(): Promise<number> {
     return await this.domainService.countStatistics();
   }
 }
 
-// ===== 便捷函数 =====
+// ===== 渚挎嵎鍑芥暟 =====
 
 export const getOrCreateStatistics = (accountUuid: string, service: RepositoryStatisticsService) =>
   service.getOrCreateStatistics(accountUuid);
@@ -129,3 +129,4 @@ export const handleStatisticsUpdateEvent = (event: StatisticsUpdateEvent, servic
 
 export const deleteStatistics = (accountUuid: string, service: RepositoryStatisticsService) =>
   service.deleteStatistics(accountUuid);
+

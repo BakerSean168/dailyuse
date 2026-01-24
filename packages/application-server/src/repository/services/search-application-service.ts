@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Search Application Service
- * Story 11.2: Obsidian 风格搜索
- * Story 11.6: 高级搜索功能（property 模式）
+ * Story 11.2: Obsidian 椋庢牸鎼滅储
+ * Story 11.6: 楂樼骇鎼滅储鍔熻兘锛坧roperty 妯″紡锛?
  */
 
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, SearchRequest, SearchResponse, SearchResultItem, MatchType } from '@dailyuse/contracts/repository';
@@ -17,18 +17,18 @@ export class SearchApplicationService {
   }
 
   /**
-   * 执行搜索
+   * 鎵ц鎼滅储
    */
   async search(request: SearchRequest): Promise<SearchResponse> {
     const startTime = Date.now();
     const results: SearchResultItem[] = [];
 
-    // 1. 获取所有资源
+    // 1. 鑾峰彇鎵€鏈夎祫婧?
     const resources = await this.resourceRepository.findByRepositoryUuid(
       request.repositoryUuid
     );
 
-    // 2. 根据搜索模式筛选
+    // 2. 鏍规嵁鎼滅储妯″紡绛涢€?
     for (const resource of resources) {
       const result = await this.searchResource(resource, request);
       if (result && result.matchCount > 0) {
@@ -36,10 +36,10 @@ export class SearchApplicationService {
       }
     }
 
-    // 3. 排序（按匹配数量降序）
+    // 3. 鎺掑簭锛堟寜鍖归厤鏁伴噺闄嶅簭锛?
     results.sort((a, b) => b.matchCount - a.matchCount);
 
-    // 4. 分页
+    // 4. 鍒嗛〉
     const page = request.page || 1;
     const pageSize = request.pageSize || 50;
     const startIndex = (page - 1) * pageSize;
@@ -59,7 +59,7 @@ export class SearchApplicationService {
   }
 
   /**
-   * 搜索单个资源
+   * 鎼滅储鍗曚釜璧勬簮
    */
   private async searchResource(
     resource: Resource,
@@ -75,12 +75,12 @@ export class SearchApplicationService {
       matchType: this.getMatchType(request.mode),
       matches: [],
       matchCount: 0,
-      createdAt: new Date(Number(persistence.created_at)).toISOString(),
-      updatedAt: new Date(Number(persistence.updated_at)).toISOString(),
+      createdAt: new Date(Number(persistence\.createdAt)).toISOString(),
+      updatedAt: new Date(Number(persistence\.updatedAt)).toISOString(),
       size: persistence.size,
     };
 
-    // 根据搜索模式执行不同的搜索逻辑
+    // 鏍规嵁鎼滅储妯″紡鎵ц涓嶅悓鐨勬悳绱㈤€昏緫
     switch (request.mode) {
       case 'file':
         this.searchInFilename(resource, request, searchResult);
@@ -110,7 +110,7 @@ export class SearchApplicationService {
   }
 
   /**
-   * 搜索文件名
+   * 鎼滅储鏂囦欢鍚?
    */
   private searchInFilename(
     resource: Resource,
@@ -138,7 +138,7 @@ export class SearchApplicationService {
   }
 
   /**
-   * 搜索标签
+   * 鎼滅储鏍囩
    */
   private searchInTags(
     resource: Resource,
@@ -169,7 +169,7 @@ export class SearchApplicationService {
   }
 
   /**
-   * 搜索路径
+   * 鎼滅储璺緞
    */
   private searchInPath(
     resource: Resource,
@@ -197,9 +197,9 @@ export class SearchApplicationService {
   }
 
   /**
-   * Story 11.6: 搜索 YAML frontmatter 属性
-   * 格式：[property]:value
-   * 例如：[author]:sean
+   * Story 11.6: 鎼滅储 YAML frontmatter 灞炴€?
+   * 鏍煎紡锛歔property]:value
+   * 渚嬪锛歔author]:sean
    */
   private searchInProperty(
     resource: Resource,
@@ -208,7 +208,7 @@ export class SearchApplicationService {
   ): void {
     const persistence = resource.toPersistenceDTO();
     
-    // 只搜索文本类型文件
+    // 鍙悳绱㈡枃鏈被鍨嬫枃浠?
     const textTypes = ['MARKDOWN', 'TEXT', 'MD', 'TXT'];
     if (!textTypes.includes(String(persistence.type).toUpperCase())) {
       return;
@@ -217,7 +217,7 @@ export class SearchApplicationService {
     try {
       const content = persistence.content || '';
       
-      // 解析查询：[property]:value
+      // 瑙ｆ瀽鏌ヨ锛歔property]:value
       const propertyQueryMatch = request.query.match(/\[([^\]]+)\]:(.+)/);
       if (!propertyQueryMatch) {
         console.warn('Invalid property query format. Expected: [property]:value');
@@ -228,14 +228,14 @@ export class SearchApplicationService {
       const propertyName = property.trim();
       const searchValue = value.trim();
 
-      // 提取 YAML frontmatter
+      // 鎻愬彇 YAML frontmatter
       const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
       if (!frontmatterMatch) {
-        return; // 没有 frontmatter
+        return; // 娌℃湁 frontmatter
       }
 
       try {
-        // 简单的 YAML 解析（避免引入 yaml 库）
+        // 绠€鍗曠殑 YAML 瑙ｆ瀽锛堥伩鍏嶅紩鍏?yaml 搴擄級
         const frontmatterText = frontmatterMatch[1];
         const lines = frontmatterText.split('\n');
         
@@ -247,12 +247,12 @@ export class SearchApplicationService {
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i].trim();
           
-          // 跳过空行和注释
+          // 璺宠繃绌鸿鍜屾敞閲?
           if (!line || line.startsWith('#')) continue;
           
-          // 属性定义
+          // 灞炴€у畾涔?
           if (line.includes(':') && !line.startsWith('-')) {
-            // 保存上一个属性的数组值
+            // 淇濆瓨涓婁竴涓睘鎬х殑鏁扮粍鍊?
             if (inArray && currentProperty) {
               if (this.matchPropertyValue(currentProperty, arrayValues, propertyName, searchValue, request.caseSensitive)) {
                 result.matches.push({
@@ -265,21 +265,21 @@ export class SearchApplicationService {
               }
             }
             
-            // 解析新属性
+            // 瑙ｆ瀽鏂板睘鎬?
             const [key, ...valueParts] = line.split(':');
             currentProperty = key.trim();
             const valueText = valueParts.join(':').trim();
             
             if (valueText === '[' || valueText === '') {
-              // 数组开始
+              // 鏁扮粍寮€濮?
               inArray = true;
               arrayValues = [];
             } else {
-              // 单个值
+              // 鍗曚釜鍊?
               inArray = false;
               currentValue = valueText;
               
-              // 检查匹配
+              // 妫€鏌ュ尮閰?
               if (this.matchPropertyValue(currentProperty, currentValue, propertyName, searchValue, request.caseSensitive)) {
                 result.matches.push({
                   lineNumber: i + 1,
@@ -291,13 +291,13 @@ export class SearchApplicationService {
               }
             }
           } else if (line.startsWith('-') && inArray) {
-            // 数组元素
+            // 鏁扮粍鍏冪礌
             const arrayValue = line.substring(1).trim();
             arrayValues.push(arrayValue);
           }
         }
         
-        // 处理最后一个数组
+        // 澶勭悊鏈€鍚庝竴涓暟缁?
         if (inArray && currentProperty) {
           if (this.matchPropertyValue(currentProperty, arrayValues, propertyName, searchValue, request.caseSensitive)) {
             result.matches.push({
@@ -318,7 +318,7 @@ export class SearchApplicationService {
   }
 
   /**
-   * 匹配属性值
+   * 鍖归厤灞炴€у€?
    */
   private matchPropertyValue(
     currentProperty: string,
@@ -327,12 +327,12 @@ export class SearchApplicationService {
     searchValue: string,
     caseSensitive?: boolean
   ): boolean {
-    // 属性名匹配（忽略大小写）
+    // 灞炴€у悕鍖归厤锛堝拷鐣ュぇ灏忓啓锛?
     if (currentProperty.toLowerCase() !== targetProperty.toLowerCase()) {
       return false;
     }
 
-    // 值匹配
+    // 鍊煎尮閰?
     const normalizeText = (text: string) => 
       caseSensitive ? text : text.toLowerCase();
 
@@ -350,7 +350,7 @@ export class SearchApplicationService {
   }
 
   /**
-   * 搜索内容
+   * 鎼滅储鍐呭
    */
   private searchInContent(
     resource: Resource,
@@ -359,14 +359,14 @@ export class SearchApplicationService {
   ): void {
     const persistence = resource.toPersistenceDTO();
     
-    // 只搜索文本类型文件
+    // 鍙悳绱㈡枃鏈被鍨嬫枃浠?
     const textTypes = ['MARKDOWN', 'TEXT', 'MD', 'TXT'];
     if (!textTypes.includes(String(persistence.type).toUpperCase())) {
       return;
     }
 
     try {
-      // 使用 resource 的 content 字段
+      // 浣跨敤 resource 鐨?content 瀛楁
       const content = persistence.content || '';
       const lines = content.split('\n');
 
@@ -377,16 +377,16 @@ export class SearchApplicationService {
       lines.forEach((line, index) => {
         const lineText = request.caseSensitive ? line : line.toLowerCase();
 
-        // 模式过滤
+        // 妯″紡杩囨护
         if (request.mode === 'section') {
-          // 只搜索标题行 (Markdown)
+          // 鍙悳绱㈡爣棰樿 (Markdown)
           if (!line.trim().startsWith('#')) return;
         }
 
-        // 查找匹配
+        // 鏌ユ壘鍖归厤
         const startIndex = lineText.indexOf(query);
         if (startIndex !== -1) {
-          // 获取上下文
+          // 鑾峰彇涓婁笅鏂?
           const beforeContext = lines[index - 1] || '';
           const afterContext = lines[index + 1] || '';
 
@@ -419,5 +419,6 @@ export class SearchApplicationService {
     return typeMap[mode] || 'content';
   }
 }
+
 
 

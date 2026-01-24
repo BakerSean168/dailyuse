@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Delete Folder
  *
- * 删除文件夹（级联）
+ * 鍒犻櫎鏂囦欢澶癸紙绾ц仈锛?
  */
 
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';
@@ -45,3 +45,4 @@ export class DeleteFolder {
     }
   }
 }
+

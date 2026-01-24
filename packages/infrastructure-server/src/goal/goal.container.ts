@@ -1,13 +1,13 @@
 /**
  * Goal Container (Server)
  *
- * 依赖注入容器，管�?Goal 模块�?repository 实例
+ * 渚濊禆娉ㄥ叆瀹瑰櫒锛岀鐞?Goal 妯″潡鐨?repository 瀹炰緥
  */
 
 import type { IGoalRepository, IGoalStatisticsRepository, IGoalFolderRepository } from '@dailyuse/domain-server/goal';
 
 /**
- * Goal 模块依赖注入容器
+ * Goal 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒
  */
 export class GoalContainer {
   private static instance: GoalContainer;
@@ -18,7 +18,7 @@ export class GoalContainer {
   private constructor() {}
 
   /**
-   * 获取容器单例
+   * 鑾峰彇瀹瑰櫒鍗曚緥
    */
   static getInstance(): GoalContainer {
     if (!GoalContainer.instance) {
@@ -28,14 +28,14 @@ export class GoalContainer {
   }
 
   /**
-   * 重置容器（用于测试）
+   * 閲嶇疆瀹瑰櫒锛堢敤浜庢祴璇曪級
    */
   static resetInstance(): void {
     GoalContainer.instance = new GoalContainer();
   }
 
   /**
-   * 注册 GoalRepository
+   * 娉ㄥ唽 GoalRepository
    */
   registerGoalRepository(repository: IGoalRepository): this {
     this.goalRepository = repository;
@@ -43,7 +43,7 @@ export class GoalContainer {
   }
 
   /**
-   * 注册 GoalStatisticsRepository
+   * 娉ㄥ唽 GoalStatisticsRepository
    */
   registerStatisticsRepository(repository: IGoalStatisticsRepository): this {
     this.statisticsRepository = repository;
@@ -51,7 +51,7 @@ export class GoalContainer {
   }
 
   /**
-   * 注册 GoalFolderRepository
+   * 娉ㄥ唽 GoalFolderRepository
    */
   registerGoalFolderRepository(repository: IGoalFolderRepository): this {
     this.goalFolderRepository = repository;
@@ -59,7 +59,7 @@ export class GoalContainer {
   }
 
   /**
-   * 获取 GoalRepository
+   * 鑾峰彇 GoalRepository
    */
   getGoalRepository(): IGoalRepository {
     if (!this.goalRepository) {
@@ -69,7 +69,7 @@ export class GoalContainer {
   }
 
   /**
-   * 获取 GoalStatisticsRepository
+   * 鑾峰彇 GoalStatisticsRepository
    */
   getStatisticsRepository(): IGoalStatisticsRepository {
     if (!this.statisticsRepository) {
@@ -79,7 +79,7 @@ export class GoalContainer {
   }
 
   /**
-   * 获取 GoalFolderRepository
+   * 鑾峰彇 GoalFolderRepository
    */
   getGoalFolderRepository(): IGoalFolderRepository {
     if (!this.goalFolderRepository) {
@@ -89,14 +89,14 @@ export class GoalContainer {
   }
 
   /**
-   * 检查是否已配置
+   * 妫€鏌ユ槸鍚﹀凡閰嶇疆
    */
   isConfigured(): boolean {
     return this.goalRepository !== null;
   }
 
   /**
-   * 清空所有注册的依赖
+   * 娓呯┖鎵€鏈夋敞鍐岀殑渚濊禆
    */
   clear(): void {
     this.goalRepository = null;

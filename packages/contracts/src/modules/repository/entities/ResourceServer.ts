@@ -36,8 +36,8 @@ export interface ResourceServerDTO {
  */
 export interface ResourcePersistenceDTO {
   uuid: string;
-  repository_uuid: string;
-  folder_uuid?: string | null;
+  repositoryUuid: string;
+  folderUuid?: string | null;
   name: string;
   type: ResourceType;
   path: string;
@@ -46,8 +46,8 @@ export interface ResourcePersistenceDTO {
   metadata: string; // JSON string
   stats: string; // JSON string
   status: ResourceStatus;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: number;
+  updatedAt: number;
 }
 
 // ============ 实体接口 ============

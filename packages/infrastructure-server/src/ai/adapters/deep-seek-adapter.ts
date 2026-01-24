@@ -1,12 +1,12 @@
 /**
  * DeepSeek Adapter
- * DeepSeek 国产高性价比模型适配�?
+ * DeepSeek 鍥戒骇楂樻€т环姣旀ā鍨嬮€傞厤锟?
  *
- * 特点�?
- * - 高性价比，价格优惠
- * - 支持 deepseek-chat, deepseek-coder 等模�?
- * - 新用户有免费额度
- * - OpenAI 兼容接口
+ * 鐗圭偣锟?
+ * - 楂樻€т环姣旓紝浠锋牸浼樻儬
+ * - 鏀寔 deepseek-chat, deepseek-coder 绛夋ā锟?
+ * - 鏂扮敤鎴锋湁鍏嶈垂棰濆害
+ * - OpenAI 鍏煎鎺ュ彛
  *
  * @see https://platform.deepseek.com/api-docs
  */
@@ -24,21 +24,21 @@ import {
 import { AIGenerationTimeoutError, AIProviderError } from '../errors/a-i-errors';
 
 /**
- * DeepSeek 配置
+ * DeepSeek 閰嶇疆
  */
 export interface DeepSeekConfig {
   /** API Key */
   apiKey: string;
-  /** 默认模型 ID */
+  /** 榛樿妯″瀷 ID */
   defaultModel: string;
-  /** 超时时间（毫秒，默认 60000�?*/
+  /** 瓒呮椂鏃堕棿锛堟绉掞紝榛樿 60000锟?*/
   timeoutMs?: number;
 }
 
 /**
- * DeepSeek Adapter 实现
+ * DeepSeek Adapter 瀹炵幇
  *
- * 用法�?
+ * 鐢ㄦ硶锟?
  * ```typescript
  * const adapter = new DeepSeekAdapter({
  *   apiKey: 'sk-xxx',
@@ -48,9 +48,9 @@ export interface DeepSeekConfig {
  * ```
  */
 export class DeepSeekAdapter extends BaseAIAdapter {
-  /** DeepSeek API 基础地址 */
+  /** DeepSeek API 鍩虹鍦板潃 */
   private static readonly BASE_URL = 'https://api.deepseek.com/v1';
-  /** 提供商名�?*/
+  /** 鎻愪緵鍟嗗悕锟?*/
   private static readonly PROVIDER_NAME = 'DeepSeek';
 
   private readonly openai: ReturnType<typeof createOpenAI>;
@@ -70,7 +70,7 @@ export class DeepSeekAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 一次性生成文�?
+   * 涓€娆℃€х敓鎴愭枃锟?
    */
   async generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>> {
     try {
@@ -121,7 +121,7 @@ export class DeepSeekAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 流式生成文本
+   * 娴佸紡鐢熸垚鏂囨湰
    */
   async *streamText(request: AIGenerationRequest): AsyncGenerator<AIStreamChunk, void, unknown> {
     try {
@@ -171,7 +171,7 @@ export class DeepSeekAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 健康检�?
+   * 鍋ュ悍妫€锟?
    */
   async healthCheck(): Promise<boolean> {
     try {
@@ -187,21 +187,21 @@ export class DeepSeekAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 获取提供商名�?
+   * 鑾峰彇鎻愪緵鍟嗗悕锟?
    */
   getProviderName(): string {
     return DeepSeekAdapter.PROVIDER_NAME;
   }
 
   /**
-   * 获取模型 ID
+   * 鑾峰彇妯″瀷 ID
    */
   getModelId(): string {
     return this.modelId;
   }
 
   /**
-   * 构建完整 Prompt
+   * 鏋勫缓瀹屾暣 Prompt
    */
   private buildPrompt(request: AIGenerationRequest): string {
     const parts: string[] = [];
@@ -220,7 +220,7 @@ export class DeepSeekAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 尝试解析 JSON
+   * 灏濊瘯瑙ｆ瀽 JSON
    */
   private tryParseJSON<T>(text: string): T | null {
     try {

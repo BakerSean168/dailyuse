@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Update Resource Content
  *
- * 更新 Markdown 内容
+ * 鏇存柊 Markdown 鍐呭
  */
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
@@ -40,3 +40,4 @@ export class UpdateResourceContent {
     return { resource: resource.toClientDTO() };
   }
 }
+

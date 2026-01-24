@@ -6,22 +6,22 @@ import { ReminderContainer } from '../di/ReminderContainer';
 import { isDevelopment } from '../../shared/config/env';
 
 /**
- * 每日分析 Cron Job
+ * 姣忔棩鍒嗘瀽 Cron Job
  *
- * 执行时间：每天凌�?2:00
- * Cron 表达式：0 2 * * *
+ * 鎵ц鏃堕棿锛氭瘡澶╁噷锟?2:00
+ * Cron 琛ㄨ揪寮忥細0 2 * * *
  *
- * 职责�?
- * - 分析所有账户的提醒效果
- * - 自动调整低效提醒的频�?
- * - 生成分析报告
+ * 鑱岃矗锟?
+ * - 鍒嗘瀽鎵€鏈夎处鎴风殑鎻愰啋鏁堟灉
+ * - 鑷姩璋冩暣浣庢晥鎻愰啋鐨勯锟?
+ * - 鐢熸垚鍒嗘瀽鎶ュ憡
  */
 export class DailyAnalysisCronJob {
   private analysisService!: SmartFrequencyAnalysisService;
   private adjustmentService!: FrequencyAdjustmentService;
 
   /**
-   * 初始化服�?
+   * 鍒濆鍖栨湇锟?
    */
   private async initialize(): Promise<void> {
     this.analysisService = await SmartFrequencyAnalysisService.getInstance();
@@ -29,7 +29,7 @@ export class DailyAnalysisCronJob {
   }
 
   /**
-   * 执行每日分析任务
+   * 鎵ц姣忔棩鍒嗘瀽浠诲姟
    */
   async execute(): Promise<void> {
     console.log('[DailyAnalysisCronJob] Starting daily analysis...');
@@ -38,16 +38,16 @@ export class DailyAnalysisCronJob {
     try {
       await this.initialize();
 
-      // 获取所有活跃账�?
+      // 鑾峰彇鎵€鏈夋椿璺冭处锟?
       const accountUuids = await this.getAllActiveAccounts();
       console.log(`[DailyAnalysisCronJob] Found ${accountUuids.length} active accounts`);
 
-      // 分析结果统计
+      // 鍒嗘瀽缁撴灉缁熻
       let totalTemplatesAnalyzed = 0;
       let totalAdjustmentsMade = 0;
       const failedAccounts: string[] = [];
 
-      // 逐个分析账户
+      // 閫愪釜鍒嗘瀽璐︽埛
       for (const accountUuid of accountUuids) {
         try {
           const result = await this.analyzeAccount(accountUuid);
@@ -68,7 +68,7 @@ export class DailyAnalysisCronJob {
         failedAccounts: failedAccounts.length,
       });
 
-      // 保存分析报告
+      // 淇濆瓨鍒嗘瀽鎶ュ憡
       await this.saveAnalysisReport({
         executedAt: startTime,
         duration,
@@ -84,17 +84,17 @@ export class DailyAnalysisCronJob {
   }
 
   /**
-   * 分析单个账户
+   * 鍒嗘瀽鍗曚釜璐︽埛
    */
   private async analyzeAccount(
     accountUuid: string,
   ): Promise<{ templatesAnalyzed: number; adjustmentsMade: number }> {
     console.log(`[DailyAnalysisCronJob] Analyzing account ${accountUuid}...`);
 
-    // 1. 生成效果分析报告
+    // 1. 鐢熸垚鏁堟灉鍒嗘瀽鎶ュ憡
     const report = await this.analysisService.analyzeAllTemplates(accountUuid);
 
-    // 2. 自动调整低效提醒
+    // 2. 鑷姩璋冩暣浣庢晥鎻愰啋
     const adjustments = await this.adjustmentService.batchAutoAdjust(accountUuid);
 
     console.log(`[DailyAnalysisCronJob] Account ${accountUuid} analyzed:`, {
@@ -112,9 +112,9 @@ export class DailyAnalysisCronJob {
   }
 
   /**
-   * 获取所有活跃账�?
+   * 鑾峰彇鎵€鏈夋椿璺冭处锟?
    *
-   * 定义：最�?0天内有至少一个活跃提醒模板的账户
+   * 瀹氫箟锛氭渶锟?0澶╁唴鏈夎嚦灏戜竴涓椿璺冩彁閱掓ā鏉跨殑璐︽埛
    */
   private async getAllActiveAccounts(): Promise<string[]> {
     const container = ReminderContainer.getInstance();
@@ -122,12 +122,12 @@ export class DailyAnalysisCronJob {
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    // 查询最�?0天内有活跃模板的账户
+    // 鏌ヨ鏈€锟?0澶╁唴鏈夋椿璺冩ā鏉跨殑璐︽埛
     const accounts = await prisma.reminderTemplate.findMany({
       where: {
         selfEnabled: true,
         status: 'active',
-        // TODO: 需要运�?Prisma migration 后才能使�?smartFrequencyEnabled
+        // TODO: 闇€瑕佽繍锟?Prisma migration 鍚庢墠鑳戒娇锟?smartFrequencyEnabled
         // smartFrequencyEnabled: true,
         createdAt: {
           gte: thirtyDaysAgo,
@@ -143,13 +143,13 @@ export class DailyAnalysisCronJob {
   }
 
   /**
-   * 保存分析报告
+   * 淇濆瓨鍒嗘瀽鎶ュ憡
    *
-   * TODO: 实现报告持久�?
-   * 可以选择�?
-   * - 保存到数据库
-   * - 保存到文件系�?
-   * - 发送到监控系统
+   * TODO: 瀹炵幇鎶ュ憡鎸佷箙锟?
+   * 鍙互閫夋嫨锟?
+   * - 淇濆瓨鍒版暟鎹簱
+   * - 淇濆瓨鍒版枃浠剁郴锟?
+   * - 鍙戦€佸埌鐩戞帶绯荤粺
    */
   private async saveAnalysisReport(report: {
     executedAt: number;
@@ -159,21 +159,21 @@ export class DailyAnalysisCronJob {
     totalAdjustmentsMade: number;
     failedAccounts: string[];
   }): Promise<void> {
-    // TODO: 持久化报�?
+    // TODO: 鎸佷箙鍖栨姤锟?
     console.log('[DailyAnalysisCronJob] Analysis report:', report);
   }
 }
 
 /**
- * Cron Job 注册函数
+ * Cron Job 娉ㄥ唽鍑芥暟
  *
- * 使用 node-cron 或其他调度器注册此任�?
+ * 浣跨敤 node-cron 鎴栧叾浠栬皟搴﹀櫒娉ㄥ唽姝や换锟?
  *
  * @example
  * ```typescript
  * import cron from 'node-cron';
  *
- * // 每天凌晨 2:00 执行
+ * // 姣忓ぉ鍑屾櫒 2:00 鎵ц
  * cron.schedule('0 2 * * *', async () => {
  *   const job = new DailyAnalysisCronJob();
  *   await job.execute();
@@ -183,11 +183,11 @@ export class DailyAnalysisCronJob {
 export async function registerDailyAnalysisCronJob(): Promise<void> {
   const job = new DailyAnalysisCronJob();
 
-  // TODO: 使用实际�?cron 调度�?
-  // 例如：node-cron, bull, agenda �?
+  // TODO: 浣跨敤瀹為檯锟?cron 璋冨害锟?
+  // 渚嬪锛歯ode-cron, bull, agenda 锟?
   console.log('[DailyAnalysisCronJob] Registered (schedule: 0 2 * * *)');
 
-  // 开发环境可以手动触发测�?
+  // 寮€鍙戠幆澧冨彲浠ユ墜鍔ㄨЕ鍙戞祴锟?
   if (isDevelopment) {
     console.log('[DailyAnalysisCronJob] Development mode - execute manually with: job.execute()');
   }

@@ -1,16 +1,16 @@
-import type { IFolderRepository } from '@dailyuse/domain-server/repository';
+﻿import type { IFolderRepository } from '@dailyuse/domain-server/repository';
 import { Folder, FolderHierarchyService } from '@dailyuse/domain-server/repository';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, FolderClientDTO, FolderMetadataServerDTO } from '@dailyuse/contracts/repository';
 
 /**
- * Folder 应用服务
- * 负责文件夹（Folder）的 CRUD 操作
+ * Folder 搴旂敤鏈嶅姟
+ * 璐熻矗鏂囦欢澶癸紙Folder锛夌殑 CRUD 鎿嶄綔
  *
- * 架构职责：
- * - 调用 Repository 进行持久化
- * - DTO 转换（Domain → ClientDTO）
- * - 协调业务用例
- * - 管理文件夹层次结构
+ * 鏋舵瀯鑱岃矗锛?
+ * - 璋冪敤 Repository 杩涜鎸佷箙鍖?
+ * - DTO 杞崲锛圖omain 鈫?ClientDTO锛?
+ * - 鍗忚皟涓氬姟鐢ㄤ緥
+ * - 绠＄悊鏂囦欢澶瑰眰娆＄粨鏋?
  */
 export class FolderApplicationService {
   private folderRepository: IFolderRepository;
@@ -22,7 +22,7 @@ export class FolderApplicationService {
   }
 
   /**
-   * 创建文件夹
+   * 鍒涘缓鏂囦欢澶?
    */
   async createFolder(params: {
     repositoryUuid: string;
@@ -31,7 +31,7 @@ export class FolderApplicationService {
     order?: number;
     metadata?: Partial<FolderMetadataServerDTO>;
   }): Promise<FolderClientDTO> {
-    // 1. 如果有父文件夹，查询父路径
+    // 1. 濡傛灉鏈夌埗鏂囦欢澶癸紝鏌ヨ鐖惰矾寰?
     let parentPath: string | null = null;
     if (params.parentUuid) {
       const parent = await this.folderRepository.findByUuid(params.parentUuid);
@@ -41,7 +41,7 @@ export class FolderApplicationService {
       parentPath = parent.path;
     }
 
-    // 2. 创建领域实体
+    // 2. 鍒涘缓棰嗗煙瀹炰綋
     const folder = Folder.create({
       repositoryUuid: params.repositoryUuid,
       parentUuid: params.parentUuid,
@@ -51,15 +51,15 @@ export class FolderApplicationService {
       metadata: params.metadata,
     });
 
-    // 3. 持久化
+    // 3. 鎸佷箙鍖?
     await this.folderRepository.save(folder);
 
-    // 4. 返回 ClientDTO
+    // 4. 杩斿洖 ClientDTO
     return folder.toClientDTO();
   }
 
   /**
-   * 获取文件夹详情
+   * 鑾峰彇鏂囦欢澶硅鎯?
    */
   async getFolder(uuid: string): Promise<FolderClientDTO | null> {
     const folder = await this.folderRepository.findByUuid(uuid);
@@ -67,21 +67,21 @@ export class FolderApplicationService {
   }
 
   /**
-   * 获取文件夹树（指定仓储）
+   * 鑾峰彇鏂囦欢澶规爲锛堟寚瀹氫粨鍌級
    */
   async getFolderTree(repositoryUuid: string): Promise<FolderClientDTO[]> {
-    // 1. 查询所有文件夹
+    // 1. 鏌ヨ鎵€鏈夋枃浠跺す
     const allFolders = await this.folderRepository.findByRepositoryUuid(repositoryUuid);
 
-    // 2. 构建树形结构
+    // 2. 鏋勫缓鏍戝舰缁撴瀯
     const tree = this.hierarchyService.buildTree(allFolders);
 
-    // 3. 转换 FolderTreeNode 为 ClientDTO（递归处理子节点）
+    // 3. 杞崲 FolderTreeNode 涓?ClientDTO锛堥€掑綊澶勭悊瀛愯妭鐐癸級
     const convertTreeNode = (node: any): FolderClientDTO => {
       const folder = node.folder as Folder;
-      const clientDTO = folder.toClientDTO(false); // 先不包含子节点
+      const clientDTO = folder.toClientDTO(false); // 鍏堜笉鍖呭惈瀛愯妭鐐?
 
-      // 递归转换子节点
+      // 閫掑綊杞崲瀛愯妭鐐?
       if (node.children && node.children.length > 0) {
         clientDTO.children = node.children.map((child: any) => convertTreeNode(child));
       }
@@ -93,49 +93,49 @@ export class FolderApplicationService {
   }
 
   /**
-   * 重命名文件夹
+   * 閲嶅懡鍚嶆枃浠跺す
    */
   async renameFolder(uuid: string, newName: string): Promise<FolderClientDTO> {
-    // 1. 查询文件夹
+    // 1. 鏌ヨ鏂囦欢澶?
     const folder = await this.folderRepository.findByUuid(uuid);
     if (!folder) {
       throw new Error(`Folder not found: ${uuid}`);
     }
 
-    // 2. 重命名（领域方法会自动更新 path）
+    // 2. 閲嶅懡鍚嶏紙棰嗗煙鏂规硶浼氳嚜鍔ㄦ洿鏂?path锛?
     folder.rename(newName);
 
-    // 3. 持久化
+    // 3. 鎸佷箙鍖?
     await this.folderRepository.save(folder);
 
-    // 4. 级联更新子路径（使用正确的方法签名）
+    // 4. 绾ц仈鏇存柊瀛愯矾寰勶紙浣跨敤姝ｇ‘鐨勬柟娉曠鍚嶏級
     await this.hierarchyService.updateChildrenPaths(
       folder.uuid,
       folder.path,
       this.folderRepository,
     );
 
-    // 5. 返回 ClientDTO
+    // 5. 杩斿洖 ClientDTO
     return folder.toClientDTO();
   }
 
   /**
-   * 移动文件夹
+   * 绉诲姩鏂囦欢澶?
    */
   async moveFolder(
     uuid: string,
     newParentUuid: string | null,
   ): Promise<FolderClientDTO> {
-    // 1. 查询文件夹
+    // 1. 鏌ヨ鏂囦欢澶?
     const folder = await this.folderRepository.findByUuid(uuid);
     if (!folder) {
       throw new Error(`Folder not found: ${uuid}`);
     }
 
-    // 2. 查询所有同仓储的文件夹
+    // 2. 鏌ヨ鎵€鏈夊悓浠撳偍鐨勬枃浠跺す
     const allFolders = await this.folderRepository.findByRepositoryUuid(folder.repositoryUuid);
 
-    // 3. 循环检测 - await the async result
+    // 3. 寰幆妫€娴?- await the async result
     if (newParentUuid) {
       const hasCycle = await this.hierarchyService.detectCycle(
         folder.uuid,
@@ -147,7 +147,7 @@ export class FolderApplicationService {
       }
     }
 
-    // 4. 获取新父路径
+    // 4. 鑾峰彇鏂扮埗璺緞
     let newParentPath: string | null = null;
     if (newParentUuid) {
       const newParent = await this.folderRepository.findByUuid(newParentUuid);
@@ -157,34 +157,34 @@ export class FolderApplicationService {
       newParentPath = newParent.path;
     }
 
-    // 5. 移动（领域方法）
+    // 5. 绉诲姩锛堥鍩熸柟娉曪級
     folder.moveTo(newParentUuid, newParentPath ?? undefined);
 
-    // 6. 持久化
+    // 6. 鎸佷箙鍖?
     await this.folderRepository.save(folder);
 
-    // 7. 级联更新子路径（使用正确的方法签名）
+    // 7. 绾ц仈鏇存柊瀛愯矾寰勶紙浣跨敤姝ｇ‘鐨勬柟娉曠鍚嶏級
     await this.hierarchyService.updateChildrenPaths(
       folder.uuid,
       folder.path,
       this.folderRepository,
     );
 
-    // 8. 返回 ClientDTO
+    // 8. 杩斿洖 ClientDTO
     return folder.toClientDTO();
   }
 
   /**
-   * 删除文件夹（级联）
+   * 鍒犻櫎鏂囦欢澶癸紙绾ц仈锛?
    */
   async deleteFolder(uuid: string): Promise<void> {
-    // 1. 查询文件夹
+    // 1. 鏌ヨ鏂囦欢澶?
     const folder = await this.folderRepository.findByUuid(uuid);
     if (!folder) {
       throw new Error(`Folder not found: ${uuid}`);
     }
 
-    // 2. 收集所有要删除的文件夹UUID（包括子文件夹）
+    // 2. 鏀堕泦鎵€鏈夎鍒犻櫎鐨勬枃浠跺すUUID锛堝寘鎷瓙鏂囦欢澶癸級
     const collectChildrenUuids = async (folderUuid: string): Promise<string[]> => {
       const uuids = [folderUuid];
       const children = await this.folderRepository.findByParentUuid(folderUuid);
@@ -199,11 +199,12 @@ export class FolderApplicationService {
 
     const uuidsToDelete = await collectChildrenUuids(uuid);
 
-    // 3. 级联删除（从叶子节点开始，reverse 顺序）
+    // 3. 绾ц仈鍒犻櫎锛堜粠鍙跺瓙鑺傜偣寮€濮嬶紝reverse 椤哄簭锛?
     for (const folderUuid of uuidsToDelete.reverse()) {
       await this.folderRepository.delete(folderUuid);
     }
   }
 }
+
 
 

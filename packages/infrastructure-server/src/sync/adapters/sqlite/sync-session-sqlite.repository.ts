@@ -1,6 +1,6 @@
 /**
  * SQLite SyncSession Repository Implementation
- * 同步会话的 SQLite 仓储实现
+ * 鍚屾浼氳瘽鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,26 +15,26 @@ export class SqliteSyncSessionRepository implements ISyncSessionRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO sync_sessions (
-        uuid, account_uuid, status, started_at, completed_at,
-        error_message, sync_type, created_at, updated_at
+        uuid, accountUuid, status, startedAt, completedAt,
+        error_message, sync_type, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         status = excluded.status,
-        completed_at = excluded.completed_at,
+        completedAt = excluded.completedAt,
         error_message = excluded.error_message,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       dto.status,
-      dto.started_at,
-      dto.completed_at || null,
+      dto.startedAt,
+      dto.completedAt || null,
       dto.error_message || null,
       dto.sync_type,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -46,41 +46,41 @@ export class SqliteSyncSessionRepository implements ISyncSessionRepository {
 
     return SyncSession.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       status: row.status,
-      started_at: new Date(row.started_at),
-      completed_at: row.completed_at ? new Date(row.completed_at) : null,
+      started_at: new Date(row.startedAt),
+      completed_at: row.completedAt ? new Date(row.completedAt) : null,
       error_message: row.error_message,
       sync_type: row.sync_type,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findByAccountUuid(accountUuid: string): Promise<SyncSession[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM sync_sessions WHERE account_uuid = ? ORDER BY started_at DESC LIMIT 50`
+      `SELECT * FROM sync_sessions WHERE accountUuid = ? ORDER BY startedAt DESC LIMIT 50`
     );
     const rows = stmt.all(accountUuid) as any[];
 
     return rows.map((row) =>
       SyncSession.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         status: row.status,
-        started_at: new Date(row.started_at),
-        completed_at: row.completed_at ? new Date(row.completed_at) : null,
+        started_at: new Date(row.startedAt),
+        completed_at: row.completedAt ? new Date(row.completedAt) : null,
         error_message: row.error_message,
         sync_type: row.sync_type,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
 
   async findActiveSession(accountUuid: string): Promise<SyncSession | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM sync_sessions WHERE account_uuid = ? AND status IN ('PENDING', 'IN_PROGRESS') ORDER BY started_at DESC LIMIT 1`
+      `SELECT * FROM sync_sessions WHERE accountUuid = ? AND status IN ('PENDING', 'IN_PROGRESS') ORDER BY startedAt DESC LIMIT 1`
     );
     const row = stmt.get(accountUuid) as any;
 
@@ -88,20 +88,20 @@ export class SqliteSyncSessionRepository implements ISyncSessionRepository {
 
     return SyncSession.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       status: row.status,
-      started_at: new Date(row.started_at),
-      completed_at: row.completed_at ? new Date(row.completed_at) : null,
+      started_at: new Date(row.startedAt),
+      completed_at: row.completedAt ? new Date(row.completedAt) : null,
       error_message: row.error_message,
       sync_type: row.sync_type,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findLatestSession(accountUuid: string): Promise<SyncSession | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM sync_sessions WHERE account_uuid = ? ORDER BY started_at DESC LIMIT 1`
+      `SELECT * FROM sync_sessions WHERE accountUuid = ? ORDER BY startedAt DESC LIMIT 1`
     );
     const row = stmt.get(accountUuid) as any;
 
@@ -109,19 +109,19 @@ export class SqliteSyncSessionRepository implements ISyncSessionRepository {
 
     return SyncSession.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       status: row.status,
-      started_at: new Date(row.started_at),
-      completed_at: row.completed_at ? new Date(row.completed_at) : null,
+      started_at: new Date(row.startedAt),
+      completed_at: row.completedAt ? new Date(row.completedAt) : null,
       error_message: row.error_message,
       sync_type: row.sync_type,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findByQuery(accountUuid: string, options: SyncSessionQueryOptions): Promise<SyncSession[]> {
-    let query = `SELECT * FROM sync_sessions WHERE account_uuid = ?`;
+    let query = `SELECT * FROM sync_sessions WHERE accountUuid = ?`;
     const params: any[] = [accountUuid];
 
     if (options.status) {
@@ -135,16 +135,16 @@ export class SqliteSyncSessionRepository implements ISyncSessionRepository {
     }
 
     if (options.startedAfter) {
-      query += ` AND started_at > ?`;
+      query += ` AND startedAt > ?`;
       params.push(options.startedAfter);
     }
 
     if (options.completedBefore) {
-      query += ` AND completed_at < ?`;
+      query += ` AND completedAt < ?`;
       params.push(options.completedBefore);
     }
 
-    query += ` ORDER BY started_at DESC`;
+    query += ` ORDER BY startedAt DESC`;
 
     if (options.limit) {
       query += ` LIMIT ?`;
@@ -157,14 +157,14 @@ export class SqliteSyncSessionRepository implements ISyncSessionRepository {
     return rows.map((row) =>
       SyncSession.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         status: row.status,
-        started_at: new Date(row.started_at),
-        completed_at: row.completed_at ? new Date(row.completed_at) : null,
+        started_at: new Date(row.startedAt),
+        completed_at: row.completedAt ? new Date(row.completedAt) : null,
         error_message: row.error_message,
         sync_type: row.sync_type,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -175,8 +175,9 @@ export class SqliteSyncSessionRepository implements ISyncSessionRepository {
   }
 
   async deleteByAccountUuid(accountUuid: string): Promise<number> {
-    const stmt = this.db.prepare(`DELETE FROM sync_sessions WHERE account_uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM sync_sessions WHERE accountUuid = ?`);
     const result = stmt.run(accountUuid);
     return result.changes ?? 0;
   }
 }
+

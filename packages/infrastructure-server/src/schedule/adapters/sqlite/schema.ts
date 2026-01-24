@@ -1,6 +1,6 @@
 /**
  * SQLite Database Schema - Schedule Module
- * 日程模块数据库架构
+ * 鏃ョ▼妯″潡鏁版嵁搴撴灦鏋?
  */
 
 export const SCHEDULE_MODULE_SCHEMA = `

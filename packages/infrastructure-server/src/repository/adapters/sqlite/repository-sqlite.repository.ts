@@ -1,6 +1,6 @@
 /**
  * SQLite Repository Repository Implementation
- * Repository 聚合根的 SQLite 仓储实现
+ * Repository 鑱氬悎鏍圭殑 SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -16,8 +16,8 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO repositories (
-        uuid, account_uuid, name, description, type, status, config,
-        created_at, updated_at
+        uuid, accountUuid, name, description, type, status, config,
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         name = excluded.name,
@@ -25,19 +25,19 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
         type = excluded.type,
         status = excluded.status,
         config = excluded.config,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       dto.name,
       dto.description || null,
       dto.type,
       dto.status,
       dto.config ? JSON.stringify(dto.config) : null,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -51,34 +51,34 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
 
     return Repository.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       name: row.name,
       description: row.description,
       type: row.type,
       status: row.status,
       config: row.config ? JSON.parse(row.config) : undefined,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findByAccountUuid(accountUuid: string): Promise<Repository[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM repositories WHERE account_uuid = ? ORDER BY created_at DESC`,
+      `SELECT * FROM repositories WHERE accountUuid = ? ORDER BY createdAt DESC`,
     );
     const rows = stmt.all(accountUuid) as any[];
 
     return rows.map((row) =>
       Repository.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         name: row.name,
         description: row.description,
         type: row.type,
         status: row.status,
         config: row.config ? JSON.parse(row.config) : undefined,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       }),
     );
   }
@@ -88,21 +88,21 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     status: RepositoryStatus,
   ): Promise<Repository[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM repositories WHERE account_uuid = ? AND status = ? ORDER BY created_at DESC`,
+      `SELECT * FROM repositories WHERE accountUuid = ? AND status = ? ORDER BY createdAt DESC`,
     );
     const rows = stmt.all(accountUuid, status) as any[];
 
     return rows.map((row) =>
       Repository.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         name: row.name,
         description: row.description,
         type: row.type,
         status: row.status,
         config: row.config ? JSON.parse(row.config) : undefined,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       }),
     );
   }
@@ -119,3 +119,4 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     return stmt.get(uuid) !== undefined;
   }
 }
+

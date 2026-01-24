@@ -1,21 +1,21 @@
 /**
- * Schedule Worker - Bree 任务执行脚本
+ * Schedule Worker - Bree 浠诲姟鎵ц鑴氭湰
  * 
- * 职责�?
- * - 在独立的 Worker Thread 中执行调度任�?
- * - 接收任务执行上下�?
- * - 执行回调逻辑（发送通知、触发业务逻辑�?
- * - 记录执行结果
+ * 鑱岃矗锟?
+ * - 鍦ㄧ嫭绔嬬殑 Worker Thread 涓墽琛岃皟搴︿换锟?
+ * - 鎺ユ敹浠诲姟鎵ц涓婁笅锟?
+ * - 鎵ц鍥炶皟閫昏緫锛堝彂閫侀€氱煡銆佽Е鍙戜笟鍔￠€昏緫锟?
+ * - 璁板綍鎵ц缁撴灉
  * 
- * 注意�?
- * - 这个文件会在 Worker Thread 中运�?
- * - 使用 workerData 接收父进程传递的参数
- * - 通过 parentPort 与父进程通信
+ * 娉ㄦ剰锟?
+ * - 杩欎釜鏂囦欢浼氬湪 Worker Thread 涓繍锟?
+ * - 浣跨敤 workerData 鎺ユ敹鐖惰繘绋嬩紶閫掔殑鍙傛暟
+ * - 閫氳繃 parentPort 涓庣埗杩涚▼閫氫俊
  * 
- * 架构注意�?
- * - 为了避免循环依赖，不直接导入应用服务
- * - 改为通过 workerData 传递必需的回调或数据
- * - 父进程负责调用应用层的业务逻辑
+ * 鏋舵瀯娉ㄦ剰锟?
+ * - 涓轰簡閬垮厤寰幆渚濊禆锛屼笉鐩存帴瀵煎叆搴旂敤鏈嶅姟
+ * - 鏀逛负閫氳繃 workerData 浼犻€掑繀闇€鐨勫洖璋冩垨鏁版嵁
+ * - 鐖惰繘绋嬭礋璐ｈ皟鐢ㄥ簲鐢ㄥ眰鐨勪笟鍔￠€昏緫
  */
 
 import { parentPort, workerData } from 'worker_threads';
@@ -46,7 +46,7 @@ async function initializeApplication() {
 }
 
 /**
- * Worker 入口
+ * Worker 鍏ュ彛
  */
 (async () => {
   await initializeApplication();
@@ -91,14 +91,14 @@ async function initializeApplication() {
 })();
 
 /**
- * 执行 Goal 提醒
+ * 鎵ц Goal 鎻愰啋
  * 
- * 注意：实际的 Goal 查询和通知发送由父进程处�?
+ * 娉ㄦ剰锛氬疄闄呯殑 Goal 鏌ヨ鍜岄€氱煡鍙戦€佺敱鐖惰繘绋嬪锟?
  */
 async function executeGoalReminder(data: { goalId: string; accountUuid: string }) {
   console.log(`Executing goal reminder for goal ${data.goalId}`);
-  // 实际的业务逻辑由父进程中的 GoalApplicationService 处理
-  // 这里只记录执行信�?
+  // 瀹為檯鐨勪笟鍔￠€昏緫鐢辩埗杩涚▼涓殑 GoalApplicationService 澶勭悊
+  // 杩欓噷鍙褰曟墽琛屼俊锟?
   if (parentPort) {
     parentPort.postMessage({
       type: 'goal-reminder',
@@ -109,14 +109,14 @@ async function executeGoalReminder(data: { goalId: string; accountUuid: string }
 }
 
 /**
- * 执行 Task 提醒
+ * 鎵ц Task 鎻愰啋
  * 
- * 注意：实际的 Task 查询和通知发送由父进程处�?
+ * 娉ㄦ剰锛氬疄闄呯殑 Task 鏌ヨ鍜岄€氱煡鍙戦€佺敱鐖惰繘绋嬪锟?
  */
 async function executeTaskReminder(data: { taskId: string; accountUuid: string }) {
   console.log(`Executing task reminder for task ${data.taskId}`);
-  // 实际的业务逻辑由父进程中的 TaskTemplateApplicationService 处理
-  // 这里只记录执行信�?
+  // 瀹為檯鐨勪笟鍔￠€昏緫鐢辩埗杩涚▼涓殑 TaskTemplateApplicationService 澶勭悊
+  // 杩欓噷鍙褰曟墽琛屼俊锟?
   if (parentPort) {
     parentPort.postMessage({
       type: 'task-reminder',
@@ -127,14 +127,14 @@ async function executeTaskReminder(data: { taskId: string; accountUuid: string }
 }
 
 /**
- * 执行 Reminder
+ * 鎵ц Reminder
  * 
- * 注意：实际的 Reminder 查询和通知发送由父进程处�?
+ * 娉ㄦ剰锛氬疄闄呯殑 Reminder 鏌ヨ鍜岄€氱煡鍙戦€佺敱鐖惰繘绋嬪锟?
  */
 async function executeReminder(data: { reminderId: string; accountUuid: string }) {
   console.log(`Executing reminder for reminder ${data.reminderId}`);
-  // 实际的业务逻辑由父进程中的 ReminderApplicationService 处理
-  // 这里只记录执行信�?
+  // 瀹為檯鐨勪笟鍔￠€昏緫鐢辩埗杩涚▼涓殑 ReminderApplicationService 澶勭悊
+  // 杩欓噷鍙褰曟墽琛屼俊锟?
   if (parentPort) {
     parentPort.postMessage({
       type: 'reminder',

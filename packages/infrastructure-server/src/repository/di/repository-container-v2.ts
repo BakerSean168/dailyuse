@@ -6,20 +6,20 @@ import type {
 } from '@dailyuse/domain-server/repository';
 
 /**
- * Repository 模块依赖注入容器
- * 负责管理领域服务和仓储的实例创建和生命周期
+ * Repository 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒
+ * 璐熻矗绠＄悊棰嗗煙鏈嶅姟鍜屼粨鍌ㄧ殑瀹炰緥鍒涘缓鍜岀敓鍛藉懆鏈?
  *
- * 设计原则（改进版）：
- * 1. 支持多数据库提供者（Prisma、SQLite、Memory 等）
- * 2. 支持动态注册实现（不再依赖硬编码的 Prisma）
- * 3. 支持测试替换（Mock 仓储）
- * 4. 支持懒加载（首次调用时创建）
- * 5. 支持重置（用于测试）
+ * 璁捐鍘熷垯锛堟敼杩涚増锛夛細
+ * 1. 鏀寔澶氭暟鎹簱鎻愪緵鑰咃紙Prisma銆丼QLite銆丮emory 绛夛級
+ * 2. 鏀寔鍔ㄦ€佹敞鍐屽疄鐜帮紙涓嶅啀渚濊禆纭紪鐮佺殑 Prisma锛?
+ * 3. 鏀寔娴嬭瘯鏇挎崲锛圡ock 浠撳偍锛?
+ * 4. 鏀寔鎳掑姞杞斤紙棣栨璋冪敤鏃跺垱寤猴級
+ * 5. 鏀寔閲嶇疆锛堢敤浜庢祴璇曪級
  *
- * 使用场景：
- * - API 项目：通过 DatabaseProviderFactory 注册 Prisma 实现
- * - Desktop 项目：通过 DatabaseProviderFactory 注册 SQLite 实现
- * - 测试：直接注入 Mock 实现
+ * 浣跨敤鍦烘櫙锛?
+ * - API 椤圭洰锛氶€氳繃 DatabaseProviderFactory 娉ㄥ唽 Prisma 瀹炵幇
+ * - Desktop 椤圭洰锛氶€氳繃 DatabaseProviderFactory 娉ㄥ唽 SQLite 瀹炵幇
+ * - 娴嬭瘯锛氱洿鎺ユ敞鍏?Mock 瀹炵幇
  */
 export class RepositoryContainer {
   private static instance: RepositoryContainer;
@@ -31,7 +31,7 @@ export class RepositoryContainer {
   private constructor() {}
 
   /**
-   * 获取容器单例
+   * 鑾峰彇瀹瑰櫒鍗曚緥
    */
   static getInstance(): RepositoryContainer {
     if (!RepositoryContainer.instance) {
@@ -41,16 +41,16 @@ export class RepositoryContainer {
   }
 
   /**
-   * 重置单例（用于切换提供者或测试）
+   * 閲嶇疆鍗曚緥锛堢敤浜庡垏鎹㈡彁渚涜€呮垨娴嬭瘯锛?
    */
   static resetInstance(): void {
     RepositoryContainer.instance = new RepositoryContainer();
   }
 
-  // ===== Repository 仓储 =====
+  // ===== Repository 浠撳偍 =====
 
   /**
-   * 注册 Repository 仓储实现
+   * 娉ㄥ唽 Repository 浠撳偍瀹炵幇
    */
   registerRepositoryRepository(repository: IRepositoryRepository): this {
     this.repositoryRepository = repository;
@@ -58,7 +58,7 @@ export class RepositoryContainer {
   }
 
   /**
-   * 获取 Repository 仓储实例
+   * 鑾峰彇 Repository 浠撳偍瀹炰緥
    */
   getRepositoryRepository(): IRepositoryRepository {
     if (!this.repositoryRepository) {
@@ -70,10 +70,10 @@ export class RepositoryContainer {
     return this.repositoryRepository;
   }
 
-  // ===== Resource 仓储 =====
+  // ===== Resource 浠撳偍 =====
 
   /**
-   * 注册 Resource 仓储实现
+   * 娉ㄥ唽 Resource 浠撳偍瀹炵幇
    */
   registerResourceRepository(repository: IResourceRepository): this {
     this.resourceRepository = repository;
@@ -81,7 +81,7 @@ export class RepositoryContainer {
   }
 
   /**
-   * 获取 Resource 仓储实例
+   * 鑾峰彇 Resource 浠撳偍瀹炰緥
    */
   getResourceRepository(): IResourceRepository {
     if (!this.resourceRepository) {
@@ -93,10 +93,10 @@ export class RepositoryContainer {
     return this.resourceRepository;
   }
 
-  // ===== Folder 仓储 =====
+  // ===== Folder 浠撳偍 =====
 
   /**
-   * 注册 Folder 仓储实现
+   * 娉ㄥ唽 Folder 浠撳偍瀹炵幇
    */
   registerFolderRepository(repository: IFolderRepository): this {
     this.folderRepository = repository;
@@ -104,7 +104,7 @@ export class RepositoryContainer {
   }
 
   /**
-   * 获取 Folder 仓储实例
+   * 鑾峰彇 Folder 浠撳偍瀹炰緥
    */
   getFolderRepository(): IFolderRepository {
     if (!this.folderRepository) {
@@ -116,10 +116,10 @@ export class RepositoryContainer {
     return this.folderRepository;
   }
 
-  // ===== Repository Statistics 仓储 =====
+  // ===== Repository Statistics 浠撳偍 =====
 
   /**
-   * 注册 RepositoryStatistics 仓储实现
+   * 娉ㄥ唽 RepositoryStatistics 浠撳偍瀹炵幇
    */
   registerRepositoryStatisticsRepository(repository: IRepositoryStatisticsRepository): this {
     this.repositoryStatisticsRepository = repository;
@@ -127,7 +127,7 @@ export class RepositoryContainer {
   }
 
   /**
-   * 获取 RepositoryStatistics 仓储实例
+   * 鑾峰彇 RepositoryStatistics 浠撳偍瀹炰緥
    */
   getRepositoryStatisticsRepository(): IRepositoryStatisticsRepository {
     if (!this.repositoryStatisticsRepository) {
@@ -139,19 +139,19 @@ export class RepositoryContainer {
     return this.repositoryStatisticsRepository;
   }
 
-  // ===== 别名方法（兼容性） =====
+  // ===== 鍒悕鏂规硶锛堝吋瀹规€э級 =====
 
   /**
-   * 获取 Repository 聚合仓储实例（别名）
+   * 鑾峰彇 Repository 鑱氬悎浠撳偍瀹炰緥锛堝埆鍚嶏級
    */
   getRepositoryAggregateRepository(): IRepositoryRepository {
     return this.getRepositoryRepository();
   }
 
-  // ===== 工具方法 =====
+  // ===== 宸ュ叿鏂规硶 =====
 
   /**
-   * 重置容器（用于测试或切换提供者）
+   * 閲嶇疆瀹瑰櫒锛堢敤浜庢祴璇曟垨鍒囨崲鎻愪緵鑰咃級
    */
   reset(): void {
     this.repositoryRepository = undefined;
@@ -161,7 +161,7 @@ export class RepositoryContainer {
   }
 
   /**
-   * 检查是否已初始化
+   * 妫€鏌ユ槸鍚﹀凡鍒濆鍖?
    */
   isInitialized(): boolean {
     return !!(
@@ -173,7 +173,7 @@ export class RepositoryContainer {
   }
 
   /**
-   * 检查是否部分初始化
+   * 妫€鏌ユ槸鍚﹂儴鍒嗗垵濮嬪寲
    */
   isPartiallyInitialized(): boolean {
     return !!(

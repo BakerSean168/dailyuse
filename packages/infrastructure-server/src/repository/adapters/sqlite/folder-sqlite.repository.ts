@@ -1,6 +1,6 @@
 /**
  * SQLite Folder Repository Implementation
- * Folder 实体的 SQLite 仓储实现
+ * Folder 瀹炰綋鐨?SQLite 浠撳偍瀹炵�?
  */
 
 import type Database from 'better-sqlite3';
@@ -25,12 +25,12 @@ export class SqliteFolderRepository implements IFolderRepository {
 
     stmt.run(
       dto.uuid,
-      dto.repository_uuid,
-      dto.parent_uuid || null,
+      dto.repositoryUuid,
+      dto.parentUuid || null,
       dto.name,
       dto.path,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -44,12 +44,12 @@ export class SqliteFolderRepository implements IFolderRepository {
 
     return Folder.fromPersistenceDTO({
       uuid: row.uuid,
-      repository_uuid: row.repository_uuid,
-      parent_uuid: row.parent_uuid,
+      repositoryUuid: row.repository_uuid,
+      parentUuid: row.parent_uuid,
       name: row.name,
       path: row.path,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
     });
   }
 
@@ -62,12 +62,12 @@ export class SqliteFolderRepository implements IFolderRepository {
     return rows.map((row) =>
       Folder.fromPersistenceDTO({
         uuid: row.uuid,
-        repository_uuid: row.repository_uuid,
-        parent_uuid: row.parent_uuid,
+        repositoryUuid: row.repository_uuid,
+        parentUuid: row.parent_uuid,
         name: row.name,
         path: row.path,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at),
       }),
     );
   }
@@ -81,12 +81,12 @@ export class SqliteFolderRepository implements IFolderRepository {
     return rows.map((row) =>
       Folder.fromPersistenceDTO({
         uuid: row.uuid,
-        repository_uuid: row.repository_uuid,
-        parent_uuid: row.parent_uuid,
+        repositoryUuid: row.repository_uuid,
+        parentUuid: row.parent_uuid,
         name: row.name,
         path: row.path,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at),
       }),
     );
   }
@@ -95,7 +95,7 @@ export class SqliteFolderRepository implements IFolderRepository {
     const stmt = this.db.prepare(
       `SELECT f.* FROM folders f
        JOIN repositories r ON f.repository_uuid = r.uuid
-       WHERE r.account_uuid = ?
+       WHERE r.accountUuid = ?
        ORDER BY f.path ASC`,
     );
     const rows = stmt.all(accountUuid) as any[];
@@ -103,12 +103,12 @@ export class SqliteFolderRepository implements IFolderRepository {
     return rows.map((row) =>
       Folder.fromPersistenceDTO({
         uuid: row.uuid,
-        repository_uuid: row.repository_uuid,
-        parent_uuid: row.parent_uuid,
+        repositoryUuid: row.repository_uuid,
+        parentUuid: row.parent_uuid,
         name: row.name,
         path: row.path,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at),
       }),
     );
   }
@@ -125,3 +125,4 @@ export class SqliteFolderRepository implements IFolderRepository {
     stmt.run(uuid);
   }
 }
+

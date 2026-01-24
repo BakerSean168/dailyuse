@@ -1,6 +1,6 @@
 /**
  * Shared Infrastructure Configuration
- * 共享基础设施配置
+ * 鍏变韩鍩虹璁炬柦閰嶇疆
  *
  * @module Shared/Infrastructure/Config
  */

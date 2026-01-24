@@ -6,28 +6,28 @@ const logger = createLogger('FocusModeCronJob');
 
 /**
  * FocusMode Cron Job
- * 专注周期自动过期调度�?
+ * 涓撴敞鍛ㄦ湡鑷姩杩囨湡璋冨害鍣?
  *
- * 职责�?
- * - 定时检查并自动失效过期的专注周�?
- * - 记录执行日志
- * - 处理错误情况
+ * 鑱岃矗锛?
+ * - 瀹氭椂妫€鏌ュ苟鑷姩澶辨晥杩囨湡鐨勪笓娉ㄥ懆鏈?
+ * - 璁板綍鎵ц鏃ュ織
+ * - 澶勭悊閿欒鎯呭喌
  *
- * 调度频率：每小时执行一�?(cron: '0 * * * *')
- * - 分钟�?（每小时的第 0 分钟�?
- * - 小时�?（每小时�?
- * - 日期�?（每天）
- * - 月份�?（每月）
- * - 星期�?（每周）
+ * 璋冨害棰戠巼锛氭瘡灏忔椂鎵ц涓€娆?(cron: '0 * * * *')
+ * - 鍒嗛挓锛?锛堟瘡灏忔椂鐨勭 0 鍒嗛挓锛?
+ * - 灏忔椂锛?锛堟瘡灏忔椂锛?
+ * - 鏃ユ湡锛?锛堟瘡澶╋級
+ * - 鏈堜唤锛?锛堟瘡鏈堬級
+ * - 鏄熸湡锛?锛堟瘡鍛級
  *
- * 使用示例�?
+ * 浣跨敤绀轰緥锛?
  * ```typescript
  * import { startFocusModeCronJob, stopFocusModeCronJob } from './focusModeCronJob';
  *
- * // 启动调度�?
+ * // 鍚姩璋冨害鍣?
  * startFocusModeCronJob();
  *
- * // 停止调度�?
+ * // 鍋滄璋冨害鍣?
  * stopFocusModeCronJob();
  * ```
  */
@@ -36,8 +36,8 @@ let cronTask: cron.ScheduledTask | null = null;
 let focusModeService: FocusModeApplicationService | null = null;
 
 /**
- * 获取 FocusModeApplicationService 单例
- * 延迟加载，避免循环依�?
+ * 鑾峰彇 FocusModeApplicationService 鍗曚緥
+ * 寤惰繜鍔犺浇锛岄伩鍏嶅惊鐜緷璧?
  */
 async function getFocusModeService(): Promise<FocusModeApplicationService> {
   if (!focusModeService) {
@@ -47,8 +47,8 @@ async function getFocusModeService(): Promise<FocusModeApplicationService> {
 }
 
 /**
- * 执行自动过期检�?
- * �?cron 调度器定时调�?
+ * 鎵ц鑷姩杩囨湡妫€鏌?
+ * 鐢?cron 璋冨害鍣ㄥ畾鏃惰皟鐢?
  */
 async function checkAndDeactivateExpiredFocusModes(): Promise<void> {
   const startTime = Date.now();
@@ -77,15 +77,15 @@ async function checkAndDeactivateExpiredFocusModes(): Promise<void> {
       durationMs: duration,
     });
 
-    // 不抛出错误，避免影响后续的调度执�?
+    // 涓嶆姏鍑洪敊璇紝閬垮厤褰卞搷鍚庣画鐨勮皟搴︽墽琛?
   }
 }
 
 /**
- * 启动 FocusMode Cron Job
- * 在应用启动时调用
+ * 鍚姩 FocusMode Cron Job
+ * 鍦ㄥ簲鐢ㄥ惎鍔ㄦ椂璋冪敤
  *
- * @returns cron.ScheduledTask 实例
+ * @returns cron.ScheduledTask 瀹炰緥
  */
 export function startFocusModeCronJob(): cron.ScheduledTask {
   if (cronTask) {
@@ -94,11 +94,11 @@ export function startFocusModeCronJob(): cron.ScheduledTask {
   }
 
   logger.info('Starting focus mode cron job', {
-    schedule: '0 * * * *', // 每小时执行一�?
+    schedule: '0 * * * *', // 姣忓皬鏃舵墽琛屼竴娆?
     description: 'Check and deactivate expired focus modes',
   });
 
-  // 创建定时任务：每小时执行一�?
+  // 鍒涘缓瀹氭椂浠诲姟锛氭瘡灏忔椂鎵ц涓€娆?
   cronTask = cron.schedule(
     '0 * * * *',
     () => {
@@ -107,16 +107,16 @@ export function startFocusModeCronJob(): cron.ScheduledTask {
       });
     },
     {
-      timezone: 'Asia/Shanghai', // 使用中国时区
+      timezone: 'Asia/Shanghai', // 浣跨敤涓浗鏃跺尯
     },
   );
 
-  // 启动任务
+  // 鍚姩浠诲姟
   cronTask.start();
 
   logger.info('Focus mode cron job started successfully');
 
-  // 可选：应用启动时立即执行一次检�?
+  // 鍙€夛細搴旂敤鍚姩鏃剁珛鍗虫墽琛屼竴娆℃鏌?
   checkAndDeactivateExpiredFocusModes().catch((error) => {
     logger.error('Failed to run initial focus mode expiration check', error);
   });
@@ -125,8 +125,8 @@ export function startFocusModeCronJob(): cron.ScheduledTask {
 }
 
 /**
- * 停止 FocusMode Cron Job
- * 在应用关闭时调用
+ * 鍋滄 FocusMode Cron Job
+ * 鍦ㄥ簲鐢ㄥ叧闂椂璋冪敤
  */
 export function stopFocusModeCronJob(): void {
   if (!cronTask) {
@@ -141,19 +141,19 @@ export function stopFocusModeCronJob(): void {
 }
 
 /**
- * 获取 Cron Job 运行状�?
+ * 鑾峰彇 Cron Job 杩愯鐘舵€?
  *
- * @returns 是否正在运行
+ * @returns 鏄惁姝ｅ湪杩愯
  */
 export function isFocusModeCronJobRunning(): boolean {
   return cronTask !== null;
 }
 
 /**
- * 手动触发一次过期检�?
- * 用于测试或管理员手动触发
+ * 鎵嬪姩瑙﹀彂涓€娆¤繃鏈熸鏌?
+ * 鐢ㄤ簬娴嬭瘯鎴栫鐞嗗憳鎵嬪姩瑙﹀彂
  *
- * @returns 过期的专注周期数�?
+ * @returns 杩囨湡鐨勪笓娉ㄥ懆鏈熸暟閲?
  */
 export async function manualCheckExpiredFocusModes(): Promise<number> {
   logger.info('Manual focus mode expiration check triggered');

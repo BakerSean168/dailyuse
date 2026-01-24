@@ -5,16 +5,16 @@ import { GoalStatus, FolderType } from '@dailyuse/contracts/goal';
 import { PriorityLevel } from '@dailyuse/contracts/shared';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 
-// 类型别名
+// 绫诲瀷鍒悕
 
 /**
- * GoalFolder Prisma 仓储实现
+ * GoalFolder Prisma 浠撳偍瀹炵幇
  */
 export class GoalFolderPrismaRepository implements IGoalFolderRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * �?Prisma 模型映射为领域实�?
+   * 灏?Prisma 妯″瀷鏄犲皠涓洪鍩熷疄浣?
    */
   private mapToEntity(data: PrismaGoalFolder): GoalFolder {
     return GoalFolder.fromPersistenceDTO({
@@ -37,7 +37,7 @@ export class GoalFolderPrismaRepository implements IGoalFolderRepository {
   }
 
   /**
-   * 保存文件�?
+   * 淇濆瓨鏂囦欢澶?
    */
   async save(folder: GoalFolder): Promise<void> {
     const persistence = folder.toPersistenceDTO();
@@ -77,7 +77,7 @@ export class GoalFolderPrismaRepository implements IGoalFolderRepository {
   }
 
   /**
-   * 根据 UUID 查找文件�?
+   * 鏍规嵁 UUID 鏌ユ壘鏂囦欢澶?
    */
   async findById(uuid: string): Promise<GoalFolder | null> {
     const data = await this.prisma.goalFolder.findUnique({
@@ -88,7 +88,7 @@ export class GoalFolderPrismaRepository implements IGoalFolderRepository {
   }
 
   /**
-   * 根据账户 UUID 查找所有文件夹
+   * 鏍规嵁璐︽埛 UUID 鏌ユ壘鎵€鏈夋枃浠跺す
    */
   async findByAccountUuid(accountUuid: string): Promise<GoalFolder[]> {
     const data = await this.prisma.goalFolder.findMany({
@@ -100,7 +100,7 @@ export class GoalFolderPrismaRepository implements IGoalFolderRepository {
   }
 
   /**
-   * 删除文件夹（物理删除�?
+   * 鍒犻櫎鏂囦欢澶癸紙鐗╃悊鍒犻櫎锛?
    */
   async delete(uuid: string): Promise<void> {
     await this.prisma.goalFolder.delete({
@@ -109,7 +109,7 @@ export class GoalFolderPrismaRepository implements IGoalFolderRepository {
   }
 
   /**
-   * 检查文件夹是否存在
+   * 妫€鏌ユ枃浠跺す鏄惁瀛樺湪
    */
   async exists(uuid: string): Promise<boolean> {
     const count = await this.prisma.goalFolder.count({

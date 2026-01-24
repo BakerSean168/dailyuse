@@ -1,6 +1,6 @@
 /**
  * SQLite EditorSession Repository Implementation
- * 编辑器会话的 SQLite 仓储实现
+ * 缂栬緫鍣ㄤ細璇濈殑 SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -21,14 +21,14 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
       workspace_uuid: row.workspace_uuid,
       name: row.name,
       is_active: row.is_active === 1,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findByWorkspaceUuid(workspaceUuid: string): Promise<EditorSession[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_sessions WHERE workspace_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM editor_sessions WHERE workspace_uuid = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(workspaceUuid) as any[];
 
@@ -38,8 +38,8 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
         workspace_uuid: row.workspace_uuid,
         name: row.name,
         is_active: row.is_active === 1,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -57,14 +57,14 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
       workspace_uuid: row.workspace_uuid,
       name: row.name,
       is_active: row.is_active === 1,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findActiveByWorkspaceUuid(workspaceUuid: string): Promise<EditorSession | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_sessions WHERE workspace_uuid = ? AND is_active = 1 ORDER BY updated_at DESC LIMIT 1`
+      `SELECT * FROM editor_sessions WHERE workspace_uuid = ? AND is_active = 1 ORDER BY updatedAt DESC LIMIT 1`
     );
     const row = stmt.get(workspaceUuid) as any;
 
@@ -75,8 +75,8 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
       workspace_uuid: row.workspace_uuid,
       name: row.name,
       is_active: row.is_active === 1,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -85,12 +85,12 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO editor_sessions (
-        uuid, workspace_uuid, name, is_active, created_at, updated_at
+        uuid, workspace_uuid, name, is_active, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         name = excluded.name,
         is_active = excluded.is_active,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
@@ -98,8 +98,8 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
       dto.workspace_uuid,
       dto.name,
       dto.is_active ? 1 : 0,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -111,12 +111,12 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
   async saveBatch(sessions: EditorSession[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO editor_sessions (
-        uuid, workspace_uuid, name, is_active, created_at, updated_at
+        uuid, workspace_uuid, name, is_active, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         name = excluded.name,
         is_active = excluded.is_active,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     const transaction = this.db.transaction((items: EditorSession[]) => {
@@ -127,8 +127,8 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
           dto.workspace_uuid,
           dto.name,
           dto.is_active ? 1 : 0,
-          dto.created_at,
-          dto.updated_at,
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -141,3 +141,4 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
     stmt.run(workspaceUuid);
   }
 }
+

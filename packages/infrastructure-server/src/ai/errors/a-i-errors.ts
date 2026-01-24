@@ -4,7 +4,7 @@
  */
 
 /**
- * AI 生成超时错误
+ * AI 鐢熸垚瓒呮椂閿欒
  */
 export class AIGenerationTimeoutError extends Error {
   constructor(timeoutSeconds: number) {
@@ -14,7 +14,7 @@ export class AIGenerationTimeoutError extends Error {
 }
 
 /**
- * AI 配额超限错误
+ * AI 閰嶉瓒呴檺閿欒
  */
 export class AIQuotaExceededError extends Error {
   public readonly quotaLimit: number;
@@ -34,7 +34,7 @@ export class AIQuotaExceededError extends Error {
 }
 
 /**
- * AI 提供商错�?
+ * AI 鎻愪緵鍟嗛敊璇?
  */
 export class AIProviderError extends Error {
   public readonly provider: string;
@@ -49,7 +49,7 @@ export class AIProviderError extends Error {
 }
 
 /**
- * AI 验证错误
+ * AI 楠岃瘉閿欒
  */
 export class AIValidationError extends Error {
   public readonly validationErrors: string[];

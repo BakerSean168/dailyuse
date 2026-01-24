@@ -1,8 +1,8 @@
 /**
  * SQLite Database Manager
  *
- * 管理 SQLite 数据库连接、初始化和迁移
- * 使用 better-sqlite3 提供同步 API
+ * 绠＄悊 SQLite 鏁版嵁搴撹繛鎺ャ€佸垵濮嬪寲鍜岃縼绉?
+ * 浣跨敤 better-sqlite3 鎻愪緵鍚屾 API
  */
 
 import Database from 'better-sqlite3';
@@ -11,22 +11,22 @@ import fs from 'fs';
 
 export interface ISqliteConfig {
   /**
-   * 数据库文件路径
-   * 如果为 ':memory:'，则使用内存数据库（测试用）
+   * 鏁版嵁搴撴枃浠惰矾寰?
+   * 濡傛灉涓?':memory:'锛屽垯浣跨敤鍐呭瓨鏁版嵁搴擄紙娴嬭瘯鐢級
    */
   dbPath: string;
   /**
-   * 是否在启动时创建表
+   * 鏄惁鍦ㄥ惎鍔ㄦ椂鍒涘缓琛?
    */
   autoMigrate?: boolean;
   /**
-   * 调试模式
+   * 璋冭瘯妯″紡
    */
   verbose?: boolean;
 }
 
 /**
- * SQLite 数据库管理器
+ * SQLite 鏁版嵁搴撶鐞嗗櫒
  */
 export class SqliteDatabase {
   private db: Database.Database | null = null;
@@ -37,11 +37,11 @@ export class SqliteDatabase {
   }
 
   /**
-   * 初始化数据库连接
+   * 鍒濆鍖栨暟鎹簱杩炴帴
    */
   initialize(): void {
     try {
-      // 确保目录存在
+      // 纭繚鐩綍瀛樺湪
       if (this.config.dbPath !== ':memory:') {
         const dir = path.dirname(this.config.dbPath);
         if (!fs.existsSync(dir)) {
@@ -49,33 +49,33 @@ export class SqliteDatabase {
         }
       }
 
-      // 创建数据库连接
+      // 鍒涘缓鏁版嵁搴撹繛鎺?
       this.db = new Database(this.config.dbPath);
 
-      // 启用外键约束
+      // 鍚敤澶栭敭绾︽潫
       this.db.pragma('foreign_keys = ON');
 
-      // 设置 WAL 模式（更好的并发性能）
+      // 璁剧疆 WAL 妯″紡锛堟洿濂界殑骞跺彂鎬ц兘锛?
       if (this.config.dbPath !== ':memory:') {
         this.db.pragma('journal_mode = WAL');
       }
 
       if (this.config.verbose) {
-        console.log(`✅ SQLite database initialized at ${this.config.dbPath}`);
+        console.log(`鉁?SQLite database initialized at ${this.config.dbPath}`);
       }
 
-      // 自动迁移
+      // 鑷姩杩佺Щ
       if (this.config.autoMigrate) {
         this.migrate();
       }
     } catch (error) {
-      console.error('❌ Failed to initialize SQLite database:', error);
+      console.error('鉂?Failed to initialize SQLite database:', error);
       throw error;
     }
   }
 
   /**
-   * 获取数据库实例
+   * 鑾峰彇鏁版嵁搴撳疄渚?
    */
   getDatabase(): Database.Database {
     if (!this.db) {
@@ -85,16 +85,16 @@ export class SqliteDatabase {
   }
 
   /**
-   * 执行迁移
+   * 鎵ц杩佺Щ
    */
   private migrate(): void {
     if (!this.db) {
       throw new Error('Database not initialized');
     }
 
-    // 创建表
+    // 鍒涘缓琛?
     const schema = `
-      -- Repository 表
+      -- Repository 琛?
       CREATE TABLE IF NOT EXISTS repositories (
         uuid TEXT PRIMARY KEY,
         account_uuid TEXT NOT NULL,
@@ -108,7 +108,7 @@ export class SqliteDatabase {
         UNIQUE(account_uuid, name)
       );
 
-      -- Folder 表
+      -- Folder 琛?
       CREATE TABLE IF NOT EXISTS folders (
         uuid TEXT PRIMARY KEY,
         repository_uuid TEXT NOT NULL,
@@ -122,7 +122,7 @@ export class SqliteDatabase {
         UNIQUE(repository_uuid, parent_uuid, name)
       );
 
-      -- Resource 表
+      -- Resource 琛?
       CREATE TABLE IF NOT EXISTS resources (
         uuid TEXT PRIMARY KEY,
         repository_uuid TEXT NOT NULL,
@@ -142,7 +142,7 @@ export class SqliteDatabase {
         UNIQUE(repository_uuid, path)
       );
 
-      -- RepositoryStatistics 表
+      -- RepositoryStatistics 琛?
       CREATE TABLE IF NOT EXISTS repository_statistics (
         uuid TEXT PRIMARY KEY,
         account_uuid TEXT NOT NULL UNIQUE,
@@ -158,7 +158,7 @@ export class SqliteDatabase {
         updated_at INTEGER NOT NULL
       );
 
-      -- 创建索引
+      -- 鍒涘缓绱㈠紩
       CREATE INDEX IF NOT EXISTS idx_repositories_account_uuid ON repositories(account_uuid);
       CREATE INDEX IF NOT EXISTS idx_folders_repository_uuid ON folders(repository_uuid);
       CREATE INDEX IF NOT EXISTS idx_folders_parent_uuid ON folders(parent_uuid);
@@ -170,29 +170,29 @@ export class SqliteDatabase {
     try {
       this.db.exec(schema);
       if (this.config.verbose) {
-        console.log('✅ Database schema migrated successfully');
+        console.log('鉁?Database schema migrated successfully');
       }
     } catch (error) {
-      console.error('❌ Migration failed:', error);
+      console.error('鉂?Migration failed:', error);
       throw error;
     }
   }
 
   /**
-   * 关闭数据库连接
+   * 鍏抽棴鏁版嵁搴撹繛鎺?
    */
   close(): void {
     if (this.db) {
       this.db.close();
       this.db = null;
       if (this.config.verbose) {
-        console.log('✅ Database connection closed');
+        console.log('鉁?Database connection closed');
       }
     }
   }
 
   /**
-   * 检查数据库健康状态
+   * 妫€鏌ユ暟鎹簱鍋ュ悍鐘舵€?
    */
   healthCheck(): boolean {
     try {

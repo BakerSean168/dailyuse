@@ -1,30 +1,30 @@
 /**
  * Environment Configuration
- * 环境变量配置
+ * 鐜鍙橀噺閰嶇疆
  *
- * 职责�?
- * - 集中管理应用环境变量
- * - 提供类型安全的环境配置访�?
- * - 验证必需的环境变�?
+ * 鑱岃矗锟?
+ * - 闆嗕腑绠＄悊搴旂敤鐜鍙橀噺
+ * - 鎻愪緵绫诲瀷瀹夊叏鐨勭幆澧冮厤缃锟?
+ * - 楠岃瘉蹇呴渶鐨勭幆澧冨彉锟?
  *
  * @module Shared/Infrastructure
  */
 
 /**
- * 环境配置对象
+ * 鐜閰嶇疆瀵硅薄
  */
 export const env = {
-  // 应用环境
+  // 搴旂敤鐜
   NODE_ENV: process.env.NODE_ENV || 'development',
   
-  // 数据库配�?
+  // 鏁版嵁搴撻厤锟?
   DATABASE_URL: process.env.DATABASE_URL || '',
   
-  // API 配置
+  // API 閰嶇疆
   API_PORT: parseInt(process.env.API_PORT || '3000', 10),
   API_HOST: process.env.API_HOST || 'localhost',
   
-  // AI 配置
+  // AI 閰嶇疆
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
   
@@ -37,37 +37,37 @@ export const env = {
   
   SILICONFLOW_API_KEY: process.env.SILICONFLOW_API_KEY || '',
   
-  // Redis 配置
+  // Redis 閰嶇疆
   REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
   REDIS_HOST: process.env.REDIS_HOST || 'localhost',
   REDIS_PORT: parseInt(process.env.REDIS_PORT || '6379', 10),
   REDIS_DB: parseInt(process.env.REDIS_DB || '0', 10),
   REDIS_PASSWORD: process.env.REDIS_PASSWORD || '',
   
-  // 日志配置
+  // 鏃ュ織閰嶇疆
   LOG_LEVEL: process.env.LOG_LEVEL || 'info',
   
-  // 调度器配�?
+  // 璋冨害鍣ㄩ厤锟?
   SCHEDULER_ENABLED: process.env.SCHEDULER_ENABLED === 'true',
   SCHEDULER_TIMEZONE: process.env.SCHEDULER_TIMEZONE || 'UTC',
 } as const;
 
 /**
- * 检查是否为开发环�?
+ * 妫€鏌ユ槸鍚︿负寮€鍙戠幆锟?
  */
 export function isDevelopment(): boolean {
   return env.NODE_ENV === 'development';
 }
 
 /**
- * 检查是否为生产环境
+ * 妫€鏌ユ槸鍚︿负鐢熶骇鐜
  */
 export function isProduction(): boolean {
   return env.NODE_ENV === 'production';
 }
 
 /**
- * 获取 Redis 配置
+ * 鑾峰彇 Redis 閰嶇疆
  */
 export function getRedisConfig(): Record<string, any> {
   if (env.REDIS_URL) {
@@ -83,7 +83,7 @@ export function getRedisConfig(): Record<string, any> {
 }
 
 /**
- * 验证必需的环境变�?
+ * 楠岃瘉蹇呴渶鐨勭幆澧冨彉锟?
  */
 export function validateEnv(): void {
   const required = ['DATABASE_URL'] as const;
@@ -96,7 +96,7 @@ export function validateEnv(): void {
 }
 
 /**
- * 获取环境变量，带回退�?
+ * 鑾峰彇鐜鍙橀噺锛屽甫鍥為€€锟?
  */
 export function getEnv<T extends keyof typeof env>(key: T, defaultValue?: string): string {
   const value = env[key];

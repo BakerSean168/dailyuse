@@ -1,6 +1,6 @@
 /**
  * @file StatisticsCacheService.ts
- * @description 统计数据缓存服务，基�?Redis 实现�?
+ * @description 缁熻鏁版嵁缂撳瓨鏈嶅姟锛屽熀锟?Redis 瀹炵幇锟?
  * @date 2025-01-22
  */
 
@@ -10,35 +10,35 @@ import type { DashboardConfigServerDTO, WidgetConfigDTO, DashboardStatisticsClie
 import { getRedisConfig, env } from '../../shared/config/env';
 
 /**
- * 统计数据缓存服务�?
+ * 缁熻鏁版嵁缂撳瓨鏈嶅姟锟?
  *
  * @remarks
- * 负责管理仪表板统计数据的缓存�?
- * - 使用 Redis 作为后端存储�?
- * - 默认 TTL �?5 分钟�?
- * - 提供缓存读取、写入、失效和批量管理功能�?
- * - 具备连接失败重试和错误处理机制�?
+ * 璐熻矗绠＄悊浠〃鏉跨粺璁℃暟鎹殑缂撳瓨锟?
+ * - 浣跨敤 Redis 浣滀负鍚庣瀛樺偍锟?
+ * - 榛樿 TTL 锟?5 鍒嗛挓锟?
+ * - 鎻愪緵缂撳瓨璇诲彇銆佸啓鍏ャ€佸け鏁堝拰鎵归噺绠＄悊鍔熻兘锟?
+ * - 鍏峰杩炴帴澶辫触閲嶈瘯鍜岄敊璇鐞嗘満鍒讹拷?
  *
- * 架构层次：Infrastructure Layer
+ * 鏋舵瀯灞傛锛欼nfrastructure Layer
  */
 export class StatisticsCacheService {
   private readonly redis: Redis;
-  private readonly ttlSeconds = 300; // 5 分钟
+  private readonly ttlSeconds = 300; // 5 鍒嗛挓
   private readonly keyPrefix = 'dashboard:statistics';
 
   constructor(redisUrl?: string) {
-    // 支持两种配置方式�?
-    // 1. REDIS_URL (完整 URL): redis://:password@host:port/db
-    // 2. 分离配置: REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_DB
+    // 鏀寔涓ょ閰嶇疆鏂瑰紡锟?
+    // 1. REDIS_URL (瀹屾暣 URL): redis://:password@host:port/db
+    // 2. 鍒嗙閰嶇疆: REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_DB
     const redisConfig = getRedisConfig();
 
     if (redisUrl || env.REDIS_URL) {
-      // 使用 URL 方式 (ioredis 会自动解�?URL)
+      // 浣跨敤 URL 鏂瑰紡 (ioredis 浼氳嚜鍔ㄨВ锟?URL)
       const url = redisUrl || env.REDIS_URL!;
       this.redis = new Redis(url, {
         retryStrategy: (times: number) => {
           const delay = Math.min(times * 50, 2000);
-          console.warn(`[StatisticsCache] Redis 连接失败�?{delay}ms 后重�?(尝试 ${times} �?`);
+          console.warn(`[StatisticsCache] Redis 杩炴帴澶辫触锟?{delay}ms 鍚庨噸锟?(灏濊瘯 ${times} 锟?`);
           return delay;
         },
         maxRetriesPerRequest: 3,
@@ -46,7 +46,7 @@ export class StatisticsCacheService {
         commandTimeout: 3000,
       });
     } else {
-      // 使用分离配置
+      // 浣跨敤鍒嗙閰嶇疆
       this.redis = new Redis({
         host: env.REDIS_HOST,
         port: env.REDIS_PORT,
@@ -54,7 +54,7 @@ export class StatisticsCacheService {
         db: env.REDIS_DB,
         retryStrategy: (times: number) => {
           const delay = Math.min(times * 50, 2000);
-          console.warn(`[StatisticsCache] Redis 连接失败�?{delay}ms 后重�?(尝试 ${times} �?`);
+          console.warn(`[StatisticsCache] Redis 杩炴帴澶辫触锟?{delay}ms 鍚庨噸锟?(灏濊瘯 ${times} 锟?`);
           return delay;
         },
         maxRetriesPerRequest: 3,
@@ -64,33 +64,33 @@ export class StatisticsCacheService {
     }
 
     this.redis.on('connect', () => {
-      console.log('[StatisticsCache] �?Redis 连接成功');
+      console.log('[StatisticsCache] 锟?Redis 杩炴帴鎴愬姛');
     });
 
     this.redis.on('error', (error) => {
-      console.error('[StatisticsCache] �?Redis 连接错误:', error.message);
+      console.error('[StatisticsCache] 锟?Redis 杩炴帴閿欒:', error.message);
     });
 
     this.redis.on('reconnecting', () => {
-      console.log('[StatisticsCache] 🔄 Redis 重新连接�?..');
+      console.log('[StatisticsCache] 馃攧 Redis 閲嶆柊杩炴帴锟?..');
     });
   }
 
   /**
-   * 生成缓存键�?
+   * 鐢熸垚缂撳瓨閿拷?
    *
-   * @param userId - 用户 ID
-   * @returns Redis 键名
+   * @param userId - 鐢ㄦ埛 ID
+   * @returns Redis 閿悕
    */
   private getCacheKey(userId: string): string {
     return `${this.keyPrefix}:${userId}`;
   }
 
   /**
-   * 获取缓存的统计数据�?
+   * 鑾峰彇缂撳瓨鐨勭粺璁℃暟鎹拷?
    *
-   * @param userId - 用户 ID
-   * @returns {Promise<DashboardStatisticsClientDTO | null>} 统计数据�?null
+   * @param userId - 鐢ㄦ埛 ID
+   * @returns {Promise<DashboardStatisticsClientDTO | null>} 缁熻鏁版嵁锟?null
    */
   async get(userId: string): Promise<DashboardStatisticsClientDTO | null> {
     const key = this.getCacheKey(userId);
@@ -99,26 +99,26 @@ export class StatisticsCacheService {
       const cached = await this.redis.get(key);
 
       if (!cached) {
-        console.log(`[StatisticsCache] 缓存未命�? ${key}`);
+        console.log(`[StatisticsCache] 缂撳瓨鏈懡锟? ${key}`);
         return null;
       }
 
-      console.log(`[StatisticsCache] �?缓存命中: ${key}`);
+      console.log(`[StatisticsCache] 锟?缂撳瓨鍛戒腑: ${key}`);
       return JSON.parse(cached);
     } catch (error) {
       console.error(
-        `[StatisticsCache] 缓存读取失败: ${key}`,
+        `[StatisticsCache] 缂撳瓨璇诲彇澶辫触: ${key}`,
         error instanceof Error ? error.message : String(error),
       );
-      return null; // 降级处理
+      return null; // 闄嶇骇澶勭悊
     }
   }
 
   /**
-   * 设置缓存数据�?
+   * 璁剧疆缂撳瓨鏁版嵁锟?
    *
-   * @param userId - 用户 ID
-   * @param data - 统计数据
+   * @param userId - 鐢ㄦ埛 ID
+   * @param data - 缁熻鏁版嵁
    * @returns {Promise<void>}
    */
   async set(userId: string, data: DashboardStatisticsClientDTO): Promise<void> {
@@ -128,20 +128,20 @@ export class StatisticsCacheService {
       const serialized = JSON.stringify(data);
       await this.redis.setex(key, this.ttlSeconds, serialized);
 
-      console.log(`[StatisticsCache] 缓存已设�? ${key} (TTL: ${this.ttlSeconds}s)`);
+      console.log(`[StatisticsCache] 缂撳瓨宸茶锟? ${key} (TTL: ${this.ttlSeconds}s)`);
     } catch (error) {
       console.error(
-        `[StatisticsCache] 缓存写入失败: ${key}`,
+        `[StatisticsCache] 缂撳瓨鍐欏叆澶辫触: ${key}`,
         error instanceof Error ? error.message : String(error),
       );
-      // 不抛出错误，允许系统继续运行
+      // 涓嶆姏鍑洪敊璇紝鍏佽绯荤粺缁х画杩愯
     }
   }
 
   /**
-   * 删除缓存数据（主动失效）�?
+   * 鍒犻櫎缂撳瓨鏁版嵁锛堜富鍔ㄥけ鏁堬級锟?
    *
-   * @param userId - 用户 ID
+   * @param userId - 鐢ㄦ埛 ID
    * @returns {Promise<void>}
    */
   async invalidate(userId: string): Promise<void> {
@@ -151,40 +151,40 @@ export class StatisticsCacheService {
       const deleted = await this.redis.del(key);
 
       if (deleted > 0) {
-        console.log(`[StatisticsCache] 🗑�? 缓存已失�? ${key}`);
+        console.log(`[StatisticsCache] 馃棏锟? 缂撳瓨宸插け锟? ${key}`);
       } else {
-        console.log(`[StatisticsCache] 缓存不存在，无需失效: ${key}`);
+        console.log(`[StatisticsCache] 缂撳瓨涓嶅瓨鍦紝鏃犻渶澶辨晥: ${key}`);
       }
     } catch (error) {
       console.error(
-        `[StatisticsCache] 缓存失效失败: ${key}`,
+        `[StatisticsCache] 缂撳瓨澶辨晥澶辫触: ${key}`,
         error instanceof Error ? error.message : String(error),
       );
     }
   }
 
   /**
-   * 批量删除缓存（用于管理操作）�?
+   * 鎵归噺鍒犻櫎缂撳瓨锛堢敤浜庣鐞嗘搷浣滐級锟?
    *
-   * @param pattern - 键名匹配模式
-   * @returns {Promise<number>} 删除的键数量
+   * @param pattern - 閿悕鍖归厤妯″紡
+   * @returns {Promise<number>} 鍒犻櫎鐨勯敭鏁伴噺
    */
   async invalidatePattern(pattern: string): Promise<number> {
     try {
       const keys = await this.redis.keys(pattern);
 
       if (keys.length === 0) {
-        console.log(`[StatisticsCache] 没有匹配的缓存键: ${pattern}`);
+        console.log(`[StatisticsCache] 娌℃湁鍖归厤鐨勭紦瀛橀敭: ${pattern}`);
         return 0;
       }
 
       const deleted = await this.redis.del(...keys);
-      console.log(`[StatisticsCache] 🗑�? 批量删除 ${deleted} 个缓存键: ${pattern}`);
+      console.log(`[StatisticsCache] 馃棏锟? 鎵归噺鍒犻櫎 ${deleted} 涓紦瀛橀敭: ${pattern}`);
 
       return deleted;
     } catch (error) {
       console.error(
-        `[StatisticsCache] 批量缓存失效失败: ${pattern}`,
+        `[StatisticsCache] 鎵归噺缂撳瓨澶辨晥澶辫触: ${pattern}`,
         error instanceof Error ? error.message : String(error),
       );
       return 0;
@@ -192,10 +192,10 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 获取缓存的剩�?TTL�?
+   * 鑾峰彇缂撳瓨鐨勫墿锟?TTL锟?
    *
-   * @param userId - 用户 ID
-   * @returns {Promise<number>} 剩余秒数�?2 表示不存在，-1 表示无过期时�?
+   * @param userId - 鐢ㄦ埛 ID
+   * @returns {Promise<number>} 鍓╀綑绉掓暟锟?2 琛ㄧず涓嶅瓨鍦紝-1 琛ㄧず鏃犺繃鏈熸椂锟?
    */
   async getTtl(userId: string): Promise<number> {
     const key = this.getCacheKey(userId);
@@ -204,7 +204,7 @@ export class StatisticsCacheService {
       return await this.redis.ttl(key);
     } catch (error) {
       console.error(
-        `[StatisticsCache] 获取 TTL 失败: ${key}`,
+        `[StatisticsCache] 鑾峰彇 TTL 澶辫触: ${key}`,
         error instanceof Error ? error.message : String(error),
       );
       return -2;
@@ -212,9 +212,9 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 检�?Redis 连接状态�?
+   * 妫€锟?Redis 杩炴帴鐘舵€侊拷?
    *
-   * @returns {Promise<boolean>} 是否连接正常
+   * @returns {Promise<boolean>} 鏄惁杩炴帴姝ｅ父
    */
   async ping(): Promise<boolean> {
     try {
@@ -222,7 +222,7 @@ export class StatisticsCacheService {
       return result === 'PONG';
     } catch (error) {
       console.error(
-        '[StatisticsCache] Redis ping 失败:',
+        '[StatisticsCache] Redis ping 澶辫触:',
         error instanceof Error ? error.message : String(error),
       );
       return false;
@@ -230,19 +230,19 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 关闭 Redis 连接�?
+   * 鍏抽棴 Redis 杩炴帴锟?
    *
    * @returns {Promise<void>}
    */
   async close(): Promise<void> {
-    console.log('[StatisticsCache] 正在关闭 Redis 连接...');
+    console.log('[StatisticsCache] 姝ｅ湪鍏抽棴 Redis 杩炴帴...');
     await this.redis.quit();
   }
 
   /**
-   * 获取缓存统计信息�?
+   * 鑾峰彇缂撳瓨缁熻淇℃伅锟?
    *
-   * @returns {Promise<object>} 统计信息（键数量、内存使用、连接状态）
+   * @returns {Promise<object>} 缁熻淇℃伅锛堥敭鏁伴噺銆佸唴瀛樹娇鐢ㄣ€佽繛鎺ョ姸鎬侊級
    */
   async getStats(): Promise<{
     totalKeys: number;
@@ -262,7 +262,7 @@ export class StatisticsCacheService {
       };
     } catch (error) {
       console.error(
-        '[StatisticsCache] 获取统计信息失败:',
+        '[StatisticsCache] 鑾峰彇缁熻淇℃伅澶辫触:',
         error instanceof Error ? error.message : String(error),
       );
       return {

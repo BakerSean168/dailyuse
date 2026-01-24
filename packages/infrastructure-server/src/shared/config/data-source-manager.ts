@@ -1,10 +1,10 @@
 /**
- * 数据源类型定义
+ * 鏁版嵁婧愮被鍨嬪畾涔?
  */
 export type DataSourceType = 'prisma' | 'sqlite';
 
 /**
- * 仓储数据源配置
+ * 浠撳偍鏁版嵁婧愰厤缃?
  */
 export interface DataSourceConfig {
   type: DataSourceType;
@@ -13,8 +13,8 @@ export interface DataSourceConfig {
 }
 
 /**
- * 全局数据源管理器
- * 用于管理应用使用的数据源类型和实例
+ * 鍏ㄥ眬鏁版嵁婧愮鐞嗗櫒
+ * 鐢ㄤ簬绠＄悊搴旂敤浣跨敤鐨勬暟鎹簮绫诲瀷鍜屽疄渚?
  */
 export class DataSourceManager {
   private static instance: DataSourceManager;

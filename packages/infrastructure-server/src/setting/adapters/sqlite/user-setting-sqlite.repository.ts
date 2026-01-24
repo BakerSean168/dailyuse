@@ -1,6 +1,6 @@
 /**
  * SQLite UserSetting Repository Implementation
- * 用户设置的 SQLite 仓储实现
+ * 鐢ㄦ埛璁剧疆鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,32 +15,32 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO user_settings (
-        uuid, account_uuid, category, key, value, created_at, updated_at
+        uuid, accountUuid, category, key, value, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         value = excluded.value,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       dto.category,
       dto.key,
       JSON.stringify(dto.value),
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
   async saveMany(settings: UserSetting[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO user_settings (
-        uuid, account_uuid, category, key, value, created_at, updated_at
+        uuid, accountUuid, category, key, value, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         value = excluded.value,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     const transaction = this.db.transaction((items: UserSetting[]) => {
@@ -48,12 +48,12 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
         const dto = setting.toPersistenceDTO();
         insertStmt.run(
           dto.uuid,
-          dto.account_uuid,
+          dto.accountUuid,
           dto.category,
           dto.key,
           JSON.stringify(dto.value),
-          dto.created_at,
-          dto.updated_at,
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -69,49 +69,49 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
 
     return UserSetting.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       category: row.category,
       key: row.key,
       value: JSON.parse(row.value),
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findByAccountUuid(accountUuid: string): Promise<UserSetting[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM user_settings WHERE account_uuid = ? ORDER BY category, key ASC`
+      `SELECT * FROM user_settings WHERE accountUuid = ? ORDER BY category, key ASC`
     );
     const rows = stmt.all(accountUuid) as any[];
 
     return rows.map((row) =>
       UserSetting.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         category: row.category,
         key: row.key,
         value: JSON.parse(row.value),
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
 
   async findByAccountUuidAndCategory(accountUuid: string, category: string): Promise<UserSetting[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM user_settings WHERE account_uuid = ? AND category = ? ORDER BY key ASC`
+      `SELECT * FROM user_settings WHERE accountUuid = ? AND category = ? ORDER BY key ASC`
     );
     const rows = stmt.all(accountUuid, category) as any[];
 
     return rows.map((row) =>
       UserSetting.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         category: row.category,
         key: row.key,
         value: JSON.parse(row.value),
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -122,7 +122,7 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
     key: string,
   ): Promise<UserSetting | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM user_settings WHERE account_uuid = ? AND category = ? AND key = ? LIMIT 1`
+      `SELECT * FROM user_settings WHERE accountUuid = ? AND category = ? AND key = ? LIMIT 1`
     );
     const row = stmt.get(accountUuid, category, key) as any;
 
@@ -130,17 +130,17 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
 
     return UserSetting.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       category: row.category,
       key: row.key,
       value: JSON.parse(row.value),
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findByQuery(accountUuid: string, options: UserSettingQueryOptions): Promise<UserSetting[]> {
-    let query = `SELECT * FROM user_settings WHERE account_uuid = ?`;
+    let query = `SELECT * FROM user_settings WHERE accountUuid = ?`;
     const params: any[] = [accountUuid];
 
     if (options.category) {
@@ -166,12 +166,12 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
     return rows.map((row) =>
       UserSetting.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         category: row.category,
         key: row.key,
         value: JSON.parse(row.value),
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -182,14 +182,14 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
   }
 
   async deleteByAccountUuid(accountUuid: string): Promise<number> {
-    const stmt = this.db.prepare(`DELETE FROM user_settings WHERE account_uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM user_settings WHERE accountUuid = ?`);
     const result = stmt.run(accountUuid);
     return result.changes ?? 0;
   }
 
   async deleteByAccountUuidAndCategory(accountUuid: string, category: string): Promise<number> {
     const stmt = this.db.prepare(
-      `DELETE FROM user_settings WHERE account_uuid = ? AND category = ?`
+      `DELETE FROM user_settings WHERE accountUuid = ? AND category = ?`
     );
     const result = stmt.run(accountUuid, category);
     return result.changes ?? 0;
@@ -200,3 +200,4 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
     return stmt.get(uuid) !== undefined;
   }
 }
+

@@ -1,7 +1,7 @@
 /**
  * Authentication Container (Server)
  *
- * 依赖注入容器，管�?Authentication 模块�?repository 实例
+ * 渚濊禆娉ㄥ叆瀹瑰櫒锛岀鐞?Authentication 妯″潡鐨?repository 瀹炰緥
  */
 
 import type { 
@@ -10,7 +10,7 @@ import type {
 } from '@dailyuse/domain-server/authentication';
 
 /**
- * Authentication 模块依赖注入容器
+ * Authentication 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒
  */
 export class AuthContainer {
   private static instance: AuthContainer;
@@ -20,7 +20,7 @@ export class AuthContainer {
   private constructor() {}
 
   /**
-   * 获取容器单例
+   * 鑾峰彇瀹瑰櫒鍗曚緥
    */
   static getInstance(): AuthContainer {
     if (!AuthContainer.instance) {
@@ -30,14 +30,14 @@ export class AuthContainer {
   }
 
   /**
-   * 重置容器（用于测试）
+   * 閲嶇疆瀹瑰櫒锛堢敤浜庢祴璇曪級
    */
   static resetInstance(): void {
     AuthContainer.instance = new AuthContainer();
   }
 
   /**
-   * 注册 CredentialRepository
+   * 娉ㄥ唽 CredentialRepository
    */
   registerCredentialRepository(repository: IAuthCredentialRepository): this {
     this.credentialRepository = repository;
@@ -45,7 +45,7 @@ export class AuthContainer {
   }
 
   /**
-   * 注册 SessionRepository
+   * 娉ㄥ唽 SessionRepository
    */
   registerSessionRepository(repository: IAuthSessionRepository): this {
     this.sessionRepository = repository;
@@ -53,7 +53,7 @@ export class AuthContainer {
   }
 
   /**
-   * 获取 CredentialRepository
+   * 鑾峰彇 CredentialRepository
    */
   getCredentialRepository(): IAuthCredentialRepository {
     if (!this.credentialRepository) {
@@ -63,7 +63,7 @@ export class AuthContainer {
   }
 
   /**
-   * 获取 SessionRepository
+   * 鑾峰彇 SessionRepository
    */
   getSessionRepository(): IAuthSessionRepository {
     if (!this.sessionRepository) {
@@ -73,14 +73,14 @@ export class AuthContainer {
   }
 
   /**
-   * 检查是否已配置
+   * 妫€鏌ユ槸鍚﹀凡閰嶇疆
    */
   isConfigured(): boolean {
     return this.credentialRepository !== null && this.sessionRepository !== null;
   }
 
   /**
-   * 清空所有注册的依赖
+   * 娓呯┖鎵€鏈夋敞鍐岀殑渚濊禆
    */
   clear(): void {
     this.credentialRepository = null;

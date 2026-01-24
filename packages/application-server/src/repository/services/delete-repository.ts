@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Delete Repository
  *
- * 删除仓储
+ * 鍒犻櫎浠撳偍
  */
 
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
@@ -30,3 +30,4 @@ export class DeleteRepository {
     await this.repositoryRepository.save(repository);
   }
 }
+

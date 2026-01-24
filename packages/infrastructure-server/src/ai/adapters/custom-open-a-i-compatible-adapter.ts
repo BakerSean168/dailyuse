@@ -1,12 +1,12 @@
 /**
  * Custom OpenAI Compatible Adapter
- * 自定�?OpenAI 兼容接口适配�?
+ * 鑷畾锟?OpenAI 鍏煎鎺ュ彛閫傞厤锟?
  *
- * 支持：七牛云、Azure OpenAI、其�?OpenAI 兼容 API
+ * 鏀寔锛氫竷鐗涗簯銆丄zure OpenAI銆佸叾锟?OpenAI 鍏煎 API
  *
- * 依赖�?
- * - ai: Vercel AI SDK 核心�?
- * - @ai-sdk/openai: OpenAI provider (支持自定�?baseURL)
+ * 渚濊禆锟?
+ * - ai: Vercel AI SDK 鏍稿績锟?
+ * - @ai-sdk/openai: OpenAI provider (鏀寔鑷畾锟?baseURL)
  */
 
 import { createOpenAI } from '@ai-sdk/openai';
@@ -22,28 +22,28 @@ import {
 import { AIGenerationTimeoutError, AIProviderError } from '../errors/a-i-errors';
 
 /**
- * 自定�?Provider 配置
+ * 鑷畾锟?Provider 閰嶇疆
  */
 export interface CustomProviderConfig {
-  /** 提供商名称（用于日志和错误信息） */
+  /** 鎻愪緵鍟嗗悕绉帮紙鐢ㄤ簬鏃ュ織鍜岄敊璇俊鎭級 */
   providerName: string;
-  /** API 基础地址 */
+  /** API 鍩虹鍦板潃 */
   baseUrl: string;
   /** API Key */
   apiKey: string;
-  /** 默认模型 ID */
+  /** 榛樿妯″瀷 ID */
   defaultModel: string;
-  /** 超时时间（毫秒，默认 30000�?*/
+  /** 瓒呮椂鏃堕棿锛堟绉掞紝榛樿 30000锟?*/
   timeoutMs?: number;
 }
 
 /**
- * Custom OpenAI Compatible Adapter 实现
+ * Custom OpenAI Compatible Adapter 瀹炵幇
  *
- * 用于连接 OpenAI 兼容的第三方服务�?
- * - 七牛�?AI: https://openai.qiniu.com/v1
+ * 鐢ㄤ簬杩炴帴 OpenAI 鍏煎鐨勭涓夋柟鏈嶅姟锟?
+ * - 涓冪墰锟?AI: https://openai.qiniu.com/v1
  * - Azure OpenAI
- * - 其他兼容 API
+ * - 鍏朵粬鍏煎 API
  */
 export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   private readonly openai: ReturnType<typeof createOpenAI>;
@@ -52,15 +52,15 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   private readonly timeoutMs: number;
 
   constructor(config: CustomProviderConfig) {
-    // 使用 CUSTOM 作为基础 provider 类型
+    // 浣跨敤 CUSTOM 浣滀负鍩虹 provider 绫诲瀷
     super(AIProvider.CUSTOM, config.defaultModel as any);
 
     this.providerName = config.providerName;
     this.modelId = config.defaultModel;
     this.timeoutMs = config.timeoutMs ?? 30000;
 
-    // 创建自定�?OpenAI 兼容 provider
-    // AI SDK 5.x 默认使用 OpenAI Responses API，对于第三方兼容服务也适用
+    // 鍒涘缓鑷畾锟?OpenAI 鍏煎 provider
+    // AI SDK 5.x 榛樿浣跨敤 OpenAI Responses API锛屽浜庣涓夋柟鍏煎鏈嶅姟涔熼€傜敤
     this.openai = createOpenAI({
       apiKey: config.apiKey,
       baseURL: config.baseUrl,
@@ -68,20 +68,20 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 一次性生成文本（带超时和 JSON 解析�?
+   * 涓€娆℃€х敓鎴愭枃鏈紙甯﹁秴鏃跺拰 JSON 瑙ｆ瀽锟?
    */
   async generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>> {
     try {
       const fullPrompt = this.buildPrompt(request);
 
-      // 创建超时 Promise
+      // 鍒涘缓瓒呮椂 Promise
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
           reject(new AIGenerationTimeoutError(this.timeoutMs / 1000));
         }, this.timeoutMs);
       });
 
-      // AI 生成 Promise - 使用 .chat() 方法调用 Chat Completions API
+      // AI 鐢熸垚 Promise - 浣跨敤 .chat() 鏂规硶璋冪敤 Chat Completions API
       const generationPromise = generateText({
         model: this.openai.chat(this.modelId),
         prompt: fullPrompt,
@@ -89,10 +89,10 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
         maxOutputTokens: request.maxTokens,
       });
 
-      // 竞速：生成 vs 超时
+      // 绔為€燂細鐢熸垚 vs 瓒呮椂
       const result = await Promise.race([generationPromise, timeoutPromise]);
 
-      // 提取 token 使用统计
+      // 鎻愬彇 token 浣跨敤缁熻
       const usage = result.usage as any;
       const tokenUsage: TokenUsageServerDTO = {
         promptTokens: usage?.promptTokens ?? 0,
@@ -101,7 +101,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
           usage?.totalTokens ?? (usage?.promptTokens ?? 0) + (usage?.completionTokens ?? 0),
       };
 
-      // 尝试解析 JSON
+      // 灏濊瘯瑙ｆ瀽 JSON
       const parsedContent = this.tryParseJSON<T>(result.text);
 
       return {
@@ -124,7 +124,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 流式生成文本（AsyncGenerator�?
+   * 娴佸紡鐢熸垚鏂囨湰锛圓syncGenerator锟?
    */
   async *streamText(request: AIGenerationRequest): AsyncGenerator<AIStreamChunk, void, unknown> {
     try {
@@ -148,7 +148,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
         };
       }
 
-      // 等待最终结果以获取 token 统计
+      // 绛夊緟鏈€缁堢粨鏋滀互鑾峰彇 token 缁熻
       const finalResult = await result;
       const usage = (await finalResult.usage) as any;
 
@@ -175,7 +175,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 健康检�?
+   * 鍋ュ悍妫€锟?
    */
   async healthCheck(): Promise<boolean> {
     try {
@@ -191,21 +191,21 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 获取提供商名�?
+   * 鑾峰彇鎻愪緵鍟嗗悕锟?
    */
   getProviderName(): string {
     return this.providerName;
   }
 
   /**
-   * 获取模型 ID
+   * 鑾峰彇妯″瀷 ID
    */
   getModelId(): string {
     return this.modelId;
   }
 
   /**
-   * 构建完整 Prompt
+   * 鏋勫缓瀹屾暣 Prompt
    */
   private buildPrompt(request: AIGenerationRequest): string {
     const parts: string[] = [];
@@ -224,13 +224,13 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 尝试解析 JSON（支�?Markdown 代码块）
+   * 灏濊瘯瑙ｆ瀽 JSON锛堟敮锟?Markdown 浠ｇ爜鍧楋級
    */
   private tryParseJSON<T>(text: string): T | null {
     try {
       return JSON.parse(text) as T;
     } catch {
-      // 尝试提取 Markdown 代码块中�?JSON
+      // 灏濊瘯鎻愬彇 Markdown 浠ｇ爜鍧椾腑锟?JSON
       const jsonMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
       if (jsonMatch && jsonMatch[1]) {
         try {

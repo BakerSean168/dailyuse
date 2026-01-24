@@ -1,6 +1,6 @@
 /**
  * SQLite GoalStatistics Repository Implementation
- * 目标统计的 SQLite 仓储实现
+ * 鐩爣缁熻鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -12,7 +12,7 @@ export class SqliteGoalStatisticsRepository implements IGoalStatisticsRepository
 
   async findByAccountUuid(accountUuid: string): Promise<GoalStatistics | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM goal_statistics WHERE account_uuid = ? LIMIT 1`
+      `SELECT * FROM goal_statistics WHERE accountUuid = ? LIMIT 1`
     );
     const row = stmt.get(accountUuid) as any;
 
@@ -20,12 +20,12 @@ export class SqliteGoalStatisticsRepository implements IGoalStatisticsRepository
 
     return GoalStatistics.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row\.accountUuid,
       total_count: row.total_count,
       active_count: row.active_count,
       completed_count: row.completed_count,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row\.createdAt),
+      updatedAt: new Date(row\.updatedAt),
     });
   }
 
@@ -34,39 +34,41 @@ export class SqliteGoalStatisticsRepository implements IGoalStatisticsRepository
 
     const stmt = this.db.prepare(`
       INSERT INTO goal_statistics (
-        uuid, account_uuid, total_count, active_count, completed_count,
-        created_at, updated_at
+        uuid, accountUuid, total_count, active_count, completed_count,
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(account_uuid) DO UPDATE SET
+      ON CONFLICT(accountUuid) DO UPDATE SET
         total_count = excluded.total_count,
         active_count = excluded.active_count,
         completed_count = excluded.completed_count,
-        updated_at = excluded.updated_at
+        updatedAt = excluded\.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto\.accountUuid,
       dto.total_count,
       dto.active_count,
       dto.completed_count,
-      dto.created_at,
-      dto.updated_at,
+      dto\.createdAt,
+      dto\.updatedAt,
     );
 
     return statistics;
   }
 
   async delete(accountUuid: string): Promise<boolean> {
-    const stmt = this.db.prepare(`DELETE FROM goal_statistics WHERE account_uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM goal_statistics WHERE accountUuid = ?`);
     const result = stmt.run(accountUuid);
     return (result.changes ?? 0) > 0;
   }
 
   async exists(accountUuid: string): Promise<boolean> {
     const stmt = this.db.prepare(
-      `SELECT 1 FROM goal_statistics WHERE account_uuid = ? LIMIT 1`
+      `SELECT 1 FROM goal_statistics WHERE accountUuid = ? LIMIT 1`
     );
     return stmt.get(accountUuid) !== undefined;
   }
 }
+
+

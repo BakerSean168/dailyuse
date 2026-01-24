@@ -1,7 +1,7 @@
-/**
+﻿/**
  * List Repositories
  *
- * 获取用户的所有仓储
+ * 鑾峰彇鐢ㄦ埛鐨勬墍鏈変粨鍌?
  */
 
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
@@ -46,3 +46,4 @@ export class ListRepositories {
     return { repositories: repositories.map((r) => r.toClientDTO()) };
   }
 }
+

@@ -1,16 +1,16 @@
-/**
+﻿/**
  * SchedulerBootstrap
  *
- * 新的调度器初始化代码
- * 使用 scheduler-server 包和 BreeScheduler 引擎
+ * Initializes and manages the scheduler
+ * Uses scheduler-server package and BreeScheduler
  *
- * 替代现有�?ScheduleBootstrap �?CronJobManager
+ * Replaces the existing ScheduleBootstrap and CronJobManager
  *
  * @architecture
- * - 依赖 @dailyuse/scheduler-server（新增包�?
- * - 依赖 ScheduleTaskExecutorAdapter（ITaskHandler 实现�?
- * - 消除�?Infrastructure 层调度器的直接依�?
- * - 完全符合分层架构
+ * - Depends on @dailyuse/scheduler-server (new package)
+ * - Depends on ScheduleTaskExecutorAdapter (implements TaskHandler)
+ * - Removes direct dependency on Infrastructure layer scheduler
+ * - Fully complies with layered architecture
  */
 
 import { createLogger } from '@dailyuse/utils';
@@ -24,13 +24,13 @@ import { ScheduleMonitor } from './monitoring/ScheduleMonitor';
 const logger = createLogger('SchedulerBootstrap');
 
 /**
- * 调度器启动器
- * 
- * 职责�?
- * - 初始�?BreeScheduler（或其他调度引擎�?
- * - 从数据库加载所有活跃任�?
- * - 注册任务到调度器
- * - 启动调度�?
+ * Scheduler Startup Engine
+ *
+ * Responsibilities:
+ * - Initialize BreeScheduler (or other scheduling engines)
+ * - Load all active recurring tasks from database
+ * - Register tasks to scheduler
+ * - Start the scheduler
  */
 export class SchedulerBootstrap {
   private static instance: SchedulerBootstrap;
@@ -40,15 +40,15 @@ export class SchedulerBootstrap {
   private initialized = false;
 
   private constructor(prisma: PrismaClient) {
-    // 初始化依赖
+    // Initialize dependencies
     this.repository = new ScheduleTaskPrismaRepository(prisma);
     const monitor = ScheduleMonitor.getInstance();
     const executor = new ScheduleTaskExecutor(this.repository, monitor);
     this.handler = new ScheduleTaskExecutorAdapter(executor);
 
-    // 使用 BreeScheduler（推荐）
+    // Use BreeScheduler (recommended)
     this.scheduler = new BreeScheduler({
-      root: false, // 禁用文件系统 Worker
+      root: false, // Disable file system Worker
     });
   }
 
@@ -63,45 +63,45 @@ export class SchedulerBootstrap {
   }
 
   /**
-   * 初始化调度器
+   * Initialize Scheduler
    *
-   * 执行步骤�?
-   * 1. 从数据库加载所有启用的活跃任务
-   * 2. 为每个任务注册到 BreeScheduler
-   * 3. 启动调度�?
+   * Execution Steps:
+   * 1. Load all enabled recurring tasks from database
+   * 2. Register each task to BreeScheduler
+   * 3. Start the scheduler
    *
-   * @throws 初始化失败时抛出错误
+   * @throws Error when initialization fails
    */
   public async initialize(): Promise<void> {
     if (this.initialized) {
-      logger.warn('⚠️ 调度器已经初始化过了');
+      logger.warn(' Scheduler already initialized');
       return;
     }
 
     try {
-      logger.info('🚀 开始初始化调度�?..');
+      logger.info('Initializing scheduler...');
 
-      // 步骤 1: 从数据库加载所有启用的活跃任务
+      // Step 1: Load and register all tasks
       await this.loadAndRegisterTasks();
 
-      // 步骤 2: 启动调度�?
+      // Step 2: Start the scheduler
       await this.scheduler.start();
 
       this.initialized = true;
-      logger.info('�?调度器初始化完成');
+      logger.info(' Scheduler initialized successfully');
     } catch (error) {
-      logger.error('�?调度器初始化失败', { error });
+      logger.error('Failed to initialize scheduler', { error });
       throw error;
     }
   }
 
   /**
-   * 从数据库加载任务并注册到调度�?
+   * Load recurring tasks from database and register them to scheduler
    */
   private async loadAndRegisterTasks(): Promise<void> {
     try {
       const tasks = await this.repository.findEnabled();
-      logger.info('📋 加载任务', { count: tasks.length });
+      logger.info('Loading recurring tasks', { count: tasks.length });
 
       let registered = 0;
 
@@ -114,41 +114,43 @@ export class SchedulerBootstrap {
           await this.scheduler.register(task.uuid, task.schedule.cronExpression, this.handler);
           registered++;
         } catch (error) {
-          logger.error(`�?注册任务失败: ${task.uuid}`, { error });
+          logger.error(`Failed to register task ${task.uuid}`, { error });
         }
       }
 
-      logger.info(`�?已注�?${registered}/${tasks.length} 个任务`);
+      logger.info(`Successfully registered ${registered}/${tasks.length} tasks`);
     } catch (error) {
-      logger.error('�?加载任务失败', { error });
+      logger.error('Failed to load tasks', { error });
       throw error;
     }
   }
 
   /**
-   * 停止调度�?
+   * Shutdown scheduler
    */
   public async shutdown(): Promise<void> {
     try {
       await this.scheduler.stop();
-      logger.info('✅ 调度器已停止');
+      logger.info(' Scheduler stopped');
     } catch (error) {
-      logger.error('❌ 停止调度器失败', { error });
+      logger.error('Error stopping scheduler', { error });
       throw error;
     }
   }
 
   /**
-   * 获取调度器实�?
+   * Get scheduler instance
    */
   public getScheduler(): IScheduler {
     return this.scheduler;
   }
 
   /**
-   * 检查是否已初始�?
+   * Check if scheduler is initialized
    */
   public isInitialized(): boolean {
     return this.initialized;
   }
 }
+
+

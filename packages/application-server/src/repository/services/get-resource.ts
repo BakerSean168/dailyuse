@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Get Resource
  *
- * 获取资源详情
+ * 鑾峰彇璧勬簮璇︽儏
  */
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
@@ -33,4 +33,5 @@ export class GetResource {
     return { resource: resource ? resource.toClientDTO() : null };
   }
 }
+
 

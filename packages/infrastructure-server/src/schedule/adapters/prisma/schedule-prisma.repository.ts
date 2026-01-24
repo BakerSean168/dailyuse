@@ -21,10 +21,10 @@ export class SchedulePrismaRepository implements IScheduleRepository {
     return Schedule.fromServerDTO({
       uuid: data.uuid,
       accountUuid: data.accountUuid,
-      title: data.title,
+      name: data.name,
       description: data.description,
-      startTime: Number(data.startTime), // BigInt â†?number (milliseconds)
-      endTime: Number(data.endTime), // BigInt â†?number (milliseconds)
+      startTime: Number(data.startTime), // BigInt éˆ?number (milliseconds)
+      endTime: Number(data.endTime), // BigInt éˆ?number (milliseconds)
       duration: data.duration,
       hasConflict: data.hasConflict,
       conflictingSchedules: data.conflictingSchedules
@@ -33,8 +33,8 @@ export class SchedulePrismaRepository implements IScheduleRepository {
       priority: data.priority,
       location: data.location,
       attendees: data.attendees ? JSON.parse(data.attendees) : undefined,
-      createdAt: data.createdAt.getTime(), // Date â†?number (milliseconds)
-      updatedAt: data.updatedAt.getTime(), // Date â†?number (milliseconds)
+      createdAt: data.createdAt.getTime(), // Date éˆ?number (milliseconds)
+      updatedAt: data.updatedAt.getTime(), // Date éˆ?number (milliseconds)
     });
   }
 
@@ -49,8 +49,8 @@ export class SchedulePrismaRepository implements IScheduleRepository {
       accountUuid: dto.accountUuid,
       title: dto.title,
       description: dto.description ?? null,
-      startTime: BigInt(dto.startTime), // number â†?BigInt (milliseconds)
-      endTime: BigInt(dto.endTime), // number â†?BigInt (milliseconds)
+      startTime: BigInt(dto.startTime), // number éˆ?BigInt (milliseconds)
+      endTime: BigInt(dto.endTime), // number éˆ?BigInt (milliseconds)
       duration: dto.duration,
       hasConflict: dto.hasConflict,
       conflictingSchedules: dto.conflictingSchedules && dto.conflictingSchedules.length > 0
@@ -59,8 +59,8 @@ export class SchedulePrismaRepository implements IScheduleRepository {
       priority: dto.priority ?? null,
       location: dto.location ?? null,
       attendees: dto.attendees ? JSON.stringify(dto.attendees) : null,
-      createdAt: new Date(dto.createdAt), // number â†?Date
-      updatedAt: new Date(dto.updatedAt), // number â†?Date
+      createdAt: new Date(dto.createdAt), // number éˆ?Date
+      updatedAt: new Date(dto.updatedAt), // number éˆ?Date
     };
   }
 
@@ -144,10 +144,11 @@ export class SchedulePrismaRepository implements IScheduleRepository {
     fn: (repo: IScheduleRepository) => Promise<T>
   ): Promise<T> {
     return this.prisma.$transaction(async (tx) => {
-      const txRepo = new PrismaScheduleRepository(tx as PrismaClient);
+      const txRepo = new SchedulePrismaRepository(tx as PrismaClient);
       return fn(txRepo);
     });
   }
 }
 
-export default PrismaScheduleRepository;
+export default SchedulePrismaRepository;
+

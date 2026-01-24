@@ -1,6 +1,6 @@
 /**
  * SQLite KnowledgeGenerationTask Repository Implementation
- * 知识生成任务的 SQLite 仓储实现
+ * 鐭ヨ瘑鐢熸垚浠诲姟鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,18 +15,18 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
 
     const stmt = this.db.prepare(`
       INSERT INTO knowledge_generation_tasks (
-        uuid, account_uuid, title, description, status, created_at, updated_at
+        uuid, accountUuid, title, description, status, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       dto.title,
       dto.description || null,
       dto.status,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
 
     return task;
@@ -42,30 +42,30 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
 
     return KnowledgeGenerationTask.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       title: row.title,
       description: row.description,
       status: row.status,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findByAccountUuid(accountUuid: string): Promise<KnowledgeGenerationTask[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM knowledge_generation_tasks WHERE account_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM knowledge_generation_tasks WHERE accountUuid = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(accountUuid) as any[];
 
     return rows.map((row) =>
       KnowledgeGenerationTask.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         title: row.title,
         description: row.description,
         status: row.status,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -75,7 +75,7 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
 
     const stmt = this.db.prepare(`
       UPDATE knowledge_generation_tasks
-      SET title = ?, description = ?, status = ?, updated_at = ?
+      SET title = ?, description = ?, status = ?, updatedAt = ?
       WHERE uuid = ?
     `);
 
@@ -83,7 +83,7 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
       dto.title,
       dto.description || null,
       dto.status,
-      dto.updated_at,
+      dto.updatedAt,
       dto.uuid,
     );
 
@@ -95,3 +95,4 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
     stmt.run(uuid);
   }
 }
+

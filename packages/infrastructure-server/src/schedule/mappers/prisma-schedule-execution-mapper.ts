@@ -1,10 +1,10 @@
 /**
  * Prisma Schedule Execution Mapper
- * 负责 Prisma 模型�?ScheduleExecution 实体之间的数据转�?
+ * 璐熻矗 Prisma 妯″瀷涓?ScheduleExecution 瀹炰綋涔嬮棿鐨勬暟鎹浆鎹?
  *
- * 职责�?
- * - �?Prisma scheduleExecution 模型转换�?ScheduleExecution 实体
- * - �?ScheduleExecution 实体转换�?Prisma 持久化数�?
+ * 鑱岃矗锛?
+ * - 灏?Prisma scheduleExecution 妯″瀷杞崲涓?ScheduleExecution 瀹炰綋
+ * - 灏?ScheduleExecution 瀹炰綋杞崲涓?Prisma 鎸佷箙鍖栨暟鎹?
  */
 
 import type { scheduleExecution as PrismaScheduleExecution } from '@prisma/client';
@@ -13,11 +13,11 @@ import type { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 /**
  * PrismaScheduleExecutionMapper
- * 处理 ScheduleExecution 实体�?Prisma 模型的转�?
+ * 澶勭悊 ScheduleExecution 瀹炰綋涓?Prisma 妯″瀷鐨勮浆鎹?
  */
 export class PrismaScheduleExecutionMapper {
   /**
-   * �?Prisma 模型转换�?ScheduleExecution 实体
+   * 浠?Prisma 妯″瀷杞崲涓?ScheduleExecution 瀹炰綋
    */
   public static toDomain(data: PrismaScheduleExecution): ScheduleExecution {
     return ScheduleExecution.fromPersistenceDTO({
@@ -34,7 +34,7 @@ export class PrismaScheduleExecutionMapper {
   }
 
   /**
-   * �?ScheduleExecution 实体转换�?Prisma 持久化数�?
+   * 灏?ScheduleExecution 瀹炰綋杞崲涓?Prisma 鎸佷箙鍖栨暟鎹?
    */
   public static toPersistence(execution: ScheduleExecution): Omit<PrismaScheduleExecution, 'createdAt'> {
     const dto = execution.toPersistenceDTO();
@@ -52,7 +52,7 @@ export class PrismaScheduleExecutionMapper {
   }
 
   /**
-   * 转换�?Prisma create 输入数据（包�?createdAt�?
+   * 杞崲涓?Prisma create 杈撳叆鏁版嵁锛堝寘鍚?createdAt锛?
    */
   public static toCreateInput(execution: ScheduleExecution): any {
     const persistence = this.toPersistence(execution);
@@ -65,7 +65,7 @@ export class PrismaScheduleExecutionMapper {
   }
 
   /**
-   * 转换�?Prisma update 输入数据
+   * 杞崲涓?Prisma update 杈撳叆鏁版嵁
    */
   public static toUpdateInput(execution: ScheduleExecution): any {
     return this.toPersistence(execution);

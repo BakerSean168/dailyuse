@@ -1,6 +1,6 @@
 /**
  * SQLite Resource Repository Implementation
- * Resource 实体的 SQLite 仓储实现
+ * Resource 瀹炰綋鐨?SQLite 浠撳偍瀹炵�?
  */
 
 import type Database from 'better-sqlite3';
@@ -32,8 +32,8 @@ export class SqliteResourceRepository implements IResourceRepository {
 
     stmt.run(
       dto.uuid,
-      dto.repository_uuid,
-      dto.folder_uuid || null,
+      dto.repositoryUuid,
+      dto.folderUuid || null,
       dto.name,
       dto.type,
       dto.path,
@@ -42,8 +42,8 @@ export class SqliteResourceRepository implements IResourceRepository {
       dto.metadata ? JSON.stringify(dto.metadata) : null,
       dto.stats ? JSON.stringify(dto.stats) : null,
       dto.status,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -57,8 +57,8 @@ export class SqliteResourceRepository implements IResourceRepository {
 
     return Resource.fromPersistenceDTO({
       uuid: row.uuid,
-      repository_uuid: row.repository_uuid,
-      folder_uuid: row.folder_uuid,
+      repositoryUuid: row.repository_uuid,
+      folderUuid: row.folder_uuid,
       name: row.name,
       type: row.type,
       path: row.path,
@@ -67,8 +67,8 @@ export class SqliteResourceRepository implements IResourceRepository {
       metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
       stats: row.stats ? JSON.parse(row.stats) : undefined,
       status: row.status,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
     });
   }
 
@@ -95,8 +95,8 @@ export class SqliteResourceRepository implements IResourceRepository {
         metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
         stats: row.stats ? JSON.parse(row.stats) : undefined,
         status: row.status,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at),
       }),
     );
   }
@@ -110,8 +110,8 @@ export class SqliteResourceRepository implements IResourceRepository {
     return rows.map((row) =>
       Resource.fromPersistenceDTO({
         uuid: row.uuid,
-        repository_uuid: row.repository_uuid,
-        folder_uuid: row.folder_uuid,
+        repositoryUuid: row.repository_uuid,
+        folderUuid: row.folder_uuid,
         name: row.name,
         type: row.type,
         path: row.path,
@@ -120,8 +120,8 @@ export class SqliteResourceRepository implements IResourceRepository {
         metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
         stats: row.stats ? JSON.parse(row.stats) : undefined,
         status: row.status,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at),
       }),
     );
   }
@@ -130,16 +130,16 @@ export class SqliteResourceRepository implements IResourceRepository {
     const stmt = this.db.prepare(
       `SELECT r.* FROM resources r
        JOIN repositories repo ON r.repository_uuid = repo.uuid
-       WHERE repo.account_uuid = ?
-       ORDER BY r.created_at DESC`,
+       WHERE repo.accountUuid = ?
+       ORDER BY r.createdAt DESC`,
     );
     const rows = stmt.all(accountUuid) as any[];
 
     return rows.map((row) =>
       Resource.fromPersistenceDTO({
         uuid: row.uuid,
-        repository_uuid: row.repository_uuid,
-        folder_uuid: row.folder_uuid,
+        repositoryUuid: row.repository_uuid,
+        folderUuid: row.folder_uuid,
         name: row.name,
         type: row.type,
         path: row.path,
@@ -148,8 +148,8 @@ export class SqliteResourceRepository implements IResourceRepository {
         metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
         stats: row.stats ? JSON.parse(row.stats) : undefined,
         status: row.status,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at),
       }),
     );
   }
@@ -166,3 +166,4 @@ export class SqliteResourceRepository implements IResourceRepository {
     stmt.run(uuid);
   }
 }
+

@@ -120,23 +120,23 @@ export class TaskDependencyService {
       };
     }
 
-    // 检查是否有任务未找到
+    // Check if some predecessor tasks are not found
     const notFound = predecessorTasks.some((task) => task === null);
     if (notFound) {
       return {
         status: 'BLOCKED' as DependencyStatus,
         isBlocked: true,
-        blockingReason: '部分前置任务不存在',
+        blockingReason: null,
       };
     }
 
-    // 过滤掉 null 值
+    // Filter out null values
     const tasks = predecessorTasks.filter(Boolean) as TaskTemplate[];
 
-    // 检查是否有前置任务被阻塞
-    // TODO: 任务完成状态应该检查 TaskInstance 而不是 TaskTemplate
-    // TaskTemplate 只有管理状态 (ACTIVE/PAUSED/ARCHIVED/DELETED)
-    // TaskInstance 才有执行状态 (PENDING/IN_PROGRESS/COMPLETED 等)
+    // Check if any predecessor task is blocked
+    // TODO: Task completion status should check TaskInstance instead of TaskTemplate
+    // TaskTemplate only has management state (ACTIVE/PAUSED/ARCHIVED/DELETED)
+    // TaskInstance has execution state (PENDING/IN_PROGRESS/COMPLETED etc)
     const anyBlocked = tasks.some((task: any) => task.isBlocked === true);
     if (anyBlocked) {
       const blockedTasks = tasks

@@ -1,9 +1,9 @@
 /**
  * OpenAI Adapter
- * OpenAI 提供商适配器（使用 Vercel AI SDK�?
+ * OpenAI 鎻愪緵鍟嗛€傞厤鍣紙浣跨敤 Vercel AI SDK锟?
  *
- * 依赖�?
- * - ai: Vercel AI SDK 核心�?
+ * 渚濊禆锟?
+ * - ai: Vercel AI SDK 鏍稿績锟?
  * - @ai-sdk/openai: OpenAI provider
  */
 
@@ -20,7 +20,7 @@ import {
 import { AIGenerationTimeoutError, AIProviderError } from '../errors/a-i-errors';
 
 /**
- * OpenAI Adapter 实现
+ * OpenAI Adapter 瀹炵幇
  */
 export class OpenAIAdapter extends BaseAIAdapter {
   private readonly openai: ReturnType<typeof createOpenAI>;
@@ -33,31 +33,31 @@ export class OpenAIAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 一次性生成文本（带超时和 JSON 解析�?
+   * 涓€娆℃€х敓鎴愭枃鏈紙甯﹁秴鏃跺拰 JSON 瑙ｆ瀽锟?
    */
   async generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>> {
     try {
-      // 构建完整 Prompt
+      // 鏋勫缓瀹屾暣 Prompt
       const fullPrompt = this.buildPrompt(request);
 
-      // 创建超时 Promise
+      // 鍒涘缓瓒呮椂 Promise
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
           reject(new AIGenerationTimeoutError(BaseAIAdapter.TIMEOUT_MS / 1000));
         }, BaseAIAdapter.TIMEOUT_MS);
       });
 
-      // AI 生成 Promise
+      // AI 鐢熸垚 Promise
       const generationPromise = generateText({
         model: this.openai(this.defaultModel),
         prompt: fullPrompt,
         temperature: request.temperature ?? 0.7,
       });
 
-      // 竞速：生成 vs 超时
+      // 绔為€燂細鐢熸垚 vs 瓒呮椂
       const result = await Promise.race([generationPromise, timeoutPromise]);
 
-      // 提取 token 使用统计（AI SDK v5 字段名）
+      // 鎻愬彇 token 浣跨敤缁熻锛圓I SDK v5 瀛楁鍚嶏級
       const usage = result.usage as any; // Type compatibility workaround
       const tokenUsage: TokenUsageServerDTO = {
         promptTokens: usage?.promptTokens ?? 0,
@@ -65,7 +65,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
         totalTokens: usage?.totalTokens ?? (usage?.promptTokens ?? 0) + (usage?.completionTokens ?? 0),
       };
 
-      // 尝试解析 JSON
+      // 灏濊瘯瑙ｆ瀽 JSON
       const parsedContent = this.tryParseJSON<T>(result.text);
 
       return {
@@ -88,7 +88,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 流式生成文本（AsyncGenerator�?
+   * 娴佸紡鐢熸垚鏂囨湰锛圓syncGenerator锟?
    */
   async *streamText(request: AIGenerationRequest): AsyncGenerator<AIStreamChunk, void, unknown> {
     try {
@@ -102,7 +102,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
 
       let fullText = '';
 
-      // 流式输出每个文本�?
+      // 娴佸紡杈撳嚭姣忎釜鏂囨湰锟?
       for await (const textPart of result.textStream) {
         fullText += textPart;
         yield {
@@ -112,7 +112,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
         };
       }
 
-      // 等待最终结果以获取 token 统计
+      // 绛夊緟鏈€缁堢粨鏋滀互鑾峰彇 token 缁熻
       const finalResult = await result;
       const usage = (await finalResult.usage) as any; // Type compatibility workaround
 
@@ -122,7 +122,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
         totalTokens: usage?.totalTokens ?? (usage?.promptTokens ?? 0) + (usage?.completionTokens ?? 0),
       };
 
-      // 发送最后一个块（标记完�?+ token 统计�?
+      // 鍙戦€佹渶鍚庝竴涓潡锛堟爣璁板畬锟?+ token 缁熻锟?
       yield {
         delta: '',
         fullText,
@@ -139,7 +139,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 健康检查（使用轻量模型测试�?
+   * 鍋ュ悍妫€鏌ワ紙浣跨敤杞婚噺妯″瀷娴嬭瘯锟?
    */
   async healthCheck(): Promise<boolean> {
     try {
@@ -154,7 +154,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 构建完整 Prompt（系�?+ 上下�?+ 用户�?
+   * 鏋勫缓瀹屾暣 Prompt锛堢郴锟?+ 涓婁笅锟?+ 鐢ㄦ埛锟?
    */
   private buildPrompt(request: AIGenerationRequest): string {
     const parts: string[] = [];
@@ -173,14 +173,14 @@ export class OpenAIAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 尝试解析 JSON（支�?Markdown 代码块）
+   * 灏濊瘯瑙ｆ瀽 JSON锛堟敮锟?Markdown 浠ｇ爜鍧楋級
    */
   private tryParseJSON<T>(text: string): T | null {
     try {
-      // 尝试直接解析
+      // 灏濊瘯鐩存帴瑙ｆ瀽
       return JSON.parse(text) as T;
     } catch {
-      // 尝试提取 Markdown 代码块中�?JSON
+      // 灏濊瘯鎻愬彇 Markdown 浠ｇ爜鍧椾腑锟?JSON
       const jsonMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
       if (jsonMatch && jsonMatch[1]) {
         try {

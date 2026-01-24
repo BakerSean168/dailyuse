@@ -1,7 +1,7 @@
 /**
  * Memory Provider Initializer
  *
- * 为内存数据库提供者初始化所有仓储实现（用于测试）
+ * 涓哄唴瀛樻暟鎹簱鎻愪緵鑰呭垵濮嬪寲鎵€鏈変粨鍌ㄥ疄鐜帮紙鐢ㄤ簬娴嬭瘯锛?
  */
 
 import type {
@@ -22,35 +22,35 @@ import type {
 } from '../database-provider-factory';
 
 /**
- * Memory 提供者初始化器
+ * Memory 鎻愪緵鑰呭垵濮嬪寲鍣?
  *
- * 职责：
- * - 创建所有 Memory 仓储实现
- * - 将实现注册到容器中
- * - 主要用于单元测试
+ * 鑱岃矗锛?
+ * - 鍒涘缓鎵€鏈?Memory 浠撳偍瀹炵幇
+ * - 灏嗗疄鐜版敞鍐屽埌瀹瑰櫒涓?
+ * - 涓昏鐢ㄤ簬鍗曞厓娴嬭瘯
  */
 export class MemoryProviderInitializer implements IProviderInitializer {
   async initialize(context: IProviderInitContext): Promise<void> {
     const { container } = context;
 
-    // 创建所有 Memory 仓储实现
+    // 鍒涘缓鎵€鏈?Memory 浠撳偍瀹炵幇
     const repositoryRepository: IRepositoryRepository = new RepositoryMemoryRepository();
     const resourceRepository: IResourceRepository = new ResourceMemoryRepository();
     const folderRepository: IFolderRepository = new FolderMemoryRepository();
     const statisticsRepository: IRepositoryStatisticsRepository =
       new RepositoryStatisticsMemoryRepository();
 
-    // 注册到容器
+    // 娉ㄥ唽鍒板鍣?
     container.registerRepositoryRepository(repositoryRepository);
     container.registerResourceRepository(resourceRepository);
     container.registerFolderRepository(folderRepository);
     container.registerRepositoryStatisticsRepository(statisticsRepository);
 
-    console.log('✅ Memory provider initialized successfully (testing mode)');
+    console.log('鉁?Memory provider initialized successfully (testing mode)');
   }
 
   async cleanup(): Promise<void> {
-    console.log('✅ Memory provider cleaned up');
+    console.log('鉁?Memory provider cleaned up');
   }
 
   async healthCheck(): Promise<boolean> {

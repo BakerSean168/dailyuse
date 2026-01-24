@@ -1,6 +1,6 @@
 /**
  * SQLite AIUsageQuota Repository Implementation
- * AI 使用配额的 SQLite 仓储实现
+ * AI 浣跨敤閰嶉鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -12,24 +12,24 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
   async save(quota: AIUsageQuotaServerDTO): Promise<void> {
     const stmt = this.db.prepare(`
       INSERT INTO ai_usage_quotas (
-        uuid, account_uuid, monthly_limit, used_count, reset_date,
-        created_at, updated_at
+        uuid, accountUuid, monthly_limit, used_count, reset_date,
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(account_uuid) DO UPDATE SET
+      ON CONFLICT(accountUuid) DO UPDATE SET
         monthly_limit = excluded.monthly_limit,
         used_count = excluded.used_count,
         reset_date = excluded.reset_date,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       quota.uuid,
-      quota.account_uuid,
+      quota.accountUuid,
       quota.monthly_limit,
       quota.used_count,
       quota.reset_date,
-      new Date(quota.created_at).getTime(),
-      new Date(quota.updated_at).getTime(),
+      new Date(quota.createdAt).getTime(),
+      new Date(quota.updatedAt).getTime(),
     );
   }
 
@@ -44,7 +44,7 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
 
   async findByAccountUuid(accountUuid: string): Promise<AIUsageQuotaServerDTO | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_usage_quotas WHERE account_uuid = ? LIMIT 1`
+      `SELECT * FROM ai_usage_quotas WHERE accountUuid = ? LIMIT 1`
     );
     const row = stmt.get(accountUuid) as any;
 
@@ -59,8 +59,8 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO ai_usage_quotas (
-        uuid, account_uuid, monthly_limit, used_count, reset_date,
-        created_at, updated_at
+        uuid, accountUuid, monthly_limit, used_count, reset_date,
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
@@ -72,8 +72,8 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
       monthly_limit: 1000,
       used_count: 0,
       reset_date: now.getTime(),
-      created_at: now,
-      updated_at: now,
+      createdAt: now,
+      updatedAt: now,
     };
   }
 
@@ -84,7 +84,7 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
 
   async exists(accountUuid: string): Promise<boolean> {
     const stmt = this.db.prepare(
-      `SELECT 1 FROM ai_usage_quotas WHERE account_uuid = ? LIMIT 1`
+      `SELECT 1 FROM ai_usage_quotas WHERE accountUuid = ? LIMIT 1`
     );
     return stmt.get(accountUuid) !== undefined;
   }
@@ -92,12 +92,12 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
   private rowToDTO(row: any): AIUsageQuotaServerDTO {
     return {
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       monthly_limit: row.monthly_limit,
       used_count: row.used_count,
       reset_date: row.reset_date,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     };
   }
 
@@ -105,3 +105,4 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 }
+

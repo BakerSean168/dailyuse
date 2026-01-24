@@ -1,6 +1,6 @@
 /**
  * SQLite AIProviderConfig Repository Implementation
- * AI 服务商配置的 SQLite 仓储实现
+ * AI 鏈嶅姟鍟嗛厤缃殑 SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -12,26 +12,26 @@ export class SqliteAIProviderConfigRepository implements IAIProviderConfigReposi
   async save(config: AIProviderConfigServerDTO): Promise<void> {
     const stmt = this.db.prepare(`
       INSERT INTO ai_provider_configs (
-        uuid, account_uuid, provider_name, api_key, is_default, is_active,
-        created_at, updated_at
+        uuid, accountUuid, provider_name, api_key, is_default, is_active,
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         provider_name = excluded.provider_name,
         api_key = excluded.api_key,
         is_default = excluded.is_default,
         is_active = excluded.is_active,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       config.uuid,
-      config.account_uuid,
+      config.accountUuid,
       config.provider_name,
       config.api_key,
       config.is_default ? 1 : 0,
       config.is_active ? 1 : 0,
-      new Date(config.created_at).getTime(),
-      new Date(config.updated_at).getTime(),
+      new Date(config.createdAt).getTime(),
+      new Date(config.updatedAt).getTime(),
     );
   }
 
@@ -48,7 +48,7 @@ export class SqliteAIProviderConfigRepository implements IAIProviderConfigReposi
 
   async findByAccountUuid(accountUuid: string): Promise<AIProviderConfigServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_provider_configs WHERE account_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM ai_provider_configs WHERE accountUuid = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(accountUuid) as any[];
 
@@ -57,7 +57,7 @@ export class SqliteAIProviderConfigRepository implements IAIProviderConfigReposi
 
   async findDefaultByAccountUuid(accountUuid: string): Promise<AIProviderConfigServerDTO | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_provider_configs WHERE account_uuid = ? AND is_default = 1 LIMIT 1`
+      `SELECT * FROM ai_provider_configs WHERE accountUuid = ? AND is_default = 1 LIMIT 1`
     );
     const row = stmt.get(accountUuid) as any;
 
@@ -71,7 +71,7 @@ export class SqliteAIProviderConfigRepository implements IAIProviderConfigReposi
     name: string,
   ): Promise<AIProviderConfigServerDTO | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_provider_configs WHERE account_uuid = ? AND provider_name = ? LIMIT 1`
+      `SELECT * FROM ai_provider_configs WHERE accountUuid = ? AND provider_name = ? LIMIT 1`
     );
     const row = stmt.get(accountUuid, name) as any;
 
@@ -88,13 +88,14 @@ export class SqliteAIProviderConfigRepository implements IAIProviderConfigReposi
   private rowToDTO(row: any): AIProviderConfigServerDTO {
     return {
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       provider_name: row.provider_name,
       api_key: row.api_key,
       is_default: row.is_default === 1,
       is_active: row.is_active === 1,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     };
   }
 }
+

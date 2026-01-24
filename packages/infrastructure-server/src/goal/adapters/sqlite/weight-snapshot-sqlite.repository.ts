@@ -1,6 +1,6 @@
 /**
  * SQLite Weight Snapshot Repository Implementation
- * 权重快照的 SQLite 仓储实现
+ * 鏉冮噸蹇収鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,7 +15,7 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
 
     const stmt = this.db.prepare(`
       INSERT INTO weight_snapshots (
-        uuid, goal_uuid, kr_uuid, weight, snapshot_time, created_at, updated_at
+        uuid, goal_uuid, key_result_uuid, weight, snapshot_time, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         weight = excluded.weight,
@@ -24,19 +24,19 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
 
     stmt.run(
       dto.uuid,
-      dto.goal_uuid,
-      dto.kr_uuid,
-      dto.weight,
-      dto.snapshot_time,
-      dto.created_at,
-      dto.updated_at,
+      dto.goalUuid,
+      dto.keyResultUuid,
+      dto.newWeight,
+      dto.snapshotTime,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
   async saveMany(snapshots: KeyResultWeightSnapshot[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO weight_snapshots (
-        uuid, goal_uuid, kr_uuid, weight, snapshot_time, created_at, updated_at
+        uuid, goal_uuid, key_result_uuid, weight, snapshot_time, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         weight = excluded.weight,
@@ -48,12 +48,12 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
         const dto = snapshot.toPersistenceDTO();
         insertStmt.run(
           dto.uuid,
-          dto.goal_uuid,
-          dto.kr_uuid,
+          dto.goalUuid,
+          dto.keyResultUuid,
           dto.weight,
-          dto.snapshot_time,
-          dto.created_at,
-          dto.updated_at,
+          dto.snapshotTime,
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -86,12 +86,12 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
     const offset = (page - 1) * pageSize;
 
     const countStmt = this.db.prepare(
-      `SELECT COUNT(*) as total FROM weight_snapshots WHERE kr_uuid = ?`
+      `SELECT COUNT(*) as total FROM weight_snapshots WHERE key_result_uuid = ?`
     );
     const countResult = countStmt.get(krUuid) as any;
 
     const stmt = this.db.prepare(
-      `SELECT * FROM weight_snapshots WHERE kr_uuid = ? ORDER BY snapshot_time DESC LIMIT ? OFFSET ?`
+      `SELECT * FROM weight_snapshots WHERE key_result_uuid = ? ORDER BY snapshot_time DESC LIMIT ? OFFSET ?`
     );
     const rows = stmt.all(krUuid, pageSize, offset) as any[];
 
@@ -112,12 +112,12 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
     const offset = (page - 1) * pageSize;
 
     const countStmt = this.db.prepare(
-      `SELECT COUNT(*) as total FROM weight_snapshots WHERE snapshot_time >= ? AND snapshot_time <= ?`
+      `SELECT COUNT(*) as total FROM weight_snapshots WHERE snapshotTime >= ? AND snapshotTime <= ?`
     );
     const countResult = countStmt.get(startTime, endTime) as any;
 
     const stmt = this.db.prepare(
-      `SELECT * FROM weight_snapshots WHERE snapshot_time >= ? AND snapshot_time <= ? ORDER BY snapshot_time ASC LIMIT ? OFFSET ?`
+      `SELECT * FROM weight_snapshots WHERE snapshotTime >= ? AND snapshotTime <= ? ORDER BY snapshotTime ASC LIMIT ? OFFSET ?`
     );
     const rows = stmt.all(startTime, endTime, pageSize, offset) as any[];
 
@@ -149,14 +149,17 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   private rowToSnapshot(row: any): KeyResultWeightSnapshot {
+    // 从蛇形的行对象属性转换为驼峰的 DTO 对象
     return KeyResultWeightSnapshot.fromPersistenceDTO({
       uuid: row.uuid,
       goal_uuid: row.goal_uuid,
-      kr_uuid: row.kr_uuid,
+      kr_uuid: row.key_result_uuid,
       weight: row.weight,
       snapshot_time: row.snapshot_time,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
     });
   }
 }
+
+

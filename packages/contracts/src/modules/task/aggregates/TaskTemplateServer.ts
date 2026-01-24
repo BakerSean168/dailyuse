@@ -32,7 +32,7 @@ import { ImportanceLevel } from '../../../shared/importance';
 export interface TaskTemplateClientDTO {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string | null;
   taskType: TaskType;
   timeConfig: TaskTimeConfigClientDTO;
@@ -75,7 +75,7 @@ export interface TaskTemplateClientDTO {
 export interface TaskTemplateServerDTO {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string | null;
   taskType: TaskType; // 'ONE_TIME' | 'RECURRING'
   
@@ -135,7 +135,7 @@ export interface TaskTemplateServerDTO {
 export interface TaskTemplatePersistenceDTO {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string | null;
   taskType: string; // 'ONE_TIME' | 'RECURRING'
 
@@ -207,7 +207,7 @@ export interface TaskTemplatePersistenceDTO {
 export interface TaskTemplateServer {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string | null;
   taskType: TaskType;
   timeConfig: TaskTimeConfigServer | null; // null for ONE_TIME tasks

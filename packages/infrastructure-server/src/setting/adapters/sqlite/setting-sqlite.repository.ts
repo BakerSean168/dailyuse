@@ -1,6 +1,6 @@
 /**
  * SQLite Setting Repository Implementation
- * 应用设置的 SQLite 仓储实现
+ * 搴旂敤璁剧疆鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,12 +15,12 @@ export class SqliteSettingRepository implements ISettingRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO settings (
-        uuid, category, key, value, is_default, created_at, updated_at
+        uuid, category, key, value, is_default, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         value = excluded.value,
         is_default = excluded.is_default,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
@@ -29,20 +29,20 @@ export class SqliteSettingRepository implements ISettingRepository {
       dto.key,
       JSON.stringify(dto.value),
       dto.is_default ? 1 : 0,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
   async saveMany(settings: Setting[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO settings (
-        uuid, category, key, value, is_default, created_at, updated_at
+        uuid, category, key, value, is_default, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         value = excluded.value,
         is_default = excluded.is_default,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     const transaction = this.db.transaction((items: Setting[]) => {
@@ -54,8 +54,8 @@ export class SqliteSettingRepository implements ISettingRepository {
           dto.key,
           JSON.stringify(dto.value),
           dto.is_default ? 1 : 0,
-          dto.created_at,
-          dto.updated_at,
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -75,8 +75,8 @@ export class SqliteSettingRepository implements ISettingRepository {
       key: row.key,
       value: JSON.parse(row.value),
       is_default: row.is_default === 1,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -93,8 +93,8 @@ export class SqliteSettingRepository implements ISettingRepository {
         key: row.key,
         value: JSON.parse(row.value),
         is_default: row.is_default === 1,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -113,8 +113,8 @@ export class SqliteSettingRepository implements ISettingRepository {
       key: row.key,
       value: JSON.parse(row.value),
       is_default: row.is_default === 1,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -154,8 +154,8 @@ export class SqliteSettingRepository implements ISettingRepository {
         key: row.key,
         value: JSON.parse(row.value),
         is_default: row.is_default === 1,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -176,3 +176,4 @@ export class SqliteSettingRepository implements ISettingRepository {
     return stmt.get(uuid) !== undefined;
   }
 }
+

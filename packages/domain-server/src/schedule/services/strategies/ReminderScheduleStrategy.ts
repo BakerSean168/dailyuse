@@ -310,20 +310,18 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
   }
 
   /**
-   * 生成任务描述
+   * Generate task description
+   * Display text moved to frontend i18n
    */
   private generateTaskDescription(
     reminder: ReminderTemplateServerDTO,
     trigger: TriggerConfigServerDTO,
   ): string {
-    const typeText = reminder.type === 'ONE_TIME' ? '一次性提醒' : '循环提醒';
-    const triggerText = trigger.type === 'FIXED_TIME' ? '固定时间触发' : '间隔触发';
-
-    return `${typeText}\n触发方式: ${triggerText}\n通知渠道: ${reminder.notificationConfig.channels.join(', ')}`;
+    return '';
   }
 
   /**
-   * 更新调度配置（当 Reminder 的配置变更时）
+   * Update schedule configuration (when Reminder configuration changes)
    */
   updateSchedule(
     existingSchedule: ScheduleStrategyOutput,

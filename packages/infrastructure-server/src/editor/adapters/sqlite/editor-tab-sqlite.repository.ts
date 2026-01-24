@@ -1,6 +1,6 @@
 /**
  * SQLite EditorTab Repository Implementation
- * 编辑器标签的 SQLite 仓储实现
+ * 缂栬緫鍣ㄦ爣绛剧殑 SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -23,8 +23,8 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
       tab_index: row.tab_index,
       is_pinned: row.is_pinned === 1,
       is_dirty: row.is_dirty === 1,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -42,15 +42,15 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
         tab_index: row.tab_index,
         is_pinned: row.is_pinned === 1,
         is_dirty: row.is_dirty === 1,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
 
   async findByDocumentUuid(documentUuid: string): Promise<EditorTab[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE document_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM editor_tabs WHERE document_uuid = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(documentUuid) as any[];
 
@@ -62,8 +62,8 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
         tab_index: row.tab_index,
         is_pinned: row.is_pinned === 1,
         is_dirty: row.is_dirty === 1,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -83,8 +83,8 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
       tab_index: row.tab_index,
       is_pinned: row.is_pinned === 1,
       is_dirty: row.is_dirty === 1,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -99,7 +99,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async findDirtyByGroupUuid(groupUuid: string): Promise<EditorTab[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE group_uuid = ? AND is_dirty = 1 ORDER BY updated_at DESC`
+      `SELECT * FROM editor_tabs WHERE group_uuid = ? AND is_dirty = 1 ORDER BY updatedAt DESC`
     );
     const rows = stmt.all(groupUuid) as any[];
 
@@ -108,7 +108,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async findRecentlyAccessed(groupUuid: string, limit: number): Promise<EditorTab[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE group_uuid = ? ORDER BY updated_at DESC LIMIT ?`
+      `SELECT * FROM editor_tabs WHERE group_uuid = ? ORDER BY updatedAt DESC LIMIT ?`
     );
     const rows = stmt.all(groupUuid, limit) as any[];
 
@@ -121,13 +121,13 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
     const stmt = this.db.prepare(`
       INSERT INTO editor_tabs (
         uuid, group_uuid, document_uuid, tab_index, is_pinned, is_dirty,
-        created_at, updated_at
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         tab_index = excluded.tab_index,
         is_pinned = excluded.is_pinned,
         is_dirty = excluded.is_dirty,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
@@ -137,8 +137,8 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
       dto.tab_index,
       dto.is_pinned ? 1 : 0,
       dto.is_dirty ? 1 : 0,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -151,13 +151,13 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
     const insertStmt = this.db.prepare(`
       INSERT INTO editor_tabs (
         uuid, group_uuid, document_uuid, tab_index, is_pinned, is_dirty,
-        created_at, updated_at
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         tab_index = excluded.tab_index,
         is_pinned = excluded.is_pinned,
         is_dirty = excluded.is_dirty,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     const transaction = this.db.transaction((items: EditorTab[]) => {
@@ -170,8 +170,8 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
           dto.tab_index,
           dto.is_pinned ? 1 : 0,
           dto.is_dirty ? 1 : 0,
-          dto.created_at,
-          dto.updated_at,
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -192,8 +192,9 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
       tab_index: row.tab_index,
       is_pinned: row.is_pinned === 1,
       is_dirty: row.is_dirty === 1,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 }
+

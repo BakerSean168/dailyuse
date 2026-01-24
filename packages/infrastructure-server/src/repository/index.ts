@@ -5,7 +5,7 @@
  * Supports multiple database providers (Prisma, SQLite, Memory).
  */
 
-// Container (改进版 - 支持多提供者)
+// Container (鏀硅繘鐗?- 鏀寔澶氭彁渚涜€?
 export { RepositoryContainer } from './repository.container';
 
 // Ports (Interfaces)
@@ -14,7 +14,7 @@ export { type IRepositoryRepository } from './ports/repository-repository.port';
 export { type IRepositoryStatisticsRepository } from './ports/repository-statistics-repository.port';
 export { type IResourceRepository } from './ports/resource-repository.port';
 
-// Database Provider Factory (核心新增)
+// Database Provider Factory (鏍稿績鏂板)
 export {
   DatabaseProviderFactory,
   DatabaseProvider,

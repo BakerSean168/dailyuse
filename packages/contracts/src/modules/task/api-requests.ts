@@ -40,7 +40,7 @@ import type { BatchOperationResponseDTO } from '../../shared/dtos';
  */
 export interface CreateTaskTemplateRequest {
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string;
   taskType: TaskType;
   timeConfig: TaskTimeConfigServerDTO;
@@ -59,7 +59,7 @@ export interface CreateTaskTemplateRequest {
  * Story 2.3: urgency 已移除 - Priority 由后端根据 importance 和 dueDate 自动计算
  */
 export interface UpdateTaskTemplateRequest {
-  title?: string;
+  name?: string;
   description?: string;
   timeConfig?: TaskTimeConfigServerDTO;
   recurrenceRule?: RecurrenceRuleServerDTO;
@@ -84,7 +84,7 @@ export interface QueryTaskTemplatesRequest {
   goalUuid?: string;
   tags?: string[];
   keyword?: string;
-  sortBy?: 'createdAt' | 'updatedAt' | 'title';
+  sortBy?: 'createdAt' | 'updatedAt' | 'name';
   sortOrder?: 'asc' | 'desc';
   page?: number;
   pageSize?: number;
@@ -134,7 +134,7 @@ export interface TaskTemplatesResponse {
 export interface CreateTaskInstanceRequest {
   templateUuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string;
   scheduledStartTime: number;
   scheduledEndTime: number;
@@ -146,7 +146,7 @@ export interface CreateTaskInstanceRequest {
  * 更新任务实例请求
  */
 export interface UpdateTaskInstanceRequest {
-  title?: string;
+  name?: string;
   description?: string;
   scheduledStartTime?: number;
   scheduledEndTime?: number;

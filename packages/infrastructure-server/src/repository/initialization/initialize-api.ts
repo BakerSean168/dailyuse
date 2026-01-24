@@ -1,8 +1,8 @@
 /**
- * API 初始化脚本
+ * API 鍒濆鍖栬剼鏈?
  *
- * 使用 DatabaseProviderFactory 初始化 Prisma 提供者
- * 应该在应用启动时调用
+ * 浣跨敤 DatabaseProviderFactory 鍒濆鍖?Prisma 鎻愪緵鑰?
+ * 搴旇鍦ㄥ簲鐢ㄥ惎鍔ㄦ椂璋冪敤
  */
 
 import {
@@ -14,67 +14,67 @@ import {
 import { prisma } from '../../shared/config/prisma';
 
 /**
- * 初始化 API 仓储层
+ * 鍒濆鍖?API 浠撳偍灞?
  *
- * @returns 初始化后的提供者实例
- * @throws 如果初始化失败
+ * @returns 鍒濆鍖栧悗鐨勬彁渚涜€呭疄渚?
+ * @throws 濡傛灉鍒濆鍖栧け璐?
  */
 export async function initializeApiRepositories(): Promise<IProviderInitializer> {
   const container = RepositoryContainer.getInstance();
 
-  console.log('🚀 Initializing API repositories with Prisma...');
+  console.log('馃殌 Initializing API repositories with Prisma...');
 
   try {
     const provider = await initializePrismaProvider(prisma, container as any);
     
-    // 验证初始化
+    // 楠岃瘉鍒濆鍖?
     if (!(container as any).isInitialized?.()) {
       throw new Error('Container not fully initialized');
     }
 
-    console.log('✅ API repositories initialized successfully');
+    console.log('鉁?API repositories initialized successfully');
     return provider;
   } catch (error) {
-    console.error('❌ Failed to initialize API repositories:', error);
+    console.error('鉂?Failed to initialize API repositories:', error);
     throw error;
   }
 }
 
 /**
- * 清理 API 仓储层
+ * 娓呯悊 API 浠撳偍灞?
  *
- * @param provider 提供者实例
+ * @param provider 鎻愪緵鑰呭疄渚?
  */
 export async function cleanupApiRepositories(provider: IProviderInitializer): Promise<void> {
-  console.log('🧹 Cleaning up API repositories...');
+  console.log('馃Ч Cleaning up API repositories...');
   
   try {
     await provider.cleanup();
     (RepositoryContainer.getInstance() as any).reset?.();
-    console.log('✅ API repositories cleaned up');
+    console.log('鉁?API repositories cleaned up');
   } catch (error) {
-    console.error('❌ Error during cleanup:', error);
+    console.error('鉂?Error during cleanup:', error);
   }
 }
 
 /**
- * 检查 API 仓储健康状态
+ * 妫€鏌?API 浠撳偍鍋ュ悍鐘舵€?
  */
 export async function healthCheckApiRepositories(): Promise<boolean> {
   const container = RepositoryContainer.getInstance();
   
   try {
     if (!(container as any).isInitialized?.()) {
-      console.warn('⚠️  Repositories not initialized');
+      console.warn('鈿狅笍  Repositories not initialized');
       return false;
     }
 
-    // 简单健康检查：尝试访问一个仓储
+    // 绠€鍗曞仴搴锋鏌ワ細灏濊瘯璁块棶涓€涓粨鍌?
     const repoRepo = container.getRepositoryRepository();
-    console.log('✅ API repositories health check passed');
+    console.log('鉁?API repositories health check passed');
     return true;
   } catch (error) {
-    console.error('❌ API repositories health check failed:', error);
+    console.error('鉂?API repositories health check failed:', error);
     return false;
   }
 }

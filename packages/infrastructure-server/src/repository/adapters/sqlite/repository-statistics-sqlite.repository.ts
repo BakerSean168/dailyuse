@@ -1,6 +1,6 @@
 /**
  * SQLite Repository Statistics Repository Implementation
- * RepositoryStatistics 聚合根的 SQLite 仓储实现
+ * RepositoryStatistics 鑱氬悎鏍圭殑 SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,9 +15,9 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
 
     const stmt = this.db.prepare(`
       INSERT INTO repository_statistics (
-        uuid, account_uuid, total_repositories, active_repositories,
+        uuid, accountUuid, total_repositories, active_repositories,
         archived_repositories, total_resources, total_folders, total_tags,
-        total_storage_bytes, last_updated_at, created_at, updated_at
+        total_storage_bytes, last_updatedAt, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         total_repositories = excluded.total_repositories,
@@ -27,13 +27,13 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
         total_folders = excluded.total_folders,
         total_tags = excluded.total_tags,
         total_storage_bytes = excluded.total_storage_bytes,
-        last_updated_at = excluded.last_updated_at,
-        updated_at = excluded.updated_at
+        last_updatedAt = excluded.last_updatedAt,
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       dto.total_repositories,
       dto.active_repositories,
       dto.archived_repositories,
@@ -41,15 +41,15 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
       dto.total_folders,
       dto.total_tags,
       dto.total_storage_bytes,
-      dto.last_updated_at,
-      dto.created_at,
-      dto.updated_at,
+      dto.last_updatedAt,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
   async findByAccountUuid(accountUuid: string): Promise<RepositoryStatistics | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM repository_statistics WHERE account_uuid = ? LIMIT 1`,
+      `SELECT * FROM repository_statistics WHERE accountUuid = ? LIMIT 1`,
     );
     const row = stmt.get(accountUuid) as any;
 
@@ -57,7 +57,7 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
 
     return RepositoryStatistics.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       total_repositories: row.total_repositories,
       active_repositories: row.active_repositories,
       archived_repositories: row.archived_repositories,
@@ -65,9 +65,9 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
       total_folders: row.total_folders,
       total_tags: row.total_tags,
       total_storage_bytes: row.total_storage_bytes,
-      last_updated_at: row.last_updated_at,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
+      last_updated_at: row.last_updatedAt,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
     });
   }
 
@@ -81,7 +81,7 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
 
     return RepositoryStatistics.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       total_repositories: row.total_repositories,
       active_repositories: row.active_repositories,
       archived_repositories: row.archived_repositories,
@@ -89,9 +89,9 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
       total_folders: row.total_folders,
       total_tags: row.total_tags,
       total_storage_bytes: row.total_storage_bytes,
-      last_updated_at: row.last_updated_at,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
+      last_updated_at: row.last_updatedAt,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
     });
   }
 
@@ -100,14 +100,14 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
 
     const placeholders = accountUuids.map(() => '?').join(',');
     const stmt = this.db.prepare(
-      `SELECT * FROM repository_statistics WHERE account_uuid IN (${placeholders}) ORDER BY created_at DESC`,
+      `SELECT * FROM repository_statistics WHERE accountUuid IN (${placeholders}) ORDER BY createdAt DESC`,
     );
     const rows = stmt.all(...accountUuids) as any[];
 
     return rows.map((row) =>
       RepositoryStatistics.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         total_repositories: row.total_repositories,
         active_repositories: row.active_repositories,
         archived_repositories: row.archived_repositories,
@@ -115,15 +115,15 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
         total_folders: row.total_folders,
         total_tags: row.total_tags,
         total_storage_bytes: row.total_storage_bytes,
-        last_updated_at: row.last_updated_at,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
+        last_updated_at: row.last_updatedAt,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
       }),
     );
   }
 
   async findAll(options?: { skip?: number; take?: number }): Promise<RepositoryStatistics[]> {
-    let query = `SELECT * FROM repository_statistics ORDER BY created_at DESC`;
+    let query = `SELECT * FROM repository_statistics ORDER BY createdAt DESC`;
 
     if (options?.skip) {
       query += ` OFFSET ${options.skip}`;
@@ -138,7 +138,7 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
     return rows.map((row) =>
       RepositoryStatistics.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         total_repositories: row.total_repositories,
         active_repositories: row.active_repositories,
         archived_repositories: row.archived_repositories,
@@ -146,9 +146,9 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
         total_folders: row.total_folders,
         total_tags: row.total_tags,
         total_storage_bytes: row.total_storage_bytes,
-        last_updated_at: row.last_updated_at,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
+        last_updated_at: row.last_updatedAt,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
       }),
     );
   }
@@ -164,3 +164,4 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
     stmt.run(uuid);
   }
 }
+

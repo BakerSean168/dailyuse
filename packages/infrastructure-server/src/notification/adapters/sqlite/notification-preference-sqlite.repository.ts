@@ -1,6 +1,6 @@
 /**
  * SQLite NotificationPreference Repository Implementation
- * 通知偏好的 SQLite 仓储实现
+ * 閫氱煡鍋忓ソ鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,28 +15,28 @@ export class SqliteNotificationPreferenceRepository implements INotificationPref
 
     const stmt = this.db.prepare(`
       INSERT INTO notification_preferences (
-        uuid, account_uuid, enable_all, enable_email, enable_push,
-        quiet_hours_start, quiet_hours_end, created_at, updated_at
+        uuid, accountUuid, enable_all, enable_email, enable_push,
+        quiet_hours_start, quiet_hours_end, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(account_uuid) DO UPDATE SET
+      ON CONFLICT(accountUuid) DO UPDATE SET
         enable_all = excluded.enable_all,
         enable_email = excluded.enable_email,
         enable_push = excluded.enable_push,
         quiet_hours_start = excluded.quiet_hours_start,
         quiet_hours_end = excluded.quiet_hours_end,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       dto.enable_all ? 1 : 0,
       dto.enable_email ? 1 : 0,
       dto.enable_push ? 1 : 0,
       dto.quiet_hours_start || null,
       dto.quiet_hours_end || null,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -48,20 +48,20 @@ export class SqliteNotificationPreferenceRepository implements INotificationPref
 
     return NotificationPreference.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       enable_all: row.enable_all === 1,
       enable_email: row.enable_email === 1,
       enable_push: row.enable_push === 1,
       quiet_hours_start: row.quiet_hours_start,
       quiet_hours_end: row.quiet_hours_end,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findByAccountUuid(accountUuid: string): Promise<NotificationPreference | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM notification_preferences WHERE account_uuid = ? LIMIT 1`
+      `SELECT * FROM notification_preferences WHERE accountUuid = ? LIMIT 1`
     );
     const row = stmt.get(accountUuid) as any;
 
@@ -69,14 +69,14 @@ export class SqliteNotificationPreferenceRepository implements INotificationPref
 
     return NotificationPreference.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       enable_all: row.enable_all === 1,
       enable_email: row.enable_email === 1,
       enable_push: row.enable_push === 1,
       quiet_hours_start: row.quiet_hours_start,
       quiet_hours_end: row.quiet_hours_end,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -92,8 +92,9 @@ export class SqliteNotificationPreferenceRepository implements INotificationPref
 
   async existsByAccountUuid(accountUuid: string): Promise<boolean> {
     const stmt = this.db.prepare(
-      `SELECT 1 FROM notification_preferences WHERE account_uuid = ? LIMIT 1`
+      `SELECT 1 FROM notification_preferences WHERE accountUuid = ? LIMIT 1`
     );
     return stmt.get(accountUuid) !== undefined;
   }
 }
+

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Get Folder Tree
  *
- * 获取文件夹树（指定仓储）
+ * 鑾峰彇鏂囦欢澶规爲锛堟寚瀹氫粨鍌級
  */
 
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';
@@ -50,3 +50,4 @@ export class GetFolderTree {
     return { folders: tree.map((node) => convertTreeNode(node)) };
   }
 }
+

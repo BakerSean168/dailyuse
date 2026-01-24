@@ -1,6 +1,6 @@
 /**
  * SQLite ReminderTemplate Repository Implementation
- * 提醒模板的 SQLite 仓储实现
+ * 鎻愰啋妯℃澘鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,27 +15,27 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
 
     const stmt = this.db.prepare(`
       INSERT INTO reminder_templates (
-        uuid, account_uuid, group_uuid, title, content, status,
-        trigger_time, created_at, updated_at
+        uuid, accountUuid, group_uuid, title, content, status,
+        trigger_time, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         title = excluded.title,
         content = excluded.content,
         status = excluded.status,
         trigger_time = excluded.trigger_time,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       dto.group_uuid,
       dto.title,
       dto.content,
       dto.status,
       dto.trigger_time,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -47,14 +47,14 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
 
     return ReminderTemplate.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       group_uuid: row.group_uuid,
       title: row.title,
       content: row.content,
       status: row.status,
       trigger_time: row.trigger_time,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -66,42 +66,42 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
     },
   ): Promise<ReminderTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM reminder_templates WHERE account_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM reminder_templates WHERE accountUuid = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(accountUuid) as any[];
 
     return rows.map((row) =>
       ReminderTemplate.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         group_uuid: row.group_uuid,
         title: row.title,
         content: row.content,
         status: row.status,
         trigger_time: row.trigger_time,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
 
   async findByGroupUuid(groupUuid: string): Promise<ReminderTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM reminder_templates WHERE group_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM reminder_templates WHERE group_uuid = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(groupUuid) as any[];
 
     return rows.map((row) =>
       ReminderTemplate.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         group_uuid: row.group_uuid,
         title: row.title,
         content: row.content,
         status: row.status,
         trigger_time: row.trigger_time,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -113,7 +113,7 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
 
   async softDelete(uuid: string): Promise<void> {
     const stmt = this.db.prepare(
-      `UPDATE reminder_templates SET status = 'DELETED', updated_at = ? WHERE uuid = ?`
+      `UPDATE reminder_templates SET status = 'DELETED', updatedAt = ? WHERE uuid = ?`
     );
     stmt.run(Date.now(), uuid);
   }
@@ -123,3 +123,4 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
     return stmt.get(uuid) !== undefined;
   }
 }
+

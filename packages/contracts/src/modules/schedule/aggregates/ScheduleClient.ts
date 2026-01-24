@@ -24,9 +24,9 @@ export interface ScheduleClientDTO {
   readonly accountUuid: string;
 
   /**
-   * Schedule title/summary (e.g., "Team Meeting", "Dentist Appointment")
+   * Schedule name/summary (e.g., "Team Meeting", "Dentist Appointment")
    */
-  readonly title: string;
+  readonly name: string;
 
   /**
    * Optional detailed description
@@ -93,7 +93,7 @@ export interface ScheduleClient {
   // 基础属性
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description: string | null;
   startTime: number;
   endTime: number;

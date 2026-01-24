@@ -39,7 +39,7 @@ import type { ReminderTemplateClientDTO } from './ReminderTemplateClient';
 export interface ReminderTemplateServerDTO {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string | null;
   type: ReminderType;
   trigger: TriggerConfigServerDTO;
@@ -75,7 +75,7 @@ export interface ReminderTemplateServerDTO {
 export interface ReminderTemplatePersistenceDTO {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string | null;
   type: ReminderType;
   trigger: string; // JSON string

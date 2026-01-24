@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Move Folder
  *
- * 移动文件夹
+ * 绉诲姩鏂囦欢澶?
  */
 
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';
@@ -71,3 +71,4 @@ export class MoveFolder {
     return { folder: folder.toClientDTO() };
   }
 }
+

@@ -1,6 +1,6 @@
 /**
  * SQLite TaskDependency Repository Implementation
- * 任务依赖关系的 SQLite 仓储实现
+ * 浠诲姟渚濊禆鍏崇郴鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -17,8 +17,8 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
   async create(data: CreateTaskDependencyRequest): Promise<TaskDependencyServerDTO> {
     const stmt = this.db.prepare(`
       INSERT INTO task_dependencies (
-        uuid, account_uuid, predecessor_uuid, successor_uuid,
-        dependency_type, lag_days, created_at, updated_at
+        uuid, accountUuid, predecessor_uuid, successor_uuid,
+        dependency_type, lag_days, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
@@ -27,7 +27,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
 
     stmt.run(
       uuid,
-      data.account_uuid,
+      data.accountUuid,
       data.predecessor_uuid,
       data.successor_uuid,
       data.dependency_type || 'FINISH_TO_START',
@@ -38,13 +38,13 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
 
     return {
       uuid,
-      account_uuid: data.account_uuid,
+      account_uuid: data.accountUuid,
       predecessor_uuid: data.predecessor_uuid,
       successor_uuid: data.successor_uuid,
       dependency_type: data.dependency_type || 'FINISH_TO_START',
       lag_days: data.lag_days || 0,
-      created_at: new Date(now),
-      updated_at: new Date(now),
+      createdAt: new Date(now),
+      updatedAt: new Date(now),
     };
   }
 
@@ -59,7 +59,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
 
   async findBySuccessor(taskUuid: string): Promise<TaskDependencyServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_dependencies WHERE successor_uuid = ? ORDER BY created_at ASC`
+      `SELECT * FROM task_dependencies WHERE successor_uuid = ? ORDER BY createdAt ASC`
     );
     const rows = stmt.all(taskUuid) as any[];
 
@@ -68,7 +68,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
 
   async findByPredecessor(taskUuid: string): Promise<TaskDependencyServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_dependencies WHERE predecessor_uuid = ? ORDER BY created_at ASC`
+      `SELECT * FROM task_dependencies WHERE predecessor_uuid = ? ORDER BY createdAt ASC`
     );
     const rows = stmt.all(taskUuid) as any[];
 
@@ -170,14 +170,14 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
       values.push(data.lagDays);
     }
 
-    updates.push('updated_at = ?');
+    updates.push('updatedAt = ?');
     values.push(Date.now());
     values.push(uuid);
 
     if (updates.length === 1) {
-      // Only updated_at, just update it
+      // Only updatedAt, just update it
       const stmt = this.db.prepare(
-        `UPDATE task_dependencies SET updated_at = ? WHERE uuid = ?`
+        `UPDATE task_dependencies SET updatedAt = ? WHERE uuid = ?`
       );
       stmt.run(Date.now(), uuid);
     } else {
@@ -197,7 +197,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
 
   async findAllByAccount(accountUuid: string): Promise<TaskDependencyServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_dependencies WHERE account_uuid = ? ORDER BY created_at ASC`
+      `SELECT * FROM task_dependencies WHERE accountUuid = ? ORDER BY createdAt ASC`
     );
     const rows = stmt.all(accountUuid) as any[];
 
@@ -207,13 +207,13 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
   private rowToDTO(row: any): TaskDependencyServerDTO {
     return {
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       predecessor_uuid: row.predecessor_uuid,
       successor_uuid: row.successor_uuid,
       dependency_type: row.dependency_type,
       lag_days: row.lag_days,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     };
   }
 
@@ -221,3 +221,4 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 }
+

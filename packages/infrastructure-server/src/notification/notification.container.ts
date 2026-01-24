@@ -1,7 +1,7 @@
 /**
  * Notification Container (Server)
  *
- * 依赖注入容器，管�?Notification 模块�?repository 实例
+ * 渚濊禆娉ㄥ叆瀹瑰櫒锛岀鐞?Notification 妯″潡鐨?repository 瀹炰緥
  */
 
 import type {
@@ -11,7 +11,7 @@ import type {
 } from '@dailyuse/domain-server/notification';
 
 /**
- * Notification 模块依赖注入容器
+ * Notification 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒
  */
 export class NotificationContainer {
   private static instance: NotificationContainer;
@@ -22,7 +22,7 @@ export class NotificationContainer {
   private constructor() {}
 
   /**
-   * 获取容器单例
+   * 鑾峰彇瀹瑰櫒鍗曚緥
    */
   static getInstance(): NotificationContainer {
     if (!NotificationContainer.instance) {
@@ -32,14 +32,14 @@ export class NotificationContainer {
   }
 
   /**
-   * 重置容器（用于测试）
+   * 閲嶇疆瀹瑰櫒锛堢敤浜庢祴璇曪級
    */
   static resetInstance(): void {
     NotificationContainer.instance = new NotificationContainer();
   }
 
   /**
-   * 注册 NotificationRepository
+   * 娉ㄥ唽 NotificationRepository
    */
   registerNotificationRepository(repository: INotificationRepository): this {
     this.notificationRepository = repository;
@@ -47,7 +47,7 @@ export class NotificationContainer {
   }
 
   /**
-   * 注册 NotificationPreferenceRepository
+   * 娉ㄥ唽 NotificationPreferenceRepository
    */
   registerPreferenceRepository(repository: INotificationPreferenceRepository): this {
     this.preferenceRepository = repository;
@@ -55,7 +55,7 @@ export class NotificationContainer {
   }
 
   /**
-   * 注册 NotificationTemplateRepository
+   * 娉ㄥ唽 NotificationTemplateRepository
    */
   registerTemplateRepository(repository: INotificationTemplateRepository): this {
     this.templateRepository = repository;
@@ -63,7 +63,7 @@ export class NotificationContainer {
   }
 
   /**
-   * 获取 NotificationRepository
+   * 鑾峰彇 NotificationRepository
    */
   getNotificationRepository(): INotificationRepository {
     if (!this.notificationRepository) {
@@ -73,7 +73,7 @@ export class NotificationContainer {
   }
 
   /**
-   * 获取 NotificationPreferenceRepository
+   * 鑾峰彇 NotificationPreferenceRepository
    */
   getPreferenceRepository(): INotificationPreferenceRepository {
     if (!this.preferenceRepository) {
@@ -83,7 +83,7 @@ export class NotificationContainer {
   }
 
   /**
-   * 获取 NotificationTemplateRepository
+   * 鑾峰彇 NotificationTemplateRepository
    */
   getTemplateRepository(): INotificationTemplateRepository {
     if (!this.templateRepository) {
@@ -93,7 +93,7 @@ export class NotificationContainer {
   }
 
   /**
-   * 检查是否已配置
+   * 妫€鏌ユ槸鍚﹀凡閰嶇疆
    */
   isConfigured(): boolean {
     return (
@@ -104,7 +104,7 @@ export class NotificationContainer {
   }
 
   /**
-   * 清空所有注册的依赖
+   * 娓呯┖鎵€鏈夋敞鍐岀殑渚濊禆
    */
   clear(): void {
     this.notificationRepository = null;

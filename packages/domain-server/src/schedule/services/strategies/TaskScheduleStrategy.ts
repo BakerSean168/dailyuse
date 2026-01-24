@@ -327,26 +327,15 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
     const frequency = recurrenceRule.frequency;
 
     if (interval === 1) {
-      const map: Record<RecurrenceFrequency, string> = {
-        DAILY: '每天',
-        WEEKLY: '每周',
-        MONTHLY: '每月',
-        YEARLY: '每年',
-      };
-      return map[frequency];
+      return frequency;
     } else {
-      const map: Record<RecurrenceFrequency, string> = {
-        DAILY: '天',
-        WEEKLY: '周',
-        MONTHLY: '月',
-        YEARLY: '年',
-      };
-      return `每 ${interval} ${map[frequency]}`;
+      // Display text moved to frontend i18n
+      return `${interval} days`;
     }
   }
 
   /**
-   * 更新调度配置（当 Task 的配置变更时）
+   * Update schedule configuration (when Task configuration changes)
    */
   updateSchedule(
     existingSchedule: ScheduleStrategyOutput,

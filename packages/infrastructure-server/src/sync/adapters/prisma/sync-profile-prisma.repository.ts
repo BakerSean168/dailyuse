@@ -12,7 +12,7 @@ import {
 } from '@dailyuse/domain-server/sync';
 
 /**
- * �?Prisma 模型转换�?PersistenceDTO 格式
+ * 灏?Prisma 妯″瀷杞崲涓?PersistenceDTO 鏍煎紡
  */
 function toPersistenceDTO(record: any) {
   return {

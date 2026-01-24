@@ -2,13 +2,13 @@
 /**
  * Reminder Trigger Cron Job
  * 
- * 职责�?
- * - 每分钟扫描需要触发的提醒模板
- * - 调用 ReminderSchedulerService 执行触发逻辑
- * - 记录触发历史
- * - 更新下次触发时间
+ * 鑱岃矗锛?
+ * - 姣忓垎閽熸壂鎻忛渶瑕佽Е鍙戠殑鎻愰啋妯℃澘
+ * - 璋冪敤 ReminderSchedulerService 鎵ц瑙﹀彂閫昏緫
+ * - 璁板綍瑙﹀彂鍘嗗彶
+ * - 鏇存柊涓嬫瑙﹀彂鏃堕棿
  * 
- * 触发频率：每分钟执行一�?
+ * 瑙﹀彂棰戠巼锛氭瘡鍒嗛挓鎵ц涓€娆?
  * Cron Expression: '* * * * *'
  */
 
@@ -28,7 +28,7 @@ class ReminderTriggerCronJob {
   private constructor() {}
 
   /**
-   * 获取单例实例
+   * 鑾峰彇鍗曚緥瀹炰緥
    */
   static async getInstance(): Promise<ReminderTriggerCronJob> {
     if (!ReminderTriggerCronJob.instance) {
@@ -39,7 +39,7 @@ class ReminderTriggerCronJob {
   }
 
   /**
-   * 初始化调度服�?
+   * 鍒濆鍖栬皟搴︽湇鍔?
    */
   private async initialize(): Promise<void> {
     try {
@@ -48,17 +48,17 @@ class ReminderTriggerCronJob {
       const statsRepo = container.getReminderStatisticsRepository();
       const groupRepo = container.getReminderGroupRepository();
       
-      // 创建 ControlService（需�?group repository�?
+      // 鍒涘缓 ControlService锛堥渶瑕?group repository锛?
       const controlService = container.getControlService();
       
-      // 创建 TriggerService
+      // 鍒涘缓 TriggerService
       const triggerService = new ReminderTriggerService(
         templateRepo,
         statsRepo,
         controlService,
       );
 
-      // 创建 SchedulerService
+      // 鍒涘缓 SchedulerService
       this.schedulerService = new ReminderSchedulerService(
         templateRepo,
         statsRepo,
@@ -73,7 +73,7 @@ class ReminderTriggerCronJob {
   }
 
   /**
-   * 启动定时任务
+   * 鍚姩瀹氭椂浠诲姟
    */
   start(): void {
     if (this.cronTask) {
@@ -81,19 +81,19 @@ class ReminderTriggerCronJob {
       return;
     }
 
-    // 每分钟执行一�?
+    // 姣忓垎閽熸墽琛屼竴娆?
     this.cronTask = cron.schedule('* * * * *', async () => {
       await this.execute();
     });
 
-    // 手动启动任务
+    // 鎵嬪姩鍚姩浠诲姟
     this.cronTask.start();
     
     logger.info('Reminder trigger cron job started (runs every minute)');
   }
 
   /**
-   * 停止定时任务
+   * 鍋滄瀹氭椂浠诲姟
    */
   stop(): void {
     if (this.cronTask) {
@@ -104,7 +104,7 @@ class ReminderTriggerCronJob {
   }
 
   /**
-   * 执行触发逻辑
+   * 鎵ц瑙﹀彂閫昏緫
    */
   private async execute(): Promise<void> {
     if (this.isRunning) {
@@ -123,7 +123,7 @@ class ReminderTriggerCronJob {
     try {
       logger.debug('Starting reminder trigger scan...');
 
-      // 调用调度服务执行触发
+      // 璋冪敤璋冨害鏈嶅姟鎵ц瑙﹀彂
       const result = await this.schedulerService.schedule();
 
       const duration = Date.now() - startTime;
@@ -135,7 +135,7 @@ class ReminderTriggerCronJob {
         duration: `${duration}ms`,
       });
 
-      // 如果有失败的提醒，记录详细信�?
+      // 濡傛灉鏈夊け璐ョ殑鎻愰啋锛岃褰曡缁嗕俊鎭?
       if (result.failedCount > 0) {
         logger.warn('Some reminders failed to trigger', {
           failedCount: result.failedCount,
@@ -154,7 +154,7 @@ class ReminderTriggerCronJob {
   }
 
   /**
-   * 手动触发执行（用于测试）
+   * 鎵嬪姩瑙﹀彂鎵ц锛堢敤浜庢祴璇曪級
    */
   async manualTrigger(): Promise<void> {
     logger.info('Manual trigger requested');
@@ -162,7 +162,7 @@ class ReminderTriggerCronJob {
   }
 
   /**
-   * 获取任务状�?
+   * 鑾峰彇浠诲姟鐘舵€?
    */
   getStatus(): { isRunning: boolean; isScheduled: boolean } {
     return {
@@ -172,7 +172,7 @@ class ReminderTriggerCronJob {
   }
 }
 
-// 导出单例工厂函数
+// 瀵煎嚭鍗曚緥宸ュ巶鍑芥暟
 export const startReminderTriggerCronJob = async (): Promise<void> => {
   const job = await ReminderTriggerCronJob.getInstance();
   job.start();

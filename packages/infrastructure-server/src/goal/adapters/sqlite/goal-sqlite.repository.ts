@@ -1,6 +1,6 @@
 /**
  * SQLite Goal Repository Implementation
- * 目标的 SQLite 仓储实现
+ * 鐩爣鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -28,13 +28,13 @@ export class SqliteGoalRepository implements IGoalRepository {
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
-      dto.name,
+      dto.accountUuid,
+      dto.title,
       dto.description || null,
       dto.status,
-      dto.folder_uuid || null,
-      dto.created_at,
-      dto.updated_at,
+      dto.folderUuid || null,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -46,13 +46,13 @@ export class SqliteGoalRepository implements IGoalRepository {
 
     return Goal.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
-      name: row.name,
+      accountUuid: row.account_uuid,
+      title: row.name,
       description: row.description,
       status: row.status,
-      folder_uuid: row.folder_uuid,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      folderUuid: row.folder_uuid,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
     });
   }
 
@@ -85,13 +85,13 @@ export class SqliteGoalRepository implements IGoalRepository {
     return rows.map((row) =>
       Goal.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
-        name: row.name,
+        accountUuid: row.account_uuid,
+        title: row.name,
         description: row.description,
         status: row.status,
-        folder_uuid: row.folder_uuid,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        folderUuid: row.folder_uuid,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
       })
     );
   }
@@ -105,13 +105,13 @@ export class SqliteGoalRepository implements IGoalRepository {
     return rows.map((row) =>
       Goal.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
-        name: row.name,
+        accountUuid: row.account_uuid,
+        title: row.name,
         description: row.description,
         status: row.status,
-        folder_uuid: row.folder_uuid,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        folderUuid: row.folder_uuid,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
       })
     );
   }
@@ -123,7 +123,7 @@ export class SqliteGoalRepository implements IGoalRepository {
 
   async softDelete(uuid: string): Promise<void> {
     const stmt = this.db.prepare(
-      `UPDATE goals SET status = 'DELETED', updated_at = ? WHERE uuid = ?`
+      `UPDATE goals SET status = 'DELETED', updatedAt = ? WHERE uuid = ?`
     );
     stmt.run(Date.now(), uuid);
   }
@@ -136,8 +136,10 @@ export class SqliteGoalRepository implements IGoalRepository {
   async batchUpdateStatus(uuids: string[], status: string): Promise<void> {
     const placeholders = uuids.map(() => '?').join(',');
     const stmt = this.db.prepare(
-      `UPDATE goals SET status = ?, updated_at = ? WHERE uuid IN (${placeholders})`
+      `UPDATE goals SET status = ?, updatedAt = ? WHERE uuid IN (${placeholders})`
     );
     stmt.run(status, Date.now(), ...uuids);
   }
 }
+
+

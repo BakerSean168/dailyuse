@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Archive Repository
  *
- * 归档仓储
+ * 褰掓。浠撳偍
  */
 
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
@@ -39,3 +39,4 @@ export class ArchiveRepository {
     return { repository: repository.toClientDTO() };
   }
 }
+

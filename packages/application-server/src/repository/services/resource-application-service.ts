@@ -1,6 +1,6 @@
-/**
+﻿/**
  * Resource Application Service
- * Resource 应用服务 - Story 10-2
+ * Resource 搴旂敤鏈嶅姟 - Story 10-2
  */
 import { v4 as uuidv4 } from 'uuid';
 import { Resource } from '@dailyuse/domain-server/repository';
@@ -10,13 +10,13 @@ import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, ResourceC
 
 
 /**
- * Resource 应用服务
- * 负责 Resource 的业务用例协调
+ * Resource 搴旂敤鏈嶅姟
+ * 璐熻矗 Resource 鐨勪笟鍔＄敤渚嬪崗璋?
  *
- * 架构职责：
- * - 调用 Repository 进行持久化
- * - DTO 转换（Domain → ClientDTO）
- * - 协调业务用例
+ * 鏋舵瀯鑱岃矗锛?
+ * - 璋冪敤 Repository 杩涜鎸佷箙鍖?
+ * - DTO 杞崲锛圖omain 鈫?ClientDTO锛?
+ * - 鍗忚皟涓氬姟鐢ㄤ緥
  */
 export class ResourceApplicationService {
   private resourceRepository: IResourceRepository;
@@ -83,5 +83,6 @@ export class ResourceApplicationService {
     await this.resourceRepository.save(resource);
   }
 }
+
 
 

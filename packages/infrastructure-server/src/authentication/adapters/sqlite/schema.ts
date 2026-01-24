@@ -1,6 +1,6 @@
 /**
  * SQLite Database Schema - Authentication Module
- * 认证模块数据库架构
+ * 璁よ瘉妯″潡鏁版嵁搴撴灦鏋?
  */
 
 export const AUTHENTICATION_MODULE_SCHEMA = `

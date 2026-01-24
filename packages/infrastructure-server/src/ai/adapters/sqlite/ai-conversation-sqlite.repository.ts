@@ -1,6 +1,6 @@
 /**
  * SQLite AIConversation Repository Implementation
- * AI 对话的 SQLite 仓储实现
+ * AI 瀵硅瘽鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,21 +15,21 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
 
     const stmt = this.db.prepare(`
       INSERT INTO ai_conversations (
-        uuid, account_uuid, title, status, created_at, updated_at
+        uuid, accountUuid, title, status, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         title = excluded.title,
         status = excluded.status,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       dto.title,
       dto.status,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -43,46 +43,46 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
 
     return AIConversation.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       title: row.title,
       status: row.status,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findByAccountUuid(accountUuid: string, options?: AIConversationQueryOptions): Promise<AIConversation[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_conversations WHERE account_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM ai_conversations WHERE accountUuid = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(accountUuid) as any[];
 
     return rows.map((row) =>
       AIConversation.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         title: row.title,
         status: row.status,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
 
   async findByStatus(accountUuid: string, status: string): Promise<AIConversation[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_conversations WHERE account_uuid = ? AND status = ? ORDER BY created_at DESC`
+      `SELECT * FROM ai_conversations WHERE accountUuid = ? AND status = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(accountUuid, status) as any[];
 
     return rows.map((row) =>
       AIConversation.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         title: row.title,
         status: row.status,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -92,3 +92,4 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
     stmt.run(uuid);
   }
 }
+

@@ -1,6 +1,6 @@
 /**
  * SQLite ReminderGroup Repository Implementation
- * 提醒分组的 SQLite 仓储实现
+ * 鎻愰啋鍒嗙粍�?SQLite 浠撳偍瀹炵�?
  */
 
 import type Database from 'better-sqlite3';
@@ -26,12 +26,12 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       dto.name,
-      dto.control_mode,
-      dto.is_enabled ? 1 : 0,
-      dto.created_at,
-      dto.updated_at,
+      dto.controlMode,
+      dto.enabled ? 1 : 0,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -43,12 +43,12 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
 
     return ReminderGroup.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      accountUuid: row.account_uuid,
       name: row.name,
-      control_mode: row.control_mode,
-      is_enabled: row.is_enabled === 1,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      controlMode: row.control_mode,
+      enabled: row.is_enabled === 1,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
     });
   }
 
@@ -64,12 +64,12 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
     return rows.map((row) =>
       ReminderGroup.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        accountUuid: row.account_uuid,
         name: row.name,
-        control_mode: row.control_mode,
-        is_enabled: row.is_enabled === 1,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        controlMode: row.control_mode,
+        enabled: row.is_enabled === 1,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
       })
     );
   }
@@ -84,3 +84,4 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
     return stmt.get(uuid) !== undefined;
   }
 }
+

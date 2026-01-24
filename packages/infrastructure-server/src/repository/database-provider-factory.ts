@@ -1,13 +1,13 @@
 /**
  * Database Provider Factory
  *
- * 支持多数据库适配的工厂类，允许在运行时切换数据库实现。
- * 采用策略模式，为不同的数据库（Prisma、SQLite、MySQL等）提供统一的仓储实现。
+ * 鏀寔澶氭暟鎹簱閫傞厤鐨勫伐鍘傜被锛屽厑璁稿湪杩愯鏃跺垏鎹㈡暟鎹簱瀹炵幇銆?
+ * 閲囩敤绛栫暐妯″紡锛屼负涓嶅悓鐨勬暟鎹簱锛圥risma銆丼QLite銆丮ySQL绛夛級鎻愪緵缁熶竴鐨勪粨鍌ㄥ疄鐜般€?
  *
- * 使用场景：
- * - API 项目使用 Prisma（PostgreSQL）
- * - Desktop 项目使用 SQLite
- * - Web 前端使用 IndexedDB（未来）
+ * 浣跨敤鍦烘櫙锛?
+ * - API 椤圭洰浣跨敤 Prisma锛圥ostgreSQL锛?
+ * - Desktop 椤圭洰浣跨敤 SQLite
+ * - Web 鍓嶇浣跨敤 IndexedDB锛堟湭鏉ワ級
  */
 
 import type { RepositoryContainer } from './di/repository-container-v2';
@@ -19,7 +19,7 @@ import type {
 } from '@dailyuse/domain-server/repository';
 
 /**
- * 支持的数据库提供者类型
+ * 鏀寔鐨勬暟鎹簱鎻愪緵鑰呯被鍨?
  */
 export enum DatabaseProvider {
   PRISMA = 'prisma',
@@ -30,60 +30,60 @@ export enum DatabaseProvider {
 }
 
 /**
- * 数据库提供者配置
+ * 鏁版嵁搴撴彁渚涜€呴厤缃?
  */
 export interface IDatabaseProviderConfig {
   provider: DatabaseProvider | string;
-  /** Prisma 实例（当使用 Prisma 时） */
+  /** Prisma 瀹炰緥锛堝綋浣跨敤 Prisma 鏃讹級 */
   prisma?: any;
-  /** SQLite 数据库路径（当使用 SQLite 时） */
+  /** SQLite 鏁版嵁搴撹矾寰勶紙褰撲娇鐢?SQLite 鏃讹級 */
   sqliteDbPath?: string;
-  /** SQLite 数据库连接实例（当已创建时） */
+  /** SQLite 鏁版嵁搴撹繛鎺ュ疄渚嬶紙褰撳凡鍒涘缓鏃讹級 */
   sqliteDb?: any;
-  /** 其他自定义配置 */
+  /** 鍏朵粬鑷畾涔夐厤缃?*/
   [key: string]: any;
 }
 
 /**
- * 提供者初始化上下文
+ * 鎻愪緵鑰呭垵濮嬪寲涓婁笅鏂?
  */
 export interface IProviderInitContext {
   config: IDatabaseProviderConfig;
-  container: any; // RepositoryContainer 的类型，避免循环依赖
+  container: any; // RepositoryContainer 鐨勭被鍨嬶紝閬垮厤寰幆渚濊禆
 }
 
 /**
- * 数据库提供者初始化器接口
+ * 鏁版嵁搴撴彁渚涜€呭垵濮嬪寲鍣ㄦ帴鍙?
  */
 export interface IProviderInitializer {
   /**
-   * 初始化提供者并注册所有仓储实现
+   * 鍒濆鍖栨彁渚涜€呭苟娉ㄥ唽鎵€鏈変粨鍌ㄥ疄鐜?
    */
   initialize(context: IProviderInitContext): Promise<void>;
 
   /**
-   * 清理资源（如关闭连接）
+   * 娓呯悊璧勬簮锛堝鍏抽棴杩炴帴锛?
    */
   cleanup(): Promise<void>;
 
   /**
-   * 检查提供者健康状态
+   * 妫€鏌ユ彁渚涜€呭仴搴风姸鎬?
    */
   healthCheck(): Promise<boolean>;
 }
 
 /**
- * 内置提供者初始化器
+ * 鍐呯疆鎻愪緵鑰呭垵濮嬪寲鍣?
  */
 export const builtInInitializers: Record<string, new () => IProviderInitializer> = {};
 
 /**
- * 数据库提供者工厂
+ * 鏁版嵁搴撴彁渚涜€呭伐鍘?
  *
- * 职责：
- * 1. 注册和管理数据库提供者初始化器
- * 2. 根据配置初始化相应的提供者
- * 3. 管理提供者的生命周期
+ * 鑱岃矗锛?
+ * 1. 娉ㄥ唽鍜岀鐞嗘暟鎹簱鎻愪緵鑰呭垵濮嬪寲鍣?
+ * 2. 鏍规嵁閰嶇疆鍒濆鍖栫浉搴旂殑鎻愪緵鑰?
+ * 3. 绠＄悊鎻愪緵鑰呯殑鐢熷懡鍛ㄦ湡
  */
 export class DatabaseProviderFactory {
   private static initializers: Map<string, new () => IProviderInitializer> = new Map();
@@ -92,7 +92,7 @@ export class DatabaseProviderFactory {
   private constructor() {}
 
   /**
-   * 获取工厂单例
+   * 鑾峰彇宸ュ巶鍗曚緥
    */
   static getInstance(): DatabaseProviderFactory {
     if (!DatabaseProviderFactory.instance) {
@@ -103,23 +103,23 @@ export class DatabaseProviderFactory {
   }
 
   /**
-   * 注册内置提供者
+   * 娉ㄥ唽鍐呯疆鎻愪緵鑰?
    */
   private static registerBuiltInProviders(): void {
-    // Prisma 提供者将动态导入以避免循环依赖
+    // Prisma 鎻愪緵鑰呭皢鍔ㄦ€佸鍏ヤ互閬垮厤寰幆渚濊禆
     DatabaseProviderFactory.registerProvider(
       DatabaseProvider.PRISMA,
       require('./providers/prisma-provider').PrismaProviderInitializer,
     );
 
-    // SQLite 提供者已移至 infrastructure-desktop 包
-    // 不在此处注册以避免循环依赖
+    // SQLite 鎻愪緵鑰呭凡绉昏嚦 infrastructure-desktop 鍖?
+    // 涓嶅湪姝ゅ娉ㄥ唽浠ラ伩鍏嶅惊鐜緷璧?
     // DatabaseProviderFactory.registerProvider(
     //   DatabaseProvider.SQLITE,
     //   require('./providers/sqlite-provider').SqliteProviderInitializer,
     // );
 
-    // Memory 提供者用于测试
+    // Memory 鎻愪緵鑰呯敤浜庢祴璇?
     DatabaseProviderFactory.registerProvider(
       DatabaseProvider.MEMORY,
       require('./providers/memory-provider').MemoryProviderInitializer,
@@ -127,7 +127,7 @@ export class DatabaseProviderFactory {
   }
 
   /**
-   * 注册自定义提供者初始化器
+   * 娉ㄥ唽鑷畾涔夋彁渚涜€呭垵濮嬪寲鍣?
    */
   static registerProvider(
     name: string,
@@ -137,12 +137,12 @@ export class DatabaseProviderFactory {
   }
 
   /**
-   * 初始化数据库提供者
+   * 鍒濆鍖栨暟鎹簱鎻愪緵鑰?
    *
-   * @param config 提供者配置
-   * @param container 仓储容器
-   * @returns 初始化后的提供者初始化器实例
-   * @throws 如果提供者不存在
+   * @param config 鎻愪緵鑰呴厤缃?
+   * @param container 浠撳偍瀹瑰櫒
+   * @returns 鍒濆鍖栧悗鐨勬彁渚涜€呭垵濮嬪寲鍣ㄥ疄渚?
+   * @throws 濡傛灉鎻愪緵鑰呬笉瀛樺湪
    */
   async initializeProvider(
     config: IDatabaseProviderConfig,
@@ -170,14 +170,14 @@ export class DatabaseProviderFactory {
   }
 
   /**
-   * 获取注册的所有提供者名称
+   * 鑾峰彇娉ㄥ唽鐨勬墍鏈夋彁渚涜€呭悕绉?
    */
   getRegisteredProviders(): string[] {
     return Array.from(DatabaseProviderFactory.initializers.keys());
   }
 
   /**
-   * 检查提供者是否已注册
+   * 妫€鏌ユ彁渚涜€呮槸鍚﹀凡娉ㄥ唽
    */
   hasProvider(name: string): boolean {
     return DatabaseProviderFactory.initializers.has(name);
@@ -185,7 +185,7 @@ export class DatabaseProviderFactory {
 }
 
 /**
- * 便捷方法：初始化 API（Prisma）环境
+ * 渚挎嵎鏂规硶锛氬垵濮嬪寲 API锛圥risma锛夌幆澧?
  */
 export async function initializePrismaProvider(
   prismaClient: any,
@@ -202,7 +202,7 @@ export async function initializePrismaProvider(
 }
 
 /**
- * 便捷方法：初始化 Desktop（SQLite）环境
+ * 渚挎嵎鏂规硶锛氬垵濮嬪寲 Desktop锛圫QLite锛夌幆澧?
  */
 export async function initializeSqliteProvider(
   dbPath: string,

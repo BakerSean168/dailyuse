@@ -1,6 +1,6 @@
 /**
  * SQLite ScheduleStatistics Repository Implementation
- * 日程统计的 SQLite 仓储实现
+ * 鏃ョ▼缁熻鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,30 +15,30 @@ export class SqliteScheduleStatisticsRepository implements IScheduleStatisticsRe
 
     const stmt = this.db.prepare(`
       INSERT INTO schedule_statistics (
-        uuid, account_uuid, total_tasks, completed_tasks, failed_tasks,
-        created_at, updated_at
+        uuid, accountUuid, total_tasks, completed_tasks, failed_tasks,
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(account_uuid) DO UPDATE SET
+      ON CONFLICT(accountUuid) DO UPDATE SET
         total_tasks = excluded.total_tasks,
         completed_tasks = excluded.completed_tasks,
         failed_tasks = excluded.failed_tasks,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       dto.total_tasks,
       dto.completed_tasks,
       dto.failed_tasks,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
   async findByAccountUuid(accountUuid: string): Promise<ScheduleStatistics | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM schedule_statistics WHERE account_uuid = ? LIMIT 1`
+      `SELECT * FROM schedule_statistics WHERE accountUuid = ? LIMIT 1`
     );
     const row = stmt.get(accountUuid) as any;
 
@@ -46,12 +46,12 @@ export class SqliteScheduleStatisticsRepository implements IScheduleStatisticsRe
 
     return ScheduleStatistics.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       total_tasks: row.total_tasks,
       completed_tasks: row.completed_tasks,
       failed_tasks: row.failed_tasks,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -64,8 +64,8 @@ export class SqliteScheduleStatisticsRepository implements IScheduleStatisticsRe
 
       const stmt = this.db.prepare(`
         INSERT INTO schedule_statistics (
-          uuid, account_uuid, total_tasks, completed_tasks, failed_tasks,
-          created_at, updated_at
+          uuid, accountUuid, total_tasks, completed_tasks, failed_tasks,
+          createdAt, updatedAt
         ) VALUES (?, ?, ?, ?, ?, ?, ?)
       `);
 
@@ -77,8 +77,8 @@ export class SqliteScheduleStatisticsRepository implements IScheduleStatisticsRe
         total_tasks: 0,
         completed_tasks: 0,
         failed_tasks: 0,
-        created_at: now,
-        updated_at: now,
+        createdAt: now,
+        updatedAt: now,
       });
     }
 
@@ -86,12 +86,12 @@ export class SqliteScheduleStatisticsRepository implements IScheduleStatisticsRe
   }
 
   async deleteByAccountUuid(accountUuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM schedule_statistics WHERE account_uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM schedule_statistics WHERE accountUuid = ?`);
     stmt.run(accountUuid);
   }
 
   async findAll(limit?: number, offset?: number): Promise<ScheduleStatistics[]> {
-    let query = `SELECT * FROM schedule_statistics ORDER BY created_at DESC`;
+    let query = `SELECT * FROM schedule_statistics ORDER BY createdAt DESC`;
     const params: any[] = [];
 
     if (limit) {
@@ -110,12 +110,12 @@ export class SqliteScheduleStatisticsRepository implements IScheduleStatisticsRe
     return rows.map((row) =>
       ScheduleStatistics.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         total_tasks: row.total_tasks,
         completed_tasks: row.completed_tasks,
         failed_tasks: row.failed_tasks,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -123,14 +123,14 @@ export class SqliteScheduleStatisticsRepository implements IScheduleStatisticsRe
   async saveBatch(statistics: ScheduleStatistics[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO schedule_statistics (
-        uuid, account_uuid, total_tasks, completed_tasks, failed_tasks,
-        created_at, updated_at
+        uuid, accountUuid, total_tasks, completed_tasks, failed_tasks,
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(account_uuid) DO UPDATE SET
+      ON CONFLICT(accountUuid) DO UPDATE SET
         total_tasks = excluded.total_tasks,
         completed_tasks = excluded.completed_tasks,
         failed_tasks = excluded.failed_tasks,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     const transaction = this.db.transaction((stats: ScheduleStatistics[]) => {
@@ -138,12 +138,12 @@ export class SqliteScheduleStatisticsRepository implements IScheduleStatisticsRe
         const dto = stat.toPersistenceDTO();
         insertStmt.run(
           dto.uuid,
-          dto.account_uuid,
+          dto.accountUuid,
           dto.total_tasks,
           dto.completed_tasks,
           dto.failed_tasks,
-          dto.created_at,
-          dto.updated_at,
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -159,3 +159,4 @@ export class SqliteScheduleStatisticsRepository implements IScheduleStatisticsRe
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 }
+

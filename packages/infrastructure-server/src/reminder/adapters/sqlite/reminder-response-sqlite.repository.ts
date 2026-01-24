@@ -1,11 +1,11 @@
 /**
  * SQLite ReminderResponse Repository Implementation
- * 提醒响应的 SQLite 仓储实现
+ * 鎻愰啋鍝嶅簲鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
 import { ReminderResponse } from '@dailyuse/domain-server/reminder';
-import type { IReminderResponseRepository, ResponseAction } from '@dailyuse/domain-server/reminder';
+import type { IReminderResponseRepository } from '@dailyuse/domain-server/reminder';
 
 export class SqliteReminderResponseRepository implements IReminderResponseRepository {
   constructor(private db: Database.Database) {}
@@ -15,20 +15,20 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
 
     const stmt = this.db.prepare(`
       INSERT INTO reminder_responses (
-        uuid, template_uuid, action, responded_at, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?)
+        uuid, reminderTemplateUuid, action, responseTime, timestamp
+      ) VALUES (?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         action = excluded.action,
-        updated_at = excluded.updated_at
+        responseTime = excluded.responseTime,
+        timestamp = excluded.timestamp
     `);
 
     stmt.run(
       dto.uuid,
-      dto.template_uuid,
+      dto.reminderTemplateUuid,
       dto.action,
-      dto.responded_at,
-      dto.created_at,
-      dto.updated_at,
+      dto.responseTime || null,
+      dto.timestamp,
     );
 
     return response;
@@ -42,16 +42,15 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
 
     return ReminderResponse.fromPersistenceDTO({
       uuid: row.uuid,
-      template_uuid: row.template_uuid,
-      action: row.action as ResponseAction,
-      responded_at: new Date(row.responded_at),
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      reminderTemplateUuid: row.reminderTemplateUuid,
+      action: row.action,
+      responseTime: row.responseTime || null,
+      timestamp: row.timestamp,
     });
   }
 
   async findByTemplateUuid(templateUuid: string, limit?: number): Promise<ReminderResponse[]> {
-    let query = `SELECT * FROM reminder_responses WHERE template_uuid = ? ORDER BY responded_at DESC`;
+    let query = `SELECT * FROM reminder_responses WHERE reminderTemplateUuid = ? ORDER BY timestamp DESC`;
     const params: any[] = [templateUuid];
 
     if (limit) {
@@ -65,12 +64,13 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
     return rows.map((row) =>
       ReminderResponse.fromPersistenceDTO({
         uuid: row.uuid,
-        template_uuid: row.template_uuid,
-        action: row.action as ResponseAction,
-        responded_at: new Date(row.responded_at),
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        reminderTemplateUuid: row.reminderTemplateUuid,
+        action: row.action,
+        responseTime: row.responseTime || null,
+        timestamp: row.timestamp,
       })
     );
   }
 }
+
+

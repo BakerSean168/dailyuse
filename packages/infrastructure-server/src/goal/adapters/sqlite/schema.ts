@@ -1,6 +1,6 @@
 /**
  * SQLite Database Schema - Goal Module
- * 目标模块数据库架构
+ * 鐩爣妯″潡鏁版嵁搴撴灦鏋?
  */
 
 export const GOAL_MODULE_SCHEMA = `
@@ -103,3 +103,4 @@ CREATE INDEX IF NOT EXISTS idx_weight_snapshots_account_uuid ON weight_snapshots
 CREATE INDEX IF NOT EXISTS idx_weight_snapshots_goal_uuid ON weight_snapshots(goal_uuid);
 CREATE INDEX IF NOT EXISTS idx_weight_snapshots_recorded_at ON weight_snapshots(recorded_at);
 `;
+

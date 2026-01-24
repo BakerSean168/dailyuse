@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Get Repository
  *
- * 获取仓储详情
+ * 鑾峰彇浠撳偍璇︽儏
  */
 
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
@@ -33,3 +33,4 @@ export class GetRepository {
     return { repository: repository ? repository.toClientDTO() : null };
   }
 }
+

@@ -1,8 +1,8 @@
-/**
- * Story 11.5: 标签统计与过滤
+﻿/**
+ * Story 11.5: 鏍囩缁熻涓庤繃婊?
  * 
- * 标签应用服务 - 提供标签统计功能
- * 标准 Express/TypeScript 模式 - 移除了 NestJS @Injectable 装饰器
+ * 鏍囩搴旂敤鏈嶅姟 - 鎻愪緵鏍囩缁熻鍔熻兘
+ * 鏍囧噯 Express/TypeScript 妯″紡 - 绉婚櫎浜?NestJS @Injectable 瑁呴グ鍣?
  */
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
@@ -13,32 +13,32 @@ export class TagsApplicationService {
   constructor(private readonly resourceRepository: IResourceRepository) {}
 
   /**
-   * 获取仓储的标签统计信息
-   * AC #1: Tag 统计 API
+   * 鑾峰彇浠撳偍鐨勬爣绛剧粺璁′俊鎭?
+   * AC #1: Tag 缁熻 API
    * 
-   * @param repositoryUuid 仓储 UUID
-   * @returns 标签统计列表（按使用频率降序）
+   * @param repositoryUuid 浠撳偍 UUID
+   * @returns 鏍囩缁熻鍒楄〃锛堟寜浣跨敤棰戠巼闄嶅簭锛?
    */
   async getTagStatistics(repositoryUuid: string): Promise<TagStatisticsDto[]> {
-    // 1. 加载仓储所有资源（仅 MARKDOWN/TEXT 类型）
+    // 1. 鍔犺浇浠撳偍鎵€鏈夎祫婧愶紙浠?MARKDOWN/TEXT 绫诲瀷锛?
     const resources = await this.resourceRepository.findByRepositoryUuid(repositoryUuid);
     
-    // 过滤出文本类型文件
+    // 杩囨护鍑烘枃鏈被鍨嬫枃浠?
     const textTypes = ['MARKDOWN', 'TEXT', 'MD', 'TXT'];
     const textResources = resources.filter(resource => {
       const persistence = (resource as any).persistence;
       return textTypes.includes(String(persistence?.type).toUpperCase());
     });
 
-    // 2. 聚合 tag 统计
+    // 2. 鑱氬悎 tag 缁熻
     const tagMap = new Map<string, TagStatisticsDto>();
 
     for (const resource of textResources) {
-      // 提取资源的 tags
+      // 鎻愬彇璧勬簮鐨?tags
       const tags = this.extractTags(resource);
 
       for (const tag of tags) {
-        // 初始化 tag 统计
+        // 鍒濆鍖?tag 缁熻
         if (!tagMap.has(tag)) {
           tagMap.set(tag, {
             tag,
@@ -47,11 +47,11 @@ export class TagsApplicationService {
           });
         }
 
-        // 更新统计
+        // 鏇存柊缁熻
         const stat = tagMap.get(tag)!;
         stat.count++;
         
-        // 处理 updatedAt（可能是时间戳或 Date 对象）
+        // 澶勭悊 updatedAt锛堝彲鑳芥槸鏃堕棿鎴虫垨 Date 瀵硅薄锛?
         const updatedAtISO = typeof resource.updatedAt === 'number'
           ? new Date(resource.updatedAt).toISOString()
           : new Date().toISOString();
@@ -65,30 +65,30 @@ export class TagsApplicationService {
       }
     }
 
-    // 3. 按使用频率降序排序
+    // 3. 鎸変娇鐢ㄩ鐜囬檷搴忔帓搴?
     const statistics = Array.from(tagMap.values()).sort((a, b) => b.count - a.count);
 
     return statistics;
   }
 
   /**
-   * 从资源中提取 tags
-   * 复用 Story 11.6 的 YAML frontmatter 解析逻辑
+   * 浠庤祫婧愪腑鎻愬彇 tags
+   * 澶嶇敤 Story 11.6 鐨?YAML frontmatter 瑙ｆ瀽閫昏緫
    * 
-   * @param resource 资源对象
-   * @returns 标签数组
+   * @param resource 璧勬簮瀵硅薄
+   * @returns 鏍囩鏁扮粍
    */
   private extractTags(resource: any): string[] {
     const content = (resource as any).persistence?.content;
     if (!content) return [];
 
-    // 1. 提取 YAML frontmatter
+    // 1. 鎻愬彇 YAML frontmatter
     const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
     if (!frontmatterMatch) return [];
 
     const frontmatterText = frontmatterMatch[1];
 
-    // 2. 解析 tags 字段（简单的逐行解析）
+    // 2. 瑙ｆ瀽 tags 瀛楁锛堢畝鍗曠殑閫愯瑙ｆ瀽锛?
     const lines = frontmatterText.split('\n');
     let inTagsArray = false;
     const tags: string[] = [];
@@ -96,33 +96,33 @@ export class TagsApplicationService {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
 
-      // 跳过空行和注释
+      // 璺宠繃绌鸿鍜屾敞閲?
       if (!line || line.startsWith('#')) continue;
 
-      // 检查是否是 tags 属性
+      // 妫€鏌ユ槸鍚︽槸 tags 灞炴€?
       if (line.toLowerCase().startsWith('tags:')) {
         const valueText = line.substring(5).trim();
 
-        // 单行数组格式：tags: [a, b, c]
+        // 鍗曡鏁扮粍鏍煎紡锛歵ags: [a, b, c]
         if (valueText.startsWith('[') && valueText.endsWith(']')) {
           const arrayContent = valueText.slice(1, -1);
           const items = arrayContent.split(',').map((item: string) => item.trim());
           tags.push(...items);
-          break; // 已处理完毕
+          break; // 宸插鐞嗗畬姣?
         }
-        // 空值或多行数组开始
+        // 绌哄€兼垨澶氳鏁扮粍寮€濮?
         else if (valueText === '' || valueText === '[') {
           inTagsArray = true;
           continue;
         }
-        // 单个值：tags: ddd
+        // 鍗曚釜鍊硷細tags: ddd
         else {
           tags.push(valueText);
           break;
         }
       }
 
-      // 多行数组元素
+      // 澶氳鏁扮粍鍏冪礌
       if (inTagsArray && line.startsWith('-')) {
         const tagValue = line.substring(1).trim();
         if (tagValue) {
@@ -130,7 +130,7 @@ export class TagsApplicationService {
         }
       }
 
-      // 多行数组结束（遇到下一个属性）
+      // 澶氳鏁扮粍缁撴潫锛堥亣鍒颁笅涓€涓睘鎬э級
       if (inTagsArray && line.includes(':') && !line.startsWith('-')) {
         break;
       }
@@ -140,7 +140,7 @@ export class TagsApplicationService {
   }
 
   /**
-   * 提取资源标题
+   * 鎻愬彇璧勬簮鏍囬
    */
   private extractTitle(resource: any): string {
     const metadata = (resource as any).metadata;
@@ -148,12 +148,13 @@ export class TagsApplicationService {
   }
 
   /**
-   * 提取资源路径
+   * 鎻愬彇璧勬簮璺緞
    */
   private extractPath(resource: any): string {
     const metadata = (resource as any).metadata;
     return metadata?.path || '/';
   }
 }
+
 
 

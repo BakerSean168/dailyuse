@@ -1,10 +1,10 @@
 /**
  * Prisma Client Singleton
- * 单一 Prisma 客户端实�?
+ * 鍗曚竴 Prisma 瀹㈡埛绔疄锟?
  *
- * 职责�?
- * - 提供全局 PrismaClient 单例
- * - 确保整个应用只有一个数据库连接
+ * 鑱岃矗锟?
+ * - 鎻愪緵鍏ㄥ眬 PrismaClient 鍗曚緥
+ * - 纭繚鏁翠釜搴旂敤鍙湁涓€涓暟鎹簱杩炴帴
  *
  * @module Shared/Infrastructure
  */
@@ -12,12 +12,12 @@
 import type {  PrismaClient  } from "@prisma/client";
 
 /**
- * 全局 Prisma 客户端实�?
+ * 鍏ㄥ眬 Prisma 瀹㈡埛绔疄锟?
  */
 export const prisma = new PrismaClient();
 
 /**
- * 确保 Prisma 客户端已连接
+ * 纭繚 Prisma 瀹㈡埛绔凡杩炴帴
  */
 export async function ensurePrismaConnected(): Promise<void> {
   try {
@@ -29,7 +29,7 @@ export async function ensurePrismaConnected(): Promise<void> {
 }
 
 /**
- * 优雅断开 Prisma 连接
+ * 浼橀泤鏂紑 Prisma 杩炴帴
  */
 export async function disconnectPrisma(): Promise<void> {
   await prisma.$disconnect();

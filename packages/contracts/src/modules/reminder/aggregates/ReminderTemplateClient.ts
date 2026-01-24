@@ -38,7 +38,7 @@ import type { ReminderHistoryClientDTO, ReminderHistoryClient } from '../entitie
 export interface ReminderTemplateClientDTO {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string | null;
   type: ReminderType;
   trigger: TriggerConfigClientDTO;
@@ -86,7 +86,7 @@ export interface ReminderTemplateClient {
   // 基础属性
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string | null;
   type: ReminderType;
   trigger: TriggerConfigClient;

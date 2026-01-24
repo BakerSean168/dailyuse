@@ -1,7 +1,7 @@
 /**
  * AI Container (Server)
  *
- * 依赖注入容器，管�?AI 模块�?repository 实例
+ * 渚濊禆娉ㄥ叆瀹瑰櫒锛岀鐞?AI 妯″潡鐨?repository 瀹炰緥
  */
 
 import type { 
@@ -12,7 +12,7 @@ import type {
 } from '@dailyuse/domain-server/ai';
 
 /**
- * AI 模块依赖注入容器
+ * AI 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒
  */
 export class AIContainer {
   private static instance: AIContainer;
@@ -24,7 +24,7 @@ export class AIContainer {
   private constructor() {}
 
   /**
-   * 获取容器单例
+   * 鑾峰彇瀹瑰櫒鍗曚緥
    */
   static getInstance(): AIContainer {
     if (!AIContainer.instance) {
@@ -34,7 +34,7 @@ export class AIContainer {
   }
 
   /**
-   * 重置容器（用于测试）
+   * 閲嶇疆瀹瑰櫒锛堢敤浜庢祴璇曪級
    */
   static resetInstance(): void {
     AIContainer.instance = new AIContainer();

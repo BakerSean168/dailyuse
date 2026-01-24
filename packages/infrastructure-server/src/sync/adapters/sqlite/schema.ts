@@ -1,6 +1,6 @@
 /**
  * SQLite Database Schema - Sync Module
- * 同步模块数据库架构
+ * 鍚屾妯″潡鏁版嵁搴撴灦鏋?
  */
 
 export const SYNC_MODULE_SCHEMA = `

@@ -10,7 +10,7 @@ import { PrismaNotificationPreferenceRepository } from '../repositories/PrismaNo
 import { prisma } from '../../shared/config/prisma';
 
 /**
- * Notification 依赖注入容器
+ * Notification 渚濊禆娉ㄥ叆瀹瑰櫒
  */
 export class NotificationContainer {
   private static instance: NotificationContainer;

@@ -1,11 +1,11 @@
 /**
  * Schedule Monitor
- * 调度监控
+ * 璋冨害鐩戞帶
  *
- * 职责�?
- * - 监控定时任务执行状�?
- * - 记录任务执行时间和结�?
- * - 提供性能指标收集
+ * 鑱岃矗锟?
+ * - 鐩戞帶瀹氭椂浠诲姟鎵ц鐘讹拷?
+ * - 璁板綍浠诲姟鎵ц鏃堕棿鍜岀粨锟?
+ * - 鎻愪緵鎬ц兘鎸囨爣鏀堕泦
  *
  * @module Schedule/Infrastructure/Monitoring
  */
@@ -23,12 +23,12 @@ interface TaskExecutionMetrics {
 }
 
 /**
- * 调度监控�?
+ * 璋冨害鐩戞帶锟?
  */
 export class ScheduleMonitor {
   private static instance: ScheduleMonitor;
   private executionMetrics: TaskExecutionMetrics[] = [];
-  private readonly maxMetrics = 1000; // 最多保�?1000 条记�?
+  private readonly maxMetrics = 1000; // 鏈€澶氫繚锟?1000 鏉¤锟?
 
   private constructor() {}
 
@@ -40,12 +40,12 @@ export class ScheduleMonitor {
   }
 
   /**
-   * 记录任务执行
+   * 璁板綍浠诲姟鎵ц
    */
   recordExecution(metrics: TaskExecutionMetrics): void {
     this.executionMetrics.push(metrics);
 
-    // 保持内存中的指标数量在可控范�?
+    // 淇濇寔鍐呭瓨涓殑鎸囨爣鏁伴噺鍦ㄥ彲鎺ц寖锟?
     if (this.executionMetrics.length > this.maxMetrics) {
       this.executionMetrics.shift();
     }
@@ -61,7 +61,7 @@ export class ScheduleMonitor {
   }
 
   /**
-   * 获取任务的执行历�?
+   * 鑾峰彇浠诲姟鐨勬墽琛屽巻锟?
    */
   getTaskHistory(taskUuid: string, limit: number = 10): TaskExecutionMetrics[] {
     return this.executionMetrics
@@ -70,14 +70,14 @@ export class ScheduleMonitor {
   }
 
   /**
-   * 获取最近执行的任务
+   * 鑾峰彇鏈€杩戞墽琛岀殑浠诲姟
    */
   getRecentExecutions(limit: number = 10): TaskExecutionMetrics[] {
     return this.executionMetrics.slice(-limit);
   }
 
   /**
-   * 获取执行成功�?
+   * 鑾峰彇鎵ц鎴愬姛锟?
    */
   getSuccessRate(): number {
     if (this.executionMetrics.length === 0) return 0;
@@ -86,7 +86,7 @@ export class ScheduleMonitor {
   }
 
   /**
-   * 清空指标
+   * 娓呯┖鎸囨爣
    */
   clearMetrics(): void {
     this.executionMetrics = [];

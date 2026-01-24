@@ -1,6 +1,6 @@
 /**
  * SQLite SearchEngine Repository Implementation
- * 搜索引擎的 SQLite 仓储实现
+ * 鎼滅储寮曟搸鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -22,8 +22,8 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
       index_size: row.index_size,
       is_indexing: row.is_indexing === 1,
       last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -41,14 +41,14 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
       index_size: row.index_size,
       is_indexing: row.is_indexing === 1,
       last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findIndexing(): Promise<SearchEngine[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM search_engines WHERE is_indexing = 1 ORDER BY updated_at ASC`
+      `SELECT * FROM search_engines WHERE is_indexing = 1 ORDER BY updatedAt ASC`
     );
     const rows = stmt.all() as any[];
 
@@ -59,8 +59,8 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
         index_size: row.index_size,
         is_indexing: row.is_indexing === 1,
         last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -78,8 +78,8 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
         index_size: row.index_size,
         is_indexing: row.is_indexing === 1,
         last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -90,13 +90,13 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
     const stmt = this.db.prepare(`
       INSERT INTO search_engines (
         uuid, workspace_uuid, index_size, is_indexing, last_indexed_at,
-        created_at, updated_at
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         index_size = excluded.index_size,
         is_indexing = excluded.is_indexing,
         last_indexed_at = excluded.last_indexed_at,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
@@ -105,8 +105,8 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
       dto.index_size,
       dto.is_indexing ? 1 : 0,
       dto.last_indexed_at ? dto.last_indexed_at.getTime() : null,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -127,3 +127,4 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
     return stmt.get(workspaceUuid) !== undefined;
   }
 }
+

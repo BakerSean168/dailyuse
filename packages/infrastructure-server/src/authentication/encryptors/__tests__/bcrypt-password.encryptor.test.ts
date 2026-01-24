@@ -100,7 +100,7 @@ describe('BcryptPasswordEncryptor', () => {
 
     it('should handle unicode characters', async () => {
       const encryptor = new BcryptPasswordEncryptor(10);
-      const password = 'P@ssw0rd密码🔒';
+      const password = 'P@ssw0rd瀵嗙爜馃敀';
 
       const hash = await encryptor.hash(password);
 

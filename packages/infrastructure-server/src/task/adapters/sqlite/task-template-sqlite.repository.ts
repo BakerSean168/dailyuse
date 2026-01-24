@@ -1,6 +1,6 @@
 /**
  * SQLite TaskTemplate Repository Implementation
- * 任务模板的 SQLite 仓储实现
+ * 浠诲姟妯℃澘鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -17,15 +17,14 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
     const stmt = this.db.prepare(`
       INSERT INTO task_templates (
         uuid, account_uuid, name, description, status, folder_uuid,
-        goal_uuid, priority, tags, due_date, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        goal_uuid, tags, due_date, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         name = excluded.name,
         description = excluded.description,
         status = excluded.status,
         folder_uuid = excluded.folder_uuid,
         goal_uuid = excluded.goal_uuid,
-        priority = excluded.priority,
         tags = excluded.tags,
         due_date = excluded.due_date,
         updated_at = excluded.updated_at
@@ -33,17 +32,16 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
-      dto.name,
+      dto.accountUuid,
+      dto.title,
       dto.description || null,
       dto.status,
-      dto.folder_uuid || null,
-      dto.goal_uuid || null,
-      dto.priority || null,
+      dto.folderUuid || null,
+      dto.goalUuid || null,
       dto.tags ? JSON.stringify(dto.tags) : null,
-      dto.due_date || null,
-      dto.created_at,
-      dto.updated_at,
+      dto.dueDate || null,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -53,20 +51,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
     if (!row) return null;
 
-    return TaskTemplate.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row.account_uuid,
-      name: row.name,
-      description: row.description,
-      status: row.status as TaskTemplateStatus,
-      folder_uuid: row.folder_uuid,
-      goal_uuid: row.goal_uuid,
-      priority: row.priority,
-      tags: row.tags ? JSON.parse(row.tags) : [],
-      due_date: row.due_date,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
-    });
+    return this.rowToTemplate(row);
   }
 
   async findByUuidWithChildren(uuid: string): Promise<TaskTemplate | null> {
@@ -103,7 +88,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
   async findByFolder(folderUuid: string): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE folder_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE folder_uuid = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(folderUuid) as any[];
 
@@ -163,19 +148,22 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
   }
 
   private rowToTemplate(row: any): TaskTemplate {
+    // 从蛇形的行对象属性转换为驼峰的 DTO 对象
     return TaskTemplate.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      accountUuid: row.account_uuid,
       name: row.name,
       description: row.description,
+      taskType: 'ONE_TIME',
       status: row.status as TaskTemplateStatus,
-      folder_uuid: row.folder_uuid,
-      goal_uuid: row.goal_uuid,
-      priority: row.priority,
+      importance: row.importance,
+      folderUuid: row.folder_uuid,
+      goalUuid: row.goal_uuid,
       tags: row.tags ? JSON.parse(row.tags) : [],
-      due_date: row.due_date,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      dueDate: row.due_date,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
     });
   }
 }
+

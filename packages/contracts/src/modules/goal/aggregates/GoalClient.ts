@@ -28,7 +28,7 @@ export interface GoalTimeRangeSummary {
 export interface GoalClientDTO {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string | null;
   color?: string | null; // 主题色（hex 格式，如 #FF5733）
   feasibilityAnalysis?: string | null; // 可行性分析

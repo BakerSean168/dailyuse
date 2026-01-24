@@ -277,20 +277,12 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
     goal: GoalServerDTO,
     triggers: ReminderTrigger[],
   ): string {
-    const triggerDescriptions = triggers.map((trigger) => {
-      if (trigger.type === 'TIME_PROGRESS_PERCENTAGE') {
-        return `时间进度达到 ${trigger.value}%`;
-      } else if (trigger.type === 'REMAINING_DAYS') {
-        return `剩余 ${trigger.value} 天`;
-      }
-      return `触发器: ${trigger.type}`;
-    });
-
-    return `目标提醒任务\n触发条件: ${triggerDescriptions.join(', ')}`;
+    // Display text moved to frontend i18n
+    return '';
   }
 
   /**
-   * 更新调度配置（当 Goal 的 reminderConfig 变更时）
+   * Update schedule configuration (when Goal's reminderConfig changes)
    */
   updateSchedule(
     existingSchedule: ScheduleStrategyOutput,

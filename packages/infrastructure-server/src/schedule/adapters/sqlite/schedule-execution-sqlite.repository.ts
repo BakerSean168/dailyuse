@@ -1,6 +1,6 @@
 /**
  * SQLite ScheduleExecution Repository Implementation
- * 日程执行的 SQLite 仓储实现
+ * 鏃ョ▼鎵ц鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -16,12 +16,12 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
     const stmt = this.db.prepare(`
       INSERT INTO schedule_executions (
         uuid, task_uuid, executed_at, result, error_message,
-        created_at, updated_at
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         result = excluded.result,
         error_message = excluded.error_message,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
@@ -30,8 +30,8 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
       dto.executed_at,
       dto.result,
       dto.error_message || null,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -47,8 +47,8 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
       executed_at: row.executed_at,
       result: row.result,
       error_message: row.error_message,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -65,9 +65,10 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
         executed_at: row.executed_at,
         result: row.result,
         error_message: row.error_message,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
 }
+

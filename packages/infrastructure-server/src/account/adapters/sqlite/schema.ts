@@ -1,6 +1,6 @@
 /**
  * SQLite Database Schema - Account Module
- * 账户模块数据库架构
+ * 璐︽埛妯″潡鏁版嵁搴撴灦鏋?
  */
 
 export const ACCOUNT_MODULE_SCHEMA = `

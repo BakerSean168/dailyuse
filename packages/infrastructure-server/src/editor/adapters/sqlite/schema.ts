@@ -1,6 +1,6 @@
 /**
  * SQLite Database Schema - Editor Module
- * 编辑器模块数据库架构
+ * 缂栬緫鍣ㄦā鍧楁暟鎹簱鏋舵瀯
  */
 
 export const EDITOR_MODULE_SCHEMA = `

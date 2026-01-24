@@ -1,4 +1,4 @@
-/**
+﻿/**
  * TaskTemplate Aggregate Root - Client Interface
  */
 
@@ -20,7 +20,7 @@ import type { TaskInstanceClient } from './TaskInstanceClient';
 export interface TaskTemplateClientDTO {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string | null;
   taskType: TaskType;
   timeConfig: any;
@@ -28,10 +28,10 @@ export interface TaskTemplateClientDTO {
   reminderConfig?: any | null;
   importance: ImportanceLevel;
   /**
-   * 优先级分数 (0-100)
-   * 由系统根据 importance + dueDate 动态计算
-   * @readonly 此字段不能直接修改，计算由 Application Layer 负责
-   * @computed 基于 Story 1.3 算法计算得出
+   * 浼樺厛绾у垎鏁?(0-100)
+   * 鐢辩郴缁熸牴鎹?importance + dueDate 鍔ㄦ€佽绠?
+   * @readonly 姝ゅ瓧娈典笉鑳界洿鎺ヤ慨鏀癸紝璁＄畻鐢?Application Layer 璐熻矗
+   * @computed 鍩轰簬 Story 1.3 绠楁硶璁＄畻寰楀嚭
    */
   priority?: number;
   goalBinding?: any | null;
@@ -64,16 +64,6 @@ export interface TaskTemplateClientDTO {
   priorityScore?: number | null;
   isOverdue?: boolean | null;
   daysUntilDue?: number | null;
-  displayTitle: string;
-  taskTypeText: string;
-  timeDisplayText: string | null; // null for ONE_TIME tasks
-  recurrenceText?: string | null;
-  importanceText: string;
-  statusText: string;
-  hasReminder: boolean;
-  reminderText?: string | null;
-  isLinkedToGoal: boolean;
-  goalLinkText?: string | null;
   instanceCount: number;
   completedInstanceCount: number;
   pendingInstanceCount: number;
@@ -93,10 +83,10 @@ export interface TaskTemplateClient {
   reminderConfig?: TaskReminderConfigClient | null;
   importance: ImportanceLevel;
   /**
-   * 优先级分数 (0-100)
-   * 由系统根据 importance + dueDate 动态计算
-   * @readonly 此字段不能直接修改，计算由 Application Layer 负责
-   * @computed 基于 Story 1.3 算法计算得出
+   * 浼樺厛绾у垎鏁?(0-100)
+   * 鐢辩郴缁熸牴鎹?importance + dueDate 鍔ㄦ€佽绠?
+   * @readonly 姝ゅ瓧娈典笉鑳界洿鎺ヤ慨鏀癸紝璁＄畻鐢?Application Layer 璐熻矗
+   * @computed 鍩轰簬 Story 1.3 绠楁硶璁＄畻寰楀嚭
    */
   priority?: number;
   goalBinding?: TaskGoalBindingClient | null;
@@ -110,15 +100,9 @@ export interface TaskTemplateClient {
   updatedAt: number;
   deletedAt?: number | null;
   instances?: TaskInstanceClient[];
-  displayTitle: string;
-  taskTypeText: string;
   timeDisplayText: string | null; // null for ONE_TIME tasks
   recurrenceText?: string | null;
-  importanceText: string;
-  statusText: string;
-  hasReminder: boolean;
   reminderText?: string | null;
-  isLinkedToGoal: boolean;
   goalLinkText?: string | null;
   instanceCount: number;
   completedInstanceCount: number;
@@ -159,3 +143,4 @@ export interface TaskTemplateClientStatic {
 export interface TaskTemplateClientInstance extends TaskTemplateClient {
   clone(): TaskTemplateClient;
 }
+

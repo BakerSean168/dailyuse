@@ -1,6 +1,6 @@
 /**
  * SQLite Database Schema - Setting Module
- * 设置模块数据库架构
+ * 璁剧疆妯″潡鏁版嵁搴撴灦鏋?
  */
 
 export const SETTING_MODULE_SCHEMA = `

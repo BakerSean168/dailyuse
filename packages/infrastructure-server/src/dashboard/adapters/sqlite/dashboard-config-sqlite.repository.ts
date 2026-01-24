@@ -1,6 +1,6 @@
 /**
  * SQLite DashboardConfig Repository Implementation
- * 仪表板配置的 SQLite 仓储实现
+ * 浠〃鏉块厤缃殑 SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -12,7 +12,7 @@ export class SqliteDashboardConfigRepository implements IDashboardConfigReposito
 
   async findByAccountUuid(accountUuid: string): Promise<DashboardConfig | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM dashboard_configs WHERE account_uuid = ? LIMIT 1`
+      `SELECT * FROM dashboard_configs WHERE accountUuid = ? LIMIT 1`
     );
     const row = stmt.get(accountUuid) as any;
 
@@ -20,10 +20,10 @@ export class SqliteDashboardConfigRepository implements IDashboardConfigReposito
 
     return DashboardConfig.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       config: row.config ? JSON.parse(row.config) : {},
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -32,33 +32,34 @@ export class SqliteDashboardConfigRepository implements IDashboardConfigReposito
 
     const stmt = this.db.prepare(`
       INSERT INTO dashboard_configs (
-        uuid, account_uuid, config, created_at, updated_at
+        uuid, accountUuid, config, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?)
-      ON CONFLICT(account_uuid) DO UPDATE SET
+      ON CONFLICT(accountUuid) DO UPDATE SET
         config = excluded.config,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       JSON.stringify(dto.config || {}),
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
 
     return config;
   }
 
   async delete(accountUuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM dashboard_configs WHERE account_uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM dashboard_configs WHERE accountUuid = ?`);
     stmt.run(accountUuid);
   }
 
   async exists(accountUuid: string): Promise<boolean> {
     const stmt = this.db.prepare(
-      `SELECT 1 FROM dashboard_configs WHERE account_uuid = ? LIMIT 1`
+      `SELECT 1 FROM dashboard_configs WHERE accountUuid = ? LIMIT 1`
     );
     return stmt.get(accountUuid) !== undefined;
   }
 }
+

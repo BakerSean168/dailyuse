@@ -1,7 +1,7 @@
-/**
+﻿/**
  * List Resources
  *
- * 获取仓储的所有资源
+ * 鑾峰彇浠撳偍鐨勬墍鏈夎祫婧?
  */
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
@@ -33,4 +33,5 @@ export class ListResources {
     return { resources: resources.map((r) => r.toClientDTO()) };
   }
 }
+
 

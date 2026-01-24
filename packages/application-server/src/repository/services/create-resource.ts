@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Create Resource
  *
- * 创建资源
+ * 鍒涘缓璧勬簮
  */
 
 import { v4 as uuidv4 } from 'uuid';
@@ -60,3 +60,4 @@ export class CreateResource {
     return { resource: resource.toClientDTO() };
   }
 }
+

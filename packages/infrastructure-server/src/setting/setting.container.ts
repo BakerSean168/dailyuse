@@ -1,7 +1,7 @@
 /**
  * Setting Container (Server)
  *
- * 依赖注入容器，管�?Setting 模块�?repository 实例
+ * 渚濊禆娉ㄥ叆瀹瑰櫒锛岀鐞?Setting 妯″潡鐨?repository 瀹炰緥
  */
 
 import type {
@@ -11,7 +11,7 @@ import type {
 } from '@dailyuse/domain-server/setting';
 
 /**
- * Setting 模块依赖注入容器
+ * Setting 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒
  */
 export class SettingContainer {
   private static instance: SettingContainer;
@@ -22,7 +22,7 @@ export class SettingContainer {
   private constructor() {}
 
   /**
-   * 获取容器单例
+   * 鑾峰彇瀹瑰櫒鍗曚緥
    */
   static getInstance(): SettingContainer {
     if (!SettingContainer.instance) {
@@ -32,14 +32,14 @@ export class SettingContainer {
   }
 
   /**
-   * 重置容器（用于测试）
+   * 閲嶇疆瀹瑰櫒锛堢敤浜庢祴璇曪級
    */
   static resetInstance(): void {
     SettingContainer.instance = new SettingContainer();
   }
 
   /**
-   * 注册 AppConfigRepository
+   * 娉ㄥ唽 AppConfigRepository
    */
   registerAppConfigRepository(repository: IAppConfigRepository): this {
     this.appConfigRepository = repository;
@@ -47,7 +47,7 @@ export class SettingContainer {
   }
 
   /**
-   * 注册 SettingRepository
+   * 娉ㄥ唽 SettingRepository
    */
   registerSettingRepository(repository: ISettingRepository): this {
     this.settingRepository = repository;
@@ -55,7 +55,7 @@ export class SettingContainer {
   }
 
   /**
-   * 注册 UserSettingRepository
+   * 娉ㄥ唽 UserSettingRepository
    */
   registerUserSettingRepository(repository: IUserSettingRepository): this {
     this.userSettingRepository = repository;
@@ -63,7 +63,7 @@ export class SettingContainer {
   }
 
   /**
-   * 获取 AppConfigRepository
+   * 鑾峰彇 AppConfigRepository
    */
   getAppConfigRepository(): IAppConfigRepository {
     if (!this.appConfigRepository) {
@@ -73,7 +73,7 @@ export class SettingContainer {
   }
 
   /**
-   * 获取 SettingRepository
+   * 鑾峰彇 SettingRepository
    */
   getSettingRepository(): ISettingRepository {
     if (!this.settingRepository) {
@@ -83,7 +83,7 @@ export class SettingContainer {
   }
 
   /**
-   * 获取 UserSettingRepository
+   * 鑾峰彇 UserSettingRepository
    */
   getUserSettingRepository(): IUserSettingRepository {
     if (!this.userSettingRepository) {
@@ -93,14 +93,14 @@ export class SettingContainer {
   }
 
   /**
-   * 检查是否已配置
+   * 妫€鏌ユ槸鍚﹀凡閰嶇疆
    */
   isConfigured(): boolean {
     return this.userSettingRepository !== null;
   }
 
   /**
-   * 清空所有注册的依赖
+   * 娓呯┖鎵€鏈夋敞鍐岀殑渚濊禆
    */
   clear(): void {
     this.appConfigRepository = null;

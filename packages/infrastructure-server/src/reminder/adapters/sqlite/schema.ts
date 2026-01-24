@@ -1,6 +1,6 @@
 /**
  * SQLite Database Schema - Reminder Module
- * 提醒模块数据库架构
+ * 鎻愰啋妯″潡鏁版嵁搴撴灦鏋?
  */
 
 export const REMINDER_MODULE_SCHEMA = `

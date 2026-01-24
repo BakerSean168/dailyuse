@@ -1,6 +1,6 @@
 /**
  * SQLite Database Schema - Task Module
- * 任务模块数据库架构
+ * 浠诲姟妯″潡鏁版嵁搴撴灦鏋?
  */
 
 export const TASK_MODULE_SCHEMA = `

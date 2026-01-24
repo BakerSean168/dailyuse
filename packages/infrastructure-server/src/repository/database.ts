@@ -1,15 +1,15 @@
 /**
  * SQLite Database Manager
  *
- * 管理 SQLite 数据库连接和初始化
- * 使用 better-sqlite3 进行同步 I/O 操作（适合 Desktop 应用）
+ * 绠＄悊 SQLite 鏁版嵁搴撹繛鎺ュ拰鍒濆鍖?
+ * 浣跨敤 better-sqlite3 杩涜鍚屾 I/O 鎿嶄綔锛堥€傚悎 Desktop 搴旂敤锛?
  */
 
 import Database from 'better-sqlite3';
 import path from 'path';
 
 /**
- * SQLite 数据库管理器
+ * SQLite 鏁版嵁搴撶鐞嗗櫒
  */
 export class SqliteDatabase {
   private db: Database.Database | null = null;
@@ -20,26 +20,26 @@ export class SqliteDatabase {
   }
 
   /**
-   * 获取或创建数据库连接
+   * 鑾峰彇鎴栧垱寤烘暟鎹簱杩炴帴
    */
   getConnection(): Database.Database {
     if (!this.db) {
       this.db = new Database(this.dbPath);
-      // 启用外键约束
+      // 鍚敤澶栭敭绾︽潫
       this.db.pragma('foreign_keys = ON');
-      // 性能优化
+      // 鎬ц兘浼樺寲
       this.db.pragma('journal_mode = WAL');
     }
     return this.db;
   }
 
   /**
-   * 初始化数据库 schema
+   * 鍒濆鍖栨暟鎹簱 schema
    */
   async initialize(): Promise<void> {
     const db = this.getConnection();
 
-    // Repository 表
+    // Repository 琛?
     db.exec(`
       CREATE TABLE IF NOT EXISTS repositories (
         uuid TEXT PRIMARY KEY,
@@ -61,7 +61,7 @@ export class SqliteDatabase {
       ON repositories(status);
     `);
 
-    // Resource 表
+    // Resource 琛?
     db.exec(`
       CREATE TABLE IF NOT EXISTS resources (
         uuid TEXT PRIMARY KEY,
@@ -91,7 +91,7 @@ export class SqliteDatabase {
       ON resources(path);
     `);
 
-    // Folder 表
+    // Folder 琛?
     db.exec(`
       CREATE TABLE IF NOT EXISTS folders (
         uuid TEXT PRIMARY KEY,
@@ -113,7 +113,7 @@ export class SqliteDatabase {
       ON folders(parent_uuid);
     `);
 
-    // RepositoryStatistics 表
+    // RepositoryStatistics 琛?
     db.exec(`
       CREATE TABLE IF NOT EXISTS repository_statistics (
         uuid TEXT PRIMARY KEY,
@@ -136,7 +136,7 @@ export class SqliteDatabase {
   }
 
   /**
-   * 关闭数据库连接
+   * 鍏抽棴鏁版嵁搴撹繛鎺?
    */
   close(): void {
     if (this.db) {
@@ -146,7 +146,7 @@ export class SqliteDatabase {
   }
 
   /**
-   * 检查数据库健康状态
+   * 妫€鏌ユ暟鎹簱鍋ュ悍鐘舵€?
    */
   healthCheck(): boolean {
     try {
@@ -161,7 +161,7 @@ export class SqliteDatabase {
 }
 
 /**
- * 便捷函数：创建并初始化数据库
+ * 渚挎嵎鍑芥暟锛氬垱寤哄苟鍒濆鍖栨暟鎹簱
  */
 export async function initializeSqliteDatabase(dbPath: string): Promise<SqliteDatabase> {
   const db = new SqliteDatabase(dbPath);

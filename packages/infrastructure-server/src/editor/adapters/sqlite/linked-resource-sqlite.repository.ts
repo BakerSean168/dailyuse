@@ -1,6 +1,6 @@
 /**
  * SQLite LinkedResource Repository Implementation
- * 链接资源的 SQLite 仓储实现
+ * 閾炬帴璧勬簮鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -24,14 +24,14 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
       target_type: row.target_type,
       is_valid: row.is_valid === 1,
       last_verified_at: row.last_verified_at ? new Date(row.last_verified_at) : null,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findBySourceDocumentUuid(sourceDocumentUuid: string): Promise<LinkedResource[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM linked_resources WHERE source_document_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM linked_resources WHERE source_document_uuid = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(sourceDocumentUuid) as any[];
 
@@ -40,7 +40,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
 
   async findByTargetDocumentUuid(targetDocumentUuid: string): Promise<LinkedResource[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM linked_resources WHERE target_document_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM linked_resources WHERE target_document_uuid = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(targetDocumentUuid) as any[];
 
@@ -52,7 +52,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     sourceType: LinkedSourceType,
   ): Promise<LinkedResource[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM linked_resources WHERE source_document_uuid = ? AND source_type = ? ORDER BY created_at DESC`
+      `SELECT * FROM linked_resources WHERE source_document_uuid = ? AND source_type = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(sourceDocumentUuid, sourceType) as any[];
 
@@ -64,7 +64,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     targetType: LinkedTargetType,
   ): Promise<LinkedResource[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM linked_resources WHERE source_document_uuid = ? AND target_type = ? ORDER BY created_at DESC`
+      `SELECT * FROM linked_resources WHERE source_document_uuid = ? AND target_type = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(sourceDocumentUuid, targetType) as any[];
 
@@ -76,7 +76,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
       `SELECT lr.* FROM linked_resources lr
        WHERE lr.is_valid = 0 AND lr.source_document_uuid IN (
          SELECT uuid FROM documents WHERE workspace_uuid = ?
-       ) ORDER BY lr.created_at DESC`
+       ) ORDER BY lr.createdAt DESC`
     );
     const rows = stmt.all(workspaceUuid) as any[];
 
@@ -102,12 +102,12 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     const stmt = this.db.prepare(`
       INSERT INTO linked_resources (
         uuid, source_document_uuid, target_document_uuid, source_type,
-        target_type, is_valid, last_verified_at, created_at, updated_at
+        target_type, is_valid, last_verified_at, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         is_valid = excluded.is_valid,
         last_verified_at = excluded.last_verified_at,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
@@ -118,8 +118,8 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
       dto.target_type,
       dto.is_valid ? 1 : 0,
       dto.last_verified_at ? dto.last_verified_at.getTime() : null,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -137,8 +137,9 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
       target_type: row.target_type,
       is_valid: row.is_valid === 1,
       last_verified_at: row.last_verified_at ? new Date(row.last_verified_at) : null,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 }
+

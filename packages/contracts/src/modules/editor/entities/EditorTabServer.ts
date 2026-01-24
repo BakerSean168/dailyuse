@@ -22,7 +22,7 @@ export interface EditorTabServerDTO {
   documentUuid?: string | null; // 关联文档 UUID（如果是文档标签）
   tabIndex: number; // 标签索引（在分组中的位置）
   tabType: TabType;
-  title: string;
+  name: string;
   viewState: TabViewStateServerDTO;
   isPinned: boolean;
   isDirty: boolean; // 是否有未保存的更改
@@ -44,7 +44,7 @@ export interface EditorTabPersistenceDTO {
   document_uuid?: string | null;
   tab_index: number;
   tab_type: TabType;
-  title: string;
+  name: string;
   view_state: string; // JSON 字符串
   is_pinned: boolean;
   is_dirty: boolean;
@@ -67,7 +67,7 @@ export interface EditorTabServer {
   readonly documentUuid?: string | null;
   readonly tabIndex: number;
   readonly tabType: TabType;
-  readonly title: string;
+  readonly name: string;
   readonly viewState: TabViewStateServerDTO;
   readonly isPinned: boolean;
   readonly isDirty: boolean;
@@ -80,7 +80,7 @@ export interface EditorTabServer {
   /**
    * 更新标题
    */
-  updateTitle(title: string): void;
+  updateName(name: string): void;
 
   /**
    * 更新视图状态

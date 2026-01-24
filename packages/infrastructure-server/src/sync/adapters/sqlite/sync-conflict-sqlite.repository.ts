@@ -1,6 +1,6 @@
 /**
  * SQLite SyncConflict Repository Implementation
- * 同步冲突的 SQLite 仓储实现
+ * 鍚屾鍐茬獊鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -16,11 +16,11 @@ export class SqliteSyncConflictRepository implements ISyncConflictRepository {
     const stmt = this.db.prepare(`
       INSERT INTO sync_conflicts (
         uuid, session_id, entity_type, entity_uuid, conflict_type,
-        status, auto_resolvable, created_at, updated_at
+        status, auto_resolvable, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         status = excluded.status,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
@@ -31,8 +31,8 @@ export class SqliteSyncConflictRepository implements ISyncConflictRepository {
       dto.conflict_type,
       dto.status,
       dto.auto_resolvable ? 1 : 0,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -40,11 +40,11 @@ export class SqliteSyncConflictRepository implements ISyncConflictRepository {
     const insertStmt = this.db.prepare(`
       INSERT INTO sync_conflicts (
         uuid, session_id, entity_type, entity_uuid, conflict_type,
-        status, auto_resolvable, created_at, updated_at
+        status, auto_resolvable, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         status = excluded.status,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     const transaction = this.db.transaction((items: SyncConflict[]) => {
@@ -58,8 +58,8 @@ export class SqliteSyncConflictRepository implements ISyncConflictRepository {
           dto.conflict_type,
           dto.status,
           dto.auto_resolvable ? 1 : 0,
-          dto.created_at,
-          dto.updated_at,
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -81,14 +81,14 @@ export class SqliteSyncConflictRepository implements ISyncConflictRepository {
       conflict_type: row.conflict_type,
       status: row.status,
       auto_resolvable: row.auto_resolvable === 1,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findBySessionId(accountUuid: string, sessionId: string): Promise<SyncConflict[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM sync_conflicts WHERE session_id = ? ORDER BY created_at DESC`
+      `SELECT * FROM sync_conflicts WHERE session_id = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(sessionId) as any[];
 
@@ -101,8 +101,8 @@ export class SqliteSyncConflictRepository implements ISyncConflictRepository {
         conflict_type: row.conflict_type,
         status: row.status,
         auto_resolvable: row.auto_resolvable === 1,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -116,7 +116,7 @@ export class SqliteSyncConflictRepository implements ISyncConflictRepository {
       params.push(sessionId);
     }
 
-    query += ` ORDER BY created_at DESC`;
+    query += ` ORDER BY createdAt DESC`;
 
     const stmt = this.db.prepare(query);
     const rows = stmt.all(...params) as any[];
@@ -130,15 +130,15 @@ export class SqliteSyncConflictRepository implements ISyncConflictRepository {
         conflict_type: row.conflict_type,
         status: row.status,
         auto_resolvable: row.auto_resolvable === 1,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
 
   async findAutoResolvable(accountUuid: string, sessionId: string): Promise<SyncConflict[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM sync_conflicts WHERE session_id = ? AND auto_resolvable = 1 AND status != 'RESOLVED' ORDER BY created_at DESC`
+      `SELECT * FROM sync_conflicts WHERE session_id = ? AND auto_resolvable = 1 AND status != 'RESOLVED' ORDER BY createdAt DESC`
     );
     const rows = stmt.all(sessionId) as any[];
 
@@ -151,8 +151,8 @@ export class SqliteSyncConflictRepository implements ISyncConflictRepository {
         conflict_type: row.conflict_type,
         status: row.status,
         auto_resolvable: row.auto_resolvable === 1,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -186,7 +186,7 @@ export class SqliteSyncConflictRepository implements ISyncConflictRepository {
       params.push(options.autoResolvable ? 1 : 0);
     }
 
-    query += ` ORDER BY created_at DESC`;
+    query += ` ORDER BY createdAt DESC`;
 
     if (options.limit) {
       query += ` LIMIT ?`;
@@ -210,8 +210,8 @@ export class SqliteSyncConflictRepository implements ISyncConflictRepository {
         conflict_type: row.conflict_type,
         status: row.status,
         auto_resolvable: row.auto_resolvable === 1,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -252,3 +252,4 @@ export class SqliteSyncConflictRepository implements ISyncConflictRepository {
     return result.changes ?? 0;
   }
 }
+

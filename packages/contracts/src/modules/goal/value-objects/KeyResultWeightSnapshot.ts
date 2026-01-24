@@ -225,17 +225,17 @@ export const KeyResultWeightSnapshotClientDTOSchema = z.object({
  */
 export const KeyResultWeightSnapshotPersistenceDTOSchema = z.object({
   uuid: z.string().uuid(),
-  goal_uuid: z.string().uuid(),
-  key_result_uuid: z.string().uuid(),
-  old_weight: z.number().min(0).max(100),
-  new_weight: z.number().min(0).max(100),
-  weight_delta: z.number(),
-  snapshot_time: z.bigint(),
+  goalUuid: z.string().uuid(),
+  keyResultUuid: z.string().uuid(),
+  oldWeight: z.number().min(0).max(100),
+  newWeight: z.number().min(0).max(100),
+  weightDelta: z.number(),
+  snapshotTime: z.bigint(),
   trigger: SnapshotTriggerSchema,
   reason: z.string().optional().nullable(),
-  operator_uuid: z.string().uuid(),
-  created_at: z.date(),
-});
+  operatorUuid: z.string().uuid(),
+  createdAt: z.date(),
+})
 
 // ============ 类型推断 ============
 

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Rename Folder
  *
- * 重命名文件夹
+ * 閲嶅懡鍚嶆枃浠跺す
  */
 
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';
@@ -51,3 +51,4 @@ export class RenameFolder {
     return { folder: folder.toClientDTO() };
   }
 }
+

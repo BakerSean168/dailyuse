@@ -1,12 +1,12 @@
 /**
  * SiliconFlow Adapter
- * SiliconFlow 硅基流动高性价比推理平台适配�?
+ * SiliconFlow 纭呭熀娴佸姩楂樻€т环姣旀帹鐞嗗钩鍙伴€傞厤锟?
  *
- * 特点�?
- * - 国内服务商，网络延迟�?
- * - 支持 DeepSeek, Qwen 等多种模�?
- * - 免费模型可用
- * - OpenAI 兼容接口
+ * 鐗圭偣锟?
+ * - 鍥藉唴鏈嶅姟鍟嗭紝缃戠粶寤惰繜锟?
+ * - 鏀寔 DeepSeek, Qwen 绛夊绉嶆ā锟?
+ * - 鍏嶈垂妯″瀷鍙敤
+ * - OpenAI 鍏煎鎺ュ彛
  *
  * @see https://docs.siliconflow.cn/
  */
@@ -24,21 +24,21 @@ import {
 import { AIGenerationTimeoutError, AIProviderError } from '../errors/a-i-errors';
 
 /**
- * SiliconFlow 配置
+ * SiliconFlow 閰嶇疆
  */
 export interface SiliconFlowConfig {
   /** API Key */
   apiKey: string;
-  /** 默认模型 ID */
+  /** 榛樿妯″瀷 ID */
   defaultModel: string;
-  /** 超时时间（毫秒，默认 60000�?*/
+  /** 瓒呮椂鏃堕棿锛堟绉掞紝榛樿 60000锟?*/
   timeoutMs?: number;
 }
 
 /**
- * SiliconFlow Adapter 实现
+ * SiliconFlow Adapter 瀹炵幇
  *
- * 用法�?
+ * 鐢ㄦ硶锟?
  * ```typescript
  * const adapter = new SiliconFlowAdapter({
  *   apiKey: 'sk-xxx',
@@ -48,9 +48,9 @@ export interface SiliconFlowConfig {
  * ```
  */
 export class SiliconFlowAdapter extends BaseAIAdapter {
-  /** SiliconFlow API 基础地址 */
+  /** SiliconFlow API 鍩虹鍦板潃 */
   private static readonly BASE_URL = 'https://api.siliconflow.cn/v1';
-  /** 提供商名�?*/
+  /** 鎻愪緵鍟嗗悕锟?*/
   private static readonly PROVIDER_NAME = 'SiliconFlow';
 
   private readonly openai: ReturnType<typeof createOpenAI>;
@@ -70,7 +70,7 @@ export class SiliconFlowAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 一次性生成文�?
+   * 涓€娆℃€х敓鎴愭枃锟?
    */
   async generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>> {
     try {
@@ -121,7 +121,7 @@ export class SiliconFlowAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 流式生成文本
+   * 娴佸紡鐢熸垚鏂囨湰
    */
   async *streamText(request: AIGenerationRequest): AsyncGenerator<AIStreamChunk, void, unknown> {
     try {
@@ -171,7 +171,7 @@ export class SiliconFlowAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 健康检�?
+   * 鍋ュ悍妫€锟?
    */
   async healthCheck(): Promise<boolean> {
     try {
@@ -187,21 +187,21 @@ export class SiliconFlowAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 获取提供商名�?
+   * 鑾峰彇鎻愪緵鍟嗗悕锟?
    */
   getProviderName(): string {
     return SiliconFlowAdapter.PROVIDER_NAME;
   }
 
   /**
-   * 获取模型 ID
+   * 鑾峰彇妯″瀷 ID
    */
   getModelId(): string {
     return this.modelId;
   }
 
   /**
-   * 构建完整 Prompt
+   * 鏋勫缓瀹屾暣 Prompt
    */
   private buildPrompt(request: AIGenerationRequest): string {
     const parts: string[] = [];
@@ -220,7 +220,7 @@ export class SiliconFlowAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 尝试解析 JSON
+   * 灏濊瘯瑙ｆ瀽 JSON
    */
   private tryParseJSON<T>(text: string): T | null {
     try {

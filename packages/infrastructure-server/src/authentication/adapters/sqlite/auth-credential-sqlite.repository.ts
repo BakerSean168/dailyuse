@@ -1,6 +1,6 @@
 /**
  * SQLite AuthCredential Repository Implementation
- * 认证凭证的 SQLite 仓储实现
+ * 璁よ瘉鍑瘉鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,26 +15,26 @@ export class SqliteAuthCredentialRepository implements IAuthCredentialRepository
 
     const stmt = this.db.prepare(`
       INSERT INTO auth_credentials (
-        uuid, account_uuid, credential_type, credential_value, is_verified,
-        verified_at, created_at, updated_at
+        uuid, accountUuid, credential_type, credential_value, is_verified,
+        verified_at, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         credential_type = excluded.credential_type,
         credential_value = excluded.credential_value,
         is_verified = excluded.is_verified,
         verified_at = excluded.verified_at,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       dto.credential_type,
       dto.credential_value,
       dto.is_verified ? 1 : 0,
       dto.verified_at ? dto.verified_at.getTime() : null,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -46,19 +46,19 @@ export class SqliteAuthCredentialRepository implements IAuthCredentialRepository
 
     return AuthCredential.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       credential_type: row.credential_type,
       credential_value: row.credential_value,
       is_verified: row.is_verified === 1,
       verified_at: row.verified_at ? new Date(row.verified_at) : null,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findByAccountUuid(accountUuid: string): Promise<AuthCredential | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM auth_credentials WHERE account_uuid = ? ORDER BY created_at DESC LIMIT 1`
+      `SELECT * FROM auth_credentials WHERE accountUuid = ? ORDER BY createdAt DESC LIMIT 1`
     );
     const row = stmt.get(accountUuid) as any;
 
@@ -66,18 +66,18 @@ export class SqliteAuthCredentialRepository implements IAuthCredentialRepository
 
     return AuthCredential.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       credential_type: row.credential_type,
       credential_value: row.credential_value,
       is_verified: row.is_verified === 1,
       verified_at: row.verified_at ? new Date(row.verified_at) : null,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findAll(params?: { skip?: number; take?: number }): Promise<AuthCredential[]> {
-    let query = `SELECT * FROM auth_credentials ORDER BY created_at DESC`;
+    let query = `SELECT * FROM auth_credentials ORDER BY createdAt DESC`;
     const parameters: any[] = [];
 
     if (params?.skip) {
@@ -96,33 +96,33 @@ export class SqliteAuthCredentialRepository implements IAuthCredentialRepository
     return rows.map((row) =>
       AuthCredential.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         credential_type: row.credential_type,
         credential_value: row.credential_value,
         is_verified: row.is_verified === 1,
         verified_at: row.verified_at ? new Date(row.verified_at) : null,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
 
   async findByStatus(isVerified: boolean): Promise<AuthCredential[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM auth_credentials WHERE is_verified = ? ORDER BY created_at DESC`
+      `SELECT * FROM auth_credentials WHERE is_verified = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(isVerified ? 1 : 0) as any[];
 
     return rows.map((row) =>
       AuthCredential.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         credential_type: row.credential_type,
         credential_value: row.credential_value,
         is_verified: row.is_verified === 1,
         verified_at: row.verified_at ? new Date(row.verified_at) : null,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
@@ -133,7 +133,8 @@ export class SqliteAuthCredentialRepository implements IAuthCredentialRepository
   }
 
   async deleteByAccountUuid(accountUuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM auth_credentials WHERE account_uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM auth_credentials WHERE accountUuid = ?`);
     stmt.run(accountUuid);
   }
 }
+

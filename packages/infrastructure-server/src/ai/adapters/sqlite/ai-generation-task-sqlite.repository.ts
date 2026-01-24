@@ -1,6 +1,6 @@
 /**
  * SQLite AIGenerationTask Repository Implementation
- * AI 生成任务的 SQLite 仓储实现
+ * AI 鐢熸垚浠诲姟鐨?SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -13,24 +13,24 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
   async save(task: AIGenerationTaskServerDTO): Promise<void> {
     const stmt = this.db.prepare(`
       INSERT INTO ai_generation_tasks (
-        uuid, account_uuid, task_type, status, input_data, output_data,
-        created_at, updated_at
+        uuid, accountUuid, task_type, status, input_data, output_data,
+        createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         status = excluded.status,
         output_data = excluded.output_data,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       task.uuid,
-      task.account_uuid,
+      task.accountUuid,
       task.task_type,
       task.status,
       task.input_data ? JSON.stringify(task.input_data) : null,
       task.output_data ? JSON.stringify(task.output_data) : null,
-      new Date(task.created_at).getTime(),
-      new Date(task.updated_at).getTime(),
+      new Date(task.createdAt).getTime(),
+      new Date(task.updatedAt).getTime(),
     );
   }
 
@@ -47,7 +47,7 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
 
   async findByAccountUuid(accountUuid: string): Promise<AIGenerationTaskServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_generation_tasks WHERE account_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM ai_generation_tasks WHERE accountUuid = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(accountUuid) as any[];
 
@@ -59,7 +59,7 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
     taskType: GenerationTaskType,
   ): Promise<AIGenerationTaskServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_generation_tasks WHERE account_uuid = ? AND task_type = ? ORDER BY created_at DESC`
+      `SELECT * FROM ai_generation_tasks WHERE accountUuid = ? AND task_type = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(accountUuid, taskType) as any[];
 
@@ -68,7 +68,7 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
 
   async findByStatus(accountUuid: string, status: TaskStatus): Promise<AIGenerationTaskServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_generation_tasks WHERE account_uuid = ? AND status = ? ORDER BY created_at DESC`
+      `SELECT * FROM ai_generation_tasks WHERE accountUuid = ? AND status = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(accountUuid, status) as any[];
 
@@ -83,13 +83,14 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
   private rowToDTO(row: any): AIGenerationTaskServerDTO {
     return {
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       task_type: row.task_type,
       status: row.status,
       input_data: row.input_data ? JSON.parse(row.input_data) : undefined,
       output_data: row.output_data ? JSON.parse(row.output_data) : undefined,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     };
   }
 }
+

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Get Folder
  *
- * 获取文件夹详情
+ * 鑾峰彇鏂囦欢澶硅鎯?
  */
 
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';
@@ -33,3 +33,4 @@ export class GetFolder {
     return { folder: folder ? folder.toClientDTO() : null };
   }
 }
+

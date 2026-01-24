@@ -3,14 +3,14 @@ import type { ITaskStatisticsRepository } from '@dailyuse/domain-server/task';
 import { TaskStatistics } from '@dailyuse/domain-server/task';
 
 /**
- * TaskStatistics Prisma 仓储实现
- * 负责 TaskStatistics 聚合根的持久化操�?
+ * TaskStatistics Prisma 浠撳偍瀹炵幇
+ * 璐熻矗 TaskStatistics 鑱氬悎鏍圭殑鎸佷箙鍖栨搷浣?
  */
 export class TaskStatisticsPrismaRepository implements ITaskStatisticsRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 将数据库记录映射为领域实�?
+   * 灏嗘暟鎹簱璁板綍鏄犲皠涓洪鍩熷疄浣?
    */
   private mapToEntity(data: any): TaskStatistics {
     return TaskStatistics.fromPersistenceDTO({
@@ -56,7 +56,7 @@ export class TaskStatisticsPrismaRepository implements ITaskStatisticsRepository
   }
 
   /**
-   * 将时间戳转换�?Date 对象
+   * 灏嗘椂闂存埑杞崲涓?Date 瀵硅薄
    */
   private toDate(timestamp: number | null | undefined): Date | null | undefined {
     if (timestamp == null) return timestamp as null | undefined;
@@ -64,7 +64,7 @@ export class TaskStatisticsPrismaRepository implements ITaskStatisticsRepository
   }
 
   /**
-   * 保存或更新统计数�?
+   * 淇濆瓨鎴栨洿鏂扮粺璁℃暟鎹?
    */
   async save(statistics: TaskStatistics): Promise<void> {
     const persistence = statistics.toPersistenceDTO();
@@ -153,7 +153,7 @@ export class TaskStatisticsPrismaRepository implements ITaskStatisticsRepository
   }
 
   /**
-   * 根据 UUID 查找统计数据
+   * 鏍规嵁 UUID 鏌ユ壘缁熻鏁版嵁
    */
   async findByUuid(uuid: string): Promise<TaskStatistics | null> {
     const data = await this.prisma.taskStatistic.findUnique({
@@ -164,7 +164,7 @@ export class TaskStatisticsPrismaRepository implements ITaskStatisticsRepository
   }
 
   /**
-   * 根据账户 UUID 查找统计数据
+   * 鏍规嵁璐︽埛 UUID 鏌ユ壘缁熻鏁版嵁
    */
   async findByAccountUuid(accountUuid: string): Promise<TaskStatistics | null> {
     const data = await this.prisma.taskStatistic.findUnique({
@@ -175,7 +175,7 @@ export class TaskStatisticsPrismaRepository implements ITaskStatisticsRepository
   }
 
   /**
-   * 删除统计数据
+   * 鍒犻櫎缁熻鏁版嵁
    */
   async delete(uuid: string): Promise<void> {
     await this.prisma.taskStatistic.delete({
@@ -184,7 +184,7 @@ export class TaskStatisticsPrismaRepository implements ITaskStatisticsRepository
   }
 
   /**
-   * 批量保存统计数据
+   * 鎵归噺淇濆瓨缁熻鏁版嵁
    */
   async saveBatch(statisticsList: TaskStatistics[]): Promise<void> {
     await this.prisma.$transaction(

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Tags Service
  *
- * 标签统计与过滤服务
+ * 鏍囩缁熻涓庤繃婊ゆ湇鍔?
  */
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
@@ -16,10 +16,10 @@ export class TagsService {
 
 
   /**
-   * 获取仓储的标签统计信息
+   * 鑾峰彇浠撳偍鐨勬爣绛剧粺璁′俊鎭?
    *
-   * @param repositoryUuid 仓储 UUID
-   * @returns 标签统计列表（按使用频率降序）
+   * @param repositoryUuid 浠撳偍 UUID
+   * @returns 鏍囩缁熻鍒楄〃锛堟寜浣跨敤棰戠巼闄嶅簭锛?
    */
   async getTagStatistics(repositoryUuid: string): Promise<TagStatisticsDto[]> {
     const resources = await this.resourceRepository.findByRepositoryUuid(repositoryUuid);
@@ -67,7 +67,7 @@ export class TagsService {
   }
 
   /**
-   * 从资源中提取 tags
+   * 浠庤祫婧愪腑鎻愬彇 tags
    */
   private extractTags(resource: any): string[] {
     const content = (resource as any).persistence?.content;
@@ -119,7 +119,7 @@ export class TagsService {
   }
 
   /**
-   * 提取资源标题
+   * 鎻愬彇璧勬簮鏍囬
    */
   private extractTitle(resource: any): string {
     const metadata = (resource as any).metadata;
@@ -127,7 +127,7 @@ export class TagsService {
   }
 
   /**
-   * 提取资源路径
+   * 鎻愬彇璧勬簮璺緞
    */
   private extractPath(resource: any): string {
     const metadata = (resource as any).metadata;
@@ -135,7 +135,8 @@ export class TagsService {
   }
 }
 
-// ===== 便捷函数 =====
+// ===== 渚挎嵎鍑芥暟 =====
 
 export const createTagsService = (resourceRepository: IResourceRepository) =>
   new TagsService(resourceRepository);
+

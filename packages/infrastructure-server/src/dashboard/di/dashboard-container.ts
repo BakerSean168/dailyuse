@@ -1,6 +1,6 @@
 /**
  * @file DashboardContainer.ts
- * @description Dashboard 模块依赖注入容器，管理服务的实例化和生命周期�?
+ * @description Dashboard 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒锛岀鐞嗘湇鍔＄殑瀹炰緥鍖栧拰鐢熷懡鍛ㄦ湡銆?
  * @date 2025-01-22
  */
 
@@ -27,17 +27,17 @@ import { DashboardConfigPrismaRepository } from '../repositories/DashboardConfig
 import { StatisticsCacheService as CacheServiceImpl } from '../services/StatisticsCacheService';
 
 /**
- * Dashboard 模块依赖注入容器�?
+ * Dashboard 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒銆?
  *
  * @remarks
- * 负责管理 Dashboard 相关服务的实例创建和生命周期�?
+ * 璐熻矗绠＄悊 Dashboard 鐩稿叧鏈嶅姟鐨勫疄渚嬪垱寤哄拰鐢熷懡鍛ㄦ湡銆?
  *
- * 采用懒加载模式：
- * - 只在首次调用时创建实�?
- * - 后续调用返回已有实例（单例）
+ * 閲囩敤鎳掑姞杞芥ā寮忥細
+ * - 鍙湪棣栨璋冪敤鏃跺垱寤哄疄渚?
+ * - 鍚庣画璋冪敤杩斿洖宸叉湁瀹炰緥锛堝崟渚嬶級
  *
- * 支持测试替换�?
- * - 允许注入 Mock 服务用于单元测试
+ * 鏀寔娴嬭瘯鏇挎崲锛?
+ * - 鍏佽娉ㄥ叆 Mock 鏈嶅姟鐢ㄤ簬鍗曞厓娴嬭瘯
  */
 export class DashboardContainer {
   private static instance: DashboardContainer;
@@ -47,7 +47,7 @@ export class DashboardContainer {
   private constructor() {}
 
   /**
-   * 获取容器单例�?
+   * 鑾峰彇瀹瑰櫒鍗曚緥銆?
    * @returns {DashboardContainer}
    */
   static getInstance(): DashboardContainer {
@@ -58,7 +58,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 获取 TaskStatistics 仓储实例�?
+   * 鑾峰彇 TaskStatistics 浠撳偍瀹炰緥銆?
    * @returns {ITaskStatisticsRepository}
    */
   getTaskStatisticsRepository(): ITaskStatisticsRepository {
@@ -66,7 +66,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 获取 GoalStatistics 仓储实例�?
+   * 鑾峰彇 GoalStatistics 浠撳偍瀹炰緥銆?
    * @returns {IGoalStatisticsRepository}
    */
   getGoalStatisticsRepository(): IGoalStatisticsRepository {
@@ -74,7 +74,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 获取 ReminderStatistics 仓储实例�?
+   * 鑾峰彇 ReminderStatistics 浠撳偍瀹炰緥銆?
    * @returns {IReminderStatisticsRepository}
    */
   getReminderStatisticsRepository(): IReminderStatisticsRepository {
@@ -82,7 +82,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 获取 ScheduleStatistics 仓储实例�?
+   * 鑾峰彇 ScheduleStatistics 浠撳偍瀹炰緥銆?
    * @returns {IScheduleStatisticsRepository}
    */
   getScheduleStatisticsRepository(): IScheduleStatisticsRepository {
@@ -90,7 +90,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 获取缓存服务实例（懒加载）�?
+   * 鑾峰彇缂撳瓨鏈嶅姟瀹炰緥锛堟噿鍔犺浇锛夈€?
    * @returns {StatisticsCacheService}
    */
   getCacheService(): StatisticsCacheService {
@@ -101,7 +101,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 获取 Dashboard 配置仓储实例（懒加载）�?
+   * 鑾峰彇 Dashboard 閰嶇疆浠撳偍瀹炰緥锛堟噿鍔犺浇锛夈€?
    * @returns {IDashboardConfigRepository}
    */
   getDashboardConfigRepository(): IDashboardConfigRepository {
@@ -112,15 +112,15 @@ export class DashboardContainer {
   }
 
   /**
-   * 设置缓存服务实例（用于测试）�?
-   * @param service - 缓存服务 Mock 实例
+   * 璁剧疆缂撳瓨鏈嶅姟瀹炰緥锛堢敤浜庢祴璇曪級銆?
+   * @param service - 缂撳瓨鏈嶅姟 Mock 瀹炰緥
    */
   setCacheService(service: StatisticsCacheService): void {
     this.cacheService = service;
   }
 
   /**
-   * 重置容器（用于测试）�?
+   * 閲嶇疆瀹瑰櫒锛堢敤浜庢祴璇曪級銆?
    */
   reset(): void {
     this.cacheService = undefined;

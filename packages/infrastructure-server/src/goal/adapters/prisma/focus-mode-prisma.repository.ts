@@ -4,13 +4,13 @@ import { FocusMode } from '@dailyuse/domain-server/goal';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
 
 /**
- * FocusMode Prisma 仓储实现
+ * FocusMode Prisma 浠撳偍瀹炵幇
  */
 export class FocusModePrismaRepository implements IFocusModeRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * �?Prisma 模型映射为领域值对�?
+   * 灏?Prisma 妯″瀷鏄犲皠涓洪鍩熷€煎璞?
    */
   private mapToValueObject(data: PrismaFocusMode): FocusMode {
     return FocusMode.fromServerDTO({
@@ -28,7 +28,7 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
   }
 
   /**
-   * 保存专注周期（创建或更新�?
+   * 淇濆瓨涓撴敞鍛ㄦ湡锛堝垱寤烘垨鏇存柊锛?
    */
   async save(focusMode: FocusMode): Promise<void> {
     const dto = focusMode.toServerDTO();
@@ -58,7 +58,7 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
   }
 
   /**
-   * 通过 UUID 查找专注周期
+   * 閫氳繃 UUID 鏌ユ壘涓撴敞鍛ㄦ湡
    */
   async findById(uuid: string): Promise<FocusMode | null> {
     const data = await this.prisma.focusMode.findUnique({
@@ -69,7 +69,7 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
   }
 
   /**
-   * 查找账户当前活跃的专注周�?
+   * 鏌ユ壘璐︽埛褰撳墠娲昏穬鐨勪笓娉ㄥ懆鏈?
    */
   async findActiveByAccountUuid(accountUuid: string): Promise<FocusMode | null> {
     const data = await this.prisma.focusMode.findFirst({
@@ -84,7 +84,7 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
   }
 
   /**
-   * 查找账户的所有专注周期（包括历史�?
+   * 鏌ユ壘璐︽埛鐨勬墍鏈変笓娉ㄥ懆鏈燂紙鍖呮嫭鍘嗗彶锛?
    */
   async findByAccountUuid(accountUuid: string): Promise<FocusMode[]> {
     const data = await this.prisma.focusMode.findMany({
@@ -96,7 +96,7 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
   }
 
   /**
-   * 批量失效过期的专注周�?
+   * 鎵归噺澶辨晥杩囨湡鐨勪笓娉ㄥ懆鏈?
    */
   async deactivateExpired(): Promise<number> {
     const currentTime = BigInt(Date.now());
@@ -117,7 +117,7 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
   }
 
   /**
-   * 删除专注周期
+   * 鍒犻櫎涓撴敞鍛ㄦ湡
    */
   async delete(uuid: string): Promise<void> {
     await this.prisma.focusMode.delete({

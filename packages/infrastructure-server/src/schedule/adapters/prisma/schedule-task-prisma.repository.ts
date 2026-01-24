@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Prisma Schedule Task Repository
  * ScheduleTask 鑱氬悎鏍?Prisma 浠撳偍瀹炵幇
  *
@@ -385,7 +385,7 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
 
   async withTransaction<T>(fn: (repo: IScheduleTaskRepository) => Promise<T>): Promise<T> {
     return this.prisma.$transaction(async (tx) => {
-      const txRepo = new ScheduleTaskRepository(tx as PrismaClient);
+      const txRepo = new ScheduleTaskPrismaRepository(tx as PrismaClient);
       return fn(txRepo);
     });
   }

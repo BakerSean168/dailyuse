@@ -1,7 +1,7 @@
 /**
  * Prisma Provider Initializer
  *
- * 为 Prisma 数据库提供者初始化所有仓储实现
+ * 涓?Prisma 鏁版嵁搴撴彁渚涜€呭垵濮嬪寲鎵€鏈変粨鍌ㄥ疄鐜?
  */
 
 import type {
@@ -23,12 +23,12 @@ import type {
 } from '../database-provider-factory';
 
 /**
- * Prisma 提供者初始化器
+ * Prisma 鎻愪緵鑰呭垵濮嬪寲鍣?
  *
- * 职责：
- * - 创建所有 Prisma 仓储实现
- * - 将实现注册到容器中
- * - 管理 Prisma 连接的生命周期
+ * 鑱岃矗锛?
+ * - 鍒涘缓鎵€鏈?Prisma 浠撳偍瀹炵幇
+ * - 灏嗗疄鐜版敞鍐屽埌瀹瑰櫒涓?
+ * - 绠＄悊 Prisma 杩炴帴鐨勭敓鍛藉懆鏈?
  */
 export class PrismaProviderInitializer implements IProviderInitializer {
   private prisma: any;
@@ -42,7 +42,7 @@ export class PrismaProviderInitializer implements IProviderInitializer {
 
     this.prisma = config.prisma;
 
-    // 创建所有 Prisma 仓储实现
+    // 鍒涘缓鎵€鏈?Prisma 浠撳偍瀹炵幇
     const repositoryRepository: IRepositoryRepository = new RepositoryPrismaRepository(
       this.prisma,
     );
@@ -51,7 +51,7 @@ export class PrismaProviderInitializer implements IProviderInitializer {
     const statisticsRepository: IRepositoryStatisticsRepository =
       new RepositoryStatisticsPrismaRepository(this.prisma);
 
-    // 注册到容器
+    // 娉ㄥ唽鍒板鍣?
     (container as unknown as RepositoryContainer).registerRepositoryRepository(
       repositoryRepository,
     );
@@ -63,26 +63,26 @@ export class PrismaProviderInitializer implements IProviderInitializer {
       statisticsRepository,
     );
 
-    console.log('✅ Prisma provider initialized successfully');
+    console.log('鉁?Prisma provider initialized successfully');
   }
 
   async cleanup(): Promise<void> {
     if (this.prisma && typeof this.prisma.$disconnect === 'function') {
       await this.prisma.$disconnect();
-      console.log('✅ Prisma provider cleaned up');
+      console.log('鉁?Prisma provider cleaned up');
     }
   }
 
   async healthCheck(): Promise<boolean> {
     try {
       if (this.prisma) {
-        // 执行简单查询检查连接
+        // 鎵ц绠€鍗曟煡璇㈡鏌ヨ繛鎺?
         await this.prisma.$queryRaw`SELECT 1`;
         return true;
       }
       return false;
     } catch (error) {
-      console.error('❌ Prisma health check failed:', error);
+      console.error('鉂?Prisma health check failed:', error);
       return false;
     }
   }

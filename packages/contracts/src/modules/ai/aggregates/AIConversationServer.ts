@@ -15,7 +15,7 @@ import type { AIConversationClientDTO } from './AIConversationClient';
 export interface AIConversationServerDTO {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   status: ConversationStatus;
   messageCount: number;
   lastMessageAt?: number | null;
@@ -34,7 +34,7 @@ export interface AIConversationServerDTO {
 export interface AIConversationPersistenceDTO {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   status: ConversationStatus;
   messageCount: number;
   lastMessageAt?: number | null;
@@ -110,7 +110,7 @@ export interface AIConversationServer {
   // 基础属性
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   status: ConversationStatus;
   messageCount: number;
   lastMessageAt?: number | null;

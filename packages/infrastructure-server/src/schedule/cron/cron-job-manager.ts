@@ -1,15 +1,15 @@
 /**
- * CronJobManager - Cron 任务管理�?
+ * CronJobManager - Cron 浠诲姟绠＄悊鍣?
  *
  * @responsibility
- * - 管理所�?ScheduleTask �?Cron 任务
- * - 支持动态注�?注销 Cron 任务
- * - 触发时调�?ScheduleTaskExecutor 执行任务
+ * - 绠＄悊鎵€鏈?ScheduleTask 鐨?Cron 浠诲姟
+ * - 鏀寔鍔ㄦ€佹敞鍐?娉ㄩ攢 Cron 浠诲姟
+ * - 瑙﹀彂鏃惰皟鐢?ScheduleTaskExecutor 鎵ц浠诲姟
  *
  * @architecture
- * - 基础设施层（Infrastructure�?
- * - 使用 node-cron 管理定时任务
- * - 内存中维�?taskUuid �?CronJob 映射
+ * - 鍩虹璁炬柦灞傦紙Infrastructure锛?
+ * - 浣跨敤 node-cron 绠＄悊瀹氭椂浠诲姟
+ * - 鍐呭瓨涓淮鎶?taskUuid 鈫?CronJob 鏄犲皠
  */
 
 import cron from 'node-cron';
@@ -25,10 +25,10 @@ type CronJob = ReturnType<typeof cron.schedule>;
 export class CronJobManager {
   private static instance: CronJobManager;
 
-  /** taskUuid �?CronJob 映射�?*/
+  /** taskUuid 鈫?CronJob 鏄犲皠琛?*/
   private jobs: Map<string, CronJob> = new Map();
 
-  /** taskUuid �?cron 表达式映射表（用于调试） */
+  /** taskUuid 鈫?cron 琛ㄨ揪寮忔槧灏勮〃锛堢敤浜庤皟璇曪級 */
   private cronExpressions: Map<string, string> = new Map();
 
   private executor: ScheduleTaskExecutor;
@@ -47,43 +47,43 @@ export class CronJobManager {
   }
 
   /**
-   * 注册任务�?Cron Job
+   * 娉ㄥ唽浠诲姟鐨?Cron Job
    *
-   * @param task - ScheduleTask 聚合�?
-   * @returns 是否成功注册
+   * @param task - ScheduleTask 鑱氬悎鏍?
+   * @returns 鏄惁鎴愬姛娉ㄥ唽
    */
   public registerTask(task: ScheduleTask): boolean {
     const taskUuid = task.uuid;
     const cronExpression = task.schedule.cronExpression;
 
     if (!cronExpression) {
-      logger.warn('⚠️ 任务没有 cron 表达式，跳过注册', {
+      logger.warn('鈿狅笍 浠诲姟娌℃湁 cron 琛ㄨ揪寮忥紝璺宠繃娉ㄥ唽', {
         taskUuid,
         taskName: task.name,
       });
       return false;
     }
 
-    // 如果任务已经注册，先注销
+    // 濡傛灉浠诲姟宸茬粡娉ㄥ唽锛屽厛娉ㄩ攢
     if (this.jobs.has(taskUuid)) {
       this.unregisterTask(taskUuid);
     }
 
     try {
-      // 验证 cron 表达�?
+      // 楠岃瘉 cron 琛ㄨ揪寮?
       if (!cron.validate(cronExpression)) {
-        logger.error('�?无效�?cron 表达�?, {
+        logger.error('鉂?鏃犳晥鐨?cron 琛ㄨ揪寮?, {
           taskUuid,
           cronExpression,
         });
         return false;
       }
 
-      // 创建 Cron Job
+      // 鍒涘缓 Cron Job
       const job = cron.schedule(
         cronExpression,
         async () => {
-          logger.info('�?Cron 触发', {
+          logger.info('鈴?Cron 瑙﹀彂', {
             taskUuid,
             taskName: task.name,
             cronExpression,
@@ -93,7 +93,7 @@ export class CronJobManager {
           try {
             await this.executor!.executeTaskByUuid(taskUuid);
           } catch (error) {
-            logger.error('�?Cron 执行任务失败', {
+            logger.error('鉂?Cron 鎵ц浠诲姟澶辫触', {
               taskUuid,
               error,
             });
@@ -104,11 +104,11 @@ export class CronJobManager {
         },
       );
 
-      // 根据状态决定是否启�?
-      // 只有 ACTIVE 状态且 enabled=true 的任务才启动
+      // 鏍规嵁鐘舵€佸喅瀹氭槸鍚﹀惎鍔?
+      // 鍙湁 ACTIVE 鐘舵€佷笖 enabled=true 鐨勪换鍔℃墠鍚姩
       if (task.isActive() && task.enabled) {
         job.start();
-        logger.info('�?任务注册并启动成�?, {
+        logger.info('鉁?浠诲姟娉ㄥ唽骞跺惎鍔ㄦ垚鍔?, {
           taskUuid,
           taskName: task.name,
           cronExpression,
@@ -116,8 +116,8 @@ export class CronJobManager {
           status: task.status,
         });
       } else {
-        // 任务已注册但未启动（暂停状态）
-        logger.info('⏸️ 任务已注册但未启动（暂停或禁用）', {
+        // 浠诲姟宸叉敞鍐屼絾鏈惎鍔紙鏆傚仠鐘舵€侊級
+        logger.info('鈴革笍 浠诲姟宸叉敞鍐屼絾鏈惎鍔紙鏆傚仠鎴栫鐢級', {
           taskUuid,
           taskName: task.name,
           status: task.status,
@@ -125,13 +125,13 @@ export class CronJobManager {
         });
       }
 
-      // 保存到映射表
+      // 淇濆瓨鍒版槧灏勮〃
       this.jobs.set(taskUuid, job);
       this.cronExpressions.set(taskUuid, cronExpression);
 
       return true;
     } catch (error) {
-      logger.error('�?注册任务失败', {
+      logger.error('鉂?娉ㄥ唽浠诲姟澶辫触', {
         taskUuid,
         cronExpression,
         error,
@@ -141,16 +141,16 @@ export class CronJobManager {
   }
 
   /**
-   * 注销任务�?Cron Job
+   * 娉ㄩ攢浠诲姟鐨?Cron Job
    *
-   * @param taskUuid - 任务 UUID
-   * @returns 是否成功注销
+   * @param taskUuid - 浠诲姟 UUID
+   * @returns 鏄惁鎴愬姛娉ㄩ攢
    */
   public unregisterTask(taskUuid: string): boolean {
     const job = this.jobs.get(taskUuid);
 
     if (!job) {
-      logger.warn('⚠️ 任务未注册，无法注销', { taskUuid });
+      logger.warn('鈿狅笍 浠诲姟鏈敞鍐岋紝鏃犳硶娉ㄩ攢', { taskUuid });
       return false;
     }
 
@@ -159,48 +159,48 @@ export class CronJobManager {
       this.jobs.delete(taskUuid);
       this.cronExpressions.delete(taskUuid);
 
-      logger.info('�?任务注销成功', { taskUuid });
+      logger.info('鉁?浠诲姟娉ㄩ攢鎴愬姛', { taskUuid });
       return true;
     } catch (error) {
-      logger.error('�?注销任务失败', { taskUuid, error });
+      logger.error('鉂?娉ㄩ攢浠诲姟澶辫触', { taskUuid, error });
       return false;
     }
   }
 
   /**
-   * 启动任务�?Cron Job
+   * 鍚姩浠诲姟鐨?Cron Job
    */
   public startTask(taskUuid: string): boolean {
     const job = this.jobs.get(taskUuid);
 
     if (!job) {
-      logger.warn('⚠️ 任务未注册，无法启动', { taskUuid });
+      logger.warn('鈿狅笍 浠诲姟鏈敞鍐岋紝鏃犳硶鍚姩', { taskUuid });
       return false;
     }
 
     job.start();
-    logger.info('▶️ 任务已启�?, { taskUuid });
+    logger.info('鈻讹笍 浠诲姟宸插惎鍔?, { taskUuid });
     return true;
   }
 
   /**
-   * 停止任务�?Cron Job
+   * 鍋滄浠诲姟鐨?Cron Job
    */
   public stopTask(taskUuid: string): boolean {
     const job = this.jobs.get(taskUuid);
 
     if (!job) {
-      logger.warn('⚠️ 任务未注册，无法停止', { taskUuid });
+      logger.warn('鈿狅笍 浠诲姟鏈敞鍐岋紝鏃犳硶鍋滄', { taskUuid });
       return false;
     }
 
     job.stop();
-    logger.info('⏸️ 任务已停�?, { taskUuid });
+    logger.info('鈴革笍 浠诲姟宸插仠姝?, { taskUuid });
     return true;
   }
 
   /**
-   * 更新任务（重新注册）
+   * 鏇存柊浠诲姟锛堥噸鏂版敞鍐岋級
    */
   public async updateTask(task: ScheduleTask): Promise<boolean> {
     this.unregisterTask(task.uuid);
@@ -208,7 +208,7 @@ export class CronJobManager {
   }
 
   /**
-   * 获取所有已注册任务的统计信�?
+   * 鑾峰彇鎵€鏈夊凡娉ㄥ唽浠诲姟鐨勭粺璁′俊鎭?
    */
   public getStats(): {
     totalJobs: number;
@@ -223,7 +223,7 @@ export class CronJobManager {
   }
 
   /**
-   * 获取当前注册的所有任务信�?
+   * 鑾峰彇褰撳墠娉ㄥ唽鐨勬墍鏈変换鍔′俊鎭?
    */
   public getRegisteredTasks(): Array<{
     taskUuid: string;
@@ -238,49 +238,49 @@ export class CronJobManager {
   }
 
   /**
-   * 打印 Cron 任务监控报告
+   * 鎵撳嵃 Cron 浠诲姟鐩戞帶鎶ュ憡
    */
   public printCronMonitorReport(): void {
     const registeredTasks = this.getRegisteredTasks();
     const runningCount = registeredTasks.filter((t) => t.isRunning).length;
 
-    logger.info('📋 CronJobManager 监控报告', {
-      已注册任务总数: registeredTasks.length,
-      运行中任�? runningCount,
-      停止任务: registeredTasks.length - runningCount,
+    logger.info('馃搵 CronJobManager 鐩戞帶鎶ュ憡', {
+      宸叉敞鍐屼换鍔℃€绘暟: registeredTasks.length,
+      杩愯涓换鍔? runningCount,
+      鍋滄浠诲姟: registeredTasks.length - runningCount,
     });
 
     if (registeredTasks.length > 0) {
-      logger.info('任务列表:', {
+      logger.info('浠诲姟鍒楄〃:', {
         tasks: registeredTasks.map((t) => ({
           taskUuid: t.taskUuid,
-          cron表达�? t.cronExpression,
-          状�? t.isRunning ? '运行�? : '已停�?,
+          cron琛ㄨ揪寮? t.cronExpression,
+          鐘舵€? t.isRunning ? '杩愯涓? : '宸插仠姝?,
         })),
       });
     }
 
-    // 打印执行统计
+    // 鎵撳嵃鎵ц缁熻
     this.monitor.printMonitorReport();
   }
 
   /**
-   * 停止所有任�?
+   * 鍋滄鎵€鏈変换鍔?
    */
   public stopAll(): void {
     for (const [taskUuid, job] of this.jobs.entries()) {
       job.stop();
-      logger.info('⏸️ 任务已停�?, { taskUuid });
+      logger.info('鈴革笍 浠诲姟宸插仠姝?, { taskUuid });
     }
   }
 
   /**
-   * 清空所有任�?
+   * 娓呯┖鎵€鏈変换鍔?
    */
   public clear(): void {
     this.stopAll();
     this.jobs.clear();
     this.cronExpressions.clear();
-    logger.info('🗑�?所有任务已清空');
+    logger.info('馃棏锔?鎵€鏈変换鍔″凡娓呯┖');
   }
 }

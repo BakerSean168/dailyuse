@@ -380,20 +380,7 @@ export class KeyResult extends Entity implements KeyResultServer {
       progressColor = 'yellow';
     }
 
-    const valueTypeTextMap: Record<KeyResultValueType, string> = {
-      INCREMENTAL: '累计值',
-      ABSOLUTE: '绝对值',
-      PERCENTAGE: '百分比',
-      BINARY: '二元',
-    };
-
-    const aggregationMethodTextMap: Record<AggregationMethod, string> = {
-      SUM: '求和',
-      AVERAGE: '求平均',
-      MAX: '求最大值',
-      MIN: '求最小值',
-      LAST: '取最后一次',
-    };
+    // Display text moved to frontend i18n
 
     const progressClientDTO: KeyResultProgressClientDTO = {
       ...this._progress,

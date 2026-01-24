@@ -20,7 +20,7 @@ import type { KeyResultWeightSnapshotServerDTO } from '../value-objects/KeyResul
 export interface GoalServerDTO {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string | null;
   color?: string | null; // 主题色（hex 格式，如 #FF5733）
   feasibilityAnalysis?: string | null; // 可行性分析
@@ -59,7 +59,7 @@ export interface GoalServerDTO {
 export interface GoalPersistenceDTO {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string | null;
   color?: string | null; // 主题色（hex 格式）
   feasibilityAnalysis?: string | null; // 可行性分析
@@ -221,7 +221,7 @@ export interface GoalServer {
   // 基础属性
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string | null;
   status: GoalStatus;
   importance: ImportanceLevel;

@@ -3,15 +3,15 @@ import { PrismaUserSettingRepository } from '../repositories/PrismaUserSettingRe
 import { prisma } from '../../shared/config/prisma';
 
 /**
- * Setting 模块依赖注入容器
- * 负责管理领域服务和仓储的实例创建和生命周�?
+ * Setting 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒
+ * 璐熻矗绠＄悊棰嗗煙鏈嶅姟鍜屼粨鍌ㄧ殑瀹炰緥鍒涘缓鍜岀敓鍛藉懆锟?
  *
- * 采用懒加载模式：
- * - 只在首次调用时创建实�?
- * - 后续调用返回已有实例（单例）
+ * 閲囩敤鎳掑姞杞芥ā寮忥細
+ * - 鍙湪棣栨璋冪敤鏃跺垱寤哄疄锟?
+ * - 鍚庣画璋冪敤杩斿洖宸叉湁瀹炰緥锛堝崟渚嬶級
  *
- * 支持测试替换�?
- * - 允许注入 Mock 仓储用于单元测试
+ * 鏀寔娴嬭瘯鏇挎崲锟?
+ * - 鍏佽娉ㄥ叆 Mock 浠撳偍鐢ㄤ簬鍗曞厓娴嬭瘯
  */
 export class SettingContainer {
   private static instance: SettingContainer;
@@ -27,7 +27,7 @@ export class SettingContainer {
   }
 
   /**
-   * 获取用户设置仓储实例（懒加载�?
+   * 鑾峰彇鐢ㄦ埛璁剧疆浠撳偍瀹炰緥锛堟噿鍔犺浇锟?
    */
   getUserSettingRepository(): IUserSettingRepository {
     if (!this.userSettingRepository) {
@@ -37,14 +37,14 @@ export class SettingContainer {
   }
 
   /**
-   * 设置用户设置仓储实例（用于测试）
+   * 璁剧疆鐢ㄦ埛璁剧疆浠撳偍瀹炰緥锛堢敤浜庢祴璇曪級
    */
   setUserSettingRepository(repository: IUserSettingRepository): void {
     this.userSettingRepository = repository;
   }
 
   /**
-   * 重置容器（用于测试）
+   * 閲嶇疆瀹瑰櫒锛堢敤浜庢祴璇曪級
    */
   reset(): void {
     this.userSettingRepository = undefined;

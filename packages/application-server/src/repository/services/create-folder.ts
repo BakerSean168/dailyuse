@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Create Folder
  *
- * 创建文件夹
+ * 鍒涘缓鏂囦欢澶?
  */
 
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';
@@ -56,3 +56,4 @@ export class CreateFolder {
     return { folder: folder.toClientDTO() };
   }
 }
+

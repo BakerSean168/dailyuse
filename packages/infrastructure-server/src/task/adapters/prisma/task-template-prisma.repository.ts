@@ -13,7 +13,7 @@ export class TaskTemplatePrismaRepository implements ITaskTemplateRepository {
     return TaskTemplate.fromPersistenceDTO({
       uuid: data.uuid,
       accountUuid: data.accountUuid,
-      title: data.title,
+      name: data.name,
       description: data.description,
       taskType: data.taskType as TaskType,
       status: data.status as TaskTemplateStatus,
@@ -55,7 +55,7 @@ export class TaskTemplatePrismaRepository implements ITaskTemplateRepository {
       where: { uuid: data.uuid },
       update: {
         accountUuid: data.accountUuid,
-        title: data.title,
+        name: data.name,
         description: data.description,
         taskType: data.taskType,
         status: data.status,
@@ -81,7 +81,7 @@ export class TaskTemplatePrismaRepository implements ITaskTemplateRepository {
       create: {
         uuid: data.uuid,
         accountUuid: data.accountUuid,
-        title: data.title,
+        name: data.name,
         description: data.description,
         taskType: data.taskType,
         status: data.status,
@@ -308,3 +308,4 @@ export class TaskTemplatePrismaRepository implements ITaskTemplateRepository {
       return data.map(d => this.mapToEntity(d));
   }
 }
+

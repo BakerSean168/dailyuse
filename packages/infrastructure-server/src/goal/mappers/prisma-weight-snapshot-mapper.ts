@@ -1,8 +1,8 @@
 /**
  * Prisma Weight Snapshot Mapper
- * 权重快照 Prisma 映射�?
+ * 鏉冮噸蹇収 Prisma 鏄犲皠鍣?
  *
- * 负责�?Domain 对象�?Prisma 模型之间进行转换�?
+ * 璐熻矗鍦?Domain 瀵硅薄鍜?Prisma 妯″瀷涔嬮棿杩涜杞崲銆?
  */
 
 import { KeyResultWeightSnapshot } from '@dailyuse/domain-server/goal';
@@ -11,8 +11,8 @@ import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, SnapshotTrigger 
 
 
 /**
- * Prisma Weight Snapshot 类型 (生成后可�?
- * 注意: 需要在 prisma generate 后才能使用具体类�?
+ * Prisma Weight Snapshot 绫诲瀷 (鐢熸垚鍚庡彲鐢?
+ * 娉ㄦ剰: 闇€瑕佸湪 prisma generate 鍚庢墠鑳戒娇鐢ㄥ叿浣撶被鍨?
  */
 type PrismaWeightSnapshot = {
   uuid: string;
@@ -31,22 +31,22 @@ type PrismaWeightSnapshot = {
 /**
  * Weight Snapshot Mapper
  *
- * **职责**:
- * - Domain对象 �?Prisma模型 (toPrisma)
- * - Prisma模型 �?Domain对象 (toDomain)
- * - 处理类型转换 (BigInt, Date, etc.)
+ * **鑱岃矗**:
+ * - Domain瀵硅薄 鈫?Prisma妯″瀷 (toPrisma)
+ * - Prisma妯″瀷 鈫?Domain瀵硅薄 (toDomain)
+ * - 澶勭悊绫诲瀷杞崲 (BigInt, Date, etc.)
  */
 export class PrismaWeightSnapshotMapper {
   /**
-   * Domain �?Prisma Create Input
+   * Domain 杞?Prisma Create Input
    *
-   * **转换规则**:
-   * - snapshotTime: number �?BigInt
-   * - createdAt: number | undefined �?Date
-   * - reason: string | undefined �?string | null
+   * **杞崲瑙勫垯**:
+   * - snapshotTime: number 鈫?BigInt
+   * - createdAt: number | undefined 鈫?Date
+   * - reason: string | undefined 鈫?string | null
    *
-   * @param snapshot - Domain层的快照对象
-   * @returns Prisma create input数据
+   * @param snapshot - Domain灞傜殑蹇収瀵硅薄
+   * @returns Prisma create input鏁版嵁
    *
    * @example
    * ```typescript
@@ -63,24 +63,24 @@ export class PrismaWeightSnapshotMapper {
       oldWeight: snapshot.oldWeight,
       newWeight: snapshot.newWeight,
       weightDelta: snapshot.weightDelta,
-      snapshotTime: BigInt(snapshot.snapshotTime), // number �?BigInt
+      snapshotTime: BigInt(snapshot.snapshotTime), // number 鈫?BigInt
       trigger: snapshot.trigger,
-      reason: snapshot.reason ?? null, // undefined �?null
+      reason: snapshot.reason ?? null, // undefined 鈫?null
       operatorUuid: snapshot.operatorUuid,
-      createdAt: new Date(snapshot.createdAt ?? Date.now()), // number �?Date
+      createdAt: new Date(snapshot.createdAt ?? Date.now()), // number 鈫?Date
     };
   }
 
   /**
-   * Prisma Model �?Domain Object
+   * Prisma Model 杞?Domain Object
    *
-   * **转换规则**:
-   * - snapshotTime: BigInt �?number
-   * - createdAt: Date �?number (timestamp)
-   * - reason: string | null �?string | undefined
+   * **杞崲瑙勫垯**:
+   * - snapshotTime: BigInt 鈫?number
+   * - createdAt: Date 鈫?number (timestamp)
+   * - reason: string | null 鈫?string | undefined
    *
-   * @param prismaSnapshot - Prisma查询结果
-   * @returns Domain层的快照对象
+   * @param prismaSnapshot - Prisma鏌ヨ缁撴灉
+   * @returns Domain灞傜殑蹇収瀵硅薄
    *
    * @example
    * ```typescript
@@ -95,19 +95,19 @@ export class PrismaWeightSnapshotMapper {
       prismaSnapshot.keyResultUuid,
       prismaSnapshot.oldWeight,
       prismaSnapshot.newWeight,
-      Number(prismaSnapshot.snapshotTime), // BigInt �?number
-      prismaSnapshot.trigger as SnapshotTrigger, // string �?SnapshotTrigger
+      Number(prismaSnapshot.snapshotTime), // BigInt 鈫?number
+      prismaSnapshot.trigger as SnapshotTrigger, // string 鈫?SnapshotTrigger
       prismaSnapshot.operatorUuid,
-      prismaSnapshot.reason ?? undefined, // null �?undefined
-      prismaSnapshot.createdAt.getTime(), // Date �?number (timestamp)
+      prismaSnapshot.reason ?? undefined, // null 鈫?undefined
+      prismaSnapshot.createdAt.getTime(), // Date 鈫?number (timestamp)
     );
   }
 
   /**
-   * 批量转换: Prisma �?Domain
+   * 鎵归噺杞崲: Prisma 鈫?Domain
    *
-   * @param prismaSnapshots - Prisma查询结果数组
-   * @returns Domain对象数组
+   * @param prismaSnapshots - Prisma鏌ヨ缁撴灉鏁扮粍
+   * @returns Domain瀵硅薄鏁扮粍
    *
    * @example
    * ```typescript

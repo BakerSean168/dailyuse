@@ -1,6 +1,6 @@
 /**
  * SQLite Database Schema - Notification Module
- * 通知模块数据库架构
+ * 閫氱煡妯″潡鏁版嵁搴撴灦鏋?
  */
 
 export const NOTIFICATION_MODULE_SCHEMA = `

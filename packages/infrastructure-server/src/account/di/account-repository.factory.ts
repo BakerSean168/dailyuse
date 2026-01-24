@@ -1,4 +1,4 @@
-import type { IAccountRepository, IAccountStatusRepository } from '@dailyuse/domain-server/account';
+import type { IAccountRepository } from '@dailyuse/domain-server/account';
 import { AccountPrismaRepository } from '../adapters/prisma/account-prisma.repository';
 import { SqliteAccountRepository } from '../adapters/sqlite/account-sqlite.repository';
 
@@ -22,12 +22,12 @@ export class AccountRepositoryFactory {
  * Account Status Repository Factory (if needed)
  */
 export class AccountStatusRepositoryFactory {
-  static createForPrisma(prismaClient: any): IAccountStatusRepository {
+  static createForPrisma(prismaClient: any): any {
     // Implement based on actual Prisma adapter
     throw new Error('AccountStatusRepository Prisma adapter not implemented');
   }
 
-  static createForSQLite(sqliteDb: any): IAccountStatusRepository {
+  static createForSQLite(sqliteDb: any): any {
     // Implement based on actual SQLite adapter
     throw new Error('AccountStatusRepository SQLite adapter not implemented');
   }

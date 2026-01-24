@@ -1,6 +1,6 @@
 /**
  * SQLite Database Schema - Dashboard Module
- * 仪表板模块数据库架构
+ * 浠〃鏉挎ā鍧楁暟鎹簱鏋舵瀯
  */
 
 export const DASHBOARD_MODULE_SCHEMA = `

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Search Service
  *
- * Obsidian 风格搜索和高级搜索功能（property 模式）
+ * Obsidian 椋庢牸鎼滅储鍜岄珮绾ф悳绱㈠姛鑳斤紙property 妯″紡锛?
  */
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
@@ -21,7 +21,7 @@ export class SearchService {
   constructor(private readonly resourceRepository: IResourceRepository) {}
 
   /**
-   * 执行搜索
+   * 鎵ц鎼滅储
    */
   async search(request: SearchRequest): Promise<SearchResponse> {
     const startTime = Date.now();
@@ -57,7 +57,7 @@ export class SearchService {
   }
 
   /**
-   * 搜索单个资源
+   * 鎼滅储鍗曚釜璧勬簮
    */
   private async searchResource(
     resource: Resource,
@@ -73,8 +73,8 @@ export class SearchService {
       matchType: this.getMatchType(request.mode),
       matches: [],
       matchCount: 0,
-      createdAt: new Date(Number(persistence.created_at)).toISOString(),
-      updatedAt: new Date(Number(persistence.updated_at)).toISOString(),
+      createdAt: new Date(persistence.createdAt).toISOString(),
+      updatedAt: new Date(persistence.updatedAt).toISOString(),
       size: persistence.size,
     };
 
@@ -102,7 +102,7 @@ export class SearchService {
   }
 
   /**
-   * 搜索文件名
+   * 鎼滅储鏂囦欢鍚?
    */
   private searchInFilename(
     resource: Resource,
@@ -128,7 +128,7 @@ export class SearchService {
   }
 
   /**
-   * 搜索标签
+   * 鎼滅储鏍囩
    */
   private searchInTags(
     resource: Resource,
@@ -157,7 +157,7 @@ export class SearchService {
   }
 
   /**
-   * 搜索路径
+   * 鎼滅储璺緞
    */
   private searchInPath(
     resource: Resource,
@@ -183,8 +183,8 @@ export class SearchService {
   }
 
   /**
-   * 搜索 YAML frontmatter 属性
-   * 格式：[property]:value
+   * 鎼滅储 YAML frontmatter 灞炴€?
+   * 鏍煎紡锛歔property]:value
    */
   private searchInProperty(
     resource: Resource,
@@ -314,7 +314,7 @@ export class SearchService {
   }
 
   /**
-   * 匹配属性值
+   * 鍖归厤灞炴€у€?
    */
   private matchPropertyValue(
     currentProperty: string,
@@ -340,7 +340,7 @@ export class SearchService {
   }
 
   /**
-   * 搜索内容
+   * 鎼滅储鍐呭
    */
   private searchInContent(
     resource: Resource,
@@ -402,7 +402,8 @@ export class SearchService {
   }
 }
 
-// ===== 便捷函数 =====
+// ===== 渚挎嵎鍑芥暟 =====
 
 export const createSearchService = (resourceRepository: IResourceRepository) =>
   new SearchService(resourceRepository);
+

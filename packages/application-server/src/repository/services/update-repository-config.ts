@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Update Repository Config
  *
- * 更新仓储配置
+ * 鏇存柊浠撳偍閰嶇疆
  */
 
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
@@ -44,3 +44,4 @@ export class UpdateRepositoryConfig {
     return { repository: repository.toClientDTO() };
   }
 }
+

@@ -1,4 +1,4 @@
-﻿import type {  PrismaClient  } from "@prisma/client";
+import type {  PrismaClient  } from "@prisma/client";
 import type { IScheduleStatisticsRepository } from '@dailyuse/domain-server/schedule';
 import { ScheduleStatistics } from '@dailyuse/domain-server/schedule';
 
@@ -165,7 +165,7 @@ export class ScheduleStatisticsPrismaRepository implements IScheduleStatisticsRe
    */
   async withTransaction<T>(fn: (repo: IScheduleStatisticsRepository) => Promise<T>): Promise<T> {
     return this.prisma.$transaction(async (tx) => {
-      const txRepo = new ScheduleStatisticsRepository(tx as PrismaClient);
+      const txRepo = new ScheduleStatisticsPrismaRepository(tx as PrismaClient);
       return fn(txRepo);
     });
   }

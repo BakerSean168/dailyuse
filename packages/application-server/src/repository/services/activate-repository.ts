@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Activate Repository
  *
- * 激活仓储
+ * 婵€娲讳粨鍌?
  */
 
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
@@ -40,3 +40,4 @@ export class ActivateRepository {
     return { repository: repository.toClientDTO() };
   }
 }
+

@@ -39,7 +39,7 @@ export interface ReminderGroupPersistenceDTO {
   description?: string | null;
   color?: string | null;
   icon?: string | null;
-  control_mode: ControlMode;
+  controlMode: ControlMode;
   enabled: boolean;
   status: ReminderStatus;
   order: number;

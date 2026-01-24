@@ -1,16 +1,16 @@
-import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
+﻿import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
 import { Repository } from '@dailyuse/domain-server/repository';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, RepositoryClientDTO, RepositoryConfigServerDTO, RepositoryStatsServerDTO } from '@dailyuse/contracts/repository';
 import { RepositoryType, RepositoryStatus } from '@dailyuse/contracts/repository';
 
 /**
- * Repository 应用服务
- * 负责仓储（Repository）的 CRUD 操作
+ * Repository 搴旂敤鏈嶅姟
+ * 璐熻矗浠撳偍锛圧epository锛夌殑 CRUD 鎿嶄綔
  *
- * 架构职责：
- * - 调用 Repository 进行持久化
- * - DTO 转换（Domain → ClientDTO）
- * - 协调业务用例
+ * 鏋舵瀯鑱岃矗锛?
+ * - 璋冪敤 Repository 杩涜鎸佷箙鍖?
+ * - DTO 杞崲锛圖omain 鈫?ClientDTO锛?
+ * - 鍗忚皟涓氬姟鐢ㄤ緥
  */
 export class RepositoryApplicationService {
   private repositoryRepository: IRepositoryRepository;
@@ -20,7 +20,7 @@ export class RepositoryApplicationService {
   }
 
   /**
-   * 创建仓储
+   * 鍒涘缓浠撳偍
    */
   async createRepository(params: {
     accountUuid: string;
@@ -30,18 +30,18 @@ export class RepositoryApplicationService {
     description?: string;
     config?: Partial<RepositoryConfigServerDTO>;
   }): Promise<RepositoryClientDTO> {
-    // 1. 创建领域实体
+    // 1. 鍒涘缓棰嗗煙瀹炰綋
     const repository = Repository.create(params);
 
-    // 2. 持久化
+    // 2. 鎸佷箙鍖?
     await this.repositoryRepository.save(repository);
 
-    // 3. 返回 ClientDTO
+    // 3. 杩斿洖 ClientDTO
     return repository.toClientDTO();
   }
 
   /**
-   * 获取仓储详情
+   * 鑾峰彇浠撳偍璇︽儏
    */
   async getRepository(uuid: string): Promise<RepositoryClientDTO | null> {
     const repository = await this.repositoryRepository.findByUuid(uuid);
@@ -49,7 +49,7 @@ export class RepositoryApplicationService {
   }
 
   /**
-   * 获取用户的所有仓储
+   * 鑾峰彇鐢ㄦ埛鐨勬墍鏈変粨鍌?
    */
   async listRepositories(
     accountUuid: string,
@@ -70,107 +70,108 @@ export class RepositoryApplicationService {
   }
 
   /**
-   * 更新仓储配置
+   * 鏇存柊浠撳偍閰嶇疆
    */
   async updateRepositoryConfig(
     uuid: string,
     config: Partial<RepositoryConfigServerDTO>,
   ): Promise<RepositoryClientDTO> {
-    // 1. 查询仓储
+    // 1. 鏌ヨ浠撳偍
     const repository = await this.repositoryRepository.findByUuid(uuid);
     if (!repository) {
       throw new Error(`Repository not found: ${uuid}`);
     }
 
-    // 2. 更新配置（领域方法）
+    // 2. 鏇存柊閰嶇疆锛堥鍩熸柟娉曪級
     repository.updateConfig(config);
 
-    // 3. 持久化
+    // 3. 鎸佷箙鍖?
     await this.repositoryRepository.save(repository);
 
-    // 4. 返回 ClientDTO
+    // 4. 杩斿洖 ClientDTO
     return repository.toClientDTO();
   }
 
   /**
-   * 更新仓储统计
+   * 鏇存柊浠撳偍缁熻
    */
   async updateRepositoryStats(
     uuid: string,
     stats: Partial<RepositoryStatsServerDTO>,
   ): Promise<RepositoryClientDTO> {
-    // 1. 查询仓储
+    // 1. 鏌ヨ浠撳偍
     const repository = await this.repositoryRepository.findByUuid(uuid);
     if (!repository) {
       throw new Error(`Repository not found: ${uuid}`);
     }
 
-    // 2. 更新统计（领域方法）
+    // 2. 鏇存柊缁熻锛堥鍩熸柟娉曪級
     repository.updateStats(stats);
 
-    // 3. 持久化
+    // 3. 鎸佷箙鍖?
     await this.repositoryRepository.save(repository);
 
-    // 4. 返回 ClientDTO
+    // 4. 杩斿洖 ClientDTO
     return repository.toClientDTO();
   }
 
   /**
-   * 归档仓储
+   * 褰掓。浠撳偍
    */
   async archiveRepository(uuid: string): Promise<RepositoryClientDTO> {
-    // 1. 查询仓储
+    // 1. 鏌ヨ浠撳偍
     const repository = await this.repositoryRepository.findByUuid(uuid);
     if (!repository) {
       throw new Error(`Repository not found: ${uuid}`);
     }
 
-    // 2. 归档（领域方法）
+    // 2. 褰掓。锛堥鍩熸柟娉曪級
     repository.archive();
 
-    // 3. 持久化
+    // 3. 鎸佷箙鍖?
     await this.repositoryRepository.save(repository);
 
-    // 4. 返回 ClientDTO
+    // 4. 杩斿洖 ClientDTO
     return repository.toClientDTO();
   }
 
   /**
-   * 激活仓储
+   * 婵€娲讳粨鍌?
    */
   async activateRepository(uuid: string): Promise<RepositoryClientDTO> {
-    // 1. 查询仓储
+    // 1. 鏌ヨ浠撳偍
     const repository = await this.repositoryRepository.findByUuid(uuid);
     if (!repository) {
       throw new Error(`Repository not found: ${uuid}`);
     }
 
-    // 2. 激活（领域方法）
+    // 2. 婵€娲伙紙棰嗗煙鏂规硶锛?
     repository.activate();
 
-    // 3. 持久化
+    // 3. 鎸佷箙鍖?
     await this.repositoryRepository.save(repository);
 
-    // 4. 返回 ClientDTO
+    // 4. 杩斿洖 ClientDTO
     return repository.toClientDTO();
   }
 
   /**
-   * 删除仓储
+   * 鍒犻櫎浠撳偍
    */
   async deleteRepository(uuid: string): Promise<void> {
-    // 1. 查询仓储
+    // 1. 鏌ヨ浠撳偍
     const repository = await this.repositoryRepository.findByUuid(uuid);
     if (!repository) {
       throw new Error(`Repository not found: ${uuid}`);
     }
 
-    // 2. 软删除（领域方法）
+    // 2. 杞垹闄わ紙棰嗗煙鏂规硶锛?
     repository.delete();
 
-    // 3. 持久化
+    // 3. 鎸佷箙鍖?
     await this.repositoryRepository.save(repository);
   }
 }
+
 
 

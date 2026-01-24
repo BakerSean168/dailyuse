@@ -268,18 +268,6 @@ export class GoalReview extends Entity implements GoalReviewServer {
   }
 
   public toClientDTO(): GoalReviewClientDTO {
-    const getRatingText = (rating: number): string => {
-      if (rating >= 5) return 'Excellent';
-      if (rating >= 4) return 'Good';
-      if (rating >= 3) return 'Average';
-      if (rating >= 2) return 'Fair';
-      return 'Poor';
-    };
-
-    const getRatingStars = (rating: number): string => {
-      return '★'.repeat(rating) + '☆'.repeat(5 - rating);
-    };
-
     return {
       uuid: this.uuid,
       goalUuid: this._goalUuid,
@@ -313,15 +301,6 @@ export class GoalReview extends Entity implements GoalReviewServer {
       }),
       reviewedAt: this._reviewedAt,
       createdAt: this._createdAt,
-
-      // UI 计算字段
-      typeText: this._type, // 假设 ReviewType 是字符串枚举
-      ratingText: getRatingText(this._rating),
-      formattedReviewedAt: new Date(this._reviewedAt).toLocaleString(),
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
-      ratingStars: getRatingStars(this._rating),
-      displaySummary:
-        this._summary.length > 100 ? this._summary.substring(0, 97) + '...' : this._summary,
     };
   }
 

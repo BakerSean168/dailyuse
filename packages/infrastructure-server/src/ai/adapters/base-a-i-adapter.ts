@@ -1,11 +1,11 @@
 /**
  * Base AI Adapter
- * AI 提供商抽象基�?
+ * AI 鎻愪緵鍟嗘娊璞″熀绫?
  *
- * 职责�?
- * - 定义 AI 生成的统一接口
- * - 提供超时保护机制
- * - 标准化请�?响应格式
+ * 鑱岃矗锛?
+ * - 瀹氫箟 AI 鐢熸垚鐨勭粺涓€鎺ュ彛
+ * - 鎻愪緵瓒呮椂淇濇姢鏈哄埗
+ * - 鏍囧噯鍖栬姹?鍝嶅簲鏍煎紡
  */
 
 import type { GenerationTaskType, AIProvider, AIModel, TokenUsageServerDTO } from '@dailyuse/contracts/ai';
@@ -15,11 +15,11 @@ import type { IAIAdapter, AIGenerationRequest, AIGenerationResponse, AIStreamChu
 export { AIGenerationRequest, AIGenerationResponse, AIStreamChunk };
 
 /**
- * Base AI Adapter 抽象�?
+ * Base AI Adapter 鎶借薄绫?
  */
 export abstract class BaseAIAdapter implements IAIAdapter {
   /**
-   * AI 生成超时时间�?0秒）
+   * AI 鐢熸垚瓒呮椂鏃堕棿锛?0绉掞級
    */
   protected static readonly TIMEOUT_MS = 10000;
 
@@ -29,29 +29,29 @@ export abstract class BaseAIAdapter implements IAIAdapter {
   ) {}
 
   /**
-   * 一次性生成文本（带超时保护）
+   * 涓€娆℃€х敓鎴愭枃鏈紙甯﹁秴鏃朵繚鎶わ級
    */
   abstract generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>>;
 
   /**
-   * 流式生成文本
+   * 娴佸紡鐢熸垚鏂囨湰
    */
   abstract streamText(request: AIGenerationRequest): AsyncGenerator<AIStreamChunk, void, unknown>;
 
   /**
-   * 健康检�?
+   * 鍋ュ悍妫€鏌?
    */
   abstract healthCheck(): Promise<boolean>;
 
   /**
-   * 获取提供商名�?
+   * 鑾峰彇鎻愪緵鍟嗗悕绉?
    */
   getProvider(): AIProvider {
     return this.provider;
   }
 
   /**
-   * 获取默认模型
+   * 鑾峰彇榛樿妯″瀷
    */
   getDefaultModel(): AIModel {
     return this.defaultModel;

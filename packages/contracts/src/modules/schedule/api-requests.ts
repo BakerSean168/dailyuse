@@ -28,7 +28,7 @@ import type {
  */
 export interface CreateScheduleRequest {
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string;
   startTime: number;
   endTime: number;
@@ -51,7 +51,7 @@ export interface CreateScheduleResponseDTO {
  * Request DTO for updating a schedule
  */
 export interface UpdateScheduleRequest {
-  title?: string;
+  name?: string;
   description?: string;
   startTime?: number;
   endTime?: number;

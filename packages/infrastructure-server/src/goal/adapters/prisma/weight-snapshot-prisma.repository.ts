@@ -1,8 +1,8 @@
 /**
  * Prisma Weight Snapshot Repository Implementation
- * 权重快照仓储 Prisma 实现
+ * 鏉冮噸蹇収浠撳偍 Prisma 瀹炵幇
  *
- * 负责权重快照的持久化操作�?
+ * 璐熻矗鏉冮噸蹇収鐨勬寔涔呭寲鎿嶄綔銆?
  */
 
 import type { PrismaClient } from '@prisma/client';
@@ -13,28 +13,28 @@ import { PrismaWeightSnapshotMapper } from '../../mappers/prisma-weight-snapshot
 /**
  * Prisma Weight Snapshot Repository
  *
- * **设计模式**: Repository Pattern
- * **职责**:
- * - 实现 IWeightSnapshotRepository 接口
- * - 处理所有数据库操作 (CRUD + 查询)
- * - 使用 Mapper 进行 Domain �?Prisma 转换
+ * **璁捐妯″紡**: Repository Pattern
+ * **鑱岃矗**:
+ * - 瀹炵幇 IWeightSnapshotRepository 鎺ュ彛
+ * - 澶勭悊鎵€鏈夋暟鎹簱鎿嶄綔 (CRUD + 鏌ヨ)
+ * - 浣跨敤 Mapper 杩涜 Domain 鈫?Prisma 杞崲
  *
- * **查询特�?*:
- * - 分页支持 (page, pageSize)
- * - 时间倒序排序 (最新的在前)
- * - 多维度查�?(Goal, KeyResult, TimeRange)
+ * **鏌ヨ鐗规€?*:
+ * - 鍒嗛〉鏀寔 (page, pageSize)
+ * - 鏃堕棿鍊掑簭鎺掑簭 (鏈€鏂扮殑鍦ㄥ墠)
+ * - 澶氱淮搴︽煡璇?(Goal, KeyResult, TimeRange)
  */
 export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   /**
-   * 保存单个快照
+   * 淇濆瓨鍗曚釜蹇収
    *
-   * **事务**: 使用 Prisma 自动事务
-   * **冲突**: UUID 冲突时会抛出 Prisma 错误
+   * **浜嬪姟**: 浣跨敤 Prisma 鑷姩浜嬪姟
+   * **鍐茬獊**: UUID 鍐茬獊鏃朵細鎶涘嚭 Prisma 閿欒
    *
-   * @param snapshot - Domain快照对象
-   * @throws {PrismaClientKnownRequestError} �?UUID 冲突�?
+   * @param snapshot - Domain蹇収瀵硅薄
+   * @throws {PrismaClientKnownRequestError} 褰?UUID 鍐茬獊鏃?
    *
    * @example
    * ```typescript
@@ -48,12 +48,12 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 批量保存快照
+   * 鎵归噺淇濆瓨蹇収
    *
-   * **性能优化**: 使用 Prisma createMany 批量插入
-   * **事务**: 整个批量操作在单个事务中执行
+   * **鎬ц兘浼樺寲**: 浣跨敤 Prisma createMany 鎵归噺鎻掑叆
+   * **浜嬪姟**: 鏁翠釜鎵归噺鎿嶄綔鍦ㄥ崟涓簨鍔′腑鎵ц
    *
-   * @param snapshots - Domain快照对象数组
+   * @param snapshots - Domain蹇収瀵硅薄鏁扮粍
    *
    * @example
    * ```typescript
@@ -67,15 +67,15 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 查询 Goal 的所有快�?
+   * 鏌ヨ Goal 鐨勬墍鏈夊揩鐓?
    *
-   * **排序**: �?snapshotTime 倒序 (最新的在前)
-   * **分页**: 支持 page �?pageSize 参数
+   * **鎺掑簭**: 鎸?snapshotTime 鍊掑簭 (鏈€鏂扮殑鍦ㄥ墠)
+   * **鍒嗛〉**: 鏀寔 page 鍜?pageSize 鍙傛暟
    *
    * @param goalUuid - Goal UUID
-   * @param page - 页码 (�?1 开�?
-   * @param pageSize - 每页数量
-   * @returns 快照列表和总数
+   * @param page - 椤电爜 (浠?1 寮€濮?
+   * @param pageSize - 姣忛〉鏁伴噺
+   * @returns 蹇収鍒楄〃鍜屾€绘暟
    *
    * @example
    * ```typescript
@@ -109,15 +109,15 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 查询 KeyResult 的所有快�?
+   * 鏌ヨ KeyResult 鐨勬墍鏈夊揩鐓?
    *
-   * **排序**: �?snapshotTime 倒序 (最新的在前)
-   * **分页**: 支持 page �?pageSize 参数
+   * **鎺掑簭**: 鎸?snapshotTime 鍊掑簭 (鏈€鏂扮殑鍦ㄥ墠)
+   * **鍒嗛〉**: 鏀寔 page 鍜?pageSize 鍙傛暟
    *
    * @param krUuid - KeyResult UUID
-   * @param page - 页码 (�?1 开�?
-   * @param pageSize - 每页数量
-   * @returns 快照列表和总数
+   * @param page - 椤电爜 (浠?1 寮€濮?
+   * @param pageSize - 姣忛〉鏁伴噺
+   * @returns 蹇収鍒楄〃鍜屾€绘暟
    *
    * @example
    * ```typescript
@@ -150,17 +150,17 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 查询时间范围内的快照
+   * 鏌ヨ鏃堕棿鑼冨洿鍐呯殑蹇収
    *
-   * **排序**: �?snapshotTime 升序 (时间线顺序，用于趋势分析)
-   * **边界**: 包含起止时间 (gte, lte)
-   * **分页**: 支持 page �?pageSize 参数
+   * **鎺掑簭**: 鎸?snapshotTime 鍗囧簭 (鏃堕棿绾块『搴忥紝鐢ㄤ簬瓒嬪娍鍒嗘瀽)
+   * **杈圭晫**: 鍖呭惈璧锋鏃堕棿 (gte, lte)
+   * **鍒嗛〉**: 鏀寔 page 鍜?pageSize 鍙傛暟
    *
-   * @param startTime - 开始时间戳 (ms)
-   * @param endTime - 结束时间�?(ms)
-   * @param page - 页码 (�?1 开�?
-   * @param pageSize - 每页数量
-   * @returns 快照列表和总数
+   * @param startTime - 寮€濮嬫椂闂存埑 (ms)
+   * @param endTime - 缁撴潫鏃堕棿鎴?(ms)
+   * @param page - 椤电爜 (浠?1 寮€濮?
+   * @param pageSize - 姣忛〉鏁伴噺
+   * @returns 蹇収鍒楄〃鍜屾€绘暟
    *
    * @example
    * ```typescript
@@ -181,11 +181,11 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
       this.prisma.keyResultWeightSnapshot.findMany({
         where: {
           snapshotTime: {
-            gte: BigInt(startTime), // number �?BigInt 转换
+            gte: BigInt(startTime), // number 鈫?BigInt 杞崲
             lte: BigInt(endTime),
           },
         },
-        orderBy: { snapshotTime: 'asc' }, // 时间线顺�?(用于趋势�?
+        orderBy: { snapshotTime: 'asc' }, // 鏃堕棿绾块『搴?(鐢ㄤ簬瓒嬪娍鍥?
         skip,
         take: pageSize,
       }),
@@ -206,10 +206,10 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 根据 UUID 查询单个快照
+   * 鏍规嵁 UUID 鏌ヨ鍗曚釜蹇収
    *
-   * @param uuid - 快照 UUID
-   * @returns 快照对象�?null
+   * @param uuid - 蹇収 UUID
+   * @returns 蹇収瀵硅薄鎴?null
    *
    * @example
    * ```typescript
@@ -228,9 +228,9 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 删除单个快照
+   * 鍒犻櫎鍗曚釜蹇収
    *
-   * @param uuid - 快照 UUID
+   * @param uuid - 蹇収 UUID
    *
    * @example
    * ```typescript
@@ -244,10 +244,10 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 删除 Goal 的所有快�?
+   * 鍒犻櫎 Goal 鐨勬墍鏈夊揩鐓?
    *
-   * **批量操作**: 使用 deleteMany 批量删除
-   * **级联**: Goal 删除时会自动级联删除 (onDelete: Cascade)
+   * **鎵归噺鎿嶄綔**: 浣跨敤 deleteMany 鎵归噺鍒犻櫎
+   * **绾ц仈**: Goal 鍒犻櫎鏃朵細鑷姩绾ц仈鍒犻櫎 (onDelete: Cascade)
    *
    * @param goalUuid - Goal UUID
    *
@@ -263,10 +263,10 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 删除 KeyResult 的所有快�?
+   * 鍒犻櫎 KeyResult 鐨勬墍鏈夊揩鐓?
    *
-   * **批量操作**: 使用 deleteMany 批量删除
-   * **级联**: KR 删除时会自动级联删除 (onDelete: Cascade)
+   * **鎵归噺鎿嶄綔**: 浣跨敤 deleteMany 鎵归噺鍒犻櫎
+   * **绾ц仈**: KR 鍒犻櫎鏃朵細鑷姩绾ц仈鍒犻櫎 (onDelete: Cascade)
    *
    * @param krUuid - KeyResult UUID
    *
@@ -282,14 +282,14 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 删除时间范围内的快照
+   * 鍒犻櫎鏃堕棿鑼冨洿鍐呯殑蹇収
    *
-   * **用�?*: 清理历史数据、数据归�?
-   * **批量操作**: 使用 deleteMany 批量删除
+   * **鐢ㄩ€?*: 娓呯悊鍘嗗彶鏁版嵁銆佹暟鎹綊妗?
+   * **鎵归噺鎿嶄綔**: 浣跨敤 deleteMany 鎵归噺鍒犻櫎
    *
-   * @param startTime - 开始时间戳 (ms)
-   * @param endTime - 结束时间�?(ms)
-   * @returns 删除的记录数�?
+   * @param startTime - 寮€濮嬫椂闂存埑 (ms)
+   * @param endTime - 缁撴潫鏃堕棿鎴?(ms)
+   * @returns 鍒犻櫎鐨勮褰曟暟閲?
    *
    * @example
    * ```typescript

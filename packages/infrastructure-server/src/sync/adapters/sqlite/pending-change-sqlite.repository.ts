@@ -1,6 +1,6 @@
 /**
  * SQLite PendingChange Repository Implementation
- * 待处理变更的 SQLite 仓储实现
+ * 寰呭鐞嗗彉鏇寸殑 SQLite 浠撳偍瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -15,18 +15,18 @@ export class SqlitePendingChangeRepository implements ISyncPendingChangeReposito
 
     const stmt = this.db.prepare(`
       INSERT INTO pending_changes (
-        uuid, account_uuid, entity_type, entity_uuid, operation,
-        old_data, new_data, status, sync_status, created_at, updated_at
+        uuid, accountUuid, entity_type, entity_uuid, operation,
+        old_data, new_data, status, sync_status, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         status = excluded.status,
         sync_status = excluded.sync_status,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto.account_uuid,
+      dto.accountUuid,
       dto.entity_type,
       dto.entity_uuid,
       dto.operation,
@@ -34,21 +34,21 @@ export class SqlitePendingChangeRepository implements ISyncPendingChangeReposito
       JSON.stringify(dto.new_data || {}),
       dto.status,
       dto.sync_status,
-      dto.created_at,
-      dto.updated_at,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
   async saveMany(changes: PendingChange[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO pending_changes (
-        uuid, account_uuid, entity_type, entity_uuid, operation,
-        old_data, new_data, status, sync_status, created_at, updated_at
+        uuid, accountUuid, entity_type, entity_uuid, operation,
+        old_data, new_data, status, sync_status, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         status = excluded.status,
         sync_status = excluded.sync_status,
-        updated_at = excluded.updated_at
+        updatedAt = excluded.updatedAt
     `);
 
     const transaction = this.db.transaction((items: PendingChange[]) => {
@@ -56,7 +56,7 @@ export class SqlitePendingChangeRepository implements ISyncPendingChangeReposito
         const dto = change.toPersistenceDTO();
         insertStmt.run(
           dto.uuid,
-          dto.account_uuid,
+          dto.accountUuid,
           dto.entity_type,
           dto.entity_uuid,
           dto.operation,
@@ -64,8 +64,8 @@ export class SqlitePendingChangeRepository implements ISyncPendingChangeReposito
           JSON.stringify(dto.new_data || {}),
           dto.status,
           dto.sync_status,
-          dto.created_at,
-          dto.updated_at,
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -81,7 +81,7 @@ export class SqlitePendingChangeRepository implements ISyncPendingChangeReposito
 
     return PendingChange.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row.account_uuid,
+      account_uuid: row.accountUuid,
       entity_type: row.entity_type,
       entity_uuid: row.entity_uuid,
       operation: row.operation,
@@ -89,21 +89,21 @@ export class SqlitePendingChangeRepository implements ISyncPendingChangeReposito
       new_data: JSON.parse(row.new_data),
       status: row.status,
       sync_status: row.sync_status,
-      created_at: new Date(row.created_at),
-      updated_at: new Date(row.updated_at),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
   async findByAccountUuid(accountUuid: string): Promise<PendingChange[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM pending_changes WHERE account_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM pending_changes WHERE accountUuid = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(accountUuid) as any[];
 
     return rows.map((row) =>
       PendingChange.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         entity_type: row.entity_type,
         entity_uuid: row.entity_uuid,
         operation: row.operation,
@@ -111,22 +111,22 @@ export class SqlitePendingChangeRepository implements ISyncPendingChangeReposito
         new_data: JSON.parse(row.new_data),
         status: row.status,
         sync_status: row.sync_status,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
 
   async findUnsyncedChanges(accountUuid: string): Promise<PendingChange[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM pending_changes WHERE account_uuid = ? AND sync_status != 'SYNCED' ORDER BY created_at ASC`
+      `SELECT * FROM pending_changes WHERE accountUuid = ? AND sync_status != 'SYNCED' ORDER BY createdAt ASC`
     );
     const rows = stmt.all(accountUuid) as any[];
 
     return rows.map((row) =>
       PendingChange.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         entity_type: row.entity_type,
         entity_uuid: row.entity_uuid,
         operation: row.operation,
@@ -134,14 +134,14 @@ export class SqlitePendingChangeRepository implements ISyncPendingChangeReposito
         new_data: JSON.parse(row.new_data),
         status: row.status,
         sync_status: row.sync_status,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
 
   async findByQuery(accountUuid: string, options: PendingChangeQueryOptions): Promise<PendingChange[]> {
-    let query = `SELECT * FROM pending_changes WHERE account_uuid = ?`;
+    let query = `SELECT * FROM pending_changes WHERE accountUuid = ?`;
     const params: any[] = [accountUuid];
 
     if (options.entityType) {
@@ -169,7 +169,7 @@ export class SqlitePendingChangeRepository implements ISyncPendingChangeReposito
       params.push(options.syncStatus);
     }
 
-    query += ` ORDER BY created_at ASC`;
+    query += ` ORDER BY createdAt ASC`;
 
     if (options.limit) {
       query += ` LIMIT ?`;
@@ -182,7 +182,7 @@ export class SqlitePendingChangeRepository implements ISyncPendingChangeReposito
     return rows.map((row) =>
       PendingChange.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row.account_uuid,
+        account_uuid: row.accountUuid,
         entity_type: row.entity_type,
         entity_uuid: row.entity_uuid,
         operation: row.operation,
@@ -190,14 +190,14 @@ export class SqlitePendingChangeRepository implements ISyncPendingChangeReposito
         new_data: JSON.parse(row.new_data),
         status: row.status,
         sync_status: row.sync_status,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }
 
   async count(accountUuid: string, options?: PendingChangeQueryOptions): Promise<number> {
-    let query = `SELECT COUNT(*) as count FROM pending_changes WHERE account_uuid = ?`;
+    let query = `SELECT COUNT(*) as count FROM pending_changes WHERE accountUuid = ?`;
     const params: any[] = [accountUuid];
 
     if (options?.status) {
@@ -222,16 +222,17 @@ export class SqlitePendingChangeRepository implements ISyncPendingChangeReposito
   }
 
   async deleteByAccountUuid(accountUuid: string): Promise<number> {
-    const stmt = this.db.prepare(`DELETE FROM pending_changes WHERE account_uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM pending_changes WHERE accountUuid = ?`);
     const result = stmt.run(accountUuid);
     return result.changes ?? 0;
   }
 
   async deleteOlderThan(accountUuid: string, timestamp: number): Promise<number> {
     const stmt = this.db.prepare(
-      `DELETE FROM pending_changes WHERE account_uuid = ? AND created_at < ?`
+      `DELETE FROM pending_changes WHERE accountUuid = ? AND createdAt < ?`
     );
     const result = stmt.run(accountUuid, timestamp);
     return result.changes ?? 0;
   }
 }
+

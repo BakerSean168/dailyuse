@@ -9,19 +9,19 @@ import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalReques
 /**
  * PrismaFocusSessionRepository
  *
- * Prisma 实现的专注周期仓�?
- * 负责 FocusSession 聚合根的持久化和查询
+ * Prisma 瀹炵幇鐨勪笓娉ㄥ懆鏈熶粨鍌?
+ * 璐熻矗 FocusSession 鑱氬悎鏍圭殑鎸佷箙鍖栧拰鏌ヨ
  *
- * 映射关系�?
- * - Domain Entity (FocusSession) �?Persistence DTO �?Prisma Model
- * - Prisma Client 自动�?snake_case 字段转换�?camelCase
+ * 鏄犲皠鍏崇郴锛?
+ * - Domain Entity (FocusSession) 鈫?Persistence DTO 鈫?Prisma Model
+ * - Prisma Client 鑷姩灏?snake_case 瀛楁杞崲涓?camelCase
  */
 export class FocusSessionPrismaRepository implements IFocusSessionRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * �?Prisma 模型映射为领域实�?
-   * 注意：Prisma Client 自动�?@map 的字段转换为 camelCase
+   * 灏?Prisma 妯″瀷鏄犲皠涓洪鍩熷疄浣?
+   * 娉ㄦ剰锛歅risma Client 鑷姩灏?@map 鐨勫瓧娈佃浆鎹负 camelCase
    */
   private mapToEntity(data: PrismaFocusSession): FocusSession {
     return FocusSession.fromPersistenceDTO({
@@ -45,13 +45,13 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
   }
 
   /**
-   * 保存领域实体到数据库
-   * 使用 upsert 模式（存在则更新，不存在则创建）
+   * 淇濆瓨棰嗗煙瀹炰綋鍒版暟鎹簱
+   * 浣跨敤 upsert 妯″紡锛堝瓨鍦ㄥ垯鏇存柊锛屼笉瀛樺湪鍒欏垱寤猴級
    */
   async save(session: FocusSession): Promise<void> {
     const persistence = session.toPersistenceDTO();
 
-    // 准备数据（可更新的字段）
+    // 鍑嗗鏁版嵁锛堝彲鏇存柊鐨勫瓧娈碉級
     const data = {
       goalUuid: persistence.goalUuid,
       status: persistence.status,
@@ -81,7 +81,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
   }
 
   /**
-   * 根据 UUID 查找单个会话
+   * 鏍规嵁 UUID 鏌ユ壘鍗曚釜浼氳瘽
    */
   async findById(uuid: string): Promise<FocusSession | null> {
     const data = await this.prisma.focusSession.findUnique({
@@ -91,8 +91,8 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
   }
 
   /**
-   * 查找用户的活跃会话（IN_PROGRESS �?PAUSED�?
-   * 业务规则：一个用户同时只能有一个活跃会�?
+   * 鏌ユ壘鐢ㄦ埛鐨勬椿璺冧細璇濓紙IN_PROGRESS 鎴?PAUSED锛?
+   * 涓氬姟瑙勫垯锛氫竴涓敤鎴峰悓鏃跺彧鑳芥湁涓€涓椿璺冧細璇?
    */
   async findActiveSession(accountUuid: string): Promise<FocusSession | null> {
     const data = await this.prisma.focusSession.findFirst({
@@ -106,14 +106,14 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
         },
       },
       orderBy: {
-        createdAt: 'desc', // 返回最新的活跃会话
+        createdAt: 'desc', // 杩斿洖鏈€鏂扮殑娲昏穬浼氳瘽
       },
     });
     return data ? this.mapToEntity(data) : null;
   }
 
   /**
-   * 查找用户的所有会话（支持过滤和分页）
+   * 鏌ユ壘鐢ㄦ埛鐨勬墍鏈変細璇濓紙鏀寔杩囨护鍜屽垎椤碉級
    */
   async findByAccountUuid(
     accountUuid: string,
@@ -128,7 +128,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
       endDate?: number; // Unix timestamp
     },
   ): Promise<FocusSession[]> {
-    // 构建查询条件
+    // 鏋勫缓鏌ヨ鏉′欢
     const where: any = { accountUuid };
 
     if (options?.goalUuid) {
@@ -139,7 +139,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
       where.status = { in: options.status };
     }
 
-    // 日期范围过滤
+    // 鏃ユ湡鑼冨洿杩囨护
     if (options?.startDate || options?.endDate) {
       where.createdAt = {};
       if (options.startDate) {
@@ -150,7 +150,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
       }
     }
 
-    // 排序字段映射
+    // 鎺掑簭瀛楁鏄犲皠
     const orderByField = options?.orderBy || 'createdAt';
     const orderDirection = options?.orderDirection || 'desc';
 
@@ -167,7 +167,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
   }
 
   /**
-   * 查找目标关联的所有会�?
+   * 鏌ユ壘鐩爣鍏宠仈鐨勬墍鏈変細璇?
    */
   async findByGoalUuid(
     goalUuid: string,
@@ -201,7 +201,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
   }
 
   /**
-   * 删除会话（物理删除）
+   * 鍒犻櫎浼氳瘽锛堢墿鐞嗗垹闄わ級
    */
   async delete(uuid: string): Promise<void> {
     await this.prisma.focusSession.delete({
@@ -210,7 +210,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
   }
 
   /**
-   * 检查会话是否存�?
+   * 妫€鏌ヤ細璇濇槸鍚﹀瓨鍦?
    */
   async exists(uuid: string): Promise<boolean> {
     const count = await this.prisma.focusSession.count({
@@ -220,7 +220,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
   }
 
   /**
-   * 统计会话数量
+   * 缁熻浼氳瘽鏁伴噺
    */
   async count(
     accountUuid: string,
