@@ -4,7 +4,10 @@
 
 import type Database from 'better-sqlite3';
 import { ScheduleTask } from '@dailyuse/domain-server/schedule';
-import type { IScheduleTaskRepository, IScheduleTaskQueryOptions } from '@dailyuse/domain-server/schedule';
+import type {
+  IScheduleTaskRepository,
+  IScheduleTaskQueryOptions,
+} from '@dailyuse/domain-server/schedule';
 import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 
 export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
@@ -13,7 +16,7 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
   async save(task: ScheduleTask): Promise<void> {
     const dto = task.toPersistenceDTO();
 
-    const stmt = this.db.prepare(\
+    const stmt = this.db.prepare(`
       INSERT INTO schedule_tasks (
         uuid, account_uuid, name, description, source_module, source_entity_id, status,
         enabled, cron_expression, timezone, start_date, end_date, max_executions,
@@ -33,7 +36,7 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
         last_execution_duration = excluded.last_execution_duration,
         consecutive_failures = excluded.consecutive_failures,
         updated_at = excluded.updated_at
-    \);
+    `);
 
     stmt.run(
       dto.uuid,
@@ -70,7 +73,7 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
   }
 
   async findByUuid(uuid: string): Promise<ScheduleTask | null> {
-    const stmt = this.db.prepare(\SELECT * FROM schedule_tasks WHERE uuid = ? LIMIT 1\);
+    const stmt = this.db.prepare(`SELECT * FROM schedule_tasks WHERE uuid = ? LIMIT 1`);
     const row = stmt.get(uuid) as any;
 
     if (!row) return null;
@@ -79,13 +82,13 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
   }
 
   async deleteByUuid(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(\DELETE FROM schedule_tasks WHERE uuid = ?\);
+    const stmt = this.db.prepare(`DELETE FROM schedule_tasks WHERE uuid = ?`);
     stmt.run(uuid);
   }
 
   async findByAccountUuid(accountUuid: string): Promise<ScheduleTask[]> {
     const stmt = this.db.prepare(
-      \SELECT * FROM schedule_tasks WHERE account_uuid = ? ORDER BY next_run_at ASC NULLS LAST\
+      `SELECT * FROM schedule_tasks WHERE account_uuid = ? ORDER BY next_run_at ASC NULLS LAST`,
     );
     const rows = stmt.all(accountUuid) as any[];
 
@@ -93,15 +96,15 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
   }
 
   async findBySourceModule(module: SourceModule, accountUuid?: string): Promise<ScheduleTask[]> {
-    let query = \SELECT * FROM schedule_tasks WHERE source_module = ?\;
+    let query = `SELECT * FROM schedule_tasks WHERE source_module = ?`;
     const params: any[] = [module];
 
     if (accountUuid) {
-      query += \ AND account_uuid = ?\;
+      query += ` AND account_uuid = ?`;
       params.push(accountUuid);
     }
 
-    query += \ ORDER BY next_run_at ASC NULLS LAST\;
+    query += ` ORDER BY next_run_at ASC NULLS LAST`;
 
     const stmt = this.db.prepare(query);
     const rows = stmt.all(...params) as any[];
@@ -114,15 +117,15 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
     entityId: string,
     accountUuid?: string,
   ): Promise<ScheduleTask[]> {
-    let query = \SELECT * FROM schedule_tasks WHERE source_module = ? AND source_entity_id = ?\;
+    let query = `SELECT * FROM schedule_tasks WHERE source_module = ? AND source_entity_id = ?`;
     const params: any[] = [module, entityId];
 
     if (accountUuid) {
-      query += \ AND account_uuid = ?\;
+      query += ` AND account_uuid = ?`;
       params.push(accountUuid);
     }
 
-    query += \ ORDER BY next_run_at ASC NULLS LAST\;
+    query += ` ORDER BY next_run_at ASC NULLS LAST`;
 
     const stmt = this.db.prepare(query);
     const rows = stmt.all(...params) as any[];
@@ -131,15 +134,15 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
   }
 
   async findByStatus(status: ScheduleTaskStatus, accountUuid?: string): Promise<ScheduleTask[]> {
-    let query = \SELECT * FROM schedule_tasks WHERE status = ?\;
+    let query = `SELECT * FROM schedule_tasks WHERE status = ?`;
     const params: any[] = [status];
 
     if (accountUuid) {
-      query += \ AND account_uuid = ?\;
+      query += ` AND account_uuid = ?`;
       params.push(accountUuid);
     }
 
-    query += \ ORDER BY next_run_at ASC NULLS LAST\;
+    query += ` ORDER BY next_run_at ASC NULLS LAST`;
 
     const stmt = this.db.prepare(query);
     const rows = stmt.all(...params) as any[];
@@ -148,15 +151,15 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
   }
 
   async findEnabled(accountUuid?: string): Promise<ScheduleTask[]> {
-    let query = \SELECT * FROM schedule_tasks WHERE enabled = 1 AND status = 'ACTIVE'\;
+    let query = `SELECT * FROM schedule_tasks WHERE enabled = 1 AND status = 'ACTIVE'`;
     const params: any[] = [];
 
     if (accountUuid) {
-      query += \ AND account_uuid = ?\;
+      query += ` AND account_uuid = ?`;
       params.push(accountUuid);
     }
 
-    query += \ ORDER BY next_run_at ASC NULLS LAST\;
+    query += ` ORDER BY next_run_at ASC NULLS LAST`;
 
     const stmt = this.db.prepare(query);
     const rows = stmt.all(...params) as any[];
@@ -165,11 +168,11 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
   }
 
   async findDueTasksForExecution(beforeTime: Date, limit?: number): Promise<ScheduleTask[]> {
-    let query = \SELECT * FROM schedule_tasks WHERE enabled = 1 AND status IN ('ACTIVE', 'PENDING') AND next_run_at <= ? ORDER BY next_run_at ASC\;
+    let query = `SELECT * FROM schedule_tasks WHERE enabled = 1 AND status IN ('ACTIVE', 'PENDING') AND next_run_at <= ? ORDER BY next_run_at ASC`;
     const params: any[] = [beforeTime.getTime()];
 
     if (limit) {
-      query += \ LIMIT ?\;
+      query += ` LIMIT ?`;
       params.push(limit);
     }
 
@@ -180,43 +183,43 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
   }
 
   async query(options: IScheduleTaskQueryOptions): Promise<ScheduleTask[]> {
-    let query = \SELECT * FROM schedule_tasks WHERE 1=1\;
+    let query = `SELECT * FROM schedule_tasks WHERE 1=1`;
     const params: any[] = [];
 
     if (options.accountUuid) {
-      query += \ AND account_uuid = ?\;
+      query += ` AND account_uuid = ?`;
       params.push(options.accountUuid);
     }
 
     if (options.sourceModule) {
-      query += \ AND source_module = ?\;
+      query += ` AND source_module = ?`;
       params.push(options.sourceModule);
     }
 
     if (options.sourceEntityId) {
-      query += \ AND source_entity_id = ?\;
+      query += ` AND source_entity_id = ?`;
       params.push(options.sourceEntityId);
     }
 
     if (options.status) {
-      query += \ AND status = ?\;
+      query += ` AND status = ?`;
       params.push(options.status);
     }
 
     if (options.isEnabled !== undefined) {
-      query += \ AND enabled = ?\;
+      query += ` AND enabled = ?`;
       params.push(options.isEnabled ? 1 : 0);
     }
 
-    query += \ ORDER BY next_run_at ASC NULLS LAST\;
+    query += ` ORDER BY next_run_at ASC NULLS LAST`;
 
     if (options.limit) {
-      query += \ LIMIT ?\;
+      query += ` LIMIT ?`;
       params.push(options.limit);
     }
 
     if (options.offset) {
-      query += \ OFFSET ?\;
+      query += ` OFFSET ?`;
       params.push(options.offset);
     }
 
@@ -227,31 +230,31 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
   }
 
   async count(options: IScheduleTaskQueryOptions): Promise<number> {
-    let query = \SELECT COUNT(*) as count FROM schedule_tasks WHERE 1=1\;
+    let query = `SELECT COUNT(*) as count FROM schedule_tasks WHERE 1=1`;
     const params: any[] = [];
 
     if (options.accountUuid) {
-      query += \ AND account_uuid = ?\;
+      query += ` AND account_uuid = ?`;
       params.push(options.accountUuid);
     }
 
     if (options.sourceModule) {
-      query += \ AND source_module = ?\;
+      query += ` AND source_module = ?`;
       params.push(options.sourceModule);
     }
 
     if (options.sourceEntityId) {
-      query += \ AND source_entity_id = ?\;
+      query += ` AND source_entity_id = ?`;
       params.push(options.sourceEntityId);
     }
 
     if (options.status) {
-      query += \ AND status = ?\;
+      query += ` AND status = ?`;
       params.push(options.status);
     }
 
     if (options.isEnabled !== undefined) {
-      query += \ AND enabled = ?\;
+      query += ` AND enabled = ?`;
       params.push(options.isEnabled ? 1 : 0);
     }
 

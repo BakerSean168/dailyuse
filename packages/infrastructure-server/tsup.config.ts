@@ -30,6 +30,7 @@ export default defineConfig({
     '@prisma/client',
     'bree',
     'node-cron',
+    'better-sqlite3',
   ],
   sourcemap: true,
 });
