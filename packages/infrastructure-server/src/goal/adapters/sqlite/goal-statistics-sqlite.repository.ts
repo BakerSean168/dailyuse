@@ -20,12 +20,12 @@ export class SqliteGoalStatisticsRepository implements IGoalStatisticsRepository
 
     return GoalStatistics.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row\.accountUuid,
+      account_uuid: row.accountUuid,
       total_count: row.total_count,
       active_count: row.active_count,
       completed_count: row.completed_count,
-      createdAt: new Date(row\.createdAt),
-      updatedAt: new Date(row\.updatedAt),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -34,24 +34,24 @@ export class SqliteGoalStatisticsRepository implements IGoalStatisticsRepository
 
     const stmt = this.db.prepare(`
       INSERT INTO goal_statistics (
-        uuid, accountUuid, total_count, active_count, completed_count,
+        uuid, account_uuid, total_count, active_count, completed_count,
         createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(accountUuid) DO UPDATE SET
+      ON CONFLICT(account_uuid) DO UPDATE SET
         total_count = excluded.total_count,
         active_count = excluded.active_count,
         completed_count = excluded.completed_count,
-        updatedAt = excluded\.updatedAt
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto\.accountUuid,
-      dto.total_count,
-      dto.active_count,
-      dto.completed_count,
-      dto\.createdAt,
-      dto\.updatedAt,
+      dto.accountUuid,
+      dto.totalCount,
+      dto.activeCount,
+      dto.completedCount,
+      dto.createdAt,
+      dto.updatedAt,
     );
 
     return statistics;

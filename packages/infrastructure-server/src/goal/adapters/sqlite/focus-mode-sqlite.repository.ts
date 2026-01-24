@@ -21,19 +21,19 @@ export class SqliteFocusModeRepository implements IFocusModeRepository {
       ON CONFLICT(uuid) DO UPDATE SET
         is_active = excluded.is_active,
         actual_end_time = excluded.actual_end_time,
-        updatedAt = excluded\.updatedAt
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto\.accountUuid,
+      dto.accountUuid,
       dto.name,
-      dto.start_time,
-      dto.end_time,
-      dto.is_active ? 1 : 0,
-      dto.actual_end_time || null,
-      dto\.createdAt,
-      dto\.updatedAt,
+      dto.startTime,
+      dto.endTime,
+      dto.isActive ? 1 : 0,
+      dto.actualEndTime || null,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -43,17 +43,7 @@ export class SqliteFocusModeRepository implements IFocusModeRepository {
 
     if (!row) return null;
 
-    return FocusMode.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row\.accountUuid,
-      name: row.name,
-      start_time: row.start_time,
-      end_time: row.end_time,
-      is_active: row.is_active === 1,
-      actual_end_time: row.actual_end_time,
-      createdAt: new Date(row\.createdAt),
-      updatedAt: new Date(row\.updatedAt),
-    });
+    return this.rowToFocusMode(row);
   }
 
   async findActiveByAccountUuid(accountUuid: string): Promise<FocusMode | null> {
@@ -64,17 +54,7 @@ export class SqliteFocusModeRepository implements IFocusModeRepository {
 
     if (!row) return null;
 
-    return FocusMode.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row\.accountUuid,
-      name: row.name,
-      start_time: row.start_time,
-      end_time: row.end_time,
-      is_active: row.is_active === 1,
-      actual_end_time: row.actual_end_time,
-      createdAt: new Date(row\.createdAt),
-      updatedAt: new Date(row\.updatedAt),
-    });
+    return this.rowToFocusMode(row);
   }
 
   async findByAccountUuid(accountUuid: string): Promise<FocusMode[]> {
@@ -83,19 +63,7 @@ export class SqliteFocusModeRepository implements IFocusModeRepository {
     );
     const rows = stmt.all(accountUuid) as any[];
 
-    return rows.map((row) =>
-      FocusMode.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row\.accountUuid,
-        name: row.name,
-        start_time: row.start_time,
-        end_time: row.end_time,
-        is_active: row.is_active === 1,
-        actual_end_time: row.actual_end_time,
-        createdAt: new Date(row\.createdAt),
-        updatedAt: new Date(row\.updatedAt),
-      })
-    );
+    return rows.map((row) => this.rowToFocusMode(row));
   }
 
   async deactivateExpired(): Promise<number> {
@@ -113,6 +81,21 @@ export class SqliteFocusModeRepository implements IFocusModeRepository {
   async delete(uuid: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM focus_modes WHERE uuid = ?`);
     stmt.run(uuid);
+  }
+
+  // Private helper method to convert database row to FocusMode
+  private rowToFocusMode(row: any): FocusMode {
+    return FocusMode.fromPersistenceDTO({
+      uuid: row.uuid,
+      accountUuid: row.account_uuid,
+      name: row.name,
+      startTime: row.start_time,
+      endTime: row.end_time,
+      isActive: row.is_active === 1,
+      actualEndTime: row.actual_end_time,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+    });
   }
 }
 

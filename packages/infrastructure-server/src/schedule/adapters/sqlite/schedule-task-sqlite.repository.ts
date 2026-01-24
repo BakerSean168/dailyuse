@@ -88,7 +88,7 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
 
   async findByAccountUuid(accountUuid: string): Promise<ScheduleTask[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM schedule_tasks WHERE account_uuid = ? ORDER BY next_run_at ASC NULLS LAST`,
+      `SELECT * FROM schedule_tasks WHERE account_uuid = ? ORDER BY next_run_at ASC NULLS LAST`
     );
     const rows = stmt.all(accountUuid) as any[];
 
