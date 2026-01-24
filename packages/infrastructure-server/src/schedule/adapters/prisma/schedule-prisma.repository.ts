@@ -23,8 +23,8 @@ export class SchedulePrismaRepository implements IScheduleRepository {
       accountUuid: data.accountUuid,
       name: data.name,
       description: data.description,
-      startTime: Number(data.startTime), // BigInt éˆ?number (milliseconds)
-      endTime: Number(data.endTime), // BigInt éˆ?number (milliseconds)
+      startTime: Number(data.startTime), // BigInt ï¿½?number (milliseconds)
+      endTime: Number(data.endTime), // BigInt ï¿½?number (milliseconds)
       duration: data.duration,
       hasConflict: data.hasConflict,
       conflictingSchedules: data.conflictingSchedules
@@ -33,8 +33,8 @@ export class SchedulePrismaRepository implements IScheduleRepository {
       priority: data.priority,
       location: data.location,
       attendees: data.attendees ? JSON.parse(data.attendees) : undefined,
-      createdAt: data.createdAt.getTime(), // Date éˆ?number (milliseconds)
-      updatedAt: data.updatedAt.getTime(), // Date éˆ?number (milliseconds)
+      createdAt: data.createdAt.getTime(), // Date ï¿½?number (milliseconds)
+      updatedAt: data.updatedAt.getTime(), // Date ï¿½?number (milliseconds)
     });
   }
 
@@ -47,10 +47,10 @@ export class SchedulePrismaRepository implements IScheduleRepository {
     return {
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
-      title: dto.title,
+      name: dto.name,
       description: dto.description ?? null,
-      startTime: BigInt(dto.startTime), // number éˆ?BigInt (milliseconds)
-      endTime: BigInt(dto.endTime), // number éˆ?BigInt (milliseconds)
+      startTime: BigInt(dto.startTime), // number â†’ BigInt (milliseconds)
+      endTime: BigInt(dto.endTime), // number â†’ BigInt (milliseconds)
       duration: dto.duration,
       hasConflict: dto.hasConflict,
       conflictingSchedules: dto.conflictingSchedules && dto.conflictingSchedules.length > 0
@@ -59,8 +59,8 @@ export class SchedulePrismaRepository implements IScheduleRepository {
       priority: dto.priority ?? null,
       location: dto.location ?? null,
       attendees: dto.attendees ? JSON.stringify(dto.attendees) : null,
-      createdAt: new Date(dto.createdAt), // number éˆ?Date
-      updatedAt: new Date(dto.updatedAt), // number éˆ?Date
+      createdAt: new Date(dto.createdAt), // number ï¿½?Date
+      updatedAt: new Date(dto.updatedAt), // number ï¿½?Date
     };
   }
 

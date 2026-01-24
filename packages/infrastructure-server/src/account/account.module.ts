@@ -6,9 +6,9 @@ import {
   AccountEmailApplicationService,
   AccountDeletionApplicationService,
 } from '@dailyuse/application-server/account';
-import { PrismaAccountRepository } from './repositories/prisma-account.repository';
-import { PrismaAuthCredentialRepository } from '../authentication/repositories/prisma-auth-credential-repository';
-import { PrismaAuthSessionRepository } from '../authentication/repositories/prisma-auth-session-repository';
+import { AccountPrismaRepository } from './adapters/prisma/account-prisma.repository';
+import { AuthCredentialPrismaRepository } from '../authentication/adapters/prisma/auth-credential-prisma.repository';
+import { AuthSessionPrismaRepository } from '../authentication/adapters/prisma/auth-session-prisma.repository';
 import { PrismaTransactionManager } from '../shared/prisma-transaction-manager';
 import type { PrismaClient } from '@prisma/client';
 
@@ -21,9 +21,9 @@ export class AccountModule {
   public readonly deletionService: AccountDeletionApplicationService;
 
   constructor(prisma: PrismaClient) {
-    const accountRepository = new PrismaAccountRepository(prisma);
-    const credentialRepository = new PrismaAuthCredentialRepository(prisma);
-    const sessionRepository = new PrismaAuthSessionRepository(prisma);
+    const accountRepository = new AccountPrismaRepository(prisma);
+    const credentialRepository = new AuthCredentialPrismaRepository(prisma);
+    const sessionRepository = new AuthSessionPrismaRepository(prisma);
     const transactionManager = new PrismaTransactionManager(prisma);
 
     this.registrationService = new RegistrationApplicationService(

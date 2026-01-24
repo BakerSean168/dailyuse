@@ -4,6 +4,9 @@
  * Repository implementations and DI Module for Reminder module.
  */
 
+// DI Module
+export { ReminderModule } from './reminder.module';
+
 // Adapters
 export { ReminderPrismaRepository } from './adapters/prisma/reminder-prisma.repository';
 export { SqliteReminderGroupRepository } from './adapters/sqlite/reminder-group-sqlite.repository';

@@ -22,7 +22,7 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('RepositorySyncRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerRepositorySyncRoutes(): Router {
+export function registerRepositorySyncRoutes(syncService: RepositorySyncApplicationService): Router {
   const router: Router = ExpressRouter();
 
   router.use(authMiddleware);

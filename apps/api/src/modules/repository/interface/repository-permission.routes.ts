@@ -22,7 +22,7 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('RepositoryPermissionRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerRepositoryPermissionRoutes(): Router {
+export function registerRepositoryPermissionRoutes(permissionService: RepositoryPermissionApplicationService): Router {
   const router: Router = ExpressRouter();
 
   router.use(authMiddleware);

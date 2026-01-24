@@ -22,7 +22,7 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('DashboardWidgetRoutes');
 const responseBuilder = createResponseBuilder();
 
-export function registerDashboardWidgetRoutes(): Router {
+export function registerDashboardWidgetRoutes(dashboardService: DashboardApplicationService): Router {
   const router: Router = ExpressRouter();
 
   router.use(authMiddleware);

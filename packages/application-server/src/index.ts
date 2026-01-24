@@ -47,5 +47,8 @@ export * from './authentication';
 // AI module
 export * from './ai';
 
+// Editor module
+export * from './editor';
+
 // Sync module
 export * from './sync';

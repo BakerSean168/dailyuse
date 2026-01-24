@@ -133,10 +133,10 @@ export class SyncSessionPrismaRepository implements ISyncSessionRepository {
     return records.map((r: unknown) => SyncSession.fromPersistenceDTO(toPersistenceDTO(r)));
   }
 
-  async findByQuery(options: SyncSessionQueryOptions): Promise<SyncSession[]> {
+  async findByQuery(accountUuid: string, options: SyncSessionQueryOptions): Promise<SyncSession[]> {
     const records = await this.prisma.syncSession.findMany({
       where: {
-        accountUuid: this.accountUuid,
+        accountUuid: accountUuid,
         ...(options.profileId && { profileId: options.profileId }),
         ...(options.status && options.status.length > 0 && { status: { in: options.status } }),
       },
@@ -147,10 +147,10 @@ export class SyncSessionPrismaRepository implements ISyncSessionRepository {
     return records.map((r: unknown) => SyncSession.fromPersistenceDTO(toPersistenceDTO(r)));
   }
 
-  async count(options?: SyncSessionQueryOptions): Promise<number> {
+  async count(accountUuid: string, options?: SyncSessionQueryOptions): Promise<number> {
     return this.prisma.syncSession.count({
       where: {
-        accountUuid: this.accountUuid,
+        accountUuid: accountUuid,
         ...(options?.profileId && { profileId: options.profileId }),
         ...(options?.status && options.status.length > 0 && { status: { in: options.status } }),
       },

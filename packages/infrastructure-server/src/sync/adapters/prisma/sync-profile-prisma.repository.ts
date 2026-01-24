@@ -121,10 +121,10 @@ export class SyncProfilePrismaRepository implements ISyncProfileRepository {
     return records.map((r: unknown) => SyncProfile.fromPersistenceDTO(toPersistenceDTO(r)));
   }
 
-  async findByQuery(options: SyncProfileQueryOptions): Promise<SyncProfile[]> {
+  async findByQuery(accountUuid: string, options: SyncProfileQueryOptions): Promise<SyncProfile[]> {
     const records = await this.prisma.syncProfile.findMany({
       where: {
-        accountUuid: this.accountUuid,
+        accountUuid: accountUuid,
         ...(options.providerType && { providerType: options.providerType }),
         ...(options.isActive !== undefined && { isActive: options.isActive }),
       },
@@ -135,10 +135,10 @@ export class SyncProfilePrismaRepository implements ISyncProfileRepository {
     return records.map((r: unknown) => SyncProfile.fromPersistenceDTO(toPersistenceDTO(r)));
   }
 
-  async count(options?: SyncProfileQueryOptions): Promise<number> {
+  async count(accountUuid: string, options?: SyncProfileQueryOptions): Promise<number> {
     return this.prisma.syncProfile.count({
       where: {
-        accountUuid: this.accountUuid,
+        accountUuid: accountUuid,
         ...(options?.providerType && { providerType: options.providerType }),
         ...(options?.isActive !== undefined && { isActive: options.isActive }),
       },

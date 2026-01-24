@@ -40,7 +40,7 @@ export class SyncProfileMemoryRepository implements ISyncProfileRepository {
       .sort((a, b) => b.createdAt - a.createdAt);
   }
 
-  async findByQuery(options: SyncProfileQueryOptions): Promise<SyncProfile[]> {
+  async findByQuery(accountUuid: string, options: SyncProfileQueryOptions): Promise<SyncProfile[]> {
     let results = Array.from(this.profiles.values());
 
     if (options.providerType) {
@@ -65,7 +65,7 @@ export class SyncProfileMemoryRepository implements ISyncProfileRepository {
     return results;
   }
 
-  async count(options?: SyncProfileQueryOptions): Promise<number> {
+  async count(accountUuid: string, options?: SyncProfileQueryOptions): Promise<number> {
     if (!options) {
       return this.profiles.size;
     }

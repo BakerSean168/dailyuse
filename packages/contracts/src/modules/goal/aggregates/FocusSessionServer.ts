@@ -45,17 +45,16 @@ export interface FocusSessionPersistenceDTO {
   actualDurationMinutes: number;
   description: string | null;
 
-  startedAt: Date | null;
-  pausedAt: Date | null;
-  resumedAt: Date | null;
-  completedAt: Date | null;
-  cancelledAt: Date | null;
-
+  startedAt: number | null;
+  pausedAt: number | null;
+  resumedAt: number | null;
+  completedAt: number | null;
+  cancelledAt: number | null;
   pauseCount: number;
   pausedDurationMinutes: number;
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: number; // timestamp (ms)
+  updatedAt: number; // timestamp (ms)
 }
 
 /**

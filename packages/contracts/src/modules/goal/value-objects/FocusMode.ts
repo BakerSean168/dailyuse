@@ -11,6 +11,21 @@ import { z } from 'zod';
 export type HiddenGoalsMode = 'hide' | 'dim' | 'collapse';
 
 /**
+ * FocusMode Persistence DTO
+ */
+export interface FocusModePersistenceDTO {
+  uuid: string;
+  accountUuid: string;
+  name: string;
+  startTime: number;
+  endTime: number;
+  isActive: boolean;
+  actualEndTime: number | null;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/**
  * FocusMode 服务端 DTO
  */
 export interface FocusModeServerDTO {

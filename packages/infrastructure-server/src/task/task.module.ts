@@ -1,61 +1,93 @@
-import type {  PrismaClient  } from "@prisma/client";
-import {
-  TaskInstancePrismaRepository,
-  TaskTemplatePrismaRepository,
-  TaskDependencyPrismaRepository,
-  TaskStatisticsPrismaRepository
-} from './adapters/prisma';
-// Import Schedule Repo
-import { ScheduleTaskPrismaRepository } from '../schedule/adapters/prisma';
-
+import type { PrismaClient } from '@prisma/client';
+import type Database from 'better-sqlite3';
+import type {
+  ITaskInstanceRepository,
+  ITaskDependencyRepository,
+  ITaskStatisticsRepository,
+} from '@dailyuse/domain-server/task';
+import { TaskRepositoryFactory } from './di/task-repository.factory';
 import {
   TaskInstanceApplicationService,
   TaskTemplateApplicationService,
   TaskDependencyApplicationService,
-  TaskStatisticsApplicationService
+  TaskStatisticsApplicationService,
 } from '@dailyuse/application-server/task';
+import { ScheduleTaskPrismaRepository } from '../schedule/adapters/prisma';
+import { SqliteScheduleTaskRepository } from '../schedule/adapters/sqlite';
 
+// Type alias for better SQLite3 database instance
+type BetterSQLiteDB = Database.Database;
+
+/**
+ * Task Module
+ *
+ * Composition Root for Task domain
+ * Supports both Prisma (API) and SQLite (Desktop) data sources
+ *
+ * 用法:
+ * const taskModule = new TaskModule('prisma', prismaClient);
+ * // or
+ * const taskModule = new TaskModule('sqlite', sqliteDb);
+ *
+ * // Use services
+ * await taskModule.taskInstanceService.create(data);
+ */
 export class TaskModule {
-  public readonly taskInstanceRepository: TaskInstancePrismaRepository;
-  public readonly taskTemplateRepository: TaskTemplatePrismaRepository;
-  public readonly taskDependencyRepository: TaskDependencyPrismaRepository;
-  public readonly taskStatisticsRepository: TaskStatisticsPrismaRepository;
-  public readonly scheduleTaskRepository: ScheduleTaskPrismaRepository;
+  public readonly taskInstanceRepository: ITaskInstanceRepository;
+  public readonly taskDependencyRepository: ITaskDependencyRepository;
+  public readonly taskStatisticsRepository: ITaskStatisticsRepository;
+  public readonly scheduleTaskRepository: any; // ScheduleRepository
 
   public readonly taskInstanceService: TaskInstanceApplicationService;
   public readonly taskTemplateService: TaskTemplateApplicationService;
   public readonly taskDependencyService: TaskDependencyApplicationService;
   public readonly taskStatisticsService: TaskStatisticsApplicationService;
 
-  constructor(prisma: PrismaClient) {
-    // 1. Initialize Repositories
-    this.taskInstanceRepository = new TaskInstancePrismaRepository(prisma);
-    this.taskTemplateRepository = new TaskTemplatePrismaRepository(prisma);
-    this.taskDependencyRepository = new TaskDependencyPrismaRepository(prisma);
-    this.taskStatisticsRepository = new TaskStatisticsPrismaRepository(prisma);
-    this.scheduleTaskRepository = new ScheduleTaskPrismaRepository(prisma);
+  constructor(dataSourceType: 'prisma' | 'sqlite', dbConnection: PrismaClient | BetterSQLiteDB) {
+    // 1. Initialize Repositories using Factory
+    this.taskInstanceRepository = TaskRepositoryFactory.createTaskInstanceRepository(
+      dataSourceType,
+      dbConnection,
+    );
+    this.taskDependencyRepository = TaskRepositoryFactory.createTaskDependencyRepository(
+      dataSourceType,
+      dbConnection,
+    );
+    this.taskStatisticsRepository = TaskRepositoryFactory.createTaskStatisticsRepository(
+      dataSourceType,
+      dbConnection,
+    );
 
-    // 2. Initialize Services (Pure DI)
+    // 2. Initialize Schedule Repository (special handling)
+    if (dataSourceType === 'prisma') {
+      this.scheduleTaskRepository = new ScheduleTaskPrismaRepository(dbConnection as PrismaClient);
+    } else if (dataSourceType === 'sqlite') {
+      this.scheduleTaskRepository = new SqliteScheduleTaskRepository(dbConnection as BetterSQLiteDB);
+    } else {
+      throw new Error(`Unknown data source type: ${dataSourceType}`);
+    }
+
+    // 3. Initialize Services (Pure DI)
+    this.taskTemplateService = new TaskTemplateApplicationService(
+      this.taskInstanceRepository as any,
+      this.taskInstanceRepository,
+      this.scheduleTaskRepository as any,
+    );
+
     this.taskInstanceService = new TaskInstanceApplicationService(
       this.taskInstanceRepository,
-      this.taskTemplateRepository
+      this.taskInstanceRepository as any,
     );
 
-    this.taskTemplateService = new TaskTemplateApplicationService(
-      this.taskTemplateRepository,
-      this.taskInstanceRepository,
-      this.scheduleTaskRepository
-    );
-    
     this.taskDependencyService = new TaskDependencyApplicationService(
       this.taskDependencyRepository,
-      this.taskTemplateRepository
+      this.taskInstanceRepository as any,
     );
 
     this.taskStatisticsService = new TaskStatisticsApplicationService(
       this.taskStatisticsRepository,
-      this.taskTemplateRepository,
-      this.taskInstanceRepository
+      this.taskInstanceRepository as any,
+      this.taskInstanceRepository,
     );
   }
 }

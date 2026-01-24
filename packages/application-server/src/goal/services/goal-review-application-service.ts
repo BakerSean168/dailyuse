@@ -2,7 +2,7 @@ import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 
 import { GoalDomainService } from '@dailyuse/domain-server/goal';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
-import { GoalEventPublisher } from './GoalEventPublisher';
+import { GoalEventPublisher } from './goal-event-publisher';
 
 /**
  * GoalReview 应用服务

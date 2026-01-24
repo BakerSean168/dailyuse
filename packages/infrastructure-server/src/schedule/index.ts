@@ -4,6 +4,9 @@
  * Repository implementations and DI Module for Schedule module.
  */
 
+// DI Module
+export { ScheduleModule } from './schedule.module';
+
 // Adapters
 export { SchedulePrismaRepository } from './adapters/prisma/schedule-prisma.repository';
 export { ScheduleTaskPrismaRepository } from './adapters/prisma/schedule-task-prisma.repository';
@@ -17,9 +20,9 @@ export { SqliteScheduleStatisticsRepository } from './adapters/sqlite/schedule-s
 // Datasources (External integrations)
 export {
   CronJobManager,
-  BreeExecutionEngine,
-  ScheduleMonitor,
-  PrismaScheduleExecutionMapper,
+  // BreeExecutionEngine, // TODO: Fix bree dependency
+  // ScheduleMonitor, // TODO: Fix ScheduleMonitor
+  // PrismaScheduleExecutionMapper, // TODO: Fix PrismaScheduleExecutionMapper
 } from './datasources';
 
 export { SchedulerBootstrap } from './scheduler-bootstrap';

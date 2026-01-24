@@ -24,6 +24,9 @@
     "paths": {
       "@dailyuse/patterns": [
         "./packages/patterns/src/index.ts"
+      ],
+      "@api/shared": [
+        "./apps/api/src/shared/index.ts"
       ]
     }
   }

@@ -4,6 +4,9 @@
  * Ports and Adapters for Setting module persistence.
  */
 
+// DI Module
+export { SettingModule } from './setting.module';
+
 // Container
 export { SettingContainer } from './setting.container';
 

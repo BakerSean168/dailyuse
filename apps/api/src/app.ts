@@ -40,7 +40,7 @@ import { setupSwagger } from './shared/infrastructure/config/swagger';
 import { createLogger } from '@dailyuse/utils';
 import { performanceMiddleware } from './shared/infrastructure/http/middlewares/performance.middleware';
 import { getCorsOrigins, isAllCorsOriginsAllowed } from './shared/infrastructure/config/env.js';
-import { GoalModule, AccountModule, TaskModule, ScheduleModule, ReminderModule, NotificationModule, SettingModule, AIModule } from '@dailyuse/infrastructure-server';
+import { GoalModule, AccountModule, TaskModule, ScheduleModule, ReminderModule, NotificationModule, SettingModule, AIModule, RepositoryModule, DashboardModule } from '@dailyuse/infrastructure-server';
 
 export interface AppDependencies {
   goalModule: GoalModule;
@@ -51,6 +51,8 @@ export interface AppDependencies {
   notificationModule: NotificationModule;
   settingModule: SettingModule;
   aiModule: AIModule;
+  repositoryModule: RepositoryModule;
+  dashboardModule: DashboardModule;
 }
 
 export const createApp = (deps: AppDependencies): Express => {
@@ -107,10 +109,10 @@ export const createApp = (deps: AppDependencies): Express => {
   api.use('/reminders', authMiddleware, registerReminderRoutes(deps.reminderModule));
   api.use('/schedules', authMiddleware, registerScheduleRoutes(deps.scheduleModule));
   api.use('/editor', authMiddleware, registerEditorRoutes());
-  api.use('/repositories', authMiddleware, registerRepositoryRoutes());
+  api.use('/repositories', authMiddleware, registerRepositoryRoutes(deps.repositoryModule));
   api.use('/settings', authMiddleware, registerSettingRoutes(deps.settingModule));
   api.use('/metrics', authMiddleware, registerMetricsRoutes());
-  api.use('/dashboard', authMiddleware, registerDashboardRoutes());
+  api.use('/dashboard', authMiddleware, registerDashboardRoutes(deps.dashboardModule));
   api.use('/cross-module', authMiddleware, crossModuleRouter);
   api.use('/sse', registerSSERoutes());
   api.use('/notifications', authMiddleware, registerNotificationRoutes(

@@ -4,6 +4,15 @@
  * 瀵煎嚭All鏈?Repository 妯″潡鐨?Services
  */
 
+// ===== Repository Application Service =====
+export { RepositoryApplicationService } from './repository-application-service';
+
+// ===== Repository Sync Application Service =====
+export { RepositorySyncApplicationService } from './repository-sync-application-service';
+
+// ===== Repository Permission Application Service =====
+export { RepositoryPermissionApplicationService } from './repository-permission-application-service';
+
 // ===== Repository 鐢ㄤ緥 =====
 export { CreateRepository } from './create-repository';
 export type { CreateRepositoryInput } from './create-repository';

@@ -3,7 +3,7 @@
  * @description Calculate next run time from cron expression
  */
 
-import { parseExpression } from 'cron-parser';
+import parser from 'cron-parser';
 
 /**
  * Calculate the next run time for a cron expression
@@ -14,7 +14,7 @@ import { parseExpression } from 'cron-parser';
  */
 export function calculateNextRun(cronExpression: string, timezone: string = 'UTC'): Date | null {
   try {
-    const interval = parseExpression(cronExpression, {
+    const interval = parser.parseExpression(cronExpression, {
       currentDate: new Date(),
       tz: timezone,
     });

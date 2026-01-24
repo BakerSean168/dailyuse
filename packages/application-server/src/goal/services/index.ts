@@ -43,6 +43,10 @@ export { GoalApplicationService } from './goal-application-service';
 
 export { GoalKeyResultApplicationService } from './goal-key-result-application-service';
 
+export { GoalRecordApplicationService } from './goal-record-application-service';
+
+export { GoalReviewApplicationService } from './goal-review-application-service';
+
 // ============================================================
 // Internal Services
 // ============================================================

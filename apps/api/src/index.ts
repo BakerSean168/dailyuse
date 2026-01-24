@@ -9,7 +9,17 @@ import { initializeLogger, getStartupInfo } from './shared/infrastructure/config
 import { createLogger } from '@dailyuse/utils';
 import { registerAllCronJobs, startCronScheduler, stopCronScheduler } from './shared/infrastructure/cron';
 import { registerTaskEventListeners } from '@dailyuse/application-server/task';
-import { GoalModule, AccountModule, TaskModule, ScheduleModule, ReminderModule, NotificationModule, SettingModule, AIModule } from '@dailyuse/infrastructure-server';
+import { 
+  GoalModule, 
+  AccountModule, 
+  TaskModule, 
+  ScheduleModule, 
+  ReminderModule, 
+  NotificationModule, 
+  SettingModule, 
+  AIModule 
+} from '@dailyuse/infrastructure-server';
+import { DataSourceManager } from '@dailyuse/infrastructure-server';
 
 // 初始化日志系统
 initializeLogger();
@@ -37,9 +47,15 @@ const logger = createLogger('API');
     }
 
     // 🎯 初始化 Infrastructure Module (Composition Root)
+    // 关键: 使用 DataSourceManager 确保 TaskModule 能获取正确的数据库实例
+    DataSourceManager.initialize({
+      type: 'prisma',
+      prismaClient: prisma,
+    });
+
     const goalModule = new GoalModule(prisma);
     const accountModule = new AccountModule(prisma);
-    const taskModule = new TaskModule(prisma);
+    const taskModule = new TaskModule('prisma', prisma);
     const scheduleModule = new ScheduleModule(prisma);
     const reminderModule = new ReminderModule(prisma);
     const notificationModule = new NotificationModule(prisma);

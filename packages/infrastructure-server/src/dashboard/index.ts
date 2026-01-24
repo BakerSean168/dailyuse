@@ -4,6 +4,9 @@
  * Ports and Adapters for Dashboard module persistence.
  */
 
+// Module (Composition Pattern - ADR-025)
+export { DashboardModule } from './dashboard.module';
+
 // Container
 export { DashboardContainer, type IStatisticsCacheService } from './dashboard.container';
 

@@ -5,6 +5,9 @@
  * 类型定义请从 @dailyuse/contracts/dashboard 导入
  */
 
+// ===== Dashboard Application Service =====
+export { DashboardApplicationService } from './dashboard-application-service';
+
 // ===== Widget Config =====
 export { GetWidgetConfig } from './get-widget-config';
 export { UpdateWidgetConfig } from './update-widget-config';

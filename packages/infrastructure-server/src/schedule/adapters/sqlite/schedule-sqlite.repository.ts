@@ -37,6 +37,14 @@ export class SqliteScheduleRepository implements IScheduleRepository {
   async findByDateRange(accountUuid: string, startTime: number, endTime: number): Promise<Schedule[]> {
     throw new Error('SQLite Schedule Repository not implemented');
   }
+
+  async deleteByUuid(uuid: string): Promise<void> {
+    throw new Error('SQLite Schedule Repository not implemented');
+  }
+
+  async findByTimeRange(accountUuid: string, startTime: number, endTime: number): Promise<Schedule[]> {
+    throw new Error('SQLite Schedule Repository not implemented');
+  }
 }
 
 

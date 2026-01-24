@@ -19,8 +19,9 @@ import { registerRepositoryPermissionRoutes } from './repository-permission.rout
 import { registerRepositoryResourceRoutes } from './repository-resource.routes';
 import { registerRepositoryFolderRoutes } from './repository-folder.routes';
 import { registerRepositoryStatisticsRoutes } from './repository-statistics.routes';
+import { RepositoryModule } from '@dailyuse/infrastructure-server';
 
-export function registerRepositoryRoutes(): Router {
+export function registerRepositoryRoutes(repositoryModule: RepositoryModule): Router {
   const router: Router = ExpressRouter();
 
   // ============ 仓库核心路由 ============
@@ -30,7 +31,7 @@ export function registerRepositoryRoutes(): Router {
   // PUT    /api/repositories/:id          - 更新仓库
   // DELETE /api/repositories/:id          - 删除仓库
   // PATCH  /api/repositories/:id/settings - 更新设置
-  router.use('/', registerRepositoryCoreRoutes());
+  router.use('/', registerRepositoryCoreRoutes(repositoryModule.repositoryService));
 
   // ============ 仓库同步路由 ============
   // POST   /api/repositories/:id/sync           - 同步
@@ -39,7 +40,7 @@ export function registerRepositoryRoutes(): Router {
   // POST   /api/repositories/:id/push           - 推送
   // GET    /api/repositories/:id/changes        - 获取变更
   // POST   /api/repositories/:id/revert         - 恢复版本
-  router.use('/', registerRepositorySyncRoutes());
+  router.use('/', registerRepositorySyncRoutes(repositoryModule.syncService));
 
   // ============ 仓库权限路由 ============
   // POST   /api/repositories/:id/permissions           - 添加权限
@@ -48,19 +49,19 @@ export function registerRepositoryRoutes(): Router {
   // DELETE /api/repositories/:id/permissions/:userId   - 删除权限
   // POST   /api/repositories/:id/share                 - 分享
   // GET    /api/repositories/:id/share-links           - 获取分享链接
-  router.use('/', registerRepositoryPermissionRoutes());
+  router.use('/', registerRepositoryPermissionRoutes(repositoryModule.permissionService));
 
   // ============ 资源路由 ============
   // 资源文件管理
-  router.use('/resources', registerRepositoryResourceRoutes());
+  router.use('/resources', registerRepositoryResourceRoutes(repositoryModule.resourceService));
 
   // ============ 文件夹路由 ============
   // 文件夹结构管理
-  router.use('/folders', registerRepositoryFolderRoutes());
+  router.use('/folders', registerRepositoryFolderRoutes(repositoryModule.folderService));
 
   // ============ 仓库统计路由 ============
   // 统计和分析
-  router.use('/statistics', registerRepositoryStatisticsRoutes());
+  router.use('/statistics', registerRepositoryStatisticsRoutes(repositoryModule.statisticsService));
 
   return router;
 }

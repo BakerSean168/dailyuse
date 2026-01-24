@@ -30,6 +30,8 @@ export {
   // Legacy (向后兼容)
   GoalApplicationService,
   GoalKeyResultApplicationService,
+  GoalRecordApplicationService,
+  GoalReviewApplicationService,
 } from './services';
 
 // ============================================================

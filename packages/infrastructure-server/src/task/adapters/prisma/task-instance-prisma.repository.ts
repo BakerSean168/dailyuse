@@ -1,7 +1,7 @@
-import type {  PrismaClient  } from "@prisma/client";
+import type { PrismaClient } from '@prisma/client';
 import type { ITaskInstanceRepository } from '@dailyuse/domain-server/task';
 import { TaskInstance } from '@dailyuse/domain-server/task';
-import { TaskInstanceStatus } from '@dailyuse/contracts/task';
+import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 
 /**
  * Prisma implementation of ITaskInstanceRepository
@@ -10,76 +10,98 @@ export class TaskInstancePrismaRepository implements ITaskInstanceRepository {
   constructor(private prisma: PrismaClient) {}
 
   private mapToEntity(data: any): TaskInstance {
-    // Parse JSON fields if they are strings (Prisma might return them as objects if typed, or strings if raw)
-    // Assuming standard Prisma behavior with Json type
     return TaskInstance.fromPersistenceDTO({
       uuid: data.uuid,
       templateUuid: data.templateUuid,
       accountUuid: data.accountUuid,
-      instanceDate: Number(data.instanceDate),
-      status: data.status as TaskInstanceStatus,
-      completionRecord: data.completionRecord ? (typeof data.completionRecord === 'string' ? JSON.parse(data.completionRecord) : data.completionRecord) : undefined,
-      skipRecord: data.skipRecord ? (typeof data.skipRecord === 'string' ? JSON.parse(data.skipRecord) : data.skipRecord) : undefined,
-      createdAt: Number(data.createdAt),
-      updatedAt: Number(data.updatedAt),
+      instanceDate: typeof data.instanceDate === 'bigint' ? Number(data.instanceDate) : data.instanceDate,
+      timeConfig: data.timeConfig || '{}',
+      importance: data.importance || 'Moderate',
+      priority: data.priority || undefined,
+      status: data.status,
+      completionRecord: data.completionRecord || undefined,
+      skipRecord: data.skipRecord || undefined,
+      actualStartTime: data.actualStartTime ? (typeof data.actualStartTime === 'bigint' ? Number(data.actualStartTime) : data.actualStartTime) : undefined,
+      actualEndTime: data.actualEndTime ? (typeof data.actualEndTime === 'bigint' ? Number(data.actualEndTime) : data.actualEndTime) : undefined,
+      note: data.note || undefined,
+      createdAt: typeof data.createdAt === 'bigint' ? Number(data.createdAt) : data.createdAt,
+      updatedAt: typeof data.updatedAt === 'bigint' ? Number(data.updatedAt) : data.updatedAt,
     });
   }
 
   async save(instance: TaskInstance): Promise<void> {
     const data = instance.toPersistenceDTO();
+    const updateData: any = {
+      templateUuid: data.templateUuid,
+      accountUuid: data.accountUuid,
+      instanceDate: new Date(data.instanceDate),
+      timeConfig: data.timeConfig || '{}',
+      importance: data.importance || 'Moderate',
+      priority: data.priority || undefined,
+      status: data.status,
+      actualStartTime: data.actualStartTime ? new Date(data.actualStartTime) : undefined,
+      actualEndTime: data.actualEndTime ? new Date(data.actualEndTime) : undefined,
+      note: data.note || undefined,
+      updatedAt: new Date(data.updatedAt),
+    };
+
+    // Only set completion/skip records if they exist
+    if (data.completionRecord) {
+      updateData.completionRecord = data.completionRecord;
+    }
+    if (data.skipRecord) {
+      updateData.skipRecord = data.skipRecord;
+    }
+
+    const createData = {
+      ...updateData,
+      uuid: data.uuid,
+      createdAt: new Date(data.createdAt),
+    };
+
     await this.prisma.taskInstance.upsert({
       where: { uuid: data.uuid },
-      update: {
-        templateUuid: data.templateUuid,
-        accountUuid: data.accountUuid,
-        instanceDate: BigInt(data.instanceDate),
-        status: data.status,
-        completionRecord: data.completionRecord ?? PrismaClient.JsonNull,
-        skipRecord: data.skipRecord ?? PrismaClient.JsonNull,
-        updatedAt: BigInt(data.updatedAt),
-      },
-      create: {
-        uuid: data.uuid,
-        templateUuid: data.templateUuid,
-        accountUuid: data.accountUuid,
-        instanceDate: BigInt(data.instanceDate),
-        status: data.status,
-        completionRecord: data.completionRecord ?? PrismaClient.JsonNull,
-        skipRecord: data.skipRecord ?? PrismaClient.JsonNull,
-        createdAt: BigInt(data.createdAt),
-        updatedAt: BigInt(data.updatedAt),
-      },
+      update: updateData,
+      create: createData,
     });
   }
 
   async saveMany(instances: TaskInstance[]): Promise<void> {
-    // Prisma createMany doesn't support upsert, and we might have updates.
-    // Ideally use transaction.
     const transaction = instances.map((instance) => {
-        const data = instance.toPersistenceDTO();
-        return this.prisma.taskInstance.upsert({
-            where: { uuid: data.uuid },
-            update: {
-                templateUuid: data.templateUuid,
-                accountUuid: data.accountUuid,
-                instanceDate: BigInt(data.instanceDate),
-                status: data.status,
-                completionRecord: data.completionRecord ?? PrismaClient.JsonNull,
-                skipRecord: data.skipRecord ?? PrismaClient.JsonNull,
-                updatedAt: BigInt(data.updatedAt),
-            },
-            create: {
-                uuid: data.uuid,
-                templateUuid: data.templateUuid,
-                accountUuid: data.accountUuid,
-                instanceDate: BigInt(data.instanceDate),
-                status: data.status,
-                completionRecord: data.completionRecord ?? PrismaClient.JsonNull,
-                skipRecord: data.skipRecord ?? PrismaClient.JsonNull,
-                createdAt: BigInt(data.createdAt),
-                updatedAt: BigInt(data.updatedAt),
-            },
-        });
+      const data = instance.toPersistenceDTO();
+      const updateData: any = {
+        templateUuid: data.templateUuid,
+        accountUuid: data.accountUuid,
+        instanceDate: new Date(data.instanceDate),
+        timeConfig: data.timeConfig || '{}',
+        importance: data.importance || 'Moderate',
+        priority: data.priority || undefined,
+        status: data.status,
+        actualStartTime: data.actualStartTime ? new Date(data.actualStartTime) : undefined,
+        actualEndTime: data.actualEndTime ? new Date(data.actualEndTime) : undefined,
+        note: data.note || undefined,
+        updatedAt: new Date(data.updatedAt),
+      };
+
+      // Only set completion/skip records if they exist
+      if (data.completionRecord) {
+        updateData.completionRecord = data.completionRecord;
+      }
+      if (data.skipRecord) {
+        updateData.skipRecord = data.skipRecord;
+      }
+
+      const createData = {
+        ...updateData,
+        uuid: data.uuid,
+        createdAt: new Date(data.createdAt),
+      };
+
+      return this.prisma.taskInstance.upsert({
+        where: { uuid: data.uuid },
+        update: updateData,
+        create: createData,
+      });
     });
     await this.prisma.$transaction(transaction);
   }
@@ -114,8 +136,8 @@ export class TaskInstancePrismaRepository implements ITaskInstanceRepository {
       where: {
         accountUuid,
         instanceDate: {
-          gte: BigInt(startDate),
-          lte: BigInt(endDate),
+          gte: new Date(startDate),
+          lte: new Date(endDate),
         },
       },
     });
@@ -136,11 +158,11 @@ export class TaskInstancePrismaRepository implements ITaskInstanceRepository {
   }
 
   async findOverdueInstances(accountUuid: string): Promise<TaskInstance[]> {
-    const now = BigInt(Date.now());
+    const now = new Date();
     const data = await this.prisma.taskInstance.findMany({
       where: {
         accountUuid,
-        status: TaskInstanceStatus.PENDING,
+        status: 'PENDING',
         instanceDate: { lt: now },
       },
     });
@@ -172,7 +194,7 @@ export class TaskInstancePrismaRepository implements ITaskInstanceRepository {
     const count = await this.prisma.taskInstance.count({
       where: {
         templateUuid,
-        instanceDate: { gte: BigInt(fromDate) },
+        instanceDate: { gte: new Date(fromDate) },
       },
     });
     return count;
@@ -187,8 +209,8 @@ export class TaskInstancePrismaRepository implements ITaskInstanceRepository {
       where: {
         templateUuid,
         instanceDate: {
-          gte: BigInt(startDate),
-          lte: BigInt(endDate),
+          gte: new Date(startDate),
+          lte: new Date(endDate),
         },
       },
     });
@@ -196,12 +218,12 @@ export class TaskInstancePrismaRepository implements ITaskInstanceRepository {
   }
 
   async deleteFuturePendingInstances(templateUuid: string, fromDate: number): Promise<void> {
-      await this.prisma.taskInstance.deleteMany({
-          where: {
-              templateUuid,
-              instanceDate: { gte: BigInt(fromDate) },
-              status: TaskInstanceStatus.PENDING
-          }
-      });
+    await this.prisma.taskInstance.deleteMany({
+      where: {
+        templateUuid,
+        instanceDate: { gte: new Date(fromDate) },
+        status: 'PENDING',
+      },
+    });
   }
 }

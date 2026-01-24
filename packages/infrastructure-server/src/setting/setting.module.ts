@@ -1,13 +1,14 @@
 import type {  PrismaClient  } from "@prisma/client";
-import { PrismaUserSettingRepository } from './repositories/prisma-user-setting-repository';
-import { SettingApplicationService } from '@dailyuse/application-server/setting';
+import { SettingApplicationService } from '@dailyuse/application-server';
+import { UserSettingPrismaRepository } from './adapters/prisma/user-setting-prisma.repository';
 
 export class SettingModule {
-  public readonly userSettingRepository: PrismaUserSettingRepository;
+  public readonly userSettingRepository: UserSettingPrismaRepository;
   public readonly settingService: SettingApplicationService;
 
   constructor(prisma: PrismaClient) {
-    this.userSettingRepository = new PrismaUserSettingRepository(prisma);
+    this.userSettingRepository = new UserSettingPrismaRepository(prisma);
     this.settingService = new SettingApplicationService(this.userSettingRepository);
   }
 }
+

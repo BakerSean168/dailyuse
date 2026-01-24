@@ -4,7 +4,8 @@
  * Ports and Adapters for Repository module persistence.
  * Supports multiple database providers (Prisma, SQLite, Memory).
  */
-
+// Module (Composition Pattern - ADR-025)
+export { RepositoryModule } from './repository.module';
 // Container (鏀硅繘鐗?- 鏀寔澶氭彁渚涜€?
 export { RepositoryContainer } from './repository.container';
 

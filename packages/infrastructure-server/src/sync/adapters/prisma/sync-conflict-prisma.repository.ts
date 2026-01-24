@@ -154,10 +154,10 @@ export class SyncConflictPrismaRepository implements ISyncConflictRepository {
     return records.map((r: unknown) => SyncConflict.fromPersistenceDTO(toPersistenceDTO(r)));
   }
 
-  async findByQuery(options: SyncConflictQueryOptions): Promise<SyncConflict[]> {
+  async findByQuery(accountUuid: string, options: SyncConflictQueryOptions): Promise<SyncConflict[]> {
     const records = await this.prisma.syncConflict.findMany({
       where: {
-        accountUuid: this.accountUuid,
+        accountUuid: accountUuid,
         ...(options.sessionId && { sessionId: options.sessionId }),
         ...(options.entityType && { entityType: options.entityType }),
         ...(options.status && { status: options.status }),
@@ -171,10 +171,10 @@ export class SyncConflictPrismaRepository implements ISyncConflictRepository {
     return records.map((r: unknown) => SyncConflict.fromPersistenceDTO(toPersistenceDTO(r)));
   }
 
-  async count(options?: SyncConflictQueryOptions): Promise<number> {
+  async count(accountUuid: string, options?: SyncConflictQueryOptions): Promise<number> {
     return this.prisma.syncConflict.count({
       where: {
-        accountUuid: this.accountUuid,
+        accountUuid: accountUuid,
         ...(options?.sessionId && { sessionId: options.sessionId }),
         ...(options?.entityType && { entityType: options.entityType }),
         ...(options?.status && { status: options.status }),

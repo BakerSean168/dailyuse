@@ -21,6 +21,9 @@ export {
   DependencyStatus,
 } from './enums';
 
+// ============ Shared Enums ============
+export { ImportanceLevel } from '../../shared';
+
 // ============ Config Constants ============
 export {
   TASK_INSTANCE_GENERATION_CONFIG,

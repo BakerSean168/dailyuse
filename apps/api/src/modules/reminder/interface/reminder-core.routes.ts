@@ -14,8 +14,8 @@
 
 import type { Router } from 'express';
 import { Router as ExpressRouter } from 'express';
-import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
-import { authMiddleware } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
+import type { AuthenticatedRequest } from '../../../shared/infrastructure/http/middlewares/authMiddleware';
+import { authMiddleware } from '../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { ReminderApplicationService } from '@dailyuse/application-server';
 import { createResponseBuilder } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';

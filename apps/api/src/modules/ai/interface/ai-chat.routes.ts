@@ -317,3 +317,12 @@ export function registerChatRoutes(
   router.get('/quota', async (req: AuthenticatedRequest, res) => {
     try {
       const quota = await getQuotaService.execute(req.user.accountUuid);
+      res.json(responseBuilder.success(quota, 'Quota retrieved successfully'));
+    } catch (error) {
+      logger.error('Get quota failed:', error);
+      throw error;
+    }
+  });
+
+  return router;
+}

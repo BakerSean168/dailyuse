@@ -1,4 +1,4 @@
-import { ITransactionManager } from '@dailyuse/application-server/common/transaction.manager';
+import { ITransactionManager } from '@dailyuse/application-server';
 import { prisma } from './config/prisma';
 
 export class PrismaTransactionManager implements ITransactionManager {

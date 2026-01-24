@@ -282,9 +282,8 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
     transaction(uuids);
   }
 
-  async withTransaction<T>(callback: () => Promise<T>): Promise<T> {
-    const transaction = this.db.transaction(() => callback());
-    return transaction();
+  async withTransaction<T>(fn: (repo: IScheduleTaskRepository) => Promise<T>): Promise<T> {
+    return fn(this);
   }
 
   // Private helper method to convert database row to ScheduleTask

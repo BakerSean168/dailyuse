@@ -58,7 +58,7 @@ export class SyncConflictMemoryRepository implements ISyncConflictRepository {
       .sort((a, b) => b.createdAt - a.createdAt);
   }
 
-  async findByQuery(options: SyncConflictQueryOptions): Promise<SyncConflict[]> {
+  async findByQuery(accountUuid: string, options: SyncConflictQueryOptions): Promise<SyncConflict[]> {
     let results = Array.from(this.conflicts.values());
 
     if (options.sessionId) {
@@ -95,7 +95,7 @@ export class SyncConflictMemoryRepository implements ISyncConflictRepository {
     return results;
   }
 
-  async count(options?: SyncConflictQueryOptions): Promise<number> {
+  async count(accountUuid: string, options?: SyncConflictQueryOptions): Promise<number> {
     if (!options) {
       return this.conflicts.size;
     }

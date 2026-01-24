@@ -20,3 +20,5 @@ export { AccountMemoryRepository } from './adapters/memory/account-memory.reposi
 // DI Container and Factory
 export { AccountContainer } from './di/account-container';
 export { AccountRepositoryFactory, AccountStatusRepositoryFactory } from './di/account-repository.factory';
+// Module
+export { AccountModule } from './account.module';

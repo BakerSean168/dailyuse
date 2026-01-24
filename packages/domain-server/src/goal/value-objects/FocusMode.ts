@@ -3,7 +3,23 @@
  * 专注周期聚焦模式领域对象
  */
 
-import type { FocusModeClientDTO, FocusModeServerDTO, FocusModePersistenceDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
+import type { FocusModeClientDTO, FocusModeServerDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
+
+/**
+ * FocusMode Persistence DTO
+ * 本地定义，用于数据库映射
+ */
+export interface FocusModePersistenceDTO {
+  uuid: string;
+  accountUuid: string;
+  name: string;
+  startTime: number;
+  endTime: number;
+  isActive: boolean;
+  actualEndTime: number | null;
+  createdAt: number;
+  updatedAt: number;
+}
 
 /**
  * 聚焦模式值对象

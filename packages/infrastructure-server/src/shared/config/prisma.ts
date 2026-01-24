@@ -9,7 +9,7 @@
  * @module Shared/Infrastructure
  */
 
-import type {  PrismaClient  } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 /**
  * 鍏ㄥ眬 Prisma 瀹㈡埛绔疄锟?

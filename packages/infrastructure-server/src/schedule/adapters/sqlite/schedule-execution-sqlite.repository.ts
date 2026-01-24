@@ -1,11 +1,12 @@
 /**
  * SQLite ScheduleExecution Repository Implementation
- * 鏃ョ▼鎵ц鐨?SQLite Repository瀹炵幇
+ * 日程执行的 SQLite Repository 实现
  */
 
 import type Database from 'better-sqlite3';
 import { ScheduleExecution } from '@dailyuse/domain-server/schedule';
 import type { IScheduleExecutionRepository } from '@dailyuse/domain-server/schedule';
+import type { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepository {
   constructor(private db: Database.Database) {}
@@ -15,23 +16,26 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
 
     const stmt = this.db.prepare(`
       INSERT INTO schedule_executions (
-        uuid, task_uuid, executed_at, result, error_message,
-        createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        uuid, task_uuid, execution_time, status, duration, result, error, retry_count, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
+        status = excluded.status,
+        duration = excluded.duration,
         result = excluded.result,
-        error_message = excluded.error_message,
-        updatedAt = excluded.updatedAt
+        error = excluded.error,
+        retry_count = excluded.retry_count
     `);
 
     stmt.run(
       dto.uuid,
-      dto.task_uuid,
-      dto.executed_at,
-      dto.result,
-      dto.error_message || null,
+      dto.taskUuid,
+      dto.executionTime,
+      dto.status,
+      dto.duration || null,
+      dto.result || null,
+      dto.error || null,
+      dto.retryCount,
       dto.createdAt,
-      dto.updatedAt,
     );
   }
 
@@ -41,34 +45,47 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
 
     if (!row) return null;
 
-    return ScheduleExecution.fromPersistenceDTO({
-      uuid: row.uuid,
-      task_uuid: row.task_uuid,
-      executed_at: row.executed_at,
-      result: row.result,
-      error_message: row.error_message,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return ScheduleExecution.fromPersistenceDTO(this.rowToExecution(row));
   }
 
   async findByTaskUuid(taskUuid: string): Promise<ScheduleExecution[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM schedule_executions WHERE task_uuid = ? ORDER BY executed_at DESC`
+      `SELECT * FROM schedule_executions WHERE task_uuid = ? ORDER BY execution_time DESC`
     );
     const rows = stmt.all(taskUuid) as any[];
 
-    return rows.map((row) =>
-      ScheduleExecution.fromPersistenceDTO({
-        uuid: row.uuid,
-        task_uuid: row.task_uuid,
-        executed_at: row.executed_at,
-        result: row.result,
-        error_message: row.error_message,
-        createdAt: new Date(row.createdAt),
-        updatedAt: new Date(row.updatedAt),
-      })
-    );
+    return rows.map((row) => ScheduleExecution.fromPersistenceDTO(this.rowToExecution(row)));
+  }
+
+  async findByStatus(status: ExecutionStatus): Promise<ScheduleExecution[]> {
+    const stmt = this.db.prepare(`SELECT * FROM schedule_executions WHERE status = ?`);
+    const rows = stmt.all(status) as any[];
+
+    return rows.map((row) => ScheduleExecution.fromPersistenceDTO(this.rowToExecution(row)));
+  }
+
+  async delete(uuid: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM schedule_executions WHERE uuid = ?`);
+    stmt.run(uuid);
+  }
+
+  async deleteByTaskUuid(taskUuid: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM schedule_executions WHERE task_uuid = ?`);
+    stmt.run(taskUuid);
+  }
+
+  private rowToExecution(row: any) {
+    return {
+      uuid: row.uuid,
+      taskUuid: row.task_uuid,
+      executionTime: row.execution_time,
+      status: row.status as ExecutionStatus,
+      duration: row.duration || null,
+      result: row.result || null,
+      error: row.error || null,
+      retryCount: row.retry_count,
+      createdAt: row.created_at,
+    };
   }
 }
 

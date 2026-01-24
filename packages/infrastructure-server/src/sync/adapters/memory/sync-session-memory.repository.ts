@@ -42,7 +42,7 @@ export class SyncSessionMemoryRepository implements ISyncSessionRepository {
     );
   }
 
-  async findByQuery(options: SyncSessionQueryOptions): Promise<SyncSession[]> {
+  async findByQuery(accountUuid: string, options: SyncSessionQueryOptions): Promise<SyncSession[]> {
     let results = Array.from(this.sessions.values());
 
     if (options.profileId) {
@@ -67,7 +67,7 @@ export class SyncSessionMemoryRepository implements ISyncSessionRepository {
     return results;
   }
 
-  async count(options?: SyncSessionQueryOptions): Promise<number> {
+  async count(accountUuid: string, options?: SyncSessionQueryOptions): Promise<number> {
     if (!options) {
       return this.sessions.size;
     }

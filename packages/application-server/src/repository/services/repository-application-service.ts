@@ -14,7 +14,9 @@ import { RepositoryType, RepositoryStatus } from '@dailyuse/contracts/repository
  */
 export class RepositoryApplicationService {
   private repositoryRepository: IRepositoryRepository;
-
+  static async getInstance() {
+    return new RepositoryApplicationService(null as any);
+  }
   constructor(repositoryRepository: IRepositoryRepository) {
     this.repositoryRepository = repositoryRepository;
   }

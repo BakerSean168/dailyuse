@@ -43,7 +43,7 @@ export class PendingChangeMemoryRepository implements IPendingChangeRepository {
       .sort((a, b) => a.createdAt - b.createdAt);
   }
 
-  async findAllUnsynced(limit?: number): Promise<PendingChange[]> {
+  async findAllUnsynced(accountUuid: string, limit?: number): Promise<PendingChange[]> {
     let results = Array.from(this.changes.values())
       .filter((c) => !c.isSynced)
       .sort((a, b) => a.createdAt - b.createdAt);
@@ -55,7 +55,7 @@ export class PendingChangeMemoryRepository implements IPendingChangeRepository {
     return results;
   }
 
-  async findByQuery(options: PendingChangeQueryOptions): Promise<PendingChange[]> {
+  async findByQuery(accountUuid: string, options: PendingChangeQueryOptions): Promise<PendingChange[]> {
     let results = Array.from(this.changes.values());
 
     if (options.entityType) {
@@ -92,7 +92,7 @@ export class PendingChangeMemoryRepository implements IPendingChangeRepository {
     return results;
   }
 
-  async count(options?: PendingChangeQueryOptions): Promise<number> {
+  async count(accountUuid: string, options?: PendingChangeQueryOptions): Promise<number> {
     if (!options) {
       return this.changes.size;
     }

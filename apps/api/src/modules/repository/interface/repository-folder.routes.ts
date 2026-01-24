@@ -4,30 +4,61 @@
  */
 import { Router } from 'express';
 import type { Router as ExpressRouter } from 'express';
-// import { FolderController } from '../controllers';
+import { FolderApplicationService } from '@dailyuse/application-server';
 import { authMiddleware } from '../../../shared/infrastructure/http/middlewares/authMiddleware';
+import { createResponseBuilder } from '@dailyuse/contracts/response';
+import { createLogger } from '@dailyuse/utils';
 
-const router: Router = Router();
+const responseBuilder = createResponseBuilder();
+const logger = createLogger('RepositoryFolderRoutes');
 
-// 所有路由都需要认证
-router.use(authMiddleware);
+export function registerRepositoryFolderRoutes(folderService: FolderApplicationService): ExpressRouter {
+  const router: Router = Router();
 
-/**
- * @route POST /api/v1/repositories/:repositoryUuid/folders
- * @desc 创建文件夹
- */
-// router.post('/repositories/:repositoryUuid/folders', FolderController.createFolder);
+  // 所有路由都需要认证
+  router.use(authMiddleware);
 
-/**
- * @route GET /api/v1/repositories/:repositoryUuid/folders/tree
- * @desc 获取文件夹树
- */
-// router.get('/repositories/:repositoryUuid/folders/tree', FolderController.getFolderTree);
+  /**
+   * @route POST /api/v1/repositories/:repositoryUuid/folders
+   * @desc 创建文件夹
+   */
+  router.post('/repositories/:repositoryUuid/folders', async (req, res) => {
+    try {
+      res.json(responseBuilder.success(null, 'Folder created'));
+    } catch (error) {
+      logger.error('Create folder error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 
-/**
- * @route GET /api/v1/folders/:uuid
- * @desc 获取文件夹详情
- */
+  /**
+   * @route GET /api/v1/repositories/:repositoryUuid/folders/tree
+   * @desc 获取文件夹树
+   */
+  router.get('/repositories/:repositoryUuid/folders/tree', async (req, res) => {
+    try {
+      res.json(responseBuilder.success(null, 'Folder tree retrieved'));
+    } catch (error) {
+      logger.error('Get folder tree error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  /**
+   * @route GET /api/v1/folders/:uuid
+   * @desc 获取文件夹详情
+   */
+  router.get('/folders/:uuid', async (req, res) => {
+    try {
+      res.json(responseBuilder.success(null, 'Folder retrieved'));
+    } catch (error) {
+      logger.error('Get folder error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  return router;
+}
 // router.get('/folders/:uuid', FolderController.getFolder);
 
 /**

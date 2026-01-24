@@ -5,7 +5,8 @@
  * Used by login endpoints in Express applications.
  */
 
-import { Strategy as LocalStrategy, IVerifyOptions } from 'passport-local';
+import { Strategy as LocalStrategy } from 'passport-local';
+import type { IVerifyOptions } from 'passport-local';
 import type { IAuthCredentialRepository } from '../ports/auth-credential-repository.port';
 import type { IPasswordEncryptor } from '../ports/password-encryptor.port';
 

@@ -133,10 +133,10 @@ export class PendingChangePrismaRepository implements IPendingChangeRepository {
     return records.map((r: unknown) => PendingChange.fromPersistenceDTO(toPersistenceDTO(r)));
   }
 
-  async findAllUnsynced(limit?: number): Promise<PendingChange[]> {
+  async findAllUnsynced(accountUuid: string, limit?: number): Promise<PendingChange[]> {
     const records = await this.prisma.pendingChange.findMany({
       where: {
-        accountUuid: this.accountUuid,
+        accountUuid: accountUuid,
         isSynced: false,
       },
       orderBy: { createdAt: 'asc' },
@@ -145,10 +145,10 @@ export class PendingChangePrismaRepository implements IPendingChangeRepository {
     return records.map((r: unknown) => PendingChange.fromPersistenceDTO(toPersistenceDTO(r)));
   }
 
-  async findByQuery(options: PendingChangeQueryOptions): Promise<PendingChange[]> {
+  async findByQuery(accountUuid: string, options: PendingChangeQueryOptions): Promise<PendingChange[]> {
     const records = await this.prisma.pendingChange.findMany({
       where: {
-        accountUuid: this.accountUuid,
+        accountUuid: accountUuid,
         ...(options.entityType && { entityType: options.entityType }),
         ...(options.entityUuid && { entityUuid: options.entityUuid }),
         ...(options.operation && { operation: options.operation }),
@@ -161,10 +161,10 @@ export class PendingChangePrismaRepository implements IPendingChangeRepository {
     return records.map((r: unknown) => PendingChange.fromPersistenceDTO(toPersistenceDTO(r)));
   }
 
-  async count(options?: PendingChangeQueryOptions): Promise<number> {
+  async count(accountUuid: string, options?: PendingChangeQueryOptions): Promise<number> {
     return this.prisma.pendingChange.count({
       where: {
-        accountUuid: this.accountUuid,
+        accountUuid: accountUuid,
         ...(options?.entityType && { entityType: options.entityType }),
         ...(options?.entityUuid && { entityUuid: options.entityUuid }),
         ...(options?.operation && { operation: options.operation }),

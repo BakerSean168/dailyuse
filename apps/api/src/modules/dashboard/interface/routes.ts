@@ -11,15 +11,16 @@ import type { Router } from 'express';
 import { Router as ExpressRouter } from 'express';
 import { registerDashboardWidgetRoutes } from './dashboard-widget.routes';
 import { registerDashboardLayoutRoutes } from './dashboard-layout.routes';
+import { DashboardModule } from '@dailyuse/infrastructure-server';
 
-export function registerDashboardRoutes(): Router {
+export function registerDashboardRoutes(dashboardModule: DashboardModule): Router {
   const router: Router = ExpressRouter();
 
   // ============ 仪表板小部件路由 ============
-  router.use('/widgets', registerDashboardWidgetRoutes());
+  router.use('/widgets', registerDashboardWidgetRoutes(dashboardModule.dashboardService));
 
   // ============ 仪表板布局路由 ============
-  router.use('/layout', registerDashboardLayoutRoutes());
+  router.use('/layout', registerDashboardLayoutRoutes(dashboardModule.dashboardService));
 
   return router;
 }
