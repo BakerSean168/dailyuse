@@ -28,7 +28,7 @@ export class EditorTab extends Entity implements EditorTabServer {
   private _documentUuid: string | null;
   private _tabIndex: number;
   private _tabType: TabType;
-  private _title: string;
+  private _name: string;
   private _viewState: TabViewState;
   private _isPinned: boolean;
   private _isDirty: boolean;
@@ -46,7 +46,7 @@ export class EditorTab extends Entity implements EditorTabServer {
     documentUuid?: string | null;
     tabIndex: number;
     tabType: TabType;
-    title: string;
+    name: string;
     viewState: TabViewState;
     isPinned: boolean;
     isDirty: boolean;
@@ -62,7 +62,7 @@ export class EditorTab extends Entity implements EditorTabServer {
     this._documentUuid = params.documentUuid ?? null;
     this._tabIndex = params.tabIndex;
     this._tabType = params.tabType;
-    this._title = params.title;
+    this._name = params.name;
     this._viewState = params.viewState;
     this._isPinned = params.isPinned;
     this._isDirty = params.isDirty;
@@ -96,8 +96,8 @@ export class EditorTab extends Entity implements EditorTabServer {
   public get tabType(): TabType {
     return this._tabType;
   }
-  public get title(): string {
-    return this._title;
+  public get name(): string {
+    return this._name;
   }
   public get viewState(): TabViewStateServerDTO {
     return this._viewState.toServerDTO();
@@ -131,7 +131,7 @@ export class EditorTab extends Entity implements EditorTabServer {
     documentUuid?: string | null;
     tabIndex: number;
     tabType: TabType;
-    title: string;
+    name: string;
     viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
   }): EditorTab {
@@ -155,7 +155,7 @@ export class EditorTab extends Entity implements EditorTabServer {
       documentUuid: params.documentUuid,
       tabIndex: params.tabIndex,
       tabType: params.tabType,
-      title: params.title,
+      name: params.name,
       viewState,
       isPinned: params.isPinned ?? false,
       isDirty: false,
@@ -179,7 +179,7 @@ export class EditorTab extends Entity implements EditorTabServer {
       documentUuid: dto.documentUuid,
       tabIndex: dto.tabIndex,
       tabType: dto.tabType,
-      title: dto.title,
+      name: dto.name,
       viewState: TabViewState.fromServerDTO(dto.viewState),
       isPinned: dto.isPinned,
       isDirty: dto.isDirty,
@@ -202,7 +202,7 @@ export class EditorTab extends Entity implements EditorTabServer {
       documentUuid: dto.documentUuid,
       tabIndex: dto.tabIndex,
       tabType: dto.tabType,
-      title: dto.title,
+      name: dto.name,
       viewState: dto.viewState
         ? TabViewState.fromServerDTO(dto.viewState)
         : TabViewState.createDefault(),
@@ -227,7 +227,7 @@ export class EditorTab extends Entity implements EditorTabServer {
       documentUuid: dto.document_uuid,
       tabIndex: dto.tab_index,
       tabType: dto.tab_type,
-      title: dto.title,
+      name: dto.name,
       viewState: TabViewState.fromPersistenceDTO(JSON.parse(dto.view_state)),
       isPinned: dto.is_pinned,
       isDirty: dto.is_dirty,
@@ -240,10 +240,10 @@ export class EditorTab extends Entity implements EditorTabServer {
   // ===== 业务方法 =====
 
   /**
-   * 更新标题
+   * 更新名称
    */
-  public updateTitle(title: string): void {
-    this._title = title;
+  public updateName(name: string): void {
+    this._name = name;
     this._updatedAt = Date.now();
   }
 
@@ -314,7 +314,7 @@ export class EditorTab extends Entity implements EditorTabServer {
       documentUuid: this._documentUuid,
       tabIndex: this._tabIndex,
       tabType: this._tabType,
-      title: this._title,
+      name: this._name,
       viewState: this._viewState.toServerDTO(),
       isPinned: this._isPinned,
       isDirty: this._isDirty,
@@ -334,7 +334,7 @@ export class EditorTab extends Entity implements EditorTabServer {
       documentUuid: this._documentUuid,
       tabIndex: this._tabIndex,
       tabType: this._tabType,
-      title: this._title,
+      name: this._name,
       viewState: this._viewState.toClientDTO(),
       isPinned: this._isPinned,
       isDirty: this._isDirty,
@@ -359,7 +359,7 @@ export class EditorTab extends Entity implements EditorTabServer {
       document_uuid: this._documentUuid,
       tab_index: this._tabIndex,
       tab_type: this._tabType,
-      title: this._title,
+      name: this._name,
       view_state: JSON.stringify(this._viewState.toPersistenceDTO()),
       is_pinned: this._isPinned,
       is_dirty: this._isDirty,

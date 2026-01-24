@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SchedulerBootstrap
  *
  * Initializes and manages the scheduler

@@ -4,7 +4,7 @@ import { FocusMode } from '@dailyuse/domain-server/goal';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
 
 /**
- * FocusMode Prisma 浠撳偍瀹炵幇
+ * FocusMode Prisma Repository瀹炵幇
  */
 export class PrismaFocusModeRepository implements IFocusModeRepository {
   constructor(private prisma: PrismaClient) {}
@@ -28,7 +28,7 @@ export class PrismaFocusModeRepository implements IFocusModeRepository {
   }
 
   /**
-   * 淇濆瓨涓撴敞鍛ㄦ湡锛堝垱寤烘垨鏇存柊锛?
+   * Save涓撴敞鍛ㄦ湡锛堝垱寤烘垨Update锛?
    */
   async save(focusMode: FocusMode): Promise<void> {
     const dto = focusMode.toServerDTO();
@@ -117,7 +117,7 @@ export class PrismaFocusModeRepository implements IFocusModeRepository {
   }
 
   /**
-   * 鍒犻櫎涓撴敞鍛ㄦ湡
+   * Delete涓撴敞鍛ㄦ湡
    */
   async delete(uuid: string): Promise<void> {
     await this.prisma.focusMode.delete({

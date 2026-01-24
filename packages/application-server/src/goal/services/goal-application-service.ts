@@ -67,7 +67,13 @@ export class GoalApplicationService {
     }
 
     // 2. 委托领域服务创建聚合根（不持久化）
-    const goal = this.domainService.createGoal(params, parentGoal);
+    const goal = this.domainService.createGoal(
+      {
+        ...params,
+        name: params.title,
+      },
+      parentGoal,
+    );
 
     // 3. 如果有 keyResults，添加到目标中
     if (params.keyResults && params.keyResults.length > 0) {
@@ -304,7 +310,7 @@ export class GoalApplicationService {
   async searchGoals(accountUuid: string, query: string): Promise<GoalClientDTO[]> {
     const goals = await this.goalRepository.findByAccountUuid(accountUuid, {});
     return goals
-      .filter((g) => g.title.includes(query) || g.description?.includes(query))
+      .filter((g) => g.name.includes(query) || g.description?.includes(query))
       .map((g: Goal) => g.toClientDTO());
   }
 }

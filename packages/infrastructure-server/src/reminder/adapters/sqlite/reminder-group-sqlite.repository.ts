@@ -1,6 +1,6 @@
 /**
  * SQLite ReminderGroup Repository Implementation
- * 鎻愰啋鍒嗙粍�?SQLite 浠撳偍瀹炵�?
+ * 鎻愰啋鍒嗙粍�?SQLite Repository瀹炵�?
  */
 
 import type Database from 'better-sqlite3';

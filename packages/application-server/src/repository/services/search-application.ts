@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Search Service
  *
  * Obsidian 椋庢牸鎼滅储鍜岄珮绾ф悳绱㈠姛鑳斤紙property 妯″紡锛?
@@ -57,7 +57,7 @@ export class SearchService {
   }
 
   /**
-   * 鎼滅储鍗曚釜璧勬簮
+   * 鎼滅储鍗曚釜Resource
    */
   private async searchResource(
     resource: Resource,
@@ -102,7 +102,7 @@ export class SearchService {
   }
 
   /**
-   * 鎼滅储鏂囦欢鍚?
+   * 鎼滅储鏂囦欢And
    */
   private searchInFilename(
     resource: Resource,

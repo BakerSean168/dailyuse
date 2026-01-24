@@ -4,7 +4,7 @@
 export type DataSourceType = 'prisma' | 'sqlite';
 
 /**
- * 浠撳偍鏁版嵁婧愰厤缃?
+ * Repository鏁版嵁婧愰厤缃?
  */
 export interface DataSourceConfig {
   type: DataSourceType;

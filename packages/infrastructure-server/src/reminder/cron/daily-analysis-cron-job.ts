@@ -12,7 +12,7 @@ import { isDevelopment } from '../../shared/config/env';
  * Cron 琛ㄨ揪寮忥細0 2 * * *
  *
  * 鑱岃矗锟?
- * - 鍒嗘瀽鎵€鏈夎处鎴风殑鎻愰啋鏁堟灉
+ * - 鍒嗘瀽All鏈夎处鎴风殑鎻愰啋鏁堟灉
  * - 鑷姩璋冩暣浣庢晥鎻愰啋鐨勯锟?
  * - 鐢熸垚鍒嗘瀽鎶ュ憡
  */
@@ -38,7 +38,7 @@ export class DailyAnalysisCronJob {
     try {
       await this.initialize();
 
-      // 鑾峰彇鎵€鏈夋椿璺冭处锟?
+      // GetAll鏈夋椿璺冭处锟?
       const accountUuids = await this.getAllActiveAccounts();
       console.log(`[DailyAnalysisCronJob] Found ${accountUuids.length} active accounts`);
 
@@ -68,7 +68,7 @@ export class DailyAnalysisCronJob {
         failedAccounts: failedAccounts.length,
       });
 
-      // 淇濆瓨鍒嗘瀽鎶ュ憡
+      // Save鍒嗘瀽鎶ュ憡
       await this.saveAnalysisReport({
         executedAt: startTime,
         duration,
@@ -112,7 +112,7 @@ export class DailyAnalysisCronJob {
   }
 
   /**
-   * 鑾峰彇鎵€鏈夋椿璺冭处锟?
+   * GetAll鏈夋椿璺冭处锟?
    *
    * 瀹氫箟锛氭渶锟?0澶╁唴鏈夎嚦灏戜竴涓椿璺冩彁閱掓ā鏉跨殑璐︽埛
    */
@@ -127,7 +127,7 @@ export class DailyAnalysisCronJob {
       where: {
         selfEnabled: true,
         status: 'active',
-        // TODO: 闇€瑕佽繍锟?Prisma migration 鍚庢墠鑳戒娇锟?smartFrequencyEnabled
+        // TODO: Need瑕佽繍锟?Prisma migration 鍚庢墠鑳戒娇锟?smartFrequencyEnabled
         // smartFrequencyEnabled: true,
         createdAt: {
           gte: thirtyDaysAgo,
@@ -143,12 +143,12 @@ export class DailyAnalysisCronJob {
   }
 
   /**
-   * 淇濆瓨鍒嗘瀽鎶ュ憡
+   * Save鍒嗘瀽鎶ュ憡
    *
    * TODO: 瀹炵幇鎶ュ憡鎸佷箙锟?
    * 鍙互閫夋嫨锟?
-   * - 淇濆瓨鍒版暟鎹簱
-   * - 淇濆瓨鍒版枃浠剁郴锟?
+   * - Save鍒版暟鎹簱
+   * - Save鍒版枃浠剁郴锟?
    * - 鍙戦€佸埌鐩戞帶绯荤粺
    */
   private async saveAnalysisReport(report: {

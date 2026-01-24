@@ -40,7 +40,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
       // 鏋勫缓瀹屾暣 Prompt
       const fullPrompt = this.buildPrompt(request);
 
-      // 鍒涘缓瓒呮椂 Promise
+      // Create瓒呮椂 Promise
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
           reject(new AIGenerationTimeoutError(BaseAIAdapter.TIMEOUT_MS / 1000));
@@ -112,7 +112,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
         };
       }
 
-      // 绛夊緟鏈€缁堢粨鏋滀互鑾峰彇 token 缁熻
+      // 绛夊緟鏈€缁堢粨鏋滀互Get token 缁熻
       const finalResult = await result;
       const usage = (await finalResult.usage) as any; // Type compatibility workaround
 

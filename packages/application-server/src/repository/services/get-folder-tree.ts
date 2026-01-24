@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Get Folder Tree
  *
- * 鑾峰彇鏂囦欢澶规爲锛堟寚瀹氫粨鍌級
+ * Get folder tree锛堟寚瀹氫粨鍌級
  */
 
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';

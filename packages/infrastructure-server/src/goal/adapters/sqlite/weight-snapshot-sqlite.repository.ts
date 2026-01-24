@@ -1,6 +1,6 @@
 /**
  * SQLite Weight Snapshot Repository Implementation
- * 鏉冮噸蹇収鐨?SQLite 浠撳偍瀹炵幇
+ * 鏉冮噸蹇収鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

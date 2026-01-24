@@ -22,7 +22,7 @@ export class CreateConversation {
   ): Promise<ConversationResponse> {
     const conversation = AIConversation.create({
       accountUuid,
-      title: input.title || 'New Conversation',
+      name: input.title || 'New Conversation',
     });
 
     await this.conversationRepository.save(conversation);

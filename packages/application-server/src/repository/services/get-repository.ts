@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Get Repository
  *
- * 鑾峰彇浠撳偍璇︽儏
+ * GetRepository璇︽儏
  */
 
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';

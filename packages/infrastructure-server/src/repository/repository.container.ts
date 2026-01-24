@@ -81,7 +81,7 @@ import type {
 } from '@dailyuse/domain-server/setting';
 
 /**
- * 鎵€鏈夋ā鍧楃殑渚濊禆娉ㄥ叆瀹瑰櫒
+ * All鏈夋ā鍧楃殑渚濊禆娉ㄥ叆瀹瑰櫒
  */
 export class RepositoryContainer {
   private static instance: RepositoryContainer;
@@ -165,7 +165,7 @@ export class RepositoryContainer {
   private constructor() {}
 
   /**
-   * 鑾峰彇瀹瑰櫒鍗曚緥
+   * Get瀹瑰櫒鍗曚緥
    */
   static getInstance(): RepositoryContainer {
     if (!RepositoryContainer.instance) {

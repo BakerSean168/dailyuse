@@ -1,7 +1,7 @@
 /**
  * Prisma Provider Initializer
  *
- * 涓?Prisma 鏁版嵁搴撴彁渚涜€呭垵濮嬪寲鎵€鏈変粨鍌ㄥ疄鐜?
+ * 涓?Prisma 鏁版嵁搴撴彁渚涜€呭垵濮嬪寲All鏈変粨鍌ㄥ疄鐜?
  */
 
 import type {
@@ -26,7 +26,7 @@ import type {
  * Prisma 鎻愪緵鑰呭垵濮嬪寲鍣?
  *
  * 鑱岃矗锛?
- * - 鍒涘缓鎵€鏈?Prisma 浠撳偍瀹炵幇
+ * - CreateAll鏈?Prisma Repository瀹炵幇
  * - 灏嗗疄鐜版敞鍐屽埌瀹瑰櫒涓?
  * - 绠＄悊 Prisma 杩炴帴鐨勭敓鍛藉懆鏈?
  */
@@ -42,7 +42,7 @@ export class PrismaProviderInitializer implements IProviderInitializer {
 
     this.prisma = config.prisma;
 
-    // 鍒涘缓鎵€鏈?Prisma 浠撳偍瀹炵幇
+    // CreateAll鏈?Prisma Repository瀹炵幇
     const repositoryRepository: IRepositoryRepository = new RepositoryPrismaRepository(
       this.prisma,
     );

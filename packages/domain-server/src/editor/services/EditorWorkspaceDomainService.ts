@@ -355,7 +355,7 @@ export class EditorWorkspaceDomainService {
     documentUuid?: string;
     tabIndex: number;
     tabType: TabType;
-    title: string;
+    name: string;
     viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
   }): Promise<EditorTab> {
@@ -380,7 +380,7 @@ export class EditorWorkspaceDomainService {
       documentUuid: params.documentUuid,
       tabIndex: params.tabIndex,
       tabType: params.tabType,
-      title: params.title,
+      name: params.name,
       viewState: params.viewState,
       isPinned: params.isPinned,
     });
@@ -399,7 +399,7 @@ export class EditorWorkspaceDomainService {
     groupUuid: string;
     tabUuid: string;
     tabIndex?: number;
-    title?: string;
+    name?: string;
     viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
   }): Promise<EditorTab> {
@@ -428,8 +428,8 @@ export class EditorWorkspaceDomainService {
     if (params.tabIndex !== undefined) {
       tab.updateTabIndex(params.tabIndex);
     }
-    if (params.title !== undefined) {
-      tab.updateTitle(params.title);
+    if (params.name !== undefined) {
+      tab.updateName(params.name);
     }
     if (params.viewState !== undefined) {
       tab.updateViewState(params.viewState);

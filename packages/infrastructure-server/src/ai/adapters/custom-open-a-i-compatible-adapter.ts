@@ -59,7 +59,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
     this.modelId = config.defaultModel;
     this.timeoutMs = config.timeoutMs ?? 30000;
 
-    // 鍒涘缓鑷畾锟?OpenAI 鍏煎 provider
+    // Create鑷畾锟?OpenAI 鍏煎 provider
     // AI SDK 5.x 榛樿浣跨敤 OpenAI Responses API锛屽浜庣涓夋柟鍏煎鏈嶅姟涔熼€傜敤
     this.openai = createOpenAI({
       apiKey: config.apiKey,
@@ -74,7 +74,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
     try {
       const fullPrompt = this.buildPrompt(request);
 
-      // 鍒涘缓瓒呮椂 Promise
+      // Create瓒呮椂 Promise
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
           reject(new AIGenerationTimeoutError(this.timeoutMs / 1000));
@@ -148,7 +148,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
         };
       }
 
-      // 绛夊緟鏈€缁堢粨鏋滀互鑾峰彇 token 缁熻
+      // 绛夊緟鏈€缁堢粨鏋滀互Get token 缁熻
       const finalResult = await result;
       const usage = (await finalResult.usage) as any;
 
@@ -191,14 +191,14 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 鑾峰彇鎻愪緵鍟嗗悕锟?
+   * Get鎻愪緵鍟嗗悕锟?
    */
   getProviderName(): string {
     return this.providerName;
   }
 
   /**
-   * 鑾峰彇妯″瀷 ID
+   * Get妯″瀷 ID
    */
   getModelId(): string {
     return this.modelId;

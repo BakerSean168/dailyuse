@@ -1,6 +1,6 @@
 /**
  * SQLite EditorWorkspace Repository Implementation
- * 缂栬緫鍣ㄥ伐浣滃尯鐨?SQLite 浠撳偍瀹炵幇
+ * 缂栬緫鍣ㄥ伐浣滃尯鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

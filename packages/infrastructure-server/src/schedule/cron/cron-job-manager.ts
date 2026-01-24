@@ -2,7 +2,7 @@
  * CronJobManager - Cron 浠诲姟绠＄悊鍣?
  *
  * @responsibility
- * - 绠＄悊鎵€鏈?ScheduleTask 鐨?Cron 浠诲姟
+ * - 绠＄悊All鏈?ScheduleTask 鐨?Cron 浠诲姟
  * - 鏀寔鍔ㄦ€佹敞鍐?娉ㄩ攢 Cron 浠诲姟
  * - 瑙﹀彂鏃惰皟鐢?ScheduleTaskExecutor 鎵ц浠诲姟
  *
@@ -79,7 +79,7 @@ export class CronJobManager {
         return false;
       }
 
-      // 鍒涘缓 Cron Job
+      // Create Cron Job
       const job = cron.schedule(
         cronExpression,
         async () => {
@@ -125,7 +125,7 @@ export class CronJobManager {
         });
       }
 
-      // 淇濆瓨鍒版槧灏勮〃
+      // Save鍒版槧灏勮〃
       this.jobs.set(taskUuid, job);
       this.cronExpressions.set(taskUuid, cronExpression);
 
@@ -200,7 +200,7 @@ export class CronJobManager {
   }
 
   /**
-   * 鏇存柊浠诲姟锛堥噸鏂版敞鍐岋級
+   * Update浠诲姟锛堥噸鏂版敞鍐岋級
    */
   public async updateTask(task: ScheduleTask): Promise<boolean> {
     this.unregisterTask(task.uuid);
@@ -208,7 +208,7 @@ export class CronJobManager {
   }
 
   /**
-   * 鑾峰彇鎵€鏈夊凡娉ㄥ唽浠诲姟鐨勭粺璁′俊鎭?
+   * GetAll鏈夊凡娉ㄥ唽浠诲姟鐨勭粺璁′俊鎭?
    */
   public getStats(): {
     totalJobs: number;
@@ -223,7 +223,7 @@ export class CronJobManager {
   }
 
   /**
-   * 鑾峰彇褰撳墠娉ㄥ唽鐨勬墍鏈変换鍔′俊鎭?
+   * Get褰撳墠娉ㄥ唽鐨勬墍鏈変换鍔′俊鎭?
    */
   public getRegisteredTasks(): Array<{
     taskUuid: string;
@@ -251,7 +251,7 @@ export class CronJobManager {
     });
 
     if (registeredTasks.length > 0) {
-      logger.info('浠诲姟鍒楄〃:', {
+      logger.info('浠诲姟List:', {
         tasks: registeredTasks.map((t) => ({
           taskUuid: t.taskUuid,
           cron琛ㄨ揪寮? t.cronExpression,
@@ -265,7 +265,7 @@ export class CronJobManager {
   }
 
   /**
-   * 鍋滄鎵€鏈変换鍔?
+   * 鍋滄All鏈変换鍔?
    */
   public stopAll(): void {
     for (const [taskUuid, job] of this.jobs.entries()) {
@@ -275,12 +275,12 @@ export class CronJobManager {
   }
 
   /**
-   * 娓呯┖鎵€鏈変换鍔?
+   * 娓呯┖All鏈変换鍔?
    */
   public clear(): void {
     this.stopAll();
     this.jobs.clear();
     this.cronExpressions.clear();
-    logger.info('馃棏锔?鎵€鏈変换鍔″凡娓呯┖');
+    logger.info('馃棏锔?All鏈変换鍔″凡娓呯┖');
   }
 }

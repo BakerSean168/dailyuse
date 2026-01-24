@@ -1,6 +1,6 @@
 /**
  * SQLite Setting Repository Implementation
- * 搴旂敤璁剧疆鐨?SQLite 浠撳偍瀹炵幇
+ * 搴旂敤璁剧疆鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

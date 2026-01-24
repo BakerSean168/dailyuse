@@ -60,7 +60,7 @@ const DEFAULT_DURATION = 30 * DAY_MS;
 export class Goal extends AggregateRoot implements GoalServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
-  private _title: string;
+  private _name: string;
   private _description: string | null;
   private _color: string | null; // 主题色
   private _feasibilityAnalysis: string | null; // 可行性分析
@@ -91,7 +91,7 @@ export class Goal extends AggregateRoot implements GoalServer {
   private constructor(params: {
     uuid?: string;
     accountUuid: string;
-    title: string;
+    name: string;
     description?: string | null;
     color?: string | null;
     feasibilityAnalysis?: string | null;
@@ -115,7 +115,7 @@ export class Goal extends AggregateRoot implements GoalServer {
   }) {
     super(params.uuid ?? AggregateRoot.generateUUID());
     this._accountUuid = params.accountUuid;
-    this._title = params.title;
+    this._name = params.name;
     this._description = params.description ?? null;
     this._color = params.color ?? null;
     this._feasibilityAnalysis = params.feasibilityAnalysis ?? null;
@@ -148,8 +148,8 @@ export class Goal extends AggregateRoot implements GoalServer {
   public get accountUuid(): string {
     return this._accountUuid;
   }
-  public get title(): string {
-    return this._title;
+  public get name(): string {
+    return this._name;
   }
   public get description(): string | null {
     return this._description;
@@ -249,7 +249,7 @@ export class Goal extends AggregateRoot implements GoalServer {
    */
   public static create(params: {
     accountUuid: string;
-    title: string;
+    name: string;
     description?: string;
     color?: string;
     feasibilityAnalysis?: string;
@@ -268,14 +268,14 @@ export class Goal extends AggregateRoot implements GoalServer {
     if (!params.accountUuid) {
       throw new Error('Account UUID is required');
     }
-    if (!params.title || params.title.trim().length === 0) {
-      throw new Error('Title is required');
+    if (!params.name || params.name.trim().length === 0) {
+      throw new Error('Name is required');
     }
 
     const now = Date.now();
     const goal = new Goal({
       accountUuid: params.accountUuid,
-      title: params.title.trim(),
+      name: params.name.trim(),
       description: params.description?.trim() || null,
       color: params.color?.trim() || null,
       feasibilityAnalysis: params.feasibilityAnalysis?.trim() || null,
@@ -318,7 +318,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     const goal = new Goal({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
-      title: dto.title,
+      name: dto.name,
       description: dto.description ?? null,
       status: dto.status,
       importance: dto.importance,
@@ -363,7 +363,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     return new Goal({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
-      title: dto.title,
+      name: dto.name,
       description: dto.description ?? null,
       color: dto.color ?? null,
       feasibilityAnalysis: dto.feasibilityAnalysis ?? null,
@@ -393,7 +393,7 @@ export class Goal extends AggregateRoot implements GoalServer {
    * 更新基本信息
    */
   public updateBasicInfo(params: {
-    title?: string;
+    name?: string;
     description?: string;
     importance?: ImportanceLevel;
     // urgency?: UrgencyLevel; // REMOVED
@@ -405,14 +405,14 @@ export class Goal extends AggregateRoot implements GoalServer {
     const previousData: Partial<GoalServerDTO> = {};
     const changes: string[] = [];
 
-    if (params.title !== undefined && params.title !== this._title) {
-      const trimmed = params.title.trim();
+    if (params.name !== undefined && params.name !== this._name) {
+      const trimmed = params.name.trim();
       if (trimmed.length === 0) {
-        throw new Error('Title cannot be empty');
+        throw new Error('Name cannot be empty');
       }
-      previousData.title = this._title;
-      this._title = trimmed;
-      changes.push('title');
+      previousData.name = this._name;
+      this._name = trimmed;
+      changes.push('name');
     }
 
     if (params.description !== undefined && params.description !== this._description) {
@@ -1260,23 +1260,19 @@ export class Goal extends AggregateRoot implements GoalServer {
    * 转换为 Client DTO
    */
   public toClientDTO(includeChildren: boolean = false): GoalClientDTO {
-    const progress = this.calculateProgress();
-    const timeProgressRatio = this.calculateTimeProgressRatio();
-    const timeRangeSummary = this.buildTimeRangeSummary();
     const includeKeyResults = includeChildren && this._keyResults.length > 0;
     const keyResults = includeKeyResults ? this._keyResults.map((kr) => kr.toClientDTO()) : [];
-    const records = includeKeyResults
-      ? keyResults.flatMap((kr) => kr.records ?? [])
-      : undefined;
 
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
-      title: this._title,
+      name: this._name,
       description: this._description,
+      color: this._color,
+      feasibilityAnalysis: this._feasibilityAnalysis,
+      motivation: this._motivation,
       status: this._status,
       importance: this._importance,
-      // urgency removed - use priority instead
       category: this._category,
       tags: [...this._tags],
       startDate: this._startDate,
@@ -1295,31 +1291,6 @@ export class Goal extends AggregateRoot implements GoalServer {
         includeChildren && this._reviews.length > 0
           ? this._reviews.map((r) => r.toClientDTO())
           : [],
-      overallProgress: progress,
-      isCompleted: this._status === GoalStatus.COMPLETED,
-      isArchived: !!this._archivedAt,
-      isDeleted: !!this._deletedAt,
-      isOverdue: this.isOverdue(),
-      daysRemaining: this.getDaysRemaining(),
-      priority: this.priority,
-      priorityText: this.priorityText,
-      priorityLevel: this.priorityLevel,
-      keyResultCount: this._keyResults.length,
-      completedKeyResultCount: this._keyResults.filter((kr) => kr.isCompleted()).length,
-      reviewCount: this._reviews.length,
-      // Add missing properties
-      statusText: this._status, // Placeholder
-      importanceText: this._importance, // Placeholder
-      // urgencyText removed
-      hasActiveReminders: !!this._reminderConfig?.enabled,
-      reminderSummary: null, // Placeholder
-      weightedProgress: progress,
-      timeProgressRatio,
-      timeProgressPercentage: timeProgressRatio === null ? null : Math.round(timeProgressRatio * 10000) / 100,
-      timeProgressText: timeProgressRatio === null ? null : `${(timeProgressRatio * 100).toFixed(1)}%`,
-      timeRangeSummary,
-      records,
-      recordCount: records?.length ?? 0,
     };
   }
 
@@ -1331,7 +1302,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
-      title: this._title,
+      name: this._name,
       description: this._description,
       color: this._color,
       feasibilityAnalysis: this._feasibilityAnalysis,
@@ -1371,7 +1342,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
-      title: this._title,
+      name: this._name,
       description: this._description,
       color: this._color,
       feasibilityAnalysis: this._feasibilityAnalysis,

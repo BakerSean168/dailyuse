@@ -8,7 +8,7 @@ import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalReques
 // 绫诲瀷鍒悕
 
 /**
- * GoalFolder Prisma 浠撳偍瀹炵幇
+ * GoalFolder Prisma Repository瀹炵幇
  */
 export class PrismaGoalFolderRepository implements IGoalFolderRepository {
   constructor(private prisma: PrismaClient) {}
@@ -37,7 +37,7 @@ export class PrismaGoalFolderRepository implements IGoalFolderRepository {
   }
 
   /**
-   * 淇濆瓨鏂囦欢澶?
+   * Save鏂囦欢澶?
    */
   async save(folder: GoalFolder): Promise<void> {
     const persistence = folder.toPersistenceDTO();
@@ -88,7 +88,7 @@ export class PrismaGoalFolderRepository implements IGoalFolderRepository {
   }
 
   /**
-   * 鏍规嵁璐︽埛 UUID 鏌ユ壘鎵€鏈夋枃浠跺す
+   * 鏍规嵁璐︽埛 UUID 鏌ユ壘All鏈夋枃浠跺す
    */
   async findByAccountUuid(accountUuid: string): Promise<GoalFolder[]> {
     const data = await this.prisma.goalFolder.findMany({
@@ -100,7 +100,7 @@ export class PrismaGoalFolderRepository implements IGoalFolderRepository {
   }
 
   /**
-   * 鍒犻櫎鏂囦欢澶癸紙鐗╃悊鍒犻櫎锛?
+   * Delete鏂囦欢澶癸紙鐗╃悊Delete锛?
    */
   async delete(uuid: string): Promise<void> {
     await this.prisma.goalFolder.delete({

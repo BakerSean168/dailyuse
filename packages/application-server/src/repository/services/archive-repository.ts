@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Archive Repository
  *
- * 褰掓。浠撳偍
+ * 褰掓。Repository
  */
 
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';

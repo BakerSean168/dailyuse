@@ -6,6 +6,7 @@
 import type { TaskType, TaskTemplateStatus } from '../enums';
 import type { TaskInstanceServerDTO } from './TaskInstanceServer';
 import type { TaskTemplateHistoryServerDTO } from '../entities';
+import type { TaskTemplateClientDTO } from './TaskTemplateClient';
 import type {
   TaskTimeConfigServer,
   TaskTimeConfigServerDTO,
@@ -27,49 +28,6 @@ import { ImportanceLevel } from '../../../shared/importance';
 // ============ DTO 定义 ============
 
 /**
- * TaskTemplate Client DTO (声明，实际定义在 Client 文件)
- */
-export interface TaskTemplateClientDTO {
-  uuid: string;
-  accountUuid: string;
-  name: string;
-  description?: string | null;
-  taskType: TaskType;
-  timeConfig: TaskTimeConfigClientDTO;
-  recurrenceRule?: RecurrenceRuleClientDTO | null;
-  reminderConfig?: TaskReminderConfigClientDTO | null;
-  importance: ImportanceLevel;
-  goalBinding?: TaskGoalBindingClientDTO | null;
-  folderUuid?: string | null;
-  tags: string[];
-  color?: string | null;
-  status: TaskTemplateStatus;
-  lastGeneratedDate?: number | null;
-  generateAheadDays: number | null; // null for ONE_TIME tasks
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
-  history?: any[];
-  instances?: any[];
-  displayTitle: string;
-  taskTypeText: string;
-  timeDisplayText: string | null; // null for ONE_TIME tasks
-  recurrenceText?: string | null;
-  importanceText: string;
-  statusText: string;
-  hasReminder: boolean;
-  reminderText?: string | null;
-  isLinkedToGoal: boolean;
-  goalLinkText?: string | null;
-  instanceCount: number;
-  completedInstanceCount: number;
-  pendingInstanceCount: number;
-  completionRate: number;
-  formattedCreatedAt: string;
-  formattedUpdatedAt: string;
-}
-
-/**
  * TaskTemplate Server DTO
  */
 export interface TaskTemplateServerDTO {
@@ -78,14 +36,14 @@ export interface TaskTemplateServerDTO {
   name: string;
   description?: string | null;
   taskType: TaskType; // 'ONE_TIME' | 'RECURRING'
-  
+
   // === 循环任务专用 ===
   timeConfig?: TaskTimeConfigServerDTO | null;
   recurrenceRule?: RecurrenceRuleServerDTO | null;
   reminderConfig?: TaskReminderConfigServerDTO | null;
   lastGeneratedDate?: number | null;
   generateAheadDays?: number | null;
-  
+
   // === 通用属性 ===
   importance: ImportanceLevel;
   /**
@@ -98,15 +56,15 @@ export interface TaskTemplateServerDTO {
   tags: string[];
   color?: string | null;
   status: TaskTemplateStatus;
-  
+
   // === Goal/KR 关联（通用） ===
   goalUuid?: string | null;
   keyResultUuid?: string | null;
   goalBinding?: TaskGoalBindingServerDTO | null; // 仅循环任务使用的高级绑定
-  
+
   // === 子任务支持（通用） ===
   parentTaskUuid?: string | null;
-  
+
   // === 一次性任务专用 ===
   startDate?: number | null; // Unix timestamp (ms)
   dueDate?: number | null; // Unix timestamp (ms)
@@ -114,12 +72,12 @@ export interface TaskTemplateServerDTO {
   estimatedMinutes?: number | null;
   actualMinutes?: number | null;
   note?: string | null;
-  
+
   // === 依赖关系（通用） ===
   dependencyStatus?: string; // 'NONE' | 'WAITING' | 'READY' | 'BLOCKED'
   isBlocked?: boolean;
   blockingReason?: string | null;
-  
+
   // === 其他 ===
   folderUuid?: string | null;
   createdAt: number;

@@ -366,38 +366,18 @@ export class KeyResult extends Entity implements KeyResultServer {
   }
 
   public toClientDTO(): KeyResultClientDTO {
-    const progressPercentage = this.calculatePercentage();
-    const isCompleted = this.isCompleted();
-    const unit = this._progress.unit ? ` ${this._progress.unit}` : '';
-    const progressText = `${this._progress.currentValue}${unit} / ${this._progress.targetValue}${unit}`;
-
-    let progressColor = 'gray';
-    if (isCompleted) {
-      progressColor = 'green';
-    } else if (progressPercentage > 70) {
-      progressColor = 'blue';
-    } else if (progressPercentage > 30) {
-      progressColor = 'yellow';
-    }
-
-    // Display text moved to frontend i18n
-
     const progressClientDTO: KeyResultProgressClientDTO = {
-      ...this._progress,
-      progressPercentage,
-      isCompleted,
-      progressText,
-      progressBarColor: progressColor,
-      valueTypeText: valueTypeTextMap[this._progress.valueType],
-      aggregationMethodText: aggregationMethodTextMap[this._progress.aggregationMethod],
+      valueType: this._progress.valueType,
+      aggregationMethod: this._progress.aggregationMethod,
+      initialValue: this._progress.initialValue,
+      targetValue: this._progress.targetValue,
+      currentValue: this._progress.currentValue,
+      unit: this._progress.unit,
     };
 
     const recordsClientDTO = this._records.map((recordDTO) => {
       return GoalRecord.fromServerDTO(recordDTO).toClientDTO();
     });
-
-    const aggregationMethodText = aggregationMethodTextMap[this._progress.aggregationMethod];
-    const calculationExplanation = `当前进度由 ${this._records.length} 条记录${aggregationMethodText}计算得出`;
 
     return {
       uuid: this.uuid,
@@ -410,17 +390,6 @@ export class KeyResult extends Entity implements KeyResultServer {
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       records: recordsClientDTO.length > 0 ? recordsClientDTO : null,
-
-      // UI calculated fields
-      progressPercentage,
-      progressText,
-      progressColor,
-      isCompleted,
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
-      formattedUpdatedAt: new Date(this._updatedAt).toLocaleString(),
-      displayTitle: this._title.length > 50 ? this._title.substring(0, 47) + '...' : this._title,
-      aggregationMethodText,
-      calculationExplanation,
     };
   }
 

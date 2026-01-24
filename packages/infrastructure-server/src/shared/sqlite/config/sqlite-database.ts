@@ -16,7 +16,7 @@ export interface ISqliteConfig {
    */
   dbPath: string;
   /**
-   * 鏄惁鍦ㄥ惎鍔ㄦ椂鍒涘缓琛?
+   * 鏄惁鍦ㄥ惎鍔ㄦ椂Create琛?
    */
   autoMigrate?: boolean;
   /**
@@ -49,7 +49,7 @@ export class SqliteDatabase {
         }
       }
 
-      // 鍒涘缓鏁版嵁搴撹繛鎺?
+      // Create鏁版嵁搴撹繛鎺?
       this.db = new Database(this.config.dbPath);
 
       // 鍚敤澶栭敭绾︽潫
@@ -75,7 +75,7 @@ export class SqliteDatabase {
   }
 
   /**
-   * 鑾峰彇鏁版嵁搴撳疄渚?
+   * Get鏁版嵁搴撳疄渚?
    */
   getDatabase(): Database.Database {
     if (!this.db) {
@@ -92,7 +92,7 @@ export class SqliteDatabase {
       throw new Error('Database not initialized');
     }
 
-    // 鍒涘缓琛?
+    // Create琛?
     const schema = `
       -- Repository 琛?
       CREATE TABLE IF NOT EXISTS repositories (
@@ -158,7 +158,7 @@ export class SqliteDatabase {
         updated_at INTEGER NOT NULL
       );
 
-      -- 鍒涘缓绱㈠紩
+      -- Create绱㈠紩
       CREATE INDEX IF NOT EXISTS idx_repositories_account_uuid ON repositories(account_uuid);
       CREATE INDEX IF NOT EXISTS idx_folders_repository_uuid ON folders(repository_uuid);
       CREATE INDEX IF NOT EXISTS idx_folders_parent_uuid ON folders(parent_uuid);

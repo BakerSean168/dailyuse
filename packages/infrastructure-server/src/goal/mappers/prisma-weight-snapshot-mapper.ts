@@ -12,7 +12,7 @@ import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, SnapshotTrigger 
 
 /**
  * Prisma Weight Snapshot 绫诲瀷 (鐢熸垚鍚庡彲鐢?
- * 娉ㄦ剰: 闇€瑕佸湪 prisma generate 鍚庢墠鑳戒娇鐢ㄥ叿浣撶被鍨?
+ * 娉ㄦ剰: Need瑕佸湪 prisma generate 鍚庢墠鑳戒娇鐢ㄥ叿浣撶被鍨?
  */
 type PrismaWeightSnapshot = {
   uuid: string;

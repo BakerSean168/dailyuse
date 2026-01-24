@@ -201,25 +201,9 @@ export class GoalReminderConfig extends ValueObject implements GoalReminderConfi
    * 转换为 Client DTO
    */
   public toClientDTO(): GoalReminderConfigClientDTO {
-    const progressTriggers = this._triggers.filter((t) => t.type === 'TIME_PROGRESS_PERCENTAGE');
-    const remainingDaysTriggers = this._triggers.filter((t) => t.type === 'REMAINING_DAYS');
-    const activeTriggers = this._triggers.filter((t) => t.enabled);
-    
-    // 生成触发器摘要
-    const triggerSummary = this._generateTriggerSummary();
-    
     return {
       enabled: this._enabled,
       triggers: [...this._triggers],
-      statusText: this._enabled
-        ? activeTriggers.length > 0
-          ? `已启用 ${activeTriggers.length} 个提醒`
-          : '已启用（无触发器）'
-        : '未启用',
-      progressTriggerCount: progressTriggers.length,
-      remainingDaysTriggerCount: remainingDaysTriggers.length,
-      activeTriggerCount: activeTriggers.length,
-      triggerSummary,
     };
   }
 

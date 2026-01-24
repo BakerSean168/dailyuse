@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Get Resource
  *
- * 鑾峰彇璧勬簮璇︽儏
+ * GetResource璇︽儏
  */
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';

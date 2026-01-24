@@ -1,6 +1,6 @@
 /**
  * SQLite EditorTab Repository Implementation
- * 缂栬緫鍣ㄦ爣绛剧殑 SQLite 浠撳偍瀹炵幇
+ * 缂栬緫鍣ㄦ爣绛剧殑 SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

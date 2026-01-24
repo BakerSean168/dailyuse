@@ -20,7 +20,7 @@ export class SqliteDatabase {
   }
 
   /**
-   * 鑾峰彇鎴栧垱寤烘暟鎹簱杩炴帴
+   * Get鎴栧垱寤烘暟鎹簱杩炴帴
    */
   getConnection(): Database.Database {
     if (!this.db) {

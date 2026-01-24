@@ -52,7 +52,7 @@ export class PrismaScheduleExecutionMapper {
   }
 
   /**
-   * 杞崲涓?Prisma create 杈撳叆鏁版嵁锛堝寘鍚?createdAt锛?
+   * 杞崲涓?Prisma create 杈撳叆鏁版嵁锛堝寘AndcreatedAt锛?
    */
   public static toCreateInput(execution: ScheduleExecution): any {
     const persistence = this.toPersistence(execution);

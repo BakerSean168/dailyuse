@@ -1,6 +1,6 @@
 /**
  * SQLite AuthCredential Repository Implementation
- * 璁よ瘉鍑瘉鐨?SQLite 浠撳偍瀹炵幇
+ * 璁よ瘉鍑瘉鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

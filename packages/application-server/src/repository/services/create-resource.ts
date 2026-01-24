@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Create Resource
  *
- * 鍒涘缓璧勬簮
+ * Create resource
  */
 
 import { v4 as uuidv4 } from 'uuid';

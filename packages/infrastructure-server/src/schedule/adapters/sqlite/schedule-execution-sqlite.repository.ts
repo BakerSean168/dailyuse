@@ -1,6 +1,6 @@
 /**
  * SQLite ScheduleExecution Repository Implementation
- * 鏃ョ▼鎵ц鐨?SQLite 浠撳偍瀹炵幇
+ * 鏃ョ▼鎵ц鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

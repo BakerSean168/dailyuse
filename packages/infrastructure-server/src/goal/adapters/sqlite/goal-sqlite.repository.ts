@@ -1,6 +1,6 @@
 /**
  * SQLite Goal Repository Implementation
- * 鐩爣鐨?SQLite 浠撳偍瀹炵幇
+ * 鐩爣鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

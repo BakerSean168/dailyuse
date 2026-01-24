@@ -27,7 +27,7 @@ export class AIConversationService {
       // 创建聚合根
       const conversation = AIConversationServer.create({
         accountUuid,
-        title: title ?? 'New Chat',
+        name: title ?? 'New Chat',
       });
 
       // 持久化 - 传递聚合根
@@ -36,7 +36,7 @@ export class AIConversationService {
       logger.info('Conversation created', {
         uuid: conversation.uuid,
         accountUuid,
-        title: conversation.title,
+        name: conversation.name,
       });
 
       // 返回 ClientDTO

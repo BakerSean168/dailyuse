@@ -1,6 +1,6 @@
 /**
  * Prisma Weight Snapshot Repository Implementation
- * 鏉冮噸蹇収浠撳偍 Prisma 瀹炵幇
+ * 鏉冮噸蹇収Repository Prisma 瀹炵幇
  *
  * 璐熻矗鏉冮噸蹇収鐨勬寔涔呭寲鎿嶄綔銆?
  */
@@ -16,7 +16,7 @@ import { PrismaWeightSnapshotMapper } from '../../mappers/prisma-weight-snapshot
  * **璁捐妯″紡**: Repository Pattern
  * **鑱岃矗**:
  * - 瀹炵幇 IWeightSnapshotRepository 鎺ュ彛
- * - 澶勭悊鎵€鏈夋暟鎹簱鎿嶄綔 (CRUD + 鏌ヨ)
+ * - 澶勭悊All鏈夋暟鎹簱鎿嶄綔 (CRUD + 鏌ヨ)
  * - 浣跨敤 Mapper 杩涜 Domain 鈫?Prisma 杞崲
  *
  * **鏌ヨ鐗规€?*:
@@ -28,7 +28,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   constructor(private readonly prisma: PrismaClient) {}
 
   /**
-   * 淇濆瓨鍗曚釜蹇収
+   * Save鍗曚釜蹇収
    *
    * **浜嬪姟**: 浣跨敤 Prisma 鑷姩浜嬪姟
    * **鍐茬獊**: UUID 鍐茬獊鏃朵細鎶涘嚭 Prisma 閿欒
@@ -48,7 +48,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 鎵归噺淇濆瓨蹇収
+   * 鎵归噺Save蹇収
    *
    * **鎬ц兘浼樺寲**: 浣跨敤 Prisma createMany 鎵归噺鎻掑叆
    * **浜嬪姟**: 鏁翠釜鎵归噺鎿嶄綔鍦ㄥ崟涓簨鍔′腑鎵ц
@@ -70,12 +70,12 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
    * 鏌ヨ Goal 鐨勬墍鏈夊揩鐓?
    *
    * **鎺掑簭**: 鎸?snapshotTime 鍊掑簭 (鏈€鏂扮殑鍦ㄥ墠)
-   * **鍒嗛〉**: 鏀寔 page 鍜?pageSize 鍙傛暟
+   * **鍒嗛〉**: 鏀寔 page 鍜?pageSize Parameter
    *
    * @param goalUuid - Goal UUID
    * @param page - 椤电爜 (浠?1 寮€濮?
    * @param pageSize - 姣忛〉鏁伴噺
-   * @returns 蹇収鍒楄〃鍜屾€绘暟
+   * @returns 蹇収List鍜屾€绘暟
    *
    * @example
    * ```typescript
@@ -112,12 +112,12 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
    * 鏌ヨ KeyResult 鐨勬墍鏈夊揩鐓?
    *
    * **鎺掑簭**: 鎸?snapshotTime 鍊掑簭 (鏈€鏂扮殑鍦ㄥ墠)
-   * **鍒嗛〉**: 鏀寔 page 鍜?pageSize 鍙傛暟
+   * **鍒嗛〉**: 鏀寔 page 鍜?pageSize Parameter
    *
    * @param krUuid - KeyResult UUID
    * @param page - 椤电爜 (浠?1 寮€濮?
    * @param pageSize - 姣忛〉鏁伴噺
-   * @returns 蹇収鍒楄〃鍜屾€绘暟
+   * @returns 蹇収List鍜屾€绘暟
    *
    * @example
    * ```typescript
@@ -154,13 +154,13 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
    *
    * **鎺掑簭**: 鎸?snapshotTime 鍗囧簭 (鏃堕棿绾块『搴忥紝鐢ㄤ簬瓒嬪娍鍒嗘瀽)
    * **杈圭晫**: 鍖呭惈璧锋鏃堕棿 (gte, lte)
-   * **鍒嗛〉**: 鏀寔 page 鍜?pageSize 鍙傛暟
+   * **鍒嗛〉**: 鏀寔 page 鍜?pageSize Parameter
    *
    * @param startTime - 寮€濮嬫椂闂存埑 (ms)
    * @param endTime - 缁撴潫鏃堕棿鎴?(ms)
    * @param page - 椤电爜 (浠?1 寮€濮?
    * @param pageSize - 姣忛〉鏁伴噺
-   * @returns 蹇収鍒楄〃鍜屾€绘暟
+   * @returns 蹇収List鍜屾€绘暟
    *
    * @example
    * ```typescript
@@ -228,7 +228,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 鍒犻櫎鍗曚釜蹇収
+   * Delete鍗曚釜蹇収
    *
    * @param uuid - 蹇収 UUID
    *
@@ -244,10 +244,10 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 鍒犻櫎 Goal 鐨勬墍鏈夊揩鐓?
+   * Delete Goal 鐨勬墍鏈夊揩鐓?
    *
-   * **鎵归噺鎿嶄綔**: 浣跨敤 deleteMany 鎵归噺鍒犻櫎
-   * **绾ц仈**: Goal 鍒犻櫎鏃朵細鑷姩绾ц仈鍒犻櫎 (onDelete: Cascade)
+   * **鎵归噺鎿嶄綔**: 浣跨敤 deleteMany 鎵归噺Delete
+   * **绾ц仈**: Goal Delete鏃朵細鑷姩绾ц仈Delete (onDelete: Cascade)
    *
    * @param goalUuid - Goal UUID
    *
@@ -263,10 +263,10 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 鍒犻櫎 KeyResult 鐨勬墍鏈夊揩鐓?
+   * Delete KeyResult 鐨勬墍鏈夊揩鐓?
    *
-   * **鎵归噺鎿嶄綔**: 浣跨敤 deleteMany 鎵归噺鍒犻櫎
-   * **绾ц仈**: KR 鍒犻櫎鏃朵細鑷姩绾ц仈鍒犻櫎 (onDelete: Cascade)
+   * **鎵归噺鎿嶄綔**: 浣跨敤 deleteMany 鎵归噺Delete
+   * **绾ц仈**: KR Delete鏃朵細鑷姩绾ц仈Delete (onDelete: Cascade)
    *
    * @param krUuid - KeyResult UUID
    *
@@ -282,14 +282,14 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 鍒犻櫎鏃堕棿鑼冨洿鍐呯殑蹇収
+   * Delete鏃堕棿鑼冨洿鍐呯殑蹇収
    *
    * **鐢ㄩ€?*: 娓呯悊鍘嗗彶鏁版嵁銆佹暟鎹綊妗?
-   * **鎵归噺鎿嶄綔**: 浣跨敤 deleteMany 鎵归噺鍒犻櫎
+   * **鎵归噺鎿嶄綔**: 浣跨敤 deleteMany 鎵归噺Delete
    *
    * @param startTime - 寮€濮嬫椂闂存埑 (ms)
    * @param endTime - 缁撴潫鏃堕棿鎴?(ms)
-   * @returns 鍒犻櫎鐨勮褰曟暟閲?
+   * @returns Delete鐨勮褰曟暟閲?
    *
    * @example
    * ```typescript

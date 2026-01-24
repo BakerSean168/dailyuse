@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Update Resource Content
  *
- * 鏇存柊 Markdown 鍐呭
+ * Update Markdown 鍐呭
  */
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';

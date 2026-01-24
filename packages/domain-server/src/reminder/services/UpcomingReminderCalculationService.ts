@@ -85,7 +85,7 @@ export class UpcomingReminderCalculationService {
 
     // 为每个提醒计算接下来的触发时间
     for (const reminder of reminders) {
-      console.log(`📝 [UpcomingReminderCalculation] 处理提醒: ${reminder.title}`, {
+      console.log(`📝 [UpcomingReminderCalculation] 处理提醒: ${reminder.name}`, {
         uuid: reminder.uuid,
         type: reminder.type,
         triggerType: reminder.trigger.type,
@@ -106,7 +106,7 @@ export class UpcomingReminderCalculationService {
         reminder.nextTriggerAt <= endTime
       ) {
         console.log(
-          `✅ [UpcomingReminderCalculation] 使用已有的 nextTriggerAt: ${reminder.title}`,
+          `✅ [UpcomingReminderCalculation] 使用已有的 nextTriggerAt: ${reminder.name}`,
           {
             nextTriggerAt: new Date(reminder.nextTriggerAt).toISOString(),
           },
@@ -123,7 +123,7 @@ export class UpcomingReminderCalculationService {
             ? 'nextTriggerAt 已过期'
             : 'nextTriggerAt 超出范围';
 
-        console.log(`🔍 [UpcomingReminderCalculation] 重新计算触发时间: ${reminder.title}`, {
+        console.log(`🔍 [UpcomingReminderCalculation] 重新计算触发时间: ${reminder.name}`, {
           reason,
           oldNextTriggerAt: reminder.nextTriggerAt
             ? new Date(reminder.nextTriggerAt).toISOString()
@@ -131,7 +131,7 @@ export class UpcomingReminderCalculationService {
         });
 
         const nextTrigger = this.calculateNextTriggerTime(reminder, afterTime);
-        console.log(`🔍 [UpcomingReminderCalculation] 计算结果: ${reminder.title}`, {
+        console.log(`🔍 [UpcomingReminderCalculation] 计算结果: ${reminder.name}`, {
           nextTrigger: nextTrigger ? new Date(nextTrigger).toISOString() : null,
           inRange: nextTrigger ? nextTrigger >= afterTime && nextTrigger <= endTime : false,
         });
@@ -146,7 +146,7 @@ export class UpcomingReminderCalculationService {
           }
         } else if (nextTrigger) {
           console.log(
-            `⚠️  [UpcomingReminderCalculation] 计算的 nextTrigger 也超出范围: ${reminder.title}`,
+            `⚠️  [UpcomingReminderCalculation] 计算的 nextTrigger 也超出范围: ${reminder.name}`,
             {
               nextTrigger: new Date(nextTrigger).toISOString(),
               afterTime: new Date(afterTime).toISOString(),
@@ -362,7 +362,7 @@ export class UpcomingReminderCalculationService {
     const startTime = reminder.activeTime.activatedAt;
 
     console.log(`🔢 [calculateNextIntervalTrigger] 计算间隔触发`, {
-      title: reminder.title,
+      name: reminder.name,
       intervalMinutes: interval.minutes,
       intervalMs,
       startTime: new Date(startTime).toISOString(),
@@ -375,7 +375,7 @@ export class UpcomingReminderCalculationService {
     const nextTriggerTime = startTime + nextIntervalCount * intervalMs;
 
     console.log(`🔢 [calculateNextIntervalTrigger] 计算详情`, {
-      title: reminder.title,
+      name: reminder.name,
       elapsed: `${elapsed}ms (${Math.floor(elapsed / 1000 / 60)}分钟)`,
       nextIntervalCount,
       nextTriggerTime: new Date(nextTriggerTime).toISOString(),
@@ -383,7 +383,7 @@ export class UpcomingReminderCalculationService {
     });
 
     // 重构后：移除 endDate 检查，生效控制由 status 字段负责
-    console.log(`✅ [calculateNextIntervalTrigger] 返回下次触发时间: ${reminder.title}`, {
+    console.log(`✅ [calculateNextIntervalTrigger] 返回下次触发时间: ${reminder.name}`, {
       nextTriggerTime: new Date(nextTriggerTime).toISOString(),
     });
     return nextTriggerTime;
@@ -405,7 +405,7 @@ export class UpcomingReminderCalculationService {
 
     return {
       templateUuid: reminder.uuid,
-      title: reminder.title,
+      title: reminder.name,
       description: reminder.description ?? undefined,
       type: reminder.type,
       triggerType: reminder.trigger.type,
@@ -476,7 +476,7 @@ export class UpcomingReminderCalculationService {
 
       // 检查提醒是否在活跃期内（今天）
       if (reminder.activeTime.activatedAt > todayEnd) {
-        console.log(`⏭️  [calculateTodaySchedule] 提醒还未激活: ${reminder.title}`, {
+        console.log(`⏭️  [calculateTodaySchedule] 提醒还未激活: ${reminder.name}`, {
           activatedAt: new Date(reminder.activeTime.activatedAt).toISOString(),
         });
         continue;
@@ -492,7 +492,7 @@ export class UpcomingReminderCalculationService {
       );
 
       console.log(
-        `📍 [calculateTodaySchedule] ${reminder.title} 在今天的触发次数: ${todayTriggerTimes.length}`,
+        `📍 [calculateTodaySchedule] ${reminder.name} 在今天的触发次数: ${todayTriggerTimes.length}`,
         {
           times: todayTriggerTimes.map((dto) => dto.nextTriggerDisplay),
         },
@@ -609,7 +609,7 @@ export class UpcomingReminderCalculationService {
     const intervalMs = interval.minutes * 60 * 1000;
     const reminderStartTime = reminder.activeTime.activatedAt;
 
-    console.log(`⏰ [generateIntervalTriggersForToday] ${reminder.title}`, {
+    console.log(`⏰ [generateIntervalTriggersForToday] ${reminder.name}`, {
       intervalMinutes: interval.minutes,
       reminderStartTime: new Date(reminderStartTime).toISOString(),
       todayStart: new Date(todayStart).toISOString(),
@@ -645,7 +645,7 @@ export class UpcomingReminderCalculationService {
     }
 
     console.log(
-      `✅ [generateIntervalTriggersForToday] ${reminder.title} 生成 ${result.length} 个触发点`,
+      `✅ [generateIntervalTriggersForToday] ${reminder.name} 生成 ${result.length} 个触发点`,
       {
         times: result.map((r) => r.nextTriggerDisplay),
       },

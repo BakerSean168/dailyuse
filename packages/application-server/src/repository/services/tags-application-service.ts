@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Story 11.5: 鏍囩缁熻涓庤繃婊?
  * 
  * 鏍囩搴旂敤鏈嶅姟 - 鎻愪緵鏍囩缁熻鍔熻兘
@@ -13,14 +13,14 @@ export class TagsApplicationService {
   constructor(private readonly resourceRepository: IResourceRepository) {}
 
   /**
-   * 鑾峰彇浠撳偍鐨勬爣绛剧粺璁′俊鎭?
+   * GetRepository鐨勬爣绛剧粺璁′俊鎭?
    * AC #1: Tag 缁熻 API
    * 
-   * @param repositoryUuid 浠撳偍 UUID
-   * @returns 鏍囩缁熻鍒楄〃锛堟寜浣跨敤棰戠巼闄嶅簭锛?
+   * @param repositoryUuid Repository UUID
+   * @returns 鏍囩缁熻List锛堟寜浣跨敤棰戠巼闄嶅簭锛?
    */
   async getTagStatistics(repositoryUuid: string): Promise<TagStatisticsDto[]> {
-    // 1. 鍔犺浇浠撳偍鎵€鏈夎祫婧愶紙浠?MARKDOWN/TEXT 绫诲瀷锛?
+    // 1. 鍔犺浇RepositoryAll鏈夎祫婧愶紙浠?MARKDOWN/TEXT 绫诲瀷锛?
     const resources = await this.resourceRepository.findByRepositoryUuid(repositoryUuid);
     
     // 杩囨护鍑烘枃鏈被鍨嬫枃浠?
@@ -34,7 +34,7 @@ export class TagsApplicationService {
     const tagMap = new Map<string, TagStatisticsDto>();
 
     for (const resource of textResources) {
-      // 鎻愬彇璧勬簮鐨?tags
+      // 鎻愬彇Resource鐨?tags
       const tags = this.extractTags(resource);
 
       for (const tag of tags) {
@@ -47,7 +47,7 @@ export class TagsApplicationService {
           });
         }
 
-        // 鏇存柊缁熻
+        // Update缁熻
         const stat = tagMap.get(tag)!;
         stat.count++;
         
@@ -75,7 +75,7 @@ export class TagsApplicationService {
    * 浠庤祫婧愪腑鎻愬彇 tags
    * 澶嶇敤 Story 11.6 鐨?YAML frontmatter 瑙ｆ瀽閫昏緫
    * 
-   * @param resource 璧勬簮瀵硅薄
+   * @param resource Resource瀵硅薄
    * @returns 鏍囩鏁扮粍
    */
   private extractTags(resource: any): string[] {
@@ -140,7 +140,7 @@ export class TagsApplicationService {
   }
 
   /**
-   * 鎻愬彇璧勬簮鏍囬
+   * 鎻愬彇Resource鏍囬
    */
   private extractTitle(resource: any): string {
     const metadata = (resource as any).metadata;
@@ -148,7 +148,7 @@ export class TagsApplicationService {
   }
 
   /**
-   * 鎻愬彇璧勬簮璺緞
+   * 鎻愬彇Resource璺緞
    */
   private extractPath(resource: any): string {
     const metadata = (resource as any).metadata;

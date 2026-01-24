@@ -1,4 +1,4 @@
-﻿/**
+/**
  * TaskTemplate Aggregate Root - Client Interface
  */
 
@@ -59,23 +59,16 @@ export interface TaskTemplateClientDTO {
   dependencyStatus?: string;
   isBlocked?: boolean;
   blockingReason?: string | null;
-  // ONE_TIME task display fields
-  priorityLevel?: string | null;
-  priorityScore?: number | null;
-  isOverdue?: boolean | null;
-  daysUntilDue?: number | null;
   instanceCount: number;
   completedInstanceCount: number;
   pendingInstanceCount: number;
   completionRate: number;
-  formattedCreatedAt: string;
-  formattedUpdatedAt: string;
 }
 
 export interface TaskTemplateClient {
   uuid: string;
   accountUuid: string;
-  title: string;
+  name: string;
   description?: string | null;
   taskType: TaskType;
   timeConfig: TaskTimeConfigClient;
@@ -100,16 +93,23 @@ export interface TaskTemplateClient {
   updatedAt: number;
   deletedAt?: number | null;
   instances?: TaskInstanceClient[];
-  timeDisplayText: string | null; // null for ONE_TIME tasks
-  recurrenceText?: string | null;
-  reminderText?: string | null;
-  goalLinkText?: string | null;
+  // ONE_TIME task fields
+  goalUuid?: string | null;
+  keyResultUuid?: string | null;
+  parentTaskUuid?: string | null;
+  startDate?: number | null;
+  dueDate?: number | null;
+  completedAt?: number | null;
+  estimatedMinutes?: number | null;
+  actualMinutes?: number | null;
+  note?: string | null;
+  dependencyStatus?: string;
+  isBlocked?: boolean;
+  blockingReason?: string | null;
   instanceCount: number;
   completedInstanceCount: number;
   pendingInstanceCount: number;
   completionRate: number;
-  formattedCreatedAt: string;
-  formattedUpdatedAt: string;
 
   getDisplayTitle(): string;
   getStatusBadge(): { text: string; color: string };
@@ -143,4 +143,3 @@ export interface TaskTemplateClientStatic {
 export interface TaskTemplateClientInstance extends TaskTemplateClient {
   clone(): TaskTemplateClient;
 }
-

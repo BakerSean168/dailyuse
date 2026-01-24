@@ -91,7 +91,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
       tags: this.generateTags(task),
       payload: {
         taskUuid: task.uuid,
-        taskTitle: task.title,
+        taskTitle: task.name,
         taskType: task.taskType,
         recurrenceFrequency: recurrenceRule.frequency,
         reminderTriggers: reminderConfig.triggers,
@@ -303,7 +303,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    * 生成任务名称
    */
   private generateTaskName(task: TaskTemplateServerDTO): string {
-    return `Task Reminder: ${task.title}`;
+    return `Task Reminder: ${task.name}`;
   }
 
   /**

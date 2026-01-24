@@ -21,16 +21,6 @@ export interface AIConversationClientDTO {
 
   // 子实体 DTO
   messages?: MessageClientDTO[] | null;
-
-  // UI 计算字段
-  isActive: boolean;
-  isClosed: boolean;
-  isArchived: boolean;
-  canAddMessage: boolean;
-  statusText: string;
-  formattedCreatedAt: string;
-  formattedUpdatedAt: string;
-  formattedLastMessageAt?: string | null;
 }
 
 // ============ 实体接口 ============
@@ -48,25 +38,6 @@ export interface AIConversationClient {
 
   // 子实体
   messages?: MessageClient[] | null;
-
-  // UI 计算属性
-  isActive: boolean;
-  isClosed: boolean;
-  isArchived: boolean;
-  canAddMessage: boolean;
-  statusText: string;
-  formattedCreatedAt: string;
-  formattedUpdatedAt: string;
-  formattedLastMessageAt?: string | null;
-
-  // 实体方法
-  getDisplayTitle(): string;
-  getStatusBadge(): string;
-  canClose(): boolean;
-  canArchive(): boolean;
-  canDelete(): boolean;
-  hasMessages(): boolean;
-  getMessageCount(): number;
 
   // DTO 转换
   toClientDTO(): AIConversationClientDTO;

@@ -13,8 +13,6 @@ export interface GoalRecordClientDTO {
   note?: string | null;
   recordedAt: number;
   createdAt: number;
-  formattedRecordedAt: string;
-  formattedCreatedAt: string;
 }
 
 export interface GoalRecordClient {
@@ -26,12 +24,6 @@ export interface GoalRecordClient {
   note?: string | null;
   recordedAt: number;
   createdAt: number;
-  formattedRecordedAt: string;
-  formattedCreatedAt: string;
-
-  getDisplayText(): string;
-  getSummary(): string;
-  hasNote(): boolean;
 
   toClientDTO(): GoalRecordClientDTO;
   toServerDTO(): GoalRecordServerDTO;

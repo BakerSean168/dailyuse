@@ -6,7 +6,7 @@
  * - 鏀寔澶氬 AI 妯″瀷锛圤penAI, Anthropic, Google, Meta 绛夛級
  * - 閮ㄥ垎妯″瀷鍏嶈垂
  * - 缁熶竴锟?OpenAI 鍏煎鎺ュ彛
- * - 闇€瑕侀澶栫殑璇锋眰澶存爣璇嗗簲鐢ㄦ潵锟?
+ * - Need瑕侀澶栫殑璇锋眰澶存爣璇嗗簲鐢ㄦ潵锟?
  *
  * @see https://openrouter.ai/docs
  */
@@ -67,7 +67,7 @@ export class OpenRouterAdapter extends BaseAIAdapter {
     this.timeoutMs = config.timeoutMs ?? 60000;
     this.appName = config.appName ?? 'DailyUse';
 
-    // OpenRouter 浣跨敤 OpenAI 鍏煎鎺ュ彛锛屼絾闇€瑕侀澶栫殑璇锋眰锟?
+    // OpenRouter 浣跨敤 OpenAI 鍏煎鎺ュ彛锛屼絾Need瑕侀澶栫殑璇锋眰锟?
     this.openai = createOpenAI({
       apiKey: config.apiKey,
       baseURL: OpenRouterAdapter.BASE_URL,
@@ -197,14 +197,14 @@ export class OpenRouterAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 鑾峰彇鎻愪緵鍟嗗悕锟?
+   * Get鎻愪緵鍟嗗悕锟?
    */
   getProviderName(): string {
     return OpenRouterAdapter.PROVIDER_NAME;
   }
 
   /**
-   * 鑾峰彇妯″瀷 ID
+   * Get妯″瀷 ID
    */
   getModelId(): string {
     return this.modelId;

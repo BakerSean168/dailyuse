@@ -13,7 +13,7 @@ import { getRedisConfig, env } from '../../shared/config/env';
  * 缁熻鏁版嵁缂撳瓨鏈嶅姟锟?
  *
  * @remarks
- * 璐熻矗绠＄悊浠〃鏉跨粺璁℃暟鎹殑缂撳瓨锟?
+ * 璐熻矗绠＄悊浠〃鏉跨粺Count鎹殑缂撳瓨锟?
  * - 浣跨敤 Redis 浣滀负鍚庣瀛樺偍锟?
  * - 榛樿 TTL 锟?5 鍒嗛挓锟?
  * - 鎻愪緵缂撳瓨璇诲彇銆佸啓鍏ャ€佸け鏁堝拰鎵归噺绠＄悊鍔熻兘锟?
@@ -87,7 +87,7 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 鑾峰彇缂撳瓨鐨勭粺璁℃暟鎹拷?
+   * Get缂撳瓨鐨勭粺Count鎹拷?
    *
    * @param userId - 鐢ㄦ埛 ID
    * @returns {Promise<DashboardStatisticsClientDTO | null>} 缁熻鏁版嵁锟?null
@@ -139,7 +139,7 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 鍒犻櫎缂撳瓨鏁版嵁锛堜富鍔ㄥけ鏁堬級锟?
+   * Delete缂撳瓨鏁版嵁锛堜富鍔ㄥけ鏁堬級锟?
    *
    * @param userId - 鐢ㄦ埛 ID
    * @returns {Promise<void>}
@@ -164,10 +164,10 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 鎵归噺鍒犻櫎缂撳瓨锛堢敤浜庣鐞嗘搷浣滐級锟?
+   * 鎵归噺Delete缂撳瓨锛堢敤浜庣鐞嗘搷浣滐級锟?
    *
    * @param pattern - 閿悕鍖归厤妯″紡
-   * @returns {Promise<number>} 鍒犻櫎鐨勯敭鏁伴噺
+   * @returns {Promise<number>} Delete鐨勯敭鏁伴噺
    */
   async invalidatePattern(pattern: string): Promise<number> {
     try {
@@ -179,7 +179,7 @@ export class StatisticsCacheService {
       }
 
       const deleted = await this.redis.del(...keys);
-      console.log(`[StatisticsCache] 馃棏锟? 鎵归噺鍒犻櫎 ${deleted} 涓紦瀛橀敭: ${pattern}`);
+      console.log(`[StatisticsCache] 馃棏锟? 鎵归噺Delete ${deleted} 涓紦瀛橀敭: ${pattern}`);
 
       return deleted;
     } catch (error) {
@@ -192,7 +192,7 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 鑾峰彇缂撳瓨鐨勫墿锟?TTL锟?
+   * Get缂撳瓨鐨勫墿锟?TTL锟?
    *
    * @param userId - 鐢ㄦ埛 ID
    * @returns {Promise<number>} 鍓╀綑绉掓暟锟?2 琛ㄧず涓嶅瓨鍦紝-1 琛ㄧず鏃犺繃鏈熸椂锟?
@@ -204,7 +204,7 @@ export class StatisticsCacheService {
       return await this.redis.ttl(key);
     } catch (error) {
       console.error(
-        `[StatisticsCache] 鑾峰彇 TTL 澶辫触: ${key}`,
+        `[StatisticsCache] Get TTL 澶辫触: ${key}`,
         error instanceof Error ? error.message : String(error),
       );
       return -2;
@@ -240,7 +240,7 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 鑾峰彇缂撳瓨缁熻淇℃伅锟?
+   * Get缂撳瓨缁熻淇℃伅锟?
    *
    * @returns {Promise<object>} 缁熻淇℃伅锛堥敭鏁伴噺銆佸唴瀛樹娇鐢ㄣ€佽繛鎺ョ姸鎬侊級
    */
@@ -262,7 +262,7 @@ export class StatisticsCacheService {
       };
     } catch (error) {
       console.error(
-        '[StatisticsCache] 鑾峰彇缁熻淇℃伅澶辫触:',
+        '[StatisticsCache] Get缁熻淇℃伅澶辫触:',
         error instanceof Error ? error.message : String(error),
       );
       return {

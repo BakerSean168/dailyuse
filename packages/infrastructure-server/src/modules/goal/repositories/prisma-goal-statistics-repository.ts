@@ -4,7 +4,7 @@ import type { IGoalStatisticsRepository } from '@dailyuse/domain-server/goal';
 import { GoalStatistics } from '@dailyuse/domain-server/goal';
 
 /**
- * GoalStatistics Prisma 浠撳偍瀹炵幇
+ * GoalStatistics Prisma Repository瀹炵幇
  * 璐熻矗缁熻鏁版嵁鐨勬寔涔呭寲
  *
  * 娉ㄦ剰锛?
@@ -15,9 +15,9 @@ export class PrismaGoalStatisticsRepository implements IGoalStatisticsRepository
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 淇濆瓨缁熻淇℃伅锛圲PSERT 璇箟锛?
+   * Save缁熻淇℃伅锛圲PSERT 璇箟锛?
    *
-   * 杩斿洖鏇存柊鍚庣殑缁熻鑱氬悎鏍?
+   * 杩斿洖Update鍚庣殑缁熻鑱氬悎鏍?
    */
   async upsert(statistics: GoalStatistics): Promise<GoalStatistics> {
     const persistence = statistics.toPersistenceDTO();
@@ -74,7 +74,7 @@ export class PrismaGoalStatisticsRepository implements IGoalStatisticsRepository
       },
     });
 
-    // 杩斿洖鏇存柊鍚庣殑鑱氬悎鏍?
+    // 杩斿洖Update鍚庣殑鑱氬悎鏍?
     return GoalStatistics.fromPersistenceDTO({
       accountUuid: record.accountUuid,
       totalGoals: record.totalGoals,
@@ -134,7 +134,7 @@ export class PrismaGoalStatisticsRepository implements IGoalStatisticsRepository
   }
 
   /**
-   * 鍒犻櫎缁熻
+   * Delete缁熻
    */
   async delete(accountUuid: string): Promise<boolean> {
     try {
@@ -143,7 +143,7 @@ export class PrismaGoalStatisticsRepository implements IGoalStatisticsRepository
       });
       return true;
     } catch (error) {
-      // 濡傛灉璁板綍涓嶅瓨鍦紝Prisma浼氭姏鍑洪敊璇?
+      // 濡傛灉Record涓嶅瓨鍦紝Prisma浼氭姏鍑洪敊璇?
       return false;
     }
   }

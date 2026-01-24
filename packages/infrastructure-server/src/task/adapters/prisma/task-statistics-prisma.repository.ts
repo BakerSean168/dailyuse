@@ -3,14 +3,14 @@ import type { ITaskStatisticsRepository } from '@dailyuse/domain-server/task';
 import { TaskStatistics } from '@dailyuse/domain-server/task';
 
 /**
- * TaskStatistics Prisma 浠撳偍瀹炵幇
+ * TaskStatistics Prisma Repository瀹炵幇
  * 璐熻矗 TaskStatistics 鑱氬悎鏍圭殑鎸佷箙鍖栨搷浣?
  */
 export class TaskStatisticsPrismaRepository implements ITaskStatisticsRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 灏嗘暟鎹簱璁板綍鏄犲皠涓洪鍩熷疄浣?
+   * 灏嗘暟鎹簱Record鏄犲皠涓洪鍩熷疄浣?
    */
   private mapToEntity(data: any): TaskStatistics {
     return TaskStatistics.fromPersistenceDTO({
@@ -64,7 +64,7 @@ export class TaskStatisticsPrismaRepository implements ITaskStatisticsRepository
   }
 
   /**
-   * 淇濆瓨鎴栨洿鏂扮粺璁℃暟鎹?
+   * Save鎴栨洿鏂扮粺Count鎹?
    */
   async save(statistics: TaskStatistics): Promise<void> {
     const persistence = statistics.toPersistenceDTO();
@@ -175,7 +175,7 @@ export class TaskStatisticsPrismaRepository implements ITaskStatisticsRepository
   }
 
   /**
-   * 鍒犻櫎缁熻鏁版嵁
+   * Delete缁熻鏁版嵁
    */
   async delete(uuid: string): Promise<void> {
     await this.prisma.taskStatistic.delete({
@@ -184,7 +184,7 @@ export class TaskStatisticsPrismaRepository implements ITaskStatisticsRepository
   }
 
   /**
-   * 鎵归噺淇濆瓨缁熻鏁版嵁
+   * 鎵归噺Save缁熻鏁版嵁
    */
   async saveBatch(statisticsList: TaskStatistics[]): Promise<void> {
     await this.prisma.$transaction(

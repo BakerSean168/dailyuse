@@ -1,6 +1,6 @@
 /**
  * SQLite SyncProfile Repository Implementation
- * 鍚屾閰嶇疆鏂囦欢鐨?SQLite 浠撳偍瀹炵幇
+ * 鍚屾閰嶇疆鏂囦欢鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

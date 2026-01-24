@@ -420,8 +420,8 @@ export class Resource implements ResourceServer {
   toPersistenceDTO(): ResourcePersistenceDTO {
     return {
       uuid: this._uuid,
-      repository_uuid: this._repositoryUuid,
-      folder_uuid: this._folderUuid,
+      repositoryUuid: this._repositoryUuid,
+      folderUuid: this._folderUuid,
       name: this._name,
       type: this._type,
       path: this._path,
@@ -430,8 +430,8 @@ export class Resource implements ResourceServer {
       metadata: JSON.stringify(this._metadata.toServerDTO()),
       stats: JSON.stringify(this._stats.toServerDTO()),
       status: this._status,
-      created_at: new Date(this._createdAt),
-      updated_at: new Date(this._updatedAt),
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
     };
   }
 
@@ -486,8 +486,8 @@ export class Resource implements ResourceServer {
   static fromPersistenceDTO(dto: ResourcePersistenceDTO): Resource {
     return new Resource({
       uuid: dto.uuid,
-      repositoryUuid: dto.repository_uuid,
-      folderUuid: dto.folder_uuid,
+      repositoryUuid: dto.repositoryUuid,
+      folderUuid: dto.folderUuid,
       name: dto.name,
       type: dto.type,
       path: dto.path,
@@ -498,8 +498,8 @@ export class Resource implements ResourceServer {
       ),
       stats: ResourceStats.fromServerDTO(JSON.parse(dto.stats) as ResourceStatsServerDTO),
       status: dto.status,
-      createdAt: dto.created_at.getTime(),
-      updatedAt: dto.updated_at.getTime(),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
     });
   }
 }

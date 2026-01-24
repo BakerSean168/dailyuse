@@ -1,4 +1,4 @@
-﻿import type { IFolderRepository } from '@dailyuse/domain-server/repository';
+import type { IFolderRepository } from '@dailyuse/domain-server/repository';
 import { Folder, FolderHierarchyService } from '@dailyuse/domain-server/repository';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, FolderClientDTO, FolderMetadataServerDTO } from '@dailyuse/contracts/repository';
 
@@ -9,7 +9,7 @@ import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, FolderCli
  * 鏋舵瀯鑱岃矗锛?
  * - 璋冪敤 Repository 杩涜鎸佷箙鍖?
  * - DTO 杞崲锛圖omain 鈫?ClientDTO锛?
- * - 鍗忚皟涓氬姟鐢ㄤ緥
+ * - Coordinate business logic
  * - 绠＄悊鏂囦欢澶瑰眰娆＄粨鏋?
  */
 export class FolderApplicationService {
@@ -22,7 +22,7 @@ export class FolderApplicationService {
   }
 
   /**
-   * 鍒涘缓鏂囦欢澶?
+   * Create folder
    */
   async createFolder(params: {
     repositoryUuid: string;
@@ -41,7 +41,7 @@ export class FolderApplicationService {
       parentPath = parent.path;
     }
 
-    // 2. 鍒涘缓棰嗗煙瀹炰綋
+    // 2. Create domain entity
     const folder = Folder.create({
       repositoryUuid: params.repositoryUuid,
       parentUuid: params.parentUuid,
@@ -59,7 +59,7 @@ export class FolderApplicationService {
   }
 
   /**
-   * 鑾峰彇鏂囦欢澶硅鎯?
+   * Get鏂囦欢澶硅鎯?
    */
   async getFolder(uuid: string): Promise<FolderClientDTO | null> {
     const folder = await this.folderRepository.findByUuid(uuid);
@@ -67,10 +67,10 @@ export class FolderApplicationService {
   }
 
   /**
-   * 鑾峰彇鏂囦欢澶规爲锛堟寚瀹氫粨鍌級
+   * Get folder tree锛堟寚瀹氫粨鍌級
    */
   async getFolderTree(repositoryUuid: string): Promise<FolderClientDTO[]> {
-    // 1. 鏌ヨ鎵€鏈夋枃浠跺す
+    // 1. 鏌ヨAll鏈夋枃浠跺す
     const allFolders = await this.folderRepository.findByRepositoryUuid(repositoryUuid);
 
     // 2. 鏋勫缓鏍戝舰缁撴瀯
@@ -108,7 +108,7 @@ export class FolderApplicationService {
     // 3. 鎸佷箙鍖?
     await this.folderRepository.save(folder);
 
-    // 4. 绾ц仈鏇存柊瀛愯矾寰勶紙浣跨敤姝ｇ‘鐨勬柟娉曠鍚嶏級
+    // 4. 绾ц仈Update瀛愯矾寰勶紙浣跨敤姝ｇ‘鐨勬柟娉曠鍚嶏級
     await this.hierarchyService.updateChildrenPaths(
       folder.uuid,
       folder.path,
@@ -132,7 +132,7 @@ export class FolderApplicationService {
       throw new Error(`Folder not found: ${uuid}`);
     }
 
-    // 2. 鏌ヨ鎵€鏈夊悓浠撳偍鐨勬枃浠跺す
+    // 2. 鏌ヨAll鏈夊悓Repository鐨勬枃浠跺す
     const allFolders = await this.folderRepository.findByRepositoryUuid(folder.repositoryUuid);
 
     // 3. 寰幆妫€娴?- await the async result
@@ -147,7 +147,7 @@ export class FolderApplicationService {
       }
     }
 
-    // 4. 鑾峰彇鏂扮埗璺緞
+    // 4. Get鏂扮埗璺緞
     let newParentPath: string | null = null;
     if (newParentUuid) {
       const newParent = await this.folderRepository.findByUuid(newParentUuid);
@@ -163,7 +163,7 @@ export class FolderApplicationService {
     // 6. 鎸佷箙鍖?
     await this.folderRepository.save(folder);
 
-    // 7. 绾ц仈鏇存柊瀛愯矾寰勶紙浣跨敤姝ｇ‘鐨勬柟娉曠鍚嶏級
+    // 7. 绾ц仈Update瀛愯矾寰勶紙浣跨敤姝ｇ‘鐨勬柟娉曠鍚嶏級
     await this.hierarchyService.updateChildrenPaths(
       folder.uuid,
       folder.path,
@@ -175,7 +175,7 @@ export class FolderApplicationService {
   }
 
   /**
-   * 鍒犻櫎鏂囦欢澶癸紙绾ц仈锛?
+   * Delete鏂囦欢澶癸紙绾ц仈锛?
    */
   async deleteFolder(uuid: string): Promise<void> {
     // 1. 鏌ヨ鏂囦欢澶?
@@ -184,7 +184,7 @@ export class FolderApplicationService {
       throw new Error(`Folder not found: ${uuid}`);
     }
 
-    // 2. 鏀堕泦鎵€鏈夎鍒犻櫎鐨勬枃浠跺すUUID锛堝寘鎷瓙鏂囦欢澶癸級
+    // 2. 鏀堕泦All鏈夎Delete鐨勬枃浠跺すUUID锛堝寘鎷瓙鏂囦欢澶癸級
     const collectChildrenUuids = async (folderUuid: string): Promise<string[]> => {
       const uuids = [folderUuid];
       const children = await this.folderRepository.findByParentUuid(folderUuid);
@@ -199,7 +199,7 @@ export class FolderApplicationService {
 
     const uuidsToDelete = await collectChildrenUuids(uuid);
 
-    // 3. 绾ц仈鍒犻櫎锛堜粠鍙跺瓙鑺傜偣寮€濮嬶紝reverse 椤哄簭锛?
+    // 3. 绾ц仈Delete锛堜粠鍙跺瓙鑺傜偣寮€濮嬶紝reverse 椤哄簭锛?
     for (const folderUuid of uuidsToDelete.reverse()) {
       await this.folderRepository.delete(folderUuid);
     }

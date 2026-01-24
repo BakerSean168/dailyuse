@@ -3,7 +3,7 @@ import type { IScheduleStatisticsRepository } from '@dailyuse/domain-server/sche
 import { ScheduleStatistics } from '@dailyuse/domain-server/schedule';
 
 /**
- * ScheduleStatistics 鑱氬悎鏍?Prisma 浠撳偍瀹炵幇
+ * ScheduleStatistics 鑱氬悎鏍?Prisma Repository瀹炵幇
  * 璐熻矗缁熻鏁版嵁鐨勬寔涔呭寲
  *
  * 鍙傝€?Repository 妯″潡鐨勭粺璁′粨鍌ㄥ疄鐜版ā寮?
@@ -79,10 +79,10 @@ export class ScheduleStatisticsPrismaRepository implements IScheduleStatisticsRe
     };
   }
 
-  // ===== 浠撳偍鏂规硶 =====
+  // ===== Repository鏂规硶 =====
 
   /**
-   * 淇濆瓨鎴栨洿鏂扮粺璁℃暟鎹紙UPSERT锛?
+   * Save鎴栨洿鏂扮粺Count鎹紙UPSERT锛?
    */
   async save(stats: ScheduleStatistics): Promise<void> {
     const data = this.mapToPrisma(stats);
@@ -106,14 +106,14 @@ export class ScheduleStatisticsPrismaRepository implements IScheduleStatisticsRe
   }
 
   /**
-   * 鑾峰彇鎴栧垱寤虹粺璁℃暟鎹?
-   * 濡傛灉涓嶅瓨鍦ㄥ垯鍒涘缓涓€涓垵濮嬪寲鐨勭粺璁″璞?
+   * Get鎴栧垱寤虹粺Count鎹?
+   * 濡傛灉涓嶅瓨鍦ㄥ垯Create涓€涓垵濮嬪寲鐨勭粺璁″璞?
    */
   async getOrCreate(accountUuid: string): Promise<ScheduleStatistics> {
     let stats = await this.findByAccountUuid(accountUuid);
 
     if (!stats) {
-      // 鍒涘缓鍒濆鍖栫殑缁熻鏁版嵁
+      // Create鍒濆鍖栫殑缁熻鏁版嵁
       stats = ScheduleStatistics.createEmpty(accountUuid);
       await this.save(stats);
     }
@@ -122,7 +122,7 @@ export class ScheduleStatisticsPrismaRepository implements IScheduleStatisticsRe
   }
 
   /**
-   * 鍒犻櫎缁熻鏁版嵁锛堟帴鍙ｈ姹傜殑鏂规硶鍚嶏級
+   * Delete缁熻鏁版嵁锛堟帴鍙ｈ姹傜殑鏂规硶鍚嶏級
    */
   async deleteByAccountUuid(accountUuid: string): Promise<void> {
     await this.prisma.scheduleStatistic.delete({
@@ -131,7 +131,7 @@ export class ScheduleStatisticsPrismaRepository implements IScheduleStatisticsRe
   }
 
   /**
-   * 鏌ヨ鎵€鏈夌粺璁℃暟鎹?
+   * 鏌ヨAll鏈夌粺Count鎹?
    */
   async findAll(limit?: number, offset?: number): Promise<ScheduleStatistics[]> {
     const data = await this.prisma.scheduleStatistic.findMany({
@@ -144,7 +144,7 @@ export class ScheduleStatisticsPrismaRepository implements IScheduleStatisticsRe
   }
 
   /**
-   * 鎵归噺淇濆瓨
+   * 鎵归噺Save
    */
   async saveBatch(statistics: ScheduleStatistics[]): Promise<void> {
     for (const stats of statistics) {

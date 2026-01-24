@@ -1,6 +1,6 @@
 /**
  * SQLite AIConversation Repository Implementation
- * AI 瀵硅瘽鐨?SQLite 浠撳偍瀹炵幇
+ * AI 瀵硅瘽鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

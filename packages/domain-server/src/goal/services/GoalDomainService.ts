@@ -34,7 +34,7 @@ export class GoalDomainService {
   public createGoal(
     params: {
       accountUuid: string;
-      title: string;
+      name: string;
       description?: string;
       importance?: ImportanceLevel;
       // urgency?: UrgencyLevel; // REMOVED - priority is now computed
@@ -52,7 +52,7 @@ export class GoalDomainService {
     parentGoal?: Goal,
   ): Goal {
     // 1. 验证标题
-    this.validateGoalTitle(params.title);
+    this.validateGoalTitle(params.name);
 
     // 2. 验证日期范围
     this.validateGoalDateRange(params.startDate, params.targetDate);

@@ -105,7 +105,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     // 缁戝畾 'worker created' 浜嬩欢
     this.bree.on('worker created', this.handleTaskStart);
 
-    // 璁板綍娲昏穬浠诲姟
+    // Record娲昏穬浠诲姟
     tasks.forEach((task) => this.activeTasks.set(task.uuid, task));
 
     // 鍚姩寮曟搸
@@ -158,7 +158,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     await this.bree.add(jobOptions);
     await this.bree.start(task.uuid);
 
-    // 璁板綍娲昏穬浠诲姟
+    // Record娲昏穬浠诲姟
     this.activeTasks.set(task.uuid, task);
 
     console.log(`鉁?Added task ${task.uuid} to execution engine`);
@@ -218,7 +218,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
   }
 
   /**
-   * 鑾峰彇娲昏穬浠诲姟鍒楄〃
+   * Get娲昏穬浠诲姟List
    */
   getActiveTasks(): ScheduleTask[] {
     return Array.from(this.activeTasks.values());
@@ -311,7 +311,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     const startTime = this.taskStartTimes.get(taskId) ?? Date.now();
     const duration = Date.now() - startTime;
 
-    // 鑾峰彇涓婁竴娆＄殑鎵ц璁板綍
+    // Get涓婁竴娆＄殑鎵цRecord
     const previousExecutions = await this.executionRepository.findByTaskUuid(taskId);
     const lastExecution = previousExecutions.sort((a, b) => b.executionTime - a.executionTime)[0];
     const currentRetryCount = lastExecution ? lastExecution.retryCount : 0;
@@ -332,7 +332,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
       });
       execution.incrementRetry(); // This will set retryCount to 1 on first retry
       
-      // 鍒涘缓涓€涓竴娆℃€х殑閲嶈瘯浠诲姟
+      // Create涓€涓竴娆℃€х殑閲嶈瘯浠诲姟
       const retryJobName = `${taskId}-retry-${nextRetryCount}-${Date.now()}`;
       const jobOptions = this.toJobOptions(task);
       
@@ -369,7 +369,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
         status: ExecutionStatus.FAILED,
       });
       task.fail(error.message);
-      // TODO: 淇濆瓨 task 鐘舵€?
+      // TODO: Save task 鐘舵€?
     }
     
     execution.markFailed(error.message, duration);
@@ -423,7 +423,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     try {
       await this.executionRepository.save(execution);
       console.log(`馃捑 Saved execution record for task ${taskId}`);
-      // TODO: 淇濆瓨 task 鐘舵€?
+      // TODO: Save task 鐘舵€?
     } catch (repoError) {
       console.error(`鉂?Failed to save execution record for task ${taskId}:`, repoError);
     }

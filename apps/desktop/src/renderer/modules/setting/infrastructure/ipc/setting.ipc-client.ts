@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Setting IPC Client - Setting 妯″潡 IPC 瀹㈡埛绔? * 
  * @module renderer/modules/setting/infrastructure/ipc
  */
@@ -83,7 +83,7 @@ export class SettingIPCClient {
   // ============ Settings ============
 
   /**
-   * 鑾峰彇鎵€鏈夎缃?   */
+   * GetAll鏈夎缃?   */
   async getAll(): Promise<AppSettingsDTO> {
     return this.client.invoke<AppSettingsDTO>(
       SettingChannels.GET_ALL,
@@ -92,7 +92,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 璁剧疆鎵€鏈夎缃?   */
+   * 璁剧疆All鏈夎缃?   */
   async setAll(settings: Partial<AppSettingsDTO>): Promise<AppSettingsDTO> {
     return this.client.invoke<AppSettingsDTO>(
       SettingChannels.UPDATE,
@@ -101,7 +101,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 鑾峰彇璁剧疆
+   * Get璁剧疆
    */
   async get<K extends keyof AppSettingsDTO>(key: K): Promise<AppSettingsDTO[K]> {
     return this.client.invoke<AppSettingsDTO[K]>(
@@ -111,7 +111,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 鏇存柊璁剧疆
+   * Update璁剧疆
    */
   async update<K extends keyof AppSettingsDTO>(
     key: K,
@@ -136,7 +136,7 @@ export class SettingIPCClient {
   // ============ Section Settings ============
 
   /**
-   * 鑾峰彇璁剧疆鍒嗙被
+   * Get璁剧疆鍒嗙被
    */
   async getSection<K extends keyof AppSettingsDTO>(section: K): Promise<AppSettingsDTO[K]> {
     return this.client.invoke<AppSettingsDTO[K]>(
@@ -146,7 +146,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 鏇存柊璁剧疆鍒嗙被
+   * Update璁剧疆鍒嗙被
    */
   async updateSection<K extends keyof AppSettingsDTO>(
     section: K,
@@ -161,7 +161,7 @@ export class SettingIPCClient {
   // ============ Shortcuts ============
 
   /**
-   * 鑾峰彇蹇嵎閿垪琛?   */
+   * Get蹇嵎閿垪琛?   */
   async listShortcuts(): Promise<ShortcutSettingsDTO> {
     return this.client.invoke<ShortcutSettingsDTO>(
       SettingChannels.SHORTCUT_LIST,
@@ -190,7 +190,7 @@ export class SettingIPCClient {
   // ============ Theme ============
 
   /**
-   * 鑾峰彇涓婚
+   * Get涓婚
    */
   async getTheme(): Promise<AppearanceSettingsDTO['theme']> {
     return this.client.invoke<AppearanceSettingsDTO['theme']>(
@@ -210,7 +210,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 鑾峰彇鍙敤涓婚鍒楄〃
+   * Get鍙敤涓婚List
    */
   async listThemes(): Promise<ThemeDTO[]> {
     return this.client.invoke<ThemeDTO[]>(
@@ -222,7 +222,7 @@ export class SettingIPCClient {
   // ============ Language ============
 
   /**
-   * 鑾峰彇璇█
+   * Get璇█
    */
   async getLanguage(): Promise<string> {
     return this.client.invoke<string>(
@@ -244,7 +244,7 @@ export class SettingIPCClient {
   // ============ Notifications ============
 
   /**
-   * 鑾峰彇閫氱煡璁剧疆
+   * Get閫氱煡璁剧疆
    */
   async getNotificationSettings(): Promise<NotificationSettingsDTO> {
     return this.client.invoke<NotificationSettingsDTO>(
@@ -254,7 +254,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 鏇存柊閫氱煡璁剧疆
+   * Update閫氱煡璁剧疆
    */
   async updateNotificationSettings(settings: Partial<NotificationSettingsDTO>): Promise<NotificationSettingsDTO> {
     return this.client.invoke<NotificationSettingsDTO>(
@@ -266,7 +266,7 @@ export class SettingIPCClient {
   // ============ Backup ============
 
   /**
-   * 鍒涘缓璁剧疆澶囦唤
+   * Create璁剧疆澶囦唤
    */
   async createBackup(): Promise<{ path: string }> {
     return this.client.invoke(
@@ -286,7 +286,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 鑾峰彇澶囦唤鍒楄〃
+   * Get澶囦唤List
    */
   async listBackups(): Promise<Array<{ path: string; createdAt: number }>> {
     return this.client.invoke(

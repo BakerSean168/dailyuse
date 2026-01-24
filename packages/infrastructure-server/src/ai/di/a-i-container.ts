@@ -10,7 +10,7 @@
  * 鏋舵瀯璇存槑锟?
  * - 棰嗗煙鏈嶅姟锟?@dailyuse/domain-server 瀵煎叆锛堢函楠岃瘉閫昏緫锟?
  * - 鍩虹璁炬柦鏈嶅姟浠庢湰锟?infrastructure/ 瀵煎叆锛圓dapter銆丵uota銆丳rompts锟?
- * - 搴旂敤鏈嶅姟鍗忚皟鎵€鏈変緷锟?
+ * - 搴旂敤鏈嶅姟鍗忚皟All鏈変緷锟?
  */
 
 import type { PrismaClient } from '@prisma/client';
@@ -54,7 +54,7 @@ export class AIContainer {
   }
 
   /**
-   * 鑾峰彇瀹瑰櫒鍗曚緥
+   * Get瀹瑰櫒鍗曚緥
    */
   static getInstance(): AIContainer {
     if (!AIContainer.instance) {
@@ -64,7 +64,7 @@ export class AIContainer {
   }
 
   /**
-   * 鑾峰彇 Conversation Repository
+   * Get Conversation Repository
    */
   getConversationRepository(): PrismaAIConversationRepository {
     if (!this.conversationRepository) {
@@ -74,7 +74,7 @@ export class AIContainer {
   }
 
   /**
-   * 鑾峰彇 Quota Repository
+   * Get Quota Repository
    */
   getQuotaRepository(): PrismaAIUsageQuotaRepository {
     if (!this.quotaRepository) {
@@ -84,7 +84,7 @@ export class AIContainer {
   }
 
   /**
-   * 鑾峰彇 Task Repository
+   * Get Task Repository
    */
   getTaskRepository(): KnowledgeGenerationTaskRepository {
     if (!this.taskRepository) {
@@ -94,7 +94,7 @@ export class AIContainer {
   }
 
   /**
-   * 鑾峰彇 Provider Config Repository
+   * Get Provider Config Repository
    */
   getProviderConfigRepository(): PrismaAIProviderConfigRepository {
     if (!this.providerConfigRepository) {
@@ -104,12 +104,12 @@ export class AIContainer {
   }
 
   /**
-   * 鑾峰彇 AI Adapter锛堝熀纭€璁炬柦锟?
+   * Get AI Adapter锛堝熀纭€璁炬柦锟?
    *
-   * 娉ㄦ剰锛氳繖涓柟娉曚粎鐢ㄤ簬闇€瑕佸揩閫熻幏鍙栦竴锟?AI Adapter 鐨勫満锟?
+   * 娉ㄦ剰锛氳繖涓柟娉曚粎鐢ㄤ簬Need瑕佸揩閫熻幏鍙栦竴锟?AI Adapter 鐨勫満锟?
    * 瀵逛簬鐢ㄦ埛鐩稿叧锟?AI 璋冪敤锛屽簲璇ヤ娇锟?getProviderConfigService().getAdapterForProvider()
    *
-   * @deprecated 浣跨敤 getProviderConfigService().getAdapterForProvider() 鑾峰彇鎸囧畾鐢ㄦ埛 Provider 锟?Adapter
+   * @deprecated 浣跨敤 getProviderConfigService().getAdapterForProvider() Get鎸囧畾鐢ㄦ埛 Provider 锟?Adapter
    */
   getAIAdapter(): BaseAIAdapter {
     if (!this.aiAdapter) {
@@ -133,7 +133,7 @@ export class AIContainer {
   }
 
   /**
-   * 鑾峰彇 Provider Config Service锛圥rovider CRUD + 閫傞厤鍣ㄧ鐞嗭級
+   * Get Provider Config Service锛圥rovider CRUD + 閫傞厤鍣ㄧ鐞嗭級
    */
   getProviderConfigService(): AIProviderConfigService {
     if (!this.providerConfigService) {
@@ -144,7 +144,7 @@ export class AIContainer {
   }
 
   /**
-   * 鑾峰彇 Provider Switching Service锛堟櫤鑳藉垏锟?+ 鏁呴殰杞Щ锟?
+   * Get Provider Switching Service锛堟櫤鑳藉垏锟?+ 鏁呴殰杞Щ锟?
    */
   getProviderSwitchingService(): AIProviderSwitchingService {
     if (!this.providerSwitchingService) {
@@ -155,7 +155,7 @@ export class AIContainer {
   }
 
   /**
-   * 鑾峰彇 AIGenerationValidationService锛堥鍩熸湇锟?- 绾獙璇侊級
+   * Get AIGenerationValidationService锛堥鍩熸湇锟?- 绾獙璇侊級
    */
   getValidationService(): AIGenerationValidationService {
     if (!this.validationService) {
@@ -165,7 +165,7 @@ export class AIContainer {
   }
 
   /**
-   * 鑾峰彇 AIConversationService锛堝璇濈鐞嗘湇鍔★級
+   * Get AIConversationService锛堝璇濈鐞嗘湇鍔★級
    */
   getConversationService(): AIConversationService {
     if (!this.conversationService) {
@@ -176,7 +176,7 @@ export class AIContainer {
   }
 
   /**
-   * 鑾峰彇 GoalGenerationApplicationService锛堢洰鏍囩敓鎴愭湇鍔★級
+   * Get GoalGenerationApplicationService锛堢洰鏍囩敓鎴愭湇鍔★級
    *
    * 娉ㄦ剰锛氭鏈嶅姟涓嶅啀缁戝畾鍥哄畾锟?AI Adapter
    * 姣忔璋冪敤鏃朵細鏍规嵁鐢ㄦ埛閰嶇疆鍔ㄦ€佽幏鍙栧搴旂殑 AI Provider
@@ -197,18 +197,18 @@ export class AIContainer {
   }
 
   /**
-   * 鑾峰彇 ApplicationService
+   * Get ApplicationService
    */
   getApplicationService(): AIGenerationApplicationService {
     if (!this.applicationService) {
-      // 鍒涘缓渚濊禆
+      // Create渚濊禆
       const validationService = this.getValidationService();
       const aiAdapter = this.getAIAdapter();
       const quotaRepository = this.getQuotaRepository();
       const conversationRepository = this.getConversationRepository();
       const taskRepository = this.getTaskRepository();
 
-      // 鍒涘缓 Application Service
+      // Create Application Service
       this.applicationService = new AIGenerationApplicationService(
         validationService,
         aiAdapter,
@@ -223,7 +223,7 @@ export class AIContainer {
   }
 
   /**
-   * 娓呯悊璧勬簮
+   * 娓呯悊Resource
    * 娉ㄦ剰锛氫笉鏂紑 Prisma 杩炴帴锛屽洜涓轰娇鐢ㄧ殑鏄叏灞€鍏变韩瀹炰緥
    */
   async dispose(): Promise<void> {

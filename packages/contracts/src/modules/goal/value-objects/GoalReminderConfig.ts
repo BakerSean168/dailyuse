@@ -63,21 +63,8 @@ export interface IGoalReminderConfigClient {
   enabled: boolean;
   triggers: ReminderTrigger[];
 
-  // UI 辅助属性
-  statusText: string; // "已启用 3 个提醒" / "未启用"
-  progressTriggerCount: number; // 时间进度触发器数量
-  remainingDaysTriggerCount: number; // 剩余天数触发器数量
-  activeTriggerCount: number; // 启用的触发器数量
-  triggerSummary: string; // "进度 50%, 20%; 剩余 100天, 50天"
-
   // 值对象方法
   equals(other: IGoalReminderConfigClient): boolean;
-
-  // UI 辅助方法
-  hasActiveTriggers(): boolean;
-  getProgressTriggers(): ReminderTrigger[];
-  getRemainingDaysTriggers(): ReminderTrigger[];
-  getTriggerDisplayText(trigger: ReminderTrigger): string; // "时间进度 50%" / "剩余 100 天"
 
   // DTO 转换方法
   toServerDTO(): GoalReminderConfigServerDTO;
@@ -99,11 +86,6 @@ export interface GoalReminderConfigServerDTO {
 export interface GoalReminderConfigClientDTO {
   enabled: boolean;
   triggers: ReminderTrigger[];
-  statusText: string;
-  progressTriggerCount: number;
-  remainingDaysTriggerCount: number;
-  activeTriggerCount: number;
-  triggerSummary: string;
 }
 
 /**

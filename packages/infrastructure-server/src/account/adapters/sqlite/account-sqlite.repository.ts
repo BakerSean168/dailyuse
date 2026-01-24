@@ -1,6 +1,6 @@
 /**
  * SQLite Account Repository Implementation
- * 璐︽埛鐨?SQLite 浠撳偍瀹炵幇
+ * 璐︽埛鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

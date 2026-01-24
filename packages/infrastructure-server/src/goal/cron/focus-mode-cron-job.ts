@@ -10,7 +10,7 @@ const logger = createLogger('FocusModeCronJob');
  *
  * 鑱岃矗锛?
  * - 瀹氭椂妫€鏌ュ苟鑷姩澶辨晥杩囨湡鐨勪笓娉ㄥ懆鏈?
- * - 璁板綍鎵ц鏃ュ織
+ * - Record鎵ц鏃ュ織
  * - 澶勭悊閿欒鎯呭喌
  *
  * 璋冨害棰戠巼锛氭瘡灏忔椂鎵ц涓€娆?(cron: '0 * * * *')
@@ -36,7 +36,7 @@ let cronTask: cron.ScheduledTask | null = null;
 let focusModeService: FocusModeApplicationService | null = null;
 
 /**
- * 鑾峰彇 FocusModeApplicationService 鍗曚緥
+ * Get FocusModeApplicationService 鍗曚緥
  * 寤惰繜鍔犺浇锛岄伩鍏嶅惊鐜緷璧?
  */
 async function getFocusModeService(): Promise<FocusModeApplicationService> {
@@ -98,7 +98,7 @@ export function startFocusModeCronJob(): cron.ScheduledTask {
     description: 'Check and deactivate expired focus modes',
   });
 
-  // 鍒涘缓瀹氭椂浠诲姟锛氭瘡灏忔椂鎵ц涓€娆?
+  // Create瀹氭椂浠诲姟锛氭瘡灏忔椂鎵ц涓€娆?
   cronTask = cron.schedule(
     '0 * * * *',
     () => {
@@ -141,7 +141,7 @@ export function stopFocusModeCronJob(): void {
 }
 
 /**
- * 鑾峰彇 Cron Job 杩愯鐘舵€?
+ * Get Cron Job 杩愯鐘舵€?
  *
  * @returns 鏄惁姝ｅ湪杩愯
  */

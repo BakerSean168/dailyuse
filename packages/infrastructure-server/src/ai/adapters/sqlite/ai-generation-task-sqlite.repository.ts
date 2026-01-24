@@ -1,6 +1,6 @@
 /**
  * SQLite AIGenerationTask Repository Implementation
- * AI 鐢熸垚浠诲姟鐨?SQLite 浠撳偍瀹炵幇
+ * AI 鐢熸垚浠诲姟鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

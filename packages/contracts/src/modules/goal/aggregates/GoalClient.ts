@@ -53,35 +53,6 @@ export interface GoalClientDTO {
   // ===== 子实体 DTO =====
   keyResults?: KeyResultClientDTO[] | null;
   reviews?: GoalReviewClientDTO[] | null;
-
-  // UI 计算字段
-  overallProgress: number; // 0-100
-  isDeleted: boolean;
-  isCompleted: boolean;
-  isArchived: boolean;
-  isOverdue: boolean;
-  daysRemaining?: number | null;
-  statusText: string;
-  importanceText: string;
-  // urgencyText: string; // REMOVED
-  /** 动态优先级分数 (0-100)，基于 importance + targetDate 计算 */
-  priority: number;
-  /** 优先级显示文本，如 '紧急' / '高' / '中' / '低' */
-  priorityText: string;
-  /** 优先级级别，用于 UI 颜色显示 */
-  priorityLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
-  keyResultCount: number;
-  completedKeyResultCount: number;
-  reviewCount: number;
-  hasActiveReminders: boolean; // 是否有启用的提醒
-  reminderSummary?: string | null; // 提醒摘要
-  weightedProgress?: number | null;
-  timeProgressRatio?: number | null;
-  timeProgressPercentage?: number | null;
-  timeProgressText?: string | null;
-  timeRangeSummary?: GoalTimeRangeSummary | null;
-  records?: GoalRecordClientDTO[] | null;
-  recordCount?: number;
 }
 
 // ============ 实体接口 ============
@@ -116,35 +87,6 @@ export interface GoalClient {
   createdAt: number;
   updatedAt: number;
   deletedAt?: number | null;
-
-  // UI 计算属性
-  overallProgress: number;
-  isDeleted: boolean;
-  isCompleted: boolean;
-  isArchived: boolean;
-  isOverdue: boolean;
-  daysRemaining?: number | null;
-  statusText: string;
-  importanceText: string;
-  // urgencyText: string; // REMOVED
-  /** 动态优先级分数 (0-100) */
-  priority: number;
-  /** 优先级显示文本 */
-  priorityText: string;
-  /** 优先级级别 */
-  priorityLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
-  keyResultCount: number;
-  completedKeyResultCount: number;
-  reviewCount: number;
-  hasActiveReminders: boolean;
-  reminderSummary?: string | null;
-  weightedProgress?: number | null;
-  timeProgressRatio?: number | null;
-  timeProgressPercentage?: number | null;
-  timeProgressText?: string | null;
-  timeRangeSummary?: GoalTimeRangeSummary | null;
-  records?: GoalRecordClientDTO[] | null;
-  recordCount?: number;
 
   // ===== 子实体集合（聚合根统一管理） =====
 

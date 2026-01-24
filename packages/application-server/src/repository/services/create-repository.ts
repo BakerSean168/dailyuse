@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Create Repository
  *
- * 鍒涘缓浠撳偍
+ * Create repository
  */
 
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';

@@ -1,6 +1,6 @@
 /**
  * SQLite Resource Repository Implementation
- * Resource 瀹炰綋鐨?SQLite 浠撳偍瀹炵�?
+ * Resource 瀹炰綋鐨?SQLite Repository瀹炵�?
  */
 
 import type Database from 'better-sqlite3';

@@ -14,7 +14,7 @@ import {
 import { prisma } from '../../shared/config/prisma';
 
 /**
- * 鍒濆鍖?API 浠撳偍灞?
+ * 鍒濆鍖?API Repository灞?
  *
  * @returns 鍒濆鍖栧悗鐨勬彁渚涜€呭疄渚?
  * @throws 濡傛灉鍒濆鍖栧け璐?
@@ -41,7 +41,7 @@ export async function initializeApiRepositories(): Promise<IProviderInitializer>
 }
 
 /**
- * 娓呯悊 API 浠撳偍灞?
+ * 娓呯悊 API Repository灞?
  *
  * @param provider 鎻愪緵鑰呭疄渚?
  */
@@ -58,7 +58,7 @@ export async function cleanupApiRepositories(provider: IProviderInitializer): Pr
 }
 
 /**
- * 妫€鏌?API 浠撳偍鍋ュ悍鐘舵€?
+ * 妫€鏌?API Repository鍋ュ悍鐘舵€?
  */
 export async function healthCheckApiRepositories(): Promise<boolean> {
   const container = RepositoryContainer.getInstance();

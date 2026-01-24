@@ -22,7 +22,7 @@ export class NotificationContainer {
   private constructor() {}
 
   /**
-   * 鑾峰彇瀹瑰櫒鍗曚緥
+   * Get瀹瑰櫒鍗曚緥
    */
   static getInstance(): NotificationContainer {
     if (!NotificationContainer.instance) {
@@ -63,7 +63,7 @@ export class NotificationContainer {
   }
 
   /**
-   * 鑾峰彇 NotificationRepository
+   * Get NotificationRepository
    */
   getNotificationRepository(): INotificationRepository {
     if (!this.notificationRepository) {
@@ -73,7 +73,7 @@ export class NotificationContainer {
   }
 
   /**
-   * 鑾峰彇 NotificationPreferenceRepository
+   * Get NotificationPreferenceRepository
    */
   getPreferenceRepository(): INotificationPreferenceRepository {
     if (!this.preferenceRepository) {
@@ -83,7 +83,7 @@ export class NotificationContainer {
   }
 
   /**
-   * 鑾峰彇 NotificationTemplateRepository
+   * Get NotificationTemplateRepository
    */
   getTemplateRepository(): INotificationTemplateRepository {
     if (!this.templateRepository) {
@@ -104,7 +104,7 @@ export class NotificationContainer {
   }
 
   /**
-   * 娓呯┖鎵€鏈夋敞鍐岀殑渚濊禆
+   * 娓呯┖All鏈夋敞鍐岀殑渚濊禆
    */
   clear(): void {
     this.notificationRepository = null;

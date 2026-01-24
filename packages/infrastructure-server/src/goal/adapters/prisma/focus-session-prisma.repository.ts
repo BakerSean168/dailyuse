@@ -45,13 +45,13 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
   }
 
   /**
-   * 淇濆瓨棰嗗煙瀹炰綋鍒版暟鎹簱
-   * 浣跨敤 upsert 妯″紡锛堝瓨鍦ㄥ垯鏇存柊锛屼笉瀛樺湪鍒欏垱寤猴級
+   * Save棰嗗煙瀹炰綋鍒版暟鎹簱
+   * 浣跨敤 upsert 妯″紡锛堝瓨鍦ㄥ垯Update锛屼笉瀛樺湪鍒欏垱寤猴級
    */
   async save(session: FocusSession): Promise<void> {
     const persistence = session.toPersistenceDTO();
 
-    // 鍑嗗鏁版嵁锛堝彲鏇存柊鐨勫瓧娈碉級
+    // 鍑嗗鏁版嵁锛堝彲Update鐨勫瓧娈碉級
     const data = {
       goalUuid: persistence.goalUuid,
       status: persistence.status,
@@ -201,7 +201,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
   }
 
   /**
-   * 鍒犻櫎浼氳瘽锛堢墿鐞嗗垹闄わ級
+   * Delete浼氳瘽锛堢墿鐞嗗垹闄わ級
    */
   async delete(uuid: string): Promise<void> {
     await this.prisma.focusSession.delete({

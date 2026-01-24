@@ -4,7 +4,7 @@
  *
  * 鑱岃矗锟?
  * - 鐩戞帶瀹氭椂浠诲姟鎵ц鐘讹拷?
- * - 璁板綍浠诲姟鎵ц鏃堕棿鍜岀粨锟?
+ * - Record浠诲姟鎵ц鏃堕棿鍜岀粨锟?
  * - 鎻愪緵鎬ц兘鎸囨爣鏀堕泦
  *
  * @module Schedule/Infrastructure/Monitoring
@@ -40,7 +40,7 @@ export class ScheduleMonitor {
   }
 
   /**
-   * 璁板綍浠诲姟鎵ц
+   * Record浠诲姟鎵ц
    */
   recordExecution(metrics: TaskExecutionMetrics): void {
     this.executionMetrics.push(metrics);
@@ -61,7 +61,7 @@ export class ScheduleMonitor {
   }
 
   /**
-   * 鑾峰彇浠诲姟鐨勬墽琛屽巻锟?
+   * Get浠诲姟鐨勬墽琛屽巻锟?
    */
   getTaskHistory(taskUuid: string, limit: number = 10): TaskExecutionMetrics[] {
     return this.executionMetrics
@@ -70,14 +70,14 @@ export class ScheduleMonitor {
   }
 
   /**
-   * 鑾峰彇鏈€杩戞墽琛岀殑浠诲姟
+   * Get鏈€杩戞墽琛岀殑浠诲姟
    */
   getRecentExecutions(limit: number = 10): TaskExecutionMetrics[] {
     return this.executionMetrics.slice(-limit);
   }
 
   /**
-   * 鑾峰彇鎵ц鎴愬姛锟?
+   * Get鎵ц鎴愬姛锟?
    */
   getSuccessRate(): number {
     if (this.executionMetrics.length === 0) return 0;

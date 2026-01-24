@@ -44,14 +44,14 @@ export abstract class BaseAIAdapter implements IAIAdapter {
   abstract healthCheck(): Promise<boolean>;
 
   /**
-   * 鑾峰彇鎻愪緵鍟嗗悕绉?
+   * Get鎻愪緵鍟嗗悕绉?
    */
   getProvider(): AIProvider {
     return this.provider;
   }
 
   /**
-   * 鑾峰彇榛樿妯″瀷
+   * Get榛樿妯″瀷
    */
   getDefaultModel(): AIModel {
     return this.defaultModel;

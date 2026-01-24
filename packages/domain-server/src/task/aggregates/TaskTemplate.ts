@@ -3,13 +3,14 @@
  * 任务模板 - 聚合�?
  */
 
-import type { TaskTemplateClientDTO, TaskTemplatePersistenceDTO, TaskTemplateServer, TaskTemplateServerDTO } from '@dailyuse/contracts/task';
-import { RecurrenceFrequency, TimeType } from '@dailyuse/contracts/task';
-import {
-  TaskType,
-  TaskTemplateStatus,
-  RecurrenceEndConditionType,
+import type {
+  TaskTemplateClientDTO,
+  TaskTemplatePersistenceDTO,
+  TaskTemplateServer,
+  TaskTemplateServerDTO,
 } from '@dailyuse/contracts/task';
+import { RecurrenceFrequency, TimeType } from '@dailyuse/contracts/task';
+import { TaskType, TaskTemplateStatus, RecurrenceEndConditionType } from '@dailyuse/contracts/task';
 import { ImportanceLevel, PriorityLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
 import { calculateTaskPriority } from '../services/priority-calculator.service';
@@ -150,6 +151,10 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
 
   public get accountUuid(): string {
     return this._accountUuid;
+  }
+
+  public get name(): string {
+    return this._title;
   }
 
   public get title(): string {
@@ -1051,12 +1056,12 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
 
   /**
    * 获取优先级等级和分数 (Story 1.2)
-   * 
+   *
    * 使用纯函数 calculateTaskPriority 计算优先级分数，基于：
    * - Importance（重要性）：Task 实体固有属性
    * - Due Date（截止日期）：用于计算时间紧急程度
    * - Current Time（当前时间）：基准时间点
-   * 
+   *
    * 对于一次性任务：根据分数映射到 5 级优先级等级
    * 对于循环任务：返回最低优先级
    */
@@ -1064,19 +1069,19 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     if (this._taskType !== TaskType.ONE_TIME) {
       return { level: PriorityLevel.Low, score: 0 };
     }
-    
+
     const currentTime = new Date();
     const dueDateObj = this._dueDate ? new Date(this._dueDate) : null;
-    
+
     const score = calculateTaskPriority(this._importance, dueDateObj, currentTime);
     const level = this.scoreToPriorityLevel(score);
-    
+
     return { level, score };
   }
 
   /**
    * 将优先级分数映射到优先级等级
-   * 
+   *
    * 分数范围：[0, 100]
    * - [80, 100]: Critical（紧急）- 需要立即处理
    * - [60, 80): High（高）- 今天必须处理
@@ -1261,7 +1266,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
-      title: this._title,
+      name: this._title,
       description: this._description,
       taskType: this._taskType,
       timeConfig: this._timeConfig?.toServerDTO() ?? null,
@@ -1303,18 +1308,19 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
     // ONE_TIME 任务的优先级计算
-    const priority = this._taskType === 'ONE_TIME' ? this.getPriority() : null;
+    const priority = this._taskType === 'ONE_TIME' ? this.getPriority() : undefined;
 
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
-      title: this._title,
+      name: this._title,
       description: this._description,
       taskType: this._taskType,
       timeConfig: this._timeConfig?.toClientDTO() ?? null,
       recurrenceRule: this._recurrenceRule?.toClientDTO() ?? null,
       reminderConfig: this._reminderConfig?.toClientDTO() ?? null,
       importance: this._importance,
+      priority: priority?.score,
       goalBinding: this._goalBinding?.toClientDTO() ?? null,
       folderUuid: this._folderUuid,
       tags: [...this._tags],
@@ -1325,7 +1331,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       deletedAt: this._deletedAt,
-      // ONE_TIME 任务新字�?
+      // ONE_TIME 任务新字段
       goalUuid: this._goalUuid,
       keyResultUuid: this._keyResultUuid,
       parentTaskUuid: this._parentTaskUuid,
@@ -1340,27 +1346,10 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       blockingReason: this._blockingReason,
       history: includeChildren ? this._history.map((h) => h.toClientDTO()) : undefined,
       instances: includeChildren ? this._instances.map((i) => i.toClientDTO()) : undefined,
-      displayTitle: this._title,
-      taskTypeText: this.getTaskTypeText(),
-      timeDisplayText: this._timeConfig?.toClientDTO()?.displayText ?? null,
-      recurrenceText: this._recurrenceRule?.toClientDTO().recurrenceDisplayText ?? null,
-      importanceText: this.getImportanceText(),
-      statusText: this.getStatusText(),
-      hasReminder: this.hasReminder(),
-      reminderText: this._reminderConfig?.toClientDTO().reminderSummary ?? null,
-      isLinkedToGoal: this.isLinkedToGoal(),
-      goalLinkText: this._goalBinding?.toClientDTO().displayText ?? null,
       instanceCount: totalCount,
       completedInstanceCount: completedCount,
       pendingInstanceCount: pendingCount,
       completionRate,
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString('zh-CN'),
-      formattedUpdatedAt: new Date(this._updatedAt).toLocaleString('zh-CN'),
-      // ONE_TIME 任务额外的展示字�?
-      priorityLevel: priority?.level ?? null,
-      priorityScore: priority?.score ?? null,
-      isOverdue: this._taskType === 'ONE_TIME' ? this.isOverdue() : null,
-      daysUntilDue: this._taskType === 'ONE_TIME' ? this.getDaysUntilDue() : null,
     };
   }
 
@@ -1368,7 +1357,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
-      title: this._title,
+      name: this._title,
       description: this._description,
       taskType: this._taskType,
 
@@ -1484,7 +1473,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
 
   /**
    * 创建循环任务（便捷工厂方法）
-   * 
+   *
    * Story 1.1+1.2：已移除 urgency 参数
    * 循环任务的优先级不通过 getPriority() 计算（返回最低优先级）
    */
@@ -1527,7 +1516,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
 
   /**
    * 创建新的任务模板（通用工厂方法，保留向后兼容）
-   * 
+   *
    * 支持一次性任务和循环任务的统一创建接口
    * Story 1.1+1.2：urgency 已移除，优先级改为时间感知的计算
    */
@@ -1599,7 +1588,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     const template = new TaskTemplate(
       {
         accountUuid: dto.accountUuid,
-        title: dto.title,
+        title: dto.name,
         description: dto.description,
         taskType: dto.taskType,
         timeConfig: dto.timeConfig ? TaskTimeConfig.fromServerDTO(dto.timeConfig) : null,
@@ -1699,7 +1688,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
 
     const props: TaskTemplateProps = {
       accountUuid: dto.accountUuid,
-      title: dto.title,
+      title: dto.name,
       description: dto.description,
       taskType: dto.taskType as TaskType,
       timeConfig,
@@ -1810,7 +1799,3 @@ interface TaskTemplateProps {
   updatedAt: number;
   deletedAt?: number | null;
 }
-
-
-
-

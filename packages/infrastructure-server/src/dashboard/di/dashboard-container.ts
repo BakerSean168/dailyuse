@@ -47,7 +47,7 @@ export class DashboardContainer {
   private constructor() {}
 
   /**
-   * 鑾峰彇瀹瑰櫒鍗曚緥銆?
+   * Get瀹瑰櫒鍗曚緥銆?
    * @returns {DashboardContainer}
    */
   static getInstance(): DashboardContainer {
@@ -58,7 +58,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 鑾峰彇 TaskStatistics 浠撳偍瀹炰緥銆?
+   * Get TaskStatistics Repository瀹炰緥銆?
    * @returns {ITaskStatisticsRepository}
    */
   getTaskStatisticsRepository(): ITaskStatisticsRepository {
@@ -66,7 +66,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 鑾峰彇 GoalStatistics 浠撳偍瀹炰緥銆?
+   * Get GoalStatistics Repository瀹炰緥銆?
    * @returns {IGoalStatisticsRepository}
    */
   getGoalStatisticsRepository(): IGoalStatisticsRepository {
@@ -74,7 +74,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 鑾峰彇 ReminderStatistics 浠撳偍瀹炰緥銆?
+   * Get ReminderStatistics Repository瀹炰緥銆?
    * @returns {IReminderStatisticsRepository}
    */
   getReminderStatisticsRepository(): IReminderStatisticsRepository {
@@ -82,7 +82,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 鑾峰彇 ScheduleStatistics 浠撳偍瀹炰緥銆?
+   * Get ScheduleStatistics Repository瀹炰緥銆?
    * @returns {IScheduleStatisticsRepository}
    */
   getScheduleStatisticsRepository(): IScheduleStatisticsRepository {
@@ -90,7 +90,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 鑾峰彇缂撳瓨鏈嶅姟瀹炰緥锛堟噿鍔犺浇锛夈€?
+   * Get缂撳瓨鏈嶅姟瀹炰緥锛堟噿鍔犺浇锛夈€?
    * @returns {StatisticsCacheService}
    */
   getCacheService(): StatisticsCacheService {
@@ -101,7 +101,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 鑾峰彇 Dashboard 閰嶇疆浠撳偍瀹炰緥锛堟噿鍔犺浇锛夈€?
+   * Get Dashboard 閰嶇疆Repository瀹炰緥锛堟噿鍔犺浇锛夈€?
    * @returns {IDashboardConfigRepository}
    */
   getDashboardConfigRepository(): IDashboardConfigRepository {

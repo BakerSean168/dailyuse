@@ -1,6 +1,6 @@
 /**
  * SQLite FocusMode Repository Implementation
- * 涓撴敞鍛ㄦ湡鐨?SQLite 浠撳偍瀹炵幇
+ * 涓撴敞鍛ㄦ湡鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

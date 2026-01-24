@@ -38,7 +38,7 @@ export interface IDatabaseProviderConfig {
   prisma?: any;
   /** SQLite 鏁版嵁搴撹矾寰勶紙褰撲娇鐢?SQLite 鏃讹級 */
   sqliteDbPath?: string;
-  /** SQLite 鏁版嵁搴撹繛鎺ュ疄渚嬶紙褰撳凡鍒涘缓鏃讹級 */
+  /** SQLite 鏁版嵁搴撹繛鎺ュ疄渚嬶紙褰撳凡Create鏃讹級 */
   sqliteDb?: any;
   /** 鍏朵粬鑷畾涔夐厤缃?*/
   [key: string]: any;
@@ -57,12 +57,12 @@ export interface IProviderInitContext {
  */
 export interface IProviderInitializer {
   /**
-   * 鍒濆鍖栨彁渚涜€呭苟娉ㄥ唽鎵€鏈変粨鍌ㄥ疄鐜?
+   * 鍒濆鍖栨彁渚涜€呭苟娉ㄥ唽All鏈変粨鍌ㄥ疄鐜?
    */
   initialize(context: IProviderInitContext): Promise<void>;
 
   /**
-   * 娓呯悊璧勬簮锛堝鍏抽棴杩炴帴锛?
+   * 娓呯悊Resource锛堝鍏抽棴杩炴帴锛?
    */
   cleanup(): Promise<void>;
 
@@ -92,7 +92,7 @@ export class DatabaseProviderFactory {
   private constructor() {}
 
   /**
-   * 鑾峰彇宸ュ巶鍗曚緥
+   * Get宸ュ巶鍗曚緥
    */
   static getInstance(): DatabaseProviderFactory {
     if (!DatabaseProviderFactory.instance) {
@@ -140,7 +140,7 @@ export class DatabaseProviderFactory {
    * 鍒濆鍖栨暟鎹簱鎻愪緵鑰?
    *
    * @param config 鎻愪緵鑰呴厤缃?
-   * @param container 浠撳偍瀹瑰櫒
+   * @param container Repository瀹瑰櫒
    * @returns 鍒濆鍖栧悗鐨勬彁渚涜€呭垵濮嬪寲鍣ㄥ疄渚?
    * @throws 濡傛灉鎻愪緵鑰呬笉瀛樺湪
    */
@@ -170,7 +170,7 @@ export class DatabaseProviderFactory {
   }
 
   /**
-   * 鑾峰彇娉ㄥ唽鐨勬墍鏈夋彁渚涜€呭悕绉?
+   * Get娉ㄥ唽鐨勬墍鏈夋彁渚涜€呭悕绉?
    */
   getRegisteredProviders(): string[] {
     return Array.from(DatabaseProviderFactory.initializers.keys());

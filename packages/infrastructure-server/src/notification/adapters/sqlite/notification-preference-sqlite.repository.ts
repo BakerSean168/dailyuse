@@ -1,6 +1,6 @@
 /**
  * SQLite NotificationPreference Repository Implementation
- * 閫氱煡鍋忓ソ鐨?SQLite 浠撳偍瀹炵幇
+ * 閫氱煡鍋忓ソ鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

@@ -1,6 +1,6 @@
 /**
  * SQLite DashboardConfig Repository Implementation
- * 浠〃鏉块厤缃殑 SQLite 浠撳偍瀹炵幇
+ * 浠〃鏉块厤缃殑 SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

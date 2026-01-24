@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Get Folder
  *
- * 鑾峰彇鏂囦欢澶硅鎯?
+ * Get鏂囦欢澶硅鎯?
  */
 
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';

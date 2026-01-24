@@ -5,8 +5,8 @@
  * 鑱岃矗锛?
  * - 姣忓垎閽熸壂鎻忛渶瑕佽Е鍙戠殑鎻愰啋妯℃澘
  * - 璋冪敤 ReminderSchedulerService 鎵ц瑙﹀彂閫昏緫
- * - 璁板綍瑙﹀彂鍘嗗彶
- * - 鏇存柊涓嬫瑙﹀彂鏃堕棿
+ * - Record瑙﹀彂鍘嗗彶
+ * - Update涓嬫瑙﹀彂鏃堕棿
  * 
  * 瑙﹀彂棰戠巼锛氭瘡鍒嗛挓鎵ц涓€娆?
  * Cron Expression: '* * * * *'
@@ -28,7 +28,7 @@ class ReminderTriggerCronJob {
   private constructor() {}
 
   /**
-   * 鑾峰彇鍗曚緥瀹炰緥
+   * Get鍗曚緥瀹炰緥
    */
   static async getInstance(): Promise<ReminderTriggerCronJob> {
     if (!ReminderTriggerCronJob.instance) {
@@ -48,17 +48,17 @@ class ReminderTriggerCronJob {
       const statsRepo = container.getReminderStatisticsRepository();
       const groupRepo = container.getReminderGroupRepository();
       
-      // 鍒涘缓 ControlService锛堥渶瑕?group repository锛?
+      // Create ControlService锛堥渶瑕?group repository锛?
       const controlService = container.getControlService();
       
-      // 鍒涘缓 TriggerService
+      // Create TriggerService
       const triggerService = new ReminderTriggerService(
         templateRepo,
         statsRepo,
         controlService,
       );
 
-      // 鍒涘缓 SchedulerService
+      // Create SchedulerService
       this.schedulerService = new ReminderSchedulerService(
         templateRepo,
         statsRepo,
@@ -162,7 +162,7 @@ class ReminderTriggerCronJob {
   }
 
   /**
-   * 鑾峰彇浠诲姟鐘舵€?
+   * Get浠诲姟鐘舵€?
    */
   getStatus(): { isRunning: boolean; isScheduled: boolean } {
     return {

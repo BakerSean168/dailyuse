@@ -1,6 +1,6 @@
 /**
  * SQLite PendingChange Repository Implementation
- * 寰呭鐞嗗彉鏇寸殑 SQLite 浠撳偍瀹炵幇
+ * 寰呭鐞嗗彉鏇寸殑 SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

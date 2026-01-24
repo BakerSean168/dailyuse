@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Delete Repository
  *
- * 鍒犻櫎浠撳偍
+ * Delete repository
  */
 
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';

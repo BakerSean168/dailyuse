@@ -1,6 +1,6 @@
 /**
  * SQLite Folder Repository Implementation
- * Folder 瀹炰綋鐨?SQLite 浠撳偍瀹炵�?
+ * Folder 瀹炰綋鐨?SQLite Repository瀹炵�?
  */
 
 import type Database from 'better-sqlite3';

@@ -1,6 +1,6 @@
 /**
  * TaskDependency Prisma Repository
- * 浠诲姟渚濊禆鍏崇郴 Prisma 浠撳偍瀹炵幇
+ * 浠诲姟渚濊禆鍏崇郴 Prisma Repository瀹炵幇
  * 鏍囧噯 Express/TypeScript 妯″紡 - 绉婚櫎浜?NestJS @Injectable 瑁呴グ鍣?
  */
 
@@ -34,7 +34,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
   }
 
   /**
-   * 鍒涘缓渚濊禆鍏崇郴
+   * Create渚濊禆鍏崇郴
    */
   async create(data: CreateTaskDependencyRequest): Promise<TaskDependencyServerDTO> {
     const dependency = await this.prisma.taskDependency.create({
@@ -104,7 +104,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
   }
 
   /**
-   * 閫掑綊鏌ユ壘鎵€鏈夊墠缃换鍔★紙瀹屾暣渚濊禆閾撅級
+   * 閫掑綊鏌ユ壘All鏈夊墠缃换鍔★紙瀹屾暣渚濊禆閾撅級
    */
   async findAllPredecessors(taskUuid: string): Promise<string[]> {
     const visited = new Set<string>();
@@ -142,7 +142,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
   }
 
   /**
-   * 閫掑綊鏌ユ壘鎵€鏈夊悗缁换鍔★紙瀹屾暣渚濊禆閾撅級
+   * 閫掑綊鏌ユ壘All鏈夊悗缁换鍔★紙瀹屾暣渚濊禆閾撅級
    */
   async findAllSuccessors(taskUuid: string): Promise<string[]> {
     const visited = new Set<string>();
@@ -180,7 +180,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
   }
 
   /**
-   * 鍒犻櫎渚濊禆鍏崇郴
+   * Delete渚濊禆鍏崇郴
    */
   async delete(uuid: string): Promise<void> {
     await this.prisma.taskDependency.delete({
@@ -189,7 +189,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
   }
 
   /**
-   * 鍒犻櫎涓庢寚瀹氫换鍔＄浉鍏崇殑鎵€鏈変緷璧栧叧绯?
+   * Delete涓庢寚瀹氫换鍔＄浉鍏崇殑All鏈変緷璧栧叧绯?
    */
   async deleteByTask(taskUuid: string): Promise<void> {
     await this.prisma.taskDependency.deleteMany({
@@ -200,7 +200,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
   }
 
   /**
-   * 鏇存柊渚濊禆鍏崇郴
+   * Update渚濊禆鍏崇郴
    */
   async update(uuid: string, data: UpdateTaskDependencyRequest): Promise<TaskDependencyServerDTO> {
     const dependency = await this.prisma.taskDependency.update({
@@ -215,11 +215,11 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
   }
 
   /**
-   * 鑾峰彇璐︽埛鐨勬墍鏈変緷璧栧叧绯?
+   * Get璐︽埛鐨勬墍鏈変緷璧栧叧绯?
    * 閫氳繃鍏宠仈鐨勪换鍔℃ā鏉胯幏鍙栬处鎴蜂俊鎭?
    */
   async findAllByAccount(accountUuid: string): Promise<TaskDependencyServerDTO[]> {
-    // 鍏堣幏鍙栬处鎴风殑鎵€鏈変换鍔℃ā鏉?UUID
+    // 鍏堣幏鍙栬处鎴风殑All鏈変换鍔℃ā鏉?UUID
     const templates = await this.prisma.taskTemplate.findMany({
       where: { accountUuid },
       select: { uuid: true },
@@ -231,7 +231,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
       return [];
     }
 
-    // 鏌ユ壘鎵€鏈夌浉鍏崇殑渚濊禆鍏崇郴
+    // 鏌ユ壘All鏈夌浉鍏崇殑渚濊禆鍏崇郴
     const dependencies = await this.prisma.taskDependency.findMany({
       where: {
         OR: [

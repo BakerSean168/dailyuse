@@ -63,14 +63,6 @@ export interface IKeyResultProgressClient {
   currentValue: number;
   unit?: string | null;
 
-  // UI 辅助属性
-  progressPercentage: number; // 完成百分比 0-100
-  progressText: string; // "50/100 次" / "50%"
-  progressBarColor: string; // 进度条颜色
-  isCompleted: boolean;
-  valueTypeText: string; // "累计值" / "绝对值" / "百分比" / "二元"
-  aggregationMethodText: string; // "求和" / "求平均" / "求最大值" / "求最小值" / "取最后一次"
-
   // 值对象方法
   equals(other: IKeyResultProgressClient): boolean;
 
@@ -104,12 +96,6 @@ export interface KeyResultProgressClientDTO {
   targetValue: number;
   currentValue: number;
   unit?: string | null;
-  progressPercentage: number;
-  progressText: string;
-  progressBarColor: string;
-  isCompleted: boolean;
-  valueTypeText: string;
-  aggregationMethodText: string;
 }
 
 /**

@@ -1,13 +1,20 @@
-﻿/**
+/**
  * Search Application Service
  * Story 11.2: Obsidian 椋庢牸鎼滅储
  * Story 11.6: 楂樼骇鎼滅储鍔熻兘锛坧roperty 妯″紡锛?
  */
 
-import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, SearchRequest, SearchResponse, SearchResultItem, MatchType } from '@dailyuse/contracts/repository';
+import type {
+  RepositoryServerDTO,
+  ResourceServerDTO,
+  FolderServerDTO,
+  SearchRequest,
+  SearchResponse,
+  SearchResultItem,
+  MatchType,
+} from '@dailyuse/contracts/repository';
 import { Resource } from '@dailyuse/domain-server/repository';
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
-
 
 export class SearchApplicationService {
   private resourceRepository: IResourceRepository;
@@ -23,10 +30,8 @@ export class SearchApplicationService {
     const startTime = Date.now();
     const results: SearchResultItem[] = [];
 
-    // 1. 鑾峰彇鎵€鏈夎祫婧?
-    const resources = await this.resourceRepository.findByRepositoryUuid(
-      request.repositoryUuid
-    );
+    // 1. GetAll鏈夎祫婧?
+    const resources = await this.resourceRepository.findByRepositoryUuid(request.repositoryUuid);
 
     // 2. 鏍规嵁鎼滅储妯″紡绛涢€?
     for (const resource of resources) {
@@ -59,14 +64,14 @@ export class SearchApplicationService {
   }
 
   /**
-   * 鎼滅储鍗曚釜璧勬簮
+   * 鎼滅储鍗曚釜Resource
    */
   private async searchResource(
     resource: Resource,
-    request: SearchRequest
+    request: SearchRequest,
   ): Promise<SearchResultItem | null> {
     const persistence = resource.toPersistenceDTO();
-    
+
     const searchResult: SearchResultItem = {
       resourceUuid: persistence.uuid,
       resourceName: persistence.name,
@@ -75,8 +80,8 @@ export class SearchApplicationService {
       matchType: this.getMatchType(request.mode),
       matches: [],
       matchCount: 0,
-      createdAt: new Date(Number(persistence\.createdAt)).toISOString(),
-      updatedAt: new Date(Number(persistence\.updatedAt)).toISOString(),
+      createdAt: new Date(Number(persistence.createdAt)).toISOString(),
+      updatedAt: new Date(Number(persistence.updatedAt)).toISOString(),
       size: persistence.size,
     };
 
@@ -110,21 +115,17 @@ export class SearchApplicationService {
   }
 
   /**
-   * 鎼滅储鏂囦欢鍚?
+   * 鎼滅储鏂囦欢And
    */
   private searchInFilename(
     resource: Resource,
     request: SearchRequest,
-    result: SearchResultItem
+    result: SearchResultItem,
   ): void {
     const persistence = resource.toPersistenceDTO();
-    const searchText = request.caseSensitive
-      ? persistence.name
-      : persistence.name.toLowerCase();
+    const searchText = request.caseSensitive ? persistence.name : persistence.name.toLowerCase();
 
-    const query = request.caseSensitive
-      ? request.query
-      : request.query.toLowerCase();
+    const query = request.caseSensitive ? request.query : request.query.toLowerCase();
 
     if (searchText.includes(query)) {
       result.matches.push({
@@ -140,18 +141,12 @@ export class SearchApplicationService {
   /**
    * 鎼滅储鏍囩
    */
-  private searchInTags(
-    resource: Resource,
-    request: SearchRequest,
-    result: SearchResultItem
-  ): void {
+  private searchInTags(resource: Resource, request: SearchRequest, result: SearchResultItem): void {
     const persistence = resource.toPersistenceDTO();
     const metadata = JSON.parse(persistence.metadata);
     const tags = metadata?.tags || [];
-    
-    const query = request.caseSensitive
-      ? request.query
-      : request.query.toLowerCase();
+
+    const query = request.caseSensitive ? request.query : request.query.toLowerCase();
 
     tags.forEach((tag: string, index: number) => {
       const tagText = request.caseSensitive ? tag : tag.toLowerCase();
@@ -171,19 +166,11 @@ export class SearchApplicationService {
   /**
    * 鎼滅储璺緞
    */
-  private searchInPath(
-    resource: Resource,
-    request: SearchRequest,
-    result: SearchResultItem
-  ): void {
+  private searchInPath(resource: Resource, request: SearchRequest, result: SearchResultItem): void {
     const persistence = resource.toPersistenceDTO();
-    const searchText = request.caseSensitive
-      ? persistence.path
-      : persistence.path.toLowerCase();
+    const searchText = request.caseSensitive ? persistence.path : persistence.path.toLowerCase();
 
-    const query = request.caseSensitive
-      ? request.query
-      : request.query.toLowerCase();
+    const query = request.caseSensitive ? request.query : request.query.toLowerCase();
 
     if (searchText.includes(query)) {
       result.matches.push({
@@ -204,10 +191,10 @@ export class SearchApplicationService {
   private searchInProperty(
     resource: Resource,
     request: SearchRequest,
-    result: SearchResultItem
+    result: SearchResultItem,
   ): void {
     const persistence = resource.toPersistenceDTO();
-    
+
     // 鍙悳绱㈡枃鏈被鍨嬫枃浠?
     const textTypes = ['MARKDOWN', 'TEXT', 'MD', 'TXT'];
     if (!textTypes.includes(String(persistence.type).toUpperCase())) {
@@ -216,7 +203,7 @@ export class SearchApplicationService {
 
     try {
       const content = persistence.content || '';
-      
+
       // 瑙ｆ瀽鏌ヨ锛歔property]:value
       const propertyQueryMatch = request.query.match(/\[([^\]]+)\]:(.+)/);
       if (!propertyQueryMatch) {
@@ -238,23 +225,31 @@ export class SearchApplicationService {
         // 绠€鍗曠殑 YAML 瑙ｆ瀽锛堥伩鍏嶅紩鍏?yaml 搴擄級
         const frontmatterText = frontmatterMatch[1];
         const lines = frontmatterText.split('\n');
-        
+
         let currentProperty = '';
         let currentValue: string | string[] = '';
         let inArray = false;
         let arrayValues: string[] = [];
-        
+
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i].trim();
-          
+
           // 璺宠繃绌鸿鍜屾敞閲?
           if (!line || line.startsWith('#')) continue;
-          
+
           // 灞炴€у畾涔?
           if (line.includes(':') && !line.startsWith('-')) {
-            // 淇濆瓨涓婁竴涓睘鎬х殑鏁扮粍鍊?
+            // Save涓婁竴涓睘鎬х殑鏁扮粍鍊?
             if (inArray && currentProperty) {
-              if (this.matchPropertyValue(currentProperty, arrayValues, propertyName, searchValue, request.caseSensitive)) {
+              if (
+                this.matchPropertyValue(
+                  currentProperty,
+                  arrayValues,
+                  propertyName,
+                  searchValue,
+                  request.caseSensitive,
+                )
+              ) {
                 result.matches.push({
                   lineNumber: i,
                   lineContent: `${currentProperty}: ${JSON.stringify(arrayValues)}`,
@@ -264,12 +259,12 @@ export class SearchApplicationService {
                 result.matchCount++;
               }
             }
-            
+
             // 瑙ｆ瀽鏂板睘鎬?
             const [key, ...valueParts] = line.split(':');
             currentProperty = key.trim();
             const valueText = valueParts.join(':').trim();
-            
+
             if (valueText === '[' || valueText === '') {
               // 鏁扮粍寮€濮?
               inArray = true;
@@ -278,9 +273,17 @@ export class SearchApplicationService {
               // 鍗曚釜鍊?
               inArray = false;
               currentValue = valueText;
-              
+
               // 妫€鏌ュ尮閰?
-              if (this.matchPropertyValue(currentProperty, currentValue, propertyName, searchValue, request.caseSensitive)) {
+              if (
+                this.matchPropertyValue(
+                  currentProperty,
+                  currentValue,
+                  propertyName,
+                  searchValue,
+                  request.caseSensitive,
+                )
+              ) {
                 result.matches.push({
                   lineNumber: i + 1,
                   lineContent: line,
@@ -296,10 +299,18 @@ export class SearchApplicationService {
             arrayValues.push(arrayValue);
           }
         }
-        
+
         // 澶勭悊鏈€鍚庝竴涓暟缁?
         if (inArray && currentProperty) {
-          if (this.matchPropertyValue(currentProperty, arrayValues, propertyName, searchValue, request.caseSensitive)) {
+          if (
+            this.matchPropertyValue(
+              currentProperty,
+              arrayValues,
+              propertyName,
+              searchValue,
+              request.caseSensitive,
+            )
+          ) {
             result.matches.push({
               lineNumber: lines.length,
               lineContent: `${currentProperty}: ${JSON.stringify(arrayValues)}`,
@@ -325,7 +336,7 @@ export class SearchApplicationService {
     currentValue: string | string[],
     targetProperty: string,
     searchValue: string,
-    caseSensitive?: boolean
+    caseSensitive?: boolean,
   ): boolean {
     // 灞炴€у悕鍖归厤锛堝拷鐣ュぇ灏忓啓锛?
     if (currentProperty.toLowerCase() !== targetProperty.toLowerCase()) {
@@ -333,17 +344,14 @@ export class SearchApplicationService {
     }
 
     // 鍊煎尮閰?
-    const normalizeText = (text: string) => 
-      caseSensitive ? text : text.toLowerCase();
+    const normalizeText = (text: string) => (caseSensitive ? text : text.toLowerCase());
 
     const normalizedSearch = normalizeText(searchValue);
 
     if (typeof currentValue === 'string') {
       return normalizeText(currentValue).includes(normalizedSearch);
     } else if (Array.isArray(currentValue)) {
-      return currentValue.some(v => 
-        normalizeText(String(v)).includes(normalizedSearch)
-      );
+      return currentValue.some((v) => normalizeText(String(v)).includes(normalizedSearch));
     }
 
     return false;
@@ -355,10 +363,10 @@ export class SearchApplicationService {
   private searchInContent(
     resource: Resource,
     request: SearchRequest,
-    result: SearchResultItem
+    result: SearchResultItem,
   ): void {
     const persistence = resource.toPersistenceDTO();
-    
+
     // 鍙悳绱㈡枃鏈被鍨嬫枃浠?
     const textTypes = ['MARKDOWN', 'TEXT', 'MD', 'TXT'];
     if (!textTypes.includes(String(persistence.type).toUpperCase())) {
@@ -370,9 +378,7 @@ export class SearchApplicationService {
       const content = persistence.content || '';
       const lines = content.split('\n');
 
-      const query = request.caseSensitive
-        ? request.query
-        : request.query.toLowerCase();
+      const query = request.caseSensitive ? request.query : request.query.toLowerCase();
 
       lines.forEach((line, index) => {
         const lineText = request.caseSensitive ? line : line.toLowerCase();
@@ -386,7 +392,7 @@ export class SearchApplicationService {
         // 鏌ユ壘鍖归厤
         const startIndex = lineText.indexOf(query);
         if (startIndex !== -1) {
-          // 鑾峰彇涓婁笅鏂?
+          // Get涓婁笅鏂?
           const beforeContext = lines[index - 1] || '';
           const afterContext = lines[index + 1] || '';
 
@@ -419,6 +425,3 @@ export class SearchApplicationService {
     return typeMap[mode] || 'content';
   }
 }
-
-
-

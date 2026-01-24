@@ -1,6 +1,6 @@
 /**
  * SQLite AIUsageQuota Repository Implementation
- * AI 浣跨敤閰嶉鐨?SQLite 浠撳偍瀹炵幇
+ * AI 浣跨敤閰嶉鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

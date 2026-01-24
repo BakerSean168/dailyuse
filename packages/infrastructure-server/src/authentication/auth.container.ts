@@ -20,7 +20,7 @@ export class AuthContainer {
   private constructor() {}
 
   /**
-   * 鑾峰彇瀹瑰櫒鍗曚緥
+   * Get瀹瑰櫒鍗曚緥
    */
   static getInstance(): AuthContainer {
     if (!AuthContainer.instance) {
@@ -53,7 +53,7 @@ export class AuthContainer {
   }
 
   /**
-   * 鑾峰彇 CredentialRepository
+   * Get CredentialRepository
    */
   getCredentialRepository(): IAuthCredentialRepository {
     if (!this.credentialRepository) {
@@ -63,7 +63,7 @@ export class AuthContainer {
   }
 
   /**
-   * 鑾峰彇 SessionRepository
+   * Get SessionRepository
    */
   getSessionRepository(): IAuthSessionRepository {
     if (!this.sessionRepository) {
@@ -80,7 +80,7 @@ export class AuthContainer {
   }
 
   /**
-   * 娓呯┖鎵€鏈夋敞鍐岀殑渚濊禆
+   * 娓呯┖All鏈夋敞鍐岀殑渚濊禆
    */
   clear(): void {
     this.credentialRepository = null;

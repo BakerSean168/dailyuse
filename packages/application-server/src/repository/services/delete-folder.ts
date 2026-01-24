@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Delete Folder
  *
- * 鍒犻櫎鏂囦欢澶癸紙绾ц仈锛?
+ * Delete鏂囦欢澶癸紙绾ц仈锛?
  */
 
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';

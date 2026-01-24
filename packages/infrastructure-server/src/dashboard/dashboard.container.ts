@@ -27,7 +27,7 @@ export class DashboardContainer {
   private constructor() {}
 
   /**
-   * 鑾峰彇瀹瑰櫒鍗曚緥
+   * Get瀹瑰櫒鍗曚緥
    */
   static getInstance(): DashboardContainer {
     if (!DashboardContainer.instance) {
@@ -60,7 +60,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 鑾峰彇 DashboardConfigRepository
+   * Get DashboardConfigRepository
    */
   getDashboardConfigRepository(): IDashboardConfigRepository {
     if (!this.dashboardConfigRepository) {
@@ -70,7 +70,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 鑾峰彇 StatisticsCacheService
+   * Get StatisticsCacheService
    */
   getStatisticsCacheService(): IStatisticsCacheService {
     if (!this.statisticsCacheService) {
@@ -94,7 +94,7 @@ export class DashboardContainer {
   }
 
   /**
-   * 娓呯┖鎵€鏈夋敞鍐岀殑渚濊禆
+   * 娓呯┖All鏈夋敞鍐岀殑渚濊禆
    */
   clear(): void {
     this.dashboardConfigRepository = null;

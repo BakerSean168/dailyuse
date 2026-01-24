@@ -1,6 +1,6 @@
 /**
  * SQLite SearchEngine Repository Implementation
- * 鎼滅储寮曟搸鐨?SQLite 浠撳偍瀹炵幇
+ * 鎼滅储寮曟搸鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

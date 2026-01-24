@@ -81,7 +81,7 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
       tags: this.generateTags(goal, activeTriggers),
       payload: {
         goalUuid: goal.uuid,
-        goalTitle: goal.title,
+        goalTitle: goal.name,
         triggerTypes: activeTriggers.map((t) => t.type),
         importance: goal.importance,
         // urgency: goal.urgency, // REMOVED - priority is now computed
@@ -267,7 +267,7 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
    * 生成任务名称
    */
   private generateTaskName(goal: GoalServerDTO): string {
-    return `Goal Reminder: ${goal.title}`;
+    return `Goal Reminder: ${goal.name}`;
   }
 
   /**

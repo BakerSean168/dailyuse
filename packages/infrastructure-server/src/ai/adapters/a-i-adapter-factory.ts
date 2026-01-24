@@ -3,7 +3,7 @@
  * AI 閫傞厤鍣ㄥ伐锟?
  *
  * 鑱岃矗锟?
- * - 鏍规嵁 Provider 閰嶇疆鍒涘缓瀵瑰簲锟?AI 閫傞厤锟?
+ * - 鏍规嵁 Provider 閰嶇疆Create瀵瑰簲锟?AI 閫傞厤锟?
  * - 绠＄悊閫傞厤鍣ㄧ紦瀛橈紙鍚屼竴閰嶇疆澶嶇敤閫傞厤鍣ㄥ疄渚嬶級
  * - 鏀寔鍔ㄦ€佸垏鎹㈢敤鎴疯嚜瀹氫箟 Provider
  */
@@ -36,14 +36,14 @@ function getCacheKey(config: AIProviderConfigServerDTO): string {
  * ```
  */
 export class AIAdapterFactory {
-  /** 閫傞厤鍣ㄧ紦瀛橈紙閬垮厤閲嶅鍒涘缓锟?*/
+  /** 閫傞厤鍣ㄧ紦瀛橈紙閬垮厤閲嶅Create锟?*/
   private static adapterCache = new Map<string, BaseAIAdapter>();
 
   /** 榛樿 OpenAI 閫傞厤鍣紙浣跨敤鐜鍙橀噺閰嶇疆锟?*/
   private static defaultAdapter: OpenAIAdapter | null = null;
 
   /**
-   * 锟?Provider 閰嶇疆鍒涘缓閫傞厤锟?
+   * 锟?Provider 閰嶇疆Create閫傞厤锟?
    */
   static createFromConfig(config: AIProviderConfigServerDTO): BaseAIAdapter {
     const cacheKey = getCacheKey(config);
@@ -53,7 +53,7 @@ export class AIAdapterFactory {
       return this.adapterCache.get(cacheKey)!;
     }
 
-    // 鏍规嵁 Provider 绫诲瀷鍒涘缓閫傞厤锟?
+    // 鏍规嵁 Provider 绫诲瀷Create閫傞厤锟?
     let adapter: BaseAIAdapter;
 
     switch (config.providerType) {
@@ -156,7 +156,7 @@ export class AIAdapterFactory {
   }
 
   /**
-   * 鑾峰彇榛樿 OpenAI 閫傞厤鍣紙浣跨敤鐜鍙橀噺锟?
+   * Get榛樿 OpenAI 閫傞厤鍣紙浣跨敤鐜鍙橀噺锟?
    * 鐢ㄤ簬娌℃湁鐢ㄦ埛鑷畾锟?Provider 鏃剁殑鍥為€€
    */
   static getDefaultAdapter(): OpenAIAdapter {

@@ -93,7 +93,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
       timeout: null, // 默认无超时限制
       payload: {
         reminderUuid: reminder.uuid,
-        reminderTitle: reminder.title,
+        reminderTitle: reminder.name,
         reminderType: reminder.type,
         triggerType: trigger.type,
         importanceLevel: reminder.importanceLevel,
@@ -306,7 +306,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
    * 生成任务名称
    */
   private generateTaskName(reminder: ReminderTemplateServerDTO): string {
-    return `Reminder: ${reminder.title}`;
+    return `Reminder: ${reminder.name}`;
   }
 
   /**

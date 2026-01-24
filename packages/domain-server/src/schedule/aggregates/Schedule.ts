@@ -176,7 +176,7 @@ export class Schedule extends AggregateRoot {
     return new Schedule({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
-      title: dto.title,
+      title: dto.name,
       description: dto.description,
       startTime: dto.startTime,
       endTime: dto.endTime,
@@ -331,7 +331,7 @@ export class Schedule extends AggregateRoot {
     return {
       uuid: this._uuid,
       accountUuid: this._accountUuid,
-      title: this._title,
+      name: this._title,
       description: this._description,
       startTime: this._startTime,
       endTime: this._endTime,
@@ -353,7 +353,7 @@ export class Schedule extends AggregateRoot {
     return {
       uuid: this._uuid,
       accountUuid: this._accountUuid,
-      title: this._title,
+      name: this._title,
       description: this._description ?? undefined,
       startTime: this._startTime,
       endTime: this._endTime,

@@ -13,7 +13,7 @@ export class EditorContainer {
   private constructor() {}
 
   /**
-   * 鑾峰彇瀹瑰櫒鍗曚緥
+   * Get瀹瑰櫒鍗曚緥
    */
   static getInstance(): EditorContainer {
     if (!EditorContainer.instance) {
@@ -23,8 +23,8 @@ export class EditorContainer {
   }
 
   /**
-   * 鑾峰彇 EditorWorkspace 鑱氬悎鏍逛粨锟?
-   * 浣跨敤鎳掑姞杞斤紝绗竴娆¤闂椂鍒涘缓瀹炰緥
+   * Get EditorWorkspace 鑱氬悎鏍逛粨锟?
+   * 浣跨敤鎳掑姞杞斤紝绗竴娆¤闂椂Create瀹炰緥
    */
   getEditorWorkspaceRepository(): IEditorWorkspaceRepository {
     if (!this.editorWorkspaceRepository) {

@@ -336,7 +336,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     const template = new ReminderTemplate({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
-      title: dto.title,
+      title: dto.name,
       description: dto.description,
       type: dto.type,
       trigger,
@@ -423,7 +423,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     return new ReminderTemplate({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
-      title: dto.title,
+      title: dto.name,
       description: dto.description,
       type: dto.type,
       trigger,
@@ -1009,7 +1009,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     const dto: ReminderTemplateServerDTO = {
       uuid: this.uuid,
       accountUuid: this.accountUuid,
-      title: this.title,
+      name: this.title,
       description: this.description,
       type: this.type,
       trigger: this.trigger,
@@ -1071,7 +1071,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     const clientDTO: ReminderTemplateClientDTO = {
       uuid: this.uuid,
       accountUuid: this.accountUuid,
-      title: this.title,
+      name: this.title,
       description: this.description,
       type: this.type,
       trigger: this._trigger.toClientDTO(),
@@ -1125,7 +1125,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     return {
       uuid: this.uuid,
       accountUuid: this.accountUuid,
-      title: this.title,
+      name: this.title,
       description: this.description,
       type: this.type,
       trigger: JSON.stringify(this._trigger.toServerDTO()),

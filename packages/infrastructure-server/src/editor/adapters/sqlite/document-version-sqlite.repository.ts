@@ -1,6 +1,6 @@
 /**
  * SQLite DocumentVersion Repository Implementation
- * 鏂囨。鐗堟湰鐨?SQLite 浠撳偍瀹炵幇
+ * 鏂囨。鐗堟湰鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

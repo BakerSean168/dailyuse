@@ -22,7 +22,7 @@ export class SettingContainer {
   private constructor() {}
 
   /**
-   * 鑾峰彇瀹瑰櫒鍗曚緥
+   * Get瀹瑰櫒鍗曚緥
    */
   static getInstance(): SettingContainer {
     if (!SettingContainer.instance) {
@@ -63,7 +63,7 @@ export class SettingContainer {
   }
 
   /**
-   * 鑾峰彇 AppConfigRepository
+   * Get AppConfigRepository
    */
   getAppConfigRepository(): IAppConfigRepository {
     if (!this.appConfigRepository) {
@@ -73,7 +73,7 @@ export class SettingContainer {
   }
 
   /**
-   * 鑾峰彇 SettingRepository
+   * Get SettingRepository
    */
   getSettingRepository(): ISettingRepository {
     if (!this.settingRepository) {
@@ -83,7 +83,7 @@ export class SettingContainer {
   }
 
   /**
-   * 鑾峰彇 UserSettingRepository
+   * Get UserSettingRepository
    */
   getUserSettingRepository(): IUserSettingRepository {
     if (!this.userSettingRepository) {
@@ -100,7 +100,7 @@ export class SettingContainer {
   }
 
   /**
-   * 娓呯┖鎵€鏈夋敞鍐岀殑渚濊禆
+   * 娓呯┖All鏈夋敞鍐岀殑渚濊禆
    */
   clear(): void {
     this.appConfigRepository = null;

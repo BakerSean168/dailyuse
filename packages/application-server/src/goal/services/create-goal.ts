@@ -34,7 +34,14 @@ export class CreateGoal {
     }
 
     // 3. 委托领域服务创建聚合根
-    const goal = this.domainService.createGoal({ accountUuid, ...input }, parentGoal);
+    const goal = this.domainService.createGoal(
+      {
+        accountUuid,
+        ...input,
+        name: input.title,
+      },
+      parentGoal,
+    );
 
     // 4. 如果有 keyResults，添加到目标中
     // if (input.keyResults && input.keyResults.length > 0) {

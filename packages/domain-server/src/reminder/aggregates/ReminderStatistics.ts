@@ -103,10 +103,10 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
     return new ReminderStatistics({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
-      templateStats: JSON.parse(dto.template_stats),
-      groupStats: JSON.parse(dto.group_stats),
-      triggerStats: JSON.parse(dto.trigger_stats),
-      calculatedAt: dto.calculated_at,
+      templateStats: JSON.parse(dto.templateStats),
+      groupStats: JSON.parse(dto.groupStats),
+      triggerStats: JSON.parse(dto.triggerStats),
+      calculatedAt: dto.calculatedAt,
     });
   }
 
@@ -318,10 +318,10 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
     return {
       uuid: this.uuid,
       accountUuid: this.accountUuid,
-      template_stats: JSON.stringify(this.templateStats),
-      group_stats: JSON.stringify(this.groupStats),
-      trigger_stats: JSON.stringify(this.triggerStats),
-      calculated_at: this.calculatedAt,
+      templateStats: JSON.stringify(this.templateStats),
+      groupStats: JSON.stringify(this.groupStats),
+      triggerStats: JSON.stringify(this.triggerStats),
+      calculatedAt: this.calculatedAt,
     };
   }
 }

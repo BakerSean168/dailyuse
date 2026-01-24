@@ -126,7 +126,7 @@ export class TaskDependencyService {
       return {
         status: 'BLOCKED' as DependencyStatus,
         isBlocked: true,
-        blockingReason: null,
+        blockingReason: undefined,
       };
     }
 

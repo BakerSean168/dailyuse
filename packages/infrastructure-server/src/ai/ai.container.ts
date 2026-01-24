@@ -24,7 +24,7 @@ export class AIContainer {
   private constructor() {}
 
   /**
-   * 鑾峰彇瀹瑰櫒鍗曚緥
+   * Get瀹瑰櫒鍗曚緥
    */
   static getInstance(): AIContainer {
     if (!AIContainer.instance) {

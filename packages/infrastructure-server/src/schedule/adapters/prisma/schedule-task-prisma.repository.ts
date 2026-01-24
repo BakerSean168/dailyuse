@@ -1,6 +1,6 @@
 /**
  * Prisma Schedule Task Repository
- * ScheduleTask 鑱氬悎鏍?Prisma 浠撳偍瀹炵幇
+ * ScheduleTask 鑱氬悎鏍?Prisma Repository瀹炵幇
  *
  * 鑱岃矗锛?
  * - 瀹炵幇 IScheduleTaskRepository 鎺ュ彛
@@ -32,7 +32,7 @@ interface IScheduleTaskQueryOptions {
 
 /**
  * ScheduleTaskRepository
- * 瀹屾暣鐨?DDD 浠撳偍瀹炵幇锛屾棤涓存椂閫傞厤浠ｇ爜
+ * 瀹屾暣鐨?DDD Repository瀹炵幇锛屾棤涓存椂閫傞厤浠ｇ爜
  */
 export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
   constructor(private prisma: PrismaClient) {}
@@ -83,10 +83,10 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
       updatedAt: data.updatedAt.getTime(),
     };
 
-    // 浣跨敤鑱氬悎鏍圭殑 fromPersistenceDTO 鏂规硶鍒涘缓瀹炰緥
+    // 浣跨敤鑱氬悎鏍圭殑 fromPersistenceDTO 鏂规硶Create瀹炰緥
     const task = ScheduleTask.fromPersistenceDTO(persistenceDTO);
 
-    // 鎭㈠鎵ц璁板綍瀛愬疄浣?
+    // 鎭㈠鎵цRecord瀛愬疄浣?
     if (data.scheduleExecution && data.scheduleExecution.length > 0) {
       for (const execData of data.scheduleExecution) {
         const execution = ScheduleExecution.fromPersistenceDTO({
@@ -164,7 +164,7 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
       update: data,
     });
 
-    // 淇濆瓨鎵ц璁板綍锛堝鏋滄湁锛?
+    // Save鎵цRecord锛堝鏋滄湁锛?
     const executions = task.executions;
     if (executions && executions.length > 0) {
       for (const execution of executions) {

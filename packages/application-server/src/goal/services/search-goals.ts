@@ -23,7 +23,7 @@ export class SearchGoals {
 
     const filteredGoals = allGoals.filter(
       (g) =>
-        g.title.toLowerCase().includes(query.toLowerCase()) ||
+        g.name.toLowerCase().includes(query.toLowerCase()) ||
         g.description?.toLowerCase().includes(query.toLowerCase()),
     );
 

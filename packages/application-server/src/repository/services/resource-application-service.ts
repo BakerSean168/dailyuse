@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Resource Application Service
  * Resource 搴旂敤鏈嶅姟 - Story 10-2
  */
@@ -16,7 +16,7 @@ import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, ResourceC
  * 鏋舵瀯鑱岃矗锛?
  * - 璋冪敤 Repository 杩涜鎸佷箙鍖?
  * - DTO 杞崲锛圖omain 鈫?ClientDTO锛?
- * - 鍗忚皟涓氬姟鐢ㄤ緥
+ * - Coordinate business logic
  */
 export class ResourceApplicationService {
   private resourceRepository: IResourceRepository;

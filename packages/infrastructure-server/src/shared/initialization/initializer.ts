@@ -12,7 +12,7 @@
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 
 /**
- * 娉ㄥ唽鍩虹璁炬柦灞傜殑鎵€鏈夊垵濮嬪寲浠诲姟
+ * 娉ㄥ唽鍩虹璁炬柦灞傜殑All鏈夊垵濮嬪寲浠诲姟
  */
 export function registerAllInitializationTasks(): void {
   const manager = InitializationManager.getInstance();
@@ -26,7 +26,7 @@ export function registerAllInitializationTasks(): void {
 export async function initializeApp(): Promise<void> {
   console.log('Starting infrastructure application initialization...');
 
-  // 娉ㄥ唽鎵€鏈夊垵濮嬪寲浠诲姟
+  // 娉ㄥ唽All鏈夊垵濮嬪寲浠诲姟
   registerAllInitializationTasks();
 
   // 鎵ц搴旂敤鍚姩闃舵鐨勫垵濮嬪寲

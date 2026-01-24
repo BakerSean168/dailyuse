@@ -18,7 +18,7 @@ export class GoalContainer {
   private constructor() {}
 
   /**
-   * 鑾峰彇瀹瑰櫒鍗曚緥
+   * Get瀹瑰櫒鍗曚緥
    */
   static getInstance(): GoalContainer {
     if (!GoalContainer.instance) {
@@ -59,7 +59,7 @@ export class GoalContainer {
   }
 
   /**
-   * 鑾峰彇 GoalRepository
+   * Get GoalRepository
    */
   getGoalRepository(): IGoalRepository {
     if (!this.goalRepository) {
@@ -69,7 +69,7 @@ export class GoalContainer {
   }
 
   /**
-   * 鑾峰彇 GoalStatisticsRepository
+   * Get GoalStatisticsRepository
    */
   getStatisticsRepository(): IGoalStatisticsRepository {
     if (!this.statisticsRepository) {
@@ -79,7 +79,7 @@ export class GoalContainer {
   }
 
   /**
-   * 鑾峰彇 GoalFolderRepository
+   * Get GoalFolderRepository
    */
   getGoalFolderRepository(): IGoalFolderRepository {
     if (!this.goalFolderRepository) {
@@ -96,7 +96,7 @@ export class GoalContainer {
   }
 
   /**
-   * 娓呯┖鎵€鏈夋敞鍐岀殑渚濊禆
+   * 娓呯┖All鏈夋敞鍐岀殑渚濊禆
    */
   clear(): void {
     this.goalRepository = null;

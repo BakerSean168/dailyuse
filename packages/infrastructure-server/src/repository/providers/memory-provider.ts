@@ -1,7 +1,7 @@
 /**
  * Memory Provider Initializer
  *
- * 涓哄唴瀛樻暟鎹簱鎻愪緵鑰呭垵濮嬪寲鎵€鏈変粨鍌ㄥ疄鐜帮紙鐢ㄤ簬娴嬭瘯锛?
+ * 涓哄唴瀛樻暟鎹簱鎻愪緵鑰呭垵濮嬪寲All鏈変粨鍌ㄥ疄鐜帮紙鐢ㄤ簬娴嬭瘯锛?
  */
 
 import type {
@@ -25,7 +25,7 @@ import type {
  * Memory 鎻愪緵鑰呭垵濮嬪寲鍣?
  *
  * 鑱岃矗锛?
- * - 鍒涘缓鎵€鏈?Memory 浠撳偍瀹炵幇
+ * - CreateAll鏈?Memory Repository瀹炵幇
  * - 灏嗗疄鐜版敞鍐屽埌瀹瑰櫒涓?
  * - 涓昏鐢ㄤ簬鍗曞厓娴嬭瘯
  */
@@ -33,7 +33,7 @@ export class MemoryProviderInitializer implements IProviderInitializer {
   async initialize(context: IProviderInitContext): Promise<void> {
     const { container } = context;
 
-    // 鍒涘缓鎵€鏈?Memory 浠撳偍瀹炵幇
+    // CreateAll鏈?Memory Repository瀹炵幇
     const repositoryRepository: IRepositoryRepository = new RepositoryMemoryRepository();
     const resourceRepository: IResourceRepository = new ResourceMemoryRepository();
     const folderRepository: IFolderRepository = new FolderMemoryRepository();

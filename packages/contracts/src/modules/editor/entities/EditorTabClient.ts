@@ -1,4 +1,4 @@
-﻿/**
+/**
  * EditorTab Entity - Client Interface
  * 缂栬緫鍣ㄦ爣绛惧疄浣?- 瀹㈡埛绔帴鍙?
  */
@@ -11,7 +11,7 @@ import type { TabViewStateClientDTO } from '../value-objects';
 
 /**
  * Editor Tab Client DTO
- * 缂栬緫鍣ㄦ爣绛惧鎴风 DTO锛堝寘鍚?UI 鏍煎紡鍖栧瓧娈碉級
+ * 缂栬緫鍣ㄦ爣绛惧鎴风 DTO锛堝寘AndUI 鏍煎紡鍖栧瓧娈碉級
  */
 export interface EditorTabClientDTO {
   uuid: string;
@@ -61,17 +61,17 @@ export interface EditorTabClient {
   // ===== UI 杈呭姪鏂规硶 =====
 
   /**
-   * 鑾峰彇鏄剧ず鏍囬锛堝寘鍚剰鏍囪锛?
+   * Get鏄剧ず鏍囬锛堝寘鍚剰鏍囪锛?
    */
   getDisplayName(): string;
 
   /**
-   * 鑾峰彇鏍囩绫诲瀷鏍囩
+   * Get鏍囩绫诲瀷鏍囩
    */
   getTabTypeLabel(): string;
 
   /**
-   * 鑾峰彇鏍囩鍥炬爣鍚嶇О
+   * Get鏍囩鍥炬爣鍚嶇О
    */
   getIconName(): string;
 
@@ -86,17 +86,17 @@ export interface EditorTabClient {
   canClose(): boolean;
 
   /**
-   * 鏄惁闇€瑕佺‘璁ゅ叧闂紙鏈夋湭淇濆瓨鏇存敼鏃讹級
+   * 鏄惁Need瑕佺‘璁ゅ叧闂紙鏈夋湭Save鏇存敼鏃讹級
    */
   needsCloseConfirmation(): boolean;
 
   /**
-   * 鑾峰彇鏍煎紡鍖栫殑鏈€鍚庤闂椂闂?
+   * Get鏍煎紡鍖栫殑鏈€鍚庤闂椂闂?
    */
   getFormattedLastAccessed(): string | null;
 
   /**
-   * 鑾峰彇鏍囩鐘舵€侀鑹诧紙鐢ㄤ簬 UI 寰界珷锛?
+   * Get鏍囩鐘舵€侀鑹诧紙鐢ㄤ簬 UI 寰界珷锛?
    */
   getStatusColor(): string;
 

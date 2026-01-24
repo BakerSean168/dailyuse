@@ -1,7 +1,7 @@
-﻿/**
+/**
  * List Resources
  *
- * 鑾峰彇浠撳偍鐨勬墍鏈夎祫婧?
+ * GetRepository鐨勬墍鏈夎祫婧?
  */
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';

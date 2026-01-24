@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Repository Statistics Service
  *
- * 浠撳偍缁熻鐩稿叧鐨勫簲鐢ㄦ湇鍔?
+ * Repository缁熻鐩稿叧鐨勫簲鐢ㄦ湇鍔?
  */
 
 import type {
@@ -35,7 +35,7 @@ export class RepositoryStatisticsService {
   // ===== 缁熻鏌ヨ =====
 
   /**
-   * 鑾峰彇璐︽埛鐨勭粺璁′俊鎭紙涓嶅瓨鍦ㄥ垯鑷姩鍒涘缓锛?
+   * Get璐︽埛鐨勭粺璁′俊鎭紙涓嶅瓨鍦ㄥ垯鑷姩Create锛?
    */
   async getOrCreateStatistics(accountUuid: string): Promise<RepositoryStatisticsServerDTO> {
     const statistics = await this.domainService.getOrCreateStatistics(accountUuid);
@@ -43,7 +43,7 @@ export class RepositoryStatisticsService {
   }
 
   /**
-   * 鑾峰彇璐︽埛鐨勭粺璁′俊鎭紙涓嶈嚜鍔ㄥ垱寤猴級
+   * Get璐︽埛鐨勭粺璁′俊鎭紙涓嶈嚜鍔ㄥ垱寤猴級
    */
   async getStatistics(accountUuid: string): Promise<RepositoryStatisticsServerDTO | null> {
     const statistics = await this.domainService.getStatistics(accountUuid);
@@ -68,21 +68,21 @@ export class RepositoryStatisticsService {
   }
 
   /**
-   * 澶勭悊缁熻鏇存柊浜嬩欢
+   * 澶勭悊缁熻Update浜嬩欢
    */
   async handleStatisticsUpdateEvent(event: StatisticsUpdateEvent): Promise<void> {
     await this.domainService.handleStatisticsUpdateEvent(event);
   }
 
   /**
-   * 鍒犻櫎缁熻淇℃伅
+   * Delete缁熻淇℃伅
    */
   async deleteStatistics(accountUuid: string): Promise<void> {
     await this.domainService.deleteStatistics(accountUuid);
   }
 
   /**
-   * 鎵归噺鑾峰彇澶氫釜璐︽埛鐨勭粺璁?
+   * 鎵归噺Get澶氫釜璐︽埛鐨勭粺璁?
    */
   async getStatisticsByAccountUuids(
     accountUuids: string[],
@@ -92,7 +92,7 @@ export class RepositoryStatisticsService {
   }
 
   /**
-   * 鑾峰彇鎵€鏈夎处鎴风殑缁熻锛堝垎椤碉級
+   * GetAll鏈夎处鎴风殑缁熻锛堝垎椤碉級
    */
   async getAllStatistics(options?: {
     skip?: number;

@@ -184,7 +184,7 @@ export class EditorGroup extends Entity implements EditorGroupServer {
     documentUuid?: string | null;
     tabIndex: number;
     tabType: TabType;
-    title: string;
+    name: string;
     viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
   }): EditorTab {

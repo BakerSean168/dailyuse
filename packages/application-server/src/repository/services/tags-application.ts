@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Tags Service
  *
  * 鏍囩缁熻涓庤繃婊ゆ湇鍔?
@@ -16,10 +16,10 @@ export class TagsService {
 
 
   /**
-   * 鑾峰彇浠撳偍鐨勬爣绛剧粺璁′俊鎭?
+   * GetRepository鐨勬爣绛剧粺璁′俊鎭?
    *
-   * @param repositoryUuid 浠撳偍 UUID
-   * @returns 鏍囩缁熻鍒楄〃锛堟寜浣跨敤棰戠巼闄嶅簭锛?
+   * @param repositoryUuid Repository UUID
+   * @returns 鏍囩缁熻List锛堟寜浣跨敤棰戠巼闄嶅簭锛?
    */
   async getTagStatistics(repositoryUuid: string): Promise<TagStatisticsDto[]> {
     const resources = await this.resourceRepository.findByRepositoryUuid(repositoryUuid);
@@ -119,7 +119,7 @@ export class TagsService {
   }
 
   /**
-   * 鎻愬彇璧勬簮鏍囬
+   * 鎻愬彇Resource鏍囬
    */
   private extractTitle(resource: any): string {
     const metadata = (resource as any).metadata;
@@ -127,7 +127,7 @@ export class TagsService {
   }
 
   /**
-   * 鎻愬彇璧勬簮璺緞
+   * 鎻愬彇Resource璺緞
    */
   private extractPath(resource: any): string {
     const metadata = (resource as any).metadata;

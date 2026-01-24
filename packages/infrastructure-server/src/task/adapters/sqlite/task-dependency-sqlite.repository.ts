@@ -1,6 +1,6 @@
 /**
  * SQLite TaskDependency Repository Implementation
- * 浠诲姟渚濊禆鍏崇郴鐨?SQLite 浠撳偍瀹炵幇
+ * 浠诲姟渚濊禆鍏崇郴鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

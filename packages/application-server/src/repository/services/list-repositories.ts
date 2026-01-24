@@ -1,7 +1,7 @@
-﻿/**
+/**
  * List Repositories
  *
- * 鑾峰彇鐢ㄦ埛鐨勬墍鏈変粨鍌?
+ * Get all repositories of the user?
  */
 
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';

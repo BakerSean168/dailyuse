@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Create Folder
  *
- * 鍒涘缓鏂囦欢澶?
+ * Create folder
  */
 
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';

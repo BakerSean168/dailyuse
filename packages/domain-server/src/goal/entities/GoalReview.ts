@@ -277,28 +277,13 @@ export class GoalReview extends Entity implements GoalReviewServer {
       achievements: this._achievements,
       challenges: this._challenges,
       improvements: this._improvements,
-      keyResultSnapshots: this._keyResultSnapshots.map((snapshot) => {
-        const progressText = `${snapshot.currentValue}/${snapshot.targetValue} (${snapshot.progressPercentage.toFixed(
-          0,
-        )}%)`;
-        let progressBarColor = 'gray';
-        if (snapshot.progressPercentage >= 100) {
-          progressBarColor = 'green';
-        } else if (snapshot.progressPercentage > 70) {
-          progressBarColor = 'blue';
-        } else if (snapshot.progressPercentage > 30) {
-          progressBarColor = 'yellow';
-        }
-        const displayTitle =
-          snapshot.title.length > 50 ? snapshot.title.substring(0, 47) + '...' : snapshot.title;
-
-        return {
-          ...snapshot,
-          progressText,
-          progressBarColor,
-          displayTitle,
-        };
-      }),
+      keyResultSnapshots: this._keyResultSnapshots.map((snapshot) => ({
+        keyResultUuid: snapshot.keyResultUuid,
+        title: snapshot.title,
+        targetValue: snapshot.targetValue,
+        currentValue: snapshot.currentValue,
+        progressPercentage: snapshot.progressPercentage,
+      })),
       reviewedAt: this._reviewedAt,
       createdAt: this._createdAt,
     };

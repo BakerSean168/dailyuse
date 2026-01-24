@@ -170,8 +170,6 @@ export class GoalRecord extends Entity implements GoalRecordServer {
       note: this._note,
       recordedAt: this._recordedAt,
       createdAt: this._createdAt,
-      formattedRecordedAt: new Date(this._recordedAt).toLocaleString(),
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
     };
   }
 

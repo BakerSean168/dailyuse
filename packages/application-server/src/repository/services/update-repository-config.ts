@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Update Repository Config
  *
- * 鏇存柊浠撳偍閰嶇疆
+ * UpdateRepository閰嶇疆
  */
 
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';

@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Delete Resource
  *
- * 鍒犻櫎璧勬簮
+ * Delete asset
  */
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';

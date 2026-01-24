@@ -67,7 +67,7 @@ export function isProduction(): boolean {
 }
 
 /**
- * 鑾峰彇 Redis 閰嶇疆
+ * Get Redis 閰嶇疆
  */
 export function getRedisConfig(): Record<string, any> {
   if (env.REDIS_URL) {
@@ -96,7 +96,7 @@ export function validateEnv(): void {
 }
 
 /**
- * 鑾峰彇鐜鍙橀噺锛屽甫鍥為€€锟?
+ * Get鐜鍙橀噺锛屽甫鍥為€€锟?
  */
 export function getEnv<T extends keyof typeof env>(key: T, defaultValue?: string): string {
   const value = env[key];

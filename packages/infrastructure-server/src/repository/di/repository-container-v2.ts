@@ -7,12 +7,12 @@ import type {
 
 /**
  * Repository 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒
- * 璐熻矗绠＄悊棰嗗煙鏈嶅姟鍜屼粨鍌ㄧ殑瀹炰緥鍒涘缓鍜岀敓鍛藉懆鏈?
+ * 璐熻矗绠＄悊棰嗗煙鏈嶅姟鍜屼粨鍌ㄧ殑瀹炰緥Create鍜岀敓鍛藉懆鏈?
  *
  * 璁捐鍘熷垯锛堟敼杩涚増锛夛細
  * 1. 鏀寔澶氭暟鎹簱鎻愪緵鑰咃紙Prisma銆丼QLite銆丮emory 绛夛級
  * 2. 鏀寔鍔ㄦ€佹敞鍐屽疄鐜帮紙涓嶅啀渚濊禆纭紪鐮佺殑 Prisma锛?
- * 3. 鏀寔娴嬭瘯鏇挎崲锛圡ock 浠撳偍锛?
+ * 3. 鏀寔娴嬭瘯鏇挎崲锛圡ock Repository锛?
  * 4. 鏀寔鎳掑姞杞斤紙棣栨璋冪敤鏃跺垱寤猴級
  * 5. 鏀寔閲嶇疆锛堢敤浜庢祴璇曪級
  *
@@ -31,7 +31,7 @@ export class RepositoryContainer {
   private constructor() {}
 
   /**
-   * 鑾峰彇瀹瑰櫒鍗曚緥
+   * Get瀹瑰櫒鍗曚緥
    */
   static getInstance(): RepositoryContainer {
     if (!RepositoryContainer.instance) {
@@ -47,10 +47,10 @@ export class RepositoryContainer {
     RepositoryContainer.instance = new RepositoryContainer();
   }
 
-  // ===== Repository 浠撳偍 =====
+  // ===== Repository Repository =====
 
   /**
-   * 娉ㄥ唽 Repository 浠撳偍瀹炵幇
+   * 娉ㄥ唽 Repository Repository瀹炵幇
    */
   registerRepositoryRepository(repository: IRepositoryRepository): this {
     this.repositoryRepository = repository;
@@ -58,7 +58,7 @@ export class RepositoryContainer {
   }
 
   /**
-   * 鑾峰彇 Repository 浠撳偍瀹炰緥
+   * Get Repository Repository瀹炰緥
    */
   getRepositoryRepository(): IRepositoryRepository {
     if (!this.repositoryRepository) {
@@ -70,10 +70,10 @@ export class RepositoryContainer {
     return this.repositoryRepository;
   }
 
-  // ===== Resource 浠撳偍 =====
+  // ===== Resource Repository =====
 
   /**
-   * 娉ㄥ唽 Resource 浠撳偍瀹炵幇
+   * 娉ㄥ唽 Resource Repository瀹炵幇
    */
   registerResourceRepository(repository: IResourceRepository): this {
     this.resourceRepository = repository;
@@ -81,7 +81,7 @@ export class RepositoryContainer {
   }
 
   /**
-   * 鑾峰彇 Resource 浠撳偍瀹炰緥
+   * Get Resource Repository瀹炰緥
    */
   getResourceRepository(): IResourceRepository {
     if (!this.resourceRepository) {
@@ -93,10 +93,10 @@ export class RepositoryContainer {
     return this.resourceRepository;
   }
 
-  // ===== Folder 浠撳偍 =====
+  // ===== Folder Repository =====
 
   /**
-   * 娉ㄥ唽 Folder 浠撳偍瀹炵幇
+   * 娉ㄥ唽 Folder Repository瀹炵幇
    */
   registerFolderRepository(repository: IFolderRepository): this {
     this.folderRepository = repository;
@@ -104,7 +104,7 @@ export class RepositoryContainer {
   }
 
   /**
-   * 鑾峰彇 Folder 浠撳偍瀹炰緥
+   * Get Folder Repository瀹炰緥
    */
   getFolderRepository(): IFolderRepository {
     if (!this.folderRepository) {
@@ -116,10 +116,10 @@ export class RepositoryContainer {
     return this.folderRepository;
   }
 
-  // ===== Repository Statistics 浠撳偍 =====
+  // ===== Repository Statistics Repository =====
 
   /**
-   * 娉ㄥ唽 RepositoryStatistics 浠撳偍瀹炵幇
+   * 娉ㄥ唽 RepositoryStatistics Repository瀹炵幇
    */
   registerRepositoryStatisticsRepository(repository: IRepositoryStatisticsRepository): this {
     this.repositoryStatisticsRepository = repository;
@@ -127,7 +127,7 @@ export class RepositoryContainer {
   }
 
   /**
-   * 鑾峰彇 RepositoryStatistics 浠撳偍瀹炰緥
+   * Get RepositoryStatistics Repository瀹炰緥
    */
   getRepositoryStatisticsRepository(): IRepositoryStatisticsRepository {
     if (!this.repositoryStatisticsRepository) {
@@ -142,7 +142,7 @@ export class RepositoryContainer {
   // ===== 鍒悕鏂规硶锛堝吋瀹规€э級 =====
 
   /**
-   * 鑾峰彇 Repository 鑱氬悎浠撳偍瀹炰緥锛堝埆鍚嶏級
+   * Get Repository 鑱氬悎Repository瀹炰緥锛堝埆鍚嶏級
    */
   getRepositoryAggregateRepository(): IRepositoryRepository {
     return this.getRepositoryRepository();

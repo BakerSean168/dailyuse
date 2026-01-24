@@ -42,11 +42,6 @@ export interface IKeyResultSnapshotClient {
   currentValue: number;
   progressPercentage: number;
 
-  // UI 辅助属性
-  progressText: string; // "50/100 (50%)"
-  progressBarColor: string;
-  displayTitle: string; // 显示标题（可能截断）
-
   // 值对象方法
   equals(other: IKeyResultSnapshotClient): boolean;
 
@@ -76,9 +71,6 @@ export interface KeyResultSnapshotClientDTO {
   targetValue: number;
   currentValue: number;
   progressPercentage: number;
-  progressText: string;
-  progressBarColor: string;
-  displayTitle: string;
 }
 
 /**

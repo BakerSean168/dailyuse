@@ -1,6 +1,6 @@
 /**
  * SQLite EditorGroup Repository Implementation
- * 缂栬緫鍣ㄥ垎缁勭殑 SQLite 浠撳偍瀹炵幇
+ * 缂栬緫鍣ㄥ垎缁勭殑 SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';

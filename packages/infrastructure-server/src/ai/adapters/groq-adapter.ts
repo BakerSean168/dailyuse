@@ -188,14 +188,14 @@ export class GroqAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 鑾峰彇鎻愪緵鍟嗗悕锟?
+   * Get鎻愪緵鍟嗗悕锟?
    */
   getProviderName(): string {
     return GroqAdapter.PROVIDER_NAME;
   }
 
   /**
-   * 鑾峰彇妯″瀷 ID
+   * Get妯″瀷 ID
    */
   getModelId(): string {
     return this.modelId;

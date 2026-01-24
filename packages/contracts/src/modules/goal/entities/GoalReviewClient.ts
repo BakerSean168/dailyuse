@@ -18,12 +18,6 @@ export interface GoalReviewClientDTO {
   keyResultSnapshots: KeyResultSnapshotClientDTO[];
   reviewedAt: number;
   createdAt: number;
-  typeText: string;
-  ratingText: string;
-  formattedReviewedAt: string;
-  formattedCreatedAt: string;
-  ratingStars: string;
-  displaySummary: string;
 }
 
 export interface GoalReviewClient {
@@ -38,19 +32,6 @@ export interface GoalReviewClient {
   keyResultSnapshots: KeyResultSnapshotClientDTO[];
   reviewedAt: number;
   createdAt: number;
-  typeText: string;
-  ratingText: string;
-  formattedReviewedAt: string;
-  formattedCreatedAt: string;
-  ratingStars: string;
-  displaySummary: string;
-
-  getRatingColor(): string;
-  getRatingIcon(): string;
-  hasAchievements(): boolean;
-  hasChallenges(): boolean;
-  hasImprovements(): boolean;
-  getSnapshotCount(): number;
 
   toClientDTO(): GoalReviewClientDTO;
   toServerDTO(): GoalReviewServerDTO;

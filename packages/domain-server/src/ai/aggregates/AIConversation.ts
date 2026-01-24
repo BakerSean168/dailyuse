@@ -10,7 +10,7 @@ import { Message } from '../entities/Message';
 
 export class AIConversation extends AggregateRoot implements AIConversationServer {
   private _accountUuid: string;
-  private _title: string;
+  private _name: string;
   private _status: ConversationStatus;
   private _messageCount: number;
   private _lastMessageAt: number | null;
@@ -23,7 +23,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
   private constructor(params: {
     uuid?: string;
     accountUuid: string;
-    title: string;
+    name: string;
     status: ConversationStatus;
     messageCount: number;
     lastMessageAt?: number | null;
@@ -33,7 +33,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
   }) {
     super(params.uuid ?? AggregateRoot.generateUUID());
     this._accountUuid = params.accountUuid;
-    this._title = params.title;
+    this._name = params.name;
     this._status = params.status;
     this._messageCount = params.messageCount;
     this._lastMessageAt = params.lastMessageAt ?? null;
@@ -51,8 +51,8 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     return this._accountUuid;
   }
 
-  public get title(): string {
-    return this._title;
+  public get name(): string {
+    return this._name;
   }
 
   public get status(): ConversationStatus {
@@ -83,11 +83,11 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     return [...this._messages];
   }
 
-  public static create(params: { accountUuid: string; title: string }): AIConversation {
+  public static create(params: { accountUuid: string; name: string }): AIConversation {
     const now = Date.now();
     const conversation = new AIConversation({
       accountUuid: params.accountUuid,
-      title: params.title,
+      name: params.name,
       status: ConversationStatus.ACTIVE,
       messageCount: 0,
       lastMessageAt: null,
@@ -113,7 +113,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     const conversation = new AIConversation({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
-      title: dto.title,
+      name: dto.name,
       status: dto.status,
       messageCount: dto.messageCount,
       lastMessageAt: dto.lastMessageAt,
@@ -133,7 +133,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     return new AIConversation({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
-      title: dto.title,
+      name: dto.name,
       status: dto.status,
       messageCount: dto.messageCount,
       lastMessageAt: dto.lastMessageAt,
@@ -206,7 +206,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
-      title: this._title,
+      name: this._name,
       status: this._status,
       messageCount: this._messageCount,
       lastMessageAt: this._lastMessageAt,
@@ -221,23 +221,13 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
-      title: this._title,
+      name: this._name,
       status: this._status,
       messageCount: this._messageCount,
       lastMessageAt: this._lastMessageAt,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       messages: null,
-      isActive: this._status === ConversationStatus.ACTIVE,
-      isClosed: this._status === ConversationStatus.CLOSED,
-      isArchived: this._status === ConversationStatus.ARCHIVED,
-      canAddMessage: this._status === ConversationStatus.ACTIVE,
-      statusText: this._status,
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
-      formattedUpdatedAt: new Date(this._updatedAt).toLocaleString(),
-      formattedLastMessageAt: this._lastMessageAt
-        ? new Date(this._lastMessageAt).toLocaleString()
-        : null,
     };
   }
 
@@ -245,7 +235,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
-      title: this._title,
+      name: this._name,
       status: this._status,
       messageCount: this._messageCount,
       lastMessageAt: this._lastMessageAt,

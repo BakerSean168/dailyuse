@@ -4,14 +4,14 @@ import { prisma } from '../../shared/config/prisma';
 
 /**
  * Setting 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒
- * 璐熻矗绠＄悊棰嗗煙鏈嶅姟鍜屼粨鍌ㄧ殑瀹炰緥鍒涘缓鍜岀敓鍛藉懆锟?
+ * 璐熻矗绠＄悊棰嗗煙鏈嶅姟鍜屼粨鍌ㄧ殑瀹炰緥Create鍜岀敓鍛藉懆锟?
  *
  * 閲囩敤鎳掑姞杞芥ā寮忥細
  * - 鍙湪棣栨璋冪敤鏃跺垱寤哄疄锟?
  * - 鍚庣画璋冪敤杩斿洖宸叉湁瀹炰緥锛堝崟渚嬶級
  *
  * 鏀寔娴嬭瘯鏇挎崲锟?
- * - 鍏佽娉ㄥ叆 Mock 浠撳偍鐢ㄤ簬鍗曞厓娴嬭瘯
+ * - 鍏佽娉ㄥ叆 Mock Repository鐢ㄤ簬鍗曞厓娴嬭瘯
  */
 export class SettingContainer {
   private static instance: SettingContainer;
@@ -27,7 +27,7 @@ export class SettingContainer {
   }
 
   /**
-   * 鑾峰彇鐢ㄦ埛璁剧疆浠撳偍瀹炰緥锛堟噿鍔犺浇锟?
+   * Get鐢ㄦ埛璁剧疆Repository瀹炰緥锛堟噿鍔犺浇锟?
    */
   getUserSettingRepository(): IUserSettingRepository {
     if (!this.userSettingRepository) {
@@ -37,7 +37,7 @@ export class SettingContainer {
   }
 
   /**
-   * 璁剧疆鐢ㄦ埛璁剧疆浠撳偍瀹炰緥锛堢敤浜庢祴璇曪級
+   * 璁剧疆鐢ㄦ埛璁剧疆Repository瀹炰緥锛堢敤浜庢祴璇曪級
    */
   setUserSettingRepository(repository: IUserSettingRepository): void {
     this.userSettingRepository = repository;
