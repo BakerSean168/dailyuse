@@ -21,8 +21,8 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         status = excluded.status,
-        completedAt = excluded\.completedAt,
-        updatedAt = excluded\.updatedAt
+        completedAt = excluded.completedAt,
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
@@ -33,8 +33,8 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
       dto.startedAt,
       dto.completedAt || null,
       dto.durationMinutes || null,
-      dto\.createdAt,
-      dto\.updatedAt,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -44,17 +44,7 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
 
     if (!row) return null;
 
-    return FocusSession.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row\.accountUuid,
-      goal_uuid: row\.goalUuid,
-      status: row.status as FocusSessionStatus,
-      started_at: new Date(row\.startedAt),
-      completed_at: row\.completedAt ? new Date(row\.completedAt) : null,
-      duration_minutes: row\.durationMinutes,
-      createdAt: new Date(row\.createdAt),
-      updatedAt: new Date(row\.updatedAt),
-    });
+    return this.rowToFocusSession(row);
   }
 
   async findActiveSession(accountUuid: string): Promise<FocusSession | null> {
@@ -65,17 +55,7 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
 
     if (!row) return null;
 
-    return FocusSession.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row\.accountUuid,
-      goal_uuid: row\.goalUuid,
-      status: row.status as FocusSessionStatus,
-      started_at: new Date(row\.startedAt),
-      completed_at: row\.completedAt ? new Date(row\.completedAt) : null,
-      duration_minutes: row\.durationMinutes,
-      createdAt: new Date(row\.createdAt),
-      updatedAt: new Date(row\.updatedAt),
-    });
+    return this.rowToFocusSession(row);
   }
 
   async findByAccountUuid(
@@ -120,19 +100,7 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
     const stmt = this.db.prepare(query);
     const rows = stmt.all(...params) as any[];
 
-    return rows.map((row) =>
-      FocusSession.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row\.accountUuid,
-        goal_uuid: row\.goalUuid,
-        status: row.status as FocusSessionStatus,
-        started_at: new Date(row\.startedAt),
-        completed_at: row\.completedAt ? new Date(row\.completedAt) : null,
-        duration_minutes: row\.durationMinutes,
-        createdAt: new Date(row\.createdAt),
-        updatedAt: new Date(row\.updatedAt),
-      })
-    );
+    return rows.map((row) => this.rowToFocusSession(row));
   }
 
   async findByGoalUuid(
@@ -167,24 +135,50 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
     const stmt = this.db.prepare(query);
     const rows = stmt.all(...params) as any[];
 
-    return rows.map((row) =>
-      FocusSession.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row\.accountUuid,
-        goal_uuid: row\.goalUuid,
-        status: row.status as FocusSessionStatus,
-        started_at: new Date(row\.startedAt),
-        completed_at: row\.completedAt ? new Date(row\.completedAt) : null,
-        duration_minutes: row\.durationMinutes,
-        createdAt: new Date(row\.createdAt),
-        updatedAt: new Date(row\.updatedAt),
-      })
-    );
+    return rows.map((row) => this.rowToFocusSession(row));
   }
 
   async delete(uuid: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM focus_sessions WHERE uuid = ?`);
     stmt.run(uuid);
+  }
+
+  async exists(uuid: string): Promise<boolean> {
+    const stmt = this.db.prepare(`SELECT 1 FROM focus_sessions WHERE uuid = ? LIMIT 1`);
+    const row = stmt.get(uuid) as any;
+    return !!row;
+  }
+
+  async count(
+    accountUuid: string,
+    options?: {
+      status?: FocusSessionStatus[];
+      startDate?: number;
+      endDate?: number;
+    },
+  ): Promise<number> {
+    let query = `SELECT COUNT(*) as count FROM focus_sessions WHERE accountUuid = ?`;
+    const params: any[] = [accountUuid];
+
+    if (options?.status && options.status.length > 0) {
+      const placeholders = options.status.map(() => '?').join(',');
+      query += ` AND status IN (${placeholders})`;
+      params.push(...options.status);
+    }
+
+    if (options?.startDate) {
+      query += ` AND startedAt >= ?`;
+      params.push(options.startDate);
+    }
+
+    if (options?.endDate) {
+      query += ` AND startedAt <= ?`;
+      params.push(options.endDate);
+    }
+
+    const stmt = this.db.prepare(query);
+    const result = stmt.get(...params) as any;
+    return result.count;
   }
 
   private mapOrderBy(field: string): string {
@@ -195,6 +189,30 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
       updatedAt: 'updatedAt',
     };
     return mapping[field] || 'createdAt';
+  }
+
+  // Private helper method to convert database row to FocusSession
+  private rowToFocusSession(row: any): FocusSession {
+    return FocusSession.fromPersistenceDTO({
+      uuid: row.uuid,
+      accountUuid: row.account_uuid,
+      goalUuid: row.goal_uuid,
+      status: row.status as FocusSessionStatus,
+      startedAt: new Date(row.started_at),
+      completedAt: row.completed_at ? new Date(row.completed_at) : null,
+      durationMinutes: row.duration_minutes,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+      actualDurationMinutes: row.actual_duration_minutes || null,
+      description: row.description || null,
+      pausedAt: row.paused_at ? new Date(row.paused_at) : null,
+      resumedAt: row.resumed_at ? new Date(row.resumed_at) : null,
+      cancelledAt: row.cancelled_at ? new Date(row.cancelled_at) : null,
+      pauseCount: row.pause_count || 0,
+      pausedDurationMinutes: row.paused_duration_minutes || 0,
+
+
+    });
   }
 }
 

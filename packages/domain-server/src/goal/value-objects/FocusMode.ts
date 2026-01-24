@@ -3,7 +3,7 @@
  * 专注周期聚焦模式领域对象
  */
 
-import type { FocusModeClientDTO, FocusModeServerDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
+import type { FocusModeClientDTO, FocusModeServerDTO, FocusModePersistenceDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
 
 /**
  * 聚焦模式值对象
@@ -125,6 +125,23 @@ export class FocusMode {
       this.createdAt,
       Date.now(), // 更新 updatedAt
     );
+  }
+
+  /**
+   * transform to Persistence DTO
+   */
+  toPersistenceDTO(): FocusModePersistenceDTO {
+    return {
+      uuid: this.uuid,
+      accountUuid: this.accountUuid,
+      name: `${this.focusedGoalUuids.join(',')}-${this.startTime}`,
+      startTime: this.startTime,
+      endTime: this.endTime,
+      isActive: this.isActive,
+      actualEndTime: this.actualEndTime,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    };
   }
 
   /**
