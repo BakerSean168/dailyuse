@@ -68,7 +68,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
     goalsCompletedThisMonth?: number;
     totalReviews?: number;
     averageRating?: number | null;
-    lastCalculatedAt?: number;
+    lastCalculatedAt?: Date;
   }) {
     super(params.accountUuid); // 使用 accountUuid 作为聚合根 ID
     this._accountUuid = params.accountUuid;
@@ -89,7 +89,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
     this._goalsCompletedThisMonth = params.goalsCompletedThisMonth ?? 0;
     this._totalReviews = params.totalReviews ?? 0;
     this._averageRating = params.averageRating ?? null;
-    this._lastCalculatedAt = params.lastCalculatedAt ?? Date.now();
+    this._lastCalculatedAt = params.lastCalculatedAt ?? new Date();
   }
 
   // ===== Getter 属性 =====
@@ -180,7 +180,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       goalsCompletedThisMonth: 0,
       totalReviews: 0,
       averageRating: null,
-      lastCalculatedAt: Date.now(),
+      lastCalculatedAt: new Date(),
     });
   }
 
@@ -214,7 +214,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       goalsCompletedThisMonth: dto.goalsCompletedThisMonth,
       totalReviews: dto.totalReviews,
       averageRating: dto.averageRating ?? null,
-      lastCalculatedAt: dto.lastCalculatedAt,
+      lastCalculatedAt: new Date(dto.lastCalculatedAt),
     });
   }
 
@@ -241,7 +241,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       goalsCompletedThisMonth: dto.goalsCompletedThisMonth,
       totalReviews: dto.totalReviews,
       averageRating: dto.averageRating ?? null,
-      lastCalculatedAt: dto.lastCalculatedAt,
+      lastCalculatedAt: new Date(dto.lastCalculatedAt),
     });
   }
 
@@ -253,9 +253,9 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
    */
   public recalculate(goals: GoalServerDTO[]): void {
     const previousStatistics = this.toServerDTO();
-    const now = Date.now();
-    const weekStart = this.getWeekStart(now);
-    const monthStart = this.getMonthStart(now);
+    const now = new Date();
+    const weekStart = this.getWeekStart(now.getTime());
+    const monthStart = this.getMonthStart(now.getTime());
 
     // 重置所有计数器
     this._totalGoals = 0;
@@ -301,7 +301,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       }
 
       // 逾期目标
-      if (goal.targetDate && goal.targetDate < now && goal.status !== 'COMPLETED') {
+      if (goal.targetDate && goal.targetDate < now.getTime() && goal.status !== 'COMPLETED') {
         this._overdueGoals++;
       }
 
@@ -377,7 +377,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
     this.addDomainEvent({
       eventType: 'goal_statistics.recalculated',
       aggregateId: this._accountUuid,
-      occurredOn: new Date(now),
+      occurredOn: now,
       accountUuid: this._accountUuid,
       payload: {
         statistics: this.toServerDTO(),

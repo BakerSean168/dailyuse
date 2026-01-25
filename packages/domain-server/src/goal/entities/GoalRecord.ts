@@ -34,8 +34,8 @@ export class GoalRecord extends Entity implements GoalRecordServer {
     goalUuid: string;
     value: number;
     note?: string | null;
-    recordedAt: number;
-    createdAt: number;
+    recordedAt: Date;
+    createdAt: Date;
   }) {
     super(params.uuid ?? Entity.generateUUID());
     this._keyResultUuid = params.keyResultUuid;
@@ -92,14 +92,14 @@ export class GoalRecord extends Entity implements GoalRecordServer {
       throw new Error('Value must be a valid number');
     }
 
-    const now = Date.now();
+    const now = new Date();
 
     return new GoalRecord({
       keyResultUuid: params.keyResultUuid,
       goalUuid: params.goalUuid,
       value: params.value,
       note: params.note?.trim() || null,
-      recordedAt: params.recordedAt ?? now,
+      recordedAt: params.recordedAt ? new Date(params.recordedAt) : now,
       createdAt: now,
     });
   }
@@ -114,7 +114,7 @@ export class GoalRecord extends Entity implements GoalRecordServer {
       goalUuid: dto.goalUuid,
       value: dto.value,
       note: dto.note ?? null,
-      recordedAt: dto.recordedAt,
+      recordedAt: new Date(dto.recordedAt),
       createdAt: new Date(dto.createdAt),
     });
   }
@@ -129,7 +129,7 @@ export class GoalRecord extends Entity implements GoalRecordServer {
       goalUuid: dto.goalUuid,
       value: dto.value,
       note: dto.note ?? null,
-      recordedAt: dto.recordedAt,
+      recordedAt: new Date(dto.recordedAt),
       createdAt: new Date(dto.createdAt),
     });
   }

@@ -34,7 +34,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
     this._templateStats = params.templateStats;
     this._groupStats = params.groupStats;
     this._triggerStats = params.triggerStats;
-    this._calculatedAt = params.calculatedAt;
+    this._calculatedAt = new Date(params.calculatedAt);
   }
 
   public override get uuid(): string {
@@ -120,7 +120,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
     this._templateStats = this.calculateTemplateStats(templates);
     this._groupStats = this.calculateGroupStats(groups);
     // triggerStats 需要从历史记录计算，这里保持不变
-    this._calculatedAt = new Date();
+    this._calculatedAt = new Date(Date.now());
 
     this.addDomainEvent({
       eventType: 'ReminderStatisticsUpdated',
@@ -139,7 +139,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
       ...this._templateStats,
       ...templateStats,
     };
-    this._calculatedAt = new Date();
+    this._calculatedAt = new Date(Date.now());
 
     this.addDomainEvent({
       eventType: 'ReminderStatisticsUpdated',
@@ -158,7 +158,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
       ...this._groupStats,
       ...groupStats,
     };
-    this._calculatedAt = new Date();
+    this._calculatedAt = new Date(Date.now());
 
     this.addDomainEvent({
       eventType: 'ReminderStatisticsUpdated',
@@ -177,7 +177,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
       ...this._triggerStats,
       ...triggerStats,
     };
-    this._calculatedAt = new Date();
+    this._calculatedAt = new Date(Date.now());
 
     this.addDomainEvent({
       eventType: 'ReminderStatisticsUpdated',
@@ -232,7 +232,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
    * @deprecated 使用 recalculate() 替代
    */
   public async calculate(): Promise<void> {
-    this._calculatedAt = new Date();
+    this._calculatedAt = new Date(Date.now());
     this.addDomainEvent({
       eventType: 'ReminderStatisticsUpdated',
       aggregateId: this.uuid,
@@ -289,7 +289,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
       templateStats: this.templateStats,
       groupStats: this.groupStats,
       triggerStats: this.triggerStats,
-      calculatedAt: this.calculatedAt,
+      calculatedAt: this.calculatedAt.getTime(),
     };
   }
 

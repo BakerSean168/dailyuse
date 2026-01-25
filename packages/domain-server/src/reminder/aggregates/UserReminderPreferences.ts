@@ -48,8 +48,8 @@ export class UserReminderPreferences
     this._bestTimeSlots = [...params.bestTimeSlots];
     this._worstTimeSlots = [...params.worstTimeSlots];
     this._globalSmartFrequency = params.globalSmartFrequency;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+    this._createdAt = new Date(params.createdAt);
+    this._updatedAt = new Date(params.updatedAt);
   }
 
   // ===== Getter 属性 =====
@@ -114,8 +114,8 @@ export class UserReminderPreferences
       bestTimeSlots: dto.bestTimeSlots,
       worstTimeSlots: dto.worstTimeSlots,
       globalSmartFrequency: dto.globalSmartFrequency,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
     });
   }
 
@@ -131,8 +131,8 @@ export class UserReminderPreferences
       bestTimeSlots: JSON.parse(dto.bestTimeSlots) as TimeSlotDTO[],
       worstTimeSlots: JSON.parse(dto.worstTimeSlots) as TimeSlotDTO[],
       globalSmartFrequency: dto.globalSmartFrequency,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
     });
   }
 
@@ -168,7 +168,7 @@ export class UserReminderPreferences
       this._bestTimeSlots.sort((a, b) => b.avgResponseRate - a.avgResponseRate);
     }
 
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   /**
@@ -201,7 +201,7 @@ export class UserReminderPreferences
       this._worstTimeSlots.sort((a, b) => a.avgResponseRate - b.avgResponseRate);
     }
 
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   /**
@@ -210,7 +210,7 @@ export class UserReminderPreferences
   public updateTimeSlots(best: TimeSlotDTO[], worst: TimeSlotDTO[]): void {
     this._bestTimeSlots = [...best];
     this._worstTimeSlots = [...worst];
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   /**
@@ -218,7 +218,7 @@ export class UserReminderPreferences
    */
   public toggleGlobalSmartFrequency(enabled: boolean): void {
     this._globalSmartFrequency = enabled;
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   /**

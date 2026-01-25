@@ -135,8 +135,8 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     this._icon = params.icon ?? null;
     this._nextTriggerAt = params.nextTriggerAt ?? null;
     this._stats = params.stats;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+    this._createdAt = new Date(params.createdAt);
+    this._updatedAt = new Date(params.updatedAt);
     this._deletedAt = params.deletedAt ?? null;
     // 智能频率相关 (Story 5-2)
     this._responseMetrics = params.responseMetrics ?? null;
@@ -198,7 +198,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     return this._icon;
   }
   public get nextTriggerAt(): Date | null {
-    return this._nextTriggerAt;
+    return this._nextTriggerAt !== null ? new Date(this._nextTriggerAt) : null;
   }
   public get stats(): ReminderStatsServer {
     return this._stats;
@@ -210,7 +210,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     return this._updatedAt;
   }
   public get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._deletedAt !== null ? new Date(this._deletedAt) : null;
   }
 
   public get effectiveEnabled(): boolean {
@@ -353,9 +353,9 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       icon: dto.icon,
       nextTriggerAt: dto.nextTriggerAt,
       stats,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+      deletedAt: dto.deletedAt ?? null,
       // 智能频率相关 (Story 5-2)
       responseMetrics,
       frequencyAdjustment,
@@ -446,8 +446,8 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       frequencyAdjustment,
       smartFrequencyEnabled: dto.smartFrequencyEnabled ?? true,
 
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt.getTime(),
+      updatedAt: dto.updatedAt.getTime(),
       deletedAt: dto.deletedAt?.getTime() ?? null,
     });
   }
@@ -563,7 +563,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
 
     // 重新计算下次触发时间
     this._nextTriggerAt = this.calculateNextTrigger();
-    this._updatedAt = now;
+    this._updatedAt = new Date(now);
 
     // 发布更新事件
     this.addDomainEvent({
@@ -590,7 +590,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     // 更新 activatedAt 为当前时间
     this._activeTime = this._activeTime.with({ activatedAt: now });
 
-    this._updatedAt = now;
+    this._updatedAt = new Date(now);
 
     // selfEnabled 变化，需要重新计算 effectiveEnabled
     // 注意：如果有分组且分组控制模式为 GROUP，需要在应用层重新计算
@@ -616,7 +616,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
   public pause(): void {
     this._selfEnabled = false;
     this._status = ReminderStatus.PAUSED;
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
 
     // selfEnabled 变化，需要重新计算 effectiveEnabled
     // 注意：如果有分组且分组控制模式为 GROUP，需要在应用层重新计算
@@ -660,7 +660,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     }
 
     this._groupUuid = targetGroupUuid;
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
 
     // groupUuid 变化，effectiveEnabled 需要重新计算
     // 应用层需要调用 setEffectiveEnabled 来更新
@@ -787,7 +787,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
 
     // 计算下次触发时间
     this._nextTriggerAt = this.calculateNextTrigger();
-    this._updatedAt = now;
+    this._updatedAt = new Date(now);
 
     // 发布触发事件
     this.addDomainEvent({
@@ -835,8 +835,8 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
    * 软删除
    */
   public softDelete(): void {
-    this._deletedAt = new Date();
-    this._updatedAt = new Date();
+    this._deletedAt = Date.now();
+    this._updatedAt = new Date(Date.now());
 
     // 发布删除事件
     this.addDomainEvent({
@@ -856,7 +856,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
    */
   public restore(): void {
     this._deletedAt = null;
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   /**
@@ -865,7 +865,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
   public addTag(tag: string): void {
     if (!this._tags.includes(tag)) {
       this._tags.push(tag);
-      this._updatedAt = new Date();
+      this._updatedAt = new Date(Date.now());
     }
   }
 
@@ -873,7 +873,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     const index = this._tags.indexOf(tag);
     if (index > -1) {
       this._tags.splice(index, 1);
-      this._updatedAt = new Date();
+      this._updatedAt = new Date(Date.now());
     }
   }
 
@@ -884,7 +884,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
    */
   public updateResponseMetrics(metrics: ResponseMetricsServerDTO): void {
     this._responseMetrics = ResponseMetrics.fromServerDTO(metrics);
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   /**
@@ -894,7 +894,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     this._frequencyAdjustment = FrequencyAdjustment.fromServerDTO(adjustment);
     // 注意：实际的触发间隔调整应该在 Domain Service 或 Application Service 中处理
     // 这里只记录调整信息
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   /**
@@ -907,7 +907,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     this._frequencyAdjustment = this._frequencyAdjustment.with({
       userConfirmed: true,
     });
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   /**
@@ -921,7 +921,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       rejectionReason: reason ?? '用户拒绝',
     });
     // 注意：实际的触发间隔恢复应该在 Domain Service 或 Application Service 中处理
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   /**
@@ -929,7 +929,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
    */
   public toggleSmartFrequency(enabled: boolean): void {
     this._smartFrequencyEnabled = enabled;
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   /**
@@ -1024,11 +1024,11 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       tags: this.tags,
       color: this.color,
       icon: this.icon,
-      nextTriggerAt: this.nextTriggerAt,
+      nextTriggerAt: this.nextTriggerAt?.getTime() ?? null,
       stats: this.stats,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      deletedAt: this.deletedAt,
+      createdAt: this.createdAt.getTime(),
+      updatedAt: this.updatedAt.getTime(),
+      deletedAt: this.deletedAt?.getTime() ?? null,
       // 智能频率相关 (Story 5-2)
       responseMetrics: this.responseMetrics,
       frequencyAdjustment: this.frequencyAdjustment,
@@ -1087,11 +1087,11 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       tags: this.tags,
       color: this.color,
       icon: this.icon,
-      nextTriggerAt: this.nextTriggerAt,
+      nextTriggerAt: this.nextTriggerAt?.getTime() ?? null,
       stats: this._stats.toClientDTO(),
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      deletedAt: this.deletedAt,
+      createdAt: this.createdAt.getTime(),
+      updatedAt: this.updatedAt.getTime(),
+      deletedAt: this.deletedAt?.getTime() ?? null,
 
       // UI 扩展
       displayTitle: this.title,
@@ -1100,7 +1100,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       recurrenceText: this._recurrence?.toClientDTO().displayText,
       statusText,
       importanceText,
-      nextTriggerText: formatRelativeTime(this.nextTriggerAt),
+      nextTriggerText: formatRelativeTime(this.nextTriggerAt?.getTime() ?? null),
       isActive: this.status === 'ACTIVE',
       isPaused: this.status === 'PAUSED',
       lastTriggeredText: formatRelativeTime(this.stats.lastTriggeredAt ?? null),
@@ -1162,9 +1162,9 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
 
       smartFrequencyEnabled: this._smartFrequencyEnabled ?? true,
 
-      createdAt: new Date(this.createdAt),
-      updatedAt: new Date(this.updatedAt),
-      deletedAt: this.deletedAt ? new Date(this.deletedAt) : null,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      deletedAt: this.deletedAt,
     };
   }
 }

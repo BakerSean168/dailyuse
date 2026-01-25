@@ -56,8 +56,8 @@ export class KeyResult extends Entity implements KeyResultServer {
     progress: KeyResultProgressServerDTO;
     weight?: number;
     order: number;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
     records?: GoalRecordServerDTO[];
   }) {
     super(params.uuid ?? Entity.generateUUID());
@@ -125,7 +125,7 @@ export class KeyResult extends Entity implements KeyResultServer {
       throw new Error('Title is required');
     }
 
-    const now = Date.now();
+    const now = new Date();
 
     return new KeyResult({
       goalUuid: params.goalUuid,

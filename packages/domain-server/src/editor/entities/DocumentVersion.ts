@@ -44,7 +44,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
     changeDescription?: string | null;
     previousVersionUuid?: string | null;
     createdBy?: string | null;
-    createdAt: number;
+    createdAt: Date;
   }) {
     super(params.uuid || Entity.generateUUID());
     this._documentUuid = params.documentUuid;
@@ -116,7 +116,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
     createdBy?: string;
   }): DocumentVersion {
     const uuid = crypto.randomUUID();
-    const now = Date.now();
+    const now = new Date();
 
     return new DocumentVersion({
       uuid,
@@ -170,7 +170,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
       changeDescription: dto.change_description,
       previousVersionUuid: dto.previous_version_uuid,
       createdBy: dto.created_by,
-      createdAt: new Date(dto.createdAt).getTime(),
+      createdAt: dto.createdAt,
     });
   }
 
@@ -237,7 +237,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
       previousVersionUuid: this._previousVersionUuid,
       createdBy: this._createdBy,
       createdAt: this._createdAt.getTime(),
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
+      formattedCreatedAt: this._createdAt.toLocaleString(),
     };
   }
 
@@ -254,7 +254,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
       change_description: this._changeDescription,
       previous_version_uuid: this._previousVersionUuid,
       created_by: this._createdBy,
-      createdAt: new Date(this._createdAt),
+      createdAt: this._createdAt,
     };
   }
 }

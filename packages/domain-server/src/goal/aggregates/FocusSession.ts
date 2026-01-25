@@ -40,11 +40,11 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
   private _description: string | null;
 
   // 时间追踪
-  private _startedAt: number | null; // timestamp (ms)
-  private _pausedAt: number | null;
-  private _resumedAt: number | null;
+  private _startedAt: Date | null; // timestamp (ms)
+  private _pausedAt: Date | null;
+  private _resumedAt: Date | null;
   private readonly _completedAt: Date | null;
-  private _cancelledAt: number | null;
+  private _cancelledAt: Date | null;
 
   // 暂停统计
   private _pauseCount: number;
@@ -62,15 +62,15 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
     durationMinutes: number;
     actualDurationMinutes: number;
     description?: string | null;
-    startedAt?: number | null;
-    pausedAt?: number | null;
-    resumedAt?: number | null;
-    completedAt?: number | null;
-    cancelledAt?: number | null;
+    startedAt?: Date | null;
+    pausedAt?: Date | null;
+    resumedAt?: Date | null;
+    completedAt?: Date | null;
+    cancelledAt?: Date | null;
     pauseCount: number;
     pausedDurationMinutes: number;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
   }) {
     super(params.uuid ?? AggregateRoot.generateUUID());
     this._accountUuid = params.accountUuid;
@@ -158,7 +158,7 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       throw new Error('专注时长不能超过 4 小时（240 分钟）');
     }
 
-    const now = Date.now();
+    const now = new Date();
 
     return new FocusSession({
       accountUuid: params.accountUuid,
@@ -188,7 +188,7 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       throw new Error('只能从草稿状态开始专注周期');
     }
 
-    const now = Date.now();
+    const now = new Date();
     this._status = FocusSessionStatus.IN_PROGRESS;
     this._startedAt = now;
     this._updatedAt = now;
@@ -196,13 +196,13 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
     this.addDomainEvent({
       eventType: 'focus_session.started',
       aggregateId: this._uuid,
-      occurredOn: new Date(now),
+      occurredOn: now,
       payload: {
         sessionUuid: this._uuid,
         accountUuid: this._accountUuid,
         goalUuid: this._goalUuid,
         durationMinutes: this._durationMinutes,
-        startedAt: now,
+        startedAt: now.getTime(),
       },
     });
   }
@@ -215,7 +215,7 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       throw new Error('只能暂停进行中的专注周期');
     }
 
-    const now = Date.now();
+    const now = new Date();
     this._status = FocusSessionStatus.PAUSED;
     this._pausedAt = now;
     this._pauseCount += 1;
@@ -224,11 +224,11 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
     this.addDomainEvent({
       eventType: 'focus_session.paused',
       aggregateId: this._uuid,
-      occurredOn: new Date(now),
+      occurredOn: now,
       payload: {
         sessionUuid: this._uuid,
         accountUuid: this._accountUuid,
-        pausedAt: now,
+        pausedAt: now.getTime(),
         pauseCount: this._pauseCount,
       },
     });
@@ -245,10 +245,10 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       throw new Error('暂停时间不存在，无法计算暂停时长');
     }
 
-    const now = Date.now();
+    const now = new Date();
 
     // 计算本次暂停时长（毫秒转分钟）
-    const pauseDurationMs = now - this._pausedAt;
+    const pauseDurationMs = now.getTime() - this._pausedAt.getTime();
     const pauseDurationMinutes = Math.round(pauseDurationMs / 1000 / 60);
 
     this._status = FocusSessionStatus.IN_PROGRESS;
@@ -260,11 +260,11 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
     this.addDomainEvent({
       eventType: 'focus_session.resumed',
       aggregateId: this._uuid,
-      occurredOn: new Date(now),
+      occurredOn: now,
       payload: {
         sessionUuid: this._uuid,
         accountUuid: this._accountUuid,
-        resumedAt: now,
+        resumedAt: now.getTime(),
         pausedDurationMinutes: this._pausedDurationMinutes,
       },
     });
@@ -284,17 +284,17 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       throw new Error('开始时间不存在，无法计算实际时长');
     }
 
-    const now = Date.now();
+    const now = new Date();
 
     // 如果处于暂停状态，先计算最后一次暂停的时长
     if (this._status === FocusSessionStatus.PAUSED && this._pausedAt !== null) {
-      const lastPauseDurationMs = now - this._pausedAt;
+      const lastPauseDurationMs = now.getTime() - this._pausedAt.getTime();
       const lastPauseDurationMinutes = Math.round(lastPauseDurationMs / 1000 / 60);
       this._pausedDurationMinutes += lastPauseDurationMinutes;
     }
 
     // 计算实际时长 = 总时长 - 暂停时长
-    const totalDurationMs = now - this._startedAt;
+    const totalDurationMs = now.getTime() - this._startedAt.getTime();
     const totalDurationMinutes = Math.round(totalDurationMs / 1000 / 60);
     this._actualDurationMinutes = totalDurationMinutes - this._pausedDurationMinutes;
 
@@ -311,12 +311,12 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
     this.addDomainEvent({
       eventType: 'focus_session.completed',
       aggregateId: this._uuid,
-      occurredOn: new Date(now),
+      occurredOn: now,
       payload: {
         sessionUuid: this._uuid,
         accountUuid: this._accountUuid,
         goalUuid: this._goalUuid,
-        completedAt: now,
+        completedAt: now.getTime(),
         actualDurationMinutes: this._actualDurationMinutes,
         plannedDurationMinutes: this._durationMinutes,
       },
@@ -334,7 +334,7 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       throw new Error('不能取消已完成或已取消的专注周期');
     }
 
-    const now = Date.now();
+    const now = new Date();
     this._status = FocusSessionStatus.CANCELLED;
     this._cancelledAt = now;
     this._pausedAt = null; // 清除暂停时间
@@ -343,11 +343,11 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
     this.addDomainEvent({
       eventType: 'focus_session.cancelled',
       aggregateId: this._uuid,
-      occurredOn: new Date(now),
+      occurredOn: now,
       payload: {
         sessionUuid: this._uuid,
         accountUuid: this._accountUuid,
-        cancelledAt: now,
+        cancelledAt: now.getTime(),
         reason: null,
       },
     });
@@ -386,10 +386,10 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
 
     if (this._status === FocusSessionStatus.IN_PROGRESS) {
       // 进行中：当前时间 - 开始时间 - 累计暂停时长
-      elapsedMs = now - this._startedAt;
+      elapsedMs = now - this._startedAt.getTime();
     } else if (this._status === FocusSessionStatus.PAUSED && this._pausedAt !== null) {
       // 已暂停：暂停时间 - 开始时间
-      elapsedMs = this._pausedAt - this._startedAt;
+      elapsedMs = this._pausedAt.getTime() - this._startedAt.getTime();
     } else {
       return this._durationMinutes;
     }
@@ -414,11 +414,11 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       durationMinutes: this._durationMinutes,
       actualDurationMinutes: this._actualDurationMinutes,
       description: this._description,
-      startedAt: this._startedAt.getTime(),
-      pausedAt: this._pausedAt.getTime(),
-      resumedAt: this._resumedAt.getTime(),
-      completedAt: this._completedAt.getTime(),
-      cancelledAt: this._cancelledAt.getTime(),
+      startedAt: this._startedAt ? this._startedAt.getTime() : null,
+      pausedAt: this._pausedAt ? this._pausedAt.getTime() : null,
+      resumedAt: this._resumedAt ? this._resumedAt.getTime() : null,
+      completedAt: this._completedAt ? this._completedAt.getTime() : null,
+      cancelledAt: this._cancelledAt ? this._cancelledAt.getTime() : null,
       pauseCount: this._pauseCount,
       pausedDurationMinutes: this._pausedDurationMinutes,
       createdAt: this._createdAt.getTime(),
@@ -444,11 +444,11 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       durationMinutes: this._durationMinutes,
       actualDurationMinutes: this._actualDurationMinutes,
       description: this._description,
-      startedAt: this._startedAt.getTime(),
-      pausedAt: this._pausedAt.getTime(),
-      resumedAt: this._resumedAt.getTime(),
-      completedAt: this._completedAt.getTime(),
-      cancelledAt: this._cancelledAt.getTime(),
+      startedAt: this._startedAt ? this._startedAt.getTime() : null,
+      pausedAt: this._pausedAt ? this._pausedAt.getTime() : null,
+      resumedAt: this._resumedAt ? this._resumedAt.getTime() : null,
+      completedAt: this._completedAt ? this._completedAt.getTime() : null,
+      cancelledAt: this._cancelledAt ? this._cancelledAt.getTime() : null,
       pauseCount: this._pauseCount,
       pausedDurationMinutes: this._pausedDurationMinutes,
       remainingMinutes: remaining,
@@ -471,11 +471,11 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       durationMinutes: this._durationMinutes,
       actualDurationMinutes: this._actualDurationMinutes,
       description: this._description,
-      startedAt: this._startedAt.getTime(),
-      pausedAt: this._pausedAt.getTime(),
-      resumedAt: this._resumedAt.getTime(),
-      completedAt: this._completedAt.getTime(),
-      cancelledAt: this._cancelledAt.getTime(),
+      startedAt: this._startedAt ? this._startedAt.getTime() : null,
+      pausedAt: this._pausedAt ? this._pausedAt.getTime() : null,
+      resumedAt: this._resumedAt ? this._resumedAt.getTime() : null,
+      completedAt: this._completedAt ? this._completedAt.getTime() : null,
+      cancelledAt: this._cancelledAt ? this._cancelledAt.getTime() : null,
       pauseCount: this._pauseCount,
       pausedDurationMinutes: this._pausedDurationMinutes,
       createdAt: this._createdAt.getTime(),
@@ -496,11 +496,11 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       durationMinutes: dto.durationMinutes,
       actualDurationMinutes: dto.actualDurationMinutes,
       description: dto.description,
-      startedAt: dto.startedAt,
-      pausedAt: dto.pausedAt,
-      resumedAt: dto.resumedAt,
-      completedAt: dto.completedAt,
-      cancelledAt: dto.cancelledAt,
+      startedAt: dto.startedAt ? new Date(dto.startedAt) : null,
+      pausedAt: dto.pausedAt ? new Date(dto.pausedAt) : null,
+      resumedAt: dto.resumedAt ? new Date(dto.resumedAt) : null,
+      completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
+      cancelledAt: dto.cancelledAt ? new Date(dto.cancelledAt) : null,
       pauseCount: dto.pauseCount,
       pausedDurationMinutes: dto.pausedDurationMinutes,
       createdAt: new Date(dto.createdAt),
@@ -520,11 +520,11 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       durationMinutes: dto.durationMinutes,
       actualDurationMinutes: dto.actualDurationMinutes,
       description: dto.description,
-      startedAt: dto.startedAt,
-      pausedAt: dto.pausedAt,
-      resumedAt: dto.resumedAt,
-      completedAt: dto.completedAt,
-      cancelledAt: dto.cancelledAt,
+      startedAt: dto.startedAt ? new Date(dto.startedAt) : null,
+      pausedAt: dto.pausedAt ? new Date(dto.pausedAt) : null,
+      resumedAt: dto.resumedAt ? new Date(dto.resumedAt) : null,
+      completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
+      cancelledAt: dto.cancelledAt ? new Date(dto.cancelledAt) : null,
       pauseCount: dto.pauseCount,
       pausedDurationMinutes: dto.pausedDurationMinutes,
       createdAt: new Date(dto.createdAt),
@@ -544,11 +544,11 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       durationMinutes: dto.durationMinutes,
       actualDurationMinutes: dto.actualDurationMinutes,
       description: dto.description,
-      startedAt: dto.startedAt,
-      pausedAt: dto.pausedAt,
-      resumedAt: dto.resumedAt,
-      completedAt: dto.completedAt,
-      cancelledAt: dto.cancelledAt,
+      startedAt: dto.startedAt ? new Date(dto.startedAt) : null,
+      pausedAt: dto.pausedAt ? new Date(dto.pausedAt) : null,
+      resumedAt: dto.resumedAt ? new Date(dto.resumedAt) : null,
+      completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
+      cancelledAt: dto.cancelledAt ? new Date(dto.cancelledAt) : null,
       pauseCount: dto.pauseCount,
       pausedDurationMinutes: dto.pausedDurationMinutes,
       createdAt: new Date(dto.createdAt),

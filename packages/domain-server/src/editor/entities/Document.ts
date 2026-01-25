@@ -50,8 +50,8 @@ export class Document extends Entity implements DocumentServer {
     indexStatus: IndexStatus;
     lastIndexedAt?: number | null;
     lastModifiedAt?: number | null;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
   }) {
     super(params.uuid || Entity.generateUUID());
     this._workspaceUuid = params.workspaceUuid;
@@ -100,10 +100,10 @@ export class Document extends Entity implements DocumentServer {
   public get indexStatus(): IndexStatus {
     return this._indexStatus;
   }
-  public get lastIndexedAt(): Date | null {
+  public get lastIndexedAt(): number | null {
     return this._lastIndexedAt;
   }
-  public get lastModifiedAt(): Date | null {
+  public get lastModifiedAt(): number | null {
     return this._lastModifiedAt;
   }
   public get createdAt(): Date {
@@ -128,7 +128,7 @@ export class Document extends Entity implements DocumentServer {
     metadata?: Partial<DocumentMetadataServerDTO>;
   }): Document {
     const uuid = crypto.randomUUID();
-    const now = Date.now();
+    const now = new Date();
     const contentHash = Document.calculateHash(params.content);
 
     const metadata = params.metadata
@@ -193,8 +193,8 @@ export class Document extends Entity implements DocumentServer {
       indexStatus: dto.index_status,
       lastIndexedAt: dto.last_indexed_at?.getTime() ?? null,
       lastModifiedAt: dto.last_modified_at?.getTime() ?? null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
     });
   }
 
@@ -239,8 +239,8 @@ export class Document extends Entity implements DocumentServer {
    */
   public markIndexed(): void {
     this._indexStatus = IndexStatus.INDEXED;
-    this._lastIndexedAt = new Date();
-    this._updatedAt = this._lastIndexedAt;
+    this._lastIndexedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -296,8 +296,8 @@ export class Document extends Entity implements DocumentServer {
       contentHash: this._contentHash,
       metadata: this._metadata.toServerDTO(),
       indexStatus: this._indexStatus,
-      lastIndexedAt: this._lastIndexedAt.getTime(),
-      lastModifiedAt: this._lastModifiedAt.getTime(),
+      lastIndexedAt: this._lastIndexedAt,
+      lastModifiedAt: this._lastModifiedAt,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
     };
@@ -315,8 +315,8 @@ export class Document extends Entity implements DocumentServer {
       contentHash: this._contentHash,
       metadata: this._metadata.toClientDTO(),
       indexStatus: this._indexStatus,
-      lastIndexedAt: this._lastIndexedAt.getTime(),
-      lastModifiedAt: this._lastModifiedAt.getTime(),
+      lastIndexedAt: this._lastIndexedAt,
+      lastModifiedAt: this._lastModifiedAt,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       formattedLastIndexed: this._lastIndexedAt
@@ -325,8 +325,8 @@ export class Document extends Entity implements DocumentServer {
       formattedLastModified: this._lastModifiedAt
         ? new Date(this._lastModifiedAt).toLocaleString()
         : null,
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
-      formattedUpdatedAt: new Date(this._updatedAt).toLocaleString(),
+      formattedCreatedAt: this._createdAt.toLocaleString(),
+      formattedUpdatedAt: this._updatedAt.toLocaleString(),
     };
   }
 
@@ -344,8 +344,8 @@ export class Document extends Entity implements DocumentServer {
       index_status: this._indexStatus,
       last_indexed_at: this._lastIndexedAt ? new Date(this._lastIndexedAt) : null,
       last_modified_at: this._lastModifiedAt ? new Date(this._lastModifiedAt) : null,
-      createdAt: new Date(this._createdAt),
-      updatedAt: new Date(this._updatedAt),
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
     };
   }
 

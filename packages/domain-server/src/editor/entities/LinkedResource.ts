@@ -50,8 +50,8 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
     targetAnchor?: string | null;
     isValid: boolean;
     lastValidatedAt?: number | null;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
   }) {
     super(params.uuid || Entity.generateUUID());
     this._workspaceUuid = params.workspaceUuid;
@@ -107,7 +107,7 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
   public get isValid(): boolean {
     return this._isValid;
   }
-  public get lastValidatedAt(): Date | null {
+  public get lastValidatedAt(): number | null {
     return this._lastValidatedAt;
   }
   public get createdAt(): Date {
@@ -135,7 +135,7 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
     targetAnchor?: string;
   }): LinkedResource {
     const uuid = crypto.randomUUID();
-    const now = Date.now();
+    const now = new Date();
 
     return new LinkedResource({
       uuid,
@@ -196,8 +196,8 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
       targetAnchor: dto.target_anchor,
       isValid: dto.is_valid,
       lastValidatedAt: dto.last_validated_at,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
     });
   }
 
@@ -208,8 +208,8 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
    */
   public markValid(): void {
     this._isValid = true;
-    this._lastValidatedAt = new Date();
-    this._updatedAt = this._lastValidatedAt;
+    this._lastValidatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -217,8 +217,8 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
    */
   public markInvalid(): void {
     this._isValid = false;
-    this._lastValidatedAt = new Date();
-    this._updatedAt = this._lastValidatedAt;
+    this._lastValidatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -251,8 +251,8 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
    * 记录验证时间
    */
   public recordValidation(): void {
-    this._lastValidatedAt = new Date();
-    this._updatedAt = this._lastValidatedAt;
+    this._lastValidatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -292,7 +292,7 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
       targetDocumentUuid: this._targetDocumentUuid,
       targetAnchor: this._targetAnchor,
       isValid: this._isValid,
-      lastValidatedAt: this._lastValidatedAt.getTime(),
+      lastValidatedAt: this._lastValidatedAt,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
     };
@@ -312,14 +312,14 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
       targetDocumentUuid: this._targetDocumentUuid,
       targetAnchor: this._targetAnchor,
       isValid: this._isValid,
-      lastValidatedAt: this._lastValidatedAt.getTime(),
+      lastValidatedAt: this._lastValidatedAt,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       formattedLastValidated: this._lastValidatedAt
         ? new Date(this._lastValidatedAt).toLocaleString()
         : null,
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
-      formattedUpdatedAt: new Date(this._updatedAt).toLocaleString(),
+      formattedCreatedAt: this._createdAt.toLocaleString(),
+      formattedUpdatedAt: this._updatedAt.toLocaleString(),
     };
   }
 
@@ -338,8 +338,8 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
       target_anchor: this._targetAnchor,
       is_valid: this._isValid,
       last_validated_at: this._lastValidatedAt,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
     };
   }
 }

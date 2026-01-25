@@ -22,13 +22,13 @@ export class NotificationHistory extends Entity implements NotificationHistorySe
     notificationUuid: string;
     action: string;
     details?: any | null;
-    createdAt: number;
+    createdAt: Date | number;
   }) {
     super(params.uuid ?? Entity.generateUUID());
     this._notificationUuid = params.notificationUuid;
     this._action = params.action;
     this._details = params.details ?? null;
-    this._createdAt = params.createdAt;
+    this._createdAt = params.createdAt instanceof Date ? params.createdAt : new Date(params.createdAt);
   }
 
   // ===== Getter 属性 =====

@@ -58,8 +58,8 @@ export class EditorSession extends Entity {
     isActive: boolean;
     activeGroupIndex: number;
     lastAccessedAt: number | null;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
   }) {
     super(params.uuid);
     this._workspaceUuid = params.workspaceUuid;
@@ -108,7 +108,7 @@ export class EditorSession extends Entity {
     return this._layout;
   }
 
-  public get lastAccessedAt(): Date | null {
+  public get lastAccessedAt(): number | null {
     return this._lastAccessedAt;
   }
 
@@ -153,7 +153,7 @@ export class EditorSession extends Entity {
     layout?: Partial<SessionLayoutServerDTO>;
   }): EditorSession {
     const uuid = crypto.randomUUID();
-    const now = Date.now();
+    const now = new Date();
 
     const layout = params.layout
       ? SessionLayout.fromServerDTO({
@@ -245,8 +245,8 @@ export class EditorSession extends Entity {
    */
   public activate(): void {
     this._isActive = true;
-    this._lastAccessedAt = new Date();
-    this._updatedAt = this._lastAccessedAt;
+    this._lastAccessedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -282,7 +282,7 @@ export class EditorSession extends Entity {
    * 更新最后访问时间
    */
   public updateLastAccessedAt(): void {
-    this._lastAccessedAt = new Date();
+    this._lastAccessedAt = Date.now();
     this.updateTimestamp();
   }
 
@@ -309,7 +309,7 @@ export class EditorSession extends Entity {
       isActive: this._isActive,
       activeGroupIndex: this._activeGroupIndex,
       layout: this._layout.toServerDTO(),
-      lastAccessedAt: this._lastAccessedAt.getTime(),
+      lastAccessedAt: this._lastAccessedAt,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
     };
@@ -330,7 +330,7 @@ export class EditorSession extends Entity {
       activeGroupIndex: this._activeGroupIndex,
       layout: this._layout.toClientDTO(),
       groupCount: this._groups.length,
-      lastAccessedAt: this._lastAccessedAt.getTime(),
+      lastAccessedAt: this._lastAccessedAt,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
     };
@@ -350,9 +350,9 @@ export class EditorSession extends Entity {
       is_active: this._isActive,
       active_group_index: this._activeGroupIndex,
       layout: this._layout.toPersistenceDTO(),
-      lastAccessedAt: this._lastAccessedAt.getTime(),
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      lastAccessedAt: this._lastAccessedAt,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
     };
   }
 
@@ -420,8 +420,8 @@ export class EditorSession extends Entity {
       isActive: dto.is_active,
       activeGroupIndex: dto.active_group_index,
       lastAccessedAt: dto.lastAccessedAt,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
     });
 
     // ✅ 递归重建子实体

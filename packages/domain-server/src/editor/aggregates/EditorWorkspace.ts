@@ -62,8 +62,8 @@ export class EditorWorkspace extends AggregateRoot implements EditorWorkspaceSer
     isActive: boolean;
     lastActiveSessionUuid?: string | null;
     lastAccessedAt?: number | null;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
     sessions?: EditorSession[];
   }) {
     super(params.uuid || AggregateRoot.generateUUID());
@@ -113,7 +113,7 @@ export class EditorWorkspace extends AggregateRoot implements EditorWorkspaceSer
   public get lastActiveSessionUuid(): string | null {
     return this._lastActiveSessionUuid;
   }
-  public get lastAccessedAt(): Date | null {
+  public get lastAccessedAt(): number | null {
     return this._lastAccessedAt;
   }
   public get createdAt(): Date {
@@ -141,7 +141,7 @@ export class EditorWorkspace extends AggregateRoot implements EditorWorkspaceSer
     settings?: Partial<WorkspaceSettingsServerDTO>;
   }): EditorWorkspace {
     const uuid = crypto.randomUUID();
-    const now = Date.now();
+    const now = new Date();
 
     // 创建默认布局和设置
     const layout = params.layout
@@ -304,8 +304,8 @@ export class EditorWorkspace extends AggregateRoot implements EditorWorkspaceSer
     }
 
     this._isActive = true;
-    this._lastAccessedAt = new Date();
-    this._updatedAt = this._lastAccessedAt;
+    this._lastAccessedAt = Date.now();
+    this._updatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'EditorWorkspaceActivated',
@@ -391,8 +391,8 @@ export class EditorWorkspace extends AggregateRoot implements EditorWorkspaceSer
    * 记录访问时间
    */
   public recordAccess(): void {
-    this._lastAccessedAt = new Date();
-    this._updatedAt = this._lastAccessedAt;
+    this._lastAccessedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== 子实体管理方法 =====
@@ -484,7 +484,7 @@ export class EditorWorkspace extends AggregateRoot implements EditorWorkspaceSer
       sessions: this._sessions.map((session) => session.toServerDTO()),
       isActive: this._isActive,
       lastActiveSessionUuid: this._lastActiveSessionUuid,
-      lastAccessedAt: this._lastAccessedAt.getTime(),
+      lastAccessedAt: this._lastAccessedAt,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
     };
@@ -506,14 +506,14 @@ export class EditorWorkspace extends AggregateRoot implements EditorWorkspaceSer
       sessions: this._sessions.map((session) => session.toClientDTO()),
       isActive: this._isActive,
       lastActiveSessionUuid: this._lastActiveSessionUuid,
-      lastAccessedAt: this._lastAccessedAt.getTime(),
+      lastAccessedAt: this._lastAccessedAt,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       formattedLastAccessed: this._lastAccessedAt
         ? new Date(this._lastAccessedAt).toLocaleString()
         : null,
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
-      formattedUpdatedAt: new Date(this._updatedAt).toLocaleString(),
+      formattedCreatedAt: this._createdAt.toLocaleString(),
+      formattedUpdatedAt: this._updatedAt.toLocaleString(),
     };
   }
 
@@ -532,9 +532,9 @@ export class EditorWorkspace extends AggregateRoot implements EditorWorkspaceSer
       settings: JSON.stringify(this._settings.toPersistenceDTO()),
       is_active: this._isActive,
       last_active_session_uuid: this._lastActiveSessionUuid,
-      lastAccessedAt: this._lastAccessedAt.getTime(),
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      lastAccessedAt: this._lastAccessedAt,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
     };
   }
 }

@@ -42,7 +42,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
   private _completedGoalCount: number;
   private _createdAt: Date;
   private _updatedAt: Date;
-  private _deletedAt: number | null;
+  private _deletedAt: Date | null;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -58,9 +58,9 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
     folderType?: FolderType | null;
     goalCount: number;
     completedGoalCount: number;
-    createdAt: number;
-    updatedAt: number;
-    deletedAt?: number | null;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date | null;
   }) {
     super(params.uuid ?? AggregateRoot.generateUUID());
     this._accountUuid = params.accountUuid;
@@ -150,7 +150,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
       throw new Error('Name is required');
     }
 
-    const now = Date.now();
+    const now = new Date();
     const folder = new GoalFolder({
       accountUuid: params.accountUuid,
       name: params.name.trim(),
@@ -440,7 +440,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
       completedGoalCount: this._completedGoalCount,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt.getTime(),
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
     };
   }
 
@@ -463,7 +463,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
       completedGoalCount: this._completedGoalCount,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt.getTime(),
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
 
       // UI 计算字段
       displayName: this._name,
@@ -493,7 +493,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
       completedGoalCount: this._completedGoalCount,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt.getTime(),
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
     };
   }
 }

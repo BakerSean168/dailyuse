@@ -59,8 +59,8 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
     this._color = params.color ?? null;
     this._icon = params.icon ?? null;
     this._stats = params.stats;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+    this._createdAt = new Date(params.createdAt);
+    this._updatedAt = new Date(params.updatedAt);
     this._deletedAt = params.deletedAt ?? null;
   }
 
@@ -104,7 +104,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
     return this._updatedAt;
   }
   public get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._deletedAt !== null ? new Date(this._deletedAt) : null;
   }
 
   public static create(params: {
@@ -164,9 +164,9 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
       color: dto.color,
       icon: dto.icon,
       stats,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+      deletedAt: dto.deletedAt ?? null,
     });
   }
 
@@ -184,9 +184,9 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
       color: dto.color,
       icon: dto.icon,
       stats,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+      createdAt: dto.createdAt.getTime(),
+      updatedAt: dto.updatedAt.getTime(),
+      deletedAt: dto.deletedAt?.getTime() ?? null,
     });
   }
 
@@ -194,7 +194,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
     if (this._controlMode === ControlMode.GROUP) return;
     const oldMode = this._controlMode;
     this._controlMode = ControlMode.GROUP;
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
     this.addDomainEvent({
       eventType: 'ReminderGroupControlModeSwitched',
       aggregateId: this.uuid,
@@ -212,7 +212,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
     if (this._controlMode === ControlMode.INDIVIDUAL) return;
     const oldMode = this._controlMode;
     this._controlMode = ControlMode.INDIVIDUAL;
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
     this.addDomainEvent({
       eventType: 'ReminderGroupControlModeSwitched',
       aggregateId: this.uuid,
@@ -237,7 +237,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
   public enable(): void {
     this._enabled = true;
     this._status = ReminderStatus.ACTIVE;
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
     this.addDomainEvent({
       eventType: 'ReminderGroupEnabled',
       aggregateId: this.uuid,
@@ -250,7 +250,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
   public pause(): void {
     this._enabled = false;
     this._status = ReminderStatus.PAUSED;
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
     this.addDomainEvent({
       eventType: 'ReminderGroupPaused',
       aggregateId: this.uuid,
@@ -273,7 +273,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
       throw new Error('只能在 GROUP 模式下批量启用模板');
     }
     this._enabled = true;
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   public async pauseAllTemplates(): Promise<void> {
@@ -281,7 +281,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
       throw new Error('只能在 GROUP 模式下批量暂停模板');
     }
     this._enabled = false;
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   public async enableGroupAndAllTemplates(): Promise<void> {
@@ -295,7 +295,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
   }
 
   public async updateStats(): Promise<void> {
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   public async getTemplatesCount(): Promise<number> {
@@ -309,13 +309,13 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
   public activate(): void {
     this._status = ReminderStatus.ACTIVE;
     this._deletedAt = null;
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   public softDelete(): void {
-    this._deletedAt = new Date();
+    this._deletedAt = Date.now();
     this._status = ReminderStatus.PAUSED;
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
     this.addDomainEvent({
       eventType: 'ReminderGroupDeleted',
       aggregateId: this.uuid,
@@ -328,7 +328,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
   public restore(): void {
     this._deletedAt = null;
     this._status = ReminderStatus.ACTIVE;
-    this._updatedAt = new Date();
+    this._updatedAt = new Date(Date.now());
   }
 
   public toServerDTO(): ReminderGroupServerDTO {
@@ -344,9 +344,9 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
       color: this.color,
       icon: this.icon,
       stats: this.stats,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      deletedAt: this.deletedAt,
+      createdAt: this.createdAt.getTime(),
+      updatedAt: this.updatedAt.getTime(),
+      deletedAt: this.deletedAt?.getTime() ?? null,
     };
   }
 

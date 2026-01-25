@@ -42,8 +42,8 @@ export class EditorGroup extends Entity implements EditorGroupServer {
     groupIndex: number;
     activeTabIndex: number;
     name?: string | null;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
     tabs?: EditorTab[];
   }) {
     super(params.uuid || Entity.generateUUID());
@@ -103,7 +103,7 @@ export class EditorGroup extends Entity implements EditorGroupServer {
     name?: string;
   }): EditorGroup {
     const uuid = crypto.randomUUID();
-    const now = Date.now();
+    const now = new Date();
 
     return new EditorGroup({
       uuid,
@@ -264,8 +264,8 @@ export class EditorGroup extends Entity implements EditorGroupServer {
       tabs: this._tabs.map((tab) => tab.toClientDTO()),
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
-      formattedUpdatedAt: new Date(this._updatedAt).toLocaleString(),
+      formattedCreatedAt: this._createdAt.toLocaleString(),
+      formattedUpdatedAt: this._updatedAt.toLocaleString(),
     };
   }
 
@@ -278,8 +278,8 @@ export class EditorGroup extends Entity implements EditorGroupServer {
       group_index: this._groupIndex,
       active_tab_index: this._activeTabIndex,
       name: this._name,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
     };
   }
 
@@ -341,8 +341,8 @@ export class EditorGroup extends Entity implements EditorGroupServer {
       groupIndex: dto.group_index,
       activeTabIndex: dto.active_tab_index,
       name: dto.name,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
     });
 
     // ✅ 递归重建子实体 (如果 DTO 包含tabs数据)

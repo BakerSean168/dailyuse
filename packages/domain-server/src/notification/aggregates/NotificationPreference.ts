@@ -45,8 +45,8 @@ export class NotificationPreference extends AggregateRoot implements Notificatio
     categories: CategoryPreferences;
     doNotDisturb?: DoNotDisturbConfig | null;
     rateLimit?: RateLimit | null;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date | number;
+    updatedAt: Date | number;
   }) {
     super(params.uuid ?? AggregateRoot.generateUUID());
     this._accountUuid = params.accountUuid;
@@ -55,8 +55,8 @@ export class NotificationPreference extends AggregateRoot implements Notificatio
     this._categories = params.categories;
     this._doNotDisturb = params.doNotDisturb ?? null;
     this._rateLimit = params.rateLimit ?? null;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+    this._createdAt = params.createdAt instanceof Date ? params.createdAt : new Date(params.createdAt);
+    this._updatedAt = params.updatedAt instanceof Date ? params.updatedAt : new Date(params.updatedAt);
   }
 
   // ===== Getter 属性 =====

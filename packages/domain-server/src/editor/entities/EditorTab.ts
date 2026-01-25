@@ -51,8 +51,8 @@ export class EditorTab extends Entity implements EditorTabServer {
     isPinned: boolean;
     isDirty: boolean;
     lastAccessedAt?: number | null;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
   }) {
     super(params.uuid || Entity.generateUUID());
     this._groupUuid = params.groupUuid;
@@ -108,7 +108,7 @@ export class EditorTab extends Entity implements EditorTabServer {
   public get isDirty(): boolean {
     return this._isDirty;
   }
-  public get lastAccessedAt(): Date | null {
+  public get lastAccessedAt(): number | null {
     return this._lastAccessedAt;
   }
   public get createdAt(): Date {
@@ -136,7 +136,7 @@ export class EditorTab extends Entity implements EditorTabServer {
     isPinned?: boolean;
   }): EditorTab {
     const uuid = crypto.randomUUID();
-    const now = Date.now();
+    const now = new Date();
 
     // 创建默认视图状态
     const viewState = params.viewState
@@ -232,8 +232,8 @@ export class EditorTab extends Entity implements EditorTabServer {
       isPinned: dto.is_pinned,
       isDirty: dto.is_dirty,
       lastAccessedAt: dto.lastAccessedAt,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
     });
   }
 
@@ -283,8 +283,8 @@ export class EditorTab extends Entity implements EditorTabServer {
    * 记录访问时间
    */
   public recordAccess(): void {
-    this._lastAccessedAt = new Date();
-    this._updatedAt = this._lastAccessedAt;
+    this._lastAccessedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -318,7 +318,7 @@ export class EditorTab extends Entity implements EditorTabServer {
       viewState: this._viewState.toServerDTO(),
       isPinned: this._isPinned,
       isDirty: this._isDirty,
-      lastAccessedAt: this._lastAccessedAt.getTime(),
+      lastAccessedAt: this._lastAccessedAt,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
     };
@@ -338,14 +338,14 @@ export class EditorTab extends Entity implements EditorTabServer {
       viewState: this._viewState.toClientDTO(),
       isPinned: this._isPinned,
       isDirty: this._isDirty,
-      lastAccessedAt: this._lastAccessedAt.getTime(),
+      lastAccessedAt: this._lastAccessedAt,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       formattedLastAccessed: this._lastAccessedAt
         ? new Date(this._lastAccessedAt).toLocaleString()
         : null,
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
-      formattedUpdatedAt: new Date(this._updatedAt).toLocaleString(),
+      formattedCreatedAt: this._createdAt.toLocaleString(),
+      formattedUpdatedAt: this._updatedAt.toLocaleString(),
     };
   }
 
@@ -363,9 +363,9 @@ export class EditorTab extends Entity implements EditorTabServer {
       view_state: JSON.stringify(this._viewState.toPersistenceDTO()),
       is_pinned: this._isPinned,
       is_dirty: this._isDirty,
-      lastAccessedAt: this._lastAccessedAt.getTime(),
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      lastAccessedAt: this._lastAccessedAt,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
     };
   }
 }

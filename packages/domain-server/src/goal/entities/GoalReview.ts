@@ -39,8 +39,8 @@ export class GoalReview extends Entity implements GoalReviewServer {
     challenges?: string | null;
     improvements?: string | null;
     keyResultSnapshots: KeyResultSnapshotServerDTO[];
-    reviewedAt: number;
-    createdAt: number;
+    reviewedAt: Date;
+    createdAt: Date;
   }) {
     super(params.uuid ?? Entity.generateUUID());
     this._goalUuid = params.goalUuid;
@@ -117,7 +117,7 @@ export class GoalReview extends Entity implements GoalReviewServer {
       throw new Error('Summary is required');
     }
 
-    const now = Date.now();
+    const now = new Date();
 
     return new GoalReview({
       goalUuid: params.goalUuid,
@@ -128,7 +128,7 @@ export class GoalReview extends Entity implements GoalReviewServer {
       challenges: params.challenges?.trim() || null,
       improvements: params.improvements?.trim() || null,
       keyResultSnapshots: params.keyResultSnapshots ?? [],
-      reviewedAt: params.reviewedAt ?? now,
+      reviewedAt: params.reviewedAt ? new Date(params.reviewedAt) : now,
       createdAt: now,
     });
   }
@@ -147,7 +147,7 @@ export class GoalReview extends Entity implements GoalReviewServer {
       challenges: dto.challenges ?? null,
       improvements: dto.improvements ?? null,
       keyResultSnapshots: dto.keyResultSnapshots,
-      reviewedAt: dto.reviewedAt,
+      reviewedAt: new Date(dto.reviewedAt),
       createdAt: new Date(dto.createdAt),
     });
   }
@@ -169,7 +169,7 @@ export class GoalReview extends Entity implements GoalReviewServer {
       challenges: dto.challenges ?? null,
       improvements: dto.improvements ?? null,
       keyResultSnapshots: snapshots,
-      reviewedAt: dto.reviewedAt,
+      reviewedAt: new Date(dto.reviewedAt),
       createdAt: new Date(dto.createdAt),
     });
   }

@@ -44,8 +44,8 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
     template: NotificationTemplateConfig;
     isActive: boolean;
     isSystemTemplate: boolean;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date | number;
+    updatedAt: Date | number;
   }) {
     super(params.uuid ?? AggregateRoot.generateUUID());
     this._name = params.name;
@@ -55,8 +55,8 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
     this._template = params.template;
     this._isActive = params.isActive;
     this._isSystemTemplate = params.isSystemTemplate;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+    this._createdAt = params.createdAt instanceof Date ? params.createdAt : new Date(params.createdAt);
+    this._updatedAt = params.updatedAt instanceof Date ? params.updatedAt : new Date(params.updatedAt);
   }
 
   // ===== Getter 属性 =====

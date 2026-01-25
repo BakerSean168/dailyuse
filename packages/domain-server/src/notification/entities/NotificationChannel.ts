@@ -30,9 +30,9 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
   private _error: ChannelError | null;
   private _response: ChannelResponse | null;
   private _createdAt: Date;
-  private _sentAt: number | null;
-  private _deliveredAt: number | null;
-  private _failedAt: number | null;
+  private _sentAt: Date | null;
+  private _deliveredAt: Date | null;
+  private _failedAt: Date | null;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -45,10 +45,10 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
     maxRetries: number;
     error?: ChannelError | null;
     response?: ChannelResponse | null;
-    createdAt: number;
-    sentAt?: number | null;
-    deliveredAt?: number | null;
-    failedAt?: number | null;
+    createdAt: Date | number;
+    sentAt?: Date | number | null;
+    deliveredAt?: Date | number | null;
+    failedAt?: Date | number | null;
   }) {
     super(params.uuid ?? Entity.generateUUID());
     this._notificationUuid = params.notificationUuid;
@@ -59,10 +59,10 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
     this._maxRetries = params.maxRetries;
     this._error = params.error ?? null;
     this._response = params.response ?? null;
-    this._createdAt = params.createdAt;
-    this._sentAt = params.sentAt ?? null;
-    this._deliveredAt = params.deliveredAt ?? null;
-    this._failedAt = params.failedAt ?? null;
+    this._createdAt = params.createdAt instanceof Date ? params.createdAt : new Date(params.createdAt);
+    this._sentAt = params.sentAt ? (params.sentAt instanceof Date ? params.sentAt : new Date(params.sentAt)) : null;
+    this._deliveredAt = params.deliveredAt ? (params.deliveredAt instanceof Date ? params.deliveredAt : new Date(params.deliveredAt)) : null;
+    this._failedAt = params.failedAt ? (params.failedAt instanceof Date ? params.failedAt : new Date(params.failedAt)) : null;
   }
 
   // ===== Getter 属性 =====
@@ -278,9 +278,9 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
       error: dto.error ? ChannelError.fromContract(dto.error) : null,
       response: dto.response ? ChannelResponse.fromContract(dto.response) : null,
       createdAt: new Date(dto.createdAt),
-      sentAt: dto.sentAt,
-      deliveredAt: dto.deliveredAt,
-      failedAt: dto.failedAt,
+      sentAt: dto.sentAt ? new Date(dto.sentAt) : null,
+      deliveredAt: dto.deliveredAt ? new Date(dto.deliveredAt) : null,
+      failedAt: dto.failedAt ? new Date(dto.failedAt) : null,
     });
   }
 
@@ -299,9 +299,9 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
       error: dto.error ? ChannelError.fromContract(JSON.parse(dto.error)) : null,
       response: dto.response ? ChannelResponse.fromContract(JSON.parse(dto.response)) : null,
       createdAt: new Date(dto.createdAt),
-      sentAt: dto.sentAt,
-      deliveredAt: dto.deliveredAt,
-      failedAt: dto.failedAt,
+      sentAt: dto.sentAt ? new Date(dto.sentAt) : null,
+      deliveredAt: dto.deliveredAt ? new Date(dto.deliveredAt) : null,
+      failedAt: dto.failedAt ? new Date(dto.failedAt) : null,
     });
   }
 }

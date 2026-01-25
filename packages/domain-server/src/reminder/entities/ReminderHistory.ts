@@ -38,14 +38,14 @@ export class ReminderHistory extends Entity implements ReminderHistoryServer {
   }) {
     super(params.uuid || Entity.generateUUID());
     this._templateUuid = params.templateUuid;
-    this._triggeredAt = params.triggeredAt;
+    this._triggeredAt = new Date(params.triggeredAt);
     this._result = params.result;
     this._error = params.error ?? null;
     this._notificationSent = params.notificationSent;
     this._notificationChannels = params.notificationChannels
       ? [...params.notificationChannels]
       : null;
-    this._createdAt = params.createdAt;
+    this._createdAt = new Date(params.createdAt);
   }
 
   // ===== Getter 属性 =====
@@ -101,7 +101,7 @@ export class ReminderHistory extends Entity implements ReminderHistoryServer {
       error: params.error,
       notificationSent: params.notificationSent,
       notificationChannels: params.notificationChannels,
-      createdAt: new Date(),
+      createdAt: Date.now(),
     });
   }
 
@@ -117,7 +117,7 @@ export class ReminderHistory extends Entity implements ReminderHistoryServer {
       error: dto.error,
       notificationSent: dto.notificationSent,
       notificationChannels: dto.notificationChannels ?? null,
-      createdAt: new Date(dto.createdAt),
+      createdAt: dto.createdAt,
     });
   }
 
@@ -128,12 +128,12 @@ export class ReminderHistory extends Entity implements ReminderHistoryServer {
     return new ReminderHistory({
       uuid: dto.uuid,
       templateUuid: dto.templateUuid,
-      triggeredAt: dto.triggeredAt,
+      triggeredAt: dto.triggeredAt.getTime(),
       result: dto.result,
       error: dto.error,
       notificationSent: dto.notificationSent,
       notificationChannels: dto.notificationChannels ? JSON.parse(dto.notificationChannels) : null,
-      createdAt: new Date(dto.createdAt),
+      createdAt: dto.createdAt.getTime(),
     });
   }
 
@@ -169,12 +169,12 @@ export class ReminderHistory extends Entity implements ReminderHistoryServer {
     return {
       uuid: this.uuid,
       templateUuid: this.templateUuid,
-      triggeredAt: this.triggeredAt,
+      triggeredAt: this.triggeredAt.getTime(),
       result: this.result,
       error: this.error,
       notificationSent: this.notificationSent,
       notificationChannels: this.notificationChannels,
-      createdAt: this.createdAt,
+      createdAt: this.createdAt.getTime(),
     };
   }
 
@@ -198,16 +198,16 @@ export class ReminderHistory extends Entity implements ReminderHistoryServer {
     return {
       uuid: this.uuid,
       templateUuid: this.templateUuid,
-      triggeredAt: this.triggeredAt,
+      triggeredAt: this.triggeredAt.getTime(),
       result: this.result,
       error: this.error,
       notificationSent: this.notificationSent,
       notificationChannels: this.notificationChannels,
-      createdAt: this.createdAt,
+      createdAt: this.createdAt.getTime(),
 
       // UI 扩展
       resultText: resultTextMap[this.result],
-      timeAgo: formatTimeAgo(this.triggeredAt),
+      timeAgo: formatTimeAgo(this.triggeredAt.getTime()),
       channelsText: channelsText,
     };
   }
