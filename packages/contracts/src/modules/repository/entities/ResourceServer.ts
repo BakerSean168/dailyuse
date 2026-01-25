@@ -46,8 +46,8 @@ export interface ResourcePersistenceDTO {
   metadata: string; // JSON string
   stats: string; // JSON string
   status: ResourceStatus;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 实体接口 ============

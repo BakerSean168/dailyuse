@@ -399,7 +399,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
             snoozeCount: dto.snoozeCount ?? 0,
             effectivenessScore: dto.effectivenessScore ?? 0,
             sampleSize: dto.sampleSize ?? 0,
-            lastAnalysisTime: dto.lastAnalysisTime ?? Date.now(),
+            lastAnalysisTime: dto.lastAnalysisTime?.getTime() ?? Date.now(),
           })
         : null;
 
@@ -413,7 +413,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
             originalInterval: dto.originalInterval,
             adjustedInterval: dto.adjustedInterval,
             adjustmentReason: dto.adjustmentReason ?? '',
-            adjustmentTime: dto.adjustmentTime ?? Date.now(),
+            adjustmentTime: dto.adjustmentTime?.getTime() ?? Date.now(),
             isAutoAdjusted: dto.isAutoAdjusted ?? false,
             userConfirmed: dto.userConfirmed ?? false,
             rejectionReason: null,
@@ -446,9 +446,9 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       frequencyAdjustment,
       smartFrequencyEnabled: dto.smartFrequencyEnabled ?? true,
 
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
+      createdAt: dto.createdAt.getTime(),
+      updatedAt: dto.updatedAt.getTime(),
+      deletedAt: dto.deletedAt?.getTime() ?? null,
     });
   }
 
@@ -1150,21 +1150,21 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       snoozeCount: responseMetricsFlat?.snoozeCount ?? 0,
       effectivenessScore: responseMetricsFlat?.effectivenessScore ?? null,
       sampleSize: responseMetricsFlat?.sampleSize ?? 0,
-      lastAnalysisTime: responseMetricsFlat?.lastAnalysisTime ?? null,
+      lastAnalysisTime: responseMetricsFlat?.lastAnalysisTime ? new Date(responseMetricsFlat.lastAnalysisTime) : null,
 
       // Smart Frequency: Frequency Adjustment（扁平化）
       originalInterval: frequencyAdjustmentFlat?.originalInterval ?? null,
       adjustedInterval: frequencyAdjustmentFlat?.adjustedInterval ?? null,
       adjustmentReason: frequencyAdjustmentFlat?.adjustmentReason ?? null,
-      adjustmentTime: frequencyAdjustmentFlat?.adjustmentTime ?? null,
+      adjustmentTime: frequencyAdjustmentFlat?.adjustmentTime ? new Date(frequencyAdjustmentFlat.adjustmentTime) : null,
       isAutoAdjusted: frequencyAdjustmentFlat?.isAutoAdjusted ?? false,
       userConfirmed: frequencyAdjustmentFlat?.userConfirmed ?? false,
 
       smartFrequencyEnabled: this._smartFrequencyEnabled ?? true,
 
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      deletedAt: this.deletedAt,
+      createdAt: new Date(this.createdAt),
+      updatedAt: new Date(this.updatedAt),
+      deletedAt: this.deletedAt ? new Date(this.deletedAt) : null,
     };
   }
 }

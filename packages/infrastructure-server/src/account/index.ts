@@ -5,20 +5,17 @@
  * Supports both Prisma (API) and SQLite (Desktop) data sources.
  */
 
+// DI Module
+export { AccountModule } from './account.module';
+
+// DI Factory
+export { AccountRepositoryFactory } from './di';
+
 // Ports (Interfaces)
-export type { IAccountRepository } from '@dailyuse/domain-server/account';
+export { type IAccountRepository } from '@dailyuse/domain-server/account';
 
 // Prisma Adapters
-export { AccountPrismaRepository } from './adapters/prisma/account-prisma.repository';
+export { AccountPrismaRepository } from './adapters/prisma';
 
 // SQLite Adapters
-export { SqliteAccountRepository } from './adapters/sqlite/account-sqlite.repository';
-
-// Memory Adapters
-export { AccountMemoryRepository } from './adapters/memory/account-memory.repository';
-
-// DI Container and Factory
-export { AccountContainer } from './di/account-container';
-export { AccountRepositoryFactory, AccountStatusRepositoryFactory } from './di/account-repository.factory';
-// Module
-export { AccountModule } from './account.module';
+export { SqliteAccountRepository } from './adapters/sqlite';

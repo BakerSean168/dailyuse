@@ -90,7 +90,7 @@ export interface ReminderTemplatePersistenceDTO {
   tags: string; // JSON string
   color?: string | null;
   icon?: string | null;
-  nextTriggerAt?: number | null;
+  nextTriggerAt?: Date | null;
   stats: string; // JSON string
   
   // Smart Frequency: Response Metrics（扁平化字段）
@@ -100,21 +100,21 @@ export interface ReminderTemplatePersistenceDTO {
   snoozeCount?: number;
   effectivenessScore?: number | null;
   sampleSize?: number;
-  lastAnalysisTime?: number | null;
+  lastAnalysisTime?: Date | null;
   
   // Smart Frequency: Frequency Adjustment（扁平化字段）
   originalInterval?: number | null;
   adjustedInterval?: number | null;
   adjustmentReason?: string | null;
-  adjustmentTime?: number | null;
+  adjustmentTime?: Date | null;
   isAutoAdjusted?: boolean;
   userConfirmed?: boolean;
   
   smartFrequencyEnabled?: boolean;
   
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 }
 
 // ============ 领域事件 ============

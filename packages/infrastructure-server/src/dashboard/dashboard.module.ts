@@ -1,35 +1,46 @@
 /**
  * Dashboard Module
  * 
- * Infrastructure-level composition of Dashboard domain services and repositories.
- * Follows ADR-025: Module Composition Pattern
+ * DI Container for Dashboard domain.
+ * Supports both Prisma (API) and SQLite (Desktop) data sources.
+ * 
+ * Usage:
+ * ```typescript
+ * // API (Prisma)
+ * const dashboardModule = new DashboardModule('prisma', prismaClient);
+ * 
+ * // Desktop (SQLite)
+ * const dashboardModule = new DashboardModule('sqlite', sqliteDb);
+ * ```
  */
 
 import type { PrismaClient } from '@prisma/client';
+import type Database from 'better-sqlite3';
+
+import type { IDashboardConfigRepository } from '@dailyuse/domain-server/dashboard';
+
 import {
   DashboardApplicationService,
 } from '@dailyuse/application-server/dashboard';
 
-import { DashboardConfigPrismaRepository } from './adapters/prisma/dashboard-config-prisma.repository';
+import { DashboardRepositoryFactory } from './di/dashboard-repository.factory';
 
-/**
- * Dashboard Module - DI Container
- * 
- * Instantiates all repositories and application services for the Dashboard domain.
- * Used by API and Worker applications to access dashboard functionality.
- */
+type BetterSQLiteDB = Database.Database;
+
 export class DashboardModule {
-  // Repositories (Public for testing/inspection)
-  public readonly dashboardRepository: DashboardConfigPrismaRepository;
+  // ============ Repositories (Public for testing) ============
+  public readonly dashboardRepository: IDashboardConfigRepository;
 
-  // Application Services (Public - injected into routes)
+  // ============ Application Services (Public - injected into routes) ============
   public readonly dashboardService: DashboardApplicationService;
 
-  constructor(prisma: PrismaClient) {
-    // 1. Initialize Repositories
-    this.dashboardRepository = new DashboardConfigPrismaRepository(prisma);
+  constructor(dataSourceType: 'prisma' | 'sqlite', dbConnection: PrismaClient | BetterSQLiteDB) {
+    // ============ Step 1: Initialize Repositories using Factory ============
+    const repositories = DashboardRepositoryFactory.create(dataSourceType, dbConnection);
+    
+    this.dashboardRepository = repositories.dashboardRepository;
 
-    // 2. Initialize Application Services (Pure Dependency Injection)
+    // ============ Step 2: Initialize Application Services (Pure DI) ============
     this.dashboardService = new DashboardApplicationService();
   }
 }

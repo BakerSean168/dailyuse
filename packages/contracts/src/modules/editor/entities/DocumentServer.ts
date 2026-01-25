@@ -45,10 +45,10 @@ export interface DocumentPersistenceDTO {
   content_hash: string;
   metadata: string; // JSON 字符串
   index_status: IndexStatus;
-  last_indexed_at?: number | null;
-  last_modified_at?: number | null;
-  createdAt: number;
-  updatedAt: number;
+  last_indexed_at?: Date | null;
+  last_modified_at?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**

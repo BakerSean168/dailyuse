@@ -124,5 +124,36 @@ export class SqliteFolderRepository implements IFolderRepository {
     const stmt = this.db.prepare(`DELETE FROM folders WHERE uuid = ?`);
     stmt.run(uuid);
   }
+
+  async findRootFolders(repositoryUuid: string): Promise<Folder[]> {
+    const stmt = this.db.prepare(
+      `SELECT * FROM folders WHERE repository_uuid = ? AND parent_uuid IS NULL ORDER BY name ASC`
+    );
+    const rows = stmt.all(repositoryUuid) as any[];
+
+    return rows.map((row) =>
+      Folder.fromPersistenceDTO({
+        uuid: row.uuid,
+        repositoryUuid: row.repository_uuid,
+        parentUuid: row.parent_uuid,
+        name: row.name,
+        path: row.path,
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at),
+      })
+    );
+  }
+
+  async deleteByRepositoryUuid(repositoryUuid: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM folders WHERE repository_uuid = ?`);
+    stmt.run(repositoryUuid);
+  }
+
+  async exists(uuid: string): Promise<boolean> {
+    const stmt = this.db.prepare(
+      `SELECT 1 FROM folders WHERE uuid = ? LIMIT 1`
+    );
+    return stmt.get(uuid) !== undefined;
+  }
 }
 

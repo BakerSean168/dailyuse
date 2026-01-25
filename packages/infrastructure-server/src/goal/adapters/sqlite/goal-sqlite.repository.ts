@@ -15,24 +15,30 @@ export class SqliteGoalRepository implements IGoalRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO goals (
-        uuid, account_uuid, name, description, status, folder_uuid,
-        created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        uuid, account_uuid, title, description, status, importance, tags,
+        folder_uuid, sort_order, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
-        name = excluded.name,
+        title = excluded.title,
         description = excluded.description,
         status = excluded.status,
+        importance = excluded.importance,
+        tags = excluded.tags,
         folder_uuid = excluded.folder_uuid,
+        sort_order = excluded.sort_order,
         updated_at = excluded.updated_at
     `);
 
     stmt.run(
       dto.uuid,
       dto.accountUuid,
-      dto.title,
+      dto.name,
       dto.description || null,
       dto.status,
+      dto.importance,
+      dto.tags,
       dto.folderUuid || null,
+      dto.sortOrder,
       dto.createdAt,
       dto.updatedAt,
     );
@@ -47,10 +53,13 @@ export class SqliteGoalRepository implements IGoalRepository {
     return Goal.fromPersistenceDTO({
       uuid: row.uuid,
       accountUuid: row.account_uuid,
-      title: row.name,
+      name: row.title,
       description: row.description,
       status: row.status,
+      importance: row.importance,
+      tags: row.tags || '[]',
       folderUuid: row.folder_uuid,
+      sortOrder: row.sort_order,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     });
@@ -86,10 +95,13 @@ export class SqliteGoalRepository implements IGoalRepository {
       Goal.fromPersistenceDTO({
         uuid: row.uuid,
         accountUuid: row.account_uuid,
-        title: row.name,
+        name: row.title,
         description: row.description,
         status: row.status,
+        importance: row.importance,
+        tags: row.tags || '[]',
         folderUuid: row.folder_uuid,
+        sortOrder: row.sort_order,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
       })
@@ -106,10 +118,13 @@ export class SqliteGoalRepository implements IGoalRepository {
       Goal.fromPersistenceDTO({
         uuid: row.uuid,
         accountUuid: row.account_uuid,
-        title: row.name,
+        name: row.title,
         description: row.description,
         status: row.status,
+        importance: row.importance,
+        tags: row.tags || '[]',
         folderUuid: row.folder_uuid,
+        sortOrder: row.sort_order,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
       })
@@ -139,6 +154,14 @@ export class SqliteGoalRepository implements IGoalRepository {
       `UPDATE goals SET status = ?, updatedAt = ? WHERE uuid IN (${placeholders})`
     );
     stmt.run(status, Date.now(), ...uuids);
+  }
+
+  async batchMoveToFolder(uuids: string[], folderUuid: string | null): Promise<void> {
+    const placeholders = uuids.map(() => '?').join(',');
+    const stmt = this.db.prepare(
+      `UPDATE goals SET folder_uuid = ?, updated_at = ? WHERE uuid IN (${placeholders})`
+    );
+    stmt.run(folderUuid || null, Date.now(), ...uuids);
   }
 }
 

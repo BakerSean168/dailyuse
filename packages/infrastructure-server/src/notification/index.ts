@@ -4,9 +4,11 @@
  * Ports and Adapters for Notification module persistence.
  */
 
-// Container
-export { NotificationContainer } from './notification.container';
+// DI Module
 export { NotificationModule } from './notification.module';
+
+// DI Factory
+export { NotificationRepositoryFactory } from './di';
 
 // Ports (Interfaces)
 export { type INotificationRepository } from './ports/notification-repository.port';
@@ -14,11 +16,15 @@ export { type INotificationPreferenceRepository } from './ports/notification-pre
 export { type INotificationTemplateRepository } from './ports/notification-template-repository.port';
 
 // Prisma Adapters
-export { NotificationPrismaRepository } from './adapters/prisma/notification-prisma.repository';
-export { NotificationPreferencePrismaRepository } from './adapters/prisma/notification-preference-prisma.repository';
-export { NotificationTemplatePrismaRepository } from './adapters/prisma/notification-template-prisma.repository';
+export {
+  NotificationPrismaRepository,
+  NotificationPreferencePrismaRepository,
+  NotificationTemplatePrismaRepository,
+} from './adapters/prisma';
 
-// Memory Adapters
-export { NotificationMemoryRepository } from './adapters/memory/notification-memory.repository';
-export { NotificationPreferenceMemoryRepository } from './adapters/memory/notification-preference-memory.repository';
-export { NotificationTemplateMemoryRepository } from './adapters/memory/notification-template-memory.repository';
+// SQLite Adapters
+export {
+  SqliteNotificationRepository,
+  SqliteNotificationPreferenceRepository,
+  SqliteNotificationTemplateRepository,
+} from './adapters/sqlite';

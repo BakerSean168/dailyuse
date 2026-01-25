@@ -1,59 +1,72 @@
 /**
  * Repository Module
  * 
- * Infrastructure-level composition of Repository domain services and repositories.
- * Follows ADR-025: Module Composition Pattern
+ * DI Container for Repository domain.
+ * Supports both Prisma (API) and SQLite (Desktop) data sources.
+ * 
+ * Usage:
+ * ```typescript
+ * // API (Prisma)
+ * const repositoryModule = new RepositoryModule('prisma', prismaClient);
+ * 
+ * // Desktop (SQLite)
+ * const repositoryModule = new RepositoryModule('sqlite', sqliteDb);
+ * ```
  */
 
 import type { PrismaClient } from '@prisma/client';
+import type Database from 'better-sqlite3';
+
+import type {
+  IRepositoryRepository,
+  IResourceRepository,
+  IFolderRepository,
+  IRepositoryStatisticsRepository,
+} from '@dailyuse/domain-server/repository';
+
 import {
   RepositoryApplicationService,
   RepositorySyncApplicationService,
   RepositoryPermissionApplicationService,
-  // TODO: ResourceApplicationService not exported from application-server
-  // TODO: FolderApplicationService not exported from application-server
-  // TODO: RepositoryStatisticsApplicationService not exported from application-server
+  ResourceApplicationService,
+  FolderApplicationService,
+  RepositoryStatisticsApplicationService,
 } from '@dailyuse/application-server/repository';
 
-import { RepositoryPrismaRepository } from './adapters/prisma/repository-prisma.repository';
-import { ResourcePrismaRepository } from './adapters/prisma/resource-prisma.repository';
-import { FolderPrismaRepository } from './adapters/prisma/folder-prisma.repository';
-import { RepositoryStatisticsPrismaRepository } from './adapters/prisma/repository-statistics-prisma.repository';
+import { RepositoryRepositoryFactory } from './di/repository-repository.factory';
 
-/**
- * Repository Module - DI Container
- * 
- * Instantiates all repositories and application services for the Repository domain.
- * Used by API and Worker applications to access repository functionality.
- * 
- * NOTE: This module is incomplete - waiting for application-server to export missing services
- */
+type BetterSQLiteDB = Database.Database;
+
 export class RepositoryModule {
-  // Repositories (Public for testing/inspection)
-  public readonly repositoryRepository: RepositoryPrismaRepository;
-  public readonly resourceRepository: ResourcePrismaRepository;
-  public readonly folderRepository: FolderPrismaRepository;
-  public readonly statisticsRepository: RepositoryStatisticsPrismaRepository;
+  // ============ Repositories (Public for testing) ============
+  public readonly repositoryRepository: IRepositoryRepository;
+  public readonly resourceRepository: IResourceRepository;
+  public readonly folderRepository: IFolderRepository;
+  public readonly statisticsRepository: IRepositoryStatisticsRepository;
 
-  // Application Services (Public - injected into routes)
+  // ============ Application Services (Public - injected into routes) ============
   public readonly repositoryService: RepositoryApplicationService;
   public readonly syncService: RepositorySyncApplicationService;
   public readonly permissionService: RepositoryPermissionApplicationService;
-  // public readonly resourceService: ResourceApplicationService;  // TODO: Not exported
-  // public readonly folderService: FolderApplicationService;  // TODO: Not exported
-  // public readonly statisticsService: RepositoryStatisticsApplicationService;  // TODO: Not exported
+  public readonly resourceService: ResourceApplicationService;
+  public readonly folderService: FolderApplicationService;
+  public readonly statisticsService: RepositoryStatisticsApplicationService;
 
-  constructor(prisma: PrismaClient) {
-    // 1. Initialize Repositories
-    this.repositoryRepository = new RepositoryPrismaRepository(prisma);
-    this.resourceRepository = new ResourcePrismaRepository(prisma);
-    this.folderRepository = new FolderPrismaRepository(prisma);
-    this.statisticsRepository = new RepositoryStatisticsPrismaRepository(prisma);
+  constructor(dataSourceType: 'prisma' | 'sqlite', dbConnection: PrismaClient | BetterSQLiteDB) {
+    // ============ Step 1: Initialize Repositories using Factory ============
+    const repositories = RepositoryRepositoryFactory.create(dataSourceType, dbConnection);
+    
+    this.repositoryRepository = repositories.repositoryRepository;
+    this.resourceRepository = repositories.resourceRepository;
+    this.folderRepository = repositories.folderRepository;
+    this.statisticsRepository = repositories.statisticsRepository;
 
-    // 2. Initialize Application Services (Pure Dependency Injection)
+    // ============ Step 2: Initialize Application Services (Pure DI) ============
     this.repositoryService = new RepositoryApplicationService(this.repositoryRepository);
     this.syncService = new RepositorySyncApplicationService();
     this.permissionService = new RepositoryPermissionApplicationService();
-    // TODO: Initialize resourceService, folderService, statisticsService once services are exported
+    this.resourceService = new ResourceApplicationService(this.resourceRepository);
+    this.folderService = new FolderApplicationService(this.folderRepository);
+    this.statisticsService = new RepositoryStatisticsApplicationService(this.statisticsRepository);
   }
 }

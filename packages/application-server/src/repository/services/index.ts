@@ -13,6 +13,15 @@ export { RepositorySyncApplicationService } from './repository-sync-application-
 // ===== Repository Permission Application Service =====
 export { RepositoryPermissionApplicationService } from './repository-permission-application-service';
 
+// ===== Resource Application Service =====
+export { ResourceApplicationService } from './resource-application-service';
+
+// ===== Folder Application Service =====
+export { FolderApplicationService } from './folder-application-service';
+
+// ===== Repository Statistics Application Service =====
+export { RepositoryStatisticsApplicationService } from './repository-statistics-application-service';
+
 // ===== Repository 鐢ㄤ緥 =====
 export { CreateRepository } from './create-repository';
 export type { CreateRepositoryInput } from './create-repository';

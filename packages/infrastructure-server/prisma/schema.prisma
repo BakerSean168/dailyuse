@@ -147,9 +147,9 @@ model document {
   lastVersionedAt Int?     @map("last_versioned_at") // 最后版本创建时间
   lastEditedAt    Int?     @map("last_edited_at") // 最后编辑时间（用于冲突检测）
   editSessionId   String?  @map("edit_session_id") // 编辑会话 ID（用于冲突检测）
-  createdAt       Int      @default(dbgenerated("extract(epoch from now())::integer")) @map("created_at")
-  updatedAt       Int      @default(dbgenerated("extract(epoch from now())::integer")) @map("updated_at")
-  deletedAt       Int?     @map("deleted_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
 
   account     account            @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
   versions    document_version[] // 版本历史关联
@@ -173,7 +173,7 @@ model document_version {
   changedBy         String  @map("changed_by")
   restoredFrom      String? @map("restored_from") // UUID of source version if restore
   metadata          Json? // { addedChars, deletedChars, modifiedSections }
-  createdAt         Int     @default(dbgenerated("extract(epoch from now())::integer")) @map("created_at")
+  createdAt         DateTime @default(now()) @map("created_at")
 
   document document @relation(fields: [documentUuid], references: [uuid], onDelete: Cascade)
   account  account  @relation(fields: [changedBy], references: [uuid])
@@ -191,8 +191,8 @@ model document_link {
   linkText           String  @map("link_text") // Original text like "项目计划"
   linkPosition       Int     @map("link_position") // Character position in source document
   isBroken           Boolean @default(false) @map("is_broken") // True if target deleted
-  createdAt          Int     @default(dbgenerated("extract(epoch from now())::integer")) @map("created_at")
-  updatedAt          Int     @default(dbgenerated("extract(epoch from now())::integer")) @map("updated_at")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @map("updated_at")
 
   sourceDocument document  @relation("source_links", fields: [sourceDocumentUuid], references: [uuid], onDelete: Cascade)
   targetDocument document? @relation("target_links", fields: [targetDocumentUuid], references: [uuid], onDelete: SetNull)
@@ -308,13 +308,13 @@ model focusMode {
   uuid             String   @id
   accountUuid      String   @map("account_uuid")
   focusedGoalUuids String[] @map("focused_goal_uuids")
-  startTime        BigInt   @map("start_time")
-  endTime          BigInt   @map("end_time")
+  startTime        DateTime @map("start_time")
+  endTime          DateTime @map("end_time")
   hiddenGoalsMode  String   @map("hidden_goals_mode")
   isActive         Boolean  @default(true) @map("is_active")
-  actualEndTime    BigInt?  @map("actual_end_time")
-  createdAt        BigInt   @map("created_at")
-  updatedAt        BigInt   @map("updated_at")
+  actualEndTime    DateTime? @map("actual_end_time")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @map("updated_at")
   account          account  @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
   @@index([accountUuid])
@@ -457,7 +457,7 @@ model keyResultWeightSnapshot {
   oldWeight     Float     @map("old_weight")
   newWeight     Float     @map("new_weight")
   weightDelta   Float     @map("weight_delta")
-  snapshotTime  BigInt    @map("snapshot_time")
+  snapshotTime  DateTime  @map("snapshot_time")
   trigger       String
   reason        String?
   operatorUuid  String    @map("operator_uuid")
@@ -705,13 +705,13 @@ model reminderTemplate {
   snoozeCount        Int     @default(0) @map("snooze_count")
   effectivenessScore Float?  @map("effectiveness_score")
   sampleSize         Int     @default(0) @map("sample_size")
-  lastAnalysisTime   BigInt? @map("last_analysis_time")
+  lastAnalysisTime   DateTime? @map("last_analysis_time")
 
   // Smart Frequency: Frequency Adjustment
   originalInterval Int?    @map("original_interval")
   adjustedInterval Int?    @map("adjusted_interval")
   adjustmentReason String? @map("adjustment_reason")
-  adjustmentTime   BigInt? @map("adjustment_time")
+  adjustmentTime   DateTime? @map("adjustment_time")
   isAutoAdjusted   Boolean @default(false) @map("is_auto_adjusted")
   userConfirmed    Boolean @default(false) @map("user_confirmed")
 
@@ -732,7 +732,7 @@ model reminderResponse {
   templateUuid String   @map("template_uuid")
   action       String // clicked, ignored, snoozed, dismissed, completed
   responseTime Int?     @map("response_time") // seconds
-  timestamp    BigInt
+  timestamp    DateTime
   createdAt    DateTime @default(now()) @map("created_at")
 
   reminderTemplate reminderTemplate @relation(fields: [templateUuid], references: [uuid], onDelete: Cascade)
@@ -757,8 +757,8 @@ model repository {
   git                String?
   syncStatus         String?              @map("sync_status")
   lastAccessedAt     DateTime?            @map("last_accessed_at")
-  createdAt          BigInt               @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("created_at") // epoch ms
-  updatedAt          BigInt               @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("updated_at") // epoch ms
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @map("updated_at")
   account            account              @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
   repositoryExplorer repositoryExplorer[]
   repositoryResource repositoryResource[]
@@ -781,8 +781,8 @@ model folder {
   order          Int     @default(0)
   isExpanded     Boolean @default(true) @map("is_expanded")
   metadata       Json    @default("{}") // FolderMetadata JSONB: {icon, color, ...}
-  createdAt      BigInt  @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("created_at") // epoch ms
-  updatedAt      BigInt  @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("updated_at") // epoch ms
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @map("updated_at")
 
   repository repository @relation(fields: [repositoryUuid], references: [uuid], onDelete: Cascade)
   parent     folder?    @relation("FolderHierarchy", fields: [parentUuid], references: [uuid], onDelete: Cascade)
@@ -820,9 +820,9 @@ model resource {
   category    String?
 
   status     String  @default("ACTIVE") // ACTIVE | ARCHIVED | DELETED | DRAFT
-  createdAt  BigInt  @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("created_at") // epoch ms
-  updatedAt  BigInt  @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("updated_at") // epoch ms
-  modifiedAt BigInt? @map("modified_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+  modifiedAt DateTime? @map("modified_at")
 
   repository repository @relation(fields: [repositoryUuid], references: [uuid], onDelete: Cascade)
 
@@ -1008,8 +1008,8 @@ model schedule {
   accountUuid          String   @map("account_uuid")
   title                String
   description          String?
-  startTime            BigInt   @map("start_time")
-  endTime              BigInt   @map("end_time")
+  startTime            DateTime @map("start_time")
+  endTime              DateTime @map("end_time")
   duration             Int
   hasConflict          Boolean  @default(false) @map("has_conflict")
   conflictingSchedules String?  @map("conflicting_schedules")
@@ -1199,9 +1199,9 @@ model taskTemplate {
   parentTaskUuid String? @map("parent_task_uuid")
 
   // === 一次性任务专用字段 ===
-  startDate        BigInt? @map("start_date") // Unix timestamp (ms)
-  dueDate          BigInt? @map("due_date") // Unix timestamp (ms)
-  completedAt      BigInt? @map("completed_at") // Unix timestamp (ms)
+  startDate        DateTime? @map("start_date")
+  dueDate          DateTime? @map("due_date")
+  completedAt      DateTime? @map("completed_at")
   estimatedMinutes Int?    @map("estimated_minutes")
   actualMinutes    Int?    @map("actual_minutes")
   note             String? @db.Text

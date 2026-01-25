@@ -67,13 +67,13 @@ export interface ScheduleTaskPersistenceDTO {
   // ========== ScheduleConfig 值对象（展开字段）==========
   cronExpression: string | null;
   timezone: string;
-  startDate: number | null; // epoch ms
-  endDate: number | null; // epoch ms
+  startDate: Date | null;
+  endDate: Date | null;
   maxExecutions: number | null;
 
   // ========== ExecutionInfo 值对象（展开字段）==========
-  nextRunAt: number | null; // epoch ms - ⭐ 关键字段！
-  lastRunAt: number | null; // epoch ms
+  nextRunAt: Date | null;
+  lastRunAt: Date | null;
   executionCount: number;
   lastExecutionStatus: string | null;
   lastExecutionDuration: number | null; // ms
@@ -93,8 +93,8 @@ export interface ScheduleTaskPersistenceDTO {
   timeout: number | null;
 
   // 时间戳
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // 注意：子实体在数据库中是独立表，通过外键关联
 }

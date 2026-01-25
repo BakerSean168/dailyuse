@@ -1,20 +1,24 @@
 /**
  * Dashboard Module - Infrastructure Server
  *
- * Ports and Adapters for Dashboard module persistence.
+ * Repository implementations and DI Module for Dashboard domain.
+ * Supports both Prisma (API) and SQLite (Desktop) data sources.
  */
 
-// Module (Composition Pattern - ADR-025)
+// ============ DI Module ============
 export { DashboardModule } from './dashboard.module';
 
-// Container
-export { DashboardContainer, type IStatisticsCacheService } from './dashboard.container';
+// ============ Repository Factory ============
+export { DashboardRepositoryFactory } from './di/dashboard-repository.factory';
 
-// Ports (Interfaces)
-export { type IDashboardConfigRepository } from './ports/dashboard-config-repository.port';
-
-// Prisma Adapters
+// ============ Adapters - Prisma ============
 export { DashboardConfigPrismaRepository } from './adapters/prisma/dashboard-config-prisma.repository';
 
-// Memory Adapters
+// ============ Adapters - SQLite ============
+export { SqliteDashboardConfigRepository } from './adapters/sqlite/dashboard-config-sqlite.repository';
+
+// ============ Adapters - Memory ============
 export { DashboardConfigMemoryRepository } from './adapters/memory/dashboard-config-memory.repository';
+
+// ============ Ports (Interfaces) ============
+export { type IDashboardConfigRepository } from './ports/dashboard-config-repository.port';

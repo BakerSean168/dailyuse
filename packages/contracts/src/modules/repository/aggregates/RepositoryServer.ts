@@ -47,8 +47,8 @@ export interface RepositoryPersistenceDTO {
   config: string; // JSON string
   stats: string; // JSON string
   status: RepositoryStatus;
-  createdAt: number; // epoch ms
-  updatedAt: number; // epoch ms
+  createdAt: Date;
+  updatedAt: Date;
   
   // 注意：子实体（folders）在数据库中是独立表，通过外键关联
 }

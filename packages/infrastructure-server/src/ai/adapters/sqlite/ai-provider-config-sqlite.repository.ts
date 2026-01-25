@@ -85,6 +85,16 @@ export class SqliteAIProviderConfigRepository implements IAIProviderConfigReposi
     stmt.run(uuid);
   }
 
+  async exists(uuid: string): Promise<boolean> {
+    const stmt = this.db.prepare(`SELECT 1 FROM ai_provider_configs WHERE uuid = ? LIMIT 1`);
+    return stmt.get(uuid) !== undefined;
+  }
+
+  async clearDefaultForAccount(accountUuid: string): Promise<void> {
+    const stmt = this.db.prepare(`UPDATE ai_provider_configs SET is_default = 0 WHERE accountUuid = ?`);
+    stmt.run(accountUuid);
+  }
+
   private rowToDTO(row: any): AIProviderConfigServerDTO {
     return {
       uuid: row.uuid,

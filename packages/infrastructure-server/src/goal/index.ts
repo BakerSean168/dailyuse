@@ -1,23 +1,34 @@
 /**
  * Goal Module - Infrastructure Server
  *
- * Ports and Adapters for Goal module persistence.
+ * Repository implementations and DI Module for Goal domain.
+ * Supports both Prisma (API) and SQLite (Desktop) data sources.
  */
 
-// Container
-export { GoalContainer } from './goal.container';
+// ============ DI Module ============
 export { GoalModule } from './goal.module';
 
+// ============ Repository Factory ============
+export { GoalRepositoryFactory } from './di/repository-factory';
 
-// Ports (Interfaces)
-export { type IGoalRepository } from './ports/goal-repository.port';
-
-// Prisma Adapters
+// ============ Adapters - Prisma ============
 export { GoalPrismaRepository } from './adapters/prisma/goal-prisma.repository';
-
-// Memory Adapters
-export { GoalMemoryRepository } from './adapters/memory/goal-memory.repository';
-
-// Prisma Weight Snapshot
-export { PrismaWeightSnapshotMapper } from './mappers/prisma-weight-snapshot-mapper';
+export { GoalFolderPrismaRepository } from './adapters/prisma/goal-folder-prisma.repository';
+export { GoalStatisticsPrismaRepository } from './adapters/prisma/goal-statistics-prisma.repository';
+export { FocusModePrismaRepository } from './adapters/prisma/focus-mode-prisma.repository';
+export { FocusSessionPrismaRepository } from './adapters/prisma/focus-session-prisma.repository';
 export { PrismaWeightSnapshotRepository } from './adapters/prisma/weight-snapshot-prisma.repository';
+
+// ============ Adapters - SQLite ============
+export { SqliteGoalRepository } from './adapters/sqlite/goal-sqlite.repository';
+export { SqliteGoalFolderRepository } from './adapters/sqlite/goal-folder-sqlite.repository';
+export { SqliteGoalStatisticsRepository } from './adapters/sqlite/goal-statistics-sqlite.repository';
+export { SqliteFocusModeRepository } from './adapters/sqlite/focus-mode-sqlite.repository';
+export { SqliteFocusSessionRepository } from './adapters/sqlite/focus-session-sqlite.repository';
+export { SqliteWeightSnapshotRepository } from './adapters/sqlite/weight-snapshot-sqlite.repository';
+
+// ============ Ports (Interfaces) ============
+export type { IGoalRepository } from './ports/goal-repository.port';
+
+// ============ Mappers ============
+export { PrismaWeightSnapshotMapper } from './mappers/prisma-weight-snapshot-mapper';

@@ -13,12 +13,12 @@ export interface FocusModePersistenceDTO {
   uuid: string;
   accountUuid: string;
   name: string;
-  startTime: number;
-  endTime: number;
+  startTime: Date;
+  endTime: Date;
   isActive: boolean;
-  actualEndTime: number | null;
-  createdAt: number;
-  updatedAt: number;
+  actualEndTime: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
@@ -151,12 +151,12 @@ export class FocusMode {
       uuid: this.uuid,
       accountUuid: this.accountUuid,
       name: `${this.focusedGoalUuids.join(',')}-${this.startTime}`,
-      startTime: this.startTime,
-      endTime: this.endTime,
+      startTime: new Date(this.startTime),
+      endTime: new Date(this.endTime),
       isActive: this.isActive,
-      actualEndTime: this.actualEndTime,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
+      actualEndTime: this.actualEndTime ? new Date(this.actualEndTime) : null,
+      createdAt: new Date(this.createdAt),
+      updatedAt: new Date(this.updatedAt),
     };
   }
 

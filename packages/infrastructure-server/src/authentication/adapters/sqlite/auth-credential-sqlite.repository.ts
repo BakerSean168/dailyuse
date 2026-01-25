@@ -107,11 +107,29 @@ export class SqliteAuthCredentialRepository implements IAuthCredentialRepository
     );
   }
 
-  async findByStatus(isVerified: boolean): Promise<AuthCredential[]> {
-    const stmt = this.db.prepare(
-      `SELECT * FROM auth_credentials WHERE is_verified = ? ORDER BY createdAt DESC`
-    );
-    const rows = stmt.all(isVerified ? 1 : 0) as any[];
+  async findByStatus(
+    status: 'ACTIVE' | 'SUSPENDED' | 'EXPIRED' | 'REVOKED',
+    params?: { skip?: number; take?: number },
+  ): Promise<AuthCredential[]> {
+    // Map status to is_verified field (simplified mapping for now)
+    // ACTIVE = is_verified true, others = is_verified false
+    const isVerified = status === 'ACTIVE' ? 1 : 0;
+    
+    let query = `SELECT * FROM auth_credentials WHERE is_verified = ? ORDER BY createdAt DESC`;
+    const parameters: any[] = [isVerified];
+
+    if (params?.skip) {
+      query += ` OFFSET ?`;
+      parameters.push(params.skip);
+    }
+
+    if (params?.take) {
+      query += ` LIMIT ?`;
+      parameters.push(params.take);
+    }
+
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(...parameters) as any[];
 
     return rows.map((row) =>
       AuthCredential.fromPersistenceDTO({
@@ -135,6 +153,58 @@ export class SqliteAuthCredentialRepository implements IAuthCredentialRepository
   async deleteByAccountUuid(accountUuid: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM auth_credentials WHERE accountUuid = ?`);
     stmt.run(accountUuid);
+  }
+
+  async findByType(
+    type: 'PASSWORD' | 'API_KEY' | 'BIOMETRIC' | 'MAGIC_LINK' | 'HARDWARE_KEY',
+    params?: { skip?: number; take?: number },
+  ): Promise<any[]> {
+    let query = `SELECT * FROM auth_credentials WHERE credential_type = ? ORDER BY createdAt DESC`;
+    const parameters: any[] = [type];
+
+    if (params?.skip) {
+      query += ` OFFSET ?`;
+      parameters.push(params.skip);
+    }
+
+    if (params?.take) {
+      query += ` LIMIT ?`;
+      parameters.push(params.take);
+    }
+
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(...parameters) as any[];
+
+    return rows.map((row) =>
+      AuthCredential.fromPersistenceDTO({
+        uuid: row.uuid,
+        account_uuid: row.accountUuid,
+        credential_type: row.credential_type,
+        credential_value: row.credential_value,
+        is_verified: row.is_verified === 1,
+        verified_at: row.verified_at ? new Date(row.verified_at) : null,
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
+      })
+    );
+  }
+
+  async existsByAccountUuid(accountUuid: string): Promise<boolean> {
+    const stmt = this.db.prepare(
+      `SELECT 1 FROM auth_credentials WHERE accountUuid = ? LIMIT 1`
+    );
+    return stmt.get(accountUuid) !== undefined;
+  }
+
+  async deleteExpired(): Promise<number> {
+    // For SQLite, we need to delete credentials with expired status in metadata
+    // Since this is complex with JSON parsing, we'll delete credentials with expiresAt in the past
+    const stmt = this.db.prepare(
+      `DELETE FROM auth_credentials WHERE expiresAt IS NOT NULL AND expiresAt < ?`
+    );
+    const now = Date.now();
+    const result = stmt.run(now);
+    return result.changes;
   }
 }
 

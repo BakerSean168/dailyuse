@@ -80,6 +80,22 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
     stmt.run(uuid);
   }
 
+  async findRecent(accountUuid: string, limit: number, offset?: number): Promise<AIGenerationTaskServerDTO[]> {
+    const limitVal = Math.min(limit, 100);
+    const offsetVal = offset || 0;
+    const stmt = this.db.prepare(
+      `SELECT * FROM ai_generation_tasks WHERE accountUuid = ? ORDER BY createdAt DESC LIMIT ? OFFSET ?`
+    );
+    const rows = stmt.all(accountUuid, limitVal, offsetVal) as any[];
+
+    return rows.map((row) => this.rowToDTO(row));
+  }
+
+  async exists(uuid: string): Promise<boolean> {
+    const stmt = this.db.prepare(`SELECT 1 FROM ai_generation_tasks WHERE uuid = ? LIMIT 1`);
+    return stmt.get(uuid) !== undefined;
+  }
+
   private rowToDTO(row: any): AIGenerationTaskServerDTO {
     return {
       uuid: row.uuid,

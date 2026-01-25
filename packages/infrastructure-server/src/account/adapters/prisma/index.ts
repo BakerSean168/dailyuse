@@ -1,1 +1,1 @@
-export { AccountRepositoryPrisma } from './account-prisma.repository';
+export { AccountPrismaRepository } from './account-prisma.repository';

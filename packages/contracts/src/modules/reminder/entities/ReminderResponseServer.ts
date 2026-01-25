@@ -43,7 +43,7 @@ export interface ReminderResponsePersistenceDTO {
   reminderTemplateUuid: string;
   action: ReminderResponseAction;
   responseTime?: number | null;
-  timestamp: number;
+  timestamp: Date;
 }
 
 // ============ 实体接口 ============

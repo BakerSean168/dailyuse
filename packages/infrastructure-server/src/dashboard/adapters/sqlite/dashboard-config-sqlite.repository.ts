@@ -18,31 +18,30 @@ export class SqliteDashboardConfigRepository implements IDashboardConfigReposito
 
     if (!row) return null;
 
-    return DashboardConfig.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
-      config: row.config ? JSON.parse(row.config) : {},
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
+    return DashboardConfig.fromPersistence({
+      id: row.id,
+      accountUuid: row.accountUuid,
+      widgetConfig: row.config || '{}',
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
     });
   }
 
   async save(config: DashboardConfig): Promise<DashboardConfig> {
-    const dto = config.toPersistenceDTO();
+    const dto = config.toPersistence();
 
     const stmt = this.db.prepare(`
       INSERT INTO dashboard_configs (
-        uuid, accountUuid, config, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?)
+        accountUuid, widgetConfig, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?)
       ON CONFLICT(accountUuid) DO UPDATE SET
-        config = excluded.config,
+        widgetConfig = excluded.widgetConfig,
         updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
-      dto.uuid,
       dto.accountUuid,
-      JSON.stringify(dto.config || {}),
+      dto.widgetConfig,
       dto.createdAt,
       dto.updatedAt,
     );

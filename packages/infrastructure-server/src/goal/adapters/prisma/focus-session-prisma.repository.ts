@@ -32,15 +32,15 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
       durationMinutes: data.durationMinutes,
       actualDurationMinutes: data.actualDurationMinutes,
       description: data.description,
-      startedAt: data.startedAt,
-      pausedAt: data.pausedAt,
-      resumedAt: data.resumedAt,
-      completedAt: data.completedAt,
-      cancelledAt: data.cancelledAt,
+      startedAt: data.startedAt ? (typeof data.startedAt === 'number' ? data.startedAt : new Date(data.startedAt).getTime()) : null,
+      pausedAt: data.pausedAt ? (typeof data.pausedAt === 'number' ? data.pausedAt : new Date(data.pausedAt).getTime()) : null,
+      resumedAt: data.resumedAt ? (typeof data.resumedAt === 'number' ? data.resumedAt : new Date(data.resumedAt).getTime()) : null,
+      completedAt: data.completedAt ? (typeof data.completedAt === 'number' ? data.completedAt : new Date(data.completedAt).getTime()) : null,
+      cancelledAt: data.cancelledAt ? (typeof data.cancelledAt === 'number' ? data.cancelledAt : new Date(data.cancelledAt).getTime()) : null,
       pauseCount: data.pauseCount,
       pausedDurationMinutes: data.pausedDurationMinutes,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
+      createdAt: typeof data.createdAt === 'number' ? data.createdAt : new Date(data.createdAt).getTime(),
+      updatedAt: typeof data.updatedAt === 'number' ? data.updatedAt : new Date(data.updatedAt).getTime(),
     });
   }
 
@@ -58,14 +58,14 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
       durationMinutes: persistence.durationMinutes,
       actualDurationMinutes: persistence.actualDurationMinutes,
       description: persistence.description,
-      startedAt: persistence.startedAt,
-      pausedAt: persistence.pausedAt,
-      resumedAt: persistence.resumedAt,
-      completedAt: persistence.completedAt,
-      cancelledAt: persistence.cancelledAt,
+      startedAt: persistence.startedAt ? new Date(persistence.startedAt) : null,
+      pausedAt: persistence.pausedAt ? new Date(persistence.pausedAt) : null,
+      resumedAt: persistence.resumedAt ? new Date(persistence.resumedAt) : null,
+      completedAt: persistence.completedAt ? new Date(persistence.completedAt) : null,
+      cancelledAt: persistence.cancelledAt ? new Date(persistence.cancelledAt) : null,
       pauseCount: persistence.pauseCount,
       pausedDurationMinutes: persistence.pausedDurationMinutes,
-      updatedAt: persistence.updatedAt,
+      updatedAt: new Date(typeof persistence.updatedAt === 'number' ? persistence.updatedAt : new Date(persistence.updatedAt).getTime()),
     };
 
     await this.prisma.focusSession.upsert({
@@ -73,7 +73,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
       create: {
         uuid: persistence.uuid,
         accountUuid: persistence.accountUuid,
-        createdAt: persistence.createdAt,
+        createdAt: new Date(typeof persistence.createdAt === 'number' ? persistence.createdAt : new Date(persistence.createdAt).getTime()),
         ...data,
       },
       update: data,

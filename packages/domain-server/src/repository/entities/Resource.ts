@@ -430,8 +430,8 @@ export class Resource implements ResourceServer {
       metadata: JSON.stringify(this._metadata.toServerDTO()),
       stats: JSON.stringify(this._stats.toServerDTO()),
       status: this._status,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: new Date(this._createdAt),
+      updatedAt: new Date(this._updatedAt),
     };
   }
 
@@ -498,8 +498,8 @@ export class Resource implements ResourceServer {
       ),
       stats: ResourceStats.fromServerDTO(JSON.parse(dto.stats) as ResourceStatsServerDTO),
       status: dto.status,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: dto.createdAt.getTime(),
+      updatedAt: dto.updatedAt.getTime(),
     });
   }
 }

@@ -1,50 +1,53 @@
-import type {  PrismaClient  } from "@prisma/client";
-import {
-  SchedulePrismaRepository,
-  ScheduleExecutionPrismaRepository,
-  ScheduleStatisticsPrismaRepository,
-  ScheduleTaskPrismaRepository,
-} from './adapters/prisma';
+import type { PrismaClient } from '@prisma/client';
+import type Database from 'better-sqlite3';
+
 import {
   ScheduleApplicationService,
   ScheduleStatisticsApplicationService,
-  ScheduleEventApplicationService
+  ScheduleEventApplicationService,
 } from '@dailyuse/application-server/schedule';
-// import { ScheduleConflictDetectionService } from '@dailyuse/application-server/schedule';
+import { ScheduleRepositoryFactory } from './di';
+
+type BetterSQLiteDB = Database.Database;
+
+type ScheduleRepositories = ReturnType<
+  typeof ScheduleRepositoryFactory.createPrismaRepositories
+>;
 
 export class ScheduleModule {
-  public readonly scheduleRepository: SchedulePrismaRepository;
-  public readonly scheduleExecutionRepository: ScheduleExecutionPrismaRepository;
-  public readonly scheduleStatisticsRepository: ScheduleStatisticsPrismaRepository;
-  public readonly scheduleTaskRepository: ScheduleTaskPrismaRepository;
+  public readonly scheduleRepository: ScheduleRepositories['scheduleRepository'];
+  public readonly scheduleExecutionRepository: ScheduleRepositories['scheduleExecutionRepository'];
+  public readonly scheduleStatisticsRepository: ScheduleRepositories['scheduleStatisticsRepository'];
+  public readonly scheduleTaskRepository: ScheduleRepositories['scheduleTaskRepository'];
 
   public readonly scheduleService: ScheduleApplicationService;
   public readonly scheduleStatisticsService: ScheduleStatisticsApplicationService;
   public readonly scheduleEventService: ScheduleEventApplicationService;
-  // public readonly scheduleConflictService: ScheduleConflictDetectionService;
 
-  constructor(prisma: PrismaClient) {
-    // 1. Initialize Repositories
-    this.scheduleRepository = new SchedulePrismaRepository(prisma);
-    this.scheduleExecutionRepository = new ScheduleExecutionPrismaRepository(prisma);
-    this.scheduleStatisticsRepository = new ScheduleStatisticsPrismaRepository(prisma);
-    this.scheduleTaskRepository = new ScheduleTaskPrismaRepository(prisma);
+  constructor(
+    dataSourceType: 'prisma' | 'sqlite',
+    dbConnection: PrismaClient | BetterSQLiteDB,
+  ) {
+    // 1. Initialize Repositories using Factory
+    const repositories = ScheduleRepositoryFactory.create(dataSourceType, dbConnection);
+    this.scheduleRepository = repositories.scheduleRepository;
+    this.scheduleExecutionRepository = repositories.scheduleExecutionRepository;
+    this.scheduleStatisticsRepository = repositories.scheduleStatisticsRepository;
+    this.scheduleTaskRepository = repositories.scheduleTaskRepository;
 
     // 2. Initialize Services
     this.scheduleService = new ScheduleApplicationService(
       this.scheduleTaskRepository,
-      this.scheduleStatisticsRepository
+      this.scheduleStatisticsRepository,
     );
 
     this.scheduleStatisticsService = new ScheduleStatisticsApplicationService(
       this.scheduleStatisticsRepository,
-      this.scheduleTaskRepository
+      this.scheduleTaskRepository,
     );
 
     this.scheduleEventService = new ScheduleEventApplicationService(
-      this.scheduleRepository
+      this.scheduleRepository,
     );
-    
-    // this.scheduleConflictService = new ScheduleConflictDetectionService(this.scheduleRepository);
   }
 }

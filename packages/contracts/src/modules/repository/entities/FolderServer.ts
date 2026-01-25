@@ -38,8 +38,8 @@ export interface FolderPersistenceDTO {
   order: number;
   isExpanded: boolean;
   metadata: string; // JSON string
-  createdAt: number; // epoch ms
-  updatedAt: number; // epoch ms
+  createdAt: Date;
+  updatedAt: Date;
 
   // 注意：子文件夹（children）通过 parent_uuid 外键关联
 }

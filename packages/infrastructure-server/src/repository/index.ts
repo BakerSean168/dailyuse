@@ -1,12 +1,16 @@
 /**
  * Repository Module - Infrastructure Server
  *
- * Ports and Adapters for Repository module persistence.
- * Supports multiple database providers (Prisma, SQLite, Memory).
+ * Repository implementations and DI Module for Repository domain.
+ * Supports both Prisma (API) and SQLite (Desktop) data sources.
  */
 // Module (Composition Pattern - ADR-025)
 export { RepositoryModule } from './repository.module';
-// Container (鏀硅繘鐗?- 鏀寔澶氭彁渚涜€?
+
+// Repository Factory
+export { RepositoryRepositoryFactory } from './di/repository-repository.factory';
+
+// Legacy Container (for backward compatibility)
 export { RepositoryContainer } from './repository.container';
 
 // Ports (Interfaces)
@@ -37,6 +41,12 @@ export { FolderPrismaRepository } from './adapters/prisma/folder-prisma.reposito
 export { RepositoryPrismaRepository } from './adapters/prisma/repository-prisma.repository';
 export { RepositoryStatisticsPrismaRepository } from './adapters/prisma/repository-statistics-prisma.repository';
 export { ResourcePrismaRepository } from './adapters/prisma/resource-prisma.repository';
+
+// SQLite Adapters
+export { SqliteRepositoryRepository } from './adapters/sqlite/repository-sqlite.repository';
+export { SqliteFolderRepository } from './adapters/sqlite/folder-sqlite.repository';
+export { SqliteRepositoryStatisticsRepository } from './adapters/sqlite/repository-statistics-sqlite.repository';
+export { SqliteResourceRepository } from './adapters/sqlite/resource-sqlite.repository';
 
 // Memory Adapters
 export { FolderMemoryRepository } from './adapters/memory/folder-memory.repository';

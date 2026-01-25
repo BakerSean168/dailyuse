@@ -91,5 +91,30 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
     const stmt = this.db.prepare(`DELETE FROM ai_conversations WHERE uuid = ?`);
     stmt.run(uuid);
   }
+
+  async findRecent(accountUuid: string, limit: number, offset?: number): Promise<AIConversation[]> {
+    const limitVal = Math.min(limit, 100);
+    const offsetVal = offset || 0;
+    const stmt = this.db.prepare(
+      `SELECT * FROM ai_conversations WHERE accountUuid = ? ORDER BY createdAt DESC LIMIT ? OFFSET ?`
+    );
+    const rows = stmt.all(accountUuid, limitVal, offsetVal) as any[];
+
+    return rows.map((row) =>
+      AIConversation.fromPersistenceDTO({
+        uuid: row.uuid,
+        account_uuid: row.accountUuid,
+        title: row.title,
+        status: row.status,
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
+      })
+    );
+  }
+
+  async exists(uuid: string): Promise<boolean> {
+    const stmt = this.db.prepare(`SELECT 1 FROM ai_conversations WHERE uuid = ? LIMIT 1`);
+    return stmt.get(uuid) !== undefined;
+  }
 }
 

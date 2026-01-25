@@ -314,8 +314,8 @@ export class Repository extends AggregateRoot implements RepositoryServer {
       config: JSON.stringify(this._config.toServerDTO()),
       stats: JSON.stringify(this._stats.toServerDTO()),
       status: this._status,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: new Date(this._createdAt),
+      updatedAt: new Date(this._updatedAt),
     };
   }
 
@@ -382,8 +382,8 @@ export class Repository extends AggregateRoot implements RepositoryServer {
       config: RepositoryConfig.fromServerDTO(JSON.parse(dto.config)),
       stats: RepositoryStats.fromServerDTO(JSON.parse(dto.stats)),
       status: dto.status,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: dto.createdAt.getTime(),
+      updatedAt: dto.updatedAt.getTime(),
       folders: null,
     });
   }

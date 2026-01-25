@@ -105,7 +105,7 @@ export class ReminderResponse extends Entity implements ReminderResponseServer {
       reminderTemplateUuid: dto.reminderTemplateUuid,
       action: dto.action,
       responseTime: dto.responseTime,
-      timestamp: dto.timestamp,
+      timestamp: dto.timestamp.getTime(),
     });
   }
 
@@ -243,7 +243,7 @@ export class ReminderResponse extends Entity implements ReminderResponseServer {
       reminderTemplateUuid: this._reminderTemplateUuid,
       action: this._action,
       responseTime: this._responseTime,
-      timestamp: this._timestamp,
+      timestamp: new Date(this._timestamp),
     };
   }
 }

@@ -100,8 +100,8 @@ export interface TaskTemplatePersistenceDTO {
   // === 循环任务专用 ===
   // Flattened timeConfig
   timeConfigType?: string | null;
-  timeConfigStartTime?: number | null;
-  timeConfigEndTime?: number | null;
+  timeConfigStartTime?: Date | null;
+  timeConfigEndTime?: Date | null;
   timeConfigDurationMinutes?: number | null;
 
   // Flattened recurrence_rule
@@ -110,7 +110,7 @@ export interface TaskTemplatePersistenceDTO {
   recurrenceRuleDaysOfWeek?: string | null; // JSON array
   recurrenceRuleDayOfMonth?: number | null;
   recurrenceRuleMonthOfYear?: number | null;
-  recurrenceRuleEndDate?: number | null;
+  recurrenceRuleEndDate?: Date | null;
   recurrenceRuleCount?: number | null;
 
   // Flattened reminderConfig
@@ -119,7 +119,7 @@ export interface TaskTemplatePersistenceDTO {
   reminderConfigUnit?: string | null;
   reminderConfigChannel?: string | null;
 
-  lastGeneratedDate?: number | null;
+  lastGeneratedDate?: Date | null;
   generateAheadDays?: number | null;
 
   // === 通用属性 ===
@@ -141,9 +141,9 @@ export interface TaskTemplatePersistenceDTO {
   parentTaskUuid?: string | null;
 
   // === 一次性任务专用 ===
-  startDate?: number | null; // BigInt in Prisma
-  dueDate?: number | null; // BigInt in Prisma
-  completedAt?: number | null; // BigInt in Prisma
+  startDate?: Date | null;
+  dueDate?: Date | null;
+  completedAt?: Date | null;
   estimatedMinutes?: number | null;
   actualMinutes?: number | null;
   note?: string | null;
@@ -155,9 +155,9 @@ export interface TaskTemplatePersistenceDTO {
 
   // === 其他 ===
   folderUuid?: string | null;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 }
 
 // ============ 聚合根接口 ============

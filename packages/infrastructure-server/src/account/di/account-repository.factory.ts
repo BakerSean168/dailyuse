@@ -1,35 +1,86 @@
-import type { IAccountRepository } from '@dailyuse/domain-server/account';
-import { AccountPrismaRepository } from '../adapters/prisma/account-prisma.repository';
-import { SqliteAccountRepository } from '../adapters/sqlite/account-sqlite.repository';
+/**
+ * Account Repository Factory
+ * Provides repository implementations for different data sources
+ * 
+ * Note: Account module also depends on Authentication repositories
+ * (AuthCredential, AuthSession) and TransactionManager
+ */
+
+import type { PrismaClient } from '@prisma/client';
+import type Database from 'better-sqlite3';
+
+import { AccountPrismaRepository } from '../adapters/prisma';
+import { SqliteAccountRepository } from '../adapters/sqlite';
+import {
+  AuthCredentialPrismaRepository,
+  AuthSessionPrismaRepository,
+} from '../../authentication/adapters/prisma/index';
+import {
+  SqliteAuthCredentialRepository,
+  SqliteAuthSessionRepository,
+} from '../../authentication/adapters/sqlite/index';
+import { PrismaTransactionManager } from '../../shared/prisma-transaction-manager';
+import { SqliteTransactionManager } from '../../shared/sqlite-transaction-manager';
+
+type BetterSQLiteDB = Database.Database;
 
 /**
  * Account Repository Factory
- *
- * Creates repository instances based on data source type
- * Supports: Prisma (API), SQLite (Desktop)
  */
 export class AccountRepositoryFactory {
-  static createForPrisma(prismaClient: any): IAccountRepository {
+  /**
+   * Create repositories using Prisma (for API/PostgreSQL)
+   */
+  static createPrismaRepositories(prisma: PrismaClient) {
+    return {
+      accountRepository: new AccountPrismaRepository(prisma),
+      credentialRepository: new AuthCredentialPrismaRepository(prisma),
+      sessionRepository: new AuthSessionPrismaRepository(prisma),
+      transactionManager: new PrismaTransactionManager(prisma),
+    };
+  }
+
+  /**
+   * Create repositories using SQLite (for Desktop/better-sqlite3)
+   */
+  static createSqliteRepositories(db: BetterSQLiteDB) {
+    return {
+      accountRepository: new SqliteAccountRepository(db),
+      credentialRepository: new SqliteAuthCredentialRepository(db),
+      sessionRepository: new SqliteAuthSessionRepository(db),
+      transactionManager: new SqliteTransactionManager(db),
+    };
+  }
+
+  /**
+   * Create repositories based on data source type
+   */
+  static create(
+    dataSource: 'prisma' | 'sqlite',
+    client: PrismaClient | BetterSQLiteDB,
+  ): ReturnType<typeof AccountRepositoryFactory.createPrismaRepositories> {
+    if (dataSource === 'prisma') {
+      return this.createPrismaRepositories(client as PrismaClient) as any;
+    } else {
+      return this.createSqliteRepositories(client as BetterSQLiteDB) as any;
+    }
+  }
+
+  /**
+   * Legacy methods for backward compatibility
+   * @deprecated Use create() instead
+   */
+  static createForPrisma(prismaClient: any) {
     return new AccountPrismaRepository(prismaClient);
   }
 
-  static createForSQLite(sqliteDb: any): IAccountRepository {
+  /**
+   * Legacy methods for backward compatibility
+   * @deprecated Use create() instead
+   */
+  static createForSQLite(sqliteDb: any) {
     return new SqliteAccountRepository(sqliteDb);
   }
 }
 
-/**
- * Account Status Repository Factory (if needed)
- */
-export class AccountStatusRepositoryFactory {
-  static createForPrisma(prismaClient: any): any {
-    // Implement based on actual Prisma adapter
-    throw new Error('AccountStatusRepository Prisma adapter not implemented');
-  }
-
-  static createForSQLite(sqliteDb: any): any {
-    // Implement based on actual SQLite adapter
-    throw new Error('AccountStatusRepository SQLite adapter not implemented');
-  }
-}
 

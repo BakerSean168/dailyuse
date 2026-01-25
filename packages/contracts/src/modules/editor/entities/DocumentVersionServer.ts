@@ -41,7 +41,7 @@ export interface DocumentVersionPersistenceDTO {
   change_description?: string | null;
   previous_version_uuid?: string | null;
   created_by?: string | null;
-  createdAt: number;
+  createdAt: Date;
 }
 
 /**

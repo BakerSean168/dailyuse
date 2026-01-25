@@ -205,8 +205,8 @@ export class Folder implements FolderServer {
       order: this._order,
       isExpanded: this._isExpanded,
       metadata: JSON.stringify(this._metadata.toServerDTO()),
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: new Date(this._createdAt),
+      updatedAt: new Date(this._updatedAt),
     };
   }
 
@@ -267,8 +267,8 @@ export class Folder implements FolderServer {
       dto.order,
       dto.isExpanded,
       FolderMetadata.fromServerDTO(JSON.parse(dto.metadata)),
-      dto.createdAt,
-      dto.updatedAt,
+      dto.createdAt.getTime(),
+      dto.updatedAt.getTime(),
       null,
     );
   }

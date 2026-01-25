@@ -20,16 +20,16 @@ export class SqliteGoalFolderRepository implements IGoalFolderRepository {
       ON CONFLICT(uuid) DO UPDATE SET
         name = excluded.name,
         description = excluded.description,
-        updatedAt = excluded\.updatedAt
+        updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.uuid,
-      dto\.accountUuid,
+      dto.accountUuid,
       dto.name,
       dto.description || null,
-      dto\.createdAt,
-      dto\.updatedAt,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -41,11 +41,11 @@ export class SqliteGoalFolderRepository implements IGoalFolderRepository {
 
     return GoalFolder.fromPersistenceDTO({
       uuid: row.uuid,
-      account_uuid: row\.accountUuid,
+      account_uuid: row.accountUuid,
       name: row.name,
       description: row.description,
-      createdAt: new Date(row\.createdAt),
-      updatedAt: new Date(row\.updatedAt),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
     });
   }
 
@@ -58,11 +58,11 @@ export class SqliteGoalFolderRepository implements IGoalFolderRepository {
     return rows.map((row) =>
       GoalFolder.fromPersistenceDTO({
         uuid: row.uuid,
-        account_uuid: row\.accountUuid,
+        account_uuid: row.accountUuid,
         name: row.name,
         description: row.description,
-        createdAt: new Date(row\.createdAt),
-        updatedAt: new Date(row\.updatedAt),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
       })
     );
   }

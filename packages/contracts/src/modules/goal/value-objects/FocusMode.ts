@@ -17,12 +17,12 @@ export interface FocusModePersistenceDTO {
   uuid: string;
   accountUuid: string;
   name: string;
-  startTime: number;
-  endTime: number;
+  startTime: Date;
+  endTime: Date;
   isActive: boolean;
-  actualEndTime: number | null;
-  createdAt: number;
-  updatedAt: number;
+  actualEndTime: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**

@@ -1,3 +1,6 @@
+import type { PrismaClient } from '@prisma/client';
+import type Database from 'better-sqlite3';
+
 import {
   AccountApplicationService,
   RegistrationApplicationService,
@@ -6,11 +9,13 @@ import {
   AccountEmailApplicationService,
   AccountDeletionApplicationService,
 } from '@dailyuse/application-server/account';
-import { AccountPrismaRepository } from './adapters/prisma/account-prisma.repository';
-import { AuthCredentialPrismaRepository } from '../authentication/adapters/prisma/auth-credential-prisma.repository';
-import { AuthSessionPrismaRepository } from '../authentication/adapters/prisma/auth-session-prisma.repository';
-import { PrismaTransactionManager } from '../shared/prisma-transaction-manager';
-import type { PrismaClient } from '@prisma/client';
+import { AccountRepositoryFactory } from './di';
+
+type BetterSQLiteDB = Database.Database;
+
+type AccountRepositories = ReturnType<
+  typeof AccountRepositoryFactory.createPrismaRepositories
+>;
 
 export class AccountModule {
   public readonly accountApplicationService: AccountApplicationService;
@@ -20,16 +25,22 @@ export class AccountModule {
   public readonly emailService: AccountEmailApplicationService;
   public readonly deletionService: AccountDeletionApplicationService;
 
-  constructor(prisma: PrismaClient) {
-    const accountRepository = new AccountPrismaRepository(prisma);
-    const credentialRepository = new AuthCredentialPrismaRepository(prisma);
-    const sessionRepository = new AuthSessionPrismaRepository(prisma);
-    const transactionManager = new PrismaTransactionManager(prisma);
+  constructor(
+    dataSourceType: 'prisma' | 'sqlite',
+    dbConnection: PrismaClient | BetterSQLiteDB,
+  ) {
+    // 1. Initialize Repositories using Factory
+    const repositories = AccountRepositoryFactory.create(dataSourceType, dbConnection);
+    const accountRepository = repositories.accountRepository;
+    const credentialRepository = repositories.credentialRepository;
+    const sessionRepository = repositories.sessionRepository;
+    const transactionManager = repositories.transactionManager;
 
+    // 2. Initialize Services
     this.registrationService = new RegistrationApplicationService(
       accountRepository,
       credentialRepository,
-      transactionManager
+      transactionManager,
     );
 
     this.profileService = new AccountProfileApplicationService(accountRepository);
@@ -42,7 +53,7 @@ export class AccountModule {
       accountRepository,
       credentialRepository,
       sessionRepository,
-      transactionManager
+      transactionManager,
     );
 
     this.accountApplicationService = new AccountApplicationService(
@@ -50,7 +61,7 @@ export class AccountModule {
       this.profileService,
       this.statusService,
       this.emailService,
-      this.deletionService
+      this.deletionService,
     );
   }
 }

@@ -1,12 +1,9 @@
-import type {  PrismaClient  } from "@prisma/client";
-import {
-  AIConversationPrismaRepository,
-  AIGenerationTaskPrismaRepository,
-  AIProviderConfigPrismaRepository,
-  AIUsageQuotaPrismaRepository
-} from './adapters/prisma';
+import type { PrismaClient } from '@prisma/client';
+import type Database from 'better-sqlite3';
+
 import { AIGenerationValidationService } from '@dailyuse/domain-server/ai';
 import { AIAdapterFactory } from './adapters/a-i-adapter-factory';
+import { AIRepositoryFactory } from './di';
 
 import {
   CreateConversation,
@@ -20,14 +17,18 @@ import {
   AIConversationService,
   AIProviderConfigService,
   AIGenerationApplicationService,
-  AIChatApplicationService
+  AIChatApplicationService,
 } from '@dailyuse/application-server/ai';
 
+type BetterSQLiteDB = Database.Database;
+
+type AIRepositories = ReturnType<typeof AIRepositoryFactory.createPrismaRepositories>;
+
 export class AIModule {
-  public readonly conversationRepository: AIConversationPrismaRepository;
-  public readonly generationTaskRepository: AIGenerationTaskPrismaRepository;
-  public readonly providerConfigRepository: AIProviderConfigPrismaRepository;
-  public readonly usageQuotaRepository: AIUsageQuotaPrismaRepository;
+  public readonly conversationRepository: AIRepositories['conversationRepository'];
+  public readonly generationTaskRepository: AIRepositories['generationTaskRepository'];
+  public readonly providerConfigRepository: AIRepositories['providerConfigRepository'];
+  public readonly usageQuotaRepository: AIRepositories['usageQuotaRepository'];
 
   public readonly createConversation: CreateConversation;
   public readonly deleteConversation: DeleteConversation;
@@ -42,24 +43,33 @@ export class AIModule {
   public readonly generationService: AIGenerationApplicationService;
   public readonly chatService: AIChatApplicationService;
 
-  constructor(prisma: PrismaClient) {
-    this.conversationRepository = new AIConversationPrismaRepository(prisma);
-    this.generationTaskRepository = new AIGenerationTaskPrismaRepository(prisma);
-    this.providerConfigRepository = new AIProviderConfigPrismaRepository(prisma);
-    this.usageQuotaRepository = new AIUsageQuotaPrismaRepository(prisma);
+  constructor(
+    dataSourceType: 'prisma' | 'sqlite',
+    dbConnection: PrismaClient | BetterSQLiteDB,
+  ) {
+    // 1. Initialize Repositories using Factory
+    const repositories = AIRepositoryFactory.create(dataSourceType, dbConnection);
+    this.conversationRepository = repositories.conversationRepository;
+    this.generationTaskRepository = repositories.generationTaskRepository;
+    this.providerConfigRepository = repositories.providerConfigRepository;
+    this.usageQuotaRepository = repositories.usageQuotaRepository;
 
+    // 2. Initialize Services
     this.createConversation = new CreateConversation(this.conversationRepository);
     this.deleteConversation = new DeleteConversation(this.conversationRepository);
     this.listConversations = new ListConversations(this.conversationRepository);
     this.listProviders = new ListProviders(this.providerConfigRepository);
     this.getConversation = new GetConversation(this.conversationRepository);
     this.sendMessage = new SendMessage(this.conversationRepository);
-    this.generateGoal = new GenerateGoal(this.generationTaskRepository, this.providerConfigRepository);
+    this.generateGoal = new GenerateGoal(
+      this.generationTaskRepository,
+      this.providerConfigRepository,
+    );
     this.getQuota = new GetQuota(this.usageQuotaRepository);
     this.conversationService = new AIConversationService(this.conversationRepository);
     this.providerConfigService = new AIProviderConfigService(
       this.providerConfigRepository,
-      (config: any) => AIAdapterFactory.createFromConfig(config)
+      (config: any) => AIAdapterFactory.createFromConfig(config),
     );
 
     const validationService = new AIGenerationValidationService();

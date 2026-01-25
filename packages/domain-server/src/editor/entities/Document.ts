@@ -191,10 +191,10 @@ export class Document extends Entity implements DocumentServer {
       contentHash: dto.content_hash,
       metadata: DocumentMetadata.fromPersistenceDTO(JSON.parse(dto.metadata)),
       indexStatus: dto.index_status,
-      lastIndexedAt: dto.last_indexed_at,
-      lastModifiedAt: dto.last_modified_at,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      lastIndexedAt: dto.last_indexed_at?.getTime() ?? null,
+      lastModifiedAt: dto.last_modified_at?.getTime() ?? null,
+      createdAt: dto.createdAt.getTime(),
+      updatedAt: dto.updatedAt.getTime(),
     });
   }
 
@@ -342,10 +342,10 @@ export class Document extends Entity implements DocumentServer {
       content_hash: this._contentHash,
       metadata: JSON.stringify(this._metadata.toPersistenceDTO()),
       index_status: this._indexStatus,
-      last_indexed_at: this._lastIndexedAt,
-      last_modified_at: this._lastModifiedAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      last_indexed_at: this._lastIndexedAt ? new Date(this._lastIndexedAt) : null,
+      last_modified_at: this._lastModifiedAt ? new Date(this._lastModifiedAt) : null,
+      createdAt: new Date(this._createdAt),
+      updatedAt: new Date(this._updatedAt),
     };
   }
 

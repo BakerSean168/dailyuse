@@ -1,29 +1,37 @@
-import type {  PrismaClient  } from "@prisma/client";
-import {
-  NotificationPrismaRepository,
-  NotificationPreferencePrismaRepository,
-  NotificationTemplatePrismaRepository
-} from './adapters/prisma';
+import type { PrismaClient } from '@prisma/client';
+import type Database from 'better-sqlite3';
+
 import {
   NotificationApplicationService,
   NotificationTemplateApplicationService,
-  NotificationChannelApplicationService
+  NotificationChannelApplicationService,
 } from '@dailyuse/application-server/notification';
+import { NotificationRepositoryFactory } from './di';
+
+type BetterSQLiteDB = Database.Database;
+
+type NotificationRepositories = ReturnType<
+  typeof NotificationRepositoryFactory.createPrismaRepositories
+>;
 
 export class NotificationModule {
-  public readonly notificationRepository: NotificationPrismaRepository;
-  public readonly notificationPreferenceRepository: NotificationPreferencePrismaRepository;
-  public readonly notificationTemplateRepository: NotificationTemplatePrismaRepository;
+  public readonly notificationRepository: NotificationRepositories['notificationRepository'];
+  public readonly notificationPreferenceRepository: NotificationRepositories['notificationPreferenceRepository'];
+  public readonly notificationTemplateRepository: NotificationRepositories['notificationTemplateRepository'];
 
   public readonly notificationService: NotificationApplicationService;
   public readonly notificationTemplateService: NotificationTemplateApplicationService;
   public readonly notificationChannelService: NotificationChannelApplicationService;
 
-  constructor(prisma: PrismaClient) {
-    // 1. Initialize Repositories
-    this.notificationRepository = new NotificationPrismaRepository(prisma);
-    this.notificationPreferenceRepository = new NotificationPreferencePrismaRepository(prisma);
-    this.notificationTemplateRepository = new NotificationTemplatePrismaRepository(prisma);
+  constructor(
+    dataSourceType: 'prisma' | 'sqlite',
+    dbConnection: PrismaClient | BetterSQLiteDB,
+  ) {
+    // 1. Initialize Repositories using Factory
+    const repositories = NotificationRepositoryFactory.create(dataSourceType, dbConnection);
+    this.notificationRepository = repositories.notificationRepository;
+    this.notificationPreferenceRepository = repositories.notificationPreferenceRepository;
+    this.notificationTemplateRepository = repositories.notificationTemplateRepository;
 
     // 2. Initialize Services
     this.notificationService = new NotificationApplicationService();

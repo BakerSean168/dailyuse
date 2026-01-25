@@ -170,7 +170,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
       changeDescription: dto.change_description,
       previousVersionUuid: dto.previous_version_uuid,
       createdBy: dto.created_by,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt).getTime(),
     });
   }
 
@@ -254,7 +254,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
       change_description: this._changeDescription,
       previous_version_uuid: this._previousVersionUuid,
       created_by: this._createdBy,
-      createdAt: this._createdAt,
+      createdAt: new Date(this._createdAt),
     };
   }
 }
