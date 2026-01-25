@@ -28,8 +28,8 @@ export interface SyncProfileServerDTO {
     failedSyncs: number;
     averageDurationMs: number;
   };
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface SyncProfilePersistenceDTO {
@@ -42,12 +42,12 @@ export interface SyncProfilePersistenceDTO {
   isDefault: boolean;
   isActive: boolean;
   isConnected: boolean;
-  lastSyncAt: number | null;
+  lastSyncAt: Date | null;
   lastSyncVersionJson: string | null;
   lastSyncResult: string | null;
   historyStatsJson: string;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 领域事件 ============
@@ -55,14 +55,14 @@ export interface SyncProfilePersistenceDTO {
 export interface SyncProfileCreatedDomainEvent {
   type: 'sync.profile.created';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: { profile: SyncProfileServerDTO };
 }
 
 export interface SyncProfileConnectedDomainEvent {
   type: 'sync.profile.connected';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: { providerType: SyncProviderType };
 }
 
@@ -78,7 +78,7 @@ export interface SyncProfileServer {
   isDefault: boolean;
   isActive: boolean;
   isConnected: boolean;
-  lastSyncAt?: number | null;
+  lastSyncAt?: Date | null;
   lastSyncVersion?: SyncVersionServerDTO | null;
   lastSyncResult?: 'success' | 'failed' | 'partial' | null;
   historyStats: {
@@ -87,8 +87,8 @@ export interface SyncProfileServer {
     failedSyncs: number;
     averageDurationMs: number;
   };
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // 配置管理
   updateName(name: string): void;

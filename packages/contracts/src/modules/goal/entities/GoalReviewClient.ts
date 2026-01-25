@@ -31,7 +31,7 @@ export interface GoalReviewClient {
   improvements?: string | null;
   keyResultSnapshots: KeyResultSnapshotClientDTO[];
   reviewedAt: number;
-  createdAt: number;
+  createdAt: Date;
 
   toClientDTO(): GoalReviewClientDTO;
   toServerDTO(): GoalReviewServerDTO;

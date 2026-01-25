@@ -26,8 +26,8 @@ export interface RefreshTokenPersistenceDTO {
   uuid: string;
   sessionUuid: string;
   token: string;
-  expiresAt: number;
-  createdAt: number;
+  expiresAt: Date;
+  createdAt: Date;
   usedAt?: number | null;
 }
 
@@ -37,8 +37,8 @@ export interface RefreshTokenServer {
   uuid: string;
   sessionUuid: string;
   token: string;
-  expiresAt: number;
-  createdAt: number;
+  expiresAt: Date;
+  createdAt: Date;
   usedAt?: number | null;
 
   isExpired(): boolean;

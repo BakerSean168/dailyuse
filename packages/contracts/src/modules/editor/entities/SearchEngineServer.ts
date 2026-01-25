@@ -41,8 +41,8 @@ export interface SearchEnginePersistenceDTO {
   last_indexed_at?: number | null;
   is_indexing: boolean;
   index_progress?: number | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
@@ -62,8 +62,8 @@ export interface SearchEngineServer {
   readonly lastIndexedAt?: number | null;
   readonly isIndexing: boolean;
   readonly indexProgress?: number | null;
-  readonly createdAt: number;
-  readonly updatedAt: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 
   // ===== 业务方法 =====
 

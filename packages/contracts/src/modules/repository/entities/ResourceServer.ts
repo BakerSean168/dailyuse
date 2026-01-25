@@ -68,8 +68,8 @@ export interface ResourceServer {
   metadata: ResourceMetadataServer;
   stats: ResourceStatsServer;
   status: ResourceStatus;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // 内容操作方法
   updateMarkdownContent(content: string): void;

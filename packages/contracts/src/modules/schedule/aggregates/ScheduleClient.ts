@@ -95,16 +95,16 @@ export interface ScheduleClient {
   accountUuid: string;
   name: string;
   description: string | null;
-  startTime: number;
-  endTime: number;
+  startTime: Date;
+  endTime: Date;
   duration: number;
   hasConflict: boolean;
   conflictingSchedules: readonly string[] | null;
   priority: number | null;
   location: string | null;
   attendees: readonly string[] | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // UI 辅助属性
   durationDisplay: string;
@@ -131,8 +131,8 @@ export interface ScheduleClient {
   getConflictCount(): number;
   hasLocation(): boolean;
   hasAttendees(): boolean;
-  overlaps(startTime: number, endTime: number): boolean;
-  getOverlapDuration(startTime: number, endTime: number): number;
+  overlaps(startTime: Date, endTime: Date): boolean;
+  getOverlapDuration(startTime: Date, endTime: Date): Date;
 
   // ===== 转换方法 (To) =====
 
@@ -178,8 +178,8 @@ export interface ScheduleClientStatic {
     accountUuid: string;
     title: string;
     description?: string;
-    startTime: number;
-    endTime: number;
+    startTime: Date;
+    endTime: Date;
     priority?: number;
     location?: string;
     attendees?: string[];

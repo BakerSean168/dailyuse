@@ -36,7 +36,7 @@ export interface NotificationHistoryClient {
   details?: any | null;
 
   // 时间戳
-  createdAt: number;
+  createdAt: Date;
 
   // UI 扩展属性
   actionText: string;

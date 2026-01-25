@@ -77,12 +77,12 @@ export interface NotificationPersistenceDTO {
   relatedEntityUuid?: string | null;
   actions?: string | null; // JSON string
   metadata?: string | null; // JSON string
-  expiresAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
+  expiresAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
   sentAt?: number | null;
   deliveredAt?: number | null;
-  deletedAt?: number | null;
+  deletedAt?: Date | null;
 }
 
 // ============ 领域事件 ============
@@ -93,7 +93,7 @@ export interface NotificationPersistenceDTO {
 export interface NotificationCreatedEvent {
   type: 'notification.created';
   aggregateId: string; // notificationUuid
-  timestamp: number; // epoch ms
+  timestamp: Date; // epoch ms
   payload: {
     notification: NotificationServerDTO;
     sendImmediately: boolean;
@@ -106,7 +106,7 @@ export interface NotificationCreatedEvent {
 export interface NotificationSentEvent {
   type: 'notification.sent';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     notificationUuid: string;
     channels: string[]; // 渠道类型列表
@@ -119,7 +119,7 @@ export interface NotificationSentEvent {
 export interface NotificationReadEvent {
   type: 'notification.read';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     notificationUuid: string;
     readAt: number;
@@ -132,7 +132,7 @@ export interface NotificationReadEvent {
 export interface NotificationDeletedEvent {
   type: 'notification.deleted';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     notificationUuid: string;
   };
@@ -144,7 +144,7 @@ export interface NotificationDeletedEvent {
 export interface NotificationStatusChangedEvent {
   type: 'notification.status.changed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     previousStatus: NotificationStatus;
     newStatus: NotificationStatus;
@@ -192,14 +192,14 @@ export interface NotificationServer {
   metadata?: NotificationMetadataServer | null;
 
   // ===== 过期设置 =====
-  expiresAt?: number | null;
+  expiresAt?: Date | null;
 
   // ===== 时间戳 (统一使用 number epoch ms) =====
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
   sentAt?: number | null;
   deliveredAt?: number | null;
-  deletedAt?: number | null;
+  deletedAt?: Date | null;
 
   // ===== 子实体集合（聚合根统一管理） =====
 
@@ -315,7 +315,7 @@ export interface NotificationServerStatic {
     relatedEntityUuid?: string;
     actions?: NotificationActionServerDTO[];
     metadata?: NotificationMetadataServerDTO;
-    expiresAt?: number;
+    expiresAt?: Date;
   }): NotificationServer;
 
   /**

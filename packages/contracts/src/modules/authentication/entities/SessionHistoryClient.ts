@@ -27,7 +27,7 @@ export interface SessionHistoryClient {
   details?: any | null;
   ipAddress?: string | null;
   userAgent?: string | null;
-  createdAt: number;
+  createdAt: Date;
 
   toClientDTO(): SessionHistoryClientDTO;
 }

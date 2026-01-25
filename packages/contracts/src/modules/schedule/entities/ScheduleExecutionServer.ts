@@ -35,7 +35,7 @@ export interface ScheduleExecutionPersistenceDTO {
   result: string | null; // JSON string
   error: string | null;
   retryCount: number;
-  createdAt: number;
+  createdAt: Date;
 }
 
 // ============ 实体接口 ============
@@ -55,7 +55,7 @@ export interface ScheduleExecutionServer {
   retryCount: number;
 
   // 时间戳 (统一使用 number epoch ms)
-  createdAt: number;
+  createdAt: Date;
 
   // ===== 业务方法 =====
 

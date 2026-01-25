@@ -67,9 +67,9 @@ export interface SettingPersistenceDTO {
   isSystemSetting: boolean;
   syncConfig?: string | null; // JSON
   history: string; // JSON
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 }
 
 // ============ 聚合根接口 ============
@@ -93,9 +93,9 @@ export interface SettingServer {
   isSystemSetting: boolean;
   syncConfig?: SyncConfigServer | null;
   history?: SettingHistoryServer[] | null;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 
   // 值管理
   setValue(newValue: any, operatorUuid?: string): void;

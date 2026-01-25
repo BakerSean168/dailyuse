@@ -89,8 +89,8 @@ export interface ScheduleTaskClient {
   metadata: TaskMetadataClient;
 
   // 时间戳
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // UI 辅助属性
   statusDisplay: string;

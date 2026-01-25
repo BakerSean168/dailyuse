@@ -31,8 +31,8 @@ export interface KeyResultPersistenceDTO {
   progress: string; // JSON string
   weight: number; // 权重 (0-100)
   order: number;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface KeyResultServer {
@@ -43,8 +43,8 @@ export interface KeyResultServer {
   progress: KeyResultProgressServerDTO;
   weight: number; // 权重 (0-100)
   order: number;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
   records?: GoalRecordServerDTO[] | null;
 
   updateTitle(title: string): void;

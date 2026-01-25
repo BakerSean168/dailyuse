@@ -57,8 +57,8 @@ export interface NotificationTemplateAggregatePersistenceDTO {
   templatePushIcon?: string;
   templatePushSound?: string;
 
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 领域事件 ============
@@ -69,7 +69,7 @@ export interface NotificationTemplateAggregatePersistenceDTO {
 export interface NotificationTemplateCreatedEvent {
   type: 'notification.template.created';
   aggregateId: string; // templateUuid
-  timestamp: number; // epoch ms
+  timestamp: Date; // epoch ms
   payload: {
     template: NotificationTemplateAggregateServerDTO;
   };
@@ -81,7 +81,7 @@ export interface NotificationTemplateCreatedEvent {
 export interface NotificationTemplateUpdatedEvent {
   type: 'notification.template.updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     template: NotificationTemplateAggregateServerDTO;
     changes: string[];
@@ -94,7 +94,7 @@ export interface NotificationTemplateUpdatedEvent {
 export interface NotificationTemplateActivationChangedEvent {
   type: 'notification.template.activation.changed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     templateUuid: string;
     isActive: boolean;
@@ -130,8 +130,8 @@ export interface NotificationTemplateServer {
   isSystemTemplate: boolean;
 
   // ===== 时间戳 (统一使用 number epoch ms) =====
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // ===== 业务方法 =====
 

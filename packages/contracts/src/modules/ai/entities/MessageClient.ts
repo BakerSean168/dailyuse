@@ -36,7 +36,7 @@ export interface MessageClient {
   role: MessageRole;
   content: string;
   tokenCount?: number | null;
-  createdAt: number;
+  createdAt: Date;
 
   // ===== 业务方法 =====
 

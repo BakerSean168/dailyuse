@@ -29,9 +29,9 @@ export interface ApiKeyCredentialClient {
   keyPrefix: string;
   status: 'ACTIVE' | 'REVOKED' | 'EXPIRED';
   lastUsedAt?: number | null;
-  expiresAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
+  expiresAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 
   toClientDTO(): ApiKeyCredentialClientDTO;
 }

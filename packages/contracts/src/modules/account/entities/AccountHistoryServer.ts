@@ -28,7 +28,7 @@ export interface AccountHistoryPersistenceDTO {
   details?: string | null; // JSON
   ip_address?: string | null;
   user_agent?: string | null;
-  createdAt: number;
+  createdAt: Date;
 }
 
 // ============ 实体接口 ============
@@ -40,7 +40,7 @@ export interface AccountHistoryServer {
   details?: any | null;
   ipAddress?: string | null;
   userAgent?: string | null;
-  createdAt: number;
+  createdAt: Date;
 
   toServerDTO(): AccountHistoryServerDTO;
   toClientDTO(): AccountHistoryClientDTO;

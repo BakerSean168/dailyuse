@@ -69,8 +69,8 @@ export interface RepositoryServer {
   config: RepositoryConfigServer;
   stats: RepositoryStatsServer;
   status: RepositoryStatus;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // 子实体
   folders?: FolderServer[] | null;

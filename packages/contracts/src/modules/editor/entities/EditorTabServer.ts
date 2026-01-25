@@ -49,8 +49,8 @@ export interface EditorTabPersistenceDTO {
   is_pinned: boolean;
   is_dirty: boolean;
   lastAccessedAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
@@ -72,8 +72,8 @@ export interface EditorTabServer {
   readonly isPinned: boolean;
   readonly isDirty: boolean;
   readonly lastAccessedAt?: number | null;
-  readonly createdAt: number;
-  readonly updatedAt: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 
   // ===== 业务方法 =====
 

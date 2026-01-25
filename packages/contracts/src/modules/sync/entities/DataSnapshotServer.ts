@@ -35,7 +35,7 @@ export interface DataSnapshotPersistenceDTO {
   entityCountsJson: string;
   compressedSize: number;
   rawSize: number;
-  createdAt: number;
+  createdAt: Date;
   dataPath: string | null;
   dataJson: string | null;
 }
@@ -53,7 +53,7 @@ export interface DataSnapshotServer {
   entityCounts: Record<string, number>;
   compressedSize: number;
   rawSize: number;
-  createdAt: number;
+  createdAt: Date;
   data?: Record<string, unknown[]> | null;
 
   loadData(): Promise<void>;

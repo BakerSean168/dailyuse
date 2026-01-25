@@ -69,26 +69,26 @@ export interface AuthCredentialClient {
   twoFactor?: {
     enabled: boolean;
     method: 'TOTP' | 'SMS' | 'EMAIL' | 'AUTHENTICATOR_APP';
-    verifiedAt?: number | null;
+    verifiedAt?: Date | null;
   } | null;
   biometric?: {
     enabled: boolean;
     type: 'FINGERPRINT' | 'FACE_ID' | 'TOUCH_ID';
     deviceId?: string | null;
-    enrolledAt?: number | null;
+    enrolledAt?: Date | null;
   } | null;
   status: 'ACTIVE' | 'SUSPENDED' | 'EXPIRED' | 'REVOKED';
   security: {
     requirePasswordChange: boolean;
-    passwordExpiresAt?: number | null;
+    passwordExpiresAt?: Date | null;
     failedLoginAttempts: number;
-    lastFailedLoginAt?: number | null;
-    lockedUntil?: number | null;
-    lastPasswordChangeAt?: number | null;
+    lastFailedLoginAt?: Date | null;
+    lockedUntil?: Date | null;
+    lastPasswordChangeAt?: Date | null;
   };
   history: CredentialHistoryClient[];
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   toClientDTO(): AuthCredentialClientDTO;
 }

@@ -30,12 +30,12 @@ export interface SyncStatePersistenceDTO {
   currentSessionId: string | null;
   globalVersionJson: string;
   pendingChangesCount: number;
-  lastSyncAt: number | null;
+  lastSyncAt: Date | null;
   isLocked: boolean;
   lockReason: string | null;
   isOnline: boolean;
   registeredDevicesJson: string;
-  updatedAt: number;
+  updatedAt: Date;
 }
 
 // ============ 接口定义 ============
@@ -47,12 +47,12 @@ export interface SyncStateServer {
   currentSessionId?: string | null;
   globalVersion: SyncVersionServerDTO;
   pendingChangesCount: number;
-  lastSyncAt?: number | null;
+  lastSyncAt?: Date | null;
   isLocked: boolean;
   lockReason?: string | null;
   isOnline: boolean;
   registeredDevices: DeviceInfoDTO[];
-  updatedAt: number;
+  updatedAt: Date;
 
   // 状态管理
   setActiveProfile(profileId: string): void;

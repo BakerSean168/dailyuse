@@ -53,9 +53,9 @@ export interface AccountServerDTO {
   };
   security: {
     twoFactorEnabled: boolean;
-    lastPasswordChange?: number | null;
+    lastPasswordChange?: Date | null;
     loginAttempts: number;
-    lockedUntil?: number | null;
+    lockedUntil?: Date | null;
   };
   history: AccountHistoryServer[];
   stats: {
@@ -66,10 +66,10 @@ export interface AccountServerDTO {
     lastLoginAt?: number | null;
     loginCount: number;
   };
-  createdAt: number;
-  updatedAt: number;
-  lastActiveAt?: number | null;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  lastActiveAt?: Date | null;
+  deletedAt?: Date | null;
 }
 
 /**
@@ -101,9 +101,9 @@ export interface AccountPersistenceDTO {
   subscriptionId?: string | null;
   subscriptionPlan?: 'FREE' | 'BASIC' | 'PRO' | 'ENTERPRISE' | null;
   subscriptionStatus?: 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'SUSPENDED' | null;
-  subscriptionStartDate?: number | null;
-  subscriptionEndDate?: number | null;
-  subscriptionRenewalDate?: number | null;
+  subscriptionStartDate?: Date | null;
+  subscriptionEndDate?: Date | null;
+  subscriptionRenewalDate?: Date | null;
   subscriptionAutoRenew?: boolean | null;
 
   // Flattened storage
@@ -113,9 +113,9 @@ export interface AccountPersistenceDTO {
 
   // Flattened security
   twoFactorEnabled: boolean;
-  lastPasswordChange?: number | null;
+  lastPasswordChange?: Date | null;
   loginAttempts: number;
-  lockedUntil?: number | null;
+  lockedUntil?: Date | null;
 
   // History remains as JSON
   history: string; // JSON
@@ -125,13 +125,13 @@ export interface AccountPersistenceDTO {
   statsTotalTasks: number;
   statsTotalSchedules: number;
   statsTotalReminders: number;
-  statsLastLoginAt?: number | null;
+  statsLastLoginAt?: Date | null;
   statsLoginCount: number;
 
-  createdAt: number;
-  updatedAt: number;
-  lastActiveAt?: number | null;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  lastActiveAt?: Date | null;
+  deletedAt?: Date | null;
 }
 
 // ============ 实体接口 ============
@@ -177,9 +177,9 @@ export interface AccountServer {
   };
   security: {
     twoFactorEnabled: boolean;
-    lastPasswordChange?: number | null;
+    lastPasswordChange?: Date | null;
     loginAttempts: number;
-    lockedUntil?: number | null;
+    lockedUntil?: Date | null;
   };
   history: AccountHistoryServer[];
   stats: {
@@ -190,10 +190,10 @@ export interface AccountServer {
     lastLoginAt?: number | null;
     loginCount: number;
   };
-  createdAt: number;
-  updatedAt: number;
-  lastActiveAt?: number | null;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  lastActiveAt?: Date | null;
+  deletedAt?: Date | null;
 
   // 状态管理
   activate(): void;

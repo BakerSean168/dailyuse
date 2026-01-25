@@ -84,8 +84,8 @@ export interface ScheduleStatisticsClient {
   moduleStatistics: Record<string, ModuleStatisticsClientDTO>;
 
   // 时间戳
-  lastUpdatedAt: number;
-  createdAt: number;
+  lastUpdatedAt: Date;
+  createdAt: Date;
 
   // UI 辅助属性
   totalTasksDisplay: string;

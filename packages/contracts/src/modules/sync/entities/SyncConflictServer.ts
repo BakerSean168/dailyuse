@@ -39,8 +39,8 @@ export interface SyncConflictPersistenceDTO {
   status: string;
   autoResolvable: boolean;
   resolutionJson: string | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 接口定义 ============
@@ -57,8 +57,8 @@ export interface SyncConflictServer {
   status: ConflictStatus;
   autoResolvable: boolean;
   resolution?: ConflictResolutionDTO | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   resolve(resolution: ConflictResolutionDTO): void;
   ignore(): void;

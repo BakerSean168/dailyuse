@@ -53,17 +53,17 @@ export interface FocusSessionClient {
   readonly actualDurationMinutes: number;
   readonly description: string | null;
 
-  readonly startedAt: number | null;
+  readonly startedAt: Date | null;
   readonly pausedAt: number | null;
   readonly resumedAt: number | null;
-  readonly completedAt: number | null;
+  readonly completedAt: Date | null;
   readonly cancelledAt: number | null;
 
   readonly pauseCount: number;
   readonly pausedDurationMinutes: number;
 
-  readonly createdAt: number;
-  readonly updatedAt: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 
   // ===== DTO 转换方法 =====
   toClientDTO(): FocusSessionClientDTO;

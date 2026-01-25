@@ -38,9 +38,9 @@ export interface AIConversationPersistenceDTO {
   status: ConversationStatus;
   messageCount: number;
   lastMessageAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 
   // 注意：子实体在数据库中是独立表，通过外键关联
   // Persistence 层不包含子实体数据
@@ -54,7 +54,7 @@ export interface AIConversationPersistenceDTO {
 export interface AIConversationCreatedEvent {
   type: 'ai_conversation.created';
   aggregateId: string; // conversationUuid
-  timestamp: number;
+  timestamp: Date;
   payload: {
     conversation: AIConversationServerDTO;
     accountUuid: string;
@@ -67,7 +67,7 @@ export interface AIConversationCreatedEvent {
 export interface AIConversationUpdatedEvent {
   type: 'ai_conversation.updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     conversationUuid: string;
     previousData: Partial<AIConversationServerDTO>;
@@ -81,7 +81,7 @@ export interface AIConversationUpdatedEvent {
 export interface AIMessageAddedEvent {
   type: 'ai_conversation.message_added';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     conversationUuid: string;
     message: MessageServerDTO;
@@ -94,10 +94,10 @@ export interface AIMessageAddedEvent {
 export interface AIConversationDeletedEvent {
   type: 'ai_conversation.deleted';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     conversationUuid: string;
-    deletedAt: number;
+    deletedAt: Date;
   };
 }
 
@@ -114,9 +114,9 @@ export interface AIConversationServer {
   status: ConversationStatus;
   messageCount: number;
   lastMessageAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 
   // 子实体集合
   messages: MessageServer[];

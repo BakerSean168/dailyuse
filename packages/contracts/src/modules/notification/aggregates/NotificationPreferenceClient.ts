@@ -81,8 +81,8 @@ export interface NotificationPreferenceClient {
   rateLimit?: RateLimitClient | null;
 
   // ===== 时间戳 =====
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // ===== UI 计算属性 =====
   isAllEnabled: boolean;

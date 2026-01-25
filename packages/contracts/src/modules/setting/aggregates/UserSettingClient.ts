@@ -101,8 +101,8 @@ export interface UserSettingClient {
     enabled: boolean;
     features: string[];
   };
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
   themeText: string;
   languageText: string;
   experimentalFeatureCount: number;

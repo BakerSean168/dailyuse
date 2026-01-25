@@ -77,8 +77,8 @@ export interface EditorWorkspacePersistenceDTO {
   last_active_session_uuid?: string | null;
 
   lastAccessedAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 领域事件 ============
@@ -89,7 +89,7 @@ export interface EditorWorkspacePersistenceDTO {
 export interface EditorWorkspaceCreatedEvent {
   type: 'editor.workspace.created';
   aggregateId: string; // workspaceUuid
-  timestamp: number; // epoch ms
+  timestamp: Date; // epoch ms
   payload: {
     workspace: EditorWorkspaceServerDTO;
     createDefaultSession: boolean;
@@ -102,7 +102,7 @@ export interface EditorWorkspaceCreatedEvent {
 export interface EditorWorkspaceUpdatedEvent {
   type: 'editor.workspace.updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     workspace: EditorWorkspaceServerDTO;
     previousData: Partial<EditorWorkspaceServerDTO>;
@@ -116,7 +116,7 @@ export interface EditorWorkspaceUpdatedEvent {
 export interface EditorWorkspaceDeletedEvent {
   type: 'editor.workspace.deleted';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     workspaceUuid: string;
     accountUuid: string;
@@ -129,7 +129,7 @@ export interface EditorWorkspaceDeletedEvent {
 export interface EditorWorkspaceActivatedEvent {
   type: 'editor.workspace.activated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     workspaceUuid: string;
     accountUuid: string;
@@ -154,8 +154,8 @@ export interface EditorWorkspaceServer {
   isActive: boolean;
   lastActiveSessionUuid?: string | null;
   lastAccessedAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // ===== 领域方法 =====
 

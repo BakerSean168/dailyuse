@@ -31,8 +31,8 @@ export interface DashboardConfigPersistenceDTO {
   id: number;
   accountUuid: string;
   widgetConfig: string; // JSON string
-  createdAt: number; // epoch ms
-  updatedAt: number; // epoch ms
+  createdAt: Date; // epoch ms
+  updatedAt: Date; // epoch ms
 }
 
 // ============ 实体接口 ============

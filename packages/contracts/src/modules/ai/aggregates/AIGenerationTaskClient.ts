@@ -42,8 +42,8 @@ export interface AIGenerationTaskClient {
   input: GenerationInputClientDTO;
   result?: GenerationResultClientDTO | null;
   error?: string | null;
-  createdAt: number;
-  completedAt?: number | null;
+  createdAt: Date;
+  completedAt?: Date | null;
 
   isPending: boolean;
   isProcessing: boolean;

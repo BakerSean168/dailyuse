@@ -33,8 +33,8 @@ export interface AIConversationClient {
   status: ConversationStatus;
   messageCount: number;
   lastMessageAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // 子实体
   messages?: MessageClient[] | null;

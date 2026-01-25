@@ -55,6 +55,6 @@ export interface EditorSessionPersistenceDTO {
   layout: SessionLayoutPersistenceDTO;
 
   lastAccessedAt: number | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }

@@ -125,7 +125,7 @@ export interface ReminderTemplatePersistenceDTO {
 export interface ReminderTemplateCreatedEvent {
   type: 'reminder.template.created';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     template: ReminderTemplateServerDTO;
   };
@@ -137,7 +137,7 @@ export interface ReminderTemplateCreatedEvent {
 export interface ReminderTemplateUpdatedEvent {
   type: 'reminder.template.updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     template: ReminderTemplateServerDTO;
     previousData: Partial<ReminderTemplateServerDTO>;
@@ -151,7 +151,7 @@ export interface ReminderTemplateUpdatedEvent {
 export interface ReminderTemplateDeletedEvent {
   type: 'reminder.template.deleted';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     templateUuid: string;
     templateTitle: string;
@@ -164,7 +164,7 @@ export interface ReminderTemplateDeletedEvent {
 export interface ReminderTemplateEnabledEvent {
   type: 'reminder.template.enabled';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     templateUuid: string;
   };
@@ -176,7 +176,7 @@ export interface ReminderTemplateEnabledEvent {
 export interface ReminderTemplatePausedEvent {
   type: 'reminder.template.paused';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     templateUuid: string;
   };
@@ -188,7 +188,7 @@ export interface ReminderTemplatePausedEvent {
 export interface ReminderTemplateTriggeredEvent {
   type: 'reminder.template.triggered';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     templateUuid: string;
     triggeredAt: number;
@@ -202,7 +202,7 @@ export interface ReminderTemplateTriggeredEvent {
 export interface ReminderTemplateMovedEvent {
   type: 'reminder.template.moved';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     templateUuid: string;
     oldGroupUuid?: string | null;
@@ -250,9 +250,9 @@ export interface ReminderTemplateServer {
   stats: ReminderStatsServer;
 
   // 时间戳 (统一使用 number epoch ms)
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 
   // ===== 智能频率相关属性 (Story 5-2) =====
   responseMetrics?: ResponseMetricsServer | null;
@@ -309,8 +309,8 @@ export interface ReminderTemplateServer {
   // 触发计算
   calculateNextTrigger(): number | null;
   shouldTriggerNow(): boolean;
-  shouldTriggerAt(timestamp: number): boolean;
-  isActiveAtTime(timestamp: number): boolean;
+  shouldTriggerAt(timestamp: Date): boolean;
+  isActiveAtTime(timestamp: Date): boolean;
 
   // 触发记录
   recordTrigger(): void;

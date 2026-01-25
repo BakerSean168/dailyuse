@@ -40,10 +40,10 @@ export interface NotificationChannelPersistenceDTO {
   maxRetries: number;
   error?: string | null; // JSON string
   response?: string | null; // JSON string
-  createdAt: number;
+  createdAt: Date;
   sentAt?: number | null;
   deliveredAt?: number | null;
-  failedAt?: number | null;
+  failedAt?: Date | null;
 }
 
 // ============ 实体接口 ============
@@ -66,10 +66,10 @@ export interface NotificationChannelServer {
   response?: ChannelResponseServerDTO | null;
 
   // 时间戳 (统一使用 number epoch ms)
-  createdAt: number;
+  createdAt: Date;
   sentAt?: number | null;
   deliveredAt?: number | null;
-  failedAt?: number | null;
+  failedAt?: Date | null;
 
   // ===== 业务方法 =====
 

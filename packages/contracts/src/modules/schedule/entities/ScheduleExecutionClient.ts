@@ -47,7 +47,7 @@ export interface ScheduleExecutionClient {
   result: Record<string, any> | null;
   error: string | null;
   retryCount: number;
-  createdAt: number;
+  createdAt: Date;
 
   // UI 辅助属性
   executionTimeFormatted: string;

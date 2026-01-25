@@ -64,9 +64,9 @@ export interface SettingClient {
   isReadOnly: boolean;
   isSystemSetting: boolean;
   syncConfig?: SyncConfigClient | null;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
   isDeleted: boolean;
   isDefault: boolean;
   hasChanged: boolean;

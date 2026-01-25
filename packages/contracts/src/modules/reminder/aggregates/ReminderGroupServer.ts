@@ -44,9 +44,9 @@ export interface ReminderGroupPersistenceDTO {
   status: ReminderStatus;
   order: number;
   stats: string; // JSON string
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 }
 
 // ============ 领域事件 ============
@@ -57,7 +57,7 @@ export interface ReminderGroupPersistenceDTO {
 export interface ReminderGroupCreatedEvent {
   type: 'reminder.group.created';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     group: ReminderGroupServerDTO;
   };
@@ -69,7 +69,7 @@ export interface ReminderGroupCreatedEvent {
 export interface ReminderGroupUpdatedEvent {
   type: 'reminder.group.updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     group: ReminderGroupServerDTO;
     previousData: Partial<ReminderGroupServerDTO>;
@@ -83,7 +83,7 @@ export interface ReminderGroupUpdatedEvent {
 export interface ReminderGroupDeletedEvent {
   type: 'reminder.group.deleted';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     groupUuid: string;
     groupName: string;
@@ -96,7 +96,7 @@ export interface ReminderGroupDeletedEvent {
 export interface ReminderGroupControlModeSwitchedEvent {
   type: 'reminder.group.control.mode.switched';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     groupUuid: string;
     previousMode: ControlMode;
@@ -110,7 +110,7 @@ export interface ReminderGroupControlModeSwitchedEvent {
 export interface ReminderGroupEnabledEvent {
   type: 'reminder.group.enabled';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     groupUuid: string;
   };
@@ -122,7 +122,7 @@ export interface ReminderGroupEnabledEvent {
 export interface ReminderGroupPausedEvent {
   type: 'reminder.group.paused';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     groupUuid: string;
   };
@@ -159,9 +159,9 @@ export interface ReminderGroupServer {
   stats: GroupStatsServer;
 
   // 时间戳 (统一使用 number epoch ms)
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 
   // ===== 业务方法 =====
 

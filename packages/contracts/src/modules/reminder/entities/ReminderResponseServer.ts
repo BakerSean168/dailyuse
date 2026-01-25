@@ -42,7 +42,7 @@ export interface ReminderResponsePersistenceDTO {
   uuid: string;
   reminderTemplateUuid: string;
   action: ReminderResponseAction;
-  responseTime?: number | null;
+  responseTime?: Date | null;
   timestamp: Date;
 }
 
@@ -55,8 +55,8 @@ export interface ReminderResponseServer {
   uuid: string;
   reminderTemplateUuid: string;
   action: ReminderResponseAction;
-  responseTime?: number | null;
-  timestamp: number;
+  responseTime?: Date | null;
+  timestamp: Date;
 
   // 业务方法
   isClicked(): boolean;
@@ -84,8 +84,8 @@ export interface ReminderResponseServerStatic {
   create(params: {
     reminderTemplateUuid: string;
     action: ReminderResponseAction;
-    responseTime?: number;
-    timestamp?: number;
+    responseTime?: Date;
+    timestamp?: Date;
   }): ReminderResponseServer;
 
   /**

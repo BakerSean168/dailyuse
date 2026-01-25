@@ -45,8 +45,8 @@ export interface EditorGroupClient {
   readonly groupIndex: number;
   readonly activeTabIndex: number;
   readonly name?: string | null;
-  readonly createdAt: number;
-  readonly updatedAt: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 
   // ===== UI 辅助方法 =====
 

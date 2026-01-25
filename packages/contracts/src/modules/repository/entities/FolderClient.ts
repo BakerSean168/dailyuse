@@ -50,8 +50,8 @@ export interface FolderClient {
   order: number;
   isExpanded: boolean;
   metadata: FolderMetadataClient;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // 子文件夹
   children?: FolderClient[] | null;

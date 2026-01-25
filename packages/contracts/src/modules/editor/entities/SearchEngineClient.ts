@@ -47,8 +47,8 @@ export interface SearchEngineClient {
   readonly lastIndexedAt?: number | null;
   readonly isIndexing: boolean;
   readonly indexProgress?: number | null;
-  readonly createdAt: number;
-  readonly updatedAt: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 
   // ===== UI 辅助方法 =====
 

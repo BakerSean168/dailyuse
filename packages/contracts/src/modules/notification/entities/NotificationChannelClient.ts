@@ -60,10 +60,10 @@ export interface NotificationChannelClient {
   response?: ChannelResponseClientDTO | null;
 
   // 时间戳
-  createdAt: number;
+  createdAt: Date;
   sentAt?: number | null;
   deliveredAt?: number | null;
-  failedAt?: number | null;
+  failedAt?: Date | null;
 
   // UI 属性
   isPending: boolean;

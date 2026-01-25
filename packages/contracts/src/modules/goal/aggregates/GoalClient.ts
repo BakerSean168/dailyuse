@@ -13,7 +13,7 @@ import type { GoalRecordClientDTO } from '../entities/GoalRecordClient';
 // ============ DTO 定义 ============
 
 export interface GoalTimeRangeSummary {
-  startDate?: number | null;
+  startDate?: Date | null;
   targetDate?: number | null;
   actualStartDate?: number | null;
   actualEndDate?: number | null;
@@ -74,9 +74,9 @@ export interface GoalClient {
   // urgency: UrgencyLevel; // REMOVED
   category?: string | null;
   tags: string[];
-  startDate?: number | null;
+  startDate?: Date | null;
   targetDate?: number | null;
-  completedAt?: number | null;
+  completedAt?: Date | null;
   archivedAt?: number | null;
   folderUuid?: string | null;
   parentGoalUuid?: string | null;
@@ -84,9 +84,9 @@ export interface GoalClient {
   reminderConfig?: GoalReminderConfigClient | null;
 
   // 时间戳
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 
   // ===== 子实体集合（聚合根统一管理） =====
 
@@ -306,7 +306,7 @@ export interface GoalClientStatic {
     // urgency: UrgencyLevel; // REMOVED
     category?: string;
     tags?: string[];
-    startDate?: number;
+    startDate?: Date;
     targetDate?: number;
     folderUuid?: string;
     parentGoalUuid?: string;

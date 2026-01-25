@@ -32,20 +32,20 @@ export interface AuthCredentialServerDTO {
     enabled: boolean;
     type: 'FINGERPRINT' | 'FACE_ID' | 'TOUCH_ID';
     deviceId?: string | null;
-    enrolledAt?: number | null;
+    enrolledAt?: Date | null;
   } | null;
   status: 'ACTIVE' | 'SUSPENDED' | 'EXPIRED' | 'REVOKED';
   security: {
     requirePasswordChange: boolean;
-    passwordExpiresAt?: number | null;
+    passwordExpiresAt?: Date | null;
     failedLoginAttempts: number;
-    lastFailedLoginAt?: number | null;
-    lockedUntil?: number | null;
-    lastPasswordChangeAt?: number | null;
+    lastFailedLoginAt?: Date | null;
+    lockedUntil?: Date | null;
+    lastPasswordChangeAt?: Date | null;
   };
   history: CredentialHistoryServer[];
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
@@ -63,11 +63,11 @@ export interface AuthCredentialPersistenceDTO {
   status: 'ACTIVE' | 'SUSPENDED' | 'EXPIRED' | 'REVOKED';
   security: string; // JSON
   history: string; // JSON
-  createdAt: number;
-  updatedAt: number;
-  expiresAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  expiresAt?: Date | null;
   lastUsedAt?: number | null;
-  revokedAt?: number | null;
+  revokedAt?: Date | null;
 }
 
 // ============ 实体接口 ============
@@ -84,26 +84,26 @@ export interface AuthCredentialServer {
     secret?: string | null;
     backupCodes: string[];
     method: 'TOTP' | 'SMS' | 'EMAIL' | 'AUTHENTICATOR_APP';
-    verifiedAt?: number | null;
+    verifiedAt?: Date | null;
   } | null;
   biometric?: {
     enabled: boolean;
     type: 'FINGERPRINT' | 'FACE_ID' | 'TOUCH_ID';
     deviceId?: string | null;
-    enrolledAt?: number | null;
+    enrolledAt?: Date | null;
   } | null;
   status: 'ACTIVE' | 'SUSPENDED' | 'EXPIRED' | 'REVOKED';
   security: {
     requirePasswordChange: boolean;
-    passwordExpiresAt?: number | null;
+    passwordExpiresAt?: Date | null;
     failedLoginAttempts: number;
-    lastFailedLoginAt?: number | null;
-    lockedUntil?: number | null;
-    lastPasswordChangeAt?: number | null;
+    lastFailedLoginAt?: Date | null;
+    lockedUntil?: Date | null;
+    lastPasswordChangeAt?: Date | null;
   };
   history: CredentialHistoryServer[];
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // Password methods
   setPassword(hashedPassword: string): void;

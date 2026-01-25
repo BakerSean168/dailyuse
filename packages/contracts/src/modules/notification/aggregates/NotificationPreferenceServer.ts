@@ -64,8 +64,8 @@ export interface NotificationPreferencePersistenceDTO {
   categories: string; // JSON string
   doNotDisturb?: string | null; // JSON string
   rateLimit?: string | null; // JSON string
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 领域事件 ============
@@ -76,7 +76,7 @@ export interface NotificationPreferencePersistenceDTO {
 export interface NotificationPreferenceCreatedEvent {
   type: 'notification.preference.created';
   aggregateId: string; // preferenceUuid
-  timestamp: number; // epoch ms
+  timestamp: Date; // epoch ms
   payload: {
     preference: NotificationPreferenceServerDTO;
   };
@@ -88,7 +88,7 @@ export interface NotificationPreferenceCreatedEvent {
 export interface NotificationPreferenceUpdatedEvent {
   type: 'notification.preference.updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     preference: NotificationPreferenceServerDTO;
     changes: string[];
@@ -126,8 +126,8 @@ export interface NotificationPreferenceServer {
   rateLimit?: RateLimitServer | null;
 
   // ===== 时间戳 (统一使用 number epoch ms) =====
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // ===== 业务方法 =====
 
@@ -146,7 +146,7 @@ export interface NotificationPreferenceServer {
   ): void;
 
   // 免打扰
-  enableDoNotDisturb(startTime: string, endTime: string, daysOfWeek: number[]): void;
+  enableDoNotDisturb(startTime: string, endTime: string, daysOfWeek: Date[]): void;
   disableDoNotDisturb(): void;
   isInDoNotDisturbPeriod(): boolean;
 

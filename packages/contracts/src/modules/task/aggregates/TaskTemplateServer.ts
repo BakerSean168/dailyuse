@@ -179,9 +179,9 @@ export interface TaskTemplateServer {
   status: TaskTemplateStatus;
   lastGeneratedDate?: number | null;
   generateAheadDays: number | null; // null for ONE_TIME tasks
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
   history: TaskTemplateHistoryServerDTO[];
   instances: TaskInstanceServerDTO[];
 

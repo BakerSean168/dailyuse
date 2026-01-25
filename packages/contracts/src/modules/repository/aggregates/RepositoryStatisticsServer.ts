@@ -42,9 +42,9 @@ export interface RepositoryStatisticsPersistenceDTO {
   totalFolders: number;
   totalTags: number;
   totalStorageBytes: number;
-  lastUpdatedAt: number;
-  createdAt: number;
-  updatedAt: number;
+  lastUpdatedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
@@ -71,7 +71,7 @@ export interface RecalculateStatisticsResponse {
 export interface StatisticsUpdateEvent {
   type: 'repository.created' | 'repository.deleted' | 'repository.updated' | 'resource.created' | 'resource.deleted' | 'folder.created' | 'folder.deleted';
   accountUuid: string;
-  timestamp: number;
+  timestamp: Date;
   payload?: Record<string, unknown>;
 }
 
@@ -100,9 +100,9 @@ export interface RepositoryStatisticsServer {
   totalStorageBytes: number;
   
   // 时间戳
-  lastUpdatedAt: number;
-  readonly createdAt: number;
-  updatedAt: number;
+  lastUpdatedAt: Date;
+  readonly createdAt: Date;
+  updatedAt: Date;
   
   // 方法
   toClientDTO(): RepositoryStatisticsServerDTO;

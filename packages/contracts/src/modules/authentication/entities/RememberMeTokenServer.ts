@@ -43,10 +43,10 @@ export interface RememberMeTokenPersistenceDTO {
   usage_count: number;
   lastUsedAt?: number | null;
   last_used_ip?: string | null;
-  expiresAt: number;
-  createdAt: number;
-  updatedAt: number;
-  revokedAt?: number | null;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  revokedAt?: Date | null;
 }
 
 // ============ 实体接口 ============
@@ -62,10 +62,10 @@ export interface RememberMeTokenServer {
   usageCount: number;
   lastUsedAt?: number | null;
   lastUsedIp?: string | null;
-  expiresAt: number;
-  createdAt: number;
-  updatedAt: number;
-  revokedAt?: number | null;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  revokedAt?: Date | null;
 
   verifyToken(plainToken: string): boolean;
   verifyDevice(deviceFingerprint: string): boolean;

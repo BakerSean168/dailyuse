@@ -54,8 +54,8 @@ export interface DocumentClient {
   readonly indexStatus: IndexStatus;
   readonly lastIndexedAt?: number | null;
   readonly lastModifiedAt?: number | null;
-  readonly createdAt: number;
-  readonly updatedAt: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 
   // ===== UI 辅助方法 =====
 

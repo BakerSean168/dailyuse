@@ -61,7 +61,7 @@ export interface DocumentVersionServer {
   readonly changeDescription?: string | null;
   readonly previousVersionUuid?: string | null;
   readonly createdBy?: string | null;
-  readonly createdAt: number;
+  readonly createdAt: Date;
 
   // ===== 业务方法 =====
 

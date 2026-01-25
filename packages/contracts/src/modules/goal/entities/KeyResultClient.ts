@@ -27,8 +27,8 @@ export interface KeyResultClient {
   progress: KeyResultProgressClientDTO;
   weight: number; // 权重 (0-100)
   order: number;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
   records?: GoalRecordClientDTO[] | null;
 
   toClientDTO(): KeyResultClientDTO;

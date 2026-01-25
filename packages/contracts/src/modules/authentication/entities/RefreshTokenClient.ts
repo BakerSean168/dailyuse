@@ -23,8 +23,8 @@ export interface RefreshTokenClient {
   uuid: string;
   sessionUuid: string;
   token: string;
-  expiresAt: number;
-  createdAt: number;
+  expiresAt: Date;
+  createdAt: Date;
   usedAt?: number | null;
 
   toClientDTO(): RefreshTokenClientDTO;

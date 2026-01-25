@@ -89,17 +89,17 @@ export interface TaskTemplateClient {
   status: TaskTemplateStatus;
   lastGeneratedDate?: number | null;
   generateAheadDays: number | null; // null for ONE_TIME tasks
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
   instances?: TaskInstanceClient[];
   // ONE_TIME task fields
   goalUuid?: string | null;
   keyResultUuid?: string | null;
   parentTaskUuid?: string | null;
-  startDate?: number | null;
+  startDate?: Date | null;
   dueDate?: number | null;
-  completedAt?: number | null;
+  completedAt?: Date | null;
   estimatedMinutes?: number | null;
   actualMinutes?: number | null;
   note?: string | null;

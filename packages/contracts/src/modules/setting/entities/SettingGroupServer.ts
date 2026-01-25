@@ -42,9 +42,9 @@ export interface SettingGroupPersistenceDTO {
   settings: string; // JSON
   isSystemGroup: boolean;
   isCollapsed: boolean;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 }
 
 // ============ 实体接口 ============
@@ -61,9 +61,9 @@ export interface SettingGroupServer {
   settings?: SettingItemServer[] | null;
   isSystemGroup: boolean;
   isCollapsed: boolean;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 
   // 业务方法
   addSetting(setting: SettingItemServer): void;

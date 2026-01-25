@@ -54,8 +54,8 @@ export interface AIGenerationTaskPersistenceDTO {
   maxRetries: number;
   processingStartedAt?: number | null;
   processingCompletedAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 领域事件 ============
@@ -66,7 +66,7 @@ export interface AIGenerationTaskPersistenceDTO {
 export interface AIGenerationTaskCreatedEvent {
   type: 'ai_generation_task.created';
   aggregateId: string; // taskUuid
-  timestamp: number;
+  timestamp: Date;
   payload: {
     task: AIGenerationTaskServerDTO;
     accountUuid: string;
@@ -79,12 +79,12 @@ export interface AIGenerationTaskCreatedEvent {
 export interface AIGenerationTaskStatusChangedEvent {
   type: 'ai_generation_task.status_changed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     taskUuid: string;
     previousStatus: TaskStatus;
     newStatus: TaskStatus;
-    changedAt: number;
+    changedAt: Date;
   };
 }
 
@@ -94,12 +94,12 @@ export interface AIGenerationTaskStatusChangedEvent {
 export interface AIGenerationTaskCompletedEvent {
   type: 'ai_generation_task.completed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     taskUuid: string;
     result: GenerationResultServerDTO;
     tokenUsage?: TokenUsageServerDTO | null;
-    completedAt: number;
+    completedAt: Date;
   };
 }
 
@@ -109,12 +109,12 @@ export interface AIGenerationTaskCompletedEvent {
 export interface AIGenerationTaskFailedEvent {
   type: 'ai_generation_task.failed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     taskUuid: string;
     errorMessage: string;
     retryCount: number;
-    failedAt: number;
+    failedAt: Date;
   };
 }
 
@@ -124,11 +124,11 @@ export interface AIGenerationTaskFailedEvent {
 export interface AIGenerationTaskRetriedEvent {
   type: 'ai_generation_task.retried';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     taskUuid: string;
     retryCount: number;
-    retriedAt: number;
+    retriedAt: Date;
   };
 }
 
@@ -154,8 +154,8 @@ export interface AIGenerationTaskServer {
   maxRetries: number;
   processingStartedAt?: number | null;
   processingCompletedAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // ===== 状态管理方法 =====
 

@@ -34,7 +34,7 @@ export interface GoalReviewPersistenceDTO {
   improvements?: string | null;
   keyResultSnapshots: string; // JSON string
   reviewedAt: number;
-  createdAt: number;
+  createdAt: Date;
 }
 
 export interface GoalReviewServer {
@@ -48,7 +48,7 @@ export interface GoalReviewServer {
   improvements?: string | null;
   keyResultSnapshots: KeyResultSnapshotServerDTO[];
   reviewedAt: number;
-  createdAt: number;
+  createdAt: Date;
 
   updateRating(rating: number): void;
   updateSummary(summary: string): void;

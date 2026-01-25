@@ -75,7 +75,7 @@ export interface ReminderStatisticsPersistenceDTO {
 export interface ReminderStatisticsUpdatedEvent {
   type: 'reminder.statistics.updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     statistics: ReminderStatisticsServerDTO;
   };
@@ -110,7 +110,7 @@ export interface ReminderStatisticsServer {
   /**
    * 获取指定时间范围内的触发次数
    */
-  getTriggersInRange(startDate: number, endDate: number): Promise<number>;
+  getTriggersInRange(startDate: Date, endDate: Date): Promise<number>;
 
   // ===== 转换方法 (To) =====
 

@@ -28,12 +28,12 @@ export interface AuthSessionServerDTO {
     city?: string | null;
     timezone?: string | null;
   } | null;
-  lastActivityAt: number;
+  lastActivityAt: Date;
   lastActivityType?: string | null;
   history: SessionHistoryServer[];
-  createdAt: number;
-  expiresAt: number;
-  revokedAt?: number | null;
+  createdAt: Date;
+  expiresAt: Date;
+  revokedAt?: Date | null;
 }
 
 /**
@@ -43,11 +43,11 @@ export interface AuthSessionPersistenceDTO {
   uuid: string;
   accountUuid: string;
   accessToken: string;
-  accessTokenExpiresAt: number;
+  accessTokenExpiresAt: Date;
 
   // Flattened refresh token
   refreshToken: string;
-  refreshTokenExpiresAt: number;
+  refreshTokenExpiresAt: Date;
 
   // Flattened device info
   deviceId: string;
@@ -64,12 +64,12 @@ export interface AuthSessionPersistenceDTO {
   locationCity?: string | null;
   locationTimezone?: string | null;
 
-  lastActivityAt: number;
+  lastActivityAt: Date;
   lastActivityType?: string | null;
   history: string; // JSON
-  createdAt: number;
-  expiresAt: number;
-  revokedAt?: number | null;
+  createdAt: Date;
+  expiresAt: Date;
+  revokedAt?: Date | null;
 }
 
 // ============ 实体接口 ============
@@ -78,7 +78,7 @@ export interface AuthSessionServer {
   uuid: string;
   accountUuid: string;
   accessToken: string;
-  accessTokenExpiresAt: number;
+  accessTokenExpiresAt: Date;
   refreshToken: RefreshTokenServer;
   device: DeviceInfoServer;
   status: 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'LOCKED';
@@ -89,12 +89,12 @@ export interface AuthSessionServer {
     city?: string | null;
     timezone?: string | null;
   } | null;
-  lastActivityAt: number;
+  lastActivityAt: Date;
   lastActivityType?: string | null;
   history: SessionHistoryServer[];
-  createdAt: number;
-  expiresAt: number;
-  revokedAt?: number | null;
+  createdAt: Date;
+  expiresAt: Date;
+  revokedAt?: Date | null;
 
   refreshAccessToken(newToken: string, expiresInMinutes: number): void;
   refreshRefreshToken(): void;

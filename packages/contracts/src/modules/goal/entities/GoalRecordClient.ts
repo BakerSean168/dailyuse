@@ -23,7 +23,7 @@ export interface GoalRecordClient {
   calculatedCurrentValue?: number;  // 记录时计算的累计值（用于展示）
   note?: string | null;
   recordedAt: number;
-  createdAt: number;
+  createdAt: Date;
 
   toClientDTO(): GoalRecordClientDTO;
   toServerDTO(): GoalRecordServerDTO;

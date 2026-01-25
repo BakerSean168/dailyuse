@@ -35,8 +35,8 @@ export interface AIUsageQuotaPersistenceDTO {
   resetPeriod: QuotaResetPeriod;
   lastResetAt: number;
   nextResetAt: number;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 领域事件 ============
@@ -47,7 +47,7 @@ export interface AIUsageQuotaPersistenceDTO {
 export interface AIUsageQuotaCreatedEvent {
   type: 'ai_usage_quota.created';
   aggregateId: string; // quotaUuid
-  timestamp: number;
+  timestamp: Date;
   payload: {
     quota: AIUsageQuotaServerDTO;
     accountUuid: string;
@@ -60,7 +60,7 @@ export interface AIUsageQuotaCreatedEvent {
 export interface AIUsageQuotaConsumedEvent {
   type: 'ai_usage_quota.consumed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     quotaUuid: string;
     accountUuid: string;
@@ -77,7 +77,7 @@ export interface AIUsageQuotaConsumedEvent {
 export interface AIUsageQuotaResetEvent {
   type: 'ai_usage_quota.reset';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     quotaUuid: string;
     accountUuid: string;
@@ -93,7 +93,7 @@ export interface AIUsageQuotaResetEvent {
 export interface AIUsageQuotaExceededEvent {
   type: 'ai_usage_quota.exceeded';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     quotaUuid: string;
     accountUuid: string;
@@ -109,12 +109,12 @@ export interface AIUsageQuotaExceededEvent {
 export interface AIUsageQuotaLimitUpdatedEvent {
   type: 'ai_usage_quota.limit_updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     quotaUuid: string;
     previousLimit: number;
     newLimit: number;
-    updatedAt: number;
+    updatedAt: Date;
   };
 }
 
@@ -132,8 +132,8 @@ export interface AIUsageQuotaServer {
   resetPeriod: QuotaResetPeriod;
   lastResetAt: number;
   nextResetAt: number;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // ===== 配额管理方法 =====
 

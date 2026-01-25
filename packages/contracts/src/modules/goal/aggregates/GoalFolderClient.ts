@@ -57,9 +57,9 @@ export interface GoalFolderClient {
   completedGoalCount: number;
 
   // 时间戳
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 
   // UI 计算属性
   displayName: string;

@@ -26,10 +26,10 @@ export interface PasswordCredentialClient {
   credentialUuid: string;
   algorithm: 'BCRYPT' | 'ARGON2' | 'SCRYPT';
   status: 'ACTIVE' | 'INACTIVE' | 'LOCKED';
-  failedAttempts: number;
+  failedAttempts: Date;
   lastChangedAt: number;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   toClientDTO(): PasswordCredentialClientDTO;
 }

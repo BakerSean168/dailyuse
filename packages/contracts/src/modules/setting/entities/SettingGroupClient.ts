@@ -45,9 +45,9 @@ export interface SettingGroupClient {
   settings?: SettingItemClient[] | null;
   isSystemGroup: boolean;
   isCollapsed: boolean;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
   isDeleted: boolean;
   settingCount: number;
   displayName: string;

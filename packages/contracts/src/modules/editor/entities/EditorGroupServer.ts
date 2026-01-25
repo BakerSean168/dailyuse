@@ -44,8 +44,8 @@ export interface EditorGroupPersistenceDTO {
   // 子实体：标签列表 (JSON 存储)
   tabs?: EditorTabPersistenceDTO[]; // ✅ 使用 PersistenceDTO 类型
 
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
@@ -61,8 +61,8 @@ export interface EditorGroupServer {
   readonly groupIndex: number;
   readonly activeTabIndex: number;
   readonly name?: string | null;
-  readonly createdAt: number;
-  readonly updatedAt: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 
   // ===== 业务方法 =====
 

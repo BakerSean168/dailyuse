@@ -15,7 +15,7 @@ export interface RecurrenceRuleServer {
   frequency: RecurrenceFrequency;
   interval: number; // 间隔（如每2天、每3周）
   daysOfWeek: DayOfWeek[]; // 星期几（WEEKLY时使用）
-  endDate?: number | null; // epoch ms - 结束日期
+  endDate?: Date | null; // epoch ms - 结束日期
   occurrences?: number | null; // 重复次数
 
   // 值对象方法
@@ -55,6 +55,6 @@ export interface RecurrenceRulePersistenceDTO {
   frequency: string;
   interval: number;
   daysOfWeek: string; // JSON array
-  endDate?: number | null;
+  endDate?: Date | null;
   occurrences?: number | null;
 }

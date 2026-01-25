@@ -77,8 +77,8 @@ export interface AppConfigClient {
     maxFileSize: number;
     maxStorageSize: number;
   };
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
   appVersionText: string;
   environmentText: string;
   enabledFeaturesCount: number;

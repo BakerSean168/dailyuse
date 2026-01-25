@@ -46,8 +46,8 @@ export interface SettingItemClient {
   sortOrder: number;
   isReadOnly: boolean;
   isVisible: boolean;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
   isDefault: boolean;
   displayValue: string;
 

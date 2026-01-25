@@ -45,8 +45,8 @@ export interface SettingItemPersistenceDTO {
   sortOrder: number;
   isReadOnly: boolean;
   isVisible: boolean;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 实体接口 ============
@@ -64,8 +64,8 @@ export interface SettingItemServer {
   sortOrder: number;
   isReadOnly: boolean;
   isVisible: boolean;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // 业务方法
   setValue(newValue: any): void;

@@ -96,10 +96,10 @@ export interface TaskInstancePersistenceDTO {
   completionRecord?: string | null; // JSON
   skipRecord?: string | null; // JSON
   actualStartTime?: number | null;
-  actualEndTime?: number | null;
+  actualEndTime?: Date | null;
   note?: string | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 聚合根接口 ============
@@ -116,10 +116,10 @@ export interface TaskInstanceServer {
   completionRecord?: CompletionRecordServer | null;
   skipRecord?: SkipRecordServer | null;
   actualStartTime?: number | null;
-  actualEndTime?: number | null;
+  actualEndTime?: Date | null;
   note?: string | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // 状态转换
   start(): void;

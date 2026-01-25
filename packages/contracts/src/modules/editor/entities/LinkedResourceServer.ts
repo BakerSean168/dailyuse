@@ -46,8 +46,8 @@ export interface LinkedResourcePersistenceDTO {
   target_anchor?: string | null;
   is_valid: boolean;
   last_validated_at?: number | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
@@ -69,8 +69,8 @@ export interface LinkedResourceServer {
   readonly targetAnchor?: string | null;
   readonly isValid: boolean;
   readonly lastValidatedAt?: number | null;
-  readonly createdAt: number;
-  readonly updatedAt: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 
   // ===== 业务方法 =====
 

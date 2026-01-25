@@ -41,8 +41,8 @@ export interface AIUsageQuotaClient {
   resetPeriod: QuotaResetPeriod;
   lastResetAt: number;
   nextResetAt: number;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // ===== 计算属性方法 =====
 

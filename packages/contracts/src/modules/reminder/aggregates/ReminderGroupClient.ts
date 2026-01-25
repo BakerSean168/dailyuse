@@ -55,9 +55,9 @@ export interface ReminderGroupClient {
   status: ReminderStatus;
   order: number;
   stats: GroupStatsClientDTO;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 
   // UI 扩展
   displayName: string;

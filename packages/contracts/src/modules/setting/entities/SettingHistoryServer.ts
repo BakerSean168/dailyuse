@@ -31,7 +31,7 @@ export interface SettingHistoryPersistenceDTO {
   newValue: string; // JSON
   operatorUuid?: string | null;
   operatorType: 'USER' | 'SYSTEM' | 'API';
-  createdAt: number;
+  createdAt: Date;
 }
 
 // ============ 实体接口 ============
@@ -44,7 +44,7 @@ export interface SettingHistoryServer {
   newValue: any;
   operatorUuid?: string | null;
   operatorType: 'USER' | 'SYSTEM' | 'API';
-  createdAt: number;
+  createdAt: Date;
 
   toServerDTO(): SettingHistoryServerDTO;
   toClientDTO(): SettingHistoryClientDTO;

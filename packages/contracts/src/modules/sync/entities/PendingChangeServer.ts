@@ -33,8 +33,8 @@ export interface PendingChangePersistenceDTO {
   versionJson: string;
   isSynced: boolean;
   syncedInSession: string | null;
-  createdAt: number;
-  syncedAt: number | null;
+  createdAt: Date;
+  syncedAt: Date | null;
 }
 
 // ============ 接口定义 ============
@@ -48,8 +48,8 @@ export interface PendingChangeServer {
   version: SyncVersionServerDTO;
   isSynced: boolean;
   syncedInSession?: string | null;
-  createdAt: number;
-  syncedAt?: number | null;
+  createdAt: Date;
+  syncedAt?: Date | null;
 
   markAsSynced(sessionId: string): void;
 

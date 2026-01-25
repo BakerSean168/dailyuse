@@ -45,7 +45,7 @@ export interface DocumentVersionClient {
   readonly changeDescription?: string | null;
   readonly previousVersionUuid?: string | null;
   readonly createdBy?: string | null;
-  readonly createdAt: number;
+  readonly createdAt: Date;
 
   // ===== UI 辅助方法 =====
 

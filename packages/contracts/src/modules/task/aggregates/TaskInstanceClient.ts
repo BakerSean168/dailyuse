@@ -76,10 +76,10 @@ export interface TaskInstanceClient {
   completionRecord?: CompletionRecordClient | null;
   skipRecord?: SkipRecordClient | null;
   actualStartTime?: number | null;
-  actualEndTime?: number | null;
+  actualEndTime?: Date | null;
   note?: string | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
   instanceDateFormatted: string;
   statusText: string;
   statusColor: string;

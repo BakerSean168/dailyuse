@@ -55,8 +55,8 @@ export interface EditorTabClient {
   readonly isPinned: boolean;
   readonly isDirty: boolean;
   readonly lastAccessedAt?: number | null;
-  readonly createdAt: number;
-  readonly updatedAt: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 
   // ===== UI 杈呭姪鏂规硶 =====
 

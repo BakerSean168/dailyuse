@@ -4,7 +4,10 @@
  */
 
 import type { SubscriptionClient, SubscriptionClientDTO } from '../entities/SubscriptionClient';
-import type { AccountHistoryClient, AccountHistoryClientDTO } from '../entities/AccountHistoryClient';
+import type {
+  AccountHistoryClient,
+  AccountHistoryClientDTO,
+} from '../entities/AccountHistoryClient';
 
 // ============ DTO 定义 ============
 
@@ -114,9 +117,9 @@ export interface AccountClient {
   };
   security: {
     twoFactorEnabled: boolean;
-    lastPasswordChange?: number | null;
+    lastPasswordChange?: Date | null;
     loginAttempts: number;
-    lockedUntil?: number | null;
+    lockedUntil?: Date | null;
   };
   history: AccountHistoryClient[];
   stats: {
@@ -124,13 +127,13 @@ export interface AccountClient {
     totalTasks: number;
     totalSchedules: number;
     totalReminders: number;
-    lastLoginAt?: number | null;
+    lastLoginAt?: Date | null;
     loginCount: number;
   };
-  createdAt: number;
-  updatedAt: number;
-  lastActiveAt?: number | null;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  lastActiveAt?: Date | null;
+  deletedAt?: Date | null;
 
   toClientDTO(): AccountClientDTO;
 }

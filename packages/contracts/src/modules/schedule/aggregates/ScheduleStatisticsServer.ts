@@ -74,8 +74,8 @@ export interface ScheduleStatisticsPersistenceDTO {
   moduleStatistics: string;
 
   // 时间戳
-  lastUpdatedAt: number;
-  createdAt: number;
+  lastUpdatedAt: Date;
+  createdAt: Date;
 }
 
 // ============ 领域事件 ============
@@ -86,7 +86,7 @@ export interface ScheduleStatisticsPersistenceDTO {
 export interface ScheduleStatisticsCreatedEvent {
   type: 'schedule.statistics.created';
   aggregateId: string; // accountUuid
-  timestamp: number; // epoch ms
+  timestamp: Date; // epoch ms
   payload: {
     accountUuid: string;
   };
@@ -98,7 +98,7 @@ export interface ScheduleStatisticsCreatedEvent {
 export interface ScheduleStatisticsUpdatedEvent {
   type: 'schedule.statistics.updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     accountUuid: string;
     changes: string[];
@@ -113,7 +113,7 @@ export interface ScheduleStatisticsUpdatedEvent {
 export interface ScheduleStatisticsTaskCountChangedEvent {
   type: 'schedule.statistics.task.count.changed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     status: ScheduleTaskStatus;
     delta: number; // +1 or -1
@@ -127,7 +127,7 @@ export interface ScheduleStatisticsTaskCountChangedEvent {
 export interface ScheduleStatisticsExecutionRecordedEvent {
   type: 'schedule.statistics.execution.recorded';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     status: ExecutionStatus;
     duration: number;
@@ -142,7 +142,7 @@ export interface ScheduleStatisticsExecutionRecordedEvent {
 export interface ScheduleStatisticsModuleUpdatedEvent {
   type: 'schedule.statistics.module.updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     moduleName: string;
     moduleStats: ModuleStatisticsServerDTO;
@@ -193,8 +193,8 @@ export interface ScheduleStatisticsServer {
   moduleStatistics: Record<string, ModuleStatisticsServerDTO>;
 
   // 时间戳
-  lastUpdatedAt: number;
-  createdAt: number;
+  lastUpdatedAt: Date;
+  createdAt: Date;
 
   // ===== 业务方法 =====
 

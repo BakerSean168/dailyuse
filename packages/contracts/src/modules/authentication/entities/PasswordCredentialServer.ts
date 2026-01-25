@@ -38,10 +38,10 @@ export interface PasswordCredentialPersistenceDTO {
   algorithm: 'BCRYPT' | 'ARGON2' | 'SCRYPT';
   iterations?: number | null;
   status: 'ACTIVE' | 'INACTIVE' | 'LOCKED';
-  failedAttempts: number;
+  failedAttempts: Date;
   last_changed_at: number;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 实体接口 ============
@@ -54,10 +54,10 @@ export interface PasswordCredentialServer {
   algorithm: 'BCRYPT' | 'ARGON2' | 'SCRYPT';
   iterations?: number | null;
   status: 'ACTIVE' | 'INACTIVE' | 'LOCKED';
-  failedAttempts: number;
+  failedAttempts: Date;
   lastChangedAt: number;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   verify(plainPassword: string): Promise<boolean>;
   needsRehash(): boolean;

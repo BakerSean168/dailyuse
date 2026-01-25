@@ -50,8 +50,8 @@ export interface UserSettingServerDTO {
     enabled: boolean;
     features: string[];
   };
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
@@ -104,8 +104,8 @@ export interface UserSettingPersistenceDTO {
   experimentalFeatures: string; // JSON: string[]
 
   // Timestamps
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 聚合根接口 ============
@@ -151,8 +151,8 @@ export interface UserSettingServer {
     enabled: boolean;
     features: string[];
   };
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // 外观管理
   updateAppearance(appearance: Partial<UserSettingServer['appearance']>): void;

@@ -27,10 +27,10 @@ export interface SyncSessionServerDTO {
   error?: { code: string; message: string; details?: unknown; stack?: string } | null;
   canRetry: boolean;
   retryCount: number;
-  createdAt: number;
-  startedAt?: number | null;
-  completedAt?: number | null;
-  updatedAt: number;
+  createdAt: Date;
+  startedAt?: Date | null;
+  completedAt?: Date | null;
+  updatedAt: Date;
 }
 
 export interface SyncSessionPersistenceDTO {
@@ -49,10 +49,10 @@ export interface SyncSessionPersistenceDTO {
   errorJson: string | null;
   canRetry: boolean;
   retryCount: number;
-  createdAt: number;
-  startedAt: number | null;
-  completedAt: number | null;
-  updatedAt: number;
+  createdAt: Date;
+  startedAt: Date | null;
+  completedAt: Date | null;
+  updatedAt: Date;
 }
 
 // ============ 领域事件 ============
@@ -60,21 +60,21 @@ export interface SyncSessionPersistenceDTO {
 export interface SyncSessionCreatedDomainEvent {
   type: 'sync.session.created';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: { session: SyncSessionServerDTO };
 }
 
 export interface SyncSessionCompletedDomainEvent {
   type: 'sync.session.completed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: { statistics: SyncSessionStatsDTO; newVersion: SyncVersionServerDTO };
 }
 
 export interface SyncSessionFailedDomainEvent {
   type: 'sync.session.failed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: { error: { code: string; message: string } };
 }
 
@@ -95,10 +95,10 @@ export interface SyncSessionServer {
   error?: { code: string; message: string; details?: unknown } | null;
   canRetry: boolean;
   retryCount: number;
-  createdAt: number;
-  startedAt?: number | null;
-  completedAt?: number | null;
-  updatedAt: number;
+  createdAt: Date;
+  startedAt?: Date | null;
+  completedAt?: Date | null;
+  updatedAt: Date;
 
   // 状态转换
   start(): void;

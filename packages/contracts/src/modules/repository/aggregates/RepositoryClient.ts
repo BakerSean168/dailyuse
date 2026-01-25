@@ -63,8 +63,8 @@ export interface RepositoryClient {
   config: RepositoryConfigClient;
   stats: RepositoryStatsClient;
   status: RepositoryStatus;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // 子实体
   folders?: FolderClient[] | null;

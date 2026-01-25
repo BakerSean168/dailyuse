@@ -41,7 +41,7 @@ export interface ReminderHistoryClient {
   error?: string | null;
   notificationSent: boolean;
   notificationChannels?: NotificationChannel[] | null;
-  createdAt: number;
+  createdAt: Date;
 
   // UI 扩展
   resultText: string;

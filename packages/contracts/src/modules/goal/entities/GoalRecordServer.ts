@@ -30,7 +30,7 @@ export interface GoalRecordPersistenceDTO {
   value: number;  // 本次记录的值（独立值）
   note?: string | null;
   recordedAt: number;
-  createdAt: number;
+  createdAt: Date;
 }
 
 // ============ 实体接口 ============
@@ -42,7 +42,7 @@ export interface GoalRecordServer {
   value: number;  // 本次记录的值（独立值）
   note?: string | null;
   recordedAt: number;
-  createdAt: number;
+  createdAt: Date;
 
   updateNote(note: string): void;
 

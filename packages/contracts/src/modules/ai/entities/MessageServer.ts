@@ -29,7 +29,7 @@ export interface MessagePersistenceDTO {
   role: MessageRole;
   content: string;
   tokenCount?: number | null;
-  createdAt: number;
+  createdAt: Date;
 }
 
 // ============ 实体接口 ============
@@ -43,7 +43,7 @@ export interface MessageServer {
   role: MessageRole;
   content: string;
   tokenCount?: number | null;
-  createdAt: number;
+  createdAt: Date;
 
   // ===== 转换方法 =====
 

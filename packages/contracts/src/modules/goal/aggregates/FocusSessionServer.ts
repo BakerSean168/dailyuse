@@ -45,16 +45,16 @@ export interface FocusSessionPersistenceDTO {
   actualDurationMinutes: number;
   description: string | null;
 
-  startedAt: number | null;
+  startedAt: Date | null;
   pausedAt: number | null;
   resumedAt: number | null;
-  completedAt: number | null;
+  completedAt: Date | null;
   cancelledAt: number | null;
   pauseCount: number;
   pausedDurationMinutes: number;
 
-  createdAt: number; // timestamp (ms)
-  updatedAt: number; // timestamp (ms)
+  createdAt: Date; // timestamp (ms)
+  updatedAt: Date; // timestamp (ms)
 }
 
 /**
@@ -71,17 +71,17 @@ export interface FocusSessionServer {
   readonly actualDurationMinutes: number;
   readonly description: string | null;
 
-  readonly startedAt: number | null;
+  readonly startedAt: Date | null;
   readonly pausedAt: number | null;
   readonly resumedAt: number | null;
-  readonly completedAt: number | null;
+  readonly completedAt: Date | null;
   readonly cancelledAt: number | null;
 
   readonly pauseCount: number;
   readonly pausedDurationMinutes: number;
 
-  readonly createdAt: number;
-  readonly updatedAt: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 
   // ===== 业务方法 =====
   /**
@@ -138,7 +138,7 @@ export interface FocusSessionStartedEvent {
     accountUuid: string;
     goalUuid: string | null;
     durationMinutes: number;
-    startedAt: number;
+    startedAt: Date;
   };
 }
 
@@ -183,7 +183,7 @@ export interface FocusSessionCompletedEvent {
     sessionUuid: string;
     accountUuid: string;
     goalUuid: string | null;
-    completedAt: number;
+    completedAt: Date;
     actualDurationMinutes: number;
     plannedDurationMinutes: number;
   };

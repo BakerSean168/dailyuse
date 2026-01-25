@@ -69,17 +69,17 @@ export interface GoalPersistenceDTO {
   // urgency: UrgencyLevel; // REMOVED - 不再持久化
   category?: string | null;
   tags: string; // JSON string
-  startDate?: number | null;
+  startDate?: Date | null;
   targetDate?: number | null;
-  completedAt?: number | null;
+  completedAt?: Date | null;
   archivedAt?: number | null;
   folderUuid?: string | null;
   parentGoalUuid?: string | null;
   sortOrder: number;
   reminderConfig?: string | null; // JSON string
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 
   // 注意：子实体在数据库中是独立表，通过外键关联
   // Persistence 层不包含子实体数据
@@ -93,7 +93,7 @@ export interface GoalPersistenceDTO {
 export interface GoalCreatedEvent {
   type: 'goal.created';
   aggregateId: string; // goalUuid
-  timestamp: number; // epoch ms
+  timestamp: Date; // epoch ms
   payload: {
     goal: GoalServerDTO;
     accountUuid: string;
@@ -107,7 +107,7 @@ export interface GoalCreatedEvent {
 export interface GoalUpdatedEvent {
   type: 'goal.updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     goal: GoalServerDTO;
     previousData: Partial<GoalServerDTO>;
@@ -121,12 +121,12 @@ export interface GoalUpdatedEvent {
 export interface GoalStatusChangedEvent {
   type: 'goal.status_changed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     goalUuid: string;
     previousStatus: GoalStatus;
     newStatus: GoalStatus;
-    changedAt: number;
+    changedAt: Date;
   };
 }
 
@@ -136,10 +136,10 @@ export interface GoalStatusChangedEvent {
 export interface GoalCompletedEvent {
   type: 'goal.completed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     goalUuid: string;
-    completedAt: number;
+    completedAt: Date;
     finalProgress: number;
   };
 }
@@ -150,7 +150,7 @@ export interface GoalCompletedEvent {
 export interface GoalArchivedEvent {
   type: 'goal.archived';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     goalUuid: string;
     archivedAt: number;
@@ -163,10 +163,10 @@ export interface GoalArchivedEvent {
 export interface GoalDeletedEvent {
   type: 'goal.deleted';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     goalUuid: string;
-    deletedAt: number;
+    deletedAt: Date;
     isSoftDelete: boolean;
   };
 }
@@ -177,7 +177,7 @@ export interface GoalDeletedEvent {
 export interface KeyResultAddedEvent {
   type: 'goal.key_result_added';
   aggregateId: string; // goalUuid
-  timestamp: number;
+  timestamp: Date;
   payload: {
     goalUuid: string;
     keyResult: KeyResultServerDTO;
@@ -190,7 +190,7 @@ export interface KeyResultAddedEvent {
 export interface KeyResultUpdatedEvent {
   type: 'goal.key_result_updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     goalUuid: string;
     keyResultUuid: string;
@@ -205,7 +205,7 @@ export interface KeyResultUpdatedEvent {
 export interface GoalReviewAddedEvent {
   type: 'goal.review_added';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     goalUuid: string;
     review: GoalReviewServerDTO;
@@ -234,9 +234,9 @@ export interface GoalServer {
   priorityText: string;
   category?: string | null;
   tags: string[];
-  startDate?: number | null;
+  startDate?: Date | null;
   targetDate?: number | null;
-  completedAt?: number | null;
+  completedAt?: Date | null;
   archivedAt?: number | null;
   folderUuid?: string | null;
   parentGoalUuid?: string | null;
@@ -244,9 +244,9 @@ export interface GoalServer {
   reminderConfig?: GoalReminderConfigServer | null;
 
   // 时间戳 (统一使用 number epoch ms)
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 
   // ===== 子实体集合（聚合根统一管理） =====
 
@@ -453,7 +453,7 @@ export interface GoalServerStatic {
     // urgency: UrgencyLevel; // REMOVED - priority is computed from importance + targetDate
     category?: string;
     tags?: string[];
-    startDate?: number;
+    startDate?: Date;
     targetDate?: number;
     folderUuid?: string;
     parentGoalUuid?: string;

@@ -41,12 +41,12 @@ export interface TaskDependencyServerDTO {
   /**
    * 创建时间
    */
-  readonly createdAt: Date;
+  readonly createdAt: number;
 
   /**
    * 更新时间
    */
-  readonly updatedAt: Date;
+  readonly updatedAt: number;
 }
 
 /**

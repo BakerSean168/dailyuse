@@ -107,7 +107,7 @@ export interface ScheduleTaskPersistenceDTO {
 export interface ScheduleTaskCreatedEvent {
   type: 'schedule.task.created';
   aggregateId: string; // taskUuid
-  timestamp: number; // epoch ms
+  timestamp: Date; // epoch ms
   payload: {
     taskUuid: string;
     name: string;
@@ -124,7 +124,7 @@ export interface ScheduleTaskCreatedEvent {
 export interface ScheduleTaskPausedEvent {
   type: 'schedule.task.paused';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     taskUuid: string;
     sourceModule: SourceModule;
@@ -139,7 +139,7 @@ export interface ScheduleTaskPausedEvent {
 export interface ScheduleTaskResumedEvent {
   type: 'schedule.task.resumed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     taskUuid: string;
     sourceModule: SourceModule;
@@ -154,7 +154,7 @@ export interface ScheduleTaskResumedEvent {
 export interface ScheduleTaskCompletedEvent {
   type: 'schedule.task.completed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     taskUuid: string;
     sourceModule: SourceModule;
@@ -169,7 +169,7 @@ export interface ScheduleTaskCompletedEvent {
 export interface ScheduleTaskCancelledEvent {
   type: 'schedule.task.cancelled';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     taskUuid: string;
     sourceModule: SourceModule;
@@ -184,7 +184,7 @@ export interface ScheduleTaskCancelledEvent {
 export interface ScheduleTaskFailedEvent {
   type: 'schedule.task.failed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     taskUuid: string;
     sourceModule: SourceModule;
@@ -200,7 +200,7 @@ export interface ScheduleTaskFailedEvent {
 export interface ScheduleTaskExecutedEvent {
   type: 'schedule.task.executed';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     taskUuid: string;
     executionUuid: string;
@@ -218,7 +218,7 @@ export interface ScheduleTaskExecutedEvent {
 export interface ScheduleTaskScheduleUpdatedEvent {
   type: 'schedule.task.schedule.updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     taskUuid: string;
     previousCronExpression: string;
@@ -263,8 +263,8 @@ export interface ScheduleTaskServer {
   metadata: TaskMetadataServer;
 
   // 时间戳 (统一使用 number epoch ms)
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // ===== 子实体集合（聚合根统一管理） =====
 

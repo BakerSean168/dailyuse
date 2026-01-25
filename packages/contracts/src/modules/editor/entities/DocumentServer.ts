@@ -69,8 +69,8 @@ export interface DocumentServer {
   readonly indexStatus: IndexStatus;
   readonly lastIndexedAt?: number | null;
   readonly lastModifiedAt?: number | null;
-  readonly createdAt: number;
-  readonly updatedAt: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 
   // ===== 业务方法 =====
 
@@ -112,7 +112,7 @@ export interface DocumentServer {
   /**
    * 更新文件修改时间
    */
-  updateFileModifiedTime(timestamp: number): void;
+  updateFileModifiedTime(timestamp: Date): void;
 
   /**
    * 获取文件扩展名

@@ -10,7 +10,7 @@ import type { TaskTimeConfigServerDTO } from './TaskTimeConfigServer';
 
 export interface TaskTimeConfigClient {
   timeType: TimeType;
-  startDate?: number | null;
+  startDate?: Date | null;
   // endDate 已移除 - 结束日期属于重复规则，不属于时间配置
   timePoint?: number | null;
   timeRange?: { start: number; end: number } | null;

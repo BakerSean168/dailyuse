@@ -59,8 +59,8 @@ export interface FolderServer {
   order: number;
   isExpanded: boolean;
   metadata: FolderMetadataServer;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // 子文件夹
   children?: FolderServer[] | null;

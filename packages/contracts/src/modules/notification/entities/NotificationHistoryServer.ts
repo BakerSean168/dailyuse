@@ -24,7 +24,7 @@ export interface NotificationHistoryPersistenceDTO {
   notificationUuid: string;
   action: string;
   details?: string | null; // JSON string
-  createdAt: number;
+  createdAt: Date;
 }
 
 // ============ 实体接口 ============
@@ -40,7 +40,7 @@ export interface NotificationHistoryServer {
   details?: any | null;
 
   // 时间戳 (统一使用 number epoch ms)
-  createdAt: number;
+  createdAt: Date;
 
   // ===== 业务方法 =====
 

@@ -34,9 +34,9 @@ export interface ApiKeyCredentialPersistenceDTO {
   key_prefix: string;
   status: 'ACTIVE' | 'REVOKED' | 'EXPIRED';
   lastUsedAt?: number | null;
-  expiresAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
+  expiresAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 实体接口 ============
@@ -49,9 +49,9 @@ export interface ApiKeyCredentialServer {
   keyPrefix: string;
   status: 'ACTIVE' | 'REVOKED' | 'EXPIRED';
   lastUsedAt?: number | null;
-  expiresAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
+  expiresAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 
   isExpired(): boolean;
   isValid(): boolean;

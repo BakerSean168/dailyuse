@@ -38,10 +38,10 @@ export interface RememberMeTokenClient {
   usageCount: number;
   lastUsedAt?: number | null;
   lastUsedIp?: string | null;
-  expiresAt: number;
-  createdAt: number;
-  updatedAt: number;
-  revokedAt?: number | null;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  revokedAt?: Date | null;
 
   toClientDTO(): RememberMeTokenClientDTO;
 }

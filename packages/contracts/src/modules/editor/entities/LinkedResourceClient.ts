@@ -52,8 +52,8 @@ export interface LinkedResourceClient {
   readonly targetAnchor?: string | null;
   readonly isValid: boolean;
   readonly lastValidatedAt?: number | null;
-  readonly createdAt: number;
-  readonly updatedAt: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 
   // ===== UI 辅助方法 =====
 

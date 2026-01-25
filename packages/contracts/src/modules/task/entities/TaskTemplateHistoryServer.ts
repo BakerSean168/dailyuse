@@ -16,7 +16,7 @@ export interface TaskTemplateHistoryServer {
   templateUuid: string;
   action: string; // "created" | "updated" | "paused" | "resumed" | "archived"
   changes?: any | null; // 变更内容（JSON）
-  createdAt: number;
+  createdAt: Date;
 
   toServerDTO(): TaskTemplateHistoryServerDTO;
   toClientDTO(): TaskTemplateHistoryClientDTO;
@@ -44,5 +44,5 @@ export interface TaskTemplateHistoryPersistenceDTO {
   templateUuid: string;
   action: string;
   changes?: string | null; // JSON string
-  createdAt: number;
+  createdAt: Date;
 }

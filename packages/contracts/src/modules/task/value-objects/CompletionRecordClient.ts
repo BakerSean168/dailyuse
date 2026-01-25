@@ -8,7 +8,7 @@ import type { CompletionRecordServerDTO } from './CompletionRecordServer';
 // ============ 接口定义 ============
 
 export interface CompletionRecordClient {
-  completedAt: number;
+  completedAt: Date;
   actualDuration?: number | null;
   note?: string | null;
   rating?: number | null;

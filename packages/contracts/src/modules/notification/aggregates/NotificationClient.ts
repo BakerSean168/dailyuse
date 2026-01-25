@@ -105,14 +105,14 @@ export interface NotificationClient {
   metadata?: NotificationMetadataClient | null;
 
   // ===== 过期设置 =====
-  expiresAt?: number | null;
+  expiresAt?: Date | null;
 
   // ===== 时间戳 =====
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
   sentAt?: number | null;
   deliveredAt?: number | null;
-  deletedAt?: number | null;
+  deletedAt?: Date | null;
 
   // ===== UI 计算属性 =====
   isDeleted: boolean;
@@ -244,7 +244,7 @@ export interface NotificationClientStatic {
     relatedEntityUuid?: string;
     actions?: NotificationActionClientDTO[];
     metadata?: NotificationMetadataClientDTO;
-    expiresAt?: number;
+    expiresAt?: Date;
   }): NotificationClient;
 
   /**

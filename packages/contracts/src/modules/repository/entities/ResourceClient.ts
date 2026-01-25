@@ -64,8 +64,8 @@ export interface ResourceClient {
   metadata: ResourceMetadataClient;
   stats: ResourceStatsClient;
   status: ResourceStatus;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // UI 计算属性
   isDeleted: boolean;

@@ -69,8 +69,8 @@ export interface AppConfigServerDTO {
       maxPerDay: number;
     };
   };
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
@@ -85,8 +85,8 @@ export interface AppConfigPersistenceDTO {
   api: string; // JSON
   security: string; // JSON
   notifications: string; // JSON
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 聚合根接口 ============
@@ -150,8 +150,8 @@ export interface AppConfigServer {
       maxPerDay: number;
     };
   };
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // 功能管理
   enableFeature(feature: string): void;

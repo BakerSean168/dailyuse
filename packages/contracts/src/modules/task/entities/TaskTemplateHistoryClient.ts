@@ -17,7 +17,7 @@ export interface TaskTemplateHistoryClient {
   templateUuid: string;
   action: string;
   changes?: any | null;
-  createdAt: number;
+  createdAt: Date;
 
   hasSpecificChange(key: string): boolean;
 

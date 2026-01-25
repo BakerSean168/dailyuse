@@ -28,7 +28,7 @@ export interface IDoNotDisturbConfigServer {
   ): IDoNotDisturbConfigServer;
 
   // ���
-  isInPeriod(timestamp: number): boolean;
+  isInPeriod(timestamp: Date): boolean;
 
   // DTO lb��
   toServerDTO(): DoNotDisturbConfigServerDTO;

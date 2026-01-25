@@ -41,7 +41,7 @@ export interface AuthSessionClient {
   uuid: string;
   accountUuid: string;
   accessToken: string;
-  accessTokenExpiresAt: number;
+  accessTokenExpiresAt: Date;
   refreshToken: RefreshTokenClient;
   device: DeviceInfoClient;
   status: 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'LOCKED';
@@ -52,12 +52,12 @@ export interface AuthSessionClient {
     city?: string | null;
     timezone?: string | null;
   } | null;
-  lastActivityAt: number;
+  lastActivityAt: Date;
   lastActivityType?: string | null;
   history: SessionHistoryClient[];
-  createdAt: number;
-  expiresAt: number;
-  revokedAt?: number | null;
+  createdAt: Date;
+  expiresAt: Date;
+  revokedAt?: Date | null;
 
   toClientDTO(): AuthSessionClientDTO;
 }

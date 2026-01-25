@@ -35,7 +35,7 @@ export interface SettingHistoryClient {
   operatorUuid?: string | null;
   operatorType: string;
   operatorName?: string | null;
-  createdAt: number;
+  createdAt: Date;
   timeAgo: string;
   changeText: string;
 

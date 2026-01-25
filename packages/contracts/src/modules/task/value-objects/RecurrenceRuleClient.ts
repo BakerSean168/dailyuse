@@ -15,7 +15,7 @@ export interface RecurrenceRuleClient {
   frequency: RecurrenceFrequency;
   interval: number;
   daysOfWeek: DayOfWeek[];
-  endDate?: number | null;
+  endDate?: Date | null;
   occurrences?: number | null;
 
   // UI 辅助属性

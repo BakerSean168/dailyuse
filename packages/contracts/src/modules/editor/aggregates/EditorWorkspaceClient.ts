@@ -69,8 +69,8 @@ export interface EditorWorkspaceClient {
   isActive: boolean;
   lastActiveSessionUuid?: string | null;
   lastAccessedAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // ===== UI 辅助方法 =====
 

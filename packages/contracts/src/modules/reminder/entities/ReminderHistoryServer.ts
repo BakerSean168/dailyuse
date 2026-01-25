@@ -33,7 +33,7 @@ export interface ReminderHistoryPersistenceDTO {
   error?: string | null;
   notificationSent: boolean;
   notificationChannels?: string | null; // JSON string
-  createdAt: number;
+  createdAt: Date;
 }
 
 // ============ 实体接口 ============
@@ -52,7 +52,7 @@ export interface ReminderHistoryServer {
   notificationChannels?: NotificationChannel[] | null;
 
   // 时间戳 (统一使用 number epoch ms)
-  createdAt: number;
+  createdAt: Date;
 
   // ===== 业务方法 =====
 

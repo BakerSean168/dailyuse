@@ -104,9 +104,9 @@ export interface ReminderTemplateClient {
   icon?: string | null;
   nextTriggerAt?: number | null;
   stats: ReminderStatsClient;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 
   // UI 扩展
   displayTitle: string;

@@ -35,16 +35,16 @@ export interface SubscriptionPersistenceDTO {
   accountUuid: string;
   plan: 'FREE' | 'BASIC' | 'PRO' | 'ENTERPRISE';
   status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'SUSPENDED';
-  startDate: number;
-  endDate?: number | null;
-  renewalDate?: number | null;
+  startDate: Date;
+  endDate?: Date | null;
+  renewalDate?: Date | null;
   autoRenew: boolean;
   paymentMethod?: string | null;
   billingCycle: 'MONTHLY' | 'YEARLY' | 'LIFETIME';
   amount?: number | null;
   currency?: string | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 实体接口 ============
@@ -54,16 +54,16 @@ export interface SubscriptionServer {
   accountUuid: string;
   plan: 'FREE' | 'BASIC' | 'PRO' | 'ENTERPRISE';
   status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'SUSPENDED';
-  startDate: number;
-  endDate?: number | null;
-  renewalDate?: number | null;
+  startDate: Date;
+  endDate?: Date | null;
+  renewalDate?: Date | null;
   autoRenew: boolean;
   paymentMethod?: string | null;
   billingCycle: 'MONTHLY' | 'YEARLY' | 'LIFETIME';
   amount?: number | null;
   currency?: string | null;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   isActive(): boolean;
   isExpired(): boolean;

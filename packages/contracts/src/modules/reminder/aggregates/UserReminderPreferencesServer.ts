@@ -56,8 +56,8 @@ export interface UserReminderPreferencesPersistenceDTO {
   bestTimeSlots: string; // JSON string
   worstTimeSlots: string; // JSON string
   globalSmartFrequency: boolean;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============ 实体接口 ============
@@ -71,8 +71,8 @@ export interface UserReminderPreferencesServer {
   bestTimeSlots: TimeSlotDTO[];
   worstTimeSlots: TimeSlotDTO[];
   globalSmartFrequency: boolean;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   // 业务方法
   addBestTimeSlot(timeSlot: TimeSlotDTO): void;

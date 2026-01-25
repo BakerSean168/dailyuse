@@ -45,9 +45,9 @@ export interface GoalFolderPersistenceDTO {
   folderType?: FolderType | null;
   goalCount: number;
   completedGoalCount: number;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 }
 
 // ============ 领域事件 ============
@@ -58,7 +58,7 @@ export interface GoalFolderPersistenceDTO {
 export interface GoalFolderCreatedEvent {
   type: 'goal_folder.created';
   aggregateId: string; // folderUuid
-  timestamp: number;
+  timestamp: Date;
   payload: {
     folder: GoalFolderServerDTO;
     accountUuid: string;
@@ -71,7 +71,7 @@ export interface GoalFolderCreatedEvent {
 export interface GoalFolderUpdatedEvent {
   type: 'goal_folder.updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     folder: GoalFolderServerDTO;
     previousData: Partial<GoalFolderServerDTO>;
@@ -85,10 +85,10 @@ export interface GoalFolderUpdatedEvent {
 export interface GoalFolderDeletedEvent {
   type: 'goal_folder.deleted';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     folderUuid: string;
-    deletedAt: number;
+    deletedAt: Date;
     isSoftDelete: boolean;
   };
 }
@@ -99,7 +99,7 @@ export interface GoalFolderDeletedEvent {
 export interface GoalFolderStatsUpdatedEvent {
   type: 'goal_folder.stats_updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     folderUuid: string;
     goalCount: number;
@@ -128,9 +128,9 @@ export interface GoalFolderServer {
   completedGoalCount: number;
 
   // 时间戳 (统一使用 number epoch ms)
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 
   // 业务方法
   rename(newName: string): void;

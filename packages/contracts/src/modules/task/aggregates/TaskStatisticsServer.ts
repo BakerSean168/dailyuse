@@ -135,7 +135,7 @@ export interface TaskStatisticsPersistenceDTO {
 export interface TaskStatisticsUpdatedEvent {
   type: 'task.statistics.updated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     statistics: TaskStatisticsServerDTO;
     previousStatistics?: TaskStatisticsServerDTO;
@@ -148,7 +148,7 @@ export interface TaskStatisticsUpdatedEvent {
 export interface TaskStatisticsRecalculatedEvent {
   type: 'task.statistics.recalculated';
   aggregateId: string;
-  timestamp: number;
+  timestamp: Date;
   payload: {
     statistics: TaskStatisticsServerDTO;
     reason: string; // 重新计算的原因

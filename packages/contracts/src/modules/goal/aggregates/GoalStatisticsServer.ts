@@ -90,7 +90,7 @@ export interface GoalStatisticsPersistenceDTO {
 export interface GoalStatisticsRecalculatedEvent {
   type: 'goal_statistics.recalculated';
   aggregateId: string; // GoalStatistics 聚合根的 uuid
-  timestamp: number;
+  timestamp: Date;
   payload: {
     statistics: GoalStatisticsServerDTO;
     previousStatistics?: GoalStatisticsServerDTO;
