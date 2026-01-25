@@ -15,10 +15,10 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
   private _quotaLimit: number;
   private _currentUsage: number;
   private _resetPeriod: QuotaResetPeriod;
-  private _lastResetAt: number;
-  private _nextResetAt: number;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _lastResetAt: Date;
+  private _nextResetAt: Date;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   private constructor(params: {
     uuid?: string;
@@ -62,19 +62,19 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
     return this._resetPeriod;
   }
 
-  public get lastResetAt(): number {
+  public get lastResetAt(): Date {
     return this._lastResetAt;
   }
 
-  public get nextResetAt(): number {
+  public get nextResetAt(): Date {
     return this._nextResetAt;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -118,8 +118,8 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
       resetPeriod: dto.resetPeriod,
       lastResetAt: dto.lastResetAt,
       nextResetAt: dto.nextResetAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -132,8 +132,8 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
       resetPeriod: dto.resetPeriod,
       lastResetAt: dto.lastResetAt,
       nextResetAt: dto.nextResetAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -147,7 +147,7 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
     }
 
     this._currentUsage += amount;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'ai.quota.consumed',
@@ -189,9 +189,9 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
 
   public reset(): void {
     this._currentUsage = 0;
-    this._lastResetAt = Date.now();
+    this._lastResetAt = new Date();
     this._nextResetAt = this.calculateNextResetTime();
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'ai.quota.reset',
@@ -208,7 +208,7 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
   public updateLimit(newLimit: number): void {
     const oldLimit = this._quotaLimit;
     this._quotaLimit = newLimit;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'ai.quota.limit_updated',
@@ -265,10 +265,10 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
       quotaLimit: this._quotaLimit,
       currentUsage: this._currentUsage,
       resetPeriod: this._resetPeriod,
-      lastResetAt: this._lastResetAt,
-      nextResetAt: this._nextResetAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      lastResetAt: this._lastResetAt.getTime(),
+      nextResetAt: this._nextResetAt.getTime(),
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -279,10 +279,10 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
       quotaLimit: this._quotaLimit,
       currentUsage: this._currentUsage,
       resetPeriod: this._resetPeriod,
-      lastResetAt: this._lastResetAt,
-      nextResetAt: this._nextResetAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      lastResetAt: this._lastResetAt.getTime(),
+      nextResetAt: this._nextResetAt.getTime(),
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
       remainingQuota: this.getRemainingQuota(),
       usagePercentage: this.getUsagePercentage(),
       isExceeded: this.isExceeded(),
@@ -297,10 +297,10 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
       quotaLimit: this._quotaLimit,
       currentUsage: this._currentUsage,
       resetPeriod: this._resetPeriod,
-      lastResetAt: this._lastResetAt,
-      nextResetAt: this._nextResetAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      lastResetAt: this._lastResetAt.getTime(),
+      nextResetAt: this._nextResetAt.getTime(),
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 }

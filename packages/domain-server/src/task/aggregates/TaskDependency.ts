@@ -138,8 +138,8 @@ export class TaskDependency extends AggregateRoot {
         successorTaskUuid: dto.successorTaskUuid,
         dependencyType: dto.dependencyType,
         lagDays: dto.lagDays,
-        createdAt: dto.createdAt,
-        updatedAt: dto.updatedAt,
+        createdAt: new Date(dto.createdAt),
+        updatedAt: new Date(dto.updatedAt),
       },
       dto.uuid,
     );
@@ -251,8 +251,8 @@ export class TaskDependency extends AggregateRoot {
       successorTaskUuid: this._successorTaskUuid,
       dependencyType: this._dependencyType,
       lagDays: this._lagDays,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 

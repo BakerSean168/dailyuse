@@ -29,8 +29,8 @@ export class SettingItem extends Entity implements SettingItemServer {
   private _sortOrder: number;
   private _isReadOnly: boolean;
   private _isVisible: boolean;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   private constructor(params: {
     uuid: string;
@@ -110,11 +110,11 @@ export class SettingItem extends Entity implements SettingItemServer {
     return this._isVisible;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -129,7 +129,7 @@ export class SettingItem extends Entity implements SettingItemServer {
     }
 
     this._value = newValue;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -141,7 +141,7 @@ export class SettingItem extends Entity implements SettingItemServer {
     }
 
     this._value = this._defaultValue;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -197,8 +197,8 @@ export class SettingItem extends Entity implements SettingItemServer {
       sortOrder: this._sortOrder,
       isReadOnly: this._isReadOnly,
       isVisible: this._isVisible,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -216,8 +216,8 @@ export class SettingItem extends Entity implements SettingItemServer {
       sortOrder: this._sortOrder,
       isReadOnly: this._isReadOnly,
       isVisible: this._isVisible,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
       // Computed properties
       isDefault: this.isDefault(),
       displayValue: this.getDisplayValue(),
@@ -242,8 +242,8 @@ export class SettingItem extends Entity implements SettingItemServer {
       sortOrder: this._sortOrder,
       isReadOnly: this._isReadOnly,
       isVisible: this._isVisible,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -301,8 +301,8 @@ export class SettingItem extends Entity implements SettingItemServer {
       sortOrder: dto.sortOrder,
       isReadOnly: dto.isReadOnly,
       isVisible: dto.isVisible,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -323,8 +323,8 @@ export class SettingItem extends Entity implements SettingItemServer {
       sortOrder: dto.sortOrder,
       isReadOnly: dto.isReadOnly,
       isVisible: dto.isVisible,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 }

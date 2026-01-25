@@ -32,8 +32,8 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
   private _actualStartTime: number | null;
   private _actualEndTime: number | null;
   private _note: string | null;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
@@ -141,11 +141,11 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
     return this._note;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -161,7 +161,7 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
 
     this._status = 'IN_PROGRESS' as TaskInstanceStatus;
     this._actualStartTime = Date.now();
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -224,7 +224,7 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
   public markExpired(): void {
     if (this._status === 'PENDING' || this._status === 'IN_PROGRESS') {
       this._status = 'EXPIRED' as TaskInstanceStatus;
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -270,8 +270,8 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
       actualStartTime: this._actualStartTime,
       actualEndTime: this._actualEndTime,
       note: this._note,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -299,8 +299,8 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
       actualStartTime: this._actualStartTime,
       actualEndTime: this._actualEndTime,
       note: this._note,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
       instanceDateFormatted,
       statusText,
       statusColor,
@@ -333,8 +333,8 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
       actualStartTime: this._actualStartTime,
       actualEndTime: this._actualEndTime,
       note: this._note,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -388,8 +388,8 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
       actualStartTime: dto.actualStartTime,
       actualEndTime: dto.actualEndTime,
       note: dto.note,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -415,8 +415,8 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
       actualStartTime: dto.actualStartTime,
       actualEndTime: dto.actualEndTime,
       note: dto.note,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 

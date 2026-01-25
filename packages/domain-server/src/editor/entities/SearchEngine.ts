@@ -26,8 +26,8 @@ export class SearchEngine extends Entity implements SearchEngineServer {
   private _lastIndexedAt: number | null;
   private _isIndexing: boolean;
   private _indexProgress: number | null;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -85,7 +85,7 @@ export class SearchEngine extends Entity implements SearchEngineServer {
   public get totalDocumentCount(): number {
     return this._totalDocumentCount;
   }
-  public get lastIndexedAt(): number | null {
+  public get lastIndexedAt(): Date | null {
     return this._lastIndexedAt;
   }
   public get isIndexing(): boolean {
@@ -94,10 +94,10 @@ export class SearchEngine extends Entity implements SearchEngineServer {
   public get indexProgress(): number | null {
     return this._indexProgress;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -147,8 +147,8 @@ export class SearchEngine extends Entity implements SearchEngineServer {
       lastIndexedAt: dto.lastIndexedAt,
       isIndexing: dto.isIndexing,
       indexProgress: dto.indexProgress,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -168,8 +168,8 @@ export class SearchEngine extends Entity implements SearchEngineServer {
       lastIndexedAt: dto.last_indexed_at,
       isIndexing: dto.is_indexing,
       indexProgress: dto.index_progress,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -186,7 +186,7 @@ export class SearchEngine extends Entity implements SearchEngineServer {
     this._totalDocumentCount = totalDocumentCount;
     this._indexedDocumentCount = 0;
     this._indexProgress = 0;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -199,7 +199,7 @@ export class SearchEngine extends Entity implements SearchEngineServer {
     this._indexedDocumentCount = indexedCount;
     this._totalDocumentCount = totalCount;
     this._indexProgress = totalCount > 0 ? Math.floor((indexedCount / totalCount) * 100) : 0;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -211,7 +211,7 @@ export class SearchEngine extends Entity implements SearchEngineServer {
     }
     this._isIndexing = false;
     this._indexProgress = 100;
-    this._lastIndexedAt = Date.now();
+    this._lastIndexedAt = new Date();
     this._updatedAt = this._lastIndexedAt;
   }
 
@@ -224,7 +224,7 @@ export class SearchEngine extends Entity implements SearchEngineServer {
     }
     this._isIndexing = false;
     this._indexProgress = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -236,7 +236,7 @@ export class SearchEngine extends Entity implements SearchEngineServer {
     this._totalDocumentCount = 0;
     this._indexProgress = null;
     this._lastIndexedAt = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -250,7 +250,7 @@ export class SearchEngine extends Entity implements SearchEngineServer {
         (this._indexedDocumentCount / this._totalDocumentCount) * 100,
       );
     }
-    this._lastIndexedAt = Date.now();
+    this._lastIndexedAt = new Date();
     this._updatedAt = this._lastIndexedAt;
   }
 
@@ -288,11 +288,11 @@ export class SearchEngine extends Entity implements SearchEngineServer {
       indexPath: this._indexPath,
       indexedDocumentCount: this._indexedDocumentCount,
       totalDocumentCount: this._totalDocumentCount,
-      lastIndexedAt: this._lastIndexedAt,
+      lastIndexedAt: this._lastIndexedAt.getTime(),
       isIndexing: this._isIndexing,
       indexProgress: this._indexProgress,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -306,11 +306,11 @@ export class SearchEngine extends Entity implements SearchEngineServer {
       indexPath: this._indexPath,
       indexedDocumentCount: this._indexedDocumentCount,
       totalDocumentCount: this._totalDocumentCount,
-      lastIndexedAt: this._lastIndexedAt,
+      lastIndexedAt: this._lastIndexedAt.getTime(),
       isIndexing: this._isIndexing,
       indexProgress: this._indexProgress,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
       formattedLastIndexed: this._lastIndexedAt
         ? new Date(this._lastIndexedAt).toLocaleString()
         : null,
@@ -332,8 +332,8 @@ export class SearchEngine extends Entity implements SearchEngineServer {
       last_indexed_at: this._lastIndexedAt,
       is_indexing: this._isIndexing,
       index_progress: this._indexProgress,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 }

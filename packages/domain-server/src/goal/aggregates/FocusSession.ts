@@ -43,15 +43,15 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
   private _startedAt: number | null; // timestamp (ms)
   private _pausedAt: number | null;
   private _resumedAt: number | null;
-  private _completedAt: number | null;
+  private readonly _completedAt: Date | null;
   private _cancelledAt: number | null;
 
   // 暂停统计
   private _pauseCount: number;
   private _pausedDurationMinutes: number; // 累计暂停时长
 
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -112,19 +112,19 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
   public get description(): string | null {
     return this._description;
   }
-  public get startedAt(): number | null {
+  public get startedAt(): Date | null {
     return this._startedAt;
   }
-  public get pausedAt(): number | null {
+  public get pausedAt(): Date | null {
     return this._pausedAt;
   }
-  public get resumedAt(): number | null {
+  public get resumedAt(): Date | null {
     return this._resumedAt;
   }
-  public get completedAt(): number | null {
+  public get completedAt(): Date | null {
     return this._completedAt;
   }
-  public get cancelledAt(): number | null {
+  public get cancelledAt(): Date | null {
     return this._cancelledAt;
   }
   public get pauseCount(): number {
@@ -133,10 +133,10 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
   public get pausedDurationMinutes(): number {
     return this._pausedDurationMinutes;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -414,15 +414,15 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       durationMinutes: this._durationMinutes,
       actualDurationMinutes: this._actualDurationMinutes,
       description: this._description,
-      startedAt: this._startedAt,
-      pausedAt: this._pausedAt,
-      resumedAt: this._resumedAt,
-      completedAt: this._completedAt,
-      cancelledAt: this._cancelledAt,
+      startedAt: this._startedAt.getTime(),
+      pausedAt: this._pausedAt.getTime(),
+      resumedAt: this._resumedAt.getTime(),
+      completedAt: this._completedAt.getTime(),
+      cancelledAt: this._cancelledAt.getTime(),
       pauseCount: this._pauseCount,
       pausedDurationMinutes: this._pausedDurationMinutes,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -444,18 +444,18 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       durationMinutes: this._durationMinutes,
       actualDurationMinutes: this._actualDurationMinutes,
       description: this._description,
-      startedAt: this._startedAt,
-      pausedAt: this._pausedAt,
-      resumedAt: this._resumedAt,
-      completedAt: this._completedAt,
-      cancelledAt: this._cancelledAt,
+      startedAt: this._startedAt.getTime(),
+      pausedAt: this._pausedAt.getTime(),
+      resumedAt: this._resumedAt.getTime(),
+      completedAt: this._completedAt.getTime(),
+      cancelledAt: this._cancelledAt.getTime(),
       pauseCount: this._pauseCount,
       pausedDurationMinutes: this._pausedDurationMinutes,
       remainingMinutes: remaining,
       progressPercentage: progressPercentage,
       isActive: this.isActive(),
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -471,15 +471,15 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       durationMinutes: this._durationMinutes,
       actualDurationMinutes: this._actualDurationMinutes,
       description: this._description,
-      startedAt: this._startedAt,
-      pausedAt: this._pausedAt,
-      resumedAt: this._resumedAt,
-      completedAt: this._completedAt,
-      cancelledAt: this._cancelledAt,
+      startedAt: this._startedAt.getTime(),
+      pausedAt: this._pausedAt.getTime(),
+      resumedAt: this._resumedAt.getTime(),
+      completedAt: this._completedAt.getTime(),
+      cancelledAt: this._cancelledAt.getTime(),
       pauseCount: this._pauseCount,
       pausedDurationMinutes: this._pausedDurationMinutes,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -503,8 +503,8 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       cancelledAt: dto.cancelledAt,
       pauseCount: dto.pauseCount,
       pausedDurationMinutes: dto.pausedDurationMinutes,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -527,8 +527,8 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       cancelledAt: dto.cancelledAt,
       pauseCount: dto.pauseCount,
       pausedDurationMinutes: dto.pausedDurationMinutes,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -551,8 +551,8 @@ export class FocusSession extends AggregateRoot implements FocusSessionServer {
       cancelledAt: dto.cancelledAt,
       pauseCount: dto.pauseCount,
       pausedDurationMinutes: dto.pausedDurationMinutes,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 }

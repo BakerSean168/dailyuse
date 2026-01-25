@@ -243,7 +243,7 @@ export interface GoalServer {
   sortOrder: number;
   reminderConfig?: GoalReminderConfigServer | null;
 
-  // 时间戳 (统一使用 number epoch ms)
+
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;

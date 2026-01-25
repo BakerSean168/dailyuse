@@ -26,8 +26,8 @@ export class Resource implements ResourceServer {
   private _metadata: ResourceMetadata;
   private _stats: ResourceStats;
   private _status: ResourceStatus;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   private constructor(params: {
     uuid: string;
@@ -115,7 +115,7 @@ export class Resource implements ResourceServer {
   // ===== 内容操作方法 =====
   updateMarkdownContent(content: string): void {
     this._content = content;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._stats.incrementEditCount();
 
     // 更新字数统计
@@ -134,7 +134,7 @@ export class Resource implements ResourceServer {
 
   clearContent(): void {
     this._content = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== 元数据方法 =====
@@ -143,7 +143,7 @@ export class Resource implements ResourceServer {
       ...this._metadata.toServerDTO(),
       ...newMetadata,
     });
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   updateStats(newStats: Partial<ResourceStatsServerDTO>): void {
@@ -151,28 +151,28 @@ export class Resource implements ResourceServer {
       ...this._stats.toServerDTO(),
       ...newStats,
     });
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== 状态管理 =====
   archive(): void {
     this._status = ResourceStatus.ARCHIVED;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   activate(): void {
     this._status = ResourceStatus.ACTIVE;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   delete(): void {
     this._status = ResourceStatus.DELETED;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   moveTo(folderUuid: string | null): void {
     this._folderUuid = folderUuid;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -180,7 +180,7 @@ export class Resource implements ResourceServer {
    */
   recordAccess(): void {
     this._stats.incrementViewCount();
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -198,7 +198,7 @@ export class Resource implements ResourceServer {
       throw new Error('Resource name cannot be empty');
     }
     this._name = name.trim();
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -209,7 +209,7 @@ export class Resource implements ResourceServer {
       ...this._metadata.toServerDTO(),
       description,
     });
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -220,7 +220,7 @@ export class Resource implements ResourceServer {
       ...this._metadata.toServerDTO(),
       category,
     });
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -234,7 +234,7 @@ export class Resource implements ResourceServer {
         ...metadataDTO,
         tags: [...currentTags, tag],
       });
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -243,7 +243,7 @@ export class Resource implements ResourceServer {
    */
   softDelete(): void {
     this._status = ResourceStatus.DELETED;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -263,7 +263,7 @@ export class Resource implements ResourceServer {
       ...metadataDTO,
       isFavorite: !isFavorite,
     });
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -274,7 +274,7 @@ export class Resource implements ResourceServer {
       throw new Error('Only draft resources can be published');
     }
     this._status = ResourceStatus.ACTIVE;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== 私有辅助方法 =====
@@ -478,8 +478,8 @@ export class Resource implements ResourceServer {
       metadata: ResourceMetadata.fromServerDTO(dto.metadata),
       stats: ResourceStats.fromServerDTO(dto.stats),
       status: dto.status,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -498,8 +498,8 @@ export class Resource implements ResourceServer {
       ),
       stats: ResourceStats.fromServerDTO(JSON.parse(dto.stats) as ResourceStatsServerDTO),
       status: dto.status,
-      createdAt: dto.createdAt.getTime(),
-      updatedAt: dto.updatedAt.getTime(),
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 }

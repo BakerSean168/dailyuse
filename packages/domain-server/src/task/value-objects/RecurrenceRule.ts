@@ -91,7 +91,7 @@ export class RecurrenceRule extends ValueObject implements RecurrenceRuleServer 
   /**
    * 设置结束日期
    */
-  public withEndDate(endDate: number): RecurrenceRule {
+  public withEndDate(endDate: Date): RecurrenceRule {
     return this.with({ endDate, occurrences: null });
   }
 
@@ -226,7 +226,7 @@ export class RecurrenceRule extends ValueObject implements RecurrenceRuleServer 
   /**
    * 创建每天重复的规则（指定结束日期）
    */
-  public static dailyUntil(interval: number, endDate: number): RecurrenceRule {
+  public static dailyUntil(interval: number, endDate: Date): RecurrenceRule {
     return new RecurrenceRule({
       frequency: 'DAILY' as RecurrenceFrequency,
       interval,
@@ -268,7 +268,7 @@ export class RecurrenceRule extends ValueObject implements RecurrenceRuleServer 
   public static weeklyUntil(
     daysOfWeek: DayOfWeek[],
     interval: number,
-    endDate: number,
+    endDate: Date,
   ): RecurrenceRule {
     return new RecurrenceRule({
       frequency: 'WEEKLY' as RecurrenceFrequency,
@@ -312,7 +312,7 @@ export class RecurrenceRule extends ValueObject implements RecurrenceRuleServer 
   /**
    * 创建每月重复的规则（指定结束日期）
    */
-  public static monthlyUntil(interval: number, endDate: number): RecurrenceRule {
+  public static monthlyUntil(interval: number, endDate: Date): RecurrenceRule {
     return new RecurrenceRule({
       frequency: 'MONTHLY' as RecurrenceFrequency,
       interval,
@@ -351,7 +351,7 @@ export class RecurrenceRule extends ValueObject implements RecurrenceRuleServer 
   /**
    * 创建每年重复的规则（指定结束日期）
    */
-  public static yearlyUntil(interval: number, endDate: number): RecurrenceRule {
+  public static yearlyUntil(interval: number, endDate: Date): RecurrenceRule {
     return new RecurrenceRule({
       frequency: 'YEARLY' as RecurrenceFrequency,
       interval,

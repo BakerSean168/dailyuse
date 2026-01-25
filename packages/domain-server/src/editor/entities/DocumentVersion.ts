@@ -29,7 +29,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
   private _changeDescription: string | null;
   private _previousVersionUuid: string | null;
   private _createdBy: string | null;
-  private _createdAt: number;
+  private _createdAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -94,7 +94,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
   public get createdBy(): string | null {
     return this._createdBy;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
@@ -150,7 +150,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
       changeDescription: dto.changeDescription,
       previousVersionUuid: dto.previousVersionUuid,
       createdBy: dto.createdBy,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -219,7 +219,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
       changeDescription: this._changeDescription,
       previousVersionUuid: this._previousVersionUuid,
       createdBy: this._createdBy,
-      createdAt: this._createdAt,
+      createdAt: this._createdAt.getTime(),
     };
   }
 
@@ -236,7 +236,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
       changeDescription: this._changeDescription,
       previousVersionUuid: this._previousVersionUuid,
       createdBy: this._createdBy,
-      createdAt: this._createdAt,
+      createdAt: this._createdAt.getTime(),
       formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
     };
   }

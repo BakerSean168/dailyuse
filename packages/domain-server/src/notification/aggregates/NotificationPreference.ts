@@ -33,8 +33,8 @@ export class NotificationPreference extends AggregateRoot implements Notificatio
   private _categories: CategoryPreferences;
   private _doNotDisturb: DoNotDisturbConfig | null;
   private _rateLimit: RateLimit | null;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -88,10 +88,10 @@ export class NotificationPreference extends AggregateRoot implements Notificatio
   public get rateLimit(): RateLimitServer | null {
     return this._rateLimit ?? null;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -102,7 +102,7 @@ export class NotificationPreference extends AggregateRoot implements Notificatio
    */
   public enableAll(): void {
     this._enabled = true;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -110,7 +110,7 @@ export class NotificationPreference extends AggregateRoot implements Notificatio
    */
   public disableAll(): void {
     this._enabled = false;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -118,7 +118,7 @@ export class NotificationPreference extends AggregateRoot implements Notificatio
    */
   public enableChannel(channel: 'inApp' | 'email' | 'push' | 'sms'): void {
     this._channels[channel] = true;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -126,7 +126,7 @@ export class NotificationPreference extends AggregateRoot implements Notificatio
    */
   public disableChannel(channel: 'inApp' | 'email' | 'push' | 'sms'): void {
     this._channels[channel] = false;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -142,7 +142,7 @@ export class NotificationPreference extends AggregateRoot implements Notificatio
         ...this._categories[categoryKey],
         ...preference,
       };
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -156,7 +156,7 @@ export class NotificationPreference extends AggregateRoot implements Notificatio
       endTime,
       daysOfWeek,
     });
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -164,7 +164,7 @@ export class NotificationPreference extends AggregateRoot implements Notificatio
    */
   public disableDoNotDisturb(): void {
     this._doNotDisturb = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -316,8 +316,8 @@ export class NotificationPreference extends AggregateRoot implements Notificatio
       categories: dto.categories,
       doNotDisturb: dto.doNotDisturb ? DoNotDisturbConfig.fromContract(dto.doNotDisturb) : null,
       rateLimit: dto.rateLimit ? RateLimit.fromContract(dto.rateLimit) : null,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -334,8 +334,8 @@ export class NotificationPreference extends AggregateRoot implements Notificatio
         ? DoNotDisturbConfig.fromContract(JSON.parse(dto.doNotDisturb))
         : null,
       rateLimit: dto.rateLimit ? RateLimit.fromContract(JSON.parse(dto.rateLimit)) : null,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 }

@@ -18,21 +18,25 @@ import { ValueObject } from '@dailyuse/utils';
  */
 export class TaskTimeConfig extends ValueObject implements TaskTimeConfigServer {
   public readonly timeType: TimeType;
-  public readonly startDate: number | null;
+  private readonly _startDate: Date | null;
   // endDate 已移除 - 结束日期属于重复规则的结束条件
   public readonly timePoint: number | null;
   public readonly timeRange: { start: number; end: number } | null;
 
+  public get startDate(): Date | null {
+    return this._startDate;
+  }
+
   constructor(params: {
     timeType: TimeType;
-    startDate?: number | null;
+    startDate?: Date | null;
     timePoint?: number | null;
     timeRange?: { start: number; end: number } | null;
   }) {
     super();
 
     this.timeType = params.timeType;
-    this.startDate = params.startDate ?? null;
+    this._startDate = params.startDate ?? null;
     // endDate 已移除
     this.timePoint = params.timePoint ?? null;
     this.timeRange = params.timeRange ? { ...params.timeRange } : null;
@@ -50,7 +54,7 @@ export class TaskTimeConfig extends ValueObject implements TaskTimeConfigServer 
   public with(
     changes: Partial<{
       timeType: TimeType;
-      startDate: number | null;
+      startDate: Date | null;
       timePoint: number | null;
       timeRange: { start: number; end: number } | null;
     }>,
@@ -81,7 +85,7 @@ export class TaskTimeConfig extends ValueObject implements TaskTimeConfigServer 
 
     return (
       this.timeType === other.timeType &&
-      this.startDate === other.startDate &&
+      this._startDate === other._startDate &&
       // endDate 已移除
       this.timePoint === other.timePoint &&
       timeRangeEqual
@@ -121,7 +125,7 @@ export class TaskTimeConfig extends ValueObject implements TaskTimeConfigServer 
   public toPersistenceDTO(): TaskTimeConfigPersistenceDTO {
     return {
       timeType: this.timeType,
-      startDate: this.startDate,
+      startDate: this._startDate,
       // endDate 已移除
       timePoint: this.timePoint,
       timeRange: this.timeRange ? JSON.stringify(this.timeRange) : null,

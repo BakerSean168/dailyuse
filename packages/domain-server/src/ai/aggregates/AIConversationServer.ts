@@ -14,8 +14,8 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
   private _status: ConversationStatus;
   private _messageCount: number;
   private _lastMessageAt: number | null;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
   private _deletedAt: number | null;
 
   private _messages: Message[];
@@ -63,19 +63,19 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     return this._messageCount;
   }
 
-  public get lastMessageAt(): number | null {
+  public get lastMessageAt(): Date | null {
     return this._lastMessageAt;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
-  public get deletedAt(): number | null {
+  public get deletedAt(): Date | null {
     return this._deletedAt;
   }
 
@@ -116,10 +116,10 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
       title: dto.title,
       status: dto.status,
       messageCount: dto.messageCount,
-      lastMessageAt: dto.lastMessageAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
+      lastMessageAt: dto.lastMessageAt ? new Date(dto.lastMessageAt) : null,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
 
     if (dto.messages) {
@@ -136,10 +136,10 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
       title: dto.title,
       status: dto.status,
       messageCount: dto.messageCount,
-      lastMessageAt: dto.lastMessageAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
+      lastMessageAt: dto.lastMessageAt ? new Date(dto.lastMessageAt) : null,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 
@@ -150,7 +150,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     this._messages.push(message);
     this._messageCount++;
     this._lastMessageAt = message.createdAt;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'ai.message.added',
@@ -181,7 +181,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     if (this._status === status) return;
     const oldStatus = this._status;
     this._status = status;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'ai.conversation.status_changed',
@@ -197,9 +197,9 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
   }
 
   public softDelete(): void {
-    this._deletedAt = Date.now();
+    this._deletedAt = new Date();
     this._status = ConversationStatus.ARCHIVED;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public toServerDTO(includeChildren: boolean = false): AIConversationServerDTO {
@@ -209,10 +209,10 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
       title: this._title,
       status: this._status,
       messageCount: this._messageCount,
-      lastMessageAt: this._lastMessageAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      lastMessageAt: this._lastMessageAt.getTime(),
+      createdAt: new Date(this._createdAt),
+      updatedAt: new Date(this._updatedAt),
+      deletedAt: this._deletedAt.getTime(),
       messages: includeChildren ? this._messages.map((m) => m.toServerDTO()) : null,
     };
   }
@@ -224,9 +224,9 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
       title: this._title,
       status: this._status,
       messageCount: this._messageCount,
-      lastMessageAt: this._lastMessageAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      lastMessageAt: this._lastMessageAt.getTime(),
+      createdAt: new Date(this._createdAt),
+      updatedAt: new Date(this._updatedAt),
       messages: null,
       isActive: this._status === ConversationStatus.ACTIVE,
       isClosed: this._status === ConversationStatus.CLOSED,
@@ -248,10 +248,10 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
       title: this._title,
       status: this._status,
       messageCount: this._messageCount,
-      lastMessageAt: this._lastMessageAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      lastMessageAt: this._lastMessageAt.getTime(),
+      createdAt: new Date(this._createdAt),
+      updatedAt: new Date(this._updatedAt),
+      deletedAt: this._deletedAt.getTime(),
     };
   }
 }

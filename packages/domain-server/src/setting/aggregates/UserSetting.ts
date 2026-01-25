@@ -67,8 +67,8 @@ export class UserSetting extends AggregateRoot implements UserSettingServer {
     enabled: boolean;
     features: string[];
   };
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   private constructor(params: {
     uuid?: string;
@@ -146,55 +146,55 @@ export class UserSetting extends AggregateRoot implements UserSettingServer {
 
   updateAppearance(appearance: Partial<UserSetting['_appearance']>): void {
     this._appearance = { ...this._appearance, ...appearance };
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   updateTheme(theme: ThemeMode): void {
     this._appearance.theme = theme;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ========== 语言和区域 ==========
 
   updateLocale(locale: Partial<UserSetting['_locale']>): void {
     this._locale = { ...this._locale, ...locale };
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   updateLanguage(language: string): void {
     this._locale.language = language;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   updateTimezone(timezone: string): void {
     this._locale.timezone = timezone;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ========== 工作流 ==========
 
   updateWorkflow(workflow: Partial<UserSetting['_workflow']>): void {
     this._workflow = { ...this._workflow, ...workflow };
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ========== 快捷键 ==========
 
   updateShortcut(action: string, shortcut: string): void {
     this._shortcuts.custom[action] = shortcut;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   removeShortcut(action: string): void {
     delete this._shortcuts.custom[action];
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ========== 隐私 ==========
 
   updatePrivacy(privacy: Partial<UserSetting['_privacy']>): void {
     this._privacy = { ...this._privacy, ...privacy };
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ========== 实验性功能 ==========
@@ -202,7 +202,7 @@ export class UserSetting extends AggregateRoot implements UserSettingServer {
   enableExperimentalFeature(feature: string): void {
     if (!this._experimental.features.includes(feature)) {
       this._experimental.features.push(feature);
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -210,7 +210,7 @@ export class UserSetting extends AggregateRoot implements UserSettingServer {
     const index = this._experimental.features.indexOf(feature);
     if (index > -1) {
       this._experimental.features.splice(index, 1);
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -495,8 +495,8 @@ export class UserSetting extends AggregateRoot implements UserSettingServer {
       shortcuts,
       privacy,
       experimental,
-      createdAt: dto.createdAt || Date.now(),
-      updatedAt: dto.updatedAt || Date.now(),
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -565,8 +565,8 @@ export class UserSetting extends AggregateRoot implements UserSettingServer {
       shortcuts,
       privacy,
       experimental,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 }

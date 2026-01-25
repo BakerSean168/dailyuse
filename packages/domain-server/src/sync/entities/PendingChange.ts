@@ -26,7 +26,7 @@ export class PendingChange extends Entity {
   private _version: SyncVersionServerDTO;
   private _isSynced: boolean;
   private _syncedInSession?: string | null;
-  private _createdAt: number;
+  private _createdAt: Date;
   private _syncedAt?: number | null;
 
   private constructor(params: {
@@ -115,7 +115,7 @@ export class PendingChange extends Entity {
       afterData: params.afterData,
       version: params.version,
       isSynced: false,
-      createdAt: Date.now(),
+      createdAt: new Date(),
     });
   }
 
@@ -132,7 +132,7 @@ export class PendingChange extends Entity {
       version: dto.version,
       isSynced: dto.isSynced,
       syncedInSession: dto.syncedInSession,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
       syncedAt: dto.syncedAt,
     });
   }
@@ -154,7 +154,7 @@ export class PendingChange extends Entity {
       version: JSON.parse(dto.versionJson),
       isSynced: dto.isSynced,
       syncedInSession: dto.syncedInSession,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
       syncedAt: dto.syncedAt,
     });
   }
@@ -167,7 +167,7 @@ export class PendingChange extends Entity {
   markAsSynced(sessionId: string): void {
     this._isSynced = true;
     this._syncedInSession = sessionId;
-    this._syncedAt = Date.now();
+    this._syncedAt = new Date();
   }
 
   /**

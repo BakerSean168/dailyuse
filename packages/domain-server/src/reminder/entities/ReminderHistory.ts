@@ -18,12 +18,12 @@ import { Entity } from '@dailyuse/utils';
 export class ReminderHistory extends Entity implements ReminderHistoryServer {
   // ===== 私有字段 =====
   private _templateUuid: string;
-  private _triggeredAt: number;
+  private _triggeredAt: Date;
   private _result: TriggerResult;
   private _error: string | null;
   private _notificationSent: boolean;
   private _notificationChannels: NotificationChannel[] | null;
-  private _createdAt: number;
+  private _createdAt: Date;
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
@@ -57,7 +57,7 @@ export class ReminderHistory extends Entity implements ReminderHistoryServer {
     return this._templateUuid;
   }
 
-  public get triggeredAt(): number {
+  public get triggeredAt(): Date {
     return this._triggeredAt;
   }
 
@@ -77,7 +77,7 @@ export class ReminderHistory extends Entity implements ReminderHistoryServer {
     return this._notificationChannels ? [...this._notificationChannels] : null;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
@@ -101,7 +101,7 @@ export class ReminderHistory extends Entity implements ReminderHistoryServer {
       error: params.error,
       notificationSent: params.notificationSent,
       notificationChannels: params.notificationChannels,
-      createdAt: Date.now(),
+      createdAt: new Date(),
     });
   }
 
@@ -117,7 +117,7 @@ export class ReminderHistory extends Entity implements ReminderHistoryServer {
       error: dto.error,
       notificationSent: dto.notificationSent,
       notificationChannels: dto.notificationChannels ?? null,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -133,7 +133,7 @@ export class ReminderHistory extends Entity implements ReminderHistoryServer {
       error: dto.error,
       notificationSent: dto.notificationSent,
       notificationChannels: dto.notificationChannels ? JSON.parse(dto.notificationChannels) : null,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 

@@ -25,8 +25,8 @@ export class GoalReview extends Entity implements GoalReviewServer {
   private _challenges: string | null;
   private _improvements: string | null;
   private _keyResultSnapshots: KeyResultSnapshotServerDTO[];
-  private _reviewedAt: number;
-  private _createdAt: number;
+  private _reviewedAt: Date;
+  private _createdAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -83,10 +83,10 @@ export class GoalReview extends Entity implements GoalReviewServer {
   public get keyResultSnapshots(): KeyResultSnapshotServerDTO[] {
     return this._keyResultSnapshots;
   }
-  public get reviewedAt(): number {
+  public get reviewedAt(): Date {
     return this._reviewedAt;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
@@ -148,7 +148,7 @@ export class GoalReview extends Entity implements GoalReviewServer {
       improvements: dto.improvements ?? null,
       keyResultSnapshots: dto.keyResultSnapshots,
       reviewedAt: dto.reviewedAt,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -170,7 +170,7 @@ export class GoalReview extends Entity implements GoalReviewServer {
       improvements: dto.improvements ?? null,
       keyResultSnapshots: snapshots,
       reviewedAt: dto.reviewedAt,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -262,8 +262,8 @@ export class GoalReview extends Entity implements GoalReviewServer {
       challenges: this._challenges,
       improvements: this._improvements,
       keyResultSnapshots: this._keyResultSnapshots,
-      reviewedAt: this._reviewedAt,
-      createdAt: this._createdAt,
+      reviewedAt: this._reviewedAt.getTime(),
+      createdAt: this._createdAt.getTime(),
     };
   }
 
@@ -284,8 +284,8 @@ export class GoalReview extends Entity implements GoalReviewServer {
         currentValue: snapshot.currentValue,
         progressPercentage: snapshot.progressPercentage,
       })),
-      reviewedAt: this._reviewedAt,
-      createdAt: this._createdAt,
+      reviewedAt: this._reviewedAt.getTime(),
+      createdAt: this._createdAt.getTime(),
     };
   }
 
@@ -303,8 +303,8 @@ export class GoalReview extends Entity implements GoalReviewServer {
       challenges: this._challenges,
       improvements: this._improvements,
       keyResultSnapshots: JSON.stringify(this._keyResultSnapshots),
-      reviewedAt: this._reviewedAt,
-      createdAt: this._createdAt,
+      reviewedAt: this._reviewedAt.getTime(),
+      createdAt: this._createdAt.getTime(),
     };
   }
 }

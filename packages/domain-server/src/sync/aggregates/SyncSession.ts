@@ -49,10 +49,10 @@ export class SyncSession extends AggregateRoot {
   private _error?: SessionError | null;
   private _canRetry: boolean;
   private _retryCount: number;
-  private _createdAt: number;
+  private _createdAt: Date;
   private _startedAt?: number | null;
   private _completedAt?: number | null;
-  private _updatedAt: number;
+  private _updatedAt: Date;
 
   private constructor(params: {
     uuid: string;
@@ -212,10 +212,10 @@ export class SyncSession extends AggregateRoot {
       error: dto.error,
       canRetry: dto.canRetry,
       retryCount: dto.retryCount,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
       startedAt: dto.startedAt,
       completedAt: dto.completedAt,
-      updatedAt: dto.updatedAt,
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -240,10 +240,10 @@ export class SyncSession extends AggregateRoot {
       error: dto.errorJson ? JSON.parse(dto.errorJson) : null,
       canRetry: dto.canRetry,
       retryCount: dto.retryCount,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
       startedAt: dto.startedAt,
       completedAt: dto.completedAt,
-      updatedAt: dto.updatedAt,
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -257,8 +257,8 @@ export class SyncSession extends AggregateRoot {
       throw new Error('SyncSession: can only start a pending session');
     }
     this._status = SyncSessionStatus.COLLECTING;
-    this._startedAt = Date.now();
-    this._updatedAt = Date.now();
+    this._startedAt = new Date();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -269,7 +269,7 @@ export class SyncSession extends AggregateRoot {
       throw new Error('SyncSession: must be in collecting state');
     }
     this._status = SyncSessionStatus.SYNCING;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -280,7 +280,7 @@ export class SyncSession extends AggregateRoot {
     if (this._status === SyncSessionStatus.SYNCING) {
       this._status = SyncSessionStatus.CONFLICTED;
     }
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -290,8 +290,8 @@ export class SyncSession extends AggregateRoot {
     this._status = SyncSessionStatus.COMPLETED;
     this._endVersion = endVersion;
     this._statistics = statistics;
-    this._completedAt = Date.now();
-    this._updatedAt = Date.now();
+    this._completedAt = new Date();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -301,8 +301,8 @@ export class SyncSession extends AggregateRoot {
     this._status = SyncSessionStatus.FAILED;
     this._error = error;
     this._canRetry = canRetry;
-    this._completedAt = Date.now();
-    this._updatedAt = Date.now();
+    this._completedAt = new Date();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -313,8 +313,8 @@ export class SyncSession extends AggregateRoot {
       throw new Error('SyncSession: cannot cancel a finished session');
     }
     this._status = SyncSessionStatus.CANCELLED;
-    this._completedAt = Date.now();
-    this._updatedAt = Date.now();
+    this._completedAt = new Date();
+    this._updatedAt = new Date();
   }
 
   // ===== 查询方法 =====
@@ -375,10 +375,10 @@ export class SyncSession extends AggregateRoot {
       error: this._error,
       canRetry: this._canRetry,
       retryCount: this._retryCount,
-      createdAt: this._createdAt,
+      createdAt: new Date(this._createdAt),
       startedAt: this._startedAt,
       completedAt: this._completedAt,
-      updatedAt: this._updatedAt,
+      updatedAt: new Date(this._updatedAt),
     };
   }
 
@@ -398,7 +398,7 @@ export class SyncSession extends AggregateRoot {
       statistics: this._statistics,
       error: this._error ? { code: this._error.code, message: this._error.message } : null,
       canRetry: this._canRetry,
-      createdAt: this._createdAt,
+      createdAt: new Date(this._createdAt),
       startedAt: this._startedAt,
       completedAt: this._completedAt,
     };
@@ -421,10 +421,10 @@ export class SyncSession extends AggregateRoot {
       errorJson: this._error ? JSON.stringify(this._error) : null,
       canRetry: this._canRetry,
       retryCount: this._retryCount,
-      createdAt: this._createdAt,
-      startedAt: this._startedAt ?? null,
-      completedAt: this._completedAt ?? null,
-      updatedAt: this._updatedAt,
+      createdAt: new Date(this._createdAt),
+      startedAt: this._startedAt ? new Date(this._startedAt) : null,
+      completedAt: this._completedAt ? new Date(this._completedAt) : null,
+      updatedAt: new Date(this._updatedAt),
     };
   }
 }

@@ -20,8 +20,8 @@ export class Folder implements FolderServer {
   private _order: number;
   private _isExpanded: boolean;
   private _metadata: FolderMetadata;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
   private _children: FolderServer[] | null;
 
   // ===== 私有构造函数 =====
@@ -34,8 +34,8 @@ export class Folder implements FolderServer {
     order: number,
     isExpanded: boolean,
     metadata: FolderMetadata,
-    createdAt: number,
-    updatedAt: number,
+    createdAt: Date,
+    updatedAt: Date,
     children: FolderServer[] | null = null,
   ) {
     this._uuid = uuid;
@@ -103,7 +103,7 @@ export class Folder implements FolderServer {
       this._path = `/${newName}`;
     }
 
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   moveTo(newParentUuid: string | null, newParentPath?: string): void {
@@ -116,24 +116,24 @@ export class Folder implements FolderServer {
       this._path = `/${this._name}`;
     }
 
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   updatePath(newPath: string): void {
     this._path = newPath;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   updateMetadata(metadata: Partial<FolderMetadataServerDTO>): void {
     const currentDTO = this._metadata.toServerDTO();
     const merged = { ...currentDTO, ...metadata };
     this._metadata = FolderMetadata.fromServerDTO(merged);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   setExpanded(isExpanded: boolean): void {
     this._isExpanded = isExpanded;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== DTO 转换方法 =====

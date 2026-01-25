@@ -19,7 +19,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
   private _templateStats: TemplateStatsInfo;
   private _groupStats: GroupStatsInfo;
   private _triggerStats: TriggerStatsInfo;
-  private _calculatedAt: number;
+  private _calculatedAt: Date;
 
   private constructor(params: {
     uuid?: string;
@@ -52,7 +52,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
   public get triggerStats(): TriggerStatsInfo {
     return { ...this._triggerStats };
   }
-  public get calculatedAt(): number {
+  public get calculatedAt(): Date {
     return this._calculatedAt;
   }
 
@@ -120,7 +120,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
     this._templateStats = this.calculateTemplateStats(templates);
     this._groupStats = this.calculateGroupStats(groups);
     // triggerStats 需要从历史记录计算，这里保持不变
-    this._calculatedAt = Date.now();
+    this._calculatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'ReminderStatisticsUpdated',
@@ -139,7 +139,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
       ...this._templateStats,
       ...templateStats,
     };
-    this._calculatedAt = Date.now();
+    this._calculatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'ReminderStatisticsUpdated',
@@ -158,7 +158,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
       ...this._groupStats,
       ...groupStats,
     };
-    this._calculatedAt = Date.now();
+    this._calculatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'ReminderStatisticsUpdated',
@@ -177,7 +177,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
       ...this._triggerStats,
       ...triggerStats,
     };
-    this._calculatedAt = Date.now();
+    this._calculatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'ReminderStatisticsUpdated',
@@ -222,7 +222,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
    * 获取指定时间范围内的触发次数
    * 注意：这个方法需要访问历史记录，实际实现应该在应用服务层
    */
-  public async getTriggersInRange(startDate: number, endDate: number): Promise<number> {
+  public async getTriggersInRange(startDate: Date, endDate: Date): Promise<number> {
     // 这里返回估算值，实际应该在 ApplicationService 中查询历史记录
     return 0;
   }
@@ -232,7 +232,7 @@ export class ReminderStatistics extends AggregateRoot implements ReminderStatist
    * @deprecated 使用 recalculate() 替代
    */
   public async calculate(): Promise<void> {
-    this._calculatedAt = Date.now();
+    this._calculatedAt = new Date();
     this.addDomainEvent({
       eventType: 'ReminderStatisticsUpdated',
       aggregateId: this.uuid,

@@ -35,8 +35,8 @@ export class Notification extends AggregateRoot implements NotificationServer {
   private _actions: NotificationAction[] | null;
   private _metadata: NotificationMetadata | null;
   private _expiresAt: number | null;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
   private _sentAt: number | null;
   private _deliveredAt: number | null;
   private _deletedAt: number | null;
@@ -125,7 +125,7 @@ export class Notification extends AggregateRoot implements NotificationServer {
   public get isRead(): boolean {
     return this._isRead;
   }
-  public get readAt(): number | null {
+  public get readAt(): Date | null {
     return this._readAt;
   }
   public get relatedEntityType(): RelatedEntityType | null {
@@ -140,22 +140,22 @@ export class Notification extends AggregateRoot implements NotificationServer {
   public get metadata(): NotificationMetadataServer | null {
     return this._metadata ?? null;
   }
-  public get expiresAt(): number | null {
+  public get expiresAt(): Date | null {
     return this._expiresAt;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
-  public get sentAt(): number | null {
+  public get sentAt(): Date | null {
     return this._sentAt;
   }
-  public get deliveredAt(): number | null {
+  public get deliveredAt(): Date | null {
     return this._deliveredAt;
   }
-  public get deletedAt(): number | null {
+  public get deletedAt(): Date | null {
     return this._deletedAt;
   }
   public get channels(): NotificationChannel[] | null {
@@ -242,7 +242,7 @@ export class Notification extends AggregateRoot implements NotificationServer {
     }
 
     this._status = NotificationStatus.SENT;
-    this._sentAt = Date.now();
+    this._sentAt = new Date();
     this.addHistory('SENT', { sentAt: this._sentAt });
 
     logger.info('✅ [聚合根] 通知已标记为已发送', {
@@ -256,7 +256,7 @@ export class Notification extends AggregateRoot implements NotificationServer {
     if (this._isRead) return;
 
     this._isRead = true;
-    this._readAt = Date.now();
+    this._readAt = new Date();
     this._status = NotificationStatus.READ;
     this.addHistory('READ', { readAt: this._readAt });
   }
@@ -280,7 +280,7 @@ export class Notification extends AggregateRoot implements NotificationServer {
   }
 
   public softDelete(): void {
-    this._deletedAt = Date.now();
+    this._deletedAt = new Date();
     this.addHistory('DELETED', { deletedAt: this._deletedAt });
   }
 
@@ -458,11 +458,11 @@ export class Notification extends AggregateRoot implements NotificationServer {
       actions: dto.actions?.map((a) => NotificationAction.fromContract(a)) ?? null,
       metadata: dto.metadata ? NotificationMetadata.fromContract(dto.metadata) : null,
       expiresAt: dto.expiresAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
       sentAt: dto.sentAt,
       deliveredAt: dto.deliveredAt,
-      deletedAt: dto.deletedAt,
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
 
     if (dto.channels) {
@@ -495,11 +495,11 @@ export class Notification extends AggregateRoot implements NotificationServer {
         : null,
       metadata: dto.metadata ? NotificationMetadata.fromContract(JSON.parse(dto.metadata)) : null,
       expiresAt: dto.expiresAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
       sentAt: dto.sentAt,
       deliveredAt: dto.deliveredAt,
-      deletedAt: dto.deletedAt,
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 }

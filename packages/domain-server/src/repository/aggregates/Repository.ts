@@ -42,8 +42,8 @@ export class Repository extends AggregateRoot implements RepositoryServer {
   private _config: RepositoryConfig;
   private _stats: RepositoryStats;
   private _status: RepositoryStatus;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
   private _folders: FolderServer[] | null;
 
   // ===== 私有构造函数 =====
@@ -112,11 +112,11 @@ export class Repository extends AggregateRoot implements RepositoryServer {
     return this._status;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -129,14 +129,14 @@ export class Repository extends AggregateRoot implements RepositoryServer {
     const currentDTO = this._config.toServerDTO();
     const merged = { ...currentDTO, ...newConfig };
     this._config = RepositoryConfig.fromServerDTO(merged);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   updateStats(newStats: Partial<RepositoryStatsServerDTO>): void {
     const currentDTO = this._stats.toServerDTO();
     const merged = { ...currentDTO, ...newStats };
     this._stats = RepositoryStats.fromServerDTO(merged);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   archive(): void {
@@ -144,7 +144,7 @@ export class Repository extends AggregateRoot implements RepositoryServer {
       throw new Error('Repository is already archived');
     }
     this._status = RepositoryStatus.ARCHIVED;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   activate(): void {
@@ -152,12 +152,12 @@ export class Repository extends AggregateRoot implements RepositoryServer {
       throw new Error('Repository is already active');
     }
     this._status = RepositoryStatus.ACTIVE;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   delete(): void {
     this._status = RepositoryStatus.DELETED;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -171,7 +171,7 @@ export class Repository extends AggregateRoot implements RepositoryServer {
    * 记录访问时间
    */
   recordAccess(): void {
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     // 可以在这里增加访问计数等
   }
 
@@ -183,7 +183,7 @@ export class Repository extends AggregateRoot implements RepositoryServer {
       throw new Error('Repository name cannot be empty');
     }
     this._name = name.trim();
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -191,7 +191,7 @@ export class Repository extends AggregateRoot implements RepositoryServer {
    */
   updateDescription(description: string | null): void {
     this._description = description;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -202,7 +202,7 @@ export class Repository extends AggregateRoot implements RepositoryServer {
       throw new Error('Repository path cannot be empty');
     }
     this._path = path.trim();
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -211,7 +211,7 @@ export class Repository extends AggregateRoot implements RepositoryServer {
    */
   addRelatedGoal(goalUuid: string): void {
     // 暂时只更新时间戳，实际实现需要在 config 中添加 relatedGoals 字段
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     // TODO: 在 RepositoryConfig 中添加 relatedGoals 支持
   }
 
@@ -365,8 +365,8 @@ export class Repository extends AggregateRoot implements RepositoryServer {
       config: RepositoryConfig.fromServerDTO(dto.config),
       stats: RepositoryStats.fromServerDTO(dto.stats),
       status: dto.status,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
       folders,
     });
   }
@@ -382,8 +382,8 @@ export class Repository extends AggregateRoot implements RepositoryServer {
       config: RepositoryConfig.fromServerDTO(JSON.parse(dto.config)),
       stats: RepositoryStats.fromServerDTO(JSON.parse(dto.stats)),
       status: dto.status,
-      createdAt: dto.createdAt.getTime(),
-      updatedAt: dto.updatedAt.getTime(),
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
       folders: null,
     });
   }

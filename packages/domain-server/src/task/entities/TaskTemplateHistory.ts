@@ -23,7 +23,7 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistorySe
   private _templateUuid: string;
   private _action: string;
   private _changes: any | null;
-  private _createdAt: number;
+  private _createdAt: Date;
 
   private constructor(params: {
     uuid?: string;
@@ -56,7 +56,7 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistorySe
     return this._changes;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
@@ -69,7 +69,7 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistorySe
       templateUuid: this._templateUuid,
       action: this._action,
       changes: this._changes,
-      createdAt: this._createdAt,
+      createdAt: this._createdAt.getTime(),
     };
   }
 
@@ -79,7 +79,7 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistorySe
       templateUuid: this._templateUuid,
       action: this._action,
       changes: this._changes,
-      createdAt: this._createdAt,
+      createdAt: this._createdAt.getTime(),
     };
   }
 
@@ -89,7 +89,7 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistorySe
       templateUuid: this._templateUuid,
       action: this._action,
       changes: this._changes ? JSON.stringify(this._changes) : null,
-      createdAt: this._createdAt,
+      createdAt: this._createdAt.getTime(),
     };
   }
 
@@ -105,7 +105,7 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistorySe
       templateUuid: params.templateUuid,
       action: params.action,
       changes: params.changes,
-      createdAt: Date.now(),
+      createdAt: new Date(),
     });
   }
 
@@ -115,7 +115,7 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistorySe
       templateUuid: dto.templateUuid,
       action: dto.action,
       changes: dto.changes,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -125,7 +125,7 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistorySe
       templateUuid: dto.templateUuid,
       action: dto.action,
       changes: dto.changes ? JSON.parse(dto.changes) : null,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 

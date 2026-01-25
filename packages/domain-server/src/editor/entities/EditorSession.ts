@@ -45,8 +45,8 @@ export class EditorSession extends Entity {
 
   // ===== 时间戳 =====
   private _lastAccessedAt: number | null;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   private constructor(params: {
     uuid: string;
@@ -108,15 +108,15 @@ export class EditorSession extends Entity {
     return this._layout;
   }
 
-  public get lastAccessedAt(): number | null {
+  public get lastAccessedAt(): Date | null {
     return this._lastAccessedAt;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -129,7 +129,7 @@ export class EditorSession extends Entity {
       throw new Error('会话名称不能为空');
     }
     this._name = newName.trim();
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
   /**
    * 更新描述
@@ -137,7 +137,7 @@ export class EditorSession extends Entity {
    */
   public updateDescription(newDescription: string | null): void {
     this._description = newDescription ? newDescription.trim() : null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== 工厂方法 =====
@@ -245,7 +245,7 @@ export class EditorSession extends Entity {
    */
   public activate(): void {
     this._isActive = true;
-    this._lastAccessedAt = Date.now();
+    this._lastAccessedAt = new Date();
     this._updatedAt = this._lastAccessedAt;
   }
 
@@ -254,7 +254,7 @@ export class EditorSession extends Entity {
    */
   public deactivate(): void {
     this._isActive = false;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -282,7 +282,7 @@ export class EditorSession extends Entity {
    * 更新最后访问时间
    */
   public updateLastAccessedAt(): void {
-    this._lastAccessedAt = Date.now();
+    this._lastAccessedAt = new Date();
     this.updateTimestamp();
   }
 
@@ -290,7 +290,7 @@ export class EditorSession extends Entity {
    * 更新时间戳
    */
   private updateTimestamp(): void {
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== DTO 转换方法 =====
@@ -309,9 +309,9 @@ export class EditorSession extends Entity {
       isActive: this._isActive,
       activeGroupIndex: this._activeGroupIndex,
       layout: this._layout.toServerDTO(),
-      lastAccessedAt: this._lastAccessedAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      lastAccessedAt: this._lastAccessedAt.getTime(),
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -330,9 +330,9 @@ export class EditorSession extends Entity {
       activeGroupIndex: this._activeGroupIndex,
       layout: this._layout.toClientDTO(),
       groupCount: this._groups.length,
-      lastAccessedAt: this._lastAccessedAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      lastAccessedAt: this._lastAccessedAt.getTime(),
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -350,9 +350,9 @@ export class EditorSession extends Entity {
       is_active: this._isActive,
       active_group_index: this._activeGroupIndex,
       layout: this._layout.toPersistenceDTO(),
-      lastAccessedAt: this._lastAccessedAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      lastAccessedAt: this._lastAccessedAt.getTime(),
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -370,8 +370,8 @@ export class EditorSession extends Entity {
       isActive: dto.isActive,
       activeGroupIndex: dto.activeGroupIndex,
       lastAccessedAt: dto.lastAccessedAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
 
     // ✅ 递归重建子实体
@@ -394,8 +394,8 @@ export class EditorSession extends Entity {
       isActive: dto.isActive,
       activeGroupIndex: dto.activeGroupIndex,
       lastAccessedAt: dto.lastAccessedAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
 
     // ✅ 递归重建子实体
@@ -420,8 +420,8 @@ export class EditorSession extends Entity {
       isActive: dto.is_active,
       activeGroupIndex: dto.active_group_index,
       lastAccessedAt: dto.lastAccessedAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
 
     // ✅ 递归重建子实体

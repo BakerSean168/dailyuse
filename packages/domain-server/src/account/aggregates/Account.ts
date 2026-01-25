@@ -31,8 +31,8 @@ export class Account extends AggregateRoot implements AccountServer {
   private _stats: AccountServerDTO['stats'];
 
   // 时间戳
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
   private _lastActiveAt: number | null;
   private _deletedAt: number | null;
 
@@ -125,16 +125,16 @@ export class Account extends AggregateRoot implements AccountServer {
   public get stats(): AccountServerDTO['stats'] {
     return { ...this._stats };
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
-  public get lastActiveAt(): number | null {
+  public get lastActiveAt(): Date | null {
     return this._lastActiveAt;
   }
-  public get deletedAt(): number | null {
+  public get deletedAt(): Date | null {
     return this._deletedAt;
   }
 
@@ -216,10 +216,10 @@ export class Account extends AggregateRoot implements AccountServer {
       storage: dto.storage,
       security: dto.security,
       stats: dto.stats,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
       lastActiveAt: dto.lastActiveAt,
-      deletedAt: dto.deletedAt,
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
     if (dto.subscription) {
       account._subscription = Subscription.fromServerDTO(dto.subscription);
@@ -267,10 +267,10 @@ export class Account extends AggregateRoot implements AccountServer {
         lastLoginAt: dto.statsLastLoginAt,
         loginCount: dto.statsLoginCount,
       },
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
       lastActiveAt: dto.lastActiveAt,
-      deletedAt: dto.deletedAt,
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
 
     if (
@@ -305,24 +305,24 @@ export class Account extends AggregateRoot implements AccountServer {
   // 状态管理
   public activate(): void {
     this._status = 'ACTIVE';
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public deactivate(): void {
     this._status = 'INACTIVE';
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public suspend(reason: string): void {
     this._status = 'SUSPENDED';
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('ACCOUNT_SUSPENDED', { reason });
   }
 
   public softDelete(): void {
     this._status = 'DELETED';
-    this._deletedAt = Date.now();
-    this._updatedAt = Date.now();
+    this._deletedAt = new Date();
+    this._updatedAt = new Date();
     this.addHistory('ACCOUNT_DELETED', {});
   }
 
@@ -330,7 +330,7 @@ export class Account extends AggregateRoot implements AccountServer {
     if (this._status === 'DELETED') {
       this._status = 'ACTIVE';
       this._deletedAt = null;
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
       this.addHistory('ACCOUNT_RESTORED', {});
     }
   }
@@ -338,17 +338,17 @@ export class Account extends AggregateRoot implements AccountServer {
   // 资料管理
   public updateProfile(profile: Partial<AccountServerDTO['profile']>): void {
     this._profile = { ...this._profile, ...profile };
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public updateAvatar(avatarUrl: string): void {
     this._profile.avatar = avatarUrl;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public updateDisplayName(displayName: string): void {
     this._profile.displayName = displayName;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // 偏好管理
@@ -359,18 +359,18 @@ export class Account extends AggregateRoot implements AccountServer {
       notifications: { ...this._preferences.notifications, ...preferences.notifications },
       privacy: { ...this._preferences.privacy, ...preferences.privacy },
     };
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public updateTheme(theme: 'LIGHT' | 'DARK' | 'AUTO'): void {
     this._preferences.theme = theme;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // 邮箱与手机
   public verifyEmail(): void {
     this._emailVerified = true;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('EMAIL_VERIFIED', {});
   }
 
@@ -378,7 +378,7 @@ export class Account extends AggregateRoot implements AccountServer {
     const oldEmail = this._email;
     this._email = newEmail;
     this._emailVerified = false;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('EMAIL_UPDATED', { oldEmail, newEmail });
   }
 
@@ -387,7 +387,7 @@ export class Account extends AggregateRoot implements AccountServer {
       throw new Error('No phone number to verify');
     }
     this._phoneVerified = true;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('PHONE_VERIFIED', {});
   }
 
@@ -395,32 +395,32 @@ export class Account extends AggregateRoot implements AccountServer {
     const oldPhone = this._phoneNumber;
     this._phoneNumber = newPhone;
     this._phoneVerified = false;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('PHONE_UPDATED', { oldPhone, newPhone });
   }
 
   // 安全管理
   public enableTwoFactor(): void {
     this._security.twoFactorEnabled = true;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('TWO_FACTOR_ENABLED', {});
   }
 
   public disableTwoFactor(): void {
     this._security.twoFactorEnabled = false;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('TWO_FACTOR_DISABLED', {});
   }
 
   public changePassword(): void {
     this._security.lastPasswordChange = Date.now();
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('PASSWORD_CHANGED', {});
   }
 
   public incrementLoginAttempts(): void {
     this._security.loginAttempts += 1;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     if (this._security.loginAttempts >= 5) {
       this.lockAccount(15); // 锁定15分钟
     }
@@ -428,32 +428,32 @@ export class Account extends AggregateRoot implements AccountServer {
 
   public resetLoginAttempts(): void {
     this._security.loginAttempts = 0;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public lockAccount(durationMinutes: number): void {
     this._security.lockedUntil = Date.now() + durationMinutes * 60 * 1000;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('ACCOUNT_LOCKED', { durationMinutes });
   }
 
   public unlockAccount(): void {
     this._security.lockedUntil = null;
     this._security.loginAttempts = 0;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('ACCOUNT_UNLOCKED', {});
   }
 
   // 订阅管理
   public updateSubscription(subscription: SubscriptionServer): void {
     this._subscription = Subscription.fromServerDTO(subscription);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public cancelSubscription(): void {
     if (this._subscription) {
       this._subscription.cancel();
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -464,7 +464,7 @@ export class Account extends AggregateRoot implements AccountServer {
 
   public updateStorageUsage(bytesUsed: number): void {
     this._storage.used = bytesUsed;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // 历史记录
@@ -484,20 +484,20 @@ export class Account extends AggregateRoot implements AccountServer {
   // 统计更新
   public updateStats(stats: Partial<AccountServerDTO['stats']>): void {
     this._stats = { ...this._stats, ...stats };
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public recordLogin(): void {
     this._stats.lastLoginAt = Date.now();
     this._stats.loginCount += 1;
     this._security.loginAttempts = 0;
-    this._lastActiveAt = Date.now();
-    this._updatedAt = Date.now();
+    this._lastActiveAt = new Date();
+    this._updatedAt = new Date();
     this.addHistory('LOGIN', {});
   }
 
   public recordActivity(): void {
-    this._lastActiveAt = Date.now();
+    this._lastActiveAt = new Date();
   }
 
   // 子实体管理
@@ -526,10 +526,10 @@ export class Account extends AggregateRoot implements AccountServer {
       security: this._security,
       history: this._history as any, // 实体本身实现了接口
       stats: this._stats,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      lastActiveAt: this._lastActiveAt,
-      deletedAt: this._deletedAt,
+      createdAt: new Date(this._createdAt),
+      updatedAt: new Date(this._updatedAt),
+      lastActiveAt: this._lastActiveAt.getTime(),
+      deletedAt: this._deletedAt.getTime(),
     };
   }
 
@@ -549,10 +549,10 @@ export class Account extends AggregateRoot implements AccountServer {
       security: this._security,
       history: this._history,
       stats: this._stats,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      lastActiveAt: this._lastActiveAt,
-      deletedAt: this._deletedAt,
+      createdAt: new Date(this._createdAt),
+      updatedAt: new Date(this._updatedAt),
+      lastActiveAt: this._lastActiveAt.getTime(),
+      deletedAt: this._deletedAt.getTime(),
     };
   }
 
@@ -608,10 +608,10 @@ export class Account extends AggregateRoot implements AccountServer {
       statsLastLoginAt: this._stats.lastLoginAt,
       statsLoginCount: this._stats.loginCount,
 
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      lastActiveAt: this._lastActiveAt,
-      deletedAt: this._deletedAt,
+      createdAt: new Date(this._createdAt),
+      updatedAt: new Date(this._updatedAt),
+      lastActiveAt: this._lastActiveAt.getTime(),
+      deletedAt: this._deletedAt.getTime(),
     };
   }
 }

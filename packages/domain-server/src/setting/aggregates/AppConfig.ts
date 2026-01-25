@@ -73,8 +73,8 @@ export class AppConfig extends AggregateRoot implements AppConfigServer {
       maxPerDay: number;
     };
   };
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   private constructor(
     uuid: string,
@@ -85,8 +85,8 @@ export class AppConfig extends AggregateRoot implements AppConfigServer {
     api: AppConfig['_api'],
     security: AppConfig['_security'],
     notifications: AppConfig['_notifications'],
-    createdAt: number,
-    updatedAt: number,
+    createdAt: Date,
+    updatedAt: Date,
   ) {
     super(uuid);
     this._version = version;
@@ -147,14 +147,14 @@ export class AppConfig extends AggregateRoot implements AppConfigServer {
   enableFeature(feature: string): void {
     if (feature in this._features) {
       this._features[feature as keyof typeof this._features] = true;
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
   disableFeature(feature: string): void {
     if (feature in this._features) {
       this._features[feature as keyof typeof this._features] = false;
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -176,22 +176,22 @@ export class AppConfig extends AggregateRoot implements AppConfigServer {
 
   updateAppInfo(info: Partial<AppConfig['_app']>): void {
     this._app = { ...this._app, ...info };
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   updateLimits(limits: Partial<AppConfig['_limits']>): void {
     this._limits = { ...this._limits, ...limits };
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   updateApiConfig(config: Partial<AppConfig['_api']>): void {
     this._api = { ...this._api, ...config };
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   updateSecurityConfig(config: Partial<AppConfig['_security']>): void {
     this._security = { ...this._security, ...config };
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ========== DTO 转换 ==========

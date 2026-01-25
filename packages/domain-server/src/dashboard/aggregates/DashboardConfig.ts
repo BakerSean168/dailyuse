@@ -42,8 +42,8 @@ export class DashboardConfig extends AggregateRoot implements DashboardConfigSer
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _widgetConfig: Map<string, WidgetConfig>;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -75,8 +75,8 @@ export class DashboardConfig extends AggregateRoot implements DashboardConfigSer
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       widgetConfig: dto.widgetConfig,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -90,8 +90,8 @@ export class DashboardConfig extends AggregateRoot implements DashboardConfigSer
       uuid: `dashboard-config-${dto.accountUuid}`, // 生成 UUID
       accountUuid: dto.accountUuid,
       widgetConfig,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -208,7 +208,7 @@ export class DashboardConfig extends AggregateRoot implements DashboardConfigSer
       }
     });
 
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -219,7 +219,7 @@ export class DashboardConfig extends AggregateRoot implements DashboardConfigSer
     Object.entries(widgetConfig).forEach(([widgetId, config]) => {
       this._widgetConfig.set(widgetId, WidgetConfig.fromDTO(config));
     });
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -229,7 +229,7 @@ export class DashboardConfig extends AggregateRoot implements DashboardConfigSer
     const config = this._widgetConfig.get(widgetId);
     if (config) {
       this._widgetConfig.set(widgetId, config.withVisible(true));
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -240,7 +240,7 @@ export class DashboardConfig extends AggregateRoot implements DashboardConfigSer
     const config = this._widgetConfig.get(widgetId);
     if (config) {
       this._widgetConfig.set(widgetId, config.withVisible(false));
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -251,7 +251,7 @@ export class DashboardConfig extends AggregateRoot implements DashboardConfigSer
     const config = this._widgetConfig.get(widgetId);
     if (config) {
       this._widgetConfig.set(widgetId, config.withOrder(newOrder));
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -262,7 +262,7 @@ export class DashboardConfig extends AggregateRoot implements DashboardConfigSer
     const config = this._widgetConfig.get(widgetId);
     if (config) {
       this._widgetConfig.set(widgetId, config.withSize(size));
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 

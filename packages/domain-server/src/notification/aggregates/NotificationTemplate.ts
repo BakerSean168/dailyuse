@@ -31,8 +31,8 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
   private _template: NotificationTemplateConfig;
   private _isActive: boolean;
   private _isSystemTemplate: boolean;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -84,10 +84,10 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
   public get isSystemTemplate(): boolean {
     return this._isSystemTemplate;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -99,7 +99,7 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
   public activate(): void {
     if (this._isActive) return;
     this._isActive = true;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -108,7 +108,7 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
   public deactivate(): void {
     if (!this._isActive) return;
     this._isActive = false;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -118,7 +118,7 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
     const current = this._template.toContract();
     const updated = { ...current, ...template };
     this._template = NotificationTemplateConfig.fromContract(updated);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -276,8 +276,8 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
       template: NotificationTemplateConfig.fromContract(dto.template),
       isActive: dto.isActive,
       isSystemTemplate: dto.isSystemTemplate,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -323,8 +323,8 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
       template: NotificationTemplateConfig.fromContract(templateConfigDTO),
       isActive: dto.isActive,
       isSystemTemplate: dto.isSystemTemplate,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 }

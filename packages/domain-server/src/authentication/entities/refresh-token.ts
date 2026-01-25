@@ -29,7 +29,7 @@ export class RefreshToken extends Entity implements RefreshTokenServer {
     this._usedAt = params.usedAt ?? null;
   }
 
-  public get usedAt(): number | null {
+  public get usedAt(): Date | null {
     return this._usedAt;
   }
 
@@ -78,7 +78,7 @@ export class RefreshToken extends Entity implements RefreshTokenServer {
   }
 
   public markAsUsed(): void {
-    this._usedAt = Date.now();
+    this._usedAt = new Date();
   }
 
   // DTO conversion
@@ -89,7 +89,7 @@ export class RefreshToken extends Entity implements RefreshTokenServer {
       token: this.token,
       expiresAt: this.expiresAt,
       createdAt: this.createdAt,
-      usedAt: this._usedAt,
+      usedAt: this._usedAt.getTime(),
     };
   }
 
@@ -100,7 +100,7 @@ export class RefreshToken extends Entity implements RefreshTokenServer {
       token: this.token,
       expiresAt: this.expiresAt,
       createdAt: this.createdAt,
-      usedAt: this._usedAt,
+      usedAt: this._usedAt.getTime(),
     };
   }
 
@@ -111,7 +111,7 @@ export class RefreshToken extends Entity implements RefreshTokenServer {
       token: this.token,
       expiresAt: this.expiresAt,
       createdAt: this.createdAt,
-      usedAt: this._usedAt,
+      usedAt: this._usedAt.getTime(),
     };
   }
 }

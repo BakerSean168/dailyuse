@@ -49,12 +49,12 @@ export class ResourceStats implements ResourceStatsServer {
   // ===== 业务方法 =====
   incrementViewCount(): void {
     this._viewCount++;
-    this._lastViewedAt = Date.now();
+    this._lastViewedAt = new Date();
   }
 
   incrementEditCount(): void {
     this._editCount++;
-    this._lastEditedAt = Date.now();
+    this._lastEditedAt = new Date();
   }
 
   updateLinkCount(count: number): void {

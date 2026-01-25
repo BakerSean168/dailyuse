@@ -29,7 +29,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
   private _maxRetries: number;
   private _error: ChannelError | null;
   private _response: ChannelResponse | null;
-  private _createdAt: number;
+  private _createdAt: Date;
   private _sentAt: number | null;
   private _deliveredAt: number | null;
   private _failedAt: number | null;
@@ -93,16 +93,16 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
   public get response(): ChannelResponseServerDTO | null {
     return this._response?.toContract() ?? null;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get sentAt(): number | null {
+  public get sentAt(): Date | null {
     return this._sentAt;
   }
-  public get deliveredAt(): number | null {
+  public get deliveredAt(): Date | null {
     return this._deliveredAt;
   }
-  public get failedAt(): number | null {
+  public get failedAt(): Date | null {
     return this._failedAt;
   }
 
@@ -117,7 +117,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
     }
 
     this._status = ChannelStatus.SENT;
-    this._sentAt = Date.now();
+    this._sentAt = new Date();
     this._sendAttempts++;
   }
 
@@ -153,7 +153,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
     }
 
     this._status = ChannelStatus.DELIVERED;
-    this._deliveredAt = Date.now();
+    this._deliveredAt = new Date();
   }
 
   /**
@@ -162,7 +162,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
   public markAsFailed(error: ChannelErrorServerDTO): void {
     this._status = ChannelStatus.FAILED;
     this._error = ChannelError.fromContract(error);
-    this._failedAt = Date.now();
+    this._failedAt = new Date();
   }
 
   // ===== 状态查询方法 =====
@@ -259,7 +259,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
       recipient: params.recipient,
       sendAttempts: 0,
       maxRetries: params.maxRetries ?? 3,
-      createdAt: Date.now(),
+      createdAt: new Date(),
     });
   }
 
@@ -277,7 +277,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
       maxRetries: dto.maxRetries,
       error: dto.error ? ChannelError.fromContract(dto.error) : null,
       response: dto.response ? ChannelResponse.fromContract(dto.response) : null,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
       sentAt: dto.sentAt,
       deliveredAt: dto.deliveredAt,
       failedAt: dto.failedAt,
@@ -298,7 +298,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
       maxRetries: dto.maxRetries,
       error: dto.error ? ChannelError.fromContract(JSON.parse(dto.error)) : null,
       response: dto.response ? ChannelResponse.fromContract(JSON.parse(dto.response)) : null,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
       sentAt: dto.sentAt,
       deliveredAt: dto.deliveredAt,
       failedAt: dto.failedAt,

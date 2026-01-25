@@ -46,8 +46,8 @@ export class FocusMode {
     readonly hiddenGoalsMode: HiddenGoalsMode,
     readonly isActive: boolean,
     readonly actualEndTime: number | null,
-    readonly createdAt: number,
-    readonly updatedAt: number,
+    readonly createdAt: Date,
+    readonly updatedAt: Date,
   ) {
     this.validate();
   }

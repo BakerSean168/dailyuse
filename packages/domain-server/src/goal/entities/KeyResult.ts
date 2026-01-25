@@ -43,8 +43,8 @@ export class KeyResult extends Entity implements KeyResultServer {
   private _progress: KeyResultProgressServerDTO;
   private _weight: number; // 权重 (0-100)
   private _order: number;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
   private _records: GoalRecordServerDTO[];
 
   // ===== 构造函数（私有） =====
@@ -94,10 +94,10 @@ export class KeyResult extends Entity implements KeyResultServer {
   public get order(): number {
     return this._order;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
   public get records(): GoalRecordServerDTO[] | null {
@@ -152,8 +152,8 @@ export class KeyResult extends Entity implements KeyResultServer {
       progress: dto.progress,
       weight: dto.weight,
       order: dto.order,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
       records: dto.records ?? [],
     });
   }
@@ -182,8 +182,8 @@ export class KeyResult extends Entity implements KeyResultServer {
       progress,
       weight: dto.weight,
       order: dto.order,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
       records: [],
     });
   }
@@ -199,7 +199,7 @@ export class KeyResult extends Entity implements KeyResultServer {
       throw new Error('Title cannot be empty');
     }
     this._title = trimmed;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -207,7 +207,7 @@ export class KeyResult extends Entity implements KeyResultServer {
    */
   public updateDescription(description: string): void {
     this._description = description.trim() || null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -218,7 +218,7 @@ export class KeyResult extends Entity implements KeyResultServer {
       throw new Error('Weight must be between 0 and 100');
     }
     this._weight = weight;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -269,7 +269,7 @@ export class KeyResult extends Entity implements KeyResultServer {
    */
   public updateOrder(order: number): void {
     this._order = order;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -277,7 +277,7 @@ export class KeyResult extends Entity implements KeyResultServer {
    */
   public addRecord(record: GoalRecordServerDTO): void {
     this._records.push(record);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.recalculateProgress();
   }
 
@@ -290,7 +290,7 @@ export class KeyResult extends Entity implements KeyResultServer {
       throw new Error(`Record with uuid ${recordUuid} not found`);
     }
     this._records.splice(index, 1);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     // 删除后重新计算进度
     this.recalculateProgress();
   }
@@ -301,7 +301,7 @@ export class KeyResult extends Entity implements KeyResultServer {
   public recalculateProgress(): void {
     if (this._records.length === 0) {
       this._progress.currentValue = 0;
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
       return;
     }
 
@@ -335,7 +335,7 @@ export class KeyResult extends Entity implements KeyResultServer {
       ...this._progress,
       currentValue: newValue,
     };
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -359,8 +359,8 @@ export class KeyResult extends Entity implements KeyResultServer {
       progress: this._progress,
       weight: this._weight,
       order: this._order,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
       records: this._records.length > 0 ? this._records : null,
     };
   }
@@ -387,8 +387,8 @@ export class KeyResult extends Entity implements KeyResultServer {
       progress: progressClientDTO,
       weight: this._weight,
       order: this._order,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
       records: recordsClientDTO.length > 0 ? recordsClientDTO : null,
     };
   }
@@ -414,8 +414,8 @@ export class KeyResult extends Entity implements KeyResultServer {
       progress: JSON.stringify(progressPersistence),
       weight: this._weight,
       order: this._order,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 }

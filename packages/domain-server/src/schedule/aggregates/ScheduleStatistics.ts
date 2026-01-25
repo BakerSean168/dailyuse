@@ -84,8 +84,8 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
   private _notificationTotalDuration: number;
 
   // 时间戳
-  private _lastUpdatedAt: number;
-  private _createdAt: number;
+  private _lastUpdatedAt: Date;
+  private _createdAt: Date;
 
   // ============ 私有构造函数 ============
   private constructor(params: {
@@ -261,11 +261,11 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
     };
   }
 
-  public get lastUpdatedAt(): number {
+  public get lastUpdatedAt(): Date {
     return this._lastUpdatedAt;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
@@ -296,7 +296,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
         break;
     }
 
-    this._lastUpdatedAt = Date.now();
+    this._lastUpdatedAt = new Date();
 
     // 发布事件
     this.addDomainEvent({
@@ -337,7 +337,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
         break;
     }
 
-    this._lastUpdatedAt = Date.now();
+    this._lastUpdatedAt = new Date();
 
     // 发布事件
     this.addDomainEvent({
@@ -396,7 +396,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
         break;
     }
 
-    this._lastUpdatedAt = Date.now();
+    this._lastUpdatedAt = new Date();
   }
 
   /**
@@ -406,7 +406,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
     this._activeTasks = Math.max(0, this._activeTasks - 1);
     this._pausedTasks++;
     this._decrementModuleActiveTaskCount(module);
-    this._lastUpdatedAt = Date.now();
+    this._lastUpdatedAt = new Date();
   }
 
   /**
@@ -416,7 +416,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
     this._pausedTasks = Math.max(0, this._pausedTasks - 1);
     this._activeTasks++;
     this._incrementModuleActiveTaskCount(module);
-    this._lastUpdatedAt = Date.now();
+    this._lastUpdatedAt = new Date();
   }
 
   /**
@@ -428,7 +428,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
       this._decrementModuleActiveTaskCount(module);
     }
     this._completedTasks++;
-    this._lastUpdatedAt = Date.now();
+    this._lastUpdatedAt = new Date();
   }
 
   /**
@@ -440,7 +440,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
       this._decrementModuleActiveTaskCount(module);
     }
     this._failedTasks++;
-    this._lastUpdatedAt = Date.now();
+    this._lastUpdatedAt = new Date();
   }
 
   // ============ 执行统计方法 ============
@@ -477,7 +477,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
 
     // 更新模块执行统计
     this._recordModuleExecution(sourceModule, status, duration);
-    this._lastUpdatedAt = Date.now();
+    this._lastUpdatedAt = new Date();
 
     // 发布事件
     this.addDomainEvent({
@@ -573,7 +573,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
     this._notificationSuccessfulExecutions = 0;
     this._notificationFailedExecutions = 0;
 
-    this._lastUpdatedAt = Date.now();
+    this._lastUpdatedAt = new Date();
 
     // 发布事件
     this.addDomainEvent({
@@ -709,7 +709,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
         this._notificationTotalDuration += durationMs;
         break;
     }
-    this._lastUpdatedAt = Date.now();
+    this._lastUpdatedAt = new Date();
   }
 
   /**
@@ -777,7 +777,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
         this._notificationTotalDuration = 0;
         break;
     }
-    this._lastUpdatedAt = Date.now();
+    this._lastUpdatedAt = new Date();
   }
 
   // ============ 私有辅助方法 ============
@@ -1042,8 +1042,8 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
       minExecutionDuration: 0,
       maxExecutionDuration: 0,
       moduleStatistics: JSON.stringify(moduleStatsObject),
-      lastUpdatedAt: this._lastUpdatedAt,
-      createdAt: this._createdAt,
+      lastUpdatedAt: this._lastUpdatedAt.getTime(),
+      createdAt: this._createdAt.getTime(),
     };
   }
 
@@ -1179,7 +1179,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
       notificationSuccessfulExecutions: notificationStats.successfulExecutions,
       notificationFailedExecutions: notificationStats.failedExecutions,
       lastUpdatedAt: dto.lastUpdatedAt,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -1264,7 +1264,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
       notificationSuccessfulExecutions: notificationStats.successfulExecutions,
       notificationFailedExecutions: notificationStats.failedExecutions,
       lastUpdatedAt: dto.lastUpdatedAt,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 }

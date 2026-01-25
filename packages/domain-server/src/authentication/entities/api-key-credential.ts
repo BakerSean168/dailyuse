@@ -20,7 +20,7 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
   private _lastUsedAt: number | null;
   public readonly expiresAt?: number | null;
   public readonly createdAt: number;
-  private _updatedAt: number;
+  private _updatedAt: Date;
 
   constructor(params: {
     uuid?: string;
@@ -50,11 +50,11 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
     return this._status;
   }
 
-  public get lastUsedAt(): number | null {
+  public get lastUsedAt(): Date | null {
     return this._lastUsedAt;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -122,12 +122,12 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
 
   public revoke(): void {
     this._status = 'REVOKED';
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public recordUsage(): void {
-    this._lastUsedAt = Date.now();
-    this._updatedAt = Date.now();
+    this._lastUsedAt = new Date();
+    this._updatedAt = new Date();
   }
 
   // DTO conversion
@@ -139,10 +139,10 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
       key: this.key,
       keyPrefix: this.keyPrefix,
       status: this._status,
-      lastUsedAt: this._lastUsedAt,
+      lastUsedAt: this._lastUsedAt.getTime(),
       expiresAt: this.expiresAt,
       createdAt: this.createdAt,
-      updatedAt: this._updatedAt,
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -153,10 +153,10 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
       name: this.name,
       keyPrefix: this.keyPrefix,
       status: this._status,
-      lastUsedAt: this._lastUsedAt,
+      lastUsedAt: this._lastUsedAt.getTime(),
       expiresAt: this.expiresAt,
       createdAt: this.createdAt,
-      updatedAt: this._updatedAt,
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -168,10 +168,10 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
       key: this.key,
       key_prefix: this.keyPrefix,
       status: this._status,
-      lastUsedAt: this._lastUsedAt,
+      lastUsedAt: this._lastUsedAt.getTime(),
       expiresAt: this.expiresAt,
       createdAt: this.createdAt,
-      updatedAt: this._updatedAt,
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 }

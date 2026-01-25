@@ -14,7 +14,7 @@ export class NotificationHistory extends Entity implements NotificationHistorySe
   private _notificationUuid: string;
   private _action: string;
   private _details: any | null;
-  private _createdAt: number;
+  private _createdAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -44,7 +44,7 @@ export class NotificationHistory extends Entity implements NotificationHistorySe
   public get details(): any | null {
     return this._details;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
@@ -99,7 +99,7 @@ export class NotificationHistory extends Entity implements NotificationHistorySe
       notificationUuid: params.notificationUuid,
       action: params.action,
       details: params.details,
-      createdAt: Date.now(),
+      createdAt: new Date(),
     });
   }
 
@@ -112,7 +112,7 @@ export class NotificationHistory extends Entity implements NotificationHistorySe
       notificationUuid: dto.notificationUuid,
       action: dto.action,
       details: dto.details,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -125,7 +125,7 @@ export class NotificationHistory extends Entity implements NotificationHistorySe
       notificationUuid: dto.notificationUuid,
       action: dto.action,
       details: dto.details ? JSON.parse(dto.details) : null,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 }
