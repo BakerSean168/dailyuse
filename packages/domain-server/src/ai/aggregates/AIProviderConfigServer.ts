@@ -52,8 +52,8 @@ export class AIProviderConfigServer extends AggregateRoot {
     isActive: boolean;
     isDefault: boolean;
     priority: number;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
   }) {
     super(params.uuid ?? AggregateRoot.generateUUID());
     this._accountUuid = params.accountUuid;
@@ -139,7 +139,7 @@ export class AIProviderConfigServer extends AggregateRoot {
     isDefault?: boolean;
     priority?: number;
   }): AIProviderConfigServer {
-    const now = Date.now();
+    const now = new Date();
     const instance = new AIProviderConfigServer({
       accountUuid: params.accountUuid,
       name: params.name.trim(),
@@ -158,7 +158,7 @@ export class AIProviderConfigServer extends AggregateRoot {
     instance.addDomainEvent({
       eventType: 'ai.provider_config.created',
       aggregateId: instance.uuid,
-      occurredOn: new Date(now),
+      occurredOn: now,
       accountUuid: params.accountUuid,
       payload: {
         name: instance.name,
@@ -246,7 +246,7 @@ export class AIProviderConfigServer extends AggregateRoot {
     this.addDomainEvent({
       eventType: 'ai.provider_config.models_updated',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._updatedAt),
+      occurredOn: this._updatedAt,
       accountUuid: this._accountUuid,
       payload: {
         modelCount: models.length,
@@ -287,7 +287,7 @@ export class AIProviderConfigServer extends AggregateRoot {
     this.addDomainEvent({
       eventType: 'ai.provider_config.set_default',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._updatedAt),
+      occurredOn: this._updatedAt,
       accountUuid: this._accountUuid,
       payload: {
         providerName: this._name,

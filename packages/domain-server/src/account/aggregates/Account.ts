@@ -33,8 +33,8 @@ export class Account extends AggregateRoot implements AccountServer {
   // 时间戳
   private _createdAt: Date;
   private _updatedAt: Date;
-  private _lastActiveAt: number | null;
-  private _deletedAt: number | null;
+  private _lastActiveAt: Date | null;
+  private _deletedAt: Date | null;
 
   // 子实体
   private _subscription: Subscription | null;
@@ -53,10 +53,10 @@ export class Account extends AggregateRoot implements AccountServer {
     storage: AccountServerDTO['storage'];
     security: AccountServerDTO['security'];
     stats: AccountServerDTO['stats'];
-    createdAt: number;
-    updatedAt: number;
-    lastActiveAt?: number | null;
-    deletedAt?: number | null;
+    createdAt: Date;
+    updatedAt: Date;
+    lastActiveAt?: Date | null;
+    deletedAt?: Date | null;
   }) {
     super(params.uuid ?? AggregateRoot.generateUUID());
     this._username = params.username;
@@ -146,7 +146,7 @@ export class Account extends AggregateRoot implements AccountServer {
     timezone?: string;
     language?: string;
   }): Account {
-    const now = Date.now();
+    const now = new Date();
     return new Account({
       username: params.username,
       email: params.email,
@@ -218,7 +218,7 @@ export class Account extends AggregateRoot implements AccountServer {
       stats: dto.stats,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
-      lastActiveAt: dto.lastActiveAt,
+      lastActiveAt: dto.lastActiveAt ? new Date(dto.lastActiveAt) : null,
       deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
     if (dto.subscription) {
@@ -267,10 +267,10 @@ export class Account extends AggregateRoot implements AccountServer {
         lastLoginAt: dto.statsLastLoginAt,
         loginCount: dto.statsLoginCount,
       },
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
       lastActiveAt: dto.lastActiveAt,
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+      deletedAt: dto.deletedAt,
     });
 
     if (
@@ -526,10 +526,10 @@ export class Account extends AggregateRoot implements AccountServer {
       security: this._security,
       history: this._history as any, // 实体本身实现了接口
       stats: this._stats,
-      createdAt: new Date(this._createdAt),
-      updatedAt: new Date(this._updatedAt),
-      lastActiveAt: this._lastActiveAt.getTime(),
-      deletedAt: this._deletedAt.getTime(),
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      lastActiveAt: this._lastActiveAt ? this._lastActiveAt.getTime() : null,
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
     };
   }
 
@@ -549,10 +549,10 @@ export class Account extends AggregateRoot implements AccountServer {
       security: this._security,
       history: this._history,
       stats: this._stats,
-      createdAt: new Date(this._createdAt),
-      updatedAt: new Date(this._updatedAt),
-      lastActiveAt: this._lastActiveAt.getTime(),
-      deletedAt: this._deletedAt.getTime(),
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      lastActiveAt: this._lastActiveAt ? this._lastActiveAt.getTime() : null,
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
     };
   }
 
@@ -608,10 +608,10 @@ export class Account extends AggregateRoot implements AccountServer {
       statsLastLoginAt: this._stats.lastLoginAt,
       statsLoginCount: this._stats.loginCount,
 
-      createdAt: new Date(this._createdAt),
-      updatedAt: new Date(this._updatedAt),
-      lastActiveAt: this._lastActiveAt.getTime(),
-      deletedAt: this._deletedAt.getTime(),
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
+      lastActiveAt: this._lastActiveAt,
+      deletedAt: this._deletedAt,
     };
   }
 }

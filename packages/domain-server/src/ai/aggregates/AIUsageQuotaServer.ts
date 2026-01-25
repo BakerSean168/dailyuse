@@ -26,10 +26,10 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
     quotaLimit: number;
     currentUsage: number;
     resetPeriod: QuotaResetPeriod;
-    lastResetAt: number;
-    nextResetAt: number;
-    createdAt: number;
-    updatedAt: number;
+    lastResetAt: Date;
+    nextResetAt: Date;
+    createdAt: Date;
+    updatedAt: Date;
   }) {
     super(params.uuid ?? AggregateRoot.generateUUID());
     this._accountUuid = params.accountUuid;
@@ -83,14 +83,14 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
     quotaLimit: number;
     resetPeriod: QuotaResetPeriod;
   }): AIUsageQuotaServer {
-    const now = Date.now();
+    const now = new Date();
     const instance = new AIUsageQuotaServer({
       accountUuid: params.accountUuid,
       quotaLimit: params.quotaLimit,
       currentUsage: 0,
       resetPeriod: params.resetPeriod,
       lastResetAt: now,
-      nextResetAt: 0, // Will be calculated
+      nextResetAt: now, // Will be calculated
       createdAt: now,
       updatedAt: now,
     });
@@ -99,7 +99,7 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
     instance.addDomainEvent({
       eventType: 'ai.quota.created',
       aggregateId: instance.uuid,
-      occurredOn: new Date(now),
+      occurredOn: now,
       accountUuid: params.accountUuid,
       payload: {
         quota: instance.toServerDTO(),
@@ -116,8 +116,8 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
       quotaLimit: dto.quotaLimit,
       currentUsage: dto.currentUsage,
       resetPeriod: dto.resetPeriod,
-      lastResetAt: dto.lastResetAt,
-      nextResetAt: dto.nextResetAt,
+      lastResetAt: new Date(dto.lastResetAt),
+      nextResetAt: new Date(dto.nextResetAt),
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
     });
@@ -130,8 +130,8 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
       quotaLimit: dto.quotaLimit,
       currentUsage: dto.currentUsage,
       resetPeriod: dto.resetPeriod,
-      lastResetAt: dto.lastResetAt,
-      nextResetAt: dto.nextResetAt,
+      lastResetAt: new Date(dto.lastResetAt),
+      nextResetAt: new Date(dto.nextResetAt),
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
     });
@@ -152,7 +152,7 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
     this.addDomainEvent({
       eventType: 'ai.quota.consumed',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._updatedAt),
+      occurredOn: this._updatedAt,
       accountUuid: this._accountUuid,
       payload: {
         quotaUuid: this.uuid,
@@ -184,7 +184,7 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
   }
 
   public shouldReset(): boolean {
-    return Date.now() >= this._nextResetAt;
+    return new Date() >= this._nextResetAt;
   }
 
   public reset(): void {
@@ -196,7 +196,7 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
     this.addDomainEvent({
       eventType: 'ai.quota.reset',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._updatedAt),
+      occurredOn: this._updatedAt,
       accountUuid: this._accountUuid,
       payload: {
         quotaUuid: this.uuid,
@@ -213,7 +213,7 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
     this.addDomainEvent({
       eventType: 'ai.quota.limit_updated',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._updatedAt),
+      occurredOn: this._updatedAt,
       accountUuid: this._accountUuid,
       payload: {
         quotaUuid: this.uuid,
@@ -223,7 +223,7 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
     });
   }
 
-  public calculateNextResetTime(): number {
+  public calculateNextResetTime(): Date {
     const now = new Date();
     const resetDate = new Date(now);
 
@@ -250,7 +250,7 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
         resetDate.setHours(0, 0, 0, 0);
         break;
     }
-    return resetDate.getTime();
+    return resetDate;
   }
 
   public getUsagePercentage(): number {

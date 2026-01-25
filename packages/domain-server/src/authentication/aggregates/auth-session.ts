@@ -35,15 +35,15 @@ export class AuthSession extends AggregateRoot implements AuthSessionServer {
   private _lastActivityAt: Date;
   private _lastActivityType: string | null;
   private _history: SessionHistory[];
-  public readonly createdAt: number;
+  public readonly createdAt: Date;
   private _expiresAt: Date;
-  private _revokedAt: number | null;
+  private _revokedAt: Date | null;
 
   constructor(params: {
     uuid?: string;
     accountUuid: string;
     accessToken: string;
-    accessTokenExpiresAt: number;
+    accessTokenExpiresAt: Date;
     refreshToken: RefreshToken;
     device: DeviceInfo;
     status?: 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'LOCKED';
@@ -54,12 +54,12 @@ export class AuthSession extends AggregateRoot implements AuthSessionServer {
       city?: string | null;
       timezone?: string | null;
     } | null;
-    lastActivityAt?: number;
+    lastActivityAt?: Date;
     lastActivityType?: string | null;
     history?: SessionHistory[];
-    createdAt?: number;
-    expiresAt?: number;
-    revokedAt?: number | null;
+    createdAt?: Date;
+    expiresAt?: Date;
+    revokedAt?: Date | null;
   }) {
     super(params.uuid ?? generateUUID());
     this.accountUuid = params.accountUuid;
@@ -70,11 +70,12 @@ export class AuthSession extends AggregateRoot implements AuthSessionServer {
     this._status = params.status ?? 'ACTIVE';
     this._ipAddress = params.ipAddress;
     this._location = params.location ?? null;
-    this._lastActivityAt = params.lastActivityAt ?? Date.now();
+    const now = new Date();
+    this._lastActivityAt = params.lastActivityAt ?? now;
     this._lastActivityType = params.lastActivityType ?? null;
     this._history = params.history ?? [];
-    this.createdAt = params.createdAt ?? Date.now();
-    this._expiresAt = params.expiresAt ?? Date.now() + 30 * 24 * 60 * 60 * 1000; // Default 30 days (与 RefreshToken 一致)
+    this.createdAt = params.createdAt ?? now;
+    this._expiresAt = params.expiresAt ?? new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // Default 30 days
     this._revokedAt = params.revokedAt ?? null;
   }
 
@@ -149,7 +150,7 @@ export class AuthSession extends AggregateRoot implements AuthSessionServer {
       expiresInDays: 30,
     });
 
-    const accessTokenExpiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes
+    const accessTokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
     const session = new AuthSession({
       accountUuid: params.accountUuid,
@@ -177,18 +178,18 @@ export class AuthSession extends AggregateRoot implements AuthSessionServer {
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       accessToken: dto.accessToken,
-      accessTokenExpiresAt: dto.accessTokenExpiresAt,
+      accessTokenExpiresAt: new Date(dto.accessTokenExpiresAt),
       refreshToken: RefreshToken.fromServerDTO(dto.refreshToken as any),
       device: DeviceInfo.fromServerDTO(dto.device as any),
       status: dto.status,
       ipAddress: dto.ipAddress,
       location: dto.location,
-      lastActivityAt: dto.lastActivityAt,
+      lastActivityAt: new Date(dto.lastActivityAt),
       lastActivityType: dto.lastActivityType,
       history: dto.history.map((h) => SessionHistory.fromServerDTO(h as any)),
-      createdAt: dto.createdAt,
-      expiresAt: dto.expiresAt,
-      revokedAt: dto.revokedAt,
+      createdAt: new Date(dto.createdAt),
+      expiresAt: new Date(dto.expiresAt),
+      revokedAt: dto.revokedAt ? new Date(dto.revokedAt) : null,
     });
   }
 
@@ -243,7 +244,7 @@ export class AuthSession extends AggregateRoot implements AuthSessionServer {
   // Business methods
   public refreshAccessToken(newToken: string, expiresInMinutes: number): void {
     this._accessToken = newToken;
-    this._accessTokenExpiresAt = new Date() + expiresInMinutes * 60 * 1000;
+    this._accessTokenExpiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
     this._lastActivityAt = new Date();
     this._addHistory('ACCESS_TOKEN_REFRESHED');
   }
@@ -256,13 +257,13 @@ export class AuthSession extends AggregateRoot implements AuthSessionServer {
       expiresInDays: 30,
     });
     // 🔥 修复：同时更新 Session 的 expiresAt（Sliding Window）
-    this._expiresAt = new Date() + 30 * 24 * 60 * 60 * 1000; // 30 days
+    this._expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
     this._lastActivityAt = new Date();
     this._addHistory('REFRESH_TOKEN_REFRESHED');
   }
 
   public isAccessTokenExpired(): boolean {
-    return Date.now() > this._accessTokenExpiresAt;
+    return new Date() > this._accessTokenExpiresAt;
   }
 
   public isRefreshTokenExpired(): boolean {
@@ -273,7 +274,7 @@ export class AuthSession extends AggregateRoot implements AuthSessionServer {
     // 检查三个条件：1. 状态为 ACTIVE；2. RefreshToken 未过期；3. Session 未过期
     // expiresAt 会随 refreshRefreshToken() 自动续期（Sliding Window）
     return (
-      this._status === 'ACTIVE' && !this.isRefreshTokenExpired() && Date.now() < this._expiresAt
+      this._status === 'ACTIVE' && !this.isRefreshTokenExpired() && new Date() < this._expiresAt
     );
   }
 
@@ -308,9 +309,7 @@ export class AuthSession extends AggregateRoot implements AuthSessionServer {
   }
 
   public extend(hours: number): void {
-    const newExpiry = this.expiresAt + hours * 60 * 60 * 1000;
-    // Update expiresAt through private property since it's readonly
-    (this as any).expiresAt = newExpiry;
+    this._expiresAt = new Date(this._expiresAt.getTime() + hours * 60 * 60 * 1000);
     this._addHistory('SESSION_EXTENDED', { hours });
   }
 
@@ -329,9 +328,9 @@ export class AuthSession extends AggregateRoot implements AuthSessionServer {
       lastActivityAt: this._lastActivityAt.getTime(),
       lastActivityType: this._lastActivityType,
       history: this._history as any,
-      createdAt: this.createdAt,
-      expiresAt: this.expiresAt,
-      revokedAt: this._revokedAt.getTime(),
+      createdAt: this.createdAt.getTime(),
+      expiresAt: this.expiresAt.getTime(),
+      revokedAt: this._revokedAt ? this._revokedAt.getTime() : null,
     };
   }
 
@@ -349,9 +348,9 @@ export class AuthSession extends AggregateRoot implements AuthSessionServer {
       lastActivityAt: this._lastActivityAt.getTime(),
       lastActivityType: this._lastActivityType,
       history: this._history as any,
-      createdAt: this.createdAt,
-      expiresAt: this.expiresAt,
-      revokedAt: this._revokedAt.getTime(),
+      createdAt: this.createdAt.getTime(),
+      expiresAt: this.expiresAt.getTime(),
+      revokedAt: this._revokedAt ? this._revokedAt.getTime() : null,
     };
   }
 
@@ -363,7 +362,7 @@ export class AuthSession extends AggregateRoot implements AuthSessionServer {
       uuid: this.uuid,
       accountUuid: this.accountUuid,
       accessToken: this._accessToken,
-      accessTokenExpiresAt: this._accessTokenExpiresAt.getTime(),
+      accessTokenExpiresAt: this._accessTokenExpiresAt,
 
       // Flattened refresh token
       refreshToken: refreshTokenDTO.token,
@@ -384,12 +383,12 @@ export class AuthSession extends AggregateRoot implements AuthSessionServer {
       locationCity: this._location?.city,
       locationTimezone: this._location?.timezone,
 
-      lastActivityAt: this._lastActivityAt.getTime(),
+      lastActivityAt: this._lastActivityAt,
       lastActivityType: this._lastActivityType,
       history: JSON.stringify(this._history.map((h) => h.toPersistenceDTO())),
       createdAt: this.createdAt,
       expiresAt: this.expiresAt,
-      revokedAt: this._revokedAt.getTime(),
+      revokedAt: this._revokedAt,
     };
   }
 

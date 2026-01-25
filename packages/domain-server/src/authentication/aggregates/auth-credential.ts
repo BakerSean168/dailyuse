@@ -100,8 +100,8 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
       failedLoginAttempts: 0,
     };
     this._history = params.history ?? [];
-    this.createdAt = params.createdAt ?? Date.now();
-    this._updatedAt = params.updatedAt ?? Date.now();
+    this.createdAt = params.createdAt ?? new Date();
+    this._updatedAt = params.updatedAt ?? new Date();
   }
 
   public get passwordCredential(): PasswordCredentialServer | null {

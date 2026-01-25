@@ -9,23 +9,23 @@ import { Entity, generateUUID } from '@dailyuse/utils';
 export class RefreshToken extends Entity implements RefreshTokenServer {
   public readonly sessionUuid: string;
   public readonly token: string;
-  public readonly expiresAt: number;
-  public readonly createdAt: number;
-  private _usedAt: number | null;
+  public readonly expiresAt: Date;
+  public readonly createdAt: Date;
+  private _usedAt: Date | null;
 
   constructor(params: {
     uuid?: string;
     sessionUuid: string;
     token: string;
-    expiresAt: number;
-    createdAt?: number;
-    usedAt?: number | null;
+    expiresAt: Date;
+    createdAt?: Date;
+    usedAt?: Date | null;
   }) {
     super(params.uuid ?? generateUUID());
     this.sessionUuid = params.sessionUuid;
     this.token = params.token;
     this.expiresAt = params.expiresAt;
-    this.createdAt = params.createdAt ?? Date.now();
+    this.createdAt = params.createdAt ?? new Date();
     this._usedAt = params.usedAt ?? null;
   }
 
@@ -40,7 +40,7 @@ export class RefreshToken extends Entity implements RefreshTokenServer {
     expiresInDays?: number;
   }): RefreshToken {
     const expiresInDays = params.expiresInDays ?? 30;
-    const expiresAt = Date.now() + expiresInDays * 24 * 60 * 60 * 1000;
+    const expiresAt = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000);
 
     return new RefreshToken({
       uuid: generateUUID(),
@@ -55,9 +55,9 @@ export class RefreshToken extends Entity implements RefreshTokenServer {
       uuid: dto.uuid,
       sessionUuid: dto.sessionUuid,
       token: dto.token,
-      expiresAt: dto.expiresAt,
-      createdAt: dto.createdAt,
-      usedAt: dto.usedAt,
+      expiresAt: new Date(dto.expiresAt),
+      createdAt: new Date(dto.createdAt),
+      usedAt: dto.usedAt ? new Date(dto.usedAt) : null,
     });
   }
 
@@ -74,7 +74,7 @@ export class RefreshToken extends Entity implements RefreshTokenServer {
 
   // Business methods
   public isExpired(): boolean {
-    return Date.now() > this.expiresAt;
+    return new Date() > this.expiresAt;
   }
 
   public markAsUsed(): void {
@@ -87,9 +87,9 @@ export class RefreshToken extends Entity implements RefreshTokenServer {
       uuid: this.uuid,
       sessionUuid: this.sessionUuid,
       token: this.token,
-      expiresAt: this.expiresAt,
-      createdAt: this.createdAt,
-      usedAt: this._usedAt.getTime(),
+      expiresAt: this.expiresAt.getTime(),
+      createdAt: this.createdAt.getTime(),
+      usedAt: this._usedAt ? this._usedAt.getTime() : null,
     };
   }
 
@@ -98,9 +98,9 @@ export class RefreshToken extends Entity implements RefreshTokenServer {
       uuid: this.uuid,
       sessionUuid: this.sessionUuid,
       token: this.token,
-      expiresAt: this.expiresAt,
-      createdAt: this.createdAt,
-      usedAt: this._usedAt.getTime(),
+      expiresAt: this.expiresAt.getTime(),
+      createdAt: this.createdAt.getTime(),
+      usedAt: this._usedAt ? this._usedAt.getTime() : null,
     };
   }
 
@@ -111,7 +111,7 @@ export class RefreshToken extends Entity implements RefreshTokenServer {
       token: this.token,
       expiresAt: this.expiresAt,
       createdAt: this.createdAt,
-      usedAt: this._usedAt.getTime(),
+      usedAt: this._usedAt,
     };
   }
 }
