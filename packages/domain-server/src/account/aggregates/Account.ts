@@ -413,7 +413,7 @@ export class Account extends AggregateRoot implements AccountServer {
   }
 
   public changePassword(): void {
-    this._security.lastPasswordChange = Date.now();
+    this._security.lastPasswordChange = new Date();
     this._updatedAt = new Date();
     this.addHistory('PASSWORD_CHANGED', {});
   }
@@ -432,7 +432,7 @@ export class Account extends AggregateRoot implements AccountServer {
   }
 
   public lockAccount(durationMinutes: number): void {
-    this._security.lockedUntil = Date.now() + durationMinutes * 60 * 1000;
+    this._security.lockedUntil = new Date(Date.now() + durationMinutes * 60 * 1000);
     this._updatedAt = new Date();
     this.addHistory('ACCOUNT_LOCKED', { durationMinutes });
   }
@@ -470,7 +470,7 @@ export class Account extends AggregateRoot implements AccountServer {
   // 历史记录
   public addHistory(action: string, details?: any): void {
     const history = AccountHistory.create({
-      accountUuid: this._uuid,
+      accountUuid: this.uuid,
       action,
       details,
     });
@@ -512,7 +512,7 @@ export class Account extends AggregateRoot implements AccountServer {
   // DTO conversion
   public toServerDTO(): AccountServerDTO {
     return {
-      uuid: this._uuid,
+      uuid: this.uuid,
       username: this._username,
       email: this._email,
       emailVerified: this._emailVerified,

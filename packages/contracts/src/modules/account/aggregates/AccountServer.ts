@@ -3,8 +3,8 @@
  * 账户实体 - 服务端接口
  */
 
-import type { SubscriptionServer } from '../entities/SubscriptionServer';
-import type { AccountHistoryServer } from '../entities/AccountHistoryServer';
+import type { SubscriptionServer, SubscriptionServerDTO } from '../entities/SubscriptionServer';
+import type { AccountHistoryServer, AccountHistoryServerDTO } from '../entities/AccountHistoryServer';
 import type { AccountClientDTO } from './AccountClient';
 
 // ============ DTO 定义 ============
@@ -45,7 +45,7 @@ export interface AccountServerDTO {
       allowSearchByEmail: boolean;
     };
   };
-  subscription?: SubscriptionServer | null;
+  subscription?: SubscriptionServerDTO | null;
   storage: {
     used: number;
     quota: number;
@@ -53,11 +53,11 @@ export interface AccountServerDTO {
   };
   security: {
     twoFactorEnabled: boolean;
-    lastPasswordChange?: Date | null;
+    lastPasswordChange?: number | null;
     loginAttempts: number;
-    lockedUntil?: Date | null;
+    lockedUntil?: number | null;
   };
-  history: AccountHistoryServer[];
+  history: AccountHistoryServerDTO[];
   stats: {
     totalGoals: number;
     totalTasks: number;
@@ -66,10 +66,10 @@ export interface AccountServerDTO {
     lastLoginAt?: number | null;
     loginCount: number;
   };
-  createdAt: Date;
-  updatedAt: Date;
-  lastActiveAt?: Date | null;
-  deletedAt?: Date | null;
+  createdAt: number;
+  updatedAt: number;
+  lastActiveAt?: number | null;
+  deletedAt?: number | null;
 }
 
 /**
