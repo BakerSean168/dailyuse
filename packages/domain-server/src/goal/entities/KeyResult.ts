@@ -45,7 +45,7 @@ export class KeyResult extends Entity implements KeyResultServer {
   private _order: number;
   private _createdAt: Date;
   private _updatedAt: Date;
-  private _records: GoalRecordServerDTO[];
+  private _records: GoalRecord[];
 
   // ===== 构造函数（私有） =====
   private constructor(params: {

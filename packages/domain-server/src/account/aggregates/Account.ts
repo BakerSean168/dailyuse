@@ -24,11 +24,11 @@ export class Account extends AggregateRoot implements AccountServer {
   private _status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'DELETED';
 
   // 复杂对象
-  private _profile: AccountServerDTO['profile'];
-  private _preferences: AccountServerDTO['preferences'];
-  private _storage: AccountServerDTO['storage'];
-  private _security: AccountServerDTO['security'];
-  private _stats: AccountServerDTO['stats'];
+  private _profile: AccountServer['profile'];
+  private _preferences: AccountServer['preferences'];
+  private _storage: AccountServer['storage'];
+  private _security: AccountServer['security'];
+  private _stats: AccountServer['stats'];
 
   // 时间戳
   private _createdAt: Date;
@@ -48,11 +48,11 @@ export class Account extends AggregateRoot implements AccountServer {
     phoneNumber?: string | null;
     phoneVerified: boolean;
     status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'DELETED';
-    profile: AccountServerDTO['profile'];
-    preferences: AccountServerDTO['preferences'];
-    storage: AccountServerDTO['storage'];
-    security: AccountServerDTO['security'];
-    stats: AccountServerDTO['stats'];
+    profile: AccountServer['profile'];
+    preferences: AccountServer['preferences'];
+    storage: AccountServer['storage'];
+    security: AccountServer['security'];
+    stats: AccountServer['stats'];
     createdAt: Date;
     updatedAt: Date;
     lastActiveAt?: Date | null;
@@ -100,10 +100,10 @@ export class Account extends AggregateRoot implements AccountServer {
   public get status(): 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'DELETED' {
     return this._status;
   }
-  public get profile(): AccountServerDTO['profile'] {
+  public get profile(): AccountServer['profile'] {
     return { ...this._profile };
   }
-  public get preferences(): AccountServerDTO['preferences'] {
+  public get preferences(): AccountServer['preferences'] {
     return {
       ...this._preferences,
       notifications: { ...this._preferences.notifications },
@@ -113,16 +113,16 @@ export class Account extends AggregateRoot implements AccountServer {
   public get subscription(): Subscription | null {
     return this._subscription;
   }
-  public get storage(): AccountServerDTO['storage'] {
+  public get storage(): AccountServer['storage'] {
     return { ...this._storage };
   }
-  public get security(): AccountServerDTO['security'] {
+  public get security(): AccountServer['security'] {
     return { ...this._security };
   }
   public get history(): AccountHistory[] {
     return [...this._history];
   }
-  public get stats(): AccountServerDTO['stats'] {
+  public get stats(): AccountServer['stats'] {
     return { ...this._stats };
   }
   public get createdAt(): Date {
@@ -203,6 +203,15 @@ export class Account extends AggregateRoot implements AccountServer {
   }
 
   public static fromServerDTO(dto: AccountServerDTO): Account {
+    // 把子对象中的时间戳（DTO）转换为 Date 对象
+    const securityForEntity = {
+      twoFactorEnabled: dto.security.twoFactorEnabled,
+      lastPasswordChange: dto.security.lastPasswordChange
+        ? new Date(dto.security.lastPasswordChange)
+        : null,
+      loginAttempts: dto.security.loginAttempts,
+      lockedUntil: dto.security.lockedUntil ? new Date(dto.security.lockedUntil) : null,
+    };
     const account = new Account({
       uuid: dto.uuid,
       username: dto.username,
@@ -214,7 +223,7 @@ export class Account extends AggregateRoot implements AccountServer {
       profile: dto.profile,
       preferences: dto.preferences,
       storage: dto.storage,
-      security: dto.security,
+      security: securityForEntity,
       stats: dto.stats,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
@@ -336,7 +345,7 @@ export class Account extends AggregateRoot implements AccountServer {
   }
 
   // 资料管理
-  public updateProfile(profile: Partial<AccountServerDTO['profile']>): void {
+  public updateProfile(profile: Partial<AccountServer['profile']>): void {
     this._profile = { ...this._profile, ...profile };
     this._updatedAt = new Date();
   }
@@ -352,7 +361,7 @@ export class Account extends AggregateRoot implements AccountServer {
   }
 
   // 偏好管理
-  public updatePreferences(preferences: Partial<AccountServerDTO['preferences']>): void {
+  public updatePreferences(preferences: Partial<AccountServer['preferences']>): void {
     this._preferences = {
       ...this._preferences,
       ...preferences,
@@ -482,7 +491,7 @@ export class Account extends AggregateRoot implements AccountServer {
   }
 
   // 统计更新
-  public updateStats(stats: Partial<AccountServerDTO['stats']>): void {
+  public updateStats(stats: Partial<AccountServer['stats']>): void {
     this._stats = { ...this._stats, ...stats };
     this._updatedAt = new Date();
   }
@@ -523,7 +532,16 @@ export class Account extends AggregateRoot implements AccountServer {
       preferences: this._preferences,
       subscription: this._subscription as any, // 实体本身实现了接口
       storage: this._storage,
-      security: this._security,
+      security: {
+        twoFactorEnabled: this._security.twoFactorEnabled,
+        lastPasswordChange: this._security.lastPasswordChange
+          ? this._security.lastPasswordChange.getTime()
+          : null,
+        loginAttempts: this._security.loginAttempts,
+        lockedUntil: this._security.lockedUntil
+          ? this._security.lockedUntil.getTime()
+          : null,
+      },
       history: this._history as any, // 实体本身实现了接口
       stats: this._stats,
       createdAt: this._createdAt.getTime(),

@@ -14,6 +14,7 @@ import {
   type SyncVersionServerDTO,
 } from '@dailyuse/contracts/sync';
 import { SyncProfileConfig } from '../value-objects/SyncProfileConfig';
+import { SyncVersion } from '../value-objects/SyncVersion';
 
 interface HistoryStats {
   totalSyncs: number;
@@ -37,7 +38,7 @@ export class SyncProfile extends AggregateRoot {
   private _isActive: boolean;
   private _isConnected: boolean;
   private _lastSyncAt?: number | null;
-  private _lastSyncVersion?: SyncVersionServerDTO | null;
+  private _lastSyncVersion?: SyncVersion | null;
   private _lastSyncResult?: 'success' | 'failed' | 'partial' | null;
   private _historyStats: HistoryStats;
   private _createdAt: Date;

@@ -13,6 +13,7 @@ import {
   type SyncVersionServerDTO,
   type ConflictResolutionDTO,
 } from '@dailyuse/contracts/sync';
+import { SyncVersion } from '../value-objects/SyncVersion';
 
 type ConflictType = 'update-update' | 'update-delete' | 'delete-update';
 
@@ -25,9 +26,9 @@ export class SyncConflict extends Entity {
   private _sessionId: string;
   private _entityRef: EntityReferenceDTO;
   private _conflictType: ConflictType;
-  private _localVersion: SyncVersionServerDTO;
+  private _localVersion: SyncVersion;
   private _localData: unknown;
-  private _remoteVersion: SyncVersionServerDTO;
+  private _remoteVersion: SyncVersion;
   private _remoteData: unknown;
   private _status: ConflictStatus;
   private _autoResolvable: boolean;
@@ -54,9 +55,9 @@ export class SyncConflict extends Entity {
     this._sessionId = params.sessionId;
     this._entityRef = params.entityRef;
     this._conflictType = params.conflictType;
-    this._localVersion = params.localVersion;
+    this._localVersion = SyncVersion.fromServerDTO(params.localVersion);
     this._localData = params.localData;
-    this._remoteVersion = params.remoteVersion;
+    this._remoteVersion = SyncVersion.fromServerDTO(params.remoteVersion);
     this._remoteData = params.remoteData;
     this._status = params.status;
     this._autoResolvable = params.autoResolvable;

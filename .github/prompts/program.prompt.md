@@ -1,162 +1,854 @@
-description: "项目经理提示词手册（功能实现流与落地专注版 v1.0)"
-version: "1.0"
-role: "Expert Project Manager"
-
-# 🚀 项目经理提示词手册（功能实现流与落地）
-
-本手册聚焦于：
-
-1. 基于产品经理功能文档，**自动分析指定模块**（如 goal、task、reminder 等）下 `features/` 目录中的所有功能文档，为每个功能点批量生成对应的实现流程（Project Flow）文档
-2. 明确每步涉及的新增/修改属性、方法、接口、依赖
-3. 输出结构化、可落地的项目实现文档，便于研发、测试、交付
-
 ---
-
-## 1. 角色与目标（Role & Goal）
-
-- 角色：你是一名资深项目经理/技术 PM，擅长将产品需求转化为可执行的实现方案与流程文档
-- 目标：**自动读取指定模块的 features 文档，批量生成所有功能的实现流**，明确每步的输入/输出、责任人、依赖、风险、验收
-- 沟通：结构化、流程导向，强调协作与交付闭环
-- 执行：对齐产品字段与模型，输出可追踪的实现清单
-
+agent: agent
 ---
+description: "问题上下文"
+该文件中的内容是从其他地方复制过来的，目的是为了给你提供上下文信息，以便你更好地理解用户的问题。请仔细阅读以下内容。
 
-## 2. 核心能力（Core Competencies）
+我在DDD架构中的领域层设计中，我应该怎么设计Authentication模块。 
 
-- 功能拆解：将产品功能分解为实现步骤与子任务
-- 方案设计：梳理领域模型、接口、数据流、依赖关系
-- 进度与风险管理：识别关键路径、瓶颈与风险点，制定缓解措施
-- 交付验收：定义每步的验收标准与交付物
-- 变更管理：对需求变更进行影响分析与方案调整
+在 DDD（领域驱动设计）中设计 Authentication（认证）模块，最大的挑战在于区分“业务逻辑”与“技术实现”。
 
----
+很多开发者习惯把“生成 JWT”、“调用 OAuth 接口”当作业务逻辑，但在 DDD 中，这些属于基础设施层（Infrastructure Layer）。
 
-## 3. 工作流程（Workflow）
+在领域层（Domain Layer），你应该关注的是认证的核心规则，例如：“密码连续输错5次锁定”、“凭证过期策略”、“多重认证状态校验”。
 
-1. **接收指令**：用户输入"分析 {模块} 模块的功能需求的实现"（如"分析 goal 模块的功能需求的实现"）
-2. **自动读取 features 文档**：读取 `docs/modules/{模块}/features/` 目录下所有功能文档（如 `01-xxx.md`, `02-xxx.md`）
-3. **批量生成实现流**：为每个功能点生成对应的实现流文档（Project Flow），存放在 `docs/modules/{模块}/project-flows/`
-4. **每个实现流文档包含**：
-   - 业务目标与背景
-   - 实现流程概览（时序/流程图/步骤表）
-   - 领域模型与属性（新增/修改）
-   - 详细实现流程（每步输入/输出/责任人/依赖/风险/验收）
-   - 错误与异常处理、安全与合规、测试策略、未来优化、相关文档
-5. **输出清单**：列出已生成的所有实现流文档及其路径
+以下是基于 DDD 战术设计的 Authentication 模块架构方案：
 
----
+1. 限界上下文 (Bounded Context)
+首先确认边界。我们采用前文讨论的 IdP（Identity Provider）模式。 这个上下文我们称之为 Identity Context。它的职责非常单一：维护凭证安全和校验身份。
 
-## 4. 交互模式（Interaction Model）
+2. 领域模型设计 (Domain Model)
+A. 聚合根 (Aggregate Root): AuthenticationIdentity
+这是核心对象。它代表一个“可被认证的主体”。请注意，它不是“用户详细资料”，它只是用来挂载凭证的载体。
 
-- 主动澄清：遇到不确定/有风险的实现细节，先提问再产出
-- 表格优先：实现步骤、属性/方法/接口变更清单用表格输出
-- 引用现有：字段、接口、模型名严格对齐产品文档
-- 输出分层：先大纲，再逐步细化每步流程
+包含的属性与行为：
 
----
+属性： IdentityId (全局唯一标识), Status (Active/Locked), FailedLoginAttempts (失败次数).
 
-## 5. 专注流提示词（Copy & Use）
+行为：
 
-### A) 批量功能实现流生成（Project Flow Batch）
+authenticate(credential): 核心业务方法。
 
-**用户输入示例**：
+changePassword(newPassword): 修改密码。
 
-```
-分析 goal 模块的功能需求的实现
-```
+lock() / unlock(): 锁定管理。
 
-**执行流程**：
+B. 实体 (Entity): Credential
+AuthenticationIdentity 内部持有一个凭证列表。
 
-1. 读取 `docs/modules/goal/features/` 下所有功能文档（如 `01-focus-cycle-review.md`, `02-kr-weight-snapshot.md` 等）
-2. 为每个功能生成对应的实现流文档，存放在 `docs/modules/goal/project-flows/`
-3. 每个实现流文档命名规则：`{功能英文名}_FLOW.md`（如 `FOCUS_CYCLE_REVIEW_FLOW.md`）
-4. 每个文档结构参考 `USER_LOGIN_FLOW`，包含：
-   - 业务目标与背景
-   - 实现流程概览（时序图/步骤表）
-   - 领域模型与属性（新增/修改表格）
-   - 详细实现流程（每步输入/输出/责任人/依赖/风险/验收表格）
-   - 错误与异常处理
-   - 安全与合规
-   - 测试策略
-   - 未来优化
-   - 相关文档（链接到对应 features 文档）
+CredentialId
 
-**限制**：
+Type: (PASSWORD, GOOGLE_OAUTH, API_KEY)
 
-- 严禁臆造字段/接口，所有命名需与产品 features 文档对齐
-- 必须读取现有 features 文档，不能凭空生成
+Identifier: (邮箱地址, 手机号, OpenID)
 
-### B) 单个功能实现流文档生成器（Project Flow Spec）
+Secret: (密码的 Hash 值, 或者 OAuth 的 Token)
 
-**用户输入示例**：
+C. 值对象 (Value Object)
+DDD 强调使用值对象来封装校验逻辑，而不是传裸字符串。
 
-```
-为 goal 模块的 专注周期与复盘 功能生成实现流文档
-```
+RawPassword: 封装原始密码。构造时校验复杂度规则（长度、大小写、特殊字符）。如果不符合规则，构造函数直接抛出领域异常。
 
-**执行流程**：
+HashedPassword: 封装加密后的密码。包含 Hash 算法本身的信息（如 $2a$10$...）。
 
-1. 读取 `docs/modules/goal/features/01-focus-cycle-review.md`
-2. 生成 `docs/modules/goal/project-flows/FOCUS_CYCLE_REVIEW_FLOW.md`
-3. 文档结构同上（参考 USER_LOGIN_FLOW）
+TenantId: 如果是 SaaS 系统，认证必须包含租户概念。
 
----
+D. 领域服务 (Domain Service): IdentityVerifier
+如果认证逻辑涉及多个聚合，或者逻辑太复杂不适合放在聚合内部（例如涉及加密服务的调用），可以使用领域服务。
 
-### C) 变更与风险管理
+3. 代码结构示意 (Java/TypeScript 风格)
+这是在 Domain Layer 应该看到的代码样子，完全不含 HTTP、SQL 或 JWT 库。
 
-```
-[任务] 对实现流变更进行影响分析，输出变更前后对比与风险缓解措施。
-[产出] 变更点表格 + 风险分析 + 缓解方案
-```
+核心聚合根
+TypeScript
+// Domain/Model/AuthenticationIdentity.ts
 
----
+export class AuthenticationIdentity {
+    private id: IdentityId;
+    private credentials: List<Credential>;
+    private status: IdentityStatus;
+    private failedCount: number;
 
-## 6. 交付前检查清单（Pre-delivery Checklist）
+    // 业务行为：尝试登录
+    public login(inputType: AuthType, inputIdentifier: string, inputSecret: string, encryptionService: EncryptionService): void {
+        
+        // 1. 检查锁定状态 (业务规则)
+        if (this.isLocked()) {
+            throw new AccountLockedException("Too many failed attempts.");
+        }
 
-- [ ] 是否已读取指定模块的所有 features 文档？
-- [ ] 是否为每个功能生成了对应的实现流文档？
-- [ ] 每个文档是否覆盖所有实现步骤与依赖？
-- [ ] 是否明确每步的输入/输出/责任人/验收？
-- [ ] 是否列出所有需新增/修改的属性、方法、接口（表格形式）？
-- [ ] 是否对齐产品 features 文档的字段与命名？
-- [ ] 是否给出异常/安全/测试/优化建议？
-- [ ] 是否引用相关 features 文档？
-- [ ] 文档命名是否规范（{功能英文名}\_FLOW.md）？
+        // 2. 查找匹配的凭证
+        const credential = this.credentials.find(c => c.matchIdentifier(inputIdentifier));
+        if (!credential) {
+            this.recordFailure(); // 领域内部逻辑：增加失败次数
+            throw new InvalidCredentialsException();
+        }
 
----
+        // 3. 校验密码 (调用领域服务/接口进行比对)
+        if (!credential.verifySecret(inputSecret, encryptionService)) {
+            this.recordFailure();
+            // 触发锁定规则
+            if (this.failedCount >= 5) {
+                this.lock();
+            }
+            throw new InvalidCredentialsException();
+        }
 
-## 7. 示例调用（拷贝即可）
+        // 4. 成功：重置计数
+        this.resetFailureCount();
+        
+        // 5. 发布领域事件
+        DomainEventPublisher.publish(new UserAuthenticatedEvent(this.id));
+    }
 
-**批量生成**：
+    private recordFailure() {
+        this.failedCount++;
+    }
+}
+抽象接口 (Ports)
+领域层定义接口，基础设施层去实现。
 
-```
-分析 goal 模块的功能需求的实现
-```
+TypeScript
+// Domain/Service/EncryptionService.ts
+// 这是一个防腐层接口，Domain层不知道你是用 BCrypt 还是 Argon2
+export interface EncryptionService {
+    hash(raw: string): string;
+    matches(raw: string, hash: string): boolean;
+}
 
-→ 自动为 goal 模块所有 features 生成实现流文档
+// Domain/Repository/IdentityRepository.ts
+export interface IdentityRepository {
+    findByIdentifier(identifier: string): Promise<AuthenticationIdentity>;
+    save(identity: AuthenticationIdentity): Promise<void>;
+}
+4. 领域事件 (Domain Events)
+在认证模块中，领域事件至关重要，因为它是连接 Auth 模块与其他模块（如通知、风控）的桥梁。
 
-**单个生成**：
+IdentityAuthenticated: 认证成功。订阅者：日志审计、Token 生成器。
 
-```
-为 task 模块的 依赖图 功能生成实现流文档
-```
+IdentityLocked: 账号被锁。订阅者：通知服务（发邮件告诉用户账号被锁）。
 
-→ 只为指定功能生成实现流文档
+PasswordChanged: 密码变更。订阅者：通知服务、会话管理器（踢出旧设备）。
 
-**输出示例**：
+5. 常见误区纠正
+在设计 Domain 层时，一定要避免以下“泄露”：
 
-```
-✅ 已为 goal 模块生成 8 个实现流文档：
-- docs/modules/goal/project-flows/FOCUS_CYCLE_REVIEW_FLOW.md
-- docs/modules/goal/project-flows/KR_WEIGHT_SNAPSHOT_FLOW.md
-- docs/modules/goal/project-flows/GOAL_TASK_REPO_LINK_FLOW.md
-- ...
-```
+错误做法 (Anti-Pattern)	正确做法 (DDD Pattern)
+在领域层生成 Token
 
----
 
----
+user.generateJwt()
 
-## mode: agent
+应用层负责生成
 
-Define the task to achieve, including specific requirements, constraints, and success criteria.
+
+领域层只负责返回“认证成功”的结论或事件。应用层监听到事件后，调用工具类生成 JWT。
+
+在领域层依赖 HTTP
+
+
+login(request: HttpServletRequest)
+
+应用层负责解析
+
+
+应用层从 Request 提取参数，组装成 Command 对象传给领域层。
+
+直接使用 String 传密码
+
+
+setPassword(String pwd)
+
+使用值对象
+
+
+setPassword(new RawPassword(pwd))，确保只要 RawPassword 对象存在，它就一定是符合复杂度要求的。
+
+6. 完整的调用链路 (Flow)
+看看各层是如何配合的：
+
+Interface Layer (Controller):
+
+接收 POST /login。
+
+解析 JSON，构建 LoginCommand。
+
+Application Layer (App Service):
+
+调用 IdentityRepository.findByIdentifier(cmd.email)。
+
+调用 identity.login(..., encryptionService)。
+
+如果无异常，生成 JWT（这是应用层逻辑，因为 JWT 是针对客户端的）。
+
+保存聚合状态 repo.save(identity)。
+
+Domain Layer:
+
+执行上述代码块中的逻辑：比对哈希、判断锁定、重置计数。
+
+发出 UserAuthenticatedEvent。
+
+Infrastructure Layer:
+
+实现 EncryptionService (调用 BCrypt)。
+
+实现 IdentityRepository (SQL 操作)。
+
+总结
+在 DDD 的领域层设计 Authentication：
+
+核心是状态机：关注 锁定、激活、失败计数 等状态的流转。
+
+抽象加密：领域层只定义“密码需要比对”，不关心“怎么比对”。
+
+输出是结论：领域层告诉应用层“这个人是对的”，然后应用层去签发“通行证（Token）”。
+
+你需要我进一步展示 Infrastructure 层如何实现那个 EncryptionService，或者 Application 层怎么协调 JWT 的生成吗？
+
+auth 模块需要 一个 session 聚合根来管理 认证的会话吗
+
+这是一个非常关键的架构决策。在 DDD 中，是否需要一个 Session 聚合根，取决于你对“控制权”的要求。
+
+简短的回答是：如果你想要实现“踢人下线”、“限制多端登录”、“查看登录设备”等功能，那么你需要一个 Session 聚合根。
+
+如果你的系统只需要最简单的 JWT 校验（Token 发出去就不管了），那么不需要。但在构建“完整的认证模块”时，强烈建议引入 Session 聚合根。
+
+以下是详细的 DDD 设计推演：
+
+1. 为什么要独立出 Session 聚合根？
+初学者常犯的错误是将 Session 作为一个简单的字段放在 User (或 AuthenticationIdentity) 聚合里。
+
+错误设计： 在 AuthenticationIdentity 里放一个 List<Session>。
+
+后果： 每次用户刷新 Token (Refresh)，都需要修改最后活跃时间。这意味着你要锁定 AuthenticationIdentity 这个核心聚合。如果有高频的刷新操作，会导致数据库锁竞争，影响到“修改密码”等核心业务。
+
+正确设计： Session 是一个独立的聚合根。
+
+理由： Session 的生命周期（创建、刷新、过期、销毁）与 User 的生命周期（注册、改密、注销）是解耦的。User 是相对静态的，Session 是高度动态的。
+
+2. Session 聚合根的模型设计
+在 Identity Context (认证上下文) 中，Session 聚合根应该长这样：
+
+核心属性
+SessionId: 聚合的唯一标识 (通常直接作为 Refresh Token 发给客户端)。
+
+IdentityId: 关联的用户 ID (它指向 AuthenticationIdentity，但只存 ID，保持聚合间松耦合)。
+
+DeviceInfo: 值对象 (User-Agent, IP, OS)。
+
+ExpirationTime: 过期时间。
+
+Status: 枚举 (Active, Revoked, Expired)。
+
+核心行为 (Business Behaviors)
+refresh(): 续期。检查当前状态，如果未撤销且未过期，延长过期时间。
+
+revoke(): 撤销。将状态设为 Revoked (踢下线)。
+
+isValid(): 校验逻辑。
+
+代码示例 (TypeScript/Java 风格)
+TypeScript
+// Domain/Model/Session/Session.ts
+
+export class Session { // Aggregate Root
+    private id: SessionId;
+    private identityId: IdentityId; // 引用另一个聚合的ID
+    private deviceInfo: DeviceInfo; // Value Object
+    private expiresAt: Date;
+    private isRevoked: boolean;
+
+    constructor(identityId: IdentityId, deviceInfo: DeviceInfo, durationSeconds: number) {
+        this.id = new SessionId(UUID.random()); // 这个ID就是 Refresh Token
+        this.identityId = identityId;
+        this.deviceInfo = deviceInfo;
+        this.isRevoked = false;
+        this.extendExpiration(durationSeconds);
+    }
+
+    // 业务行为：续期
+    public refresh(durationSeconds: number): void {
+        this.checkActive(); // Invariant check
+        this.extendExpiration(durationSeconds);
+        // 触发事件：SessionRefreshed (用于审计或统计)
+    }
+
+    // 业务行为：强制下线
+    public revoke(): void {
+        this.isRevoked = true;
+        // 触发事件：SessionRevoked
+    }
+
+    // 内部校验逻辑
+    public isValid(): boolean {
+        return !this.isRevoked && this.expiresAt > new Date();
+    }
+
+    private checkActive(): void {
+        if (!this.isValid()) {
+            throw new SessionExpiredException("Session is no longer valid.");
+        }
+    }
+}
+3. Session 聚合根与其他模块的交互
+这里有一个经典的 DDD 协作场景：如何限制一个用户只能同时在线 3 个设备？
+
+这个逻辑不属于 Session 自身（因为 Session 不知道其他 Session 的存在），也不完全属于 AuthenticationIdentity。这里需要引入一个 Domain Service (领域服务)。
+
+服务名： SessionManager 或 AuthenticationService
+
+逻辑流程：
+
+用户输入密码登录。
+
+AuthenticationIdentity 校验密码成功。
+
+应用层 调用 SessionManager.createSession(userId, device)。
+
+SessionManager 去资源库 (SessionRepository) 查询该 userId 下所有 Active 的 Session。
+
+业务规则校验：如果数量 >= 3，根据策略处理（报错，或者踢掉最老的一个）。
+
+创建一个新的 Session 聚合根。
+
+SessionRepository.save(newSession)。
+
+返回 SessionId (作为 Refresh Token)。
+
+4. 这里的 SessionId 和 Refresh Token 是什么关系？
+这是一个常见的困惑点。在 DDD 实现中：
+
+SessionId (聚合根的 ID) 本质上就是 Refresh Token。
+
+当你把 SessionId (比如一个 UUID) 发给前端作为 Refresh Token 时，前端下次拿这个 UUID 来请求刷新。
+
+后端拿着这个 UUID 去数据库 findById，找到对应的 Session 聚合根，然后执行 session.refresh()。
+
+Access Token (JWT) 是什么？
+
+它是 Session 聚合根的一个快照投影。
+
+Access Token 包含了 SessionId、UserId、Scope，并被签名。它是由 Session 生成的“短期通行证”。
+
+5. 总结：架构图谱
+在你的 DDD 架构中，现在的 Auth 模块包含两个核心聚合：
+
+AuthenticationIdentity (聚合根)
+
+职责：存密码 Hash，校验密码，管理账号锁定。
+
+生命周期：长。
+
+数据量：1 个用户对应 1 个。
+
+Session (聚合根)
+
+职责：管理登录状态，续期，设备指纹，踢人。
+
+生命周期：短（随用户登录登出产生和销毁）。
+
+数据量：1 个用户对应 N 个 (手机、电脑、平板)。
+
+结论： 是的，你需要 Session 聚合根。它是连接“静态身份”与“动态访问”的桥梁，也是实现现代化安全控制（如异地登录提醒、设备管理）的基础。
+
+我可以为你做的下一步： 需要我为你展示这个 SessionManager 领域服务的具体代码逻辑吗？特别是关于 “如何踢掉最旧的设备” 这一策略的实现？
+
+给我具体的 每个对象的 type 定义
+
+好的，基于我们确定的 IdP（身份提供商）模式 以及 DDD（领域驱动设计） 架构，以下是详细的 Type/Interface 定义。
+
+我会使用 TypeScript 语法来描述，因为它能最清晰地展示结构和类型约束。我们将分为三个部分：Shared Kernel (基础类型)、Identity Context (认证上下文) 和 Account Context (账号上下文)。
+
+一、 Shared Kernel (基础值对象)
+为了防止“原始类型偏执（Primitive Obsession）”，我们先定义一些基础的值对象类型。
+
+TypeScript
+// --- Shared Kernel / Primitives ---
+
+// 使用 Brand Type 防止 ID 混用 (User ID 不能传给 Session ID)
+export type IdentityId = string & { readonly brand: unique symbol }; 
+export type SessionId = string & { readonly brand: unique symbol }; 
+export type AccountId = string & { readonly brand: unique symbol }; // 通常与 IdentityId 是同一个值
+
+// 时间戳统一类型
+export type DateTime = Date;
+
+// 客户端设备信息 (Value Object)
+export interface DeviceInfo {
+  ipAddress: string;
+  userAgent: string;
+  location?: string; // 可选: 基于IP解析的地理位置
+  fingerprint?: string; // 可选: 设备指纹
+}
+二、 Identity Context (认证模块 - 核心)
+这是最复杂的模块，包含两个聚合根：AuthenticationIdentity (静态身份) 和 Session (动态会话)。
+
+1. 聚合根: AuthenticationIdentity
+管理凭证、锁定状态、安全策略。
+
+TypeScript
+// --- Domain: Identity Aggregate ---
+
+export enum IdentityStatus {
+  ACTIVE = 'ACTIVE',       // 正常
+  LOCKED = 'LOCKED',       // 临时锁定 (密码输错太多)
+  DISABLED = 'DISABLED',   // 永久禁用 (违规)
+  UNVERIFIED = 'UNVERIFIED' // 未验证 (如邮箱未激活)
+}
+
+export enum CredentialType {
+  PASSWORD = 'PASSWORD',
+  GOOGLE = 'GOOGLE',
+  GITHUB = 'GITHUB',
+  WECHAT = 'WECHAT',
+  PHONE_SMS = 'PHONE_SMS' // 仅手机号+验证码登录，无密码
+}
+
+// 实体: 凭证 (Entity)
+export interface Credential {
+  // 复合主键通常是 (type + identifier)
+  type: CredentialType;
+  
+  // 登录标识: email, phone, open_id
+  identifier: string; 
+  
+  // 密钥: 密码Hash, 或者 OAuth 的 AccessToken (如果是持久化的话)
+  // 注意: 对于 PASSWORD 类型，这里存的是 bcrypt string ($2a$10$...)
+  // 对于 SMS 或 第三方登录，这里可能是空，或者存第三方的 union_id
+  secret?: string; 
+  
+  verified: boolean; // 如: 邮箱是否已点击链接验证
+}
+
+// 聚合根: 身份 (Aggregate Root)
+export interface AuthenticationIdentity {
+  readonly id: IdentityId; // 全局唯一ID
+  
+  status: IdentityStatus;
+  
+  // 失败计数器 (用于判断是否锁定)
+  failedLoginAttempts: number;
+  lastFailedAttempt?: DateTime;
+  lockedUntil?: DateTime;
+
+  // 凭证列表 (一个用户可以同时有 邮箱密码 + 谷歌登录)
+  credentials: Credential[];
+
+  createdAt: DateTime;
+  updatedAt: DateTime;
+
+  // --- 领域行为方法 (仅示意) ---
+  // login(cmd: LoginCommand): void;
+  // changePassword(newHash: string): void;
+  // bindCredential(cred: Credential): void;
+}
+2. 聚合根: Session
+管理登录态、刷新令牌、踢人下线。
+
+TypeScript
+// --- Domain: Session Aggregate ---
+
+export interface Session {
+  // SessionId 本质上就是 Refresh Token (UUID)
+  readonly id: SessionId; 
+  
+  readonly identityId: IdentityId; // 关联到上面的 Identity
+  
+  readonly deviceInfo: DeviceInfo; // 登录时的设备信息
+  
+  createdAt: DateTime;
+  expiresAt: DateTime; // Refresh Token 的绝对过期时间 (如 30天后)
+  
+  isRevoked: boolean; // 是否被撤销 (踢下线/登出)
+  lastRefreshedAt: DateTime; // 最后一次刷新时间 (用于滑动过期)
+  
+  // --- 领域行为方法 (仅示意) ---
+  // refresh(newDevice: DeviceInfo): void;
+  // revoke(): void;
+  // isValid(): boolean;
+}
+三、 Account Context (账号/用户资料模块)
+这是业务层面的用户档案。它不包含密码，只包含展示信息。
+
+TypeScript
+// --- Domain: User Profile Aggregate ---
+
+export interface UserProfile {
+  readonly id: AccountId; // 与 IdentityId 保持一致，方便关联
+  
+  // 基础资料
+  nickname: string;
+  avatarUrl: string;
+  bio?: string;
+  gender?: 'MALE' | 'FEMALE' | 'OTHER' | 'UNKNOWN';
+  birthday?: DateTime;
+
+  // 偏好设置 (JSON 结构，用 Value Object 封装)
+  preferences: UserPreferences;
+  
+  // 业务状态 (与认证状态不同，这里是业务层面的，如“禁言”)
+  reputationScore: number; // 信誉分
+  isMuted: boolean; // 是否被禁言
+
+  createdAt: DateTime;
+  updatedAt: DateTime;
+}
+
+// 值对象: 用户偏好
+export interface UserPreferences {
+  theme: 'LIGHT' | 'DARK' | 'SYSTEM';
+  language: string; // 'en-US', 'zh-CN'
+  notificationEnabled: boolean;
+}
+四、 应用层交互对象 (DTOs)
+这是前端与后端 API 交互时的数据结构，必须与领域对象区分开。
+
+1. 登录交互 (Login)
+TypeScript
+// [Request] POST /auth/login
+export interface LoginRequestDTO {
+  type: 'PASSWORD' | 'SMS' | 'SOCIAL';
+  identifier: string; // email 或 phone
+  credential: string; // 密码明文 或 验证码 或 OAuth Code
+  deviceId?: string;  // 前端生成的设备唯一码 (可选)
+}
+
+// [Response]
+export interface LoginResponseDTO {
+  accessToken: string;  // JWT
+  refreshToken: string; // UUID (SessionId)
+  expiresIn: number;    // 秒
+  user: UserCardDTO;    // 附带简单的用户信息，方便前端展示
+}
+2. 令牌刷新 (Refresh)
+TypeScript
+// [Request] POST /auth/refresh
+export interface RefreshTokenRequestDTO {
+  refreshToken: string;
+}
+
+// [Response]
+export interface RefreshTokenResponseDTO {
+  accessToken: string;
+  refreshToken?: string; // 如果支持 Refresh Token 轮转，这里会返回新的
+}
+3. 注册交互 (Register)
+TypeScript
+// [Request] POST /auth/register
+export interface RegisterRequestDTO {
+  username?: string;
+  email?: string;
+  phone?: string;
+  password?: string; // 密码明文
+  verifyCode?: string; // 验证码 (注册通常需要验证)
+}
+4. JWT Payload (Access Token 内部结构)
+这是 JWT解码后的 JSON 结构：
+
+TypeScript
+export interface JwtPayload {
+  sub: string;       // Subject (IdentityId)
+  iss: string;       // Issuer (api.yourdomain.com)
+  iat: number;       // Issued At (Timestamp)
+  exp: number;       // Expiration (Timestamp)
+  
+  // 自定义 Claims (不要放敏感信息!)
+  sid: string;       // Session ID (关联到 Session 聚合)
+  scope: string;     // 权限范围 "read write"
+  role: string;      // "user" | "admin"
+  name?: string;     // 冗余字段，方便前端显示
+}
+总结：关键差异点
+Identity vs UserProfile:
+
+AuthenticationIdentity 处理的是 Security (密码, 锁定, 尝试次数)。
+
+UserProfile 处理的是 Vanity (昵称, 头像, 个人简介)。
+
+它们通过 ID 关联，但在物理上是隔离的。
+
+Credential vs LoginRequest:
+
+Credential (领域对象) 存的是 Hash。
+
+LoginRequest (DTO) 传的是 明文密码。
+
+SessionId vs RefreshToken:
+
+在类型定义上，它们通常是同一个字符串，但语义不同。Session 是服务端的全量对象，RefreshToken 是客户端持有的句柄。
+
+这套类型定义可以直接用于指导数据库 Schema 的设计以及具体的类编写。
+
+AuthCrendential 下的实体对象呢
+
+这是一个非常好的深入点。在 DDD 中，AuthCredential（认证凭据）通常不是一个简单的对象，而是一个多态的实体体系。
+
+因为“密码登录”的数据结构和“微信登录”的数据结构完全不同。
+
+我们需要利用 TypeScript 的 Discriminated Unions（可辨识联合） 特性来设计这个实体。这样设计的好处是：代码在处理不同登录方式时，会有严格的类型安全检查。
+
+以下是 AuthenticationIdentity 聚合根下的 AuthCredential 实体家族 的详细定义：
+
+一、 核心设计思路
+多态性：密码凭据需要存 Hash，OAuth 凭据需要存 OpenID 和 AccessToken。
+
+局部实体：它是 AuthenticationIdentity 聚合的一部分，它的生命周期完全依赖于 Identity。
+
+安全性：使用值对象（Value Object）来封装敏感数据（如密码哈希）。
+
+二、 具体 Type 定义
+1. 基础接口 (Base Entity)
+所有凭据共有的属性。
+
+TypeScript
+// 凭据类型的枚举
+export enum CredentialType {
+  PASSWORD = 'PASSWORD',      // 传统的账号/邮箱 + 密码
+  OAUTH2 = 'OAUTH2',          // 第三方登录 (Google, GitHub, WeChat)
+  PHONE_SMS = 'PHONE_SMS',    // 手机号 (无密码，靠验证码)
+  API_KEY = 'API_KEY',        // 机器对接用的 Key
+  MAGIC_LINK = 'MAGIC_LINK'   // 邮箱免密链接
+}
+
+// 基础凭据接口
+interface BaseCredential {
+  // 局部实体ID (在 Identity 内部唯一即可，数据库通常用自增或 UUID)
+  readonly id: string; 
+  
+  readonly type: CredentialType;
+  
+  // 标识符 (用于登录的“账号”)
+  // 对于 PASSWORD 类型，这里是 email 或 username
+  // 对于 OAUTH2 类型，这里是 provider + openId 的组合
+  // 对于 PHONE 类型，这里是 E.164 格式的手机号 (+86138...)
+  readonly identifier: string;
+
+  // 凭据状态
+  isVerified: boolean; // 例如：邮箱是否验证过
+  
+  createdAt: Date;
+  updatedAt: Date;
+}
+2. 密码凭据实体 (PasswordCredential)
+这是最复杂的，因为涉及加密安全。
+
+TypeScript
+// 值对象: 封装哈希后的密码 (防止把明文当哈希存)
+export class HashedPassword {
+  constructor(private readonly value: string) {
+    if (!value.startsWith('$2a$') && !value.startsWith('$argon2')) {
+      throw new Error("Invalid hash format"); // 简单的防御性编程
+    }
+  }
+  toString() { return this.value; }
+}
+
+export interface PasswordCredential extends BaseCredential {
+  readonly type: CredentialType.PASSWORD;
+  
+  // 核心敏感数据
+  passwordHash: HashedPassword;
+  
+  // 安全策略元数据
+  passwordChangedAt: Date; // 用于强制踢出旧 Token
+  mustChangePassword: boolean; // 管理员重置密码后，用户下次登录需修改
+}
+3. OAuth/第三方凭据实体 (OAuthCredential)
+不需要存密码，但需要存第三方的元数据。
+
+TypeScript
+export interface OAuthCredential extends BaseCredential {
+  readonly type: CredentialType.OAUTH2;
+  
+  provider: 'GOOGLE' | 'GITHUB' | 'WECHAT';
+  
+  // 第三方的唯一ID (OpenID / Subject)
+  externalUserId: string; 
+  
+  // (可选) 如果你需要调用第三方 API (如获取用户好友列表)，需要持久化这些
+  accessToken?: string;
+  refreshToken?: string;
+  tokenExpiresAt?: Date;
+  
+  // 冗余字段: 第三方那边的昵称 (防止第三方把号删了我们不知道是谁)
+  externalUsername?: string; 
+}
+4. 手机/短信凭据实体 (PhoneCredential)
+手机验证码是瞬时的（Transient），通常存在 Redis 里，不持久化在 SQL 的 Credential 表中。 所以这个实体主要用于“占位”，表示“这个用户绑定了手机号”。
+
+TypeScript
+export interface PhoneCredential extends BaseCredential {
+  readonly type: CredentialType.PHONE_SMS;
+  
+  // 规范化的手机号 (e.g. "+8613800138000")
+  phoneNumber: string; 
+  
+  // 手机号验证时间
+  verifiedAt: Date;
+}
+5. 最终的联合类型 (The Union Type)
+在聚合根 AuthenticationIdentity 中使用的就是这个类型。
+
+TypeScript
+// 这就是你在代码里主要引用的类型
+export type AuthCredential = 
+  | PasswordCredential 
+  | OAuthCredential 
+  | PhoneCredential;
+三、 在聚合根中如何使用？
+在 AuthenticationIdentity 聚合根中，我们通过这个联合类型来处理逻辑。 TypeScript 的类型守卫（Type Guard）在这里非常有用。
+
+TypeScript
+// Domain/Model/Identity/AuthenticationIdentity.ts
+
+export class AuthenticationIdentity {
+    // ... 其他属性
+    private _credentials: AuthCredential[] = [];
+
+    // 获取该用户所有的登录方式
+    public get credentials(): AuthCredential[] {
+        return [...this._credentials];
+    }
+
+    /**
+     * 业务逻辑：修改密码
+     * 注意：这个方法会自动检查该用户是否有密码登录方式
+     */
+    public changePassword(newHash: HashedPassword): void {
+        // 1. 找到 Password 类型的凭据
+        const credIndex = this._credentials.findIndex(
+            c => c.type === CredentialType.PASSWORD
+        );
+
+        if (credIndex === -1) {
+            throw new Error("This user does not have a password setup.");
+        }
+
+        // 2. 类型收窄 (Type Narrowing)
+        // 此时 TypeScript 知道 oldCred 是 PasswordCredential 类型
+        const oldCred = this._credentials[credIndex] as PasswordCredential;
+
+        // 3. 更新凭据 (在 DDD 中通常是替换或修改内部状态)
+        // 这里演示创建一个新的对象来替换 (Immutability 风格)
+        const newCred: PasswordCredential = {
+            ...oldCred,
+            passwordHash: newHash,
+            passwordChangedAt: new Date(),
+            mustChangePassword: false,
+            updatedAt: new Date()
+        };
+
+        this._credentials[credIndex] = newCred;
+        
+        // 4. 触发事件
+        this.addDomainEvent(new PasswordChangedEvent(this.id));
+    }
+    
+    /**
+     * 业务逻辑：绑定第三方账号
+     */
+    public bindOAuth(provider: string, openId: string, tokens: any): void {
+       // 检查重复绑定逻辑...
+       const newCred: OAuthCredential = {
+           id: UUID.generate(),
+           type: CredentialType.OAUTH2,
+           identifier: `${provider}_${openId}`, // 组合键作为唯一标识
+           externalUserId: openId,
+           provider: provider as any,
+           // ... 其他字段
+           isVerified: true,
+           createdAt: new Date(),
+           updatedAt: new Date()
+       };
+       this._credentials.push(newCred);
+    }
+}
+四、 数据库映射参考 (Infrastructure)
+虽然上面是领域对象，但最终要存数据库。通常有两种策略：
+
+策略 A：单表继承 (Single Table Inheritance) - 推荐 一张大表 auth_credentials，包含所有字段，用不到的字段为 NULL。
+
+type: 'PASSWORD'
+
+password_hash: 'xxx' (OAuth记录这里为NULL)
+
+oauth_provider: NULL (Password记录这里为NULL)
+
+策略 B：多表关联 (Class Table Inheritance)
+
+auth_credentials (id, type, identifier)
+
+auth_credentials_password (cred_id, hash)
+
+auth_credentials_oauth (cred_id, provider, token)
+
+在 DDD 实践中，策略 A 通常更好，因为查询聚合根时，我们要一次性把所有凭据捞出来，单表查询性能最高，也更容易映射回上面的 AuthCredential 联合类型。
+
+ 所以，实现方法应该是先有一个 **identify** 聚合根，然后这个聚合根下有一个 **credential** 实体，
+
+
+
+然后这个实体是有多种类别的。 
+
+你的理解完全正确。
+
+这就是 DDD 中**聚合（Aggregate）**模式的标准应用。这种设计将“身份状态”与“认证方式”完美解耦，同时又保证了它们生命周期的一致性。
+
+我们可以用一张清晰的结构图来总结这个模型：
+
+1. 为什么这种结构最合理？
+A. 生命周期管控 (Lifecycle Management)
+聚合根 (Identity) 是老板：Credential 不能独立存在。必须先有人（Identity），才能有这个人的密码（Credential）。
+
+级联效应：如果你删除了 Identity（注销账号），或者锁定了 Identity（封号），那么该用户下挂载的所有 Credential（无论是密码、微信还是 GitHub）都会瞬间全部失效。这保证了业务一致性。
+
+B. 扩展性 (Extensibility - Open/Closed Principle)
+开放扩展：你想加一个“指纹登录”？只需要新增一种 FingerprintCredential 实体类别。
+
+关闭修改：你不需要去修改 Identity 聚合根的核心逻辑（如锁定逻辑、ID 生成逻辑），也不需要改动现有的 PasswordCredential。
+
+2. 这个结构的“逻辑视图”
+在内存中，当你把这个聚合根从数据库查出来时，它的样子大概是这样的（JSON 伪代码表示）：
+
+JSON
+// Aggregate Root: Identity
+{
+  "id": "identity_9527",
+  "status": "ACTIVE",       // 只要把它改成 LOCKED，下面所有登录方式全废
+  "failed_attempts": 0,
+  
+  // List<Entity>: Credentials (多态列表)
+  "credentials": [
+    // 类别 1: 密码凭据
+    {
+      "type": "PASSWORD",
+      "identifier": "my_email@test.com",
+      "secret": "$2a$10$Xj..." // Hash
+    },
+    // 类别 2: 微信凭据
+    {
+      "type": "OAUTH_WECHAT",
+      "identifier": "open_id_xyz123", // 微信的OpenID
+      "secret": "access_token_..."
+    }
+  ]
+}
+3. 一个关键的实现细节：标识符的唯一性
+虽然 Credential 是内部实体，但它有一个特殊性：全局唯一性校验。
+
+通常，DDD 里的内部实体只需要在聚合内部唯一。但是，identifier（如邮箱、手机号）必须在全系统中唯一。
+
+问题：两个不同的 Identity 不能拥有相同的 identifier（比如不能两个人都用同一个手机号注册）。
+
+解决：这通常通过数据库的唯一索引 (Unique Index) 来强制保证，或者在应用服务层（Application Service）创建用户前先查重。
+
+总结
+你的架构蓝图现在非常清晰：
+
+Identity (Root)：负责管状态（锁不锁）、管安全（失败几次）、管生命周期。
+
+Credential (Entity)：负责存数据（Hash、Token），它是多态的，挂在 Identity 下面。
+
+One-to-Many：一个 Identity 对应 N 个 Credential。
+

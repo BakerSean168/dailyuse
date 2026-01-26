@@ -16,3 +16,5 @@ export * from './shared';
 export * from './dtos';
 // 重新导出 UI 组件类型
 export * from './ui-components';
+
+export type { Equatable } from './equatable';

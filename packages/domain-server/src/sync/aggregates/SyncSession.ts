@@ -40,8 +40,8 @@ export class SyncSession extends AggregateRoot {
   private _strategy: SyncStrategy;
   private _triggerType: SyncTriggerType;
   private _triggerDevice: DeviceInfoDTO;
-  private _startVersion: SyncVersionServerDTO;
-  private _endVersion?: SyncVersionServerDTO | null;
+  private _startVersion: SyncVersion;
+  private _endVersion?: SyncVersion | null;
   private _localSnapshotId?: string | null;
   private _remoteSnapshotId?: string | null;
   private _conflicts: SyncConflict[];

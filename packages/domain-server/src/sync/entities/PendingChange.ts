@@ -12,6 +12,7 @@ import {
   type EntityReferenceDTO,
   type SyncVersionServerDTO,
 } from '@dailyuse/contracts/sync';
+import { SyncVersion } from '../value-objects/SyncVersion';
 
 /**
  * PendingChange 实体
@@ -23,7 +24,7 @@ export class PendingChange extends Entity {
   private _operation: ChangeOperationType;
   private _beforeData?: unknown | null;
   private _afterData?: unknown | null;
-  private _version: SyncVersionServerDTO;
+  private _version: SyncVersion;
   private _isSynced: boolean;
   private _syncedInSession?: string | null;
   private _createdAt: Date;
@@ -46,7 +47,7 @@ export class PendingChange extends Entity {
     this._operation = params.operation;
     this._beforeData = params.beforeData;
     this._afterData = params.afterData;
-    this._version = params.version;
+    this._version = SyncVersion.fromServerDTO(params.version);
     this._isSynced = params.isSynced;
     this._syncedInSession = params.syncedInSession;
     this._createdAt = params.createdAt;

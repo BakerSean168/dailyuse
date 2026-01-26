@@ -32,25 +32,25 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
     secret?: string | null;
     backupCodes: string[];
     method: 'TOTP' | 'SMS' | 'EMAIL' | 'AUTHENTICATOR_APP';
-    verifiedAt?: number | null;
+    verifiedAt?: Date | null;
   } | null;
   private _biometric: {
     enabled: boolean;
     type: 'FINGERPRINT' | 'FACE_ID' | 'TOUCH_ID';
     deviceId?: string | null;
-    enrolledAt?: number | null;
+    enrolledAt?: Date | null;
   } | null;
   private _status: 'ACTIVE' | 'SUSPENDED' | 'EXPIRED' | 'REVOKED';
   private _security: {
     requirePasswordChange: boolean;
-    passwordExpiresAt?: number | null;
+    passwordExpiresAt?: Date | null;
     failedLoginAttempts: number;
-    lastFailedLoginAt?: number | null;
-    lockedUntil?: number | null;
-    lastPasswordChangeAt?: number | null;
+    lastFailedLoginAt?: Date | null;
+    lockedUntil?: Date | null;
+    lastPasswordChangeAt?: Date | null;
   };
   private _history: CredentialHistory[];
-  public readonly createdAt: number;
+  public readonly createdAt: Date;
   private _updatedAt: Date;
 
   constructor(params: {
@@ -65,26 +65,26 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
       secret?: string | null;
       backupCodes: string[];
       method: 'TOTP' | 'SMS' | 'EMAIL' | 'AUTHENTICATOR_APP';
-      verifiedAt?: number | null;
+      verifiedAt?: Date | null;
     } | null;
     biometric?: {
       enabled: boolean;
       type: 'FINGERPRINT' | 'FACE_ID' | 'TOUCH_ID';
       deviceId?: string | null;
-      enrolledAt?: number | null;
+      enrolledAt?: Date | null;
     } | null;
     status?: 'ACTIVE' | 'SUSPENDED' | 'EXPIRED' | 'REVOKED';
     security?: {
       requirePasswordChange: boolean;
-      passwordExpiresAt?: number | null;
+      passwordExpiresAt?: Date | null;
       failedLoginAttempts: number;
-      lastFailedLoginAt?: number | null;
-      lockedUntil?: number | null;
-      lastPasswordChangeAt?: number | null;
+      lastFailedLoginAt?: Date | null;
+      lockedUntil?: Date | null;
+      lastPasswordChangeAt?: Date | null;
     };
     history?: CredentialHistory[];
-    createdAt?: number;
-    updatedAt?: number;
+    createdAt?: Date;
+    updatedAt?: Date;
   }) {
     super(params.uuid ?? generateUUID());
     this.accountUuid = params.accountUuid;
@@ -150,15 +150,6 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
       accountUuid: params.accountUuid,
       type: params.type,
     });
-
-    if (params.hashedPassword && params.type === 'PASSWORD') {
-      const passwordCred = PasswordCredential.create({
-        credentialUuid: credential.uuid,
-        hashedPassword: params.hashedPassword,
-        salt: crypto.randomBytes(16).toString('hex'),
-      });
-      credential._passwordCredential = passwordCred;
-    }
 
     credential._addHistory('CREDENTIAL_CREATED', { type: params.type });
     return credential;
@@ -247,7 +238,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
       });
     }
 
-    this._security.lastPasswordChangeAt = Date.now();
+    this._security.lastPasswordChangeAt = new Date();
     this._security.requirePasswordChange = false;
     this._updatedAt = new Date();
     this._addHistory('PASSWORD_CHANGED');

@@ -91,7 +91,7 @@ export interface AccountPersistenceDTO {
   location?: string | null;
   timezone: string;
   language: string;
-  dateOfBirth?: number | null;
+  dateOfBirth?: Date | null;
   gender?: 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY' | null;
 
   // Preferences can remain as JSON for now
@@ -151,7 +151,7 @@ export interface AccountServer {
     location?: string | null;
     timezone: string;
     language: string;
-    dateOfBirth?: number | null;
+    dateOfBirth?: Date | null;
     gender?: 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY' | null;
   };
   preferences: {
@@ -187,7 +187,7 @@ export interface AccountServer {
     totalTasks: number;
     totalSchedules: number;
     totalReminders: number;
-    lastLoginAt?: number | null;
+    lastLoginAt?: Date | null;
     loginCount: number;
   };
   createdAt: Date;
