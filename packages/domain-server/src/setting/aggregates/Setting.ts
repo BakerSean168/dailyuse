@@ -37,8 +37,8 @@ export class Setting extends AggregateRoot implements SettingServer {
   private _isSystemSetting: boolean;
   private _syncConfig?: SyncConfig | null;
   private _history: SettingHistory[];
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
   private _deletedAt?: number | null;
 
   private constructor(params: {
@@ -139,13 +139,13 @@ export class Setting extends AggregateRoot implements SettingServer {
   public get history(): SettingHistory[] | null | undefined {
     return this._history.length > 0 ? this._history : null;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
-  public get deletedAt(): number | null | undefined {
+  public get deletedAt(): Date | null | undefined {
     return this._deletedAt;
   }
 
@@ -228,7 +228,7 @@ export class Setting extends AggregateRoot implements SettingServer {
     this._history.push(history);
 
     this._value = newValue;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -273,7 +273,7 @@ export class Setting extends AggregateRoot implements SettingServer {
     if (this._isEncrypted) {
       // 实际的加密逻辑应该由外部服务提供
       // 这里只标记为已加密
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -295,7 +295,7 @@ export class Setting extends AggregateRoot implements SettingServer {
   public async sync(): Promise<void> {
     if (this._syncConfig && this._syncConfig.isSyncEnabled()) {
       // 实际的同步逻辑应该由外部服务提供
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -343,7 +343,7 @@ export class Setting extends AggregateRoot implements SettingServer {
    */
   public softDelete(): void {
     if (this._deletedAt) return;
-    this._deletedAt = Date.now();
+    this._deletedAt = new Date();
     this._updatedAt = this._deletedAt;
   }
 
@@ -400,9 +400,9 @@ export class Setting extends AggregateRoot implements SettingServer {
       isReadOnly: this._isReadOnly,
       isSystemSetting: this._isSystemSetting,
       syncConfig: this._syncConfig?.toClientDTO(),
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt.getTime(),
       // Computed properties
       isDeleted: this.getIsDeleted(),
       isDefault: this.isDefault(),
@@ -438,9 +438,9 @@ export class Setting extends AggregateRoot implements SettingServer {
         includeHistory && this._history.length > 0
           ? this._history.map((h) => h.toServerDTO())
           : null,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt.getTime(),
     };
   }
 
@@ -467,9 +467,9 @@ export class Setting extends AggregateRoot implements SettingServer {
       isSystemSetting: this._isSystemSetting,
       syncConfig: this._syncConfig ? JSON.stringify(this._syncConfig.toServerDTO()) : null,
       history: JSON.stringify(this._history.map((h) => h.toServerDTO())),
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt.getTime(),
     };
   }
 
@@ -496,9 +496,9 @@ export class Setting extends AggregateRoot implements SettingServer {
       isSystemSetting: dto.isSystemSetting,
       syncConfig: dto.syncConfig ? SyncConfig.fromServerDTO(dto.syncConfig) : null,
       history: dto.history ? dto.history.map((h) => SettingHistory.fromServerDTO(h)) : [],
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 
@@ -526,9 +526,9 @@ export class Setting extends AggregateRoot implements SettingServer {
       isSystemSetting: dto.isSystemSetting,
       syncConfig: dto.syncConfig ? SyncConfig.fromServerDTO(JSON.parse(dto.syncConfig)) : null,
       history: historyData.map((h) => SettingHistory.fromServerDTO(h)),
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 }

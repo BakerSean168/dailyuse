@@ -40,9 +40,9 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
   private _folderType: FolderType | null;
   private _goalCount: number;
   private _completedGoalCount: number;
-  private _createdAt: number;
-  private _updatedAt: number;
-  private _deletedAt: number | null;
+  private _createdAt: Date;
+  private _updatedAt: Date;
+  private _deletedAt: Date | null;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -58,9 +58,9 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
     folderType?: FolderType | null;
     goalCount: number;
     completedGoalCount: number;
-    createdAt: number;
-    updatedAt: number;
-    deletedAt?: number | null;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date | null;
   }) {
     super(params.uuid ?? AggregateRoot.generateUUID());
     this._accountUuid = params.accountUuid;
@@ -116,13 +116,13 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
   public get completedGoalCount(): number {
     return this._completedGoalCount;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
-  public get deletedAt(): number | null {
+  public get deletedAt(): Date | null {
     return this._deletedAt;
   }
 
@@ -150,7 +150,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
       throw new Error('Name is required');
     }
 
-    const now = Date.now();
+    const now = new Date();
     const folder = new GoalFolder({
       accountUuid: params.accountUuid,
       name: params.name.trim(),
@@ -199,9 +199,9 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
       folderType: dto.folderType ?? null,
       goalCount: dto.goalCount,
       completedGoalCount: dto.completedGoalCount,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt ?? null,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 
@@ -222,9 +222,9 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
       folderType: dto.folderType ?? null,
       goalCount: dto.goalCount,
       completedGoalCount: dto.completedGoalCount,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt ?? null,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 
@@ -247,7 +247,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
     };
 
     this._name = trimmed;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'GoalFolderUpdated',
@@ -267,7 +267,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
    */
   public updateDescription(description: string): void {
     this._description = description.trim() || null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -275,7 +275,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
    */
   public updateIcon(icon: string): void {
     this._icon = icon.trim() || null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -283,7 +283,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
    */
   public updateColor(color: string): void {
     this._color = color.trim() || null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -294,7 +294,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
       throw new Error('Sort order cannot be negative');
     }
     this._sortOrder = sortOrder;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -310,7 +310,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
 
     this._goalCount = goalCount;
     this._completedGoalCount = completedCount;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'GoalFolderStatsUpdated',
@@ -334,7 +334,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
       throw new Error('Cannot delete system folder');
     }
 
-    this._deletedAt = Date.now();
+    this._deletedAt = new Date();
     this._updatedAt = this._deletedAt;
 
     this.addDomainEvent({
@@ -357,7 +357,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
     if (!this._deletedAt) return;
 
     this._deletedAt = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -365,7 +365,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
    */
   public moveToParent(parentFolderUuid: string | null): void {
     this._parentFolderUuid = parentFolderUuid;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -373,7 +373,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
    */
   public incrementGoalCount(): void {
     this._goalCount++;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -382,7 +382,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
   public decrementGoalCount(): void {
     if (this._goalCount > 0) {
       this._goalCount--;
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -391,7 +391,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
    */
   public incrementCompletedCount(): void {
     this._completedGoalCount++;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -400,7 +400,7 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
   public decrementCompletedCount(): void {
     if (this._completedGoalCount > 0) {
       this._completedGoalCount--;
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -438,9 +438,9 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
       folderType: this._folderType,
       goalCount: this._goalCount,
       completedGoalCount: this._completedGoalCount,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
     };
   }
 
@@ -461,9 +461,9 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
       folderType: this._folderType,
       goalCount: this._goalCount,
       completedGoalCount: this._completedGoalCount,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
 
       // UI 计算字段
       displayName: this._name,
@@ -491,9 +491,9 @@ export class GoalFolder extends AggregateRoot implements GoalFolderServer {
       folderType: this._folderType,
       goalCount: this._goalCount,
       completedGoalCount: this._completedGoalCount,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
     };
   }
 }

@@ -29,7 +29,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
   private _changeDescription: string | null;
   private _previousVersionUuid: string | null;
   private _createdBy: string | null;
-  private _createdAt: number;
+  private _createdAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -44,7 +44,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
     changeDescription?: string | null;
     previousVersionUuid?: string | null;
     createdBy?: string | null;
-    createdAt: number;
+    createdAt: Date;
   }) {
     super(params.uuid || Entity.generateUUID());
     this._documentUuid = params.documentUuid;
@@ -94,7 +94,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
   public get createdBy(): string | null {
     return this._createdBy;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
@@ -116,7 +116,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
     createdBy?: string;
   }): DocumentVersion {
     const uuid = crypto.randomUUID();
-    const now = Date.now();
+    const now = new Date();
 
     return new DocumentVersion({
       uuid,
@@ -150,7 +150,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
       changeDescription: dto.changeDescription,
       previousVersionUuid: dto.previousVersionUuid,
       createdBy: dto.createdBy,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -170,7 +170,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
       changeDescription: dto.change_description,
       previousVersionUuid: dto.previous_version_uuid,
       createdBy: dto.created_by,
-      createdAt: new Date(dto.createdAt).getTime(),
+      createdAt: dto.createdAt,
     });
   }
 
@@ -219,7 +219,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
       changeDescription: this._changeDescription,
       previousVersionUuid: this._previousVersionUuid,
       createdBy: this._createdBy,
-      createdAt: this._createdAt,
+      createdAt: this._createdAt.getTime(),
     };
   }
 
@@ -236,8 +236,8 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
       changeDescription: this._changeDescription,
       previousVersionUuid: this._previousVersionUuid,
       createdBy: this._createdBy,
-      createdAt: this._createdAt,
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
+      createdAt: this._createdAt.getTime(),
+      formattedCreatedAt: this._createdAt.toLocaleString(),
     };
   }
 
@@ -254,7 +254,7 @@ export class DocumentVersion extends Entity implements DocumentVersionServer {
       change_description: this._changeDescription,
       previous_version_uuid: this._previousVersionUuid,
       created_by: this._createdBy,
-      createdAt: new Date(this._createdAt),
+      createdAt: this._createdAt,
     };
   }
 }

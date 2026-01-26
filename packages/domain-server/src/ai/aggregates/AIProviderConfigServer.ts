@@ -37,8 +37,8 @@ export class AIProviderConfigServer extends AggregateRoot {
   private _isActive: boolean;
   private _isDefault: boolean;
   private _priority: number;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   private constructor(params: {
     uuid?: string;
@@ -52,8 +52,8 @@ export class AIProviderConfigServer extends AggregateRoot {
     isActive: boolean;
     isDefault: boolean;
     priority: number;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
   }) {
     super(params.uuid ?? AggregateRoot.generateUUID());
     this._accountUuid = params.accountUuid;
@@ -116,11 +116,11 @@ export class AIProviderConfigServer extends AggregateRoot {
     return this._priority;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -139,7 +139,7 @@ export class AIProviderConfigServer extends AggregateRoot {
     isDefault?: boolean;
     priority?: number;
   }): AIProviderConfigServer {
-    const now = Date.now();
+    const now = new Date();
     const instance = new AIProviderConfigServer({
       accountUuid: params.accountUuid,
       name: params.name.trim(),
@@ -158,7 +158,7 @@ export class AIProviderConfigServer extends AggregateRoot {
     instance.addDomainEvent({
       eventType: 'ai.provider_config.created',
       aggregateId: instance.uuid,
-      occurredOn: new Date(now),
+      occurredOn: now,
       accountUuid: params.accountUuid,
       payload: {
         name: instance.name,
@@ -186,8 +186,8 @@ export class AIProviderConfigServer extends AggregateRoot {
       isActive: dto.isActive,
       isDefault: dto.isDefault,
       priority: dto.priority ?? 100,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -202,7 +202,7 @@ export class AIProviderConfigServer extends AggregateRoot {
       throw new Error('Provider name must be 1-50 characters');
     }
     this._name = trimmed;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -210,7 +210,7 @@ export class AIProviderConfigServer extends AggregateRoot {
    */
   public updateBaseUrl(baseUrl: string): void {
     this._baseUrl = AIProviderConfigServer.normalizeBaseUrl(baseUrl);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -221,7 +221,7 @@ export class AIProviderConfigServer extends AggregateRoot {
       throw new Error('API Key cannot be empty');
     }
     this._apiKey = apiKey;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -233,7 +233,7 @@ export class AIProviderConfigServer extends AggregateRoot {
       console.warn(`Model ${modelId} not in available models list`);
     }
     this._defaultModel = modelId;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -241,12 +241,12 @@ export class AIProviderConfigServer extends AggregateRoot {
    */
   public updateAvailableModels(models: AIModelInfo[]): void {
     this._availableModels = models;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'ai.provider_config.models_updated',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._updatedAt),
+      occurredOn: this._updatedAt,
       accountUuid: this._accountUuid,
       payload: {
         modelCount: models.length,
@@ -259,7 +259,7 @@ export class AIProviderConfigServer extends AggregateRoot {
    */
   public activate(): void {
     this._isActive = true;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -271,7 +271,7 @@ export class AIProviderConfigServer extends AggregateRoot {
     if (this._isDefault) {
       this._isDefault = false;
     }
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -282,12 +282,12 @@ export class AIProviderConfigServer extends AggregateRoot {
       throw new Error('Cannot set inactive provider as default');
     }
     this._isDefault = true;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'ai.provider_config.set_default',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._updatedAt),
+      occurredOn: this._updatedAt,
       accountUuid: this._accountUuid,
       payload: {
         providerName: this._name,
@@ -300,7 +300,7 @@ export class AIProviderConfigServer extends AggregateRoot {
    */
   public unsetDefault(): void {
     this._isDefault = false;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -312,7 +312,7 @@ export class AIProviderConfigServer extends AggregateRoot {
       throw new Error('Priority must be between 1 and 999');
     }
     this._priority = priority;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== DTO Conversion =====
@@ -333,8 +333,8 @@ export class AIProviderConfigServer extends AggregateRoot {
       isActive: this._isActive,
       isDefault: this._isDefault,
       priority: this._priority,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -354,8 +354,8 @@ export class AIProviderConfigServer extends AggregateRoot {
       isActive: this._isActive,
       isDefault: this._isDefault,
       priority: this._priority,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 

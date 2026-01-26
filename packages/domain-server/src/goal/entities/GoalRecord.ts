@@ -24,8 +24,8 @@ export class GoalRecord extends Entity implements GoalRecordServer {
   private _goalUuid: string; // ⚠️ 所属 Goal 的 UUID
   private _value: number; // 本次记录的值（独立值）
   private _note: string | null;
-  private _recordedAt: number;
-  private _createdAt: number;
+  private _recordedAt: Date;
+  private _createdAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -34,8 +34,8 @@ export class GoalRecord extends Entity implements GoalRecordServer {
     goalUuid: string;
     value: number;
     note?: string | null;
-    recordedAt: number;
-    createdAt: number;
+    recordedAt: Date;
+    createdAt: Date;
   }) {
     super(params.uuid ?? Entity.generateUUID());
     this._keyResultUuid = params.keyResultUuid;
@@ -62,10 +62,10 @@ export class GoalRecord extends Entity implements GoalRecordServer {
   public get note(): string | null {
     return this._note;
   }
-  public get recordedAt(): number {
+  public get recordedAt(): Date {
     return this._recordedAt;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
@@ -92,14 +92,14 @@ export class GoalRecord extends Entity implements GoalRecordServer {
       throw new Error('Value must be a valid number');
     }
 
-    const now = Date.now();
+    const now = new Date();
 
     return new GoalRecord({
       keyResultUuid: params.keyResultUuid,
       goalUuid: params.goalUuid,
       value: params.value,
       note: params.note?.trim() || null,
-      recordedAt: params.recordedAt ?? now,
+      recordedAt: params.recordedAt ? new Date(params.recordedAt) : now,
       createdAt: now,
     });
   }
@@ -114,8 +114,8 @@ export class GoalRecord extends Entity implements GoalRecordServer {
       goalUuid: dto.goalUuid,
       value: dto.value,
       note: dto.note ?? null,
-      recordedAt: dto.recordedAt,
-      createdAt: dto.createdAt,
+      recordedAt: new Date(dto.recordedAt),
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -129,8 +129,8 @@ export class GoalRecord extends Entity implements GoalRecordServer {
       goalUuid: dto.goalUuid,
       value: dto.value,
       note: dto.note ?? null,
-      recordedAt: dto.recordedAt,
-      createdAt: dto.createdAt,
+      recordedAt: new Date(dto.recordedAt),
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -155,8 +155,8 @@ export class GoalRecord extends Entity implements GoalRecordServer {
       goalUuid: this._goalUuid,
       value: this._value,
       note: this._note,
-      recordedAt: this._recordedAt,
-      createdAt: this._createdAt,
+      recordedAt: this._recordedAt.getTime(),
+      createdAt: this._createdAt.getTime(),
     };
   }
 
@@ -168,8 +168,8 @@ export class GoalRecord extends Entity implements GoalRecordServer {
       value: this._value,
       calculatedCurrentValue,
       note: this._note,
-      recordedAt: this._recordedAt,
-      createdAt: this._createdAt,
+      recordedAt: this._recordedAt.getTime(),
+      createdAt: this._createdAt.getTime(),
     };
   }
 
@@ -183,8 +183,8 @@ export class GoalRecord extends Entity implements GoalRecordServer {
       goalUuid: this._goalUuid,
       value: this._value,
       note: this._note,
-      recordedAt: this._recordedAt,
-      createdAt: this._createdAt,
+      recordedAt: this._recordedAt.getTime(),
+      createdAt: this._createdAt.getTime(),
     };
   }
 }

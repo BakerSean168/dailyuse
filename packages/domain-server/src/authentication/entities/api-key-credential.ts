@@ -17,10 +17,10 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
   public readonly key: string;
   public readonly keyPrefix: string;
   private _status: 'ACTIVE' | 'REVOKED' | 'EXPIRED';
-  private _lastUsedAt: number | null;
-  public readonly expiresAt?: number | null;
-  public readonly createdAt: number;
-  private _updatedAt: number;
+  private _lastUsedAt: Date | null;
+  public readonly expiresAt?: Date | null;
+  public readonly createdAt: Date;
+  private _updatedAt: Date;
 
   constructor(params: {
     uuid?: string;
@@ -29,10 +29,10 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
     key: string;
     keyPrefix: string;
     status?: 'ACTIVE' | 'REVOKED' | 'EXPIRED';
-    lastUsedAt?: number | null;
-    expiresAt?: number | null;
-    createdAt?: number;
-    updatedAt?: number;
+    lastUsedAt?: Date | null;
+    expiresAt?: Date | null;
+    createdAt?: Date;
+    updatedAt?: Date;
   }) {
     super(params.uuid ?? generateUUID());
     this.credentialUuid = params.credentialUuid;
@@ -41,20 +41,21 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
     this.keyPrefix = params.keyPrefix;
     this._status = params.status ?? 'ACTIVE';
     this._lastUsedAt = params.lastUsedAt ?? null;
+    const now = new Date();
     this.expiresAt = params.expiresAt ?? null;
-    this.createdAt = params.createdAt ?? Date.now();
-    this._updatedAt = params.updatedAt ?? Date.now();
+    this.createdAt = params.createdAt ?? now;
+    this._updatedAt = params.updatedAt ?? now;
   }
 
   public get status(): 'ACTIVE' | 'REVOKED' | 'EXPIRED' {
     return this._status;
   }
 
-  public get lastUsedAt(): number | null {
+  public get lastUsedAt(): Date | null {
     return this._lastUsedAt;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -67,7 +68,7 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
     expiresInDays?: number;
   }): ApiKeyCredential {
     const expiresAt = params.expiresInDays
-      ? Date.now() + params.expiresInDays * 24 * 60 * 60 * 1000
+      ? new Date(Date.now() + params.expiresInDays * 24 * 60 * 60 * 1000)
       : null;
 
     return new ApiKeyCredential({
@@ -88,10 +89,10 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
       key: dto.key,
       keyPrefix: dto.keyPrefix,
       status: dto.status,
-      lastUsedAt: dto.lastUsedAt,
-      expiresAt: dto.expiresAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      lastUsedAt: dto.lastUsedAt ? new Date(dto.lastUsedAt) : null,
+      expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -113,7 +114,7 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
   // Business methods
   public isExpired(): boolean {
     if (!this.expiresAt) return false;
-    return Date.now() > this.expiresAt;
+    return new Date() > this.expiresAt;
   }
 
   public isValid(): boolean {
@@ -122,12 +123,12 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
 
   public revoke(): void {
     this._status = 'REVOKED';
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public recordUsage(): void {
-    this._lastUsedAt = Date.now();
-    this._updatedAt = Date.now();
+    this._lastUsedAt = new Date();
+    this._updatedAt = new Date();
   }
 
   // DTO conversion
@@ -139,10 +140,10 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
       key: this.key,
       keyPrefix: this.keyPrefix,
       status: this._status,
-      lastUsedAt: this._lastUsedAt,
-      expiresAt: this.expiresAt,
-      createdAt: this.createdAt,
-      updatedAt: this._updatedAt,
+      lastUsedAt: this._lastUsedAt ? this._lastUsedAt.getTime() : null,
+      expiresAt: this.expiresAt ? this.expiresAt.getTime() : null,
+      createdAt: this.createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -153,10 +154,10 @@ export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
       name: this.name,
       keyPrefix: this.keyPrefix,
       status: this._status,
-      lastUsedAt: this._lastUsedAt,
-      expiresAt: this.expiresAt,
-      createdAt: this.createdAt,
-      updatedAt: this._updatedAt,
+      lastUsedAt: this._lastUsedAt ? this._lastUsedAt.getTime() : null,
+      expiresAt: this.expiresAt ? this.expiresAt.getTime() : null,
+      createdAt: this.createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 

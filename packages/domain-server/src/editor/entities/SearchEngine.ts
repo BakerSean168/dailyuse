@@ -26,8 +26,8 @@ export class SearchEngine extends Entity implements SearchEngineServer {
   private _lastIndexedAt: number | null;
   private _isIndexing: boolean;
   private _indexProgress: number | null;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -42,8 +42,8 @@ export class SearchEngine extends Entity implements SearchEngineServer {
     lastIndexedAt?: number | null;
     isIndexing: boolean;
     indexProgress?: number | null;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
   }) {
     super(params.uuid || Entity.generateUUID());
     this._workspaceUuid = params.workspaceUuid;
@@ -94,10 +94,10 @@ export class SearchEngine extends Entity implements SearchEngineServer {
   public get indexProgress(): number | null {
     return this._indexProgress;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -114,7 +114,7 @@ export class SearchEngine extends Entity implements SearchEngineServer {
     indexPath: string;
   }): SearchEngine {
     const uuid = crypto.randomUUID();
-    const now = Date.now();
+    const now = new Date();
 
     return new SearchEngine({
       uuid,
@@ -147,8 +147,8 @@ export class SearchEngine extends Entity implements SearchEngineServer {
       lastIndexedAt: dto.lastIndexedAt,
       isIndexing: dto.isIndexing,
       indexProgress: dto.indexProgress,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -186,7 +186,7 @@ export class SearchEngine extends Entity implements SearchEngineServer {
     this._totalDocumentCount = totalDocumentCount;
     this._indexedDocumentCount = 0;
     this._indexProgress = 0;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -199,7 +199,7 @@ export class SearchEngine extends Entity implements SearchEngineServer {
     this._indexedDocumentCount = indexedCount;
     this._totalDocumentCount = totalCount;
     this._indexProgress = totalCount > 0 ? Math.floor((indexedCount / totalCount) * 100) : 0;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -212,7 +212,7 @@ export class SearchEngine extends Entity implements SearchEngineServer {
     this._isIndexing = false;
     this._indexProgress = 100;
     this._lastIndexedAt = Date.now();
-    this._updatedAt = this._lastIndexedAt;
+    this._updatedAt = new Date();
   }
 
   /**
@@ -224,7 +224,7 @@ export class SearchEngine extends Entity implements SearchEngineServer {
     }
     this._isIndexing = false;
     this._indexProgress = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -236,7 +236,7 @@ export class SearchEngine extends Entity implements SearchEngineServer {
     this._totalDocumentCount = 0;
     this._indexProgress = null;
     this._lastIndexedAt = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -251,7 +251,7 @@ export class SearchEngine extends Entity implements SearchEngineServer {
       );
     }
     this._lastIndexedAt = Date.now();
-    this._updatedAt = this._lastIndexedAt;
+    this._updatedAt = new Date();
   }
 
   /**
@@ -291,8 +291,8 @@ export class SearchEngine extends Entity implements SearchEngineServer {
       lastIndexedAt: this._lastIndexedAt,
       isIndexing: this._isIndexing,
       indexProgress: this._indexProgress,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -309,13 +309,13 @@ export class SearchEngine extends Entity implements SearchEngineServer {
       lastIndexedAt: this._lastIndexedAt,
       isIndexing: this._isIndexing,
       indexProgress: this._indexProgress,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
       formattedLastIndexed: this._lastIndexedAt
         ? new Date(this._lastIndexedAt).toLocaleString()
         : null,
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
-      formattedUpdatedAt: new Date(this._updatedAt).toLocaleString(),
+      formattedCreatedAt: this._createdAt.toLocaleString(),
+      formattedUpdatedAt: this._updatedAt.toLocaleString(),
     };
   }
 

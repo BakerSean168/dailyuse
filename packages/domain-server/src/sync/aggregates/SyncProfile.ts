@@ -40,8 +40,8 @@ export class SyncProfile extends AggregateRoot {
   private _lastSyncVersion?: SyncVersionServerDTO | null;
   private _lastSyncResult?: 'success' | 'failed' | 'partial' | null;
   private _historyStats: HistoryStats;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   private constructor(params: {
     uuid: string;
@@ -191,8 +191,8 @@ export class SyncProfile extends AggregateRoot {
       lastSyncVersion: dto.lastSyncVersion,
       lastSyncResult: dto.lastSyncResult,
       historyStats: dto.historyStats,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -216,8 +216,8 @@ export class SyncProfile extends AggregateRoot {
         : null,
       lastSyncResult: dto.lastSyncResult as 'success' | 'failed' | 'partial' | null,
       historyStats: JSON.parse(dto.historyStatsJson),
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -231,7 +231,7 @@ export class SyncProfile extends AggregateRoot {
       throw new Error('SyncProfile: name cannot be empty');
     }
     this._name = name.trim();
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -239,7 +239,7 @@ export class SyncProfile extends AggregateRoot {
    */
   updateSyncConfig(config: SyncProfileConfigDTO): void {
     this._syncConfig = config;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -247,7 +247,7 @@ export class SyncProfile extends AggregateRoot {
    */
   updateProviderConfig(config: SyncProviderConfigDTO): void {
     this._providerConfig = config;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -255,7 +255,7 @@ export class SyncProfile extends AggregateRoot {
    */
   setAsDefault(): void {
     this._isDefault = true;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -263,7 +263,7 @@ export class SyncProfile extends AggregateRoot {
    */
   unsetDefault(): void {
     this._isDefault = false;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -271,7 +271,7 @@ export class SyncProfile extends AggregateRoot {
    */
   activate(): void {
     this._isActive = true;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -279,7 +279,7 @@ export class SyncProfile extends AggregateRoot {
    */
   deactivate(): void {
     this._isActive = false;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -287,7 +287,7 @@ export class SyncProfile extends AggregateRoot {
    */
   setConnected(connected: boolean): void {
     this._isConnected = connected;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -298,7 +298,7 @@ export class SyncProfile extends AggregateRoot {
     result: 'success' | 'failed' | 'partial',
     durationMs: number,
   ): void {
-    this._lastSyncAt = Date.now();
+    this._lastSyncAt = new Date();
     this._lastSyncVersion = version;
     this._lastSyncResult = result;
 
@@ -323,7 +323,7 @@ export class SyncProfile extends AggregateRoot {
       averageDurationMs,
     };
 
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== 查询方法 =====
@@ -361,8 +361,8 @@ export class SyncProfile extends AggregateRoot {
       lastSyncVersion: this._lastSyncVersion,
       lastSyncResult: this._lastSyncResult,
       historyStats: this._historyStats,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: new Date(this._createdAt),
+      updatedAt: new Date(this._updatedAt),
     };
   }
 
@@ -390,8 +390,8 @@ export class SyncProfile extends AggregateRoot {
       lastSyncAt: this._lastSyncAt,
       lastSyncResult: this._lastSyncResult,
       statusLabel: this.statusLabel,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: new Date(this._createdAt),
+      updatedAt: new Date(this._updatedAt),
     };
   }
 
@@ -406,14 +406,14 @@ export class SyncProfile extends AggregateRoot {
       isDefault: this._isDefault,
       isActive: this._isActive,
       isConnected: this._isConnected,
-      lastSyncAt: this._lastSyncAt ?? null,
+      lastSyncAt: this._lastSyncAt ? new Date(this._lastSyncAt) : null,
       lastSyncVersionJson: this._lastSyncVersion
         ? JSON.stringify(this._lastSyncVersion)
         : null,
       lastSyncResult: this._lastSyncResult ?? null,
       historyStatsJson: JSON.stringify(this._historyStats),
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: new Date(this._createdAt),
+      updatedAt: new Date(this._updatedAt),
     };
   }
 }

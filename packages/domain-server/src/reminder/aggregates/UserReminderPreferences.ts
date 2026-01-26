@@ -30,8 +30,8 @@ export class UserReminderPreferences
   private _bestTimeSlots: TimeSlotDTO[];
   private _worstTimeSlots: TimeSlotDTO[];
   private _globalSmartFrequency: boolean;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
@@ -48,8 +48,8 @@ export class UserReminderPreferences
     this._bestTimeSlots = [...params.bestTimeSlots];
     this._worstTimeSlots = [...params.worstTimeSlots];
     this._globalSmartFrequency = params.globalSmartFrequency;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+    this._createdAt = new Date(params.createdAt);
+    this._updatedAt = new Date(params.updatedAt);
   }
 
   // ===== Getter 属性 =====
@@ -73,11 +73,11 @@ export class UserReminderPreferences
     return this._globalSmartFrequency;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -168,7 +168,7 @@ export class UserReminderPreferences
       this._bestTimeSlots.sort((a, b) => b.avgResponseRate - a.avgResponseRate);
     }
 
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date(Date.now());
   }
 
   /**
@@ -201,7 +201,7 @@ export class UserReminderPreferences
       this._worstTimeSlots.sort((a, b) => a.avgResponseRate - b.avgResponseRate);
     }
 
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date(Date.now());
   }
 
   /**
@@ -210,7 +210,7 @@ export class UserReminderPreferences
   public updateTimeSlots(best: TimeSlotDTO[], worst: TimeSlotDTO[]): void {
     this._bestTimeSlots = [...best];
     this._worstTimeSlots = [...worst];
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date(Date.now());
   }
 
   /**
@@ -218,7 +218,7 @@ export class UserReminderPreferences
    */
   public toggleGlobalSmartFrequency(enabled: boolean): void {
     this._globalSmartFrequency = enabled;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date(Date.now());
   }
 
   /**
@@ -282,8 +282,8 @@ export class UserReminderPreferences
       bestTimeSlots: [...this._bestTimeSlots],
       worstTimeSlots: [...this._worstTimeSlots],
       globalSmartFrequency: this._globalSmartFrequency,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -313,8 +313,8 @@ export class UserReminderPreferences
       bestTimeSlots: [...this._bestTimeSlots],
       worstTimeSlots: [...this._worstTimeSlots],
       globalSmartFrequency: this._globalSmartFrequency,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
       bestTimeSlotsText,
       worstTimeSlotsText,
     };
@@ -330,8 +330,8 @@ export class UserReminderPreferences
       bestTimeSlots: JSON.stringify(this._bestTimeSlots),
       worstTimeSlots: JSON.stringify(this._worstTimeSlots),
       globalSmartFrequency: this._globalSmartFrequency,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 }

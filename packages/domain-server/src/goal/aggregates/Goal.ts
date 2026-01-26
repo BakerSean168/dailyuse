@@ -70,17 +70,17 @@ export class Goal extends AggregateRoot implements GoalServer {
   // private _urgency: UrgencyLevel; // REMOVED - priority 现在是计算属性
   private _category: string | null;
   private _tags: string[];
-  private _startDate: number | null;
-  private _targetDate: number | null;
-  private _completedAt: number | null;
-  private _archivedAt: number | null;
+  private readonly _startDate: Date | null;
+  private _targetDate: Date | null;
+  private readonly _completedAt: Date | null;
+  private readonly _archivedAt: Date | null;
   private _folderUuid: string | null;
   private _parentGoalUuid: string | null;
   private _sortOrder: number;
   private _reminderConfig: GoalReminderConfig | null;
-  private _createdAt: number;
-  private _updatedAt: number;
-  private _deletedAt: number | null;
+  private _createdAt: Date;
+  private _updatedAt: Date;
+  private _deletedAt: Date | null;
 
   // ===== 子实体集合 =====
   private _keyResults: KeyResult[];
@@ -101,17 +101,17 @@ export class Goal extends AggregateRoot implements GoalServer {
     // urgency: UrgencyLevel; // REMOVED
     category?: string | null;
     tags: string[];
-    startDate?: number | null;
-    targetDate?: number | null;
-    completedAt?: number | null;
-    archivedAt?: number | null;
+    startDate?: Date | null;
+    targetDate?: Date | null;
+    completedAt?: Date | null;
+    archivedAt?: Date | null;
     folderUuid?: string | null;
     parentGoalUuid?: string | null;
     sortOrder: number;
     reminderConfig?: GoalReminderConfig | null;
-    createdAt: number;
-    updatedAt: number;
-    deletedAt?: number | null;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date | null;
   }) {
     super(params.uuid ?? AggregateRoot.generateUUID());
     this._accountUuid = params.accountUuid;
@@ -175,7 +175,7 @@ export class Goal extends AggregateRoot implements GoalServer {
    * 基于 importance 和 targetDate 计算
    */
   public get priority(): number {
-    const targetDate = this._targetDate ? new Date(this._targetDate) : null;
+    const targetDate = this._targetDate;
     return calculateGoalPriority(this._importance, targetDate, new Date());
   }
   
@@ -199,16 +199,16 @@ export class Goal extends AggregateRoot implements GoalServer {
   public get tags(): string[] {
     return [...this._tags];
   }
-  public get startDate(): number | null {
+  public get startDate(): Date | null {
     return this._startDate;
   }
-  public get targetDate(): number | null {
+  public get targetDate(): Date | null {
     return this._targetDate;
   }
-  public get completedAt(): number | null {
+  public get completedAt(): Date | null {
     return this._completedAt;
   }
-  public get archivedAt(): number | null {
+  public get archivedAt(): Date | null {
     return this._archivedAt;
   }
   public get folderUuid(): string | null {
@@ -223,13 +223,13 @@ export class Goal extends AggregateRoot implements GoalServer {
   public get reminderConfig(): GoalReminderConfig | null {
     return this._reminderConfig;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
-  public get deletedAt(): number | null {
+  public get deletedAt(): Date | null {
     return this._deletedAt;
   }
   public get keyResults(): KeyResult[] {
@@ -258,8 +258,8 @@ export class Goal extends AggregateRoot implements GoalServer {
     // urgency?: UrgencyLevel; // REMOVED
     category?: string;
     tags?: string[];
-    startDate?: number;
-    targetDate?: number;
+    startDate?: Date;
+    targetDate?: Date;
     folderUuid?: string;
     parentGoalUuid?: string;
     reminderConfig?: GoalReminderConfig;
@@ -272,7 +272,8 @@ export class Goal extends AggregateRoot implements GoalServer {
       throw new Error('Name is required');
     }
 
-    const now = Date.now();
+    const now = new Date();
+
     const goal = new Goal({
       accountUuid: params.accountUuid,
       name: params.name.trim(),
@@ -299,7 +300,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     goal.addDomainEvent({
       eventType: 'goal.created',
       aggregateId: goal.uuid,
-      occurredOn: new Date(now),
+      occurredOn: now,
       accountUuid: params.accountUuid,
       payload: {
         goal: goal.toServerDTO(),
@@ -325,17 +326,17 @@ export class Goal extends AggregateRoot implements GoalServer {
       // urgency: dto.urgency, // REMOVED
       category: dto.category ?? null,
       tags: dto.tags,
-      startDate: dto.startDate ?? null,
-      targetDate: dto.targetDate ?? null,
-      completedAt: dto.completedAt ?? null,
-      archivedAt: dto.archivedAt ?? null,
+      startDate: dto.startDate ? new Date(dto.startDate) : null,
+      targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
+      completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
+      archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
       folderUuid: dto.folderUuid ?? null,
       parentGoalUuid: dto.parentGoalUuid ?? null,
       sortOrder: dto.sortOrder,
       reminderConfig: dto.reminderConfig ? GoalReminderConfig.fromServerDTO(dto.reminderConfig) : null,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt ?? null,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
 
     // 重建子实体
@@ -373,17 +374,17 @@ export class Goal extends AggregateRoot implements GoalServer {
       // urgency: dto.urgency, // REMOVED
       category: dto.category ?? null,
       tags,
-      startDate: dto.startDate ?? null,
-      targetDate: dto.targetDate ?? null,
-      completedAt: dto.completedAt ?? null,
-      archivedAt: dto.archivedAt ?? null,
+      startDate: dto.startDate ? new Date(dto.startDate) : null,
+      targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
+      completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
+      archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
       folderUuid: dto.folderUuid ?? null,
       parentGoalUuid: dto.parentGoalUuid ?? null,
       sortOrder: dto.sortOrder,
       reminderConfig,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt ?? null,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 
@@ -457,11 +458,11 @@ export class Goal extends AggregateRoot implements GoalServer {
     }
 
     if (changes.length > 0) {
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
       this.addDomainEvent({
         eventType: 'goal.updated',
         aggregateId: this.uuid,
-        occurredOn: new Date(this._updatedAt),
+        occurredOn: this._updatedAt,
         accountUuid: this._accountUuid,
         payload: {
           goal: this.toServerDTO(),
@@ -475,26 +476,26 @@ export class Goal extends AggregateRoot implements GoalServer {
   /**
    * 更新时间范围
    */
-  public updateTimeRange(params: { startDate?: number | null; targetDate?: number | null }): void {
+  public updateTimeRange(params: { startDate?: Date | null; targetDate?: Date | null }): void {
     const oldStartDate = this._startDate;
     const oldTargetDate = this._targetDate;
     let hasChanges = false;
 
-    if (params.startDate !== undefined && params.startDate !== this._startDate) {
+    if (params.startDate !== undefined && params.startDate?.getTime() !== this._startDate?.getTime()) {
       this._startDate = params.startDate;
       hasChanges = true;
     }
-    if (params.targetDate !== undefined && params.targetDate !== this._targetDate) {
+    if (params.targetDate !== undefined && params.targetDate?.getTime() !== this._targetDate?.getTime()) {
       this._targetDate = params.targetDate;
       hasChanges = true;
     }
 
     if (hasChanges) {
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
       this.addDomainEvent({
         eventType: 'goal.schedule_time_changed',
         aggregateId: this.uuid,
-        occurredOn: new Date(this._updatedAt),
+        occurredOn: this._updatedAt,
         accountUuid: this._accountUuid,
         payload: {
           goal: this.toServerDTO(),
@@ -520,7 +521,7 @@ export class Goal extends AggregateRoot implements GoalServer {
       throw new Error('Target date is not set');
     }
     
-    const newTargetDate = this._targetDate + extensionDays * 24 * 60 * 60 * 1000;
+    const newTargetDate = new Date(this._targetDate.getTime() + extensionDays * 24 * 60 * 60 * 1000);
     this.updateTimeRange({ targetDate: newTargetDate });
   }
   
@@ -537,10 +538,10 @@ export class Goal extends AggregateRoot implements GoalServer {
       throw new Error('Start or target date is not set');
     }
     
-    const newTargetDate = this._targetDate - shortenDays * 24 * 60 * 60 * 1000;
+    const newTargetDate = new Date(this._targetDate.getTime() - shortenDays * 24 * 60 * 60 * 1000);
     
     // 确保新的目标时间仍然晚于开始时间
-    if (newTargetDate <= this._startDate) {
+    if (newTargetDate.getTime() <= this._startDate.getTime()) {
       throw new Error('Target date cannot be earlier than or equal to start date');
     }
     
@@ -552,7 +553,7 @@ export class Goal extends AggregateRoot implements GoalServer {
    */
   public updateTags(tags: string[]): void {
     this._tags = tags;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -562,7 +563,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     const trimmed = tag.trim();
     if (trimmed && !this._tags.includes(trimmed)) {
       this._tags.push(trimmed);
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -573,7 +574,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     const index = this._tags.indexOf(tag);
     if (index !== -1) {
       this._tags.splice(index, 1);
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -585,7 +586,7 @@ export class Goal extends AggregateRoot implements GoalServer {
 
     const previousStatus = this._status;
     this._status = newStatus;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     // 如果标记为完成，记录完成时间
     if (newStatus === 'COMPLETED' && !this._completedAt) {
@@ -596,7 +597,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     this.addDomainEvent({
       eventType: 'goal.status_changed',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._updatedAt),
+      occurredOn: this._updatedAt,
       accountUuid: this._accountUuid,
       payload: {
         goalUuid: this.uuid,
@@ -612,7 +613,7 @@ export class Goal extends AggregateRoot implements GoalServer {
    */
   public activate(): void {
     this._status = GoalStatus.ACTIVE;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -629,13 +630,13 @@ export class Goal extends AggregateRoot implements GoalServer {
     if (this._status === GoalStatus.COMPLETED) return;
 
     this._status = GoalStatus.COMPLETED;
-    this._completedAt = Date.now();
+    this._completedAt = new Date();
     this._updatedAt = this._completedAt;
 
     this.addDomainEvent({
       eventType: 'goal.completed',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._completedAt),
+      occurredOn: this._completedAt,
       accountUuid: this._accountUuid,
       payload: {
         goalUuid: this.uuid,
@@ -652,13 +653,13 @@ export class Goal extends AggregateRoot implements GoalServer {
     if (this._archivedAt) return;
 
     this._status = GoalStatus.ARCHIVED; // 更新状态
-    this._archivedAt = Date.now();
+    this._archivedAt = new Date();
     this._updatedAt = this._archivedAt;
 
     this.addDomainEvent({
       eventType: 'goal.archived',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._archivedAt),
+      occurredOn: this._archivedAt,
       accountUuid: this._accountUuid,
       payload: {
         goalUuid: this.uuid,
@@ -673,13 +674,13 @@ export class Goal extends AggregateRoot implements GoalServer {
   public softDelete(): void {
     if (this._deletedAt) return;
 
-    this._deletedAt = Date.now();
+    this._deletedAt = new Date();
     this._updatedAt = this._deletedAt;
 
     this.addDomainEvent({
       eventType: 'goal.deleted',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._deletedAt),
+      occurredOn: this._deletedAt,
       accountUuid: this._accountUuid,
       payload: {
         goalUuid: this.uuid,
@@ -694,7 +695,7 @@ export class Goal extends AggregateRoot implements GoalServer {
    */
   public restore(): void {
     this._deletedAt = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -702,7 +703,7 @@ export class Goal extends AggregateRoot implements GoalServer {
    */
   public moveToFolder(folderUuid: string | null): void {
     this._folderUuid = folderUuid;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -710,7 +711,7 @@ export class Goal extends AggregateRoot implements GoalServer {
    */
   public updateSortOrder(sortOrder: number): void {
     this._sortOrder = sortOrder;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -720,12 +721,12 @@ export class Goal extends AggregateRoot implements GoalServer {
     const oldConfigDTO = this._reminderConfig?.toServerDTO() ?? null;
     
     this._reminderConfig = config ? GoalReminderConfig.fromServerDTO(config) : null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'goal.reminder_config_changed',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._updatedAt),
+      occurredOn: this._updatedAt,
       accountUuid: this._accountUuid,
       payload: {
         goal: this.toServerDTO(),
@@ -742,7 +743,7 @@ export class Goal extends AggregateRoot implements GoalServer {
   public enableReminder(): void {
     if (this._reminderConfig) {
       this._reminderConfig = this._reminderConfig.enable();
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -752,7 +753,7 @@ export class Goal extends AggregateRoot implements GoalServer {
   public disableReminder(): void {
     if (this._reminderConfig) {
       this._reminderConfig = this._reminderConfig.disable();
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -764,7 +765,7 @@ export class Goal extends AggregateRoot implements GoalServer {
       throw new Error('Reminder config not initialized');
     }
     this._reminderConfig = this._reminderConfig.addTrigger(trigger);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -775,7 +776,7 @@ export class Goal extends AggregateRoot implements GoalServer {
       throw new Error('Reminder config not initialized');
     }
     this._reminderConfig = this._reminderConfig.removeTrigger(type, value);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== 关键结果管理 =====
@@ -815,7 +816,7 @@ export class Goal extends AggregateRoot implements GoalServer {
    */
   public addKeyResult(keyResult: KeyResult): void {
     this._keyResults.push(keyResult);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     // 自动重新计算进度
     const newProgress = this.calculateProgress();
@@ -823,7 +824,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     this.addDomainEvent({
       eventType: 'goal.key_result_added',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._updatedAt),
+      occurredOn: this._updatedAt,
       accountUuid: this._accountUuid,
       payload: {
         goalUuid: this.uuid,
@@ -847,7 +848,7 @@ export class Goal extends AggregateRoot implements GoalServer {
       keyResult.updateDescription(updates.description || '');
     }
 
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     // 自动重新计算进度
     const newProgress = this.calculateProgress();
@@ -855,7 +856,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     this.addDomainEvent({
       eventType: 'goal.key_result_updated',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._updatedAt),
+      occurredOn: this._updatedAt,
       accountUuid: this._accountUuid,
       payload: {
         goalUuid: this.uuid,
@@ -885,7 +886,7 @@ export class Goal extends AggregateRoot implements GoalServer {
       }
     }
     this._keyResults = newOrder;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -917,7 +918,7 @@ export class Goal extends AggregateRoot implements GoalServer {
 
     const oldProgress = this.calculateProgress();
     keyResult.updateProgress(newValue, note);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     // 自动重新计算进度
     const newProgress = this.calculateProgress();
@@ -927,7 +928,7 @@ export class Goal extends AggregateRoot implements GoalServer {
       this.addDomainEvent({
         eventType: 'goal.progress_updated',
         aggregateId: this.uuid,
-        occurredOn: new Date(this._updatedAt),
+        occurredOn: this._updatedAt,
         accountUuid: this._accountUuid,
         payload: {
           goalUuid: this.uuid,
@@ -949,7 +950,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     const index = this._keyResults.findIndex((kr) => kr.uuid === keyResultUuid);
     if (index !== -1) {
       const removed = this._keyResults.splice(index, 1)[0];
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
       
       // 自动重新计算进度
       const newProgress = this.calculateProgress();
@@ -957,7 +958,7 @@ export class Goal extends AggregateRoot implements GoalServer {
       this.addDomainEvent({
         eventType: 'goal.key_result_removed',
         aggregateId: this.uuid,
-        occurredOn: new Date(this._updatedAt),
+        occurredOn: this._updatedAt,
         accountUuid: this._accountUuid,
         payload: {
           goalUuid: this.uuid,
@@ -1085,7 +1086,7 @@ export class Goal extends AggregateRoot implements GoalServer {
 
     // 添加到快照数组
     this._weightSnapshots.push(snapshot);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -1144,12 +1145,12 @@ export class Goal extends AggregateRoot implements GoalServer {
    */
   public addReview(review: GoalReview): void {
     this._reviews.push(review);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'goal.review_added',
       aggregateId: this.uuid,
-      occurredOn: new Date(this._updatedAt),
+      occurredOn: this._updatedAt,
       accountUuid: this._accountUuid,
       payload: {
         goalUuid: this.uuid,
@@ -1197,7 +1198,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     if (params.challenges) review.addChallenge(params.challenges);
     if (params.improvements) review.addImprovement(params.improvements);
 
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -1207,7 +1208,7 @@ export class Goal extends AggregateRoot implements GoalServer {
     const index = this._reviews.findIndex((r) => r.uuid === reviewUuid);
     if (index !== -1) {
       const removed = this._reviews.splice(index, 1)[0];
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
       return removed;
     }
     return null;
@@ -1220,7 +1221,7 @@ export class Goal extends AggregateRoot implements GoalServer {
    */
   public isOverdue(): boolean {
     if (!this._targetDate || this._status === 'COMPLETED') return false;
-    return Date.now() > this._targetDate;
+    return Date.now() > this._targetDate.getTime();
   }
 
   /**
@@ -1235,7 +1236,7 @@ export class Goal extends AggregateRoot implements GoalServer {
    */
   public getRemainingDays(): number | null {
     if (!this._targetDate) return null;
-    const diff = this._targetDate - Date.now();
+    const diff = this._targetDate.getTime() - Date.now();
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   }
 
@@ -1367,8 +1368,8 @@ export class Goal extends AggregateRoot implements GoalServer {
   }
 
   private resolveTimeRange(): { start: number | null; end: number | null } {
-    const start = this._startDate ?? this._createdAt ?? null;
-    let end = this._targetDate ?? this._completedAt ?? this._updatedAt ?? null;
+    const start = this._startDate?.getTime() ?? this._createdAt?.getTime() ?? null;
+    let end = this._targetDate?.getTime() ?? this._completedAt?.getTime() ?? this._updatedAt?.getTime() ?? null;
 
     if (start && (!end || end <= start)) {
       end = start + DEFAULT_DURATION;

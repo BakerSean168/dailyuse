@@ -40,8 +40,8 @@ export class Schedule extends AggregateRoot {
   private _priority: number | null;
   private _location: string | null;
   private _attendees: string[] | null;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -130,11 +130,11 @@ export class Schedule extends AggregateRoot {
     return this._attendees ? [...this._attendees] : null;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -341,8 +341,8 @@ export class Schedule extends AggregateRoot {
       priority: this._priority,
       location: this._location,
       attendees: this._attendees,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -363,8 +363,8 @@ export class Schedule extends AggregateRoot {
       priority: this._priority ?? undefined,
       location: this._location ?? undefined,
       attendees: this._attendees ?? undefined,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -378,7 +378,7 @@ export class Schedule extends AggregateRoot {
   public markAsConflicting(conflictingUuids: string[]): void {
     this._hasConflict = true;
     this._conflictingSchedules = [...conflictingUuids];
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -387,7 +387,7 @@ export class Schedule extends AggregateRoot {
   public clearConflicts(): void {
     this._hasConflict = false;
     this._conflictingSchedules = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -404,7 +404,7 @@ export class Schedule extends AggregateRoot {
     this._startTime = newStartTime;
     this._endTime = newEndTime;
     this._duration = this.calculateDuration(newStartTime, newEndTime);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== 更新方法 (Story 4-1) =====
@@ -417,7 +417,7 @@ export class Schedule extends AggregateRoot {
       throw new Error('Title cannot be empty');
     }
     this._title = title;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -425,7 +425,7 @@ export class Schedule extends AggregateRoot {
    */
   public updateDescription(description: string | null): void {
     this._description = description;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -438,7 +438,7 @@ export class Schedule extends AggregateRoot {
     this._startTime = startTime;
     this._endTime = endTime;
     this._duration = this.calculateDuration(startTime, endTime);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -449,7 +449,7 @@ export class Schedule extends AggregateRoot {
       throw new Error('Priority must be between 1 and 5');
     }
     this._priority = priority;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -457,7 +457,7 @@ export class Schedule extends AggregateRoot {
    */
   public updateLocation(location: string | null): void {
     this._location = location;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -465,6 +465,6 @@ export class Schedule extends AggregateRoot {
    */
   public updateAttendees(attendees: string[] | null): void {
     this._attendees = attendees ? [...attendees] : null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 }

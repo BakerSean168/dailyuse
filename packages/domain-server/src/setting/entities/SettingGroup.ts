@@ -27,8 +27,8 @@ export class SettingGroup extends Entity implements SettingGroupServer {
   private _settings: SettingItem[];
   private _isSystemGroup: boolean;
   private _isCollapsed: boolean;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
   private _deletedAt?: number | null;
 
   private constructor(params: {
@@ -105,15 +105,15 @@ export class SettingGroup extends Entity implements SettingGroupServer {
     return this._isCollapsed;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
-  public get deletedAt(): number | null | undefined {
+  public get deletedAt(): Date | null | undefined {
     return this._deletedAt;
   }
 
@@ -130,7 +130,7 @@ export class SettingGroup extends Entity implements SettingGroupServer {
     }
 
     this._settings.push(setting);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -143,7 +143,7 @@ export class SettingGroup extends Entity implements SettingGroupServer {
     }
 
     this._settings.splice(index, 1);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -166,7 +166,7 @@ export class SettingGroup extends Entity implements SettingGroupServer {
     }
 
     this._settings = orderedSettings;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -188,7 +188,7 @@ export class SettingGroup extends Entity implements SettingGroupServer {
    */
   public collapse(): void {
     this._isCollapsed = true;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -196,7 +196,7 @@ export class SettingGroup extends Entity implements SettingGroupServer {
    */
   public expand(): void {
     this._isCollapsed = false;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -204,7 +204,7 @@ export class SettingGroup extends Entity implements SettingGroupServer {
    */
   public softDelete(): void {
     if (this._deletedAt) return;
-    this._deletedAt = Date.now();
+    this._deletedAt = new Date();
     this._updatedAt = this._deletedAt;
   }
 
@@ -213,7 +213,7 @@ export class SettingGroup extends Entity implements SettingGroupServer {
    */
   public restore(): void {
     this._deletedAt = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ============ Helper Methods for Client DTO ============
@@ -248,9 +248,9 @@ export class SettingGroup extends Entity implements SettingGroupServer {
       settings: this._settings.length > 0 ? this._settings.map((s) => s.toServerDTO()) : null,
       isSystemGroup: this._isSystemGroup,
       isCollapsed: this._isCollapsed,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt.getTime(),
     };
   }
 
@@ -267,9 +267,9 @@ export class SettingGroup extends Entity implements SettingGroupServer {
       settings: this._settings.length > 0 ? this._settings.map((s) => s.toClientDTO()) : null,
       isSystemGroup: this._isSystemGroup,
       isCollapsed: this._isCollapsed,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt.getTime(),
       // Computed properties
       isDeleted: this.getIsDeleted(),
       settingCount: this.getSettingCount(),
@@ -293,9 +293,9 @@ export class SettingGroup extends Entity implements SettingGroupServer {
       settings: JSON.stringify(this._settings.map((s) => s.toServerDTO())),
       isSystemGroup: this._isSystemGroup,
       isCollapsed: this._isCollapsed,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt.getTime(),
     };
   }
 
@@ -349,9 +349,9 @@ export class SettingGroup extends Entity implements SettingGroupServer {
       settings: dto.settings ? dto.settings.map((s) => SettingItem.fromServerDTO(s)) : [],
       isSystemGroup: dto.isSystemGroup,
       isCollapsed: dto.isCollapsed,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 
@@ -374,9 +374,9 @@ export class SettingGroup extends Entity implements SettingGroupServer {
         : [],
       isSystemGroup: dto.isSystemGroup,
       isCollapsed: dto.isCollapsed,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 }

@@ -29,10 +29,10 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
   private _maxRetries: number;
   private _error: ChannelError | null;
   private _response: ChannelResponse | null;
-  private _createdAt: number;
-  private _sentAt: number | null;
-  private _deliveredAt: number | null;
-  private _failedAt: number | null;
+  private _createdAt: Date;
+  private _sentAt: Date | null;
+  private _deliveredAt: Date | null;
+  private _failedAt: Date | null;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -45,10 +45,10 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
     maxRetries: number;
     error?: ChannelError | null;
     response?: ChannelResponse | null;
-    createdAt: number;
-    sentAt?: number | null;
-    deliveredAt?: number | null;
-    failedAt?: number | null;
+    createdAt: Date | number;
+    sentAt?: Date | number | null;
+    deliveredAt?: Date | number | null;
+    failedAt?: Date | number | null;
   }) {
     super(params.uuid ?? Entity.generateUUID());
     this._notificationUuid = params.notificationUuid;
@@ -59,10 +59,10 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
     this._maxRetries = params.maxRetries;
     this._error = params.error ?? null;
     this._response = params.response ?? null;
-    this._createdAt = params.createdAt;
-    this._sentAt = params.sentAt ?? null;
-    this._deliveredAt = params.deliveredAt ?? null;
-    this._failedAt = params.failedAt ?? null;
+    this._createdAt = params.createdAt instanceof Date ? params.createdAt : new Date(params.createdAt);
+    this._sentAt = params.sentAt ? (params.sentAt instanceof Date ? params.sentAt : new Date(params.sentAt)) : null;
+    this._deliveredAt = params.deliveredAt ? (params.deliveredAt instanceof Date ? params.deliveredAt : new Date(params.deliveredAt)) : null;
+    this._failedAt = params.failedAt ? (params.failedAt instanceof Date ? params.failedAt : new Date(params.failedAt)) : null;
   }
 
   // ===== Getter 属性 =====
@@ -93,16 +93,16 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
   public get response(): ChannelResponseServerDTO | null {
     return this._response?.toContract() ?? null;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get sentAt(): number | null {
+  public get sentAt(): Date | null {
     return this._sentAt;
   }
-  public get deliveredAt(): number | null {
+  public get deliveredAt(): Date | null {
     return this._deliveredAt;
   }
-  public get failedAt(): number | null {
+  public get failedAt(): Date | null {
     return this._failedAt;
   }
 
@@ -117,7 +117,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
     }
 
     this._status = ChannelStatus.SENT;
-    this._sentAt = Date.now();
+    this._sentAt = new Date();
     this._sendAttempts++;
   }
 
@@ -153,7 +153,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
     }
 
     this._status = ChannelStatus.DELIVERED;
-    this._deliveredAt = Date.now();
+    this._deliveredAt = new Date();
   }
 
   /**
@@ -162,7 +162,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
   public markAsFailed(error: ChannelErrorServerDTO): void {
     this._status = ChannelStatus.FAILED;
     this._error = ChannelError.fromContract(error);
-    this._failedAt = Date.now();
+    this._failedAt = new Date();
   }
 
   // ===== 状态查询方法 =====
@@ -259,7 +259,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
       recipient: params.recipient,
       sendAttempts: 0,
       maxRetries: params.maxRetries ?? 3,
-      createdAt: Date.now(),
+      createdAt: new Date(),
     });
   }
 
@@ -277,10 +277,10 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
       maxRetries: dto.maxRetries,
       error: dto.error ? ChannelError.fromContract(dto.error) : null,
       response: dto.response ? ChannelResponse.fromContract(dto.response) : null,
-      createdAt: dto.createdAt,
-      sentAt: dto.sentAt,
-      deliveredAt: dto.deliveredAt,
-      failedAt: dto.failedAt,
+      createdAt: new Date(dto.createdAt),
+      sentAt: dto.sentAt ? new Date(dto.sentAt) : null,
+      deliveredAt: dto.deliveredAt ? new Date(dto.deliveredAt) : null,
+      failedAt: dto.failedAt ? new Date(dto.failedAt) : null,
     });
   }
 
@@ -298,10 +298,10 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
       maxRetries: dto.maxRetries,
       error: dto.error ? ChannelError.fromContract(JSON.parse(dto.error)) : null,
       response: dto.response ? ChannelResponse.fromContract(JSON.parse(dto.response)) : null,
-      createdAt: dto.createdAt,
-      sentAt: dto.sentAt,
-      deliveredAt: dto.deliveredAt,
-      failedAt: dto.failedAt,
+      createdAt: new Date(dto.createdAt),
+      sentAt: dto.sentAt ? new Date(dto.sentAt) : null,
+      deliveredAt: dto.deliveredAt ? new Date(dto.deliveredAt) : null,
+      failedAt: dto.failedAt ? new Date(dto.failedAt) : null,
     });
   }
 }

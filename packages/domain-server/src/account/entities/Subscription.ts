@@ -15,32 +15,32 @@ export class Subscription extends Entity implements SubscriptionServer {
   private _accountUuid: string;
   private _plan: 'FREE' | 'BASIC' | 'PRO' | 'ENTERPRISE';
   private _status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'SUSPENDED';
-  private _startDate: number;
-  private _endDate: number | null;
-  private _renewalDate: number | null;
+  private readonly _startDate: Date;
+  private readonly _endDate: Date | null;
+  private readonly _renewalDate: Date | null;
   private _autoRenew: boolean;
   private _paymentMethod: string | null;
   private _billingCycle: 'MONTHLY' | 'YEARLY' | 'LIFETIME';
   private _amount: number | null;
   private _currency: string | null;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   private constructor(params: {
     uuid?: string;
     accountUuid: string;
     plan: 'FREE' | 'BASIC' | 'PRO' | 'ENTERPRISE';
     status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'SUSPENDED';
-    startDate: number;
-    endDate?: number | null;
-    renewalDate?: number | null;
+    startDate: Date;
+    endDate?: Date | null;
+    renewalDate?: Date | null;
     autoRenew: boolean;
     paymentMethod?: string | null;
     billingCycle: 'MONTHLY' | 'YEARLY' | 'LIFETIME';
     amount?: number | null;
     currency?: string | null;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
   }) {
     super(params.uuid ?? Entity.generateUUID());
     this._accountUuid = params.accountUuid;
@@ -71,13 +71,13 @@ export class Subscription extends Entity implements SubscriptionServer {
   public get status(): 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'SUSPENDED' {
     return this._status;
   }
-  public get startDate(): number {
+  public get startDate(): Date {
     return this._startDate;
   }
-  public get endDate(): number | null {
+  public get endDate(): Date | null {
     return this._endDate;
   }
-  public get renewalDate(): number | null {
+  public get renewalDate(): Date | null {
     return this._renewalDate;
   }
   public get autoRenew(): boolean {
@@ -95,10 +95,10 @@ export class Subscription extends Entity implements SubscriptionServer {
   public get currency(): string | null {
     return this._currency;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -108,7 +108,7 @@ export class Subscription extends Entity implements SubscriptionServer {
     plan: 'FREE' | 'BASIC' | 'PRO' | 'ENTERPRISE';
     billingCycle?: 'MONTHLY' | 'YEARLY' | 'LIFETIME';
   }): Subscription {
-    const now = Date.now();
+    const now = new Date();
     return new Subscription({
       accountUuid: params.accountUuid,
       plan: params.plan,
@@ -127,16 +127,16 @@ export class Subscription extends Entity implements SubscriptionServer {
       accountUuid: dto.accountUuid,
       plan: dto.plan,
       status: dto.status,
-      startDate: dto.startDate,
-      endDate: dto.endDate,
-      renewalDate: dto.renewalDate,
+      startDate: new Date(dto.startDate),
+      endDate: dto.endDate ? new Date(dto.endDate) : null,
+      renewalDate: dto.renewalDate ? new Date(dto.renewalDate) : null,
       autoRenew: dto.autoRenew,
       paymentMethod: dto.paymentMethod,
       billingCycle: dto.billingCycle,
       amount: dto.amount,
       currency: dto.currency,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -161,25 +161,25 @@ export class Subscription extends Entity implements SubscriptionServer {
 
   // Business methods
   public isActive(): boolean {
-    return this._status === 'ACTIVE' && (!this._endDate || Date.now() < this._endDate);
+    return this._status === 'ACTIVE' && (!this._endDate || new Date() < this._endDate);
   }
 
   public isExpired(): boolean {
-    return this._endDate !== null && Date.now() > this._endDate;
+    return this._endDate !== null && new Date() > this._endDate;
   }
 
   public cancel(): void {
     this._status = 'CANCELLED';
     this._autoRenew = false;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public renew(): void {
-    const now = Date.now();
+    const now = new Date();
     if (this._billingCycle === 'MONTHLY') {
-      this._renewalDate = now + 30 * 24 * 60 * 60 * 1000;
+      this._renewalDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     } else if (this._billingCycle === 'YEARLY') {
-      this._renewalDate = now + 365 * 24 * 60 * 60 * 1000;
+      this._renewalDate = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
     }
     this._status = 'ACTIVE';
     this._updatedAt = now;
@@ -187,12 +187,12 @@ export class Subscription extends Entity implements SubscriptionServer {
 
   public upgrade(plan: 'FREE' | 'BASIC' | 'PRO' | 'ENTERPRISE'): void {
     this._plan = plan;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public downgrade(plan: 'FREE' | 'BASIC' | 'PRO' | 'ENTERPRISE'): void {
     this._plan = plan;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // DTO conversion
@@ -202,16 +202,16 @@ export class Subscription extends Entity implements SubscriptionServer {
       accountUuid: this._accountUuid,
       plan: this._plan,
       status: this._status,
-      startDate: this._startDate,
-      endDate: this._endDate,
-      renewalDate: this._renewalDate,
+      startDate: this._startDate.getTime(),
+      endDate: this._endDate ? this._endDate.getTime() : null,
+      renewalDate: this._renewalDate ? this._renewalDate.getTime() : null,
       autoRenew: this._autoRenew,
       paymentMethod: this._paymentMethod,
       billingCycle: this._billingCycle,
       amount: this._amount,
       currency: this._currency,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -221,16 +221,16 @@ export class Subscription extends Entity implements SubscriptionServer {
       accountUuid: this._accountUuid,
       plan: this._plan,
       status: this._status,
-      startDate: this._startDate,
-      endDate: this._endDate,
-      renewalDate: this._renewalDate,
+      startDate: this._startDate.getTime(),
+      endDate: this._endDate ? this._endDate.getTime() : null,
+      renewalDate: this._renewalDate ? this._renewalDate.getTime() : null,
       autoRenew: this._autoRenew,
       paymentMethod: this._paymentMethod,
       billingCycle: this._billingCycle,
       amount: this._amount,
       currency: this._currency,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -240,16 +240,16 @@ export class Subscription extends Entity implements SubscriptionServer {
       accountUuid: this._accountUuid,
       plan: this._plan,
       status: this._status,
-      startDate: this._startDate,
-      endDate: this._endDate,
-      renewalDate: this._renewalDate,
+      startDate: this._startDate.getTime(),
+      endDate: this._endDate ? this._endDate.getTime() : null,
+      renewalDate: this._renewalDate ? this._renewalDate.getTime() : null,
       autoRenew: this._autoRenew,
       paymentMethod: this._paymentMethod,
       billingCycle: this._billingCycle,
       amount: this._amount,
       currency: this._currency,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 }

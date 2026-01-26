@@ -39,8 +39,8 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
   private _execution: ExecutionInfo;
   private _retryPolicy: RetryPolicy;
   private _metadata: TaskMetadata;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   // ===== 子实体集合 =====
   private _executions: ScheduleExecution[];
@@ -116,10 +116,10 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
   public get metadata(): TaskMetadata {
     return this._metadata;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
   public get executions(): ScheduleExecution[] | null {
@@ -254,7 +254,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
     this._status = ScheduleTaskStatus.PAUSED;
     // 自动禁用，保持状态一致性
     this._enabled = false;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     // 发布事件
     this.addDomainEvent({
@@ -281,7 +281,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
     this._status = ScheduleTaskStatus.ACTIVE;
     // 自动启用
     this._enabled = true;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     // 重新计算下次执行时间
     const nextRunAt = this._schedule.calculateNextRun();
@@ -307,7 +307,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
    */
   public complete(): void {
     this._status = ScheduleTaskStatus.COMPLETED;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     // 发布事件
     this.addDomainEvent({
@@ -332,7 +332,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
       throw new Error('Cannot cancel a completed task');
     }
     this._status = ScheduleTaskStatus.CANCELLED;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     // 发布事件
     this.addDomainEvent({
@@ -354,7 +354,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
    */
   public fail(error: string): void {
     this._status = ScheduleTaskStatus.FAILED;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     // 发布事件
     this.addDomainEvent({
@@ -380,7 +380,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
   public updateSchedule(schedule: Partial<any>): void {
     const oldCron = this._schedule.cronExpression;
     this._schedule = this._schedule.with(schedule);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     // 重新计算下次执行时间
     const nextRunAt = this._schedule.calculateNextRun(Date.now());
@@ -522,7 +522,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
       nextRunAt,
     });
 
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     // 发布事件
     this.addDomainEvent({
@@ -549,7 +549,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
    */
   public updateExecutionInfo(updates: Partial<any>): void {
     this._execution = this._execution.with(updates);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -557,7 +557,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
    */
   public resetFailures(): void {
     this._execution = this._execution.resetFailures();
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== 重试策略管理 =====
@@ -567,7 +567,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
    */
   public updateRetryPolicy(policy: Partial<any>): void {
     this._retryPolicy = this._retryPolicy.with(policy);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -593,7 +593,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
    */
   public updateMetadata(metadata: Partial<any>): void {
     this._metadata = this._metadata.with(metadata);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -601,7 +601,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
    */
   public updatePayload(payload: Record<string, any>): void {
     this._metadata = this._metadata.updatePayload(payload);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -609,7 +609,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
    */
   public addTag(tag: string): void {
     this._metadata = this._metadata.addTag(tag);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -617,7 +617,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
    */
   public removeTag(tag: string): void {
     this._metadata = this._metadata.removeTag(tag);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== 启用/禁用 =====
@@ -631,7 +631,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
     if (this._status === ScheduleTaskStatus.PAUSED) {
       this._status = ScheduleTaskStatus.ACTIVE;
     }
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -643,7 +643,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
     if (this._status === ScheduleTaskStatus.ACTIVE) {
       this._status = ScheduleTaskStatus.PAUSED;
     }
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== 状态检查 =====
@@ -798,8 +798,8 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
       execution: this._execution.toServerDTO(),
       retryPolicy: this._retryPolicy.toServerDTO(),
       metadata: this._metadata.toServerDTO(),
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
       executions: includeChildren ? this._executions.map((e) => e.toServerDTO()) : undefined,
     };
   }
@@ -821,8 +821,8 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
       execution: this._execution.toClientDTO(),
       retryPolicy: this._retryPolicy.toClientDTO(),
       metadata: this._metadata.toClientDTO(),
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
       executions: includeChildren ? this._executions.map((e) => e.toClientDTO()) : undefined,
       // UI 辅助属性
       statusDisplay: this.getStatusDisplay(),
@@ -882,8 +882,8 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
       priority: metadataDTO.priority,
       timeout: metadataDTO.timeout,
       // Timestamps
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -957,8 +957,8 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
       execution: ExecutionInfo.fromServerDTO(dto.execution),
       retryPolicy: RetryPolicy.fromServerDTO(dto.retryPolicy),
       metadata: TaskMetadata.fromServerDTO(dto.metadata),
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
 
     if (dto.executions) {
@@ -993,8 +993,8 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
       execution: ExecutionInfo.fromDTO(dto.execution),
       retryPolicy: RetryPolicy.fromDTO(dto.retryPolicy),
       metadata: TaskMetadata.fromDTO(dto.metadata),
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
 
     if (dto.executions) {
@@ -1027,8 +1027,8 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
         maxExecutions: dto.maxExecutions ?? null,
       }),
       execution: new ExecutionInfo({
-        nextRunAt: dto.nextRunAt ?? null,
-        lastRunAt: dto.lastRunAt ?? null,
+        nextRunAt: dto.nextRunAt,
+        lastRunAt: dto.lastRunAt,
         executionCount: dto.executionCount,
         lastExecutionStatus: (dto.lastExecutionStatus as ExecutionStatus) ?? null,
         lastExecutionDuration: dto.lastExecutionDuration ?? dto.last_execution_duration ?? null,
@@ -1047,8 +1047,8 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
         priority: dto.priority,
         timeout: dto.timeout,
       }),
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 }

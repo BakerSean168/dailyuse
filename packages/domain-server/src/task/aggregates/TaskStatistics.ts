@@ -45,7 +45,7 @@ export class TaskStatistics extends AggregateRoot implements TaskStatisticsServe
   private _completionStats: CompletionStatsInfo;
   private _timeStats: TimeStatsInfo;
   private _distributionStats: DistributionStatsInfo;
-  private _calculatedAt: number;
+  private _calculatedAt: Date;
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(props: TaskStatisticsProps, uuid?: string) {
@@ -93,7 +93,7 @@ export class TaskStatistics extends AggregateRoot implements TaskStatisticsServe
     };
   }
 
-  public get calculatedAt(): number {
+  public get calculatedAt(): Date {
     return this._calculatedAt;
   }
 
@@ -286,7 +286,7 @@ export class TaskStatistics extends AggregateRoot implements TaskStatisticsServe
       ...this._templateStats,
       ...templateStats,
     };
-    this._calculatedAt = Date.now();
+    this._calculatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'task.statistics.updated',
@@ -307,7 +307,7 @@ export class TaskStatistics extends AggregateRoot implements TaskStatisticsServe
       ...this._instanceStats,
       ...instanceStats,
     };
-    this._calculatedAt = Date.now();
+    this._calculatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'task.statistics.updated',
@@ -328,7 +328,7 @@ export class TaskStatistics extends AggregateRoot implements TaskStatisticsServe
       ...this._completionStats,
       ...completionStats,
     };
-    this._calculatedAt = Date.now();
+    this._calculatedAt = new Date();
 
     this.addDomainEvent({
       eventType: 'task.statistics.updated',
@@ -554,7 +554,7 @@ export class TaskStatistics extends AggregateRoot implements TaskStatisticsServe
       completionStats: this._completionStats,
       timeStats: this._timeStats,
       distributionStats: this._distributionStats,
-      calculatedAt: this._calculatedAt,
+      calculatedAt: this._calculatedAt.getTime(),
     };
   }
 
@@ -577,7 +577,7 @@ export class TaskStatistics extends AggregateRoot implements TaskStatisticsServe
       completionStats: this._completionStats,
       timeStats: this._timeStats,
       distributionStats: this._distributionStats,
-      calculatedAt: this._calculatedAt,
+      calculatedAt: this._calculatedAt.getTime(),
       // UI 扩展字段
       todayCompletionText: `今日完成 ${todayCompleted}/${todayTotal}`,
       weekCompletionText: `本周完成 ${weekCompleted}/${weekTotal}`,
@@ -654,7 +654,7 @@ export class TaskStatistics extends AggregateRoot implements TaskStatisticsServe
       distributionByFolder: JSON.stringify(this._distributionStats.tasksByFolder),
       distributionByTag: JSON.stringify(this._distributionStats.tasksByTag),
 
-      calculatedAt: this._calculatedAt,
+      calculatedAt: this._calculatedAt.getTime(),
     };
   }
 }

@@ -46,7 +46,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
   private _goalsCompletedThisMonth: number;
   private _totalReviews: number;
   private _averageRating: number | null;
-  private _lastCalculatedAt: number;
+  private _lastCalculatedAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -68,7 +68,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
     goalsCompletedThisMonth?: number;
     totalReviews?: number;
     averageRating?: number | null;
-    lastCalculatedAt?: number;
+    lastCalculatedAt?: Date;
   }) {
     super(params.accountUuid); // 使用 accountUuid 作为聚合根 ID
     this._accountUuid = params.accountUuid;
@@ -89,7 +89,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
     this._goalsCompletedThisMonth = params.goalsCompletedThisMonth ?? 0;
     this._totalReviews = params.totalReviews ?? 0;
     this._averageRating = params.averageRating ?? null;
-    this._lastCalculatedAt = params.lastCalculatedAt ?? Date.now();
+    this._lastCalculatedAt = params.lastCalculatedAt ?? new Date();
   }
 
   // ===== Getter 属性 =====
@@ -147,7 +147,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
   public get averageRating(): number | null {
     return this._averageRating;
   }
-  public get lastCalculatedAt(): number {
+  public get lastCalculatedAt(): Date {
     return this._lastCalculatedAt;
   }
 
@@ -180,7 +180,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       goalsCompletedThisMonth: 0,
       totalReviews: 0,
       averageRating: null,
-      lastCalculatedAt: Date.now(),
+      lastCalculatedAt: new Date(),
     });
   }
 
@@ -214,7 +214,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       goalsCompletedThisMonth: dto.goalsCompletedThisMonth,
       totalReviews: dto.totalReviews,
       averageRating: dto.averageRating ?? null,
-      lastCalculatedAt: dto.lastCalculatedAt,
+      lastCalculatedAt: new Date(dto.lastCalculatedAt),
     });
   }
 
@@ -241,7 +241,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       goalsCompletedThisMonth: dto.goalsCompletedThisMonth,
       totalReviews: dto.totalReviews,
       averageRating: dto.averageRating ?? null,
-      lastCalculatedAt: dto.lastCalculatedAt,
+      lastCalculatedAt: new Date(dto.lastCalculatedAt),
     });
   }
 
@@ -253,9 +253,9 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
    */
   public recalculate(goals: GoalServerDTO[]): void {
     const previousStatistics = this.toServerDTO();
-    const now = Date.now();
-    const weekStart = this.getWeekStart(now);
-    const monthStart = this.getMonthStart(now);
+    const now = new Date();
+    const weekStart = this.getWeekStart(now.getTime());
+    const monthStart = this.getMonthStart(now.getTime());
 
     // 重置所有计数器
     this._totalGoals = 0;
@@ -301,7 +301,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       }
 
       // 逾期目标
-      if (goal.targetDate && goal.targetDate < now && goal.status !== 'COMPLETED') {
+      if (goal.targetDate && goal.targetDate < now.getTime() && goal.status !== 'COMPLETED') {
         this._overdueGoals++;
       }
 
@@ -377,7 +377,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
     this.addDomainEvent({
       eventType: 'goal_statistics.recalculated',
       aggregateId: this._accountUuid,
-      occurredOn: new Date(now),
+      occurredOn: now,
       accountUuid: this._accountUuid,
       payload: {
         statistics: this.toServerDTO(),
@@ -452,7 +452,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       goalsCompletedThisMonth: this._goalsCompletedThisMonth,
       totalReviews: this._totalReviews,
       averageRating: this._averageRating,
-      lastCalculatedAt: this._lastCalculatedAt,
+      lastCalculatedAt: this._lastCalculatedAt.getTime(),
     };
   }
 
@@ -491,7 +491,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       goalsCompletedThisMonth: this._goalsCompletedThisMonth,
       totalReviews: this._totalReviews,
       averageRating: this._averageRating,
-      lastCalculatedAt: this._lastCalculatedAt,
+      lastCalculatedAt: this._lastCalculatedAt.getTime(),
 
       // UI 计算字段
       completionRate,
@@ -525,7 +525,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       goalsCompletedThisMonth: this._goalsCompletedThisMonth,
       totalReviews: this._totalReviews,
       averageRating: this._averageRating,
-      lastCalculatedAt: this._lastCalculatedAt,
+      lastCalculatedAt: this._lastCalculatedAt.getTime(),
     };
   }
 
@@ -571,7 +571,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       this._goalsCreatedThisMonth++;
     }
 
-    this._lastCalculatedAt = Date.now();
+    this._lastCalculatedAt = new Date();
   }
 
   /**
@@ -606,7 +606,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       }
     }
 
-    this._lastCalculatedAt = Date.now();
+    this._lastCalculatedAt = new Date();
   }
 
   /**
@@ -636,7 +636,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       this._completedGoals++;
     }
 
-    this._lastCalculatedAt = Date.now();
+    this._lastCalculatedAt = new Date();
   }
 
   /**
@@ -659,7 +659,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       this._goalsCompletedThisMonth++;
     }
 
-    this._lastCalculatedAt = Date.now();
+    this._lastCalculatedAt = new Date();
   }
 
   /**
@@ -667,7 +667,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
    */
   public onGoalArchived(event: GoalStatisticsUpdateEvent): void {
     this._archivedGoals++;
-    this._lastCalculatedAt = Date.now();
+    this._lastCalculatedAt = new Date();
   }
 
   /**
@@ -675,7 +675,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
    */
   public onGoalActivated(event: GoalStatisticsUpdateEvent): void {
     this._activeGoals++;
-    this._lastCalculatedAt = Date.now();
+    this._lastCalculatedAt = new Date();
   }
 
   /**
@@ -684,7 +684,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
   public onKeyResultCreated(event: GoalStatisticsUpdateEvent): void {
     const count = event.payload.keyResultCount || 1;
     this._totalKeyResults += count;
-    this._lastCalculatedAt = Date.now();
+    this._lastCalculatedAt = new Date();
   }
 
   /**
@@ -693,7 +693,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
   public onKeyResultDeleted(event: GoalStatisticsUpdateEvent): void {
     const count = event.payload.keyResultCount || 1;
     this._totalKeyResults = Math.max(0, this._totalKeyResults - count);
-    this._lastCalculatedAt = Date.now();
+    this._lastCalculatedAt = new Date();
   }
 
   /**
@@ -701,7 +701,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
    */
   public onKeyResultCompleted(event: GoalStatisticsUpdateEvent): void {
     this._completedKeyResults++;
-    this._lastCalculatedAt = Date.now();
+    this._lastCalculatedAt = new Date();
   }
 
   /**
@@ -717,7 +717,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       this._averageRating = newTotal / this._totalReviews;
     }
 
-    this._lastCalculatedAt = Date.now();
+    this._lastCalculatedAt = new Date();
   }
 
   /**
@@ -737,7 +737,7 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       }
     }
 
-    this._lastCalculatedAt = Date.now();
+    this._lastCalculatedAt = new Date();
   }
 
   /**
@@ -748,6 +748,6 @@ export class GoalStatistics extends AggregateRoot implements GoalStatisticsServe
       // 这里可以添加专注会话相关的统计
       // 目前 GoalStatistics 没有专注会话字段，可以后续扩展
     }
-    this._lastCalculatedAt = Date.now();
+    this._lastCalculatedAt = new Date();
   }
 }

@@ -32,8 +32,8 @@ export class SyncConflict extends Entity {
   private _status: ConflictStatus;
   private _autoResolvable: boolean;
   private _resolution?: ConflictResolutionDTO | null;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   private constructor(params: {
     uuid: string;
@@ -160,8 +160,8 @@ export class SyncConflict extends Entity {
       status: dto.status,
       autoResolvable: dto.autoResolvable,
       resolution: dto.resolution,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -185,8 +185,8 @@ export class SyncConflict extends Entity {
       status: dto.status as ConflictStatus,
       autoResolvable: dto.autoResolvable,
       resolution: dto.resolutionJson ? JSON.parse(dto.resolutionJson) : null,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -201,7 +201,7 @@ export class SyncConflict extends Entity {
     }
     this._resolution = resolution;
     this._status = ConflictStatus.RESOLVED;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -212,7 +212,7 @@ export class SyncConflict extends Entity {
       throw new Error('SyncConflict: conflict is already resolved');
     }
     this._status = ConflictStatus.IGNORED;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**

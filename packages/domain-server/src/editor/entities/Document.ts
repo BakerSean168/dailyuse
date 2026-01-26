@@ -33,8 +33,8 @@ export class Document extends Entity implements DocumentServer {
   private _indexStatus: IndexStatus;
   private _lastIndexedAt: number | null;
   private _lastModifiedAt: number | null;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -50,8 +50,8 @@ export class Document extends Entity implements DocumentServer {
     indexStatus: IndexStatus;
     lastIndexedAt?: number | null;
     lastModifiedAt?: number | null;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
   }) {
     super(params.uuid || Entity.generateUUID());
     this._workspaceUuid = params.workspaceUuid;
@@ -106,10 +106,10 @@ export class Document extends Entity implements DocumentServer {
   public get lastModifiedAt(): number | null {
     return this._lastModifiedAt;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -128,7 +128,7 @@ export class Document extends Entity implements DocumentServer {
     metadata?: Partial<DocumentMetadataServerDTO>;
   }): Document {
     const uuid = crypto.randomUUID();
-    const now = Date.now();
+    const now = new Date();
     const contentHash = Document.calculateHash(params.content);
 
     const metadata = params.metadata
@@ -171,8 +171,8 @@ export class Document extends Entity implements DocumentServer {
       indexStatus: dto.indexStatus,
       lastIndexedAt: dto.lastIndexedAt,
       lastModifiedAt: dto.lastModifiedAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -193,8 +193,8 @@ export class Document extends Entity implements DocumentServer {
       indexStatus: dto.index_status,
       lastIndexedAt: dto.last_indexed_at?.getTime() ?? null,
       lastModifiedAt: dto.last_modified_at?.getTime() ?? null,
-      createdAt: dto.createdAt.getTime(),
-      updatedAt: dto.updatedAt.getTime(),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
     });
   }
 
@@ -207,7 +207,7 @@ export class Document extends Entity implements DocumentServer {
     this._content = content;
     this._contentHash = contentHash;
     this._indexStatus = IndexStatus.OUTDATED;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -215,7 +215,7 @@ export class Document extends Entity implements DocumentServer {
    */
   public updateMetadata(metadata: Partial<DocumentMetadataServerDTO>): void {
     this._metadata = this._metadata.with(metadata);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -223,7 +223,7 @@ export class Document extends Entity implements DocumentServer {
    */
   public rename(newName: string): void {
     this._name = newName;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -231,7 +231,7 @@ export class Document extends Entity implements DocumentServer {
    */
   public move(newPath: string): void {
     this._path = newPath;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -240,7 +240,7 @@ export class Document extends Entity implements DocumentServer {
   public markIndexed(): void {
     this._indexStatus = IndexStatus.INDEXED;
     this._lastIndexedAt = Date.now();
-    this._updatedAt = this._lastIndexedAt;
+    this._updatedAt = new Date();
   }
 
   /**
@@ -248,7 +248,7 @@ export class Document extends Entity implements DocumentServer {
    */
   public markIndexOutdated(): void {
     this._indexStatus = IndexStatus.OUTDATED;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -256,7 +256,7 @@ export class Document extends Entity implements DocumentServer {
    */
   public markIndexFailed(): void {
     this._indexStatus = IndexStatus.FAILED;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -264,7 +264,7 @@ export class Document extends Entity implements DocumentServer {
    */
   public updateFileModifiedTime(timestamp: number): void {
     this._lastModifiedAt = timestamp;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -298,8 +298,8 @@ export class Document extends Entity implements DocumentServer {
       indexStatus: this._indexStatus,
       lastIndexedAt: this._lastIndexedAt,
       lastModifiedAt: this._lastModifiedAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -317,16 +317,16 @@ export class Document extends Entity implements DocumentServer {
       indexStatus: this._indexStatus,
       lastIndexedAt: this._lastIndexedAt,
       lastModifiedAt: this._lastModifiedAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
       formattedLastIndexed: this._lastIndexedAt
         ? new Date(this._lastIndexedAt).toLocaleString()
         : null,
       formattedLastModified: this._lastModifiedAt
         ? new Date(this._lastModifiedAt).toLocaleString()
         : null,
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
-      formattedUpdatedAt: new Date(this._updatedAt).toLocaleString(),
+      formattedCreatedAt: this._createdAt.toLocaleString(),
+      formattedUpdatedAt: this._updatedAt.toLocaleString(),
     };
   }
 
@@ -344,8 +344,8 @@ export class Document extends Entity implements DocumentServer {
       index_status: this._indexStatus,
       last_indexed_at: this._lastIndexedAt ? new Date(this._lastIndexedAt) : null,
       last_modified_at: this._lastModifiedAt ? new Date(this._lastModifiedAt) : null,
-      createdAt: new Date(this._createdAt),
-      updatedAt: new Date(this._updatedAt),
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
     };
   }
 

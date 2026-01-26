@@ -17,7 +17,7 @@ export class AccountHistory extends Entity implements AccountHistoryServer {
   private _details: any | null;
   private _ipAddress: string | null;
   private _userAgent: string | null;
-  private _createdAt: number;
+  private _createdAt: Date;
 
   private constructor(params: {
     uuid?: string;
@@ -26,7 +26,7 @@ export class AccountHistory extends Entity implements AccountHistoryServer {
     details?: any | null;
     ipAddress?: string | null;
     userAgent?: string | null;
-    createdAt: number;
+    createdAt: Date;
   }) {
     super(params.uuid ?? Entity.generateUUID());
     this._accountUuid = params.accountUuid;
@@ -56,7 +56,7 @@ export class AccountHistory extends Entity implements AccountHistoryServer {
   public get userAgent(): string | null {
     return this._userAgent;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
@@ -74,7 +74,7 @@ export class AccountHistory extends Entity implements AccountHistoryServer {
       details: params.details,
       ipAddress: params.ipAddress,
       userAgent: params.userAgent,
-      createdAt: Date.now(),
+      createdAt: new Date(),
     });
   }
 
@@ -86,7 +86,7 @@ export class AccountHistory extends Entity implements AccountHistoryServer {
       details: dto.details,
       ipAddress: dto.ipAddress,
       userAgent: dto.userAgent,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -98,7 +98,7 @@ export class AccountHistory extends Entity implements AccountHistoryServer {
       details: dto.details ? JSON.parse(dto.details) : null,
       ipAddress: dto.ip_address,
       userAgent: dto.user_agent,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -111,7 +111,7 @@ export class AccountHistory extends Entity implements AccountHistoryServer {
       details: this._details,
       ipAddress: this._ipAddress,
       userAgent: this._userAgent,
-      createdAt: this._createdAt,
+      createdAt: this._createdAt.getTime(),
     };
   }
 
@@ -123,7 +123,7 @@ export class AccountHistory extends Entity implements AccountHistoryServer {
       details: this._details,
       ipAddress: this._ipAddress,
       userAgent: this._userAgent,
-      createdAt: this._createdAt,
+      createdAt: this._createdAt.getTime(),
     };
   }
 
@@ -135,7 +135,7 @@ export class AccountHistory extends Entity implements AccountHistoryServer {
       details: this._details ? JSON.stringify(this._details) : null,
       ip_address: this._ipAddress,
       user_agent: this._userAgent,
-      createdAt: this._createdAt,
+      createdAt: this._createdAt.getTime(),
     };
   }
 }

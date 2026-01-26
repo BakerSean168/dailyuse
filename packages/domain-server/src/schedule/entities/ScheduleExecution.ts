@@ -29,7 +29,7 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
   private _result: Record<string, any> | null;
   private _error: string | null;
   private _retryCount: number;
-  private _createdAt: number;
+  private _createdAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -79,7 +79,7 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
   public get retryCount(): number {
     return this._retryCount;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
@@ -191,7 +191,7 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
       result: this._result ? { ...this._result } : null,
       error: this._error,
       retryCount: this._retryCount,
-      createdAt: this._createdAt,
+      createdAt: this._createdAt.getTime(),
     };
   }
 
@@ -208,7 +208,7 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
       result: this._result ? { ...this._result } : null,
       error: this._error,
       retryCount: this._retryCount,
-      createdAt: this._createdAt,
+      createdAt: this._createdAt.getTime(),
       // UI 辅助属性
       executionTimeFormatted: new Date(this._executionTime).toLocaleString('zh-CN'),
       statusDisplay: this._getStatusText(),
@@ -240,7 +240,7 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
       result: this._result ? JSON.stringify(this._result) : null,
       error: this._error,
       retryCount: this._retryCount,
-      createdAt: this._createdAt,
+      createdAt: this._createdAt.getTime(),
     };
   }
 

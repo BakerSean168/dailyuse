@@ -12,7 +12,7 @@ export class Message extends Entity implements MessageServer {
   private _role: MessageRole;
   private _content: string;
   private _tokenCount: number | null;
-  private _createdAt: number;
+  private _createdAt: Date;
 
   private constructor(params: {
     uuid?: string;
@@ -20,7 +20,7 @@ export class Message extends Entity implements MessageServer {
     role: MessageRole;
     content: string;
     tokenCount?: number | null;
-    createdAt: number;
+    createdAt: Date;
   }) {
     super(params.uuid ?? Entity.generateUUID());
     this._conversationUuid = params.conversationUuid;
@@ -50,7 +50,7 @@ export class Message extends Entity implements MessageServer {
     return this._tokenCount;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
@@ -65,7 +65,7 @@ export class Message extends Entity implements MessageServer {
       role: params.role,
       content: params.content,
       tokenCount: params.tokenCount,
-      createdAt: Date.now(),
+      createdAt: new Date(),
     });
   }
 
@@ -76,7 +76,7 @@ export class Message extends Entity implements MessageServer {
       role: dto.role,
       content: dto.content,
       tokenCount: dto.tokenCount,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -87,7 +87,7 @@ export class Message extends Entity implements MessageServer {
       role: dto.role,
       content: dto.content,
       tokenCount: dto.tokenCount,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -98,7 +98,7 @@ export class Message extends Entity implements MessageServer {
       role: this._role,
       content: this._content,
       tokenCount: this._tokenCount,
-      createdAt: this._createdAt,
+      createdAt: this._createdAt.getTime(),
     };
   }
 
@@ -109,11 +109,11 @@ export class Message extends Entity implements MessageServer {
       role: this._role,
       content: this._content,
       tokenCount: this._tokenCount,
-      createdAt: this._createdAt,
+      createdAt: this._createdAt.getTime(),
       isUser: this._role === MessageRole.USER,
       isAssistant: this._role === MessageRole.ASSISTANT,
       isSystem: this._role === MessageRole.SYSTEM,
-      formattedTime: new Date(this._createdAt).toLocaleString(),
+      formattedTime: this._createdAt.toLocaleString(),
     };
   }
 

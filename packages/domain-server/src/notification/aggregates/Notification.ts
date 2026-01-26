@@ -29,17 +29,17 @@ export class Notification extends AggregateRoot implements NotificationServer {
   private _urgency: UrgencyLevel;
   private _status: NotificationStatus;
   private _isRead: boolean;
-  private _readAt: number | null;
+  private _readAt: Date | null;
   private _relatedEntityType: RelatedEntityType | null;
   private _relatedEntityUuid: string | null;
   private _actions: NotificationAction[] | null;
   private _metadata: NotificationMetadata | null;
-  private _expiresAt: number | null;
-  private _createdAt: number;
-  private _updatedAt: number;
-  private _sentAt: number | null;
-  private _deliveredAt: number | null;
-  private _deletedAt: number | null;
+  private _expiresAt: Date | null;
+  private _createdAt: Date;
+  private _updatedAt: Date;
+  private _sentAt: Date | null;
+  private _deliveredAt: Date | null;
+  private _deletedAt: Date | null;
 
   // ===== 子实体集合 =====
   private _channels: NotificationChannel[];
@@ -57,17 +57,17 @@ export class Notification extends AggregateRoot implements NotificationServer {
     urgency: UrgencyLevel;
     status: NotificationStatus;
     isRead: boolean;
-    readAt?: number | null;
+    readAt?: Date | number | null;
     relatedEntityType?: RelatedEntityType | null;
     relatedEntityUuid?: string | null;
     actions?: NotificationAction[] | null;
     metadata?: NotificationMetadata | null;
-    expiresAt?: number | null;
-    createdAt: number;
-    updatedAt: number;
-    sentAt?: number | null;
-    deliveredAt?: number | null;
-    deletedAt?: number | null;
+    expiresAt?: Date | number | null;
+    createdAt: Date | number;
+    updatedAt: Date | number;
+    sentAt?: Date | number | null;
+    deliveredAt?: Date | number | null;
+    deletedAt?: Date | number | null;
   }) {
     super(params.uuid ?? AggregateRoot.generateUUID());
     this._accountUuid = params.accountUuid;
@@ -79,17 +79,17 @@ export class Notification extends AggregateRoot implements NotificationServer {
     this._urgency = params.urgency;
     this._status = params.status;
     this._isRead = params.isRead;
-    this._readAt = params.readAt ?? null;
+    this._readAt = params.readAt ? (params.readAt instanceof Date ? params.readAt : new Date(params.readAt)) : null;
     this._relatedEntityType = params.relatedEntityType ?? null;
     this._relatedEntityUuid = params.relatedEntityUuid ?? null;
     this._actions = params.actions ?? null;
     this._metadata = params.metadata ?? null;
-    this._expiresAt = params.expiresAt ?? null;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._sentAt = params.sentAt ?? null;
-    this._deliveredAt = params.deliveredAt ?? null;
-    this._deletedAt = params.deletedAt ?? null;
+    this._expiresAt = params.expiresAt ? (params.expiresAt instanceof Date ? params.expiresAt : new Date(params.expiresAt)) : null;
+    this._createdAt = params.createdAt instanceof Date ? params.createdAt : new Date(params.createdAt);
+    this._updatedAt = params.updatedAt instanceof Date ? params.updatedAt : new Date(params.updatedAt);
+    this._sentAt = params.sentAt ? (params.sentAt instanceof Date ? params.sentAt : new Date(params.sentAt)) : null;
+    this._deliveredAt = params.deliveredAt ? (params.deliveredAt instanceof Date ? params.deliveredAt : new Date(params.deliveredAt)) : null;
+    this._deletedAt = params.deletedAt ? (params.deletedAt instanceof Date ? params.deletedAt : new Date(params.deletedAt)) : null;
     this._channels = [];
     this._history = [];
   }
@@ -125,7 +125,7 @@ export class Notification extends AggregateRoot implements NotificationServer {
   public get isRead(): boolean {
     return this._isRead;
   }
-  public get readAt(): number | null {
+  public get readAt(): Date | null {
     return this._readAt;
   }
   public get relatedEntityType(): RelatedEntityType | null {
@@ -140,22 +140,22 @@ export class Notification extends AggregateRoot implements NotificationServer {
   public get metadata(): NotificationMetadataServer | null {
     return this._metadata ?? null;
   }
-  public get expiresAt(): number | null {
+  public get expiresAt(): Date | null {
     return this._expiresAt;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
-  public get sentAt(): number | null {
+  public get sentAt(): Date | null {
     return this._sentAt;
   }
-  public get deliveredAt(): number | null {
+  public get deliveredAt(): Date | null {
     return this._deliveredAt;
   }
-  public get deletedAt(): number | null {
+  public get deletedAt(): Date | null {
     return this._deletedAt;
   }
   public get channels(): NotificationChannel[] | null {
@@ -242,7 +242,7 @@ export class Notification extends AggregateRoot implements NotificationServer {
     }
 
     this._status = NotificationStatus.SENT;
-    this._sentAt = Date.now();
+    this._sentAt = new Date();
     this.addHistory('SENT', { sentAt: this._sentAt });
 
     logger.info('✅ [聚合根] 通知已标记为已发送', {
@@ -256,7 +256,7 @@ export class Notification extends AggregateRoot implements NotificationServer {
     if (this._isRead) return;
 
     this._isRead = true;
-    this._readAt = Date.now();
+    this._readAt = new Date();
     this._status = NotificationStatus.READ;
     this.addHistory('READ', { readAt: this._readAt });
   }
@@ -280,7 +280,7 @@ export class Notification extends AggregateRoot implements NotificationServer {
   }
 
   public softDelete(): void {
-    this._deletedAt = Date.now();
+    this._deletedAt = new Date();
     this.addHistory('DELETED', { deletedAt: this._deletedAt });
   }
 
@@ -295,7 +295,7 @@ export class Notification extends AggregateRoot implements NotificationServer {
 
   public isExpired(): boolean {
     if (!this._expiresAt) return false;
-    return Date.now() > this._expiresAt;
+    return Date.now() > this._expiresAt.getTime();
   }
 
   public isPending(): boolean {
@@ -398,7 +398,7 @@ export class Notification extends AggregateRoot implements NotificationServer {
     relatedEntityUuid?: string;
     actions?: NotificationActionServerDTO[];
     metadata?: NotificationMetadataServerDTO;
-    expiresAt?: number;
+    expiresAt?: Date | number;
   }): Notification {
     logger.info('🔨 [聚合根] 创建 Notification 实例', {
       accountUuid: params.accountUuid,
@@ -424,7 +424,7 @@ export class Notification extends AggregateRoot implements NotificationServer {
       relatedEntityUuid: params.relatedEntityUuid,
       actions: params.actions?.map((a) => NotificationAction.fromContract(a)) ?? null,
       metadata: params.metadata ? NotificationMetadata.fromContract(params.metadata) : null,
-      expiresAt: params.expiresAt,
+      expiresAt: params.expiresAt ? (params.expiresAt instanceof Date ? params.expiresAt : new Date(params.expiresAt)) : undefined,
       createdAt: now,
       updatedAt: now,
     });
@@ -452,17 +452,17 @@ export class Notification extends AggregateRoot implements NotificationServer {
       urgency: dto.urgency,
       status: dto.status,
       isRead: dto.isRead,
-      readAt: dto.readAt,
+      readAt: dto.readAt ? new Date(dto.readAt) : null,
       relatedEntityType: dto.relatedEntityType,
       relatedEntityUuid: dto.relatedEntityUuid,
       actions: dto.actions?.map((a) => NotificationAction.fromContract(a)) ?? null,
       metadata: dto.metadata ? NotificationMetadata.fromContract(dto.metadata) : null,
-      expiresAt: dto.expiresAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      sentAt: dto.sentAt,
-      deliveredAt: dto.deliveredAt,
-      deletedAt: dto.deletedAt,
+      expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      sentAt: dto.sentAt ? new Date(dto.sentAt) : null,
+      deliveredAt: dto.deliveredAt ? new Date(dto.deliveredAt) : null,
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
 
     if (dto.channels) {
@@ -487,19 +487,19 @@ export class Notification extends AggregateRoot implements NotificationServer {
       urgency: dto.urgency,
       status: dto.status,
       isRead: dto.isRead,
-      readAt: dto.readAt,
+      readAt: dto.readAt ? new Date(dto.readAt) : null,
       relatedEntityType: dto.relatedEntityType,
       relatedEntityUuid: dto.relatedEntityUuid,
       actions: dto.actions
         ? JSON.parse(dto.actions).map((a: any) => NotificationAction.fromContract(a))
         : null,
       metadata: dto.metadata ? NotificationMetadata.fromContract(JSON.parse(dto.metadata)) : null,
-      expiresAt: dto.expiresAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      sentAt: dto.sentAt,
-      deliveredAt: dto.deliveredAt,
-      deletedAt: dto.deletedAt,
+      expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      sentAt: dto.sentAt ? new Date(dto.sentAt) : null,
+      deliveredAt: dto.deliveredAt ? new Date(dto.deliveredAt) : null,
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 }

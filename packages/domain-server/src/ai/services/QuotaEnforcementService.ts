@@ -64,7 +64,7 @@ export class QuotaEnforcementService {
       remainingQuota,
       quotaLimit: quota.quotaLimit,
       currentUsage: quota.currentUsage,
-      nextResetAt: quota.nextResetAt,
+      nextResetAt: quota.nextResetAt.getTime(),
       reason: canConsume ? undefined : 'Insufficient quota available',
     };
   }
@@ -128,7 +128,7 @@ export class QuotaEnforcementService {
       quotaLimit: quota.quotaLimit,
       currentUsage: quota.currentUsage,
       usagePercentage: quota.getUsagePercentage(),
-      nextResetAt: quota.nextResetAt,
+      nextResetAt: quota.nextResetAt.getTime(),
       isExceeded: quota.isExceeded(),
     };
   }

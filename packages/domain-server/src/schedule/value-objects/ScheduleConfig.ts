@@ -255,7 +255,7 @@ export class ScheduleConfig extends ValueObject implements ScheduleConfigServer 
    * 创建单次执行配置
    */
   public static createOneTime(
-    executeAt: number,
+    executeAt: Date,
     timezone: Timezone = 'UTC' as Timezone,
   ): ScheduleConfig {
     const date = new Date(executeAt);

@@ -26,7 +26,7 @@ export class RememberMeToken extends Entity implements RememberMeTokenServer {
   private _lastUsedIp: string | null;
   public readonly expiresAt: number;
   public readonly createdAt: number;
-  private _updatedAt: number;
+  private _updatedAt: Date;
   private _revokedAt: number | null;
 
   constructor(params: {
@@ -69,7 +69,7 @@ export class RememberMeToken extends Entity implements RememberMeTokenServer {
     return this._usageCount;
   }
 
-  public get lastUsedAt(): number | null {
+  public get lastUsedAt(): Date | null {
     return this._lastUsedAt;
   }
 
@@ -77,11 +77,11 @@ export class RememberMeToken extends Entity implements RememberMeTokenServer {
     return this._lastUsedIp;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
-  public get revokedAt(): number | null {
+  public get revokedAt(): Date | null {
     return this._revokedAt;
   }
 
@@ -167,20 +167,20 @@ export class RememberMeToken extends Entity implements RememberMeTokenServer {
 
   public recordUsage(ipAddress: string): void {
     this._usageCount++;
-    this._lastUsedAt = Date.now();
+    this._lastUsedAt = new Date();
     this._lastUsedIp = ipAddress;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public markAsUsed(): void {
     this._status = 'USED';
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   public revoke(): void {
     this._status = 'REVOKED';
-    this._revokedAt = Date.now();
-    this._updatedAt = Date.now();
+    this._revokedAt = new Date();
+    this._updatedAt = new Date();
   }
 
   // DTO conversion
@@ -194,12 +194,12 @@ export class RememberMeToken extends Entity implements RememberMeTokenServer {
       device: this.device.toServerDTO(),
       status: this._status,
       usageCount: this._usageCount,
-      lastUsedAt: this._lastUsedAt,
+      lastUsedAt: this._lastUsedAt.getTime(),
       lastUsedIp: this._lastUsedIp,
       expiresAt: this.expiresAt,
       createdAt: this.createdAt,
-      updatedAt: this._updatedAt,
-      revokedAt: this._revokedAt,
+      updatedAt: this._updatedAt.getTime(),
+      revokedAt: this._revokedAt.getTime(),
     };
   }
 
@@ -212,12 +212,12 @@ export class RememberMeToken extends Entity implements RememberMeTokenServer {
       device: this.device.toClientDTO(),
       status: this._status,
       usageCount: this._usageCount,
-      lastUsedAt: this._lastUsedAt,
+      lastUsedAt: this._lastUsedAt.getTime(),
       lastUsedIp: this._lastUsedIp,
       expiresAt: this.expiresAt,
       createdAt: this.createdAt,
-      updatedAt: this._updatedAt,
-      revokedAt: this._revokedAt,
+      updatedAt: this._updatedAt.getTime(),
+      revokedAt: this._revokedAt.getTime(),
     };
   }
 
@@ -231,12 +231,12 @@ export class RememberMeToken extends Entity implements RememberMeTokenServer {
       device: JSON.stringify(this.device.toServerDTO()),
       status: this._status,
       usage_count: this._usageCount,
-      lastUsedAt: this._lastUsedAt,
+      lastUsedAt: this._lastUsedAt.getTime(),
       last_used_ip: this._lastUsedIp,
       expiresAt: this.expiresAt,
       createdAt: this.createdAt,
-      updatedAt: this._updatedAt,
-      revokedAt: this._revokedAt,
+      updatedAt: this._updatedAt.getTime(),
+      revokedAt: this._revokedAt.getTime(),
     };
   }
 }

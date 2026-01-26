@@ -43,7 +43,7 @@ export interface ITaskInstanceRepository {
   /**
    * 根据日期范围查找任务实例
    */
-  findByDateRange(accountUuid: string, startDate: number, endDate: number): Promise<TaskInstance[]>;
+  findByDateRange(accountUuid: string, startDate: Date, endDate: Date): Promise<TaskInstance[]>;
 
   /**
    * 根据状态查找任务实例
@@ -82,8 +82,8 @@ export interface ITaskInstanceRepository {
    */
   findByTemplateUuidAndDateRange(
     templateUuid: string,
-    startDate: number,
-    endDate: number,
+    startDate: Date,
+    endDate: Date,
   ): Promise<TaskInstance[]>;
 
   /**

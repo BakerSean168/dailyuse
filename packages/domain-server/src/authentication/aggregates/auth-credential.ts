@@ -51,7 +51,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
   };
   private _history: CredentialHistory[];
   public readonly createdAt: number;
-  private _updatedAt: number;
+  private _updatedAt: Date;
 
   constructor(params: {
     uuid?: string;
@@ -100,8 +100,8 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
       failedLoginAttempts: 0,
     };
     this._history = params.history ?? [];
-    this.createdAt = params.createdAt ?? Date.now();
-    this._updatedAt = params.updatedAt ?? Date.now();
+    this.createdAt = params.createdAt ?? new Date();
+    this._updatedAt = params.updatedAt ?? new Date();
   }
 
   public get passwordCredential(): PasswordCredentialServer | null {
@@ -136,7 +136,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
     return this._history as any;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
@@ -249,7 +249,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
 
     this._security.lastPasswordChangeAt = Date.now();
     this._security.requirePasswordChange = false;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('PASSWORD_CHANGED');
   }
 
@@ -259,7 +259,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
 
   public requirePasswordChange(): void {
     this._security.requirePasswordChange = true;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('PASSWORD_CHANGE_REQUIRED');
   }
 
@@ -281,7 +281,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
     });
 
     this._rememberMeTokens.push(token);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('REMEMBER_ME_TOKEN_GENERATED', { deviceId: device.deviceId });
 
     return token as any;
@@ -324,20 +324,20 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
     const token = this._rememberMeTokens.find((t) => t.uuid === tokenUuid);
     if (token) {
       token.revoke();
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
       this._addHistory('REMEMBER_ME_TOKEN_REVOKED', { tokenUuid });
     }
   }
 
   public revokeAllRememberMeTokens(): void {
     this._rememberMeTokens.forEach((t) => t.revoke());
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('ALL_REMEMBER_ME_TOKENS_REVOKED');
   }
 
   public revokeRememberMeTokensByDevice(deviceId: string): void {
     this._rememberMeTokens.filter((t) => t.device.deviceId === deviceId).forEach((t) => t.revoke());
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('REMEMBER_ME_TOKENS_REVOKED_BY_DEVICE', { deviceId });
   }
 
@@ -345,7 +345,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
     const expiredCount = this._rememberMeTokens.filter((t) => t.isExpired()).length;
     this._rememberMeTokens = this._rememberMeTokens.filter((t) => !t.isExpired());
     if (expiredCount > 0) {
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
       this._addHistory('EXPIRED_REMEMBER_ME_TOKENS_CLEANED', { count: expiredCount });
     }
   }
@@ -365,7 +365,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
     });
 
     this._apiKeyCredentials.push(apiKey);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('API_KEY_GENERATED', { name, keyPrefix });
 
     return apiKey as any;
@@ -375,7 +375,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
     const key = this._apiKeyCredentials.find((k) => k.uuid === keyUuid);
     if (key) {
       key.revoke();
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
       this._addHistory('API_KEY_REVOKED', { keyUuid });
     }
   }
@@ -394,7 +394,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
       verifiedAt: Date.now(),
     };
 
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('TWO_FACTOR_ENABLED', { method });
 
     return secret;
@@ -402,7 +402,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
 
   public disableTwoFactor(): void {
     this._twoFactor = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('TWO_FACTOR_DISABLED');
   }
 
@@ -429,7 +429,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
     const index = this._twoFactor.backupCodes.indexOf(code.toUpperCase());
     if (index !== -1) {
       this._twoFactor.backupCodes.splice(index, 1);
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
       this._addHistory('BACKUP_CODE_USED');
       return true;
     }
@@ -446,13 +446,13 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
       enrolledAt: Date.now(),
     };
 
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('BIOMETRIC_ENROLLED', { type, deviceId });
   }
 
   public revokeBiometric(): void {
     this._biometric = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('BIOMETRIC_REVOKED');
   }
 
@@ -466,7 +466,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
       this._addHistory('ACCOUNT_LOCKED', { reason: 'too_many_failed_attempts' });
     }
 
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('FAILED_LOGIN_RECORDED', { attempts: this._security.failedLoginAttempts });
   }
 
@@ -474,7 +474,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
     this._security.failedLoginAttempts = 0;
     this._security.lastFailedLoginAt = null;
     this._security.lockedUntil = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('FAILED_ATTEMPTS_RESET');
   }
 
@@ -485,19 +485,19 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
 
   public suspend(): void {
     this._status = 'SUSPENDED';
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('CREDENTIAL_SUSPENDED');
   }
 
   public activate(): void {
     this._status = 'ACTIVE';
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('CREDENTIAL_ACTIVATED');
   }
 
   public revoke(): void {
     this._status = 'REVOKED';
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this._addHistory('CREDENTIAL_REVOKED');
   }
 
@@ -516,7 +516,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
       security: this._security,
       history: this._history,
       createdAt: this.createdAt,
-      updatedAt: this._updatedAt,
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -540,7 +540,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
       security: this._security,
       history: this._history.map((h) => h.toClientDTO()),
       createdAt: this.createdAt,
-      updatedAt: this._updatedAt,
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -560,7 +560,7 @@ export class AuthCredential extends AggregateRoot implements AuthCredentialServe
       security: JSON.stringify(this._security),
       history: JSON.stringify(this._history.map((h) => h.toPersistenceDTO())),
       createdAt: this.createdAt,
-      updatedAt: this._updatedAt,
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 

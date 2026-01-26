@@ -70,9 +70,9 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   private _generateAheadDays: number | null;
 
   // ===== 一次性任务专用字�?=====
-  private _startDate: number | null;
-  private _dueDate: number | null;
-  private _completedAt: number | null;
+  private readonly _startDate: Date | null;
+  private readonly _dueDate: Date | null;
+  private readonly _completedAt: Date | null;
   private _estimatedMinutes: number | null;
   private _actualMinutes: number | null;
   private _note: string | null;
@@ -83,8 +83,8 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   private _blockingReason: string | null;
 
   // ===== 审计字段 =====
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
   private _deletedAt: number | null;
 
   // ===== 子实体集�?=====
@@ -235,7 +235,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     return this._dueDate;
   }
 
-  public get completedAt(): number | null {
+  public get completedAt(): Date | null {
     return this._completedAt;
   }
 
@@ -263,15 +263,15 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     return this._blockingReason;
   }
 
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
 
-  public get deletedAt(): number | null {
+  public get deletedAt(): Date | null {
     return this._deletedAt;
   }
 
@@ -353,7 +353,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
 
     if (instances.length > 0) {
       this._lastGeneratedDate = toDate;
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
 
     return instances;
@@ -441,7 +441,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       });
     }
     this._status = 'ACTIVE' as TaskTemplateStatus;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('resumed');
   }
 
@@ -457,7 +457,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       });
     }
     this._status = 'PAUSED' as TaskTemplateStatus;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('paused');
   }
 
@@ -476,7 +476,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       throw new TaskTemplateArchivedError(this.uuid);
     }
     this._status = 'ARCHIVED' as TaskTemplateStatus;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('archived');
   }
 
@@ -492,8 +492,8 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       });
     }
     this._status = 'DELETED' as TaskTemplateStatus;
-    this._deletedAt = Date.now();
-    this._updatedAt = Date.now();
+    this._deletedAt = new Date();
+    this._updatedAt = new Date();
     this.addHistory('deleted');
   }
 
@@ -510,7 +510,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     }
     this._status = 'ACTIVE' as TaskTemplateStatus;
     this._deletedAt = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('restored');
   }
 
@@ -582,7 +582,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     }
     const oldTitle = this._title;
     this._title = newTitle.trim();
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('title_updated', { oldTitle, newTitle: this._title });
   }
 
@@ -592,7 +592,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   public updateDescription(newDescription: string | null): void {
     const oldDescription = this._description;
     this._description = newDescription ? newDescription.trim() : null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('description_updated', { oldDescription, newDescription: this._description });
   }
 
@@ -609,7 +609,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     }
     const oldStartDate = this._startDate;
     this._startDate = newStartDate;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('start_date_updated', { oldStartDate, newStartDate });
 
     this.addDomainEvent({
@@ -642,7 +642,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     // Those are TaskInstanceStatus states. This check has been removed.
     const oldDueDate = this._dueDate;
     this._dueDate = newDueDate;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('due_date_updated', { oldDueDate, newDueDate });
 
     this.addDomainEvent({
@@ -673,7 +673,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     }
     const oldRuleDTO = this._recurrenceRule?.toServerDTO() ?? null;
     this._recurrenceRule = newRule;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('recurrence_rule_updated', {
       oldRule: oldRuleDTO,
       newRule: newRule.toServerDTO(),
@@ -747,7 +747,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
 
     const oldRuleDTO = this._recurrenceRule.toServerDTO();
     this._recurrenceRule = updatedRule;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
 
     this.addHistory('recurrence_end_condition_updated', {
       oldRule: oldRuleDTO,
@@ -774,7 +774,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   public updatePriority(newImportance: ImportanceLevel): void {
     const oldImportance = this._importance;
     this._importance = newImportance;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('priority_updated', { oldImportance, newImportance });
   }
 
@@ -784,7 +784,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   public updateTags(newTags: string[]): void {
     const oldTags = [...this._tags];
     this._tags = [...new Set(newTags)]; // 去重
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('tags_updated', { oldTags, newTags: this._tags });
   }
 
@@ -794,7 +794,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   public updateColor(newColor: string | null): void {
     const oldColor = this._color;
     this._color = newColor;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('color_updated', { oldColor, newColor });
   }
 
@@ -811,7 +811,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     }
     const oldNote = this._note;
     this._note = newNote;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('note_updated', { oldNote, newNote });
   }
 
@@ -835,7 +835,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     }
     const oldEstimatedMinutes = this._estimatedMinutes;
     this._estimatedMinutes = estimatedMinutes;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('estimated_time_updated', { oldEstimatedMinutes, estimatedMinutes });
   }
 
@@ -923,7 +923,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       keyResultUuid,
       incrementValue,
     });
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('goal_bound', { goalUuid, keyResultUuid, incrementValue });
   }
 
@@ -944,7 +944,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     }
 
     this._goalBinding = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('goal_unbound');
   }
 
@@ -975,7 +975,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     }
     this._goalUuid = goalUuid;
     this._keyResultUuid = keyResultUuid || null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('linked_to_goal', { goalUuid, keyResultUuid });
   }
 
@@ -1001,7 +1001,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     const oldKeyResultUuid = this._keyResultUuid;
     this._goalUuid = null;
     this._keyResultUuid = null;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('unlinked_from_goal', { oldGoalUuid, oldKeyResultUuid });
   }
 
@@ -1019,7 +1019,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       });
     }
     // 实际实现中应该通过 repository 验证 subtaskUuid 是否存在
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('subtask_added', { subtaskUuid });
   }
 
@@ -1034,7 +1034,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
         attemptedAction: 'removeSubtask',
       });
     }
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('subtask_removed', { subtaskUuid });
   }
 
@@ -1130,7 +1130,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     this._isBlocked = true;
     this._blockingReason = reason;
     this._dependencyStatus = 'BLOCKED';
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('marked_as_blocked', { reason, dependencyTaskUuid });
   }
 
@@ -1148,7 +1148,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     this._isBlocked = false;
     this._blockingReason = null;
     this._dependencyStatus = 'READY';
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('marked_as_ready');
   }
 
@@ -1165,7 +1165,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     }
     const oldStatus = this._dependencyStatus;
     this._dependencyStatus = status;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     this.addHistory('dependency_status_updated', { oldStatus, newStatus: status });
   }
 
@@ -1181,7 +1181,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       changes: changes ? JSON.stringify(changes) : null,
     });
     this._history.push(history);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   // ===== 子实体管理方�?=====
@@ -1223,7 +1223,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       importance: this._importance,
     });
     this._instances.push(instance);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     return instance.uuid;
   }
 
@@ -1232,7 +1232,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
    */
   public addInstance(instance: TaskInstance): void {
     this._instances.push(instance);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -1242,7 +1242,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
     const index = this._instances.findIndex((i) => i.uuid === instanceUuid);
     if (index === -1) return null;
     const [removed] = this._instances.splice(index, 1);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     return removed;
   }
 
@@ -1280,16 +1280,16 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       status: this._status,
       lastGeneratedDate: this._lastGeneratedDate,
       generateAheadDays: this._generateAheadDays,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt.getTime(),
       // ONE_TIME 任务新字�?
       goalUuid: this._goalUuid,
       keyResultUuid: this._keyResultUuid,
       parentTaskUuid: this._parentTaskUuid,
       startDate: this._startDate,
       dueDate: this._dueDate,
-      completedAt: this._completedAt,
+      completedAt: this._completedAt.getTime(),
       estimatedMinutes: this._estimatedMinutes,
       actualMinutes: this._actualMinutes,
       note: this._note,
@@ -1328,16 +1328,16 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       status: this._status,
       lastGeneratedDate: this._lastGeneratedDate,
       generateAheadDays: this._generateAheadDays,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt.getTime(),
       // ONE_TIME 任务新字段
       goalUuid: this._goalUuid,
       keyResultUuid: this._keyResultUuid,
       parentTaskUuid: this._parentTaskUuid,
       startDate: this._startDate,
       dueDate: this._dueDate,
-      completedAt: this._completedAt,
+      completedAt: this._completedAt.getTime(),
       estimatedMinutes: this._estimatedMinutes,
       actualMinutes: this._actualMinutes,
       note: this._note,
@@ -1401,9 +1401,9 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       status: this._status,
       lastGeneratedDate: this._lastGeneratedDate,
       generateAheadDays: this._generateAheadDays ?? null,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt.getTime(),
 
       // ONE_TIME 任务新字�?
       goalUuid: this._goalUuid,
@@ -1411,7 +1411,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       parentTaskUuid: this._parentTaskUuid,
       startDate: this._startDate,
       dueDate: this._dueDate,
-      completedAt: this._completedAt,
+      completedAt: this._completedAt.getTime(),
       estimatedMinutes: this._estimatedMinutes,
       actualMinutes: this._actualMinutes,
       note: this._note,
@@ -1606,9 +1606,9 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
         status: dto.status,
         lastGeneratedDate: dto.lastGeneratedDate,
         generateAheadDays: dto.generateAheadDays,
-        createdAt: dto.createdAt,
-        updatedAt: dto.updatedAt,
-        deletedAt: dto.deletedAt,
+        createdAt: new Date(dto.createdAt),
+        updatedAt: new Date(dto.updatedAt),
+        deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
         // ONE_TIME 任务新字�?
         goalUuid: dto.goalUuid,
         keyResultUuid: dto.keyResultUuid,
@@ -1702,9 +1702,9 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
       status: dto.status as TaskTemplateStatus,
       lastGeneratedDate: dto.lastGeneratedDate,
       generateAheadDays: dto.generateAheadDays,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
       // ONE_TIME 任务新字�?
       goalUuid: dto.goalUuid,
       keyResultUuid: dto.keyResultUuid,

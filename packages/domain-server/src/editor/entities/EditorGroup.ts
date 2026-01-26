@@ -27,8 +27,8 @@ export class EditorGroup extends Entity implements EditorGroupServer {
   private _groupIndex: number;
   private _activeTabIndex: number;
   private _name: string | null;
-  private _createdAt: number;
-  private _updatedAt: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   // ===== 子实体 =====
   private _tabs: EditorTab[];
@@ -42,8 +42,8 @@ export class EditorGroup extends Entity implements EditorGroupServer {
     groupIndex: number;
     activeTabIndex: number;
     name?: string | null;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: Date;
+    updatedAt: Date;
     tabs?: EditorTab[];
   }) {
     super(params.uuid || Entity.generateUUID());
@@ -80,10 +80,10 @@ export class EditorGroup extends Entity implements EditorGroupServer {
   public get name(): string | null {
     return this._name;
   }
-  public get createdAt(): number {
+  public get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+  public get updatedAt(): Date {
     return this._updatedAt;
   }
   public get tabs(): EditorTab[] {
@@ -103,7 +103,7 @@ export class EditorGroup extends Entity implements EditorGroupServer {
     name?: string;
   }): EditorGroup {
     const uuid = crypto.randomUUID();
-    const now = Date.now();
+    const now = new Date();
 
     return new EditorGroup({
       uuid,
@@ -133,8 +133,8 @@ export class EditorGroup extends Entity implements EditorGroupServer {
       groupIndex: dto.groupIndex,
       activeTabIndex: dto.activeTabIndex,
       name: dto.name,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
       tabs,
     });
   }
@@ -147,7 +147,7 @@ export class EditorGroup extends Entity implements EditorGroupServer {
   public setActiveTab(tabIndex: number): void {
     if (this.isValidTabIndex(tabIndex)) {
       this._activeTabIndex = tabIndex;
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
     }
   }
 
@@ -156,7 +156,7 @@ export class EditorGroup extends Entity implements EditorGroupServer {
    */
   public rename(name: string | null): void {
     this._name = name;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -164,7 +164,7 @@ export class EditorGroup extends Entity implements EditorGroupServer {
    */
   public updateGroupIndex(newIndex: number): void {
     this._groupIndex = newIndex;
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
   }
 
   /**
@@ -196,7 +196,7 @@ export class EditorGroup extends Entity implements EditorGroupServer {
       ...params,
     });
     this._tabs.push(tab);
-    this._updatedAt = Date.now();
+    this._updatedAt = new Date();
     return tab;
   }
 
@@ -215,7 +215,7 @@ export class EditorGroup extends Entity implements EditorGroupServer {
     const index = this._tabs.findIndex((t) => t.uuid === tabUuid);
     if (index !== -1) {
       this._tabs.splice(index, 1);
-      this._updatedAt = Date.now();
+      this._updatedAt = new Date();
       return true;
     }
     return false;
@@ -247,8 +247,8 @@ export class EditorGroup extends Entity implements EditorGroupServer {
       activeTabIndex: this._activeTabIndex,
       name: this._name,
       tabs: this._tabs.map((tab) => tab.toServerDTO()),
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -262,10 +262,10 @@ export class EditorGroup extends Entity implements EditorGroupServer {
       activeTabIndex: this._activeTabIndex,
       name: this._name,
       tabs: this._tabs.map((tab) => tab.toClientDTO()),
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
-      formattedUpdatedAt: new Date(this._updatedAt).toLocaleString(),
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      formattedCreatedAt: this._createdAt.toLocaleString(),
+      formattedUpdatedAt: this._updatedAt.toLocaleString(),
     };
   }
 
@@ -297,8 +297,8 @@ export class EditorGroup extends Entity implements EditorGroupServer {
       groupIndex: dto.groupIndex,
       activeTabIndex: dto.activeTabIndex,
       name: dto.name,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
 
     // ✅ 递归重建子实体
@@ -319,8 +319,8 @@ export class EditorGroup extends Entity implements EditorGroupServer {
       groupIndex: dto.groupIndex,
       activeTabIndex: dto.activeTabIndex,
       name: dto.name,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
 
     // ✅ 递归重建子实体
