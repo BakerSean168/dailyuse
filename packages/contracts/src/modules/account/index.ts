@@ -3,17 +3,6 @@
  * 账户模块 - 显式导出
  */
 
-// ============ Enums ============
-export {
-  AccountStatus,
-  Gender,
-  ThemeType,
-  ProfileVisibility,
-  SubscriptionPlan,
-  SubscriptionStatus,
-  BillingCycle,
-  StorageQuotaType,
-} from './enums';
 
 // ============ Aggregates ============
 export type {
@@ -21,68 +10,56 @@ export type {
   AccountPersistenceDTO,
   AccountServer,
   AccountServerStatic,
-} from './aggregates/AccountServer';
+} from './aggregates/account-server';
 
 export type {
   AccountClientDTO,
   AccountClient,
   AccountClientStatic,
-} from './aggregates/AccountClient';
+} from './aggregates/account-client';
 
 // ============ Entities ============
+
+// ============ Value Objects ============
 export type {
-  SubscriptionServerDTO,
-  SubscriptionPersistenceDTO,
-  SubscriptionServer,
-  SubscriptionServerStatic,
-} from './entities/SubscriptionServer';
+  AccountProfile,
+  AccountProfileDTO,
+  AccountProfilePersistenceDTO
+} from './value-objects/account-profile';
+export type {
+  AccountSettings,
+  AccountSettingsDTO,
+  AccountSettingsPersistenceDTO
+} from './value-objects/account-settings';
+export type {
+  ContactEmail,
+  ContactEmailDTO,
+  ContactEmailPersistenceDTO
+} from './value-objects/contact-email';
+export type {
+  ContactPhone,
+  ContactPhoneDTO,
+  ContactPhonePersistenceDTO
+} from './value-objects/contact-phone';
+export {
+  AccountStatus
+} from './value-objects/account-status';
+export {
+  GenderType
+} from './value-objects/gender-type';
+export {
+  ThemeType
+} from './value-objects/theme-type';
+
+// ============ protocol ============
 
 export type {
-  SubscriptionClientDTO,
-  SubscriptionClient,
-  SubscriptionClientStatic,
-} from './entities/SubscriptionClient';
-
-export type {
-  AccountHistoryServerDTO,
-  AccountHistoryPersistenceDTO,
-  AccountHistoryServer,
-  AccountHistoryServerStatic,
-} from './entities/AccountHistoryServer';
-
-export type {
-  AccountHistoryClientDTO,
-  AccountHistoryClient,
-  AccountHistoryClientStatic,
-} from './entities/AccountHistoryClient';
+  AccountEventMap,
+  AccountRpcMap,
+} from './protocol';
 
 // ============ API Requests/Responses ============
 export type {
-  AccountDTO,
-  AccountListResponseDTO,
-  SubscriptionDTO,
-  AccountHistoryListResponseDTO,
-  CreateAccountRequest,
-  UpdateAccountProfileRequest,
-  UpdateAccountPreferencesRequest,
-  UpdateEmailRequest,
-  VerifyEmailRequest,
-  UpdatePhoneRequest,
-  VerifyPhoneRequest,
-  SubscribePlanRequest,
-  CancelSubscriptionRequest,
-  AccountQueryParams,
-  AccountStatsResponseDTO,
-} from './api-requests';
-
-// ============ DTO Aliases (for backward compatibility) ============
-// Web 应用使用 *RequestDTO 命名，提供别名兼容
-export type { CreateAccountRequest as CreateAccountRequestDTO } from './api-requests';
-export type { UpdateAccountProfileRequest as UpdateAccountProfileRequestDTO } from './api-requests';
-export type { UpdateAccountPreferencesRequest as UpdateAccountPreferencesRequestDTO } from './api-requests';
-export type { UpdateEmailRequest as UpdateEmailRequestDTO } from './api-requests';
-export type { VerifyEmailRequest as VerifyEmailRequestDTO } from './api-requests';
-export type { UpdatePhoneRequest as UpdatePhoneRequestDTO } from './api-requests';
-export type { VerifyPhoneRequest as VerifyPhoneRequestDTO } from './api-requests';
-export type { SubscribePlanRequest as SubscribePlanRequestDTO } from './api-requests';
-export type { CancelSubscriptionRequest as CancelSubscriptionRequestDTO } from './api-requests';
+  CreateAccountReq,
+  UpdateProfileReq,
+} from './api';

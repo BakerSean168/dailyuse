@@ -10,12 +10,14 @@ Auth 模块的核心目标只有三个：**验证身份**、**发放通行证（
 基于确定的 **IdP（身份提供商）模式** 以及 **DDD（领域驱动设计）** 架构
 ## Overview
 
-### 聚合根[[AuthIdentity]]
+### 聚合根
 
 管理凭证、锁定状态、安全策略
-#### 子实体[[AuthCredential]]
+#### 
 
-
+- [ ] 聚合根[[AuthIdentity]]
+- [ ] 子实体[[AuthCredential]]
+- [ ] 值对象
 
 AuthSession 聚合根：
 管理登录态、刷新令牌、踢人下线

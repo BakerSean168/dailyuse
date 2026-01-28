@@ -119,7 +119,7 @@ export { RepositoryStats } from './repository/value-objects/RepositoryStats';
 
 // ==================== Account 模块 ====================
 // 聚合根
-export { Account } from './account/aggregates/Account';
+export { Account } from './account/aggregates/account';
 
 // 实体
 export { Subscription } from './account/entities/Subscription';

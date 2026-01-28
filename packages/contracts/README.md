@@ -7,26 +7,19 @@
 本包采用**子路径导出**模式，支持极致的 Tree-Shaking 和模块隔离。
 
 ### 导入方式
-
 ```typescript
-// ✅ 方式 1: 从根路径导入常用类型（便捷）
-import { ApiResponse, GoalStatus, TaskType } from '@dailyuse/contracts';
 
-// ✅ 方式 2: 从子路径导入完整模块（推荐，极致 Tree-Shaking）
+// ✅ 方式: 从子路径导入完整模块（推荐，极致 Tree-Shaking）
 import { GoalServerDTO, GoalClientDTO } from '@dailyuse/contracts/goal';
 import { TaskTemplateServer } from '@dailyuse/contracts/task';
 import { AccountDTO } from '@dailyuse/contracts/account';
 
-// ✅ 方式 3: 导入整个模块命名空间（避免命名冲突）
-import * as GoalContracts from '@dailyuse/contracts/goal';
-import * as TaskContracts from '@dailyuse/contracts/task';
 ```
 
 ### 子路径列表
 
 | 子路径                               | 说明                        |
 | ------------------------------------ | --------------------------- |
-| `@dailyuse/contracts`                | 根入口：常用枚举 + 命名空间 |
 | `@dailyuse/contracts/task`           | 任务模块契约                |
 | `@dailyuse/contracts/goal`           | 目标模块契约                |
 | `@dailyuse/contracts/reminder`       | 提醒模块契约                |
@@ -84,20 +77,6 @@ import {
   SubscriptionPlan,
   // ...更多枚举
 } from '@dailyuse/contracts';
-```
-
-### 命名空间（向后兼容）
-
-```typescript
-import {
-  GoalContracts,
-  TaskContracts,
-  AccountContracts,
-  // ...
-} from '@dailyuse/contracts';
-
-// 使用
-const goal: GoalContracts.GoalServerDTO = { ... };
 ```
 
 ## 最佳实践

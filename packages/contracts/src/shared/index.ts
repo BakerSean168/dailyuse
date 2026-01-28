@@ -18,3 +18,5 @@ export * from './dtos';
 export * from './ui-components';
 
 export type { Equatable } from './equatable';
+export type { AppEventRegistry, AppRpcRegistry } from './protocol';
+export type { IDomainEvent } from './domain-event.interface';

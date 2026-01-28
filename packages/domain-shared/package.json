@@ -1,0 +1,42 @@
+{
+  "name": "@dailyuse/domain-shared",
+  "version": "0.0.1",
+  "description": "Shared domain models and business logic for both client and server",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./account": {
+      "types": "./dist/account/index.d.ts",
+      "import": "./dist/account/index.js"
+    },
+    "./authentication": {
+      "types": "./dist/authentication/index.d.ts",
+      "import": "./dist/authentication/index.js"
+    }
+  },
+  "scripts": {},
+  "keywords": [
+    "domain",
+    "shared",
+    "business-logic",
+    "ddd"
+  ],
+  "author": "bakersean",
+  "license": "MIT",
+  "dependencies": {
+    "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {}
+}

@@ -1,0 +1,1 @@
+export type CredentialId = string & { readonly __brand: unique symbol };

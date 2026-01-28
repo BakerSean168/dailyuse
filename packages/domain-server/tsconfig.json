@@ -54,7 +54,7 @@
   // ============================================================
 
   // 包含的文件 - 包含所有 TypeScript 文件
-  "include": ["src"],
+  "include": ["src", "../domain-shared/src/account/value-objects"],
 
   // 排除的文件
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]

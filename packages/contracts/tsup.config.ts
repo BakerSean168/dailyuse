@@ -37,5 +37,7 @@ export default createTsupConfig({
     'src/response/index.ts',
     'src/result/index.ts',
     'src/shared/index.ts',
+    // 原语类型入口
+    'src/primitives/index.ts',
   ],
 });

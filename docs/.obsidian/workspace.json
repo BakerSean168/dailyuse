@@ -22,31 +22,31 @@
             }
           },
           {
-            "id": "a922f50e013785a0",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "architecture/拼项目.md",
-                "mode": "source",
-                "source": true
-              },
-              "icon": "lucide-file",
-              "title": "拼项目"
-            }
-          },
-          {
             "id": "2ff237f5e83d6b36",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "modules/authentication/domain/aggregates/Example.md",
+                "file": "modules/authentication/domain/value-objects/list.md",
                 "mode": "source",
-                "source": false
+                "source": true
               },
               "icon": "lucide-file",
-              "title": "Example"
+              "title": "list"
+            }
+          },
+          {
+            "id": "1d9fd104c400ff3f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "packages/domain-client/README.md",
+                "mode": "source",
+                "source": true
+              },
+              "icon": "lucide-file",
+              "title": "README"
             }
           }
         ],
@@ -142,13 +142,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "modules/authentication/domain/aggregates/Example.md",
+                "file": "packages/domain-client/README.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Example 的大纲"
+              "title": "README 的大纲"
             }
           }
         ],
@@ -164,12 +164,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "modules/authentication/domain/aggregates/Example.md",
+                "file": "packages/domain-client/README.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Example 的出链列表"
+              "title": "README 的出链列表"
             }
           }
         ]
@@ -215,43 +215,43 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "2ff237f5e83d6b36",
+  "active": "1d9fd104c400ff3f",
   "lastOpenFiles": [
-    "modules/authentication/domain/services/interfaces.md",
+    "standards/domain-shared-type-value-object-spec.md",
+    "standards/domain-shared-class-value-object-spec.md",
+    "standards/domain-server-spec.md",
+    "standards/domain-client-spec.md",
+    "packages/domain-server/README.md",
     "modules/authentication/domain/value-objects/list.md",
-    "modules/authentication/domain/aggregates/Session.md",
+    "packages/domain-client/README.md",
+    "packages/README.md",
+    "standards/枚举与常量对象规范(Enum&Constant-Objects).md",
+    "standards/值对象可以是type.md",
+    "standards/命名name/枚举类型命名.md",
+    "standards/代码风格",
+    "standards/命名name",
+    "standards/id值对象生成id的实现.md",
+    "standards/值对象里的联合类型在PersistenceDTO中改为string.md",
+    "standards/值对象里的时间使用number时间戳-毫秒.md",
+    "standards/architecture.md",
+    "2026-01-27.md",
+    "modules/authentication/domain/value-objects/device-info.md",
+    "modules/authentication/domain/README.md",
+    "modules/authentication/README.md",
+    "standards/contracts/normal.md",
+    "architecture/拼项目.md",
+    "standards/contracts",
     "modules/authentication/domain/aggregates/AuthenticationIdentity.md",
+    "modules/authentication/domain/aggregates/Session.md",
+    "modules/authentication/domain/aggregates/Example.md",
+    "modules/authentication/domain/aggregates/AuthSession.md",
+    "modules/authentication/domain/aggregates/AuthIdentity.md",
     "modules/authentication/domain/events",
     "modules/authentication/domain/services",
-    "modules/authentication/domain/aggregates/AuthSession.md",
-    "modules/authentication/domain/types/example-status.md",
-    "modules/authentication/domain/aggregates/Example.md",
-    "modules/authentication/domain/aggregates/AuthIdentity.md",
     "modules/authentication/domain/types",
-    "modules/authentication/domain/aggregates/example.md",
-    "modules/authentication/domain/entities/AuthCredential.md",
-    "modules/authentication/domain/README.md",
-    "modules/authentication/types/types.md",
-    "modules/authentication/README.md",
     "modules/authentication/types",
     "modules/authentication/domain",
     "modules/authentication/domain/value-objects",
-    "modules/authentication/domain/entities",
-    "modules/authentication/领域对象v1.md",
-    "modules/authentication/domain/aggregates",
-    "architecture/拼项目.md",
-    "prd.md",
-    "epics.md",
-    "TECH_SYNC_EPIC017.md",
-    "ARCHITECTURE_SUMMARY.md",
-    "architecture/EPIC-017-refactoring-utils-patterns.md",
-    "architecture/package-implementation-guide.md",
-    "architecture/desktop-architecture.md",
-    "architecture/adr/001-use-nx-monorepo.md",
-    "未命名.md",
-    "architecture/api-architecture.md",
-    "architecture/dashboard-architecture.md",
-    "business-flows",
-    "troubleshooting"
+    "modules/authentication/domain/entities"
   ]
 }

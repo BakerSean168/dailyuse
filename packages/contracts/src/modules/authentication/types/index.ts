@@ -28,7 +28,7 @@ export type {
   TokenStatusInfo,
   LoginCredentials,
   EmailLoginCredentials,
-} from './auth-status';
+} from '../enums/auth-status';
 
 // JWT Payload Types
 export type { JwtPayloadDTO } from './jwt-payload';

@@ -73,6 +73,10 @@
     "./sync": {
       "types": "./dist/modules/sync/index.d.ts",
       "import": "./dist/modules/sync/index.js"
+    },
+    "./primitives": {
+      "types": "./dist/primitives/index.d.ts",
+      "import": "./dist/primitives/index.js"
     }
   },
   "dependencies": {

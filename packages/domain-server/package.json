@@ -67,6 +67,7 @@
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/utils": "workspace:*",
+    "@dailyuse/domain-shared": "workspace:*",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.1.0",
     "jsonwebtoken": "^9.0.2",

@@ -3,17 +3,16 @@
  */
 
 // Aggregates
-export { Account } from './aggregates/Account';
+export { Account } from './aggregates/account';
 
 // Entities
-export { Subscription } from './entities/Subscription';
-export { AccountHistory } from './entities/AccountHistory';
+
+
 
 // Repositories
 export {
   type IAccountRepository,
-  type PrismaTransactionClient as AccountPrismaTransactionClient,
-} from './repositories/IAccountRepository';
+} from './repositories/i-account-repository';
 
 // Services
-export { AccountDomainService } from './services/AccountDomainService';
+export { AccountUniquenessChecker } from './services/account-uniqueness-checker';

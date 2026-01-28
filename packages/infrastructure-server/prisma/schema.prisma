@@ -9,69 +9,27 @@ datasource db {
 }
 
 model account {
-  uuid                           String                           @id
-  username                       String                           @unique
-  email                          String                           @unique
-  emailVerified                  Boolean                          @default(false) @map("email_verified")
-  phoneNumber                    String?                          @map("phone_number")
-  phoneVerified                  Boolean                          @default(false) @map("phone_verified")
-  status                         String                           @default("ACTIVE")
-  profile                        String
-  preferences                    String
-  subscription                   String?
-  storage                        String
-  security                       String
-  history                        String                           @default("[]")
-  stats                          String
-  settings                       Json?                            @default("{}") // DDD UserSetting Aggregate JSON Storage
+  id                             String                           @id
+  status                         String                           @default("ACTIVE") // AccountStatus
+  // profile
+  profile                        Json
+  // settings
+  settings                       Json
+  // email object value
+  emailAddress                   string                           @unique @map("email_address") // jdoe@example.com
+  emailIsVerified                Boolean                          @default(false) @map("email_is_verified")
+  emailVerifiedAt                DateTime?                        @default(false) @map("email_verified_at")
+  emailIsPrimary                 Boolean                          @default(false) @map("email_is_primary")
+  // phone object value
+  phoneCountryCode               String?                          @map("phone_country_code") // +86
+  phoneNumber                    String?                          @map("phone_number") // 13800138000
+  phoneFullNumber                String?                          @map("phone_full_number") // +8613800138000 (E.164格式)
+  phoneIsVerified                Boolean?                         @default(false) @map("phone_is_verified")
+  phoneVerifiedAt                DateTime?                        @map("phone_verified_at)                 
   createdAt                      DateTime                         @default(now()) @map("created_at")
-  updatedAt                      DateTime                         @map("updated_at")
-  lastActiveAt                   DateTime?                        @map("last_active_at")
-  deletedAt                      DateTime?                        @map("deleted_at")
-  authCredential                 authCredential[]
-  authSession                    authSession[]
-  editorWorkspaceSessionGroupTab editorWorkspaceSessionGroupTab[]
-  editorWorkspaceSessionGroup    editorWorkspaceSessionGroup[]
-  editorWorkspaceSession         editorWorkspaceSession[]
-  editorWorkspace                editorWorkspace[]
-  focusMode                      focusMode[]
-  focusSession                   focusSession[]
-  goalFolder                     goalFolder[]
-  goalStatistic                  goalStatistic?
-  goal                           goal[]
-  reminderGroup                  reminderGroup[]
-  reminderInstance               reminderInstance[]
-  reminderStatistic              reminderStatistic?
-  reminderTemplate               reminderTemplate[]
-  repository                     repository[]
-  repositoryExplorer             repositoryExplorer[]
-  repositoryStatistic            repositoryStatistic?
-  scheduleStatistic              scheduleStatistic?
-  scheduleTask                   scheduleTask[]
-  schedule                       schedule[]
-  setting                        setting[]
-  taskInstance                   taskInstance[]
-  taskStatistic                  taskStatistic?
-  taskTemplate                   taskTemplate[]
-  userSetting                    userSetting?
-  document                       document[]
-  document_version               document_version[]
-  aiConversation                 aiConversation[]
-  aiGenerationTask               aiGenerationTask[]
-  aiUsageQuota                   aiUsageQuota?
-  aiProviderConfig               aiProviderConfig[]
-  dashboardConfig                dashboardConfig?
-  // EPIC-005: Sync Module Relations
-  syncProfiles                   syncProfile[]
-  syncSessions                   syncSession[]
-  syncConflicts                  syncConflict[]
-  pendingChanges                 pendingChange[]
-
-  @@index([createdAt])
+  updatedAt                      DateTime                         @updatedAt @map("updated_at")
   @@index([email])
-  @@index([lastActiveAt])
-  @@index([status])
-  @@index([username])
+  @@index([phone])
   @@map("accounts")
 }
 

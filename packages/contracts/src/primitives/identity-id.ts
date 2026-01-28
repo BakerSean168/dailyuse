@@ -1,0 +1,1 @@
+export type IdentityId = string & { readonly __brand: unique symbol };

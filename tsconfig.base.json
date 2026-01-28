@@ -2,10 +2,7 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
-    "lib": [
-      "ES2020",
-      "DOM"
-    ],
+    "lib": ["ES2020", "DOM"],
     "moduleResolution": "Bundler",
     "strict": true,
     "noImplicitReturns": true,
@@ -22,12 +19,9 @@
     "useDefineForClassFields": true,
     "allowJs": false,
     "paths": {
-      "@dailyuse/patterns": [
-        "./packages/patterns/src/index.ts"
-      ],
-      "@api/shared": [
-        "./apps/api/src/shared/index.ts"
-      ]
+      "@dailyuse/patterns": ["./packages/patterns/src/index.ts"],
+      "@api/shared": ["./apps/api/src/shared/index.ts"],
+      "@dailyuse/domain-shared": ["packages/domain-shared/src/index.ts"]
     }
   }
 }

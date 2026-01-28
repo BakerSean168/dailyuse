@@ -7,79 +7,70 @@ import type { PasswordCredentialServer } from '../entities/PasswordCredentialSer
 import type { ApiKeyCredentialServer } from '../entities/ApiKeyCredentialServer';
 import type { RememberMeTokenServer } from '../entities/RememberMeTokenServer';
 import type { CredentialHistoryServer } from '../entities/CredentialHistoryServer';
-import type { AuthIdentityClientDTO } from './AuthIdentityClient';
+import type { AuthIdentityClientDTO } from './auth-identity-client';
+import type { PlainPassword } from './../value-objects/plain-password';
+import type { OAuthCredential } from '../entities/oauth-credential-server';
+// =========== 相关类型 ============
 
+import type { IdentityId } from '../value-objects/identity-id';
+import type { IdentityStatus } from '../value-objects/auth-identity-status';
+import type { AuthCredential } from '../types/auth-credential';
+import type { DomainDate } from '@/primitives';
+import type { TransferDate } from '@/primitives';
+import type { PersistenceDate } from '@/primitives';
 // ============ 实体接口 ============
 
 export interface AuthIdentityServer {
-  uuid: string;
+  readonly id: IdentityId;
+  status: IdentityStatus;
   accountUuid: string;
-  type: 'PASSWORD' | 'API_KEY' | 'BIOMETRIC' | 'MAGIC_LINK' | 'HARDWARE_KEY';
-  passwordCredential?: PasswordCredentialServer | null;
-  apiKeyCredentials: ApiKeyCredentialServer[];
-  rememberMeTokens: RememberMeTokenServer[];
-  twoFactor?: {
-    enabled: boolean;
-    secret?: string | null;
-    backupCodes: string[];
-    method: 'TOTP' | 'SMS' | 'EMAIL' | 'AUTHENTICATOR_APP';
-    verifiedAt?: Date | null;
-  } | null;
-  biometric?: {
-    enabled: boolean;
-    type: 'FINGERPRINT' | 'FACE_ID' | 'TOUCH_ID';
-    deviceId?: string | null;
-    enrolledAt?: Date | null;
-  } | null;
-  status: 'ACTIVE' | 'SUSPENDED' | 'EXPIRED' | 'REVOKED';
-  security: {
-    requirePasswordChange: boolean;
-    passwordExpiresAt?: Date | null;
-    failedLoginAttempts: number;
-    lastFailedLoginAt?: Date | null;
-    lockedUntil?: Date | null;
-    lastPasswordChangeAt?: Date | null;
-  };
-  history: CredentialHistoryServer[];
-  createdAt: Date;
-  updatedAt: Date;
 
-  // Password methods
-  setPassword(hashedPassword: string): void;
-  verifyPassword(hashedPassword: string): boolean;
-  requirePasswordChange(): void;
+  // 失败计数 (业务核心)
+  failedLoginAttempts: number;
+  lastFailedAttempt?: DomainDate;
+  lockedUntil?: DomainDate;
 
-  // Remember-Me Token methods
-  generateRememberMeToken(deviceInfo: any, expiresInDays?: number): RememberMeTokenServer;
-  verifyRememberMeToken(token: string, deviceFingerprint: string): RememberMeTokenServer | null;
-  refreshRememberMeToken(oldToken: string, deviceFingerprint: string): RememberMeTokenServer | null;
-  revokeRememberMeToken(tokenUuid: string): void;
-  revokeAllRememberMeTokens(): void;
-  revokeRememberMeTokensByDevice(deviceId: string): void;
-  cleanupExpiredRememberMeTokens(): void;
+  // 内部持有的凭证列表
+  readonly credentials: AuthCredential[];
 
-  // API Key methods
-  generateApiKey(name: string, expiresInDays?: number): ApiKeyCredentialServer;
-  revokeApiKey(keyUuid: string): void;
+  readonly createdAt: DomainDate;
+  readonly updatedAt: DomainDate;
 
-  // Two-Factor methods
-  enableTwoFactor(method: 'TOTP' | 'SMS' | 'EMAIL' | 'AUTHENTICATOR_APP'): string;
-  disableTwoFactor(): void;
-  verifyTwoFactorCode(code: string): boolean;
-  generateBackupCodes(): string[];
-  useBackupCode(code: string): boolean;
 
-  // Biometric methods
-  enrollBiometric(type: 'FINGERPRINT' | 'FACE_ID' | 'TOUCH_ID', deviceId: string): void;
-  revokeBiometric(): void;
+  // --- Behaviors (业务行为) ---
+  
+  /**
+   * 核心认证逻辑
+   * @throws IdentityLockedException, InvalidCredentialsException
+   */
+  authenticate(
+    identifier: string, 
+    plainPassword: PlainPassword, 
+    encryptionService: any
+  ): Promise<void>;
 
-  // Security methods
-  recordFailedLogin(): void;
-  resetFailedAttempts(): void;
-  isLocked(): boolean;
-  suspend(): void;
-  activate(): void;
-  revoke(): void;
+  /**
+   * 修改密码
+   * 1. 检查是否存在 Password 类型的凭证 (没有则报错或创建)
+   * 2. 调用 encryptionService.hash()
+   * 3. 更新 credential 状态
+   */
+  changePassword(
+    newPassword: PlainPassword, 
+    encryptionService: any
+  ): Promise<void>;
+
+  /**
+   * 绑定第三方账号
+   * 1. 查重 (防止同一个微信绑定两个号)
+   * 2. push 到 credentials 列表
+   */
+  bindOAuth(credential: OAuthCredential): void;
+
+  /**
+   * 解锁账号 (通常由管理员或时间过期触发)
+   */
+  unlock(): void;
 
   toServerDTO(): AuthIdentityServerDTO;
   toClientDTO(): AuthIdentityClientDTO;
@@ -102,57 +93,28 @@ export interface AuthIdentityServerStatic {
  * AuthIdentity Server DTO
  */
 export interface AuthIdentityServerDTO {
-  uuid: string;
+  id: IdentityId;
+  status: IdentityStatus;
   accountUuid: string;
-  type: 'PASSWORD' | 'API_KEY' | 'BIOMETRIC' | 'MAGIC_LINK' | 'HARDWARE_KEY';
-  passwordCredential?: PasswordCredentialServer | null;
-  apiKeyCredentials: ApiKeyCredentialServer[];
-  rememberMeTokens: RememberMeTokenServer[];
-  twoFactor?: {
-    enabled: boolean;
-    secret?: string | null;
-    backupCodes: string[];
-    method: 'TOTP' | 'SMS' | 'EMAIL' | 'AUTHENTICATOR_APP';
-    verifiedAt?: number | null;
-  } | null;
-  biometric?: {
-    enabled: boolean;
-    type: 'FINGERPRINT' | 'FACE_ID' | 'TOUCH_ID';
-    deviceId?: string | null;
-    enrolledAt?: Date | null;
-  } | null;
-  status: 'ACTIVE' | 'SUSPENDED' | 'EXPIRED' | 'REVOKED';
-  security: {
-    requirePasswordChange: boolean;
-    passwordExpiresAt?: Date | null;
-    failedLoginAttempts: number;
-    lastFailedLoginAt?: Date | null;
-    lockedUntil?: Date | null;
-    lastPasswordChangeAt?: Date | null;
-  };
-  history: CredentialHistoryServer[];
-  createdAt: Date;
-  updatedAt: Date;
+  failedLoginAttempts: number;
+  lastFailedAttempt?: TransferDate;
+  lockedUntil?: TransferDate;
+  credentials: AuthCredential[];
+  createdAt: TransferDate;
+  updatedAt: TransferDate;
 }
 
 /**
  * AuthIdentity Persistence DTO
  */
 export interface AuthIdentityPersistenceDTO {
-  uuid: string;
+  id: IdentityId;
+  status: IdentityStatus;
   accountUuid: string;
-  type: 'PASSWORD' | 'API_KEY' | 'BIOMETRIC' | 'MAGIC_LINK' | 'HARDWARE_KEY';
-  password_credential?: string | null; // JSON
-  api_key_credentials: string; // JSON
-  remember_me_tokens: string; // JSON
-  two_factor?: string | null; // JSON
-  biometric?: string | null; // JSON
-  status: 'ACTIVE' | 'SUSPENDED' | 'EXPIRED' | 'REVOKED';
-  security: string; // JSON
-  history: string; // JSON
-  createdAt: Date;
-  updatedAt: Date;
-  expiresAt?: Date | null;
-  lastUsedAt?: number | null;
-  revokedAt?: Date | null;
+  failedLoginAttempts: number;
+  lastFailedAttempt?: PersistenceDate;
+  lockedUntil?: PersistenceDate;
+  credentials: AuthCredential[];
+  createdAt: PersistenceDate;
+  updatedAt: PersistenceDate;
 }

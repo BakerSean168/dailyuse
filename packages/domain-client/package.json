@@ -81,6 +81,7 @@
 
   "dependencies": {
     "@dailyuse/utils": "workspace:*",
+    "@dailyuse/domain-shared": "workspace:*",
     "date-fns": "^4.1.0"
   },
   "devDependencies": {
