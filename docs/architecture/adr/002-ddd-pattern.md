@@ -730,7 +730,7 @@ export class GetGoalHandler implements IQueryHandler<GetGoalQuery> {
 - [DDD Reference](https://www.domainlanguage.com/ddd/reference/)
 - [domain-driven-hexagon](https://github.com/Sairyss/domain-driven-hexagon) - TypeScript DDD 参考实现
 - [ddd-forum](https://github.com/stemmlerjs/ddd-forum) - Clean Architecture + DDD
-- [[../../concepts/ddd-patterns|DDD 模式指南]] - 项目内 DDD 实践
+- [[ddd-patterns|DDD 模式指南]] - 项目内 DDD 实践
 
 ---
 

@@ -1,94 +1,121 @@
 /**
- * AuthSession Entity - Server Interface
- * 会话实体 - 服务端接口
+ * AuthSession Aggregate Root - Server Interface
+ * 会话聚合根 - 服务端接口
+ *
+ * 核心职责:
+ * 1. 管理用户会话生命周期
+ * 2. 支持多设备并发会话
+ * 3. 实现会话续期和撤销逻辑
  */
-
 
 import type { DeviceInfo } from '../value-objects/device-info';
 import type { AuthSessionClientDTO } from './auth-session-client';
 
-import type { SessionId } from '../value-objects/auth-session-id';
+import type { AuthSessionId } from '../value-objects/auth-session-id';
 import type { IdentityId } from '../value-objects/identity-id';
 import { SessionStatus } from '../value-objects/session-status';
 import type { DomainDate } from '@/primitives/domain-date';
 import type { TransferDate } from '@/primitives';
 import type { PersistenceDate } from '@/primitives';
 
-// ============ 实体接口 ============
+// ============ 聚合根接口 ============
 
+/**
+ * Server 端会话聚合根
+ * 持有完整的会话数据和敏感信息
+ */
 export interface AuthSessionServer {
-  // --- State ---
-    // SessionId 即 Refresh Token
-    readonly id: SessionId;
-    
-    // 仅引用 ID，不持有对象 (Lazy Loading)
-    readonly identityId: IdentityId;
-  
-    
-    readonly deviceInfo: DeviceInfo;
-    
-    readonly createdAt: DomainDate;
-    expiresAt: DomainDate;         // 绝对过期时间
-    lastRefreshedAt: DomainDate;   // 滑动窗口用
-    
-    status: SessionStatus;
-  
-    // --- Behaviors ---
-  
-    /**
-     * 续期 (Refresh Token)
-     * 1. 检查是否 Revoked -> 抛错
-     * 2. 检查是否 Expired -> 抛错
-     * 3. 延长 expiresAt
-     */
-    refresh(extensionSeconds: number): void;
-  
-    /**
-     * 撤销/踢下线
-     * 1. status = REVOKED
-     * 2. 发出 SessionRevokedEvent
-     */
-    revoke(): void;
-  
-    /**
-     * 校验有效性 (Getter)
-     */
-    isValid(): boolean;
-  
+  /**
+   * 会话 ID (强类型)
+   * 通常作为 Refresh Token 的 JTI (JWT ID)
+   */
+  id: AuthSessionId;
 
-    toServerDTO(): AuthSessionServerDTO;
-    toClientDTO(): AuthSessionClientDTO;
-    toPersistenceDTO(): AuthSessionPersistenceDTO;
+  /**
+   * 关联的身份 ID
+   * 引用关系: Session -> Identity
+   */
+  identityId: IdentityId;
+
+  /**
+   * ✅ 设备信息 (包含指纹、IP、User-Agent 等)
+   */
+  deviceInfo: DeviceInfo;
+
+  /**
+   * 会话令牌 (JWT JTI)
+   * Server 端用于 Redis/数据库验证
+   */
+  token: string;
+
+  /**
+   * 刷新令牌哈希 (如果支持刷新)
+   */
+  refreshTokenHash?: string;
+
+  /**
+   * 会话状态
+   */
+  status: SessionStatus;
+
+  /**
+   * 创建时间
+   */
+  createdAt: DomainDate;
+
+  /**
+   * 过期时间 (绝对过期)
+   */
+  expiresAt: DomainDate;
+
+  /**
+   * 最后活跃时间 (用于滑动窗口)
+   */
+  lastActiveAt: DomainDate;
+
+  /**
+   * 是否被撤销
+   */
+  isRevoked: boolean;
 }
 
 export interface AuthSessionServerStatic {
+  fromServerDTO(dto: AuthSessionServerDTO): AuthSessionServer;
   fromPersistenceDTO(dto: AuthSessionPersistenceDTO): AuthSessionServer;
 }
 
 // ============ DTO 定义 ============
 
 /**
- * AuthSession Server DTO
+ * Server DTO (内部构造用)
+ * 使用 TransferDate (number) 时间戳
  */
 export interface AuthSessionServerDTO {
-  id: string;
-  identityId: string;
+  id: AuthSessionId;
+  identityId: IdentityId;
   deviceInfo: DeviceInfo;
+  token: string;
+  refreshTokenHash?: string;
+  status: SessionStatus;
   createdAt: TransferDate;
   expiresAt: TransferDate;
-  lastRefreshedAt: TransferDate;
-  status: SessionStatus;
+  lastActiveAt: TransferDate;
+  isRevoked: boolean;
 }
 
 /**
- * AuthSession Persistence DTO
+ * Persistence DTO (数据库存储)
+ * 使用 PersistenceDate (Date 对象)
  */
 export interface AuthSessionPersistenceDTO {
-  id: string;
-  identityId: string;
+  id: AuthSessionId;
+  identityId: IdentityId;
   deviceInfo: DeviceInfo;
+  token: string;
+  refreshTokenHash?: string;
+  status: SessionStatus;
   createdAt: PersistenceDate;
   expiresAt: PersistenceDate;
-  lastRefreshedAt: PersistenceDate;
-  status: SessionStatus;
+  lastActiveAt: PersistenceDate;
+  isRevoked: boolean;
 }

@@ -725,7 +725,7 @@ describe('GoalService', () => {
 
 ## 📚 相关文档
 
-- [[../../concepts/ddd-patterns|DDD 模式指南]]
+- [[ddd-patterns|DDD 模式指南]]
 - [[../../architecture/api-architecture|API 架构]]
 - [[../../guides/development/testing|测试指南]]
 - [[../../reference/api/goal|Goal API 完整参考]]

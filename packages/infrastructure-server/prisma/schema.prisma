@@ -1,6 +1,4 @@
-generator client {
-  provider = "prisma-client-js"
-}
+
 
 datasource db {
   provider          = "postgresql"
@@ -8,30 +6,7 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-model account {
-  id                             String                           @id
-  status                         String                           @default("ACTIVE") // AccountStatus
-  // profile
-  profile                        Json
-  // settings
-  settings                       Json
-  // email object value
-  emailAddress                   string                           @unique @map("email_address") // jdoe@example.com
-  emailIsVerified                Boolean                          @default(false) @map("email_is_verified")
-  emailVerifiedAt                DateTime?                        @default(false) @map("email_verified_at")
-  emailIsPrimary                 Boolean                          @default(false) @map("email_is_primary")
-  // phone object value
-  phoneCountryCode               String?                          @map("phone_country_code") // +86
-  phoneNumber                    String?                          @map("phone_number") // 13800138000
-  phoneFullNumber                String?                          @map("phone_full_number") // +8613800138000 (E.164格式)
-  phoneIsVerified                Boolean?                         @default(false) @map("phone_is_verified")
-  phoneVerifiedAt                DateTime?                        @map("phone_verified_at)                 
-  createdAt                      DateTime                         @default(now()) @map("created_at")
-  updatedAt                      DateTime                         @updatedAt @map("updated_at")
-  @@index([email])
-  @@index([phone])
-  @@map("accounts")
-}
+
 
 model appConfig {
   uuid        String   @id
@@ -46,9 +21,10 @@ model appConfig {
   @@map("app_configs")
 }
 
+
 model authCredential {
-  uuid        String    @id
-  accountUuid String    @map("account_uuid")
+  id          String    @id // authCredentialId
+  status      string    @default("ACTIVE") // "ACTIVE" | "LOCKED" | "DISABLED" | "UNVERIFIED"
   type        String
   data        String
   metadata    String

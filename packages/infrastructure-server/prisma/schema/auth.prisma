@@ -1,0 +1,149 @@
+
+// 1. 使用枚举保持与领域层 Value Object 一致
+enum AuthIdentityStatus {
+  ACTIVE  // 正常
+  LOCKED      // 多次尝试失败锁定
+  DISABLED   // 管理员禁用
+  UNVERIFIED      // 未验证
+}
+
+enum CredentialType {
+  PASSWORD
+  OAUTH
+  PHONE
+  MAGIC_LINK
+  // PASSKEY // 未来扩展
+}
+
+enum CredentialStatus {
+  ACTIVE
+  SUSPENDED
+  EXPIRED
+  REVOKED // 如：用户解绑了 Google，或者重置了密码导致旧凭证失效
+}
+
+// ==========================================
+// 1. 身份聚合根表 (AuthIdentity)
+// ==========================================
+model AuthIdentity {
+  // ID: 使用 UUID 或 CUID
+  id        String             @id @default(uuid())
+  
+  // 状态管理
+  status    AuthIdentityStatus @default(UNVERIFIED)
+
+  // 安全风控字段 (对应聚合根内部状态)
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  lastFailedAttempt   DateTime? @map("last_failed_attempt")
+  lockedUntil         DateTime? @map("locked_until")
+
+  // 时间戳
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // 关联
+  credentials AuthCredential[]
+  sessions    AuthSession[]
+
+  // 映射到数据库表名 (通常用下划线复数)
+  @@map("auth_identities")
+}
+
+// ==========================================
+// 2. 凭证实体表 (AuthCredential)
+// 采用 "单表继承 (Single Table Inheritance)" 策略
+// ==========================================
+model AuthCredential {
+  id         String @id @default(uuid())
+  
+  // 归属的身份
+  identityId String @map("identity_id")
+  identity   AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  // 核心字段
+  type       CredentialType
+  status     CredentialStatus @default(ACTIVE)
+  
+  // ------------------------------------------------------
+  // 策略 A: 稀疏列 (Sparse Columns) - 推荐
+  // 将不同类型的特有字段直接摊平在表中，用 NULL 区分。
+  // 优点: 查询极快，SQL 类型安全，易于索引。
+  // ------------------------------------------------------
+
+  // [Type: PASSWORD]
+  // 只有密码类型才有 identifier(email) 和 hash
+  // 注意：对于 PASSWORD 类型，identifier 存邮箱；对于 PHONE 类型，存手机号
+  identifier   String? // 邮箱 或 手机号 (用于快速查找)
+  passwordHash String? @map("password_hash") // Argon2 hash
+  passwordLastChangedAt DateTime? @map("password_last_changed_at") // 密码最后修改时间
+
+  // [Type: OAUTH]
+  provider          String? // GOOGLE, GITHUB (数据库存字符串，代码转枚举)
+  providerSubjectId String? @map("provider_subject_id") // 第三方返回的 sub / openid
+  accessToken       String? @map("access_token")  // 视安全需求，可能需要加密存储
+  refreshToken      String? @map("refresh_token") // 视安全需求，可能需要加密存储
+  oauthExpiresAt    DateTime? @map("oauth_expires_at") // Token 过期时间
+
+  // [Type: PHONE]
+  // 复用 identifier 存手机号
+  isVerified        Boolean? @default(false) @map("is_verified")
+
+  // ------------------------------------------------------
+  // 元数据
+  // ------------------------------------------------------
+  createdAt  DateTime  @default(now()) @map("created_at")
+  lastUsedAt DateTime? @map("last_used_at")
+
+  @@map("auth_credentials")
+
+  // 索引设计 (关键!)
+  
+  // 1. 查找某个用户的某种凭证 (例如：改密码时查 PASSWORD 凭证)
+  @@index([identityId, type])
+
+  // 2. 登录查找 (Password/Phone): 根据 标识 + 类型 查找
+  // 例: WHERE identifier = 'a@b.com' AND type = 'PASSWORD'
+  @@unique([identifier, type]) 
+
+  // 3. 登录查找 (OAuth): 根据 Provider + Sub 查找
+  // 例: WHERE provider = 'GOOGLE' AND provider_subject_id = '123456'
+  @@unique([provider, providerSubjectId])
+}
+
+// ==========================================
+// 3. 会话聚合根表 (AuthSession)
+// ==========================================
+model AuthSession {
+  // Session ID 通常就是 Refresh Token 的核心部分，或者是 JWT 的 JTI
+  id         String @id @default(uuid())
+
+  identityId String @map("identity_id")
+  identity   AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  // 核心令牌数据
+  refreshTokenHash String? @map("refresh_token_hash") // 如果你想支持 Refresh Token 轮换 (Rotation)
+  
+  // 设备信息 (对应 DeviceInfo Value Object)
+  deviceId          String  @map("device_id")
+  deviceFingerprint String  @map("device_fingerprint")
+  deviceType        String  @map("device_type") // MOBILE, DESKTOP
+  deviceName        String? @map("device_name")
+  os                String?
+  browser           String?
+  ipAddress         String? @map("ip_address")
+  
+  // 地理位置 (用 JSON 存比较灵活，因为字段不确定)
+  location          Json?   // { country, city, timezone }
+
+  // 生命周期
+  createdAt    DateTime @default(now()) @map("created_at")
+  expiresAt    DateTime @map("expires_at")
+  lastActiveAt DateTime @default(now()) @map("last_active_at")
+
+  @@map("auth_sessions")
+  
+  // 索引：查找某用户的所有会话 (用于 "我的设备" 列表)
+  @@index([identityId])
+  // 索引：查找过期会话 (用于清理任务)
+  @@index([expiresAt])
+}

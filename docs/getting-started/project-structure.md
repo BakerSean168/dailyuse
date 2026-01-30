@@ -338,7 +338,7 @@ module/
 - [[../architecture/api-architecture|🔌 API 架构]]
 - [[../architecture/web-architecture|🌐 Web 架构]]
 - [[../guides/development/coding-standards|📝 代码规范]]
-- [[../concepts/ddd-patterns|🏛 DDD 模式]]
+- [[ddd-patterns|🏛 DDD 模式]]
 
 ---
 

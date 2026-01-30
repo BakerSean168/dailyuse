@@ -9,7 +9,7 @@ export interface ContactPhone {
   number: string;       // 13800138000
   fullNumber: string;   // +8613800138000 (E.164格式)
   isVerified: boolean;
-  verifiedAt?: DomainDate | null;
+  verifiedAt: DomainDate | null;
 }
 
 export interface ContactPhoneDTO {
@@ -17,7 +17,7 @@ export interface ContactPhoneDTO {
   number: string;       // 13800138000
   fullNumber: string;   // +8613800138000 (E.164格式)
   isVerified: boolean;
-  verifiedAt?: TransferDate | null;
+  verifiedAt: TransferDate | null;
 }
 
 export interface ContactPhonePersistenceDTO {
@@ -25,5 +25,5 @@ export interface ContactPhonePersistenceDTO {
   number: string;       // 13800138000
   fullNumber: string;   // +8613800138000 (E.164格式)
   isVerified: boolean;
-  verifiedAt?: PersistenceDate | null;
+  verifiedAt: PersistenceDate | null;
 }

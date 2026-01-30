@@ -1,18 +1,39 @@
 /**
- * 第三方 OAuth 凭证的服务端定义文件
+ * OAuth 凭证 (Server 端持有 Provider 信息)
  */
 
-import type { BaseCredential } from "../types/base-credential";
-import type { CredentialType } from "../value-objects/auth-credential-type";
+import type { DomainDate, TransferDate, PersistenceDate } from '@/primitives';
+import type { BaseAuthCredentialPersistenceDTO, BaseAuthCredentialServer, BaseAuthCredentialServerDTO } from './base-auth-credential-server';
+import { OAuthProvider } from '../value-objects/oauth-provider';
 
-export interface OAuthCredential extends BaseCredential {
-  readonly type: CredentialType.OAUTH2;
-  
-  readonly provider: 'GOOGLE' | 'GITHUB' | 'WECHAT';
-  readonly externalUserId: string; // 第三方的 OpenID
-  
-  // 第三方令牌 (可选，如果不需持久化可不存)
-  accessToken?: string;
-  refreshToken?: string;
-  tokenExpiresAt?: Date;
+export interface OAuthCredentialServer extends BaseAuthCredentialServer {
+  type: 'OAUTH';
+  provider: OAuthProvider;
+  providerSubjectId: string;
+  accessToken: string | null;
+  refreshToken: string | null;
+  expiresAt: DomainDate | null;
+}
+
+export interface OAuthCredentialServerDTO extends BaseAuthCredentialServerDTO {
+  type: 'OAUTH';
+  provider: OAuthProvider;
+  providerSubjectId: string;
+  accessToken: string | null;
+  refreshToken: string | null;
+  expiresAt: TransferDate | null;
+}
+
+export interface OAuthCredentialPersistenceDTO extends BaseAuthCredentialPersistenceDTO {
+  type: 'OAUTH';
+  provider: OAuthProvider;
+  providerSubjectId: string;
+  accessToken: string | null;
+  refreshToken: string | null;
+  expiresAt: PersistenceDate | null;
+}
+
+export interface OAuthCredentialServerStatic {
+  fromServerDTO(dto: OAuthCredentialServerDTO): OAuthCredentialServer;
+  fromPersistenceDTO(dto: OAuthCredentialPersistenceDTO): OAuthCredentialServer;
 }

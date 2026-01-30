@@ -9,28 +9,28 @@ import type { GenderType } from "./gender-type";
 
 export interface AccountProfile {
   nickname: string;     // 昵称
-  realName?: string;    // 实名 (可选)
-  avatarUrl?: string;   // 头像链接
-  bio?: string;         // 个人简介
+  realName: string | null;    // 实名
+  avatarUrl: string | null;   // 头像链接
+  bio: string | null;         // 个人简介
   gender: GenderType;
-  birthday?: DomainDate; // 生日
+  birthday: DomainDate | null; // 生日
 }
 
 
 export interface AccountProfileDTO {
   nickname: string;     // 昵称
-  realName?: string;    // 实名 (可选)
-  avatarUrl?: string;   // 头像链接
-  bio?: string;         // 个人简介
+  realName: string | null;    // 实名
+  avatarUrl: string | null;   // 头像链接
+  bio: string | null;         // 个人简介
   gender: GenderType;
-  birthday?: TransferDate; // 生日
+  birthday: TransferDate | null; // 生日
 }
 
 export interface AccountProfilePersistenceDTO {
   nickname: string;     // 昵称
-  realName?: string;    // 实名 (可选)
-  avatarUrl?: string;   // 头像链接
-  bio?: string;         // 个人简介
+  realName: string | null;    // 实名
+  avatarUrl: string | null;   // 头像链接
+  bio: string | null;         // 个人简介
   gender: GenderType;
-  birthday?: PersistenceDate; // 生日
+  birthday: PersistenceDate | null; // 生日
 }

@@ -1,404 +1,331 @@
 /**
  * AuthSession 聚合根实现
  * 实现 AuthSessionServer 接口
+ * 
+ * 核心职责:
+ * 1. 管理用户会话生命周期
+ * 2. 支持多设备并发会话
+ * 3. 实现会话续期和撤销逻辑
  */
 
 import type {
-  AuthSessionClientDTO,
   AuthSessionPersistenceDTO,
   AuthSessionServer,
   AuthSessionServerDTO,
-  DeviceInfoServer,
-  RefreshTokenServer,
-  SessionHistoryServer,
+  DeviceInfo as IDeviceInfo,
+  AuthEventMap,
 } from '@dailyuse/contracts/authentication';
-import { AggregateRoot, generateUUID } from '@dailyuse/utils';
-import { RefreshToken } from '../entities/refresh-token';
-import { SessionHistory } from '../entities/session-history';
-import { DeviceInfo } from '../value-objects/device-info';
-import crypto from 'crypto';
+import { AggregateRoot } from '@dailyuse/utils';
 
-export class AuthSession extends AggregateRoot implements AuthSessionServer {
-  public readonly accountUuid: string;
-  private _accessToken: string;
-  private _accessTokenExpiresAt: Date;
-  private _refreshToken: RefreshToken;
-  private _device: DeviceInfo;
-  private _status: 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'LOCKED';
-  private _ipAddress: string;
-  private _location: {
-    country?: string | null;
-    region?: string | null;
-    city?: string | null;
-    timezone?: string | null;
-  } | null;
-  private _lastActivityAt: Date;
-  private _lastActivityType: string | null;
-  private _history: SessionHistory[];
-  public readonly createdAt: Date;
+import {
+  SessionStatus,
+  DeviceInfo,
+AuthSessionId,
+
+} from '@dailyuse/domain-shared/authentication';
+
+import { IdentityId } from '@dailyuse/domain-shared/account';
+
+// ================= 常量定义 =================
+
+/** 默认会话有效期（毫秒）- 7 天 */
+const DEFAULT_SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+/** 滑动窗口刷新阈值（毫秒）- 1 小时 */
+const SLIDING_WINDOW_THRESHOLD_MS = 60 * 60 * 1000;
+
+/**
+ * AuthSession 聚合根
+ * 管理用户的登录会话
+ */
+export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSessionServer {
+
+  // ================= 1. 内部状态 (Backing Fields) =================
+  private _identityId: IdentityId;
+  private _deviceInfo: DeviceInfo;
+  private _token: string;
+  private _refreshTokenHash: string | undefined;
+  private _status: typeof SessionStatus.ACTIVE;
+  private _createdAt: Date;
   private _expiresAt: Date;
-  private _revokedAt: Date | null;
+  private _lastActiveAt: Date;
+  private _isRevoked: boolean;
 
-  constructor(params: {
-    uuid?: string;
-    accountUuid: string;
-    accessToken: string;
-    accessTokenExpiresAt: Date;
-    refreshToken: RefreshToken;
-    device: DeviceInfo;
-    status?: 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'LOCKED';
-    ipAddress: string;
-    location?: {
-      country?: string | null;
-      region?: string | null;
-      city?: string | null;
-      timezone?: string | null;
-    } | null;
-    lastActivityAt?: Date;
-    lastActivityType?: string | null;
-    history?: SessionHistory[];
-    createdAt?: Date;
-    expiresAt?: Date;
-    revokedAt?: Date | null;
-  }) {
-    super(params.uuid ?? generateUUID());
-    this.accountUuid = params.accountUuid;
-    this._accessToken = params.accessToken;
-    this._accessTokenExpiresAt = params.accessTokenExpiresAt;
-    this._refreshToken = params.refreshToken;
-    this._device = params.device;
-    this._status = params.status ?? 'ACTIVE';
-    this._ipAddress = params.ipAddress;
-    this._location = params.location ?? null;
-    const now = new Date();
-    this._lastActivityAt = params.lastActivityAt ?? now;
-    this._lastActivityType = params.lastActivityType ?? null;
-    this._history = params.history ?? [];
-    this.createdAt = params.createdAt ?? now;
-    this._expiresAt = params.expiresAt ?? new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // Default 30 days
-    this._revokedAt = params.revokedAt ?? null;
+  // ================= 2. 构造函数 (Private) =================
+  private constructor(props: AuthSessionServerDTO) {
+    super(props.id);
+
+    this._identityId = props.identityId;
+    this._deviceInfo = DeviceInfo.fromDTO(props.deviceInfo);
+    this._token = props.token;
+    this._refreshTokenHash = props.refreshTokenHash;
+    this._status = SessionStatus.of(props.status);
+    this._createdAt = new Date(props.createdAt);
+    this._expiresAt = new Date(props.expiresAt);
+    this._lastActiveAt = new Date(props.lastActiveAt);
+    this._isRevoked = props.isRevoked;
   }
 
-  public get accessToken(): string {
-    return this._accessToken;
+  // ================= 3. 公共属性 (Getters) =================
+  get identityId(): IdentityId {
+    return this._identityId;
   }
 
-  public get accessTokenExpiresAt(): Date {
-    return this._accessTokenExpiresAt;
+  get deviceInfo(): IDeviceInfo {
+    return this._deviceInfo.toDTO();
   }
 
-  public get refreshToken(): RefreshTokenServer {
-    return this._refreshToken as any;
+  get token(): string {
+    return this._token;
   }
 
-  public get device(): DeviceInfoServer {
-    return this._device as any;
+  get refreshTokenHash(): string | undefined {
+    return this._refreshTokenHash;
   }
 
-  public get status(): 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'LOCKED' {
+  get status(): typeof SessionStatus.ACTIVE {
     return this._status;
   }
 
-  public get ipAddress(): string {
-    return this._ipAddress;
+  get createdAt(): Date {
+    return this._createdAt;
   }
 
-  public get location() {
-    return this._location;
-  }
-
-  public get lastActivityAt(): Date {
-    return this._lastActivityAt;
-  }
-
-  public get lastActivityType(): string | null {
-    return this._lastActivityType;
-  }
-
-  public get history(): SessionHistoryServer[] {
-    return this._history as any;
-  }
-
-  public get expiresAt(): Date {
+  get expiresAt(): Date {
     return this._expiresAt;
   }
 
-  public get revokedAt(): Date | null {
-    return this._revokedAt;
+  get lastActiveAt(): Date {
+    return this._lastActiveAt;
   }
 
-  // Factory methods
+  get isRevoked(): boolean {
+    return this._isRevoked;
+  }
+
+  // ================= 4. 工厂方法 (Factories) =================
+
+  /**
+   * 🏭 业务工厂：创建一个新的会话
+   */
   public static create(params: {
-    accountUuid: string;
-    accessToken: string;
-    refreshToken: string;
-    device: DeviceInfoServer;
-    ipAddress: string;
-    location?: {
-      country?: string;
-      region?: string;
-      city?: string;
-      timezone?: string;
-    };
+    id: AuthSessionId;
+    identityId: IdentityId;
+    deviceInfo: IDeviceInfo;
+    token: string;
+    refreshTokenHash?: string;
+    durationMs?: number;
   }): AuthSession {
-    const device =
-      params.device instanceof DeviceInfo ? params.device : DeviceInfo.fromServerDTO(params.device);
+    const now = Date.now();
+    const duration = params.durationMs ?? DEFAULT_SESSION_DURATION_MS;
 
-    const refreshToken = RefreshToken.create({
-      sessionUuid: '', // Will be set after session creation
-      token: params.refreshToken,
-      expiresInDays: 30,
+    const dto: AuthSessionServerDTO = {
+      id: params.id,
+      identityId: params.identityId,
+      deviceInfo: params.deviceInfo,
+      token: params.token,
+      refreshTokenHash: params.refreshTokenHash,
+      status: SessionStatus.ACTIVE,
+      createdAt: now,
+      expiresAt: now + duration,
+      lastActiveAt: now,
+      isRevoked: false,
+    };
+
+    const session = new AuthSession(dto);
+
+    session.addDomainEvent<AuthEventMap['auth:login-success']>('auth:session-created' as keyof AuthEventMap, {
+      ip: params.deviceInfo.ipAddress ?? '',
     });
 
-    const accessTokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-
-    const session = new AuthSession({
-      accountUuid: params.accountUuid,
-      accessToken: params.accessToken,
-      accessTokenExpiresAt,
-      refreshToken,
-      device,
-      ipAddress: params.ipAddress,
-      location: params.location,
-    });
-
-    // Update refresh token with session UUID
-    session._refreshToken = RefreshToken.create({
-      sessionUuid: session.uuid,
-      token: params.refreshToken,
-      expiresInDays: 30,
-    });
-
-    session._addHistory('SESSION_CREATED', { ipAddress: params.ipAddress });
     return session;
   }
 
-  public static fromServerDTO(dto: AuthSessionServerDTO): AuthSession {
-    return new AuthSession({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
-      accessToken: dto.accessToken,
-      accessTokenExpiresAt: new Date(dto.accessTokenExpiresAt),
-      refreshToken: RefreshToken.fromServerDTO(dto.refreshToken as any),
-      device: DeviceInfo.fromServerDTO(dto.device as any),
-      status: dto.status,
-      ipAddress: dto.ipAddress,
-      location: dto.location,
-      lastActivityAt: new Date(dto.lastActivityAt),
-      lastActivityType: dto.lastActivityType,
-      history: dto.history.map((h) => SessionHistory.fromServerDTO(h as any)),
-      createdAt: new Date(dto.createdAt),
-      expiresAt: new Date(dto.expiresAt),
-      revokedAt: dto.revokedAt ? new Date(dto.revokedAt) : null,
-    });
-  }
-
+  /**
+   * 🏭 恢复工厂：从持久化 DTO 恢复
+   */
   public static fromPersistenceDTO(dto: AuthSessionPersistenceDTO): AuthSession {
-    const refreshToken = RefreshToken.fromPersistenceDTO({
-      uuid: '', // Assuming not stored directly, can be generated or omitted
-      sessionUuid: dto.uuid,
-      token: dto.refreshToken,
-      expiresAt: dto.refreshTokenExpiresAt,
-      createdAt: 0, // Assuming not stored, default value
-      usedAt: null, // Assuming not stored, default value
-    });
-
-    const device = DeviceInfo.fromServerDTO({
-      deviceId: dto.deviceId,
-      deviceType: dto.deviceType === 'DESKTOP' ? 'DESKTOP' : 'UNKNOWN',
-      os: dto.deviceOs,
-      browser: dto.deviceBrowser,
-      deviceFingerprint: '', // Assuming not stored
-      firstSeenAt: 0, // Assuming not stored
-      lastSeenAt: 0, // Assuming not stored
-    });
-
-    const location = {
-      country: dto.locationCountry,
-      region: dto.locationRegion,
-      city: dto.locationCity,
-      timezone: dto.locationTimezone,
-    };
-
-    const history = JSON.parse(dto.history);
-
-    return new AuthSession({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
-      accessToken: dto.accessToken,
-      accessTokenExpiresAt: dto.accessTokenExpiresAt,
-      refreshToken,
-      device,
+    const serverDTO: AuthSessionServerDTO = {
+      id: dto.id,
+      identityId: dto.identityId,
+      deviceInfo: dto.deviceInfo,
+      token: dto.token,
+      refreshTokenHash: dto.refreshTokenHash,
       status: dto.status,
-      ipAddress: dto.ipAddress,
-      location,
-      lastActivityAt: dto.lastActivityAt,
-      lastActivityType: dto.lastActivityType,
-      history: history.map((h: any) => SessionHistory.fromPersistenceDTO(h)),
-      createdAt: dto.createdAt,
-      expiresAt: dto.expiresAt,
-      revokedAt: dto.revokedAt,
-    });
+      createdAt: dto.createdAt.getTime(),
+      expiresAt: dto.expiresAt.getTime(),
+      lastActiveAt: dto.lastActiveAt.getTime(),
+      isRevoked: dto.isRevoked,
+    };
+    return new AuthSession(serverDTO);
   }
 
-  // Business methods
-  public refreshAccessToken(newToken: string, expiresInMinutes: number): void {
-    this._accessToken = newToken;
-    this._accessTokenExpiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
-    this._lastActivityAt = new Date();
-    this._addHistory('ACCESS_TOKEN_REFRESHED');
+  /**
+   * 🏭 恢复工厂：从 Server DTO 恢复
+   */
+  public static fromServerDTO(dto: AuthSessionServerDTO): AuthSession {
+    return new AuthSession(dto);
   }
 
-  public refreshRefreshToken(): void {
-    const newToken = crypto.randomBytes(32).toString('hex');
-    this._refreshToken = RefreshToken.create({
-      sessionUuid: this.uuid,
-      token: newToken,
-      expiresInDays: 30,
-    });
-    // 🔥 修复：同时更新 Session 的 expiresAt（Sliding Window）
-    this._expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
-    this._lastActivityAt = new Date();
-    this._addHistory('REFRESH_TOKEN_REFRESHED');
-  }
+  // ================= 5. 业务行为 (Business Actions) =================
 
-  public isAccessTokenExpired(): boolean {
-    return new Date() > this._accessTokenExpiresAt;
-  }
-
-  public isRefreshTokenExpired(): boolean {
-    return this._refreshToken.isExpired();
-  }
-
+  /**
+   * ✅ 检查会话是否有效
+   */
   public isValid(): boolean {
-    // 检查三个条件：1. 状态为 ACTIVE；2. RefreshToken 未过期；3. Session 未过期
-    // expiresAt 会随 refreshRefreshToken() 自动续期（Sliding Window）
-    return (
-      this._status === 'ACTIVE' && !this.isRefreshTokenExpired() && new Date() < this._expiresAt
-    );
+    // 1. 检查是否被撤销
+    if (this._isRevoked) {
+      return false;
+    }
+
+    // 2. 检查状态
+    if (!SessionStatus.isActive(this._status)) {
+      return false;
+    }
+
+    // 3. 检查是否过期
+    if (this.isExpired()) {
+      return false;
+    }
+
+    return true;
   }
 
-  public recordActivity(activityType: string): void {
-    this._lastActivityAt = new Date();
-    this._lastActivityType = activityType;
-    this._addHistory('ACTIVITY_RECORDED', { activityType });
+  /**
+   * ✅ 检查会话是否过期
+   */
+  public isExpired(): boolean {
+    return this._expiresAt.getTime() < Date.now();
   }
 
-  public updateDeviceInfo(device: Partial<DeviceInfoServer>): void {
-    this._device = DeviceInfo.fromServerDTO({
-      ...this._device.toServerDTO(),
-      ...device,
-    } as any);
-    this._addHistory('DEVICE_INFO_UPDATED');
+  /**
+   * ✅ 刷新会话活跃时间（滑动窗口）
+   * 只有当距离上次刷新超过阈值时才刷新
+   */
+  public touch(): boolean {
+    if (!this.isValid()) {
+      return false;
+    }
+
+    const now = Date.now();
+    const timeSinceLastActive = now - this._lastActiveAt.getTime();
+
+    // 只有超过阈值才刷新，避免频繁更新
+    if (timeSinceLastActive < SLIDING_WINDOW_THRESHOLD_MS) {
+      return false;
+    }
+
+    this._lastActiveAt = new Date(now);
+    return true;
   }
 
+  /**
+   * ✅ 续期会话
+   */
+  public extend(durationMs?: number): void {
+    if (!this.isValid()) {
+      throw new Error('Cannot extend an invalid session');
+    }
+
+    const duration = durationMs ?? DEFAULT_SESSION_DURATION_MS;
+    const now = Date.now();
+
+    this._expiresAt = new Date(now + duration);
+    this._lastActiveAt = new Date(now);
+  }
+
+  /**
+   * ✅ 撤销会话（用户登出）
+   */
   public revoke(): void {
-    this._status = 'REVOKED';
-    this._revokedAt = new Date();
-    this._addHistory('SESSION_REVOKED');
+    if (this._isRevoked) {
+      return; // 幂等
+    }
+
+    this._isRevoked = true;
+    this._status = SessionStatus.REVOKED;
+
+    this.addDomainEvent<AuthEventMap['auth:login-success']>('auth:session-revoked' as keyof AuthEventMap, {
+      ip: this._deviceInfo.ipAddress ?? '',
+    });
   }
 
-  public lock(): void {
-    this._status = 'LOCKED';
-    this._addHistory('SESSION_LOCKED');
+  /**
+   * ✅ 标记会话过期
+   */
+  public markExpired(): void {
+    if (SessionStatus.isExpired(this._status)) {
+      return; // 幂等
+    }
+
+    this._status = SessionStatus.EXPIRED;
   }
 
-  public activate(): void {
-    this._status = 'ACTIVE';
-    this._addHistory('SESSION_ACTIVATED');
+  /**
+   * ✅ 更新刷新令牌哈希
+   */
+  public updateRefreshTokenHash(hash: string): void {
+    if (!this.isValid()) {
+      throw new Error('Cannot update refresh token on an invalid session');
+    }
+
+    this._refreshTokenHash = hash;
+    this._lastActiveAt = new Date();
   }
 
-  public extend(hours: number): void {
-    this._expiresAt = new Date(this._expiresAt.getTime() + hours * 60 * 60 * 1000);
-    this._addHistory('SESSION_EXTENDED', { hours });
+  /**
+   * ✅ 获取会话剩余有效时间（秒）
+   */
+  public getRemainingSeconds(): number {
+    if (!this.isValid()) {
+      return 0;
+    }
+
+    const remaining = this._expiresAt.getTime() - Date.now();
+    return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
   }
 
-  // DTO conversion
+  /**
+   * ✅ 检查是否是当前会话
+   */
+  public isCurrentSession(currentToken: string): boolean {
+    return this._token === currentToken;
+  }
+
+  // ================= 6. 序列化 (Serialization) =================
+
+  /**
+   * 转换为 Server DTO
+   */
   public toServerDTO(): AuthSessionServerDTO {
     return {
-      uuid: this.uuid,
-      accountUuid: this.accountUuid,
-      accessToken: this._accessToken,
-      accessTokenExpiresAt: this._accessTokenExpiresAt.getTime(),
-      refreshToken: this._refreshToken as any,
-      device: this._device as any,
+      id: this.id,
+      identityId: this._identityId,
+      deviceInfo: this._deviceInfo.toDTO(),
+      token: this._token,
+      refreshTokenHash: this._refreshTokenHash,
       status: this._status,
-      ipAddress: this._ipAddress,
-      location: this._location,
-      lastActivityAt: this._lastActivityAt.getTime(),
-      lastActivityType: this._lastActivityType,
-      history: this._history as any,
-      createdAt: this.createdAt.getTime(),
-      expiresAt: this.expiresAt.getTime(),
-      revokedAt: this._revokedAt ? this._revokedAt.getTime() : null,
+      createdAt: this._createdAt.getTime(),
+      expiresAt: this._expiresAt.getTime(),
+      lastActiveAt: this._lastActiveAt.getTime(),
+      isRevoked: this._isRevoked,
     };
   }
 
-  public toClientDTO(): AuthSessionClientDTO {
-    return {
-      uuid: this.uuid,
-      accountUuid: this.accountUuid,
-      accessToken: this._accessToken,
-      accessTokenExpiresAt: this._accessTokenExpiresAt.getTime(),
-      refreshToken: this._refreshToken as any,
-      device: this._device as any,
-      status: this._status,
-      ipAddress: this._ipAddress,
-      location: this._location,
-      lastActivityAt: this._lastActivityAt.getTime(),
-      lastActivityType: this._lastActivityType,
-      history: this._history as any,
-      createdAt: this.createdAt.getTime(),
-      expiresAt: this.expiresAt.getTime(),
-      revokedAt: this._revokedAt ? this._revokedAt.getTime() : null,
-    };
-  }
-
+  /**
+   * 转换为持久化 DTO
+   */
   public toPersistenceDTO(): AuthSessionPersistenceDTO {
-    const refreshTokenDTO = this._refreshToken.toPersistenceDTO();
-    const deviceDTO = this._device.toServerDTO();
-
     return {
-      uuid: this.uuid,
-      accountUuid: this.accountUuid,
-      accessToken: this._accessToken,
-      accessTokenExpiresAt: this._accessTokenExpiresAt,
-
-      // Flattened refresh token
-      refreshToken: refreshTokenDTO.token,
-      refreshTokenExpiresAt: refreshTokenDTO.expiresAt,
-
-      // Flattened device info
-      deviceId: deviceDTO.deviceId,
-      deviceType: deviceDTO.deviceType,
-      deviceOs: deviceDTO.os,
-      deviceBrowser: deviceDTO.browser,
-
+      id: this.id,
+      identityId: this._identityId,
+      deviceInfo: this._deviceInfo.toDTO(),
+      token: this._token,
+      refreshTokenHash: this._refreshTokenHash,
       status: this._status,
-      ipAddress: this._ipAddress,
-
-      // Flattened location
-      locationCountry: this._location?.country,
-      locationRegion: this._location?.region,
-      locationCity: this._location?.city,
-      locationTimezone: this._location?.timezone,
-
-      lastActivityAt: this._lastActivityAt,
-      lastActivityType: this._lastActivityType,
-      history: JSON.stringify(this._history.map((h) => h.toPersistenceDTO())),
-      createdAt: this.createdAt,
-      expiresAt: this.expiresAt,
-      revokedAt: this._revokedAt,
+      createdAt: this._createdAt,
+      expiresAt: this._expiresAt,
+      lastActiveAt: this._lastActiveAt,
+      isRevoked: this._isRevoked,
     };
-  }
-
-  // Private helper
-  private _addHistory(action: string, details?: any): void {
-    const history = SessionHistory.create({
-      sessionUuid: this.uuid,
-      action,
-      details,
-    });
-    this._history.push(history);
   }
 }

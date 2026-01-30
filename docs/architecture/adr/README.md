@@ -156,7 +156,7 @@ updated: YYYY-MM-DD
 ## 🔍 相关文档
 
 - [[../system-overview|系统架构概览]]
-- [[../../concepts/ddd-patterns|DDD 模式指南]]
+- [[ddd-patterns|DDD 模式指南]]
 - [[../../concepts/event-driven|事件驱动架构]]
 - [[../../contributing/documentation-guide|文档贡献指南]]
 

@@ -1,85 +1,71 @@
 /**
- * AuthIdentity Entity - Server Interface
- * 认证实体 - 服务端接口
+ * AuthIdentity Aggregate Root - Server Interface
+ * 认证身份聚合根 - 服务端接口
+ *
+ * 核心职责:
+ * 1. 管理多种凭证 (密码、OAuth、手机等)
+ * 2. 协调凭证生命周期 (添加、删除、更新)
+ * 3. 实施业务规则 (至少保留一个凭证、登录失败锁定等)
  */
 
-import type { PasswordCredentialServer } from '../entities/PasswordCredentialServer';
-import type { ApiKeyCredentialServer } from '../entities/ApiKeyCredentialServer';
-import type { RememberMeTokenServer } from '../entities/RememberMeTokenServer';
-import type { CredentialHistoryServer } from '../entities/CredentialHistoryServer';
-import type { AuthIdentityClientDTO } from './auth-identity-client';
-import type { PlainPassword } from './../value-objects/plain-password';
-import type { OAuthCredential } from '../entities/oauth-credential-server';
-// =========== 相关类型 ============
+import type { AuthCredentialServer, AuthCredentialServerDTO } from '../entities/auth-credential-server';
+import type { DomainDate, TransferDate, PersistenceDate } from '@/primitives';
+import type { AuthIdentityStatus } from '../value-objects/auth-identity-status';
+import type { IdentityId } from '@/primitives';
 
-import type { IdentityId } from '../value-objects/identity-id';
-import type { IdentityStatus } from '../value-objects/auth-identity-status';
-import type { AuthCredential } from '../types/auth-credential';
-import type { DomainDate } from '@/primitives';
-import type { TransferDate } from '@/primitives';
-import type { PersistenceDate } from '@/primitives';
-// ============ 实体接口 ============
 
+// ============ 聚合根接口 ============
+
+/**
+ * Server 端身份聚合根
+ * 持有完整的凭证和敏感信息
+ */
 export interface AuthIdentityServer {
-  readonly id: IdentityId;
-  status: IdentityStatus;
-  accountUuid: string;
+  /**
+   * 身份 ID (强类型)
+   */
+  id: IdentityId;
 
-  // 失败计数 (业务核心)
+  /**
+   * 身份状态
+   */
+  status: AuthIdentityStatus;
+
+  /**
+   * 登录失败计数
+   */
   failedLoginAttempts: number;
-  lastFailedAttempt?: DomainDate;
-  lockedUntil?: DomainDate;
-
-  // 内部持有的凭证列表
-  readonly credentials: AuthCredential[];
-
-  readonly createdAt: DomainDate;
-  readonly updatedAt: DomainDate;
-
-
-  // --- Behaviors (业务行为) ---
-  
-  /**
-   * 核心认证逻辑
-   * @throws IdentityLockedException, InvalidCredentialsException
-   */
-  authenticate(
-    identifier: string, 
-    plainPassword: PlainPassword, 
-    encryptionService: any
-  ): Promise<void>;
 
   /**
-   * 修改密码
-   * 1. 检查是否存在 Password 类型的凭证 (没有则报错或创建)
-   * 2. 调用 encryptionService.hash()
-   * 3. 更新 credential 状态
+   * 最后失败尝试时间
    */
-  changePassword(
-    newPassword: PlainPassword, 
-    encryptionService: any
-  ): Promise<void>;
+  lastFailedAttempt: DomainDate | null;
 
   /**
-   * 绑定第三方账号
-   * 1. 查重 (防止同一个微信绑定两个号)
-   * 2. push 到 credentials 列表
+   * 锁定直到此时间 (null 表示未锁定)
    */
-  bindOAuth(credential: OAuthCredential): void;
+  lockedUntil: DomainDate | null;
 
   /**
-   * 解锁账号 (通常由管理员或时间过期触发)
+   * ✅ 核心：持有的凭证列表
+   * 业务规则: 至少保留一个凭证
    */
-  unlock(): void;
+  credentials: AuthCredentialServer[];
 
-  toServerDTO(): AuthIdentityServerDTO;
-  toClientDTO(): AuthIdentityClientDTO;
-  toPersistenceDTO(): AuthIdentityPersistenceDTO;
+  /**
+   * 创建时间
+   */
+  createdAt: DomainDate;
+
+  /**
+   * 更新时间
+   */
+  updatedAt: DomainDate;
 }
 
 export interface AuthIdentityServerStatic {
   create(params: {
-    accountUuid: string;
+    accountId: IdentityId;
     type: 'PASSWORD' | 'API_KEY' | 'BIOMETRIC' | 'MAGIC_LINK' | 'HARDWARE_KEY';
     hashedPassword?: string;
   }): AuthIdentityServer;
@@ -90,31 +76,31 @@ export interface AuthIdentityServerStatic {
 // ============ DTO 定义 ============
 
 /**
- * AuthIdentity Server DTO
+ * Server DTO (内部构造用)
+ * 使用 TransferDate (number) 时间戳
  */
 export interface AuthIdentityServerDTO {
   id: IdentityId;
-  status: IdentityStatus;
-  accountUuid: string;
+  status: AuthIdentityStatus;
   failedLoginAttempts: number;
-  lastFailedAttempt?: TransferDate;
-  lockedUntil?: TransferDate;
-  credentials: AuthCredential[];
+  lastFailedAttempt: TransferDate | null;
+  lockedUntil: TransferDate | null;
+  credentials: AuthCredentialServerDTO[];
   createdAt: TransferDate;
   updatedAt: TransferDate;
 }
 
 /**
- * AuthIdentity Persistence DTO
+ * Persistence DTO (数据库存储)
+ * 使用 PersistenceDate (Date 对象)
  */
 export interface AuthIdentityPersistenceDTO {
   id: IdentityId;
-  status: IdentityStatus;
-  accountUuid: string;
+  status: AuthIdentityStatus;
   failedLoginAttempts: number;
-  lastFailedAttempt?: PersistenceDate;
-  lockedUntil?: PersistenceDate;
-  credentials: AuthCredential[];
+  lastFailedAttempt: PersistenceDate | null;
+  lockedUntil: PersistenceDate | null;
+  credentials: AuthCredentialServer[];
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
 }

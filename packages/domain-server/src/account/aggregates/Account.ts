@@ -84,29 +84,17 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
   public static create(params: {
     id: IdentityId,
     email: string;
-    nickname: string;
   }): Account {
     const now = Date.now();
     const dto: AccountServerDTO = {
       id: params.id.toString(),
       status: AccountStatus.ACTIVE,
-      profile: {
-        nickname: params.nickname,
-        gender: GenderType.PREFER_NOT_TO_SAY,
-        birthday: undefined,
-        avatarUrl: undefined,
-        bio: undefined,
-        realName: undefined,
-      },
-      settings: {
-        theme: ThemeType.SYSTEM,
-        language: 'en-US',
-        timezone: 'UTC',
-        notificationEnabled: true,
-      },
+      profile: AccountProfile.createDefault(params.email).toDTO(),
+      settings: AccountSettings.createDefault().toDTO(),
       email: {
         address: params.email,
         isVerified: false,
+        verifiedAt: null,
         isPrimary: true,
       },
       phone: null,

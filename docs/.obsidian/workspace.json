@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "modules/authentication/domain/value-objects/list.md",
+                "file": "standards/domain-event-spec.md",
                 "mode": "source",
                 "source": true
               },
               "icon": "lucide-file",
-              "title": "list"
+              "title": "domain-event-spec"
             }
           },
           {
@@ -50,7 +50,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -123,7 +123,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "modules/authentication/domain/aggregates/Example.md",
+                "file": "standards/domain-event-spec.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -133,7 +133,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Example 的反向链接列表"
+              "title": "domain-event-spec 的反向链接列表"
             }
           },
           {
@@ -142,42 +142,15 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "packages/domain-client/README.md",
+                "file": "standards/domain-event-spec.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "README 的大纲"
+              "title": "domain-event-spec 的大纲"
             }
-          }
-        ],
-        "currentTab": 1
-      },
-      {
-        "id": "939bd9e1c6ef4cb7",
-        "type": "tabs",
-        "children": [
-          {
-            "id": "outgoing-link",
-            "type": "leaf",
-            "state": {
-              "type": "outgoing-link",
-              "state": {
-                "file": "packages/domain-client/README.md",
-                "linksCollapsed": false,
-                "unlinkedCollapsed": true
-              },
-              "icon": "links-going-out",
-              "title": "README 的出链列表"
-            }
-          }
-        ]
-      },
-      {
-        "id": "b42fd6c499bec317",
-        "type": "tabs",
-        "children": [
+          },
           {
             "id": "tag",
             "type": "leaf",
@@ -192,8 +165,23 @@
               "icon": "lucide-tags",
               "title": "标签"
             }
+          },
+          {
+            "id": "outgoing-link",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "standards/domain-event-spec.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "domain-event-spec 的出链列表"
+            }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "horizontal",
@@ -215,15 +203,21 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "1d9fd104c400ff3f",
+  "active": "2ff237f5e83d6b36",
   "lastOpenFiles": [
+    "concepts/ddd/领域服务-纯函数-应用服务.md",
+    "standards/domain-event-spec.md",
+    "concepts/ddd/ddd-patterns.md",
+    "concepts/ddd",
+    "modules/authentication/domain/value-objects/list.md",
+    "packages/domain-client/README.md",
+    "standards/contracts-modules-spec.md",
+    "standards/contracts-modules-spec",
     "standards/domain-shared-type-value-object-spec.md",
     "standards/domain-shared-class-value-object-spec.md",
     "standards/domain-server-spec.md",
     "standards/domain-client-spec.md",
     "packages/domain-server/README.md",
-    "modules/authentication/domain/value-objects/list.md",
-    "packages/domain-client/README.md",
     "packages/README.md",
     "standards/枚举与常量对象规范(Enum&Constant-Objects).md",
     "standards/值对象可以是type.md",
@@ -242,16 +236,10 @@
     "architecture/拼项目.md",
     "standards/contracts",
     "modules/authentication/domain/aggregates/AuthenticationIdentity.md",
-    "modules/authentication/domain/aggregates/Session.md",
-    "modules/authentication/domain/aggregates/Example.md",
-    "modules/authentication/domain/aggregates/AuthSession.md",
-    "modules/authentication/domain/aggregates/AuthIdentity.md",
     "modules/authentication/domain/events",
     "modules/authentication/domain/services",
     "modules/authentication/domain/types",
     "modules/authentication/types",
-    "modules/authentication/domain",
-    "modules/authentication/domain/value-objects",
-    "modules/authentication/domain/entities"
+    "modules/authentication/domain"
   ]
 }

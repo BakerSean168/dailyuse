@@ -1,6 +1,10 @@
-export enum IdentityStatus {
-  ACTIVE = 'ACTIVE',       // 正常
-  LOCKED = 'LOCKED',       // 临时锁定 (安全策略)
-  DISABLED = 'DISABLED',   // 永久禁用 (管理员操作)
-  UNVERIFIED = 'UNVERIFIED' // 待验证
-}
+/**
+ * 认证身份状态
+ */
+export const AuthIdentityStatus = {
+  ACTIVE: 'ACTIVE',
+  LOCKED: 'LOCKED', // 多次尝试失败锁定
+  DISABLED: 'DISABLED', // 管理员禁用
+  UNVERIFIED: 'UNVERIFIED' // 待验证
+} as const;
+export type AuthIdentityStatus = keyof typeof AuthIdentityStatus;

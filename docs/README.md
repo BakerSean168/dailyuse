@@ -176,7 +176,7 @@ docs/
 3. [📂 源码树分析](./source-tree-analysis.md) - 完整目录结构
 4. [🗄️ 数据模型](./data-models.md) - Prisma Schema 文档
 5. [📝 架构决策记录](./architecture/adr/README.md) - 关键技术选型
-6. [🏛 DDD模式](./concepts/ddd-patterns.md) - 领域驱动设计
+6. [🏛 DDD模式](ddd-patterns.md) - 领域驱动设计
 
 ### 💻 高级开发者
 
@@ -301,7 +301,7 @@ docs/
 
 ### DDD与架构模式
 
-- [[concepts/ddd-patterns|🏛 DDD模式指南]] - Entity、Value Object、Aggregate、Repository、Service
+- [[ddd-patterns|🏛 DDD模式指南]] - Entity、Value Object、Aggregate、Repository、Service
 - [[concepts/event-driven|📡 事件驱动架构]] - 事件设计、发布订阅模式
 
 ### 业务概念

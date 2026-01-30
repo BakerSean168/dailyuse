@@ -1,8 +1,28 @@
-import type { BaseCredential } from "../types/base-credential";
-import type { CredentialType } from "../value-objects/auth-credential-type";
-import type { PhoneNumberServer } from "../value-objects/phone-number";
+import type { PhoneNumber, PhoneNumberDTO, PhoneNumberPersistenceDTO } from "../value-objects/phone-number";
+import type { BaseAuthCredentialPersistenceDTO, BaseAuthCredentialServer, BaseAuthCredentialServerDTO } from './base-auth-credential-server';
 
-export interface PhoneCredential extends BaseCredential {
-  readonly type: CredentialType.PHONE_SMS;
-  readonly phoneNumber: PhoneNumberServer; // 强类型
+/**
+ * 手机凭证
+ */
+export interface PhoneCredentialServer extends BaseAuthCredentialServer {
+  type: 'PHONE';
+  phoneNumber: PhoneNumber;
+  isVerified: boolean;
+}
+
+export interface PhoneCredentialServerDTO extends BaseAuthCredentialServerDTO {
+  type: 'PHONE';
+  phoneNumber: PhoneNumberDTO;
+  isVerified: boolean;
+}
+
+export interface PhoneCredentialPersistenceDTO extends BaseAuthCredentialPersistenceDTO {
+  type: 'PHONE';
+  phoneNumber: PhoneNumberPersistenceDTO;
+  isVerified: boolean;
+}
+
+export interface PhoneCredentialServerStatic {
+  fromServerDTO(dto: PhoneCredentialServerDTO): PhoneCredentialServer;
+  fromPersistenceDTO(dto: PhoneCredentialPersistenceDTO): PhoneCredentialServer;
 }

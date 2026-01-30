@@ -1,158 +1,219 @@
 /**
  * PasswordCredential 实体实现
- * 实现 PasswordCredentialServer 接口
+ * 密码凭证 - Server 端持有哈希值
+ * 
+ * ✅ Server 可以看到哈希值和盐值
+ * ❌ 绝对不能序列化给 Client 端
  */
 
 import type {
-  PasswordCredentialClientDTO,
-  PasswordCredentialPersistenceDTO,
   PasswordCredentialServer,
   PasswordCredentialServerDTO,
+  PasswordCredentialPersistenceDTO,
 } from '@dailyuse/contracts/authentication';
-import { Entity, generateUUID } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils';
 
-export class PasswordCredential extends Entity implements PasswordCredentialServer {
-  public readonly credentialUuid: string;
-  public readonly hashedPassword: string;
-  public readonly salt: string;
-  public readonly algorithm: 'BCRYPT' | 'ARGON2' | 'SCRYPT';
-  public readonly iterations?: number | null;
-  public readonly createdAt: number;
-  public readonly updatedAt: number;
-  public readonly status: 'ACTIVE' | 'INACTIVE' | 'LOCKED';
-  public readonly failedAttempts: number;
-  public readonly lastChangedAt: number;
+import {
+  CredentialType,
+  CredentialStatus,
+  HashedPassword,
+  type AuthCredentialId,
+} from '@dailyuse/domain-shared/authentication';
 
-  constructor(params: {
-    uuid?: string;
-    credentialUuid: string;
-    hashedPassword: string;
-    salt: string;
-    algorithm: 'BCRYPT' | 'ARGON2' | 'SCRYPT';
-    iterations?: number | null;
-    createdAt?: number;
-    updatedAt?: number;
-    status?: 'ACTIVE' | 'INACTIVE' | 'LOCKED';
-    failedAttempts?: number;
-    lastChangedAt?: number;
-  }) {
-    super(params.uuid ?? generateUUID());
-    this.credentialUuid = params.credentialUuid;
-    this.hashedPassword = params.hashedPassword;
-    this.salt = params.salt;
-    this.algorithm = params.algorithm;
-    this.iterations = params.iterations ?? null;
-    this.createdAt = params.createdAt ?? Date.now();
-    this.updatedAt = params.updatedAt ?? Date.now();
-    this.status = params.status ?? 'ACTIVE';
-    this.failedAttempts = params.failedAttempts ?? 0;
-    this.lastChangedAt = params.lastChangedAt ?? Date.now();
+/**
+ * 密码凭证实体
+ */
+export class PasswordCredential extends Entity<AuthCredentialId> implements PasswordCredentialServer {
+
+  // ================= 1. 内部状态 =================
+  private _status: typeof CredentialStatus.ACTIVE;
+  private _hashedPassword: HashedPassword;
+  private _passwordLastChangedAt: Date;
+  private _createdAt: Date;
+  private _lastUsedAt: Date | null;
+
+  // 只读类型标识
+  public readonly type = 'PASSWORD';
+
+  // ================= 2. 构造函数 =================
+  private constructor(props: PasswordCredentialServerDTO) {
+    super(props.id);
+
+    this._status = CredentialStatus.of(props.status);
+    this._hashedPassword = HashedPassword.fromDTO(props.hashedPassword);
+    this._passwordLastChangedAt = new Date(props.passwordLastChangedAt);
+    this._createdAt = new Date(props.createdAt);
+    this._lastUsedAt = props.lastUsedAt ? new Date(props.lastUsedAt) : null;
   }
 
-  // Factory methods
+  // ================= 3. Getters =================
+  get status(): typeof CredentialStatus.ACTIVE {
+    return this._status;
+  }
+
+  get hashedPassword(): HashedPassword {
+    return this._hashedPassword;
+  }
+
+  get passwordLastChangedAt(): Date {
+    return this._passwordLastChangedAt;
+  }
+
+  get createdAt(): Date {
+    return this._createdAt;
+  }
+
+  get lastUsedAt(): Date | null {
+    return this._lastUsedAt;
+  }
+
+  // ================= 4. 工厂方法 =================
+
+  /**
+   * 🏭 业务工厂：创建新的密码凭证
+   */
   public static create(params: {
-    credentialUuid: string;
-    hashedPassword: string;
-    salt: string;
-    algorithm?: 'BCRYPT' | 'ARGON2' | 'SCRYPT';
+    id: AuthCredentialId;
+    hashedPassword: HashedPassword;
   }): PasswordCredential {
-    return new PasswordCredential({
-      uuid: generateUUID(),
-      credentialUuid: params.credentialUuid,
-      hashedPassword: params.hashedPassword,
-      salt: params.salt,
-      algorithm: params.algorithm ?? 'BCRYPT',
-    });
+    const now = Date.now();
+    const dto: PasswordCredentialServerDTO = {
+      id: params.id,
+      type: 'PASSWORD',
+      status: CredentialStatus.ACTIVE,
+      hashedPassword: params.hashedPassword.toDTO(),
+      passwordLastChangedAt: now,
+      createdAt: now,
+      lastUsedAt: null,
+    };
+    return new PasswordCredential(dto);
   }
 
-  public static fromServerDTO(dto: PasswordCredentialServerDTO): PasswordCredential {
-    return new PasswordCredential({
-      uuid: dto.uuid,
-      credentialUuid: dto.credentialUuid,
-      hashedPassword: dto.hashedPassword,
-      salt: dto.salt,
-      algorithm: dto.algorithm,
-      iterations: dto.iterations,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      status: dto.status,
-      failedAttempts: dto.failedAttempts,
-      lastChangedAt: dto.lastChangedAt,
-    });
-  }
-
+  /**
+   * 🏭 恢复工厂：从持久化 DTO 恢复
+   */
   public static fromPersistenceDTO(dto: PasswordCredentialPersistenceDTO): PasswordCredential {
-    return new PasswordCredential({
-      uuid: dto.uuid,
-      credentialUuid: dto.credential_uuid,
-      hashedPassword: dto.hashed_password,
-      salt: dto.salt,
-      algorithm: dto.algorithm,
-      iterations: dto.iterations,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+    const serverDTO: PasswordCredentialServerDTO = {
+      id: dto.id,
+      type: 'PASSWORD',
       status: dto.status,
-      failedAttempts: dto.failedAttempts,
-      lastChangedAt: dto.last_changed_at,
-    });
+      hashedPassword: dto.hashedPassword,
+      passwordLastChangedAt: dto.passwordLastChangedAt.getTime(),
+      createdAt: dto.createdAt.getTime(),
+      lastUsedAt: dto.lastUsedAt?.getTime() ?? null,
+    };
+    return new PasswordCredential(serverDTO);
   }
 
-  // Business methods
-  public async verify(plainPassword: string): Promise<boolean> {
-    // Password verification should be handled by application layer
-    // Domain layer only stores the hashed password
-    throw new Error('Password verification must be handled by application layer');
+  /**
+   * 🏭 恢复工厂：从 Server DTO 恢复
+   */
+  public static fromServerDTO(dto: PasswordCredentialServerDTO): PasswordCredential {
+    return new PasswordCredential(dto);
   }
 
-  public needsRehash(): boolean {
-    // This logic should be moved to application layer
-    // Domain layer doesn't know about hashing algorithms
-    return false;
+  // ================= 5. 业务行为 =================
+
+  /**
+   * ✅ 更新密码
+   */
+  public updatePassword(newHashedPassword: HashedPassword): void {
+    if (!CredentialStatus.isActive(this._status)) {
+      throw new Error('Cannot update password on inactive credential');
+    }
+
+    this._hashedPassword = newHashedPassword;
+    this._passwordLastChangedAt = new Date();
   }
 
-  // DTO conversion
+  /**
+   * ✅ 记录使用时间
+   */
+  public recordUsage(): void {
+    this._lastUsedAt = new Date();
+  }
+
+  /**
+   * ✅ 暂停凭证
+   */
+  public suspend(): void {
+    if (CredentialStatus.isSuspended(this._status)) {
+      return; // 幂等
+    }
+
+    this._status = CredentialStatus.SUSPENDED;
+  }
+
+  /**
+   * ✅ 恢复凭证
+   */
+  public activate(): void {
+    if (CredentialStatus.isActive(this._status)) {
+      return; // 幂等
+    }
+
+    if (CredentialStatus.isRevoked(this._status)) {
+      throw new Error('Cannot activate a revoked credential');
+    }
+
+    this._status = CredentialStatus.ACTIVE;
+  }
+
+  /**
+   * ✅ 吊销凭证
+   */
+  public revoke(): void {
+    if (CredentialStatus.isRevoked(this._status)) {
+      return; // 幂等
+    }
+
+    this._status = CredentialStatus.REVOKED;
+  }
+
+  /**
+   * ✅ 检查密码是否需要更新（超过指定天数）
+   */
+  public needsPasswordChange(maxAgeDays: number = 90): boolean {
+    return this._hashedPassword.needsReset(maxAgeDays);
+  }
+
+  /**
+   * ✅ 获取密码上次更新距今的天数
+   */
+  public getPasswordAgeDays(): number {
+    const dayMs = 24 * 60 * 60 * 1000;
+    return Math.floor((Date.now() - this._passwordLastChangedAt.getTime()) / dayMs);
+  }
+
+  // ================= 6. 序列化 =================
+
+  /**
+   * 转换为 Server DTO
+   */
   public toServerDTO(): PasswordCredentialServerDTO {
     return {
-      uuid: this.uuid,
-      credentialUuid: this.credentialUuid,
-      hashedPassword: this.hashedPassword,
-      salt: this.salt,
-      algorithm: this.algorithm,
-      iterations: this.iterations,
-      status: this.status,
-      failedAttempts: this.failedAttempts,
-      lastChangedAt: this.lastChangedAt,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
+      id: this.id,
+      type: 'PASSWORD',
+      status: this._status,
+      hashedPassword: this._hashedPassword.toDTO(),
+      passwordLastChangedAt: this._passwordLastChangedAt.getTime(),
+      createdAt: this._createdAt.getTime(),
+      lastUsedAt: this._lastUsedAt?.getTime() ?? null,
     };
   }
 
-  public toClientDTO(): PasswordCredentialClientDTO {
-    return {
-      uuid: this.uuid,
-      credentialUuid: this.credentialUuid,
-      algorithm: this.algorithm,
-      status: this.status,
-      failedAttempts: this.failedAttempts,
-      lastChangedAt: this.lastChangedAt,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-    };
-  }
-
+  /**
+   * 转换为持久化 DTO
+   */
   public toPersistenceDTO(): PasswordCredentialPersistenceDTO {
     return {
-      uuid: this.uuid,
-      credential_uuid: this.credentialUuid,
-      hashed_password: this.hashedPassword,
-      salt: this.salt,
-      algorithm: this.algorithm,
-      iterations: this.iterations,
-      status: this.status,
-      failedAttempts: this.failedAttempts,
-      last_changed_at: this.lastChangedAt,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
+      id: this.id,
+      type: 'PASSWORD',
+      status: this._status,
+      hashedPassword: this._hashedPassword.toDTO(),
+      passwordLastChangedAt: this._passwordLastChangedAt,
+      createdAt: this._createdAt,
+      lastUsedAt: this._lastUsedAt,
     };
   }
 }

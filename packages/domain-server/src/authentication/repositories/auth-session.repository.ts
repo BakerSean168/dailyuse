@@ -1,120 +1,44 @@
-/**
- * IAuthSessionRepository 接口
- * 会话仓储接口
- */
-
-import { AuthSession } from '../aggregates/auth-session';
+import type { AuthSessionId, IdentityId } from '@dailyuse/contracts/authentication';
+import type { AuthSession } from '../aggregates/auth-session';
 
 /**
- * Prisma 事务客户端类型
- * 用于在事务中执行数据库操作
+ * 会话聚合根仓储接口
+ * 负责 AuthSession 的生命周期管理
  */
-export type PrismaTransactionClient = any; // Prisma.TransactionClient
-
-export interface IAuthSessionRepository {
+export interface AuthSessionRepository {
   /**
-   * 保存会话
-   * @param session - 会话聚合根
-   * @param tx - 可选的 Prisma 事务客户端，用于在事务中保存
+   * ✅ 保存会话 (新建登录或续期)
    */
-  save(session: AuthSession, tx?: PrismaTransactionClient): Promise<void>;
+  save(session: AuthSession): Promise<void>;
 
   /**
-   * 根据 UUID 查找会话
-   * @param uuid - 会话 UUID
-   * @param tx - 可选的 Prisma 事务客户端，用于在事务中查询
+   * 🔍 根据 ID 查找 (用于校验 Token)
    */
-  findByUuid(uuid: string, tx?: PrismaTransactionClient): Promise<AuthSession | null>;
+  findById(id: AuthSessionId): Promise<AuthSession | null>;
 
   /**
-   * 根据账户 UUID 查找所有会话
-   * @param accountUuid - 账户 UUID
-   * @param tx - 可选的 Prisma 事务客户端，用于在事务中查询
+   * 🔍 查找某用户的所有会话 (用于"我的设备"列表)
    */
-  findByAccountUuid(accountUuid: string, tx?: PrismaTransactionClient): Promise<AuthSession[]>;
+  findByIdentityId(identityId: IdentityId): Promise<AuthSession[]>;
 
   /**
-   * 根据访问令牌查找会话
-   * @param accessToken - 访问令牌
-   * @param tx - 可选的 Prisma 事务客户端，用于在事务中查询
+   * 🔍 查找并刷新 Token
+   * (有些实现可能需要单独的方法来原子更新 AccessToken)
    */
-  findByAccessToken(accessToken: string, tx?: PrismaTransactionClient): Promise<AuthSession | null>;
+  // updateToken(sessionId: SessionId, newToken: string): Promise<void>; // 可选，视实现而定
 
   /**
-   * 根据刷新令牌查找会话
-   * @param refreshToken - 刷新令牌
-   * @param tx - 可选的 Prisma 事务客户端，用于在事务中查询
+   * 🗑️ 移除单个会话 (登出 / 踢下线)
    */
-  findByRefreshToken(
-    refreshToken: string,
-    tx?: PrismaTransactionClient,
-  ): Promise<AuthSession | null>;
+  remove(session: AuthSession): Promise<void>;
 
   /**
-   * 根据设备 ID 查找会话
-   * @param deviceId - 设备 ID
-   * @param tx - 可选的 Prisma 事务客户端，用于在事务中查询
+   * 🗑️ 移除某用户的所有会话 (修改密码后强制下线 / 封号)
    */
-  findByDeviceId(deviceId: string, tx?: PrismaTransactionClient): Promise<AuthSession[]>;
+  removeAllByIdentityId(identityId: IdentityId): Promise<void>;
 
   /**
-   * 查找活跃会话
-   * @param accountUuid - 账户 UUID
-   * @param tx - 可选的 Prisma 事务客户端，用于在事务中查询
+   * 🧹 清理过期会话 (定时任务用)
    */
-  findActiveSessions(accountUuid: string, tx?: PrismaTransactionClient): Promise<AuthSession[]>;
-
-  /**
-   * 根据账户 UUID 查找所有活跃会话（别名方法）
-   * @param accountUuid - 账户 UUID
-   * @param tx - 可选的 Prisma 事务客户端，用于在事务中查询
-   */
-  findActiveSessionsByAccountUuid(
-    accountUuid: string,
-    tx?: PrismaTransactionClient,
-  ): Promise<AuthSession[]>;
-
-  /**
-   * 查找所有会话（支持分页）
-   * @param params - 分页参数
-   * @param tx - 可选的 Prisma 事务客户端，用于在事务中查询
-   */
-  findAll(
-    params?: { skip?: number; take?: number },
-    tx?: PrismaTransactionClient,
-  ): Promise<AuthSession[]>;
-
-  /**
-   * 根据状态查找会话
-   * @param status - 会话状态
-   * @param params - 分页参数
-   * @param tx - 可选的 Prisma 事务客户端，用于在事务中查询
-   */
-  findByStatus(
-    status: 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'LOCKED',
-    params?: { skip?: number; take?: number },
-    tx?: PrismaTransactionClient,
-  ): Promise<AuthSession[]>;
-
-  /**
-   * 删除会话
-   * @param uuid - 会话 UUID
-   * @param tx - 可选的 Prisma 事务客户端，用于在事务中删除
-   */
-  delete(uuid: string, tx?: PrismaTransactionClient): Promise<void>;
-
-  /**
-   * 删除账户的所有会话
-   * @param accountUuid - 账户 UUID
-   * @param tx - 可选的 Prisma 事务客户端，用于在事务中删除
-   * @returns 删除的会话数量
-   */
-  deleteByAccountUuid(accountUuid: string, tx?: PrismaTransactionClient): Promise<number>;
-
-  /**
-   * 批量删除过期会话
-   * @param tx - 可选的 Prisma 事务客户端，用于在事务中删除
-   * @returns 删除的会话数量
-   */
-  deleteExpired(tx?: PrismaTransactionClient): Promise<number>;
+  removeExpired(): Promise<void>;
 }

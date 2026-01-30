@@ -23,9 +23,9 @@ export class ContactPhone extends ValueObject<ContactPhoneDTO> implements IConta
    * 场景: 用户添加电话号码
    */
   public static createUnverified(countryCode: string, number: string, fullNumber: string): ContactPhone {
-    const props: ContactPhoneDTO = { countryCode, number, fullNumber, isVerified: false };
+    const props: ContactPhoneDTO = { countryCode, number, fullNumber, isVerified: false, verifiedAt: null };
     this.validate(props);
-    return new ContactPhone({ ...props, verifiedAt: undefined });
+    return new ContactPhone({ ...props, verifiedAt: null });
   }
 
   // ================= 内部逻辑 =================
@@ -121,7 +121,7 @@ export class ContactPhone extends ValueObject<ContactPhoneDTO> implements IConta
       number: dto.number,
       fullNumber: dto.fullNumber,
       isVerified: dto.isVerified,
-      verifiedAt: dto.verifiedAt ? new Date(dto.verifiedAt).getTime() : undefined,
+      verifiedAt: dto.verifiedAt ? new Date(dto.verifiedAt).getTime() : null,
     });
   }
 
@@ -135,7 +135,7 @@ export class ContactPhone extends ValueObject<ContactPhoneDTO> implements IConta
       number: this.props.number,
       fullNumber: this.props.fullNumber,
       isVerified: this.props.isVerified,
-      verifiedAt: this.props.verifiedAt ? new Date(this.props.verifiedAt) : undefined,
+      verifiedAt: this.props.verifiedAt ? new Date(this.props.verifiedAt) : null,
     };
   }
 

@@ -17,20 +17,20 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import { registerAccountRoutes } from './modules/account/interface';
 import { registerAuthenticationRoutes } from './modules/authentication/interface';
-import { registerTaskRoutes } from './modules/task/interface';
-import { registerGoalRoutes } from './modules/goal/interface';
-import { registerGoalFolderRoutes } from './modules/goal/interface/goal-folder.routes';
-import { registerWeightSnapshotRoutes } from './modules/goal/interface/goal-weight-snapshot.routes';
-import { registerReminderRoutes } from './modules/reminder/interface';
-import { registerScheduleRoutes } from './modules/schedule/interface';
-import { registerNotificationRoutes } from './modules/notification/interface';
-import { registerSSERoutes } from './modules/notification/interface/sseRoutes';
-import { registerSettingRoutes } from './modules/setting/interface';
-import { registerEditorRoutes } from './modules/editor/interface';
-import { registerRepositoryRoutes } from './modules/repository/interface';
-import { registerMetricsRoutes } from './modules/metrics/interface';
-import { registerAIRoutes } from './modules/ai/interface';
-import { registerDashboardRoutes } from './modules/dashboard/interface';
+// import { registerTaskRoutes } from './modules/task/interface';
+// import { registerGoalRoutes } from './modules/goal/interface';
+// import { registerGoalFolderRoutes } from './modules/goal/interface/goal-folder.routes';
+// import { registerWeightSnapshotRoutes } from './modules/goal/interface/goal-weight-snapshot.routes';
+// import { registerReminderRoutes } from './modules/reminder/interface';
+// import { registerScheduleRoutes } from './modules/schedule/interface';
+// import { registerNotificationRoutes } from './modules/notification/interface';
+// import { registerSSERoutes } from './modules/notification/interface/sseRoutes';
+// import { registerSettingRoutes } from './modules/setting/interface';
+// import { registerEditorRoutes } from './modules/editor/interface';
+// import { registerRepositoryRoutes } from './modules/repository/interface';
+// import { registerMetricsRoutes } from './modules/metrics/interface';
+// import { registerAIRoutes } from './modules/ai/interface';
+// import { registerDashboardRoutes } from './modules/dashboard/interface';
 import crossModuleRouter from './shared/infrastructure/http/routes/crossModuleRoutes';
 import infrastructureRouter from './shared/infrastructure/http/routes/infrastructureRoutes';
 import {
@@ -40,19 +40,19 @@ import { setupSwagger } from './shared/infrastructure/config/swagger';
 import { createLogger } from '@dailyuse/utils';
 import { performanceMiddleware } from './shared/infrastructure/http/middlewares/performance.middleware';
 import { getCorsOrigins, isAllCorsOriginsAllowed } from './shared/infrastructure/config/env.js';
-import { GoalModule, AccountModule, TaskModule, ScheduleModule, ReminderModule, NotificationModule, SettingModule, AIModule, RepositoryModule, DashboardModule } from '@dailyuse/infrastructure-server';
+import { GoalModule, AccountModule/*, TaskModule, ScheduleModule, ReminderModule, NotificationModule, SettingModule, AIModule, RepositoryModule, DashboardModule*/ } from '@dailyuse/infrastructure-server';
 
 export interface AppDependencies {
   goalModule: GoalModule;
   accountModule: AccountModule;
-  taskModule: TaskModule;
-  scheduleModule: ScheduleModule;
-  reminderModule: ReminderModule;
-  notificationModule: NotificationModule;
-  settingModule: SettingModule;
-  aiModule: AIModule;
-  repositoryModule: RepositoryModule;
-  dashboardModule: DashboardModule;
+  // taskModule: TaskModule;
+  // scheduleModule: ScheduleModule;
+  // reminderModule: ReminderModule;
+  // notificationModule: NotificationModule;
+  // settingModule: SettingModule;
+  // aiModule: AIModule;
+  // repositoryModule: RepositoryModule;
+  // dashboardModule: DashboardModule;
 }
 
 export const createApp = (deps: AppDependencies): Express => {
@@ -99,28 +99,28 @@ export const createApp = (deps: AppDependencies): Express => {
 
   api.use('/accounts', registerAccountRoutes(deps.accountModule));
   api.use('/auth', registerAuthenticationRoutes());
-  api.use('/tasks', authMiddleware, registerTaskRoutes(deps.taskModule));
+  // api.use('/tasks', authMiddleware, registerTaskRoutes(deps.taskModule));
   
   // INJECTED SERVICE
-  api.use('/goals', authMiddleware, registerGoalRoutes(deps.goalModule));
+  // api.use('/goals', authMiddleware, registerGoalRoutes(deps.goalModule));
 
-  api.use('/goal-folders', authMiddleware, registerGoalFolderRoutes());
-  api.use('/weight-snapshots', authMiddleware, registerWeightSnapshotRoutes());
-  api.use('/reminders', authMiddleware, registerReminderRoutes(deps.reminderModule));
-  api.use('/schedules', authMiddleware, registerScheduleRoutes(deps.scheduleModule));
-  api.use('/editor', authMiddleware, registerEditorRoutes());
-  api.use('/repositories', authMiddleware, registerRepositoryRoutes(deps.repositoryModule));
-  api.use('/settings', authMiddleware, registerSettingRoutes(deps.settingModule));
-  api.use('/metrics', authMiddleware, registerMetricsRoutes());
-  api.use('/dashboard', authMiddleware, registerDashboardRoutes(deps.dashboardModule));
-  api.use('/cross-module', authMiddleware, crossModuleRouter);
-  api.use('/sse', registerSSERoutes());
-  api.use('/notifications', authMiddleware, registerNotificationRoutes(
-    deps.notificationModule.notificationService,
-    deps.notificationModule.notificationTemplateService,
-    deps.notificationModule.notificationChannelService
-  ));
-  api.use('/ai', authMiddleware, registerAIRoutes(deps.aiModule));
+  // api.use('/goal-folders', authMiddleware, registerGoalFolderRoutes());
+  // api.use('/weight-snapshots', authMiddleware, registerWeightSnapshotRoutes());
+  // api.use('/reminders', authMiddleware, registerReminderRoutes(deps.reminderModule));
+  // api.use('/schedules', authMiddleware, registerScheduleRoutes(deps.scheduleModule));
+  // api.use('/editor', authMiddleware, registerEditorRoutes());
+  // api.use('/repositories', authMiddleware, registerRepositoryRoutes(deps.repositoryModule));
+  // api.use('/settings', authMiddleware, registerSettingRoutes(deps.settingModule));
+  // api.use('/metrics', authMiddleware, registerMetricsRoutes());
+  // api.use('/dashboard', authMiddleware, registerDashboardRoutes(deps.dashboardModule));
+  // api.use('/cross-module', authMiddleware, crossModuleRouter);
+  // api.use('/sse', registerSSERoutes());
+  // api.use('/notifications', authMiddleware, registerNotificationRoutes(
+  //   deps.notificationModule.notificationService,
+  //   deps.notificationModule.notificationTemplateService,
+  //   deps.notificationModule.notificationChannelService
+  // ));
+  // api.use('/ai', authMiddleware, registerAIRoutes(deps.aiModule));
 
   logger.info('Notification and event system initialized successfully');
 

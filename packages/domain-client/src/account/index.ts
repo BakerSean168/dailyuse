@@ -6,5 +6,5 @@
 
 
 // 聚合根
-export { Account } from './aggregates/account';
+export * from './aggregates';
 

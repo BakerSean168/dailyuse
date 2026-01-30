@@ -53,7 +53,7 @@ updated: 2026-01-08T10:00:00
 ```
 
 详细了解：
-- [[../concepts/ddd-patterns|DDD 模式指南]]
+- [[ddd-patterns|DDD 模式指南]]
 - [[ddd-type-architecture|DDD 类型架构规范]] ⭐ 新增（2025-12）
 - **[Package Implementation Guide](./package-implementation-guide.md)** ⭐ 新增（2026-01）
 - **[拼项目.md](./拼项目.md)** ⭐ 新增（2026-01）
@@ -216,7 +216,7 @@ DailyUse 包含以下业务模块：
 ### 概念文档
 - [[../concepts/schedule/UNIFIED_SCHEDULE_EVENT_SYSTEM|统一日程事件系统]]
 - [[../concepts/weight-system/WEIGHT_SYSTEM_COMPLETE_OVERHAUL|权重系统设计]]
-- [[../concepts/ddd-patterns|DDD 模式]]
+- [[ddd-patterns|DDD 模式]]
 - [[../concepts/event-driven|事件驱动架构]]
 
 ### 开发指南

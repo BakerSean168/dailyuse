@@ -1,13 +1,31 @@
-import type { BaseCredential } from '../types/base-credential';
-import type { CredentialType } from '../value-objects/auth-credential-type';
+import type { BaseAuthCredentialPersistenceDTO, BaseAuthCredentialServer, BaseAuthCredentialServerDTO } from './base-auth-credential-server';
 import type { HashedPassword } from '../value-objects/hashed-password';
+import type { DomainDate, TransferDate, PersistenceDate } from '@/primitives';
 
-export interface PasswordCredential extends BaseCredential {
-  readonly type: CredentialType.PASSWORD;
-  
-  // 这里存的是值对象 HashedPassword，而不是 string
-  passwordHash: HashedPassword; 
-  
-  // 用于安全策略: "您的密码已超过90天未修改"
-  passwordChangedAt: Date; 
+/**
+ * 密码凭证 (Server 端持有哈希值)
+ * ✅ Server 可以看到哈希值和盐值
+ * ❌ 绝对不能序列化给 Client 端
+ */
+export interface PasswordCredentialServer extends BaseAuthCredentialServer {
+  type: 'PASSWORD';
+  hashedPassword: HashedPassword;
+  passwordLastChangedAt: DomainDate;
+}
+
+export interface PasswordCredentialServerDTO extends BaseAuthCredentialServerDTO {
+  type: 'PASSWORD';
+  hashedPassword: HashedPassword;
+  passwordLastChangedAt: TransferDate;
+}
+
+export interface PasswordCredentialPersistenceDTO extends BaseAuthCredentialPersistenceDTO {
+  type: 'PASSWORD';
+  hashedPassword: HashedPassword;
+  passwordLastChangedAt: PersistenceDate;
+}
+
+export interface PasswordCredentialServerStatic {
+  fromServerDTO(dto: PasswordCredentialServerDTO): PasswordCredentialServer;
+  fromPersistenceDTO(dto: PasswordCredentialPersistenceDTO): PasswordCredentialServer;
 }

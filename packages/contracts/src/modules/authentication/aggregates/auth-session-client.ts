@@ -1,62 +1,74 @@
 /**
- * AuthSession Entity - Client Interface
- * 会话实体 - 客户端接口
+ * AuthSession Aggregate Root - Client Interface
+ * 会话聚合根 - 客户端接口
+ *
+ * Client 端看到的会话是脱敏的
+ * - 不包含 Token 本体
+ * - 显示用户友好的会话列表 (当前设备、其他设备)
  */
 
-import type { DeviceInfo } from '../value-objects/device-info';
+import type { AuthSessionId, DeviceInfo } from '../value-objects';
+import type { TransferDate, DomainDate } from '@/primitives';
 
-import type { SessionId } from '../value-objects/auth-session-id';
-import type { IdentityId } from '../value-objects/identity-id';
-import { SessionStatus } from '../value-objects/session-status';
-import type { DomainDate } from '@/primitives/domain-date';
-import type { TransferDate } from '@/primitives';
+// ============ 聚合根接口 ============
 
-
-// ============ 实体接口 ============
-
+/**
+ * Client 端会话聚合根
+ * 用于显示"当前登录设备"列表
+ */
 export interface AuthSessionClient {
-  // --- State ---
-  // SessionId 即 Refresh Token
-  readonly id: SessionId;
-  // 仅引用 ID，不持有对象 (Lazy Loading)
-  readonly identityId: IdentityId;
-  readonly isCurrent: boolean;
-  
-  readonly deviceInfo: DeviceInfo;
-  
-  readonly createdAt: DomainDate;
-  expiresAt: DomainDate;         // 绝对过期时间
-  lastRefreshedAt: DomainDate;   // 滑动窗口用
-  
-  status: SessionStatus;
-
-  // --- Behaviors ---
+  /**
+   * 会话 ID
+   */
+  id: AuthSessionId;
 
   /**
-   * 行为：判断是否可以被撤销
-   * (比如：也许策略上不允许撤销本机，或者 Admin 才能撤销)
+   * 关联的身份 ID
    */
-  canBeRevoked(): boolean;
+  identityId: string;
+
+  /**
+   * ✅ 设备信息 (用户可以看到的信息)
+   */
+  deviceInfo: DeviceInfo;
+
+  /**
+   * 是否是当前会话 (用户所在设备的会话)
+   */
+  isCurrentSession: boolean;
+
+  /**
+   * 创建时间
+   */
+  createdAt: DomainDate;
+
+  /**
+   * 过期时间
+   */
+  expiresAt: DomainDate;
+
+  /**
+   * 最后活跃时间
+   */
+  lastActiveAt: DomainDate;
 }
 
 export interface AuthSessionClientStatic {
   fromClientDTO(dto: AuthSessionClientDTO): AuthSessionClient;
 }
 
-
 // ============ DTO 定义 ============
 
 /**
- * AuthSession Client DTO
+ * Client DTO (API Response)
+ * 这就是返回给前端的数据结构
  */
 export interface AuthSessionClientDTO {
-  id: string;
+  id: AuthSessionId;
   identityId: string;
-  isCurrent: boolean;
   deviceInfo: DeviceInfo;
+  isCurrentSession: boolean;
   createdAt: TransferDate;
   expiresAt: TransferDate;
-  lastRefreshedAt: TransferDate;
-  status: SessionStatus;
+  lastActiveAt: TransferDate;
 }
-

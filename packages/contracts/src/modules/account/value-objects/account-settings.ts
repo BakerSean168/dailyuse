@@ -2,10 +2,11 @@
  * 偏好设置
  */
 import type { ThemeType } from "./theme-type";
+import type { LanguageCode } from "./language-code";
 
 export interface AccountSettings {
   theme: ThemeType;
-  language: string;     // 'zh-CN', 'en-US'
+  language: LanguageCode;     // 'zh-CN', 'en-US'
   timezone: string;     // 'Asia/Shanghai'
   notificationEnabled: boolean;
 }
@@ -14,14 +15,14 @@ export interface AccountSettings {
 
 export interface AccountSettingsDTO {
   theme: ThemeType;
-  language: string;     // 'zh-CN', 'en-US'
+  language: LanguageCode;     // 'zh-CN', 'en-US'
   timezone: string;     // 'Asia/Shanghai'
   notificationEnabled: boolean;
 }
 
 export interface AccountSettingsPersistenceDTO {
   theme: ThemeType;
-  language: string;     // 'zh-CN', 'en-US'
+  language: LanguageCode;     // 'zh-CN', 'en-US'
   timezone: string;     // 'Asia/Shanghai'
   notificationEnabled: boolean;
 }

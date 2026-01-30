@@ -4,16 +4,8 @@
  */
 
 // 聚合根
-export { AuthCredential } from './aggregates/AuthCredential';
-export { AuthSession } from './aggregates/AuthSession';
+export * from './aggregates';
 
 // 实体
-export { PasswordCredential } from './entities/PasswordCredential';
-export { ApiKeyCredential } from './entities/ApiKeyCredential';
-export { RememberMeToken } from './entities/RememberMeToken';
-export { RefreshToken } from './entities/RefreshToken';
-export { CredentialHistory } from './entities/CredentialHistory';
-export { SessionHistory } from './entities/SessionHistory';
+export * from './entities';
 
-// 值对象
-export { DeviceInfo } from './value-objects/DeviceInfo';

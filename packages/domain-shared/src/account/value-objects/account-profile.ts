@@ -30,10 +30,10 @@ export class AccountProfile extends ValueObject<AccountProfileDTO> implements IA
     return new AccountProfile({
       nickname: defaultNickname,
       gender: GenderType.PREFER_NOT_TO_SAY,
-      realName: undefined,
-      avatarUrl: undefined,
-      bio: undefined,
-      birthday: undefined 
+      realName: null,
+      avatarUrl: null,
+      bio: null,
+      birthday: null 
     });
   }
 
@@ -112,12 +112,12 @@ export class AccountProfile extends ValueObject<AccountProfileDTO> implements IA
   // 直接暴露 props 中的原始值，或者返回强类型对象
 
   get nickname(): string { return this.props.nickname; }
-  get realName(): string | undefined { return this.props.realName; }
-  get avatarUrl(): string | undefined { return this.props.avatarUrl; }
-  get bio(): string | undefined { return this.props.bio; }
+  get realName(): string | null { return this.props.realName; }
+  get avatarUrl(): string | null { return this.props.avatarUrl; }
+  get bio(): string | null { return this.props.bio; }
   get gender(): GenderType { return GenderType.of(this.props.gender); }
-  get birthday(): DomainDate | undefined {
-    return this.props.birthday ? new Date(this.props.birthday) : undefined;
+  get birthday(): DomainDate | null {
+    return this.props.birthday ? new Date(this.props.birthday) : null;
   }
 
   // ================= 序列化 (Serialization) =================
@@ -132,7 +132,7 @@ export class AccountProfile extends ValueObject<AccountProfileDTO> implements IA
       avatarUrl: dto.avatarUrl,
       bio: dto.bio,
       gender: GenderType.of(dto.gender),
-      birthday: dto.birthday ? new Date(dto.birthday).getTime() : undefined
+      birthday: dto.birthday ? new Date(dto.birthday).getTime() : null
     });
   }
 
@@ -147,7 +147,7 @@ export class AccountProfile extends ValueObject<AccountProfileDTO> implements IA
       avatarUrl: this.props.avatarUrl,
       bio: this.props.bio,
       gender: this.props.gender,
-      birthday: this.props.birthday ? new Date(this.props.birthday) : undefined
+      birthday: this.props.birthday ? new Date(this.props.birthday) : null
     };
   }
 

@@ -12,12 +12,12 @@ import { registerTaskEventListeners } from '@dailyuse/application-server/task';
 import { 
   GoalModule, 
   AccountModule, 
-  TaskModule, 
-  ScheduleModule, 
-  ReminderModule, 
-  NotificationModule, 
-  SettingModule, 
-  AIModule 
+  // TaskModule, 
+  // ScheduleModule, 
+  // ReminderModule, 
+  // NotificationModule, 
+  // SettingModule, 
+  // AIModule 
 } from '@dailyuse/infrastructure-server';
 import { DataSourceManager } from '@dailyuse/infrastructure-server';
 
@@ -55,15 +55,15 @@ const logger = createLogger('API');
 
     const goalModule = new GoalModule(prisma);
     const accountModule = new AccountModule(prisma);
-    const taskModule = new TaskModule('prisma', prisma);
-    const scheduleModule = new ScheduleModule(prisma);
-    const reminderModule = new ReminderModule(prisma);
-    const notificationModule = new NotificationModule(prisma);
-    const settingModule = new SettingModule(prisma);
-    const aiModule = new AIModule(prisma);
+    // const taskModule = new TaskModule('prisma', prisma);
+    // const scheduleModule = new ScheduleModule(prisma);
+    // const reminderModule = new ReminderModule(prisma);
+    // const notificationModule = new NotificationModule(prisma);
+    // const settingModule = new SettingModule(prisma);
+    // const aiModule = new AIModule(prisma);
     
     // 注册 Task 事件监听器
-    registerTaskEventListeners(taskModule.taskInstanceRepository);
+    // registerTaskEventListeners(taskModule.taskInstanceRepository);
     logger.info('✅ Task event listeners registered successfully');
 
     /* 
@@ -73,8 +73,8 @@ const logger = createLogger('API');
     */
 
     // 启动统一 Cron 调度器
-    registerAllCronJobs();
-    startCronScheduler();
+    // registerAllCronJobs();
+    // startCronScheduler();
     logger.info('✅ Unified cron scheduler started', {
       description: 'Handles all cron jobs including Focus Mode, Reminder Triggers, and Daily Analysis',
     });
@@ -83,12 +83,12 @@ const logger = createLogger('API');
     const app = createApp({
       goalModule: goalModule,
       accountModule: accountModule,
-      taskModule: taskModule,
-      scheduleModule: scheduleModule,
-      reminderModule: reminderModule,
-      notificationModule: notificationModule,
-      settingModule: settingModule,
-      aiModule: aiModule,
+      // taskModule: taskModule,
+      // scheduleModule: scheduleModule,
+      // reminderModule: reminderModule,
+      // notificationModule: notificationModule,
+      // settingModule: settingModule,
+      // aiModule: aiModule,
     });
 
     app.listen(env.API_PORT, env.API_HOST, () => {

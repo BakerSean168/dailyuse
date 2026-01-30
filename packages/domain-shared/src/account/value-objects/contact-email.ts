@@ -23,12 +23,12 @@ export class ContactEmail extends ValueObject<ContactEmailDTO> implements IConta
    * 场景: 用户注册时，创建邮箱地址
    */
   public static createUnverified(address: string): ContactEmail {
-    this.validate({ address, isVerified: false, isPrimary: true });
+    this.validate({ address, isVerified: false, isPrimary: true, verifiedAt: null });
     return new ContactEmail({
       address,
       isVerified: false,
       isPrimary: true,
-      verifiedAt: undefined
+      verifiedAt: null
     });
   }
 
@@ -136,7 +136,7 @@ export class ContactEmail extends ValueObject<ContactEmailDTO> implements IConta
     return new ContactEmail({
       address: dto.address,
       isVerified: dto.isVerified,
-      verifiedAt: dto.verifiedAt ? new Date(dto.verifiedAt).getTime() : undefined,
+      verifiedAt: dto.verifiedAt ? new Date(dto.verifiedAt).getTime() : null,
       isPrimary: dto.isPrimary
     });
   }

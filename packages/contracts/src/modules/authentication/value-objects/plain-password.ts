@@ -5,3 +5,7 @@
 export interface PlainPassword {
     readonly value: string;
 }
+
+export interface PlainPasswordDTO {
+    readonly value: string;
+}

@@ -1,1 +1,1 @@
-export type CredentialId = string & { readonly __brand: unique symbol };
+export type AuthCredentialId = string & { readonly __brand: unique symbol };

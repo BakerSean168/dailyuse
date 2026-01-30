@@ -1,8 +1,8 @@
-export const ImportanceLevels = {
+export const ImportanceLevel = {
   Vital: "Vital",
   Important: "Important",
   Moderate: "Moderate",
   Minor: "Minor",
   Trivial: "Trivial",
 }
-export type ImportanceLevelType = keyof typeof ImportanceLevels;
+export type ImportanceLevel = keyof typeof ImportanceLevel;

@@ -1,6 +1,7 @@
 import { ValueObject } from '@dailyuse/utils';
 import type { AccountSettingsDTO, AccountSettingsPersistenceDTO, AccountSettings as IAccountSettings } from '@dailyuse/contracts/account';
 import { ThemeType } from './theme-type';
+import { LanguageCode } from './language-code';
 
 export class AccountSettings extends ValueObject<AccountSettingsDTO> implements IAccountSettings {
 
@@ -25,7 +26,7 @@ export class AccountSettings extends ValueObject<AccountSettingsDTO> implements 
   public static createDefault(): AccountSettings {
     return new AccountSettings({
       theme: ThemeType.SYSTEM,
-      language: 'zh-CN',
+      language: LanguageCode.ZH_CN,
       timezone: 'Asia/Shanghai',
       notificationEnabled: true,
     });
@@ -64,7 +65,7 @@ export class AccountSettings extends ValueObject<AccountSettingsDTO> implements 
   /**
    * 切换语言
    */
-  public switchLanguage(language: string): AccountSettings {
+  public switchLanguage(language: LanguageCode): AccountSettings {
     const newProps = { ...this.props, language };
     AccountSettings.validate(newProps);
     return new AccountSettings(newProps);
@@ -138,8 +139,8 @@ export class AccountSettings extends ValueObject<AccountSettingsDTO> implements 
     return ThemeType.of(this.props.theme);
   }
 
-  get language(): string {
-    return this.props.language;
+  get language(): LanguageCode {
+    return LanguageCode.of(this.props.language);
   }
 
   get timezone(): string {
@@ -153,7 +154,7 @@ export class AccountSettings extends ValueObject<AccountSettingsDTO> implements 
   public static fromPersistenceDTO(dto: AccountSettingsPersistenceDTO): AccountSettings {
     return new AccountSettings({
       theme: ThemeType.of(dto.theme),
-      language: dto.language,
+      language: LanguageCode.of(dto.language),
       timezone: dto.timezone,
       notificationEnabled: dto.notificationEnabled
     });
@@ -164,7 +165,7 @@ export class AccountSettings extends ValueObject<AccountSettingsDTO> implements 
    * 职责: 处理数据类型转换，便于数据库存储
    */
   public toPersistenceDTO(): AccountSettingsPersistenceDTO {
-    return { ...this.props };
+    return { ...this.props}
   } 
 
   /**

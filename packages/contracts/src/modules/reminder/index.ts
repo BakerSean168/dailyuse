@@ -19,9 +19,6 @@ export {
   TriggerResult,
 } from './enums';
 
-// Import ImportanceLevel from shared for re-export
-export { ImportanceLevel } from '../../shared';
-
 // ============ Value Objects ============
 export type {
   IRecurrenceConfigServer,
