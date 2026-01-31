@@ -8,19 +8,19 @@ export type {
   SyncVersionServerDTO,
   SyncVersionClientDTO,
   SyncVersionPersistenceDTO,
-  ISyncVersionServer,} from './SyncVersion';
+  ISyncVersionServer,} from './sync-version';
 
 export type {
   EntityReferenceDTO,
-  IEntityReference,} from './EntityReference';
+  IEntityReference,} from './entity-reference';
 
 export type {
   ConflictResolutionDTO,
-  IConflictResolution,} from './ConflictResolution';
+  IConflictResolution,} from './conflict-resolution';
 
 export type {
   DeviceInfoDTO,
-  IDeviceInfo,} from './DeviceInfo';
+  IDeviceInfo,} from './device-info';
 
 export type {
   AutoSyncConfigDTO,
@@ -31,10 +31,10 @@ export type {
   WebDAVProviderConfigDTO,
   SyncProviderConfigDTO,
   ISyncProfileConfig,
-} from './SyncProfileConfig';
+} from './sync-profile-config';
 
 export type {
   EntitySyncStats,
   SyncSessionStatsDTO,
   ISyncSessionStats,
-} from './SyncSessionStats';
+} from './sync-session-stats';

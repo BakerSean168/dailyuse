@@ -40,10 +40,4 @@ export interface UIConfigClient {
   min: number | null;
   max: number | null;
   step: number | null;
-
-  // UI 方法
-  hasOptions(): boolean;
-  hasRange(): boolean;
-  getComponentName(): string;
-}
 }

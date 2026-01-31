@@ -57,7 +57,5 @@ export interface DataSnapshotServer {
   createdAt: DomainDate;
   data: Record<string, unknown[]> | null;
 
-  loadData(): Promise<void>;
   getEntityData<T>(entityType: SyncableEntityType): T[] | null;
-}
 }

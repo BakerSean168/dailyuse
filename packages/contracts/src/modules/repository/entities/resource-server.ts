@@ -72,24 +72,4 @@ export interface ResourceServer {
   status: ResourceStatus;
   createdAt: DomainDate;
   updatedAt: DomainDate;
-
-  // 内容操作方法
-  updateMarkdownContent(content: string): void;
-  getMarkdownContent(): string;
-  clearContent(): void;
-
-  // 元数据方�?
-  updateMetadata(newMetadata: Partial<ResourceMetadataServerDTO>): void;
-  updateStats(newStats: Partial<ResourceStatsServerDTO>): void;
-  
-  // 状态管�?
-  archive(): void;
-  activate(): void;
-  delete(): void;
-  moveTo(folderId: FolderId | null): void;
-
-  // DTO 转换方法
-}
-
-// ============ 静态工厂方法接�?============
 }

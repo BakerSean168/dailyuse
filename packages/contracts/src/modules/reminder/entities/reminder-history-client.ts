@@ -60,27 +60,22 @@ export interface ReminderHistoryClient {
   /**
    * 获取结果徽章
    */
-  getResultBadge(): { text: string; color: string; icon: string };
 
   /**
    * 获取显示文本
    */
-  getDisplayText(): string;
 
   /**
    * 是否成功
    */
-  isSuccess(): boolean;
 
   /**
    * 是否失败
    */
-  isFailed(): boolean;
 
   /**
    * 是否跳过
    */
-  isSkipped(): boolean;
 
 }
 

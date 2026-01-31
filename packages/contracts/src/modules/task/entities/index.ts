@@ -2,5 +2,13 @@
  * Task Entities Export
  */
 
-export * from './TaskTemplateHistoryServer';
-export * from './TaskTemplateHistoryClient';
+export type {
+  TaskTemplateHistoryServer,
+  TaskTemplateHistoryServerDTO,
+  TaskTemplateHistoryPersistenceDTO,
+} from './task-template-history-server';
+
+export type {
+  TaskTemplateHistoryClientDTO,
+  TaskTemplateHistoryClient,
+} from './task-template-history-client';

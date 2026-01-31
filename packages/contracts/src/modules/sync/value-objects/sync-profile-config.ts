@@ -80,7 +80,4 @@ export interface ISyncProfileConfig {
   compress: boolean;
   encrypt: boolean;
 
-  equals(other: ISyncProfileConfig): boolean;
-  with(updates: Partial<SyncProfileConfigDTO>): ISyncProfileConfig;
-  toDTO(): SyncProfileConfigDTO;
 }

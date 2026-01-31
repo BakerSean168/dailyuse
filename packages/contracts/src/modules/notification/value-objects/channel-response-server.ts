@@ -16,7 +16,6 @@ export interface IChannelResponseServer {
   data?: any;
 
   // <ï¿½aï¿½ï¿½
-  equals(other: IChannelResponseServer): boolean;
   with(
     updates: Partial<
       Omit<
@@ -49,6 +48,6 @@ export interface ChannelResponsePersistenceDTO {
   data: string | null; // JSON string
 }
 
-// ============ {ï¿½ï¿½ï¿?============
+// ============ {ï¿½ï¿½ï¿½?============
 
 export type ChannelResponseServer = IChannelResponseServer;

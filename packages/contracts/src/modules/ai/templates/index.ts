@@ -2,4 +2,4 @@
  * AI Provider Templates Index
  */
 
-export * from './AIProviderTemplate';
+export * from './ai-provider-template';

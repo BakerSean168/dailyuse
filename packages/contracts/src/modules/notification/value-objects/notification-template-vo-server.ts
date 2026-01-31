@@ -1,6 +1,6 @@
 /**
  * NotificationTemplate Value Object (Server)
- * ï¿?<ï¿½a - 
+ * ï¿½?<ï¿½a - 
 ï¿½ï¿½
  */
 
@@ -12,7 +12,7 @@ import type { NotificationTemplateConfigClientDTO } from './notification-templat
  */
 export interface TemplateContent {
   title: string; // /ï¿½ï¿½: {{variable}}
-  content: string; // /ï¿½Ï?Markdown
+  content: string; // /ï¿½ï¿½?Markdown
   variables: string[]; // ['taskName', 'dueDate', etc.]
 }
 
@@ -26,7 +26,7 @@ export interface EmailTemplateContent {
 }
 
 /**
- * ï¿?!ï¿½ï¿½
+ * ï¿½?!ï¿½ï¿½
  */
 export interface PushTemplateContent {
   title: string;
@@ -48,7 +48,7 @@ export interface ChannelConfig {
 // ============ ï¿½ï¿½I ============
 
 /**
- * ï¿?Mn - Server ï¿½ï¿½
+ * ï¿½?Mn - Server ï¿½ï¿½
  */
 export interface INotificationTemplateConfigServer {
   template: TemplateContent;
@@ -57,7 +57,6 @@ export interface INotificationTemplateConfigServer {
   pushTemplate: PushTemplateContent | null;
 
   // <ï¿½aï¿½ï¿½
-  equals(other: INotificationTemplateConfigServer): boolean;
   with(
     updates: Partial<
       Omit<
@@ -92,6 +91,6 @@ export interface NotificationTemplateConfigPersistenceDTO {
   pushTemplate: string | null; // JSON.stringify(PushTemplateContent)
 }
 
-// ============ {ï¿½ï¿½ï¿?============
+// ============ {ï¿½ï¿½ï¿½?============
 
 export type NotificationTemplateConfigServer = INotificationTemplateConfigServer;

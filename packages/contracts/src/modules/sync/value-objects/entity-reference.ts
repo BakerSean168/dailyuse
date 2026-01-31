@@ -1,6 +1,6 @@
 /**
  * Entity Reference Value Object
- * 实体引用值对�?
+ * 实体引用值对�?
  */
 
 import type { SyncableEntityType } from './syncable-entity-type';
@@ -20,7 +20,4 @@ export interface IEntityReference {
   entityId: string;
   entityName?: string;
 
-  equals(other: IEntityReference): boolean;
-  toString(): string;
-  toDTO(): EntityReferenceDTO;
 }

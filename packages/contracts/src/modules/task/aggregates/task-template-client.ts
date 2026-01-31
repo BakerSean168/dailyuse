@@ -12,19 +12,14 @@ import type {
   DomainDate,
   TransferDate,
 } from '@/primitives';
-import type { TaskTemplateServerDTO } from './task-template-server';
 import type { TaskType } from '../value-objects/task-type';
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
 import { ImportanceLevel } from '../../../shared/importance';
 import type {
-  TaskTimeConfigClient,
-  TaskTimeConfigClientDTO,
-  RecurrenceRuleClient,
-  RecurrenceRuleClientDTO,
-  TaskReminderConfigClient,
-  TaskReminderConfigClientDTO,
-  TaskGoalBindingClient,
-  TaskGoalBindingClientDTO,
+  TaskTimeConfig,
+  RecurrenceRule,
+  TaskReminderConfig,
+  TaskGoalBinding,
 } from '../value-objects';
 import type { TaskInstanceClient } from './task-instance-client';
 
@@ -77,18 +72,18 @@ export interface TaskTemplateClient {
   name: string;
   description: string | null;
   taskType: TaskType;
-  timeConfig: TaskTimeConfigClient;
-  recurrenceRule: RecurrenceRuleClient | null;
-  reminderConfig: TaskReminderConfigClient | null;
+  timeConfig: TaskTimeConfig;
+  recurrenceRule: RecurrenceRule | null;
+  reminderConfig: TaskReminderConfig | null;
   importance: ImportanceLevel;
   /**
    * 浼樺厛绾у垎鏁?(0-100)
-   * 鐢辩郴缁熸牴�?importance + dueDate 鍔ㄦ€佽绠?
-   * @readonly 姝ゅ瓧娈典笉鑳界洿鎺ヤ慨鏀癸紝璁＄畻鐢?Application Layer 璐熻�?
-   * @computed 鍩轰�?Story 1.3 绠楁硶璁＄畻寰楀�?
+   * 鐢辩郴缁熸牴�?importance + dueDate 鍔ㄦ€佽绠?
+   * @readonly 姝ゅ瓧娈典笉鑳界洿鎺ヤ慨鏀癸紝璁＄畻鐢?Application Layer 璐熻�?
+   * @computed 鍩轰�?Story 1.3 绠楁硶璁＄畻寰楀�?
    */
   priority?: number;
-  goalBinding: TaskGoalBindingClient | null;
+  goalBinding: TaskGoalBinding | null;
   folderId: GoalFolderId | null;
   tags: string[];
   color: string | null;
@@ -117,6 +112,4 @@ export interface TaskTemplateClient {
   pendingInstanceCount: number;
   completionRate: number;
 
-  toClientDTO(includeChildren?: boolean): TaskTemplateClientDTO;
-  toServerDTO(includeChildren?: boolean): TaskTemplateServerDTO;
 }

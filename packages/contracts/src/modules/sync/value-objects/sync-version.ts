@@ -1,6 +1,6 @@
 /**
  * Sync Version Value Object
- * 同步版本（向量时钟）值对�?
+ * 同步版本（向量时钟）值对�?
  */
 
 // ============ DTO 定义 ============
@@ -48,9 +48,4 @@ export interface ISyncVersionServer {
   lastModifiedBy: string;
   lastModifiedAt: number;
 
-  equals(other: ISyncVersionServer): boolean;
-  increment(deviceId: string): ISyncVersionServer;
-  merge(other: ISyncVersionServer): ISyncVersionServer;
-  happenedBefore(other: ISyncVersionServer): boolean;
-  isConflict(other: ISyncVersionServer): boolean;
 }

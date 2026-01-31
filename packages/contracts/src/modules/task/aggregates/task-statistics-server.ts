@@ -184,37 +184,30 @@ export interface TaskStatisticsServer {
   /**
    * 重新计算统计信息
    */
-  recalculate(templates: any[], instances: any[]): void;
 
   /**
    * 更新模板统计
    */
-  updateTemplateStats(templateStats: Partial<TemplateStatsInfo>): void;
 
   /**
    * 更新实例统计
    */
-  updateInstanceStats(instanceStats: Partial<InstanceStatsInfo>): void;
 
   /**
    * 更新完成统计
    */
-  updateCompletionStats(completionStats: Partial<CompletionStatsInfo>): void;
 
   /**
    * 获取今日完成�?
    */
-  getTodayCompletionRate(): number;
 
   /**
    * 获取本周完成�?
    */
-  getWeekCompletionRate(): number;
 
   /**
    * 获取效率趋势
    */
-  getEfficiencyTrend(): 'UP' | 'DOWN' | 'STABLE';
 
 }
 

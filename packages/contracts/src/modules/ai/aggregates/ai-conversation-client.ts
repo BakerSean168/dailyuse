@@ -1,50 +1,46 @@
 /**
  * AIConversation Aggregate Root - Client Interface
- * AI对话聚合�?- 客户端接�?
+ * AI对话聚合根 - 客户端接口
  */
 
-import type { AiConversationId, IdentityId, TransferDate, DomainDate } from '@/primitives';
-import type { ConversationStatus } from '../value-objects/conversation-status';
+import type { ConversationStatus } from '../enums';
 import type { AIConversationServerDTO } from './ai-conversation-server';
 import type { MessageClient, MessageClientDTO } from '../entities/message-client';
 
 // ============ DTO 定义 ============
 
 export interface AIConversationClientDTO {
-  id: string;
-  identityId: string;
+  uuid: string;
+  accountUuid: string;
   name: string;
   status: ConversationStatus;
   messageCount: number;
-  lastMessageAt: TransferDate | null;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
+  lastMessageAt?: number | null;
+  createdAt: number;
+  updatedAt: number;
 
-  // 子实�?DTO
-  messages: MessageClientDTO[] | null;
+  // 子实体 DTO
+  messages?: MessageClientDTO[] | null;
 }
 
 // ============ 实体接口 ============
 
 export interface AIConversationClient {
-  // 基础属�?
-  id: AiConversationId;
-  identityId: IdentityId;
+  // 基础属性
+  uuid: string;
+  accountUuid: string;
   name: string;
   status: ConversationStatus;
   messageCount: number;
-  lastMessageAt: DomainDate | null;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
+  lastMessageAt?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
 
-  // 子实�?
-  messages: MessageClient[] | null;
+  // 子实体
+  messages?: MessageClient[] | null;
 
   // DTO 转换
 }
 
-// ============ 静态工厂方法接�?============
-
 export interface AIConversationClientInstance extends AIConversationClient {
-  clone(): AIConversationClient;
 }

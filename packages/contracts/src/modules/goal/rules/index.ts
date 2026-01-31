@@ -1,1 +1,1 @@
-export * from './StatusRule';
+export * from './status-rule';

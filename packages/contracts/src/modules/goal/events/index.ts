@@ -1,2 +1,2 @@
-export * from './DomainEvents';
-export * from './GoalStatisticsEvents';
+export * from './domain-events';
+export * from './goal-statistics-events';

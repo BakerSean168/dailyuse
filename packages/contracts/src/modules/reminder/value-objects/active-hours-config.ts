@@ -1,22 +1,21 @@
 /**
  * Active Hours Config Value Object
- * 活跃时间段配置值对�?
+ * 活跃时间段配置值对�?
  */
 
 // ============ 接口定义 ============
 
 /**
- * 活跃时间段配�?- Server 接口
+ * 活跃时间段配�?- Server 接口
  */
 export interface IActiveHoursConfigServer {
   enabled: boolean;
-  /** 开始小�?(0-23) */
+  /** 开始小�?(0-23) */
   startHour: number;
   /** 结束小时 (0-23) */
   endHour: number;
 
-  // 值对象方�?
-  equals(other: IActiveHoursConfigServer): boolean;
+  // 值对象方�?
   with(
     updates: Partial<
       Omit<
@@ -30,18 +29,17 @@ export interface IActiveHoursConfigServer {
 }
 
 /**
- * 活跃时间段配�?- Client 接口
+ * 活跃时间段配�?- Client 接口
  */
 export interface IActiveHoursConfigClient {
   enabled: boolean;
   startHour: number;
   endHour: number;
 
-  // UI 辅助属�?
+  // UI 辅助属�?
   displayText: string; // "09:00 - 21:00" | "全天"
 
-  // 值对象方�?
-  equals(other: IActiveHoursConfigClient): boolean;
+  // 值对象方�?
 
   // DTO 转换方法
 }

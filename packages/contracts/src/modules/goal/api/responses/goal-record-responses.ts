@@ -1,7 +1,7 @@
 /**
  * Goal Record Responses
  */
-import type { GoalRecordClientDTO } from '../../aggregates';
+import type { GoalRecordClientDTO } from '../../entities';
 
 /**
  * 目标记录响应

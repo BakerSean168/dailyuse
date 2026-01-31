@@ -22,9 +22,4 @@ export interface SyncConfigClient {
   enabled: boolean;
   syncToCloud: boolean;
   syncToDevices: boolean;
-
-  // UI 方法
-  isSyncEnabled(): boolean;
-  getSyncTargets(): string[];
-}
 }

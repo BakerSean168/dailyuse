@@ -104,20 +104,4 @@ export interface SyncSessionServer {
   completedAt: DomainDate | null;
   updatedAt: DomainDate;
 
-  // 状态转�?
-  start(): void;
-  complete(stats: SyncSessionStatsDTO, newVersion: SyncVersionServerDTO): void;
-  fail(error: { code: string; message: string; details?: unknown }): void;
-  cancel(reason?: string): void;
-
-  // 冲突管理
-  addConflict(conflict: SyncConflictServerDTO): void;
-  resolveConflict(conflictId: SyncConflictId): void;
-  hasUnresolvedConflicts(): boolean;
-
-  // 业务查询
-  canStart(): boolean;
-  canRetrySync(): boolean;
-  getDurationMs(): number | null;
-}
 }

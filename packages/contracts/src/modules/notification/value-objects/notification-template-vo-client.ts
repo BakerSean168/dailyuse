@@ -1,6 +1,6 @@
 /**
  * NotificationTemplate Value Object (Client)
- * ï¿?<ï¿½a - ï¿?ï¿?
+ * ï¿½?<ï¿½a - ï¿½?ï¿½?
  */
 
 import type {
@@ -14,7 +14,7 @@ import type {
 // ============ ï¿½ï¿½I ============
 
 /**
- * ï¿?Mn - Client ï¿½ï¿½
+ * ï¿½?Mn - Client ï¿½ï¿½
  */
 export interface INotificationTemplateConfigClient {
   template: TemplateContent;
@@ -24,12 +24,11 @@ export interface INotificationTemplateConfigClient {
 
   // UI ï¿½ï¿½^'
   enabledChannelsCount: number;
-  enabledChannelsList: string[]; // ["ï¿?ï¿?, "ï¿½ï¿½"]
+  enabledChannelsList: string[]; // ["ï¿½?ï¿½?, "ï¿½ï¿½"]
   hasEmailTemplate: boolean;
   hasPushTemplate: boolean;
 
   // <ï¿½aï¿½ï¿½
-  equals(other: INotificationTemplateConfigClient): boolean;
 
   // DTO lbï¿½ï¿½
 }
@@ -50,6 +49,6 @@ export interface NotificationTemplateConfigClientDTO {
   hasPushTemplate: boolean;
 }
 
-// ============ {ï¿½ï¿½ï¿?============
+// ============ {ï¿½ï¿½ï¿½?============
 
 export type NotificationTemplateConfigClient = INotificationTemplateConfigClient;

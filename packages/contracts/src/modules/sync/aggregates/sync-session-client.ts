@@ -47,7 +47,4 @@ export interface SyncSessionClient {
   canRetry: boolean;
   estimatedTimeRemaining: number | null;
 
-  isInProgress(): boolean;
-  isCompleted(): boolean;
-  isFailed(): boolean;
 }

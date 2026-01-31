@@ -52,7 +52,4 @@ export interface SettingGroupClient {
   isDeleted: boolean;
   settingCount: number;
   displayName: string;
-
-  // DTO 转换方法
-}
 }

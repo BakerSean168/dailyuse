@@ -23,86 +23,86 @@ export {
 // ============ Value Objects - Server ============
 export type {
   ValidationRuleServer,
-  ValidationRuleServerDTO,} from './value-objects/ValidationRuleServer';
+  ValidationRuleServerDTO,} from './value-objects/validation-rule-server';
 
 export type {
   UIConfigServer,
-  UIConfigServerDTO,} from './value-objects/UIConfigServer';
+  UIConfigServerDTO,} from './value-objects/ui-config-server';
 
 export type {
   SyncConfigServer,
-  SyncConfigServerDTO,} from './value-objects/SyncConfigServer';
+  SyncConfigServerDTO,} from './value-objects/sync-config-server';
 
 // ============ Value Objects - Client ============
 export type {
   ValidationRuleClient,
-  ValidationRuleClientDTO,} from './value-objects/ValidationRuleClient';
+  ValidationRuleClientDTO,} from './value-objects/validation-rule-client';
 
 export type {
   UIConfigClient,
-  UIConfigClientDTO,} from './value-objects/UIConfigClient';
+  UIConfigClientDTO,} from './value-objects/ui-config-client';
 
 export type {
   SyncConfigClient,
-  SyncConfigClientDTO,} from './value-objects/SyncConfigClient';
+  SyncConfigClientDTO,} from './value-objects/sync-config-client';
 
 // ============ Entities - Server ============
 export type {
   SettingHistoryServer,
   SettingHistoryServerDTO,
-  SettingHistoryPersistenceDTO,} from './entities/SettingHistoryServer';
+  SettingHistoryPersistenceDTO,} from './entities/setting-history-server';
 
 export type {
   SettingItemServer,
   SettingItemServerDTO,
-  SettingItemPersistenceDTO,} from './entities/SettingItemServer';
+  SettingItemPersistenceDTO,} from './entities/setting-item-server';
 
 export type {
   SettingGroupServer,
   SettingGroupServerDTO,
-  SettingGroupPersistenceDTO,} from './entities/SettingGroupServer';
+  SettingGroupPersistenceDTO,} from './entities/setting-group-server';
 
 // ============ Entities - Client ============
 export type {
   SettingHistoryClient,
-  SettingHistoryClientDTO,} from './entities/SettingHistoryClient';
+  SettingHistoryClientDTO,} from './entities/setting-history-client';
 
 export type {
   SettingItemClient,
-  SettingItemClientDTO,} from './entities/SettingItemClient';
+  SettingItemClientDTO,} from './entities/setting-item-client';
 
 export type {
   SettingGroupClient,
-  SettingGroupClientDTO,} from './entities/SettingGroupClient';
+  SettingGroupClientDTO,} from './entities/setting-group-client';
 
 // ============ Aggregates - Server ============
 export type {
   SettingServer,
   SettingServerDTO,
-  SettingPersistenceDTO,} from './aggregates/SettingServer';
+  SettingPersistenceDTO,} from './aggregates/setting-server';
 
 export type {
   AppConfigServer,
   AppConfigServerDTO,
-  AppConfigPersistenceDTO,} from './aggregates/AppConfigServer';
+  AppConfigPersistenceDTO,} from './aggregates/app-config-server';
 
 export type {
   UserSettingServer,
   UserSettingServerDTO,
-  UserSettingPersistenceDTO,} from './aggregates/UserSettingServer';
+  UserSettingPersistenceDTO,} from './aggregates/user-setting-server';
 
 // ============ Aggregates - Client ============
 export type {
   SettingClient,
-  SettingClientDTO,} from './aggregates/SettingClient';
+  SettingClientDTO,} from './aggregates/setting-client';
 
 export type {
   AppConfigClient,
-  AppConfigClientDTO,} from './aggregates/AppConfigClient';
+  AppConfigClientDTO,} from './aggregates/app-config-client';
 
 export type {
   UserSettingClient,
-  UserSettingClientDTO,} from './aggregates/UserSettingClient';
+  UserSettingClientDTO,} from './aggregates/user-setting-client';
 
 // ============ API Requests/Responses ============
 export type {

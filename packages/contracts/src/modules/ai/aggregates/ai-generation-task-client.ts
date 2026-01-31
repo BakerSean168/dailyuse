@@ -1,6 +1,6 @@
 /**
  * AIGenerationTask Aggregate Root - Client Interface
- * AI生成任务聚合�?- 客户端接�?
+ * AI生成任务聚合�?- 客户端接�?
  */
 
 import type { AiGenerationTaskId, IdentityId, TransferDate, DomainDate } from '@/primitives';
@@ -57,9 +57,4 @@ export interface AIGenerationTaskClient {
   formattedCreatedAt: string;
   formattedCompletedAt: string | null;
 
-  getStatusBadge(): string;
-  getTypeBadge(): string;
-  hasResult(): boolean;
-  hasError(): boolean;
-  canRetry(): boolean;
 }

@@ -9,54 +9,54 @@ export { RepositoryType, RepositoryStatus, ResourceType, ResourceStatus } from '
 // ============ Value Objects - Server ============
 export type {
   RepositoryConfigServerDTO,
-  RepositoryConfigServer,} from './value-objects/RepositoryConfigServer';
+  RepositoryConfigServer,} from './value-objects/repository-config-server';
 
 export type {
   RepositoryStatsServerDTO,
-  RepositoryStatsServer,} from './value-objects/RepositoryStatsServer';
+  RepositoryStatsServer,} from './value-objects/repository-stats-server';
 
 export type {
   FolderMetadataServerDTO,
-  FolderMetadataServer,} from './value-objects/FolderMetadataServer';
+  FolderMetadataServer,} from './value-objects/folder-metadata-server';
 
 export type {
   ResourceMetadataServerDTO,
-  ResourceMetadataServer,} from './value-objects/ResourceMetadataServer';
+  ResourceMetadataServer,} from './value-objects/resource-metadata-server';
 
 export type {
   ResourceStatsServerDTO,
-  ResourceStatsServer,} from './value-objects/ResourceStatsServer';
+  ResourceStatsServer,} from './value-objects/resource-stats-server';
 
 // ============ Value Objects - Client ============
 export type {
   RepositoryConfigClientDTO,
-  RepositoryConfigClient,} from './value-objects/RepositoryConfigClient';
+  RepositoryConfigClient,} from './value-objects/repository-config-client';
 
 export type {
   RepositoryStatsClientDTO,
-  RepositoryStatsClient,} from './value-objects/RepositoryStatsClient';
+  RepositoryStatsClient,} from './value-objects/repository-stats-client';
 
 export type {
   FolderMetadataClientDTO,
-  FolderMetadataClient,} from './value-objects/FolderMetadataClient';
+  FolderMetadataClient,} from './value-objects/folder-metadata-client';
 
 export type {
   ResourceMetadataClientDTO,
-  ResourceMetadataClient,} from './value-objects/ResourceMetadataClient';
+  ResourceMetadataClient,} from './value-objects/resource-metadata-client';
 
 export type {
   ResourceStatsClientDTO,
-  ResourceStatsClient,} from './value-objects/ResourceStatsClient';
+  ResourceStatsClient,} from './value-objects/resource-stats-client';
 
 // ============ Aggregates ============
 export type {
   RepositoryServerDTO,
   RepositoryPersistenceDTO,
-  RepositoryServer,} from './aggregates/RepositoryServer';
+  RepositoryServer,} from './aggregates/repository-server';
 
 export type {
   RepositoryClientDTO,
-  RepositoryClient,} from './aggregates/RepositoryClient';
+  RepositoryClient,} from './aggregates/repository-client';
 
 export type {
   RepositoryStatisticsServerDTO,
@@ -64,27 +64,27 @@ export type {
   RepositoryStatisticsServer,  RecalculateStatisticsRequest,
   RecalculateStatisticsResponse,
   StatisticsUpdateEvent,
-} from './aggregates/RepositoryStatisticsServer';
+} from './aggregates/repository-statistics-server';
 
 // ============ Entities ============
 export type {
   FolderServerDTO,
   FolderPersistenceDTO,
-  FolderServer,} from './entities/FolderServer';
+  FolderServer,} from './entities/folder-server';
 
-export type { FolderClientDTO, FolderClient } from './entities/FolderClient';
+export type { FolderClientDTO, FolderClient } from './entities/folder-client';
 
 export type {
   ResourceServerDTO,
   ResourcePersistenceDTO,
-  ResourceServer,} from './entities/ResourceServer';
+  ResourceServer,} from './entities/resource-server';
 
 export type {
   ResourceClientDTO,
-  ResourceClient,} from './entities/ResourceClient';
+  ResourceClient,} from './entities/resource-client';
 
 // ============ DTOs (File Tree - Story 11.1) ============
-export type { TreeNodeType, TreeNode, FileTreeResponse } from './TreeNode';
+export type { TreeNodeType, TreeNode, FileTreeResponse } from './tree-node';
 
 // ============ DTOs (Search - Story 11.2) ============
 export type {
@@ -94,7 +94,7 @@ export type {
   MatchType,
   SearchResultItem,
   SearchResponse,
-} from './SearchContracts';
+} from './search-contracts';
 
 // ============ DTOs (Bookmark - Story 11.4) ============
 export type {
@@ -103,10 +103,10 @@ export type {
   CreateBookmarkRequest,
   UpdateBookmarkRequest,
   BookmarkListResponse,
-} from './BookmarkContracts';
+} from './bookmark-contracts';
 
 // ============ DTOs (Tags - Story 11.5) ============
-export type { TagStatisticsDto, TagResourceReferenceDto } from './TagsContracts';
+export type { TagStatisticsDto, TagResourceReferenceDto } from './tags-contracts';
 
 // ============ DTOs (Resource Upload - Story 11.x) ============
 export type {
@@ -123,8 +123,8 @@ export type {
   ResourceDeleteRequest,
   ImageCompressionSettings,
   ImageEmbedSettings,
-} from './ResourceContracts';
+} from './resource-contracts';
 
 // ============ Constants (Upload) ============
-export { RESOURCE_UPLOAD_CONFIG } from './ResourceContracts';
-export type { ResourceUploadConfig } from './ResourceContracts';
+export { RESOURCE_UPLOAD_CONFIG } from './resource-contracts';
+export type { ResourceUploadConfig } from './resource-contracts';

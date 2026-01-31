@@ -1,12 +1,12 @@
 /**
  * Tab View State Value Object
- * 标签页视图状态值对�?
+ * 标签页视图状态值对�?
  */
 
 // ============ 接口定义 ============
 
 /**
- * 标签页视图状�?- Server 接口
+ * 标签页视图状�?- Server 接口
  */
 export interface ITabViewStateServer {
   scrollTop: number;
@@ -20,8 +20,7 @@ export interface ITabViewStateServer {
     end: { line: number; column: number };
   }> | null;
 
-  // 值对象方�?
-  equals(other: ITabViewStateServer): boolean;
+  // 值对象方�?
   with(
     updates: Partial<
       Omit<
@@ -35,7 +34,7 @@ export interface ITabViewStateServer {
 }
 
 /**
- * 标签页视图状�?- Client 接口
+ * 标签页视图状�?- Client 接口
  */
 export interface ITabViewStateClient {
   scrollTop: number;
@@ -49,8 +48,7 @@ export interface ITabViewStateClient {
     end: { line: number; column: number };
   }> | null;
 
-  // 值对象方�?
-  equals(other: ITabViewStateClient): boolean;
+  // 值对象方�?
 
   // DTO 转换方法
 }

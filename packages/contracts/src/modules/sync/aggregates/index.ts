@@ -9,28 +9,28 @@ export type {
   SyncSessionCreatedDomainEvent,
   SyncSessionCompletedDomainEvent,
   SyncSessionFailedDomainEvent,
-  SyncSessionServer,} from './SyncSessionServer';
+  SyncSessionServer,} from './sync-session-server';
 
 export type {
   SyncSessionClientDTO,
-  SyncSessionClient,} from './SyncSessionClient';
+  SyncSessionClient,} from './sync-session-client';
 
 export type {
   SyncProfileServerDTO,
   SyncProfilePersistenceDTO,
   SyncProfileCreatedDomainEvent,
   SyncProfileConnectedDomainEvent,
-  SyncProfileServer,} from './SyncProfileServer';
+  SyncProfileServer,} from './sync-profile-server';
 
 export type {
   SyncProfileClientDTO,
-  SyncProfileClient,} from './SyncProfileClient';
+  SyncProfileClient,} from './sync-profile-client';
 
 export type {
   SyncStateServerDTO,
   SyncStatePersistenceDTO,
-  SyncStateServer,} from './SyncStateServer';
+  SyncStateServer,} from './sync-state-server';
 
 export type {
   SyncStateClientDTO,
-  SyncStateClient,} from './SyncStateClient';
+  SyncStateClient,} from './sync-state-client';

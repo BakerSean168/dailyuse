@@ -1,6 +1,6 @@
 /**
  * ChannelError Value Object (Server)
- *  Sï¿?ï¿½a - 
+ *  Sï¿½?ï¿½a - 
 ï¿½ï¿½
  */
 
@@ -8,7 +8,7 @@ import type { ChannelErrorClientDTO } from './channel-error-client';
 // ============ ï¿½ï¿½I ============
 
 /**
- *  Sï¿?- Server ï¿½ï¿½
+ *  Sï¿½?- Server ï¿½ï¿½
  */
 export interface IChannelErrorServer {
   code: string;
@@ -16,7 +16,6 @@ export interface IChannelErrorServer {
   details?: any;
 
   // <ï¿½aï¿½ï¿½
-  equals(other: IChannelErrorServer): boolean;
   with(
     updates: Partial<
       Omit<
@@ -49,6 +48,6 @@ export interface ChannelErrorPersistenceDTO {
   details: string | null; // JSON string
 }
 
-// ============ {ï¿½ï¿½ï¿?============
+// ============ {ï¿½ï¿½ï¿½?============
 
 export type ChannelErrorServer = IChannelErrorServer;

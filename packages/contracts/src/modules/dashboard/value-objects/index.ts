@@ -2,4 +2,4 @@
  * Dashboard Value Objects Index
  */
 
-export * from './WidgetConfig';
+export * from './widget-config';

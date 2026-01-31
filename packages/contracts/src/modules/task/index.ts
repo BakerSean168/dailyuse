@@ -29,110 +29,110 @@ export {
   TASK_INSTANCE_GENERATION_CONFIG,
   TASK_INSTANCE_VIEW_CONFIG,
   RECURRENCE_RULE_DEFAULTS,
-} from './config';
+} from './configs/config';
 
 // ============ Value Objects ============
 export type {
   RecurrenceRuleServer,
   RecurrenceRuleServerDTO,
   RecurrenceRulePersistenceDTO,
-} from './value-objects/RecurrenceRuleServer';
+} from './value-objects/recurrence-rule';
 
 export type {
   RecurrenceRuleClient,
   RecurrenceRuleClientDTO,
-} from './value-objects/RecurrenceRuleClient';
+} from './value-objects/recurrence-rule-client';
 
 export type {
   TaskReminderConfigServer,
   TaskReminderConfigServerDTO,
   TaskReminderConfigPersistenceDTO,
-} from './value-objects/TaskReminderConfigServer';
+} from './value-objects/task-reminder-config';
 
 export type {
   TaskReminderConfigClient,
   TaskReminderConfigClientDTO,
-} from './value-objects/TaskReminderConfigClient';
+} from './value-objects/task-reminder-config-client';
 
 export type {
   TaskGoalBindingServer,
   TaskGoalBindingServerDTO,
   TaskGoalBindingPersistenceDTO,
-} from './value-objects/TaskGoalBindingServer';
+} from './value-objects/task-goal-binding';
 
 export type {
   TaskGoalBindingClient,
   TaskGoalBindingClientDTO,
-} from './value-objects/TaskGoalBindingClient';
+} from './value-objects/task-goal-binding-client';
 
 export type {
   TaskTimeConfigServer,
   TaskTimeConfigServerDTO,
   TaskTimeConfigPersistenceDTO,
-} from './value-objects/TaskTimeConfigServer';
+} from './value-objects/task-time-config';
 
 export type {
   TaskTimeConfigClient,
   TaskTimeConfigClientDTO,
-} from './value-objects/TaskTimeConfigClient';
+} from './value-objects/task-time-config-client';
 
 export type {
   CompletionRecordServer,
   CompletionRecordServerDTO,
   CompletionRecordPersistenceDTO,
-} from './value-objects/CompletionRecordServer';
+} from './value-objects/completion-record';
 
 export type {
   CompletionRecordClient,
   CompletionRecordClientDTO,
-} from './value-objects/CompletionRecordClient';
+} from './value-objects/completion-record-client';
 
 export type {
   SkipRecordServer,
   SkipRecordServerDTO,
   SkipRecordPersistenceDTO,
-} from './value-objects/SkipRecordServer';
+} from './value-objects/skip-record-server';
 
-export type { SkipRecordClient, SkipRecordClientDTO } from './value-objects/SkipRecordClient';
+export type { SkipRecordClient, SkipRecordClientDTO } from './value-objects/skip-record-client';
 
-export { PriorityLevel } from './value-objects/TaskPriority';
+export { PriorityLevel } from './value-objects/task-priority';
 
-export type { TaskPriority, PriorityCalculationParams } from './value-objects/TaskPriority';
+export type { TaskPriority, PriorityCalculationParams } from './value-objects/task-priority';
 
 // ============ Entities ============
 export type {
   TaskTemplateHistoryServer,
   TaskTemplateHistoryServerDTO,
   TaskTemplateHistoryPersistenceDTO,
-} from './entities/TaskTemplateHistoryServer';
+} from './entities/task-template-history-server';
 
 export type {
   TaskTemplateHistoryClientDTO,
-  TaskTemplateHistoryClient,  TaskTemplateHistoryClientInstance,
-} from './entities/TaskTemplateHistoryClient';
+  TaskTemplateHistoryClient,
+} from './entities/task-template-history-client';
 
 // ============ Aggregates ============
 export type {
   TaskInstanceServerDTO,
   TaskInstancePersistenceDTO,
   TaskInstanceServer,
-} from './aggregates/TaskInstanceServer';
+} from './aggregates/task-instance-server';
 
 export type {
   TaskInstanceClientDTO,
-  TaskInstanceClient,  TaskInstanceClientInstance,
-} from './aggregates/TaskInstanceClient';
+  TaskInstanceClient,
+} from './aggregates/task-instance-client';
 
 export type {
   TaskTemplateServerDTO,
   TaskTemplatePersistenceDTO,
   TaskTemplateServer,
-} from './aggregates/TaskTemplateServer';
+} from './aggregates/task-template-server';
 
 export type {
   TaskTemplateClientDTO,
-  TaskTemplateClient,  TaskTemplateClientInstance,
-} from './aggregates/TaskTemplateClient';
+  TaskTemplateClient,
+} from './aggregates/task-template-client';
 
 export type {
   TaskStatisticsServerDTO,
@@ -140,25 +140,27 @@ export type {
   TaskStatisticsUpdatedEvent,
   TaskStatisticsRecalculatedEvent,
   TaskStatisticsDomainEvent,
-  TaskStatisticsServer,  TemplateStatsInfo,
+  TaskStatisticsServer,
+  TemplateStatsInfo,
   InstanceStatsInfo,
   CompletionStatsInfo,
   TimeStatsInfo,
   DistributionStatsInfo,
-} from './aggregates/TaskStatisticsServer';
+} from './aggregates/task-statistics-server';
 
 export type {
   TaskStatisticsClientDTO,
-  TaskStatisticsClient,  ChartData,
+  TaskStatisticsClient,
+  ChartData,
   TrendData,
-} from './aggregates/TaskStatisticsClient';
+} from './aggregates/task-statistics-client';
 
 export type {
   TaskDependencyServerDTO,
   TaskTemplateWithDependenciesServerDTO,
   CircularDependencyValidationResult,
   DependencyChainServerDTO,
-} from './aggregates/TaskDependencyServer';
+} from './aggregates/task-dependency-server';
 
 export type {
   TaskDependencyClientDTO,
@@ -170,7 +172,7 @@ export type {
   ValidateDependencyResponse,
   BatchCreateDependenciesRequest,
   BatchCreateDependenciesResponse,
-} from './aggregates/TaskDependencyClient';
+} from './aggregates/task-dependency-client';
 
 // ============ Events ============
 export type {
@@ -234,7 +236,7 @@ export type {
   BatchUpdatePriorityRequest,
   BatchCancelTasksRequest,
   LinkTaskToGoalRequest,
-} from './api-requests';
+} from './api';
 
 // ============ Query Types (Story 2.5) ============
 export { TaskSortBy, TaskFilterBy } from './queries';

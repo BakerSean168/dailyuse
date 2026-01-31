@@ -47,4 +47,3 @@ export interface SettingHistoryServer {
   operatorType: 'USER' | 'SYSTEM' | 'API';
   createdAt: DomainDate;
 }
-}

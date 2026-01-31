@@ -19,7 +19,6 @@ export interface INotificationActionServer {
   payload?: any;
 
   // <ï¿½aï¿½ï¿½
-  equals(other: INotificationActionServer): boolean;
   with(
     updates: Partial<
       Omit<
@@ -54,6 +53,6 @@ export interface NotificationActionPersistenceDTO {
   payload: string | null; // JSON string
 }
 
-// ============ {ï¿½ï¿½ï¿?============
+// ============ {ï¿½ï¿½ï¿½?============
 
 export type NotificationActionServer = INotificationActionServer;

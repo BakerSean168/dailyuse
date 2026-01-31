@@ -78,27 +78,22 @@ export interface EditorWorkspaceClient {
   /**
    * 获取显示名称
    */
-  getDisplayName(): string;
 
   /**
    * 获取项目类型标签
    */
-  getProjectTypeLabel(): string;
 
   /**
    * 获取状态颜�?
    */
-  getStatusColor(): string;
 
   /**
    * 是否可以激�?
    */
-  canActivate(): boolean;
 
   /**
    * 格式化最后访问时�?
    */
-  getFormattedLastAccessed(): string | null;
 
   // ===== DTO 转换方法 =====
 

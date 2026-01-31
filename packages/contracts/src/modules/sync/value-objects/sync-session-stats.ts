@@ -38,9 +38,4 @@ export interface ISyncSessionStats {
   bytesTransferred: number;
   durationMs: number;
 
-  addEntityStats(stats: EntitySyncStats): ISyncSessionStats;
-  incrementSuccess(): ISyncSessionStats;
-  incrementFailed(): ISyncSessionStats;
-  incrementConflict(): ISyncSessionStats;
-  toDTO(): SyncSessionStatsDTO;
 }

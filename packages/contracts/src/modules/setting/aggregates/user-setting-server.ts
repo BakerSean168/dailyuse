@@ -155,27 +155,4 @@ export interface UserSettingServer {
   createdAt: DomainDate;
   updatedAt: DomainDate;
 
-  // 外观管理
-  updateAppearance(appearance: Partial<UserSettingServer['appearance']>): void;
-  updateTheme(theme: 'LIGHT' | 'DARK' | 'AUTO'): void;
-
-  // 语言和区�?
-  updateLocale(locale: Partial<UserSettingServer['locale']>): void;
-  updateLanguage(language: string): void;
-  updateTimezone(timezone: string): void;
-
-  // 工作�?
-  updateWorkflow(workflow: Partial<UserSettingServer['workflow']>): void;
-
-  // 快捷�?
-  updateShortcut(action: string, shortcut: string): void;
-  removeShortcut(action: string): void;
-
-  // 隐私
-  updatePrivacy(privacy: Partial<UserSettingServer['privacy']>): void;
-
-  // 实验性功�?
-  enableExperimentalFeature(feature: string): void;
-  disableExperimentalFeature(feature: string): void;
-}
 }

@@ -1,6 +1,6 @@
 /**
  * Module Statistics Value Object
- * 模块统计值对�?
+ * 模块统计值对�?
  */
 
 // ============ 接口定义 ============
@@ -15,10 +15,10 @@ export interface IModuleStatisticsServer {
   /** 总任务数 */
   totalTasks: number;
 
-  /** 活跃任务�?*/
+  /** 活跃任务�?*/
   activeTasks: number;
 
-  /** 总执行次�?*/
+  /** 总执行次�?*/
   totalExecutions: number;
 
   /** 成功执行次数 */
@@ -30,8 +30,7 @@ export interface IModuleStatisticsServer {
   /** 平均执行时长（毫秒） */
   avgDuration: number;
 
-  // 值对象方�?
-  equals(other: IModuleStatisticsServer): boolean;
+  // 值对象方�?
   with(
     updates: Partial<
       Omit<
@@ -54,7 +53,6 @@ export interface IModuleStatisticsServer {
     failureDelta: number,
     durationMs: number,
   ): IModuleStatisticsServer;
-  calculateSuccessRate(): number;
 
   // DTO 转换方法
 }
@@ -69,36 +67,35 @@ export interface IModuleStatisticsClient {
   /** 总任务数 */
   totalTasks: number;
 
-  /** 活跃任务�?*/
+  /** 活跃任务�?*/
   activeTasks: number;
 
-  /** 总执行次�?*/
+  /** 总执行次�?*/
   totalExecutions: number;
 
-  /** 成功�?*/
+  /** 成功�?*/
   successRate: number;
 
   /** 平均执行时长 */
   avgDuration: number;
 
-  // UI 辅助属�?
+  // UI 辅助属�?
   /** 模块显示名称 */
   moduleDisplayName: string; // "提醒模块" | "任务模块"
 
   /** 成功率格式化 */
   successRateFormatted: string; // "98.5%"
 
-  /** 成功率颜�?*/
+  /** 成功率颜�?*/
   successRateColor: string; // "green" | "yellow" | "red"
 
-  /** 平均时长格式�?*/
-  avgDurationFormatted: string; // "1.2 �?
+  /** 平均时长格式�?*/
+  avgDurationFormatted: string; // "1.2 �?
 
   /** 活跃任务比例 */
   activeTasksRatio: string; // "80/100"
 
-  // 值对象方�?
-  equals(other: IModuleStatisticsClient): boolean;
+  // 值对象方�?
 
   // DTO 转换方法
 }

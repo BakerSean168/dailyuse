@@ -1,18 +1,18 @@
 /**
  * Recurrence Config Value Object
- * 重复配置值对�?
+ * 重复配置值对�?
  */
 
 import type { RecurrenceType } from './recurrence-type';
 import type { WeekDay } from './week-day';
 
-// ============ 子配置接�?============
+// ============ 子配置接�?============
 
 /**
  * 每日重复配置
  */
 export interface DailyRecurrence {
-  /** �?N �?*/
+  /** �?N �?*/
   interval: number;
 }
 
@@ -20,17 +20,17 @@ export interface DailyRecurrence {
  * 每周重复配置
  */
 export interface WeeklyRecurrence {
-  /** �?N �?*/
+  /** �?N �?*/
   interval: number;
-  /** 星期�?*/
+  /** 星期�?*/
   weekDays: WeekDay[];
 }
 
 /**
- * 自定义日期重复配�?
+ * 自定义日期重复配�?
  */
 export interface CustomDaysRecurrence {
-  /** 指定的日期列�?(epoch ms) */
+  /** 指定的日期列�?(epoch ms) */
   dates: number[];
 }
 
@@ -45,8 +45,7 @@ export interface IRecurrenceConfigServer {
   weekly: WeeklyRecurrence | null;
   customDays: CustomDaysRecurrence | null;
 
-  // 值对象方�?
-  equals(other: IRecurrenceConfigServer): boolean;
+  // 值对象方�?
   with(
     updates: Partial<
       Omit<
@@ -68,11 +67,10 @@ export interface IRecurrenceConfigClient {
   weekly: WeeklyRecurrence | null;
   customDays: CustomDaysRecurrence | null;
 
-  // UI 辅助属�?
+  // UI 辅助属�?
   displayText: string; // "每天" | "每周一、三、五" | "指定日期"
 
-  // 值对象方�?
-  equals(other: IRecurrenceConfigClient): boolean;
+  // 值对象方�?
 
   // DTO 转换方法
 }

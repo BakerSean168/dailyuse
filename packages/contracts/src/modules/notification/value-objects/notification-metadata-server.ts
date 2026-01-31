@@ -20,7 +20,6 @@ export interface INotificationMetadataServer {
   data?: any; // ï¿½Ipn
 
   // <ï¿½aï¿½ï¿½
-  equals(other: INotificationMetadataServer): boolean;
   with(
     updates: Partial<
       Omit<
@@ -59,6 +58,6 @@ export interface NotificationMetadataPersistenceDTO {
   data: string | null; // JSON string
 }
 
-// ============ {ï¿½ï¿½ï¿?============
+// ============ {ï¿½ï¿½ï¿½?============
 
 export type NotificationMetadataServer = INotificationMetadataServer;

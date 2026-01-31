@@ -4,7 +4,7 @@
  */
 
 import type { WidgetConfigData } from './aggregates';
-import type { DashboardStatisticsClientDTO } from './DashboardStatisticsClient';
+import type { DashboardStatisticsClientDTO } from './dashboard-statistics-client';
 
 // ============ Dashboard Statistics 请求/响应 ============
 

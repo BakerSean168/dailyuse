@@ -51,7 +51,4 @@ export interface SettingItemClient {
   updatedAt: DomainDate;
   isDefault: boolean;
   displayValue: string;
-
-  // DTO 转换方法
-}
 }

@@ -8,7 +8,6 @@
 
 export interface PhoneNumber {
     readonly value: string;
-    domain(): string;
 }
 
 // ============ DTO 定义 ============

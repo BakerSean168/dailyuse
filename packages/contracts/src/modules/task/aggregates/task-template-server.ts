@@ -1,6 +1,6 @@
 /**
  * TaskTemplate Aggregate Root - Server Interface
- * 任务模板聚合�?
+ * 任务模板聚合�?
  */
 
 import type {
@@ -18,20 +18,15 @@ import type { TaskType } from '../value-objects/task-type';
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
 import type { TaskInstanceServerDTO } from './task-instance-server';
 import type { TaskTemplateHistoryServerDTO } from '../entities';
-import type { TaskTemplateClientDTO } from './task-template-client';
 import type {
-  TaskTimeConfigServer,
-  TaskTimeConfigServerDTO,
-  TaskTimeConfigClientDTO,
-  RecurrenceRuleServer,
-  RecurrenceRuleServerDTO,
-  RecurrenceRuleClientDTO,
-  TaskReminderConfigServer,
-  TaskReminderConfigServerDTO,
-  TaskReminderConfigClientDTO,
-  TaskGoalBindingServer,
-  TaskGoalBindingServerDTO,
-  TaskGoalBindingClientDTO,
+  TaskTimeConfig,
+  TaskTimeConfigDTO,
+  RecurrenceRule,
+  RecurrenceRuleDTO,
+  TaskReminderConfig,
+  TaskReminderConfigDTO,
+  TaskGoalBinding,
+  TaskGoalBindingDTO,
 } from '../value-objects';
 
 // 导入共享类型
@@ -47,45 +42,24 @@ export interface TaskTemplateServerDTO {
   identityId: string;
   name: string;
   description: string | null;
-  taskType: TaskType; // 'ONE_TIME' | 'RECURRING'
 
   // === 循环任务专用 ===
-  timeConfig: TaskTimeConfigServerDTO | null;
-  recurrenceRule: RecurrenceRuleServerDTO | null;
-  reminderConfig: TaskReminderConfigServerDTO | null;
+  timeConfig: TaskTimeConfigDTO | null;
+  recurrenceRule: RecurrenceRuleDTO | null;
+  reminderConfig: TaskReminderConfigDTO | null;
   lastGeneratedDate: TransferDate | null;
   generateAheadDays: number | null;
 
-  // === 通用属�?===
   importance: ImportanceLevel;
-  /**
-   * 优先级分�?(0-100)
-   * 由系统根�?importance + dueDate 动态计�?
-   * @readonly 此字段不能直接修改，计算�?Application Layer 负责
-   * @computed 基于 Story 1.3 算法计算得出
-   */
   priority?: number;
   tags: string[];
   color: string | null;
   status: TaskTemplateStatus;
 
-  // === Goal/KR 关联（通用�?===
-  goalId: string | null;
-  keyResultId: string | null;
-  goalBinding: TaskGoalBindingServerDTO | null; // 仅循环任务使用的高级绑定
+  goalBinding: TaskGoalBindingDTO | null;
 
-  // === 子任务支持（通用�?===
   parentTaskId: string | null;
 
-  // === 一次性任务专�?===
-  startDate: TransferDate | null;
-  dueDate: TransferDate | null;
-  completedAt: TransferDate | null;
-  estimatedMinutes: number | null;
-  actualMinutes: number | null;
-  note: string | null;
-
-  // === 依赖关系（通用�?===
   dependencyStatus?: string; // 'NONE' | 'WAITING' | 'READY' | 'BLOCKED'
   isBlocked?: boolean;
   blockingReason: string | null;
@@ -96,7 +70,7 @@ export interface TaskTemplateServerDTO {
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
   history?: TaskTemplateHistoryServerDTO[];
-  instances?: TaskInstanceServerDTO[]; // �?RECURRING 有实�?
+  instances?: TaskInstanceServerDTO[]; 
 }
 
 /**
@@ -107,7 +81,6 @@ export interface TaskTemplatePersistenceDTO {
   identityId: string;
   name: string;
   description: string | null;
-  taskType: string; // 'ONE_TIME' | 'RECURRING'
 
   // === 循环任务专用 ===
   // Flattened timeConfig
@@ -134,25 +107,25 @@ export interface TaskTemplatePersistenceDTO {
   lastGeneratedDate: Date | null;
   generateAheadDays: number | null;
 
-  // === 通用属�?===
+  // === 通用属�?===
   importance: string; // 'vital' | 'important' | 'moderate' | 'minor' | 'trivial'
   tags: string; // JSON array
   color: string | null;
   status: string;
 
-  // === Goal/KR 关联（通用�?===
+  // === Goal/KR 关联（通用�?===
   goalId: string | null;
   keyResultId: string | null;
 
-  // Flattened goal_binding (仅循环任务高级绑�?
+  // Flattened goal_binding (仅循环任务高级绑�?
   goalBindingGoalId: string | null;
   goalBindingKeyResultId: string | null;
   goalBindingIncrementValue: number | null;
 
-  // === 子任务支持（通用�?===
+  // === 子任务支持（通用�?===
   parentTaskId: string | null;
 
-  // === 一次性任务专�?===
+  // === 一次性任务专�?===
   startDate: PersistenceDate | null;
   dueDate: PersistenceDate | null;
   completedAt: PersistenceDate | null;
@@ -160,7 +133,7 @@ export interface TaskTemplatePersistenceDTO {
   actualMinutes: number | null;
   note: string | null;
 
-  // === 依赖关系（通用�?===
+  // === 依赖关系（通用�?===
   dependencyStatus?: string; // 'NONE' | 'WAITING' | 'READY' | 'BLOCKED'
   isBlocked?: boolean;
   blockingReason: string | null;
@@ -172,7 +145,7 @@ export interface TaskTemplatePersistenceDTO {
   deletedAt: PersistenceDate | null;
 }
 
-// ============ 聚合根接�?============
+// ============ 聚合根接�?============
 
 export interface TaskTemplateServer {
   id: TaskTemplateId;
@@ -180,11 +153,11 @@ export interface TaskTemplateServer {
   name: string;
   description: string | null;
   taskType: TaskType;
-  timeConfig: TaskTimeConfigServer | null; // null for ONE_TIME tasks
-  recurrenceRule: RecurrenceRuleServer | null;
-  reminderConfig: TaskReminderConfigServer | null;
+  timeConfig: TaskTimeConfig | null; // null for ONE_TIME tasks
+  recurrenceRule: RecurrenceRule | null;
+  reminderConfig: TaskReminderConfig | null;
   importance: ImportanceLevel;
-  goalBinding: TaskGoalBindingServer | null;
+  goalBinding: TaskGoalBinding | null;
   folderId: GoalFolderId | null;
   tags: string[];
   color: string | null;
@@ -197,42 +170,4 @@ export interface TaskTemplateServer {
   history: TaskTemplateHistoryServerDTO[];
   instances: TaskInstanceServerDTO[];
 
-  // 实例生成
-  generateInstances(fromDate: DomainDate, toDate: DomainDate): any[];
-  getInstanceForDate(date: DomainDate): any | null;
-  shouldGenerateInstance(date: DomainDate): boolean;
-
-  // 状态管�?
-  activate(): void;
-  pause(): void;
-  archive(): void;
-  softDelete(): void;
-  restore(): void;
-
-  // 时间规则
-  isActiveOnDate(date: DomainDate): boolean;
-  getNextOccurrence(afterDate: DomainDate): DomainDate | null;
-
-  // 提醒
-  hasReminder(): boolean;
-  getReminderTime(instanceDate: DomainDate): DomainDate | null;
-
-  // 目标绑定
-  bindToGoal(goalId: GoalId, keyResultId: KeyResultId, incrementValue: number): void;
-  unbindFromGoal(): void;
-  isLinkedToGoal(): boolean;
-
-  // 历史记录
-  addHistory(action: string, changes?: any): void;
-
-  // 子实体管�?
-  createInstance(params: any): TaskInstanceId;
-  addInstance(instance: any): void;
-  removeInstance(instanceId: TaskInstanceId): any | null;
-  getInstance(instanceId: TaskInstanceId): any | null;
-  getAllInstances(): any[];
-
-  // DTO 转换
-  toServerDTO(includeChildren?: boolean): TaskTemplateServerDTO;
-  toClientDTO(includeChildren?: boolean): TaskTemplateClientDTO;
 }

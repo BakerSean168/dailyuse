@@ -132,14 +132,8 @@ export interface ReminderTemplateClient {
   // ===== UI 业务方法 =====
 
   // 格式化展�?
-  getStatusBadge(): { text: string; color: string; icon: string };
-  getImportanceBadge(): { text: string; color: string };
-  getTriggerDisplay(): string;
-  getNextTriggerDisplay(): string;
 
   // 操作判断
-  canEnable(): boolean;
-  canPause(): boolean;
 
 }
 

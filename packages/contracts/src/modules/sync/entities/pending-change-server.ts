@@ -51,7 +51,4 @@ export interface PendingChangeServer {
   syncedInSessionId: SyncSessionId | null;
   createdAt: DomainDate;
   syncedAt: DomainDate | null;
-
-  markAsSynced(sessionId: SyncSessionId): void;
-}
 }

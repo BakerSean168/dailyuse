@@ -1,6 +1,6 @@
 /**
  * AppConfig Aggregate Root - Server Interface
- * 应用配置聚合�?- 服务端接�?
+ * 应用配置聚合�?- 服务端接�?
  */
 
 import type { AppConfigId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
@@ -90,7 +90,7 @@ export interface AppConfigPersistenceDTO {
   updatedAt: PersistenceDate;
 }
 
-// ============ 聚合根接�?============
+// ============ 聚合根接�?============
 
 export interface AppConfigServer {
   id: AppConfigId;
@@ -155,16 +155,8 @@ export interface AppConfigServer {
   updatedAt: DomainDate;
 
   // 功能管理
-  enableFeature(feature: string): void;
-  disableFeature(feature: string): void;
-  isFeatureEnabled(feature: string): boolean;
 
-  // 限制检�?
-  checkLimit(limitType: string, currentValue: number): boolean;
+  // 限制检�?
 
   // 配置更新
-  updateAppInfo(info: Partial<AppConfigServer['app']>): void;
-  updateLimits(limits: Partial<AppConfigServer['limits']>): void;
-  updateApiConfig(config: Partial<AppConfigServer['api']>): void;
-  updateSecurityConfig(config: Partial<AppConfigServer['security']>): void;
 }

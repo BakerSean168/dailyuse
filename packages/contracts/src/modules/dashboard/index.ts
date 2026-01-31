@@ -16,19 +16,17 @@ export type { WidgetConfigDTO as WidgetConfig } from './value-objects';
 export type {
   DashboardConfigClientDTO,
   DashboardConfigClient,
-  DashboardConfigClientFactory,
-} from './aggregates/DashboardConfigClient';
+} from './aggregates/dashboard-config-client';
 
 export type {
   DashboardConfigServerDTO,
   DashboardConfigPersistenceDTO,
   DashboardConfigServer,
-  DashboardConfigServerFactory,
   WidgetConfigData,
-} from './aggregates/DashboardConfigServer';
+} from './aggregates/dashboard-config-server';
 
 // ============ Legacy (保持向后兼容) ============
-export type { DashboardSummary, DashboardStatisticsClientDTO } from './DashboardStatisticsClient';
+export type { DashboardSummary, DashboardStatisticsClientDTO } from './dashboard-statistics-client';
 
 // ============ API Requests/Responses ============
 export type {

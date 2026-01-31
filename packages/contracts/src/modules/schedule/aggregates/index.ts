@@ -4,13 +4,53 @@
  */
 
 // ============ Schedule Aggregate ============
-export * from './schedule-server';
-export * from './schedule-client';
+export type {
+  ScheduleServer,
+  ScheduleServerDTO,
+  SchedulePersistenceDTO,
+} from './schedule-server';
+
+export type {
+  ScheduleClientDTO,
+  ScheduleClient,
+} from './schedule-client';
 
 // ============ ScheduleTask Aggregate ============
-export * from './schedule-task-server';
-export * from './schedule-task-client';
+export type {
+  ScheduleTaskServerDTO,
+  ScheduleTaskPersistenceDTO,
+  ScheduleTaskCreatedEvent,
+  ScheduleTaskPausedEvent,
+  ScheduleTaskResumedEvent,
+  ScheduleTaskCompletedEvent,
+  ScheduleTaskCancelledEvent,
+  ScheduleTaskFailedEvent,
+  ScheduleTaskExecutedEvent,
+  ScheduleTaskScheduleUpdatedEvent,
+  ScheduleTaskDomainEvent,
+  ScheduleTaskServer,
+} from './schedule-task-server';
+
+export type {
+  ScheduleTaskClientDTO,
+  ScheduleTaskClient,
+} from './schedule-task-client';
 
 // ============ ScheduleStatistics Aggregate ============
-export * from './schedule-statistics-server';
-export * from './schedule-statistics-client';
+export type {
+  ScheduleStatisticsServerDTO,
+  ScheduleStatisticsPersistenceDTO,
+  ScheduleStatisticsCreatedEvent,
+  ScheduleStatisticsUpdatedEvent,
+  ScheduleStatisticsTaskCountChangedEvent,
+  ScheduleStatisticsExecutionRecordedEvent,
+  ScheduleStatisticsModuleUpdatedEvent,
+  ScheduleStatisticsDomainEvent,
+  ScheduleStatisticsServer,
+  ScheduleStatisticsServerStatic,
+} from './schedule-statistics-server';
+
+export type {
+  ScheduleStatisticsClientDTO,
+  ScheduleStatisticsClient,
+} from './schedule-statistics-client';

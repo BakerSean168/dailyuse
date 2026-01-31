@@ -39,11 +39,4 @@ export interface SettingHistoryClient {
   createdAt: DomainDate;
   timeAgo: string;
   changeText: string;
-
-  // UI 方法
-  getChangeText(): string;
-  getOperatorText(): string;
-  getIcon(): string;
-  getTimeAgo(): string;
-}
 }

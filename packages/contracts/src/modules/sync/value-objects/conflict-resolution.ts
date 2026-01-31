@@ -1,6 +1,6 @@
 /**
  * Conflict Resolution Value Object
- * 冲突解决方案值对�?
+ * 冲突解决方案值对�?
  */
 
 import type { ConflictResolutionStrategy } from './conflict-resolution-strategy';
@@ -26,6 +26,4 @@ export interface IConflictResolution {
   resolvedBy: string;
   notes?: string;
 
-  equals(other: IConflictResolution): boolean;
-  toDTO(): ConflictResolutionDTO;
 }

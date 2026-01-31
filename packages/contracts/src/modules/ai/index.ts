@@ -23,8 +23,9 @@ export {
 // ============ Aggregates ============
 export type {
   AIConversationClientDTO,
-  AIConversationClient,  AIConversationClientInstance,
-} from './aggregates/AIConversationClient';
+  AIConversationClient,
+  AIConversationClientInstance,
+} from './aggregates/ai-conversation-client';
 
 export type {
   AIConversationServerDTO,
@@ -33,12 +34,13 @@ export type {
   AIConversationUpdatedEvent,
   AIMessageAddedEvent,
   AIConversationDeletedEvent,
-  AIConversationServer,} from './aggregates/AIConversationServer';
+  AIConversationServer,
+} from './aggregates/ai-conversation-server';
 
 export type {
   AIGenerationTaskClientDTO,
-  AIGenerationTaskClient,  AIGenerationTaskClientInstance,
-} from './aggregates/AIGenerationTaskClient';
+  AIGenerationTaskClient,
+} from './aggregates/ai-generation-task-client';
 
 export type {
   AIGenerationTaskServerDTO,
@@ -48,11 +50,13 @@ export type {
   AIGenerationTaskCompletedEvent,
   AIGenerationTaskFailedEvent,
   AIGenerationTaskRetriedEvent,
-  AIGenerationTaskServer,} from './aggregates/AIGenerationTaskServer';
+  AIGenerationTaskServer,
+} from './aggregates/ai-generation-task-server';
 
 export type {
   AIUsageQuotaClientDTO,
-  AIUsageQuotaClient,} from './aggregates/AIUsageQuotaClient';
+  AIUsageQuotaClient,
+} from './aggregates/ai-usage-quota-client';
 
 export type {
   AIUsageQuotaServerDTO,
@@ -62,44 +66,47 @@ export type {
   AIUsageQuotaResetEvent,
   AIUsageQuotaExceededEvent,
   AIUsageQuotaLimitUpdatedEvent,
-  AIUsageQuotaServer,} from './aggregates/AIUsageQuotaServer';
+  AIUsageQuotaServer,
+} from './aggregates/ai-usage-quota-server';
 
 export type {
   AIProviderConfigClientDTO,
   AIModelInfo,
   AIProviderConfigSummary,
-} from './aggregates/AIProviderConfigClient';
+} from './aggregates/ai-provider-config-client';
 
-export type { AIProviderConfigServerDTO } from './aggregates/AIProviderConfigServer';
+export type { AIProviderConfigServerDTO } from './aggregates/ai-provider-config-server';
 
 // ============ Entities ============
 export type {
   MessageClientDTO,
-  MessageClient,} from './entities/MessageClient';
+  MessageClient,
+} from './entities/message-client';
 
 export type {
   MessageServerDTO,
   MessagePersistenceDTO,
-  MessageServer,} from './entities/MessageServer';
+  MessageServer,
+} from './entities/message-server';
 
 // ============ Value Objects ============
 export type {
   GenerationInputClientDTO,
   GenerationInputServerDTO,
   GenerationInputPersistenceDTO,
-} from './value-objects/GenerationInput';
+} from './value-objects/generation-input';
 
 export type {
   GenerationResultClientDTO,
   GenerationResultServerDTO,
   GenerationResultPersistenceDTO,
-} from './value-objects/GenerationResult';
+} from './value-objects/generation-result';
 
 export type {
   TokenUsageClientDTO,
   TokenUsageServerDTO,
   TokenUsagePersistenceDTO,
-} from './value-objects/TokenUsage';
+} from './value-objects/token-usage';
 
 // ============ API Requests & Responses ============
 export type {
@@ -124,14 +131,14 @@ export type {
   GeneratedGoalDraft,
   GenerateGoalResponse,
   GenerateGoalWithKRsResponse,
-} from './api-responses/GenerateGoalResponse';
+} from './api-responses/generate-goal-response';
 
 export type {
   KeyResultPreview,
   GenerateKeyResultsResponse,
-} from './api-responses/GenerateKeyResultsResponse';
+} from './api-responses/generate-key-results-response';
 
-export type { SummarizationResultDTO } from './api-responses/SummarizationResultDTO';
+export type { SummarizationResultDTO } from './api-responses/summarization-result-dto';
 
 export type {
   CreateAIProviderRequest,
@@ -141,20 +148,20 @@ export type {
   SetDefaultProviderRequest,
   RefreshProviderModelsRequest,
   RefreshProviderModelsResponse,
-} from './api-requests/AIProviderConfigRequest';
+} from './api-requests/ai-provider-config-request';
 
 export type {
   GenerateGoalRequest,
   GenerateGoalWithKRsRequest,
-} from './api-requests/GenerateGoalRequest';
+} from './api-requests/generate-goal-request';
 
-export { GoalCategory } from './api-requests/GenerateGoalRequest';
+export { GoalCategory } from './api-requests/generate-goal-request';
 
 // ============ Templates ============
-export type { AIProviderTemplate } from './templates/AIProviderTemplate';
+export type { AIProviderTemplate } from './templates/ai-provider-template';
 export {
   AI_PROVIDER_TEMPLATES,
   getTemplateById,
   getTemplatesByType,
   getFreeTemplates,
-} from './templates/AIProviderTemplate';
+} from './templates/ai-provider-template';

@@ -1,0 +1,28 @@
+/**
+ * GoalRecord Entity - Client Interface
+ */
+
+export interface GoalRecordClientDTO {
+  uuid: string;
+  keyResultUuid: string;
+  goalUuid: string;
+  value: number;  // 本次记录的值（独立值）
+  calculatedCurrentValue?: number;  // 记录时计算的累计值（用于展示）
+  note?: string | null;
+  recordedAt: number;
+  createdAt: number;
+}
+
+export interface GoalRecordClient {
+  uuid: string;
+  keyResultUuid: string;
+  goalUuid: string;
+  value: number;  // 本次记录的值（独立值）
+  calculatedCurrentValue?: number;  // 记录时计算的累计值（用于展示）
+  note?: string | null;
+  recordedAt: number;
+  createdAt: Date;
+}
+
+export interface GoalRecordClientInstance extends GoalRecordClient {
+}

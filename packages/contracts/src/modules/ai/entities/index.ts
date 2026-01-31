@@ -2,5 +2,5 @@
  * AI Entities Index
  */
 
-export * from './MessageClient';
-export * from './MessageServer';
+export * from './message-client';
+export * from './message-server';

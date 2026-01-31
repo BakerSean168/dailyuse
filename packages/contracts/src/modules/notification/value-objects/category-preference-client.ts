@@ -1,6 +1,6 @@
 /**
  * CategoryPreference Value Object (Client)
- * {O}<ï¿½a - ï¿?ï¿?
+ * {O}<ï¿½a - ï¿½?ï¿½?
  */
 
 import type { ImportanceLevel } from '../../../shared/index';
@@ -18,11 +18,10 @@ export interface ICategoryPreferenceClient {
 
   // UI ï¿½ï¿½^'
   enabledChannelsCount: number;
-  enabledChannelsList: string[]; // ["ï¿?ï¿?, "ï¿½ï¿½"]
+  enabledChannelsList: string[]; // ["ï¿½?ï¿½?, "ï¿½ï¿½"]
   importanceText: string; // "ï¿½vÍ, ^8Í"
 
   // <ï¿½aï¿½ï¿½
-  equals(other: ICategoryPreferenceClient): boolean;
 
   // DTO lbï¿½ï¿½
 }
@@ -41,6 +40,6 @@ export interface CategoryPreferenceClientDTO {
   importanceText: string;
 }
 
-// ============ {ï¿½ï¿½ï¿?============
+// ============ {ï¿½ï¿½ï¿½?============
 
 export type CategoryPreferenceClient = ICategoryPreferenceClient;

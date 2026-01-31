@@ -7,18 +7,18 @@ export type {
   TaskInstanceServerDTO,
   TaskInstancePersistenceDTO,
   TaskInstanceServer,
-} from './TaskInstanceServer';
+} from './task-instance-server';
 
-export type { TaskInstanceClientDTO, TaskInstanceClient } from './TaskInstanceClient';
+export type { TaskInstanceClientDTO, TaskInstanceClient } from './task-instance-client';
 
 // TaskTemplate
 export type {
   TaskTemplateServerDTO,
   TaskTemplatePersistenceDTO,
   TaskTemplateServer,
-} from './TaskTemplateServer';
+} from './task-template-server';
 
-export type { TaskTemplateClientDTO, TaskTemplateClient } from './TaskTemplateClient';
+export type { TaskTemplateClientDTO, TaskTemplateClient } from './task-template-client';
 
 // TaskStatistics
 export type {
@@ -30,14 +30,14 @@ export type {
   CompletionStatsInfo,
   TimeStatsInfo,
   DistributionStatsInfo,
-} from './TaskStatisticsServer';
+} from './task-statistics-server';
 
 export type {
   TaskStatisticsClientDTO,
   TaskStatisticsClient,
   ChartData,
   TrendData,
-} from './TaskStatisticsClient';
+} from './task-statistics-client';
 
 // TaskDependency
 export type {
@@ -45,7 +45,7 @@ export type {
   TaskTemplateWithDependenciesServerDTO,
   CircularDependencyValidationResult,
   DependencyChainServerDTO,
-} from './TaskDependencyServer';
+} from './task-dependency-server';
 
 export type {
   TaskDependencyClientDTO,
@@ -57,4 +57,4 @@ export type {
   ValidateDependencyResponse,
   BatchCreateDependenciesRequest,
   BatchCreateDependenciesResponse,
-} from './TaskDependencyClient';
+} from './task-dependency-client';

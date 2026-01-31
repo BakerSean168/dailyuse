@@ -1,6 +1,6 @@
 /**
  * ChannelResponse Value Object (Client)
- *  SÍ”<ï¿½a - ï¿?ï¿?
+ *  SÍ”<ï¿½a - ï¿½?ï¿½?
  */
 
 import type { ChannelResponseServerDTO } from './channel-response-server';
@@ -20,7 +20,6 @@ export interface IChannelResponseClient {
   statusText: string;
 
   // <ï¿½aï¿½ï¿½
-  equals(other: IChannelResponseClient): boolean;
 
   // DTO lbï¿½ï¿½
 }
@@ -38,6 +37,6 @@ export interface ChannelResponseClientDTO {
   statusText: string;
 }
 
-// ============ {ï¿½ï¿½ï¿?============
+// ============ {ï¿½ï¿½ï¿½?============
 
 export type ChannelResponseClient = IChannelResponseClient;

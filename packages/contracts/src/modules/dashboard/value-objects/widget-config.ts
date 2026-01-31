@@ -24,17 +24,14 @@ export interface WidgetConfigClient {
   visible: boolean;
   order: number;
   size: WidgetSize;
-  toDTO(): WidgetConfigDTO;
 
   /**
    * 克隆配置
    */
-  clone(): WidgetConfigClient;
 
   /**
    * 是否与另一个配置相等
    */
-  equals(other: WidgetConfigClient): boolean;
 }
 
 // ============ Server 接口 ============
@@ -46,15 +43,12 @@ export interface WidgetConfigServer {
   visible: boolean;
   order: number;
   size: WidgetSize;
-  toDTO(): WidgetConfigDTO;
 
   /**
    * 验证配置有效性
    */
-  validate(): boolean;
 
   /**
    * 是否与另一个配置相等
    */
-  equals(other: WidgetConfigServer): boolean;
 }

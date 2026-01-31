@@ -31,7 +31,7 @@ export type {
   DailyRecurrence,
   WeeklyRecurrence,
   CustomDaysRecurrence,
-} from './value-objects/RecurrenceConfig';
+} from './value-objects/recurrence-config';
 
 export type {
   INotificationConfigServer,
@@ -44,7 +44,7 @@ export type {
   SoundConfig,
   VibrationConfig,
   NotificationActionConfig,
-} from './value-objects/NotificationConfig';
+} from './value-objects/notification-config';
 
 export type {
   ITriggerConfigServer,
@@ -56,7 +56,7 @@ export type {
   TriggerConfigClient,
   FixedTimeTrigger,
   IntervalTrigger,
-} from './value-objects/TriggerConfig';
+} from './value-objects/trigger-config';
 
 export type {
   IActiveTimeConfigServer,
@@ -66,7 +66,7 @@ export type {
   ActiveTimeConfigPersistenceDTO,
   ActiveTimeConfigServer,
   ActiveTimeConfigClient,
-} from './value-objects/ActiveTimeConfig';
+} from './value-objects/active-time-config';
 
 export type {
   IActiveHoursConfigServer,
@@ -76,7 +76,7 @@ export type {
   ActiveHoursConfigPersistenceDTO,
   ActiveHoursConfigServer,
   ActiveHoursConfigClient,
-} from './value-objects/ActiveHoursConfig';
+} from './value-objects/active-hours-config';
 
 export type {
   IReminderStatsServer,
@@ -86,7 +86,7 @@ export type {
   ReminderStatsPersistenceDTO,
   ReminderStatsServer,
   ReminderStatsClient,
-} from './value-objects/ReminderStats';
+} from './value-objects/reminder-stats';
 
 export type {
   IGroupStatsServer,
@@ -96,34 +96,34 @@ export type {
   GroupStatsPersistenceDTO,
   GroupStatsServer,
   GroupStatsClient,
-} from './value-objects/GroupStats';
+} from './value-objects/group-stats';
 
 export type {
   ResponseMetricsServerDTO,
   ResponseMetricsClientDTO,
-  ResponseMetricsServer,} from './value-objects/ResponseMetricsServer';
+  ResponseMetricsServer,} from './value-objects/response-metrics-server';
 
 export type {
   FrequencyAdjustmentServerDTO,
   FrequencyAdjustmentClientDTO,
-  FrequencyAdjustmentServer,} from './value-objects/FrequencyAdjustmentServer';
+  FrequencyAdjustmentServer,} from './value-objects/frequency-adjustment-server';
 
 // ============ Entities ============
 export type {
   ReminderHistoryServerDTO,
   ReminderHistoryPersistenceDTO,
-  ReminderHistoryServer,} from './entities/ReminderHistoryServer';
+  ReminderHistoryServer,} from './entities/reminder-history-server';
 
 export type {
   ReminderHistoryClientDTO,
-  ReminderHistoryClient,} from './entities/ReminderHistoryClient';
+  ReminderHistoryClient,} from './entities/reminder-history-client';
 
 export type {
   ReminderResponseAction,
   ReminderResponseServerDTO,
   ReminderResponseClientDTO,
   ReminderResponsePersistenceDTO,
-  ReminderResponseServer,} from './entities/ReminderResponseServer';
+  ReminderResponseServer,} from './entities/reminder-response-server';
 
 // ============ Aggregates ============
 export type {
@@ -137,11 +137,11 @@ export type {
   ReminderTemplateTriggeredEvent,
   ReminderTemplateMovedEvent,
   ReminderTemplateDomainEvent,
-  ReminderTemplateServer,} from './aggregates/ReminderTemplateServer';
+  ReminderTemplateServer,} from './aggregates/reminder-template-server';
 
 export type {
   ReminderTemplateClientDTO,
-  ReminderTemplateClient,} from './aggregates/ReminderTemplateClient';
+  ReminderTemplateClient,} from './aggregates/reminder-template-client';
 
 export type {
   ReminderGroupServerDTO,
@@ -153,11 +153,11 @@ export type {
   ReminderGroupEnabledEvent,
   ReminderGroupPausedEvent,
   ReminderGroupDomainEvent,
-  ReminderGroupServer,} from './aggregates/ReminderGroupServer';
+  ReminderGroupServer,} from './aggregates/reminder-group-server';
 
 export type {
   ReminderGroupClientDTO,
-  ReminderGroupClient,} from './aggregates/ReminderGroupClient';
+  ReminderGroupClient,} from './aggregates/reminder-group-client';
 
 export type {
   ReminderStatisticsServerDTO,
@@ -167,18 +167,18 @@ export type {
   ReminderStatisticsServer,  TemplateStatsInfo,
   GroupStatsInfo,
   TriggerStatsInfo,
-} from './aggregates/ReminderStatisticsServer';
+} from './aggregates/reminder-statistics-server';
 
 export type {
   ReminderStatisticsClientDTO,
-  ReminderStatisticsClient,} from './aggregates/ReminderStatisticsClient';
+  ReminderStatisticsClient,} from './aggregates/reminder-statistics-client';
 
 export type {
   TimeSlotDTO,
   UserReminderPreferencesServerDTO,
   UserReminderPreferencesClientDTO,
   UserReminderPreferencesPersistenceDTO,
-  UserReminderPreferencesServer,} from './aggregates/UserReminderPreferencesServer';
+  UserReminderPreferencesServer,} from './aggregates/user-reminder-preferences-server';
 
 // ============ API Requests ============
 export type {

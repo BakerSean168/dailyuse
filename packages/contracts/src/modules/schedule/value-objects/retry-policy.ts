@@ -1,6 +1,6 @@
 /**
  * Retry Policy Value Object
- * 重试策略值对�?
+ * 重试策略值对�?
  */
 
 // ============ 接口定义 ============
@@ -12,7 +12,7 @@ export interface IRetryPolicyServer {
   /** 是否启用重试 */
   enabled: boolean;
 
-  /** 最大重试次�?*/
+  /** 最大重试次�?*/
   maxRetries: number;
 
   /** 初始重试延迟（毫秒） */
@@ -21,11 +21,10 @@ export interface IRetryPolicyServer {
   /** 退避倍数（用于指数退避） */
   backoffMultiplier: number;
 
-  /** 最大重试延迟（毫秒�?*/
+  /** 最大重试延迟（毫秒�?*/
   maxRetryDelay: number;
 
-  // 值对象方�?
-  equals(other: IRetryPolicyServer): boolean;
+  // 值对象方�?
   with(
     updates: Partial<
       Omit<
@@ -40,8 +39,6 @@ export interface IRetryPolicyServer {
       >
     >,
   ): IRetryPolicyServer;
-  shouldRetry(currentRetryCount: number): boolean;
-  calculateNextRetryDelay(currentRetryCount: number): number;
 
   // DTO 转换方法
 }
@@ -53,7 +50,7 @@ export interface IRetryPolicyClient {
   /** 是否启用重试 */
   enabled: boolean;
 
-  /** 最大重试次�?*/
+  /** 最大重试次�?*/
   maxRetries: number;
 
   /** 初始重试延迟 */
@@ -62,24 +59,23 @@ export interface IRetryPolicyClient {
   /** 退避倍数 */
   backoffMultiplier: number;
 
-  /** 最大重试延�?*/
+  /** 最大重试延�?*/
   maxRetryDelay: number;
 
-  // UI 辅助属�?
+  // UI 辅助属�?
   /** 重试策略描述 */
-  policyDescription: string; // "最多重�?3 次，延迟 5s ~ 60s"
+  policyDescription: string; // "最多重�?3 次，延迟 5s ~ 60s"
 
-  /** 启用状态显�?*/
-  enabledDisplay: string; // "已启�? | "已禁�?
+  /** 启用状态显�?*/
+  enabledDisplay: string; // "已启�? | "已禁�?
 
-  /** 重试延迟格式�?*/
-  retryDelayFormatted: string; // "5 �?
+  /** 重试延迟格式�?*/
+  retryDelayFormatted: string; // "5 �?
 
   /** 最大重试延迟格式化 */
-  maxRetryDelayFormatted: string; // "60 �?
+  maxRetryDelayFormatted: string; // "60 �?
 
-  // 值对象方�?
-  equals(other: IRetryPolicyClient): boolean;
+  // 值对象方�?
 
   // DTO 转换方法
 }

@@ -1,12 +1,12 @@
 /**
  * Workspace Settings Value Object
- * 工作区设置值对�?
+ * 工作区设置值对�?
  */
 
 // ============ 接口定义 ============
 
 /**
- * 工作区设�?- Server 接口
+ * 工作区设�?- Server 接口
  */
 export interface IWorkspaceSettingsServer {
   theme: string | null;
@@ -19,11 +19,10 @@ export interface IWorkspaceSettingsServer {
   minimap: boolean | null;
   autoSave: {
     enabled: boolean;
-    interval: number; // �?
+    interval: number; // �?
   } | null;
 
-  // 值对象方�?
-  equals(other: IWorkspaceSettingsServer): boolean;
+  // 值对象方�?
   with(
     updates: Partial<
       Omit<
@@ -37,7 +36,7 @@ export interface IWorkspaceSettingsServer {
 }
 
 /**
- * 工作区设�?- Client 接口
+ * 工作区设�?- Client 接口
  */
 export interface IWorkspaceSettingsClient {
   theme: string;
@@ -53,11 +52,10 @@ export interface IWorkspaceSettingsClient {
     interval: number;
   };
 
-  // UI 辅助属�?
-  autoSaveFormatted: string; // "�?30 �?
+  // UI 辅助属�?
+  autoSaveFormatted: string; // "�?30 �?
 
-  // 值对象方�?
-  equals(other: IWorkspaceSettingsClient): boolean;
+  // 值对象方�?
 
   // DTO 转换方法
 }
@@ -121,7 +119,7 @@ export interface WorkspaceSettingsPersistenceDTO {
 export type WorkspaceSettingsServer = IWorkspaceSettingsServer;
 export type WorkspaceSettingsClient = IWorkspaceSettingsClient;
 
-// ============ 默认�?============
+// ============ 默认�?============
 
 export const DEFAULT_WORKSPACE_SETTINGS: WorkspaceSettingsServerDTO = {
   theme: 'default',

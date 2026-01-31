@@ -28,12 +28,4 @@ export interface ValidationRuleClient {
   pattern: string | null;
   enum: any[] | null;
   custom: string | null;
-
-  // UI 方法
-  hasMinConstraint(): boolean;
-  hasMaxConstraint(): boolean;
-  hasPattern(): boolean;
-  hasEnum(): boolean;
-  getConstraintText(): string;
-}
 }

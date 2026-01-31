@@ -88,10 +88,10 @@ export interface GoalStatisticsPersistenceDTO {
 // ============ 实体接口 ============
 
 /**
- * GoalStatistics 聚合�?- Server 接口（实例方法）
+ * GoalStatistics 聚合根 - Server 接口（实例方法）
  */
 export interface GoalStatisticsServer {
-  // 基础属�?
+  // 基础属性
   identityId: IdentityId;
   totalGoals: number;
   activeGoals: number;
@@ -102,7 +102,6 @@ export interface GoalStatisticsServer {
   completedKeyResults: number;
   averageProgress: number;
   goalsByImportance: Record<string, number>;
-  // goalsByUrgency: Record<string, number>; // REMOVED
   goalsByCategory: Record<string, number>;
   goalsByStatus: Record<string, number>;
   goalsCreatedThisWeek: number;
@@ -112,15 +111,4 @@ export interface GoalStatisticsServer {
   totalReviews: number;
   averageRating: number | null;
   lastCalculatedAt: DomainDate;
-
-  // 业务方法
-  recalculate(goals: any[]): void;
-  getCompletionRate(): number;
-  getAverageGoalsPerMonth(): number;
-
 }
-
-/**
- * GoalStatistics 静态工厂方法接�?
- * 注意：TypeScript 接口不能包含静态方法，这些方法应该在类上实�?
- */

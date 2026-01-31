@@ -1,11 +1,11 @@
 /**
  * Repository Statistics Server DTO
- * 仓储统计服务�?DTO
+ * 仓储统计服务�?DTO
  */
 import type { RepositoryId, IdentityId, DomainDate, TransferDate, PersistenceDate } from '@/primitives';
 
 /**
- * 仓储统计服务�?DTO
+ * 仓储统计服务�?DTO
  */
 export interface RepositoryStatisticsServerDTO {
   id: string;
@@ -24,14 +24,14 @@ export interface RepositoryStatisticsServerDTO {
   // 存储统计
   totalStorageBytes: number;
   
-  // 时间�?
+  // 时间�?
   lastUpdatedAt: TransferDate;
   createdAt: TransferDate;
   updatedAt: TransferDate;
 }
 
 /**
- * 仓储统计持久�?DTO
+ * 仓储统计持久�?DTO
  */
 export interface RepositoryStatisticsPersistenceDTO {
   id: string;
@@ -77,7 +77,7 @@ export interface StatisticsUpdateEvent {
 }
 
 /**
- * Repository Statistics Server 静态接�?
+ * Repository Statistics Server 静态接�?
  */
 /**
  * Repository Statistics Server 接口
@@ -95,19 +95,8 @@ export interface RepositoryStatisticsServer {
   totalTags: number;
   totalStorageBytes: number;
   
-  // 时间�?
+  // 时间�?
   lastUpdatedAt: DomainDate;
   readonly createdAt: DomainDate;
   updatedAt: DomainDate;
-  
-  // 方法
-  
-  // 更新方法
-  incrementRepositories(delta?: number): void;
-  decrementRepositories(delta?: number): void;
-  incrementResources(delta?: number): void;
-  decrementResources(delta?: number): void;
-  incrementFolders(delta?: number): void;
-  decrementFolders(delta?: number): void;
-  updateStorage(bytes: number): void;
 }

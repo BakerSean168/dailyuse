@@ -105,13 +105,4 @@ export interface SettingServer {
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;
 
-  // DTO 转换方法
-  toServerDTO(includeHistory?: boolean): SettingServerDTO;
-
-  /**
-   * 转换�?Client DTO
-   * @param includeChildren 是否包含子实体（默认 false�?
-   */
-  toClientDTO(includeChildren?: boolean): SettingClientDTO;
-}
 }

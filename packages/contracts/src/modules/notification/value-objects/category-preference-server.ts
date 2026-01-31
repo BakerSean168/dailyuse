@@ -26,10 +26,9 @@ export interface ChannelPreference {
 export interface ICategoryPreferenceServer {
   enabled: boolean;
   channels: ChannelPreference;
-  importance: ImportanceLevel[]; // ï¿?ï¿½Í?ï¿?ï¿?ï¿?
+  importance: ImportanceLevel[]; // ï¿½?ï¿½ï¿½?ï¿½?ï¿½?ï¿½?
 
   // <ï¿½aï¿½ï¿½
-  equals(other: ICategoryPreferenceServer): boolean;
   with(
     updates: Partial<
       Omit<
@@ -62,6 +61,6 @@ export interface CategoryPreferencePersistenceDTO {
   importance: string; // JSON.stringify(ImportanceLevel[])
 }
 
-// ============ {ï¿½ï¿½ï¿?============
+// ============ {ï¿½ï¿½ï¿½?============
 
 export type CategoryPreferenceServer = ICategoryPreferenceServer;

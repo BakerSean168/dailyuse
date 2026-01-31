@@ -1,6 +1,6 @@
 /**
  * Workspace Layout Value Object
- * 工作区布局值对�?
+ * 工作区布局值对�?
  */
 
 // ============ 接口定义 ============
@@ -16,8 +16,7 @@ export interface IWorkspaceLayoutServer {
   isSidebarVisible: boolean;
   isPanelVisible: boolean;
 
-  // 值对象方�?
-  equals(other: IWorkspaceLayoutServer): boolean;
+  // 值对象方�?
   with(
     updates: Partial<
       Omit<
@@ -41,8 +40,7 @@ export interface IWorkspaceLayoutClient {
   isSidebarVisible: boolean;
   isPanelVisible: boolean;
 
-  // 值对象方�?
-  equals(other: IWorkspaceLayoutClient): boolean;
+  // 值对象方�?
 
   // DTO 转换方法
 }
@@ -90,7 +88,7 @@ export interface WorkspaceLayoutPersistenceDTO {
 export type WorkspaceLayoutServer = IWorkspaceLayoutServer;
 export type WorkspaceLayoutClient = IWorkspaceLayoutClient;
 
-// ============ 默认�?============
+// ============ 默认�?============
 
 export const DEFAULT_WORKSPACE_LAYOUT: WorkspaceLayoutServerDTO = {
   sidebarPosition: 'left',

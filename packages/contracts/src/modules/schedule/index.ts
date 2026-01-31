@@ -22,7 +22,7 @@ export type {
   ScheduleConfigPersistenceDTO,
   ScheduleConfigServer,
   ScheduleConfigClient,
-} from './value-objects/ScheduleConfig';
+} from './value-objects/schedule-config';
 
 export type {
   IExecutionInfoServer,
@@ -32,7 +32,7 @@ export type {
   ExecutionInfoPersistenceDTO,
   ExecutionInfoServer,
   ExecutionInfoClient,
-} from './value-objects/ExecutionInfo';
+} from './value-objects/execution-info';
 
 export type {
   IRetryPolicyServer,
@@ -42,7 +42,7 @@ export type {
   RetryPolicyPersistenceDTO,
   RetryPolicyServer,
   RetryPolicyClient,
-} from './value-objects/RetryPolicy';
+} from './value-objects/retry-policy';
 
 export type {
   ITaskMetadataServer,
@@ -52,7 +52,7 @@ export type {
   TaskMetadataPersistenceDTO,
   TaskMetadataServer,
   TaskMetadataClient,
-} from './value-objects/TaskMetadata';
+} from './value-objects/task-metadata';
 
 export type {
   IModuleStatisticsServer,
@@ -62,17 +62,17 @@ export type {
   ModuleStatisticsPersistenceDTO,
   ModuleStatisticsServer,
   ModuleStatisticsClient,
-} from './value-objects/ModuleStatistics';
+} from './value-objects/module-statistics';
 
 // ============ Entities ============
 export type {
   ScheduleExecutionServerDTO,
   ScheduleExecutionPersistenceDTO,
-  ScheduleExecutionServer,} from './entities/ScheduleExecutionServer';
+  ScheduleExecutionServer,} from './entities/schedule-execution-server';
 
 export type {
   ScheduleExecutionClientDTO,
-  ScheduleExecutionClient,} from './entities/ScheduleExecutionClient';
+  ScheduleExecutionClient,} from './entities/schedule-execution-client';
 
 // ============ Aggregates ============
 export type {
@@ -87,11 +87,11 @@ export type {
   ScheduleTaskExecutedEvent,
   ScheduleTaskScheduleUpdatedEvent,
   ScheduleTaskDomainEvent,
-  ScheduleTaskServer,} from './aggregates/ScheduleTaskServer';
+  ScheduleTaskServer,} from './aggregates/schedule-task-server';
 
 export type {
   ScheduleTaskClientDTO,
-  ScheduleTaskClient,} from './aggregates/ScheduleTaskClient';
+  ScheduleTaskClient,} from './aggregates/schedule-task-client';
 
 export type {
   ScheduleStatisticsServerDTO,
@@ -102,11 +102,11 @@ export type {
   ScheduleStatisticsExecutionRecordedEvent,
   ScheduleStatisticsModuleUpdatedEvent,
   ScheduleStatisticsDomainEvent,
-  ScheduleStatisticsServer,} from './aggregates/ScheduleStatisticsServer';
+  ScheduleStatisticsServer,} from './aggregates/schedule-statistics-server';
 
 export type {
   ScheduleStatisticsClientDTO,
-  ScheduleStatisticsClient,} from './aggregates/ScheduleStatisticsClient';
+  ScheduleStatisticsClient,} from './aggregates/schedule-statistics-client';
 
 // ============ Event Types ============
 export {
@@ -121,16 +121,16 @@ export type {
   ScheduleEventType,
 } from './event-types';
 
-export type { ScheduleServerDTO } from './aggregates/ScheduleServer';
+export type { ScheduleServerDTO } from './aggregates/schedule-server';
 
-export type { ScheduleClientDTO, ScheduleClient } from './aggregates/ScheduleClient';
+export type { ScheduleClientDTO, ScheduleClient } from './aggregates/schedule-client';
 
 // ============ Conflict Detection (Story 9.1) ============
 export type {
   ConflictDetectionResult,
   ConflictDetail,
   ConflictSuggestion,
-} from './value-objects/ConflictDetectionResult';
+} from './value-objects/conflict-detection-result';
 
 // ============ API Requests ============
 export { ResolutionStrategy } from './api-requests';

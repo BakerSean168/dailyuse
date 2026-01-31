@@ -140,10 +140,10 @@ export interface EditorWorkspaceActivatedEvent {
 // ============ 聚合根接�?============
 
 /**
- * Editor Workspace Server Interface (聚合�?
+ * Editor Workspace Server Interface (聚合根)
  */
 export interface EditorWorkspaceServer {
-  // ===== 基础属�?=====
+  // ===== 基础属性 =====
   id: EditorWorkspaceId;
   identityId: IdentityId;
   name: string;
@@ -157,68 +157,4 @@ export interface EditorWorkspaceServer {
   lastAccessedAt: DomainDate | null;
   createdAt: DomainDate;
   updatedAt: DomainDate;
-
-  // ===== 领域方法 =====
-
-  /**
-   * 更新工作区信�?
-   */
-  update(updates: {
-    name?: string;
-    description?: string;
-    layout?: Partial<WorkspaceLayoutServerDTO>;
-    settings?: Partial<WorkspaceSettingsServerDTO>;
-  /**
-   * 激活工作区
-   */
-  activate(): void;
-
-  /**
-   * 停用工作�?
-   */
-  deactivate(): void;
-
-  /**
-   * 更新布局
-   */
-  updateLayout(layout: Partial<WorkspaceLayoutServerDTO>): void;
-
-  /**
-   * 更新设置
-   */
-  updateSettings(settings: Partial<WorkspaceSettingsServerDTO>): void;
-
-  /**
-   * 设置最后活跃的会话
-   */
-  setLastActiveSession(sessionId: EditorSessionId | null): void;
-
-  /**
-   * 记录访问时间
-   */
-  recordAccess(): void;
-
-  // ===== DTO 转换方法 =====
-
-  /**
-   * 转换�?Server DTO
-   */
-
-  /**
-   * 转换�?Client DTO
-   */
-
-  /**
-   * 转换�?Persistence DTO
-   */
-
-  /**
-   * �?Server DTO 创建实例（静态工厂方法）
-   */
-  // static fromServerDTO(dto: EditorWorkspaceServerDTO): EditorWorkspaceServer;
-
-  /**
-   * �?Persistence DTO 创建实例（静态工厂方法）
-   */
-  // static fromPersistenceDTO(dto: EditorWorkspacePersistenceDTO): EditorWorkspaceServer;
 }

@@ -4,9 +4,9 @@
  */
 
 import type { SettingValueType, SettingScope } from './enums';
-import type { SettingServerDTO } from './aggregates/SettingServer';
-import type { AppConfigServerDTO } from './aggregates/AppConfigServer';
-import type { UserSettingServerDTO } from './aggregates/UserSettingServer';
+import type { SettingServerDTO } from './aggregates/setting-server';
+import type { AppConfigServerDTO } from './aggregates/app-config-server';
+import type { UserSettingServerDTO } from './aggregates/user-setting-server';
 
 // ============ Setting API ============
 

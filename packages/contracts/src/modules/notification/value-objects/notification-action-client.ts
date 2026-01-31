@@ -1,6 +1,6 @@
 /**
  * NotificationAction Value Object (Client)
- * ï¿½ï¿½\<ï¿½a - ï¿?ï¿?
+ * ï¿½ï¿½\<ï¿½a - ï¿½?ï¿½?
  */
 
 import type { NotificationActionType } from './notification-action-type';
@@ -18,11 +18,10 @@ export interface INotificationActionClient {
   payload?: any;
 
   // UI ï¿½ï¿½^'
-  typeText: string; // "ï¿?", "API(", "sï¿?, "ï¿½I"
+  typeText: string; // "ï¿½?", "API(", "sï¿½?, "ï¿½I"
   icon: string;
 
   // <ï¿½aï¿½ï¿½
-  equals(other: INotificationActionClient): boolean;
 
   // DTO lbï¿½ï¿½
 }
@@ -41,6 +40,6 @@ export interface NotificationActionClientDTO {
   icon: string;
 }
 
-// ============ {ï¿½ï¿½ï¿?============
+// ============ {ï¿½ï¿½ï¿½?============
 
 export type NotificationActionClient = INotificationActionClient;

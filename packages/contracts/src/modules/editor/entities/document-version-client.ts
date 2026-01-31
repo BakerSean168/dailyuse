@@ -1,6 +1,6 @@
 /**
  * DocumentVersion Entity - Client Interface
- * 文档版本实体 - 客户端接�?
+ * 文档版本实体 - 客户端接�?
  */
 
 import type { DocumentVersionId, DocumentId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate } from '@/primitives';
@@ -9,7 +9,7 @@ import type { DocumentVersionServerDTO } from './document-version-server';
 
 /**
  * Document Version Client DTO
- * 文档版本客户�?DTO（包�?UI 格式化字段）
+ * 文档版本客户�?DTO（包�?UI 格式化字段）
  */
 export interface DocumentVersionClientDTO {
   id: string;
@@ -25,16 +25,16 @@ export interface DocumentVersionClientDTO {
   createdBy: string | null;
   createdAt: TransferDate;
 
-  // UI 格式化字�?
+  // UI 格式化字�?
   formattedCreatedAt: string;
 }
 
 /**
  * Document Version Entity - Client Interface
- * 文档版本实体 - 客户端接�?
+ * 文档版本实体 - 客户端接�?
  */
 export interface DocumentVersionClient {
-  // ===== 基础属�?=====
+  // ===== 基础属�?=====
   readonly id: DocumentVersionId;
   readonly documentId: DocumentId;
   readonly workspaceId: EditorWorkspaceId;
@@ -53,32 +53,25 @@ export interface DocumentVersionClient {
   /**
    * 获取变更类型标签
    */
-  getChangeTypeLabel(): string;
 
   /**
    * 获取变更类型颜色
    */
-  getChangeTypeColor(): string;
 
   /**
-   * 获取版本显示名称（如 "v1", "v2"�?
+   * 获取版本显示名称（如 "v1", "v2"�?
    */
-  getVersionLabel(): string;
 
   /**
-   * 是否为首个版�?
+   * 是否为首个版�?
    */
-  isFirstVersion(): boolean;
 
   /**
-   * 是否有变更描�?
+   * 是否有变更描�?
    */
-  hasDescription(): boolean;
 
   /**
    * 获取创建者显示名称（如果没有则返回默认值）
    */
-  getCreatorDisplayName(): string;
 
-  // ===== DTO 转换方法 =====
 }

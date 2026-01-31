@@ -3,28 +3,49 @@
  */
 
 // RecurrenceRule
-export * from './RecurrenceRuleServer';
-export * from './RecurrenceRuleClient';
+export type {
+  RecurrenceRule,
+  RecurrenceRuleDTO,
+  RecurrenceRulePersistenceDTO,
+} from './recurrence-rule';
 
 // TaskReminderConfig
-export * from './TaskReminderConfigServer';
-export * from './TaskReminderConfigClient';
+export type {
+  TaskReminderConfig,
+  TaskReminderConfigDTO,
+  TaskReminderConfigPersistenceDTO,
+} from './task-reminder-config';
+
 
 // TaskGoalBinding
-export * from './TaskGoalBindingServer';
-export * from './TaskGoalBindingClient';
+export type {
+  TaskGoalBinding,
+  TaskGoalBindingDTO,
+  TaskGoalBindingPersistenceDTO,
+} from './task-goal-binding';
 
 // TaskTimeConfig
-export * from './TaskTimeConfigServer';
-export * from './TaskTimeConfigClient';
+export type {
+  TaskTimeConfig,
+  TaskTimeConfigDTO,
+  TaskTimeConfigPersistenceDTO,
+} from './task-time-config';
 
 // CompletionRecord
-export * from './CompletionRecordServer';
-export * from './CompletionRecordClient';
+export type {
+  CompletionRecord,
+  CompletionRecordDTO,
+  CompletionRecordPersistenceDTO,
+} from './completion-record';
 
-// SkipRecord
-export * from './SkipRecordServer';
-export * from './SkipRecordClient';
+export type {
+  CompletionRecordClient,
+  CompletionRecordClientDTO,
+} from './completion-record-client';
 
 // TaskPriority
-export * from './TaskPriority';
+export { PriorityLevel } from './task-priority';
+export type {
+  TaskPriority,
+  PriorityCalculationParams,
+} from './task-priority';

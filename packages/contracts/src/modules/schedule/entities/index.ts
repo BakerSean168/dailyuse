@@ -4,5 +4,13 @@
  */
 
 // ============ ScheduleExecution Entity ============
-export * from './schedule-execution-server';
-export * from './schedule-execution-client';
+export type {
+  ScheduleExecutionServerDTO,
+  ScheduleExecutionPersistenceDTO,
+  ScheduleExecutionServer,
+} from './schedule-execution-server';
+
+export type {
+  ScheduleExecutionClientDTO,
+  ScheduleExecutionClient,
+} from './schedule-execution-client';

@@ -91,25 +91,4 @@ export interface SyncProfileServer {
   createdAt: DomainDate;
   updatedAt: DomainDate;
 
-  // 配置管理
-  updateName(name: string): void;
-  updateDescription(description: string): void;
-  updateSyncConfig(config: Partial<SyncProfileConfigDTO>): void;
-  updateProviderConfig(config: Partial<SyncProviderConfigDTO>): void;
-
-  // 状态管�?
-  activate(): void;
-  deactivate(): void;
-  setAsDefault(): void;
-  markConnected(): void;
-  markDisconnected(): void;
-
-  // 同步记录
-  recordSyncResult(result: 'success' | 'failed' | 'partial', durationMs: number): void;
-  updateLastSyncVersion(version: SyncVersionServerDTO): void;
-
-  // 业务查询
-  canSync(): boolean;
-  needsReconnect(): boolean;
-}
 }

@@ -1,6 +1,6 @@
 /**
  * TaskInstance Aggregate Root - Server Interface
- * 任务实例聚合�?
+ * 任务实例聚合�?
  */
 
 import type {
@@ -68,14 +68,14 @@ export interface TaskInstanceServerDTO {
   instanceDate: TransferDate;
   timeConfig: TaskTimeConfigServerDTO;
   /**
-   * 任务重要性级�?(继承�?TaskTemplate)
-   * Story 1.1+: 用户设置的重要性，用于优先级计�?
+   * 任务重要性级�?(继承�?TaskTemplate)
+   * Story 1.1+: 用户设置的重要性，用于优先级计�?
    */
   importance: ImportanceLevel;
   /**
-   * 优先级分�?(0-100)
-   * 由系统根�?importance + dueDate 动态计�?
-   * @readonly 此字段不能直接修改，计算�?Application Layer 负责
+   * 优先级分�?(0-100)
+   * 由系统根�?importance + dueDate 动态计�?
+   * @readonly 此字段不能直接修改，计算�?Application Layer 负责
    * @computed 基于 Story 1.3 算法计算得出
    */
   priority?: number;
@@ -110,7 +110,7 @@ export interface TaskInstancePersistenceDTO {
   updatedAt: PersistenceDate;
 }
 
-// ============ 聚合根接�?============
+// ============ 聚合根接�?============
 
 export interface TaskInstanceServer {
   id: TaskInstanceId;
@@ -129,17 +129,9 @@ export interface TaskInstanceServer {
   createdAt: DomainDate;
   updatedAt: DomainDate;
 
-  // 状态转�?
-  start(): void;
-  complete(actualDuration?: number, note?: string, rating?: number): void;
-  skip(reason?: string): void;
-  markExpired(): void;
+  // 状态转�?
 
   // 业务判断
-  canStart(): boolean;
-  canComplete(): boolean;
-  canSkip(): boolean;
-  isOverdue(): boolean;
 
   // DTO 转换
 }

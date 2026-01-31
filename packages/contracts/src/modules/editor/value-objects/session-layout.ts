@@ -1,6 +1,6 @@
 /**
  * Session Layout Value Object
- * 会话布局值对�?
+ * 会话布局值对�?
  */
 
 // ============ 接口定义 ============
@@ -13,8 +13,7 @@ export interface ISessionLayoutServer {
   groupCount: number;
   activeGroupIndex: number;
 
-  // 值对象方�?
-  equals(other: ISessionLayoutServer): boolean;
+  // 值对象方�?
   with(
     updates: Partial<
       Omit<
@@ -35,8 +34,7 @@ export interface ISessionLayoutClient {
   groupCount: number;
   activeGroupIndex: number;
 
-  // 值对象方�?
-  equals(other: ISessionLayoutClient): boolean;
+  // 值对象方�?
 
   // DTO 转换方法
 }
@@ -75,7 +73,7 @@ export interface SessionLayoutPersistenceDTO {
 export type SessionLayoutServer = ISessionLayoutServer;
 export type SessionLayoutClient = ISessionLayoutClient;
 
-// ============ 默认�?============
+// ============ 默认�?============
 
 export const DEFAULT_SESSION_LAYOUT: SessionLayoutServerDTO = {
   splitType: 'horizontal',

@@ -16,7 +16,6 @@ export interface IRateLimitServer {
   maxPerDay: number;
 
   // <ï¿½aï¿½ï¿½
-  equals(other: IRateLimitServer): boolean;
   with(
     updates: Partial<
       Omit<IRateLimitServer, 'equals' | 'with' | 'toServerDTO' | 'toClientDTO' | 'toPersistenceDTO'>
@@ -46,6 +45,6 @@ export interface RateLimitPersistenceDTO {
   maxPerDay: number;
 }
 
-// ============ {ï¿½ï¿½ï¿?============
+// ============ {ï¿½ï¿½ï¿½?============
 
 export type RateLimitServer = IRateLimitServer;

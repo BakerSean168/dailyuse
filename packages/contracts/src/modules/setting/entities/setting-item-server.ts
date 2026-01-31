@@ -73,7 +73,4 @@ export interface SettingItemServer {
   isVisible: boolean;
   createdAt: DomainDate;
   updatedAt: DomainDate;
-
-  // DTO 转换方法
-}
 }

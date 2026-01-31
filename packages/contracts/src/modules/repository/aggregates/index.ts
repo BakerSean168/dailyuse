@@ -1,2 +1,10 @@
-export * from './RepositoryServer';
-export * from './RepositoryClient';
+export type {
+  RepositoryServerDTO,
+  RepositoryPersistenceDTO,
+  RepositoryServer,
+} from './repository-server';
+
+export type {
+  RepositoryClientDTO,
+  RepositoryClient,
+} from './repository-client';

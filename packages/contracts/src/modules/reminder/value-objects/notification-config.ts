@@ -1,12 +1,12 @@
 /**
  * Notification Config Value Object
- * 通知配置值对�?
+ * 通知配置值对�?
  */
 
 import type { NotificationChannel } from './notification-channel';
 import type { NotificationAction } from './notification-action';
 
-// ============ 子配置接�?============
+// ============ 子配置接�?============
 
 /**
  * 声音配置
@@ -47,8 +47,7 @@ export interface INotificationConfigServer {
   vibration: VibrationConfig | null;
   actions: NotificationActionConfig[] | null;
 
-  // 值对象方�?
-  equals(other: INotificationConfigServer): boolean;
+  // 值对象方�?
   with(
     updates: Partial<
       Omit<
@@ -72,13 +71,12 @@ export interface INotificationConfigClient {
   vibration: VibrationConfig | null;
   actions: NotificationActionConfig[] | null;
 
-  // UI 辅助属�?
-  channelsText: string; // "应用�?+ 推�?
+  // UI 辅助属�?
+  channelsText: string; // "应用�?+ 推�?
   hasSoundEnabled: boolean;
   hasVibrationEnabled: boolean;
 
-  // 值对象方�?
-  equals(other: INotificationConfigClient): boolean;
+  // 值对象方�?
 
   // DTO 转换方法
 }

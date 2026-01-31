@@ -64,27 +64,22 @@ export interface ScheduleExecutionClient {
   /**
    * 检查是否成�?
    */
-  isSuccess(): boolean;
 
   /**
    * 检查是否失�?
    */
-  isFailed(): boolean;
 
   /**
    * 检查是否超�?
    */
-  isTimeout(): boolean;
 
   /**
    * 检查是否跳�?
    */
-  isSkipped(): boolean;
 
   /**
    * 检查是否正在重�?
    */
-  isRetrying(): boolean;
 
 }
 

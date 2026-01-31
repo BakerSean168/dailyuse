@@ -1,6 +1,6 @@
 /**
  * Repository Aggregate Root - Client Interface
- * 仓储聚合�?- 客户端接�?
+ * 仓储聚合�?- 客户端接�?
  */
 import type { RepositoryId, IdentityId, DomainDate, TransferDate } from '@/primitives';
 import type { RepositoryType } from '../value-objects/repository-type';
@@ -32,7 +32,7 @@ export interface RepositoryClientDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
 
-  // 子实�?
+  // 子实�?
   folders: FolderClientDTO[] | null;
 
   // UI 计算字段
@@ -52,10 +52,10 @@ export interface RepositoryClientDTO {
 // ============ 实体接口 ============
 
 /**
- * Repository 聚合�?- Client 接口（实例方法）
+ * Repository 聚合�?- Client 接口（实例方法）
  */
 export interface RepositoryClient {
-  // 基础属�?
+  // 基础属�?
   id: RepositoryId;
   identityId: IdentityId;
   name: string;
@@ -68,10 +68,10 @@ export interface RepositoryClient {
   createdAt: DomainDate;
   updatedAt: DomainDate;
 
-  // 子实�?
+  // 子实�?
   folders: FolderClient[] | null;
 
-  // UI 计算属�?
+  // UI 计算属�?
   isDeleted: boolean;
   isArchived: boolean;
   isActive: boolean;
@@ -83,16 +83,4 @@ export interface RepositoryClient {
   formattedSize: string;
   createdAtText: string;
   updatedAtText: string;
-
-  // 方法
-  updateConfig(newConfig: Partial<RepositoryConfigClient>): void;
-  updateStats(newStats: Partial<RepositoryStatsClient>): void;
-  archive(): void;
-  activate(): void;
-
-  // DTO 转换方法
-  toClientDTO(includeFolders?: boolean): RepositoryClientDTO;
-  toServerDTO(includeFolders?: boolean): RepositoryServerDTO;
 }
-
-// ============ 静态工厂方法接�?============

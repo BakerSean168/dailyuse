@@ -60,9 +60,4 @@ export interface SyncConflictServer {
   resolution: ConflictResolutionDTO | null;
   createdAt: DomainDate;
   updatedAt: DomainDate;
-
-  resolve(resolution: ConflictResolutionDTO): void;
-  ignore(): void;
-  canAutoResolve(): boolean;
-}
 }

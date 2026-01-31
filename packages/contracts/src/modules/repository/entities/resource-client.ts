@@ -1,6 +1,6 @@
 /**
  * Resource Entity - Client Interface
- * 资源实体 - 客户端接�?
+ * 资源实体 - 客户端接�?
  */
 import type { ResourceId, RepositoryId, FolderId, DomainDate, TransferDate } from '@/primitives';
 import type { ResourceType } from '../value-objects/resource-type';
@@ -54,7 +54,7 @@ export interface ResourceClientDTO {
  * Resource 实体 - Client 接口（实例方法）
  */
 export interface ResourceClient {
-  // 基础属�?
+  // 基础属�?
   id: ResourceId;
   repositoryId: RepositoryId;
   folderId: FolderId | null;
@@ -69,7 +69,7 @@ export interface ResourceClient {
   createdAt: DomainDate;
   updatedAt: DomainDate;
 
-  // UI 计算属�?
+  // UI 计算属�?
   isDeleted: boolean;
   isArchived: boolean;
   isActive: boolean;
@@ -82,8 +82,4 @@ export interface ResourceClient {
   updatedAtText: string;
   extension: string;
   icon: string;
-
-  // DTO 转换方法
 }
-
-// ============ 静态工厂方法接�?============

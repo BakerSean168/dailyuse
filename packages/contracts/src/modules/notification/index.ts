@@ -23,14 +23,14 @@ export type {
   NotificationActionServerDTO,
   NotificationActionPersistenceDTO,
   NotificationActionServer,
-} from './value-objects/NotificationActionServer';
+} from './value-objects/notification-action-server';
 
 export type {
   INotificationMetadataServer,
   NotificationMetadataServerDTO,
   NotificationMetadataPersistenceDTO,
   NotificationMetadataServer,
-} from './value-objects/NotificationMetadataServer';
+} from './value-objects/notification-metadata-server';
 
 export type {
   ICategoryPreferenceServer,
@@ -38,41 +38,41 @@ export type {
   CategoryPreferencePersistenceDTO,
   CategoryPreferenceServer,
   ChannelPreference,
-} from './value-objects/CategoryPreferenceServer';
+} from './value-objects/category-preference-server';
 
 export type {
   IDoNotDisturbConfigServer,
   DoNotDisturbConfigServerDTO,
   DoNotDisturbConfigPersistenceDTO,
   DoNotDisturbConfigServer,
-} from './value-objects/DoNotDisturbConfigServer';
+} from './value-objects/do-not-disturb-config-server';
 
 export type {
   IDoNotDisturbConfigClient,
   DoNotDisturbConfigClientDTO,
   DoNotDisturbConfigClient,
-} from './value-objects/DoNotDisturbConfigClient';
+} from './value-objects/do-not-disturb-config-client';
 
 export type {
   IRateLimitServer,
   RateLimitServerDTO,
   RateLimitPersistenceDTO,
   RateLimitServer,
-} from './value-objects/RateLimitServer';
+} from './value-objects/rate-limit-server';
 
 export type {
   IChannelErrorServer,
   ChannelErrorServerDTO,
   ChannelErrorPersistenceDTO,
   ChannelErrorServer,
-} from './value-objects/ChannelErrorServer';
+} from './value-objects/channel-error-server';
 
 export type {
   IChannelResponseServer,
   ChannelResponseServerDTO,
   ChannelResponsePersistenceDTO,
   ChannelResponseServer,
-} from './value-objects/ChannelResponseServer';
+} from './value-objects/channel-response-server';
 
 export type {
   INotificationTemplateConfigServer,
@@ -83,50 +83,50 @@ export type {
   EmailTemplateContent,
   PushTemplateContent,
   ChannelConfig,
-} from './value-objects/NotificationTemplateServer';
+} from './value-objects/notification-template-vo-server';
 
 // ============ Value Objects - Client ============
 export type {
   INotificationActionClient,
   NotificationActionClientDTO,
   NotificationActionClient,
-} from './value-objects/NotificationActionClient';
+} from './value-objects/notification-action-client';
 
 export type {
   INotificationMetadataClient,
   NotificationMetadataClientDTO,
   NotificationMetadataClient,
-} from './value-objects/NotificationMetadataClient';
+} from './value-objects/notification-metadata-client';
 
 export type {
   ICategoryPreferenceClient,
   CategoryPreferenceClientDTO,
   CategoryPreferenceClient,
-} from './value-objects/CategoryPreferenceClient';
+} from './value-objects/category-preference-client';
 
 export type {
   IRateLimitClient,
   RateLimitClientDTO,
   RateLimitClient,
-} from './value-objects/RateLimitClient';
+} from './value-objects/rate-limit-client';
 
 export type {
   IChannelErrorClient,
   ChannelErrorClientDTO,
   ChannelErrorClient,
-} from './value-objects/ChannelErrorClient';
+} from './value-objects/channel-error-client';
 
 export type {
   IChannelResponseClient,
   ChannelResponseClientDTO,
   ChannelResponseClient,
-} from './value-objects/ChannelResponseClient';
+} from './value-objects/channel-response-client';
 
 export type {
   INotificationTemplateConfigClient,
   NotificationTemplateConfigClientDTO,
   NotificationTemplateConfigClient,
-} from './value-objects/NotificationTemplateClient';
+} from './value-objects/notification-template-vo-client';
 
 // ============ Aggregates ============
 export type {
@@ -138,11 +138,13 @@ export type {
   NotificationDeletedEvent,
   NotificationStatusChangedEvent,
   NotificationDomainEvent,
-  NotificationServer,} from './aggregates/NotificationServer';
+  NotificationServer,
+} from './aggregates/notification-server';
 
 export type {
   NotificationClientDTO,
-  NotificationClient,} from './aggregates/NotificationClient';
+  NotificationClient,
+} from './aggregates/notification-client';
 
 export type {
   NotificationTemplateAggregateServerDTO,
@@ -151,11 +153,13 @@ export type {
   NotificationTemplateUpdatedEvent,
   NotificationTemplateActivationChangedEvent,
   NotificationTemplateDomainEvent,
-  NotificationTemplateServer,} from './aggregates/NotificationTemplateServer';
+  NotificationTemplateServer,
+} from './aggregates/notification-template-server';
 
 export type {
   NotificationTemplateAggregateClientDTO,
-  NotificationTemplateClient,} from './aggregates/NotificationTemplateClient';
+  NotificationTemplateClient,
+} from './aggregates/notification-template-client';
 
 export type {
   NotificationPreferenceServerDTO,
@@ -163,32 +167,38 @@ export type {
   NotificationPreferenceCreatedEvent,
   NotificationPreferenceUpdatedEvent,
   NotificationPreferenceDomainEvent,
-  NotificationPreferenceServer,  ChannelPreferences,
+  NotificationPreferenceServer,
+  ChannelPreferences,
   CategoryPreferences,
-} from './aggregates/NotificationPreferenceServer';
+} from './aggregates/notification-preference-server';
 
 export type {
   NotificationPreferenceClientDTO,
-  NotificationPreferenceClient,} from './aggregates/NotificationPreferenceClient';
+  NotificationPreferenceClient,
+} from './aggregates/notification-preference-client';
 
 // ============ Entities ============
 export type {
   NotificationChannelServerDTO,
   NotificationChannelPersistenceDTO,
-  NotificationChannelServer,} from './entities/NotificationChannelServer';
+  NotificationChannelServer,
+} from './entities/notification-channel-server';
 
 export type {
   NotificationChannelClientDTO,
-  NotificationChannelClient,} from './entities/NotificationChannelClient';
+  NotificationChannelClient,
+} from './entities/notification-channel-client';
 
 export type {
   NotificationHistoryServerDTO,
   NotificationHistoryPersistenceDTO,
-  NotificationHistoryServer,} from './entities/NotificationHistoryServer';
+  NotificationHistoryServer,
+} from './entities/notification-history-server';
 
 export type {
   NotificationHistoryClientDTO,
-  NotificationHistoryClient,} from './entities/NotificationHistoryClient';
+  NotificationHistoryClient,
+} from './entities/notification-history-client';
 
 // ============ API Requests ============
 export type {

@@ -7,5 +7,19 @@
  */
 
 // Editor Workspace Aggregate (唯一的聚合根)
-export * from './EditorWorkspaceServer';
-export * from './EditorWorkspaceClient';
+export type {
+  WorkspaceLayout,
+  WorkspaceSettings,
+  EditorWorkspaceServerDTO,
+  EditorWorkspacePersistenceDTO,
+  EditorWorkspaceCreatedEvent,
+  EditorWorkspaceUpdatedEvent,
+  EditorWorkspaceDeletedEvent,
+  EditorWorkspaceActivatedEvent,
+  EditorWorkspaceServer,
+} from './editor-workspace-server';
+
+export type {
+  EditorWorkspaceClientDTO,
+  EditorWorkspaceClient,
+} from './editor-workspace-client';

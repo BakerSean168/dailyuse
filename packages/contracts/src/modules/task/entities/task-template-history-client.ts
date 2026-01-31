@@ -24,5 +24,4 @@ export interface TaskTemplateHistoryClient {
   changes: any | null;
   createdAt: DomainDate;
 
-  hasSpecificChange(key: string): boolean;
 }

@@ -73,7 +73,4 @@ export interface SettingClient {
   hasChanged: boolean;
   displayName: string;
   displayValue: string;
-
-  // DTO 转换方法
-}
 }

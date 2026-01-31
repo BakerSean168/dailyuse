@@ -72,16 +72,4 @@ export interface SettingGroupServer {
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;
-
-  // 业务方法
-  addSetting(setting: SettingItemServer): void;
-  removeSetting(settingId: string): void;
-  reorderSettings(settingIds: string[]): void;
-  getSettings(): SettingItemServer[];
-  getSettingByKey(key: string): SettingItemServer | null;
-  collapse(): void;
-  expand(): void;
-  softDelete(): void;
-  restore(): void;
-}
 }

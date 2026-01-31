@@ -1,6 +1,6 @@
 /**
  * LinkedResource Entity - Server Interface
- * 链接资源实体 - 服务端接�?
+ * 链接资源实体 - 服务端接�?
  */
 
 import type { LinkedResourceId, EditorWorkspaceId, IdentityId, DocumentId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
@@ -10,20 +10,20 @@ import type { LinkedResourceClientDTO } from './linked-resource-client';
 
 /**
  * Linked Resource Server DTO
- * 链接资源服务�?DTO
+ * 链接资源服务�?DTO
  */
 export interface LinkedResourceServerDTO {
   id: LinkedResourceId;
-  workspaceId: EditorWorkspaceId; // 所属工作区 ID（聚合根外键�?
+  workspaceId: EditorWorkspaceId; // 所属工作区 ID（聚合根外键�?
   identityId: IdentityId;
-  sourceDocumentId: DocumentId; // 源文�?ID
+  sourceDocumentId: DocumentId; // 源文�?ID
   sourceType: LinkedSourceType;
-  sourceLine: number | null; // 源位置（行号�?
-  sourceColumn: number | null; // 源位置（列号�?
+  sourceLine: number | null; // 源位置（行号�?
+  sourceColumn: number | null; // 源位置（列号�?
   targetPath: string; // 目标路径（可能是相对路径或绝对路径）
   targetType: LinkedTargetType;
-  targetDocumentId: DocumentId | null; // 目标文档 ID（如果是内部文档�?
-  targetAnchor: string | null; // 目标锚点（如 #heading-id�?
+  targetDocumentId: DocumentId | null; // 目标文档 ID（如果是内部文档�?
+  targetAnchor: string | null; // 目标锚点（如 #heading-id�?
   isValid: boolean; // 链接是否有效（目标是否存在）
   lastValidatedAt: TransferDate | null;
   createdAt: TransferDate;
@@ -32,7 +32,7 @@ export interface LinkedResourceServerDTO {
 
 /**
  * Linked Resource Persistence DTO
- * 链接资源持久�?DTO（数据库字段，snake_case�?
+ * 链接资源持久�?DTO（数据库字段，snake_case�?
  */
 export interface LinkedResourcePersistenceDTO {
   id: LinkedResourceId;
@@ -54,10 +54,10 @@ export interface LinkedResourcePersistenceDTO {
 
 /**
  * Linked Resource Entity - Server Interface
- * 链接资源实体 - 服务端接�?
+ * 链接资源实体 - 服务端接�?
  */
 export interface LinkedResourceServer {
-  // ===== 基础属�?=====
+  // ===== 基础属�?=====
   readonly id: LinkedResourceId;
   readonly workspaceId: EditorWorkspaceId;
   readonly identityId: IdentityId;
@@ -77,49 +77,39 @@ export interface LinkedResourceServer {
   // ===== 业务方法 =====
 
   /**
-   * 标记为有�?
+   * 标记为有�?
    */
-  markValid(): void;
 
   /**
-   * 标记为无效（链接失效�?
+   * 标记为无效（链接失效�?
    */
-  markInvalid(): void;
 
   /**
    * 更新目标路径（当文件移动时）
    */
-  updateTargetPath(newPath: string): void;
 
   /**
-   * 更新目标文档 ID（当链接目标是内部文档时�?
+   * 更新目标文档 ID（当链接目标是内部文档时�?
    */
-  updateTargetDocument(documentId: DocumentId | null): void;
 
   /**
    * 更新源位置（当源文档编辑时）
    */
-  updateSourceLocation(line: number | null, column: number | null): void;
 
   /**
    * 记录验证时间
    */
-  recordValidation(): void;
 
   /**
-   * 判断是否为内部链接（指向工作区内文档�?
+   * 判断是否为内部链接（指向工作区内文档�?
    */
-  isInternalLink(): boolean;
 
   /**
-   * 判断是否为外部链�?
+   * 判断是否为外部链�?
    */
-  isExternalLink(): boolean;
 
   /**
-   * 判断是否有锚�?
+   * 判断是否有锚�?
    */
-  hasAnchor(): boolean;
 
-  // ===== DTO 转换方法 =====
 }

@@ -1,6 +1,6 @@
 /**
  * LinkedResource Entity - Client Interface
- * 链接资源实体 - 客户端接�?
+ * 链接资源实体 - 客户端接�?
  */
 
 import type { LinkedResourceId, EditorWorkspaceId, IdentityId, DocumentId, TransferDate, DomainDate } from '@/primitives';
@@ -10,7 +10,7 @@ import type { LinkedResourceServerDTO } from './linked-resource-server';
 
 /**
  * Linked Resource Client DTO
- * 链接资源客户�?DTO（包�?UI 格式化字段）
+ * 链接资源客户�?DTO（包�?UI 格式化字段）
  */
 export interface LinkedResourceClientDTO {
   id: string;
@@ -29,7 +29,7 @@ export interface LinkedResourceClientDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
 
-  // UI 格式化字�?
+  // UI 格式化字�?
   formattedLastValidated: string | null;
   formattedCreatedAt: string;
   formattedUpdatedAt: string;
@@ -37,10 +37,10 @@ export interface LinkedResourceClientDTO {
 
 /**
  * Linked Resource Entity - Client Interface
- * 链接资源实体 - 客户端接�?
+ * 链接资源实体 - 客户端接�?
  */
 export interface LinkedResourceClient {
-  // ===== 基础属�?=====
+  // ===== 基础属�?=====
   readonly id: LinkedResourceId;
   readonly workspaceId: EditorWorkspaceId;
   readonly identityId: IdentityId;
@@ -60,59 +60,47 @@ export interface LinkedResourceClient {
   // ===== UI 辅助方法 =====
 
   /**
-   * 获取源类型标�?
+   * 获取源类型标�?
    */
-  getSourceTypeLabel(): string;
 
   /**
    * 获取目标类型标签
    */
-  getTargetTypeLabel(): string;
 
   /**
    * 获取目标类型图标名称
    */
-  getTargetIconName(): string;
 
   /**
-   * 获取链接状态标�?
+   * 获取链接状态标�?
    */
-  getValidStatusLabel(): string;
 
   /**
-   * 获取链接状态颜�?
+   * 获取链接状态颜�?
    */
-  getValidStatusColor(): string;
 
   /**
-   * 是否为内部链�?
+   * 是否为内部链�?
    */
-  isInternalLink(): boolean;
 
   /**
-   * 是否为外部链�?
+   * 是否为外部链�?
    */
-  isExternalLink(): boolean;
 
   /**
-   * 是否有锚�?
+   * 是否有锚�?
    */
-  hasAnchor(): boolean;
 
   /**
-   * 获取源位置文本（�?"Line 10, Col 5"�?
+   * 获取源位置文本（�?"Line 10, Col 5"�?
    */
-  getSourceLocationText(): string | null;
 
   /**
-   * 获取格式化的最后验证时�?
+   * 获取格式化的最后验证时�?
    */
-  getFormattedLastValidated(): string | null;
 
   /**
-   * 获取完整的目�?URL（包含锚点）
+   * 获取完整的目�?URL（包含锚点）
    */
-  getFullTargetUrl(): string;
 
-  // ===== DTO 转换方法 =====
 }

@@ -1,6 +1,6 @@
 /**
  * Schedule Config Value Object
- * 调度配置值对�?
+ * 调度配置值对�?
  */
 
 import type { Timezone } from './timezone';
@@ -11,7 +11,7 @@ import type { Timezone } from './timezone';
  * 调度配置 - Server 接口
  */
 export interface IScheduleConfigServer {
-  /** Cron 表达�?*/
+  /** Cron 表达�?*/
   cronExpression: string;
 
   /** 时区 */
@@ -20,14 +20,13 @@ export interface IScheduleConfigServer {
   /** 开始日期（可选，null 表示立即开始） */
   startDate: number | null;
 
-  /** 结束日期（可选，null 表示永不结束�?*/
+  /** 结束日期（可选，null 表示永不结束�?*/
   endDate: number | null;
 
-  /** 最大执行次数（可选，null 表示无限�?*/
+  /** 最大执行次数（可选，null 表示无限�?*/
   maxExecutions: number | null;
 
-  // 值对象方�?
-  equals(other: IScheduleConfigServer): boolean;
+  // 值对象方�?
   with(
     updates: Partial<
       Omit<
@@ -42,8 +41,6 @@ export interface IScheduleConfigServer {
       >
     >,
   ): IScheduleConfigServer;
-  calculateNextRun(currentTime: number): number | null;
-  isExpired(currentTime: number): boolean;
 
   // DTO 转换方法
 }
@@ -52,22 +49,22 @@ export interface IScheduleConfigServer {
  * 调度配置 - Client 接口
  */
 export interface IScheduleConfigClient {
-  /** Cron 表达�?*/
+  /** Cron 表达�?*/
   cronExpression: string;
 
   /** 时区 */
   timezone: Timezone;
 
-  /** 开始日�?*/
+  /** 开始日�?*/
   startDate: Date | null;
 
   /** 结束日期 */
   endDate: Date | null;
 
-  /** 最大执行次�?*/
+  /** 最大执行次�?*/
   maxExecutions: number | null;
 
-  // UI 辅助属�?
+  // UI 辅助属�?
   /** Cron 表达式的人类可读描述 */
   cronDescription: string; // "每天 9:00"
 
@@ -77,14 +74,13 @@ export interface IScheduleConfigClient {
   /** 开始日期格式化 */
   startDateFormatted: string | null; // "2025-01-01 09:00"
 
-  /** 结束日期格式�?*/
+  /** 结束日期格式�?*/
   endDateFormatted: string | null;
 
   /** 最大执行次数格式化 */
-  maxExecutionsFormatted: string; // "无限" | "100 �?
+  maxExecutionsFormatted: string; // "无限" | "100 �?
 
-  // 值对象方�?
-  equals(other: IScheduleConfigClient): boolean;
+  // 值对象方�?
 
   // DTO 转换方法
 }

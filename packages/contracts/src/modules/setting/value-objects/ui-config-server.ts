@@ -77,4 +77,3 @@ export interface UIConfigServer {
   max: number | null;
   step: number | null;
 }
-}

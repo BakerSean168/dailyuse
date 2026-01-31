@@ -1,6 +1,6 @@
 /**
  * Document Entity - Client Interface
- * 文档实体 - 客户端接�?
+ * 文档实体 - 客户端接�?
  */
 
 import type { DocumentId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate } from '@/primitives';
@@ -8,12 +8,12 @@ import type { DocumentLanguage } from '../value-objects/document-language';
 import type { IndexStatus } from '../value-objects/index-status';
 import type { DocumentServerDTO } from './document-server';
 
-// 从值对象导入类�?
+// 从值对象导入类�?
 import type { DocumentMetadataClientDTO } from '../value-objects';
 
 /**
  * Document Client DTO
- * 文档客户�?DTO（包�?UI 格式化字段）
+ * 文档客户�?DTO（包�?UI 格式化字段）
  */
 export interface DocumentClientDTO {
   id: string;
@@ -31,7 +31,7 @@ export interface DocumentClientDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
 
-  // UI 格式化字�?
+  // UI 格式化字�?
   formattedLastIndexed: string | null;
   formattedLastModified: string | null;
   formattedCreatedAt: string;
@@ -40,10 +40,10 @@ export interface DocumentClientDTO {
 
 /**
  * Document Entity - Client Interface
- * 文档实体 - 客户端接�?
+ * 文档实体 - 客户端接�?
  */
 export interface DocumentClient {
-  // ===== 基础属�?=====
+  // ===== 基础属�?=====
   readonly id: DocumentId;
   readonly workspaceId: EditorWorkspaceId;
   readonly identityId: IdentityId;
@@ -62,54 +62,43 @@ export interface DocumentClient {
   // ===== UI 辅助方法 =====
 
   /**
-   * 获取文件扩展�?
+   * 获取文件扩展�?
    */
-  getFileExtension(): string;
 
   /**
    * 获取语言标签
    */
-  getLanguageLabel(): string;
 
   /**
-   * 获取索引状态颜�?
+   * 获取索引状态颜�?
    */
-  getIndexStatusColor(): string;
 
   /**
-   * 获取索引状态标�?
+   * 获取索引状态标�?
    */
-  getIndexStatusLabel(): string;
 
   /**
-   * 是否�?Markdown 文档
+   * 是否�?Markdown 文档
    */
-  isMarkdown(): boolean;
 
   /**
-   * 是否需要重新索�?
+   * 是否需要重新索�?
    */
-  needsReindex(): boolean;
 
   /**
-   * 获取格式化的最后索引时�?
+   * 获取格式化的最后索引时�?
    */
-  getFormattedLastIndexed(): string | null;
 
   /**
-   * 获取格式化的最后修改时�?
+   * 获取格式化的最后修改时�?
    */
-  getFormattedLastModified(): string | null;
 
   /**
    * 获取内容预览（前 N 个字符）
    */
-  getContentPreview(maxLength?: number): string;
 
   /**
-   * 获取文件大小（字节数�?
+   * 获取文件大小（字节数�?
    */
-  getContentSize(): number;
 
-  // ===== DTO 转换方法 =====
 }

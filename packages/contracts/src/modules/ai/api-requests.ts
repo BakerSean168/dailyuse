@@ -101,21 +101,21 @@ export interface UpdateQuotaLimitRequest {
 
 // ============ AI Generation Requests (Epic 2) ============
 
-export * from './api-requests/GenerateKeyResultsRequest';
-export * from './api-responses/GenerateKeyResultsResponse';
-export * from './api-requests/GenerateTasksRequest';
-export * from './api-responses/GenerateTasksResponse';
+export * from './api-requests/generate-key-results-request';
+export * from './api-responses/generate-key-results-response';
+export * from './api-requests/generate-tasks-request';
+export * from './api-responses/generate-tasks-response';
 // Summarization (Epic 4 Story 4.1)
-export * from './api-requests/SummarizationRequest';
-export * from './api-responses/SummarizationResultDTO';
+export * from './api-requests/summarization-request';
+export * from './api-responses/summarization-result-dto';
 // Knowledge Generation (Epic 4 Story 4.3)
-export * from './api-requests/KnowledgeGenerationRequest';
-export * from './api-responses/KnowledgeGenerationTaskDTO';
+export * from './api-requests/knowledge-generation-request';
+export * from './api-responses/knowledge-generation-task-dto';
 // Goal Generation (Story AI-002)
-export * from './api-requests/GenerateGoalRequest';
-export * from './api-responses/GenerateGoalResponse';
+export * from './api-requests/generate-goal-request';
+export * from './api-responses/generate-goal-response';
 // AI Provider Config (Story AI-002)
-export * from './api-requests/AIProviderConfigRequest';
+export * from './api-requests/ai-provider-config-request';
 
 // ============ Common List Request ============
 

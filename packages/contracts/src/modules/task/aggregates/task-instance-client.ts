@@ -13,12 +13,10 @@ import type { TaskInstanceServerDTO } from './task-instance-server';
 import type { TaskInstanceStatus } from '../value-objects/task-instance-status';
 import { ImportanceLevel } from '../../../shared/importance';
 import type {
-  TaskTimeConfigClient,
-  TaskTimeConfigClientDTO,
-  CompletionRecordClient,
-  CompletionRecordClientDTO,
-  SkipRecordClient,
-  SkipRecordClientDTO,
+  TaskTimeConfig,
+  TaskTimeConfigDTO,
+  CompletionRecord,
+  CompletionRecordDTO,
 } from '../value-objects';
 
 export interface TaskInstanceClientDTO {
@@ -26,22 +24,14 @@ export interface TaskInstanceClientDTO {
   templateId: string;
   identityId: string;
   instanceDate: TransferDate;
-  timeConfig: TaskTimeConfigClientDTO;
-  /**
-   * 任务重要性级�?(继承�?TaskTemplate)
-   * Story 1.1+: 用户设置的重要性，用于优先级计�?
-   */
+  timeConfig: TaskTimeConfigDTO;
+ 
   importance?: ImportanceLevel;
-  /**
-   * 优先级分�?(0-100)
-   * 由系统根�?importance + dueDate 动态计�?
-   * @readonly 此字段不能直接修改，计算�?Application Layer 负责
-   * @computed 基于 Story 1.3 算法计算得出
-   */
+
   priority?: number;
   status: TaskInstanceStatus;
-  completionRecord: CompletionRecordClientDTO | null;
-  skipRecord: SkipRecordClientDTO | null;
+  completionRecord: CompletionRecordDTO | null;
+
   actualStartTime: TransferDate | null;
   actualEndTime: TransferDate | null;
   note: string | null;
@@ -66,22 +56,14 @@ export interface TaskInstanceClient {
   templateId: TaskTemplateId;
   identityId: IdentityId;
   instanceDate: DomainDate;
-  timeConfig: TaskTimeConfigClient;
-  /**
-   * 任务重要性级�?(继承�?TaskTemplate)
-   * Story 1.1+: 用户设置的重要性，用于优先级计�?
-   */
+  timeConfig: TaskTimeConfig;
+
   importance?: ImportanceLevel;
-  /**
-   * 优先级分�?(0-100)
-   * 由系统根�?importance + dueDate 动态计�?
-   * @readonly 此字段不能直接修改，计算�?Application Layer 负责
-   * @computed 基于 Story 1.3 算法计算得出
-   */
+
   priority?: number;
   status: TaskInstanceStatus;
-  completionRecord: CompletionRecordClient | null;
-  skipRecord: SkipRecordClient | null;
+  completionRecord: CompletionRecord | null;
+
   actualStartTime: DomainDate | null;
   actualEndTime: DomainDate | null;
   note: string | null;
@@ -100,9 +82,4 @@ export interface TaskInstanceClient {
   formattedCreatedAt: string;
   formattedUpdatedAt: string;
 
-  getStatusBadge(): { text: string; color: string };
-  getStatusIcon(): string;
-  canStart(): boolean;
-  canComplete(): boolean;
-  canSkip(): boolean;
 }

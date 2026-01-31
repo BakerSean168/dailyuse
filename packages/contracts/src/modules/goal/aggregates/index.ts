@@ -4,17 +4,49 @@
  */
 
 // Goal 聚合根
-export * from './GoalServer';
-export * from './GoalClient';
+export type {
+  GoalServerDTO,
+  GoalPersistenceDTO,
+  GoalServer,
+} from './goal-server';
+
+export type {
+  GoalClientDTO,
+  GoalClient,
+} from './goal-client';
 
 // GoalFolder 聚合根
-export * from './GoalFolderServer';
-export * from './GoalFolderClient';
+export type {
+  GoalFolderServerDTO,
+  GoalFolderPersistenceDTO,
+  GoalFolderServer,
+} from './goal-folder-server';
+
+export type {
+  GoalFolderClientDTO,
+  GoalFolderClient,
+} from './goal-folder-client';
 
 // GoalStatistics 聚合根
-export * from './GoalStatisticsServer';
-export * from './GoalStatisticsClient';
+export type {
+  GoalStatisticsServerDTO,
+  GoalStatisticsPersistenceDTO,
+  GoalStatisticsServer,
+} from './goal-statistics-server';
+
+export type {
+  GoalStatisticsClientDTO,
+  GoalStatisticsClient,
+} from './goal-statistics-client';
 
 // FocusSession 聚合根
-export * from './FocusSessionServer';
-export * from './FocusSessionClient';
+export type {
+  FocusSessionServerDTO,
+  FocusSessionPersistenceDTO,
+  FocusSessionServer,
+} from './focus-session-server';
+
+export type {
+  FocusSessionClientDTO,
+  FocusSessionClient,
+} from './focus-session-client';

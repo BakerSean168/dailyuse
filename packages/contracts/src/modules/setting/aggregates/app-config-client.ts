@@ -1,6 +1,6 @@
 /**
  * AppConfig Aggregate Root - Client Interface
- * 应用配置聚合�?- 客户端接�?
+ * 应用配置聚合�?- 客户端接�?
  */
 
 import type { AppConfigId, TransferDate, DomainDate } from '@/primitives';
@@ -47,7 +47,7 @@ export interface AppConfigClientDTO {
   enabledFeaturesCount: number;
 }
 
-// ============ 聚合根接�?============
+// ============ 聚合根接�?============
 
 export interface AppConfigClient {
   id: AppConfigId;
@@ -85,11 +85,4 @@ export interface AppConfigClient {
   enabledFeaturesCount: number;
 
   // UI 方法
-  getAppVersionText(): string;
-  getEnvironmentBadge(): { text: string; color: string };
-  getEnabledFeatures(): string[];
-  isFeatureEnabled(feature: string): boolean;
-  canCreateGoal(currentCount: number): boolean;
-  canCreateTask(currentCount: number): boolean;
-  canUploadFile(fileSize: number): boolean;
 }

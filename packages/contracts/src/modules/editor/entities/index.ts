@@ -4,29 +4,83 @@
  */
 
 // Document Entity
-export * from './DocumentServer';
-export * from './DocumentClient';
+export type {
+  DocumentServerDTO,
+  DocumentPersistenceDTO,
+  DocumentServer,
+} from './document-server';
+
+export type {
+  DocumentClientDTO,
+  DocumentClient,
+} from './document-client';
 
 // Document Version Entity
-export * from './DocumentVersionServer';
-export * from './DocumentVersionClient';
+export type {
+  DocumentVersionServerDTO,
+  DocumentVersionPersistenceDTO,
+  DocumentVersionServer,
+} from './document-version-server';
+
+export type {
+  DocumentVersionClientDTO,
+  DocumentVersionClient,
+} from './document-version-client';
 
 // Editor Session Entity (⚠️ 实体，不是聚合根)
-export * from './EditorSessionServer';
-export * from './EditorSessionClient';
+export type {
+  EditorSessionServerDTO,
+  EditorSessionPersistenceDTO,
+} from './editor-session-server';
+
+export type {
+  EditorSessionClientDTO,
+} from './editor-session-client';
 
 // Editor Group Entity
-export * from './EditorGroupServer';
-export * from './EditorGroupClient';
+export type {
+  EditorGroupServerDTO,
+  EditorGroupPersistenceDTO,
+  EditorGroupServer,
+} from './editor-group-server';
+
+export type {
+  EditorGroupClientDTO,
+  EditorGroupClient,
+} from './editor-group-client';
 
 // Editor Tab Entity
-export * from './EditorTabServer';
-export * from './EditorTabClient';
+export type {
+  EditorTabServerDTO,
+  EditorTabPersistenceDTO,
+  EditorTabServer,
+} from './editor-tab-server';
+
+export type {
+  EditorTabClientDTO,
+  EditorTabClient,
+} from './editor-tab-client';
 
 // Search Engine Entity
-export * from './SearchEngineServer';
-export * from './SearchEngineClient';
+export type {
+  SearchEngineServerDTO,
+  SearchEnginePersistenceDTO,
+  SearchEngineServer,
+} from './search-engine-server';
+
+export type {
+  SearchEngineClientDTO,
+  SearchEngineClient,
+} from './search-engine-client';
 
 // Linked Resource Entity
-export * from './LinkedResourceServer';
-export * from './LinkedResourceClient';
+export type {
+  LinkedResourceServerDTO,
+  LinkedResourcePersistenceDTO,
+  LinkedResourceServer,
+} from './linked-resource-server';
+
+export type {
+  LinkedResourceClientDTO,
+  LinkedResourceClient,
+} from './linked-resource-client';

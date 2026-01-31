@@ -1,6 +1,6 @@
 /**
  * Sync State Aggregate Root - Client Interface
- * 全局同步状态聚合根（客户端�?
+ * 全局同步状态聚合根（客户端�?
  */
 
 import type { SyncProfileId, SyncSessionId, TransferDate } from '@/primitives';
@@ -36,6 +36,4 @@ export interface SyncStateClient {
   pendingChangesCount: number;
   isOnline: boolean;
 
-  canSync(): boolean;
-  isSyncing(): boolean;
 }

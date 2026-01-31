@@ -77,17 +77,8 @@ export interface ReminderGroupClient {
   // ===== UI 业务方法 =====
 
   // 格式化展�?
-  getStatusBadge(): { text: string; color: string };
-  getControlModeBadge(): { text: string; color: string; icon: string };
-  getIcon(): string;
-  getColorStyle(): string;
 
   // 操作判断
-  canSwitchMode(): boolean;
-  canEnableAll(): boolean;
-  canPauseAll(): boolean;
-  hasTemplates(): boolean;
-  isGroupControlled(): boolean;
 
 }
 

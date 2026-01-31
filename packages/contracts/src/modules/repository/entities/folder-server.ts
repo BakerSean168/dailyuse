@@ -65,17 +65,4 @@ export interface FolderServer {
 
   // 子文件夹
   children: FolderServer[] | null;
-
-  // 方法
-  rename(newName: string): void;
-  moveTo(newParentId: FolderId | null, newParentPath?: string): void;
-  updatePath(newPath: string): void;
-  updateMetadata(metadata: Partial<FolderMetadataServer>): void;
-  setExpanded(isExpanded: boolean): void;
-
-  // DTO 转换方法
-  toServerDTO(includeChildren?: boolean): FolderServerDTO;
-}
-
-// ============ 静态工厂方法接�?============
 }

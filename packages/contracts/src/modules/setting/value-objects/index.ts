@@ -22,9 +22,35 @@ export { ScheduleViewType } from './schedule-view-type';
 export { ProfileVisibility } from './profile-visibility';
 
 // ============ Value Objects ============
-export * from './validation-rule-server';
-export * from './validation-rule-client';
-export * from './ui-config-server';
-export * from './ui-config-client';
-export * from './sync-config-server';
-export * from './sync-config-client';
+export type {
+  ValidationRuleServerDTO,
+  ValidationRulePersistenceDTO,
+  ValidationRuleServer,
+} from './validation-rule-server';
+
+export type {
+  ValidationRuleClientDTO,
+  ValidationRuleClient,
+} from './validation-rule-client';
+
+export type {
+  UIConfigServerDTO,
+  UIConfigPersistenceDTO,
+  UIConfigServer,
+} from './ui-config-server';
+
+export type {
+  UIConfigClientDTO,
+  UIConfigClient,
+} from './ui-config-client';
+
+export type {
+  SyncConfigServerDTO,
+  SyncConfigPersistenceDTO,
+  SyncConfigServer,
+} from './sync-config-server';
+
+export type {
+  SyncConfigClientDTO,
+  SyncConfigClient,
+} from './sync-config-client';

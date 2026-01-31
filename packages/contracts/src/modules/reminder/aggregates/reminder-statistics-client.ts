@@ -58,12 +58,10 @@ export interface ReminderStatisticsClient {
   /**
    * 获取成功�?(0-100)
    */
-  getSuccessRate(): number;
 
   /**
    * 获取触发趋势
    */
-  getTriggerTrend(): 'UP' | 'DOWN' | 'STABLE';
 
 }
 

@@ -86,44 +86,36 @@ export interface GoalStatisticsClient {
   /**
    * 获取完成度文�?
    */
-  getCompletionText(): string;
 
   /**
    * 获取逾期文本
    */
-  getOverdueText(): string;
 
   /**
    * 获取趋势指示�?
    */
-  getTrendIndicator(): { icon: string; color: string; text: string };
 
   /**
    * 获取目标最多的分类
    */
-  getTopCategory(): string | null;
 
   // ===== 图表数据方法 =====
 
   /**
    * 获取重要性图表数�?
    */
-  getImportanceChartData(): ChartData;
 
   /**
    * 获取状态图表数�?
    */
-  getStatusChartData(): ChartData;
 
   /**
    * 获取进度图表数据
    */
-  getProgressChartData(): ChartData;
 
   /**
    * 获取时间线图表数�?
    */
-  getTimelineChartData(): TimelineData;
 
 }
 

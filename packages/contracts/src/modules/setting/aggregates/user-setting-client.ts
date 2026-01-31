@@ -107,13 +107,4 @@ export interface UserSettingClient {
   themeText: string;
   languageText: string;
   experimentalFeatureCount: number;
-
-  // UI 方法
-  getThemeText(): string;
-  getLanguageText(): string;
-  getShortcutText(action: string): string;
-  getShortcut(action: string): string | null;
-  hasShortcut(action: string): boolean;
-  hasExperimentalFeature(feature: string): boolean;
-}
 }

@@ -50,22 +50,18 @@ export interface AIUsageQuotaClient {
   /**
    * 获取剩余配额
    */
-  getRemainingQuota(): number;
 
   /**
    * 获取使用率（百分比）
    */
-  getUsagePercentage(): number;
 
   /**
    * 检查是否已超限
    */
-  isQuotaExceeded(): boolean;
 
   /**
    * 获取格式化的重置周期文本
    */
-  getFormattedResetPeriod(): string;
 
 }
 

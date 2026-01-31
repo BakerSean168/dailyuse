@@ -5,10 +5,10 @@
  * 所有前端 API 客户端使用的类型都在这里定义
  */
 
-import type { NotificationServerDTO } from './aggregates/NotificationServer';
-import type { NotificationChannelServerDTO } from './entities/NotificationChannelServer';
-import type { NotificationTemplateAggregateServerDTO } from './aggregates/NotificationTemplateServer';
-import type { NotificationPreferenceServerDTO } from './aggregates/NotificationPreferenceServer';
+import type { NotificationServerDTO } from './aggregates/notification-server';
+import type { NotificationChannelServerDTO } from './entities/notification-channel-server';
+import type { NotificationTemplateAggregateServerDTO } from './aggregates/notification-template-server';
+import type { NotificationPreferenceServerDTO } from './aggregates/notification-preference-server';
 import type {
   NotificationType,
   NotificationCategory,

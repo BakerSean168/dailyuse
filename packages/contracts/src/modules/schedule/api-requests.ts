@@ -3,11 +3,11 @@
  * 调度模块 - API 请求/响应类型定义
  */
 
-import type { ScheduleTaskClientDTO } from './aggregates/ScheduleTaskClient';
-import type { ScheduleStatisticsClientDTO } from './aggregates/ScheduleStatisticsClient';
-import type { ScheduleExecutionClientDTO } from './entities/ScheduleExecutionClient';
-import type { ScheduleClientDTO } from './aggregates/ScheduleClient';
-import type { ConflictDetectionResult } from './value-objects/ConflictDetectionResult';
+import type { ScheduleTaskClientDTO } from './aggregates/schedule-task-client';
+import type { ScheduleStatisticsClientDTO } from './aggregates/schedule-statistics-client';
+import type { ScheduleExecutionClientDTO } from './entities/schedule-execution-client';
+import type { ScheduleClientDTO } from './aggregates/schedule-client';
+import type { ConflictDetectionResult } from './value-objects/conflict-detection-result';
 import type {
   ScheduleTaskStatus,
   ExecutionStatus,

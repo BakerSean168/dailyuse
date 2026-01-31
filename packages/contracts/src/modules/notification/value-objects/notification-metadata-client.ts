@@ -1,6 +1,6 @@
 /**
  * NotificationMetadata Value Object (Client)
- * ï¿½Cpn<ï¿½a - ï¿?ï¿?
+ * ï¿½Cpn<ï¿½a - ï¿½?ï¿½?
  */
 
 import type { NotificationMetadataServerDTO } from './notification-metadata-server';
@@ -24,7 +24,6 @@ export interface INotificationMetadataClient {
   hasBadge: boolean;
 
   // <ï¿½aï¿½ï¿½
-  equals(other: INotificationMetadataClient): boolean;
 
   // DTO lbï¿½ï¿½
 }
@@ -46,6 +45,6 @@ export interface NotificationMetadataClientDTO {
   hasBadge: boolean;
 }
 
-// ============ {ï¿½ï¿½ï¿?============
+// ============ {ï¿½ï¿½ï¿½?============
 
 export type NotificationMetadataClient = INotificationMetadataClient;

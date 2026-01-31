@@ -17,7 +17,6 @@ export interface IDoNotDisturbConfigServer {
   daysOfWeek: number[]; // 0-6 (0=Sunday)
 
   // <ï¿½aï¿½ï¿½
-  equals(other: IDoNotDisturbConfigServer): boolean;
   with(
     updates: Partial<
       Omit<
@@ -27,8 +26,7 @@ export interface IDoNotDisturbConfigServer {
     >,
   ): IDoNotDisturbConfigServer;
 
-  // ï¿½ï¿½ï¿?
-  isInPeriod(timestamp: Date): boolean;
+  // ï¿½ï¿½ï¿½?
 
   // DTO lbï¿½ï¿½
 }
@@ -55,6 +53,6 @@ export interface DoNotDisturbConfigPersistenceDTO {
   daysOfWeek: string; // JSON.stringify(number[])
 }
 
-// ============ {ï¿½ï¿½ï¿?============
+// ============ {ï¿½ï¿½ï¿½?============
 
 export type DoNotDisturbConfigServer = IDoNotDisturbConfigServer;

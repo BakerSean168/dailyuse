@@ -1,6 +1,6 @@
 /**
  * Document Entity - Server Interface
- * 文档实体 - 服务端接�?
+ * 文档实体 - 服务端接�?
  */
 
 import type { DocumentId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
@@ -8,19 +8,19 @@ import type { DocumentLanguage } from '../value-objects/document-language';
 import type { IndexStatus } from '../value-objects/index-status';
 import type { DocumentClientDTO } from './document-client';
 
-// 从值对象导入类�?
+// 从值对象导入类�?
 import type { DocumentMetadataServerDTO } from '../value-objects';
 
 /**
  * Document Server DTO
- * 文档服务�?DTO
+ * 文档服务�?DTO
  */
 export interface DocumentServerDTO {
   id: DocumentId;
-  workspaceId: EditorWorkspaceId; // 所属工作区 ID（聚合根外键�?
+  workspaceId: EditorWorkspaceId; // 所属工作区 ID（聚合根外键�?
   identityId: IdentityId;
-  path: string; // 文档路径（相对于工作区根目录�?
-  name: string; // 文档名称（包含扩展名�?
+  path: string; // 文档路径（相对于工作区根目录�?
+  name: string; // 文档名称（包含扩展名�?
   language: DocumentLanguage;
   content: string;
   contentHash: string; // 内容哈希值（用于变更检测）
@@ -34,7 +34,7 @@ export interface DocumentServerDTO {
 
 /**
  * Document Persistence DTO
- * 文档持久�?DTO（数据库字段，snake_case�?
+ * 文档持久�?DTO（数据库字段，snake_case�?
  */
 export interface DocumentPersistenceDTO {
   id: DocumentId;
@@ -45,7 +45,7 @@ export interface DocumentPersistenceDTO {
   language: DocumentLanguage;
   content: string;
   content_hash: string;
-  metadata: string; // JSON 字符�?
+  metadata: string; // JSON 字符�?
   index_status: IndexStatus;
   last_indexed_at: PersistenceDate | null;
   last_modified_at: PersistenceDate | null;
@@ -55,10 +55,10 @@ export interface DocumentPersistenceDTO {
 
 /**
  * Document Entity - Server Interface
- * 文档实体 - 服务端接�?
+ * 文档实体 - 服务端接�?
  */
 export interface DocumentServer {
-  // ===== 基础属�?=====
+  // ===== 基础属�?=====
   readonly id: DocumentId;
   readonly workspaceId: EditorWorkspaceId;
   readonly identityId: IdentityId;
@@ -79,52 +79,41 @@ export interface DocumentServer {
   /**
    * 更新文档内容
    */
-  updateContent(content: string, contentHash: string): void;
 
   /**
-   * 更新元数�?
+   * 更新元数�?
    */
-  updateMetadata(metadata: Partial<DocumentMetadataServerDTO>): void;
 
   /**
-   * 重命名文�?
+   * 重命名文�?
    */
-  rename(newName: string): void;
 
   /**
    * 移动文档到新路径
    */
-  move(newPath: string): void;
 
   /**
    * 标记为已索引
    */
-  markIndexed(): void;
 
   /**
    * 标记索引过期
    */
-  markIndexOutdated(): void;
 
   /**
    * 标记索引失败
    */
-  markIndexFailed(): void;
 
   /**
    * 更新文件修改时间
    */
-  updateFileModifiedTime(timestamp: Date): void;
 
   /**
-   * 获取文件扩展�?
+   * 获取文件扩展�?
    */
-  getFileExtension(): string;
 
   /**
-   * 判断是否�?Markdown 文档
+   * 判断是否�?Markdown 文档
    */
-  isMarkdown(): boolean;
 
-  // ===== DTO 转换方法 =====
 }

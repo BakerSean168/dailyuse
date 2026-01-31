@@ -1,6 +1,6 @@
 /**
  * RateLimit Value Object (Client)
- * 速率限制 - 客户�?
+ * 速率限制 - 客户�?
  */
 
 import type { RateLimitServerDTO } from './rate-limit-server';
@@ -18,7 +18,6 @@ export interface IRateLimitClient {
   limitText: string;
 
   // 方法
-  equals(other: IRateLimitClient): boolean;
 
   // DTO 转换
 }

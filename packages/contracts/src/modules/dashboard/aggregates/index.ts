@@ -2,5 +2,14 @@
  * Dashboard Aggregates Index
  */
 
-export * from './DashboardConfigClient';
-export * from './DashboardConfigServer';
+export type {
+  DashboardConfigClientDTO,
+  DashboardConfigClient,
+} from './dashboard-config-client';
+
+export type {
+  WidgetConfigData,
+  DashboardConfigServerDTO,
+  DashboardConfigPersistenceDTO,
+  DashboardConfigServer,
+} from './dashboard-config-server';

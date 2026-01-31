@@ -1,6 +1,6 @@
 /**
  * Group Stats Value Object
- * 分组统计信息值对�?
+ * 分组统计信息值对�?
  */
 
 // ============ 接口定义 ============
@@ -20,8 +20,7 @@ export interface IGroupStatsServer {
   /** selfEnabled = false 的模板数 */
   selfPausedTemplates: number;
 
-  // 值对象方�?
-  equals(other: IGroupStatsServer): boolean;
+  // 值对象方�?
   with(
     updates: Partial<
       Omit<
@@ -44,12 +43,11 @@ export interface IGroupStatsClient {
   selfEnabledTemplates: number;
   selfPausedTemplates: number;
 
-  // UI 辅助属�?
-  templateCountText: string; // "5 个提�?
-  activeStatusText: string; // "3 个活�?
+  // UI 辅助属�?
+  templateCountText: string; // "5 个提�?
+  activeStatusText: string; // "3 个活�?
 
-  // 值对象方�?
-  equals(other: IGroupStatsClient): boolean;
+  // 值对象方�?
 
   // DTO 转换方法
 }

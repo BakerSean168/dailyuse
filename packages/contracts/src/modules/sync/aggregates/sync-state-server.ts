@@ -55,28 +55,4 @@ export interface SyncStateServer {
   registeredDevices: DeviceInfoDTO[];
   updatedAt: DomainDate;
 
-  // 状态管�?
-  setActiveProfile(profileId: SyncProfileId): void;
-  clearActiveProfile(): void;
-  startSession(sessionId: SyncSessionId): void;
-  endSession(): void;
-  
-  // 锁管�?
-  lock(reason: string): void;
-  unlock(): void;
-  
-  // 网络状�?
-  setOnline(online: boolean): void;
-  
-  // 版本管理
-  updateGlobalVersion(version: SyncVersionServerDTO): void;
-  incrementPendingChanges(): void;
-  decrementPendingChanges(count?: number): void;
-  
-  // 设备管理
-  registerDevice(device: DeviceInfoDTO): void;
-  
-  // 业务查询
-  canStartSync(): boolean;
-  isSyncing(): boolean;
 }

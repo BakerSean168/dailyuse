@@ -1,25 +1,24 @@
 /**
  * Document Metadata Value Object
- * 文档元数据值对�?
+ * 文档元数据值对�?
  */
 
 // ============ 接口定义 ============
 
 /**
- * 文档元数�?- Server 接口
+ * 文档元数�?- Server 接口
  */
 export interface IDocumentMetadataServer {
   tags: string[];
   category: string | null;
   wordCount: number | null;
   characterCount: number | null;
-  readingTime: number | null; // �?
+  readingTime: number | null; // �?
   encoding: string | null;
   language: string | null;
   customFields?: Record<string, any> | null;
 
-  // 值对象方�?
-  equals(other: IDocumentMetadataServer): boolean;
+  // 值对象方�?
   with(
     updates: Partial<
       Omit<
@@ -33,7 +32,7 @@ export interface IDocumentMetadataServer {
 }
 
 /**
- * 文档元数�?- Client 接口
+ * 文档元数�?- Client 接口
  */
 export interface IDocumentMetadataClient {
   tags: string[];
@@ -42,12 +41,11 @@ export interface IDocumentMetadataClient {
   characterCount: number | null;
   readingTime: number | null;
 
-  // UI 辅助属�?
+  // UI 辅助属�?
   wordCountFormatted: string | null; // "1,234 words"
   readingTimeFormatted: string | null; // "5 min read"
 
-  // 值对象方�?
-  equals(other: IDocumentMetadataClient): boolean;
+  // 值对象方�?
 
   // DTO 转换方法
 }

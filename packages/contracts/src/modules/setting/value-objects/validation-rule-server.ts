@@ -41,4 +41,4 @@ export interface ValidationRuleServer {
   enum: any[] | null;
   custom: string | null;
 }
-}
+

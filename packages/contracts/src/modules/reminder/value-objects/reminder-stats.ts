@@ -1,6 +1,6 @@
 /**
  * Reminder Stats Value Object
- * 提醒统计信息值对�?
+ * 提醒统计信息值对�?
  */
 
 // ============ 接口定义 ============
@@ -9,13 +9,12 @@
  * 提醒统计信息 - Server 接口
  */
 export interface IReminderStatsServer {
-  /** 总触发次�?*/
+  /** 总触发次�?*/
   totalTriggers: number;
-  /** 最后触发时�?(epoch ms) */
+  /** 最后触发时�?(epoch ms) */
   lastTriggeredAt: number | null;
 
-  // 值对象方�?
-  equals(other: IReminderStatsServer): boolean;
+  // 值对象方�?
   with(
     updates: Partial<
       Omit<
@@ -35,12 +34,11 @@ export interface IReminderStatsClient {
   totalTriggers: number;
   lastTriggeredAt: number | null;
 
-  // UI 辅助属�?
-  totalTriggersText: string; // "已触�?15 �?
-  lastTriggeredText: string | null; // "3 小时�?
+  // UI 辅助属�?
+  totalTriggersText: string; // "已触�?15 �?
+  lastTriggeredText: string | null; // "3 小时�?
 
-  // 值对象方�?
-  equals(other: IReminderStatsClient): boolean;
+  // 值对象方�?
 
   // DTO 转换方法
 }

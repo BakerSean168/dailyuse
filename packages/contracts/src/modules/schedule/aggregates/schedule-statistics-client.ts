@@ -98,13 +98,8 @@ export interface ScheduleStatisticsClient {
   // ===== 业务方法 =====
 
   // 获取模块统计
-  getModuleStats(moduleName: string): ModuleStatisticsClientDTO | null;
-  getAllModuleStats(): ModuleStatisticsClientDTO[];
 
   // 计算方法
-  calculateSuccessRate(): number;
-  calculateFailureRate(): number;
-  calculateHealthScore(): number;
 
 }
 

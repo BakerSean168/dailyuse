@@ -8,7 +8,6 @@
 
 export interface EmailAddress {
     readonly value: string;
-    domain(): string;
 }
 
 

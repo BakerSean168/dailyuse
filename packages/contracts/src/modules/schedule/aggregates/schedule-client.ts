@@ -120,25 +120,4 @@ export interface ScheduleClient {
   attendeesDisplay: string;
   formattedCreatedAt: string;
   formattedUpdatedAt: string;
-
-  // ===== 业务方法 =====
-
-  // 状态检�?
-  isOngoing(): boolean;
-  isPast(): boolean;
-  isUpcoming(withinMinutes?: number): boolean;
-  isToday(): boolean;
-  hasConflicts(): boolean;
-  getConflictCount(): number;
-  hasLocation(): boolean;
-  hasAttendees(): boolean;
-  overlaps(startTime: DomainDate, endTime: DomainDate): boolean;
-  getOverlapDuration(startTime: DomainDate, endTime: DomainDate): DomainDate;
-
-}
-
-/**
- * Schedule 静态工厂方法接�?
- */
-): ScheduleClient;
 }

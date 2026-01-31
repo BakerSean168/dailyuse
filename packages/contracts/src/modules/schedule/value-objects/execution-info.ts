@@ -1,6 +1,6 @@
 /**
  * Execution Info Value Object
- * 执行信息值对�?
+ * 执行信息值对�?
  */
 
 import type { ExecutionStatus } from './execution-status';
@@ -17,10 +17,10 @@ export interface IExecutionInfoServer {
   /** 上次执行时间 */
   lastRunAt: number | null;
 
-  /** 已执行次�?*/
+  /** 已执行次�?*/
   executionCount: number;
 
-  /** 上次执行状�?*/
+  /** 上次执行状�?*/
   lastExecutionStatus: ExecutionStatus | null;
 
   /** 上次执行时长（毫秒） */
@@ -29,8 +29,7 @@ export interface IExecutionInfoServer {
   /** 连续失败次数 */
   consecutiveFailures: number;
 
-  // 值对象方�?
-  equals(other: IExecutionInfoServer): boolean;
+  // 值对象方�?
   with(
     updates: Partial<
       Omit<
@@ -51,7 +50,6 @@ export interface IExecutionInfoServer {
     duration: number;
     nextRunAt: number | null;
   }): IExecutionInfoServer;
-  resetFailures(): IExecutionInfoServer;
 
   // DTO 转换方法
 }
@@ -66,33 +64,32 @@ export interface IExecutionInfoClient {
   /** 上次执行时间 */
   lastRunAt: Date | null;
 
-  /** 已执行次�?*/
+  /** 已执行次�?*/
   executionCount: number;
 
-  /** 上次执行状�?*/
+  /** 上次执行状�?*/
   lastExecutionStatus: ExecutionStatus | null;
 
   /** 连续失败次数 */
   consecutiveFailures: number;
 
-  // UI 辅助属�?
-  /** 下次执行时间格式�?*/
-  nextRunAtFormatted: string | null; // "2025-01-01 09:00" | "30 分钟�?
+  // UI 辅助属�?
+  /** 下次执行时间格式�?*/
+  nextRunAtFormatted: string | null; // "2025-01-01 09:00" | "30 分钟�?
 
-  /** 上次执行时间格式�?*/
-  lastRunAtFormatted: string | null; // "2 小时�?
+  /** 上次执行时间格式�?*/
+  lastRunAtFormatted: string | null; // "2 小时�?
 
-  /** 上次执行时长格式�?*/
-  lastExecutionDurationFormatted: string | null; // "1.2 �?
+  /** 上次执行时长格式�?*/
+  lastExecutionDurationFormatted: string | null; // "1.2 �?
 
-  /** 执行次数格式�?*/
-  executionCountFormatted: string; // "已执�?100 �?
+  /** 执行次数格式�?*/
+  executionCountFormatted: string; // "已执�?100 �?
 
-  /** 健康状�?*/
+  /** 健康状�?*/
   healthStatus: 'healthy' | 'warning' | 'critical'; // 基于连续失败次数
 
-  // 值对象方�?
-  equals(other: IExecutionInfoClient): boolean;
+  // 值对象方�?
 
   // DTO 转换方法
 }

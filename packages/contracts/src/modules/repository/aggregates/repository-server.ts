@@ -58,10 +58,10 @@ export interface RepositoryPersistenceDTO {
 // ============ 实体接口 ============
 
 /**
- * Repository 聚合�?- Server 接口（实例方法）
+ * Repository 聚合根 - Server 接口（实例方法）
  */
 export interface RepositoryServer {
-  // 基础属�?
+  // 基础属性
   id: RepositoryId;
   identityId: IdentityId;
   name: string;
@@ -74,19 +74,6 @@ export interface RepositoryServer {
   createdAt: DomainDate;
   updatedAt: DomainDate;
 
-  // 子实�?
+  // 子实体
   folders: FolderServer[] | null;
-
-  // 方法
-  updateConfig(newConfig: Partial<RepositoryConfigServer>): void;
-  updateStats(newStats: Partial<RepositoryStatsServer>): void;
-  archive(): void;
-  activate(): void;
-  delete(): void;
-
-  // DTO 转换方法
-  toServerDTO(includeFolders?: boolean): RepositoryServerDTO;
-}
-
-// ============ 静态工厂方法接�?============
 }

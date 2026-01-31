@@ -1,3 +1,5 @@
+import type { TransferDate } from '@/primitives';
+
 export interface GoalStatisticsClientDTO {
   identityId: string;
   totalGoals: number;
@@ -24,8 +26,6 @@ export interface GoalStatisticsClientDTO {
   completionRate: number; // 完成率 0-100
   keyResultCompletionRate: number; // 关键结果完成率 0-100
   overdueRate: number; // 逾期率 0-100
-  weeklyTrend: TrendType;
-  monthlyTrend: TrendType;
-
-  
+  // weeklyTrend: TrendType;
+  // monthlyTrend: TrendType;
 }
