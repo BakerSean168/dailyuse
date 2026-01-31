@@ -43,21 +43,4 @@ export interface SettingHistoryClient {
   getChangeText(): string;
   getOperatorText(): string;
   getIcon(): string;
-  getTimeAgo(): string;
-
-  toServerDTO(): SettingHistoryServerDTO;
-}
-
-export interface SettingHistoryClientStatic {
-  create(params: {
-    settingUuid: string;
-    settingKey: string;
-    oldValue: any;
-    newValue: any;
-    operatorUuid?: string;
-    operatorType: string;
-    operatorName?: string;
-  }): SettingHistoryClient;
-  fromServerDTO(dto: SettingHistoryServerDTO): SettingHistoryClient;
-  fromClientDTO(dto: SettingHistoryClientDTO): SettingHistoryClient;
-}
+  getTimeAgo(): string;}

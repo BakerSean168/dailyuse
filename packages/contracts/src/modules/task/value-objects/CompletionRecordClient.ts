@@ -20,9 +20,7 @@ export interface CompletionRecordClient {
   hasRating: boolean;
   ratingStars: string;
 
-  equals(other: CompletionRecordClient): boolean;
-  toServerDTO(): CompletionRecordServerDTO;
-}
+  equals(other: CompletionRecordClient): boolean;}
 
 // ============ DTO 定义 ============
 

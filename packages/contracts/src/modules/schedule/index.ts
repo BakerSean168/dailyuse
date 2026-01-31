@@ -68,15 +68,11 @@ export type {
 export type {
   ScheduleExecutionServerDTO,
   ScheduleExecutionPersistenceDTO,
-  ScheduleExecutionServer,
-  ScheduleExecutionServerStatic,
-} from './entities/ScheduleExecutionServer';
+  ScheduleExecutionServer,} from './entities/ScheduleExecutionServer';
 
 export type {
   ScheduleExecutionClientDTO,
-  ScheduleExecutionClient,
-  ScheduleExecutionClientStatic,
-} from './entities/ScheduleExecutionClient';
+  ScheduleExecutionClient,} from './entities/ScheduleExecutionClient';
 
 // ============ Aggregates ============
 export type {
@@ -91,15 +87,11 @@ export type {
   ScheduleTaskExecutedEvent,
   ScheduleTaskScheduleUpdatedEvent,
   ScheduleTaskDomainEvent,
-  ScheduleTaskServer,
-  ScheduleTaskServerStatic,
-} from './aggregates/ScheduleTaskServer';
+  ScheduleTaskServer,} from './aggregates/ScheduleTaskServer';
 
 export type {
   ScheduleTaskClientDTO,
-  ScheduleTaskClient,
-  ScheduleTaskClientStatic,
-} from './aggregates/ScheduleTaskClient';
+  ScheduleTaskClient,} from './aggregates/ScheduleTaskClient';
 
 export type {
   ScheduleStatisticsServerDTO,
@@ -110,15 +102,11 @@ export type {
   ScheduleStatisticsExecutionRecordedEvent,
   ScheduleStatisticsModuleUpdatedEvent,
   ScheduleStatisticsDomainEvent,
-  ScheduleStatisticsServer,
-  ScheduleStatisticsServerStatic,
-} from './aggregates/ScheduleStatisticsServer';
+  ScheduleStatisticsServer,} from './aggregates/ScheduleStatisticsServer';
 
 export type {
   ScheduleStatisticsClientDTO,
-  ScheduleStatisticsClient,
-  ScheduleStatisticsClientStatic,
-} from './aggregates/ScheduleStatisticsClient';
+  ScheduleStatisticsClient,} from './aggregates/ScheduleStatisticsClient';
 
 // ============ Event Types ============
 export {
@@ -135,7 +123,7 @@ export type {
 
 export type { ScheduleServerDTO } from './aggregates/ScheduleServer';
 
-export type { ScheduleClientDTO, ScheduleClient, ScheduleClientStatic } from './aggregates/ScheduleClient';
+export type { ScheduleClientDTO, ScheduleClient } from './aggregates/ScheduleClient';
 
 // ============ Conflict Detection (Story 9.1) ============
 export type {

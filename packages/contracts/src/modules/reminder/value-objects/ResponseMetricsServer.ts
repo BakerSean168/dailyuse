@@ -58,32 +58,7 @@ export interface ResponseMetricsServer {
   getEffectivenessLabel(): 'HIGH' | 'MEDIUM' | 'LOW';
 
   // 转换方法
-  toServerDTO(): ResponseMetricsServerDTO;
-  toClientDTO(): ResponseMetricsClientDTO;
-}
 
 /**
  * Response Metrics 静态工厂方法接口
  */
-export interface ResponseMetricsServerStatic {
-  /**
-   * 创建新的 Response Metrics（静态工厂方法）
-   */
-  create(params: {
-    clickRate: number;
-    ignoreRate: number;
-    avgResponseTime: number;
-    snoozeCount?: number;
-    sampleSize: number;
-  }): ResponseMetricsServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: ResponseMetricsServerDTO): ResponseMetricsServer;
-
-  /**
-   * 从 Client DTO 创建实体
-   */
-  fromClientDTO(dto: ResponseMetricsClientDTO): ResponseMetricsServer;
-}

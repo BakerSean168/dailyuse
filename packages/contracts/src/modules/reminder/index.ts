@@ -101,39 +101,29 @@ export type {
 export type {
   ResponseMetricsServerDTO,
   ResponseMetricsClientDTO,
-  ResponseMetricsServer,
-  ResponseMetricsServerStatic,
-} from './value-objects/ResponseMetricsServer';
+  ResponseMetricsServer,} from './value-objects/ResponseMetricsServer';
 
 export type {
   FrequencyAdjustmentServerDTO,
   FrequencyAdjustmentClientDTO,
-  FrequencyAdjustmentServer,
-  FrequencyAdjustmentServerStatic,
-} from './value-objects/FrequencyAdjustmentServer';
+  FrequencyAdjustmentServer,} from './value-objects/FrequencyAdjustmentServer';
 
 // ============ Entities ============
 export type {
   ReminderHistoryServerDTO,
   ReminderHistoryPersistenceDTO,
-  ReminderHistoryServer,
-  ReminderHistoryServerStatic,
-} from './entities/ReminderHistoryServer';
+  ReminderHistoryServer,} from './entities/ReminderHistoryServer';
 
 export type {
   ReminderHistoryClientDTO,
-  ReminderHistoryClient,
-  ReminderHistoryClientStatic,
-} from './entities/ReminderHistoryClient';
+  ReminderHistoryClient,} from './entities/ReminderHistoryClient';
 
 export type {
   ReminderResponseAction,
   ReminderResponseServerDTO,
   ReminderResponseClientDTO,
   ReminderResponsePersistenceDTO,
-  ReminderResponseServer,
-  ReminderResponseServerStatic,
-} from './entities/ReminderResponseServer';
+  ReminderResponseServer,} from './entities/ReminderResponseServer';
 
 // ============ Aggregates ============
 export type {
@@ -147,15 +137,11 @@ export type {
   ReminderTemplateTriggeredEvent,
   ReminderTemplateMovedEvent,
   ReminderTemplateDomainEvent,
-  ReminderTemplateServer,
-  ReminderTemplateServerStatic,
-} from './aggregates/ReminderTemplateServer';
+  ReminderTemplateServer,} from './aggregates/ReminderTemplateServer';
 
 export type {
   ReminderTemplateClientDTO,
-  ReminderTemplateClient,
-  ReminderTemplateClientStatic,
-} from './aggregates/ReminderTemplateClient';
+  ReminderTemplateClient,} from './aggregates/ReminderTemplateClient';
 
 export type {
   ReminderGroupServerDTO,
@@ -167,42 +153,32 @@ export type {
   ReminderGroupEnabledEvent,
   ReminderGroupPausedEvent,
   ReminderGroupDomainEvent,
-  ReminderGroupServer,
-  ReminderGroupServerStatic,
-} from './aggregates/ReminderGroupServer';
+  ReminderGroupServer,} from './aggregates/ReminderGroupServer';
 
 export type {
   ReminderGroupClientDTO,
-  ReminderGroupClient,
-  ReminderGroupClientStatic,
-} from './aggregates/ReminderGroupClient';
+  ReminderGroupClient,} from './aggregates/ReminderGroupClient';
 
 export type {
   ReminderStatisticsServerDTO,
   ReminderStatisticsPersistenceDTO,
   ReminderStatisticsUpdatedEvent,
   ReminderStatisticsDomainEvent,
-  ReminderStatisticsServer,
-  ReminderStatisticsServerStatic,
-  TemplateStatsInfo,
+  ReminderStatisticsServer,  TemplateStatsInfo,
   GroupStatsInfo,
   TriggerStatsInfo,
 } from './aggregates/ReminderStatisticsServer';
 
 export type {
   ReminderStatisticsClientDTO,
-  ReminderStatisticsClient,
-  ReminderStatisticsClientStatic,
-} from './aggregates/ReminderStatisticsClient';
+  ReminderStatisticsClient,} from './aggregates/ReminderStatisticsClient';
 
 export type {
   TimeSlotDTO,
   UserReminderPreferencesServerDTO,
   UserReminderPreferencesClientDTO,
   UserReminderPreferencesPersistenceDTO,
-  UserReminderPreferencesServer,
-  UserReminderPreferencesServerStatic,
-} from './aggregates/UserReminderPreferencesServer';
+  UserReminderPreferencesServer,} from './aggregates/UserReminderPreferencesServer';
 
 // ============ API Requests ============
 export type {

@@ -1,0 +1,193 @@
+// ==========================================
+// Task Module
+// 任务模板聚合根、实例、依赖、历史、统计
+// ==========================================
+
+model TaskTemplate {
+  id          String  @id
+  identityId  String  @map("identity_id")
+  title       String
+  description String?
+  taskType    String  @map("task_type") // 'ONE_TIME' | 'RECURRING'
+  status      String
+  importance  String  @default("moderate") // ImportanceLevel
+  color       String?
+  tags        String // JSON: string[]
+  folderId    String? @map("folder_id")
+
+  // === Goal/KR 关联 ===
+  goalId      String? @map("goal_id")
+  keyResultId String? @map("key_result_id")
+
+  // === 子任务支持 ===
+  parentTaskId String? @map("parent_task_id")
+
+  // === 一次性任务专用字段 ===
+  startDate        DateTime? @map("start_date")
+  dueDate          DateTime? @map("due_date")
+  completedAt      DateTime? @map("completed_at")
+  estimatedMinutes Int?      @map("estimated_minutes")
+  actualMinutes    Int?      @map("actual_minutes")
+  note             String?   @db.Text
+
+  // === 循环任务专用字段 ===
+  lastGeneratedDate DateTime? @map("last_generated_date")
+  generateAheadDays Int?      @map("generate_ahead_days")
+
+  // === 时间配置（循环任务用） ===
+  timeConfigType            String?   @map("time_config_type")
+  timeConfigStartTime       DateTime? @map("time_config_start_time")
+  timeConfigEndTime         DateTime? @map("time_config_end_time")
+  timeConfigDurationMinutes Int?      @map("time_config_duration_minutes")
+
+  // === 重复规则（循环任务用） ===
+  recurrenceRuleType        String?   @map("recurrence_rule_type")
+  recurrenceRuleInterval    Int?      @map("recurrence_rule_interval")
+  recurrenceRuleDaysOfWeek  String?   @map("recurrence_rule_days_of_week")
+  recurrenceRuleDayOfMonth  Int?      @map("recurrence_rule_day_of_month")
+  recurrenceRuleMonthOfYear Int?      @map("recurrence_rule_month_of_year")
+  recurrenceRuleEndDate     DateTime? @map("recurrence_rule_end_date")
+  recurrenceRuleCount       Int?      @map("recurrence_rule_count")
+
+  // === 提醒配置（循环任务用） ===
+  reminderConfigEnabled           Boolean? @map("reminder_config_enabled")
+  reminderConfigTimeOffsetMinutes Int?     @map("reminder_config_time_offset_minutes")
+  reminderConfigUnit              String?  @map("reminder_config_unit")
+  reminderConfigChannel           String?  @map("reminder_config_channel")
+
+  // === Goal 绑定（循环任务用） ===
+  goalBindingGoalId         String? @map("goal_binding_goal_id")
+  goalBindingKeyResultId    String? @map("goal_binding_key_result_id")
+  goalBindingIncrementValue Float?  @map("goal_binding_increment_value")
+
+  // === 依赖关系 ===
+  blockingReason   String? @map("blocking_reason")
+  dependencyStatus String  @default("NONE") @map("dependency_status")
+  isBlocked        Boolean @default(false) @map("is_blocked")
+
+  // === 审计字段 ===
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // === 关系 ===
+  account   Account    @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  goal      Goal?      @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  keyResult KeyResult? @relation(fields: [keyResultId], references: [id], onDelete: SetNull)
+
+  // 子任务关系
+  parentTask TaskTemplate?  @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
+  subtasks   TaskTemplate[] @relation("TaskSubtasks")
+
+  // 依赖关系
+  predecessorDependencies TaskDependency[] @relation("PredecessorTaskDeps")
+  successorDependencies   TaskDependency[] @relation("SuccessorTaskDeps")
+
+  // 实例（仅 RECURRING 生成）
+  instances TaskInstance[]
+  history   TaskTemplateHistory[]
+
+  @@index([identityId])
+  @@index([taskType])
+  @@index([status])
+  @@index([importance])
+  @@index([goalId])
+  @@index([keyResultId])
+  @@index([parentTaskId])
+  @@index([dueDate])
+  @@index([deletedAt])
+  @@map("task_templates")
+}
+
+model TaskInstance {
+  id               String    @id
+  templateId       String    @map("template_id")
+  identityId       String    @map("identity_id")
+  instanceDate     DateTime  @map("instance_date")
+  status           String
+  note             String?
+  actualStartTime  DateTime? @map("actual_start_time")
+  actualEndTime    DateTime? @map("actual_end_time")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  timeConfig       String    @map("time_config")
+  completionRecord String?   @map("completion_record")
+  skipRecord       String?   @map("skip_record")
+
+  account  Account      @relation(fields: [identityId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  template TaskTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId, instanceDate])
+  @@map("task_instances")
+}
+
+model TaskDependency {
+  id                String   @id
+  predecessorTaskId String   @map("predecessor_task_id")
+  successorTaskId   String   @map("successor_task_id")
+  dependencyType    String   @default("FINISH_TO_START") @map("dependency_type")
+  lagDays           Int?     @map("lag_days")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  predecessorTask TaskTemplate @relation("PredecessorTaskDeps", fields: [predecessorTaskId], references: [id], onDelete: Cascade)
+  successorTask   TaskTemplate @relation("SuccessorTaskDeps", fields: [successorTaskId], references: [id], onDelete: Cascade)
+
+  @@unique([predecessorTaskId, successorTaskId])
+  @@index([successorTaskId])
+  @@map("task_dependencies")
+}
+
+model TaskTemplateHistory {
+  id         String   @id
+  templateId String   @map("template_id")
+  action     String
+  changes    String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  template TaskTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@map("task_template_history")
+}
+
+model TaskStatistic {
+  id                       String   @id
+  identityId               String   @unique @map("identity_id")
+  calculatedAt             DateTime @map("calculated_at")
+  templateTotal            Int      @map("template_total")
+  templateActive           Int      @map("template_active")
+  templatePaused           Int      @map("template_paused")
+  templateArchived         Int      @map("template_archived")
+  templateOneTime          Int      @map("template_one_time")
+  templateRecurring        Int      @map("template_recurring")
+  instanceTotal            Int      @map("instance_total")
+  instanceToday            Int      @map("instance_today")
+  instanceWeek             Int      @map("instance_week")
+  instanceMonth            Int      @map("instance_month")
+  instancePending          Int      @map("instance_pending")
+  instanceInProgress       Int      @map("instance_in_progress")
+  instanceCompleted        Int      @map("instance_completed")
+  instanceSkipped          Int      @map("instance_skipped")
+  instanceExpired          Int      @map("instance_expired")
+  completionToday          Int      @map("completion_today")
+  completionWeek           Int      @map("completion_week")
+  completionMonth          Int      @map("completion_month")
+  completionTotal          Int      @map("completion_total")
+  completionAvgTime        Float?   @map("completion_avg_time")
+  completionRate           Float    @map("completion_rate")
+  timeAllDay               Int      @map("time_all_day")
+  timePoint                Int      @map("time_point")
+  timeRange                Int      @map("time_range")
+  timeOverdue              Int      @map("time_overdue")
+  timeUpcoming             Int      @map("time_upcoming")
+  distributionByImportance String   @map("distribution_by_importance")
+  distributionByUrgency    String   @map("distribution_by_urgency")
+  distributionByFolder     String   @map("distribution_by_folder")
+  distributionByTag        String   @map("distribution_by_tag")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId])
+  @@map("task_statistics")
+}

@@ -51,21 +51,4 @@ export interface PendingChangeServer {
   createdAt: Date;
   syncedAt?: Date | null;
 
-  markAsSynced(sessionId: string): void;
-
-  toServerDTO(): PendingChangeServerDTO;
-  toClientDTO(): PendingChangeClientDTO;
-  toPersistenceDTO(): PendingChangePersistenceDTO;
-}
-
-export interface PendingChangeServerStatic {
-  create(params: {
-    entityRef: EntityReferenceDTO;
-    operation: ChangeOperationType;
-    beforeData?: unknown;
-    afterData?: unknown;
-    version: SyncVersionServerDTO;
-  }): PendingChangeServer;
-  fromServerDTO(dto: PendingChangeServerDTO): PendingChangeServer;
-  fromPersistenceDTO(dto: PendingChangePersistenceDTO): PendingChangeServer;
-}
+  markAsSynced(sessionId: string): void;}

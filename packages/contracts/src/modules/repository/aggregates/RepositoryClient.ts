@@ -92,10 +92,3 @@ export interface RepositoryClient {
   toClientDTO(includeFolders?: boolean): RepositoryClientDTO;
   toServerDTO(includeFolders?: boolean): RepositoryServerDTO;
 }
-
-// ============ 静态工厂方法接口 ============
-
-export interface RepositoryClientStatic {
-  fromServerDTO(dto: RepositoryServerDTO): RepositoryClient;
-  fromClientDTO(dto: RepositoryClientDTO): RepositoryClient;
-}

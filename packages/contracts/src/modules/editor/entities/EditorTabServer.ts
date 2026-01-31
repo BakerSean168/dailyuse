@@ -117,9 +117,4 @@ export interface EditorTabServer {
    */
   isDocumentTab(): boolean;
 
-  // ===== DTO 转换方法 =====
-
-  toServerDTO(): EditorTabServerDTO;
-  toClientDTO(): EditorTabClientDTO;
-  toPersistenceDTO(): EditorTabPersistenceDTO;
-}
+  // ===== DTO 转换方法 =====}

@@ -53,10 +53,6 @@ export interface AuthSessionClient {
   lastActiveAt: DomainDate;
 }
 
-export interface AuthSessionClientStatic {
-  fromClientDTO(dto: AuthSessionClientDTO): AuthSessionClient;
-}
-
 // ============ DTO 定义 ============
 
 /**

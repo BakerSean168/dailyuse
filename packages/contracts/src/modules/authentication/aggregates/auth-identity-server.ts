@@ -63,16 +63,6 @@ export interface AuthIdentityServer {
   updatedAt: DomainDate;
 }
 
-export interface AuthIdentityServerStatic {
-  create(params: {
-    accountId: IdentityId;
-    type: 'PASSWORD' | 'API_KEY' | 'BIOMETRIC' | 'MAGIC_LINK' | 'HARDWARE_KEY';
-    hashedPassword?: string;
-  }): AuthIdentityServer;
-  fromServerDTO(dto: AuthIdentityServerDTO): AuthIdentityServer;
-  fromPersistenceDTO(dto: AuthIdentityPersistenceDTO): AuthIdentityServer;
-}
-
 // ============ DTO 定义 ============
 
 /**

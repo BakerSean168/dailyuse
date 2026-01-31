@@ -52,15 +52,4 @@ export interface ISyncVersionServer {
   increment(deviceId: string): ISyncVersionServer;
   merge(other: ISyncVersionServer): ISyncVersionServer;
   happenedBefore(other: ISyncVersionServer): boolean;
-  isConflict(other: ISyncVersionServer): boolean;
-
-  toServerDTO(): SyncVersionServerDTO;
-  toClientDTO(): SyncVersionClientDTO;
-  toPersistenceDTO(): SyncVersionPersistenceDTO;
-}
-
-export interface ISyncVersionServerStatic {
-  create(deviceId: string): ISyncVersionServer;
-  fromServerDTO(dto: SyncVersionServerDTO): ISyncVersionServer;
-  fromPersistenceDTO(dto: SyncVersionPersistenceDTO): ISyncVersionServer;
-}
+  isConflict(other: ISyncVersionServer): boolean;}

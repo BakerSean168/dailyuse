@@ -100,9 +100,4 @@ export interface EditorTabClient {
    */
   getStatusColor(): string;
 
-  // ===== DTO 杞崲鏂规硶 =====
-
-  toClientDTO(): EditorTabClientDTO;
-  toServerDTO(): EditorTabServerDTO;
-}
-
+  // ===== DTO 杞崲鏂规硶 =====}

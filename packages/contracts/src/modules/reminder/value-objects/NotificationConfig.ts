@@ -57,11 +57,7 @@ export interface INotificationConfigServer {
     >,
   ): INotificationConfigServer;
 
-  // DTO 转换方法
-  toServerDTO(): NotificationConfigServerDTO;
-  toClientDTO(): NotificationConfigClientDTO;
-  toPersistenceDTO(): NotificationConfigPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 通知配置 - Client 接口
@@ -82,9 +78,7 @@ export interface INotificationConfigClient {
   // 值对象方法
   equals(other: INotificationConfigClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): NotificationConfigServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

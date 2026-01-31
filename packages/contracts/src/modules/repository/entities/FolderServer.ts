@@ -73,21 +73,4 @@ export interface FolderServer {
   setExpanded(isExpanded: boolean): void;
 
   // DTO 转换方法
-  toServerDTO(includeChildren?: boolean): FolderServerDTO;
-  toPersistenceDTO(): FolderPersistenceDTO;
-}
-
-// ============ 静态工厂方法接口 ============
-
-export interface FolderServerStatic {
-  create(params: {
-    repositoryUuid: string;
-    parentUuid?: string;
-    name: string;
-    parentPath?: string;
-    order?: number;
-  }): FolderServer;
-
-  fromServerDTO(dto: FolderServerDTO): FolderServer;
-  fromPersistenceDTO(dto: FolderPersistenceDTO): FolderServer;
-}
+  toServerDTO(includeChildren?: boolean): FolderServerDTO;}

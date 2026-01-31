@@ -74,24 +74,4 @@ export interface SettingGroupServer {
   collapse(): void;
   expand(): void;
   softDelete(): void;
-  restore(): void;
-
-  toServerDTO(): SettingGroupServerDTO;
-  toClientDTO(): SettingGroupClientDTO;
-  toPersistenceDTO(): SettingGroupPersistenceDTO;
-}
-
-export interface SettingGroupServerStatic {
-  create(params: {
-    name: string;
-    description?: string;
-    icon?: string;
-    parentGroupUuid?: string;
-    path: string;
-    level: number;
-    sortOrder?: number;
-    isSystemGroup?: boolean;
-  }): SettingGroupServer;
-  fromServerDTO(dto: SettingGroupServerDTO): SettingGroupServer;
-  fromPersistenceDTO(dto: SettingGroupPersistenceDTO): SettingGroupServer;
-}
+  restore(): void;}

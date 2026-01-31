@@ -25,11 +25,4 @@ export interface PendingChangeClient {
   entityRef: EntityReferenceDTO;
   operation: ChangeOperationType;
   summary: string;
-  isSynced: boolean;
-
-  toClientDTO(): PendingChangeClientDTO;
-}
-
-export interface PendingChangeClientStatic {
-  fromClientDTO(dto: PendingChangeClientDTO): PendingChangeClient;
-}
+  isSynced: boolean;}

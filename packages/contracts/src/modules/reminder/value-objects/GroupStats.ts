@@ -31,11 +31,7 @@ export interface IGroupStatsServer {
     >,
   ): IGroupStatsServer;
 
-  // DTO 转换方法
-  toServerDTO(): GroupStatsServerDTO;
-  toClientDTO(): GroupStatsClientDTO;
-  toPersistenceDTO(): GroupStatsPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 分组统计信息 - Client 接口
@@ -54,9 +50,7 @@ export interface IGroupStatsClient {
   // 值对象方法
   equals(other: IGroupStatsClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): GroupStatsServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

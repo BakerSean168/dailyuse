@@ -30,11 +30,7 @@ export interface INotificationMetadataServer {
     >,
   ): INotificationMetadataServer;
 
-  // DTO lb��
-  toServerDTO(): NotificationMetadataServerDTO;
-  toClientDTO(): NotificationMetadataClientDTO;
-  toPersistenceDTO(): NotificationMetadataPersistenceDTO;
-}
+  // DTO lb��}
 
 // ============ DTO �I ============
 

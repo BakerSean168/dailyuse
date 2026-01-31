@@ -16,9 +16,7 @@ export interface TaskGoalBindingClient {
   displayText: string;
   hasPositiveIncrement: boolean;
 
-  equals(other: TaskGoalBindingClient): boolean;
-  toServerDTO(): TaskGoalBindingServerDTO;
-}
+  equals(other: TaskGoalBindingClient): boolean;}
 
 // ============ DTO 定义 ============
 

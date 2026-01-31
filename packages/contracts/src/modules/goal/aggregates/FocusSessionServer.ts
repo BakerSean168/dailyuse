@@ -119,10 +119,7 @@ export interface FocusSessionServer {
    */
   getRemainingMinutes(): number;
 
-  // ===== DTO 转换方法 =====
-  toServerDTO(): FocusSessionServerDTO;
-  toPersistenceDTO(): FocusSessionPersistenceDTO;
-}
+  // ===== DTO 转换方法 =====}
 
 // ============ 领域事件定义 ============
 

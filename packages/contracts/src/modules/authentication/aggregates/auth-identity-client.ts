@@ -68,10 +68,6 @@ export interface AuthIdentityClient {
   updatedAt: DomainDate;
 }
 
-export interface AuthIdentityClientStatic {
-  fromClientDTO(dto: AuthIdentityClientDTO): AuthIdentityClient;
-}
-
 // ============ DTO 定义 ============
 
 /**

@@ -156,41 +156,6 @@ export interface NotificationTemplateServer {
   };
 
   // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): NotificationTemplateAggregateServerDTO;
-
   /**
    * 转换为 Persistence DTO (数据库)
-   */
-  toPersistenceDTO(): NotificationTemplateAggregatePersistenceDTO;
-}
-
-/**
- * NotificationTemplate 静态工厂方法接口
- */
-export interface NotificationTemplateServerStatic {
-  /**
-   * 创建新的 NotificationTemplate 聚合根（静态工厂方法）
-   */
-  create(params: {
-    name: string;
-    type: NotificationType;
-    category: NotificationCategory;
-    template: NotificationTemplateConfigServerDTO;
-    description?: string;
-    isSystemTemplate?: boolean;
-  }): NotificationTemplateServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: NotificationTemplateAggregateServerDTO): NotificationTemplateServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: NotificationTemplateAggregatePersistenceDTO): NotificationTemplateServer;
-}
+   */}

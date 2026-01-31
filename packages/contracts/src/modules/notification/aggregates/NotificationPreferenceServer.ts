@@ -157,39 +157,6 @@ export interface NotificationPreferenceServer {
   shouldSendNotification(category: string, type: string, channel: string): boolean;
 
   // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): NotificationPreferenceServerDTO;
-
   /**
    * 转换为 Persistence DTO (数据库)
-   */
-  toPersistenceDTO(): NotificationPreferencePersistenceDTO;
-}
-
-/**
- * NotificationPreference 静态工厂方法接口
- */
-export interface NotificationPreferenceServerStatic {
-  /**
-   * 创建新的 NotificationPreference 聚合根（静态工厂方法）
-   */
-  create(params: {
-    accountUuid: string;
-    enabled?: boolean;
-    channels?: Partial<ChannelPreferences>;
-    categories?: Partial<CategoryPreferences>;
-  }): NotificationPreferenceServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: NotificationPreferenceServerDTO): NotificationPreferenceServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: NotificationPreferencePersistenceDTO): NotificationPreferenceServer;
-}
+   */}

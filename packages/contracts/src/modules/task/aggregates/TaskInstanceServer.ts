@@ -133,8 +133,4 @@ export interface TaskInstanceServer {
   canSkip(): boolean;
   isOverdue(): boolean;
 
-  // DTO 转换
-  toServerDTO(): TaskInstanceServerDTO;
-  toClientDTO(): TaskInstanceClientDTO;
-  toPersistenceDTO(): TaskInstancePersistenceDTO;
-}
+  // DTO 转换}

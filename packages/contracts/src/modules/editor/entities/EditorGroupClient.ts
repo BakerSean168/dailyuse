@@ -65,8 +65,4 @@ export interface EditorGroupClient {
    */
   hasCustomName(): boolean;
 
-  // ===== DTO 转换方法 =====
-
-  toClientDTO(): EditorGroupClientDTO;
-  toServerDTO(): EditorGroupServerDTO;
-}
+  // ===== DTO 转换方法 =====}

@@ -107,9 +107,4 @@ export interface SearchEngineServer {
    */
   isIndexOutdated(threshold: number): boolean;
 
-  // ===== DTO 转换方法 =====
-
-  toServerDTO(): SearchEngineServerDTO;
-  toClientDTO(): SearchEngineClientDTO;
-  toPersistenceDTO(): SearchEnginePersistenceDTO;
-}
+  // ===== DTO 转换方法 =====}

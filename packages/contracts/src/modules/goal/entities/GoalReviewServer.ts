@@ -55,25 +55,4 @@ export interface GoalReviewServer {
   addAchievement(achievement: string): void;
   addChallenge(challenge: string): void;
   addImprovement(improvement: string): void;
-  isHighQuality(): boolean;
-
-  toServerDTO(): GoalReviewServerDTO;
-  toClientDTO(): GoalReviewClientDTO;
-  toPersistenceDTO(): GoalReviewPersistenceDTO;
-}
-
-export interface GoalReviewServerStatic {
-  create(params: {
-    goalUuid: string;
-    type: ReviewType;
-    rating: number;
-    summary: string;
-    achievements?: string;
-    challenges?: string;
-    improvements?: string;
-    keyResultSnapshots?: KeyResultSnapshotServerDTO[];
-    reviewedAt?: number;
-  }): GoalReviewServer;
-  fromServerDTO(dto: GoalReviewServerDTO): GoalReviewServer;
-  fromPersistenceDTO(dto: GoalReviewPersistenceDTO): GoalReviewServer;
-}
+  isHighQuality(): boolean;}

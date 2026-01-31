@@ -116,32 +116,4 @@ export interface ReminderStatisticsServer {
 
   /**
    * 转换为 Server DTO
-   */
-  toServerDTO(): ReminderStatisticsServerDTO;
-
-  toClientDTO(): ReminderStatisticsClientDTO;
-  /**
-   * 转换为 Persistence DTO (数据库)
-   */
-  toPersistenceDTO(): ReminderStatisticsPersistenceDTO;
-}
-
-/**
- * Reminder Statistics 静态工厂方法接口
- */
-export interface ReminderStatisticsServerStatic {
-  /**
-   * 创建新的 Reminder Statistics 聚合根（静态工厂方法）
-   */
-  create(params: { accountUuid: string }): ReminderStatisticsServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: ReminderStatisticsServerDTO): ReminderStatisticsServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: ReminderStatisticsPersistenceDTO): ReminderStatisticsServer;
-}
+   */}

@@ -1,0 +1,141 @@
+// ==========================================
+// AI Module
+// AI 对话、消息、生成任务、配额、Provider 配置
+// ==========================================
+
+model AiConversation {
+  id            String    @id
+  identityId    String    @map("identity_id")
+  title         String
+  status        String // ACTIVE, CLOSED, ARCHIVED
+  messageCount  Int       @default(0) @map("message_count")
+  lastMessageAt DateTime? @map("last_message_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  account  Account     @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  messages AiMessage[]
+
+  @@index([identityId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([lastMessageAt])
+  @@map("ai_conversations")
+}
+
+model AiMessage {
+  id             String   @id
+  conversationId String   @map("conversation_id")
+  role           String // USER, ASSISTANT, SYSTEM
+  content        String   @db.Text
+  tokenUsage     String?  @map("token_usage") // JSON
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
+  @@map("ai_messages")
+}
+
+model AiGenerationTask {
+  id           String    @id
+  identityId   String    @map("identity_id")
+  taskType     String    @map("task_type") // GOAL_KEY_RESULTS, TASK_TEMPLATES, etc.
+  status       String // PENDING, PROCESSING, COMPLETED, FAILED
+  input        String    @db.Text // JSON string
+  result       String?   @db.Text // JSON string
+  error        String?   @db.Text
+  retryCount   Int       @default(0) @map("retry_count")
+  tokenUsage   String?   @map("token_usage") // JSON
+  processingMs Int?      @map("processing_ms")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  completedAt  DateTime? @map("completed_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId])
+  @@index([taskType])
+  @@index([status])
+  @@index([createdAt])
+  @@map("ai_generation_tasks")
+}
+
+model AiUsageQuota {
+  id           String   @id
+  identityId   String   @unique @map("identity_id")
+  quotaLimit   Int      @default(50) @map("quota_limit")
+  currentUsage Int      @default(0) @map("current_usage")
+  resetPeriod  String   @default("DAILY") @map("reset_period") // DAILY, WEEKLY, MONTHLY
+  lastResetAt  DateTime @default(now()) @map("last_reset_at")
+  nextResetAt  DateTime @map("next_reset_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId])
+  @@index([nextResetAt])
+  @@map("ai_usage_quotas")
+}
+
+model AiProviderConfig {
+  id              String   @id
+  identityId      String   @map("identity_id")
+  name            String // 配置名称
+  providerType    String   @map("provider_type") // OPENAI, QINIU, ANTHROPIC, CUSTOM_OPENAI_COMPATIBLE
+  baseUrl         String   @map("base_url") // API 基础地址
+  apiKeyEncrypted String   @map("api_key_encrypted") // AES-256-GCM 加密的 API Key
+  defaultModel    String?  @map("default_model")
+  availableModels String   @default("[]") @map("available_models") // 可用模型列表 JSON
+  isActive        Boolean  @default(true) @map("is_active")
+  isDefault       Boolean  @default(false) @map("is_default")
+  priority        Int      @default(100) // 优先级
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@unique([identityId, name])
+  @@index([identityId])
+  @@index([isDefault])
+  @@index([isActive])
+  @@index([priority])
+  @@map("ai_provider_configs")
+}
+
+model KnowledgeGenerationTask {
+  id                   String    @id
+  identityId           String    @map("identity_id")
+  topic                String
+  documentCount        Int       @default(5) @map("document_count")
+  targetAudience       String?   @map("target_audience")
+  folderPath           String    @map("folder_path")
+  status               String // PENDING, GENERATING, COMPLETED, FAILED
+  progress             Int       @default(0) // 0-100
+  generatedDocumentIds String[]  @map("generated_document_ids")
+  error                String?   @db.Text
+  createdAt            DateTime  @default(now()) @map("created_at")
+  completedAt          DateTime? @map("completed_at")
+
+  @@index([identityId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("knowledge_generation_tasks")
+}
+
+model DashboardConfig {
+  id           Int      @id @default(autoincrement())
+  identityId   String   @unique @map("identity_id")
+  widgetConfig Json     @map("widget_config")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId])
+  @@map("dashboard_configs")
+}

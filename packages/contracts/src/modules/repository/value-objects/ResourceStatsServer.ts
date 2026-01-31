@@ -18,13 +18,6 @@ export interface ResourceStatsServer {
   editCount: number;
   linkCount: number;
   lastViewedAt?: number | null;
-  lastEditedAt?: number | null;
-
-  toServerDTO(): ResourceStatsServerDTO;
-}
+  lastEditedAt?: number | null;}
 
 // ============ Server Static ============
-export interface ResourceStatsServerStatic {
-  create(params?: Partial<ResourceStatsServerDTO>): ResourceStatsServer;
-  fromServerDTO(dto: ResourceStatsServerDTO): ResourceStatsServer;
-}

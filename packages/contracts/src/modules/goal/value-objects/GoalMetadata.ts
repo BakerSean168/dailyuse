@@ -34,11 +34,7 @@ export interface IGoalMetadataServer {
   addTag(tag: string): IGoalMetadataServer;
   removeTag(tag: string): IGoalMetadataServer;
 
-  // DTO 转换方法
-  toServerDTO(): GoalMetadataServerDTO;
-  toClientDTO(): GoalMetadataClientDTO;
-  toPersistenceDTO(): GoalMetadataPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 目标元数据 - Client 接口
@@ -68,9 +64,7 @@ export interface IGoalMetadataClient {
   // UI 辅助方法
   hasTag(tag: string): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): GoalMetadataServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

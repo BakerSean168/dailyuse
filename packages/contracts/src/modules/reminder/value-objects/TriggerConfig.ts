@@ -48,11 +48,7 @@ export interface ITriggerConfigServer {
     >,
   ): ITriggerConfigServer;
 
-  // DTO 转换方法
-  toServerDTO(): TriggerConfigServerDTO;
-  toClientDTO(): TriggerConfigClientDTO;
-  toPersistenceDTO(): TriggerConfigPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 触发器配置 - Client 接口
@@ -68,9 +64,7 @@ export interface ITriggerConfigClient {
   // 值对象方法
   equals(other: ITriggerConfigClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): TriggerConfigServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

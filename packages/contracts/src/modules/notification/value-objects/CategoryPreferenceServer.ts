@@ -39,11 +39,7 @@ export interface ICategoryPreferenceServer {
     >,
   ): ICategoryPreferenceServer;
 
-  // DTO lb��
-  toServerDTO(): CategoryPreferenceServerDTO;
-  toClientDTO(): CategoryPreferenceClientDTO;
-  toPersistenceDTO(): CategoryPreferencePersistenceDTO;
-}
+  // DTO lb��}
 
 // ============ DTO �I ============
 

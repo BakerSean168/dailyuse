@@ -43,11 +43,7 @@ export interface IKeyResultProgressServer {
   updateProgress(newValue: number): IKeyResultProgressServer; // 更新进度
   recalculateFromRecords(recordValues: number[]): number; // 根据记录重新计算当前值
 
-  // DTO 转换方法
-  toServerDTO(): KeyResultProgressServerDTO;
-  toClientDTO(): KeyResultProgressClientDTO;
-  toPersistenceDTO(): KeyResultProgressPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 关键成果进度 - Client 接口
@@ -66,9 +62,7 @@ export interface IKeyResultProgressClient {
   // 值对象方法
   equals(other: IKeyResultProgressClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): KeyResultProgressServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

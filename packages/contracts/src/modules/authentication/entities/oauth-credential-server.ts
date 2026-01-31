@@ -32,8 +32,3 @@ export interface OAuthCredentialPersistenceDTO extends BaseAuthCredentialPersist
   refreshToken: string | null;
   expiresAt: PersistenceDate | null;
 }
-
-export interface OAuthCredentialServerStatic {
-  fromServerDTO(dto: OAuthCredentialServerDTO): OAuthCredentialServer;
-  fromPersistenceDTO(dto: OAuthCredentialPersistenceDTO): OAuthCredentialServer;
-}

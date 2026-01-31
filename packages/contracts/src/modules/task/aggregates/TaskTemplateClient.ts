@@ -133,13 +133,6 @@ export interface TaskTemplateClient {
   toServerDTO(includeChildren?: boolean): TaskTemplateServerDTO;
 }
 
-export interface TaskTemplateClientStatic {
-  fromClientDTO(dto: TaskTemplateClientDTO): TaskTemplateClient;
-  fromServerDTO(dto: TaskTemplateServerDTO): TaskTemplateClient;
-  forCreate(accountUuid: string): TaskTemplateClient;
-  create(params: any): TaskTemplateClient;
-}
-
 export interface TaskTemplateClientInstance extends TaskTemplateClient {
   clone(): TaskTemplateClient;
 }

@@ -75,10 +75,3 @@ export interface FolderClient {
   toClientDTO(includeChildren?: boolean): FolderClientDTO;
   toServerDTO(includeChildren?: boolean): FolderServerDTO;
 }
-
-// ============ 静态工厂方法接口 ============
-
-export interface FolderClientStatic {
-  fromServerDTO(dto: FolderServerDTO): FolderClient;
-  fromClientDTO(dto: FolderClientDTO): FolderClient;
-}

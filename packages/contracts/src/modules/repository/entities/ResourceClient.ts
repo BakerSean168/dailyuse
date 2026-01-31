@@ -81,14 +81,4 @@ export interface ResourceClient {
   extension: string;
   icon: string;
 
-  // DTO 转换方法
-  toClientDTO(): ResourceClientDTO;
-  toServerDTO(): ResourceServerDTO;
-}
-
-// ============ 静态工厂方法接口 ============
-
-export interface ResourceClientStatic {
-  fromServerDTO(dto: ResourceServerDTO): ResourceClient;
-  fromClientDTO(dto: ResourceClientDTO): ResourceClient;
-}
+  // DTO 转换方法}

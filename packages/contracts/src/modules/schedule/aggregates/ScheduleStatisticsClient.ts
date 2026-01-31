@@ -106,29 +106,6 @@ export interface ScheduleStatisticsClient {
   calculateHealthScore(): number;
 
   // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): ScheduleStatisticsServerDTO;
-
   /**
    * 转换为 Client DTO
-   */
-  toClientDTO(): ScheduleStatisticsClientDTO;
-}
-
-/**
- * ScheduleStatistics 静态工厂方法接口
- */
-export interface ScheduleStatisticsClientStatic {
-  /**
-   * 从 Server DTO 创建客户端实体
-   */
-  fromServerDTO(dto: ScheduleStatisticsServerDTO): ScheduleStatisticsClient;
-
-  /**
-   * 从 Client DTO 创建客户端实体
-   */
-  fromClientDTO(dto: ScheduleStatisticsClientDTO): ScheduleStatisticsClient;
-}
+   */}

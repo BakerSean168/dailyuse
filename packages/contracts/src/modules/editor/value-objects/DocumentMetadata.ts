@@ -29,11 +29,7 @@ export interface IDocumentMetadataServer {
     >,
   ): IDocumentMetadataServer;
 
-  // DTO 转换方法
-  toServerDTO(): DocumentMetadataServerDTO;
-  toClientDTO(): DocumentMetadataClientDTO;
-  toPersistenceDTO(): DocumentMetadataPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 文档元数据 - Client 接口
@@ -52,9 +48,7 @@ export interface IDocumentMetadataClient {
   // 值对象方法
   equals(other: IDocumentMetadataClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): DocumentMetadataServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

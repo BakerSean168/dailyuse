@@ -1,0 +1,72 @@
+// ==========================================
+// Document Module
+// 文档聚合根、版本、链接
+// ==========================================
+
+model Document {
+  id              String    @id
+  identityId      String    @map("identity_id")
+  title           String
+  content         String    @db.Text
+  folderPath      String    @map("folder_path")
+  tags            String[] // PostgreSQL array
+  status          String    @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
+  currentVersion  Int       @default(0) @map("current_version")
+  lastVersionedAt DateTime? @map("last_versioned_at")
+  lastEditedAt    DateTime? @map("last_edited_at")
+  editSessionId   String?   @map("edit_session_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  account     Account           @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  versions    DocumentVersion[]
+  sourceLinks DocumentLink[]    @relation("source_links")
+  targetLinks DocumentLink[]    @relation("target_links")
+
+  @@index([identityId, deletedAt])
+  @@index([identityId, folderPath])
+  @@index([identityId, status])
+  @@map("documents")
+}
+
+model DocumentVersion {
+  id                String   @id
+  documentId        String   @map("document_id")
+  versionNumber     Int      @map("version_number")
+  title             String
+  content           String   @db.Text
+  changeType        String   @map("change_type") // initial | major | minor | patch | restore
+  changeDescription String?  @map("change_description")
+  changedBy         String   @map("changed_by")
+  restoredFrom      String?  @map("restored_from")
+  metadata          Json? // { addedChars, deletedChars, modifiedSections }
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  account  Account  @relation(fields: [changedBy], references: [id])
+
+  @@index([documentId, versionNumber])
+  @@index([documentId, createdAt])
+  @@index([changedBy])
+  @@map("document_versions")
+}
+
+model DocumentLink {
+  id               String   @id
+  sourceDocumentId String   @map("source_document_id")
+  targetDocumentId String?  @map("target_document_id")
+  linkText         String   @map("link_text")
+  linkPosition     Int      @map("link_position")
+  isBroken         Boolean  @default(false) @map("is_broken")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  sourceDocument Document  @relation("source_links", fields: [sourceDocumentId], references: [id], onDelete: Cascade)
+  targetDocument Document? @relation("target_links", fields: [targetDocumentId], references: [id], onDelete: SetNull)
+
+  @@index([sourceDocumentId])
+  @@index([targetDocumentId])
+  @@index([isBroken])
+  @@map("document_links")
+}

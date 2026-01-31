@@ -383,41 +383,4 @@ export interface ReminderTemplateServer {
 
   /**
    * 转换为 Persistence DTO (数据库)
-   */
-  toPersistenceDTO(): ReminderTemplatePersistenceDTO;
-}
-
-/**
- * Reminder Template 静态工厂方法接口
- */
-export interface ReminderTemplateServerStatic {
-  /**
-   * 创建新的 Reminder Template 聚合根（静态工厂方法）
-   */
-  create(params: {
-    accountUuid: string;
-    title: string;
-    type: ReminderType;
-    trigger: TriggerConfigServerDTO;
-    activeTime: ActiveTimeConfigServerDTO;
-    notificationConfig: NotificationConfigServerDTO;
-    description?: string;
-    recurrence?: RecurrenceConfigServerDTO;
-    activeHours?: ActiveHoursConfigServerDTO;
-    importanceLevel?: ImportanceLevel;
-    tags?: string[];
-    color?: string;
-    icon?: string;
-    groupUuid?: string;
-  }): ReminderTemplateServer;
-
-  /**
-   * 从 Server DTO 创建实体（递归创建子实体）
-   */
-  fromServerDTO(dto: ReminderTemplateServerDTO): ReminderTemplateServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: ReminderTemplatePersistenceDTO): ReminderTemplateServer;
-}
+   */}

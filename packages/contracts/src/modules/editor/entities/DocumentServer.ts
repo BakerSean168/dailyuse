@@ -124,9 +124,4 @@ export interface DocumentServer {
    */
   isMarkdown(): boolean;
 
-  // ===== DTO 转换方法 =====
-
-  toServerDTO(): DocumentServerDTO;
-  toClientDTO(): DocumentClientDTO;
-  toPersistenceDTO(): DocumentPersistenceDTO;
-}
+  // ===== DTO 转换方法 =====}

@@ -41,11 +41,4 @@ export interface SyncProfileClient {
   isConnected: boolean;
   statusLabel: string;
 
-  canSync(): boolean;
-
-  toClientDTO(): SyncProfileClientDTO;
-}
-
-export interface SyncProfileClientStatic {
-  fromClientDTO(dto: SyncProfileClientDTO): SyncProfileClient;
-}
+  canSync(): boolean;}

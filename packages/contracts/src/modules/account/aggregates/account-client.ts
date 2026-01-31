@@ -28,10 +28,6 @@ export interface AccountClient {
   updatedAt: DomainDate;
 }
 
-export interface AccountClientStatic {
-  fromClientDTO(dto: AccountClientDTO): AccountClient;
-}
-
 // ============ DTO 定义 ============
 
 /**
@@ -47,4 +43,3 @@ export interface AccountClientDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
 }
-

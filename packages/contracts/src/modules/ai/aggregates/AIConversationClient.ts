@@ -39,18 +39,7 @@ export interface AIConversationClient {
   // 子实体
   messages?: MessageClient[] | null;
 
-  // DTO 转换
-  toClientDTO(): AIConversationClientDTO;
-  toServerDTO(): AIConversationServerDTO;
-}
-
-// ============ 静态工厂方法接口 ============
-
-export interface AIConversationClientStatic {
-  fromClientDTO(dto: AIConversationClientDTO): AIConversationClient;
-  fromServerDTO(dto: AIConversationServerDTO): AIConversationClient;
-  forCreate(accountUuid: string, title: string): AIConversationClient;
-}
+  // DTO 转换}
 
 export interface AIConversationClientInstance extends AIConversationClient {
   clone(): AIConversationClient;

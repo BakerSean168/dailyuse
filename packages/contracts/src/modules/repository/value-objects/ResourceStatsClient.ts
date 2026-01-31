@@ -33,14 +33,6 @@ export interface ResourceStatsClient {
   editCountText: string;
   linkCountText: string;
   lastViewedText?: string | null;
-  lastEditedText?: string | null;
-
-  toClientDTO(): ResourceStatsClientDTO;
-  toServerDTO(): ResourceStatsServerDTO;
-}
+  lastEditedText?: string | null;}
 
 // ============ Client Static ============
-export interface ResourceStatsClientStatic {
-  fromServerDTO(dto: ResourceStatsServerDTO): ResourceStatsClient;
-  fromClientDTO(dto: ResourceStatsClientDTO): ResourceStatsClient;
-}

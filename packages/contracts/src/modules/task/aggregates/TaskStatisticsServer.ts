@@ -216,39 +216,9 @@ export interface TaskStatisticsServer {
   getEfficiencyTrend(): 'UP' | 'DOWN' | 'STABLE';
 
   // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): TaskStatisticsServerDTO;
-
   /**
    * 转换为 Client DTO
-   */
-  toClientDTO(): TaskStatisticsClientDTO;
-
+   */
   /**
    * 转换为 Persistence DTO (数据库)
-   */
-  toPersistenceDTO(): TaskStatisticsPersistenceDTO;
-}
-
-/**
- * TaskStatistics 静态工厂方法接口
- */
-export interface TaskStatisticsServerStatic {
-  /**
-   * 创建新的 TaskStatistics 聚合根（静态工厂方法）
-   */
-  createDefault(accountUuid: string): TaskStatisticsServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: TaskStatisticsServerDTO): TaskStatisticsServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: TaskStatisticsPersistenceDTO): TaskStatisticsServer;
-}
+   */}

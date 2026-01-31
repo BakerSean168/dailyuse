@@ -29,14 +29,6 @@ export interface RepositoryConfigClient {
   // UI 计算属性
   searchEngineText: string;
   gitStatusText: string;
-  syncStatusText: string;
-
-  toClientDTO(): RepositoryConfigClientDTO;
-  toServerDTO(): RepositoryConfigServerDTO;
-}
+  syncStatusText: string;}
 
 // ============ Client Static ============
-export interface RepositoryConfigClientStatic {
-  fromServerDTO(dto: RepositoryConfigServerDTO): RepositoryConfigClient;
-  fromClientDTO(dto: RepositoryConfigClientDTO): RepositoryConfigClient;
-}

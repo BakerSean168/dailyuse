@@ -59,17 +59,7 @@ export interface AIGenerationTaskClient {
   getTypeBadge(): string;
   hasResult(): boolean;
   hasError(): boolean;
-  canRetry(): boolean;
-
-  toClientDTO(): AIGenerationTaskClientDTO;
-  toServerDTO(): AIGenerationTaskServerDTO;
-}
-
-export interface AIGenerationTaskClientStatic {
-  fromClientDTO(dto: AIGenerationTaskClientDTO): AIGenerationTaskClient;
-  fromServerDTO(dto: AIGenerationTaskServerDTO): AIGenerationTaskClient;
-  forCreate(accountUuid: string, type: GenerationTaskType, input: GenerationInputClientDTO): AIGenerationTaskClient;
-}
+  canRetry(): boolean;}
 
 export interface AIGenerationTaskClientInstance extends AIGenerationTaskClient {
   clone(): AIGenerationTaskClient;

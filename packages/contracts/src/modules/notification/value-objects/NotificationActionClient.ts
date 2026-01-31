@@ -1,15 +1,15 @@
 /**
  * NotificationAction Value Object (Client)
- * åÍ\<ùa - ¢7ï
+ * ï¿½ï¿½\<ï¿½a - ï¿½7ï¿½
  */
 
 import type { NotificationActionType } from '../enums';
 import type { NotificationActionServerDTO } from './NotificationActionServer';
 
-// ============ ¥ãšI ============
+// ============ ï¿½ï¿½I ============
 
 /**
- * åÍ\ - Client ¥ã
+ * ï¿½ï¿½\ - Client ï¿½ï¿½
  */
 export interface INotificationActionClient {
   id: string;
@@ -17,18 +17,16 @@ export interface INotificationActionClient {
   type: NotificationActionType;
   payload?: any;
 
-  // UI …©^'
-  typeText: string; // "ü*", "API(", "sí", "êšI"
+  // UI ï¿½ï¿½^'
+  typeText: string; // "ï¿½*", "API(", "sï¿½", "ï¿½I"
   icon: string;
 
-  // <ùa¹Õ
+  // <ï¿½aï¿½ï¿½
   equals(other: INotificationActionClient): boolean;
 
-  // DTO lb¹Õ
-  toServerDTO(): NotificationActionServerDTO;
-}
+  // DTO lbï¿½ï¿½}
 
-// ============ DTO šI ============
+// ============ DTO ï¿½I ============
 
 /**
  * NotificationAction Client DTO
@@ -42,6 +40,6 @@ export interface NotificationActionClientDTO {
   icon: string;
 }
 
-// ============ {‹üú ============
+// ============ {ï¿½ï¿½ï¿½ ============
 
 export type NotificationActionClient = INotificationActionClient;

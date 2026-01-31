@@ -27,11 +27,7 @@ export interface IWorkspaceLayoutServer {
     >,
   ): IWorkspaceLayoutServer;
 
-  // DTO 转换方法
-  toServerDTO(): WorkspaceLayoutServerDTO;
-  toClientDTO(): WorkspaceLayoutClientDTO;
-  toPersistenceDTO(): WorkspaceLayoutPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 工作区布局 - Client 接口
@@ -47,9 +43,7 @@ export interface IWorkspaceLayoutClient {
   // 值对象方法
   equals(other: IWorkspaceLayoutClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): WorkspaceLayoutServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

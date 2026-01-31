@@ -119,9 +119,4 @@ export interface LinkedResourceServer {
    */
   hasAnchor(): boolean;
 
-  // ===== DTO 转换方法 =====
-
-  toServerDTO(): LinkedResourceServerDTO;
-  toClientDTO(): LinkedResourceClientDTO;
-  toPersistenceDTO(): LinkedResourcePersistenceDTO;
-}
+  // ===== DTO 转换方法 =====}

@@ -65,7 +65,4 @@ export interface FocusSessionClient {
   readonly createdAt: Date;
   readonly updatedAt: Date;
 
-  // ===== DTO 转换方法 =====
-  toClientDTO(): FocusSessionClientDTO;
-  toServerDTO(): FocusSessionServerDTO;
-}
+  // ===== DTO 转换方法 =====}

@@ -187,43 +187,9 @@ export interface AIUsageQuotaServer {
   getUsagePercentage(): number;
 
   // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): AIUsageQuotaServerDTO;
-
   /**
    * 转换为 Client DTO
-   */
-  toClientDTO(): AIUsageQuotaClientDTO;
-
+   */
   /**
    * 转换为 Persistence DTO
-   */
-  toPersistenceDTO(): AIUsageQuotaPersistenceDTO;
-}
-
-/**
- * AIUsageQuota 静态工厂方法接口
- */
-export interface AIUsageQuotaServerStatic {
-  /**
-   * 创建新的 AIUsageQuota 聚合根（静态工厂方法）
-   */
-  create(params: {
-    accountUuid: string;
-    quotaLimit: number;
-    resetPeriod: QuotaResetPeriod;
-  }): AIUsageQuotaServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: AIUsageQuotaServerDTO): AIUsageQuotaServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: AIUsageQuotaPersistenceDTO): AIUsageQuotaServer;
-}
+   */}

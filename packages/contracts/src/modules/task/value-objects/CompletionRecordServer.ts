@@ -13,11 +13,7 @@ export interface CompletionRecordServer {
   note?: string | null;
   rating?: number | null;
 
-  equals(other: CompletionRecordServer): boolean;
-  toServerDTO(): CompletionRecordServerDTO;
-  toClientDTO(): CompletionRecordClientDTO;
-  toPersistenceDTO(): CompletionRecordPersistenceDTO;
-}
+  equals(other: CompletionRecordServer): boolean;}
 
 // ============ DTO 定义 ============
 

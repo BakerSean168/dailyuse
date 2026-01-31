@@ -31,17 +31,7 @@ export interface GoalReviewClient {
   improvements?: string | null;
   keyResultSnapshots: KeyResultSnapshotClientDTO[];
   reviewedAt: number;
-  createdAt: Date;
-
-  toClientDTO(): GoalReviewClientDTO;
-  toServerDTO(): GoalReviewServerDTO;
-}
-
-export interface GoalReviewClientStatic {
-  fromClientDTO(dto: GoalReviewClientDTO): GoalReviewClient;
-  fromServerDTO(dto: GoalReviewServerDTO): GoalReviewClient;
-  forCreate(goalUuid: string): GoalReviewClient;
-}
+  createdAt: Date;}
 
 export interface GoalReviewClientInstance extends GoalReviewClient {
   clone(): GoalReviewClient;

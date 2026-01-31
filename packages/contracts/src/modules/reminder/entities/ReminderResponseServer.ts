@@ -67,34 +67,3 @@ export interface ReminderResponseServer {
   isPositiveResponse(): boolean; // CLICKED 或 COMPLETED
   isNegativeResponse(): boolean; // IGNORED 或 DISMISSED
   getResponseWeight(): number; // 响应权重：COMPLETED(1.5), CLICKED(1.0), SNOOZED(-0.2), DISMISSED(-0.3), IGNORED(-0.5)
-
-  // 转换方法
-  toServerDTO(): ReminderResponseServerDTO;
-  toClientDTO(): ReminderResponseClientDTO;
-  toPersistenceDTO(): ReminderResponsePersistenceDTO;
-}
-
-/**
- * Reminder Response 静态工厂方法接口
- */
-export interface ReminderResponseServerStatic {
-  /**
-   * 创建新的 Reminder Response（静态工厂方法）
-   */
-  create(params: {
-    reminderTemplateUuid: string;
-    action: ReminderResponseAction;
-    responseTime?: Date;
-    timestamp?: Date;
-  }): ReminderResponseServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: ReminderResponseServerDTO): ReminderResponseServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: ReminderResponsePersistenceDTO): ReminderResponseServer;
-}

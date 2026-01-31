@@ -155,39 +155,7 @@ export interface AIConversationServer {
    * @param includeChildren 是否包含子实体（默认 false）
    */
   toServerDTO(includeChildren?: boolean): AIConversationServerDTO;
-
-  /**
-   * 转换为 Client DTO
-   */
-  toClientDTO(): AIConversationClientDTO;
-
   /**
    * 转换为 Persistence DTO
    * 注意：Persistence 不包含子实体，子实体单独持久化
-   */
-  toPersistenceDTO(): AIConversationPersistenceDTO;
-}
-
-/**
- * AIConversation 静态工厂方法接口
- */
-export interface AIConversationServerStatic {
-  /**
-   * 创建新的 AIConversation 聚合根（静态工厂方法）
-   */
-  create(params: {
-    accountUuid: string;
-    title: string;
-  }): AIConversationServer;
-
-  /**
-   * 从 Server DTO 创建实体（递归创建子实体）
-   */
-  fromServerDTO(dto: AIConversationServerDTO): AIConversationServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   * 注意：需要单独加载子实体
-   */
-  fromPersistenceDTO(dto: AIConversationPersistenceDTO): AIConversationServer;
-}
+   */}

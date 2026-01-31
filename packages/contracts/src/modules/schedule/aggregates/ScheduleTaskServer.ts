@@ -377,39 +377,4 @@ export interface ScheduleTaskServer {
   /**
    * 转换为 Persistence DTO (数据库)
    * 注意：子实体在数据库中是独立表，不包含在 Persistence DTO 中
-   */
-  toPersistenceDTO(): ScheduleTaskPersistenceDTO;
-}
-
-/**
- * ScheduleTask 静态工厂方法接口
- * 注意：TypeScript 接口不能包含静态方法，这些方法应该在类上实现
- */
-export interface ScheduleTaskServerStatic {
-  /**
-   * 创建新的 ScheduleTask 聚合根（静态工厂方法）
-   * @param params 创建参数
-   * @returns 新的 ScheduleTask 实例
-   */
-  create(params: {
-    accountUuid: string;
-    name: string;
-    sourceModule: SourceModule;
-    sourceEntityId: string;
-    schedule: ScheduleConfigServerDTO;
-    description?: string;
-    metadata?: Partial<TaskMetadataServerDTO>;
-    retryPolicy?: Partial<RetryPolicyServerDTO>;
-  }): ScheduleTaskServer;
-
-  /**
-   * 从 Server DTO 创建实体（递归创建子实体）
-   */
-  fromServerDTO(dto: ScheduleTaskServerDTO): ScheduleTaskServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   * 注意：需要单独加载子实体
-   */
-  fromPersistenceDTO(dto: ScheduleTaskPersistenceDTO): ScheduleTaskServer;
-}
+   */}

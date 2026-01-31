@@ -29,17 +29,7 @@ export interface KeyResultClient {
   order: number;
   createdAt: Date;
   updatedAt: Date;
-  records?: GoalRecordClientDTO[] | null;
-
-  toClientDTO(): KeyResultClientDTO;
-  toServerDTO(): KeyResultServerDTO;
-}
-
-export interface KeyResultClientStatic {
-  fromClientDTO(dto: KeyResultClientDTO): KeyResultClient;
-  fromServerDTO(dto: KeyResultServerDTO): KeyResultClient;
-  forCreate(goalUuid: string): KeyResultClient;
-}
+  records?: GoalRecordClientDTO[] | null;}
 
 export interface KeyResultClientInstance extends KeyResultClient {
   clone(): KeyResultClient;

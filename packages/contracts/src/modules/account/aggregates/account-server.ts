@@ -28,11 +28,6 @@ export interface AccountServer {
   updatedAt: DomainDate;
 }
 
-export interface AccountServerStatic {
-  fromPersistenceDTO(dto: AccountPersistenceDTO): AccountServer;
-  fromServerDTO(dto: AccountServerDTO): AccountServer;
-}
-
 // ============ DTO 定义 ============
 
 /**

@@ -35,11 +35,7 @@ export interface ITaskMetadataServer {
   ): ITaskMetadataServer;
   validate(): { isValid: boolean; errors: string[] };
 
-  // DTO 转换方法
-  toServerDTO(): TaskMetadataServerDTO;
-  toClientDTO(): TaskMetadataClientDTO;
-  toPersistenceDTO(): TaskMetadataPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 任务元数据 - Client 接口
@@ -76,9 +72,7 @@ export interface ITaskMetadataClient {
   // 值对象方法
   equals(other: ITaskMetadataClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): TaskMetadataServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

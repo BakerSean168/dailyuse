@@ -33,11 +33,7 @@ export interface IWorkspaceSettingsServer {
     >,
   ): IWorkspaceSettingsServer;
 
-  // DTO 转换方法
-  toServerDTO(): WorkspaceSettingsServerDTO;
-  toClientDTO(): WorkspaceSettingsClientDTO;
-  toPersistenceDTO(): WorkspaceSettingsPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 工作区设置 - Client 接口
@@ -62,9 +58,7 @@ export interface IWorkspaceSettingsClient {
   // 值对象方法
   equals(other: IWorkspaceSettingsClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): WorkspaceSettingsServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

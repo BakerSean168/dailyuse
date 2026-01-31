@@ -82,34 +82,3 @@ export interface UserReminderPreferencesServer {
   getBestTimeSlot(): TimeSlotDTO | null; // 获取响应率最高的时间段
   getWorstTimeSlot(): TimeSlotDTO | null; // 获取响应率最低的时间段
   isGoodTimeToRemind(hour: number): boolean; // 判断某个小时是否是好时机
-
-  // 转换方法
-  toServerDTO(): UserReminderPreferencesServerDTO;
-  toClientDTO(): UserReminderPreferencesClientDTO;
-  toPersistenceDTO(): UserReminderPreferencesPersistenceDTO;
-}
-
-/**
- * User Reminder Preferences 静态工厂方法接口
- */
-export interface UserReminderPreferencesServerStatic {
-  /**
-   * 创建新的 User Reminder Preferences（静态工厂方法）
-   */
-  create(params: {
-    accountUuid: string;
-    bestTimeSlots?: TimeSlotDTO[];
-    worstTimeSlots?: TimeSlotDTO[];
-    globalSmartFrequency?: boolean;
-  }): UserReminderPreferencesServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: UserReminderPreferencesServerDTO): UserReminderPreferencesServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: UserReminderPreferencesPersistenceDTO): UserReminderPreferencesServer;
-}

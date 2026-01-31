@@ -86,26 +86,4 @@ export interface ResourceServer {
   delete(): void;
   moveTo(folderUuid: string | null): void;
 
-  // DTO 转换方法
-  toServerDTO(): ResourceServerDTO;
-  toPersistenceDTO(): ResourcePersistenceDTO;
-}
-
-// ============ 静态工厂方法接口 ============
-
-export interface ResourceServerStatic {
-  create(params: {
-    uuid: string;
-    repositoryUuid: string;
-    name: string;
-    type: ResourceType;
-    path: string;
-    folderUuid?: string | null;
-    content?: string;
-    metadata?: Partial<ResourceMetadataServerDTO>;
-    stats?: Partial<ResourceStatsServerDTO>;
-  }): ResourceServer;
-
-  fromServerDTO(dto: ResourceServerDTO): ResourceServer;
-  fromPersistenceDTO(dto: ResourcePersistenceDTO): ResourceServer;
-}
+  // DTO 转换方法}

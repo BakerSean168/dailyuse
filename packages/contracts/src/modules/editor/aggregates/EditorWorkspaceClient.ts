@@ -100,17 +100,9 @@ export interface EditorWorkspaceClient {
   getFormattedLastAccessed(): string | null;
 
   // ===== DTO 转换方法 =====
-
-  /**
-   * 转换为 Client DTO
-   */
-  toClientDTO(): EditorWorkspaceClientDTO;
-
   /**
    * 转换为 Server DTO
-   */
-  toServerDTO(): EditorWorkspaceServerDTO;
-
+   */
   /**
    * 从 Server DTO 创建实例（静态工厂方法）
    */

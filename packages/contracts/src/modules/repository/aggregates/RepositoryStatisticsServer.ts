@@ -78,11 +78,6 @@ export interface StatisticsUpdateEvent {
 /**
  * Repository Statistics Server 静态接口
  */
-export interface RepositoryStatisticsServerStatic {
-  fromPersistenceDTO(dto: RepositoryStatisticsPersistenceDTO): RepositoryStatisticsServer;
-  create(accountUuid: string): RepositoryStatisticsServer;
-}
-
 /**
  * Repository Statistics Server 接口
  */
@@ -104,10 +99,7 @@ export interface RepositoryStatisticsServer {
   readonly createdAt: Date;
   updatedAt: Date;
   
-  // 方法
-  toClientDTO(): RepositoryStatisticsServerDTO;
-  toPersistenceDTO(): RepositoryStatisticsPersistenceDTO;
-  
+  // 方法  
   // 更新方法
   incrementRepositories(delta?: number): void;
   decrementRepositories(delta?: number): void;

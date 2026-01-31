@@ -8,27 +8,19 @@ export type {
   SyncVersionServerDTO,
   SyncVersionClientDTO,
   SyncVersionPersistenceDTO,
-  ISyncVersionServer,
-  ISyncVersionServerStatic,
-} from './SyncVersion';
+  ISyncVersionServer,} from './SyncVersion';
 
 export type {
   EntityReferenceDTO,
-  IEntityReference,
-  IEntityReferenceStatic,
-} from './EntityReference';
+  IEntityReference,} from './EntityReference';
 
 export type {
   ConflictResolutionDTO,
-  IConflictResolution,
-  IConflictResolutionStatic,
-} from './ConflictResolution';
+  IConflictResolution,} from './ConflictResolution';
 
 export type {
   DeviceInfoDTO,
-  IDeviceInfo,
-  IDeviceInfoStatic,
-} from './DeviceInfo';
+  IDeviceInfo,} from './DeviceInfo';
 
 export type {
   AutoSyncConfigDTO,

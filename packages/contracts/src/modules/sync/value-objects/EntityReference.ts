@@ -24,8 +24,3 @@ export interface IEntityReference {
   toString(): string;
   toDTO(): EntityReferenceDTO;
 }
-
-export interface IEntityReferenceStatic {
-  create(entityType: SyncableEntityType, entityUuid: string, entityName?: string): IEntityReference;
-  fromDTO(dto: EntityReferenceDTO): IEntityReference;
-}

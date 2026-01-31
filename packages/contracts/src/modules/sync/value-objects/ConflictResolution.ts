@@ -29,10 +29,3 @@ export interface IConflictResolution {
   equals(other: IConflictResolution): boolean;
   toDTO(): ConflictResolutionDTO;
 }
-
-export interface IConflictResolutionStatic {
-  createLocalWins(localData: unknown, resolvedBy: string): IConflictResolution;
-  createRemoteWins(remoteData: unknown, resolvedBy: string): IConflictResolution;
-  createMerged(mergedData: unknown, resolvedBy: string, notes?: string): IConflictResolution;
-  fromDTO(dto: ConflictResolutionDTO): IConflictResolution;
-}

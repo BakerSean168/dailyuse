@@ -76,35 +76,3 @@ export interface UIConfigServer {
   min?: number | null;
   max?: number | null;
   step?: number | null;
-
-  toServerDTO(): UIConfigServerDTO;
-  toClientDTO(): UIConfigClientDTO;
-}
-
-export interface UIConfigServerStatic {
-  create(params: {
-    inputType:
-      | 'TEXT'
-      | 'NUMBER'
-      | 'SWITCH'
-      | 'SELECT'
-      | 'RADIO'
-      | 'CHECKBOX'
-      | 'SLIDER'
-      | 'COLOR'
-      | 'FILE';
-    label?: string;
-    placeholder?: string;
-    helpText?: string;
-    icon?: string;
-    order?: number;
-    visible?: boolean;
-    disabled?: boolean;
-    options?: Array<{ label: string; value: any }>;
-    min?: number;
-    max?: number;
-    step?: number;
-  }): UIConfigServer;
-  fromServerDTO(dto: UIConfigServerDTO): UIConfigServer;
-  fromPersistenceDTO(dto: UIConfigPersistenceDTO): UIConfigServer;
-}

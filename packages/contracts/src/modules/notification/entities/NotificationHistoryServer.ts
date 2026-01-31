@@ -48,38 +48,6 @@ export interface NotificationHistoryServer {
   getNotification(): Promise<any>; // 返回 NotificationServer，避免循环依赖
 
   // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): NotificationHistoryServerDTO;
-
   /**
    * 转换为 Persistence DTO (数据库)
-   */
-  toPersistenceDTO(): NotificationHistoryPersistenceDTO;
-}
-
-/**
- * NotificationHistory 静态工厂方法接口
- */
-export interface NotificationHistoryServerStatic {
-  /**
-   * 创建新的 NotificationHistory 实体（静态工厂方法）
-   */
-  create(params: {
-    notificationUuid: string;
-    action: string;
-    details?: any;
-  }): NotificationHistoryServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: NotificationHistoryServerDTO): NotificationHistoryServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: NotificationHistoryPersistenceDTO): NotificationHistoryServer;
-}
+   */}

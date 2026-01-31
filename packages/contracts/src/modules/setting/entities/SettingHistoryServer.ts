@@ -44,22 +44,4 @@ export interface SettingHistoryServer {
   newValue: any;
   operatorUuid?: string | null;
   operatorType: 'USER' | 'SYSTEM' | 'API';
-  createdAt: Date;
-
-  toServerDTO(): SettingHistoryServerDTO;
-  toClientDTO(): SettingHistoryClientDTO;
-  toPersistenceDTO(): SettingHistoryPersistenceDTO;
-}
-
-export interface SettingHistoryServerStatic {
-  create(params: {
-    settingUuid: string;
-    settingKey: string;
-    oldValue: any;
-    newValue: any;
-    operatorUuid?: string;
-    operatorType: 'USER' | 'SYSTEM' | 'API';
-  }): SettingHistoryServer;
-  fromServerDTO(dto: SettingHistoryServerDTO): SettingHistoryServer;
-  fromPersistenceDTO(dto: SettingHistoryPersistenceDTO): SettingHistoryServer;
-}
+  createdAt: Date;}

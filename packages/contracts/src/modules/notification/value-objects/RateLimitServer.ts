@@ -23,11 +23,7 @@ export interface IRateLimitServer {
     >,
   ): IRateLimitServer;
 
-  // DTO lb��
-  toServerDTO(): RateLimitServerDTO;
-  toClientDTO(): RateLimitClientDTO;
-  toPersistenceDTO(): RateLimitPersistenceDTO;
-}
+  // DTO lb��}
 
 // ============ DTO �I ============
 

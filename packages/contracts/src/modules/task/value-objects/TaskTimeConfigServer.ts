@@ -15,11 +15,7 @@ export interface TaskTimeConfigServer {
   timePoint?: number | null;
   timeRange?: { start: number; end: number } | null;
 
-  equals(other: TaskTimeConfigServer): boolean;
-  toServerDTO(): TaskTimeConfigServerDTO;
-  toClientDTO(): TaskTimeConfigClientDTO;
-  toPersistenceDTO(): TaskTimeConfigPersistenceDTO;
-}
+  equals(other: TaskTimeConfigServer): boolean;}
 
 // ============ DTO 定义 ============
 

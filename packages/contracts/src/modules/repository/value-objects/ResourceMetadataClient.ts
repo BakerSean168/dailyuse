@@ -27,14 +27,6 @@ export interface ResourceMetadataClient {
   // UI 计算属性
   wordCountText: string;
   readingTimeText: string;
-  hasThumbnail: boolean;
-
-  toClientDTO(): ResourceMetadataClientDTO;
-  toServerDTO(): ResourceMetadataServerDTO;
-}
+  hasThumbnail: boolean;}
 
 // ============ Client Static ============
-export interface ResourceMetadataClientStatic {
-  fromServerDTO(dto: ResourceMetadataServerDTO): ResourceMetadataClient;
-  fromClientDTO(dto: ResourceMetadataClientDTO): ResourceMetadataClient;
-}

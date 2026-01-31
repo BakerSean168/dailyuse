@@ -31,11 +31,7 @@ export interface IGoalTimeRangeServer {
   getRemainingDays(): number | null; // 获取剩余天数（当前到 targetDate）
   isWithinTimeRange(timestamp: number): boolean; // 时间戳是否在范围内
 
-  // DTO 转换方法
-  toServerDTO(): GoalTimeRangeServerDTO;
-  toClientDTO(): GoalTimeRangeClientDTO;
-  toPersistenceDTO(): GoalTimeRangePersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 目标时间范围 - Client 接口
@@ -60,9 +56,7 @@ export interface IGoalTimeRangeClient {
   // 值对象方法
   equals(other: IGoalTimeRangeClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): GoalTimeRangeServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

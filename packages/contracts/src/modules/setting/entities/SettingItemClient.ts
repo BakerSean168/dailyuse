@@ -55,25 +55,4 @@ export interface SettingItemClient {
   getDisplayValue(): string;
   getInputComponent(): string;
   canEdit(): boolean;
-  canReset(): boolean;
-
-  toServerDTO(): SettingItemServerDTO;
-}
-
-export interface SettingItemClientStatic {
-  create(params: {
-    groupUuid: string;
-    key: string;
-    name: string;
-    description?: string;
-    value: any;
-    defaultValue: any;
-    valueType: string;
-    ui: UIConfigClient;
-    sortOrder?: number;
-    isReadOnly?: boolean;
-    isVisible?: boolean;
-  }): SettingItemClient;
-  fromServerDTO(dto: SettingItemServerDTO): SettingItemClient;
-  fromClientDTO(dto: SettingItemClientDTO): SettingItemClient;
-}
+  canReset(): boolean;}

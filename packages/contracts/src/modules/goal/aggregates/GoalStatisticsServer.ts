@@ -135,34 +135,11 @@ export interface GoalStatisticsServer {
   /**
    * 转换为 Server DTO
    */
-  toServerDTO(): GoalStatisticsServerDTO;
-
-  toClientDTO(): GoalStatisticsClientDTO;
-  /**
    * 转换为 Persistence DTO
    */
-  toPersistenceDTO(): GoalStatisticsPersistenceDTO;
 }
 
 /**
  * GoalStatistics 静态工厂方法接口
  * 注意：TypeScript 接口不能包含静态方法，这些方法应该在类上实现
  */
-export interface GoalStatisticsServerStatic {
-  /**
-   * 创建新的 GoalStatistics 聚合根（静态工厂方法）
-   * @param accountUuid 账户 UUID
-   * @returns 新的 GoalStatistics 实例
-   */
-  createDefault(accountUuid: string): GoalStatisticsServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: GoalStatisticsServerDTO): GoalStatisticsServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: GoalStatisticsPersistenceDTO): GoalStatisticsServer;
-}

@@ -79,8 +79,4 @@ export interface DocumentVersionClient {
    */
   getCreatorDisplayName(): string;
 
-  // ===== DTO 转换方法 =====
-
-  toClientDTO(): DocumentVersionClientDTO;
-  toServerDTO(): DocumentVersionServerDTO;
-}
+  // ===== DTO 转换方法 =====}

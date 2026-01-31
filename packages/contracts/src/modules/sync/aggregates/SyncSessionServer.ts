@@ -114,22 +114,4 @@ export interface SyncSessionServer {
   // 业务查询
   canStart(): boolean;
   canRetrySync(): boolean;
-  getDurationMs(): number | null;
-
-  toServerDTO(): SyncSessionServerDTO;
-  toClientDTO(): SyncSessionClientDTO;
-  toPersistenceDTO(): SyncSessionPersistenceDTO;
-}
-
-export interface SyncSessionServerStatic {
-  create(params: {
-    profileId: string;
-    direction: SyncDirection;
-    strategy: SyncStrategy;
-    triggerType: SyncTriggerType;
-    triggerDevice: DeviceInfoDTO;
-    startVersion: SyncVersionServerDTO;
-  }): SyncSessionServer;
-  fromServerDTO(dto: SyncSessionServerDTO): SyncSessionServer;
-  fromPersistenceDTO(dto: SyncSessionPersistenceDTO): SyncSessionServer;
-}
+  getDurationMs(): number | null;}

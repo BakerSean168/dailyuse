@@ -56,11 +56,7 @@ export interface IModuleStatisticsServer {
   ): IModuleStatisticsServer;
   calculateSuccessRate(): number;
 
-  // DTO 转换方法
-  toServerDTO(): ModuleStatisticsServerDTO;
-  toClientDTO(): ModuleStatisticsClientDTO;
-  toPersistenceDTO(): ModuleStatisticsPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 模块统计 - Client 接口
@@ -103,9 +99,7 @@ export interface IModuleStatisticsClient {
   // 值对象方法
   equals(other: IModuleStatisticsClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): ModuleStatisticsServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

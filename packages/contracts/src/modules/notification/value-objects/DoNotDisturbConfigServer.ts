@@ -30,11 +30,7 @@ export interface IDoNotDisturbConfigServer {
   // ���
   isInPeriod(timestamp: Date): boolean;
 
-  // DTO lb��
-  toServerDTO(): DoNotDisturbConfigServerDTO;
-  toClientDTO(): DoNotDisturbConfigClientDTO;
-  toPersistenceDTO(): DoNotDisturbConfigPersistenceDTO;
-}
+  // DTO lb��}
 
 // ============ DTO �I ============
 

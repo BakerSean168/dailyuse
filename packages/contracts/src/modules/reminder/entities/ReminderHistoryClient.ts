@@ -79,16 +79,4 @@ export interface ReminderHistoryClient {
 
   /**
    * 转换为 Server DTO
-   */
-  toServerDTO(): ReminderHistoryServerDTO;
-}
-
-/**
- * Reminder History Client 静态工厂方法接口
- */
-export interface ReminderHistoryClientStatic {
-  /**
-   * 从 Server DTO 创建客户端实体
-   */
-  fromServerDTO(dto: ReminderHistoryServerDTO): ReminderHistoryClient;
-}
+   */}

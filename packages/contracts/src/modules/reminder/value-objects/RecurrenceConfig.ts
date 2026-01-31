@@ -55,11 +55,7 @@ export interface IRecurrenceConfigServer {
     >,
   ): IRecurrenceConfigServer;
 
-  // DTO 转换方法
-  toServerDTO(): RecurrenceConfigServerDTO;
-  toClientDTO(): RecurrenceConfigClientDTO;
-  toPersistenceDTO(): RecurrenceConfigPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 重复配置 - Client 接口
@@ -76,9 +72,7 @@ export interface IRecurrenceConfigClient {
   // 值对象方法
   equals(other: IRecurrenceConfigClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): RecurrenceConfigServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

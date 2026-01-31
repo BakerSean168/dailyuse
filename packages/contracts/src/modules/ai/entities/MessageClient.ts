@@ -69,26 +69,4 @@ export interface MessageClient {
 
   /**
    * 转换为 Client DTO
-   */
-  toClientDTO(): MessageClientDTO;
-}
-
-/**
- * Message 静态工厂方法接口
- */
-export interface MessageClientStatic {
-  /**
-   * 创建新的 Message 实体（静态工厂方法）
-   */
-  create(params: {
-    conversationUuid: string;
-    role: MessageRole;
-    content: string;
-    tokenCount?: number;
-  }): MessageClient;
-
-  /**
-   * 从 Client DTO 创建实体
-   */
-  fromClientDTO(dto: MessageClientDTO): MessageClient;
-}
+   */}

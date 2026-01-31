@@ -16,13 +16,6 @@ export interface ResourceMetadataServer {
   wordCount?: number | null;
   readingTime?: number | null;
   thumbnail?: string | null;
-  [key: string]: unknown;
-
-  toServerDTO(): ResourceMetadataServerDTO;
-}
+  [key: string]: unknown;}
 
 // ============ Server Static ============
-export interface ResourceMetadataServerStatic {
-  create(params?: Partial<ResourceMetadataServerDTO>): ResourceMetadataServer;
-  fromServerDTO(dto: ResourceMetadataServerDTO): ResourceMetadataServer;
-}

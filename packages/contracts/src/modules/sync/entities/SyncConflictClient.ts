@@ -37,11 +37,4 @@ export interface SyncConflictClient {
   status: ConflictStatus;
   autoResolvable: boolean;
   summary: string;
-  conflictedFields: string[];
-
-  toClientDTO(): SyncConflictClientDTO;
-}
-
-export interface SyncConflictClientStatic {
-  fromClientDTO(dto: SyncConflictClientDTO): SyncConflictClient;
-}
+  conflictedFields: string[];}

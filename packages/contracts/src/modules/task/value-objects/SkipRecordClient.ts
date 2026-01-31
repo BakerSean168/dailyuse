@@ -16,9 +16,7 @@ export interface SkipRecordClient {
   hasReason: boolean;
   displayText: string;
 
-  equals(other: SkipRecordClient): boolean;
-  toServerDTO(): SkipRecordServerDTO;
-}
+  equals(other: SkipRecordClient): boolean;}
 
 // ============ DTO 定义 ============
 

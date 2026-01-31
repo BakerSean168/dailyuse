@@ -1,0 +1,180 @@
+// ==========================================
+// Goal Module
+// 目标聚合根、关键结果、文件夹、记录、评审、统计
+// ==========================================
+
+model Goal {
+  id                  String    @id
+  identityId          String    @map("identity_id")
+  title               String
+  description         String?
+  status              String    @default("pending")
+  importance          String    @default("moderate") // ImportanceLevel
+  urgency             Int       @default(2)
+  category            String?
+  tags                String?
+  startDate           DateTime? @map("start_date")
+  targetDate          DateTime? @map("target_date")
+  completedAt         DateTime? @map("completed_at")
+  archivedAt          DateTime? @map("archived_at")
+  folderId            String?   @map("folder_id")
+  parentGoalId        String?   @map("parent_goal_id")
+  sortOrder           Int       @default(0) @map("sort_order")
+  reminderConfig      String?   @map("reminder_config")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  deletedAt           DateTime? @map("deleted_at")
+  color               String?
+  feasibilityAnalysis String?   @map("feasibility_analysis")
+  motivation          String?
+
+  focusSessions            FocusSession[]
+  reviews                  GoalReview[]
+  account                  Account                   @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  folder                   GoalFolder?               @relation(fields: [folderId], references: [id])
+  parentGoal               Goal?                     @relation("GoalHierarchy", fields: [parentGoalId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  childGoals               Goal[]                    @relation("GoalHierarchy")
+  keyResultWeightSnapshots KeyResultWeightSnapshot[]
+  keyResults               KeyResult[]
+  taskTemplates            TaskTemplate[]
+
+  @@index([targetDate])
+  @@map("goals")
+}
+
+model GoalFolder {
+  id                 String    @id
+  identityId         String    @map("identity_id")
+  name               String
+  description        String?
+  color              String?
+  icon               String?
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+  deletedAt          DateTime? @map("deleted_at")
+  completedGoalCount Int       @default(0) @map("completed_goal_count")
+  folderType         String?   @map("folder_type")
+  goalCount          Int       @default(0) @map("goal_count")
+  isSystemFolder     Boolean   @default(false) @map("is_system_folder")
+  parentFolderId     String?   @map("parent_folder_id")
+  sortOrder          Int       @default(0) @map("sort_order")
+
+  account      Account      @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  parentFolder GoalFolder?  @relation("GoalFolderHierarchy", fields: [parentFolderId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  childFolders GoalFolder[] @relation("GoalFolderHierarchy")
+  goals        Goal[]
+
+  @@index([parentFolderId])
+  @@map("goal_folders")
+}
+
+model KeyResult {
+  id                String   @id
+  goalId            String   @map("goal_id")
+  title             String
+  description       String?
+  valueType         String   @map("value_type")
+  aggregationMethod String   @map("aggregation_method")
+  targetValue       Float    @map("target_value")
+  currentValue      Float    @default(0) @map("current_value")
+  unit              String?
+  weight            Float    @default(1)
+  order             Int      @default(0)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  records                  GoalRecord[]
+  keyResultWeightSnapshots KeyResultWeightSnapshot[]
+  goal                     Goal                      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  taskTemplates            TaskTemplate[]
+
+  @@index([goalId])
+  @@map("key_results")
+}
+
+model GoalRecord {
+  id          String   @id
+  keyResultId String   @map("key_result_id")
+  value       Float
+  note        String?
+  recordedAt  DateTime @map("recorded_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  keyResult KeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
+
+  @@index([recordedAt])
+  @@map("goal_records")
+}
+
+model GoalReview {
+  id             String   @id
+  goalId         String   @map("goal_id")
+  reviewType     String   @map("review_type")
+  content        String
+  achievements   String?
+  challenges     String?
+  lessonsLearned String?  @map("lessons_learned")
+  nextSteps      String?  @map("next_steps")
+  rating         Int?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@map("goal_reviews")
+}
+
+model GoalStatistic {
+  id                      Int      @id @default(autoincrement())
+  identityId              String   @unique @map("identity_id")
+  totalGoals              Int      @default(0) @map("total_goals")
+  activeGoals             Int      @default(0) @map("active_goals")
+  completedGoals          Int      @default(0) @map("completed_goals")
+  archivedGoals           Int      @default(0) @map("archived_goals")
+  overdueGoals            Int      @default(0) @map("overdue_goals")
+  totalKeyResults         Int      @default(0) @map("total_key_results")
+  completedKeyResults     Int      @default(0) @map("completed_key_results")
+  averageProgress         Float    @default(0) @map("average_progress")
+  goalsByImportance       String   @default("{}") @map("goals_by_importance")
+  goalsByUrgency          String   @default("{}") @map("goals_by_urgency")
+  goalsByCategory         String   @default("{}") @map("goals_by_category")
+  goalsByStatus           String   @default("{}") @map("goals_by_status")
+  goalsCreatedThisWeek    Int      @default(0) @map("goals_created_this_week")
+  goalsCompletedThisWeek  Int      @default(0) @map("goals_completed_this_week")
+  goalsCreatedThisMonth   Int      @default(0) @map("goals_created_this_month")
+  goalsCompletedThisMonth Int      @default(0) @map("goals_completed_this_month")
+  totalReviews            Int      @default(0) @map("total_reviews")
+  averageRating           Float?   @map("average_rating")
+  totalFocusSessions      Int      @default(0) @map("total_focus_sessions")
+  completedFocusSessions  Int      @default(0) @map("completed_focus_sessions")
+  totalFocusMinutes       Int      @default(0) @map("total_focus_minutes")
+  lastCalculatedAt        DateTime @default(now()) @map("last_calculated_at")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId])
+  @@map("goal_statistics")
+}
+
+model KeyResultWeightSnapshot {
+  id           String   @id
+  goalId       String   @map("goal_id")
+  keyResultId  String   @map("key_result_id")
+  oldWeight    Float    @map("old_weight")
+  newWeight    Float    @map("new_weight")
+  weightDelta  Float    @map("weight_delta")
+  snapshotTime DateTime @map("snapshot_time")
+  trigger      String
+  reason       String?
+  operatorId   String   @map("operator_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  goal      Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  keyResult KeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
+
+  @@index([snapshotTime])
+  @@map("key_result_weight_snapshots")
+}

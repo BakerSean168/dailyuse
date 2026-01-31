@@ -44,21 +44,4 @@ export interface GoalRecordServer {
   recordedAt: number;
   createdAt: Date;
 
-  updateNote(note: string): void;
-
-  toServerDTO(): GoalRecordServerDTO;
-  toClientDTO(calculatedCurrentValue?: number): GoalRecordClientDTO;
-  toPersistenceDTO(): GoalRecordPersistenceDTO;
-}
-
-export interface GoalRecordServerStatic {
-  create(params: {
-    keyResultUuid: string;
-    goalUuid: string;
-    value: number;  // 本次记录的值
-    note?: string;
-    recordedAt?: number;
-  }): GoalRecordServer;
-  fromServerDTO(dto: GoalRecordServerDTO): GoalRecordServer;
-  fromPersistenceDTO(dto: GoalRecordPersistenceDTO): GoalRecordServer;
-}
+  updateNote(note: string): void;  toClientDTO(calculatedCurrentValue?: number): GoalRecordClientDTO;}

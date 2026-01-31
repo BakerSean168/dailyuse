@@ -431,42 +431,4 @@ export interface GoalServer {
   /**
    * 转换为 Persistence DTO
    * 注意：Persistence 不包含子实体，子实体单独持久化
-   */
-  toPersistenceDTO(): GoalPersistenceDTO;
-}
-
-/**
- * Goal 静态工厂方法接口
- * 注意：TypeScript 接口不能包含静态方法，这些方法应该在类上实现
- */
-export interface GoalServerStatic {
-  /**
-   * 创建新的 Goal 聚合根（静态工厂方法）
-   * @param params 创建参数
-   * @returns 新的 Goal 实例
-   */
-  create(params: {
-    accountUuid: string;
-    title: string;
-    description?: string;
-    importance: ImportanceLevel;
-    // urgency: UrgencyLevel; // REMOVED - priority is computed from importance + targetDate
-    category?: string;
-    tags?: string[];
-    startDate?: Date;
-    targetDate?: number;
-    folderUuid?: string;
-    parentGoalUuid?: string;
-  }): GoalServer;
-
-  /**
-   * 从 Server DTO 创建实体（递归创建子实体）
-   */
-  fromServerDTO(dto: GoalServerDTO): GoalServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   * 注意：需要单独加载子实体
-   */
-  fromPersistenceDTO(dto: GoalPersistenceDTO): GoalServer;
-}
+   */}

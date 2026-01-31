@@ -87,45 +87,4 @@ export interface NotificationChannelClient {
   // 操作
   retry(): void;
 
-  // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): NotificationChannelServerDTO;
-
-  /**
-   * 转换为 Client DTO
-   */
-  toClientDTO(): NotificationChannelClientDTO;
-
-  /**
-   * 克隆当前实体（用于编辑表单）
-   */
-  clone(): NotificationChannelClient;
-}
-
-/**
- * NotificationChannel 静态工厂方法接口
- */
-export interface NotificationChannelClientStatic {
-  /**
-   * 创建新的 NotificationChannel 实体（静态工厂方法）
-   */
-  create(params: {
-    notificationUuid: string;
-    channelType: NotificationChannelType;
-    recipient?: string;
-    maxRetries?: number;
-  }): NotificationChannelClient;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: NotificationChannelServerDTO): NotificationChannelClient;
-
-  /**
-   * 从 Client DTO 创建实体
-   */
-  fromClientDTO(dto: NotificationChannelClientDTO): NotificationChannelClient;
 }

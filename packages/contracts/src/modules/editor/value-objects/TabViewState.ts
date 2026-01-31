@@ -31,11 +31,7 @@ export interface ITabViewStateServer {
     >,
   ): ITabViewStateServer;
 
-  // DTO 转换方法
-  toServerDTO(): TabViewStateServerDTO;
-  toClientDTO(): TabViewStateClientDTO;
-  toPersistenceDTO(): TabViewStatePersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 标签页视图状态 - Client 接口
@@ -55,9 +51,7 @@ export interface ITabViewStateClient {
   // 值对象方法
   equals(other: ITabViewStateClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): TabViewStateServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

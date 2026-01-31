@@ -26,11 +26,7 @@ export interface IActiveHoursConfigServer {
     >,
   ): IActiveHoursConfigServer;
 
-  // DTO 转换方法
-  toServerDTO(): ActiveHoursConfigServerDTO;
-  toClientDTO(): ActiveHoursConfigClientDTO;
-  toPersistenceDTO(): ActiveHoursConfigPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 活跃时间段配置 - Client 接口
@@ -46,9 +42,7 @@ export interface IActiveHoursConfigClient {
   // 值对象方法
   equals(other: IActiveHoursConfigClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): ActiveHoursConfigServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

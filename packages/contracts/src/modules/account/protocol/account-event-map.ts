@@ -4,4 +4,3 @@ export type AccountEventMap = {
   'account:closed': { reason: string };
   'account:profile-updated': { updatedFields: string[] };
 };
-

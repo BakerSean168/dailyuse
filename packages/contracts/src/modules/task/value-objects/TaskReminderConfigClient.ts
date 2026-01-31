@@ -25,9 +25,7 @@ export interface TaskReminderConfigClient {
   reminderSummary: string;
   triggerDescriptions: string[];
 
-  equals(other: TaskReminderConfigClient): boolean;
-  toServerDTO(): TaskReminderConfigServerDTO;
-}
+  equals(other: TaskReminderConfigClient): boolean;}
 
 // ============ DTO 定义 ============
 

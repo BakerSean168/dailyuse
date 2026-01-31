@@ -109,21 +109,4 @@ export interface SyncProfileServer {
 
   // 业务查询
   canSync(): boolean;
-  needsReconnect(): boolean;
-
-  toServerDTO(): SyncProfileServerDTO;
-  toClientDTO(): SyncProfileClientDTO;
-  toPersistenceDTO(): SyncProfilePersistenceDTO;
-}
-
-export interface SyncProfileServerStatic {
-  create(params: {
-    name: string;
-    description?: string;
-    providerType: SyncProviderType;
-    providerConfig: SyncProviderConfigDTO;
-    syncConfig: SyncProfileConfigDTO;
-  }): SyncProfileServer;
-  fromServerDTO(dto: SyncProfileServerDTO): SyncProfileServer;
-  fromPersistenceDTO(dto: SyncProfilePersistenceDTO): SyncProfileServer;
-}
+  needsReconnect(): boolean;}

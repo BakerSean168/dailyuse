@@ -45,10 +45,6 @@ export interface AuthCredentialClient {
   isPrimary: boolean;
 }
 
-export interface AuthCredentialClientStatic {
-  fromClientDTO(dto: AuthCredentialClientDTO): AuthCredentialClient;
-}
-
 // ============ DTO 定义 ============
 
 /**

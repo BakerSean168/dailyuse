@@ -6,38 +6,26 @@
 export type {
   SyncConflictServerDTO,
   SyncConflictPersistenceDTO,
-  SyncConflictServer,
-  SyncConflictServerStatic,
-} from './SyncConflictServer';
+  SyncConflictServer,} from './SyncConflictServer';
 
 export type {
   SyncConflictClientDTO,
-  SyncConflictClient,
-  SyncConflictClientStatic,
-} from './SyncConflictClient';
+  SyncConflictClient,} from './SyncConflictClient';
 
 export type {
   PendingChangeServerDTO,
   PendingChangePersistenceDTO,
-  PendingChangeServer,
-  PendingChangeServerStatic,
-} from './PendingChangeServer';
+  PendingChangeServer,} from './PendingChangeServer';
 
 export type {
   PendingChangeClientDTO,
-  PendingChangeClient,
-  PendingChangeClientStatic,
-} from './PendingChangeClient';
+  PendingChangeClient,} from './PendingChangeClient';
 
 export type {
   DataSnapshotServerDTO,
   DataSnapshotPersistenceDTO,
-  DataSnapshotServer,
-  DataSnapshotServerStatic,
-} from './DataSnapshotServer';
+  DataSnapshotServer,} from './DataSnapshotServer';
 
 export type {
   DataSnapshotClientDTO,
-  DataSnapshotClient,
-  DataSnapshotClientStatic,
-} from './DataSnapshotClient';
+  DataSnapshotClient,} from './DataSnapshotClient';

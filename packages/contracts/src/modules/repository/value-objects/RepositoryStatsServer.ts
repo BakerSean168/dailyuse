@@ -14,13 +14,6 @@ export interface RepositoryStatsServerDTO {
 export interface RepositoryStatsServer {
   resourceCount: number;
   folderCount: number;
-  totalSize: number;
-
-  toServerDTO(): RepositoryStatsServerDTO;
-}
+  totalSize: number;}
 
 // ============ Server Static ============
-export interface RepositoryStatsServerStatic {
-  create(params?: Partial<RepositoryStatsServerDTO>): RepositoryStatsServer;
-  fromServerDTO(dto: RepositoryStatsServerDTO): RepositoryStatsServer;
-}

@@ -292,40 +292,4 @@ export interface NotificationServer {
   /**
    * 转换为 Persistence DTO (数据库)
    * 注意：子实体在数据库中是独立表，不包含在 Persistence DTO 中
-   */
-  toPersistenceDTO(): NotificationPersistenceDTO;
-}
-
-/**
- * Notification 静态工厂方法接口
- */
-export interface NotificationServerStatic {
-  /**
-   * 创建新的 Notification 聚合根（静态工厂方法）
-   */
-  create(params: {
-    accountUuid: string;
-    title: string;
-    content: string;
-    type: NotificationType;
-    category: NotificationCategory;
-    importance?: ImportanceLevel;
-    urgency?: UrgencyLevel;
-    relatedEntityType?: RelatedEntityType;
-    relatedEntityUuid?: string;
-    actions?: NotificationActionServerDTO[];
-    metadata?: NotificationMetadataServerDTO;
-    expiresAt?: Date;
-  }): NotificationServer;
-
-  /**
-   * 从 Server DTO 创建实体（递归创建子实体）
-   */
-  fromServerDTO(dto: NotificationServerDTO): NotificationServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   * 注意：需要单独加载子实体
-   */
-  fromPersistenceDTO(dto: NotificationPersistenceDTO): NotificationServer;
-}
+   */}

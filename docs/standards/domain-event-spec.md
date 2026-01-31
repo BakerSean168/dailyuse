@@ -56,7 +56,7 @@ export interface IDomainEvent<P = unknown> {
 
 聚合根基类负责管理事件的生命周期（收集、清理）。
 
-**文件**: `libs/utils/src/ddd/aggregate-root.ts`
+**文件**: `packages/utils/src/ddd/aggregate-root.ts`
 
 ```TypeScript
 import { Entity } from './entity';
@@ -109,7 +109,7 @@ export abstract class AggregateRoot<TId> extends Entity<TId> {
 1. 事件名必须是**过去式** (Created, Changed, Deleted)。
 2. 不要在构造函数之外的地方随便 `new` 事件，使用 `addDomainEvent`。
 
-**文件**: `libs/domain-server/src/modules/auth/aggregates/auth-identity.ts`
+**文件**: `packages/domain-server/src/modules/auth/aggregates/auth-identity.ts`
 
 TypeScript
 
@@ -160,7 +160,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
 
 这是“隐式发送”发生的地方。仓储层的 `save` 方法充当了拦截器。
 
-**文件**: `libs/infrastructure/src/persistence/repositories/prisma-auth-identity.repo.ts`
+**文件**: `packages/infrastructure/src/persistence/repositories/prisma-auth-identity.repo.ts`
 
 TypeScript
 
@@ -217,7 +217,7 @@ export class PrismaAuthIdentityRepository implements AuthIdentityRepository {
 
 现在你的领域服务变得非常干净，完全不需要处理 EventBus。
 
-**文件**: `libs/domain-server/.../registration.service.ts`
+**文件**: `packages/domain-server/.../registration.service.ts`
 
 TypeScript
 

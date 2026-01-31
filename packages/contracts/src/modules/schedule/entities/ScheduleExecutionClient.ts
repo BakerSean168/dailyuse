@@ -86,29 +86,6 @@ export interface ScheduleExecutionClient {
   isRetrying(): boolean;
 
   // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): ScheduleExecutionServerDTO;
-
   /**
    * 转换为 Client DTO
-   */
-  toClientDTO(): ScheduleExecutionClientDTO;
-}
-
-/**
- * ScheduleExecution 静态工厂方法接口
- */
-export interface ScheduleExecutionClientStatic {
-  /**
-   * 从 Server DTO 创建客户端实体
-   */
-  fromServerDTO(dto: ScheduleExecutionServerDTO): ScheduleExecutionClient;
-
-  /**
-   * 从 Client DTO 创建客户端实体
-   */
-  fromClientDTO(dto: ScheduleExecutionClientDTO): ScheduleExecutionClient;
-}
+   */}

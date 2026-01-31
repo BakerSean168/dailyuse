@@ -34,7 +34,7 @@ export type ImportanceLevel = typeof ImportanceLevels[keyof typeof ImportanceLev
 
 // 或者提取 Key 类型 (仅当 Key 与 Value 完全一致时使用)
 // export type ImportanceLevel = keyof typeof ImportanceLevels;
-````
+```
 
 ## 3. 正确与错误示例 (Do's & Don'ts)
 

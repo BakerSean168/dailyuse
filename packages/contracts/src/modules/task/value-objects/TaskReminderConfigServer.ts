@@ -19,11 +19,7 @@ export interface TaskReminderConfigServer {
   enabled: boolean;
   triggers: ReminderTrigger[];
 
-  equals(other: TaskReminderConfigServer): boolean;
-  toServerDTO(): TaskReminderConfigServerDTO;
-  toClientDTO(): TaskReminderConfigClientDTO;
-  toPersistenceDTO(): TaskReminderConfigPersistenceDTO;
-}
+  equals(other: TaskReminderConfigServer): boolean;}
 
 // ============ DTO 定义 ============
 

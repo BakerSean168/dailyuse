@@ -1,3 +1,7 @@
+---
+tags: [standard, domain/client]
+---
+
 # Domain Client 开发规范：聚合根与实体
 
 **版本**: 1.0

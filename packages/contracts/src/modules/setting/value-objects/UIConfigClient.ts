@@ -44,26 +44,4 @@ export interface UIConfigClient {
   // UI 方法
   hasOptions(): boolean;
   hasRange(): boolean;
-  getComponentName(): string;
-
-  toServerDTO(): UIConfigServerDTO;
-}
-
-export interface UIConfigClientStatic {
-  create(params: {
-    inputType: string;
-    label?: string;
-    placeholder?: string;
-    helpText?: string;
-    icon?: string;
-    order?: number;
-    visible?: boolean;
-    disabled?: boolean;
-    options?: Array<{ label: string; value: any }>;
-    min?: number;
-    max?: number;
-    step?: number;
-  }): UIConfigClient;
-  fromServerDTO(dto: UIConfigServerDTO): UIConfigClient;
-  fromClientDTO(dto: UIConfigClientDTO): UIConfigClient;
-}
+  getComponentName(): string;}

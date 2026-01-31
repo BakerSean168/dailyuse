@@ -25,11 +25,7 @@ export interface IReminderStatsServer {
     >,
   ): IReminderStatsServer;
 
-  // DTO 转换方法
-  toServerDTO(): ReminderStatsServerDTO;
-  toClientDTO(): ReminderStatsClientDTO;
-  toPersistenceDTO(): ReminderStatsPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 提醒统计信息 - Client 接口
@@ -45,9 +41,7 @@ export interface IReminderStatsClient {
   // 值对象方法
   equals(other: IReminderStatsClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): ReminderStatsServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

@@ -233,32 +233,4 @@ export interface ScheduleStatisticsServer {
 
   /**
    * 转换为 Server DTO
-   */
-  toServerDTO(): ScheduleStatisticsServerDTO;
-
-  toClientDTO(): ScheduleStatisticsClientDTO;
-  /**
-   * 转换为 Persistence DTO (数据库)
-   */
-  toPersistenceDTO(): ScheduleStatisticsPersistenceDTO;
-}
-
-/**
- * ScheduleStatistics 静态工厂方法接口
- */
-export interface ScheduleStatisticsServerStatic {
-  /**
-   * 创建新的 ScheduleStatistics 聚合根（静态工厂方法）
-   */
-  create(params: { accountUuid: string }): ScheduleStatisticsServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: ScheduleStatisticsServerDTO): ScheduleStatisticsServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: ScheduleStatisticsPersistenceDTO): ScheduleStatisticsServer;
-}
+   */}

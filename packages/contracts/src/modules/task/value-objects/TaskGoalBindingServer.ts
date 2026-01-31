@@ -12,11 +12,7 @@ export interface TaskGoalBindingServer {
   keyResultUuid: string;
   incrementValue: number;
 
-  equals(other: TaskGoalBindingServer): boolean;
-  toServerDTO(): TaskGoalBindingServerDTO;
-  toClientDTO(): TaskGoalBindingClientDTO;
-  toPersistenceDTO(): TaskGoalBindingPersistenceDTO;
-}
+  equals(other: TaskGoalBindingServer): boolean;}
 
 // ============ DTO 定义 ============
 

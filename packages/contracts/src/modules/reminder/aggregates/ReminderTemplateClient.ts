@@ -139,16 +139,4 @@ export interface ReminderTemplateClient {
 
   /**
    * 转换为 Server DTO
-   */
-  toServerDTO(): ReminderTemplateServerDTO;
-}
-
-/**
- * Reminder Template Client 静态工厂方法接口
- */
-export interface ReminderTemplateClientStatic {
-  /**
-   * 从 Server DTO 创建客户端实体
-   */
-  fromServerDTO(dto: ReminderTemplateServerDTO): ReminderTemplateClient;
-}
+   */}

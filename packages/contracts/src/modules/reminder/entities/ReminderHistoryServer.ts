@@ -76,38 +76,10 @@ export interface ReminderHistoryServer {
   /**
    * 转换为 Server DTO
    */
-  toServerDTO(): ReminderHistoryServerDTO;
-
-  toClientDTO(): ReminderHistoryClientDTO;
-  /**
    * 转换为 Persistence DTO (数据库)
    */
-  toPersistenceDTO(): ReminderHistoryPersistenceDTO;
 }
 
 /**
  * Reminder History 静态工厂方法接口
  */
-export interface ReminderHistoryServerStatic {
-  /**
-   * 创建新的 Reminder History 实体（静态工厂方法）
-   */
-  create(params: {
-    templateUuid: string;
-    triggeredAt: number;
-    result: TriggerResult;
-    error?: string;
-    notificationSent: boolean;
-    notificationChannels?: NotificationChannel[];
-  }): ReminderHistoryServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: ReminderHistoryServerDTO): ReminderHistoryServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: ReminderHistoryPersistenceDTO): ReminderHistoryServer;
-}

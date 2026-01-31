@@ -273,59 +273,6 @@ export interface GoalClient {
    */
   canAddReview(): boolean;
 
-  // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO（递归转换子实体）
-   * @param includeChildren 是否包含子实体（默认 false）
-   */
-  toServerDTO(includeChildren?: boolean): GoalServerDTO;
-
-  /**
-   * 转换为 Client DTO（递归转换子实体）
-   * @param includeChildren 是否包含子实体（默认 false）
-   */
-  toClientDTO(includeChildren?: boolean): GoalClientDTO;
-}
-
-/**
- * Goal 静态工厂方法接口
- * 注意：TypeScript 接口不能包含静态方法，这些方法应该在类上实现
- */
-export interface GoalClientStatic {
-  /**
-   * 创建新的 Goal 聚合根（静态工厂方法）
-   * @param params 创建参数
-   * @returns 新的 Goal 实例
-   */
-  create(params: {
-    accountUuid: string;
-    title: string;
-    description?: string;
-    importance: ImportanceLevel;
-    // urgency: UrgencyLevel; // REMOVED
-    category?: string;
-    tags?: string[];
-    startDate?: Date;
-    targetDate?: number;
-    folderUuid?: string;
-    parentGoalUuid?: string;
-  }): GoalClient;
-
-  /**
-   * 创建用于创建表单的空 Goal 实例
-   */
-  forCreate(accountUuid: string): GoalClient;
-
-  /**
-   * 从 Server DTO 创建实体（递归创建子实体）
-   */
-  fromServerDTO(dto: GoalServerDTO): GoalClient;
-
-  /**
-   * 从 Client DTO 创建实体（递归创建子实体）
-   */
-  fromClientDTO(dto: GoalClientDTO): GoalClient;
 }
 
 /**

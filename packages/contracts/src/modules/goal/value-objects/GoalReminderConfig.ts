@@ -50,11 +50,7 @@ export interface IGoalReminderConfigServer {
   enable(): IGoalReminderConfigServer; // 启用提醒
   disable(): IGoalReminderConfigServer; // 禁用提醒
 
-  // DTO 转换方法
-  toServerDTO(): GoalReminderConfigServerDTO;
-  toClientDTO(): GoalReminderConfigClientDTO;
-  toPersistenceDTO(): GoalReminderConfigPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 目标提醒配置 - Client 接口
@@ -66,9 +62,7 @@ export interface IGoalReminderConfigClient {
   // 值对象方法
   equals(other: IGoalReminderConfigClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): GoalReminderConfigServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

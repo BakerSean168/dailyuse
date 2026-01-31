@@ -125,37 +125,6 @@ export interface GoalStatisticsClient {
   getTimelineChartData(): TimelineData;
 
   // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): GoalStatisticsServerDTO;
-
   /**
    * 转换为 Client DTO
-   */
-  toClientDTO(): GoalStatisticsClientDTO;
-}
-
-/**
- * GoalStatistics 静态工厂方法接口
- * 注意：TypeScript 接口不能包含静态方法，这些方法应该在类上实现
- */
-export interface GoalStatisticsClientStatic {
-  /**
-   * 创建新的 GoalStatistics 聚合根（静态工厂方法）
-   * @param accountUuid 账户 UUID
-   * @returns 新的 GoalStatistics 实例
-   */
-  createDefault(accountUuid: string): GoalStatisticsClient;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: GoalStatisticsServerDTO): GoalStatisticsClient;
-
-  /**
-   * 从 Client DTO 创建实体
-   */
-  fromClientDTO(dto: GoalStatisticsClientDTO): GoalStatisticsClient;
-}
+   */}

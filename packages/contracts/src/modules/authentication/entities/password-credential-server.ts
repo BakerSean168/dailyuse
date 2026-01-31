@@ -24,8 +24,3 @@ export interface PasswordCredentialPersistenceDTO extends BaseAuthCredentialPers
   hashedPassword: HashedPassword;
   passwordLastChangedAt: PersistenceDate;
 }
-
-export interface PasswordCredentialServerStatic {
-  fromServerDTO(dto: PasswordCredentialServerDTO): PasswordCredentialServer;
-  fromPersistenceDTO(dto: PasswordCredentialPersistenceDTO): PasswordCredentialServer;
-}

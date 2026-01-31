@@ -52,11 +52,7 @@ export interface IKeyResultWeightSnapshotServer {
   isWeightIncreased(): boolean; // 权重是否增加
   isWeightDecreased(): boolean; // 权重是否减少
 
-  // DTO 转换方法
-  toServerDTO(): KeyResultWeightSnapshotServerDTO;
-  toClientDTO(): KeyResultWeightSnapshotClientDTO;
-  toPersistenceDTO(): KeyResultWeightSnapshotPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 关键成果权重快照 - Client 接口
@@ -83,9 +79,7 @@ export interface IKeyResultWeightSnapshotClient {
   // 值对象方法
   equals(other: IKeyResultWeightSnapshotClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): KeyResultWeightSnapshotServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

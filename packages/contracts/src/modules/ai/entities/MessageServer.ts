@@ -46,44 +46,9 @@ export interface MessageServer {
   createdAt: Date;
 
   // ===== 转换方法 =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): MessageServerDTO;
-
   /**
    * 转换为 Client DTO
-   */
-  toClientDTO(): MessageClientDTO;
-
+   */
   /**
    * 转换为 Persistence DTO
-   */
-  toPersistenceDTO(): MessagePersistenceDTO;
-}
-
-/**
- * Message 静态工厂方法接口
- */
-export interface MessageServerStatic {
-  /**
-   * 创建新的 Message 实体（静态工厂方法）
-   */
-  create(params: {
-    conversationUuid: string;
-    role: MessageRole;
-    content: string;
-    tokenCount?: number;
-  }): MessageServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: MessageServerDTO): MessageServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: MessagePersistenceDTO): MessageServer;
-}
+   */}

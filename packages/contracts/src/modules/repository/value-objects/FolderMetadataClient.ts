@@ -27,14 +27,6 @@ export interface FolderMetadataClient {
   hasIcon: boolean;
   hasColor: boolean;
   displayIcon: string;
-  displayColor: string;
-
-  toClientDTO(): FolderMetadataClientDTO;
-  toServerDTO(): FolderMetadataServerDTO;
-}
+  displayColor: string;}
 
 // ============ Client Static ============
-export interface FolderMetadataClientStatic {
-  fromServerDTO(dto: FolderMetadataServerDTO): FolderMetadataClient;
-  fromClientDTO(dto: FolderMetadataClientDTO): FolderMetadataClient;
-}

@@ -83,22 +83,4 @@ export interface RepositoryServer {
   delete(): void;
 
   // DTO 转换方法
-  toServerDTO(includeFolders?: boolean): RepositoryServerDTO;
-  toPersistenceDTO(): RepositoryPersistenceDTO;
-}
-
-// ============ 静态工厂方法接口 ============
-
-export interface RepositoryServerStatic {
-  create(params: {
-    accountUuid: string;
-    name: string;
-    type: RepositoryType;
-    path: string;
-    description?: string;
-    config?: Partial<RepositoryConfigServer>;
-  }): RepositoryServer;
-
-  fromServerDTO(dto: RepositoryServerDTO): RepositoryServer;
-  fromPersistenceDTO(dto: RepositoryPersistenceDTO): RepositoryServer;
-}
+  toServerDTO(includeFolders?: boolean): RepositoryServerDTO;}

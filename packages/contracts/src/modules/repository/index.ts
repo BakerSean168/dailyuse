@@ -9,85 +9,59 @@ export { RepositoryType, RepositoryStatus, ResourceType, ResourceStatus } from '
 // ============ Value Objects - Server ============
 export type {
   RepositoryConfigServerDTO,
-  RepositoryConfigServer,
-  RepositoryConfigServerStatic,
-} from './value-objects/RepositoryConfigServer';
+  RepositoryConfigServer,} from './value-objects/RepositoryConfigServer';
 
 export type {
   RepositoryStatsServerDTO,
-  RepositoryStatsServer,
-  RepositoryStatsServerStatic,
-} from './value-objects/RepositoryStatsServer';
+  RepositoryStatsServer,} from './value-objects/RepositoryStatsServer';
 
 export type {
   FolderMetadataServerDTO,
-  FolderMetadataServer,
-  FolderMetadataServerStatic,
-} from './value-objects/FolderMetadataServer';
+  FolderMetadataServer,} from './value-objects/FolderMetadataServer';
 
 export type {
   ResourceMetadataServerDTO,
-  ResourceMetadataServer,
-  ResourceMetadataServerStatic,
-} from './value-objects/ResourceMetadataServer';
+  ResourceMetadataServer,} from './value-objects/ResourceMetadataServer';
 
 export type {
   ResourceStatsServerDTO,
-  ResourceStatsServer,
-  ResourceStatsServerStatic,
-} from './value-objects/ResourceStatsServer';
+  ResourceStatsServer,} from './value-objects/ResourceStatsServer';
 
 // ============ Value Objects - Client ============
 export type {
   RepositoryConfigClientDTO,
-  RepositoryConfigClient,
-  RepositoryConfigClientStatic,
-} from './value-objects/RepositoryConfigClient';
+  RepositoryConfigClient,} from './value-objects/RepositoryConfigClient';
 
 export type {
   RepositoryStatsClientDTO,
-  RepositoryStatsClient,
-  RepositoryStatsClientStatic,
-} from './value-objects/RepositoryStatsClient';
+  RepositoryStatsClient,} from './value-objects/RepositoryStatsClient';
 
 export type {
   FolderMetadataClientDTO,
-  FolderMetadataClient,
-  FolderMetadataClientStatic,
-} from './value-objects/FolderMetadataClient';
+  FolderMetadataClient,} from './value-objects/FolderMetadataClient';
 
 export type {
   ResourceMetadataClientDTO,
-  ResourceMetadataClient,
-  ResourceMetadataClientStatic,
-} from './value-objects/ResourceMetadataClient';
+  ResourceMetadataClient,} from './value-objects/ResourceMetadataClient';
 
 export type {
   ResourceStatsClientDTO,
-  ResourceStatsClient,
-  ResourceStatsClientStatic,
-} from './value-objects/ResourceStatsClient';
+  ResourceStatsClient,} from './value-objects/ResourceStatsClient';
 
 // ============ Aggregates ============
 export type {
   RepositoryServerDTO,
   RepositoryPersistenceDTO,
-  RepositoryServer,
-  RepositoryServerStatic,
-} from './aggregates/RepositoryServer';
+  RepositoryServer,} from './aggregates/RepositoryServer';
 
 export type {
   RepositoryClientDTO,
-  RepositoryClient,
-  RepositoryClientStatic,
-} from './aggregates/RepositoryClient';
+  RepositoryClient,} from './aggregates/RepositoryClient';
 
 export type {
   RepositoryStatisticsServerDTO,
   RepositoryStatisticsPersistenceDTO,
-  RepositoryStatisticsServer,
-  RepositoryStatisticsServerStatic,
-  RecalculateStatisticsRequest,
+  RepositoryStatisticsServer,  RecalculateStatisticsRequest,
   RecalculateStatisticsResponse,
   StatisticsUpdateEvent,
 } from './aggregates/RepositoryStatisticsServer';
@@ -96,24 +70,18 @@ export type {
 export type {
   FolderServerDTO,
   FolderPersistenceDTO,
-  FolderServer,
-  FolderServerStatic,
-} from './entities/FolderServer';
+  FolderServer,} from './entities/FolderServer';
 
-export type { FolderClientDTO, FolderClient, FolderClientStatic } from './entities/FolderClient';
+export type { FolderClientDTO, FolderClient } from './entities/FolderClient';
 
 export type {
   ResourceServerDTO,
   ResourcePersistenceDTO,
-  ResourceServer,
-  ResourceServerStatic,
-} from './entities/ResourceServer';
+  ResourceServer,} from './entities/ResourceServer';
 
 export type {
   ResourceClientDTO,
-  ResourceClient,
-  ResourceClientStatic,
-} from './entities/ResourceClient';
+  ResourceClient,} from './entities/ResourceClient';
 
 // ============ DTOs (File Tree - Story 11.1) ============
 export type { TreeNodeType, TreeNode, FileTreeResponse } from './TreeNode';

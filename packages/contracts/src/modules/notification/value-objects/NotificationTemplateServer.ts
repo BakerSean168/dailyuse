@@ -67,11 +67,7 @@ export interface INotificationTemplateConfigServer {
     >,
   ): INotificationTemplateConfigServer;
 
-  // DTO lb��
-  toServerDTO(): NotificationTemplateConfigServerDTO;
-  toClientDTO(): NotificationTemplateConfigClientDTO;
-  toPersistenceDTO(): NotificationTemplateConfigPersistenceDTO;
-}
+  // DTO lb��}
 
 // ============ DTO �I ============
 

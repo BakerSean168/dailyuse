@@ -24,10 +24,6 @@ export interface WidgetConfigClient {
   visible: boolean;
   order: number;
   size: WidgetSize;
-
-  /**
-   * 转换为 DTO
-   */
   toDTO(): WidgetConfigDTO;
 
   /**
@@ -50,10 +46,6 @@ export interface WidgetConfigServer {
   visible: boolean;
   order: number;
   size: WidgetSize;
-
-  /**
-   * 转换为 DTO
-   */
   toDTO(): WidgetConfigDTO;
 
   /**

@@ -113,21 +113,4 @@ export interface UserSettingClient {
   getShortcutText(action: string): string;
   getShortcut(action: string): string | null;
   hasShortcut(action: string): boolean;
-  hasExperimentalFeature(feature: string): boolean;
-
-  toServerDTO(): UserSettingServerDTO;
-}
-
-export interface UserSettingClientStatic {
-  create(params: {
-    accountUuid: string;
-    appearance?: Partial<UserSettingClient['appearance']>;
-    locale?: Partial<UserSettingClient['locale']>;
-    workflow?: Partial<UserSettingClient['workflow']>;
-    shortcuts?: Partial<UserSettingClient['shortcuts']>;
-    privacy?: Partial<UserSettingClient['privacy']>;
-    experimental?: Partial<UserSettingClient['experimental']>;
-  }): UserSettingClient;
-  fromServerDTO(dto: UserSettingServerDTO): UserSettingClient;
-  fromClientDTO(dto: UserSettingClientDTO): UserSettingClient;
-}
+  hasExperimentalFeature(feature: string): boolean;}

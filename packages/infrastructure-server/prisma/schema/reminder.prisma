@@ -1,0 +1,143 @@
+// ==========================================
+// Reminder Module
+// 提醒模板、实例、分组、历史、统计、响应
+// ==========================================
+
+model ReminderTemplate {
+  id                 String    @id
+  identityId         String    @map("identity_id")
+  title              String
+  description        String?
+  type               String
+  selfEnabled        Boolean   @map("self_enabled")
+  status             String
+  groupId            String?   @map("group_id")
+  importanceLevel    String    @map("importance_level")
+  tags               String
+  color              String?
+  icon               String?
+  nextTriggerAt      DateTime? @map("next_trigger_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+  deletedAt          DateTime? @map("deleted_at")
+  trigger            String
+  recurrence         String?
+  activeTime         String    @map("active_time")
+  activeHours        String?   @map("active_hours")
+  notificationConfig String    @map("notification_config")
+  stats              String
+
+  // Smart Frequency: Response Metrics
+  clickRate          Float?    @map("click_rate")
+  ignoreRate         Float?    @map("ignore_rate")
+  avgResponseTime    Int?      @map("avg_response_time")
+  snoozeCount        Int       @default(0) @map("snooze_count")
+  effectivenessScore Float?    @map("effectiveness_score")
+  sampleSize         Int       @default(0) @map("sample_size")
+  lastAnalysisTime   DateTime? @map("last_analysis_time")
+
+  // Smart Frequency: Frequency Adjustment
+  originalInterval      Int?      @map("original_interval")
+  adjustedInterval      Int?      @map("adjusted_interval")
+  adjustmentReason      String?   @map("adjustment_reason")
+  adjustmentTime        DateTime? @map("adjustment_time")
+  isAutoAdjusted        Boolean   @default(false) @map("is_auto_adjusted")
+  userConfirmed         Boolean   @default(false) @map("user_confirmed")
+  smartFrequencyEnabled Boolean   @default(true) @map("smart_frequency_enabled")
+
+  history   ReminderHistory[]
+  instances ReminderInstance[]
+  responses ReminderResponse[]
+  account   Account            @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  group     ReminderGroup?     @relation(fields: [groupId], references: [id])
+
+  @@index([status])
+  @@map("reminder_templates")
+}
+
+model ReminderGroup {
+  id          String    @id
+  identityId  String    @map("identity_id")
+  name        String
+  description String?
+  color       String?
+  icon        String?
+  controlMode String    @map("control_mode")
+  enabled     Boolean
+  status      String
+  order       Int
+  stats       String
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  account   Account            @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  templates ReminderTemplate[]
+
+  @@index([identityId])
+  @@map("reminder_groups")
+}
+
+model ReminderInstance {
+  id          String    @id
+  templateId  String    @map("template_id")
+  identityId  String    @map("identity_id")
+  triggerAt   DateTime  @map("trigger_at")
+  status      String
+  result      String?
+  processedAt DateTime? @map("processed_at")
+  note        String?
+  payload     String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  account  Account          @relation(fields: [identityId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  template ReminderTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([triggerAt])
+  @@map("reminder_instances")
+}
+
+model ReminderHistory {
+  id                  String   @id
+  templateId          String   @map("template_id")
+  triggeredAt         DateTime @map("triggered_at")
+  result              String
+  error               String?
+  notificationSent    Boolean  @map("notification_sent")
+  notificationChannel String?
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  template ReminderTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@map("reminder_history")
+}
+
+model ReminderStatistic {
+  id            String   @id
+  identityId    String   @unique @map("identity_id")
+  templateStats String   @map("template_stats")
+  groupStats    String   @map("group_stats")
+  triggerStats  String   @map("trigger_stats")
+  calculatedAt  DateTime @map("calculated_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId])
+  @@map("reminder_statistics")
+}
+
+model ReminderResponse {
+  id           String   @id @default(uuid())
+  templateId   String   @map("template_id")
+  action       String // clicked, ignored, snoozed, dismissed, completed
+  responseTime Int?     @map("response_time") // seconds
+  timestamp    DateTime
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  template ReminderTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId, timestamp(sort: Desc)])
+  @@map("reminder_responses")
+}

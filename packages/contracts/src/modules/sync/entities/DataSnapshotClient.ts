@@ -32,11 +32,4 @@ export interface DataSnapshotClient {
   source: 'local' | 'remote';
   entityTypes: SyncableEntityType[];
   entityCounts: Record<string, number>;
-  isDataLoaded: boolean;
-
-  toClientDTO(): DataSnapshotClientDTO;
-}
-
-export interface DataSnapshotClientStatic {
-  fromClientDTO(dto: DataSnapshotClientDTO): DataSnapshotClient;
-}
+  isDataLoaded: boolean;}

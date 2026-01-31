@@ -29,11 +29,7 @@ export interface RecurrenceRuleServer {
     >,
   ): RecurrenceRuleServer;
 
-  // DTO 转换方法
-  toServerDTO(): RecurrenceRuleServerDTO;
-  toClientDTO(): RecurrenceRuleClientDTO;
-  toPersistenceDTO(): RecurrenceRulePersistenceDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

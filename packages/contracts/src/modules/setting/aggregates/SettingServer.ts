@@ -127,30 +127,4 @@ export interface SettingServer {
    * 转换为 Client DTO
    * @param includeChildren 是否包含子实体（默认 false）
    */
-  toClientDTO(includeChildren?: boolean): SettingClientDTO;
-
-  toPersistenceDTO(): SettingPersistenceDTO;
-}
-
-export interface SettingServerStatic {
-  create(params: {
-    key: string;
-    name: string;
-    description?: string;
-    valueType: SettingValueType;
-    value: any;
-    defaultValue: any;
-    scope: 'SYSTEM' | 'USER' | 'DEVICE';
-    accountUuid?: string;
-    deviceId?: string;
-    groupUuid?: string;
-    validation?: ValidationRuleServer;
-    ui?: UIConfigServer;
-    isEncrypted?: boolean;
-    isReadOnly?: boolean;
-    isSystemSetting?: boolean;
-    syncConfig?: SyncConfigServer;
-  }): SettingServer;
-  fromServerDTO(dto: SettingServerDTO): SettingServer;
-  fromPersistenceDTO(dto: SettingPersistenceDTO): SettingServer;
-}
+  toClientDTO(includeChildren?: boolean): SettingClientDTO;}

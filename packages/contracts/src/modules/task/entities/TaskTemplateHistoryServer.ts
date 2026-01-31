@@ -16,12 +16,7 @@ export interface TaskTemplateHistoryServer {
   templateUuid: string;
   action: string; // "created" | "updated" | "paused" | "resumed" | "archived"
   changes?: any | null; // 变更内容（JSON）
-  createdAt: Date;
-
-  toServerDTO(): TaskTemplateHistoryServerDTO;
-  toClientDTO(): TaskTemplateHistoryClientDTO;
-  toPersistenceDTO(): TaskTemplateHistoryPersistenceDTO;
-}
+  createdAt: Date;}
 
 // ============ DTO 定义 ============
 

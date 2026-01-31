@@ -91,39 +91,6 @@ export interface NotificationChannelServer {
   getNotification(): Promise<any>; // 返回 NotificationServer，避免循环依赖
 
   // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): NotificationChannelServerDTO;
-
   /**
    * 转换为 Persistence DTO (数据库)
-   */
-  toPersistenceDTO(): NotificationChannelPersistenceDTO;
-}
-
-/**
- * NotificationChannel 静态工厂方法接口
- */
-export interface NotificationChannelServerStatic {
-  /**
-   * 创建新的 NotificationChannel 实体（静态工厂方法）
-   */
-  create(params: {
-    notificationUuid: string;
-    channelType: NotificationChannelType;
-    recipient?: string;
-    maxRetries?: number;
-  }): NotificationChannelServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: NotificationChannelServerDTO): NotificationChannelServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: NotificationChannelPersistenceDTO): NotificationChannelServer;
-}
+   */}

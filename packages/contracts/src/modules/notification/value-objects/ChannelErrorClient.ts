@@ -1,32 +1,30 @@
 /**
  * ChannelError Value Object (Client)
- *  Sï<ùa - ¢7ï
+ *  Sï¿½<ï¿½a - ï¿½7ï¿½
  */
 
 import type { ChannelErrorServerDTO } from './ChannelErrorServer';
 
-// ============ ¥ãšI ============
+// ============ ï¿½ï¿½I ============
 
 /**
- *  Sï - Client ¥ã
+ *  Sï¿½ - Client ï¿½ï¿½
  */
 export interface IChannelErrorClient {
   code: string;
   message: string;
   details?: any;
 
-  // UI …©^'
-  displayMessage: string; // (7Ë}„ïˆo
-  isRetryable: boolean; // /&ïÍÕ
+  // UI ï¿½ï¿½^'
+  displayMessage: string; // (7ï¿½}ï¿½ï¿½o
+  isRetryable: boolean; // /&ï¿½ï¿½ï¿½
 
-  // <ùa¹Õ
+  // <ï¿½aï¿½ï¿½
   equals(other: IChannelErrorClient): boolean;
 
-  // DTO lb¹Õ
-  toServerDTO(): ChannelErrorServerDTO;
-}
+  // DTO lbï¿½ï¿½}
 
-// ============ DTO šI ============
+// ============ DTO ï¿½I ============
 
 /**
  * ChannelError Client DTO
@@ -39,6 +37,6 @@ export interface ChannelErrorClientDTO {
   isRetryable: boolean;
 }
 
-// ============ {‹üú ============
+// ============ {ï¿½ï¿½ï¿½ ============
 
 export type ChannelErrorClient = IChannelErrorClient;

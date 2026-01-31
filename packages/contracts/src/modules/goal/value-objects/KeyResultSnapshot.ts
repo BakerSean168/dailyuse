@@ -26,11 +26,7 @@ export interface IKeyResultSnapshotServer {
     >,
   ): IKeyResultSnapshotServer;
 
-  // DTO 转换方法
-  toServerDTO(): KeyResultSnapshotServerDTO;
-  toClientDTO(): KeyResultSnapshotClientDTO;
-  toPersistenceDTO(): KeyResultSnapshotPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 关键成果快照 - Client 接口
@@ -45,9 +41,7 @@ export interface IKeyResultSnapshotClient {
   // 值对象方法
   equals(other: IKeyResultSnapshotClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): KeyResultSnapshotServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

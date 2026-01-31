@@ -142,44 +142,6 @@ export interface GoalFolderServer {
   restore(): void;
 
   // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): GoalFolderServerDTO;
-
   /**
    * 转换为 Persistence DTO
-   */
-  toPersistenceDTO(): GoalFolderPersistenceDTO;
-}
-
-/**
- * GoalFolder 静态工厂方法接口
- * 注意：TypeScript 接口不能包含静态方法，这些方法应该在类上实现
- */
-export interface GoalFolderServerStatic {
-  /**
-   * 创建新的 GoalFolder 聚合根（静态工厂方法）
-   * @param params 创建参数
-   * @returns 新的 GoalFolder 实例
-   */
-  create(params: {
-    accountUuid: string;
-    name: string;
-    description?: string;
-    icon?: string;
-    color?: string;
-    parentFolderUuid?: string;
-  }): GoalFolderServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: GoalFolderServerDTO): GoalFolderServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: GoalFolderPersistenceDTO): GoalFolderServer;
-}
+   */}

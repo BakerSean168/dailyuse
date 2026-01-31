@@ -11,11 +11,7 @@ export interface SkipRecordServer {
   skippedAt: number;
   reason?: string | null;
 
-  equals(other: SkipRecordServer): boolean;
-  toServerDTO(): SkipRecordServerDTO;
-  toClientDTO(): SkipRecordClientDTO;
-  toPersistenceDTO(): SkipRecordPersistenceDTO;
-}
+  equals(other: SkipRecordServer): boolean;}
 
 // ============ DTO 定义 ============
 

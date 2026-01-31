@@ -165,15 +165,4 @@ export interface AppConfigServer {
   updateAppInfo(info: Partial<AppConfigServer['app']>): void;
   updateLimits(limits: Partial<AppConfigServer['limits']>): void;
   updateApiConfig(config: Partial<AppConfigServer['api']>): void;
-  updateSecurityConfig(config: Partial<AppConfigServer['security']>): void;
-
-  toServerDTO(): AppConfigServerDTO;
-  toClientDTO(): AppConfigClientDTO;
-  toPersistenceDTO(): AppConfigPersistenceDTO;
-}
-
-export interface AppConfigServerStatic {
-  create(params?: Partial<AppConfigServer>): AppConfigServer;
-  fromServerDTO(dto: AppConfigServerDTO): AppConfigServer;
-  fromPersistenceDTO(dto: AppConfigPersistenceDTO): AppConfigServer;
-}
+  updateSecurityConfig(config: Partial<AppConfigServer['security']>): void;}

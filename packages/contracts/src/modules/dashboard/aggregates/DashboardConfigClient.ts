@@ -95,17 +95,6 @@ export interface DashboardConfigClient {
    */
   resetToDefault(): DashboardConfigClient;
 
-  // ===== 转换方法 =====
-
-  /**
-   * 转换为 DTO
-   */
-  toDTO(): DashboardConfigClientDTO;
-
-  /**
-   * 克隆实例
-   */
-  clone(): DashboardConfigClient;
 }
 
 // ============ 静态工厂方法 ============

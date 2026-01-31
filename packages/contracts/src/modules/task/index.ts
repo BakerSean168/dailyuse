@@ -108,9 +108,7 @@ export type {
 
 export type {
   TaskTemplateHistoryClientDTO,
-  TaskTemplateHistoryClient,
-  TaskTemplateHistoryClientStatic,
-  TaskTemplateHistoryClientInstance,
+  TaskTemplateHistoryClient,  TaskTemplateHistoryClientInstance,
 } from './entities/TaskTemplateHistoryClient';
 
 // ============ Aggregates ============
@@ -122,9 +120,7 @@ export type {
 
 export type {
   TaskInstanceClientDTO,
-  TaskInstanceClient,
-  TaskInstanceClientStatic,
-  TaskInstanceClientInstance,
+  TaskInstanceClient,  TaskInstanceClientInstance,
 } from './aggregates/TaskInstanceClient';
 
 export type {
@@ -135,9 +131,7 @@ export type {
 
 export type {
   TaskTemplateClientDTO,
-  TaskTemplateClient,
-  TaskTemplateClientStatic,
-  TaskTemplateClientInstance,
+  TaskTemplateClient,  TaskTemplateClientInstance,
 } from './aggregates/TaskTemplateClient';
 
 export type {
@@ -146,9 +140,7 @@ export type {
   TaskStatisticsUpdatedEvent,
   TaskStatisticsRecalculatedEvent,
   TaskStatisticsDomainEvent,
-  TaskStatisticsServer,
-  TaskStatisticsServerStatic,
-  TemplateStatsInfo,
+  TaskStatisticsServer,  TemplateStatsInfo,
   InstanceStatsInfo,
   CompletionStatsInfo,
   TimeStatsInfo,
@@ -157,9 +149,7 @@ export type {
 
 export type {
   TaskStatisticsClientDTO,
-  TaskStatisticsClient,
-  TaskStatisticsClientStatic,
-  ChartData,
+  TaskStatisticsClient,  ChartData,
   TrendData,
 } from './aggregates/TaskStatisticsClient';
 

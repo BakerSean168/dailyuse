@@ -25,14 +25,6 @@ export interface RepositoryStatsClient {
   // UI 计算属性
   formattedSize: string;
   hasResources: boolean;
-  hasFolders: boolean;
-
-  toClientDTO(): RepositoryStatsClientDTO;
-  toServerDTO(): RepositoryStatsServerDTO;
-}
+  hasFolders: boolean;}
 
 // ============ Client Static ============
-export interface RepositoryStatsClientStatic {
-  fromServerDTO(dto: RepositoryStatsServerDTO): RepositoryStatsClient;
-  fromClientDTO(dto: RepositoryStatsClientDTO): RepositoryStatsClient;
-}

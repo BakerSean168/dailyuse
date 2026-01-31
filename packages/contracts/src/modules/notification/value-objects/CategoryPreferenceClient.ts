@@ -24,9 +24,7 @@ export interface ICategoryPreferenceClient {
   // <�a��
   equals(other: ICategoryPreferenceClient): boolean;
 
-  // DTO lb��
-  toServerDTO(): CategoryPreferenceServerDTO;
-}
+  // DTO lb��}
 
 // ============ DTO �I ============
 

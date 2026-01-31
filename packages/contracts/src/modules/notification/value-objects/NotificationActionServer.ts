@@ -29,11 +29,7 @@ export interface INotificationActionServer {
     >,
   ): INotificationActionServer;
 
-  // DTO lb��
-  toServerDTO(): NotificationActionServerDTO;
-  toClientDTO(): NotificationActionClientDTO;
-  toPersistenceDTO(): NotificationActionPersistenceDTO;
-}
+  // DTO lb��}
 
 // ============ DTO �I ============
 

@@ -40,20 +40,3 @@ export interface ValidationRuleServer {
   pattern?: string | null;
   enum?: any[] | null;
   custom?: string | null;
-
-  toServerDTO(): ValidationRuleServerDTO;
-  toClientDTO(): ValidationRuleClientDTO;
-}
-
-export interface ValidationRuleServerStatic {
-  create(params: {
-    required: boolean;
-    min?: number;
-    max?: number;
-    pattern?: string;
-    enum?: any[];
-    custom?: string;
-  }): ValidationRuleServer;
-  fromServerDTO(dto: ValidationRuleServerDTO): ValidationRuleServer;
-  fromPersistenceDTO(dto: ValidationRulePersistenceDTO): ValidationRuleServer;
-}

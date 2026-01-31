@@ -58,22 +58,4 @@ export interface SettingGroupClient {
   getBreadcrumbs(): string[];
   canEdit(): boolean;
   canDelete(): boolean;
-  toggle(): void;
-
-  toServerDTO(): SettingGroupServerDTO;
-}
-
-export interface SettingGroupClientStatic {
-  create(params: {
-    name: string;
-    description?: string;
-    icon?: string;
-    parentGroupUuid?: string;
-    path: string;
-    level: number;
-    sortOrder?: number;
-    isSystemGroup?: boolean;
-  }): SettingGroupClient;
-  fromServerDTO(dto: SettingGroupServerDTO): SettingGroupClient;
-  fromClientDTO(dto: SettingGroupClientDTO): SettingGroupClient;
-}
+  toggle(): void;}

@@ -83,30 +83,4 @@ export interface SettingClient {
   canSync(): boolean;
   validate(value: any): { valid: boolean; error?: string };
   setValue(value: any): void;
-  reset(): void;
-
-  toServerDTO(): SettingServerDTO;
-}
-
-export interface SettingClientStatic {
-  create(params: {
-    key: string;
-    name: string;
-    description?: string;
-    valueType: string;
-    value: any;
-    defaultValue: any;
-    scope: string;
-    accountUuid?: string;
-    deviceId?: string;
-    groupUuid?: string;
-    validation?: ValidationRuleClient;
-    ui?: UIConfigClient;
-    isEncrypted?: boolean;
-    isReadOnly?: boolean;
-    isSystemSetting?: boolean;
-    syncConfig?: SyncConfigClient;
-  }): SettingClient;
-  fromServerDTO(dto: SettingServerDTO): SettingClient;
-  fromClientDTO(dto: SettingClientDTO): SettingClient;
-}
+  reset(): void;}

@@ -64,16 +64,4 @@ export interface ReminderStatisticsClient {
 
   /**
    * 转换为 Server DTO
-   */
-  toServerDTO(): ReminderStatisticsServerDTO;
-}
-
-/**
- * Reminder Statistics Client 静态工厂方法接口
- */
-export interface ReminderStatisticsClientStatic {
-  /**
-   * 从 Server DTO 创建客户端实体
-   */
-  fromServerDTO(dto: ReminderStatisticsServerDTO): ReminderStatisticsClient;
-}
+   */}

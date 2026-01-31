@@ -1,7 +1,11 @@
+---
+tags: [standard, domain/shared]
+---
+
 # Domain Shared 开发规范：Type 类型值对象 (Enums & Primitives)
 
 **版本**: 1.0
-**适用范围**: `libs/domain-shared` 中基于 Type 实现的值对象
+**适用范围**: `packages/domain-shared` 中基于 Type 实现的值对象
 **读者**: 开发人员, AI 助手
 
 ## 1. 核心概念

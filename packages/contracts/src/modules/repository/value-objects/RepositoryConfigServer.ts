@@ -18,13 +18,6 @@ export interface RepositoryConfigServer {
   enableGit: boolean;
   autoSync?: boolean;
   syncInterval?: number;
-  [key: string]: unknown;
-
-  toServerDTO(): RepositoryConfigServerDTO;
-}
+  [key: string]: unknown;}
 
 // ============ Server Static ============
-export interface RepositoryConfigServerStatic {
-  create(params?: Partial<RepositoryConfigServerDTO>): RepositoryConfigServer;
-  fromServerDTO(dto: RepositoryConfigServerDTO): RepositoryConfigServer;
-}

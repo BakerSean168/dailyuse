@@ -62,23 +62,4 @@ export interface SyncConflictServer {
 
   resolve(resolution: ConflictResolutionDTO): void;
   ignore(): void;
-  canAutoResolve(): boolean;
-
-  toServerDTO(): SyncConflictServerDTO;
-  toClientDTO(): SyncConflictClientDTO;
-  toPersistenceDTO(): SyncConflictPersistenceDTO;
-}
-
-export interface SyncConflictServerStatic {
-  create(params: {
-    sessionId: string;
-    entityRef: EntityReferenceDTO;
-    conflictType: 'update-update' | 'update-delete' | 'delete-update';
-    localVersion: SyncVersionServerDTO;
-    localData: unknown;
-    remoteVersion: SyncVersionServerDTO;
-    remoteData: unknown;
-  }): SyncConflictServer;
-  fromServerDTO(dto: SyncConflictServerDTO): SyncConflictServer;
-  fromPersistenceDTO(dto: SyncConflictPersistenceDTO): SyncConflictServer;
-}
+  canAutoResolve(): boolean;}

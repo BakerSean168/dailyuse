@@ -13,10 +13,6 @@ export type AuthCredentialServer =
   | PhoneCredentialServer;
 
   
-export interface AuthCredentialServerStatic {
-  fromPersistenceDTO(dto: AuthCredentialPersistenceDTO): AuthCredentialServer;
-}
-
 // ============ DTO 定义 ============
 
 /**

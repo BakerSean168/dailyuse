@@ -50,44 +50,4 @@ export interface NotificationHistoryClient {
   getActionColor(): string;
   getDisplayText(): string;
 
-  // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): NotificationHistoryServerDTO;
-
-  /**
-   * 转换为 Client DTO
-   */
-  toClientDTO(): NotificationHistoryClientDTO;
-
-  /**
-   * 克隆当前实体（用于编辑表单）
-   */
-  clone(): NotificationHistoryClient;
-}
-
-/**
- * NotificationHistory 静态工厂方法接口
- */
-export interface NotificationHistoryClientStatic {
-  /**
-   * 创建新的 NotificationHistory 实体（静态工厂方法）
-   */
-  create(params: {
-    notificationUuid: string;
-    action: string;
-    details?: any;
-  }): NotificationHistoryClient;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: NotificationHistoryServerDTO): NotificationHistoryClient;
-
-  /**
-   * 从 Client DTO 创建实体
-   */
-  fromClientDTO(dto: NotificationHistoryClientDTO): NotificationHistoryClient;
 }

@@ -59,33 +59,7 @@ export interface FrequencyAdjustmentServer {
   getDisplayInterval(seconds: number): string; // "每天1次" | "每2天1次"
 
   // 转换方法
-  toServerDTO(): FrequencyAdjustmentServerDTO;
-  toClientDTO(): FrequencyAdjustmentClientDTO;
-}
 
 /**
  * Frequency Adjustment 静态工厂方法接口
  */
-export interface FrequencyAdjustmentServerStatic {
-  /**
-   * 创建新的 Frequency Adjustment（静态工厂方法）
-   */
-  create(params: {
-    originalInterval: number;
-    adjustedInterval: number;
-    adjustmentReason: string;
-    isAutoAdjusted?: boolean;
-    userConfirmed?: boolean;
-    rejectionReason?: string;
-  }): FrequencyAdjustmentServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: FrequencyAdjustmentServerDTO): FrequencyAdjustmentServer;
-
-  /**
-   * 从 Client DTO 创建实体
-   */
-  fromClientDTO(dto: FrequencyAdjustmentClientDTO): FrequencyAdjustmentServer;
-}

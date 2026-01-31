@@ -43,11 +43,7 @@ export interface IRetryPolicyServer {
   shouldRetry(currentRetryCount: number): boolean;
   calculateNextRetryDelay(currentRetryCount: number): number;
 
-  // DTO 转换方法
-  toServerDTO(): RetryPolicyServerDTO;
-  toClientDTO(): RetryPolicyClientDTO;
-  toPersistenceDTO(): RetryPolicyPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 重试策略 - Client 接口
@@ -84,9 +80,7 @@ export interface IRetryPolicyClient {
   // 值对象方法
   equals(other: IRetryPolicyClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): RetryPolicyServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

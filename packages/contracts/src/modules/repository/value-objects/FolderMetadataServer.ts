@@ -14,13 +14,6 @@ export interface FolderMetadataServerDTO {
 export interface FolderMetadataServer {
   icon?: string;
   color?: string;
-  [key: string]: unknown;
-
-  toServerDTO(): FolderMetadataServerDTO;
-}
+  [key: string]: unknown;}
 
 // ============ Server Static ============
-export interface FolderMetadataServerStatic {
-  create(params?: Partial<FolderMetadataServerDTO>): FolderMetadataServer;
-  fromServerDTO(dto: FolderMetadataServerDTO): FolderMetadataServer;
-}

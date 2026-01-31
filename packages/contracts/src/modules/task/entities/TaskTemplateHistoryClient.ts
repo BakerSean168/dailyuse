@@ -19,16 +19,7 @@ export interface TaskTemplateHistoryClient {
   changes?: any | null;
   createdAt: Date;
 
-  hasSpecificChange(key: string): boolean;
-
-  toClientDTO(): TaskTemplateHistoryClientDTO;
-  toServerDTO(): TaskTemplateHistoryServerDTO;
-}
-
-export interface TaskTemplateHistoryClientStatic {
-  fromClientDTO(dto: TaskTemplateHistoryClientDTO): TaskTemplateHistoryClient;
-  fromServerDTO(dto: TaskTemplateHistoryServerDTO): TaskTemplateHistoryClient;
-}
+  hasSpecificChange(key: string): boolean;}
 
 export interface TaskTemplateHistoryClientInstance extends TaskTemplateHistoryClient {
   clone(): TaskTemplateHistoryClient;

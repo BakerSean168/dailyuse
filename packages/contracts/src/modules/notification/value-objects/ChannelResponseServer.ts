@@ -26,11 +26,7 @@ export interface IChannelResponseServer {
     >,
   ): IChannelResponseServer;
 
-  // DTO lb��
-  toServerDTO(): ChannelResponseServerDTO;
-  toClientDTO(): ChannelResponseClientDTO;
-  toPersistenceDTO(): ChannelResponsePersistenceDTO;
-}
+  // DTO lb��}
 
 // ============ DTO �I ============
 

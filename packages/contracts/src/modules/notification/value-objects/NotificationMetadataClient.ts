@@ -1,14 +1,14 @@
 /**
  * NotificationMetadata Value Object (Client)
- * ÂCpn<˘a - ¢7Ô
+ * ÔøΩCpn<ÔøΩa - ÔøΩ7ÔøΩ
  */
 
 import type { NotificationMetadataServerDTO } from './NotificationMetadataServer';
 
-// ============ •„öI ============
+// ============ ÔøΩÔøΩI ============
 
 /**
- * ÂCpn - Client •„
+ * ÔøΩCpn - Client ÔøΩÔøΩ
  */
 export interface INotificationMetadataClient {
   icon?: string | null;
@@ -18,19 +18,17 @@ export interface INotificationMetadataClient {
   badge?: number | null;
   data?: any;
 
-  // UI Ö©^'
+  // UI ÔøΩÔøΩ^'
   hasIcon: boolean;
   hasImage: boolean;
   hasBadge: boolean;
 
-  // <˘aπ’
+  // <ÔøΩaÔøΩÔøΩ
   equals(other: INotificationMetadataClient): boolean;
 
-  // DTO lbπ’
-  toServerDTO(): NotificationMetadataServerDTO;
-}
+  // DTO lbÔøΩÔøΩ}
 
-// ============ DTO öI ============
+// ============ DTO ÔøΩI ============
 
 /**
  * NotificationMetadata Client DTO
@@ -47,6 +45,6 @@ export interface NotificationMetadataClientDTO {
   hasBadge: boolean;
 }
 
-// ============ {ã¸˙ ============
+// ============ {ÔøΩÔøΩÔøΩ ============
 
 export type NotificationMetadataClient = INotificationMetadataClient;

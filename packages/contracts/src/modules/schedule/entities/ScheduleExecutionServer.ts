@@ -118,36 +118,4 @@ export interface ScheduleExecutionServer {
 
   /**
    * 转换为 Server DTO
-   */
-  toServerDTO(): ScheduleExecutionServerDTO;
-
-  toClientDTO(): ScheduleExecutionClientDTO;
-  /**
-   * 转换为 Persistence DTO (数据库)
-   */
-  toPersistenceDTO(): ScheduleExecutionPersistenceDTO;
-}
-
-/**
- * ScheduleExecution 静态工厂方法接口
- */
-export interface ScheduleExecutionServerStatic {
-  /**
-   * 创建新的 ScheduleExecution 实体（静态工厂方法）
-   */
-  create(params: {
-    taskUuid: string;
-    executionTime: number;
-    status?: ExecutionStatus;
-  }): ScheduleExecutionServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: ScheduleExecutionServerDTO): ScheduleExecutionServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: ScheduleExecutionPersistenceDTO): ScheduleExecutionServer;
-}
+   */}

@@ -175,23 +175,4 @@ export interface UserSettingServer {
 
   // 实验性功能
   enableExperimentalFeature(feature: string): void;
-  disableExperimentalFeature(feature: string): void;
-
-  toServerDTO(): UserSettingServerDTO;
-  toClientDTO(): UserSettingClientDTO;
-  toPersistenceDTO(): UserSettingPersistenceDTO;
-}
-
-export interface UserSettingServerStatic {
-  create(params: {
-    accountUuid: string;
-    appearance?: Partial<UserSettingServer['appearance']>;
-    locale?: Partial<UserSettingServer['locale']>;
-    workflow?: Partial<UserSettingServer['workflow']>;
-    shortcuts?: Partial<UserSettingServer['shortcuts']>;
-    privacy?: Partial<UserSettingServer['privacy']>;
-    experimental?: Partial<UserSettingServer['experimental']>;
-  }): UserSettingServer;
-  fromServerDTO(dto: UserSettingServerDTO): UserSettingServer;
-  fromPersistenceDTO(dto: UserSettingPersistenceDTO): UserSettingServer;
-}
+  disableExperimentalFeature(feature: string): void;}

@@ -87,8 +87,4 @@ export interface SearchEngineClient {
    */
   needsReindex(): boolean;
 
-  // ===== DTO 转换方法 =====
-
-  toClientDTO(): SearchEngineClientDTO;
-  toServerDTO(): SearchEngineServerDTO;
-}
+  // ===== DTO 转换方法 =====}

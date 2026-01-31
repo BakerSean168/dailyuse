@@ -36,11 +36,4 @@ export interface SyncStateClient {
   isOnline: boolean;
 
   canSync(): boolean;
-  isSyncing(): boolean;
-
-  toClientDTO(): SyncStateClientDTO;
-}
-
-export interface SyncStateClientStatic {
-  fromClientDTO(dto: SyncStateClientDTO): SyncStateClient;
-}
+  isSyncing(): boolean;}

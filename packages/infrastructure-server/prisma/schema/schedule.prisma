@@ -1,0 +1,109 @@
+// ==========================================
+// Schedule Module
+// 日程聚合根、任务、执行、统计
+// ==========================================
+
+model Schedule {
+  id                   String   @id
+  identityId           String   @map("identity_id")
+  title                String
+  description          String?
+  startTime            DateTime @map("start_time")
+  endTime              DateTime @map("end_time")
+  duration             Int
+  hasConflict          Boolean  @default(false) @map("has_conflict")
+  conflictingSchedules String?  @map("conflicting_schedules")
+  priority             Int?
+  location             String?
+  attendees            String?
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([startTime, endTime])
+  @@map("schedules")
+}
+
+model ScheduleTask {
+  id                    String    @id
+  identityId            String    @map("identity_id")
+  name                  String
+  description           String?
+  sourceModule          String    @map("source_module")
+  sourceEntityId        String    @map("source_entity_id")
+  status                String
+  enabled               Boolean
+  cronExpression        String?   @map("cron_expression")
+  timezone              String
+  startDate             DateTime? @map("start_date")
+  endDate               DateTime? @map("end_date")
+  maxExecutions         Int?      @map("max_executions")
+  nextRunAt             DateTime? @map("next_run_at")
+  lastRunAt             DateTime? @map("last_run_at")
+  executionCount        Int       @default(0) @map("execution_count")
+  lastExecutionStatus   String?   @map("last_execution_status")
+  lastExecutionDuration Int?      @map("last_execution_duration")
+  consecutiveFailures   Int       @default(0) @map("consecutive_failures")
+  maxRetries            Int       @map("max_retries")
+  initialDelayMs        Int       @map("initial_delay_ms")
+  maxDelayMs            Int       @map("max_delay_ms")
+  backoffMultiplier     Float     @map("backoff_multiplier")
+  retryableStatuses     String    @default("[]") @map("retryable_statuses")
+  payload               String?
+  tags                  String    @default("[]")
+  priority              String
+  timeout               Int?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  executions ScheduleExecution[]
+  account    Account             @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@map("schedule_tasks")
+}
+
+model ScheduleExecution {
+  id            String   @id
+  taskId        String   @map("task_id")
+  executionTime DateTime @map("execution_time")
+  status        String
+  duration      Int?
+  result        String?
+  error         String?
+  retryCount    Int      @default(0) @map("retry_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  task ScheduleTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@map("schedule_executions")
+}
+
+model ScheduleStatistic {
+  id                   Int      @id @default(autoincrement())
+  identityId           String   @unique @map("identity_id")
+  totalTasks           Int      @map("total_tasks")
+  activeTasks          Int      @map("active_tasks")
+  pausedTasks          Int      @map("paused_tasks")
+  completedTasks       Int      @map("completed_tasks")
+  cancelledTasks       Int      @map("cancelled_tasks")
+  failedTasks          Int      @map("failed_tasks")
+  totalExecutions      Int      @map("total_executions")
+  successfulExecutions Int      @map("successful_executions")
+  failedExecutions     Int      @map("failed_executions")
+  skippedExecutions    Int      @map("skipped_executions")
+  timeoutExecutions    Int      @map("timeout_executions")
+  avgExecutionDuration Float    @map("avg_execution_duration")
+  minExecutionDuration Float    @map("min_execution_duration")
+  maxExecutionDuration Float    @map("max_execution_duration")
+  moduleStatistics     String   @default("{}") @map("module_statistics")
+  lastUpdatedAt        DateTime @map("last_updated_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId])
+  @@map("schedule_statistics")
+}

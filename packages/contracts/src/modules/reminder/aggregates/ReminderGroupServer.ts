@@ -197,40 +197,4 @@ export interface ReminderGroupServer {
 
   /**
    * 转换为 Server DTO
-   */
-  toServerDTO(): ReminderGroupServerDTO;
-
-  toClientDTO(): ReminderGroupClientDTO;
-  /**
-   * 转换为 Persistence DTO (数据库)
-   */
-  toPersistenceDTO(): ReminderGroupPersistenceDTO;
-}
-
-/**
- * Reminder Group 静态工厂方法接口
- */
-export interface ReminderGroupServerStatic {
-  /**
-   * 创建新的 Reminder Group 聚合根（静态工厂方法）
-   */
-  create(params: {
-    accountUuid: string;
-    name: string;
-    description?: string;
-    color?: string;
-    icon?: string;
-    controlMode?: ControlMode;
-    order?: number;
-  }): ReminderGroupServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: ReminderGroupServerDTO): ReminderGroupServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: ReminderGroupPersistenceDTO): ReminderGroupServer;
-}
+   */}

@@ -1,7 +1,11 @@
+---
+tags: [standard, domain/shared]
+---
+
 # Domain Shared 开发规范：值对象与通用逻辑
 
 **版本**: 1.1 (Updated)
-**适用范围**: `libs/domain-shared`
+**适用范围**: `packages/domain-shared`
 **读者**: 开发人员, AI 助手
 
 ## 1. 核心设计理念

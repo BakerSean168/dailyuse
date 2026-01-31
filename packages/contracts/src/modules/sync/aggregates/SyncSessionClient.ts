@@ -45,11 +45,4 @@ export interface SyncSessionClient {
 
   isInProgress(): boolean;
   isCompleted(): boolean;
-  isFailed(): boolean;
-
-  toClientDTO(): SyncSessionClientDTO;
-}
-
-export interface SyncSessionClientStatic {
-  fromClientDTO(dto: SyncSessionClientDTO): SyncSessionClient;
-}
+  isFailed(): boolean;}

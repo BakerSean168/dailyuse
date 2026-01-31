@@ -20,9 +20,7 @@ export interface IRateLimitClient {
   // 方法
   equals(other: IRateLimitClient): boolean;
 
-  // DTO 转换
-  toServerDTO(): RateLimitServerDTO;
-}
+  // DTO 转换}
 
 // ============ DTO 定义 ============
 

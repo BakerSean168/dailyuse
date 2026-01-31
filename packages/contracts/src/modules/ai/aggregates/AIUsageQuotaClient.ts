@@ -75,16 +75,4 @@ export interface AIUsageQuotaClient {
 
   /**
    * 转换为 Client DTO
-   */
-  toClientDTO(): AIUsageQuotaClientDTO;
-}
-
-/**
- * AIUsageQuota 静态工厂方法接口
- */
-export interface AIUsageQuotaClientStatic {
-  /**
-   * 从 Client DTO 创建实体
-   */
-  fromClientDTO(dto: AIUsageQuotaClientDTO): AIUsageQuotaClient;
-}
+   */}

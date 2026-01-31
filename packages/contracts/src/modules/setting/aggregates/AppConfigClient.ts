@@ -90,13 +90,4 @@ export interface AppConfigClient {
   isFeatureEnabled(feature: string): boolean;
   canCreateGoal(currentCount: number): boolean;
   canCreateTask(currentCount: number): boolean;
-  canUploadFile(fileSize: number): boolean;
-
-  toServerDTO(): AppConfigServerDTO;
-}
-
-export interface AppConfigClientStatic {
-  create(params?: Partial<AppConfigClient>): AppConfigClient;
-  fromServerDTO(dto: AppConfigServerDTO): AppConfigClient;
-  fromClientDTO(dto: AppConfigClientDTO): AppConfigClient;
-}
+  canUploadFile(fileSize: number): boolean;}

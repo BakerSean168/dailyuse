@@ -25,17 +25,4 @@ export interface SyncConfigClient {
 
   // UI 方法
   isSyncEnabled(): boolean;
-  getSyncTargets(): string[];
-
-  toServerDTO(): SyncConfigServerDTO;
-}
-
-export interface SyncConfigClientStatic {
-  create(params: {
-    enabled?: boolean;
-    syncToCloud?: boolean;
-    syncToDevices?: boolean;
-  }): SyncConfigClient;
-  fromServerDTO(dto: SyncConfigServerDTO): SyncConfigClient;
-  fromClientDTO(dto: SyncConfigClientDTO): SyncConfigClient;
-}
+  getSyncTargets(): string[];}

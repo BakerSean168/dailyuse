@@ -88,16 +88,4 @@ export interface ReminderGroupClient {
 
   /**
    * 转换为 Server DTO
-   */
-  toServerDTO(): ReminderGroupServerDTO;
-}
-
-/**
- * Reminder Group Client 静态工厂方法接口
- */
-export interface ReminderGroupClientStatic {
-  /**
-   * 从 Server DTO 创建客户端实体
-   */
-  fromServerDTO(dto: ReminderGroupServerDTO): ReminderGroupClient;
-}
+   */}

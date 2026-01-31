@@ -28,11 +28,7 @@ export interface IActiveTimeConfigServer {
     >,
   ): IActiveTimeConfigServer;
 
-  // DTO 转换方法
-  toServerDTO(): ActiveTimeConfigServerDTO;
-  toClientDTO(): ActiveTimeConfigClientDTO;
-  toPersistenceDTO(): ActiveTimeConfigPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 生效时间配置 - Client 接口
@@ -47,9 +43,7 @@ export interface IActiveTimeConfigClient {
   // 值对象方法
   equals(other: IActiveTimeConfigClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): ActiveTimeConfigServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

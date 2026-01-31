@@ -86,9 +86,4 @@ export interface EditorGroupServer {
    */
   isValidTabIndex(tabIndex: number, tabCount: number): boolean;
 
-  // ===== DTO 转换方法 =====
-
-  toServerDTO(): EditorGroupServerDTO;
-  toClientDTO(): EditorGroupClientDTO;
-  toPersistenceDTO(): EditorGroupPersistenceDTO;
-}
+  // ===== DTO 转换方法 =====}

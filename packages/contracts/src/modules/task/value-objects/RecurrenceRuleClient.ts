@@ -27,9 +27,7 @@ export interface RecurrenceRuleClient {
   // 值对象方法
   equals(other: RecurrenceRuleClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): RecurrenceRuleServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

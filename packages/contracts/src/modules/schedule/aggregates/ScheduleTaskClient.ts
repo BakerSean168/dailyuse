@@ -120,35 +120,4 @@ export interface ScheduleTaskClient {
   getRecentExecutions(limit: number): ScheduleExecutionClient[];
   getFailedExecutions(): ScheduleExecutionClient[];
 
-  // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): ScheduleTaskServerDTO;
-
-  /**
-   * 转换为 Client DTO
-   */
-  toClientDTO(): ScheduleTaskClientDTO;
-
-  /**
-   * 克隆当前实体（用于编辑表单）
-   */
-  clone(): ScheduleTaskClient;
-}
-
-/**
- * ScheduleTask 静态工厂方法接口
- */
-export interface ScheduleTaskClientStatic {
-  /**
-   * 从 Server DTO 创建客户端实体
-   */
-  fromServerDTO(dto: ScheduleTaskServerDTO): ScheduleTaskClient;
-
-  /**
-   * 从 Client DTO 创建客户端实体
-   */
-  fromClientDTO(dto: ScheduleTaskClientDTO): ScheduleTaskClient;
 }

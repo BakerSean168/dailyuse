@@ -112,8 +112,4 @@ export interface LinkedResourceClient {
    */
   getFullTargetUrl(): string;
 
-  // ===== DTO 转换方法 =====
-
-  toClientDTO(): LinkedResourceClientDTO;
-  toServerDTO(): LinkedResourceServerDTO;
-}
+  // ===== DTO 转换方法 =====}

@@ -70,27 +70,4 @@ export interface SettingItemServer {
   // 业务方法
   setValue(newValue: any): void;
   resetToDefault(): void;
-  isDefault(): boolean;
-
-  toServerDTO(): SettingItemServerDTO;
-  toClientDTO(): SettingItemClientDTO;
-  toPersistenceDTO(): SettingItemPersistenceDTO;
-}
-
-export interface SettingItemServerStatic {
-  create(params: {
-    groupUuid: string;
-    key: string;
-    name: string;
-    description?: string;
-    value: any;
-    defaultValue: any;
-    valueType: SettingValueType;
-    ui: UIConfigServer;
-    sortOrder?: number;
-    isReadOnly?: boolean;
-    isVisible?: boolean;
-  }): SettingItemServer;
-  fromServerDTO(dto: SettingItemServerDTO): SettingItemServer;
-  fromPersistenceDTO(dto: SettingItemPersistenceDTO): SettingItemServer;
-}
+  isDefault(): boolean;}

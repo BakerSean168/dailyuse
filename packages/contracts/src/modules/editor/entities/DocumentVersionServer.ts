@@ -85,9 +85,4 @@ export interface DocumentVersionServer {
    */
   isCreateChange(): boolean;
 
-  // ===== DTO 转换方法 =====
-
-  toServerDTO(): DocumentVersionServerDTO;
-  toClientDTO(): DocumentVersionClientDTO;
-  toPersistenceDTO(): DocumentVersionPersistenceDTO;
-}
+  // ===== DTO 转换方法 =====}

@@ -27,14 +27,3 @@ export interface IDeviceInfo {
   equals(other: IDeviceInfo): boolean;
   toDTO(): DeviceInfoDTO;
 }
-
-export interface IDeviceInfoStatic {
-  create(params: {
-    deviceId: string;
-    deviceName: string;
-    deviceType: 'desktop' | 'web' | 'mobile';
-    os: string;
-    appVersion: string;
-  }): IDeviceInfo;
-  fromDTO(dto: DeviceInfoDTO): IDeviceInfo;
-}

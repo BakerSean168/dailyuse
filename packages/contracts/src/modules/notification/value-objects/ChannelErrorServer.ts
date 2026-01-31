@@ -26,11 +26,7 @@ export interface IChannelErrorServer {
     >,
   ): IChannelErrorServer;
 
-  // DTO lb��
-  toServerDTO(): ChannelErrorServerDTO;
-  toClientDTO(): ChannelErrorClientDTO;
-  toPersistenceDTO(): ChannelErrorPersistenceDTO;
-}
+  // DTO lb��}
 
 // ============ DTO �I ============
 

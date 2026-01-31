@@ -97,17 +97,7 @@ export interface TaskInstanceClient {
   getStatusIcon(): string;
   canStart(): boolean;
   canComplete(): boolean;
-  canSkip(): boolean;
-
-  toClientDTO(): TaskInstanceClientDTO;
-  toServerDTO(): TaskInstanceServerDTO;
-}
-
-export interface TaskInstanceClientStatic {
-  fromClientDTO(dto: TaskInstanceClientDTO): TaskInstanceClient;
-  fromServerDTO(dto: TaskInstanceServerDTO): TaskInstanceClient;
-  forCreate(templateUuid: string, accountUuid: string, instanceDate: number): TaskInstanceClient;
-}
+  canSkip(): boolean;}
 
 export interface TaskInstanceClientInstance extends TaskInstanceClient {
   clone(): TaskInstanceClient;

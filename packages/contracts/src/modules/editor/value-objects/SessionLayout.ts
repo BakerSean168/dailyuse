@@ -24,11 +24,7 @@ export interface ISessionLayoutServer {
     >,
   ): ISessionLayoutServer;
 
-  // DTO 转换方法
-  toServerDTO(): SessionLayoutServerDTO;
-  toClientDTO(): SessionLayoutClientDTO;
-  toPersistenceDTO(): SessionLayoutPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 会话布局 - Client 接口
@@ -41,9 +37,7 @@ export interface ISessionLayoutClient {
   // 值对象方法
   equals(other: ISessionLayoutClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): SessionLayoutServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

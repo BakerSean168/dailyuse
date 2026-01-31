@@ -1,7 +1,11 @@
+---
+tags: [standard, domain/server]
+---
+
 # Domain Server 开发规范：聚合根与实体
 
 **版本**: 1.0
-**适用范围**: `libs/domain-server`
+**适用范围**: `packages/domain-server`
 **读者**: 开发人员, AI 助手
 
 ## 1. 核心设计理念

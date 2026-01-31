@@ -53,11 +53,7 @@ export interface IExecutionInfoServer {
   }): IExecutionInfoServer;
   resetFailures(): IExecutionInfoServer;
 
-  // DTO 转换方法
-  toServerDTO(): ExecutionInfoServerDTO;
-  toClientDTO(): ExecutionInfoClientDTO;
-  toPersistenceDTO(): ExecutionInfoPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 执行信息 - Client 接口
@@ -97,9 +93,7 @@ export interface IExecutionInfoClient {
   // 值对象方法
   equals(other: IExecutionInfoClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): ExecutionInfoServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

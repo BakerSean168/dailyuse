@@ -21,8 +21,3 @@ export interface PhoneCredentialPersistenceDTO extends BaseAuthCredentialPersist
   phoneNumber: PhoneNumberPersistenceDTO;
   isVerified: boolean;
 }
-
-export interface PhoneCredentialServerStatic {
-  fromServerDTO(dto: PhoneCredentialServerDTO): PhoneCredentialServer;
-  fromPersistenceDTO(dto: PhoneCredentialPersistenceDTO): PhoneCredentialServer;
-}

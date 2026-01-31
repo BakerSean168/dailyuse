@@ -57,21 +57,4 @@ export interface DataSnapshotServer {
   data?: Record<string, unknown[]> | null;
 
   loadData(): Promise<void>;
-  getEntityData<T>(entityType: SyncableEntityType): T[] | null;
-
-  toServerDTO(): DataSnapshotServerDTO;
-  toClientDTO(): DataSnapshotClientDTO;
-  toPersistenceDTO(): DataSnapshotPersistenceDTO;
-}
-
-export interface DataSnapshotServerStatic {
-  create(params: {
-    sessionId: string;
-    snapshotType: 'full' | 'incremental';
-    source: 'local' | 'remote';
-    version: SyncVersionServerDTO;
-    data: Record<string, unknown[]>;
-  }): DataSnapshotServer;
-  fromServerDTO(dto: DataSnapshotServerDTO): DataSnapshotServer;
-  fromPersistenceDTO(dto: DataSnapshotPersistenceDTO): DataSnapshotServer;
-}
+  getEntityData<T>(entityType: SyncableEntityType): T[] | null;}

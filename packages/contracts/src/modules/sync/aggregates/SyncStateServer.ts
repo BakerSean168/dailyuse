@@ -77,15 +77,4 @@ export interface SyncStateServer {
   
   // 业务查询
   canStartSync(): boolean;
-  isSyncing(): boolean;
-
-  toServerDTO(): SyncStateServerDTO;
-  toClientDTO(): SyncStateClientDTO;
-  toPersistenceDTO(): SyncStatePersistenceDTO;
-}
-
-export interface SyncStateServerStatic {
-  create(currentDevice: DeviceInfoDTO): SyncStateServer;
-  fromServerDTO(dto: SyncStateServerDTO): SyncStateServer;
-  fromPersistenceDTO(dto: SyncStatePersistenceDTO): SyncStateServer;
-}
+  isSyncing(): boolean;}

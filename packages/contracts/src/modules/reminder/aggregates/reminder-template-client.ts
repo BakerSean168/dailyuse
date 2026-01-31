@@ -1,0 +1,148 @@
+/**
+ * Reminder Template Aggregate Root - Client Interface
+ * 提醒模板聚合�?- 客户端接�?
+ */
+
+import type {
+  ReminderTemplateId,
+  ReminderGroupId,
+  IdentityId,
+  TransferDate,
+  DomainDate,
+} from '@/primitives';
+import { ImportanceLevel } from '../../../shared/importance';
+import type { ReminderType } from '../value-objects/reminder-type';
+import type { ReminderStatus } from '../value-objects/reminder-status';
+import type { ReminderTemplateServerDTO } from './reminder-template-server';
+
+// 从值对象导入类型（接口 + DTO�?
+import type {
+  RecurrenceConfigServerDTO,
+  RecurrenceConfigClientDTO,
+  RecurrenceConfigClient,
+  NotificationConfigServerDTO,
+  NotificationConfigClientDTO,
+  NotificationConfigClient,
+  TriggerConfigServerDTO,
+  TriggerConfigClientDTO,
+  TriggerConfigClient,
+  ActiveTimeConfigServerDTO,
+  ActiveTimeConfigClientDTO,
+  ActiveTimeConfigClient,
+  ActiveHoursConfigServerDTO,
+  ActiveHoursConfigClientDTO,
+  ActiveHoursConfigClient,
+  ReminderStatsServerDTO,
+  ReminderStatsClientDTO,
+  ReminderStatsClient,
+} from '../value-objects';
+import type { ReminderHistoryClientDTO, ReminderHistoryClient } from '../entities/reminder-history-client';
+
+// ============ DTO 定义 ============
+
+/**
+ * Reminder Template Client DTO
+ */
+export interface ReminderTemplateClientDTO {
+  id: string;
+  identityId: string;
+  name: string;
+  description: string | null;
+  type: ReminderType;
+  trigger: TriggerConfigClientDTO;
+  recurrence: RecurrenceConfigClientDTO | null;
+  activeTime: ActiveTimeConfigClientDTO;
+  activeHours: ActiveHoursConfigClientDTO | null;
+  notificationConfig: NotificationConfigClientDTO;
+  selfEnabled: boolean;
+  status: ReminderStatus;
+  effectiveEnabled: boolean; // 实际启用状态（计算得出�?
+  groupId: string | null;
+  importanceLevel: ImportanceLevel;
+  tags: string[];
+  color: string | null;
+  icon: string | null;
+  nextTriggerAt: TransferDate | null;
+  stats: ReminderStatsClientDTO;
+  createdAt: TransferDate;
+  updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
+
+  // ===== 子实�?DTO =====
+  history: ReminderHistoryClientDTO[] | null; // 提醒历史列表（可选加载）
+
+  // UI 扩展
+  displayTitle: string;
+  typeText: string; // "一次�? | "循环"
+  triggerText: string; // "每天 09:00" | "每隔 30 分钟"
+  recurrenceText: string | null; // "每周一、三、五" | "每天"
+  statusText: string;
+  importanceText: string;
+  nextTriggerText: string | null; // "明天 09:00" | "10 分钟�?
+  isActive: boolean;
+  isPaused: boolean;
+  lastTriggeredText: string | null; // "3 小时�?
+  controlledByGroup: boolean; // 是否受组控制
+}
+
+// ============ 实体接口 ============
+
+/**
+ * Reminder Template 聚合�?- Client 接口
+ */
+export interface ReminderTemplateClient {
+  // 基础属�?
+  id: ReminderTemplateId;
+  identityId: IdentityId;
+  name: string;
+  description: string | null;
+  type: ReminderType;
+  trigger: TriggerConfigClient;
+  recurrence: RecurrenceConfigClient | null;
+  activeTime: ActiveTimeConfigClient;
+  activeHours: ActiveHoursConfigClient | null;
+  notificationConfig: NotificationConfigClient;
+  selfEnabled: boolean;
+  status: ReminderStatus;
+  effectiveEnabled: boolean;
+  groupId: ReminderGroupId | null;
+  importanceLevel: ImportanceLevel;
+  tags: string[];
+  color: string | null;
+  icon: string | null;
+  nextTriggerAt: DomainDate | null;
+  stats: ReminderStatsClient;
+  createdAt: DomainDate;
+  updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
+
+  // UI 扩展
+  displayTitle: string;
+  typeText: string;
+  triggerText: string;
+  recurrenceText: string | null;
+  statusText: string;
+  importanceText: string;
+  nextTriggerText: string | null;
+  isActive: boolean;
+  isPaused: boolean;
+  lastTriggeredText: string | null;
+  controlledByGroup: boolean;
+
+  // ===== UI 业务方法 =====
+
+  // 格式化展�?
+  getStatusBadge(): { text: string; color: string; icon: string };
+  getImportanceBadge(): { text: string; color: string };
+  getTriggerDisplay(): string;
+  getNextTriggerDisplay(): string;
+
+  // 操作判断
+  canEnable(): boolean;
+  canPause(): boolean;
+
+}
+
+/**
+ * Reminder Template Client 静态工厂方法接�?
+ */

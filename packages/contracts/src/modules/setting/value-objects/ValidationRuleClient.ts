@@ -34,20 +34,4 @@ export interface ValidationRuleClient {
   hasMaxConstraint(): boolean;
   hasPattern(): boolean;
   hasEnum(): boolean;
-  getConstraintText(): string;
-
-  toServerDTO(): ValidationRuleServerDTO;
-}
-
-export interface ValidationRuleClientStatic {
-  create(params: {
-    required: boolean;
-    min?: number;
-    max?: number;
-    pattern?: string;
-    enum?: any[];
-    custom?: string;
-  }): ValidationRuleClient;
-  fromServerDTO(dto: ValidationRuleServerDTO): ValidationRuleClient;
-  fromClientDTO(dto: ValidationRuleClientDTO): ValidationRuleClient;
-}
+  getConstraintText(): string;}

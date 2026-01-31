@@ -109,8 +109,4 @@ export interface DocumentClient {
    */
   getContentSize(): number;
 
-  // ===== DTO 转换方法 =====
-
-  toClientDTO(): DocumentClientDTO;
-  toServerDTO(): DocumentServerDTO;
-}
+  // ===== DTO 转换方法 =====}

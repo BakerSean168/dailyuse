@@ -31,17 +31,3 @@ export interface SyncConfigServer {
   enabled: boolean;
   syncToCloud: boolean;
   syncToDevices: boolean;
-
-  toServerDTO(): SyncConfigServerDTO;
-  toClientDTO(): SyncConfigClientDTO;
-}
-
-export interface SyncConfigServerStatic {
-  create(params: {
-    enabled?: boolean;
-    syncToCloud?: boolean;
-    syncToDevices?: boolean;
-  }): SyncConfigServer;
-  fromServerDTO(dto: SyncConfigServerDTO): SyncConfigServer;
-  fromPersistenceDTO(dto: SyncConfigPersistenceDTO): SyncConfigServer;
-}

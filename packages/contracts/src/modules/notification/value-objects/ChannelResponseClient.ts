@@ -1,32 +1,30 @@
 /**
  * ChannelResponse Value Object (Client)
- *  SÍ”<ùa - ¢7ï
+ *  SÍ”<ï¿½a - ï¿½7ï¿½
  */
 
 import type { ChannelResponseServerDTO } from './ChannelResponseServer';
 
-// ============ ¥ãšI ============
+// ============ ï¿½ï¿½I ============
 
 /**
- *  SÍ” - Client ¥ã
+ *  SÍ” - Client ï¿½ï¿½
  */
 export interface IChannelResponseClient {
   messageId?: string | null;
   statusCode?: number | null;
   data?: any;
 
-  // UI …©^'
+  // UI ï¿½ï¿½^'
   isSuccess: boolean;
   statusText: string;
 
-  // <ùa¹Õ
+  // <ï¿½aï¿½ï¿½
   equals(other: IChannelResponseClient): boolean;
 
-  // DTO lb¹Õ
-  toServerDTO(): ChannelResponseServerDTO;
-}
+  // DTO lbï¿½ï¿½}
 
-// ============ DTO šI ============
+// ============ DTO ï¿½I ============
 
 /**
  * ChannelResponse Client DTO
@@ -39,6 +37,6 @@ export interface ChannelResponseClientDTO {
   statusText: string;
 }
 
-// ============ {‹üú ============
+// ============ {ï¿½ï¿½ï¿½ ============
 
 export type ChannelResponseClient = IChannelResponseClient;

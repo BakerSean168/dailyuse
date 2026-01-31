@@ -79,11 +79,6 @@ export interface AuthSessionServer {
   isRevoked: boolean;
 }
 
-export interface AuthSessionServerStatic {
-  fromServerDTO(dto: AuthSessionServerDTO): AuthSessionServer;
-  fromPersistenceDTO(dto: AuthSessionPersistenceDTO): AuthSessionServer;
-}
-
 // ============ DTO 定义 ============
 
 /**

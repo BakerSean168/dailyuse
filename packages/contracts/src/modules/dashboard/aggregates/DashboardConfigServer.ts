@@ -119,22 +119,6 @@ export interface DashboardConfigServer {
    */
   validateWidgetConfig(widgetId: string): boolean;
 
-  // ===== 转换方法 =====
-
-  /**
-   * 转换为 DTO
-   */
-  toDTO(): DashboardConfigServerDTO;
-
-  /**
-   * 转换为 Persistence DTO
-   */
-  toPersistence(): DashboardConfigPersistenceDTO;
-
-  /**
-   * 克隆实例
-   */
-  clone(): DashboardConfigServer;
 }
 
 // ============ 静态工厂方法 ============

@@ -47,11 +47,7 @@ export interface IScheduleConfigServer {
   calculateNextRun(currentTime: number): number | null;
   isExpired(currentTime: number): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): ScheduleConfigServerDTO;
-  toClientDTO(): ScheduleConfigClientDTO;
-  toPersistenceDTO(): ScheduleConfigPersistenceDTO;
-}
+  // DTO 转换方法}
 
 /**
  * 调度配置 - Client 接口
@@ -91,9 +87,7 @@ export interface IScheduleConfigClient {
   // 值对象方法
   equals(other: IScheduleConfigClient): boolean;
 
-  // DTO 转换方法
-  toServerDTO(): ScheduleConfigServerDTO;
-}
+  // DTO 转换方法}
 
 // ============ DTO 定义 ============
 

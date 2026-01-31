@@ -24,9 +24,7 @@ export interface TaskTimeConfigClient {
   displayText: string;
   hasDateRange: boolean; // 指的是 timeRange 是否有开始和结束时间
 
-  equals(other: TaskTimeConfigClient): boolean;
-  toServerDTO(): TaskTimeConfigServerDTO;
-}
+  equals(other: TaskTimeConfigClient): boolean;}
 
 // ============ DTO 定义 ============
 

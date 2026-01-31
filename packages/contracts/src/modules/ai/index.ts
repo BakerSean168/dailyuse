@@ -23,9 +23,7 @@ export {
 // ============ Aggregates ============
 export type {
   AIConversationClientDTO,
-  AIConversationClient,
-  AIConversationClientStatic,
-  AIConversationClientInstance,
+  AIConversationClient,  AIConversationClientInstance,
 } from './aggregates/AIConversationClient';
 
 export type {
@@ -35,15 +33,11 @@ export type {
   AIConversationUpdatedEvent,
   AIMessageAddedEvent,
   AIConversationDeletedEvent,
-  AIConversationServer,
-  AIConversationServerStatic,
-} from './aggregates/AIConversationServer';
+  AIConversationServer,} from './aggregates/AIConversationServer';
 
 export type {
   AIGenerationTaskClientDTO,
-  AIGenerationTaskClient,
-  AIGenerationTaskClientStatic,
-  AIGenerationTaskClientInstance,
+  AIGenerationTaskClient,  AIGenerationTaskClientInstance,
 } from './aggregates/AIGenerationTaskClient';
 
 export type {
@@ -54,15 +48,11 @@ export type {
   AIGenerationTaskCompletedEvent,
   AIGenerationTaskFailedEvent,
   AIGenerationTaskRetriedEvent,
-  AIGenerationTaskServer,
-  AIGenerationTaskServerStatic,
-} from './aggregates/AIGenerationTaskServer';
+  AIGenerationTaskServer,} from './aggregates/AIGenerationTaskServer';
 
 export type {
   AIUsageQuotaClientDTO,
-  AIUsageQuotaClient,
-  AIUsageQuotaClientStatic,
-} from './aggregates/AIUsageQuotaClient';
+  AIUsageQuotaClient,} from './aggregates/AIUsageQuotaClient';
 
 export type {
   AIUsageQuotaServerDTO,
@@ -72,9 +62,7 @@ export type {
   AIUsageQuotaResetEvent,
   AIUsageQuotaExceededEvent,
   AIUsageQuotaLimitUpdatedEvent,
-  AIUsageQuotaServer,
-  AIUsageQuotaServerStatic,
-} from './aggregates/AIUsageQuotaServer';
+  AIUsageQuotaServer,} from './aggregates/AIUsageQuotaServer';
 
 export type {
   AIProviderConfigClientDTO,
@@ -87,16 +75,12 @@ export type { AIProviderConfigServerDTO } from './aggregates/AIProviderConfigSer
 // ============ Entities ============
 export type {
   MessageClientDTO,
-  MessageClient,
-  MessageClientStatic,
-} from './entities/MessageClient';
+  MessageClient,} from './entities/MessageClient';
 
 export type {
   MessageServerDTO,
   MessagePersistenceDTO,
-  MessageServer,
-  MessageServerStatic,
-} from './entities/MessageServer';
+  MessageServer,} from './entities/MessageServer';
 
 // ============ Value Objects ============
 export type {

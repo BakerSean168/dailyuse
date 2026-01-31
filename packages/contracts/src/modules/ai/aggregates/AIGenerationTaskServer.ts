@@ -195,47 +195,9 @@ export interface AIGenerationTaskServer {
   getProcessingDuration(): number | null;
 
   // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-  toServerDTO(): AIGenerationTaskServerDTO;
-
   /**
    * 转换为 Client DTO
-   */
-  toClientDTO(): AIGenerationTaskClientDTO;
-
+   */
   /**
    * 转换为 Persistence DTO
-   */
-  toPersistenceDTO(): AIGenerationTaskPersistenceDTO;
-}
-
-/**
- * AIGenerationTask 静态工厂方法接口
- */
-export interface AIGenerationTaskServerStatic {
-  /**
-   * 创建新的 AIGenerationTask 聚合根（静态工厂方法）
-   */
-  create(params: {
-    accountUuid: string;
-    conversationUuid?: string;
-    type: GenerationTaskType;
-    provider: AIProvider;
-    model: AIModel;
-    input: GenerationInputServerDTO;
-    maxRetries?: number;
-  }): AIGenerationTaskServer;
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  fromServerDTO(dto: AIGenerationTaskServerDTO): AIGenerationTaskServer;
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  fromPersistenceDTO(dto: AIGenerationTaskPersistenceDTO): AIGenerationTaskServer;
-}
+   */}

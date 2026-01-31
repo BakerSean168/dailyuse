@@ -222,6 +222,4 @@ export interface TaskTemplateServer {
 
   // DTO 转换
   toServerDTO(includeChildren?: boolean): TaskTemplateServerDTO;
-  toClientDTO(includeChildren?: boolean): TaskTemplateClientDTO;
-  toPersistenceDTO(): TaskTemplatePersistenceDTO;
-}
+  toClientDTO(includeChildren?: boolean): TaskTemplateClientDTO;}

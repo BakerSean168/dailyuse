@@ -75,4 +75,3 @@ export interface DeviceInfoPersistenceDTO {
   firstSeenAt: Date;
   lastSeenAt: Date;
 }
-
