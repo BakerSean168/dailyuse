@@ -6,8 +6,7 @@
 import type { ScheduleTaskId, IdentityId, DomainDate, TransferDate } from '@/primitives';
 import type { ScheduleTaskStatus } from '../value-objects/schedule-task-status';
 import type { SourceModule } from '../value-objects/source-module';
-import type { ExecutionStatus } from '../value-objects/execution-status';
-import type { ScheduleTaskServerDTO } from './schedule-task-server';
+
 import type {
   ScheduleExecutionClient,
   ScheduleExecutionClientDTO,
@@ -109,22 +108,6 @@ export interface ScheduleTaskClient {
   // ===== 子实体集�?=====
   executions: ScheduleExecutionClient[] | null;
 
-  // ===== 业务方法 =====
-
-  // 状态检�?
-  isActive(): boolean;
-  isPaused(): boolean;
-  isCompleted(): boolean;
-  isCancelled(): boolean;
-  isFailed(): boolean;
-  isExpired(): boolean;
-
-  // 获取执行记录
-  getRecentExecutions(limit: number): ScheduleExecutionClient[];
-  getFailedExecutions(): ScheduleExecutionClient[];
 
 }
 
-/**
- * ScheduleTask 静态工厂方法接�?
- */

@@ -28,14 +28,14 @@ export interface TaskInstanceClientDTO {
   instanceDate: TransferDate;
   timeConfig: TaskTimeConfigClientDTO;
   /**
-   * 任务重要性级�?(继承�?TaskTemplate)
-   * Story 1.1+: 用户设置的重要性，用于优先级计�?
+   * 任务重要性级�?(继承�?TaskTemplate)
+   * Story 1.1+: 用户设置的重要性，用于优先级计�?
    */
   importance?: ImportanceLevel;
   /**
-   * 优先级分�?(0-100)
-   * 由系统根�?importance + dueDate 动态计�?
-   * @readonly 此字段不能直接修改，计算�?Application Layer 负责
+   * 优先级分�?(0-100)
+   * 由系统根�?importance + dueDate 动态计�?
+   * @readonly 此字段不能直接修改，计算�?Application Layer 负责
    * @computed 基于 Story 1.3 算法计算得出
    */
   priority?: number;
@@ -68,14 +68,14 @@ export interface TaskInstanceClient {
   instanceDate: DomainDate;
   timeConfig: TaskTimeConfigClient;
   /**
-   * 任务重要性级�?(继承�?TaskTemplate)
-   * Story 1.1+: 用户设置的重要性，用于优先级计�?
+   * 任务重要性级�?(继承�?TaskTemplate)
+   * Story 1.1+: 用户设置的重要性，用于优先级计�?
    */
   importance?: ImportanceLevel;
   /**
-   * 优先级分�?(0-100)
-   * 由系统根�?importance + dueDate 动态计�?
-   * @readonly 此字段不能直接修改，计算�?Application Layer 负责
+   * 优先级分�?(0-100)
+   * 由系统根�?importance + dueDate 动态计�?
+   * @readonly 此字段不能直接修改，计算�?Application Layer 负责
    * @computed 基于 Story 1.3 算法计算得出
    */
   priority?: number;

@@ -32,4 +32,4 @@ export interface SyncConfigServer {
   syncToCloud: boolean;
   syncToDevices: boolean;
 }
-}
+
