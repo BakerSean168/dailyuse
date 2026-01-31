@@ -28,14 +28,3 @@ export interface ChartDataDTO {
   }[];
 }
 
-/**
- * Template statistics info
- */
-export interface TemplateStatsInfoDTO {
-  totalTemplates: number;
-  activeTemplates: number;
-  pausedTemplates: number;
-  archivedTemplates: number;
-  oneTimeTemplates: number;
-  recurringTemplates: number;
-}

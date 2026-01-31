@@ -3,116 +3,130 @@
  * 通知值对象导出
  */
 
-// ============ Server 端值对象 ============
+// ============ NotificationAction ============
 export type {
-  INotificationActionServer,
-  NotificationActionServerDTO,
+  INotificationAction,
+  INotificationActionClient,
+  NotificationActionDTO,
+  NotificationActionClientDTO,
   NotificationActionPersistenceDTO,
+  NotificationAction,
+  NotificationActionClient,
+  // Backward compatibility
+  NotificationActionServerDTO,
+  INotificationActionServer,
   NotificationActionServer,
-} from './notification-action-server';
+} from './notification-action';
 
+// ============ NotificationMetadata ============
 export type {
-  INotificationMetadataServer,
-  NotificationMetadataServerDTO,
+  INotificationMetadata,
+  INotificationMetadataClient,
+  NotificationMetadataDTO,
+  NotificationMetadataClientDTO,
   NotificationMetadataPersistenceDTO,
+  NotificationMetadata,
+  NotificationMetadataClient,
+  // Backward compatibility
+  NotificationMetadataServerDTO,
+  INotificationMetadataServer,
   NotificationMetadataServer,
-} from './notification-metadata-server';
+} from './notification-metadata';
 
+// ============ CategoryPreference ============
 export type {
   ChannelPreference,
-  ICategoryPreferenceServer,
-  CategoryPreferenceServerDTO,
+  ICategoryPreference,
+  ICategoryPreferenceClient,
+  CategoryPreferenceDTO,
+  CategoryPreferenceClientDTO,
   CategoryPreferencePersistenceDTO,
+  CategoryPreference,
+  CategoryPreferenceClient,
+  // Backward compatibility
+  CategoryPreferenceServerDTO,
+  ICategoryPreferenceServer,
   CategoryPreferenceServer,
-} from './category-preference-server';
+} from './category-preference';
 
+// ============ DoNotDisturbConfig ============
 export type {
-  IDoNotDisturbConfigServer,
-  DoNotDisturbConfigServerDTO,
+  IDoNotDisturbConfig,
+  IDoNotDisturbConfigClient,
+  DoNotDisturbConfigDTO,
+  DoNotDisturbConfigClientDTO,
   DoNotDisturbConfigPersistenceDTO,
+  DoNotDisturbConfig,
+  DoNotDisturbConfigClient,
+  // Backward compatibility
+  DoNotDisturbConfigServerDTO,
+  IDoNotDisturbConfigServer,
   DoNotDisturbConfigServer,
-} from './do-not-disturb-config-server';
+} from './do-not-disturb-config';
 
+// ============ RateLimit ============
 export type {
-  IRateLimitServer,
-  RateLimitServerDTO,
+  IRateLimit,
+  IRateLimitClient,
+  RateLimitDTO,
+  RateLimitClientDTO,
   RateLimitPersistenceDTO,
+  RateLimit,
+  RateLimitClient,
+  // Backward compatibility
+  RateLimitServerDTO,
+  IRateLimitServer,
   RateLimitServer,
-} from './rate-limit-server';
+} from './rate-limit';
 
+// ============ ChannelError ============
 export type {
-  IChannelErrorServer,
-  ChannelErrorServerDTO,
+  IChannelError,
+  IChannelErrorClient,
+  ChannelErrorDTO,
+  ChannelErrorClientDTO,
   ChannelErrorPersistenceDTO,
+  ChannelError,
+  ChannelErrorClient,
+  // Backward compatibility
+  ChannelErrorServerDTO,
+  IChannelErrorServer,
   ChannelErrorServer,
-} from './channel-error-server';
+} from './channel-error';
 
+// ============ ChannelResponse ============
 export type {
-  IChannelResponseServer,
-  ChannelResponseServerDTO,
+  IChannelResponse,
+  IChannelResponseClient,
+  ChannelResponseDTO,
+  ChannelResponseClientDTO,
   ChannelResponsePersistenceDTO,
+  ChannelResponse,
+  ChannelResponseClient,
+  // Backward compatibility
+  ChannelResponseServerDTO,
+  IChannelResponseServer,
   ChannelResponseServer,
-} from './channel-response-server';
+} from './channel-response';
 
+// ============ NotificationTemplateConfig ============
 export type {
   TemplateContent,
   EmailTemplateContent,
   PushTemplateContent,
   ChannelConfig,
-  INotificationTemplateConfigServer,
-  NotificationTemplateConfigServerDTO,
-  NotificationTemplateConfigPersistenceDTO,
-  NotificationTemplateConfigServer,
-} from './notification-template-vo-server';
-
-// ============ Client 端值对象 ============
-export type {
-  INotificationActionClient,
-  NotificationActionClientDTO,
-  NotificationActionClient,
-} from './notification-action-client';
-
-export type {
-  INotificationMetadataClient,
-  NotificationMetadataClientDTO,
-  NotificationMetadataClient,
-} from './notification-metadata-client';
-
-export type {
-  ICategoryPreferenceClient,
-  CategoryPreferenceClientDTO,
-  CategoryPreferenceClient,
-} from './category-preference-client';
-
-export type {
-  IDoNotDisturbConfigClient,
-  DoNotDisturbConfigClientDTO,
-  DoNotDisturbConfigClient,
-} from './do-not-disturb-config-client';
-
-export type {
-  IRateLimitClient,
-  RateLimitClientDTO,
-  RateLimitClient,
-} from './rate-limit-client';
-
-export type {
-  IChannelErrorClient,
-  ChannelErrorClientDTO,
-  ChannelErrorClient,
-} from './channel-error-client';
-
-export type {
-  IChannelResponseClient,
-  ChannelResponseClientDTO,
-  ChannelResponseClient,
-} from './channel-response-client';
-
-export type {
+  INotificationTemplateConfig,
   INotificationTemplateConfigClient,
+  NotificationTemplateConfigDTO,
   NotificationTemplateConfigClientDTO,
+  NotificationTemplateConfigPersistenceDTO,
+  NotificationTemplateConfig,
   NotificationTemplateConfigClient,
-} from './notification-template-vo-client';
+  // Backward compatibility
+  NotificationTemplateConfigServerDTO,
+  INotificationTemplateConfigServer,
+  NotificationTemplateConfigServer,
+} from './notification-template-vo';
 
 // ============ 共享枚举/类型 ============
 export { ChannelStatus } from './channel-status';

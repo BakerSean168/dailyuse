@@ -1,16 +1,14 @@
 /**
- * UIConfig Value Object - Server Interface
- * UI配置值对�?- 服务端接�?
+ * UIConfig Value Object
+ * UI配置值对象
  */
-
-import type { UIConfigClientDTO } from './ui-config-client';
 
 // ============ DTO 定义 ============
 
 /**
- * UIConfig Server DTO
+ * UIConfig DTO (Server)
  */
-export interface UIConfigServerDTO {
+export interface UIConfigDTO {
   inputType:
     | 'TEXT'
     | 'NUMBER'
@@ -21,6 +19,24 @@ export interface UIConfigServerDTO {
     | 'SLIDER'
     | 'COLOR'
     | 'FILE';
+  label: string | null;
+  placeholder: string | null;
+  helpText: string | null;
+  icon: string | null;
+  order: number;
+  visible: boolean;
+  disabled: boolean;
+  options: Array<{ label: string; value: any }> | null;
+  min: number | null;
+  max: number | null;
+  step: number | null;
+}
+
+/**
+ * UIConfig Client DTO
+ */
+export interface UIConfigClientDTO {
+  inputType: string;
   label: string | null;
   placeholder: string | null;
   helpText: string | null;
@@ -52,9 +68,12 @@ export interface UIConfigPersistenceDTO {
   step: number | null;
 }
 
-// ============ 值对象接�?============
+// ============ 值对象接口 ============
 
-export interface UIConfigServer {
+/**
+ * UIConfig 值对象接口 (Server)
+ */
+export interface UIConfig {
   inputType:
     | 'TEXT'
     | 'NUMBER'
@@ -77,3 +96,33 @@ export interface UIConfigServer {
   max: number | null;
   step: number | null;
 }
+
+/**
+ * UIConfig Client 值对象接口
+ */
+export interface UIConfigClient {
+  inputType: string;
+  label: string | null;
+  placeholder: string | null;
+  helpText: string | null;
+  icon: string | null;
+  order: number;
+  visible: boolean;
+  disabled: boolean;
+  options: Array<{ label: string; value: any }> | null;
+  min: number | null;
+  max: number | null;
+  step: number | null;
+}
+
+// ============ Backward Compatibility ============
+
+/**
+ * @deprecated Use UIConfigDTO instead
+ */
+export type UIConfigServerDTO = UIConfigDTO;
+
+/**
+ * @deprecated Use UIConfig instead
+ */
+export type UIConfigServer = UIConfig;

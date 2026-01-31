@@ -17,116 +17,123 @@ export {
   ContentType,
 } from './enums';
 
-// ============ Value Objects - Server ============
+// ============ Value Objects ============
 export type {
+  INotificationAction,
+  INotificationActionClient,
+  NotificationActionDTO,
+  NotificationActionClientDTO,
+  NotificationActionPersistenceDTO,
+  NotificationAction,
+  NotificationActionClient,
+  // Backward compatibility
   INotificationActionServer,
   NotificationActionServerDTO,
-  NotificationActionPersistenceDTO,
   NotificationActionServer,
-} from './value-objects/notification-action-server';
+} from './value-objects/notification-action';
 
 export type {
+  INotificationMetadata,
+  INotificationMetadataClient,
+  NotificationMetadataDTO,
+  NotificationMetadataClientDTO,
+  NotificationMetadataPersistenceDTO,
+  NotificationMetadata,
+  NotificationMetadataClient,
+  // Backward compatibility
   INotificationMetadataServer,
   NotificationMetadataServerDTO,
-  NotificationMetadataPersistenceDTO,
   NotificationMetadataServer,
-} from './value-objects/notification-metadata-server';
+} from './value-objects/notification-metadata';
 
 export type {
+  ChannelPreference,
+  ICategoryPreference,
+  ICategoryPreferenceClient,
+  CategoryPreferenceDTO,
+  CategoryPreferenceClientDTO,
+  CategoryPreferencePersistenceDTO,
+  CategoryPreference,
+  CategoryPreferenceClient,
+  // Backward compatibility
   ICategoryPreferenceServer,
   CategoryPreferenceServerDTO,
-  CategoryPreferencePersistenceDTO,
   CategoryPreferenceServer,
-  ChannelPreference,
-} from './value-objects/category-preference-server';
+} from './value-objects/category-preference';
 
 export type {
+  IDoNotDisturbConfig,
+  IDoNotDisturbConfigClient,
+  DoNotDisturbConfigDTO,
+  DoNotDisturbConfigClientDTO,
+  DoNotDisturbConfigPersistenceDTO,
+  DoNotDisturbConfig,
+  DoNotDisturbConfigClient,
+  // Backward compatibility
   IDoNotDisturbConfigServer,
   DoNotDisturbConfigServerDTO,
-  DoNotDisturbConfigPersistenceDTO,
   DoNotDisturbConfigServer,
-} from './value-objects/do-not-disturb-config-server';
+} from './value-objects/do-not-disturb-config';
 
 export type {
-  IDoNotDisturbConfigClient,
-  DoNotDisturbConfigClientDTO,
-  DoNotDisturbConfigClient,
-} from './value-objects/do-not-disturb-config-client';
-
-export type {
+  IRateLimit,
+  IRateLimitClient,
+  RateLimitDTO,
+  RateLimitClientDTO,
+  RateLimitPersistenceDTO,
+  RateLimit,
+  RateLimitClient,
+  // Backward compatibility
   IRateLimitServer,
   RateLimitServerDTO,
-  RateLimitPersistenceDTO,
   RateLimitServer,
-} from './value-objects/rate-limit-server';
+} from './value-objects/rate-limit';
 
 export type {
+  IChannelError,
+  IChannelErrorClient,
+  ChannelErrorDTO,
+  ChannelErrorClientDTO,
+  ChannelErrorPersistenceDTO,
+  ChannelError,
+  ChannelErrorClient,
+  // Backward compatibility
   IChannelErrorServer,
   ChannelErrorServerDTO,
-  ChannelErrorPersistenceDTO,
   ChannelErrorServer,
-} from './value-objects/channel-error-server';
+} from './value-objects/channel-error';
 
 export type {
+  IChannelResponse,
+  IChannelResponseClient,
+  ChannelResponseDTO,
+  ChannelResponseClientDTO,
+  ChannelResponsePersistenceDTO,
+  ChannelResponse,
+  ChannelResponseClient,
+  // Backward compatibility
   IChannelResponseServer,
   ChannelResponseServerDTO,
-  ChannelResponsePersistenceDTO,
   ChannelResponseServer,
-} from './value-objects/channel-response-server';
+} from './value-objects/channel-response';
 
 export type {
-  INotificationTemplateConfigServer,
-  NotificationTemplateConfigServerDTO,
-  NotificationTemplateConfigPersistenceDTO,
-  NotificationTemplateConfigServer,
   TemplateContent,
   EmailTemplateContent,
   PushTemplateContent,
   ChannelConfig,
-} from './value-objects/notification-template-vo-server';
-
-// ============ Value Objects - Client ============
-export type {
-  INotificationActionClient,
-  NotificationActionClientDTO,
-  NotificationActionClient,
-} from './value-objects/notification-action-client';
-
-export type {
-  INotificationMetadataClient,
-  NotificationMetadataClientDTO,
-  NotificationMetadataClient,
-} from './value-objects/notification-metadata-client';
-
-export type {
-  ICategoryPreferenceClient,
-  CategoryPreferenceClientDTO,
-  CategoryPreferenceClient,
-} from './value-objects/category-preference-client';
-
-export type {
-  IRateLimitClient,
-  RateLimitClientDTO,
-  RateLimitClient,
-} from './value-objects/rate-limit-client';
-
-export type {
-  IChannelErrorClient,
-  ChannelErrorClientDTO,
-  ChannelErrorClient,
-} from './value-objects/channel-error-client';
-
-export type {
-  IChannelResponseClient,
-  ChannelResponseClientDTO,
-  ChannelResponseClient,
-} from './value-objects/channel-response-client';
-
-export type {
+  INotificationTemplateConfig,
   INotificationTemplateConfigClient,
+  NotificationTemplateConfigDTO,
   NotificationTemplateConfigClientDTO,
+  NotificationTemplateConfigPersistenceDTO,
+  NotificationTemplateConfig,
   NotificationTemplateConfigClient,
-} from './value-objects/notification-template-vo-client';
+  // Backward compatibility
+  INotificationTemplateConfigServer,
+  NotificationTemplateConfigServerDTO,
+  NotificationTemplateConfigServer,
+} from './value-objects/notification-template-vo';
 
 // ============ Aggregates ============
 export type {

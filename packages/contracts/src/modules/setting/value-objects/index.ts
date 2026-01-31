@@ -23,34 +23,34 @@ export { ProfileVisibility } from './profile-visibility';
 
 // ============ Value Objects ============
 export type {
-  ValidationRuleServerDTO,
-  ValidationRulePersistenceDTO,
-  ValidationRuleServer,
-} from './validation-rule-server';
-
-export type {
+  ValidationRuleDTO,
   ValidationRuleClientDTO,
+  ValidationRulePersistenceDTO,
+  ValidationRule,
   ValidationRuleClient,
-} from './validation-rule-client';
+  // Backward compatibility
+  ValidationRuleServerDTO,
+  ValidationRuleServer,
+} from './validation-rule';
 
 export type {
-  UIConfigServerDTO,
-  UIConfigPersistenceDTO,
-  UIConfigServer,
-} from './ui-config-server';
-
-export type {
+  UIConfigDTO,
   UIConfigClientDTO,
+  UIConfigPersistenceDTO,
+  UIConfig,
   UIConfigClient,
-} from './ui-config-client';
+  // Backward compatibility
+  UIConfigServerDTO,
+  UIConfigServer,
+} from './ui-config';
 
 export type {
-  SyncConfigServerDTO,
-  SyncConfigPersistenceDTO,
-  SyncConfigServer,
-} from './sync-config-server';
-
-export type {
+  SyncConfigDTO,
   SyncConfigClientDTO,
+  SyncConfigPersistenceDTO,
+  SyncConfig,
   SyncConfigClient,
-} from './sync-config-client';
+  // Backward compatibility
+  SyncConfigServerDTO,
+  SyncConfigServer,
+} from './sync-config';

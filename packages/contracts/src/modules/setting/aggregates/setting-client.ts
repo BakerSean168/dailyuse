@@ -7,9 +7,9 @@ import type { SettingId, SettingGroupId, IdentityId, TransferDate, DomainDate } 
 import type {
   ValidationRuleClient,
   ValidationRuleClientDTO,
-} from '../value-objects/validation-rule-client';
-import type { UIConfigClient, UIConfigClientDTO } from '../value-objects/ui-config-client';
-import type { SyncConfigClient, SyncConfigClientDTO } from '../value-objects/sync-config-client';
+} from '../value-objects/validation-rule';
+import type { UIConfigClient, UIConfigClientDTO } from '../value-objects/ui-config';
+import type { SyncConfigClient, SyncConfigClientDTO } from '../value-objects/sync-config';
 import type { SettingServerDTO } from './setting-server';
 
 // ============ DTO 定义 ============

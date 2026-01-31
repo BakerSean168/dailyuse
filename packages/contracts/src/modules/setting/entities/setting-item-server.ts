@@ -11,7 +11,7 @@ import type {
   PersistenceDate,
 } from '@/primitives';
 import type { SettingItemClientDTO } from './setting-item-client';
-import type { UIConfigServer, UIConfigServerDTO } from '../value-objects/ui-config-server';
+import type { UIConfigServer, UIConfigServerDTO } from '../value-objects/ui-config';
 import { SettingValueType } from '../value-objects/setting-value-type';
 
 // ============ DTO 定义 ============

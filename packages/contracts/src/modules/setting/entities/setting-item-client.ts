@@ -4,7 +4,7 @@
  */
 
 import type { SettingId, SettingGroupId, TransferDate, DomainDate } from '@/primitives';
-import type { UIConfigClient, UIConfigClientDTO } from '../value-objects/ui-config-client';
+import type { UIConfigClient, UIConfigClientDTO } from '../value-objects/ui-config';
 import type { SettingItemServerDTO } from './setting-item-server';
 
 // ============ DTO 定义 ============

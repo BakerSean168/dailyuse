@@ -23,63 +23,38 @@ export interface TaskInstanceClientDTO {
   id: string;
   templateId: string;
   identityId: string;
+
   instanceDate: TransferDate;
   timeConfig: TaskTimeConfigDTO;
  
   importance?: ImportanceLevel;
-
   priority?: number;
-  status: TaskInstanceStatus;
-  completionRecord: CompletionRecordDTO | null;
 
+  status: TaskInstanceStatus;
   actualStartTime: TransferDate | null;
   actualEndTime: TransferDate | null;
-  note: string | null;
+
+  comment: string | null;
   createdAt: TransferDate;
   updatedAt: TransferDate;
-  instanceDateFormatted: string;
-  statusText: string;
-  statusColor: string;
-  isCompleted: boolean;
-  isSkipped: boolean;
-  isPending: boolean;
-  isExpired: boolean;
-  hasNote: boolean;
-  actualDuration: number | null;
-  durationText: string | null;
-  formattedCreatedAt: string;
-  formattedUpdatedAt: string;
 }
 
 export interface TaskInstanceClient {
   id: TaskInstanceId;
   templateId: TaskTemplateId;
   identityId: IdentityId;
+
   instanceDate: DomainDate;
   timeConfig: TaskTimeConfig;
 
   importance?: ImportanceLevel;
-
   priority?: number;
-  status: TaskInstanceStatus;
-  completionRecord: CompletionRecord | null;
 
+  status: TaskInstanceStatus;
   actualStartTime: DomainDate | null;
   actualEndTime: DomainDate | null;
-  note: string | null;
+  
+  comment: string | null;
   createdAt: DomainDate;
   updatedAt: DomainDate;
-  instanceDateFormatted: string;
-  statusText: string;
-  statusColor: string;
-  isCompleted: boolean;
-  isSkipped: boolean;
-  isPending: boolean;
-  isExpired: boolean;
-  hasNote: boolean;
-  actualDuration: number | null;
-  durationText: string | null;
-  formattedCreatedAt: string;
-  formattedUpdatedAt: string;
-
 }

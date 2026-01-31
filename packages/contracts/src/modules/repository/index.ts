@@ -6,62 +6,74 @@
 // ============ Enums ============
 export { RepositoryType, RepositoryStatus, ResourceType, ResourceStatus } from './enums';
 
-// ============ Value Objects - Server ============
+// ============ Value Objects ============
 export type {
-  RepositoryConfigServerDTO,
-  RepositoryConfigServer,} from './value-objects/repository-config-server';
-
-export type {
-  RepositoryStatsServerDTO,
-  RepositoryStatsServer,} from './value-objects/repository-stats-server';
-
-export type {
-  FolderMetadataServerDTO,
-  FolderMetadataServer,} from './value-objects/folder-metadata-server';
-
-export type {
-  ResourceMetadataServerDTO,
-  ResourceMetadataServer,} from './value-objects/resource-metadata-server';
-
-export type {
-  ResourceStatsServerDTO,
-  ResourceStatsServer,} from './value-objects/resource-stats-server';
-
-// ============ Value Objects - Client ============
-export type {
+  RepositoryConfigDTO,
   RepositoryConfigClientDTO,
-  RepositoryConfigClient,} from './value-objects/repository-config-client';
+  RepositoryConfig,
+  RepositoryConfigClient,
+  // Backward compatibility
+  RepositoryConfigServerDTO,
+  RepositoryConfigServer,
+} from './value-objects/repository-config';
 
 export type {
+  RepositoryStatsDTO,
   RepositoryStatsClientDTO,
-  RepositoryStatsClient,} from './value-objects/repository-stats-client';
+  RepositoryStats,
+  RepositoryStatsClient,
+  // Backward compatibility
+  RepositoryStatsServerDTO,
+  RepositoryStatsServer,
+} from './value-objects/repository-stats';
 
 export type {
+  FolderMetadataDTO,
   FolderMetadataClientDTO,
-  FolderMetadataClient,} from './value-objects/folder-metadata-client';
+  FolderMetadata,
+  FolderMetadataClient,
+  // Backward compatibility
+  FolderMetadataServerDTO,
+  FolderMetadataServer,
+} from './value-objects/folder-metadata';
 
 export type {
+  ResourceMetadataDTO,
   ResourceMetadataClientDTO,
-  ResourceMetadataClient,} from './value-objects/resource-metadata-client';
+  ResourceMetadata,
+  ResourceMetadataClient,
+  // Backward compatibility
+  ResourceMetadataServerDTO,
+  ResourceMetadataServer,
+} from './value-objects/resource-metadata';
 
 export type {
+  ResourceStatsDTO,
   ResourceStatsClientDTO,
-  ResourceStatsClient,} from './value-objects/resource-stats-client';
+  ResourceStats,
+  ResourceStatsClient,
+  // Backward compatibility
+  ResourceStatsServerDTO,
+  ResourceStatsServer,
+} from './value-objects/resource-stats';
 
 // ============ Aggregates ============
 export type {
   RepositoryServerDTO,
   RepositoryPersistenceDTO,
-  RepositoryServer,} from './aggregates/repository-server';
+  RepositoryServer,
+} from './aggregates/repository-server';
 
 export type {
   RepositoryClientDTO,
-  RepositoryClient,} from './aggregates/repository-client';
+  RepositoryClient,
+} from './aggregates/repository-client';
 
 export type {
   RepositoryStatisticsServerDTO,
   RepositoryStatisticsPersistenceDTO,
-  RepositoryStatisticsServer,  RecalculateStatisticsRequest,
+  RepositoryStatisticsServer,
+  RecalculateStatisticsRequest,
   RecalculateStatisticsResponse,
   StatisticsUpdateEvent,
 } from './aggregates/repository-statistics-server';
@@ -70,18 +82,21 @@ export type {
 export type {
   FolderServerDTO,
   FolderPersistenceDTO,
-  FolderServer,} from './entities/folder-server';
+  FolderServer,
+} from './entities/folder-server';
 
 export type { FolderClientDTO, FolderClient } from './entities/folder-client';
 
 export type {
   ResourceServerDTO,
   ResourcePersistenceDTO,
-  ResourceServer,} from './entities/resource-server';
+  ResourceServer,
+} from './entities/resource-server';
 
 export type {
   ResourceClientDTO,
-  ResourceClient,} from './entities/resource-client';
+  ResourceClient,
+} from './entities/resource-client';
 
 // ============ DTOs (File Tree - Story 11.1) ============
 export type { TreeNodeType, TreeNode, FileTreeResponse } from './tree-node';
@@ -115,7 +130,7 @@ export type {
   ResourceUploadRequest,
   BatchUploadResult,
   Resource,
-  ResourceMetadata,
+  ResourceMetadata as ResourceContractMetadata,
   ResourceListQuery,
   ResourceListResponse,
   ResourceMoveRequest,

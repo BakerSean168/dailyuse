@@ -17,9 +17,13 @@ import type { TaskTemplateStatus } from '../value-objects/task-template-status';
 import { ImportanceLevel } from '../../../shared/importance';
 import type {
   TaskTimeConfig,
+  TaskTimeConfigDTO,
   RecurrenceRule,
+  RecurrenceRuleDTO,
   TaskReminderConfig,
+  TaskReminderConfigDTO,
   TaskGoalBinding,
+  TaskGoalBindingDTO,
 } from '../value-objects';
 import type { TaskInstanceClient } from './task-instance-client';
 
@@ -29,13 +33,13 @@ export interface TaskTemplateClientDTO {
   name: string;
   description: string | null;
   taskType: TaskType;
-  timeConfig: any;
-  recurrenceRule: any | null;
-  reminderConfig: any | null;
+  timeConfig: TaskTimeConfigDTO;
+  recurrenceRule: RecurrenceRuleDTO | null;
+  reminderConfig: TaskReminderConfigDTO | null;
   importance: ImportanceLevel;
 
   priority?: number;
-  goalBinding: any | null;
+  goalBinding: TaskGoalBindingDTO | null;
   folderId: string | null;
   tags: string[];
   color: string | null;
@@ -47,16 +51,14 @@ export interface TaskTemplateClientDTO {
   deletedAt: TransferDate | null;
   history?: any[];
   instances?: any[];
-  // ONE_TIME task fields
-  goalId: string | null;
-  keyResultId: string | null;
+
   parentTaskId: string | null;
   startDate: TransferDate | null;
   dueDate: TransferDate | null;
   completedAt: TransferDate | null;
   estimatedMinutes: number | null;
   actualMinutes: number | null;
-  note: string | null;
+  comment: string | null;
   dependencyStatus?: string;
   isBlocked?: boolean;
   blockingReason: string | null;
@@ -76,14 +78,11 @@ export interface TaskTemplateClient {
   recurrenceRule: RecurrenceRule | null;
   reminderConfig: TaskReminderConfig | null;
   importance: ImportanceLevel;
-  /**
-   * 浼樺厛绾у垎鏁?(0-100)
-   * 鐢辩郴缁熸牴�?importance + dueDate 鍔ㄦ€佽绠?
-   * @readonly 姝ゅ瓧娈典笉鑳界洿鎺ヤ慨鏀癸紝璁＄畻鐢?Application Layer 璐熻�?
-   * @computed 鍩轰�?Story 1.3 绠楁硶璁＄畻寰楀�?
-   */
+
   priority?: number;
+
   goalBinding: TaskGoalBinding | null;
+
   folderId: GoalFolderId | null;
   tags: string[];
   color: string | null;
@@ -92,18 +91,14 @@ export interface TaskTemplateClient {
   generateAheadDays: number | null; // null for ONE_TIME tasks
   createdAt: DomainDate;
   updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-  instances?: TaskInstanceClient[];
-  // ONE_TIME task fields
-  goalId: GoalId | null;
-  keyResultId: KeyResultId | null;
+
   parentTaskId: TaskTemplateId | null;
   startDate: DomainDate | null;
   dueDate: DomainDate | null;
   completedAt: DomainDate | null;
   estimatedMinutes: number | null;
   actualMinutes: number | null;
-  note: string | null;
+  comment: string | null;
   dependencyStatus?: string;
   isBlocked?: boolean;
   blockingReason: string | null;

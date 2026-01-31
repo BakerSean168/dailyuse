@@ -82,13 +82,21 @@ export type {
 } from './group-stats';
 
 export type {
-  ResponseMetricsServerDTO,
+  ResponseMetricsDTO,
   ResponseMetricsClientDTO,
+  ResponseMetrics,
+  ResponseMetricsClient,
+  // Backward compatibility
+  ResponseMetricsServerDTO,
   ResponseMetricsServer,
-} from './response-metrics-server';
+} from './response-metrics';
 
 export type {
-  FrequencyAdjustmentServerDTO,
+  FrequencyAdjustmentDTO,
   FrequencyAdjustmentClientDTO,
+  FrequencyAdjustment,
+  FrequencyAdjustmentClient,
+  // Backward compatibility
+  FrequencyAdjustmentServerDTO,
   FrequencyAdjustmentServer,
-} from './frequency-adjustment-server';
+} from './frequency-adjustment';

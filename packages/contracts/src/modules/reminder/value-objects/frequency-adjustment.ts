@@ -1,15 +1,15 @@
 /**
- * Frequency Adjustment Value Object - Server
- * 频率调整值对象 - 服务端
+ * Frequency Adjustment Value Object
+ * 频率调整值对象
  */
 
 // ============ DTO 定义 ============
 
 /**
- * Frequency Adjustment Server DTO
+ * Frequency Adjustment DTO (Server)
  * 提醒频率调整记录
  */
-export interface FrequencyAdjustmentServerDTO {
+export interface FrequencyAdjustmentDTO {
   readonly originalInterval: number; // 原始间隔（秒）
   readonly adjustedInterval: number; // 调整后间隔（秒）
   readonly adjustmentReason: string; // 调整原因
@@ -21,6 +21,7 @@ export interface FrequencyAdjustmentServerDTO {
 
 /**
  * Frequency Adjustment Client DTO
+ * 包含 UI 显示字段
  */
 export interface FrequencyAdjustmentClientDTO {
   readonly originalInterval: number;
@@ -41,7 +42,7 @@ export interface FrequencyAdjustmentClientDTO {
 /**
  * Frequency Adjustment 值对象接口
  */
-export interface FrequencyAdjustmentServer {
+export interface FrequencyAdjustment {
   readonly originalInterval: number;
   readonly adjustedInterval: number;
   readonly adjustmentReason: string;
@@ -50,3 +51,33 @@ export interface FrequencyAdjustmentServer {
   readonly userConfirmed: boolean;
   readonly rejectionReason?: string | null;
 }
+
+/**
+ * Frequency Adjustment Client 值对象接口
+ * 包含 UI 显示字段
+ */
+export interface FrequencyAdjustmentClient {
+  readonly originalInterval: number;
+  readonly adjustedInterval: number;
+  readonly adjustmentReason: string;
+  readonly adjustmentTime: number;
+  readonly isAutoAdjusted: boolean;
+  readonly userConfirmed: boolean;
+  readonly rejectionReason?: string | null;
+  // UI 显示文本
+  readonly displayText: string;
+  readonly changeRateText: string;
+  readonly statusText: string;
+}
+
+// ============ Backward Compatibility ============
+
+/**
+ * @deprecated Use FrequencyAdjustmentDTO instead
+ */
+export type FrequencyAdjustmentServerDTO = FrequencyAdjustmentDTO;
+
+/**
+ * @deprecated Use FrequencyAdjustment instead
+ */
+export type FrequencyAdjustmentServer = FrequencyAdjustment;

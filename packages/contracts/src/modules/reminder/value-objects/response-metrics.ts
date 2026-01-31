@@ -1,15 +1,15 @@
 /**
- * Response Metrics Value Object - Server
- * 响应指标值对象 - 服务端
+ * Response Metrics Value Object
+ * 响应指标值对象
  */
 
 // ============ DTO 定义 ============
 
 /**
- * Response Metrics Server DTO
+ * Response Metrics DTO (Server)
  * 提醒响应指标
  */
-export interface ResponseMetricsServerDTO {
+export interface ResponseMetricsDTO {
   readonly clickRate: number; // 点击率 (0-100)
   readonly ignoreRate: number; // 忽略率 (0-100)
   readonly avgResponseTime: number; // 平均响应时间（秒）
@@ -41,7 +41,7 @@ export interface ResponseMetricsClientDTO {
 /**
  * Response Metrics 值对象接口
  */
-export interface ResponseMetricsServer {
+export interface ResponseMetrics {
   readonly clickRate: number;
   readonly ignoreRate: number;
   readonly avgResponseTime: number;
@@ -50,3 +50,32 @@ export interface ResponseMetricsServer {
   readonly sampleSize: number;
   readonly lastAnalysisTime: number;
 }
+
+/**
+ * Response Metrics Client 值对象接口
+ */
+export interface ResponseMetricsClient {
+  readonly clickRate: number;
+  readonly ignoreRate: number;
+  readonly avgResponseTime: number;
+  readonly snoozeCount: number;
+  readonly effectivenessScore: number;
+  readonly sampleSize: number;
+  readonly lastAnalysisTime: number;
+  // UI 显示文本
+  readonly displayText: string;
+  readonly effectivenessLabel: string;
+  readonly effectivenessColor: string;
+}
+
+// ============ Backward Compatibility ============
+
+/**
+ * @deprecated Use ResponseMetricsDTO instead
+ */
+export type ResponseMetricsServerDTO = ResponseMetricsDTO;
+
+/**
+ * @deprecated Use ResponseMetrics instead
+ */
+export type ResponseMetricsServer = ResponseMetrics;

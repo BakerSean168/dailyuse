@@ -4,10 +4,10 @@
  */
 
 import type {
-  TaskTimeConfigServerDTO,
-  RecurrenceRuleServerDTO,
-  TaskReminderConfigServerDTO,
-  TaskGoalBindingServerDTO,
+  TaskTimeConfigDTO,
+  RecurrenceRuleDTO,
+  TaskReminderConfigDTO,
+  TaskGoalBindingDTO,
 } from '../../value-objects';
 import type { TaskType } from '../../value-objects/task-type';
 import type { TaskTemplateStatus } from '../../value-objects/task-template-status';
@@ -22,11 +22,11 @@ export interface CreateTaskTemplateRequest {
   name: string;
   description?: string;
   taskType: TaskType;
-  timeConfig: TaskTimeConfigServerDTO;
-  recurrenceRule?: RecurrenceRuleServerDTO;
-  reminderConfig?: TaskReminderConfigServerDTO;
+  timeConfig: TaskTimeConfigDTO;
+  recurrenceRule?: RecurrenceRuleDTO;
+  reminderConfig?: TaskReminderConfigDTO;
   importance: ImportanceLevel;
-  goalBinding?: TaskGoalBindingServerDTO;
+  goalBinding?: TaskGoalBindingDTO;
   folderUuid?: string;
   tags?: string[];
   color?: string;
@@ -40,9 +40,9 @@ export interface CreateTaskTemplateRequest {
 export interface UpdateTaskTemplateRequest {
   name?: string;
   description?: string;
-  timeConfig?: TaskTimeConfigServerDTO;
-  recurrenceRule?: RecurrenceRuleServerDTO;
-  reminderConfig?: TaskReminderConfigServerDTO;
+  timeConfig?: TaskTimeConfigDTO;
+  recurrenceRule?: RecurrenceRuleDTO;
+  reminderConfig?: TaskReminderConfigDTO;
   importance?: ImportanceLevel;
   folderUuid?: string;
   tags?: string[];

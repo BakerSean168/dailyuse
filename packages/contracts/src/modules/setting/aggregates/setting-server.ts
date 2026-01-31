@@ -15,9 +15,9 @@ import type { SettingClientDTO } from './setting-client';
 import type {
   ValidationRuleServer,
   ValidationRuleServerDTO,
-} from '../value-objects/validation-rule-server';
-import type { UIConfigServer, UIConfigServerDTO } from '../value-objects/ui-config-server';
-import type { SyncConfigServer, SyncConfigServerDTO } from '../value-objects/sync-config-server';
+} from '../value-objects/validation-rule';
+import type { UIConfigServer, UIConfigServerDTO } from '../value-objects/ui-config';
+import type { SyncConfigServer, SyncConfigServerDTO } from '../value-objects/sync-config';
 import type {
   SettingHistoryServer,
   SettingHistoryServerDTO,

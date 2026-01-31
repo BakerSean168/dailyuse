@@ -38,11 +38,6 @@ export type {
   CompletionRecordPersistenceDTO,
 } from './completion-record';
 
-export type {
-  CompletionRecordClient,
-  CompletionRecordClientDTO,
-} from './completion-record-client';
-
 // TaskPriority
 export { PriorityLevel } from './task-priority';
 export type {

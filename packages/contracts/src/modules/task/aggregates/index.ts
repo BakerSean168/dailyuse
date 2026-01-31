@@ -20,18 +20,6 @@ export type {
 
 export type { TaskTemplateClientDTO, TaskTemplateClient } from './task-template-client';
 
-// TaskStatistics
-export type {
-  TaskStatisticsServerDTO,
-  TaskStatisticsPersistenceDTO,
-  TaskStatisticsServer,
-  TemplateStatsInfo,
-  InstanceStatsInfo,
-  CompletionStatsInfo,
-  TimeStatsInfo,
-  DistributionStatsInfo,
-} from './task-statistics-server';
-
 export type {
   TaskStatisticsClientDTO,
   TaskStatisticsClient,

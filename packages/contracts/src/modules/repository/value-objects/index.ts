@@ -1,51 +1,54 @@
-// Server Value Objects
+// Repository Config Value Objects
 export type {
+  RepositoryConfigDTO,
+  RepositoryConfigClientDTO,
+  RepositoryConfig,
+  RepositoryConfigClient,
+  // Backward compatibility
   RepositoryConfigServerDTO,
   RepositoryConfigServer,
-} from './repository-config-server';
+} from './repository-config';
 
+// Repository Stats Value Objects
 export type {
+  RepositoryStatsDTO,
+  RepositoryStatsClientDTO,
+  RepositoryStats,
+  RepositoryStatsClient,
+  // Backward compatibility
   RepositoryStatsServerDTO,
   RepositoryStatsServer,
-} from './repository-stats-server';
+} from './repository-stats';
 
+// Folder Metadata Value Objects
 export type {
+  FolderMetadataDTO,
+  FolderMetadataClientDTO,
+  FolderMetadata,
+  FolderMetadataClient,
+  // Backward compatibility
   FolderMetadataServerDTO,
   FolderMetadataServer,
-} from './folder-metadata-server';
+} from './folder-metadata';
 
+// Resource Metadata Value Objects
 export type {
+  ResourceMetadataDTO,
+  ResourceMetadataClientDTO,
+  ResourceMetadata,
+  ResourceMetadataClient,
+  // Backward compatibility
   ResourceMetadataServerDTO,
   ResourceMetadataServer,
-} from './resource-metadata-server';
+} from './resource-metadata';
 
+// Resource Stats Value Objects
 export type {
+  ResourceStatsDTO,
+  ResourceStatsClientDTO,
+  ResourceStats,
+  ResourceStatsClient,
+  // Backward compatibility
   ResourceStatsServerDTO,
   ResourceStatsServer,
-} from './resource-stats-server';
-
-// Client Value Objects
-export type {
-  RepositoryConfigClientDTO,
-  RepositoryConfigClient,
-} from './repository-config-client';
-
-export type {
-  RepositoryStatsClientDTO,
-  RepositoryStatsClient,
-} from './repository-stats-client';
-
-export type {
-  FolderMetadataClientDTO,
-  FolderMetadataClient,
-} from './folder-metadata-client';
-
-export type {
-  ResourceMetadataClientDTO,
-  ResourceMetadataClient,
-} from './resource-metadata-client';
-
-export type {
-  ResourceStatsClientDTO,
-  ResourceStatsClient,
-} from './resource-stats-client';
+} from './resource-stats';

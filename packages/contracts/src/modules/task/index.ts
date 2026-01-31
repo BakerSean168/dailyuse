@@ -33,67 +33,34 @@ export {
 
 // ============ Value Objects ============
 export type {
-  RecurrenceRuleServer,
-  RecurrenceRuleServerDTO,
+  RecurrenceRule,
+  RecurrenceRuleDTO,
   RecurrenceRulePersistenceDTO,
 } from './value-objects/recurrence-rule';
 
 export type {
-  RecurrenceRuleClient,
-  RecurrenceRuleClientDTO,
-} from './value-objects/recurrence-rule-client';
-
-export type {
-  TaskReminderConfigServer,
-  TaskReminderConfigServerDTO,
+  TaskReminderConfig,
+  TaskReminderConfigDTO,
   TaskReminderConfigPersistenceDTO,
 } from './value-objects/task-reminder-config';
 
 export type {
-  TaskReminderConfigClient,
-  TaskReminderConfigClientDTO,
-} from './value-objects/task-reminder-config-client';
-
-export type {
-  TaskGoalBindingServer,
-  TaskGoalBindingServerDTO,
+  TaskGoalBinding,
+  TaskGoalBindingDTO,
   TaskGoalBindingPersistenceDTO,
 } from './value-objects/task-goal-binding';
 
 export type {
-  TaskGoalBindingClient,
-  TaskGoalBindingClientDTO,
-} from './value-objects/task-goal-binding-client';
-
-export type {
-  TaskTimeConfigServer,
-  TaskTimeConfigServerDTO,
+  TaskTimeConfig,
+  TaskTimeConfigDTO,
   TaskTimeConfigPersistenceDTO,
 } from './value-objects/task-time-config';
 
 export type {
-  TaskTimeConfigClient,
-  TaskTimeConfigClientDTO,
-} from './value-objects/task-time-config-client';
-
-export type {
-  CompletionRecordServer,
-  CompletionRecordServerDTO,
+  CompletionRecord,
+  CompletionRecordDTO,
   CompletionRecordPersistenceDTO,
 } from './value-objects/completion-record';
-
-export type {
-  CompletionRecordClient,
-  CompletionRecordClientDTO,
-} from './value-objects/completion-record-client';
-
-export type {
-  SkipRecordServer,
-  SkipRecordServerDTO,
-  SkipRecordPersistenceDTO,
-} from './value-objects/skip-record-server';
-
-export type { SkipRecordClient, SkipRecordClientDTO } from './value-objects/skip-record-client';
 
 export { PriorityLevel } from './value-objects/task-priority';
 

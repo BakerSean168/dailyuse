@@ -99,31 +99,44 @@ export type {
 } from './value-objects/group-stats';
 
 export type {
-  ResponseMetricsServerDTO,
+  ResponseMetricsDTO,
   ResponseMetricsClientDTO,
-  ResponseMetricsServer,} from './value-objects/response-metrics-server';
+  ResponseMetrics,
+  ResponseMetricsClient,
+  // Backward compatibility
+  ResponseMetricsServerDTO,
+  ResponseMetricsServer,
+} from './value-objects/response-metrics';
 
 export type {
-  FrequencyAdjustmentServerDTO,
+  FrequencyAdjustmentDTO,
   FrequencyAdjustmentClientDTO,
-  FrequencyAdjustmentServer,} from './value-objects/frequency-adjustment-server';
+  FrequencyAdjustment,
+  FrequencyAdjustmentClient,
+  // Backward compatibility
+  FrequencyAdjustmentServerDTO,
+  FrequencyAdjustmentServer,
+} from './value-objects/frequency-adjustment';
 
 // ============ Entities ============
 export type {
   ReminderHistoryServerDTO,
   ReminderHistoryPersistenceDTO,
-  ReminderHistoryServer,} from './entities/reminder-history-server';
+  ReminderHistoryServer,
+} from './entities/reminder-history-server';
 
 export type {
   ReminderHistoryClientDTO,
-  ReminderHistoryClient,} from './entities/reminder-history-client';
+  ReminderHistoryClient,
+} from './entities/reminder-history-client';
 
 export type {
   ReminderResponseAction,
   ReminderResponseServerDTO,
   ReminderResponseClientDTO,
   ReminderResponsePersistenceDTO,
-  ReminderResponseServer,} from './entities/reminder-response-server';
+  ReminderResponseServer,
+} from './entities/reminder-response-server';
 
 // ============ Aggregates ============
 export type {
@@ -137,11 +150,13 @@ export type {
   ReminderTemplateTriggeredEvent,
   ReminderTemplateMovedEvent,
   ReminderTemplateDomainEvent,
-  ReminderTemplateServer,} from './aggregates/reminder-template-server';
+  ReminderTemplateServer,
+} from './aggregates/reminder-template-server';
 
 export type {
   ReminderTemplateClientDTO,
-  ReminderTemplateClient,} from './aggregates/reminder-template-client';
+  ReminderTemplateClient,
+} from './aggregates/reminder-template-client';
 
 export type {
   ReminderGroupServerDTO,
@@ -153,32 +168,37 @@ export type {
   ReminderGroupEnabledEvent,
   ReminderGroupPausedEvent,
   ReminderGroupDomainEvent,
-  ReminderGroupServer,} from './aggregates/reminder-group-server';
+  ReminderGroupServer,
+} from './aggregates/reminder-group-server';
 
 export type {
   ReminderGroupClientDTO,
-  ReminderGroupClient,} from './aggregates/reminder-group-client';
+  ReminderGroupClient,
+} from './aggregates/reminder-group-client';
 
 export type {
   ReminderStatisticsServerDTO,
   ReminderStatisticsPersistenceDTO,
   ReminderStatisticsUpdatedEvent,
   ReminderStatisticsDomainEvent,
-  ReminderStatisticsServer,  TemplateStatsInfo,
+  ReminderStatisticsServer,
+  TemplateStatsInfo,
   GroupStatsInfo,
   TriggerStatsInfo,
 } from './aggregates/reminder-statistics-server';
 
 export type {
   ReminderStatisticsClientDTO,
-  ReminderStatisticsClient,} from './aggregates/reminder-statistics-client';
+  ReminderStatisticsClient,
+} from './aggregates/reminder-statistics-client';
 
 export type {
   TimeSlotDTO,
   UserReminderPreferencesServerDTO,
   UserReminderPreferencesClientDTO,
   UserReminderPreferencesPersistenceDTO,
-  UserReminderPreferencesServer,} from './aggregates/user-reminder-preferences-server';
+  UserReminderPreferencesServer,
+} from './aggregates/user-reminder-preferences-server';
 
 // ============ API Requests ============
 export type {

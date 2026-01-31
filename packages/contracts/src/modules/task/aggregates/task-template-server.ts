@@ -43,7 +43,6 @@ export interface TaskTemplateServerDTO {
   name: string;
   description: string | null;
 
-  // === 循环任务专用 ===
   timeConfig: TaskTimeConfigDTO | null;
   recurrenceRule: RecurrenceRuleDTO | null;
   reminderConfig: TaskReminderConfigDTO | null;
@@ -82,7 +81,6 @@ export interface TaskTemplatePersistenceDTO {
   name: string;
   description: string | null;
 
-  // === 循环任务专用 ===
   // Flattened timeConfig
   timeConfigType: string | null;
   timeConfigStartTime: Date | null;
@@ -107,33 +105,15 @@ export interface TaskTemplatePersistenceDTO {
   lastGeneratedDate: Date | null;
   generateAheadDays: number | null;
 
-  // === 通用属�?===
   importance: string; // 'vital' | 'important' | 'moderate' | 'minor' | 'trivial'
   tags: string; // JSON array
   color: string | null;
   status: string;
 
-  // === Goal/KR 关联（通用�?===
-  goalId: string | null;
-  keyResultId: string | null;
+  goalBinding: TaskGoalBindingDTO | null;
 
-  // Flattened goal_binding (仅循环任务高级绑�?
-  goalBindingGoalId: string | null;
-  goalBindingKeyResultId: string | null;
-  goalBindingIncrementValue: number | null;
-
-  // === 子任务支持（通用�?===
   parentTaskId: string | null;
 
-  // === 一次性任务专�?===
-  startDate: PersistenceDate | null;
-  dueDate: PersistenceDate | null;
-  completedAt: PersistenceDate | null;
-  estimatedMinutes: number | null;
-  actualMinutes: number | null;
-  note: string | null;
-
-  // === 依赖关系（通用�?===
   dependencyStatus?: string; // 'NONE' | 'WAITING' | 'READY' | 'BLOCKED'
   isBlocked?: boolean;
   blockingReason: string | null;
@@ -150,6 +130,7 @@ export interface TaskTemplatePersistenceDTO {
 export interface TaskTemplateServer {
   id: TaskTemplateId;
   identityId: IdentityId;
+
   name: string;
   description: string | null;
   taskType: TaskType;
@@ -157,7 +138,9 @@ export interface TaskTemplateServer {
   recurrenceRule: RecurrenceRule | null;
   reminderConfig: TaskReminderConfig | null;
   importance: ImportanceLevel;
+
   goalBinding: TaskGoalBinding | null;
+
   folderId: GoalFolderId | null;
   tags: string[];
   color: string | null;
@@ -168,6 +151,4 @@ export interface TaskTemplateServer {
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;
   history: TaskTemplateHistoryServerDTO[];
-  instances: TaskInstanceServerDTO[];
-
 }
