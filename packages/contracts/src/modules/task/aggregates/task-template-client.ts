@@ -4,15 +4,12 @@
 
 import type {
   TaskTemplateId,
-  TaskInstanceId,
   IdentityId,
-  GoalId,
-  KeyResultId,
   GoalFolderId,
   DomainDate,
   TransferDate,
 } from '@/primitives';
-import type { TaskType } from '../value-objects/task-type';
+
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
 import { ImportanceLevel } from '../../../shared/importance';
 import type {
@@ -25,14 +22,13 @@ import type {
   TaskGoalBinding,
   TaskGoalBindingDTO,
 } from '../value-objects';
-import type { TaskInstanceClient } from './task-instance-client';
 
 export interface TaskTemplateClientDTO {
   id: string;
   identityId: string;
   name: string;
   description: string | null;
-  taskType: TaskType;
+
   timeConfig: TaskTimeConfigDTO;
   recurrenceRule: RecurrenceRuleDTO | null;
   reminderConfig: TaskReminderConfigDTO | null;
@@ -73,7 +69,7 @@ export interface TaskTemplateClient {
   identityId: IdentityId;
   name: string;
   description: string | null;
-  taskType: TaskType;
+
   timeConfig: TaskTimeConfig;
   recurrenceRule: RecurrenceRule | null;
   reminderConfig: TaskReminderConfig | null;

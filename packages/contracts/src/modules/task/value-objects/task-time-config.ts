@@ -4,13 +4,13 @@
  */
 
 import type { DomainDate, TransferDate, PersistenceDate } from '@/primitives';
-import type { TimeType } from './time-type';
+import type { TaskTimeType } from './task-time-type';
 
 
 // ============ 接口定义 ============
 
 export interface TaskTimeConfig {
-  timeType: TimeType;
+  timeType: TaskTimeType;
   startDate: DomainDate | null;
   timePoint: number | null;
   timeRange?: { start: number; end: number } | null;
@@ -20,7 +20,7 @@ export interface TaskTimeConfig {
 // ============ DTO 定义 ============
 
 export interface TaskTimeConfigDTO {
-  timeType: TimeType;
+  timeType: TaskTimeType;
   startDate: TransferDate | null;
 
   timePoint: number | null;

@@ -38,9 +38,9 @@ export type {
   CompletionRecordPersistenceDTO,
 } from './completion-record';
 
-// TaskPriority
-export { PriorityLevel } from './task-priority';
-export type {
-  TaskPriority,
-  PriorityCalculationParams,
-} from './task-priority';
+
+
+export { TaskTemplateStatus } from './task-template-status';
+export { TaskInstanceStatus } from './task-instance-status';
+export { TaskTimeType } from './task-time-type';
+export type { ChecklistItemDefinition, ChecklistItemDefinitionDTO } from './checklist-item-definition';

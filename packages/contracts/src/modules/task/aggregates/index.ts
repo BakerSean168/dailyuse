@@ -18,14 +18,21 @@ export type {
   TaskTemplateServer,
 } from './task-template-server';
 
-export type { TaskTemplateClientDTO, TaskTemplateClient } from './task-template-client';
+export type { 
+  TaskTemplateClientDTO, 
+  TaskTemplateClient 
+} from './task-template-client';
 
 export type {
-  TaskStatisticsClientDTO,
-  TaskStatisticsClient,
-  ChartData,
-  TrendData,
-} from './task-statistics-client';
+  TaskFolderClientDTO,
+  TaskFolderClient,
+} from './task-folder-client';
+
+export type {
+  TaskFolderServerDTO,
+  TaskFolderPersistenceDTO,
+  TaskFolderServer,
+} from './task-folder-server';
 
 // TaskDependency
 export type {

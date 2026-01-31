@@ -5,19 +5,14 @@
 
 import type {
   TaskTemplateId,
-  TaskInstanceId,
   IdentityId,
-  GoalId,
-  KeyResultId,
-  GoalFolderId,
+  TaskFolderId,
   DomainDate,
   TransferDate,
   PersistenceDate,
 } from '@/primitives';
-import type { TaskType } from '../value-objects/task-type';
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
 import type { TaskInstanceServerDTO } from './task-instance-server';
-import type { TaskTemplateHistoryServerDTO } from '../entities';
 import type {
   TaskTimeConfig,
   TaskTimeConfigDTO,
@@ -27,6 +22,8 @@ import type {
   TaskReminderConfigDTO,
   TaskGoalBinding,
   TaskGoalBindingDTO,
+  ChecklistItemDefinition, 
+  ChecklistItemDefinitionDTO,
 } from '../value-objects';
 
 // 导入共享类型
@@ -58,6 +55,7 @@ export interface TaskTemplateServerDTO {
   goalBinding: TaskGoalBindingDTO | null;
 
   parentTaskId: string | null;
+  checklist: ChecklistItemDefinitionDTO[]; // To be defined later
 
   dependencyStatus?: string; // 'NONE' | 'WAITING' | 'READY' | 'BLOCKED'
   isBlocked?: boolean;
@@ -68,7 +66,6 @@ export interface TaskTemplateServerDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
-  history?: TaskTemplateHistoryServerDTO[];
   instances?: TaskInstanceServerDTO[]; 
 }
 
@@ -133,15 +130,15 @@ export interface TaskTemplateServer {
 
   name: string;
   description: string | null;
-  taskType: TaskType;
   timeConfig: TaskTimeConfig | null; // null for ONE_TIME tasks
   recurrenceRule: RecurrenceRule | null;
   reminderConfig: TaskReminderConfig | null;
   importance: ImportanceLevel;
 
   goalBinding: TaskGoalBinding | null;
+  checklist: ChecklistItemDefinition[];
 
-  folderId: GoalFolderId | null;
+  folderId: TaskFolderId | null;
   tags: string[];
   color: string | null;
   status: TaskTemplateStatus;
@@ -150,5 +147,4 @@ export interface TaskTemplateServer {
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;
-  history: TaskTemplateHistoryServerDTO[];
 }

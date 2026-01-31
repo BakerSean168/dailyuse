@@ -1,23 +1,6 @@
-import type { TransferDate } from '@/primitives';
+import type { TransferDate, DomainDate, PersistenceDate } from '@/primitives';
 
-export interface TaskStatisticsDTO {
-
-  templateStats: TemplateStatsInfo;
-  instanceStats: InstanceStatsInfo;
-  completionStats: CompletionStatsInfo;
-  timeStats: TimeStatsInfo;
-  distributionStats: DistributionStatsInfo;
-  calculatedAt: TransferDate;
-
-  // UI 扩展
-  todayCompletionText: string;
-  weekCompletionText: string;
-  completionRateText: string;
-  overdueText: string;
-  efficiencyTrendText: string;
-}
-
-
+// ============ 统计子信息接口 ============
 
 /**
  * 实例统计信息
@@ -42,8 +25,8 @@ export interface CompletionStatsInfo {
   weekCompleted: number;
   monthCompleted: number;
   totalCompleted: number;
-  averageCompletionTime: number | null; // 平均完成时间（毫秒）
-  completionRate: number; // 完成�?0-100
+  averageCompletionTime: number | null;
+  completionRate: number;
 }
 
 /**
@@ -54,17 +37,17 @@ export interface TimeStatsInfo {
   timePointTasks: number;
   timeRangeTasks: number;
   overdueInstances: number;
-  upcomingInstances: number; // 即将到期的实�?
+  upcomingInstances: number;
 }
 
 /**
  * 分布统计信息
  */
 export interface DistributionStatsInfo {
-  tasksByImportance: Record<string, number>; // 按重要性分�?
-  tasksByUrgency: Record<string, number>; // 按紧急度分布
-  tasksByFolder: Record<string, number>; // 按文件夹分布
-  tasksByTag: Record<string, number>; // 按标签分�?
+  tasksByImportance: Record<string, number>;
+  tasksByUrgency: Record<string, number>;
+  tasksByFolder: Record<string, number>;
+  tasksByTag: Record<string, number>;
 }
 
 /**
@@ -77,4 +60,50 @@ export interface TemplateStatsInfo {
   archivedTemplates: number;
   oneTimeTemplates: number;
   recurringTemplates: number;
+}
+
+// ============ DTO 定义 ============
+
+/**
+ * Task Statistics DTO (传输层)
+ */
+export interface TaskStatisticsDTO {
+  templateStats: TemplateStatsInfo;
+  instanceStats: InstanceStatsInfo;
+  completionStats: CompletionStatsInfo;
+  timeStats: TimeStatsInfo;
+  distributionStats: DistributionStatsInfo;
+  calculatedAt: TransferDate;
+  // UI 显示文本
+  todayCompletionText: string;
+  weekCompletionText: string;
+  completionRateText: string;
+  overdueText: string;
+  efficiencyTrendText: string;
+  // 图表数据
+  chartData?: ChartData;
+  trendData?: TrendData;
+}
+
+/**
+ * 图表数据
+ */
+export interface ChartData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    backgroundColor?: string;
+    borderColor?: string;
+  }[];
+}
+
+/**
+ * 趋势数据
+ */
+export interface TrendData {
+  period: 'daily' | 'weekly' | 'monthly';
+  completionTrend: number[];
+  efficiencyTrend: number[];
+  timestamps: number[];
 }
