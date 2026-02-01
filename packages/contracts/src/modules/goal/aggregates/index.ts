@@ -27,18 +27,6 @@ export type {
   GoalFolderClient,
 } from './goal-folder-client';
 
-// GoalStatistics 聚合根
-export type {
-  GoalStatisticsServerDTO,
-  GoalStatisticsPersistenceDTO,
-  GoalStatisticsServer,
-} from './goal-statistics-server';
-
-export type {
-  GoalStatisticsClientDTO,
-  GoalStatisticsClient,
-} from './goal-statistics-client';
-
 // FocusSession 聚合根
 export type {
   FocusSessionServerDTO,

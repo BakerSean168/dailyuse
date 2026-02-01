@@ -2,7 +2,6 @@ export * from './goal-responses';
 export * from './goal-folder-responses';
 export * from './goal-record-responses';
 export * from './goal-review-responses';
-export * from './goal-statistics-responses';
 export * from './key-result-responses';
 export * from './import-export-responses';
 export * from './focus-responses';

@@ -9,8 +9,6 @@ import type {
   TabType,
   LinkedSourceType,
   LinkedTargetType,
-} from './enums';
-import type {
   WorkspaceLayoutServerDTO,
   WorkspaceSettingsServerDTO,
   SessionLayoutServerDTO,

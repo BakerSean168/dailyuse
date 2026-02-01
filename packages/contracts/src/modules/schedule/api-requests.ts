@@ -4,21 +4,18 @@
  */
 
 import type { ScheduleTaskClientDTO } from './aggregates/schedule-task-client';
-import type { ScheduleStatisticsClientDTO } from './aggregates/schedule-statistics-client';
 import type { ScheduleExecutionClientDTO } from './entities/schedule-execution-client';
 import type { ScheduleClientDTO } from './aggregates/schedule-client';
 import type { ConflictDetectionResult } from './value-objects/conflict-detection-result';
 import type {
+  ScheduleConfigServerDTO,
+  RetryPolicyServerDTO,
+  TaskMetadataServerDTO,
   ScheduleTaskStatus,
   ExecutionStatus,
   SourceModule,
   TaskPriority,
   Timezone,
-} from './enums';
-import type {
-  ScheduleConfigServerDTO,
-  RetryPolicyServerDTO,
-  TaskMetadataServerDTO,
 } from './value-objects';
 
 // ============ Schedule (Old) 请求/响应 ============
@@ -275,18 +272,10 @@ export interface ExecutionHistoryStatsDTO {
   readonly recentExecutions: readonly ScheduleExecutionClientDTO[];
 }
 
-// ============ ScheduleStatistics 响应 ============
-
-/**
- * 统计数据响应
- */
-export type ScheduleStatisticsDTO = ScheduleStatisticsClientDTO;
-
 /**
  * 仪表盘统计响应
  */
 export interface ScheduleDashboardStatsDTO {
-  readonly overview: ScheduleStatisticsClientDTO;
   readonly recentExecutions: readonly ScheduleExecutionClientDTO[];
   readonly failedTasks: readonly ScheduleTaskClientDTO[];
   readonly upcomingTasks: readonly {

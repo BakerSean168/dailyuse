@@ -3,7 +3,7 @@
  * AI对话聚合根 - 服务端接口
  */
 
-import type { ConversationStatus } from '../enums';
+import type { ConversationStatus } from '../value-objects/conversation-status';
 import type { MessageServer, MessageServerDTO } from '../entities/message-server';
 import type { AIConversationClientDTO } from './ai-conversation-client';
 

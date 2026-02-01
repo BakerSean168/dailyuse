@@ -9,7 +9,10 @@ import type {
   AIUsageQuotaClientDTO,
   MessageClientDTO,
 } from './index';
-import type { ConversationStatus, GenerationTaskType, AIProvider, AIModel } from './enums';
+import type { ConversationStatus } from './value-objects/conversation-status';
+import type { GenerationTaskType } from './value-objects/generation-task-type';
+import type { AIProvider } from './value-objects/ai-provider';
+import type { AIModel } from './value-objects/ai-model';
 
 // ============ Conversation Requests ============
 

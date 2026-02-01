@@ -3,7 +3,7 @@
  * 通知模板聚合根 - 服务端接口
  */
 
-import type { NotificationType, NotificationCategory } from '../enums';
+import type { NotificationType, NotificationCategory } from '../value-objects';
 import type {
   NotificationTemplateConfigServer,
   NotificationTemplateConfigServerDTO,

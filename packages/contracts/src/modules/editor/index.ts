@@ -3,7 +3,7 @@
  * 编辑器模块 - 显式导出
  */
 
-// ============ Enums ============
+// ============ Enums (Value Objects) ============
 export {
   ProjectType,
   DocumentLanguage,
@@ -15,7 +15,7 @@ export {
   LinkedTargetType,
   ViewMode,
   SidebarActiveTab,
-} from './enums';
+} from './value-objects';
 
 // ============ Value Objects ============
 export type {

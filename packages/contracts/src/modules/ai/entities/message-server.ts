@@ -3,7 +3,7 @@
  * 消息实体 - 服务端接口
  */
 
-import type { MessageRole } from '../enums';
+import type { MessageRole } from '../value-objects/message-role';
 import type { MessageClientDTO } from './message-client';
 
 // ============ DTO 定义 ============

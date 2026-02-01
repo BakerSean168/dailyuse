@@ -9,18 +9,16 @@ import type { NotificationServerDTO } from './aggregates/notification-server';
 import type { NotificationChannelServerDTO } from './entities/notification-channel-server';
 import type { NotificationTemplateAggregateServerDTO } from './aggregates/notification-template-server';
 import type { NotificationPreferenceServerDTO } from './aggregates/notification-preference-server';
-import type {
-  NotificationType,
-  NotificationCategory,
-  NotificationStatus,
-  RelatedEntityType,
-  NotificationChannelType,
-} from './enums';
 import type { ImportanceLevel, UrgencyLevel } from '../../shared/index';
 import type {
   NotificationActionServerDTO,
   NotificationMetadataServerDTO,
   CategoryPreferenceServerDTO,
+  NotificationType,
+  NotificationCategory,
+  NotificationStatus,
+  RelatedEntityType,
+  NotificationChannelType,
 } from './value-objects';
 
 // ============ API 响应类型（服务端返回给前端）============

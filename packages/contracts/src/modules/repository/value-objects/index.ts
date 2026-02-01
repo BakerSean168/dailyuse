@@ -52,3 +52,16 @@ export type {
   ResourceStatsServerDTO,
   ResourceStatsServer,
 } from './resource-stats';
+
+// ============ Enum Value Objects ============
+// Repository Type
+export { RepositoryType } from './repository-type';
+
+// Repository Status
+export { RepositoryStatus } from './repository-status';
+
+// Resource Type
+export { ResourceType } from './resource-type';
+
+// Resource Status
+export { ResourceStatus } from './resource-status';

@@ -4,7 +4,6 @@
  */
 
 import { ImportanceLevel } from '../../../shared/importance';
-import type { ReminderType, ReminderStatus } from '../enums';
 import type {
   ReminderHistoryServer,
   ReminderHistoryServerDTO,
@@ -12,6 +11,8 @@ import type {
 
 // 从值对象导入类型
 import type {
+  ReminderType,
+  ReminderStatus,
   RecurrenceConfigServer,
   RecurrenceConfigServerDTO,
   NotificationConfigServer,

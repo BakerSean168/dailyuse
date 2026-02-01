@@ -3,6 +3,15 @@
  * 调度模块 - 值对象统一导出
  */
 
+// ============ Enum Value Objects ============
+export { ScheduleTaskStatus } from './schedule-task-status';
+export { ExecutionStatus } from './execution-status';
+export { TaskPriority } from './task-priority';
+export { SourceModule } from './source-module';
+export { Timezone } from './timezone';
+export { ConflictSeverity } from './conflict-severity';
+
+// ============ Complex Value Objects ============
 export type {
   IScheduleConfigServer,
   IScheduleConfigClient,
@@ -43,12 +52,4 @@ export type {
   TaskMetadataClient,
 } from './task-metadata';
 
-export type {
-  IModuleStatisticsServer,
-  IModuleStatisticsClient,
-  ModuleStatisticsServerDTO,
-  ModuleStatisticsClientDTO,
-  ModuleStatisticsPersistenceDTO,
-  ModuleStatisticsServer,
-  ModuleStatisticsClient,
-} from './module-statistics';
+export type { ConflictDetectionResult } from './conflict-detection-result';

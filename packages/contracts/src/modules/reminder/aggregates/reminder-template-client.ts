@@ -15,7 +15,7 @@ import type { ReminderType } from '../value-objects/reminder-type';
 import type { ReminderStatus } from '../value-objects/reminder-status';
 import type { ReminderTemplateServerDTO } from './reminder-template-server';
 
-// 从值对象导入类型（接口 + DTO�?
+// 从值对象导入类型
 import type {
   RecurrenceConfigServerDTO,
   RecurrenceConfigClientDTO,

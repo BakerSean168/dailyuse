@@ -41,22 +41,6 @@ export type {
 } from './reminder-group-client';
 
 export type {
-  TemplateStatsInfo,
-  GroupStatsInfo,
-  TriggerStatsInfo,
-  ReminderStatisticsServerDTO,
-  ReminderStatisticsPersistenceDTO,
-  ReminderStatisticsUpdatedEvent,
-  ReminderStatisticsDomainEvent,
-  ReminderStatisticsServer,
-} from './reminder-statistics-server';
-
-export type {
-  ReminderStatisticsClientDTO,
-  ReminderStatisticsClient,
-} from './reminder-statistics-client';
-
-export type {
   TimeSlotDTO,
   UserReminderPreferencesServerDTO,
   UserReminderPreferencesClientDTO,

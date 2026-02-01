@@ -3,7 +3,7 @@
  * 提醒模块常量定义
  */
 
-import { ControlMode, ReminderStatus } from './enums';
+import { ControlMode, ReminderStatus } from './value-objects';
 
 /**
  * 根分组（桌面）配置
@@ -34,7 +34,7 @@ export const ROOT_GROUP_CONFIG = {
   ORDER: -1,
   
   /** 根分组的控制模式（默认为独立控制） */
-  CONTROL_MODE: ControlMode.INDIVIDUAL,
+  CONTROL_MODE: ControlMode.Individual,
   
   /** 根分组是否可以删除 */
   CAN_DELETE: false,

@@ -35,22 +35,3 @@ export type {
   ScheduleTaskClientDTO,
   ScheduleTaskClient,
 } from './schedule-task-client';
-
-// ============ ScheduleStatistics Aggregate ============
-export type {
-  ScheduleStatisticsServerDTO,
-  ScheduleStatisticsPersistenceDTO,
-  ScheduleStatisticsCreatedEvent,
-  ScheduleStatisticsUpdatedEvent,
-  ScheduleStatisticsTaskCountChangedEvent,
-  ScheduleStatisticsExecutionRecordedEvent,
-  ScheduleStatisticsModuleUpdatedEvent,
-  ScheduleStatisticsDomainEvent,
-  ScheduleStatisticsServer,
-  ScheduleStatisticsServerStatic,
-} from './schedule-statistics-server';
-
-export type {
-  ScheduleStatisticsClientDTO,
-  ScheduleStatisticsClient,
-} from './schedule-statistics-client';

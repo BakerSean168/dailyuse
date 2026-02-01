@@ -3,7 +3,7 @@
  * 通知渠道实体 - 客户端接口
  */
 
-import type { NotificationChannelType, ChannelStatus } from '../enums';
+import type { NotificationChannelType, ChannelStatus } from '../value-objects';
 import type { NotificationChannelServerDTO } from './notification-channel-server';
 import type { ChannelErrorClientDTO, ChannelResponseClientDTO } from '../value-objects';
 

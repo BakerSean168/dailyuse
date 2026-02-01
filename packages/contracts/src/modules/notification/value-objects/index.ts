@@ -128,27 +128,27 @@ export type {
   NotificationTemplateConfigServer,
 } from './notification-template-vo';
 
-// ============ 共享枚举/类型 ============
-export { ChannelStatus } from './channel-status';
-export type { ChannelStatus as ChannelStatusType } from './channel-status';
-
-export { ContentType } from './content-type';
-export type { ContentType as ContentTypeType } from './content-type';
-
-export { NotificationActionType } from './notification-action-type';
-export type { NotificationActionType as NotificationActionTypeType } from './notification-action-type';
+// ============ Enum Value Objects ============
+export { NotificationType } from './notification-type';
+export type { NotificationType as NotificationTypeValue } from './notification-type';
 
 export { NotificationCategory } from './notification-category';
-export type { NotificationCategory as NotificationCategoryType } from './notification-category';
-
-export { NotificationChannelType } from './notification-channel-type';
-export type { NotificationChannelType as NotificationChannelTypeEnumType } from './notification-channel-type';
+export type { NotificationCategory as NotificationCategoryValue } from './notification-category';
 
 export { NotificationStatus } from './notification-status';
-export type { NotificationStatus as NotificationStatusType } from './notification-status';
-
-export { NotificationType } from './notification-type';
-export type { NotificationType as NotificationTypeType } from './notification-type';
+export type { NotificationStatus as NotificationStatusValue } from './notification-status';
 
 export { RelatedEntityType } from './related-entity-type';
-export type { RelatedEntityType as RelatedEntityTypeType } from './related-entity-type';
+export type { RelatedEntityType as RelatedEntityTypeValue } from './related-entity-type';
+
+export { NotificationChannelType } from './notification-channel-type';
+export type { NotificationChannelType as NotificationChannelTypeValue } from './notification-channel-type';
+
+export { ChannelStatus } from './channel-status';
+export type { ChannelStatus as ChannelStatusValue } from './channel-status';
+
+export { NotificationActionType } from './notification-action-type';
+export type { NotificationActionType as NotificationActionTypeValue } from './notification-action-type';
+
+export { ContentType } from './content-type';
+export type { ContentType as ContentTypeValue } from './content-type';

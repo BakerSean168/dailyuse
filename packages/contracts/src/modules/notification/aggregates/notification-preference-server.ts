@@ -3,7 +3,7 @@
  * 通知偏好聚合根 - 服务端接口
  */
 
-import type { NotificationCategory } from '../enums';
+import type { NotificationCategory } from '../value-objects';
 import type {
   CategoryPreferenceServer,
   CategoryPreferenceServerDTO,
@@ -150,4 +150,5 @@ export interface NotificationPreferenceServer {
   // ===== 转换方法 (To) =====
   /**
    * 转换为 Persistence DTO (数据库)
-   */}
+   */
+}

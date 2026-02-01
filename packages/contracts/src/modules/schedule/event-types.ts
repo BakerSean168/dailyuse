@@ -49,34 +49,6 @@ export const ScheduleTaskEventTypes = {
 export type ScheduleTaskEventType =
   (typeof ScheduleTaskEventTypes)[keyof typeof ScheduleTaskEventTypes];
 
-// ============ ScheduleStatistics 事件类型 ============
-
-/**
- * ScheduleStatistics 事件类型枚举
- */
-export const ScheduleStatisticsEventTypes = {
-  /** 统计创建 */
-  CREATED: 'schedule.statistics.created',
-
-  /** 任务计数增加 */
-  TASK_COUNT_INCREMENTED: 'schedule.statistics.task-count.incremented',
-
-  /** 任务计数减少 */
-  TASK_COUNT_DECREMENTED: 'schedule.statistics.task-count.decremented',
-
-  /** 执行记录 */
-  EXECUTION_RECORDED: 'schedule.statistics.execution.recorded',
-
-  /** 统计重置 */
-  RESET: 'schedule.statistics.reset',
-} as const;
-
-/**
- * ScheduleStatistics 事件类型联合类型
- */
-export type ScheduleStatisticsEventType =
-  (typeof ScheduleStatisticsEventTypes)[keyof typeof ScheduleStatisticsEventTypes];
-
 // ============ 所有 Schedule 事件类型 ============
 
 /**
@@ -84,10 +56,9 @@ export type ScheduleStatisticsEventType =
  */
 export const ScheduleEventTypes = {
   ...ScheduleTaskEventTypes,
-  ...ScheduleStatisticsEventTypes,
 } as const;
 
 /**
  * Schedule 事件类型联合类型
  */
-export type ScheduleEventType = ScheduleTaskEventType | ScheduleStatisticsEventType;
+export type ScheduleEventType = ScheduleTaskEventType;

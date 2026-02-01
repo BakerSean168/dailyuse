@@ -3,7 +3,7 @@
  * 调度执行记录实体 - 服务端接口
  */
 
-import type { ExecutionStatus } from '../enums';
+import type { ExecutionStatus } from '../value-objects';
 import type { ScheduleExecutionClientDTO } from './schedule-execution-client';
 
 // ============ DTO 定义 ============

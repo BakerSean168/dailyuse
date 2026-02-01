@@ -3,8 +3,7 @@
  * 提醒分组聚合根 - 服务端接口
  */
 
-import type { ControlMode, ReminderStatus } from '../enums';
-import type { GroupStatsServer, GroupStatsServerDTO } from '../value-objects';
+import type { ControlMode, ReminderStatus, GroupStatsServer, GroupStatsServerDTO } from '../value-objects';
 import type { ReminderGroupClientDTO } from './reminder-group-client';
 
 // ============ DTO 定义 ============

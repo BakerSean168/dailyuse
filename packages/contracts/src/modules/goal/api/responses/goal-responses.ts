@@ -2,7 +2,7 @@
  * Goal Responses
  */
 
-import type { GoalClientDTO, GoalStatisticsClientDTO } from '../../aggregates';
+import type { GoalClientDTO } from '../../aggregates';
 import type { KeyResultClientDTO, GoalReviewClientDTO, GoalRecordClientDTO } from '../../entities';
 import type { BatchOperationResponseDTO } from '../../../../shared/dtos';
 

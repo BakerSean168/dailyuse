@@ -4,14 +4,14 @@
  */
 
 import type { ScheduleTaskClientDTO } from './schedule-task-client';
-import type { ScheduleTaskStatus, SourceModule, ExecutionStatus } from '../enums';
 import type {
   ScheduleExecutionServer,
   ScheduleExecutionServerDTO,
 } from '../entities/schedule-execution-server';
-
-// 从值对象导入类型
 import type {
+  ScheduleTaskStatus,
+  SourceModule,
+  ExecutionStatus,
   ScheduleConfigServer,
   ScheduleConfigServerDTO,
   ExecutionInfoServer,

@@ -3,7 +3,7 @@
  * 通知偏好聚合根 - 客户端接口
  */
 
-import type { NotificationCategory } from '../enums';
+import type { NotificationCategory } from '../value-objects';
 import type {
   NotificationPreferenceServerDTO,
   CategoryPreferences,

@@ -11,8 +11,7 @@ import type {
 } from '@/primitives';
 import type { ControlMode } from '../value-objects/control-mode';
 import type { ReminderStatus } from '../value-objects/reminder-status';
-import type { ReminderGroupServerDTO } from './reminder-group-server';
-import type { GroupStatsServerDTO, GroupStatsClientDTO } from '../value-objects';
+import type { GroupStatsClientDTO } from '../value-objects';
 
 // ============ DTO 定义 ============
 

@@ -3,7 +3,7 @@
  * 消息实体 - 客户端接口
  */
 
-import type { MessageRole } from '../enums';
+import type { MessageRole } from '../value-objects/message-role';
 
 // ============ DTO 定义 ============
 
@@ -64,4 +64,5 @@ export interface MessageClient {
 
   /**
    * 转换为 Client DTO
-   */}
+   */
+}

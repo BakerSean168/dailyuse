@@ -3,7 +3,7 @@
  * 提醒历史实体 - 服务端接口
  */
 
-import type { TriggerResult, NotificationChannel } from '../enums';
+import type { TriggerResult, NotificationChannel } from '../value-objects';
 import type { ReminderHistoryClientDTO } from './reminder-history-client';
 
 // ============ DTO 定义 ============

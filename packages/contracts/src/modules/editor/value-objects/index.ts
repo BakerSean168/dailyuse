@@ -3,6 +3,19 @@
  * 编辑器值对象导出
  */
 
+// ============ Enum Value Objects ============
+export { ProjectType } from './project-type';
+export { DocumentLanguage } from './document-language';
+export { VersionChangeType } from './version-change-type';
+export { TabType } from './tab-type';
+export { SplitDirection } from './split-direction';
+export { IndexStatus } from './index-status';
+export { LinkedSourceType } from './linked-source-type';
+export { LinkedTargetType } from './linked-target-type';
+export { ViewMode } from './view-mode';
+export { SidebarActiveTab } from './sidebar-active-tab';
+
+// ============ Complex Value Objects ============
 export type {
   IWorkspaceLayoutServer,
   IWorkspaceLayoutClient,

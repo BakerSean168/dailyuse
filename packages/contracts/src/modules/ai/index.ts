@@ -6,7 +6,7 @@
 // ============ Service Interfaces ============
 export type { IAIService, AIServiceConfig } from './services';
 
-// ============ Enums ============
+// ============ Value Objects (Enum-like) ============
 export {
   ConversationStatus,
   MessageRole,
@@ -18,7 +18,8 @@ export {
   KnowledgeDocumentTemplateType,
   MetricType,
   QuotaResetPeriod,
-} from './enums';
+  AITaskPriority,
+} from './value-objects';
 
 // ============ Aggregates ============
 export type {

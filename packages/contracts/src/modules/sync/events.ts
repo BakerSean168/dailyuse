@@ -3,7 +3,7 @@
  * 同步模块领域事件定义
  */
 
-import type { SyncSessionStatus, SyncDirection, SyncStrategy, SyncTriggerType, SyncProviderType, SyncableEntityType, ConflictStatus } from './enums';
+import type { SyncSessionStatus, SyncDirection, SyncStrategy, SyncTriggerType, SyncProviderType, SyncableEntityType, ConflictStatus } from './value-objects';
 import type { EntityReferenceDTO, SyncVersionServerDTO, ConflictResolutionDTO, SyncSessionStatsDTO, DeviceInfoDTO } from './value-objects';
 
 // ============ 事件名常量 ============

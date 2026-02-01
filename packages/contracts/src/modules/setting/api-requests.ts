@@ -3,7 +3,7 @@
  * 设置模块 - API 请求/响应 DTOs
  */
 
-import type { SettingValueType, SettingScope } from './enums';
+import type { SettingValueType, SettingScope } from './value-objects';
 import type { SettingServerDTO } from './aggregates/setting-server';
 import type { AppConfigServerDTO } from './aggregates/app-config-server';
 import type { UserSettingServerDTO } from './aggregates/user-setting-server';

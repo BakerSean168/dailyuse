@@ -3,7 +3,7 @@
  * 通知渠道实体 - 服务端接口
  */
 
-import type { NotificationChannelType, ChannelStatus } from '../enums';
+import type { NotificationChannelType, ChannelStatus } from '../value-objects';
 import type { ChannelErrorServerDTO, ChannelResponseServerDTO } from '../value-objects';
 
 // ============ DTO 定义 ============
@@ -82,4 +82,5 @@ export interface NotificationChannelServer {
   // ===== 转换方法 (To) =====
   /**
    * 转换为 Persistence DTO (数据库)
-   */}
+   */
+}

@@ -15,9 +15,6 @@ export * from './entities';
 // ============ Aggregates ============
 export * from './aggregates';
 
-// ============ DTOs ============
-export * from './dtos';
-
 // ============ API Requests ============
 export * from './api';
 

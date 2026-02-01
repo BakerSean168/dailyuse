@@ -8,7 +8,7 @@ import type {
   NotificationCategory,
   NotificationStatus,
   RelatedEntityType,
-} from '../enums';
+} from '../value-objects';
 import type { ImportanceLevel, UrgencyLevel } from '../../../shared/index';
 import type { NotificationServerDTO } from './notification-server';
 import type {

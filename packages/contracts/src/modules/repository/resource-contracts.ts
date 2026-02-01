@@ -3,10 +3,7 @@
  * 资源管理模块契约 - 用于前后端共享类型定义
  */
 
-import { ResourceType } from './value-objects/resource-type';
-
-// Re-export for convenience
-export { ResourceType };
+import type { ResourceType } from './value-objects/resource-type';
 
 // ============================================================
 // 资源嵌入模式
@@ -74,15 +71,15 @@ export interface Resource {
   mimeType: string;
   url: string;
   thumbnailUrl?: string;
-  metadata?: ResourceMetadata;
+  metadata?: ResourceContractMetadata;
   createdAt: string;
   updatedAt: string;
 }
 
 /**
- * 资源元数据
+ * 资源元数据（Contract层定义）
  */
-export interface ResourceMetadata {
+export interface ResourceContractMetadata {
   /** 图片/视频宽度 */
   width?: number;
   /** 图片/视频高度 */

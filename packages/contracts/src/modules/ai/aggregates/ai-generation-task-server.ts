@@ -3,7 +3,10 @@
  * AI生成任务聚合根 - 服务端接口
  */
 
-import type { GenerationTaskType, TaskStatus, AIProvider, AIModel } from '../enums';
+import type { GenerationTaskType } from '../value-objects/generation-task-type';
+import type { TaskStatus } from '../value-objects/task-status';
+import type { AIProvider } from '../value-objects/ai-provider';
+import type { AIModel } from '../value-objects/ai-model';
 import type { AIGenerationTaskClientDTO } from './ai-generation-task-client';
 import type { GenerationInputServerDTO } from '../value-objects/generation-input';
 import type { GenerationResultServerDTO } from '../value-objects/generation-result';

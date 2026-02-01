@@ -3,7 +3,7 @@
  * AI使用配额聚合根 - 服务端接口
  */
 
-import type { QuotaResetPeriod } from '../enums';
+import type { QuotaResetPeriod } from '../value-objects/quota-reset-period';
 import type { AIUsageQuotaClientDTO } from './ai-usage-quota-client';
 
 // ============ DTO 定义 ============
@@ -134,55 +134,4 @@ export interface AIUsageQuotaServer {
   nextResetAt: number;
   createdAt: Date;
   updatedAt: Date;
-
-  // ===== 配额管理方法 =====
-
-  /**
-   * 消耗配额
-   * @param amount 消耗数量
-   * @returns 是否成功消耗
-   */
-
-  /**
-   * 检查是否可以消耗指定数量
-   * @param amount 要消耗的数量
-   * @returns 是否可以消耗
-   */
-
-  /**
-   * 获取剩余配额
-   */
-
-  /**
-   * 检查是否已超限
-   */
-
-  /**
-   * 检查是否需要重置
-   */
-
-  /**
-   * 重置配额
-   */
-
-  /**
-   * 更新配额限制
-   */
-
-  /**
-   * 计算下次重置时间
-   */
-
-  /**
-   * 获取使用率（百分比）
-   */
-
-  // ===== 转换方法 (To) =====
-  /**
-   * 转换为 Client DTO
-   */
-
-  /**
-   * 转换为 Persistence DTO
-   */
 }
