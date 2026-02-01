@@ -27,7 +27,7 @@ import type {
 } from '../value-objects';
 
 // 导入共享类型
-import { ImportanceLevel } from '../../../shared/importance';
+import { ImportanceLevel } from '../../../shared/value-objects/importance';
 
 // ============ DTO 定义 ============
 

@@ -5,15 +5,15 @@
 
 // ============ Schedule Aggregate ============
 export type {
-  ScheduleServer,
-  ScheduleServerDTO,
+  ScheduleJobServer,
+  ScheduleJobServerDTO,
   SchedulePersistenceDTO,
-} from './schedule-server';
+} from './schedule-job-server';
 
 export type {
-  ScheduleClientDTO,
-  ScheduleClient,
-} from './schedule-client';
+  ScheduleJobClientDTO,
+  ScheduleJobClient,
+} from './schedule-job-client';
 
 // ============ ScheduleTask Aggregate ============
 export type {

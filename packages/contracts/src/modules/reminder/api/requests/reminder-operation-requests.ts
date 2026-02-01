@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { ImportanceLevel } from '../../../../shared/importance';
+import { ImportanceLevel } from '../../../../shared/value-objects/importance';
 import type { ReminderType } from '../../value-objects/reminder-type';
 import type { ReminderStatus } from '../../value-objects/reminder-status';
 

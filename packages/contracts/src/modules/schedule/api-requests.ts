@@ -5,7 +5,7 @@
 
 import type { ScheduleTaskClientDTO } from './aggregates/schedule-task-client';
 import type { ScheduleExecutionClientDTO } from './entities/schedule-execution-client';
-import type { ScheduleClientDTO } from './aggregates/schedule-client';
+import type { ScheduleClientDTO } from './aggregates/schedule-job-client';
 import type { ConflictDetectionResult } from './value-objects/conflict-detection-result';
 import type {
   ScheduleConfigServerDTO,

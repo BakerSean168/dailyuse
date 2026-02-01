@@ -3,7 +3,7 @@
  * 提醒模板聚合根 - 服务端接口
  */
 
-import { ImportanceLevel } from '../../../shared/importance';
+import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type {
   ReminderHistoryServer,
   ReminderHistoryServerDTO,

@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import type { ScheduleClientDTO } from '../../aggregates/schedule-client';
+import type { ScheduleClientDTO } from '../../aggregates/schedule-job-client';
 import type { ConflictDetectionResult } from '../../value-objects/conflict-detection-result';
 
 // ============ Zod Schemas ============

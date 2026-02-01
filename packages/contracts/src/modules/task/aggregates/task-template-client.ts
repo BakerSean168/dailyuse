@@ -11,7 +11,7 @@ import type {
 } from '@/primitives';
 
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
-import { ImportanceLevel } from '../../../shared/importance';
+import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type {
   TaskTimeConfig,
   TaskTimeConfigDTO,

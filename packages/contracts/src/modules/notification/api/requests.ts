@@ -3,17 +3,17 @@
  * 通知模块 API 请求类型
  */
 
-import type { NotificationType } from '../value-objects/notification-type';
-import type { NotificationCategory } from '../value-objects/notification-category';
-import type { NotificationStatus } from '../value-objects/notification-status';
-import type { RelatedEntityType } from '../value-objects/related-entity-type';
-import type { NotificationChannelType } from '../value-objects/notification-channel-type';
-import type { ImportanceLevel, UrgencyLevel } from '../../../shared/index';
 import type {
-  NotificationActionServerDTO,
-  NotificationMetadataServerDTO,
-  CategoryPreferenceServerDTO,
+  NotificationType,
+  NotificationCategory,
+  NotificationStatus,
+  RelatedEntityType,
+  NotificationChannelType,
+  NotificationActionDTO,
+  NotificationMetadataDTO,
+  CategoryPreferenceDTO,
 } from '../value-objects';
+import type { ImportanceLevel, UrgencyLevel } from '../../../shared/index';
 
 // ============ 通知请求 ============
 
@@ -30,8 +30,8 @@ export interface CreateNotificationRequest {
   urgency?: UrgencyLevel;
   relatedEntityType?: RelatedEntityType;
   relatedEntityUuid?: string;
-  actions?: NotificationActionServerDTO[];
-  metadata?: NotificationMetadataServerDTO;
+  actions?: NotificationActionDTO[];
+  metadata?: NotificationMetadataDTO;
   expiresAt?: number;
   sendImmediately?: boolean;
   channels?: NotificationChannelType[];
@@ -44,7 +44,7 @@ export interface UpdateNotificationRequest {
   title?: string;
   content?: string;
   status?: NotificationStatus;
-  metadata?: NotificationMetadataServerDTO;
+  metadata?: NotificationMetadataDTO;
   expiresAt?: number;
 }
 

@@ -4,51 +4,19 @@
  */
 
 import type { NotificationChannelType, ChannelStatus } from '../value-objects';
-import type { NotificationChannelServerDTO } from './notification-channel-server';
-import type { ChannelErrorClientDTO, ChannelResponseClientDTO } from '../value-objects';
-
-// ============ DTO 定义 ============
-
-/**
- * NotificationChannel Client DTO
- */
-export interface NotificationChannelClientDTO {
-  uuid: string;
-  notificationUuid: string;
-  channelType: NotificationChannelType;
-  status: ChannelStatus;
-  recipient?: string | null;
-  sendAttempts: number;
-  maxRetries: number;
-  error?: ChannelErrorClientDTO | null;
-  response?: ChannelResponseClientDTO | null;
-  createdAt: number;
-  sentAt?: number | null;
-  deliveredAt?: number | null;
-  failedAt?: number | null;
-
-  // UI 格式化属性
-  isPending: boolean;
-  isSent: boolean;
-  isDelivered: boolean;
-  isFailed: boolean;
-  canRetry: boolean;
-  statusText: string;
-  channelTypeText: string;
-  formattedCreatedAt: string;
-  formattedSentAt?: string;
-  formattedDeliveredAt?: string;
-}
+import type { ChannelErrorDTO, ChannelResponseDTO } from '../value-objects';
+import type { TransferDate, DomainDate } from '@/primitives';
 
 // ============ 实体接口 ============
 
 /**
- * NotificationChannel 实体 - Client 接口（实例方法）
+ * NotificationChannel 实体 - Client 接口
  */
 export interface NotificationChannelClient {
   // 基础属性
-  uuid: string;
-  notificationUuid: string;
+  id: string;
+  notificationId: string;
+
   channelType: NotificationChannelType;
   status: ChannelStatus;
   recipient?: string | null;
@@ -56,31 +24,30 @@ export interface NotificationChannelClient {
   maxRetries: number;
 
   // 错误和响应信息
-  error?: ChannelErrorClientDTO | null;
-  response?: ChannelResponseClientDTO | null;
+  error?: ChannelErrorDTO | null;
+  response?: ChannelResponseDTO | null;
 
-  // 时间戳
-  createdAt: Date;
-  sentAt?: number | null;
-  deliveredAt?: number | null;
-  failedAt?: Date | null;
-
-  // UI 属性
-  isPending: boolean;
-  isSent: boolean;
-  isDelivered: boolean;
-  isFailed: boolean;
-  canRetry: boolean;
-  statusText: string;
-  channelTypeText: string;
-  formattedCreatedAt: string;
-  formattedSentAt?: string;
-  formattedDeliveredAt?: string;
-
-  // ===== UI 业务方法 =====
-
-  // 格式化展示
-
-  // 操作
-
+  sentAt?: DomainDate | null;
+  failedAt?: DomainDate | null;
 }
+
+// ============ DTO 定义 ============
+
+/**
+ * NotificationChannel Client DTO
+ */
+export interface NotificationChannelClientDTO {
+  id: string;
+  notificationId: string;
+  channelType: NotificationChannelType;
+  status: ChannelStatus;
+  recipient?: string | null;
+  sendAttempts: number;
+  maxRetries: number;
+  error?: ChannelErrorDTO | null;
+  response?: ChannelResponseDTO | null;
+  createdAt: TransferDate;
+  sentAt?: TransferDate | null;
+  failedAt?: TransferDate | null;
+}
+

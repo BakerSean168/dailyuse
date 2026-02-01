@@ -7,9 +7,11 @@ import type { NotificationServerDTO } from '../aggregates/notification-server';
 import type { NotificationChannelServerDTO } from '../entities/notification-channel-server';
 import type { NotificationTemplateAggregateServerDTO } from '../aggregates/notification-template-server';
 import type { NotificationPreferenceServerDTO } from '../aggregates/notification-preference-server';
-import type { NotificationType } from '../value-objects/notification-type';
-import type { NotificationCategory } from '../value-objects/notification-category';
-import type { NotificationStatus } from '../value-objects/notification-status';
+import type {
+  NotificationType,
+  NotificationCategory,
+  NotificationStatus,
+} from '../value-objects';
 
 // ============ API 响应类型 ============
 

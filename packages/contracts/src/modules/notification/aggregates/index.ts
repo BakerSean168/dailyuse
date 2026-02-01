@@ -3,9 +3,32 @@
  * 通知聚合 - 索引
  */
 
-export * from './notification-client';
-export * from './notification-server';
-export * from './notification-preference-client';
-export * from './notification-preference-server';
-export * from './notification-template-client';
-export * from './notification-template-server';
+// ===== Notification Server =====
+export type {
+  NotificationServer,
+  NotificationServerDTO,
+  NotificationPersistenceDTO,
+} from './notification-server';
+
+// ===== Notification Client =====
+export type {
+  NotificationClient,
+  NotificationClientDTO,
+} from './notification-client';
+
+// ===== NotificationPreference Server =====
+export type {
+  NotificationPreferenceServer,
+  NotificationPreferenceServerDTO,
+  NotificationPreferencePersistenceDTO,
+} from './notification-preference-server';
+
+// ===== NotificationPreference Client =====
+export type {
+  NotificationPreferenceClient,
+  NotificationPreferenceClientDTO,
+} from './notification-preference-client';
+
+export type {
+  ToastWindowClient,
+} from './toast-window-client';

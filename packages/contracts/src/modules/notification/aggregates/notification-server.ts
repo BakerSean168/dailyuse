@@ -7,160 +7,20 @@ import type {
   NotificationType,
   NotificationCategory,
   NotificationStatus,
-  RelatedEntityType,
+  NotificationMetadata,
+  NotificationMetadataDTO,
+  NotificationMetadataPersistenceDTO,
+  NotificationAction,
+  NotificationActionDTO,
+  NotificationActionPersistenceDTO,
 } from '../value-objects';
-import type { ImportanceLevel, UrgencyLevel } from '../../../shared/index';
+import type { ImportanceLevel } from '../../../shared/index';
 import type {
   NotificationChannelServer,
   NotificationChannelServerDTO,
 } from '../entities/notification-channel-server';
-import type {
-  NotificationHistoryServer,
-  NotificationHistoryServerDTO,
-} from '../entities/notification-history-server';
-import type {
-  NotificationActionServer,
-  NotificationActionServerDTO,
-  NotificationMetadataServer,
-  NotificationMetadataServerDTO,
-} from '../value-objects';
+import type { IdentityId, NotificationId, PersistenceDate, DomainDate, TransferDate } from '@/primitives';
 
-// ============ DTO 定义 ============
-
-/**
- * Notification Server DTO
- */
-export interface NotificationServerDTO {
-  uuid: string;
-  accountUuid: string;
-  title: string;
-  content: string;
-  type: NotificationType;
-  category: NotificationCategory;
-  importance: ImportanceLevel;
-  urgency: UrgencyLevel;
-  status: NotificationStatus;
-  isRead: boolean;
-  readAt?: number | null; // epoch ms
-  relatedEntityType?: RelatedEntityType | null;
-  relatedEntityUuid?: string | null;
-  actions?: NotificationActionServerDTO[] | null;
-  metadata?: NotificationMetadataServerDTO | null;
-  expiresAt?: number | null; // epoch ms
-  createdAt: number; // epoch ms
-  updatedAt: number; // epoch ms
-  sentAt?: number | null; // epoch ms
-  deliveredAt?: number | null; // epoch ms
-  deletedAt?: number | null;
-
-  // ===== 子实体 DTO =====
-  channels?: NotificationChannelServerDTO[] | null; // 渠道列表（可选加载）
-  history?: NotificationHistoryServerDTO[] | null; // 历史记录（可选加载）
-}
-
-/**
- * Notification Persistence DTO (数据库映射)
- */
-export interface NotificationPersistenceDTO {
-  uuid: string;
-  accountUuid: string;
-  title: string;
-  content: string;
-  type: NotificationType;
-  category: NotificationCategory;
-  importance: ImportanceLevel;
-  urgency: UrgencyLevel;
-  status: NotificationStatus;
-  isRead: boolean;
-  readAt?: number | null;
-  relatedEntityType?: RelatedEntityType | null;
-  relatedEntityUuid?: string | null;
-  actions?: string | null; // JSON string
-  metadata?: string | null; // JSON string
-  expiresAt?: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  sentAt?: number | null;
-  deliveredAt?: number | null;
-  deletedAt?: Date | null;
-}
-
-// ============ 领域事件 ============
-
-/**
- * 通知创建事件
- */
-export interface NotificationCreatedEvent {
-  type: 'notification.created';
-  aggregateId: string; // notificationUuid
-  timestamp: Date; // epoch ms
-  payload: {
-    notification: NotificationServerDTO;
-    sendImmediately: boolean;
-  };
-}
-
-/**
- * 通知发送事件
- */
-export interface NotificationSentEvent {
-  type: 'notification.sent';
-  aggregateId: string;
-  timestamp: Date;
-  payload: {
-    notificationUuid: string;
-    channels: string[]; // 渠道类型列表
-  };
-}
-
-/**
- * 通知已读事件
- */
-export interface NotificationReadEvent {
-  type: 'notification.read';
-  aggregateId: string;
-  timestamp: Date;
-  payload: {
-    notificationUuid: string;
-    readAt: number;
-  };
-}
-
-/**
- * 通知删除事件
- */
-export interface NotificationDeletedEvent {
-  type: 'notification.deleted';
-  aggregateId: string;
-  timestamp: Date;
-  payload: {
-    notificationUuid: string;
-  };
-}
-
-/**
- * 通知状态变更事件
- */
-export interface NotificationStatusChangedEvent {
-  type: 'notification.status.changed';
-  aggregateId: string;
-  timestamp: Date;
-  payload: {
-    previousStatus: NotificationStatus;
-    newStatus: NotificationStatus;
-    reason?: string;
-  };
-}
-
-/**
- * Notification 领域事件联合类型
- */
-export type NotificationDomainEvent =
-  | NotificationCreatedEvent
-  | NotificationSentEvent
-  | NotificationReadEvent
-  | NotificationDeletedEvent
-  | NotificationStatusChangedEvent;
 
 // ============ 实体接口 ============
 
@@ -169,108 +29,91 @@ export type NotificationDomainEvent =
  */
 export interface NotificationServer {
   // ===== 基础属性 =====
-  uuid: string;
-  accountUuid: string;
+  id: NotificationId;
+  identityId: IdentityId;
+
   title: string;
   content: string;
   type: NotificationType;
+
   category: NotificationCategory;
   importance: ImportanceLevel;
-  urgency: UrgencyLevel;
+
   status: NotificationStatus;
   isRead: boolean;
   readAt?: number | null;
 
-  // ===== 关联实体 =====
-  relatedEntityType?: RelatedEntityType | null;
-  relatedEntityUuid?: string | null;
-
   // ===== 操作配置 =====
-  actions?: NotificationActionServer[] | null;
+  actions?: NotificationAction[] | null;
 
   // ===== 元数据 =====
-  metadata?: NotificationMetadataServer | null;
+  metadata?: NotificationMetadata | null;
 
-  // ===== 过期设置 =====
-  expiresAt?: Date | null;
-
-  // ===== 时间戳 (统一使用 number epoch ms) =====
-  createdAt: Date;
-  updatedAt: Date;
-  sentAt?: number | null;
-  deliveredAt?: number | null;
-  deletedAt?: Date | null;
-
-  // ===== 子实体集合（聚合根统一管理） =====
-
+  // ===== 时间戳 =====
+  createdAt: DomainDate;
+  updatedAt: DomainDate;
   /**
    * 渠道列表（懒加载，可选）
    */
-  channels?: NotificationChannelServer[] | null;
+  notificationChannels?: NotificationChannelServer[] | null;
 
-  /**
-   * 历史记录列表（懒加载，可选）
-   */
-  history?: NotificationHistoryServer[] | null;
+}
 
-  // ===== 工厂方法（创建子实体 - 实例方法） =====
 
-  /**
-   * 创建子实体：NotificationChannel（通过聚合根创建）
-   */
-  createChannel(params: {
-    channelType: string;
-    recipient?: string;
-    maxRetries?: number;
-  }): NotificationChannelServer;
+// ============ DTO 定义 ============
 
-  /**
-   * 创建子实体：NotificationHistory（通过聚合根创建）
-   */
+/**
+ * Notification Server DTO
+ */
+export interface NotificationServerDTO {
+  id: NotificationId;
+  identityId: IdentityId;
 
-  // ===== 子实体管理方法 =====
+  title: string;
+  content: string;
+  type: NotificationType;
 
-  /**
-   * 添加渠道
-   */
+  category: NotificationCategory;
+  importance: ImportanceLevel;
 
-  /**
-   * 移除渠道
-   */
+  isRead: boolean;
+  readAt?: TransferDate | null; 
+  status: NotificationStatus;
 
-  /**
-   * 获取所有渠道
-   */
+  actions?: NotificationActionDTO[] | null;
+  metadata?: NotificationMetadataDTO | null;
 
-  /**
-   * 通过类型获取渠道
-   */
+  createdAt: TransferDate; 
+  updatedAt: TransferDate; 
 
-  /**
-   * 添加历史记录
-   */
+  // ===== 子实体 DTO =====
+  notificationChannels?: NotificationChannelServerDTO[] | null; // 渠道列表（可选加载）
+}
 
-  /**
-   * 获取所有历史记录
-   */
+/**
+ * Notification Persistence DTO
+ */
+export interface NotificationPersistenceDTO {
+  id: NotificationId;
+  identityId: IdentityId;
 
-  // ===== 业务方法 =====
+  title: string;
+  content: string;
+  type: NotificationType;
 
-  // 状态管理
+  category: NotificationCategory;
+  importance: ImportanceLevel;
 
-  // 状态查询
+  status: NotificationStatus;
+  isRead: boolean;
+  readAt?: PersistenceDate | null;
 
-  // 操作处理
+  actions?: NotificationActionPersistenceDTO[] | null;
+  metadata?: NotificationMetadataPersistenceDTO | null;
 
-  // ===== 转换方法 (To) =====
+  notificationChannels?: string | null;
 
-  /**
-   * 转换为 Server DTO（递归转换子实体）
-   * @param includeChildren 是否包含子实体（默认 false）
-   */
+  createdAt: PersistenceDate;
+  updatedAt: PersistenceDate;
 
-  /**
-   * 转换为 Persistence DTO (数据库)
-   * 注意：子实体在数据库中是独立表，不包含在 Persistence DTO 中
-   */
 }

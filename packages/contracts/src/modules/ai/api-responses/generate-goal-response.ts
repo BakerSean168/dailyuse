@@ -6,7 +6,7 @@
 import type { TokenUsageClientDTO } from '../value-objects/token-usage';
 import type { KeyResultPreview } from './generate-key-results-response';
 import type { GoalCategory } from '../api-requests/generate-goal-request';
-import { ImportanceLevel } from '../../../shared/importance';
+import { ImportanceLevel } from '../../../shared/value-objects/importance';
 
 /**
  * AI 生成的目标草稿

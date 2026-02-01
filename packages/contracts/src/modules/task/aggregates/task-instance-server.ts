@@ -12,7 +12,7 @@ import type {
   PersistenceDate,
 } from '@/primitives';
 import type { TaskInstanceStatus } from '../value-objects/task-instance-status';
-import { ImportanceLevel } from '../../../shared/importance';
+import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type {
   TaskTimeConfig,
   TaskTimeConfigDTO,

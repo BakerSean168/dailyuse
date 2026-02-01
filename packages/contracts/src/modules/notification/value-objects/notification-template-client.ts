@@ -4,10 +4,8 @@
  */
 
 import type { NotificationType, NotificationCategory } from '../value-objects';
-import type { NotificationTemplateAggregateServerDTO } from './notification-template-server';
 import type {
-  NotificationTemplateConfigClient,
-  NotificationTemplateConfigClientDTO,
+  NotificationTemplateDTO,
 } from '../value-objects';
 
 // ============ DTO 定义 ============
@@ -21,7 +19,7 @@ export interface NotificationTemplateAggregateClientDTO {
   description?: string | null;
   type: NotificationType;
   category: NotificationCategory;
-  template: NotificationTemplateConfigClientDTO;
+  template: NotificationTemplateDTO;
   isActive: boolean;
   isSystemTemplate: boolean;
   createdAt: number;
@@ -49,7 +47,7 @@ export interface NotificationTemplateClient {
   category: NotificationCategory;
 
   // ===== 模板内容（值对象） =====
-  template: NotificationTemplateConfigClient;
+  template: NotificationTemplateDTO;
 
   // ===== 状态 =====
   isActive: boolean;

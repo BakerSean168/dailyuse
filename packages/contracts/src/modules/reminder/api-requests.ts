@@ -3,7 +3,7 @@
  * 提醒模块 - API 请求和响应定义
  */
 
-import { ImportanceLevel } from '../../shared/importance';
+import { ImportanceLevel } from '../../shared/value-objects/importance';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
@@ -18,7 +18,7 @@ import type {
   ActiveHoursConfigServerDTO,
   NotificationConfigServerDTO,
 } from './value-objects';
-import type { BatchOperationResponseDTO as SharedBatchOperationResponseDTO } from '../../shared/dtos';
+import type { BatchOperationResponseDTO as SharedBatchOperationResponseDTO } from '../../shared/dtos/chart-data.dto';
 
 // ============ Reminder Template 请求 ============
 
