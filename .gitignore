@@ -80,5 +80,17 @@ vitest.config.*.timestamp*
 
 docs/.obsidian
 
+# SpecKit - Agent Folder Security
+# Ignore generated specification artifacts (may contain internal implementation details)
+.specify/memory/.credentials.*
+.specify/memory/.secrets.*
+.specify/memory/.env.*
+.specify/scripts/generated/**
+.specify/scripts/credentials.*
+.specify/scripts/secrets.*
+
+# SpecKit Agent Config (if contains credentials, uncomment)
+# .github/agents/
+
 # Windows
 D:/.e2e-test-credentials.json
