@@ -19,17 +19,20 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type { 
+  ExampleProperty as IExampleProperty,
   ExamplePropertyDTO, 
   ExamplePropertyPersistenceDTO 
 } from '@dailyuse/contracts/example';
+import type { DomainDate } from '@dailyuse/contracts/primitives';
 
 /**
  * 【基类 ValueObject<T> 自带方法】
  * - props: T (readonly) - 内部属性，已通过 Object.freeze 冻结
  * - equals(vo?: ValueObject<T>): boolean - 结构性相等检查（使用 lodash.isEqual 深度比较）
  * - getRawProps(): T - 获取原始属性副本
+ * 要实现定义的接口
  */
-export class ExampleProperty extends ValueObject<ExamplePropertyDTO> {
+export class ExampleProperty extends ValueObject<ExamplePropertyDTO> implements IExampleProperty {
 
   // ================= 构造函数（必须私有）=================
   private constructor(props: ExamplePropertyDTO) {
@@ -74,6 +77,7 @@ export class ExampleProperty extends ValueObject<ExamplePropertyDTO> {
     return new ExampleProperty({
       key,
       value: '',
+      date: new Date().getTime(),
       description: null,
     });
   }
@@ -110,6 +114,7 @@ export class ExampleProperty extends ValueObject<ExamplePropertyDTO> {
     return new ExampleProperty({
       key: dto.key,
       value: dto.value,
+      date: dto.date.getTime(),
       description: dto.description,
     });
   }
@@ -154,6 +159,10 @@ export class ExampleProperty extends ValueObject<ExamplePropertyDTO> {
 
   public get value(): string {
     return this.props.value;
+  }
+
+  public get date(): DomainDate {
+    return new Date(this.props.date);
   }
 
   public get description(): string | null {
@@ -224,6 +233,7 @@ export class ExampleProperty extends ValueObject<ExamplePropertyDTO> {
     return {
       key: this.props.key,
       value: this.props.value,
+      date: this.props.date,
       description: this.props.description,
     };
   }
@@ -244,6 +254,7 @@ export class ExampleProperty extends ValueObject<ExamplePropertyDTO> {
     return {
       key: this.props.key,
       value: this.props.value,
+      date: new Date(this.props.date),
       description: this.props.description,
     };
   }

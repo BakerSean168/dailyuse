@@ -1,3 +1,5 @@
+import type { ExampleStatus as IExampleStatus } from '@dailyuse/contracts/example';
+
 /**
  * ExampleStatus 枚举类型
  * 
@@ -12,61 +14,131 @@
  */
 
 /**
- * 示例模块的生命周期状态
+ * 📝 示例状态 - 示例实体的生命周期状态
  * 
- * 状态机：
- * Draft → Active → Archived
- * Draft → Rejected → Archived
+ * Branded Type：运行时为 string，编译时具有类型安全性
+ * 零序列化成本，内存开销极小
  */
-export const ExampleStatusEnum = {
-  /** 草稿状态：刚创建，还未激活 */
-  Draft: 'Draft',
-  /** 活跃状态：已发布并生效 */
-  Active: 'Active',
-  /** 已拒绝状态：创建过程中被拒绝 */
-  Rejected: 'Rejected',
-  /** 已归档状态：不再使用，但保留历史数据 */
-  Archived: 'Archived',
-} as const;
+export type ExampleStatus = IExampleStatus & { readonly __brand: unique symbol };
 
 /**
- * ExampleStatus 类型
- * 结果：'Draft' | 'Active' | 'Rejected' | 'Archived'
+ * 合法值集合 - Single Source of Truth
+ * 用于校验和遍历
  */
-export type ExampleStatusType = typeof ExampleStatusEnum[keyof typeof ExampleStatusEnum];
+const VALUES: IExampleStatus[] = ['Draft', 'Active', 'Rejected', 'Archived'];
 
 /**
- * ExampleStatus 工具对象
- * 
- * 提供类型安全的枚举操作方法
+ * 伴生对象 - 提供静态方法和行为逻辑
+ * 没有 this，所有行为方法第一个参数都是该 Type 的实例
  */
 export const ExampleStatus = {
-  ...ExampleStatusEnum,
+  // ================= 常量定义 =================
+  
+  Draft: 'Draft' as ExampleStatus,
+  Active: 'Active' as ExampleStatus,
+  Rejected: 'Rejected' as ExampleStatus,
+  Archived: 'Archived' as ExampleStatus,
+
+  // ================= 工厂方法 =================
 
   /**
-   * 从 string 安全转换为 ExampleStatusType
-   * 
-   * @throws 当值不是有效状态时
+   * 🏭 工厂方法：验证并转换
+   * 接受任意 string，返回安全的 ExampleStatus
+   * @throws 当输入值不在合法值列表中时
    */
-  of(value: string): ExampleStatusType {
+  of(value: string): ExampleStatus {
     if (!this.isValid(value)) {
       throw new Error(`Invalid ExampleStatus: ${value}`);
     }
-    return value as ExampleStatusType;
+    return value as ExampleStatus;
+  },
+
+  // ================= 类型守卫 =================
+
+  /**
+   * 🛡️ 类型守卫：运行时类型检查
+   * 用于条件判断时的类型细化
+   * @example
+   * if (ExampleStatus.isValid(input)) {
+   *   const status: ExampleStatus = input; // TS 自动推断
+   * }
+   */
+  isValid(value: string): value is ExampleStatus {
+    return VALUES.includes(value as IExampleStatus);
   },
 
   /**
-   * 校验是否为有效状态值
+   * 📋 获取所有可用值
+   * 用于前端渲染下拉框、状态管理等场景
    */
-  isValid(value: string): value is ExampleStatusType {
-    return Object.values(ExampleStatusEnum).includes(value as ExampleStatusType);
+  getAll(): ExampleStatus[] {
+    return VALUES as ExampleStatus[];
+  },
+
+  // ================= 行为方法 (State Logic) =================
+
+  /**
+   * 是否为草稿状态
+   * （刚创建，还未激活）
+   */
+  isDraft(status: ExampleStatus): boolean {
+    return status === this.Draft;
   },
 
   /**
-   * 获取所有状态值
+   * 是否为活跃状态
+   * （已发布并生效）
    */
-  values(): ExampleStatusType[] {
-    return Object.values(ExampleStatusEnum);
+  isActive(status: ExampleStatus): boolean {
+    return status === this.Active;
+  },
+
+  /**
+   * 是否为已拒绝状态
+   * （创建过程中被拒绝）
+   */
+  isRejected(status: ExampleStatus): boolean {
+    return status === this.Rejected;
+  },
+
+  /**
+   * 是否为已归档状态
+   * （不再使用，但保留历史数据）
+   */
+  isArchived(status: ExampleStatus): boolean {
+    return status === this.Archived;
+  },
+
+  /**
+   * 是否可编辑
+   * 仅草稿状态可以编辑
+   */
+  isEditable(status: ExampleStatus): boolean {
+    return status === this.Draft;
+  },
+
+  /**
+   * 是否可激活
+   * 草稿状态可以被激活
+   */
+  canActivate(status: ExampleStatus): boolean {
+    return status === this.Draft;
+  },
+
+  /**
+   * 是否可拒绝
+   * 草稿状态可以被拒绝
+   */
+  canReject(status: ExampleStatus): boolean {
+    return status === this.Draft;
+  },
+
+  /**
+   * 是否可归档
+   * 活跃或拒绝状态可以被归档
+   */
+  canArchive(status: ExampleStatus): boolean {
+    return status === this.Active || status === this.Rejected;
   },
 
   /**
@@ -78,13 +150,14 @@ export const ExampleStatus = {
    * - Rejected → Archived
    * - Archived → （不可转换）
    */
-  canTransitionTo(from: ExampleStatusType, to: ExampleStatusType): boolean {
-    const transitions: Record<ExampleStatusType, ExampleStatusType[]> = {
-      [ExampleStatusEnum.Draft]: [ExampleStatusEnum.Active, ExampleStatusEnum.Rejected],
-      [ExampleStatusEnum.Active]: [ExampleStatusEnum.Archived],
-      [ExampleStatusEnum.Rejected]: [ExampleStatusEnum.Archived],
-      [ExampleStatusEnum.Archived]: [],
+  canTransitionTo(from: ExampleStatus, to: ExampleStatus): boolean {
+    const transitions: Record<IExampleStatus, IExampleStatus[]> = {
+      'Draft': ['Active', 'Rejected'],
+      'Active': ['Archived'],
+      'Rejected': ['Archived'],
+      'Archived': [],
     };
-    return transitions[from]?.includes(to) ?? false;
+    return transitions[from as IExampleStatus]?.includes(to as IExampleStatus) ?? false;
   },
+
 } as const;

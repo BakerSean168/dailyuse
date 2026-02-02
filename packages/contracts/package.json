@@ -10,6 +10,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./example": {
+      "types": "./dist/modules/example/index.d.ts",
+      "import": "./dist/modules/example/index.js"
+    },
     "./task": {
       "types": "./dist/modules/task/index.d.ts",
       "import": "./dist/modules/task/index.js"

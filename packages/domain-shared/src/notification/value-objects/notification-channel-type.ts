@@ -1,0 +1,65 @@
+import type { NotificationChannelType as INotificationChannelType } from '@dailyuse/contracts/notification';
+
+/**
+ * 📝 通知渠道类型 - 通知的投递渠道
+ * 
+ * Branded Type：运行时为 string，编译时具有类型安全性
+ * 零序列化成本，内存开销极小
+ */
+export type NotificationChannelType = INotificationChannelType & { readonly __brand: unique symbol };
+
+/**
+ * 合法值集合 - Single Source of Truth
+ * 用于校验和遍历
+ */
+const VALUES: INotificationChannelType[] = ['InApp', 'Email', 'Push', 'Sms', 'Webhook'];
+
+/**
+ * 伴生对象 - 提供静态方法和行为逻辑
+ */
+export const NotificationChannelType = {
+  // ================= 常量定义 =================
+  
+  InApp: 'InApp' as NotificationChannelType,
+  Email: 'Email' as NotificationChannelType,
+  Push: 'Push' as NotificationChannelType,
+  Sms: 'Sms' as NotificationChannelType,
+  Webhook: 'Webhook' as NotificationChannelType,
+
+  // ================= 工厂方法 =================
+
+  of(value: string): NotificationChannelType {
+    if (!this.isValid(value)) {
+      throw new Error(`Invalid NotificationChannelType: ${value}`);
+    }
+    return value as NotificationChannelType;
+  },
+
+  // ================= 类型守卫 =================
+
+  isValid(value: string): value is NotificationChannelType {
+    return VALUES.includes(value as INotificationChannelType);
+  },
+
+  // ================= 遍历方法 =================
+
+  getAll(): NotificationChannelType[] {
+    return VALUES as NotificationChannelType[];
+  },
+
+  // ================= 工具方法 =================
+
+  /**
+   * 判断是否为实时渠道（立即投递）
+   */
+  isRealtime(value: NotificationChannelType): boolean {
+    return value === 'InApp' || value === 'Push' || value === 'Sms';
+  },
+
+  /**
+   * 判断是否为异步渠道
+   */
+  isAsync(value: NotificationChannelType): boolean {
+    return value === 'Email' || value === 'Webhook';
+  },
+};

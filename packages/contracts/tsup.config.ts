@@ -19,6 +19,7 @@ export default createTsupConfig({
     // 根入口（精简版，只导出核心类型和常用枚举）
     'src/index.ts',
     // 模块入口（完整模块导出）
+    'src/modules/example/index.ts',
     'src/modules/task/index.ts',
     'src/modules/goal/index.ts',
     'src/modules/reminder/index.ts',

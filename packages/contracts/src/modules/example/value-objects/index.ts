@@ -11,10 +11,5 @@
 export { ExampleStatus } from './example-status';
 
 // ============ Properties ============
-export type { ExamplePropertyDTO, ExampleProperty } from './example-property';
-export { createExampleProperty } from './example-property';
-
-// ============ Time Ranges ============
-export type { ExampleTimeRangeDTO, ExampleTimeRange, ExampleTimeRangePersistenceDTO } from './example-time-range';
-export { createExampleTimeRange, toExampleTimeRangeDTO, toExampleTimeRangePersistenceDTO, ExampleTimeRangeUtils } from './example-time-range';
+export type {  ExampleProperty, ExamplePropertyDTO, ExamplePropertyPersistenceDTO } from './example-property';
 
