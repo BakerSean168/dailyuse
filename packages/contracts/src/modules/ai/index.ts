@@ -1,6 +1,6 @@
 /**
  * AI Module Exports
- * AI模块 - 显式导出
+ * AI模块 - 统一导出 subfolders 下的所有内容 直接 export * from './folder-name'
  */
 
 // ============ Service Interfaces ============
