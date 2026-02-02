@@ -118,8 +118,3 @@ export interface ActivateFocusModeRequest {
 export interface ExtendFocusModeRequest {
   newEndTime: TransferDate; // 新的结束时间 (timestamp)
 }
-
-// ============ 向后兼容别名 (Backward Compatibility) ============
-
-/** @deprecated Use FocusModeDTO */
-export type FocusModeServerDTO = FocusModeDTO;

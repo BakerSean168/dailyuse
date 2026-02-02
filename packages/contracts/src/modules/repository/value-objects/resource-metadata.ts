@@ -6,9 +6,10 @@
 // ============ DTO 定义 ============
 
 /**
- * Resource Metadata DTO (Server)
+ * Resource Metadata DTO
  */
 export interface ResourceMetadataDTO {
+  tags: string[]; // 资源标签
   wordCount: number | null;
   readingTime: number | null; // 分钟
   thumbnail: string | null; // 缩略图 URL
@@ -16,19 +17,14 @@ export interface ResourceMetadataDTO {
 }
 
 /**
- * Resource Metadata Client DTO
- * 包含 UI 计算字段
+ * Resource Metadata Persistence DTO (数据库映射)
  */
-export interface ResourceMetadataClientDTO {
+export interface ResourceMetadataPersistenceDTO {
+  tags: string[]; // 资源标签
   wordCount: number | null;
   readingTime: number | null;
   thumbnail: string | null;
   [key: string]: unknown;
-
-  // UI 计算字段
-  wordCountText: string; // "1,234 字"
-  readingTimeText: string; // "约 5 分钟"
-  hasThumbnail: boolean;
 }
 
 // ============ 实体接口 ============
@@ -37,36 +33,9 @@ export interface ResourceMetadataClientDTO {
  * Resource Metadata 值对象接口
  */
 export interface ResourceMetadata {
+  tags: string[];
   wordCount: number | null;
   readingTime: number | null;
   thumbnail: string | null;
   [key: string]: unknown;
 }
-
-/**
- * Resource Metadata Client 值对象接口
- * 包含 UI 计算属性
- */
-export interface ResourceMetadataClient {
-  wordCount: number | null;
-  readingTime: number | null;
-  thumbnail: string | null;
-  [key: string]: unknown;
-
-  // UI 计算属性
-  wordCountText: string;
-  readingTimeText: string;
-  hasThumbnail: boolean;
-}
-
-// ============ Backward Compatibility ============
-
-/**
- * @deprecated Use ResourceMetadataDTO instead
- */
-export type ResourceMetadataServerDTO = ResourceMetadataDTO;
-
-/**
- * @deprecated Use ResourceMetadata instead
- */
-export type ResourceMetadataServer = ResourceMetadata;

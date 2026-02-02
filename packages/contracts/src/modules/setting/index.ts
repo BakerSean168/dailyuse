@@ -3,14 +3,16 @@
  * 设置模块 - 简化导出
  */
 
-// ============ Value Objects ============
-export * from './value-objects';
+// ============ Constants ============
+export * from './constants';
 
-// ============ Entities ============
-export * from './entities';
 
 // ============ Aggregates ============
 export * from './aggregates';
 
-// ============ API ============
-export * from './api';
+// ============ RPC Protocol ============
+export * from './protocol';
+
+// ============ Legacy Exports (for backward compatibility) ============
+export * from './value-objects';
+export * from './entities';

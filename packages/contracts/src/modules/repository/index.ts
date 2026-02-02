@@ -15,10 +15,4 @@ export * from './aggregates';
 // ============ Protocol ============
 export * from './protocol';
 
-// ============ Domain Contracts ============
-export * from './tree-node';
-export * from './search-contracts';
-export * from './bookmark-contracts';
-export * from './tags-contracts';
-export * from './resource-contracts';
-
+export * from './dtos';

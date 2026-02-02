@@ -117,12 +117,4 @@ export interface UIConfigClient {
 
 // ============ Backward Compatibility ============
 
-/**
- * @deprecated Use UIConfigDTO instead
- */
-export type UIConfigServerDTO = UIConfigDTO;
 
-/**
- * @deprecated Use UIConfig instead
- */
-export type UIConfigServer = UIConfig;

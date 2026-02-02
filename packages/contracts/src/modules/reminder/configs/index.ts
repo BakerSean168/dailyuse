@@ -1,0 +1,1 @@
+export { RootGroupConfig } from './root-group-config';

@@ -1,0 +1,45 @@
+/**
+ * 仓库设置 (REPOSITORY) - 常量定义
+ * ✅ 每个配置项嵌入 Zod Schema
+ */
+import { z } from 'zod';
+import type { SettingDefinition } from '../value-objects';
+import { SettingCategory } from '../value-objects';
+
+export const REPOSITORY_SETTINGS: Record<string, SettingDefinition> = {
+  'repository.defaultStorageLocation': {
+    key: 'repository.defaultStorageLocation',
+    name: '默认存储位置',
+    description: '新仓库的默认存储位置',
+    category: SettingCategory.REPOSITORY,
+    type: 'SELECT',
+    defaultValue: 'local',
+    schema: z.enum(['local', 'cloud']),
+    isSyncable: true,
+    scope: 'USER',
+  },
+
+  'repository.imageCompression': {
+    key: 'repository.imageCompression',
+    name: '图片压缩',
+    description: '自动压缩上传的图片',
+    category: SettingCategory.REPOSITORY,
+    type: 'BOOLEAN',
+    defaultValue: true,
+    schema: z.boolean(),
+    isSyncable: true,
+    scope: 'USER',
+  },
+
+  'repository.excludedExtensions': {
+    key: 'repository.excludedExtensions',
+    name: '排除扩展名',
+    description: '不同步的文件扩展名列表',
+    category: SettingCategory.REPOSITORY,
+    type: 'ARRAY',
+    defaultValue: ['.tmp', '.log', '.DS_Store'],
+    schema: z.array(z.string()),
+    isSyncable: true,
+    scope: 'USER',
+  },
+} as const satisfies Record<string, SettingDefinition>;

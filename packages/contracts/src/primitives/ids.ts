@@ -90,6 +90,8 @@ export type DocumentLinkId = string & { readonly __brand: 'DocumentLinkId' };
 /** 设置 ID */
 export type SettingId = string & { readonly __brand: 'SettingId' };
 
+export type SettingEntryId = string & { readonly __brand: 'SettingEntryId' };
+
 /** 设置分组 ID */
 export type SettingGroupId = string & { readonly __brand: 'SettingGroupId' };
 

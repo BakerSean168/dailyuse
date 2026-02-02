@@ -1,21 +1,10 @@
 export type {
-  FolderServerDTO,
-  FolderPersistenceDTO,
-  FolderServer,
-} from './folder-server';
+  ResourceBookmarkServerDTO,
+  ResourceBookmarkPersistenceDTO,
+  ResourceBookmarkServer,
+} from './resource-bookmark-server';
 
 export type {
-  FolderClientDTO,
-  FolderClient,
-} from './folder-client';
-
-export type {
-  ResourceServerDTO,
-  ResourcePersistenceDTO,
-  ResourceServer,
-} from './resource-server';
-
-export type {
-  ResourceClientDTO,
-  ResourceClient,
-} from './resource-client';
+  ResourceBookmarkClient,
+  ResourceBookmarkClientDTO,
+} from './resource-bookmark-client';

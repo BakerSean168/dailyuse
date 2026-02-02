@@ -56,15 +56,3 @@ export interface FolderMetadataClient {
   displayIcon: string;
   displayColor: string;
 }
-
-// ============ Backward Compatibility ============
-
-/**
- * @deprecated Use FolderMetadataDTO instead
- */
-export type FolderMetadataServerDTO = FolderMetadataDTO;
-
-/**
- * @deprecated Use FolderMetadata instead
- */
-export type FolderMetadataServer = FolderMetadata;

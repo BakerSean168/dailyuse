@@ -4,7 +4,7 @@
  */
 
 // ============ Constants ============
-export * from './constants';
+export * from './configs';
 
 // ============ Value Objects ============
 export * from './value-objects';
@@ -17,3 +17,5 @@ export * from './aggregates';
 
 // ============ API ============
 export * from './api';
+
+// export * from './protocol';

@@ -62,15 +62,3 @@ export interface RepositoryConfigClient {
   gitStatusText: string;
   syncStatusText: string;
 }
-
-// ============ Backward Compatibility ============
-
-/**
- * @deprecated Use RepositoryConfigDTO instead
- */
-export type RepositoryConfigServerDTO = RepositoryConfigDTO;
-
-/**
- * @deprecated Use RepositoryConfig instead
- */
-export type RepositoryConfigServer = RepositoryConfig;

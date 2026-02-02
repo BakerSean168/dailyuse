@@ -70,14 +70,4 @@ export interface FrequencyAdjustmentClient {
   readonly statusText: string;
 }
 
-// ============ Backward Compatibility ============
 
-/**
- * @deprecated Use FrequencyAdjustmentDTO instead
- */
-export type FrequencyAdjustmentServerDTO = FrequencyAdjustmentDTO;
-
-/**
- * @deprecated Use FrequencyAdjustment instead
- */
-export type FrequencyAdjustmentServer = FrequencyAdjustment;

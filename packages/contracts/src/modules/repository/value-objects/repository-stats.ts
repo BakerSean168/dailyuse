@@ -54,15 +54,3 @@ export interface RepositoryStatsClient {
   hasResources: boolean;
   hasFolders: boolean;
 }
-
-// ============ Backward Compatibility ============
-
-/**
- * @deprecated Use RepositoryStatsDTO instead
- */
-export type RepositoryStatsServerDTO = RepositoryStatsDTO;
-
-/**
- * @deprecated Use RepositoryStats instead
- */
-export type RepositoryStatsServer = RepositoryStats;

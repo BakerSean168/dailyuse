@@ -1,0 +1,1 @@
+export type { SettingRpcMap } from './setting-rpc-map';

@@ -98,9 +98,6 @@ export type {
   ResponseMetricsClientDTO,
   ResponseMetrics,
   ResponseMetricsClient,
-  // Backward compatibility
-  ResponseMetricsServerDTO,
-  ResponseMetricsServer,
 } from './response-metrics';
 
 export type {
@@ -108,7 +105,4 @@ export type {
   FrequencyAdjustmentClientDTO,
   FrequencyAdjustment,
   FrequencyAdjustmentClient,
-  // Backward compatibility
-  FrequencyAdjustmentServerDTO,
-  FrequencyAdjustmentServer,
 } from './frequency-adjustment';

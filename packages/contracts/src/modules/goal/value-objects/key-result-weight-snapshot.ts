@@ -112,12 +112,3 @@ export interface KeyResultWeightSnapshotPersistenceDTO {
   operatorId: IdentityId;
   createdAt: PersistenceDate;
 }
-
-// ============ 向后兼容别名 (Backward Compatibility) ============
-
-/** @deprecated Use KeyResultWeightSnapshot */
-export type KeyResultWeightSnapshotServer = KeyResultWeightSnapshot;
-/** @deprecated Use KeyResultWeightSnapshot */
-export type KeyResultWeightSnapshotClient = KeyResultWeightSnapshot;
-/** @deprecated Use KeyResultWeightSnapshotDTO */
-export type KeyResultWeightSnapshotServerDTO = KeyResultWeightSnapshotDTO;

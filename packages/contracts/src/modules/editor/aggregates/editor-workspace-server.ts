@@ -5,12 +5,9 @@
 
 import type { EditorWorkspaceId, EditorSessionId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
 import type { ProjectType } from '../value-objects/project-type';
-import type { EditorWorkspaceClientDTO } from './editor-workspace-client';
 
-// 从值对象导入类�?
 import type { WorkspaceLayoutServerDTO, WorkspaceSettingsServerDTO } from '../value-objects';
 
-// 从实体导入类�?
 import type { EditorSessionServerDTO } from '../entities/editor-session-server';
 
 // ============ 类型别名（向后兼容，简化使用） ============

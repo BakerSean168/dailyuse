@@ -81,6 +81,40 @@ model folder {
   updatedAt DateTime @updatedAt
 }
 
+/**
+ * Resource Bookmark Model
+ * 资源书签 - 用户对资源的标记/别名
+ * 
+ * 设计说明：
+ * - 属于某个身份/用户（identityId）
+ * - 指向某个具体的资源（resourceId）
+ * - 支持自定义别名、图标和颜色
+ * - 通过 sortOrder 维护用户自定义的排序
+ * - 使用外键级联删除：资源被删除时，相关书签自动清理
+ */
+model resourceBookmark {
+  id        String   @id @default(cuid())
+  
+  // 关联字段
+  identityId String   @map("identity_id") // 所有者 (用户)
+  resourceId String   @map("resource_id") // 指向的资源
+  
+  // 自定义数据
+  aliasName  String?  @map("alias_name") // 用户自定义的别名
+  icon       String?  // 自定义图标 (Figma icon name 或 emoji)
+  color      String?  // 自定义颜色 (hex color code)
+  
+  // 排序和时间戳
+  sortOrder  Int      @default(0) @map("sort_order") // 排序位置
+  createdAt  DateTime @default(now()) @map("created_at")
+  
+  // 约束和索引
+  @@unique([identityId, resourceId]) // 同一个用户不能对同一个资源重复加书签
+  @@index([identityId]) // 快速查询用户的所有书签
+  @@index([resourceId]) // 快速查询资源的所有书签
+  @@map("resource_bookmarks")
+}
+
 model repositoryStatistics {
   id        String   @id @default(cuid())
   uuid      String   @unique

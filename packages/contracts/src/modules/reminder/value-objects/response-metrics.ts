@@ -68,14 +68,4 @@ export interface ResponseMetricsClient {
   readonly effectivenessColor: string;
 }
 
-// ============ Backward Compatibility ============
 
-/**
- * @deprecated Use ResponseMetricsDTO instead
- */
-export type ResponseMetricsServerDTO = ResponseMetricsDTO;
-
-/**
- * @deprecated Use ResponseMetrics instead
- */
-export type ResponseMetricsServer = ResponseMetrics;

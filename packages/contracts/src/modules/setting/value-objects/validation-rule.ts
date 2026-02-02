@@ -67,14 +67,4 @@ export interface ValidationRuleClient {
   custom: string | null;
 }
 
-// ============ Backward Compatibility ============
 
-/**
- * @deprecated Use ValidationRuleDTO instead
- */
-export type ValidationRuleServerDTO = ValidationRuleDTO;
-
-/**
- * @deprecated Use ValidationRule instead
- */
-export type ValidationRuleServer = ValidationRule;

@@ -3,9 +3,7 @@
  * 设置聚合 - 索引
  */
 
-export * from './app-config-client';
-export * from './app-config-server';
-export * from './setting-client';
-export * from './setting-server';
-export * from './user-setting-client';
+// ============ New Registry-Based Aggregates ============
+
+// ============ Legacy Aggregates (for backward compatibility) ============
 export * from './user-setting-server';

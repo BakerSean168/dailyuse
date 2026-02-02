@@ -3,35 +3,6 @@
  * 同步配置值对象
  */
 
-// ============ DTO 定义 ============
-
-/**
- * SyncConfig DTO (Server)
- */
-export interface SyncConfigDTO {
-  enabled: boolean;
-  syncToCloud: boolean;
-  syncToDevices: boolean;
-}
-
-/**
- * SyncConfig Client DTO
- */
-export interface SyncConfigClientDTO {
-  enabled: boolean;
-  syncToCloud: boolean;
-  syncToDevices: boolean;
-}
-
-/**
- * SyncConfig Persistence DTO
- */
-export interface SyncConfigPersistenceDTO {
-  enabled: boolean;
-  syncToCloud: boolean;
-  syncToDevices: boolean;
-}
-
 // ============ 值对象接口 ============
 
 /**
@@ -43,23 +14,27 @@ export interface SyncConfig {
   syncToDevices: boolean;
 }
 
+
+// ============ DTO 定义 ============
+
 /**
- * SyncConfig Client 值对象接口
+ * SyncConfig DTO (Server)
  */
-export interface SyncConfigClient {
+export interface SyncConfigDTO {
   enabled: boolean;
   syncToCloud: boolean;
   syncToDevices: boolean;
 }
 
-// ============ Backward Compatibility ============
 
 /**
- * @deprecated Use SyncConfigDTO instead
+ * SyncConfig Persistence DTO
  */
-export type SyncConfigServerDTO = SyncConfigDTO;
+export interface SyncConfigPersistenceDTO {
+  enabled: boolean;
+  syncToCloud: boolean;
+  syncToDevices: boolean;
+}
 
-/**
- * @deprecated Use SyncConfig instead
- */
-export type SyncConfigServer = SyncConfig;
+
+

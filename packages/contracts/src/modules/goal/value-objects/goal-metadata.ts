@@ -57,12 +57,3 @@ export interface GoalMetadataPersistenceDTO {
   category: string | null;
   tags: string; // JSON string: JSON.stringify(string[])
 }
-
-// ============ 向后兼容别名 (Backward Compatibility) ============
-
-/** @deprecated Use GoalMetadata */
-export type GoalMetadataServer = GoalMetadata;
-/** @deprecated Use GoalMetadata */
-export type GoalMetadataClient = GoalMetadata;
-/** @deprecated Use GoalMetadataDTO */
-export type GoalMetadataServerDTO = GoalMetadataDTO;
