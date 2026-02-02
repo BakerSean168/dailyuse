@@ -174,3 +174,11 @@ export {
   SyncSessionStats,
   ConflictResolution,
 } from './sync/value-objects';
+
+// ==================== Example 模块（活文档参考实现）====================
+// 聚合根
+export { Example } from './example/aggregates/Example';
+
+// 实体
+export { ExampleHistory, ExampleHistoryActionClient } from './example/entities/ExampleHistory';
+export type { ExampleHistoryActionClient as ExampleHistoryActionClientType } from './example/entities/ExampleHistory';

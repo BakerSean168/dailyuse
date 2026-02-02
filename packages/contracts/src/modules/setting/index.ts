@@ -4,7 +4,7 @@
  */
 
 // ============ Constants ============
-export * from './constants';
+export * from './configs';
 
 
 // ============ Aggregates ============

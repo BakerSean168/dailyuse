@@ -1,3 +1,6 @@
 export * from './profile';
 export * from './settings';
-export * from './lifecycle';
+export { 
+    CheckAvailabilitySchema, type CheckAvailabilityReq, type CheckAvailabilityRes,
+    CloseAccountSchema, type CloseAccountReq, type CloseAccountRes
+} from './lifecycle';

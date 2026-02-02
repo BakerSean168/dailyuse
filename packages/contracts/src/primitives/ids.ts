@@ -6,6 +6,9 @@
 // 使用 branded type pattern 创建名义类型
 // 这样可以防止不同类型的 ID 被混用
 
+/** 示例实体 ID */
+export type ExampleId = string & { readonly __brand: 'ExampleId' };
+
 /** 账户/身份 ID */
 export type IdentityId = string & { readonly __brand: 'IdentityId' };
 

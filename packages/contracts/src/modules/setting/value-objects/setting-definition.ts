@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { SettingCategory } from './setting-category';
 import type { SettingValueType } from './setting-value-type';
+import type { UIInputType } from './ui-input-type';
 
 export interface SettingDefinition<T = any> {
   key: string;
@@ -8,6 +9,7 @@ export interface SettingDefinition<T = any> {
   description?: string;
   category: SettingCategory;
   type: SettingValueType;
+  uiInputType?: UIInputType; // UI 输入组件类型（如 Select, Slider 等）
   defaultValue: T;
 
   // ✅ 核心验证逻辑：在定义处嵌入 Zod Schema

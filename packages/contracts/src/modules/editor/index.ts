@@ -183,4 +183,4 @@ export type {
   ListLinkedResourcesResponse,
   ValidateLinksRequest,
   ValidateLinksResponse,
-} from './api-requests';
+} from './api/api-requests';

@@ -39,6 +39,4 @@ export interface ResourceStats {
   lastViewedAt: number | null;
   lastEditedAt: number | null;
 }
-  lastViewedText: string | null;
-  lastEditedText: string | null;
-}
+

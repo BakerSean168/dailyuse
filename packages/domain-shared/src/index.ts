@@ -2,3 +2,6 @@
 
 export * from './account';
 export * from './authentication';
+
+// Example 模块（活文档参考实现）
+export * from './example';

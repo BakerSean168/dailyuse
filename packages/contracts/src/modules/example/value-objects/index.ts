@@ -9,7 +9,6 @@
 
 // ============ Statuses ============
 export { ExampleStatus } from './example-status';
-export type { ExampleStatusCode, ExampleStatusType } from './example-status';
 
 // ============ Properties ============
 export type { ExamplePropertyDTO, ExampleProperty } from './example-property';

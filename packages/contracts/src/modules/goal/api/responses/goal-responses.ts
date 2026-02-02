@@ -4,7 +4,7 @@
 
 import type { GoalClientDTO } from '../../aggregates';
 import type { KeyResultClientDTO, GoalReviewClientDTO, GoalRecordClientDTO } from '../../entities';
-import type { BatchOperationResponseDTO } from '../../../../shared/dtos/chart-data.dto';
+
 
 /**
  * 目标响应
@@ -22,11 +22,6 @@ export interface GoalsResponse {
   page: number;
   pageSize: number;
 }
-
-/**
- * 批量操作响应
- */
-export type BatchOperationResponse = BatchOperationResponseDTO;
 
 /**
  * 目标聚合视图响应

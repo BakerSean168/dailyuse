@@ -70,29 +70,6 @@ export interface KeyResultWeightSnapshotDTO {
   createdAt: TransferDate;
 }
 
-/**
- * Key Result Weight Snapshot Client DTO
- * 包含 UI 显示用的计算属性
- */
-export interface KeyResultWeightSnapshotClientDTO {
-  id: KeyResultWeightSnapshotId;
-  goalId: GoalId;
-  keyResultId: KeyResultId;
-  oldWeight: number;
-  newWeight: number;
-  weightDelta: number;
-  snapshotTime: TransferDate;
-  trigger: SnapshotTrigger;
-  reason: string | null;
-  operatorId: IdentityId;
-  createdAt: TransferDate;
-  // UI 显示属性
-  snapshotTimeText: string;
-  triggerText: string;
-  weightChangeText: string;
-  weightChangeColor: string;
-}
-
 // ============ Persistence DTO (持久化层) ============
 
 /**

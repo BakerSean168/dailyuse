@@ -13,7 +13,6 @@ import type {
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { ReminderType } from '../value-objects/reminder-type';
 import type { ReminderStatus } from '../value-objects/reminder-status';
-import type { ReminderTemplateServerDTO } from './reminder-template-server';
 
 // 从值对象导入类型
 import type {
@@ -129,14 +128,4 @@ export interface ReminderTemplateClient {
   lastTriggeredText: string | null;
   controlledByGroup: boolean;
 
-  // ===== UI 业务方法 =====
-
-  // 格式化展�?
-
-  // 操作判断
-
 }
-
-/**
- * Reminder Template Client 静态工厂方法接�?
- */

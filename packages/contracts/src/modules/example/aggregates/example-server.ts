@@ -10,7 +10,7 @@
  */
 
 import type { ExampleId, IdentityId, DomainDate } from '@/primitives';
-import type { ExampleStatusType, ExampleProperty } from '../value-objects';
+import type { ExampleStatus, ExampleProperty } from '../value-objects';
 
 /**
  * 服务层持久化 DTO
@@ -73,7 +73,7 @@ export interface ExampleServer {
   identityId: IdentityId;
   name: string;
   description: string | null;
-  status: ExampleStatusType;
+  status: ExampleStatus;
   priority: number;
   isPublic: boolean;
   viewCount: number;

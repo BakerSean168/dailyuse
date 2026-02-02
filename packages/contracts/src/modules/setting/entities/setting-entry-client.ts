@@ -7,7 +7,7 @@
  * 2. 本地设备配置 (Device Settings)
  */
 import type { TransferDate, SettingEntryId, DomainDate } from '@/primitives';
-import type { SettingCategory } from '../registry';
+import { SettingCategory } from '../value-objects';
 
 export interface SettingEntryClient {
   id: SettingEntryId;

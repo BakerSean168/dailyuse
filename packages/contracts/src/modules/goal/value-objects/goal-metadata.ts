@@ -31,21 +31,6 @@ export interface GoalMetadataDTO {
   tags: string[];
 }
 
-/**
- * Goal Metadata Client DTO
- * 包含 UI 显示用的计算属性
- */
-export interface GoalMetadataClientDTO {
-  importance: ImportanceLevel;
-  category: string | null;
-  tags: string[];
-  // UI 显示属性
-  importanceText: string;
-  priorityBadgeColor: string;
-  categoryDisplay: string;
-  tagsDisplay: string;
-}
-
 // ============ Persistence DTO (持久化层) ============
 
 /**

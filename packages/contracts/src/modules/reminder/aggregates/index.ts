@@ -6,14 +6,6 @@
 export type {
   ReminderTemplateServerDTO,
   ReminderTemplatePersistenceDTO,
-  ReminderTemplateCreatedEvent,
-  ReminderTemplateUpdatedEvent,
-  ReminderTemplateDeletedEvent,
-  ReminderTemplateEnabledEvent,
-  ReminderTemplatePausedEvent,
-  ReminderTemplateTriggeredEvent,
-  ReminderTemplateMovedEvent,
-  ReminderTemplateDomainEvent,
   ReminderTemplateServer,
 } from './reminder-template-server';
 
@@ -25,13 +17,6 @@ export type {
 export type {
   ReminderGroupServerDTO,
   ReminderGroupPersistenceDTO,
-  ReminderGroupCreatedEvent,
-  ReminderGroupUpdatedEvent,
-  ReminderGroupDeletedEvent,
-  ReminderGroupControlModeSwitchedEvent,
-  ReminderGroupEnabledEvent,
-  ReminderGroupPausedEvent,
-  ReminderGroupDomainEvent,
   ReminderGroupServer,
 } from './reminder-group-server';
 

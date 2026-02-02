@@ -1,4 +1,3 @@
-// libs/domain-shared/src/utils/createIdType.ts
 import { IdGenerator } from './id-generator';
 
 /**

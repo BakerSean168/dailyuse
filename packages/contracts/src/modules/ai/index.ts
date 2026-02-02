@@ -3,9 +3,6 @@
  * AI模块 - 统一导出 subfolders 下的所有内容 直接 export * from './folder-name'
  */
 
-// ============ Service Interfaces ============
-export type { IAIService, AIServiceConfig } from './services';
-
 // ============ Value Objects (Enum-like) ============
 export {
   ConversationStatus,
@@ -110,59 +107,4 @@ export type {
 } from './value-objects/token-usage';
 
 // ============ API Requests & Responses ============
-export type {
-  CreateConversationRequest,
-  UpdateConversationRequest,
-  ConversationResponse,
-  ConversationListResponse,
-  SendMessageRequest,
-  MessageResponse,
-  MessageListResponse,
-  CreateGenerationTaskRequest,
-  GenerationTaskResponse,
-  GenerationTaskListResponse,
-  ChatStreamRequest,
-  ChatStreamChunk,
-  QuotaResponse,
-  UpdateQuotaLimitRequest,
-  ListRequest,
-} from './api-requests';
 
-export type {
-  GeneratedGoalDraft,
-  GenerateGoalResponse,
-  GenerateGoalWithKRsResponse,
-} from './api-responses/generate-goal-response';
-
-export type {
-  KeyResultPreview,
-  GenerateKeyResultsResponse,
-} from './api-responses/generate-key-results-response';
-
-export type { SummarizationResultDTO } from './api-responses/summarization-result-dto';
-
-export type {
-  CreateAIProviderRequest,
-  UpdateAIProviderRequest,
-  TestAIProviderConnectionRequest,
-  TestAIProviderConnectionResponse,
-  SetDefaultProviderRequest,
-  RefreshProviderModelsRequest,
-  RefreshProviderModelsResponse,
-} from './api-requests/ai-provider-config-request';
-
-export type {
-  GenerateGoalRequest,
-  GenerateGoalWithKRsRequest,
-} from './api-requests/generate-goal-request';
-
-export { GoalCategory } from './api-requests/generate-goal-request';
-
-// ============ Templates ============
-export type { AIProviderTemplate } from './templates/ai-provider-template';
-export {
-  AI_PROVIDER_TEMPLATES,
-  getTemplateById,
-  getTemplatesByType,
-  getFreeTemplates,
-} from './templates/ai-provider-template';

@@ -3,8 +3,8 @@
  * 同步模块 API 请求和响应类型
  */
 
-import type { SyncDirection, SyncStrategy, SyncProviderType, SyncTriggerType, SyncableEntityType, ConflictResolutionStrategy } from './enums';
-import type { SyncProfileConfigDTO, SyncProviderConfigDTO, ConflictResolutionDTO, SyncSessionStatsDTO } from './value-objects';
+import type { SyncDirection, SyncStrategy, SyncProviderType, SyncTriggerType, SyncableEntityType } from './value-objects';
+import type { SyncProfileConfigDTO, SyncProviderConfigDTO, ConflictResolutionDTO } from './value-objects';
 import type { SyncSessionClientDTO, SyncProfileClientDTO, SyncStateClientDTO } from './aggregates';
 import type { SyncConflictClientDTO, PendingChangeClientDTO } from './entities';
 

@@ -34,13 +34,13 @@ export interface ExampleClientDTO {
  * - 包含从 primitives 导入的强类型 ID
  */
 import type { ExampleId, IdentityId } from '@/primitives';
-import type { ExampleStatusType } from '../value-objects';
+import type { ExampleStatus } from '../value-objects';
 
 export interface ExampleClient {
   id: ExampleId;
   name: string;
   description: string | null;
-  status: ExampleStatusType;
+  status: ExampleStatus;
   priority: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;

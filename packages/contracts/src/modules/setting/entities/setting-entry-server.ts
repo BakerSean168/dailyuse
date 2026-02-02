@@ -9,7 +9,7 @@
  * 4. 维护设置的版本历史
  */
 import type { TransferDate, DomainDate, PersistenceDate, SettingEntryId } from '@/primitives';
-import { SETTING_REGISTRY, validateSettingValue, SettingCategory } from '../registry';
+
 
 /**
  * 设置聚合根的领域接口

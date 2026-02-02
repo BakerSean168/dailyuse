@@ -6,11 +6,7 @@
 export type {
   GoalMetadata,
   GoalMetadataDTO,
-  GoalMetadataClientDTO,
   GoalMetadataPersistenceDTO,
-  GoalMetadataServer,
-  GoalMetadataClient,
-  GoalMetadataServerDTO,
 } from './goal-metadata';
 
 export type {
@@ -42,7 +38,6 @@ export type {
   SnapshotTrigger as SnapshotTriggerType,
   KeyResultWeightSnapshot,
   KeyResultWeightSnapshotDTO,
-  KeyResultWeightSnapshotClientDTO,
   KeyResultWeightSnapshotPersistenceDTO,
 } from './key-result-weight-snapshot';
 
@@ -60,7 +55,6 @@ export type {
   FocusModePersistenceDTO,
   ActivateFocusModeRequest,
   ExtendFocusModeRequest,
-  FocusModeServerDTO,
 } from './focus-mode';
 
 // ============ 枚举值对象 ============

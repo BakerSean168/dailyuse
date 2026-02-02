@@ -2,33 +2,26 @@
  * Example Module - API Export
  * 
  * 【规范说明：API 层导出】
- * 导出顺序：Requests → Responses → Endpoints
+ * 按功能分组，每个文件包含相关的 Schema、Req、Res 类型
  */
 
-// ============ Request DTOs ============
-export type {
-  CreateExampleRequest,
-  UpdateExampleRequest,
-  ListExampleQuery,
-} from './requests';
-
-// ============ Response DTOs ============
-export type {
-  ExampleResponse,
-  ListExampleResponse,
-  CreateExampleResponse,
-  UpdateExampleResponse,
-  DeleteExampleResponse,
-  ErrorResponse,
-} from './responses';
-
-// ============ API Endpoints & Routes ============
 export {
-  EXAMPLE_API_PREFIX,
-  GET_EXAMPLE_ENDPOINT,
-  LIST_EXAMPLES_ENDPOINT,
-  CREATE_EXAMPLE_ENDPOINT,
-  UPDATE_EXAMPLE_ENDPOINT,
-  DELETE_EXAMPLE_ENDPOINT,
-  EXAMPLE_API_ENDPOINTS,
-} from './endpoints';
+  // Create
+  CreateExampleSchema,
+  type CreateExampleReq,
+  type CreateExampleRes,
+  // Update
+  UpdateExampleSchema,
+  type UpdateExampleReq,
+  type UpdateExampleRes,
+  // Get
+  type GetExampleReq,
+  type GetExampleRes,
+  // Delete
+  type DeleteExampleReq,
+  type DeleteExampleRes,
+  // List
+  ListExampleQuerySchema,
+  type ListExampleQuery,
+  type ListExampleRes,
+} from './crud';
