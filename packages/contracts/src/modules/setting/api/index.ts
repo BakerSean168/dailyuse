@@ -3,7 +3,7 @@
  * 设置模块 API - 请求/响应类型
  */
 
-import type { UserSettingClientDTO } from '../aggregates';
+import type { UserSettingServerDTO } from '../aggregates';
 import type { SettingEntryClientDTO } from '../entities';
 import type { SettingCategory } from '../value-objects';
 
@@ -65,7 +65,7 @@ export interface ResetSettingRequest {
 /**
  * 用户设置响应
  */
-export type UserSettingResponse = UserSettingClientDTO;
+export type UserSettingResponse = UserSettingServerDTO;
 
 /**
  * 设置项响应

@@ -12,7 +12,7 @@ import type {
   CleanupOldNotificationsReq,
   CleanupOldNotificationsRes,
   GetNotificationStatsReq,
-  NotificationStatsRes,
+  GetNotificationStatsRes,
   ExecuteNotificationActionReq,
   ExecuteNotificationActionRes,
   UpdateNotificationPreferenceReq,
@@ -40,7 +40,7 @@ export type NotificationRpcMap = {
   'notification:cleanup-old': [CleanupOldNotificationsReq, CleanupOldNotificationsRes];
   
   // === Statistics ===
-  'notification:get-stats': [GetNotificationStatsReq, NotificationStatsRes];
+  'notification:get-stats': [GetNotificationStatsReq, GetNotificationStatsRes];
   
   // === Actions ===
   'notification:execute-action': [ExecuteNotificationActionReq, ExecuteNotificationActionRes];

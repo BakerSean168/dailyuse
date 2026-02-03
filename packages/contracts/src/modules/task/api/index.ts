@@ -5,37 +5,7 @@
  * 按功能分组，每个操作导出相关的 Schema、Request、Response 类型
  */
 
-export {
-  // Shared Schema
-  TaskTimeConfigSchema,
-  type TaskTimeConfigReq,
-  RecurrenceConfigSchema,
-  type RecurrenceConfigReq,
-  ChecklistItemSchema,
-  type ChecklistItemReq,
-
-  // Create Task
-  CreateTaskSchema,
-  type CreateTaskReq,
-  type CreateTaskRes,
-
-  // Update Task
-  UpdateTaskSchema,
-  type UpdateTaskReq,
-  type UpdateTaskRes,
-
-  // Get Task Instances
-  GetInstancesByRangeSchema,
-  type GetInstancesByRangeReq,
-  type GetInstancesByRangeRes,
-
-  // Reschedule Task
-  RescheduleTaskSchema,
-  type RescheduleTaskReq,
-  type RescheduleTaskRes,
-
-  // Toggle Task Completion
-  ToggleTaskCompletionSchema,
-  type ToggleTaskCompletionReq,
-  type ToggleTaskCompletionRes,
-} from './crud';
+// Feature-based DTO exports
+export * from './task-crud.dto';
+export * from './task-instance.dto';
+export * from './task-reschedule.dto';

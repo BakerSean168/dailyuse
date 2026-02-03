@@ -1,49 +1,13 @@
 /**
- * Authentication Module - API Export
+ * Authentication API - Unified Exports
  * 
- * 【规范说明：API 层导出】
- * 按功能分组，每个操作导出相关的 Schema、Request、Response 类型
+ * 统一导出所有认证相关的 API 定义
+ * 使用方式: import { LoginByEmailReq, RegisterByEmailReq } from '@contracts/authentication/api';
  */
 
-export {
-  // Login Operations
-  SendSmsCodeSchema,
-  type SendSmsCodeReq,
-  type SendSmsCodeRes,
-  LoginByEmailSchema,
-  type LoginByEmailReq,
-  type LoginByEmailRes,
-  LoginByPhoneSchema,
-  type LoginByPhoneReq,
-  type LoginByPhoneRes,
-
-  // Register Operations
-  RegisterByEmailSchema,
-  type RegisterByEmailReq,
-  type RegisterByEmailRes,
-  RegisterByPhoneSchema,
-  type RegisterByPhoneReq,
-  type RegisterByPhoneRes,
-
-  // Password Operations
-  ChangePasswordSchema,
-  type ChangePasswordReq,
-  type ChangePasswordRes,
-  ResetPasswordSchema,
-  type ResetPasswordReq,
-  type ResetPasswordRes,
-
-  // OAuth Operations
-  OAuthAuthorizeSchema,
-  type OAuthAuthorizeReq,
-  type OAuthAuthorizeRes,
-
-  // Session Operations
-  RefreshTokenSchema,
-  type RefreshTokenReq,
-  type RefreshTokenRes,
-  type LogoutReq,
-  type LogoutRes,
-  type ValidateTokenReq,
-  type ValidateTokenRes,
-} from './crud';
+// 从 feature-based DTO files 导出
+export * from './login.dto';
+export * from './register.dto';
+export * from './password.dto';
+export * from './oauth.dto';
+export * from './session.dto';

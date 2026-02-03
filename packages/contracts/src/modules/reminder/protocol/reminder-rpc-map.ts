@@ -1,43 +1,36 @@
 import type {
-  CreateReminderTemplateRequest,
-  UpdateReminderTemplateRequest,
-  QueryReminderTemplatesRequest,
-  ReminderTemplateDTO,
-  ReminderTemplateListDTO,
-  GetUpcomingRemindersRequestSchema,
-  ReminderOperationResponseDTO,
-  TemplateScheduleStatusDTO,
-  UpcomingReminderItemDTO,
-  CreateReminderGroupRequest,
-  UpdateReminderGroupRequest,
-  SwitchGroupControlModeRequest,
-  BatchGroupTemplatesRequest,
-  ReminderGroupClientDTO,
+  CreateReminderTemplateReq,
+  CreateReminderTemplateRes,
+  UpdateReminderTemplateReq,
+  UpdateReminderTemplateRes,
+  GetUpcomingRemindersReq,
+  GetUpcomingRemindersRes,
+  CreateReminderGroupReq,
+  CreateReminderGroupRes,
+  UpdateReminderGroupReq,
+  UpdateReminderGroupRes,
+  SwitchGroupControlModeReq,
+  SwitchGroupControlModeRes,
 } from '../api';
+
+import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '../aggregates';
 
 // === Reminder Module RPC Map ===
 export type ReminderRpcMap = {
   // === Template Operations ===
-  'reminder:create-template': [CreateReminderTemplateRequest, ReminderTemplateDTO];
-  'reminder:update-template': [UpdateReminderTemplateRequest, ReminderTemplateDTO];
-  'reminder:query-templates': [QueryReminderTemplatesRequest, ReminderTemplateListDTO];
-  'reminder:get-upcoming': [{ days?: number; limit?: number; importanceLevel?: string; type?: string }, UpcomingReminderItemDTO[]];
+  'reminder:create-template': [CreateReminderTemplateReq, CreateReminderTemplateRes];
+  'reminder:update-template': [UpdateReminderTemplateReq, UpdateReminderTemplateRes];
+  'reminder:get-upcoming': [GetUpcomingRemindersReq, GetUpcomingRemindersRes];
   
   // === Template Control ===
-  'reminder:enable-template': [{ templateUuid: string }, ReminderOperationResponseDTO];
-  'reminder:pause-template': [{ templateUuid: string }, ReminderOperationResponseDTO];
-  'reminder:disable-template': [{ templateUuid: string }, ReminderOperationResponseDTO];
-  'reminder:delete-template': [{ templateUuid: string }, ReminderOperationResponseDTO];
-  'reminder:get-schedule-status': [{ templateUuid: string }, TemplateScheduleStatusDTO];
-  
-  // === Batch Operations ===
-  'reminder:batch-enable': [{ templateUuids: string[] }, ReminderOperationResponseDTO];
-  'reminder:batch-pause': [{ templateUuids: string[] }, ReminderOperationResponseDTO];
+  'reminder:enable-template': [{ templateUuid: string }, ReminderTemplateClientDTO];
+  'reminder:pause-template': [{ templateUuid: string }, ReminderTemplateClientDTO];
+  'reminder:disable-template': [{ templateUuid: string }, ReminderTemplateClientDTO];
+  'reminder:delete-template': [{ templateUuid: string }, void];
   
   // === Group Operations ===
-  'reminder-group:create': [CreateReminderGroupRequest, ReminderGroupClientDTO];
-  'reminder-group:update': [UpdateReminderGroupRequest, ReminderGroupClientDTO];
-  'reminder-group:switch-mode': [SwitchGroupControlModeRequest, ReminderGroupClientDTO];
-  'reminder-group:batch-templates': [BatchGroupTemplatesRequest, ReminderOperationResponseDTO];
-  'reminder-group:list': [{ status?: string }, ReminderGroupClientDTO[]];
+  'reminder-group:create': [CreateReminderGroupReq, CreateReminderGroupRes];
+  'reminder-group:update': [UpdateReminderGroupReq, UpdateReminderGroupRes];
+  'reminder-group:switch-mode': [SwitchGroupControlModeReq, SwitchGroupControlModeRes];
+  'reminder-group:list': [void, ReminderGroupClientDTO[]];
 };

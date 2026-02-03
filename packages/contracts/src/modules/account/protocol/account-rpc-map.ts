@@ -6,10 +6,9 @@
 import type {
   CheckAvailabilityReq, CheckAvailabilityRes,
   CloseAccountReq, CloseAccountRes,
-  GetMyProfileReq, GetMyProfileRes,
-  GetPublicProfileReq, PublicProfileRes,
-  UpdateProfileReq, UpdateProfileRes,
-  UpdateSettingsReq, UpdateSettingsRes
+  GetAccountReq, GetAccountRes,
+  UpdateAccountReq, UpdateAccountRes,
+  UpdateAccountSettingsReq, UpdateAccountSettingsRes
 } from '../api';
 
 export type AccountRpcMap = {
@@ -18,10 +17,9 @@ export type AccountRpcMap = {
   'account:close': [CloseAccountReq, CloseAccountRes];
   
   // Profile
-  'account:get-my-profile': [GetMyProfileReq, GetMyProfileRes];
-  'account:get-public-profile': [GetPublicProfileReq, PublicProfileRes];
-  'account:update-profile': [UpdateProfileReq, UpdateProfileRes];
+  'account:get-my-profile': [GetAccountReq, GetAccountRes];
+  'account:update-profile': [UpdateAccountReq, UpdateAccountRes];
   
   // Settings
-  'account:update-settings': [UpdateSettingsReq, UpdateSettingsRes];
+  'account:update-settings': [UpdateAccountSettingsReq, UpdateAccountSettingsRes];
 };
