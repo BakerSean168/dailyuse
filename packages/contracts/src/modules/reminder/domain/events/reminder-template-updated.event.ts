@@ -3,14 +3,12 @@
  * 
  * Triggered when: Reminder template properties are updated
  * Subscribers: Reminder service, Cache invalidation
+ * 
+ * 【说明】
+ * - aggregateId 已由 addDomainEvent 自动生成，无需重复定义
+ * - occurredAt 已由 addDomainEvent 自动生成，无需重复定义
  */
 export interface ReminderTemplateUpdatedEvent {
-  /** Reminder template unique identifier */
-  templateId: string;
-
   /** List of fields that were changed */
   changes: string[];
-
-  /** Update timestamp */
-  updatedAt: number;
 }

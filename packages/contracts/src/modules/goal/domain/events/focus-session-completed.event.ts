@@ -3,14 +3,11 @@
  * 
  * Triggered when: Focus session completes successfully
  * Subscribers: User statistics, Achievement system
+ * 
+ * Note: aggregateId (sessionId) is automatically set by the domain event system.
+ * Note: occurredAt timestamp is automatically set by the domain event system.
  */
 export interface FocusSessionCompletedEvent {
-  /** Session unique identifier */
-  sessionId: string;
-
-  /** Completion timestamp */
-  completedAt: number;
-
   /** Total session duration in milliseconds */
   duration: number;
 }

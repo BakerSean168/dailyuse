@@ -3,11 +3,9 @@
  * 
  * Triggered when: User logs out
  * Subscribers: Session cleanup, Audit log
+ * 
+ * 【说明】
+ * - aggregateId 已由 addDomainEvent 自动生成，无需重复定义
+ * - occurredAt 已由 addDomainEvent 自动生成，无需重复定义
  */
-export interface UserLoggedOutEvent {
-  /** User/Identity identifier */
-  identityId: string;
-
-  /** Logout timestamp */
-  logoutAt: number;
-}
+export interface UserLoggedOutEvent {}

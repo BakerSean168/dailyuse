@@ -3,14 +3,12 @@
  * 
  * Triggered when: Reminder template is deleted
  * Subscribers: Cleanup services, Audit log
+ * 
+ * 【说明】
+ * - aggregateId 已由 addDomainEvent 自动生成，无需重复定义
+ * - occurredAt 已由 addDomainEvent 自动生成，无需重复定义
  */
 export interface ReminderTemplateDeletedEvent {
-  /** Reminder template unique identifier */
-  templateId: string;
-
-  /** Deletion timestamp */
-  deletedAt: number;
-
   /** Whether this is a soft delete */
   isSoftDelete: boolean;
 }

@@ -3,11 +3,11 @@
  * 
  * Triggered when: Key result progress is updated
  * Subscribers: Goal progress calculator, User notifications
+ * 
+ * Note: aggregateId (goalId) is automatically set by the domain event system.
+ * Note: occurredAt timestamp is automatically set by the domain event system.
  */
 export interface KeyResultUpdatedEvent {
-  /** Goal unique identifier */
-  goalId: string;
-
   /** Key result unique identifier */
   keyResultId: string;
 
@@ -16,7 +16,4 @@ export interface KeyResultUpdatedEvent {
 
   /** New progress value */
   newValue: number;
-
-  /** Update timestamp */
-  updatedAt: number;
 }

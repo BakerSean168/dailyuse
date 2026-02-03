@@ -3,14 +3,11 @@
  * 
  * Triggered when: Goal folder is deleted
  * Subscribers: Cleanup services, Audit log
+ * 
+ * Note: aggregateId (folderId) is automatically set by the domain event system.
+ * Note: occurredAt timestamp is automatically set by the domain event system.
  */
 export interface GoalFolderDeletedEvent {
-  /** Folder unique identifier */
-  folderId: string;
-
-  /** Deletion timestamp */
-  deletedAt: number;
-
   /** Whether this is a soft delete */
   isSoftDelete: boolean;
 }

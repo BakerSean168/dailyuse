@@ -451,9 +451,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     if (hasChanges) {
       this._updatedAt = new Date();
       this.addDomainEvent<GoalEventMap['goal:update']>('goal:update', {
-        id: this._id,
-        identityId: this._identityId,
-        updatedAt: this._updatedAt,
+        changes: Object.keys(params),
       });
     }
   }
@@ -477,9 +475,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     if (hasChanges) {
       this._updatedAt = new Date();
       this.addDomainEvent<GoalEventMap['goal:update']>('goal:update', {
-        id: this._id,
-        identityId: this._identityId,
-        updatedAt: this._updatedAt,
+        changes: Object.keys(params),
       });
     }
   }
@@ -561,17 +557,14 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     this._updatedAt = new Date();
 
     // 如果标记为完成，记录完成时间
-    if (newStatus === GoalStatus.COMPLETED && !this._completedAt) {
+    if (newStatus === GoalStatus.Completed && !this._completedAt) {
       // Note: completedAt is readonly, cannot be modified after construction
     }
 
     // 🎯 触发状态变更事件
     this.addDomainEvent<GoalEventMap['goal:status-change']>('goal:status-change', {
-      id: this._id,
-      identityId: this._identityId,
       previousStatus,
       newStatus,
-      changedAt: this._updatedAt,
     });
   }
 
@@ -579,16 +572,16 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * ✅ 激活目标
    */
   public activate(): void {
-    this.updateStatus(GoalStatus.ACTIVE);
+    this.updateStatus(GoalStatus.Active);
   }
 
   /**
    * ✅ 完成目标
    */
   public markAsCompleted(): void {
-    if (this._status === GoalStatus.COMPLETED) return; // 幂等
+    if (this._status === GoalStatus.Completed) return; // 幂等
 
-    this._status = GoalStatus.COMPLETED;
+    this._status = GoalStatus.Completed;
     this._updatedAt = new Date();
 
     this.addDomainEvent<GoalEventMap['goal:complete']>('goal:complete', {
@@ -604,7 +597,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   public archive(): void {
     if (this._archivedAt) return; // 幂等
 
-    this._status = GoalStatus.ARCHIVED;
+    this._status = GoalStatus.Archived;
     this._updatedAt = new Date();
 
     this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {

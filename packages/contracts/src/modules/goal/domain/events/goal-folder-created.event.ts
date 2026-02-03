@@ -3,14 +3,11 @@
  * 
  * Triggered when: New goal folder is created
  * Subscribers: User folder tree, Folder statistics
+ * 
+ * Note: aggregateId (folderId) is automatically set by the domain event system.
+ * Note: occurredAt timestamp is automatically set by the domain event system.
  */
 export interface GoalFolderCreatedEvent {
-  /** Folder unique identifier */
-  folderId: string;
-
   /** User/Identity identifier */
   identityId: string;
-
-  /** Creation timestamp */
-  createdAt: number;
 }

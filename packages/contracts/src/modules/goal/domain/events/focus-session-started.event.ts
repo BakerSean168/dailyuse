@@ -3,14 +3,11 @@
  * 
  * Triggered when: Focus session begins
  * Subscribers: Session tracking, User activity log
+ * 
+ * Note: aggregateId (sessionId) is automatically set by the domain event system.
+ * Note: occurredAt timestamp is automatically set by the domain event system.
  */
 export interface FocusSessionStartedEvent {
-  /** Session unique identifier */
-  sessionId: string;
-
   /** Associated goal identifier */
   goalId: string;
-
-  /** Session start timestamp */
-  startedAt: number;
 }

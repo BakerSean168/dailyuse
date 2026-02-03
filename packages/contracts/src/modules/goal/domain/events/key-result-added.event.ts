@@ -3,14 +3,11 @@
  * 
  * Triggered when: Key result is added to goal
  * Subscribers: Goal statistics, User notifications
+ * 
+ * Note: aggregateId (goalId) is automatically set by the domain event system.
+ * Note: occurredAt timestamp is automatically set by the domain event system.
  */
 export interface KeyResultAddedEvent {
-  /** Goal unique identifier */
-  goalId: string;
-
   /** Key result unique identifier */
   keyResultId: string;
-
-  /** Addition timestamp */
-  addedAt: number;
 }

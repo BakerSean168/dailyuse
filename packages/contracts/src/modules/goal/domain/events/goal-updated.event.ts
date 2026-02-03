@@ -3,14 +3,11 @@
  * 
  * Triggered when: Goal properties are updated
  * Subscribers: Goal folder stats, User activity log
+ * 
+ * Note: aggregateId (goalId) is automatically set by the domain event system.
+ * Note: occurredAt timestamp is automatically set by the domain event system.
  */
 export interface GoalUpdatedEvent {
-  /** Goal unique identifier */
-  goalId: string;
-
   /** List of fields that were changed */
   changes: string[];
-
-  /** Update timestamp */
-  updatedAt: number;
 }
