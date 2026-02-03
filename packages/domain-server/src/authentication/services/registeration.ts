@@ -1,7 +1,7 @@
-import { eventBus } from '@dailyuse/utils'; // 假设你有一个全局事件总线工具
+import { eventBus } from '@dailyuse/utils';
 import type { RegisterByEmailReq } from '@dailyuse/contracts/authentication';
 import { AuthIdentity } from '../aggregates/auth-identity';
-import type { AuthIdentityRepository } from '../repositories/auth-identity.repository';
+import type { IAuthIdentityRepository } from '../repositories/i-auth-identity.repository';
 import { PlainPassword } from '@dailyuse/domain-shared/authentication';
 
 // 定义业务异常 (建议放在 shared 或单独的 errors 目录)
@@ -20,7 +20,7 @@ export class RegistrationService {
   
   // 通过构造函数注入仓储接口 (依赖倒置原则)
   constructor(
-    private readonly identityRepo: AuthIdentityRepository
+    private readonly identityRepo: IAuthIdentityRepository
   ) {}
 
   /**

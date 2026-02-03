@@ -5,7 +5,11 @@ import type {
   PasswordChangedEvent,
   IdentityProviderConnectedEvent,
   SessionInvalidatedEvent,
+  IdentityActivatedEvent,
+  IdentityDisabledEvent,
+  SessionCreatedEvent
 } from '../domain/events';
+import type { SessionRevokedEvent } from '../domain/events/session-revoked.event';
 
 /**
  * Authentication Module - Event Map
@@ -50,4 +54,19 @@ export type AuthEventMap = {
    * Triggered when user session is invalidated
    */
   'auth:session-invalidate': SessionInvalidatedEvent;
+
+  /**
+   * Identity activated event
+   * Triggered when user identity is activated
+   */
+  'auth:identity-activate': IdentityActivatedEvent;
+
+  /**
+   * Identity disabled event
+   * Triggered when user identity is disabled
+   */
+  'auth:identity-disable': IdentityDisabledEvent;
+
+  'auth:session-created': SessionCreatedEvent;
+  'auth:session-revoked': SessionRevokedEvent;
 };

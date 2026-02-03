@@ -6,7 +6,7 @@ import type { AuthIdentity } from '../aggregates/auth-identity';
  * 身份聚合根仓储接口
  * 负责 AuthIdentity 的持久化和查询
  */
-export interface AuthIdentityRepository {
+export interface IAuthIdentityRepository {
   /**
    * ✅ 保存或更新身份
    * 新增时：将聚合根持久化到数据库

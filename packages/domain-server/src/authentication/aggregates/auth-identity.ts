@@ -37,7 +37,7 @@ import {
 
 import {
     IdentityId,
-} from '@dailyuse/domain-shared/account';
+} from '@dailyuse/domain-shared';
 
 import {
   OAuthCredential,
@@ -263,7 +263,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     this._status = AuthIdentityStatus.ACTIVE;
     this.refreshUpdatedAt();
 
-    this.addDomainEvent<AuthEventMap['auth:login-success']>('auth:identity-activated' as keyof AuthEventMap, {
+    this.addDomainEvent<AuthEventMap['auth:identity-activated']>('auth:identity-activated' as keyof AuthEventMap, {
       ip: '',
     });
   }
@@ -406,7 +406,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     this._status = AuthIdentityStatus.DISABLED;
     this.refreshUpdatedAt();
 
-    this.addDomainEvent<AuthEventMap['auth:login-success']>('auth:identity-disabled' as keyof AuthEventMap, {
+    this.addDomainEvent<AuthEventMap['auth:identity-disabled']>('auth:identity-disabled' as keyof AuthEventMap, {
       ip: '',
     });
   }

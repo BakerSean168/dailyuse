@@ -5,7 +5,7 @@ import type { AuthSession } from '../aggregates/auth-session';
  * 会话聚合根仓储接口
  * 负责 AuthSession 的生命周期管理
  */
-export interface AuthSessionRepository {
+export interface IAuthSessionRepository {
   /**
    * ✅ 保存会话 (新建登录或续期)
    */

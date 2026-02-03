@@ -1,8 +1,16 @@
 /**
- * Reminder domain services
- */
-
-// 纯业务逻辑服务（推荐使用）
+ * Reminder Domain Services
+ * 提醒模块领域服务
+ * 
+ * 【规范说明：领域服务（Domain Service）】
+ * 领域服务是跨聚合根的业务逻辑，使用场景：
+ * - 一次操作涉及多个聚合根时
+ * - 业务逻辑不属于任何单一聚合根
+ * - 无决类状态：整个业务逻辑执行后才保存
+ * - 注入仓储：很有提供仓储侦可培议可蚓
+ * 
+ * 【业务逻辑服务（推荐使用）】
+ * 纯业务逻辑服务（推荐使用）
 export { ReminderTemplateBusinessService } from './ReminderTemplateBusinessService';
 export type {
   TemplateEffectiveStatus,

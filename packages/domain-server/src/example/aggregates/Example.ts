@@ -42,9 +42,7 @@ import type {
 import { 
   ExampleId, 
   ExampleStatus, 
-  ExampleStatusType,
   ExampleProperty, 
-  ExampleTag 
 } from '@dailyuse/domain-shared/example';
 
 export class Example extends AggregateRoot<ExampleId> implements IExampleServer {
@@ -59,12 +57,11 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
   private _identityId: IdentityId;
   private _name: string;
   private _description: string | null;
-  private _status: ExampleStatusType;
+  private _status: ExampleStatus;
   private _priority: number;
   private _isPublic: boolean;
   private _viewCount: number;
   private _likeCount: number;
-  private _tags: ExampleTag[];
   private _properties: Map<string, ExampleProperty>;
   private _createdAt: DomainDate;   // ✅ 使用 DomainDate
   private _updatedAt: DomainDate;   // ✅ 使用 DomainDate

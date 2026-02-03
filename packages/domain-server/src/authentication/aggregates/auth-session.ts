@@ -24,7 +24,7 @@ AuthSessionId,
 
 } from '@dailyuse/domain-shared/authentication';
 
-import { IdentityId } from '@dailyuse/domain-shared/account';
+import { IdentityId } from '@dailyuse/domain-shared';
 
 // ================= 常量定义 =================
 
@@ -133,7 +133,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
 
     const session = new AuthSession(dto);
 
-    session.addDomainEvent<AuthEventMap['auth:login-success']>('auth:session-created' as keyof AuthEventMap, {
+    session.addDomainEvent<AuthEventMap['auth:session-created']>('auth:session-created', {
       ip: params.deviceInfo.ipAddress ?? '',
     });
 
@@ -244,7 +244,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
     this._isRevoked = true;
     this._status = SessionStatus.REVOKED;
 
-    this.addDomainEvent<AuthEventMap['auth:login-success']>('auth:session-revoked' as keyof AuthEventMap, {
+    this.addDomainEvent<AuthEventMap['auth:session-revoked']>('auth:session-revoked', {
       ip: this._deviceInfo.ipAddress ?? '',
     });
   }

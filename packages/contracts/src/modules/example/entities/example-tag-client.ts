@@ -1,4 +1,4 @@
-import type { TransferDate } from '@/primitives';
+import type { DomainDate, TransferDate } from '@/primitives';
 
 /**
  * ExampleTag Entity - Client Interface
@@ -10,7 +10,7 @@ import type { TransferDate } from '@/primitives';
  * 
  * 【时间类型规范 - 防腐层设计】
  * Client 层的时间字段统一使用 TransferDate（number 时间戳）
- * 前端通常使用 dayjs/date-fns 等库处理，传输时使用时间戳更高效
+ * 前端通常使用 date-fns 等库处理，传输时使用时间戳更高效
  */
 
 /**
@@ -37,6 +37,6 @@ export interface ExampleTagClient {
   name: string;
   color: string;
   order: number;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
+  createdAt: DomainDate;
+  updatedAt: DomainDate;
 }
