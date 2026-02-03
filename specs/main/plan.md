@@ -1,37 +1,33 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: Define base contracts for RPC/events across all modules
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Branch**: `main` | **Date**: 2026-02-02 | **Spec**: [specs/main/spec.md](specs/main/spec.md)
+**Input**: Feature specification from [specs/main/spec.md](specs/main/spec.md)
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+Standardize contracts for all modules in packages/contracts by defining base RPC/event maps in protocol, API request/response schemas in api, and composed/aggregate response DTOs in dtos. Provide consistent structure and references so RPC request/response types align with API schemas.
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
-
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: TypeScript ~5.9 (Node >=22)  
+**Primary Dependencies**: Nx 22.x, pnpm 10.x, zod 4.x  
+**Storage**: N/A (contracts only)  
+**Testing**: Vitest (workspace)  
+**Target Platform**: Node (monorepo packages)  
+**Project Type**: Monorepo (Nx)  
+**Performance Goals**: N/A (schema-only changes)  
+**Constraints**: Keep backward-compatible contract shapes when possible  
+**Scale/Scope**: 13 modules under packages/contracts/src/modules
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+Constitution file contains placeholders only; no enforceable gates. Proceeding with no additional constraints.
+
+Post-Phase 1 re-check: No changes; still no enforceable gates.
 
 ## Project Structure
 
@@ -48,57 +44,33 @@ specs/[###-feature]/
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+packages/
+└── contracts/
+    └── src/
+        └── modules/
+            ├── account/
+            │   ├── api/
+            │   ├── protocol/
+            │   ├── dtos/
+            │   └── ...
+            ├── ai/
+            ├── authentication/
+            ├── editor/
+            ├── example/
+            ├── goal/
+            ├── notification/
+            ├── reminder/
+            ├── repository/
+            ├── schedule/
+            ├── setting/
+            ├── sync/
+            └── task/
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Use Nx monorepo packages structure; scope limited to contracts package modules.
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
-
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+No Constitution violations. Complexity is inherent to multi-module standardization but is justified by the need for consistent contract integration across 13 modules.

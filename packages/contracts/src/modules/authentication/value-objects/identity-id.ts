@@ -1,1 +1,1 @@
-export type { IdentityId } from '@/primitives/identity-id';
+export type { IdentityId } from '@/primitives';

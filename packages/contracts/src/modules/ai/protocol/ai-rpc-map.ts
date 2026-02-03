@@ -1,4 +1,33 @@
-// 定义 AI 模块处理的 RPC 请求 [请求, 响应]
+/**
+ * AI RPC Map
+ * 
+ * Defines RPC operations for AI module
+ */
+import type {
+  GenerateGoalReq, GenerateGoalRes,
+  GenerateKeyResultsReq, GenerateKeyResultsRes,
+  GenerateTasksReq, GenerateTasksRes,
+  KnowledgeGenerationReq, KnowledgeGenerationRes,
+  SummarizationReq, SummarizationRes,
+  CreateAIProviderConfigReq, CreateAIProviderConfigRes,
+  UpdateAIProviderConfigReq, UpdateAIProviderConfigRes,
+  TestAIProviderReq, TestAIProviderRes,
+} from '../api';
+
 export type AIRpcMap = {
-  // Placeholder - 添加 RPC 请求类型
+  // Goal Generation
+  'ai:generate-goal': [GenerateGoalReq, GenerateGoalRes];
+  'ai:generate-key-results': [GenerateKeyResultsReq, GenerateKeyResultsRes];
+  
+  // Task Generation
+  'ai:generate-tasks': [GenerateTasksReq, GenerateTasksRes];
+  
+  // Knowledge & Summarization
+  'ai:generate-knowledge': [KnowledgeGenerationReq, KnowledgeGenerationRes];
+  'ai:summarize': [SummarizationReq, SummarizationRes];
+  
+  // Provider Configuration
+  'ai:create-provider-config': [CreateAIProviderConfigReq, CreateAIProviderConfigRes];
+  'ai:update-provider-config': [UpdateAIProviderConfigReq, UpdateAIProviderConfigRes];
+  'ai:test-provider': [TestAIProviderReq, TestAIProviderRes];
 };

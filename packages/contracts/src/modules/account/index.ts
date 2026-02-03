@@ -3,7 +3,6 @@
  * 账户模块 - 显式导出
  */
 
-
 // ============ Aggregates ============
 export * from './aggregates'
 
@@ -12,8 +11,7 @@ export * from './aggregates'
 // ============ Value Objects ============
 export * from './value-objects';
 
-// ============ protocol ============
-
+// ============ Protocol ============
 export * from './protocol'
 
 // ============ API Requests/Responses ============

@@ -1,0 +1,84 @@
+openapi: 3.1.0
+info:
+  title: DailyUse Contracts RPC/Event Map
+  version: 0.1.0
+  description: Base RPC/event contract map for all modules in packages/contracts.
+paths: {}
+components:
+  schemas:
+    RpcEnvelope:
+      type: object
+      required:
+        - event
+        - request
+      properties:
+        event:
+          type: string
+          description: Namespaced event key, e.g. auth:login
+        request:
+          type: object
+          description: Request payload typed by the module API schema
+    RpcResponseEnvelope:
+      type: object
+      required:
+        - event
+        - response
+      properties:
+        event:
+          type: string
+        response:
+          type: object
+          description: Response payload typed by the module API schema or DTO
+x-rpc-events:
+  account:
+    protocol: packages/contracts/src/modules/account/protocol
+    api: packages/contracts/src/modules/account/api
+    dtos: packages/contracts/src/modules/account/dtos
+  ai:
+    protocol: packages/contracts/src/modules/ai/protocol
+    api: packages/contracts/src/modules/ai/api
+    dtos: packages/contracts/src/modules/ai/dtos
+  authentication:
+    protocol: packages/contracts/src/modules/authentication/protocol
+    api: packages/contracts/src/modules/authentication/api
+    dtos: packages/contracts/src/modules/authentication/dtos
+  editor:
+    protocol: packages/contracts/src/modules/editor/protocol
+    api: packages/contracts/src/modules/editor/api
+    dtos: packages/contracts/src/modules/editor/dtos
+  example:
+    protocol: packages/contracts/src/modules/example/protocol
+    api: packages/contracts/src/modules/example/api
+    dtos: packages/contracts/src/modules/example/dtos
+  goal:
+    protocol: packages/contracts/src/modules/goal/protocol
+    api: packages/contracts/src/modules/goal/api
+    dtos: packages/contracts/src/modules/goal/dtos
+  notification:
+    protocol: packages/contracts/src/modules/notification/protocol
+    api: packages/contracts/src/modules/notification/api
+    dtos: packages/contracts/src/modules/notification/dtos
+  reminder:
+    protocol: packages/contracts/src/modules/reminder/protocol
+    api: packages/contracts/src/modules/reminder/api
+    dtos: packages/contracts/src/modules/reminder/dtos
+  repository:
+    protocol: packages/contracts/src/modules/repository/protocol
+    api: packages/contracts/src/modules/repository/api
+    dtos: packages/contracts/src/modules/repository/dtos
+  schedule:
+    protocol: packages/contracts/src/modules/schedule/protocol
+    api: packages/contracts/src/modules/schedule/api
+    dtos: packages/contracts/src/modules/schedule/dtos
+  setting:
+    protocol: packages/contracts/src/modules/setting/protocol
+    api: packages/contracts/src/modules/setting/api
+    dtos: packages/contracts/src/modules/setting/dtos
+  sync:
+    protocol: packages/contracts/src/modules/sync/protocol
+    api: packages/contracts/src/modules/sync/api
+    dtos: packages/contracts/src/modules/sync/dtos
+  task:
+    protocol: packages/contracts/src/modules/task/protocol
+    api: packages/contracts/src/modules/task/api
+    dtos: packages/contracts/src/modules/task/dtos

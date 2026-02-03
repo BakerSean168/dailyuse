@@ -15,8 +15,8 @@ export * from './entities';
 // ============ Aggregates ============
 export * from './aggregates';
 
+// ============ Protocol ============
+export * from './protocol';
+
 // ============ API Requests ============
 export * from './api';
-
-// ============ protocol ============
-export * from './protocol';

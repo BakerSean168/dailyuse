@@ -1,46 +1,57 @@
+/**
+ * Task Domain Event Map
+ * 
+ * Event Naming Convention: task:<action>
+ * - task:create - Template created
+ * - task:update - Template updated
+ * - task:delete - Template deleted
+ * - task:instance-create - Instance created
+ * - task:complete - Instance completed
+ * - task:uncomplete - Instance uncompleted
+ * - task:reschedule - Instance rescheduled
+ */
 export interface TaskEventMap {
-  // ================= Template Events (元数据变更) =================
-  'task:template-created': {
+  // ================= Template Events (Metadata Changes) =================
+  'task:create': {
     templateId: string;
     identityId: string;
-    linkedKeyResultId?: string; // 如果关联了 OKR
+    linkedKeyResultId?: string; // Associated OKR if any
   };
-  'task:template-updated': {
-    templateId: string;
-
-  };
-  'task:template-deleted': {
+  'task:update': {
     templateId: string;
   };
+  'task:delete': {
+    templateId: string;
+  };
 
-  // ================= Instance Events (执行状态变更 - 核心) =================
+  // ================= Instance Events (Execution State Changes) =================
   
-  // 1. 生成了新的待办实例 (Schedule 模块可能会监听这个来排程)
-  'task:instance-created': {
+  // 1. New task instance generated (Schedule module may listen for calendar sync)
+  'task:instance-create': {
     instanceId: string;
     templateId: string;
     date: string; // ISO Date
     scheduledTime: { start: string; end?: string } | null;
   };
 
-  // 2. 任务完成 (Goal 模块监听这个来增加 KeyResult 进度!)
-  'task:instance-completed': {
+  // 2. Task completed (Goal module listens to increment KeyResult progress)
+  'task:complete': {
     instanceId: string;
     templateId: string;
     identityId: string;
     completedAt: string;
-    linkedKeyResultId?: string; // 方便 Goal 模块快速过滤
-    impactValue?: number;       // 贡献值
+    linkedKeyResultId?: string; // For efficient filtering by Goal module
+    impactValue?: number;       // Contribution value
   };
 
-  // 3. 任务取消完成 (误操作回滚，Goal 模块需要扣减进度)
-  'task:instance-uncompleted': {
+  // 3. Task uncompleted (rollback - Goal module needs to decrement progress)
+  'task:uncomplete': {
     instanceId: string;
     linkedKeyResultId?: string;
   };
 
-  // 4. 任务被推迟/重排 (Schedule 模块更新日历)
-  'task:instance-rescheduled': {
+  // 4. Task rescheduled/postponed (Schedule module updates calendar)
+  'task:reschedule': {
     instanceId: string;
     originalDate: string;
     newDate: string;

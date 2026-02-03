@@ -109,7 +109,7 @@ apps/web/
 
 ### Desktop 应用 (apps/desktop/)
 
-桌面应用，使用 Electron + Vue。
+桌面应用，使用 Electron + React。
 
 ```
 apps/desktop/
@@ -133,15 +133,7 @@ apps/desktop/
 类型契约，定义前后端共享的类型。
 
 ```
-packages/contracts/
-├── src/
-│   ├── goal/                # 目标相关类型
-│   │   ├── goal.types.ts    # 目标实体类型
-│   │   ├── dto.types.ts     # DTO 类型
-│   │   └── events.types.ts  # 事件类型
-│   ├── task/                # 任务相关类型
-│   └── ...
-└── package.json
+
 ```
 
 **用途**: 确保前后端类型一致，避免类型不匹配。

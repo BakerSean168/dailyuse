@@ -5,6 +5,9 @@
  * ImportanceLevel 和 UrgencyLevel 从 @dailyuse/contracts/shared 导入
  */
 
+// ============ Protocol ============
+export * from './protocol';
+
 // ============ Value Objects ============
 export * from './value-objects';
 
@@ -16,4 +19,3 @@ export * from './aggregates';
 
 // ============ API ============
 export * from './api';
-

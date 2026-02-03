@@ -1,19 +1,36 @@
-// 定义 Schedule 模块发出的事件
+/**
+ * Schedule Domain Event Map
+ * 
+ * Event Naming Convention: schedule:<action>
+ * - schedule:statistics-create - Statistics created
+ * - schedule:statistics-update - Statistics updated
+ * - schedule:task-count-change - Task count changed
+ * - schedule:execution-record - Execution recorded
+ * - schedule:module-update - Module stats updated
+ * - schedule:task-create - Task created
+ * - schedule:task-pause - Task paused
+ * - schedule:task-resume - Task resumed
+ * - schedule:task-complete - Task completed
+ * - schedule:task-cancel - Task cancelled
+ * - schedule:task-fail - Task failed
+ * - schedule:task-execute - Task executed
+ * - schedule:task-schedule-update - Task schedule updated
+ */
 export type ScheduleEventMap = {
-  // ScheduleStatistics 事件
-  'schedule-statistics:created': { identityId: string };
-  'schedule-statistics:updated': { identityId: string; changes: string[] };
-  'schedule-statistics:task-count-changed': { status: string; delta: number; totalTasks: number };
-  'schedule-statistics:execution-recorded': { status: string; duration: number; sourceModule: string; totalExecutions: number };
-  'schedule-statistics:module-updated': { moduleName: string; taskCount: number; executionCount: number };
+  // ScheduleStatistics Events
+  'schedule:statistics-create': { identityId: string };
+  'schedule:statistics-update': { identityId: string; changes: string[] };
+  'schedule:task-count-change': { status: string; delta: number; totalTasks: number };
+  'schedule:execution-record': { status: string; duration: number; sourceModule: string; totalExecutions: number };
+  'schedule:module-update': { moduleName: string; taskCount: number; executionCount: number };
 
-  // ScheduleTask 事件
-  'schedule-task:created': { scheduleTaskId: string; name: string; sourceModule: string; sourceEntityId: string; cronExpression: string };
-  'schedule-task:paused': { scheduleTaskId: string; sourceModule: string; sourceEntityId: string; reason?: string };
-  'schedule-task:resumed': { scheduleTaskId: string; sourceModule: string; sourceEntityId: string; nextRunAt: number };
-  'schedule-task:completed': { scheduleTaskId: string; sourceModule: string; sourceEntityId: string; totalExecutions: number };
-  'schedule-task:cancelled': { scheduleTaskId: string; sourceModule: string; sourceEntityId: string; reason: string };
-  'schedule-task:failed': { scheduleTaskId: string; sourceModule: string; sourceEntityId: string; error: string; consecutiveFailures: number };
-  'schedule-task:executed': { scheduleTaskId: string; executionId: string; sourceModule: string; sourceEntityId: string; status: string; duration: number };
-  'schedule-task:schedule-updated': { scheduleTaskId: string; previousCronExpression: string; newCronExpression: string; nextRunAt: number };
+  // ScheduleTask Events
+  'schedule:task-create': { scheduleTaskId: string; name: string; sourceModule: string; sourceEntityId: string; cronExpression: string };
+  'schedule:task-pause': { scheduleTaskId: string; sourceModule: string; sourceEntityId: string; reason?: string };
+  'schedule:task-resume': { scheduleTaskId: string; sourceModule: string; sourceEntityId: string; nextRunAt: number };
+  'schedule:task-complete': { scheduleTaskId: string; sourceModule: string; sourceEntityId: string; totalExecutions: number };
+  'schedule:task-cancel': { scheduleTaskId: string; sourceModule: string; sourceEntityId: string; reason: string };
+  'schedule:task-fail': { scheduleTaskId: string; sourceModule: string; sourceEntityId: string; error: string; consecutiveFailures: number };
+  'schedule:task-execute': { scheduleTaskId: string; executionId: string; sourceModule: string; sourceEntityId: string; status: string; duration: number };
+  'schedule:task-schedule-update': { scheduleTaskId: string; previousCronExpression: string; newCronExpression: string; nextRunAt: number };
 };

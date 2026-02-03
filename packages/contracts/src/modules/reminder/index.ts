@@ -6,6 +6,9 @@
 // ============ Constants ============
 export * from './configs';
 
+// ============ Protocol ============
+export * from './protocol';
+
 // ============ Value Objects ============
 export * from './value-objects';
 
@@ -17,5 +20,3 @@ export * from './aggregates';
 
 // ============ API ============
 export * from './api';
-
-// export * from './protocol';

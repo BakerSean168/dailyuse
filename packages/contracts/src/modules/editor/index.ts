@@ -3,6 +3,9 @@
  * 编辑器模块 - 显式导出
  */
 
+// ============ API ============
+export * from './api/api-requests';
+
 // ============ Enums (Value Objects) ============
 export {
   ProjectType,

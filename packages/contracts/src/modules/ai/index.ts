@@ -3,6 +3,12 @@
  * AI模块 - 统一导出 subfolders 下的所有内容 直接 export * from './folder-name'
  */
 
+// ============ Protocol ============
+export * from './protocol';
+
+// ============ API ============
+export * from './api';
+
 // ============ Value Objects (Enum-like) ============
 export {
   ConversationStatus,

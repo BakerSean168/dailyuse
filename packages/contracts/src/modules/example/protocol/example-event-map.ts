@@ -1,51 +1,52 @@
 /**
  * Example Module - Event Map
  * 
- * 【规范说明：Event Map】
- * 定义模块发出的所有事件类型和数据结构
- * 用于模块间异步通信和事件驱动架构
- * 
- * 事件命名规范：'module-name:action-name'
+ * Event Naming Convention: example:<action>
+ * - example:create - Example created
+ * - example:update - Example updated
+ * - example:delete - Example deleted
+ * - example:status-change - Example status changed
  */
 
 export type ExampleEventMap = {
   /**
-   * Example 创建事件
-   * 当新 Example 被创建时发出
+   * Example created event
+   * Emitted when new Example is created
    */
-  'example:created': {
+  'example:create': {
     id: string;
     name: string;
     createdAt: number;
   };
 
   /**
-   * Example 更新事件
-   * 当 Example 被更新时发出
+   * Example updated event
+   * Emitted when Example is updated
    */
-  'example:updated': {
+  'example:update': {
     id: string;
     updatedFields: string[];
     updatedAt: number;
   };
 
   /**
-   * Example 删除事件
-   * 当 Example 被删除时发出
+   * Example deleted event
+   * Emitted when Example is deleted
    */
-  'example:deleted': {
+  'example:delete': {
     id: string;
     deletedAt: number;
   };
 
   /**
-   * Example 状态变更事件
-   * 当 Example 状态改变时发出
+   * Example status changed event
+   * Emitted when Example status changes
    */
-  'example:status-changed': {
+  'example:status-change': {
     id: string;
     oldStatus: string;
     newStatus: string;
     changedAt: number;
   };
+};
 };

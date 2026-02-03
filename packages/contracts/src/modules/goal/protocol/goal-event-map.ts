@@ -1,33 +1,56 @@
-// 定义 Goal 模块发出的事件
+/**
+ * Goal Domain Event Map
+ * 
+ * Event Naming Convention: goal:<action>
+ * - goal:create - Goal created
+ * - goal:update - Goal updated
+ * - goal:status-change - Goal status changed
+ * - goal:complete - Goal completed
+ * - goal:archive - Goal archived
+ * - goal:delete - Goal deleted
+ * - goal:key-result-add - Key result added
+ * - goal:key-result-update - Key result updated
+ * - goal:review-add - Review added
+ * - goal:folder-create - Folder created
+ * - goal:folder-update - Folder updated
+ * - goal:folder-delete - Folder deleted
+ * - goal:folder-stats-update - Folder stats updated
+ * - goal:statistics-recalculate - Statistics recalculated
+ * - goal:focus-session-start - Focus session started
+ * - goal:focus-session-pause - Focus session paused
+ * - goal:focus-session-resume - Focus session resumed
+ * - goal:focus-session-complete - Focus session completed
+ * - goal:focus-session-cancel - Focus session cancelled
+ */
 export type GoalEventMap = {
-  // ============ Goal 事件 ============
-  'goal:created': { goalId: string; identityId: string; folderId: string | null };
-  'goal:updated': { goalId: string; changes: string[] };
-  'goal:status-changed': { goalId: string; previousStatus: string; newStatus: string };
-  'goal:completed': { goalId: string; completedAt: number; finalProgress: number };
-  'goal:archived': { goalId: string; archivedAt: number };
-  'goal:deleted': { goalId: string; deletedAt: number; isSoftDelete: boolean };
+  // ============ Goal Events ============
+  'goal:create': { goalId: string; identityId: string; folderId: string | null };
+  'goal:update': { goalId: string; changes: string[] };
+  'goal:status-change': { goalId: string; previousStatus: string; newStatus: string };
+  'goal:complete': { goalId: string; completedAt: number; finalProgress: number };
+  'goal:archive': { goalId: string; archivedAt: number };
+  'goal:delete': { goalId: string; deletedAt: number; isSoftDelete: boolean };
 
-  // ============ KeyResult 事件 ============
-  'goal:key-result-added': { goalId: string; keyResultId: string };
-  'goal:key-result-updated': { goalId: string; keyResultId: string; previousValue: number; newValue: number };
+  // ============ KeyResult Events ============
+  'goal:key-result-add': { goalId: string; keyResultId: string };
+  'goal:key-result-update': { goalId: string; keyResultId: string; previousValue: number; newValue: number };
 
-  // ============ GoalReview 事件 ============
-  'goal:review-added': { goalId: string; reviewId: string };
+  // ============ GoalReview Events ============
+  'goal:review-add': { goalId: string; reviewId: string };
 
-  // ============ GoalFolder 事件 ============
-  'goal-folder:created': { folderId: string; identityId: string };
-  'goal-folder:updated': { folderId: string; changes: string[] };
-  'goal-folder:deleted': { folderId: string; deletedAt: number; isSoftDelete: boolean };
-  'goal-folder:stats-updated': { folderId: string; goalCount: number; completedGoalCount: number };
+  // ============ GoalFolder Events ============
+  'goal:folder-create': { folderId: string; identityId: string };
+  'goal:folder-update': { folderId: string; changes: string[] };
+  'goal:folder-delete': { folderId: string; deletedAt: number; isSoftDelete: boolean };
+  'goal:folder-stats-update': { folderId: string; goalCount: number; completedGoalCount: number };
 
-  // ============ GoalStatistics 事件 ============
-  'goal-statistics:recalculated': { identityId: string };
+  // ============ GoalStatistics Events ============
+  'goal:statistics-recalculate': { identityId: string };
 
-  // ============ FocusSession 事件 ============
-  'focus-session:started': { sessionId: string; identityId: string; goalId: string | null; durationMinutes: number; startedAt: number };
-  'focus-session:paused': { sessionId: string; identityId: string; pausedAt: number; pauseCount: number };
-  'focus-session:resumed': { sessionId: string; identityId: string; resumedAt: number; pausedDurationMinutes: number };
-  'focus-session:completed': { sessionId: string; identityId: string; goalId: string | null; completedAt: number; actualDurationMinutes: number; plannedDurationMinutes: number };
-  'focus-session:cancelled': { sessionId: string; identityId: string; cancelledAt: number; reason?: string | null };
+  // ============ FocusSession Events ============
+  'goal:focus-session-start': { sessionId: string; identityId: string; goalId: string | null; durationMinutes: number; startedAt: number };
+  'goal:focus-session-pause': { sessionId: string; identityId: string; pausedAt: number; pauseCount: number };
+  'goal:focus-session-resume': { sessionId: string; identityId: string; resumedAt: number; pausedDurationMinutes: number };
+  'goal:focus-session-complete': { sessionId: string; identityId: string; goalId: string | null; completedAt: number; actualDurationMinutes: number; plannedDurationMinutes: number };
+  'goal:focus-session-cancel': { sessionId: string; identityId: string; cancelledAt: number; reason?: string | null };
 };

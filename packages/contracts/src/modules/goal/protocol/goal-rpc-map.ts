@@ -6,3 +6,4 @@ export type GoalRpcMap = {
   'goal-folder:get-by-id': [{ folderId: string }, { folder: unknown } | null];
   'focus-session:get-active': [{ identityId: string }, { session: unknown } | null];
 };
+

@@ -11,7 +11,8 @@ import type {
 } from '@dailyuse/contracts/account';
 import { AggregateRoot } from '@dailyuse/utils';
 
-import { IdentityId } from '@dailyuse/domain-shared/account';
+// Import IdentityId from shared primitives (cross-module shared type)
+import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 import { 
   AccountProfile, 

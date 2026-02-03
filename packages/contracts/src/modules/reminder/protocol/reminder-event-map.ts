@@ -1,17 +1,21 @@
 /**
- * Reminder Template - Event Map
- * 提醒模板 - 事件映射
+ * Reminder Domain Event Map
  * 
- * 【规范说明：Event Map】
- * 定义提醒模板发出的所有事件类型和数据结构
- * 用于模块间异步通信和事件驱动架构
+ * Event Naming Convention: reminder:<action>
+ * - reminder:create - Template created
+ * - reminder:update - Template updated
+ * - reminder:delete - Template deleted
+ * - reminder:enable - Template enabled
+ * - reminder:pause - Template paused
+ * - reminder:trigger - Template triggered
+ * - reminder:move - Template moved to group
  */
 
 export type ReminderEventMap = {
   /**
-   * 提醒模板创建事件
+   * Template created event
    */
-  'reminder:template-created': {
+  'reminder:create': {
     uuid: string;
     name: string;
     type: string;
@@ -20,52 +24,52 @@ export type ReminderEventMap = {
   };
 
   /**
-   * 提醒模板更新事件
+   * Template updated event
    */
-  'reminder:template-updated': {
+  'reminder:update': {
     uuid: string;
     changes: string[];
     updatedAt: number;
   };
 
   /**
-   * 提醒模板删除事件
+   * Template deleted event
    */
-  'reminder:template-deleted': {
+  'reminder:delete': {
     uuid: string;
     name: string;
     deletedAt: number;
   };
 
   /**
-   * 提醒模板启用事件
+   * Template enabled event
    */
-  'reminder:template-enabled': {
+  'reminder:enable': {
     uuid: string;
     enabledAt: number;
   };
 
   /**
-   * 提醒模板暂停事件
+   * Template paused event
    */
-  'reminder:template-paused': {
+  'reminder:pause': {
     uuid: string;
     pausedAt: number;
   };
 
   /**
-   * 提醒模板触发事件
+   * Template triggered event
    */
-  'reminder:template-triggered': {
+  'reminder:trigger': {
     uuid: string;
     triggeredAt: number;
     nextTriggerAt?: number | null;
   };
 
   /**
-   * 提醒模板移动到分组事件
+   * Template moved to group event
    */
-  'reminder:template-moved': {
+  'reminder:move': {
     uuid: string;
     oldGroupUuid?: string | null;
     newGroupUuid?: string | null;

@@ -20,6 +20,3 @@ export {
 export {
   AccountProfile
 } from './value-objects/account-profile';
-export {
-  IdentityId
-} from './value-objects/identity-id';

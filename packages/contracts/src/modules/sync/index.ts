@@ -3,6 +3,12 @@
  * 同步模块 - 简化导出
  */
 
+// ============ Protocol ============
+export * from './protocol';
+
+// ============ API ============
+export * from './api';
+
 // ============ Value Objects ============
 export * from './value-objects';
 
@@ -11,12 +17,3 @@ export * from './entities';
 
 // ============ Aggregates ============
 export * from './aggregates';
-
-// ============ API ============
-export * from './api';
-
-// ============ Protocol ============
-export * from './protocol';
-
-// ============ Events ============
-export * from './events';

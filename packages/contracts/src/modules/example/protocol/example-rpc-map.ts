@@ -8,31 +8,24 @@
  * 类型定义：'rpc-name': [RequestType, ResponseType]
  */
 
+import type {
+  CreateExampleReq,
+  CreateExampleRes,
+  UpdateExampleReq,
+  UpdateExampleRes,
+  GetExampleReq,
+  GetExampleRes,
+  DeleteExampleReq,
+  DeleteExampleRes,
+  ListExampleQuery,
+  ListExampleRes,
+} from '../api';
+
 export type ExampleRpcMap = {
-  /**
-   * 检查 Example 是否存在
-   * 请求：{ id: string }
-   * 响应：boolean
-   */
-  'example:check-existence': [{ id: string }, boolean];
-
-  /**
-   * 获取 Example 基本信息
-   * 请求：{ id: string }
-   * 响应：{ name: string; status: string } | null
-   */
-  'example:get-basic-info': [
-    { id: string },
-    { name: string; status: string } | null
-  ];
-
-  /**
-   * 批量获取 Example 信息
-   * 请求：{ ids: string[] }
-   * 响应：Array<{ id: string; name: string }>
-   */
-  'example:get-batch': [
-    { ids: string[] },
-    Array<{ id: string; name: string }>
-  ];
+  // === CRUD Operations ===
+  'example:create': [CreateExampleReq, CreateExampleRes];
+  'example:update': [UpdateExampleReq, UpdateExampleRes];
+  'example:get': [GetExampleReq, GetExampleRes];
+  'example:delete': [DeleteExampleReq, DeleteExampleRes];
+  'example:list': [ListExampleQuery, ListExampleRes];
 };

@@ -3,76 +3,17 @@ import type { NotificationServerDTO } from '../aggregates/notification-server';
 import type { NotificationStatus } from '../value-objects';
 
 /**
- * 通知创建事件
- */
-export interface NotificationCreatedEvent {
-  type: 'notification.created';
-  aggregateId: NotificationId;
-  timestamp: Date;
-  payload: {
-    notification: NotificationServerDTO;
-    sendImmediately: boolean;
-  };
-}
-
-/**
- * 通知发送事件
- */
-export interface NotificationSentEvent {
-  type: 'notification.sent';
-  aggregateId: NotificationId;
-  timestamp: Date;
-  payload: {
-    notificationUuid: NotificationId;
-    channels: string[];
-  };
-}
-
-/**
- * 通知已读事件
- */
-export interface NotificationReadEvent {
-  type: 'notification.read';
-  aggregateId: NotificationId;
-  timestamp: Date;
-  payload: {
-    notificationUuid: NotificationId;
-    readAt: number;
-  };
-}
-
-/**
- * 通知删除事件
- */
-export interface NotificationDeletedEvent {
-  type: 'notification.deleted';
-  aggregateId: NotificationId;
-  timestamp: Date;
-  payload: {
-    notificationUuid: NotificationId;
-  };
-}
-
-/**
- * 通知状态变更事件
- */
-export interface NotificationStatusChangedEvent {
-  type: 'notification.status.changed';
-  aggregateId: NotificationId;
-  timestamp: Date;
-  payload: {
-    previousStatus: NotificationStatus;
-    newStatus: NotificationStatus;
-    reason?: string;
-  };
-}
-
-/**
- * Notification Event Map
- * 定义所有通知相关的事件
+ * Notification Domain Event Map
+ * 
+ * Event Naming Convention: notification:<action>
+ * - notification:create - Notification created
+ * - notification:send - Notification sent
+ * - notification:read - Notification read
+ * - notification:delete - Notification deleted
+ * - notification:status-change - Notification status changed
  */
 export interface NotificationEventMap {
-  'notification.created': {
+  'notification:create': {
     aggregateId: NotificationId;
     timestamp: Date;
     payload: {
@@ -80,7 +21,8 @@ export interface NotificationEventMap {
       sendImmediately: boolean;
     };
   };
-  'notification.sent': {
+  
+  'notification:send': {
     aggregateId: NotificationId;
     timestamp: Date;
     payload: {
@@ -88,7 +30,8 @@ export interface NotificationEventMap {
       channels: string[];
     };
   };
-  'notification.read': {
+  
+  'notification:read': {
     aggregateId: NotificationId;
     timestamp: Date;
     payload: {
@@ -96,8 +39,25 @@ export interface NotificationEventMap {
       readAt: number;
     };
   };
-  'notification.deleted': {
+  
+  'notification:delete': {
     aggregateId: NotificationId;
+    timestamp: Date;
+    payload: {
+      notificationUuid: NotificationId;
+    };
+  };
+  
+  'notification:status-change': {
+    aggregateId: NotificationId;
+    timestamp: Date;
+    payload: {
+      previousStatus: NotificationStatus;
+      newStatus: NotificationStatus;
+      reason?: string;
+    };
+  };
+}
     timestamp: Date;
     payload: {
       notificationUuid: NotificationId;
