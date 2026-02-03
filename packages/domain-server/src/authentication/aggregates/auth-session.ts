@@ -134,7 +134,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
     const session = new AuthSession(dto);
 
     session.addDomainEvent<AuthEventMap['auth:session-created']>('auth:session-created', {
-      ip: params.deviceInfo.ipAddress ?? '',
+      identityId: params.identityId,
     });
 
     return session;
@@ -245,7 +245,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
     this._status = SessionStatus.REVOKED;
 
     this.addDomainEvent<AuthEventMap['auth:session-revoked']>('auth:session-revoked', {
-      ip: this._deviceInfo.ipAddress ?? '',
+      identityId: this._identityId,
     });
   }
 

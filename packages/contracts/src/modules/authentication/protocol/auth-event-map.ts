@@ -35,37 +35,37 @@ export type AuthEventMap = {
    * User registration event
    * Triggered when new user registers
    */
-  'auth:register': UserRegisteredEvent;
+  'auth:registered': UserRegisteredEvent;
 
   /**
    * Password changed event
    * Triggered when user changes password
    */
-  'auth:password-change': PasswordChangedEvent;
+  'auth:password-changed': PasswordChangedEvent;
 
   /**
    * Identity provider connected event
    * Triggered when user connects OAuth provider
    */
-  'auth:provider-connect': IdentityProviderConnectedEvent;
+  'auth:provider-connected': IdentityProviderConnectedEvent;
 
   /**
    * Session invalidated event
    * Triggered when user session is invalidated
    */
-  'auth:session-invalidate': SessionInvalidatedEvent;
+  'auth:session-invalidated': SessionInvalidatedEvent;
 
   /**
    * Identity activated event
    * Triggered when user identity is activated
    */
-  'auth:identity-activate': IdentityActivatedEvent;
+  'auth:identity-activated': IdentityActivatedEvent;
 
   /**
    * Identity disabled event
    * Triggered when user identity is disabled
    */
-  'auth:identity-disable': IdentityDisabledEvent;
+  'auth:identity-disabled': IdentityDisabledEvent;
 
   'auth:session-created': SessionCreatedEvent;
   'auth:session-revoked': SessionRevokedEvent;

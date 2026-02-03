@@ -23,7 +23,7 @@ export interface ExampleTagClientDTO {
   name: string;
   color: string;
   order: number;
-  createdAt: TransferDate; // Unix 时间戳（毫秒）
+  createdAt: TransferDate;
   updatedAt: TransferDate;
 }
 

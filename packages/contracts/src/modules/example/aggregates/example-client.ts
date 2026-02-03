@@ -9,7 +9,7 @@
  * 4. 包含所有用户可见的字段
  */
 
-import type { TransferDate } from '@/primitives';
+import type { DomainDate, TransferDate } from '@/primitives';
 
 /**
  * 传输层 DTO（序列化格式）
@@ -42,8 +42,8 @@ export interface ExampleClient {
   description: string | null;
   status: ExampleStatus;
   priority: number;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
+  createdAt: DomainDate;
+  updatedAt: DomainDate;
 }
 
 /**

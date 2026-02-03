@@ -1,8 +1,6 @@
 import type {
   ExampleCreatedEvent,
-  ExampleUpdatedEvent,
   ExampleDeletedEvent,
-  ExampleStatusChangedEvent,
 } from '../domain/events';
 
 /**
@@ -19,24 +17,12 @@ export type ExampleEventMap = {
    * Example created event
    * Emitted when new Example is created
    */
-  'example:create': ExampleCreatedEvent;
-
-  /**
-   * Example updated event
-   * Emitted when Example is updated
-   */
-  'example:update': ExampleUpdatedEvent;
+  'example:created': ExampleCreatedEvent;
 
   /**
    * Example deleted event
    * Emitted when Example is deleted
    */
-  'example:delete': ExampleDeletedEvent;
-
-  /**
-   * Example status changed event
-   * Emitted when Example status changes
-   */
-  'example:status-change': ExampleStatusChangedEvent;
+  'example:deleted': ExampleDeletedEvent;
 };
 

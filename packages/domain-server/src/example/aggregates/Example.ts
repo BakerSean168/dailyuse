@@ -62,7 +62,6 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
   private _isPublic: boolean;
   private _viewCount: number;
   private _likeCount: number;
-  private _properties: Map<string, ExampleProperty>;
   private _createdAt: DomainDate;   // ✅ 使用 DomainDate
   private _updatedAt: DomainDate;   // ✅ 使用 DomainDate
   private _deletedAt: DomainDate | null;  // ✅ 使用 DomainDate
@@ -84,13 +83,10 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
     this._isPublic = props.isPublic;
     this._viewCount = props.viewCount;
     this._likeCount = props.likeCount;
-    this._tags = props.tags.map(t => ExampleTag.fromDTO(t));
-    this._properties = new Map(
-      props.properties.map(p => [p.key, ExampleProperty.fromDTO(p)])
-    );
     this._createdAt = new Date(props.createdAt);
     this._updatedAt = new Date(props.updatedAt);
     this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
+
   }
 
   // ================= 3. 公共属性（Readonly Getters）=================
@@ -104,13 +100,11 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
   get identityId(): IdentityId { return this._identityId; }
   get name(): string { return this._name; }
   get description(): string | null { return this._description; }
-  get status(): ExampleStatusType { return this._status; }
+  get status(): ExampleStatus { return this._status; }
   get priority(): number { return this._priority; }
   get isPublic(): boolean { return this._isPublic; }
   get viewCount(): number { return this._viewCount; }
   get likeCount(): number { return this._likeCount; }
-  get tags(): ExampleTag[] { return [...this._tags]; } // 返回副本
-  get properties(): Map<string, ExampleProperty> { return new Map(this._properties); }
   get createdAt(): DomainDate { return this._createdAt; }  // ✅ 返回 DomainDate
   get updatedAt(): DomainDate { return this._updatedAt; }  // ✅ 返回 DomainDate
   get deletedAt(): DomainDate | null { return this._deletedAt; }  // ✅ 返回 DomainDate
@@ -162,8 +156,6 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
       isPublic: params.isPublic ?? false,
       viewCount: 0,
       likeCount: 0,
-      tags: [],
-      properties: [],
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
@@ -175,7 +167,6 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
     // 4. 发出领域事件
     example.addDomainEvent<ExampleEventMap['example:created']>('example:created', {
       id: dto.id,
-      identityId: params.identityId,
       name: dto.name,
       createdAt: now,
     });
@@ -206,8 +197,6 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
       isPublic: dto.isPublic,
       viewCount: dto.viewCount,
       likeCount: dto.likeCount,
-      tags: dto.tags.map(t => ExampleTag.fromPersistenceDTO(t).toDTO()),
-      properties: dto.properties.map(p => ExampleProperty.fromPersistenceDTO(p).toDTO()),
       // ✅ PersistenceDate(Date) → TransferDate(number)
       createdAt: dto.createdAt.getTime(),
       updatedAt: dto.updatedAt.getTime(),
@@ -257,8 +246,7 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
     // 3. Event
     this.addDomainEvent<ExampleEventMap['example:updated']>('example:updated', {
       id: this.id,
-      changes: { name: this._name },
-      previousValues: { name: oldName },
+      updatedFields: { name: { oldValue: oldName, newValue: this._name } },
       updatedAt: this._updatedAt.getTime(),
     });
   }
@@ -387,9 +375,6 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
       isPublic: this._isPublic,
       viewCount: this._viewCount,
       likeCount: this._likeCount,
-      tags: this._tags.map(t => t.toPersistence()),
-      properties: Array.from(this._properties.values()).map(p => p.toPersistence()),
-      // ✅ DomainDate → PersistenceDate（目前都是 Date）
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       deletedAt: this._deletedAt,
@@ -413,9 +398,6 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
       isPublic: this._isPublic,
       viewCount: this._viewCount,
       likeCount: this._likeCount,
-      tags: this._tags.map(t => t.toDTO()),
-      properties: Array.from(this._properties.values()).map(p => p.toDTO()),
-      // ✅ DomainDate(Date) → TransferDate(number)
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       deletedAt: this._deletedAt?.getTime() ?? null,

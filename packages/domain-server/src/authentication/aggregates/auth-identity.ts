@@ -264,7 +264,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     this.refreshUpdatedAt();
 
     this.addDomainEvent<AuthEventMap['auth:identity-activated']>('auth:identity-activated' as keyof AuthEventMap, {
-      ip: '',
+      identityId: this.id,
     });
   }
 
@@ -407,7 +407,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     this.refreshUpdatedAt();
 
     this.addDomainEvent<AuthEventMap['auth:identity-disabled']>('auth:identity-disabled' as keyof AuthEventMap, {
-      ip: '',
+      identityId: this.id,
     });
   }
 

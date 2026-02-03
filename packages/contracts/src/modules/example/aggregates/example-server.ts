@@ -9,51 +9,8 @@
  * 4. 用于聚合根的内部状态表示
  */
 
-import type { ExampleId, IdentityId, DomainDate } from '@/primitives';
+import type { ExampleId, IdentityId, DomainDate, PersistenceDate, TransferDate } from '@/primitives';
 import type { ExampleStatus, ExampleProperty } from '../value-objects';
-
-/**
- * 服务层持久化 DTO
- * - 用于数据库持久化层（ORM、查询构建器）
- * - 字段名称可能对应数据库列名
- * - 包含所有数据库中存储的字段
- * - 避免数据库特定类型在上层暴露
- */
-export interface ExamplePersistenceDTO {
-  id: string;
-  identityId: string;
-  name: string;
-  description: string | null;
-  status: string;
-  priority: number;
-  isPublic: boolean;
-  viewCount: number;
-  likeCount: number;
-  customProperties: Record<string, unknown>;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-}
-
-/**
- * 应用服务 DTO
- * - 在不同服务层之间传递
- * - 比 Persistence DTO 更业务化
- * - 包含必要的计算字段但不包含 ORM 的内部状态
- */
-export interface ExampleServerDTO {
-  id: string;
-  identityId: string;
-  name: string;
-  description: string | null;
-  status: string;
-  priority: number;
-  isPublic: boolean;
-  viewCount: number;
-  likeCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
 
 /**
  * 服务层聚合根接口
@@ -78,8 +35,50 @@ export interface ExampleServer {
   isPublic: boolean;
   viewCount: number;
   likeCount: number;
-  customProperties: Map<string, ExampleProperty>;
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;
+}
+
+/**
+ * 服务层持久化 DTO
+ * - 用于数据库持久化层（ORM、查询构建器）
+ * - 字段名称可能对应数据库列名
+ * - 包含所有数据库中存储的字段
+ * - 避免数据库特定类型在上层暴露
+ */
+export interface ExamplePersistenceDTO {
+  id: string;
+  identityId: string;
+  name: string;
+  description: string | null;
+  status: string;
+  priority: number;
+  isPublic: boolean;
+  viewCount: number;
+  likeCount: number;
+  createdAt: PersistenceDate;
+  updatedAt: PersistenceDate;
+  deletedAt: PersistenceDate | null;
+}
+
+/**
+ * 应用服务 DTO
+ * - 在不同服务层之间传递
+ * - 比 Persistence DTO 更业务化
+ * - 包含必要的计算字段但不包含 ORM 的内部状态
+ */
+export interface ExampleServerDTO {
+  id: string;
+  identityId: string;
+  name: string;
+  description: string | null;
+  status: string;
+  priority: number;
+  isPublic: boolean;
+  viewCount: number;
+  likeCount: number;
+  createdAt: TransferDate;
+  updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }
