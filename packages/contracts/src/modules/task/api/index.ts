@@ -1,17 +1,41 @@
 /**
- * Task API Export
+ * Task Module - API Export
+ * 
+ * 【规范说明：API 层导出】
+ * 按功能分组，每个操作导出相关的 Schema、Request、Response 类型
  */
 
-// === Schemas ===
-export { CreateTaskSchema, TaskTimeConfigSchema, RecurrenceConfigSchema, ChecklistItemSchema } from './create-task';
-export { UpdateTaskSchema } from './update-content';
-export { RescheduleTaskSchema } from './reschedule-task';
-export { GetInstancesByRangeSchema } from './get-instance';
-export { ToggleTaskCompletionSchema } from './task-completion';
+export {
+  // Shared Schema
+  TaskTimeConfigSchema,
+  type TaskTimeConfigReq,
+  RecurrenceConfigSchema,
+  type RecurrenceConfigReq,
+  ChecklistItemSchema,
+  type ChecklistItemReq,
 
-// === Request Types ===
-export type { CreateTaskReq } from './create-task';
-export type { UpdateTaskReq } from './update-content';
-export type { RescheduleTaskReq } from './reschedule-task';
-export type { GetInstancesByRangeReq } from './get-instance';
-export type { ToggleTaskCompletionReq } from './task-completion';
+  // Create Task
+  CreateTaskSchema,
+  type CreateTaskReq,
+  type CreateTaskRes,
+
+  // Update Task
+  UpdateTaskSchema,
+  type UpdateTaskReq,
+  type UpdateTaskRes,
+
+  // Get Task Instances
+  GetInstancesByRangeSchema,
+  type GetInstancesByRangeReq,
+  type GetInstancesByRangeRes,
+
+  // Reschedule Task
+  RescheduleTaskSchema,
+  type RescheduleTaskReq,
+  type RescheduleTaskRes,
+
+  // Toggle Task Completion
+  ToggleTaskCompletionSchema,
+  type ToggleTaskCompletionReq,
+  type ToggleTaskCompletionRes,
+} from './crud';

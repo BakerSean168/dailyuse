@@ -1,20 +1,32 @@
+import type {
+  SyncStartedEvent,
+  SyncProgressUpdatedEvent,
+  SyncCompletedEvent,
+  SyncFailedEvent,
+  SyncConflictDetectedEvent,
+  SyncConflictResolvedEvent,
+  SyncDisconnectedEvent,
+} from '../domain/events';
+
 /**
- * Sync Domain Event Map
+ * Sync Module - Event Map
  * 
  * Event Naming Convention: sync:<action>
- * - sync:profile-create - Sync profile created
- * - sync:profile-connect - Sync profile connected
- * - sync:session-create - Sync session created
- * - sync:session-complete - Sync session completed
- * - sync:session-fail - Sync session failed
+ * Maps event names to their payload types for type-safe event handling
  */
-export type SyncEventMap = {
-  // SyncProfile Events
-  'sync:profile-create': { profileId: string; name: string; providerType: string };
-  'sync:profile-connect': { profileId: string; providerType: string };
 
-  // SyncSession Events
-  'sync:session-create': { sessionId: string; profileId: string; direction: string; triggerType: string };
-  'sync:session-complete': { sessionId: string; totalChanges: number; durationMs: number };
-  'sync:session-fail': { sessionId: string; errorCode: string; errorMessage: string };
+export type SyncEventMap = {
+  'sync:start': SyncStartedEvent;
+
+  'sync:progress': SyncProgressUpdatedEvent;
+
+  'sync:complete': SyncCompletedEvent;
+
+  'sync:fail': SyncFailedEvent;
+
+  'sync:conflict-detect': SyncConflictDetectedEvent;
+
+  'sync:conflict-resolve': SyncConflictResolvedEvent;
+
+  'sync:disconnect': SyncDisconnectedEvent;
 };

@@ -2,21 +2,47 @@
  * Account API Export
  */
 
-// === Schemas ===
-export { CheckAvailabilitySchema, CloseAccountSchema } from './lifecycle';
-export { GetPublicProfileSchema, UpdateProfileSchema } from './profile';
-export { UpdateSettingsSchema } from './settings';
+// === Account Profile Operations ===
+export {
+  UpdateAccountSchema,
+} from './crud';
+export type {
+  GetAccountReq,
+  GetAccountRes,
+  UpdateAccountReq,
+  UpdateAccountRes,
+} from './crud';
 
-// === Request/Response Types ===
-export type { 
-  CheckAvailabilityReq, CheckAvailabilityRes,
-  CloseAccountReq, CloseAccountRes
-} from './lifecycle';
+// === Account Availability Check ===
+export {
+  CheckAvailabilitySchema,
+} from './crud';
 export type {
-  GetMyProfileReq, GetMyProfileRes,
-  GetPublicProfileReq, PublicProfileRes,
-  UpdateProfileReq, UpdateProfileRes
-} from './profile';
+  CheckAvailabilityReq,
+  CheckAvailabilityRes,
+} from './crud';
+
+// === Account Lifecycle Operations ===
+export {
+  CloseAccountSchema,
+  ExportAccountDataReq,
+  ExportAccountDataRes,
+  ImportAccountDataSchema,
+} from './crud';
 export type {
-  UpdateSettingsReq, UpdateSettingsRes
-} from './settings';
+  CloseAccountReq,
+  CloseAccountRes,
+  ImportAccountDataReq,
+  ImportAccountDataRes,
+} from './crud';
+
+// === Account Settings Operations ===
+export {
+  UpdateAccountSettingsSchema,
+} from './crud';
+export type {
+  GetAccountSettingsReq,
+  GetAccountSettingsRes,
+  UpdateAccountSettingsReq,
+  UpdateAccountSettingsRes,
+} from './crud';

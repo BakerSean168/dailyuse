@@ -1,22 +1,49 @@
 /**
- * Authentication API Export
+ * Authentication Module - API Export
+ * 
+ * 【规范说明：API 层导出】
+ * 按功能分组，每个操作导出相关的 Schema、Request、Response 类型
  */
 
-// === Schemas ===
-export { RegisterByEmailSchema, RegisterByPhoneSchema } from './register';
-export { LoginByEmailSchema, LoginByPhoneSchema, SendSmsCodeSchema } from './login';
-export { RefreshTokenSchema, RevokeSessionSchema } from './session';
-export { ChangePasswordSchema, ForgotPasswordSchema, ResetPasswordSchema } from './password';
-export { GetOAuthUrlSchema, OAuthCallbackSchema } from './oauth';
+export {
+  // Login Operations
+  SendSmsCodeSchema,
+  type SendSmsCodeReq,
+  type SendSmsCodeRes,
+  LoginByEmailSchema,
+  type LoginByEmailReq,
+  type LoginByEmailRes,
+  LoginByPhoneSchema,
+  type LoginByPhoneReq,
+  type LoginByPhoneRes,
 
-// === Request/Response Types ===
-export type { RegisterByEmailReq, RegisterByEmailRes, RegisterByPhoneReq, RegisterByPhoneRes } from './register';
-export type { LoginByEmailReq, LoginByEmailRes, LoginByPhoneReq, LoginByPhoneRes, SendSmsCodeReq, SendSmsCodeRes } from './login';
-export type { 
-  GetCurrentUserReq, GetCurrentUserRes,
-  RefreshTokenReq, RefreshTokenRes, 
-  ListSessionsReq, ListSessionsRes,
-  RevokeSessionReq, RevokeSessionRes 
-} from './session';
-export type { ChangePasswordReq, ChangePasswordRes, ForgotPasswordReq, ForgotPasswordRes, ResetPasswordReq, ResetPasswordRes } from './password';
-export type { GetOAuthUrlReq, GetOAuthUrlRes, OAuthCallbackReq, OAuthCallbackRes } from './oauth';
+  // Register Operations
+  RegisterByEmailSchema,
+  type RegisterByEmailReq,
+  type RegisterByEmailRes,
+  RegisterByPhoneSchema,
+  type RegisterByPhoneReq,
+  type RegisterByPhoneRes,
+
+  // Password Operations
+  ChangePasswordSchema,
+  type ChangePasswordReq,
+  type ChangePasswordRes,
+  ResetPasswordSchema,
+  type ResetPasswordReq,
+  type ResetPasswordRes,
+
+  // OAuth Operations
+  OAuthAuthorizeSchema,
+  type OAuthAuthorizeReq,
+  type OAuthAuthorizeRes,
+
+  // Session Operations
+  RefreshTokenSchema,
+  type RefreshTokenReq,
+  type RefreshTokenRes,
+  type LogoutReq,
+  type LogoutRes,
+  type ValidateTokenReq,
+  type ValidateTokenRes,
+} from './crud';

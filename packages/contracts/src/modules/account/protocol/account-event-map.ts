@@ -1,32 +1,39 @@
+import type {
+  AccountCreatedEvent,
+  AccountClosedEvent,
+  AccountProfileUpdatedEvent,
+  AccountSettingsUpdatedEvent,
+} from '../domain/events';
+
 /**
- * Account Domain Event Map
+ * Account Module - Event Map
  * 
  * Event Naming Convention: account:<action>
- * - account:create - Account created
- * - account:close - Account closed
- * - account:update-profile - Profile updated
- * - account:update-settings - Settings updated
+ * Maps event names to their payload types for type-safe event handling
  */
+
 export type AccountEventMap = {
-  'account:create': { 
-    accountId: string;
-    email: string; 
-    createdAt: number;
-  };
-  
-  'account:close': { 
-    accountId: string;
-    reason: string;
-    closedAt: number;
-  };
-  
-  'account:update-profile': { 
-    accountId: string;
-    updatedFields: string[];
-  };
-  
-  'account:update-settings': {
-    accountId: string;
-    updatedFields: string[];
-  };
+  /**
+   * Account created event
+   * Triggered when account is created
+   */
+  'account:create': AccountCreatedEvent;
+
+  /**
+   * Account closed event
+   * Triggered when account is closed/deleted
+   */
+  'account:close': AccountClosedEvent;
+
+  /**
+   * Account profile updated event
+   * Triggered when account profile is updated
+   */
+  'account:update-profile': AccountProfileUpdatedEvent;
+
+  /**
+   * Account settings updated event
+   * Triggered when account settings are changed
+   */
+  'account:update-settings': AccountSettingsUpdatedEvent;
 };

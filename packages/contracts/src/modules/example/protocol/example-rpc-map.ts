@@ -19,6 +19,8 @@ import type {
   DeleteExampleRes,
   ListExampleQuery,
   ListExampleRes,
+  ComplexExampleQuery,
+  ComplexExampleRes,
 } from '../api';
 
 export type ExampleRpcMap = {
@@ -28,4 +30,5 @@ export type ExampleRpcMap = {
   'example:get': [GetExampleReq, GetExampleRes];
   'example:delete': [DeleteExampleReq, DeleteExampleRes];
   'example:list': [ListExampleQuery, ListExampleRes];
+  'example:complex-query': [ComplexExampleQuery, ComplexExampleRes];
 };

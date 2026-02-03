@@ -24,8 +24,8 @@ description: "Task list for contracts baseline across modules"
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 [US1] Inventory modules and confirm protocol/api/dtos folders exist under packages/contracts/src/modules/*
-- [ ] T002 [US1] Document contract layering rules (protocol → api → dtos) in packages/contracts/README.md
+- [X] T001 [US1] Inventory modules and confirm protocol/api/dtos folders exist under packages/contracts/src/modules/*
+- [X] T002 [US1] Document contract layering rules (protocol → api → dtos) in packages/contracts/README.md
 
 ---
 
@@ -35,8 +35,8 @@ description: "Task list for contracts baseline across modules"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 [US1] Define module event key naming convention in packages/contracts/README.md
-- [ ] T004 [US1] Create/update module index re-exports for protocol/api/dtos in packages/contracts/src/modules/*/index.ts
+- [X] T003 [US1] Define module event key naming convention in packages/contracts/README.md
+- [X] T004 [US1] Create/update module index re-exports for protocol/api/dtos in packages/contracts/src/modules/*/index.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -51,82 +51,82 @@ description: "Task list for contracts baseline across modules"
 ### Implementation for User Story 1
 
 **Account module**
-- [ ] T005 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/account/api/*.ts
-- [ ] T006 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/account/dtos/*.ts
-- [ ] T007 [US1] Update RPC map to use API types in packages/contracts/src/modules/account/protocol/account-rpc-map.ts
-- [ ] T008 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/account/protocol/account-event-map.ts
+- [X] T005 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/account/api/*.ts
+- [X] T006 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/account/dtos/*.ts
+- [X] T007 [US1] Update RPC map to use API types in packages/contracts/src/modules/account/protocol/account-rpc-map.ts
+- [X] T008 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/account/protocol/account-event-map.ts
 
 **AI module**
-- [ ] T009 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/ai/api/*.ts
-- [ ] T010 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/ai/dtos/*.ts
-- [ ] T011 [US1] Update RPC map to use API types in packages/contracts/src/modules/ai/protocol/ai-rpc-map.ts
-- [ ] T012 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/ai/protocol/ai-event-map.ts
+- [X] T009 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/ai/api/*.ts
+- [X] T010 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/ai/dtos/*.ts
+- [X] T011 [US1] Update RPC map to use API types in packages/contracts/src/modules/ai/protocol/ai-rpc-map.ts
+- [X] T012 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/ai/protocol/ai-event-map.ts
 
 **Authentication module**
-- [ ] T013 [P] [US1] Align login request union and API schemas in packages/contracts/src/modules/authentication/api/login.ts
-- [ ] T014 [P] [US1] Ensure composed response types in packages/contracts/src/modules/authentication/dtos/*.ts
-- [ ] T015 [US1] Update RPC map to use API types in packages/contracts/src/modules/authentication/protocol/auth-rpc-map.ts
-- [ ] T016 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/authentication/protocol/auth-event-map.ts
+- [X] T013 [P] [US1] Align login request union and API schemas in packages/contracts/src/modules/authentication/api/login.ts
+- [X] T014 [P] [US1] Ensure composed response types in packages/contracts/src/modules/authentication/dtos/*.ts
+- [X] T015 [US1] Update RPC map to use API types in packages/contracts/src/modules/authentication/protocol/auth-rpc-map.ts
+- [X] T016 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/authentication/protocol/auth-event-map.ts
 
 **Editor module**
-- [ ] T017 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/editor/api/*.ts
-- [ ] T018 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/editor/dtos/*.ts
-- [ ] T019 [US1] Update RPC map to use API types in packages/contracts/src/modules/editor/protocol/editor-rpc-map.ts
-- [ ] T020 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/editor/protocol/editor-event-map.ts
+- [X] T017 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/editor/api/*.ts
+- [X] T018 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/editor/dtos/*.ts
+- [X] T019 [US1] Update RPC map to use API types in packages/contracts/src/modules/editor/protocol/editor-rpc-map.ts
+- [X] T020 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/editor/protocol/editor-event-map.ts
 
 **Example module**
-- [ ] T021 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/example/api/*.ts
-- [ ] T022 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/example/dtos/*.ts
-- [ ] T023 [US1] Update RPC map to use API types in packages/contracts/src/modules/example/protocol/example-rpc-map.ts
-- [ ] T024 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/example/protocol/example-event-map.ts
+- [X] T021 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/example/api/*.ts
+- [X] T022 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/example/dtos/*.ts
+- [X] T023 [US1] Update RPC map to use API types in packages/contracts/src/modules/example/protocol/example-rpc-map.ts
+- [X] T024 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/example/protocol/example-event-map.ts
 
 **Goal module**
-- [ ] T025 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/goal/api/*.ts
-- [ ] T026 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/goal/dtos/*.ts
-- [ ] T027 [US1] Update RPC map to use API types in packages/contracts/src/modules/goal/protocol/goal-rpc-map.ts
-- [ ] T028 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/goal/protocol/goal-event-map.ts
+- [X] T025 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/goal/api/*.ts
+- [X] T026 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/goal/dtos/*.ts
+- [X] T027 [US1] Update RPC map to use API types in packages/contracts/src/modules/goal/protocol/goal-rpc-map.ts
+- [X] T028 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/goal/protocol/goal-event-map.ts
 
 **Notification module**
-- [ ] T029 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/notification/api/*.ts
-- [ ] T030 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/notification/dtos/*.ts
-- [ ] T031 [US1] Update RPC map to use API types in packages/contracts/src/modules/notification/protocol/notification-rpc-map.ts
-- [ ] T032 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/notification/protocol/notification-event-map.ts
+- [X] T029 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/notification/api/*.ts
+- [X] T030 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/notification/dtos/*.ts
+- [X] T031 [US1] Update RPC map to use API types in packages/contracts/src/modules/notification/protocol/notification-rpc-map.ts
+- [X] T032 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/notification/protocol/notification-event-map.ts
 
 **Reminder module**
-- [ ] T033 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/reminder/api/*.ts
-- [ ] T034 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/reminder/dtos/*.ts
-- [ ] T035 [US1] Update RPC map to use API types in packages/contracts/src/modules/reminder/protocol/reminder-rpc-map.ts
-- [ ] T036 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/reminder/protocol/reminder-event-map.ts
+- [X] T033 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/reminder/api/*.ts
+- [X] T034 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/reminder/dtos/*.ts
+- [X] T035 [US1] Update RPC map to use API types in packages/contracts/src/modules/reminder/protocol/reminder-rpc-map.ts
+- [X] T036 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/reminder/protocol/reminder-event-map.ts
 
 **Repository module**
-- [ ] T037 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/repository/api/*.ts
-- [ ] T038 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/repository/dtos/*.ts
-- [ ] T039 [US1] Update RPC map to use API types in packages/contracts/src/modules/repository/protocol/repository-rpc-map.ts
-- [ ] T040 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/repository/protocol/repository-event-map.ts
+- [X] T037 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/repository/api/*.ts
+- [X] T038 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/repository/dtos/*.ts
+- [X] T039 [US1] Update RPC map to use API types in packages/contracts/src/modules/repository/protocol/repository-rpc-map.ts
+- [X] T040 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/repository/protocol/repository-event-map.ts
 
 **Schedule module**
-- [ ] T041 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/schedule/api/*.ts
-- [ ] T042 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/schedule/dtos/*.ts
-- [ ] T043 [US1] Update RPC map to use API types in packages/contracts/src/modules/schedule/protocol/schedule-rpc-map.ts
-- [ ] T044 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/schedule/protocol/schedule-event-map.ts
+- [X] T041 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/schedule/api/*.ts
+- [X] T042 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/schedule/dtos/*.ts
+- [X] T043 [US1] Update RPC map to use API types in packages/contracts/src/modules/schedule/protocol/schedule-rpc-map.ts
+- [X] T044 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/schedule/protocol/schedule-event-map.ts
 
 **Setting module**
-- [ ] T045 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/setting/api/*.ts
-- [ ] T046 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/setting/dtos/*.ts
-- [ ] T047 [US1] Update RPC map to use API types in packages/contracts/src/modules/setting/protocol/setting-rpc-map.ts
-- [ ] T048 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/setting/protocol/setting-event-map.ts
+- [X] T045 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/setting/api/*.ts
+- [X] T046 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/setting/dtos/*.ts
+- [X] T047 [US1] Update RPC map to use API types in packages/contracts/src/modules/setting/protocol/setting-rpc-map.ts
+- [X] T048 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/setting/protocol/setting-event-map.ts
 
 **Sync module**
-- [ ] T049 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/sync/api/*.ts
-- [ ] T050 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/sync/dtos/*.ts
-- [ ] T051 [US1] Update RPC map to use API types in packages/contracts/src/modules/sync/protocol/sync-rpc-map.ts
-- [ ] T052 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/sync/protocol/sync-event-map.ts
+- [X] T049 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/sync/api/*.ts
+- [X] T050 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/sync/dtos/*.ts
+- [X] T051 [US1] Update RPC map to use API types in packages/contracts/src/modules/sync/protocol/sync-rpc-map.ts
+- [X] T052 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/sync/protocol/sync-event-map.ts
 
 **Task module**
-- [ ] T053 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/task/api/*.ts
-- [ ] T054 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/task/dtos/*.ts
-- [ ] T055 [US1] Update RPC map to use API types in packages/contracts/src/modules/task/protocol/task-rpc-map.ts
-- [ ] T056 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/task/protocol/task-event-map.ts
+- [X] T053 [P] [US1] Define/align API schemas and req/res types in packages/contracts/src/modules/task/api/*.ts
+- [X] T054 [P] [US1] Define composed DTOs (if needed) in packages/contracts/src/modules/task/dtos/*.ts
+- [X] T055 [US1] Update RPC map to use API types in packages/contracts/src/modules/task/protocol/task-rpc-map.ts
+- [X] T056 [US1] Update event map to use API/DTO types in packages/contracts/src/modules/task/protocol/task-event-map.ts
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -136,8 +136,8 @@ description: "Task list for contracts baseline across modules"
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T057 [P] Update contracts registry in specs/main/contracts/rpc-events.openapi.yaml
-- [ ] T058 Run quickstart validation checklist in specs/main/quickstart.md
+- [X] T057 [P] Update contracts registry in specs/main/contracts/rpc-events.openapi.yaml
+- [X] T058 Run quickstart validation checklist in specs/main/quickstart.md
 
 ---
 

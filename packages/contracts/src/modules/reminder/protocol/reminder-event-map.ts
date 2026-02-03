@@ -1,79 +1,61 @@
+import type {
+  ReminderTemplateCreatedEvent,
+  ReminderTemplateUpdatedEvent,
+  ReminderTemplateDeletedEvent,
+  ReminderGroupCreatedEvent,
+  ReminderGroupUpdatedEvent,
+  ReminderGroupDeletedEvent,
+  ReminderTriggeredEvent,
+} from '../domain/events';
+
 /**
- * Reminder Domain Event Map
+ * Reminder Module - Event Map
  * 
  * Event Naming Convention: reminder:<action>
- * - reminder:create - Template created
- * - reminder:update - Template updated
- * - reminder:delete - Template deleted
- * - reminder:enable - Template enabled
- * - reminder:pause - Template paused
- * - reminder:trigger - Template triggered
- * - reminder:move - Template moved to group
+ * Maps event names to their payload types for type-safe event handling
  */
 
 export type ReminderEventMap = {
   /**
-   * Template created event
+   * Reminder template created event
+   * Triggered when reminder template is created
    */
-  'reminder:create': {
-    uuid: string;
-    name: string;
-    type: string;
-    accountUuid: string;
-    createdAt: number;
-  };
+  'reminder:create': ReminderTemplateCreatedEvent;
 
   /**
-   * Template updated event
+   * Reminder template updated event
+   * Triggered when reminder template is updated
    */
-  'reminder:update': {
-    uuid: string;
-    changes: string[];
-    updatedAt: number;
-  };
+  'reminder:update': ReminderTemplateUpdatedEvent;
 
   /**
-   * Template deleted event
+   * Reminder template deleted event
+   * Triggered when reminder template is deleted
    */
-  'reminder:delete': {
-    uuid: string;
-    name: string;
-    deletedAt: number;
-  };
+  'reminder:delete': ReminderTemplateDeletedEvent;
 
   /**
-   * Template enabled event
+   * Reminder group created event
+   * Triggered when reminder group is created
    */
-  'reminder:enable': {
-    uuid: string;
-    enabledAt: number;
-  };
+  'reminder:group-create': ReminderGroupCreatedEvent;
 
   /**
-   * Template paused event
+   * Reminder group updated event
+   * Triggered when reminder group is updated
    */
-  'reminder:pause': {
-    uuid: string;
-    pausedAt: number;
-  };
+  'reminder:group-update': ReminderGroupUpdatedEvent;
 
   /**
-   * Template triggered event
+   * Reminder group deleted event
+   * Triggered when reminder group is deleted
    */
-  'reminder:trigger': {
-    uuid: string;
-    triggeredAt: number;
-    nextTriggerAt?: number | null;
-  };
+  'reminder:group-delete': ReminderGroupDeletedEvent;
 
   /**
-   * Template moved to group event
+   * Reminder triggered event
+   * Triggered when reminder fires
    */
-  'reminder:move': {
-    uuid: string;
-    oldGroupUuid?: string | null;
-    newGroupUuid?: string | null;
-    movedAt: number;
-  };
+  'reminder:trigger': ReminderTriggeredEvent;
 };
 

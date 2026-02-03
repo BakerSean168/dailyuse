@@ -1,9 +1,5 @@
 export type {
   NotificationEventMap,
-  NotificationCreatedEvent,
-  NotificationSentEvent,
-  NotificationReadEvent,
-  NotificationDeletedEvent,
-  NotificationStatusChangedEvent,
   NotificationDomainEvent,
 } from './notification-event-map';
+export type { NotificationRpcMap } from './notification-rpc-map';

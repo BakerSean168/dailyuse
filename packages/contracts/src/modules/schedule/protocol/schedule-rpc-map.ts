@@ -1,21 +1,13 @@
 import type {
   CreateScheduleRequest,
   UpdateScheduleRequest,
-  ScheduleJobClientDTO,
-  ConflictDetectionResult,
-  CreateScheduleTaskRequest,
-  UpdateScheduleTaskRequest,
-  UpdateScheduleConfigRequest,
-  UpdateTaskMetadataRequest,
   ScheduleTaskQueryParamsDTO,
-  ScheduleTaskClientDTO,
-  ScheduleTaskListResponseDTO,
   ScheduleExecutionQueryParamsDTO,
-  ScheduleExecutionDTO,
-  ScheduleExecutionListResponseDTO,
-  ExecutionHistoryStatsDTO,
   ScheduleOperationSuccessResponseDTO,
 } from '../api';
+import type { ScheduleJobClientDTO, ScheduleTaskClientDTO } from '../aggregates';
+import type { ScheduleExecutionClientDTO } from '../entities';
+import type { ConflictDetectionResult } from '../value-objects';
 
 // === Schedule Module RPC Map ===
 export type ScheduleRpcMap = {
@@ -28,16 +20,17 @@ export type ScheduleRpcMap = {
   'schedule:resolve-conflict': [{ resolution: string; newStartTime?: number; newEndTime?: number; newDuration?: number }, ScheduleJobClientDTO];
   
   // === Schedule Task Operations ===
-  'schedule-task:create': [CreateScheduleTaskRequest, ScheduleTaskClientDTO];
-  'schedule-task:update': [UpdateScheduleTaskRequest, ScheduleTaskClientDTO];
+  'schedule-task:create': [any, ScheduleTaskClientDTO];
+  'schedule-task:update': [any, ScheduleTaskClientDTO];
   'schedule-task:delete': [{ taskUuid: string }, ScheduleOperationSuccessResponseDTO];
-  'schedule-task:query': [ScheduleTaskQueryParamsDTO, ScheduleTaskListResponseDTO];
+  'schedule-task:query': [ScheduleTaskQueryParamsDTO, any];
   'schedule-task:enable': [{ taskUuid: string }, ScheduleTaskClientDTO];
   'schedule-task:disable': [{ taskUuid: string }, ScheduleTaskClientDTO];
-  'schedule-task:update-config': [UpdateScheduleConfigRequest, ScheduleTaskClientDTO];
-  'schedule-task:update-metadata': [UpdateTaskMetadataRequest, ScheduleTaskClientDTO];
+  'schedule-task:update-config': [any, ScheduleTaskClientDTO];
+  'schedule-task:update-metadata': [any, ScheduleTaskClientDTO];
   
   // === Schedule Execution Records ===
-  'schedule-execution:query': [ScheduleExecutionQueryParamsDTO, ScheduleExecutionListResponseDTO];
-  'schedule-execution:get-stats': [{ taskUuid: string }, ExecutionHistoryStatsDTO];
+  'schedule-execution:query': [ScheduleExecutionQueryParamsDTO, { items: ScheduleExecutionClientDTO[]; total: number; page: number; limit: number }];
+  'schedule-execution:get-stats': [{ taskUuid: string }, any];
 };
+

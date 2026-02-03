@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { ExampleClientDTO } from '../aggregates';
+import type { ComplexExampleDTO } from '../dtos';
 
 // ============ 创建 Example ============
 
@@ -76,4 +77,16 @@ export interface ListExampleRes {
     hasMore: boolean;
     totalPages: number;
   };
+}
+
+export const ComplexExampleQuerySchema = z.object({
+  includeDetails: z.boolean().optional().default(false),
+  filterByDescription: z.string().optional(),
+});
+
+export type ComplexExampleQuery = z.infer<typeof ComplexExampleQuerySchema>;
+
+export interface ComplexExampleRes {
+  items: ComplexExampleDTO[];
+  totalCount: number;
 }

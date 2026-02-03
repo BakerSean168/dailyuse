@@ -1,85 +1,54 @@
-import type { NotificationId } from '@/primitives';
-import type { NotificationServerDTO } from '../aggregates/notification-server';
-import type { NotificationStatus } from '../value-objects';
+import type {
+  NotificationCreatedEvent,
+  NotificationSentEvent,
+  NotificationReadEvent,
+  NotificationDeletedEvent,
+  NotificationStatusChangedEvent,
+  NotificationChannelFailedEvent,
+} from '../domain/events';
 
 /**
- * Notification Domain Event Map
+ * Notification Module - Event Map
  * 
  * Event Naming Convention: notification:<action>
- * - notification:create - Notification created
- * - notification:send - Notification sent
- * - notification:read - Notification read
- * - notification:delete - Notification deleted
- * - notification:status-change - Notification status changed
+ * Maps event names to their payload types for type-safe event handling
  */
-export interface NotificationEventMap {
-  'notification:create': {
-    aggregateId: NotificationId;
-    timestamp: Date;
-    payload: {
-      notification: NotificationServerDTO;
-      sendImmediately: boolean;
-    };
-  };
-  
-  'notification:send': {
-    aggregateId: NotificationId;
-    timestamp: Date;
-    payload: {
-      notificationUuid: NotificationId;
-      channels: string[];
-    };
-  };
-  
-  'notification:read': {
-    aggregateId: NotificationId;
-    timestamp: Date;
-    payload: {
-      notificationUuid: NotificationId;
-      readAt: number;
-    };
-  };
-  
-  'notification:delete': {
-    aggregateId: NotificationId;
-    timestamp: Date;
-    payload: {
-      notificationUuid: NotificationId;
-    };
-  };
-  
-  'notification:status-change': {
-    aggregateId: NotificationId;
-    timestamp: Date;
-    payload: {
-      previousStatus: NotificationStatus;
-      newStatus: NotificationStatus;
-      reason?: string;
-    };
-  };
-}
-    timestamp: Date;
-    payload: {
-      notificationUuid: NotificationId;
-    };
-  };
-  'notification.status.changed': {
-    aggregateId: NotificationId;
-    timestamp: Date;
-    payload: {
-      previousStatus: NotificationStatus;
-      newStatus: NotificationStatus;
-      reason?: string;
-    };
-  };
-}
 
-/**
- * Notification 领域事件联合类型
- */
-export type NotificationDomainEvent =
-  | NotificationCreatedEvent
-  | NotificationSentEvent
-  | NotificationReadEvent
-  | NotificationDeletedEvent
-  | NotificationStatusChangedEvent;
+export type NotificationEventMap = {
+  /**
+   * Notification created event
+   * Triggered when notification is created
+   */
+  'notification:create': NotificationCreatedEvent;
+
+  /**
+   * Notification sent event
+   * Triggered when notification is sent through channels
+   */
+  'notification:send': NotificationSentEvent;
+
+  /**
+   * Notification read event
+   * Triggered when notification is marked as read
+   */
+  'notification:read': NotificationReadEvent;
+
+  /**
+   * Notification deleted event
+   * Triggered when notification is deleted
+   */
+  'notification:delete': NotificationDeletedEvent;
+
+  /**
+   * Notification status changed event
+   * Triggered when notification status changes
+   */
+  'notification:status-change': NotificationStatusChangedEvent;
+
+  /**
+   * Notification channel failed event
+   * Triggered when notification fails to send through channel
+   */
+  'notification:channel-failed': NotificationChannelFailedEvent;
+};
+

@@ -1,5 +1,22 @@
+/**
+ * Notification Module - API Contracts (CRUD + Operations)
+ * 
+ * 【规范说明：API 层导出】
+ * 使用 Zod Schema 定义所有请求，类型通过 z.infer 推导
+ * 响应类型明确指向 DTO（aggregates/entities/dtos）
+ */
+
 import { z } from 'zod';
 import type { NotificationServerDTO } from '../aggregates/notification-server';
+import type { NotificationChannelServerDTO } from '../entities/notification-channel-server';
+import type { NotificationPreferenceServerDTO } from '../aggregates/notification-preference-server';
+import type {
+  NotificationListResultDTO,
+  NotificationStatsDTO,
+  SendNotificationResultDTO,
+  ListNotificationChannelsResultDTO,
+  BatchOperationResultDTO,
+} from '../dtos';
 import {
   NotificationType,
   NotificationCategory,
@@ -7,7 +24,6 @@ import {
   RelatedEntityType,
   NotificationChannelType,
 } from '../value-objects';
-import type { ImportanceLevel, UrgencyLevel } from '../../../shared';
 
 // ============ 创建通知 ============
 
@@ -64,13 +80,7 @@ export const NotificationQuerySchema = z.object({
 });
 
 export type NotificationQuery = z.infer<typeof NotificationQuerySchema>;
-
-export interface NotificationListRes {
-  notifications: NotificationServerDTO[];
-  total: number;
-  page: number;
-  limit: number;
-}
+export type NotificationListRes = NotificationListResultDTO;
 
 // ============ 批量操作 ============
 
@@ -79,14 +89,14 @@ export const MarkAsReadBatchSchema = z.object({
 });
 
 export type MarkAsReadBatchReq = z.infer<typeof MarkAsReadBatchSchema>;
-export type MarkAsReadBatchRes = { updatedCount: number };
+export type MarkAsReadBatchRes = BatchOperationResultDTO;
 
 export const DeleteNotificationsBatchSchema = z.object({
   notificationUuids: z.array(z.string().uuid()).min(1),
 });
 
 export type DeleteNotificationsBatchReq = z.infer<typeof DeleteNotificationsBatchSchema>;
-export type DeleteNotificationsBatchRes = { deletedCount: number };
+export type DeleteNotificationsBatchRes = BatchOperationResultDTO;
 
 export const CleanupOldNotificationsSchema = z.object({
   accountUuid: z.string().uuid(),
@@ -95,19 +105,12 @@ export const CleanupOldNotificationsSchema = z.object({
 });
 
 export type CleanupOldNotificationsReq = z.infer<typeof CleanupOldNotificationsSchema>;
-export type CleanupOldNotificationsRes = { deletedCount: number };
+export type CleanupOldNotificationsRes = BatchOperationResultDTO;
 
 // ============ 统计 ============
 
 export type GetNotificationStatsReq = void;
-
-export interface NotificationStatsRes {
-  unreadCount: number;
-  totalCount: number;
-  byCategory: Record<NotificationCategory, number>;
-  byType: Record<NotificationType, number>;
-  byStatus: Record<NotificationStatus, number>;
-}
+export type GetNotificationStatsRes = NotificationStatsDTO;
 
 // ============ 执行操作 ============
 
@@ -118,3 +121,79 @@ export const ExecuteNotificationActionSchema = z.object({
 
 export type ExecuteNotificationActionReq = z.infer<typeof ExecuteNotificationActionSchema>;
 export type ExecuteNotificationActionRes = NotificationServerDTO;
+
+// ============================================================================
+// CHANNEL Operations
+// ============================================================================
+
+/**
+ * 发送通知 Schema
+ */
+export const SendNotificationSchema = z.object({
+  notificationUuid: z.string().uuid(),
+  channels: z.array(z.nativeEnum(NotificationChannelType)).optional(),
+});
+
+export type SendNotificationReq = z.infer<typeof SendNotificationSchema>;
+export type SendNotificationRes = SendNotificationResultDTO;
+
+/**
+ * 重试渠道 Schema
+ */
+export const RetryChannelSchema = z.object({
+  channelUuid: z.string().uuid(),
+});
+
+export type RetryChannelReq = z.infer<typeof RetryChannelSchema>;
+export type RetryChannelRes = NotificationChannelServerDTO;
+
+/**
+ * 列表渠道
+ */
+export type ListNotificationChannelsReq = void;
+export type ListNotificationChannelsRes = ListNotificationChannelsResultDTO;
+
+// ============================================================================
+// PREFERENCE Operations
+// ============================================================================
+
+/**
+ * 更新通知偏好 Schema
+ */
+export const UpdateNotificationPreferenceSchema = z.object({
+  enabled: z.boolean().optional(),
+  channels: z.object({
+    inApp: z.boolean().optional(),
+    email: z.boolean().optional(),
+    push: z.boolean().optional(),
+    sms: z.boolean().optional(),
+  }).optional(),
+  categories: z.object({
+    task: z.any().optional(),
+    goal: z.any().optional(),
+    schedule: z.any().optional(),
+    reminder: z.any().optional(),
+    account: z.any().optional(),
+    system: z.any().optional(),
+  }).optional(),
+  doNotDisturb: z.object({
+    enabled: z.boolean(),
+    startTime: z.string(),
+    endTime: z.string(),
+    daysOfWeek: z.array(z.number().int().min(0).max(6)),
+  }).optional(),
+  rateLimit: z.object({
+    enabled: z.boolean(),
+    maxPerHour: z.number().int().min(1),
+    maxPerDay: z.number().int().min(1),
+  }).optional(),
+});
+
+export type UpdateNotificationPreferenceReq = z.infer<typeof UpdateNotificationPreferenceSchema>;
+export type UpdateNotificationPreferenceRes = NotificationPreferenceServerDTO;
+
+/**
+ * 获取通知偏好
+ */
+export type GetNotificationPreferenceReq = void;
+export type GetNotificationPreferenceRes = NotificationPreferenceServerDTO;

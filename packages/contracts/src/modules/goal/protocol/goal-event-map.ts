@@ -1,56 +1,163 @@
+import type {
+  GoalCreatedEvent,
+  GoalUpdatedEvent,
+  GoalStatusChangedEvent,
+  GoalCompletedEvent,
+  GoalArchivedEvent,
+  GoalDeletedEvent,
+  KeyResultAddedEvent,
+  KeyResultUpdatedEvent,
+  KeyResultDeletedEvent,
+  ReviewAddedEvent,
+  GoalFolderCreatedEvent,
+  GoalFolderUpdatedEvent,
+  GoalFolderDeletedEvent,
+  GoalFolderStatsUpdatedEvent,
+  GoalStatisticsRecalculatedEvent,
+  FocusSessionStartedEvent,
+  FocusSessionPausedEvent,
+  FocusSessionResumedEvent,
+  FocusSessionCompletedEvent,
+  FocusSessionCancelledEvent,
+} from '../domain/events';
+
 /**
- * Goal Domain Event Map
+ * Goal Module - Event Map
  * 
  * Event Naming Convention: goal:<action>
- * - goal:create - Goal created
- * - goal:update - Goal updated
- * - goal:status-change - Goal status changed
- * - goal:complete - Goal completed
- * - goal:archive - Goal archived
- * - goal:delete - Goal deleted
- * - goal:key-result-add - Key result added
- * - goal:key-result-update - Key result updated
- * - goal:review-add - Review added
- * - goal:folder-create - Folder created
- * - goal:folder-update - Folder updated
- * - goal:folder-delete - Folder deleted
- * - goal:folder-stats-update - Folder stats updated
- * - goal:statistics-recalculate - Statistics recalculated
- * - goal:focus-session-start - Focus session started
- * - goal:focus-session-pause - Focus session paused
- * - goal:focus-session-resume - Focus session resumed
- * - goal:focus-session-complete - Focus session completed
- * - goal:focus-session-cancel - Focus session cancelled
+ * Maps event names to their payload types for type-safe event handling
  */
+
 export type GoalEventMap = {
   // ============ Goal Events ============
-  'goal:create': { goalId: string; identityId: string; folderId: string | null };
-  'goal:update': { goalId: string; changes: string[] };
-  'goal:status-change': { goalId: string; previousStatus: string; newStatus: string };
-  'goal:complete': { goalId: string; completedAt: number; finalProgress: number };
-  'goal:archive': { goalId: string; archivedAt: number };
-  'goal:delete': { goalId: string; deletedAt: number; isSoftDelete: boolean };
+  
+  /**
+   * Goal created event
+   * Triggered when a new goal is created
+   */
+  'goal:create': GoalCreatedEvent;
+
+  /**
+   * Goal updated event
+   * Triggered when goal is updated
+   */
+  'goal:update': GoalUpdatedEvent;
+
+  /**
+   * Goal status changed event
+   * Triggered when goal status changes
+   */
+  'goal:status-change': GoalStatusChangedEvent;
+
+  /**
+   * Goal completed event
+   * Triggered when goal is completed
+   */
+  'goal:complete': GoalCompletedEvent;
+
+  /**
+   * Goal archived event
+   * Triggered when goal is archived
+   */
+  'goal:archive': GoalArchivedEvent;
+
+  /**
+   * Goal deleted event
+   * Triggered when goal is deleted
+   */
+  'goal:delete': GoalDeletedEvent;
 
   // ============ KeyResult Events ============
-  'goal:key-result-add': { goalId: string; keyResultId: string };
-  'goal:key-result-update': { goalId: string; keyResultId: string; previousValue: number; newValue: number };
+
+  /**
+   * Key result added event
+   * Triggered when key result is added to goal
+   */
+  'goal:key-result-add': KeyResultAddedEvent;
+
+  /**
+   * Key result updated event
+   * Triggered when key result is updated
+   */
+  'goal:key-result-update': KeyResultUpdatedEvent;
+
+  /**
+   * Key result deleted event
+   * Triggered when key result is deleted
+   */
+  'goal:key-result-delete': KeyResultDeletedEvent;
 
   // ============ GoalReview Events ============
-  'goal:review-add': { goalId: string; reviewId: string };
+
+  /**
+   * Review added event
+   * Triggered when review is added to goal
+   */
+  'goal:review-add': ReviewAddedEvent;
 
   // ============ GoalFolder Events ============
-  'goal:folder-create': { folderId: string; identityId: string };
-  'goal:folder-update': { folderId: string; changes: string[] };
-  'goal:folder-delete': { folderId: string; deletedAt: number; isSoftDelete: boolean };
-  'goal:folder-stats-update': { folderId: string; goalCount: number; completedGoalCount: number };
 
-  // ============ GoalStatistics Events ============
-  'goal:statistics-recalculate': { identityId: string };
+  /**
+   * Folder created event
+   * Triggered when goal folder is created
+   */
+  'goal:folder-create': GoalFolderCreatedEvent;
+
+  /**
+   * Folder updated event
+   * Triggered when folder is updated
+   */
+  'goal:folder-update': GoalFolderUpdatedEvent;
+
+  /**
+   * Folder deleted event
+   * Triggered when folder is deleted
+   */
+  'goal:folder-delete': GoalFolderDeletedEvent;
+
+  /**
+   * Folder statistics updated event
+   * Triggered when folder stats are recalculated
+   */
+  'goal:folder-stats-update': GoalFolderStatsUpdatedEvent;
+
+  // ============ Statistics Events ============
+
+  /**
+   * Statistics recalculated event
+   * Triggered when user goal statistics need refresh
+   */
+  'goal:statistics-recalculate': GoalStatisticsRecalculatedEvent;
 
   // ============ FocusSession Events ============
-  'goal:focus-session-start': { sessionId: string; identityId: string; goalId: string | null; durationMinutes: number; startedAt: number };
-  'goal:focus-session-pause': { sessionId: string; identityId: string; pausedAt: number; pauseCount: number };
-  'goal:focus-session-resume': { sessionId: string; identityId: string; resumedAt: number; pausedDurationMinutes: number };
-  'goal:focus-session-complete': { sessionId: string; identityId: string; goalId: string | null; completedAt: number; actualDurationMinutes: number; plannedDurationMinutes: number };
-  'goal:focus-session-cancel': { sessionId: string; identityId: string; cancelledAt: number; reason?: string | null };
+
+  /**
+   * Focus session started event
+   * Triggered when focus session begins
+   */
+  'goal:focus-session-start': FocusSessionStartedEvent;
+
+  /**
+   * Focus session paused event
+   * Triggered when focus session is paused
+   */
+  'goal:focus-session-pause': FocusSessionPausedEvent;
+
+  /**
+   * Focus session resumed event
+   * Triggered when focus session resumes
+   */
+  'goal:focus-session-resume': FocusSessionResumedEvent;
+
+  /**
+   * Focus session completed event
+   * Triggered when focus session completes
+   */
+  'goal:focus-session-complete': FocusSessionCompletedEvent;
+
+  /**
+   * Focus session cancelled event
+   * Triggered when focus session is cancelled
+   */
+  'goal:focus-session-cancel': FocusSessionCancelledEvent;
 };

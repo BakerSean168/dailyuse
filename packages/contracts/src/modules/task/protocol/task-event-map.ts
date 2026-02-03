@@ -1,59 +1,53 @@
+import type {
+  TaskCreatedEvent,
+  TaskUpdatedEvent,
+  TaskDeletedEvent,
+  TaskCompletedEvent,
+  TaskUncompletedEvent,
+  TaskRescheduledEvent,
+} from '../domain/events';
+
 /**
- * Task Domain Event Map
+ * Task Module - Event Map
  * 
  * Event Naming Convention: task:<action>
- * - task:create - Template created
- * - task:update - Template updated
- * - task:delete - Template deleted
- * - task:instance-create - Instance created
- * - task:complete - Instance completed
- * - task:uncomplete - Instance uncompleted
- * - task:reschedule - Instance rescheduled
+ * Maps event names to their payload types for type-safe event handling
  */
-export interface TaskEventMap {
-  // ================= Template Events (Metadata Changes) =================
-  'task:create': {
-    templateId: string;
-    identityId: string;
-    linkedKeyResultId?: string; // Associated OKR if any
-  };
-  'task:update': {
-    templateId: string;
-  };
-  'task:delete': {
-    templateId: string;
-  };
 
-  // ================= Instance Events (Execution State Changes) =================
-  
-  // 1. New task instance generated (Schedule module may listen for calendar sync)
-  'task:instance-create': {
-    instanceId: string;
-    templateId: string;
-    date: string; // ISO Date
-    scheduledTime: { start: string; end?: string } | null;
-  };
+export type TaskEventMap = {
+  /**
+   * Task created event
+   * Triggered when task instance is created
+   */
+  'task:create': TaskCreatedEvent;
 
-  // 2. Task completed (Goal module listens to increment KeyResult progress)
-  'task:complete': {
-    instanceId: string;
-    templateId: string;
-    identityId: string;
-    completedAt: string;
-    linkedKeyResultId?: string; // For efficient filtering by Goal module
-    impactValue?: number;       // Contribution value
-  };
+  /**
+   * Task updated event
+   * Triggered when task is updated
+   */
+  'task:update': TaskUpdatedEvent;
 
-  // 3. Task uncompleted (rollback - Goal module needs to decrement progress)
-  'task:uncomplete': {
-    instanceId: string;
-    linkedKeyResultId?: string;
-  };
+  /**
+   * Task deleted event
+   * Triggered when task is deleted
+   */
+  'task:delete': TaskDeletedEvent;
 
-  // 4. Task rescheduled/postponed (Schedule module updates calendar)
-  'task:reschedule': {
-    instanceId: string;
-    originalDate: string;
-    newDate: string;
-  };
-}
+  /**
+   * Task completed event
+   * Triggered when task is marked complete
+   */
+  'task:complete': TaskCompletedEvent;
+
+  /**
+   * Task uncompleted event
+   * Triggered when task completion is reverted
+   */
+  'task:uncomplete': TaskUncompletedEvent;
+
+  /**
+   * Task rescheduled event
+   * Triggered when task is rescheduled to different date
+   */
+  'task:reschedule': TaskRescheduledEvent;
+};

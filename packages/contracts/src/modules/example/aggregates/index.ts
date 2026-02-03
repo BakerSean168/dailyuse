@@ -16,10 +16,3 @@ export type {
   ExampleServer,
 } from './example-server';
 
-// ============ Domain Events ============
-export type {
-  ExampleCreatedEvent,
-  ExampleUpdatedEvent,
-  ExampleDeletedEvent,
-  ExampleDomainEvent,
-} from './example-server';

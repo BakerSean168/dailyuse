@@ -1,3 +1,10 @@
+import type {
+  ExampleCreatedEvent,
+  ExampleUpdatedEvent,
+  ExampleDeletedEvent,
+  ExampleStatusChangedEvent,
+} from '../domain/events';
+
 /**
  * Example Module - Event Map
  * 
@@ -7,46 +14,29 @@
  * - example:delete - Example deleted
  * - example:status-change - Example status changed
  */
-
 export type ExampleEventMap = {
   /**
    * Example created event
    * Emitted when new Example is created
    */
-  'example:create': {
-    id: string;
-    name: string;
-    createdAt: number;
-  };
+  'example:create': ExampleCreatedEvent;
 
   /**
    * Example updated event
    * Emitted when Example is updated
    */
-  'example:update': {
-    id: string;
-    updatedFields: string[];
-    updatedAt: number;
-  };
+  'example:update': ExampleUpdatedEvent;
 
   /**
    * Example deleted event
    * Emitted when Example is deleted
    */
-  'example:delete': {
-    id: string;
-    deletedAt: number;
-  };
+  'example:delete': ExampleDeletedEvent;
 
   /**
    * Example status changed event
    * Emitted when Example status changes
    */
-  'example:status-change': {
-    id: string;
-    oldStatus: string;
-    newStatus: string;
-    changedAt: number;
-  };
+  'example:status-change': ExampleStatusChangedEvent;
 };
-};
+

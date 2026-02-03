@@ -24,4 +24,8 @@ export {
   ListExampleQuerySchema,
   type ListExampleQuery,
   type ListExampleRes,
+
+  ComplexExampleQuerySchema,
+  type ComplexExampleQuery,
+  type ComplexExampleRes,
 } from './crud';

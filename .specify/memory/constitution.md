@@ -1,11 +1,10 @@
-<!-- SYNC IMPACT REPORT (2026-02-02)
-Version: 0.0.0 → 1.0.0 (Initial Release)
-This is the first formal constitution establishing governance for the DailyUse project.
-New Principles: 5 core principles + 2 additional sections
-Added Sections: Technology Stack Requirements, Code Quality & Review Standards
-Files Updated: .specify/templates/ (already compliant)
-Templates Status: ✅ plan-template.md, ✅ spec-template.md, ✅ tasks-template.md (all align with principles)
-Follow-up TODOs: None - all placeholders resolved
+<!-- SYNC IMPACT REPORT (2026-02-03)
+Version: 1.1.0 → 1.2.0 (Example Modules as Living Documentation)
+Added Principle VII: Example modules as executable code standards and authoritative reference
+New Guidance: Example modules required in every module-bearing package with strict governance
+Templates Updated: None (constitution-only change; example modules already exist and compliant)
+Reference Implementation: packages/contracts/src/modules/example/ (currently exemplifies principle)
+Follow-up Action: Document example module governance in developer guide
 -->
 
 # DailyUse Constitution
@@ -83,6 +82,105 @@ Unit tests and integration tests MUST be written for all business logic. Coverag
 - Tests MUST be executable via `nx test {project}` and `nx affected:test` for CI/CD
 
 **Rationale:** Tests serve as executable specifications, prevent regressions, and give confidence during refactoring. High coverage ensures reliability across platforms.
+
+### VI. Contract Standardization (Protocol/API/DTOs Layering)
+
+All inter-module communication contracts MUST follow a strict three-layer architecture: Protocol (RPC/Event definitions) → API (Request/Response types with validation) → DTOs (Complex composed types).
+
+**Non-negotiable rules:**
+
+**Protocol Layer** (`packages/contracts/src/modules/{domain}/protocol/`):
+- MUST contain `{domain}-rpc-map.ts` defining all RPC operations as a discriminated union type
+- MUST contain `{domain}-event-map.ts` defining all domain events with timestamp, aggregateId, and event-specific payload
+- RPC map signature format MUST be: `'domain:operation': [RequestType, ResponseType]` where RequestType and ResponseType are ALWAYS imported from `../api`, NEVER defined inline
+- ALL types in RPC maps and event maps MUST be imported from API or aggregates layers; inline custom object definitions are FORBIDDEN
+- Namespace format for operations MUST be `domain:kebab-case-operation` (e.g., `'goal:create'`, `'task:update'`, `'notification:batch-notify'`)
+- Event naming format MUST be `domain:PascalCaseEvent` (e.g., `'goal:GoalCreated'`, `'task:TaskCompleted'`)
+
+**API Layer** (`packages/contracts/src/modules/{domain}/api/`):
+- MUST export all Request types (`*Req`), Response types (`*Res`), and Query types (`*Query`) used by Protocol layer
+- MUST use Zod schemas for complex request/query types (e.g., `CreateGoalSchema`, `ListGoalQuerySchema`) with validation rules
+- MAY re-export aggregates and DTOs needed for API type composition; MUST NOT define new types not re-exported
+- Response types (`*Res`) MUST be entity/aggregate types from aggregates layer, NEVER inline objects
+- Simple types (like `void`) MAY be used directly; complex responses MUST come from aggregates or be typed interfaces
+- MUST have an `index.ts` that exports all types used by protocol and consumers
+
+**DTOs Layer** (`packages/contracts/src/modules/{domain}/dtos/`):
+- MUST contain composed/complex types that combine multiple aggregates or add presentation-layer concerns
+- DTOs are INTERMEDIATE types between API responses and presentation/consumption code
+- DTOs MUST import from aggregates; MUST NOT be imported by API or Protocol layers (unidirectional dependency)
+- Use case: When a view needs data from multiple entities, compose it in a DTO; API exports the base entity, DTO adds the composition
+- Example: `ComplexExampleDTO` imports `ExampleClientDTO` from aggregates and adds `clientDetails` composition
+
+**Dependency Flow** (unidirectional):
+```
+Protocol → imports types from → API
+API → imports types from → Aggregates, DTOs
+DTOs → imports from → Aggregates
+```
+
+**Prohibited:**
+- ❌ Defining request/response types inline in RPC map (MUST move to API layer)
+- ❌ Custom objects in protocol layer without API layer re-export (MUST be defined in API with Zod schema or as typed interface)
+- ❌ DTOs importing from Protocol or API layers
+- ❌ API layer creating types not defined in files (MUST be traceable and re-exportable)
+
+**Verification:**
+- Every type in an RPC map entry MUST be traceable to a file in the `../api` directory
+- `pnpm nx build contracts` MUST pass with zero TypeScript errors
+- Type exports in `api/index.ts` MUST match all types used in `protocol/{domain}-rpc-map.ts`
+
+**Rationale:** This strict layering ensures type contracts between modules are explicit, validated, and compose cleanly. Moving complex types to API layer (with Zod schemas) enables validation at boundaries, preventing invalid data from crossing module boundaries. DTOs enable custom compositions for specific use cases without polluting core API definitions. This prevents the anti-pattern of inline custom object types that lose validation and become difficult to maintain as the codebase scales.
+
+### VII. Example Modules as Executable Code Standards (Living Documentation)
+
+Every package and app containing business modules MUST include an `example` module that serves as the reference implementation, demonstrating correct patterns for all code standards and architectural principles.
+
+**Non-negotiable rules:**
+
+**Creation & Maintenance**:
+- Each module-bearing package (`packages/*`, `apps/*/src/`) MUST include an `example/` or `{package}-example/` directory
+- The example module MUST be fully functional and buildable; it cannot be a stub or placeholder
+- The example module structure MUST mirror the real modules in the same package exactly (same layering, same file organization, same patterns)
+- Example modules MUST be updated whenever code standards change (e.g., when new Principle is added to Constitution)
+- Example modules are FORBIDDEN from being feature-specific; they MUST be generic/reusable patterns that apply to all modules in that context
+
+**Reference Authority**:
+- When code reviews identify a pattern question, the example module IS the source of truth
+- All new developers MUST study the example module before writing code in that package
+- PR descriptions MUST explicitly reference the example module when introducing patterns (e.g., "Following `packages/contracts/src/modules/example/` pattern")
+- Refactoring efforts MUST ensure example modules remain compliant with changes
+
+**Scope by Package**:
+
+| Package | Example Module | Demonstrates |
+|---------|---|---|
+| `packages/contracts/` | `src/modules/example/` | Protocol/API/DTOs layering, RPC maps, event maps, Zod schemas, type organization |
+| `packages/domain-server/` | `src/modules/example/` | Backend DDD structure: domain layer, application services, repositories, DTOs, use cases |
+| `packages/domain-client/` | `src/modules/example/` | Frontend-agnostic client logic: state management, services, models, validation, composition |
+| `packages/ui/` | `components/example/` | Component patterns: props, slots, styling, accessibility, testing, storybook |
+| `apps/api/src/` | `modules/example/` | API server module: NestJS controller, service, guards, decorators, DTOs, API routes |
+| `apps/web/src/` | `modules/example/` | Vue 3 module: views, composables, components, state (Pinia), API integration, patterns |
+| `apps/desktop/src/` | `modules/example/` | Electron renderer module: React components, IPC patterns, main-process communication, state |
+
+**Code Quality**:
+- Example modules MUST have >80% test coverage (unit + integration)
+- Example modules MUST pass all linting, formatting, and type checking (`pnpm lint`, `pnpm format`, `pnpm tsc`)
+- Example modules MUST build successfully with zero warnings: `nx build {package}` or equivalent
+- Comments in example modules MUST explain WHY patterns are used, not just WHAT they do
+- Example modules SHOULD include edge cases and error handling (to guide developers on completeness)
+
+**CI/CD Integration**:
+- All example modules MUST be built and tested in CI (not excluded)
+- Failing example module builds/tests MUST block PR merge (treated as production code)
+- Example module compliance SHOULD be verified via linting rule or pre-commit hook (tooling optional)
+
+**Governance**:
+- Changes to example modules MUST undergo same code review rigor as production code
+- Example modules MAY receive separate CHANGELOG entries: `docs(example): update {module} pattern`
+- Example module refactors MUST be documented in `docs/guides/` for developer awareness
+
+**Rationale:** Making example modules mandatory and authoritative ensures every developer learns from a single, tested source of truth. This prevents pattern drift where different modules solve the same problem differently, reduces code review friction ("does this match the pattern?"), accelerates onboarding, and creates living documentation that evolves with the codebase. By treating examples as production-quality code, they stay relevant and trustworthy. This principle directly supports Principle IV (Code Consistency & Maintainability) by anchoring all patterns to an executable reference.
 
 ## Technology Stack Requirements
 
@@ -164,4 +262,4 @@ Constitution versions follow **Semantic Versioning**:
 
 ---
 
-**Version**: 1.0.0 | **Ratified**: 2026-02-02 | **Last Amended**: 2026-02-02
+**Version**: 1.2.0 | **Ratified**: 2026-02-02 | **Last Amended**: 2026-02-03

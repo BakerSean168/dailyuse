@@ -1,52 +1,57 @@
 /**
- * Notification Module API - Barrel Export
- * 通知模块 API 导出
+ * Notification Module API Contracts (Grouped by operation type)
  */
 
-// ===== CRUD Operations =====
+// === Notification CRUD Operations ===
 export {
   CreateNotificationSchema,
-  type CreateNotificationReq,
-  type CreateNotificationRes,
   UpdateNotificationSchema,
-  type UpdateNotificationReq,
-  type UpdateNotificationRes,
   NotificationQuerySchema,
-  type NotificationQuery,
-  type NotificationListRes,
   MarkAsReadBatchSchema,
-  type MarkAsReadBatchReq,
-  type MarkAsReadBatchRes,
   DeleteNotificationsBatchSchema,
-  type DeleteNotificationsBatchReq,
-  type DeleteNotificationsBatchRes,
   CleanupOldNotificationsSchema,
-  type CleanupOldNotificationsReq,
-  type CleanupOldNotificationsRes,
-  type GetNotificationStatsReq,
-  type NotificationStatsRes,
   ExecuteNotificationActionSchema,
-  type ExecuteNotificationActionReq,
-  type ExecuteNotificationActionRes,
+} from './crud';
+export type {
+  CreateNotificationReq,
+  CreateNotificationRes,
+  UpdateNotificationReq,
+  UpdateNotificationRes,
+  NotificationQuery,
+  NotificationListRes,
+  MarkAsReadBatchReq,
+  MarkAsReadBatchRes,
+  DeleteNotificationsBatchReq,
+  DeleteNotificationsBatchRes,
+  CleanupOldNotificationsReq,
+  CleanupOldNotificationsRes,
+  GetNotificationStatsReq,
+  GetNotificationStatsRes,
+  ExecuteNotificationActionReq,
+  ExecuteNotificationActionRes,
 } from './crud';
 
-// ===== Preferences =====
-export {
-  UpdateNotificationPreferenceSchema,
-  type UpdateNotificationPreferenceReq,
-  type UpdateNotificationPreferenceRes,
-  type GetNotificationPreferenceReq,
-  type GetNotificationPreferenceRes,
-} from './preferences';
-
-// ===== Channels =====
+// === Channel Operations ===
 export {
   SendNotificationSchema,
-  type SendNotificationReq,
-  type SendNotificationRes,
   RetryChannelSchema,
-  type RetryChannelReq,
-  type RetryChannelRes,
-  type ListNotificationChannelsReq,
-  type ListNotificationChannelsRes,
-} from './channels';
+} from './crud';
+export type {
+  SendNotificationReq,
+  SendNotificationRes,
+  RetryChannelReq,
+  RetryChannelRes,
+  ListNotificationChannelsReq,
+  ListNotificationChannelsRes,
+} from './crud';
+
+// === Preference Operations ===
+export {
+  UpdateNotificationPreferenceSchema,
+} from './crud';
+export type {
+  UpdateNotificationPreferenceReq,
+  UpdateNotificationPreferenceRes,
+  GetNotificationPreferenceReq,
+  GetNotificationPreferenceRes,
+} from './crud';

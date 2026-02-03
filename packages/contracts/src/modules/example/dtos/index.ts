@@ -16,3 +16,5 @@
 
 // 目前没有特殊的 DTO 定义
 // 如果需要添加统计或报表 DTO，在这里导出
+
+export type { ComplexExampleDTO } from './complex-example.dto';

@@ -1,48 +1,58 @@
 /**
- * AI Module API Export
- * AI 模块 API 导出
+ * AI Module API Contracts (Grouped by operation type)
  */
 
-// ===== Goal Generation =====
+// === Goal Generation Operations ===
 export {
   GoalCategory,
   GenerateGoalSchema,
-  type GenerateGoalReq,
-  type GeneratedGoalDraft,
-  type GenerateGoalRes,
   GenerateKeyResultsSchema,
-  type GenerateKeyResultsReq,
-  type KeyResultPreview,
-  type GenerateKeyResultsRes,
-} from './goal-generation';
+} from './crud';
+export type {
+  GenerateGoalReq,
+  GenerateGoalRes,
+  GenerateKeyResultsReq,
+  GenerateKeyResultsRes,
+} from './crud';
 
-// ===== Task Generation =====
+// === Task Generation Operations ===
 export {
   GenerateTasksSchema,
-  type GenerateTasksReq,
-  type GeneratedTaskPreview,
-  type GenerateTasksRes,
-} from './task-generation';
+} from './crud';
+export type {
+  GenerateTasksReq,
+  GenerateTasksRes,
+} from './crud';
 
-// ===== Knowledge & Summarization =====
+// === Knowledge Operations ===
 export {
   KnowledgeGenerationSchema,
-  type KnowledgeGenerationReq,
-  type KnowledgeGenerationRes,
   SummarizationSchema,
-  type SummarizationReq,
-  type SummarizationRes,
-} from './knowledge';
+} from './crud';
+export type {
+  KnowledgeGenerationReq,
+  KnowledgeGenerationRes,
+  SummarizationReq,
+  SummarizationRes,
+} from './crud';
 
-// ===== Provider Configuration =====
+// === AI Provider Configuration Operations ===
 export {
   CreateAIProviderConfigSchema,
-  type CreateAIProviderConfigReq,
-  type CreateAIProviderConfigRes,
   UpdateAIProviderConfigSchema,
-  type UpdateAIProviderConfigReq,
-  type UpdateAIProviderConfigRes,
   TestAIProviderSchema,
-  type TestAIProviderReq,
-  type TestAIProviderRes,
-} from './provider-config';
+} from './crud';
+export type {
+  CreateAIProviderConfigReq,
+  CreateAIProviderConfigRes,
+  UpdateAIProviderConfigReq,
+  UpdateAIProviderConfigRes,
+  GetAIProviderConfigsReq,
+  GetAIProviderConfigsRes,
+  GetAIProviderConfigReq,
+  GetAIProviderConfigRes,
+  DeleteAIProviderConfigReq,
+  DeleteAIProviderConfigRes,
+  TestAIProviderReq,
+  TestAIProviderRes,
+} from './crud';
