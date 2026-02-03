@@ -1,0 +1,10 @@
+import { createIdType } from '@dailyuse/utils';
+
+import type { TaskTemplateId as ITaskTemplateId } from '@dailyuse/contracts/primitives';
+
+/**
+ * TaskTemplateId 值对象
+ * 用于强类型化任务模板 ID
+ */
+export const TaskTemplateId = createIdType<ITaskTemplateId>('ITaskTemplateId');
+export type TaskTemplateId = ITaskTemplateId;

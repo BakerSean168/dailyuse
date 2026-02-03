@@ -7,10 +7,12 @@
  * 2. 包含服务层需要的元数据和内部字段
  * 3. 可能包含不被外部消费者看到的字段
  * 4. 用于聚合根的内部状态表示
+ * 5. 领域模型和传输层 id 使用强类型，持久层使用 string
  */
 
-import type { ExampleId, IdentityId, DomainDate, PersistenceDate, TransferDate } from '@/primitives';
+import type { ExampleId, IdentityId, DomainDate, PersistenceDate, TransferDate } from '@dailyuse/contracts/primitives';
 import type { ExampleStatus, ExampleProperty } from '../value-objects';
+import type { ExampleTagServer, ExampleTagServerDTO } from '../entities';
 
 /**
  * 服务层聚合根接口
@@ -35,6 +37,10 @@ export interface ExampleServer {
   isPublic: boolean;
   viewCount: number;
   likeCount: number;
+
+  //子实体
+  exampleTags: ExampleTagServer[]; // 仅包含标签 ID 列表
+
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;
@@ -57,6 +63,9 @@ export interface ExamplePersistenceDTO {
   isPublic: boolean;
   viewCount: number;
   likeCount: number;
+
+  exampleTags: ExamplePersistenceDTO[]; // 仅包含标签 ID 列表
+
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
   deletedAt: PersistenceDate | null;
@@ -69,8 +78,8 @@ export interface ExamplePersistenceDTO {
  * - 包含必要的计算字段但不包含 ORM 的内部状态
  */
 export interface ExampleServerDTO {
-  id: string;
-  identityId: string;
+  id: ExampleId;
+  identityId: IdentityId;
   name: string;
   description: string | null;
   status: string;
@@ -78,6 +87,9 @@ export interface ExampleServerDTO {
   isPublic: boolean;
   viewCount: number;
   likeCount: number;
+
+  exampleTags: ExampleTagServerDTO[]; // 仅包含标签 ID 列表
+
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;

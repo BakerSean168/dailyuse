@@ -38,4 +38,4 @@
  * - transferOwnership: 复杂的跨实体操作
  */
 
-export { ExampleDomainService } from './ExampleDomainService';
+export { FeatureOne } from './feature-one';

@@ -26,7 +26,7 @@
  */
 
 import type { Example } from '../aggregates/example';
-import type { ExampleId } from '@dailyuse/domain-shared/example';
+import type { ExampleId } from '@/domain-shared';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 
 /**

@@ -30,8 +30,8 @@ import type {
   ExampleServerDTO,
   ExamplePersistenceDTO,
   ExampleEventMap,
-} from '@dailyuse/contracts/example';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
+} from '@/contracts';
+import { IdentityId } from '@dailyuse/domain-shared';
 // 2. 引入时间类型（防腐层 ACL）
 import type {
   DomainDate,
@@ -43,7 +43,9 @@ import {
   ExampleId, 
   ExampleStatus, 
   ExampleProperty, 
-} from '@dailyuse/domain-shared/example';
+} from '@/domain-shared';
+
+import { ExampleTag } from '../entities/example-tag';
 
 export class Example extends AggregateRoot<ExampleId> implements IExampleServer {
   // ================= 1. 内部状态（Private Backing Fields）=================
@@ -62,6 +64,9 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
   private _isPublic: boolean;
   private _viewCount: number;
   private _likeCount: number;
+
+  private _exampleTags: ExampleTag[] = []; // 子实体集合
+
   private _createdAt: DomainDate;   // ✅ 使用 DomainDate
   private _updatedAt: DomainDate;   // ✅ 使用 DomainDate
   private _deletedAt: DomainDate | null;  // ✅ 使用 DomainDate
@@ -83,6 +88,9 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
     this._isPublic = props.isPublic;
     this._viewCount = props.viewCount;
     this._likeCount = props.likeCount;
+
+    this._exampleTags = []; // 初始为空，后续可通过方法添加
+
     this._createdAt = new Date(props.createdAt);
     this._updatedAt = new Date(props.updatedAt);
     this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
@@ -105,6 +113,7 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
   get isPublic(): boolean { return this._isPublic; }
   get viewCount(): number { return this._viewCount; }
   get likeCount(): number { return this._likeCount; }
+  get exampleTags(): ExampleTag[] { return this._exampleTags; }
   get createdAt(): DomainDate { return this._createdAt; }  // ✅ 返回 DomainDate
   get updatedAt(): DomainDate { return this._updatedAt; }  // ✅ 返回 DomainDate
   get deletedAt(): DomainDate | null { return this._deletedAt; }  // ✅ 返回 DomainDate
@@ -156,6 +165,7 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
       isPublic: params.isPublic ?? false,
       viewCount: 0,
       likeCount: 0,
+      exampleTags: [],
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
@@ -188,8 +198,8 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
    */
   public static fromPersistenceDTO(dto: ExamplePersistenceDTO): Example {
     const serverDTO: ExampleServerDTO = {
-      id: dto.id,
-      identityId: dto.identityId,
+      id: ExampleId.of(dto.id),
+      identityId: IdentityId.of(dto.identityId),
       name: dto.name,
       description: dto.description,
       status: dto.status,
@@ -197,6 +207,8 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
       isPublic: dto.isPublic,
       viewCount: dto.viewCount,
       likeCount: dto.likeCount,
+      // 子实体恢复留空，Repository 负责加载和关联
+      exampleTags: [],
       // ✅ PersistenceDate(Date) → TransferDate(number)
       createdAt: dto.createdAt.getTime(),
       updatedAt: dto.updatedAt.getTime(),
@@ -220,35 +232,6 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
   // 辅助方法：刷新更新时间
   private refreshUpdatedAt(): void {
     this._updatedAt = new Date();
-  }
-
-  /**
-   * ✅ 更新名称
-   */
-  public updateName(name: string): void {
-    // 1. Check
-    if (!name || name.trim().length === 0) {
-      throw new Error('Example name cannot be empty');
-    }
-    if (name.length > 256) {
-      throw new Error('Example name too long (max 256 characters)');
-    }
-    if (this._status === ExampleStatus.Archived) {
-      throw new Error('Cannot update archived example');
-    }
-
-    const oldName = this._name;
-
-    // 2. Act
-    this._name = name.trim();
-    this.refreshUpdatedAt();
-
-    // 3. Event
-    this.addDomainEvent<ExampleEventMap['example:updated']>('example:updated', {
-      id: this.id,
-      updatedFields: { name: { oldValue: oldName, newValue: this._name } },
-      updatedAt: this._updatedAt.getTime(),
-    });
   }
 
   /**
@@ -279,12 +262,6 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
     this.refreshUpdatedAt();
 
     // 3. Event
-    this.addDomainEvent<ExampleEventMap['example:status-changed']>('example:status-changed', {
-      id: this.id,
-      oldStatus: ExampleStatus.Draft,
-      newStatus: ExampleStatus.Active,
-      changedAt: this._updatedAt.getTime(),
-    });
   }
 
   /**
@@ -300,13 +277,6 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
     const oldStatus = this._status;
     this._status = ExampleStatus.Archived;
     this.refreshUpdatedAt();
-
-    this.addDomainEvent<ExampleEventMap['example:status-changed']>('example:status-changed', {
-      id: this.id,
-      oldStatus,
-      newStatus: ExampleStatus.Archived,
-      changedAt: this._updatedAt.getTime(),
-    });
   }
 
   /**
@@ -318,11 +288,11 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
     }
     
     // 检查重复
-    if (this._tags.some(t => t.id === tag.id)) {
+    if (this._exampleTags.some(t => t.id === tag.id)) {
       throw new Error('Tag already exists');
     }
 
-    this._tags.push(tag);
+    this._exampleTags.push(tag);
     this.refreshUpdatedAt();
   }
 
@@ -334,12 +304,12 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
       throw new Error('Cannot modify archived example');
     }
 
-    const index = this._tags.findIndex(t => t.id === tagId);
+    const index = this._exampleTags.findIndex(t => t.id === tagId);
     if (index === -1) {
       throw new Error('Tag not found');
     }
 
-    this._tags.splice(index, 1);
+    this._exampleTags.splice(index, 1);
     this.refreshUpdatedAt();
   }
 
@@ -375,6 +345,8 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
       isPublic: this._isPublic,
       viewCount: this._viewCount,
       likeCount: this._likeCount,
+      // 子实体持久化留空，Repository 负责保存和关联
+      exampleTags: [],
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       deletedAt: this._deletedAt,
@@ -398,6 +370,7 @@ export class Example extends AggregateRoot<ExampleId> implements IExampleServer 
       isPublic: this._isPublic,
       viewCount: this._viewCount,
       likeCount: this._likeCount,
+      exampleTags: this._exampleTags.map(tag => tag.toServerDTO()),
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       deletedAt: this._deletedAt?.getTime() ?? null,

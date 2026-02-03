@@ -3,6 +3,13 @@
  * 通知值对象导出
  */
 
+// IDs
+export { NotificationId } from './notification-id';
+export { NotificationChannelId } from './notification-channel-id';
+export { NotificationPreferenceId } from './notification-preference-id';
+export { NotificationTemplateId } from './notification-template-id';
+
+// Value Objects
 export { NotificationType } from './notification-type';
 export { NotificationCategory } from './notification-category';
 export { NotificationStatus } from './notification-status';

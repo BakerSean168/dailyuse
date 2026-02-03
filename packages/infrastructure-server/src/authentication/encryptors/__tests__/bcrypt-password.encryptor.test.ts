@@ -9,7 +9,7 @@ import { describe, it, expect, vi } from 'vitest';
 import {
   BcryptPasswordEncryptor,
   createBcryptEncryptor,
-} from '../bcrypt-password.encryptor';
+} from '../argon2-hasher';
 
 describe('BcryptPasswordEncryptor', () => {
   describe('constructor', () => {

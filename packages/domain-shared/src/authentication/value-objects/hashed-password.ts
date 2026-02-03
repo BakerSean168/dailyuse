@@ -1,8 +1,8 @@
 import { ValueObject } from '@dailyuse/utils';
 import type { HashedPasswordDTO, HashedPasswordPersistenceDTO, HashedPassword as IHashedPassword } from '@dailyuse/contracts/authentication';
 import { PasswordAlgorithm } from './password-algorithm';
-import * as argon2 from 'argon2';
 import { PlainPassword } from './plain-password';
+import type { IPasswordHasher } from '../services/i-password-hasher.service';
 /**
  * 🔐 哈希密码值对象
  *
@@ -27,9 +27,9 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
    * 🏭 异步工厂：从原始密码创建 (Raw -> Hashed)
    * 这里是唯一发生加密计算的地方
    */
-  public static async create(rawPassword: PlainPassword): Promise<HashedPassword> {
+  public static async create(rawPassword: PlainPassword, hasher: IPasswordHasher): Promise<HashedPassword> {
     // 1. 执行耗时的哈希算法
-    const hashString = await argon2.hash(rawPassword.value);
+    const hashString = await hasher.hash(rawPassword.value);
     
     // 2. 从 PHC 格式哈希中提取盐值
     // 格式: $argon2id$v=19$m=65536,t=3,p=4$salt$hash

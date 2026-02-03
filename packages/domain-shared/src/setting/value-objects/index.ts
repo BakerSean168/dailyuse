@@ -3,6 +3,12 @@
  * 设置值对象导出
  */
 
+// IDs
+export { SettingId } from './setting-id';
+export { SettingEntryId } from './setting-entry-id';
+export { SettingGroupId } from './setting-group-id';
+
+// Value Objects
 export { SettingValueType } from './setting-value-type';
 export { SettingScope } from './setting-scope';
 export { UIInputType } from './ui-input-type';

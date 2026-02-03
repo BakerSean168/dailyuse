@@ -77,8 +77,8 @@ export interface GoalTimeRangeSummary {
  * API 传输�?
  */
 export interface GoalClientDTO {
-  id: string;
-  identityId: string;
+  id: GoalId;
+  identityId: IdentityId;
   name: string;
   description: string | null;
   color: string | null;
@@ -92,8 +92,8 @@ export interface GoalClientDTO {
   targetDate: TransferDate | null;
   completedAt: TransferDate | null;
   archivedAt: TransferDate | null;
-  folderId: string | null;
-  parentGoalId: string | null;
+  folderId: GoalFolderId | null;
+  parentGoalId: GoalId | null;
   sortOrder: number;
   reminderConfig: GoalReminderConfigDTO | null;
   createdAt: TransferDate;

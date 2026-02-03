@@ -3,6 +3,14 @@
  * 同步值对象导出
  */
 
+// IDs
+export { SyncProfileId } from './sync-profile-id';
+export { SyncSessionId } from './sync-session-id';
+export { SyncConflictId } from './sync-conflict-id';
+export { PendingChangeId } from './pending-change-id';
+export { DataSnapshotId } from './data-snapshot-id';
+
+// Value Objects
 export { SyncSessionStatus } from './sync-session-status';
 export { SyncDirection } from './sync-direction';
 export { SyncStrategy } from './sync-strategy';

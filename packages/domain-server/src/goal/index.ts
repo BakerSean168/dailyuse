@@ -31,23 +31,20 @@
  * - 外部 I/O 库（fs, axios, prisma, ioredis 等）
  */
 
-// 值对象
-export {
-  FocusMode,
-  GoalMetadata,
-  GoalReminderConfig,
-  GoalTimeRange,
-  KeyResultProgress,
-  KeyResultSnapshot,
-  KeyResultWeightSnapshot,
-} from './value-objects';
+// 聚合根
+export * from './aggregates';
 
 // 实体
-export {
-  GoalRecord,
-  GoalReview,
-  KeyResult,
-} from './entities';
+export * from './entities';
+
+// 值对象
+export * from './value-objects';
+
+// 仓储接口
+export * from './repositories';
+
+// 领域服务
+export * from './services';
 
 // 聚合根
 export {

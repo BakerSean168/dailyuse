@@ -6,6 +6,13 @@
  * - 品牌化 ID 类型
  */
 
+// IDs
+export * from './editor-workspace-id';
+export * from './editor-session-id';
+export * from './editor-group-id';
+export * from './editor-tab-id';
+
+// Value Objects
 export * from './project-type';
 export * from './document-language';
 export * from './version-change-type';

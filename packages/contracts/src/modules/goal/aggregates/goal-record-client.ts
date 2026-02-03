@@ -2,13 +2,15 @@
  * GoalRecord Entity - Client Interface
  */
 
-import type { DomainDate, TransferDate } from '@/primitives';
+import type { DomainDate, GoalId, TransferDate } from '@/primitives';
+import type { GoalRecordId } from '@/primitives';
+import type { KeyResultId } from '@/primitives';
 
 
 export interface GoalRecordClientDTO {
-  id: string;
-  keyResultId: string;
-  goalId: string;
+  id: GoalRecordId;
+  keyResultId: KeyResultId;
+  goalId: GoalId;
   value: number;  // 本次记录的值（独立值）
   valueAfter: number;   // 改变后的快照值
   comment: string | null;
@@ -16,9 +18,9 @@ export interface GoalRecordClientDTO {
 }
 
 export interface GoalRecordClient {
-  id: string;
-  keyResultId: string;
-  goalId: string;
+  id: GoalRecordId;
+  keyResultId: KeyResultId;
+  goalId: GoalId;
   value: number;  // 本次记录的值（独立值）
   valueAfter: number;   // 改变后的快照值
   comment: string | null;

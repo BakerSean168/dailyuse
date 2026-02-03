@@ -1,4 +1,4 @@
-import type { DomainDate, TransferDate, PersistenceDate } from '@/primitives';
+import type { DomainDate, TransferDate, PersistenceDate } from '@dailyuse/contracts/primitives';
 
 /**
  * ExampleTag Entity - Server Interface

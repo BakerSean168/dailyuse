@@ -12,9 +12,9 @@ import type { FocusSessionServerDTO } from './focus-session-server';
  * 客户端传输对象
  */
 export interface FocusSessionClientDTO {
-  id: string;
-  identityId: string;
-  goalId: string | null;
+  id: FocusSessionId;
+  identityId: IdentityId;
+  goalId: GoalId | null;
   status: FocusSessionStatus;
   durationMinutes: number; // 计划时长（分钟）
   actualDurationMinutes: number; // 实际时长（分钟）

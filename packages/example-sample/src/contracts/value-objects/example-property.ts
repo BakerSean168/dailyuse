@@ -10,8 +10,7 @@
  * 这个文件展示如何定义一个复杂的、可复用的 Value Object。
  */
 
-import type { DomainDate } from "@/primitives";
-import type { PersistenceDate, TransferDate } from "@/primitives";
+import type { DomainDate, PersistenceDate, TransferDate } from '@dailyuse/contracts/primitives';
 
 /**
  * 领域层 Value Object

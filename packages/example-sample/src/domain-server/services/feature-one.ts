@@ -2,7 +2,7 @@
  * Example 领域服务
  * 
  * 【规范说明：Domain Service】
- * 
+ * 按照用例拆分领域服务，避免单一服务过大
  * 领域服务用于处理不适合放在聚合根中的业务逻辑：
  * 
  * 【何时使用 Domain Service】
@@ -53,17 +53,17 @@
 
 import type { Example } from '../aggregates/example';
 import type { IExampleRepository } from '../repositories/IExampleRepository';
-import type { ExampleId } from '@dailyuse/domain-shared/example';
+import type { ExampleId } from '@/domain-shared';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 
 /**
- * Example 领域服务
+ * FeatureOne 领域服务
  * 
  * 【依赖注入】
  * 通过构造函数注入 Repository 接口
  * 具体实现由 DI 容器提供
  */
-export class ExampleDomainService {
+export class FeatureOne {
   constructor(
     private readonly exampleRepository: IExampleRepository,
   ) {}

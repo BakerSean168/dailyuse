@@ -17,13 +17,12 @@
  * - 实体（Entity）：有 ID，可变，通过 ID 比较
  * - 值对象（Value Object）：无 ID，不可变，通过值比较
  * 
- * 【ExampleHistory 实体示例】
+ * 【ExampleTag 实体示例】
  * 展示了标准的实体实现模式：
  * - 继承 Entity 基类（提供 UUID）
  * - 私有构造函数 + 工厂方法
- * - 时间字段使用 DomainDate
+ * - 时间字段使用 Date
  * - 转换方法：toServerDTO(), toPersistenceDTO()
  */
 
-export { ExampleHistory, ExampleHistoryAction } from './ExampleHistory';
-export type { ExampleHistoryAction as ExampleHistoryActionType } from './ExampleHistory';
+export { ExampleTag } from './example-tag';

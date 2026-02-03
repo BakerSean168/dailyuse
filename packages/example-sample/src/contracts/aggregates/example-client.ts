@@ -9,7 +9,9 @@
  * 4. 包含所有用户可见的字段
  */
 
-import type { DomainDate, TransferDate } from '@/primitives';
+import type { DomainDate, TransferDate, ExampleId, IdentityId } from '@dailyuse/contracts/primitives';
+import type { ExampleStatus } from '../value-objects';
+import type { ExampleTagClient, ExampleTagClientDTO } from '../entities';
 
 /**
  * 传输层 DTO（序列化格式）
@@ -23,6 +25,10 @@ export interface ExampleClientDTO {
   description: string | null;
   status: string; // 状态值，如 'Draft', 'Active'
   priority: number;
+
+  // 子实体
+  exampleTags: ExampleTagClientDTO[]; // 仅包含标签 ID 列表
+
   createdAt: TransferDate;
   updatedAt: TransferDate;
 }
@@ -33,15 +39,16 @@ export interface ExampleClientDTO {
  * - 比 DTO 更类型安全
  * - 包含从 primitives 导入的强类型 ID
  */
-import type { ExampleId, IdentityId } from '@/primitives';
-import type { ExampleStatus } from '../value-objects';
-
 export interface ExampleClient {
   id: ExampleId;
   name: string;
   description: string | null;
   status: ExampleStatus;
   priority: number;
+
+  // 子实体
+  exampleTags: ExampleTagClient[]; // 仅包含标签 ID 列表
+
   createdAt: DomainDate;
   updatedAt: DomainDate;
 }

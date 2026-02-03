@@ -27,10 +27,6 @@
       "types": "./dist/editor/index.d.ts",
       "import": "./dist/editor/index.js"
     },
-    "./example": {
-      "types": "./dist/example/index.d.ts",
-      "import": "./dist/example/index.js"
-    },
     "./goal": {
       "types": "./dist/goal/index.d.ts",
       "import": "./dist/goal/index.js"

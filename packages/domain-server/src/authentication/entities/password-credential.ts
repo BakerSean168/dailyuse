@@ -20,6 +20,8 @@ import {
   type AuthCredentialId,
 } from '@dailyuse/domain-shared/authentication';
 
+import type { IPasswordHasher } from '@dailyuse/domain-shared/authentication';
+
 /**
  * 密码凭证实体
  */
@@ -113,6 +115,13 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   }
 
   // ================= 5. 业务行为 =================
+
+  /**
+   * ✅ 比较明文密码是否匹配
+   */
+  public compare(plainPassword: string, hasher: IPasswordHasher): Promise<boolean> {
+    return hasher.compare(plainPassword, this._hashedPassword.hash);
+  }
 
   /**
    * ✅ 更新密码

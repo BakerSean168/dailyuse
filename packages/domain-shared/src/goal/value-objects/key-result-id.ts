@@ -1,0 +1,10 @@
+import { createIdType } from '@dailyuse/utils';
+
+import type { KeyResultId as IKeyResultId } from '@dailyuse/contracts/primitives';
+
+/**
+ * KeyResultId 值对象
+ * 用于强类型化关键结果 ID
+ */
+export const KeyResultId = createIdType<IKeyResultId>('IKeyResultId');
+export type KeyResultId = IKeyResultId;

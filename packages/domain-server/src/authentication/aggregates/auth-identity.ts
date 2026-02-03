@@ -44,7 +44,7 @@ import {
   PhoneCredential,
   PasswordCredential
 } from '../entities';
-
+import type { IPasswordHasher } from '@dailyuse/domain-shared/authentication';
 
 
 // ================= 常量定义 =================
@@ -131,11 +131,12 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
   public static async createWithEmail(params: {
     email: string; // 这里的 email 仅用于校验或作为初始状态
     plainPassword: string; // 接收值对象
+    hasher: IPasswordHasher;
   }): Promise<AuthIdentity> {
     const now = Date.now();
 
     const plainPassword = PlainPassword.create({ value: params.plainPassword });
-    const hashedPassword = await HashedPassword.create(plainPassword);
+    const hashedPassword = await HashedPassword.create(plainPassword, params.hasher);
 
     // 1. 聚合根内部负责创建对应的凭证实体
     // 这样 PasswordCredential 的创建逻辑就被封装在 Identity 内部了
@@ -241,6 +242,16 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
 
   // ================= 5. 业务行为 (Business Actions) =================
 
+  public async verifyPassword(plainPassword: string, hasher: IPasswordHasher): Promise<boolean> {
+    const credential = this.getCredentialByType(CredentialType.PASSWORD);
+
+    if (credential instanceof PasswordCredential) {
+      return credential.compare(plainPassword, hasher);
+    }
+
+    throw new Error('Credential not found or is not a password credential');
+  }
+
   /**
    * 刷新更新时间
    */
@@ -324,6 +335,17 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     }
 
     return true;
+  }
+
+  /**✅ 检查是否已登录 */
+  public isLoggedIn(): boolean {
+    return AuthIdentityStatus.isActive(this._status) && !this.isLocked();
+  }
+
+  public clearLogin(): void {
+    // 清除登录相关状态
+    this.resetFailedAttempts();
+    // 这里可以添加更多清理逻辑，如清除会话令牌等
   }
 
   /**

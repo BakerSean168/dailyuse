@@ -4,5 +4,5 @@
  * Password encryption and hashing implementations
  */
 
-export { BcryptPasswordEncryptor, createBcryptEncryptor } from './bcrypt-password.encryptor';
-export type { IPasswordEncryptor } from '../ports/password-encryptor.port';
+export { Argon2Hasher } from './argon2-hasher';
+

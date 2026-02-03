@@ -1,0 +1,10 @@
+import { createIdType } from '@dailyuse/utils';
+
+import type { NotificationPreferenceId as INotificationPreferenceId } from '@dailyuse/contracts/primitives';
+
+/**
+ * NotificationPreferenceId 值对象
+ * 用于强类型化通知偏好 ID
+ */
+export const NotificationPreferenceId = createIdType<INotificationPreferenceId>('INotificationPreferenceId');
+export type NotificationPreferenceId = INotificationPreferenceId;

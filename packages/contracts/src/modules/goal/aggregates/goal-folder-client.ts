@@ -13,13 +13,13 @@ import type { GoalFolderServerDTO } from './goal-folder-server';
  * GoalFolder Client DTO
  */
 export interface GoalFolderClientDTO {
-  id: string;
-  identityId: string;
+  id: GoalFolderId;
+  identityId: IdentityId;
   name: string;
   description: string | null;
   icon: string | null;
   color: string | null;
-  parentFolderId: string | null;
+  parentFolderId: GoalFolderId | null;
   sortOrder: number;
   isSystemFolder: boolean;
   folderType: FolderType | null;

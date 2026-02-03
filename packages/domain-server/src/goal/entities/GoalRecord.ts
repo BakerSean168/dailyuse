@@ -2,14 +2,26 @@
  * GoalRecord 实体
  * 目标记录实体
  *
- * DDD 实体职责：
- * - 记录关键成果的进度变更
- * - 追踪数值变化和变更原因
+ * 【规范说明：实体（Entity）】
+ * 实体与值对象的区别在于：
+ * - 拥有唯一标识（通过 id）
+ * - 可以改变状态
+ * - 生命周期内身份保持不变（同一个 id）
+ *
+ * 【GoalRecord 职责】
+ * - 记录关键成果的具体数值变更
+ * - 追踪变更时间和备注原因
+ * - 支持进度追踪（结合其他记录计算进度）
+ *
+ * 【不变量（Invariants）】
+ * 这些条件必须始终保持真：
+ * - value 是有效数字
+ * - recordedAt 不能早于 createdAt（理论上）
  */
 
 import { Entity } from '@dailyuse/utils';
+import { GoalRecordId, GoalId, KeyResultId } from '@dailyuse/domain-shared';
 import type {
-  GoalRecordClientDTO,
   GoalRecordPersistenceDTO,
   GoalRecordServer,
   GoalRecordServerDTO,
@@ -18,155 +30,131 @@ import type {
 /**
  * GoalRecord 实体
  */
-export class GoalRecord extends Entity implements GoalRecordServer {
-  // ===== 私有字段 =====
-  private _keyResultUuid: string; // ⚠️ 所属 KeyResult 的 UUID
-  private _goalUuid: string; // ⚠️ 所属 Goal 的 UUID
-  private _value: number; // 本次记录的值（独立值）
+export class GoalRecord extends Entity<GoalRecordId> implements GoalRecordServer {
+  // ================= 1. 内部状态 (Backing Fields) =================
+  private _keyResultId: KeyResultId;
+  private _goalId: GoalId;
+  private _value: number;
   private _note: string | null;
   private _recordedAt: Date;
   private _createdAt: Date;
 
-  // ===== 构造函数（私有） =====
-  private constructor(params: {
-    uuid?: string;
-    keyResultUuid: string;
-    goalUuid: string;
-    value: number;
-    note?: string | null;
-    recordedAt: Date;
-    createdAt: Date;
-  }) {
-    super(params.uuid ?? Entity.generateUUID());
-    this._keyResultUuid = params.keyResultUuid;
-    this._goalUuid = params.goalUuid;
-    this._value = params.value;
-    this._note = params.note ?? null;
-    this._recordedAt = params.recordedAt;
-    this._createdAt = params.createdAt;
+  // ================= 2. 构造函数 (Private) =================
+  private constructor(props: GoalRecordServerDTO) {
+    super(props.uuid as GoalRecordId);
+    this._keyResultId = props.keyResultUuid as KeyResultId;
+    this._goalId = props.goalUuid as GoalId;
+    this._value = props.value;
+    this._note = props.note ?? null;
+    this._recordedAt = new Date(props.recordedAt);
+    this._createdAt = new Date(props.createdAt);
   }
 
-  // ===== Getter 属性 =====
-  public override get uuid(): string {
-    return this._uuid;
+  // ================= 3. 公共属性 (Getters) =================
+  get keyResultUuid(): string {
+    return this._keyResultId;
   }
-  public get keyResultUuid(): string {
-    return this._keyResultUuid;
+
+  get goalUuid(): string {
+    return this._goalId;
   }
-  public get goalUuid(): string {
-    return this._goalUuid;
-  }
-  public get value(): number {
+
+  get value(): number {
     return this._value;
   }
-  public get note(): string | null {
+
+  get note(): string | null {
     return this._note;
   }
-  public get recordedAt(): Date {
+
+  get recordedAt(): Date {
     return this._recordedAt;
   }
-  public get createdAt(): Date {
+
+  get createdAt(): Date {
     return this._createdAt;
   }
 
-  // ===== 工厂方法 =====
+  // ================= 4. 工厂方法 (Factories) =================
 
   /**
-   * 创建新的 GoalRecord 实体
+   * 🏭 业务工厂：创建新的目标记录
    */
   public static create(params: {
-    keyResultUuid: string;
-    goalUuid: string;
+    keyResultId: KeyResultId;
+    goalId: GoalId;
     value: number;
     note?: string;
     recordedAt?: number;
   }): GoalRecord {
     // 验证
-    if (!params.keyResultUuid) {
-      throw new Error('KeyResult UUID is required');
+    if (!params.keyResultId) {
+      throw new Error('KeyResult ID is required');
     }
-    if (!params.goalUuid) {
-      throw new Error('Goal UUID is required');
+    if (!params.goalId) {
+      throw new Error('Goal ID is required');
     }
     if (typeof params.value !== 'number' || isNaN(params.value)) {
       throw new Error('Value must be a valid number');
     }
 
-    const now = new Date();
+    const now = Date.now();
+    const uuid = Entity.generateUUID();
 
     return new GoalRecord({
-      keyResultUuid: params.keyResultUuid,
-      goalUuid: params.goalUuid,
+      uuid,
+      keyResultUuid: params.keyResultId,
+      goalUuid: params.goalId,
       value: params.value,
       note: params.note?.trim() || null,
-      recordedAt: params.recordedAt ? new Date(params.recordedAt) : now,
+      recordedAt: params.recordedAt ?? now,
       createdAt: now,
     });
   }
 
   /**
-   * 从 Server DTO 重建实体
+   * 🏭 恢复工厂：从 ServerDTO 恢复
    */
   public static fromServerDTO(dto: GoalRecordServerDTO): GoalRecord {
-    return new GoalRecord({
-      uuid: dto.uuid,
-      keyResultUuid: dto.keyResultUuid,
-      goalUuid: dto.goalUuid,
-      value: dto.value,
-      note: dto.note ?? null,
-      recordedAt: new Date(dto.recordedAt),
-      createdAt: new Date(dto.createdAt),
-    });
+    return new GoalRecord(dto);
   }
 
   /**
-   * 从持久化 DTO 重建实体
+   * 🏭 恢复工厂：从 PersistenceDTO 恢复
    */
   public static fromPersistenceDTO(dto: GoalRecordPersistenceDTO): GoalRecord {
-    return new GoalRecord({
+    const serverDTO: GoalRecordServerDTO = {
       uuid: dto.uuid,
       keyResultUuid: dto.keyResultUuid,
       goalUuid: dto.goalUuid,
       value: dto.value,
-      note: dto.note ?? null,
-      recordedAt: new Date(dto.recordedAt),
-      createdAt: new Date(dto.createdAt),
-    });
+      note: dto.note,
+      recordedAt: dto.recordedAt,
+      createdAt: dto.createdAt.getTime(),
+    };
+    return new GoalRecord(serverDTO);
   }
 
-  // ===== 业务方法 =====
+  // ================= 5. 业务行为 (Business Actions) =================
 
   /**
-   * 更新备注
+   * ✅ 更新备注
    */
   public updateNote(note: string): void {
     this._note = note.trim() || null;
   }
 
-  // ===== DTO 转换 =====
+  // ================= 6. 序列化 (Serialization) =================
 
   /**
    * 转换为 Server DTO
    */
   public toServerDTO(): GoalRecordServerDTO {
     return {
-      uuid: this.uuid,
-      keyResultUuid: this._keyResultUuid,
-      goalUuid: this._goalUuid,
+      uuid: this.id as string,
+      keyResultUuid: this._keyResultId,
+      goalUuid: this._goalId,
       value: this._value,
-      note: this._note,
-      recordedAt: this._recordedAt.getTime(),
-      createdAt: this._createdAt.getTime(),
-    };
-  }
-
-  public toClientDTO(calculatedCurrentValue?: number): GoalRecordClientDTO {
-    return {
-      uuid: this.uuid,
-      keyResultUuid: this._keyResultUuid,
-      goalUuid: this._goalUuid,
-      value: this._value,
-      calculatedCurrentValue,
       note: this._note,
       recordedAt: this._recordedAt.getTime(),
       createdAt: this._createdAt.getTime(),
@@ -174,17 +162,17 @@ export class GoalRecord extends Entity implements GoalRecordServer {
   }
 
   /**
-   * 转换为持久化 DTO
+   * 转换为 Persistence DTO
    */
   public toPersistenceDTO(): GoalRecordPersistenceDTO {
     return {
-      uuid: this.uuid,
-      keyResultUuid: this._keyResultUuid,
-      goalUuid: this._goalUuid,
+      uuid: this.id as string,
+      keyResultUuid: this._keyResultId,
+      goalUuid: this._goalId,
       value: this._value,
       note: this._note,
       recordedAt: this._recordedAt.getTime(),
-      createdAt: this._createdAt.getTime(),
+      createdAt: this._createdAt,
     };
   }
 }

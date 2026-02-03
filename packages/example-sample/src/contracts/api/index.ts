@@ -35,10 +35,10 @@
  */
 
 // Feature One: 基础 CRUD 操作
-export * from './feature-one.dto';
+export * from './examples';
 
 // Feature Two: 列表查询和复杂操作
-export * from './feature-two.dto';
+export * from './get-view';
 
 /**
  * 【扩展指南】

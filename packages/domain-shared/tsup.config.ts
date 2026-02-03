@@ -22,7 +22,6 @@ export default createTsupConfig({
     'src/ai/index.ts',
     'src/authentication/index.ts',
     'src/editor/index.ts',
-    'src/example/index.ts',
     'src/goal/index.ts',
     'src/notification/index.ts',
     'src/reminder/index.ts',

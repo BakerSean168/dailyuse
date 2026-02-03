@@ -3,7 +3,7 @@ import type { RegisterByEmailReq } from '@dailyuse/contracts/authentication';
 import { AuthIdentity } from '../aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '../repositories/i-auth-identity.repository';
 import { PlainPassword } from '@dailyuse/domain-shared/authentication';
-
+import type { IPasswordHasher } from '@dailyuse/domain-shared/authentication';
 // 定义业务异常 (建议放在 shared 或单独的 errors 目录)
 export class UserAlreadyExistsError extends Error {
   constructor(identifier: string) {
@@ -20,7 +20,8 @@ export class RegistrationService {
   
   // 通过构造函数注入仓储接口 (依赖倒置原则)
   constructor(
-    private readonly identityRepo: IAuthIdentityRepository
+    private readonly identityRepo: IAuthIdentityRepository,
+    private readonly passwordHasher: IPasswordHasher
   ) {}
 
   /**
@@ -44,6 +45,7 @@ export class RegistrationService {
     const identity = await AuthIdentity.createWithEmail({
       email,
       plainPassword: password, // 内部会自动 Hash
+      hasher: this.passwordHasher
     });
 
     // 3. 【持久化】保存到数据库
