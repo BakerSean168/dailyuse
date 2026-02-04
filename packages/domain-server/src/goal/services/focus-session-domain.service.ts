@@ -18,6 +18,7 @@
 import { FocusSession } from '../aggregates/focus-session';
 import type { Goal } from '../aggregates/goal';
 import { FocusSessionStatus, GoalStatus } from '@dailyuse/contracts/goal';
+import type { IdentityId, GoalId } from '@dailyuse/contracts/primitives';
 
 // 枚举值使用（避免与类型别名冲突）
 
@@ -68,13 +69,13 @@ export class FocusSessionDomainService {
    * @param accountUuid - 账户 UUID
    * @throws Error - 如果存在活跃会话
    */
-  validateSingleActiveSession(existingSessions: FocusSession[], accountUuid: string): void {
+  validateSingleActiveSession(existingSessions: FocusSession[], identityId: string): void {
     const activeSessions = existingSessions.filter((session) => session.isActive());
 
     if (activeSessions.length > 0) {
       const activeSession = activeSessions[0];
       throw new Error(
-        `您有正在进行的专注周期（UUID: ${activeSession.uuid}），请先完成或取消后再创建新的专注周期`,
+        `您有正在进行的专注周期（ID: ${activeSession.id}），请先完成或取消后再创建新的专注周期`,
       );
     }
   }
@@ -87,21 +88,21 @@ export class FocusSessionDomainService {
    * - 目标不能是已归档或已删除的
    *
    * @param goal - 关联的目标聚合根（由 ApplicationService 查询后传入）
-   * @param accountUuid - 当前账户 UUID
+   * @param identityId - 当前身份 ID
    * @throws Error - 如果目标无效
    */
-  validateAssociatedGoal(goal: Goal | null, accountUuid: string): void {
+  validateAssociatedGoal(goal: Goal | null, identityId: string): void {
     if (!goal) {
       throw new Error('关联的目标不存在');
     }
 
     // 验证目标所有权
-    if (goal.accountUuid !== accountUuid) {
+    if (goal.identityId !== identityId) {
       throw new Error('无权关联此目标，目标不属于当前账户');
     }
 
     // 验证目标状态
-    if (goal.status === GoalStatus.ARCHIVED) {
+    if (goal.status === GoalStatus.Archived) {
       throw new Error('不能关联已归档的目标');
     }
 
@@ -167,7 +168,7 @@ export class FocusSessionDomainService {
     }
 
     // 总时长（毫秒 → 分钟）
-    const totalDurationMs = session.completedAt - session.startedAt;
+    const totalDurationMs = session.completedAt.getTime() - session.startedAt.getTime();
     const totalDurationMinutes = Math.round(totalDurationMs / 1000 / 60);
 
     // 实际时长 = 总时长 - 暂停时长
@@ -321,8 +322,8 @@ export class FocusSessionDomainService {
    */
   createFocusSession(
     params: {
-      accountUuid: string;
-      goalUuid?: string | null;
+      identityId: string;
+      goalId?: string | null;
       durationMinutes: number;
       description?: string | null;
     },
@@ -335,16 +336,16 @@ export class FocusSessionDomainService {
     this.validateDescription(params.description);
 
     // 3. 验证关联目标（如果提供）
-    if (params.goalUuid && goal) {
-      this.validateAssociatedGoal(goal, params.accountUuid);
+    if (params.goalId && goal) {
+      this.validateAssociatedGoal(goal, params.identityId);
     }
 
     // 4. 创建聚合根（通过工厂方法）
     const session = FocusSession.create({
-      accountUuid: params.accountUuid,
-      goalUuid: params.goalUuid || null,
+      identityId: params.identityId as IdentityId,
+      goalId: (params.goalId ?? null) as GoalId | null,
       durationMinutes: params.durationMinutes,
-      description: params.description || null,
+      description: params.description ?? null,
     });
 
     // 5. 返回聚合根（不持久化）

@@ -7,7 +7,7 @@
  * - 不包含业务逻辑
  */
 
-import type { GoalStatistics } from '../aggregates/GoalStatistics';
+import type { GoalStatistics } from '../aggregates/goal-statistics';
 
 /**
  * GoalStatistics 仓储接口
