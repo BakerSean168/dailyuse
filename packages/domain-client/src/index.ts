@@ -34,10 +34,10 @@ export {
 export { Goal } from './goal/aggregates/Goal';
 export { GoalFolder } from './goal/aggregates/GoalFolder';
 export { GoalStatistics } from './goal/aggregates/GoalStatistics';
+export { GoalRecord } from './goal/aggregates/GoalRecord';
 
 // 实体
 export { KeyResult } from './goal/entities/KeyResult';
-export { GoalRecord } from './goal/entities/GoalRecord';
 export { GoalReview } from './goal/entities/GoalReview';
 
 // 值对象

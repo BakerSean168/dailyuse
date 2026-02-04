@@ -217,9 +217,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
 
     // 发送领域事件
     folder.addDomainEvent('GoalFolderCreated', {
-      folderId: folder.id,
       identityId: params.identityId,
-      createdAt: now.getTime(),
     });
 
     return folder;
@@ -316,9 +314,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
     this._updatedAt = new Date();
 
     this.addDomainEvent('GoalFolderUpdated', {
-      folderId: this.id,
       changes: ['name'],
-      updatedAt: this._updatedAt.getTime(),
     });
   }
 
@@ -381,10 +377,8 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
     this._updatedAt = new Date();
 
     this.addDomainEvent('GoalFolderStatsUpdated', {
-      folderId: this.id,
       goalCount: this._goalCount,
       completedGoalCount: this._completedGoalCount,
-      updatedAt: this._updatedAt.getTime(),
     });
   }
 
@@ -407,8 +401,6 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
     this._updatedAt = this._deletedAt;
 
     this.addDomainEvent('GoalFolderDeleted', {
-      folderId: this.id,
-      deletedAt: this._deletedAt.getTime(),
       isSoftDelete: true,
     });
   }

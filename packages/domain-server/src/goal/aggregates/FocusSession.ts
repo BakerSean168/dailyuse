@@ -169,8 +169,6 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
     });
 
     session.addDomainEvent('focus-session:created', {
-      id: id,
-      identityId: params.identityId,
       goalId: params.goalId ?? null,
     });
 
@@ -223,11 +221,7 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
     this._startedAt = now;
     this._updatedAt = now;
 
-    this.addDomainEvent('focus-session:started', {
-      id: this.id,
-      identityId: this._identityId,
-      startedAt: now.getTime(),
-    });
+    this.addDomainEvent('focus-session:started', {});
   }
 
   /**
@@ -243,11 +237,7 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
     this._pauseCount += 1;
     this._updatedAt = now;
 
-    this.addDomainEvent('focus-session:paused', {
-      id: this.id,
-      identityId: this._identityId,
-      pauseCount: this._pauseCount,
-    });
+    this.addDomainEvent('focus-session:paused', {});
   }
 
   /**
@@ -268,11 +258,7 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
     this._pausedAt = null;
     this._updatedAt = now;
 
-    this.addDomainEvent('focus-session:resumed', {
-      id: this.id,
-      identityId: this._identityId,
-      pausedDurationMinutes: this._pausedDurationMinutes,
-    });
+    this.addDomainEvent('focus-session:resumed', {});
   }
 
   /**
@@ -302,11 +288,7 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
     this._updatedAt = now;
 
     this.addDomainEvent('focus-session:completed', {
-      id: this.id,
-      identityId: this._identityId,
-      goalId: this._goalId,
-      actualDurationMinutes: this._actualDurationMinutes,
-      plannedDurationMinutes: this._durationMinutes,
+      duration: this._actualDurationMinutes * 60 * 1000,
     });
   }
 
@@ -324,10 +306,7 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
     this._pausedAt = null;
     this._updatedAt = now;
 
-    this.addDomainEvent('focus-session:cancelled', {
-      id: this.id,
-      identityId: this._identityId,
-    });
+    this.addDomainEvent('focus-session:cancelled', {});
   }
 
   /**

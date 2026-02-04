@@ -317,10 +317,8 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
     // 🎯 触发领域事件
     goal.addDomainEvent<GoalEventMap['goal:create']>('goal:create', {
-      goalId: goal.id,
       identityId: params.identityId,
       folderId: params.folderId,
-      createdAt: now.getTime(),
     });
 
     return goal;
@@ -585,9 +583,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     this._updatedAt = new Date();
 
     this.addDomainEvent<GoalEventMap['goal:complete']>('goal:complete', {
-      id: this._id,
-      identityId: this._identityId,
-      completedAt: this._updatedAt,
+      finalProgress: this.calculateProgress(),
     });
   }
 
@@ -600,11 +596,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     this._status = GoalStatus.Archived;
     this._updatedAt = new Date();
 
-    this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {
-      id: this._id,
-      identityId: this._identityId,
-      archivedAt: this._updatedAt,
-    });
+    this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {});
   }
 
   /**
@@ -617,9 +609,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     this._updatedAt = this._deletedAt;
 
     this.addDomainEvent<GoalEventMap['goal:delete']>('goal:delete', {
-      id: this._id,
-      identityId: this._identityId,
-      deletedAt: this._deletedAt,
+      isSoftDelete: true,
     });
   }
 
@@ -737,14 +727,12 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     this._updatedAt = new Date();
 
     this.addDomainEvent<GoalEventMap['goal:key-result-add']>('goal:key-result-add', {
-      id: this._id,
-      identityId: this._identityId,
-      addedAt: this._updatedAt,
+      keyResultId: keyResult.id,
     });
   }
 
   /**
-   * ✅ 更新关键结果
+   * ✅ 更新关键结果属性（标题、描述等）
    */
   public updateKeyResult(keyResultId: string, updates: Partial<KeyResult>): void {
     const keyResult = this._keyResults.find((kr) => kr.id === keyResultId);
@@ -759,11 +747,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
     this._updatedAt = new Date();
 
-    this.addDomainEvent<GoalEventMap['goal:key-result-update']>('goal:key-result-update', {
-      id: this._id,
-      identityId: this._identityId,
-      updatedAt: this._updatedAt,
-    });
+    // 注：属性更新不触发专门的事件，由 Goal:update 处理
   }
 
   /**
@@ -824,9 +808,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     // 如果进度发生变化，触发进度更新事件
     if (oldProgress !== newProgress) {
       this.addDomainEvent<GoalEventMap['goal:update']>('goal:update', {
-        id: this._id,
-        identityId: this._identityId,
-        updatedAt: this._updatedAt,
+        changes: ['progress'],
       });
     }
 
@@ -843,9 +825,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
       this._updatedAt = new Date();
 
       this.addDomainEvent<GoalEventMap['goal:key-result-delete']>('goal:key-result-delete', {
-        id: this._id,
-        identityId: this._identityId,
-        deletedAt: this._updatedAt,
+        keyResultId: keyResultId,
       });
 
       return removed;
@@ -1017,9 +997,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     this._updatedAt = new Date();
 
     this.addDomainEvent<GoalEventMap['goal:review-add']>('goal:review-add', {
-      id: this._id,
-      identityId: this._identityId,
-      addedAt: this._updatedAt,
+      reviewId: review.id,
     });
   }
 

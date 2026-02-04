@@ -1,27 +1,35 @@
 /**
  * TaskInstance 聚合根实现 (Server)
  * 任务实例 - 聚合根
+ * 
+ * 【规范说明：聚合根（Aggregate Root）】
+ * 聚合根是 DDD 中的核心概念，代表一个业务边界：
+ * - 唯一标识：通过 ID 区分不同的聚合实例
+ * - 事务边界：所有对聚合的修改在一个事务内完成
+ * - 统一性：聚合保证内部状态的一致性
+ * - 生命周期：聚合有创建、修改、删除的完整生命周期
+ * 
+ * 【TaskInstance 职责】
+ * 管理任务实例的完整生命周期：
+ * - 状态转换（PENDING → IN_PROGRESS → COMPLETED/SKIPPED/EXPIRED）
+ * - 执行时间追踪（开始时间、结束时间、实际耗时）
+ * - 完成记录（完成状态、评分、备注）
+ * - 跳过记录（跳过原因、跳过时间）
  */
 
-import type { TaskInstanceClientDTO, TaskInstancePersistenceDTO, TaskInstanceServer, TaskInstanceServerDTO } from '@dailyuse/contracts/task';
-import { TaskInstanceStatus, TimeType } from '@dailyuse/contracts/task';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { TaskInstanceClientDTO, TaskInstancePersistenceDTO, TaskInstanceServer, TaskInstanceServerDTO, TaskEventMap } from '@dailyuse/contracts/task';
+import { TaskInstanceStatus, TimeType, TaskTemplateId, TaskInstanceId } from '@dailyuse/domain-shared/task';
+import { ImportanceLevel, IdentityId } from '@dailyuse/domain-shared';
 import { AggregateRoot } from '@dailyuse/utils';
 import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../value-objects';
 
 /**
  * TaskInstance 聚合根
- *
- * DDD 聚合根职责：
- * - 管理任务实例的生命周期
- * - 执行状态转换业务逻辑
- * - 确保业务规则一致性
- * - 是事务边界
  */
-export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
-  // ===== 私有字段 =====
-  private _templateUuid: string;
-  private _accountUuid: string;
+export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskInstanceServer {
+  // ===== 1. 内部状态 (Backing Fields) =====
+  private _templateId: TaskTemplateId;
+  private _identityId: IdentityId;
   private _instanceDate: number;
   private _timeConfig: TaskTimeConfig;
   private _importance: ImportanceLevel;
@@ -35,11 +43,11 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
   private _createdAt: Date;
   private _updatedAt: Date;
 
-  // ===== 构造函数（私有，通过工厂方法创建） =====
+  // ===== 2. 构造函数 (Private) =====
   private constructor(params: {
-    uuid?: string;
-    templateUuid: string;
-    accountUuid: string;
+    id?: TaskInstanceId;
+    templateId: TaskTemplateId;
+    identityId: IdentityId;
     instanceDate: number;
     timeConfig: TaskTimeConfig;
     importance: ImportanceLevel;
@@ -53,9 +61,9 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
     createdAt: number;
     updatedAt: number;
   }) {
-    super(params.uuid || AggregateRoot.generateUUID());
-    this._templateUuid = params.templateUuid;
-    this._accountUuid = params.accountUuid;
+    super(params.id || TaskInstanceId.generate());
+    this._templateId = params.templateId;
+    this._identityId = params.identityId;
     this._instanceDate = params.instanceDate;
     this._timeConfig = params.timeConfig;
     this._importance = params.importance;
@@ -70,17 +78,13 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
     this._updatedAt = params.updatedAt;
   }
 
-  // ===== Getter 属性 =====
-  public override get uuid(): string {
-    return this._uuid;
+  // ===== 3. 公共属性 (Getters) =====
+  public get templateId(): TaskTemplateId {
+    return this._templateId;
   }
 
-  public get templateUuid(): string {
-    return this._templateUuid;
-  }
-
-  public get accountUuid(): string {
-    return this._accountUuid;
+  public get identityId(): IdentityId {
+    return this._identityId;
   }
 
   public get instanceDate(): number {
@@ -192,6 +196,11 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
     }
 
     this._updatedAt = now;
+    
+    // 🎯 触发领域事件
+    this.addDomainEvent<TaskEventMap['task:complete']>('task:complete', {
+      goalId: null, // TaskInstance doesn't store goalId directly
+    });
   }
 
   /**
@@ -253,13 +262,13 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
     return now > this._instanceDate + 86400000; // 超过1天视为过期
   }
 
-  // ===== DTO 转换 =====
+  // ===== 6. 序列化 (Serialization) =====
 
   public toServerDTO(): TaskInstanceServerDTO {
     return {
-      uuid: this.uuid,
-      templateUuid: this._templateUuid,
-      accountUuid: this._accountUuid,
+      id: this.id,
+      templateId: this._templateId,
+      identityId: this._identityId,
       instanceDate: this._instanceDate,
       timeConfig: this._timeConfig.toServerDTO(),
       importance: this._importance,
@@ -286,9 +295,9 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
     const durationText = actualDuration ? this.formatDuration(actualDuration) : null;
 
     return {
-      uuid: this.uuid,
-      templateUuid: this._templateUuid,
-      accountUuid: this._accountUuid,
+      id: this.id,
+      templateId: this._templateId,
+      identityId: this._identityId,
       instanceDate: this._instanceDate,
       timeConfig: this._timeConfig.toClientDTO(),
       importance: this._importance,
@@ -318,9 +327,9 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
 
   public toPersistenceDTO(): TaskInstancePersistenceDTO {
     return {
-      uuid: this.uuid,
-      templateUuid: this._templateUuid,
-      accountUuid: this._accountUuid,
+      id: this.id,
+      templateId: this._templateId,
+      identityId: this._identityId,
       instanceDate: this._instanceDate,
       timeConfig: JSON.stringify(this._timeConfig.toPersistenceDTO()),
       importance: this._importance,
@@ -338,25 +347,25 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
     };
   }
 
-  // ===== 工厂方法 =====
+  // ===== 4. 工厂方法 (Factories) =====
 
   /**
-   * 创建新的任务实例
+   * 🏭 业务工厂：创建新的任务实例
    *
    * 注意：不再发布领域事件
    * 提醒由 ScheduleTask 统一管理（混合方案 C）
    */
   public static create(params: {
-    templateUuid: string;
-    accountUuid: string;
+    templateId: TaskTemplateId;
+    identityId: IdentityId;
     instanceDate: number;
     timeConfig: TaskTimeConfig;
     importance: ImportanceLevel;
   }): TaskInstance {
     const now = Date.now();
     const instance = new TaskInstance({
-      templateUuid: params.templateUuid,
-      accountUuid: params.accountUuid,
+      templateId: params.templateId,
+      identityId: params.identityId,
       instanceDate: params.instanceDate,
       timeConfig: params.timeConfig,
       importance: params.importance,
@@ -369,13 +378,13 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
   }
 
   /**
-   * 从 ServerDTO 恢复
+   * 🏭 恢复工厂：从 ServerDTO 恢复
    */
   public static fromServerDTO(dto: TaskInstanceServerDTO): TaskInstance {
     return new TaskInstance({
-      uuid: dto.uuid,
-      templateUuid: dto.templateUuid,
-      accountUuid: dto.accountUuid,
+      id: dto.id as TaskInstanceId,
+      templateId: dto.templateId as TaskTemplateId,
+      identityId: dto.identityId as IdentityId,
       instanceDate: dto.instanceDate,
       timeConfig: TaskTimeConfig.fromServerDTO(dto.timeConfig),
       importance: dto.importance,
@@ -394,13 +403,13 @@ export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
   }
 
   /**
-   * 从 PersistenceDTO 恢复
+   * 🏭 恢复工厂：从 PersistenceDTO 恢复
    */
   public static fromPersistenceDTO(dto: TaskInstancePersistenceDTO): TaskInstance {
     return new TaskInstance({
-      uuid: dto.uuid,
-      templateUuid: dto.templateUuid,
-      accountUuid: dto.accountUuid,
+      id: dto.id as TaskInstanceId,
+      templateId: dto.templateId as TaskTemplateId,
+      identityId: dto.identityId as IdentityId,
       instanceDate: dto.instanceDate,
       timeConfig: TaskTimeConfig.fromPersistenceDTO(JSON.parse(dto.timeConfig as string)),
       importance: dto.importance as ImportanceLevel,

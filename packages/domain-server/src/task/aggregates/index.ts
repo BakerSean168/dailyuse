@@ -18,18 +18,12 @@
  * 【TaskInstance 聚合根】
  * - 任务实例管理：具体的任务执行实例
  * - 任务状态跟踪：待办、进行中、已完成、已取消
- * - 执行记录：执行时间、执行时閟统计
+ * - 执行记录：执行时间、执行时长统计
  * 
  * 【TaskDependency 聚合根】
  * - 依赖关系管理：任务间的编织与顺序
- * - 程序计算：根据依赖可计算任务执行顺序
- * 
- * 【TaskStatistics 聚合根】
- * - 统计数据聚合：沉淀瘧一每一个任务皇6统计数据
- * - 轨迹控制：任务正常呗与发会数据
+ * - 计算：根据依赖计算任务执行顺序
  */
 
 export { TaskInstance } from './TaskInstance';
 export { TaskTemplate } from './TaskTemplate';
-export { TaskStatistics } from './TaskStatistics';
-export { TaskDependency } from './TaskDependency';

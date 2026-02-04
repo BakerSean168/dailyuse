@@ -50,8 +50,8 @@ export * from './services';
 export {
   Goal,
   GoalFolder,
-  GoalStatistics,
   FocusSession,
+  GoalRecord,
 } from './aggregates';
 
 // 仓储接口
@@ -68,7 +68,5 @@ export type {
 // 领域服务
 export {
   GoalDomainService,
-  GoalFolderDomainService,
-  GoalStatisticsDomainService,
   FocusSessionDomainService,
 } from './services';

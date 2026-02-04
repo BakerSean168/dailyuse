@@ -15,5 +15,3 @@ export interface AIQuotaCreatedEvent {
   /** Initial limit */
   limit: number;
 }
-  createdAt: number;
-}

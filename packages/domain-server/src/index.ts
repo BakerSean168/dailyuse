@@ -40,6 +40,3 @@ export * from './dashboard/index.js';
 
 // Sync 模块
 export * from './sync/index.js';
-
-// Example 模块（活文档参考实现）
-export * from './example/index.js';
