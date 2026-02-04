@@ -8,7 +8,7 @@
  * 【包含内容】
  * - 聚合根（Aggregates）：Goal, GoalFolder, GoalStatistics, FocusSession
  * - 实体（Entities）：GoalRecord, GoalReview, KeyResult
- * - 值对象（Value Objects）：FocusMode, GoalMetadata, GoalTimeRange, KeyResultProgress 等
+ * - 值对象（Value Objects）：从 @dailyuse/domain-shared 导出
  * - 仓储接口（Repositories）：IGoalRepository, IGoalFolderRepository 等
  * - 领域服务（Domain Services）：GoalDomainService, FocusSessionDomainService 等
  * 
@@ -41,20 +41,6 @@ export * from './entities';
 export * from './value-objects';
 
 // 仓储接口
-export * from './repositories';
-
-// 领域服务
-export * from './services';
-
-// 聚合根
-export {
-  Goal,
-  GoalFolder,
-  FocusSession,
-  GoalRecord,
-} from './aggregates';
-
-// 仓储接口
 export type {
   IFocusModeRepository,
   IGoalRepository,
@@ -70,3 +56,4 @@ export {
   GoalDomainService,
   FocusSessionDomainService,
 } from './services';
+

@@ -33,6 +33,7 @@ import type { GoalEventMap } from '@dailyuse/contracts/goal';
 import {
   GoalStatus,
   ReminderTriggerType,
+  
 } from '@dailyuse/contracts/goal';
 import type {
   SnapshotTrigger,
@@ -49,7 +50,17 @@ import type {
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { KeyResult } from '../entities/KeyResult';
 import { GoalReview } from '../entities/GoalReview';
-import { GoalReminderConfig, KeyResultWeightSnapshot, KeyResultNotFoundInGoalError } from '../value-objects';
+import {
+  GoalReminderConfig,
+  KeyResultWeightSnapshot,
+  KeyResultNotFoundInGoalError,
+  GoalNameRequiredError,
+  GoalInvalidDateRangeError,
+  GoalInvalidDateModificationError,
+  GoalTargetDateNotSetError,
+  GoalKeyResultNotFoundError,
+  GoalReviewNotFoundError,
+} from '../value-objects';
 import { calculateGoalPriority, mapPriorityToLevel, mapPriorityToText } from '../services/goal-priority-calculator.service';
 
 // ================ 常量定义 ================
@@ -71,10 +82,10 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   private _importance: ImportanceLevel;
   private _category: string | null;
   private _tags: string[];
-  private readonly _startDate: Date | null;
+  private _startDate: Date | null;
   private _targetDate: Date | null;
-  private readonly _completedAt: Date | null;
-  private readonly _archivedAt: Date | null;
+  private _completedAt: Date | null;
+  private _archivedAt: Date | null;
   private _folderId: string | null;
   private _parentGoalId: GoalId | null;
   private _sortOrder: number;
@@ -119,9 +130,16 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     this._updatedAt = new Date(props.updatedAt);
     this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
     
-    this._keyResults = [];
-    this._goalReviews = [];
-    this._weightSnapshots = [];
+    // Initialize child entities from props
+    this._keyResults = (props.keyResults || []).map((kr: KeyResultServerDTO) =>
+      KeyResult.fromServerDTO(kr),
+    );
+    this._goalReviews = (props.goalReviews || []).map((r: GoalReviewServerDTO) =>
+      GoalReview.fromServerDTO(r),
+    );
+    this._weightSnapshots = (props.weightSnapshots || []).map((ws: KeyResultWeightSnapshotDTO) =>
+      KeyResultWeightSnapshot.fromServerDTO(ws),
+    );
   }
 
   // ================= 4. 公共属性 (Getters) =================
@@ -255,6 +273,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * 🏭 业务工厂：创建新的目标
+   * @throws {GoalNameRequiredError} 当名称为空时
    */
   public static create(params: {
     identityId: IdentityId;
@@ -274,10 +293,10 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   }): Goal {
     // 验证
     if (!params.identityId) {
-      throw new Error('Identity ID is required');
+      throw new GoalNameRequiredError();
     }
     if (!params.name || params.name.trim().length === 0) {
-      throw new Error('Name is required');
+      throw new GoalNameRequiredError();
     }
 
     const now = new Date();
@@ -328,21 +347,8 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * 🏭 恢复工厂：从 Server DTO 恢复
    */
   public static fromServerDTO(dto: GoalServerDTO): Goal {
-    const goal = new Goal(dto);
-    
-    // 恢复子实体
-    if (dto.keyResults && dto.keyResults.length > 0) {
-      goal._keyResults = dto.keyResults.map((kr: KeyResultServerDTO) =>
-        KeyResult.fromServerDTO(kr),
-      );
-    }
-    if (dto.goalReviews && dto.goalReviews.length > 0) {
-      goal._goalReviews = dto.goalReviews.map((r: GoalReviewServerDTO) =>
-        GoalReview.fromServerDTO(r),
-      );
-    }
-
-    return goal;
+    // Child entities are now initialized in constructor
+    return new Goal(dto);
   }
 
   /**
@@ -395,6 +401,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * ✅ 更新基本信息
+   * @throws {GoalNameRequiredError} 当名称为空时
    */
   public updateBasicInfo(params: {
     name?: string;
@@ -410,7 +417,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     if (params.name !== undefined && params.name !== this._name) {
       const trimmed = params.name.trim();
       if (trimmed.length === 0) {
-        throw new Error('Name cannot be empty');
+        throw new GoalNameRequiredError();
       }
       this._name = trimmed;
       hasChanges = true;
@@ -480,13 +487,15 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * ✅ 延长目标时间
+   * @throws {GoalInvalidDateModificationError} 当天数不为正数时
+   * @throws {GoalTargetDateNotSetError} 当目标日期未设置时
    */
   public extendTargetDate(extensionDays: number): void {
     if (extensionDays <= 0) {
-      throw new Error('Extension days must be positive');
+      throw new GoalInvalidDateModificationError('extend', extensionDays);
     }
     if (!this._targetDate) {
-      throw new Error('Target date is not set');
+      throw new GoalTargetDateNotSetError();
     }
 
     const newTargetDate = new Date(this._targetDate.getTime() + extensionDays * DAY_MS);
@@ -495,20 +504,26 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * ✅ 缩短目标时间
+   * @throws {GoalInvalidDateModificationError} 当天数不为正数时
+   * @throws {GoalTargetDateNotSetError} 当目标日期未设置时
+   * @throws {GoalInvalidDateRangeError} 当新日期早于开始日期时
    */
   public shortenTargetDate(shortenDays: number): void {
     if (shortenDays <= 0) {
-      throw new Error('Shorten days must be positive');
+      throw new GoalInvalidDateModificationError('shorten', shortenDays);
     }
     if (!this._targetDate) {
-      throw new Error('Target date is not set');
+      throw new GoalTargetDateNotSetError();
     }
 
     const newTargetDate = new Date(this._targetDate.getTime() - shortenDays * DAY_MS);
 
     // 确保新的目标时间仍然晚于开始时间
     if (this._startDate && newTargetDate.getTime() <= this._startDate.getTime()) {
-      throw new Error('Target date cannot be earlier than or equal to start date');
+      throw new GoalInvalidDateRangeError(
+        'Target date cannot be earlier than or equal to start date',
+        { newTargetDate, startDate: this._startDate },
+      );
     }
 
     this.updateTimeRange({ targetDate: newTargetDate });
@@ -733,11 +748,12 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * ✅ 更新关键结果属性（标题、描述等）
+   * @throws {GoalKeyResultNotFoundError} 当关键结果不存在时
    */
   public updateKeyResult(keyResultId: string, updates: Partial<KeyResult>): void {
     const keyResult = this._keyResults.find((kr) => kr.id === keyResultId);
     if (!keyResult) {
-      throw new Error(`KeyResult ${keyResultId} not found`);
+      throw new GoalKeyResultNotFoundError(keyResultId, this.id);
     }
 
     if (updates.title) keyResult.updateTitle(updates.title);
@@ -1002,13 +1018,6 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   }
 
   /**
-   * 📊 获取所有回顾记录
-   */
-  public getgoalReviews(): GoalReview[] {
-    return [...this._goalReviews];
-  }
-
-  /**
    * 📊 获取最新的回顾记录
    */
   public getLatestReview(): GoalReview | null {
@@ -1018,6 +1027,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * ✅ 更新回顾
+   * @throws {GoalReviewNotFoundError} 当回顾不存在时
    */
   public updateReview(
     reviewId: string,
@@ -1031,7 +1041,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   ): void {
     const review = this._goalReviews.find((r) => r.id === reviewId);
     if (!review) {
-      throw new Error(`Review ${reviewId} not found`);
+      throw new GoalReviewNotFoundError(reviewId, this.id);
     }
 
     if (params.rating !== undefined) review.updateRating(params.rating);
@@ -1080,13 +1090,6 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     if (!this._targetDate) return null;
     const diff = this._targetDate.getTime() - Date.now();
     return Math.ceil(diff / DAY_MS);
-  }
-
-  /**
-   * 📊 获取剩余天数（接口要求的方法名）
-   */
-  public getDaysRemaining(): number | null {
-    return this.getRemainingDays();
   }
 
   /**

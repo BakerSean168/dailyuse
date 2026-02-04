@@ -9,7 +9,7 @@
  * - 隐藏数据访问细节
  */
 
-import type { KeyResultWeightSnapshot } from '../value-objects/KeyResultWeightSnapshot';
+import type { KeyResultWeightSnapshot } from '../value-objects';
 
 /**
  * 快照查询结果

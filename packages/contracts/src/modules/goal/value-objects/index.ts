@@ -28,6 +28,7 @@ export type {
 } from './key-result-snapshot';
 
 export type {
+  ReminderTrigger,
   GoalReminderConfig,
   GoalReminderConfigDTO,
   GoalReminderConfigPersistenceDTO,

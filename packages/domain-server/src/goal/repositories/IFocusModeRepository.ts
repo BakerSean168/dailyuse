@@ -9,7 +9,7 @@
  * - 隐藏数据访问细节
  */
 
-import type { FocusMode } from '../value-objects/FocusMode';
+import type { FocusMode } from '../value-objects';
 
 /**
  * IFocusModeRepository 仓储接口
