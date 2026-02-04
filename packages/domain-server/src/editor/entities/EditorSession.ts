@@ -13,21 +13,25 @@
  *           └── EditorTab (实体)
  */
 
-import { Entity } from '@dailyuse/utils';
+import { Entity, generateUUID } from '@dailyuse/utils';
 import type {
   EditorSessionClientDTO,
   EditorSessionPersistenceDTO,
   EditorSessionServerDTO,
   SessionLayoutServerDTO,
 } from '@dailyuse/contracts/editor';
+import type {
+  EditorSessionId,
+  EditorWorkspaceId,
+  IdentityId,
+} from '@dailyuse/contracts/primitives';
 import { SessionLayout } from '../value-objects/SessionLayout';
 import { EditorGroup } from './EditorGroup';
-import * as crypto from 'crypto';
 
-export class EditorSession extends Entity {
+export class EditorSession extends Entity<EditorSessionId> {
   // ===== 外键：所属聚合根 =====
-  private _workspaceUuid: string;
-  private _accountUuid: string;
+  private _workspaceId: EditorWorkspaceId;
+  private _identityId: IdentityId;
 
   // ===== 基础属性 =====
   private _name: string;
@@ -49,9 +53,9 @@ export class EditorSession extends Entity {
   private _updatedAt: Date;
 
   private constructor(params: {
-    uuid: string;
-    workspaceUuid: string;
-    accountUuid: string;
+    id: EditorSessionId;
+    workspaceId: EditorWorkspaceId;
+    identityId: IdentityId;
     name: string;
     description: string | null;
     layout: SessionLayout;
@@ -61,9 +65,9 @@ export class EditorSession extends Entity {
     createdAt: Date;
     updatedAt: Date;
   }) {
-    super(params.uuid);
-    this._workspaceUuid = params.workspaceUuid;
-    this._accountUuid = params.accountUuid;
+    super(params.id);
+    this._workspaceId = params.workspaceId;
+    this._identityId = params.identityId;
     this._name = params.name;
     this._description = params.description;
     this._layout = params.layout;
@@ -76,12 +80,12 @@ export class EditorSession extends Entity {
 
   // ===== Getter 属性 =====
 
-  public get workspaceUuid(): string {
-    return this._workspaceUuid;
+  public get workspaceId(): EditorWorkspaceId {
+    return this._workspaceId;
   }
 
-  public get accountUuid(): string {
-    return this._accountUuid;
+  public get identityId(): IdentityId {
+    return this._identityId;
   }
 
   public get name(): string {
@@ -121,6 +125,7 @@ export class EditorSession extends Entity {
   }
 
   // ===== 实例属性修改方法 =====
+
   /**
    * 重命名会话
    */
@@ -131,6 +136,7 @@ export class EditorSession extends Entity {
     this._name = newName.trim();
     this._updatedAt = new Date();
   }
+
   /**
    * 更新描述
    * @param newDescription 新描述，可以为 null 清除描述
@@ -146,26 +152,26 @@ export class EditorSession extends Entity {
    * 创建新的 EditorSession
    */
   public static create(params: {
-    workspaceUuid: string;
-    accountUuid: string;
+    workspaceId: EditorWorkspaceId;
+    identityId: IdentityId;
     name: string;
     description?: string;
     layout?: Partial<SessionLayoutServerDTO>;
   }): EditorSession {
-    const uuid = crypto.randomUUID();
+    const id = generateUUID() as EditorSessionId;
     const now = new Date();
 
     const layout = params.layout
-      ? SessionLayout.fromServerDTO({
+      ? SessionLayout.fromDTO({
           ...SessionLayout.createDefault().toServerDTO(),
           ...params.layout,
         })
       : SessionLayout.createDefault();
 
     return new EditorSession({
-      uuid,
-      workspaceUuid: params.workspaceUuid,
-      accountUuid: params.accountUuid,
+      id,
+      workspaceId: params.workspaceId,
+      identityId: params.identityId,
       name: params.name,
       description: params.description ?? null,
       layout,
@@ -184,9 +190,9 @@ export class EditorSession extends Entity {
    */
   public addGroup(params: { groupIndex: number; name?: string }): EditorGroup {
     const group = EditorGroup.create({
-      sessionUuid: this.uuid,
-      workspaceUuid: this._workspaceUuid,
-      accountUuid: this._accountUuid,
+      sessionId: this.id,
+      workspaceId: this._workspaceId,
+      identityId: this._identityId,
       groupIndex: params.groupIndex,
       name: params.name,
     });
@@ -200,8 +206,8 @@ export class EditorSession extends Entity {
   /**
    * 移除分组
    */
-  public removeGroup(groupUuid: string): void {
-    const index = this._groups.findIndex((g) => g.uuid === groupUuid);
+  public removeGroup(groupId: string): void {
+    const index = this._groups.findIndex((g) => g.id === groupId);
     if (index !== -1) {
       this._groups.splice(index, 1);
 
@@ -217,8 +223,8 @@ export class EditorSession extends Entity {
   /**
    * 获取指定分组
    */
-  public getGroup(groupUuid: string): EditorGroup | undefined {
-    return this._groups.find((g) => g.uuid === groupUuid);
+  public getGroup(groupId: string): EditorGroup | undefined {
+    return this._groups.find((g) => g.id === groupId);
   }
 
   /**
@@ -300,12 +306,12 @@ export class EditorSession extends Entity {
    */
   public toServerDTO(): EditorSessionServerDTO {
     return {
-      uuid: this.uuid,
-      workspaceUuid: this._workspaceUuid,
-      accountUuid: this._accountUuid,
+      id: this.id,
+      workspaceId: this._workspaceId,
+      identityId: this._identityId,
       name: this._name,
       description: this._description,
-      groups: this._groups.map((group) => group.toServerDTO()), // ✅ 递归转换
+      groups: this._groups.map((group) => group.toServerDTO()),
       isActive: this._isActive,
       activeGroupIndex: this._activeGroupIndex,
       layout: this._layout.toServerDTO(),
@@ -320,15 +326,15 @@ export class EditorSession extends Entity {
    */
   public toClientDTO(): EditorSessionClientDTO {
     return {
-      uuid: this.uuid,
-      workspaceUuid: this._workspaceUuid,
-      accountUuid: this._accountUuid,
+      id: this.id,
+      workspaceId: this._workspaceId,
+      identityId: this._identityId,
       name: this._name,
       description: this._description,
-      groups: this._groups.map((group) => group.toClientDTO()), // ✅ 递归转换
+      groups: this._groups.map((group) => group.toClientDTO()),
       isActive: this._isActive,
       activeGroupIndex: this._activeGroupIndex,
-      layout: this._layout.toClientDTO(),
+      layout: this._layout.toServerDTO(),
       groupCount: this._groups.length,
       lastAccessedAt: this._lastAccessedAt,
       createdAt: this._createdAt.getTime(),
@@ -341,16 +347,16 @@ export class EditorSession extends Entity {
    */
   public toPersistenceDTO(): EditorSessionPersistenceDTO {
     return {
-      uuid: this.uuid,
-      workspace_uuid: this._workspaceUuid,
-      accountUuid: this._accountUuid,
+      id: this.id,
+      workspace_id: this._workspaceId,
+      identityId: this._identityId,
       name: this._name,
       description: this._description,
-      groups: this._groups.map((group) => group.toPersistenceDTO()), // ✅ 递归转换
+      groups: this._groups.map((group) => group.toPersistenceDTO()),
       is_active: this._isActive,
       active_group_index: this._activeGroupIndex,
       layout: this._layout.toPersistenceDTO(),
-      lastAccessedAt: this._lastAccessedAt,
+      lastAccessedAt: this._lastAccessedAt !== null ? new Date(this._lastAccessedAt) : null,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
     };
@@ -361,12 +367,12 @@ export class EditorSession extends Entity {
    */
   public static fromServerDTO(dto: EditorSessionServerDTO): EditorSession {
     const session = new EditorSession({
-      uuid: dto.uuid,
-      workspaceUuid: dto.workspaceUuid,
-      accountUuid: dto.accountUuid,
+      id: dto.id,
+      workspaceId: dto.workspaceId,
+      identityId: dto.identityId,
       name: dto.name,
       description: dto.description,
-      layout: SessionLayout.fromServerDTO(dto.layout),
+      layout: SessionLayout.fromDTO(dto.layout),
       isActive: dto.isActive,
       activeGroupIndex: dto.activeGroupIndex,
       lastAccessedAt: dto.lastAccessedAt,
@@ -374,8 +380,10 @@ export class EditorSession extends Entity {
       updatedAt: new Date(dto.updatedAt),
     });
 
-    // ✅ 递归重建子实体
-    session._groups = dto.groups.map((groupDto) => EditorGroup.fromServerDTO(groupDto));
+    // 递归重建子实体
+    session._groups = dto.groups.map((groupDto) =>
+      EditorGroup.fromServerDTO(groupDto),
+    );
 
     return session;
   }
@@ -385,12 +393,12 @@ export class EditorSession extends Entity {
    */
   public static fromClientDTO(dto: EditorSessionClientDTO): EditorSession {
     const session = new EditorSession({
-      uuid: dto.uuid,
-      workspaceUuid: dto.workspaceUuid,
-      accountUuid: dto.accountUuid,
+      id: dto.id as EditorSessionId,
+      workspaceId: dto.workspaceId as EditorWorkspaceId,
+      identityId: dto.identityId as IdentityId,
       name: dto.name,
       description: dto.description,
-      layout: SessionLayout.fromServerDTO(dto.layout), // 使用 fromServerDTO
+      layout: SessionLayout.fromDTO(dto.layout),
       isActive: dto.isActive,
       activeGroupIndex: dto.activeGroupIndex,
       lastAccessedAt: dto.lastAccessedAt,
@@ -398,8 +406,10 @@ export class EditorSession extends Entity {
       updatedAt: new Date(dto.updatedAt),
     });
 
-    // ✅ 递归重建子实体
-    session._groups = dto.groups.map((groupDto) => EditorGroup.fromServerDTO(groupDto)); // 使用 fromServerDTO
+    // 递归重建子实体
+    session._groups = dto.groups.map((groupDto) =>
+      EditorGroup.fromClientDTO(groupDto),
+    );
 
     return session;
   }
@@ -411,20 +421,20 @@ export class EditorSession extends Entity {
     dto: EditorSessionPersistenceDTO,
   ): EditorSession {
     const session = new EditorSession({
-      uuid: dto.uuid,
-      workspaceUuid: dto.workspace_uuid,
-      accountUuid: dto.accountUuid,
+      id: dto.id,
+      workspaceId: dto.workspace_id,
+      identityId: dto.identityId,
       name: dto.name,
       description: dto.description,
       layout: SessionLayout.fromPersistenceDTO(dto.layout),
       isActive: dto.is_active,
       activeGroupIndex: dto.active_group_index,
-      lastAccessedAt: dto.lastAccessedAt,
+      lastAccessedAt: dto.lastAccessedAt?.getTime() ?? null,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
     });
 
-    // ✅ 递归重建子实体
+    // 递归重建子实体
     session._groups = (dto.groups || []).map((groupDto) =>
       EditorGroup.fromPersistenceDTO(groupDto),
     );

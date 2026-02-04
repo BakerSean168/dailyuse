@@ -12,18 +12,25 @@ import type {
   TabType,
   TabViewStateServerDTO,
 } from '@dailyuse/contracts/editor';
-import { Entity } from '@dailyuse/utils';
+import type {
+  EditorGroupId,
+  EditorSessionId,
+  EditorWorkspaceId,
+  IdentityId,
+  TransferDate,
+} from '@dailyuse/contracts/primitives';
+import { Entity, generateUUID } from '@dailyuse/utils';
 import { EditorTab } from './EditorTab';
 
 /**
  * EditorGroup 实体
  * 作为 EditorSession 实体的子实体
  */
-export class EditorGroup extends Entity implements EditorGroupServer {
+export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupServer {
   // ===== 私有字段 =====
-  private _sessionUuid: string; // 父实体外键
-  private _workspaceUuid: string; // 聚合根外键
-  private _accountUuid: string;
+  private _sessionId: EditorSessionId;
+  private _workspaceId: EditorWorkspaceId;
+  private _identityId: IdentityId;
   private _groupIndex: number;
   private _activeTabIndex: number;
   private _name: string | null;
@@ -35,10 +42,10 @@ export class EditorGroup extends Entity implements EditorGroupServer {
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
-    uuid?: string;
-    sessionUuid: string;
-    workspaceUuid: string;
-    accountUuid: string;
+    id: EditorGroupId;
+    sessionId: EditorSessionId;
+    workspaceId: EditorWorkspaceId;
+    identityId: IdentityId;
     groupIndex: number;
     activeTabIndex: number;
     name?: string | null;
@@ -46,10 +53,10 @@ export class EditorGroup extends Entity implements EditorGroupServer {
     updatedAt: Date;
     tabs?: EditorTab[];
   }) {
-    super(params.uuid || Entity.generateUUID());
-    this._sessionUuid = params.sessionUuid;
-    this._workspaceUuid = params.workspaceUuid;
-    this._accountUuid = params.accountUuid;
+    super(params.id);
+    this._sessionId = params.sessionId;
+    this._workspaceId = params.workspaceId;
+    this._identityId = params.identityId;
     this._groupIndex = params.groupIndex;
     this._activeTabIndex = params.activeTabIndex;
     this._name = params.name ?? null;
@@ -59,211 +66,234 @@ export class EditorGroup extends Entity implements EditorGroupServer {
   }
 
   // ===== Getter 属性 =====
-  public override get uuid(): string {
-    return this._uuid;
+  public get sessionId(): EditorSessionId {
+    return this._sessionId;
   }
-  public get sessionUuid(): string {
-    return this._sessionUuid;
+
+  public get workspaceId(): EditorWorkspaceId {
+    return this._workspaceId;
   }
-  public get workspaceUuid(): string {
-    return this._workspaceUuid;
+
+  public get identityId(): IdentityId {
+    return this._identityId;
   }
-  public get accountUuid(): string {
-    return this._accountUuid;
-  }
+
   public get groupIndex(): number {
     return this._groupIndex;
   }
+
   public get activeTabIndex(): number {
     return this._activeTabIndex;
   }
+
   public get name(): string | null {
     return this._name;
   }
+
+  public get tabs(): EditorTab[] {
+    return [...this._tabs];
+  }
+
   public get createdAt(): Date {
     return this._createdAt;
   }
+
   public get updatedAt(): Date {
     return this._updatedAt;
   }
-  public get tabs(): EditorTab[] {
-    return [...this._tabs]; // 返回副本，防止外部修改
-  }
 
   // ===== 工厂方法 =====
-
-  /**
-   * 创建新的 EditorGroup
-   */
   public static create(params: {
-    sessionUuid: string;
-    workspaceUuid: string;
-    accountUuid: string;
+    sessionId: EditorSessionId;
+    workspaceId: EditorWorkspaceId;
+    identityId: IdentityId;
     groupIndex: number;
     name?: string;
   }): EditorGroup {
-    const uuid = crypto.randomUUID();
     const now = new Date();
-
     return new EditorGroup({
-      uuid,
-      sessionUuid: params.sessionUuid,
-      workspaceUuid: params.workspaceUuid,
-      accountUuid: params.accountUuid,
+      id: generateUUID() as EditorGroupId,
+      sessionId: params.sessionId,
+      workspaceId: params.workspaceId,
+      identityId: params.identityId,
       groupIndex: params.groupIndex,
       activeTabIndex: 0,
-      name: params.name,
+      name: params.name ?? null,
       createdAt: now,
       updatedAt: now,
       tabs: [],
     });
   }
 
-  /**
-   * 从 DTO 重建
-   */
-  public static fromDTO(dto: EditorGroupServerDTO): EditorGroup {
-    const tabs = dto.tabs.map((tabDto) => EditorTab.fromServerDTO(tabDto));
-
-    return new EditorGroup({
-      uuid: dto.uuid,
-      sessionUuid: dto.sessionUuid,
-      workspaceUuid: dto.workspaceUuid,
-      accountUuid: dto.accountUuid,
+  public static fromServerDTO(dto: EditorGroupServerDTO): EditorGroup {
+    const group = new EditorGroup({
+      id: dto.id,
+      sessionId: dto.sessionId,
+      workspaceId: dto.workspaceId,
+      identityId: dto.identityId,
       groupIndex: dto.groupIndex,
       activeTabIndex: dto.activeTabIndex,
       name: dto.name,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
-      tabs,
+      tabs: [],
     });
+
+    // 递归重建子实体
+    group._tabs = dto.tabs?.map((tabDto) => EditorTab.fromServerDTO(tabDto)) ?? [];
+
+    return group;
+  }
+
+  public static fromClientDTO(dto: EditorGroupClientDTO): EditorGroup {
+    const group = new EditorGroup({
+      id: dto.id as EditorGroupId,
+      sessionId: dto.sessionId as EditorSessionId,
+      workspaceId: dto.workspaceId as EditorWorkspaceId,
+      identityId: dto.identityId as IdentityId,
+      groupIndex: dto.groupIndex,
+      activeTabIndex: dto.activeTabIndex,
+      name: dto.name,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      tabs: [],
+    });
+
+    // 递归重建子实体
+    group._tabs = dto.tabs?.map((tabDto) => EditorTab.fromClientDTO(tabDto)) ?? [];
+
+    return group;
+  }
+
+  public static fromPersistenceDTO(dto: EditorGroupPersistenceDTO): EditorGroup {
+    const group = new EditorGroup({
+      id: dto.id,
+      sessionId: dto.session_id,
+      workspaceId: dto.workspace_id,
+      identityId: dto.identityId,
+      groupIndex: dto.group_index,
+      activeTabIndex: dto.active_tab_index,
+      name: dto.name,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      tabs: [],
+    });
+
+    // 递归重建子实体
+    group._tabs = dto.tabs?.map((tabDto) => EditorTab.fromPersistenceDTO(tabDto)) ?? [];
+
+    return group;
   }
 
   // ===== 业务方法 =====
-
-  /**
-   * 设置活动标签
-   */
-  public setActiveTab(tabIndex: number): void {
-    if (this.isValidTabIndex(tabIndex)) {
-      this._activeTabIndex = tabIndex;
-      this._updatedAt = new Date();
-    }
-  }
-
-  /**
-   * 重命名分组
-   */
-  public rename(name: string | null): void {
-    this._name = name;
-    this._updatedAt = new Date();
-  }
-
-  /**
-   * 更新分组索引
-   */
-  public updateGroupIndex(newIndex: number): void {
-    this._groupIndex = newIndex;
-    this._updatedAt = new Date();
-  }
-
-  /**
-   * 验证标签索引
-   */
-  public isValidTabIndex(tabIndex: number): boolean {
-    return tabIndex >= 0 && tabIndex < this._tabs.length;
-  }
-
-  // ===== 子实体管理方法 =====
-
-  /**
-   * 添加标签（工厂方法）
-   * 创建新的 EditorTab 并添加到组中
-   */
   public addTab(params: {
-    documentUuid?: string | null;
-    tabIndex: number;
-    tabType: TabType;
-    name: string;
+    documentId?: string | null;
+    type?: TabType;
     viewState?: Partial<TabViewStateServerDTO>;
-    isPinned?: boolean;
   }): EditorTab {
     const tab = EditorTab.create({
-      groupUuid: this._uuid,
-      sessionUuid: this._sessionUuid,
-      workspaceUuid: this._workspaceUuid,
-      accountUuid: this._accountUuid,
-      ...params,
+      groupId: this.id,
+      sessionId: this._sessionId,
+      workspaceId: this._workspaceId,
+      identityId: this._identityId,
+      documentId: params.documentId,
+      type: params.type,
+      viewState: params.viewState,
+      tabIndex: this._tabs.length,
     });
+
     this._tabs.push(tab);
-    this._updatedAt = new Date();
+    this._activeTabIndex = this._tabs.length - 1;
+    this.updateTimestamp();
+
     return tab;
   }
 
-  /**
-   * 添加已存在的标签（用于从持久化恢复）
-   * 注意：这个方法不应该在业务逻辑中使用，只用于重建聚合
-   */
-  public addExistingTab(tab: EditorTab): void {
-    this._tabs.push(tab);
-  }
-
-  /**
-   * 移除标签
-   */
-  public removeTab(tabUuid: string): boolean {
-    const index = this._tabs.findIndex((t) => t.uuid === tabUuid);
+  public removeTab(tabId: string): void {
+    const index = this._tabs.findIndex((t) => t.id === tabId);
     if (index !== -1) {
       this._tabs.splice(index, 1);
-      this._updatedAt = new Date();
-      return true;
+
+      // 调整活动标签索引
+      if (this._activeTabIndex >= this._tabs.length) {
+        this._activeTabIndex = Math.max(0, this._tabs.length - 1);
+      }
+
+      this.updateTimestamp();
     }
-    return false;
   }
 
-  /**
-   * 获取标签
-   */
-  public getTab(tabUuid: string): EditorTab | undefined {
-    return this._tabs.find((t) => t.uuid === tabUuid);
+  public setActiveTab(tabIndex: number): void {
+    if (tabIndex >= 0 && tabIndex < this._tabs.length) {
+      this._activeTabIndex = tabIndex;
+      this.updateTimestamp();
+    }
   }
 
-  /**
-   * 获取所有标签
-   */
-  public getAllTabs(): EditorTab[] {
-    return [...this._tabs];
+  public rename(name: string | null): void {
+    this._name = name;
+    this.updateTimestamp();
   }
 
-  // ===== DTO 转换方法 =====
+  public updateGroupIndex(groupIndex: number): void {
+    this._groupIndex = groupIndex;
+    this.updateTimestamp();
+  }
 
+  public getTab(tabId: string): EditorTab | undefined {
+    return this._tabs.find((t) => t.id === tabId);
+  }
+
+  public getActiveTab(): EditorTab | undefined {
+    return this._tabs[this._activeTabIndex];
+  }
+
+  private updateTimestamp(): void {
+    this._updatedAt = new Date();
+  }
+
+  // ===== 计算属性 =====
+  public get tabCount(): number {
+    return this._tabs.length;
+  }
+
+  public get isEmpty(): boolean {
+    return this._tabs.length === 0;
+  }
+
+  public get hasActiveTab(): boolean {
+    return this._activeTabIndex >= 0 && this._activeTabIndex < this._tabs.length;
+  }
+
+  // ===== 序列化方法 =====
   public toServerDTO(): EditorGroupServerDTO {
     return {
-      uuid: this._uuid,
-      sessionUuid: this._sessionUuid,
-      workspaceUuid: this._workspaceUuid,
-      accountUuid: this._accountUuid,
+      id: this.id,
+      sessionId: this._sessionId,
+      workspaceId: this._workspaceId,
+      identityId: this._identityId,
       groupIndex: this._groupIndex,
       activeTabIndex: this._activeTabIndex,
       name: this._name,
       tabs: this._tabs.map((tab) => tab.toServerDTO()),
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      createdAt: this._createdAt.getTime() as TransferDate,
+      updatedAt: this._updatedAt.getTime() as TransferDate,
     };
   }
 
   public toClientDTO(): EditorGroupClientDTO {
     return {
-      uuid: this._uuid,
-      sessionUuid: this._sessionUuid,
-      workspaceUuid: this._workspaceUuid,
-      accountUuid: this._accountUuid,
+      id: this.id,
+      sessionId: this._sessionId,
+      workspaceId: this._workspaceId,
+      identityId: this._identityId,
       groupIndex: this._groupIndex,
       activeTabIndex: this._activeTabIndex,
       name: this._name,
       tabs: this._tabs.map((tab) => tab.toClientDTO()),
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      createdAt: this._createdAt.getTime() as TransferDate,
+      updatedAt: this._updatedAt.getTime() as TransferDate,
+      // UI 格式化字段
       formattedCreatedAt: this._createdAt.toLocaleString(),
       formattedUpdatedAt: this._updatedAt.toLocaleString(),
     };
@@ -271,85 +301,16 @@ export class EditorGroup extends Entity implements EditorGroupServer {
 
   public toPersistenceDTO(): EditorGroupPersistenceDTO {
     return {
-      uuid: this._uuid,
-      session_uuid: this._sessionUuid,
-      workspace_uuid: this._workspaceUuid,
-      accountUuid: this._accountUuid,
+      id: this.id,
+      session_id: this._sessionId,
+      workspace_id: this._workspaceId,
+      identityId: this._identityId,
       group_index: this._groupIndex,
       active_tab_index: this._activeTabIndex,
       name: this._name,
+      tabs: this._tabs.map((tab) => tab.toPersistenceDTO()),
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
     };
-  }
-
-  // ===== From DTO 方法 =====
-
-  /**
-   * 从 Server DTO 创建实体 (递归重建子实体)
-   */
-  public static fromServerDTO(dto: EditorGroupServerDTO): EditorGroup {
-    const group = new EditorGroup({
-      uuid: dto.uuid,
-      sessionUuid: dto.sessionUuid,
-      workspaceUuid: dto.workspaceUuid,
-      accountUuid: dto.accountUuid,
-      groupIndex: dto.groupIndex,
-      activeTabIndex: dto.activeTabIndex,
-      name: dto.name,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
-
-    // ✅ 递归重建子实体
-    group._tabs = dto.tabs.map((tabDto) => EditorTab.fromServerDTO(tabDto));
-
-    return group;
-  }
-
-  /**
-   * 从 Client DTO 创建实体 (递归重建子实体)
-   */
-  public static fromClientDTO(dto: EditorGroupClientDTO): EditorGroup {
-    const group = new EditorGroup({
-      uuid: dto.uuid,
-      sessionUuid: dto.sessionUuid,
-      workspaceUuid: dto.workspaceUuid,
-      accountUuid: dto.accountUuid,
-      groupIndex: dto.groupIndex,
-      activeTabIndex: dto.activeTabIndex,
-      name: dto.name,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
-
-    // ✅ 递归重建子实体
-    group._tabs = dto.tabs.map((tabDto) => EditorTab.fromClientDTO(tabDto));
-
-    return group;
-  }
-
-  /**
-   * 从 Persistence DTO 创建实体 (递归重建子实体)
-   */
-  public static fromPersistenceDTO(dto: EditorGroupPersistenceDTO): EditorGroup {
-    const group = new EditorGroup({
-      uuid: dto.uuid,
-      sessionUuid: dto.session_uuid,
-      workspaceUuid: dto.workspace_uuid,
-      accountUuid: dto.accountUuid,
-      groupIndex: dto.group_index,
-      activeTabIndex: dto.active_tab_index,
-      name: dto.name,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-    });
-
-    // ✅ 递归重建子实体 (如果 DTO 包含tabs数据)
-    if (dto.tabs) {
-      group._tabs = dto.tabs.map((tabDto) => EditorTab.fromPersistenceDTO(tabDto));
-    }
-
-    return group;
   }
 }

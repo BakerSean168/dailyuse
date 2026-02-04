@@ -1,119 +1,134 @@
 /**
  * EditorTab 实体实现
  * 实现 EditorTabServer 接口
- * 作为 EditorGroup 实体的子实体
  */
 
+import { Entity, generateUUID } from '@dailyuse/utils';
+import { TabType } from '@dailyuse/contracts/editor';
 import type {
   EditorTabClientDTO,
   EditorTabPersistenceDTO,
   EditorTabServer,
   EditorTabServerDTO,
-  TabType,
   TabViewStateServerDTO,
 } from '@dailyuse/contracts/editor';
-import { Entity } from '@dailyuse/utils';
-import { TabViewState } from '../value-objects/TabViewState';
+import type {
+  DocumentId,
+  EditorGroupId,
+  EditorSessionId,
+  EditorTabId,
+  EditorWorkspaceId,
+  IdentityId,
+} from '@dailyuse/contracts/primitives';
 
 /**
  * EditorTab 实体
- * 作为 EditorGroup 实体的子实体
  */
-export class EditorTab extends Entity implements EditorTabServer {
+export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
   // ===== 私有字段 =====
-  private _groupUuid: string; // 父实体外键
-  private _sessionUuid: string;
-  private _workspaceUuid: string; // 聚合根外键
-  private _accountUuid: string;
-  private _documentUuid: string | null;
+  private _groupId: EditorGroupId;
+  private _sessionId: EditorSessionId;
+  private _workspaceId: EditorWorkspaceId;
+  private _identityId: IdentityId;
+  private _documentId: DocumentId | null;
   private _tabIndex: number;
   private _tabType: TabType;
   private _name: string;
-  private _viewState: TabViewState;
+  private _viewState: TabViewStateServerDTO;
   private _isPinned: boolean;
   private _isDirty: boolean;
-  private _lastAccessedAt: number | null;
+  private _lastAccessedAt: Date | null;
   private _createdAt: Date;
   private _updatedAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
-    uuid?: string;
-    groupUuid: string;
-    sessionUuid: string;
-    workspaceUuid: string;
-    accountUuid: string;
-    documentUuid?: string | null;
+    id: EditorTabId;
+    groupId: EditorGroupId;
+    sessionId: EditorSessionId;
+    workspaceId: EditorWorkspaceId;
+    identityId: IdentityId;
+    documentId: DocumentId | null;
     tabIndex: number;
     tabType: TabType;
     name: string;
-    viewState: TabViewState;
+    viewState: TabViewStateServerDTO;
     isPinned: boolean;
     isDirty: boolean;
-    lastAccessedAt?: number | null;
+    lastAccessedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
   }) {
-    super(params.uuid || Entity.generateUUID());
-    this._groupUuid = params.groupUuid;
-    this._sessionUuid = params.sessionUuid;
-    this._workspaceUuid = params.workspaceUuid;
-    this._accountUuid = params.accountUuid;
-    this._documentUuid = params.documentUuid ?? null;
+    super(params.id);
+    this._groupId = params.groupId;
+    this._sessionId = params.sessionId;
+    this._workspaceId = params.workspaceId;
+    this._identityId = params.identityId;
+    this._documentId = params.documentId;
     this._tabIndex = params.tabIndex;
     this._tabType = params.tabType;
     this._name = params.name;
     this._viewState = params.viewState;
     this._isPinned = params.isPinned;
     this._isDirty = params.isDirty;
-    this._lastAccessedAt = params.lastAccessedAt ?? null;
+    this._lastAccessedAt = params.lastAccessedAt;
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
   }
 
   // ===== Getter 属性 =====
-  public override get uuid(): string {
-    return this._uuid;
+  public get groupId(): EditorGroupId {
+    return this._groupId;
   }
-  public get groupUuid(): string {
-    return this._groupUuid;
+
+  public get sessionId(): EditorSessionId {
+    return this._sessionId;
   }
-  public get sessionUuid(): string {
-    return this._sessionUuid;
+
+  public get workspaceId(): EditorWorkspaceId {
+    return this._workspaceId;
   }
-  public get workspaceUuid(): string {
-    return this._workspaceUuid;
+
+  public get identityId(): IdentityId {
+    return this._identityId;
   }
-  public get accountUuid(): string {
-    return this._accountUuid;
+
+  public get documentId(): DocumentId | null {
+    return this._documentId;
   }
-  public get documentUuid(): string | null {
-    return this._documentUuid;
-  }
+
   public get tabIndex(): number {
     return this._tabIndex;
   }
+
   public get tabType(): TabType {
     return this._tabType;
   }
+
   public get name(): string {
     return this._name;
   }
+
   public get viewState(): TabViewStateServerDTO {
-    return this._viewState.toServerDTO();
+    return this._viewState;
   }
+
   public get isPinned(): boolean {
     return this._isPinned;
   }
+
   public get isDirty(): boolean {
     return this._isDirty;
   }
-  public get lastAccessedAt(): number | null {
+
+  public get lastAccessedAt(): Date | null {
     return this._lastAccessedAt;
   }
+
   public get createdAt(): Date {
     return this._createdAt;
   }
+
   public get updatedAt(): Date {
     return this._updatedAt;
   }
@@ -121,146 +136,143 @@ export class EditorTab extends Entity implements EditorTabServer {
   // ===== 工厂方法 =====
 
   /**
-   * 创建新的 EditorTab
+   * 创建新的标签
    */
   public static create(params: {
-    groupUuid: string;
-    sessionUuid: string;
-    workspaceUuid: string;
-    accountUuid: string;
-    documentUuid?: string | null;
+    groupId: EditorGroupId;
+    sessionId: EditorSessionId;
+    workspaceId: EditorWorkspaceId;
+    identityId: IdentityId;
+    documentId?: string | null;
     tabIndex: number;
-    tabType: TabType;
-    name: string;
+    type?: TabType;
+    name?: string;
     viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
   }): EditorTab {
-    const uuid = crypto.randomUUID();
+    const id = generateUUID() as EditorTabId;
     const now = new Date();
 
-    // 创建默认视图状态
-    const viewState = params.viewState
-      ? TabViewState.fromServerDTO({
-          ...TabViewState.createDefault().toServerDTO(),
-          ...params.viewState,
-        })
-      : TabViewState.createDefault();
+    const defaultViewState: TabViewStateServerDTO = {
+      scrollTop: 0,
+      scrollLeft: 0,
+      cursorPosition: { line: 0, column: 0 },
+      selections: [],
+      ...params.viewState,
+    };
 
     return new EditorTab({
-      uuid,
-      groupUuid: params.groupUuid,
-      sessionUuid: params.sessionUuid,
-      workspaceUuid: params.workspaceUuid,
-      accountUuid: params.accountUuid,
-      documentUuid: params.documentUuid,
+      id,
+      groupId: params.groupId,
+      sessionId: params.sessionId,
+      workspaceId: params.workspaceId,
+      identityId: params.identityId,
+      documentId: (params.documentId ?? null) as DocumentId | null,
       tabIndex: params.tabIndex,
-      tabType: params.tabType,
-      name: params.name,
-      viewState,
+      tabType: params.type ?? TabType.Document,
+      name: params.name ?? 'Untitled',
+      viewState: defaultViewState,
       isPinned: params.isPinned ?? false,
       isDirty: false,
+      lastAccessedAt: now,
       createdAt: now,
       updatedAt: now,
     });
   }
 
-  // ===== From DTO 方法 =====
-
   /**
-   * 从 Server DTO 重建
+   * 从 ServerDTO 恢复
    */
   public static fromServerDTO(dto: EditorTabServerDTO): EditorTab {
     return new EditorTab({
-      uuid: dto.uuid,
-      groupUuid: dto.groupUuid,
-      sessionUuid: dto.sessionUuid,
-      workspaceUuid: dto.workspaceUuid,
-      accountUuid: dto.accountUuid,
-      documentUuid: dto.documentUuid,
+      id: dto.id,
+      groupId: dto.groupId,
+      sessionId: dto.sessionId,
+      workspaceId: dto.workspaceId,
+      identityId: dto.identityId,
+      documentId: dto.documentId,
       tabIndex: dto.tabIndex,
       tabType: dto.tabType,
       name: dto.name,
-      viewState: TabViewState.fromServerDTO(dto.viewState),
+      viewState: dto.viewState,
       isPinned: dto.isPinned,
       isDirty: dto.isDirty,
-      lastAccessedAt: dto.lastAccessedAt,
+      lastAccessedAt: dto.lastAccessedAt !== null ? new Date(dto.lastAccessedAt) : null,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
     });
   }
 
   /**
-   * 从 Client DTO 重建
+   * 从 ClientDTO 恢复
    */
   public static fromClientDTO(dto: EditorTabClientDTO): EditorTab {
     return new EditorTab({
-      uuid: dto.uuid,
-      groupUuid: dto.groupUuid,
-      sessionUuid: dto.sessionUuid,
-      workspaceUuid: dto.workspaceUuid,
-      accountUuid: dto.accountUuid,
-      documentUuid: dto.documentUuid,
+      id: dto.id as EditorTabId,
+      groupId: dto.groupId as EditorGroupId,
+      sessionId: dto.sessionId as EditorSessionId,
+      workspaceId: dto.workspaceId as EditorWorkspaceId,
+      identityId: dto.identityId as IdentityId,
+      documentId: dto.documentId as DocumentId | null,
       tabIndex: dto.tabIndex,
       tabType: dto.tabType,
       name: dto.name,
-      viewState: dto.viewState
-        ? TabViewState.fromServerDTO(dto.viewState)
-        : TabViewState.createDefault(),
+      viewState: dto.viewState,
       isPinned: dto.isPinned,
       isDirty: dto.isDirty,
-      lastAccessedAt: dto.lastAccessedAt,
+      lastAccessedAt: dto.lastAccessedAt !== null ? new Date(dto.lastAccessedAt) : null,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
     });
   }
 
   /**
-   * 从 Persistence DTO 重建
+   * 从 PersistenceDTO 恢复
    */
   public static fromPersistenceDTO(dto: EditorTabPersistenceDTO): EditorTab {
     return new EditorTab({
-      uuid: dto.uuid,
-      groupUuid: dto.groupUuid,
-      sessionUuid: dto.session_uuid,
-      workspaceUuid: dto.workspace_uuid,
-      accountUuid: dto.accountUuid,
-      documentUuid: dto.document_uuid,
+      id: dto.id,
+      groupId: dto.group_id,
+      sessionId: dto.session_id,
+      workspaceId: dto.workspace_id,
+      identityId: dto.identityId,
+      documentId: dto.document_id,
       tabIndex: dto.tab_index,
       tabType: dto.tab_type,
       name: dto.name,
-      viewState: TabViewState.fromPersistenceDTO(JSON.parse(dto.view_state)),
+      viewState: JSON.parse(dto.view_state) as TabViewStateServerDTO,
       isPinned: dto.is_pinned,
       isDirty: dto.is_dirty,
-      lastAccessedAt: dto.lastAccessedAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      lastAccessedAt: dto.lastAccessedAt ? new Date(dto.lastAccessedAt) : null,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
   // ===== 业务方法 =====
 
   /**
-   * 更新名称
+   * 更新标题
    */
   public updateName(name: string): void {
     this._name = name;
-    this._updatedAt = new Date();
+    this.updateTimestamp();
   }
 
   /**
    * 更新视图状态
    */
   public updateViewState(viewState: Partial<TabViewStateServerDTO>): void {
-    this._viewState = this._viewState.with(viewState);
-    this._updatedAt = new Date();
+    this._viewState = { ...this._viewState, ...viewState };
+    this.updateTimestamp();
   }
 
   /**
    * 切换固定状态
    */
-  public togglePin(): void {
+  public togglePinned(): void {
     this._isPinned = !this._isPinned;
-    this._updatedAt = new Date();
+    this.updateTimestamp();
   }
 
   /**
@@ -268,7 +280,7 @@ export class EditorTab extends Entity implements EditorTabServer {
    */
   public markDirty(): void {
     this._isDirty = true;
-    this._updatedAt = new Date();
+    this.updateTimestamp();
   }
 
   /**
@@ -276,91 +288,102 @@ export class EditorTab extends Entity implements EditorTabServer {
    */
   public markClean(): void {
     this._isDirty = false;
-    this._updatedAt = new Date();
+    this.updateTimestamp();
   }
 
   /**
    * 记录访问时间
    */
   public recordAccess(): void {
-    this._lastAccessedAt = Date.now();
-    this._updatedAt = new Date();
+    this._lastAccessedAt = new Date();
+    this.updateTimestamp();
   }
 
   /**
    * 更新标签索引（用于重新排序）
    */
-  public updateTabIndex(newIndex: number): void {
-    this._tabIndex = newIndex;
-    this._updatedAt = new Date();
+  public updateTabIndex(tabIndex: number): void {
+    this._tabIndex = tabIndex;
+    this.updateTimestamp();
   }
 
   /**
    * 判断是否为文档标签
    */
   public isDocumentTab(): boolean {
-    return this._tabType === 'document' && this._documentUuid !== null;
+    return this._tabType === TabType.Document;
   }
 
-  // ===== DTO 转换方法 =====
+  private updateTimestamp(): void {
+    this._updatedAt = new Date();
+  }
 
+  // ===== 序列化方法 =====
+
+  /**
+   * 转换为 ServerDTO
+   */
   public toServerDTO(): EditorTabServerDTO {
     return {
-      uuid: this._uuid,
-      groupUuid: this._groupUuid,
-      sessionUuid: this._sessionUuid,
-      workspaceUuid: this._workspaceUuid,
-      accountUuid: this._accountUuid,
-      documentUuid: this._documentUuid,
+      id: this.id,
+      groupId: this._groupId,
+      sessionId: this._sessionId,
+      workspaceId: this._workspaceId,
+      identityId: this._identityId,
+      documentId: this._documentId,
       tabIndex: this._tabIndex,
       tabType: this._tabType,
       name: this._name,
-      viewState: this._viewState.toServerDTO(),
+      viewState: this._viewState,
       isPinned: this._isPinned,
       isDirty: this._isDirty,
-      lastAccessedAt: this._lastAccessedAt,
+      lastAccessedAt: this._lastAccessedAt?.getTime() ?? null,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
     };
   }
 
+  /**
+   * 转换为 ClientDTO
+   */
   public toClientDTO(): EditorTabClientDTO {
     return {
-      uuid: this._uuid,
-      groupUuid: this._groupUuid,
-      sessionUuid: this._sessionUuid,
-      workspaceUuid: this._workspaceUuid,
-      accountUuid: this._accountUuid,
-      documentUuid: this._documentUuid,
+      id: this.id as unknown as string,
+      groupId: this._groupId as unknown as string,
+      sessionId: this._sessionId as unknown as string,
+      workspaceId: this._workspaceId as unknown as string,
+      identityId: this._identityId as unknown as string,
+      documentId: this._documentId as unknown as string | null,
       tabIndex: this._tabIndex,
       tabType: this._tabType,
       name: this._name,
-      viewState: this._viewState.toClientDTO(),
+      viewState: this._viewState,
       isPinned: this._isPinned,
       isDirty: this._isDirty,
-      lastAccessedAt: this._lastAccessedAt,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      formattedLastAccessed: this._lastAccessedAt
-        ? new Date(this._lastAccessedAt).toLocaleString()
-        : null,
+      lastAccessedAt: this._lastAccessedAt?.getTime() ?? null,
+      formattedLastAccessed: this._lastAccessedAt?.toLocaleString() ?? null,
       formattedCreatedAt: this._createdAt.toLocaleString(),
       formattedUpdatedAt: this._updatedAt.toLocaleString(),
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
+  /**
+   * 转换为 PersistenceDTO
+   */
   public toPersistenceDTO(): EditorTabPersistenceDTO {
     return {
-      uuid: this._uuid,
-      groupUuid: this._groupUuid,
-      session_uuid: this._sessionUuid,
-      workspace_uuid: this._workspaceUuid,
-      accountUuid: this._accountUuid,
-      document_uuid: this._documentUuid,
+      id: this.id,
+      group_id: this._groupId,
+      session_id: this._sessionId,
+      workspace_id: this._workspaceId,
+      identityId: this._identityId,
+      document_id: this._documentId,
       tab_index: this._tabIndex,
       tab_type: this._tabType,
       name: this._name,
-      view_state: JSON.stringify(this._viewState.toPersistenceDTO()),
+      view_state: JSON.stringify(this._viewState),
       is_pinned: this._isPinned,
       is_dirty: this._isDirty,
       lastAccessedAt: this._lastAccessedAt,

@@ -37,7 +37,7 @@ export {
   SyncVersion,
   EntityReference,
   ConflictResolution,
-  SyncDeviceInfo,
+  DeviceInfo,
   SyncProfileConfig,
   SyncSessionStats,
 } from './value-objects';

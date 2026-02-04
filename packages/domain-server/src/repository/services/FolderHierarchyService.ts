@@ -38,7 +38,7 @@ export class FolderHierarchyService {
         break;
       }
 
-      currentUuid = parent.parentUuid;
+      currentUuid = parent.parentId;
       depth++;
     }
 
@@ -60,7 +60,7 @@ export class FolderHierarchyService {
       child.updatePath(childNewPath);
       await folderRepository.save(child);
 
-      await this.updateChildrenPaths(child.uuid, childNewPath, folderRepository);
+      await this.updateChildrenPaths(String(child.id), childNewPath, folderRepository);
     }
   }
 
@@ -72,17 +72,17 @@ export class FolderHierarchyService {
     const rootFolders: FolderTreeNode[] = [];
 
     for (const folder of folders) {
-      folderMap.set(folder.uuid, {
+      folderMap.set(String(folder.id), {
         folder,
         children: [],
       });
     }
 
     for (const folder of folders) {
-      const node = folderMap.get(folder.uuid)!;
+      const node = folderMap.get(String(folder.id))!;
 
-      if (folder.parentUuid) {
-        const parentNode = folderMap.get(folder.parentUuid);
+      if (folder.parentId) {
+        const parentNode = folderMap.get(folder.parentId);
         if (parentNode) {
           parentNode.children.push(node);
         } else {

@@ -8,13 +8,36 @@
 
 import type { IRepositoryStatisticsRepository } from '../repositories/IRepositoryStatisticsRepository';
 import type { IRepositoryRepository } from '../repositories/IRepositoryRepository';
-import { RepositoryStatistics } from '../aggregates/RepositoryStatistics';
-import type {
-  RecalculateStatisticsRequest,
-  RecalculateStatisticsResponse,
-  StatisticsUpdateEvent,
-  RepositoryStatisticsServerDTO,
-} from '@dailyuse/contracts/repository';
+import { RepositoryStatistics, type RepositoryStatisticsServerDTO } from '../aggregates/RepositoryStatistics';
+
+// ============ 本地类型定义 ============
+// TODO: 这些类型应该移到 @dailyuse/contracts/repository
+
+/**
+ * Recalculate Statistics Request
+ */
+export interface RecalculateStatisticsRequest {
+  accountUuid: string;
+}
+
+/**
+ * Recalculate Statistics Response
+ */
+export interface RecalculateStatisticsResponse {
+  ok: boolean;
+  message: string;
+  statistics: RepositoryStatisticsServerDTO;
+  recalculatedAt: number;
+}
+
+/**
+ * Statistics Update Event
+ */
+export interface StatisticsUpdateEvent {
+  accountUuid: string;
+  eventType: string;
+  data?: unknown;
+}
 
 export class RepositoryStatisticsDomainService {
   constructor(

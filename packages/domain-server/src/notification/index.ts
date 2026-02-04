@@ -31,6 +31,9 @@
  * - 外部 I/O 库（fs, axios, prisma, ioredis 等）
  */
 
+// Value Objects
+export * from './value-objects';
+
 // Aggregates
 export * from './aggregates/Notification';
 export { NotificationPreference } from './aggregates/NotificationPreference';

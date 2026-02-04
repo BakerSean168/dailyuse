@@ -17,6 +17,7 @@ import type {
   AIProviderConfigClientDTO,
   AIProviderConfigServerDTO,
 } from '@dailyuse/contracts/ai';
+import { AiProviderConfigId } from '@dailyuse/domain-shared/ai';
 
 /**
  * AIProviderConfig 聚合根
@@ -26,8 +27,8 @@ import type {
  * - API Key 安全处理（掩码生成）
  * - 默认 Provider 管理
  */
-export class AIProviderConfigServer extends AggregateRoot {
-  private _accountUuid: string;
+export class AIProviderConfigServer extends AggregateRoot<AiProviderConfigId> {
+  private _identityId: string;
   private _name: string;
   private _providerType: AIProviderType;
   private _baseUrl: string;
@@ -41,8 +42,8 @@ export class AIProviderConfigServer extends AggregateRoot {
   private _updatedAt: Date;
 
   private constructor(params: {
-    uuid?: string;
-    accountUuid: string;
+    id?: string;
+    identityId: string;
     name: string;
     providerType: AIProviderType;
     baseUrl: string;
@@ -55,8 +56,8 @@ export class AIProviderConfigServer extends AggregateRoot {
     createdAt: Date;
     updatedAt: Date;
   }) {
-    super(params.uuid ?? AggregateRoot.generateUUID());
-    this._accountUuid = params.accountUuid;
+    super(AiProviderConfigId.of(params.id ?? AiProviderConfigId.generate()));
+    this._identityId = params.identityId;
     this._name = params.name;
     this._providerType = params.providerType;
     this._baseUrl = params.baseUrl;
@@ -72,12 +73,12 @@ export class AIProviderConfigServer extends AggregateRoot {
 
   // ===== Getters =====
 
-  public override get uuid(): string {
-    return this._uuid;
+  public get uuid(): string {
+    return String(this.id);
   }
 
-  public get accountUuid(): string {
-    return this._accountUuid;
+  public get identityId(): string {
+    return this._identityId;
   }
 
   public get name(): string {
@@ -130,7 +131,7 @@ export class AIProviderConfigServer extends AggregateRoot {
    * 创建新的 AI Provider 配置
    */
   public static create(params: {
-    accountUuid: string;
+    identityId: string;
     name: string;
     providerType: AIProviderType;
     baseUrl: string;
@@ -141,7 +142,7 @@ export class AIProviderConfigServer extends AggregateRoot {
   }): AIProviderConfigServer {
     const now = new Date();
     const instance = new AIProviderConfigServer({
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       name: params.name.trim(),
       providerType: params.providerType,
       baseUrl: AIProviderConfigServer.normalizeBaseUrl(params.baseUrl),
@@ -155,16 +156,12 @@ export class AIProviderConfigServer extends AggregateRoot {
       updatedAt: now,
     });
 
-    instance.addDomainEvent({
-      eventType: 'ai.provider_config.created',
-      aggregateId: instance.uuid,
-      occurredOn: now,
-      accountUuid: params.accountUuid,
-      payload: {
-        name: instance.name,
-        providerType: instance.providerType,
-        isDefault: instance.isDefault,
-      },
+    instance.addDomainEvent('ai.provider_config.created', {
+      identityId: params.identityId,
+      providerConfigId: instance.uuid,
+      name: instance.name,
+      providerType: instance.providerType,
+      isDefault: instance.isDefault,
     });
 
     return instance;
@@ -175,8 +172,8 @@ export class AIProviderConfigServer extends AggregateRoot {
    */
   public static fromServerDTO(dto: AIProviderConfigServerDTO): AIProviderConfigServer {
     return new AIProviderConfigServer({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
+      id: String(dto.id),
+      identityId: String(dto.identityId),
       name: dto.name,
       providerType: dto.providerType,
       baseUrl: dto.baseUrl,
@@ -243,14 +240,10 @@ export class AIProviderConfigServer extends AggregateRoot {
     this._availableModels = models;
     this._updatedAt = new Date();
 
-    this.addDomainEvent({
-      eventType: 'ai.provider_config.models_updated',
-      aggregateId: this.uuid,
-      occurredOn: this._updatedAt,
-      accountUuid: this._accountUuid,
-      payload: {
-        modelCount: models.length,
-      },
+    this.addDomainEvent('ai.provider_config.models_updated', {
+      identityId: this._identityId,
+      providerConfigId: this.uuid,
+      modelCount: models.length,
     });
   }
 
@@ -284,14 +277,10 @@ export class AIProviderConfigServer extends AggregateRoot {
     this._isDefault = true;
     this._updatedAt = new Date();
 
-    this.addDomainEvent({
-      eventType: 'ai.provider_config.set_default',
-      aggregateId: this.uuid,
-      occurredOn: this._updatedAt,
-      accountUuid: this._accountUuid,
-      payload: {
-        providerName: this._name,
-      },
+    this.addDomainEvent('ai.provider_config.set_default', {
+      identityId: this._identityId,
+      providerConfigId: this.uuid,
+      providerName: this._name,
     });
   }
 
@@ -322,8 +311,8 @@ export class AIProviderConfigServer extends AggregateRoot {
    */
   public toServerDTO(): AIProviderConfigServerDTO {
     return {
-      uuid: this.uuid,
-      accountUuid: this._accountUuid,
+      id: this.id,
+      identityId: this._identityId as unknown as import('@dailyuse/contracts/primitives').IdentityId,
       name: this._name,
       providerType: this._providerType,
       baseUrl: this._baseUrl,
@@ -343,8 +332,8 @@ export class AIProviderConfigServer extends AggregateRoot {
    */
   public toClientDTO(): AIProviderConfigClientDTO {
     return {
-      uuid: this.uuid,
-      accountUuid: this._accountUuid,
+      id: this.uuid,
+      identityId: this._identityId,
       name: this._name,
       providerType: this._providerType,
       baseUrl: this._baseUrl,

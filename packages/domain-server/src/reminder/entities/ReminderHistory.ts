@@ -3,9 +3,14 @@
  * 提醒历史记录实体
  */
 
-import type { ReminderHistoryServer, ReminderHistoryServerDTO, ReminderHistoryClientDTO, ReminderHistoryPersistenceDTO } from '@dailyuse/contracts/reminder';
+import type {
+  ReminderHistoryServer,
+  ReminderHistoryServerDTO,
+  ReminderHistoryClientDTO,
+  ReminderHistoryPersistenceDTO,
+} from '@dailyuse/contracts/reminder';
 import { TriggerResult, NotificationChannel } from '@dailyuse/contracts/reminder';
-import { Entity } from '@dailyuse/utils';
+import { Entity, generateUUID } from '@dailyuse/utils';
 
 /**
  * ReminderHistory 实体
@@ -15,7 +20,7 @@ import { Entity } from '@dailyuse/utils';
  * - 有生命周期
  * - 属于 ReminderTemplate 聚合根
  */
-export class ReminderHistory extends Entity implements ReminderHistoryServer {
+export class ReminderHistory extends Entity<string> implements ReminderHistoryServer {
   // ===== 私有字段 =====
   private _templateUuid: string;
   private _triggeredAt: Date;
@@ -36,7 +41,7 @@ export class ReminderHistory extends Entity implements ReminderHistoryServer {
     notificationChannels?: NotificationChannel[] | null;
     createdAt: number;
   }) {
-    super(params.uuid || Entity.generateUUID());
+    super(params.uuid || generateUUID());
     this._templateUuid = params.templateUuid;
     this._triggeredAt = new Date(params.triggeredAt);
     this._result = params.result;
@@ -49,16 +54,16 @@ export class ReminderHistory extends Entity implements ReminderHistoryServer {
   }
 
   // ===== Getter 属性 =====
-  public override get uuid(): string {
-    return this._uuid;
+  public get uuid(): string {
+    return this.id;
   }
 
   public get templateUuid(): string {
     return this._templateUuid;
   }
 
-  public get triggeredAt(): Date {
-    return this._triggeredAt;
+  public get triggeredAt(): number {
+    return this._triggeredAt.getTime();
   }
 
   public get result(): TriggerResult {
@@ -82,151 +87,141 @@ export class ReminderHistory extends Entity implements ReminderHistoryServer {
   }
 
   // ===== 工厂方法 =====
-
-  /**
-   * 创建新的 ReminderHistory 实体
-   */
   public static create(params: {
     templateUuid: string;
-    triggeredAt: number;
+    triggeredAt?: number;
     result: TriggerResult;
-    error?: string;
-    notificationSent: boolean;
-    notificationChannels?: NotificationChannel[];
+    error?: string | null;
+    notificationSent?: boolean;
+    notificationChannels?: NotificationChannel[] | null;
   }): ReminderHistory {
+    const now = Date.now();
     return new ReminderHistory({
       templateUuid: params.templateUuid,
-      triggeredAt: params.triggeredAt,
+      triggeredAt: params.triggeredAt ?? now,
       result: params.result,
-      error: params.error,
-      notificationSent: params.notificationSent,
-      notificationChannels: params.notificationChannels,
-      createdAt: Date.now(),
+      error: params.error ?? null,
+      notificationSent: params.notificationSent ?? false,
+      notificationChannels: params.notificationChannels ?? null,
+      createdAt: now,
     });
   }
 
-  /**
-   * 从 Server DTO 创建实体
-   */
   public static fromServerDTO(dto: ReminderHistoryServerDTO): ReminderHistory {
     return new ReminderHistory({
       uuid: dto.uuid,
       templateUuid: dto.templateUuid,
       triggeredAt: dto.triggeredAt,
       result: dto.result,
-      error: dto.error,
+      error: dto.error ?? null,
       notificationSent: dto.notificationSent,
       notificationChannels: dto.notificationChannels ?? null,
       createdAt: dto.createdAt,
     });
   }
 
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  public static fromPersistenceDTO(dto: ReminderHistoryPersistenceDTO): ReminderHistory {
+  public static fromPersistenceDTO(
+    dto: ReminderHistoryPersistenceDTO,
+  ): ReminderHistory {
+    const notificationChannels = dto.notificationChannels
+      ? JSON.parse(dto.notificationChannels)
+      : null;
+
     return new ReminderHistory({
       uuid: dto.uuid,
       templateUuid: dto.templateUuid,
-      triggeredAt: dto.triggeredAt.getTime(),
+      triggeredAt: dto.triggeredAt,
       result: dto.result,
-      error: dto.error,
+      error: dto.error ?? null,
       notificationSent: dto.notificationSent,
-      notificationChannels: dto.notificationChannels ? JSON.parse(dto.notificationChannels) : null,
+      notificationChannels,
       createdAt: dto.createdAt.getTime(),
     });
   }
 
-  // ===== 业务方法 =====
-
-  /**
-   * 是否成功
-   */
-  public isSuccess(): boolean {
-    return this._result === 'SUCCESS';
+  // ===== 计算属性 =====
+  public get isSuccess(): boolean {
+    return this._result === TriggerResult.Success;
   }
 
-  /**
-   * 是否失败
-   */
-  public isFailed(): boolean {
-    return this._result === 'FAILED';
+  public get isFailed(): boolean {
+    return this._result === TriggerResult.Failed;
   }
 
-  /**
-   * 是否跳过
-   */
-  public isSkipped(): boolean {
-    return this._result === 'SKIPPED';
+  public get isSkipped(): boolean {
+    return this._result === TriggerResult.Skipped;
   }
 
-  // ===== 转换方法 (To) =====
+  public get hasError(): boolean {
+    return this._error !== null;
+  }
 
-  /**
-   * 转换为 Server DTO
-   */
+  public get resultDescription(): string {
+    const descriptions: Record<TriggerResult, string> = {
+      [TriggerResult.Success]: '成功',
+      [TriggerResult.Failed]: '失败',
+      [TriggerResult.Skipped]: '跳过',
+    };
+    return descriptions[this._result];
+  }
+
+  public get triggeredAtFormatted(): string {
+    return this._triggeredAt.toLocaleString();
+  }
+
+  public get createdAtFormatted(): string {
+    return this._createdAt.toLocaleString();
+  }
+
+  public get notificationChannelCount(): number {
+    return this._notificationChannels?.length ?? 0;
+  }
+
+  // ===== 序列化方法 =====
   public toServerDTO(): ReminderHistoryServerDTO {
     return {
-      uuid: this.uuid,
-      templateUuid: this.templateUuid,
-      triggeredAt: this.triggeredAt.getTime(),
-      result: this.result,
-      error: this.error,
-      notificationSent: this.notificationSent,
-      notificationChannels: this.notificationChannels,
-      createdAt: this.createdAt.getTime(),
+      uuid: this.id,
+      templateUuid: this._templateUuid,
+      triggeredAt: this._triggeredAt.getTime(),
+      result: this._result,
+      error: this._error,
+      notificationSent: this._notificationSent,
+      notificationChannels: this._notificationChannels,
+      createdAt: this._createdAt.getTime(),
     };
   }
 
   public toClientDTO(): ReminderHistoryClientDTO {
-    const resultTextMap: Record<TriggerResult, string> = {
-      SUCCESS: '成功',
-      FAILED: '失败',
-      SKIPPED: '跳过',
-    };
-
-    const formatTimeAgo = (timestamp: number): string => {
-      const diff = Date.now() - timestamp;
-      const hours = Math.floor(diff / 3600000);
-      if (hours > 0) return `${hours} 小时前`;
-      const minutes = Math.floor(diff / 60000);
-      return `${minutes} 分钟前`;
-    };
-
-    const channelsText = this.notificationChannels?.join(' + ');
-
     return {
-      uuid: this.uuid,
-      templateUuid: this.templateUuid,
-      triggeredAt: this.triggeredAt.getTime(),
-      result: this.result,
-      error: this.error,
-      notificationSent: this.notificationSent,
-      notificationChannels: this.notificationChannels,
-      createdAt: this.createdAt.getTime(),
-
-      // UI 扩展
-      resultText: resultTextMap[this.result],
-      timeAgo: formatTimeAgo(this.triggeredAt.getTime()),
-      channelsText: channelsText,
+      uuid: this.id,
+      templateUuid: this._templateUuid,
+      triggeredAt: this._triggeredAt.getTime(),
+      result: this._result,
+      error: this._error,
+      notificationSent: this._notificationSent,
+      notificationChannels: this._notificationChannels,
+      createdAt: this._createdAt.getTime(),
+      // Client 专属计算字段
+      resultDescription: this.resultDescription,
+      triggeredAtFormatted: this.triggeredAtFormatted,
+      createdAtFormatted: this.createdAtFormatted,
+      isSuccess: this.isSuccess,
+      hasError: this.hasError,
     };
   }
 
-  /**
-   * 转换为 Persistence DTO (数据库)
-   */
   public toPersistenceDTO(): ReminderHistoryPersistenceDTO {
     return {
-      uuid: this.uuid,
-      templateUuid: this.templateUuid,
-      triggeredAt: this.triggeredAt,
-      result: this.result,
-      error: this.error,
-      notificationSent: this.notificationSent,
-      notificationChannels: this.notificationChannels
-        ? JSON.stringify(this.notificationChannels)
+      uuid: this.id,
+      templateUuid: this._templateUuid,
+      triggeredAt: this._triggeredAt.getTime(),
+      result: this._result,
+      error: this._error,
+      notificationSent: this._notificationSent,
+      notificationChannels: this._notificationChannels
+        ? JSON.stringify(this._notificationChannels)
         : null,
-      createdAt: this.createdAt,
+      createdAt: this._createdAt,
     };
   }
 }

@@ -1,0 +1,1 @@
+export { SyncProfileConfig } from './index';

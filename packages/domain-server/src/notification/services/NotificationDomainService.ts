@@ -12,8 +12,10 @@ import type { INotificationRepository } from '../repositories/INotificationRepos
 import type { INotificationTemplateRepository } from '../repositories/INotificationTemplateRepository';
 import type { INotificationPreferenceRepository } from '../repositories/INotificationPreferenceRepository';
 import { Notification } from '../aggregates/Notification';
-import type { NotificationActionServerDTO, NotificationMetadataServerDTO, RelatedEntityType } from '@dailyuse/contracts/notification';
-import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
+import { NotificationChannel } from '../entities/NotificationChannel';
+import type { NotificationActionDTO, NotificationMetadataDTO } from '@dailyuse/contracts/notification';
+import { NotificationCategory, NotificationType, NotificationChannelType } from '@dailyuse/contracts/notification';
+import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { createLogger } from '@dailyuse/utils';
 
@@ -47,20 +49,15 @@ export class NotificationDomainService {
     category: NotificationCategory;
     importance?: ImportanceLevel;
     urgency?: UrgencyLevel;
-    relatedEntityType?: RelatedEntityType;
-    relatedEntityUuid?: string;
-    actions?: NotificationActionServerDTO[];
-    metadata?: NotificationMetadataServerDTO;
-    expiresAt?: number;
-    channels?: string[]; // 指定发送渠道
+    actions?: NotificationActionDTO[];
+    metadata?: NotificationMetadataDTO;
+    channels?: NotificationChannelType[]; // 指定发送渠道
   }): Promise<Notification> {
     logger.info('🔔 [领域服务] 开始创建通知', {
       accountUuid: params.accountUuid,
       title: params.title,
       type: params.type,
       category: params.category,
-      relatedEntityType: params.relatedEntityType,
-      relatedEntityUuid: params.relatedEntityUuid,
       channels: params.channels,
     });
 
@@ -76,8 +73,7 @@ export class NotificationDomainService {
       // 检查是否应该发送通知
       const shouldSend = preference.shouldSendNotification(
         params.category,
-        params.type,
-        'inApp', // 默认检查应用内通知
+        NotificationChannelType.InApp, // 默认检查应用内通知
       );
 
       if (!shouldSend) {
@@ -96,24 +92,35 @@ export class NotificationDomainService {
 
     // 2. 创建通知聚合根
     logger.debug('🏗️ 创建通知聚合根');
-    const notification = Notification.create(params);
+    const notification = Notification.create({
+      identityId: params.accountUuid as IdentityId,
+      title: params.title,
+      content: params.content,
+      type: params.type,
+      category: params.category,
+      importance: params.importance,
+      actions: params.actions,
+      metadata: params.metadata,
+    });
 
     logger.info('✅ 通知聚合根已创建', {
-      notificationUuid: notification.uuid,
+      notificationId: String(notification.id),
       title: notification.title,
       type: notification.type,
       category: notification.category,
     });
 
     // 3. 添加渠道
-    const channels = params.channels ?? ['inApp']; // 默认只发送应用内通知
+    const channels = params.channels ?? [NotificationChannelType.InApp]; // 默认只发送应用内通知
     logger.debug('📡 添加通知渠道', { channels });
     
     for (const channelType of channels) {
-      notification.createChannel({
+      const channel = NotificationChannel.create({
+        notificationId: notification.id,
         channelType,
         recipient: params.accountUuid,
       });
+      notification.addChannel(channel);
       logger.debug(`  ➕ 已添加渠道: ${channelType}`);
     }
 
@@ -122,9 +129,8 @@ export class NotificationDomainService {
     await notification.send();
 
     logger.info('✅ 通知已标记为已发送', {
-      notificationUuid: notification.uuid,
+      notificationId: String(notification.id),
       status: notification.status,
-      sentAt: notification.sentAt,
     });
 
     // 5. 持久化
@@ -132,24 +138,22 @@ export class NotificationDomainService {
     await this.notificationRepo.save(notification);
 
     logger.info('✅✅✅ [领域服务] 通知创建完成', {
-      notificationUuid: notification.uuid,
-      accountUuid: notification.accountUuid,
+      notificationId: String(notification.id),
+      identityId: String(notification.identityId),
       title: notification.title,
       type: notification.type,
       category: notification.category,
       status: notification.status,
-      relatedEntityType: notification.relatedEntityType,
-      relatedEntityUuid: notification.relatedEntityUuid,
       channelCount: channels.length,
       isRead: notification.isRead,
-      createdAt: new Date(notification.createdAt).toISOString(),
+      createdAt: notification.createdAt.toISOString(),
     });
 
     // 6. 触发领域事件 - 用于 SSE 推送
     const notificationDTO = notification.toServerDTO();
     logger.info('📡 [领域服务] 发布 NotificationCreated 领域事件', {
-      notificationUuid: notification.uuid,
-      accountUuid: notification.accountUuid,
+      notificationId: String(notification.id),
+      identityId: String(notification.identityId),
     });
 
     // 这里需要通过事件总线发布，让 SSE 管理器接收并推送
@@ -165,9 +169,7 @@ export class NotificationDomainService {
     accountUuid: string;
     templateUuid: string;
     variables: Record<string, any>;
-    relatedEntityType?: RelatedEntityType;
-    relatedEntityUuid?: string;
-    channels?: string[];
+    channels?: NotificationChannelType[];
   }): Promise<Notification> {
     // 1. 获取模板
     const template = await this.templateRepo.findById(params.templateUuid);
@@ -195,8 +197,6 @@ export class NotificationDomainService {
       content: rendered.content,
       type: template.type,
       category: template.category,
-      relatedEntityType: params.relatedEntityType,
-      relatedEntityUuid: params.relatedEntityUuid,
       channels: params.channels,
     });
   }
@@ -357,7 +357,14 @@ export class NotificationDomainService {
       throw new Error(`Notification not found: ${notificationUuid}`);
     }
 
-    await notification.executeAction(actionId);
+    // 检查操作是否存在
+    const actions = notification.actions;
+    const action = actions?.find(a => a.id === actionId);
+    if (!action) {
+      throw new Error(`Action not found: ${actionId}`);
+    }
+
+    // 通知操作由应用服务层处理
     await this.notificationRepo.save(notification);
 
     // 触发操作执行事件

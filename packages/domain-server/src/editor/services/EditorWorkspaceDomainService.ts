@@ -1,10 +1,10 @@
 /**
  * EditorWorkspace 领域服务
  *
- * DDD 领域服务职责：
+ * DDD 领域服务职责�?
  * - 跨聚合根的业务逻辑
- * - 协调多个聚合根
- * - 使用仓储接口进行持久化
+ * - 协调多个聚合�?
+ * - 使用仓储接口进行持久�?
  * - 触发领域事件
  */
 
@@ -14,27 +14,28 @@ import { EditorSession } from '../entities/EditorSession';
 import { EditorGroup } from '../entities/EditorGroup';
 import { EditorTab } from '../entities/EditorTab';
 import type { SessionLayoutServerDTO, SplitDirection, TabViewStateServerDTO, WorkspaceLayoutServerDTO, WorkspaceSettingsServerDTO } from '@dailyuse/contracts/editor';
+import type { IdentityId, EditorSessionId } from '@dailyuse/contracts/primitives';
 import { ProjectType, TabType } from '@dailyuse/contracts/editor';
 
 /**
  * EditorWorkspaceDomainService
  *
- * 注意：
- * - 通过构造函数注入仓储接口
+ * 注意�?
+ * - 通过构造函数注入仓储接�?
  * - 不直接操作数据库
  * - 业务逻辑在聚合根/实体中，服务只是协调
  */
 export class EditorWorkspaceDomainService {
   constructor(
     private readonly workspaceRepo: IEditorWorkspaceRepository,
-    // 可以注入其他仓储或服务
+    // 可以注入其他仓储或服�?
     // private readonly eventBus: IEventBus,
   ) {}
 
   // ===== Workspace 管理 =====
 
   /**
-   * 创建新的工作区
+   * 创建新的工作�?
    */
   public async createWorkspace(params: {
     accountUuid: string;
@@ -46,9 +47,17 @@ export class EditorWorkspaceDomainService {
     settings?: Partial<WorkspaceSettingsServerDTO>;
   }): Promise<EditorWorkspace> {
     // 1. 创建聚合根（业务逻辑在聚合根中）
-    const workspace = EditorWorkspace.create(params);
+    const workspace = EditorWorkspace.create({
+      identityId: params.accountUuid as IdentityId,
+      name: params.name,
+      description: params.description,
+      projectPath: params.projectPath,
+      projectType: params.projectType,
+      layout: params.layout as WorkspaceLayoutServerDTO | undefined,
+      settings: params.settings as WorkspaceSettingsServerDTO | undefined,
+    });
 
-    // 2. 持久化
+    // 2. 持久�?
     await this.workspaceRepo.save(workspace);
 
     // 3. 触发领域事件（可选）
@@ -73,7 +82,7 @@ export class EditorWorkspaceDomainService {
 
     if (workspace) {
       // 更新访问时间
-      workspace.recordAccess();
+      workspace.activate();
       await this.workspaceRepo.save(workspace);
     }
 
@@ -91,7 +100,7 @@ export class EditorWorkspaceDomainService {
   }
 
   /**
-   * 更新工作区
+   * 更新工作�?
    */
   public async updateWorkspace(params: {
     uuid: string;
@@ -104,12 +113,12 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Workspace not found: ${params.uuid}`);
     }
 
-    // 业务逻辑在聚合根中
-    if (params.name !== undefined || params.description !== undefined) {
-      workspace.update({
-        name: params.name,
-        description: params.description,
-      });
+    // 业务逻辑在聚合根�?
+    if (params.name !== undefined) {
+      workspace.updateName(params.name);
+    }
+    if (params.description !== undefined) {
+      workspace.updateDescription(params.description);
     }
     if (params.isActive !== undefined) {
       if (params.isActive) {
@@ -125,7 +134,7 @@ export class EditorWorkspaceDomainService {
   }
 
   /**
-   * 删除工作区
+   * 删除工作�?
    */
   public async deleteWorkspace(uuid: string): Promise<boolean> {
     const workspace = await this.workspaceRepo.findByUuid(uuid);
@@ -134,9 +143,9 @@ export class EditorWorkspaceDomainService {
       return false;
     }
 
-    // 检查是否有活跃的会话
+    // 检查是否有活跃的会�?
     // Check if has sessions
-    const sessions = workspace.getAllSessions();
+    const sessions = workspace.sessions;
     if (sessions.length > 0) {
       console.warn(`Deleting workspace with ${sessions.length} sessions`);
     }
@@ -163,10 +172,12 @@ export class EditorWorkspaceDomainService {
     }
 
     // 业务逻辑在聚合根中
-    const session = workspace.addSession({
+    const session = EditorSession.create({
+      workspaceId: workspace.id,
+      identityId: workspace.identityId,
       name: params.name,
-      layout: params.layout,
     });
+    workspace.addSession(session);
 
     await this.workspaceRepo.save(workspace);
 
@@ -174,7 +185,7 @@ export class EditorWorkspaceDomainService {
   }
 
   /**
-   * 获取工作区的所有会话
+   * 获取工作区的所有会�?
    */
   public async getSessions(workspaceUuid: string): Promise<EditorSession[]> {
     const workspace = await this.workspaceRepo.findByUuid(workspaceUuid);
@@ -183,7 +194,7 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Workspace not found: ${workspaceUuid}`);
     }
 
-    return workspace.getAllSessions();
+    return workspace.sessions;
   }
 
   /**
@@ -202,7 +213,7 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Workspace not found: ${params.workspaceUuid}`);
     }
 
-    const session = workspace.getSession(params.sessionUuid);
+    const session = workspace.getSession(params.sessionUuid as EditorSessionId);
     if (!session) {
       throw new Error(`Session not found: ${params.sessionUuid}`);
     }
@@ -237,7 +248,7 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Workspace not found: ${workspaceUuid}`);
     }
 
-    const result = workspace.removeSession(sessionUuid);
+    const result = workspace.removeSession(sessionUuid as EditorSessionId);
     if (result) {
       await this.workspaceRepo.save(workspace);
     }
@@ -262,7 +273,7 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Workspace not found: ${params.workspaceUuid}`);
     }
 
-    const session = workspace.getSession(params.sessionUuid);
+    const session = workspace.getSession(params.sessionUuid as EditorSessionId);
     if (!session) {
       throw new Error(`Session not found: ${params.sessionUuid}`);
     }
@@ -279,7 +290,7 @@ export class EditorWorkspaceDomainService {
   }
 
   /**
-   * 更新组
+   * 更新�?
    */
   public async updateGroup(params: {
     workspaceUuid: string;
@@ -295,7 +306,7 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Workspace not found: ${params.workspaceUuid}`);
     }
 
-    const session = workspace.getSession(params.sessionUuid);
+    const session = workspace.getSession(params.sessionUuid as EditorSessionId);
     if (!session) {
       throw new Error(`Session not found: ${params.sessionUuid}`);
     }
@@ -320,7 +331,7 @@ export class EditorWorkspaceDomainService {
   }
 
   /**
-   * 删除组
+   * 删除�?
    */
   public async removeGroup(
     workspaceUuid: string,
@@ -333,7 +344,7 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Workspace not found: ${workspaceUuid}`);
     }
 
-    const session = workspace.getSession(sessionUuid);
+    const session = workspace.getSession(sessionUuid as EditorSessionId);
     if (!session) {
       throw new Error(`Session not found: ${sessionUuid}`);
     }
@@ -365,7 +376,7 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Workspace not found: ${params.workspaceUuid}`);
     }
 
-    const session = workspace.getSession(params.sessionUuid);
+    const session = workspace.getSession(params.sessionUuid as EditorSessionId);
     if (!session) {
       throw new Error(`Session not found: ${params.sessionUuid}`);
     }
@@ -377,12 +388,9 @@ export class EditorWorkspaceDomainService {
 
     // 业务逻辑在实体中
     const tab = group.addTab({
-      documentUuid: params.documentUuid,
-      tabIndex: params.tabIndex,
-      tabType: params.tabType,
-      name: params.name,
+      documentId: params.documentUuid,
+      type: params.tabType,
       viewState: params.viewState,
-      isPinned: params.isPinned,
     });
 
     await this.workspaceRepo.save(workspace);
@@ -409,7 +417,7 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Workspace not found: ${params.workspaceUuid}`);
     }
 
-    const session = workspace.getSession(params.sessionUuid);
+    const session = workspace.getSession(params.sessionUuid as EditorSessionId);
     if (!session) {
       throw new Error(`Session not found: ${params.sessionUuid}`);
     }
@@ -437,7 +445,7 @@ export class EditorWorkspaceDomainService {
     if (params.isPinned !== undefined) {
       // Toggle pin only if current state differs from desired state
       if (tab.isPinned !== params.isPinned) {
-        tab.togglePin();
+        tab.togglePinned();
       }
     }
 
@@ -461,7 +469,7 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Workspace not found: ${workspaceUuid}`);
     }
 
-    const session = workspace.getSession(sessionUuid);
+    const session = workspace.getSession(sessionUuid as EditorSessionId);
     if (!session) {
       throw new Error(`Session not found: ${sessionUuid}`);
     }
@@ -471,18 +479,19 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Group not found: ${groupUuid}`);
     }
 
-    const result = group.removeTab(tabUuid);
-    if (result) {
-      await this.workspaceRepo.save(workspace);
-    }
+    // Check if tab exists before removing
+    const tabExists = group.getTab(tabUuid) !== undefined;
+    group.removeTab(tabUuid);
+    
+    await this.workspaceRepo.save(workspace);
 
-    return result;
+    return tabExists;
   }
 
-  // ===== 激活状态管理 =====
+  // ===== 激活状态管�?=====
 
   /**
-   * 激活会话
+   * 激活会�?
    */
   public async activateSession(workspaceUuid: string, sessionUuid: string): Promise<void> {
     const workspace = await this.workspaceRepo.findByUuid(workspaceUuid);
@@ -491,7 +500,7 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Workspace not found: ${workspaceUuid}`);
     }
 
-    const session = workspace.getSession(sessionUuid);
+    const session = workspace.getSession(sessionUuid as EditorSessionId);
     if (!session) {
       throw new Error(`Session not found: ${sessionUuid}`);
     }
@@ -510,7 +519,7 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Workspace not found: ${workspaceUuid}`);
     }
 
-    const session = workspace.getSession(sessionUuid);
+    const session = workspace.getSession(sessionUuid as EditorSessionId);
     if (!session) {
       throw new Error(`Session not found: ${sessionUuid}`);
     }
@@ -520,7 +529,7 @@ export class EditorWorkspaceDomainService {
   }
 
   /**
-   * 激活标签
+   * 激活标�?
    */
   public async activateTab(
     workspaceUuid: string,
@@ -534,7 +543,7 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Workspace not found: ${workspaceUuid}`);
     }
 
-    const session = workspace.getSession(sessionUuid);
+    const session = workspace.getSession(sessionUuid as EditorSessionId);
     if (!session) {
       throw new Error(`Session not found: ${sessionUuid}`);
     }
@@ -568,7 +577,7 @@ export class EditorWorkspaceDomainService {
       throw new Error(`Workspace not found: ${workspaceUuid}`);
     }
 
-    const session = workspace.getSession(sessionUuid);
+    const session = workspace.getSession(sessionUuid as EditorSessionId);
     if (!session) {
       throw new Error(`Session not found: ${sessionUuid}`);
     }

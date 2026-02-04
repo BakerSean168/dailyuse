@@ -1,0 +1,175 @@
+/**
+ * DoNotDisturbConfig 值对象
+ * 
+ * 勿扰模式配置：启用状态、时间范围、生效日期
+ * 不可变性（所有修改返回新实例）
+ */
+
+import { ValueObject } from '@dailyuse/utils';
+import type {
+  DoNotDisturbConfig as IDoNotDisturbConfig,
+  DoNotDisturbConfigDTO,
+  DoNotDisturbConfigPersistenceDTO,
+} from '@dailyuse/contracts/notification';
+
+/**
+ * DoNotDisturbConfig 值对象实现
+ */
+export class DoNotDisturbConfig extends ValueObject<DoNotDisturbConfigDTO> implements IDoNotDisturbConfig {
+
+  private constructor(props: DoNotDisturbConfigDTO) {
+    super(props);
+  }
+
+  // ================= 工厂方法 =================
+  
+  public static create(props: DoNotDisturbConfigDTO): DoNotDisturbConfig {
+    this.validate(props);
+    return new DoNotDisturbConfig(props);
+  }
+
+  public static createDefault(): DoNotDisturbConfig {
+    return new DoNotDisturbConfig({
+      enabled: false,
+      startTime: '22:00',
+      endTime: '08:00',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // 每天
+    });
+  }
+
+  public static createNightMode(): DoNotDisturbConfig {
+    return new DoNotDisturbConfig({
+      enabled: true,
+      startTime: '23:00',
+      endTime: '07:00',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+    });
+  }
+
+  public static fromDTO(dto: DoNotDisturbConfigDTO): DoNotDisturbConfig {
+    return new DoNotDisturbConfig(dto);
+  }
+
+  public static fromPersistenceDTO(dto: DoNotDisturbConfigPersistenceDTO): DoNotDisturbConfig {
+    return new DoNotDisturbConfig({
+      enabled: dto.enabled,
+      startTime: dto.startTime,
+      endTime: dto.endTime,
+      daysOfWeek: JSON.parse(dto.daysOfWeek),
+    });
+  }
+
+  // ================= 校验 =================
+  
+  private static validate(props: DoNotDisturbConfigDTO): void {
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!timeRegex.test(props.startTime)) {
+      throw new Error('Invalid startTime format (expected HH:mm)');
+    }
+    if (!timeRegex.test(props.endTime)) {
+      throw new Error('Invalid endTime format (expected HH:mm)');
+    }
+    if (!Array.isArray(props.daysOfWeek)) {
+      throw new Error('daysOfWeek must be an array');
+    }
+    for (const day of props.daysOfWeek) {
+      if (day < 0 || day > 6) {
+        throw new Error('daysOfWeek values must be 0-6');
+      }
+    }
+  }
+
+  // ================= Getters =================
+
+  public get enabled(): boolean {
+    return this.props.enabled;
+  }
+
+  public get startTime(): string {
+    return this.props.startTime;
+  }
+
+  public get endTime(): string {
+    return this.props.endTime;
+  }
+
+  public get daysOfWeek(): number[] {
+    return [...this.props.daysOfWeek];
+  }
+
+  // ================= 行为方法 =================
+
+  public setEnabled(enabled: boolean): DoNotDisturbConfig {
+    return new DoNotDisturbConfig({ ...this.props, enabled });
+  }
+
+  public setTimeRange(startTime: string, endTime: string): DoNotDisturbConfig {
+    const newProps = { ...this.props, startTime, endTime };
+    DoNotDisturbConfig.validate(newProps);
+    return new DoNotDisturbConfig(newProps);
+  }
+
+  public setDaysOfWeek(daysOfWeek: number[]): DoNotDisturbConfig {
+    const newProps = { ...this.props, daysOfWeek };
+    DoNotDisturbConfig.validate(newProps);
+    return new DoNotDisturbConfig(newProps);
+  }
+
+  // ================= 计算属性 =================
+
+  public get isWeekdaysOnly(): boolean {
+    const weekdays = [1, 2, 3, 4, 5];
+    return this.props.daysOfWeek.length === 5 &&
+      weekdays.every(d => this.props.daysOfWeek.includes(d));
+  }
+
+  public get isWeekendsOnly(): boolean {
+    const weekends = [0, 6];
+    return this.props.daysOfWeek.length === 2 &&
+      weekends.every(d => this.props.daysOfWeek.includes(d));
+  }
+
+  public get isEveryDay(): boolean {
+    return this.props.daysOfWeek.length === 7;
+  }
+
+  public isActiveAt(time: Date): boolean {
+    if (!this.props.enabled) return false;
+    
+    const day = time.getDay();
+    if (!this.props.daysOfWeek.includes(day)) return false;
+
+    const currentMinutes = time.getHours() * 60 + time.getMinutes();
+    const [startH, startM] = this.props.startTime.split(':').map(Number);
+    const [endH, endM] = this.props.endTime.split(':').map(Number);
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+
+    if (startMinutes < endMinutes) {
+      return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+    } else {
+      // 跨午夜
+      return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+    }
+  }
+
+  // ================= 序列化 =================
+
+  public toDTO(): DoNotDisturbConfigDTO {
+    return {
+      enabled: this.props.enabled,
+      startTime: this.props.startTime,
+      endTime: this.props.endTime,
+      daysOfWeek: [...this.props.daysOfWeek],
+    };
+  }
+
+  public toPersistenceDTO(): DoNotDisturbConfigPersistenceDTO {
+    return {
+      enabled: this.props.enabled,
+      startTime: this.props.startTime,
+      endTime: this.props.endTime,
+      daysOfWeek: JSON.stringify(this.props.daysOfWeek),
+    };
+  }
+}

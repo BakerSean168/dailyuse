@@ -22,4 +22,4 @@
 
 export { NotificationDomainService } from './NotificationDomainService';
 export { NotificationTemplateDomainService } from './NotificationTemplateDomainService';
-export { NotificationPreferenceDomainService } from './NotificationPreferenceDomainService';
+// export { NotificationPreferenceDomainService } from './NotificationPreferenceDomainService'; // TODO: needs refactoring

@@ -27,3 +27,4 @@
 
 export { TaskInstance } from './TaskInstance';
 export { TaskTemplate } from './TaskTemplate';
+export { TaskDependency } from './TaskDependency';

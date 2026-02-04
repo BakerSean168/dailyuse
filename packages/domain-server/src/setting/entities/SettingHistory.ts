@@ -1,47 +1,97 @@
 /**
  * SettingHistory 实体实现
- * 实现 SettingHistoryServer 接口
+ * 设置变更历史记录
  */
 
-import { Entity, generateUUID } from '@dailyuse/utils';
-import type {
-  SettingHistoryClientDTO,
-  SettingHistoryPersistenceDTO,
-  SettingHistoryServer,
-  SettingHistoryServerDTO,
-} from '@dailyuse/contracts/setting';
+import { Entity } from '@dailyuse/utils';
+import type { SettingHistoryId, SettingEntryId, TransferDate, PersistenceDate, DomainDate } from '@dailyuse/contracts/primitives';
+import { SettingHistoryId as SettingHistoryIdType, SettingEntryId as SettingEntryIdType } from '@dailyuse/domain-shared/setting';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
+
+// ============ Local Type Definitions ============
+// TODO: Move these to @dailyuse/contracts/setting when finalizing API
+
+/** 操作者类型 */
+export type OperatorType = 'USER' | 'SYSTEM' | 'API';
+
+/** SettingHistory Server 接口 */
+export interface SettingHistoryServer {
+  readonly id: SettingHistoryId;
+  readonly settingEntryId: SettingEntryId;
+  readonly settingKey: string;
+  readonly oldValue: unknown;
+  readonly newValue: unknown;
+  readonly operatorId: string | null;
+  readonly operatorType: OperatorType;
+  readonly createdAt: DomainDate;
+  
+  toServerDTO(): SettingHistoryServerDTO;
+  toClientDTO(): SettingHistoryClientDTO;
+  toPersistenceDTO(): SettingHistoryPersistenceDTO;
+}
+
+/** Server DTO - 用于 Server 和 Client 传输 */
+export interface SettingHistoryServerDTO {
+  id: SettingHistoryId;
+  settingEntryId: SettingEntryId;
+  settingKey: string;
+  oldValue: unknown;
+  newValue: unknown;
+  operatorId: string | null;
+  operatorType: OperatorType;
+  createdAt: TransferDate;
+}
+
+/** Client DTO - 用于展示层 */
+export interface SettingHistoryClientDTO extends SettingHistoryServerDTO {
+  timeAgo: string;
+  changeText: string;
+}
+
+/** Persistence DTO - 用于数据库存储 */
+export interface SettingHistoryPersistenceDTO {
+  id: SettingHistoryId;
+  settingEntryId: SettingEntryId;
+  settingKey: string;
+  oldValue: string; // JSON serialized
+  newValue: string; // JSON serialized
+  operatorId: string | null;
+  operatorType: OperatorType;
+  createdAt: PersistenceDate;
+}
 
 /**
  * SettingHistory 实体
  * 设置变更历史记录
  */
-export class SettingHistory extends Entity implements SettingHistoryServer {
-  public readonly settingUuid: string;
+export class SettingHistory extends Entity<SettingHistoryId> implements SettingHistoryServer {
+  public readonly settingEntryId: SettingEntryId;
   public readonly settingKey: string;
-  public readonly oldValue: any;
-  public readonly newValue: any;
-  public readonly operatorUuid?: string | null;
-  public readonly operatorType: 'USER' | 'SYSTEM' | 'API';
-  public readonly createdAt: number;
+  public readonly oldValue: unknown;
+  public readonly newValue: unknown;
+  public readonly operatorId: string | null;
+  public readonly operatorType: OperatorType;
+  public readonly createdAt: DomainDate;
 
-  private constructor(params: {
-    uuid?: string;
-    settingUuid: string;
-    settingKey: string;
-    oldValue: any;
-    newValue: any;
-    operatorUuid?: string | null;
-    operatorType: 'USER' | 'SYSTEM' | 'API';
-    createdAt: number;
-  }) {
-    super(params.uuid ?? generateUUID());
-    this.settingUuid = params.settingUuid;
+  private constructor(
+    id: SettingHistoryId,
+    params: {
+      settingEntryId: SettingEntryId;
+      settingKey: string;
+      oldValue: unknown;
+      newValue: unknown;
+      operatorId: string | null;
+      operatorType: OperatorType;
+      createdAt: Date;
+    }
+  ) {
+    super(id);
+    this.settingEntryId = params.settingEntryId;
     this.settingKey = params.settingKey;
     this.oldValue = params.oldValue;
     this.newValue = params.newValue;
-    this.operatorUuid = params.operatorUuid ?? null;
+    this.operatorId = params.operatorId;
     this.operatorType = params.operatorType;
     this.createdAt = params.createdAt;
   }
@@ -49,14 +99,14 @@ export class SettingHistory extends Entity implements SettingHistoryServer {
   // ============ Helper Methods for Client DTO ============
 
   private getTimeAgo(): string {
-    return formatDistanceToNow(new Date(this.createdAt), {
+    return formatDistanceToNow(this.createdAt, {
       addSuffix: true,
       locale: zhCN,
     });
   }
 
   private getChangeText(): string {
-    const formatValue = (value: any): string => {
+    const formatValue = (value: unknown): string => {
       if (value === null || value === undefined) return '空';
       if (typeof value === 'boolean') return value ? '是' : '否';
       if (typeof value === 'object') return JSON.stringify(value);
@@ -73,28 +123,30 @@ export class SettingHistory extends Entity implements SettingHistoryServer {
    * 创建新的 SettingHistory
    */
   public static create(params: {
-    settingUuid: string;
+    settingEntryId: SettingEntryId;
     settingKey: string;
-    oldValue: any;
-    newValue: any;
-    operatorUuid?: string;
-    operatorType: 'USER' | 'SYSTEM' | 'API';
+    oldValue: unknown;
+    newValue: unknown;
+    operatorId?: string;
+    operatorType: OperatorType;
   }): SettingHistory {
-    if (!params.settingUuid) {
-      throw new Error('SettingUuid is required');
+    if (!params.settingEntryId) {
+      throw new Error('SettingEntryId is required');
     }
     if (!params.settingKey) {
       throw new Error('SettingKey is required');
     }
 
-    return new SettingHistory({
-      settingUuid: params.settingUuid,
+    const id = SettingHistoryIdType.of(SettingHistoryIdType.generate());
+
+    return new SettingHistory(id, {
+      settingEntryId: params.settingEntryId,
       settingKey: params.settingKey,
       oldValue: params.oldValue,
       newValue: params.newValue,
-      operatorUuid: params.operatorUuid,
+      operatorId: params.operatorId ?? null,
       operatorType: params.operatorType,
-      createdAt: Date.now(),
+      createdAt: new Date(),
     });
   }
 
@@ -102,15 +154,15 @@ export class SettingHistory extends Entity implements SettingHistoryServer {
    * 从 ServerDTO 重建
    */
   public static fromServerDTO(dto: SettingHistoryServerDTO): SettingHistory {
-    return new SettingHistory({
-      uuid: dto.uuid,
-      settingUuid: dto.settingUuid,
+    const id = SettingHistoryIdType.of(dto.id);
+    return new SettingHistory(id, {
+      settingEntryId: dto.settingEntryId,
       settingKey: dto.settingKey,
       oldValue: dto.oldValue,
       newValue: dto.newValue,
-      operatorUuid: dto.operatorUuid,
+      operatorId: dto.operatorId,
       operatorType: dto.operatorType,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -118,13 +170,13 @@ export class SettingHistory extends Entity implements SettingHistoryServer {
    * 从 PersistenceDTO 重建
    */
   public static fromPersistenceDTO(dto: SettingHistoryPersistenceDTO): SettingHistory {
-    return new SettingHistory({
-      uuid: dto.uuid,
-      settingUuid: dto.settingUuid,
+    const id = SettingHistoryIdType.of(dto.id);
+    return new SettingHistory(id, {
+      settingEntryId: dto.settingEntryId,
       settingKey: dto.settingKey,
       oldValue: JSON.parse(dto.oldValue),
       newValue: JSON.parse(dto.newValue),
-      operatorUuid: dto.operatorUuid,
+      operatorId: dto.operatorId,
       operatorType: dto.operatorType,
       createdAt: dto.createdAt,
     });
@@ -135,27 +187,20 @@ export class SettingHistory extends Entity implements SettingHistoryServer {
    */
   public toServerDTO(): SettingHistoryServerDTO {
     return {
-      uuid: this.uuid,
-      settingUuid: this.settingUuid,
+      id: this.id,
+      settingEntryId: this.settingEntryId,
       settingKey: this.settingKey,
       oldValue: this.oldValue,
       newValue: this.newValue,
-      operatorUuid: this.operatorUuid,
+      operatorId: this.operatorId,
       operatorType: this.operatorType,
-      createdAt: this.createdAt,
+      createdAt: this.createdAt.getTime(),
     };
   }
 
   public toClientDTO(): SettingHistoryClientDTO {
     return {
-      uuid: this.uuid,
-      settingUuid: this.settingUuid,
-      settingKey: this.settingKey,
-      oldValue: this.oldValue,
-      newValue: this.newValue,
-      operatorUuid: this.operatorUuid,
-      operatorType: this.operatorType,
-      createdAt: this.createdAt,
+      ...this.toServerDTO(),
       // Computed properties
       timeAgo: this.getTimeAgo(),
       changeText: this.getChangeText(),
@@ -167,12 +212,12 @@ export class SettingHistory extends Entity implements SettingHistoryServer {
    */
   public toPersistenceDTO(): SettingHistoryPersistenceDTO {
     return {
-      uuid: this.uuid,
-      settingUuid: this.settingUuid,
+      id: this.id,
+      settingEntryId: this.settingEntryId,
       settingKey: this.settingKey,
       oldValue: JSON.stringify(this.oldValue),
       newValue: JSON.stringify(this.newValue),
-      operatorUuid: this.operatorUuid,
+      operatorId: this.operatorId,
       operatorType: this.operatorType,
       createdAt: this.createdAt,
     };

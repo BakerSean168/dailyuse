@@ -22,11 +22,11 @@ import { PriorityCalculationError } from '../../task/errors/priority-calculation
  * 用于将ImportanceLevel转换为基础权重值
  */
 const IMPORTANCE_WEIGHTS: Record<ImportanceLevel, number> = {
-  vital: 5,
-  important: 4,
-  moderate: 3,
-  minor: 2,
-  trivial: 1,
+  Vital: 5,
+  Important: 4,
+  Moderate: 3,
+  Minor: 2,
+  Trivial: 1,
 };
 
 /**

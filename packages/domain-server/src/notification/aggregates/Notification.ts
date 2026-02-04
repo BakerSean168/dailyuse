@@ -3,262 +3,191 @@
  * 实现 NotificationServer 接口
  */
 
-import type { RelatedEntityType, NotificationActionServer, NotificationActionServerDTO, NotificationMetadataServer, NotificationMetadataServerDTO, NotificationPersistenceDTO, NotificationServer, NotificationServerDTO } from '@dailyuse/contracts/notification';
-import { NotificationCategory, NotificationStatus } from '@dailyuse/contracts/notification';
-import { NotificationType } from '@dailyuse/contracts/notification';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import type {
+  NotificationServer,
+  NotificationServerDTO,
+  NotificationPersistenceDTO,
+  NotificationActionDTO,
+  NotificationMetadataDTO,
+  NotificationChannelServer,
+} from '@dailyuse/contracts/notification';
+import type { IdentityId } from '@dailyuse/contracts/primitives';
+import {
+  NotificationCategory,
+  NotificationStatus,
+  NotificationType,
+} from '@dailyuse/contracts/notification';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot, createLogger } from '@dailyuse/utils';
-import { NotificationAction } from '../value-objects/NotificationAction';
-import { NotificationMetadata } from '../value-objects/NotificationMetadata';
+import {
+  NotificationId,
+  NotificationAction,
+  NotificationMetadata,
+} from '@dailyuse/domain-shared/notification';
+import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 import { NotificationChannel } from '../entities/NotificationChannel';
-import { NotificationHistory } from '../entities/NotificationHistory';
 
 const logger = createLogger('Notification');
 
 /**
  * Notification 聚合根
  */
-export class Notification extends AggregateRoot implements NotificationServer {
+export class Notification
+  extends AggregateRoot<NotificationId>
+  implements NotificationServer
+{
   // ===== 私有字段 =====
-  private _accountUuid: string;
+  private _identityId: IdentityId;
   private _title: string;
   private _content: string;
   private _type: NotificationType;
   private _category: NotificationCategory;
   private _importance: ImportanceLevel;
-  private _urgency: UrgencyLevel;
   private _status: NotificationStatus;
   private _isRead: boolean;
-  private _readAt: Date | null;
-  private _relatedEntityType: RelatedEntityType | null;
-  private _relatedEntityUuid: string | null;
+  private _readAt: number | null;
   private _actions: NotificationAction[] | null;
   private _metadata: NotificationMetadata | null;
-  private _expiresAt: Date | null;
   private _createdAt: Date;
   private _updatedAt: Date;
-  private _sentAt: Date | null;
-  private _deliveredAt: Date | null;
-  private _deletedAt: Date | null;
 
   // ===== 子实体集合 =====
-  private _channels: NotificationChannel[];
-  private _history: NotificationHistory[];
+  private _notificationChannels: NotificationChannel[];
 
   // ===== 构造函数（私有） =====
-  private constructor(params: {
-    uuid?: string;
-    accountUuid: string;
-    title: string;
-    content: string;
-    type: NotificationType;
-    category: NotificationCategory;
-    importance: ImportanceLevel;
-    urgency: UrgencyLevel;
-    status: NotificationStatus;
-    isRead: boolean;
-    readAt?: Date | number | null;
-    relatedEntityType?: RelatedEntityType | null;
-    relatedEntityUuid?: string | null;
-    actions?: NotificationAction[] | null;
-    metadata?: NotificationMetadata | null;
-    expiresAt?: Date | number | null;
-    createdAt: Date | number;
-    updatedAt: Date | number;
-    sentAt?: Date | number | null;
-    deliveredAt?: Date | number | null;
-    deletedAt?: Date | number | null;
-  }) {
-    super(params.uuid ?? AggregateRoot.generateUUID());
-    this._accountUuid = params.accountUuid;
+  private constructor(
+    id: NotificationId,
+    params: {
+      identityId: IdentityId;
+      title: string;
+      content: string;
+      type: NotificationType;
+      category: NotificationCategory;
+      importance: ImportanceLevel;
+      status: NotificationStatus;
+      isRead: boolean;
+      readAt?: number | null;
+      actions?: NotificationAction[] | null;
+      metadata?: NotificationMetadata | null;
+      createdAt: Date;
+      updatedAt: Date;
+    },
+  ) {
+    super(id);
+    this._identityId = params.identityId;
     this._title = params.title;
     this._content = params.content;
     this._type = params.type;
     this._category = params.category;
     this._importance = params.importance;
-    this._urgency = params.urgency;
     this._status = params.status;
     this._isRead = params.isRead;
-    this._readAt = params.readAt ? (params.readAt instanceof Date ? params.readAt : new Date(params.readAt)) : null;
-    this._relatedEntityType = params.relatedEntityType ?? null;
-    this._relatedEntityUuid = params.relatedEntityUuid ?? null;
+    this._readAt = params.readAt ?? null;
     this._actions = params.actions ?? null;
     this._metadata = params.metadata ?? null;
-    this._expiresAt = params.expiresAt ? (params.expiresAt instanceof Date ? params.expiresAt : new Date(params.expiresAt)) : null;
-    this._createdAt = params.createdAt instanceof Date ? params.createdAt : new Date(params.createdAt);
-    this._updatedAt = params.updatedAt instanceof Date ? params.updatedAt : new Date(params.updatedAt);
-    this._sentAt = params.sentAt ? (params.sentAt instanceof Date ? params.sentAt : new Date(params.sentAt)) : null;
-    this._deliveredAt = params.deliveredAt ? (params.deliveredAt instanceof Date ? params.deliveredAt : new Date(params.deliveredAt)) : null;
-    this._deletedAt = params.deletedAt ? (params.deletedAt instanceof Date ? params.deletedAt : new Date(params.deletedAt)) : null;
-    this._channels = [];
-    this._history = [];
+    this._createdAt = params.createdAt;
+    this._updatedAt = params.updatedAt;
+    this._notificationChannels = [];
   }
 
   // ===== Getter 属性 =====
-  public override get uuid(): string {
-    return this._uuid;
+  public get identityId(): IdentityId {
+    return this._identityId;
   }
-  public get accountUuid(): string {
-    return this._accountUuid;
-  }
+
   public get title(): string {
     return this._title;
   }
+
   public get content(): string {
     return this._content;
   }
+
   public get type(): NotificationType {
     return this._type;
   }
+
   public get category(): NotificationCategory {
     return this._category;
   }
+
   public get importance(): ImportanceLevel {
     return this._importance;
   }
-  public get urgency(): UrgencyLevel {
-    return this._urgency;
-  }
+
   public get status(): NotificationStatus {
     return this._status;
   }
+
   public get isRead(): boolean {
     return this._isRead;
   }
-  public get readAt(): Date | null {
+
+  public get readAt(): number | null {
     return this._readAt;
   }
-  public get relatedEntityType(): RelatedEntityType | null {
-    return this._relatedEntityType;
+
+  public get actions(): NotificationAction[] | null {
+    return this._actions ? [...this._actions] : null;
   }
-  public get relatedEntityUuid(): string | null {
-    return this._relatedEntityUuid;
+
+  public get metadata(): NotificationMetadata | null {
+    return this._metadata;
   }
-  public get actions(): NotificationActionServer[] | null {
-    return this._actions ?? null;
-  }
-  public get metadata(): NotificationMetadataServer | null {
-    return this._metadata ?? null;
-  }
-  public get expiresAt(): Date | null {
-    return this._expiresAt;
-  }
+
   public get createdAt(): Date {
     return this._createdAt;
   }
+
   public get updatedAt(): Date {
     return this._updatedAt;
   }
-  public get sentAt(): Date | null {
-    return this._sentAt;
-  }
-  public get deliveredAt(): Date | null {
-    return this._deliveredAt;
-  }
-  public get deletedAt(): Date | null {
-    return this._deletedAt;
-  }
-  public get channels(): NotificationChannel[] | null {
-    return this._channels.length > 0 ? [...this._channels] : null;
-  }
-  public get history(): NotificationHistory[] | null {
-    return this._history.length > 0 ? [...this._history] : null;
-  }
 
-  // ===== 工厂方法（创建子实体） =====
-
-  public createChannel(params: {
-    channelType: string;
-    recipient?: string;
-    maxRetries?: number;
-  }): NotificationChannel {
-    const channel = NotificationChannel.create({
-      notificationUuid: this.uuid,
-      channelType: params.channelType as any,
-      recipient: params.recipient,
-      maxRetries: params.maxRetries,
-    });
-    this._channels.push(channel);
-    return channel;
-  }
-
-  public createHistory(params: { action: string; details?: any }): NotificationHistory {
-    const history = NotificationHistory.create({
-      notificationUuid: this.uuid,
-      action: params.action,
-      details: params.details,
-    });
-    this._history.push(history);
-    return history;
-  }
-
-  // ===== 子实体管理方法 =====
-
-  public addChannel(channel: NotificationChannel): void {
-    this._channels.push(channel);
-  }
-
-  public removeChannel(channelUuid: string): NotificationChannel | null {
-    const index = this._channels.findIndex((c) => c.uuid === channelUuid);
-    if (index === -1) return null;
-    const [removed] = this._channels.splice(index, 1);
-    return removed;
-  }
-
-  public getAllChannels(): NotificationChannel[] {
-    return [...this._channels];
-  }
-
-  public getChannelByType(type: string): NotificationChannel | null {
-    return this._channels.find((c) => c.channelType === type) ?? null;
-  }
-
-  public addHistory(action: string, details?: any): void {
-    const history = this.createHistory({ action, details });
-    this._history.push(history);
-  }
-
-  public getHistory(): NotificationHistory[] {
-    return [...this._history];
+  public get notificationChannels(): NotificationChannelServer[] | null {
+    return this._notificationChannels.length > 0 ? [...this._notificationChannels] : null;
   }
 
   // ===== 业务方法 =====
 
   public async send(): Promise<void> {
     logger.info('📨 [聚合根] 发送通知', {
-      uuid: this._uuid,
+      id: String(this.id),
       title: this._title,
       status: this._status,
-      accountUuid: this._accountUuid,
     });
 
-    if (this._status !== NotificationStatus.PENDING) {
+    if (this._status !== NotificationStatus.Pending) {
       logger.error('❌ [聚合根] 通知状态不允许发送', {
-        uuid: this._uuid,
+        id: String(this.id),
         currentStatus: this._status,
-        expectedStatus: NotificationStatus.PENDING,
       });
       throw new Error('只能发送待发送状态的通知');
     }
 
-    this._status = NotificationStatus.SENT;
-    this._sentAt = new Date();
-    this.addHistory('SENT', { sentAt: this._sentAt });
+    this._status = NotificationStatus.Sent;
+    this._updatedAt = new Date();
 
     logger.info('✅ [聚合根] 通知已标记为已发送', {
-      uuid: this._uuid,
+      id: String(this.id),
       status: this._status,
-      sentAt: new Date(this._sentAt).toISOString(),
     });
+  }
+
+  public markAsDelivered(): void {
+    if (this._status !== NotificationStatus.Sent) {
+      throw new Error('只能将已发送状态的通知标记为已送达');
+    }
+    this._status = NotificationStatus.Delivered;
+    this._updatedAt = new Date();
   }
 
   public markAsRead(): void {
     if (this._isRead) return;
 
     this._isRead = true;
-    this._readAt = new Date();
-    this._status = NotificationStatus.READ;
-    this.addHistory('READ', { readAt: this._readAt });
+    this._readAt = Date.now();
+    this._status = NotificationStatus.Read;
+    this._updatedAt = new Date();
   }
 
   public markAsUnread(): void {
@@ -266,240 +195,199 @@ export class Notification extends AggregateRoot implements NotificationServer {
 
     this._isRead = false;
     this._readAt = null;
-    this._status = NotificationStatus.DELIVERED;
-    this.addHistory('UNREAD');
+    this._status = NotificationStatus.Delivered;
+    this._updatedAt = new Date();
   }
 
   public cancel(): void {
-    if (this._status === NotificationStatus.DELIVERED || this._status === NotificationStatus.READ) {
+    if (
+      this._status === NotificationStatus.Delivered ||
+      this._status === NotificationStatus.Read
+    ) {
       throw new Error('无法取消：通知已交付或已读');
     }
 
-    this._status = NotificationStatus.CANCELLED;
-    this.addHistory('CANCELLED');
+    this._status = NotificationStatus.Cancelled;
+    this._updatedAt = new Date();
   }
 
-  public softDelete(): void {
-    this._deletedAt = new Date();
-    this.addHistory('DELETED', { deletedAt: this._deletedAt });
-  }
-
-  public restore(): void {
-    if (!this._deletedAt) {
-      throw new Error('通知未被删除，无需恢复');
-    }
-
-    this._deletedAt = null;
-    this.addHistory('RESTORED');
-  }
-
-  public isExpired(): boolean {
-    if (!this._expiresAt) return false;
-    return Date.now() > this._expiresAt.getTime();
+  public markAsFailed(): void {
+    this._status = NotificationStatus.Failed;
+    this._updatedAt = new Date();
   }
 
   public isPending(): boolean {
-    return this._status === NotificationStatus.PENDING;
+    return this._status === NotificationStatus.Pending;
   }
 
   public isSent(): boolean {
-    return this._status === NotificationStatus.SENT;
+    return this._status === NotificationStatus.Sent;
   }
 
   public isDelivered(): boolean {
-    return this._status === NotificationStatus.DELIVERED;
+    return this._status === NotificationStatus.Delivered;
   }
 
   public hasBeenRead(): boolean {
     return this._isRead;
   }
 
-  public async executeAction(actionId: string): Promise<void> {
-    const action = this._actions?.find((a) => a.id === actionId);
-    if (!action) {
-      throw new Error(`操作 ${actionId} 不存在`);
-    }
+  // ===== 子实体管理 =====
 
-    this.addHistory('ACTION_EXECUTED', { actionId, action: action.toContract() });
+  public addChannel(channel: NotificationChannel): void {
+    this._notificationChannels.push(channel);
+    this._updatedAt = new Date();
+  }
+
+  public getChannelByType(type: string): NotificationChannel | undefined {
+    return this._notificationChannels.find((c) => c.channelType === type);
   }
 
   // ===== 转换方法 =====
 
-  public toServerDTO(includeChildren = false): NotificationServerDTO {
-    const dto: NotificationServerDTO = {
-      uuid: this.uuid,
-      accountUuid: this.accountUuid,
-      title: this.title,
-      content: this.content,
-      type: this.type,
-      category: this.category,
-      importance: this.importance,
-      urgency: this.urgency,
-      status: this.status,
-      isRead: this.isRead,
-      readAt: this.readAt,
-      relatedEntityType: this.relatedEntityType,
-      relatedEntityUuid: this.relatedEntityUuid,
-      actions: this.actions,
-      metadata: this.metadata,
-      expiresAt: this.expiresAt,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      sentAt: this.sentAt,
-      deliveredAt: this.deliveredAt,
-      deletedAt: this.deletedAt,
+  public toServerDTO(): NotificationServerDTO {
+    return {
+      id: String(this.id) as NotificationId,
+      identityId: this._identityId,
+      title: this._title,
+      content: this._content,
+      type: this._type,
+      category: this._category,
+      importance: this._importance,
+      status: this._status,
+      isRead: this._isRead,
+      readAt: this._readAt,
+      actions: this._actions?.map((a) => a.toDTO()) ?? null,
+      metadata: this._metadata?.toDTO() ?? null,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      notificationChannels: this._notificationChannels.length > 0
+        ? this._notificationChannels.map((c) => c.toServerDTO())
+        : null,
     };
-
-    if (includeChildren) {
-      dto.channels = this._channels.map((c) => c.toServerDTO());
-      dto.history = this._history.map((h) => h.toServerDTO());
-    }
-
-    return dto;
   }
 
   public toPersistenceDTO(): NotificationPersistenceDTO {
     return {
-      uuid: this.uuid,
-      accountUuid: this.accountUuid,
-      title: this.title,
-      content: this.content,
-      type: this.type,
-      category: this.category,
-      importance: this.importance,
-      urgency: this.urgency,
-      status: this.status,
-      isRead: this.isRead,
-      readAt: this.readAt,
-      relatedEntityType: this.relatedEntityType,
-      relatedEntityUuid: this.relatedEntityUuid,
-      actions: this.actions ? JSON.stringify(this.actions) : null,
-      metadata: this.metadata ? JSON.stringify(this.metadata) : null,
-      expiresAt: this.expiresAt,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      sentAt: this.sentAt,
-      deliveredAt: this.deliveredAt,
-      deletedAt: this.deletedAt,
+      id: String(this.id) as NotificationId,
+      identityId: this._identityId,
+      title: this._title,
+      content: this._content,
+      type: this._type,
+      category: this._category,
+      importance: this._importance,
+      status: this._status,
+      isRead: this._isRead,
+      readAt: this._readAt ? new Date(this._readAt) : null,
+      actions: this._actions?.map((a) => a.toPersistenceDTO()) ?? null,
+      metadata: this._metadata?.toPersistenceDTO() ?? null,
+      notificationChannels: this._notificationChannels.length > 0
+        ? JSON.stringify(this._notificationChannels.map((c) => c.toPersistenceDTO()))
+        : null,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
     };
   }
 
   // ===== 静态工厂方法 =====
 
   public static create(params: {
-    accountUuid: string;
+    identityId: IdentityId;
     title: string;
     content: string;
     type: NotificationType;
     category: NotificationCategory;
     importance?: ImportanceLevel;
-    urgency?: UrgencyLevel;
-    relatedEntityType?: RelatedEntityType;
-    relatedEntityUuid?: string;
-    actions?: NotificationActionServerDTO[];
-    metadata?: NotificationMetadataServerDTO;
-    expiresAt?: Date | number;
+    actions?: NotificationActionDTO[];
+    metadata?: NotificationMetadataDTO;
   }): Notification {
     logger.info('🔨 [聚合根] 创建 Notification 实例', {
-      accountUuid: params.accountUuid,
+      identityId: String(params.identityId),
       title: params.title,
       type: params.type,
       category: params.category,
-      relatedEntityType: params.relatedEntityType,
-      relatedEntityUuid: params.relatedEntityUuid,
     });
 
-    const now = Date.now();
-    const notification = new Notification({
-      accountUuid: params.accountUuid,
+    const id = NotificationId.of(NotificationId.generate());
+    const now = new Date();
+
+    const notification = new Notification(id, {
+      identityId: params.identityId,
       title: params.title,
       content: params.content,
       type: params.type,
       category: params.category,
-      importance: params.importance ?? ImportanceLevel.Moderate,
-      urgency: params.urgency ?? UrgencyLevel.Low,
-      status: NotificationStatus.PENDING,
+      importance: params.importance ?? ('Moderate' as ImportanceLevel),
+      status: NotificationStatus.Pending,
       isRead: false,
-      relatedEntityType: params.relatedEntityType,
-      relatedEntityUuid: params.relatedEntityUuid,
-      actions: params.actions?.map((a) => NotificationAction.fromContract(a)) ?? null,
-      metadata: params.metadata ? NotificationMetadata.fromContract(params.metadata) : null,
-      expiresAt: params.expiresAt ? (params.expiresAt instanceof Date ? params.expiresAt : new Date(params.expiresAt)) : undefined,
+      actions: params.actions?.map((a) => NotificationAction.fromDTO(a)) ?? null,
+      metadata: params.metadata ? NotificationMetadata.fromDTO(params.metadata) : null,
       createdAt: now,
       updatedAt: now,
     });
 
-    notification.addHistory('CREATED', { createdAt: now });
-
     logger.info('✅ [聚合根] Notification 实例已创建', {
-      uuid: notification.uuid,
+      id: String(notification.id),
       status: notification.status,
-      createdAt: new Date(notification.createdAt).toISOString(),
     });
 
     return notification;
   }
 
   public static fromServerDTO(dto: NotificationServerDTO): Notification {
-    const notification = new Notification({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
+    const id = NotificationId.of(dto.id);
+
+    const notification = new Notification(id, {
+      identityId: IdentityIdType.of(dto.identityId),
       title: dto.title,
       content: dto.content,
       type: dto.type,
       category: dto.category,
       importance: dto.importance,
-      urgency: dto.urgency,
       status: dto.status,
       isRead: dto.isRead,
-      readAt: dto.readAt ? new Date(dto.readAt) : null,
-      relatedEntityType: dto.relatedEntityType,
-      relatedEntityUuid: dto.relatedEntityUuid,
-      actions: dto.actions?.map((a) => NotificationAction.fromContract(a)) ?? null,
-      metadata: dto.metadata ? NotificationMetadata.fromContract(dto.metadata) : null,
-      expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+      readAt: dto.readAt ?? null,
+      actions: dto.actions?.map((a) => NotificationAction.fromDTO(a)) ?? null,
+      metadata: dto.metadata ? NotificationMetadata.fromDTO(dto.metadata) : null,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
-      sentAt: dto.sentAt ? new Date(dto.sentAt) : null,
-      deliveredAt: dto.deliveredAt ? new Date(dto.deliveredAt) : null,
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
 
-    if (dto.channels) {
-      notification._channels = dto.channels.map((c) => NotificationChannel.fromServerDTO(c));
-    }
-    if (dto.history) {
-      notification._history = dto.history.map((h) => NotificationHistory.fromServerDTO(h));
+    if (dto.notificationChannels) {
+      for (const channelDto of dto.notificationChannels) {
+        notification._notificationChannels.push(NotificationChannel.fromServerDTO(channelDto));
+      }
     }
 
     return notification;
   }
 
   public static fromPersistenceDTO(dto: NotificationPersistenceDTO): Notification {
-    return new Notification({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
+    const id = NotificationId.of(dto.id);
+
+    const notification = new Notification(id, {
+      identityId: IdentityIdType.of(dto.identityId),
       title: dto.title,
       content: dto.content,
       type: dto.type,
       category: dto.category,
       importance: dto.importance,
-      urgency: dto.urgency,
       status: dto.status,
       isRead: dto.isRead,
-      readAt: dto.readAt ? new Date(dto.readAt) : null,
-      relatedEntityType: dto.relatedEntityType,
-      relatedEntityUuid: dto.relatedEntityUuid,
-      actions: dto.actions
-        ? JSON.parse(dto.actions).map((a: any) => NotificationAction.fromContract(a))
-        : null,
-      metadata: dto.metadata ? NotificationMetadata.fromContract(JSON.parse(dto.metadata)) : null,
-      expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+      readAt: dto.readAt ? dto.readAt.getTime() : null,
+      actions: dto.actions?.map((a) => NotificationAction.fromPersistenceDTO(a)) ?? null,
+      metadata: dto.metadata ? NotificationMetadata.fromPersistenceDTO(dto.metadata) : null,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
-      sentAt: dto.sentAt ? new Date(dto.sentAt) : null,
-      deliveredAt: dto.deliveredAt ? new Date(dto.deliveredAt) : null,
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
+
+    if (dto.notificationChannels) {
+      const channelDtos = JSON.parse(dto.notificationChannels);
+      for (const channelDto of channelDtos) {
+        notification._notificationChannels.push(NotificationChannel.fromPersistenceDTO(channelDto));
+      }
+    }
+
+    return notification;
   }
 }

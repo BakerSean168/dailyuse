@@ -4,338 +4,190 @@
  */
 
 import type {
-  CategoryPreferenceServerDTO,
-  CategoryPreferences,
-  ChannelPreferences,
-  DoNotDisturbConfigServer,
-  DoNotDisturbConfigServerDTO,
-  NotificationPreferencePersistenceDTO,
   NotificationPreferenceServer,
   NotificationPreferenceServerDTO,
-  RateLimitServer,
-  RateLimitServerDTO,
+  NotificationPreferencePersistenceDTO,
+  NotificationChannelType,
 } from '@dailyuse/contracts/notification';
-import { NotificationCategory } from '@dailyuse/contracts/notification';
+import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { AggregateRoot } from '@dailyuse/utils';
-import { CategoryPreference } from '../value-objects/CategoryPreference';
-import { DoNotDisturbConfig } from '../value-objects/DoNotDisturbConfig';
-import { RateLimit } from '../value-objects/RateLimit';
+import {
+  NotificationPreferenceId,
+} from '@dailyuse/domain-shared/notification';
+import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 
 /**
  * NotificationPreference 聚合根
  * 负责用户通知偏好设置的管理
+ * 
+ * 设计说明:
+ * - settings: Map<moduleName, channelTypes[]> 记录每个模块启用的渠道
+ * - 例如: task -> [InApp, Email], system -> [InApp]
  */
-export class NotificationPreference extends AggregateRoot implements NotificationPreferenceServer {
+export class NotificationPreference
+  extends AggregateRoot<NotificationPreferenceId>
+  implements NotificationPreferenceServer
+{
   // ===== 私有字段 =====
-  private _accountUuid: string;
-  private _enabled: boolean;
-  private _channels: ChannelPreferences;
-  private _categories: CategoryPreferences;
-  private _doNotDisturb: DoNotDisturbConfig | null;
-  private _rateLimit: RateLimit | null;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+  private _identityId: IdentityId;
+  private _settings: Map<string, NotificationChannelType[]>;
 
   // ===== 构造函数（私有） =====
-  private constructor(params: {
-    uuid?: string;
-    accountUuid: string;
-    enabled: boolean;
-    channels: ChannelPreferences;
-    categories: CategoryPreferences;
-    doNotDisturb?: DoNotDisturbConfig | null;
-    rateLimit?: RateLimit | null;
-    createdAt: Date | number;
-    updatedAt: Date | number;
-  }) {
-    super(params.uuid ?? AggregateRoot.generateUUID());
-    this._accountUuid = params.accountUuid;
-    this._enabled = params.enabled;
-    this._channels = params.channels;
-    this._categories = params.categories;
-    this._doNotDisturb = params.doNotDisturb ?? null;
-    this._rateLimit = params.rateLimit ?? null;
-    this._createdAt = params.createdAt instanceof Date ? params.createdAt : new Date(params.createdAt);
-    this._updatedAt = params.updatedAt instanceof Date ? params.updatedAt : new Date(params.updatedAt);
+  private constructor(
+    id: NotificationPreferenceId,
+    identityId: IdentityId,
+    settings: Map<string, NotificationChannelType[]>,
+  ) {
+    super(id);
+    this._identityId = identityId;
+    this._settings = settings;
   }
 
   // ===== Getter 属性 =====
-  public override get uuid(): string {
-    return this._uuid;
+  public get identityId(): IdentityId {
+    return this._identityId;
   }
-  public get accountUuid(): string {
-    return this._accountUuid;
-  }
-  public get enabled(): boolean {
-    return this._enabled;
-  }
-  public get channels(): ChannelPreferences {
-    return { ...this._channels };
-  }
-  public get categories(): CategoryPreferences {
-    return {
-      task: { ...this._categories.task },
-      goal: { ...this._categories.goal },
-      schedule: { ...this._categories.schedule },
-      reminder: { ...this._categories.reminder },
-      account: { ...this._categories.account },
-      system: { ...this._categories.system },
-    };
-  }
-  public get doNotDisturb(): DoNotDisturbConfigServer | null {
-    return this._doNotDisturb ?? null;
-  }
-  public get rateLimit(): RateLimitServer | null {
-    return this._rateLimit ?? null;
-  }
-  public get createdAt(): Date {
-    return this._createdAt;
-  }
-  public get updatedAt(): Date {
-    return this._updatedAt;
+
+  public get settings(): Map<string, NotificationChannelType[]> {
+    return new Map(this._settings);
   }
 
   // ===== 业务方法 =====
 
   /**
-   * 启用所有通知
+   * 获取模块的渠道配置
    */
-  public enableAll(): void {
-    this._enabled = true;
-    this._updatedAt = new Date();
+  public getModuleChannels(moduleName: string): NotificationChannelType[] {
+    return this._settings.get(moduleName) ?? [];
   }
 
   /**
-   * 禁用所有通知
+   * 设置模块的渠道配置
    */
-  public disableAll(): void {
-    this._enabled = false;
-    this._updatedAt = new Date();
+  public setModuleChannels(moduleName: string, channels: NotificationChannelType[]): void {
+    this._settings.set(moduleName, [...channels]);
   }
 
   /**
-   * 启用指定渠道
+   * 启用模块的某个渠道
    */
-  public enableChannel(channel: 'inApp' | 'email' | 'push' | 'sms'): void {
-    this._channels[channel] = true;
-    this._updatedAt = new Date();
-  }
-
-  /**
-   * 禁用指定渠道
-   */
-  public disableChannel(channel: 'inApp' | 'email' | 'push' | 'sms'): void {
-    this._channels[channel] = false;
-    this._updatedAt = new Date();
-  }
-
-  /**
-   * 更新分类偏好
-   */
-  public updateCategoryPreference(
-    category: NotificationCategory,
-    preference: Partial<CategoryPreferenceServerDTO>,
-  ): void {
-    const categoryKey = category.toLowerCase() as keyof CategoryPreferences;
-    if (categoryKey in this._categories) {
-      this._categories[categoryKey] = {
-        ...this._categories[categoryKey],
-        ...preference,
-      };
-      this._updatedAt = new Date();
+  public enableChannel(moduleName: string, channel: NotificationChannelType): void {
+    const channels = this._settings.get(moduleName) ?? [];
+    if (!channels.includes(channel)) {
+      channels.push(channel);
+      this._settings.set(moduleName, channels);
     }
   }
 
   /**
-   * 启用免打扰
+   * 禁用模块的某个渠道
    */
-  public enableDoNotDisturb(startTime: string, endTime: string, daysOfWeek: number[]): void {
-    this._doNotDisturb = DoNotDisturbConfig.fromContract({
-      enabled: true,
-      startTime,
-      endTime,
-      daysOfWeek,
-    });
-    this._updatedAt = new Date();
-  }
-
-  /**
-   * 禁用免打扰
-   */
-  public disableDoNotDisturb(): void {
-    this._doNotDisturb = null;
-    this._updatedAt = new Date();
-  }
-
-  /**
-   * 检查是否在免打扰时段
-   */
-  public isInDoNotDisturbPeriod(): boolean {
-    if (!this._doNotDisturb || !this._doNotDisturb.enabled) {
-      return false;
+  public disableChannel(moduleName: string, channel: NotificationChannelType): void {
+    const channels = this._settings.get(moduleName) ?? [];
+    const index = channels.indexOf(channel);
+    if (index !== -1) {
+      channels.splice(index, 1);
+      this._settings.set(moduleName, channels);
     }
-    return this._doNotDisturb.isInPeriod(Date.now());
   }
 
   /**
-   * 检查速率限制
+   * 禁用模块的所有通知
    */
-  public checkRateLimit(): boolean {
-    if (!this._rateLimit) {
-      return true; // 无限制
-    }
-    // RateLimit 值对象应该有速率检查逻辑，这里简化处理
-    return true;
+  public disableModule(moduleName: string): void {
+    this._settings.set(moduleName, []);
   }
 
   /**
    * 判断是否应该发送通知
    */
-  public shouldSendNotification(category: string, type: string, channel: string): boolean {
-    // 1. 检查全局开关
-    if (!this._enabled) {
-      return false;
+  public shouldSendNotification(moduleName: string, channel: NotificationChannelType): boolean {
+    const channels = this._settings.get(moduleName);
+    if (!channels) {
+      return false; // 未配置的模块不发送
     }
-
-    // 2. 检查渠道开关
-    const channelKey = channel as keyof ChannelPreferences;
-    if (channelKey in this._channels && !this._channels[channelKey]) {
-      return false;
-    }
-
-    // 3. 检查分类开关
-    const categoryKey = category.toLowerCase() as keyof CategoryPreferences;
-    if (categoryKey in this._categories) {
-      const categoryPref = this._categories[categoryKey];
-      if (!categoryPref.enabled) {
-        return false;
-      }
-    }
-
-    // 4. 检查免打扰
-    if (this.isInDoNotDisturbPeriod()) {
-      return false;
-    }
-
-    // 5. 检查速率限制
-    if (!this.checkRateLimit()) {
-      return false;
-    }
-
-    return true;
+    return channels.includes(channel);
   }
 
   // ===== 转换方法 =====
 
   public toServerDTO(): NotificationPreferenceServerDTO {
+    const settingsRecord: Record<string, NotificationChannelType[]> = {};
+    for (const [key, value] of this._settings) {
+      settingsRecord[key] = [...value];
+    }
+
     return {
-      uuid: this.uuid,
-      accountUuid: this.accountUuid,
-      enabled: this.enabled,
-      channels: this.channels,
-      categories: this.categories,
-      doNotDisturb: this.doNotDisturb,
-      rateLimit: this.rateLimit,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
+      id: String(this.id),
+      identityId: this._identityId,
+      settings: settingsRecord,
     };
   }
 
   public toPersistenceDTO(): NotificationPreferencePersistenceDTO {
+    const settingsRecord: Record<string, NotificationChannelType[]> = {};
+    for (const [key, value] of this._settings) {
+      settingsRecord[key] = [...value];
+    }
+
     return {
-      uuid: this.uuid,
-      accountUuid: this.accountUuid,
-      enabled: this.enabled,
-      channels: JSON.stringify(this.channels),
-      categories: JSON.stringify(this.categories),
-      doNotDisturb: this.doNotDisturb ? JSON.stringify(this.doNotDisturb) : null,
-      rateLimit: this.rateLimit ? JSON.stringify(this.rateLimit) : null,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
+      id: String(this.id),
+      identityId: this._identityId,
+      settings: JSON.stringify(settingsRecord),
     };
   }
 
   // ===== 静态工厂方法 =====
 
-  private static getDefaultCategoryPreferences(): CategoryPreferences {
-    const defaultPref = CategoryPreference.createDefault();
-
-    return {
-      task: defaultPref,
-      goal: defaultPref,
-      schedule: defaultPref,
-      reminder: defaultPref,
-      account: defaultPref,
-      system: defaultPref,
-    };
-  }
-
+  /**
+   * 创建新的通知偏好
+   */
   public static create(params: {
-    accountUuid: string;
-    enabled?: boolean;
-    channels?: Partial<ChannelPreferences>;
-    categories?: Partial<CategoryPreferences>;
+    identityId: IdentityId;
+    defaultChannels?: NotificationChannelType[];
   }): NotificationPreference {
-    const now = Date.now();
+    const id = NotificationPreferenceId.of(NotificationPreferenceId.generate());
+    const settings = new Map<string, NotificationChannelType[]>();
 
-    const defaultChannels: ChannelPreferences = {
-      inApp: true,
-      email: false,
-      push: false,
-      sms: false,
-    };
+    // 可以为常用模块设置默认渠道
+    if (params.defaultChannels && params.defaultChannels.length > 0) {
+      const defaultModules = ['task', 'goal', 'schedule', 'reminder', 'system'];
+      for (const moduleName of defaultModules) {
+        settings.set(moduleName, [...params.defaultChannels]);
+      }
+    }
 
-    const channels = {
-      ...defaultChannels,
-      ...(params.channels ?? {}),
-    };
-
-    const categories = {
-      ...NotificationPreference.getDefaultCategoryPreferences(),
-      ...(params.categories ?? {}),
-    };
-
-    return new NotificationPreference({
-      accountUuid: params.accountUuid,
-      enabled: params.enabled ?? true,
-      channels,
-      categories,
-      doNotDisturb: null,
-      rateLimit: null,
-      createdAt: now,
-      updatedAt: now,
-    });
+    return new NotificationPreference(id, params.identityId, settings);
   }
 
+  /**
+   * 从 Server DTO 还原
+   */
   public static fromServerDTO(dto: NotificationPreferenceServerDTO): NotificationPreference {
-    return new NotificationPreference({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
-      enabled: dto.enabled,
-      channels: dto.channels,
-      categories: dto.categories,
-      doNotDisturb: dto.doNotDisturb ? DoNotDisturbConfig.fromContract(dto.doNotDisturb) : null,
-      rateLimit: dto.rateLimit ? RateLimit.fromContract(dto.rateLimit) : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
+    const id = NotificationPreferenceId.of(dto.id);
+    const settings = new Map<string, NotificationChannelType[]>();
+
+    for (const [key, value] of Object.entries(dto.settings)) {
+      settings.set(key, [...value]);
+    }
+
+    return new NotificationPreference(id, IdentityIdType.of(dto.identityId), settings);
   }
 
+  /**
+   * 从持久化 DTO 还原
+   */
   public static fromPersistenceDTO(
     dto: NotificationPreferencePersistenceDTO,
   ): NotificationPreference {
-    return new NotificationPreference({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
-      enabled: dto.enabled,
-      channels: JSON.parse(dto.channels),
-      categories: JSON.parse(dto.categories),
-      doNotDisturb: dto.doNotDisturb
-        ? DoNotDisturbConfig.fromContract(JSON.parse(dto.doNotDisturb))
-        : null,
-      rateLimit: dto.rateLimit ? RateLimit.fromContract(JSON.parse(dto.rateLimit)) : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
+    const id = NotificationPreferenceId.of(dto.id);
+    const settingsRecord = JSON.parse(dto.settings) as Record<string, NotificationChannelType[]>;
+    const settings = new Map<string, NotificationChannelType[]>();
+
+    for (const [key, value] of Object.entries(settingsRecord)) {
+      settings.set(key, [...value]);
+    }
+
+    return new NotificationPreference(id, IdentityIdType.of(dto.identityId), settings);
   }
 }

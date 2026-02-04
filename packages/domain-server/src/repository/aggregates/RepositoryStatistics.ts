@@ -7,10 +7,44 @@
  */
 
 import { v4 as uuid } from 'uuid';
-import type {
-  RepositoryStatisticsServerDTO,
-  RepositoryStatisticsPersistenceDTO,
-} from '@dailyuse/contracts/repository';
+
+// ============ DTO 定义（服务端特有）============
+
+/**
+ * RepositoryStatistics Server DTO
+ */
+export interface RepositoryStatisticsServerDTO {
+  uuid: string;
+  accountUuid: string;
+  totalRepositories: number;
+  activeRepositories: number;
+  archivedRepositories: number;
+  totalResources: number;
+  totalFolders: number;
+  totalTags: number;
+  totalStorageBytes: number;
+  lastUpdatedAt: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/**
+ * RepositoryStatistics Persistence DTO
+ */
+export interface RepositoryStatisticsPersistenceDTO {
+  uuid: string;
+  accountUuid: string;
+  totalRepositories: number;
+  activeRepositories: number;
+  archivedRepositories: number;
+  totalResources: number;
+  totalFolders: number;
+  totalTags: number;
+  totalStorageBytes: number;
+  lastUpdatedAt: number;
+  createdAt: number;
+  updatedAt: number;
+}
 
 export class RepositoryStatistics {
   readonly uuid: string;

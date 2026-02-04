@@ -13,75 +13,80 @@ import type {
   LinkedResourceServer,
   LinkedResourceServerDTO,
 } from '@dailyuse/contracts/editor';
-import { Entity } from '@dailyuse/utils';
+import type {
+  LinkedResourceId,
+  EditorWorkspaceId,
+  IdentityId,
+  DocumentId,
+  TransferDate,
+  PersistenceDate,
+} from '@dailyuse/contracts/primitives';
+import { Entity, generateUUID } from '@dailyuse/utils';
 
 /**
  * LinkedResource 实体
  */
-export class LinkedResource extends Entity implements LinkedResourceServer {
+export class LinkedResource extends Entity<LinkedResourceId> implements LinkedResourceServer {
   // ===== 私有字段 =====
-  private _workspaceUuid: string; // 聚合根外键
-  private _accountUuid: string;
-  private _sourceDocumentUuid: string;
+  private _workspaceId: EditorWorkspaceId;
+  private _identityId: IdentityId;
+  private _sourceDocumentId: DocumentId;
   private _sourceType: LinkedSourceType;
   private _sourceLine: number | null;
   private _sourceColumn: number | null;
   private _targetPath: string;
   private _targetType: LinkedTargetType;
-  private _targetDocumentUuid: string | null;
+  private _targetDocumentId: DocumentId | null;
   private _targetAnchor: string | null;
   private _isValid: boolean;
-  private _lastValidatedAt: number | null;
+  private _lastValidatedAt: Date | null;
   private _createdAt: Date;
   private _updatedAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
-    uuid?: string;
-    workspaceUuid: string;
-    accountUuid: string;
-    sourceDocumentUuid: string;
+    id: LinkedResourceId;
+    workspaceId: EditorWorkspaceId;
+    identityId: IdentityId;
+    sourceDocumentId: DocumentId;
     sourceType: LinkedSourceType;
-    sourceLine?: number | null;
-    sourceColumn?: number | null;
+    sourceLine: number | null;
+    sourceColumn: number | null;
     targetPath: string;
     targetType: LinkedTargetType;
-    targetDocumentUuid?: string | null;
-    targetAnchor?: string | null;
+    targetDocumentId: DocumentId | null;
+    targetAnchor: string | null;
     isValid: boolean;
-    lastValidatedAt?: number | null;
+    lastValidatedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
   }) {
-    super(params.uuid || Entity.generateUUID());
-    this._workspaceUuid = params.workspaceUuid;
-    this._accountUuid = params.accountUuid;
-    this._sourceDocumentUuid = params.sourceDocumentUuid;
+    super(params.id);
+    this._workspaceId = params.workspaceId;
+    this._identityId = params.identityId;
+    this._sourceDocumentId = params.sourceDocumentId;
     this._sourceType = params.sourceType;
-    this._sourceLine = params.sourceLine ?? null;
-    this._sourceColumn = params.sourceColumn ?? null;
+    this._sourceLine = params.sourceLine;
+    this._sourceColumn = params.sourceColumn;
     this._targetPath = params.targetPath;
     this._targetType = params.targetType;
-    this._targetDocumentUuid = params.targetDocumentUuid ?? null;
-    this._targetAnchor = params.targetAnchor ?? null;
+    this._targetDocumentId = params.targetDocumentId;
+    this._targetAnchor = params.targetAnchor;
     this._isValid = params.isValid;
-    this._lastValidatedAt = params.lastValidatedAt ?? null;
+    this._lastValidatedAt = params.lastValidatedAt;
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
   }
 
   // ===== Getter 属性 =====
-  public override get uuid(): string {
-    return this._uuid;
+  public get workspaceId(): EditorWorkspaceId {
+    return this._workspaceId;
   }
-  public get workspaceUuid(): string {
-    return this._workspaceUuid;
+  public get identityId(): IdentityId {
+    return this._identityId;
   }
-  public get accountUuid(): string {
-    return this._accountUuid;
-  }
-  public get sourceDocumentUuid(): string {
-    return this._sourceDocumentUuid;
+  public get sourceDocumentId(): DocumentId {
+    return this._sourceDocumentId;
   }
   public get sourceType(): LinkedSourceType {
     return this._sourceType;
@@ -98,8 +103,8 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
   public get targetType(): LinkedTargetType {
     return this._targetType;
   }
-  public get targetDocumentUuid(): string | null {
-    return this._targetDocumentUuid;
+  public get targetDocumentId(): DocumentId | null {
+    return this._targetDocumentId;
   }
   public get targetAnchor(): string | null {
     return this._targetAnchor;
@@ -107,7 +112,7 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
   public get isValid(): boolean {
     return this._isValid;
   }
-  public get lastValidatedAt(): number | null {
+  public get lastValidatedAt(): Date | null {
     return this._lastValidatedAt;
   }
   public get createdAt(): Date {
@@ -123,33 +128,34 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
    * 创建新的 LinkedResource
    */
   public static create(params: {
-    workspaceUuid: string;
-    accountUuid: string;
-    sourceDocumentUuid: string;
+    workspaceId: string;
+    identityId: string;
+    sourceDocumentId: string;
     sourceType: LinkedSourceType;
-    sourceLine?: number;
-    sourceColumn?: number;
+    sourceLine?: number | null;
+    sourceColumn?: number | null;
     targetPath: string;
     targetType: LinkedTargetType;
-    targetDocumentUuid?: string;
-    targetAnchor?: string;
+    targetDocumentId?: string | null;
+    targetAnchor?: string | null;
   }): LinkedResource {
-    const uuid = crypto.randomUUID();
+    const id = generateUUID() as LinkedResourceId;
     const now = new Date();
 
     return new LinkedResource({
-      uuid,
-      workspaceUuid: params.workspaceUuid,
-      accountUuid: params.accountUuid,
-      sourceDocumentUuid: params.sourceDocumentUuid,
+      id,
+      workspaceId: params.workspaceId as EditorWorkspaceId,
+      identityId: params.identityId as IdentityId,
+      sourceDocumentId: params.sourceDocumentId as DocumentId,
       sourceType: params.sourceType,
-      sourceLine: params.sourceLine,
-      sourceColumn: params.sourceColumn,
+      sourceLine: params.sourceLine ?? null,
+      sourceColumn: params.sourceColumn ?? null,
       targetPath: params.targetPath,
       targetType: params.targetType,
-      targetDocumentUuid: params.targetDocumentUuid,
-      targetAnchor: params.targetAnchor,
+      targetDocumentId: (params.targetDocumentId ?? null) as DocumentId | null,
+      targetAnchor: params.targetAnchor ?? null,
       isValid: false, // 初始状态为未验证
+      lastValidatedAt: null,
       createdAt: now,
       updatedAt: now,
     });
@@ -160,19 +166,19 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
    */
   public static fromDTO(dto: LinkedResourceServerDTO): LinkedResource {
     return new LinkedResource({
-      uuid: dto.uuid,
-      workspaceUuid: dto.workspaceUuid,
-      accountUuid: dto.accountUuid,
-      sourceDocumentUuid: dto.sourceDocumentUuid,
+      id: dto.id,
+      workspaceId: dto.workspaceId,
+      identityId: dto.identityId,
+      sourceDocumentId: dto.sourceDocumentId,
       sourceType: dto.sourceType,
       sourceLine: dto.sourceLine,
       sourceColumn: dto.sourceColumn,
       targetPath: dto.targetPath,
       targetType: dto.targetType,
-      targetDocumentUuid: dto.targetDocumentUuid,
+      targetDocumentId: dto.targetDocumentId,
       targetAnchor: dto.targetAnchor,
       isValid: dto.isValid,
-      lastValidatedAt: dto.lastValidatedAt,
+      lastValidatedAt: dto.lastValidatedAt ? new Date(dto.lastValidatedAt) : null,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
     });
@@ -183,21 +189,21 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
    */
   public static fromPersistenceDTO(dto: LinkedResourcePersistenceDTO): LinkedResource {
     return new LinkedResource({
-      uuid: dto.uuid,
-      workspaceUuid: dto.workspace_uuid,
-      accountUuid: dto.accountUuid,
-      sourceDocumentUuid: dto.source_document_uuid,
+      id: dto.id,
+      workspaceId: dto.workspace_id,
+      identityId: dto.identityId,
+      sourceDocumentId: dto.source_document_id,
       sourceType: dto.source_type,
       sourceLine: dto.source_line,
       sourceColumn: dto.source_column,
       targetPath: dto.target_path,
       targetType: dto.target_type,
-      targetDocumentUuid: dto.target_document_uuid,
+      targetDocumentId: dto.target_document_id,
       targetAnchor: dto.target_anchor,
       isValid: dto.is_valid,
-      lastValidatedAt: dto.last_validated_at,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      lastValidatedAt: dto.last_validated_at ? new Date(dto.last_validated_at) : null,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -208,7 +214,7 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
    */
   public markValid(): void {
     this._isValid = true;
-    this._lastValidatedAt = Date.now();
+    this._lastValidatedAt = new Date();
     this._updatedAt = new Date();
   }
 
@@ -217,7 +223,7 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
    */
   public markInvalid(): void {
     this._isValid = false;
-    this._lastValidatedAt = Date.now();
+    this._lastValidatedAt = new Date();
     this._updatedAt = new Date();
   }
 
@@ -231,10 +237,10 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
   }
 
   /**
-   * 更新目标文档 UUID（当链接目标是内部文档时）
+   * 更新目标文档 ID（当链接目标是内部文档时）
    */
-  public updateTargetDocument(documentUuid: string | null): void {
-    this._targetDocumentUuid = documentUuid;
+  public updateTargetDocument(documentId: string | null): void {
+    this._targetDocumentId = documentId as DocumentId | null;
     this._updatedAt = new Date();
   }
 
@@ -251,7 +257,7 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
    * 记录验证时间
    */
   public recordValidation(): void {
-    this._lastValidatedAt = Date.now();
+    this._lastValidatedAt = new Date();
     this._updatedAt = new Date();
   }
 
@@ -259,14 +265,14 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
    * 判断是否为内部链接（指向工作区内文档）
    */
   public isInternalLink(): boolean {
-    return this._targetType === LinkedTargetType.DOCUMENT;
+    return this._targetType === LinkedTargetType.Document;
   }
 
   /**
    * 判断是否为外部链接
    */
   public isExternalLink(): boolean {
-    return this._targetType === LinkedTargetType.EXTERNAL_URL;
+    return this._targetType === LinkedTargetType.ExternalUrl;
   }
 
   /**
@@ -280,44 +286,42 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
 
   public toServerDTO(): LinkedResourceServerDTO {
     return {
-      uuid: this._uuid,
-      workspaceUuid: this._workspaceUuid,
-      accountUuid: this._accountUuid,
-      sourceDocumentUuid: this._sourceDocumentUuid,
+      id: this.id,
+      workspaceId: this._workspaceId,
+      identityId: this._identityId,
+      sourceDocumentId: this._sourceDocumentId,
       sourceType: this._sourceType,
       sourceLine: this._sourceLine,
       sourceColumn: this._sourceColumn,
       targetPath: this._targetPath,
       targetType: this._targetType,
-      targetDocumentUuid: this._targetDocumentUuid,
+      targetDocumentId: this._targetDocumentId,
       targetAnchor: this._targetAnchor,
       isValid: this._isValid,
-      lastValidatedAt: this._lastValidatedAt,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      lastValidatedAt: this._lastValidatedAt?.getTime() as TransferDate | null,
+      createdAt: this._createdAt.getTime() as TransferDate,
+      updatedAt: this._updatedAt.getTime() as TransferDate,
     };
   }
 
   public toClientDTO(): LinkedResourceClientDTO {
     return {
-      uuid: this._uuid,
-      workspaceUuid: this._workspaceUuid,
-      accountUuid: this._accountUuid,
-      sourceDocumentUuid: this._sourceDocumentUuid,
+      id: this.id,
+      workspaceId: this._workspaceId,
+      identityId: this._identityId,
+      sourceDocumentId: this._sourceDocumentId,
       sourceType: this._sourceType,
       sourceLine: this._sourceLine,
       sourceColumn: this._sourceColumn,
       targetPath: this._targetPath,
       targetType: this._targetType,
-      targetDocumentUuid: this._targetDocumentUuid,
+      targetDocumentId: this._targetDocumentId,
       targetAnchor: this._targetAnchor,
       isValid: this._isValid,
-      lastValidatedAt: this._lastValidatedAt,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      formattedLastValidated: this._lastValidatedAt
-        ? new Date(this._lastValidatedAt).toLocaleString()
-        : null,
+      lastValidatedAt: this._lastValidatedAt?.getTime() as TransferDate | null,
+      createdAt: this._createdAt.getTime() as TransferDate,
+      updatedAt: this._updatedAt.getTime() as TransferDate,
+      formattedLastValidated: this._lastValidatedAt?.toLocaleString() ?? null,
       formattedCreatedAt: this._createdAt.toLocaleString(),
       formattedUpdatedAt: this._updatedAt.toLocaleString(),
     };
@@ -325,21 +329,21 @@ export class LinkedResource extends Entity implements LinkedResourceServer {
 
   public toPersistenceDTO(): LinkedResourcePersistenceDTO {
     return {
-      uuid: this._uuid,
-      workspace_uuid: this._workspaceUuid,
-      accountUuid: this._accountUuid,
-      source_document_uuid: this._sourceDocumentUuid,
+      id: this.id,
+      workspace_id: this._workspaceId,
+      identityId: this._identityId,
+      source_document_id: this._sourceDocumentId,
       source_type: this._sourceType,
       source_line: this._sourceLine,
       source_column: this._sourceColumn,
       target_path: this._targetPath,
       target_type: this._targetType,
-      target_document_uuid: this._targetDocumentUuid,
+      target_document_id: this._targetDocumentId,
       target_anchor: this._targetAnchor,
       is_valid: this._isValid,
-      last_validated_at: this._lastValidatedAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      last_validated_at: this._lastValidatedAt as PersistenceDate | null,
+      createdAt: this._createdAt as PersistenceDate,
+      updatedAt: this._updatedAt as PersistenceDate,
     };
   }
 }

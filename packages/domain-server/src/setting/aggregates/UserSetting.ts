@@ -2,571 +2,294 @@
  * UserSetting Aggregate Root
  * 用户设置聚合根
  *
- * 位置：domain-server/setting/aggregates/UserSetting.ts
- * 文件路径已明确表明这是服务端聚合，无需在类名添加 Server 后缀
+ * 使用 Registry-Based 设计，所有设置存储在 entries Map 中
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
 import type {
-  UserSettingClientDTO,
-  UserSettingPersistenceDTO,
+  TransferDate,
+  PersistenceDate,
+  DomainDate,
+  SettingId as ISettingId,
+  IdentityId,
+} from '@dailyuse/contracts/primitives';
+import type {
   UserSettingServer,
   UserSettingServerDTO,
+  UserSettingPersistenceDTO,
+  SettingEntryServer,
+  SettingEntryServerDTO,
 } from '@dailyuse/contracts/setting';
-import {
-  DateFormat,
-  FontSize,
-  GoalViewType,
-  ProfileVisibility,
-  ScheduleViewType,
-  TaskViewType,
-  ThemeMode,
-  TimeFormat,
-} from '@dailyuse/contracts/setting';
+import { SettingId, SettingEntryId } from '@dailyuse/domain-shared/setting';
+
+// ============ Local SettingEntry Entity ============
+
+interface SettingEntryParams {
+  key: string;
+  value: unknown;
+  updatedAt?: DomainDate;
+}
+
+class SettingEntry implements SettingEntryServer {
+  public readonly id: SettingEntryId;
+  public readonly key: string;
+  private _value: unknown;
+  private _updatedAt: DomainDate;
+
+  private constructor(id: SettingEntryId, params: SettingEntryParams) {
+    this.id = id;
+    this.key = params.key;
+    this._value = params.value;
+    this._updatedAt = params.updatedAt ?? new Date();
+  }
+
+  get value(): unknown {
+    return this._value;
+  }
+
+  get updatedAt(): DomainDate {
+    return this._updatedAt;
+  }
+
+  setValue(value: unknown): void {
+    this._value = value;
+    this._updatedAt = new Date();
+  }
+
+  static create(params: SettingEntryParams): SettingEntry {
+    const id = SettingEntryId.of(SettingEntryId.generate());
+    return new SettingEntry(id, params);
+  }
+
+  static fromDTO(dto: SettingEntryServerDTO): SettingEntry {
+    const id = SettingEntryId.of(dto.id);
+    return new SettingEntry(id, {
+      key: dto.key,
+      value: dto.value,
+      updatedAt: new Date(dto.updatedAt),
+    });
+  }
+
+  toDTO(): SettingEntryServerDTO {
+    return {
+      id: this.id,
+      key: this.key,
+      value: this._value,
+      updatedAt: this._updatedAt.getTime() as TransferDate,
+    };
+  }
+}
+
+// ============ UserSetting Aggregate ============
 
 /**
  * 用户设置聚合根
  */
-export class UserSetting extends AggregateRoot implements UserSettingServer {
-  private _accountUuid: string;
-  private _appearance: {
-    theme: ThemeMode;
-    accentColor: string;
-    fontSize: FontSize;
-    fontFamily?: string | null;
-    compactMode: boolean;
-  };
-  private _locale: {
-    language: string;
-    timezone: string;
-    dateFormat: DateFormat;
-    timeFormat: TimeFormat;
-    weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-    currency: string;
-  };
-  private _workflow: {
-    defaultTaskView: TaskViewType;
-    defaultGoalView: GoalViewType;
-    defaultScheduleView: ScheduleViewType;
-    autoSave: boolean;
-    autoSaveInterval: number;
-    confirmBeforeDelete: boolean;
-  };
-  private _shortcuts: {
-    enabled: boolean;
-    custom: Record<string, string>;
-  };
-  private _privacy: {
-    profileVisibility: ProfileVisibility;
-    showOnlineStatus: boolean;
-    allowSearchByEmail: boolean;
-    allowSearchByPhone: boolean;
-    shareUsageData: boolean;
-  };
-  private _experimental: {
-    enabled: boolean;
-    features: string[];
-  };
-  private _createdAt: Date;
-  private _updatedAt: Date;
+export class UserSetting extends AggregateRoot<ISettingId> implements UserSettingServer {
+  private _identityId: IdentityId;
+  private _entries: Map<string, SettingEntry>;
+  private _createdAt: DomainDate;
+  private _updatedAt: DomainDate;
 
-  private constructor(params: {
-    uuid?: string;
-    accountUuid: string;
-    appearance: UserSetting['_appearance'];
-    locale: UserSetting['_locale'];
-    workflow: UserSetting['_workflow'];
-    shortcuts: UserSetting['_shortcuts'];
-    privacy: UserSetting['_privacy'];
-    experimental: UserSetting['_experimental'];
-    createdAt: number;
-    updatedAt: number;
-  }) {
-    super(params.uuid ?? AggregateRoot.generateUUID());
-    this._accountUuid = params.accountUuid;
-    this._appearance = params.appearance;
-    this._locale = params.locale;
-    this._workflow = params.workflow;
-    this._shortcuts = params.shortcuts;
-    this._privacy = params.privacy;
-    // 最终防护：确保 features 始终是数组
-    this._experimental = {
-      enabled: params.experimental.enabled,
-      features: Array.isArray(params.experimental.features) ? params.experimental.features : [],
-    };
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+  private constructor(
+    id: ISettingId,
+    params: {
+      identityId: IdentityId;
+      entries?: Map<string, SettingEntry>;
+      createdAt?: DomainDate;
+      updatedAt?: DomainDate;
+    }
+  ) {
+    super(id);
+    this._identityId = params.identityId;
+    this._entries = params.entries ?? new Map();
+    this._createdAt = params.createdAt ?? new Date();
+    this._updatedAt = params.updatedAt ?? new Date();
   }
 
   // ========== Getters ==========
 
-  get accountUuid(): string {
-    return this._accountUuid;
+  get identityId(): IdentityId {
+    return this._identityId;
   }
 
-  get appearance(): UserSetting['_appearance'] {
-    return { ...this._appearance };
+  get entries(): Map<string, SettingEntryServer> {
+    return new Map(this._entries);
   }
 
-  get locale(): UserSetting['_locale'] {
-    return { ...this._locale };
-  }
-
-  get workflow(): UserSetting['_workflow'] {
-    return { ...this._workflow };
-  }
-
-  get shortcuts(): UserSetting['_shortcuts'] {
-    return {
-      enabled: this._shortcuts.enabled,
-      custom: { ...this._shortcuts.custom },
-    };
-  }
-
-  get privacy(): UserSetting['_privacy'] {
-    return { ...this._privacy };
-  }
-
-  get experimental(): UserSetting['_experimental'] {
-    return {
-      enabled: this._experimental.enabled,
-      features: [...this._experimental.features],
-    };
-  }
-
-  get createdAt(): number {
+  get createdAt(): DomainDate {
     return this._createdAt;
   }
 
-  get updatedAt(): number {
+  get updatedAt(): DomainDate {
     return this._updatedAt;
   }
 
-  // ========== 外观管理 ==========
+  // ========== Entry Management ==========
 
-  updateAppearance(appearance: Partial<UserSetting['_appearance']>): void {
-    this._appearance = { ...this._appearance, ...appearance };
+  /**
+   * 设置一个配置项
+   */
+  setValue(key: string, value: unknown): void {
+    const existing = this._entries.get(key);
+    if (existing) {
+      existing.setValue(value);
+    } else {
+      const entry = SettingEntry.create({ key, value });
+      this._entries.set(key, entry);
+    }
     this._updatedAt = new Date();
   }
 
-  updateTheme(theme: ThemeMode): void {
-    this._appearance.theme = theme;
-    this._updatedAt = new Date();
+  /**
+   * 获取配置值
+   */
+  getValue<T = unknown>(key: string): T | undefined {
+    return this._entries.get(key)?.value as T | undefined;
   }
 
-  // ========== 语言和区域 ==========
-
-  updateLocale(locale: Partial<UserSetting['_locale']>): void {
-    this._locale = { ...this._locale, ...locale };
-    this._updatedAt = new Date();
+  /**
+   * 获取配置值或默认值
+   */
+  getValueOrDefault<T>(key: string, defaultValue: T): T {
+    const value = this.getValue<T>(key);
+    return value !== undefined ? value : defaultValue;
   }
 
-  updateLanguage(language: string): void {
-    this._locale.language = language;
-    this._updatedAt = new Date();
+  /**
+   * 检查配置是否存在
+   */
+  hasEntry(key: string): boolean {
+    return this._entries.has(key);
   }
 
-  updateTimezone(timezone: string): void {
-    this._locale.timezone = timezone;
-    this._updatedAt = new Date();
-  }
-
-  // ========== 工作流 ==========
-
-  updateWorkflow(workflow: Partial<UserSetting['_workflow']>): void {
-    this._workflow = { ...this._workflow, ...workflow };
-    this._updatedAt = new Date();
-  }
-
-  // ========== 快捷键 ==========
-
-  updateShortcut(action: string, shortcut: string): void {
-    this._shortcuts.custom[action] = shortcut;
-    this._updatedAt = new Date();
-  }
-
-  removeShortcut(action: string): void {
-    delete this._shortcuts.custom[action];
-    this._updatedAt = new Date();
-  }
-
-  // ========== 隐私 ==========
-
-  updatePrivacy(privacy: Partial<UserSetting['_privacy']>): void {
-    this._privacy = { ...this._privacy, ...privacy };
-    this._updatedAt = new Date();
-  }
-
-  // ========== 实验性功能 ==========
-
-  enableExperimentalFeature(feature: string): void {
-    if (!this._experimental.features.includes(feature)) {
-      this._experimental.features.push(feature);
+  /**
+   * 删除配置
+   */
+  removeEntry(key: string): boolean {
+    const deleted = this._entries.delete(key);
+    if (deleted) {
       this._updatedAt = new Date();
+    }
+    return deleted;
+  }
+
+  /**
+   * 批量设置配置
+   */
+  setValues(entries: Record<string, unknown>): void {
+    for (const [key, value] of Object.entries(entries)) {
+      this.setValue(key, value);
     }
   }
 
-  disableExperimentalFeature(feature: string): void {
-    const index = this._experimental.features.indexOf(feature);
-    if (index > -1) {
-      this._experimental.features.splice(index, 1);
-      this._updatedAt = new Date();
-    }
+  /**
+   * 获取所有配置的key
+   */
+  getKeys(): string[] {
+    return Array.from(this._entries.keys());
   }
 
   // ========== DTO 转换 ==========
 
   toServerDTO(): UserSettingServerDTO {
-    return {
-      uuid: this.uuid,
-      accountUuid: this._accountUuid,
-      appearance: this._appearance,
-      locale: this._locale,
-      workflow: this._workflow,
-      shortcuts: this._shortcuts,
-      privacy: this._privacy,
-      experimental: this._experimental,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-    };
-  }
+    const entriesArray: SettingEntryServerDTO[] = [];
+    for (const entry of this._entries.values()) {
+      entriesArray.push(entry.toDTO());
+    }
 
-  toClientDTO(): UserSettingClientDTO {
     return {
-      uuid: this.uuid,
-      accountUuid: this._accountUuid,
-      appearance: this._appearance,
-      locale: this._locale,
-      workflow: this._workflow,
-      shortcuts: this._shortcuts,
-      privacy: this._privacy,
-      experimental: this._experimental,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      themeText: ThemeMode[this._appearance.theme],
-      languageText: this._locale.language,
-      experimentalFeatureCount: this._experimental.features.length,
+      id: this.id,
+      identityId: this._identityId,
+      entries: JSON.stringify(entriesArray),
+      createdAt: this._createdAt.getTime() as TransferDate,
+      updatedAt: this._updatedAt.getTime() as TransferDate,
     };
   }
 
   toPersistenceDTO(): UserSettingPersistenceDTO {
+    const entriesArray: SettingEntryServerDTO[] = [];
+    for (const entry of this._entries.values()) {
+      entriesArray.push(entry.toDTO());
+    }
+
     return {
-      uuid: this.uuid,
-      accountUuid: this._accountUuid,
-
-      // Appearance - 扁平化
-      appearanceTheme: this._appearance.theme,
-      appearanceAccentColor: this._appearance.accentColor,
-      appearanceFontSize: this._appearance.fontSize,
-      appearanceFontFamily: this._appearance.fontFamily ?? null,
-      appearanceCompactMode: this._appearance.compactMode,
-
-      // Locale - 扁平化
-      localeLanguage: this._locale.language,
-      localeTimezone: this._locale.timezone,
-      localeDateFormat: this._locale.dateFormat,
-      localeTimeFormat: this._locale.timeFormat,
-      localeWeekStartsOn: this._locale.weekStartsOn,
-      localeCurrency: this._locale.currency,
-
-      // Workflow - 扁平化
-      workflowDefaultTaskView: this._workflow.defaultTaskView,
-      workflowDefaultGoalView: this._workflow.defaultGoalView,
-      workflowDefaultScheduleView: this._workflow.defaultScheduleView,
-      workflowAutoSave: this._workflow.autoSave,
-      workflowAutoSaveInterval: this._workflow.autoSaveInterval,
-      workflowConfirmBeforeDelete: this._workflow.confirmBeforeDelete,
-
-      // Shortcuts - custom 为 JSON
-      shortcutsEnabled: this._shortcuts.enabled,
-      shortcutsCustom: JSON.stringify(this._shortcuts.custom),
-
-      // Privacy - 扁平化
-      privacyProfileVisibility: this._privacy.profileVisibility,
-      privacyShowOnlineStatus: this._privacy.showOnlineStatus,
-      privacyAllowSearchByEmail: this._privacy.allowSearchByEmail,
-      privacyAllowSearchByPhone: this._privacy.allowSearchByPhone,
-      privacyShareUsageData: this._privacy.shareUsageData,
-
-      // Experimental - features 为 JSON
-      experimentalEnabled: this._experimental.enabled,
-      experimentalFeatures: JSON.stringify(this._experimental.features),
-
-      // Timestamps
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      id: this.id,
+      identityId: this._identityId,
+      entries: JSON.stringify(entriesArray),
+      createdAt: this._createdAt as PersistenceDate,
+      updatedAt: this._updatedAt as PersistenceDate,
     };
   }
 
   // ========== 静态工厂方法 ==========
 
-  static create(params: {
-    accountUuid: string;
-    appearance?: Partial<UserSettingServer['appearance']>;
-    locale?: Partial<UserSettingServer['locale']>;
-    workflow?: Partial<UserSettingServer['workflow']>;
-    shortcuts?: Partial<UserSettingServer['shortcuts']>;
-    privacy?: Partial<UserSettingServer['privacy']>;
-    experimental?: Partial<UserSettingServer['experimental']>;
-  }): UserSetting {
-    const now = Date.now();
-
-    // 默认外观设置
-    const defaultAppearance: UserSetting['_appearance'] = {
-      theme: ThemeMode.AUTO,
-      accentColor: '#3B82F6',
-      fontSize: FontSize.MEDIUM,
-      fontFamily: null,
-      compactMode: false,
-    };
-
-    // 默认语言和区域设置
-    const defaultLocale: UserSetting['_locale'] = {
-      language: 'zh-CN',
-      timezone: 'Asia/Shanghai',
-      dateFormat: DateFormat.YYYY_MM_DD,
-      timeFormat: TimeFormat.H24,
-      weekStartsOn: 1, // Monday
-      currency: 'CNY',
-    };
-
-    // 默认工作流设置
-    const defaultWorkflow: UserSetting['_workflow'] = {
-      defaultTaskView: TaskViewType.LIST,
-      defaultGoalView: GoalViewType.LIST,
-      defaultScheduleView: ScheduleViewType.WEEK,
-      autoSave: true,
-      autoSaveInterval: 30000, // 30 seconds
-      confirmBeforeDelete: true,
-    };
-
-    // 默认快捷键设置
-    const defaultShortcuts: UserSetting['_shortcuts'] = {
-      enabled: true,
-      custom: {},
-    };
-
-    // 默认隐私设置
-    const defaultPrivacy: UserSetting['_privacy'] = {
-      profileVisibility: ProfileVisibility.PRIVATE,
-      showOnlineStatus: true,
-      allowSearchByEmail: true,
-      allowSearchByPhone: false,
-      shareUsageData: false,
-    };
-
-    // 默认实验性功能设置
-    const defaultExperimental: UserSetting['_experimental'] = {
-      enabled: false,
-      features: [],
-    };
-
-    const appearance: UserSetting['_appearance'] = {
-      ...defaultAppearance,
-      ...params.appearance,
-      theme: (params.appearance?.theme as ThemeMode) || defaultAppearance.theme,
-      fontSize: (params.appearance?.fontSize as FontSize) || defaultAppearance.fontSize,
-    };
-
-    const locale: UserSetting['_locale'] = {
-      ...defaultLocale,
-      ...params.locale,
-      dateFormat: (params.locale?.dateFormat as DateFormat) || defaultLocale.dateFormat,
-      timeFormat: (params.locale?.timeFormat as TimeFormat) || defaultLocale.timeFormat,
-    };
-
-    const workflow: UserSetting['_workflow'] = {
-      ...defaultWorkflow,
-      ...params.workflow,
-      defaultTaskView:
-        (params.workflow?.defaultTaskView as TaskViewType) || defaultWorkflow.defaultTaskView,
-      defaultGoalView:
-        (params.workflow?.defaultGoalView as GoalViewType) || defaultWorkflow.defaultGoalView,
-      defaultScheduleView:
-        (params.workflow?.defaultScheduleView as ScheduleViewType) ||
-        defaultWorkflow.defaultScheduleView,
-    };
-
-    const privacy: UserSetting['_privacy'] = {
-      ...defaultPrivacy,
-      ...params.privacy,
-      profileVisibility:
-        (params.privacy?.profileVisibility as ProfileVisibility) ||
-        defaultPrivacy.profileVisibility,
-    };
-
-    return new UserSetting({
-      accountUuid: params.accountUuid,
-      appearance,
-      locale,
-      workflow,
-      shortcuts: { ...defaultShortcuts, ...params.shortcuts },
-      privacy,
-      experimental: { ...defaultExperimental, ...params.experimental },
-      createdAt: now,
-      updatedAt: now,
+  static create(params: { identityId: IdentityId; initialEntries?: Record<string, unknown> }): UserSetting {
+    const id = SettingId.of(SettingId.generate());
+    const setting = new UserSetting(id, {
+      identityId: params.identityId,
     });
+
+    if (params.initialEntries) {
+      setting.setValues(params.initialEntries);
+    }
+
+    return setting;
   }
 
   static fromServerDTO(dto: UserSettingServerDTO): UserSetting {
-    // 如果 DTO 是空对象或缺少必需字段，抛出错误
-    if (!dto.accountUuid) {
-      throw new Error('fromServerDTO requires accountUuid in dto');
+    const id = SettingId.of(dto.id);
+
+    const entries = new Map<string, SettingEntry>();
+    if (dto.entries) {
+      try {
+        const parsed = JSON.parse(dto.entries) as SettingEntryServerDTO[];
+        for (const entryDTO of parsed) {
+          const entry = SettingEntry.fromDTO(entryDTO);
+          entries.set(entry.key, entry);
+        }
+      } catch {
+        // Invalid entries JSON, use empty map
+      }
     }
 
-    // 安全地处理可能缺失的字段，使用默认值
-    const experimental = {
-      enabled: dto.experimental?.enabled ?? false,
-      features: Array.isArray(dto.experimental?.features) ? dto.experimental.features : [],
-    };
-
-    const appearance = dto.appearance
-      ? {
-          ...dto.appearance,
-          theme: (dto.appearance.theme as ThemeMode) || ThemeMode.LIGHT,
-          fontSize: (dto.appearance.fontSize as FontSize) || FontSize.MEDIUM,
-          fontFamily: dto.appearance.fontFamily ?? null,
-        }
-      : {
-          theme: ThemeMode.LIGHT,
-          accentColor: '#1976d2',
-          fontSize: FontSize.MEDIUM,
-          fontFamily: null,
-          compactMode: false,
-        };
-
-    const locale = dto.locale
-      ? {
-          ...dto.locale,
-          dateFormat: (dto.locale.dateFormat as DateFormat) || DateFormat.YYYY_MM_DD,
-          timeFormat: (dto.locale.timeFormat as TimeFormat) || TimeFormat.H24,
-        }
-      : {
-          language: 'zh-CN',
-          timezone: 'Asia/Shanghai',
-          dateFormat: DateFormat.YYYY_MM_DD,
-          timeFormat: TimeFormat.H24,
-          weekStartsOn: 1 as 0 | 1 | 2 | 3 | 4 | 5 | 6,
-          currency: 'CNY',
-        };
-
-    const workflow = dto.workflow
-      ? {
-          ...dto.workflow,
-          defaultTaskView: (dto.workflow.defaultTaskView as TaskViewType) || TaskViewType.LIST,
-          defaultGoalView: (dto.workflow.defaultGoalView as GoalViewType) || GoalViewType.LIST,
-          defaultScheduleView:
-            (dto.workflow.defaultScheduleView as ScheduleViewType) || ScheduleViewType.WEEK,
-        }
-      : {
-          defaultTaskView: TaskViewType.LIST,
-          defaultGoalView: GoalViewType.LIST,
-          defaultScheduleView: ScheduleViewType.WEEK,
-          autoSave: true,
-          autoSaveInterval: 30000,
-          confirmBeforeDelete: true,
-        };
-
-    const shortcuts = dto.shortcuts || {
-      enabled: true,
-      custom: {},
-    };
-
-    const privacy = dto.privacy
-      ? {
-          ...dto.privacy,
-          profileVisibility:
-            (dto.privacy.profileVisibility as ProfileVisibility) || ProfileVisibility.PUBLIC,
-        }
-      : {
-          profileVisibility: ProfileVisibility.PUBLIC,
-          showOnlineStatus: true,
-          allowSearchByEmail: false,
-          allowSearchByPhone: false,
-          shareUsageData: true,
-        };
-
-    return new UserSetting({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
-      appearance,
-      locale,
-      workflow,
-      shortcuts,
-      privacy,
-      experimental,
+    return new UserSetting(id, {
+      identityId: dto.identityId as IdentityId,
+      entries,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
     });
   }
 
   static fromPersistenceDTO(dto: UserSettingPersistenceDTO): UserSetting {
-    // 从扁平化的 DTO 重建嵌套结构
-    const appearance: UserSetting['_appearance'] = {
-      theme: dto.appearanceTheme as ThemeMode,
-      accentColor: dto.appearanceAccentColor,
-      fontSize: dto.appearanceFontSize as FontSize,
-      fontFamily: dto.appearanceFontFamily,
-      compactMode: dto.appearanceCompactMode,
-    };
+    const id = SettingId.of(dto.id);
 
-    const locale: UserSetting['_locale'] = {
-      language: dto.localeLanguage,
-      timezone: dto.localeTimezone,
-      dateFormat: dto.localeDateFormat as DateFormat,
-      timeFormat: dto.localeTimeFormat as TimeFormat,
-      weekStartsOn: dto.localeWeekStartsOn as 0 | 1 | 2 | 3 | 4 | 5 | 6,
-      currency: dto.localeCurrency,
-    };
-
-    const workflow: UserSetting['_workflow'] = {
-      defaultTaskView: dto.workflowDefaultTaskView as TaskViewType,
-      defaultGoalView: dto.workflowDefaultGoalView as GoalViewType,
-      defaultScheduleView: dto.workflowDefaultScheduleView as ScheduleViewType,
-      autoSave: dto.workflowAutoSave,
-      autoSaveInterval: dto.workflowAutoSaveInterval,
-      confirmBeforeDelete: dto.workflowConfirmBeforeDelete,
-    };
-
-    const shortcuts: UserSetting['_shortcuts'] = {
-      enabled: dto.shortcutsEnabled,
-      custom: JSON.parse(dto.shortcutsCustom),
-    };
-
-    const privacy: UserSetting['_privacy'] = {
-      profileVisibility: dto.privacyProfileVisibility as ProfileVisibility,
-      showOnlineStatus: dto.privacyShowOnlineStatus,
-      allowSearchByEmail: dto.privacyAllowSearchByEmail,
-      allowSearchByPhone: dto.privacyAllowSearchByPhone,
-      shareUsageData: dto.privacyShareUsageData,
-    };
-
-    // 安全地解析 experimental.features，确保它是一个数组
-    let features: string[] = [];
-    try {
-      const parsed = JSON.parse(dto.experimentalFeatures);
-      features = Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      console.error('Failed to parse experimental features, using empty array:', error);
-      features = [];
+    const entries = new Map<string, SettingEntry>();
+    if (dto.entries) {
+      try {
+        const parsed = JSON.parse(dto.entries) as SettingEntryServerDTO[];
+        for (const entryDTO of parsed) {
+          // Handle both Date and number for updatedAt (persistence vs server DTO)
+          const updatedAtValue = entryDTO.updatedAt;
+          const updatedAtNum = typeof updatedAtValue === 'number'
+            ? updatedAtValue
+            : (updatedAtValue as unknown as Date).getTime();
+          const entry = SettingEntry.fromDTO({
+            ...entryDTO,
+            updatedAt: updatedAtNum as TransferDate,
+          });
+          entries.set(entry.key, entry);
+        }
+      } catch {
+        // Invalid entries JSON, use empty map
+      }
     }
 
-    const experimental: UserSetting['_experimental'] = {
-      enabled: dto.experimentalEnabled,
-      features,
-    };
-
-    return new UserSetting({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
-      appearance,
-      locale,
-      workflow,
-      shortcuts,
-      privacy,
-      experimental,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+    return new UserSetting(id, {
+      identityId: dto.identityId as IdentityId,
+      entries,
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
     });
   }
 }

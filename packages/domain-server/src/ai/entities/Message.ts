@@ -6,8 +6,9 @@ import type {
   MessageServerDTO,
 } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
+import { AiMessageId } from '@dailyuse/domain-shared/ai';
 
-export class Message extends Entity implements MessageServer {
+export class Message extends Entity<AiMessageId> implements MessageServer {
   private _conversationUuid: string;
   private _role: MessageRole;
   private _content: string;
@@ -22,7 +23,7 @@ export class Message extends Entity implements MessageServer {
     tokenCount?: number | null;
     createdAt: Date;
   }) {
-    super(params.uuid ?? Entity.generateUUID());
+    super((params.uuid ?? AiMessageId.generate()) as AiMessageId);
     this._conversationUuid = params.conversationUuid;
     this._role = params.role;
     this._content = params.content;
@@ -30,8 +31,8 @@ export class Message extends Entity implements MessageServer {
     this._createdAt = params.createdAt;
   }
 
-  public override get uuid(): string {
-    return this._uuid;
+  public get uuid(): string {
+    return String(this.id);
   }
 
   public get conversationUuid(): string {
@@ -110,9 +111,9 @@ export class Message extends Entity implements MessageServer {
       content: this._content,
       tokenCount: this._tokenCount,
       createdAt: this._createdAt.getTime(),
-      isUser: this._role === MessageRole.USER,
-      isAssistant: this._role === MessageRole.ASSISTANT,
-      isSystem: this._role === MessageRole.SYSTEM,
+      isUser: this._role === MessageRole.User,
+      isAssistant: this._role === MessageRole.Assistant,
+      isSystem: this._role === MessageRole.System,
       formattedTime: new Date(this._createdAt).toLocaleString(),
     };
   }

@@ -38,7 +38,15 @@ export type {
   CompletionRecordPersistenceDTO,
 } from './completion-record';
 
-
+// Enums
+export { RecurrenceFrequency } from './recurrence-frequency';
+export { DayOfWeek } from './day-of-week';
+export { TaskReminderType } from './task-reminder-type';
+export { ReminderTimeUnit } from './reminder-time-unit';
+export { DependencyType } from './dependency-type';
+export { DependencyStatus } from './dependency-status';
+export { RecurrenceEndConditionType } from './recurrence-end-condition-type';
+export { TaskScheduleMode } from './task-schedule-mode';
 
 export { TaskTemplateStatus } from './task-template-status';
 export { TaskInstanceStatus } from './task-instance-status';

@@ -3,5 +3,5 @@
  * 目标实体
  */
 
-export { GoalReview } from './GoalReview';
-export { KeyResult } from './KeyResult';
+export { GoalReview } from './goal-review';
+export { KeyResult } from './key-result';

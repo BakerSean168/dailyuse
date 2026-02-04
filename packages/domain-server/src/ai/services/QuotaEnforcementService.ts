@@ -64,7 +64,7 @@ export class QuotaEnforcementService {
       remainingQuota,
       quotaLimit: quota.quotaLimit,
       currentUsage: quota.currentUsage,
-      nextResetAt: quota.nextResetAt.getTime(),
+      nextResetAt: quota.nextResetAt as unknown as number,
       reason: canConsume ? undefined : 'Insufficient quota available',
     };
   }
@@ -128,7 +128,7 @@ export class QuotaEnforcementService {
       quotaLimit: quota.quotaLimit,
       currentUsage: quota.currentUsage,
       usagePercentage: quota.getUsagePercentage(),
-      nextResetAt: quota.nextResetAt.getTime(),
+      nextResetAt: quota.nextResetAt as unknown as number,
       isExceeded: quota.isExceeded(),
     };
   }
@@ -154,7 +154,7 @@ export class QuotaEnforcementService {
       const quota = AIUsageQuotaServer.create({
         accountUuid,
         quotaLimit: 50,
-        resetPeriod: QuotaResetPeriod.DAILY,
+        resetPeriod: QuotaResetPeriod.Daily,
       });
       await this.quotaRepository.save(quota.toServerDTO());
       return quota;

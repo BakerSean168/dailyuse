@@ -4,24 +4,33 @@
  */
 
 import type {
-  NotificationChannelType,
-  ChannelErrorServerDTO,
-  ChannelResponseServerDTO,
-  NotificationChannelPersistenceDTO,
   NotificationChannelServer,
   NotificationChannelServerDTO,
+  NotificationChannelPersistenceDTO,
+  ChannelErrorDTO,
+  ChannelResponseDTO,
+  NotificationChannelType,
+  ChannelStatus,
 } from '@dailyuse/contracts/notification';
-import { ChannelStatus } from '@dailyuse/contracts/notification';
 import { Entity } from '@dailyuse/utils';
-import { ChannelError } from '../value-objects/ChannelError';
-import { ChannelResponse } from '../value-objects/ChannelResponse';
+import {
+  NotificationChannelId,
+  NotificationId,
+  ChannelError,
+  ChannelResponse,
+  ChannelStatus as ChannelStatusType,
+} from '@dailyuse/domain-shared/notification';
 
 /**
  * NotificationChannel 实体
+ * 管理通知在特定渠道的发送状态
  */
-export class NotificationChannel extends Entity implements NotificationChannelServer {
+export class NotificationChannel
+  extends Entity<NotificationChannelId>
+  implements NotificationChannelServer
+{
   // ===== 私有字段 =====
-  private _notificationUuid: string;
+  private _notificationId: NotificationId;
   private _channelType: NotificationChannelType;
   private _status: ChannelStatus;
   private _recipient: string | null;
@@ -29,29 +38,27 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
   private _maxRetries: number;
   private _error: ChannelError | null;
   private _response: ChannelResponse | null;
-  private _createdAt: Date;
   private _sentAt: Date | null;
-  private _deliveredAt: Date | null;
   private _failedAt: Date | null;
 
   // ===== 构造函数（私有） =====
-  private constructor(params: {
-    uuid?: string;
-    notificationUuid: string;
-    channelType: NotificationChannelType;
-    status: ChannelStatus;
-    recipient?: string | null;
-    sendAttempts: number;
-    maxRetries: number;
-    error?: ChannelError | null;
-    response?: ChannelResponse | null;
-    createdAt: Date | number;
-    sentAt?: Date | number | null;
-    deliveredAt?: Date | number | null;
-    failedAt?: Date | number | null;
-  }) {
-    super(params.uuid ?? Entity.generateUUID());
-    this._notificationUuid = params.notificationUuid;
+  private constructor(
+    id: NotificationChannelId,
+    params: {
+      notificationId: NotificationId;
+      channelType: NotificationChannelType;
+      status: ChannelStatus;
+      recipient?: string | null;
+      sendAttempts: number;
+      maxRetries: number;
+      error?: ChannelError | null;
+      response?: ChannelResponse | null;
+      sentAt?: Date | null;
+      failedAt?: Date | null;
+    },
+  ) {
+    super(id);
+    this._notificationId = params.notificationId;
     this._channelType = params.channelType;
     this._status = params.status;
     this._recipient = params.recipient ?? null;
@@ -59,248 +66,191 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
     this._maxRetries = params.maxRetries;
     this._error = params.error ?? null;
     this._response = params.response ?? null;
-    this._createdAt = params.createdAt instanceof Date ? params.createdAt : new Date(params.createdAt);
-    this._sentAt = params.sentAt ? (params.sentAt instanceof Date ? params.sentAt : new Date(params.sentAt)) : null;
-    this._deliveredAt = params.deliveredAt ? (params.deliveredAt instanceof Date ? params.deliveredAt : new Date(params.deliveredAt)) : null;
-    this._failedAt = params.failedAt ? (params.failedAt instanceof Date ? params.failedAt : new Date(params.failedAt)) : null;
+    this._sentAt = params.sentAt ?? null;
+    this._failedAt = params.failedAt ?? null;
   }
 
   // ===== Getter 属性 =====
-  public override get uuid(): string {
-    return this._uuid;
+  public get notificationId(): NotificationId {
+    return this._notificationId;
   }
-  public get notificationUuid(): string {
-    return this._notificationUuid;
-  }
+
   public get channelType(): NotificationChannelType {
     return this._channelType;
   }
+
   public get status(): ChannelStatus {
     return this._status;
   }
+
   public get recipient(): string | null {
     return this._recipient;
   }
+
   public get sendAttempts(): number {
     return this._sendAttempts;
   }
+
   public get maxRetries(): number {
     return this._maxRetries;
   }
-  public get error(): ChannelErrorServerDTO | null {
-    return this._error?.toContract() ?? null;
+
+  public get error(): ChannelErrorDTO | null {
+    return this._error?.toDTO() ?? null;
   }
-  public get response(): ChannelResponseServerDTO | null {
-    return this._response?.toContract() ?? null;
+
+  public get response(): ChannelResponseDTO | null {
+    return this._response?.toDTO() ?? null;
   }
-  public get createdAt(): Date {
-    return this._createdAt;
-  }
+
   public get sentAt(): Date | null {
     return this._sentAt;
   }
-  public get deliveredAt(): Date | null {
-    return this._deliveredAt;
-  }
+
   public get failedAt(): Date | null {
     return this._failedAt;
   }
 
   // ===== 业务方法 =====
 
-  /**
-   * 发送通知
-   */
-  public async send(): Promise<void> {
-    if (this._status !== ChannelStatus.PENDING) {
+  public send(): void {
+    if (this._status !== ChannelStatusType.Pending) {
       throw new Error('只能发送待发送状态的渠道');
     }
-
-    this._status = ChannelStatus.SENT;
-    this._sentAt = new Date();
     this._sendAttempts++;
+    this._status = ChannelStatusType.Sent;
+    this._sentAt = new Date();
   }
 
-  /**
-   * 重试发送
-   */
-  public async retry(): Promise<void> {
-    if (!this.canRetry()) {
-      throw new Error('无法重试：已达最大重试次数或状态不允许重试');
+  public markAsDelivered(response?: ChannelResponse): void {
+    if (this._status !== ChannelStatusType.Sent) {
+      throw new Error('只能将已发送状态标记为已送达');
     }
-
-    this._status = ChannelStatus.PENDING;
-    this._error = null;
-  }
-
-  /**
-   * 取消发送
-   */
-  public cancel(): void {
-    if (this._status === ChannelStatus.DELIVERED || this._status === ChannelStatus.CANCELLED) {
-      throw new Error('无法取消：渠道已交付或已取消');
+    this._status = ChannelStatusType.Delivered;
+    if (response) {
+      this._response = response;
     }
-
-    this._status = ChannelStatus.CANCELLED;
   }
 
-  /**
-   * 标记为已交付
-   */
-  public markAsDelivered(): void {
-    if (this._status !== ChannelStatus.SENT) {
-      throw new Error('只能标记已发送的渠道为已交付');
-    }
-
-    this._status = ChannelStatus.DELIVERED;
-    this._deliveredAt = new Date();
-  }
-
-  /**
-   * 标记为失败
-   */
-  public markAsFailed(error: ChannelErrorServerDTO): void {
-    this._status = ChannelStatus.FAILED;
-    this._error = ChannelError.fromContract(error);
+  public markAsFailed(error: ChannelError): void {
+    this._status = ChannelStatusType.Failed;
+    this._error = error;
     this._failedAt = new Date();
   }
 
-  // ===== 状态查询方法 =====
-
-  public isPending(): boolean {
-    return this._status === ChannelStatus.PENDING;
-  }
-
-  public isSent(): boolean {
-    return this._status === ChannelStatus.SENT;
-  }
-
-  public isDelivered(): boolean {
-    return this._status === ChannelStatus.DELIVERED;
-  }
-
-  public isFailed(): boolean {
-    return this._status === ChannelStatus.FAILED;
+  public cancel(): void {
+    if (
+      this._status === ChannelStatusType.Delivered
+    ) {
+      throw new Error('无法取消：渠道消息已送达');
+    }
+    this._status = ChannelStatusType.Cancelled;
   }
 
   public canRetry(): boolean {
     return (
-      (this._status === ChannelStatus.FAILED || this._status === ChannelStatus.PENDING) &&
+      this._status === ChannelStatusType.Failed &&
       this._sendAttempts < this._maxRetries
     );
   }
 
-  /**
-   * 获取所属通知（需要通过仓储查询）
-   */
-  public async getNotification(): Promise<any> {
-    throw new Error('需要通过 NotificationRepository 实现');
+  public retry(): void {
+    if (!this.canRetry()) {
+      throw new Error('无法重试：已达最大重试次数或状态不允许');
+    }
+    this._status = ChannelStatusType.Pending;
+    this._error = null;
+    this._failedAt = null;
   }
 
   // ===== 转换方法 =====
 
-  /**
-   * 转换为 ServerDTO
-   */
   public toServerDTO(): NotificationChannelServerDTO {
     return {
-      uuid: this.uuid,
-      notificationUuid: this.notificationUuid,
-      channelType: this.channelType,
-      status: this.status,
-      recipient: this.recipient,
-      sendAttempts: this.sendAttempts,
-      maxRetries: this.maxRetries,
-      error: this.error,
-      response: this.response,
-      createdAt: this.createdAt,
-      sentAt: this.sentAt,
-      deliveredAt: this.deliveredAt,
-      failedAt: this.failedAt,
+      id: String(this.id),
+      notificationId: String(this._notificationId),
+      channelType: this._channelType,
+      status: this._status,
+      recipient: this._recipient,
+      sendAttempts: this._sendAttempts,
+      maxRetries: this._maxRetries,
+      error: this._error?.toDTO() ?? null,
+      response: this._response?.toDTO() ?? null,
+      createdAt: Date.now(),
+      sentAt: this._sentAt?.getTime() ?? null,
+      failedAt: this._failedAt?.getTime() ?? null,
     };
   }
 
-  /**
-   * 转换为 PersistenceDTO
-   */
   public toPersistenceDTO(): NotificationChannelPersistenceDTO {
     return {
-      uuid: this.uuid,
-      notificationUuid: this.notificationUuid,
-      channelType: this.channelType,
-      status: this.status,
-      recipient: this.recipient,
-      sendAttempts: this.sendAttempts,
-      maxRetries: this.maxRetries,
-      error: this.error ? JSON.stringify(this.error) : null,
-      response: this.response ? JSON.stringify(this.response) : null,
-      createdAt: this.createdAt,
-      sentAt: this.sentAt,
-      deliveredAt: this.deliveredAt,
-      failedAt: this.failedAt,
+      id: String(this.id),
+      notificationId: this._notificationId,
+      channelType: this._channelType,
+      status: this._status,
+      recipient: this._recipient,
+      sendAttempts: this._sendAttempts,
+      maxRetries: this._maxRetries,
+      error: this._error ? JSON.stringify(this._error.toDTO()) : null,
+      response: this._response ? JSON.stringify(this._response.toDTO()) : null,
+      createdAt: new Date(),
+      sentAt: this._sentAt ?? null,
+      failedAt: this._failedAt ?? null,
     };
   }
 
   // ===== 静态工厂方法 =====
 
-  /**
-   * 创建新的 NotificationChannel 实体
-   */
   public static create(params: {
-    notificationUuid: string;
+    notificationId: NotificationId;
     channelType: NotificationChannelType;
     recipient?: string;
     maxRetries?: number;
   }): NotificationChannel {
-    return new NotificationChannel({
-      notificationUuid: params.notificationUuid,
+    const id = NotificationChannelId.of(NotificationChannelId.generate());
+
+    return new NotificationChannel(id, {
+      notificationId: params.notificationId,
       channelType: params.channelType,
-      status: ChannelStatus.PENDING,
+      status: ChannelStatusType.Pending,
       recipient: params.recipient,
       sendAttempts: 0,
       maxRetries: params.maxRetries ?? 3,
-      createdAt: new Date(),
     });
   }
 
-  /**
-   * 从 ServerDTO 创建实体
-   */
   public static fromServerDTO(dto: NotificationChannelServerDTO): NotificationChannel {
-    return new NotificationChannel({
-      uuid: dto.uuid,
-      notificationUuid: dto.notificationUuid,
+    const id = NotificationChannelId.of(dto.id);
+    const notificationId = NotificationId.of(dto.notificationId);
+
+    return new NotificationChannel(id, {
+      notificationId,
       channelType: dto.channelType,
       status: dto.status,
       recipient: dto.recipient,
       sendAttempts: dto.sendAttempts,
       maxRetries: dto.maxRetries,
-      error: dto.error ? ChannelError.fromContract(dto.error) : null,
-      response: dto.response ? ChannelResponse.fromContract(dto.response) : null,
-      createdAt: new Date(dto.createdAt),
+      error: dto.error ? ChannelError.fromDTO(dto.error) : null,
+      response: dto.response ? ChannelResponse.fromDTO(dto.response) : null,
       sentAt: dto.sentAt ? new Date(dto.sentAt) : null,
-      deliveredAt: dto.deliveredAt ? new Date(dto.deliveredAt) : null,
       failedAt: dto.failedAt ? new Date(dto.failedAt) : null,
     });
   }
 
-  /**
-   * 从 PersistenceDTO 创建实体
-   */
   public static fromPersistenceDTO(dto: NotificationChannelPersistenceDTO): NotificationChannel {
-    return new NotificationChannel({
-      uuid: dto.uuid,
-      notificationUuid: dto.notificationUuid,
+    const id = NotificationChannelId.of(dto.id);
+    const notificationId = NotificationId.of(dto.notificationId);
+
+    return new NotificationChannel(id, {
+      notificationId,
       channelType: dto.channelType,
       status: dto.status,
       recipient: dto.recipient,
       sendAttempts: dto.sendAttempts,
       maxRetries: dto.maxRetries,
-      error: dto.error ? ChannelError.fromContract(JSON.parse(dto.error)) : null,
-      response: dto.response ? ChannelResponse.fromContract(JSON.parse(dto.response)) : null,
-      createdAt: new Date(dto.createdAt),
+      error: dto.error ? ChannelError.fromDTO(JSON.parse(dto.error)) : null,
+      response: dto.response ? ChannelResponse.fromDTO(JSON.parse(dto.response)) : null,
       sentAt: dto.sentAt ? new Date(dto.sentAt) : null,
-      deliveredAt: dto.deliveredAt ? new Date(dto.deliveredAt) : null,
       failedAt: dto.failedAt ? new Date(dto.failedAt) : null,
     });
   }

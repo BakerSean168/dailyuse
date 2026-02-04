@@ -1,131 +1,156 @@
 /**
  * NotificationHistory 实体实现
- * 实现 NotificationHistoryServer 接口
+ * 通知历史记录
  */
 
-import type { NotificationHistoryPersistenceDTO, NotificationHistoryServer, NotificationHistoryServerDTO } from '@dailyuse/contracts/notification';
 import { Entity } from '@dailyuse/utils';
+import { NotificationHistoryId } from '@dailyuse/domain-shared/notification';
+import type { NotificationId, NotificationHistoryId as INotificationHistoryId } from '@dailyuse/contracts/primitives';
+
+// ============ 本地类型定义 ============
+// TODO: 这些类型应该移到 @dailyuse/contracts/notification
+
+/**
+ * NotificationHistory Server DTO
+ */
+export interface NotificationHistoryServerDTO {
+  id: INotificationHistoryId;
+  notificationId: NotificationId;
+  action: string;
+  details: unknown | null;
+  createdAt: number; // TransferDate
+}
+
+/**
+ * NotificationHistory Persistence DTO
+ */
+export interface NotificationHistoryPersistenceDTO {
+  id: INotificationHistoryId;
+  notificationId: NotificationId;
+  action: string;
+  details: string | null; // JSON string
+  createdAt: Date;
+}
+
+/**
+ * NotificationHistory Server Interface
+ */
+export interface NotificationHistoryServer {
+  readonly id: INotificationHistoryId;
+  readonly notificationId: NotificationId;
+  readonly action: string;
+  readonly details: unknown | null;
+  readonly createdAt: Date;
+
+  toServerDTO(): NotificationHistoryServerDTO;
+  toPersistenceDTO(): NotificationHistoryPersistenceDTO;
+}
 
 /**
  * NotificationHistory 实体
  */
-export class NotificationHistory extends Entity implements NotificationHistoryServer {
+export class NotificationHistory
+  extends Entity<INotificationHistoryId>
+  implements NotificationHistoryServer
+{
   // ===== 私有字段 =====
-  private _notificationUuid: string;
+  private _notificationId: NotificationId;
   private _action: string;
-  private _details: any | null;
+  private _details: unknown | null;
   private _createdAt: Date;
 
   // ===== 构造函数（私有） =====
-  private constructor(params: {
-    uuid?: string;
-    notificationUuid: string;
-    action: string;
-    details?: any | null;
-    createdAt: Date | number;
-  }) {
-    super(params.uuid ?? Entity.generateUUID());
-    this._notificationUuid = params.notificationUuid;
+  private constructor(
+    id: INotificationHistoryId,
+    params: {
+      notificationId: NotificationId;
+      action: string;
+      details: unknown | null;
+      createdAt: Date;
+    },
+  ) {
+    super(id);
+    this._notificationId = params.notificationId;
     this._action = params.action;
-    this._details = params.details ?? null;
-    this._createdAt = params.createdAt instanceof Date ? params.createdAt : new Date(params.createdAt);
+    this._details = params.details;
+    this._createdAt = params.createdAt;
   }
 
   // ===== Getter 属性 =====
-  public override get uuid(): string {
-    return this._uuid;
+  public get notificationId(): NotificationId {
+    return this._notificationId;
   }
-  public get notificationUuid(): string {
-    return this._notificationUuid;
-  }
+
   public get action(): string {
     return this._action;
   }
-  public get details(): any | null {
+
+  public get details(): unknown | null {
     return this._details;
   }
+
   public get createdAt(): Date {
     return this._createdAt;
   }
 
-  // ===== 业务方法 =====
-
-  /**
-   * 获取所属通知（需要通过仓储查询）
-   */
-  public async getNotification(): Promise<any> {
-    throw new Error('需要通过 NotificationRepository 实现');
-  }
-
   // ===== 转换方法 =====
 
-  /**
-   * 转换为 ServerDTO
-   */
   public toServerDTO(): NotificationHistoryServerDTO {
     return {
-      uuid: this.uuid,
-      notificationUuid: this.notificationUuid,
-      action: this.action,
-      details: this.details,
-      createdAt: this.createdAt,
+      id: String(this.id) as INotificationHistoryId,
+      notificationId: this._notificationId,
+      action: this._action,
+      details: this._details,
+      createdAt: this._createdAt.getTime(),
     };
   }
 
-  /**
-   * 转换为 PersistenceDTO
-   */
   public toPersistenceDTO(): NotificationHistoryPersistenceDTO {
     return {
-      uuid: this.uuid,
-      notificationUuid: this.notificationUuid,
-      action: this.action,
-      details: this.details ? JSON.stringify(this.details) : null,
-      createdAt: this.createdAt,
+      id: String(this.id) as INotificationHistoryId,
+      notificationId: this._notificationId,
+      action: this._action,
+      details: this._details ? JSON.stringify(this._details) : null,
+      createdAt: this._createdAt,
     };
   }
 
   // ===== 静态工厂方法 =====
 
-  /**
-   * 创建新的 NotificationHistory 实体
-   */
   public static create(params: {
-    notificationUuid: string;
+    notificationId: NotificationId;
     action: string;
-    details?: any;
+    details?: unknown;
   }): NotificationHistory {
-    return new NotificationHistory({
-      notificationUuid: params.notificationUuid,
+    const id = NotificationHistoryId.of(NotificationHistoryId.generate());
+
+    return new NotificationHistory(id, {
+      notificationId: params.notificationId,
       action: params.action,
-      details: params.details,
+      details: params.details ?? null,
       createdAt: new Date(),
     });
   }
 
-  /**
-   * 从 ServerDTO 创建实体
-   */
   public static fromServerDTO(dto: NotificationHistoryServerDTO): NotificationHistory {
-    return new NotificationHistory({
-      uuid: dto.uuid,
-      notificationUuid: dto.notificationUuid,
+    const id = NotificationHistoryId.of(dto.id);
+
+    return new NotificationHistory(id, {
+      notificationId: dto.notificationId,
       action: dto.action,
       details: dto.details,
       createdAt: new Date(dto.createdAt),
     });
   }
 
-  /**
-   * 从 PersistenceDTO 创建实体
-   */
   public static fromPersistenceDTO(dto: NotificationHistoryPersistenceDTO): NotificationHistory {
-    return new NotificationHistory({
-      uuid: dto.uuid,
-      notificationUuid: dto.notificationUuid,
+    const id = NotificationHistoryId.of(dto.id);
+
+    return new NotificationHistory(id, {
+      notificationId: dto.notificationId,
       action: dto.action,
       details: dto.details ? JSON.parse(dto.details) : null,
-      createdAt: new Date(dto.createdAt),
+      createdAt: dto.createdAt instanceof Date ? dto.createdAt : new Date(dto.createdAt),
     });
   }
 }

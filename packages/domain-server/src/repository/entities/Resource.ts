@@ -3,503 +3,342 @@
  * 资源实体 - 服务端实现
  */
 import type {
-  ResourceClientDTO,
-  ResourceMetadataServerDTO,
   ResourcePersistenceDTO,
   ResourceServer,
   ResourceServerDTO,
-  ResourceStatsServerDTO,
+  ResourceMetadataDTO,
+  ResourceStatsDTO,
+  ExternalLink,
 } from '@dailyuse/contracts/repository';
+import type { ResourceId, RepositoryId, FolderId } from '@dailyuse/contracts/primitives';
 import { ResourceStatus, ResourceType } from '@dailyuse/contracts/repository';
-import { ResourceMetadata } from '../value-objects/ResourceMetadata';
-import { ResourceStats } from '../value-objects/ResourceStats';
+import { Entity } from '@dailyuse/utils';
+import { ResourceId as ResourceIdType } from '@dailyuse/domain-shared/repository';
+import { ResourceMetadata, ResourceStats } from '../value-objects';
 
-export class Resource implements ResourceServer {
-  private _uuid: string;
-  private _repositoryUuid: string;
-  private _folderUuid?: string | null;
-  private _name: string;
+export class Resource extends Entity<ResourceId> implements ResourceServer {
+  // ===== 私有字段 =====
+  private _repositoryId: RepositoryId;
+  private _folderId: FolderId | null;
   private _type: ResourceType;
+  private _name: string;
   private _path: string;
-  private _size: number;
-  private _content?: string | null;
+  private _mimeType: string | null;
+  private _size: number | null;
+  private _content: string | null;
+  private _childrenCount: number | null;
   private _metadata: ResourceMetadata;
   private _stats: ResourceStats;
   private _status: ResourceStatus;
   private _createdAt: Date;
   private _updatedAt: Date;
+  private _version: number;
+  private _externalLinks: ExternalLink[] | null;
 
-  private constructor(params: {
-    uuid: string;
-    repositoryUuid: string;
-    name: string;
-    type: ResourceType;
-    path: string;
-    size: number;
-    folderUuid?: string | null;
-    content?: string | null;
-    metadata: ResourceMetadata;
-    stats: ResourceStats;
-    status: ResourceStatus;
-    createdAt: number;
-    updatedAt: number;
-  }) {
-    this._uuid = params.uuid;
-    this._repositoryUuid = params.repositoryUuid;
-    this._folderUuid = params.folderUuid ?? null;
-    this._name = params.name;
+  // ===== 构造函数（私有） =====
+  private constructor(
+    id: ResourceId,
+    params: {
+      repositoryId: RepositoryId;
+      folderId: FolderId | null;
+      type: ResourceType;
+      name: string;
+      path: string;
+      mimeType: string | null;
+      size: number | null;
+      content: string | null;
+      childrenCount: number | null;
+      metadata: ResourceMetadata;
+      stats: ResourceStats;
+      status: ResourceStatus;
+      createdAt: Date;
+      updatedAt: Date;
+      version: number;
+      externalLinks?: ExternalLink[] | null;
+    },
+  ) {
+    super(id);
+    this._repositoryId = params.repositoryId;
+    this._folderId = params.folderId;
     this._type = params.type;
+    this._name = params.name;
     this._path = params.path;
+    this._mimeType = params.mimeType;
     this._size = params.size;
-    this._content = params.content ?? null;
+    this._content = params.content;
+    this._childrenCount = params.childrenCount;
     this._metadata = params.metadata;
     this._stats = params.stats;
     this._status = params.status;
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
+    this._version = params.version;
+    this._externalLinks = params.externalLinks ?? null;
   }
 
   // ===== Getters =====
-  get uuid(): string {
-    return this._uuid;
+  get repositoryId(): RepositoryId {
+    return this._repositoryId;
   }
 
-  get repositoryUuid(): string {
-    return this._repositoryUuid;
-  }
-
-  get folderUuid(): string | null | undefined {
-    return this._folderUuid;
-  }
-
-  get name(): string {
-    return this._name;
+  get folderId(): FolderId | null {
+    return this._folderId;
   }
 
   get type(): ResourceType {
     return this._type;
   }
 
+  get name(): string {
+    return this._name;
+  }
+
   get path(): string {
     return this._path;
   }
 
-  get size(): number {
+  get mimeType(): string | null {
+    return this._mimeType;
+  }
+
+  get size(): number | null {
     return this._size;
   }
 
-  get content(): string | null | undefined {
+  get content(): string | null {
     return this._content;
   }
 
-  get metadata(): ResourceMetadata {
-    return this._metadata;
+  get childrenCount(): number | null {
+    return this._childrenCount;
   }
 
-  get stats(): ResourceStats {
-    return this._stats;
+  get metadata(): ResourceMetadataDTO {
+    return this._metadata.toDTO();
+  }
+
+  get stats(): ResourceStatsDTO {
+    return this._stats.toDTO();
   }
 
   get status(): ResourceStatus {
     return this._status;
   }
 
-  get createdAt(): number {
+  get createdAt(): Date {
     return this._createdAt;
   }
 
-  get updatedAt(): number {
+  get updatedAt(): Date {
     return this._updatedAt;
   }
 
-  // ===== 内容操作方法 =====
-  updateMarkdownContent(content: string): void {
+  get version(): number {
+    return this._version;
+  }
+
+  // ===== 业务方法 =====
+
+  public rename(newName: string): void {
+    this._name = newName;
+    this._updatedAt = new Date();
+    this._version++;
+  }
+
+  public updateContent(content: string): void {
     this._content = content;
     this._updatedAt = new Date();
-    this._stats.incrementEditCount();
-
-    // 更新字数统计
-    const wordCount = this.calculateWordCount(content);
-    const readingTime = Math.ceil(wordCount / 200); // 假设每分钟 200 字
-    this._metadata = ResourceMetadata.create({
-      ...this._metadata.toServerDTO(),
-      wordCount,
-      readingTime,
-    });
+    this._version++;
+    // Update stats
+    this._stats = this._stats.recordEdit();
   }
 
-  getMarkdownContent(): string {
-    return this._content ?? '';
-  }
-
-  clearContent(): void {
-    this._content = null;
+  public moveTo(folderId: FolderId | null, newPath: string): void {
+    this._folderId = folderId;
+    this._path = newPath;
     this._updatedAt = new Date();
+    this._version++;
   }
 
-  // ===== 元数据方法 =====
-  updateMetadata(newMetadata: Partial<ResourceMetadataServerDTO>): void {
-    this._metadata = ResourceMetadata.create({
-      ...this._metadata.toServerDTO(),
-      ...newMetadata,
-    });
-    this._updatedAt = new Date();
-  }
-
-  updateStats(newStats: Partial<ResourceStatsServerDTO>): void {
-    this._stats = ResourceStats.create({
-      ...this._stats.toServerDTO(),
-      ...newStats,
-    });
-    this._updatedAt = new Date();
-  }
-
-  // ===== 状态管理 =====
-  archive(): void {
-    this._status = ResourceStatus.ARCHIVED;
-    this._updatedAt = new Date();
-  }
-
-  activate(): void {
-    this._status = ResourceStatus.ACTIVE;
-    this._updatedAt = new Date();
-  }
-
-  delete(): void {
-    this._status = ResourceStatus.DELETED;
-    this._updatedAt = new Date();
-  }
-
-  moveTo(folderUuid: string | null): void {
-    this._folderUuid = folderUuid;
-    this._updatedAt = new Date();
-  }
-
-  /**
-   * 记录访问时间
-   */
-  recordAccess(): void {
-    this._stats.incrementViewCount();
-    this._updatedAt = new Date();
-  }
-
-  /**
-   * 检查是否可以编辑
-   */
-  canEdit(): boolean {
-    return this._status !== ResourceStatus.DELETED && this._status !== ResourceStatus.ARCHIVED;
-  }
-
-  /**
-   * 更新资源名称
-   */
-  updateName(name: string): void {
-    if (!name || name.trim().length === 0) {
-      throw new Error('Resource name cannot be empty');
+  public archive(): void {
+    if (this._status === ResourceStatus.Archived) {
+      throw new Error('资源已归档');
     }
-    this._name = name.trim();
+    this._status = ResourceStatus.Archived;
     this._updatedAt = new Date();
+    this._version++;
   }
 
-  /**
-   * 更新资源描述
-   */
-  updateDescription(description: string | null): void {
-    this._metadata = ResourceMetadata.create({
-      ...this._metadata.toServerDTO(),
-      description,
-    });
-    this._updatedAt = new Date();
-  }
-
-  /**
-   * 设置资源分类
-   */
-  setCategory(category: string): void {
-    this._metadata = ResourceMetadata.create({
-      ...this._metadata.toServerDTO(),
-      category,
-    });
-    this._updatedAt = new Date();
-  }
-
-  /**
-   * 添加标签
-   */
-  addTag(tag: string): void {
-    const metadataDTO = this._metadata.toServerDTO();
-    const currentTags: string[] = Array.isArray(metadataDTO.tags) ? metadataDTO.tags : [];
-    if (!currentTags.includes(tag)) {
-      this._metadata = ResourceMetadata.create({
-        ...metadataDTO,
-        tags: [...currentTags, tag],
-      });
-      this._updatedAt = new Date();
+  public unarchive(): void {
+    if (this._status !== ResourceStatus.Archived) {
+      throw new Error('资源未归档');
     }
+    this._status = ResourceStatus.Active;
+    this._updatedAt = new Date();
+    this._version++;
   }
 
-  /**
-   * 软删除
-   */
-  softDelete(): void {
-    this._status = ResourceStatus.DELETED;
+  public delete(): void {
+    this._status = ResourceStatus.Deleted;
+    this._updatedAt = new Date();
+    this._version++;
+  }
+
+  public recordView(): void {
+    this._stats = this._stats.recordView();
     this._updatedAt = new Date();
   }
 
-  /**
-   * 检查是否为 Markdown 资源
-   */
-  isMarkdown(): boolean {
-    return this._type === ResourceType.MARKDOWN;
+  public isActive(): boolean {
+    return this._status === ResourceStatus.Active;
   }
 
-  /**
-   * 切换收藏状态
-   */
-  toggleFavorite(): void {
-    const metadataDTO = this._metadata.toServerDTO();
-    const isFavorite = metadataDTO.isFavorite ?? false;
-    this._metadata = ResourceMetadata.create({
-      ...metadataDTO,
-      isFavorite: !isFavorite,
-    });
-    this._updatedAt = new Date();
+  public isArchived(): boolean {
+    return this._status === ResourceStatus.Archived;
   }
 
-  /**
-   * 发布资源（从草稿变为激活状态）
-   */
-  publish(): void {
-    if (this._status !== ResourceStatus.DRAFT) {
-      throw new Error('Only draft resources can be published');
-    }
-    this._status = ResourceStatus.ACTIVE;
-    this._updatedAt = new Date();
+  public isDeleted(): boolean {
+    return this._status === ResourceStatus.Deleted;
   }
 
-  // ===== 私有辅助方法 =====
-  private calculateWordCount(content: string): number {
-    // 移除 Markdown 语法，计算纯文本字数
-    const plainText = content
-      .replace(/!\[.*?\]\(.*?\)/g, '') // 移除图片
-      .replace(/\[.*?\]\(.*?\)/g, '$1') // 移除链接，保留文本
-      .replace(/[#*`~_\-]/g, '') // 移除 Markdown 符号
-      .trim();
-
-    // 中文字符计数
-    const chineseChars = (plainText.match(/[\u4e00-\u9fa5]/g) || []).length;
-    // 英文单词计数
-    const englishWords = plainText
-      .replace(/[\u4e00-\u9fa5]/g, '')
-      .split(/\s+/)
-      .filter((word) => word.length > 0).length;
-
-    return chineseChars + englishWords;
+  public isFolder(): boolean {
+    return this._type === ResourceType.FOLDER;
   }
 
-  // ===== DTO 转换方法 =====
-  toServerDTO(): ResourceServerDTO {
+  public isFile(): boolean {
+    return this._type === ResourceType.FILE;
+  }
+
+  // ===== DTO 转换 =====
+
+  public toServerDTO(): ResourceServerDTO {
     return {
-      uuid: this._uuid,
-      repositoryUuid: this._repositoryUuid,
-      folderUuid: this._folderUuid,
+      id: String(this.id),
+      repositoryId: String(this._repositoryId),
+      folderId: this._folderId ? String(this._folderId) : null,
       name: this._name,
       type: this._type,
       path: this._path,
+      mimeType: this._mimeType,
       size: this._size,
       content: this._content,
-      metadata: this._metadata.toServerDTO(),
-      stats: this._stats.toServerDTO(),
+      childrenCount: this._childrenCount,
+      metadata: this._metadata.toDTO(),
+      stats: this._stats.toDTO(),
+      status: this._status,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      version: this._version,
+      externalLinks: this._externalLinks,
+    };
+  }
+
+  public toPersistenceDTO(): ResourcePersistenceDTO {
+    return {
+      id: String(this.id),
+      repositoryId: String(this._repositoryId),
+      folderId: this._folderId ? String(this._folderId) : null,
+      name: this._name,
+      type: this._type,
+      path: this._path,
+      mimeType: this._mimeType,
+      size: this._size,
+      content: this._content,
+      metadata: JSON.stringify(this._metadata.toDTO()),
+      stats: JSON.stringify(this._stats.toDTO()),
       status: this._status,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
-    };
-  }
-
-  toClientDTO(): ResourceClientDTO {
-    // 状态判断
-    const isDeleted = this._status === ResourceStatus.DELETED;
-    const isArchived = this._status === ResourceStatus.ARCHIVED;
-    const isActive = this._status === ResourceStatus.ACTIVE;
-    const isDraft = this._status === ResourceStatus.DRAFT;
-
-    // 状态文本
-    const statusText = isDeleted
-      ? 'Deleted'
-      : isArchived
-        ? 'Archived'
-        : isActive
-          ? 'Active'
-          : 'Draft';
-
-    // 类型文本
-    const typeText =
-      this._type === ResourceType.MARKDOWN
-        ? 'Markdown'
-        : this._type === ResourceType.CODE
-          ? 'Code'
-          : this._type === ResourceType.IMAGE
-            ? 'Image'
-            : this._type === ResourceType.VIDEO
-              ? 'Video'
-              : this._type === ResourceType.AUDIO
-                ? 'Audio'
-                : this._type === ResourceType.PDF
-                  ? 'PDF'
-                  : this._type === ResourceType.LINK
-                    ? 'Link'
-                    : 'Other';
-
-    // 显示名称（截断过长的名称）
-    const displayName = this._name.length > 50 ? this._name.substring(0, 47) + '...' : this._name;
-
-    // 文件大小格式化
-    const formatSize = (bytes: number): string => {
-      if (bytes < 1024) return `${bytes} B`;
-      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-      if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-      return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-    };
-
-    // 时间格式化
-    const formattedCreatedAt = new Date(this._createdAt).toLocaleString();
-    const formattedUpdatedAt = new Date(this._updatedAt).toLocaleString();
-
-    // 文件扩展名
-    const extension = this._name.includes('.') ? '.' + this._name.split('.').pop() : '';
-
-    // 图标（根据类型）
-    const icon =
-      this._type === ResourceType.MARKDOWN
-        ? 'description'
-        : this._type === ResourceType.CODE
-          ? 'code'
-          : this._type === ResourceType.IMAGE
-            ? 'image'
-            : this._type === ResourceType.VIDEO
-              ? 'movie'
-              : this._type === ResourceType.AUDIO
-                ? 'audiotrack'
-                : this._type === ResourceType.PDF
-                  ? 'picture_as_pdf'
-                  : this._type === ResourceType.LINK
-                    ? 'link'
-                    : 'insert_drive_file';
-
-    return {
-      uuid: this._uuid,
-      repositoryUuid: this._repositoryUuid,
-      folderUuid: this._folderUuid,
-      name: this._name,
-      type: this._type,
-      path: this._path,
-      size: this._size,
-      content: this._content,
-      metadata: this._metadata.toServerDTO() as any, // TODO: 待 metadata 实现 toClientDTO
-      stats: this._stats.toServerDTO() as any, // TODO: 待 stats 实现 toClientDTO
-      status: this._status,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-
-      // UI 计算字段
-      isDeleted,
-      isArchived,
-      isActive,
-      isDraft,
-      statusText,
-      typeText,
-      displayName,
-      formattedSize: formatSize(this._size),
-      createdAtText: formattedCreatedAt,
-      updatedAtText: formattedUpdatedAt,
-      extension,
-      icon,
-    };
-  }
-
-  toPersistenceDTO(): ResourcePersistenceDTO {
-    return {
-      uuid: this._uuid,
-      repositoryUuid: this._repositoryUuid,
-      folderUuid: this._folderUuid,
-      name: this._name,
-      type: this._type,
-      path: this._path,
-      size: this._size,
-      content: this._content,
-      metadata: JSON.stringify(this._metadata.toServerDTO()),
-      stats: JSON.stringify(this._stats.toServerDTO()),
-      status: this._status,
-      createdAt: new Date(this._createdAt),
-      updatedAt: new Date(this._updatedAt),
+      version: this._version,
     };
   }
 
   // ===== 静态工厂方法 =====
-  static create(params: {
-    uuid: string;
-    repositoryUuid: string;
+
+  public static create(params: {
+    repositoryId: RepositoryId;
+    folderId?: FolderId | null;
     name: string;
     type: ResourceType;
     path: string;
-    folderUuid?: string | null;
-    content?: string;
-    metadata?: Partial<ResourceMetadataServerDTO>;
-    stats?: Partial<ResourceStatsServerDTO>;
+    mimeType?: string | null;
+    size?: number | null;
+    content?: string | null;
+    metadata?: Partial<ResourceMetadataDTO>;
   }): Resource {
-    const now = Date.now();
-    return new Resource({
-      uuid: params.uuid,
-      repositoryUuid: params.repositoryUuid,
-      name: params.name,
+    const id = ResourceIdType.of(ResourceIdType.generate());
+    const now = new Date();
+
+    return new Resource(id, {
+      repositoryId: params.repositoryId,
+      folderId: params.folderId ?? null,
       type: params.type,
+      name: params.name,
       path: params.path,
-      size: params.content?.length || 0,
-      folderUuid: params.folderUuid,
-      content: params.content,
-      metadata: ResourceMetadata.create(params.metadata),
-      stats: ResourceStats.create(params.stats),
-      status: ResourceStatus.DRAFT,
+      mimeType: params.mimeType ?? null,
+      size: params.size ?? null,
+      content: params.content ?? null,
+      childrenCount: params.type === ResourceType.FOLDER ? 0 : null,
+      metadata: params.metadata 
+        ? ResourceMetadata.create({
+            tags: params.metadata.tags ?? [],
+            wordCount: params.metadata.wordCount ?? null,
+            readingTime: params.metadata.readingTime ?? null,
+            thumbnail: params.metadata.thumbnail ?? null,
+          })
+        : ResourceMetadata.createEmpty(),
+      stats: ResourceStats.createEmpty(),
+      status: ResourceStatus.Active,
       createdAt: now,
       updatedAt: now,
+      version: 1,
+      externalLinks: null,
     });
   }
 
-  static fromServerDTO(dto: ResourceServerDTO): Resource {
-    return new Resource({
-      uuid: dto.uuid,
-      repositoryUuid: dto.repositoryUuid,
-      folderUuid: dto.folderUuid,
-      name: dto.name,
+  public static fromServerDTO(dto: ResourceServerDTO): Resource {
+    const id = ResourceIdType.of(dto.id);
+
+    return new Resource(id, {
+      repositoryId: dto.repositoryId as RepositoryId,
+      folderId: dto.folderId as FolderId | null,
       type: dto.type,
+      name: dto.name,
       path: dto.path,
+      mimeType: dto.mimeType,
       size: dto.size,
       content: dto.content,
-      metadata: ResourceMetadata.fromServerDTO(dto.metadata),
-      stats: ResourceStats.fromServerDTO(dto.stats),
+      childrenCount: dto.childrenCount,
+      metadata: ResourceMetadata.fromDTO(dto.metadata),
+      stats: ResourceStats.fromDTO(dto.stats),
       status: dto.status,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
+      version: dto.version,
+      externalLinks: dto.externalLinks,
     });
   }
 
-  static fromPersistenceDTO(dto: ResourcePersistenceDTO): Resource {
-    return new Resource({
-      uuid: dto.uuid,
-      repositoryUuid: dto.repositoryUuid,
-      folderUuid: dto.folderUuid,
-      name: dto.name,
+  public static fromPersistenceDTO(dto: ResourcePersistenceDTO): Resource {
+    const id = ResourceIdType.of(dto.id);
+
+    return new Resource(id, {
+      repositoryId: dto.repositoryId as RepositoryId,
+      folderId: dto.folderId as FolderId | null,
       type: dto.type,
+      name: dto.name,
       path: dto.path,
+      mimeType: dto.mimeType,
       size: dto.size,
       content: dto.content,
-      metadata: ResourceMetadata.fromServerDTO(
-        JSON.parse(dto.metadata) as ResourceMetadataServerDTO,
-      ),
-      stats: ResourceStats.fromServerDTO(JSON.parse(dto.stats) as ResourceStatsServerDTO),
+      childrenCount: null,
+      metadata: ResourceMetadata.fromDTO(JSON.parse(dto.metadata)),
+      stats: ResourceStats.fromDTO(JSON.parse(dto.stats)),
       status: dto.status,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt instanceof Date ? dto.createdAt : new Date(dto.createdAt),
+      updatedAt: dto.updatedAt instanceof Date ? dto.updatedAt : new Date(dto.updatedAt),
+      version: dto.version,
+      externalLinks: null,
     });
   }
 }

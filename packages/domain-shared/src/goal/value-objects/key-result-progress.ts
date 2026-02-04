@@ -179,6 +179,70 @@ export class KeyResultProgress extends ValueObject<KeyResultProgressDTO> impleme
     return this.updateCurrentValue(this.props.targetValue);
   }
 
+  // ================= 聚合计算方法（根据不同的计算类型）=================
+
+  /**
+   * 根据聚合方法计算聚合值
+   * 
+   * @param values 需要聚合的数值数组
+   * @returns 计算后的聚合值
+   * 
+   * 支持的计算方式：
+   * - Sum: 求和
+   * - Average: 平均值
+   * - Max: 最大值
+   * - Min: 最小值
+   * - Last: 最后一个值
+   */
+  public calculateAggregatedValue(values: number[]): number {
+    if (values.length === 0) return 0;
+
+    switch (this.props.aggregationMethod) {
+      case 'Sum':
+        return values.reduce((sum, val) => sum + val, 0);
+
+      case 'Average':
+        return values.reduce((sum, val) => sum + val, 0) / values.length;
+
+      case 'Max':
+        return Math.max(...values);
+
+      case 'Min':
+        return Math.min(...values);
+
+      case 'Last':
+        return values[values.length - 1];
+
+      default:
+        return 0;
+    }
+  }
+
+  /**
+   * 根据聚合方法更新当前值
+   * 
+   * @param values 新的数值数组
+   * @returns 更新后的新实例
+   */
+  public updateCurrentValueByAggregation(values: number[]): KeyResultProgress {
+    const aggregatedValue = this.calculateAggregatedValue(values);
+    return this.updateCurrentValue(aggregatedValue);
+  }
+
+  /**
+   * 获取当前聚合方法的描述
+   */
+  public getAggregationMethodDescription(): string {
+    const descriptions: Record<KeyResultCalculationMethod, string> = {
+      'Sum': '求和所有子项值',
+      'Average': '计算所有子项的平均值',
+      'Max': '取最大的子项值',
+      'Min': '取最小的子项值',
+      'Last': '取最后一个子项的值',
+    };
+    return descriptions[this.props.aggregationMethod] || '未知计算方式';
+  }
+
   // ================= 计算属性（Rich Logic）=================
 
   /**

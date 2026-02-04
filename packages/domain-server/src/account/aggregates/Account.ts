@@ -104,9 +104,8 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
     };
     const account = new Account(dto);
 
-    account.addDomainEvent<AccountEventMap['account:created']>('account:created', {
-      email: params.email,
-      createdAt: now,
+    account.addDomainEvent<AccountEventMap['account:create']>('account:create', {
+      identityId: params.id.toString(),
     });
 
     return account;
@@ -172,7 +171,7 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
     // 5. 【关键】发出领域事件
     // 聚合根只负责管好自己，但它需要通知全世界：“我注销了！”
     // Auth 模块监听到这个事件后，会吊销该用户的登录 Token
-    this.addDomainEvent<AccountEventMap['account:closed']>('account:closed', {
+    this.addDomainEvent<AccountEventMap['account:close']>('account:close', {
       reason: 'User initiated closure'
     });
   }

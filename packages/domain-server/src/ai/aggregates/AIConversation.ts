@@ -6,14 +6,15 @@ import type {
   AIConversationServerDTO,
 } from '@dailyuse/contracts/ai';
 import { ConversationStatus } from '@dailyuse/contracts/ai';
+import { AiConversationId } from '@dailyuse/domain-shared/ai';
 import { Message } from '../entities/Message';
 
-export class AIConversation extends AggregateRoot implements AIConversationServer {
+export class AIConversation extends AggregateRoot<AiConversationId> implements AIConversationServer {
   private _accountUuid: string;
   private _name: string;
   private _status: ConversationStatus;
   private _messageCount: number;
-  private _lastMessageAt: Date | null;
+  private _lastMessageAt: number | null;
   private _createdAt: Date;
   private _updatedAt: Date;
   private _deletedAt: Date | null;
@@ -26,12 +27,12 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     name: string;
     status: ConversationStatus;
     messageCount: number;
-    lastMessageAt?: Date | null;
+    lastMessageAt?: number | null;
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;
   }) {
-    super(params.uuid ?? AggregateRoot.generateUUID());
+    super(AiConversationId.of(params.uuid ?? AiConversationId.generate()));
     this._accountUuid = params.accountUuid;
     this._name = params.name;
     this._status = params.status;
@@ -43,8 +44,8 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     this._messages = [];
   }
 
-  public override get uuid(): string {
-    return this._uuid;
+  public get uuid(): string {
+    return String(this.id);
   }
 
   public get accountUuid(): string {
@@ -63,7 +64,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     return this._messageCount;
   }
 
-  public get lastMessageAt(): Date | null {
+  public get lastMessageAt(): number | null {
     return this._lastMessageAt;
   }
 
@@ -88,7 +89,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     const conversation = new AIConversation({
       accountUuid: params.accountUuid,
       name: params.name,
-      status: ConversationStatus.ACTIVE,
+      status: ConversationStatus.Active,
       messageCount: 0,
       lastMessageAt: null,
       createdAt: now,
@@ -96,14 +97,9 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
       deletedAt: null,
     });
 
-    conversation.addDomainEvent({
-      eventType: 'ai.conversation.created',
-      aggregateId: conversation.uuid,
-      occurredOn: now,
+    conversation.addDomainEvent('ai.conversation.created', {
       accountUuid: params.accountUuid,
-      payload: {
-        conversation: conversation.toServerDTO(),
-      },
+      conversation: conversation.toServerDTO(),
     });
 
     return conversation;
@@ -116,7 +112,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
       name: dto.name,
       status: dto.status,
       messageCount: dto.messageCount,
-      lastMessageAt: dto.lastMessageAt ? new Date(dto.lastMessageAt) : null,
+      lastMessageAt: dto.lastMessageAt ?? null,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
       deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
@@ -144,23 +140,18 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
   }
 
   public addMessage(message: Message): void {
-    if (this._status !== ConversationStatus.ACTIVE) {
+    if (this._status !== ConversationStatus.Active) {
       throw new Error('Cannot add message to a non-active conversation');
     }
     this._messages.push(message);
     this._messageCount++;
-    this._lastMessageAt = message.createdAt;
+    this._lastMessageAt = message.createdAt.getTime();
     this._updatedAt = new Date();
 
-    this.addDomainEvent({
-      eventType: 'ai.message.added',
-      aggregateId: this.uuid,
-      occurredOn: new Date(this._updatedAt),
+    this.addDomainEvent('ai.message.added', {
       accountUuid: this._accountUuid,
-      payload: {
-        conversationUuid: this.uuid,
-        message: message.toServerDTO(),
-      },
+      conversationUuid: this.uuid,
+      message: message.toServerDTO(),
     });
   }
 
@@ -183,22 +174,17 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     this._status = status;
     this._updatedAt = new Date();
 
-    this.addDomainEvent({
-      eventType: 'ai.conversation.status_changed',
-      aggregateId: this.uuid,
-      occurredOn: new Date(this._updatedAt),
+    this.addDomainEvent('ai.conversation.status_changed', {
       accountUuid: this._accountUuid,
-      payload: {
-        conversationUuid: this.uuid,
-        oldStatus,
-        newStatus: status,
-      },
+      conversationUuid: this.uuid,
+      oldStatus,
+      newStatus: status,
     });
   }
 
   public softDelete(): void {
     this._deletedAt = new Date();
-    this._status = ConversationStatus.ARCHIVED;
+    this._status = ConversationStatus.Archived;
     this._updatedAt = new Date();
   }
 
@@ -209,7 +195,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
       name: this._name,
       status: this._status,
       messageCount: this._messageCount,
-      lastMessageAt: this._lastMessageAt ? this._lastMessageAt.getTime() : null,
+      lastMessageAt: this._lastMessageAt,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
@@ -224,7 +210,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
       name: this._name,
       status: this._status,
       messageCount: this._messageCount,
-      lastMessageAt: this._lastMessageAt ? this._lastMessageAt.getTime() : null,
+      lastMessageAt: this._lastMessageAt,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       messages: null,
