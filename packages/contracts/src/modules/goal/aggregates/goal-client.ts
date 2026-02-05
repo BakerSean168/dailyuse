@@ -31,6 +31,8 @@ export interface GoalClient {
 
   status: GoalStatus;
   importance: ImportanceLevel;
+  /** 动态优先级分数 */
+  priority: number;
   category: string | null;
   tags: string[];
 

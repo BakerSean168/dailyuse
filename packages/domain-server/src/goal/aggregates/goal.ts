@@ -27,7 +27,7 @@
  * - 目标进度在 0-100 之间
  */
 
-import { AggregateRoot, generateUUID } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils';
 import { GoalId, IdentityId, GoalFolderId, KeyResultWeightSnapshotId } from '@dailyuse/domain-shared';
 import type { GoalEventMap } from '@dailyuse/contracts/goal';
 import {
@@ -70,7 +70,7 @@ import {
   KeyResultWeightExceededError,
   GoalReviewRatingInvalidError,
 } from '../value-objects';
-import { calculateGoalPriority, mapPriorityToLevel, mapPriorityToText } from '../services/goal-priority-calculator.service';
+import { calculateGoalPriority, mapPriorityToLevel, mapPriorityToText } from '../services/goal-priority-calculator';
 
 // ================ 常量定义 ================
 const DAY_MS = 1000 * 60 * 60 * 24;
@@ -89,6 +89,11 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   private _motivation: string | null;
   private _status: GoalStatus;
   private _importance: ImportanceLevel;
+  /** 
+   * 持久化的优先级分数
+   * 用于数据库排序，每日 Cron Job 或属性变更时更新
+   */
+  private _priority: number;
   private _category: string | null;
   private _tags: string[];
   private _startDate: Date | null;
@@ -125,6 +130,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     this._motivation = props.motivation ?? null;
     this._status = props.status;
     this._importance = props.importance;
+    this._priority = props.priority ?? 0; // 初始化优先级，稍后刷新
     this._category = props.category ?? null;
     this._tags = props.tags ?? [];
     this._startDate = props.startDate ? new Date(props.startDate) : null;
@@ -192,26 +198,38 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   }
 
   /**
-   * 📊 计算属性：动态优先级分数 (0-100)
-   * 基于 importance 和 targetDate 计算
+   * 📊 持久化属性：优先级分数
+   * 基于 importance 和 targetDate 计算，由 refreshPriority() 更新
+   * 持久化存储以支持高性能排序
    */
   get priority(): number {
-    const targetDate = this._targetDate;
-    return calculateGoalPriority(this._importance, targetDate, new Date());
+    return this._priority;
   }
 
   /**
    * 📊 计算属性：优先级级别
    */
   get priorityLevel(): 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' {
-    return mapPriorityToLevel(this.priority);
+    return mapPriorityToLevel(this._priority);
   }
 
   /**
    * 📊 计算属性：优先级显示文本
    */
   get priorityText(): string {
-    return mapPriorityToText(this.priority);
+    return mapPriorityToText(this._priority);
+  }
+
+  /**
+   * 🔄 刷新优先级分数
+   * 根据当前 importance 和 targetDate 重新计算优先级
+   * 应在以下场景调用：
+   * - Goal 创建时
+   * - importance 或 targetDate 变更时
+   * - 每日 Cron Job 批量刷新时
+   */
+  public refreshPriority(referenceDate: Date = new Date()): void {
+    this._priority = calculateGoalPriority(this._importance, this._targetDate, referenceDate);
   }
 
   get category(): string | null {
@@ -367,6 +385,9 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
       deletedAt: null,
     });
 
+    // 🔢 初始化优先级分数
+    goal.refreshPriority();
+
     // 🎯 触发领域事件
     goal.addDomainEvent<GoalEventMap['goal:create']>('goal:create', {
       identityId: params.identityId,
@@ -423,7 +444,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
       keyResults: null,
       goalReviews: null,
       weightSnapshots: null,
-      priority: 0,
+      priority: dto.priority ?? 0,
       version: dto.version ?? 1,
     };
 
@@ -459,6 +480,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     this.ensureModifiable();
     
     let hasChanges = false;
+    let importanceChanged = false;
 
     if (params.name !== undefined && params.name !== this._name) {
       // 使用静态验证方法
@@ -475,6 +497,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     if (params.importance !== undefined && params.importance !== this._importance) {
       this._importance = params.importance;
       hasChanges = true;
+      importanceChanged = true;
     }
 
     if (params.category !== undefined && params.category !== this._category) {
@@ -499,6 +522,12 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
     if (hasChanges) {
       this._updatedAt = new Date();
+      
+      // 🔢 importance 变更时刷新优先级
+      if (importanceChanged) {
+        this.refreshPriority();
+      }
+      
       this.addDomainEvent<GoalEventMap['goal:update']>('goal:update', {
         changes: Object.keys(params),
       });
@@ -510,6 +539,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    */
   public updateTimeRange(params: { startDate?: Date | null; targetDate?: Date | null }): void {
     let hasChanges = false;
+    let targetDateChanged = false;
 
     if (params.startDate !== undefined && params.startDate?.getTime() !== this._startDate?.getTime()) {
       // Note: startDate is readonly, so we can't update it
@@ -519,10 +549,17 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     if (params.targetDate !== undefined && params.targetDate?.getTime() !== this._targetDate?.getTime()) {
       this._targetDate = params.targetDate;
       hasChanges = true;
+      targetDateChanged = true;
     }
 
     if (hasChanges) {
       this._updatedAt = new Date();
+      
+      // 🔢 targetDate 变更时刷新优先级
+      if (targetDateChanged) {
+        this.refreshPriority();
+      }
+      
       this.addDomainEvent<GoalEventMap['goal:update']>('goal:update', {
         changes: Object.keys(params),
       });
@@ -1339,6 +1376,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
       motivation: this._motivation,
       status: this._status,
       importance: this._importance,
+      priority: this._priority,
       category: this._category,
       tags: [...this._tags],
       startDate: this._startDate,

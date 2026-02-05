@@ -13,14 +13,10 @@ import type {
   GoalTimeRangeSummary,
 } from '@dailyuse/contracts/goal';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { DailyPriorityCalculator } from '@dailyuse/domain-shared/goal';
 import { AggregateRoot } from '@dailyuse/utils';
 import { GoalReminderConfig } from '../value-objects';
 import { KeyResult, GoalReview } from '../entities';
-
-// Priority calculation constants (aligned with domain-server)
-const IMPORTANCE_WEIGHT = 0.6;
-const TIME_WEIGHT = 0.4;
-const OVERDUE_BOOST = 50;
 
 const DAY_MS = 1000 * 60 * 60 * 24;
 const DEFAULT_DURATION = 30 * DAY_MS;
@@ -34,6 +30,8 @@ export class Goal extends AggregateRoot implements GoalClient {
   private _motivation?: string | null; // 实现动机
   private _status: GoalStatus;
   private _importance: ImportanceLevel;
+  /** 动态优先级分数（使用共享内核计算器） */
+  private _priority: number;
   private _category?: string | null;
   private _tags: string[];
   private _startDate?: number | null;
@@ -62,6 +60,7 @@ export class Goal extends AggregateRoot implements GoalClient {
     motivation?: string | null;
     status: GoalStatus;
     importance: ImportanceLevel;
+    priority?: number;
     category?: string | null;
     tags?: string[];
     startDate?: number | null;
@@ -87,6 +86,7 @@ export class Goal extends AggregateRoot implements GoalClient {
     this._motivation = params.motivation;
     this._status = params.status;
     this._importance = params.importance;
+    this._priority = params.priority ?? 0;
     this._category = params.category;
     this._tags = params.tags ?? [];
     this._startDate = params.startDate;
@@ -225,68 +225,40 @@ export class Goal extends AggregateRoot implements GoalClient {
   }
 
   /**
-   * 计算动态优先级 (0-100)
-   * 基于 importance 和 targetDate
+   * 🔄 刷新优先级分数（使用共享内核计算器）
+   * 根据当前 importance 和 targetDate 重新计算优先级
    */
-  private calculatePriority(): number {
-    const importanceMap: Record<ImportanceLevel, number> = {
-      [ImportanceLevel.Vital]: 5,
-      [ImportanceLevel.Important]: 4,
-      [ImportanceLevel.Moderate]: 3,
-      [ImportanceLevel.Minor]: 2,
-      [ImportanceLevel.Trivial]: 1,
-    };
-    const importanceValue = importanceMap[this._importance] ?? 3;
-    const importanceWeight = importanceValue * 20 * IMPORTANCE_WEIGHT;
-
-    if (!this._targetDate) {
-      return Math.round(importanceWeight + 5);
-    }
-
-    const now = Date.now();
-    const daysRemaining = Math.ceil((this._targetDate - now) / (1000 * 60 * 60 * 24));
-
-    if (daysRemaining < 0) {
-      return Math.min(100, Math.round(importanceWeight + OVERDUE_BOOST));
-    }
-
-    const timeUrgency = Math.min(100, 100 / (1 + daysRemaining / 7));
-    const timeWeight = timeUrgency * TIME_WEIGHT;
-
-    return Math.min(100, Math.max(0, Math.round(importanceWeight + timeWeight)));
+  public refreshPriority(referenceDate: Date = new Date()): void {
+    const targetDate = this._targetDate ? new Date(this._targetDate) : null;
+    this._priority = DailyPriorityCalculator.calculate(this._importance, targetDate, referenceDate);
   }
 
   /**
-   * 动态优先级值 (0-100)
+   * 动态优先级值（持久化属性）
    */
   public get priority(): number {
-    return this.calculatePriority();
+    return this._priority;
   }
 
   /**
    * 优先级级别
    */
   public get priorityLevel(): 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' {
-    const p = this.priority;
-    if (p >= 80) return 'CRITICAL';
-    if (p >= 60) return 'HIGH';
-    if (p >= 40) return 'MEDIUM';
-    return 'LOW';
+    return DailyPriorityCalculator.mapScoreToLevel(this._priority);
   }
 
   /**
    * 优先级文本
    */
   public get priorityText(): string {
-    const levelMap = { CRITICAL: '紧急', HIGH: '高', MEDIUM: '中', LOW: '低' };
-    return levelMap[this.priorityLevel];
+    return DailyPriorityCalculator.mapScoreToText(this._priority);
   }
 
   /**
    * 优先级分数 (使用 priority 值)
    */
   public get priorityScore(): number {
-    return this.priority;
+    return this._priority;
   }
 
   public get keyResultCount(): number {
@@ -706,6 +678,7 @@ export class Goal extends AggregateRoot implements GoalClient {
       description: this._description,
       status: this._status,
       importance: this._importance,
+      priority: this._priority,
       category: this._category,
       tags: [...this._tags],
       startDate: this._startDate,
@@ -838,6 +811,7 @@ export class Goal extends AggregateRoot implements GoalClient {
       motivation: dto.motivation,
       status: dto.status,
       importance: dto.importance,
+      priority: dto.priority ?? 0,
       category: dto.category,
       tags: dto.tags,
       startDate: dto.startDate,
@@ -869,6 +843,7 @@ export class Goal extends AggregateRoot implements GoalClient {
       motivation: dto.motivation,
       status: dto.status,
       importance: dto.importance,
+      priority: dto.priority ?? 0,
       category: dto.category,
       tags: dto.tags,
       startDate: dto.startDate,

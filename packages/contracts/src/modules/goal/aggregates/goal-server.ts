@@ -37,8 +37,8 @@ export interface GoalServer {
 
   // === 状态与元数�?===
   status: GoalStatus;
-  importance: ImportanceLevel;
-  category: string | null;
+  importance: ImportanceLevel;  /** 动态优先级分数（持久化属性） */
+  priority: number;  category: string | null;
   tags: string[];
 
   keyResults: KeyResultServer[] | null;
@@ -116,6 +116,11 @@ export interface GoalPersistenceDTO {
   motivation: string | null;
   status: string;
   importance: string;
+  /** 
+   * 动态优先级分数（持久化）
+   * 用于高性能排序，每日 Cron Job 更新
+   */
+  priority: number;
   category: string | null;
   tags: string[];
   startDate: PersistenceDate | null;
