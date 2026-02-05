@@ -9,9 +9,17 @@ import type {
   TaskTemplateServerDTO,
   TaskEventMap,
 } from '@dailyuse/contracts/task';
-import { RecurrenceFrequency } from '@dailyuse/contracts/task';
-import { TaskType, TaskTemplateStatus, RecurrenceEndConditionType, TimeType, TaskTemplateId, TaskFolderId } from '@dailyuse/domain-shared/task';
-import { ImportanceLevel, PriorityLevel, IdentityId, GoalId, KeyResultId } from '@dailyuse/domain-shared';
+import { RecurrenceFrequency, RecurrenceEndConditionType, TaskTimeType as TimeType, TaskInstanceStatus } from '@dailyuse/contracts/task';
+import { ImportanceLevel, PriorityLevel } from '@dailyuse/contracts/shared';
+import { TaskTemplateStatus, TaskTemplateId, TaskFolderId } from '@dailyuse/domain-shared/task';
+import { IdentityId, GoalId, KeyResultId } from '@dailyuse/domain-shared';
+
+// TaskType is a simple string literal type, not exported from domain-shared
+type TaskType = 'ONE_TIME' | 'RECURRING';
+const TaskType = {
+  ONE_TIME: 'ONE_TIME' as const,
+  RECURRING: 'RECURRING' as const,
+};
 import { AggregateRoot } from '@dailyuse/utils';
 import { calculateTaskPriority } from '../services/priority-calculator.service';
 import {
@@ -19,6 +27,7 @@ import {
   RecurrenceRule,
   TaskReminderConfig,
   TaskGoalBinding,
+  ChecklistItemDefinition,
 } from '../value-objects';
 import { TaskTemplateHistory } from '../entities';
 import { TaskInstance } from './TaskInstance';
@@ -39,7 +48,7 @@ import {
  * - ��������ģ���������??
  * - ��������ʵ������??
  * - ������ʷ��¼
- * - ִ��ҵ�����
+ * - ִ��ҵ�����?
  * - �������??
  */
 export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskTemplateServer {
@@ -57,7 +66,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   // ===== Goal/KR ������ͨ�ã�=====
   private _goalId: GoalId | null;
   private _keyResultId: KeyResultId | null;
-  private _goalBinding: TaskGoalBinding | null; // ��ѭ������ĸ߼���
+  private _goalBinding: TaskGoalBinding | null; // ��ѭ������ĸ߼���?
 
   // ===== ������֧�֣�ͨ�ã�=====
   private _parentTaskId: TaskTemplateId | null;
@@ -66,13 +75,16 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   private _timeConfig: TaskTimeConfig | null;
   private _recurrenceRule: RecurrenceRule | null;
   private _reminderConfig: TaskReminderConfig | null;
-  private _lastGeneratedDate: number | null;
+  private _lastGeneratedDate: Date | null;
   private _generateAheadDays: number | null;
 
+  // ===== Checklist =====
+  private _checklist: ChecklistItemDefinition[];
+
   // ===== һ��������ר����??=====
-  private readonly _startDate: Date | null;
-  private readonly _dueDate: Date | null;
-  private readonly _completedAt: Date | null;
+  private _startDate: Date | null;
+  private _dueDate: Date | null;
+  private _completedAt: Date | null;
   private _estimatedMinutes: number | null;
   private _actualMinutes: number | null;
   private _note: string | null;
@@ -82,10 +94,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   private _isBlocked: boolean;
   private _blockingReason: string | null;
 
-  // ===== ����ֶ� =====
+  // ===== ����ֶ�?=====
   private _createdAt: Date;
   private _updatedAt: Date;
-  private _deletedAt: number | null;
+  private _deletedAt: Date | null;
 
   // ===== ��ʵ�弯??=====
   private _history: TaskTemplateHistory[];
@@ -121,6 +133,9 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     this._lastGeneratedDate = props.lastGeneratedDate ?? null;
     this._generateAheadDays = props.generateAheadDays ?? null;
 
+    // Checklist
+    this._checklist = props.checklist ?? [];
+
     // һ��������ר??
     this._startDate = props.startDate ?? null;
     this._dueDate = props.dueDate ?? null;
@@ -134,7 +149,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     this._isBlocked = props.isBlocked ?? false;
     this._blockingReason = props.blockingReason ?? null;
 
-    // ����ֶ�
+    // ����ֶ�?
     this._createdAt = props.createdAt;
     this._updatedAt = props.updatedAt;
     this._deletedAt = props.deletedAt ?? null;
@@ -145,9 +160,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   }
 
   // ===== Getter ���� =====
-  public get id(): TaskTemplateId {
-    return this._id;
-  }
 
   public get identityId(): IdentityId {
     return this._identityId;
@@ -205,12 +217,16 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     return this._status;
   }
 
-  public get lastGeneratedDate(): number | null {
+  public get lastGeneratedDate(): Date | null {
     return this._lastGeneratedDate;
   }
 
   public get generateAheadDays(): number | null {
     return this._generateAheadDays;
+  }
+
+  public get checklist(): ChecklistItemDefinition[] {
+    return [...this._checklist];
   }
 
   // === ���� Getter��һ���������ͨ��??===
@@ -227,11 +243,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     return this._parentTaskId;
   }
 
-  public get startDate(): number | null {
+  public get startDate(): Date | null {
     return this._startDate;
   }
 
-  public get dueDate(): number | null {
+  public get dueDate(): Date | null {
     return this._dueDate;
   }
 
@@ -295,14 +311,14 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     }
 
     // Check if template is archived
-    if (this._status === 'ARCHIVED') {
+    if (this._status === TaskTemplateStatus.Archived) {
       throw new TaskTemplateArchivedError(this.id);
     }
 
     const instances: TaskInstance[] = [];
 
     // Only generate instances for active templates
-    if (this._status !== 'ACTIVE') {
+    if (this._status !== TaskTemplateStatus.Active) {
       throw new InvalidTaskTemplateStateError('Can only generate instances for active templates', {
         templateId: this.id,
         currentStatus: this._status,
@@ -314,16 +330,16 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       // ��������ֻҪ�� startDate ������ʵ�������������ڷ�Χ��
       // ԭ�򣺵������������δ����Զ�����ڣ��û���Ȼ��Ҫ��??
       if (this._timeConfig?.startDate) {
-        // ����Ƿ��Ѿ����ɹ��������ظ����ɣ�
+        // ����Ƿ��Ѿ����ɹ��������ظ����ɣ�?
         const alreadyGenerated = this._instances.some(
-          (inst) => inst.instanceDate === this._timeConfig!.startDate,
+          (inst) => inst.instanceDate === this._timeConfig!.startDate?.getTime(),
         );
 
         if (!alreadyGenerated) {
           const instance = TaskInstance.create({
             templateId: this.id,
             identityId: this._identityId,
-            instanceDate: this._timeConfig.startDate,
+            instanceDate: this._timeConfig.startDate.getTime(),
             timeConfig: this._timeConfig,
             importance: this._importance,
           });
@@ -352,7 +368,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     }
 
     if (instances.length > 0) {
-      this._lastGeneratedDate = toDate;
+      this._lastGeneratedDate = new Date(toDate);
       this._updatedAt = new Date();
     }
 
@@ -376,7 +392,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
    * �ж��Ƿ�Ӧ����ָ����������ʵ??
    */
   public shouldGenerateInstance(date: number): boolean {
-    if (this._status !== 'ACTIVE') {
+    if (this._status !== TaskTemplateStatus.Active) {
       return false;
     }
 
@@ -389,29 +405,29 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     }
 
     // ����Ƿ����ظ��������Ч��??
-    if (this._recurrenceRule.endDate && date > this._recurrenceRule.endDate) {
+    if (this._recurrenceRule.endDate && date > this._recurrenceRule.endDate.getTime()) {
       return false;
     }
 
-    // ���Ƶ??
+    // ����??
     const rule = this._recurrenceRule;
     const dateObj = new Date(date);
 
     switch (rule.frequency) {
-      case 'DAILY':
+      case RecurrenceFrequency.Daily:
         return true; // ÿ�춼��??
 
-      case 'WEEKLY':
-        // ����Ƿ���ָ�������ڼ�
+      case RecurrenceFrequency.Weekly:
+        // ����Ƿ���ָ�������ڼ�?
         const dayOfWeek = dateObj.getDay();
         return rule.daysOfWeek.includes(dayOfWeek as any);
 
-      case 'MONTHLY':
+      case RecurrenceFrequency.Monthly:
         // ÿ�µ�ָ����??
         // ����򻯴�����ʵ��Ӧ�ø���??
         return true;
 
-      case 'YEARLY':
+      case RecurrenceFrequency.Yearly:
         // ÿ���ָ����??
         return true;
 
@@ -426,21 +442,21 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
    * ����ģ??
    */
   public activate(): void {
-    if (this._status === 'DELETED') {
+    if (this._status === TaskTemplateStatus.Deleted) {
       throw new InvalidTaskTemplateStateError('Cannot activate a deleted template', {
         templateId: this.id,
         currentStatus: this._status,
         attemptedAction: 'activate',
       });
     }
-    if (this._status === 'ACTIVE') {
+    if (this._status === TaskTemplateStatus.Active) {
       throw new InvalidTaskTemplateStateError('Template is already active', {
         templateId: this.id,
         currentStatus: this._status,
         attemptedAction: 'activate',
       });
     }
-    this._status = 'ACTIVE' as TaskTemplateStatus;
+    this._status = TaskTemplateStatus.Active;
     this._updatedAt = new Date();
     this.addHistory('resumed');
   }
@@ -449,52 +465,52 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
    * ��ͣģ��
    */
   public pause(): void {
-    if (this._status !== 'ACTIVE') {
+    if (this._status !== TaskTemplateStatus.Active) {
       throw new InvalidTaskTemplateStateError('Can only pause active templates', {
         templateId: this.id,
         currentStatus: this._status,
         attemptedAction: 'pause',
       });
     }
-    this._status = 'PAUSED' as TaskTemplateStatus;
+    this._status = TaskTemplateStatus.Paused;
     this._updatedAt = new Date();
-    this.addHistory('paused');
+    this.addHistory('Paused');
   }
 
   /**
    * �鵵ģ��
    */
   public archive(): void {
-    if (this._status === 'DELETED') {
+    if (this._status === TaskTemplateStatus.Deleted) {
       throw new InvalidTaskTemplateStateError('Cannot archive a deleted template', {
         templateId: this.id,
         currentStatus: this._status,
         attemptedAction: 'archive',
       });
     }
-    if (this._status === 'ARCHIVED') {
+    if (this._status === TaskTemplateStatus.Archived) {
       throw new TaskTemplateArchivedError(this.id);
     }
-    this._status = 'ARCHIVED' as TaskTemplateStatus;
+    this._status = TaskTemplateStatus.Archived;
     this._updatedAt = new Date();
-    this.addHistory('archived');
+    this.addHistory('Archived');
   }
 
   /**
    * ��ɾ��ģ??
    */
   public softDelete(): void {
-    if (this._status === 'DELETED') {
+    if (this._status === TaskTemplateStatus.Deleted) {
       throw new InvalidTaskTemplateStateError('Template is already deleted', {
         templateId: this.id,
         currentStatus: this._status,
         attemptedAction: 'softDelete',
       });
     }
-    this._status = 'DELETED' as TaskTemplateStatus;
+    this._status = TaskTemplateStatus.Deleted;
     this._deletedAt = new Date();
     this._updatedAt = new Date();
-    this.addHistory('deleted');
+    this.addHistory('Deleted');
     
     // ?? ���������¼�
     this.addDomainEvent<TaskEventMap['task:delete']>('task:delete', {
@@ -506,14 +522,14 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
    * �ָ�ģ��
    */
   public restore(): void {
-    if (this._status !== 'DELETED') {
+    if (this._status !== TaskTemplateStatus.Deleted) {
       throw new InvalidTaskTemplateStateError('Can only restore deleted templates', {
         templateId: this.id,
         currentStatus: this._status,
         attemptedAction: 'restore',
       });
     }
-    this._status = 'ACTIVE' as TaskTemplateStatus;
+    this._status = TaskTemplateStatus.Active;
     this._deletedAt = null;
     this._updatedAt = new Date();
     this.addHistory('restored');
@@ -524,25 +540,25 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   // TaskTemplate ֻ����ģ�������ACTIVE/PAUSED/ARCHIVED/DELETED��??
   // ������Щ����ֻ��Ϊ�������ݣ�δ��Ӧ���Ƴ�??
 
-  // ===== ʱ����򷽷� =====
+  // ===== ʱ����򷽷�?=====
 
   /**
    * �ж�ģ����ָ�������Ƿ��??
    */
   public isActiveOnDate(date: number): boolean {
-    if (this._status !== TaskTemplateStatus.ACTIVE) {
+    if (this._status !== TaskTemplateStatus.Active) {
       return false;
     }
 
     if (this._taskType === TaskType.ONE_TIME) {
-      return this._timeConfig?.startDate === date;
+      return this._timeConfig?.startDate?.getTime() === date;
     }
 
     if (!this._recurrenceRule) {
       return false;
     }
 
-    if (this._recurrenceRule.endDate && date > this._recurrenceRule.endDate) {
+    if (this._recurrenceRule.endDate && date > this._recurrenceRule.endDate.getTime()) {
       return false;
     }
 
@@ -550,16 +566,16 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   }
 
   /**
-   * ��ȡָ������֮�����һ�η���ʱ??
+   * ��ȡָ������֮�����һ�η����??
    */
   public getNextOccurrence(afterDate: number): number | null {
-    if (this._status !== TaskTemplateStatus.ACTIVE) {
+    if (this._status !== TaskTemplateStatus.Active) {
       return null;
     }
 
     if (this._taskType === TaskType.ONE_TIME) {
-      if (this._timeConfig?.startDate && this._timeConfig.startDate > afterDate) {
-        return this._timeConfig.startDate;
+      if (this._timeConfig?.startDate && this._timeConfig.startDate.getTime() > afterDate) {
+        return this._timeConfig.startDate.getTime();
       }
       return null;
     }
@@ -609,7 +625,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   /**
    * ���¿�ʼʱ??(ONE_TIME)
    */
-  public updateStartDate(newStartDate: number | null): void {
+  public updateStartDate(newStartDate: Date | null): void {
     if (this._taskType !== 'ONE_TIME') {
       throw new InvalidTaskTemplateStateError('Only ONE_TIME tasks have start dates', {
         templateId: this.id,
@@ -622,25 +638,19 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     this._updatedAt = new Date();
     this.addHistory('start_date_updated', { oldStartDate, newStartDate });
 
-    this.addDomainEvent({
-      eventType: 'task_template.schedule_time_changed',
-      aggregateId: this.id,
-      occurredOn: new Date(this._updatedAt),
-      identityId: this._identityId,
-      payload: {
-        taskTemplate: this.toServerDTO(),
-        oldStartDate: oldStartDate,
-        oldDueDate: this._dueDate,
-        newStartDate: newStartDate,
-        newDueDate: this._dueDate,
-      },
+    this.addDomainEvent('task_template.schedule_time_changed', {
+      taskTemplate: this.toServerDTO(),
+      oldStartDate: oldStartDate,
+      oldDueDate: this._dueDate,
+      newStartDate: newStartDate,
+      newDueDate: this._dueDate,
     });
   }
 
   /**
    * ���½�ֹʱ�� (ONE_TIME)
    */
-  public updateDueDate(newDueDate: number | null): void {
+  public updateDueDate(newDueDate: Date | null): void {
     if (this._taskType !== TaskType.ONE_TIME) {
       throw new InvalidTaskTemplateStateError('Only ONE_TIME tasks have due dates', {
         templateId: this.id,
@@ -655,27 +665,13 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     this._updatedAt = new Date();
     this.addHistory('due_date_updated', { oldDueDate, newDueDate });
 
-    this.addDomainEvent({
-      eventType: 'task_template.schedule_time_changed',
-      aggregateId: this.id,
-      occurredOn: new Date(this._updatedAt),
-      identityId: this._identityId,
-      payload: {
-        taskTemplate: this.toServerDTO(),
-        oldStartDate: this._startDate,
-        oldDueDate: oldDueDate,
-        newStartDate: this._startDate,
-        newDueDate: newDueDate,
-      },
+    this.addDomainEvent('task_template.schedule_time_changed', {
+      taskTemplate: this.toServerDTO(),
+      oldStartDate: this._startDate,
+      oldDueDate: oldDueDate,
+      newStartDate: this._startDate,
+      newDueDate: newDueDate,
     });
-    
-    // ?? ������׼�����¼�����������ڱ仯��
-    if (oldDueDate !== newDueDate) {
-      this.addDomainEvent<TaskEventMap['task:rescheduled']>('task:rescheduled', {
-        previousDueDate: oldDueDate ?? 0,
-        newDueDate: newDueDate ?? 0,
-      });
-    }
   }
 
   /**
@@ -689,29 +685,23 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         attemptedAction: 'updateRecurrenceRule',
       });
     }
-    const oldRuleDTO = this._recurrenceRule?.toServerDTO() ?? null;
+    const oldRuleDTO = this._recurrenceRule?.toDTO() ?? null;
     this._recurrenceRule = newRule;
     this._updatedAt = new Date();
     this.addHistory('recurrence_rule_updated', {
       oldRule: oldRuleDTO,
-      newRule: newRule.toServerDTO(),
+      newRule: newRule.toDTO(),
     });
 
-    this.addDomainEvent({
-      eventType: 'task_template.recurrence_changed',
-      aggregateId: this.id,
-      occurredOn: new Date(this._updatedAt),
-      identityId: this._identityId,
-      payload: {
-        taskTemplate: this.toServerDTO(),
-        oldRecurrenceRule: oldRuleDTO,
-        newRecurrenceRule: newRule.toServerDTO(),
-      },
+    this.addDomainEvent('task_template.recurrence_changed', {
+      taskTemplate: this.toServerDTO(),
+      oldRecurrenceRule: oldRuleDTO,
+      newRecurrenceRule: newRule.toDTO(),
     });
   }
 
   /**
-   * �����ظ�����Ľ���������ʹ��ö�����ͺ�Ĭ��ֵ��
+   * �����ظ�����Ľ���������ʹ��ö�����ͺ�Ĭ��ֵ��?
    * @param endConditionType ������������
    * @param customValue �Զ���ֵ������ʱ������ظ�����??
    */
@@ -738,21 +728,21 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     let updatedRule: RecurrenceRule;
 
     switch (endConditionType) {
-      case RecurrenceEndConditionType.NEVER:
+      case RecurrenceEndConditionType.Never:
         // ������������??endDate ??occurrences
-        updatedRule = this._recurrenceRule.withNeverEnd();
+        updatedRule = this._recurrenceRule.setEndDate(null).setOccurrences(null);
         break;
 
-      case RecurrenceEndConditionType.END_DATE:
-        // ָ�����ڽ�����ʹ���ṩ�����ڣ����û����Ĭ��??30 ���
-        const endDate = customValue ?? Date.now() + 30 * 86400000; // Ĭ�� 30 ���
-        updatedRule = this._recurrenceRule.withEndDate(endDate);
+      case RecurrenceEndConditionType.EndDate:
+        // ָ�����ڽ�����ʹ���ṩ�����ڣ����û����Ĭ��??30 ���?
+        const endDate = customValue ?? Date.now() + 30 * 86400000; // Ĭ�� 30 ���?
+        updatedRule = this._recurrenceRule.setEndDate(new Date(endDate));
         break;
 
-      case RecurrenceEndConditionType.OCCURRENCES:
+      case RecurrenceEndConditionType.Occurrences:
         // ָ������������ʹ���ṩ�Ĵ��������û����Ĭ��??10 ??
         const occurrences = customValue ?? 10; // Ĭ�� 10 ??
-        updatedRule = this._recurrenceRule.withOccurrences(occurrences);
+        updatedRule = this._recurrenceRule.setOccurrences(occurrences);
         break;
 
       default:
@@ -763,26 +753,20 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         });
     }
 
-    const oldRuleDTO = this._recurrenceRule.toServerDTO();
+    const oldRuleDTO = this._recurrenceRule.toDTO();
     this._recurrenceRule = updatedRule;
     this._updatedAt = new Date();
 
     this.addHistory('recurrence_end_condition_updated', {
       oldRule: oldRuleDTO,
-      newRule: updatedRule.toServerDTO(),
+      newRule: updatedRule.toDTO(),
       endConditionType,
     });
 
-    this.addDomainEvent({
-      eventType: 'task_template.recurrence_changed',
-      aggregateId: this.id,
-      occurredOn: new Date(this._updatedAt),
-      identityId: this._identityId,
-      payload: {
-        taskTemplate: this.toServerDTO(),
-        oldRecurrenceRule: oldRuleDTO,
-        newRecurrenceRule: updatedRule.toServerDTO(),
-      },
+    this.addDomainEvent('task_template.recurrence_changed', {
+      taskTemplate: this.toServerDTO(),
+      oldRecurrenceRule: oldRuleDTO,
+      newRecurrenceRule: updatedRule.toDTO(),
     });
   }
 
@@ -869,7 +853,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     }
     // Note: TaskTemplateStatus doesn't have COMPLETED/CANCELLED states
     // Those checks have been removed as they belong to TaskInstance status
-    return Date.now() > this._dueDate;
+    return Date.now() > this._dueDate.getTime();
   }
 
   /**
@@ -883,7 +867,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       return null;
     }
     const now = Date.now();
-    const diffMs = this._dueDate - now;
+    const diffMs = this._dueDate.getTime() - now;
     return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   }
 
@@ -909,40 +893,34 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     return instanceDate - 3600000;
   }
 
-  // ===== Ŀ��󶨷��� =====
+  // ===== Ŀ��󶨷���?=====
 
   /**
    * �󶨵�Ŀ??
    */
-  public bindToGoal(goalUuid: string, keyResultUuid: string, incrementValue: number): void {
+  public bindToGoal(goalId: string, keyResultId: string, goalRecordValue: number): void {
     // Validate parameters
-    if (!goalUuid || !keyResultUuid) {
-      throw new InvalidGoalBindingError('Goal UUID and Key Result UUID are required', {
-        goalUuid,
-        reason: 'Missing required parameters',
-      });
+    if (!goalId || !keyResultId) {
+      throw new InvalidGoalBindingError('Goal ID and Key Result ID are required');
     }
 
     // Check if already bound
     if (this._goalBinding) {
-      throw new InvalidGoalBindingError('Template is already bound to a goal', {
-        goalUuid: this._goalBinding.goalUuid,
-        reason: 'Template already has a goal binding',
-      });
+      throw new InvalidGoalBindingError('Template is already bound to a goal');
     }
 
     // Check if template is archived
-    if (this._status === 'ARCHIVED') {
+    if (this._status === TaskTemplateStatus.Archived) {
       throw new TaskTemplateArchivedError(this.id);
     }
 
-    this._goalBinding = new TaskGoalBinding({
-      goalUuid,
-      keyResultUuid,
-      incrementValue,
+    this._goalBinding = TaskGoalBinding.fromDTO({
+      goalId,
+      keyResultId,
+      goalRecordValue,
     });
     this._updatedAt = new Date();
-    this.addHistory('goal_bound', { goalUuid, keyResultUuid, incrementValue });
+    this.addHistory('goal_bound', { goalId, keyResultId, goalRecordValue });
   }
 
   /**
@@ -951,13 +929,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   public unbindFromGoal(): void {
     // Check if template has goal binding
     if (!this._goalBinding) {
-      throw new InvalidGoalBindingError('Template is not bound to any goal', {
-        reason: 'No goal binding exists',
-      });
+      throw new InvalidGoalBindingError('Template is not bound to any goal');
     }
 
     // Check if template is archived
-    if (this._status === 'ARCHIVED') {
+    if (this._status === TaskTemplateStatus.Archived) {
       throw new TaskTemplateArchivedError(this.id);
     }
 
@@ -967,7 +943,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   }
 
   /**
-   * �Ƿ�󶨵�Ŀ??
+   * �Ƿ�󶨵��??
    */
   public isLinkedToGoal(): boolean {
     return this._goalBinding !== null;
@@ -991,14 +967,14 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         attemptedAction: 'linkToGoal',
       });
     }
-    this._goalId = goalUuid;
-    this._keyResultId = keyResultUuid || null;
+    this._goalId = goalUuid as GoalId;
+    this._keyResultId = (keyResultUuid || null) as KeyResultId | null;
     this._updatedAt = new Date();
     this.addHistory('linked_to_goal', { goalUuid, keyResultUuid });
   }
 
   /**
-   * ���Ŀ������ (ONE_TIME)
+   * ���Ŀ������?(ONE_TIME)
    */
   public unlinkFromGoal(): void {
     if (this._taskType !== 'ONE_TIME') {
@@ -1036,7 +1012,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         attemptedAction: 'addSubtask',
       });
     }
-    // ʵ��ʵ����Ӧ��ͨ�� repository ��֤ subtaskUuid �Ƿ����
+    // ʵ��ʵ����Ӧ��ͨ�� repository ��֤ subtaskUuid �Ƿ����?
     this._updatedAt = new Date();
     this.addHistory('subtask_added', { subtaskUuid });
   }
@@ -1076,20 +1052,20 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
    * ��ȡ���ȼ��ȼ��ͷ��� (Story 1.2)
    *
    * ʹ�ô����� calculateTaskPriority �������ȼ����������ڣ�
-   * - Importance����Ҫ�ԣ���Task ʵ���������
-   * - Due Date����ֹ���ڣ������ڼ���ʱ������̶�
-   * - Current Time����ǰʱ�䣩����׼ʱ���
+   * - Importance����Ҫ�ԣ���Task ʵ���������?
+   * - Due Date����ֹ���ڣ������ڼ���ʱ������̶�?
+   * - Current Time����ǰʱ�䣩����׼ʱ���?
    *
    * ����һ�������񣺸��ݷ���ӳ�䵽 5 �����ȼ��ȼ�
-   * ����ѭ�����񣺷���������ȼ�
+   * ����ѭ�����񣺷���������ȼ�?
    */
   public getPriority(): { level: PriorityLevel; score: number } {
     if (this._taskType !== TaskType.ONE_TIME) {
-      return { level: PriorityLevel.Low, score: 0 };
+      return { level: PriorityLevel.Low as PriorityLevel, score: 0 };
     }
 
     const currentTime = new Date();
-    const dueDateObj = this._dueDate ? new Date(this._dueDate) : null;
+    const dueDateObj = this._dueDate;
 
     const score = calculateTaskPriority(this._importance, dueDateObj, currentTime);
     const level = this.scoreToPriorityLevel(score);
@@ -1102,17 +1078,17 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
    *
    * ������Χ��[0, 100]
    * - [80, 100]: Critical��������- ��Ҫ��������
-   * - [60, 80): High���ߣ�- ������봦��
+   * - [60, 80): High���ߣ�- ������봦��?
    * - [40, 60): Medium���У�- ������Ҫ����
    * - [20, 40): Low���ͣ�- �����Ժ���
    * - [0, 20): None���ޣ�- �޾���ʱ��Ҫ��
    */
   private scoreToPriorityLevel(score: number): PriorityLevel {
-    if (score >= 80) return PriorityLevel.Critical;
-    if (score >= 60) return PriorityLevel.High;
-    if (score >= 40) return PriorityLevel.Medium;
-    if (score >= 20) return PriorityLevel.Low;
-    return PriorityLevel.None;
+    if (score >= 80) return PriorityLevel.Critical as PriorityLevel;
+    if (score >= 60) return PriorityLevel.High as PriorityLevel;
+    if (score >= 40) return PriorityLevel.Medium as PriorityLevel;
+    if (score >= 20) return PriorityLevel.Low as PriorityLevel;
+    return PriorityLevel.None as PriorityLevel;
   }
 
   /**
@@ -1132,7 +1108,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   // ===== ������������ (ONE_TIME) =====
 
   /**
-   * ���Ϊ������
+   * ���Ϊ������?
    */
   public markAsBlocked(reason: string, dependencyTaskUuid?: string): void {
     if (this._taskType !== 'ONE_TIME') {
@@ -1153,7 +1129,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   }
 
   /**
-   * ���Ϊ��??(�����������)
+   * ���Ϊ��??(�����������?
    */
   public markAsReady(): void {
     if (this._taskType !== 'ONE_TIME') {
@@ -1173,7 +1149,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   /**
    * ��������״??
    */
-  public updateDependencyStatus(status: 'PENDING' | 'READY' | 'BLOCKED'): void {
+  public updateDependencyStatus(status: 'Pending' | 'READY' | 'BLOCKED'): void {
     if (this._taskType !== 'ONE_TIME') {
       throw new InvalidTaskTemplateStateError('Only ONE_TIME tasks can have dependency status', {
         templateId: this.id,
@@ -1194,7 +1170,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
    */
   public addHistory(action: string, changes?: any): void {
     const history = TaskTemplateHistory.create({
-      templateId: this.id,
+      templateUuid: this.id,
       action,
       changes: changes ? JSON.stringify(changes) : null,
     });
@@ -1209,10 +1185,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
    */
   public createInstance(params: any): string {
     // Check if template is archived or deleted
-    if (this._status === 'ARCHIVED') {
+    if (this._status === TaskTemplateStatus.Archived) {
       throw new TaskTemplateArchivedError(this.id);
     }
-    if (this._status === 'DELETED') {
+    if (this._status === TaskTemplateStatus.Deleted) {
       throw new InvalidTaskTemplateStateError('Cannot create instance from deleted template', {
         templateId: this.id,
         currentStatus: this._status,
@@ -1242,7 +1218,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     });
     this._instances.push(instance);
     this._updatedAt = new Date();
-    return instance.uuid;
+    return instance.id;
   }
 
   /**
@@ -1257,7 +1233,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
    * �Ƴ�ʵ��
    */
   public removeInstance(instanceUuid: string): TaskInstance | null {
-    const index = this._instances.findIndex((i) => i.uuid === instanceUuid);
+    const index = this._instances.findIndex((i) => i.id === instanceUuid);
     if (index === -1) return null;
     const [removed] = this._instances.splice(index, 1);
     this._updatedAt = new Date();
@@ -1268,7 +1244,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
    * ��ȡʵ��
    */
   public getInstance(instanceUuid: string): TaskInstance | null {
-    return this._instances.find((i) => i.uuid === instanceUuid) ?? null;
+    return this._instances.find((i) => i.id === instanceUuid) ?? null;
   }
 
   /**
@@ -1286,46 +1262,37 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       identityId: this._identityId,
       name: this._title,
       description: this._description,
-      taskType: this._taskType,
-      timeConfig: this._timeConfig?.toServerDTO() ?? null,
-      recurrenceRule: this._recurrenceRule?.toServerDTO() ?? null,
-      reminderConfig: this._reminderConfig?.toServerDTO() ?? null,
+      timeConfig: this._timeConfig?.toDTO() ?? null,
+      recurrenceRule: this._recurrenceRule?.toDTO() ?? null,
+      reminderConfig: this._reminderConfig?.toDTO() ?? null,
       importance: this._importance,
-      goalBinding: this._goalBinding?.toServerDTO() ?? null,
+      priority: this._taskType === 'ONE_TIME' ? this.getPriority().score : undefined,
+      goalBinding: this._goalBinding?.toDTO() ?? null,
+      checklist: this._checklist.map((c) => c.toDTO()),
       folderId: this._folderId,
       tags: [...this._tags],
       color: this._color,
       status: this._status,
-      lastGeneratedDate: this._lastGeneratedDate,
+      lastGeneratedDate: this._lastGeneratedDate?.getTime() ?? null,
       generateAheadDays: this._generateAheadDays,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
-      // ONE_TIME �������ֶ�
-      goalId: this._goalId,
-      keyResultId: this._keyResultId,
       parentTaskId: this._parentTaskId,
-      startDate: this._startDate,
-      dueDate: this._dueDate,
-      completedAt: this._completedAt?.getTime() ?? null,
-      estimatedMinutes: this._estimatedMinutes,
-      actualMinutes: this._actualMinutes,
-      note: this._note,
       dependencyStatus: this._dependencyStatus,
       isBlocked: this._isBlocked,
       blockingReason: this._blockingReason,
-      history: includeChildren ? this._history.map((h) => h.toServerDTO()) : undefined,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
       instances: includeChildren ? this._instances.map((i) => i.toServerDTO()) : undefined,
     };
   }
 
   public toClientDTO(includeChildren: boolean = false): TaskTemplateClientDTO {
-    const completedCount = this._instances.filter((i) => i.status === 'COMPLETED').length;
-    const pendingCount = this._instances.filter((i) => i.status === 'PENDING').length;
+    const completedCount = this._instances.filter((i) => i.status === 'Completed').length;
+    const pendingCount = this._instances.filter((i) => i.status === 'Pending').length;
     const totalCount = this._instances.length;
     const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
-    // ONE_TIME ��������ȼ�����
+    // ONE_TIME ��������ȼ�����?
     const priority = this._taskType === 'ONE_TIME' ? this.getPriority() : undefined;
 
     return {
@@ -1333,32 +1300,28 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       identityId: this._identityId,
       name: this._title,
       description: this._description,
-      taskType: this._taskType,
-      timeConfig: this._timeConfig?.toClientDTO() ?? null,
-      recurrenceRule: this._recurrenceRule?.toClientDTO() ?? null,
-      reminderConfig: this._reminderConfig?.toClientDTO() ?? null,
+      timeConfig: this._timeConfig?.toDTO() ?? { timeType: 'AllDay', startDate: null, timePoint: null, timeRange: null },
+      recurrenceRule: this._recurrenceRule?.toDTO() ?? null,
+      reminderConfig: this._reminderConfig?.toDTO() ?? null,
       importance: this._importance,
       priority: priority?.score,
-      goalBinding: this._goalBinding?.toClientDTO() ?? null,
+      goalBinding: this._goalBinding?.toDTO() ?? null,
       folderId: this._folderId,
       tags: [...this._tags],
       color: this._color,
       status: this._status,
-      lastGeneratedDate: this._lastGeneratedDate,
+      lastGeneratedDate: this._lastGeneratedDate?.getTime() ?? null,
       generateAheadDays: this._generateAheadDays,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       deletedAt: this._deletedAt?.getTime() ?? null,
-      // ONE_TIME �������ֶ�
-      goalId: this._goalId,
-      keyResultId: this._keyResultId,
       parentTaskId: this._parentTaskId,
-      startDate: this._startDate,
-      dueDate: this._dueDate,
+      startDate: this._startDate?.getTime() ?? null,
+      dueDate: this._dueDate?.getTime() ?? null,
       completedAt: this._completedAt?.getTime() ?? null,
       estimatedMinutes: this._estimatedMinutes,
       actualMinutes: this._actualMinutes,
-      note: this._note,
+      comment: this._note,
       dependencyStatus: this._dependencyStatus,
       isBlocked: this._isBlocked,
       blockingReason: this._blockingReason,
@@ -1377,41 +1340,37 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       identityId: this._identityId,
       name: this._title,
       description: this._description,
-      taskType: this._taskType,
 
       // Flattened timeConfig (RECURRING ����ר��)
-      timeConfigType: this._timeConfig?.timeType as 'POINT' | 'RANGE' | 'ALL_DAY' | undefined,
-      timeConfigStartTime: this._timeConfig?.startDate,
+      timeConfigType: this._timeConfig?.timeType ?? null,
+      timeConfigStartTime: this._timeConfig?.startDate ?? null,
       timeConfigEndTime: null, // endDate ���Ƴ� - �������������ظ�����
       timeConfigDurationMinutes:
         this._timeConfig?.timeRange &&
         this._timeConfig.timeRange.end &&
         this._timeConfig.timeRange.start
           ? (this._timeConfig.timeRange.end - this._timeConfig.timeRange.start) / 60000
-          : undefined,
+          : null,
 
       // Flattened recurrence_rule (RECURRING ����ר��)
-      recurrenceRuleType: this._recurrenceRule?.frequency,
-      recurrenceRuleInterval: this._recurrenceRule?.interval,
+      recurrenceRuleType: this._recurrenceRule?.frequency ?? null,
+      recurrenceRuleInterval: this._recurrenceRule?.interval ?? null,
       recurrenceRuleDaysOfWeek: this._recurrenceRule?.daysOfWeek
         ? JSON.stringify(this._recurrenceRule.daysOfWeek)
-        : undefined,
-      recurrenceRuleDayOfMonth: undefined, // Not implemented in VO
-      recurrenceRuleMonthOfYear: undefined, // Not implemented in VO
-      recurrenceRuleEndDate: this._recurrenceRule?.endDate,
-      recurrenceRuleCount: this._recurrenceRule?.occurrences,
+        : null,
+      recurrenceRuleDayOfMonth: null, // Not implemented in VO
+      recurrenceRuleMonthOfYear: null, // Not implemented in VO
+      recurrenceRuleEndDate: this._recurrenceRule?.endDate ?? null,
+      recurrenceRuleCount: this._recurrenceRule?.occurrences ?? null,
 
       // Flattened reminderConfig (RECURRING ����ר��)
-      reminderConfigEnabled: this._reminderConfig?.enabled,
-      reminderConfigTimeOffsetMinutes: this._reminderConfig?.triggers[0]?.relativeValue,
-      reminderConfigUnit: this._reminderConfig?.triggers[0]?.relativeUnit,
-      reminderConfigChannel: this._reminderConfig ? 'PUSH' : undefined,
+      reminderConfigEnabled: this._reminderConfig?.enabled ?? null,
+      reminderConfigTimeOffsetMinutes: this._reminderConfig?.triggers[0]?.relativeValue ?? null,
+      reminderConfigUnit: this._reminderConfig?.triggers[0]?.relativeUnit ?? null,
+      reminderConfigChannel: this._reminderConfig ? 'PUSH' : null,
 
       importance: this._importance, // Store as string: 'vital', 'important', etc.
-      // Flattened goal_binding (RECURRING ����ר�� - �ɰ�)
-      goalBindingGoalUuid: this._goalBinding?.goalUuid,
-      goalBindingKeyResultUuid: this._goalBinding?.keyResultUuid,
-      goalBindingIncrementValue: this._goalBinding?.incrementValue,
+      goalBinding: this._goalBinding?.toDTO() ?? null,
 
       folderId: this._folderId,
       tags: JSON.stringify(this._tags),
@@ -1419,38 +1378,28 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       status: this._status,
       lastGeneratedDate: this._lastGeneratedDate,
       generateAheadDays: this._generateAheadDays ?? null,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
-
-      // ONE_TIME �������ֶ�
-      goalId: this._goalId,
-      keyResultId: this._keyResultId,
       parentTaskId: this._parentTaskId,
-      startDate: this._startDate,
-      dueDate: this._dueDate,
-      completedAt: this._completedAt?.getTime() ?? null,
-      estimatedMinutes: this._estimatedMinutes,
-      actualMinutes: this._actualMinutes,
-      note: this._note,
       dependencyStatus: this._dependencyStatus,
       isBlocked: this._isBlocked,
       blockingReason: this._blockingReason,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
+      deletedAt: this._deletedAt,
     };
   }
 
   // ===== �������� =====
 
   /**
-   * ����һ������??(��ݹ�������)
+   * ����һ������??(��ݹ�������?
    */
   public static createOneTimeTask(params: {
     identityId: IdentityId;
     title: string;
     description?: string;
     importance?: ImportanceLevel;
-    startDate?: number;
-    dueDate?: number;
+    startDate?: Date;
+    dueDate?: Date;
     estimatedMinutes?: number;
     note?: string;
     goalId?: GoalId;
@@ -1460,16 +1409,16 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     tags?: string[];
     color?: string;
   }): TaskTemplate {
-    const now = Date.now();
+    const now = new Date();
     const template = new TaskTemplate({
       identityId: params.identityId,
       title: params.title,
       description: params.description || null,
       taskType: TaskType.ONE_TIME,
-      importance: params.importance ?? ImportanceLevel.Moderate,
+      importance: (params.importance ?? ImportanceLevel.Moderate) as ImportanceLevel,
       tags: params.tags ?? [],
       color: params.color || null,
-      status: TaskTemplateStatus.ACTIVE, // Use ACTIVE instead of TODO
+      status: TaskTemplateStatus.Active, // Use ACTIVE instead of TODO
       folderId: params.folderId || null,
       goalId: params.goalId || null,
       keyResultId: params.keyResultId || null,
@@ -1478,7 +1427,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       dueDate: params.dueDate || null,
       estimatedMinutes: params.estimatedMinutes || null,
       note: params.note || null,
-      dependencyStatus: 'PENDING',
+      dependencyStatus: 'Pending',
       isBlocked: false,
       blockingReason: null,
       createdAt: now,
@@ -1490,10 +1439,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   }
 
   /**
-   * ����ѭ�����񣨱�ݹ���������
+   * ����ѭ�����񣨱�ݹ���������?
    *
    * Story 1.1+1.2�����Ƴ� urgency ����
-   * ѭ����������ȼ���ͨ�� getPriority() ���㣨����������ȼ���
+   * ѭ����������ȼ���ͨ��?getPriority() ���㣨����������ȼ���?
    */
   public static createRecurringTask(params: {
     identityId: IdentityId;
@@ -1508,7 +1457,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     color?: string;
     generateAheadDays?: number;
   }): TaskTemplate {
-    const now = Date.now();
+    const now = new Date();
     const template = new TaskTemplate({
       identityId: params.identityId,
       title: params.title,
@@ -1517,12 +1466,12 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       timeConfig: params.timeConfig,
       recurrenceRule: params.recurrenceRule,
       reminderConfig: params.reminderConfig || null,
-      importance: params.importance ?? ImportanceLevel.Moderate,
+      importance: (params.importance ?? ImportanceLevel.Moderate) as ImportanceLevel,
       goalBinding: null,
       folderId: params.folderId || null,
       tags: params.tags ?? [],
       color: params.color || null,
-      status: TaskTemplateStatus.ACTIVE,
+      status: TaskTemplateStatus.Active,
       generateAheadDays: params.generateAheadDays ?? 30,
       createdAt: now,
       updatedAt: now,
@@ -1536,7 +1485,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
    * �����µ�����ģ�壨ͨ�ù������������������ݣ�
    *
    * ֧��һ���������ѭ�������ͳһ�����ӿ�
-   * Story 1.1+1.2��urgency ���Ƴ������ȼ���Ϊʱ���֪�ļ���
+   * Story 1.1+1.2��urgency ���Ƴ������ȼ���Ϊʱ���֪�ļ���?
    */
   public static create(params: {
     identityId: IdentityId;
@@ -1575,7 +1524,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       });
     }
 
-    const now = Date.now();
+    const now = new Date();
     const template = new TaskTemplate({
       identityId: params.identityId,
       title: params.title,
@@ -1584,12 +1533,12 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       timeConfig: params.timeConfig,
       recurrenceRule: params.recurrenceRule,
       reminderConfig: params.reminderConfig,
-      importance: params.importance ?? ImportanceLevel.Moderate,
+      importance: (params.importance ?? ImportanceLevel.Moderate) as ImportanceLevel,
       goalBinding: null, // Initialize as null
       folderId: params.folderId,
       tags: params.tags ?? [],
       color: params.color,
-      status: 'ACTIVE' as TaskTemplateStatus,
+      status: TaskTemplateStatus.Active,
       createdAt: now,
       updatedAt: now,
       generateAheadDays: params.generateAheadDays ?? 30, // Default value
@@ -1615,46 +1564,33 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         identityId: dto.identityId as IdentityId,
         title: dto.name,
         description: dto.description,
-        taskType: dto.taskType,
-        timeConfig: dto.timeConfig ? TaskTimeConfig.fromServerDTO(dto.timeConfig) : null,
+        taskType: TaskType.RECURRING, // Default, can be inferred from recurrenceRule
+        timeConfig: dto.timeConfig ? TaskTimeConfig.fromDTO(dto.timeConfig) : null,
         recurrenceRule: dto.recurrenceRule
-          ? RecurrenceRule.fromServerDTO(dto.recurrenceRule)
+          ? RecurrenceRule.fromDTO(dto.recurrenceRule)
           : null,
         reminderConfig: dto.reminderConfig
-          ? TaskReminderConfig.fromServerDTO(dto.reminderConfig)
+          ? TaskReminderConfig.fromDTO(dto.reminderConfig)
           : null,
-        importance: dto.importance,
-        goalBinding: dto.goalBinding ? TaskGoalBinding.fromServerDTO(dto.goalBinding) : null,
+        importance: dto.importance as ImportanceLevel,
+        goalBinding: dto.goalBinding ? TaskGoalBinding.fromDTO(dto.goalBinding) : null,
+        checklist: dto.checklist ? dto.checklist.map((c) => ChecklistItemDefinition.fromDTO(c)) : [],
         folderId: dto.folderId as TaskFolderId | null,
         tags: dto.tags,
         color: dto.color,
-        status: dto.status,
-        lastGeneratedDate: dto.lastGeneratedDate,
+        status: dto.status as TaskTemplateStatus,
+        lastGeneratedDate: dto.lastGeneratedDate ? new Date(dto.lastGeneratedDate) : null,
         generateAheadDays: dto.generateAheadDays,
         createdAt: new Date(dto.createdAt),
         updatedAt: new Date(dto.updatedAt),
         deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-        // ONE_TIME �������ֶ�
-        goalId: dto.goalId as GoalId | null,
-        keyResultId: dto.keyResultId as KeyResultId | null,
         parentTaskId: dto.parentTaskId as TaskTemplateId | null,
-        startDate: dto.startDate,
-        dueDate: dto.dueDate,
-        completedAt: dto.completedAt,
-        estimatedMinutes: dto.estimatedMinutes,
-        actualMinutes: dto.actualMinutes,
-        note: dto.note,
         dependencyStatus: dto.dependencyStatus,
         isBlocked: dto.isBlocked,
         blockingReason: dto.blockingReason,
       },
       dto.id as TaskTemplateId,
     );
-
-    // �ָ���ʷ��¼
-    if (dto.history) {
-      template._history = dto.history.map((h) => TaskTemplateHistory.fromServerDTO(h));
-    }
 
     // �ָ�ʵ��
     if (dto.instances) {
@@ -1668,19 +1604,23 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
    * ??PersistenceDTO �ָ�
    */
   public static fromPersistenceDTO(dto: TaskTemplatePersistenceDTO): TaskTemplate {
-    const timeConfig = new TaskTimeConfig({
-      timeType: dto.timeConfigType as TimeType,
-      startDate: dto.timeConfigStartTime,
-      // endDate ���Ƴ� - �������������ظ����򣬲�����ʱ������
-    });
+    let timeConfig = null;
+    if (dto.timeConfigType) {
+      timeConfig = TaskTimeConfig.create({
+        timeType: dto.timeConfigType as any,
+        startDate: dto.timeConfigStartTime ? dto.timeConfigStartTime.getTime() : null,
+        timePoint: null,
+        timeRange: null,
+      });
+    }
 
     let recurrenceRule = null;
     if (dto.recurrenceRuleType) {
-      recurrenceRule = new RecurrenceRule({
+      recurrenceRule = RecurrenceRule.create({
         frequency: dto.recurrenceRuleType as RecurrenceFrequency,
         interval: dto.recurrenceRuleInterval ?? 1,
         daysOfWeek: dto.recurrenceRuleDaysOfWeek ? JSON.parse(dto.recurrenceRuleDaysOfWeek) : [],
-        endDate: dto.recurrenceRuleEndDate,
+        endDate: dto.recurrenceRuleEndDate ? dto.recurrenceRuleEndDate.getTime() : null,
         occurrences: dto.recurrenceRuleCount,
       });
     }
@@ -1689,24 +1629,21 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     if (dto.reminderConfigEnabled) {
       const triggers = [
         {
-          type: 'RELATIVE',
+          type: 'Relative' as const,
+          absoluteTime: null,
           relativeValue: dto.reminderConfigTimeOffsetMinutes,
-          relativeUnit: dto.reminderConfigUnit,
+          relativeUnit: dto.reminderConfigUnit as any,
         },
       ];
-      reminderConfig = new TaskReminderConfig({
+      reminderConfig = TaskReminderConfig.create({
         enabled: dto.reminderConfigEnabled,
-        triggers: triggers as any, // Cast to any to avoid type issues
+        triggers: triggers,
       });
     }
 
     let goalBinding = null;
-    if (dto.goalBindingGoalUuid) {
-      goalBinding = new TaskGoalBinding({
-        goalUuid: dto.goalBindingGoalUuid,
-        keyResultUuid: dto.goalBindingKeyResultUuid ?? '',
-        incrementValue: dto.goalBindingIncrementValue ?? 0,
-      });
+    if (dto.goalBinding) {
+      goalBinding = TaskGoalBinding.fromDTO(dto.goalBinding);
     }
 
     const tags = dto.tags ? JSON.parse(dto.tags) : [];
@@ -1715,7 +1652,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       identityId: dto.identityId as IdentityId,
       title: dto.name,
       description: dto.description,
-      taskType: dto.taskType as TaskType,
+      taskType: recurrenceRule ? TaskType.RECURRING : TaskType.ONE_TIME,
       timeConfig,
       recurrenceRule,
       reminderConfig,
@@ -1727,22 +1664,13 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       status: dto.status as TaskTemplateStatus,
       lastGeneratedDate: dto.lastGeneratedDate,
       generateAheadDays: dto.generateAheadDays,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-      // ONE_TIME �������ֶ�
-      goalId: dto.goalId as GoalId | null,
-      keyResultId: dto.keyResultId as KeyResultId | null,
       parentTaskId: dto.parentTaskId as TaskTemplateId | null,
-      startDate: dto.startDate,
-      dueDate: dto.dueDate,
-      completedAt: dto.completedAt,
-      estimatedMinutes: dto.estimatedMinutes,
-      actualMinutes: dto.actualMinutes,
-      note: dto.note,
       dependencyStatus: dto.dependencyStatus,
       isBlocked: dto.isBlocked,
       blockingReason: dto.blockingReason,
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+      deletedAt: dto.deletedAt,
     };
     return new TaskTemplate(props, dto.id as TaskTemplateId);
   }
@@ -1758,24 +1686,24 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   }
 
   private getImportanceText(): string {
-    const map: Record<ImportanceLevel, string> = {
-      [ImportanceLevel.Vital]: '������Ҫ',
-      [ImportanceLevel.Important]: '�ǳ���Ҫ',
-      [ImportanceLevel.Moderate]: '�е���Ҫ',
-      [ImportanceLevel.Minor]: '��̫��Ҫ',
-      [ImportanceLevel.Trivial]: '�޹ؽ�Ҫ',
+    const map: { [key in ImportanceLevel]: string } = {
+      Vital: '������Ҫ',
+      Important: '�ǳ���Ҫ',
+      Moderate: '�е���Ҫ',
+      Minor: '��̫��Ҫ',
+      Trivial: '�޹ؽ�Ҫ',
     };
-    return map[this._importance];
+    return map[this._importance as ImportanceLevel];
   }
 
   private getStatusText(): string {
-    const map: Record<TaskTemplateStatus, string> = {
-      ACTIVE: '��Ծ',
-      PAUSED: '��ͣ',
-      ARCHIVED: '�鵵',
-      DELETED: '��ɾ��',
+    const map: { Active: string; Paused: string; Archived: string; Deleted: string } = {
+      Active: '��Ծ',
+      Paused: '��ͣ',
+      Archived: '�鵵',
+      Deleted: '��ɾ��',
     };
-    return map[this._status];
+    return map[this._status as 'Active' | 'Paused' | 'Archived' | 'Deleted'];
   }
 }
 
@@ -1796,6 +1724,9 @@ interface TaskTemplateProps {
   keyResultId?: KeyResultId | null;
   goalBinding?: TaskGoalBinding | null;
 
+  // === Checklist ===
+  checklist?: ChecklistItemDefinition[];
+
   // === ������֧�� ===
   parentTaskId?: TaskTemplateId | null;
 
@@ -1803,13 +1734,13 @@ interface TaskTemplateProps {
   timeConfig?: TaskTimeConfig | null;
   recurrenceRule?: RecurrenceRule | null;
   reminderConfig?: TaskReminderConfig | null;
-  lastGeneratedDate?: number | null;
+  lastGeneratedDate?: Date | null;
   generateAheadDays?: number | null;
 
   // === һ��������ר??===
-  startDate?: number | null;
-  dueDate?: number | null;
-  completedAt?: number | null;
+  startDate?: Date | null;
+  dueDate?: Date | null;
+  completedAt?: Date | null;
   estimatedMinutes?: number | null;
   actualMinutes?: number | null;
   note?: string | null;
@@ -1819,8 +1750,8 @@ interface TaskTemplateProps {
   isBlocked?: boolean;
   blockingReason?: string | null;
 
-  // === ����ֶ� ===
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  // === ����ֶ�?===
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 }

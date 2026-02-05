@@ -13,22 +13,22 @@ import { type ImportanceLevel, type UrgencyLevel, PriorityLevel } from '@dailyus
  * 重要性权重映射
  */
 export const IMPORTANCE_WEIGHTS: Record<ImportanceLevel, number> = {
-  vital: 5,
-  important: 4,
-  moderate: 3,
-  minor: 2,
-  trivial: 1,
+  Vital: 5,
+  Important: 4,
+  Moderate: 3,
+  Minor: 2,
+  Trivial: 1,
 };
 
 /**
  * 紧急性权重映射
  */
 export const URGENCY_WEIGHTS: Record<UrgencyLevel, number> = {
-  critical: 5,
-  high: 4,
-  medium: 3,
-  low: 2,
-  none: 1,
+  Critical: 5,
+  High: 4,
+  Medium: 3,
+  Low: 2,
+  None: 1,
 };
 
 /**
@@ -134,15 +134,15 @@ export function calculatePriority(
   // 4. 确定优先级等级（5级系统）
   let level: PriorityLevel;
   if (totalWeight >= 14) {
-    level = PriorityLevel.Critical;
+    level = 'Critical';
   } else if (totalWeight >= 11) {
-    level = PriorityLevel.High;
+    level = 'High';
   } else if (totalWeight >= 8) {
-    level = PriorityLevel.Medium;
+    level = 'Medium';
   } else if (totalWeight >= 5) {
-    level = PriorityLevel.Low;
+    level = 'Low';
   } else {
-    level = PriorityLevel.None;
+    level = 'None';
   }
 
   // 5. 计算分数（0-100）
@@ -162,11 +162,11 @@ export function calculatePriority(
  */
 export function getPriorityBadgeColor(level: PriorityLevel): string {
   const colorMap: Record<PriorityLevel, string> = {
-    [PriorityLevel.Critical]: 'red',
-    [PriorityLevel.High]: 'orange',
-    [PriorityLevel.Medium]: 'yellow',
-    [PriorityLevel.Low]: 'blue',
-    [PriorityLevel.None]: 'gray',
+    Critical: 'red',
+    High: 'orange',
+    Medium: 'yellow',
+    Low: 'blue',
+    None: 'gray',
   };
   return colorMap[level];
 }
@@ -176,11 +176,11 @@ export function getPriorityBadgeColor(level: PriorityLevel): string {
  */
 export function getPriorityText(level: PriorityLevel): string {
   const textMap: Record<PriorityLevel, string> = {
-    [PriorityLevel.Critical]: '紧急',
-    [PriorityLevel.High]: '高优先级',
-    [PriorityLevel.Medium]: '中优先级',
-    [PriorityLevel.Low]: '低优先级',
-    [PriorityLevel.None]: '无优先级',
+    Critical: '紧急',
+    High: '高优先级',
+    Medium: '中优先级',
+    Low: '低优先级',
+    None: '无优先级',
   };
   return textMap[level];
 }

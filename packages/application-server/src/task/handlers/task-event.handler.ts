@@ -1,6 +1,10 @@
-import { eventBus, type DomainEvent, Logger } from '@dailyuse/utils';
+import { eventBus, Logger } from '@dailyuse/utils';
+import type { IDomainEvent } from '@dailyuse/contracts/shared';
 
 const logger = new Logger('TaskEventHandler');
+
+// Cast eventBus to any for custom event types not in AppEventRegistry
+const customEventBus = eventBus as any;
 
 /**
  * Task 模块事件处理器
@@ -26,7 +30,7 @@ export class TaskEventHandler {
     /**
      * 监听 Task 实例生成事件
      */
-    eventBus.on('task.instances.generated', async (event: DomainEvent) => {
+    customEventBus.on('task.instances.generated', async (event: IDomainEvent) => {
       try {
         await this.handleTaskInstancesGenerated(event);
       } catch (error) {
@@ -37,7 +41,7 @@ export class TaskEventHandler {
     /**
      * 监听 Task 模板创建事件
      */
-    eventBus.on('task.template.created', async (event: DomainEvent) => {
+    customEventBus.on('task.template.created', async (event: IDomainEvent) => {
       try {
         await this.handleTaskTemplateCreated(event);
       } catch (error) {
@@ -48,7 +52,7 @@ export class TaskEventHandler {
     /**
      * 监听 Task 实例完成事件
      */
-    eventBus.on('task.instance.completed', async (event: DomainEvent) => {
+    customEventBus.on('task.instance.completed', async (event: IDomainEvent) => {
       try {
         await this.handleTaskInstanceCompleted(event);
       } catch (error) {
@@ -63,8 +67,9 @@ export class TaskEventHandler {
   /**
    * 处理任务实例生成事件
    */
-  private static async handleTaskInstancesGenerated(event: DomainEvent): Promise<void> {
-    const { accountUuid, payload } = event;
+  private static async handleTaskInstancesGenerated(event: IDomainEvent): Promise<void> {
+    const eventData = event as any;
+    const accountUuid = eventData.accountUuid ?? eventData.payload?.accountUuid;
 
     if (!accountUuid) {
       logger.error('[TaskEventHandler] Missing accountUuid in task.instances.generated event');
@@ -72,7 +77,7 @@ export class TaskEventHandler {
     }
 
     const { templateUuid, templateTitle, instanceCount, instances, dateRange, strategy } =
-      payload as any;
+      eventData.payload ?? eventData;
 
     logger.info('📦 [TaskEventHandler] Task instances generated', {
       accountUuid,
@@ -89,7 +94,7 @@ export class TaskEventHandler {
   /**
    * 处理任务模板创建事件
    */
-  private static async handleTaskTemplateCreated(event: DomainEvent): Promise<void> {
+  private static async handleTaskTemplateCreated(event: IDomainEvent): Promise<void> {
     const { accountUuid, payload } = event as any;
 
     if (!accountUuid) {
@@ -118,7 +123,7 @@ export class TaskEventHandler {
   /**
    * 处理任务实例完成事件
    */
-  private static async handleTaskInstanceCompleted(event: DomainEvent): Promise<void> {
+  private static async handleTaskInstanceCompleted(event: IDomainEvent): Promise<void> {
     const { accountUuid, payload } = event as any;
 
     if (!accountUuid) {
@@ -152,9 +157,9 @@ export class TaskEventHandler {
       return;
     }
 
-    eventBus.off('task.instances.generated');
-    eventBus.off('task.template.created');
-    eventBus.off('task.instance.completed');
+    customEventBus.off('task.instances.generated');
+    customEventBus.off('task.template.created');
+    customEventBus.off('task.instance.completed');
 
     this.isInitialized = false;
     console.log('🔄 [TaskEventHandler] Event listeners reset');

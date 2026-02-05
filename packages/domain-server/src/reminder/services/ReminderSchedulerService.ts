@@ -15,7 +15,6 @@
 
 import type { ReminderTemplate } from '../aggregates/ReminderTemplate';
 import type { IReminderTemplateRepository } from '../repositories/IReminderTemplateRepository';
-import type { IReminderStatisticsRepository } from '../repositories/IReminderStatisticsRepository';
 import type { ReminderTriggerService, ITriggerReminderResult } from './ReminderTriggerService';
 import { TriggerResult } from '@dailyuse/contracts/reminder';
 import { createLogger } from '@dailyuse/utils';
@@ -60,7 +59,6 @@ export interface IScheduleOptions {
 export class ReminderSchedulerService {
   constructor(
     private readonly templateRepository: IReminderTemplateRepository,
-    private readonly statisticsRepository: IReminderStatisticsRepository,
     private readonly triggerService: ReminderTriggerService,
   ) {}
 
@@ -116,13 +114,13 @@ export class ReminderSchedulerService {
 
     // 统计结果
     const successCount = results.filter(
-      (r) => r.result === TriggerResult.SUCCESS,
+      (r) => r.result === TriggerResult.Success,
     ).length;
     const failedCount = results.filter(
-      (r) => r.result === TriggerResult.FAILED,
+      (r) => r.result === TriggerResult.Failed,
     ).length;
     const skippedCount = results.filter(
-      (r) => r.result === TriggerResult.SKIPPED,
+      (r) => r.result === TriggerResult.Skipped,
     ).length;
 
     logger.info('Reminder schedule scan completed', {
@@ -164,30 +162,6 @@ export class ReminderSchedulerService {
     }
 
     return updatedCount;
-  }
-
-  /**
-   * 重新计算账户的统计数据
-   */
-  async recalculateStatistics(accountUuid: string): Promise<void> {
-    const statistics = await this.statisticsRepository.findOrCreate(accountUuid);
-    const templates = await this.templateRepository.findByAccountUuid(accountUuid, {
-      includeHistory: true,
-    });
-
-    // 调用聚合根的 calculate 方法重新计算
-    statistics.calculate();
-
-    await this.statisticsRepository.save(statistics);
-  }
-
-  /**
-   * 批量重新计算多个账户的统计数据
-   */
-  async recalculateStatisticsBatch(accountUuids: string[]): Promise<void> {
-    for (const accountUuid of accountUuids) {
-      await this.recalculateStatistics(accountUuid);
-    }
   }
 
   /**
@@ -280,7 +254,7 @@ export class ReminderSchedulerService {
 
           results.push({
             ok: true,
-            result: TriggerResult.SKIPPED,
+            result: TriggerResult.Skipped,
             triggerTime: template.getNextTriggerTime() || Date.now(),
             nextTriggerTime,
             message: '过期跳过',
@@ -296,7 +270,7 @@ export class ReminderSchedulerService {
 
           results.push({
             ok: true,
-            result: TriggerResult.SKIPPED,
+            result: TriggerResult.Skipped,
             triggerTime: Date.now(),
             nextTriggerTime,
             message: '重新调度',
@@ -306,13 +280,13 @@ export class ReminderSchedulerService {
     }
 
     const successCount = results.filter(
-      (r) => r.result === TriggerResult.SUCCESS,
+      (r) => r.result === TriggerResult.Success,
     ).length;
     const failedCount = results.filter(
-      (r) => r.result === TriggerResult.FAILED,
+      (r) => r.result === TriggerResult.Failed,
     ).length;
     const skippedCount = results.filter(
-      (r) => r.result === TriggerResult.SKIPPED,
+      (r) => r.result === TriggerResult.Skipped,
     ).length;
 
     return {

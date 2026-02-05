@@ -41,15 +41,15 @@ export class ScheduleStrategyFactory {
   private registerDefaultStrategies(): void {
     // 注册 Goal 策略
     const goalStrategy = new GoalScheduleStrategy();
-    this.strategies.set(SourceModule.GOAL, goalStrategy);
+    this.strategies.set(SourceModule.Goal, goalStrategy);
 
     // 注册 Task 策略
     const taskStrategy = new TaskScheduleStrategy();
-    this.strategies.set(SourceModule.TASK, taskStrategy);
+    this.strategies.set(SourceModule.Task, taskStrategy);
 
     // 注册 Reminder 策略
     const reminderStrategy = new ReminderScheduleStrategy();
-    this.strategies.set(SourceModule.REMINDER, reminderStrategy);
+    this.strategies.set(SourceModule.Reminder, reminderStrategy);
   }
 
   /**

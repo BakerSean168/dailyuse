@@ -3,11 +3,18 @@
  * 表示任务跳过记录
  */
 
-import type {
-  SkipRecordServerDTO,
-  SkipRecordPersistenceDTO,
-} from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
+
+// Local DTO types (not yet defined in contracts)
+interface SkipRecordServerDTO {
+  skippedAt: number;
+  reason: string | null;
+}
+
+interface SkipRecordPersistenceDTO {
+  skipped_at: number;
+  reason: string | null;
+}
 
 export class SkipRecord extends ValueObject<SkipRecordServerDTO> {
   private _skippedAt: number;
@@ -50,7 +57,7 @@ export class SkipRecord extends ValueObject<SkipRecordServerDTO> {
 
   public static fromPersistence(dto: SkipRecordPersistenceDTO): SkipRecord {
     return new SkipRecord({
-      skippedAt: dto.skippedAt,
+      skippedAt: dto.skipped_at,
       reason: dto.reason,
     });
   }
@@ -66,7 +73,7 @@ export class SkipRecord extends ValueObject<SkipRecordServerDTO> {
 
   public toPersistence(): SkipRecordPersistenceDTO {
     return {
-      skippedAt: this._skippedAt,
+      skipped_at: this._skippedAt,
       reason: this._reason,
     };
   }

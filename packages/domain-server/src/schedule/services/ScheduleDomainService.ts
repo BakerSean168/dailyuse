@@ -13,17 +13,17 @@
  * - 任务生命周期管理
  * - 与其他模块的集成（Reminder, Task, Goal, Notification）
  *
+ * 注意:
+ * - 统计功能已移至应用层（statistics 是读模型，不是聚合根）
+ *
  * @domain-server/schedule
  */
 
 import { ScheduleTask } from '../aggregates/ScheduleTask';
-import type { ScheduleStatistics } from '../aggregates/ScheduleStatistics';
 import type { IScheduleTaskRepository } from '../repositories/IScheduleTaskRepository';
-import type { IScheduleStatisticsRepository } from '../repositories/IScheduleStatisticsRepository';
 import type {
   RetryPolicyServerDTO,
   ScheduleConfigServerDTO,
-  TaskMetadataServerDTO,
 } from '@dailyuse/contracts/schedule';
 import { ExecutionStatus, ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 import { ScheduleConfig } from '../value-objects/ScheduleConfig';
@@ -36,7 +36,7 @@ import { TaskMetadata } from '../value-objects/TaskMetadata';
 export interface ICreateScheduleTaskParams {
   name: string;
   description?: string;
-  accountUuid: string;
+  identityId: string;
   sourceModule: SourceModule;
   sourceEntityId: string;
   schedule: ScheduleConfigServerDTO;
@@ -69,7 +69,6 @@ export interface IExecuteScheduleTaskResult {
 export class ScheduleDomainService {
   constructor(
     private readonly scheduleTaskRepository: IScheduleTaskRepository,
-    private readonly scheduleStatisticsRepository: IScheduleStatisticsRepository,
   ) {}
 
   // ============ 任务创建 ============
@@ -81,14 +80,16 @@ export class ScheduleDomainService {
     // 将 DTO 转换为值对象
     const schedule = ScheduleConfig.fromDTO({
       ...params.schedule,
-      startDate: params.schedule.startDate ? new Date(params.schedule.startDate).getTime() : null,
-      endDate: params.schedule.endDate ? new Date(params.schedule.endDate).getTime() : null,
+      startDate: params.schedule.startDate ? new Date(params.schedule.startDate).toISOString() : null,
+      endDate: params.schedule.endDate ? new Date(params.schedule.endDate).toISOString() : null,
     });
     const retryPolicy = params.retryConfig ? RetryPolicy.fromDTO(params.retryConfig) : undefined;
     const metadata = params.payload
-      ? new TaskMetadata({
+      ? TaskMetadata.create({
           payload: params.payload,
           tags: params.tags || [],
+          priority: 'Normal',
+          timeout: null,
         })
       : undefined;
 
@@ -96,7 +97,7 @@ export class ScheduleDomainService {
     const task = ScheduleTask.create({
       name: params.name,
       description: params.description,
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       sourceModule: params.sourceModule,
       sourceEntityId: params.sourceEntityId,
       schedule,
@@ -106,11 +107,6 @@ export class ScheduleDomainService {
 
     // 保存任务
     await this.scheduleTaskRepository.save(task);
-
-    // 更新统计
-    const statistics = await this.scheduleStatisticsRepository.getOrCreate(params.accountUuid);
-    statistics.incrementTaskCount(task.status);
-    await this.scheduleStatisticsRepository.save(statistics);
 
     return task;
   }
@@ -126,23 +122,25 @@ export class ScheduleDomainService {
       // 转换 DTO 为值对象
       const schedule = ScheduleConfig.fromDTO({
         ...param.schedule,
-        startDate: param.schedule.startDate ? new Date(param.schedule.startDate).getTime() : null,
-        endDate: param.schedule.endDate ? new Date(param.schedule.endDate).getTime() : null,
+        startDate: param.schedule.startDate ? new Date(param.schedule.startDate).toISOString() : null,
+        endDate: param.schedule.endDate ? new Date(param.schedule.endDate).toISOString() : null,
       });
       const retryPolicy = param.retryConfig
         ? RetryPolicy.fromDTO(param.retryConfig)
         : RetryPolicy.createDefault();
       const metadata = param.payload
-        ? new TaskMetadata({
+        ? TaskMetadata.create({
             payload: param.payload,
             tags: param.tags || [],
+            priority: 'Normal',
+            timeout: null,
           })
         : TaskMetadata.createDefault();
 
       const task = ScheduleTask.create({
         name: param.name,
         description: param.description,
-        accountUuid: param.accountUuid,
+        identityId: param.identityId,
         sourceModule: param.sourceModule,
         sourceEntityId: param.sourceEntityId,
         schedule,
@@ -154,20 +152,6 @@ export class ScheduleDomainService {
 
     // 批量保存
     await this.scheduleTaskRepository.saveBatch(tasks);
-
-    // 更新统计（按账户分组）
-    const accountStatistics = new Map<string, ScheduleStatistics>();
-    for (const task of tasks) {
-      let statistics = accountStatistics.get(task.accountUuid);
-      if (!statistics) {
-        statistics = await this.scheduleStatisticsRepository.getOrCreate(task.accountUuid);
-        accountStatistics.set(task.accountUuid, statistics);
-      }
-      statistics.incrementTaskCount(task.status);
-    }
-
-    // 保存所有统计
-    await this.scheduleStatisticsRepository.saveBatch(Array.from(accountStatistics.values()));
 
     return tasks;
   }
@@ -194,7 +178,7 @@ export class ScheduleDomainService {
       throw new Error(`ScheduleTask is disabled: ${params.taskUuid}`);
     }
 
-    if (task.status !== ScheduleTaskStatus.ACTIVE) {
+    if (task.status !== ScheduleTaskStatus.Active) {
       throw new Error(`ScheduleTask is not active: ${params.taskUuid} (status: ${task.status})`);
     }
 
@@ -209,7 +193,7 @@ export class ScheduleDomainService {
       const errorMessage = error instanceof Error ? error.message : String(error);
       result = {
         executionUuid: crypto.randomUUID(),
-        status: ExecutionStatus.FAILED,
+        status: ExecutionStatus.Failed,
         duration: Date.now() - startedAt.getTime(),
         errorMessage,
       };
@@ -225,11 +209,6 @@ export class ScheduleDomainService {
 
     // 保存任务
     await this.scheduleTaskRepository.save(task);
-
-    // 更新统计
-    const statistics = await this.scheduleStatisticsRepository.getOrCreate(task.accountUuid);
-    statistics.recordExecution(result.status, result.duration, task.sourceModule);
-    await this.scheduleStatisticsRepository.save(statistics);
 
     return {
       ...result,
@@ -255,16 +234,8 @@ export class ScheduleDomainService {
       throw new Error(`ScheduleTask not found: ${taskUuid}`);
     }
 
-    const wasActive = task.status === 'active';
     task.pause();
-
     await this.scheduleTaskRepository.save(task);
-
-    if (wasActive) {
-      const statistics = await this.scheduleStatisticsRepository.getOrCreate(task.accountUuid);
-      statistics.incrementPausedTasks(task.sourceModule);
-      await this.scheduleStatisticsRepository.save(statistics);
-    }
   }
 
   /**
@@ -276,35 +247,21 @@ export class ScheduleDomainService {
       throw new Error(`ScheduleTask not found: ${taskUuid}`);
     }
 
-    const wasPaused = task.status === 'paused';
     task.resume();
-
     await this.scheduleTaskRepository.save(task);
-
-    if (wasPaused) {
-      const statistics = await this.scheduleStatisticsRepository.getOrCreate(task.accountUuid);
-      statistics.decrementPausedTasks(task.sourceModule);
-      await this.scheduleStatisticsRepository.save(statistics);
-    }
   }
 
   /**
    * 完成任务
    */
-  async completeScheduleTask(taskUuid: string, reason?: string): Promise<void> {
+  async completeScheduleTask(taskUuid: string, _reason?: string): Promise<void> {
     const task = await this.scheduleTaskRepository.findByUuid(taskUuid);
     if (!task) {
       throw new Error(`ScheduleTask not found: ${taskUuid}`);
     }
 
-    const wasActive = task.status === ScheduleTaskStatus.ACTIVE;
     task.complete();
-
     await this.scheduleTaskRepository.save(task);
-
-    const statistics = await this.scheduleStatisticsRepository.getOrCreate(task.accountUuid);
-    statistics.incrementCompletedTasks(task.sourceModule, wasActive);
-    await this.scheduleStatisticsRepository.save(statistics);
   }
 
   /**
@@ -329,14 +286,8 @@ export class ScheduleDomainService {
       throw new Error(`ScheduleTask not found: ${taskUuid}`);
     }
 
-    const wasActive = task.status === 'active';
     task.fail(reason);
-
     await this.scheduleTaskRepository.save(task);
-
-    const statistics = await this.scheduleStatisticsRepository.getOrCreate(task.accountUuid);
-    statistics.incrementFailedTasks(task.sourceModule, wasActive);
-    await this.scheduleStatisticsRepository.save(statistics);
   }
 
   /**
@@ -349,10 +300,6 @@ export class ScheduleDomainService {
     }
 
     await this.scheduleTaskRepository.deleteByUuid(taskUuid);
-
-    const statistics = await this.scheduleStatisticsRepository.getOrCreate(task.accountUuid);
-    statistics.decrementTaskCount(task.status);
-    await this.scheduleStatisticsRepository.save(statistics);
   }
 
   // ============ 任务配置更新 ============
@@ -409,31 +356,7 @@ export class ScheduleDomainService {
    * 批量删除任务
    */
   async deleteScheduleTasksBatch(taskUuids: string[]): Promise<void> {
-    // 查找所有任务
-    const tasks: ScheduleTask[] = [];
-    for (const uuid of taskUuids) {
-      const task = await this.scheduleTaskRepository.findByUuid(uuid);
-      if (task) {
-        tasks.push(task);
-      }
-    }
-
-    // 批量删除
     await this.scheduleTaskRepository.deleteBatch(taskUuids);
-
-    // 更新统计
-    const accountStatistics = new Map<string, ScheduleStatistics>();
-    for (const task of tasks) {
-      let statistics = accountStatistics.get(task.accountUuid);
-      if (!statistics) {
-        statistics = await this.scheduleStatisticsRepository.getOrCreate(task.accountUuid);
-        accountStatistics.set(task.accountUuid, statistics);
-      }
-      statistics.decrementTaskCount(task.status);
-    }
-
-    // 保存所有统计
-    await this.scheduleStatisticsRepository.saveBatch(Array.from(accountStatistics.values()));
   }
 
   /**
@@ -444,26 +367,13 @@ export class ScheduleDomainService {
 
     for (const uuid of taskUuids) {
       const task = await this.scheduleTaskRepository.findByUuid(uuid);
-      if (task && task.status === 'active') {
+      if (task && task.status === ScheduleTaskStatus.Active) {
         task.pause();
         tasks.push(task);
       }
     }
 
     await this.scheduleTaskRepository.saveBatch(tasks);
-
-    // 更新统计
-    const accountStatistics = new Map<string, ScheduleStatistics>();
-    for (const task of tasks) {
-      let statistics = accountStatistics.get(task.accountUuid);
-      if (!statistics) {
-        statistics = await this.scheduleStatisticsRepository.getOrCreate(task.accountUuid);
-        accountStatistics.set(task.accountUuid, statistics);
-      }
-      statistics.incrementPausedTasks(task.sourceModule);
-    }
-
-    await this.scheduleStatisticsRepository.saveBatch(Array.from(accountStatistics.values()));
   }
 
   /**
@@ -474,25 +384,12 @@ export class ScheduleDomainService {
 
     for (const uuid of taskUuids) {
       const task = await this.scheduleTaskRepository.findByUuid(uuid);
-      if (task && task.status === 'paused') {
+      if (task && task.status === ScheduleTaskStatus.Paused) {
         task.resume();
         tasks.push(task);
       }
     }
 
     await this.scheduleTaskRepository.saveBatch(tasks);
-
-    // 更新统计
-    const accountStatistics = new Map<string, ScheduleStatistics>();
-    for (const task of tasks) {
-      let statistics = accountStatistics.get(task.accountUuid);
-      if (!statistics) {
-        statistics = await this.scheduleStatisticsRepository.getOrCreate(task.accountUuid);
-        accountStatistics.set(task.accountUuid, statistics);
-      }
-      statistics.decrementPausedTasks(task.sourceModule);
-    }
-
-    await this.scheduleStatisticsRepository.saveBatch(Array.from(accountStatistics.values()));
   }
 }

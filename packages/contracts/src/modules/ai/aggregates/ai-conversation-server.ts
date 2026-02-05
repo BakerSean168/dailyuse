@@ -3,47 +3,49 @@
  * AI对话聚合根 - 服务端接口
  */
 
+import type { AiConversationId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
 import type { ConversationStatus } from '../value-objects/conversation-status';
-import type { MessageServer, MessageServerDTO } from '../entities/message-server';
-import type { AIConversationClientDTO } from './ai-conversation-client';
+import type { MessageServer, MessageServerDTO, MessagePersistenceDTO } from '../entities/message-server';
 
 // ============ DTO 定义 ============
 
 /**
  * AIConversation Server DTO（应用层）
+ * 使用 TransferDate (number) 时间戳
  */
 export interface AIConversationServerDTO {
-  uuid: string;
-  accountUuid: string;
+  id: AiConversationId;
+  identityId: IdentityId;
   name: string;
   status: ConversationStatus;
   messageCount: number;
-  lastMessageAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+  lastMessageAt: TransferDate | null;
+  createdAt: TransferDate;
+  updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 
   // 子实体 DTO
-  messages?: MessageServerDTO[] | null;
+  messages: MessageServerDTO[] | null;
 }
 
 /**
  * AIConversation Persistence DTO（数据库层）
- * 注意：使用 camelCase 命名，与数据库 snake_case 的映射在仓储层处理
+ * 使用 PersistenceDate (Date 对象)
  */
 export interface AIConversationPersistenceDTO {
-  uuid: string;
-  accountUuid: string;
+  id: AiConversationId;
+  identityId: IdentityId;
   name: string;
   status: ConversationStatus;
   messageCount: number;
-  lastMessageAt?: number | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date | null;
+  lastMessageAt: PersistenceDate | null;
+  createdAt: PersistenceDate;
+  updatedAt: PersistenceDate;
+  deletedAt: PersistenceDate | null;
 
   // 注意：子实体在数据库中是独立表，通过外键关联
-  // Persistence 层不包含子实体数据
+  // Persistence 层可选包含子实体数据
+  messages: MessagePersistenceDTO[] | null;
 }
 
 // ============ 领域事件 ============
@@ -53,11 +55,11 @@ export interface AIConversationPersistenceDTO {
  */
 export interface AIConversationCreatedEvent {
   type: 'ai_conversation.created';
-  aggregateId: string; // conversationUuid
-  timestamp: Date;
+  aggregateId: AiConversationId;
+  timestamp: DomainDate;
   payload: {
     conversation: AIConversationServerDTO;
-    accountUuid: string;
+    identityId: IdentityId;
   };
 }
 
@@ -66,10 +68,10 @@ export interface AIConversationCreatedEvent {
  */
 export interface AIConversationUpdatedEvent {
   type: 'ai_conversation.updated';
-  aggregateId: string;
-  timestamp: Date;
+  aggregateId: AiConversationId;
+  timestamp: DomainDate;
   payload: {
-    conversationUuid: string;
+    conversationId: AiConversationId;
     previousData: Partial<AIConversationServerDTO>;
     changes: string[];
   };
@@ -80,10 +82,10 @@ export interface AIConversationUpdatedEvent {
  */
 export interface AIMessageAddedEvent {
   type: 'ai_conversation.message_added';
-  aggregateId: string;
-  timestamp: Date;
+  aggregateId: AiConversationId;
+  timestamp: DomainDate;
   payload: {
-    conversationUuid: string;
+    conversationId: AiConversationId;
     message: MessageServerDTO;
   };
 }
@@ -93,64 +95,31 @@ export interface AIMessageAddedEvent {
  */
 export interface AIConversationDeletedEvent {
   type: 'ai_conversation.deleted';
-  aggregateId: string;
-  timestamp: Date;
+  aggregateId: AiConversationId;
+  timestamp: DomainDate;
   payload: {
-    conversationUuid: string;
-    deletedAt: Date;
+    conversationId: AiConversationId;
+    deletedAt: DomainDate;
   };
 }
 
-// ============ 实体接口 ============
+// ============ 聚合根接口 ============
 
 /**
- * AIConversation 聚合根 - Server 接口（实例方法）
+ * AIConversation 聚合根 - Server 接口
  */
 export interface AIConversationServer {
   // 基础属性
-  uuid: string;
-  accountUuid: string;
+  id: AiConversationId;
+  identityId: IdentityId;
   name: string;
   status: ConversationStatus;
   messageCount: number;
-  lastMessageAt?: number | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date | null;
+  lastMessageAt: DomainDate | null;
+  createdAt: DomainDate;
+  updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 
   // 子实体集合
   messages: MessageServer[];
-
-  // ===== 子实体管理方法 =====
-
-  /**
-   * 添加消息到对话
-   */
-
-  /**
-   * 获取所有消息
-   */
-
-  /**
-   * 获取最新消息
-   */
-
-  /**
-   * 更新对话状态
-   */
-
-  /**
-   * 软删除对话
-   */
-
-  // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO（递归转换子实体）
-   * @param includeChildren 是否包含子实体（默认 false）
-   */
-  /**
-   * 转换为 Persistence DTO
-   * 注意：Persistence 不包含子实体，子实体单独持久化
-   */
 }

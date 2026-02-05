@@ -26,6 +26,5 @@
  */
 
 export { AIConversation } from './AIConversation';
-export { AIConversationServer } from './AIConversationServer';
 export { AIProviderConfigServer } from './AIProviderConfigServer';
 export { AIUsageQuotaServer } from './AIUsageQuotaServer';

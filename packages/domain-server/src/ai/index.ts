@@ -40,21 +40,15 @@
  */
 
 // ===== Aggregates =====
-export * from './aggregates/AIConversation';
-// 为了向后兼容，导出 AIConversation 别名为 AIConversationServer
-export { AIConversation as AIConversationServer } from './aggregates/AIConversation';
-export * from './aggregates/AIUsageQuotaServer';
-export * from './aggregates/AIProviderConfigServer';
+export * from './aggregates';
+
 
 // ===== Entities =====
-export * from './entities/Message';
-// 为了向后兼容，导出 Message 别名为 MessageServer
-export { Message as MessageServer } from './entities/Message';
-export * from './entities/KnowledgeGenerationTask';
+export * from './entities';
 
 // ===== Value Objects =====
-export * from './value-objects/GenerationInput';
-export * from './value-objects/TokenUsage';
+export * from './value-objects';
+
 
 // ===== Repositories =====
 export * from './repositories';

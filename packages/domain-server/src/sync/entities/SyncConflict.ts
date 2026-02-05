@@ -12,6 +12,7 @@ import {
   type EntityReferenceDTO,
   type SyncVersionServerDTO,
   type ConflictResolutionDTO,
+  type SyncableEntityType,
 } from '@dailyuse/contracts/sync';
 import { SyncVersion } from '../value-objects/SyncVersion';
 
@@ -22,7 +23,7 @@ type ConflictType = 'update-update' | 'update-delete' | 'delete-update';
  *
  * 表示一个同步冲突
  */
-export class SyncConflict extends Entity {
+export class SyncConflict extends Entity<string> {
   private _sessionId: string;
   private _entityRef: EntityReferenceDTO;
   private _conflictType: ConflictType;
@@ -37,7 +38,7 @@ export class SyncConflict extends Entity {
   private _updatedAt: Date;
 
   private constructor(params: {
-    uuid: string;
+    id: string;
     sessionId: string;
     entityRef: EntityReferenceDTO;
     conflictType: ConflictType;
@@ -51,7 +52,7 @@ export class SyncConflict extends Entity {
     createdAt: number;
     updatedAt: number;
   }) {
-    super(params.uuid);
+    super(params.id);
     this._sessionId = params.sessionId;
     this._entityRef = params.entityRef;
     this._conflictType = params.conflictType;
@@ -61,16 +62,12 @@ export class SyncConflict extends Entity {
     this._remoteData = params.remoteData;
     this._status = params.status;
     this._autoResolvable = params.autoResolvable;
-    this._resolution = params.resolution;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+    this._resolution = params.resolution ?? null;
+    this._createdAt = new Date(params.createdAt);
+    this._updatedAt = new Date(params.updatedAt);
   }
 
   // ===== Getters =====
-
-  override get uuid(): string {
-    return this._uuid;
-  }
 
   get sessionId(): string {
     return this._sessionId;
@@ -85,7 +82,7 @@ export class SyncConflict extends Entity {
   }
 
   get localVersion(): SyncVersionServerDTO {
-    return this._localVersion;
+    return this._localVersion.toServerDTO();
   }
 
   get localData(): unknown {
@@ -93,7 +90,7 @@ export class SyncConflict extends Entity {
   }
 
   get remoteVersion(): SyncVersionServerDTO {
-    return this._remoteVersion;
+    return this._remoteVersion.toServerDTO();
   }
 
   get remoteData(): unknown {
@@ -108,16 +105,16 @@ export class SyncConflict extends Entity {
     return this._autoResolvable;
   }
 
-  get resolution(): ConflictResolutionDTO | undefined | null {
-    return this._resolution;
+  get resolution(): ConflictResolutionDTO | null {
+    return this._resolution ?? null;
   }
 
   get createdAt(): number {
-    return this._createdAt;
+    return this._createdAt.getTime();
   }
 
   get updatedAt(): number {
-    return this._updatedAt;
+    return this._updatedAt.getTime();
   }
 
   // ===== 静态工厂方法 =====
@@ -126,7 +123,7 @@ export class SyncConflict extends Entity {
    * 创建新的冲突记录
    */
   static create(params: {
-    uuid: string;
+    id: string;
     sessionId: string;
     entityRef: EntityReferenceDTO;
     conflictType: ConflictType;
@@ -138,7 +135,7 @@ export class SyncConflict extends Entity {
     const now = Date.now();
     return new SyncConflict({
       ...params,
-      status: ConflictStatus.UNRESOLVED,
+      status: ConflictStatus.Unresolved,
       autoResolvable: false,
       createdAt: now,
       updatedAt: now,
@@ -150,7 +147,7 @@ export class SyncConflict extends Entity {
    */
   static fromServerDTO(dto: SyncConflictServerDTO): SyncConflict {
     return new SyncConflict({
-      uuid: dto.uuid,
+      id: dto.id,
       sessionId: dto.sessionId,
       entityRef: dto.entityRef,
       conflictType: dto.conflictType,
@@ -161,8 +158,8 @@ export class SyncConflict extends Entity {
       status: dto.status,
       autoResolvable: dto.autoResolvable,
       resolution: dto.resolution,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
     });
   }
 
@@ -171,11 +168,11 @@ export class SyncConflict extends Entity {
    */
   static fromPersistenceDTO(dto: SyncConflictPersistenceDTO): SyncConflict {
     return new SyncConflict({
-      uuid: dto.uuid,
+      id: dto.id,
       sessionId: dto.sessionId,
       entityRef: {
-        entityType: dto.entityType as any,
-        entityUuid: dto.entityUuid,
+        entityType: dto.entityType as SyncableEntityType,
+        entityId: dto.entityId,
         entityName: dto.entityName ?? undefined,
       },
       conflictType: dto.conflictType as ConflictType,
@@ -186,8 +183,8 @@ export class SyncConflict extends Entity {
       status: dto.status as ConflictStatus,
       autoResolvable: dto.autoResolvable,
       resolution: dto.resolutionJson ? JSON.parse(dto.resolutionJson) : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt.getTime(),
+      updatedAt: dto.updatedAt.getTime(),
     });
   }
 
@@ -197,11 +194,11 @@ export class SyncConflict extends Entity {
    * 解决冲突
    */
   resolve(resolution: ConflictResolutionDTO): void {
-    if (this._status === ConflictStatus.RESOLVED) {
+    if (this._status === ConflictStatus.Resolved) {
       throw new Error('SyncConflict: conflict is already resolved');
     }
     this._resolution = resolution;
-    this._status = ConflictStatus.RESOLVED;
+    this._status = ConflictStatus.Resolved;
     this._updatedAt = new Date();
   }
 
@@ -209,10 +206,10 @@ export class SyncConflict extends Entity {
    * 标记为忽略
    */
   ignore(): void {
-    if (this._status === ConflictStatus.RESOLVED) {
+    if (this._status === ConflictStatus.Resolved) {
       throw new Error('SyncConflict: conflict is already resolved');
     }
-    this._status = ConflictStatus.IGNORED;
+    this._status = ConflictStatus.Ignored;
     this._updatedAt = new Date();
   }
 
@@ -227,51 +224,51 @@ export class SyncConflict extends Entity {
    * 是否已解决
    */
   get isResolved(): boolean {
-    return this._status === ConflictStatus.RESOLVED;
+    return this._status === ConflictStatus.Resolved;
   }
 
   /**
    * 是否待处理
    */
   get isPending(): boolean {
-    return this._status === ConflictStatus.UNRESOLVED;
+    return this._status === ConflictStatus.Unresolved;
   }
 
   // ===== DTO 转换 =====
 
   toServerDTO(): SyncConflictServerDTO {
     return {
-      uuid: this.uuid,
+      id: this.id,
       sessionId: this._sessionId,
       entityRef: this._entityRef,
       conflictType: this._conflictType,
-      localVersion: this._localVersion,
+      localVersion: this._localVersion.toServerDTO(),
       localData: this._localData,
-      remoteVersion: this._remoteVersion,
+      remoteVersion: this._remoteVersion.toServerDTO(),
       remoteData: this._remoteData,
       status: this._status,
       autoResolvable: this._autoResolvable,
-      resolution: this._resolution,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      resolution: this._resolution ?? null,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
   toClientDTO(): SyncConflictClientDTO {
     return {
-      uuid: this.uuid,
+      id: this.id,
       sessionId: this._sessionId,
       entityRef: this._entityRef,
       conflictType: this._conflictType,
-      localVersion: this._localVersion,
+      localVersion: this._localVersion.toServerDTO(),
       localData: this._localData,
-      remoteVersion: this._remoteVersion,
+      remoteVersion: this._remoteVersion.toServerDTO(),
       remoteData: this._remoteData,
       status: this._status,
       autoResolvable: this._autoResolvable,
-      resolution: this._resolution,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      resolution: this._resolution ?? null,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
       summary: this._generateSummary(),
       conflictedFields: this._detectConflictedFields(),
     };
@@ -281,7 +278,7 @@ export class SyncConflict extends Entity {
    * 生成冲突摘要
    */
   private _generateSummary(): string {
-    const entityName = this._entityRef.entityName ?? this._entityRef.entityUuid.substring(0, 8);
+    const entityName = this._entityRef.entityName ?? this._entityRef.entityId.substring(0, 8);
     const typeText = {
       'update-update': '双方都更新了',
       'update-delete': '本地更新，远程删除',
@@ -313,15 +310,15 @@ export class SyncConflict extends Entity {
 
   toPersistenceDTO(): SyncConflictPersistenceDTO {
     return {
-      uuid: this.uuid,
+      id: this.id,
       sessionId: this._sessionId,
       entityType: this._entityRef.entityType,
-      entityUuid: this._entityRef.entityUuid,
+      entityId: this._entityRef.entityId,
       entityName: this._entityRef.entityName ?? null,
       conflictType: this._conflictType,
-      localVersionJson: JSON.stringify(this._localVersion),
+      localVersionJson: JSON.stringify(this._localVersion.toServerDTO()),
       localDataJson: JSON.stringify(this._localData),
-      remoteVersionJson: JSON.stringify(this._remoteVersion),
+      remoteVersionJson: JSON.stringify(this._remoteVersion.toServerDTO()),
       remoteDataJson: JSON.stringify(this._remoteData),
       status: this._status,
       autoResolvable: this._autoResolvable,

@@ -4,7 +4,10 @@
  */
 
 import { TaskTemplate } from '../aggregates';
-import { TaskInstanceStatus, TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
+import { TaskInstanceStatus, TaskTemplateStatus } from '@dailyuse/contracts/task';
+
+// Local type definition (not yet in contracts)
+type TaskType = 'Standard' | 'Recurring' | 'Checklist';
 
 /**
  * 任务查询过滤器

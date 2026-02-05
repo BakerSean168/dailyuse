@@ -21,12 +21,8 @@
  * 【UserReminderPreferences 聚合根】
  * - 用户偏好管理：用户的提醒偏好设置
  * - 性质控制：不同频道、静音、会话时段
- * 
- * 【ReminderStatistics 聚合根】
- * - 统计数据聚合：提醒统计、处理情况跟踪
  */
 
 export { ReminderTemplate } from './ReminderTemplate';
 export { ReminderGroup } from './ReminderGroup';
-export { ReminderStatistics } from './ReminderStatistics';
 export { UserReminderPreferences } from './UserReminderPreferences';

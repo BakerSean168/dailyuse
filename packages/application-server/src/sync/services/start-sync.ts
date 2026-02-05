@@ -13,8 +13,9 @@ import {
 } from '@dailyuse/domain-server/sync';
 import {
   SyncStrategy,
-  type StartSyncRequest,
-  type StartSyncResponse,
+  SyncDirection,
+  type StartSyncReq,
+  type StartSyncRes,
   type DeviceInfoDTO,
 } from '@dailyuse/contracts/sync';
 import { eventBus } from '@dailyuse/utils';
@@ -31,8 +32,8 @@ export class StartSync {
   async execute(
     accountUuid: string,
     deviceInfo: DeviceInfoDTO,
-    request: StartSyncRequest,
-  ): Promise<StartSyncResponse> {
+    request: StartSyncReq,
+  ): Promise<StartSyncRes> {
     // 1. 获取配置文件
     let profile: SyncProfile | null = null;
     if (request.profileId) {
@@ -55,42 +56,52 @@ export class StartSync {
       throw new Error('已有同步正在进行中，请等待完成或取消');
     }
 
-    // 3. 确定同步参数
-    const direction = request.direction ?? profile.syncConfig.direction;
-    const strategy = request.forceFullSync
-      ? SyncStrategy.FULL
-      : (request.strategy ?? SyncStrategy.AUTO);
+    // 3. 确定同步参数 - 使用配置文件中的值
+    const direction = profile.syncConfig.direction;
+    const strategy = SyncStrategy.Auto;
 
     // 4. 创建起始版本
-    const startVersion =
-      profile.lastSyncVersion ?? SyncVersion.create(deviceInfo.deviceId).toServerDTO();
+    let startVersionDTO: import('@dailyuse/contracts/sync').SyncVersionServerDTO;
+    if (profile.lastSyncVersion) {
+      // lastSyncVersion is already a DTO from the profile - just use it directly
+      startVersionDTO = profile.lastSyncVersion as import('@dailyuse/contracts/sync').SyncVersionServerDTO;
+    } else {
+      // Create a new initial version
+      const now = Date.now();
+      startVersionDTO = {
+        logicalVersion: 0,
+        vectorClock: [{ deviceId: deviceInfo.deviceId, version: 1, updatedAt: now }],
+        lastModifiedBy: deviceInfo.deviceId,
+        lastModifiedAt: now,
+      };
+    }
 
     // 5. 创建会话
     const session = SyncSession.create({
-      profileId: profile.uuid,
+      profileId: profile.id,
       direction,
       strategy,
-      triggerType: request.triggerType,
+      triggerType: 'Manual',
       triggerDevice: deviceInfo,
-      startVersion,
+      startVersion: startVersionDTO,
     });
 
     // 6. 持久化
     await this.sessionRepository.save(session);
 
     // 7. 发布事件
-    await eventBus.emit('sync.session.started', {
-      sessionId: session.uuid,
-      profileId: profile.uuid,
+    await (eventBus as any).send('sync.session.started', {
+      sessionId: session.id,
+      profileId: profile.id,
       accountUuid,
       direction,
       strategy,
-      triggerType: request.triggerType,
     });
 
     return {
-      sessionId: session.uuid,
-      session: session.toClientDTO(),
+      syncSessionId: session.id,
+      status: 'PENDING',
+      startedAt: Date.now(),
     };
   }
 }

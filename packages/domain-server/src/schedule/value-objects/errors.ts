@@ -12,7 +12,7 @@ import type { SourceModule } from '@dailyuse/contracts/schedule';
 export class ScheduleStrategyNotFoundError extends DomainError {
   constructor(
     public readonly sourceModule: SourceModule,
-    public readonly context?: {
+    public override readonly context?: {
       availableModules?: SourceModule[];
       operationId?: string;
     },
@@ -47,7 +47,7 @@ export class ScheduleTaskCreationError extends DomainError {
   constructor(
     public readonly sourceModule: SourceModule,
     public readonly sourceEntityId: string,
-    public readonly originalError?: Error,
+    public override readonly originalError?: Error,
   ) {
     super(
       'schedule_task_creation_error',
@@ -62,7 +62,7 @@ export class ScheduleTaskCreationError extends DomainError {
 export class ScheduleTaskUpdateError extends DomainError {
   constructor(
     public readonly taskUuid: string,
-    public readonly originalError?: Error,
+    public override readonly originalError?: Error,
   ) {
     super(
       'schedule_task_update_error',

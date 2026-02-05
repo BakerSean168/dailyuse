@@ -25,7 +25,7 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
    * 支持 GOAL 源模块
    */
   supports(sourceModule: SourceModule): boolean {
-    return sourceModule === SourceModule.GOAL;
+    return sourceModule === SourceModule.Goal;
   }
 
   /**
@@ -51,13 +51,13 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
 
     if (!this.shouldCreateSchedule(goal)) {
       throw new Error(
-        `Goal ${goal.uuid} does not have valid reminder configuration for scheduling`,
+        `Goal ${goal.id} does not have valid reminder configuration for scheduling`,
       );
     }
 
     const { reminderConfig } = goal;
     if (!reminderConfig) {
-      throw new Error(`Goal ${goal.uuid} missing reminderConfig`);
+      throw new Error(`Goal ${goal.id} missing reminderConfig`);
     }
 
     // 获取所有启用的触发器
@@ -67,20 +67,21 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
   const cronExpression = this.generateCronExpression(goal);
 
     // 创建调度配置
-    const scheduleConfig = new ScheduleConfig({
+    const scheduleConfig = ScheduleConfig.create({
       cronExpression,
-      timezone: Timezone.SHANGHAI, // 默认时区，后续可以从用户设置获取
-      startDate: goal.startDate ?? Date.now(),
-      endDate: goal.targetDate ?? null,
+      timezone: Timezone.Shanghai, // 默认时区，后续可以从用户设置获取
+      startDate: goal.startDate ? new Date(goal.startDate).toISOString() : new Date().toISOString(),
+      endDate: goal.targetDate ? new Date(goal.targetDate).toISOString() : null,
       maxExecutions: null, // Goal 的提醒通常没有最大执行次数限制
     });
 
     // 创建元数据
-    const metadata = new TaskMetadata({
+    const metadata = TaskMetadata.create({
       priority: this.calculatePriority(goal),
       tags: this.generateTags(goal, activeTriggers),
+      timeout: null, // Goal 提醒没有超时限制
       payload: {
-        goalUuid: goal.uuid,
+        goalId: goal.id,
         goalTitle: goal.name,
         triggerTypes: activeTriggers.map((t) => t.type),
         importance: goal.importance,
@@ -158,12 +159,12 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
     for (const trigger of triggers) {
       if (!trigger.enabled) continue;
 
-      if (trigger.type === 'TIME_PROGRESS_PERCENTAGE') {
+      if (trigger.type === 'TimeProgressPercentage') {
         const triggerDate = this.calculateTriggerDateForTimeProgress(goal, trigger);
         if (triggerDate) {
           upcomingDates.push(triggerDate.toISOString());
         }
-      } else if (trigger.type === 'REMAINING_DAYS') {
+      } else if (trigger.type === 'RemainingDays') {
         const triggerDate = this.calculateTriggerDateForRemainingDays(goal, trigger);
         if (triggerDate) {
           upcomingDates.push(triggerDate.toISOString());
@@ -215,21 +216,21 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
 
     // priority >= 80: URGENT (CRITICAL level)
     if (priority >= 80) {
-      return TaskPriority.URGENT;
+      return TaskPriority.Urgent;
     }
 
     // priority >= 60: HIGH
     if (priority >= 60) {
-      return TaskPriority.HIGH;
+      return TaskPriority.High;
     }
 
     // priority >= 40: NORMAL (MEDIUM level)
     if (priority >= 40) {
-      return TaskPriority.NORMAL;
+      return TaskPriority.Normal;
     }
 
     // priority < 40: LOW
-    return TaskPriority.LOW;
+    return TaskPriority.Low;
   }
 
   /**
@@ -248,9 +249,9 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
     // 添加触发器类型标签
     const triggerTypes = [...new Set(triggers.map((t) => t.type))];
     for (const type of triggerTypes) {
-      if (type === 'TIME_PROGRESS_PERCENTAGE') {
+      if (type === 'TimeProgressPercentage') {
         tags.push('trigger:time-progress');
-      } else if (type === 'REMAINING_DAYS') {
+      } else if (type === 'RemainingDays') {
         tags.push('trigger:remaining-days');
       }
     }

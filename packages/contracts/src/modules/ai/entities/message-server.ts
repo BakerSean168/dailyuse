@@ -3,54 +3,47 @@
  * 消息实体 - 服务端接口
  */
 
+import type { AiMessageId, AiConversationId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
 import type { MessageRole } from '../value-objects/message-role';
-import type { MessageClientDTO } from './message-client';
 
 // ============ DTO 定义 ============
 
 /**
  * Message Server DTO（应用层）
+ * 使用 TransferDate (number) 时间戳
  */
 export interface MessageServerDTO {
-  uuid: string;
-  conversationUuid: string;
+  id: AiMessageId;
+  conversationId: AiConversationId;
   role: MessageRole;
   content: string;
-  tokenCount?: number | null;
-  createdAt: number;
+  tokenCount: number | null;
+  createdAt: TransferDate;
 }
 
 /**
  * Message Persistence DTO（数据库层）
+ * 使用 PersistenceDate (Date 对象)
  */
 export interface MessagePersistenceDTO {
-  uuid: string;
-  conversationUuid: string;
+  id: AiMessageId;
+  conversationId: AiConversationId;
   role: MessageRole;
   content: string;
-  tokenCount?: number | null;
-  createdAt: Date;
+  tokenCount: number | null;
+  createdAt: PersistenceDate;
 }
 
 // ============ 实体接口 ============
 
 /**
- * Message 实体 - Server 接口（实例方法）
+ * Message 实体 - Server 接口
  */
 export interface MessageServer {
-  uuid: string;
-  conversationUuid: string;
+  id: AiMessageId;
+  conversationId: AiConversationId;
   role: MessageRole;
   content: string;
-  tokenCount?: number | null;
-  createdAt: Date;
-
-  // ===== 转换方法 =====
-  /**
-   * 转换为 Client DTO
-   */
-
-  /**
-   * 转换为 Persistence DTO
-   */
+  tokenCount: number | null;
+  createdAt: DomainDate;
 }

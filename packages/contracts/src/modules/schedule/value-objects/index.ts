@@ -52,4 +52,4 @@ export type {
   TaskMetadataClient,
 } from './task-metadata';
 
-export type { ConflictDetectionResult } from './conflict-detection-result';
+export type { ConflictDetectionResult, ConflictDetail, ConflictSuggestion } from './conflict-detection-result';

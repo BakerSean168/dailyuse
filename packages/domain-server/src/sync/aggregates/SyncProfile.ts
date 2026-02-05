@@ -3,7 +3,7 @@
  * 同步配置文件
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot, generateUUID } from '@dailyuse/utils';
 import {
   SyncProviderType,
   type SyncProfileServerDTO,
@@ -28,7 +28,7 @@ interface HistoryStats {
  *
  * 同步配置文件
  */
-export class SyncProfile extends AggregateRoot {
+export class SyncProfile extends AggregateRoot<string> {
   private _name: string;
   private _description?: string | null;
   private _providerType: SyncProviderType;
@@ -38,14 +38,14 @@ export class SyncProfile extends AggregateRoot {
   private _isActive: boolean;
   private _isConnected: boolean;
   private _lastSyncAt?: number | null;
-  private _lastSyncVersion?: SyncVersion | null;
+  private _lastSyncVersion?: SyncVersionServerDTO | null;
   private _lastSyncResult?: 'success' | 'failed' | 'partial' | null;
   private _historyStats: HistoryStats;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+  private _createdAt: number;
+  private _updatedAt: number;
 
   private constructor(params: {
-    uuid: string;
+    id: string;
     name: string;
     description?: string | null;
     providerType: SyncProviderType;
@@ -61,7 +61,7 @@ export class SyncProfile extends AggregateRoot {
     createdAt: number;
     updatedAt: number;
   }) {
-    super(params.uuid);
+    super(params.id);
     this._name = params.name;
     this._description = params.description;
     this._providerType = params.providerType;
@@ -79,10 +79,6 @@ export class SyncProfile extends AggregateRoot {
   }
 
   // ===== Getters =====
-
-  override get uuid(): string {
-    return this._uuid;
-  }
 
   get name(): string {
     return this._name;
@@ -121,7 +117,7 @@ export class SyncProfile extends AggregateRoot {
   }
 
   get lastSyncVersion(): SyncVersionServerDTO | null | undefined {
-    return this._lastSyncVersion;
+    return this._lastSyncVersion ?? null;
   }
 
   get lastSyncResult(): 'success' | 'failed' | 'partial' | null | undefined {
@@ -154,12 +150,12 @@ export class SyncProfile extends AggregateRoot {
   }): SyncProfile {
     const now = Date.now();
     return new SyncProfile({
-      uuid: AggregateRoot.generateUUID(),
+      id: generateUUID(),
       name: params.name,
       description: params.description,
       providerType: params.providerType,
       providerConfig: params.providerConfig,
-      syncConfig: params.syncConfig ?? SyncProfileConfig.createDefault().toDTO(),
+      syncConfig: params.syncConfig ?? SyncProfileConfig.createDefault().toServerDTO(),
       isDefault: false,
       isActive: true,
       isConnected: false,
@@ -179,7 +175,7 @@ export class SyncProfile extends AggregateRoot {
    */
   static fromServerDTO(dto: SyncProfileServerDTO): SyncProfile {
     return new SyncProfile({
-      uuid: dto.uuid,
+      id: dto.id,
       name: dto.name,
       description: dto.description,
       providerType: dto.providerType,
@@ -192,8 +188,8 @@ export class SyncProfile extends AggregateRoot {
       lastSyncVersion: dto.lastSyncVersion,
       lastSyncResult: dto.lastSyncResult,
       historyStats: dto.historyStats,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt.getTime(),
+      updatedAt: dto.updatedAt.getTime(),
     });
   }
 
@@ -202,7 +198,7 @@ export class SyncProfile extends AggregateRoot {
    */
   static fromPersistenceDTO(dto: SyncProfilePersistenceDTO): SyncProfile {
     return new SyncProfile({
-      uuid: dto.uuid,
+      id: dto.id,
       name: dto.name,
       description: dto.description,
       providerType: dto.providerType as SyncProviderType,
@@ -211,14 +207,14 @@ export class SyncProfile extends AggregateRoot {
       isDefault: dto.isDefault,
       isActive: dto.isActive,
       isConnected: dto.isConnected,
-      lastSyncAt: dto.lastSyncAt,
+      lastSyncAt: dto.lastSyncAt ? dto.lastSyncAt.getTime() : null,
       lastSyncVersion: dto.lastSyncVersionJson
         ? JSON.parse(dto.lastSyncVersionJson)
         : null,
       lastSyncResult: dto.lastSyncResult as 'success' | 'failed' | 'partial' | null,
       historyStats: JSON.parse(dto.historyStatsJson),
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt.getTime(),
+      updatedAt: dto.updatedAt.getTime(),
     });
   }
 
@@ -232,7 +228,7 @@ export class SyncProfile extends AggregateRoot {
       throw new Error('SyncProfile: name cannot be empty');
     }
     this._name = name.trim();
-    this._updatedAt = new Date();
+    this._updatedAt = Date.now();
   }
 
   /**
@@ -240,7 +236,7 @@ export class SyncProfile extends AggregateRoot {
    */
   updateSyncConfig(config: SyncProfileConfigDTO): void {
     this._syncConfig = config;
-    this._updatedAt = new Date();
+    this._updatedAt = Date.now();
   }
 
   /**
@@ -248,7 +244,7 @@ export class SyncProfile extends AggregateRoot {
    */
   updateProviderConfig(config: SyncProviderConfigDTO): void {
     this._providerConfig = config;
-    this._updatedAt = new Date();
+    this._updatedAt = Date.now();
   }
 
   /**
@@ -256,7 +252,7 @@ export class SyncProfile extends AggregateRoot {
    */
   setAsDefault(): void {
     this._isDefault = true;
-    this._updatedAt = new Date();
+    this._updatedAt = Date.now();
   }
 
   /**
@@ -264,7 +260,7 @@ export class SyncProfile extends AggregateRoot {
    */
   unsetDefault(): void {
     this._isDefault = false;
-    this._updatedAt = new Date();
+    this._updatedAt = Date.now();
   }
 
   /**
@@ -272,7 +268,7 @@ export class SyncProfile extends AggregateRoot {
    */
   activate(): void {
     this._isActive = true;
-    this._updatedAt = new Date();
+    this._updatedAt = Date.now();
   }
 
   /**
@@ -280,7 +276,7 @@ export class SyncProfile extends AggregateRoot {
    */
   deactivate(): void {
     this._isActive = false;
-    this._updatedAt = new Date();
+    this._updatedAt = Date.now();
   }
 
   /**
@@ -288,7 +284,7 @@ export class SyncProfile extends AggregateRoot {
    */
   setConnected(connected: boolean): void {
     this._isConnected = connected;
-    this._updatedAt = new Date();
+    this._updatedAt = Date.now();
   }
 
   /**
@@ -299,7 +295,7 @@ export class SyncProfile extends AggregateRoot {
     result: 'success' | 'failed' | 'partial',
     durationMs: number,
   ): void {
-    this._lastSyncAt = new Date();
+    this._lastSyncAt = Date.now();
     this._lastSyncVersion = version;
     this._lastSyncResult = result;
 
@@ -324,7 +320,7 @@ export class SyncProfile extends AggregateRoot {
       averageDurationMs,
     };
 
-    this._updatedAt = new Date();
+    this._updatedAt = Date.now();
   }
 
   // ===== 查询方法 =====
@@ -349,18 +345,18 @@ export class SyncProfile extends AggregateRoot {
 
   toServerDTO(): SyncProfileServerDTO {
     return {
-      uuid: this.uuid,
+      id: this.id,
       name: this._name,
-      description: this._description,
+      description: this._description ?? null,
       providerType: this._providerType,
       providerConfig: this._providerConfig,
       syncConfig: this._syncConfig,
       isDefault: this._isDefault,
       isActive: this._isActive,
       isConnected: this._isConnected,
-      lastSyncAt: this._lastSyncAt,
-      lastSyncVersion: this._lastSyncVersion,
-      lastSyncResult: this._lastSyncResult,
+      lastSyncAt: this._lastSyncAt ?? null,
+      lastSyncVersion: this._lastSyncVersion ?? null,
+      lastSyncResult: this._lastSyncResult ?? null,
       historyStats: this._historyStats,
       createdAt: new Date(this._createdAt),
       updatedAt: new Date(this._updatedAt),
@@ -369,9 +365,9 @@ export class SyncProfile extends AggregateRoot {
 
   toClientDTO(): SyncProfileClientDTO {
     return {
-      uuid: this.uuid,
+      id: this.id,
       name: this._name,
-      description: this._description,
+      description: this._description ?? null,
       providerType: this._providerType,
       providerSummary: {
         type: this._providerType,
@@ -388,17 +384,18 @@ export class SyncProfile extends AggregateRoot {
       isDefault: this._isDefault,
       isActive: this._isActive,
       isConnected: this._isConnected,
-      lastSyncAt: this._lastSyncAt,
-      lastSyncResult: this._lastSyncResult,
+      lastSyncAt: this._lastSyncAt ?? null,
+      lastSyncResult: this._lastSyncResult ?? null,
       statusLabel: this.statusLabel,
-      createdAt: new Date(this._createdAt),
-      updatedAt: new Date(this._updatedAt),
+      nextAutoSyncAt: null, // TODO: calculate from syncConfig.autoSyncIntervalMinutes
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
     };
   }
 
   toPersistenceDTO(): SyncProfilePersistenceDTO {
     return {
-      uuid: this.uuid,
+      id: this.id,
       name: this._name,
       description: this._description ?? null,
       providerType: this._providerType,

@@ -67,7 +67,7 @@ export class ReminderTemplateBusinessService {
     group: ReminderGroup | null,
   ): TemplateEffectiveStatus {
     const templateStatus = template.status;
-    const templateEnabled = templateStatus === ReminderStatus.ACTIVE;
+    const templateEnabled = templateStatus === ReminderStatus.Active;
 
     // 规则 1: 未分组，使用模板自身状态
     if (!group) {
@@ -81,11 +81,11 @@ export class ReminderTemplateBusinessService {
     }
 
     const groupStatus = group.status;
-    const groupEnabled = groupStatus === ReminderStatus.ACTIVE;
+    const groupEnabled = groupStatus === ReminderStatus.Active;
     const controlMode = group.controlMode;
 
     // 规则 2: INDIVIDUAL 模式，使用模板自身状态
-    if (controlMode === ControlMode.INDIVIDUAL) {
+    if (controlMode === ControlMode.Individual) {
       return {
         isEffectivelyEnabled: templateEnabled,
         reason: '分组为独立控制模式，使用模板自身状态',
@@ -159,10 +159,10 @@ export class ReminderTemplateBusinessService {
     }
 
     // 检查账户一致性
-    if (targetGroup.accountUuid !== template.accountUuid) {
+    if (targetGroup.identityId !== template.identityId) {
       return {
         valid: false,
-        reason: `分组 ${targetGroup.uuid} 属于账户 ${targetGroup.accountUuid}，与模板账户 ${template.accountUuid} 不一致`,
+        reason: `分组 ${targetGroup.id} 属于账户 ${targetGroup.identityId}，与模板账户 ${template.identityId} 不一致`,
       };
     }
 

@@ -5,12 +5,12 @@
 export type {
   AIConversationClientDTO,
   AIConversationClient,
-  AIConversationClientInstance,
 } from './ai-conversation-client';
 
 export type {
   AIConversationServerDTO,
   AIConversationPersistenceDTO,
+  AIConversationServer,
   AIConversationCreatedEvent,
   AIConversationUpdatedEvent,
   AIMessageAddedEvent,
@@ -25,9 +25,12 @@ export type {
 export type {
   AIGenerationTaskServerDTO,
   AIGenerationTaskPersistenceDTO,
+  AIGenerationTaskServer,
   AIGenerationTaskCreatedEvent,
   AIGenerationTaskStatusChangedEvent,
   AIGenerationTaskCompletedEvent,
+  AIGenerationTaskFailedEvent,
+  AIGenerationTaskRetriedEvent,
 } from './ai-generation-task-server';
 
 export type {
@@ -38,6 +41,7 @@ export type {
 export type {
   AIUsageQuotaServerDTO,
   AIUsageQuotaPersistenceDTO,
+  AIUsageQuotaServer,
   AIUsageQuotaCreatedEvent,
   AIUsageQuotaConsumedEvent,
   AIUsageQuotaResetEvent,
@@ -52,5 +56,7 @@ export type {
 } from './ai-provider-config-client';
 
 export type {
+  AIProviderConfigPersistenceDTO,
+  AIProviderConfigServer,
   AIProviderConfigServerDTO,
 } from './ai-provider-config-server';

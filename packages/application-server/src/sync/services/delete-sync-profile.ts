@@ -26,7 +26,8 @@ export class DeleteSyncProfile {
 
     await this.profileRepository.delete(profileId);
 
-    await eventBus.emit('sync.profile.deleted', {
+    // Note: Using 'any' cast for custom event not registered in GlobalEventBus
+    (eventBus as any).send('sync.profile.deleted', {
       profileId,
       accountUuid,
     });

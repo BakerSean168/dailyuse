@@ -15,7 +15,7 @@ import type { TaskMetadata } from '../../value-objects/TaskMetadata';
  * 调度策略输入数据
  */
 export interface ScheduleStrategyInput {
-  accountUuid: string;
+  identityId: string;
   sourceModule: SourceModule;
   sourceEntityId: string;
   sourceEntity: any; // 源实体的完整数据

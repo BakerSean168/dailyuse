@@ -3,20 +3,22 @@
  * 消息实体 - 客户端接口
  */
 
+import type { AiMessageId, AiConversationId, TransferDate, DomainDate } from '@/primitives';
 import type { MessageRole } from '../value-objects/message-role';
 
 // ============ DTO 定义 ============
 
 /**
  * Message Client DTO
+ * 使用 TransferDate (number) 时间戳
  */
 export interface MessageClientDTO {
-  uuid: string;
-  conversationUuid: string;
+  id: string;
+  conversationId: string;
   role: MessageRole;
   content: string;
-  tokenCount?: number | null;
-  createdAt: number;
+  tokenCount: number | null;
+  createdAt: TransferDate;
 
   // UI 计算字段
   isUser: boolean;
@@ -28,41 +30,19 @@ export interface MessageClientDTO {
 // ============ 实体接口 ============
 
 /**
- * Message 实体 - Client 接口（实例方法）
+ * Message 实体 - Client 接口
  */
 export interface MessageClient {
-  uuid: string;
-  conversationUuid: string;
+  id: AiMessageId;
+  conversationId: AiConversationId;
   role: MessageRole;
   content: string;
-  tokenCount?: number | null;
-  createdAt: Date;
+  tokenCount: number | null;
+  createdAt: DomainDate;
 
-  // ===== 业务方法 =====
-
-  /**
-   * 检查是否为用户消息
-   */
-
-  /**
-   * 检查是否为助手消息
-   */
-
-  /**
-   * 检查是否为系统消息
-   */
-
-  /**
-   * 获取格式化的时间字符串
-   */
-
-  /**
-   * 获取内容摘要（前 N 个字符）
-   */
-
-  // ===== 转换方法 =====
-
-  /**
-   * 转换为 Client DTO
-   */
+  // ===== 计算属性 =====
+  isUser: boolean;
+  isAssistant: boolean;
+  isSystem: boolean;
+  formattedTime: string;
 }

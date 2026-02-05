@@ -12,7 +12,7 @@
  * - 与业务逻辑耦合最小化
  */
 
-import { ReminderType } from '@dailyuse/contracts/reminder';
+import { ReminderType, ReminderStatus, TriggerType, RecurrenceType } from '@dailyuse/contracts/reminder';
 import type { FixedTimeTrigger, IntervalTrigger, RecurrenceConfigServerDTO, ReminderTemplateServerDTO, TriggerConfigServerDTO } from '@dailyuse/contracts/reminder';
 import { WeekDay } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
@@ -86,7 +86,7 @@ export class UpcomingReminderCalculationService {
     // 为每个提醒计算接下来的触发时间
     for (const reminder of reminders) {
       console.log(`📝 [UpcomingReminderCalculation] 处理提醒: ${reminder.name}`, {
-        uuid: reminder.uuid,
+        uuid: reminder.id,
         type: reminder.type,
         triggerType: reminder.trigger.type,
         selfEnabled: reminder.selfEnabled,
@@ -177,7 +177,7 @@ export class UpcomingReminderCalculationService {
   ): number | null {
     try {
       // 检查提醒是否已启用且激活
-      if (!reminder.selfEnabled || reminder.status !== 'ACTIVE') {
+      if (!reminder.selfEnabled || reminder.status !== ReminderStatus.Active) {
         return null;
       }
 
@@ -190,15 +190,15 @@ export class UpcomingReminderCalculationService {
       // 重构后：移除 endDate 检查，生效控制由 status 字段负责
 
       // 根据提醒类型计算
-      if (reminder.type === 'ONE_TIME') {
+      if (reminder.type === ReminderType.OneTime) {
         return this.calculateOneTimeTrigger(reminder, afterTime);
-      } else if (reminder.type === 'RECURRING') {
+      } else if (reminder.type === ReminderType.Recurring) {
         return this.calculateRecurringTrigger(reminder, afterTime);
       }
 
       return null;
     } catch (error) {
-      console.error(`[UpcomingReminderCalculationService] 计算提醒 ${reminder.uuid} 失败:`, error);
+      console.error(`[UpcomingReminderCalculationService] 计算提醒 ${reminder.id} 失败:`, error);
       return null;
     }
   }
@@ -212,7 +212,7 @@ export class UpcomingReminderCalculationService {
   ): number | null {
     const trigger = reminder.trigger as TriggerConfigServerDTO;
 
-    if (trigger.type === 'FIXED_TIME' && trigger.fixedTime) {
+    if (trigger.type === TriggerType.FixedTime && trigger.fixedTime) {
       // 一次性固定时间提醒
       // 从 activeTime.activatedAt 的日期 + fixedTime 的时间
       const dateObj = new Date(reminder.activeTime.activatedAt);
@@ -237,9 +237,9 @@ export class UpcomingReminderCalculationService {
   ): number | null {
     const trigger = reminder.trigger as TriggerConfigServerDTO;
 
-    if (trigger.type === 'FIXED_TIME' && trigger.fixedTime) {
+    if (trigger.type === TriggerType.FixedTime && trigger.fixedTime) {
       return this.calculateNextFixedTimeTrigger(reminder, trigger.fixedTime, afterTime);
-    } else if (trigger.type === 'INTERVAL' && trigger.interval) {
+    } else if (trigger.type === TriggerType.Interval && trigger.interval) {
       return this.calculateNextIntervalTrigger(reminder, trigger.interval, afterTime);
     }
 
@@ -296,7 +296,7 @@ export class UpcomingReminderCalculationService {
     }
 
     switch (recurrence.type) {
-      case 'DAILY': {
+      case RecurrenceType.Daily: {
         // 每 N 天
         if (recurrence.daily?.interval) {
           // 从提醒的开始日期开始计算间隔
@@ -310,26 +310,26 @@ export class UpcomingReminderCalculationService {
         return true;
       }
 
-      case 'WEEKLY': {
+      case RecurrenceType.Weekly: {
         if (recurrence.weekly?.weekDays) {
           const dayOfWeek = date.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-          // 转换为 MONDAY=0, TUESDAY=1, ..., SUNDAY=6
+          // 转换为 Monday=0, Tuesday=1, ..., Sunday=6
           const mappedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
           const weekDayMap: Record<WeekDay, number> = {
-            MONDAY: 0,
-            TUESDAY: 1,
-            WEDNESDAY: 2,
-            THURSDAY: 3,
-            FRIDAY: 4,
-            SATURDAY: 5,
-            SUNDAY: 6,
+            [WeekDay.Monday]: 0,
+            [WeekDay.Tuesday]: 1,
+            [WeekDay.Wednesday]: 2,
+            [WeekDay.Thursday]: 3,
+            [WeekDay.Friday]: 4,
+            [WeekDay.Saturday]: 5,
+            [WeekDay.Sunday]: 6,
           };
           return recurrence.weekly.weekDays.some((day) => weekDayMap[day] === mappedDay);
         }
         return true;
       }
 
-      case 'CUSTOM_DAYS': {
+      case RecurrenceType.CustomDays: {
         if (recurrence.customDays?.dates) {
           const checkDate = new Date(date);
           checkDate.setHours(0, 0, 0, 0);
@@ -404,7 +404,7 @@ export class UpcomingReminderCalculationService {
     const daysUntilTrigger = Math.ceil((nextTriggerAt - baseTime) / (24 * 60 * 60 * 1000));
 
     return {
-      templateUuid: reminder.uuid,
+      templateUuid: reminder.id,
       title: reminder.name,
       description: reminder.description ?? undefined,
       type: reminder.type,
@@ -470,7 +470,7 @@ export class UpcomingReminderCalculationService {
     // 为每个提醒计算今天的所有触发时间
     for (const reminder of reminders) {
       // 检查提醒是否启用且在活跃期内
-      if (!reminder.selfEnabled || reminder.status !== 'ACTIVE') {
+      if (!reminder.selfEnabled || reminder.status !== ReminderStatus.Active) {
         continue;
       }
 
@@ -531,7 +531,7 @@ export class UpcomingReminderCalculationService {
     const result: UpcomingReminderDTO[] = [];
     const trigger = reminder.trigger as TriggerConfigServerDTO;
 
-    if (trigger.type === 'FIXED_TIME' && trigger.fixedTime) {
+    if (trigger.type === TriggerType.FixedTime && trigger.fixedTime) {
       // 固定时间触发：在今天的特定时间触发
       const triggerTimes = this.generateFixedTimeTriggersForToday(
         reminder,
@@ -540,7 +540,7 @@ export class UpcomingReminderCalculationService {
         todayEnd,
       );
       result.push(...triggerTimes.slice(0, maxItems));
-    } else if (trigger.type === 'INTERVAL' && trigger.interval) {
+    } else if (trigger.type === TriggerType.Interval && trigger.interval) {
       // 间隔触发：在今天的多个时间点触发
       const triggerTimes = this.generateIntervalTriggersForToday(
         reminder,

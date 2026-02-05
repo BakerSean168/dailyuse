@@ -16,12 +16,11 @@
 import type { ITaskTemplateRepository, TaskTemplate } from '@dailyuse/domain-server/task';
 import {
   TaskTemplateStatus,
-  TaskSortBy,
-  TaskFilterBy,
   type TaskTemplateServerDTO,
   type TaskTemplateClientDTO,
 } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { TaskSortBy, TaskFilterBy } from './task-query.validator';
 
 /**
  * 任务查询服务
@@ -90,12 +89,12 @@ export class TaskQueryService {
     currentTime: Date,
   ): number {
     // 重要性映射到数值（0-100�?
-    const importanceMap: Record<ImportanceLevel, number> = {
-      [ImportanceLevel.Trivial]: 20,
-      [ImportanceLevel.Minor]: 40,
-      [ImportanceLevel.Moderate]: 60,
-      [ImportanceLevel.Important]: 80,
-      [ImportanceLevel.Vital]: 100,
+    const importanceMap: { Vital: number; Important: number; Moderate: number; Minor: number; Trivial: number } = {
+      Vital: 100,
+      Important: 80,
+      Moderate: 60,
+      Minor: 40,
+      Trivial: 20,
     };
 
     const importanceScore = importanceMap[importance] || 60;
@@ -136,10 +135,14 @@ export class TaskQueryService {
     dtos: (TaskTemplateServerDTO | TaskTemplateClientDTO)[],
     currentTime: Date,
   ): Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }> {
-    return dtos.map((dto) => ({
-      ...dto,
-      priority: this.calculatePriority(dto.importance, dto.dueDate || null, currentTime),
-    }));
+    return dtos.map((dto) => {
+      // Handle dueDate access: TaskTemplateClientDTO has dueDate directly, TaskTemplateServerDTO uses timeConfig.startDate
+      const dueDate = 'dueDate' in dto ? (dto.dueDate as number | null) : (dto.timeConfig?.startDate as number | null);
+      return {
+        ...dto,
+        priority: this.calculatePriority(dto.importance, dueDate, currentTime),
+      };
+    });
   }
 
   /**
@@ -186,7 +189,8 @@ export class TaskQueryService {
 
     if (filter.startsWith('dueDate:')) {
       const dateFilter = filter.split(':')[1];
-      return this.matchesDueDateFilter(dto.dueDate ?? null, dateFilter, currentTime);
+      const dueDate = 'dueDate' in dto ? (dto.dueDate as number | null) : (dto.timeConfig?.startDate as number | null);
+      return this.matchesDueDateFilter(dueDate ?? null, dateFilter, currentTime);
     }
 
     return true;
@@ -308,18 +312,20 @@ export class TaskQueryService {
     dtos: Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }>,
   ): Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }> {
     return dtos.sort((a, b) => {
-      const aHasDue = a.dueDate != null;
-      const bHasDue = b.dueDate != null;
+      const aDueDate = 'dueDate' in a ? (a.dueDate as number | null) : (a.timeConfig?.startDate as number | null);
+      const bDueDate = 'dueDate' in b ? (b.dueDate as number | null) : (b.timeConfig?.startDate as number | null);
+      const aHasDue = aDueDate != null;
+      const bHasDue = bDueDate != null;
 
-      // 无期限的任务排在最�?
+      // 无期限的任务排在最后
       if (!aHasDue && bHasDue) return 1;
       if (aHasDue && !bHasDue) return -1;
 
-      // 都没有期限，保持原顺�?
+      // 都没有期限，保持原顺序
       if (!aHasDue && !bHasDue) return 0;
 
       // 都有期限，按升序排列
-      return (a.dueDate as number) - (b.dueDate as number);
+      return (aDueDate as number) - (bDueDate as number);
     });
   }
 
@@ -344,12 +350,12 @@ export class TaskQueryService {
   private sortByImportance(
     dtos: Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }>,
   ): Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }> {
-    const importanceValues: Record<ImportanceLevel, number> = {
-      [ImportanceLevel.Vital]: 5,
-      [ImportanceLevel.Important]: 4,
-      [ImportanceLevel.Moderate]: 3,
-      [ImportanceLevel.Minor]: 2,
-      [ImportanceLevel.Trivial]: 1,
+    const importanceValues: { Vital: number; Important: number; Moderate: number; Minor: number; Trivial: number } = {
+      Vital: 5,
+      Important: 4,
+      Moderate: 3,
+      Minor: 2,
+      Trivial: 1,
     };
 
     return dtos.sort((a, b) => {
@@ -367,7 +373,7 @@ export class TaskQueryService {
    * @returns 活跃任务列表
    */
   private async getAllActiveTemplates(accountUuid: string): Promise<TaskTemplate[]> {
-    const activeStatuses = [TaskTemplateStatus.ACTIVE, TaskTemplateStatus.PAUSED];
+    const activeStatuses = [TaskTemplateStatus.Active, TaskTemplateStatus.Paused];
 
     const templates: TaskTemplate[] = [];
     for (const status of activeStatuses) {

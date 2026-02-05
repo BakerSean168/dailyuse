@@ -9,7 +9,8 @@
 
 import { SourceModule, Timezone, TaskPriority } from '@dailyuse/contracts/schedule';
 import type { FixedTimeTrigger, IntervalTrigger, RecurrenceConfigServerDTO, ReminderTemplateServerDTO, TriggerConfigServerDTO } from '@dailyuse/contracts/reminder';
-import { ReminderType, WeekDay } from '@dailyuse/contracts/reminder';
+import { ReminderType, ReminderStatus, TriggerType, RecurrenceType, WeekDay } from '@dailyuse/contracts/reminder';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ScheduleConfig } from '../../value-objects/ScheduleConfig';
 import { TaskMetadata } from '../../value-objects/TaskMetadata';
 import type {
@@ -26,7 +27,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
    * 支持 REMINDER 源模块
    */
   supports(sourceModule: SourceModule): boolean {
-    return sourceModule === SourceModule.REMINDER;
+    return sourceModule === SourceModule.Reminder;
   }
 
   /**
@@ -42,7 +43,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
    */
   shouldCreateSchedule(sourceEntity: ReminderTemplateServerDTO): boolean {
     // 必须启用且激活
-    if (!sourceEntity.selfEnabled || sourceEntity.status !== 'ACTIVE') {
+    if (!sourceEntity.selfEnabled || sourceEntity.status !== ReminderStatus.Active) {
       return false;
     }
 
@@ -64,13 +65,13 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
 
     if (!this.shouldCreateSchedule(reminder)) {
       throw new Error(
-        `Reminder ${reminder.uuid} does not have valid configuration for scheduling`,
+        `Reminder ${reminder.id} does not have valid configuration for scheduling`,
       );
     }
 
     const { trigger, recurrence, activeTime, type } = reminder;
     if (!trigger) {
-      throw new Error(`Reminder ${reminder.uuid} missing trigger configuration`);
+      throw new Error(`Reminder ${reminder.id} missing trigger configuration`);
     }
 
     // 根据提醒类型和触发器生成 cron 表达式
@@ -78,21 +79,21 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
 
     // 创建调度配置
     // 重构后：startDate/endDate 移除，生效控制由 status 字段负责
-    const scheduleConfig = new ScheduleConfig({
+    const scheduleConfig = ScheduleConfig.create({
       cronExpression,
-      timezone: Timezone.SHANGHAI, // 默认时区，后续可以从用户设置获取
-      startDate: activeTime.activatedAt, // 使用激活时间作为开始
+      timezone: Timezone.Shanghai, // 默认时区，后续可以从用户设置获取
+      startDate: activeTime.activatedAt ? new Date(activeTime.activatedAt).toISOString() : null, // 使用激活时间作为开始
       endDate: null, // 不再使用 endDate，生效控制由 status 负责
-      maxExecutions: type === 'ONE_TIME' ? 1 : null, // 一次性提醒只执行一次
+      maxExecutions: type === ReminderType.OneTime ? 1 : null, // 一次性提醒只执行一次
     });
 
     // 创建元数据
-    const metadata = new TaskMetadata({
+    const metadata = TaskMetadata.create({
       priority: this.calculatePriority(reminder),
       tags: this.generateTags(reminder),
       timeout: null, // 默认无超时限制
       payload: {
-        reminderUuid: reminder.uuid,
+        reminderUuid: reminder.id,
         reminderTitle: reminder.name,
         reminderType: reminder.type,
         triggerType: trigger.type,
@@ -129,9 +130,9 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
     recurrence: RecurrenceConfigServerDTO | null | undefined,
     type: ReminderType,
   ): string {
-    if (trigger.type === 'FIXED_TIME' && trigger.fixedTime) {
+    if (trigger.type === TriggerType.FixedTime && trigger.fixedTime) {
       return this.generateFixedTimeCron(trigger.fixedTime, recurrence, type);
-    } else if (trigger.type === 'INTERVAL' && trigger.interval) {
+    } else if (trigger.type === TriggerType.Interval && trigger.interval) {
       return this.generateIntervalCron(trigger.interval);
     }
 
@@ -153,7 +154,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
     const minute = parseInt(minuteStr, 10);
 
     // 一次性提醒：暂时简化为每天该时间（实际执行时会检查日期）
-    if (type === 'ONE_TIME') {
+    if (type === ReminderType.OneTime) {
       return `0 ${minute} ${hour} * * *`;
     }
 
@@ -165,7 +166,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
     }
 
     switch (recurrence.type) {
-      case 'DAILY':
+      case RecurrenceType.Daily:
         // 每 N 天
         if (recurrence.daily?.interval === 1) {
           return `0 ${minute} ${hour} * * *`; // 每天
@@ -174,7 +175,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
           return `0 ${minute} ${hour} * * *`;
         }
 
-      case 'WEEKLY':
+      case RecurrenceType.Weekly:
         // 每周指定的几天
         if (recurrence.weekly) {
           const daysOfWeek = this.convertWeekDaysToCron(recurrence.weekly.weekDays);
@@ -182,7 +183,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
         }
         return `0 ${minute} ${hour} * * *`;
 
-      case 'CUSTOM_DAYS':
+      case RecurrenceType.CustomDays:
         // 自定义日期：简化为每天检查，由执行器判断是否是指定日期
         return `0 ${minute} ${hour} * * *`;
 
@@ -232,13 +233,13 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
 
     const cronDays = weekDays.map((day) => {
       const map: Record<WeekDay, number> = {
-        MONDAY: 1,
-        TUESDAY: 2,
-        WEDNESDAY: 3,
-        THURSDAY: 4,
-        FRIDAY: 5,
-        SATURDAY: 6,
-        SUNDAY: 0,
+        Monday: 1,
+        Tuesday: 2,
+        Wednesday: 3,
+        Thursday: 4,
+        Friday: 5,
+        Saturday: 6,
+        Sunday: 0,
       };
       return map[day];
     });
@@ -257,17 +258,17 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
 
     // 根据重要性级别映射
     switch (importanceLevel) {
-      case 'vital':
-        return TaskPriority.URGENT;
-      case 'important':
-        return TaskPriority.HIGH;
-      case 'moderate':
-        return TaskPriority.NORMAL;
-      case 'minor':
-      case 'trivial':
-        return TaskPriority.LOW;
+      case ImportanceLevel.Vital:
+        return TaskPriority.Urgent;
+      case ImportanceLevel.Important:
+        return TaskPriority.High;
+      case ImportanceLevel.Moderate:
+        return TaskPriority.Normal;
+      case ImportanceLevel.Minor:
+      case ImportanceLevel.Trivial:
+        return TaskPriority.Low;
       default:
-        return TaskPriority.NORMAL;
+        return TaskPriority.Normal;
     }
   }
 

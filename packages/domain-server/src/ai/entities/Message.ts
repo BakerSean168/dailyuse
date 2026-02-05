@@ -6,37 +6,34 @@ import type {
   MessageServerDTO,
 } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
-import { AiMessageId } from '@dailyuse/domain-shared/ai';
+import type { AiConversationId as IAiConversationId } from '@dailyuse/contracts/primitives';
+import { AiMessageId, AiConversationId } from '@dailyuse/domain-shared/ai';
 
 export class Message extends Entity<AiMessageId> implements MessageServer {
-  private _conversationUuid: string;
+  private _conversationId: IAiConversationId;
   private _role: MessageRole;
   private _content: string;
   private _tokenCount: number | null;
   private _createdAt: Date;
 
   private constructor(params: {
-    uuid?: string;
-    conversationUuid: string;
+    id?: string;
+    conversationId: string;
     role: MessageRole;
     content: string;
     tokenCount?: number | null;
     createdAt: Date;
   }) {
-    super((params.uuid ?? AiMessageId.generate()) as AiMessageId);
-    this._conversationUuid = params.conversationUuid;
+    super((params.id ?? AiMessageId.generate()) as AiMessageId);
+    this._conversationId = AiConversationId.of(params.conversationId);
     this._role = params.role;
     this._content = params.content;
     this._tokenCount = params.tokenCount ?? null;
     this._createdAt = params.createdAt;
   }
 
-  public get uuid(): string {
-    return String(this.id);
-  }
-
-  public get conversationUuid(): string {
-    return this._conversationUuid;
+  public get conversationId(): IAiConversationId {
+    return this._conversationId;
   }
 
   public get role(): MessageRole {
@@ -56,13 +53,13 @@ export class Message extends Entity<AiMessageId> implements MessageServer {
   }
 
   public static create(params: {
-    conversationUuid: string;
+    conversationId: string;
     role: MessageRole;
     content: string;
     tokenCount?: number;
   }): Message {
     return new Message({
-      conversationUuid: params.conversationUuid,
+      conversationId: params.conversationId,
       role: params.role,
       content: params.content,
       tokenCount: params.tokenCount,
@@ -72,8 +69,8 @@ export class Message extends Entity<AiMessageId> implements MessageServer {
 
   public static fromServerDTO(dto: MessageServerDTO): Message {
     return new Message({
-      uuid: dto.uuid,
-      conversationUuid: dto.conversationUuid,
+      id: dto.id,
+      conversationId: dto.conversationId,
       role: dto.role,
       content: dto.content,
       tokenCount: dto.tokenCount,
@@ -83,8 +80,8 @@ export class Message extends Entity<AiMessageId> implements MessageServer {
 
   public static fromPersistenceDTO(dto: MessagePersistenceDTO): Message {
     return new Message({
-      uuid: dto.uuid,
-      conversationUuid: dto.conversationUuid,
+      id: dto.id,
+      conversationId: dto.conversationId,
       role: dto.role,
       content: dto.content,
       tokenCount: dto.tokenCount,
@@ -94,8 +91,8 @@ export class Message extends Entity<AiMessageId> implements MessageServer {
 
   public toServerDTO(): MessageServerDTO {
     return {
-      uuid: this.uuid,
-      conversationUuid: this._conversationUuid,
+      id: this.id,
+      conversationId: this._conversationId,
       role: this._role,
       content: this._content,
       tokenCount: this._tokenCount,
@@ -105,8 +102,8 @@ export class Message extends Entity<AiMessageId> implements MessageServer {
 
   public toClientDTO(): MessageClientDTO {
     return {
-      uuid: this.uuid,
-      conversationUuid: this._conversationUuid,
+      id: String(this.id),
+      conversationId: String(this._conversationId),
       role: this._role,
       content: this._content,
       tokenCount: this._tokenCount,
@@ -120,8 +117,8 @@ export class Message extends Entity<AiMessageId> implements MessageServer {
 
   public toPersistenceDTO(): MessagePersistenceDTO {
     return {
-      uuid: this.uuid,
-      conversationUuid: this._conversationUuid,
+      id: this.id,
+      conversationId: this._conversationId,
       role: this._role,
       content: this._content,
       tokenCount: this._tokenCount,

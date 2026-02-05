@@ -16,14 +16,10 @@
  * 【IScheduleTaskRepository】
  * - 日程任务持久化：日程内的子任务管理
  * 
- * 【IScheduleStatisticsRepository】
- * - 日程统计持久化：忙碌程度、事件数量统计
- * 
  * 【IScheduleExecutionRepository】
  * - 日程执行记录持久化：日程实际执行情况统计
  */
 
 export * from './IScheduleTaskRepository';
-export * from './IScheduleStatisticsRepository';
 export * from './IScheduleExecutionRepository';
 export * from './IScheduleRepository';

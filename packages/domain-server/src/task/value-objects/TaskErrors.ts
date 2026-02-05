@@ -18,10 +18,11 @@ export class TaskTemplateNotFoundError extends DomainError {
  * 任务模板状态无效错误
  */
 export class InvalidTaskTemplateStateError extends DomainError {
-  constructor(templateId: string, currentState: string, expectedState: string) {
+  constructor(message: string, context?: { templateId?: string; currentStatus?: string; attemptedAction?: string }) {
+    const contextStr = context ? ` (templateId: ${context.templateId}, status: ${context.currentStatus}, action: ${context.attemptedAction})` : '';
     super(
       'invalid_task_template_state',
-      `任务模板状态无效：${templateId}，当前状态 ${currentState}，期望 ${expectedState}`,
+      `${message}${contextStr}`,
     );
   }
 }
@@ -60,10 +61,12 @@ export class InvalidGoalBindingError extends DomainError {
  * 日期范围无效错误
  */
 export class InvalidDateRangeError extends DomainError {
-  constructor(startDate: Date, endDate: Date) {
+  constructor(startDate: Date | number, endDate: Date | number) {
+    const start = typeof startDate === 'number' ? new Date(startDate) : startDate;
+    const end = typeof endDate === 'number' ? new Date(endDate) : endDate;
     super(
       'invalid_date_range',
-      `日期范围无效：开始日期 ${startDate.toISOString()} 晚于结束日期 ${endDate.toISOString()}`,
+      `日期范围无效：开始日期 ${start.toISOString()} 晚于结束日期 ${end.toISOString()}`,
     );
   }
 }

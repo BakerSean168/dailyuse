@@ -13,8 +13,10 @@
  * - 直接发送通知
  */
 
-import type { DomainEvent } from '@dailyuse/utils';
-import type { TaskType, TaskReminderType, ReminderTimeUnit } from '@dailyuse/contracts/task';
+import type { IDomainEvent } from '@dailyuse/contracts/shared';
+import type { TaskReminderType, ReminderTimeUnit } from '@dailyuse/contracts/task';
+
+type TaskType = 'ONE_TIME' | 'RECURRING';
 import type { ITaskInstanceRepository } from '@dailyuse/domain-server/task';
 
 interface ScheduleTaskTriggeredPayload {
@@ -44,7 +46,7 @@ export class TaskReminderScheduleHandler {
   /**
    * 处理 ScheduleTask 触发事件
    */
-  async handle(event: DomainEvent<ScheduleTaskTriggeredPayload>): Promise<void> {
+  async handle(event: IDomainEvent<ScheduleTaskTriggeredPayload>): Promise<void> {
     const { sourceModule, sourceEntityId, metadata } = event.payload;
 
     // 只处理 TASK 模块的事件
@@ -57,7 +59,8 @@ export class TaskReminderScheduleHandler {
 
     try {
       // 1. 获取今天的 TaskInstance
-      const today = new Date().setHours(0, 0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       
       const instances = await this.taskInstanceRepository.findByTemplateUuidAndDateRange(
         templateUuid,
@@ -71,8 +74,8 @@ export class TaskReminderScheduleHandler {
       }
 
       const instance = instances[0];
-      const taskTitle = metadata?.payload?.taskTitle ?? instance.templateUuid;
-      console.log(`[TaskReminderScheduleHandler] 找到今天的任务实例: ${instance.uuid}, title="${taskTitle}"`);
+      const taskTitle = metadata?.payload?.taskTitle ?? instance.templateId;
+      console.log(`[TaskReminderScheduleHandler] 找到今天的任务实例: ${instance.id}, title="${taskTitle}"`);
 
       // 2. 获取提醒配置
       const reminderTriggers = metadata?.payload?.reminderTriggers;
@@ -84,7 +87,7 @@ export class TaskReminderScheduleHandler {
       // 3. 发送提醒通知
       await this.sendReminderNotification(instance, reminderTriggers);
       
-      console.log(`✅ [TaskReminderScheduleHandler] 提醒发送成功: instance=${instance.uuid}`);
+      console.log(`✅ [TaskReminderScheduleHandler] 提醒发送成功: instance=${instance.id}`);
     } catch (error) {
       console.error(`❌ [TaskReminderScheduleHandler] 处理失败:`, error);
     }
@@ -110,9 +113,9 @@ export class TaskReminderScheduleHandler {
 
     // 计算提醒时间
     let reminderTime = Date.now();
-    if (trigger.type === 'ABSOLUTE' && trigger.absoluteTime) {
+    if (trigger.type === 'Absolute' && trigger.absoluteTime) {
       reminderTime = trigger.absoluteTime;
-    } else if (trigger.type === 'RELATIVE' && trigger.relativeValue && trigger.relativeUnit) {
+    } else if (trigger.type === 'Relative' && trigger.relativeValue && trigger.relativeUnit) {
       // 从任务的时间配置中获取任务时间
       const instanceDate = instance.instanceDate; // TaskInstance 的日期（timestamp）
       const offsetMinutes = this.convertToMinutes(trigger.relativeValue, trigger.relativeUnit);
@@ -130,7 +133,7 @@ export class TaskReminderScheduleHandler {
     console.log(`📢 [TaskReminderScheduleHandler] 发送提醒通知:`);
     console.log(`   - 任务: ${instance.title}`);
     console.log(`   - 时间: ${new Date(reminderTime).toLocaleString('zh-CN')}`);
-    console.log(`   - 实例: ${instance.uuid}`);
+    console.log(`   - 实例: ${instance.id}`);
 
     // TODO: 调用通知服务
     // await notificationService.send({
@@ -150,11 +153,11 @@ export class TaskReminderScheduleHandler {
    */
   private convertToMinutes(value: number, unit: ReminderTimeUnit): number {
     switch (unit) {
-      case 'MINUTES':
+      case 'Minutes':
         return value;
-      case 'HOURS':
+      case 'Hours':
         return value * 60;
-      case 'DAYS':
+      case 'Days':
         return value * 24 * 60;
       default:
         return 0;

@@ -53,6 +53,6 @@ export class TaskExpirationService {
    * @returns 过期数量
    */
   countExpiredInstances(instances: TaskInstance[]): number {
-    return instances.filter((i) => i.status === 'EXPIRED').length;
+    return instances.filter((i) => i.status === 'Expired').length;
   }
 }

@@ -254,7 +254,7 @@ export class KeyResultProgress extends ValueObject<KeyResultProgressDTO> impleme
     if (range === 0) return 0;
 
     const progress = this.props.currentValue - this.props.initialValue;
-    let percentage = (progress / range) * 100;
+    const percentage = (progress / range) * 100;
 
     // 限制在 0-100 范围内（超过目标值会显示 >100%）
     return Math.max(0, Math.min(percentage, 100));

@@ -6,15 +6,17 @@ import type {
   AIConversationServerDTO,
 } from '@dailyuse/contracts/ai';
 import { ConversationStatus } from '@dailyuse/contracts/ai';
+import type { IdentityId as IIdentityId } from '@dailyuse/contracts/primitives';
 import { AiConversationId } from '@dailyuse/domain-shared/ai';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { Message } from '../entities/Message';
 
 export class AIConversation extends AggregateRoot<AiConversationId> implements AIConversationServer {
-  private _accountUuid: string;
+  private _identityId: IIdentityId;
   private _name: string;
   private _status: ConversationStatus;
   private _messageCount: number;
-  private _lastMessageAt: number | null;
+  private _lastMessageAt: Date | null;
   private _createdAt: Date;
   private _updatedAt: Date;
   private _deletedAt: Date | null;
@@ -22,18 +24,18 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
   private _messages: Message[];
 
   private constructor(params: {
-    uuid?: string;
-    accountUuid: string;
+    id?: string;
+    identityId: string;
     name: string;
     status: ConversationStatus;
     messageCount: number;
-    lastMessageAt?: number | null;
+    lastMessageAt?: Date | null;
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;
   }) {
-    super(AiConversationId.of(params.uuid ?? AiConversationId.generate()));
-    this._accountUuid = params.accountUuid;
+    super(AiConversationId.of(params.id ?? AiConversationId.generate()));
+    this._identityId = IdentityId.of(params.identityId);
     this._name = params.name;
     this._status = params.status;
     this._messageCount = params.messageCount;
@@ -44,12 +46,8 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
     this._messages = [];
   }
 
-  public get uuid(): string {
-    return String(this.id);
-  }
-
-  public get accountUuid(): string {
-    return this._accountUuid;
+  public get identityId(): IIdentityId {
+    return this._identityId;
   }
 
   public get name(): string {
@@ -64,7 +62,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
     return this._messageCount;
   }
 
-  public get lastMessageAt(): number | null {
+  public get lastMessageAt(): Date | null {
     return this._lastMessageAt;
   }
 
@@ -84,10 +82,10 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
     return [...this._messages];
   }
 
-  public static create(params: { accountUuid: string; name: string }): AIConversation {
+  public static create(params: { identityId: string; name: string }): AIConversation {
     const now = new Date();
     const conversation = new AIConversation({
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       name: params.name,
       status: ConversationStatus.Active,
       messageCount: 0,
@@ -98,7 +96,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
     });
 
     conversation.addDomainEvent('ai.conversation.created', {
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       conversation: conversation.toServerDTO(),
     });
 
@@ -107,12 +105,12 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
 
   public static fromServerDTO(dto: AIConversationServerDTO): AIConversation {
     const conversation = new AIConversation({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
+      id: dto.id,
+      identityId: dto.identityId,
       name: dto.name,
       status: dto.status,
       messageCount: dto.messageCount,
-      lastMessageAt: dto.lastMessageAt ?? null,
+      lastMessageAt: dto.lastMessageAt ? new Date(dto.lastMessageAt) : null,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
       deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
@@ -126,9 +124,9 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
   }
 
   public static fromPersistenceDTO(dto: AIConversationPersistenceDTO): AIConversation {
-    return new AIConversation({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
+    const conversation = new AIConversation({
+      id: dto.id,
+      identityId: dto.identityId,
       name: dto.name,
       status: dto.status,
       messageCount: dto.messageCount,
@@ -137,6 +135,12 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
     });
+
+    if (dto.messages) {
+      conversation._messages = dto.messages.map((m) => Message.fromPersistenceDTO(m));
+    }
+
+    return conversation;
   }
 
   public addMessage(message: Message): void {
@@ -145,12 +149,12 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
     }
     this._messages.push(message);
     this._messageCount++;
-    this._lastMessageAt = message.createdAt.getTime();
+    this._lastMessageAt = message.createdAt;
     this._updatedAt = new Date();
 
     this.addDomainEvent('ai.message.added', {
-      accountUuid: this._accountUuid,
-      conversationUuid: this.uuid,
+      identityId: String(this._identityId),
+      conversationId: String(this.id),
       message: message.toServerDTO(),
     });
   }
@@ -175,8 +179,8 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
     this._updatedAt = new Date();
 
     this.addDomainEvent('ai.conversation.status_changed', {
-      accountUuid: this._accountUuid,
-      conversationUuid: this.uuid,
+      identityId: String(this._identityId),
+      conversationId: String(this.id),
       oldStatus,
       newStatus: status,
     });
@@ -190,12 +194,12 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
 
   public toServerDTO(includeChildren: boolean = false): AIConversationServerDTO {
     return {
-      uuid: this.uuid,
-      accountUuid: this._accountUuid,
+      id: this.id,
+      identityId: this._identityId,
       name: this._name,
       status: this._status,
       messageCount: this._messageCount,
-      lastMessageAt: this._lastMessageAt,
+      lastMessageAt: this._lastMessageAt ? this._lastMessageAt.getTime() : null,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
@@ -205,12 +209,12 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
 
   public toClientDTO(): AIConversationClientDTO {
     return {
-      uuid: this.uuid,
-      accountUuid: this._accountUuid,
+      id: String(this.id),
+      identityId: String(this._identityId),
       name: this._name,
       status: this._status,
       messageCount: this._messageCount,
-      lastMessageAt: this._lastMessageAt,
+      lastMessageAt: this._lastMessageAt ? this._lastMessageAt.getTime() : null,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       messages: null,
@@ -219,8 +223,8 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
 
   public toPersistenceDTO(): AIConversationPersistenceDTO {
     return {
-      uuid: this.uuid,
-      accountUuid: this._accountUuid,
+      id: this.id,
+      identityId: this._identityId,
       name: this._name,
       status: this._status,
       messageCount: this._messageCount,
@@ -228,6 +232,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       deletedAt: this._deletedAt,
+      messages: this._messages.length > 0 ? this._messages.map((m) => m.toPersistenceDTO()) : null,
     };
   }
 }

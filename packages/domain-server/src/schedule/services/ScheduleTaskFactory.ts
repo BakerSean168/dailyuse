@@ -40,7 +40,7 @@ export class ScheduleTaskFactory {
    * @throws ScheduleTaskCreationError 如果创建过程失败
    */
   public createFromSourceEntity(input: ScheduleStrategyInput): ScheduleTask {
-    const { accountUuid, sourceModule, sourceEntityId, sourceEntity } = input;
+    const { identityId, sourceModule, sourceEntityId, sourceEntity } = input;
     const operationId = `create-schedule-task-${sourceModule}-${sourceEntityId}-${Date.now()}`;
 
     try {
@@ -60,10 +60,6 @@ export class ScheduleTaskFactory {
           sourceModule,
           sourceEntityId,
           'Source entity does not meet scheduling requirements',
-          {
-            entityData: sourceEntity,
-            operationId,
-          },
         );
       }
 
@@ -72,7 +68,7 @@ export class ScheduleTaskFactory {
 
       // 创建 ScheduleTask 聚合根
       const scheduleTask = ScheduleTask.create({
-        accountUuid,
+        identityId,
         name: strategyOutput.name,
         description: strategyOutput.description ?? undefined,
         sourceModule,
@@ -96,13 +92,7 @@ export class ScheduleTaskFactory {
       throw new ScheduleTaskCreationError(
         sourceModule,
         sourceEntityId,
-        error instanceof Error ? error.message : 'Unknown error',
-        {
-          sourceEntity,
-          operationId,
-          step: 'create_schedule_task',
-          originalError: error instanceof Error ? error : undefined,
-        },
+        error instanceof Error ? error : undefined,
       );
     }
   }

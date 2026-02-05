@@ -6,7 +6,39 @@
  * 负责确保 API 接收到的查询参数符合预期的枚举值
  */
 
-import { TaskSortBy, TaskFilterBy } from '@dailyuse/contracts/task';
+/**
+ * Task Sort By options
+ */
+export const TaskSortBy = {
+  PRIORITY: 'priority',
+  DUE_DATE: 'dueDate',
+  CREATED_AT: 'createdAt',
+  IMPORTANCE: 'importance',
+} as const;
+export type TaskSortBy = (typeof TaskSortBy)[keyof typeof TaskSortBy];
+
+/**
+ * Task Filter By options
+ */
+export const TaskFilterBy = {
+  // Importance-based
+  IMPORTANCE_VITAL: 'importance:vital',
+  IMPORTANCE_IMPORTANT: 'importance:important',
+  IMPORTANCE_MODERATE: 'importance:moderate',
+  IMPORTANCE_MINOR: 'importance:minor',
+  IMPORTANCE_TRIVIAL: 'importance:trivial',
+  // Status-based
+  STATUS_ACTIVE: 'status:active',
+  STATUS_COMPLETED: 'status:completed',
+  STATUS_BLOCKED: 'status:blocked',
+  STATUS_CANCELLED: 'status:cancelled',
+  // Time-based
+  DUE_DATE_OVERDUE: 'dueDate:overdue',
+  DUE_DATE_TODAY: 'dueDate:today',
+  DUE_DATE_UPCOMING: 'dueDate:upcoming',
+  DUE_DATE_NO_DUE_DATE: 'dueDate:noDueDate',
+} as const;
+export type TaskFilterBy = (typeof TaskFilterBy)[keyof typeof TaskFilterBy];
 
 /**
  * 任务查询参数验证器

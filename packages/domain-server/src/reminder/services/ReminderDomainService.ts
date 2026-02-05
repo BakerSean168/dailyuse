@@ -2,13 +2,15 @@ import type { ActiveHoursConfigServerDTO, ActiveTimeConfigServerDTO, Notificatio
 import { ControlMode, ReminderType } from '@dailyuse/contracts/reminder';
 import type {
   IReminderGroupRepository,
-  IReminderStatisticsRepository,
   IReminderTemplateRepository,
 } from '../repositories';
 import { ReminderTemplate } from '../aggregates/ReminderTemplate';
 import { ReminderGroup } from '../aggregates/ReminderGroup';
 import { ReminderTemplateControlService } from './ReminderTemplateControlService';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
+
+// Local branded type
+type IdentityId = string & { readonly __brand: 'IdentityId' };
 
 /**
  * Reminder Domain Service
@@ -29,7 +31,6 @@ export class ReminderDomainService {
   constructor(
     private readonly reminderTemplateRepository: IReminderTemplateRepository,
     private readonly reminderGroupRepository: IReminderGroupRepository,
-    private readonly reminderStatisticsRepository: IReminderStatisticsRepository,
   ) {
     this.controlService = new ReminderTemplateControlService(
       reminderTemplateRepository,
@@ -64,12 +65,12 @@ export class ReminderDomainService {
   }): Promise<ReminderTemplate> {
     if (params.groupUuid) {
       const group = await this.reminderGroupRepository.findById(params.groupUuid);
-      if (!group || group.accountUuid !== params.accountUuid) {
+      if (!group || group.identityId !== params.accountUuid) {
         throw new Error(`Invalid groupUuid: ${params.groupUuid}`);
       }
     }
 
-    const template = ReminderTemplate.create(params);
+    const template = ReminderTemplate.create({ ...params, identityId: params.accountUuid as IdentityId });
     await this.reminderTemplateRepository.save(template);
 
     // TODO: Update group stats if groupUuid is present
@@ -126,7 +127,7 @@ export class ReminderDomainService {
       throw new Error(`ReminderGroup with name "${params.name}" already exists.`);
     }
 
-    const group = ReminderGroup.create(params);
+    const group = ReminderGroup.create({ ...params, identityId: params.accountUuid });
     await this.reminderGroupRepository.save(group);
     return group;
   }
@@ -170,7 +171,7 @@ export class ReminderDomainService {
 
     if (groupUuid) {
       const group = await this.getGroup(groupUuid);
-      if (!group || group.accountUuid !== template.accountUuid) {
+      if (!group || group.identityId !== template.identityId) {
         throw new Error(`Invalid groupUuid: ${groupUuid}`);
       }
     }
@@ -205,7 +206,7 @@ export class ReminderDomainService {
     await this.reminderGroupRepository.save(group);
 
     // If group control is active, update all templates within the group
-    if (group.controlMode === 'GROUP') {
+    if (group.controlMode === ControlMode.Group) {
       const templates = await this.reminderTemplateRepository.findByGroupUuid(uuid);
       for (const template of templates) {
         if (group.enabled) {

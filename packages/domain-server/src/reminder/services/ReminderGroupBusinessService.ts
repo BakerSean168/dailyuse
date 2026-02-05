@@ -81,7 +81,7 @@ export class ReminderGroupBusinessService {
 
       totalTemplates++;
 
-      if (template.status === ReminderStatus.ACTIVE) {
+      if (template.status === ReminderStatus.Active) {
         activeTemplates++;
       } else {
         pausedTemplates++;
@@ -156,9 +156,9 @@ export class ReminderGroupBusinessService {
   ): GroupNameValidation {
     const conflictingGroup = existingGroups.find(
       g =>
-        g.accountUuid === accountUuid &&
+        g.identityId === accountUuid &&
         g.name === name &&
-        g.uuid !== excludeGroupUuid &&
+        g.id !== excludeGroupUuid &&
         !g.deletedAt, // 忽略已删除的分组
     );
 
@@ -210,8 +210,8 @@ export class ReminderGroupBusinessService {
     group: ReminderGroup,
     templates: ReminderTemplate[],
   ): ReminderTemplate[] {
-    // 只有 GROUP 模式下才有影响
-    if (group.controlMode !== ControlMode.GROUP) {
+    // 只有 Group 模式下才有影响
+    if (group.controlMode !== ControlMode.Group) {
       return [];
     }
 

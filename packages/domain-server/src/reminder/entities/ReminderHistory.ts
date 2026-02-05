@@ -192,9 +192,14 @@ export class ReminderHistory extends Entity<string> implements ReminderHistorySe
   }
 
   public toClientDTO(): ReminderHistoryClientDTO {
+    // 生成通知渠道文本
+    const channelsText = this._notificationChannels?.length
+      ? this._notificationChannels.join(' + ')
+      : null;
+
     return {
-      uuid: this.id,
-      templateUuid: this._templateUuid,
+      id: this.id,
+      templateId: this._templateUuid,
       triggeredAt: this._triggeredAt.getTime(),
       result: this._result,
       error: this._error,
@@ -202,11 +207,9 @@ export class ReminderHistory extends Entity<string> implements ReminderHistorySe
       notificationChannels: this._notificationChannels,
       createdAt: this._createdAt.getTime(),
       // Client 专属计算字段
-      resultDescription: this.resultDescription,
-      triggeredAtFormatted: this.triggeredAtFormatted,
-      createdAtFormatted: this.createdAtFormatted,
-      isSuccess: this.isSuccess,
-      hasError: this.hasError,
+      resultText: this.resultDescription,
+      timeAgo: this.triggeredAtFormatted,
+      channelsText,
     };
   }
 

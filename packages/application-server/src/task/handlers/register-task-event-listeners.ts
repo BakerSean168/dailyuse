@@ -16,12 +16,14 @@
  */
 
 import { createLogger, eventBus } from '@dailyuse/utils';
-import { ScheduleTaskEventTypes } from '@dailyuse/contracts/schedule';
 import { TaskReminderScheduleHandler } from './task-reminder-schedule.handler';
 import { TaskEventHandler } from '../services/task-event-handler';
 import type { ITaskInstanceRepository } from '@dailyuse/domain-server/task';
 
 const logger = createLogger('TaskEventListeners');
+
+// Event name constant
+const SCHEDULE_TASK_EXECUTE_EVENT = 'schedule:task-execute';
 
 /**
  * 注册 Task 事件监听器
@@ -31,15 +33,16 @@ export function registerTaskEventListeners(taskInstanceRepository: ITaskInstance
   TaskEventHandler.initialize();
   logger.info('✅ TaskEventHandler 已初始化（监听实例生成、模板创建、实例完成事件）');
 
-  // 监听 schedule.task.triggered 事件
-  eventBus.subscribe(ScheduleTaskEventTypes.TRIGGERED, async (event: any) => {
+  // 监听 schedule:task-execute 事件
+  // Note: Using 'any' cast because this event type is from ScheduleEventMap, not registered in GlobalEventBus
+  (eventBus as any).on(SCHEDULE_TASK_EXECUTE_EVENT, async (event: any) => {
     try {
       // 只处理 TASK 模块的事件
       if (event.payload?.sourceModule !== 'TASK') {
         return;
       }
 
-      logger.info(`📩 接收到 ${ScheduleTaskEventTypes.TRIGGERED} 事件 (Task)`, {
+      logger.info(`📩 接收到 ${SCHEDULE_TASK_EXECUTE_EVENT} 事件 (Task)`, {
         taskUuid: event.payload?.taskUuid,
         templateUuid: event.payload?.sourceEntityId,
         taskName: event.payload?.taskName,
@@ -52,7 +55,7 @@ export function registerTaskEventListeners(taskInstanceRepository: ITaskInstance
       // 处理事件
       await handler.handle(event);
     } catch (error) {
-      logger.error(`❌ 处理 ${ScheduleTaskEventTypes.TRIGGERED} 事件失败`, {
+      logger.error(`❌ 处理 ${SCHEDULE_TASK_EXECUTE_EVENT} 事件失败`, {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         event: {
@@ -64,5 +67,5 @@ export function registerTaskEventListeners(taskInstanceRepository: ITaskInstance
     }
   });
 
-  logger.info(`✅ Task 事件监听器注册完成（监听 ${ScheduleTaskEventTypes.TRIGGERED} 事件）`);
+  logger.info(`✅ Task 事件监听器注册完成（监听 ${SCHEDULE_TASK_EXECUTE_EVENT} 事件）`);
 }

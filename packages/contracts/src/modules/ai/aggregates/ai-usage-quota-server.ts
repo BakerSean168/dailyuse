@@ -3,40 +3,41 @@
  * AI使用配额聚合根 - 服务端接口
  */
 
+import type { AiUsageQuotaId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
 import type { QuotaResetPeriod } from '../value-objects/quota-reset-period';
-import type { AIUsageQuotaClientDTO } from './ai-usage-quota-client';
 
 // ============ DTO 定义 ============
 
 /**
  * AIUsageQuota Server DTO（应用层）
+ * 使用 TransferDate (number) 时间戳
  */
 export interface AIUsageQuotaServerDTO {
-  uuid: string;
-  accountUuid: string;
+  id: AiUsageQuotaId;
+  identityId: IdentityId;
   quotaLimit: number;
   currentUsage: number;
   resetPeriod: QuotaResetPeriod;
-  lastResetAt: number;
-  nextResetAt: number;
-  createdAt: number;
-  updatedAt: number;
+  lastResetAt: TransferDate;
+  nextResetAt: TransferDate;
+  createdAt: TransferDate;
+  updatedAt: TransferDate;
 }
 
 /**
  * AIUsageQuota Persistence DTO（数据库层）
- * 注意：使用 camelCase 命名，与数据库 snake_case 的映射在仓储层处理
+ * 使用 PersistenceDate (Date 对象)
  */
 export interface AIUsageQuotaPersistenceDTO {
-  uuid: string;
-  accountUuid: string;
+  id: AiUsageQuotaId;
+  identityId: IdentityId;
   quotaLimit: number;
   currentUsage: number;
   resetPeriod: QuotaResetPeriod;
-  lastResetAt: number;
-  nextResetAt: number;
-  createdAt: Date;
-  updatedAt: Date;
+  lastResetAt: PersistenceDate;
+  nextResetAt: PersistenceDate;
+  createdAt: PersistenceDate;
+  updatedAt: PersistenceDate;
 }
 
 // ============ 领域事件 ============
@@ -46,11 +47,11 @@ export interface AIUsageQuotaPersistenceDTO {
  */
 export interface AIUsageQuotaCreatedEvent {
   type: 'ai_usage_quota.created';
-  aggregateId: string; // quotaUuid
-  timestamp: Date;
+  aggregateId: AiUsageQuotaId;
+  timestamp: DomainDate;
   payload: {
     quota: AIUsageQuotaServerDTO;
-    accountUuid: string;
+    identityId: IdentityId;
   };
 }
 
@@ -59,15 +60,15 @@ export interface AIUsageQuotaCreatedEvent {
  */
 export interface AIUsageQuotaConsumedEvent {
   type: 'ai_usage_quota.consumed';
-  aggregateId: string;
-  timestamp: Date;
+  aggregateId: AiUsageQuotaId;
+  timestamp: DomainDate;
   payload: {
-    quotaUuid: string;
-    accountUuid: string;
+    quotaId: AiUsageQuotaId;
+    identityId: IdentityId;
     amount: number;
     previousUsage: number;
     newUsage: number;
-    consumedAt: number;
+    consumedAt: TransferDate;
   };
 }
 
@@ -76,14 +77,14 @@ export interface AIUsageQuotaConsumedEvent {
  */
 export interface AIUsageQuotaResetEvent {
   type: 'ai_usage_quota.reset';
-  aggregateId: string;
-  timestamp: Date;
+  aggregateId: AiUsageQuotaId;
+  timestamp: DomainDate;
   payload: {
-    quotaUuid: string;
-    accountUuid: string;
+    quotaId: AiUsageQuotaId;
+    identityId: IdentityId;
     previousUsage: number;
-    resetAt: number;
-    nextResetAt: number;
+    resetAt: TransferDate;
+    nextResetAt: TransferDate;
   };
 }
 
@@ -92,14 +93,14 @@ export interface AIUsageQuotaResetEvent {
  */
 export interface AIUsageQuotaExceededEvent {
   type: 'ai_usage_quota.exceeded';
-  aggregateId: string;
-  timestamp: Date;
+  aggregateId: AiUsageQuotaId;
+  timestamp: DomainDate;
   payload: {
-    quotaUuid: string;
-    accountUuid: string;
+    quotaId: AiUsageQuotaId;
+    identityId: IdentityId;
     quotaLimit: number;
     currentUsage: number;
-    exceededAt: number;
+    exceededAt: TransferDate;
   };
 }
 
@@ -108,30 +109,30 @@ export interface AIUsageQuotaExceededEvent {
  */
 export interface AIUsageQuotaLimitUpdatedEvent {
   type: 'ai_usage_quota.limit_updated';
-  aggregateId: string;
-  timestamp: Date;
+  aggregateId: AiUsageQuotaId;
+  timestamp: DomainDate;
   payload: {
-    quotaUuid: string;
+    quotaId: AiUsageQuotaId;
     previousLimit: number;
     newLimit: number;
-    updatedAt: Date;
+    updatedAt: DomainDate;
   };
 }
 
-// ============ 实体接口 ============
+// ============ 聚合根接口 ============
 
 /**
- * AIUsageQuota 聚合根 - Server 接口（实例方法）
+ * AIUsageQuota 聚合根 - Server 接口
  */
 export interface AIUsageQuotaServer {
   // 基础属性
-  uuid: string;
-  accountUuid: string;
+  id: AiUsageQuotaId;
+  identityId: IdentityId;
   quotaLimit: number;
   currentUsage: number;
   resetPeriod: QuotaResetPeriod;
-  lastResetAt: number;
-  nextResetAt: number;
-  createdAt: Date;
-  updatedAt: Date;
+  lastResetAt: DomainDate;
+  nextResetAt: DomainDate;
+  createdAt: DomainDate;
+  updatedAt: DomainDate;
 }

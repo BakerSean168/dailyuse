@@ -12,14 +12,48 @@
  * @since Story 9.1 (EPIC-SCHEDULE-001)
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot, generateUUID } from '@dailyuse/utils';
 import type {
   ConflictDetail,
   ConflictDetectionResult,
   ConflictSuggestion,
-  ScheduleClientDTO,
-  ScheduleServerDTO,
 } from '@dailyuse/contracts/schedule';
+
+// TODO: 当 contracts 中定义了 ScheduleServerDTO 和 ScheduleClientDTO 后，移除这些临时类型
+// Story 9.1 用户日程的 DTO 接口暂未定义
+interface ScheduleServerDTO {
+  uuid: string;
+  accountUuid: string;
+  name: string;
+  description?: string;
+  startTime: number;
+  endTime: number;
+  duration: number;
+  hasConflict: boolean;
+  conflictingSchedules?: string[];
+  priority?: number;
+  location?: string;
+  attendees?: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+interface ScheduleClientDTO {
+  uuid: string;
+  accountUuid: string;
+  name: string;
+  description: string | null;
+  startTime: number;
+  endTime: number;
+  duration: number;
+  hasConflict: boolean;
+  conflictingSchedules: string[] | null;
+  priority: number | null;
+  location: string | null;
+  attendees: string[] | null;
+  createdAt: number;
+  updatedAt: number;
+}
 
 /**
  * Schedule 聚合根
@@ -27,7 +61,7 @@ import type {
  * 注意：这是用户面向的日程（会议、约会等），不是 ScheduleTask（cron任务调度）
  * TODO: 定义 ScheduleServer 接口后实现
  */
-export class Schedule extends AggregateRoot {
+export class Schedule extends AggregateRoot<string> {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _title: string;
@@ -59,7 +93,7 @@ export class Schedule extends AggregateRoot {
     createdAt?: number;
     updatedAt?: number;
   }) {
-    super(params.uuid || AggregateRoot.generateUUID());
+    super(params.uuid || generateUUID());
     
     // Validation: startTime must be before endTime
     if (params.startTime >= params.endTime) {
@@ -77,13 +111,13 @@ export class Schedule extends AggregateRoot {
     this._priority = params.priority ?? null;
     this._location = params.location ?? null;
     this._attendees = params.attendees ?? null;
-    this._createdAt = params.createdAt ?? Date.now();
-    this._updatedAt = params.updatedAt ?? Date.now();
+    this._createdAt = new Date(params.createdAt ?? Date.now());
+    this._updatedAt = new Date(params.updatedAt ?? Date.now());
   }
 
   // ===== Getter 属性 =====
-  public override get uuid(): string {
-    return this._uuid;
+  public get uuid(): string {
+    return this.id;
   }
 
   public get accountUuid(): string {
@@ -329,7 +363,7 @@ export class Schedule extends AggregateRoot {
    */
   public toClientDTO(): ScheduleClientDTO {
     return {
-      uuid: this._uuid,
+      uuid: this.id,
       accountUuid: this._accountUuid,
       name: this._title,
       description: this._description,
@@ -351,7 +385,7 @@ export class Schedule extends AggregateRoot {
    */
   public toServerDTO(): ScheduleServerDTO {
     return {
-      uuid: this._uuid,
+      uuid: this.id,
       accountUuid: this._accountUuid,
       name: this._title,
       description: this._description ?? undefined,

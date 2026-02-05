@@ -34,8 +34,9 @@ export class TaskInstanceGenerationService {
 
     // 1. 计算起始日期：从上次生成日期的下一天，或从今天开始
     // 注意：如果是强制生成，调用方应该负责清理旧实例，这里只负责生成新的
+    const lastGeneratedTime = template.lastGeneratedDate?.getTime();
     const fromDate =
-      !forceGenerate && template.lastGeneratedDate ? template.lastGeneratedDate + 86400000 : now;
+      !forceGenerate && lastGeneratedTime ? lastGeneratedTime + 86400000 : now;
 
     // 2. 计算目标结束日期：默认未来 100 天
     const targetDays = TARGET_GENERATE_AHEAD_DAYS;
@@ -57,15 +58,15 @@ export class TaskInstanceGenerationService {
    * @returns 是否需要补充
    */
   shouldRefillInstances(template: TaskTemplate): boolean {
-    // 只为 ACTIVE 状态的模板补充实例
-    if (template.status !== 'ACTIVE') {
+    // 只为 Active 状态的模板补充实例
+    if (template.status !== 'Active') {
       return false;
     }
 
     const now = Date.now();
 
     // 检查最远实例的日期
-    const lastGenerated = template.lastGeneratedDate || 0;
+    const lastGenerated = template.lastGeneratedDate?.getTime() || 0;
     const daysRemaining = Math.floor((lastGenerated - now) / 86400000);
 
     // 如果剩余天数少于阈值，需要补充

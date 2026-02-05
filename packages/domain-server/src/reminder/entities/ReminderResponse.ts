@@ -10,7 +10,7 @@ import type {
   ReminderResponsePersistenceDTO,
   ReminderResponseAction,
 } from '@dailyuse/contracts/reminder';
-import { Entity } from '@dailyuse/utils';
+import { Entity, generateUUID } from '@dailyuse/utils';
 
 /**
  * ReminderResponse 实体
@@ -21,12 +21,12 @@ import { Entity } from '@dailyuse/utils';
  * - 记录用户对提醒的响应行为
  * - 用于计算提醒效果指标
  */
-export class ReminderResponse extends Entity implements ReminderResponseServer {
+export class ReminderResponse extends Entity<string> implements ReminderResponseServer {
   // ===== 私有字段 =====
   private _reminderTemplateUuid: string;
   private _action: ReminderResponseAction;
-  private _responseTime: number | null;
-  private _timestamp: number;
+  private _responseTime: Date | null;
+  private _timestamp: Date;
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
@@ -36,16 +36,16 @@ export class ReminderResponse extends Entity implements ReminderResponseServer {
     responseTime?: number | null;
     timestamp: number;
   }) {
-    super(params.uuid || Entity.generateUUID());
+    super(params.uuid || generateUUID());
     this._reminderTemplateUuid = params.reminderTemplateUuid;
     this._action = params.action;
-    this._responseTime = params.responseTime ?? null;
-    this._timestamp = params.timestamp;
+    this._responseTime = params.responseTime != null ? new Date(params.responseTime) : null;
+    this._timestamp = new Date(params.timestamp);
   }
 
   // ===== Getter 属性 =====
-  public override get uuid(): string {
-    return this._uuid;
+  public get uuid(): string {
+    return this.id;
   }
 
   public get reminderTemplateUuid(): string {
@@ -56,11 +56,11 @@ export class ReminderResponse extends Entity implements ReminderResponseServer {
     return this._action;
   }
 
-  public get responseTime(): number | null {
+  public get responseTime(): Date | null {
     return this._responseTime;
   }
 
-  public get timestamp(): number {
+  public get timestamp(): Date {
     return this._timestamp;
   }
 
@@ -104,7 +104,7 @@ export class ReminderResponse extends Entity implements ReminderResponseServer {
       uuid: dto.uuid,
       reminderTemplateUuid: dto.reminderTemplateUuid,
       action: dto.action,
-      responseTime: dto.responseTime,
+      responseTime: dto.responseTime?.getTime() ?? null,
       timestamp: dto.timestamp.getTime(),
     });
   }
@@ -188,11 +188,11 @@ export class ReminderResponse extends Entity implements ReminderResponseServer {
    */
   public toServerDTO(): ReminderResponseServerDTO {
     return {
-      uuid: this._uuid,
+      uuid: this.id,
       reminderTemplateUuid: this._reminderTemplateUuid,
       action: this._action,
-      responseTime: this._responseTime,
-      timestamp: this._timestamp,
+      responseTime: this._responseTime?.getTime() ?? null,
+      timestamp: this._timestamp.getTime(),
     };
   }
 
@@ -213,22 +213,23 @@ export class ReminderResponse extends Entity implements ReminderResponseServer {
 
     // 响应时间文本
     let responseTimeText: string | undefined = undefined;
-    if (this._responseTime !== null) {
-      if (this._responseTime < 60) {
-        responseTimeText = `${this._responseTime}秒后响应`;
-      } else if (this._responseTime < 3600) {
-        responseTimeText = `${Math.round(this._responseTime / 60)}分钟后响应`;
+    const responseTimeSec = this._responseTime ? Math.floor(this._responseTime.getTime() / 1000) : null;
+    if (responseTimeSec !== null) {
+      if (responseTimeSec < 60) {
+        responseTimeText = `${responseTimeSec}秒后响应`;
+      } else if (responseTimeSec < 3600) {
+        responseTimeText = `${Math.round(responseTimeSec / 60)}分钟后响应`;
       } else {
-        responseTimeText = `${Math.round(this._responseTime / 3600)}小时后响应`;
+        responseTimeText = `${Math.round(responseTimeSec / 3600)}小时后响应`;
       }
     }
 
     return {
-      uuid: this._uuid,
+      uuid: this.id,
       reminderTemplateUuid: this._reminderTemplateUuid,
       action: this._action,
-      responseTime: this._responseTime,
-      timestamp: this._timestamp,
+      responseTime: this._responseTime?.getTime() ?? null,
+      timestamp: this._timestamp.getTime(),
       actionText,
       responseTimeText,
     };
@@ -239,11 +240,11 @@ export class ReminderResponse extends Entity implements ReminderResponseServer {
    */
   public toPersistenceDTO(): ReminderResponsePersistenceDTO {
     return {
-      uuid: this._uuid,
+      uuid: this.id,
       reminderTemplateUuid: this._reminderTemplateUuid,
       action: this._action,
       responseTime: this._responseTime,
-      timestamp: new Date(this._timestamp),
+      timestamp: this._timestamp,
     };
   }
 }

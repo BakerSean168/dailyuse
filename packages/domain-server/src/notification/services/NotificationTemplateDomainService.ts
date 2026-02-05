@@ -6,7 +6,7 @@
 
 import type { INotificationTemplateRepository } from '../repositories/INotificationTemplateRepository';
 import { NotificationTemplate } from '../aggregates/NotificationTemplate';
-import type { NotificationTemplateConfigServerDTO } from '@dailyuse/contracts/notification';
+import type { NotificationTemplateConfigServerDTO } from '../value-objects/NotificationTemplateConfig';
 import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
 
 /**

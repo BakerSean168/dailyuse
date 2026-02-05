@@ -18,12 +18,7 @@
  * 【ScheduleTask 聚合根】
  * - 日程任务管理：日程内的子任务
  * - 任务完成状态：跟踪日程任务完成情况
- * 
- * 【ScheduleStatistics 聚合根】
- * - 日程统计数据：忙碌程度、事件数量统计
- * - 时间块分析：统计不同时间段的事件分布
  */
 
 export * from './ScheduleTask';
-export * from './ScheduleStatistics';
 export * from './Schedule'; // Story 9.1 - User-facing schedules with conflict detection

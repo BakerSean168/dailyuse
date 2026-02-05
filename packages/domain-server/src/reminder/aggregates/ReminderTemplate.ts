@@ -8,8 +8,7 @@ import type {
   ActiveHoursConfigServerDTO,
   ActiveTimeConfigServer,
   ActiveTimeConfigServerDTO,
-  FrequencyAdjustmentServer,
-  FrequencyAdjustmentServerDTO,
+  FrequencyAdjustmentDTO,
   NotificationConfigServer,
   NotificationConfigServerDTO,
   RecurrenceConfigServer,
@@ -19,8 +18,7 @@ import type {
   ReminderTemplatePersistenceDTO,
   ReminderTemplateServer,
   ReminderTemplateServerDTO,
-  ResponseMetricsServer,
-  ResponseMetricsServerDTO,
+  ResponseMetricsDTO,
   TriggerConfigServer,
   TriggerConfigServerDTO,
 } from '@dailyuse/contracts/reminder';
@@ -31,7 +29,11 @@ import {
   TriggerResult,
 } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { AggregateRoot } from '@dailyuse/utils';
+
+// Branded types (locally defined since not exported from contracts)
+type ReminderTemplateId = string & { readonly __brand: 'ReminderTemplateId' };
+type IdentityId = string & { readonly __brand: 'IdentityId' };
+import { AggregateRoot, generateUUID } from '@dailyuse/utils';
 import {
   RecurrenceConfig,
   NotificationConfig,
@@ -53,9 +55,9 @@ import { ReminderHistory } from '../entities';
  * - 确保聚合内的一致性
  * - 是事务边界
  */
-export class ReminderTemplate extends AggregateRoot implements ReminderTemplateServer {
+export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implements ReminderTemplateServer {
   // ===== 私有字段 =====
-  private _accountUuid: string;
+  private _identityId: IdentityId;
   private _title: string;
   private _description: string | null;
   private _type: ReminderType;
@@ -89,7 +91,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
     uuid?: string;
-    accountUuid: string;
+    identityId: IdentityId;
     title: string;
     description?: string | null;
     type: ReminderType;
@@ -115,8 +117,8 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     frequencyAdjustment?: FrequencyAdjustment | null;
     smartFrequencyEnabled?: boolean;
   }) {
-    super(params.uuid || AggregateRoot.generateUUID());
-    this._accountUuid = params.accountUuid;
+    super((params.uuid || generateUUID()) as ReminderTemplateId);
+    this._identityId = params.identityId;
     this._title = params.title;
     this._description = params.description ?? null;
     this._type = params.type;
@@ -146,11 +148,11 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
   }
 
   // ===== Getter 属性 =====
-  public override get uuid(): string {
-    return this._uuid;
+  public get uuid(): string {
+    return this.id;
   }
-  public get accountUuid(): string {
-    return this._accountUuid;
+  public get identityId(): IdentityId {
+    return this._identityId;
   }
   public get title(): string {
     return this._title;
@@ -197,8 +199,8 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
   public get icon(): string | null {
     return this._icon;
   }
-  public get nextTriggerAt(): Date | null {
-    return this._nextTriggerAt !== null ? new Date(this._nextTriggerAt) : null;
+  public get nextTriggerAt(): number | null {
+    return this._nextTriggerAt;
   }
   public get stats(): ReminderStatsServer {
     return this._stats;
@@ -218,11 +220,11 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
   }
 
   // ===== 智能频率相关 Getter (Story 5-2) =====
-  public get responseMetrics(): ResponseMetricsServer | null {
+  public get responseMetrics(): ResponseMetrics | null {
     return this._responseMetrics;
   }
 
-  public get frequencyAdjustment(): FrequencyAdjustmentServer | null {
+  public get frequencyAdjustment(): FrequencyAdjustment | null {
     return this._frequencyAdjustment;
   }
 
@@ -240,7 +242,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
    * 创建新的 ReminderTemplate 聚合根
    */
   public static create(params: {
-    accountUuid: string;
+    identityId: IdentityId;
     title: string;
     type: ReminderType;
     trigger: TriggerConfigServerDTO;
@@ -255,27 +257,24 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     icon?: string;
     groupUuid?: string;
   }): ReminderTemplate {
-    const uuid = AggregateRoot.generateUUID();
+    const uuid = generateUUID();
     const now = Date.now();
 
     // 创建值对象
-    const trigger = TriggerConfig.fromServerDTO(params.trigger);
-    const activeTime = ActiveTimeConfig.fromServerDTO(params.activeTime);
-    const notificationConfig = NotificationConfig.fromServerDTO(params.notificationConfig);
-    const recurrence = params.recurrence ? RecurrenceConfig.fromServerDTO(params.recurrence) : null;
+    const trigger = TriggerConfig.fromDTO(params.trigger);
+    const activeTime = ActiveTimeConfig.fromDTO(params.activeTime);
+    const notificationConfig = NotificationConfig.fromDTO(params.notificationConfig);
+    const recurrence = params.recurrence ? RecurrenceConfig.fromDTO(params.recurrence) : null;
     const activeHours = params.activeHours
-      ? ActiveHoursConfig.fromServerDTO(params.activeHours)
+      ? ActiveHoursConfig.fromDTO(params.activeHours)
       : null;
 
     // 创建空统计
-    const stats = new ReminderStats({
-      totalTriggers: 0,
-      lastTriggeredAt: null,
-    });
+    const stats = ReminderStats.createEmpty();
 
     const template = new ReminderTemplate({
       uuid,
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       title: params.title,
       description: params.description,
       type: params.type,
@@ -285,9 +284,9 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       activeHours,
       notificationConfig,
       selfEnabled: true, // 默认启用
-      status: ReminderStatus.ACTIVE,
+      status: ReminderStatus.Active,
       groupUuid: params.groupUuid,
-      importanceLevel: params.importanceLevel || ImportanceLevel.Moderate,
+      importanceLevel: params.importanceLevel ?? (ImportanceLevel.Moderate as ImportanceLevel),
       tags: params.tags,
       color: params.color,
       icon: params.icon,
@@ -300,16 +299,11 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     template._nextTriggerAt = template.calculateNextTrigger();
 
     // 发布创建事件
-    template.addDomainEvent({
-      eventType: 'reminder.template.created',
-      aggregateId: uuid,
-      occurredOn: new Date(),
-      accountUuid: params.accountUuid,
-      payload: {
-        templateUuid: uuid,
-        title: params.title,
-        type: params.type,
-      },
+    template.addDomainEvent('reminder.template.created', {
+      templateUuid: uuid,
+      identityId: params.identityId,
+      title: params.title,
+      type: params.type,
     });
 
     return template;
@@ -319,23 +313,16 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
    * 从 Server DTO 创建实体
    */
   public static fromServerDTO(dto: ReminderTemplateServerDTO): ReminderTemplate {
-    const trigger = TriggerConfig.fromServerDTO(dto.trigger);
-    const activeTime = ActiveTimeConfig.fromServerDTO(dto.activeTime);
-    const notificationConfig = NotificationConfig.fromServerDTO(dto.notificationConfig);
-    const recurrence = dto.recurrence ? RecurrenceConfig.fromServerDTO(dto.recurrence) : null;
-    const activeHours = dto.activeHours ? ActiveHoursConfig.fromServerDTO(dto.activeHours) : null;
-    const stats = ReminderStats.fromServerDTO(dto.stats);
-    // 智能频率相关 (Story 5-2)
-    const responseMetrics = dto.responseMetrics
-      ? ResponseMetrics.fromServerDTO(dto.responseMetrics)
-      : null;
-    const frequencyAdjustment = dto.frequencyAdjustment
-      ? FrequencyAdjustment.fromServerDTO(dto.frequencyAdjustment)
-      : null;
+    const trigger = TriggerConfig.fromDTO(dto.trigger);
+    const activeTime = ActiveTimeConfig.fromDTO(dto.activeTime);
+    const notificationConfig = NotificationConfig.fromDTO(dto.notificationConfig);
+    const recurrence = dto.recurrence ? RecurrenceConfig.fromDTO(dto.recurrence) : null;
+    const activeHours = dto.activeHours ? ActiveHoursConfig.fromDTO(dto.activeHours) : null;
+    const stats = ReminderStats.fromDTO(dto.stats);
 
     const template = new ReminderTemplate({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
+      uuid: dto.id as string,
+      identityId: dto.identityId as IdentityId,
       title: dto.name,
       description: dto.description,
       type: dto.type,
@@ -356,10 +343,10 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt ?? null,
-      // 智能频率相关 (Story 5-2)
-      responseMetrics,
-      frequencyAdjustment,
-      smartFrequencyEnabled: dto.smartFrequencyEnabled,
+      // 智能频率相关 - 这些字段不在 ReminderTemplateServerDTO 中，使用默认值
+      responseMetrics: null,
+      frequencyAdjustment: null,
+      smartFrequencyEnabled: true,
     });
 
     // 加载历史记录
@@ -374,16 +361,16 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
    * 从 Persistence DTO 创建实体
    */
   public static fromPersistenceDTO(dto: ReminderTemplatePersistenceDTO): ReminderTemplate {
-    const trigger = TriggerConfig.fromServerDTO(JSON.parse(dto.trigger));
-    const activeTime = ActiveTimeConfig.fromServerDTO(JSON.parse(dto.activeTime));
-    const notificationConfig = NotificationConfig.fromServerDTO(JSON.parse(dto.notificationConfig));
+    const trigger = TriggerConfig.fromDTO(JSON.parse(dto.trigger));
+    const activeTime = ActiveTimeConfig.fromDTO(JSON.parse(dto.activeTime));
+    const notificationConfig = NotificationConfig.fromDTO(JSON.parse(dto.notificationConfig));
     const recurrence = dto.recurrence
-      ? RecurrenceConfig.fromServerDTO(JSON.parse(dto.recurrence))
+      ? RecurrenceConfig.fromDTO(JSON.parse(dto.recurrence))
       : null;
     const activeHours = dto.activeHours
-      ? ActiveHoursConfig.fromServerDTO(JSON.parse(dto.activeHours))
+      ? ActiveHoursConfig.fromDTO(JSON.parse(dto.activeHours))
       : null;
-    const stats = ReminderStats.fromServerDTO(JSON.parse(dto.stats));
+    const stats = ReminderStats.fromDTO(JSON.parse(dto.stats));
     const tags = JSON.parse(dto.tags);
 
     // Smart Frequency: Reconstruct ResponseMetrics from flat fields
@@ -392,7 +379,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       dto.clickRate !== undefined &&
       dto.ignoreRate !== null &&
       dto.ignoreRate !== undefined
-        ? ResponseMetrics.fromServerDTO({
+        ? ResponseMetrics.fromDTO({
             clickRate: dto.clickRate,
             ignoreRate: dto.ignoreRate,
             avgResponseTime: dto.avgResponseTime ?? 0,
@@ -409,7 +396,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       dto.originalInterval !== undefined &&
       dto.adjustedInterval !== null &&
       dto.adjustedInterval !== undefined
-        ? FrequencyAdjustment.fromServerDTO({
+        ? FrequencyAdjustment.fromDTO({
             originalInterval: dto.originalInterval,
             adjustedInterval: dto.adjustedInterval,
             adjustmentReason: dto.adjustmentReason ?? '',
@@ -421,8 +408,8 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
         : null;
 
     return new ReminderTemplate({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
+      uuid: dto.id as string,
+      identityId: dto.identityId as IdentityId,
       title: dto.name,
       description: dto.description,
       type: dto.type,
@@ -438,7 +425,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       tags,
       color: dto.color,
       icon: dto.icon,
-      nextTriggerAt: dto.nextTriggerAt,
+      nextTriggerAt: dto.nextTriggerAt?.getTime() ?? null,
       stats,
 
       // Smart Frequency fields
@@ -542,22 +529,22 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
 
     // 更新值对象
     if (updates.trigger !== undefined) {
-      this._trigger = TriggerConfig.fromServerDTO(updates.trigger);
+      this._trigger = TriggerConfig.fromDTO(updates.trigger);
     }
     if (updates.activeTime !== undefined) {
-      this._activeTime = ActiveTimeConfig.fromServerDTO(updates.activeTime);
+      this._activeTime = ActiveTimeConfig.fromDTO(updates.activeTime);
     }
     if (updates.notificationConfig !== undefined) {
-      this._notificationConfig = NotificationConfig.fromServerDTO(updates.notificationConfig);
+      this._notificationConfig = NotificationConfig.fromDTO(updates.notificationConfig);
     }
     if (updates.recurrence !== undefined) {
       this._recurrence = updates.recurrence
-        ? RecurrenceConfig.fromServerDTO(updates.recurrence)
+        ? RecurrenceConfig.fromDTO(updates.recurrence)
         : null;
     }
     if (updates.activeHours !== undefined) {
       this._activeHours = updates.activeHours
-        ? ActiveHoursConfig.fromServerDTO(updates.activeHours)
+        ? ActiveHoursConfig.fromDTO(updates.activeHours)
         : null;
     }
 
@@ -566,15 +553,10 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     this._updatedAt = new Date(now);
 
     // 发布更新事件
-    this.addDomainEvent({
-      eventType: 'reminder.template.updated',
-      aggregateId: this.uuid,
-      occurredOn: new Date(),
-      accountUuid: this._accountUuid,
-      payload: {
-        template: this.toServerDTO(),
-        updates: Object.keys(updates),
-      },
+    this.addDomainEvent('reminder.template.updated', {
+      template: this.toServerDTO(),
+      updates: Object.keys(updates),
+      identityId: this._identityId,
     });
   }
 
@@ -585,7 +567,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
   public enable(): void {
     const now = Date.now();
     this._selfEnabled = true;
-    this._status = ReminderStatus.ACTIVE;
+    this._status = ReminderStatus.Active;
 
     // 更新 activatedAt 为当前时间
     this._activeTime = this._activeTime.with({ activatedAt: now });
@@ -598,15 +580,10 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     this._effectiveEnabled = true;
 
     // 发布启用事件
-    this.addDomainEvent({
-      eventType: 'reminder.template.enabled',
-      aggregateId: this.uuid,
-      occurredOn: new Date(),
-      accountUuid: this._accountUuid,
-      payload: {
-        templateUuid: this.uuid,
-        activatedAt: now,
-      },
+    this.addDomainEvent('reminder.template.enabled', {
+      templateUuid: this.uuid,
+      activatedAt: now,
+      identityId: this._identityId,
     });
   }
 
@@ -615,7 +592,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
    */
   public pause(): void {
     this._selfEnabled = false;
-    this._status = ReminderStatus.PAUSED;
+    this._status = ReminderStatus.Paused;
     this._updatedAt = new Date(Date.now());
 
     // selfEnabled 变化，需要重新计算 effectiveEnabled
@@ -624,14 +601,9 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     this._effectiveEnabled = false;
 
     // 发布暂停事件
-    this.addDomainEvent({
-      eventType: 'reminder.template.paused',
-      aggregateId: this.uuid,
-      occurredOn: new Date(),
-      accountUuid: this._accountUuid,
-      payload: {
-        templateUuid: this.uuid,
-      },
+    this.addDomainEvent('reminder.template.paused', {
+      templateUuid: this.uuid,
+      identityId: this._identityId,
     });
   }
 
@@ -666,16 +638,11 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     // 应用层需要调用 setEffectiveEnabled 来更新
 
     // 发布移动事件
-    this.addDomainEvent({
-      eventType: 'reminder.template.moved',
-      aggregateId: this.uuid,
-      occurredOn: new Date(),
-      accountUuid: this._accountUuid,
-      payload: {
-        templateUuid: this.uuid,
-        oldGroupUuid,
-        newGroupUuid: targetGroupUuid,
-      },
+    this.addDomainEvent('reminder.template.moved', {
+      templateUuid: this.uuid,
+      oldGroupUuid,
+      newGroupUuid: targetGroupUuid,
+      identityId: this._identityId,
     });
   }
 
@@ -710,7 +677,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     const now = Date.now();
 
     // 检查模板状态，只有 ACTIVE 状态才触发
-    if (this._status !== ReminderStatus.ACTIVE) {
+    if (this._status !== ReminderStatus.Active) {
       return null;
     }
 
@@ -746,7 +713,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
    */
   public isActiveAtTime(timestamp: number): boolean {
     // 检查状态
-    if (this._status !== ReminderStatus.ACTIVE) {
+    if (this._status !== ReminderStatus.Active) {
       return false;
     }
 
@@ -776,7 +743,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     // 创建历史记录
     this.createHistory({
       triggeredAt: now,
-      result: TriggerResult.SUCCESS,
+      result: TriggerResult.Success,
     });
 
     // 更新统计
@@ -790,16 +757,11 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     this._updatedAt = new Date(now);
 
     // 发布触发事件
-    this.addDomainEvent({
-      eventType: 'reminder.template.triggered',
-      aggregateId: this.uuid,
-      occurredOn: new Date(),
-      accountUuid: this._accountUuid,
-      payload: {
-        templateUuid: this.uuid,
-        triggeredAt: now,
-        nextTriggerAt: this._nextTriggerAt,
-      },
+    this.addDomainEvent('reminder.template.triggered', {
+      templateUuid: this.uuid,
+      triggeredAt: now,
+      nextTriggerAt: this._nextTriggerAt,
+      identityId: this._identityId,
     });
   }
 
@@ -807,19 +769,19 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
    * 查询方法
    */
   public isActive(): boolean {
-    return this._status === 'ACTIVE';
+    return this._status === ReminderStatus.Active;
   }
 
   public isPaused(): boolean {
-    return this._status === 'PAUSED';
+    return this._status === ReminderStatus.Paused;
   }
 
   public isOneTime(): boolean {
-    return this._type === 'ONE_TIME';
+    return this._type === ReminderType.OneTime;
   }
 
   public isRecurring(): boolean {
-    return this._type === 'RECURRING';
+    return this._type === ReminderType.Recurring;
   }
 
   public getNextTriggerTime(): number | null {
@@ -839,15 +801,10 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     this._updatedAt = new Date(Date.now());
 
     // 发布删除事件
-    this.addDomainEvent({
-      eventType: 'reminder.template.deleted',
-      aggregateId: this.uuid,
-      occurredOn: new Date(),
-      accountUuid: this._accountUuid,
-      payload: {
-        templateUuid: this.uuid,
-        templateTitle: this._title,
-      },
+    this.addDomainEvent('reminder.template.deleted', {
+      templateUuid: this.uuid,
+      templateTitle: this._title,
+      identityId: this._identityId,
     });
   }
 
@@ -882,16 +839,16 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
   /**
    * 更新响应指标
    */
-  public updateResponseMetrics(metrics: ResponseMetricsServerDTO): void {
-    this._responseMetrics = ResponseMetrics.fromServerDTO(metrics);
+  public updateResponseMetrics(metrics: ResponseMetricsDTO): void {
+    this._responseMetrics = ResponseMetrics.fromDTO(metrics);
     this._updatedAt = new Date(Date.now());
   }
 
   /**
    * 应用频率调整（自动调整或用户手动调整）
    */
-  public applyFrequencyAdjustment(adjustment: FrequencyAdjustmentServerDTO): void {
-    this._frequencyAdjustment = FrequencyAdjustment.fromServerDTO(adjustment);
+  public applyFrequencyAdjustment(adjustment: FrequencyAdjustmentDTO): void {
+    this._frequencyAdjustment = FrequencyAdjustment.fromDTO(adjustment);
     // 注意：实际的触发间隔调整应该在 Domain Service 或 Application Service 中处理
     // 这里只记录调整信息
     this._updatedAt = new Date(Date.now());
@@ -939,13 +896,14 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     if (!this._responseMetrics || !this._smartFrequencyEnabled) {
       return false;
     }
-    return this._responseMetrics.needsAdjustment();
+    // Check if effectiveness is low or ignore rate is high
+    return this._responseMetrics.effectivenessScore < 40 || this._responseMetrics.ignoreRate > 60;
   }
 
   /**
    * 计算建议的频率调整
    */
-  public calculateSuggestedAdjustment(): FrequencyAdjustmentServerDTO | null {
+  public calculateSuggestedAdjustment(): FrequencyAdjustmentDTO | null {
     if (!this._responseMetrics || !this._smartFrequencyEnabled || !this._trigger) {
       return null;
     }
@@ -1007,16 +965,16 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
    */
   public toServerDTO(includeChildren = false): ReminderTemplateServerDTO {
     const dto: ReminderTemplateServerDTO = {
-      uuid: this.uuid,
-      accountUuid: this.accountUuid,
+      id: this.uuid as ReminderTemplateId,
+      identityId: this.identityId,
       name: this.title,
       description: this.description,
       type: this.type,
-      trigger: this.trigger,
-      recurrence: this.recurrence,
-      activeTime: this.activeTime,
-      activeHours: this.activeHours,
-      notificationConfig: this.notificationConfig,
+      trigger: this._trigger.toServerDTO(),
+      recurrence: this._recurrence?.toServerDTO() ?? null,
+      activeTime: this._activeTime.toServerDTO(),
+      activeHours: this._activeHours?.toServerDTO() ?? null,
+      notificationConfig: this._notificationConfig.toServerDTO(),
       selfEnabled: this.selfEnabled,
       status: this.status,
       groupUuid: this.groupUuid,
@@ -1024,15 +982,11 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       tags: this.tags,
       color: this.color,
       icon: this.icon,
-      nextTriggerAt: this.nextTriggerAt?.getTime() ?? null,
-      stats: this.stats,
+      nextTriggerAt: this.nextTriggerAt,
+      stats: this._stats.toServerDTO(),
       createdAt: this.createdAt.getTime(),
       updatedAt: this.updatedAt.getTime(),
       deletedAt: this.deletedAt?.getTime() ?? null,
-      // 智能频率相关 (Story 5-2)
-      responseMetrics: this.responseMetrics,
-      frequencyAdjustment: this.frequencyAdjustment,
-      smartFrequencyEnabled: this.smartFrequencyEnabled,
     };
 
     if (includeChildren && this._history.length > 0) {
@@ -1049,61 +1003,113 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
     const effectiveEnabled = this.selfEnabled;
     const controlledByGroup = !!this.groupUuid;
 
-    const typeText = this.type === 'ONE_TIME' ? '一次性' : '循环';
-    const statusText = this.status === 'ACTIVE' ? '活跃' : '暂停';
+    const typeText = this._type === ReminderType.OneTime ? '一次性' : '循环';
+    const statusText = this._status === ReminderStatus.Active ? '活跃' : '暂停';
     const importanceMap: Record<ImportanceLevel, string> = {
-      [ImportanceLevel.Vital]: '关键',
-      [ImportanceLevel.Important]: '重要',
-      [ImportanceLevel.Moderate]: '中等',
-      [ImportanceLevel.Minor]: '次要',
-      [ImportanceLevel.Trivial]: '琐碎',
+      Vital: '关键',
+      Important: '重要',
+      Moderate: '中等',
+      Minor: '次要',
+      Trivial: '琐碎',
     };
     const importanceText = importanceMap[this.importanceLevel];
 
     // 简单的相对时间文本
-    const formatRelativeTime = (timestamp: number | null): string | undefined => {
-      if (!timestamp) return undefined;
+    const formatRelativeTime = (timestamp: number | null): string | null => {
+      if (!timestamp) return null;
       const diff = timestamp - Date.now();
       if (diff < 0) return `${Math.round(-diff / 3600000)} 小时前`;
       return `${Math.round(diff / 3600000)} 小时后`;
     };
 
+    // Build trigger client DTO manually
+    const triggerServerDTO = this._trigger.toServerDTO();
+    const triggerClientDTO = {
+      ...triggerServerDTO,
+      displayText: this._trigger.displayText,
+    };
+
+    // Build recurrence client DTO manually
+    const recurrenceClientDTO = this._recurrence
+      ? {
+          ...this._recurrence.toServerDTO(),
+          displayText: (this._recurrence as { displayText?: string }).displayText ?? '',
+        }
+      : null;
+
+    // Build activeTime client DTO manually - format display text
+    const activeTimeServerDTO = this._activeTime.toServerDTO();
+    const activeTimeClientDTO = {
+      ...activeTimeServerDTO,
+      displayText: new Date(activeTimeServerDTO.activatedAt).toLocaleString(),
+    };
+
+    // Build activeHours client DTO manually
+    const activeHoursClientDTO = this._activeHours
+      ? {
+          ...this._activeHours.toServerDTO(),
+          displayText: this._activeHours.enabled 
+            ? `${this._activeHours.startHour}:00 - ${this._activeHours.endHour}:00`
+            : '全天',
+        }
+      : null;
+
+    // Build notificationConfig client DTO manually
+    const notificationServerDTO = this._notificationConfig.toServerDTO();
+    const notificationConfigClientDTO = {
+      ...notificationServerDTO,
+      channelsText: notificationServerDTO.channels.join(', ') || '无',
+      hasSoundEnabled: notificationServerDTO.sound !== null,
+      hasVibrationEnabled: notificationServerDTO.vibration !== null,
+    };
+
+    // Build stats client DTO manually
+    const statsServerDTO = this._stats.toServerDTO();
+    const statsClientDTO = {
+      ...statsServerDTO,
+      totalTriggersText: this._stats.totalTriggersText,
+      lastTriggeredText: this._stats.lastTriggeredText,
+    };
+
     const clientDTO: ReminderTemplateClientDTO = {
-      uuid: this.uuid,
-      accountUuid: this.accountUuid,
+      id: this.uuid,
+      identityId: this.identityId,
       name: this.title,
       description: this.description,
       type: this.type,
-      trigger: this._trigger.toClientDTO(),
-      recurrence: this._recurrence ? this._recurrence.toClientDTO() : null,
-      activeTime: this._activeTime.toClientDTO(),
-      activeHours: this._activeHours ? this._activeHours.toClientDTO() : null,
-      notificationConfig: this._notificationConfig.toClientDTO(),
+      trigger: triggerClientDTO,
+      recurrence: recurrenceClientDTO,
+      activeTime: activeTimeClientDTO,
+      activeHours: activeHoursClientDTO,
+      notificationConfig: notificationConfigClientDTO,
       selfEnabled: this.selfEnabled,
       status: this.status,
       effectiveEnabled: effectiveEnabled,
-      groupUuid: this.groupUuid,
+      groupId: this.groupUuid,
       importanceLevel: this.importanceLevel,
       tags: this.tags,
       color: this.color,
       icon: this.icon,
-      nextTriggerAt: this.nextTriggerAt?.getTime() ?? null,
-      stats: this._stats.toClientDTO(),
+      nextTriggerAt: this.nextTriggerAt,
+      stats: statsClientDTO,
       createdAt: this.createdAt.getTime(),
       updatedAt: this.updatedAt.getTime(),
       deletedAt: this.deletedAt?.getTime() ?? null,
 
+      // 子实体
+      history: null,
+
       // UI 扩展
       displayTitle: this.title,
       typeText,
-      triggerText: this._trigger.toClientDTO().displayText,
-      recurrenceText: this._recurrence?.toClientDTO().displayText,
+      triggerText: this._trigger.displayText,
+      recurrenceText: recurrenceClientDTO?.displayText ?? null,
       statusText,
       importanceText,
-      nextTriggerText: formatRelativeTime(this.nextTriggerAt?.getTime() ?? null),
-      isActive: this.status === 'ACTIVE',
-      isPaused: this.status === 'PAUSED',
-      lastTriggeredText: formatRelativeTime(this.stats.lastTriggeredAt ?? null),
+      nextTriggerText: formatRelativeTime(this.nextTriggerAt),
+      isActive: this._status === ReminderStatus.Active,
+      isPaused: this._status === ReminderStatus.Paused,
+      lastTriggeredText: formatRelativeTime(this._stats.lastTriggeredAt),
       controlledByGroup: controlledByGroup,
     };
 
@@ -1119,12 +1125,12 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
    */
   public toPersistenceDTO(): ReminderTemplatePersistenceDTO {
     // 展开 ResponseMetrics 和 FrequencyAdjustment 的扁平字段
-    const responseMetricsFlat = this._responseMetrics?.toPersistenceDTO();
-    const frequencyAdjustmentFlat = this._frequencyAdjustment?.toPersistenceDTO();
+    const responseMetricsFlat = this._responseMetrics?.toDTO();
+    const frequencyAdjustmentFlat = this._frequencyAdjustment?.toDTO();
 
     return {
-      uuid: this.uuid,
-      accountUuid: this.accountUuid,
+      id: this.uuid as ReminderTemplateId,
+      identityId: this.identityId,
       name: this.title,
       description: this.description,
       type: this.type,
@@ -1140,7 +1146,7 @@ export class ReminderTemplate extends AggregateRoot implements ReminderTemplateS
       tags: JSON.stringify(this.tags),
       color: this.color,
       icon: this.icon,
-      nextTriggerAt: this.nextTriggerAt,
+      nextTriggerAt: this._nextTriggerAt !== null ? new Date(this._nextTriggerAt) : null,
       stats: JSON.stringify(this._stats.toServerDTO()),
 
       // Smart Frequency: Response Metrics（扁平化）

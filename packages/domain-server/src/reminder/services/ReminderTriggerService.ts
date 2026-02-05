@@ -14,9 +14,9 @@
  */
 
 import type { ReminderTemplate } from '../aggregates/ReminderTemplate';
-import type { ReminderStatistics } from '../aggregates/ReminderStatistics';
+// import type { ReminderStatistics } from '../aggregates/ReminderStatistics'; // Deleted
 import type { IReminderTemplateRepository } from '../repositories/IReminderTemplateRepository';
-import type { IReminderStatisticsRepository } from '../repositories/IReminderStatisticsRepository';
+// import type { IReminderStatisticsRepository } from '../repositories/IReminderStatisticsRepository'; // Deleted
 import { RecurrenceType, TriggerResult, TriggerType } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateControlService } from './ReminderTemplateControlService';
 
@@ -58,7 +58,7 @@ export interface ITriggerReminderResult {
 export class ReminderTriggerService {
   constructor(
     private readonly templateRepository: IReminderTemplateRepository,
-    private readonly statisticsRepository: IReminderStatisticsRepository,
+    // private readonly statisticsRepository: IReminderStatisticsRepository, // Deleted
     private readonly controlService: ReminderTemplateControlService,
   ) {}
 
@@ -80,7 +80,7 @@ export class ReminderTriggerService {
     if (!isEnabled) {
       return {
         ok: false,
-        result: TriggerResult.SKIPPED,
+        result: TriggerResult.Skipped,
         triggerTime,
         nextTriggerTime: null,
         message: '模板未启用或被分组禁用',
@@ -90,7 +90,7 @@ export class ReminderTriggerService {
     // 记录触发历史（成功）
     const history = template.createHistory({
       triggeredAt: triggerTime,
-      result: TriggerResult.SUCCESS,
+      result: TriggerResult.Success,
     });
     template.addHistory(history);
 
@@ -102,12 +102,12 @@ export class ReminderTriggerService {
     // 保存模板（包括历史记录）
     await this.templateRepository.save(template);
 
-    // 更新统计数据
-    await this.updateStatistics(template.accountUuid, TriggerResult.SUCCESS);
+    // 更新统计数据 - Commented out as ReminderStatistics is deleted
+    // await this.updateStatistics(template.identityId, TriggerResult.Success);
 
     return {
       ok: true,
-      result: TriggerResult.SUCCESS,
+      result: TriggerResult.Success,
       triggerTime,
       nextTriggerTime,
       message: '触发成功',
@@ -125,13 +125,13 @@ export class ReminderTriggerService {
   ): Promise<void> {
     const history = template.createHistory({
       triggeredAt: triggerTime,
-      result: TriggerResult.FAILED,
+      result: TriggerResult.Failed,
       error: error,
     });
     template.addHistory(history);
 
     await this.templateRepository.save(template);
-    await this.updateStatistics(template.accountUuid, TriggerResult.FAILED);
+    // await this.updateStatistics(template.identityId, TriggerResult.Failed); // Commented out - ReminderStatistics deleted
   }
 
   /**
@@ -144,13 +144,13 @@ export class ReminderTriggerService {
   ): Promise<void> {
     const history = template.createHistory({
       triggeredAt: triggerTime,
-      result: TriggerResult.SKIPPED,
+      result: TriggerResult.Skipped,
       error: reason,
     });
     template.addHistory(history);
 
     await this.templateRepository.save(template);
-    await this.updateStatistics(template.accountUuid, TriggerResult.SKIPPED);
+    // await this.updateStatistics(template.identityId, TriggerResult.Skipped); // Commented out - ReminderStatistics deleted
   }
 
   /**
@@ -166,7 +166,7 @@ export class ReminderTriggerService {
       } catch (error) {
         results.push({
           ok: false,
-          result: TriggerResult.FAILED,
+          result: TriggerResult.Failed,
           triggerTime: param.triggerTime || Date.now(),
           nextTriggerTime: null,
           message: error instanceof Error ? error.message : '触发失败',
@@ -224,15 +224,14 @@ export class ReminderTriggerService {
     return effectivelyEnabled;
   }
 
-  /**
-   * 更新统计数据
-   */
-  private async updateStatistics(accountUuid: string, result: TriggerResult): Promise<void> {
-    const statistics = await this.statisticsRepository.findOrCreate(accountUuid);
-
-    // 这里只是简单更新，实际的统计计算由 ReminderStatistics 聚合根的 calculate() 方法完成
-    // 在实际使用时，应该定期调用 statistics.calculate() 来重新计算完整统计
-
-    await this.statisticsRepository.save(statistics);
-  }
+  // /**
+  //  * 更新统计数据
+  //  * Commented out - ReminderStatistics and IReminderStatisticsRepository have been deleted
+  //  */
+  // private async updateStatistics(accountUuid: string, result: TriggerResult): Promise<void> {
+  //   const statistics = await this.statisticsRepository.findOrCreate(accountUuid);
+  //   // 这里只是简单更新，实际的统计计算由 ReminderStatistics 聚合根的 calculate() 方法完成
+  //   // 在实际使用时，应该定期调用 statistics.calculate() 来重新计算完整统计
+  //   await this.statisticsRepository.save(statistics);
+  // }
 }

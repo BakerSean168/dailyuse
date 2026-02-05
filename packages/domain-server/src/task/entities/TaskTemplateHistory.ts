@@ -3,13 +3,42 @@
  * 任务模板历史记录 - 实体
  */
 
-import type {
-  TaskTemplateHistoryClientDTO,
-  TaskTemplateHistoryPersistenceDTO,
-  TaskTemplateHistoryServer,
-  TaskTemplateHistoryServerDTO,
-} from '@dailyuse/contracts/task';
-import { Entity } from '@dailyuse/utils';
+import { Entity, generateUUID } from '@dailyuse/utils';
+
+/**
+ * Local DTO interfaces for TaskTemplateHistory
+ */
+export interface TaskTemplateHistoryServerDTO {
+  uuid: string;
+  templateUuid: string;
+  action: string;
+  changes: any | null;
+  createdAt: number;
+}
+
+export interface TaskTemplateHistoryClientDTO {
+  uuid: string;
+  templateUuid: string;
+  action: string;
+  changes: any | null;
+  createdAt: number;
+}
+
+export interface TaskTemplateHistoryPersistenceDTO {
+  uuid: string;
+  templateUuid: string;
+  action: string;
+  changes: string | null;
+  createdAt: number;
+}
+
+export interface TaskTemplateHistoryServer {
+  uuid: string;
+  templateUuid: string;
+  action: string;
+  changes: any | null;
+  createdAt: Date;
+}
 
 /**
  * TaskTemplateHistory 实体
@@ -19,7 +48,7 @@ import { Entity } from '@dailyuse/utils';
  * - 有生命周期
  * - 可变性
  */
-export class TaskTemplateHistory extends Entity implements TaskTemplateHistoryServer {
+export class TaskTemplateHistory extends Entity<string> implements TaskTemplateHistoryServer {
   private _templateUuid: string;
   private _action: string;
   private _changes: any | null;
@@ -32,16 +61,16 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistorySe
     changes?: any | null;
     createdAt: number;
   }) {
-    super(params.uuid ?? Entity.generateUUID());
+    super(params.uuid ?? generateUUID());
     this._templateUuid = params.templateUuid;
     this._action = params.action;
     this._changes = params.changes ?? null;
-    this._createdAt = params.createdAt;
+    this._createdAt = new Date(params.createdAt);
   }
 
   // Getters
-  public override get uuid(): string {
-    return this._uuid;
+  public get uuid(): string {
+    return this.id;
   }
 
   public get templateUuid(): string {
@@ -105,7 +134,7 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistorySe
       templateUuid: params.templateUuid,
       action: params.action,
       changes: params.changes,
-      createdAt: new Date(),
+      createdAt: Date.now(),
     });
   }
 
@@ -115,7 +144,7 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistorySe
       templateUuid: dto.templateUuid,
       action: dto.action,
       changes: dto.changes,
-      createdAt: new Date(dto.createdAt),
+      createdAt: dto.createdAt,
     });
   }
 
@@ -125,7 +154,7 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistorySe
       templateUuid: dto.templateUuid,
       action: dto.action,
       changes: dto.changes ? JSON.parse(dto.changes) : null,
-      createdAt: new Date(dto.createdAt),
+      createdAt: dto.createdAt,
     });
   }
 

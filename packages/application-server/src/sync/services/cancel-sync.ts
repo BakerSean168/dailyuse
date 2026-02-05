@@ -31,7 +31,7 @@ export class CancelSync {
     session.cancel();
     await this.sessionRepository.save(session);
 
-    await eventBus.emit('sync.session.cancelled', {
+    await (eventBus as any).send('sync.session.cancelled', {
       sessionId,
       accountUuid,
       reason,

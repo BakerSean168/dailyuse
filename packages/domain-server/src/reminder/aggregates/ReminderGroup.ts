@@ -14,11 +14,14 @@ import type {
   ReminderGroupServer,
   ReminderGroupServerDTO,
 } from '@dailyuse/contracts/reminder';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot, generateUUID } from '@dailyuse/utils';
 import { GroupStats } from '../value-objects';
 
-export class ReminderGroup extends AggregateRoot implements ReminderGroupServer {
-  private _accountUuid: string;
+// IdentityId branded type (从 contracts 内部定义)
+type IdentityId = string & { readonly __brand: 'IdentityId' };
+
+export class ReminderGroup extends AggregateRoot<string> implements ReminderGroupServer {
+  private _identityId: IdentityId;
   private _name: string;
   private _description: string | null;
   private _controlMode: ControlMode;
@@ -34,7 +37,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
 
   private constructor(params: {
     uuid?: string;
-    accountUuid: string;
+    identityId: string;
     name: string;
     description?: string | null;
     controlMode: ControlMode;
@@ -48,8 +51,8 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
     updatedAt: number;
     deletedAt?: number | null;
   }) {
-    super(params.uuid || AggregateRoot.generateUUID());
-    this._accountUuid = params.accountUuid;
+    super(params.uuid || generateUUID());
+    this._identityId = params.identityId as IdentityId;
     this._name = params.name;
     this._description = params.description ?? null;
     this._controlMode = params.controlMode;
@@ -64,11 +67,8 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
     this._deletedAt = params.deletedAt ?? null;
   }
 
-  public override get uuid(): string {
-    return this._uuid;
-  }
-  public get accountUuid(): string {
-    return this._accountUuid;
+  public get identityId(): IdentityId {
+    return this._identityId;
   }
   public get name(): string {
     return this._name;
@@ -108,7 +108,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
   }
 
   public static create(params: {
-    accountUuid: string;
+    identityId: string;
     name: string;
     controlMode?: ControlMode;
     description?: string;
@@ -116,23 +116,17 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
     icon?: string;
     order?: number;
   }): ReminderGroup {
-    const uuid = AggregateRoot.generateUUID();
+    const uuid = generateUUID();
     const now = Date.now();
-    const stats = new GroupStats({
-      totalTemplates: 0,
-      activeTemplates: 0,
-      pausedTemplates: 0,
-      selfEnabledTemplates: 0,
-      selfPausedTemplates: 0,
-    });
+    const stats = GroupStats.createEmpty();
     const group = new ReminderGroup({
       uuid,
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       name: params.name,
       description: params.description,
-      controlMode: params.controlMode || ControlMode.INDIVIDUAL,
+      controlMode: params.controlMode || ControlMode.Individual,
       enabled: true,
-      status: ReminderStatus.ACTIVE,
+      status: ReminderStatus.Active,
       order: params.order || 0,
       color: params.color,
       icon: params.icon,
@@ -140,21 +134,18 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
       createdAt: now,
       updatedAt: now,
     });
-    group.addDomainEvent({
-      eventType: 'ReminderGroupCreated',
-      aggregateId: uuid,
-      occurredOn: new Date(),
-      accountUuid: params.accountUuid,
-      payload: { group: group.toServerDTO() },
+    group.addDomainEvent('ReminderGroupCreated', {
+      identityId: params.identityId,
+      group: group.toServerDTO(),
     });
     return group;
   }
 
   public static fromServerDTO(dto: ReminderGroupServerDTO): ReminderGroup {
-    const stats = GroupStats.fromServerDTO(dto.stats);
+    const stats = GroupStats.fromDTO(dto.stats);
     return new ReminderGroup({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
+      uuid: dto.id,
+      identityId: dto.identityId,
       name: dto.name,
       description: dto.description,
       controlMode: dto.controlMode,
@@ -171,10 +162,10 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
   }
 
   public static fromPersistenceDTO(dto: ReminderGroupPersistenceDTO): ReminderGroup {
-    const stats = GroupStats.fromServerDTO(JSON.parse(dto.stats));
+    const stats = GroupStats.fromDTO(dto.stats);
     return new ReminderGroup({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
+      uuid: dto.id,
+      identityId: dto.identityId,
       name: dto.name,
       description: dto.description,
       controlMode: dto.controlMode,
@@ -191,43 +182,33 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
   }
 
   public switchToGroupControl(): void {
-    if (this._controlMode === ControlMode.GROUP) return;
+    if (this._controlMode === ControlMode.Group) return;
     const oldMode = this._controlMode;
-    this._controlMode = ControlMode.GROUP;
+    this._controlMode = ControlMode.Group;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent({
-      eventType: 'ReminderGroupControlModeSwitched',
-      aggregateId: this.uuid,
-      occurredOn: new Date(),
-      accountUuid: this._accountUuid,
-      payload: {
-        groupUuid: this.uuid,
-        previousMode: oldMode,
-        newMode: ControlMode.GROUP,
-      },
+    this.addDomainEvent('ReminderGroupControlModeSwitched', {
+      identityId: this._identityId,
+      groupId: this.id,
+      previousMode: oldMode,
+      newMode: ControlMode.Group,
     });
   }
 
   public switchToIndividualControl(): void {
-    if (this._controlMode === ControlMode.INDIVIDUAL) return;
+    if (this._controlMode === ControlMode.Individual) return;
     const oldMode = this._controlMode;
-    this._controlMode = ControlMode.INDIVIDUAL;
+    this._controlMode = ControlMode.Individual;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent({
-      eventType: 'ReminderGroupControlModeSwitched',
-      aggregateId: this.uuid,
-      occurredOn: new Date(),
-      accountUuid: this._accountUuid,
-      payload: {
-        groupUuid: this.uuid,
-        previousMode: oldMode,
-        newMode: ControlMode.INDIVIDUAL,
-      },
+    this.addDomainEvent('ReminderGroupControlModeSwitched', {
+      identityId: this._identityId,
+      groupId: this.id,
+      previousMode: oldMode,
+      newMode: ControlMode.Individual,
     });
   }
 
   public toggleControlMode(): void {
-    if (this._controlMode === ControlMode.GROUP) {
+    if (this._controlMode === ControlMode.Group) {
       this.switchToIndividualControl();
     } else {
       this.switchToGroupControl();
@@ -236,27 +217,21 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
 
   public enable(): void {
     this._enabled = true;
-    this._status = ReminderStatus.ACTIVE;
+    this._status = ReminderStatus.Active;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent({
-      eventType: 'ReminderGroupEnabled',
-      aggregateId: this.uuid,
-      occurredOn: new Date(),
-      accountUuid: this._accountUuid,
-      payload: { groupUuid: this.uuid },
+    this.addDomainEvent('ReminderGroupEnabled', {
+      identityId: this._identityId,
+      groupId: this.id,
     });
   }
 
   public pause(): void {
     this._enabled = false;
-    this._status = ReminderStatus.PAUSED;
+    this._status = ReminderStatus.Paused;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent({
-      eventType: 'ReminderGroupPaused',
-      aggregateId: this.uuid,
-      occurredOn: new Date(),
-      accountUuid: this._accountUuid,
-      payload: { groupUuid: this.uuid },
+    this.addDomainEvent('ReminderGroupPaused', {
+      identityId: this._identityId,
+      groupId: this.id,
     });
   }
 
@@ -269,7 +244,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
   }
 
   public async enableAllTemplates(): Promise<void> {
-    if (this._controlMode !== ControlMode.GROUP) {
+    if (this._controlMode !== ControlMode.Group) {
       throw new Error('只能在 GROUP 模式下批量启用模板');
     }
     this._enabled = true;
@@ -277,7 +252,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
   }
 
   public async pauseAllTemplates(): Promise<void> {
-    if (this._controlMode !== ControlMode.GROUP) {
+    if (this._controlMode !== ControlMode.Group) {
       throw new Error('只能在 GROUP 模式下批量暂停模板');
     }
     this._enabled = false;
@@ -307,34 +282,32 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
   }
 
   public activate(): void {
-    this._status = ReminderStatus.ACTIVE;
+    this._status = ReminderStatus.Active;
     this._deletedAt = null;
     this._updatedAt = new Date(Date.now());
   }
 
   public softDelete(): void {
     this._deletedAt = Date.now();
-    this._status = ReminderStatus.PAUSED;
+    this._status = ReminderStatus.Paused;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent({
-      eventType: 'ReminderGroupDeleted',
-      aggregateId: this.uuid,
-      occurredOn: new Date(),
-      accountUuid: this._accountUuid,
-      payload: { groupUuid: this.uuid, groupName: this._name },
+    this.addDomainEvent('ReminderGroupDeleted', {
+      identityId: this._identityId,
+      groupId: this.id,
+      groupName: this._name,
     });
   }
 
   public restore(): void {
     this._deletedAt = null;
-    this._status = ReminderStatus.ACTIVE;
+    this._status = ReminderStatus.Active;
     this._updatedAt = new Date(Date.now());
   }
 
   public toServerDTO(): ReminderGroupServerDTO {
     return {
-      uuid: this.uuid,
-      accountUuid: this.accountUuid,
+      id: this.id,
+      identityId: this.identityId,
       name: this.name,
       description: this.description,
       controlMode: this.controlMode,
@@ -343,7 +316,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
       order: this.order,
       color: this.color,
       icon: this.icon,
-      stats: this.stats,
+      stats: this._stats.toServerDTO(),
       createdAt: this.createdAt.getTime(),
       updatedAt: this.updatedAt.getTime(),
       deletedAt: this.deletedAt?.getTime() ?? null,
@@ -352,16 +325,18 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
 
   public toClientDTO(): ReminderGroupClientDTO {
     const controlModeText =
-      this.controlMode === ControlMode.GROUP ? '组控制' : '个体控制';
-    const statusText = this.status === ReminderStatus.ACTIVE ? '活跃' : '暂停';
+      this.controlMode === ControlMode.Group ? '组控制' : '个体控制';
+    const statusText = this.status === ReminderStatus.Active ? '活跃' : '暂停';
     const controlDescription =
-      this.controlMode === ControlMode.GROUP
+      this.controlMode === ControlMode.Group
         ? '所有提醒统一启用'
         : '提醒独立控制';
 
+    const statsDTO = this._stats.toServerDTO();
+
     return {
-      uuid: this.uuid,
-      accountUuid: this.accountUuid,
+      id: this.id,
+      identityId: this.identityId,
       name: this.name,
       description: this.description,
       controlMode: this.controlMode,
@@ -370,10 +345,14 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
       order: this.order,
       color: this.color,
       icon: this.icon,
-      stats: this._stats.toClientDTO(),
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      deletedAt: this.deletedAt,
+      stats: {
+        ...statsDTO,
+        templateCountText: `${statsDTO.totalTemplates} 个提醒`,
+        activeStatusText: `${statsDTO.activeTemplates} 个活跃`,
+      },
+      createdAt: this.createdAt.getTime(),
+      updatedAt: this.updatedAt.getTime(),
+      deletedAt: this.deletedAt?.getTime() ?? null,
 
       // UI 扩展
       displayName: this.name,
@@ -387,8 +366,8 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
 
   public toPersistenceDTO(): ReminderGroupPersistenceDTO {
     return {
-      uuid: this.uuid,
-      accountUuid: this.accountUuid,
+      id: this.id,
+      identityId: this.identityId,
       name: this.name,
       description: this.description,
       controlMode: this.controlMode,
@@ -397,7 +376,7 @@ export class ReminderGroup extends AggregateRoot implements ReminderGroupServer 
       order: this.order,
       color: this.color,
       icon: this.icon,
-      stats: JSON.stringify(this.stats),
+      stats: this._stats.toServerDTO(),
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       deletedAt: this.deletedAt,

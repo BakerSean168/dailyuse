@@ -3,7 +3,7 @@
  * 同步会话
  */
 
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot, generateUUID } from '@dailyuse/utils';
 import {
   SyncSessionStatus,
   SyncDirection,
@@ -18,7 +18,7 @@ import {
   type SyncConflictServerDTO,
 } from '@dailyuse/contracts/sync';
 import { SyncConflict } from '../entities/SyncConflict';
-import { SyncVersion } from '../value-objects/SyncVersion';
+import { SyncVersion } from '../value-objects';
 import { SyncSessionStats } from '../value-objects/SyncSessionStats';
 
 interface SessionError {
@@ -33,7 +33,7 @@ interface SessionError {
  *
  * 表示一次同步会话
  */
-export class SyncSession extends AggregateRoot {
+export class SyncSession extends AggregateRoot<string> {
   private _profileId: string;
   private _status: SyncSessionStatus;
   private _direction: SyncDirection;
@@ -41,42 +41,42 @@ export class SyncSession extends AggregateRoot {
   private _triggerType: SyncTriggerType;
   private _triggerDevice: DeviceInfoDTO;
   private _startVersion: SyncVersion;
-  private _endVersion?: SyncVersion | null;
-  private _localSnapshotId?: string | null;
-  private _remoteSnapshotId?: string | null;
+  private _endVersion: SyncVersion | null;
+  private _localSnapshotId: string | null;
+  private _remoteSnapshotId: string | null;
   private _conflicts: SyncConflict[];
-  private _statistics?: SyncSessionStatsDTO | null;
-  private _error?: SessionError | null;
+  private _statistics: SyncSessionStatsDTO | null;
+  private _error: SessionError | null;
   private _canRetry: boolean;
   private _retryCount: number;
   private _createdAt: Date;
-  private _startedAt?: number | null;
-  private _completedAt?: number | null;
+  private _startedAt: Date | null;
+  private _completedAt: Date | null;
   private _updatedAt: Date;
 
   private constructor(params: {
-    uuid: string;
+    id: string;
     profileId: string;
     status: SyncSessionStatus;
     direction: SyncDirection;
     strategy: SyncStrategy;
     triggerType: SyncTriggerType;
     triggerDevice: DeviceInfoDTO;
-    startVersion: SyncVersionServerDTO;
-    endVersion?: SyncVersionServerDTO | null;
-    localSnapshotId?: string | null;
-    remoteSnapshotId?: string | null;
+    startVersion: SyncVersion;
+    endVersion: SyncVersion | null;
+    localSnapshotId: string | null;
+    remoteSnapshotId: string | null;
     conflicts: SyncConflict[];
-    statistics?: SyncSessionStatsDTO | null;
-    error?: SessionError | null;
+    statistics: SyncSessionStatsDTO | null;
+    error: SessionError | null;
     canRetry: boolean;
     retryCount: number;
-    createdAt: number;
-    startedAt?: number | null;
-    completedAt?: number | null;
-    updatedAt: number;
+    createdAt: Date;
+    startedAt: Date | null;
+    completedAt: Date | null;
+    updatedAt: Date;
   }) {
-    super(params.uuid);
+    super(params.id);
     this._profileId = params.profileId;
     this._status = params.status;
     this._direction = params.direction;
@@ -99,10 +99,6 @@ export class SyncSession extends AggregateRoot {
   }
 
   // ===== Getters =====
-
-  override get uuid(): string {
-    return this._uuid;
-  }
 
   get profileId(): string {
     return this._profileId;
@@ -132,11 +128,11 @@ export class SyncSession extends AggregateRoot {
     return this._conflicts;
   }
 
-  get statistics(): SyncSessionStatsDTO | null | undefined {
+  get statistics(): SyncSessionStatsDTO | null {
     return this._statistics;
   }
 
-  get error(): SessionError | null | undefined {
+  get error(): SessionError | null {
     return this._error;
   }
 
@@ -148,15 +144,15 @@ export class SyncSession extends AggregateRoot {
     return this._retryCount;
   }
 
-  get createdAt(): number {
+  get createdAt(): Date {
     return this._createdAt;
   }
 
-  get startedAt(): number | null | undefined {
+  get startedAt(): Date | null {
     return this._startedAt;
   }
 
-  get completedAt(): number | null | undefined {
+  get completedAt(): Date | null {
     return this._completedAt;
   }
 
@@ -173,20 +169,27 @@ export class SyncSession extends AggregateRoot {
     triggerDevice: DeviceInfoDTO;
     startVersion: SyncVersionServerDTO;
   }): SyncSession {
-    const now = Date.now();
+    const now = new Date();
     return new SyncSession({
-      uuid: AggregateRoot.generateUUID(),
+      id: generateUUID(),
       profileId: params.profileId,
-      status: SyncSessionStatus.PENDING,
+      status: SyncSessionStatus.Pending,
       direction: params.direction,
       strategy: params.strategy,
       triggerType: params.triggerType,
       triggerDevice: params.triggerDevice,
-      startVersion: params.startVersion,
+      startVersion: SyncVersion.fromServerDTO(params.startVersion),
+      endVersion: null,
+      localSnapshotId: null,
+      remoteSnapshotId: null,
       conflicts: [],
+      statistics: null,
+      error: null,
       canRetry: true,
       retryCount: 0,
       createdAt: now,
+      startedAt: null,
+      completedAt: null,
       updatedAt: now,
     });
   }
@@ -196,15 +199,15 @@ export class SyncSession extends AggregateRoot {
    */
   static fromServerDTO(dto: SyncSessionServerDTO): SyncSession {
     return new SyncSession({
-      uuid: dto.uuid,
+      id: dto.id,
       profileId: dto.profileId,
       status: dto.status,
       direction: dto.direction,
       strategy: dto.strategy,
       triggerType: dto.triggerType,
       triggerDevice: dto.triggerDevice,
-      startVersion: dto.startVersion,
-      endVersion: dto.endVersion,
+      startVersion: SyncVersion.fromServerDTO(dto.startVersion),
+      endVersion: dto.endVersion ? SyncVersion.fromServerDTO(dto.endVersion) : null,
       localSnapshotId: dto.localSnapshotId,
       remoteSnapshotId: dto.remoteSnapshotId,
       conflicts: (dto.conflicts ?? []).map(SyncConflict.fromServerDTO),
@@ -212,10 +215,10 @@ export class SyncSession extends AggregateRoot {
       error: dto.error,
       canRetry: dto.canRetry,
       retryCount: dto.retryCount,
-      createdAt: new Date(dto.createdAt),
+      createdAt: dto.createdAt,
       startedAt: dto.startedAt,
       completedAt: dto.completedAt,
-      updatedAt: new Date(dto.updatedAt),
+      updatedAt: dto.updatedAt,
     });
   }
 
@@ -224,15 +227,15 @@ export class SyncSession extends AggregateRoot {
    */
   static fromPersistenceDTO(dto: SyncSessionPersistenceDTO): SyncSession {
     return new SyncSession({
-      uuid: dto.uuid,
+      id: dto.id,
       profileId: dto.profileId,
       status: dto.status as SyncSessionStatus,
       direction: dto.direction as SyncDirection,
       strategy: dto.strategy as SyncStrategy,
       triggerType: dto.triggerType as SyncTriggerType,
       triggerDevice: JSON.parse(dto.triggerDeviceJson),
-      startVersion: JSON.parse(dto.startVersionJson),
-      endVersion: dto.endVersionJson ? JSON.parse(dto.endVersionJson) : null,
+      startVersion: SyncVersion.fromServerDTO(JSON.parse(dto.startVersionJson)),
+      endVersion: dto.endVersionJson ? SyncVersion.fromServerDTO(JSON.parse(dto.endVersionJson)) : null,
       localSnapshotId: dto.localSnapshotId,
       remoteSnapshotId: dto.remoteSnapshotId,
       conflicts: [], // Conflicts loaded separately
@@ -240,10 +243,10 @@ export class SyncSession extends AggregateRoot {
       error: dto.errorJson ? JSON.parse(dto.errorJson) : null,
       canRetry: dto.canRetry,
       retryCount: dto.retryCount,
-      createdAt: new Date(dto.createdAt),
+      createdAt: dto.createdAt,
       startedAt: dto.startedAt,
       completedAt: dto.completedAt,
-      updatedAt: new Date(dto.updatedAt),
+      updatedAt: dto.updatedAt,
     });
   }
 
@@ -253,10 +256,10 @@ export class SyncSession extends AggregateRoot {
    * 开始同步
    */
   start(): void {
-    if (this._status !== SyncSessionStatus.PENDING) {
+    if (this._status !== SyncSessionStatus.Pending) {
       throw new Error('SyncSession: can only start a pending session');
     }
-    this._status = SyncSessionStatus.COLLECTING;
+    this._status = SyncSessionStatus.Collecting;
     this._startedAt = new Date();
     this._updatedAt = new Date();
   }
@@ -265,10 +268,10 @@ export class SyncSession extends AggregateRoot {
    * 进入同步阶段
    */
   startSyncing(): void {
-    if (this._status !== SyncSessionStatus.COLLECTING) {
+    if (this._status !== SyncSessionStatus.Collecting) {
       throw new Error('SyncSession: must be in collecting state');
     }
-    this._status = SyncSessionStatus.SYNCING;
+    this._status = SyncSessionStatus.Syncing;
     this._updatedAt = new Date();
   }
 
@@ -277,8 +280,8 @@ export class SyncSession extends AggregateRoot {
    */
   addConflict(conflict: SyncConflict): void {
     this._conflicts.push(conflict);
-    if (this._status === SyncSessionStatus.SYNCING) {
-      this._status = SyncSessionStatus.CONFLICTED;
+    if (this._status === SyncSessionStatus.Syncing) {
+      this._status = SyncSessionStatus.Conflicted;
     }
     this._updatedAt = new Date();
   }
@@ -287,8 +290,8 @@ export class SyncSession extends AggregateRoot {
    * 完成同步（成功）
    */
   complete(endVersion: SyncVersionServerDTO, statistics: SyncSessionStatsDTO): void {
-    this._status = SyncSessionStatus.COMPLETED;
-    this._endVersion = endVersion;
+    this._status = SyncSessionStatus.Completed;
+    this._endVersion = SyncVersion.fromServerDTO(endVersion);
     this._statistics = statistics;
     this._completedAt = new Date();
     this._updatedAt = new Date();
@@ -298,7 +301,7 @@ export class SyncSession extends AggregateRoot {
    * 完成同步（失败）
    */
   fail(error: SessionError, canRetry: boolean = true): void {
-    this._status = SyncSessionStatus.FAILED;
+    this._status = SyncSessionStatus.Failed;
     this._error = error;
     this._canRetry = canRetry;
     this._completedAt = new Date();
@@ -309,10 +312,10 @@ export class SyncSession extends AggregateRoot {
    * 取消同步
    */
   cancel(): void {
-    if (this._status === SyncSessionStatus.COMPLETED || this._status === SyncSessionStatus.FAILED) {
+    if (this._status === SyncSessionStatus.Completed || this._status === SyncSessionStatus.Failed) {
       throw new Error('SyncSession: cannot cancel a finished session');
     }
-    this._status = SyncSessionStatus.CANCELLED;
+    this._status = SyncSessionStatus.Cancelled;
     this._completedAt = new Date();
     this._updatedAt = new Date();
   }
@@ -324,9 +327,9 @@ export class SyncSession extends AggregateRoot {
    */
   get isInProgress(): boolean {
     return (
-      this._status === SyncSessionStatus.COLLECTING ||
-      this._status === SyncSessionStatus.SYNCING ||
-      this._status === SyncSessionStatus.CONFLICTED
+      this._status === SyncSessionStatus.Collecting ||
+      this._status === SyncSessionStatus.Syncing ||
+      this._status === SyncSessionStatus.Conflicted
     );
   }
 
@@ -335,9 +338,9 @@ export class SyncSession extends AggregateRoot {
    */
   get isFinished(): boolean {
     return (
-      this._status === SyncSessionStatus.COMPLETED ||
-      this._status === SyncSessionStatus.FAILED ||
-      this._status === SyncSessionStatus.CANCELLED
+      this._status === SyncSessionStatus.Completed ||
+      this._status === SyncSessionStatus.Failed ||
+      this._status === SyncSessionStatus.Cancelled
     );
   }
 
@@ -345,7 +348,7 @@ export class SyncSession extends AggregateRoot {
    * 是否成功
    */
   get isSuccessful(): boolean {
-    return this._status === SyncSessionStatus.COMPLETED;
+    return this._status === SyncSessionStatus.Completed;
   }
 
   /**
@@ -359,15 +362,15 @@ export class SyncSession extends AggregateRoot {
 
   toServerDTO(): SyncSessionServerDTO {
     return {
-      uuid: this.uuid,
+      id: this.id,
       profileId: this._profileId,
       status: this._status,
       direction: this._direction,
       strategy: this._strategy,
       triggerType: this._triggerType,
       triggerDevice: this._triggerDevice,
-      startVersion: this._startVersion,
-      endVersion: this._endVersion,
+      startVersion: this._startVersion.toServerDTO(),
+      endVersion: this._endVersion ? this._endVersion.toServerDTO() : null,
       localSnapshotId: this._localSnapshotId,
       remoteSnapshotId: this._remoteSnapshotId,
       conflicts: this._conflicts.map((c) => c.toServerDTO()),
@@ -375,16 +378,16 @@ export class SyncSession extends AggregateRoot {
       error: this._error,
       canRetry: this._canRetry,
       retryCount: this._retryCount,
-      createdAt: new Date(this._createdAt),
+      createdAt: this._createdAt,
       startedAt: this._startedAt,
       completedAt: this._completedAt,
-      updatedAt: new Date(this._updatedAt),
+      updatedAt: this._updatedAt,
     };
   }
 
   toClientDTO(): SyncSessionClientDTO {
     return {
-      uuid: this.uuid,
+      id: this.id,
       profileId: this._profileId,
       status: this._status,
       direction: this._direction,
@@ -398,33 +401,34 @@ export class SyncSession extends AggregateRoot {
       statistics: this._statistics,
       error: this._error ? { code: this._error.code, message: this._error.message } : null,
       canRetry: this._canRetry,
-      createdAt: new Date(this._createdAt),
-      startedAt: this._startedAt,
-      completedAt: this._completedAt,
+      createdAt: this._createdAt.getTime(),
+      startedAt: this._startedAt ? this._startedAt.getTime() : null,
+      completedAt: this._completedAt ? this._completedAt.getTime() : null,
+      estimatedTimeRemaining: null,
     };
   }
 
   toPersistenceDTO(): SyncSessionPersistenceDTO {
     return {
-      uuid: this.uuid,
+      id: this.id,
       profileId: this._profileId,
       status: this._status,
       direction: this._direction,
       strategy: this._strategy,
       triggerType: this._triggerType,
       triggerDeviceJson: JSON.stringify(this._triggerDevice),
-      startVersionJson: JSON.stringify(this._startVersion),
-      endVersionJson: this._endVersion ? JSON.stringify(this._endVersion) : null,
-      localSnapshotId: this._localSnapshotId ?? null,
-      remoteSnapshotId: this._remoteSnapshotId ?? null,
+      startVersionJson: JSON.stringify(this._startVersion.toServerDTO()),
+      endVersionJson: this._endVersion ? JSON.stringify(this._endVersion.toServerDTO()) : null,
+      localSnapshotId: this._localSnapshotId,
+      remoteSnapshotId: this._remoteSnapshotId,
       statisticsJson: this._statistics ? JSON.stringify(this._statistics) : null,
       errorJson: this._error ? JSON.stringify(this._error) : null,
       canRetry: this._canRetry,
       retryCount: this._retryCount,
-      createdAt: new Date(this._createdAt),
-      startedAt: this._startedAt ? new Date(this._startedAt) : null,
-      completedAt: this._completedAt ? new Date(this._completedAt) : null,
-      updatedAt: new Date(this._updatedAt),
+      createdAt: this._createdAt,
+      startedAt: this._startedAt,
+      completedAt: this._completedAt,
+      updatedAt: this._updatedAt,
     };
   }
 }

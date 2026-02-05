@@ -16,6 +16,7 @@ import type {
   AIModelInfo,
   AIProviderConfigClientDTO,
   AIProviderConfigServerDTO,
+  AIProviderConfigServer,
 } from '@dailyuse/contracts/ai';
 import { AiProviderConfigId } from '@dailyuse/domain-shared/ai';
 
@@ -27,7 +28,7 @@ import { AiProviderConfigId } from '@dailyuse/domain-shared/ai';
  * - API Key 安全处理（掩码生成）
  * - 默认 Provider 管理
  */
-export class AIProviderConfigServer extends AggregateRoot<AiProviderConfigId> {
+export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implements AIProviderConfigServer {
   private _identityId: string;
   private _name: string;
   private _providerType: AIProviderType;
@@ -73,7 +74,7 @@ export class AIProviderConfigServer extends AggregateRoot<AiProviderConfigId> {
 
   // ===== Getters =====
 
-  public get uuid(): string {
+  public get id(): string {
     return String(this.id);
   }
 

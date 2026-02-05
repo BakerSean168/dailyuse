@@ -1,33 +1,35 @@
 /**
- * TaskInstance 聚合根实现 (Server)
- * 任务实例 - 聚合根
+ * TaskInstance 聚合根实�?(Server)
+ * 任务实例 - 聚合�?
  * 
- * 【规范说明：聚合根（Aggregate Root）】
+ * 【规范说明：聚合根（Aggregate Root）�?
  * 聚合根是 DDD 中的核心概念，代表一个业务边界：
- * - 唯一标识：通过 ID 区分不同的聚合实例
+ * - 唯一标识：通过 ID 区分不同的聚合实�?
  * - 事务边界：所有对聚合的修改在一个事务内完成
- * - 统一性：聚合保证内部状态的一致性
+ * - 统一性：聚合保证内部状态的一致�?
  * - 生命周期：聚合有创建、修改、删除的完整生命周期
  * 
- * 【TaskInstance 职责】
+ * 【TaskInstance 职责�?
  * 管理任务实例的完整生命周期：
- * - 状态转换（PENDING → IN_PROGRESS → COMPLETED/SKIPPED/EXPIRED）
- * - 执行时间追踪（开始时间、结束时间、实际耗时）
+ * - 状态转换（PENDING �?IN_PROGRESS �?COMPLETED/SKIPPED/EXPIRED�?
+ * - 执行时间追踪（开始时间、结束时间、实际耗时�?
  * - 完成记录（完成状态、评分、备注）
  * - 跳过记录（跳过原因、跳过时间）
  */
 
 import type { TaskInstanceClientDTO, TaskInstancePersistenceDTO, TaskInstanceServer, TaskInstanceServerDTO, TaskEventMap } from '@dailyuse/contracts/task';
-import { TaskInstanceStatus, TimeType, TaskTemplateId, TaskInstanceId } from '@dailyuse/domain-shared/task';
-import { ImportanceLevel, IdentityId } from '@dailyuse/domain-shared';
+import { TaskInstanceStatus, TaskTimeType as TimeType } from '@dailyuse/contracts/task';
+import { TaskTemplateId, TaskInstanceId } from '@dailyuse/domain-shared/task';
+import { IdentityId } from '@dailyuse/domain-shared';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
 import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../value-objects';
 
 /**
  * TaskInstance 聚合根
  */
-export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskInstanceServer {
-  // ===== 1. 内部状态 (Backing Fields) =====
+export class TaskInstance extends AggregateRoot<TaskInstanceId> {
+  // ===== 1. 内部状态(Backing Fields) =====
   private _templateId: TaskTemplateId;
   private _identityId: IdentityId;
   private _instanceDate: number;
@@ -40,10 +42,10 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
   private _actualStartTime: number | null;
   private _actualEndTime: number | null;
   private _note: string | null;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+  private _createdAt: number;
+  private _updatedAt: number;
 
-  // ===== 2. 构造函数 (Private) =====
+  // ===== 2. 构造函�?(Private) =====
   private constructor(params: {
     id?: TaskInstanceId;
     templateId: TaskTemplateId;
@@ -78,7 +80,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
     this._updatedAt = params.updatedAt;
   }
 
-  // ===== 3. 公共属性 (Getters) =====
+  // ===== 3. 公共属�?(Getters) =====
   public get templateId(): TaskTemplateId {
     return this._templateId;
   }
@@ -108,13 +110,13 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
    * Story 1.5: 用于优先级计算
    */
   public get dueDate(): number | null {
-    if (this._timeConfig.timeType === TimeType.TIME_POINT) {
+    if (this._timeConfig.timeType === TimeType.TimePoint) {
       return this._timeConfig.timePoint;
-    } else if (this._timeConfig.timeType === TimeType.TIME_RANGE) {
+    } else if (this._timeConfig.timeType === TimeType.TimeRange) {
       return this._timeConfig.timeRange?.end ?? null;
     } else {
-      // 全天任务截止到 instanceDate 当天结束 (23:59:59)
-      // instanceDate 通常是当天的 00:00:00 (本地时间或 UTC?)
+      // 全天任务截止 instanceDate 当天结束 (23:59:59)
+      // instanceDate 通常是当天的 00:00:00 (本地时间 或 UTC?)
       // 假设 instanceDate 是该日的起始时间(UTC 0点 或 Local 0点)
       // 如果没有更好的信息，就使用 instanceDate + 1 天
       return this._instanceDate + 86400000 - 1; 
@@ -145,11 +147,11 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
     return this._note;
   }
 
-  public get createdAt(): Date {
+  public get createdAt(): number {
     return this._createdAt;
   }
 
-  public get updatedAt(): Date {
+  public get updatedAt(): number {
     return this._updatedAt;
   }
 
@@ -163,9 +165,9 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
       throw new Error('Cannot start task in current state');
     }
 
-    this._status = 'IN_PROGRESS' as TaskInstanceStatus;
+    this._status = 'InProgress' as TaskInstanceStatus;
     this._actualStartTime = Date.now();
-    this._updatedAt = new Date();
+    this._updatedAt = Date.now();
   }
 
   /**
@@ -177,18 +179,16 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
     }
 
     const now = Date.now();
-    this._status = 'COMPLETED' as TaskInstanceStatus;
+    this._status = 'Completed' as TaskInstanceStatus;
     this._actualEndTime = now;
 
     // 创建完成记录
-    this._completionRecord = new CompletionRecord({
+    this._completionRecord = CompletionRecord.create({
       completedAt: now,
       actualDuration:
         actualDuration ?? (this._actualStartTime ? now - this._actualStartTime : null),
       note: note ?? null,
       rating: rating ?? null,
-      taskUuid: this.uuid,
-      completionStatus: 'completed',
     });
 
     if (note) {
@@ -212,10 +212,10 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
     }
 
     const now = Date.now();
-    this._status = 'SKIPPED' as TaskInstanceStatus;
+    this._status = 'Skipped' as TaskInstanceStatus;
 
     // 创建跳过记录
-    this._skipRecord = new SkipRecord({
+    this._skipRecord = SkipRecord.create({
       skippedAt: now,
       reason: reason ?? null,
     });
@@ -228,12 +228,12 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
   }
 
   /**
-   * 标记为过期
+   * 标记为过�?
    */
   public markExpired(): void {
-    if (this._status === 'PENDING' || this._status === 'IN_PROGRESS') {
-      this._status = 'EXPIRED' as TaskInstanceStatus;
-      this._updatedAt = new Date();
+    if (this._status === 'Pending' || this._status === 'InProgress') {
+      this._status = 'Expired' as TaskInstanceStatus;
+      this._updatedAt = Date.now();
     }
   }
 
@@ -241,119 +241,90 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
    * 业务判断方法
    */
   public canStart(): boolean {
-    return this._status === 'PENDING';
+    return this._status === 'Pending';
   }
 
   public canComplete(): boolean {
-    return this._status === 'PENDING' || this._status === 'IN_PROGRESS';
+    return this._status === 'Pending' || this._status === 'InProgress';
   }
 
   public canSkip(): boolean {
-    return this._status === 'PENDING' || this._status === 'IN_PROGRESS';
+    return this._status === 'Pending' || this._status === 'InProgress';
   }
 
   public isOverdue(): boolean {
-    if (this._status !== 'PENDING' && this._status !== 'IN_PROGRESS') {
+    if (this._status !== 'Pending' && this._status !== 'InProgress') {
       return false;
     }
 
     const now = Date.now();
-    // 检查是否超过实例日期
-    return now > this._instanceDate + 86400000; // 超过1天视为过期
+    // 检查是否超过实例日�?
+    return now > this._instanceDate + 86400000; // 超过1天视为过�?
   }
 
-  // ===== 6. 序列化 (Serialization) =====
+  // ===== 6. 序列化(Serialization) =====
 
   public toServerDTO(): TaskInstanceServerDTO {
     return {
-      id: this.id,
-      templateId: this._templateId,
-      identityId: this._identityId,
+      id: this.id.toString(),
+      templateId: this._templateId.toString(),
+      identityId: this._identityId.toString(),
       instanceDate: this._instanceDate,
-      timeConfig: this._timeConfig.toServerDTO(),
+      timeConfig: this._timeConfig.toDTO(),
       importance: this._importance,
       priority: this._priority,
       status: this._status,
-      completionRecord: this._completionRecord?.toServerDTO() ?? null,
-      skipRecord: this._skipRecord?.toServerDTO() ?? null,
       actualStartTime: this._actualStartTime,
       actualEndTime: this._actualEndTime,
-      note: this._note,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      comment: this._note,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
     };
   }
 
   public toClientDTO(): TaskInstanceClientDTO {
-    const instanceDateFormatted = new Date(this._instanceDate).toLocaleDateString('zh-CN');
-    const statusText = this.getStatusText();
-    const statusColor = this.getStatusColor();
-    const actualDuration =
-      this._actualStartTime && this._actualEndTime
-        ? this._actualEndTime - this._actualStartTime
-        : null;
-    const durationText = actualDuration ? this.formatDuration(actualDuration) : null;
-
     return {
-      id: this.id,
-      templateId: this._templateId,
-      identityId: this._identityId,
+      id: this.id.toString(),
+      templateId: this._templateId.toString(),
+      identityId: this._identityId.toString(),
       instanceDate: this._instanceDate,
-      timeConfig: this._timeConfig.toClientDTO(),
+      timeConfig: this._timeConfig.toDTO(),
       importance: this._importance,
       priority: this._priority,
       status: this._status,
-      completionRecord: this._completionRecord?.toClientDTO() ?? null,
-      skipRecord: this._skipRecord?.toClientDTO() ?? null,
       actualStartTime: this._actualStartTime,
       actualEndTime: this._actualEndTime,
-      note: this._note,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      instanceDateFormatted,
-      statusText,
-      statusColor,
-      isCompleted: this._status === 'COMPLETED',
-      isSkipped: this._status === 'SKIPPED',
-      isPending: this._status === 'PENDING',
-      isExpired: this._status === 'EXPIRED',
-      hasNote: this._note !== null,
-      actualDuration,
-      durationText,
-      formattedCreatedAt: new Date(this._createdAt).toLocaleString('zh-CN'),
-      formattedUpdatedAt: new Date(this._updatedAt).toLocaleString('zh-CN'),
+      comment: this._note,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
     };
   }
 
   public toPersistenceDTO(): TaskInstancePersistenceDTO {
     return {
-      id: this.id,
-      templateId: this._templateId,
-      identityId: this._identityId,
-      instanceDate: this._instanceDate,
-      timeConfig: JSON.stringify(this._timeConfig.toPersistenceDTO()),
+      id: this.id.toString(),
+      templateId: this._templateId.toString(),
+      identityId: this._identityId.toString(),
+      instanceDate: new Date(this._instanceDate),
+      timeConfig: JSON.stringify(this._timeConfig.toDTO()),
       importance: this._importance,
       priority: this._priority,
       status: this._status,
-      completionRecord: this._completionRecord
-        ? JSON.stringify(this._completionRecord.toPersistenceDTO())
-        : null,
-      skipRecord: this._skipRecord ? JSON.stringify(this._skipRecord.toPersistenceDTO()) : null,
-      actualStartTime: this._actualStartTime,
-      actualEndTime: this._actualEndTime,
-      note: this._note,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      actualStartTime: this._actualStartTime ? new Date(this._actualStartTime) : null,
+      actualEndTime: this._actualEndTime ? new Date(this._actualEndTime) : null,
+      comment: this._note,
+      createdAt: new Date(this._createdAt),
+      updatedAt: new Date(this._updatedAt),
     };
   }
 
   // ===== 4. 工厂方法 (Factories) =====
 
   /**
-   * 🏭 业务工厂：创建新的任务实例
+   * 🏭 业务工厂：创建新的任务实�?
    *
-   * 注意：不再发布领域事件
-   * 提醒由 ScheduleTask 统一管理（混合方案 C）
+   * 注意：不再发布领域事�?
+   * 提醒�?ScheduleTask 统一管理（混合方�?C�?
    */
   public static create(params: {
     templateId: TaskTemplateId;
@@ -369,7 +340,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
       instanceDate: params.instanceDate,
       timeConfig: params.timeConfig,
       importance: params.importance,
-      status: 'PENDING' as TaskInstanceStatus,
+      status: 'Pending' as TaskInstanceStatus,
       createdAt: now,
       updatedAt: now,
     });
@@ -386,19 +357,15 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
       templateId: dto.templateId as TaskTemplateId,
       identityId: dto.identityId as IdentityId,
       instanceDate: dto.instanceDate,
-      timeConfig: TaskTimeConfig.fromServerDTO(dto.timeConfig),
+      timeConfig: TaskTimeConfig.fromDTO(dto.timeConfig),
       importance: dto.importance,
       priority: dto.priority,
-      status: dto.status,
-      completionRecord: dto.completionRecord
-        ? CompletionRecord.fromServerDTO(dto.completionRecord, dto.uuid)
-        : null,
-      skipRecord: dto.skipRecord ? SkipRecord.fromServerDTO(dto.skipRecord) : null,
+      status: dto.status as TaskInstanceStatus,
       actualStartTime: dto.actualStartTime,
       actualEndTime: dto.actualEndTime,
-      note: dto.note,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      note: dto.comment,
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
     });
   }
 
@@ -410,22 +377,16 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
       id: dto.id as TaskInstanceId,
       templateId: dto.templateId as TaskTemplateId,
       identityId: dto.identityId as IdentityId,
-      instanceDate: dto.instanceDate,
-      timeConfig: TaskTimeConfig.fromPersistenceDTO(JSON.parse(dto.timeConfig as string)),
+      instanceDate: dto.instanceDate.getTime(),
+      timeConfig: TaskTimeConfig.fromDTO(JSON.parse(dto.timeConfig)),
       importance: dto.importance as ImportanceLevel,
       priority: dto.priority,
       status: dto.status as TaskInstanceStatus,
-      completionRecord: dto.completionRecord
-        ? CompletionRecord.fromPersistenceDTO(JSON.parse(dto.completionRecord as string))
-        : null,
-      skipRecord: dto.skipRecord
-        ? SkipRecord.fromPersistenceDTO(JSON.parse(dto.skipRecord as string))
-        : null,
-      actualStartTime: dto.actualStartTime,
-      actualEndTime: dto.actualEndTime,
-      note: dto.note,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      actualStartTime: dto.actualStartTime?.getTime() ?? null,
+      actualEndTime: dto.actualEndTime?.getTime() ?? null,
+      note: dto.comment,
+      createdAt: dto.createdAt.getTime(),
+      updatedAt: dto.updatedAt.getTime(),
     });
   }
 
@@ -433,22 +394,22 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
 
   private getStatusText(): string {
     const statusMap: Record<TaskInstanceStatus, string> = {
-      PENDING: '待完成',
-      IN_PROGRESS: '进行中',
-      COMPLETED: '已完成',
-      SKIPPED: '已跳过',
-      EXPIRED: '已过期',
+      Pending: '待完成',
+      InProgress: '进行中',
+      Completed: '已完成',
+      Skipped: '已跳过',
+      Expired: '已过期',
     };
     return statusMap[this._status];
   }
 
   private getStatusColor(): string {
     const colorMap: Record<TaskInstanceStatus, string> = {
-      PENDING: 'blue',
-      IN_PROGRESS: 'orange',
-      COMPLETED: 'green',
-      SKIPPED: 'gray',
-      EXPIRED: 'red',
+      Pending: 'blue',
+      InProgress: 'orange',
+      Completed: 'green',
+      Skipped: 'gray',
+      Expired: 'red',
     };
     return colorMap[this._status];
   }

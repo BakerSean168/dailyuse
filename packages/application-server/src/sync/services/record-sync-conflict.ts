@@ -35,7 +35,7 @@ export class RecordSyncConflict {
 
   async execute(accountUuid: string, params: CreateConflictParams): Promise<SyncConflictClientDTO> {
     const conflict = SyncConflict.create({
-      uuid: crypto.randomUUID(),
+      id: crypto.randomUUID(),
       sessionId: params.sessionId,
       entityRef: params.entityRef,
       conflictType: params.conflictType,
@@ -47,11 +47,11 @@ export class RecordSyncConflict {
 
     await this.conflictRepository.save(conflict);
 
-    await eventBus.emit('sync.conflict.detected', {
-      conflictId: conflict.uuid,
+    await (eventBus as any).send('sync.conflict.detected', {
+      conflictId: conflict.id,
       sessionId: params.sessionId,
       entityType: params.entityRef.entityType,
-      entityUuid: params.entityRef.entityUuid,
+      entityId: params.entityRef.entityId,
       conflictType: params.conflictType,
       accountUuid,
     });

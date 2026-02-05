@@ -8,7 +8,7 @@
  */
 
 import { SourceModule, Timezone, TaskPriority } from '@dailyuse/contracts/schedule';
-import type { RecurrenceRuleServerDTO, ReminderTimeUnit, TaskReminderConfigServerDTO, TaskTemplateServerDTO, TaskTimeConfigServerDTO } from '@dailyuse/contracts/task';
+import type { RecurrenceRuleDTO, ReminderTimeUnit, TaskReminderConfigDTO, TaskTemplateServerDTO, TaskTimeConfigDTO } from '@dailyuse/contracts/task';
 import { DayOfWeek, RecurrenceFrequency } from '@dailyuse/contracts/task';
 import { ScheduleConfig } from '../../value-objects/ScheduleConfig';
 import { TaskMetadata } from '../../value-objects/TaskMetadata';
@@ -26,7 +26,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    * 支持 TASK 源模块
    */
   supports(sourceModule: SourceModule): boolean {
-    return sourceModule === SourceModule.TASK;
+    return sourceModule === SourceModule.Task;
   }
 
   /**
@@ -37,12 +37,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    * 3. 有 reminderConfig 且已启用
    */
   shouldCreateSchedule(sourceEntity: TaskTemplateServerDTO): boolean {
-    // 只有循环任务需要调度
-    if (sourceEntity.taskType !== 'RECURRING') {
-      return false;
-    }
-
-    // 必须有重复规则
+    // 必须有重复规则（循环任务）
     if (!sourceEntity.recurrenceRule) {
       return false;
     }
@@ -64,35 +59,36 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
 
     if (!this.shouldCreateSchedule(task)) {
       throw new Error(
-        `Task ${task.uuid} does not have valid configuration for scheduling`,
+        `Task ${task.id} does not have valid configuration for scheduling`,
       );
     }
 
     const { recurrenceRule, reminderConfig, timeConfig } = task;
     if (!recurrenceRule || !reminderConfig) {
-      throw new Error(`Task ${task.uuid} missing recurrenceRule or reminderConfig`);
+      throw new Error(`Task ${task.id} missing recurrenceRule or reminderConfig`);
     }
 
     // 根据重复规则生成 cron 表达式
     const cronExpression = this.generateCronExpression(recurrenceRule, reminderConfig, timeConfig);
 
     // 创建调度配置
-    const scheduleConfig = new ScheduleConfig({
+    const startTimestamp = timeConfig?.startDate ?? Date.now();
+    const scheduleConfig = ScheduleConfig.fromDTO({
       cronExpression,
-      timezone: Timezone.SHANGHAI, // 默认时区，后续可以从用户设置获取
-      startDate: timeConfig?.startDate ?? Date.now(),
-      endDate: recurrenceRule.endDate ?? null, // 结束日期从重复规则获取，不再从 timeConfig 获取
+      timezone: Timezone.Shanghai, // 默认时区，后续可以从用户设置获取
+      startDate: new Date(startTimestamp).toISOString(),
+      endDate: recurrenceRule.endDate ? new Date(recurrenceRule.endDate).toISOString() : null, // 结束日期从重复规则获取，不再从 timeConfig 获取
       maxExecutions: recurrenceRule.occurrences ?? null,
     });
 
     // 创建元数据
-    const metadata = new TaskMetadata({
+    const metadata = TaskMetadata.create({
       priority: this.calculatePriority(task),
       tags: this.generateTags(task),
+      timeout: null,
       payload: {
-        taskUuid: task.uuid,
+        taskId: task.id,
         taskTitle: task.name,
-        taskType: task.taskType,
         recurrenceFrequency: recurrenceRule.frequency,
         reminderTriggers: reminderConfig.triggers,
         importance: task.importance,
@@ -127,16 +123,16 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    * - 默认：任务开始时间或 9:00
    */
   private generateCronExpression(
-    recurrenceRule: RecurrenceRuleServerDTO,
-    reminderConfig: TaskReminderConfigServerDTO,
-    timeConfig?: TaskTimeConfigServerDTO | null,
+    recurrenceRule: RecurrenceRuleDTO,
+    reminderConfig: TaskReminderConfigDTO,
+    timeConfig?: TaskTimeConfigDTO | null,
   ): string {
     // 确定提醒时间（小时和分钟）
     const { hour, minute } = this.calculateReminderTime(reminderConfig, timeConfig);
 
     // 根据重复频率生成 cron
     switch (recurrenceRule.frequency) {
-      case 'DAILY':
+      case RecurrenceFrequency.Daily:
         // 每 N 天，在指定时间
         if (recurrenceRule.interval === 1) {
           return `0 ${minute} ${hour} * * *`; // 每天
@@ -145,7 +141,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
           return `0 ${minute} ${hour} * * *`;
         }
 
-      case 'WEEKLY':
+      case RecurrenceFrequency.Weekly:
         // 每周指定的几天
         const daysOfWeek = this.convertDaysOfWeekToCron(recurrenceRule.daysOfWeek);
         if (recurrenceRule.interval === 1) {
@@ -155,11 +151,11 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
           return `0 ${minute} ${hour} * * ${daysOfWeek}`;
         }
 
-      case 'MONTHLY':
+      case RecurrenceFrequency.Monthly:
         // 每月 1 号（简化版）
         return `0 ${minute} ${hour} 1 * *`;
 
-      case 'YEARLY':
+      case RecurrenceFrequency.Yearly:
         // 每年 1 月 1 号（简化版）
         return `0 ${minute} ${hour} 1 1 *`;
 
@@ -173,20 +169,20 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    * 计算提醒时间
    */
   private calculateReminderTime(
-    reminderConfig: TaskReminderConfigServerDTO,
-    timeConfig?: TaskTimeConfigServerDTO | null,
+    reminderConfig: TaskReminderConfigDTO,
+    timeConfig?: TaskTimeConfigDTO | null,
   ): { hour: number; minute: number } {
     // 查找第一个触发器
     const firstTrigger = reminderConfig.triggers[0];
 
-    if (firstTrigger.type === 'ABSOLUTE' && firstTrigger.absoluteTime) {
+    if (firstTrigger.type === 'Absolute' && firstTrigger.absoluteTime) {
       // 使用绝对时间
       const date = new Date(firstTrigger.absoluteTime);
       return {
         hour: date.getHours(),
         minute: date.getMinutes(),
       };
-    } else if (firstTrigger.type === 'RELATIVE') {
+    } else if (firstTrigger.type === 'Relative') {
       // 相对时间：使用任务的时间配置
       if (timeConfig?.timePoint) {
         const date = new Date(timeConfig.timePoint);
@@ -224,11 +220,11 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    */
   private convertToMinutes(value: number, unit: ReminderTimeUnit): number {
     switch (unit) {
-      case 'MINUTES':
+      case 'Minutes':
         return value;
-      case 'HOURS':
+      case 'Hours':
         return value * 60;
-      case 'DAYS':
+      case 'Days':
         return value * 24 * 60;
       default:
         return 0;
@@ -257,23 +253,23 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
   private calculatePriority(task: TaskTemplateServerDTO): TaskPriority {
     const { importance } = task;
 
-    // Vital = URGENT
-    if (importance === 'vital') {
-      return TaskPriority.URGENT;
+    // Vital = Urgent
+    if (importance === 'Vital') {
+      return TaskPriority.Urgent;
     }
 
-    // Important = HIGH
-    if (importance === 'important') {
-      return TaskPriority.HIGH;
+    // Important = High
+    if (importance === 'Important') {
+      return TaskPriority.High;
     }
 
-    // Moderate = NORMAL
-    if (importance === 'moderate') {
-      return TaskPriority.NORMAL;
+    // Moderate = Normal
+    if (importance === 'Moderate') {
+      return TaskPriority.Normal;
     }
 
-    // Minor/Trivial = LOW
-    return TaskPriority.LOW;
+    // Minor/Trivial = Low
+    return TaskPriority.Low;
   }
 
   /**
@@ -292,8 +288,8 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
     }
 
     // 添加文件夹标签
-    if (task.folderUuid) {
-      tags.push(`folder:${task.folderUuid}`);
+    if (task.folderId) {
+      tags.push(`folder:${task.folderId}`);
     }
 
     return tags;
@@ -311,7 +307,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    */
   private generateTaskDescription(
     task: TaskTemplateServerDTO,
-    recurrenceRule: RecurrenceRuleServerDTO,
+    recurrenceRule: RecurrenceRuleDTO,
   ): string {
     const frequencyText = this.getFrequencyText(recurrenceRule);
     const reminderCount = task.reminderConfig?.triggers.length ?? 0;
@@ -322,7 +318,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
   /**
    * 获取频率文本
    */
-  private getFrequencyText(recurrenceRule: RecurrenceRuleServerDTO): string {
+  private getFrequencyText(recurrenceRule: RecurrenceRuleDTO): string {
     const interval = recurrenceRule.interval;
     const frequency = recurrenceRule.frequency;
 

@@ -15,14 +15,10 @@
  * 【IReminderGroupRepository】
  * - 提醒组持久化：管理批量提醒的组织
  * 
- * 【IReminderStatisticsRepository】
- * - 提醒统计持久化：沉淀瘧事实提醒统计数据
- * 
  * 【IReminderResponseRepository】
  * - 提醒答复会话持久化：跟踪用户的提醒互动
  */
 
 export type { IReminderTemplateRepository } from './IReminderTemplateRepository';
 export type { IReminderGroupRepository } from './IReminderGroupRepository';
-export type { IReminderStatisticsRepository } from './IReminderStatisticsRepository';
 export type { IReminderResponseRepository, ResponseAction } from './IReminderResponseRepository';

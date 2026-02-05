@@ -3,7 +3,7 @@
  * 任务依赖关系聚合
  */
 
-import { AggregateRoot, UniqueId } from '@dailyuse/utils';
+import { AggregateRoot, generateUUID } from '@dailyuse/utils';
 import type {
   TaskDependencyServerDTO,
 } from '@dailyuse/contracts/task';
@@ -17,9 +17,9 @@ import {
  * TaskDependency 聚合根 - 服务端
  * 表示两个任务之间的依赖关系
  */
-export class TaskDependency extends AggregateRoot<TaskDependencyServerDTO> {
+export class TaskDependency extends AggregateRoot<string> {
   private constructor(
-    id: UniqueId,
+    id: string,
     private readonly _predecessorTaskId: string,
     private readonly _successorTaskId: string,
     private _dependencyType: DependencyType,
@@ -68,9 +68,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyServerDTO> {
     dependencyType?: DependencyType;
     lagDays?: number;
   }): TaskDependency {
-    const id = props.id
-      ? UniqueId.fromString(props.id)
-      : UniqueId.create();
+    const id = props.id ?? generateUUID();
     const now = new Date();
 
     return new TaskDependency(
@@ -89,7 +87,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyServerDTO> {
    */
   public static fromDTO(dto: TaskDependencyServerDTO): TaskDependency {
     return new TaskDependency(
-      UniqueId.fromString(dto.id),
+      dto.id,
       dto.predecessorTaskId,
       dto.successorTaskId,
       dto.dependencyType,
@@ -136,8 +134,8 @@ export class TaskDependency extends AggregateRoot<TaskDependencyServerDTO> {
       successorTaskId: this._successorTaskId,
       dependencyType: this._dependencyType,
       lagDays: this._lagDays,
-      createdAt: this._createdAt.toISOString(),
-      updatedAt: this._updatedAt.toISOString(),
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 }

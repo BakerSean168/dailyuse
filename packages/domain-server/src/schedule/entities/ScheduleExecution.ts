@@ -8,7 +8,7 @@
  * - 错误信息管理
  */
 
-import { Entity } from '@dailyuse/utils';
+import { Entity, generateUUID } from '@dailyuse/utils';
 import type {
   ScheduleExecutionClientDTO,
   ScheduleExecutionPersistenceDTO,
@@ -20,10 +20,10 @@ import { ExecutionStatus } from '@dailyuse/contracts/schedule';
 /**
  * ScheduleExecution 实体
  */
-export class ScheduleExecution extends Entity implements ScheduleExecutionServer {
+export class ScheduleExecution extends Entity<string> implements ScheduleExecutionServer {
   // ===== 私有字段 =====
   private _taskUuid: string;
-  private _executionTime: number;
+  private _executionTime: Date;
   private _status: ExecutionStatus;
   private _duration: number | null;
   private _result: Record<string, any> | null;
@@ -43,26 +43,26 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
     retryCount?: number;
     createdAt?: number;
   }) {
-    super(params.uuid ?? Entity.generateUUID());
+    super(params.uuid ?? generateUUID());
     this._taskUuid = params.taskUuid;
-    this._executionTime = params.executionTime;
+    this._executionTime = new Date(params.executionTime);
     this._status = params.status;
     this._duration = params.duration ?? null;
     this._result = params.result ?? null;
     this._error = params.error ?? null;
     this._retryCount = params.retryCount ?? 0;
-    this._createdAt = params.createdAt ?? Date.now();
+    this._createdAt = new Date(params.createdAt ?? Date.now());
   }
 
   // ===== Getter 属性 =====
-  public override get uuid(): string {
-    return this._uuid;
+  public get uuid(): string {
+    return this.id;
   }
   public get taskUuid(): string {
     return this._taskUuid;
   }
   public get executionTime(): number {
-    return this._executionTime;
+    return this._executionTime.getTime();
   }
   public get status(): ExecutionStatus {
     return this._status;
@@ -89,7 +89,7 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
    * 标记执行成功
    */
   public markSuccess(duration: number, result?: Record<string, any>): void {
-    this._status = ExecutionStatus.SUCCESS;
+    this._status = ExecutionStatus.Success;
     this._duration = duration;
     if (result) {
       this._result = result;
@@ -101,7 +101,7 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
    * 标记执行失败
    */
   public markFailed(error: string, duration?: number): void {
-    this._status = ExecutionStatus.FAILED;
+    this._status = ExecutionStatus.Failed;
     this._error = error;
     if (duration !== undefined) {
       this._duration = duration;
@@ -112,7 +112,7 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
    * 标记执行超时
    */
   public markTimeout(duration: number): void {
-    this._status = ExecutionStatus.TIMEOUT;
+    this._status = ExecutionStatus.Timeout;
     this._duration = duration;
     this._error = 'Execution timeout';
   }
@@ -121,7 +121,7 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
    * 标记执行跳过
    */
   public markSkipped(reason: string): void {
-    this._status = ExecutionStatus.SKIPPED;
+    this._status = ExecutionStatus.Skipped;
     this._error = reason;
     this._duration = 0;
   }
@@ -131,7 +131,7 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
    */
   public incrementRetry(): void {
     this._retryCount += 1;
-    this._status = ExecutionStatus.RETRYING;
+    this._status = ExecutionStatus.Retrying;
   }
 
   /**
@@ -152,28 +152,28 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
    * 检查是否成功
    */
   public isSuccess(): boolean {
-    return this._status === ExecutionStatus.SUCCESS;
+    return this._status === ExecutionStatus.Success;
   }
 
   /**
    * 检查是否失败
    */
   public isFailed(): boolean {
-    return this._status === ExecutionStatus.FAILED;
+    return this._status === ExecutionStatus.Failed;
   }
 
   /**
    * 检查是否超时
    */
   public isTimeout(): boolean {
-    return this._status === ExecutionStatus.TIMEOUT;
+    return this._status === ExecutionStatus.Timeout;
   }
 
   /**
    * 检查是否跳过
    */
   public isSkipped(): boolean {
-    return this._status === ExecutionStatus.SKIPPED;
+    return this._status === ExecutionStatus.Skipped;
   }
 
   // ===== 转换方法 =====
@@ -183,9 +183,9 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
    */
   public toServerDTO(): ScheduleExecutionServerDTO {
     return {
-      uuid: this._uuid,
+      uuid: this.id,
       taskUuid: this._taskUuid,
-      executionTime: this._executionTime,
+      executionTime: this._executionTime.getTime(),
       status: this._status,
       duration: this._duration,
       result: this._result ? { ...this._result } : null,
@@ -200,9 +200,9 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
    */
   public toClientDTO(): ScheduleExecutionClientDTO {
     return {
-      uuid: this._uuid,
-      taskUuid: this._taskUuid,
-      executionTime: this._executionTime,
+      id: this.id,
+      scheduleTaskId: this._taskUuid,
+      executionTime: this._executionTime.getTime(),
       status: this._status,
       duration: this._duration,
       result: this._result ? { ...this._result } : null,
@@ -210,7 +210,7 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
       retryCount: this._retryCount,
       createdAt: this._createdAt.getTime(),
       // UI 辅助属性
-      executionTimeFormatted: new Date(this._executionTime).toLocaleString('zh-CN'),
+      executionTimeFormatted: this._executionTime.toLocaleString('zh-CN'),
       statusDisplay: this._getStatusText(),
       statusColor: this._getStatusColor(),
       durationFormatted: this._formatDuration(),
@@ -232,15 +232,15 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
    */
   public toPersistenceDTO(): ScheduleExecutionPersistenceDTO {
     return {
-      uuid: this._uuid,
+      uuid: this.id,
       taskUuid: this._taskUuid,
-      executionTime: this._executionTime,
+      executionTime: this._executionTime.getTime(),
       status: this._status,
       duration: this._duration,
       result: this._result ? JSON.stringify(this._result) : null,
       error: this._error,
       retryCount: this._retryCount,
-      createdAt: this._createdAt.getTime(),
+      createdAt: this._createdAt,
     };
   }
 
@@ -248,15 +248,15 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
 
   private _getStatusText(): string {
     switch (this._status) {
-      case ExecutionStatus.SUCCESS:
+      case ExecutionStatus.Success:
         return '执行成功';
-      case ExecutionStatus.FAILED:
+      case ExecutionStatus.Failed:
         return '执行失败';
-      case ExecutionStatus.TIMEOUT:
+      case ExecutionStatus.Timeout:
         return '执行超时';
-      case ExecutionStatus.SKIPPED:
+      case ExecutionStatus.Skipped:
         return '已跳过';
-      case ExecutionStatus.RETRYING:
+      case ExecutionStatus.Retrying:
         return '重试中';
       default:
         return '未知状态';
@@ -265,15 +265,15 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
 
   private _getStatusColor(): string {
     switch (this._status) {
-      case ExecutionStatus.SUCCESS:
+      case ExecutionStatus.Success:
         return 'green';
-      case ExecutionStatus.FAILED:
+      case ExecutionStatus.Failed:
         return 'red';
-      case ExecutionStatus.TIMEOUT:
+      case ExecutionStatus.Timeout:
         return 'orange';
-      case ExecutionStatus.SKIPPED:
+      case ExecutionStatus.Skipped:
         return 'gray';
-      case ExecutionStatus.RETRYING:
+      case ExecutionStatus.Retrying:
         return 'blue';
       default:
         return 'gray';
@@ -305,7 +305,7 @@ export class ScheduleExecution extends Entity implements ScheduleExecutionServer
     return new ScheduleExecution({
       taskUuid: params.taskUuid,
       executionTime: params.executionTime,
-      status: params.status ?? ExecutionStatus.SUCCESS,
+      status: params.status ?? ExecutionStatus.Success,
       createdAt: Date.now(),
     });
   }

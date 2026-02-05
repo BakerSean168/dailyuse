@@ -31,7 +31,7 @@ export class SetDefaultSyncProfile {
     profile.setAsDefault();
     await this.profileRepository.save(profile);
 
-    await eventBus.emit('sync.profile.default-changed', {
+    await (eventBus as any).send('sync.profile.default-changed', {
       profileId,
       accountUuid,
     });

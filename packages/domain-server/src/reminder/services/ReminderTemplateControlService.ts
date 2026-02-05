@@ -78,7 +78,7 @@ export class ReminderTemplateControlService {
         groupStatus: null,
         controlMode: null,
         effectiveStatus: templateStatus,
-        isEffectivelyEnabled: templateStatus === ReminderStatus.ACTIVE,
+        isEffectivelyEnabled: templateStatus === ReminderStatus.Active,
         statusReason: '未分组，使用模板自身状态',
       };
     }
@@ -98,7 +98,7 @@ export class ReminderTemplateControlService {
         groupStatus: null,
         controlMode: null,
         effectiveStatus: templateStatus,
-        isEffectivelyEnabled: templateStatus === ReminderStatus.ACTIVE,
+        isEffectivelyEnabled: templateStatus === ReminderStatus.Active,
         statusReason: '分组不存在，使用模板自身状态',
       };
     }
@@ -107,7 +107,7 @@ export class ReminderTemplateControlService {
     const controlMode = targetGroup.controlMode;
 
     // INDIVIDUAL 模式：模板状态即有效状态
-    if (controlMode === ControlMode.INDIVIDUAL) {
+    if (controlMode === ControlMode.Individual) {
       return {
         templateUuid: template.uuid,
         templateStatus,
@@ -115,21 +115,21 @@ export class ReminderTemplateControlService {
         groupStatus,
         controlMode,
         effectiveStatus: templateStatus,
-        isEffectivelyEnabled: templateStatus === ReminderStatus.ACTIVE,
+        isEffectivelyEnabled: templateStatus === ReminderStatus.Active,
         statusReason: '分组为独立控制模式，使用模板自身状态',
       };
     }
 
     // GROUP 模式：分组状态 AND 模板状态
     const effectiveStatus =
-      groupStatus === ReminderStatus.ACTIVE && templateStatus === ReminderStatus.ACTIVE
-        ? ReminderStatus.ACTIVE
-        : ReminderStatus.PAUSED;
+      groupStatus === ReminderStatus.Active && templateStatus === ReminderStatus.Active
+        ? ReminderStatus.Active
+        : ReminderStatus.Paused;
 
     let statusReason = '分组为组控制模式';
-    if (groupStatus === ReminderStatus.PAUSED) {
+    if (groupStatus === ReminderStatus.Paused) {
       statusReason += '，分组已暂停';
-    } else if (templateStatus === ReminderStatus.PAUSED) {
+    } else if (templateStatus === ReminderStatus.Paused) {
       statusReason += '，模板已暂停';
     } else {
       statusReason += '，分组和模板均启用';
@@ -142,7 +142,7 @@ export class ReminderTemplateControlService {
       groupStatus,
       controlMode,
       effectiveStatus,
-      isEffectivelyEnabled: effectiveStatus === ReminderStatus.ACTIVE,
+      isEffectivelyEnabled: effectiveStatus === ReminderStatus.Active,
       statusReason,
     };
   }
@@ -165,7 +165,7 @@ export class ReminderTemplateControlService {
     const groups = await this.groupRepository.findByIds(Array.from(groupUuids));
     const groupMap = new Map<string, ReminderGroup>();
     for (const group of groups) {
-      groupMap.set(group.uuid, group);
+      groupMap.set(group.id, group);
     }
 
     // 计算每个模板的有效状态
@@ -182,7 +182,7 @@ export class ReminderTemplateControlService {
           groupStatus: null,
           controlMode: null,
           effectiveStatus: templateStatus,
-          isEffectivelyEnabled: templateStatus === ReminderStatus.ACTIVE,
+          isEffectivelyEnabled: templateStatus === ReminderStatus.Active,
           statusReason: '未分组，使用模板自身状态',
         });
         continue;
@@ -197,7 +197,7 @@ export class ReminderTemplateControlService {
           groupStatus: null,
           controlMode: null,
           effectiveStatus: templateStatus,
-          isEffectivelyEnabled: templateStatus === ReminderStatus.ACTIVE,
+          isEffectivelyEnabled: templateStatus === ReminderStatus.Active,
           statusReason: '分组不存在，使用模板自身状态',
         });
         continue;
@@ -206,7 +206,7 @@ export class ReminderTemplateControlService {
       const groupStatus = group.status;
       const controlMode = group.controlMode;
 
-      if (controlMode === ControlMode.INDIVIDUAL) {
+      if (controlMode === ControlMode.Individual) {
         results.push({
           templateUuid: template.uuid,
           templateStatus,
@@ -214,21 +214,21 @@ export class ReminderTemplateControlService {
           groupStatus,
           controlMode,
           effectiveStatus: templateStatus,
-          isEffectivelyEnabled: templateStatus === ReminderStatus.ACTIVE,
+          isEffectivelyEnabled: templateStatus === ReminderStatus.Active,
           statusReason: '分组为独立控制模式，使用模板自身状态',
         });
         continue;
       }
 
       const effectiveStatus =
-        groupStatus === ReminderStatus.ACTIVE && templateStatus === ReminderStatus.ACTIVE
-          ? ReminderStatus.ACTIVE
-          : ReminderStatus.PAUSED;
+        groupStatus === ReminderStatus.Active && templateStatus === ReminderStatus.Active
+          ? ReminderStatus.Active
+          : ReminderStatus.Paused;
 
       let statusReason = '分组为组控制模式';
-      if (groupStatus === ReminderStatus.PAUSED) {
+      if (groupStatus === ReminderStatus.Paused) {
         statusReason += '，分组已暂停';
-      } else if (templateStatus === ReminderStatus.PAUSED) {
+      } else if (templateStatus === ReminderStatus.Paused) {
         statusReason += '，模板已暂停';
       } else {
         statusReason += '，分组和模板均启用';
@@ -241,7 +241,7 @@ export class ReminderTemplateControlService {
         groupStatus,
         controlMode,
         effectiveStatus,
-        isEffectivelyEnabled: effectiveStatus === ReminderStatus.ACTIVE,
+        isEffectivelyEnabled: effectiveStatus === ReminderStatus.Active,
         statusReason,
       });
     }
@@ -275,14 +275,14 @@ export class ReminderTemplateControlService {
   /**
    * 获取账户下所有真正启用的模板
    */
-  async getEffectivelyEnabledTemplatesByAccount(accountUuid: string): Promise<ReminderTemplate[]> {
-    const templates = await this.templateRepository.findByAccountUuid(accountUuid);
+  async getEffectivelyEnabledTemplatesByIdentityId(identityId: string): Promise<ReminderTemplate[]> {
+    const templates = await this.templateRepository.findByAccountUuid(identityId);
     const statusResults = await this.calculateEffectiveStatusBatch(templates);
 
     const enabledTemplateUuids = statusResults
       .filter((r) => r.isEffectivelyEnabled)
       .map((r) => r.templateUuid);
 
-    return templates.filter((t) => enabledTemplateUuids.includes(t.uuid));
+    return templates.filter((t: ReminderTemplate) => enabledTemplateUuids.includes(t.uuid));
   }
 }

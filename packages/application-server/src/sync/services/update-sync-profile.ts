@@ -5,13 +5,10 @@
  */
 
 import type {
-  UpdateSyncProfileRequest,
+  UpdateSyncProfileReq,
   SyncProfileClientDTO,
-  SyncProfileConfigDTO,
-  SyncProviderConfigDTO,
 } from '@dailyuse/contracts/sync';
 import type { ISyncProfileRepository } from '@dailyuse/domain-server/sync';
-import { eventBus } from '@dailyuse/utils';
 
 /**
  * Update Sync Profile Service
@@ -21,12 +18,13 @@ export class UpdateSyncProfile {
 
   async execute(
     accountUuid: string,
-    request: UpdateSyncProfileRequest,
+    profileId: string,
+    request: UpdateSyncProfileReq,
   ): Promise<SyncProfileClientDTO> {
     // 1. 查找配置
-    const profile = await this.profileRepository.findByUuid(request.profileId);
+    const profile = await this.profileRepository.findByUuid(profileId);
     if (!profile) {
-      throw new Error(`同步配置不存在: ${request.profileId}`);
+      throw new Error(`同步配置不存在: ${profileId}`);
     }
 
     // 2. 检查名称唯一性
@@ -34,7 +32,7 @@ export class UpdateSyncProfile {
       const nameExists = await this.profileRepository.existsByName(
         accountUuid,
         request.name,
-        profile.uuid,
+        profile.id,
       );
       if (nameExists) {
         throw new Error(`同步配置名称 "${request.name}" 已存在`);
@@ -42,25 +40,22 @@ export class UpdateSyncProfile {
       profile.updateName(request.name);
     }
 
-    // 3. 更新其他字段
-    if (request.syncConfig) {
-      const mergedConfig = { ...profile.syncConfig, ...request.syncConfig };
-      profile.updateSyncConfig(mergedConfig as SyncProfileConfigDTO);
-    }
+    // 3. 更新同步配置
+    // Note: UpdateSyncProfileReq has direction/strategy fields but they use
+    // different enum values than the domain types. Skipping these for now.
+    // TODO: Add proper mapping between API and domain types
 
-    if (request.providerConfig) {
-      const mergedProviderConfig = { ...profile.providerConfig, ...request.providerConfig };
-      profile.updateProviderConfig(mergedProviderConfig as SyncProviderConfigDTO);
+    if (request.config) {
+      // config 是通用配置，合并到 providerConfig
+      const currentProviderConfig = profile.providerConfig;
+      profile.updateProviderConfig({
+        ...currentProviderConfig,
+        ...request.config,
+      });
     }
 
     // 4. 持久化
     await this.profileRepository.save(profile);
-
-    // 5. 发布事件
-    await eventBus.emit('sync.profile.updated', {
-      profileId: profile.uuid,
-      accountUuid,
-    });
 
     return profile.toClientDTO();
   }

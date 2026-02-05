@@ -18,7 +18,7 @@ import { eventBus } from '@dailyuse/utils';
  */
 export interface RecordChangeParams {
   entityType: SyncableEntityType;
-  entityUuid: string;
+  entityId: string;
   entityName?: string;
   operation: ChangeOperationType;
   beforeData?: unknown;
@@ -37,23 +37,23 @@ export class RecordPendingChange {
     const existingChanges = await this.changeRepository.findUnsyncedByEntityRef(
       accountUuid,
       params.entityType,
-      params.entityUuid,
+      params.entityId,
     );
 
     // 2. 如果有未同步的创建操作，且当前是更新操作，合并
-    if (existingChanges.length > 0 && params.operation === 'UPDATE') {
+    if (existingChanges.length > 0 && params.operation === ChangeOperationType.Update) {
       const createChange = existingChanges.find(
-        (c: PendingChange) => c.operation === ChangeOperationType.CREATE,
+        (c: PendingChange) => c.operation === ChangeOperationType.Create,
       );
       if (createChange) {
-        await this.changeRepository.delete(createChange.uuid);
+        await this.changeRepository.delete(createChange.id);
         const updatedChange = PendingChange.create({
           entityRef: {
             entityType: params.entityType,
-            entityUuid: params.entityUuid,
+            entityId: params.entityId,
             entityName: params.entityName,
           },
-          operation: ChangeOperationType.CREATE,
+          operation: ChangeOperationType.Create,
           beforeData: createChange.beforeData,
           afterData: params.afterData,
           version: params.version,
@@ -64,19 +64,19 @@ export class RecordPendingChange {
     }
 
     // 3. 如果有未同步的变更且当前是删除操作
-    if (existingChanges.length > 0 && params.operation === 'DELETE') {
+    if (existingChanges.length > 0 && params.operation === ChangeOperationType.Delete) {
       const createChange = existingChanges.find(
-        (c: PendingChange) => c.operation === ChangeOperationType.CREATE,
+        (c: PendingChange) => c.operation === ChangeOperationType.Create,
       );
       if (createChange) {
-        await this.changeRepository.deleteMany(existingChanges.map((c: PendingChange) => c.uuid));
+        await this.changeRepository.deleteMany(existingChanges.map((c: PendingChange) => c.id));
         const deleteChange = PendingChange.create({
           entityRef: {
             entityType: params.entityType,
-            entityUuid: params.entityUuid,
+            entityId: params.entityId,
             entityName: params.entityName,
           },
-          operation: ChangeOperationType.DELETE,
+          operation: ChangeOperationType.Delete,
           beforeData: params.beforeData,
           afterData: params.afterData,
           version: params.version,
@@ -90,7 +90,7 @@ export class RecordPendingChange {
     const change = PendingChange.create({
       entityRef: {
         entityType: params.entityType,
-        entityUuid: params.entityUuid,
+        entityId: params.entityId,
         entityName: params.entityName,
       },
       operation: params.operation,
@@ -102,10 +102,10 @@ export class RecordPendingChange {
     await this.changeRepository.save(change);
 
     // 5. 发布事件
-    await eventBus.emit('sync.change.recorded', {
-      changeId: change.uuid,
+    await (eventBus as any).send('sync.change.recorded', {
+      changeId: change.id,
       entityType: params.entityType,
-      entityUuid: params.entityUuid,
+      entityId: params.entityId,
       operation: params.operation,
       accountUuid,
     });

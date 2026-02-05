@@ -18,12 +18,8 @@
  * 
  * 【ITaskDependencyRepository】
  * - 依赖关系持久化：管理任务之间的依赖关系
- * 
- * 【ITaskStatisticsRepository】
- * - 任务统计持久化：仓存是事实抨法上的沉淀瘧
  */
 
 export type { ITaskInstanceRepository } from './ITaskInstanceRepository';
 export type { ITaskTemplateRepository, TaskFilters } from './ITaskTemplateRepository';
 export type { ITaskDependencyRepository } from './ITaskDependencyRepository';
-export type { ITaskStatisticsRepository } from './ITaskStatisticsRepository';

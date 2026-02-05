@@ -3,9 +3,56 @@
  * 用户自定义 AI 服务提供商配置（服务端视图）
  */
 
-import type { AiProviderConfigId, IdentityId, TransferDate } from '@/primitives';
+import type { AiProviderConfigId, IdentityId, PersistenceDate, TransferDate, DomainDate } from '@/primitives';
 import type { AIProviderType } from '../value-objects/ai-provider-type';
 import type { AIModelInfo } from './ai-provider-config-client';
+
+
+export interface AIProviderConfigServer  {
+
+  id: AiProviderConfigId;
+  identityId: IdentityId;
+
+  name: string;
+
+  providerType: AIProviderType;
+
+  baseUrl: string;
+
+  apiKey: string;
+
+  defaultModel: string | null;
+
+  availableModels: AIModelInfo[];
+
+  isActive: boolean;
+  isDefault: boolean;
+  priority: number;
+
+  createdAt: DomainDate;
+  updatedAt: DomainDate;
+
+}
+
+export interface AIProviderConfigPersistenceDTO {
+  id: string;
+  identityId: string;
+
+  name: string;
+
+  providerType: AIProviderType;
+  baseUrl: string;
+  apiKey: string;
+  defaultModel: string | null;
+  availableModels: AIModelInfo[]
+  isActive: boolean;
+
+  isDefault: boolean;
+  priority: number;
+
+  createdAt: PersistenceDate;
+  updatedAt: PersistenceDate;
+}
 
 /**
  * AI Provider 配置 - 服务端 DTO
