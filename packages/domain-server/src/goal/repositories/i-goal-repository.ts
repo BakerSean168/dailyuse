@@ -104,4 +104,24 @@ export interface IGoalRepository {
    * @param folderUuid 目标文件夹 UUID
    */
   batchMoveToFolder(uuids: string[], folderUuid: string | null): Promise<void>;
+
+  // ================= 层级关系查询 =================
+
+  /**
+   * 检查目标是否是另一个目标的祖先
+   * 用于循环依赖检测
+   *
+   * @param potentialAncestorId 可能是祖先的目标 ID
+   * @param potentialDescendantId 可能是后代的目标 ID
+   * @returns 如果 potentialAncestorId 是 potentialDescendantId 的祖先则返回 true
+   */
+  isAncestor(potentialAncestorId: string, potentialDescendantId: string): Promise<boolean>;
+
+  /**
+   * 查找目标的所有直接子目标
+   *
+   * @param parentId 父目标 ID
+   * @returns 子目标列表
+   */
+  findChildren(parentId: string): Promise<Goal[]>;
 }

@@ -63,6 +63,12 @@ import {
   GoalTargetDateNotSetError,
   GoalKeyResultNotFoundError,
   GoalReviewNotFoundError,
+  GoalDeletedError,
+  GoalArchivedError,
+  GoalNameTooLongError,
+  KeyResultWeightInvalidError,
+  KeyResultWeightExceededError,
+  GoalReviewRatingInvalidError,
 } from '../value-objects';
 import { calculateGoalPriority, mapPriorityToLevel, mapPriorityToText } from '../services/goal-priority-calculator.service';
 
@@ -276,31 +282,55 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * 🏭 业务工厂：创建新的目标
+   * 
+   * 【DDD 设计】
+   * 工厂方法负责所有验证，确保创建的目标始终处于有效状态。
+   * 这遵循了"Tell, Don't Ask"原则 - 调用者只需告诉 Goal 要做什么，
+   * Goal 自己负责验证和保护其不变量。
+   * 
+   * @param params 创建参数
+   * @param parentGoal 可选的父目标（如果提供了 parentGoalId，需要传入父目标进行验证）
    * @throws {GoalNameRequiredError} 当名称为空时
+   * @throws {GoalNameTooLongError} 当名称超过200字符时
+   * @throws {GoalInvalidDateRangeError} 当开始日期晚于目标日期时
+   * @throws {GoalArchivedError} 当父目标已归档时
+   * @throws {GoalDeletedError} 当父目标已删除时
    */
-  public static create(params: {
-    identityId: IdentityId;
-    name: string;
-    description: string | null;
-    color: string;
-    feasibilityAnalysis: string | null;
-    motivation: string | null;
-    importance: ImportanceLevel;
-    category: string | null;
-    tags: string[];
-    startDate: Date | null;
-    targetDate: Date | null;
-    folderId: GoalFolderId | null;
-    parentGoalId: GoalId | null;
-    reminderConfig: GoalReminderConfig | null;
-  }): Goal {
-    // 验证
+  public static create(
+    params: {
+      identityId: IdentityId;
+      name: string;
+      description: string | null;
+      color: string;
+      feasibilityAnalysis: string | null;
+      motivation: string | null;
+      importance: ImportanceLevel;
+      category: string | null;
+      tags: string[];
+      startDate: Date | null;
+      targetDate: Date | null;
+      folderId: GoalFolderId | null;
+      parentGoalId: GoalId | null;
+      reminderConfig: GoalReminderConfig | null;
+    },
+    parentGoal?: Goal,
+  ): Goal {
+    // 1. 验证必填字段
     if (!params.identityId) {
       throw new GoalNameRequiredError();
     }
-    if (!params.name || params.name.trim().length === 0) {
-      throw new GoalNameRequiredError();
+    
+    // 2. 验证标题（使用静态验证方法）
+    Goal.validateTitle(params.name);
+    
+    // 3. 验证日期范围
+    Goal.validateDateRange(params.startDate, params.targetDate);
+    
+    // 4. 验证父目标状态
+    if (params.parentGoalId && !parentGoal) {
+      throw new Error('Parent goal is required when parentGoalId is provided');
     }
+    Goal.validateParentGoal(parentGoal);
 
     const now = new Date();
     const id = GoalId.generate();
@@ -404,7 +434,17 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * ✅ 更新基本信息
+   * 
+   * 【DDD 设计】
+   * 聚合根自己保护自己的不变量：
+   * - 不允许修改已删除的目标
+   * - 不允许修改已归档的目标
+   * - 验证名称有效性
+   * 
+   * @throws {GoalDeletedError} 当目标已删除时
+   * @throws {GoalArchivedError} 当目标已归档时
    * @throws {GoalNameRequiredError} 当名称为空时
+   * @throws {GoalNameTooLongError} 当名称超过200字符时
    */
   public updateBasicInfo(params: {
     name?: string;
@@ -415,14 +455,15 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     feasibilityAnalysis?: string | null;
     motivation?: string | null;
   }): void {
+    // Guard: 确保可修改
+    this.ensureModifiable();
+    
     let hasChanges = false;
 
     if (params.name !== undefined && params.name !== this._name) {
-      const trimmed = params.name.trim();
-      if (trimmed.length === 0) {
-        throw new GoalNameRequiredError();
-      }
-      this._name = trimmed;
+      // 使用静态验证方法
+      Goal.validateTitle(params.name);
+      this._name = params.name.trim();
       hasChanges = true;
     }
 
@@ -705,7 +746,69 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   // ================= 7. 关键结果管理 (KeyResult Management) =================
 
   /**
+   * 🏭 创建并添加关键结果
+   * 
+   * 【DDD 设计】
+   * 这是一个便捷方法，结合了创建和添加操作。
+   * 聚合根自己验证权重范围和总和约束。
+   * 
+   * @throws {GoalDeletedError} 当目标已删除时
+   * @throws {GoalArchivedError} 当目标已归档时
+   * @throws {KeyResultWeightInvalidError} 当权重不在0-100之间时
+   * @throws {KeyResultWeightExceededError} 当权重总和超过100时
+   */
+  public createAndAddKeyResult(params: {
+    title: string;
+    description?: string | null;
+    valueType: string;
+    aggregationMethod?: string;
+    targetValue: number;
+    currentValue?: number;
+    unit?: string;
+    weight: number;
+  }): KeyResult {
+    // Guard: 确保可修改
+    this.ensureModifiable();
+    
+    // 验证权重范围
+    Goal.validateKeyResultWeight(params.weight);
+    
+    // 验证权重总和
+    const currentTotalWeight = this._keyResults.reduce((sum, kr) => sum + kr.weight, 0);
+    if (currentTotalWeight + params.weight > 100) {
+      throw new KeyResultWeightExceededError(currentTotalWeight, params.weight);
+    }
+    
+    // 创建关键结果
+    const keyResult = KeyResult.create({
+      title: params.title,
+      description: params.description ?? undefined,
+      progress: {
+        initialValue: 0,
+        currentValue: params.currentValue ?? 0,
+        targetValue: params.targetValue,
+        valueType: params.valueType as any,
+        aggregationMethod: (params.aggregationMethod || 'LAST') as any,
+        unit: params.unit ?? null,
+      },
+      weight: params.weight,
+      order: this._keyResults.length,
+    });
+    
+    // 添加到集合
+    this._keyResults.push(keyResult);
+    this._updatedAt = new Date();
+
+    this.addDomainEvent<GoalEventMap['goal:key-result-add']>('goal:key-result-add', {
+      keyResultId: keyResult.id,
+    });
+    
+    return keyResult;
+  }
+
+  /**
    * 🏭 创建关键结果（工厂方法）
+   * @deprecated 使用 createAndAddKeyResult 代替，它会自动添加并验证
    */
   public createKeyResult(params: {
     title: string;
@@ -736,6 +839,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * ✅ 添加关键结果
+   * @deprecated 使用 createAndAddKeyResult 代替，它会自动验证
    */
   public addKeyResult(keyResult: KeyResult): void {
     this._keyResults.push(keyResult);
@@ -748,9 +852,12 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * ✅ 更新关键结果属性（标题、描述等）
+   * @throws {GoalDeletedError} 当目标已删除时
    * @throws {GoalKeyResultNotFoundError} 当关键结果不存在时
    */
   public updateKeyResult(keyResultId: string, updates: Partial<KeyResult>): void {
+    this.ensureNotDeleted();
+    
     const keyResult = this._keyResults.find((kr) => kr.id === keyResultId);
     if (!keyResult) {
       throw new GoalKeyResultNotFoundError(keyResultId);
@@ -804,15 +911,20 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * ✅ 更新关键结果进度
+   * @throws {GoalDeletedError} 当目标已删除时
+   * @throws {GoalKeyResultNotFoundError} 当关键结果不存在时
    */
   public updateKeyResultProgress(
     keyResultId: string,
     newValue: number,
     note?: string,
   ): KeyResultServerDTO {
+    // Guard: 确保未删除
+    this.ensureNotDeleted();
+    
     const keyResult = this._keyResults.find((kr) => kr.id === keyResultId);
     if (!keyResult) {
-      throw new Error(`KeyResult ${keyResultId} not found`);
+      throw new GoalKeyResultNotFoundError(keyResultId);
     }
 
     const oldProgress = this.calculateProgress();
@@ -833,8 +945,11 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * ✅ 删除关键结果
+   * @throws {GoalDeletedError} 当目标已删除时
    */
   public removeKeyResult(keyResultId: string): KeyResult | null {
+    this.ensureNotDeleted();
+    
     const index = this._keyResults.findIndex((kr) => kr.id === keyResultId);
     if (index !== -1) {
       const removed = this._keyResults.splice(index, 1)[0];
@@ -974,7 +1089,62 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   // ================= 9. 回顾管理 (Review Management) =================
 
   /**
+   * 🏭 创建并添加回顾
+   * 
+   * 【DDD 设计】
+   * 便捷方法，结合创建和添加，并验证所有约束。
+   * 
+   * @throws {GoalDeletedError} 当目标已删除时
+   * @throws {GoalReviewRatingInvalidError} 当评分不在0-10之间时
+   */
+  public createAndAddReview(params: {
+    title: string;
+    content: string;
+    reviewType: string;
+    rating?: number;
+    achievements?: string;
+    challenges?: string;
+    nextActions?: string;
+  }): GoalReview {
+    // Guard: 确保未删除
+    this.ensureNotDeleted();
+    
+    // 验证评分
+    Goal.validateReviewRating(params.rating);
+    
+    // 创建关键结果快照
+    const keyResultSnapshots: KeyResultSnapshotDTO[] = this._keyResults.map((kr) => ({
+      keyResultId: kr.id as any,
+      title: kr.title,
+      targetValue: kr.progress.targetValue,
+      currentValue: kr.progress.currentValue,
+      progressPercentage: kr.calculatePercentage(),
+    }));
+
+    const review = GoalReview.create({
+      type: params.reviewType as any,
+      rating: params.rating || 3,
+      summary: params.content,
+      achievements: params.achievements,
+      challenges: params.challenges,
+      improvements: params.nextActions,
+      keyResultSnapshots,
+    });
+    
+    // 添加到集合
+    this._goalReviews.push(review);
+    this._updatedAt = new Date();
+
+    this.addDomainEvent<GoalEventMap['goal:review-add']>('goal:review-add', {
+      reviewId: review.id,
+    });
+
+    return review;
+  }
+
+  /**
    * 🏭 创建回顾（工厂方法）
+   * @deprecated 使用 createAndAddReview 代替
    */
   public createReview(params: {
     title: string;
@@ -1009,6 +1179,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * ✅ 添加回顾
+   * @deprecated 使用 createAndAddReview 代替
    */
   public addReview(review: GoalReview): void {
     this._goalReviews.push(review);
@@ -1029,7 +1200,9 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * ✅ 更新回顾
+   * @throws {GoalDeletedError} 当目标已删除时
    * @throws {GoalReviewNotFoundError} 当回顾不存在时
+   * @throws {GoalReviewRatingInvalidError} 当评分不在0-10之间时
    */
   public updateReview(
     reviewId: string,
@@ -1041,6 +1214,9 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
       improvements?: string;
     },
   ): void {
+    this.ensureNotDeleted();
+    Goal.validateReviewRating(params.rating);
+    
     const review = this._goalReviews.find((r) => r.id === reviewId);
     if (!review) {
       throw new GoalReviewNotFoundError(reviewId);
@@ -1057,8 +1233,11 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * ✅ 删除回顾
+   * @throws {GoalDeletedError} 当目标已删除时
    */
   public removeReview(reviewId: string): GoalReview | null {
+    this.ensureNotDeleted();
+    
     const index = this._goalReviews.findIndex((r) => r.id === reviewId);
     if (index !== -1) {
       const removed = this._goalReviews.splice(index, 1)[0];
@@ -1186,7 +1365,102 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     };
   }
 
-  // ================= 12. 辅助方法 (Helpers) =================
+  // ================= 12. Guard Clauses (守卫方法) =================
+
+  /**
+   * 确保目标未被删除
+   * @throws {GoalDeletedError} 当目标已被软删除时
+   */
+  private ensureNotDeleted(): void {
+    if (this._deletedAt !== null) {
+      throw new GoalDeletedError(this.id);
+    }
+  }
+
+  /**
+   * 确保目标未被归档
+   * @throws {GoalArchivedError} 当目标已被归档时
+   */
+  private ensureNotArchived(): void {
+    if (this._status === GoalStatus.Archived) {
+      throw new GoalArchivedError(this.id);
+    }
+  }
+
+  /**
+   * 确保目标可以被修改（未删除且未归档）
+   * @throws {GoalDeletedError} 当目标已被软删除时
+   * @throws {GoalArchivedError} 当目标已被归档时
+   */
+  private ensureModifiable(): void {
+    this.ensureNotDeleted();
+    this.ensureNotArchived();
+  }
+
+  // ================= 13. 静态验证方法 (Static Validators) =================
+
+  /**
+   * 验证目标标题
+   * @throws {GoalNameRequiredError} 当标题为空时
+   * @throws {GoalNameTooLongError} 当标题超过200字符时
+   */
+  public static validateTitle(title: string): void {
+    const trimmed = title.trim();
+    if (trimmed.length === 0) {
+      throw new GoalNameRequiredError();
+    }
+    if (trimmed.length > 200) {
+      throw new GoalNameTooLongError(200);
+    }
+  }
+
+  /**
+   * 验证日期范围
+   * @throws {GoalInvalidDateRangeError} 当开始日期晚于目标日期时
+   */
+  public static validateDateRange(startDate?: Date | null, targetDate?: Date | null): void {
+    if (startDate && targetDate && startDate.getTime() > targetDate.getTime()) {
+      throw new GoalInvalidDateRangeError(startDate, targetDate);
+    }
+  }
+
+  /**
+   * 验证关键结果权重
+   * @throws {KeyResultWeightInvalidError} 当权重不在0-100之间时
+   */
+  public static validateKeyResultWeight(weight: number): void {
+    if (weight < 0 || weight > 100) {
+      throw new KeyResultWeightInvalidError(weight);
+    }
+  }
+
+  /**
+   * 验证回顾评分
+   * @throws {GoalReviewRatingInvalidError} 当评分不在0-10之间时
+   */
+  public static validateReviewRating(rating?: number): void {
+    if (rating !== undefined && (rating < 0 || rating > 10)) {
+      throw new GoalReviewRatingInvalidError(rating);
+    }
+  }
+
+  /**
+   * 验证父目标状态（用于创建子目标）
+   * @throws {GoalArchivedError} 当父目标已归档时
+   * @throws {GoalDeletedError} 当父目标已删除时
+   */
+  public static validateParentGoal(parentGoal?: Goal): void {
+    if (!parentGoal) return;
+    
+    if (parentGoal.status === GoalStatus.Archived) {
+      throw new GoalArchivedError(parentGoal.id);
+    }
+    if (parentGoal.deletedAt !== null) {
+      throw new GoalDeletedError(parentGoal.id);
+    }
+  }
+
+  // ================= 14. 辅助方法 (Helpers) =================
 
   private resolveTimeRange(): { start: number | null; end: number | null } {
     const start = this._startDate?.getTime() ?? this._createdAt?.getTime() ?? null;

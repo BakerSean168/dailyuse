@@ -6,20 +6,15 @@
  * 领域服务是跨聚合根的业务逻辑，使用场景：
  * - 一次操作涉及多个聚合根时
  * - 业务逻辑不属于任何单一聚合根
- * - 无决类状态：整个业务逻辑执行后才保存
- * - 注入仓储：很有提供仓储侦可培议可蚓
- * 
- * 【AIGenerationService】
- * - AI 内容生成：预客提辞、生成回复、根据上下文预输
- * - 预客管理：管理变群变磨变根据变算法
+ * - 无状态：不持有任何实例状态
  * 
  * 【AIGenerationValidationService】
- * - 预客可推性检查：检查是否应该们物祈减宣宙的上下文
+ * - AI 输出验证：验证 AI 生成内容的业务规则
+ * - 纯领域验证，不涉及基础设施
  * 
  * 【QuotaEnforcementService】
- * - 额度管理：检查 Token 额度、报蛙超额
+ * - 额度管理：检查 Token 额度、处理超额
  */
 
-export { AIGenerationService } from './AIGenerationService';
 export { AIGenerationValidationService } from './AIGenerationValidationService';
 export { QuotaEnforcementService, QuotaExceededError } from './QuotaEnforcementService';

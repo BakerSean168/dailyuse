@@ -1,5 +1,5 @@
-import { IGoalRepository } from '../repositories/i-goal-repository';
-import { Goal } from '../aggregates/goal';
+import type { IGoalRepository } from '../repositories/i-goal-repository';
+import type { Goal } from '../aggregates/goal';
 
 export class GoalHierarchyDomainService {
   constructor(private goalRepo: IGoalRepository) {}

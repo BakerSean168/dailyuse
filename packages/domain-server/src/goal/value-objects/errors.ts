@@ -83,3 +83,60 @@ export class KeyResultNotFoundInGoalError extends DomainError {
     );
   }
 }
+
+/**
+ * 目标已删除错误
+ */
+export class GoalDeletedError extends DomainError {
+  constructor(goalId?: string) {
+    super('goal_deleted', goalId ? `目标 ${goalId} 已删除，无法执行此操作` : '目标已删除，无法执行此操作');
+  }
+}
+
+/**
+ * 目标已归档错误
+ */
+export class GoalArchivedError extends DomainError {
+  constructor(goalId?: string) {
+    super('goal_archived', goalId ? `目标 ${goalId} 已归档，无法执行此操作` : '目标已归档，无法执行此操作');
+  }
+}
+
+/**
+ * 目标标题过长错误
+ */
+export class GoalNameTooLongError extends DomainError {
+  constructor(maxLength: number = 200) {
+    super('goal_name_too_long', `目标名称过长（最大 ${maxLength} 个字符）`);
+  }
+}
+
+/**
+ * 关键结果权重无效错误
+ */
+export class KeyResultWeightInvalidError extends DomainError {
+  constructor(weight: number) {
+    super('key_result_weight_invalid', `关键结果权重 ${weight} 无效（必须在 0-100 之间）`);
+  }
+}
+
+/**
+ * 关键结果权重总和超出错误
+ */
+export class KeyResultWeightExceededError extends DomainError {
+  constructor(currentTotal: number, adding: number) {
+    super(
+      'key_result_weight_exceeded',
+      `关键结果权重总和超出：当前 ${currentTotal}，添加 ${adding}，总和将超过 100`,
+    );
+  }
+}
+
+/**
+ * 目标回顾评分无效错误
+ */
+export class GoalReviewRatingInvalidError extends DomainError {
+  constructor(rating: number) {
+    super('goal_review_rating_invalid', `目标回顾评分 ${rating} 无效（必须在 0-10 之间）`);
+  }
+}

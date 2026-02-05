@@ -52,4 +52,10 @@ export {
   GoalKeyResultNotFoundError,
   GoalReviewNotFoundError,
   KeyResultNotFoundInGoalError,
+  GoalDeletedError,
+  GoalArchivedError,
+  GoalNameTooLongError,
+  KeyResultWeightInvalidError,
+  KeyResultWeightExceededError,
+  GoalReviewRatingInvalidError,
 } from './errors';

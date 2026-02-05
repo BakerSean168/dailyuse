@@ -49,9 +49,15 @@ export type {
   SnapshotQueryResult,
 } from './repositories';
 
-// 领域服务
+// 领域服务（只保留真正的领域服务）
 export {
-  GoalDomainService,
   FocusSessionDomainService,
+  GoalProgressCalculator,
 } from './services';
+
+// 导出仓储接口类型
+export type {
+  IGoalRecordRepository,
+  GoalRecordQueryOptions,
+} from './repositories';
 
