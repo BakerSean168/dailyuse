@@ -223,9 +223,40 @@ export class KeyResultProgress extends ValueObject<KeyResultProgressDTO> impleme
    * 
    * @param values 新的数值数组
    * @returns 更新后的新实例
+   * @deprecated 建议使用 recalculateFromHistory 方法，更清晰地表达语义
    */
   public updateCurrentValueByAggregation(values: number[]): KeyResultProgress {
-    const aggregatedValue = this.calculateAggregatedValue(values);
+    return this.recalculateFromHistory(values);
+  }
+
+  /**
+   * ✅ 纯计算方法：根据历史数据重新计算当前状态
+   * 
+   * 【DDD 原则】
+   * - 值对象是纯内存操作，不依赖任何外部数据源
+   * - 所有输入都通过参数传入
+   * - 返回新的不可变实例
+   * 
+   * 【使用场景】
+   * 1. 用户添加新的进度记录
+   * 2. 用户删除或修改历史记录
+   * 3. 系统需要重新计算进度（数据迁移、修复等）
+   * 
+   * @param historyValues 历史记录的值数组（按时间排序）
+   * @returns 计算后的新 KeyResultProgress 实例
+   * 
+   * @example
+   * // 在 GoalProgressCalculator 领域服务中使用
+   * const values = [10, 20, 30]; // 从 Repository 查询得到
+   * const newProgress = keyResult.progress.recalculateFromHistory(values);
+   */
+  public recalculateFromHistory(historyValues: number[]): KeyResultProgress {
+    // 如果没有历史记录，重置为初始值
+    if (historyValues.length === 0) {
+      return this.updateCurrentValue(this.props.initialValue);
+    }
+
+    const aggregatedValue = this.calculateAggregatedValue(historyValues);
     return this.updateCurrentValue(aggregatedValue);
   }
 

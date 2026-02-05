@@ -10,3 +10,4 @@ export * from './events';
 export * from './rules';
 export * from './protocol';
 export * from './api';
+export * from './dtos';

@@ -19,11 +19,11 @@ export interface IAccountRepository {
   save(account: Account, tx?: unknown): Promise<void>;
 
   /**
-   * 通过 UUID 查找账户
-   * @param uuid - 账户 UUID
+   * 通过 ID 查找账户
+   * @param id - 账户 ID
    * @param tx - 可选的 Prisma 事务客户端，用于在事务中查询
    */
-  findById(uuid: string, tx?: unknown): Promise<Account | null>;
+  findById(id: string, tx?: unknown): Promise<Account | null>;
 
   /**
    * 通过用户名查找账户
