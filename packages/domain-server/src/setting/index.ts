@@ -38,14 +38,14 @@ export { UIConfig } from './value-objects/UIConfig';
 export { SyncConfig } from './value-objects/SyncConfig';
 
 // ============ 实体 ============
-export { SettingHistory } from './entities/SettingHistory';
-export { SettingItem } from './entities/SettingItem';
-export { SettingGroup } from './entities/SettingGroup';
+export { SettingHistory } from './entities/setting-history';
+export { SettingItem } from './entities/setting-item';
+export { SettingGroup } from './entities/setting-group';
 
 // ============ 聚合根 ============
-export { Setting } from './aggregates/Setting';
-export { AppConfig } from './aggregates/AppConfig';
-export { UserSetting } from './aggregates/UserSetting';
+export { Setting } from './aggregates/setting';
+export { AppConfig } from './aggregates/app-config';
+export { UserSetting } from './aggregates/user-setting';
 
 // ============ 仓储接口 ============
 export type { ISettingRepository } from './repositories/ISettingRepository';

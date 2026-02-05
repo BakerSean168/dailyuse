@@ -35,13 +35,13 @@
 export * from './value-objects';
 
 // Aggregates
-export * from './aggregates/Notification';
-export { NotificationPreference } from './aggregates/NotificationPreference';
-export { NotificationTemplate } from './aggregates/NotificationTemplate';
+export * from './aggregates/notification';
+export { NotificationPreference } from './aggregates/notification-preference';
+export { NotificationTemplate } from './aggregates/notification-template';
 
 // Entities
-export { NotificationChannel } from './entities/NotificationChannel';
-export { NotificationHistory } from './entities/NotificationHistory';
+export { NotificationChannel } from './entities/notification-channel';
+export { NotificationHistory } from './entities/notification-history';
 
 // Repositories
 export * from './repositories/NotificationRepository.interface';

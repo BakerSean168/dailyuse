@@ -3,7 +3,7 @@
  * SearchEngine 实体仓储接口
  */
 
-import type { SearchEngine } from '../entities/SearchEngine';
+import type { SearchEngine } from '../entities/search-engine';
 
 /**
  * SearchEngine 仓储接口

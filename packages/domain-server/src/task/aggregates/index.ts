@@ -25,6 +25,6 @@
  * - 计算：根据依赖计算任务执行顺序
  */
 
-export { TaskInstance } from './TaskInstance';
-export { TaskTemplate } from './TaskTemplate';
-export { TaskDependency } from './TaskDependency';
+export { TaskInstance } from './task-instance';
+export { TaskTemplate } from './task-template';
+export { TaskDependency } from './task-dependency';

@@ -14,7 +14,7 @@
  * 注意：具体的 Bree 集成实现在 apps/api/src/modules/schedule/infrastructure
  */
 
-import { ScheduleTask } from '../aggregates/ScheduleTask';
+import { ScheduleTask } from '../aggregates/schedule-task';
 
 /**
  * 任务执行上下文

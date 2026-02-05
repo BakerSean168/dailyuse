@@ -8,7 +8,7 @@
  * - 隐藏数据访问细节
  */
 
-import type { Notification } from '../aggregates/Notification';
+import type { Notification } from '../aggregates/notification';
 import { NotificationCategory, NotificationStatus } from '@dailyuse/contracts/notification';
 
 /**

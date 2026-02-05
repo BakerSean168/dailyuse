@@ -17,7 +17,7 @@ import {
   type SyncSessionStatsDTO,
   type SyncConflictServerDTO,
 } from '@dailyuse/contracts/sync';
-import { SyncConflict } from '../entities/SyncConflict';
+import { SyncConflict } from '../entities/sync-conflict';
 import { SyncVersion } from '../value-objects';
 import { SyncSessionStats } from '../value-objects/SyncSessionStats';
 

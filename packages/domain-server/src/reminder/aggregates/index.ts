@@ -23,6 +23,6 @@
  * - 性质控制：不同频道、静音、会话时段
  */
 
-export { ReminderTemplate } from './ReminderTemplate';
-export { ReminderGroup } from './ReminderGroup';
-export { UserReminderPreferences } from './UserReminderPreferences';
+export { ReminderTemplate } from './reminder-template';
+export { ReminderGroup } from './reminder-group';
+export { UserReminderPreferences } from './user-reminder-preferences';

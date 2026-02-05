@@ -13,7 +13,7 @@
  * - 处理提醒结果（成功/失败/跳过）
  */
 
-import type { ReminderTemplate } from '../aggregates/ReminderTemplate';
+import type { ReminderTemplate } from '../aggregates/reminder-template';
 // import type { ReminderStatistics } from '../aggregates/ReminderStatistics'; // Deleted
 import type { IReminderTemplateRepository } from '../repositories/IReminderTemplateRepository';
 // import type { IReminderStatisticsRepository } from '../repositories/IReminderStatisticsRepository'; // Deleted

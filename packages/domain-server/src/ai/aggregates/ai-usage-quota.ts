@@ -13,7 +13,7 @@ import { AiUsageQuotaId } from '@dailyuse/domain-shared/ai';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 
-export class AIUsageQuotaServer extends AggregateRoot<AiUsageQuotaId> implements IAIUsageQuotaServer {
+export class AIUsageQuota extends AggregateRoot<AiUsageQuotaId> implements IAIUsageQuotaServer {
   private _identityId: IIdentityId;
   private _quotaLimit: number;
   private _currentUsage: number;
@@ -23,26 +23,16 @@ export class AIUsageQuotaServer extends AggregateRoot<AiUsageQuotaId> implements
   private _createdAt: Date;
   private _updatedAt: Date;
 
-  private constructor(params: {
-    id?: string;
-    identityId: string;
-    quotaLimit: number;
-    currentUsage: number;
-    resetPeriod: QuotaResetPeriod;
-    lastResetAt: Date;
-    nextResetAt: Date;
-    createdAt: Date;
-    updatedAt: Date;
-  }) {
-    super(AiUsageQuotaId.of(params.id ?? AiUsageQuotaId.generate()));
-    this._identityId = IdentityId.of(params.identityId);
-    this._quotaLimit = params.quotaLimit;
-    this._currentUsage = params.currentUsage;
-    this._resetPeriod = params.resetPeriod;
-    this._lastResetAt = params.lastResetAt;
-    this._nextResetAt = params.nextResetAt;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+  private constructor(dto: AIUsageQuotaServerDTO) {
+    super(AiUsageQuotaId.of(dto.id ?? AiUsageQuotaId.generate()));
+    this._identityId = IdentityId.of(dto.identityId);
+    this._quotaLimit = dto.quotaLimit;
+    this._currentUsage = dto.currentUsage;
+    this._resetPeriod = dto.resetPeriod;
+    this._lastResetAt = new Date(dto.lastResetAt);
+    this._nextResetAt = new Date(dto.nextResetAt);
+    this._createdAt = new Date(dto.createdAt);
+    this._updatedAt = new Date(dto.updatedAt);
   }
 
   public get identityId(): IIdentityId {
@@ -81,10 +71,11 @@ export class AIUsageQuotaServer extends AggregateRoot<AiUsageQuotaId> implements
     identityId: string;
     quotaLimit: number;
     resetPeriod: QuotaResetPeriod;
-  }): AIUsageQuotaServer {
-    const now = new Date();
-    const instance = new AIUsageQuotaServer({
-      identityId: params.identityId,
+  }): AIUsageQuota {
+    const now = Date.now();
+    const instance = new AIUsageQuota({
+      id: AiUsageQuotaId.generate(),
+      identityId: IdentityId.of(params.identityId),
       quotaLimit: params.quotaLimit,
       currentUsage: 0,
       resetPeriod: params.resetPeriod,
@@ -103,31 +94,21 @@ export class AIUsageQuotaServer extends AggregateRoot<AiUsageQuotaId> implements
     return instance;
   }
 
-  public static fromServerDTO(dto: AIUsageQuotaServerDTO): AIUsageQuotaServer {
-    return new AIUsageQuotaServer({
-      id: dto.id,
-      identityId: dto.identityId,
-      quotaLimit: dto.quotaLimit,
-      currentUsage: dto.currentUsage,
-      resetPeriod: dto.resetPeriod,
-      lastResetAt: new Date(dto.lastResetAt),
-      nextResetAt: new Date(dto.nextResetAt),
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
+  public static fromServerDTO(dto: AIUsageQuotaServerDTO): AIUsageQuota {
+    return new AIUsageQuota(dto);
   }
 
-  public static fromPersistenceDTO(dto: AIUsageQuotaPersistenceDTO): AIUsageQuotaServer {
-    return new AIUsageQuotaServer({
+  public static fromPersistenceDTO(dto: AIUsageQuotaPersistenceDTO): AIUsageQuota {
+    return new AIUsageQuota({
       id: dto.id,
       identityId: dto.identityId,
       quotaLimit: dto.quotaLimit,
       currentUsage: dto.currentUsage,
       resetPeriod: dto.resetPeriod,
-      lastResetAt: dto.lastResetAt,
-      nextResetAt: dto.nextResetAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      lastResetAt: dto.lastResetAt.getTime(),
+      nextResetAt: dto.nextResetAt.getTime(),
+      createdAt: dto.createdAt.getTime(),
+      updatedAt: dto.updatedAt.getTime(),
     });
   }
 

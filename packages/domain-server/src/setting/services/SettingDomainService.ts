@@ -10,7 +10,7 @@
  */
 
 import type { ISettingRepository } from '../repositories/ISettingRepository';
-import { Setting } from '../aggregates/Setting';
+import { Setting } from '../aggregates/setting';
 import type { ValidationRuleDTO, UIConfigDTO, SyncConfigDTO } from '@dailyuse/contracts/setting';
 import type { SettingGroupId } from '@dailyuse/contracts/primitives';
 import { SettingScope, SettingValueType } from '@dailyuse/contracts/setting';

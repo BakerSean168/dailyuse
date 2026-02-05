@@ -3,7 +3,7 @@
  * LinkedResource 实体仓储接口
  */
 
-import type { LinkedResource } from '../entities/LinkedResource';
+import type { LinkedResource } from '../entities/linked-resource';
 import type { LinkedSourceType, LinkedTargetType } from '@dailyuse/contracts/editor';
 
 /**

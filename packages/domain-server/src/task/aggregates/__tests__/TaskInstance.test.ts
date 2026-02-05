@@ -12,10 +12,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { TaskInstance } from '../TaskInstance';
-import { TaskTimeConfig } from '../../value-objects/TaskTimeConfig';
-import { CompletionRecord } from '../../value-objects/CompletionRecord';
-import { SkipRecord } from '../../value-objects/SkipRecord';
+import { TaskInstance } from '../task-instance';
+import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../../value-objects';
 import type { CompletionRecordServerDTO, SkipRecordServerDTO, TaskInstancePersistenceDTO, TaskInstanceServerDTO } from '@dailyuse/contracts/task';
 import { TimeType } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';

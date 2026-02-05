@@ -21,7 +21,7 @@ import { ScheduleConfig } from '../value-objects/ScheduleConfig';
 import { ExecutionInfo } from '../value-objects/ExecutionInfo';
 import { RetryPolicy } from '../value-objects/RetryPolicy';
 import { TaskMetadata } from '../value-objects/TaskMetadata';
-import { ScheduleExecution } from '../entities/ScheduleExecution';
+import { ScheduleExecution } from '../entities/schedule-execution';
 
 /**
  * ScheduleTask 聚合�?

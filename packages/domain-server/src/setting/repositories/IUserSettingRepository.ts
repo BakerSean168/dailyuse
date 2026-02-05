@@ -1,4 +1,4 @@
-import type { UserSetting } from '../aggregates/UserSetting';
+import type { UserSetting } from '../aggregates/user-setting';
 
 /**
  * UserSetting 仓储接口

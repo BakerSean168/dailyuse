@@ -6,15 +6,15 @@
  */
 
 export interface KnowledgeGenerationTask {
-  uuid: string;
-  accountUuid: string;
+  id: string;
+  identityId: string;
   topic: string;
   documentCount: number;
   targetAudience?: string;
   folderPath: string;
   status: KnowledgeGenerationTaskStatus;
   progress: number; // 0-100
-  generatedDocumentUuids: string[];
+  generatedDocumentIds: string[];
   error?: string;
   createdAt: number;
   completedAt?: number;
@@ -26,23 +26,23 @@ export type KnowledgeGenerationTaskStatus = 'PENDING' | 'GENERATING' | 'COMPLETE
  * Factory function to create a new task
  */
 export function createKnowledgeGenerationTask(params: {
-  uuid: string;
-  accountUuid: string;
+  id: string;
+  identityId: string;
   topic: string;
   documentCount: number;
   targetAudience?: string;
   folderPath: string;
 }): KnowledgeGenerationTask {
   return {
-    uuid: params.uuid,
-    accountUuid: params.accountUuid,
+    id: params.id,
+    identityId: params.identityId,
     topic: params.topic,
     documentCount: params.documentCount,
     targetAudience: params.targetAudience,
     folderPath: params.folderPath,
     status: 'PENDING',
     progress: 0,
-    generatedDocumentUuids: [],
+    generatedDocumentIds: [],
     createdAt: Date.now(),
   };
 }
@@ -67,13 +67,13 @@ export function updateTaskProgress(
  */
 export function completeTask(
   task: KnowledgeGenerationTask,
-  documentUuids: string[],
+  documentIds: string[],
 ): KnowledgeGenerationTask {
   return {
     ...task,
     status: 'COMPLETED',
     progress: 100,
-    generatedDocumentUuids: documentUuids,
+    generatedDocumentIds: documentIds,
     completedAt: Date.now(),
   };
 }

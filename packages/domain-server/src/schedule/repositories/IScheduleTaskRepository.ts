@@ -10,7 +10,7 @@
  * @domain-server/schedule
  */
 
-import type { ScheduleTask } from '../aggregates/ScheduleTask';
+import type { ScheduleTask } from '../aggregates/schedule-task';
 import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 
 /**

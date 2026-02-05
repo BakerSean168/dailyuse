@@ -3,10 +3,10 @@
  * 编辑器实体 - 统一导出
  */
 
-export * from './Document';
-export * from './DocumentVersion';
-export * from './EditorSession';
-export * from './EditorGroup';
-export * from './EditorTab';
-export * from './SearchEngine';
-export * from './LinkedResource';
+export * from './document';
+export * from './document-version';
+export * from './editor-session';
+export * from './editor-group';
+export * from './editor-tab';
+export * from './search-engine';
+export * from './linked-resource';

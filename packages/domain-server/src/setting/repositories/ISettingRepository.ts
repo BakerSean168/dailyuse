@@ -9,7 +9,7 @@
  * - 隐藏数据访问细节
  */
 
-import type { Setting } from '../aggregates/Setting';
+import type { Setting } from '../aggregates/setting';
 import { SettingScope } from '@dailyuse/contracts/setting';
 
 /**

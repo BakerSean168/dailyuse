@@ -12,8 +12,8 @@
  * - 提供状态查询接口
  */
 
-import type { ReminderTemplate } from '../aggregates/ReminderTemplate';
-import type { ReminderGroup } from '../aggregates/ReminderGroup';
+import type { ReminderTemplate } from '../aggregates/reminder-template';
+import type { ReminderGroup } from '../aggregates/reminder-group';
 import type { IReminderTemplateRepository } from '../repositories/IReminderTemplateRepository';
 import type { IReminderGroupRepository } from '../repositories/IReminderGroupRepository';
 import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';

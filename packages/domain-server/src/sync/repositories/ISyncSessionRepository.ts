@@ -2,7 +2,7 @@
  * ISyncSessionRepository 仓储接口
  */
 
-import type { SyncSession } from '../aggregates/SyncSession';
+import type { SyncSession } from '../aggregates/sync-session';
 import type { SyncSessionStatus } from '@dailyuse/contracts/sync';
 
 export interface SyncSessionQueryOptions {

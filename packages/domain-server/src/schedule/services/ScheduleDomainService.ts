@@ -19,7 +19,7 @@
  * @domain-server/schedule
  */
 
-import { ScheduleTask } from '../aggregates/ScheduleTask';
+import { ScheduleTask } from '../aggregates/schedule-task';
 import type { IScheduleTaskRepository } from '../repositories/IScheduleTaskRepository';
 import type {
   RetryPolicyServerDTO,

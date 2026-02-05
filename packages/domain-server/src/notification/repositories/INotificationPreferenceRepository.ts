@@ -6,7 +6,7 @@
  * - 由基础设施层实现
  */
 
-import type { NotificationPreference } from '../aggregates/NotificationPreference';
+import type { NotificationPreference } from '../aggregates/notification-preference';
 
 /**
  * INotificationPreferenceRepository 仓储接口

@@ -3,5 +3,5 @@
  * 提醒实体导出
  */
 
-export { ReminderHistory } from './ReminderHistory';
-export { ReminderResponse } from './ReminderResponse';
+export { ReminderHistory } from './reminder-history';
+export { ReminderResponse } from './reminder-response';

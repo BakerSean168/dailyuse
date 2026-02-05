@@ -8,7 +8,7 @@
  * - 隐藏数据访问细节
  */
 
-import type { ReminderResponse } from '../entities/ReminderResponse';
+import type { ReminderResponse } from '../entities/reminder-response';
 
 /**
  * 响应行为类型

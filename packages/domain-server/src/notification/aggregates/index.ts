@@ -22,6 +22,6 @@
  * - 模板変量：模板参数化，支持输入变量控制
  */
 
-export { Notification } from './Notification';
-export { NotificationTemplate } from './NotificationTemplate';
-export { NotificationPreference } from './NotificationPreference';
+export { Notification } from './notification';
+export { NotificationTemplate } from './notification-template';
+export { NotificationPreference } from './notification-preference';

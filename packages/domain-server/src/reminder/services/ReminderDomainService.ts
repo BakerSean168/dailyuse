@@ -4,8 +4,8 @@ import type {
   IReminderGroupRepository,
   IReminderTemplateRepository,
 } from '../repositories';
-import { ReminderTemplate } from '../aggregates/ReminderTemplate';
-import { ReminderGroup } from '../aggregates/ReminderGroup';
+import { ReminderTemplate } from '../aggregates/reminder-template';
+import { ReminderGroup } from '../aggregates/reminder-group';
 import { ReminderTemplateControlService } from './ReminderTemplateControlService';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 

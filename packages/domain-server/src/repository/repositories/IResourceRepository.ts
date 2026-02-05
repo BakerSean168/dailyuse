@@ -6,7 +6,7 @@
  * - 资源查询
  */
 
-import type { Resource } from '../entities/Resource';
+import type { Resource } from '../entities/resource';
 
 export interface IResourceRepository {
   /**

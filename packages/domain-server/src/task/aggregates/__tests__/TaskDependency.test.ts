@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { TaskDependency } from '../TaskDependency';
+import { TaskDependency } from '../task-dependency';
 import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import { DependencyType } from '@dailyuse/contracts/task';
 

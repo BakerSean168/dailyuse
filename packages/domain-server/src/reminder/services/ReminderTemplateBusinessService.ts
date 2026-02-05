@@ -14,8 +14,8 @@
  * - 此服务只负责业务逻辑的计算和验证
  */
 
-import type { ReminderTemplate } from '../aggregates/ReminderTemplate';
-import type { ReminderGroup } from '../aggregates/ReminderGroup';
+import type { ReminderTemplate } from '../aggregates/reminder-template';
+import type { ReminderGroup } from '../aggregates/reminder-group';
 import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 
 /**

@@ -2,11 +2,11 @@
 export * from './value-objects';
 
 // Aggregates
-export * from './aggregates/Repository';
+export * from './aggregates/repository';
 
 // Entities
-export * from './entities/Folder';
-export * from './entities/Resource';
+export * from './entities/folder';
+export * from './entities/resource';
 
 // Domain Services
 export * from './services/FolderHierarchyService';

@@ -3,5 +3,5 @@
  * 通知实体导出
  */
 
-export { NotificationChannel } from './NotificationChannel';
-export { NotificationHistory } from './NotificationHistory';
+export { NotificationChannel } from './notification-channel';
+export { NotificationHistory } from './notification-history';

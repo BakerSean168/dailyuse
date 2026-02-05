@@ -11,8 +11,8 @@
 import type { INotificationRepository } from '../repositories/INotificationRepository';
 import type { INotificationTemplateRepository } from '../repositories/INotificationTemplateRepository';
 import type { INotificationPreferenceRepository } from '../repositories/INotificationPreferenceRepository';
-import { Notification } from '../aggregates/Notification';
-import { NotificationChannel } from '../entities/NotificationChannel';
+import { Notification } from '../aggregates/notification';
+import { NotificationChannel } from '../entities/notification-channel';
 import type { NotificationActionDTO, NotificationMetadataDTO } from '@dailyuse/contracts/notification';
 import { NotificationCategory, NotificationType, NotificationChannelType } from '@dailyuse/contracts/notification';
 import type { IdentityId } from '@dailyuse/contracts/primitives';

@@ -9,7 +9,7 @@ import { ConversationStatus } from '@dailyuse/contracts/ai';
 import type { IdentityId as IIdentityId } from '@dailyuse/contracts/primitives';
 import { AiConversationId } from '@dailyuse/domain-shared/ai';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { Message } from '../entities/Message';
+import { Message } from '../entities/message';
 
 export class AIConversation extends AggregateRoot<AiConversationId> implements AIConversationServer {
   private _identityId: IIdentityId;

@@ -23,7 +23,7 @@ import type {
 import { ProjectType } from '@dailyuse/contracts/editor';
 import { EditorWorkspaceId } from '@dailyuse/domain-shared';
 import { WorkspaceLayout, WorkspaceSettings } from '@dailyuse/domain-shared/editor';
-import { EditorSession } from '../entities/EditorSession';
+import { EditorSession } from '../entities/editor-session';
 
 /**
  * EditorWorkspace 聚合根

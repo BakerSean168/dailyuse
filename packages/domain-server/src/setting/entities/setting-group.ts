@@ -6,7 +6,7 @@
 import { Entity } from '@dailyuse/utils';
 import type { SettingGroupId, TransferDate, PersistenceDate, DomainDate } from '@dailyuse/contracts/primitives';
 import { SettingGroupId as SettingGroupIdType } from '@dailyuse/domain-shared/setting';
-import { SettingItem, type SettingItemServerDTO, type SettingItemClientDTO, type SettingItemPersistenceDTO } from './SettingItem';
+import { SettingItem, type SettingItemServerDTO, type SettingItemClientDTO, type SettingItemPersistenceDTO } from './setting-item';
 
 // ============ Local Type Definitions ============
 // TODO: Move these to @dailyuse/contracts/setting when finalizing API

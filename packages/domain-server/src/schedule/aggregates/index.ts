@@ -20,5 +20,5 @@
  * - 任务完成状态：跟踪日程任务完成情况
  */
 
-export * from './ScheduleTask';
-export * from './Schedule'; // Story 9.1 - User-facing schedules with conflict detection
+export * from './schedule-task';
+export * from './schedule'; // Story 9.1 - User-facing schedules with conflict detection

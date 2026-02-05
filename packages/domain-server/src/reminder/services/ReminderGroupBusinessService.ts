@@ -9,8 +9,8 @@
  * - 职责单一：只处理分组相关的业务规则
  */
 
-import type { ReminderGroup } from '../aggregates/ReminderGroup';
-import type { ReminderTemplate } from '../aggregates/ReminderTemplate';
+import type { ReminderGroup } from '../aggregates/reminder-group';
+import type { ReminderTemplate } from '../aggregates/reminder-template';
 import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 
 /**

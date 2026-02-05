@@ -3,7 +3,7 @@
  * EditorSession 聚合根仓储接口
  */
 
-import type { EditorSession } from '../entities/EditorSession';
+import type { EditorSession } from '../entities/editor-session';
 
 /**
  * EditorSession 仓储接口

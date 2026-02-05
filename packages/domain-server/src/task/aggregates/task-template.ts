@@ -30,7 +30,7 @@ import {
   ChecklistItemDefinition,
 } from '../value-objects';
 import { TaskTemplateHistory } from '../entities';
-import { TaskInstance } from './TaskInstance';
+import { TaskInstance } from './task-instance';
 import {
   TaskTemplateNotFoundError,
   InvalidTaskTemplateStateError,

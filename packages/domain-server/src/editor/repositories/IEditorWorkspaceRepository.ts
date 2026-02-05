@@ -3,7 +3,7 @@
  * EditorWorkspace 聚合根仓储接口
  */
 
-import type { EditorWorkspace } from '../aggregates/EditorWorkspace';
+import type { EditorWorkspace } from '../aggregates/editor-workspace';
 
 /**
  * EditorWorkspace 仓储接口

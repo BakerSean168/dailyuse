@@ -6,7 +6,7 @@
  * @since Story 9.2 (EPIC-SCHEDULE-001)
  */
 
-import type { Schedule } from '../aggregates/Schedule';
+import type { Schedule } from '../aggregates/schedule';
 
 export interface IScheduleRepository {
   /**

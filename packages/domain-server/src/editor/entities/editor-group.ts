@@ -20,7 +20,7 @@ import type {
   TransferDate,
 } from '@dailyuse/contracts/primitives';
 import { Entity, generateUUID } from '@dailyuse/utils';
-import { EditorTab } from './EditorTab';
+import { EditorTab } from './editor-tab';
 
 /**
  * EditorGroup 实体

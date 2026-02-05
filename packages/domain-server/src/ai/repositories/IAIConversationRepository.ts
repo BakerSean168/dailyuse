@@ -8,7 +8,7 @@
  * - 聚合根模式：级联保存/加载 AIMessage
  */
 
-import type { AIConversation } from '../aggregates/AIConversation';
+import type { AIConversation } from '../aggregates/ai-conversation';
 import { ConversationStatus } from '@dailyuse/contracts/ai';
 
 /**

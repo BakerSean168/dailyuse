@@ -8,7 +8,7 @@
  */
 
 import { SourceModule } from '@dailyuse/contracts/schedule';
-import { ScheduleTask } from '../aggregates/ScheduleTask';
+import { ScheduleTask } from '../aggregates/schedule-task';
 import { ScheduleStrategyFactory } from './strategies/ScheduleStrategyFactory';
 import type { ScheduleStrategyInput } from './strategies/IScheduleStrategy';
 import { ExecutionInfo } from '../value-objects/ExecutionInfo';

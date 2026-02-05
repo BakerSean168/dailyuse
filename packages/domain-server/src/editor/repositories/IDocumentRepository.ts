@@ -3,7 +3,7 @@
  * Document 实体仓储接口
  */
 
-import type { Document } from '../entities/Document';
+import type { Document } from '../entities/document';
 import type { IndexStatus } from '@dailyuse/contracts/editor';
 
 /**

@@ -3,7 +3,7 @@
  * EditorGroup 实体仓储接口
  */
 
-import type { EditorGroup } from '../entities/EditorGroup';
+import type { EditorGroup } from '../entities/editor-group';
 
 /**
  * EditorGroup 仓储接口

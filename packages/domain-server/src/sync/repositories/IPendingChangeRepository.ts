@@ -2,7 +2,7 @@
  * IPendingChangeRepository 仓储接口
  */
 
-import type { PendingChange } from '../entities/PendingChange';
+import type { PendingChange } from '../entities/pending-change';
 import type { SyncableEntityType, ChangeOperationType } from '@dailyuse/contracts/sync';
 
 export interface PendingChangeQueryOptions {

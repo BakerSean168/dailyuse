@@ -19,4 +19,4 @@
  * EditorWorkspace 是聚合根，EditorSession 是聚合内的实体
  */
 
-export * from './EditorWorkspace';
+export * from './editor-workspace';

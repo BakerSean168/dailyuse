@@ -7,7 +7,7 @@
 
 import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
 import type { IAIUsageQuotaRepository } from '../repositories/IAIUsageQuotaRepository';
-import { AIUsageQuotaServer } from '../aggregates/AIUsageQuotaServer';
+import { AIUsageQuota } from '../aggregates/ai-usage-quota';
 
 
 export class QuotaExceededError extends Error {
@@ -146,13 +146,13 @@ export class QuotaEnforcementService {
    * Get or create a default quota for an account
    * Private helper method
    */
-  private async getOrCreateQuota(accountUuid: string): Promise<AIUsageQuotaServer> {
+  private async getOrCreateQuota(accountUuid: string): Promise<AIUsageQuota> {
     const quotaDTO = await this.quotaRepository.findByAccountUuid(accountUuid);
 
     if (!quotaDTO) {
       // Create default quota: 50 requests per day
-      const quota = AIUsageQuotaServer.create({
-        accountUuid,
+      const quota = AIUsageQuota.create({
+        identityId: accountUuid,
         quotaLimit: 50,
         resetPeriod: QuotaResetPeriod.Daily,
       });
@@ -160,7 +160,7 @@ export class QuotaEnforcementService {
       return quota;
     }
 
-    return AIUsageQuotaServer.fromServerDTO(quotaDTO);
+    return AIUsageQuota.fromServerDTO(quotaDTO);
   }
 
   /**

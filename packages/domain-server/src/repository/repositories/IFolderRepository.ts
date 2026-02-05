@@ -1,4 +1,4 @@
-import type { Folder } from '../entities/Folder';
+import type { Folder } from '../entities/folder';
 
 export interface IFolderRepository {
   save(folder: Folder): Promise<void>;

@@ -5,7 +5,7 @@
  * Story 9.1 (EPIC-SCHEDULE-001)
  */
 
-import { Schedule } from '../aggregates/Schedule';
+import { Schedule } from '../aggregates/schedule';
 
 describe('Schedule Aggregate', () => {
   // ===== Test Data Fixtures =====

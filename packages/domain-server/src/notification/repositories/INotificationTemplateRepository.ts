@@ -6,7 +6,7 @@
  * - 由基础设施层实现
  */
 
-import type { NotificationTemplate } from '../aggregates/NotificationTemplate';
+import type { NotificationTemplate } from '../aggregates/notification-template';
 import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
 
 /**

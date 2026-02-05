@@ -20,5 +20,5 @@
  * - 增量同步帏控：批次同步伊始化、位移更新控制
  */
 
-export { SyncSession } from './SyncSession';
-export { SyncProfile } from './SyncProfile';
+export { SyncSession } from './sync-session';
+export { SyncProfile } from './sync-profile';

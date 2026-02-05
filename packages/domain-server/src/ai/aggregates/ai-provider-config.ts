@@ -16,9 +16,12 @@ import type {
   AIModelInfo,
   AIProviderConfigClientDTO,
   AIProviderConfigServerDTO,
-  AIProviderConfigServer,
+  AIProviderConfigPersistenceDTO,
+  AIProviderConfigServer as IAIProviderConfigServer,
 } from '@dailyuse/contracts/ai';
+import type { IdentityId as IIdentityId } from '@dailyuse/contracts/primitives';
 import { AiProviderConfigId } from '@dailyuse/domain-shared/ai';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 /**
  * AIProviderConfig 聚合根
@@ -28,8 +31,8 @@ import { AiProviderConfigId } from '@dailyuse/domain-shared/ai';
  * - API Key 安全处理（掩码生成）
  * - 默认 Provider 管理
  */
-export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implements AIProviderConfigServer {
-  private _identityId: string;
+export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implements IAIProviderConfigServer {
+  private _identityId: IIdentityId;
   private _name: string;
   private _providerType: AIProviderType;
   private _baseUrl: string;
@@ -42,43 +45,25 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
   private _createdAt: Date;
   private _updatedAt: Date;
 
-  private constructor(params: {
-    id?: string;
-    identityId: string;
-    name: string;
-    providerType: AIProviderType;
-    baseUrl: string;
-    apiKey: string;
-    defaultModel: string | null;
-    availableModels: AIModelInfo[];
-    isActive: boolean;
-    isDefault: boolean;
-    priority: number;
-    createdAt: Date;
-    updatedAt: Date;
-  }) {
-    super(AiProviderConfigId.of(params.id ?? AiProviderConfigId.generate()));
-    this._identityId = params.identityId;
-    this._name = params.name;
-    this._providerType = params.providerType;
-    this._baseUrl = params.baseUrl;
-    this._apiKey = params.apiKey;
-    this._defaultModel = params.defaultModel;
-    this._availableModels = params.availableModels;
-    this._isActive = params.isActive;
-    this._isDefault = params.isDefault;
-    this._priority = params.priority;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+  private constructor(dto: AIProviderConfigServerDTO) {
+    super(AiProviderConfigId.of(dto.id ?? AiProviderConfigId.generate()));
+    this._identityId = IdentityId.of(dto.identityId);
+    this._name = dto.name;
+    this._providerType = dto.providerType;
+    this._baseUrl = dto.baseUrl;
+    this._apiKey = dto.apiKey;
+    this._defaultModel = dto.defaultModel;
+    this._availableModels = dto.availableModels;
+    this._isActive = dto.isActive;
+    this._isDefault = dto.isDefault;
+    this._priority = dto.priority ?? 100;
+    this._createdAt = new Date(dto.createdAt);
+    this._updatedAt = new Date(dto.updatedAt);
   }
 
   // ===== Getters =====
 
-  public get id(): string {
-    return String(this.id);
-  }
-
-  public get identityId(): string {
+  public get identityId(): IIdentityId {
     return this._identityId;
   }
 
@@ -140,13 +125,14 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
     defaultModel?: string;
     isDefault?: boolean;
     priority?: number;
-  }): AIProviderConfigServer {
-    const now = new Date();
-    const instance = new AIProviderConfigServer({
-      identityId: params.identityId,
+  }): AIProviderConfig {
+    const now = Date.now();
+    const instance = new AIProviderConfig({
+      id: AiProviderConfigId.generate(),
+      identityId: IdentityId.of(params.identityId),
       name: params.name.trim(),
       providerType: params.providerType,
-      baseUrl: AIProviderConfigServer.normalizeBaseUrl(params.baseUrl),
+      baseUrl: AIProviderConfig.normalizeBaseUrl(params.baseUrl),
       apiKey: params.apiKey,
       defaultModel: params.defaultModel ?? null,
       availableModels: [],
@@ -158,8 +144,8 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
     });
 
     instance.addDomainEvent('ai.provider_config.created', {
-      identityId: params.identityId,
-      providerConfigId: instance.uuid,
+      identityId: instance._identityId,
+      providerConfigId: instance.id,
       name: instance.name,
       providerType: instance.providerType,
       isDefault: instance.isDefault,
@@ -171,10 +157,17 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
   /**
    * 从 ServerDTO 重建聚合根
    */
-  public static fromServerDTO(dto: AIProviderConfigServerDTO): AIProviderConfigServer {
-    return new AIProviderConfigServer({
-      id: String(dto.id),
-      identityId: String(dto.identityId),
+  public static fromServerDTO(dto: AIProviderConfigServerDTO): AIProviderConfig {
+    return new AIProviderConfig(dto);
+  }
+
+  /**
+   * 从 PersistenceDTO 重建聚合根
+   */
+  public static fromPersistenceDTO(dto: AIProviderConfigPersistenceDTO): AIProviderConfig {
+    return new AIProviderConfig({
+      id: AiProviderConfigId.of(dto.id),
+      identityId: IdentityId.of(dto.identityId),
       name: dto.name,
       providerType: dto.providerType,
       baseUrl: dto.baseUrl,
@@ -184,8 +177,8 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
       isActive: dto.isActive,
       isDefault: dto.isDefault,
       priority: dto.priority ?? 100,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      createdAt: dto.createdAt.getTime(),
+      updatedAt: dto.updatedAt.getTime(),
     });
   }
 
@@ -207,7 +200,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
    * 更新 API 地址
    */
   public updateBaseUrl(baseUrl: string): void {
-    this._baseUrl = AIProviderConfigServer.normalizeBaseUrl(baseUrl);
+    this._baseUrl = AIProviderConfig.normalizeBaseUrl(baseUrl);
     this._updatedAt = new Date();
   }
 
@@ -243,13 +236,13 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
 
     this.addDomainEvent('ai.provider_config.models_updated', {
       identityId: this._identityId,
-      providerConfigId: this.uuid,
+      providerConfigId: this.id,
       modelCount: models.length,
     });
   }
 
   /**
-   * 激活配置
+   * 激活配�?
    */
   public activate(): void {
     this._isActive = true;
@@ -261,7 +254,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
    */
   public deactivate(): void {
     this._isActive = false;
-    // 停用时自动取消默认
+    // 停用时自动取消默�?
     if (this._isDefault) {
       this._isDefault = false;
     }
@@ -280,7 +273,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
 
     this.addDomainEvent('ai.provider_config.set_default', {
       identityId: this._identityId,
-      providerConfigId: this.uuid,
+      providerConfigId: this.id,
       providerName: this._name,
     });
   }
@@ -294,7 +287,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
   }
 
   /**
-   * 更新优先级
+   * 更新优先�?
    * @param priority 优先级数字，数字越小优先级越高（1 最高）
    */
   public updatePriority(priority: number): void {
@@ -313,7 +306,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
   public toServerDTO(): AIProviderConfigServerDTO {
     return {
       id: this.id,
-      identityId: this._identityId as unknown as import('@dailyuse/contracts/primitives').IdentityId,
+      identityId: this._identityId,
       name: this._name,
       providerType: this._providerType,
       baseUrl: this._baseUrl,
@@ -329,16 +322,37 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
   }
 
   /**
+   * 转换为 PersistenceDTO
+   */
+  public toPersistenceDTO(): AIProviderConfigPersistenceDTO {
+    return {
+      id: String(this.id),
+      identityId: String(this._identityId),
+      name: this._name,
+      providerType: this._providerType,
+      baseUrl: this._baseUrl,
+      apiKey: this._apiKey,
+      defaultModel: this._defaultModel,
+      availableModels: [...this._availableModels],
+      isActive: this._isActive,
+      isDefault: this._isDefault,
+      priority: this._priority,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
+    };
+  }
+
+  /**
    * 转换为客户端 DTO（API Key 掩码处理）
    */
   public toClientDTO(): AIProviderConfigClientDTO {
     return {
-      id: this.uuid,
-      identityId: this._identityId,
+      id: String(this.id),
+      identityId: String(this._identityId),
       name: this._name,
       providerType: this._providerType,
       baseUrl: this._baseUrl,
-      apiKeyMasked: AIProviderConfigServer.maskApiKey(this._apiKey),
+      apiKeyMasked: AIProviderConfig.maskApiKey(this._apiKey),
       defaultModel: this._defaultModel,
       availableModels: [...this._availableModels],
       isActive: this._isActive,
@@ -365,7 +379,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
   }
 
   /**
-   * 规范化 API 地址
+   * 规范�?API 地址
    * - 移除尾部斜杠
    * - 确保 https 协议（生产环境）
    */

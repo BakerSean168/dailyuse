@@ -3,7 +3,7 @@
  * 通知仓储接口
  */
 
-import type { Notification } from '../aggregates/Notification';
+import type { Notification } from '../aggregates/notification';
 
 export interface NotificationRepository {
   /**

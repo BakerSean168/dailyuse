@@ -25,6 +25,6 @@
  * - 限流控制：速率限制、并发控制
  */
 
-export { AIConversation } from './AIConversation';
-export { AIProviderConfigServer } from './AIProviderConfigServer';
-export { AIUsageQuotaServer } from './AIUsageQuotaServer';
+export { AIConversation } from './ai-conversation';
+export { AIProviderConfig } from './ai-provider-config';
+export { AIUsageQuota } from './ai-usage-quota';

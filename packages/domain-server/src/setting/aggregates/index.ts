@@ -26,6 +26,6 @@
  * - 权限配置：用户能够修改哪些设置
  */
 
-export { Setting } from './Setting';
-export { AppConfig } from './AppConfig';
-export { UserSetting } from './UserSetting';
+export { Setting } from './setting';
+export { AppConfig } from './app-config';
+export { UserSetting } from './user-setting';

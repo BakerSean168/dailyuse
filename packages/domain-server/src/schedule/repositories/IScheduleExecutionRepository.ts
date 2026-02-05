@@ -1,4 +1,4 @@
-import type { ScheduleExecution } from '../entities/ScheduleExecution';
+import type { ScheduleExecution } from '../entities/schedule-execution';
 
 /**
  * IScheduleExecutionRepository - Repository Interface

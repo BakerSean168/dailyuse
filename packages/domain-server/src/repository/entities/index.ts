@@ -1,2 +1,2 @@
-export { Folder } from './Folder';
-export { Resource } from './Resource';
+export { Folder } from './folder';
+export { Resource } from './resource';

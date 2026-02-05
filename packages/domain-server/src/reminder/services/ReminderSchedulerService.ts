@@ -13,7 +13,7 @@
  * - 定期更新统计数据
  */
 
-import type { ReminderTemplate } from '../aggregates/ReminderTemplate';
+import type { ReminderTemplate } from '../aggregates/reminder-template';
 import type { IReminderTemplateRepository } from '../repositories/IReminderTemplateRepository';
 import type { ReminderTriggerService, ITriggerReminderResult } from './ReminderTriggerService';
 import { TriggerResult } from '@dailyuse/contracts/reminder';

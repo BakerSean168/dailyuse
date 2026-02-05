@@ -2,7 +2,7 @@
  * ISyncProfileRepository 仓储接口
  */
 
-import type { SyncProfile } from '../aggregates/SyncProfile';
+import type { SyncProfile } from '../aggregates/sync-profile';
 import type { SyncProviderType } from '@dailyuse/contracts/sync';
 
 export interface SyncProfileQueryOptions {

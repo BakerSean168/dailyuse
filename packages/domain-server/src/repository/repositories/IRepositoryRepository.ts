@@ -1,4 +1,4 @@
-import type { Repository } from '../aggregates/Repository';
+import type { Repository } from '../aggregates/repository';
 import { RepositoryStatus } from '@dailyuse/contracts/repository';
 
 export interface IRepositoryRepository {

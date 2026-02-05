@@ -26,7 +26,7 @@ import type {
   IdentityId,
 } from '@dailyuse/contracts/primitives';
 import { SessionLayout } from '../value-objects/SessionLayout';
-import { EditorGroup } from './EditorGroup';
+import { EditorGroup } from './editor-group';
 
 export class EditorSession extends Entity<EditorSessionId> {
   // ===== 外键：所属聚合根 =====

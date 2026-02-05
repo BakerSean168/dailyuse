@@ -9,10 +9,10 @@
  */
 
 import type { IEditorWorkspaceRepository } from '../repositories/IEditorWorkspaceRepository';
-import { EditorWorkspace } from '../aggregates/EditorWorkspace';
-import { EditorSession } from '../entities/EditorSession';
-import { EditorGroup } from '../entities/EditorGroup';
-import { EditorTab } from '../entities/EditorTab';
+import { EditorWorkspace } from '../aggregates/editor-workspace';
+import { EditorSession } from '../entities/editor-session';
+import { EditorGroup } from '../entities/editor-group';
+import { EditorTab } from '../entities/editor-tab';
 import type { SessionLayoutServerDTO, SplitDirection, TabViewStateServerDTO, WorkspaceLayoutServerDTO, WorkspaceSettingsServerDTO } from '@dailyuse/contracts/editor';
 import type { IdentityId, EditorSessionId } from '@dailyuse/contracts/primitives';
 import { ProjectType, TabType } from '@dailyuse/contracts/editor';

@@ -2,9 +2,9 @@
  * TaskDependency Domain Service
  * 任务依赖关系领域服务
  *
- * 职责�?
- * - 循环依赖检�?
- * - 依赖状态计�?
+ * 职责�?
+ * - 循环依赖检�?
+ * - 依赖状态计�?
  * - 依赖关系管理
  */
 
@@ -13,8 +13,8 @@ import type {
   TaskDependencyServerDTO,
 } from '@dailyuse/contracts/task';
 import { DependencyStatus, DependencyType } from '@dailyuse/contracts/task';
-import { TaskTemplate } from '../aggregates/TaskTemplate';
-import { TaskDependency } from '../aggregates/TaskDependency';
+import { TaskTemplate } from '../aggregates/task-template';
+import { TaskDependency } from '../aggregates/task-dependency';
 
 // Type aliases for easier usage
 
@@ -23,7 +23,7 @@ export class TaskDependencyService {
 
   /**
    * 检测是否会形成循环依赖
-   * 使用深度优先搜索（DFS）算�?
+   * 使用深度优先搜索（DFS）算�?
    *
    * @param predecessorUuid 前置任务 UUID
    * @param successorUuid 后续任务 UUID
@@ -35,7 +35,7 @@ export class TaskDependencyService {
     successorUuid: string,
     allDependencies: TaskDependencyServerDTO[],
   ): CircularDependencyValidationResult {
-    // 如果添加这个依赖，检查是否存在从 successor �?predecessor 的路�?
+    // 如果添加这个依赖，检查是否存在从 successor �?predecessor 的路�?
     // 如果存在，说明会形成循环
     const visited = new Set<string>();
     const path: string[] = [];
@@ -52,7 +52,7 @@ export class TaskDependencyService {
       return {
         isValid: false,
         cycle: [...path, predecessorUuid],
-        message: `创建此依赖会形成循环依赖: ${[...path, predecessorUuid].join(' �?')}`,
+        message: `创建此依赖会形成循环依赖: ${[...path, predecessorUuid].join(' �?')}`,
       };
     }
 
@@ -60,7 +60,7 @@ export class TaskDependencyService {
   }
 
   /**
-   * 深度优先搜索检测循�?
+   * 深度优先搜索检测循�?
    * @private
    */
   private dfsDetectCycle(
@@ -70,12 +70,12 @@ export class TaskDependencyService {
     path: string[],
     allDependencies: TaskDependencyServerDTO[],
   ): boolean {
-    // 找到目标，说明存在循�?
+    // 找到目标，说明存在循�?
     if (current === target) {
       return true;
     }
 
-    // 已访问过，避免重�?
+    // 已访问过，避免重�?
     if (visited.has(current)) {
       return false;
     }
@@ -97,12 +97,12 @@ export class TaskDependencyService {
   }
 
   /**
-   * 计算任务的依赖状�?
+   * 计算任务的依赖状�?
    *
    * @param taskUuid 任务 UUID
    * @param dependencies 此任务的前置依赖关系
    * @param predecessorTasks 前置任务列表
-   * @returns 依赖状�?
+   * @returns 依赖状�?
    */
   calculateDependencyStatus(
     taskUuid: string,
@@ -146,15 +146,15 @@ export class TaskDependencyService {
       return {
         status: 'BLOCKED' as DependencyStatus,
         isBlocked: true,
-        blockingReason: `前置任务被阻�? ${blockedTasks}`,
+        blockingReason: `前置任务被阻�? ${blockedTasks}`,
       };
     }
 
-    // TODO: 以下逻辑需要重�?
-    // 应该检�?TaskInstance 的状态，而不�?TaskTemplate
-    // 当前暂时返回 WAITING 状�?
+    // TODO: 以下逻辑需要重�?
+    // 应该检�?TaskInstance 的状态，而不�?TaskTemplate
+    // 当前暂时返回 WAITING 状�?
     /*
-    // 检查是否所有前置任务都已完�?
+    // 检查是否所有前置任务都已完�?
     const allCompleted = tasks.every((task) => task.status === 'COMPLETED');
     if (allCompleted) {
       return {
@@ -163,7 +163,7 @@ export class TaskDependencyService {
       };
     }
 
-    // 否则处于等待状�?
+    // 否则处于等待状�?
     const waitingFor = tasks
       .filter((task) => task.status !== 'COMPLETED')
       .map((task) => task.title)
@@ -173,24 +173,24 @@ export class TaskDependencyService {
     return {
       status: 'WAITING' as DependencyStatus,
       isBlocked: true,
-      blockingReason: `等待前置任务完成 (需要检�?TaskInstance 状�?`,
+      blockingReason: `等待前置任务完成 (需要检�?TaskInstance 状�?`,
     };
   }
 
   /**
-   * 创建依赖关系实体（纯内存操作�?
+   * 创建依赖关系实体（纯内存操作�?
    *
    * @param predecessor 前置任务
    * @param successor 后续任务
    * @param accountUuid 账户 UUID
-   * @returns 创建的依赖关系实�?
+   * @returns 创建的依赖关系实�?
    */
   createDependency(
     predecessor: TaskTemplate,
     successor: TaskTemplate,
     accountUuid: string,
   ): TaskDependency {
-    // 1. 检查是否是同一个任�?
+    // 1. 检查是否是同一个任�?
     if (predecessor.id === successor.id) {
       throw new Error('任务不能依赖自己');
     }
@@ -210,7 +210,7 @@ export class TaskDependencyService {
     const dependencies = allDependencies.filter((d) => d.successorTaskId === taskUuid);
 
     if (dependencies.length === 0) {
-      return 0; // 根任�?
+      return 0; // 根任�?
     }
 
     const depths = dependencies.map((dep) =>

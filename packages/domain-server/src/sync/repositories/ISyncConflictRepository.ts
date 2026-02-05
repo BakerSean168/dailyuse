@@ -2,7 +2,7 @@
  * ISyncConflictRepository 仓储接口
  */
 
-import type { SyncConflict } from '../entities/SyncConflict';
+import type { SyncConflict } from '../entities/sync-conflict';
 import type { SyncableEntityType, ConflictStatus } from '@dailyuse/contracts/sync';
 
 type ConflictType = 'update-update' | 'update-delete' | 'delete-update';

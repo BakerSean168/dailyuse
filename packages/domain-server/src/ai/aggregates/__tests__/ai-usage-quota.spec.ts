@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
-import { AIUsageQuotaServer } from '../AIUsageQuotaServer';
+import { AIUsageQuota } from '../ai-usage-quota';
 
-describe('AIUsageQuotaServer', () => {
-  const accountUuid = 'test-account-uuid';
+describe('AIUsageQuota', () => {
+  const identityId = 'test-identity-id';
   const quotaLimit = 50;
-  const resetPeriod = QuotaResetPeriod.DAILY;
+  const resetPeriod = QuotaResetPeriod.Daily;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -16,18 +16,18 @@ describe('AIUsageQuotaServer', () => {
   });
 
   it('should create a new quota', () => {
-    const quota = AIUsageQuotaServer.create({ accountUuid, quotaLimit, resetPeriod });
+    const quota = AIUsageQuota.create({ identityId, quotaLimit, resetPeriod });
 
-    expect(quota.uuid).toBeDefined();
-    expect(quota.accountUuid).toBe(accountUuid);
+    expect(quota.id).toBeDefined();
+    expect(String(quota.identityId)).toBe(identityId);
     expect(quota.quotaLimit).toBe(quotaLimit);
     expect(quota.currentUsage).toBe(0);
     expect(quota.resetPeriod).toBe(resetPeriod);
-    expect(quota.nextResetAt).toBeGreaterThan(Date.now());
+    expect(quota.nextResetAt.getTime()).toBeGreaterThan(Date.now());
   });
 
   it('should consume quota', () => {
-    const quota = AIUsageQuotaServer.create({ accountUuid, quotaLimit, resetPeriod });
+    const quota = AIUsageQuota.create({ identityId, quotaLimit, resetPeriod });
     const success = quota.consume(10);
 
     expect(success).toBe(true);
@@ -36,7 +36,7 @@ describe('AIUsageQuotaServer', () => {
   });
 
   it('should not consume if limit exceeded', () => {
-    const quota = AIUsageQuotaServer.create({ accountUuid, quotaLimit, resetPeriod });
+    const quota = AIUsageQuota.create({ identityId, quotaLimit, resetPeriod });
     quota.consume(50);
 
     const success = quota.consume(1);
@@ -45,11 +45,11 @@ describe('AIUsageQuotaServer', () => {
   });
 
   it('should reset quota if reset time passed', () => {
-    const quota = AIUsageQuotaServer.create({ accountUuid, quotaLimit, resetPeriod });
+    const quota = AIUsageQuota.create({ identityId, quotaLimit, resetPeriod });
     quota.consume(50);
 
     // Advance time past nextResetAt
-    vi.setSystemTime(quota.nextResetAt + 1000);
+    vi.setSystemTime(quota.nextResetAt.getTime() + 1000);
 
     const success = quota.consume(10);
     expect(success).toBe(true);
@@ -57,14 +57,14 @@ describe('AIUsageQuotaServer', () => {
     expect(quota.lastResetAt).toBeDefined();
   });
 
-  it('should calculate next reset time correctly for DAILY', () => {
+  it('should calculate next reset time correctly for Daily', () => {
     const now = new Date('2025-01-01T10:00:00Z');
     vi.setSystemTime(now);
 
-    const quota = AIUsageQuotaServer.create({
-      accountUuid,
+    const quota = AIUsageQuota.create({
+      identityId,
       quotaLimit,
-      resetPeriod: QuotaResetPeriod.DAILY,
+      resetPeriod: QuotaResetPeriod.Daily,
     });
 
     const expectedReset = new Date('2025-01-02T00:00:00Z');
@@ -73,6 +73,6 @@ describe('AIUsageQuotaServer', () => {
     // For now, we check if it's roughly correct (next day).
 
     // Let's just check if it's in the future
-    expect(quota.nextResetAt).toBeGreaterThan(now.getTime());
+    expect(quota.nextResetAt.getTime()).toBeGreaterThan(now.getTime());
   });
 });

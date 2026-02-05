@@ -1,7 +1,7 @@
 /**
  * 文件夹层级管理领域服务
  */
-import type { Folder } from '../entities/Folder';
+import type { Folder } from '../entities/folder';
 import type { IFolderRepository } from '../repositories/IFolderRepository';
 
 export interface FolderTreeNode {

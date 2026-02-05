@@ -8,7 +8,7 @@
  * - 隐藏数据访问细节
  */
 
-import type { ReminderGroup } from '../aggregates/ReminderGroup';
+import type { ReminderGroup } from '../aggregates/reminder-group';
 import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 
 /**

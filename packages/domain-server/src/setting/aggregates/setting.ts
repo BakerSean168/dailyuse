@@ -7,7 +7,7 @@ import { AggregateRoot } from '@dailyuse/utils';
 import type { SettingId, SettingGroupId, SettingEntryId, TransferDate, PersistenceDate, DomainDate } from '@dailyuse/contracts/primitives';
 import { SettingScope, SettingValueType, type ValidationRuleDTO, type UIConfigDTO, type SyncConfigDTO } from '@dailyuse/contracts/setting';
 import { SettingId as SettingIdType, ValidationRule, UIConfig, SyncConfig } from '@dailyuse/domain-shared/setting';
-import { SettingHistory, type OperatorType } from '../entities/SettingHistory';
+import { SettingHistory, type OperatorType } from '../entities/setting-history';
 
 // ============ Local Type Definitions ============
 // TODO: Move these to @dailyuse/contracts/setting when finalizing API

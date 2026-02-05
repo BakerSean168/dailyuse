@@ -25,7 +25,7 @@ import {
   NotificationMetadata,
 } from '@dailyuse/domain-shared/notification';
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
-import { NotificationChannel } from '../entities/NotificationChannel';
+import { NotificationChannel } from '../entities/notification-channel';
 
 const logger = createLogger('Notification');
 

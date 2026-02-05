@@ -8,7 +8,7 @@
  * - 隐藏数据访问细节
  */
 
-import type { ReminderTemplate } from '../aggregates/ReminderTemplate';
+import type { ReminderTemplate } from '../aggregates/reminder-template';
 import { ReminderStatus } from '@dailyuse/contracts/reminder';
 
 /**

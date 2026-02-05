@@ -3,7 +3,7 @@
  * DocumentVersion 实体仓储接口
  */
 
-import type { DocumentVersion } from '../entities/DocumentVersion';
+import type { DocumentVersion } from '../entities/document-version';
 import type { VersionChangeType } from '@dailyuse/contracts/editor';
 
 /**

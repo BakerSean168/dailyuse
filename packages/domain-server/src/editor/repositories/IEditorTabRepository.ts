@@ -3,7 +3,7 @@
  * EditorTab 实体仓储接口
  */
 
-import type { EditorTab } from '../entities/EditorTab';
+import type { EditorTab } from '../entities/editor-tab';
 
 /**
  * EditorTab 仓储接口
