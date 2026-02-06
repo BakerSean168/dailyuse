@@ -66,8 +66,10 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
   private _lastFailedAttempt: Date | null;
   private _lockedUntil: Date | null;
   private _credentials: AuthCredentialServer[];
+  private _version: number;
   private _createdAt: Date;
   private _updatedAt: Date;
+  private _deletedAt: Date | null;
 
   // ================= 2. 构造函数 (Private) =================
   private constructor(props: AuthIdentityServerDTO) {
@@ -89,8 +91,10 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
       }
       throw new Error(`Unknown credential type: ${cred.type}`);
     });
+    this._version = props.version ?? 1;
     this._createdAt = new Date(props.createdAt);
     this._updatedAt = new Date(props.updatedAt);
+    this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
   }
 
   // ================= 3. 公共属性 (Getters) =================
@@ -114,12 +118,20 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     return [...this._credentials]; // 返回副本，防止外部修改
   }
 
+  get version(): number {
+    return this._version;
+  }
+
   get createdAt(): Date {
     return this._createdAt;
   }
 
   get updatedAt(): Date {
     return this._updatedAt;
+  }
+
+  get deletedAt(): Date | null {
+    return this._deletedAt;
   }
 
   // ================= 4. 工厂方法 (Factories) =================
@@ -154,8 +166,10 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
       failedLoginAttempts: 0,
       lastFailedAttempt: null,
       lockedUntil: null,
+      version: 1,
       createdAt: now,
       updatedAt: now,
+      deletedAt: null,
     };
 
     const identity = new AuthIdentity(dto);
@@ -193,8 +207,10 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
         failedLoginAttempts: 0,
         lastFailedAttempt: null,
         lockedUntil: null,
+        version: 1,
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        deletedAt: null,
     });
 
     identity.addDomainEvent('auth:identity-created', { 
@@ -227,8 +243,10 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
       }
       throw new Error(`Unknown credential type: ${cred.type}`);
       }),
+      version: dto.version,
       createdAt: dto.createdAt.getTime(),
       updatedAt: dto.updatedAt.getTime(),
+      deletedAt: dto.deletedAt?.getTime() ?? null,
     };
     return new AuthIdentity(serverDTO);
   }
@@ -457,8 +475,10 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
             throw new Error(`Unknown credential type: ${cred.type}`);
         }
       }),
+      version: this._version,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
     };
   }
 
@@ -513,8 +533,10 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
       lastFailedAttempt: this._lastFailedAttempt,
       lockedUntil: this._lockedUntil,
       credentials: this._credentials,
+      version: this._version,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
+      deletedAt: this._deletedAt,
     };
   }
 }

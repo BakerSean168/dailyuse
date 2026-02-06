@@ -29,9 +29,10 @@ export interface AIProviderConfigServer  {
   isDefault: boolean;
   priority: number;
 
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
-
+  deletedAt: DomainDate | null;
 }
 
 export interface AIProviderConfigPersistenceDTO {

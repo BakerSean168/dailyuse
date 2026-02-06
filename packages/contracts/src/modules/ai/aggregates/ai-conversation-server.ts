@@ -20,6 +20,7 @@ export interface AIConversationServerDTO {
   status: ConversationStatus;
   messageCount: number;
   lastMessageAt: TransferDate | null;
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
@@ -39,6 +40,7 @@ export interface AIConversationPersistenceDTO {
   status: ConversationStatus;
   messageCount: number;
   lastMessageAt: PersistenceDate | null;
+  version: number;
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
   deletedAt: PersistenceDate | null;
@@ -116,6 +118,7 @@ export interface AIConversationServer {
   status: ConversationStatus;
   messageCount: number;
   lastMessageAt: DomainDate | null;
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;

@@ -61,6 +61,16 @@ export interface AuthIdentityServer {
    * 更新时间
    */
   updatedAt: DomainDate;
+
+  /**
+   * 同步版本号
+   */
+  version: number;
+
+  /**
+   * 软删除时间
+   */
+  deletedAt: DomainDate | null;
 }
 
 // ============ DTO 定义 ============
@@ -76,8 +86,10 @@ export interface AuthIdentityServerDTO {
   lastFailedAttempt: TransferDate | null;
   lockedUntil: TransferDate | null;
   credentials: AuthCredentialServerDTO[];
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }
 
 /**
@@ -91,6 +103,8 @@ export interface AuthIdentityPersistenceDTO {
   lastFailedAttempt: PersistenceDate | null;
   lockedUntil: PersistenceDate | null;
   credentials: AuthCredentialServer[];
+  version: number;
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
+  deletedAt: PersistenceDate | null;
 }

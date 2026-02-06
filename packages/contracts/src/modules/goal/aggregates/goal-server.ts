@@ -55,6 +55,7 @@ export interface GoalServer {
   sortOrder: number;
   reminderConfig: GoalReminderConfig | null;
 
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;

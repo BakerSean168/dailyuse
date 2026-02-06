@@ -104,6 +104,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   private _parentGoalId: GoalId | null;
   private _sortOrder: number;
   private _reminderConfig: GoalReminderConfig | null;
+  private _version: number;
   private _createdAt: Date;
   private _updatedAt: Date;
   private _deletedAt: Date | null;
@@ -141,6 +142,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     this._parentGoalId = (props.parentGoalId ?? null) as GoalId | null;
     this._sortOrder = props.sortOrder;
     this._reminderConfig = props.reminderConfig ? GoalReminderConfig.fromDTO(props.reminderConfig) : null;
+    this._version = props.version ?? 1;
     this._createdAt = new Date(props.createdAt);
     this._updatedAt = new Date(props.updatedAt);
     this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
@@ -270,6 +272,10 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   get reminderConfig(): GoalReminderConfig | null {
     return this._reminderConfig;
+  }
+
+  get version(): number {
+    return this._version;
   }
 
   get createdAt(): Date {

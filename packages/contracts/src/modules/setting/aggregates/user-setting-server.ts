@@ -13,9 +13,10 @@ export interface UserSettingServer {
   id: SettingId;
   identityId: IdentityId;
   entries: Map<string, SettingEntryServer>;
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
-
+  deletedAt: DomainDate | null;
 }
 
 
@@ -33,8 +34,10 @@ export interface UserSettingServerDTO {
 
   entries: string; // JSON stringified entries
 
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }
 
 /**
@@ -46,6 +49,8 @@ export interface UserSettingPersistenceDTO {
 
   entries: string; // JSON stringified entries
 
+  version: number;
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
+  deletedAt: PersistenceDate | null;
 }

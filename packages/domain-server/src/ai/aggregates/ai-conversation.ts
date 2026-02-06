@@ -20,6 +20,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
   private _createdAt: Date;
   private _updatedAt: Date;
   private _deletedAt: Date | null;
+  private _version: number;
 
   private _messages: Message[];
 
@@ -33,6 +34,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;
+    version?: number;
   }) {
     super(AiConversationId.of(params.id ?? AiConversationId.generate()));
     this._identityId = IdentityId.of(params.identityId);
@@ -43,6 +45,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
     this._deletedAt = params.deletedAt ?? null;
+    this._version = params.version ?? 1;
     this._messages = [];
   }
 
@@ -76,6 +79,10 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
 
   public get deletedAt(): Date | null {
     return this._deletedAt;
+  }
+
+  public get version(): number {
+    return this._version;
   }
 
   public get messages(): Message[] {
@@ -114,6 +121,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
       deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+      version: dto.version,
     });
 
     if (dto.messages) {
@@ -134,6 +142,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
+      version: dto.version,
     });
 
     if (dto.messages) {
@@ -200,6 +209,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
       status: this._status,
       messageCount: this._messageCount,
       lastMessageAt: this._lastMessageAt ? this._lastMessageAt.getTime() : null,
+      version: this._version,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
@@ -215,7 +225,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
       status: this._status,
       messageCount: this._messageCount,
       lastMessageAt: this._lastMessageAt ? this._lastMessageAt.getTime() : null,
-      version: 1,
+      version: this._version,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       deletedAt: this._deletedAt?.getTime() ?? null,
@@ -231,6 +241,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
       status: this._status,
       messageCount: this._messageCount,
       lastMessageAt: this._lastMessageAt,
+      version: this._version,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       deletedAt: this._deletedAt,

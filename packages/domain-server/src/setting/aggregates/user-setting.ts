@@ -88,23 +88,29 @@ class SettingEntry implements SettingEntryServer {
 export class UserSetting extends AggregateRoot<ISettingId> implements UserSettingServer {
   private _identityId: IdentityId;
   private _entries: Map<string, SettingEntry>;
+  private _version: number;
   private _createdAt: DomainDate;
   private _updatedAt: DomainDate;
+  private _deletedAt: DomainDate | null;
 
   private constructor(
     id: ISettingId,
     params: {
       identityId: IdentityId;
       entries?: Map<string, SettingEntry>;
+      version?: number;
       createdAt?: DomainDate;
       updatedAt?: DomainDate;
+      deletedAt?: DomainDate | null;
     }
   ) {
     super(id);
     this._identityId = params.identityId;
     this._entries = params.entries ?? new Map();
+    this._version = params.version ?? 1;
     this._createdAt = params.createdAt ?? new Date();
     this._updatedAt = params.updatedAt ?? new Date();
+    this._deletedAt = params.deletedAt ?? null;
   }
 
   // ========== Getters ==========
@@ -117,12 +123,20 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
     return new Map(this._entries);
   }
 
+  get version(): number {
+    return this._version;
+  }
+
   get createdAt(): DomainDate {
     return this._createdAt;
   }
 
   get updatedAt(): DomainDate {
     return this._updatedAt;
+  }
+
+  get deletedAt(): DomainDate | null {
+    return this._deletedAt;
   }
 
   // ========== Entry Management ==========
@@ -202,8 +216,10 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
       id: this.id,
       identityId: this._identityId,
       entries: JSON.stringify(entriesArray),
+      version: this._version,
       createdAt: this._createdAt.getTime() as TransferDate,
       updatedAt: this._updatedAt.getTime() as TransferDate,
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() as TransferDate : null,
     };
   }
 
@@ -217,10 +233,10 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
       id: this.id,
       identityId: this._identityId,
       entries: JSON.stringify(entriesArray),
-      version: 1,
+      version: this._version,
       createdAt: this._createdAt.getTime() as TransferDate,
       updatedAt: this._updatedAt.getTime() as TransferDate,
-      deletedAt: null,
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() as TransferDate : null,
     };
   }
 
@@ -234,8 +250,10 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
       id: this.id,
       identityId: this._identityId,
       entries: JSON.stringify(entriesArray),
+      version: this._version,
       createdAt: this._createdAt as PersistenceDate,
       updatedAt: this._updatedAt as PersistenceDate,
+      deletedAt: this._deletedAt as PersistenceDate | null,
     };
   }
 
