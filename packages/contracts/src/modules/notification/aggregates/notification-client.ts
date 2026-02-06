@@ -28,8 +28,8 @@ import type { IdentityId, NotificationId, PersistenceDate, DomainDate, TransferD
  */
 export interface NotificationClient {
   // ===== 基础属性 =====
-  id: string;
-  identityId: string;
+  id: NotificationId;
+  identityId: IdentityId;
 
   title: string;
   content: string;
@@ -39,7 +39,6 @@ export interface NotificationClient {
   importance: ImportanceLevel;
 
   status: NotificationStatus;
-  isRead: boolean;
   readAt?: DomainDate | null;
 
   // ===== 操作配置 =====

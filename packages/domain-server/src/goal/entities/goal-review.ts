@@ -29,110 +29,89 @@ import type {
 import { ReviewType } from '@dailyuse/contracts/goal';
 import { GoalReviewId } from '@dailyuse/domain-shared';
 
+/** Internal props type for GoalReview entity */
+interface GoalReviewProps {
+  goalId: IGoalId;
+  type: ReviewType;
+  rating: number;
+  summary: string;
+  achievements: string | null;
+  challenges: string | null;
+  improvements: string | null;
+  keyResultSnapshots: KeyResultSnapshotDTO[];
+  reviewedAt: Date;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 /**
  * GoalReview 实体
  */
 export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServer {
-  private _goalId: IGoalId;
-  private _type: ReviewType;
-  private _rating: number;
-  private _summary: string;
-  private _achievements: string | null;
-  private _challenges: string | null;
-  private _improvements: string | null;
-  private _keyResultSnapshots: KeyResultSnapshotDTO[];
-  private _reviewedAt: Date;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  private _props: GoalReviewProps;
 
   private constructor(
     id: IGoalReviewId,
-    params: {
-      goalId: IGoalId;
-      type: ReviewType;
-      rating: number;
-      summary: string;
-      achievements: string | null;
-      challenges: string | null;
-      improvements: string | null;
-      keyResultSnapshots: KeyResultSnapshotDTO[];
-      reviewedAt: Date;
-      version: number;
-      createdAt: Date;
-      updatedAt: Date;
-      deletedAt: Date | null;
-    }
+    params: GoalReviewProps
   ) {
     super(id);
-    this._goalId = params.goalId;
-    this._type = params.type;
-    this._rating = params.rating;
-    this._summary = params.summary;
-    this._achievements = params.achievements;
-    this._challenges = params.challenges;
-    this._improvements = params.improvements;
-    this._keyResultSnapshots = params.keyResultSnapshots;
-    this._reviewedAt = params.reviewedAt;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+    this._props = { ...params };
   }
 
   // ================= Getters =================
 
   get goalId(): IGoalId {
-    return this._goalId;
+    return this._props.goalId;
   }
 
   get type(): ReviewType {
-    return this._type;
+    return this._props.type;
   }
 
   get rating(): number {
-    return this._rating;
+    return this._props.rating;
   }
 
   get summary(): string {
-    return this._summary;
+    return this._props.summary;
   }
 
   get achievements(): string | null {
-    return this._achievements;
+    return this._props.achievements;
   }
 
   get challenges(): string | null {
-    return this._challenges;
+    return this._props.challenges;
   }
 
   get improvements(): string | null {
-    return this._improvements;
+    return this._props.improvements;
   }
 
   get keyResultSnapshots(): KeyResultSnapshotDTO[] {
-    return [...this._keyResultSnapshots];
+    return [...this._props.keyResultSnapshots];
   }
 
   get reviewedAt(): DomainDate {
-    return this._reviewedAt;
+    return this._props.reviewedAt;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): DomainDate {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): DomainDate {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): DomainDate | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // ================= Factory Methods =================
@@ -238,8 +217,8 @@ export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServe
     if (rating < 0 || rating > 10) {
       throw new Error('Rating must be between 0 and 10');
     }
-    this._rating = rating;
-    this._updatedAt = new Date();
+    this._props.rating = rating;
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -250,8 +229,8 @@ export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServe
     if (trimmed.length === 0) {
       throw new Error('Summary cannot be empty');
     }
-    this._summary = trimmed;
-    this._updatedAt = new Date();
+    this._props.summary = trimmed;
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -261,12 +240,12 @@ export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServe
     const trimmed = achievement.trim();
     if (trimmed.length === 0) return;
 
-    if (this._achievements) {
-      this._achievements += '\n' + trimmed;
+    if (this._props.achievements) {
+      this._props.achievements += '\n' + trimmed;
     } else {
-      this._achievements = trimmed;
+      this._props.achievements = trimmed;
     }
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -276,12 +255,12 @@ export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServe
     const trimmed = challenge.trim();
     if (trimmed.length === 0) return;
 
-    if (this._challenges) {
-      this._challenges += '\n' + trimmed;
+    if (this._props.challenges) {
+      this._props.challenges += '\n' + trimmed;
     } else {
-      this._challenges = trimmed;
+      this._props.challenges = trimmed;
     }
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -291,30 +270,30 @@ export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServe
     const trimmed = improvement.trim();
     if (trimmed.length === 0) return;
 
-    if (this._improvements) {
-      this._improvements += '\n' + trimmed;
+    if (this._props.improvements) {
+      this._props.improvements += '\n' + trimmed;
     } else {
-      this._improvements = trimmed;
+      this._props.improvements = trimmed;
     }
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 🗑️ 软删除
    */
   public softDelete(): void {
-    if (this._deletedAt) {
+    if (this._props.deletedAt) {
       return; // 已经删除
     }
-    this._deletedAt = new Date();
-    this._updatedAt = new Date();
+    this._props.deletedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 是否为高质量回顾（评分>=4）
    */
   public isHighQuality(): boolean {
-    return this._rating >= 4;
+    return this._props.rating >= 4;
   }
 
   // ================= Serialization =================
@@ -325,19 +304,19 @@ export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServe
   public toServerDTO(): GoalReviewServerDTO {
     return {
       id: this.id,
-      goalId: this._goalId,
-      type: this._type,
-      rating: this._rating,
-      summary: this._summary,
-      achievements: this._achievements,
-      challenges: this._challenges,
-      improvements: this._improvements,
-      keyResultSnapshots: this._keyResultSnapshots,
-      reviewedAt: this._reviewedAt.getTime() as TransferDate,
-      version: this._version,
-      createdAt: this._createdAt.getTime() as TransferDate,
-      updatedAt: this._updatedAt.getTime() as TransferDate,
-      deletedAt: this._deletedAt ? this._deletedAt.getTime() as TransferDate : null,
+      goalId: this._props.goalId,
+      type: this._props.type,
+      rating: this._props.rating,
+      summary: this._props.summary,
+      achievements: this._props.achievements,
+      challenges: this._props.challenges,
+      improvements: this._props.improvements,
+      keyResultSnapshots: this._props.keyResultSnapshots,
+      reviewedAt: this._props.reviewedAt.getTime() as TransferDate,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime() as TransferDate,
+      updatedAt: this._props.updatedAt.getTime() as TransferDate,
+      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() as TransferDate : null,
     };
   }
 
@@ -346,20 +325,20 @@ export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServe
    */
   public toClientDTO(): import('@dailyuse/contracts/goal').GoalReviewClientDTO {
     return {
-      uuid: String(this.id),
-      goalUuid: String(this._goalId),
-      type: this._type,
-      rating: this._rating,
-      summary: this._summary,
-      achievements: this._achievements,
-      challenges: this._challenges,
-      improvements: this._improvements,
-      keyResultSnapshots: this._keyResultSnapshots,
-      version: this._version,
-      reviewedAt: this._reviewedAt.getTime(),
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      id: String(this.id) as import('@dailyuse/contracts/goal').GoalReviewClientDTO['id'],
+      goalId: String(this._props.goalId) as import('@dailyuse/contracts/goal').GoalReviewClientDTO['goalId'],
+      type: this._props.type,
+      rating: this._props.rating,
+      summary: this._props.summary,
+      achievements: this._props.achievements,
+      challenges: this._props.challenges,
+      improvements: this._props.improvements,
+      keyResultSnapshots: this._props.keyResultSnapshots,
+      version: this._props.version,
+      reviewedAt: this._props.reviewedAt.getTime(),
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 
@@ -369,19 +348,19 @@ export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServe
   public toPersistenceDTO(): GoalReviewPersistenceDTO {
     return {
       id: this.id,
-      goalId: this._goalId,
-      type: this._type,
-      rating: this._rating,
-      summary: this._summary,
-      achievements: this._achievements,
-      challenges: this._challenges,
-      improvements: this._improvements,
-      keyResultSnapshots: JSON.stringify(this._keyResultSnapshots),
-      reviewedAt: this._reviewedAt as PersistenceDate,
-      version: this._version,
-      createdAt: this._createdAt as PersistenceDate,
-      updatedAt: this._updatedAt as PersistenceDate,
-      deletedAt: this._deletedAt as PersistenceDate | null,
+      goalId: this._props.goalId,
+      type: this._props.type,
+      rating: this._props.rating,
+      summary: this._props.summary,
+      achievements: this._props.achievements,
+      challenges: this._props.challenges,
+      improvements: this._props.improvements,
+      keyResultSnapshots: JSON.stringify(this._props.keyResultSnapshots),
+      reviewedAt: this._props.reviewedAt as PersistenceDate,
+      version: this._props.version,
+      createdAt: this._props.createdAt as PersistenceDate,
+      updatedAt: this._props.updatedAt as PersistenceDate,
+      deletedAt: this._props.deletedAt as PersistenceDate | null,
     };
   }
 }

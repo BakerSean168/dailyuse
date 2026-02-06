@@ -4,9 +4,8 @@
  *
  * 【规范说明】
  * - 实现 NotificationPreferenceClient 接口
- * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
  * - Static fromDTO(dto: NotificationPreferenceClientDTO): NotificationPreference
  * - Instance toDTO(): NotificationPreferenceClientDTO
  */
@@ -21,68 +20,49 @@ import { NotificationPreferenceId } from '@dailyuse/domain-shared/notification';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 export class NotificationPreference extends AggregateRoot<NotificationPreferenceId> implements NotificationPreferenceClient {
-  // ================= 1. Backing Fields =================
-  private _identityId: IdentityId;
-  private _settings: Record<string, NotificationChannelType[]>;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  private readonly _props: NotificationPreferenceClient;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: NotificationPreferenceId;
-    identityId: IdentityId;
-    settings: Record<string, NotificationChannelType[]>;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(params.id);
-    this._identityId = params.identityId;
-    this._settings = params.settings;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+  private constructor(props: NotificationPreferenceClient) {
+    super(props.id);
+    this._props = props;
   }
 
   // ================= 3. Getters =================
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get settings(): Record<string, NotificationChannelType[]> {
-    return this._settings;
+    return this._props.settings;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // UI 计算属性
   get isDeleted(): boolean {
-    return this._deletedAt !== null;
+    return this._props.deletedAt !== null;
   }
 
   /**
    * 获取指定模块的通知渠道设置
    */
   getModuleChannels(moduleName: string): NotificationChannelType[] {
-    return this._settings[moduleName] ?? [];
+    return this._props.settings[moduleName] ?? [];
   }
 
   /**
@@ -110,12 +90,12 @@ export class NotificationPreference extends AggregateRoot<NotificationPreference
   public toDTO(): NotificationPreferenceClientDTO {
     return {
       id: this.id as unknown as string,
-      identityId: this._identityId as unknown as string,
-      settings: this._settings,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      identityId: this._props.identityId as unknown as string,
+      settings: this._props.settings,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 }

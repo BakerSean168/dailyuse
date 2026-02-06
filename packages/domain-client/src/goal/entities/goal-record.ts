@@ -19,82 +19,55 @@ import { Entity } from '@dailyuse/utils';
 import { GoalRecordId, KeyResultId, GoalId } from '@dailyuse/domain-shared/goal';
 
 export class GoalRecord extends Entity<GoalRecordId> implements GoalRecordClient {
-  // ================= 1. Backing Fields =================
-  private _keyResultId: KeyResultId;
-  private _goalId: GoalId;
-  private _value: number;
-  private _valueAfter: number;
-  private _comment: string | null;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  // ================= 1. Props =================
+  private readonly _props: GoalRecordClient;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: GoalRecordId;
-    keyResultId: KeyResultId;
-    goalId: GoalId;
-    value: number;
-    valueAfter: number;
-    comment: string | null;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(params.id);
-    this._keyResultId = params.keyResultId;
-    this._goalId = params.goalId;
-    this._value = params.value;
-    this._valueAfter = params.valueAfter;
-    this._comment = params.comment;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+  private constructor(props: GoalRecordClient) {
+    super(props.id);
+    this._props = props;
   }
 
   // ================= 3. Getters =================
   get keyResultId(): KeyResultId {
-    return this._keyResultId;
+    return this._props.keyResultId;
   }
 
   get goalId(): GoalId {
-    return this._goalId;
+    return this._props.goalId;
   }
 
   get value(): number {
-    return this._value;
+    return this._props.value;
   }
 
   get valueAfter(): number {
-    return this._valueAfter;
+    return this._props.valueAfter;
   }
 
   get comment(): string | null {
-    return this._comment;
+    return this._props.comment;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // 计算属性
   get isDeleted(): boolean {
-    return this._deletedAt !== null;
+    return this._props.deletedAt !== null;
   }
 
   // ================= 4. Factory Methods =================
@@ -117,15 +90,15 @@ export class GoalRecord extends Entity<GoalRecordId> implements GoalRecordClient
   public toDTO(): GoalRecordClientDTO {
     return {
       id: String(this.id) as GoalRecordClientDTO['id'],
-      keyResultId: String(this._keyResultId) as GoalRecordClientDTO['keyResultId'],
-      goalId: String(this._goalId) as GoalRecordClientDTO['goalId'],
-      value: this._value,
-      valueAfter: this._valueAfter,
-      comment: this._comment,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      keyResultId: String(this._props.keyResultId) as GoalRecordClientDTO['keyResultId'],
+      goalId: String(this._props.goalId) as GoalRecordClientDTO['goalId'],
+      value: this._props.value,
+      valueAfter: this._props.valueAfter,
+      comment: this._props.comment,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 }

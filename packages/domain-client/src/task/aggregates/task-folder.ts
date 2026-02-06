@@ -20,90 +20,63 @@ import { TaskFolderId } from '@dailyuse/domain-shared/task';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 export class TaskFolder extends AggregateRoot<TaskFolderId> implements TaskFolderClient {
-  // ================= 1. Backing Fields =================
-  private _identityId: IdentityId;
-  private _name: string;
-  private _color: string | null;
-  private _icon: string | null;
-  private _order: number;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  // ================= 1. Props =================
+  private readonly _props: TaskFolderClient;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: TaskFolderId;
-    identityId: IdentityId;
-    name: string;
-    color: string | null;
-    icon: string | null;
-    order: number;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(params.id);
-    this._identityId = params.identityId;
-    this._name = params.name;
-    this._color = params.color;
-    this._icon = params.icon;
-    this._order = params.order;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+  private constructor(props: TaskFolderClient) {
+    super(props.id);
+    this._props = props;
   }
 
   // ================= 3. Getters =================
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get color(): string | null {
-    return this._color;
+    return this._props.color;
   }
 
   get icon(): string | null {
-    return this._icon;
+    return this._props.icon;
   }
 
   get order(): number {
-    return this._order;
+    return this._props.order;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // UI 计算属性
   get isDeleted(): boolean {
-    return this._deletedAt !== null;
+    return this._props.deletedAt !== null;
   }
 
   get displayName(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get displayIcon(): string {
-    return this._icon ?? '📁';
+    return this._props.icon ?? '📁';
   }
 
   // ================= 4. Factory Methods =================
@@ -126,15 +99,15 @@ export class TaskFolder extends AggregateRoot<TaskFolderId> implements TaskFolde
   public toDTO(): TaskFolderClientDTO {
     return {
       id: this.id as TaskFolderClientDTO['id'],
-      identityId: this._identityId as TaskFolderClientDTO['identityId'],
-      name: this._name,
-      color: this._color,
-      icon: this._icon,
-      order: this._order,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      identityId: this._props.identityId as TaskFolderClientDTO['identityId'],
+      name: this._props.name,
+      color: this._props.color,
+      icon: this._props.icon,
+      order: this._props.order,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 }

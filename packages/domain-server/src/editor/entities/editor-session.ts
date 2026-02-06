@@ -28,29 +28,28 @@ import type {
 import { SessionLayout } from '../value-objects/SessionLayout';
 import { EditorGroup } from './editor-group';
 
-export class EditorSession extends Entity<EditorSessionId> {
-  // ===== 外键：所属聚合根 =====
-  private _workspaceId: EditorWorkspaceId;
-  private _identityId: IdentityId;
+/**
+ * EditorSession 属性接口
+ */
+interface EditorSessionProps {
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
+  name: string;
+  description: string | null;
+  layout: SessionLayout;
+  isActive: boolean;
+  activeGroupIndex: number;
+  lastAccessedAt: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-  // ===== 基础属性 =====
-  private _name: string;
-  private _description: string | null;
+export class EditorSession extends Entity<EditorSessionId> {
+  // ===== 私有属性 =====
+  private _props: EditorSessionProps;
 
   // ===== 子实体集合 =====
   private _groups: EditorGroup[] = [];
-
-  // ===== 状态 =====
-  private _isActive: boolean;
-  private _activeGroupIndex: number;
-
-  // ===== 布局配置 =====
-  private _layout: SessionLayout;
-
-  // ===== 时间戳 =====
-  private _lastAccessedAt: number | null;
-  private _createdAt: Date;
-  private _updatedAt: Date;
 
   private constructor(params: {
     id: EditorSessionId;
@@ -66,34 +65,36 @@ export class EditorSession extends Entity<EditorSessionId> {
     updatedAt: Date;
   }) {
     super(params.id);
-    this._workspaceId = params.workspaceId;
-    this._identityId = params.identityId;
-    this._name = params.name;
-    this._description = params.description;
-    this._layout = params.layout;
-    this._isActive = params.isActive;
-    this._activeGroupIndex = params.activeGroupIndex;
-    this._lastAccessedAt = params.lastAccessedAt;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+    this._props = {
+      workspaceId: params.workspaceId,
+      identityId: params.identityId,
+      name: params.name,
+      description: params.description,
+      layout: params.layout,
+      isActive: params.isActive,
+      activeGroupIndex: params.activeGroupIndex,
+      lastAccessedAt: params.lastAccessedAt,
+      createdAt: params.createdAt,
+      updatedAt: params.updatedAt,
+    };
   }
 
   // ===== Getter 属性 =====
 
   public get workspaceId(): EditorWorkspaceId {
-    return this._workspaceId;
+    return this._props.workspaceId;
   }
 
   public get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   public get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   public get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
 
   public get groups(): EditorGroup[] {
@@ -101,27 +102,27 @@ export class EditorSession extends Entity<EditorSessionId> {
   }
 
   public get isActive(): boolean {
-    return this._isActive;
+    return this._props.isActive;
   }
 
   public get activeGroupIndex(): number {
-    return this._activeGroupIndex;
+    return this._props.activeGroupIndex;
   }
 
   public get layout(): SessionLayout {
-    return this._layout;
+    return this._props.layout;
   }
 
   public get lastAccessedAt(): number | null {
-    return this._lastAccessedAt;
+    return this._props.lastAccessedAt;
   }
 
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   public get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   // ===== 实例属性修改方法 =====
@@ -133,8 +134,8 @@ export class EditorSession extends Entity<EditorSessionId> {
     if (!newName || newName.trim() === '') {
       throw new Error('会话名称不能为空');
     }
-    this._name = newName.trim();
-    this._updatedAt = new Date();
+    this._props.name = newName.trim();
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -142,8 +143,8 @@ export class EditorSession extends Entity<EditorSessionId> {
    * @param newDescription 新描述，可以为 null 清除描述
    */
   public updateDescription(newDescription: string | null): void {
-    this._description = newDescription ? newDescription.trim() : null;
-    this._updatedAt = new Date();
+    this._props.description = newDescription ? newDescription.trim() : null;
+    this._props.updatedAt = new Date();
   }
 
   // ===== 工厂方法 =====
@@ -191,8 +192,8 @@ export class EditorSession extends Entity<EditorSessionId> {
   public addGroup(params: { groupIndex: number; name?: string }): EditorGroup {
     const group = EditorGroup.create({
       sessionId: this.id,
-      workspaceId: this._workspaceId,
-      identityId: this._identityId,
+      workspaceId: this._props.workspaceId,
+      identityId: this._props.identityId,
       groupIndex: params.groupIndex,
       name: params.name,
     });
@@ -212,8 +213,8 @@ export class EditorSession extends Entity<EditorSessionId> {
       this._groups.splice(index, 1);
 
       // 调整活动分组索引
-      if (this._activeGroupIndex >= this._groups.length) {
-        this._activeGroupIndex = Math.max(0, this._groups.length - 1);
+      if (this._props.activeGroupIndex >= this._groups.length) {
+        this._props.activeGroupIndex = Math.max(0, this._groups.length - 1);
       }
 
       this.updateTimestamp();
@@ -239,7 +240,7 @@ export class EditorSession extends Entity<EditorSessionId> {
    */
   public setActiveGroup(groupIndex: number): void {
     if (groupIndex >= 0 && groupIndex < this._groups.length) {
-      this._activeGroupIndex = groupIndex;
+      this._props.activeGroupIndex = groupIndex;
       this.updateTimestamp();
     }
   }
@@ -250,24 +251,24 @@ export class EditorSession extends Entity<EditorSessionId> {
    * 激活会话
    */
   public activate(): void {
-    this._isActive = true;
-    this._lastAccessedAt = Date.now();
-    this._updatedAt = new Date();
+    this._props.isActive = true;
+    this._props.lastAccessedAt = Date.now();
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 取消激活
    */
   public deactivate(): void {
-    this._isActive = false;
-    this._updatedAt = new Date();
+    this._props.isActive = false;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 更新布局配置
    */
   public updateLayout(layout: Partial<SessionLayoutServerDTO>): void {
-    this._layout = this._layout.with(layout);
+    this._props.layout = this._props.layout.with(layout);
     this.updateTimestamp();
   }
 
@@ -276,10 +277,10 @@ export class EditorSession extends Entity<EditorSessionId> {
    */
   public update(updates: { name?: string; description?: string | null }): void {
     if (updates.name) {
-      this._name = updates.name;
+      this._props.name = updates.name;
     }
     if (updates.description !== undefined) {
-      this._description = updates.description;
+      this._props.description = updates.description;
     }
     this.updateTimestamp();
   }
@@ -288,7 +289,7 @@ export class EditorSession extends Entity<EditorSessionId> {
    * 更新最后访问时间
    */
   public updateLastAccessedAt(): void {
-    this._lastAccessedAt = Date.now();
+    this._props.lastAccessedAt = Date.now();
     this.updateTimestamp();
   }
 
@@ -296,7 +297,7 @@ export class EditorSession extends Entity<EditorSessionId> {
    * 更新时间戳
    */
   private updateTimestamp(): void {
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   // ===== DTO 转换方法 =====
@@ -307,17 +308,17 @@ export class EditorSession extends Entity<EditorSessionId> {
   public toServerDTO(): EditorSessionServerDTO {
     return {
       id: this.id,
-      workspaceId: this._workspaceId,
-      identityId: this._identityId,
-      name: this._name,
-      description: this._description,
+      workspaceId: this._props.workspaceId,
+      identityId: this._props.identityId,
+      name: this._props.name,
+      description: this._props.description,
       groups: this._groups.map((group) => group.toServerDTO()),
-      isActive: this._isActive,
-      activeGroupIndex: this._activeGroupIndex,
-      layout: this._layout.toServerDTO(),
-      lastAccessedAt: this._lastAccessedAt,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      isActive: this._props.isActive,
+      activeGroupIndex: this._props.activeGroupIndex,
+      layout: this._props.layout.toServerDTO(),
+      lastAccessedAt: this._props.lastAccessedAt,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
     };
   }
 
@@ -327,18 +328,18 @@ export class EditorSession extends Entity<EditorSessionId> {
   public toClientDTO(): EditorSessionClientDTO {
     return {
       id: this.id,
-      workspaceId: this._workspaceId,
-      identityId: this._identityId,
-      name: this._name,
-      description: this._description,
+      workspaceId: this._props.workspaceId,
+      identityId: this._props.identityId,
+      name: this._props.name,
+      description: this._props.description,
       groups: this._groups.map((group) => group.toClientDTO()),
-      isActive: this._isActive,
-      activeGroupIndex: this._activeGroupIndex,
-      layout: this._layout.toServerDTO(),
+      isActive: this._props.isActive,
+      activeGroupIndex: this._props.activeGroupIndex,
+      layout: this._props.layout.toServerDTO(),
       groupCount: this._groups.length,
-      lastAccessedAt: this._lastAccessedAt,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      lastAccessedAt: this._props.lastAccessedAt,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
     };
   }
 
@@ -348,17 +349,17 @@ export class EditorSession extends Entity<EditorSessionId> {
   public toPersistenceDTO(): EditorSessionPersistenceDTO {
     return {
       id: this.id,
-      workspace_id: this._workspaceId,
-      identityId: this._identityId,
-      name: this._name,
-      description: this._description,
+      workspace_id: this._props.workspaceId,
+      identityId: this._props.identityId,
+      name: this._props.name,
+      description: this._props.description,
       groups: this._groups.map((group) => group.toPersistenceDTO()),
-      is_active: this._isActive,
-      active_group_index: this._activeGroupIndex,
-      layout: this._layout.toPersistenceDTO(),
-      lastAccessedAt: this._lastAccessedAt !== null ? new Date(this._lastAccessedAt) : null,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      is_active: this._props.isActive,
+      active_group_index: this._props.activeGroupIndex,
+      layout: this._props.layout.toPersistenceDTO(),
+      lastAccessedAt: this._props.lastAccessedAt !== null ? new Date(this._props.lastAccessedAt) : null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
     };
   }
 

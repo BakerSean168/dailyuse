@@ -11,80 +11,55 @@
 import type {
   AuthCredentialClient,
   AuthCredentialClientDTO,
+  CredentialType,
 } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
 import {
   AuthCredentialId,
-  CredentialType,
 } from '@dailyuse/domain-shared/authentication';
 
 export class AuthCredential extends Entity<AuthCredentialId> implements AuthCredentialClient {
-  // ================= 内部状态 (Backing Fields) =================
-  private _type: CredentialType;
-  private _displayName: string;
-  private _lastUsedAt: Date | null;
-  private _isPrimary: boolean;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  private readonly _props: AuthCredentialClient;
 
   // ================= 构造函数 (Private) =================
-  private constructor(params: {
-    id: AuthCredentialId;
-    type: CredentialType;
-    displayName: string;
-    lastUsedAt: Date | null;
-    isPrimary: boolean;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(params.id);
-    this._type = params.type;
-    this._displayName = params.displayName;
-    this._lastUsedAt = params.lastUsedAt;
-    this._isPrimary = params.isPrimary;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+  private constructor(props: AuthCredentialClient) {
+    super(props.id);
+    this._props = props;
   }
 
   // ================= 公共属性 (Getters) =================
 
   get type(): CredentialType {
-    return this._type;
+    return this._props.type;
   }
 
   get displayName(): string {
-    return this._displayName;
+    return this._props.displayName;
   }
 
   get lastUsedAt(): Date | null {
-    return this._lastUsedAt;
+    return this._props.lastUsedAt;
   }
 
   get isPrimary(): boolean {
-    return this._isPrimary;
+    return this._props.isPrimary;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // ================= 查询方法 =================
@@ -93,21 +68,21 @@ export class AuthCredential extends Entity<AuthCredentialId> implements AuthCred
    * 是否是密码凭证
    */
   public isPassword(): boolean {
-    return CredentialType.isPasswordBased(this._type);
+    return this._props.type === 'PASSWORD';
   }
 
   /**
    * 是否是 OAuth 凭证
    */
   public isOAuth(): boolean {
-    return CredentialType.isOAuth(this._type);
+    return this._props.type === 'OAUTH';
   }
 
   /**
    * 是否是手机号凭证
    */
   public isPhone(): boolean {
-    return CredentialType.isPhoneBased(this._type);
+    return this._props.type === 'PHONE';
   }
 
   // ================= 工厂方法 (Factory Methods) =================
@@ -118,7 +93,7 @@ export class AuthCredential extends Entity<AuthCredentialId> implements AuthCred
   public static fromDTO(dto: AuthCredentialClientDTO): AuthCredential {
     return new AuthCredential({
       id: AuthCredentialId.of(dto.id),
-      type: CredentialType.of(dto.type),
+      type: dto.type,
       displayName: dto.displayName,
       lastUsedAt: dto.lastUsedAt ? new Date(dto.lastUsedAt) : null,
       isPrimary: dto.isPrimary,
@@ -136,15 +111,15 @@ export class AuthCredential extends Entity<AuthCredentialId> implements AuthCred
    */
   public toDTO(): AuthCredentialClientDTO {
     return {
-      id: this.id,
-      type: this._type,
-      displayName: this._displayName,
-      lastUsedAt: this._lastUsedAt?.getTime() ?? null,
-      isPrimary: this._isPrimary,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      id: String(this._props.id) as AuthCredentialClientDTO['id'],
+      type: this._props.type,
+      displayName: this._props.displayName,
+      lastUsedAt: this._props.lastUsedAt?.getTime() ?? null,
+      isPrimary: this._props.isPrimary,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 }

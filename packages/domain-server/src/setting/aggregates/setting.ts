@@ -95,30 +95,36 @@ export interface SettingPersistenceDTO {
   deletedAt: PersistenceDate | null;
 }
 
+/** Props interface for Setting */
+interface SettingProps {
+  key: string;
+  name: string;
+  description: string | null;
+  valueType: SettingValueType;
+  value: unknown;
+  defaultValue: unknown;
+  scope: SettingScope;
+  accountId: string | null;
+  deviceId: string | null;
+  groupId: SettingGroupId | null;
+  validation: ValidationRule | null;
+  ui: UIConfig | null;
+  isEncrypted: boolean;
+  isReadOnly: boolean;
+  isSystemSetting: boolean;
+  syncConfig: SyncConfig | null;
+  history: SettingHistory[];
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 /**
  * Setting 聚合根
  */
 export class Setting extends AggregateRoot<SettingId> implements SettingServer {
-  private _key: string;
-  private _name: string;
-  private _description: string | null;
-  private _valueType: SettingValueType;
-  private _value: unknown;
-  private _defaultValue: unknown;
-  private _scope: SettingScope;
-  private _accountId: string | null;
-  private _deviceId: string | null;
-  private _groupId: SettingGroupId | null;
-  private _validation: ValidationRule | null;
-  private _ui: UIConfig | null;
-  private _isEncrypted: boolean;
-  private _isReadOnly: boolean;
-  private _isSystemSetting: boolean;
-  private _syncConfig: SyncConfig | null;
-  private _history: SettingHistory[];
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  // ===== 私有属性容器 =====
+  private _props: SettingProps;
 
   private constructor(
     id: SettingId,
@@ -146,50 +152,52 @@ export class Setting extends AggregateRoot<SettingId> implements SettingServer {
     }
   ) {
     super(id);
-    this._key = params.key;
-    this._name = params.name;
-    this._description = params.description;
-    this._valueType = params.valueType;
-    this._value = params.value;
-    this._defaultValue = params.defaultValue;
-    this._scope = params.scope;
-    this._accountId = params.accountId;
-    this._deviceId = params.deviceId;
-    this._groupId = params.groupId;
-    this._validation = params.validation;
-    this._ui = params.ui;
-    this._isEncrypted = params.isEncrypted;
-    this._isReadOnly = params.isReadOnly;
-    this._isSystemSetting = params.isSystemSetting;
-    this._syncConfig = params.syncConfig;
-    this._history = params.history;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+    this._props = {
+      key: params.key,
+      name: params.name,
+      description: params.description,
+      valueType: params.valueType,
+      value: params.value,
+      defaultValue: params.defaultValue,
+      scope: params.scope,
+      accountId: params.accountId,
+      deviceId: params.deviceId,
+      groupId: params.groupId,
+      validation: params.validation,
+      ui: params.ui,
+      isEncrypted: params.isEncrypted,
+      isReadOnly: params.isReadOnly,
+      isSystemSetting: params.isSystemSetting,
+      syncConfig: params.syncConfig,
+      history: params.history,
+      createdAt: params.createdAt,
+      updatedAt: params.updatedAt,
+      deletedAt: params.deletedAt,
+    };
   }
 
   // ============ Getters ============
 
-  public get key(): string { return this._key; }
-  public get name(): string { return this._name; }
-  public get description(): string | null { return this._description; }
-  public get valueType(): SettingValueType { return this._valueType; }
-  public get value(): unknown { return this._value; }
-  public get defaultValue(): unknown { return this._defaultValue; }
-  public get scope(): SettingScope { return this._scope; }
-  public get accountId(): string | null { return this._accountId; }
-  public get deviceId(): string | null { return this._deviceId; }
-  public get groupId(): SettingGroupId | null { return this._groupId; }
-  public get validation(): ValidationRule | null { return this._validation; }
-  public get ui(): UIConfig | null { return this._ui; }
-  public get isEncrypted(): boolean { return this._isEncrypted; }
-  public get isReadOnly(): boolean { return this._isReadOnly; }
-  public get isSystemSetting(): boolean { return this._isSystemSetting; }
-  public get syncConfig(): SyncConfig | null { return this._syncConfig; }
-  public get history(): SettingHistory[] { return [...this._history]; }
-  public get createdAt(): DomainDate { return this._createdAt; }
-  public get updatedAt(): DomainDate { return this._updatedAt; }
-  public get deletedAt(): DomainDate | null { return this._deletedAt; }
+  public get key(): string { return this._props.key; }
+  public get name(): string { return this._props.name; }
+  public get description(): string | null { return this._props.description; }
+  public get valueType(): SettingValueType { return this._props.valueType; }
+  public get value(): unknown { return this._props.value; }
+  public get defaultValue(): unknown { return this._props.defaultValue; }
+  public get scope(): SettingScope { return this._props.scope; }
+  public get accountId(): string | null { return this._props.accountId; }
+  public get deviceId(): string | null { return this._props.deviceId; }
+  public get groupId(): SettingGroupId | null { return this._props.groupId; }
+  public get validation(): ValidationRule | null { return this._props.validation; }
+  public get ui(): UIConfig | null { return this._props.ui; }
+  public get isEncrypted(): boolean { return this._props.isEncrypted; }
+  public get isReadOnly(): boolean { return this._props.isReadOnly; }
+  public get isSystemSetting(): boolean { return this._props.isSystemSetting; }
+  public get syncConfig(): SyncConfig | null { return this._props.syncConfig; }
+  public get history(): SettingHistory[] { return [...this._props.history]; }
+  public get createdAt(): DomainDate { return this._props.createdAt; }
+  public get updatedAt(): DomainDate { return this._props.updatedAt; }
+  public get deletedAt(): DomainDate | null { return this._props.deletedAt; }
 
   // ============ 业务方法 ============
 
@@ -197,30 +205,30 @@ export class Setting extends AggregateRoot<SettingId> implements SettingServer {
    * 判断是否为默认值
    */
   public isDefault(): boolean {
-    return JSON.stringify(this._value) === JSON.stringify(this._defaultValue);
+    return JSON.stringify(this._props.value) === JSON.stringify(this._props.defaultValue);
   }
 
   /**
    * 获取显示值
    */
   private getDisplayValue(): string {
-    if (this._value === null || this._value === undefined) {
+    if (this._props.value === null || this._props.value === undefined) {
       return '未设置';
     }
-    switch (this._valueType) {
+    switch (this._props.valueType) {
       case SettingValueType.Boolean:
-        return this._value ? '是' : '否';
+        return this._props.value ? '是' : '否';
       case SettingValueType.Password:
         return '********';
       case SettingValueType.Object:
       case SettingValueType.Array:
         try {
-          return JSON.stringify(this._value, null, 2);
+          return JSON.stringify(this._props.value, null, 2);
         } catch {
           return '[无法显示的值]';
         }
       default:
-        return String(this._value);
+        return String(this._props.value);
     }
   }
 
@@ -228,58 +236,58 @@ export class Setting extends AggregateRoot<SettingId> implements SettingServer {
    * 判断是否可编辑
    */
   private getCanEdit(): boolean {
-    return !this._isReadOnly;
+    return !this._props.isReadOnly;
   }
 
   /**
    * 设置值
    */
   public setValue(newValue: unknown, operatorId?: string, operatorType: OperatorType = 'USER'): void {
-    if (this._isReadOnly) {
-      throw new Error(`Setting ${this._key} is read-only`);
+    if (this._props.isReadOnly) {
+      throw new Error(`Setting ${this._props.key} is read-only`);
     }
 
-    const oldValue = this._value;
-    this._value = newValue;
-    this._updatedAt = new Date();
+    const oldValue = this._props.value;
+    this._props.value = newValue;
+    this._props.updatedAt = new Date();
 
     // 记录历史
     const historyEntry = SettingHistory.create({
       settingEntryId: this.id as unknown as SettingEntryId,
-      settingKey: this._key,
+      settingKey: this._props.key,
       oldValue,
       newValue,
       operatorId,
       operatorType,
     });
-    this._history.push(historyEntry);
+    this._props.history.push(historyEntry);
   }
 
   /**
    * 重置为默认值
    */
   public resetToDefault(operatorId?: string): void {
-    if (this._isReadOnly) {
-      throw new Error(`Setting ${this._key} is read-only`);
+    if (this._props.isReadOnly) {
+      throw new Error(`Setting ${this._props.key} is read-only`);
     }
 
-    this.setValue(this._defaultValue, operatorId, 'USER');
+    this.setValue(this._props.defaultValue, operatorId, 'USER');
   }
 
   /**
    * 软删除
    */
   public delete(): void {
-    this._deletedAt = new Date();
-    this._updatedAt = new Date();
+    this._props.deletedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 恢复
    */
   public restore(): void {
-    this._deletedAt = null;
-    this._updatedAt = new Date();
+    this._props.deletedAt = null;
+    this._props.updatedAt = new Date();
   }
 
   // ============ DTO 转换 ============
@@ -287,25 +295,25 @@ export class Setting extends AggregateRoot<SettingId> implements SettingServer {
   public toServerDTO(): SettingServerDTO {
     return {
       id: this.id,
-      key: this._key,
-      name: this._name,
-      description: this._description,
-      valueType: this._valueType,
-      value: this._value,
-      defaultValue: this._defaultValue,
-      scope: this._scope,
-      accountId: this._accountId,
-      deviceId: this._deviceId,
-      groupId: this._groupId,
-      validation: this._validation?.toDTO() ?? null,
-      ui: this._ui?.toDTO() ?? null,
-      isEncrypted: this._isEncrypted,
-      isReadOnly: this._isReadOnly,
-      isSystemSetting: this._isSystemSetting,
-      syncConfig: this._syncConfig?.toDTO() ?? null,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      key: this._props.key,
+      name: this._props.name,
+      description: this._props.description,
+      valueType: this._props.valueType,
+      value: this._props.value,
+      defaultValue: this._props.defaultValue,
+      scope: this._props.scope,
+      accountId: this._props.accountId,
+      deviceId: this._props.deviceId,
+      groupId: this._props.groupId,
+      validation: this._props.validation?.toDTO() ?? null,
+      ui: this._props.ui?.toDTO() ?? null,
+      isEncrypted: this._props.isEncrypted,
+      isReadOnly: this._props.isReadOnly,
+      isSystemSetting: this._props.isSystemSetting,
+      syncConfig: this._props.syncConfig?.toDTO() ?? null,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 
@@ -321,25 +329,25 @@ export class Setting extends AggregateRoot<SettingId> implements SettingServer {
   public toPersistenceDTO(): SettingPersistenceDTO {
     return {
       id: this.id,
-      key: this._key,
-      name: this._name,
-      description: this._description,
-      valueType: this._valueType,
-      value: JSON.stringify(this._value),
-      defaultValue: JSON.stringify(this._defaultValue),
-      scope: this._scope,
-      accountId: this._accountId,
-      deviceId: this._deviceId,
-      groupId: this._groupId,
-      validation: this._validation ? JSON.stringify(this._validation.toDTO()) : null,
-      ui: this._ui ? JSON.stringify(this._ui.toDTO()) : null,
-      isEncrypted: this._isEncrypted,
-      isReadOnly: this._isReadOnly,
-      isSystemSetting: this._isSystemSetting,
-      syncConfig: this._syncConfig ? JSON.stringify(this._syncConfig.toDTO()) : null,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      key: this._props.key,
+      name: this._props.name,
+      description: this._props.description,
+      valueType: this._props.valueType,
+      value: JSON.stringify(this._props.value),
+      defaultValue: JSON.stringify(this._props.defaultValue),
+      scope: this._props.scope,
+      accountId: this._props.accountId,
+      deviceId: this._props.deviceId,
+      groupId: this._props.groupId,
+      validation: this._props.validation ? JSON.stringify(this._props.validation.toDTO()) : null,
+      ui: this._props.ui ? JSON.stringify(this._props.ui.toDTO()) : null,
+      isEncrypted: this._props.isEncrypted,
+      isReadOnly: this._props.isReadOnly,
+      isSystemSetting: this._props.isSystemSetting,
+      syncConfig: this._props.syncConfig ? JSON.stringify(this._props.syncConfig.toDTO()) : null,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt,
     };
   }
 

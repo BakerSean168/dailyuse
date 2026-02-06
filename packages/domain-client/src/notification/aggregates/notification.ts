@@ -14,12 +14,12 @@
 import type {
   NotificationClient,
   NotificationClientDTO,
-  NotificationChannelClientDTO,
   NotificationType,
   NotificationCategory,
   NotificationStatus,
 } from '@dailyuse/contracts/notification';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { IdentityId as IIdentityId, NotificationId as INotificationId } from '@dailyuse/contracts/primitives';
 import { AggregateRoot } from '@dailyuse/utils';
 import {
   NotificationId,
@@ -30,155 +30,108 @@ import { IdentityId } from '@dailyuse/domain-shared';
 import { NotificationChannel } from '../entities/notification-channel.js';
 
 export class Notification extends AggregateRoot<NotificationId> implements NotificationClient {
-  // ================= 1. Backing Fields =================
-  private _identityId: IdentityId;
-  private _title: string;
-  private _content: string;
-  private _type: NotificationType;
-  private _category: NotificationCategory;
-  private _importance: ImportanceLevel;
-  private _status: NotificationStatus;
-  private _isRead: boolean;
-  private _readAt: Date | null;
-  private _actions: NotificationAction[] | null;
-  private _metadata: NotificationMetadata | null;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
-  private _notificationChannels: NotificationChannel[] | null;
+  // ================= 1. Props =================
+  private readonly _props: NotificationClient;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: NotificationId;
-    identityId: IdentityId;
-    title: string;
-    content: string;
-    type: NotificationType;
-    category: NotificationCategory;
-    importance: ImportanceLevel;
-    status: NotificationStatus;
-    isRead: boolean;
-    readAt: Date | null;
-    actions: NotificationAction[] | null;
-    metadata: NotificationMetadata | null;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-    notificationChannels: NotificationChannel[] | null;
-  }) {
-    super(params.id);
-    this._identityId = params.identityId;
-    this._title = params.title;
-    this._content = params.content;
-    this._type = params.type;
-    this._category = params.category;
-    this._importance = params.importance;
-    this._status = params.status;
-    this._isRead = params.isRead;
-    this._readAt = params.readAt;
-    this._actions = params.actions;
-    this._metadata = params.metadata;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
-    this._notificationChannels = params.notificationChannels;
+  private constructor(props: NotificationClient) {
+    super(props.id as NotificationId);
+    this._props = props;
   }
 
   // ================= 3. Getters =================
-  get identityId(): string {
-    return this._identityId as unknown as string;
+  get identityId(): IIdentityId {
+    return this._props.identityId;
   }
 
   get title(): string {
-    return this._title;
+    return this._props.title;
   }
 
   get content(): string {
-    return this._content;
+    return this._props.content;
   }
 
   get type(): NotificationType {
-    return this._type;
+    return this._props.type;
   }
 
   get category(): NotificationCategory {
-    return this._category;
+    return this._props.category;
   }
 
   get importance(): ImportanceLevel {
-    return this._importance;
+    return this._props.importance;
   }
 
   get status(): NotificationStatus {
-    return this._status;
+    return this._props.status;
   }
 
-  get isRead(): boolean {
-    return this._isRead;
+  get readAt(): Date | null | undefined {
+    return this._props.readAt as Date | null | undefined;
   }
 
-  get readAt(): Date | null {
-    return this._readAt;
+  get actions(): NotificationAction[] | null | undefined {
+    return this._props.actions as NotificationAction[] | null | undefined;
   }
 
-  get actions(): NotificationAction[] | null {
-    return this._actions;
-  }
-
-  get metadata(): NotificationMetadata | null {
-    return this._metadata;
+  get metadata(): NotificationMetadata | null | undefined {
+    return this._props.metadata as NotificationMetadata | null | undefined;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
-  get notificationChannels(): NotificationChannel[] | null {
-    return this._notificationChannels;
+  get notificationChannels(): NotificationChannel[] | null | undefined {
+    return this._props.notificationChannels as NotificationChannel[] | null | undefined;
   }
 
   // UI 计算属性
+  get isRead(): boolean {
+    return this._props.readAt !== null && this._props.readAt !== undefined;
+  }
+
   get isDeleted(): boolean {
-    return this._deletedAt !== null;
+    return this._props.deletedAt !== null;
   }
 
   get isPending(): boolean {
-    return this._status === 'Pending';
+    return this._props.status === 'Pending';
   }
 
   get isSent(): boolean {
-    return this._status === 'Sent';
+    return this._props.status === 'Sent';
   }
 
   get isDelivered(): boolean {
-    return this._status === 'Delivered';
+    return this._props.status === 'Delivered';
   }
 
   get isFailed(): boolean {
-    return this._status === 'Failed';
+    return this._props.status === 'Failed';
   }
 
   get hasActions(): boolean {
-    return this._actions !== null && this._actions.length > 0;
+    const actions = this._props.actions;
+    return actions !== null && actions !== undefined && actions.length > 0;
   }
 
   get displayTitle(): string {
-    return this._title;
+    return this._props.title;
   }
 
   // ================= 4. Factory Methods =================
@@ -192,7 +145,6 @@ export class Notification extends AggregateRoot<NotificationId> implements Notif
       category: dto.category,
       importance: dto.importance,
       status: dto.status,
-      isRead: dto.isRead,
       readAt: dto.readAt ? new Date(dto.readAt) : null,
       actions: dto.actions?.map(a => NotificationAction.fromDTO(a)) ?? null,
       metadata: dto.metadata ? NotificationMetadata.fromDTO(dto.metadata) : null,
@@ -206,24 +158,31 @@ export class Notification extends AggregateRoot<NotificationId> implements Notif
 
   // ================= 5. DTO Conversion =================
   public toDTO(): NotificationClientDTO {
+    const actions = this._props.actions as NotificationAction[] | null | undefined;
+    const metadata = this._props.metadata as NotificationMetadata | null | undefined;
+    const readAt = this._props.readAt as Date | null | undefined;
+    const createdAt = this._props.createdAt as Date;
+    const updatedAt = this._props.updatedAt as Date;
+    const deletedAt = this._props.deletedAt as Date | null;
+    const notificationChannels = this._props.notificationChannels as NotificationChannel[] | null | undefined;
     return {
       id: this.id as unknown as string,
-      identityId: this._identityId as unknown as string,
-      title: this._title,
-      content: this._content,
-      type: this._type,
-      category: this._category,
-      importance: this._importance,
-      status: this._status,
-      isRead: this._isRead,
-      readAt: this._readAt?.getTime() ?? null,
-      actions: this._actions?.map(a => a.toDTO()) ?? null,
-      metadata: this._metadata?.toDTO() ?? null,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
-      notificationChannels: this._notificationChannels?.map(c => c.toDTO()) ?? null,
+      identityId: this._props.identityId as unknown as string,
+      title: this._props.title,
+      content: this._props.content,
+      type: this._props.type,
+      category: this._props.category,
+      importance: this._props.importance,
+      status: this._props.status,
+      isRead: this.isRead,
+      readAt: readAt?.getTime() ?? null,
+      actions: actions?.map(a => a.toDTO()) ?? null,
+      metadata: metadata?.toDTO() ?? null,
+      version: this._props.version,
+      createdAt: createdAt.getTime(),
+      updatedAt: updatedAt.getTime(),
+      deletedAt: deletedAt?.getTime() ?? null,
+      notificationChannels: notificationChannels?.map(c => c.toDTO()) ?? null,
     };
   }
 }

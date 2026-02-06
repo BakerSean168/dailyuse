@@ -14,92 +14,65 @@
 import type {
   KeyResultClient,
   KeyResultClientDTO,
-  KeyResultProgressDTO,
+  KeyResultProgress,
 } from '@dailyuse/contracts/goal';
 import { Entity } from '@dailyuse/utils';
 import { KeyResultId } from '@dailyuse/domain-shared/goal';
 
 export class KeyResult extends Entity<KeyResultId> implements KeyResultClient {
-  // ================= 1. Backing Fields =================
-  private _title: string;
-  private _description: string | null;
-  private _progress: KeyResultProgressDTO;
-  private _weight: number;
-  private _order: number;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  // ================= 1. Props =================
+  private readonly _props: KeyResultClient;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: KeyResultId;
-    title: string;
-    description: string | null;
-    progress: KeyResultProgressDTO;
-    weight: number;
-    order: number;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(params.id);
-    this._title = params.title;
-    this._description = params.description;
-    this._progress = params.progress;
-    this._weight = params.weight;
-    this._order = params.order;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+  private constructor(props: KeyResultClient) {
+    super(props.id);
+    this._props = props;
   }
 
   // ================= 3. Getters =================
   get title(): string {
-    return this._title;
+    return this._props.title;
   }
 
   get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
 
-  get progress(): KeyResultProgressDTO {
-    return this._progress;
+  get progress(): KeyResultProgress {
+    return this._props.progress;
   }
 
   get weight(): number {
-    return this._weight;
+    return this._props.weight;
   }
 
   get order(): number {
-    return this._order;
+    return this._props.order;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // 计算属性
   get isDeleted(): boolean {
-    return this._deletedAt !== null;
+    return this._props.deletedAt !== null;
   }
 
   get progressPercentage(): number {
-    const { initialValue, currentValue, targetValue } = this._progress;
+    const { initialValue, currentValue, targetValue } = this._props.progress;
     if (targetValue === initialValue) return currentValue >= targetValue ? 100 : 0;
     return Math.round(((currentValue - initialValue) / (targetValue - initialValue)) * 100);
   }
@@ -124,15 +97,15 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultClient {
   public toDTO(): KeyResultClientDTO {
     return {
       id: String(this.id),
-      title: this._title,
-      description: this._description,
-      progress: { ...this._progress },
-      weight: this._weight,
-      order: this._order,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      title: this._props.title,
+      description: this._props.description,
+      progress: { ...this._props.progress },
+      weight: this._props.weight,
+      order: this._props.order,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 }

@@ -21,6 +21,20 @@ import {
   ChannelStatus as ChannelStatusType,
 } from '@dailyuse/domain-shared/notification';
 
+/** Props interface for NotificationChannel */
+interface NotificationChannelProps {
+  notificationId: NotificationId;
+  channelType: NotificationChannelType;
+  status: ChannelStatus;
+  recipient: string | null;
+  sendAttempts: number;
+  maxRetries: number;
+  error: ChannelError | null;
+  response: ChannelResponse | null;
+  sentAt: Date | null;
+  failedAt: Date | null;
+}
+
 /**
  * NotificationChannel 实体
  * 管理通知在特定渠道的发送状态
@@ -29,17 +43,8 @@ export class NotificationChannel
   extends Entity<NotificationChannelId>
   implements NotificationChannelServer
 {
-  // ===== 私有字段 =====
-  private _notificationId: NotificationId;
-  private _channelType: NotificationChannelType;
-  private _status: ChannelStatus;
-  private _recipient: string | null;
-  private _sendAttempts: number;
-  private _maxRetries: number;
-  private _error: ChannelError | null;
-  private _response: ChannelResponse | null;
-  private _sentAt: Date | null;
-  private _failedAt: Date | null;
+  // ===== 私有属性容器 =====
+  private _props: NotificationChannelProps;
 
   // ===== 构造函数（私有） =====
   private constructor(
@@ -58,99 +63,101 @@ export class NotificationChannel
     },
   ) {
     super(id);
-    this._notificationId = params.notificationId;
-    this._channelType = params.channelType;
-    this._status = params.status;
-    this._recipient = params.recipient ?? null;
-    this._sendAttempts = params.sendAttempts;
-    this._maxRetries = params.maxRetries;
-    this._error = params.error ?? null;
-    this._response = params.response ?? null;
-    this._sentAt = params.sentAt ?? null;
-    this._failedAt = params.failedAt ?? null;
+    this._props = {
+      notificationId: params.notificationId,
+      channelType: params.channelType,
+      status: params.status,
+      recipient: params.recipient ?? null,
+      sendAttempts: params.sendAttempts,
+      maxRetries: params.maxRetries,
+      error: params.error ?? null,
+      response: params.response ?? null,
+      sentAt: params.sentAt ?? null,
+      failedAt: params.failedAt ?? null,
+    };
   }
 
   // ===== Getter 属性 =====
   public get notificationId(): NotificationId {
-    return this._notificationId;
+    return this._props.notificationId;
   }
 
   public get channelType(): NotificationChannelType {
-    return this._channelType;
+    return this._props.channelType;
   }
 
   public get status(): ChannelStatus {
-    return this._status;
+    return this._props.status;
   }
 
   public get recipient(): string | null {
-    return this._recipient;
+    return this._props.recipient;
   }
 
   public get sendAttempts(): number {
-    return this._sendAttempts;
+    return this._props.sendAttempts;
   }
 
   public get maxRetries(): number {
-    return this._maxRetries;
+    return this._props.maxRetries;
   }
 
   public get error(): ChannelErrorDTO | null {
-    return this._error?.toDTO() ?? null;
+    return this._props.error?.toDTO() ?? null;
   }
 
   public get response(): ChannelResponseDTO | null {
-    return this._response?.toDTO() ?? null;
+    return this._props.response?.toDTO() ?? null;
   }
 
   public get sentAt(): Date | null {
-    return this._sentAt;
+    return this._props.sentAt;
   }
 
   public get failedAt(): Date | null {
-    return this._failedAt;
+    return this._props.failedAt;
   }
 
   // ===== 业务方法 =====
 
   public send(): void {
-    if (this._status !== ChannelStatusType.Pending) {
+    if (this._props.status !== ChannelStatusType.Pending) {
       throw new Error('只能发送待发送状态的渠道');
     }
-    this._sendAttempts++;
-    this._status = ChannelStatusType.Sent;
-    this._sentAt = new Date();
+    this._props.sendAttempts++;
+    this._props.status = ChannelStatusType.Sent;
+    this._props.sentAt = new Date();
   }
 
   public markAsDelivered(response?: ChannelResponse): void {
-    if (this._status !== ChannelStatusType.Sent) {
+    if (this._props.status !== ChannelStatusType.Sent) {
       throw new Error('只能将已发送状态标记为已送达');
     }
-    this._status = ChannelStatusType.Delivered;
+    this._props.status = ChannelStatusType.Delivered;
     if (response) {
-      this._response = response;
+      this._props.response = response;
     }
   }
 
   public markAsFailed(error: ChannelError): void {
-    this._status = ChannelStatusType.Failed;
-    this._error = error;
-    this._failedAt = new Date();
+    this._props.status = ChannelStatusType.Failed;
+    this._props.error = error;
+    this._props.failedAt = new Date();
   }
 
   public cancel(): void {
     if (
-      this._status === ChannelStatusType.Delivered
+      this._props.status === ChannelStatusType.Delivered
     ) {
       throw new Error('无法取消：渠道消息已送达');
     }
-    this._status = ChannelStatusType.Cancelled;
+    this._props.status = ChannelStatusType.Cancelled;
   }
 
   public canRetry(): boolean {
     return (
-      this._status === ChannelStatusType.Failed &&
-      this._sendAttempts < this._maxRetries
+      this._props.status === ChannelStatusType.Failed &&
+      this._props.sendAttempts < this._props.maxRetries
     );
   }
 
@@ -158,9 +165,9 @@ export class NotificationChannel
     if (!this.canRetry()) {
       throw new Error('无法重试：已达最大重试次数或状态不允许');
     }
-    this._status = ChannelStatusType.Pending;
-    this._error = null;
-    this._failedAt = null;
+    this._props.status = ChannelStatusType.Pending;
+    this._props.error = null;
+    this._props.failedAt = null;
   }
 
   // ===== 转换方法 =====
@@ -168,17 +175,17 @@ export class NotificationChannel
   public toServerDTO(): NotificationChannelServerDTO {
     return {
       id: String(this.id),
-      notificationId: String(this._notificationId),
-      channelType: this._channelType,
-      status: this._status,
-      recipient: this._recipient,
-      sendAttempts: this._sendAttempts,
-      maxRetries: this._maxRetries,
-      error: this._error?.toDTO() ?? null,
-      response: this._response?.toDTO() ?? null,
+      notificationId: String(this._props.notificationId),
+      channelType: this._props.channelType,
+      status: this._props.status,
+      recipient: this._props.recipient,
+      sendAttempts: this._props.sendAttempts,
+      maxRetries: this._props.maxRetries,
+      error: this._props.error?.toDTO() ?? null,
+      response: this._props.response?.toDTO() ?? null,
       createdAt: Date.now(),
-      sentAt: this._sentAt?.getTime() ?? null,
-      failedAt: this._failedAt?.getTime() ?? null,
+      sentAt: this._props.sentAt?.getTime() ?? null,
+      failedAt: this._props.failedAt?.getTime() ?? null,
     };
   }
 
@@ -186,37 +193,37 @@ export class NotificationChannel
     const now = Date.now();
     return {
       id: String(this.id),
-      notificationId: String(this._notificationId),
-      channelType: this._channelType,
-      status: this._status,
-      recipient: this._recipient,
-      sendAttempts: this._sendAttempts,
-      maxRetries: this._maxRetries,
-      error: this._error?.toDTO() ?? null,
-      response: this._response?.toDTO() ?? null,
+      notificationId: String(this._props.notificationId),
+      channelType: this._props.channelType,
+      status: this._props.status,
+      recipient: this._props.recipient,
+      sendAttempts: this._props.sendAttempts,
+      maxRetries: this._props.maxRetries,
+      error: this._props.error?.toDTO() ?? null,
+      response: this._props.response?.toDTO() ?? null,
       version: 1,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
-      sentAt: this._sentAt?.getTime() ?? null,
-      failedAt: this._failedAt?.getTime() ?? null,
+      sentAt: this._props.sentAt?.getTime() ?? null,
+      failedAt: this._props.failedAt?.getTime() ?? null,
     };
   }
 
   public toPersistenceDTO(): NotificationChannelPersistenceDTO {
     return {
       id: String(this.id),
-      notificationId: this._notificationId,
-      channelType: this._channelType,
-      status: this._status,
-      recipient: this._recipient,
-      sendAttempts: this._sendAttempts,
-      maxRetries: this._maxRetries,
-      error: this._error ? JSON.stringify(this._error.toDTO()) : null,
-      response: this._response ? JSON.stringify(this._response.toDTO()) : null,
+      notificationId: this._props.notificationId,
+      channelType: this._props.channelType,
+      status: this._props.status,
+      recipient: this._props.recipient,
+      sendAttempts: this._props.sendAttempts,
+      maxRetries: this._props.maxRetries,
+      error: this._props.error ? JSON.stringify(this._props.error.toDTO()) : null,
+      response: this._props.response ? JSON.stringify(this._props.response.toDTO()) : null,
       createdAt: new Date(),
-      sentAt: this._sentAt ?? null,
-      failedAt: this._failedAt ?? null,
+      sentAt: this._props.sentAt ?? null,
+      failedAt: this._props.failedAt ?? null,
     };
   }
 

@@ -27,62 +27,63 @@ import {
 // 1. 引入 Contract 定义的类型，用于类型提示 (可选，但推荐)
 import type { AccountEventMap } from '@dailyuse/contracts/account';
 
+/** Props interface for Account */
+interface AccountProps {
+  profile: AccountProfile;
+  email: ContactEmail;
+  settings: AccountSettings;
+  status: AccountStatus;
+  phone: ContactPhone | null;
+  version: number;
+  deletedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export class Account extends AggregateRoot<IdentityId> implements AccountServer {
   
-  // ================= 1. 内部状态 (Backing Fields) =================
-  // 命名习惯：加下划线 _ 表示私有 backing field
-  private _profile: AccountProfile;
-  private _email: ContactEmail;
-  private _settings: AccountSettings;
-  private _status: AccountStatus;
-  private _phone: ContactPhone | null;
-
-  // 同步字段
-  private _version: number;
-  private _deletedAt: Date | null;
-
-  // 使用私有字段存储，通过 getter 暴露，以便内部修改
-  private _createdAt: Date;
-  private _updatedAt: Date;
+  // ================= 1. 私有属性容器 =================
+  private _props: AccountProps;
 
   // ================= 2. 构造函数 (Private) =================
   // 仅用于通过 Factory 还原或创建对象
   private constructor(props: AccountServerDTO) {
     super(IdentityId.of(props.id)); // 使用值对象还原 ID
     
-    this._profile = AccountProfile.create(props.profile);
-    this._email = ContactEmail.create(props.email);
-    this._settings = AccountSettings.create(props.settings);
-    this._status = AccountStatus.of(props.status); // 假设 Status 有工厂方法
-    this._phone = props.phone ? ContactPhone.create(props.phone) : null;
-    
-    this._version = props.version;
-    this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
-    this._createdAt = new Date(props.createdAt);
-    this._updatedAt = new Date(props.updatedAt);
+    this._props = {
+      profile: AccountProfile.create(props.profile),
+      email: ContactEmail.create(props.email),
+      settings: AccountSettings.create(props.settings),
+      status: AccountStatus.of(props.status),
+      phone: props.phone ? ContactPhone.create(props.phone) : null,
+      version: props.version,
+      deletedAt: props.deletedAt ? new Date(props.deletedAt) : null,
+      createdAt: new Date(props.createdAt),
+      updatedAt: new Date(props.updatedAt),
+    };
   }
 
   // ================= 3. 公共属性 (Getters) =================
   get profile(): AccountProfile {
-    return this._profile;
+    return this._props.profile;
   }
   get email(): ContactEmail {
-    return this._email;
+    return this._props.email;
   }
   get settings(): AccountSettings {
-    return this._settings;
+    return this._props.settings;
   }
   get status(): AccountStatus {
-    return this._status;
+    return this._props.status;
   }
   get phone(): ContactPhone | null {
-    return this._phone;
+    return this._props.phone;
   }
 
-  get version(): number { return this._version; }
-  get deletedAt(): Date | null { return this._deletedAt; }
-  get createdAt(): Date { return this._createdAt; }
-  get updatedAt(): Date { return this._updatedAt; }
+  get version(): number { return this._props.version; }
+  get deletedAt(): Date | null { return this._props.deletedAt; }
+  get createdAt(): Date { return this._props.createdAt; }
+  get updatedAt(): Date { return this._props.updatedAt; }
 
   // ================= 4. 工厂方法 (Factories) =================
 
@@ -146,7 +147,7 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
   
   // 辅助方法：刷新更新时间
   private refreshUpdatedAt(): void {
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -159,23 +160,23 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
    */
   public close(): void {
     // 1. 检查内部一致性 (Invariants)
-    if (this._status === AccountStatus.DEACTIVATED) {
+    if (this._props.status === AccountStatus.DEACTIVATED) {
       // 幂等性设计：如果已经注销了，直接返回，或者抛错
       // return; 
       throw new Error("Account is already closed.");
     }
 
-    if (this._status === AccountStatus.SUSPENDED) {
+    if (this._props.status === AccountStatus.SUSPENDED) {
       throw new Error("Cannot close a suspended account. Please contact support.");
     }
 
     // 2. 执行状态变更
-    this._status = AccountStatus.DEACTIVATED;
+    this._props.status = AccountStatus.DEACTIVATED;
     
     // 3. (可选) 隐私合规操作 (GDPR - Right to be forgotten)
     // 注销时是否要抹除个人信息？
-    // this._profile = this._profile.anonymize(); 
-    // this._email = this._email.mask();
+    // this._props.profile = this._props.profile.anonymize(); 
+    // this._props.email = this._props.email.mask();
 
     // 4. 更新时间
     this.refreshUpdatedAt();
@@ -194,30 +195,30 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
   public toServerDTO(): AccountServerDTO {
     return {
       id: this.id,
-      status: this._status,
-      profile: this._profile.toDTO(),
-      settings: this._settings.toDTO(),
-      email: this._email.toDTO(),
-      phone: this._phone ? this._phone.toDTO() : null,
-      version: this._version,
-      createdAt: this.createdAt.getTime(),
-      updatedAt: this.updatedAt.getTime(),
-      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
+      status: this._props.status,
+      profile: this._props.profile.toDTO(),
+      settings: this._props.settings.toDTO(),
+      email: this._props.email.toDTO(),
+      phone: this._props.phone ? this._props.phone.toDTO() : null,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
     };
   }
 
   public toPersistenceDTO(): AccountPersistenceDTO {
     return {
       id: this.id,
-      status: this._status,
-      profile: this._profile.toPersistenceDTO(),
-      settings: this._settings.toPersistenceDTO(),
-      email: this._email.toPersistenceDTO(),
-      phone: this._phone ? this._phone.toPersistenceDTO() : null,
-      version: this._version,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      deletedAt: this._deletedAt,
+      status: this._props.status,
+      profile: this._props.profile.toPersistenceDTO(),
+      settings: this._props.settings.toPersistenceDTO(),
+      email: this._props.email.toPersistenceDTO(),
+      phone: this._props.phone ? this._props.phone.toPersistenceDTO() : null,
+      version: this._props.version,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt,
     }
   }
 }

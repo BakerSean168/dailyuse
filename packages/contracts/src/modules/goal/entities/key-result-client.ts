@@ -2,8 +2,8 @@
  * KeyResult Entity - Client Interface
  */
 
-import type { DomainDate, TransferDate } from '@/primitives';
-import type { KeyResultProgressDTO } from '../value-objects';
+import type { DomainDate, TransferDate, KeyResultId } from '@/primitives';
+import type { KeyResultProgress, KeyResultProgressDTO } from '../value-objects';
 
 export interface KeyResultClientDTO {
   id: string;
@@ -19,10 +19,10 @@ export interface KeyResultClientDTO {
 }
 
 export interface KeyResultClient {
-  id: string;
+  id: KeyResultId;
   title: string;
   description: string | null;
-  progress: KeyResultProgressDTO;
+  progress: KeyResultProgress;
   weight: number; // 权重 (0-100)
   order: number;
   version: number;

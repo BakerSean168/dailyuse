@@ -28,112 +28,70 @@ import {
 import { IdentityId } from '@dailyuse/domain-shared';
 
 export class EditorTab extends Entity<EditorTabId> implements EditorTabClient {
-  // ================= 1. Backing Fields =================
-  private _groupId: EditorGroupId;
-  private _sessionId: EditorSessionId;
-  private _workspaceId: EditorWorkspaceId;
-  private _identityId: IdentityId;
-  private _documentId: DocumentId | null;
-  private _tabIndex: number;
-  private _tabType: TabType;
-  private _name: string;
-  private _viewState: TabViewStateClientDTO;
-  private _isPinned: boolean;
-  private _isDirty: boolean;
-  private _lastAccessedAt: Date | null;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+  // ================= 1. Backing Field =================
+  private readonly _props: EditorTabClient;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: EditorTabId;
-    groupId: EditorGroupId;
-    sessionId: EditorSessionId;
-    workspaceId: EditorWorkspaceId;
-    identityId: IdentityId;
-    documentId: DocumentId | null;
-    tabIndex: number;
-    tabType: TabType;
-    name: string;
-    viewState: TabViewStateClientDTO;
-    isPinned: boolean;
-    isDirty: boolean;
-    lastAccessedAt: Date | null;
-    createdAt: Date;
-    updatedAt: Date;
-  }) {
-    super(params.id);
-    this._groupId = params.groupId;
-    this._sessionId = params.sessionId;
-    this._workspaceId = params.workspaceId;
-    this._identityId = params.identityId;
-    this._documentId = params.documentId;
-    this._tabIndex = params.tabIndex;
-    this._tabType = params.tabType;
-    this._name = params.name;
-    this._viewState = params.viewState;
-    this._isPinned = params.isPinned;
-    this._isDirty = params.isDirty;
-    this._lastAccessedAt = params.lastAccessedAt;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+  private constructor(props: EditorTabClient) {
+    super(props.id);
+    this._props = props;
   }
 
   // ================= 3. Getters =================
   get groupId(): EditorGroupId {
-    return this._groupId;
+    return this._props.groupId;
   }
 
   get sessionId(): EditorSessionId {
-    return this._sessionId;
+    return this._props.sessionId;
   }
 
   get workspaceId(): EditorWorkspaceId {
-    return this._workspaceId;
+    return this._props.workspaceId;
   }
 
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get documentId(): DocumentId | null {
-    return this._documentId;
+    return this._props.documentId;
   }
 
   get tabIndex(): number {
-    return this._tabIndex;
+    return this._props.tabIndex;
   }
 
   get tabType(): TabType {
-    return this._tabType;
+    return this._props.tabType;
   }
 
   get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get viewState(): TabViewStateClientDTO {
-    return this._viewState;
+    return this._props.viewState;
   }
 
   get isPinned(): boolean {
-    return this._isPinned;
+    return this._props.isPinned;
   }
 
   get isDirty(): boolean {
-    return this._isDirty;
+    return this._props.isDirty;
   }
 
   get lastAccessedAt(): DomainDate | null {
-    return this._lastAccessedAt;
+    return this._props.lastAccessedAt;
   }
 
   get createdAt(): DomainDate {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): DomainDate {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   // ================= 4. Factory Methods =================
@@ -161,25 +119,25 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabClient {
   public toDTO(): EditorTabClientDTO {
     return {
       id: String(this.id),
-      groupId: String(this._groupId),
-      sessionId: String(this._sessionId),
-      workspaceId: String(this._workspaceId),
-      identityId: String(this._identityId),
-      documentId: this._documentId ? String(this._documentId) : null,
-      tabIndex: this._tabIndex,
-      tabType: this._tabType,
-      name: this._name,
-      viewState: this._viewState,
-      isPinned: this._isPinned,
-      isDirty: this._isDirty,
-      lastAccessedAt: this._lastAccessedAt?.getTime() ?? null,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      formattedLastAccessed: this._lastAccessedAt
-        ? this.formatRelativeTime(this._lastAccessedAt)
+      groupId: String(this._props.groupId),
+      sessionId: String(this._props.sessionId),
+      workspaceId: String(this._props.workspaceId),
+      identityId: String(this._props.identityId),
+      documentId: this._props.documentId ? String(this._props.documentId) : null,
+      tabIndex: this._props.tabIndex,
+      tabType: this._props.tabType,
+      name: this._props.name,
+      viewState: this._props.viewState,
+      isPinned: this._props.isPinned,
+      isDirty: this._props.isDirty,
+      lastAccessedAt: this._props.lastAccessedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      formattedLastAccessed: this._props.lastAccessedAt
+        ? this.formatRelativeTime(this._props.lastAccessedAt)
         : null,
-      formattedCreatedAt: this.formatDate(this._createdAt),
-      formattedUpdatedAt: this.formatRelativeTime(this._updatedAt),
+      formattedCreatedAt: this.formatDate(this._props.createdAt),
+      formattedUpdatedAt: this.formatRelativeTime(this._props.updatedAt),
     };
   }
 

@@ -35,6 +35,7 @@ export type {
 
 export type {
   EditorSessionClientDTO,
+  EditorSessionClient,
 } from './editor-session-client';
 
 // Editor Group Entity

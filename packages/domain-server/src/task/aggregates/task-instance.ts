@@ -26,89 +26,62 @@ import { AggregateRoot } from '@dailyuse/utils';
 import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../value-objects';
 
 /**
+ * Internal props interface for TaskInstance
+ */
+interface TaskInstanceProps {
+  templateId: TaskTemplateId;
+  identityId: IdentityId;
+  instanceDate: number;
+  timeConfig: TaskTimeConfig;
+  importance: ImportanceLevel;
+  priority?: number;
+  status: TaskInstanceStatus;
+  completionRecord: CompletionRecord | null;
+  skipRecord: SkipRecord | null;
+  actualStartTime: number | null;
+  actualEndTime: number | null;
+  note: string | null;
+  createdAt: number;
+  updatedAt: number;
+  version: number;
+  deletedAt: Date | null;
+}
+
+/**
  * TaskInstance 聚合根
  */
 export class TaskInstance extends AggregateRoot<TaskInstanceId> {
-  // ===== 1. 内部状态(Backing Fields) =====
-  private _templateId: TaskTemplateId;
-  private _identityId: IdentityId;
-  private _instanceDate: number;
-  private _timeConfig: TaskTimeConfig;
-  private _importance: ImportanceLevel;
-  private _priority?: number;
-  private _status: TaskInstanceStatus;
-  private _completionRecord: CompletionRecord | null;
-  private _skipRecord: SkipRecord | null;
-  private _actualStartTime: number | null;
-  private _actualEndTime: number | null;
-  private _note: string | null;
-  private _createdAt: number;
-  private _updatedAt: number;
-  private _version: number;
-  private _deletedAt: Date | null;
+  private _props: TaskInstanceProps;
 
   // ===== 2. 构造函�?(Private) =====
-  private constructor(params: {
-    id?: TaskInstanceId;
-    templateId: TaskTemplateId;
-    identityId: IdentityId;
-    instanceDate: number;
-    timeConfig: TaskTimeConfig;
-    importance: ImportanceLevel;
-    priority?: number;
-    status: TaskInstanceStatus;
-    completionRecord?: CompletionRecord | null;
-    skipRecord?: SkipRecord | null;
-    actualStartTime?: number | null;
-    actualEndTime?: number | null;
-    note?: string | null;
-    createdAt: number;
-    updatedAt: number;
-    version: number;
-    deletedAt: Date | null;
-  }) {
-    super(params.id || TaskInstanceId.generate());
-    this._templateId = params.templateId;
-    this._identityId = params.identityId;
-    this._instanceDate = params.instanceDate;
-    this._timeConfig = params.timeConfig;
-    this._importance = params.importance;
-    this._priority = params.priority;
-    this._status = params.status;
-    this._completionRecord = params.completionRecord ?? null;
-    this._skipRecord = params.skipRecord ?? null;
-    this._actualStartTime = params.actualStartTime ?? null;
-    this._actualEndTime = params.actualEndTime ?? null;
-    this._note = params.note ?? null;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._version = params.version;
-    this._deletedAt = params.deletedAt;
+  private constructor(id: TaskInstanceId, props: TaskInstanceProps) {
+    super(id);
+    this._props = props;
   }
 
   // ===== 3. 公共属�?(Getters) =====
   public get templateId(): TaskTemplateId {
-    return this._templateId;
+    return this._props.templateId;
   }
 
   public get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   public get instanceDate(): number {
-    return this._instanceDate;
+    return this._props.instanceDate;
   }
 
   public get timeConfig(): TaskTimeConfig {
-    return this._timeConfig;
+    return this._props.timeConfig;
   }
 
   public get importance(): ImportanceLevel {
-    return this._importance;
+    return this._props.importance;
   }
 
   public get priority(): number | undefined {
-    return this._priority;
+    return this._props.priority;
   }
 
   /**
@@ -116,57 +89,57 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
    * Story 1.5: 用于优先级计算
    */
   public get dueDate(): number | null {
-    if (this._timeConfig.timeType === TimeType.TimePoint) {
-      return this._timeConfig.timePoint;
-    } else if (this._timeConfig.timeType === TimeType.TimeRange) {
-      return this._timeConfig.timeRange?.end ?? null;
+    if (this._props.timeConfig.timeType === TimeType.TimePoint) {
+      return this._props.timeConfig.timePoint;
+    } else if (this._props.timeConfig.timeType === TimeType.TimeRange) {
+      return this._props.timeConfig.timeRange?.end ?? null;
     } else {
       // 全天任务截止 instanceDate 当天结束 (23:59:59)
       // instanceDate 通常是当天的 00:00:00 (本地时间 或 UTC?)
       // 假设 instanceDate 是该日的起始时间(UTC 0点 或 Local 0点)
       // 如果没有更好的信息，就使用 instanceDate + 1 天
-      return this._instanceDate + 86400000 - 1; 
+      return this._props.instanceDate + 86400000 - 1; 
     }
   }
 
   public get status(): TaskInstanceStatus {
-    return this._status;
+    return this._props.status;
   }
 
   public get completionRecord(): CompletionRecord | null {
-    return this._completionRecord;
+    return this._props.completionRecord;
   }
 
   public get skipRecord(): SkipRecord | null {
-    return this._skipRecord;
+    return this._props.skipRecord;
   }
 
   public get actualStartTime(): number | null {
-    return this._actualStartTime;
+    return this._props.actualStartTime;
   }
 
   public get actualEndTime(): number | null {
-    return this._actualEndTime;
+    return this._props.actualEndTime;
   }
 
   public get note(): string | null {
-    return this._note;
+    return this._props.note;
   }
 
   public get createdAt(): number {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   public get updatedAt(): number {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   public get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   public get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // ===== 业务方法 =====
@@ -179,9 +152,9 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       throw new Error('Cannot start task in current state');
     }
 
-    this._status = 'InProgress' as TaskInstanceStatus;
-    this._actualStartTime = Date.now();
-    this._updatedAt = Date.now();
+    this._props.status = 'InProgress' as TaskInstanceStatus;
+    this._props.actualStartTime = Date.now();
+    this._props.updatedAt = Date.now();
   }
 
   /**
@@ -193,23 +166,23 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
 
     const now = Date.now();
-    this._status = 'Completed' as TaskInstanceStatus;
-    this._actualEndTime = now;
+    this._props.status = 'Completed' as TaskInstanceStatus;
+    this._props.actualEndTime = now;
 
     // 创建完成记录
-    this._completionRecord = CompletionRecord.create({
+    this._props.completionRecord = CompletionRecord.create({
       completedAt: now,
       actualDuration:
-        actualDuration ?? (this._actualStartTime ? now - this._actualStartTime : null),
+        actualDuration ?? (this._props.actualStartTime ? now - this._props.actualStartTime : null),
       note: note ?? null,
       rating: rating ?? null,
     });
 
     if (note) {
-      this._note = note;
+      this._props.note = note;
     }
 
-    this._updatedAt = now;
+    this._props.updatedAt = now;
     
     // 🎯 触发领域事件
     this.addDomainEvent<TaskEventMap['task:complete']>('task:complete', {
@@ -226,28 +199,28 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
 
     const now = Date.now();
-    this._status = 'Skipped' as TaskInstanceStatus;
+    this._props.status = 'Skipped' as TaskInstanceStatus;
 
     // 创建跳过记录
-    this._skipRecord = SkipRecord.create({
+    this._props.skipRecord = SkipRecord.create({
       skippedAt: now,
       reason: reason ?? null,
     });
 
     if (reason) {
-      this._note = reason;
+      this._props.note = reason;
     }
 
-    this._updatedAt = now;
+    this._props.updatedAt = now;
   }
 
   /**
    * 标记为过�?
    */
   public markExpired(): void {
-    if (this._status === 'Pending' || this._status === 'InProgress') {
-      this._status = 'Expired' as TaskInstanceStatus;
-      this._updatedAt = Date.now();
+    if (this._props.status === 'Pending' || this._props.status === 'InProgress') {
+      this._props.status = 'Expired' as TaskInstanceStatus;
+      this._props.updatedAt = Date.now();
     }
   }
 
@@ -255,25 +228,25 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
    * 业务判断方法
    */
   public canStart(): boolean {
-    return this._status === 'Pending';
+    return this._props.status === 'Pending';
   }
 
   public canComplete(): boolean {
-    return this._status === 'Pending' || this._status === 'InProgress';
+    return this._props.status === 'Pending' || this._props.status === 'InProgress';
   }
 
   public canSkip(): boolean {
-    return this._status === 'Pending' || this._status === 'InProgress';
+    return this._props.status === 'Pending' || this._props.status === 'InProgress';
   }
 
   public isOverdue(): boolean {
-    if (this._status !== 'Pending' && this._status !== 'InProgress') {
+    if (this._props.status !== 'Pending' && this._props.status !== 'InProgress') {
       return false;
     }
 
     const now = Date.now();
     // 检查是否超过实例日�?
-    return now > this._instanceDate + 86400000; // 超过1天视为过�?
+    return now > this._props.instanceDate + 86400000; // 超过1天视为过�?
   }
 
   // ===== 6. 序列化(Serialization) =====
@@ -281,60 +254,60 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
   public toServerDTO(): TaskInstanceServerDTO {
     return {
       id: this.id.toString(),
-      templateId: this._templateId.toString(),
-      identityId: this._identityId.toString(),
-      instanceDate: this._instanceDate,
-      timeConfig: this._timeConfig.toDTO(),
-      importance: this._importance,
-      priority: this._priority,
-      status: this._status,
-      actualStartTime: this._actualStartTime,
-      actualEndTime: this._actualEndTime,
-      comment: this._note,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      version: this._version,
-      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
+      templateId: this._props.templateId.toString(),
+      identityId: this._props.identityId.toString(),
+      instanceDate: this._props.instanceDate,
+      timeConfig: this._props.timeConfig.toDTO(),
+      importance: this._props.importance,
+      priority: this._props.priority,
+      status: this._props.status,
+      actualStartTime: this._props.actualStartTime,
+      actualEndTime: this._props.actualEndTime,
+      comment: this._props.note,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      version: this._props.version,
+      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
     };
   }
 
   public toClientDTO(): TaskInstanceClientDTO {
     return {
       id: this.id.toString(),
-      templateId: this._templateId.toString(),
-      identityId: this._identityId.toString(),
-      instanceDate: this._instanceDate,
-      timeConfig: this._timeConfig.toDTO(),
-      importance: this._importance,
-      priority: this._priority,
-      status: this._status,
-      actualStartTime: this._actualStartTime,
-      actualEndTime: this._actualEndTime,
-      comment: this._note,
-      version: this._version,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      templateId: this._props.templateId.toString(),
+      identityId: this._props.identityId.toString(),
+      instanceDate: this._props.instanceDate,
+      timeConfig: this._props.timeConfig.toDTO(),
+      importance: this._props.importance,
+      priority: this._props.priority,
+      status: this._props.status,
+      actualStartTime: this._props.actualStartTime,
+      actualEndTime: this._props.actualEndTime,
+      comment: this._props.note,
+      version: this._props.version,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 
   public toPersistenceDTO(): TaskInstancePersistenceDTO {
     return {
       id: this.id.toString(),
-      templateId: this._templateId.toString(),
-      identityId: this._identityId.toString(),
-      instanceDate: new Date(this._instanceDate),
-      timeConfig: JSON.stringify(this._timeConfig.toDTO()),
-      importance: this._importance,
-      priority: this._priority,
-      status: this._status,
-      actualStartTime: this._actualStartTime ? new Date(this._actualStartTime) : null,
-      actualEndTime: this._actualEndTime ? new Date(this._actualEndTime) : null,
-      comment: this._note,
-      createdAt: new Date(this._createdAt),
-      updatedAt: new Date(this._updatedAt),
-      version: this._version,
-      deletedAt: this._deletedAt,
+      templateId: this._props.templateId.toString(),
+      identityId: this._props.identityId.toString(),
+      instanceDate: new Date(this._props.instanceDate),
+      timeConfig: JSON.stringify(this._props.timeConfig.toDTO()),
+      importance: this._props.importance,
+      priority: this._props.priority,
+      status: this._props.status,
+      actualStartTime: this._props.actualStartTime ? new Date(this._props.actualStartTime) : null,
+      actualEndTime: this._props.actualEndTime ? new Date(this._props.actualEndTime) : null,
+      comment: this._props.note,
+      createdAt: new Date(this._props.createdAt),
+      updatedAt: new Date(this._props.updatedAt),
+      version: this._props.version,
+      deletedAt: this._props.deletedAt,
     };
   }
 
@@ -354,13 +327,18 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     importance: ImportanceLevel;
   }): TaskInstance {
     const now = Date.now();
-    const instance = new TaskInstance({
+    const instance = new TaskInstance(TaskInstanceId.generate(), {
       templateId: params.templateId,
       identityId: params.identityId,
       instanceDate: params.instanceDate,
       timeConfig: params.timeConfig,
       importance: params.importance,
       status: 'Pending' as TaskInstanceStatus,
+      completionRecord: null,
+      skipRecord: null,
+      actualStartTime: null,
+      actualEndTime: null,
+      note: null,
       createdAt: now,
       updatedAt: now,
       version: 1,
@@ -374,8 +352,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
    * 🏭 恢复工厂：从 ServerDTO 恢复
    */
   public static fromServerDTO(dto: TaskInstanceServerDTO): TaskInstance {
-    return new TaskInstance({
-      id: dto.id as TaskInstanceId,
+    return new TaskInstance(dto.id as TaskInstanceId, {
       templateId: dto.templateId as TaskTemplateId,
       identityId: dto.identityId as IdentityId,
       instanceDate: dto.instanceDate,
@@ -383,6 +360,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       importance: dto.importance,
       priority: dto.priority,
       status: dto.status as TaskInstanceStatus,
+      completionRecord: null,
+      skipRecord: null,
       actualStartTime: dto.actualStartTime,
       actualEndTime: dto.actualEndTime,
       note: dto.comment,
@@ -397,8 +376,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
    * 🏭 恢复工厂：从 PersistenceDTO 恢复
    */
   public static fromPersistenceDTO(dto: TaskInstancePersistenceDTO): TaskInstance {
-    return new TaskInstance({
-      id: dto.id as TaskInstanceId,
+    return new TaskInstance(dto.id as TaskInstanceId, {
       templateId: dto.templateId as TaskTemplateId,
       identityId: dto.identityId as IdentityId,
       instanceDate: dto.instanceDate.getTime(),
@@ -406,6 +384,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       importance: dto.importance as ImportanceLevel,
       priority: dto.priority,
       status: dto.status as TaskInstanceStatus,
+      completionRecord: null,
+      skipRecord: null,
       actualStartTime: dto.actualStartTime?.getTime() ?? null,
       actualEndTime: dto.actualEndTime?.getTime() ?? null,
       note: dto.comment,
@@ -426,7 +406,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       Skipped: '已跳过',
       Expired: '已过期',
     };
-    return statusMap[this._status];
+    return statusMap[this._props.status];
   }
 
   private getStatusColor(): string {
@@ -437,7 +417,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       Skipped: 'gray',
       Expired: 'red',
     };
-    return colorMap[this._status];
+    return colorMap[this._props.status];
   }
 
   private formatDuration(ms: number): string {

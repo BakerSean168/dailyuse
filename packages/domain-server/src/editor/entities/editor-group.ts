@@ -23,19 +23,26 @@ import { Entity, generateUUID } from '@dailyuse/utils';
 import { EditorTab } from './editor-tab';
 
 /**
+ * EditorGroup 属性接口
+ */
+interface EditorGroupProps {
+  sessionId: EditorSessionId;
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
+  groupIndex: number;
+  activeTabIndex: number;
+  name: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
  * EditorGroup 实体
  * 作为 EditorSession 实体的子实体
  */
 export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupServer {
-  // ===== 私有字段 =====
-  private _sessionId: EditorSessionId;
-  private _workspaceId: EditorWorkspaceId;
-  private _identityId: IdentityId;
-  private _groupIndex: number;
-  private _activeTabIndex: number;
-  private _name: string | null;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+  // ===== 私有属性 =====
+  private _props: EditorGroupProps;
 
   // ===== 子实体 =====
   private _tabs: EditorTab[];
@@ -54,40 +61,42 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
     tabs?: EditorTab[];
   }) {
     super(params.id);
-    this._sessionId = params.sessionId;
-    this._workspaceId = params.workspaceId;
-    this._identityId = params.identityId;
-    this._groupIndex = params.groupIndex;
-    this._activeTabIndex = params.activeTabIndex;
-    this._name = params.name ?? null;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+    this._props = {
+      sessionId: params.sessionId,
+      workspaceId: params.workspaceId,
+      identityId: params.identityId,
+      groupIndex: params.groupIndex,
+      activeTabIndex: params.activeTabIndex,
+      name: params.name ?? null,
+      createdAt: params.createdAt,
+      updatedAt: params.updatedAt,
+    };
     this._tabs = params.tabs ?? [];
   }
 
   // ===== Getter 属性 =====
   public get sessionId(): EditorSessionId {
-    return this._sessionId;
+    return this._props.sessionId;
   }
 
   public get workspaceId(): EditorWorkspaceId {
-    return this._workspaceId;
+    return this._props.workspaceId;
   }
 
   public get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   public get groupIndex(): number {
-    return this._groupIndex;
+    return this._props.groupIndex;
   }
 
   public get activeTabIndex(): number {
-    return this._activeTabIndex;
+    return this._props.activeTabIndex;
   }
 
   public get name(): string | null {
-    return this._name;
+    return this._props.name;
   }
 
   public get tabs(): EditorTab[] {
@@ -95,11 +104,11 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
   }
 
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   public get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   // ===== 工厂方法 =====
@@ -193,9 +202,9 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
   }): EditorTab {
     const tab = EditorTab.create({
       groupId: this.id,
-      sessionId: this._sessionId,
-      workspaceId: this._workspaceId,
-      identityId: this._identityId,
+      sessionId: this._props.sessionId,
+      workspaceId: this._props.workspaceId,
+      identityId: this._props.identityId,
       documentId: params.documentId,
       type: params.type,
       viewState: params.viewState,
@@ -203,7 +212,7 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
     });
 
     this._tabs.push(tab);
-    this._activeTabIndex = this._tabs.length - 1;
+    this._props.activeTabIndex = this._tabs.length - 1;
     this.updateTimestamp();
 
     return tab;
@@ -215,8 +224,8 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
       this._tabs.splice(index, 1);
 
       // 调整活动标签索引
-      if (this._activeTabIndex >= this._tabs.length) {
-        this._activeTabIndex = Math.max(0, this._tabs.length - 1);
+      if (this._props.activeTabIndex >= this._tabs.length) {
+        this._props.activeTabIndex = Math.max(0, this._tabs.length - 1);
       }
 
       this.updateTimestamp();
@@ -225,18 +234,18 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
 
   public setActiveTab(tabIndex: number): void {
     if (tabIndex >= 0 && tabIndex < this._tabs.length) {
-      this._activeTabIndex = tabIndex;
+      this._props.activeTabIndex = tabIndex;
       this.updateTimestamp();
     }
   }
 
   public rename(name: string | null): void {
-    this._name = name;
+    this._props.name = name;
     this.updateTimestamp();
   }
 
   public updateGroupIndex(groupIndex: number): void {
-    this._groupIndex = groupIndex;
+    this._props.groupIndex = groupIndex;
     this.updateTimestamp();
   }
 
@@ -245,11 +254,11 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
   }
 
   public getActiveTab(): EditorTab | undefined {
-    return this._tabs[this._activeTabIndex];
+    return this._tabs[this._props.activeTabIndex];
   }
 
   private updateTimestamp(): void {
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   // ===== 计算属性 =====
@@ -262,55 +271,55 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
   }
 
   public get hasActiveTab(): boolean {
-    return this._activeTabIndex >= 0 && this._activeTabIndex < this._tabs.length;
+    return this._props.activeTabIndex >= 0 && this._props.activeTabIndex < this._tabs.length;
   }
 
   // ===== 序列化方法 =====
   public toServerDTO(): EditorGroupServerDTO {
     return {
       id: this.id,
-      sessionId: this._sessionId,
-      workspaceId: this._workspaceId,
-      identityId: this._identityId,
-      groupIndex: this._groupIndex,
-      activeTabIndex: this._activeTabIndex,
-      name: this._name,
+      sessionId: this._props.sessionId,
+      workspaceId: this._props.workspaceId,
+      identityId: this._props.identityId,
+      groupIndex: this._props.groupIndex,
+      activeTabIndex: this._props.activeTabIndex,
+      name: this._props.name,
       tabs: this._tabs.map((tab) => tab.toServerDTO()),
-      createdAt: this._createdAt.getTime() as TransferDate,
-      updatedAt: this._updatedAt.getTime() as TransferDate,
+      createdAt: this._props.createdAt.getTime() as TransferDate,
+      updatedAt: this._props.updatedAt.getTime() as TransferDate,
     };
   }
 
   public toClientDTO(): EditorGroupClientDTO {
     return {
       id: this.id,
-      sessionId: this._sessionId,
-      workspaceId: this._workspaceId,
-      identityId: this._identityId,
-      groupIndex: this._groupIndex,
-      activeTabIndex: this._activeTabIndex,
-      name: this._name,
+      sessionId: this._props.sessionId,
+      workspaceId: this._props.workspaceId,
+      identityId: this._props.identityId,
+      groupIndex: this._props.groupIndex,
+      activeTabIndex: this._props.activeTabIndex,
+      name: this._props.name,
       tabs: this._tabs.map((tab) => tab.toClientDTO()),
-      createdAt: this._createdAt.getTime() as TransferDate,
-      updatedAt: this._updatedAt.getTime() as TransferDate,
+      createdAt: this._props.createdAt.getTime() as TransferDate,
+      updatedAt: this._props.updatedAt.getTime() as TransferDate,
       // UI 格式化字段
-      formattedCreatedAt: this._createdAt.toLocaleString(),
-      formattedUpdatedAt: this._updatedAt.toLocaleString(),
+      formattedCreatedAt: this._props.createdAt.toLocaleString(),
+      formattedUpdatedAt: this._props.updatedAt.toLocaleString(),
     };
   }
 
   public toPersistenceDTO(): EditorGroupPersistenceDTO {
     return {
       id: this.id,
-      session_id: this._sessionId,
-      workspace_id: this._workspaceId,
-      identityId: this._identityId,
-      group_index: this._groupIndex,
-      active_tab_index: this._activeTabIndex,
-      name: this._name,
+      session_id: this._props.sessionId,
+      workspace_id: this._props.workspaceId,
+      identityId: this._props.identityId,
+      group_index: this._props.groupIndex,
+      active_tab_index: this._props.activeTabIndex,
+      name: this._props.name,
       tabs: this._tabs.map((tab) => tab.toPersistenceDTO()),
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
     };
   }
 }

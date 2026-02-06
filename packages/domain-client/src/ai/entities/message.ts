@@ -12,88 +12,77 @@ import { MessageRole } from '@dailyuse/contracts/ai';
 import type { AiConversationId as IAiConversationId } from '@dailyuse/contracts/primitives';
 import { AiMessageId, AiConversationId } from '@dailyuse/domain-shared/ai';
 
-export class Message extends Entity<AiMessageId> implements MessageClient {
-  private _conversationId: IAiConversationId;
-  private _role: MessageRole;
-  private _content: string;
-  private _tokenCount: number | null;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+// Internal props type using domain-shared class types
+interface MessageInternalProps {
+  id: AiMessageId;
+  conversationId: AiConversationId;
+  role: MessageRole;
+  content: string;
+  tokenCount: number | null;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
 
-  private constructor(params: {
-    id?: string;
-    conversationId: string;
-    role: MessageRole;
-    content: string;
-    tokenCount?: number | null;
-    version?: number;
-    createdAt: Date;
-    updatedAt?: Date;
-    deletedAt?: Date | null;
-  }) {
-    super((params.id ?? AiMessageId.generate()) as AiMessageId);
-    this._conversationId = AiConversationId.of(params.conversationId);
-    this._role = params.role;
-    this._content = params.content;
-    this._tokenCount = params.tokenCount ?? null;
-    this._version = params.version ?? 1;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt ?? params.createdAt;
-    this._deletedAt = params.deletedAt ?? null;
+export class Message extends Entity<AiMessageId> implements MessageClient {
+  private readonly _props: MessageInternalProps;
+
+  private constructor(props: MessageInternalProps) {
+    super(props.id);
+    this._props = props;
   }
 
   // ===== Getters =====
 
   public get conversationId(): IAiConversationId {
-    return this._conversationId;
+    return this._props.conversationId;
   }
 
   public get role(): MessageRole {
-    return this._role;
+    return this._props.role;
   }
 
   public get content(): string {
-    return this._content;
+    return this._props.content;
   }
 
   public get tokenCount(): number | null {
-    return this._tokenCount;
+    return this._props.tokenCount;
   }
 
   public get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   public get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   public get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // ===== 计算属性 =====
 
   public get isUser(): boolean {
-    return this._role === MessageRole.User;
+    return this._props.role === MessageRole.User;
   }
 
   public get isAssistant(): boolean {
-    return this._role === MessageRole.Assistant;
+    return this._props.role === MessageRole.Assistant;
   }
 
   public get isSystem(): boolean {
-    return this._role === MessageRole.System;
+    return this._props.role === MessageRole.System;
   }
 
   public get formattedTime(): string {
-    return this._createdAt.toLocaleString();
+    return this._props.createdAt.toLocaleString();
   }
 
   // ===== Factory Methods =====
@@ -106,10 +95,11 @@ export class Message extends Entity<AiMessageId> implements MessageClient {
   }): Message {
     const now = new Date();
     return new Message({
-      conversationId: params.conversationId,
+      id: AiMessageId.generate() as AiMessageId,
+      conversationId: AiConversationId.of(params.conversationId),
       role: params.role,
       content: params.content,
-      tokenCount: params.tokenCount,
+      tokenCount: params.tokenCount ?? null,
       version: 1,
       createdAt: now,
       updatedAt: now,
@@ -119,8 +109,8 @@ export class Message extends Entity<AiMessageId> implements MessageClient {
 
   public static fromDTO(dto: MessageClientDTO): Message {
     return new Message({
-      id: dto.id,
-      conversationId: dto.conversationId,
+      id: AiMessageId.of(dto.id),
+      conversationId: AiConversationId.of(dto.conversationId),
       role: dto.role,
       content: dto.content,
       tokenCount: dto.tokenCount,
@@ -135,15 +125,15 @@ export class Message extends Entity<AiMessageId> implements MessageClient {
 
   public toDTO(): MessageClientDTO {
     return {
-      id: String(this.id),
-      conversationId: String(this._conversationId),
-      role: this._role,
-      content: this._content,
-      tokenCount: this._tokenCount,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      id: String(this._props.id),
+      conversationId: String(this._props.conversationId),
+      role: this._props.role,
+      content: this._props.content,
+      tokenCount: this._props.tokenCount,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
       isUser: this.isUser,
       isAssistant: this.isAssistant,
       isSystem: this.isSystem,

@@ -7,8 +7,8 @@ import type { EditorTabId, EditorGroupId, EditorSessionId, EditorWorkspaceId, Id
 import type { TabType } from '../value-objects/tab-type';
 import type { EditorTabServerDTO } from './editor-tab-server';
 
-// 浠庡€煎璞″鍏ョ被鍨?
-import type { TabViewStateClientDTO } from '../value-objects';
+// 从值对象导入类型
+import type { TabViewStateClient, TabViewStateClientDTO } from '../value-objects';
 
 /**
  * Editor Tab Client DTO
@@ -52,7 +52,7 @@ export interface EditorTabClient {
   readonly tabIndex: number;
   readonly tabType: TabType;
   readonly name: string;
-  readonly viewState: TabViewStateClientDTO;
+  readonly viewState: TabViewStateClient;
   readonly isPinned: boolean;
   readonly isDirty: boolean;
   readonly lastAccessedAt: DomainDate | null;

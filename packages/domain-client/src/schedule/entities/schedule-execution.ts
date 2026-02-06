@@ -4,9 +4,8 @@
  *
  * 【规范说明】
  * - 实现 ScheduleExecutionClient 接口
- * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
  * - Static fromDTO(dto: ScheduleExecutionClientDTO): ScheduleExecution
  * - Instance toDTO(): ScheduleExecutionClientDTO
  */
@@ -20,171 +19,113 @@ import { Entity } from '@dailyuse/utils';
 import { ScheduleExecutionId, ScheduleTaskId } from '@dailyuse/domain-shared/schedule';
 
 export class ScheduleExecution extends Entity<ScheduleExecutionId> implements ScheduleExecutionClient {
-  // ================= 1. Backing Fields =================
-  private _scheduleTaskId: ScheduleTaskId;
-  private _executionTime: Date;
-  private _status: ExecutionStatus;
-  private _duration: number | null;
-  private _result: Record<string, any> | null;
-  private _error: string | null;
-  private _retryCount: number;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  private readonly _props: ScheduleExecutionClient;
 
-  // UI 辅助属性
-  private _executionTimeFormatted: string;
-  private _statusDisplay: string;
-  private _statusColor: string;
-  private _durationFormatted: string;
-  private _hasError: boolean;
-  private _hasResult: boolean;
-  private _resultSummary: string;
-
-  // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: ScheduleExecutionId;
-    scheduleTaskId: ScheduleTaskId;
-    executionTime: Date;
-    status: ExecutionStatus;
-    duration: number | null;
-    result: Record<string, any> | null;
-    error: string | null;
-    retryCount: number;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-    executionTimeFormatted: string;
-    statusDisplay: string;
-    statusColor: string;
-    durationFormatted: string;
-    hasError: boolean;
-    hasResult: boolean;
-    resultSummary: string;
-  }) {
-    super(params.id);
-    this._scheduleTaskId = params.scheduleTaskId;
-    this._executionTime = params.executionTime;
-    this._status = params.status;
-    this._duration = params.duration;
-    this._result = params.result;
-    this._error = params.error;
-    this._retryCount = params.retryCount;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
-    this._executionTimeFormatted = params.executionTimeFormatted;
-    this._statusDisplay = params.statusDisplay;
-    this._statusColor = params.statusColor;
-    this._durationFormatted = params.durationFormatted;
-    this._hasError = params.hasError;
-    this._hasResult = params.hasResult;
-    this._resultSummary = params.resultSummary;
+  private constructor(props: ScheduleExecutionClient) {
+    super(props.id);
+    this._props = props;
   }
 
-  // ================= 3. Getters =================
+  // ================= Getters =================
   get scheduleTaskId(): ScheduleTaskId {
-    return this._scheduleTaskId;
+    return this._props.scheduleTaskId;
   }
 
   get executionTime(): Date {
-    return this._executionTime;
+    return this._props.executionTime;
   }
 
   get status(): ExecutionStatus {
-    return this._status;
+    return this._props.status;
   }
 
   get duration(): number | null {
-    return this._duration;
+    return this._props.duration;
   }
 
   get result(): Record<string, any> | null {
-    return this._result ? { ...this._result } : null;
+    return this._props.result ? { ...this._props.result } : null;
   }
 
   get error(): string | null {
-    return this._error;
+    return this._props.error;
   }
 
   get retryCount(): number {
-    return this._retryCount;
+    return this._props.retryCount;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // UI 辅助属性
   get executionTimeFormatted(): string {
-    return this._executionTimeFormatted;
+    return this._props.executionTimeFormatted;
   }
 
   get statusDisplay(): string {
-    return this._statusDisplay;
+    return this._props.statusDisplay;
   }
 
   get statusColor(): string {
-    return this._statusColor;
+    return this._props.statusColor;
   }
 
   get durationFormatted(): string {
-    return this._durationFormatted;
+    return this._props.durationFormatted;
   }
 
   get hasError(): boolean {
-    return this._hasError;
+    return this._props.hasError;
   }
 
   get hasResult(): boolean {
-    return this._hasResult;
+    return this._props.hasResult;
   }
 
   get resultSummary(): string {
-    return this._resultSummary;
+    return this._props.resultSummary;
   }
 
   // UI 计算属性
   get isDeleted(): boolean {
-    return this._deletedAt !== null;
+    return this._props.deletedAt !== null;
   }
 
   get isSuccess(): boolean {
-    return this._status === 'Success';
+    return this._props.status === 'Success';
   }
 
   get isFailed(): boolean {
-    return this._status === 'Failed';
+    return this._props.status === 'Failed';
   }
 
   get isTimeout(): boolean {
-    return this._status === 'Timeout';
+    return this._props.status === 'Timeout';
   }
 
   get isSkipped(): boolean {
-    return this._status === 'Skipped';
+    return this._props.status === 'Skipped';
   }
 
   get isRetrying(): boolean {
-    return this._status === 'Retrying';
+    return this._props.status === 'Retrying';
   }
 
-  // ================= 4. Factory Methods =================
+  // ================= Factory Methods =================
   public static fromDTO(dto: ScheduleExecutionClientDTO): ScheduleExecution {
     return new ScheduleExecution({
       id: ScheduleExecutionId.of(dto.id),
@@ -209,28 +150,28 @@ export class ScheduleExecution extends Entity<ScheduleExecutionId> implements Sc
     });
   }
 
-  // ================= 5. DTO Conversion =================
+  // ================= DTO Conversion =================
   public toDTO(): ScheduleExecutionClientDTO {
     return {
-      id: String(this.id),
-      scheduleTaskId: String(this._scheduleTaskId),
-      executionTime: this._executionTime.getTime(),
-      status: this._status,
-      duration: this._duration,
-      result: this._result ? { ...this._result } : null,
-      error: this._error,
-      retryCount: this._retryCount,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
-      executionTimeFormatted: this._executionTimeFormatted,
-      statusDisplay: this._statusDisplay,
-      statusColor: this._statusColor,
-      durationFormatted: this._durationFormatted,
-      hasError: this._hasError,
-      hasResult: this._hasResult,
-      resultSummary: this._resultSummary,
+      id: String(this._props.id),
+      scheduleTaskId: String(this._props.scheduleTaskId),
+      executionTime: this._props.executionTime.getTime(),
+      status: this._props.status,
+      duration: this._props.duration,
+      result: this._props.result ? { ...this._props.result } : null,
+      error: this._props.error,
+      retryCount: this._props.retryCount,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      executionTimeFormatted: this._props.executionTimeFormatted,
+      statusDisplay: this._props.statusDisplay,
+      statusColor: this._props.statusColor,
+      durationFormatted: this._props.durationFormatted,
+      hasError: this._props.hasError,
+      hasResult: this._props.hasResult,
+      resultSummary: this._props.resultSummary,
     };
   }
 }

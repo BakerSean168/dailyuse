@@ -1,22 +1,18 @@
 /**
  * Goal Aggregate Root - Client Contracts
- * 目标聚合�?- 客户端契�?
- *
- * 注意：Contracts 包只包含纯类型定义，不包含业务逻辑或方�?
  */
 
 import type { DomainDate, TransferDate, GoalId, IdentityId, GoalFolderId } from '@/primitives';
 import type { ImportanceLevel } from '../../../shared/index';
 import type { GoalStatus } from '../value-objects/goal-status';
-import type { KeyResultClientDTO } from '../entities/key-result-client';
-import type { GoalReviewClientDTO } from '../entities/goal-review-client';
+import type { KeyResultClient, KeyResultClientDTO } from '../entities/key-result-client';
+import type { GoalReviewClient, GoalReviewClientDTO } from '../entities/goal-review-client';
 import type { GoalReminderConfig, GoalReminderConfigDTO } from '../value-objects';
 
-// ============ Domain Shape (领域�? ============
+// ============ Domain Shape ============
 
 /**
- * Goal 聚合�?- Client Domain Shape
- * �?domain-client 中的 Class 实现�?
+ * Goal aggregate - Client Domain Shape
  */
 export interface GoalClient {
   id: GoalId;
@@ -45,19 +41,16 @@ export interface GoalClient {
   parentGoalId: GoalId | null;
 
   sortOrder: number;
-  reminderConfig: GoalReminderConfig | null;
+  
 
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;
   version: number;
 
-  keyResults: KeyResultClientDTO[] | null;
-
-  // === [UI 计算字段] 后端算好返回，减轻前端负�?===
-  progress: number;            // 总进�?0-100
-  isOverdue: boolean;          // 是否逾期
-  daysRemaining: number | null;// 剩余天数
+  keyResults: KeyResultClient[] | null;
+  reviews: GoalReviewClient[] | null;
+  reminderConfig: GoalReminderConfig | null;
 }
 
 // ============ Transfer DTO (传输�? ============
@@ -78,7 +71,6 @@ export interface GoalTimeRangeSummary {
 
 /**
  * Goal Client DTO
- * API 传输�?
  */
 export interface GoalClientDTO {
   id: GoalId;
@@ -90,6 +82,8 @@ export interface GoalClientDTO {
   motivation: string | null;
   status: GoalStatus;
   importance: ImportanceLevel;
+  /** 动态优先级分数 */
+  priority: number;
   category: string | null;
   tags: string[];
   startDate: TransferDate | null;
@@ -108,9 +102,4 @@ export interface GoalClientDTO {
   // 子实体DTO
   keyResults: KeyResultClientDTO[] | null;
   reviews: GoalReviewClientDTO[] | null;
-
-  // 计算属性（由服务端或客户端计算）
-  priority: number | null;
-  progress: number | null;
-  timeRangeSummary: GoalTimeRangeSummary | null;
 }

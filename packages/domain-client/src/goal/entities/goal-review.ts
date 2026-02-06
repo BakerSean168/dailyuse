@@ -14,132 +14,85 @@
 import type {
   GoalReviewClient,
   GoalReviewClientDTO,
-  KeyResultSnapshotDTO,
+  KeyResultSnapshot,
   ReviewType,
 } from '@dailyuse/contracts/goal';
 import { Entity } from '@dailyuse/utils';
-import { GoalReviewId } from '@dailyuse/domain-shared/goal';
+import { GoalReviewId, GoalId } from '@dailyuse/domain-shared/goal';
 
 export class GoalReview extends Entity<GoalReviewId> implements GoalReviewClient {
-  // ================= 1. Backing Fields =================
-  private _uuid: string;
-  private _goalUuid: string;
-  private _type: ReviewType;
-  private _rating: number;
-  private _summary: string;
-  private _achievements: string | null;
-  private _challenges: string | null;
-  private _improvements: string | null;
-  private _keyResultSnapshots: KeyResultSnapshotDTO[];
-  private _version: number;
-  private _reviewedAt: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  // ================= 1. Props =================
+  private readonly _props: GoalReviewClient;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: GoalReviewId;
-    uuid: string;
-    goalUuid: string;
-    type: ReviewType;
-    rating: number;
-    summary: string;
-    achievements: string | null;
-    challenges: string | null;
-    improvements: string | null;
-    keyResultSnapshots: KeyResultSnapshotDTO[];
-    version: number;
-    reviewedAt: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(params.id);
-    this._uuid = params.uuid;
-    this._goalUuid = params.goalUuid;
-    this._type = params.type;
-    this._rating = params.rating;
-    this._summary = params.summary;
-    this._achievements = params.achievements;
-    this._challenges = params.challenges;
-    this._improvements = params.improvements;
-    this._keyResultSnapshots = params.keyResultSnapshots;
-    this._version = params.version;
-    this._reviewedAt = params.reviewedAt;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+  private constructor(props: GoalReviewClient) {
+    super(props.id);
+    this._props = props;
   }
 
   // ================= 3. Getters =================
-  get uuid(): string {
-    return this._uuid;
-  }
-
-  get goalUuid(): string {
-    return this._goalUuid;
+  get goalId(): GoalId {
+    return this._props.goalId;
   }
 
   get type(): ReviewType {
-    return this._type;
+    return this._props.type;
   }
 
   get rating(): number {
-    return this._rating;
+    return this._props.rating;
   }
 
   get summary(): string {
-    return this._summary;
+    return this._props.summary;
   }
 
   get achievements(): string | null {
-    return this._achievements;
+    return this._props.achievements;
   }
 
   get challenges(): string | null {
-    return this._challenges;
+    return this._props.challenges;
   }
 
   get improvements(): string | null {
-    return this._improvements;
+    return this._props.improvements;
   }
 
-  get keyResultSnapshots(): KeyResultSnapshotDTO[] {
-    return [...this._keyResultSnapshots];
+  get keyResultSnapshots(): KeyResultSnapshot[] {
+    return [...this._props.keyResultSnapshots];
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
-  get reviewedAt(): number {
-    return this._reviewedAt;
+  get reviewedAt(): Date {
+    return this._props.reviewedAt;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // 计算属性
   get isDeleted(): boolean {
-    return this._deletedAt !== null;
+    return this._props.deletedAt !== null;
   }
 
   // ================= 4. Factory Methods =================
   public static fromDTO(dto: GoalReviewClientDTO): GoalReview {
     return new GoalReview({
-      id: GoalReviewId.of(dto.uuid),
-      uuid: dto.uuid,
-      goalUuid: dto.goalUuid,
+      id: GoalReviewId.of(dto.id),
+      goalId: GoalId.of(dto.goalId),
       type: dto.type,
       rating: dto.rating,
       summary: dto.summary,
@@ -148,7 +101,7 @@ export class GoalReview extends Entity<GoalReviewId> implements GoalReviewClient
       improvements: dto.improvements,
       keyResultSnapshots: dto.keyResultSnapshots ?? [],
       version: dto.version,
-      reviewedAt: dto.reviewedAt,
+      reviewedAt: new Date(dto.reviewedAt),
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
       deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
@@ -158,20 +111,20 @@ export class GoalReview extends Entity<GoalReviewId> implements GoalReviewClient
   // ================= 5. DTO Conversion =================
   public toDTO(): GoalReviewClientDTO {
     return {
-      uuid: this._uuid,
-      goalUuid: this._goalUuid,
-      type: this._type,
-      rating: this._rating,
-      summary: this._summary,
-      achievements: this._achievements,
-      challenges: this._challenges,
-      improvements: this._improvements,
-      keyResultSnapshots: [...this._keyResultSnapshots],
-      version: this._version,
-      reviewedAt: this._reviewedAt,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      id: String(this.id) as GoalReviewClientDTO['id'],
+      goalId: String(this._props.goalId) as GoalReviewClientDTO['goalId'],
+      type: this._props.type,
+      rating: this._props.rating,
+      summary: this._props.summary,
+      achievements: this._props.achievements,
+      challenges: this._props.challenges,
+      improvements: this._props.improvements,
+      keyResultSnapshots: [...this._props.keyResultSnapshots],
+      version: this._props.version,
+      reviewedAt: this._props.reviewedAt.getTime(),
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 }

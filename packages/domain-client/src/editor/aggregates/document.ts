@@ -24,105 +24,66 @@ import { EditorWorkspaceId } from '@dailyuse/domain-shared/editor';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 export class Document extends Entity<DocumentId> implements DocumentClient {
-  // ================= 1. Backing Fields =================
-  private _workspaceId: EditorWorkspaceId;
-  private _identityId: IdentityId;
-  private _path: string;
-  private _name: string;
-  private _language: DocumentLanguage;
-  private _content: string;
-  private _contentHash: string;
-  private _metadata: DocumentMetadataClientDTO;
-  private _indexStatus: IndexStatus;
-  private _lastIndexedAt: Date | null;
-  private _lastModifiedAt: Date | null;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+  // ================= 1. Backing Field =================
+  private readonly _props: DocumentClient;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: DocumentId;
-    workspaceId: EditorWorkspaceId;
-    identityId: IdentityId;
-    path: string;
-    name: string;
-    language: DocumentLanguage;
-    content: string;
-    contentHash: string;
-    metadata: DocumentMetadataClientDTO;
-    indexStatus: IndexStatus;
-    lastIndexedAt: Date | null;
-    lastModifiedAt: Date | null;
-    createdAt: Date;
-    updatedAt: Date;
-  }) {
-    super(params.id);
-    this._workspaceId = params.workspaceId;
-    this._identityId = params.identityId;
-    this._path = params.path;
-    this._name = params.name;
-    this._language = params.language;
-    this._content = params.content;
-    this._contentHash = params.contentHash;
-    this._metadata = params.metadata;
-    this._indexStatus = params.indexStatus;
-    this._lastIndexedAt = params.lastIndexedAt;
-    this._lastModifiedAt = params.lastModifiedAt;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+  private constructor(props: DocumentClient) {
+    super(props.id);
+    this._props = props;
   }
 
   // ================= 3. Getters =================
   get workspaceId(): EditorWorkspaceId {
-    return this._workspaceId;
+    return this._props.workspaceId;
   }
 
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get path(): string {
-    return this._path;
+    return this._props.path;
   }
 
   get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get language(): DocumentLanguage {
-    return this._language;
+    return this._props.language;
   }
 
   get content(): string {
-    return this._content;
+    return this._props.content;
   }
 
   get contentHash(): string {
-    return this._contentHash;
+    return this._props.contentHash;
   }
 
   get metadata(): DocumentMetadataClientDTO {
-    return this._metadata;
+    return this._props.metadata;
   }
 
   get indexStatus(): IndexStatus {
-    return this._indexStatus;
+    return this._props.indexStatus;
   }
 
   get lastIndexedAt(): DomainDate | null {
-    return this._lastIndexedAt;
+    return this._props.lastIndexedAt;
   }
 
   get lastModifiedAt(): DomainDate | null {
-    return this._lastModifiedAt;
+    return this._props.lastModifiedAt;
   }
 
   get createdAt(): DomainDate {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): DomainDate {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   // ================= 4. Factory Methods =================
@@ -149,27 +110,27 @@ export class Document extends Entity<DocumentId> implements DocumentClient {
   public toDTO(): DocumentClientDTO {
     return {
       id: String(this.id),
-      workspaceId: String(this._workspaceId),
-      identityId: String(this._identityId),
-      path: this._path,
-      name: this._name,
-      language: this._language,
-      content: this._content,
-      contentHash: this._contentHash,
-      metadata: this._metadata,
-      indexStatus: this._indexStatus,
-      lastIndexedAt: this._lastIndexedAt?.getTime() ?? null,
-      lastModifiedAt: this._lastModifiedAt?.getTime() ?? null,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      formattedLastIndexed: this._lastIndexedAt
-        ? this.formatRelativeTime(this._lastIndexedAt)
+      workspaceId: String(this._props.workspaceId),
+      identityId: String(this._props.identityId),
+      path: this._props.path,
+      name: this._props.name,
+      language: this._props.language,
+      content: this._props.content,
+      contentHash: this._props.contentHash,
+      metadata: this._props.metadata,
+      indexStatus: this._props.indexStatus,
+      lastIndexedAt: this._props.lastIndexedAt?.getTime() ?? null,
+      lastModifiedAt: this._props.lastModifiedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      formattedLastIndexed: this._props.lastIndexedAt
+        ? this.formatRelativeTime(this._props.lastIndexedAt)
         : null,
-      formattedLastModified: this._lastModifiedAt
-        ? this.formatRelativeTime(this._lastModifiedAt)
+      formattedLastModified: this._props.lastModifiedAt
+        ? this.formatRelativeTime(this._props.lastModifiedAt)
         : null,
-      formattedCreatedAt: this.formatDate(this._createdAt),
-      formattedUpdatedAt: this.formatRelativeTime(this._updatedAt),
+      formattedCreatedAt: this.formatDate(this._props.createdAt),
+      formattedUpdatedAt: this.formatRelativeTime(this._props.updatedAt),
     };
   }
 

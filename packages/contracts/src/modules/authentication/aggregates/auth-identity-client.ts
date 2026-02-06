@@ -7,7 +7,7 @@
  * - 仅显示用户友好的状态信息
  */
 
-import type { AuthCredentialClientDTO } from '../entities/auth-credential-client';
+import type { AuthCredentialClient, AuthCredentialClientDTO } from '../entities/auth-credential-client';
 import type { TransferDate, DomainDate } from '@/primitives';
 import type { AuthIdentityStatus } from '../value-objects';
 
@@ -45,17 +45,7 @@ export interface AuthIdentityClient {
   /**
    * ✅ 脱敏的凭证列表 (仅显示 displayName, lastUsedAt)
    */
-  credentials: AuthCredentialClientDTO[];
-
-  /**
-   * 是否设置了密码 (辅助计算属性)
-   */
-  hasPassword: boolean;
-
-  /**
-   * 是否绑定了 OAuth (辅助计算属性)
-   */
-  hasOAuth: boolean;
+  credentials: AuthCredentialClient[];
 
   /**
    * 创建时间

@@ -4,9 +4,8 @@
  *
  * 【规范说明】
  * - 实现 ReminderHistoryClient 接口
- * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
  * - Static fromDTO(dto: ReminderHistoryClientDTO): ReminderHistory
  * - Instance toDTO(): ReminderHistoryClientDTO
  */
@@ -21,128 +20,85 @@ import { Entity } from '@dailyuse/utils';
 import { ReminderInstanceId, ReminderTemplateId } from '@dailyuse/domain-shared/reminder';
 
 export class ReminderHistory extends Entity<ReminderInstanceId> implements ReminderHistoryClient {
-  // ================= 1. Backing Fields =================
-  private _templateId: ReminderTemplateId;
-  private _triggeredAt: Date;
-  private _result: TriggerResult;
-  private _error: string | null;
-  private _notificationSent: boolean;
-  private _notificationChannels: NotificationChannel[] | null;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  private readonly _props: ReminderHistoryClient;
 
-  // UI 扩展
-  private _resultText: string;
-  private _timeAgo: string;
-  private _channelsText: string | null;
-
-  // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: ReminderInstanceId;
-    templateId: ReminderTemplateId;
-    triggeredAt: Date;
-    result: TriggerResult;
-    error: string | null;
-    notificationSent: boolean;
-    notificationChannels: NotificationChannel[] | null;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-    resultText: string;
-    timeAgo: string;
-    channelsText: string | null;
-  }) {
-    super(params.id);
-    this._templateId = params.templateId;
-    this._triggeredAt = params.triggeredAt;
-    this._result = params.result;
-    this._error = params.error;
-    this._notificationSent = params.notificationSent;
-    this._notificationChannels = params.notificationChannels;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
-    this._resultText = params.resultText;
-    this._timeAgo = params.timeAgo;
-    this._channelsText = params.channelsText;
+  private constructor(props: ReminderHistoryClient) {
+    super(props.id);
+    this._props = props;
   }
 
-  // ================= 3. Getters =================
+  // ================= Getters =================
   get templateId(): ReminderTemplateId {
-    return this._templateId;
+    return this._props.templateId;
   }
 
   get triggeredAt(): Date {
-    return this._triggeredAt;
+    return this._props.triggeredAt;
   }
 
   get result(): TriggerResult {
-    return this._result;
+    return this._props.result;
   }
 
   get error(): string | null {
-    return this._error;
+    return this._props.error;
   }
 
   get notificationSent(): boolean {
-    return this._notificationSent;
+    return this._props.notificationSent;
   }
 
   get notificationChannels(): NotificationChannel[] | null {
-    return this._notificationChannels ? [...this._notificationChannels] : null;
+    return this._props.notificationChannels ? [...this._props.notificationChannels] : null;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // UI 扩展属性
   get resultText(): string {
-    return this._resultText;
+    return this._props.resultText;
   }
 
   get timeAgo(): string {
-    return this._timeAgo;
+    return this._props.timeAgo;
   }
 
   get channelsText(): string | null {
-    return this._channelsText;
+    return this._props.channelsText;
   }
 
   // UI 计算属性
   get isDeleted(): boolean {
-    return this._deletedAt !== null;
+    return this._props.deletedAt !== null;
   }
 
   get isSuccess(): boolean {
-    return this._result === 'Success';
+    return this._props.result === 'Success';
   }
 
   get isFailed(): boolean {
-    return this._result === 'Failed';
+    return this._props.result === 'Failed';
   }
 
   get isSkipped(): boolean {
-    return this._result === 'Skipped';
+    return this._props.result === 'Skipped';
   }
 
-  // ================= 4. Factory Methods =================
+  // ================= Factory Methods =================
   public static fromDTO(dto: ReminderHistoryClientDTO): ReminderHistory {
     return new ReminderHistory({
       id: ReminderInstanceId.of(dto.id),
@@ -162,23 +118,23 @@ export class ReminderHistory extends Entity<ReminderInstanceId> implements Remin
     });
   }
 
-  // ================= 5. DTO Conversion =================
+  // ================= DTO Conversion =================
   public toDTO(): ReminderHistoryClientDTO {
     return {
-      id: String(this.id),
-      templateId: String(this._templateId),
-      triggeredAt: this._triggeredAt.getTime(),
-      result: this._result,
-      error: this._error,
-      notificationSent: this._notificationSent,
-      notificationChannels: this._notificationChannels ? [...this._notificationChannels] : null,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
-      resultText: this._resultText,
-      timeAgo: this._timeAgo,
-      channelsText: this._channelsText,
+      id: String(this._props.id),
+      templateId: String(this._props.templateId),
+      triggeredAt: this._props.triggeredAt.getTime(),
+      result: this._props.result,
+      error: this._props.error,
+      notificationSent: this._props.notificationSent,
+      notificationChannels: this._props.notificationChannels ? [...this._props.notificationChannels] : null,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      resultText: this._props.resultText,
+      timeAgo: this._props.timeAgo,
+      channelsText: this._props.channelsText,
     };
   }
 }

@@ -26,137 +26,110 @@ import {
   ResourceStats,
 } from '@dailyuse/domain-shared/repository';
 
-export class Resource extends Entity<ResourceId> implements ResourceClient {
-  // ================= 1. Backing Fields =================
-  private _repositoryId: RepositoryId;
-  private _folderId: FolderId | null;
-  private _name: string;
-  private _type: ResourceType;
-  private _mimeType: string;
-  private _path: string;
-  private _size: number;
-  private _content: string | null;
-  private _metadata: ResourceMetadata;
-  private _stats: ResourceStats;
-  private _status: ResourceStatus;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+// Internal props type using domain-shared class types
+interface ResourceInternalProps {
+  id: ResourceId;
+  repositoryId: RepositoryId;
+  folderId: FolderId | null;
+  name: string;
+  type: ResourceType;
+  mimeType: string;
+  path: string;
+  size: number;
+  content: string | null;
+  metadata: ResourceMetadata;
+  stats: ResourceStats;
+  status: ResourceStatus;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
 
-  // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: ResourceId;
-    repositoryId: RepositoryId;
-    folderId: FolderId | null;
-    name: string;
-    type: ResourceType;
-    mimeType: string;
-    path: string;
-    size: number;
-    content: string | null;
-    metadata: ResourceMetadata;
-    stats: ResourceStats;
-    status: ResourceStatus;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(params.id);
-    this._repositoryId = params.repositoryId;
-    this._folderId = params.folderId;
-    this._name = params.name;
-    this._type = params.type;
-    this._mimeType = params.mimeType;
-    this._path = params.path;
-    this._size = params.size;
-    this._content = params.content;
-    this._metadata = params.metadata;
-    this._stats = params.stats;
-    this._status = params.status;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+export class Resource extends Entity<ResourceId> implements ResourceClient {
+  private readonly _props: ResourceInternalProps;
+
+  private constructor(props: ResourceInternalProps) {
+    super(props.id);
+    this._props = props;
   }
 
-  // ================= 3. Getters =================
+  // ================= Getters =================
   get repositoryId(): RepositoryId {
-    return this._repositoryId;
+    return this._props.repositoryId;
   }
 
   get folderId(): FolderId | null {
-    return this._folderId;
+    return this._props.folderId;
   }
 
   get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get type(): ResourceType {
-    return this._type;
+    return this._props.type;
   }
 
   get mimeType(): string {
-    return this._mimeType;
+    return this._props.mimeType;
   }
 
   get path(): string {
-    return this._path;
+    return this._props.path;
   }
 
   get size(): number {
-    return this._size;
+    return this._props.size;
   }
 
   get content(): string | null {
-    return this._content;
+    return this._props.content;
   }
 
   get metadata(): ResourceMetadata {
-    return this._metadata;
+    return this._props.metadata;
   }
 
   get stats(): ResourceStats {
-    return this._stats;
+    return this._props.stats;
   }
 
   get status(): ResourceStatus {
-    return this._status;
+    return this._props.status;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // ================= UI 计算属性 =================
   get isDeleted(): boolean {
-    return this._status === 'Deleted';
+    return this._props.status === 'Deleted';
   }
 
   get isArchived(): boolean {
-    return this._status === 'Archived';
+    return this._props.status === 'Archived';
   }
 
   get isActive(): boolean {
-    return this._status === 'Active';
+    return this._props.status === 'Active';
   }
 
   get isDraft(): boolean {
-    return this._status === 'Draft';
+    return this._props.status === 'Draft';
   }
 
   get statusText(): string {
@@ -166,7 +139,7 @@ export class Resource extends Entity<ResourceId> implements ResourceClient {
       Deleted: '已删除',
       Draft: '草稿',
     };
-    return statusTextMap[this._status] ?? this._status;
+    return statusTextMap[this._props.status] ?? this._props.status;
   }
 
   get typeText(): string {
@@ -174,20 +147,20 @@ export class Resource extends Entity<ResourceId> implements ResourceClient {
       FILE: '文件',
       FOLDER: '文件夹',
     };
-    return typeTextMap[this._type] ?? this._type;
+    return typeTextMap[this._props.type] ?? this._props.type;
   }
 
   get displayName(): string {
     // Remove extension from filename for display
-    const lastDotIndex = this._name.lastIndexOf('.');
-    if (lastDotIndex > 0 && this._type === 'FILE') {
-      return this._name.substring(0, lastDotIndex);
+    const lastDotIndex = this._props.name.lastIndexOf('.');
+    if (lastDotIndex > 0 && this._props.type === 'FILE') {
+      return this._props.name.substring(0, lastDotIndex);
     }
-    return this._name;
+    return this._props.name;
   }
 
   get formattedSize(): string {
-    const bytes = this._size;
+    const bytes = this._props.size;
     if (bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -196,24 +169,24 @@ export class Resource extends Entity<ResourceId> implements ResourceClient {
   }
 
   get createdAtText(): string {
-    return this._createdAt.toLocaleString();
+    return this._props.createdAt.toLocaleString();
   }
 
   get updatedAtText(): string {
-    return this._updatedAt.toLocaleString();
+    return this._props.updatedAt.toLocaleString();
   }
 
   get extension(): string {
-    const lastDotIndex = this._name.lastIndexOf('.');
+    const lastDotIndex = this._props.name.lastIndexOf('.');
     if (lastDotIndex > 0) {
-      return this._name.substring(lastDotIndex);
+      return this._props.name.substring(lastDotIndex);
     }
     return '';
   }
 
   get icon(): string {
     // Return Material Design icon name based on type and extension
-    if (this._type === 'FOLDER') {
+    if (this._props.type === 'FOLDER') {
       return 'mdi-folder';
     }
     const ext = this.extension.toLowerCase();
@@ -243,7 +216,7 @@ export class Resource extends Entity<ResourceId> implements ResourceClient {
     return iconMap[ext] ?? 'mdi-file';
   }
 
-  // ================= 4. Factory Methods =================
+  // ================= Factory Methods =================
   public static fromDTO(dto: ResourceClientDTO): Resource {
     return new Resource({
       id: ResourceId.of(dto.id),
@@ -265,25 +238,25 @@ export class Resource extends Entity<ResourceId> implements ResourceClient {
     });
   }
 
-  // ================= 5. DTO Conversion =================
+  // ================= DTO Conversion =================
   public toDTO(): ResourceClientDTO {
     return {
       id: String(this.id),
-      repositoryId: String(this._repositoryId),
-      folderId: this._folderId ? String(this._folderId) : null,
-      name: this._name,
-      type: this._type,
-      mimeType: this._mimeType,
-      path: this._path,
-      size: this._size,
-      content: this._content,
-      metadata: this._metadata.toDTO(),
-      stats: this._stats.toDTO(),
-      status: this._status,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      repositoryId: String(this._props.repositoryId),
+      folderId: this._props.folderId ? String(this._props.folderId) : null,
+      name: this._props.name,
+      type: this._props.type,
+      mimeType: this._props.mimeType,
+      path: this._props.path,
+      size: this._props.size,
+      content: this._props.content,
+      metadata: this._props.metadata.toDTO(),
+      stats: this._props.stats.toDTO(),
+      status: this._props.status,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
       // UI 计算字段
       isDeleted: this.isDeleted,
       isArchived: this.isArchived,

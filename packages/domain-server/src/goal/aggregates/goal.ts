@@ -77,44 +77,52 @@ const DAY_MS = 1000 * 60 * 60 * 24;
 const DEFAULT_DURATION = 30 * DAY_MS;
 
 /**
+ * Goal 内部属性类型（用于 _props 模式）
+ * 注意：使用 Domain 类型而非 DTO 类型
+ */
+interface GoalProps {
+  identityId: IdentityId;
+  name: string;
+  description: string | null;
+  color: string;
+  feasibilityAnalysis: string | null;
+  motivation: string | null;
+  status: GoalStatus;
+  importance: ImportanceLevel;
+  /** 持久化的优先级分数，用于数据库排序 */
+  priority: number;
+  category: string | null;
+  tags: string[];
+  startDate: Date | null;
+  targetDate: Date | null;
+  completedAt: Date | null;
+  archivedAt: Date | null;
+  folderId: string | null;
+  parentGoalId: GoalId | null;
+  sortOrder: number;
+  reminderConfig: GoalReminderConfig | null;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  // 子实体集合
+  keyResults: KeyResult[];
+  goalReviews: GoalReview[];
+  weightSnapshots: KeyResultWeightSnapshot[];
+}
+
+/**
  * Goal 聚合根
  */
 export class Goal extends AggregateRoot<GoalId> implements GoalServer {
-  // ================= 1. 内部状态 (Backing Fields) =================
-  private _identityId: IdentityId;
-  private _name: string;
-  private _description: string | null;
-  private _color: string;
-  private _feasibilityAnalysis: string | null;
-  private _motivation: string | null;
-  private _status: GoalStatus;
-  private _importance: ImportanceLevel;
-  /** 
-   * 持久化的优先级分数
-   * 用于数据库排序，每日 Cron Job 或属性变更时更新
+  // ================= 1. 内部状态 (Props Pattern) =================
+  /**
+   * 使用单一 _props 对象存储所有内部状态
+   * 注意：非 readonly，因为需要支持 mutation 方法
    */
-  private _priority: number;
-  private _category: string | null;
-  private _tags: string[];
-  private _startDate: Date | null;
-  private _targetDate: Date | null;
-  private _completedAt: Date | null;
-  private _archivedAt: Date | null;
-  private _folderId: string | null;
-  private _parentGoalId: GoalId | null;
-  private _sortOrder: number;
-  private _reminderConfig: GoalReminderConfig | null;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  private _props: GoalProps;
 
-  // ================= 2. 子实体集合 =================
-  private _keyResults: KeyResult[];
-  private _goalReviews: GoalReview[];
-  private _weightSnapshots: KeyResultWeightSnapshot[];
-
-  // ================= 3. 构造函数（Private） =================
+  // ================= 2. 构造函数（Private） =================
   /**
    * 【规范说明】
    * 构造函数必须为 private，防止外部直接 new Goal(...)
@@ -123,43 +131,48 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   private constructor(props: GoalServerDTO) {
     super(props.id);
     
-    this._identityId = props.identityId as IdentityId;
-    this._name = props.name;
-    this._description = props.description ?? null;
-    this._color = props.color;
-    this._feasibilityAnalysis = props.feasibilityAnalysis ?? null;
-    this._motivation = props.motivation ?? null;
-    this._status = props.status;
-    this._importance = props.importance;
-    this._priority = props.priority ?? 0; // 初始化优先级，稍后刷新
-    this._category = props.category ?? null;
-    this._tags = props.tags ?? [];
-    this._startDate = props.startDate ? new Date(props.startDate) : null;
-    this._targetDate = props.targetDate ? new Date(props.targetDate) : null;
-    this._completedAt = props.completedAt ? new Date(props.completedAt) : null;
-    this._archivedAt = props.archivedAt ? new Date(props.archivedAt) : null;
-    this._folderId = props.folderId ?? null;
-    this._parentGoalId = (props.parentGoalId ?? null) as GoalId | null;
-    this._sortOrder = props.sortOrder;
-    this._reminderConfig = props.reminderConfig ? GoalReminderConfig.fromDTO(props.reminderConfig) : null;
-    this._version = props.version ?? 1;
-    this._createdAt = new Date(props.createdAt);
-    this._updatedAt = new Date(props.updatedAt);
-    this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
-    
     // Initialize child entities from props
-    this._keyResults = (props.keyResults || []).map((kr: KeyResultServerDTO) =>
+    const keyResults = (props.keyResults || []).map((kr: KeyResultServerDTO) =>
       KeyResult.fromServerDTO(kr),
     );
-    this._goalReviews = (props.goalReviews || []).map((r: GoalReviewServerDTO) =>
+    const goalReviews = (props.goalReviews || []).map((r: GoalReviewServerDTO) =>
       GoalReview.fromServerDTO(r),
     );
-    this._weightSnapshots = (props.weightSnapshots || []).map((ws: KeyResultWeightSnapshotDTO) =>
+    const weightSnapshots = (props.weightSnapshots || []).map((ws: KeyResultWeightSnapshotDTO) =>
       KeyResultWeightSnapshot.fromDTO(ws),
     );
+    
+    this._props = {
+      identityId: props.identityId as IdentityId,
+      name: props.name,
+      description: props.description ?? null,
+      color: props.color,
+      feasibilityAnalysis: props.feasibilityAnalysis ?? null,
+      motivation: props.motivation ?? null,
+      status: props.status,
+      importance: props.importance,
+      priority: props.priority ?? 0,
+      category: props.category ?? null,
+      tags: props.tags ?? [],
+      startDate: props.startDate ? new Date(props.startDate) : null,
+      targetDate: props.targetDate ? new Date(props.targetDate) : null,
+      completedAt: props.completedAt ? new Date(props.completedAt) : null,
+      archivedAt: props.archivedAt ? new Date(props.archivedAt) : null,
+      folderId: props.folderId ?? null,
+      parentGoalId: (props.parentGoalId ?? null) as GoalId | null,
+      sortOrder: props.sortOrder,
+      reminderConfig: props.reminderConfig ? GoalReminderConfig.fromDTO(props.reminderConfig) : null,
+      version: props.version ?? 1,
+      createdAt: new Date(props.createdAt),
+      updatedAt: new Date(props.updatedAt),
+      deletedAt: props.deletedAt ? new Date(props.deletedAt) : null,
+      keyResults,
+      goalReviews,
+      weightSnapshots,
+    };
   }
 
-  // ================= 4. 公共属性 (Getters) =================
+  // ================= 3. 公共属性 (Getters) =================
   /**
    * 【规范说明】
    * 通过 public get 暴露状态，但标记为只读
@@ -168,35 +181,35 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    */
 
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
 
   get color(): string {
-    return this._color;
+    return this._props.color;
   }
 
   get feasibilityAnalysis(): string | null {
-    return this._feasibilityAnalysis;
+    return this._props.feasibilityAnalysis;
   }
 
   get motivation(): string | null {
-    return this._motivation;
+    return this._props.motivation;
   }
 
   get status(): GoalStatus {
-    return this._status;
+    return this._props.status;
   }
 
   get importance(): ImportanceLevel {
-    return this._importance;
+    return this._props.importance;
   }
 
   /**
@@ -205,21 +218,21 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * 持久化存储以支持高性能排序
    */
   get priority(): number {
-    return this._priority;
+    return this._props.priority;
   }
 
   /**
    * 📊 计算属性：优先级级别
    */
   get priorityLevel(): 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' {
-    return mapPriorityToLevel(this._priority);
+    return mapPriorityToLevel(this._props.priority);
   }
 
   /**
    * 📊 计算属性：优先级显示文本
    */
   get priorityText(): string {
-    return mapPriorityToText(this._priority);
+    return mapPriorityToText(this._props.priority);
   }
 
   /**
@@ -231,75 +244,75 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * - 每日 Cron Job 批量刷新时
    */
   public refreshPriority(referenceDate: Date = new Date()): void {
-    this._priority = calculateGoalPriority(this._importance, this._targetDate, referenceDate);
+    this._props.priority = calculateGoalPriority(this._props.importance, this._props.targetDate, referenceDate);
   }
 
   get category(): string | null {
-    return this._category;
+    return this._props.category;
   }
 
   get tags(): string[] {
-    return [...this._tags];
+    return [...this._props.tags];
   }
 
   get startDate(): Date | null {
-    return this._startDate;
+    return this._props.startDate;
   }
 
   get targetDate(): Date | null {
-    return this._targetDate;
+    return this._props.targetDate;
   }
 
   get completedAt(): Date | null {
-    return this._completedAt;
+    return this._props.completedAt;
   }
 
   get archivedAt(): Date | null {
-    return this._archivedAt;
+    return this._props.archivedAt;
   }
 
   get folderId(): GoalFolderId | null {
-    return this._folderId as GoalFolderId | null;
+    return this._props.folderId as GoalFolderId | null;
   }
 
   get parentGoalId(): GoalId | null {
-    return this._parentGoalId;
+    return this._props.parentGoalId;
   }
 
   get sortOrder(): number {
-    return this._sortOrder;
+    return this._props.sortOrder;
   }
 
   get reminderConfig(): GoalReminderConfig | null {
-    return this._reminderConfig;
+    return this._props.reminderConfig;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   get keyResults(): KeyResult[] {
-    return [...this._keyResults];
+    return [...this._props.keyResults];
   }
 
   get goalReviews(): GoalReview[] {
-    return [...this._goalReviews];
+    return [...this._props.goalReviews];
   }
 
   get weightSnapshots(): ReadonlyArray<KeyResultWeightSnapshot> {
-    return this._weightSnapshots;
+    return this._props.weightSnapshots;
   }
 
   /**
@@ -500,46 +513,46 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     let hasChanges = false;
     let importanceChanged = false;
 
-    if (params.name !== undefined && params.name !== this._name) {
+    if (params.name !== undefined && params.name !== this._props.name) {
       // 使用静态验证方法
       Goal.validateTitle(params.name);
-      this._name = params.name.trim();
+      this._props.name = params.name.trim();
       hasChanges = true;
     }
 
-    if (params.description !== undefined && params.description !== this._description) {
-      this._description = params.description?.trim() || null;
+    if (params.description !== undefined && params.description !== this._props.description) {
+      this._props.description = params.description?.trim() || null;
       hasChanges = true;
     }
 
-    if (params.importance !== undefined && params.importance !== this._importance) {
-      this._importance = params.importance;
+    if (params.importance !== undefined && params.importance !== this._props.importance) {
+      this._props.importance = params.importance;
       hasChanges = true;
       importanceChanged = true;
     }
 
-    if (params.category !== undefined && params.category !== this._category) {
-      this._category = params.category?.trim() || null;
+    if (params.category !== undefined && params.category !== this._props.category) {
+      this._props.category = params.category?.trim() || null;
       hasChanges = true;
     }
 
-    if (params.color !== undefined && params.color !== this._color) {
-      this._color = params.color.trim() || '#3B82F6';
+    if (params.color !== undefined && params.color !== this._props.color) {
+      this._props.color = params.color.trim() || '#3B82F6';
       hasChanges = true;
     }
 
-    if (params.feasibilityAnalysis !== undefined && params.feasibilityAnalysis !== this._feasibilityAnalysis) {
-      this._feasibilityAnalysis = params.feasibilityAnalysis?.trim() || null;
+    if (params.feasibilityAnalysis !== undefined && params.feasibilityAnalysis !== this._props.feasibilityAnalysis) {
+      this._props.feasibilityAnalysis = params.feasibilityAnalysis?.trim() || null;
       hasChanges = true;
     }
 
-    if (params.motivation !== undefined && params.motivation !== this._motivation) {
-      this._motivation = params.motivation?.trim() || null;
+    if (params.motivation !== undefined && params.motivation !== this._props.motivation) {
+      this._props.motivation = params.motivation?.trim() || null;
       hasChanges = true;
     }
 
     if (hasChanges) {
-      this._updatedAt = new Date();
+      this._props.updatedAt = new Date();
       
       // 🔢 importance 变更时刷新优先级
       if (importanceChanged) {
@@ -559,19 +572,19 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     let hasChanges = false;
     let targetDateChanged = false;
 
-    if (params.startDate !== undefined && params.startDate?.getTime() !== this._startDate?.getTime()) {
+    if (params.startDate !== undefined && params.startDate?.getTime() !== this._props.startDate?.getTime()) {
       // Note: startDate is readonly, so we can't update it
       hasChanges = true;
     }
 
-    if (params.targetDate !== undefined && params.targetDate?.getTime() !== this._targetDate?.getTime()) {
-      this._targetDate = params.targetDate;
+    if (params.targetDate !== undefined && params.targetDate?.getTime() !== this._props.targetDate?.getTime()) {
+      this._props.targetDate = params.targetDate;
       hasChanges = true;
       targetDateChanged = true;
     }
 
     if (hasChanges) {
-      this._updatedAt = new Date();
+      this._props.updatedAt = new Date();
       
       // 🔢 targetDate 变更时刷新优先级
       if (targetDateChanged) {
@@ -593,11 +606,11 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     if (extensionDays <= 0) {
       throw new GoalInvalidDateModificationError('extend', extensionDays);
     }
-    if (!this._targetDate) {
+    if (!this._props.targetDate) {
       throw new GoalTargetDateNotSetError();
     }
 
-    const newTargetDate = new Date(this._targetDate.getTime() + extensionDays * DAY_MS);
+    const newTargetDate = new Date(this._props.targetDate.getTime() + extensionDays * DAY_MS);
     this.updateTimeRange({ targetDate: newTargetDate });
   }
 
@@ -611,15 +624,15 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     if (shortenDays <= 0) {
       throw new GoalInvalidDateModificationError('shorten', shortenDays);
     }
-    if (!this._targetDate) {
+    if (!this._props.targetDate) {
       throw new GoalTargetDateNotSetError();
     }
 
-    const newTargetDate = new Date(this._targetDate.getTime() - shortenDays * DAY_MS);
+    const newTargetDate = new Date(this._props.targetDate.getTime() - shortenDays * DAY_MS);
 
     // 确保新的目标时间仍然晚于开始时间
-    if (this._startDate && newTargetDate.getTime() <= this._startDate.getTime()) {
-      throw new GoalInvalidDateRangeError(this._startDate, newTargetDate);
+    if (this._props.startDate && newTargetDate.getTime() <= this._props.startDate.getTime()) {
+      throw new GoalInvalidDateRangeError(this._props.startDate, newTargetDate);
     }
 
     this.updateTimeRange({ targetDate: newTargetDate });
@@ -629,8 +642,8 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * ✅ 更新标签
    */
   public updateTags(tags: string[]): void {
-    this._tags = tags;
-    this._updatedAt = new Date();
+    this._props.tags = tags;
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -638,9 +651,9 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    */
   public addTag(tag: string): void {
     const trimmed = tag.trim();
-    if (trimmed && !this._tags.includes(trimmed)) {
-      this._tags.push(trimmed);
-      this._updatedAt = new Date();
+    if (trimmed && !this._props.tags.includes(trimmed)) {
+      this._props.tags.push(trimmed);
+      this._props.updatedAt = new Date();
     }
   }
 
@@ -648,10 +661,10 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * ✅ 删除标签
    */
   public removeTag(tag: string): void {
-    const index = this._tags.indexOf(tag);
+    const index = this._props.tags.indexOf(tag);
     if (index !== -1) {
-      this._tags.splice(index, 1);
-      this._updatedAt = new Date();
+      this._props.tags.splice(index, 1);
+      this._props.updatedAt = new Date();
     }
   }
 
@@ -659,14 +672,14 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * ✅ 更新状态
    */
   public updateStatus(newStatus: GoalStatus): void {
-    if (newStatus === this._status) return; // 幂等
+    if (newStatus === this._props.status) return; // 幂等
 
-    const previousStatus = this._status;
-    this._status = newStatus;
-    this._updatedAt = new Date();
+    const previousStatus = this._props.status;
+    this._props.status = newStatus;
+    this._props.updatedAt = new Date();
 
     // 如果标记为完成，记录完成时间
-    if (newStatus === GoalStatus.Completed && !this._completedAt) {
+    if (newStatus === GoalStatus.Completed && !this._props.completedAt) {
       // Note: completedAt is readonly, cannot be modified after construction
     }
 
@@ -688,10 +701,10 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * ✅ 完成目标
    */
   public markAsCompleted(): void {
-    if (this._status === GoalStatus.Completed) return; // 幂等
+    if (this._props.status === GoalStatus.Completed) return; // 幂等
 
-    this._status = GoalStatus.Completed;
-    this._updatedAt = new Date();
+    this._props.status = GoalStatus.Completed;
+    this._props.updatedAt = new Date();
 
     this.addDomainEvent<GoalEventMap['goal:complete']>('goal:complete', {
       finalProgress: this.calculateProgress(),
@@ -702,10 +715,10 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * ✅ 归档目标
    */
   public archive(): void {
-    if (this._archivedAt) return; // 幂等
+    if (this._props.archivedAt) return; // 幂等
 
-    this._status = GoalStatus.Archived;
-    this._updatedAt = new Date();
+    this._props.status = GoalStatus.Archived;
+    this._props.updatedAt = new Date();
 
     this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {});
   }
@@ -714,10 +727,10 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * ✅ 软删除
    */
   public softDelete(): void {
-    if (this._deletedAt) return; // 幂等
+    if (this._props.deletedAt) return; // 幂等
 
-    this._deletedAt = new Date();
-    this._updatedAt = this._deletedAt;
+    this._props.deletedAt = new Date();
+    this._props.updatedAt = this._props.deletedAt;
 
     this.addDomainEvent<GoalEventMap['goal:delete']>('goal:delete', {
       isSoftDelete: true,
@@ -728,41 +741,41 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * ✅ 恢复目标
    */
   public restore(): void {
-    this._deletedAt = null;
-    this._updatedAt = new Date();
+    this._props.deletedAt = null;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * ✅ 移动到文件夹
    */
   public moveToFolder(folderId: string | null): void {
-    this._folderId = folderId;
-    this._updatedAt = new Date();
+    this._props.folderId = folderId;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * ✅ 更新排序
    */
   public updateSortOrder(sortOrder: number): void {
-    this._sortOrder = sortOrder;
-    this._updatedAt = new Date();
+    this._props.sortOrder = sortOrder;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * ✅ 更新提醒配置
    */
   public updateReminderConfig(config: GoalReminderConfigDTO | null): void {
-    this._reminderConfig = config ? GoalReminderConfig.fromDTO(config) : null;
-    this._updatedAt = new Date();
+    this._props.reminderConfig = config ? GoalReminderConfig.fromDTO(config) : null;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * ✅ 启用提醒
    */
   public enableReminder(): void {
-    if (this._reminderConfig) {
-      this._reminderConfig = this._reminderConfig.setEnabled(true);
-      this._updatedAt = new Date();
+    if (this._props.reminderConfig) {
+      this._props.reminderConfig = this._props.reminderConfig.setEnabled(true);
+      this._props.updatedAt = new Date();
     }
   }
 
@@ -770,9 +783,9 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * ✅ 禁用提醒
    */
   public disableReminder(): void {
-    if (this._reminderConfig) {
-      this._reminderConfig = this._reminderConfig.setEnabled(false);
-      this._updatedAt = new Date();
+    if (this._props.reminderConfig) {
+      this._props.reminderConfig = this._props.reminderConfig.setEnabled(false);
+      this._props.updatedAt = new Date();
     }
   }
 
@@ -780,25 +793,25 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * ✅ 添加提醒触发器
    */
   public addReminderTrigger(trigger: ReminderTrigger): void {
-    if (!this._reminderConfig) {
+    if (!this._props.reminderConfig) {
       throw new Error('Reminder config not initialized');
     }
-    this._reminderConfig = this._reminderConfig.addTrigger(trigger);
-    this._updatedAt = new Date();
+    this._props.reminderConfig = this._props.reminderConfig.addTrigger(trigger);
+    this._props.updatedAt = new Date();
   }
 
   /**
    * ✅ 移除提醒触发器
    */
   public removeReminderTrigger(type: ReminderTriggerType, value: number): void {
-    if (!this._reminderConfig) {
+    if (!this._props.reminderConfig) {
       throw new Error('Reminder config not initialized');
     }
-    this._reminderConfig = this._reminderConfig.removeTrigger(type, value);
-    this._updatedAt = new Date();
+    this._props.reminderConfig = this._props.reminderConfig.removeTrigger(type, value);
+    this._props.updatedAt = new Date();
   }
 
-  // ================= 7. 关键结果管理 (KeyResult Management) =================
+  // ================= 4. 关键结果管理 (KeyResult Management) =================
 
   /**
    * 🏭 创建并添加关键结果
@@ -829,7 +842,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     Goal.validateKeyResultWeight(params.weight);
     
     // 验证权重总和
-    const currentTotalWeight = this._keyResults.reduce((sum, kr) => sum + kr.weight, 0);
+    const currentTotalWeight = this._props.keyResults.reduce((sum, kr) => sum + kr.weight, 0);
     if (currentTotalWeight + params.weight > 100) {
       throw new KeyResultWeightExceededError(currentTotalWeight, params.weight);
     }
@@ -847,12 +860,12 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
         unit: params.unit ?? null,
       },
       weight: params.weight,
-      sortOrder: this._keyResults.length,
+      sortOrder: this._props.keyResults.length,
     });
     
     // 添加到集合
-    this._keyResults.push(keyResult);
-    this._updatedAt = new Date();
+    this._props.keyResults.push(keyResult);
+    this._props.updatedAt = new Date();
 
     this.addDomainEvent<GoalEventMap['goal:key-result-add']>('goal:key-result-add', {
       keyResultId: keyResult.id,
@@ -887,7 +900,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
         unit: params.unit ?? null,
       },
       weight: params.weight,
-      sortOrder: this._keyResults.length,
+      sortOrder: this._props.keyResults.length,
     });
     return keyResult;
   }
@@ -897,8 +910,8 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * @deprecated 使用 createAndAddKeyResult 代替，它会自动验证
    */
   public addKeyResult(keyResult: KeyResult): void {
-    this._keyResults.push(keyResult);
-    this._updatedAt = new Date();
+    this._props.keyResults.push(keyResult);
+    this._props.updatedAt = new Date();
 
     this.addDomainEvent<GoalEventMap['goal:key-result-add']>('goal:key-result-add', {
       keyResultId: keyResult.id,
@@ -913,7 +926,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   public updateKeyResult(keyResultId: string, updates: Partial<KeyResult>): void {
     this.ensureNotDeleted();
     
-    const keyResult = this._keyResults.find((kr) => kr.id === keyResultId);
+    const keyResult = this._props.keyResults.find((kr) => kr.id === keyResultId);
     if (!keyResult) {
       throw new GoalKeyResultNotFoundError(keyResultId);
     }
@@ -923,7 +936,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
       keyResult.updateDescription(updates.description || '');
     }
 
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
 
     // 注：属性更新不触发专门的事件，由 Goal:update 处理
   }
@@ -934,34 +947,34 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   public reorderKeyResults(keyResultIds: string[]): void {
     const newOrder: KeyResult[] = [];
     for (let i = 0; i < keyResultIds.length; i++) {
-      const kr = this._keyResults.find((k) => k.id === keyResultIds[i]);
+      const kr = this._props.keyResults.find((k) => k.id === keyResultIds[i]);
       if (kr) {
         kr.updateSortOrder(i);
         newOrder.push(kr);
       }
     }
     // 添加未在列表中的关键结果
-    for (const kr of this._keyResults) {
+    for (const kr of this._props.keyResults) {
       if (!newOrder.includes(kr)) {
         newOrder.push(kr);
       }
     }
-    this._keyResults = newOrder;
-    this._updatedAt = new Date();
+    this._props.keyResults = newOrder;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 📊 通过 ID 获取关键结果
    */
   public getKeyResult(id: string): KeyResult | null {
-    return this._keyResults.find((kr) => kr.id === id) || null;
+    return this._props.keyResults.find((kr) => kr.id === id) || null;
   }
 
   /**
    * 📊 获取所有关键结果
    */
   public getAllKeyResults(): KeyResult[] {
-    return [...this._keyResults];
+    return [...this._props.keyResults];
   }
 
   /**
@@ -977,14 +990,14 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     // Guard: 确保未删除
     this.ensureNotDeleted();
     
-    const keyResult = this._keyResults.find((kr) => kr.id === keyResultId);
+    const keyResult = this._props.keyResults.find((kr) => kr.id === keyResultId);
     if (!keyResult) {
       throw new GoalKeyResultNotFoundError(keyResultId);
     }
 
     const oldProgress = this.calculateProgress();
     keyResult.recalculateProgress(newValue);
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
 
     const newProgress = this.calculateProgress();
 
@@ -1005,10 +1018,10 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   public removeKeyResult(keyResultId: string): KeyResult | null {
     this.ensureNotDeleted();
     
-    const index = this._keyResults.findIndex((kr) => kr.id === keyResultId);
+    const index = this._props.keyResults.findIndex((kr) => kr.id === keyResultId);
     if (index !== -1) {
-      const removed = this._keyResults.splice(index, 1)[0];
-      this._updatedAt = new Date();
+      const removed = this._props.keyResults.splice(index, 1)[0];
+      this._props.updatedAt = new Date();
 
       this.addDomainEvent<GoalEventMap['goal:key-result-delete']>('goal:key-result-delete', {
         keyResultId: keyResultId,
@@ -1027,19 +1040,19 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * @returns 目标进度百分比（0-100）
    */
   public calculateProgress(): number {
-    if (this._keyResults.length === 0) return 0;
+    if (this._props.keyResults.length === 0) return 0;
 
     // 计算总权重
-    const totalWeight = this._keyResults.reduce((sum, kr) => sum + kr.weight, 0);
+    const totalWeight = this._props.keyResults.reduce((sum, kr) => sum + kr.weight, 0);
 
     // 如果总权重为 0，使用简单平均
     if (totalWeight === 0) {
-      const totalPercentage = this._keyResults.reduce((sum, kr) => sum + kr.calculatePercentage(), 0);
-      return Math.round((totalPercentage / this._keyResults.length) * 100) / 100;
+      const totalPercentage = this._props.keyResults.reduce((sum, kr) => sum + kr.calculatePercentage(), 0);
+      return Math.round((totalPercentage / this._props.keyResults.length) * 100) / 100;
     }
 
     // 加权平均计算
-    const weightedSum = this._keyResults.reduce(
+    const weightedSum = this._props.keyResults.reduce(
       (sum, kr) => sum + (kr.calculatePercentage() * kr.weight),
       0,
     );
@@ -1054,18 +1067,18 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * 📊 获取进度分解详情
    */
   public getProgressBreakdown(): ProgressBreakdown {
-    const totalWeight = this._keyResults.reduce((sum, kr) => sum + kr.weight, 0);
+    const totalWeight = this._props.keyResults.reduce((sum, kr) => sum + kr.weight, 0);
     const totalProgress = this.calculateProgress();
 
     return {
       totalProgress,
       calculationMode: 'weighted_average' as const,
-      krContributions: this._keyResults.map((kr) => {
+      krContributions: this._props.keyResults.map((kr) => {
         const krProgress = kr.calculatePercentage();
         const contribution =
           totalWeight > 0
             ? Math.round((krProgress * kr.weight) / totalWeight * 100) / 100
-            : Math.round((krProgress / this._keyResults.length) * 100) / 100;
+            : Math.round((krProgress / this._props.keyResults.length) * 100) / 100;
 
         return {
           keyResultUuid: kr.id as unknown as string,
@@ -1075,7 +1088,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
           contribution,
         };
       }),
-      lastUpdateTime: this._updatedAt.getTime(),
+      lastUpdateTime: this._props.updatedAt.getTime(),
       updateTrigger: '自动计算',
     };
   }
@@ -1084,11 +1097,11 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * 📊 检查是否所有关键结果都已完成
    */
   public areAllKeyResultsCompleted(): boolean {
-    if (this._keyResults.length === 0) return false;
-    return this._keyResults.every((kr) => kr.isCompleted());
+    if (this._props.keyResults.length === 0) return false;
+    return this._props.keyResults.every((kr) => kr.isCompleted());
   }
 
-  // ================= 8. 权重快照管理 (Weight Snapshots) =================
+  // ================= 5. 权重快照管理 (Weight Snapshots) =================
 
   /**
    * ✅ 记录 KR 权重变更快照
@@ -1102,7 +1115,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     reason?: string,
   ): void {
     // 验证 KR 存在
-    const kr = this._keyResults.find((k) => k.id === krId);
+    const kr = this._props.keyResults.find((k) => k.id === krId);
     if (!kr) {
       throw new KeyResultNotFoundInGoalError(krId, this.id);
     }
@@ -1123,25 +1136,25 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
       createdAt: now,
     });
 
-    this._weightSnapshots.push(snapshot);
-    this._updatedAt = new Date();
+    this._props.weightSnapshots.push(snapshot);
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 📊 获取所有权重快照
    */
   public getAllWeightSnapshots(): ReadonlyArray<KeyResultWeightSnapshot> {
-    return this._weightSnapshots;
+    return this._props.weightSnapshots;
   }
 
   /**
    * 📊 获取特定 KR 的权重快照
    */
   public getWeightSnapshotsByKeyResult(krId: string): ReadonlyArray<KeyResultWeightSnapshot> {
-    return this._weightSnapshots.filter((snapshot) => snapshot.keyResultId === krId);
+    return this._props.weightSnapshots.filter((snapshot) => snapshot.keyResultId === krId);
   }
 
-  // ================= 9. 回顾管理 (Review Management) =================
+  // ================= 6. 回顾管理 (Review Management) =================
 
   /**
    * 🏭 创建并添加回顾
@@ -1168,7 +1181,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     Goal.validateReviewRating(params.rating);
     
     // 创建关键结果快照
-    const keyResultSnapshots: KeyResultSnapshotDTO[] = this._keyResults.map((kr) => ({
+    const keyResultSnapshots: KeyResultSnapshotDTO[] = this._props.keyResults.map((kr) => ({
       keyResultId: kr.id as any,
       title: kr.title,
       targetValue: kr.progress.targetValue,
@@ -1188,8 +1201,8 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     });
     
     // 添加到集合
-    this._goalReviews.push(review);
-    this._updatedAt = new Date();
+    this._props.goalReviews.push(review);
+    this._props.updatedAt = new Date();
 
     this.addDomainEvent<GoalEventMap['goal:review-add']>('goal:review-add', {
       reviewId: review.id,
@@ -1212,7 +1225,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     nextActions?: string;
   }): GoalReview {
     // 创建关键结果快照
-    const keyResultSnapshots: KeyResultSnapshotDTO[] = this._keyResults.map((kr) => ({
+    const keyResultSnapshots: KeyResultSnapshotDTO[] = this._props.keyResults.map((kr) => ({
       keyResultId: kr.id as any,
       title: kr.title,
       targetValue: kr.progress.targetValue,
@@ -1239,8 +1252,8 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * @deprecated 使用 createAndAddReview 代替
    */
   public addReview(review: GoalReview): void {
-    this._goalReviews.push(review);
-    this._updatedAt = new Date();
+    this._props.goalReviews.push(review);
+    this._props.updatedAt = new Date();
 
     this.addDomainEvent<GoalEventMap['goal:review-add']>('goal:review-add', {
       reviewId: review.id,
@@ -1251,8 +1264,8 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * 📊 获取最新的回顾记录
    */
   public getLatestReview(): GoalReview | null {
-    if (this._goalReviews.length === 0) return null;
-    return this._goalReviews[this._goalReviews.length - 1];
+    if (this._props.goalReviews.length === 0) return null;
+    return this._props.goalReviews[this._props.goalReviews.length - 1];
   }
 
   /**
@@ -1274,7 +1287,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     this.ensureNotDeleted();
     Goal.validateReviewRating(params.rating);
     
-    const review = this._goalReviews.find((r) => r.id === reviewId);
+    const review = this._props.goalReviews.find((r) => r.id === reviewId);
     if (!review) {
       throw new GoalReviewNotFoundError(reviewId);
     }
@@ -1285,7 +1298,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     if (params.challenges) review.addChallenge(params.challenges);
     if (params.improvements) review.addImprovement(params.improvements);
 
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -1295,23 +1308,23 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   public removeReview(reviewId: string): GoalReview | null {
     this.ensureNotDeleted();
     
-    const index = this._goalReviews.findIndex((r) => r.id === reviewId);
+    const index = this._props.goalReviews.findIndex((r) => r.id === reviewId);
     if (index !== -1) {
-      const removed = this._goalReviews.splice(index, 1)[0];
-      this._updatedAt = new Date();
+      const removed = this._props.goalReviews.splice(index, 1)[0];
+      this._props.updatedAt = new Date();
       return removed;
     }
     return null;
   }
 
-  // ================= 10. 业务规则检查 (Business Rules) =================
+  // ================= 7. 业务规则检查 (Business Rules) =================
 
   /**
    * 📊 是否已过期
    */
   public isOverdue(): boolean {
-    if (!this._targetDate || this._status === GoalStatus.Completed) return false;
-    return Date.now() > this._targetDate.getTime();
+    if (!this._props.targetDate || this._props.status === GoalStatus.Completed) return false;
+    return Date.now() > this._props.targetDate.getTime();
   }
 
   /**
@@ -1325,8 +1338,8 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * 📊 获取剩余天数
    */
   public getRemainingDays(): number | null {
-    if (!this._targetDate) return null;
-    const diff = this._targetDate.getTime() - Date.now();
+    if (!this._props.targetDate) return null;
+    const diff = this._props.targetDate.getTime() - Date.now();
     return Math.ceil(diff / DAY_MS);
   }
 
@@ -1338,7 +1351,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     return this.priority;
   }
 
-  // ================= 11. 序列化 (Serialization) =================
+  // ================= 8. 序列化 (Serialization) =================
 
   /**
    * 转换为 Server DTO
@@ -1347,36 +1360,36 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     const goalId = this.id as unknown as string;
     return {
       id: this.id,
-      identityId: this._identityId,
-      name: this._name,
-      description: this._description,
-      color: this._color,
-      feasibilityAnalysis: this._feasibilityAnalysis,
-      motivation: this._motivation,
-      status: this._status,
-      importance: this._importance,
+      identityId: this._props.identityId,
+      name: this._props.name,
+      description: this._props.description,
+      color: this._props.color,
+      feasibilityAnalysis: this._props.feasibilityAnalysis,
+      motivation: this._props.motivation,
+      status: this._props.status,
+      importance: this._props.importance,
       priority: this.priority,
-      category: this._category,
-      tags: [...this._tags],
-      startDate: this._startDate?.getTime() ?? null,
-      targetDate: this._targetDate?.getTime() ?? null,
-      completedAt: this._completedAt?.getTime() ?? null,
-      archivedAt: this._archivedAt?.getTime() ?? null,
-      folderId: this._folderId as GoalFolderId | null,
-      parentGoalId: this._parentGoalId,
-      sortOrder: this._sortOrder,
-      reminderConfig: this._reminderConfig?.toDTO() ?? null,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
-      keyResults: includeChildren && this._keyResults.length > 0
-        ? this._keyResults.map((kr) => kr.toServerDTO())
+      category: this._props.category,
+      tags: [...this._props.tags],
+      startDate: this._props.startDate?.getTime() ?? null,
+      targetDate: this._props.targetDate?.getTime() ?? null,
+      completedAt: this._props.completedAt?.getTime() ?? null,
+      archivedAt: this._props.archivedAt?.getTime() ?? null,
+      folderId: this._props.folderId as GoalFolderId | null,
+      parentGoalId: this._props.parentGoalId,
+      sortOrder: this._props.sortOrder,
+      reminderConfig: this._props.reminderConfig?.toDTO() ?? null,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      keyResults: includeChildren && this._props.keyResults.length > 0
+        ? this._props.keyResults.map((kr) => kr.toServerDTO())
         : null,
-      weightSnapshots: includeChildren && this._weightSnapshots.length > 0
-        ? this._weightSnapshots.map((ws) => ws.toDTO())
+      weightSnapshots: includeChildren && this._props.weightSnapshots.length > 0
+        ? this._props.weightSnapshots.map((ws) => ws.toDTO())
         : null,
-      goalReviews: includeChildren && this._goalReviews.length > 0
-        ? this._goalReviews.map((r) => r.toServerDTO())
+      goalReviews: includeChildren && this._props.goalReviews.length > 0
+        ? this._props.goalReviews.map((r) => r.toServerDTO())
         : null,
       version: 1, // Default version for optimistic locking
     };
@@ -1387,44 +1400,42 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    */
   public toClientDTO(includeChildren: boolean = false): import('@dailyuse/contracts/goal').GoalClientDTO {
     const now = new Date();
-    const isOverdue = this._targetDate ? this._targetDate < now && this._status !== GoalStatus.Completed : false;
-    const daysRemaining = this._targetDate
-      ? Math.ceil((this._targetDate.getTime() - now.getTime()) / DAY_MS)
+    const isOverdue = this._props.targetDate ? this._props.targetDate < now && this._props.status !== GoalStatus.Completed : false;
+    const daysRemaining = this._props.targetDate
+      ? Math.ceil((this._props.targetDate.getTime() - now.getTime()) / DAY_MS)
       : null;
 
     return {
       id: this.id,
-      identityId: this._identityId,
-      name: this._name,
-      description: this._description,
-      color: this._color,
-      feasibilityAnalysis: this._feasibilityAnalysis,
-      motivation: this._motivation,
-      status: this._status,
-      importance: this._importance,
+      identityId: this._props.identityId,
+      name: this._props.name,
+      description: this._props.description,
+      color: this._props.color,
+      feasibilityAnalysis: this._props.feasibilityAnalysis,
+      motivation: this._props.motivation,
+      status: this._props.status,
+      importance: this._props.importance,
       priority: this.priority,
-      category: this._category,
-      tags: [...this._tags],
-      startDate: this._startDate?.getTime() ?? null,
-      targetDate: this._targetDate?.getTime() ?? null,
-      completedAt: this._completedAt?.getTime() ?? null,
-      archivedAt: this._archivedAt?.getTime() ?? null,
-      folderId: this._folderId as GoalFolderId | null,
-      parentGoalId: this._parentGoalId,
-      sortOrder: this._sortOrder,
-      reminderConfig: this._reminderConfig?.toDTO() ?? null,
+      category: this._props.category,
+      tags: [...this._props.tags],
+      startDate: this._props.startDate?.getTime() ?? null,
+      targetDate: this._props.targetDate?.getTime() ?? null,
+      completedAt: this._props.completedAt?.getTime() ?? null,
+      archivedAt: this._props.archivedAt?.getTime() ?? null,
+      folderId: this._props.folderId as GoalFolderId | null,
+      parentGoalId: this._props.parentGoalId,
+      sortOrder: this._props.sortOrder,
+      reminderConfig: this._props.reminderConfig?.toDTO() ?? null,
       version: 1,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
-      keyResults: includeChildren && this._keyResults.length > 0
-        ? this._keyResults.map((kr) => kr.toClientDTO())
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      keyResults: includeChildren && this._props.keyResults.length > 0
+        ? this._props.keyResults.map((kr) => kr.toClientDTO())
         : null,
-      reviews: includeChildren && this._goalReviews.length > 0
-        ? this._goalReviews.map((r) => r.toClientDTO())
+      reviews: includeChildren && this._props.goalReviews.length > 0
+        ? this._props.goalReviews.map((r) => r.toClientDTO())
         : null,
-      progress: this.progress,
-      timeRangeSummary: null, // Will be calculated by application service if needed
     };
   }
 
@@ -1434,49 +1445,49 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   public toPersistenceDTO(): GoalPersistenceDTO {
     return {
       id: this.id,
-      identityId: this._identityId,
-      name: this._name,
-      description: this._description,
-      color: this._color,
-      feasibilityAnalysis: this._feasibilityAnalysis,
-      motivation: this._motivation,
-      status: this._status,
-      importance: this._importance,
-      priority: this._priority,
-      category: this._category,
-      tags: [...this._tags],
-      startDate: this._startDate,
-      targetDate: this._targetDate,
-      completedAt: this._completedAt,
-      archivedAt: this._archivedAt,
-      folderId: this._folderId as GoalFolderId | null,
-      parentGoalId: this._parentGoalId,
-      sortOrder: this._sortOrder,
-      reminderConfig: this._reminderConfig?.toPersistenceDTO() ?? null,
-      keyResults: this._keyResults.length > 0
-        ? this._keyResults.map((kr) => kr.toPersistenceDTO(this.id))
+      identityId: this._props.identityId,
+      name: this._props.name,
+      description: this._props.description,
+      color: this._props.color,
+      feasibilityAnalysis: this._props.feasibilityAnalysis,
+      motivation: this._props.motivation,
+      status: this._props.status,
+      importance: this._props.importance,
+      priority: this._props.priority,
+      category: this._props.category,
+      tags: [...this._props.tags],
+      startDate: this._props.startDate,
+      targetDate: this._props.targetDate,
+      completedAt: this._props.completedAt,
+      archivedAt: this._props.archivedAt,
+      folderId: this._props.folderId as GoalFolderId | null,
+      parentGoalId: this._props.parentGoalId,
+      sortOrder: this._props.sortOrder,
+      reminderConfig: this._props.reminderConfig?.toPersistenceDTO() ?? null,
+      keyResults: this._props.keyResults.length > 0
+        ? this._props.keyResults.map((kr) => kr.toPersistenceDTO(this.id))
         : null,
-      goalReviews: this._goalReviews.length > 0
-        ? this._goalReviews.map((r) => r.toPersistenceDTO())
+      goalReviews: this._props.goalReviews.length > 0
+        ? this._props.goalReviews.map((r) => r.toPersistenceDTO())
         : null,
-      weightSnapshots: this._weightSnapshots.length > 0
-        ? this._weightSnapshots.map((ws) => ws.toDTO())
+      weightSnapshots: this._props.weightSnapshots.length > 0
+        ? this._props.weightSnapshots.map((ws) => ws.toDTO())
         : null,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt,
       version: 1,
     };
   }
 
-  // ================= 12. Guard Clauses (守卫方法) =================
+  // ================= 9. Guard Clauses (守卫方法) =================
 
   /**
    * 确保目标未被删除
    * @throws {GoalDeletedError} 当目标已被软删除时
    */
   private ensureNotDeleted(): void {
-    if (this._deletedAt !== null) {
+    if (this._props.deletedAt !== null) {
       throw new GoalDeletedError(this.id);
     }
   }
@@ -1486,7 +1497,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * @throws {GoalArchivedError} 当目标已被归档时
    */
   private ensureNotArchived(): void {
-    if (this._status === GoalStatus.Archived) {
+    if (this._props.status === GoalStatus.Archived) {
       throw new GoalArchivedError(this.id);
     }
   }
@@ -1501,7 +1512,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     this.ensureNotArchived();
   }
 
-  // ================= 13. 静态验证方法 (Static Validators) =================
+  // ================= 10. 静态验证方法 (Static Validators) =================
 
   /**
    * 验证目标标题
@@ -1564,11 +1575,11 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     }
   }
 
-  // ================= 14. 辅助方法 (Helpers) =================
+  // ================= 11. 辅助方法 (Helpers) =================
 
   private resolveTimeRange(): { start: number | null; end: number | null } {
-    const start = this._startDate?.getTime() ?? this._createdAt?.getTime() ?? null;
-    let end = this._targetDate?.getTime() ?? this._completedAt?.getTime() ?? this._updatedAt?.getTime() ?? null;
+    const start = this._props.startDate?.getTime() ?? this._props.createdAt?.getTime() ?? null;
+    let end = this._props.targetDate?.getTime() ?? this._props.completedAt?.getTime() ?? this._props.updatedAt?.getTime() ?? null;
 
     if (start && (!end || end <= start)) {
       end = start + DEFAULT_DURATION;

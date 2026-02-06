@@ -33,11 +33,6 @@ export interface AuthSessionClient {
   deviceInfo: DeviceInfo;
 
   /**
-   * 是否是当前会话 (用户所在设备的会话)
-   */
-  isCurrentSession: boolean;
-
-  /**
    * 创建时间
    */
   createdAt: DomainDate;

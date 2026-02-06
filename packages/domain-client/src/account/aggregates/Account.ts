@@ -17,84 +17,71 @@ import {
   ContactPhone,
 } from '@dailyuse/domain-shared/account';
 
-export class Account extends AggregateRoot<IdentityId> implements AccountClient {
-  private _profile: AccountProfile;
-  private _email: ContactEmail;
-  private _settings: AccountSettings;
-  private _status: AccountStatus;
-  private _phone: ContactPhone | null;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+// Internal props type using domain-shared class types (which implement the contracts interfaces)
+interface AccountInternalProps {
+  id: IdentityId;
+  profile: AccountProfile;
+  email: ContactEmail;
+  settings: AccountSettings;
+  status: AccountStatus;
+  phone: ContactPhone | null;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
 
-  private constructor(params: {
-    id: string;
-    profile: AccountProfile;
-    email: ContactEmail;
-    settings: AccountSettings;
-    status: AccountStatus;
-    phone: ContactPhone | null;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(IdentityId.of(params.id));
-    this._profile = params.profile;
-    this._email = params.email;
-    this._settings = params.settings;
-    this._status = params.status;
-    this._phone = params.phone;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+export class Account extends AggregateRoot<IdentityId> implements AccountClient {
+  private readonly _props: AccountInternalProps;
+
+  private constructor(props: AccountInternalProps) {
+    super(props.id);
+    this._props = props;
   }
 
   // ===== Getters =====
 
   get profile(): AccountProfile {
-    return this._profile;
+    return this._props.profile;
   }
 
   get email(): ContactEmail {
-    return this._email;
+    return this._props.email;
   }
 
   get settings(): AccountSettings {
-    return this._settings;
+    return this._props.settings;
   }
 
   get status(): AccountStatus {
-    return this._status;
+    return this._props.status;
   }
 
   get phone(): ContactPhone | null {
-    return this._phone;
+    return this._props.phone;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // ===== Factory Methods =====
 
   public static fromDTO(dto: AccountClientDTO): Account {
     return new Account({
-      id: dto.id,
+      id: IdentityId.of(dto.id),
       profile: AccountProfile.create(dto.profile),
       email: ContactEmail.create(dto.email),
       settings: AccountSettings.create(dto.settings),
@@ -112,15 +99,15 @@ export class Account extends AggregateRoot<IdentityId> implements AccountClient 
   public toDTO(): AccountClientDTO {
     return {
       id: String(this.id),
-      status: this._status,
-      profile: this._profile.toDTO(),
-      settings: this._settings.toDTO(),
-      email: this._email.toDTO(),
-      phone: this._phone?.toDTO() ?? null,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      status: this._props.status,
+      profile: this._props.profile.toDTO(),
+      settings: this._props.settings.toDTO(),
+      email: this._props.email.toDTO(),
+      phone: this._props.phone?.toDTO() ?? null,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 }

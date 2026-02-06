@@ -32,19 +32,6 @@ export interface RepositoryClient {
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;
-
-
-  isDeleted: boolean;
-  isArchived: boolean;
-  isActive: boolean;
-  statusText: string;
-  typeText: string;
-  folderCount: number;
-  resourceCount: number;
-  totalSize: number;
-  formattedSize: string;
-  createdAtText: string;
-  updatedAtText: string;
 }
 
 // ============ DTO 定义 ============

@@ -1,12 +1,14 @@
+import type { SubtaskId, DomainDate, TransferDate } from '@/primitives';
+
 export interface SubtaskClient {
-  id: string;
+  id: SubtaskId;
   name: string;
   isCompleted: boolean;
   order: number;
   version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: DomainDate;
+  updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 }
 
 export interface SubtaskClientDTO {
@@ -15,8 +17,8 @@ export interface SubtaskClientDTO {
   isCompleted: boolean;
   order: number;
   version: number;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt: number | null;
+  createdAt: TransferDate;
+  updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }
 

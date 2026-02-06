@@ -40,10 +40,9 @@ export interface GoalFolderClientDTO {
 // ============ 实体接口 ============
 
 /**
- * GoalFolder 聚合根 - Client 接口（实例方法）
+ * GoalFolder 聚合根 - Client 接口
  */
 export interface GoalFolderClient {
-  // 基础属性
   id: GoalFolderId;
   identityId: IdentityId;
   name: string;
@@ -57,16 +56,8 @@ export interface GoalFolderClient {
   goalCount: number;
   completedGoalCount: number;
 
-  // 时间戳
   version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;
-
-  // UI 计算属性
-  displayName: string;
-  displayIcon: string;
-  completionRate: number;
-  isDeleted: boolean;
-  activeGoalCount: number;
 }

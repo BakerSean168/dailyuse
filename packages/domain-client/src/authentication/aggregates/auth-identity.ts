@@ -10,103 +10,76 @@
 import type {
   AuthIdentityClient,
   AuthIdentityClientDTO,
-  AuthCredentialClientDTO,
+  AuthCredentialClient,
+  AuthIdentityStatus,
 } from '@dailyuse/contracts/authentication';
 import { AggregateRoot } from '@dailyuse/utils';
 
 import {
-  AuthIdentityStatus,
-  CredentialType,
+  AuthIdentityStatus as AuthIdentityStatusVO,
 } from '@dailyuse/domain-shared/authentication';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 import { AuthCredential } from '../entities';
 
 export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdentityClient {
-  // ================= 内部状态 (Backing Fields) =================
-  private _status: typeof AuthIdentityStatus.ACTIVE;
-  private _failedLoginAttempts: number;
-  private _lastFailedAttempt: Date | null;
-  private _lockedUntil: Date | null;
-  private _credentials: AuthCredential[];
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  private readonly _props: AuthIdentityClient;
 
   // ================= 构造函数 (Private) =================
-  private constructor(params: {
-    id: string;
-    status: typeof AuthIdentityStatus.ACTIVE;
-    failedLoginAttempts: number;
-    lastFailedAttempt: Date | null;
-    lockedUntil: Date | null;
-    credentials: AuthCredential[];
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(IdentityId.of(params.id));
-    this._status = params.status;
-    this._failedLoginAttempts = params.failedLoginAttempts;
-    this._lastFailedAttempt = params.lastFailedAttempt;
-    this._lockedUntil = params.lockedUntil;
-    this._credentials = params.credentials;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+  private constructor(props: AuthIdentityClient) {
+    // Cast is safe: fromDTO always provides IdentityId value object
+    super(props.id as unknown as IdentityId);
+    this._props = props;
   }
 
   // ================= 公共属性 (Getters) =================
 
-  get status(): typeof AuthIdentityStatus.ACTIVE {
-    return this._status;
+  get status(): AuthIdentityStatus {
+    return this._props.status;
   }
 
   get failedLoginAttempts(): number {
-    return this._failedLoginAttempts;
+    return this._props.failedLoginAttempts;
   }
 
   get lastFailedAttempt(): Date | null {
-    return this._lastFailedAttempt;
+    return this._props.lastFailedAttempt;
   }
 
   get lockedUntil(): Date | null {
-    return this._lockedUntil;
+    return this._props.lockedUntil;
   }
 
-  get credentials(): AuthCredentialClientDTO[] {
-    return this._credentials.map((cred) => cred.toDTO());
+  get credentials(): AuthCredentialClient[] {
+    return this._props.credentials;
   }
 
   get hasPassword(): boolean {
-    return this._credentials.some(
-      (cred) => cred.type === CredentialType.PASSWORD
+    return this._props.credentials.some(
+      (cred) => cred.type === 'PASSWORD'
     );
   }
 
   get hasOAuth(): boolean {
-    return this._credentials.some(
-      (cred) => cred.type === CredentialType.OAUTH
+    return this._props.credentials.some(
+      (cred) => cred.type === 'OAUTH'
     );
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // ================= 工厂方法 (Factory Methods) =================
@@ -116,8 +89,8 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
    */
   public static fromDTO(dto: AuthIdentityClientDTO): AuthIdentity {
     return new AuthIdentity({
-      id: dto.id,
-      status: AuthIdentityStatus.of(dto.status),
+      id: IdentityId.of(dto.id),
+      status: AuthIdentityStatusVO.of(dto.status),
       failedLoginAttempts: dto.failedLoginAttempts,
       lastFailedAttempt: dto.lastFailedAttempt
         ? new Date(dto.lastFailedAttempt)
@@ -138,18 +111,18 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
    */
   public toDTO(): AuthIdentityClientDTO {
     return {
-      id: String(this.id),
-      status: this._status,
-      failedLoginAttempts: this._failedLoginAttempts,
-      lastFailedAttempt: this._lastFailedAttempt?.getTime() ?? null,
-      lockedUntil: this._lockedUntil?.getTime() ?? null,
-      credentials: this._credentials.map((cred) => cred.toDTO()),
+      id: String(this._props.id),
+      status: this._props.status,
+      failedLoginAttempts: this._props.failedLoginAttempts,
+      lastFailedAttempt: this._props.lastFailedAttempt?.getTime() ?? null,
+      lockedUntil: this._props.lockedUntil?.getTime() ?? null,
+      credentials: this._props.credentials.map((cred) => (cred as AuthCredential).toDTO()),
       hasPassword: this.hasPassword,
       hasOAuth: this.hasOAuth,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 }

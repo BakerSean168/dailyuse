@@ -8,8 +8,8 @@ import type { DocumentLanguage } from '../value-objects/document-language';
 import type { IndexStatus } from '../value-objects/index-status';
 import type { DocumentServerDTO } from './document-server';
 
-// 从值对象导入类�?
-import type { DocumentMetadataClientDTO } from '../value-objects';
+// 从值对象导入类型
+import type { DocumentMetadataClient, DocumentMetadataClientDTO } from '../value-objects';
 
 /**
  * Document Client DTO
@@ -52,7 +52,7 @@ export interface DocumentClient {
   readonly language: DocumentLanguage;
   readonly content: string;
   readonly contentHash: string;
-  readonly metadata: DocumentMetadataClientDTO;
+  readonly metadata: DocumentMetadataClient;
   readonly indexStatus: IndexStatus;
   readonly lastIndexedAt: DomainDate | null;
   readonly lastModifiedAt: DomainDate | null;

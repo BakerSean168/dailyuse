@@ -6,8 +6,8 @@
 import type { EditorGroupId, EditorSessionId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate } from '@/primitives';
 import type { EditorGroupServerDTO } from './editor-group-server';
 
-// 从实体导入类�?
-import type { EditorTabClientDTO } from './editor-tab-client';
+// 从实体导入类型
+import type { EditorTabClient, EditorTabClientDTO } from './editor-tab-client';
 
 /**
  * Editor Group Client DTO
@@ -38,7 +38,7 @@ export interface EditorGroupClientDTO {
  * 编辑器分组实�?- 客户端接�?
  */
 export interface EditorGroupClient {
-  // ===== 基础属�?=====
+  // ===== 基础属性 =====
   readonly id: EditorGroupId;
   readonly sessionId: EditorSessionId;
   readonly workspaceId: EditorWorkspaceId;
@@ -46,6 +46,11 @@ export interface EditorGroupClient {
   readonly groupIndex: number;
   readonly activeTabIndex: number;
   readonly name: string | null;
+
+  // ===== 子实体集合 =====
+  readonly tabs: EditorTabClient[];
+
+  // ===== 时间戳 =====
   readonly createdAt: DomainDate;
   readonly updatedAt: DomainDate;
 

@@ -15,105 +15,89 @@
  */
 
 import type {
+  EditorSessionClient,
   EditorSessionClientDTO,
-  SessionLayoutClientDTO,
+  SessionLayoutClient,
 } from '@dailyuse/contracts/editor';
-import type { EditorSessionId } from '@dailyuse/contracts/primitives';
+import type { EditorSessionId, DomainDate } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
 import { EditorWorkspaceId } from '@dailyuse/domain-shared/editor';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { EditorGroup } from './editor-group';
 
-export class EditorSession extends Entity<EditorSessionId> {
-  // ================= 1. Backing Fields =================
-  private _workspaceId: EditorWorkspaceId;
-  private _identityId: IdentityId;
-  private _name: string;
-  private _description: string | null;
-  private _groups: EditorGroup[];
-  private _isActive: boolean;
-  private _activeGroupIndex: number;
-  private _layout: SessionLayoutClientDTO;
-  private _lastAccessedAt: Date | null;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+// Internal props type using EditorGroup class instead of EditorGroupClient interface
+interface EditorSessionInternalProps {
+  id: EditorSessionId;
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
+  name: string;
+  description: string | null;
+  groups: EditorGroup[];
+  isActive: boolean;
+  activeGroupIndex: number;
+  layout: SessionLayoutClient;
+  lastAccessedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class EditorSession extends Entity<EditorSessionId> implements EditorSessionClient {
+  // ================= 1. Backing Field =================
+  private readonly _props: EditorSessionInternalProps;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: EditorSessionId;
-    workspaceId: EditorWorkspaceId;
-    identityId: IdentityId;
-    name: string;
-    description: string | null;
-    groups: EditorGroup[];
-    isActive: boolean;
-    activeGroupIndex: number;
-    layout: SessionLayoutClientDTO;
-    lastAccessedAt: Date | null;
-    createdAt: Date;
-    updatedAt: Date;
-  }) {
-    super(params.id);
-    this._workspaceId = params.workspaceId;
-    this._identityId = params.identityId;
-    this._name = params.name;
-    this._description = params.description;
-    this._groups = params.groups;
-    this._isActive = params.isActive;
-    this._activeGroupIndex = params.activeGroupIndex;
-    this._layout = params.layout;
-    this._lastAccessedAt = params.lastAccessedAt;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+  private constructor(props: EditorSessionInternalProps) {
+    super(props.id);
+    this._props = props;
   }
 
   // ================= 3. Getters =================
   get workspaceId(): EditorWorkspaceId {
-    return this._workspaceId;
+    return this._props.workspaceId;
   }
 
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
 
   get groups(): EditorGroup[] {
-    return [...this._groups];
+    return [...this._props.groups];
   }
 
   get isActive(): boolean {
-    return this._isActive;
+    return this._props.isActive;
   }
 
   get activeGroupIndex(): number {
-    return this._activeGroupIndex;
+    return this._props.activeGroupIndex;
   }
 
-  get layout(): SessionLayoutClientDTO {
-    return this._layout;
+  get layout(): SessionLayoutClient {
+    return this._props.layout;
   }
 
   get groupCount(): number {
-    return this._groups.length;
+    return this._props.groups.length;
   }
 
-  get lastAccessedAt(): Date | null {
-    return this._lastAccessedAt;
+  get lastAccessedAt(): DomainDate | null {
+    return this._props.lastAccessedAt;
   }
 
-  get createdAt(): Date {
-    return this._createdAt;
+  get createdAt(): DomainDate {
+    return this._props.createdAt;
   }
 
-  get updatedAt(): Date {
-    return this._updatedAt;
+  get updatedAt(): DomainDate {
+    return this._props.updatedAt;
   }
 
   // ================= 4. Factory Methods =================
@@ -138,18 +122,18 @@ export class EditorSession extends Entity<EditorSessionId> {
   public toDTO(): EditorSessionClientDTO {
     return {
       id: String(this.id),
-      workspaceId: String(this._workspaceId),
-      identityId: String(this._identityId),
-      name: this._name,
-      description: this._description,
-      groups: this._groups.map((g) => g.toDTO()),
-      isActive: this._isActive,
-      activeGroupIndex: this._activeGroupIndex,
-      layout: this._layout,
-      groupCount: this._groups.length,
-      lastAccessedAt: this._lastAccessedAt?.getTime() ?? null,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      workspaceId: String(this._props.workspaceId),
+      identityId: String(this._props.identityId),
+      name: this._props.name,
+      description: this._props.description,
+      groups: this._props.groups.map((g) => g.toDTO()),
+      isActive: this._props.isActive,
+      activeGroupIndex: this._props.activeGroupIndex,
+      layout: this._props.layout,
+      groupCount: this._props.groups.length,
+      lastAccessedAt: this._props.lastAccessedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
     };
   }
 }

@@ -98,12 +98,5 @@ export interface TaskTemplateClient {
   estimatedMinutes: number | null;
   actualMinutes: number | null;
   comment: string | null;
-  dependencyStatus?: string;
-  isBlocked?: boolean;
   blockingReason: string | null;
-  instanceCount: number;
-  completedInstanceCount: number;
-  pendingInstanceCount: number;
-  completionRate: number;
-
 }

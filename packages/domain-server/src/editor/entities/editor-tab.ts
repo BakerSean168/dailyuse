@@ -22,115 +22,93 @@ import type {
 } from '@dailyuse/contracts/primitives';
 
 /**
+ * EditorTab 属性接口
+ */
+interface EditorTabProps {
+  groupId: EditorGroupId;
+  sessionId: EditorSessionId;
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
+  documentId: DocumentId | null;
+  tabIndex: number;
+  tabType: TabType;
+  name: string;
+  viewState: TabViewStateServerDTO;
+  isPinned: boolean;
+  isDirty: boolean;
+  lastAccessedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
  * EditorTab 实体
  */
 export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
-  // ===== 私有字段 =====
-  private _groupId: EditorGroupId;
-  private _sessionId: EditorSessionId;
-  private _workspaceId: EditorWorkspaceId;
-  private _identityId: IdentityId;
-  private _documentId: DocumentId | null;
-  private _tabIndex: number;
-  private _tabType: TabType;
-  private _name: string;
-  private _viewState: TabViewStateServerDTO;
-  private _isPinned: boolean;
-  private _isDirty: boolean;
-  private _lastAccessedAt: Date | null;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+  // ===== 私有属性 =====
+  private _props: EditorTabProps;
 
   // ===== 构造函数（私有） =====
-  private constructor(params: {
-    id: EditorTabId;
-    groupId: EditorGroupId;
-    sessionId: EditorSessionId;
-    workspaceId: EditorWorkspaceId;
-    identityId: IdentityId;
-    documentId: DocumentId | null;
-    tabIndex: number;
-    tabType: TabType;
-    name: string;
-    viewState: TabViewStateServerDTO;
-    isPinned: boolean;
-    isDirty: boolean;
-    lastAccessedAt: Date | null;
-    createdAt: Date;
-    updatedAt: Date;
-  }) {
-    super(params.id);
-    this._groupId = params.groupId;
-    this._sessionId = params.sessionId;
-    this._workspaceId = params.workspaceId;
-    this._identityId = params.identityId;
-    this._documentId = params.documentId;
-    this._tabIndex = params.tabIndex;
-    this._tabType = params.tabType;
-    this._name = params.name;
-    this._viewState = params.viewState;
-    this._isPinned = params.isPinned;
-    this._isDirty = params.isDirty;
-    this._lastAccessedAt = params.lastAccessedAt;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+  private constructor(id: EditorTabId, props: EditorTabProps) {
+    super(id);
+    this._props = props;
   }
 
   // ===== Getter 属性 =====
   public get groupId(): EditorGroupId {
-    return this._groupId;
+    return this._props.groupId;
   }
 
   public get sessionId(): EditorSessionId {
-    return this._sessionId;
+    return this._props.sessionId;
   }
 
   public get workspaceId(): EditorWorkspaceId {
-    return this._workspaceId;
+    return this._props.workspaceId;
   }
 
   public get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   public get documentId(): DocumentId | null {
-    return this._documentId;
+    return this._props.documentId;
   }
 
   public get tabIndex(): number {
-    return this._tabIndex;
+    return this._props.tabIndex;
   }
 
   public get tabType(): TabType {
-    return this._tabType;
+    return this._props.tabType;
   }
 
   public get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   public get viewState(): TabViewStateServerDTO {
-    return this._viewState;
+    return this._props.viewState;
   }
 
   public get isPinned(): boolean {
-    return this._isPinned;
+    return this._props.isPinned;
   }
 
   public get isDirty(): boolean {
-    return this._isDirty;
+    return this._props.isDirty;
   }
 
   public get lastAccessedAt(): Date | null {
-    return this._lastAccessedAt;
+    return this._props.lastAccessedAt;
   }
 
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   public get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   // ===== 工厂方法 =====
@@ -161,8 +139,7 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
       ...params.viewState,
     };
 
-    return new EditorTab({
-      id,
+    return new EditorTab(id, {
       groupId: params.groupId,
       sessionId: params.sessionId,
       workspaceId: params.workspaceId,
@@ -184,8 +161,7 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
    * 从 ServerDTO 恢复
    */
   public static fromServerDTO(dto: EditorTabServerDTO): EditorTab {
-    return new EditorTab({
-      id: dto.id,
+    return new EditorTab(dto.id, {
       groupId: dto.groupId,
       sessionId: dto.sessionId,
       workspaceId: dto.workspaceId,
@@ -207,8 +183,7 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
    * 从 ClientDTO 恢复
    */
   public static fromClientDTO(dto: EditorTabClientDTO): EditorTab {
-    return new EditorTab({
-      id: dto.id as EditorTabId,
+    return new EditorTab(dto.id as EditorTabId, {
       groupId: dto.groupId as EditorGroupId,
       sessionId: dto.sessionId as EditorSessionId,
       workspaceId: dto.workspaceId as EditorWorkspaceId,
@@ -230,8 +205,7 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
    * 从 PersistenceDTO 恢复
    */
   public static fromPersistenceDTO(dto: EditorTabPersistenceDTO): EditorTab {
-    return new EditorTab({
-      id: dto.id,
+    return new EditorTab(dto.id, {
       groupId: dto.group_id,
       sessionId: dto.session_id,
       workspaceId: dto.workspace_id,
@@ -255,7 +229,7 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
    * 更新标题
    */
   public updateName(name: string): void {
-    this._name = name;
+    this._props.name = name;
     this.updateTimestamp();
   }
 
@@ -263,7 +237,7 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
    * 更新视图状态
    */
   public updateViewState(viewState: Partial<TabViewStateServerDTO>): void {
-    this._viewState = { ...this._viewState, ...viewState };
+    this._props.viewState = { ...this._props.viewState, ...viewState };
     this.updateTimestamp();
   }
 
@@ -271,7 +245,7 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
    * 切换固定状态
    */
   public togglePinned(): void {
-    this._isPinned = !this._isPinned;
+    this._props.isPinned = !this._props.isPinned;
     this.updateTimestamp();
   }
 
@@ -279,7 +253,7 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
    * 标记为脏（有未保存更改）
    */
   public markDirty(): void {
-    this._isDirty = true;
+    this._props.isDirty = true;
     this.updateTimestamp();
   }
 
@@ -287,7 +261,7 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
    * 标记为干净（已保存）
    */
   public markClean(): void {
-    this._isDirty = false;
+    this._props.isDirty = false;
     this.updateTimestamp();
   }
 
@@ -295,7 +269,7 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
    * 记录访问时间
    */
   public recordAccess(): void {
-    this._lastAccessedAt = new Date();
+    this._props.lastAccessedAt = new Date();
     this.updateTimestamp();
   }
 
@@ -303,7 +277,7 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
    * 更新标签索引（用于重新排序）
    */
   public updateTabIndex(tabIndex: number): void {
-    this._tabIndex = tabIndex;
+    this._props.tabIndex = tabIndex;
     this.updateTimestamp();
   }
 
@@ -311,11 +285,11 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
    * 判断是否为文档标签
    */
   public isDocumentTab(): boolean {
-    return this._tabType === TabType.Document;
+    return this._props.tabType === TabType.Document;
   }
 
   private updateTimestamp(): void {
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   // ===== 序列化方法 =====
@@ -326,20 +300,20 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
   public toServerDTO(): EditorTabServerDTO {
     return {
       id: this.id,
-      groupId: this._groupId,
-      sessionId: this._sessionId,
-      workspaceId: this._workspaceId,
-      identityId: this._identityId,
-      documentId: this._documentId,
-      tabIndex: this._tabIndex,
-      tabType: this._tabType,
-      name: this._name,
-      viewState: this._viewState,
-      isPinned: this._isPinned,
-      isDirty: this._isDirty,
-      lastAccessedAt: this._lastAccessedAt?.getTime() ?? null,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      groupId: this._props.groupId,
+      sessionId: this._props.sessionId,
+      workspaceId: this._props.workspaceId,
+      identityId: this._props.identityId,
+      documentId: this._props.documentId,
+      tabIndex: this._props.tabIndex,
+      tabType: this._props.tabType,
+      name: this._props.name,
+      viewState: this._props.viewState,
+      isPinned: this._props.isPinned,
+      isDirty: this._props.isDirty,
+      lastAccessedAt: this._props.lastAccessedAt?.getTime() ?? null,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
     };
   }
 
@@ -349,23 +323,23 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
   public toClientDTO(): EditorTabClientDTO {
     return {
       id: this.id as unknown as string,
-      groupId: this._groupId as unknown as string,
-      sessionId: this._sessionId as unknown as string,
-      workspaceId: this._workspaceId as unknown as string,
-      identityId: this._identityId as unknown as string,
-      documentId: this._documentId as unknown as string | null,
-      tabIndex: this._tabIndex,
-      tabType: this._tabType,
-      name: this._name,
-      viewState: this._viewState,
-      isPinned: this._isPinned,
-      isDirty: this._isDirty,
-      lastAccessedAt: this._lastAccessedAt?.getTime() ?? null,
-      formattedLastAccessed: this._lastAccessedAt?.toLocaleString() ?? null,
-      formattedCreatedAt: this._createdAt.toLocaleString(),
-      formattedUpdatedAt: this._updatedAt.toLocaleString(),
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      groupId: this._props.groupId as unknown as string,
+      sessionId: this._props.sessionId as unknown as string,
+      workspaceId: this._props.workspaceId as unknown as string,
+      identityId: this._props.identityId as unknown as string,
+      documentId: this._props.documentId as unknown as string | null,
+      tabIndex: this._props.tabIndex,
+      tabType: this._props.tabType,
+      name: this._props.name,
+      viewState: this._props.viewState,
+      isPinned: this._props.isPinned,
+      isDirty: this._props.isDirty,
+      lastAccessedAt: this._props.lastAccessedAt?.getTime() ?? null,
+      formattedLastAccessed: this._props.lastAccessedAt?.toLocaleString() ?? null,
+      formattedCreatedAt: this._props.createdAt.toLocaleString(),
+      formattedUpdatedAt: this._props.updatedAt.toLocaleString(),
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
     };
   }
 
@@ -375,20 +349,20 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
   public toPersistenceDTO(): EditorTabPersistenceDTO {
     return {
       id: this.id,
-      group_id: this._groupId,
-      session_id: this._sessionId,
-      workspace_id: this._workspaceId,
-      identityId: this._identityId,
-      document_id: this._documentId,
-      tab_index: this._tabIndex,
-      tab_type: this._tabType,
-      name: this._name,
-      view_state: JSON.stringify(this._viewState),
-      is_pinned: this._isPinned,
-      is_dirty: this._isDirty,
-      lastAccessedAt: this._lastAccessedAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      group_id: this._props.groupId,
+      session_id: this._props.sessionId,
+      workspace_id: this._props.workspaceId,
+      identityId: this._props.identityId,
+      document_id: this._props.documentId,
+      tab_index: this._props.tabIndex,
+      tab_type: this._props.tabType,
+      name: this._props.name,
+      view_state: JSON.stringify(this._props.viewState),
+      is_pinned: this._props.isPinned,
+      is_dirty: this._props.isDirty,
+      lastAccessedAt: this._props.lastAccessedAt,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
     };
   }
 }

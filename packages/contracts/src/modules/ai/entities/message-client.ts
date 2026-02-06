@@ -45,10 +45,4 @@ export interface MessageClient {
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;
-
-  // ===== 计算属性 =====
-  isUser: boolean;
-  isAssistant: boolean;
-  isSystem: boolean;
-  formattedTime: string;
 }

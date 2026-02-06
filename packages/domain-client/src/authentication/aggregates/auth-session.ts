@@ -21,50 +21,24 @@ import {
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSessionClient {
-  // ================= 内部状态 (Backing Fields) =================
-  private _identityId: IdentityId;
-  private _deviceInfo: DeviceInfo;
-  private _isCurrentSession: boolean;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _expiresAt: Date;
-  private _lastActiveAt: Date;
-  private _deletedAt: Date | null;
+  private readonly _props: AuthSessionClient;
+  private readonly _isCurrentSession: boolean;
 
   // ================= 构造函数 (Private) =================
-  private constructor(params: {
-    id: AuthSessionId;
-    identityId: IdentityId;
-    deviceInfo: DeviceInfo;
-    isCurrentSession: boolean;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    expiresAt: Date;
-    lastActiveAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(params.id);
-    this._identityId = params.identityId;
-    this._deviceInfo = params.deviceInfo;
-    this._isCurrentSession = params.isCurrentSession;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._expiresAt = params.expiresAt;
-    this._lastActiveAt = params.lastActiveAt;
-    this._deletedAt = params.deletedAt;
+  private constructor(props: AuthSessionClient, isCurrentSession: boolean) {
+    super(props.id);
+    this._props = props;
+    this._isCurrentSession = isCurrentSession;
   }
 
   // ================= 公共属性 (Getters) =================
 
   get identityId(): string {
-    return String(this._identityId);
+    return String(this._props.identityId);
   }
 
   get deviceInfo(): IDeviceInfo {
-    return this._deviceInfo.toDTO();
+    return this._props.deviceInfo;
   }
 
   get isCurrentSession(): boolean {
@@ -72,27 +46,27 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get expiresAt(): Date {
-    return this._expiresAt;
+    return this._props.expiresAt;
   }
 
   get lastActiveAt(): Date {
-    return this._lastActiveAt;
+    return this._props.lastActiveAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // ================= 查询方法 =================
@@ -101,7 +75,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
    * 会话是否已过期
    */
   public isExpired(): boolean {
-    return Date.now() > this._expiresAt.getTime();
+    return Date.now() > this._props.expiresAt.getTime();
   }
 
   /**
@@ -109,7 +83,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
    */
   public isExpiringSoon(): boolean {
     const oneDayMs = 24 * 60 * 60 * 1000;
-    return this._expiresAt.getTime() - Date.now() < oneDayMs;
+    return this._props.expiresAt.getTime() - Date.now() < oneDayMs;
   }
 
   // ================= 工厂方法 (Factory Methods) =================
@@ -122,14 +96,13 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
       id: AuthSessionId.of(dto.id),
       identityId: IdentityId.of(dto.identityId),
       deviceInfo: DeviceInfo.fromDTO(dto.deviceInfo),
-      isCurrentSession: dto.isCurrentSession,
       version: dto.version,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
       expiresAt: new Date(dto.expiresAt),
       lastActiveAt: new Date(dto.lastActiveAt),
       deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+    }, dto.isCurrentSession);
   }
 
   // ================= DTO 转换 =================
@@ -139,16 +112,16 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
    */
   public toDTO(): AuthSessionClientDTO {
     return {
-      id: this.id,
-      identityId: String(this._identityId),
-      deviceInfo: this._deviceInfo.toDTO(),
+      id: this._props.id,
+      identityId: String(this._props.identityId),
+      deviceInfo: (this._props.deviceInfo as DeviceInfo).toDTO(),
       isCurrentSession: this._isCurrentSession,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      expiresAt: this._expiresAt.getTime(),
-      lastActiveAt: this._lastActiveAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      expiresAt: this._props.expiresAt.getTime(),
+      lastActiveAt: this._props.lastActiveAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 }

@@ -21,141 +21,96 @@ import { GoalFolderId } from '@dailyuse/domain-shared/goal';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolderClient {
-  // ================= 1. Backing Fields =================
-  private _identityId: IdentityId;
-  private _name: string;
-  private _description: string | null;
-  private _icon: string | null;
-  private _color: string | null;
-  private _parentFolderId: GoalFolderId | null;
-  private _sortOrder: number;
-  private _isSystemFolder: boolean;
-  private _folderType: FolderType | null;
-  private _goalCount: number;
-  private _completedGoalCount: number;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  // ================= 1. Props =================
+  private readonly _props: GoalFolderClient;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: GoalFolderId;
-    identityId: IdentityId;
-    name: string;
-    description: string | null;
-    icon: string | null;
-    color: string | null;
-    parentFolderId: GoalFolderId | null;
-    sortOrder: number;
-    isSystemFolder: boolean;
-    folderType: FolderType | null;
-    goalCount: number;
-    completedGoalCount: number;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(params.id);
-    this._identityId = params.identityId;
-    this._name = params.name;
-    this._description = params.description;
-    this._icon = params.icon;
-    this._color = params.color;
-    this._parentFolderId = params.parentFolderId;
-    this._sortOrder = params.sortOrder;
-    this._isSystemFolder = params.isSystemFolder;
-    this._folderType = params.folderType;
-    this._goalCount = params.goalCount;
-    this._completedGoalCount = params.completedGoalCount;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+  private constructor(props: GoalFolderClient) {
+    super(props.id);
+    this._props = props;
   }
 
   // ================= 3. Getters =================
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
 
   get icon(): string | null {
-    return this._icon;
+    return this._props.icon;
   }
 
   get color(): string | null {
-    return this._color;
+    return this._props.color;
   }
 
   get parentFolderId(): GoalFolderId | null {
-    return this._parentFolderId;
+    return this._props.parentFolderId;
   }
 
   get sortOrder(): number {
-    return this._sortOrder;
+    return this._props.sortOrder;
   }
 
   get isSystemFolder(): boolean {
-    return this._isSystemFolder;
+    return this._props.isSystemFolder;
   }
 
   get folderType(): FolderType | null {
-    return this._folderType;
+    return this._props.folderType;
   }
 
   get goalCount(): number {
-    return this._goalCount;
+    return this._props.goalCount;
   }
 
   get completedGoalCount(): number {
-    return this._completedGoalCount;
+    return this._props.completedGoalCount;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // UI 计算属性
   get displayName(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get displayIcon(): string {
-    return this._icon ?? '📁';
+    return this._props.icon ?? '📁';
   }
 
   get completionRate(): number {
-    if (this._goalCount === 0) return 0;
-    return Math.round((this._completedGoalCount / this._goalCount) * 100);
+    if (this._props.goalCount === 0) return 0;
+    return Math.round((this._props.completedGoalCount / this._props.goalCount) * 100);
   }
 
   get isDeleted(): boolean {
-    return this._deletedAt !== null;
+    return this._props.deletedAt !== null;
   }
 
   get activeGoalCount(): number {
-    return this._goalCount - this._completedGoalCount;
+    return this._props.goalCount - this._props.completedGoalCount;
   }
 
   // ================= 4. Factory Methods =================
@@ -184,23 +139,23 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
   public toDTO(): GoalFolderClientDTO {
     return {
       id: String(this.id) as GoalFolderClientDTO['id'],
-      identityId: String(this._identityId) as GoalFolderClientDTO['identityId'],
-      name: this._name,
-      description: this._description,
-      icon: this._icon,
-      color: this._color,
-      parentFolderId: this._parentFolderId
-        ? (String(this._parentFolderId) as GoalFolderClientDTO['parentFolderId'])
+      identityId: String(this._props.identityId) as GoalFolderClientDTO['identityId'],
+      name: this._props.name,
+      description: this._props.description,
+      icon: this._props.icon,
+      color: this._props.color,
+      parentFolderId: this._props.parentFolderId
+        ? (String(this._props.parentFolderId) as GoalFolderClientDTO['parentFolderId'])
         : null,
-      sortOrder: this._sortOrder,
-      isSystemFolder: this._isSystemFolder,
-      folderType: this._folderType,
-      goalCount: this._goalCount,
-      completedGoalCount: this._completedGoalCount,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      sortOrder: this._props.sortOrder,
+      isSystemFolder: this._props.isSystemFolder,
+      folderType: this._props.folderType,
+      goalCount: this._props.goalCount,
+      completedGoalCount: this._props.completedGoalCount,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
       displayName: this.displayName,
       displayIcon: this.displayIcon,
       completionRate: this.completionRate,

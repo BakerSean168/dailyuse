@@ -36,70 +36,77 @@ import type {
   KeyResultServerDTO,
 } from '@dailyuse/contracts/goal';
 
+/** Internal props type for KeyResult entity */
+interface KeyResultProps {
+  title: string;
+  description: string | null;
+  progress: KeyResultServerDTO['progress'];
+  weight: number;
+  sortOrder: number;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 /**
  * KeyResult 实体
  */
 export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
-  // ================= 1. 内部状态 (Backing Fields) =================
-  private _title: string;
-  private _description: string | null;
-  private _progress: KeyResultServerDTO['progress'];
-  private _weight: number; // 权重 (0-100)
-  private _sortOrder: number;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  // ================= 1. 内部状态 (Single Props Object) =================
+  private _props: KeyResultProps;
 
   // ================= 2. 构造函数 (Private) =================
   private constructor(props: KeyResultServerDTO) {
     super(props.id as KeyResultId);
-    this._title = props.title;
-    this._description = props.description ?? null;
-    this._progress = props.progress;
-    this._weight = props.weight;
-    this._sortOrder = props.sortOrder;
-    this._version = props.version ?? 1;
-    this._createdAt = new Date(props.createdAt);
-    this._updatedAt = new Date(props.updatedAt);
-    this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
+    this._props = {
+      title: props.title,
+      description: props.description ?? null,
+      progress: props.progress,
+      weight: props.weight,
+      sortOrder: props.sortOrder,
+      version: props.version ?? 1,
+      createdAt: new Date(props.createdAt),
+      updatedAt: new Date(props.updatedAt),
+      deletedAt: props.deletedAt ? new Date(props.deletedAt) : null,
+    };
   }
 
   // ================= 3. 公共属性 (Getters) =================
   get title(): string {
-    return this._title;
+    return this._props.title;
   }
   
   get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
   
   get progress(): KeyResultServerDTO['progress'] {
-    return this._progress;
+    return this._props.progress;
   }
   
   get weight(): number {
-    return this._weight;
+    return this._props.weight;
   }
   
   get sortOrder(): number {
-    return this._sortOrder;
+    return this._props.sortOrder;
   }
   
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
   
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
   
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
   
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // ================= 4. 工厂方法 (Factory Methods) =================
@@ -188,16 +195,16 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
     if (trimmed.length === 0) {
       throw new Error('Title cannot be empty');
     }
-    this._title = trimmed;
-    this._updatedAt = new Date();
+    this._props.title = trimmed;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * ✅ 更新描述
    */
   public updateDescription(description: string): void {
-    this._description = description.trim() || null;
-    this._updatedAt = new Date();
+    this._props.description = description.trim() || null;
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -210,15 +217,15 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
     if (weight < 0 || weight > 100) {
       throw new Error('Weight must be between 0 and 100');
     }
-    this._weight = weight;
-    this._updatedAt = new Date();
+    this._props.weight = weight;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * ✅ 添加进度记录并重新计算进度
    */
   public addRecord(recordData: { value: number }): void {
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
     this.recalculateProgress(recordData.value);
   }
 
@@ -226,25 +233,25 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
    * 📊 根据聚合方式重新计算进度
    */
   public recalculateProgress(value: number): void {
-    this._progress = {
-      ...this._progress,
+    this._props.progress = {
+      ...this._props.progress,
       currentValue: value,
     };
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 📊 计算完成百分比（0-100）
    */
   public calculatePercentage(): number {
-    const start = (this._progress as any).initialValue ?? 0;
-    const range = this._progress.targetValue - start;
+    const start = (this._props.progress as any).initialValue ?? 0;
+    const range = this._props.progress.targetValue - start;
     
-    if (this._progress.targetValue <= 0 || range <= 0) {
+    if (this._props.progress.targetValue <= 0 || range <= 0) {
       return 0;
     }
     
-    const percentage = ((this._progress.currentValue - start) / range) * 100;
+    const percentage = ((this._props.progress.currentValue - start) / range) * 100;
     return Math.min(Math.max(percentage, 0), 100);
   }
 
@@ -252,26 +259,26 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
    * 📊 是否已完成
    */
   public isCompleted(): boolean {
-    return this._progress.currentValue >= this._progress.targetValue;
+    return this._props.progress.currentValue >= this._props.progress.targetValue;
   }
 
   /**
    * ✅ 更新排序
    */
   public updateSortOrder(sortOrder: number): void {
-    this._sortOrder = sortOrder;
-    this._updatedAt = new Date();
+    this._props.sortOrder = sortOrder;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 🗑️ 软删除
    */
   public softDelete(): void {
-    if (this._deletedAt) {
+    if (this._props.deletedAt) {
       return; // 已经删除
     }
-    this._deletedAt = new Date();
-    this._updatedAt = new Date();
+    this._props.deletedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -289,15 +296,15 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
   public toServerDTO(): KeyResultServerDTO {
     return {
       id: this.id,
-      title: this._title,
-      description: this._description,
-      progress: this._progress,
-      weight: this._weight,
-      sortOrder: this._sortOrder,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
+      title: this._props.title,
+      description: this._props.description,
+      progress: this._props.progress,
+      weight: this._props.weight,
+      sortOrder: this._props.sortOrder,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
     };
   }
 
@@ -307,15 +314,15 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
   public toClientDTO(): import('@dailyuse/contracts/goal').KeyResultClientDTO {
     return {
       id: String(this.id),
-      title: this._title,
-      description: this._description,
-      progress: this._progress,
-      weight: this._weight,
-      order: this._sortOrder,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      title: this._props.title,
+      description: this._props.description,
+      progress: this._props.progress,
+      weight: this._props.weight,
+      order: this._props.sortOrder,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 
@@ -324,26 +331,26 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
    */
   public toPersistenceDTO(goalId: string): KeyResultPersistenceDTO {
     const progressPersistence = {
-      initialValue: (this._progress as any).initialValue,
-      currentValue: this._progress.currentValue,
-      targetValue: this._progress.targetValue,
-      valueType: this._progress.valueType,
-      aggregationMethod: this._progress.aggregationMethod,
-      unit: this._progress.unit,
+      initialValue: (this._props.progress as any).initialValue,
+      currentValue: this._props.progress.currentValue,
+      targetValue: this._props.progress.targetValue,
+      valueType: this._props.progress.valueType,
+      aggregationMethod: this._props.progress.aggregationMethod,
+      unit: this._props.progress.unit,
     };
 
     return {
       id: this.id,
       goalId,
-      title: this._title,
-      description: this._description,
+      title: this._props.title,
+      description: this._props.description,
       progress: JSON.stringify(progressPersistence),
-      weight: this._weight,
-      sortOrder: this._sortOrder,
-      version: this._version,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      weight: this._props.weight,
+      sortOrder: this._props.sortOrder,
+      version: this._props.version,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt,
     };
   }
 }

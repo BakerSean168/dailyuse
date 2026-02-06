@@ -15,83 +15,53 @@ import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { Message } from '../entities/message';
 
 export class AIConversation extends AggregateRoot<AiConversationId> implements AIConversationClient {
-  private _identityId: IIdentityId;
-  private _name: string;
-  private _status: ConversationStatus;
-  private _messageCount: number;
-  private _lastMessageAt: Date | null;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
-  private _messages: Message[] | null;
+  private _props: AIConversationClient;
 
-  private constructor(params: {
-    id?: string;
-    identityId: string;
-    name: string;
-    status: ConversationStatus;
-    messageCount: number;
-    lastMessageAt?: Date | null;
-    version?: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt?: Date | null;
-    messages?: Message[] | null;
-  }) {
-    super(AiConversationId.of(params.id ?? AiConversationId.generate()));
-    this._identityId = IdentityId.of(params.identityId);
-    this._name = params.name;
-    this._status = params.status;
-    this._messageCount = params.messageCount;
-    this._lastMessageAt = params.lastMessageAt ?? null;
-    this._version = params.version ?? 1;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt ?? null;
-    this._messages = params.messages ?? null;
+  private constructor(props: AIConversationClient) {
+    super(props.id);
+    this._props = props;
   }
 
   // ===== Getters =====
 
   public get identityId(): IIdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   public get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   public get status(): ConversationStatus {
-    return this._status;
+    return this._props.status;
   }
 
   public get messageCount(): number {
-    return this._messageCount;
+    return this._props.messageCount;
   }
 
   public get lastMessageAt(): Date | null {
-    return this._lastMessageAt;
+    return this._props.lastMessageAt;
   }
 
   public get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   public get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   public get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   public get messages(): Message[] | null {
-    return this._messages ? [...this._messages] : null;
+    return this._props.messages ? [...(this._props.messages as Message[])] : null;
   }
 
   // ===== Factory Methods =====
@@ -99,7 +69,8 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
   public static create(params: { identityId: string; name: string }): AIConversation {
     const now = new Date();
     return new AIConversation({
-      identityId: params.identityId,
+      id: AiConversationId.of(AiConversationId.generate()),
+      identityId: IdentityId.of(params.identityId),
       name: params.name,
       status: ConversationStatus.Active,
       messageCount: 0,
@@ -114,8 +85,8 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
 
   public static fromDTO(dto: AIConversationClientDTO): AIConversation {
     return new AIConversation({
-      id: dto.id,
-      identityId: dto.identityId,
+      id: AiConversationId.of(dto.id),
+      identityId: IdentityId.of(dto.identityId),
       name: dto.name,
       status: dto.status,
       messageCount: dto.messageCount,
@@ -132,29 +103,29 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
 
   public toDTO(): AIConversationClientDTO {
     return {
-      id: String(this.id),
-      identityId: String(this._identityId),
-      name: this._name,
-      status: this._status,
-      messageCount: this._messageCount,
-      lastMessageAt: this._lastMessageAt?.getTime() ?? null,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
-      messages: this._messages ? this._messages.map((m) => m.toDTO()) : null,
+      id: String(this._props.id),
+      identityId: String(this._props.identityId),
+      name: this._props.name,
+      status: this._props.status,
+      messageCount: this._props.messageCount,
+      lastMessageAt: this._props.lastMessageAt?.getTime() ?? null,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      messages: this._props.messages ? (this._props.messages as Message[]).map((m) => m.toDTO()) : null,
     };
   }
 
   // ===== Business Logic =====
 
   public rename(name: string): void {
-    this._name = name;
-    this._updatedAt = new Date();
+    (this._props as { name: string }).name = name;
+    (this._props as { updatedAt: Date }).updatedAt = new Date();
   }
 
   public archive(): void {
-    this._status = ConversationStatus.Archived;
-    this._updatedAt = new Date();
+    (this._props as { status: ConversationStatus }).status = ConversationStatus.Archived;
+    (this._props as { updatedAt: Date }).updatedAt = new Date();
   }
 }

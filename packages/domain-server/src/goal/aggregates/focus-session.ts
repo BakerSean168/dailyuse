@@ -34,107 +34,111 @@ import type {
 } from '@dailyuse/contracts/goal';
 
 /**
+ * FocusSession 属性接口
+ */
+interface FocusSessionProps {
+  identityId: IdentityId;
+  goalId: GoalId | null;
+  status: FocusSessionStatus;
+  durationMinutes: number;
+  actualDurationMinutes: number;
+  description: string | null;
+  startedAt: Date | null;
+  pausedAt: Date | null;
+  resumedAt: Date | null;
+  completedAt: Date | null;
+  cancelledAt: Date | null;
+  pauseCount: number;
+  pausedDurationMinutes: number;
+  createdAt: Date;
+  updatedAt: Date;
+  version: number;
+  deletedAt: Date | null;
+}
+
+/**
  * FocusSession 聚合根
  */
 export class FocusSession extends AggregateRoot<FocusSessionId> implements FocusSessionServer {
-  // ================= 1. 内部状态 (Backing Fields) =================
-  private _identityId: IdentityId;
-  private _goalId: GoalId | null;
-  private _status: FocusSessionStatus;
-  private _durationMinutes: number; // 计划时长
-  private _actualDurationMinutes: number; // 实际时长
-  private _description: string | null;
-
-  // 时间追踪
-  private _startedAt: Date | null;
-  private _pausedAt: Date | null;
-  private _resumedAt: Date | null;
-  private readonly _completedAt: Date | null;
-  private _cancelledAt: Date | null;
-
-  // 暂停统计
-  private _pauseCount: number;
-  private _pausedDurationMinutes: number; // 累计暂停时长
-
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _version: number;
-  private _deletedAt: Date | null;
+  // ================= 1. 内部状态 (Props) =================
+  private _props: FocusSessionProps;
 
   // ================= 2. 构造函数 (Private) =================
   private constructor(props: FocusSessionServerDTO) {
     super(props.id);
-    this._identityId = props.identityId as IdentityId;
-    this._goalId = (props.goalId ?? null) as GoalId | null;
-    this._status = props.status;
-    this._durationMinutes = props.durationMinutes;
-    this._actualDurationMinutes = props.actualDurationMinutes;
-    this._description = props.description ?? null;
-    this._startedAt = props.startedAt ? new Date(props.startedAt) : null;
-    this._pausedAt = props.pausedAt ? new Date(props.pausedAt) : null;
-    this._resumedAt = props.resumedAt ? new Date(props.resumedAt) : null;
-    this._completedAt = props.completedAt ? new Date(props.completedAt) : null;
-    this._cancelledAt = props.cancelledAt ? new Date(props.cancelledAt) : null;
-    this._pauseCount = props.pauseCount;
-    this._pausedDurationMinutes = props.pausedDurationMinutes;
-    this._createdAt = new Date(props.createdAt);
-    this._updatedAt = new Date(props.updatedAt);
-    this._version = props.version ?? 1;
-    this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
+    this._props = {
+      identityId: props.identityId as IdentityId,
+      goalId: (props.goalId ?? null) as GoalId | null,
+      status: props.status,
+      durationMinutes: props.durationMinutes,
+      actualDurationMinutes: props.actualDurationMinutes,
+      description: props.description ?? null,
+      startedAt: props.startedAt ? new Date(props.startedAt) : null,
+      pausedAt: props.pausedAt ? new Date(props.pausedAt) : null,
+      resumedAt: props.resumedAt ? new Date(props.resumedAt) : null,
+      completedAt: props.completedAt ? new Date(props.completedAt) : null,
+      cancelledAt: props.cancelledAt ? new Date(props.cancelledAt) : null,
+      pauseCount: props.pauseCount,
+      pausedDurationMinutes: props.pausedDurationMinutes,
+      createdAt: new Date(props.createdAt),
+      updatedAt: new Date(props.updatedAt),
+      version: props.version ?? 1,
+      deletedAt: props.deletedAt ? new Date(props.deletedAt) : null,
+    };
   }
 
   // ================= 3. 公共属性 (Getters) =================
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get goalId(): GoalId | null {
-    return this._goalId;
+    return this._props.goalId;
   }
   public get status(): FocusSessionStatus {
-    return this._status;
+    return this._props.status;
   }
   public get durationMinutes(): number {
-    return this._durationMinutes;
+    return this._props.durationMinutes;
   }
   public get actualDurationMinutes(): number {
-    return this._actualDurationMinutes;
+    return this._props.actualDurationMinutes;
   }
   public get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
   public get startedAt(): Date | null {
-    return this._startedAt;
+    return this._props.startedAt;
   }
   public get pausedAt(): Date | null {
-    return this._pausedAt;
+    return this._props.pausedAt;
   }
   public get resumedAt(): Date | null {
-    return this._resumedAt;
+    return this._props.resumedAt;
   }
   public get completedAt(): Date | null {
-    return this._completedAt;
+    return this._props.completedAt;
   }
   public get cancelledAt(): Date | null {
-    return this._cancelledAt;
+    return this._props.cancelledAt;
   }
   public get pauseCount(): number {
-    return this._pauseCount;
+    return this._props.pauseCount;
   }
   public get pausedDurationMinutes(): number {
-    return this._pausedDurationMinutes;
+    return this._props.pausedDurationMinutes;
   }
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
   public get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
   public get version(): number {
-    return this._version;
+    return this._props.version;
   }
   public get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // ================= 4. 工厂方法 (Factories) =================
@@ -227,13 +231,13 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
    * ✅ 开始专注周期
    */
   public start(): void {
-    if (this._status !== FocusSessionStatus.Active) {
+    if (this._props.status !== FocusSessionStatus.Active) {
       throw new Error('只能从活跃状态开始专注周期');
     }
 
     const now = new Date();
-    this._startedAt = now;
-    this._updatedAt = now;
+    this._props.startedAt = now;
+    this._props.updatedAt = now;
 
     this.addDomainEvent('focus-session:started', {});
   }
@@ -242,14 +246,14 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
    * ✅ 暂停专注周期
    */
   public pause(): void {
-    if (this._status !== FocusSessionStatus.Active) {
+    if (this._props.status !== FocusSessionStatus.Active) {
       throw new Error('只能暂停活跃的专注周期');
     }
 
     const now = new Date();
-    this._pausedAt = now;
-    this._pauseCount += 1;
-    this._updatedAt = now;
+    this._props.pausedAt = now;
+    this._props.pauseCount += 1;
+    this._props.updatedAt = now;
 
     this.addDomainEvent('focus-session:paused', {});
   }
@@ -258,19 +262,19 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
    * ✅ 恢复专注周期
    */
   public resume(): void {
-    if (this._pausedAt === null) {
+    if (this._props.pausedAt === null) {
       throw new Error('专注周期未暂停，无法恢复');
     }
 
     const now = new Date();
 
     // 计算本次暂停时长（毫秒转分钟）
-    const pauseDurationMs = now.getTime() - this._pausedAt.getTime();
+    const pauseDurationMs = now.getTime() - this._props.pausedAt.getTime();
     const pauseDurationMinutes = Math.round(pauseDurationMs / 1000 / 60);
 
-    this._pausedDurationMinutes += pauseDurationMinutes;
-    this._pausedAt = null;
-    this._updatedAt = now;
+    this._props.pausedDurationMinutes += pauseDurationMinutes;
+    this._props.pausedAt = null;
+    this._props.updatedAt = now;
 
     this.addDomainEvent('focus-session:resumed', {});
   }
@@ -279,30 +283,30 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
    * ✅ 完成专注周期
    */
   public complete(): void {
-    if (this._startedAt === null) {
+    if (this._props.startedAt === null) {
       throw new Error('开始时间不存在，无法计算实际时长');
     }
 
     const now = new Date();
 
     // 如果处于暂停状态，先计算最后一次暂停的时长
-    if (this._pausedAt !== null) {
-      const lastPauseDurationMs = now.getTime() - this._pausedAt.getTime();
+    if (this._props.pausedAt !== null) {
+      const lastPauseDurationMs = now.getTime() - this._props.pausedAt.getTime();
       const lastPauseDurationMinutes = Math.round(lastPauseDurationMs / 1000 / 60);
-      this._pausedDurationMinutes += lastPauseDurationMinutes;
+      this._props.pausedDurationMinutes += lastPauseDurationMinutes;
     }
 
     // 计算实际时长 = 总时长 - 暂停时长
-    const totalDurationMs = now.getTime() - this._startedAt.getTime();
+    const totalDurationMs = now.getTime() - this._props.startedAt.getTime();
     const totalDurationMinutes = Math.round(totalDurationMs / 1000 / 60);
-    this._actualDurationMinutes = Math.max(0, totalDurationMinutes - this._pausedDurationMinutes);
+    this._props.actualDurationMinutes = Math.max(0, totalDurationMinutes - this._props.pausedDurationMinutes);
 
-    this._status = FocusSessionStatus.Completed;
-    this._pausedAt = null;
-    this._updatedAt = now;
+    this._props.status = FocusSessionStatus.Completed;
+    this._props.pausedAt = null;
+    this._props.updatedAt = now;
 
     this.addDomainEvent('focus-session:completed', {
-      duration: this._actualDurationMinutes * 60 * 1000,
+      duration: this._props.actualDurationMinutes * 60 * 1000,
     });
   }
 
@@ -310,15 +314,15 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
    * ✅ 取消专注周期
    */
   public cancel(): void {
-    if (this._status === FocusSessionStatus.Completed || this._status === FocusSessionStatus.Cancelled) {
+    if (this._props.status === FocusSessionStatus.Completed || this._props.status === FocusSessionStatus.Cancelled) {
       throw new Error('不能取消已完成或已取消的专注周期');
     }
 
     const now = new Date();
-    this._status = FocusSessionStatus.Cancelled;
-    this._cancelledAt = now;
-    this._pausedAt = null;
-    this._updatedAt = now;
+    this._props.status = FocusSessionStatus.Cancelled;
+    this._props.cancelledAt = now;
+    this._props.pausedAt = null;
+    this._props.updatedAt = now;
 
     this.addDomainEvent('focus-session:cancelled', {});
   }
@@ -327,32 +331,32 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
    * 📊 检查是否处于活跃状态
    */
   public isActive(): boolean {
-    return this._status === FocusSessionStatus.Active;
+    return this._props.status === FocusSessionStatus.Active;
   }
 
   /**
    * 📊 获取剩余时间（分钟）
    */
   public getRemainingMinutes(): number {
-    if (this._status !== FocusSessionStatus.Active) {
+    if (this._props.status !== FocusSessionStatus.Active) {
       return 0;
     }
 
-    if (this._startedAt === null) {
-      return this._durationMinutes;
+    if (this._props.startedAt === null) {
+      return this._props.durationMinutes;
     }
 
     const now = Date.now();
     let elapsedMs: number;
 
-    if (this._pausedAt !== null) {
-      elapsedMs = this._pausedAt.getTime() - this._startedAt.getTime();
+    if (this._props.pausedAt !== null) {
+      elapsedMs = this._props.pausedAt.getTime() - this._props.startedAt.getTime();
     } else {
-      elapsedMs = now - this._startedAt.getTime();
+      elapsedMs = now - this._props.startedAt.getTime();
     }
 
-    const elapsedMinutes = Math.round(elapsedMs / 1000 / 60) - this._pausedDurationMinutes;
-    const remaining = this._durationMinutes - elapsedMinutes;
+    const elapsedMinutes = Math.round(elapsedMs / 1000 / 60) - this._props.pausedDurationMinutes;
+    const remaining = this._props.durationMinutes - elapsedMinutes;
 
     return Math.max(0, remaining);
   }
@@ -365,23 +369,23 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
   public toServerDTO(): FocusSessionServerDTO {
     return {
       id: this.id,
-      identityId: this._identityId,
-      goalId: this._goalId,
-      status: this._status,
-      durationMinutes: this._durationMinutes,
-      actualDurationMinutes: this._actualDurationMinutes,
-      description: this._description,
-      startedAt: this._startedAt?.getTime() ?? null,
-      pausedAt: this._pausedAt?.getTime() ?? null,
-      resumedAt: this._resumedAt?.getTime() ?? null,
-      completedAt: this._completedAt?.getTime() ?? null,
-      cancelledAt: this._cancelledAt?.getTime() ?? null,
-      pauseCount: this._pauseCount,
-      pausedDurationMinutes: this._pausedDurationMinutes,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      version: this._version,
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      identityId: this._props.identityId,
+      goalId: this._props.goalId,
+      status: this._props.status,
+      durationMinutes: this._props.durationMinutes,
+      actualDurationMinutes: this._props.actualDurationMinutes,
+      description: this._props.description,
+      startedAt: this._props.startedAt?.getTime() ?? null,
+      pausedAt: this._props.pausedAt?.getTime() ?? null,
+      resumedAt: this._props.resumedAt?.getTime() ?? null,
+      completedAt: this._props.completedAt?.getTime() ?? null,
+      cancelledAt: this._props.cancelledAt?.getTime() ?? null,
+      pauseCount: this._props.pauseCount,
+      pausedDurationMinutes: this._props.pausedDurationMinutes,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      version: this._props.version,
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 
@@ -390,32 +394,32 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
    */
   public toClientDTO(): import('@dailyuse/contracts/goal').FocusSessionClientDTO {
     const remainingMinutes = this.getRemainingMinutes();
-    const progressPercentage = this._durationMinutes > 0
-      ? Math.min(100, Math.round(((this._durationMinutes - remainingMinutes) / this._durationMinutes) * 100))
+    const progressPercentage = this._props.durationMinutes > 0
+      ? Math.min(100, Math.round(((this._props.durationMinutes - remainingMinutes) / this._props.durationMinutes) * 100))
       : 0;
 
     return {
       id: this.id,
-      identityId: this._identityId,
-      goalId: this._goalId,
-      status: this._status,
-      durationMinutes: this._durationMinutes,
-      actualDurationMinutes: this._actualDurationMinutes,
-      description: this._description,
-      startedAt: this._startedAt?.getTime() ?? null,
-      pausedAt: this._pausedAt?.getTime() ?? null,
-      resumedAt: this._resumedAt?.getTime() ?? null,
-      completedAt: this._completedAt?.getTime() ?? null,
-      cancelledAt: this._cancelledAt?.getTime() ?? null,
-      pauseCount: this._pauseCount,
-      pausedDurationMinutes: this._pausedDurationMinutes,
+      identityId: this._props.identityId,
+      goalId: this._props.goalId,
+      status: this._props.status,
+      durationMinutes: this._props.durationMinutes,
+      actualDurationMinutes: this._props.actualDurationMinutes,
+      description: this._props.description,
+      startedAt: this._props.startedAt?.getTime() ?? null,
+      pausedAt: this._props.pausedAt?.getTime() ?? null,
+      resumedAt: this._props.resumedAt?.getTime() ?? null,
+      completedAt: this._props.completedAt?.getTime() ?? null,
+      cancelledAt: this._props.cancelledAt?.getTime() ?? null,
+      pauseCount: this._props.pauseCount,
+      pausedDurationMinutes: this._props.pausedDurationMinutes,
       remainingMinutes,
       progressPercentage,
-      isActive: this._status === FocusSessionStatus.Active,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      isActive: this._props.status === FocusSessionStatus.Active,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 
@@ -425,23 +429,23 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
   public toPersistenceDTO(): FocusSessionPersistenceDTO {
     return {
       id: this.id,
-      identityId: this._identityId,
-      goalId: this._goalId,
-      status: this._status,
-      durationMinutes: this._durationMinutes,
-      actualDurationMinutes: this._actualDurationMinutes,
-      description: this._description,
-      startedAt: this._startedAt,
-      pausedAt: this._pausedAt,
-      resumedAt: this._resumedAt,
-      completedAt: this._completedAt,
-      cancelledAt: this._cancelledAt,
-      pauseCount: this._pauseCount,
-      pausedDurationMinutes: this._pausedDurationMinutes,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      version: this._version,
-      deletedAt: this._deletedAt,
+      identityId: this._props.identityId,
+      goalId: this._props.goalId,
+      status: this._props.status,
+      durationMinutes: this._props.durationMinutes,
+      actualDurationMinutes: this._props.actualDurationMinutes,
+      description: this._props.description,
+      startedAt: this._props.startedAt,
+      pausedAt: this._props.pausedAt,
+      resumedAt: this._props.resumedAt,
+      completedAt: this._props.completedAt,
+      cancelledAt: this._props.cancelledAt,
+      pauseCount: this._props.pauseCount,
+      pausedDurationMinutes: this._props.pausedDurationMinutes,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      version: this._props.version,
+      deletedAt: this._props.deletedAt,
     };
   }
 }

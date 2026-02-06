@@ -53,7 +53,5 @@ export * from './schedule/index.js';
 export * from './ai/index.js';
 
 // Sync 模块
-export * from './sync/index.js';
+// export * from './sync/index.js';
 
-// Dashboard 模块
-export * from './dashboard/index.js';

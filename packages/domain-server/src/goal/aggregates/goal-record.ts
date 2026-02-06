@@ -35,63 +35,72 @@ import type {
 } from '@dailyuse/contracts/goal';
 
 /**
+ * GoalRecord 属性接口
+ */
+interface GoalRecordProps {
+  keyResultId: KeyResultId;
+  value: number;
+  note: string | null;
+  recordedAt: Date;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+/**
  * GoalRecord 聚合根
  */
 export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecordServer {
-  // ================= 1. 内部状态 (Backing Fields) =================
-  private _keyResultId: KeyResultId;
-  private _value: number;
-  private _note: string | null;
-  private _recordedAt: Date;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  // ================= 1. 内部状态 (Props) =================
+  private _props: GoalRecordProps;
 
   // ================= 2. 构造函数 (Private) =================
   private constructor(props: GoalRecordServerDTO) {
     super(props.id);
-    this._keyResultId = props.keyResultId;
-    this._value = props.value;
-    this._note = props.note ?? null;
-    this._recordedAt = new Date(props.recordedAt);
-    this._version = props.version ?? 1;
-    this._createdAt = new Date(props.createdAt);
-    this._updatedAt = new Date(props.updatedAt);
-    this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
+    this._props = {
+      keyResultId: props.keyResultId,
+      value: props.value,
+      note: props.note ?? null,
+      recordedAt: new Date(props.recordedAt),
+      version: props.version ?? 1,
+      createdAt: new Date(props.createdAt),
+      updatedAt: new Date(props.updatedAt),
+      deletedAt: props.deletedAt ? new Date(props.deletedAt) : null,
+    };
   }
 
   // ================= 3. 公共属性 (Getters) =================
   get keyResultId(): KeyResultId {
-    return this._keyResultId;
+    return this._props.keyResultId;
   }
 
   get value(): number {
-    return this._value;
+    return this._props.value;
   }
 
   get note(): string | null {
-    return this._note;
+    return this._props.note;
   }
 
   get recordedAt(): Date {
-    return this._recordedAt;
+    return this._props.recordedAt;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // ================= 4. 工厂方法 (Factories) =================
@@ -171,33 +180,33 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecor
    * ✅ 更新备注
    */
   public updateNote(note: string): void {
-    this._note = note.trim() || null;
-    this._updatedAt = new Date();
-    this._version++;
+    this._props.note = note.trim() || null;
+    this._props.updatedAt = new Date();
+    this._props.version++;
   }
 
   /**
    * ✅ 软删除
    */
   public softDelete(): void {
-    if (this._deletedAt) {
+    if (this._props.deletedAt) {
       return; // 已删除，幂等操作
     }
-    this._deletedAt = new Date();
-    this._updatedAt = new Date();
-    this._version++;
+    this._props.deletedAt = new Date();
+    this._props.updatedAt = new Date();
+    this._props.version++;
   }
 
   /**
    * ✅ 恢复软删除
    */
   public restore(): void {
-    if (!this._deletedAt) {
+    if (!this._props.deletedAt) {
       return; // 未删除，幂等操作
     }
-    this._deletedAt = null;
-    this._updatedAt = new Date();
-    this._version++;
+    this._props.deletedAt = null;
+    this._props.updatedAt = new Date();
+    this._props.version++;
   }
 
   // ================= 6. 序列化 (Serialization) =================
@@ -208,30 +217,32 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecor
   public toServerDTO(): GoalRecordServerDTO {
     return {
       id: this.id,
-      keyResultId: this._keyResultId,
-      value: this._value,
-      note: this._note,
-      recordedAt: this._recordedAt.getTime(),
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      keyResultId: this._props.keyResultId,
+      value: this._props.value,
+      note: this._props.note,
+      recordedAt: this._props.recordedAt.getTime(),
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 
   /**
    * 转换为 Client DTO
    */
-  public toClientDTO(goalUuid?: string): import('@dailyuse/contracts/goal').GoalRecordClientDTO {
+  public toClientDTO(goalId: string): import('@dailyuse/contracts/goal').GoalRecordClientDTO {
     return {
-      uuid: this.id,
-      keyResultUuid: this._keyResultId,
-      goalUuid: goalUuid ?? '', // Will be populated by application service
-      value: this._value,
-      calculatedCurrentValue: this._value, // Current value as snapshot
-      note: this._note,
-      recordedAt: this._recordedAt.getTime(),
-      createdAt: this._createdAt.getTime(),
+      id: this.id,
+      keyResultId: this._props.keyResultId,
+      goalId: goalId as import('@dailyuse/contracts/goal').GoalRecordClientDTO['goalId'],
+      value: this._props.value,
+      valueAfter: this._props.value, // Use value as snapshot for now
+      comment: this._props.note,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 
@@ -241,14 +252,14 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecor
   public toPersistenceDTO(): GoalRecordPersistenceDTO {
     return {
       id: this.id,
-      keyResultId: this._keyResultId,
-      value: this._value,
-      note: this._note,
-      recordedAt: this._recordedAt,
-      version: this._version,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
+      keyResultId: this._props.keyResultId,
+      value: this._props.value,
+      note: this._props.note,
+      recordedAt: this._props.recordedAt,
+      version: this._props.version,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt,
     };
   }
 }

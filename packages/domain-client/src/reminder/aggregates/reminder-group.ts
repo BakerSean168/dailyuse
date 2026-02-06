@@ -4,9 +4,8 @@
  *
  * 【规范说明】
  * - 实现 ReminderGroupClient 接口
- * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
  * - Static fromDTO(dto: ReminderGroupClientDTO): ReminderGroup
  * - Instance toDTO(): ReminderGroupClientDTO
  */
@@ -23,165 +22,101 @@ import { ReminderGroupId } from '@dailyuse/domain-shared/reminder';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 export class ReminderGroup extends AggregateRoot<ReminderGroupId> implements ReminderGroupClient {
-  // ================= 1. Backing Fields =================
-  private _identityId: IdentityId;
-  private _name: string;
-  private _description: string | null;
-  private _color: string | null;
-  private _icon: string | null;
-  private _controlMode: ControlMode;
-  private _enabled: boolean;
-  private _status: ReminderStatus;
-  private _order: number;
-  private _stats: GroupStatsClientDTO;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  private readonly _props: ReminderGroupClient;
 
-  // UI 扩展
-  private _displayName: string;
-  private _controlModeText: string;
-  private _statusText: string;
-  private _templateCountText: string;
-  private _activeStatusText: string;
-  private _controlDescription: string;
-
-  // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: ReminderGroupId;
-    identityId: IdentityId;
-    name: string;
-    description: string | null;
-    color: string | null;
-    icon: string | null;
-    controlMode: ControlMode;
-    enabled: boolean;
-    status: ReminderStatus;
-    order: number;
-    stats: GroupStatsClientDTO;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-    displayName: string;
-    controlModeText: string;
-    statusText: string;
-    templateCountText: string;
-    activeStatusText: string;
-    controlDescription: string;
-  }) {
-    super(params.id);
-    this._identityId = params.identityId;
-    this._name = params.name;
-    this._description = params.description;
-    this._color = params.color;
-    this._icon = params.icon;
-    this._controlMode = params.controlMode;
-    this._enabled = params.enabled;
-    this._status = params.status;
-    this._order = params.order;
-    this._stats = params.stats;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
-    this._displayName = params.displayName;
-    this._controlModeText = params.controlModeText;
-    this._statusText = params.statusText;
-    this._templateCountText = params.templateCountText;
-    this._activeStatusText = params.activeStatusText;
-    this._controlDescription = params.controlDescription;
+  private constructor(props: ReminderGroupClient) {
+    super(props.id);
+    this._props = props;
   }
 
-  // ================= 3. Getters =================
+  // ================= Getters =================
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
 
   get color(): string | null {
-    return this._color;
+    return this._props.color;
   }
 
   get icon(): string | null {
-    return this._icon;
+    return this._props.icon;
   }
 
   get controlMode(): ControlMode {
-    return this._controlMode;
+    return this._props.controlMode;
   }
 
   get enabled(): boolean {
-    return this._enabled;
+    return this._props.enabled;
   }
 
   get status(): ReminderStatus {
-    return this._status;
+    return this._props.status;
   }
 
   get order(): number {
-    return this._order;
+    return this._props.order;
   }
 
   get stats(): GroupStatsClientDTO {
-    return this._stats;
+    return this._props.stats;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // UI 扩展属性
   get displayName(): string {
-    return this._displayName;
+    return this._props.displayName;
   }
 
   get controlModeText(): string {
-    return this._controlModeText;
+    return this._props.controlModeText;
   }
 
   get statusText(): string {
-    return this._statusText;
+    return this._props.statusText;
   }
 
   get templateCountText(): string {
-    return this._templateCountText;
+    return this._props.templateCountText;
   }
 
   get activeStatusText(): string {
-    return this._activeStatusText;
+    return this._props.activeStatusText;
   }
 
   get controlDescription(): string {
-    return this._controlDescription;
+    return this._props.controlDescription;
   }
 
   // UI 计算属性
   get isDeleted(): boolean {
-    return this._deletedAt !== null;
+    return this._props.deletedAt !== null;
   }
 
-  // ================= 4. Factory Methods =================
+  // ================= Factory Methods =================
   public static fromDTO(dto: ReminderGroupClientDTO): ReminderGroup {
     return new ReminderGroup({
       id: ReminderGroupId.of(dto.id),
@@ -208,30 +143,30 @@ export class ReminderGroup extends AggregateRoot<ReminderGroupId> implements Rem
     });
   }
 
-  // ================= 5. DTO Conversion =================
+  // ================= DTO Conversion =================
   public toDTO(): ReminderGroupClientDTO {
     return {
-      id: String(this.id),
-      identityId: String(this._identityId),
-      name: this._name,
-      description: this._description,
-      color: this._color,
-      icon: this._icon,
-      controlMode: this._controlMode,
-      enabled: this._enabled,
-      status: this._status,
-      order: this._order,
-      stats: this._stats,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
-      displayName: this._displayName,
-      controlModeText: this._controlModeText,
-      statusText: this._statusText,
-      templateCountText: this._templateCountText,
-      activeStatusText: this._activeStatusText,
-      controlDescription: this._controlDescription,
+      id: String(this._props.id),
+      identityId: String(this._props.identityId),
+      name: this._props.name,
+      description: this._props.description,
+      color: this._props.color,
+      icon: this._props.icon,
+      controlMode: this._props.controlMode,
+      enabled: this._props.enabled,
+      status: this._props.status,
+      order: this._props.order,
+      stats: this._props.stats,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      displayName: this._props.displayName,
+      controlModeText: this._props.controlModeText,
+      statusText: this._props.statusText,
+      templateCountText: this._props.templateCountText,
+      activeStatusText: this._props.activeStatusText,
+      controlDescription: this._props.controlDescription,
     };
   }
 }

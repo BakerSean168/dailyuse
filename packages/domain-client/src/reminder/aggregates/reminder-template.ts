@@ -4,9 +4,8 @@
  *
  * 【规范说明】
  * - 实现 ReminderTemplateClient 接口
- * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
  * - Static fromDTO(dto: ReminderTemplateClientDTO): ReminderTemplate
  * - Instance toDTO(): ReminderTemplateClientDTO
  */
@@ -37,271 +36,170 @@ import { ReminderTemplateId, ReminderGroupId } from '@dailyuse/domain-shared/rem
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ReminderHistory } from '../entities/reminder-history.js';
 
+/**
+ * Extended props interface for ReminderTemplate
+ * Includes history child entities not in the base interface
+ */
+interface ReminderTemplateProps extends ReminderTemplateClient {
+  history: ReminderHistory[] | null;
+}
+
 export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implements ReminderTemplateClient {
-  // ================= 1. Backing Fields =================
-  private _identityId: IdentityId;
-  private _name: string;
-  private _description: string | null;
-  private _type: ReminderType;
-  private _trigger: TriggerConfigClient;
-  private _recurrence: RecurrenceConfigClient | null;
-  private _activeTime: ActiveTimeConfigClient;
-  private _activeHours: ActiveHoursConfigClient | null;
-  private _notificationConfig: NotificationConfigClient;
-  private _selfEnabled: boolean;
-  private _status: ReminderStatus;
-  private _effectiveEnabled: boolean;
-  private _groupId: ReminderGroupId | null;
-  private _importanceLevel: ImportanceLevel;
-  private _tags: string[];
-  private _color: string | null;
-  private _icon: string | null;
-  private _nextTriggerAt: Date | null;
-  private _stats: ReminderStatsClient;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
-  private _history: ReminderHistory[] | null;
+  private readonly _props: ReminderTemplateProps;
 
-  // UI 扩展
-  private _displayTitle: string;
-  private _typeText: string;
-  private _triggerText: string;
-  private _recurrenceText: string | null;
-  private _statusText: string;
-  private _importanceText: string;
-  private _nextTriggerText: string | null;
-  private _isActive: boolean;
-  private _isPaused: boolean;
-  private _lastTriggeredText: string | null;
-  private _controlledByGroup: boolean;
-
-  // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: ReminderTemplateId;
-    identityId: IdentityId;
-    name: string;
-    description: string | null;
-    type: ReminderType;
-    trigger: TriggerConfigClient;
-    recurrence: RecurrenceConfigClient | null;
-    activeTime: ActiveTimeConfigClient;
-    activeHours: ActiveHoursConfigClient | null;
-    notificationConfig: NotificationConfigClient;
-    selfEnabled: boolean;
-    status: ReminderStatus;
-    effectiveEnabled: boolean;
-    groupId: ReminderGroupId | null;
-    importanceLevel: ImportanceLevel;
-    tags: string[];
-    color: string | null;
-    icon: string | null;
-    nextTriggerAt: Date | null;
-    stats: ReminderStatsClient;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-    history: ReminderHistory[] | null;
-    displayTitle: string;
-    typeText: string;
-    triggerText: string;
-    recurrenceText: string | null;
-    statusText: string;
-    importanceText: string;
-    nextTriggerText: string | null;
-    isActive: boolean;
-    isPaused: boolean;
-    lastTriggeredText: string | null;
-    controlledByGroup: boolean;
-  }) {
-    super(params.id);
-    this._identityId = params.identityId;
-    this._name = params.name;
-    this._description = params.description;
-    this._type = params.type;
-    this._trigger = params.trigger;
-    this._recurrence = params.recurrence;
-    this._activeTime = params.activeTime;
-    this._activeHours = params.activeHours;
-    this._notificationConfig = params.notificationConfig;
-    this._selfEnabled = params.selfEnabled;
-    this._status = params.status;
-    this._effectiveEnabled = params.effectiveEnabled;
-    this._groupId = params.groupId;
-    this._importanceLevel = params.importanceLevel;
-    this._tags = params.tags;
-    this._color = params.color;
-    this._icon = params.icon;
-    this._nextTriggerAt = params.nextTriggerAt;
-    this._stats = params.stats;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
-    this._history = params.history;
-    this._displayTitle = params.displayTitle;
-    this._typeText = params.typeText;
-    this._triggerText = params.triggerText;
-    this._recurrenceText = params.recurrenceText;
-    this._statusText = params.statusText;
-    this._importanceText = params.importanceText;
-    this._nextTriggerText = params.nextTriggerText;
-    this._isActive = params.isActive;
-    this._isPaused = params.isPaused;
-    this._lastTriggeredText = params.lastTriggeredText;
-    this._controlledByGroup = params.controlledByGroup;
+  private constructor(props: ReminderTemplateProps) {
+    super(props.id);
+    this._props = props;
   }
 
-  // ================= 3. Getters =================
+  // ================= Getters =================
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
 
   get type(): ReminderType {
-    return this._type;
+    return this._props.type;
   }
 
   get trigger(): TriggerConfigClient {
-    return this._trigger;
+    return this._props.trigger;
   }
 
   get recurrence(): RecurrenceConfigClient | null {
-    return this._recurrence;
+    return this._props.recurrence;
   }
 
   get activeTime(): ActiveTimeConfigClient {
-    return this._activeTime;
+    return this._props.activeTime;
   }
 
   get activeHours(): ActiveHoursConfigClient | null {
-    return this._activeHours;
+    return this._props.activeHours;
   }
 
   get notificationConfig(): NotificationConfigClient {
-    return this._notificationConfig;
+    return this._props.notificationConfig;
   }
 
   get selfEnabled(): boolean {
-    return this._selfEnabled;
+    return this._props.selfEnabled;
   }
 
   get status(): ReminderStatus {
-    return this._status;
+    return this._props.status;
   }
 
   get effectiveEnabled(): boolean {
-    return this._effectiveEnabled;
+    return this._props.effectiveEnabled;
   }
 
   get groupId(): ReminderGroupId | null {
-    return this._groupId;
+    return this._props.groupId;
   }
 
   get importanceLevel(): ImportanceLevel {
-    return this._importanceLevel;
+    return this._props.importanceLevel;
   }
 
   get tags(): string[] {
-    return [...this._tags];
+    return [...this._props.tags];
   }
 
   get color(): string | null {
-    return this._color;
+    return this._props.color;
   }
 
   get icon(): string | null {
-    return this._icon;
+    return this._props.icon;
   }
 
   get nextTriggerAt(): Date | null {
-    return this._nextTriggerAt;
+    return this._props.nextTriggerAt;
   }
 
   get stats(): ReminderStatsClient {
-    return this._stats;
+    return this._props.stats;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   get history(): ReminderHistoryClient[] | null {
-    return this._history ? [...this._history] : null;
+    return this._props.history ? [...this._props.history] : null;
   }
 
   // UI 扩展属性
   get displayTitle(): string {
-    return this._displayTitle;
+    return this._props.displayTitle;
   }
 
   get typeText(): string {
-    return this._typeText;
+    return this._props.typeText;
   }
 
   get triggerText(): string {
-    return this._triggerText;
+    return this._props.triggerText;
   }
 
   get recurrenceText(): string | null {
-    return this._recurrenceText;
+    return this._props.recurrenceText;
   }
 
   get statusText(): string {
-    return this._statusText;
+    return this._props.statusText;
   }
 
   get importanceText(): string {
-    return this._importanceText;
+    return this._props.importanceText;
   }
 
   get nextTriggerText(): string | null {
-    return this._nextTriggerText;
+    return this._props.nextTriggerText;
   }
 
   get isActive(): boolean {
-    return this._isActive;
+    return this._props.isActive;
   }
 
   get isPaused(): boolean {
-    return this._isPaused;
+    return this._props.isPaused;
   }
 
   get lastTriggeredText(): string | null {
-    return this._lastTriggeredText;
+    return this._props.lastTriggeredText;
   }
 
   get controlledByGroup(): boolean {
-    return this._controlledByGroup;
+    return this._props.controlledByGroup;
   }
 
   // UI 计算属性
   get isDeleted(): boolean {
-    return this._deletedAt !== null;
+    return this._props.deletedAt !== null;
   }
 
-  // ================= 4. Factory Methods =================
+  // ================= Factory Methods =================
   public static fromDTO(dto: ReminderTemplateClientDTO): ReminderTemplate {
     return new ReminderTemplate({
       id: ReminderTemplateId.of(dto.id),
@@ -343,45 +241,45 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     });
   }
 
-  // ================= 5. DTO Conversion =================
+  // ================= DTO Conversion =================
   public toDTO(): ReminderTemplateClientDTO {
     return {
-      id: String(this.id),
-      identityId: String(this._identityId),
-      name: this._name,
-      description: this._description,
-      type: this._type,
-      trigger: this._trigger as TriggerConfigClientDTO,
-      recurrence: this._recurrence as RecurrenceConfigClientDTO | null,
-      activeTime: this._activeTime as ActiveTimeConfigClientDTO,
-      activeHours: this._activeHours as ActiveHoursConfigClientDTO | null,
-      notificationConfig: this._notificationConfig as NotificationConfigClientDTO,
-      selfEnabled: this._selfEnabled,
-      status: this._status,
-      effectiveEnabled: this._effectiveEnabled,
-      groupId: this._groupId ? String(this._groupId) : null,
-      importanceLevel: this._importanceLevel,
-      tags: [...this._tags],
-      color: this._color,
-      icon: this._icon,
-      nextTriggerAt: this._nextTriggerAt?.getTime() ?? null,
-      stats: this._stats as ReminderStatsClientDTO,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
-      history: this._history ? this._history.map(h => h.toDTO()) : null,
-      displayTitle: this._displayTitle,
-      typeText: this._typeText,
-      triggerText: this._triggerText,
-      recurrenceText: this._recurrenceText,
-      statusText: this._statusText,
-      importanceText: this._importanceText,
-      nextTriggerText: this._nextTriggerText,
-      isActive: this._isActive,
-      isPaused: this._isPaused,
-      lastTriggeredText: this._lastTriggeredText,
-      controlledByGroup: this._controlledByGroup,
+      id: String(this._props.id),
+      identityId: String(this._props.identityId),
+      name: this._props.name,
+      description: this._props.description,
+      type: this._props.type,
+      trigger: this._props.trigger as TriggerConfigClientDTO,
+      recurrence: this._props.recurrence as RecurrenceConfigClientDTO | null,
+      activeTime: this._props.activeTime as ActiveTimeConfigClientDTO,
+      activeHours: this._props.activeHours as ActiveHoursConfigClientDTO | null,
+      notificationConfig: this._props.notificationConfig as NotificationConfigClientDTO,
+      selfEnabled: this._props.selfEnabled,
+      status: this._props.status,
+      effectiveEnabled: this._props.effectiveEnabled,
+      groupId: this._props.groupId ? String(this._props.groupId) : null,
+      importanceLevel: this._props.importanceLevel,
+      tags: [...this._props.tags],
+      color: this._props.color,
+      icon: this._props.icon,
+      nextTriggerAt: this._props.nextTriggerAt?.getTime() ?? null,
+      stats: this._props.stats as ReminderStatsClientDTO,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      history: this._props.history ? this._props.history.map(h => h.toDTO()) : null,
+      displayTitle: this._props.displayTitle,
+      typeText: this._props.typeText,
+      triggerText: this._props.triggerText,
+      recurrenceText: this._props.recurrenceText,
+      statusText: this._props.statusText,
+      importanceText: this._props.importanceText,
+      nextTriggerText: this._props.nextTriggerText,
+      isActive: this._props.isActive,
+      isPaused: this._props.isPaused,
+      lastTriggeredText: this._props.lastTriggeredText,
+      controlledByGroup: this._props.controlledByGroup,
     };
   }
 }

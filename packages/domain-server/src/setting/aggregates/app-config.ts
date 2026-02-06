@@ -120,19 +120,25 @@ export interface AppConfigPersistenceDTO {
 
 // ============ AppConfig Aggregate ============
 
+/** Props interface for AppConfig */
+interface AppConfigProps {
+  version: string;
+  app: AppConfigServer['app'];
+  features: AppConfigServer['features'];
+  limits: AppConfigServer['limits'];
+  api: AppConfigServer['api'];
+  security: AppConfigServer['security'];
+  notifications: AppConfigServer['notifications'];
+  createdAt: DomainDate;
+  updatedAt: DomainDate;
+}
+
 /**
  * 应用配置聚合根服务端实现
  */
 export class AppConfig extends AggregateRoot<IAppConfigId> implements AppConfigServer {
-  private _version: string;
-  private _app: AppConfigServer['app'];
-  private _features: AppConfigServer['features'];
-  private _limits: AppConfigServer['limits'];
-  private _api: AppConfigServer['api'];
-  private _security: AppConfigServer['security'];
-  private _notifications: AppConfigServer['notifications'];
-  private _createdAt: DomainDate;
-  private _updatedAt: DomainDate;
+  // ===== 私有属性容器 =====
+  private _props: AppConfigProps;
 
   private constructor(
     id: IAppConfigId,
@@ -149,102 +155,104 @@ export class AppConfig extends AggregateRoot<IAppConfigId> implements AppConfigS
     }
   ) {
     super(id);
-    this._version = params.version;
-    this._app = params.app;
-    this._features = params.features;
-    this._limits = params.limits;
-    this._api = params.api;
-    this._security = params.security;
-    this._notifications = params.notifications;
-    this._createdAt = params.createdAt ?? new Date();
-    this._updatedAt = params.updatedAt ?? new Date();
+    this._props = {
+      version: params.version,
+      app: params.app,
+      features: params.features,
+      limits: params.limits,
+      api: params.api,
+      security: params.security,
+      notifications: params.notifications,
+      createdAt: params.createdAt ?? new Date(),
+      updatedAt: params.updatedAt ?? new Date(),
+    };
   }
 
   // ========== Getters ==========
 
   get version(): string {
-    return this._version;
+    return this._props.version;
   }
 
   get app(): AppConfigServer['app'] {
-    return { ...this._app };
+    return { ...this._props.app };
   }
 
   get features(): AppConfigServer['features'] {
-    return { ...this._features };
+    return { ...this._props.features };
   }
 
   get limits(): AppConfigServer['limits'] {
-    return { ...this._limits };
+    return { ...this._props.limits };
   }
 
   get api(): AppConfigServer['api'] {
-    return { ...this._api };
+    return { ...this._props.api };
   }
 
   get security(): AppConfigServer['security'] {
-    return { ...this._security };
+    return { ...this._props.security };
   }
 
   get notifications(): AppConfigServer['notifications'] {
     return {
-      ...this._notifications,
-      channels: { ...this._notifications.channels },
-      rateLimit: { ...this._notifications.rateLimit },
+      ...this._props.notifications,
+      channels: { ...this._props.notifications.channels },
+      rateLimit: { ...this._props.notifications.rateLimit },
     };
   }
 
   get createdAt(): DomainDate {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): DomainDate {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   // ========== 功能管理 ==========
 
   enableFeature(feature: keyof AppConfigServer['features']): void {
-    this._features[feature] = true;
-    this._updatedAt = new Date();
+    this._props.features[feature] = true;
+    this._props.updatedAt = new Date();
   }
 
   disableFeature(feature: keyof AppConfigServer['features']): void {
-    this._features[feature] = false;
-    this._updatedAt = new Date();
+    this._props.features[feature] = false;
+    this._props.updatedAt = new Date();
   }
 
   isFeatureEnabled(feature: keyof AppConfigServer['features']): boolean {
-    return this._features[feature] ?? false;
+    return this._props.features[feature] ?? false;
   }
 
   // ========== 限制检查 ==========
 
   checkLimit(limitType: keyof AppConfigServer['limits'], currentValue: number): boolean {
-    const limit = this._limits[limitType];
+    const limit = this._props.limits[limitType];
     return currentValue < limit;
   }
 
   // ========== 配置更新 ==========
 
   updateAppInfo(info: Partial<AppConfigServer['app']>): void {
-    this._app = { ...this._app, ...info };
-    this._updatedAt = new Date();
+    this._props.app = { ...this._props.app, ...info };
+    this._props.updatedAt = new Date();
   }
 
   updateLimits(limits: Partial<AppConfigServer['limits']>): void {
-    this._limits = { ...this._limits, ...limits };
-    this._updatedAt = new Date();
+    this._props.limits = { ...this._props.limits, ...limits };
+    this._props.updatedAt = new Date();
   }
 
   updateApiConfig(config: Partial<AppConfigServer['api']>): void {
-    this._api = { ...this._api, ...config };
-    this._updatedAt = new Date();
+    this._props.api = { ...this._props.api, ...config };
+    this._props.updatedAt = new Date();
   }
 
   updateSecurityConfig(config: Partial<AppConfigServer['security']>): void {
-    this._security = { ...this._security, ...config };
-    this._updatedAt = new Date();
+    this._props.security = { ...this._props.security, ...config };
+    this._props.updatedAt = new Date();
   }
 
   // ========== DTO 转换 ==========
@@ -252,30 +260,30 @@ export class AppConfig extends AggregateRoot<IAppConfigId> implements AppConfigS
   toServerDTO(): AppConfigServerDTO {
     return {
       id: this.id,
-      version: this._version,
-      app: this._app,
-      features: this._features,
-      limits: this._limits,
-      api: this._api,
-      security: this._security,
-      notifications: this._notifications,
-      createdAt: this._createdAt.getTime() as TransferDate,
-      updatedAt: this._updatedAt.getTime() as TransferDate,
+      version: this._props.version,
+      app: this._props.app,
+      features: this._props.features,
+      limits: this._props.limits,
+      api: this._props.api,
+      security: this._props.security,
+      notifications: this._props.notifications,
+      createdAt: this._props.createdAt.getTime() as TransferDate,
+      updatedAt: this._props.updatedAt.getTime() as TransferDate,
     };
   }
 
   toPersistenceDTO(): AppConfigPersistenceDTO {
     return {
       id: this.id,
-      version: this._version,
-      app: JSON.stringify(this._app),
-      features: JSON.stringify(this._features),
-      limits: JSON.stringify(this._limits),
-      api: JSON.stringify(this._api),
-      security: JSON.stringify(this._security),
-      notifications: JSON.stringify(this._notifications),
-      createdAt: this._createdAt as PersistenceDate,
-      updatedAt: this._updatedAt as PersistenceDate,
+      version: this._props.version,
+      app: JSON.stringify(this._props.app),
+      features: JSON.stringify(this._props.features),
+      limits: JSON.stringify(this._props.limits),
+      api: JSON.stringify(this._props.api),
+      security: JSON.stringify(this._props.security),
+      notifications: JSON.stringify(this._props.notifications),
+      createdAt: this._props.createdAt as PersistenceDate,
+      updatedAt: this._props.updatedAt as PersistenceDate,
     };
   }
 

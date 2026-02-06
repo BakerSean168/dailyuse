@@ -13,6 +13,16 @@ import type {
 import { Entity, generateUUID } from '@dailyuse/utils';
 
 /**
+ * ReminderResponse props 接口
+ */
+interface ReminderResponseProps {
+  reminderTemplateUuid: string;
+  action: ReminderResponseAction;
+  responseTime: Date | null;
+  timestamp: Date;
+}
+
+/**
  * ReminderResponse 实体
  *
  * DDD 实体特点：
@@ -23,10 +33,7 @@ import { Entity, generateUUID } from '@dailyuse/utils';
  */
 export class ReminderResponse extends Entity<string> implements ReminderResponseServer {
   // ===== 私有字段 =====
-  private _reminderTemplateUuid: string;
-  private _action: ReminderResponseAction;
-  private _responseTime: Date | null;
-  private _timestamp: Date;
+  private _props: ReminderResponseProps;
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
@@ -37,10 +44,12 @@ export class ReminderResponse extends Entity<string> implements ReminderResponse
     timestamp: number;
   }) {
     super(params.uuid || generateUUID());
-    this._reminderTemplateUuid = params.reminderTemplateUuid;
-    this._action = params.action;
-    this._responseTime = params.responseTime != null ? new Date(params.responseTime) : null;
-    this._timestamp = new Date(params.timestamp);
+    this._props = {
+      reminderTemplateUuid: params.reminderTemplateUuid,
+      action: params.action,
+      responseTime: params.responseTime != null ? new Date(params.responseTime) : null,
+      timestamp: new Date(params.timestamp),
+    };
   }
 
   // ===== Getter 属性 =====
@@ -49,19 +58,19 @@ export class ReminderResponse extends Entity<string> implements ReminderResponse
   }
 
   public get reminderTemplateUuid(): string {
-    return this._reminderTemplateUuid;
+    return this._props.reminderTemplateUuid;
   }
 
   public get action(): ReminderResponseAction {
-    return this._action;
+    return this._props.action;
   }
 
   public get responseTime(): Date | null {
-    return this._responseTime;
+    return this._props.responseTime;
   }
 
   public get timestamp(): Date {
-    return this._timestamp;
+    return this._props.timestamp;
   }
 
   // ===== 工厂方法 =====
@@ -115,35 +124,35 @@ export class ReminderResponse extends Entity<string> implements ReminderResponse
    * 是否点击
    */
   public isClicked(): boolean {
-    return this._action === 'CLICKED';
+    return this._props.action === 'CLICKED';
   }
 
   /**
    * 是否忽略
    */
   public isIgnored(): boolean {
-    return this._action === 'IGNORED';
+    return this._props.action === 'IGNORED';
   }
 
   /**
    * 是否延迟
    */
   public isSnoozed(): boolean {
-    return this._action === 'SNOOZED';
+    return this._props.action === 'SNOOZED';
   }
 
   /**
    * 是否关闭
    */
   public isDismissed(): boolean {
-    return this._action === 'DISMISSED';
+    return this._props.action === 'DISMISSED';
   }
 
   /**
    * 是否完成
    */
   public isCompleted(): boolean {
-    return this._action === 'COMPLETED';
+    return this._props.action === 'COMPLETED';
   }
 
   /**
@@ -165,7 +174,7 @@ export class ReminderResponse extends Entity<string> implements ReminderResponse
    * COMPLETED(1.5), CLICKED(1.0), SNOOZED(-0.2), DISMISSED(-0.3), IGNORED(-0.5)
    */
   public getResponseWeight(): number {
-    switch (this._action) {
+    switch (this._props.action) {
       case 'COMPLETED':
         return 1.5;
       case 'CLICKED':
@@ -189,10 +198,10 @@ export class ReminderResponse extends Entity<string> implements ReminderResponse
   public toServerDTO(): ReminderResponseServerDTO {
     return {
       uuid: this.id,
-      reminderTemplateUuid: this._reminderTemplateUuid,
-      action: this._action,
-      responseTime: this._responseTime?.getTime() ?? null,
-      timestamp: this._timestamp.getTime(),
+      reminderTemplateUuid: this._props.reminderTemplateUuid,
+      action: this._props.action,
+      responseTime: this._props.responseTime?.getTime() ?? null,
+      timestamp: this._props.timestamp.getTime(),
     };
   }
 
@@ -209,11 +218,11 @@ export class ReminderResponse extends Entity<string> implements ReminderResponse
       COMPLETED: '完成',
     };
 
-    const actionText = actionTextMap[this._action];
+    const actionText = actionTextMap[this._props.action];
 
     // 响应时间文本
     let responseTimeText: string | undefined = undefined;
-    const responseTimeSec = this._responseTime ? Math.floor(this._responseTime.getTime() / 1000) : null;
+    const responseTimeSec = this._props.responseTime ? Math.floor(this._props.responseTime.getTime() / 1000) : null;
     if (responseTimeSec !== null) {
       if (responseTimeSec < 60) {
         responseTimeText = `${responseTimeSec}秒后响应`;
@@ -226,10 +235,10 @@ export class ReminderResponse extends Entity<string> implements ReminderResponse
 
     return {
       uuid: this.id,
-      reminderTemplateUuid: this._reminderTemplateUuid,
-      action: this._action,
-      responseTime: this._responseTime?.getTime() ?? null,
-      timestamp: this._timestamp.getTime(),
+      reminderTemplateUuid: this._props.reminderTemplateUuid,
+      action: this._props.action,
+      responseTime: this._props.responseTime?.getTime() ?? null,
+      timestamp: this._props.timestamp.getTime(),
       actionText,
       responseTimeText,
     };
@@ -241,10 +250,10 @@ export class ReminderResponse extends Entity<string> implements ReminderResponse
   public toPersistenceDTO(): ReminderResponsePersistenceDTO {
     return {
       uuid: this.id,
-      reminderTemplateUuid: this._reminderTemplateUuid,
-      action: this._action,
-      responseTime: this._responseTime,
-      timestamp: this._timestamp,
+      reminderTemplateUuid: this._props.reminderTemplateUuid,
+      action: this._props.action,
+      responseTime: this._props.responseTime,
+      timestamp: this._props.timestamp,
     };
   }
 }

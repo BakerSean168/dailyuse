@@ -36,25 +36,32 @@ import type {
 } from '@dailyuse/contracts/goal';
 
 /**
+ * GoalFolder 属性接口
+ */
+interface GoalFolderProps {
+  identityId: IdentityId;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  color: string | null;
+  parentFolderId: GoalFolderId | null;
+  sortOrder: number;
+  isSystemFolder: boolean;
+  folderType: FolderType | null;
+  goalCount: number;
+  completedGoalCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  version: number;
+}
+
+/**
  * GoalFolder 聚合根
  */
 export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolderServer {
-  // ================= 1. 内部状态 (Backing Fields) =================
-  private _identityId: IdentityId;
-  private _name: string;
-  private _description: string | null;
-  private _icon: string | null;
-  private _color: string | null;
-  private _parentFolderId: GoalFolderId | null;
-  private _sortOrder: number;
-  private _isSystemFolder: boolean;
-  private _folderType: FolderType | null;
-  private _goalCount: number;
-  private _completedGoalCount: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
-  private _version: number;
+  // ================= 1. 内部状态 (Props) =================
+  private _props: GoalFolderProps;
 
   // ================= 2. 构造函数 (Private) =================
   /**
@@ -83,21 +90,23 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
     version?: number;
   }) {
     super(params.id);
-    this._identityId = params.identityId;
-    this._name = params.name;
-    this._description = params.description ?? null;
-    this._icon = params.icon ?? null;
-    this._color = params.color ?? null;
-    this._parentFolderId = params.parentFolderId ?? null;
-    this._sortOrder = params.sortOrder;
-    this._isSystemFolder = params.isSystemFolder;
-    this._folderType = params.folderType ?? null;
-    this._goalCount = params.goalCount;
-    this._completedGoalCount = params.completedGoalCount;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt ?? null;
-    this._version = params.version ?? 1;
+    this._props = {
+      identityId: params.identityId,
+      name: params.name,
+      description: params.description ?? null,
+      icon: params.icon ?? null,
+      color: params.color ?? null,
+      parentFolderId: params.parentFolderId ?? null,
+      sortOrder: params.sortOrder,
+      isSystemFolder: params.isSystemFolder,
+      folderType: params.folderType ?? null,
+      goalCount: params.goalCount,
+      completedGoalCount: params.completedGoalCount,
+      createdAt: params.createdAt,
+      updatedAt: params.updatedAt,
+      deletedAt: params.deletedAt ?? null,
+      version: params.version ?? 1,
+    };
   }
 
   // ================= 3. 公共属性 (Getters) =================
@@ -110,63 +119,63 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
    * 注意：id 已由 AggregateRoot 基类提供为 public readonly，无需重新定义
    */
   public get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
   
   public get name(): string {
-    return this._name;
+    return this._props.name;
   }
   
   public get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
   
   public get icon(): string | null {
-    return this._icon;
+    return this._props.icon;
   }
   
   public get color(): string | null {
-    return this._color;
+    return this._props.color;
   }
   
   public get parentFolderId(): GoalFolderId | null {
-    return this._parentFolderId;
+    return this._props.parentFolderId;
   }
   
   public get sortOrder(): number {
-    return this._sortOrder;
+    return this._props.sortOrder;
   }
   
   public get isSystemFolder(): boolean {
-    return this._isSystemFolder;
+    return this._props.isSystemFolder;
   }
   
   public get folderType(): FolderType | null {
-    return this._folderType;
+    return this._props.folderType;
   }
   
   public get goalCount(): number {
-    return this._goalCount;
+    return this._props.goalCount;
   }
   
   public get completedGoalCount(): number {
-    return this._completedGoalCount;
+    return this._props.completedGoalCount;
   }
   
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
   
   public get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
   
   public get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
   
   public get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   // ================= 4. 工厂方法 (Factory Methods) =================
@@ -312,16 +321,16 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
     if (trimmed.length === 0) {
       throw new Error('Name cannot be empty');
     }
-    if (this._isSystemFolder) {
+    if (this._props.isSystemFolder) {
       throw new Error('Cannot rename system folder');
     }
 
     const previousData: Partial<GoalFolderServerDTO> = {
-      name: this._name,
+      name: this._props.name,
     };
 
-    this._name = trimmed;
-    this._updatedAt = new Date();
+    this._props.name = trimmed;
+    this._props.updatedAt = new Date();
 
     this.addDomainEvent('GoalFolderUpdated', {
       changes: ['name'],
@@ -332,24 +341,24 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
    * ✅ 更新描述
    */
   public updateDescription(description: string): void {
-    this._description = description.trim() || null;
-    this._updatedAt = new Date();
+    this._props.description = description.trim() || null;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * ✅ 更新图标
    */
   public updateIcon(icon: string): void {
-    this._icon = icon.trim() || null;
-    this._updatedAt = new Date();
+    this._props.icon = icon.trim() || null;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * ✅ 更新颜色
    */
   public updateColor(color: string): void {
-    this._color = color.trim() || null;
-    this._updatedAt = new Date();
+    this._props.color = color.trim() || null;
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -362,8 +371,8 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
     if (sortOrder < 0) {
       throw new Error('Sort order cannot be negative');
     }
-    this._sortOrder = sortOrder;
-    this._updatedAt = new Date();
+    this._props.sortOrder = sortOrder;
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -382,13 +391,13 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
       throw new Error('Completed count cannot exceed total count');
     }
 
-    this._goalCount = goalCount;
-    this._completedGoalCount = completedCount;
-    this._updatedAt = new Date();
+    this._props.goalCount = goalCount;
+    this._props.completedGoalCount = completedCount;
+    this._props.updatedAt = new Date();
 
     this.addDomainEvent('GoalFolderStatsUpdated', {
-      goalCount: this._goalCount,
-      completedGoalCount: this._completedGoalCount,
+      goalCount: this._props.goalCount,
+      completedGoalCount: this._props.completedGoalCount,
     });
   }
 
@@ -402,13 +411,13 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
    * - 幂等：重复删除不会报错
    */
   public softDelete(): void {
-    if (this._deletedAt) return; // 幂等
-    if (this._isSystemFolder) {
+    if (this._props.deletedAt) return; // 幂等
+    if (this._props.isSystemFolder) {
       throw new Error('Cannot delete system folder');
     }
 
-    this._deletedAt = new Date();
-    this._updatedAt = this._deletedAt;
+    this._props.deletedAt = new Date();
+    this._props.updatedAt = this._props.deletedAt;
 
     this.addDomainEvent('GoalFolderDeleted', {
       isSoftDelete: true,
@@ -422,34 +431,34 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
    * - 幂等：未删除的文件夹调用此方法无效果
    */
   public restore(): void {
-    if (!this._deletedAt) return; // 幂等
-    this._deletedAt = null;
-    this._updatedAt = new Date();
+    if (!this._props.deletedAt) return; // 幂等
+    this._props.deletedAt = null;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * ✅ 移动到父文件夹
    */
   public moveToParent(parentFolderId: GoalFolderId | null): void {
-    this._parentFolderId = parentFolderId;
-    this._updatedAt = new Date();
+    this._props.parentFolderId = parentFolderId;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * ✅ 增加目标计数
    */
   public incrementGoalCount(): void {
-    this._goalCount++;
-    this._updatedAt = new Date();
+    this._props.goalCount++;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * ✅ 减少目标计数
    */
   public decrementGoalCount(): void {
-    if (this._goalCount > 0) {
-      this._goalCount--;
-      this._updatedAt = new Date();
+    if (this._props.goalCount > 0) {
+      this._props.goalCount--;
+      this._props.updatedAt = new Date();
     }
   }
 
@@ -457,17 +466,17 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
    * ✅ 增加完成目标计数
    */
   public incrementCompletedCount(): void {
-    this._completedGoalCount++;
-    this._updatedAt = new Date();
+    this._props.completedGoalCount++;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * ✅ 减少完成目标计数
    */
   public decrementCompletedCount(): void {
-    if (this._completedGoalCount > 0) {
-      this._completedGoalCount--;
-      this._updatedAt = new Date();
+    if (this._props.completedGoalCount > 0) {
+      this._props.completedGoalCount--;
+      this._props.updatedAt = new Date();
     }
   }
 
@@ -475,15 +484,15 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
    * 📊 获取完成率（百分比）
    */
   public getCompletionRate(): number {
-    if (this._goalCount === 0) return 0;
-    return (this._completedGoalCount / this._goalCount) * 100;
+    if (this._props.goalCount === 0) return 0;
+    return (this._props.completedGoalCount / this._props.goalCount) * 100;
   }
 
   /**
    * 📊 是否为空文件夹
    */
   public isEmpty(): boolean {
-    return this._goalCount === 0;
+    return this._props.goalCount === 0;
   }
 
   // ================= 6. 序列化 (Serialization) =================
@@ -501,21 +510,21 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
   public toServerDTO(): GoalFolderServerDTO {
     return {
       id: this.id,
-      identityId: this._identityId,
-      name: this._name,
-      description: this._description,
-      icon: this._icon,
-      color: this._color,
-      parentFolderId: this._parentFolderId,
-      sortOrder: this._sortOrder,
-      isSystemFolder: this._isSystemFolder,
-      folderType: this._folderType,
-      goalCount: this._goalCount,
-      completedGoalCount: this._completedGoalCount,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
-      version: this._version,
+      identityId: this._props.identityId,
+      name: this._props.name,
+      description: this._props.description,
+      icon: this._props.icon,
+      color: this._props.color,
+      parentFolderId: this._props.parentFolderId,
+      sortOrder: this._props.sortOrder,
+      isSystemFolder: this._props.isSystemFolder,
+      folderType: this._props.folderType,
+      goalCount: this._props.goalCount,
+      completedGoalCount: this._props.completedGoalCount,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
+      version: this._props.version,
     };
   }
 
@@ -531,29 +540,29 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
    */
   public toClientDTO(): GoalFolderClientDTO {
     const completionRate = this.getCompletionRate();
-    const activeGoalCount = this._goalCount - this._completedGoalCount;
+    const activeGoalCount = this._props.goalCount - this._props.completedGoalCount;
 
     return {
       id: this.id,
-      identityId: this._identityId,
-      name: this._name,
-      description: this._description,
-      icon: this._icon,
-      color: this._color,
-      parentFolderId: this._parentFolderId,
-      sortOrder: this._sortOrder,
-      isSystemFolder: this._isSystemFolder,
-      folderType: this._folderType,
-      goalCount: this._goalCount,
-      completedGoalCount: this._completedGoalCount,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      identityId: this._props.identityId,
+      name: this._props.name,
+      description: this._props.description,
+      icon: this._props.icon,
+      color: this._props.color,
+      parentFolderId: this._props.parentFolderId,
+      sortOrder: this._props.sortOrder,
+      isSystemFolder: this._props.isSystemFolder,
+      folderType: this._props.folderType,
+      goalCount: this._props.goalCount,
+      completedGoalCount: this._props.completedGoalCount,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
 
       // UI 计算字段
-      displayName: this._name,
-      displayIcon: this._icon ?? 'default-folder-icon',
+      displayName: this._props.name,
+      displayIcon: this._props.icon ?? 'default-folder-icon',
       completionRate: completionRate,
       activeGoalCount: activeGoalCount < 0 ? 0 : activeGoalCount,
     };
@@ -576,19 +585,19 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
   public toPersistenceDTO(): GoalFolderPersistenceDTO {
     return {
       id: this.id,
-      identityId: this._identityId,
-      name: this._name,
-      description: this._description,
-      icon: this._icon,
-      color: this._color,
-      parentFolderId: this._parentFolderId,
-      sortOrder: this._sortOrder,
-      folderType: this._folderType,
-      goalCount: this._goalCount,
-      completedGoalCount: this._completedGoalCount,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt ?? null,
+      identityId: this._props.identityId,
+      name: this._props.name,
+      description: this._props.description,
+      icon: this._props.icon,
+      color: this._props.color,
+      parentFolderId: this._props.parentFolderId,
+      sortOrder: this._props.sortOrder,
+      folderType: this._props.folderType,
+      goalCount: this._props.goalCount,
+      completedGoalCount: this._props.completedGoalCount,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt ?? null,
       version: 1, // 初始版本号，实际由 Repository 管理
     };
   }

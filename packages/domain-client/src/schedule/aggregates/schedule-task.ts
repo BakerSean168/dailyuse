@@ -4,9 +4,8 @@
  *
  * 【规范说明】
  * - 实现 ScheduleTaskClient 接口
- * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
  * - Static fromDTO(dto: ScheduleTaskClientDTO): ScheduleTask
  * - Instance toDTO(): ScheduleTaskClientDTO
  */
@@ -236,229 +235,144 @@ class TaskMetadataVO implements TaskMetadataClient {
 // ============ Aggregate Root ============
 
 export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements ScheduleTaskClient {
-  // ================= 1. Backing Fields =================
-  private _identityId: IdentityId;
-  private _name: string;
-  private _description: string | null;
-  private _sourceModule: SourceModule;
-  private _sourceEntityId: string;
-  private _status: ScheduleTaskStatus;
-  private _enabled: boolean;
+  private readonly _props: ScheduleTaskClient;
 
-  // 值对象
-  private _schedule: ScheduleConfigVO;
-  private _execution: ExecutionInfoVO;
-  private _retryPolicy: RetryPolicyVO;
-  private _metadata: TaskMetadataVO;
-
-  // 同步字段
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
-
-  // UI 辅助属性
-  private _statusDisplay: string;
-  private _statusColor: string;
-  private _sourceModuleDisplay: string;
-  private _enabledDisplay: string;
-  private _nextRunAtFormatted: string;
-  private _lastRunAtFormatted: string;
-  private _executionSummary: string;
-  private _healthStatus: string;
-  private _isOverdue: boolean;
-
-  // 子实体
-  private _executions: ScheduleExecution[] | null;
-
-  // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: ScheduleTaskId;
-    identityId: IdentityId;
-    name: string;
-    description: string | null;
-    sourceModule: SourceModule;
-    sourceEntityId: string;
-    status: ScheduleTaskStatus;
-    enabled: boolean;
-    schedule: ScheduleConfigVO;
-    execution: ExecutionInfoVO;
-    retryPolicy: RetryPolicyVO;
-    metadata: TaskMetadataVO;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-    statusDisplay: string;
-    statusColor: string;
-    sourceModuleDisplay: string;
-    enabledDisplay: string;
-    nextRunAtFormatted: string;
-    lastRunAtFormatted: string;
-    executionSummary: string;
-    healthStatus: string;
-    isOverdue: boolean;
-    executions: ScheduleExecution[] | null;
-  }) {
-    super(params.id);
-    this._identityId = params.identityId;
-    this._name = params.name;
-    this._description = params.description;
-    this._sourceModule = params.sourceModule;
-    this._sourceEntityId = params.sourceEntityId;
-    this._status = params.status;
-    this._enabled = params.enabled;
-    this._schedule = params.schedule;
-    this._execution = params.execution;
-    this._retryPolicy = params.retryPolicy;
-    this._metadata = params.metadata;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
-    this._statusDisplay = params.statusDisplay;
-    this._statusColor = params.statusColor;
-    this._sourceModuleDisplay = params.sourceModuleDisplay;
-    this._enabledDisplay = params.enabledDisplay;
-    this._nextRunAtFormatted = params.nextRunAtFormatted;
-    this._lastRunAtFormatted = params.lastRunAtFormatted;
-    this._executionSummary = params.executionSummary;
-    this._healthStatus = params.healthStatus;
-    this._isOverdue = params.isOverdue;
-    this._executions = params.executions;
+  private constructor(props: ScheduleTaskClient) {
+    super(props.id);
+    this._props = props;
   }
 
-  // ================= 3. Getters =================
+  // ================= Getters =================
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
 
   get sourceModule(): SourceModule {
-    return this._sourceModule;
+    return this._props.sourceModule;
   }
 
   get sourceEntityId(): string {
-    return this._sourceEntityId;
+    return this._props.sourceEntityId;
   }
 
   get status(): ScheduleTaskStatus {
-    return this._status;
+    return this._props.status;
   }
 
   get enabled(): boolean {
-    return this._enabled;
+    return this._props.enabled;
   }
 
   // 值对象
   get schedule(): ScheduleConfigClient {
-    return this._schedule;
+    return this._props.schedule;
   }
 
   get execution(): ExecutionInfoClient {
-    return this._execution;
+    return this._props.execution;
   }
 
   get retryPolicy(): RetryPolicyClient {
-    return this._retryPolicy;
+    return this._props.retryPolicy;
   }
 
   get metadata(): TaskMetadataClient {
-    return this._metadata;
+    return this._props.metadata;
   }
 
   // 同步字段
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // UI 辅助属性
   get statusDisplay(): string {
-    return this._statusDisplay;
+    return this._props.statusDisplay;
   }
 
   get statusColor(): string {
-    return this._statusColor;
+    return this._props.statusColor;
   }
 
   get sourceModuleDisplay(): string {
-    return this._sourceModuleDisplay;
+    return this._props.sourceModuleDisplay;
   }
 
   get enabledDisplay(): string {
-    return this._enabledDisplay;
+    return this._props.enabledDisplay;
   }
 
   get nextRunAtFormatted(): string {
-    return this._nextRunAtFormatted;
+    return this._props.nextRunAtFormatted;
   }
 
   get lastRunAtFormatted(): string {
-    return this._lastRunAtFormatted;
+    return this._props.lastRunAtFormatted;
   }
 
   get executionSummary(): string {
-    return this._executionSummary;
+    return this._props.executionSummary;
   }
 
   get healthStatus(): string {
-    return this._healthStatus;
+    return this._props.healthStatus;
   }
 
   get isOverdue(): boolean {
-    return this._isOverdue;
+    return this._props.isOverdue;
   }
 
   // 子实体
   get executions(): ScheduleExecutionClient[] | null {
-    return this._executions ? [...this._executions] : null;
+    return this._props.executions ? [...this._props.executions] : null;
   }
 
   // UI 计算属性
   get isDeleted(): boolean {
-    return this._deletedAt !== null;
+    return this._props.deletedAt !== null;
   }
 
   get isActive(): boolean {
-    return this._status === 'Active' && this._enabled;
+    return this._props.status === 'Active' && this._props.enabled;
   }
 
   get isPaused(): boolean {
-    return this._status === 'Paused';
+    return this._props.status === 'Paused';
   }
 
   get isCompleted(): boolean {
-    return this._status === 'Completed';
+    return this._props.status === 'Completed';
   }
 
   get isCancelled(): boolean {
-    return this._status === 'Cancelled';
+    return this._props.status === 'Cancelled';
   }
 
   get isFailed(): boolean {
-    return this._status === 'Failed';
+    return this._props.status === 'Failed';
   }
 
-  // ================= 4. Factory Methods =================
+  // ================= Factory Methods =================
   public static fromDTO(dto: ScheduleTaskClientDTO): ScheduleTask {
     return new ScheduleTask({
       id: ScheduleTaskId.of(dto.id),
@@ -492,36 +406,36 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
     });
   }
 
-  // ================= 5. DTO Conversion =================
+  // ================= DTO Conversion =================
   public toDTO(): ScheduleTaskClientDTO {
     return {
-      id: String(this.id),
-      identityId: String(this._identityId),
-      name: this._name,
-      description: this._description,
-      sourceModule: this._sourceModule,
-      sourceEntityId: this._sourceEntityId,
-      status: this._status,
-      enabled: this._enabled,
-      schedule: this._schedule.toDTO(),
-      execution: this._execution.toDTO(),
-      retryPolicy: this._retryPolicy.toDTO(),
-      metadata: this._metadata.toDTO(),
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
-      statusDisplay: this._statusDisplay,
-      statusColor: this._statusColor,
-      sourceModuleDisplay: this._sourceModuleDisplay,
-      enabledDisplay: this._enabledDisplay,
-      nextRunAtFormatted: this._nextRunAtFormatted,
-      lastRunAtFormatted: this._lastRunAtFormatted,
-      executionSummary: this._executionSummary,
-      healthStatus: this._healthStatus,
-      isOverdue: this._isOverdue,
-      executions: this._executions
-        ? this._executions.map((e) => e.toDTO())
+      id: String(this._props.id),
+      identityId: String(this._props.identityId),
+      name: this._props.name,
+      description: this._props.description,
+      sourceModule: this._props.sourceModule,
+      sourceEntityId: this._props.sourceEntityId,
+      status: this._props.status,
+      enabled: this._props.enabled,
+      schedule: (this._props.schedule as ScheduleConfigVO).toDTO(),
+      execution: (this._props.execution as ExecutionInfoVO).toDTO(),
+      retryPolicy: (this._props.retryPolicy as RetryPolicyVO).toDTO(),
+      metadata: (this._props.metadata as TaskMetadataVO).toDTO(),
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      statusDisplay: this._props.statusDisplay,
+      statusColor: this._props.statusColor,
+      sourceModuleDisplay: this._props.sourceModuleDisplay,
+      enabledDisplay: this._props.enabledDisplay,
+      nextRunAtFormatted: this._props.nextRunAtFormatted,
+      lastRunAtFormatted: this._props.lastRunAtFormatted,
+      executionSummary: this._props.executionSummary,
+      healthStatus: this._props.healthStatus,
+      isOverdue: this._props.isOverdue,
+      executions: this._props.executions
+        ? (this._props.executions as ScheduleExecution[]).map((e) => e.toDTO())
         : null,
     };
   }

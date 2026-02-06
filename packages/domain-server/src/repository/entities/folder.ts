@@ -95,18 +95,23 @@ export interface FolderServer {
   toPersistenceDTO(): FolderPersistenceDTO;
 }
 
+/** Props interface for Folder */
+interface FolderProps {
+  repositoryId: string;
+  parentId: string | null;
+  name: string;
+  path: string;
+  order: number;
+  isExpanded: boolean;
+  metadata: FolderMetadata;
+  createdAt: Date;
+  updatedAt: Date;
+  children: Folder[] | null;
+}
+
 export class Folder extends Entity<ResourceId> implements FolderServer {
-  // ===== 私有字段 =====
-  private _repositoryId: string;
-  private _parentId: string | null;
-  private _name: string;
-  private _path: string;
-  private _order: number;
-  private _isExpanded: boolean;
-  private _metadata: FolderMetadata;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _children: Folder[] | null;
+  // ===== 私有属性容器 =====
+  private _props: FolderProps;
 
   // ===== 私有构造函数 =====
   private constructor(
@@ -125,57 +130,59 @@ export class Folder extends Entity<ResourceId> implements FolderServer {
     },
   ) {
     super(id);
-    this._repositoryId = params.repositoryId;
-    this._parentId = params.parentId;
-    this._name = params.name;
-    this._path = params.path;
-    this._order = params.order;
-    this._isExpanded = params.isExpanded;
-    this._metadata = params.metadata;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._children = params.children ?? null;
+    this._props = {
+      repositoryId: params.repositoryId,
+      parentId: params.parentId,
+      name: params.name,
+      path: params.path,
+      order: params.order,
+      isExpanded: params.isExpanded,
+      metadata: params.metadata,
+      createdAt: params.createdAt,
+      updatedAt: params.updatedAt,
+      children: params.children ?? null,
+    };
   }
 
   // ===== Getters =====
   get repositoryId(): string {
-    return this._repositoryId;
+    return this._props.repositoryId;
   }
 
   get parentId(): string | null {
-    return this._parentId;
+    return this._props.parentId;
   }
 
   get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get path(): string {
-    return this._path;
+    return this._props.path;
   }
 
   get order(): number {
-    return this._order;
+    return this._props.order;
   }
 
   get isExpanded(): boolean {
-    return this._isExpanded;
+    return this._props.isExpanded;
   }
 
   get metadata(): FolderMetadata {
-    return this._metadata;
+    return this._props.metadata;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get children(): Folder[] | null {
-    return this._children;
+    return this._props.children;
   }
 
   // ===== 业务方法 =====
@@ -184,96 +191,96 @@ export class Folder extends Entity<ResourceId> implements FolderServer {
       throw new Error('Folder name cannot be empty');
     }
 
-    const oldPath = this._path;
-    this._name = newName;
+    const oldPath = this._props.path;
+    this._props.name = newName;
 
     // 更新路径
-    if (this._parentId) {
+    if (this._props.parentId) {
       const parentPath = oldPath.substring(0, oldPath.lastIndexOf('/'));
-      this._path = `${parentPath}/${newName}`;
+      this._props.path = `${parentPath}/${newName}`;
     } else {
-      this._path = `/${newName}`;
+      this._props.path = `/${newName}`;
     }
 
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   moveTo(newParentId: string | null, newParentPath?: string): void {
-    this._parentId = newParentId;
+    this._props.parentId = newParentId;
 
     // 更新路径
     if (newParentPath) {
-      this._path = `${newParentPath}/${this._name}`;
+      this._props.path = `${newParentPath}/${this._props.name}`;
     } else {
-      this._path = `/${this._name}`;
+      this._props.path = `/${this._props.name}`;
     }
 
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   updatePath(newPath: string): void {
-    this._path = newPath;
-    this._updatedAt = new Date();
+    this._props.path = newPath;
+    this._props.updatedAt = new Date();
   }
 
   updateMetadata(metadata: Partial<FolderMetadataDTO>): void {
-    const currentDTO = this._metadata.toDTO();
+    const currentDTO = this._props.metadata.toDTO();
     const merged = { ...currentDTO, ...metadata };
-    this._metadata = FolderMetadata.fromDTO(merged);
-    this._updatedAt = new Date();
+    this._props.metadata = FolderMetadata.fromDTO(merged);
+    this._props.updatedAt = new Date();
   }
 
   setExpanded(isExpanded: boolean): void {
-    this._isExpanded = isExpanded;
-    this._updatedAt = new Date();
+    this._props.isExpanded = isExpanded;
+    this._props.updatedAt = new Date();
   }
 
   // ===== DTO 转换方法 =====
   toServerDTO(includeChildren = false): FolderServerDTO {
     return {
       id: String(this.id),
-      repositoryId: this._repositoryId,
-      parentId: this._parentId,
-      name: this._name,
-      path: this._path,
-      order: this._order,
-      isExpanded: this._isExpanded,
-      metadata: this._metadata.toDTO(),
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      repositoryId: this._props.repositoryId,
+      parentId: this._props.parentId,
+      name: this._props.name,
+      path: this._props.path,
+      order: this._props.order,
+      isExpanded: this._props.isExpanded,
+      metadata: this._props.metadata.toDTO(),
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
       children: includeChildren
-        ? this._children?.map((c) => c.toServerDTO(true)) ?? null
+        ? this._props.children?.map((c) => c.toServerDTO(true)) ?? null
         : null,
     };
   }
 
   toClientDTO(includeChildren = false): FolderClientDTO {
     // 计算路径深度
-    const depth = this._path.split('/').filter((p) => p.length > 0).length;
-    const isRoot = this._parentId === null;
-    const hasChildren = this._children !== null && this._children.length > 0;
-    const pathParts = this._path.split('/').filter((p) => p.length > 0);
+    const depth = this._props.path.split('/').filter((p) => p.length > 0).length;
+    const isRoot = this._props.parentId === null;
+    const hasChildren = this._props.children !== null && this._props.children.length > 0;
+    const pathParts = this._props.path.split('/').filter((p) => p.length > 0);
 
     // 显示名称（截断过长的名称）
-    const displayName = this._name.length > 30 ? this._name.substring(0, 27) + '...' : this._name;
+    const displayName = this._props.name.length > 30 ? this._props.name.substring(0, 27) + '...' : this._props.name;
 
     // 时间格式化
-    const formattedCreatedAt = this._createdAt.toLocaleString();
-    const formattedUpdatedAt = this._updatedAt.toLocaleString();
+    const formattedCreatedAt = this._props.createdAt.toLocaleString();
+    const formattedUpdatedAt = this._props.updatedAt.toLocaleString();
 
     return {
       id: String(this.id),
-      repositoryId: this._repositoryId,
-      parentId: this._parentId,
-      name: this._name,
-      path: this._path,
-      order: this._order,
-      isExpanded: this._isExpanded,
-      metadata: this._metadata.toDTO(),
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      repositoryId: this._props.repositoryId,
+      parentId: this._props.parentId,
+      name: this._props.name,
+      path: this._props.path,
+      order: this._props.order,
+      isExpanded: this._props.isExpanded,
+      metadata: this._props.metadata.toDTO(),
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
       children: includeChildren
-        ? this._children?.map((c) => c.toClientDTO(true)) ?? null
+        ? this._props.children?.map((c) => c.toClientDTO(true)) ?? null
         : null,
 
       // UI 计算字段
@@ -290,15 +297,15 @@ export class Folder extends Entity<ResourceId> implements FolderServer {
   toPersistenceDTO(): FolderPersistenceDTO {
     return {
       id: String(this.id),
-      repositoryId: this._repositoryId,
-      parentId: this._parentId,
-      name: this._name,
-      path: this._path,
-      order: this._order,
-      isExpanded: this._isExpanded,
-      metadata: JSON.stringify(this._metadata.toDTO()),
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      repositoryId: this._props.repositoryId,
+      parentId: this._props.parentId,
+      name: this._props.name,
+      path: this._props.path,
+      order: this._props.order,
+      isExpanded: this._props.isExpanded,
+      metadata: JSON.stringify(this._props.metadata.toDTO()),
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
     };
   }
 

@@ -15,8 +15,8 @@ import type {
 } from '../value-objects';
 import type { EditorWorkspaceServerDTO } from './editor-workspace-server';
 
-// 从实体导入类�?
-import type { EditorSessionClientDTO } from '../entities/editor-session-client';
+// 从实体导入类型
+import type { EditorSessionClient, EditorSessionClientDTO } from '../entities/editor-session-client';
 
 // ============ DTO 定义 ============
 
@@ -58,7 +58,7 @@ export interface EditorWorkspaceClientDTO {
  * Editor Workspace Client Interface (聚合�?
  */
 export interface EditorWorkspaceClient {
-  // ===== 基础属�?=====
+  // ===== 基础属性 =====
   id: EditorWorkspaceId;
   identityId: IdentityId;
   name: string;
@@ -67,8 +67,15 @@ export interface EditorWorkspaceClient {
   projectType: ProjectType;
   layout: WorkspaceLayoutClient;
   settings: WorkspaceSettingsClient;
+
+  // ===== 子实体集合 =====
+  sessions: EditorSessionClient[];
+
+  // ===== 状态 =====
   isActive: boolean;
   lastActiveSessionId: EditorSessionId | null;
+
+  // ===== 时间戳 =====
   lastAccessedAt: DomainDate | null;
   createdAt: DomainDate;
   updatedAt: DomainDate;

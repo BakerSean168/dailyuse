@@ -13,6 +13,19 @@ import { TriggerResult, NotificationChannel } from '@dailyuse/contracts/reminder
 import { Entity, generateUUID } from '@dailyuse/utils';
 
 /**
+ * ReminderHistory props 接口
+ */
+interface ReminderHistoryProps {
+  templateUuid: string;
+  triggeredAt: Date;
+  result: TriggerResult;
+  error: string | null;
+  notificationSent: boolean;
+  notificationChannels: NotificationChannel[] | null;
+  createdAt: Date;
+}
+
+/**
  * ReminderHistory 实体
  *
  * DDD 实体特点：
@@ -22,13 +35,7 @@ import { Entity, generateUUID } from '@dailyuse/utils';
  */
 export class ReminderHistory extends Entity<string> implements ReminderHistoryServer {
   // ===== 私有字段 =====
-  private _templateUuid: string;
-  private _triggeredAt: Date;
-  private _result: TriggerResult;
-  private _error: string | null;
-  private _notificationSent: boolean;
-  private _notificationChannels: NotificationChannel[] | null;
-  private _createdAt: Date;
+  private _props: ReminderHistoryProps;
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
@@ -42,15 +49,17 @@ export class ReminderHistory extends Entity<string> implements ReminderHistorySe
     createdAt: number;
   }) {
     super(params.uuid || generateUUID());
-    this._templateUuid = params.templateUuid;
-    this._triggeredAt = new Date(params.triggeredAt);
-    this._result = params.result;
-    this._error = params.error ?? null;
-    this._notificationSent = params.notificationSent;
-    this._notificationChannels = params.notificationChannels
-      ? [...params.notificationChannels]
-      : null;
-    this._createdAt = new Date(params.createdAt);
+    this._props = {
+      templateUuid: params.templateUuid,
+      triggeredAt: new Date(params.triggeredAt),
+      result: params.result,
+      error: params.error ?? null,
+      notificationSent: params.notificationSent,
+      notificationChannels: params.notificationChannels
+        ? [...params.notificationChannels]
+        : null,
+      createdAt: new Date(params.createdAt),
+    };
   }
 
   // ===== Getter 属性 =====
@@ -59,31 +68,31 @@ export class ReminderHistory extends Entity<string> implements ReminderHistorySe
   }
 
   public get templateUuid(): string {
-    return this._templateUuid;
+    return this._props.templateUuid;
   }
 
   public get triggeredAt(): number {
-    return this._triggeredAt.getTime();
+    return this._props.triggeredAt.getTime();
   }
 
   public get result(): TriggerResult {
-    return this._result;
+    return this._props.result;
   }
 
   public get error(): string | null {
-    return this._error;
+    return this._props.error;
   }
 
   public get notificationSent(): boolean {
-    return this._notificationSent;
+    return this._props.notificationSent;
   }
 
   public get notificationChannels(): NotificationChannel[] | null {
-    return this._notificationChannels ? [...this._notificationChannels] : null;
+    return this._props.notificationChannels ? [...this._props.notificationChannels] : null;
   }
 
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   // ===== 工厂方法 =====
@@ -141,19 +150,19 @@ export class ReminderHistory extends Entity<string> implements ReminderHistorySe
 
   // ===== 计算属性 =====
   public get isSuccess(): boolean {
-    return this._result === TriggerResult.Success;
+    return this._props.result === TriggerResult.Success;
   }
 
   public get isFailed(): boolean {
-    return this._result === TriggerResult.Failed;
+    return this._props.result === TriggerResult.Failed;
   }
 
   public get isSkipped(): boolean {
-    return this._result === TriggerResult.Skipped;
+    return this._props.result === TriggerResult.Skipped;
   }
 
   public get hasError(): boolean {
-    return this._error !== null;
+    return this._props.error !== null;
   }
 
   public get resultDescription(): string {
@@ -162,52 +171,52 @@ export class ReminderHistory extends Entity<string> implements ReminderHistorySe
       [TriggerResult.Failed]: '失败',
       [TriggerResult.Skipped]: '跳过',
     };
-    return descriptions[this._result];
+    return descriptions[this._props.result];
   }
 
   public get triggeredAtFormatted(): string {
-    return this._triggeredAt.toLocaleString();
+    return this._props.triggeredAt.toLocaleString();
   }
 
   public get createdAtFormatted(): string {
-    return this._createdAt.toLocaleString();
+    return this._props.createdAt.toLocaleString();
   }
 
   public get notificationChannelCount(): number {
-    return this._notificationChannels?.length ?? 0;
+    return this._props.notificationChannels?.length ?? 0;
   }
 
   // ===== 序列化方法 =====
   public toServerDTO(): ReminderHistoryServerDTO {
     return {
       uuid: this.id,
-      templateUuid: this._templateUuid,
-      triggeredAt: this._triggeredAt.getTime(),
-      result: this._result,
-      error: this._error,
-      notificationSent: this._notificationSent,
-      notificationChannels: this._notificationChannels,
-      createdAt: this._createdAt.getTime(),
+      templateUuid: this._props.templateUuid,
+      triggeredAt: this._props.triggeredAt.getTime(),
+      result: this._props.result,
+      error: this._props.error,
+      notificationSent: this._props.notificationSent,
+      notificationChannels: this._props.notificationChannels,
+      createdAt: this._props.createdAt.getTime(),
     };
   }
 
   public toClientDTO(): ReminderHistoryClientDTO {
     // 生成通知渠道文本
-    const channelsText = this._notificationChannels?.length
-      ? this._notificationChannels.join(' + ')
+    const channelsText = this._props.notificationChannels?.length
+      ? this._props.notificationChannels.join(' + ')
       : null;
 
     return {
       id: this.id,
-      templateId: this._templateUuid,
-      triggeredAt: this._triggeredAt.getTime(),
-      result: this._result,
-      error: this._error,
-      notificationSent: this._notificationSent,
-      notificationChannels: this._notificationChannels,
+      templateId: this._props.templateUuid,
+      triggeredAt: this._props.triggeredAt.getTime(),
+      result: this._props.result,
+      error: this._props.error,
+      notificationSent: this._props.notificationSent,
+      notificationChannels: this._props.notificationChannels,
       version: 1,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._createdAt.getTime(),
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.createdAt.getTime(),
       deletedAt: null,
       // Client 专属计算字段
       resultText: this.resultDescription,
@@ -219,15 +228,15 @@ export class ReminderHistory extends Entity<string> implements ReminderHistorySe
   public toPersistenceDTO(): ReminderHistoryPersistenceDTO {
     return {
       uuid: this.id,
-      templateUuid: this._templateUuid,
-      triggeredAt: this._triggeredAt.getTime(),
-      result: this._result,
-      error: this._error,
-      notificationSent: this._notificationSent,
-      notificationChannels: this._notificationChannels
-        ? JSON.stringify(this._notificationChannels)
+      templateUuid: this._props.templateUuid,
+      triggeredAt: this._props.triggeredAt.getTime(),
+      result: this._props.result,
+      error: this._props.error,
+      notificationSent: this._props.notificationSent,
+      notificationChannels: this._props.notificationChannels
+        ? JSON.stringify(this._props.notificationChannels)
         : null,
-      createdAt: this._createdAt,
+      createdAt: this._props.createdAt,
     };
   }
 }

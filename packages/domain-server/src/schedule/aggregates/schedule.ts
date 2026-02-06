@@ -56,6 +56,25 @@ interface ScheduleClientDTO {
 }
 
 /**
+ * Schedule Props interface for simplified aggregate pattern
+ */
+interface ScheduleProps {
+  accountUuid: string;
+  title: string;
+  description: string | null;
+  startTime: number;
+  endTime: number;
+  duration: number;
+  hasConflict: boolean;
+  conflictingSchedules: string[] | null;
+  priority: number | null;
+  location: string | null;
+  attendees: string[] | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
  * Schedule 聚合根
  * 
  * 注意：这是用户面向的日程（会议、约会等），不是 ScheduleTask（cron任务调度）
@@ -63,19 +82,7 @@ interface ScheduleClientDTO {
  */
 export class Schedule extends AggregateRoot<string> {
   // ===== 私有字段 =====
-  private _accountUuid: string;
-  private _title: string;
-  private _description: string | null;
-  private _startTime: number;
-  private _endTime: number;
-  private _duration: number; // in minutes
-  private _hasConflict: boolean;
-  private _conflictingSchedules: string[] | null;
-  private _priority: number | null;
-  private _location: string | null;
-  private _attendees: string[] | null;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+  private _props: ScheduleProps;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -100,19 +107,21 @@ export class Schedule extends AggregateRoot<string> {
       throw new Error('Schedule startTime must be before endTime');
     }
 
-    this._accountUuid = params.accountUuid;
-    this._title = params.title;
-    this._description = params.description ?? null;
-    this._startTime = params.startTime;
-    this._endTime = params.endTime;
-    this._duration = this.calculateDuration(params.startTime, params.endTime);
-    this._hasConflict = params.hasConflict ?? false;
-    this._conflictingSchedules = params.conflictingSchedules ?? null;
-    this._priority = params.priority ?? null;
-    this._location = params.location ?? null;
-    this._attendees = params.attendees ?? null;
-    this._createdAt = new Date(params.createdAt ?? Date.now());
-    this._updatedAt = new Date(params.updatedAt ?? Date.now());
+    this._props = {
+      accountUuid: params.accountUuid,
+      title: params.title,
+      description: params.description ?? null,
+      startTime: params.startTime,
+      endTime: params.endTime,
+      duration: this.calculateDuration(params.startTime, params.endTime),
+      hasConflict: params.hasConflict ?? false,
+      conflictingSchedules: params.conflictingSchedules ?? null,
+      priority: params.priority ?? null,
+      location: params.location ?? null,
+      attendees: params.attendees ?? null,
+      createdAt: new Date(params.createdAt ?? Date.now()),
+      updatedAt: new Date(params.updatedAt ?? Date.now()),
+    };
   }
 
   // ===== Getter 属性 =====
@@ -121,55 +130,55 @@ export class Schedule extends AggregateRoot<string> {
   }
 
   public get accountUuid(): string {
-    return this._accountUuid;
+    return this._props.accountUuid;
   }
 
   public get title(): string {
-    return this._title;
+    return this._props.title;
   }
 
   public get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
 
   public get startTime(): number {
-    return this._startTime;
+    return this._props.startTime;
   }
 
   public get endTime(): number {
-    return this._endTime;
+    return this._props.endTime;
   }
 
   public get duration(): number {
-    return this._duration;
+    return this._props.duration;
   }
 
   public get hasConflict(): boolean {
-    return this._hasConflict;
+    return this._props.hasConflict;
   }
 
   public get conflictingSchedules(): string[] | null {
-    return this._conflictingSchedules ? [...this._conflictingSchedules] : null;
+    return this._props.conflictingSchedules ? [...this._props.conflictingSchedules] : null;
   }
 
   public get priority(): number | null {
-    return this._priority;
+    return this._props.priority;
   }
 
   public get location(): string | null {
-    return this._location;
+    return this._props.location;
   }
 
   public get attendees(): string[] | null {
-    return this._attendees ? [...this._attendees] : null;
+    return this._props.attendees ? [...this._props.attendees] : null;
   }
 
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   public get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   // ===== 工厂方法 =====
@@ -250,8 +259,8 @@ export class Schedule extends AggregateRoot<string> {
     const conflicts: ConflictDetail[] = conflictingSchedules.map((schedule) => ({
       scheduleUuid: schedule.uuid,
       scheduleTitle: schedule.title,
-      overlapStart: Math.max(this._startTime, schedule.startTime),
-      overlapEnd: Math.min(this._endTime, schedule.endTime),
+      overlapStart: Math.max(this._props.startTime, schedule.startTime),
+      overlapEnd: Math.min(this._props.endTime, schedule.endTime),
       overlapDuration: this.calculateOverlap(schedule),
     }));
 
@@ -274,7 +283,7 @@ export class Schedule extends AggregateRoot<string> {
    * @returns 是否重叠
    */
   private isOverlapping(other: Schedule): boolean {
-    return this._startTime < other.endTime && this._endTime > other.startTime;
+    return this._props.startTime < other.endTime && this._props.endTime > other.startTime;
   }
 
   /**
@@ -284,8 +293,8 @@ export class Schedule extends AggregateRoot<string> {
    * @returns 重叠时长（分钟）
    */
   private calculateOverlap(other: Schedule): number {
-    const overlapStart = Math.max(this._startTime, other.startTime);
-    const overlapEnd = Math.min(this._endTime, other.endTime);
+    const overlapStart = Math.max(this._props.startTime, other.startTime);
+    const overlapEnd = Math.min(this._props.endTime, other.endTime);
     return this.calculateDuration(overlapStart, overlapEnd);
   }
 
@@ -323,7 +332,7 @@ export class Schedule extends AggregateRoot<string> {
     // Suggestion 1: Move earlier (before earliest conflict)
     if (earliestConflict) {
       const newEndTime = earliestConflict.startTime;
-      const newStartTime = newEndTime - (this._endTime - this._startTime);
+      const newStartTime = newEndTime - (this._props.endTime - this._props.startTime);
       suggestions.push({
         type: 'move_earlier',
         newStartTime,
@@ -334,7 +343,7 @@ export class Schedule extends AggregateRoot<string> {
     // Suggestion 2: Move later (after latest conflict)
     if (latestConflict) {
       const newStartTime = latestConflict.endTime;
-      const newEndTime = newStartTime + (this._endTime - this._startTime);
+      const newEndTime = newStartTime + (this._props.endTime - this._props.startTime);
       suggestions.push({
         type: 'move_later',
         newStartTime,
@@ -344,10 +353,10 @@ export class Schedule extends AggregateRoot<string> {
 
     // Suggestion 3: Shorten (simple version: move to first gap)
     // For MVP, we'll suggest shortening to fit before first conflict
-    if (earliestConflict && this._startTime < earliestConflict.startTime) {
+    if (earliestConflict && this._props.startTime < earliestConflict.startTime) {
       suggestions.push({
         type: 'shorten',
-        newStartTime: this._startTime,
+        newStartTime: this._props.startTime,
         newEndTime: earliestConflict.startTime,
       });
     }
@@ -364,19 +373,19 @@ export class Schedule extends AggregateRoot<string> {
   public toClientDTO(): ScheduleClientDTO {
     return {
       uuid: this.id,
-      accountUuid: this._accountUuid,
-      name: this._title,
-      description: this._description,
-      startTime: this._startTime,
-      endTime: this._endTime,
-      duration: this._duration,
-      hasConflict: this._hasConflict,
-      conflictingSchedules: this._conflictingSchedules,
-      priority: this._priority,
-      location: this._location,
-      attendees: this._attendees,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      accountUuid: this._props.accountUuid,
+      name: this._props.title,
+      description: this._props.description,
+      startTime: this._props.startTime,
+      endTime: this._props.endTime,
+      duration: this._props.duration,
+      hasConflict: this._props.hasConflict,
+      conflictingSchedules: this._props.conflictingSchedules,
+      priority: this._props.priority,
+      location: this._props.location,
+      attendees: this._props.attendees,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
     };
   }
 
@@ -386,19 +395,19 @@ export class Schedule extends AggregateRoot<string> {
   public toServerDTO(): ScheduleServerDTO {
     return {
       uuid: this.id,
-      accountUuid: this._accountUuid,
-      name: this._title,
-      description: this._description ?? undefined,
-      startTime: this._startTime,
-      endTime: this._endTime,
-      duration: this._duration,
-      hasConflict: this._hasConflict,
-      conflictingSchedules: this._conflictingSchedules ?? undefined,
-      priority: this._priority ?? undefined,
-      location: this._location ?? undefined,
-      attendees: this._attendees ?? undefined,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      accountUuid: this._props.accountUuid,
+      name: this._props.title,
+      description: this._props.description ?? undefined,
+      startTime: this._props.startTime,
+      endTime: this._props.endTime,
+      duration: this._props.duration,
+      hasConflict: this._props.hasConflict,
+      conflictingSchedules: this._props.conflictingSchedules ?? undefined,
+      priority: this._props.priority ?? undefined,
+      location: this._props.location ?? undefined,
+      attendees: this._props.attendees ?? undefined,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
     };
   }
 
@@ -410,18 +419,18 @@ export class Schedule extends AggregateRoot<string> {
    * @param conflictingUuids 冲突日程的UUID列表
    */
   public markAsConflicting(conflictingUuids: string[]): void {
-    this._hasConflict = true;
-    this._conflictingSchedules = [...conflictingUuids];
-    this._updatedAt = new Date();
+    this._props.hasConflict = true;
+    this._props.conflictingSchedules = [...conflictingUuids];
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 清除冲突标记
    */
   public clearConflicts(): void {
-    this._hasConflict = false;
-    this._conflictingSchedules = null;
-    this._updatedAt = new Date();
+    this._props.hasConflict = false;
+    this._props.conflictingSchedules = null;
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -435,10 +444,10 @@ export class Schedule extends AggregateRoot<string> {
       throw new Error('Invalid time range: startTime must be before endTime');
     }
 
-    this._startTime = newStartTime;
-    this._endTime = newEndTime;
-    this._duration = this.calculateDuration(newStartTime, newEndTime);
-    this._updatedAt = new Date();
+    this._props.startTime = newStartTime;
+    this._props.endTime = newEndTime;
+    this._props.duration = this.calculateDuration(newStartTime, newEndTime);
+    this._props.updatedAt = new Date();
   }
 
   // ===== 更新方法 (Story 4-1) =====
@@ -450,16 +459,16 @@ export class Schedule extends AggregateRoot<string> {
     if (!title || title.trim().length === 0) {
       throw new Error('Title cannot be empty');
     }
-    this._title = title;
-    this._updatedAt = new Date();
+    this._props.title = title;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 更新描述
    */
   public updateDescription(description: string | null): void {
-    this._description = description;
-    this._updatedAt = new Date();
+    this._props.description = description;
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -469,10 +478,10 @@ export class Schedule extends AggregateRoot<string> {
     if (startTime >= endTime) {
       throw new Error('Start time must be before end time');
     }
-    this._startTime = startTime;
-    this._endTime = endTime;
-    this._duration = this.calculateDuration(startTime, endTime);
-    this._updatedAt = new Date();
+    this._props.startTime = startTime;
+    this._props.endTime = endTime;
+    this._props.duration = this.calculateDuration(startTime, endTime);
+    this._props.updatedAt = new Date();
   }
 
   /**
@@ -482,23 +491,23 @@ export class Schedule extends AggregateRoot<string> {
     if (priority !== null && (priority < 1 || priority > 5)) {
       throw new Error('Priority must be between 1 and 5');
     }
-    this._priority = priority;
-    this._updatedAt = new Date();
+    this._props.priority = priority;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 更新地点
    */
   public updateLocation(location: string | null): void {
-    this._location = location;
-    this._updatedAt = new Date();
+    this._props.location = location;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 更新参与者
    */
   public updateAttendees(attendees: string[] | null): void {
-    this._attendees = attendees ? [...attendees] : null;
-    this._updatedAt = new Date();
+    this._props.attendees = attendees ? [...attendees] : null;
+    this._props.updatedAt = new Date();
   }
 }

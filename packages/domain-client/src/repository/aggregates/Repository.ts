@@ -26,112 +26,91 @@ import {
 } from '@dailyuse/domain-shared/repository';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-export class Repository extends AggregateRoot<RepositoryId> implements RepositoryClient {
-  // ================= 1. Backing Fields =================
-  private _identityId: IdentityId;
-  private _name: string;
-  private _type: RepositoryType;
-  private _path: string | null;
-  private _description: string | null;
-  private _config: RepositoryConfig;
-  private _stats: RepositoryStats;
-  private _status: RepositoryStatus;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+// Internal props type using domain-shared class types
+interface RepositoryInternalProps {
+  id: RepositoryId;
+  identityId: IdentityId;
+  name: string;
+  type: RepositoryType;
+  path: string | null;
+  description: string | null;
+  config: RepositoryConfig;
+  stats: RepositoryStats;
+  status: RepositoryStatus;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
 
-  // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: RepositoryId;
-    identityId: IdentityId;
-    name: string;
-    type: RepositoryType;
-    path: string | null;
-    description: string | null;
-    config: RepositoryConfig;
-    stats: RepositoryStats;
-    status: RepositoryStatus;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(params.id);
-    this._identityId = params.identityId;
-    this._name = params.name;
-    this._type = params.type;
-    this._path = params.path;
-    this._description = params.description;
-    this._config = params.config;
-    this._stats = params.stats;
-    this._status = params.status;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+export class Repository extends AggregateRoot<RepositoryId> implements RepositoryClient {
+  private readonly _props: RepositoryInternalProps;
+
+  private constructor(props: RepositoryInternalProps) {
+    super(props.id);
+    this._props = props;
   }
 
-  // ================= 3. Getters =================
+  // ================= Getters =================
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get type(): RepositoryType {
-    return this._type;
+    return this._props.type;
   }
 
   get path(): string | null {
-    return this._path;
+    return this._props.path;
   }
 
   get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
 
   get config(): RepositoryConfig {
-    return this._config;
+    return this._props.config;
   }
 
   get stats(): RepositoryStats {
-    return this._stats;
+    return this._props.stats;
   }
 
   get status(): RepositoryStatus {
-    return this._status;
+    return this._props.status;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // ================= UI 计算属性 =================
   get isDeleted(): boolean {
-    return this._status === 'Deleted';
+    return this._props.status === 'Deleted';
   }
 
   get isArchived(): boolean {
-    return this._status === 'Archived';
+    return this._props.status === 'Archived';
   }
 
   get isActive(): boolean {
-    return this._status === 'Active';
+    return this._props.status === 'Active';
   }
 
   get statusText(): string {
@@ -140,7 +119,7 @@ export class Repository extends AggregateRoot<RepositoryId> implements Repositor
       Archived: '已归档',
       Deleted: '已删除',
     };
-    return statusTextMap[this._status] ?? this._status;
+    return statusTextMap[this._props.status] ?? this._props.status;
   }
 
   get typeText(): string {
@@ -149,34 +128,34 @@ export class Repository extends AggregateRoot<RepositoryId> implements Repositor
       Code: '代码',
       Mixed: '混合',
     };
-    return typeTextMap[this._type] ?? this._type;
+    return typeTextMap[this._props.type] ?? this._props.type;
   }
 
   get folderCount(): number {
-    return this._stats.folderCount;
+    return this._props.stats.folderCount;
   }
 
   get resourceCount(): number {
-    return this._stats.resourceCount;
+    return this._props.stats.resourceCount;
   }
 
   get totalSize(): number {
-    return this._stats.totalSize;
+    return this._props.stats.totalSize;
   }
 
   get formattedSize(): string {
-    return this._stats.formattedSize;
+    return this._props.stats.formattedSize;
   }
 
   get createdAtText(): string {
-    return this._createdAt.toLocaleString();
+    return this._props.createdAt.toLocaleString();
   }
 
   get updatedAtText(): string {
-    return this._updatedAt.toLocaleString();
+    return this._props.updatedAt.toLocaleString();
   }
 
-  // ================= 4. Factory Methods =================
+  // ================= Factory Methods =================
   public static fromDTO(dto: RepositoryClientDTO): Repository {
     return new Repository({
       id: RepositoryId.of(dto.id),
@@ -195,22 +174,22 @@ export class Repository extends AggregateRoot<RepositoryId> implements Repositor
     });
   }
 
-  // ================= 5. DTO Conversion =================
+  // ================= DTO Conversion =================
   public toDTO(): RepositoryClientDTO {
     return {
       id: String(this.id),
-      identityId: String(this._identityId),
-      name: this._name,
-      type: this._type,
-      path: this._path,
-      description: this._description,
-      config: this._config.toDTO(),
-      stats: this._stats.toDTO(),
-      status: this._status,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      identityId: String(this._props.identityId),
+      name: this._props.name,
+      type: this._props.type,
+      path: this._props.path,
+      description: this._props.description,
+      config: this._props.config.toDTO(),
+      stats: this._props.stats.toDTO(),
+      status: this._props.status,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
       // UI 计算字段
       isDeleted: this.isDeleted,
       isArchived: this.isArchived,

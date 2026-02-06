@@ -42,6 +42,9 @@ export type TaskInstanceId = string & { readonly __brand: 'TaskInstanceId' };
 /** 任务依赖 ID */
 export type TaskDependencyId = string & { readonly __brand: 'TaskDependencyId' };
 
+/** 子任务 ID */
+export type SubtaskId = string & { readonly __brand: 'SubtaskId' };
+
 /** 任务文件夹 ID */
 export type TaskFolderId = string & { readonly __brand: 'TaskFolderId' };
 

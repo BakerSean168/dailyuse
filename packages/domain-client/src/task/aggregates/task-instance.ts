@@ -24,125 +24,83 @@ import { TaskInstanceId, TaskTemplateId } from '@dailyuse/domain-shared/task';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskInstanceClient {
-  // ================= 1. Backing Fields =================
-  private _templateId: TaskTemplateId;
-  private _identityId: IdentityId;
-  private _instanceDate: Date;
-  private _timeConfig: TaskTimeConfig;
-  private _importance?: ImportanceLevel;
-  private _priority?: number;
-  private _status: TaskInstanceStatus;
-  private _actualStartTime: Date | null;
-  private _actualEndTime: Date | null;
-  private _comment: string | null;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+  // ================= 1. Props =================
+  private readonly _props: TaskInstanceClient;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: TaskInstanceId;
-    templateId: TaskTemplateId;
-    identityId: IdentityId;
-    instanceDate: Date;
-    timeConfig: TaskTimeConfig;
-    importance?: ImportanceLevel;
-    priority?: number;
-    status: TaskInstanceStatus;
-    actualStartTime: Date | null;
-    actualEndTime: Date | null;
-    comment: string | null;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(params.id);
-    this._templateId = params.templateId;
-    this._identityId = params.identityId;
-    this._instanceDate = params.instanceDate;
-    this._timeConfig = params.timeConfig;
-    this._importance = params.importance;
-    this._priority = params.priority;
-    this._status = params.status;
-    this._actualStartTime = params.actualStartTime;
-    this._actualEndTime = params.actualEndTime;
-    this._comment = params.comment;
-    this._version = params.version;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+  private constructor(props: TaskInstanceClient) {
+    super(props.id);
+    this._props = props;
   }
 
   // ================= 3. Getters =================
   get templateId(): TaskTemplateId {
-    return this._templateId;
+    return this._props.templateId;
   }
 
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get instanceDate(): Date {
-    return this._instanceDate;
+    return this._props.instanceDate;
   }
 
   get timeConfig(): TaskTimeConfig {
-    return this._timeConfig;
+    return this._props.timeConfig;
   }
 
   get importance(): ImportanceLevel | undefined {
-    return this._importance;
+    return this._props.importance;
   }
 
   get priority(): number | undefined {
-    return this._priority;
+    return this._props.priority;
   }
 
   get status(): TaskInstanceStatus {
-    return this._status;
+    return this._props.status;
   }
 
   get actualStartTime(): Date | null {
-    return this._actualStartTime;
+    return this._props.actualStartTime;
   }
 
   get actualEndTime(): Date | null {
-    return this._actualEndTime;
+    return this._props.actualEndTime;
   }
 
   get comment(): string | null {
-    return this._comment;
+    return this._props.comment;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // UI 计算属性
   get isDeleted(): boolean {
-    return this._deletedAt !== null;
+    return this._props.deletedAt !== null;
   }
 
   get isCompleted(): boolean {
-    return this._status === 'Completed';
+    return this._props.status === 'Completed';
   }
 
   get isSkipped(): boolean {
-    return this._status === 'Skipped';
+    return this._props.status === 'Skipped';
   }
 
   // ================= 4. Factory Methods =================
@@ -179,20 +137,20 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
   public toDTO(): TaskInstanceClientDTO {
     return {
       id: String(this.id) as TaskInstanceClientDTO['id'],
-      templateId: String(this._templateId) as TaskInstanceClientDTO['templateId'],
-      identityId: String(this._identityId) as TaskInstanceClientDTO['identityId'],
-      instanceDate: this._instanceDate.getTime(),
-      timeConfig: this.serializeTimeConfig(this._timeConfig),
-      importance: this._importance,
-      priority: this._priority,
-      status: this._status,
-      actualStartTime: this._actualStartTime?.getTime() ?? null,
-      actualEndTime: this._actualEndTime?.getTime() ?? null,
-      comment: this._comment,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
+      templateId: String(this._props.templateId) as TaskInstanceClientDTO['templateId'],
+      identityId: String(this._props.identityId) as TaskInstanceClientDTO['identityId'],
+      instanceDate: this._props.instanceDate.getTime(),
+      timeConfig: this.serializeTimeConfig(this._props.timeConfig),
+      importance: this._props.importance,
+      priority: this._props.priority,
+      status: this._props.status,
+      actualStartTime: this._props.actualStartTime?.getTime() ?? null,
+      actualEndTime: this._props.actualEndTime?.getTime() ?? null,
+      comment: this._props.comment,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
 

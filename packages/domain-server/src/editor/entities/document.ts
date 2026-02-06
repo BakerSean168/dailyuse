@@ -26,110 +26,88 @@ import { Entity, generateUUID } from '@dailyuse/utils';
 import { DocumentMetadata } from '@dailyuse/domain-shared/editor';
 
 /**
+ * Document 属性接口
+ */
+interface DocumentProps {
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
+  path: string;
+  name: string;
+  language: DocumentLanguage;
+  content: string;
+  contentHash: string;
+  metadata: DocumentMetadata;
+  indexStatus: IndexStatus;
+  lastIndexedAt: Date | null;
+  lastModifiedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
  * Document 实体
  */
 export class Document extends Entity<IDocumentId> implements DocumentServer {
-  // ===== 私有字段 =====
-  private _workspaceId: EditorWorkspaceId;
-  private _identityId: IdentityId;
-  private _path: string;
-  private _name: string;
-  private _language: DocumentLanguage;
-  private _content: string;
-  private _contentHash: string;
-  private _metadata: DocumentMetadata;
-  private _indexStatus: IndexStatus;
-  private _lastIndexedAt: Date | null;
-  private _lastModifiedAt: Date | null;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+  // ===== 私有属性 =====
+  private _props: DocumentProps;
 
   // ===== 构造函数（私有） =====
-  private constructor(
-    id: IDocumentId,
-    params: {
-      workspaceId: EditorWorkspaceId;
-      identityId: IdentityId;
-      path: string;
-      name: string;
-      language: DocumentLanguage;
-      content: string;
-      contentHash: string;
-      metadata: DocumentMetadata;
-      indexStatus: IndexStatus;
-      lastIndexedAt: Date | null;
-      lastModifiedAt: Date | null;
-      createdAt: Date;
-      updatedAt: Date;
-    },
-  ) {
+  private constructor(id: IDocumentId, props: DocumentProps) {
     super(id);
-    this._workspaceId = params.workspaceId;
-    this._identityId = params.identityId;
-    this._path = params.path;
-    this._name = params.name;
-    this._language = params.language;
-    this._content = params.content;
-    this._contentHash = params.contentHash;
-    this._metadata = params.metadata;
-    this._indexStatus = params.indexStatus;
-    this._lastIndexedAt = params.lastIndexedAt;
-    this._lastModifiedAt = params.lastModifiedAt;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+    this._props = props;
   }
 
   // ===== Getter 属性 =====
   public get workspaceId(): EditorWorkspaceId {
-    return this._workspaceId;
+    return this._props.workspaceId;
   }
 
   public get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   public get path(): string {
-    return this._path;
+    return this._props.path;
   }
 
   public get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   public get language(): DocumentLanguage {
-    return this._language;
+    return this._props.language;
   }
 
   public get content(): string {
-    return this._content;
+    return this._props.content;
   }
 
   public get contentHash(): string {
-    return this._contentHash;
+    return this._props.contentHash;
   }
 
   public get metadata(): DocumentMetadataServerDTO {
-    return this._metadata.toServerDTO();
+    return this._props.metadata.toServerDTO();
   }
 
   public get indexStatus(): IndexStatus {
-    return this._indexStatus;
+    return this._props.indexStatus;
   }
 
   public get lastIndexedAt(): DomainDate | null {
-    return this._lastIndexedAt;
+    return this._props.lastIndexedAt;
   }
 
   public get lastModifiedAt(): DomainDate | null {
-    return this._lastModifiedAt;
+    return this._props.lastModifiedAt;
   }
 
   public get createdAt(): DomainDate {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   public get updatedAt(): DomainDate {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   // ===== 静态工厂方法 =====
@@ -219,75 +197,75 @@ export class Document extends Entity<IDocumentId> implements DocumentServer {
    * 更新内容
    */
   public updateContent(content: string): void {
-    this._content = content;
-    this._contentHash = Document.hashContent(content);
-    this._indexStatus = IndexStatus.Outdated;
-    this._updatedAt = new Date();
+    this._props.content = content;
+    this._props.contentHash = Document.hashContent(content);
+    this._props.indexStatus = IndexStatus.Outdated;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 更新元数据
    */
   public updateMetadata(metadata: DocumentMetadataServerDTO): void {
-    this._metadata = DocumentMetadata.fromDTO(metadata);
-    this._updatedAt = new Date();
+    this._props.metadata = DocumentMetadata.fromDTO(metadata);
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 重命名
    */
   public rename(newName: string): void {
-    this._name = newName;
-    this._language = Document.detectLanguage(newName);
-    this._updatedAt = new Date();
+    this._props.name = newName;
+    this._props.language = Document.detectLanguage(newName);
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 移动到新路径
    */
   public move(newPath: string): void {
-    this._path = newPath;
-    this._updatedAt = new Date();
+    this._props.path = newPath;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 标记为已索引
    */
   public markAsIndexed(): void {
-    this._indexStatus = IndexStatus.Indexed;
-    this._lastIndexedAt = new Date();
-    this._updatedAt = new Date();
+    this._props.indexStatus = IndexStatus.Indexed;
+    this._props.lastIndexedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 标记索引过期
    */
   public markIndexOutdated(): void {
-    this._indexStatus = IndexStatus.Outdated;
-    this._updatedAt = new Date();
+    this._props.indexStatus = IndexStatus.Outdated;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 标记索引失败
    */
   public markIndexFailed(): void {
-    this._indexStatus = IndexStatus.Failed;
-    this._updatedAt = new Date();
+    this._props.indexStatus = IndexStatus.Failed;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 更新文件修改时间
    */
   public updateLastModifiedAt(time: Date): void {
-    this._lastModifiedAt = time;
-    this._updatedAt = new Date();
+    this._props.lastModifiedAt = time;
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 获取文件扩展名
    */
   public getExtension(): string {
-    const parts = this._name.split('.');
+    const parts = this._props.name.split('.');
     return parts.length > 1 ? parts.pop() ?? '' : '';
   }
 
@@ -295,7 +273,7 @@ export class Document extends Entity<IDocumentId> implements DocumentServer {
    * 是否为 Markdown 文档
    */
   public isMarkdown(): boolean {
-    return this._language === DocumentLanguage.Markdown;
+    return this._props.language === DocumentLanguage.Markdown;
   }
 
   // ===== 序列化方法 =====
@@ -303,70 +281,70 @@ export class Document extends Entity<IDocumentId> implements DocumentServer {
   public toServerDTO(): DocumentServerDTO {
     return {
       id: this.id,
-      workspaceId: this._workspaceId,
-      identityId: this._identityId,
-      path: this._path,
-      name: this._name,
-      language: this._language,
-      content: this._content,
-      contentHash: this._contentHash,
-      metadata: this._metadata.toServerDTO(),
-      indexStatus: this._indexStatus,
-      lastIndexedAt: this._lastIndexedAt?.getTime() as TransferDate | null,
-      lastModifiedAt: this._lastModifiedAt?.getTime() as TransferDate | null,
-      createdAt: this._createdAt.getTime() as TransferDate,
-      updatedAt: this._updatedAt.getTime() as TransferDate,
+      workspaceId: this._props.workspaceId,
+      identityId: this._props.identityId,
+      path: this._props.path,
+      name: this._props.name,
+      language: this._props.language,
+      content: this._props.content,
+      contentHash: this._props.contentHash,
+      metadata: this._props.metadata.toServerDTO(),
+      indexStatus: this._props.indexStatus,
+      lastIndexedAt: this._props.lastIndexedAt?.getTime() as TransferDate | null,
+      lastModifiedAt: this._props.lastModifiedAt?.getTime() as TransferDate | null,
+      createdAt: this._props.createdAt.getTime() as TransferDate,
+      updatedAt: this._props.updatedAt.getTime() as TransferDate,
     };
   }
 
   public toClientDTO(): DocumentClientDTO {
-    const serverMetadata = this._metadata.toServerDTO();
+    const serverMetadata = this._props.metadata.toServerDTO();
     return {
       id: this.id,
-      workspaceId: this._workspaceId,
-      identityId: this._identityId,
-      path: this._path,
-      name: this._name,
-      language: this._language,
-      content: this._content,
-      contentHash: this._contentHash,
+      workspaceId: this._props.workspaceId,
+      identityId: this._props.identityId,
+      path: this._props.path,
+      name: this._props.name,
+      language: this._props.language,
+      content: this._props.content,
+      contentHash: this._props.contentHash,
       metadata: {
         tags: serverMetadata.tags,
         category: serverMetadata.category,
         wordCount: serverMetadata.wordCount,
         characterCount: serverMetadata.characterCount,
         readingTime: serverMetadata.readingTime,
-        wordCountFormatted: this._metadata.wordCountFormatted,
-        readingTimeFormatted: this._metadata.readingTimeFormatted,
+        wordCountFormatted: this._props.metadata.wordCountFormatted,
+        readingTimeFormatted: this._props.metadata.readingTimeFormatted,
       },
-      indexStatus: this._indexStatus,
-      lastIndexedAt: this._lastIndexedAt?.getTime() as TransferDate | null,
-      lastModifiedAt: this._lastModifiedAt?.getTime() as TransferDate | null,
-      createdAt: this._createdAt.getTime() as TransferDate,
-      updatedAt: this._updatedAt.getTime() as TransferDate,
-      formattedLastIndexed: this._lastIndexedAt?.toLocaleString() ?? null,
-      formattedLastModified: this._lastModifiedAt?.toLocaleString() ?? null,
-      formattedCreatedAt: this._createdAt.toLocaleString(),
-      formattedUpdatedAt: this._updatedAt.toLocaleString(),
+      indexStatus: this._props.indexStatus,
+      lastIndexedAt: this._props.lastIndexedAt?.getTime() as TransferDate | null,
+      lastModifiedAt: this._props.lastModifiedAt?.getTime() as TransferDate | null,
+      createdAt: this._props.createdAt.getTime() as TransferDate,
+      updatedAt: this._props.updatedAt.getTime() as TransferDate,
+      formattedLastIndexed: this._props.lastIndexedAt?.toLocaleString() ?? null,
+      formattedLastModified: this._props.lastModifiedAt?.toLocaleString() ?? null,
+      formattedCreatedAt: this._props.createdAt.toLocaleString(),
+      formattedUpdatedAt: this._props.updatedAt.toLocaleString(),
     };
   }
 
   public toPersistenceDTO(): DocumentPersistenceDTO {
     return {
       id: this.id,
-      workspace_id: this._workspaceId,
-      identityId: this._identityId,
-      path: this._path,
-      name: this._name,
-      language: this._language,
-      content: this._content,
-      content_hash: this._contentHash,
-      metadata: JSON.stringify(this._metadata.toServerDTO()),
-      index_status: this._indexStatus,
-      last_indexed_at: this._lastIndexedAt as PersistenceDate | null,
-      last_modified_at: this._lastModifiedAt as PersistenceDate | null,
-      createdAt: this._createdAt as PersistenceDate,
-      updatedAt: this._updatedAt as PersistenceDate,
+      workspace_id: this._props.workspaceId,
+      identityId: this._props.identityId,
+      path: this._props.path,
+      name: this._props.name,
+      language: this._props.language,
+      content: this._props.content,
+      content_hash: this._props.contentHash,
+      metadata: JSON.stringify(this._props.metadata.toServerDTO()),
+      index_status: this._props.indexStatus,
+      last_indexed_at: this._props.lastIndexedAt as PersistenceDate | null,
+      last_modified_at: this._props.lastModifiedAt as PersistenceDate | null,
+      createdAt: this._props.createdAt as PersistenceDate,
+      updatedAt: this._props.updatedAt as PersistenceDate,
     };
   }
 

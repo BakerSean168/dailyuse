@@ -4,8 +4,8 @@
  */
 
 import type { NotificationChannelType, ChannelStatus } from '../value-objects';
-import type { ChannelErrorDTO, ChannelResponseDTO } from '../value-objects';
-import type { TransferDate, DomainDate } from '@/primitives';
+import type { ChannelError, ChannelErrorDTO, ChannelResponse, ChannelResponseDTO } from '../value-objects';
+import type { TransferDate, DomainDate, NotificationId, NotificationChannelId } from '@/primitives';
 
 // ============ 实体接口 ============
 
@@ -14,8 +14,8 @@ import type { TransferDate, DomainDate } from '@/primitives';
  */
 export interface NotificationChannelClient {
   // 基础属性
-  id: string;
-  notificationId: string;
+  id: NotificationChannelId;
+  notificationId: NotificationId;
 
   channelType: NotificationChannelType;
   status: ChannelStatus;
@@ -24,8 +24,8 @@ export interface NotificationChannelClient {
   maxRetries: number;
 
   // 错误和响应信息
-  error?: ChannelErrorDTO | null;
-  response?: ChannelResponseDTO | null;
+  error?: ChannelError | null;
+  response?: ChannelResponse | null;
 
   // 同步字段
   version: number;

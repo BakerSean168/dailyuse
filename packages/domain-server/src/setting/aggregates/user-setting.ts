@@ -82,16 +82,22 @@ class SettingEntry implements SettingEntryServer {
 
 // ============ UserSetting Aggregate ============
 
+/** Props interface for UserSetting */
+interface UserSettingProps {
+  identityId: IdentityId;
+  entries: Map<string, SettingEntry>;
+  version: number;
+  createdAt: DomainDate;
+  updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
+}
+
 /**
  * 用户设置聚合根
  */
 export class UserSetting extends AggregateRoot<ISettingId> implements UserSettingServer {
-  private _identityId: IdentityId;
-  private _entries: Map<string, SettingEntry>;
-  private _version: number;
-  private _createdAt: DomainDate;
-  private _updatedAt: DomainDate;
-  private _deletedAt: DomainDate | null;
+  // ===== 私有属性容器 =====
+  private _props: UserSettingProps;
 
   private constructor(
     id: ISettingId,
@@ -105,38 +111,40 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
     }
   ) {
     super(id);
-    this._identityId = params.identityId;
-    this._entries = params.entries ?? new Map();
-    this._version = params.version ?? 1;
-    this._createdAt = params.createdAt ?? new Date();
-    this._updatedAt = params.updatedAt ?? new Date();
-    this._deletedAt = params.deletedAt ?? null;
+    this._props = {
+      identityId: params.identityId,
+      entries: params.entries ?? new Map(),
+      version: params.version ?? 1,
+      createdAt: params.createdAt ?? new Date(),
+      updatedAt: params.updatedAt ?? new Date(),
+      deletedAt: params.deletedAt ?? null,
+    };
   }
 
   // ========== Getters ==========
 
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get entries(): Map<string, SettingEntryServer> {
-    return new Map(this._entries);
+    return new Map(this._props.entries);
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get createdAt(): DomainDate {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): DomainDate {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get deletedAt(): DomainDate | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // ========== Entry Management ==========
@@ -145,21 +153,21 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
    * 设置一个配置项
    */
   setValue(key: string, value: unknown): void {
-    const existing = this._entries.get(key);
+    const existing = this._props.entries.get(key);
     if (existing) {
       existing.setValue(value);
     } else {
       const entry = SettingEntry.create({ key, value });
-      this._entries.set(key, entry);
+      this._props.entries.set(key, entry);
     }
-    this._updatedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   /**
    * 获取配置值
    */
   getValue<T = unknown>(key: string): T | undefined {
-    return this._entries.get(key)?.value as T | undefined;
+    return this._props.entries.get(key)?.value as T | undefined;
   }
 
   /**
@@ -174,16 +182,16 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
    * 检查配置是否存在
    */
   hasEntry(key: string): boolean {
-    return this._entries.has(key);
+    return this._props.entries.has(key);
   }
 
   /**
    * 删除配置
    */
   removeEntry(key: string): boolean {
-    const deleted = this._entries.delete(key);
+    const deleted = this._props.entries.delete(key);
     if (deleted) {
-      this._updatedAt = new Date();
+      this._props.updatedAt = new Date();
     }
     return deleted;
   }
@@ -201,59 +209,59 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
    * 获取所有配置的key
    */
   getKeys(): string[] {
-    return Array.from(this._entries.keys());
+    return Array.from(this._props.entries.keys());
   }
 
   // ========== DTO 转换 ==========
 
   toServerDTO(): UserSettingServerDTO {
     const entriesArray: SettingEntryServerDTO[] = [];
-    for (const entry of this._entries.values()) {
+    for (const entry of this._props.entries.values()) {
       entriesArray.push(entry.toDTO());
     }
 
     return {
       id: this.id,
-      identityId: this._identityId,
+      identityId: this._props.identityId,
       entries: JSON.stringify(entriesArray),
-      version: this._version,
-      createdAt: this._createdAt.getTime() as TransferDate,
-      updatedAt: this._updatedAt.getTime() as TransferDate,
-      deletedAt: this._deletedAt ? this._deletedAt.getTime() as TransferDate : null,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime() as TransferDate,
+      updatedAt: this._props.updatedAt.getTime() as TransferDate,
+      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() as TransferDate : null,
     };
   }
 
   toClientDTO(): import('@dailyuse/contracts/setting').UserSettingClientDTO {
     const entriesArray: SettingEntryServerDTO[] = [];
-    for (const entry of this._entries.values()) {
+    for (const entry of this._props.entries.values()) {
       entriesArray.push(entry.toDTO());
     }
 
     return {
       id: this.id,
-      identityId: this._identityId,
+      identityId: this._props.identityId,
       entries: JSON.stringify(entriesArray),
-      version: this._version,
-      createdAt: this._createdAt.getTime() as TransferDate,
-      updatedAt: this._updatedAt.getTime() as TransferDate,
-      deletedAt: this._deletedAt ? this._deletedAt.getTime() as TransferDate : null,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime() as TransferDate,
+      updatedAt: this._props.updatedAt.getTime() as TransferDate,
+      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() as TransferDate : null,
     };
   }
 
   toPersistenceDTO(): UserSettingPersistenceDTO {
     const entriesArray: SettingEntryServerDTO[] = [];
-    for (const entry of this._entries.values()) {
+    for (const entry of this._props.entries.values()) {
       entriesArray.push(entry.toDTO());
     }
 
     return {
       id: this.id,
-      identityId: this._identityId,
+      identityId: this._props.identityId,
       entries: JSON.stringify(entriesArray),
-      version: this._version,
-      createdAt: this._createdAt as PersistenceDate,
-      updatedAt: this._updatedAt as PersistenceDate,
-      deletedAt: this._deletedAt as PersistenceDate | null,
+      version: this._props.version,
+      createdAt: this._props.createdAt as PersistenceDate,
+      updatedAt: this._props.updatedAt as PersistenceDate,
+      deletedAt: this._props.deletedAt as PersistenceDate | null,
     };
   }
 

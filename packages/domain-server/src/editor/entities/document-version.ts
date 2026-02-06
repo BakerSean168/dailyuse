@@ -21,94 +21,78 @@ import type {
 } from '@dailyuse/contracts/primitives';
 
 /**
+ * DocumentVersion 属性接口
+ */
+interface DocumentVersionProps {
+  documentId: DocumentId;
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
+  versionNumber: number;
+  changeType: VersionChangeType;
+  contentHash: string;
+  contentDiff: string | null;
+  changeDescription: string | null;
+  previousVersionId: DocumentVersionId | null;
+  createdBy: string | null;
+  createdAt: Date;
+}
+
+/**
  * DocumentVersion 实体
  */
 export class DocumentVersion extends Entity<DocumentVersionId> implements DocumentVersionServer {
-  // ===== 私有字段 =====
-  private _documentId: DocumentId;
-  private _workspaceId: EditorWorkspaceId;
-  private _identityId: IdentityId;
-  private _versionNumber: number;
-  private _changeType: VersionChangeType;
-  private _contentHash: string;
-  private _contentDiff: string | null;
-  private _changeDescription: string | null;
-  private _previousVersionId: DocumentVersionId | null;
-  private _createdBy: string | null;
-  private _createdAt: Date;
+  // ===== 私有属性 =====
+  private _props: DocumentVersionProps;
 
   // ===== 构造函数（私有） =====
-  private constructor(params: {
-    id: DocumentVersionId;
-    documentId: DocumentId;
-    workspaceId: EditorWorkspaceId;
-    identityId: IdentityId;
-    versionNumber: number;
-    changeType: VersionChangeType;
-    contentHash: string;
-    contentDiff?: string | null;
-    changeDescription?: string | null;
-    previousVersionId?: DocumentVersionId | null;
-    createdBy?: string | null;
-    createdAt: Date;
-  }) {
-    super(params.id);
-    this._documentId = params.documentId;
-    this._workspaceId = params.workspaceId;
-    this._identityId = params.identityId;
-    this._versionNumber = params.versionNumber;
-    this._changeType = params.changeType;
-    this._contentHash = params.contentHash;
-    this._contentDiff = params.contentDiff ?? null;
-    this._changeDescription = params.changeDescription ?? null;
-    this._previousVersionId = params.previousVersionId ?? null;
-    this._createdBy = params.createdBy ?? null;
-    this._createdAt = params.createdAt;
+  private constructor(id: DocumentVersionId, props: DocumentVersionProps) {
+    super(id);
+    this._props = props;
   }
 
   // ===== Getter 属性 =====
   public get documentId(): DocumentId {
-    return this._documentId;
+    return this._props.documentId;
   }
 
   public get workspaceId(): EditorWorkspaceId {
-    return this._workspaceId;
+    return this._props.workspaceId;
   }
 
   public get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   public get versionNumber(): number {
-    return this._versionNumber;
+    return this._props.versionNumber;
   }
 
   public get changeType(): VersionChangeType {
-    return this._changeType;
+    return this._props.changeType;
   }
 
   public get contentHash(): string {
-    return this._contentHash;
+    return this._props.contentHash;
   }
 
   public get contentDiff(): string | null {
-    return this._contentDiff;
+    return this._props.contentDiff;
   }
 
   public get changeDescription(): string | null {
-    return this._changeDescription;
+    return this._props.changeDescription;
   }
 
   public get previousVersionId(): DocumentVersionId | null {
-    return this._previousVersionId;
+    return this._props.previousVersionId;
   }
 
   public get createdBy(): string | null {
-    return this._createdBy;
+    return this._props.createdBy;
   }
 
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   // ===== 工厂方法 =====
@@ -129,18 +113,17 @@ export class DocumentVersion extends Entity<DocumentVersionId> implements Docume
     createdBy?: string | null;
   }): DocumentVersion {
     const id = generateUUID() as DocumentVersionId;
-    return new DocumentVersion({
-      id,
+    return new DocumentVersion(id, {
       documentId: params.documentId,
       workspaceId: params.workspaceId,
       identityId: params.identityId,
       versionNumber: params.versionNumber,
       changeType: params.changeType,
       contentHash: params.contentHash,
-      contentDiff: params.contentDiff,
-      changeDescription: params.changeDescription,
-      previousVersionId: params.previousVersionId,
-      createdBy: params.createdBy,
+      contentDiff: params.contentDiff ?? null,
+      changeDescription: params.changeDescription ?? null,
+      previousVersionId: params.previousVersionId ?? null,
+      createdBy: params.createdBy ?? null,
       createdAt: new Date(),
     });
   }
@@ -149,8 +132,7 @@ export class DocumentVersion extends Entity<DocumentVersionId> implements Docume
    * 从 ServerDTO 恢复
    */
   public static fromServerDTO(dto: DocumentVersionServerDTO): DocumentVersion {
-    return new DocumentVersion({
-      id: dto.id,
+    return new DocumentVersion(dto.id, {
       documentId: dto.documentId,
       workspaceId: dto.workspaceId,
       identityId: dto.identityId,
@@ -169,8 +151,7 @@ export class DocumentVersion extends Entity<DocumentVersionId> implements Docume
    * 从 PersistenceDTO 恢复
    */
   public static fromPersistenceDTO(dto: DocumentVersionPersistenceDTO): DocumentVersion {
-    return new DocumentVersion({
-      id: dto.id,
+    return new DocumentVersion(dto.id, {
       documentId: dto.document_id,
       workspaceId: dto.workspace_id,
       identityId: dto.identityId,
@@ -191,28 +172,28 @@ export class DocumentVersion extends Entity<DocumentVersionId> implements Docume
    * 更新变更描述
    */
   public updateDescription(description: string): void {
-    this._changeDescription = description;
+    this._props.changeDescription = description;
   }
 
   /**
    * 判断是否为首个版本
    */
   public isFirstVersion(): boolean {
-    return this._previousVersionId === null;
+    return this._props.previousVersionId === null;
   }
 
   /**
    * 判断变更类型是否为编辑
    */
   public isEdit(): boolean {
-    return this._changeType === VersionChangeType.Edit;
+    return this._props.changeType === VersionChangeType.Edit;
   }
 
   /**
    * 判断变更类型是否为创建
    */
   public isCreate(): boolean {
-    return this._changeType === VersionChangeType.Create;
+    return this._props.changeType === VersionChangeType.Create;
   }
 
   // ===== 序列化方法 =====
@@ -223,17 +204,17 @@ export class DocumentVersion extends Entity<DocumentVersionId> implements Docume
   public toServerDTO(): DocumentVersionServerDTO {
     return {
       id: this.id,
-      documentId: this._documentId,
-      workspaceId: this._workspaceId,
-      identityId: this._identityId,
-      versionNumber: this._versionNumber,
-      changeType: this._changeType,
-      contentHash: this._contentHash,
-      contentDiff: this._contentDiff,
-      changeDescription: this._changeDescription,
-      previousVersionId: this._previousVersionId,
-      createdBy: this._createdBy,
-      createdAt: this._createdAt.getTime(),
+      documentId: this._props.documentId,
+      workspaceId: this._props.workspaceId,
+      identityId: this._props.identityId,
+      versionNumber: this._props.versionNumber,
+      changeType: this._props.changeType,
+      contentHash: this._props.contentHash,
+      contentDiff: this._props.contentDiff,
+      changeDescription: this._props.changeDescription,
+      previousVersionId: this._props.previousVersionId,
+      createdBy: this._props.createdBy,
+      createdAt: this._props.createdAt.getTime(),
     };
   }
 
@@ -243,18 +224,18 @@ export class DocumentVersion extends Entity<DocumentVersionId> implements Docume
   public toClientDTO(): DocumentVersionClientDTO {
     return {
       id: this.id as unknown as string,
-      documentId: this._documentId as unknown as string,
-      workspaceId: this._workspaceId as unknown as string,
-      identityId: this._identityId as unknown as string,
-      versionNumber: this._versionNumber,
-      changeType: this._changeType,
-      contentHash: this._contentHash,
-      contentDiff: this._contentDiff,
-      changeDescription: this._changeDescription,
-      previousVersionId: this._previousVersionId as unknown as string | null,
-      createdBy: this._createdBy,
-      createdAt: this._createdAt.getTime(),
-      formattedCreatedAt: this._createdAt.toLocaleString(),
+      documentId: this._props.documentId as unknown as string,
+      workspaceId: this._props.workspaceId as unknown as string,
+      identityId: this._props.identityId as unknown as string,
+      versionNumber: this._props.versionNumber,
+      changeType: this._props.changeType,
+      contentHash: this._props.contentHash,
+      contentDiff: this._props.contentDiff,
+      changeDescription: this._props.changeDescription,
+      previousVersionId: this._props.previousVersionId as unknown as string | null,
+      createdBy: this._props.createdBy,
+      createdAt: this._props.createdAt.getTime(),
+      formattedCreatedAt: this._props.createdAt.toLocaleString(),
     };
   }
 
@@ -264,17 +245,17 @@ export class DocumentVersion extends Entity<DocumentVersionId> implements Docume
   public toPersistenceDTO(): DocumentVersionPersistenceDTO {
     return {
       id: this.id,
-      document_id: this._documentId,
-      workspace_id: this._workspaceId,
-      identityId: this._identityId,
-      version_number: this._versionNumber,
-      change_type: this._changeType,
-      content_hash: this._contentHash,
-      content_diff: this._contentDiff,
-      change_description: this._changeDescription,
-      previous_version_id: this._previousVersionId,
-      created_by: this._createdBy,
-      createdAt: this._createdAt,
+      document_id: this._props.documentId,
+      workspace_id: this._props.workspaceId,
+      identityId: this._props.identityId,
+      version_number: this._props.versionNumber,
+      change_type: this._props.changeType,
+      content_hash: this._props.contentHash,
+      content_diff: this._props.contentDiff,
+      change_description: this._props.changeDescription,
+      previous_version_id: this._props.previousVersionId,
+      created_by: this._props.createdBy,
+      createdAt: this._props.createdAt,
     };
   }
 }

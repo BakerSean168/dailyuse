@@ -47,6 +47,41 @@ import {
 import { ReminderHistory } from '../entities';
 
 /**
+ * ReminderTemplate props 接口
+ */
+interface ReminderTemplateProps {
+  identityId: IdentityId;
+  title: string;
+  description: string | null;
+  type: ReminderType;
+  trigger: TriggerConfig;
+  recurrence: RecurrenceConfig | null;
+  activeTime: ActiveTimeConfig;
+  activeHours: ActiveHoursConfig | null;
+  notificationConfig: NotificationConfig;
+  selfEnabled: boolean;
+  status: ReminderStatus;
+  groupUuid: string | null;
+  effectiveEnabled: boolean;
+  importanceLevel: ImportanceLevel;
+  tags: string[];
+  color: string | null;
+  icon: string | null;
+  nextTriggerAt: number | null;
+  stats: ReminderStats;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: number | null;
+  version: number;
+  // 智能频率相关字段 (Story 5-2)
+  responseMetrics: ResponseMetrics | null;
+  frequencyAdjustment: FrequencyAdjustment | null;
+  smartFrequencyEnabled: boolean;
+  // 子实体集合
+  history: ReminderHistory[];
+}
+
+/**
  * ReminderTemplate 聚合根
  *
  * DDD 聚合根职责：
@@ -57,37 +92,7 @@ import { ReminderHistory } from '../entities';
  */
 export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implements ReminderTemplateServer {
   // ===== 私有字段 =====
-  private _identityId: IdentityId;
-  private _title: string;
-  private _description: string | null;
-  private _type: ReminderType;
-  private _trigger: TriggerConfig;
-  private _recurrence: RecurrenceConfig | null;
-  private _activeTime: ActiveTimeConfig;
-  private _activeHours: ActiveHoursConfig | null;
-  private _notificationConfig: NotificationConfig;
-  private _selfEnabled: boolean;
-  private _status: ReminderStatus;
-  private _groupUuid: string | null;
-  private _effectiveEnabled: boolean; // 缓存的有效启用状态
-  private _importanceLevel: ImportanceLevel;
-  private _tags: string[];
-  private _color: string | null;
-  private _icon: string | null;
-  private _nextTriggerAt: number | null;
-  private _stats: ReminderStats;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: number | null;
-  private _version: number;
-
-  // ===== 智能频率相关字段 (Story 5-2) =====
-  private _responseMetrics: ResponseMetrics | null;
-  private _frequencyAdjustment: FrequencyAdjustment | null;
-  private _smartFrequencyEnabled: boolean;
-
-  // ===== 子实体集合 =====
-  private _history: ReminderHistory[];
+  private _props: ReminderTemplateProps;
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
@@ -120,34 +125,36 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     smartFrequencyEnabled?: boolean;
   }) {
     super((params.uuid || generateUUID()) as ReminderTemplateId);
-    this._identityId = params.identityId;
-    this._title = params.title;
-    this._description = params.description ?? null;
-    this._type = params.type;
-    this._trigger = params.trigger;
-    this._recurrence = params.recurrence ?? null;
-    this._activeTime = params.activeTime;
-    this._activeHours = params.activeHours ?? null;
-    this._notificationConfig = params.notificationConfig;
-    this._selfEnabled = params.selfEnabled;
-    this._status = params.status;
-    this._groupUuid = params.groupUuid ?? null;
-    this._effectiveEnabled = params.selfEnabled; // 初始化时默认等于 selfEnabled
-    this._importanceLevel = params.importanceLevel;
-    this._tags = params.tags ? [...params.tags] : [];
-    this._color = params.color ?? null;
-    this._icon = params.icon ?? null;
-    this._nextTriggerAt = params.nextTriggerAt ?? null;
-    this._stats = params.stats;
-    this._createdAt = new Date(params.createdAt);
-    this._updatedAt = new Date(params.updatedAt);
-    this._deletedAt = params.deletedAt ?? null;
-    this._version = params.version ?? 1;
-    // 智能频率相关 (Story 5-2)
-    this._responseMetrics = params.responseMetrics ?? null;
-    this._frequencyAdjustment = params.frequencyAdjustment ?? null;
-    this._smartFrequencyEnabled = params.smartFrequencyEnabled ?? true;
-    this._history = [];
+    this._props = {
+      identityId: params.identityId,
+      title: params.title,
+      description: params.description ?? null,
+      type: params.type,
+      trigger: params.trigger,
+      recurrence: params.recurrence ?? null,
+      activeTime: params.activeTime,
+      activeHours: params.activeHours ?? null,
+      notificationConfig: params.notificationConfig,
+      selfEnabled: params.selfEnabled,
+      status: params.status,
+      groupUuid: params.groupUuid ?? null,
+      effectiveEnabled: params.selfEnabled, // 初始化时默认等于 selfEnabled
+      importanceLevel: params.importanceLevel,
+      tags: params.tags ? [...params.tags] : [],
+      color: params.color ?? null,
+      icon: params.icon ?? null,
+      nextTriggerAt: params.nextTriggerAt ?? null,
+      stats: params.stats,
+      createdAt: new Date(params.createdAt),
+      updatedAt: new Date(params.updatedAt),
+      deletedAt: params.deletedAt ?? null,
+      version: params.version ?? 1,
+      // 智能频率相关 (Story 5-2)
+      responseMetrics: params.responseMetrics ?? null,
+      frequencyAdjustment: params.frequencyAdjustment ?? null,
+      smartFrequencyEnabled: params.smartFrequencyEnabled ?? true,
+      history: [],
+    };
   }
 
   // ===== Getter 属性 =====
@@ -155,92 +162,92 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     return this.id;
   }
   public get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
   public get title(): string {
-    return this._title;
+    return this._props.title;
   }
   public get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
   public get type(): ReminderType {
-    return this._type;
+    return this._props.type;
   }
   public get trigger(): TriggerConfigServer {
-    return this._trigger;
+    return this._props.trigger;
   }
   public get recurrence(): RecurrenceConfigServer | null {
-    return this._recurrence;
+    return this._props.recurrence;
   }
   public get activeTime(): ActiveTimeConfigServer {
-    return this._activeTime;
+    return this._props.activeTime;
   }
   public get activeHours(): ActiveHoursConfigServer | null {
-    return this._activeHours;
+    return this._props.activeHours;
   }
   public get notificationConfig(): NotificationConfigServer {
-    return this._notificationConfig;
+    return this._props.notificationConfig;
   }
   public get selfEnabled(): boolean {
-    return this._selfEnabled;
+    return this._props.selfEnabled;
   }
   public get status(): ReminderStatus {
-    return this._status;
+    return this._props.status;
   }
   public get groupUuid(): string | null {
-    return this._groupUuid;
+    return this._props.groupUuid;
   }
   public get importanceLevel(): ImportanceLevel {
-    return this._importanceLevel;
+    return this._props.importanceLevel;
   }
   public get tags(): string[] {
-    return [...this._tags];
+    return [...this._props.tags];
   }
   public get color(): string | null {
-    return this._color;
+    return this._props.color;
   }
   public get icon(): string | null {
-    return this._icon;
+    return this._props.icon;
   }
   public get nextTriggerAt(): number | null {
-    return this._nextTriggerAt;
+    return this._props.nextTriggerAt;
   }
   public get stats(): ReminderStatsServer {
-    return this._stats;
+    return this._props.stats;
   }
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
   public get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
   public get deletedAt(): Date | null {
-    return this._deletedAt !== null ? new Date(this._deletedAt) : null;
+    return this._props.deletedAt !== null ? new Date(this._props.deletedAt) : null;
   }
 
   public get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   public get effectiveEnabled(): boolean {
-    return this._effectiveEnabled;
+    return this._props.effectiveEnabled;
   }
 
   // ===== 智能频率相关 Getter (Story 5-2) =====
   public get responseMetrics(): ResponseMetrics | null {
-    return this._responseMetrics;
+    return this._props.responseMetrics;
   }
 
   public get frequencyAdjustment(): FrequencyAdjustment | null {
-    return this._frequencyAdjustment;
+    return this._props.frequencyAdjustment;
   }
 
   public get smartFrequencyEnabled(): boolean {
-    return this._smartFrequencyEnabled;
+    return this._props.smartFrequencyEnabled;
   }
 
   public get history(): ReminderHistory[] | null {
-    return this._history.length > 0 ? [...this._history] : null;
+    return this._props.history.length > 0 ? [...this._props.history] : null;
   }
 
   // ===== 工厂方法 =====
@@ -304,7 +311,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     });
 
     // 计算下次触发时间
-    template._nextTriggerAt = template.calculateNextTrigger();
+    template._props.nextTriggerAt = template.calculateNextTrigger();
 
     // 发布创建事件
     template.addDomainEvent('reminder.template.created', {
@@ -360,7 +367,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
 
     // 加载历史记录
     if (dto.history) {
-      template._history = dto.history.map((h) => ReminderHistory.fromServerDTO(h));
+      template._props.history = dto.history.map((h) => ReminderHistory.fromServerDTO(h));
     }
 
     return template;
@@ -464,11 +471,11 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       triggeredAt: params.triggeredAt,
       result: params.result,
       error: params.error,
-      notificationSent: this._notificationConfig.channels.length > 0,
-      notificationChannels: this._notificationConfig.channels,
+      notificationSent: this._props.notificationConfig.channels.length > 0,
+      notificationChannels: this._props.notificationConfig.channels,
     });
 
-    this._history.push(history);
+    this._props.history.push(history);
     return history;
   }
 
@@ -476,21 +483,21 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    * 添加历史记录到聚合根
    */
   public addHistory(history: ReminderHistory): void {
-    this._history.push(history);
+    this._props.history.push(history);
   }
 
   /**
    * 获取所有历史记录
    */
   public getAllHistory(): ReminderHistory[] {
-    return [...this._history];
+    return [...this._props.history];
   }
 
   /**
    * 获取最近 N 条历史记录
    */
   public getRecentHistory(limit: number): ReminderHistory[] {
-    return this._history.slice(-limit);
+    return this._props.history.slice(-limit);
   }
 
   // ===== 业务方法 =====
@@ -516,57 +523,57 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
 
     // 更新基础字段
     if (updates.title !== undefined) {
-      this._title = updates.title;
+      this._props.title = updates.title;
     }
     if (updates.description !== undefined) {
-      this._description = updates.description;
+      this._props.description = updates.description;
     }
     if (updates.importanceLevel !== undefined) {
-      this._importanceLevel = updates.importanceLevel;
+      this._props.importanceLevel = updates.importanceLevel;
     }
     if (updates.tags !== undefined) {
-      this._tags = [...updates.tags];
+      this._props.tags = [...updates.tags];
     }
     if (updates.color !== undefined) {
-      this._color = updates.color;
+      this._props.color = updates.color;
     }
     if (updates.icon !== undefined) {
-      this._icon = updates.icon;
+      this._props.icon = updates.icon;
     }
     if (updates.groupUuid !== undefined) {
-      this._groupUuid = updates.groupUuid;
+      this._props.groupUuid = updates.groupUuid;
     }
 
     // 更新值对象
     if (updates.trigger !== undefined) {
-      this._trigger = TriggerConfig.fromDTO(updates.trigger);
+      this._props.trigger = TriggerConfig.fromDTO(updates.trigger);
     }
     if (updates.activeTime !== undefined) {
-      this._activeTime = ActiveTimeConfig.fromDTO(updates.activeTime);
+      this._props.activeTime = ActiveTimeConfig.fromDTO(updates.activeTime);
     }
     if (updates.notificationConfig !== undefined) {
-      this._notificationConfig = NotificationConfig.fromDTO(updates.notificationConfig);
+      this._props.notificationConfig = NotificationConfig.fromDTO(updates.notificationConfig);
     }
     if (updates.recurrence !== undefined) {
-      this._recurrence = updates.recurrence
+      this._props.recurrence = updates.recurrence
         ? RecurrenceConfig.fromDTO(updates.recurrence)
         : null;
     }
     if (updates.activeHours !== undefined) {
-      this._activeHours = updates.activeHours
+      this._props.activeHours = updates.activeHours
         ? ActiveHoursConfig.fromDTO(updates.activeHours)
         : null;
     }
 
     // 重新计算下次触发时间
-    this._nextTriggerAt = this.calculateNextTrigger();
-    this._updatedAt = new Date(now);
+    this._props.nextTriggerAt = this.calculateNextTrigger();
+    this._props.updatedAt = new Date(now);
 
     // 发布更新事件
     this.addDomainEvent('reminder.template.updated', {
       template: this.toServerDTO(),
       updates: Object.keys(updates),
-      identityId: this._identityId,
+      identityId: this._props.identityId,
     });
   }
 
@@ -576,24 +583,24 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    */
   public enable(): void {
     const now = Date.now();
-    this._selfEnabled = true;
-    this._status = ReminderStatus.Active;
+    this._props.selfEnabled = true;
+    this._props.status = ReminderStatus.Active;
 
     // 更新 activatedAt 为当前时间
-    this._activeTime = this._activeTime.with({ activatedAt: now });
+    this._props.activeTime = this._props.activeTime.with({ activatedAt: now });
 
-    this._updatedAt = new Date(now);
+    this._props.updatedAt = new Date(now);
 
     // selfEnabled 变化，需要重新计算 effectiveEnabled
     // 注意：如果有分组且分组控制模式为 GROUP，需要在应用层重新计算
     // 这里先假设启用（应用层会调用 setEffectiveEnabled 来修正）
-    this._effectiveEnabled = true;
+    this._props.effectiveEnabled = true;
 
     // 发布启用事件
     this.addDomainEvent('reminder.template.enabled', {
       templateUuid: this.uuid,
       activatedAt: now,
-      identityId: this._identityId,
+      identityId: this._props.identityId,
     });
   }
 
@@ -601,19 +608,19 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    * 暂停模板
    */
   public pause(): void {
-    this._selfEnabled = false;
-    this._status = ReminderStatus.Paused;
-    this._updatedAt = new Date(Date.now());
+    this._props.selfEnabled = false;
+    this._props.status = ReminderStatus.Paused;
+    this._props.updatedAt = new Date(Date.now());
 
     // selfEnabled 变化，需要重新计算 effectiveEnabled
     // 注意：如果有分组且分组控制模式为 GROUP，需要在应用层重新计算
     // 这里先简单设置为 false
-    this._effectiveEnabled = false;
+    this._props.effectiveEnabled = false;
 
     // 发布暂停事件
     this.addDomainEvent('reminder.template.paused', {
       templateUuid: this.uuid,
-      identityId: this._identityId,
+      identityId: this._props.identityId,
     });
   }
 
@@ -621,7 +628,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    * 切换状态
    */
   public toggle(): void {
-    if (this._selfEnabled) {
+    if (this._props.selfEnabled) {
       this.pause();
     } else {
       this.enable();
@@ -634,15 +641,15 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    * @param targetGroupUuid 目标分组 UUID，null 表示移出分组
    */
   public moveToGroup(targetGroupUuid: string | null): void {
-    const oldGroupUuid = this._groupUuid;
+    const oldGroupUuid = this._props.groupUuid;
 
     // 如果分组没有变化，直接返回
     if (oldGroupUuid === targetGroupUuid) {
       return;
     }
 
-    this._groupUuid = targetGroupUuid;
-    this._updatedAt = new Date(Date.now());
+    this._props.groupUuid = targetGroupUuid;
+    this._props.updatedAt = new Date(Date.now());
 
     // groupUuid 变化，effectiveEnabled 需要重新计算
     // 应用层需要调用 setEffectiveEnabled 来更新
@@ -652,7 +659,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       templateUuid: this.uuid,
       oldGroupUuid,
       newGroupUuid: targetGroupUuid,
-      identityId: this._identityId,
+      identityId: this._props.identityId,
     });
   }
 
@@ -667,14 +674,14 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    * @param effectiveEnabled 计算后的有效启用状态
    */
   public setEffectiveEnabled(effectiveEnabled: boolean): void {
-    this._effectiveEnabled = effectiveEnabled;
+    this._props.effectiveEnabled = effectiveEnabled;
   }
 
   /**
    * 是否实际启用（同步方法，直接返回缓存值）
    */
   public isEffectivelyEnabled(): boolean {
-    return this._effectiveEnabled;
+    return this._props.effectiveEnabled;
   }
 
   /**
@@ -687,14 +694,14 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     const now = Date.now();
 
     // 检查模板状态，只有 ACTIVE 状态才触发
-    if (this._status !== ReminderStatus.Active) {
+    if (this._props.status !== ReminderStatus.Active) {
       return null;
     }
 
     // 检查是否已激活（now >= activatedAt）
-    if (now < this._activeTime.activatedAt) {
+    if (now < this._props.activeTime.activatedAt) {
       // 尚未到激活时间，下次触发时间就是激活时间
-      return this._activeTime.activatedAt;
+      return this._props.activeTime.activatedAt;
     }
 
     // 已激活，根据 recurrence 计算下次触发时间
@@ -707,14 +714,14 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    */
   public shouldTriggerNow(): boolean {
     const now = Date.now();
-    return this._nextTriggerAt !== null && now >= this._nextTriggerAt;
+    return this._props.nextTriggerAt !== null && now >= this._props.nextTriggerAt;
   }
 
   /**
    * 在指定时间是否应该触发
    */
   public shouldTriggerAt(timestamp: number): boolean {
-    return this._nextTriggerAt !== null && timestamp >= this._nextTriggerAt;
+    return this._props.nextTriggerAt !== null && timestamp >= this._props.nextTriggerAt;
   }
 
   /**
@@ -723,20 +730,20 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    */
   public isActiveAtTime(timestamp: number): boolean {
     // 检查状态
-    if (this._status !== ReminderStatus.Active) {
+    if (this._props.status !== ReminderStatus.Active) {
       return false;
     }
 
     // 检查是否已激活
-    if (timestamp < this._activeTime.activatedAt) {
+    if (timestamp < this._props.activeTime.activatedAt) {
       return false;
     }
 
     // 检查活跃时间段
-    if (this._activeHours && this._activeHours.enabled) {
+    if (this._props.activeHours && this._props.activeHours.enabled) {
       const date = new Date(timestamp);
       const hour = date.getHours();
-      if (hour < this._activeHours.startHour || hour > this._activeHours.endHour) {
+      if (hour < this._props.activeHours.startHour || hour > this._props.activeHours.endHour) {
         return false;
       }
     }
@@ -757,21 +764,21 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     });
 
     // 更新统计
-    this._stats = this._stats.with({
-      totalTriggers: this._stats.totalTriggers + 1,
+    this._props.stats = this._props.stats.with({
+      totalTriggers: this._props.stats.totalTriggers + 1,
       lastTriggeredAt: now,
     });
 
     // 计算下次触发时间
-    this._nextTriggerAt = this.calculateNextTrigger();
-    this._updatedAt = new Date(now);
+    this._props.nextTriggerAt = this.calculateNextTrigger();
+    this._props.updatedAt = new Date(now);
 
     // 发布触发事件
     this.addDomainEvent('reminder.template.triggered', {
       templateUuid: this.uuid,
       triggeredAt: now,
-      nextTriggerAt: this._nextTriggerAt,
-      identityId: this._identityId,
+      nextTriggerAt: this._props.nextTriggerAt,
+      identityId: this._props.identityId,
     });
   }
 
@@ -779,23 +786,23 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    * 查询方法
    */
   public isActive(): boolean {
-    return this._status === ReminderStatus.Active;
+    return this._props.status === ReminderStatus.Active;
   }
 
   public isPaused(): boolean {
-    return this._status === ReminderStatus.Paused;
+    return this._props.status === ReminderStatus.Paused;
   }
 
   public isOneTime(): boolean {
-    return this._type === ReminderType.OneTime;
+    return this._props.type === ReminderType.OneTime;
   }
 
   public isRecurring(): boolean {
-    return this._type === ReminderType.Recurring;
+    return this._props.type === ReminderType.Recurring;
   }
 
   public getNextTriggerTime(): number | null {
-    return this._nextTriggerAt;
+    return this._props.nextTriggerAt;
   }
 
   public async getGroup(): Promise<any | null> {
@@ -807,14 +814,14 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    * 软删除
    */
   public softDelete(): void {
-    this._deletedAt = Date.now();
-    this._updatedAt = new Date(Date.now());
+    this._props.deletedAt = Date.now();
+    this._props.updatedAt = new Date(Date.now());
 
     // 发布删除事件
     this.addDomainEvent('reminder.template.deleted', {
       templateUuid: this.uuid,
-      templateTitle: this._title,
-      identityId: this._identityId,
+      templateTitle: this._props.title,
+      identityId: this._props.identityId,
     });
   }
 
@@ -822,25 +829,25 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    * 恢复
    */
   public restore(): void {
-    this._deletedAt = null;
-    this._updatedAt = new Date(Date.now());
+    this._props.deletedAt = null;
+    this._props.updatedAt = new Date(Date.now());
   }
 
   /**
    * 标签管理
    */
   public addTag(tag: string): void {
-    if (!this._tags.includes(tag)) {
-      this._tags.push(tag);
-      this._updatedAt = new Date(Date.now());
+    if (!this._props.tags.includes(tag)) {
+      this._props.tags.push(tag);
+      this._props.updatedAt = new Date(Date.now());
     }
   }
 
   public removeTag(tag: string): void {
-    const index = this._tags.indexOf(tag);
+    const index = this._props.tags.indexOf(tag);
     if (index > -1) {
-      this._tags.splice(index, 1);
-      this._updatedAt = new Date(Date.now());
+      this._props.tags.splice(index, 1);
+      this._props.updatedAt = new Date(Date.now());
     }
   }
 
@@ -850,71 +857,71 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    * 更新响应指标
    */
   public updateResponseMetrics(metrics: ResponseMetricsDTO): void {
-    this._responseMetrics = ResponseMetrics.fromDTO(metrics);
-    this._updatedAt = new Date(Date.now());
+    this._props.responseMetrics = ResponseMetrics.fromDTO(metrics);
+    this._props.updatedAt = new Date(Date.now());
   }
 
   /**
    * 应用频率调整（自动调整或用户手动调整）
    */
   public applyFrequencyAdjustment(adjustment: FrequencyAdjustmentDTO): void {
-    this._frequencyAdjustment = FrequencyAdjustment.fromDTO(adjustment);
+    this._props.frequencyAdjustment = FrequencyAdjustment.fromDTO(adjustment);
     // 注意：实际的触发间隔调整应该在 Domain Service 或 Application Service 中处理
     // 这里只记录调整信息
-    this._updatedAt = new Date(Date.now());
+    this._props.updatedAt = new Date(Date.now());
   }
 
   /**
    * 用户确认频率调整
    */
   public confirmFrequencyAdjustment(): void {
-    if (!this._frequencyAdjustment) {
+    if (!this._props.frequencyAdjustment) {
       throw new Error('No frequency adjustment to confirm');
     }
-    this._frequencyAdjustment = this._frequencyAdjustment.with({
+    this._props.frequencyAdjustment = this._props.frequencyAdjustment.with({
       userConfirmed: true,
     });
-    this._updatedAt = new Date(Date.now());
+    this._props.updatedAt = new Date(Date.now());
   }
 
   /**
    * 用户拒绝频率调整
    */
   public rejectFrequencyAdjustment(reason?: string): void {
-    if (!this._frequencyAdjustment) {
+    if (!this._props.frequencyAdjustment) {
       throw new Error('No frequency adjustment to reject');
     }
-    this._frequencyAdjustment = this._frequencyAdjustment.with({
+    this._props.frequencyAdjustment = this._props.frequencyAdjustment.with({
       rejectionReason: reason ?? '用户拒绝',
     });
     // 注意：实际的触发间隔恢复应该在 Domain Service 或 Application Service 中处理
-    this._updatedAt = new Date(Date.now());
+    this._props.updatedAt = new Date(Date.now());
   }
 
   /**
    * 启用/禁用智能频率
    */
   public toggleSmartFrequency(enabled: boolean): void {
-    this._smartFrequencyEnabled = enabled;
-    this._updatedAt = new Date(Date.now());
+    this._props.smartFrequencyEnabled = enabled;
+    this._props.updatedAt = new Date(Date.now());
   }
 
   /**
    * 判断是否需要频率调整（基于响应指标）
    */
   public needsFrequencyAdjustment(): boolean {
-    if (!this._responseMetrics || !this._smartFrequencyEnabled) {
+    if (!this._props.responseMetrics || !this._props.smartFrequencyEnabled) {
       return false;
     }
     // Check if effectiveness is low or ignore rate is high
-    return this._responseMetrics.effectivenessScore < 40 || this._responseMetrics.ignoreRate > 60;
+    return this._props.responseMetrics.effectivenessScore < 40 || this._props.responseMetrics.ignoreRate > 60;
   }
 
   /**
    * 计算建议的频率调整
    */
   public calculateSuggestedAdjustment(): FrequencyAdjustmentDTO | null {
-    if (!this._responseMetrics || !this._smartFrequencyEnabled || !this._trigger) {
+    if (!this._props.responseMetrics || !this._props.smartFrequencyEnabled || !this._props.trigger) {
       return null;
     }
 
@@ -923,14 +930,14 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       return null;
     }
 
-    const effectivenessScore = this._responseMetrics.effectivenessScore;
-    const ignoreRate = this._responseMetrics.ignoreRate;
+    const effectivenessScore = this._props.responseMetrics.effectivenessScore;
+    const ignoreRate = this._props.responseMetrics.ignoreRate;
 
     // 获取当前间隔（秒）
     let currentIntervalSeconds: number;
-    if (this._trigger.interval) {
+    if (this._props.trigger.interval) {
       // interval.minutes 转换为秒
-      currentIntervalSeconds = this._trigger.interval.minutes * 60;
+      currentIntervalSeconds = this._props.trigger.interval.minutes * 60;
     } else {
       // 默认每天（86400秒）
       currentIntervalSeconds = 86400;
@@ -976,32 +983,32 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
   public toServerDTO(includeChildren = false): ReminderTemplateServerDTO {
     const dto: ReminderTemplateServerDTO = {
       id: this.uuid as ReminderTemplateId,
-      identityId: this.identityId,
-      name: this.title,
-      description: this.description,
-      type: this.type,
-      trigger: this._trigger.toServerDTO(),
-      recurrence: this._recurrence?.toServerDTO() ?? null,
-      activeTime: this._activeTime.toServerDTO(),
-      activeHours: this._activeHours?.toServerDTO() ?? null,
-      notificationConfig: this._notificationConfig.toServerDTO(),
-      selfEnabled: this.selfEnabled,
-      status: this.status,
-      groupUuid: this.groupUuid,
-      importanceLevel: this.importanceLevel,
-      tags: this.tags,
-      color: this.color,
-      icon: this.icon,
-      nextTriggerAt: this.nextTriggerAt,
-      stats: this._stats.toServerDTO(),
-      createdAt: this.createdAt.getTime(),
-      updatedAt: this.updatedAt.getTime(),
-      deletedAt: this.deletedAt?.getTime() ?? null,
-      version: this.version,
+      identityId: this._props.identityId,
+      name: this._props.title,
+      description: this._props.description,
+      type: this._props.type,
+      trigger: this._props.trigger.toServerDTO(),
+      recurrence: this._props.recurrence?.toServerDTO() ?? null,
+      activeTime: this._props.activeTime.toServerDTO(),
+      activeHours: this._props.activeHours?.toServerDTO() ?? null,
+      notificationConfig: this._props.notificationConfig.toServerDTO(),
+      selfEnabled: this._props.selfEnabled,
+      status: this._props.status,
+      groupUuid: this._props.groupUuid,
+      importanceLevel: this._props.importanceLevel,
+      tags: [...this._props.tags],
+      color: this._props.color,
+      icon: this._props.icon,
+      nextTriggerAt: this._props.nextTriggerAt,
+      stats: this._props.stats.toServerDTO(),
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt,
+      version: this._props.version,
     } as ReminderTemplateServerDTO;
 
-    if (includeChildren && this._history.length > 0) {
-      dto.history = this._history.map((h) => h.toServerDTO());
+    if (includeChildren && this._props.history.length > 0) {
+      dto.history = this._props.history.map((h) => h.toServerDTO());
     }
 
     return dto;
@@ -1011,11 +1018,11 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     // Note: effectiveEnabled and controlledByGroup should ideally be passed in
     // from an application service that has the context of the group.
     // Here we default to the template's own state.
-    const effectiveEnabled = this.selfEnabled;
-    const controlledByGroup = !!this.groupUuid;
+    const effectiveEnabled = this._props.selfEnabled;
+    const controlledByGroup = !!this._props.groupUuid;
 
-    const typeText = this._type === ReminderType.OneTime ? '一次性' : '循环';
-    const statusText = this._status === ReminderStatus.Active ? '活跃' : '暂停';
+    const typeText = this._props.type === ReminderType.OneTime ? '一次性' : '循环';
+    const statusText = this._props.status === ReminderStatus.Active ? '活跃' : '暂停';
     const importanceMap: Record<ImportanceLevel, string> = {
       Vital: '关键',
       Important: '重要',
@@ -1023,7 +1030,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       Minor: '次要',
       Trivial: '琐碎',
     };
-    const importanceText = importanceMap[this.importanceLevel];
+    const importanceText = importanceMap[this._props.importanceLevel];
 
     // 简单的相对时间文本
     const formatRelativeTime = (timestamp: number | null): string | null => {
@@ -1034,39 +1041,39 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     };
 
     // Build trigger client DTO manually
-    const triggerServerDTO = this._trigger.toServerDTO();
+    const triggerServerDTO = this._props.trigger.toServerDTO();
     const triggerClientDTO = {
       ...triggerServerDTO,
-      displayText: this._trigger.displayText,
+      displayText: this._props.trigger.displayText,
     };
 
     // Build recurrence client DTO manually
-    const recurrenceClientDTO = this._recurrence
+    const recurrenceClientDTO = this._props.recurrence
       ? {
-          ...this._recurrence.toServerDTO(),
-          displayText: (this._recurrence as { displayText?: string }).displayText ?? '',
+          ...this._props.recurrence.toServerDTO(),
+          displayText: (this._props.recurrence as { displayText?: string }).displayText ?? '',
         }
       : null;
 
     // Build activeTime client DTO manually - format display text
-    const activeTimeServerDTO = this._activeTime.toServerDTO();
+    const activeTimeServerDTO = this._props.activeTime.toServerDTO();
     const activeTimeClientDTO = {
       ...activeTimeServerDTO,
       displayText: new Date(activeTimeServerDTO.activatedAt).toLocaleString(),
     };
 
     // Build activeHours client DTO manually
-    const activeHoursClientDTO = this._activeHours
+    const activeHoursClientDTO = this._props.activeHours
       ? {
-          ...this._activeHours.toServerDTO(),
-          displayText: this._activeHours.enabled 
-            ? `${this._activeHours.startHour}:00 - ${this._activeHours.endHour}:00`
+          ...this._props.activeHours.toServerDTO(),
+          displayText: this._props.activeHours.enabled 
+            ? `${this._props.activeHours.startHour}:00 - ${this._props.activeHours.endHour}:00`
             : '全天',
         }
       : null;
 
     // Build notificationConfig client DTO manually
-    const notificationServerDTO = this._notificationConfig.toServerDTO();
+    const notificationServerDTO = this._props.notificationConfig.toServerDTO();
     const notificationConfigClientDTO = {
       ...notificationServerDTO,
       channelsText: notificationServerDTO.channels.join(', ') || '无',
@@ -1075,58 +1082,58 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     };
 
     // Build stats client DTO manually
-    const statsServerDTO = this._stats.toServerDTO();
+    const statsServerDTO = this._props.stats.toServerDTO();
     const statsClientDTO = {
       ...statsServerDTO,
-      totalTriggersText: this._stats.totalTriggersText,
-      lastTriggeredText: this._stats.lastTriggeredText,
+      totalTriggersText: this._props.stats.totalTriggersText,
+      lastTriggeredText: this._props.stats.lastTriggeredText,
     };
 
     const clientDTO: ReminderTemplateClientDTO = {
       id: this.uuid,
-      identityId: this.identityId,
-      name: this.title,
-      description: this.description,
-      type: this.type,
+      identityId: this._props.identityId,
+      name: this._props.title,
+      description: this._props.description,
+      type: this._props.type,
       trigger: triggerClientDTO,
       recurrence: recurrenceClientDTO,
       activeTime: activeTimeClientDTO,
       activeHours: activeHoursClientDTO,
       notificationConfig: notificationConfigClientDTO,
-      selfEnabled: this.selfEnabled,
-      status: this.status,
+      selfEnabled: this._props.selfEnabled,
+      status: this._props.status,
       effectiveEnabled: effectiveEnabled,
-      groupId: this.groupUuid,
-      importanceLevel: this.importanceLevel,
-      tags: this.tags,
-      color: this.color,
-      icon: this.icon,
-      nextTriggerAt: this.nextTriggerAt,
+      groupId: this._props.groupUuid,
+      importanceLevel: this._props.importanceLevel,
+      tags: [...this._props.tags],
+      color: this._props.color,
+      icon: this._props.icon,
+      nextTriggerAt: this._props.nextTriggerAt,
       stats: statsClientDTO,
-      version: this.version,
-      createdAt: this.createdAt.getTime(),
-      updatedAt: this.updatedAt.getTime(),
-      deletedAt: this.deletedAt?.getTime() ?? null,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt,
 
       // 子实体
       history: null,
 
       // UI 扩展
-      displayTitle: this.title,
+      displayTitle: this._props.title,
       typeText,
-      triggerText: this._trigger.displayText,
+      triggerText: this._props.trigger.displayText,
       recurrenceText: recurrenceClientDTO?.displayText ?? null,
       statusText,
       importanceText,
-      nextTriggerText: formatRelativeTime(this.nextTriggerAt),
-      isActive: this._status === ReminderStatus.Active,
-      isPaused: this._status === ReminderStatus.Paused,
-      lastTriggeredText: formatRelativeTime(this._stats.lastTriggeredAt),
+      nextTriggerText: formatRelativeTime(this._props.nextTriggerAt),
+      isActive: this._props.status === ReminderStatus.Active,
+      isPaused: this._props.status === ReminderStatus.Paused,
+      lastTriggeredText: formatRelativeTime(this._props.stats.lastTriggeredAt),
       controlledByGroup: controlledByGroup,
     };
 
-    if (includeChildren && this.history) {
-      clientDTO.history = this.history.map((h) => h.toClientDTO());
+    if (includeChildren && this._props.history.length > 0) {
+      clientDTO.history = this._props.history.map((h) => h.toClientDTO());
     }
 
     return clientDTO;
@@ -1137,29 +1144,29 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    */
   public toPersistenceDTO(): ReminderTemplatePersistenceDTO {
     // 展开 ResponseMetrics 和 FrequencyAdjustment 的扁平字段
-    const responseMetricsFlat = this._responseMetrics?.toDTO();
-    const frequencyAdjustmentFlat = this._frequencyAdjustment?.toDTO();
+    const responseMetricsFlat = this._props.responseMetrics?.toDTO();
+    const frequencyAdjustmentFlat = this._props.frequencyAdjustment?.toDTO();
 
     return {
       id: this.uuid as ReminderTemplateId,
-      identityId: this.identityId,
-      name: this.title,
-      description: this.description,
-      type: this.type,
-      trigger: JSON.stringify(this._trigger.toServerDTO()),
-      recurrence: this._recurrence ? JSON.stringify(this._recurrence.toServerDTO()) : null,
-      activeTime: JSON.stringify(this._activeTime.toServerDTO()),
-      activeHours: this._activeHours ? JSON.stringify(this._activeHours.toServerDTO()) : null,
-      notificationConfig: JSON.stringify(this._notificationConfig.toServerDTO()),
-      selfEnabled: this.selfEnabled,
-      status: this.status,
-      groupUuid: this.groupUuid,
-      importanceLevel: this.importanceLevel,
-      tags: JSON.stringify(this.tags),
-      color: this.color,
-      icon: this.icon,
-      nextTriggerAt: this._nextTriggerAt !== null ? new Date(this._nextTriggerAt) : null,
-      stats: JSON.stringify(this._stats.toServerDTO()),
+      identityId: this._props.identityId,
+      name: this._props.title,
+      description: this._props.description,
+      type: this._props.type,
+      trigger: JSON.stringify(this._props.trigger.toServerDTO()),
+      recurrence: this._props.recurrence ? JSON.stringify(this._props.recurrence.toServerDTO()) : null,
+      activeTime: JSON.stringify(this._props.activeTime.toServerDTO()),
+      activeHours: this._props.activeHours ? JSON.stringify(this._props.activeHours.toServerDTO()) : null,
+      notificationConfig: JSON.stringify(this._props.notificationConfig.toServerDTO()),
+      selfEnabled: this._props.selfEnabled,
+      status: this._props.status,
+      groupUuid: this._props.groupUuid,
+      importanceLevel: this._props.importanceLevel,
+      tags: JSON.stringify(this._props.tags),
+      color: this._props.color,
+      icon: this._props.icon,
+      nextTriggerAt: this._props.nextTriggerAt !== null ? new Date(this._props.nextTriggerAt) : null,
+      stats: JSON.stringify(this._props.stats.toServerDTO()),
 
       // Smart Frequency: Response Metrics（扁平化）
       clickRate: responseMetricsFlat?.clickRate ?? null,
@@ -1178,12 +1185,12 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       isAutoAdjusted: frequencyAdjustmentFlat?.isAutoAdjusted ?? false,
       userConfirmed: frequencyAdjustmentFlat?.userConfirmed ?? false,
 
-      smartFrequencyEnabled: this._smartFrequencyEnabled ?? true,
+      smartFrequencyEnabled: this._props.smartFrequencyEnabled ?? true,
 
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      deletedAt: this.deletedAt,
-      version: this.version,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      deletedAt: this._props.deletedAt !== null ? new Date(this._props.deletedAt) : null,
+      version: this._props.version,
     } as ReminderTemplatePersistenceDTO;
   }
 }

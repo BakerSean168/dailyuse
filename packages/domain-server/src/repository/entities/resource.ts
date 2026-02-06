@@ -16,25 +16,30 @@ import { Entity } from '@dailyuse/utils';
 import { ResourceId as ResourceIdType } from '@dailyuse/domain-shared/repository';
 import { ResourceMetadata, ResourceStats } from '../value-objects';
 
+/** Props interface for Resource */
+interface ResourceProps {
+  repositoryId: RepositoryId;
+  folderId: FolderId | null;
+  type: ResourceType;
+  name: string;
+  path: string;
+  mimeType: string | null;
+  size: number | null;
+  content: string | null;
+  childrenCount: number | null;
+  metadata: ResourceMetadata;
+  stats: ResourceStats;
+  status: ResourceStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  version: number;
+  deletedAt: Date | null;
+  externalLinks: ExternalLink[] | null;
+}
+
 export class Resource extends Entity<ResourceId> implements ResourceServer {
-  // ===== 私有字段 =====
-  private _repositoryId: RepositoryId;
-  private _folderId: FolderId | null;
-  private _type: ResourceType;
-  private _name: string;
-  private _path: string;
-  private _mimeType: string | null;
-  private _size: number | null;
-  private _content: string | null;
-  private _childrenCount: number | null;
-  private _metadata: ResourceMetadata;
-  private _stats: ResourceStats;
-  private _status: ResourceStatus;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _version: number;
-  private _deletedAt: Date | null;
-  private _externalLinks: ExternalLink[] | null;
+  // ===== 私有属性容器 =====
+  private _props: ResourceProps;
 
   // ===== 构造函数（私有） =====
   private constructor(
@@ -60,160 +65,162 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
     },
   ) {
     super(id);
-    this._repositoryId = params.repositoryId;
-    this._folderId = params.folderId;
-    this._type = params.type;
-    this._name = params.name;
-    this._path = params.path;
-    this._mimeType = params.mimeType;
-    this._size = params.size;
-    this._content = params.content;
-    this._childrenCount = params.childrenCount;
-    this._metadata = params.metadata;
-    this._stats = params.stats;
-    this._status = params.status;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._version = params.version;
-    this._deletedAt = params.deletedAt ?? null;
-    this._externalLinks = params.externalLinks ?? null;
+    this._props = {
+      repositoryId: params.repositoryId,
+      folderId: params.folderId,
+      type: params.type,
+      name: params.name,
+      path: params.path,
+      mimeType: params.mimeType,
+      size: params.size,
+      content: params.content,
+      childrenCount: params.childrenCount,
+      metadata: params.metadata,
+      stats: params.stats,
+      status: params.status,
+      createdAt: params.createdAt,
+      updatedAt: params.updatedAt,
+      version: params.version,
+      deletedAt: params.deletedAt ?? null,
+      externalLinks: params.externalLinks ?? null,
+    };
   }
 
   // ===== Getters =====
   get repositoryId(): RepositoryId {
-    return this._repositoryId;
+    return this._props.repositoryId;
   }
 
   get folderId(): FolderId | null {
-    return this._folderId;
+    return this._props.folderId;
   }
 
   get type(): ResourceType {
-    return this._type;
+    return this._props.type;
   }
 
   get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   get path(): string {
-    return this._path;
+    return this._props.path;
   }
 
   get mimeType(): string | null {
-    return this._mimeType;
+    return this._props.mimeType;
   }
 
   get size(): number | null {
-    return this._size;
+    return this._props.size;
   }
 
   get content(): string | null {
-    return this._content;
+    return this._props.content;
   }
 
   get childrenCount(): number | null {
-    return this._childrenCount;
+    return this._props.childrenCount;
   }
 
   get metadata(): ResourceMetadataDTO {
-    return this._metadata.toDTO();
+    return this._props.metadata.toDTO();
   }
 
   get stats(): ResourceStatsDTO {
-    return this._stats.toDTO();
+    return this._props.stats.toDTO();
   }
 
   get status(): ResourceStatus {
-    return this._status;
+    return this._props.status;
   }
 
   get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   // ===== 业务方法 =====
 
   public rename(newName: string): void {
-    this._name = newName;
-    this._updatedAt = new Date();
-    this._version++;
+    this._props.name = newName;
+    this._props.updatedAt = new Date();
+    this._props.version++;
   }
 
   public updateContent(content: string): void {
-    this._content = content;
-    this._updatedAt = new Date();
-    this._version++;
+    this._props.content = content;
+    this._props.updatedAt = new Date();
+    this._props.version++;
     // Update stats
-    this._stats = this._stats.recordEdit();
+    this._props.stats = this._props.stats.recordEdit();
   }
 
   public moveTo(folderId: FolderId | null, newPath: string): void {
-    this._folderId = folderId;
-    this._path = newPath;
-    this._updatedAt = new Date();
-    this._version++;
+    this._props.folderId = folderId;
+    this._props.path = newPath;
+    this._props.updatedAt = new Date();
+    this._props.version++;
   }
 
   public archive(): void {
-    if (this._status === ResourceStatus.Archived) {
+    if (this._props.status === ResourceStatus.Archived) {
       throw new Error('资源已归档');
     }
-    this._status = ResourceStatus.Archived;
-    this._updatedAt = new Date();
-    this._version++;
+    this._props.status = ResourceStatus.Archived;
+    this._props.updatedAt = new Date();
+    this._props.version++;
   }
 
   public unarchive(): void {
-    if (this._status !== ResourceStatus.Archived) {
+    if (this._props.status !== ResourceStatus.Archived) {
       throw new Error('资源未归档');
     }
-    this._status = ResourceStatus.Active;
-    this._updatedAt = new Date();
-    this._version++;
+    this._props.status = ResourceStatus.Active;
+    this._props.updatedAt = new Date();
+    this._props.version++;
   }
 
   public delete(): void {
-    this._status = ResourceStatus.Deleted;
-    this._updatedAt = new Date();
-    this._version++;
+    this._props.status = ResourceStatus.Deleted;
+    this._props.updatedAt = new Date();
+    this._props.version++;
   }
 
   public recordView(): void {
-    this._stats = this._stats.recordView();
-    this._updatedAt = new Date();
+    this._props.stats = this._props.stats.recordView();
+    this._props.updatedAt = new Date();
   }
 
   public isActive(): boolean {
-    return this._status === ResourceStatus.Active;
+    return this._props.status === ResourceStatus.Active;
   }
 
   public isArchived(): boolean {
-    return this._status === ResourceStatus.Archived;
+    return this._props.status === ResourceStatus.Archived;
   }
 
   public isDeleted(): boolean {
-    return this._status === ResourceStatus.Deleted;
+    return this._props.status === ResourceStatus.Deleted;
   }
 
   public isFolder(): boolean {
-    return this._type === ResourceType.FOLDER;
+    return this._props.type === ResourceType.FOLDER;
   }
 
   public isFile(): boolean {
-    return this._type === ResourceType.FILE;
+    return this._props.type === ResourceType.FILE;
   }
 
   // ===== DTO 转换 =====
@@ -221,44 +228,44 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
   public toServerDTO(): ResourceServerDTO {
     return {
       id: String(this.id),
-      repositoryId: String(this._repositoryId),
-      folderId: this._folderId ? String(this._folderId) : null,
-      name: this._name,
-      type: this._type,
-      path: this._path,
-      mimeType: this._mimeType,
-      size: this._size,
-      content: this._content,
-      childrenCount: this._childrenCount,
-      metadata: this._metadata.toDTO(),
-      stats: this._stats.toDTO(),
-      status: this._status,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      version: this._version,
-      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
-      externalLinks: this._externalLinks,
+      repositoryId: String(this._props.repositoryId),
+      folderId: this._props.folderId ? String(this._props.folderId) : null,
+      name: this._props.name,
+      type: this._props.type,
+      path: this._props.path,
+      mimeType: this._props.mimeType,
+      size: this._props.size,
+      content: this._props.content,
+      childrenCount: this._props.childrenCount,
+      metadata: this._props.metadata.toDTO(),
+      stats: this._props.stats.toDTO(),
+      status: this._props.status,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      version: this._props.version,
+      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
+      externalLinks: this._props.externalLinks,
     };
   }
 
   public toPersistenceDTO(): ResourcePersistenceDTO {
     return {
       id: String(this.id),
-      repositoryId: String(this._repositoryId),
-      folderId: this._folderId ? String(this._folderId) : null,
-      name: this._name,
-      type: this._type,
-      path: this._path,
-      mimeType: this._mimeType,
-      size: this._size,
-      content: this._content,
-      metadata: JSON.stringify(this._metadata.toDTO()),
-      stats: JSON.stringify(this._stats.toDTO()),
-      status: this._status,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      version: this._version,
-      deletedAt: this._deletedAt,
+      repositoryId: String(this._props.repositoryId),
+      folderId: this._props.folderId ? String(this._props.folderId) : null,
+      name: this._props.name,
+      type: this._props.type,
+      path: this._props.path,
+      mimeType: this._props.mimeType,
+      size: this._props.size,
+      content: this._props.content,
+      metadata: JSON.stringify(this._props.metadata.toDTO()),
+      stats: JSON.stringify(this._props.stats.toDTO()),
+      status: this._props.status,
+      createdAt: this._props.createdAt,
+      updatedAt: this._props.updatedAt,
+      version: this._props.version,
+      deletedAt: this._props.deletedAt,
     };
   }
 

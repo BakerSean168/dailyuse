@@ -25,78 +25,65 @@ import {
 import { IdentityId } from '@dailyuse/domain-shared';
 import { EditorTab } from './editor-tab';
 
+// Internal props type using EditorTab class instead of EditorTabClient interface
+interface EditorGroupInternalProps {
+  id: EditorGroupId;
+  sessionId: EditorSessionId;
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
+  groupIndex: number;
+  activeTabIndex: number;
+  name: string | null;
+  tabs: EditorTab[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupClient {
-  // ================= 1. Backing Fields =================
-  private _sessionId: EditorSessionId;
-  private _workspaceId: EditorWorkspaceId;
-  private _identityId: IdentityId;
-  private _groupIndex: number;
-  private _activeTabIndex: number;
-  private _name: string | null;
-  private _tabs: EditorTab[];
-  private _createdAt: Date;
-  private _updatedAt: Date;
+  // ================= 1. Backing Field =================
+  private readonly _props: EditorGroupInternalProps;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: EditorGroupId;
-    sessionId: EditorSessionId;
-    workspaceId: EditorWorkspaceId;
-    identityId: IdentityId;
-    groupIndex: number;
-    activeTabIndex: number;
-    name: string | null;
-    tabs: EditorTab[];
-    createdAt: Date;
-    updatedAt: Date;
-  }) {
-    super(params.id);
-    this._sessionId = params.sessionId;
-    this._workspaceId = params.workspaceId;
-    this._identityId = params.identityId;
-    this._groupIndex = params.groupIndex;
-    this._activeTabIndex = params.activeTabIndex;
-    this._name = params.name;
-    this._tabs = params.tabs;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+  private constructor(props: EditorGroupInternalProps) {
+    super(props.id);
+    this._props = props;
   }
 
   // ================= 3. Getters =================
   get sessionId(): EditorSessionId {
-    return this._sessionId;
+    return this._props.sessionId;
   }
 
   get workspaceId(): EditorWorkspaceId {
-    return this._workspaceId;
+    return this._props.workspaceId;
   }
 
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get groupIndex(): number {
-    return this._groupIndex;
+    return this._props.groupIndex;
   }
 
   get activeTabIndex(): number {
-    return this._activeTabIndex;
+    return this._props.activeTabIndex;
   }
 
   get name(): string | null {
-    return this._name;
+    return this._props.name;
   }
 
   get tabs(): EditorTab[] {
-    return [...this._tabs];
+    return [...this._props.tabs];
   }
 
   get createdAt(): DomainDate {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   get updatedAt(): DomainDate {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   // ================= 4. Factory Methods =================
@@ -119,17 +106,17 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupCli
   public toDTO(): EditorGroupClientDTO {
     return {
       id: String(this.id),
-      sessionId: String(this._sessionId),
-      workspaceId: String(this._workspaceId),
-      identityId: String(this._identityId),
-      groupIndex: this._groupIndex,
-      activeTabIndex: this._activeTabIndex,
-      name: this._name,
-      tabs: this._tabs.map((t) => t.toDTO()),
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      formattedCreatedAt: this.formatDate(this._createdAt),
-      formattedUpdatedAt: this.formatRelativeTime(this._updatedAt),
+      sessionId: String(this._props.sessionId),
+      workspaceId: String(this._props.workspaceId),
+      identityId: String(this._props.identityId),
+      groupIndex: this._props.groupIndex,
+      activeTabIndex: this._props.activeTabIndex,
+      name: this._props.name,
+      tabs: this._props.tabs.map((t) => t.toDTO()),
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      formattedCreatedAt: this.formatDate(this._props.createdAt),
+      formattedUpdatedAt: this.formatRelativeTime(this._props.updatedAt),
     };
   }
 

@@ -4,9 +4,8 @@
  *
  * 【规范说明】
  * - 实现 ScheduleJobClient 接口
- * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
  * - Static fromDTO(dto: ScheduleJobClientDTO): ScheduleJob
  * - Instance toDTO(): ScheduleJobClientDTO
  */
@@ -20,97 +19,60 @@ import { ScheduleId } from '@dailyuse/domain-shared/schedule';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 export class ScheduleJob extends AggregateRoot<ScheduleId> implements ScheduleJobClient {
-  // ================= 1. Backing Fields =================
-  private _identityId: IdentityId;
-  private _nextRunAt: Date;
-  private _cronExpression: string | null;
-  private _sourceModule: string;
-  private _sourceId: string;
-  private _triggerEvent: string;
-  private _payload: Record<string, any> | null;
+  private readonly _props: ScheduleJobClient;
 
-  // UI 辅助属性
-  private _nextRunAtFormatted: string;
-  private _cronExpressionDisplay: string;
-  private _sourceDisplay: string;
-  private _payloadDisplay: string;
-
-  // ================= 2. Constructor (Private) =================
-  private constructor(params: {
-    id: ScheduleId;
-    identityId: IdentityId;
-    nextRunAt: Date;
-    cronExpression: string | null;
-    sourceModule: string;
-    sourceId: string;
-    triggerEvent: string;
-    payload: Record<string, any> | null;
-    nextRunAtFormatted: string;
-    cronExpressionDisplay: string;
-    sourceDisplay: string;
-    payloadDisplay: string;
-  }) {
-    super(params.id);
-    this._identityId = params.identityId;
-    this._nextRunAt = params.nextRunAt;
-    this._cronExpression = params.cronExpression;
-    this._sourceModule = params.sourceModule;
-    this._sourceId = params.sourceId;
-    this._triggerEvent = params.triggerEvent;
-    this._payload = params.payload;
-    this._nextRunAtFormatted = params.nextRunAtFormatted;
-    this._cronExpressionDisplay = params.cronExpressionDisplay;
-    this._sourceDisplay = params.sourceDisplay;
-    this._payloadDisplay = params.payloadDisplay;
+  private constructor(props: ScheduleJobClient) {
+    super(props.id);
+    this._props = props;
   }
 
-  // ================= 3. Getters =================
+  // ================= Getters =================
   get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   get nextRunAt(): Date {
-    return this._nextRunAt;
+    return this._props.nextRunAt;
   }
 
   get cronExpression(): string | null {
-    return this._cronExpression;
+    return this._props.cronExpression;
   }
 
   get sourceModule(): string {
-    return this._sourceModule;
+    return this._props.sourceModule;
   }
 
   get sourceId(): string {
-    return this._sourceId;
+    return this._props.sourceId;
   }
 
   get triggerEvent(): string {
-    return this._triggerEvent;
+    return this._props.triggerEvent;
   }
 
   get payload(): Record<string, any> | null {
-    return this._payload ? { ...this._payload } : null;
+    return this._props.payload ? { ...this._props.payload } : null;
   }
 
   // UI 辅助属性
   get nextRunAtFormatted(): string {
-    return this._nextRunAtFormatted;
+    return this._props.nextRunAtFormatted;
   }
 
   get cronExpressionDisplay(): string {
-    return this._cronExpressionDisplay;
+    return this._props.cronExpressionDisplay;
   }
 
   get sourceDisplay(): string {
-    return this._sourceDisplay;
+    return this._props.sourceDisplay;
   }
 
   get payloadDisplay(): string {
-    return this._payloadDisplay;
+    return this._props.payloadDisplay;
   }
 
-  // ================= 4. Factory Methods =================
+  // ================= Factory Methods =================
   public static fromDTO(dto: ScheduleJobClientDTO): ScheduleJob {
     return new ScheduleJob({
       id: ScheduleId.of(dto.id),
@@ -129,17 +91,17 @@ export class ScheduleJob extends AggregateRoot<ScheduleId> implements ScheduleJo
     });
   }
 
-  // ================= 5. DTO Conversion =================
+  // ================= DTO Conversion =================
   public toDTO(): ScheduleJobClientDTO {
     return {
-      id: String(this.id),
-      identityId: String(this._identityId),
-      nextRunAt: this._nextRunAt.getTime(),
-      cronExpression: this._cronExpression,
-      sourceModule: this._sourceModule,
-      sourceId: this._sourceId,
-      triggerEvent: this._triggerEvent,
-      payload: this._payload ? { ...this._payload } : null,
+      id: String(this._props.id),
+      identityId: String(this._props.identityId),
+      nextRunAt: this._props.nextRunAt.getTime(),
+      cronExpression: this._props.cronExpression,
+      sourceModule: this._props.sourceModule,
+      sourceId: this._props.sourceId,
+      triggerEvent: this._props.triggerEvent,
+      payload: this._props.payload ? { ...this._props.payload } : null,
     };
   }
 }
