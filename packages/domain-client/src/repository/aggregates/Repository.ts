@@ -1,231 +1,217 @@
 /**
- * Repository 聚合根实现 (Client)
- * 
- * DDD 聚合根职责：
- * - 管理仓储的元数据和配置
- * - 管理文件夹树结构（子实体）
- * - 执行仓储业务逻辑
- * - 是事务边界
+ * Repository Aggregate Root - Domain Client
+ * 仓储聚合根 - 领域客户端
+ *
+ * 【规范说明】
+ * - 实现 RepositoryClient 接口
+ * - Private constructor with params object
+ * - Private _field backing fields
+ * - Public getters
+ * - Static fromDTO(dto: RepositoryClientDTO): Repository
+ * - Instance toDTO(): RepositoryClientDTO
  */
-import {
-  RepositoryStatus,
-  RepositoryType,
-} from '@dailyuse/contracts/repository';
+
 import type {
-  FolderClient,
   RepositoryClient,
   RepositoryClientDTO,
-  RepositoryConfigServerDTO,
-  RepositoryServerDTO,
-  RepositoryStatsServerDTO,
+  RepositoryConfigDTO,
+  RepositoryStatsDTO,
 } from '@dailyuse/contracts/repository';
+import type { RepositoryType, RepositoryStatus } from '@dailyuse/contracts/repository';
 import { AggregateRoot } from '@dailyuse/utils';
-import { RepositoryConfig, RepositoryStats } from '../value-objects';
-import { Folder } from '../entities/Folder';
+import {
+  RepositoryId,
+  RepositoryConfig,
+  RepositoryStats,
+} from '@dailyuse/domain-shared/repository';
+import { IdentityId } from '@dailyuse/domain-shared';
 
-// 类型别名
-
-// 枚举值
-
-export class Repository extends AggregateRoot implements RepositoryClient {
-  // ===== 私有字段 =====
-  private _accountUuid: string;
+export class Repository extends AggregateRoot<RepositoryId> implements RepositoryClient {
+  // ================= 1. Backing Fields =================
+  private _identityId: IdentityId;
   private _name: string;
   private _type: RepositoryType;
-  private _path: string;
+  private _path: string | null;
   private _description: string | null;
   private _config: RepositoryConfig;
   private _stats: RepositoryStats;
   private _status: RepositoryStatus;
-  private _createdAt: number;
-  private _updatedAt: number;
-  private _folders: FolderClient[] | null;
+  private _version: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
+  private _deletedAt: Date | null;
 
-  // ===== 私有构造函数 =====
+  // ================= 2. Constructor (Private) =================
   private constructor(params: {
-    uuid?: string;
-    accountUuid: string;
+    id: RepositoryId;
+    identityId: IdentityId;
     name: string;
     type: RepositoryType;
-    path: string;
-    description?: string | null;
+    path: string | null;
+    description: string | null;
     config: RepositoryConfig;
     stats: RepositoryStats;
     status: RepositoryStatus;
-    createdAt: number;
-    updatedAt: number;
-    folders?: FolderClient[] | null;
+    version: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
   }) {
-    super(params.uuid || AggregateRoot.generateUUID());
-    this._accountUuid = params.accountUuid;
+    super(params.id);
+    this._identityId = params.identityId;
     this._name = params.name;
     this._type = params.type;
     this._path = params.path;
-    this._description = params.description ?? null;
+    this._description = params.description;
     this._config = params.config;
     this._stats = params.stats;
     this._status = params.status;
+    this._version = params.version;
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
-    this._folders = params.folders ?? null;
+    this._deletedAt = params.deletedAt;
   }
 
-  // ===== Getters =====
-  public override get uuid(): string {
-    return this._uuid;
+  // ================= 3. Getters =================
+  get identityId(): IdentityId {
+    return this._identityId;
   }
 
-  public get accountUuid(): string {
-    return this._accountUuid;
-  }
-
-  public get name(): string {
+  get name(): string {
     return this._name;
   }
 
-  public get type(): RepositoryType {
+  get type(): RepositoryType {
     return this._type;
   }
 
-  public get path(): string {
+  get path(): string | null {
     return this._path;
   }
 
-  public get description(): string | null {
+  get description(): string | null {
     return this._description;
   }
 
-  public get config(): RepositoryConfig {
+  get config(): RepositoryConfig {
     return this._config;
   }
 
-  public get stats(): RepositoryStats {
+  get stats(): RepositoryStats {
     return this._stats;
   }
 
-  public get status(): RepositoryStatus {
+  get status(): RepositoryStatus {
     return this._status;
   }
 
-  public get createdAt(): number {
+  get version(): number {
+    return this._version;
+  }
+
+  get createdAt(): Date {
     return this._createdAt;
   }
 
-  public get updatedAt(): number {
+  get updatedAt(): Date {
     return this._updatedAt;
   }
 
-  public get folders(): FolderClient[] | null {
-    return this._folders;
+  get deletedAt(): Date | null {
+    return this._deletedAt;
   }
 
-  // ===== UI 计算属性 =====
-  public get isDeleted(): boolean {
-    return this._status === RepositoryStatus.DELETED;
+  // ================= UI 计算属性 =================
+  get isDeleted(): boolean {
+    return this._status === 'Deleted';
   }
 
-  public get isArchived(): boolean {
-    return this._status === RepositoryStatus.ARCHIVED;
+  get isArchived(): boolean {
+    return this._status === 'Archived';
   }
 
-  public get isActive(): boolean {
-    return this._status === RepositoryStatus.ACTIVE;
+  get isActive(): boolean {
+    return this._status === 'Active';
   }
 
-  public get statusText(): string {
-    const map = {
-      [RepositoryStatus.ACTIVE]: 'Active',
-      [RepositoryStatus.ARCHIVED]: 'Archived',
-      [RepositoryStatus.DELETED]: 'Deleted',
+  get statusText(): string {
+    const statusTextMap: Record<RepositoryStatus, string> = {
+      Active: '活跃',
+      Archived: '已归档',
+      Deleted: '已删除',
     };
-    return map[this._status];
+    return statusTextMap[this._status] ?? this._status;
   }
 
-  public get typeText(): string {
-    const map = {
-      [RepositoryType.MARKDOWN]: 'Markdown',
-      [RepositoryType.CODE]: 'Code',
-      [RepositoryType.MIXED]: 'Mixed',
+  get typeText(): string {
+    const typeTextMap: Record<RepositoryType, string> = {
+      Markdown: 'Markdown',
+      Code: '代码',
+      Mixed: '混合',
     };
-    return map[this._type];
+    return typeTextMap[this._type] ?? this._type;
   }
 
-  public get folderCount(): number {
+  get folderCount(): number {
     return this._stats.folderCount;
   }
 
-  public get resourceCount(): number {
+  get resourceCount(): number {
     return this._stats.resourceCount;
   }
 
-  public get totalSize(): number {
+  get totalSize(): number {
     return this._stats.totalSize;
   }
 
-  public get formattedSize(): string {
+  get formattedSize(): string {
     return this._stats.formattedSize;
   }
 
   get createdAtText(): string {
-    return new Date(this._createdAt).toLocaleString();
+    return this._createdAt.toLocaleString();
   }
 
   get updatedAtText(): string {
-    return new Date(this._updatedAt).toLocaleString();
+    return this._updatedAt.toLocaleString();
   }
 
-  // ===== 业务方法 =====
-  updateConfig(config: Partial<RepositoryConfigServerDTO>): void {
-    const currentDTO = this._config.toServerDTO();
-    const merged = { ...currentDTO, ...config };
-    this._config = RepositoryConfig.fromServerDTO(merged);
-    this._updatedAt = Date.now();
+  // ================= 4. Factory Methods =================
+  public static fromDTO(dto: RepositoryClientDTO): Repository {
+    return new Repository({
+      id: RepositoryId.of(dto.id),
+      identityId: IdentityId.of(dto.identityId),
+      name: dto.name,
+      type: dto.type,
+      path: dto.path,
+      description: dto.description,
+      config: RepositoryConfig.fromDTO(dto.config),
+      stats: RepositoryStats.fromDTO(dto.stats),
+      status: dto.status,
+      version: dto.version,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    });
   }
 
-  updateStats(stats: Partial<RepositoryStatsServerDTO>): void {
-    const currentDTO = this._stats.toServerDTO();
-    const merged = { ...currentDTO, ...stats };
-    this._stats = RepositoryStats.fromServerDTO(merged);
-    this._updatedAt = Date.now();
-  }
-
-  archive(): void {
-    if (this._status === RepositoryStatus.ARCHIVED) {
-      throw new Error('Repository is already archived');
-    }
-    if (this._status === RepositoryStatus.DELETED) {
-      throw new Error('Cannot archive a deleted repository');
-    }
-    this._status = RepositoryStatus.ARCHIVED;
-    this._updatedAt = Date.now();
-  }
-
-  activate(): void {
-    if (this._status === RepositoryStatus.ACTIVE) {
-      throw new Error('Repository is already active');
-    }
-    if (this._status === RepositoryStatus.DELETED) {
-      throw new Error('Cannot activate a deleted repository');
-    }
-    this._status = RepositoryStatus.ACTIVE;
-    this._updatedAt = Date.now();
-  }
-
-  // ===== DTO 转换 =====
-  toClientDTO(): RepositoryClientDTO {
+  // ================= 5. DTO Conversion =================
+  public toDTO(): RepositoryClientDTO {
     return {
-      uuid: this._uuid,
-      accountUuid: this._accountUuid,
+      id: String(this.id),
+      identityId: String(this._identityId),
       name: this._name,
       type: this._type,
       path: this._path,
       description: this._description,
-      config: this._config.toClientDTO(),
-      stats: this._stats.toClientDTO(),
+      config: this._config.toDTO(),
+      stats: this._stats.toDTO(),
       status: this._status,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      folders: this._folders?.map(f => (f as any).toClientDTO()) || null,
+      version: this._version,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
+      // UI 计算字段
       isDeleted: this.isDeleted,
       isArchived: this.isArchived,
       isActive: this.isActive,
@@ -238,57 +224,5 @@ export class Repository extends AggregateRoot implements RepositoryClient {
       createdAtText: this.createdAtText,
       updatedAtText: this.updatedAtText,
     };
-  }
-
-  toServerDTO(): RepositoryServerDTO {
-    return {
-      uuid: this._uuid,
-      accountUuid: this._accountUuid,
-      name: this._name,
-      type: this._type,
-      path: this._path,
-      description: this._description,
-      config: this._config.toServerDTO(),
-      stats: this._stats.toServerDTO(),
-      status: this._status,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      folders: this._folders?.map(f => (f as any).toServerDTO()) || null,
-    };
-  }
-
-  // ===== 静态工厂方法 =====
-  public static fromServerDTO(dto: RepositoryServerDTO): Repository {
-    return new Repository({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
-      name: dto.name,
-      type: dto.type,
-      path: dto.path,
-      description: dto.description ?? null,
-      config: RepositoryConfig.fromServerDTO(dto.config),
-      stats: RepositoryStats.fromServerDTO(dto.stats),
-      status: dto.status,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      folders: dto.folders?.map((f: any) => Folder.fromServerDTO(f)) || null,
-    });
-  }
-
-  public static fromClientDTO(dto: RepositoryClientDTO): Repository {
-    return new Repository({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
-      name: dto.name,
-      type: dto.type,
-      path: dto.path,
-      description: dto.description ?? null,
-      config: RepositoryConfig.fromClientDTO(dto.config),
-      stats: RepositoryStats.fromClientDTO(dto.stats),
-      status: dto.status,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      folders: dto.folders?.map((f: any) => Folder.fromClientDTO(f)) || null,
-    });
   }
 }

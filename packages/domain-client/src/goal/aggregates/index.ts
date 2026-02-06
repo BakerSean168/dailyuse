@@ -1,8 +1,7 @@
 /**
  * Goal Aggregates
+ * Goal 模块聚合根导出
  */
 
-export { Goal } from './Goal';
-export { GoalFolder } from './GoalFolder';
-export { GoalStatistics } from './GoalStatistics';
-export { GoalRecord } from './GoalRecord';
+export { Goal } from './goal.js';
+export { GoalFolder } from './goal-folder.js';

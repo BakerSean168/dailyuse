@@ -1,107 +1,126 @@
-import { AggregateRoot } from '@dailyuse/utils';
-import type { AccountClientDTO, AccountServerDTO } from '@dailyuse/contracts/account';
-import { IdentityId } from '@dailyuse/domain-shared/account';
+/**
+ * Account Aggregate Root - Domain Client
+ * 账户聚合根 - 领域客户端
+ */
 
-// ✅ 直接复用 Shared 里的值对象（包含校验和格式化逻辑）
-import { 
-  AccountProfile, 
-  AccountSettings, 
-  ContactEmail, 
+import type {
+  AccountClient,
+  AccountClientDTO,
+} from '@dailyuse/contracts/account';
+import { AggregateRoot } from '@dailyuse/utils';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
+import {
+  AccountProfile,
+  AccountSettings,
+  ContactEmail,
   AccountStatus,
-  ContactPhone 
+  ContactPhone,
 } from '@dailyuse/domain-shared/account';
 
-export class Account extends AggregateRoot<IdentityId> {
-  // 内部状态
+export class Account extends AggregateRoot<IdentityId> implements AccountClient {
   private _profile: AccountProfile;
   private _email: ContactEmail;
   private _settings: AccountSettings;
   private _status: AccountStatus;
   private _phone: ContactPhone | null;
+  private _version: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
+  private _deletedAt: Date | null;
 
-  public readonly createdAt: Date;
-  public readonly updatedAt: Date;
-
-  // 构造函数：接收 ClientDTO (因为客户端的数据只来源 API)
-  private constructor(props: AccountClientDTO) {
-    super(IdentityId.of(props.id));
-    
-    // 还原值对象
-    this._profile = AccountProfile.create(props.profile);
-    this._email = ContactEmail.create(props.email);
-    this._settings = AccountSettings.create(props.settings);
-    this._status = AccountStatus.of(props.status);
-    this._phone = props.phone ? ContactPhone.create(props.phone) : null;
-    
-    // 时间处理
-    this.createdAt = new Date(props.createdAt);
-    this.updatedAt = new Date(props.updatedAt);
+  private constructor(params: {
+    id: string;
+    profile: AccountProfile;
+    email: ContactEmail;
+    settings: AccountSettings;
+    status: AccountStatus;
+    phone: ContactPhone | null;
+    version: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
+  }) {
+    super(IdentityId.of(params.id));
+    this._profile = params.profile;
+    this._email = params.email;
+    this._settings = params.settings;
+    this._status = params.status;
+    this._phone = params.phone;
+    this._version = params.version;
+    this._createdAt = params.createdAt;
+    this._updatedAt = params.updatedAt;
+    this._deletedAt = params.deletedAt;
   }
 
-  // ============================================================
-  // 1. 工厂方法 (客户端只需要从 API 恢复)
-  // ============================================================
-  
-  public static fromClientDTO(dto: AccountClientDTO): Account {
-    return new Account(dto);
+  // ===== Getters =====
+
+  get profile(): AccountProfile {
+    return this._profile;
   }
 
-  // ❌ 客户端通常不需要 create() 工厂
-  // 因为客户端创建账号是发起一个 API 请求 (Register)，
-  // 而不是在本地内存里 new 一个对象然后保存。
-
-  // ============================================================
-  // 2. UI 辅助 Getters (ViewModel 逻辑)
-  // ============================================================
-
-  get profile() { return this._profile; }
-  get email() { return this._email; }
-  get settings() { return this._settings; }
-  get status() { return this._status; }
-  
-  // ✨ 客户端特有的 UI 逻辑：头像回退机制
-  get displayAvatar(): string {
-    return this._profile.avatarUrl || 'assets/default-avatar.png';
+  get email(): ContactEmail {
+    return this._email;
   }
 
-  // ✨ 客户端特有的 UI 逻辑：展示名称
-  get displayName(): string {
-    return this._profile.realName || this._profile.nickname || this._email.getMaskedAddress();
+  get settings(): AccountSettings {
+    return this._settings;
   }
 
-  get isSuspended(): boolean {
-    return this._status === AccountStatus.SUSPENDED;
+  get status(): AccountStatus {
+    return this._status;
   }
 
-  // ============================================================
-  // 3. 行为方法 (通常用于 乐观更新 / Clone)
-  // ============================================================
+  get phone(): ContactPhone | null {
+    return this._phone;
+  }
 
-  /**
-   * 客户端的 clone 方法，用于 React/Vue 的不可变更新
-   */
-  public cloneWith(changes: Partial<AccountClientDTO>): Account {
-    const currentDTO = this.toClientDTO();
+  get version(): number {
+    return this._version;
+  }
+
+  get createdAt(): Date {
+    return this._createdAt;
+  }
+
+  get updatedAt(): Date {
+    return this._updatedAt;
+  }
+
+  get deletedAt(): Date | null {
+    return this._deletedAt;
+  }
+
+  // ===== Factory Methods =====
+
+  public static fromDTO(dto: AccountClientDTO): Account {
     return new Account({
-      ...currentDTO,
-      ...changes
+      id: dto.id,
+      profile: AccountProfile.create(dto.profile),
+      email: ContactEmail.create(dto.email),
+      settings: AccountSettings.create(dto.settings),
+      status: AccountStatus.of(dto.status),
+      phone: dto.phone ? ContactPhone.create(dto.phone) : null,
+      version: dto.version,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 
-  // ============================================================
-  // 4. 序列化 (用于传给组件或打印)
-  // ============================================================
+  // ===== DTO Conversion =====
 
-  public toClientDTO(): AccountClientDTO {
+  public toDTO(): AccountClientDTO {
     return {
-      id: this.id,
-      status: this._status, // 假设 status 是 string
+      id: String(this.id),
+      status: this._status,
       profile: this._profile.toDTO(),
       settings: this._settings.toDTO(),
       email: this._email.toDTO(),
       phone: this._phone?.toDTO() ?? null,
-      createdAt: this.createdAt.getTime(),
-      updatedAt: this.updatedAt.getTime(),
+      version: this._version,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
     };
   }
 }

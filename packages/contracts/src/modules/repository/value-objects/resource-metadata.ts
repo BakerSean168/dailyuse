@@ -37,5 +37,4 @@ export interface ResourceMetadata {
   wordCount: number | null;
   readingTime: number | null;
   thumbnail: string | null;
-  [key: string]: unknown;
 }

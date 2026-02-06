@@ -1,7 +1,7 @@
 /**
- * Notification Aggregates Exports (Client)
+ * Notification Aggregates
+ * Notification 模块聚合根导出
  */
 
-export { NotificationClientImpl as NotificationClient } from './NotificationClient';
-export { NotificationTemplateClientImpl as NotificationTemplateClient } from './NotificationTemplateClient';
-export { NotificationPreferenceClient } from './NotificationPreferenceClient';
+export { Notification } from './notification.js';
+export { NotificationPreference } from './notification-preference.js';

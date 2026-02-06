@@ -1,14 +1,13 @@
 /**
- * Schedule 模块导出
+ * Schedule Module - Domain Client
+ * 调度模块 - 领域客户端
  *
- * **严格遵循 DDD 分层架构**
+ * 【规范说明】
+ * - 实现 Client 接口
+ * - 提供 fromDTO/toDTO 转换
+ * - 封装客户端业务逻辑
  */
 
-// ===== 聚合根 =====
-export * from './aggregates';
-
-// ===== 实体 =====
-export * from './entities';
-
-// ===== 值对象 =====
-export * from './value-objects';
+export * from './aggregates/index.js';
+export * from './entities/index.js';
+export * from '@dailyuse/domain-shared/schedule';

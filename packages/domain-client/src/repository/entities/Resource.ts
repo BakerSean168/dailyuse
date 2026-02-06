@@ -1,78 +1,93 @@
 /**
- * Resource Entity - Client Implementation
- * 资源实体 - 客户端实现
+ * Resource Entity - Domain Client
+ * 资源实体 - 领域客户端
+ *
+ * 【规范说明】
+ * - 实现 ResourceClient 接口
+ * - Private constructor with params object
+ * - Private _field backing fields
+ * - Public getters
+ * - Static fromDTO(dto: ResourceClientDTO): Resource
+ * - Instance toDTO(): ResourceClientDTO
  */
-import {
-  ResourceStatus,
-  ResourceType,
-} from '@dailyuse/contracts/repository';
+
 import type {
   ResourceClient,
   ResourceClientDTO,
-  ResourceServerDTO,
+  ResourceMetadataDTO,
+  ResourceStatsDTO,
 } from '@dailyuse/contracts/repository';
-import { formatDistanceToNow } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
-import { ResourceMetadata } from '../value-objects/ResourceMetadata';
-import { ResourceStats } from '../value-objects/ResourceStats';
+import type { ResourceType, ResourceStatus } from '@dailyuse/contracts/repository';
+import type { RepositoryId, FolderId } from '@dailyuse/contracts/primitives';
+import { Entity } from '@dailyuse/utils';
+import {
+  ResourceId,
+  ResourceMetadata,
+  ResourceStats,
+} from '@dailyuse/domain-shared/repository';
 
+export class Resource extends Entity<ResourceId> implements ResourceClient {
+  // ================= 1. Backing Fields =================
+  private _repositoryId: RepositoryId;
+  private _folderId: FolderId | null;
+  private _name: string;
+  private _type: ResourceType;
+  private _mimeType: string;
+  private _path: string;
+  private _size: number;
+  private _content: string | null;
+  private _metadata: ResourceMetadata;
+  private _stats: ResourceStats;
+  private _status: ResourceStatus;
+  private _version: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
+  private _deletedAt: Date | null;
 
-export class Resource implements ResourceClient {
-  private readonly _uuid: string;
-  private readonly _repositoryUuid: string;
-  private readonly _folderUuid?: string | null;
-  private readonly _name: string;
-  private readonly _type: ResourceType;
-  private readonly _path: string;
-  private readonly _size: number;
-  private readonly _content?: string | null;
-  private readonly _metadata: ResourceMetadata;
-  private readonly _stats: ResourceStats;
-  private readonly _status: ResourceStatus;
-  private readonly _createdAt: number;
-  private readonly _updatedAt: number;
-
+  // ================= 2. Constructor (Private) =================
   private constructor(params: {
-    uuid: string;
-    repositoryUuid: string;
+    id: ResourceId;
+    repositoryId: RepositoryId;
+    folderId: FolderId | null;
     name: string;
     type: ResourceType;
+    mimeType: string;
     path: string;
     size: number;
-    folderUuid?: string | null;
-    content?: string | null;
+    content: string | null;
     metadata: ResourceMetadata;
     stats: ResourceStats;
     status: ResourceStatus;
-    createdAt: number;
-    updatedAt: number;
+    version: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
   }) {
-    this._uuid = params.uuid;
-    this._repositoryUuid = params.repositoryUuid;
-    this._folderUuid = params.folderUuid ?? null;
+    super(params.id);
+    this._repositoryId = params.repositoryId;
+    this._folderId = params.folderId;
     this._name = params.name;
     this._type = params.type;
+    this._mimeType = params.mimeType;
     this._path = params.path;
     this._size = params.size;
-    this._content = params.content ?? null;
+    this._content = params.content;
     this._metadata = params.metadata;
     this._stats = params.stats;
     this._status = params.status;
+    this._version = params.version;
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
+    this._deletedAt = params.deletedAt;
   }
 
-  // ===== Getters =====
-  get uuid(): string {
-    return this._uuid;
+  // ================= 3. Getters =================
+  get repositoryId(): RepositoryId {
+    return this._repositoryId;
   }
 
-  get repositoryUuid(): string {
-    return this._repositoryUuid;
-  }
-
-  get folderUuid(): string | null | undefined {
-    return this._folderUuid;
+  get folderId(): FolderId | null {
+    return this._folderId;
   }
 
   get name(): string {
@@ -83,6 +98,10 @@ export class Resource implements ResourceClient {
     return this._type;
   }
 
+  get mimeType(): string {
+    return this._mimeType;
+  }
+
   get path(): string {
     return this._path;
   }
@@ -91,7 +110,7 @@ export class Resource implements ResourceClient {
     return this._size;
   }
 
-  get content(): string | null | undefined {
+  get content(): string | null {
     return this._content;
   }
 
@@ -107,56 +126,63 @@ export class Resource implements ResourceClient {
     return this._status;
   }
 
-  get createdAt(): number {
+  get version(): number {
+    return this._version;
+  }
+
+  get createdAt(): Date {
     return this._createdAt;
   }
 
-  get updatedAt(): number {
+  get updatedAt(): Date {
     return this._updatedAt;
   }
 
-  // ===== UI 计算属性 =====
+  get deletedAt(): Date | null {
+    return this._deletedAt;
+  }
+
+  // ================= UI 计算属性 =================
   get isDeleted(): boolean {
-    return this._status === ResourceStatus.DELETED;
+    return this._status === 'Deleted';
   }
 
   get isArchived(): boolean {
-    return this._status === ResourceStatus.ARCHIVED;
+    return this._status === 'Archived';
   }
 
   get isActive(): boolean {
-    return this._status === ResourceStatus.ACTIVE;
+    return this._status === 'Active';
   }
 
   get isDraft(): boolean {
-    return this._status === ResourceStatus.DRAFT;
+    return this._status === 'Draft';
   }
 
   get statusText(): string {
-    const statusMap: Record<ResourceStatus, string> = {
-      [ResourceStatus.ACTIVE]: '活跃',
-      [ResourceStatus.ARCHIVED]: '已归档',
-      [ResourceStatus.DELETED]: '已删除',
-      [ResourceStatus.DRAFT]: '草稿',
+    const statusTextMap: Record<ResourceStatus, string> = {
+      Active: '活跃',
+      Archived: '已归档',
+      Deleted: '已删除',
+      Draft: '草稿',
     };
-    return statusMap[this._status] || '未知';
+    return statusTextMap[this._status] ?? this._status;
   }
 
   get typeText(): string {
-    const typeMap: Record<ResourceType, string> = {
-      [ResourceType.MARKDOWN]: 'Markdown 文档',
-      [ResourceType.IMAGE]: '图片',
-      [ResourceType.VIDEO]: '视频',
-      [ResourceType.AUDIO]: '音频',
-      [ResourceType.PDF]: 'PDF 文档',
-      [ResourceType.LINK]: '外部链接',
-      [ResourceType.CODE]: '代码文件',
-      [ResourceType.OTHER]: '其他文件',
+    const typeTextMap: Record<ResourceType, string> = {
+      FILE: '文件',
+      FOLDER: '文件夹',
     };
-    return typeMap[this._type] || '未知类型';
+    return typeTextMap[this._type] ?? this._type;
   }
 
   get displayName(): string {
+    // Remove extension from filename for display
+    const lastDotIndex = this._name.lastIndexOf('.');
+    if (lastDotIndex > 0 && this._type === 'FILE') {
+      return this._name.substring(0, lastDotIndex);
+    }
     return this._name;
   }
 
@@ -164,68 +190,101 @@ export class Resource implements ResourceClient {
     const bytes = this._size;
     if (bytes === 0) return '0 B';
     const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   }
 
   get createdAtText(): string {
-    try {
-      return formatDistanceToNow(this._createdAt, {
-        addSuffix: true,
-        locale: zhCN,
-      });
-    } catch {
-      return new Date(this._createdAt).toLocaleDateString('zh-CN');
-    }
+    return this._createdAt.toLocaleString();
   }
 
   get updatedAtText(): string {
-    try {
-      return formatDistanceToNow(this._updatedAt, {
-        addSuffix: true,
-        locale: zhCN,
-      });
-    } catch {
-      return new Date(this._updatedAt).toLocaleDateString('zh-CN');
-    }
+    return this._updatedAt.toLocaleString();
   }
 
   get extension(): string {
-    const ext = this._name.split('.').pop();
-    return ext ? `.${ext}` : '';
+    const lastDotIndex = this._name.lastIndexOf('.');
+    if (lastDotIndex > 0) {
+      return this._name.substring(lastDotIndex);
+    }
+    return '';
   }
 
   get icon(): string {
-    const iconMap: Record<ResourceType, string> = {
-      [ResourceType.MARKDOWN]: 'mdi-language-markdown',
-      [ResourceType.IMAGE]: 'mdi-image',
-      [ResourceType.VIDEO]: 'mdi-video',
-      [ResourceType.AUDIO]: 'mdi-music',
-      [ResourceType.PDF]: 'mdi-file-pdf-box',
-      [ResourceType.LINK]: 'mdi-link-variant',
-      [ResourceType.CODE]: 'mdi-code-braces',
-      [ResourceType.OTHER]: 'mdi-file',
+    // Return Material Design icon name based on type and extension
+    if (this._type === 'FOLDER') {
+      return 'mdi-folder';
+    }
+    const ext = this.extension.toLowerCase();
+    const iconMap: Record<string, string> = {
+      '.md': 'mdi-language-markdown',
+      '.txt': 'mdi-file-document',
+      '.pdf': 'mdi-file-pdf-box',
+      '.jpg': 'mdi-file-image',
+      '.jpeg': 'mdi-file-image',
+      '.png': 'mdi-file-image',
+      '.gif': 'mdi-file-image',
+      '.svg': 'mdi-file-image',
+      '.doc': 'mdi-file-word',
+      '.docx': 'mdi-file-word',
+      '.xls': 'mdi-file-excel',
+      '.xlsx': 'mdi-file-excel',
+      '.ppt': 'mdi-file-powerpoint',
+      '.pptx': 'mdi-file-powerpoint',
+      '.zip': 'mdi-folder-zip',
+      '.rar': 'mdi-folder-zip',
+      '.js': 'mdi-nodejs',
+      '.ts': 'mdi-language-typescript',
+      '.json': 'mdi-code-json',
+      '.html': 'mdi-language-html5',
+      '.css': 'mdi-language-css3',
     };
-    return iconMap[this._type] || 'mdi-file';
+    return iconMap[ext] ?? 'mdi-file';
   }
 
-  // ===== DTO 转换方法 =====
-  toClientDTO(): ResourceClientDTO {
+  // ================= 4. Factory Methods =================
+  public static fromDTO(dto: ResourceClientDTO): Resource {
+    return new Resource({
+      id: ResourceId.of(dto.id),
+      repositoryId: dto.repositoryId as RepositoryId,
+      folderId: dto.folderId as FolderId | null,
+      name: dto.name,
+      type: dto.type,
+      mimeType: dto.mimeType,
+      path: dto.path,
+      size: dto.size,
+      content: dto.content,
+      metadata: ResourceMetadata.fromDTO(dto.metadata),
+      stats: ResourceStats.fromDTO(dto.stats),
+      status: dto.status,
+      version: dto.version,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    });
+  }
+
+  // ================= 5. DTO Conversion =================
+  public toDTO(): ResourceClientDTO {
     return {
-      uuid: this._uuid,
-      repositoryUuid: this._repositoryUuid,
-      folderUuid: this._folderUuid,
+      id: String(this.id),
+      repositoryId: String(this._repositoryId),
+      folderId: this._folderId ? String(this._folderId) : null,
       name: this._name,
       type: this._type,
+      mimeType: this._mimeType,
       path: this._path,
       size: this._size,
       content: this._content,
-      metadata: this._metadata.toClientDTO(),
-      stats: this._stats.toClientDTO(),
+      metadata: this._metadata.toDTO(),
+      stats: this._stats.toDTO(),
       status: this._status,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      version: this._version,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
+      // UI 计算字段
       isDeleted: this.isDeleted,
       isArchived: this.isArchived,
       isActive: this.isActive,
@@ -239,60 +298,5 @@ export class Resource implements ResourceClient {
       extension: this.extension,
       icon: this.icon,
     };
-  }
-
-  toServerDTO(): ResourceServerDTO {
-    return {
-      uuid: this._uuid,
-      repositoryUuid: this._repositoryUuid,
-      folderUuid: this._folderUuid,
-      name: this._name,
-      type: this._type,
-      path: this._path,
-      size: this._size,
-      content: this._content,
-      metadata: this._metadata.toServerDTO(),
-      stats: this._stats.toServerDTO(),
-      status: this._status,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-    };
-  }
-
-  // ===== 静态工厂方法 =====
-  static fromServerDTO(dto: ResourceServerDTO): Resource {
-    return new Resource({
-      uuid: dto.uuid,
-      repositoryUuid: dto.repositoryUuid,
-      folderUuid: dto.folderUuid,
-      name: dto.name,
-      type: dto.type,
-      path: dto.path,
-      size: dto.size,
-      content: dto.content,
-      metadata: ResourceMetadata.fromServerDTO(dto.metadata),
-      stats: ResourceStats.fromServerDTO(dto.stats),
-      status: dto.status,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-    });
-  }
-
-  static fromClientDTO(dto: ResourceClientDTO): Resource {
-    return new Resource({
-      uuid: dto.uuid,
-      repositoryUuid: dto.repositoryUuid,
-      folderUuid: dto.folderUuid,
-      name: dto.name,
-      type: dto.type,
-      path: dto.path,
-      size: dto.size,
-      content: dto.content,
-      metadata: ResourceMetadata.fromClientDTO(dto.metadata),
-      stats: ResourceStats.fromClientDTO(dto.stats),
-      status: dto.status,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-    });
   }
 }

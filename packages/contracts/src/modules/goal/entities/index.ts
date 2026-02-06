@@ -11,7 +11,7 @@ export type {
 export type {
   GoalRecordClientDTO,
   GoalRecordClient,
-} from './goal-record-client';
+} from '../aggregates/goal-record-client';
 
 export type {
   GoalReviewServerDTO,

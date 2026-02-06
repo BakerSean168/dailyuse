@@ -43,7 +43,6 @@ export interface RepositoryConfig {
   enableGit: boolean;
   autoSync?: boolean;
   syncInterval?: number;
-  [key: string]: unknown;
 }
 
 /**
@@ -55,7 +54,6 @@ export interface RepositoryConfigClient {
   enableGit: boolean;
   autoSync?: boolean;
   syncInterval?: number;
-  [key: string]: unknown;
 
   // UI 计算属性
   searchEngineText: string;

@@ -1,910 +1,327 @@
 /**
- * Goal 聚合根实现 (Client)
+ * Goal Aggregate Root - Domain Client
+ * 目标聚合根 - 领域客户端
+ *
+ * 【规范说明】
+ * - 实现 GoalClient 接口
+ * - Private constructor with params object
+ * - Private _field backing fields
+ * - Public getters
+ * - Static fromDTO(dto: GoalClientDTO): Goal
+ * - Instance toDTO(): GoalClientDTO
  */
 
-import {
-  GoalStatus,
-} from '@dailyuse/contracts/goal';
 import type {
   GoalClient,
   GoalClientDTO,
-  GoalRecordClientDTO,
-  GoalServerDTO,
+  GoalReminderConfig,
+  GoalReminderConfigDTO,
+  KeyResultClientDTO,
+  GoalReviewClientDTO,
   GoalTimeRangeSummary,
 } from '@dailyuse/contracts/goal';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { DailyPriorityCalculator } from '@dailyuse/domain-shared/goal';
+import { GoalStatus } from '@dailyuse/contracts/goal';
+import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
-import { GoalReminderConfig } from '../value-objects';
-import { KeyResult, GoalReview } from '../entities';
+import { GoalId, GoalFolderId } from '@dailyuse/domain-shared/goal';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
 
-const DAY_MS = 1000 * 60 * 60 * 24;
-const DEFAULT_DURATION = 30 * DAY_MS;
-
-export class Goal extends AggregateRoot implements GoalClient {
-  private _accountUuid: string;
-  private _title: string;
-  private _description?: string | null;
-  private _color?: string | null; // 主题色
-  private _feasibilityAnalysis?: string | null; // 可行性分析
-  private _motivation?: string | null; // 实现动机
+export class Goal extends AggregateRoot<GoalId> implements GoalClient {
+  // ================= 1. Backing Fields =================
+  private _identityId: IdentityId;
+  private _name: string;
+  private _description: string | null;
+  private _color: string | null;
+  private _feasibilityAnalysis: string | null;
+  private _motivation: string | null;
   private _status: GoalStatus;
   private _importance: ImportanceLevel;
-  /** 动态优先级分数（使用共享内核计算器） */
   private _priority: number;
-  private _category?: string | null;
+  private _category: string | null;
   private _tags: string[];
-  private _startDate?: number | null;
-  private _targetDate?: number | null;
-  private _completedAt?: number | null;
-  private _archivedAt?: number | null;
-  private _folderUuid?: string | null;
-  private _parentGoalUuid?: string | null;
+  private _startDate: Date | null;
+  private _targetDate: Date | null;
+  private _completedAt: Date | null;
+  private _archivedAt: Date | null;
+  private _folderId: GoalFolderId | null;
+  private _parentGoalId: GoalId | null;
   private _sortOrder: number;
-  private _reminderConfig?: GoalReminderConfig | null;
-  private _createdAt: number;
-  private _updatedAt: number;
-  private _deletedAt?: number | null;
+  private _reminderConfig: GoalReminderConfigDTO | null;
+  private _version: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
+  private _deletedAt: Date | null;
+  private _keyResults: KeyResultClientDTO[] | null;
+  private _reviews: GoalReviewClientDTO[] | null;
 
-  // 子实体集合
-  private _keyResults: KeyResult[];
-  private _reviews: GoalReview[];
+  // UI 计算字段
+  private _progress: number;
+  private _isOverdue: boolean;
+  private _daysRemaining: number | null;
+  private _timeRangeSummary: GoalTimeRangeSummary | null;
 
+  // ================= 2. Constructor (Private) =================
   private constructor(params: {
-    uuid?: string;
-    accountUuid: string;
-    title: string;
-    description?: string | null;
-    color?: string | null;
-    feasibilityAnalysis?: string | null;
-    motivation?: string | null;
+    id: GoalId;
+    identityId: IdentityId;
+    name: string;
+    description: string | null;
+    color: string | null;
+    feasibilityAnalysis: string | null;
+    motivation: string | null;
     status: GoalStatus;
     importance: ImportanceLevel;
-    priority?: number;
-    category?: string | null;
-    tags?: string[];
-    startDate?: number | null;
-    targetDate?: number | null;
-    completedAt?: number | null;
-    archivedAt?: number | null;
-    folderUuid?: string | null;
-    parentGoalUuid?: string | null;
-    sortOrder?: number;
-    reminderConfig?: GoalReminderConfig | null;
-    createdAt: number;
-    updatedAt: number;
-    deletedAt?: number | null;
-    keyResults?: KeyResult[];
-    reviews?: GoalReview[];
+    priority: number;
+    category: string | null;
+    tags: string[];
+    startDate: Date | null;
+    targetDate: Date | null;
+    completedAt: Date | null;
+    archivedAt: Date | null;
+    folderId: GoalFolderId | null;
+    parentGoalId: GoalId | null;
+    sortOrder: number;
+    reminderConfig: GoalReminderConfigDTO | null;
+    version: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
+    keyResults: KeyResultClientDTO[] | null;
+    reviews: GoalReviewClientDTO[] | null;
+    progress: number;
+    isOverdue: boolean;
+    daysRemaining: number | null;
+    timeRangeSummary: GoalTimeRangeSummary | null;
   }) {
-    super(params.uuid || AggregateRoot.generateUUID());
-    this._accountUuid = params.accountUuid;
-    this._title = params.title;
+    super(params.id);
+    this._identityId = params.identityId;
+    this._name = params.name;
     this._description = params.description;
     this._color = params.color;
     this._feasibilityAnalysis = params.feasibilityAnalysis;
     this._motivation = params.motivation;
     this._status = params.status;
     this._importance = params.importance;
-    this._priority = params.priority ?? 0;
+    this._priority = params.priority;
     this._category = params.category;
-    this._tags = params.tags ?? [];
+    this._tags = params.tags;
     this._startDate = params.startDate;
     this._targetDate = params.targetDate;
     this._completedAt = params.completedAt;
     this._archivedAt = params.archivedAt;
-    this._folderUuid = params.folderUuid;
-    this._parentGoalUuid = params.parentGoalUuid;
-    this._sortOrder = params.sortOrder ?? 0;
+    this._folderId = params.folderId;
+    this._parentGoalId = params.parentGoalId;
+    this._sortOrder = params.sortOrder;
     this._reminderConfig = params.reminderConfig;
+    this._version = params.version;
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
     this._deletedAt = params.deletedAt;
-    this._keyResults = params.keyResults ?? [];
-    this._reviews = params.reviews ?? [];
+    this._keyResults = params.keyResults;
+    this._reviews = params.reviews;
+    this._progress = params.progress;
+    this._isOverdue = params.isOverdue;
+    this._daysRemaining = params.daysRemaining;
+    this._timeRangeSummary = params.timeRangeSummary;
   }
 
-  // Getters - 基础属性
-  public override get uuid(): string {
-    return this._uuid;
+  // ================= 3. Getters =================
+  get identityId(): IdentityId {
+    return this._identityId;
   }
-  public get accountUuid(): string {
-    return this._accountUuid;
+
+  get name(): string {
+    return this._name;
   }
-  public get title(): string {
-    return this._title;
-  }
-  public get description(): string | null | undefined {
+
+  get description(): string | null {
     return this._description;
   }
-  public get color(): string | null | undefined {
+
+  get color(): string | null {
     return this._color;
   }
-  public get feasibilityAnalysis(): string | null | undefined {
+
+  get feasibilityAnalysis(): string | null {
     return this._feasibilityAnalysis;
   }
-  public get motivation(): string | null | undefined {
+
+  get motivation(): string | null {
     return this._motivation;
   }
-  public get status(): GoalStatus {
+
+  get status(): GoalStatus {
     return this._status;
   }
-  public get importance(): ImportanceLevel {
+
+  get importance(): ImportanceLevel {
     return this._importance;
   }
-  public get category(): string | null | undefined {
+
+  get priority(): number {
+    return this._priority;
+  }
+
+  get category(): string | null {
     return this._category;
   }
-  public get tags(): string[] {
+
+  get tags(): string[] {
     return [...this._tags];
   }
-  public get startDate(): number | null | undefined {
+
+  get startDate(): Date | null {
     return this._startDate;
   }
-  public get targetDate(): number | null | undefined {
+
+  get targetDate(): Date | null {
     return this._targetDate;
   }
-  public get completedAt(): number | null | undefined {
+
+  get completedAt(): Date | null {
     return this._completedAt;
   }
-  public get archivedAt(): number | null | undefined {
+
+  get archivedAt(): Date | null {
     return this._archivedAt;
   }
-  public get folderUuid(): string | null | undefined {
-    return this._folderUuid;
+
+  get folderId(): GoalFolderId | null {
+    return this._folderId;
   }
-  public get parentGoalUuid(): string | null | undefined {
-    return this._parentGoalUuid;
+
+  get parentGoalId(): GoalId | null {
+    return this._parentGoalId;
   }
-  public get sortOrder(): number {
+
+  get sortOrder(): number {
     return this._sortOrder;
   }
-  public get reminderConfig(): GoalReminderConfig | null | undefined {
-    return this._reminderConfig;
+
+  get reminderConfig(): GoalReminderConfig | null {
+    return this._reminderConfig as GoalReminderConfig | null;
   }
-  public get createdAt(): number {
+
+  get version(): number {
+    return this._version;
+  }
+
+  get createdAt(): Date {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+
+  get updatedAt(): Date {
     return this._updatedAt;
   }
-  public get deletedAt(): number | null | undefined {
+
+  get deletedAt(): Date | null {
     return this._deletedAt;
   }
 
-  // 子实体访问
-  public get keyResults(): KeyResult[] | null {
-    return this._keyResults.length > 0 ? [...this._keyResults] : null;
+  get keyResults(): KeyResultClientDTO[] | null {
+    return this._keyResults ? [...this._keyResults] : null;
   }
-  public get reviews(): GoalReview[] | null {
-    return this._reviews.length > 0 ? [...this._reviews] : null;
+
+  get reviews(): GoalReviewClientDTO[] | null {
+    return this._reviews ? [...this._reviews] : null;
   }
 
   // UI 计算属性
-  public get overallProgress(): number {
-    if (this._keyResults.length === 0) return 0;
-    const total = this._keyResults.reduce((sum, kr) => sum + kr.progressPercentage, 0);
-    return Math.round(total / this._keyResults.length);
+  get progress(): number {
+    return this._progress;
   }
 
-  public get isDeleted(): boolean {
-    return !!this._deletedAt;
+  get isOverdue(): boolean {
+    return this._isOverdue;
   }
 
-  public get isCompleted(): boolean {
-    return this._status === GoalStatus.COMPLETED;
+  get daysRemaining(): number | null {
+    return this._daysRemaining;
   }
 
-  public get isArchived(): boolean {
-    return this._status === GoalStatus.ARCHIVED;
+  get timeRangeSummary(): GoalTimeRangeSummary | null {
+    return this._timeRangeSummary;
   }
 
-  public get isOverdue(): boolean {
-    if (!this._targetDate || this.isCompleted) return false;
-    return Date.now() > this._targetDate;
+  get isDeleted(): boolean {
+    return this._deletedAt !== null;
   }
 
-  public get daysRemaining(): number | null {
-    if (!this._targetDate || this.isCompleted) return null;
-    const days = Math.ceil((this._targetDate - Date.now()) / (1000 * 60 * 60 * 24));
-    return days;
+  // ================= 4. Factory Methods =================
+  public static fromDTO(dto: GoalClientDTO): Goal {
+    // 计算 UI 字段
+    const now = Date.now();
+    const targetDate = dto.targetDate ? new Date(dto.targetDate) : null;
+    const isOverdue = targetDate !== null && targetDate.getTime() < now && dto.status !== GoalStatus.Completed;
+    const daysRemaining = targetDate
+      ? Math.ceil((targetDate.getTime() - now) / (1000 * 60 * 60 * 24))
+      : null;
+
+    return new Goal({
+      id: GoalId.of(dto.id),
+      identityId: IdentityId.of(dto.identityId),
+      name: dto.name,
+      description: dto.description,
+      color: dto.color,
+      feasibilityAnalysis: dto.feasibilityAnalysis,
+      motivation: dto.motivation,
+      status: dto.status,
+      importance: dto.importance,
+      priority: dto.priority ?? 0,
+      category: dto.category,
+      tags: dto.tags ?? [],
+      startDate: dto.startDate ? new Date(dto.startDate) : null,
+      targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
+      completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
+      archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
+      folderId: dto.folderId ? GoalFolderId.of(dto.folderId) : null,
+      parentGoalId: dto.parentGoalId ? GoalId.of(dto.parentGoalId) : null,
+      sortOrder: dto.sortOrder,
+      reminderConfig: dto.reminderConfig,
+      version: dto.version,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+      keyResults: dto.keyResults,
+      reviews: dto.reviews,
+      progress: dto.progress ?? 0,
+      isOverdue,
+      daysRemaining,
+      timeRangeSummary: dto.timeRangeSummary,
+    });
   }
 
-  public get statusText(): string {
-    const statusLabels: Record<GoalStatus, string> = {
-      [GoalStatus.DRAFT]: '草稿',
-      [GoalStatus.ACTIVE]: '进行中',
-      [GoalStatus.COMPLETED]: '已完成',
-      [GoalStatus.ARCHIVED]: '已归档',
-    };
-    return statusLabels[this._status];
-  }
-
-  public get importanceText(): string {
-    return this._importance || '未知';
-  }
-
-  /**
-   * 🔄 刷新优先级分数（使用共享内核计算器）
-   * 根据当前 importance 和 targetDate 重新计算优先级
-   */
-  public refreshPriority(referenceDate: Date = new Date()): void {
-    const targetDate = this._targetDate ? new Date(this._targetDate) : null;
-    this._priority = DailyPriorityCalculator.calculate(this._importance, targetDate, referenceDate);
-  }
-
-  /**
-   * 动态优先级值（持久化属性）
-   */
-  public get priority(): number {
-    return this._priority;
-  }
-
-  /**
-   * 优先级级别
-   */
-  public get priorityLevel(): 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' {
-    return DailyPriorityCalculator.mapScoreToLevel(this._priority);
-  }
-
-  /**
-   * 优先级文本
-   */
-  public get priorityText(): string {
-    return DailyPriorityCalculator.mapScoreToText(this._priority);
-  }
-
-  /**
-   * 优先级分数 (使用 priority 值)
-   */
-  public get priorityScore(): number {
-    return this._priority;
-  }
-
-  public get keyResultCount(): number {
-    return this._keyResults.length;
-  }
-
-  public get completedKeyResultCount(): number {
-    return this._keyResults.filter((kr) => kr.isCompleted).length;
-  }
-
-  public get reviewCount(): number {
-    return this._reviews.length;
-  }
-
-  public get hasActiveReminders(): boolean {
-    return !!this._reminderConfig?.hasActiveTriggers();
-  }
-
-  public get reminderSummary(): string | null {
-    return this._reminderConfig?.triggerSummary ?? null;
-  }
-
-  public get weightedProgress(): number {
-    return this.overallProgress;
-  }
-
-  public get timeProgressRatio(): number | null {
-    return this.calculateTimeProgressRatio();
-  }
-
-  public get timeProgressPercentage(): number | null {
-    const ratio = this.timeProgressRatio;
-    if (ratio === null) return null;
-    return Math.round(ratio * 10000) / 100;
-  }
-
-  public get timeProgressText(): string | null {
-    const percentage = this.timeProgressPercentage;
-    if (percentage === null) return null;
-    return `${percentage.toFixed(1)}%`;
-  }
-
-  public get timeRangeSummary(): GoalTimeRangeSummary | null {
-    return this.buildTimeRangeSummary();
-  }
-
-  public get records(): GoalRecordClientDTO[] | null {
-    if (!this._keyResults.length) return null;
-    const aggregated = this._keyResults.reduce<GoalRecordClientDTO[]>((acc, kr) => {
-      const recordList = kr.records ?? [];
-      if (recordList && recordList.length) {
-        return acc.concat(recordList);
-      }
-      return acc;
-    }, []);
-    return aggregated.length ? aggregated : null;
-  }
-
-  public get recordCount(): number {
-    return this.records?.length ?? 0;
-  }
-
-  public getTimeRangeSummary(): GoalTimeRangeSummary | null {
-    const summary = this.timeRangeSummary;
-    if (!summary) return null;
-    return { ...summary };
-  }
-
-  public getRecords(): GoalRecordClientDTO[] | null {
-    const data = this.records;
-    return data ? [...data] : null;
-  }
-
-  public getRecordCount(): number {
-    return this.recordCount;
-  }
-
-  /**
-   * 分析信息（兼容前端 UI 使用的属性结构）
-   * 将 motivation 和 feasibilityAnalysis 映射为 analysis 对象
-   */
-  public get analysis(): { motive?: string; feasibility?: string } {
+  // ================= 5. DTO Conversion =================
+  public toDTO(): GoalClientDTO {
     return {
-      motive: this._motivation || undefined,
-      feasibility: this._feasibilityAnalysis || undefined,
-    };
-  }
-
-  // 子实体工厂方法
-  public createKeyResult(params: {
-    title: string;
-    description?: string;
-    valueType: string;
-    targetValue: number;
-    unit?: string;
-    weight: number;
-  }): KeyResult {
-    const keyResult = KeyResult.forCreate(this._uuid);
-    // 这里应该设置参数，但由于 forCreate 返回的是预设的实例
-    // 在实际使用中需要支持参数传递或在创建后更新
-    return keyResult;
-  }
-
-  public createReview(params: {
-    title: string;
-    content: string;
-    reviewType: string;
-    rating?: number;
-    achievements?: string;
-    challenges?: string;
-    nextActions?: string;
-  }): GoalReview {
-    const review = GoalReview.forCreate(this._uuid);
-    return review;
-  }
-
-  // 子实体管理方法
-  public addKeyResult(keyResult: KeyResult): void {
-    if (!(keyResult instanceof KeyResult)) {
-      throw new Error('keyResult must be an instance of KeyResult');
-    }
-    this._keyResults.push(keyResult);
-    this._updatedAt = Date.now();
-  }
-
-  public removeKeyResult(keyResultUuid: string): KeyResult | null {
-    const index = this._keyResults.findIndex((kr) => kr.uuid === keyResultUuid);
-    if (index === -1) return null;
-    const removed = this._keyResults.splice(index, 1)[0];
-    this._updatedAt = Date.now();
-    return removed;
-  }
-
-  public updateKeyResult(
-    keyResultUuid: string,
-    updates: Partial<KeyResult>,
-  ): void {
-    const index = this._keyResults.findIndex((kr) => kr.uuid === keyResultUuid);
-    if (index === -1) throw new Error('KeyResult not found');
-    // 由于 KeyResult 是不可变的，需要重新创建
-    const current = this._keyResults[index];
-    const dto = current.toClientDTO();
-    const updated = KeyResult.fromClientDTO({ ...dto, ...updates });
-    this._keyResults[index] = updated;
-    this._updatedAt = Date.now();
-  }
-
-  public reorderKeyResults(keyResultUuids: string[]): void {
-    const reordered = keyResultUuids
-      .map((uuid) => this._keyResults.find((kr) => kr.uuid === uuid))
-      .filter((kr): kr is KeyResult => !!kr);
-    this._keyResults = reordered;
-    this._updatedAt = Date.now();
-  }
-
-  public getKeyResult(uuid: string): KeyResult | null {
-    return this._keyResults.find((kr) => kr.uuid === uuid) ?? null;
-  }
-
-  public getAllKeyResults(): KeyResult[] {
-    return [...this._keyResults];
-  }
-
-  // 属性修改方法
-  public updateTitle(title: string): void {
-    if (!title || title.trim().length === 0) {
-      throw new Error('Title cannot be empty');
-    }
-    this._title = title.trim();
-    this._updatedAt = Date.now();
-  }
-
-  public updateDescription(description: string | null): void {
-    this._description = description;
-    this._updatedAt = Date.now();
-  }
-
-  public updateColor(color: string | null): void {
-    this._color = color;
-    this._updatedAt = Date.now();
-  }
-
-  public updateMotivation(motivation: string | null): void {
-    this._motivation = motivation;
-    this._updatedAt = Date.now();
-  }
-
-  public updateFeasibilityAnalysis(feasibilityAnalysis: string | null): void {
-    this._feasibilityAnalysis = feasibilityAnalysis;
-    this._updatedAt = Date.now();
-  }
-
-  public updateImportance(importance: ImportanceLevel): void {
-    this._importance = importance;
-    this._updatedAt = Date.now();
-  }
-
-  public updateCategory(category: string | null): void {
-    this._category = category;
-    this._updatedAt = Date.now();
-  }
-
-  public updateTags(tags: string[]): void {
-    this._tags = [...tags];
-    this._updatedAt = Date.now();
-  }
-
-  public updateTimeRange(startDate: number | null, targetDate: number | null): void {
-    if (startDate && targetDate && startDate > targetDate) {
-      throw new Error('Start date cannot be after target date');
-    }
-    this._startDate = startDate;
-    this._targetDate = targetDate;
-    this._updatedAt = Date.now();
-  }
-
-  public updateStartDate(startDate: number | null): void {
-    if (startDate && this._targetDate && startDate > this._targetDate) {
-      throw new Error('Start date cannot be after target date');
-    }
-    this._startDate = startDate;
-    this._updatedAt = Date.now();
-  }
-
-  public updateTargetDate(targetDate: number | null): void {
-    if (this._startDate && targetDate && this._startDate > targetDate) {
-      throw new Error('Target date cannot be before start date');
-    }
-    this._targetDate = targetDate;
-    this._updatedAt = Date.now();
-  }
-
-  public updateFolder(folderUuid: string | null): void {
-    this._folderUuid = folderUuid;
-    this._updatedAt = Date.now();
-  }
-
-  public updateParentGoal(parentGoalUuid: string | null): void {
-    this._parentGoalUuid = parentGoalUuid;
-    this._updatedAt = Date.now();
-  }
-
-  public updateSortOrder(sortOrder: number): void {
-    this._sortOrder = sortOrder;
-    this._updatedAt = Date.now();
-  }
-
-  public updateReminderConfig(reminderConfig: GoalReminderConfig | null): void {
-    this._reminderConfig = reminderConfig;
-    this._updatedAt = Date.now();
-  }
-
-  /**
-   * 设置 accountUuid（用于保存前注入）
-   * 仅在新建目标保存时调用
-   */
-  public setAccountUuid(accountUuid: string): void {
-    if (this._accountUuid && this._accountUuid !== '') {
-      throw new Error('AccountUuid is already set');
-    }
-    this._accountUuid = accountUuid;
-  }
-
-  // 状态变更方法
-  public activate(): void {
-    if (!this.canActivate()) {
-      throw new Error('Goal cannot be activated in current status');
-    }
-    this._status = GoalStatus.ACTIVE;
-    this._updatedAt = Date.now();
-  }
-
-  public complete(): void {
-    if (!this.canComplete()) {
-      throw new Error('Goal cannot be completed in current status');
-    }
-    this._status = GoalStatus.COMPLETED;
-    this._completedAt = Date.now();
-    this._updatedAt = Date.now();
-  }
-
-  public archive(): void {
-    if (!this.canArchive()) {
-      throw new Error('Goal cannot be archived in current status');
-    }
-    this._status = GoalStatus.ARCHIVED;
-    this._archivedAt = Date.now();
-    this._updatedAt = Date.now();
-  }
-
-  public reopen(): void {
-    if (this._status !== GoalStatus.COMPLETED && this._status !== GoalStatus.ARCHIVED) {
-      throw new Error('Only completed or archived goals can be reopened');
-    }
-    this._status = GoalStatus.ACTIVE;
-    this._completedAt = null;
-    this._archivedAt = null;
-    this._updatedAt = Date.now();
-  }
-
-  public addReview(review: GoalReview): void {
-    if (!(review instanceof GoalReview)) {
-      throw new Error('review must be an instance of GoalReview');
-    }
-    this._reviews.push(review);
-    this._updatedAt = Date.now();
-  }
-
-  public removeReview(reviewUuid: string): GoalReview | null {
-    const index = this._reviews.findIndex((r) => r.uuid === reviewUuid);
-    if (index === -1) return null;
-    const removed = this._reviews.splice(index, 1)[0];
-    this._updatedAt = Date.now();
-    return removed;
-  }
-
-  public getReviews(): GoalReview[] {
-    return [...this._reviews];
-  }
-
-  public getLatestReview(): GoalReview | null {
-    if (this._reviews.length === 0) return null;
-    return this._reviews.sort((a, b) => b.reviewedAt - a.reviewedAt)[0];
-  }
-
-  // UI 业务方法
-  public getDisplayTitle(): string {
-    const maxLength = 50;
-    if (this._title.length <= maxLength) return this._title;
-    return `${this._title.substring(0, maxLength)}...`;
-  }
-
-  public getStatusBadge(): { text: string; color: string } {
-    const badges: Record<GoalStatus, { text: string; color: string }> = {
-      [GoalStatus.DRAFT]: { text: '草稿', color: 'gray' },
-      [GoalStatus.ACTIVE]: { text: '进行中', color: 'blue' },
-      [GoalStatus.COMPLETED]: { text: '已完成', color: 'green' },
-      [GoalStatus.ARCHIVED]: { text: '已归档', color: 'amber' },
-    };
-    return badges[this._status];
-  }
-
-  public getPriorityBadge(): { text: string; color: string } {
-    const level = this.priorityLevel;
-    const badges: Record<string, { text: string; color: string }> = {
-      CRITICAL: { text: '紧急', color: 'red' },
-      HIGH: { text: '高优先级', color: 'orange' },
-      MEDIUM: { text: '中优先级', color: 'amber' },
-      LOW: { text: '低优先级', color: 'blue' },
-    };
-    return badges[level];
-  }
-
-  public getProgressText(): string {
-    const completed = this.completedKeyResultCount;
-    const total = this.keyResultCount;
-    const percentage = this.overallProgress;
-    return `${completed}/${total} (${percentage}%)`;
-  }
-
-  public getDateRangeText(): string {
-    if (!this._startDate && !this._targetDate) return '未设置时间';
-    const start = this._startDate
-      ? new Date(this._startDate).toLocaleDateString('zh-CN')
-      : '未设置';
-    const target = this._targetDate
-      ? new Date(this._targetDate).toLocaleDateString('zh-CN')
-      : '未设置';
-    return `${start} 至 ${target}`;
-  }
-
-  public getReminderStatusText(): string {
-    if (!this._reminderConfig) return '未设置提醒';
-    return this._reminderConfig.statusText;
-  }
-
-  public getReminderIcon(): string {
-    if (!this.hasActiveReminders) return '🔕';
-    return '🔔';
-  }
-
-  public shouldShowReminderBadge(): boolean {
-    return this.hasActiveReminders;
-  }
-
-  // 操作判断方法
-  public canActivate(): boolean {
-    return this._status === GoalStatus.DRAFT;
-  }
-
-  public canComplete(): boolean {
-    return this._status === GoalStatus.ACTIVE;
-  }
-
-  public canArchive(): boolean {
-    return this._status === GoalStatus.COMPLETED;
-  }
-
-  public canDelete(): boolean {
-    return !this.isDeleted;
-  }
-
-  public canAddKeyResult(): boolean {
-    return this._status === GoalStatus.DRAFT || this._status === GoalStatus.ACTIVE;
-  }
-
-  public canAddReview(): boolean {
-    return true;
-  }
-
-  // DTO 转换
-  public toServerDTO(includeChildren = false): GoalServerDTO {
-    return {
-      uuid: this._uuid,
-      accountUuid: this._accountUuid,
-      title: this._title,
-      description: this._description,
-      status: this._status,
-      importance: this._importance,
-      priority: this._priority,
-      category: this._category,
-      tags: [...this._tags],
-      startDate: this._startDate,
-      targetDate: this._targetDate,
-      completedAt: this._completedAt,
-      archivedAt: this._archivedAt,
-      folderUuid: this._folderUuid,
-      parentGoalUuid: this._parentGoalUuid,
-      sortOrder: this._sortOrder,
-      reminderConfig: this._reminderConfig?.toServerDTO(),
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
-      keyResults: includeChildren ? this._keyResults.map((kr) => kr.toServerDTO()) : undefined,
-      reviews: includeChildren ? this._reviews.map((r) => r.toServerDTO()) : undefined,
-    };
-  }
-
-  public toClientDTO(includeChildren = false): GoalClientDTO {
-    const recordsPayload = includeChildren ? this.records : undefined;
-    return {
-      uuid: this._uuid,
-      accountUuid: this._accountUuid,
-      title: this._title,
+      id: String(this.id) as GoalClientDTO['id'],
+      identityId: String(this._identityId) as GoalClientDTO['identityId'],
+      name: this._name,
       description: this._description,
       color: this._color,
       feasibilityAnalysis: this._feasibilityAnalysis,
       motivation: this._motivation,
       status: this._status,
       importance: this._importance,
+      priority: this._priority,
       category: this._category,
       tags: [...this._tags],
-      startDate: this._startDate,
-      targetDate: this._targetDate,
-      completedAt: this._completedAt,
-      archivedAt: this._archivedAt,
-      folderUuid: this._folderUuid,
-      parentGoalUuid: this._parentGoalUuid,
+      startDate: this._startDate?.getTime() ?? null,
+      targetDate: this._targetDate?.getTime() ?? null,
+      completedAt: this._completedAt?.getTime() ?? null,
+      archivedAt: this._archivedAt?.getTime() ?? null,
+      folderId: this._folderId ? (String(this._folderId) as GoalClientDTO['folderId']) : null,
+      parentGoalId: this._parentGoalId ? (String(this._parentGoalId) as GoalClientDTO['parentGoalId']) : null,
       sortOrder: this._sortOrder,
-      reminderConfig: this._reminderConfig?.toClientDTO(),
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
-      keyResults: includeChildren ? this._keyResults.map((kr) => kr.toClientDTO()) : undefined,
-      reviews: includeChildren ? this._reviews.map((r) => r.toClientDTO()) : undefined,
-      overallProgress: this.overallProgress,
-      isDeleted: this.isDeleted,
-      isCompleted: this.isCompleted,
-      isArchived: this.isArchived,
-      isOverdue: this.isOverdue,
-      daysRemaining: this.daysRemaining,
-      statusText: this.statusText,
-      importanceText: this.importanceText,
-      priority: this.priority,
-      priorityLevel: this.priorityLevel,
-      priorityText: this.priorityText,
-      keyResultCount: this.keyResultCount,
-      completedKeyResultCount: this.completedKeyResultCount,
-      reviewCount: this.reviewCount,
-      hasActiveReminders: this.hasActiveReminders,
-      reminderSummary: this.reminderSummary,
-      weightedProgress: this.weightedProgress,
-      timeProgressRatio: this.timeProgressRatio,
-      timeProgressPercentage: this.timeProgressPercentage,
-      timeProgressText: this.timeProgressText,
-      timeRangeSummary: this.timeRangeSummary,
-      records: recordsPayload,
-      recordCount: this.recordCount,
-    };
-  }
-
-  // 静态工厂方法
-  public static create(params: {
-    accountUuid: string;
-    title: string;
-    description?: string;
-    importance: ImportanceLevel;
-    category?: string;
-    tags?: string[];
-    startDate?: number;
-    targetDate?: number;
-    folderUuid?: string;
-    parentGoalUuid?: string;
-  }): Goal {
-    const now = Date.now();
-    return new Goal({
-      uuid: crypto.randomUUID(),
-      accountUuid: params.accountUuid,
-      title: params.title,
-      description: params.description,
-      status: GoalStatus.DRAFT,
-      importance: params.importance,
-      category: params.category,
-      tags: params.tags,
-      startDate: params.startDate,
-      targetDate: params.targetDate,
-      folderUuid: params.folderUuid,
-      parentGoalUuid: params.parentGoalUuid,
-      createdAt: now,
-      updatedAt: now,
-    });
-  }
-
-  /**
-   * 创建新目标（用于前端表单）
-   * accountUuid 会在保存时注入
-   */
-  public static forCreate(): Goal {
-    const now = Date.now();
-    return new Goal({
-      uuid: crypto.randomUUID(), // 前端生成 UUID（乐观更新）
-      accountUuid: '', // 占位符，保存时会被替换
-      title: '',
-      status: GoalStatus.DRAFT,
-      importance: ImportanceLevel.Moderate,
-      sortOrder: 0,
-      createdAt: now,
-      updatedAt: now,
-    });
-  }
-
-  public static fromServerDTO(dto: GoalServerDTO): Goal {
-    return new Goal({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
-      title: dto.title,
-      description: dto.description,
-      color: dto.color,
-      feasibilityAnalysis: dto.feasibilityAnalysis,
-      motivation: dto.motivation,
-      status: dto.status,
-      importance: dto.importance,
-      priority: dto.priority ?? 0,
-      category: dto.category,
-      tags: dto.tags,
-      startDate: dto.startDate,
-      targetDate: dto.targetDate,
-      completedAt: dto.completedAt,
-      archivedAt: dto.archivedAt,
-      folderUuid: dto.folderUuid,
-      parentGoalUuid: dto.parentGoalUuid,
-      sortOrder: dto.sortOrder,
-      reminderConfig: dto.reminderConfig
-        ? GoalReminderConfig.fromServerDTO(dto.reminderConfig)
-        : null,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
-      keyResults: dto.keyResults?.map((kr) => KeyResult.fromServerDTO(kr)),
-      reviews: dto.reviews?.map((r) => GoalReview.fromServerDTO(r)),
-    });
-  }
-
-  public static fromClientDTO(dto: GoalClientDTO): Goal {
-    return new Goal({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
-      title: dto.title,
-      description: dto.description,
-      color: dto.color,
-      feasibilityAnalysis: dto.feasibilityAnalysis,
-      motivation: dto.motivation,
-      status: dto.status,
-      importance: dto.importance,
-      priority: dto.priority ?? 0,
-      category: dto.category,
-      tags: dto.tags,
-      startDate: dto.startDate,
-      targetDate: dto.targetDate,
-      completedAt: dto.completedAt,
-      archivedAt: dto.archivedAt,
-      folderUuid: dto.folderUuid,
-      parentGoalUuid: dto.parentGoalUuid,
-      sortOrder: dto.sortOrder,
-      reminderConfig: dto.reminderConfig
-        ? GoalReminderConfig.fromClientDTO(dto.reminderConfig)
-        : null,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
-      keyResults: dto.keyResults?.map((kr) => KeyResult.fromClientDTO(kr)),
-      reviews: dto.reviews?.map((r) => GoalReview.fromClientDTO(r)),
-    });
-  }
-
-  public clone(): Goal {
-    return Goal.fromClientDTO(this.toClientDTO(true));
-  }
-
-  private resolveTimeRange(): { start: number | null; end: number | null } {
-    const start = this._startDate ?? this._createdAt ?? null;
-    let end = this._targetDate ?? this._completedAt ?? this._updatedAt ?? null;
-
-    if (start && (!end || end <= start)) {
-      end = start + DEFAULT_DURATION;
-    }
-
-    return { start, end };
-  }
-
-  private calculateTimeProgressRatio(): number | null {
-    const { start, end } = this.resolveTimeRange();
-    if (!start || !end || end <= start) return null;
-    const now = Date.now();
-    if (now <= start) return 0;
-    if (now >= end) return 1;
-    return (now - start) / (end - start);
-  }
-
-  private buildTimeRangeSummary(): GoalTimeRangeSummary | null {
-    const { start, end } = this.resolveTimeRange();
-    if (!start && !end) return null;
-
-    const now = Date.now();
-    const duration = start && end ? Math.ceil((end - start) / DAY_MS) : null;
-    const elapsed = start ? Math.max(0, Math.ceil((now - start) / DAY_MS)) : null;
-    const remaining = end ? Math.ceil((end - now) / DAY_MS) : null;
-
-    return {
-      startDate: this._startDate ?? null,
-      targetDate: this._targetDate ?? null,
-      actualStartDate: start,
-      actualEndDate: end,
-      durationDays: duration,
-      elapsedDays: elapsed,
-      remainingDays: remaining,
+      reminderConfig: this._reminderConfig,
+      version: this._version,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
+      keyResults: this._keyResults ? [...this._keyResults] : null,
+      reviews: this._reviews ? [...this._reviews] : null,
+      progress: this._progress,
+      timeRangeSummary: this._timeRangeSummary,
     };
   }
 }

@@ -1,5 +1,6 @@
 /**
- * Task Entities Barrel Export
+ * Task Entities
+ * Task 模块实体导出
  */
 
-export * from './TaskTemplateHistory';
+export { Subtask } from './subtask.js';

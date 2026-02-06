@@ -1,16 +1,27 @@
 /**
- * Notification Module Exports (Client)
- * 通知模块导出
+ * Notification Module - Domain Client
+ * 通知模块 - 领域客户端
+ *
+ * 【模块职责】
+ * 管理通知（Notification）的客户端领域模型
+ *
+ * 【包含内容】
+ * - 聚合根（Aggregates）：Notification, NotificationPreference
+ * - 实体（Entities）：NotificationChannel
+ * - 值对象（Value Objects）：从 domain-shared 导入
+ *
+ * 【依赖规则】
+ * ✅ 允许依赖：
+ * - @dailyuse/utils（基类：AggregateRoot, Entity）
+ * - @dailyuse/contracts（DTO 接口、Client 接口）
+ * - @dailyuse/domain-shared（值对象、枚举）
  */
 
-// ===== 聚合根 =====
-export * from './aggregates';
+// ===== Aggregates =====
+export * from './aggregates/index.js';
 
-// ===== 值对象 =====
-export * from './value-objects';
+// ===== Entities =====
+export * from './entities/index.js';
 
-// ===== 实体 =====
-// export * from './entities'; // 暂不导出，客户端通常不需要子实体
-
-// Note: 客户端简化实现，子实体（channels, history）通常通过 API 按需加载
-// 不在客户端维护完整的子实体集合
+// ===== Value Objects (re-export from domain-shared) =====
+export * from '@dailyuse/domain-shared/notification';

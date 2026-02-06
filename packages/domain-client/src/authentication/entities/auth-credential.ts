@@ -1,43 +1,60 @@
-import { Entity } from '@dailyuse/utils';
-import type { AuthCredentialClientDTO, AuthCredentialClient as IAuthCredentialClient } from '@dailyuse/contracts/authentication';
-import { AuthCredentialId, CredentialType } from '@dailyuse/domain-shared/authentication';
-
 /**
- * 🔐 认证凭证实体 - 客户端
- * 
- * Client 端看到的凭证是脱敏的：
+ * AuthCredential Entity - Domain Client
+ * 认证凭证实体 - 领域客户端
+ *
+ * Client 端的凭证是脱敏的：
  * - 不包含哈希密码
  * - 不包含 OAuth AccessToken/RefreshToken
  * - 仅显示用户友好的信息
  */
-export class AuthCredential extends Entity<AuthCredentialId> implements IAuthCredentialClient {
-  // ================= 内部状态 =================
+
+import type {
+  AuthCredentialClient,
+  AuthCredentialClientDTO,
+} from '@dailyuse/contracts/authentication';
+import { Entity } from '@dailyuse/utils';
+
+import {
+  AuthCredentialId,
+  CredentialType,
+} from '@dailyuse/domain-shared/authentication';
+
+export class AuthCredential extends Entity<AuthCredentialId> implements AuthCredentialClient {
+  // ================= 内部状态 (Backing Fields) =================
   private _type: CredentialType;
   private _displayName: string;
   private _lastUsedAt: Date | null;
   private _isPrimary: boolean;
+  private _version: number;
+  private _createdAt: Date;
+  private _updatedAt: Date;
+  private _deletedAt: Date | null;
 
-  // ================= 构造函数 =================
-  private constructor(dto: AuthCredentialClientDTO) {
-    super(AuthCredentialId.of(dto.id));
-    
-    this._type = CredentialType.of(dto.type);
-    this._displayName = dto.displayName;
-    this._lastUsedAt = dto.lastUsedAt !== null ? new Date(dto.lastUsedAt) : null;
-    this._isPrimary = dto.isPrimary;
+  // ================= 构造函数 (Private) =================
+  private constructor(params: {
+    id: AuthCredentialId;
+    type: CredentialType;
+    displayName: string;
+    lastUsedAt: Date | null;
+    isPrimary: boolean;
+    version: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
+  }) {
+    super(params.id);
+    this._type = params.type;
+    this._displayName = params.displayName;
+    this._lastUsedAt = params.lastUsedAt;
+    this._isPrimary = params.isPrimary;
+    this._version = params.version;
+    this._createdAt = params.createdAt;
+    this._updatedAt = params.updatedAt;
+    this._deletedAt = params.deletedAt;
   }
 
-  // ================= 工厂方法 =================
-  
-  /**
-   * 从 ClientDTO 创建实体
-   */
-  public static fromClientDTO(dto: AuthCredentialClientDTO): AuthCredential {
-    return new AuthCredential(dto);
-  }
+  // ================= 公共属性 (Getters) =================
 
-  // ================= Getters =================
-  
   get type(): CredentialType {
     return this._type;
   }
@@ -54,67 +71,80 @@ export class AuthCredential extends Entity<AuthCredentialId> implements IAuthCre
     return this._isPrimary;
   }
 
-  // ================= UI 辅助方法 =================
-
-  /**
-   * 获取凭证类型的 UI 显示名称
-   */
-  get typeDisplayName(): string {
-    return CredentialType.getDisplayName(this._type);
+  get version(): number {
+    return this._version;
   }
+
+  get createdAt(): Date {
+    return this._createdAt;
+  }
+
+  get updatedAt(): Date {
+    return this._updatedAt;
+  }
+
+  get deletedAt(): Date | null {
+    return this._deletedAt;
+  }
+
+  // ================= 查询方法 =================
 
   /**
    * 是否是密码凭证
    */
-  get isPassword(): boolean {
+  public isPassword(): boolean {
     return CredentialType.isPasswordBased(this._type);
   }
 
   /**
    * 是否是 OAuth 凭证
    */
-  get isOAuth(): boolean {
+  public isOAuth(): boolean {
     return CredentialType.isOAuth(this._type);
   }
 
   /**
-   * 是否是手机凭证
+   * 是否是手机号凭证
    */
-  get isPhone(): boolean {
+  public isPhone(): boolean {
     return CredentialType.isPhoneBased(this._type);
   }
 
-  /**
-   * 获取最后使用时间的相对描述
-   * 例如: "刚刚使用", "5分钟前", "从未使用"
-   */
-  get lastUsedDescription(): string {
-    if (!this._lastUsedAt) {
-      return '从未使用';
-    }
-    
-    const now = Date.now();
-    const diffMs = now - this._lastUsedAt.getTime();
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  // ================= 工厂方法 (Factory Methods) =================
 
-    if (diffMinutes < 1) return '刚刚使用';
-    if (diffMinutes < 60) return `${diffMinutes}分钟前`;
-    if (diffHours < 24) return `${diffHours}小时前`;
-    if (diffDays < 30) return `${diffDays}天前`;
-    return '超过30天前';
+  /**
+   * 从 DTO 创建实例
+   */
+  public static fromDTO(dto: AuthCredentialClientDTO): AuthCredential {
+    return new AuthCredential({
+      id: AuthCredentialId.of(dto.id),
+      type: CredentialType.of(dto.type),
+      displayName: dto.displayName,
+      lastUsedAt: dto.lastUsedAt ? new Date(dto.lastUsedAt) : null,
+      isPrimary: dto.isPrimary,
+      version: dto.version,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    });
   }
 
-  // ================= 序列化 =================
+  // ================= DTO 转换 =================
 
-  public toClientDTO(): AuthCredentialClientDTO {
+  /**
+   * 转换为 DTO
+   */
+  public toDTO(): AuthCredentialClientDTO {
     return {
       id: this.id,
       type: this._type,
       displayName: this._displayName,
       lastUsedAt: this._lastUsedAt?.getTime() ?? null,
       isPrimary: this._isPrimary,
+      version: this._version,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
     };
   }
 }

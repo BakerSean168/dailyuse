@@ -1,6 +1,7 @@
 /**
- * Schedule 聚合根导出
+ * Schedule Aggregates
+ * Schedule 模块聚合根导出
  */
 
-export { Schedule } from './schedule';
-export { ScheduleTask } from './schedule-task';
+export { ScheduleTask } from './schedule-task.js';
+export { ScheduleJob } from './schedule-job.js';

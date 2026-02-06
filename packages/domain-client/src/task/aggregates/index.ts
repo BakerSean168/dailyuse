@@ -1,8 +1,8 @@
 /**
- * Task Aggregates Barrel Export
+ * Task Aggregates
+ * Task 模块聚合根导出
  */
 
-export * from './TaskInstance';
-export * from './TaskStatistics';
-export * from './TaskTemplate';
-export * from './TaskDependency';
+export { TaskTemplate } from './task-template.js';
+export { TaskInstance } from './task-instance.js';
+export { TaskFolder } from './task-folder.js';
