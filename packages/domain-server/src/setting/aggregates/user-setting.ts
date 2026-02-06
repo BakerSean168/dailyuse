@@ -207,6 +207,23 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
     };
   }
 
+  toClientDTO(): import('@dailyuse/contracts/setting').UserSettingClientDTO {
+    const entriesArray: SettingEntryServerDTO[] = [];
+    for (const entry of this._entries.values()) {
+      entriesArray.push(entry.toDTO());
+    }
+
+    return {
+      id: this.id,
+      identityId: this._identityId,
+      entries: JSON.stringify(entriesArray),
+      version: 1,
+      createdAt: this._createdAt.getTime() as TransferDate,
+      updatedAt: this._updatedAt.getTime() as TransferDate,
+      deletedAt: null,
+    };
+  }
+
   toPersistenceDTO(): UserSettingPersistenceDTO {
     const entriesArray: SettingEntryServerDTO[] = [];
     for (const entry of this._entries.values()) {

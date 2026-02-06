@@ -18,8 +18,10 @@ model FocusSession {
   cancelledAt           DateTime? @map("cancelled_at")
   pauseCount            Int       @default(0) @map("pause_count")
   pausedDurationMinutes Int       @default(0) @map("paused_duration_minutes")
+  version               Int       @default(1)
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
+  deletedAt             DateTime? @map("deleted_at")
 
   account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
   goal    Goal?   @relation(fields: [goalId], references: [id])
@@ -37,8 +39,10 @@ model FocusMode {
   hiddenGoalsMode String    @map("hidden_goals_mode")
   isActive        Boolean   @default(true) @map("is_active")
   actualEndTime   DateTime? @map("actual_end_time")
+  version         Int       @default(1)
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
 
   account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
 

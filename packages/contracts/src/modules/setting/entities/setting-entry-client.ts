@@ -13,7 +13,10 @@ export interface SettingEntryClient {
   id: SettingEntryId;
   key: string;
   value: any;
+  version: number;
+  createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 }
 
 export interface SettingEntryClientDTO {
@@ -21,5 +24,8 @@ export interface SettingEntryClientDTO {
   key: string;
   value: any;
   category: SettingCategory;
+  version: number;
+  createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }

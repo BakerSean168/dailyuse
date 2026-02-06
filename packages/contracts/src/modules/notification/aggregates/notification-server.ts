@@ -50,8 +50,10 @@ export interface NotificationServer {
   metadata?: NotificationMetadata | null;
 
   // ===== 时间戳 =====
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
   /**
    * 渠道列表（懒加载，可选）
    */
@@ -83,8 +85,10 @@ export interface NotificationServerDTO {
   actions?: NotificationActionDTO[] | null;
   metadata?: NotificationMetadataDTO | null;
 
+  version: number;
   createdAt: TransferDate; 
   updatedAt: TransferDate; 
+  deletedAt: TransferDate | null;
 
   // ===== 子实体 DTO =====
   notificationChannels?: NotificationChannelServerDTO[] | null; // 渠道列表（可选加载）
@@ -113,7 +117,9 @@ export interface NotificationPersistenceDTO {
 
   notificationChannels?: string | null;
 
+  version: number;
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
+  deletedAt: PersistenceDate | null;
 
 }

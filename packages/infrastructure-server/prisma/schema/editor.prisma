@@ -13,9 +13,11 @@ model EditorWorkspace {
   layout      Json
   setting     Json
   isActive    Boolean  @default(true) @map("is_active")
+  version     Int      @default(1)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   accessedAt  DateTime @default(now()) @map("accessed_at")
+  deletedAt   DateTime? @map("deleted_at")
 
   sessions EditorWorkspaceSession[]
   account  Account                  @relation(fields: [identityId], references: [id], onDelete: Cascade)
@@ -31,8 +33,10 @@ model EditorWorkspaceSession {
   name        String
   layout      Json
   isActive    Boolean  @default(true) @map("is_active")
+  version     Int      @default(1)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
 
   groups    EditorWorkspaceSessionGroup[]
   account   Account                       @relation(fields: [identityId], references: [id], onDelete: Cascade)
@@ -50,8 +54,10 @@ model EditorWorkspaceSessionGroup {
   groupIndex     Int      @map("group_index")
   name           String?
   splitDirection String   @map("split_direction")
+  version        Int      @default(1)
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
 
   tabs    EditorWorkspaceSessionGroupTab[]
   account Account                          @relation(fields: [identityId], references: [id], onDelete: Cascade)
@@ -74,8 +80,10 @@ model EditorWorkspaceSessionGroupTab {
   viewState   Json     @map("view_state")
   isPinned    Boolean  @default(false) @map("is_pinned")
   isActive    Boolean  @default(false) @map("is_active")
+  version     Int      @default(1)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
 
   account Account                     @relation(fields: [identityId], references: [id], onDelete: Cascade)
   group   EditorWorkspaceSessionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)

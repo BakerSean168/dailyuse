@@ -21,7 +21,10 @@ export interface ScheduleExecutionClientDTO {
   result: Record<string, any> | null;
   error: string | null;
   retryCount: number;
+  version: number;
   createdAt: TransferDate;
+  updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 
   // UI 辅助属�?
   executionTimeFormatted: string;
@@ -48,7 +51,10 @@ export interface ScheduleExecutionClient {
   result: Record<string, any> | null;
   error: string | null;
   retryCount: number;
+  version: number;
   createdAt: DomainDate;
+  updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 
   // UI 辅助属�?
   executionTimeFormatted: string;

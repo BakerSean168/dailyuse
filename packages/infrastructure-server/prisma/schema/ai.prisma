@@ -6,10 +6,11 @@
 model AiConversation {
   id            String    @id
   identityId    String    @map("identity_id")
-  title         String
+  name          String
   status        String // ACTIVE, CLOSED, ARCHIVED
   messageCount  Int       @default(0) @map("message_count")
   lastMessageAt DateTime? @map("last_message_at")
+  version       Int       @default(1)
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
   deletedAt     DateTime? @map("deleted_at")
@@ -50,6 +51,7 @@ model AiGenerationTask {
   retryCount   Int       @default(0) @map("retry_count")
   tokenUsage   String?   @map("token_usage") // JSON
   processingMs Int?      @map("processing_ms")
+  version      Int       @default(1)
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
   completedAt  DateTime? @map("completed_at")
@@ -72,8 +74,10 @@ model AiUsageQuota {
   resetPeriod  String   @default("DAILY") @map("reset_period") // DAILY, WEEKLY, MONTHLY
   lastResetAt  DateTime @default(now()) @map("last_reset_at")
   nextResetAt  DateTime @map("next_reset_at")
+  version      Int      @default(1)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
 
   account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
@@ -94,8 +98,10 @@ model AiProviderConfig {
   isActive        Boolean  @default(true) @map("is_active")
   isDefault       Boolean  @default(false) @map("is_default")
   priority        Int      @default(100) // 优先级
+  version         Int      @default(1)
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
 
   account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
 

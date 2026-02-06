@@ -27,6 +27,12 @@ export interface NotificationChannelClient {
   error?: ChannelErrorDTO | null;
   response?: ChannelResponseDTO | null;
 
+  // 同步字段
+  version: number;
+  createdAt: DomainDate;
+  updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
+
   sentAt?: DomainDate | null;
   failedAt?: DomainDate | null;
 }
@@ -46,7 +52,10 @@ export interface NotificationChannelClientDTO {
   maxRetries: number;
   error?: ChannelErrorDTO | null;
   response?: ChannelResponseDTO | null;
+  version: number;
   createdAt: TransferDate;
+  updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
   sentAt?: TransferDate | null;
   failedAt?: TransferDate | null;
 }

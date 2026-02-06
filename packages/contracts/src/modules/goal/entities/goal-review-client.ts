@@ -16,8 +16,11 @@ export interface GoalReviewClientDTO {
   challenges: string | null;
   improvements: string | null;
   keyResultSnapshots: KeyResultSnapshotDTO[];
+  version: number;
   reviewedAt: number;
   createdAt: number;
+  updatedAt: number;
+  deletedAt: number | null;
 }
 
 export interface GoalReviewClient {
@@ -30,6 +33,9 @@ export interface GoalReviewClient {
   challenges: string | null;
   improvements: string | null;
   keyResultSnapshots: KeyResultSnapshotDTO[];
+  version: number;
   reviewedAt: number;
   createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 }

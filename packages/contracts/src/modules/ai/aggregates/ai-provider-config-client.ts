@@ -32,10 +32,14 @@ export interface AIProviderConfigClientDTO {
   isDefault: boolean;
   /** 优先级（数字越小优先级越高，用于故障转移） */
   priority: number;
+  /** 版本号（用于乐观锁） */
+  version: number;
   /** 创建时间戳 */
   createdAt: number;
   /** 更新时间戳 */
   updatedAt: number;
+  /** 软删除时间戳 */
+  deletedAt: number | null;
 }
 
 /**

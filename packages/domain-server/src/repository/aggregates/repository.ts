@@ -50,6 +50,8 @@ export class Repository
   private _status: RepositoryStatus;
   private _createdAt: Date;
   private _updatedAt: Date;
+  private _version: number;
+  private _deletedAt: Date | null;
 
   // ===== 私有构造函数 =====
   private constructor(
@@ -65,6 +67,8 @@ export class Repository
       status: RepositoryStatus;
       createdAt: Date;
       updatedAt: Date;
+      version: number;
+      deletedAt: Date | null;
     },
   ) {
     super(id);
@@ -78,6 +82,8 @@ export class Repository
     this._status = params.status;
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
+    this._version = params.version;
+    this._deletedAt = params.deletedAt;
   }
 
   // ===== Getters =====
@@ -119,6 +125,14 @@ export class Repository
 
   public get updatedAt(): Date {
     return this._updatedAt;
+  }
+
+  public get version(): number {
+    return this._version;
+  }
+
+  public get deletedAt(): Date | null {
+    return this._deletedAt;
   }
 
   // ===== 业务方法 =====
@@ -192,6 +206,8 @@ export class Repository
       status: this._status,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
+      version: this._version,
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
     };
   }
 
@@ -208,6 +224,8 @@ export class Repository
       status: this._status,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
+      version: this._version,
+      deletedAt: this._deletedAt,
     };
   }
 
@@ -237,6 +255,8 @@ export class Repository
       status: RepositoryStatus.Active,
       createdAt: now,
       updatedAt: now,
+      version: 1,
+      deletedAt: null,
     });
   }
 
@@ -254,6 +274,8 @@ export class Repository
       status: dto.status,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
+      version: dto.version,
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 
@@ -271,6 +293,8 @@ export class Repository
       status: dto.status,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
+      version: dto.version,
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 }

@@ -51,6 +51,11 @@ export interface AuthSessionClient {
    * 最后活跃时间
    */
   lastActiveAt: DomainDate;
+
+  // 同步字段
+  version: number;
+  updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 }
 
 // ============ DTO 定义 ============
@@ -64,7 +69,10 @@ export interface AuthSessionClientDTO {
   identityId: string;
   deviceInfo: DeviceInfo;
   isCurrentSession: boolean;
+  version: number;
   createdAt: TransferDate;
+  updatedAt: TransferDate;
   expiresAt: TransferDate;
   lastActiveAt: TransferDate;
+  deletedAt: TransferDate | null;
 }

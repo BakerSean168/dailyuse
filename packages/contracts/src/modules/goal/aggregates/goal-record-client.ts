@@ -14,7 +14,10 @@ export interface GoalRecordClientDTO {
   value: number;  // 本次记录的值（独立值）
   valueAfter: number;   // 改变后的快照值
   comment: string | null;
+  version: number;
   createdAt: TransferDate;
+  updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }
 
 export interface GoalRecordClient {
@@ -24,5 +27,8 @@ export interface GoalRecordClient {
   value: number;  // 本次记录的值（独立值）
   valueAfter: number;   // 改变后的快照值
   comment: string | null;
+  version: number;
   createdAt: DomainDate;
+  updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 }

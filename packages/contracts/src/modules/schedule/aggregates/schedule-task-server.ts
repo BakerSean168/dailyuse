@@ -44,8 +44,10 @@ export interface ScheduleTaskServerDTO {
   metadata: TaskMetadataServerDTO;
 
   // 时间戳
+  version: number;
   createdAt: number; // epoch ms
   updatedAt: number; // epoch ms
+  deletedAt: number | null; // epoch ms
 
   // ===== 子实体 DTO (聚合根包含子实体) =====
   executions?: ScheduleExecutionServerDTO[] | null; // 执行记录列表（可选加载）
@@ -93,8 +95,10 @@ export interface ScheduleTaskPersistenceDTO {
   timeout: number | null;
 
   // 时间戳
+  version: number;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date | null;
 
   // 注意：子实体在数据库中是独立表，通过外键关联
 }
@@ -262,9 +266,11 @@ export interface ScheduleTaskServer {
   retryPolicy: RetryPolicyServer;
   metadata: TaskMetadataServer;
 
-  // 时间戳 (统一使用 number epoch ms)
+  // 同步字段
+  version: number;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date | null;
 
   // ===== 子实体集合（聚合根统一管理） =====
 

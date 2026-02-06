@@ -43,6 +43,12 @@ export interface AuthCredentialClient {
    * 是否是主要凭证（用于优先级展示）
    */
   isPrimary: boolean;
+
+  // 同步字段
+  version: number;
+  createdAt: DomainDate;
+  updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 }
 
 // ============ DTO 定义 ============
@@ -57,4 +63,8 @@ export interface AuthCredentialClientDTO {
   displayName: string;
   lastUsedAt: TransferDate | null;
   isPrimary: boolean;
+  version: number;
+  createdAt: TransferDate;
+  updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }

@@ -41,6 +41,8 @@ export class ScheduleTask extends AggregateRoot<string> implements ScheduleTaskS
   private _metadata: TaskMetadata;
   private _createdAt: Date;
   private _updatedAt: Date;
+  private _version: number;
+  private _deletedAt: Date | null;
 
   // ===== 子实体集�?=====
   private _executions: ScheduleExecution[];
@@ -61,6 +63,8 @@ export class ScheduleTask extends AggregateRoot<string> implements ScheduleTaskS
     metadata: TaskMetadata;
     createdAt: Date;
     updatedAt: Date;
+    version: number;
+    deletedAt: Date | null;
   }) {
     super(params.uuid || generateUUID());
     this._identityId = params.identityId;
@@ -76,6 +80,8 @@ export class ScheduleTask extends AggregateRoot<string> implements ScheduleTaskS
     this._metadata = params.metadata;
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
+    this._version = params.version;
+    this._deletedAt = params.deletedAt;
     this._executions = [];
   }
 
@@ -125,6 +131,12 @@ export class ScheduleTask extends AggregateRoot<string> implements ScheduleTaskS
   }
   public get updatedAt(): Date {
     return this._updatedAt;
+  }
+  public get version(): number {
+    return this._version;
+  }
+  public get deletedAt(): Date | null {
+    return this._deletedAt;
   }
   public get executions(): ScheduleExecution[] | null {
     return this._executions.length > 0 ? [...this._executions] : null;
@@ -755,6 +767,8 @@ export class ScheduleTask extends AggregateRoot<string> implements ScheduleTaskS
       metadata: this._metadata.toServerDTO(),
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
+      version: this._version,
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
       executions: includeChildren ? this._executions.map((e) => e.toServerDTO()) : undefined,
     };
   }
@@ -776,8 +790,10 @@ export class ScheduleTask extends AggregateRoot<string> implements ScheduleTaskS
       execution: this._execution.toServerDTO() as any,
       retryPolicy: this._retryPolicy.toServerDTO() as any,
       metadata: this._metadata.toServerDTO() as any,
+      version: this._version,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
       executions: includeChildren ? this._executions.map((e) => e.toClientDTO()) : null,
       // UI 辅助属性
       statusDisplay: this.getStatusDisplay(),
@@ -839,6 +855,9 @@ export class ScheduleTask extends AggregateRoot<string> implements ScheduleTaskS
       // Timestamps
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
+      // Sync fields
+      version: this._version,
+      deletedAt: this._deletedAt,
     };
   }
 
@@ -881,6 +900,8 @@ export class ScheduleTask extends AggregateRoot<string> implements ScheduleTaskS
       metadata: params.metadata || TaskMetadata.createDefault(),
       createdAt: now,
       updatedAt: now,
+      version: 1,
+      deletedAt: null,
     });
 
     // 发布创建事件
@@ -915,6 +936,8 @@ export class ScheduleTask extends AggregateRoot<string> implements ScheduleTaskS
       metadata: TaskMetadata.fromDTO(dto.metadata),
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
+      version: (dto as any).version ?? 1,
+      deletedAt: (dto as any).deletedAt ? new Date((dto as any).deletedAt) : null,
     });
 
     if (dto.executions) {
@@ -951,6 +974,8 @@ export class ScheduleTask extends AggregateRoot<string> implements ScheduleTaskS
       metadata: TaskMetadata.fromDTO(dto.metadata),
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
+      version: dto.version ?? 1,
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
 
     if (dto.executions) {
@@ -1005,6 +1030,8 @@ export class ScheduleTask extends AggregateRoot<string> implements ScheduleTaskS
       }),
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
+      version: dto.version ?? 1,
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 }

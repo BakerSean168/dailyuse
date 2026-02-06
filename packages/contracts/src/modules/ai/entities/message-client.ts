@@ -18,7 +18,10 @@ export interface MessageClientDTO {
   role: MessageRole;
   content: string;
   tokenCount: number | null;
+  version: number;
   createdAt: TransferDate;
+  updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 
   // UI 计算字段
   isUser: boolean;
@@ -38,7 +41,10 @@ export interface MessageClient {
   role: MessageRole;
   content: string;
   tokenCount: number | null;
+  version: number;
   createdAt: DomainDate;
+  updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 
   // ===== 计算属性 =====
   isUser: boolean;

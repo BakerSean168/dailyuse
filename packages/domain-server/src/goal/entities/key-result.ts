@@ -17,13 +17,18 @@
  * - 进度追踪（当前值、目标值、初始值）
  * - 权重管理（用于综合评分）
  * 
+ * 【同步支持】
+ * - deletedAt: 软删除时间戳
+ * - version: 乐观锁版本号
+ * - updatedAt: 最后更新时间（增量同步）
+ * 
  * 【不变量（Invariants）】
  * 这些条件必须始终保持真：
  * - weight 在 0-100 之间
  * - title 不能为空
  */
 
-import { Entity, generateUUID } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils';
 import { KeyResultId } from '@dailyuse/domain-shared';
 import type {
   KeyResultPersistenceDTO,
@@ -40,9 +45,11 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
   private _description: string | null;
   private _progress: KeyResultServerDTO['progress'];
   private _weight: number; // 权重 (0-100)
-  private _order: number;
+  private _sortOrder: number;
+  private _version: number;
   private _createdAt: Date;
   private _updatedAt: Date;
+  private _deletedAt: Date | null;
 
   // ================= 2. 构造函数 (Private) =================
   private constructor(props: KeyResultServerDTO) {
@@ -51,9 +58,11 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
     this._description = props.description ?? null;
     this._progress = props.progress;
     this._weight = props.weight;
-    this._order = props.order;
+    this._sortOrder = props.sortOrder;
+    this._version = props.version ?? 1;
     this._createdAt = new Date(props.createdAt);
     this._updatedAt = new Date(props.updatedAt);
+    this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
   }
 
   // ================= 3. 公共属性 (Getters) =================
@@ -73,8 +82,12 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
     return this._weight;
   }
   
-  get order(): number {
-    return this._order;
+  get sortOrder(): number {
+    return this._sortOrder;
+  }
+  
+  get version(): number {
+    return this._version;
   }
   
   get createdAt(): Date {
@@ -84,18 +97,25 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
   get updatedAt(): Date {
     return this._updatedAt;
   }
+  
+  get deletedAt(): Date | null {
+    return this._deletedAt;
+  }
 
   // ================= 4. 工厂方法 (Factory Methods) =================
 
   /**
    * 🏭 业务工厂：创建新的关键结果
+   * 
+   * @param params.id 可选的 ID，支持前端生成。如果不提供则自动生成
    */
   public static create(params: {
+    id?: KeyResultId; // 支持前端生成 ID
     title: string;
     description?: string;
     progress: KeyResultServerDTO['progress'];
     weight?: number;
-    order?: number;
+    sortOrder?: number;
   }): KeyResult {
     // 验证业务规则
     if (!params.title || params.title.trim().length === 0) {
@@ -103,7 +123,7 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
     }
 
     const now = Date.now();
-    const id = generateUUID() as KeyResultId;
+    const id = params.id ?? KeyResultId.generate();
 
     return new KeyResult({
       id,
@@ -111,9 +131,11 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
       description: params.description?.trim() || null,
       progress: params.progress,
       weight: params.weight ?? 0,
-      order: params.order ?? 0,
+      sortOrder: params.sortOrder ?? 0,
+      version: 1,
       createdAt: now,
       updatedAt: now,
+      deletedAt: null,
     });
   }
 
@@ -146,9 +168,11 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
       description: dto.description,
       progress,
       weight: dto.weight,
-      order: dto.order,
+      sortOrder: dto.sortOrder,
+      version: dto.version,
       createdAt: dto.createdAt.getTime(),
       updatedAt: dto.updatedAt.getTime(),
+      deletedAt: dto.deletedAt ? dto.deletedAt.getTime() : null,
     };
 
     return new KeyResult(serverDTO);
@@ -234,8 +258,19 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
   /**
    * ✅ 更新排序
    */
-  public updateOrder(order: number): void {
-    this._order = order;
+  public updateSortOrder(sortOrder: number): void {
+    this._sortOrder = sortOrder;
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * 🗑️ 软删除
+   */
+  public softDelete(): void {
+    if (this._deletedAt) {
+      return; // 已经删除
+    }
+    this._deletedAt = new Date();
     this._updatedAt = new Date();
   }
 
@@ -258,16 +293,36 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
       description: this._description,
       progress: this._progress,
       weight: this._weight,
-      order: this._order,
+      sortOrder: this._sortOrder,
+      version: this._version,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
+    };
+  }
+
+  /**
+   * 转换为 Client DTO
+   */
+  public toClientDTO(): import('@dailyuse/contracts/goal').KeyResultClientDTO {
+    return {
+      id: String(this.id),
+      title: this._title,
+      description: this._description,
+      progress: this._progress,
+      weight: this._weight,
+      order: this._sortOrder,
+      version: this._version,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
     };
   }
 
   /**
    * 转换为 Persistence DTO
    */
-  public toPersistenceDTO(): KeyResultPersistenceDTO {
+  public toPersistenceDTO(goalId: string): KeyResultPersistenceDTO {
     const progressPersistence = {
       initialValue: (this._progress as any).initialValue,
       currentValue: this._progress.currentValue,
@@ -279,13 +334,16 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
 
     return {
       id: this.id,
+      goalId,
       title: this._title,
       description: this._description,
       progress: JSON.stringify(progressPersistence),
       weight: this._weight,
-      order: this._order,
+      sortOrder: this._sortOrder,
+      version: this._version,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
+      deletedAt: this._deletedAt,
     };
   }
 }

@@ -208,7 +208,10 @@ export class ScheduleExecution extends Entity<string> implements ScheduleExecuti
       result: this._result ? { ...this._result } : null,
       error: this._error,
       retryCount: this._retryCount,
+      version: 1,
       createdAt: this._createdAt.getTime(),
+      updatedAt: this._createdAt.getTime(),
+      deletedAt: null,
       // UI 辅助属性
       executionTimeFormatted: this._executionTime.toLocaleString('zh-CN'),
       statusDisplay: this._getStatusText(),

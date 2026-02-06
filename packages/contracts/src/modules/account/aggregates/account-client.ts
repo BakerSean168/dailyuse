@@ -24,8 +24,10 @@ export interface AccountClient {
   email: ContactEmail;
   phone: ContactPhone | null;
 
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 }
 
 // ============ DTO 定义 ============
@@ -40,6 +42,8 @@ export interface AccountClientDTO {
   settings: AccountSettingsDTO;
   email: ContactEmailDTO;
   phone: ContactPhoneDTO | null;
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }

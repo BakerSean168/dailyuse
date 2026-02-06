@@ -1,6 +1,11 @@
 /**
  * Account Entity - Server Interface
  * 账户实体 - 服务器接口
+ * 
+ * 【同步支持】
+ * - deletedAt: 软删除时间戳
+ * - version: 乐观锁版本号
+ * - updatedAt: 最后更新时间（增量同步）
  */
 
 import type { IdentityId } from "@/modules/authentication/value-objects/identity-id";
@@ -24,8 +29,11 @@ export interface AccountServer {
   email: ContactEmail;
   phone: ContactPhone | null;
 
+  // 同步字段
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 }
 
 // ============ DTO 定义 ============
@@ -40,8 +48,10 @@ export interface AccountServerDTO {
   settings: AccountSettingsDTO;
   email: ContactEmailDTO;
   phone: ContactPhoneDTO | null;
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }
 
 /**
@@ -54,6 +64,8 @@ export interface AccountPersistenceDTO {
   settings: AccountSettingsPersistenceDTO;
   email: ContactEmailPersistenceDTO;
   phone: ContactPhonePersistenceDTO | null;
+  version: number;
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
+  deletedAt: PersistenceDate | null;
 }

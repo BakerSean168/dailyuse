@@ -20,7 +20,10 @@ export interface ResourceBookmarkClientDTO {
   color: string | null;
   
   sortOrder: number;
+  version: number;
   createdAt: TransferDate;
+  updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 
   // UI 计算字段
   displayName: string; // 显示名称（aliasName 或资源原名）
@@ -43,7 +46,10 @@ export interface ResourceBookmarkClient {
   color: string | null;
   
   sortOrder: number;
+  version: number;
   createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 
   // UI 计算属性
   displayName: string;

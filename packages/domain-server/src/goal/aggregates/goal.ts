@@ -296,6 +296,13 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     return this._weightSnapshots;
   }
 
+  /**
+   * 获取目标进度（基于关键结果加权计算）
+   */
+  get progress(): number {
+    return this.calculateProgress();
+  }
+
   // ================= 5. 工厂方法 (Factory Methods) =================
 
   /**
@@ -305,6 +312,10 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * 工厂方法负责所有验证，确保创建的目标始终处于有效状态。
    * 这遵循了"Tell, Don't Ask"原则 - 调用者只需告诉 Goal 要做什么，
    * Goal 自己负责验证和保护其不变量。
+   * 
+   * 【本地优先支持】
+   * - 支持通过 params.id 传入前端生成的 ID
+   * - 如果不提供则自动生成
    * 
    * @param params 创建参数
    * @param parentGoal 可选的父目标（如果提供了 parentGoalId，需要传入父目标进行验证）
@@ -316,6 +327,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    */
   public static create(
     params: {
+      id?: GoalId; // 支持前端生成 ID（本地优先）
       identityId: IdentityId;
       name: string;
       description: string | null;
@@ -351,7 +363,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     Goal.validateParentGoal(parentGoal);
 
     const now = new Date();
-    const id = GoalId.generate();
+    const id = params.id ?? GoalId.generate(); // 支持前端生成 ID
 
     const goal = new Goal({
       id,
@@ -829,7 +841,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
         unit: params.unit ?? null,
       },
       weight: params.weight,
-      order: this._keyResults.length,
+      sortOrder: this._keyResults.length,
     });
     
     // 添加到集合
@@ -869,7 +881,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
         unit: params.unit ?? null,
       },
       weight: params.weight,
-      order: this._keyResults.length,
+      sortOrder: this._keyResults.length,
     });
     return keyResult;
   }
@@ -918,7 +930,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     for (let i = 0; i < keyResultIds.length; i++) {
       const kr = this._keyResults.find((k) => k.id === keyResultIds[i]);
       if (kr) {
-        kr.updateOrder(i);
+        kr.updateSortOrder(i);
         newOrder.push(kr);
       }
     }
@@ -1159,6 +1171,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     }));
 
     const review = GoalReview.create({
+      goalId: this.id,
       type: params.reviewType as any,
       rating: params.rating || 3,
       summary: params.content,
@@ -1202,6 +1215,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     }));
 
     const review = GoalReview.create({
+      goalId: this.id,
       type: params.reviewType as any,
       rating: params.rating || 3,
       summary: params.content,
@@ -1356,9 +1370,55 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
         ? this._weightSnapshots.map((ws) => ws.toDTO())
         : null,
       goalReviews: includeChildren && this._goalReviews.length > 0
-        ? this._goalReviews.map((r) => r.toServerDTO(goalId))
+        ? this._goalReviews.map((r) => r.toServerDTO())
         : null,
       version: 1, // Default version for optimistic locking
+    };
+  }
+
+  /**
+   * 转换为 Client DTO
+   */
+  public toClientDTO(includeChildren: boolean = false): import('@dailyuse/contracts/goal').GoalClientDTO {
+    const now = new Date();
+    const isOverdue = this._targetDate ? this._targetDate < now && this._status !== GoalStatus.Completed : false;
+    const daysRemaining = this._targetDate
+      ? Math.ceil((this._targetDate.getTime() - now.getTime()) / DAY_MS)
+      : null;
+
+    return {
+      id: this.id,
+      identityId: this._identityId,
+      name: this._name,
+      description: this._description,
+      color: this._color,
+      feasibilityAnalysis: this._feasibilityAnalysis,
+      motivation: this._motivation,
+      status: this._status,
+      importance: this._importance,
+      priority: this.priority,
+      category: this._category,
+      tags: [...this._tags],
+      startDate: this._startDate?.getTime() ?? null,
+      targetDate: this._targetDate?.getTime() ?? null,
+      completedAt: this._completedAt?.getTime() ?? null,
+      archivedAt: this._archivedAt?.getTime() ?? null,
+      folderId: this._folderId as GoalFolderId | null,
+      parentGoalId: this._parentGoalId,
+      sortOrder: this._sortOrder,
+      reminderConfig: this._reminderConfig?.toDTO() ?? null,
+      version: 1,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
+      keyResults: includeChildren && this._keyResults.length > 0
+        ? this._keyResults.map((kr) => kr.toClientDTO())
+        : null,
+      reviews: includeChildren && this._goalReviews.length > 0
+        ? this._goalReviews.map((r) => r.toClientDTO())
+        : null,
+      progress: this.progress,
+      timeRangeSummary: null, // Will be calculated by application service if needed
     };
   }
 
@@ -1388,7 +1448,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
       sortOrder: this._sortOrder,
       reminderConfig: this._reminderConfig?.toPersistenceDTO() ?? null,
       keyResults: this._keyResults.length > 0
-        ? this._keyResults.map((kr) => kr.toPersistenceDTO())
+        ? this._keyResults.map((kr) => kr.toPersistenceDTO(this.id))
         : null,
       goalReviews: this._goalReviews.length > 0
         ? this._goalReviews.map((r) => r.toPersistenceDTO())

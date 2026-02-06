@@ -42,6 +42,7 @@ export interface TaskTemplateClientDTO {
   status: TaskTemplateStatus;
   lastGeneratedDate: TransferDate | null;
   generateAheadDays: number | null; // null for ONE_TIME tasks
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
@@ -85,8 +86,10 @@ export interface TaskTemplateClient {
   status: TaskTemplateStatus;
   lastGeneratedDate: DomainDate | null;
   generateAheadDays: number | null; // null for ONE_TIME tasks
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 
   parentTaskId: TaskTemplateId | null;
   startDate: DomainDate | null;

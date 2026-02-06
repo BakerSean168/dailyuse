@@ -463,6 +463,46 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
   }
 
   /**
+   * 转换为 Client DTO
+   */
+  public toClientDTO(): import('@dailyuse/contracts/authentication').AuthIdentityClientDTO {
+    const hasPassword = this._credentials.some(c => c.type === CredentialType.PASSWORD);
+    const hasOAuth = this._credentials.some(c => c.type === CredentialType.OAUTH);
+
+    return {
+      id: this.id,
+      status: this._status,
+      failedLoginAttempts: this._failedLoginAttempts,
+      lastFailedAttempt: this._lastFailedAttempt?.getTime() ?? null,
+      lockedUntil: this._lockedUntil?.getTime() ?? null,
+      credentials: this._credentials.map(cred => {
+        // Return sanitized credential info for client
+        return {
+          id: cred.id,
+          type: cred.type,
+          displayName: cred.type === CredentialType.OAUTH
+            ? (cred as any).provider ?? 'OAuth'
+            : cred.type === CredentialType.PASSWORD
+              ? 'Password'
+              : 'Phone',
+          lastUsedAt: (cred as any).lastUsedAt?.getTime?.() ?? null,
+          isPrimary: (cred as any).isPrimary ?? false,
+          version: 1,
+          createdAt: (cred as any).createdAt?.getTime?.() ?? Date.now(),
+          updatedAt: (cred as any).updatedAt?.getTime?.() ?? Date.now(),
+          deletedAt: null,
+        };
+      }),
+      hasPassword,
+      hasOAuth,
+      version: 1,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: null,
+    };
+  }
+
+  /**
    * 转换为持久化 DTO
    */
   public toPersistenceDTO(): AuthIdentityPersistenceDTO {

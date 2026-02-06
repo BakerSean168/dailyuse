@@ -48,6 +48,8 @@ export class Notification
   private _readAt: number | null;
   private _actions: NotificationAction[] | null;
   private _metadata: NotificationMetadata | null;
+  private _version: number;
+  private _deletedAt: Date | null;
   private _createdAt: Date;
   private _updatedAt: Date;
 
@@ -69,6 +71,8 @@ export class Notification
       readAt?: number | null;
       actions?: NotificationAction[] | null;
       metadata?: NotificationMetadata | null;
+      version: number;
+      deletedAt: Date | null;
       createdAt: Date;
       updatedAt: Date;
     },
@@ -85,6 +89,8 @@ export class Notification
     this._readAt = params.readAt ?? null;
     this._actions = params.actions ?? null;
     this._metadata = params.metadata ?? null;
+    this._version = params.version;
+    this._deletedAt = params.deletedAt;
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
     this._notificationChannels = [];
@@ -133,6 +139,14 @@ export class Notification
 
   public get metadata(): NotificationMetadata | null {
     return this._metadata;
+  }
+
+  public get version(): number {
+    return this._version;
+  }
+
+  public get deletedAt(): Date | null {
+    return this._deletedAt;
   }
 
   public get createdAt(): Date {
@@ -259,8 +273,10 @@ export class Notification
       readAt: this._readAt,
       actions: this._actions?.map((a) => a.toDTO()) ?? null,
       metadata: this._metadata?.toDTO() ?? null,
+      version: this._version,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
       notificationChannels: this._notificationChannels.length > 0
         ? this._notificationChannels.map((c) => c.toServerDTO())
         : null,
@@ -284,8 +300,10 @@ export class Notification
       notificationChannels: this._notificationChannels.length > 0
         ? JSON.stringify(this._notificationChannels.map((c) => c.toPersistenceDTO()))
         : null,
+      version: this._version,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
+      deletedAt: this._deletedAt,
     };
   }
 
@@ -322,6 +340,8 @@ export class Notification
       isRead: false,
       actions: params.actions?.map((a) => NotificationAction.fromDTO(a)) ?? null,
       metadata: params.metadata ? NotificationMetadata.fromDTO(params.metadata) : null,
+      version: 1,
+      deletedAt: null,
       createdAt: now,
       updatedAt: now,
     });
@@ -349,6 +369,8 @@ export class Notification
       readAt: dto.readAt ?? null,
       actions: dto.actions?.map((a) => NotificationAction.fromDTO(a)) ?? null,
       metadata: dto.metadata ? NotificationMetadata.fromDTO(dto.metadata) : null,
+      version: dto.version,
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
     });
@@ -377,6 +399,8 @@ export class Notification
       readAt: dto.readAt ? dto.readAt.getTime() : null,
       actions: dto.actions?.map((a) => NotificationAction.fromPersistenceDTO(a)) ?? null,
       metadata: dto.metadata ? NotificationMetadata.fromPersistenceDTO(dto.metadata) : null,
+      version: dto.version,
+      deletedAt: dto.deletedAt,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
     });

@@ -1,0 +1,343 @@
+// ============================================================
+// Goal Module - Prisma Schema
+// 目标模块数据库模型
+// ============================================================
+//
+// 【设计原则】
+// 1. 本地优先 + 多端同步：所有实体必须有 updatedAt 和 deletedAt
+// 2. 前端生成 ID：使用 CUID 作为主键，支持离线创建
+// 3. 值对象存储：复杂值对象使用 JSONB，简单的拍平存储
+// 4. 关联表存储：1:N 实体关系使用关联表
+// 5. 命名规范：数据库使用 snake_case，Prisma 用 @map 映射
+//
+// 【同步相关字段】
+// - updatedAt: 最后更新时间，用于增量同步判断
+// - deletedAt: 软删除时间，null 表示未删除
+// - version: 乐观锁版本号，用于冲突检测
+// ============================================================
+
+// ============ Goal 聚合根 ============
+
+/**
+ * Goal - 目标聚合根
+ * 
+ * 存储策略：
+ * - tags: String[] (Postgres Array) - 标签列表
+ * - reminderConfig: Json (JSONB) - 提醒配置值对象
+ * - feasibilityAnalysis/motivation: 文本字段，直接存储
+ * - keyResults: 1:N 关联表
+ * - goalReviews: 1:N 关联表  
+ * - weightSnapshots: 1:N 关联表
+ */
+model Goal {
+  // === 主键和标识 ===
+  id              String    @id                         // CUID，前端生成
+  identityId      String    @map("identity_id")         // 所属用户
+
+  // === 基础信息 ===
+  name            String                                // 目标名称
+  description     String?   @db.Text                    // 描述（可能较长）
+  color           String    @default("#3B82F6")         // 颜色
+  
+  // === 分析和动机（文本字段，直接存储）===
+  feasibilityAnalysis String? @map("feasibility_analysis") @db.Text
+  motivation      String?   @db.Text
+
+  // === 状态与元数据 ===
+  status          String    @default("ACTIVE")          // ACTIVE, COMPLETED, ARCHIVED
+  importance      String    @default("MEDIUM")          // CRITICAL, HIGH, MEDIUM, LOW
+  priority        Int       @default(0)                 // 动态优先级分数 (0-100)
+  category        String?                               // 分类
+  tags            String[]  @default([])                // 标签数组 (Postgres Array)
+
+  // === 时间范围 ===
+  startDate       DateTime? @map("start_date")          // 开始日期
+  targetDate      DateTime? @map("target_date")         // 目标日期
+  completedAt     DateTime? @map("completed_at")        // 完成时间
+  archivedAt      DateTime? @map("archived_at")         // 归档时间
+
+  // === 层级和组织 ===
+  folderId        String?   @map("folder_id")           // 所属文件夹
+  parentGoalId    String?   @map("parent_goal_id")      // 父目标
+  sortOrder       Int       @default(0) @map("sort_order") // 排序
+
+  // === 提醒配置（JSONB 值对象）===
+  // 存储结构: { enabled, triggers: [{ type, value, unit, message? }] }
+  reminderConfig  Json?     @map("reminder_config")     // GoalReminderConfigDTO
+
+  // === 关联关系 ===
+  keyResults      GoalKeyResult[]
+  reviews         GoalReview[]
+  weightSnapshots GoalKeyResultWeightSnapshot[]
+  folder          GoalFolder?  @relation(fields: [folderId], references: [id])
+  parentGoal      Goal?        @relation("GoalHierarchy", fields: [parentGoalId], references: [id])
+  childGoals      Goal[]       @relation("GoalHierarchy")
+  focusSessions   GoalFocusSession[]
+
+  // === 同步和版本控制 ===
+  version         Int       @default(1)                 // 乐观锁版本号
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")          // 软删除
+
+  // === 索引 ===
+  @@index([identityId])
+  @@index([identityId, status])
+  @@index([identityId, folderId])
+  @@index([identityId, deletedAt])
+  @@index([identityId, updatedAt])                      // 同步查询
+  @@index([parentGoalId])
+  @@map("goals")
+}
+
+
+// ============ KeyResult 实体 ============
+
+/**
+ * GoalKeyResult - 关键结果实体
+ * 
+ * 从属于 Goal 聚合根的子实体
+ * 
+ * 存储策略：
+ * - progress: Json (JSONB) - 进度值对象
+ */
+model GoalKeyResult {
+  // === 主键和标识 ===
+  id              String    @id                         // CUID，前端生成
+  goalId          String    @map("goal_id")             // 所属目标
+
+  // === 基础信息 ===
+  title           String                                // 标题
+  description     String?   @db.Text                    // 描述
+
+  // === 进度（JSONB 值对象）===
+  // 存储结构: { valueType, aggregationMethod, initialValue, targetValue, currentValue, unit? }
+  progress        Json                                  // KeyResultProgressDTO
+
+  // === 权重和排序 ===
+  weight          Int       @default(0)                 // 权重 (0-100)
+  sortOrder       Int       @default(0) @map("sort_order") // 排序位置
+
+  // === 关联关系 ===
+  goal            Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  records         GoalRecord[]
+
+  // === 同步和版本控制 ===
+  version         Int       @default(1)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")          // 软删除
+
+  // === 索引 ===
+  @@index([goalId])
+  @@index([goalId, deletedAt])
+  @@map("goal_key_results")
+}
+
+
+// ============ GoalReview 实体 ============
+
+/**
+ * GoalReview - 目标回顾实体
+ * 
+ * 记录目标的定期回顾和反思
+ * 
+ * 存储策略：
+ * - keyResultSnapshots: Json (JSONB) - KR 快照数组
+ */
+model GoalReview {
+  // === 主键和标识 ===
+  id              String    @id                         // CUID，前端生成
+  goalId          String    @map("goal_id")             // 所属目标
+
+  // === 回顾内容 ===
+  type            String                                // WEEKLY, MONTHLY, QUARTERLY, YEARLY, CUSTOM
+  rating          Int                                   // 评分 (0-10)
+  summary         String    @db.Text                    // 总结
+  achievements    String?   @db.Text                    // 成就
+  challenges      String?   @db.Text                    // 挑战
+  improvements    String?   @db.Text                    // 改进建议
+
+  // === KR 快照（JSONB 数组）===
+  // 存储结构: [{ keyResultId, title, progress, weight }]
+  keyResultSnapshots Json   @default("[]") @map("key_result_snapshots")
+
+  // === 时间 ===
+  reviewedAt      DateTime  @map("reviewed_at")         // 回顾时间
+
+  // === 关联关系 ===
+  goal            Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  // === 同步和版本控制 ===
+  version         Int       @default(1)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")          // 软删除
+
+  // === 索引 ===
+  @@index([goalId])
+  @@index([goalId, type])
+  @@index([goalId, deletedAt])
+  @@map("goal_reviews")
+}
+
+
+// ============ GoalRecord 实体 ============
+
+/**
+ * GoalRecord - 目标记录/进度条目
+ * 
+ * 记录 KeyResult 的进度更新
+ */
+model GoalRecord {
+  // === 主键和标识 ===
+  id              String    @id                         // CUID，前端生成
+  keyResultId     String    @map("key_result_id")       // 所属 KR
+
+  // === 记录内容 ===
+  value           Float                                 // 记录值
+  note            String?   @db.Text                    // 备注
+  recordedAt      DateTime  @map("recorded_at")         // 记录时间
+
+  // === 关联关系 ===
+  keyResult       GoalKeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
+
+  // === 同步和版本控制 ===
+  version         Int       @default(1)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")          // 软删除
+
+  // === 索引 ===
+  @@index([keyResultId])
+  @@index([keyResultId, recordedAt])
+  @@index([keyResultId, deletedAt])
+  @@map("goal_records")
+}
+
+
+// ============ KeyResultWeightSnapshot 值对象表 ============
+
+/**
+ * GoalKeyResultWeightSnapshot - 权重快照
+ * 
+ * 记录 KR 权重的历史变更
+ * 虽然是值对象，但需要历史查询，所以使用表存储
+ */
+model GoalKeyResultWeightSnapshot {
+  // === 主键和标识 ===
+  id              String    @id                         // CUID，前端生成
+  goalId          String    @map("goal_id")             // 所属目标
+
+  // === 快照内容 ===
+  trigger         String                                // MANUAL, AUTO_REBALANCE, KR_ADDED, KR_REMOVED
+  
+  // KR 权重快照（JSONB 数组）
+  // 存储结构: [{ keyResultId, weight, title }]
+  keyResultWeights Json     @map("key_result_weights")
+
+  // === 关联关系 ===
+  goal            Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  // === 时间戳 ===
+  createdAt       DateTime  @default(now()) @map("created_at")
+  
+  // === 索引 ===
+  @@index([goalId])
+  @@index([goalId, createdAt])
+  @@map("goal_key_result_weight_snapshots")
+}
+
+
+// ============ GoalFolder 聚合根 ============
+
+/**
+ * GoalFolder - 目标文件夹聚合根
+ */
+model GoalFolder {
+  // === 主键和标识 ===
+  id              String    @id                         // CUID，前端生成
+  identityId      String    @map("identity_id")         // 所属用户
+
+  // === 基础信息 ===
+  name            String                                // 文件夹名称
+  description     String?   @db.Text                    // 描述
+  icon            String?                               // 图标
+  color           String?                               // 颜色
+
+  // === 层级和组织 ===
+  parentFolderId  String?   @map("parent_folder_id")    // 父文件夹
+  sortOrder       Int       @default(0) @map("sort_order")
+  folderType      String?   @map("folder_type")         // DEFAULT, ARCHIVE, TRASH
+
+  // === 统计（缓存字段，定期更新）===
+  goalCount       Int       @default(0) @map("goal_count")
+  completedGoalCount Int    @default(0) @map("completed_goal_count")
+
+  // === 关联关系 ===
+  goals           Goal[]
+  parentFolder    GoalFolder?  @relation("FolderHierarchy", fields: [parentFolderId], references: [id])
+  childFolders    GoalFolder[] @relation("FolderHierarchy")
+
+  // === 同步和版本控制 ===
+  version         Int       @default(1)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")          // 软删除
+
+  // === 索引 ===
+  @@index([identityId])
+  @@index([identityId, deletedAt])
+  @@index([parentFolderId])
+  @@map("goal_folders")
+}
+
+
+// ============ FocusSession 聚合根 ============
+
+/**
+ * GoalFocusSession - 专注会话聚合根
+ * 
+ * 管理专注时间段的完整生命周期
+ */
+model GoalFocusSession {
+  // === 主键和标识 ===
+  id                    String    @id                   // CUID，前端生成
+  identityId            String    @map("identity_id")   // 所属用户
+  goalId                String?   @map("goal_id")       // 关联目标（可选）
+
+  // === 会话状态 ===
+  status                String    @default("PENDING")   // PENDING, ACTIVE, PAUSED, COMPLETED, CANCELLED
+  
+  // === 时长信息 ===
+  durationMinutes       Int       @map("duration_minutes")       // 计划时长
+  actualDurationMinutes Int       @default(0) @map("actual_duration_minutes") // 实际时长
+  pauseCount            Int       @default(0) @map("pause_count") // 暂停次数
+  pausedDurationMinutes Int       @default(0) @map("paused_duration_minutes") // 累计暂停时长
+
+  // === 描述 ===
+  description           String?   @db.Text
+
+  // === 时间节点 ===
+  startedAt             DateTime? @map("started_at")
+  pausedAt              DateTime? @map("paused_at")
+  resumedAt             DateTime? @map("resumed_at")
+  completedAt           DateTime? @map("completed_at")
+  cancelledAt           DateTime? @map("cancelled_at")
+
+  // === 关联关系 ===
+  goal                  Goal?     @relation(fields: [goalId], references: [id])
+
+  // === 同步和版本控制 ===
+  version               Int       @default(1)
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  deletedAt             DateTime? @map("deleted_at")    // 软删除
+
+  // === 索引 ===
+  @@index([identityId])
+  @@index([identityId, status])
+  @@index([identityId, deletedAt])
+  @@index([goalId])
+  @@map("goal_focus_sessions")
+}

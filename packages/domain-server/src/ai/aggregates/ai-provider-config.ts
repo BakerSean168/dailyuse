@@ -42,8 +42,10 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
   private _isActive: boolean;
   private _isDefault: boolean;
   private _priority: number;
+  private _version: number;
   private _createdAt: Date;
   private _updatedAt: Date;
+  private _deletedAt: Date | null;
 
   private constructor(dto: AIProviderConfigServerDTO) {
     super(AiProviderConfigId.of(dto.id ?? AiProviderConfigId.generate()));
@@ -57,8 +59,10 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
     this._isActive = dto.isActive;
     this._isDefault = dto.isDefault;
     this._priority = dto.priority ?? 100;
+    this._version = dto.version ?? 1;
     this._createdAt = new Date(dto.createdAt);
     this._updatedAt = new Date(dto.updatedAt);
+    this._deletedAt = dto.deletedAt != null ? new Date(dto.deletedAt) : null;
   }
 
   // ===== Getters =====
@@ -111,6 +115,14 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
     return this._updatedAt;
   }
 
+  public get version(): number {
+    return this._version;
+  }
+
+  public get deletedAt(): Date | null {
+    return this._deletedAt;
+  }
+
   // ===== Factory Methods =====
 
   /**
@@ -139,8 +151,10 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
       isActive: true,
       isDefault: params.isDefault ?? false,
       priority: params.priority ?? 100,
+      version: 1,
       createdAt: now,
       updatedAt: now,
+      deletedAt: null,
     });
 
     instance.addDomainEvent('ai.provider_config.created', {
@@ -177,8 +191,10 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
       isActive: dto.isActive,
       isDefault: dto.isDefault,
       priority: dto.priority ?? 100,
+      version: dto.version ?? 1,
       createdAt: dto.createdAt.getTime(),
       updatedAt: dto.updatedAt.getTime(),
+      deletedAt: dto.deletedAt != null ? dto.deletedAt.getTime() : null,
     });
   }
 
@@ -316,8 +332,10 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
       isActive: this._isActive,
       isDefault: this._isDefault,
       priority: this._priority,
+      version: this._version,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
     };
   }
 
@@ -337,8 +355,10 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
       isActive: this._isActive,
       isDefault: this._isDefault,
       priority: this._priority,
+      version: this._version,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
+      deletedAt: this._deletedAt,
     };
   }
 
@@ -358,8 +378,10 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
       isActive: this._isActive,
       isDefault: this._isDefault,
       priority: this._priority,
+      version: this._version,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
     };
   }
 

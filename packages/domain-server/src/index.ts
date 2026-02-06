@@ -34,6 +34,3 @@ export * from './schedule/index.js';
 
 // AI 模块
 export * from './ai/index.js';
-
-// Sync 模块
-export * from './sync/index.js';

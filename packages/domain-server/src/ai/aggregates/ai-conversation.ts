@@ -215,8 +215,10 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
       status: this._status,
       messageCount: this._messageCount,
       lastMessageAt: this._lastMessageAt ? this._lastMessageAt.getTime() : null,
+      version: 1,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
       messages: null,
     };
   }

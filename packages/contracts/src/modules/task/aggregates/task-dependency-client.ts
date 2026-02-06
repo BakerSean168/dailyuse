@@ -22,8 +22,10 @@ export interface TaskDependencyClientDTO {
   readonly successorTaskId: string;
   readonly dependencyType: DependencyType;
   readonly lagDays?: number;
+  readonly version: number;
   readonly createdAt: TransferDate;
   readonly updatedAt: TransferDate;
+  readonly deletedAt: TransferDate | null;
 
   /**
    * 前置任务的标题（用于显示）

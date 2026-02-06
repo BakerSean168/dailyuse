@@ -34,6 +34,7 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
   private _createdAt: Date;
   private _updatedAt: Date;
   private _deletedAt: number | null;
+  private _version: number;
 
   private constructor(params: {
     uuid?: string;
@@ -50,6 +51,7 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
     createdAt: number;
     updatedAt: number;
     deletedAt?: number | null;
+    version: number;
   }) {
     super(params.uuid || generateUUID());
     this._identityId = params.identityId as IdentityId;
@@ -65,6 +67,7 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
     this._createdAt = new Date(params.createdAt);
     this._updatedAt = new Date(params.updatedAt);
     this._deletedAt = params.deletedAt ?? null;
+    this._version = params.version;
   }
 
   public get identityId(): IdentityId {
@@ -106,6 +109,9 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
   public get deletedAt(): Date | null {
     return this._deletedAt !== null ? new Date(this._deletedAt) : null;
   }
+  public get version(): number {
+    return this._version;
+  }
 
   public static create(params: {
     identityId: string;
@@ -133,6 +139,7 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
       stats,
       createdAt: now,
       updatedAt: now,
+      version: 1,
     });
     group.addDomainEvent('ReminderGroupCreated', {
       identityId: params.identityId,
@@ -158,6 +165,7 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt ?? null,
+      version: dto.version,
     });
   }
 
@@ -178,6 +186,7 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
       createdAt: dto.createdAt.getTime(),
       updatedAt: dto.updatedAt.getTime(),
       deletedAt: dto.deletedAt?.getTime() ?? null,
+      version: dto.version,
     });
   }
 
@@ -320,6 +329,7 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
       createdAt: this.createdAt.getTime(),
       updatedAt: this.updatedAt.getTime(),
       deletedAt: this.deletedAt?.getTime() ?? null,
+      version: this.version,
     };
   }
 
@@ -350,6 +360,7 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
         templateCountText: `${statsDTO.totalTemplates} 个提醒`,
         activeStatusText: `${statsDTO.activeTemplates} 个活跃`,
       },
+      version: this.version,
       createdAt: this.createdAt.getTime(),
       updatedAt: this.updatedAt.getTime(),
       deletedAt: this.deletedAt?.getTime() ?? null,
@@ -380,6 +391,7 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       deletedAt: this.deletedAt,
+      version: this.version,
     };
   }
 }

@@ -6,13 +6,13 @@
 model Goal {
   id                  String    @id
   identityId          String    @map("identity_id")
-  title               String
+  name                String
   description         String?
   status              String    @default("pending")
   importance          String    @default("moderate") // ImportanceLevel
-  urgency             Int       @default(2)
+  priority            Int       @default(0)
   category            String?
-  tags                String?
+  tags                String[]  @default([])
   startDate           DateTime? @map("start_date")
   targetDate          DateTime? @map("target_date")
   completedAt         DateTime? @map("completed_at")
@@ -21,6 +21,7 @@ model Goal {
   parentGoalId        String?   @map("parent_goal_id")
   sortOrder           Int       @default(0) @map("sort_order")
   reminderConfig      String?   @map("reminder_config")
+  version             Int       @default(1)
   createdAt           DateTime  @default(now()) @map("created_at")
   updatedAt           DateTime  @updatedAt @map("updated_at")
   deletedAt           DateTime? @map("deleted_at")
@@ -49,6 +50,7 @@ model GoalFolder {
   description        String?
   color              String?
   icon               String?
+  version            Int       @default(1)
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
   deletedAt          DateTime? @map("deleted_at")
@@ -80,8 +82,10 @@ model KeyResult {
   unit              String?
   weight            Float    @default(1)
   order             Int      @default(0)
+  version           Int      @default(1)
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
 
   records                  GoalRecord[]
   keyResultWeightSnapshots KeyResultWeightSnapshot[]
@@ -93,12 +97,15 @@ model KeyResult {
 }
 
 model GoalRecord {
-  id          String   @id
-  keyResultId String   @map("key_result_id")
+  id          String    @id
+  keyResultId String    @map("key_result_id")
   value       Float
   note        String?
-  recordedAt  DateTime @map("recorded_at")
-  createdAt   DateTime @default(now()) @map("created_at")
+  recordedAt  DateTime  @map("recorded_at")
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
 
   keyResult KeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
 
@@ -116,8 +123,10 @@ model GoalReview {
   lessonsLearned String?  @map("lessons_learned")
   nextSteps      String?  @map("next_steps")
   rating         Int?
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  version        Int       @default(1)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
 
   goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
 

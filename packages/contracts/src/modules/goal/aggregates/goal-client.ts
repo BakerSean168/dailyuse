@@ -49,6 +49,8 @@ export interface GoalClient {
 
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
+  version: number;
 
   keyResults: KeyResultClientDTO[] | null;
 
@@ -101,6 +103,7 @@ export interface GoalClientDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
+  version: number;
 
   // 子实体DTO
   keyResults: KeyResultClientDTO[] | null;

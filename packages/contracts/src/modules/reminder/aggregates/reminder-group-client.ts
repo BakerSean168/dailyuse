@@ -30,6 +30,7 @@ export interface ReminderGroupClientDTO {
   status: ReminderStatus;
   order: number;
   stats: GroupStatsClientDTO;
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
@@ -61,6 +62,7 @@ export interface ReminderGroupClient {
   status: ReminderStatus;
   order: number;
   stats: GroupStatsClientDTO;
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;

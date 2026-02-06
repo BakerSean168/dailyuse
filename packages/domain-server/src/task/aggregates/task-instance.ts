@@ -44,6 +44,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
   private _note: string | null;
   private _createdAt: number;
   private _updatedAt: number;
+  private _version: number;
+  private _deletedAt: Date | null;
 
   // ===== 2. 构造函�?(Private) =====
   private constructor(params: {
@@ -62,6 +64,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     note?: string | null;
     createdAt: number;
     updatedAt: number;
+    version: number;
+    deletedAt: Date | null;
   }) {
     super(params.id || TaskInstanceId.generate());
     this._templateId = params.templateId;
@@ -78,6 +82,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     this._note = params.note ?? null;
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
+    this._version = params.version;
+    this._deletedAt = params.deletedAt;
   }
 
   // ===== 3. 公共属�?(Getters) =====
@@ -153,6 +159,14 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
 
   public get updatedAt(): number {
     return this._updatedAt;
+  }
+
+  public get version(): number {
+    return this._version;
+  }
+
+  public get deletedAt(): Date | null {
+    return this._deletedAt;
   }
 
   // ===== 业务方法 =====
@@ -279,6 +293,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       comment: this._note,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
+      version: this._version,
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
     };
   }
 
@@ -295,8 +311,10 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       actualStartTime: this._actualStartTime,
       actualEndTime: this._actualEndTime,
       comment: this._note,
+      version: this._version,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
+      deletedAt: this._deletedAt?.getTime() ?? null,
     };
   }
 
@@ -315,6 +333,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       comment: this._note,
       createdAt: new Date(this._createdAt),
       updatedAt: new Date(this._updatedAt),
+      version: this._version,
+      deletedAt: this._deletedAt,
     };
   }
 
@@ -343,6 +363,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       status: 'Pending' as TaskInstanceStatus,
       createdAt: now,
       updatedAt: now,
+      version: 1,
+      deletedAt: null,
     });
 
     return instance;
@@ -366,6 +388,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       note: dto.comment,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
+      version: dto.version,
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     });
   }
 
@@ -387,6 +411,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       note: dto.comment,
       createdAt: dto.createdAt.getTime(),
       updatedAt: dto.updatedAt.getTime(),
+      version: dto.version,
+      deletedAt: dto.deletedAt ?? null,
     });
   }
 

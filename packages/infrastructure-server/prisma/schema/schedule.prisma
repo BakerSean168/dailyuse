@@ -54,8 +54,10 @@ model ScheduleTask {
   tags                  String    @default("[]")
   priority              String
   timeout               Int?
+  version               Int       @default(1)
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
+  deletedAt             DateTime? @map("deleted_at")
 
   executions ScheduleExecution[]
   account    Account             @relation(fields: [identityId], references: [id], onDelete: Cascade)

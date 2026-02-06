@@ -48,6 +48,10 @@ export interface NotificationClient {
   // ===== 元数据 =====
   metadata?: NotificationMetadata | null;
 
+  // ===== 同步字段 =====
+  version: number;
+  deletedAt: DomainDate | null;
+
   // ===== 时间戳 =====
   createdAt: DomainDate;
   updatedAt: DomainDate;
@@ -81,8 +85,11 @@ export interface NotificationClientDTO {
   actions?: NotificationActionDTO[] | null;
   metadata?: NotificationMetadataDTO | null;
 
+  // 同步字段
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 
   // ===== 子实体 DTO =====
   notificationChannels?: NotificationChannelClientDTO[] | null;

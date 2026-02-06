@@ -63,6 +63,7 @@ export interface ReminderTemplateClientDTO {
   icon: string | null;
   nextTriggerAt: TransferDate | null;
   stats: ReminderStatsClientDTO;
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
@@ -111,6 +112,7 @@ export interface ReminderTemplateClient {
   icon: string | null;
   nextTriggerAt: DomainDate | null;
   stats: ReminderStatsClient;
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;

@@ -43,7 +43,6 @@ export * from './notification';
 export * from './dashboard';
 export * from './repository';
 export * from './setting';
-export * from './sync';
 
 // Shared
 export * from './shared';

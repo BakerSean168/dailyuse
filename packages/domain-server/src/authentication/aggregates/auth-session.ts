@@ -312,6 +312,24 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
   }
 
   /**
+   * 转换为 Client DTO
+   */
+  public toClientDTO(isCurrentSession: boolean = false): import('@dailyuse/contracts/authentication').AuthSessionClientDTO {
+    return {
+      id: this.id,
+      identityId: this._identityId,
+      deviceInfo: this._deviceInfo.toDTO(),
+      isCurrentSession,
+      version: 1,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._lastActiveAt.getTime(), // Use lastActiveAt as updatedAt
+      expiresAt: this._expiresAt.getTime(),
+      lastActiveAt: this._lastActiveAt.getTime(),
+      deletedAt: this._isRevoked ? Date.now() : null,
+    };
+  }
+
+  /**
    * 转换为持久化 DTO
    */
   public toPersistenceDTO(): AuthSessionPersistenceDTO {

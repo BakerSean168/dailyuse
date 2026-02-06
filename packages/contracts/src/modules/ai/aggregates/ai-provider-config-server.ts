@@ -49,9 +49,11 @@ export interface AIProviderConfigPersistenceDTO {
 
   isDefault: boolean;
   priority: number;
+  version: number;
 
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
+  deletedAt: PersistenceDate | null;
 }
 
 /**
@@ -81,8 +83,12 @@ export interface AIProviderConfigServerDTO {
   isDefault: boolean;
   /** 优先级（数字越小优先级越高，用于故障转移） */
   priority: number;
+  /** 版本号（用于乐观锁） */
+  version: number;
   /** 创建时间戳 */
   createdAt: TransferDate;
   /** 更新时间戳 */
   updatedAt: TransferDate;
+  /** 软删除时间戳 */
+  deletedAt: TransferDate | null;
 }

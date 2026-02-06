@@ -14,7 +14,10 @@ export class Message extends Entity<AiMessageId> implements MessageServer {
   private _role: MessageRole;
   private _content: string;
   private _tokenCount: number | null;
+  private _version: number;
   private _createdAt: Date;
+  private _updatedAt: Date;
+  private _deletedAt: Date | null;
 
   private constructor(params: {
     id?: string;
@@ -22,14 +25,20 @@ export class Message extends Entity<AiMessageId> implements MessageServer {
     role: MessageRole;
     content: string;
     tokenCount?: number | null;
+    version?: number;
     createdAt: Date;
+    updatedAt?: Date;
+    deletedAt?: Date | null;
   }) {
     super((params.id ?? AiMessageId.generate()) as AiMessageId);
     this._conversationId = AiConversationId.of(params.conversationId);
     this._role = params.role;
     this._content = params.content;
     this._tokenCount = params.tokenCount ?? null;
+    this._version = params.version ?? 1;
     this._createdAt = params.createdAt;
+    this._updatedAt = params.updatedAt ?? params.createdAt;
+    this._deletedAt = params.deletedAt ?? null;
   }
 
   public get conversationId(): IAiConversationId {
@@ -52,18 +61,34 @@ export class Message extends Entity<AiMessageId> implements MessageServer {
     return this._createdAt;
   }
 
+  public get updatedAt(): Date {
+    return this._updatedAt;
+  }
+
+  public get deletedAt(): Date | null {
+    return this._deletedAt;
+  }
+
+  public get version(): number {
+    return this._version;
+  }
+
   public static create(params: {
     conversationId: string;
     role: MessageRole;
     content: string;
     tokenCount?: number;
   }): Message {
+    const now = new Date();
     return new Message({
       conversationId: params.conversationId,
       role: params.role,
       content: params.content,
       tokenCount: params.tokenCount,
-      createdAt: new Date(),
+      version: 1,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
     });
   }
 
@@ -74,7 +99,10 @@ export class Message extends Entity<AiMessageId> implements MessageServer {
       role: dto.role,
       content: dto.content,
       tokenCount: dto.tokenCount,
+      version: (dto as any).version ?? 1,
       createdAt: new Date(dto.createdAt),
+      updatedAt: (dto as any).updatedAt ? new Date((dto as any).updatedAt) : new Date(dto.createdAt),
+      deletedAt: (dto as any).deletedAt ? new Date((dto as any).deletedAt) : null,
     });
   }
 
@@ -85,7 +113,10 @@ export class Message extends Entity<AiMessageId> implements MessageServer {
       role: dto.role,
       content: dto.content,
       tokenCount: dto.tokenCount,
+      version: (dto as any).version ?? 1,
       createdAt: dto.createdAt,
+      updatedAt: (dto as any).updatedAt ?? dto.createdAt,
+      deletedAt: (dto as any).deletedAt ?? null,
     });
   }
 
@@ -107,7 +138,10 @@ export class Message extends Entity<AiMessageId> implements MessageServer {
       role: this._role,
       content: this._content,
       tokenCount: this._tokenCount,
+      version: this._version,
       createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
       isUser: this._role === MessageRole.User,
       isAssistant: this._role === MessageRole.Assistant,
       isSystem: this._role === MessageRole.System,

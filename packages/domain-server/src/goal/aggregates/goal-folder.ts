@@ -54,6 +54,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
   private _createdAt: Date;
   private _updatedAt: Date;
   private _deletedAt: Date | null;
+  private _version: number;
 
   // ================= 2. 构造函数 (Private) =================
   /**
@@ -79,6 +80,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;
+    version?: number;
   }) {
     super(params.id);
     this._identityId = params.identityId;
@@ -95,6 +97,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
     this._deletedAt = params.deletedAt ?? null;
+    this._version = params.version ?? 1;
   }
 
   // ================= 3. 公共属性 (Getters) =================
@@ -161,6 +164,10 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
   public get deletedAt(): Date | null {
     return this._deletedAt;
   }
+  
+  public get version(): number {
+    return this._version;
+  }
 
   // ================= 4. 工厂方法 (Factory Methods) =================
 
@@ -213,6 +220,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
       completedGoalCount: 0,
       createdAt: now,
       updatedAt: now,
+      version: 1,
     });
 
     // 发送领域事件
@@ -250,6 +258,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
       deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+      version: dto.version ?? 1,
     });
   }
 
@@ -280,6 +289,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt ?? null,
+      version: dto.version ?? 1,
     });
   }
 
@@ -505,6 +515,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
+      version: this._version,
     };
   }
 
@@ -535,8 +546,10 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
       folderType: this._folderType,
       goalCount: this._goalCount,
       completedGoalCount: this._completedGoalCount,
+      version: this._version,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
 
       // UI 计算字段
       displayName: this._name,

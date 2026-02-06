@@ -22,6 +22,7 @@ model Setting {
   isSystemSetting Boolean   @default(false) @map("is_system_setting")
   syncConfig      String?   @map("sync_config")
   historyData     String    @default("[]") @map("history_data")
+  version         Int       @default(1)
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
@@ -43,8 +44,10 @@ model SettingGroup {
   order       Int      @default(0)
   icon        String?
   isCollapsed Boolean  @default(false) @map("is_collapsed")
+  version     Int      @default(1)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
 
   parent   SettingGroup?  @relation("SettingGroupHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children SettingGroup[] @relation("SettingGroupHierarchy")
@@ -62,8 +65,10 @@ model SettingItem {
   order       Int      @default(0)
   isVisible   Boolean  @default(true) @map("is_visible")
   customLabel String?  @map("custom_label")
+  version     Int      @default(1)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
 
   group SettingGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
@@ -73,11 +78,13 @@ model SettingItem {
 }
 
 model UserSetting {
-  id                          String   @id
-  identityId                  String   @unique @map("identity_id")
-  createdAt                   DateTime @default(now()) @map("created_at")
-  updatedAt                   DateTime @updatedAt @map("updated_at")
-  appearanceAccentColor       String   @default("#3B82F6") @map("appearance_accent_color")
+  id                          String    @id
+  identityId                  String    @unique @map("identity_id")
+  version                     Int       @default(1)
+  createdAt                   DateTime  @default(now()) @map("created_at")
+  updatedAt                   DateTime  @updatedAt @map("updated_at")
+  deletedAt                   DateTime? @map("deleted_at")
+  appearanceAccentColor       String    @default("#3B82F6") @map("appearance_accent_color")
   appearanceCompactMode       Boolean  @default(false) @map("appearance_compact_mode")
   appearanceFontFamily        String?  @map("appearance_font_family")
   appearanceFontSize          String   @default("MEDIUM") @map("appearance_font_size")

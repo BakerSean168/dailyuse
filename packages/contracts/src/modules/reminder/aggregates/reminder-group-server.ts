@@ -26,7 +26,8 @@ export interface ReminderGroupServer {
   order: number;
   stats: GroupStatsServer;
 
-  // 时间戳 (统一使用 DomainDate)
+  // 同步字段
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt?: DomainDate | null;
@@ -46,6 +47,7 @@ export interface ReminderGroupServerDTO {
   order: number;
   stats: GroupStatsServerDTO;
 
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt?: TransferDate | null;
@@ -64,6 +66,7 @@ export interface ReminderGroupPersistenceDTO {
   status: ReminderStatus;
   order: number;
   stats: GroupStatsServerDTO;
+  version: number;
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
   deletedAt?: PersistenceDate | null;

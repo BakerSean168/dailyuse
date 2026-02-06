@@ -56,7 +56,8 @@ export interface ReminderTemplateServer {
   nextTriggerAt?: number | null;
   stats: ReminderStatsServer;
 
-  // 时间戳 (统一使用 number epoch ms)
+  // 同步字段
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt?: DomainDate | null;
@@ -94,6 +95,7 @@ export interface ReminderTemplateServerDTO {
   icon?: string | null;
   nextTriggerAt?: number | null; // epoch ms
   stats: ReminderStatsServerDTO;
+  version: number;
   createdAt: number; // epoch ms
   updatedAt: number; // epoch ms
   deletedAt?: number | null; // epoch ms
@@ -145,6 +147,7 @@ export interface ReminderTemplatePersistenceDTO {
   
   smartFrequencyEnabled?: boolean;
   
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt?: DomainDate | null;

@@ -4,7 +4,7 @@
  *
  * 【规范说明：聚合根（Aggregate Root）】
  * 聚合根是 DDD 中的核心概念，代表一个业务边界：
- * - 唯一标识：通过 UUID 区分不同的聚合实例
+ * - 唯一标识：通过 ID 区分不同的聚合实例
  * - 事务边界：所有对聚合的修改在一个事务内完成
  * - 统一性：聚合保证内部状态的一致性
  * - 生命周期：聚合有创建、修改、删除的完整生命周期
@@ -14,15 +14,20 @@
  * - 追踪变更时间和备注原因
  * - 支持进度追踪（结合其他记录计算进度）
  *
+ * 【同步支持】
+ * - deletedAt: 软删除时间戳
+ * - version: 乐观锁版本号
+ * - updatedAt: 最后更新时间（增量同步）
+ *
  * 【不变量（Invariants）】
  * 这些条件必须始终保持真：
  * - value 是有效数字
  * - recordedAt 不能早于 createdAt（理论上）
- * - keyResultId 和 goalId 必须存在
+ * - keyResultId 必须存在
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { GoalRecordId, GoalId, KeyResultId } from '@dailyuse/domain-shared';
+import { GoalRecordId, KeyResultId } from '@dailyuse/domain-shared';
 import type {
   GoalRecordPersistenceDTO,
   GoalRecordServer,
@@ -35,34 +40,30 @@ import type {
 export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecordServer {
   // ================= 1. 内部状态 (Backing Fields) =================
   private _keyResultId: KeyResultId;
-  private _goalId: GoalId;
   private _value: number;
   private _note: string | null;
   private _recordedAt: Date;
+  private _version: number;
   private _createdAt: Date;
+  private _updatedAt: Date;
+  private _deletedAt: Date | null;
 
   // ================= 2. 构造函数 (Private) =================
   private constructor(props: GoalRecordServerDTO) {
-    super(props.uuid as GoalRecordId);
-    this._keyResultId = props.keyResultUuid as KeyResultId;
-    this._goalId = props.goalUuid as GoalId;
+    super(props.id);
+    this._keyResultId = props.keyResultId;
     this._value = props.value;
     this._note = props.note ?? null;
     this._recordedAt = new Date(props.recordedAt);
+    this._version = props.version ?? 1;
     this._createdAt = new Date(props.createdAt);
+    this._updatedAt = new Date(props.updatedAt);
+    this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
   }
 
   // ================= 3. 公共属性 (Getters) =================
-  get uuid(): string {
-    return this.id;
-  }
-
-  get keyResultUuid(): string {
+  get keyResultId(): KeyResultId {
     return this._keyResultId;
-  }
-
-  get goalUuid(): string {
-    return this._goalId;
   }
 
   get value(): number {
@@ -73,48 +74,60 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecor
     return this._note;
   }
 
-  get recordedAt(): number {
-    return this._recordedAt.getTime();
+  get recordedAt(): Date {
+    return this._recordedAt;
+  }
+
+  get version(): number {
+    return this._version;
   }
 
   get createdAt(): Date {
     return this._createdAt;
   }
 
+  get updatedAt(): Date {
+    return this._updatedAt;
+  }
+
+  get deletedAt(): Date | null {
+    return this._deletedAt;
+  }
+
   // ================= 4. 工厂方法 (Factories) =================
 
   /**
    * 🏭 业务工厂：创建新的目标记录
+   * @param params.id 可选，支持前端生成 ID
    */
   public static create(params: {
+    id?: GoalRecordId;
     keyResultId: KeyResultId;
-    goalId: GoalId;
     value: number;
     note?: string;
-    recordedAt?: number;
+    recordedAt?: Date;
   }): GoalRecord {
     // 验证
     if (!params.keyResultId) {
       throw new Error('KeyResult ID is required');
-    }
-    if (!params.goalId) {
-      throw new Error('Goal ID is required');
     }
     if (typeof params.value !== 'number' || isNaN(params.value)) {
       throw new Error('Value must be a valid number');
     }
 
     const now = Date.now();
-    const id = GoalRecordId.generate();
+    const id = params.id ?? GoalRecordId.generate();
 
     const record = new GoalRecord({
-      uuid: id,
-      keyResultUuid: params.keyResultId,
-      goalUuid: params.goalId,
+      id,
+      keyResultId: params.keyResultId,
       value: params.value,
       note: params.note?.trim() || null,
-      recordedAt: params.recordedAt ?? now,
+      recordedAt: params.recordedAt?.getTime() ?? now,
+      version: 1,
       createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
     });
 
     // 🎯 触发领域事件
@@ -139,13 +152,15 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecor
    */
   public static fromPersistenceDTO(dto: GoalRecordPersistenceDTO): GoalRecord {
     const serverDTO: GoalRecordServerDTO = {
-      uuid: dto.uuid,
-      keyResultUuid: dto.keyResultUuid,
-      goalUuid: dto.goalUuid,
+      id: dto.id,
+      keyResultId: dto.keyResultId,
       value: dto.value,
       note: dto.note,
-      recordedAt: dto.recordedAt,
+      recordedAt: dto.recordedAt.getTime(),
+      version: dto.version,
       createdAt: dto.createdAt.getTime(),
+      updatedAt: dto.updatedAt.getTime(),
+      deletedAt: dto.deletedAt?.getTime() ?? null,
     };
     return new GoalRecord(serverDTO);
   }
@@ -157,6 +172,32 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecor
    */
   public updateNote(note: string): void {
     this._note = note.trim() || null;
+    this._updatedAt = new Date();
+    this._version++;
+  }
+
+  /**
+   * ✅ 软删除
+   */
+  public softDelete(): void {
+    if (this._deletedAt) {
+      return; // 已删除，幂等操作
+    }
+    this._deletedAt = new Date();
+    this._updatedAt = new Date();
+    this._version++;
+  }
+
+  /**
+   * ✅ 恢复软删除
+   */
+  public restore(): void {
+    if (!this._deletedAt) {
+      return; // 未删除，幂等操作
+    }
+    this._deletedAt = null;
+    this._updatedAt = new Date();
+    this._version++;
   }
 
   // ================= 6. 序列化 (Serialization) =================
@@ -166,10 +207,28 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecor
    */
   public toServerDTO(): GoalRecordServerDTO {
     return {
-      uuid: this.id as string,
-      keyResultUuid: this._keyResultId,
-      goalUuid: this._goalId,
+      id: this.id,
+      keyResultId: this._keyResultId,
       value: this._value,
+      note: this._note,
+      recordedAt: this._recordedAt.getTime(),
+      version: this._version,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
+    };
+  }
+
+  /**
+   * 转换为 Client DTO
+   */
+  public toClientDTO(goalUuid?: string): import('@dailyuse/contracts/goal').GoalRecordClientDTO {
+    return {
+      uuid: this.id,
+      keyResultUuid: this._keyResultId,
+      goalUuid: goalUuid ?? '', // Will be populated by application service
+      value: this._value,
+      calculatedCurrentValue: this._value, // Current value as snapshot
       note: this._note,
       recordedAt: this._recordedAt.getTime(),
       createdAt: this._createdAt.getTime(),
@@ -181,13 +240,15 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecor
    */
   public toPersistenceDTO(): GoalRecordPersistenceDTO {
     return {
-      uuid: this.id as string,
-      keyResultUuid: this._keyResultId,
-      goalUuid: this._goalId,
+      id: this.id,
+      keyResultId: this._keyResultId,
       value: this._value,
       note: this._note,
-      recordedAt: this._recordedAt.getTime(),
+      recordedAt: this._recordedAt,
+      version: this._version,
       createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
+      deletedAt: this._deletedAt,
     };
   }
 }

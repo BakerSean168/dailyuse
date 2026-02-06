@@ -15,6 +15,7 @@ model Document {
   lastVersionedAt DateTime? @map("last_versioned_at")
   lastEditedAt    DateTime? @map("last_edited_at")
   editSessionId   String?   @map("edit_session_id")
+  version         Int       @default(1)
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
@@ -41,6 +42,7 @@ model DocumentVersion {
   changedBy         String   @map("changed_by")
   restoredFrom      String?  @map("restored_from")
   metadata          Json? // { addedChars, deletedChars, modifiedSections }
+  version           Int      @default(1)
   createdAt         DateTime @default(now()) @map("created_at")
 
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
@@ -59,8 +61,10 @@ model DocumentLink {
   linkText         String   @map("link_text")
   linkPosition     Int      @map("link_position")
   isBroken         Boolean  @default(false) @map("is_broken")
+  version          Int      @default(1)
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
 
   sourceDocument Document  @relation("source_links", fields: [sourceDocumentId], references: [id], onDelete: Cascade)
   targetDocument Document? @relation("target_links", fields: [targetDocumentId], references: [id], onDelete: SetNull)

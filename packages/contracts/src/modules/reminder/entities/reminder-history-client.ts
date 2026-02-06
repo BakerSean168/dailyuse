@@ -26,7 +26,10 @@ export interface ReminderHistoryClientDTO {
   error: string | null;
   notificationSent: boolean;
   notificationChannels: NotificationChannel[] | null;
+  version: number;
   createdAt: TransferDate;
+  updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 
   // UI 扩展
   resultText: string; // "成功" | "失败" | "跳过"
@@ -48,7 +51,10 @@ export interface ReminderHistoryClient {
   error: string | null;
   notificationSent: boolean;
   notificationChannels: NotificationChannel[] | null;
+  version: number;
   createdAt: DomainDate;
+  updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 
   // UI 扩展
   resultText: string;

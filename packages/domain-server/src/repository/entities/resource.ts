@@ -33,6 +33,7 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
   private _createdAt: Date;
   private _updatedAt: Date;
   private _version: number;
+  private _deletedAt: Date | null;
   private _externalLinks: ExternalLink[] | null;
 
   // ===== 构造函数（私有） =====
@@ -54,6 +55,7 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
       createdAt: Date;
       updatedAt: Date;
       version: number;
+      deletedAt?: Date | null;
       externalLinks?: ExternalLink[] | null;
     },
   ) {
@@ -73,6 +75,7 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
     this._version = params.version;
+    this._deletedAt = params.deletedAt ?? null;
     this._externalLinks = params.externalLinks ?? null;
   }
 
@@ -135,6 +138,10 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
 
   get version(): number {
     return this._version;
+  }
+
+  get deletedAt(): Date | null {
+    return this._deletedAt;
   }
 
   // ===== 业务方法 =====
@@ -229,6 +236,7 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       version: this._version,
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
       externalLinks: this._externalLinks,
     };
   }
@@ -250,6 +258,7 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       version: this._version,
+      deletedAt: this._deletedAt,
     };
   }
 
@@ -292,6 +301,7 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
       createdAt: now,
       updatedAt: now,
       version: 1,
+      deletedAt: null,
       externalLinks: null,
     });
   }
@@ -315,6 +325,7 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
       version: dto.version,
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
       externalLinks: dto.externalLinks,
     });
   }
@@ -338,6 +349,7 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
       createdAt: dto.createdAt instanceof Date ? dto.createdAt : new Date(dto.createdAt),
       updatedAt: dto.updatedAt instanceof Date ? dto.updatedAt : new Date(dto.updatedAt),
       version: dto.version,
+      deletedAt: dto.deletedAt ? (dto.deletedAt instanceof Date ? dto.deletedAt : new Date(dto.deletedAt)) : null,
       externalLinks: null,
     });
   }

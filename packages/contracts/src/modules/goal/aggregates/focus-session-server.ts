@@ -1,6 +1,11 @@
 /**
  * FocusSession Aggregate Root - Server Interface
  * 专注周期聚合根 - 服务端接口
+ * 
+ * 【同步支持】
+ * - deletedAt: 软删除时间戳
+ * - version: 乐观锁版本号
+ * - updatedAt: 最后更新时间（增量同步）
  */
 
 import type { IdentityId, FocusSessionId, GoalId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
@@ -30,8 +35,10 @@ export interface FocusSessionServerDTO {
   pauseCount: number; // 暂停次数
   pausedDurationMinutes: number; // 累计暂停时长（分钟）
 
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }
 
 /**
@@ -54,8 +61,10 @@ export interface FocusSessionPersistenceDTO {
   pauseCount: number;
   pausedDurationMinutes: number;
 
+  version: number;
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
+  deletedAt: PersistenceDate | null;
 }
 
 /**
@@ -81,6 +90,8 @@ export interface FocusSessionServer {
   pauseCount: number;
   pausedDurationMinutes: number;
 
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 }

@@ -5,8 +5,6 @@
  */
 
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
-import { Goal } from '@dailyuse/domain-server/goal';
-import { eventBus } from '@dailyuse/utils';
 
 /**
  * Delete Goal Service
@@ -36,9 +34,9 @@ export class DeleteGoal {
     }
 
     const keyResults = goal.keyResults || [];
-    const reviews = goal.reviews || [];
+    const goalReviews = goal.goalReviews || [];
     const keyResultCount = keyResults.length;
-    const reviewCount = reviews.length;
+    const reviewCount = goalReviews.length;
 
     const warnings: string[] = [];
 
@@ -72,13 +70,6 @@ export class DeleteGoal {
 
     goal.softDelete();
     await this.goalRepository.save(goal);
-    await this.publishEvents(goal);
-  }
-
-  private async publishEvents(goal: Goal): Promise<void> {
-    const events = goal.getUncommittedDomainEvents();
-    for (const event of events) {
-      await eventBus.emit(event.eventType, event);
-    }
+    // TODO: 实现领域事件发布
   }
 }

@@ -19,7 +19,10 @@ export interface AIGenerationTaskClientDTO {
   input: GenerationInputClientDTO;
   result: GenerationResultClientDTO | null;
   error: string | null;
+  version: number;
   createdAt: TransferDate;
+  updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
   completedAt: TransferDate | null;
 
   // UI 计算字段
@@ -44,7 +47,10 @@ export interface AIGenerationTaskClient {
   input: GenerationInputClientDTO;
   result: GenerationResultClientDTO | null;
   error: string | null;
+  version: number;
   createdAt: DomainDate;
+  updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
   completedAt: DomainDate | null;
 
   isPending: boolean;

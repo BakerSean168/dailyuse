@@ -37,6 +37,10 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
   private _status: AccountStatus;
   private _phone: ContactPhone | null;
 
+  // 同步字段
+  private _version: number;
+  private _deletedAt: Date | null;
+
   // 使用私有字段存储，通过 getter 暴露，以便内部修改
   private _createdAt: Date;
   private _updatedAt: Date;
@@ -52,6 +56,8 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
     this._status = AccountStatus.of(props.status); // 假设 Status 有工厂方法
     this._phone = props.phone ? ContactPhone.create(props.phone) : null;
     
+    this._version = props.version;
+    this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
     this._createdAt = new Date(props.createdAt);
     this._updatedAt = new Date(props.updatedAt);
   }
@@ -73,6 +79,8 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
     return this._phone;
   }
 
+  get version(): number { return this._version; }
+  get deletedAt(): Date | null { return this._deletedAt; }
   get createdAt(): Date { return this._createdAt; }
   get updatedAt(): Date { return this._updatedAt; }
 
@@ -99,8 +107,10 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
         isPrimary: true,
       },
       phone: null,
+      version: 1,
       createdAt: now,
       updatedAt: now,
+      deletedAt: null,
     };
     const account = new Account(dto);
 
@@ -124,8 +134,10 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
       settings: AccountSettings.fromPersistenceDTO(dto.settings).toDTO(),
       email: ContactEmail.fromPersistenceDTO(dto.email).toDTO(),
       phone: dto.phone ? ContactPhone.fromPersistenceDTO(dto.phone).toDTO() : null,
+      version: dto.version,
       createdAt: dto.createdAt.getTime(),
       updatedAt: dto.updatedAt.getTime(),
+      deletedAt: dto.deletedAt ? dto.deletedAt.getTime() : null,
     };
     return new Account(serverDTO);
   }
@@ -187,8 +199,10 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
       settings: this._settings.toDTO(),
       email: this._email.toDTO(),
       phone: this._phone ? this._phone.toDTO() : null,
+      version: this._version,
       createdAt: this.createdAt.getTime(),
       updatedAt: this.updatedAt.getTime(),
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
     };
   }
 
@@ -200,8 +214,10 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
       settings: this._settings.toPersistenceDTO(),
       email: this._email.toPersistenceDTO(),
       phone: this._phone ? this._phone.toPersistenceDTO() : null,
+      version: this._version,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
+      deletedAt: this._deletedAt,
     }
   }
 }

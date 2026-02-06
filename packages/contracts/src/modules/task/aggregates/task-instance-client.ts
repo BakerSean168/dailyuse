@@ -35,8 +35,12 @@ export interface TaskInstanceClientDTO {
   actualEndTime: TransferDate | null;
 
   comment: string | null;
+
+  // 同步字段
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }
 
 export interface TaskInstanceClient {
@@ -55,6 +59,10 @@ export interface TaskInstanceClient {
   actualEndTime: DomainDate | null;
   
   comment: string | null;
+
+  // 同步字段
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 }

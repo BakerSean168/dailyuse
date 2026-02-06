@@ -3,6 +3,10 @@ export interface SubtaskClient {
   name: string;
   isCompleted: boolean;
   order: number;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 export interface SubtaskClientDTO {
@@ -10,5 +14,9 @@ export interface SubtaskClientDTO {
   name: string;
   isCompleted: boolean;
   order: number;
+  version: number;
+  createdAt: number;
+  updatedAt: number;
+  deletedAt: number | null;
 }
 

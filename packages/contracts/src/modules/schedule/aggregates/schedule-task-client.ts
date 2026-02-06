@@ -49,9 +49,11 @@ export interface ScheduleTaskClientDTO {
   retryPolicy: RetryPolicyClientDTO;
   metadata: TaskMetadataClientDTO;
 
-  // 时间�?
+  // 同步字段
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 
   // UI 辅助属�?
   statusDisplay: string; // "活跃" | "暂停" | "完成" | "取消" | "失败"
@@ -90,9 +92,11 @@ export interface ScheduleTaskClient {
   retryPolicy: RetryPolicyClient;
   metadata: TaskMetadataClient;
 
-  // 时间�?
+  // 同步字段
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 
   // UI 辅助属�?
   statusDisplay: string;

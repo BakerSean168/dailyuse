@@ -34,6 +34,7 @@ export interface ResourceClientDTO {
   status: ResourceStatus;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
   version: number;
 
   // UI 计算字段
@@ -72,6 +73,7 @@ export interface ResourceClient {
   status: ResourceStatus;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
   version: number;
 
   // UI 计算属�?

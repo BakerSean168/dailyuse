@@ -63,6 +63,7 @@ export interface TaskTemplateServerDTO {
 
   // === 其他 ===
   folderId: string | null;
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
@@ -116,8 +117,7 @@ export interface TaskTemplatePersistenceDTO {
   blockingReason: string | null;
 
   // === 其他 ===
-  folderId: string | null;
-  createdAt: PersistenceDate;
+  folderId: string | null;  version: number;  createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
   deletedAt: PersistenceDate | null;
 }
@@ -144,6 +144,7 @@ export interface TaskTemplateServer {
   status: TaskTemplateStatus;
   lastGeneratedDate: DomainDate | null;
   generateAheadDays: number | null; // null for ONE_TIME tasks
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;

@@ -98,6 +98,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   private _createdAt: Date;
   private _updatedAt: Date;
   private _deletedAt: Date | null;
+  private _version: number;
 
   // ===== ��ʵ�弯??=====
   private _history: TaskTemplateHistory[];
@@ -153,6 +154,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     this._createdAt = props.createdAt;
     this._updatedAt = props.updatedAt;
     this._deletedAt = props.deletedAt ?? null;
+    this._version = props.version ?? 1;
 
     // ��ʵ??
     this._history = [];
@@ -289,6 +291,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
 
   public get deletedAt(): Date | null {
     return this._deletedAt;
+  }
+
+  public get version(): number {
+    return this._version;
   }
 
   public get history(): TaskTemplateHistory[] {
@@ -1282,6 +1288,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       deletedAt: this._deletedAt?.getTime() ?? null,
+      version: this._version,
       instances: includeChildren ? this._instances.map((i) => i.toServerDTO()) : undefined,
     };
   }
@@ -1315,6 +1322,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       deletedAt: this._deletedAt?.getTime() ?? null,
+      version: this._version,
       parentTaskId: this._parentTaskId,
       startDate: this._startDate?.getTime() ?? null,
       dueDate: this._dueDate?.getTime() ?? null,
@@ -1385,6 +1393,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       deletedAt: this._deletedAt,
+      version: this._version,
     };
   }
 
@@ -1542,6 +1551,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       createdAt: now,
       updatedAt: now,
       generateAheadDays: params.generateAheadDays ?? 30, // Default value
+      version: 1,
     });
 
     template.addHistory('created');
@@ -1584,6 +1594,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         createdAt: new Date(dto.createdAt),
         updatedAt: new Date(dto.updatedAt),
         deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+        version: dto.version ?? 1,
         parentTaskId: dto.parentTaskId as TaskTemplateId | null,
         dependencyStatus: dto.dependencyStatus,
         isBlocked: dto.isBlocked,
@@ -1671,6 +1682,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
+      version: dto.version ?? 1,
     };
     return new TaskTemplate(props, dto.id as TaskTemplateId);
   }
@@ -1754,4 +1766,5 @@ interface TaskTemplateProps {
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
+  version?: number;
 }

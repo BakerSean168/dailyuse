@@ -205,7 +205,10 @@ export class ReminderHistory extends Entity<string> implements ReminderHistorySe
       error: this._error,
       notificationSent: this._notificationSent,
       notificationChannels: this._notificationChannels,
+      version: 1,
       createdAt: this._createdAt.getTime(),
+      updatedAt: this._createdAt.getTime(),
+      deletedAt: null,
       // Client 专属计算字段
       resultText: this.resultDescription,
       timeAgo: this.triggeredAtFormatted,

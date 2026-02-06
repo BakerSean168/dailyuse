@@ -6,7 +6,7 @@
 model TaskTemplate {
   id          String  @id
   identityId  String  @map("identity_id")
-  title       String
+  name        String
   description String?
   taskType    String  @map("task_type") // 'ONE_TIME' | 'RECURRING'
   status      String
@@ -66,6 +66,7 @@ model TaskTemplate {
   isBlocked        Boolean @default(false) @map("is_blocked")
 
   // === 审计字段 ===
+  version   Int       @default(1)
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -113,6 +114,8 @@ model TaskInstance {
   timeConfig       String    @map("time_config")
   completionRecord String?   @map("completion_record")
   skipRecord       String?   @map("skip_record")
+  version          Int       @default(1)
+  deletedAt        DateTime? @map("deleted_at")
 
   account  Account      @relation(fields: [identityId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   template TaskTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
@@ -127,8 +130,10 @@ model TaskDependency {
   successorTaskId   String   @map("successor_task_id")
   dependencyType    String   @default("FINISH_TO_START") @map("dependency_type")
   lagDays           Int?     @map("lag_days")
+  version           Int      @default(1)
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
 
   predecessorTask TaskTemplate @relation("PredecessorTaskDeps", fields: [predecessorTaskId], references: [id], onDelete: Cascade)
   successorTask   TaskTemplate @relation("SuccessorTaskDeps", fields: [successorTaskId], references: [id], onDelete: Cascade)

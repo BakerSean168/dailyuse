@@ -19,6 +19,12 @@ export interface NotificationPreferenceClient {
 
   // Key: 模块名; Value: 开启的渠道列表
   settings: Record<string, NotificationChannelType[]>;
+
+  // 同步字段
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 // ============ DTO 定义 ============
@@ -30,5 +36,9 @@ export interface NotificationPreferenceClientDTO {
   id: string;
   identityId: string;
   settings: Record<string, NotificationChannelType[]>; // 模块名 => 渠道列表
+  version: number;
+  createdAt: number;
+  updatedAt: number;
+  deletedAt: number | null;
 }
 

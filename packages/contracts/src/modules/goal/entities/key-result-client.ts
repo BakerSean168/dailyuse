@@ -12,8 +12,10 @@ export interface KeyResultClientDTO {
   progress: KeyResultProgressDTO;
   weight: number; // 权重 (0-100)
   order: number;
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }
 
 export interface KeyResultClient {
@@ -23,6 +25,8 @@ export interface KeyResultClient {
   progress: KeyResultProgressDTO;
   weight: number; // 权重 (0-100)
   order: number;
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 }

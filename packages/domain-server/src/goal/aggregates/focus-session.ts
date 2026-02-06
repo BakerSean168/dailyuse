@@ -58,6 +58,8 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
 
   private _createdAt: Date;
   private _updatedAt: Date;
+  private _version: number;
+  private _deletedAt: Date | null;
 
   // ================= 2. 构造函数 (Private) =================
   private constructor(props: FocusSessionServerDTO) {
@@ -77,6 +79,8 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
     this._pausedDurationMinutes = props.pausedDurationMinutes;
     this._createdAt = new Date(props.createdAt);
     this._updatedAt = new Date(props.updatedAt);
+    this._version = props.version ?? 1;
+    this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
   }
 
   // ================= 3. 公共属性 (Getters) =================
@@ -126,6 +130,12 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
   public get updatedAt(): Date {
     return this._updatedAt;
   }
+  public get version(): number {
+    return this._version;
+  }
+  public get deletedAt(): Date | null {
+    return this._deletedAt;
+  }
 
   // ================= 4. 工厂方法 (Factories) =================
 
@@ -166,6 +176,8 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
       pausedDurationMinutes: 0,
       createdAt: now,
       updatedAt: now,
+      version: 1,
+      deletedAt: null,
     });
 
     session.addDomainEvent('focus-session:created', {
@@ -203,6 +215,8 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
       pausedDurationMinutes: dto.pausedDurationMinutes,
       createdAt: dto.createdAt.getTime(),
       updatedAt: dto.updatedAt.getTime(),
+      version: dto.version ?? 1,
+      deletedAt: dto.deletedAt?.getTime() ?? null,
     };
     return new FocusSession(serverDTO);
   }
@@ -366,6 +380,42 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
       pausedDurationMinutes: this._pausedDurationMinutes,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
+      version: this._version,
+      deletedAt: this._deletedAt?.getTime() ?? null,
+    };
+  }
+
+  /**
+   * 转换为 Client DTO
+   */
+  public toClientDTO(): import('@dailyuse/contracts/goal').FocusSessionClientDTO {
+    const remainingMinutes = this.getRemainingMinutes();
+    const progressPercentage = this._durationMinutes > 0
+      ? Math.min(100, Math.round(((this._durationMinutes - remainingMinutes) / this._durationMinutes) * 100))
+      : 0;
+
+    return {
+      id: this.id,
+      identityId: this._identityId,
+      goalId: this._goalId,
+      status: this._status,
+      durationMinutes: this._durationMinutes,
+      actualDurationMinutes: this._actualDurationMinutes,
+      description: this._description,
+      startedAt: this._startedAt?.getTime() ?? null,
+      pausedAt: this._pausedAt?.getTime() ?? null,
+      resumedAt: this._resumedAt?.getTime() ?? null,
+      completedAt: this._completedAt?.getTime() ?? null,
+      cancelledAt: this._cancelledAt?.getTime() ?? null,
+      pauseCount: this._pauseCount,
+      pausedDurationMinutes: this._pausedDurationMinutes,
+      remainingMinutes,
+      progressPercentage,
+      isActive: this._status === FocusSessionStatus.Active,
+      version: this._version,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+      deletedAt: this._deletedAt?.getTime() ?? null,
     };
   }
 
@@ -390,6 +440,8 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
       pausedDurationMinutes: this._pausedDurationMinutes,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
+      version: this._version,
+      deletedAt: this._deletedAt,
     };
   }
 }

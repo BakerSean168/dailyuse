@@ -31,16 +31,28 @@ export class NotificationPreference
   // ===== 私有字段 =====
   private _identityId: IdentityId;
   private _settings: Map<string, NotificationChannelType[]>;
+  private _version: number;
+  private _deletedAt: Date | null;
+  private _createdAt: Date;
+  private _updatedAt: Date;
 
   // ===== 构造函数（私有） =====
   private constructor(
     id: NotificationPreferenceId,
     identityId: IdentityId,
     settings: Map<string, NotificationChannelType[]>,
+    version: number,
+    deletedAt: Date | null,
+    createdAt: Date,
+    updatedAt: Date,
   ) {
     super(id);
     this._identityId = identityId;
     this._settings = settings;
+    this._version = version;
+    this._deletedAt = deletedAt;
+    this._createdAt = createdAt;
+    this._updatedAt = updatedAt;
   }
 
   // ===== Getter 属性 =====
@@ -50,6 +62,22 @@ export class NotificationPreference
 
   public get settings(): Map<string, NotificationChannelType[]> {
     return new Map(this._settings);
+  }
+
+  public get version(): number {
+    return this._version;
+  }
+
+  public get deletedAt(): Date | null {
+    return this._deletedAt;
+  }
+
+  public get createdAt(): Date {
+    return this._createdAt;
+  }
+
+  public get updatedAt(): Date {
+    return this._updatedAt;
   }
 
   // ===== 业务方法 =====
@@ -121,6 +149,10 @@ export class NotificationPreference
       id: String(this.id),
       identityId: this._identityId,
       settings: settingsRecord,
+      version: this._version,
+      deletedAt: this._deletedAt ? this._deletedAt.getTime() : null,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
     };
   }
 
@@ -134,6 +166,10 @@ export class NotificationPreference
       id: String(this.id),
       identityId: this._identityId,
       settings: JSON.stringify(settingsRecord),
+      version: this._version,
+      deletedAt: this._deletedAt,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
     };
   }
 
@@ -157,7 +193,16 @@ export class NotificationPreference
       }
     }
 
-    return new NotificationPreference(id, params.identityId, settings);
+    const now = new Date();
+    return new NotificationPreference(
+      id,
+      params.identityId,
+      settings,
+      1,
+      null,
+      now,
+      now,
+    );
   }
 
   /**
@@ -171,7 +216,15 @@ export class NotificationPreference
       settings.set(key, [...value]);
     }
 
-    return new NotificationPreference(id, IdentityIdType.of(dto.identityId), settings);
+    return new NotificationPreference(
+      id,
+      IdentityIdType.of(dto.identityId),
+      settings,
+      dto.version,
+      dto.deletedAt ? new Date(dto.deletedAt) : null,
+      new Date(dto.createdAt),
+      new Date(dto.updatedAt),
+    );
   }
 
   /**
@@ -188,6 +241,14 @@ export class NotificationPreference
       settings.set(key, [...value]);
     }
 
-    return new NotificationPreference(id, IdentityIdType.of(dto.identityId), settings);
+    return new NotificationPreference(
+      id,
+      IdentityIdType.of(dto.identityId),
+      settings,
+      dto.version,
+      dto.deletedAt ? new Date(dto.deletedAt) : null,
+      new Date(dto.createdAt),
+      new Date(dto.updatedAt),
+    );
   }
 }

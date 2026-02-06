@@ -20,6 +20,7 @@ model Notification {
   readAt            DateTime? @map("read_at")
   sentAt            DateTime? @map("sent_at")
   expiresAt         DateTime? @map("expires_at")
+  version           Int       @default(1)
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
   deletedAt         DateTime? @map("deleted_at")
@@ -71,9 +72,11 @@ model NotificationPreference {
   channels     String
   categories   String
   doNotDisturb String?  @map("do_not_disturb")
-  rateLimit    String?  @map("rate_limit")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  rateLimit    String?   @map("rate_limit")
+  version      Int       @default(1)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
 
   @@index([identityId])
   @@map("notification_preferences")

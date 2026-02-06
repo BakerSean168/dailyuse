@@ -25,6 +25,7 @@ export interface GoalFolderServerDTO {
   folderType: FolderType | null;
   goalCount: number;
   completedGoalCount: number;
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;

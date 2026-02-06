@@ -22,8 +22,10 @@ model Account {
   phoneFullNumber  String?   @map("phone_full_number") // +8613800138000 (E.164格式)
   phoneIsVerified  Boolean?  @default(false) @map("phone_is_verified")
   phoneVerifiedAt  DateTime? @map("phone_verified_at")
+  version          Int       @default(1)
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
 
   // 关联关系
   identity AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)

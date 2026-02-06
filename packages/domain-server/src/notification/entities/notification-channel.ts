@@ -182,6 +182,27 @@ export class NotificationChannel
     };
   }
 
+  public toClientDTO(): import('@dailyuse/contracts/notification').NotificationChannelClientDTO {
+    const now = Date.now();
+    return {
+      id: String(this.id),
+      notificationId: String(this._notificationId),
+      channelType: this._channelType,
+      status: this._status,
+      recipient: this._recipient,
+      sendAttempts: this._sendAttempts,
+      maxRetries: this._maxRetries,
+      error: this._error?.toDTO() ?? null,
+      response: this._response?.toDTO() ?? null,
+      version: 1,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      sentAt: this._sentAt?.getTime() ?? null,
+      failedAt: this._failedAt?.getTime() ?? null,
+    };
+  }
+
   public toPersistenceDTO(): NotificationChannelPersistenceDTO {
     return {
       id: String(this.id),

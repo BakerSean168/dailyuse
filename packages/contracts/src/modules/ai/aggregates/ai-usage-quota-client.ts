@@ -19,8 +19,10 @@ export interface AIUsageQuotaClientDTO {
   resetPeriod: QuotaResetPeriod;
   lastResetAt: TransferDate;
   nextResetAt: TransferDate;
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 
   // UI 计算字段
   remainingQuota: number;
@@ -42,8 +44,10 @@ export interface AIUsageQuotaClient {
   resetPeriod: QuotaResetPeriod;
   lastResetAt: DomainDate;
   nextResetAt: DomainDate;
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 
   // ===== 计算属性方�?=====
 

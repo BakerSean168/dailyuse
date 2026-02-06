@@ -36,8 +36,11 @@ export interface FocusSessionClientDTO {
   progressPercentage?: number; // 进度百分比（0-100）
   isActive?: boolean; // 是否活跃（进行中或暂停）
 
+  // 同步字段
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }
 
 /**
@@ -63,8 +66,11 @@ export interface FocusSessionClient {
   pauseCount: number;
   pausedDurationMinutes: number;
 
+  // 同步字段
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 
 
 }

@@ -79,6 +79,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
   private _createdAt: Date;
   private _updatedAt: Date;
   private _deletedAt: number | null;
+  private _version: number;
 
   // ===== 智能频率相关字段 (Story 5-2) =====
   private _responseMetrics: ResponseMetrics | null;
@@ -112,6 +113,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     createdAt: number;
     updatedAt: number;
     deletedAt?: number | null;
+    version?: number;
     // 智能频率相关 (Story 5-2)
     responseMetrics?: ResponseMetrics | null;
     frequencyAdjustment?: FrequencyAdjustment | null;
@@ -140,6 +142,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     this._createdAt = new Date(params.createdAt);
     this._updatedAt = new Date(params.updatedAt);
     this._deletedAt = params.deletedAt ?? null;
+    this._version = params.version ?? 1;
     // 智能频率相关 (Story 5-2)
     this._responseMetrics = params.responseMetrics ?? null;
     this._frequencyAdjustment = params.frequencyAdjustment ?? null;
@@ -213,6 +216,10 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
   }
   public get deletedAt(): Date | null {
     return this._deletedAt !== null ? new Date(this._deletedAt) : null;
+  }
+
+  public get version(): number {
+    return this._version;
   }
 
   public get effectiveEnabled(): boolean {
@@ -293,6 +300,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       stats,
       createdAt: now,
       updatedAt: now,
+      version: 1,
     });
 
     // 计算下次触发时间
@@ -343,6 +351,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt ?? null,
+      version: (dto as any).version ?? 1,
       // 智能频率相关 - 这些字段不在 ReminderTemplateServerDTO 中，使用默认值
       responseMetrics: null,
       frequencyAdjustment: null,
@@ -436,6 +445,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       createdAt: dto.createdAt.getTime(),
       updatedAt: dto.updatedAt.getTime(),
       deletedAt: dto.deletedAt?.getTime() ?? null,
+      version: (dto as any).version ?? 1,
     });
   }
 
@@ -987,7 +997,8 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       createdAt: this.createdAt.getTime(),
       updatedAt: this.updatedAt.getTime(),
       deletedAt: this.deletedAt?.getTime() ?? null,
-    };
+      version: this.version,
+    } as ReminderTemplateServerDTO;
 
     if (includeChildren && this._history.length > 0) {
       dto.history = this._history.map((h) => h.toServerDTO());
@@ -1092,6 +1103,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       icon: this.icon,
       nextTriggerAt: this.nextTriggerAt,
       stats: statsClientDTO,
+      version: this.version,
       createdAt: this.createdAt.getTime(),
       updatedAt: this.updatedAt.getTime(),
       deletedAt: this.deletedAt?.getTime() ?? null,
@@ -1171,6 +1183,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       deletedAt: this.deletedAt,
-    };
+      version: this.version,
+    } as ReminderTemplatePersistenceDTO;
   }
 }

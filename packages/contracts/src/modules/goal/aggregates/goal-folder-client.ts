@@ -25,8 +25,10 @@ export interface GoalFolderClientDTO {
   folderType: FolderType | null;
   goalCount: number;
   completedGoalCount: number;
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 
   // UI 计算字段
   displayName: string;
@@ -56,6 +58,7 @@ export interface GoalFolderClient {
   completedGoalCount: number;
 
   // 时间戳
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;

@@ -28,8 +28,10 @@ export interface RepositoryClient {
   config: RepositoryConfig;
   stats: RepositoryStats;
   status: RepositoryStatus;
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 
 
   isDeleted: boolean;
@@ -60,8 +62,10 @@ export interface RepositoryClientDTO {
   config: RepositoryConfigDTO;
   stats: RepositoryStatsDTO;
   status: RepositoryStatus;
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 
   // UI 计算字段
   isDeleted: boolean;

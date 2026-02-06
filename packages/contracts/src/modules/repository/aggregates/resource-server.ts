@@ -74,9 +74,11 @@ export interface ResourceServerDTO {
   stats: ResourceStatsDTO; // JSONB
   status: ResourceStatus;
 
+  // 同步字段
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
-  version: number;
+  deletedAt: TransferDate | null;
 }
 
 /**
@@ -95,7 +97,8 @@ export interface ResourcePersistenceDTO {
   metadata: string; // JSON string
   stats: string; // JSON string
   status: ResourceStatus;
+  version: number;
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
-  version: number;
+  deletedAt: PersistenceDate | null;
 }

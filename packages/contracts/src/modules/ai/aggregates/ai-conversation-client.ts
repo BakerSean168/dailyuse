@@ -20,8 +20,10 @@ export interface AIConversationClientDTO {
   status: ConversationStatus;
   messageCount: number;
   lastMessageAt: TransferDate | null;
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 
   // 子实体 DTO
   messages: MessageClientDTO[] | null;
@@ -40,8 +42,10 @@ export interface AIConversationClient {
   status: ConversationStatus;
   messageCount: number;
   lastMessageAt: DomainDate | null;
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 
   // 子实体
   messages: MessageClient[] | null;

@@ -66,6 +66,10 @@ export interface AuthIdentityClient {
    * 更新时间
    */
   updatedAt: DomainDate;
+
+  // 同步字段
+  version: number;
+  deletedAt: DomainDate | null;
 }
 
 // ============ DTO 定义 ============
@@ -83,6 +87,8 @@ export interface AuthIdentityClientDTO {
   credentials: AuthCredentialClientDTO[];
   hasPassword: boolean;
   hasOAuth: boolean;
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }

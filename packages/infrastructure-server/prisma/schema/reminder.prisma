@@ -6,17 +6,18 @@
 model ReminderTemplate {
   id                 String    @id
   identityId         String    @map("identity_id")
-  title              String
+  name               String
   description        String?
   type               String
   selfEnabled        Boolean   @map("self_enabled")
   status             String
-  groupId            String?   @map("group_id")
+  reminderGroupId    String?   @map("reminder_group_id")
   importanceLevel    String    @map("importance_level")
   tags               String
   color              String?
   icon               String?
   nextTriggerAt      DateTime? @map("next_trigger_at")
+  version            Int       @default(1)
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
   deletedAt          DateTime? @map("deleted_at")
@@ -49,7 +50,7 @@ model ReminderTemplate {
   instances ReminderInstance[]
   responses ReminderResponse[]
   account   Account            @relation(fields: [identityId], references: [id], onDelete: Cascade)
-  group     ReminderGroup?     @relation(fields: [groupId], references: [id])
+  group     ReminderGroup?     @relation(fields: [reminderGroupId], references: [id])
 
   @@index([status])
   @@map("reminder_templates")
@@ -67,6 +68,7 @@ model ReminderGroup {
   status      String
   order       Int
   stats       String
+  version     Int       @default(1)
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")

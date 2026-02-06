@@ -2,6 +2,11 @@
  * Repository Aggregate Root - Server Interface
  * 仓储聚合根 - 服务端接口
  * @path 应该是仓库的物理存储路径，desktop 端可用，web 端为空
+ * 
+ * 【同步支持】
+ * - deletedAt: 软删除时间戳
+ * - version: 乐观锁版本号
+ * - updatedAt: 最后更新时间（增量同步）
  */
 import type { RepositoryId, IdentityId, DomainDate, TransferDate, PersistenceDate } from '@/primitives';
 import type { RepositoryType } from '../value-objects/repository-type';
@@ -30,8 +35,12 @@ export interface RepositoryServer {
   config: RepositoryConfig;
   stats: RepositoryStats;
   status: RepositoryStatus;
+
+  // 同步字段
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 }
 
 // ============ DTO 定义 ============
@@ -49,8 +58,10 @@ export interface RepositoryServerDTO {
   config: RepositoryConfigDTO;
   stats: RepositoryStatsDTO;
   status: RepositoryStatus;
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }
 
 /**
@@ -67,8 +78,10 @@ export interface RepositoryPersistenceDTO {
   config: string; // JSON string
   stats: string; // JSON string
   status: RepositoryStatus;
+  version: number;
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
+  deletedAt: PersistenceDate | null;
   
   // 注意：子实体（folders）在数据库中是独立表，通过外键关联
 }

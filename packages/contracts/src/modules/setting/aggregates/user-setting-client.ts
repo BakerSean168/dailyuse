@@ -15,8 +15,10 @@ export interface UserSettingClient {
   
   entries: Map<string, SettingEntryClient>;
 
+  version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
+  deletedAt: DomainDate | null;
 }
 
 // ============ DTO 定义 ============
@@ -30,8 +32,10 @@ export interface UserSettingClientDTO {
 
   entries: string; // JSON stringified entries
   
+  version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
+  deletedAt: TransferDate | null;
 }
 
 
