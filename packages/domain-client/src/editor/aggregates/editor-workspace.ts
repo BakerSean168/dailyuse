@@ -27,8 +27,8 @@ import {
 import { IdentityId } from '@dailyuse/domain-shared';
 import { EditorSession } from '../entities/editor-session';
 
-// Internal props type using EditorSession class instead of EditorSessionClient interface
-interface EditorWorkspaceInternalProps {
+// 内部状态接口：使用 domain-shared 类类型
+interface EditorWorkspaceState {
   id: EditorWorkspaceId;
   identityId: IdentityId;
   name: string;
@@ -47,10 +47,10 @@ interface EditorWorkspaceInternalProps {
 
 export class EditorWorkspace extends AggregateRoot<EditorWorkspaceId> implements EditorWorkspaceClient {
   // ================= 1. Backing Field =================
-  private readonly _props: EditorWorkspaceInternalProps;
+  private readonly _props: EditorWorkspaceState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: EditorWorkspaceInternalProps) {
+  private constructor(props: EditorWorkspaceState) {
     super(props.id);
     this._props = props;
   }

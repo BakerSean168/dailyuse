@@ -36,18 +36,50 @@ import { ReminderTemplateId, ReminderGroupId } from '@dailyuse/domain-shared/rem
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ReminderHistory } from '../entities/reminder-history.js';
 
-/**
- * Extended props interface for ReminderTemplate
- * Includes history child entities not in the base interface
- */
-interface ReminderTemplateProps extends ReminderTemplateClient {
+// 内部状态接口
+interface ReminderTemplateState {
+  id: ReminderTemplateId;
+  identityId: IdentityId;
+  name: string;
+  description: string | null;
+  type: ReminderType;
+  trigger: TriggerConfigClient;
+  recurrence: RecurrenceConfigClient | null;
+  activeTime: ActiveTimeConfigClient;
+  activeHours: ActiveHoursConfigClient | null;
+  notificationConfig: NotificationConfigClient;
+  selfEnabled: boolean;
+  status: ReminderStatus;
+  effectiveEnabled: boolean;
+  groupId: ReminderGroupId | null;
+  importanceLevel: ImportanceLevel;
+  tags: string[];
+  color: string | null;
+  icon: string | null;
+  nextTriggerAt: Date | null;
+  stats: ReminderStatsClient;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
   history: ReminderHistory[] | null;
+  displayTitle: string;
+  typeText: string;
+  triggerText: string;
+  recurrenceText: string | null;
+  statusText: string;
+  importanceText: string;
+  nextTriggerText: string | null;
+  isActive: boolean;
+  isPaused: boolean;
+  lastTriggeredText: string | null;
+  controlledByGroup: boolean;
 }
 
 export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implements ReminderTemplateClient {
-  private readonly _props: ReminderTemplateProps;
+  private readonly _props: ReminderTemplateState;
 
-  private constructor(props: ReminderTemplateProps) {
+  private constructor(props: ReminderTemplateState) {
     super(props.id);
     this._props = props;
   }

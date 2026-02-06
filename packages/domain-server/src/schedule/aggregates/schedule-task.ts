@@ -9,7 +9,7 @@
  * - 确保聚合内的一致�?
  */
 
-import { AggregateRoot, generateUUID } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils';
 import type {
   ScheduleTaskClientDTO,
   ScheduleTaskPersistenceDTO,
@@ -17,6 +17,7 @@ import type {
   ScheduleTaskServerDTO,
 } from '@dailyuse/contracts/schedule';
 import { ExecutionStatus, ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
+import { ScheduleTaskId } from '@dailyuse/domain-shared/schedule';
 import { ScheduleConfig } from '../value-objects/ScheduleConfig';
 import { ExecutionInfo } from '../value-objects/ExecutionInfo';
 import { RetryPolicy } from '../value-objects/RetryPolicy';
@@ -24,9 +25,9 @@ import { TaskMetadata } from '../value-objects/TaskMetadata';
 import { ScheduleExecution } from '../entities/schedule-execution';
 
 /**
- * ScheduleTask Props interface for simplified aggregate pattern
+ * ScheduleTask 内部状态接口 for simplified aggregate pattern
  */
-interface ScheduleTaskProps {
+interface ScheduleTaskState {
   identityId: string;
   name: string;
   description: string | null;
@@ -47,9 +48,9 @@ interface ScheduleTaskProps {
 /**
  * ScheduleTask 聚合根
  */
-export class ScheduleTask extends AggregateRoot<string> implements ScheduleTaskServer {
+export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements ScheduleTaskServer {
   // ===== 私有字段 =====
-  private _props: ScheduleTaskProps;
+  private _props: ScheduleTaskState;
 
   // ===== 子实体集合 =====
   private _executions: ScheduleExecution[];
@@ -73,7 +74,7 @@ export class ScheduleTask extends AggregateRoot<string> implements ScheduleTaskS
     version: number;
     deletedAt: Date | null;
   }) {
-    super(params.uuid || generateUUID());
+    super(params.uuid ? ScheduleTaskId.of(params.uuid) : ScheduleTaskId.generate());
     this._props = {
       identityId: params.identityId,
       name: params.name,

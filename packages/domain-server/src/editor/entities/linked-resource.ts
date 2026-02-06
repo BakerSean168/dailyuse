@@ -22,11 +22,13 @@ import type {
   PersistenceDate,
 } from '@dailyuse/contracts/primitives';
 import { Entity, generateUUID } from '@dailyuse/utils';
+import { EditorWorkspaceId as EditorWorkspaceIdType } from '@dailyuse/domain-shared/editor';
+import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 
 /**
- * LinkedResource 属性接口
+ * LinkedResource 内部状态接口
  */
-interface LinkedResourceProps {
+interface LinkedResourceState {
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
   sourceDocumentId: DocumentId;
@@ -48,10 +50,10 @@ interface LinkedResourceProps {
  */
 export class LinkedResource extends Entity<LinkedResourceId> implements LinkedResourceServer {
   // ===== 私有属性 =====
-  private _props: LinkedResourceProps;
+  private _props: LinkedResourceState;
 
   // ===== 构造函数（私有） =====
-  private constructor(id: LinkedResourceId, props: LinkedResourceProps) {
+  private constructor(id: LinkedResourceId, props: LinkedResourceState) {
     super(id);
     this._props = props;
   }
@@ -121,8 +123,8 @@ export class LinkedResource extends Entity<LinkedResourceId> implements LinkedRe
     const now = new Date();
 
     return new LinkedResource(id, {
-      workspaceId: params.workspaceId as EditorWorkspaceId,
-      identityId: params.identityId as IdentityId,
+      workspaceId: EditorWorkspaceIdType.of(params.workspaceId),
+      identityId: IdentityIdType.of(params.identityId),
       sourceDocumentId: params.sourceDocumentId as DocumentId,
       sourceType: params.sourceType,
       sourceLine: params.sourceLine ?? null,

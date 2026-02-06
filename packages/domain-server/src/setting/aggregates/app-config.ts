@@ -120,8 +120,8 @@ export interface AppConfigPersistenceDTO {
 
 // ============ AppConfig Aggregate ============
 
-/** Props interface for AppConfig */
-interface AppConfigProps {
+/** 内部状态接口 for AppConfig */
+interface AppConfigState {
   version: string;
   app: AppConfigServer['app'];
   features: AppConfigServer['features'];
@@ -138,7 +138,7 @@ interface AppConfigProps {
  */
 export class AppConfig extends AggregateRoot<IAppConfigId> implements AppConfigServer {
   // ===== 私有属性容器 =====
-  private _props: AppConfigProps;
+  private _props: AppConfigState;
 
   private constructor(
     id: IAppConfigId,

@@ -18,12 +18,26 @@ import type {
 import { Entity } from '@dailyuse/utils';
 import { GoalRecordId, KeyResultId, GoalId } from '@dailyuse/domain-shared/goal';
 
+// 内部状态接口
+interface GoalRecordState {
+  id: GoalRecordId;
+  keyResultId: KeyResultId;
+  goalId: GoalId;
+  value: number;
+  valueAfter: number;
+  comment: string | null;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 export class GoalRecord extends Entity<GoalRecordId> implements GoalRecordClient {
   // ================= 1. Props =================
-  private readonly _props: GoalRecordClient;
+  private readonly _props: GoalRecordState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: GoalRecordClient) {
+  private constructor(props: GoalRecordState) {
     super(props.id);
     this._props = props;
   }

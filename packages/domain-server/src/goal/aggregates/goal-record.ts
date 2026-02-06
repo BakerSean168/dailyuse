@@ -34,10 +34,9 @@ import type {
   GoalRecordServerDTO,
 } from '@dailyuse/contracts/goal';
 
-/**
- * GoalRecord 属性接口
- */
-interface GoalRecordProps {
+// 内部状态接口
+interface GoalRecordState {
+  id: GoalRecordId;
   keyResultId: KeyResultId;
   value: number;
   note: string | null;
@@ -53,20 +52,31 @@ interface GoalRecordProps {
  */
 export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecordServer {
   // ================= 1. 内部状态 (Props) =================
-  private _props: GoalRecordProps;
+  private _props: GoalRecordState;
 
   // ================= 2. 构造函数 (Private) =================
-  private constructor(props: GoalRecordServerDTO) {
-    super(props.id);
+  private constructor(params: {
+    id: GoalRecordId;
+    keyResultId: KeyResultId;
+    value: number;
+    note: string | null;
+    recordedAt: Date;
+    version: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
+  }) {
+    super(params.id);
     this._props = {
-      keyResultId: props.keyResultId,
-      value: props.value,
-      note: props.note ?? null,
-      recordedAt: new Date(props.recordedAt),
-      version: props.version ?? 1,
-      createdAt: new Date(props.createdAt),
-      updatedAt: new Date(props.updatedAt),
-      deletedAt: props.deletedAt ? new Date(props.deletedAt) : null,
+      id: params.id,
+      keyResultId: params.keyResultId,
+      value: params.value,
+      note: params.note ?? null,
+      recordedAt: params.recordedAt,
+      version: params.version ?? 1,
+      createdAt: params.createdAt,
+      updatedAt: params.updatedAt,
+      deletedAt: params.deletedAt ?? null,
     };
   }
 
@@ -132,10 +142,10 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecor
       keyResultId: params.keyResultId,
       value: params.value,
       note: params.note?.trim() || null,
-      recordedAt: params.recordedAt?.getTime() ?? now,
+      recordedAt: params.recordedAt ?? new Date(now),
       version: 1,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: new Date(now),
+      updatedAt: new Date(now),
       deletedAt: null,
     });
 
@@ -153,25 +163,34 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecor
    * 🏭 恢复工厂：从 ServerDTO 恢复
    */
   public static fromServerDTO(dto: GoalRecordServerDTO): GoalRecord {
-    return new GoalRecord(dto);
+    return new GoalRecord({
+      id: GoalRecordId.of(dto.id),
+      keyResultId: KeyResultId.of(dto.keyResultId),
+      value: dto.value,
+      note: dto.note ?? null,
+      recordedAt: new Date(dto.recordedAt),
+      version: dto.version ?? 1,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    });
   }
 
   /**
    * 🏭 恢复工厂：从 PersistenceDTO 恢复
    */
   public static fromPersistenceDTO(dto: GoalRecordPersistenceDTO): GoalRecord {
-    const serverDTO: GoalRecordServerDTO = {
-      id: dto.id,
-      keyResultId: dto.keyResultId,
+    return new GoalRecord({
+      id: GoalRecordId.of(dto.id),
+      keyResultId: KeyResultId.of(dto.keyResultId),
       value: dto.value,
-      note: dto.note,
-      recordedAt: dto.recordedAt.getTime(),
-      version: dto.version,
-      createdAt: dto.createdAt.getTime(),
-      updatedAt: dto.updatedAt.getTime(),
-      deletedAt: dto.deletedAt?.getTime() ?? null,
-    };
-    return new GoalRecord(serverDTO);
+      note: dto.note ?? null,
+      recordedAt: dto.recordedAt,
+      version: dto.version ?? 1,
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+      deletedAt: dto.deletedAt ?? null,
+    });
   }
 
   // ================= 5. 业务行为 (Business Actions) =================

@@ -18,17 +18,35 @@ import type {
   DocumentLanguage,
   IndexStatus,
 } from '@dailyuse/contracts/editor';
-import type { DocumentId, DomainDate } from '@dailyuse/contracts/primitives';
+import type { DocumentId as IDocumentId, DomainDate } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
-import { EditorWorkspaceId } from '@dailyuse/domain-shared/editor';
+import { EditorWorkspaceId, DocumentId } from '@dailyuse/domain-shared/editor';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-export class Document extends Entity<DocumentId> implements DocumentClient {
+// 内部状态接口
+interface DocumentState {
+  id: DocumentId;
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
+  path: string;
+  name: string;
+  language: DocumentLanguage;
+  content: string;
+  contentHash: string;
+  metadata: DocumentMetadataClientDTO;
+  indexStatus: IndexStatus;
+  lastIndexedAt: Date | null;
+  lastModifiedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class Document extends Entity<IDocumentId> implements DocumentClient {
   // ================= 1. Backing Field =================
-  private readonly _props: DocumentClient;
+  private readonly _props: DocumentState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: DocumentClient) {
+  private constructor(props: DocumentState) {
     super(props.id);
     this._props = props;
   }
@@ -89,7 +107,7 @@ export class Document extends Entity<DocumentId> implements DocumentClient {
   // ================= 4. Factory Methods =================
   public static fromDTO(dto: DocumentClientDTO): Document {
     return new Document({
-      id: dto.id as DocumentId,
+      id: DocumentId.of(dto.id),
       workspaceId: EditorWorkspaceId.of(dto.workspaceId),
       identityId: IdentityId.of(dto.identityId),
       path: dto.path,

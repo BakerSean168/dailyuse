@@ -46,8 +46,8 @@ export interface NotificationHistoryServer {
   toPersistenceDTO(): NotificationHistoryPersistenceDTO;
 }
 
-/** Props interface for NotificationHistory */
-interface NotificationHistoryProps {
+/** 内部状态接口 for NotificationHistory */
+interface NotificationHistoryState {
   notificationId: NotificationId;
   action: string;
   details: unknown | null;
@@ -62,7 +62,7 @@ export class NotificationHistory
   implements NotificationHistoryServer
 {
   // ===== 私有属性容器 =====
-  private _props: NotificationHistoryProps;
+  private _props: NotificationHistoryState;
 
   // ===== 构造函数（私有） =====
   private constructor(

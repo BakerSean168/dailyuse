@@ -22,9 +22,9 @@ import type {
 } from '@dailyuse/contracts/primitives';
 
 /**
- * EditorTab 属性接口
+ * EditorTab 内部状态接口
  */
-interface EditorTabProps {
+interface EditorTabState {
   groupId: EditorGroupId;
   sessionId: EditorSessionId;
   workspaceId: EditorWorkspaceId;
@@ -46,10 +46,10 @@ interface EditorTabProps {
  */
 export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
   // ===== 私有属性 =====
-  private _props: EditorTabProps;
+  private _props: EditorTabState;
 
   // ===== 构造函数（私有） =====
-  private constructor(id: EditorTabId, props: EditorTabProps) {
+  private constructor(id: EditorTabId, props: EditorTabState) {
     super(id);
     this._props = props;
   }

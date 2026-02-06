@@ -21,10 +21,35 @@ import { AggregateRoot } from '@dailyuse/utils';
 import { ReminderGroupId } from '@dailyuse/domain-shared/reminder';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-export class ReminderGroup extends AggregateRoot<ReminderGroupId> implements ReminderGroupClient {
-  private readonly _props: ReminderGroupClient;
+// 内部状态接口
+interface ReminderGroupState {
+  id: ReminderGroupId;
+  identityId: IdentityId;
+  name: string;
+  description: string | null;
+  color: string | null;
+  icon: string | null;
+  controlMode: ControlMode;
+  enabled: boolean;
+  status: ReminderStatus;
+  order: number;
+  stats: GroupStatsClientDTO;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  displayName: string;
+  controlModeText: string;
+  statusText: string;
+  templateCountText: string;
+  activeStatusText: string;
+  controlDescription: string;
+}
 
-  private constructor(props: ReminderGroupClient) {
+export class ReminderGroup extends AggregateRoot<ReminderGroupId> implements ReminderGroupClient {
+  private readonly _props: ReminderGroupState;
+
+  private constructor(props: ReminderGroupState) {
     super(props.id);
     this._props = props;
   }

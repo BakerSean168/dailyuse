@@ -33,10 +33,9 @@ import type {
   FocusSessionServerDTO,
 } from '@dailyuse/contracts/goal';
 
-/**
- * FocusSession 属性接口
- */
-interface FocusSessionProps {
+// 内部状态接口
+interface FocusSessionState {
+  id: FocusSessionId;
   identityId: IdentityId;
   goalId: GoalId | null;
   status: FocusSessionStatus;
@@ -61,29 +60,49 @@ interface FocusSessionProps {
  */
 export class FocusSession extends AggregateRoot<FocusSessionId> implements FocusSessionServer {
   // ================= 1. 内部状态 (Props) =================
-  private _props: FocusSessionProps;
+  private _props: FocusSessionState;
 
   // ================= 2. 构造函数 (Private) =================
-  private constructor(props: FocusSessionServerDTO) {
-    super(props.id);
+  private constructor(params: {
+    id: FocusSessionId;
+    identityId: IdentityId;
+    goalId: GoalId | null;
+    status: FocusSessionStatus;
+    durationMinutes: number;
+    actualDurationMinutes: number;
+    description: string | null;
+    startedAt: Date | null;
+    pausedAt: Date | null;
+    resumedAt: Date | null;
+    completedAt: Date | null;
+    cancelledAt: Date | null;
+    pauseCount: number;
+    pausedDurationMinutes: number;
+    createdAt: Date;
+    updatedAt: Date;
+    version: number;
+    deletedAt: Date | null;
+  }) {
+    super(params.id);
     this._props = {
-      identityId: props.identityId as IdentityId,
-      goalId: (props.goalId ?? null) as GoalId | null,
-      status: props.status,
-      durationMinutes: props.durationMinutes,
-      actualDurationMinutes: props.actualDurationMinutes,
-      description: props.description ?? null,
-      startedAt: props.startedAt ? new Date(props.startedAt) : null,
-      pausedAt: props.pausedAt ? new Date(props.pausedAt) : null,
-      resumedAt: props.resumedAt ? new Date(props.resumedAt) : null,
-      completedAt: props.completedAt ? new Date(props.completedAt) : null,
-      cancelledAt: props.cancelledAt ? new Date(props.cancelledAt) : null,
-      pauseCount: props.pauseCount,
-      pausedDurationMinutes: props.pausedDurationMinutes,
-      createdAt: new Date(props.createdAt),
-      updatedAt: new Date(props.updatedAt),
-      version: props.version ?? 1,
-      deletedAt: props.deletedAt ? new Date(props.deletedAt) : null,
+      id: params.id,
+      identityId: params.identityId,
+      goalId: params.goalId ?? null,
+      status: params.status,
+      durationMinutes: params.durationMinutes,
+      actualDurationMinutes: params.actualDurationMinutes,
+      description: params.description ?? null,
+      startedAt: params.startedAt ?? null,
+      pausedAt: params.pausedAt ?? null,
+      resumedAt: params.resumedAt ?? null,
+      completedAt: params.completedAt ?? null,
+      cancelledAt: params.cancelledAt ?? null,
+      pauseCount: params.pauseCount,
+      pausedDurationMinutes: params.pausedDurationMinutes,
+      createdAt: params.createdAt,
+      updatedAt: params.updatedAt,
+      version: params.version ?? 1,
+      deletedAt: params.deletedAt ?? null,
     };
   }
 
@@ -178,8 +197,8 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
       cancelledAt: null,
       pauseCount: 0,
       pausedDurationMinutes: 0,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: new Date(now),
+      updatedAt: new Date(now),
       version: 1,
       deletedAt: null,
     });
@@ -195,34 +214,52 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
    * 🏭 恢复工厂：从 ServerDTO 恢复
    */
   public static fromServerDTO(dto: FocusSessionServerDTO): FocusSession {
-    return new FocusSession(dto);
+    return new FocusSession({
+      id: FocusSessionId.of(dto.id),
+      identityId: IdentityId.of(dto.identityId),
+      goalId: dto.goalId ? GoalId.of(dto.goalId) : null,
+      status: dto.status,
+      durationMinutes: dto.durationMinutes,
+      actualDurationMinutes: dto.actualDurationMinutes,
+      description: dto.description ?? null,
+      startedAt: dto.startedAt ? new Date(dto.startedAt) : null,
+      pausedAt: dto.pausedAt ? new Date(dto.pausedAt) : null,
+      resumedAt: dto.resumedAt ? new Date(dto.resumedAt) : null,
+      completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
+      cancelledAt: dto.cancelledAt ? new Date(dto.cancelledAt) : null,
+      pauseCount: dto.pauseCount,
+      pausedDurationMinutes: dto.pausedDurationMinutes,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      version: dto.version ?? 1,
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    });
   }
 
   /**
    * 🏭 恢复工厂：从 PersistenceDTO 恢复
    */
   public static fromPersistenceDTO(dto: FocusSessionPersistenceDTO): FocusSession {
-    const serverDTO: FocusSessionServerDTO = {
-      id: dto.id,
-      identityId: dto.identityId,
-      goalId: dto.goalId ?? null,
+    return new FocusSession({
+      id: FocusSessionId.of(dto.id),
+      identityId: IdentityId.of(dto.identityId),
+      goalId: dto.goalId ? GoalId.of(dto.goalId) : null,
       status: dto.status as FocusSessionStatus,
       durationMinutes: dto.durationMinutes,
       actualDurationMinutes: dto.actualDurationMinutes,
-      description: dto.description,
-      startedAt: dto.startedAt?.getTime() ?? null,
-      pausedAt: dto.pausedAt?.getTime() ?? null,
-      resumedAt: dto.resumedAt?.getTime() ?? null,
-      completedAt: dto.completedAt?.getTime() ?? null,
-      cancelledAt: dto.cancelledAt?.getTime() ?? null,
+      description: dto.description ?? null,
+      startedAt: dto.startedAt ?? null,
+      pausedAt: dto.pausedAt ?? null,
+      resumedAt: dto.resumedAt ?? null,
+      completedAt: dto.completedAt ?? null,
+      cancelledAt: dto.cancelledAt ?? null,
       pauseCount: dto.pauseCount,
       pausedDurationMinutes: dto.pausedDurationMinutes,
-      createdAt: dto.createdAt.getTime(),
-      updatedAt: dto.updatedAt.getTime(),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
       version: dto.version ?? 1,
-      deletedAt: dto.deletedAt?.getTime() ?? null,
-    };
-    return new FocusSession(serverDTO);
+      deletedAt: dto.deletedAt ?? null,
+    });
   }
 
   // ================= 5. 业务行为 (Business Actions) =================

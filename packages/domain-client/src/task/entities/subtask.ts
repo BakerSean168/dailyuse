@@ -15,15 +15,28 @@ import type {
   SubtaskClient,
   SubtaskClientDTO,
 } from '@dailyuse/contracts/task';
-import type { SubtaskId } from '@dailyuse/contracts/primitives';
+import type { SubtaskId as ISubtaskId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
+import { SubtaskId } from '@dailyuse/domain-shared/task';
 
-export class Subtask extends Entity<SubtaskId> implements SubtaskClient {
+// 内部状态接口
+interface SubtaskState {
+  id: SubtaskId;
+  name: string;
+  isCompleted: boolean;
+  order: number;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+export class Subtask extends Entity<ISubtaskId> implements SubtaskClient {
   // ================= 1. Props =================
-  private readonly _props: SubtaskClient;
+  private readonly _props: SubtaskState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: SubtaskClient) {
+  private constructor(props: SubtaskState) {
     super(props.id);
     this._props = props;
   }
@@ -65,7 +78,7 @@ export class Subtask extends Entity<SubtaskId> implements SubtaskClient {
   // ================= 4. Factory Methods =================
   public static fromDTO(dto: SubtaskClientDTO): Subtask {
     return new Subtask({
-      id: dto.id as SubtaskId,
+      id: SubtaskId.of(dto.id),
       name: dto.name,
       isCompleted: dto.isCompleted,
       order: dto.order,

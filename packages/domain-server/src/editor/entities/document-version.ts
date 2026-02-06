@@ -21,9 +21,9 @@ import type {
 } from '@dailyuse/contracts/primitives';
 
 /**
- * DocumentVersion 属性接口
+ * DocumentVersion 内部状态接口
  */
-interface DocumentVersionProps {
+interface DocumentVersionState {
   documentId: DocumentId;
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
@@ -42,10 +42,10 @@ interface DocumentVersionProps {
  */
 export class DocumentVersion extends Entity<DocumentVersionId> implements DocumentVersionServer {
   // ===== 私有属性 =====
-  private _props: DocumentVersionProps;
+  private _props: DocumentVersionState;
 
   // ===== 构造函数（私有） =====
-  private constructor(id: DocumentVersionId, props: DocumentVersionProps) {
+  private constructor(id: DocumentVersionId, props: DocumentVersionState) {
     super(id);
     this._props = props;
   }

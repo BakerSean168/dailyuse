@@ -25,8 +25,8 @@ import {
 import { IdentityId } from '@dailyuse/domain-shared';
 import { EditorTab } from './editor-tab';
 
-// Internal props type using EditorTab class instead of EditorTabClient interface
-interface EditorGroupInternalProps {
+// 内部状态接口：使用 domain-shared 类类型
+interface EditorGroupState {
   id: EditorGroupId;
   sessionId: EditorSessionId;
   workspaceId: EditorWorkspaceId;
@@ -41,10 +41,10 @@ interface EditorGroupInternalProps {
 
 export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupClient {
   // ================= 1. Backing Field =================
-  private readonly _props: EditorGroupInternalProps;
+  private readonly _props: EditorGroupState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: EditorGroupInternalProps) {
+  private constructor(props: EditorGroupState) {
     super(props.id);
     this._props = props;
   }

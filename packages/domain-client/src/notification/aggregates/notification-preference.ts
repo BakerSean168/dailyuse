@@ -19,11 +19,22 @@ import { AggregateRoot } from '@dailyuse/utils';
 import { NotificationPreferenceId } from '@dailyuse/domain-shared/notification';
 import { IdentityId } from '@dailyuse/domain-shared';
 
+// 内部状态接口
+interface NotificationPreferenceState {
+  id: NotificationPreferenceId;
+  identityId: IdentityId;
+  settings: Record<string, NotificationChannelType[]>;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 export class NotificationPreference extends AggregateRoot<NotificationPreferenceId> implements NotificationPreferenceClient {
-  private readonly _props: NotificationPreferenceClient;
+  private readonly _props: NotificationPreferenceState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: NotificationPreferenceClient) {
+  private constructor(props: NotificationPreferenceState) {
     super(props.id);
     this._props = props;
   }

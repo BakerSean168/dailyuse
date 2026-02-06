@@ -23,10 +23,40 @@ import { GoalId, GoalFolderId } from '@dailyuse/domain-shared/goal';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { KeyResult, GoalReview } from '../entities';
 
-export class Goal extends AggregateRoot<GoalId> implements GoalClient {
-  private readonly _props: GoalClient;
+// 内部状态接口
+interface GoalState {
+  id: GoalId;
+  identityId: IdentityId;
+  name: string;
+  description: string | null;
+  color: string | null;
+  feasibilityAnalysis: string | null;
+  motivation: string | null;
+  status: GoalStatus;
+  importance: ImportanceLevel;
+  priority: number;
+  category: string | null;
+  tags: string[];
+  startDate: Date | null;
+  targetDate: Date | null;
+  completedAt: Date | null;
+  archivedAt: Date | null;
+  folderId: GoalFolderId | null;
+  parentGoalId: GoalId | null;
+  sortOrder: number;
+  reminderConfig: GoalReminderConfig | null;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  keyResults: KeyResult[] | null;
+  reviews: GoalReview[] | null;
+}
 
-  private constructor(props: GoalClient) {
+export class Goal extends AggregateRoot<GoalId> implements GoalClient {
+  private readonly _props: GoalState;
+
+  private constructor(props: GoalState) {
     super(props.id);
     this._props = props;
   }

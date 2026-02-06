@@ -18,10 +18,26 @@ import { AggregateRoot } from '@dailyuse/utils';
 import { ScheduleId } from '@dailyuse/domain-shared/schedule';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-export class ScheduleJob extends AggregateRoot<ScheduleId> implements ScheduleJobClient {
-  private readonly _props: ScheduleJobClient;
+// 内部状态接口
+interface ScheduleJobState {
+  id: ScheduleId;
+  identityId: IdentityId;
+  nextRunAt: Date;
+  cronExpression: string | null;
+  sourceModule: string;
+  sourceId: string;
+  triggerEvent: string;
+  payload: Record<string, any> | null;
+  nextRunAtFormatted: string;
+  cronExpressionDisplay: string;
+  sourceDisplay: string;
+  payloadDisplay: string;
+}
 
-  private constructor(props: ScheduleJobClient) {
+export class ScheduleJob extends AggregateRoot<ScheduleId> implements ScheduleJobClient {
+  private readonly _props: ScheduleJobState;
+
+  private constructor(props: ScheduleJobState) {
     super(props.id);
     this._props = props;
   }

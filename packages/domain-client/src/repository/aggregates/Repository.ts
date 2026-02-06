@@ -26,8 +26,8 @@ import {
 } from '@dailyuse/domain-shared/repository';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-// Internal props type using domain-shared class types
-interface RepositoryInternalProps {
+// 内部状态接口：使用 domain-shared 类类型（有 .toDTO() 等方法）
+interface RepositoryState {
   id: RepositoryId;
   identityId: IdentityId;
   name: string;
@@ -44,9 +44,9 @@ interface RepositoryInternalProps {
 }
 
 export class Repository extends AggregateRoot<RepositoryId> implements RepositoryClient {
-  private readonly _props: RepositoryInternalProps;
+  private readonly _props: RepositoryState;
 
-  private constructor(props: RepositoryInternalProps) {
+  private constructor(props: RepositoryState) {
     super(props.id);
     this._props = props;
   }

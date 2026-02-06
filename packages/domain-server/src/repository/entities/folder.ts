@@ -95,8 +95,8 @@ export interface FolderServer {
   toPersistenceDTO(): FolderPersistenceDTO;
 }
 
-/** Props interface for Folder */
-interface FolderProps {
+/** 内部状态接口 for Folder */
+interface FolderState {
   repositoryId: string;
   parentId: string | null;
   name: string;
@@ -111,7 +111,7 @@ interface FolderProps {
 
 export class Folder extends Entity<ResourceId> implements FolderServer {
   // ===== 私有属性容器 =====
-  private _props: FolderProps;
+  private _props: FolderState;
 
   // ===== 私有构造函数 =====
   private constructor(

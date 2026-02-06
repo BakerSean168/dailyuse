@@ -3,12 +3,12 @@
  * 任务依赖关系聚合
  */
 
-import { AggregateRoot, generateUUID } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils';
 import type {
   TaskDependencyServerDTO,
 } from '@dailyuse/contracts/task';
+import { TaskDependencyId } from '@dailyuse/domain-shared/task';
 import {
-  TaskDependencyId,
   DependencyType,
   DependencyStatus,
 } from '../value-objects';
@@ -16,7 +16,8 @@ import {
 /**
  * Internal props interface for TaskDependency
  */
-interface TaskDependencyProps {
+interface TaskDependencyState {
+  id: TaskDependencyId;
   predecessorTaskId: string;
   successorTaskId: string;
   dependencyType: DependencyType;
@@ -29,10 +30,10 @@ interface TaskDependencyProps {
  * TaskDependency 聚合根 - 服务端
  * 表示两个任务之间的依赖关系
  */
-export class TaskDependency extends AggregateRoot<string> {
-  private _props: TaskDependencyProps;
+export class TaskDependency extends AggregateRoot<TaskDependencyId> {
+  private _props: TaskDependencyState;
 
-  private constructor(id: string, props: TaskDependencyProps) {
+  private constructor(id: TaskDependencyId, props: TaskDependencyState) {
     super(id);
     this._props = props;
   }
@@ -75,10 +76,11 @@ export class TaskDependency extends AggregateRoot<string> {
     dependencyType?: DependencyType;
     lagDays?: number;
   }): TaskDependency {
-    const id = props.id ?? generateUUID();
+    const id = props.id ? TaskDependencyId.of(props.id) : TaskDependencyId.generate();
     const now = new Date();
 
     return new TaskDependency(id, {
+      id,
       predecessorTaskId: props.predecessorTaskId,
       successorTaskId: props.successorTaskId,
       dependencyType: props.dependencyType ?? DependencyType.FinishToStart,
@@ -92,7 +94,9 @@ export class TaskDependency extends AggregateRoot<string> {
    * 从 DTO 还原
    */
   public static fromDTO(dto: TaskDependencyServerDTO): TaskDependency {
-    return new TaskDependency(dto.id, {
+    const id = TaskDependencyId.of(dto.id);
+    return new TaskDependency(id, {
+      id,
       predecessorTaskId: dto.predecessorTaskId,
       successorTaskId: dto.successorTaskId,
       dependencyType: dto.dependencyType,

@@ -20,12 +20,14 @@ import type {
   TransferDate,
 } from '@dailyuse/contracts/primitives';
 import { Entity, generateUUID } from '@dailyuse/utils';
+import { EditorGroupId as EditorGroupIdType, EditorSessionId as EditorSessionIdType } from '@dailyuse/domain-shared/editor';
+import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 import { EditorTab } from './editor-tab';
 
 /**
- * EditorGroup 属性接口
+ * EditorGroup 内部状态接口
  */
-interface EditorGroupProps {
+interface EditorGroupState {
   sessionId: EditorSessionId;
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
@@ -42,7 +44,7 @@ interface EditorGroupProps {
  */
 export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupServer {
   // ===== 私有属性 =====
-  private _props: EditorGroupProps;
+  private _props: EditorGroupState;
 
   // ===== 子实体 =====
   private _tabs: EditorTab[];
@@ -121,7 +123,7 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
   }): EditorGroup {
     const now = new Date();
     return new EditorGroup({
-      id: generateUUID() as EditorGroupId,
+      id: EditorGroupIdType.of(EditorGroupIdType.generate()),
       sessionId: params.sessionId,
       workspaceId: params.workspaceId,
       identityId: params.identityId,
@@ -156,10 +158,10 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
 
   public static fromClientDTO(dto: EditorGroupClientDTO): EditorGroup {
     const group = new EditorGroup({
-      id: dto.id as EditorGroupId,
-      sessionId: dto.sessionId as EditorSessionId,
+      id: EditorGroupIdType.of(dto.id),
+      sessionId: EditorSessionIdType.of(dto.sessionId),
       workspaceId: dto.workspaceId as EditorWorkspaceId,
-      identityId: dto.identityId as IdentityId,
+      identityId: IdentityIdType.of(dto.identityId),
       groupIndex: dto.groupIndex,
       activeTabIndex: dto.activeTabIndex,
       name: dto.name,

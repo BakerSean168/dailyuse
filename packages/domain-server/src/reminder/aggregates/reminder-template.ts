@@ -30,9 +30,8 @@ import {
 } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
-// Branded types (locally defined since not exported from contracts)
-type ReminderTemplateId = string & { readonly __brand: 'ReminderTemplateId' };
-type IdentityId = string & { readonly __brand: 'IdentityId' };
+import { ReminderTemplateId } from '@dailyuse/domain-shared/reminder';
+import { IdentityId } from '@dailyuse/domain-shared';
 import { AggregateRoot, generateUUID } from '@dailyuse/utils';
 import {
   RecurrenceConfig,
@@ -47,9 +46,9 @@ import {
 import { ReminderHistory } from '../entities';
 
 /**
- * ReminderTemplate props 接口
+ * ReminderTemplate 内部状态接口
  */
-interface ReminderTemplateProps {
+interface ReminderTemplateState {
   identityId: IdentityId;
   title: string;
   description: string | null;
@@ -92,7 +91,7 @@ interface ReminderTemplateProps {
  */
 export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implements ReminderTemplateServer {
   // ===== 私有字段 =====
-  private _props: ReminderTemplateProps;
+  private _props: ReminderTemplateState;
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
@@ -124,7 +123,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     frequencyAdjustment?: FrequencyAdjustment | null;
     smartFrequencyEnabled?: boolean;
   }) {
-    super((params.uuid || generateUUID()) as ReminderTemplateId);
+    super(params.uuid ? ReminderTemplateId.of(params.uuid) : ReminderTemplateId.generate());
     this._props = {
       identityId: params.identityId,
       title: params.title,
@@ -337,7 +336,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
 
     const template = new ReminderTemplate({
       uuid: dto.id as string,
-      identityId: dto.identityId as IdentityId,
+      identityId: IdentityId.of(dto.identityId),
       title: dto.name,
       description: dto.description,
       type: dto.type,
@@ -425,7 +424,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
 
     return new ReminderTemplate({
       uuid: dto.id as string,
-      identityId: dto.identityId as IdentityId,
+      identityId: IdentityId.of(dto.identityId),
       title: dto.name,
       description: dto.description,
       type: dto.type,
@@ -982,7 +981,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    */
   public toServerDTO(includeChildren = false): ReminderTemplateServerDTO {
     const dto: ReminderTemplateServerDTO = {
-      id: this.uuid as ReminderTemplateId,
+      id: this.id,
       identityId: this._props.identityId,
       name: this._props.title,
       description: this._props.description,
@@ -1148,7 +1147,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     const frequencyAdjustmentFlat = this._props.frequencyAdjustment?.toDTO();
 
     return {
-      id: this.uuid as ReminderTemplateId,
+      id: this.id,
       identityId: this._props.identityId,
       name: this._props.title,
       description: this._props.description,

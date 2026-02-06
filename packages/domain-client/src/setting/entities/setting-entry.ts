@@ -11,15 +11,22 @@ import type {
 import { SettingCategory } from '@dailyuse/contracts/setting';
 import { SettingEntryId } from '@dailyuse/domain-shared/setting';
 
-// Extended props type that includes category for internal use
-interface SettingEntryInternalProps extends SettingEntryClient {
+// 内部状态接口
+interface SettingEntryState {
+  id: SettingEntryId;
+  key: string;
+  value: unknown;
   category: SettingCategory;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 export class SettingEntry extends Entity<SettingEntryId> implements SettingEntryClient {
-  private readonly _props: SettingEntryInternalProps;
+  private readonly _props: SettingEntryState;
 
-  private constructor(props: SettingEntryInternalProps) {
+  private constructor(props: SettingEntryState) {
     super(props.id);
     this._props = props;
   }

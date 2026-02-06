@@ -27,12 +27,31 @@ import {
 } from '@dailyuse/domain-shared/editor';
 import { IdentityId } from '@dailyuse/domain-shared';
 
+// 内部状态接口
+interface EditorTabState {
+  id: EditorTabId;
+  groupId: EditorGroupId;
+  sessionId: EditorSessionId;
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
+  documentId: DocumentId | null;
+  tabIndex: number;
+  tabType: TabType;
+  name: string;
+  viewState: TabViewStateClientDTO;
+  isPinned: boolean;
+  isDirty: boolean;
+  lastAccessedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export class EditorTab extends Entity<EditorTabId> implements EditorTabClient {
   // ================= 1. Backing Field =================
-  private readonly _props: EditorTabClient;
+  private readonly _props: EditorTabState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: EditorTabClient) {
+  private constructor(props: EditorTabState) {
     super(props.id);
     this._props = props;
   }

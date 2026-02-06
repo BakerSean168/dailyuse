@@ -36,8 +36,9 @@ import type {
   KeyResultServerDTO,
 } from '@dailyuse/contracts/goal';
 
-/** Internal props type for KeyResult entity */
-interface KeyResultProps {
+// 内部状态接口
+interface KeyResultState {
+  id: KeyResultId;
   title: string;
   description: string | null;
   progress: KeyResultServerDTO['progress'];
@@ -54,21 +55,33 @@ interface KeyResultProps {
  */
 export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
   // ================= 1. 内部状态 (Single Props Object) =================
-  private _props: KeyResultProps;
+  private _props: KeyResultState;
 
   // ================= 2. 构造函数 (Private) =================
-  private constructor(props: KeyResultServerDTO) {
-    super(props.id as KeyResultId);
+  private constructor(params: {
+    id: KeyResultId;
+    title: string;
+    description: string | null;
+    progress: KeyResultServerDTO['progress'];
+    weight: number;
+    sortOrder: number;
+    version: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
+  }) {
+    super(params.id);
     this._props = {
-      title: props.title,
-      description: props.description ?? null,
-      progress: props.progress,
-      weight: props.weight,
-      sortOrder: props.sortOrder,
-      version: props.version ?? 1,
-      createdAt: new Date(props.createdAt),
-      updatedAt: new Date(props.updatedAt),
-      deletedAt: props.deletedAt ? new Date(props.deletedAt) : null,
+      id: params.id,
+      title: params.title,
+      description: params.description ?? null,
+      progress: params.progress,
+      weight: params.weight,
+      sortOrder: params.sortOrder,
+      version: params.version ?? 1,
+      createdAt: params.createdAt,
+      updatedAt: params.updatedAt,
+      deletedAt: params.deletedAt ?? null,
     };
   }
 
@@ -140,8 +153,8 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
       weight: params.weight ?? 0,
       sortOrder: params.sortOrder ?? 0,
       version: 1,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: new Date(now),
+      updatedAt: new Date(now),
       deletedAt: null,
     });
   }
@@ -150,7 +163,18 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
    * 🏭 恢复工厂：从 ServerDTO 恢复
    */
   public static fromServerDTO(dto: KeyResultServerDTO): KeyResult {
-    return new KeyResult(dto);
+    return new KeyResult({
+      id: KeyResultId.of(dto.id),
+      title: dto.title,
+      description: dto.description ?? null,
+      progress: dto.progress,
+      weight: dto.weight,
+      sortOrder: dto.sortOrder,
+      version: dto.version ?? 1,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    });
   }
 
   /**
@@ -169,20 +193,18 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
       unit: progressData.unit,
     };
 
-    const serverDTO: KeyResultServerDTO = {
-      id: dto.id,
+    return new KeyResult({
+      id: KeyResultId.of(dto.id),
       title: dto.title,
-      description: dto.description,
+      description: dto.description ?? null,
       progress,
       weight: dto.weight,
       sortOrder: dto.sortOrder,
-      version: dto.version,
-      createdAt: dto.createdAt.getTime(),
-      updatedAt: dto.updatedAt.getTime(),
-      deletedAt: dto.deletedAt ? dto.deletedAt.getTime() : null,
-    };
-
-    return new KeyResult(serverDTO);
+      version: dto.version ?? 1,
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+      deletedAt: dto.deletedAt ?? null,
+    });
   }
 
   // ================= 5. 业务行为 (Business Methods) =================

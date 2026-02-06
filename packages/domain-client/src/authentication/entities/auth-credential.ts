@@ -19,11 +19,24 @@ import {
   AuthCredentialId,
 } from '@dailyuse/domain-shared/authentication';
 
+// 内部状态接口
+interface AuthCredentialState {
+  id: AuthCredentialId;
+  type: CredentialType;
+  displayName: string;
+  lastUsedAt: Date | null;
+  isPrimary: boolean;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 export class AuthCredential extends Entity<AuthCredentialId> implements AuthCredentialClient {
-  private readonly _props: AuthCredentialClient;
+  private readonly _props: AuthCredentialState;
 
   // ================= 构造函数 (Private) =================
-  private constructor(props: AuthCredentialClient) {
+  private constructor(props: AuthCredentialState) {
     super(props.id);
     this._props = props;
   }

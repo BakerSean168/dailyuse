@@ -14,10 +14,25 @@ import { AiConversationId } from '@dailyuse/domain-shared/ai';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { Message } from '../entities/message';
 
-export class AIConversation extends AggregateRoot<AiConversationId> implements AIConversationClient {
-  private _props: AIConversationClient;
+// 内部状态接口
+interface AIConversationState {
+  id: AiConversationId;
+  identityId: IdentityId;
+  name: string;
+  status: ConversationStatus;
+  messageCount: number;
+  lastMessageAt: Date | null;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  messages: Message[] | null;
+}
 
-  private constructor(props: AIConversationClient) {
+export class AIConversation extends AggregateRoot<AiConversationId> implements AIConversationClient {
+  private _props: AIConversationState;
+
+  private constructor(props: AIConversationState) {
     super(props.id);
     this._props = props;
   }

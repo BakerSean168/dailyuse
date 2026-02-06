@@ -25,13 +25,15 @@ import type {
   EditorWorkspaceId,
   IdentityId,
 } from '@dailyuse/contracts/primitives';
+import { EditorSessionId as EditorSessionIdType } from '@dailyuse/domain-shared/editor';
+import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 import { SessionLayout } from '../value-objects/SessionLayout';
 import { EditorGroup } from './editor-group';
 
 /**
- * EditorSession 属性接口
+ * EditorSession 内部状态接口
  */
-interface EditorSessionProps {
+interface EditorSessionState {
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
   name: string;
@@ -46,7 +48,7 @@ interface EditorSessionProps {
 
 export class EditorSession extends Entity<EditorSessionId> {
   // ===== 私有属性 =====
-  private _props: EditorSessionProps;
+  private _props: EditorSessionState;
 
   // ===== 子实体集合 =====
   private _groups: EditorGroup[] = [];
@@ -159,7 +161,7 @@ export class EditorSession extends Entity<EditorSessionId> {
     description?: string;
     layout?: Partial<SessionLayoutServerDTO>;
   }): EditorSession {
-    const id = generateUUID() as EditorSessionId;
+    const id = EditorSessionIdType.of(EditorSessionIdType.generate());
     const now = new Date();
 
     const layout = params.layout
@@ -394,9 +396,9 @@ export class EditorSession extends Entity<EditorSessionId> {
    */
   public static fromClientDTO(dto: EditorSessionClientDTO): EditorSession {
     const session = new EditorSession({
-      id: dto.id as EditorSessionId,
+      id: EditorSessionIdType.of(dto.id),
       workspaceId: dto.workspaceId as EditorWorkspaceId,
-      identityId: dto.identityId as IdentityId,
+      identityId: IdentityIdType.of(dto.identityId),
       name: dto.name,
       description: dto.description,
       layout: SessionLayout.fromDTO(dto.layout),

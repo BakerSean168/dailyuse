@@ -79,4 +79,7 @@ export interface GoalFolderServer {
   createdAt: DomainDate;
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;
+
+  // 版本控制
+  version: number;
 }

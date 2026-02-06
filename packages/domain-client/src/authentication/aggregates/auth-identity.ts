@@ -22,13 +22,27 @@ import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 import { AuthCredential } from '../entities';
 
+// 内部状态接口
+interface AuthIdentityState {
+  id: IdentityId;
+  status: AuthIdentityStatus;
+  failedLoginAttempts: number;
+  lastFailedAttempt: Date | null;
+  lockedUntil: Date | null;
+  credentials: AuthCredential[];
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdentityClient {
-  private readonly _props: AuthIdentityClient;
+  private readonly _props: AuthIdentityState;
 
   // ================= 构造函数 (Private) =================
-  private constructor(props: AuthIdentityClient) {
+  private constructor(props: AuthIdentityState) {
     // Cast is safe: fromDTO always provides IdentityId value object
-    super(props.id as unknown as IdentityId);
+    super(IdentityId.of(props.id));
     this._props = props;
   }
 

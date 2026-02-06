@@ -12,8 +12,8 @@ import { MessageRole } from '@dailyuse/contracts/ai';
 import type { AiConversationId as IAiConversationId } from '@dailyuse/contracts/primitives';
 import { AiMessageId, AiConversationId } from '@dailyuse/domain-shared/ai';
 
-// Internal props type using domain-shared class types
-interface MessageInternalProps {
+// 内部状态接口
+interface MessageState {
   id: AiMessageId;
   conversationId: AiConversationId;
   role: MessageRole;
@@ -26,9 +26,9 @@ interface MessageInternalProps {
 }
 
 export class Message extends Entity<AiMessageId> implements MessageClient {
-  private readonly _props: MessageInternalProps;
+  private readonly _props: MessageState;
 
-  private constructor(props: MessageInternalProps) {
+  private constructor(props: MessageState) {
     super(props.id);
     this._props = props;
   }
@@ -95,7 +95,7 @@ export class Message extends Entity<AiMessageId> implements MessageClient {
   }): Message {
     const now = new Date();
     return new Message({
-      id: AiMessageId.generate() as AiMessageId,
+      id: AiMessageId.generate(),
       conversationId: AiConversationId.of(params.conversationId),
       role: params.role,
       content: params.content,

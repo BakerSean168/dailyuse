@@ -77,35 +77,11 @@ const DAY_MS = 1000 * 60 * 60 * 24;
 const DEFAULT_DURATION = 30 * DAY_MS;
 
 /**
- * Goal 内部属性类型（用于 _props 模式）
- * 注意：使用 Domain 类型而非 DTO 类型
+ * Goal 内部状态接口
+ * 使用 GoalServer 作为基础，但覆盖子实体为实际的类类型
  */
-interface GoalProps {
-  identityId: IdentityId;
-  name: string;
-  description: string | null;
-  color: string;
-  feasibilityAnalysis: string | null;
-  motivation: string | null;
-  status: GoalStatus;
-  importance: ImportanceLevel;
-  /** 持久化的优先级分数，用于数据库排序 */
-  priority: number;
-  category: string | null;
-  tags: string[];
-  startDate: Date | null;
-  targetDate: Date | null;
-  completedAt: Date | null;
-  archivedAt: Date | null;
-  folderId: string | null;
-  parentGoalId: GoalId | null;
-  sortOrder: number;
+interface GoalState extends Omit<GoalServer, 'keyResults' | 'goalReviews' | 'reminderConfig'> {
   reminderConfig: GoalReminderConfig | null;
-  version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-  // 子实体集合
   keyResults: KeyResult[];
   goalReviews: GoalReview[];
   weightSnapshots: KeyResultWeightSnapshot[];
@@ -120,7 +96,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * 使用单一 _props 对象存储所有内部状态
    * 注意：非 readonly，因为需要支持 mutation 方法
    */
-  private _props: GoalProps;
+  private _props: GoalState;
 
   // ================= 2. 构造函数（Private） =================
   /**
@@ -128,47 +104,65 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * 构造函数必须为 private，防止外部直接 new Goal(...)
    * 确保所有实例都通过工厂方法创建，保证业务规则验证
    */
-  private constructor(props: GoalServerDTO) {
-    super(props.id);
-    
-    // Initialize child entities from props
-    const keyResults = (props.keyResults || []).map((kr: KeyResultServerDTO) =>
-      KeyResult.fromServerDTO(kr),
-    );
-    const goalReviews = (props.goalReviews || []).map((r: GoalReviewServerDTO) =>
-      GoalReview.fromServerDTO(r),
-    );
-    const weightSnapshots = (props.weightSnapshots || []).map((ws: KeyResultWeightSnapshotDTO) =>
-      KeyResultWeightSnapshot.fromDTO(ws),
-    );
+  private constructor(params: {
+    id: GoalId;
+    identityId: IdentityId;
+    name: string;
+    description: string | null;
+    color: string;
+    feasibilityAnalysis: string | null;
+    motivation: string | null;
+    status: GoalStatus;
+    importance: ImportanceLevel;
+    priority: number;
+    category: string | null;
+    tags: string[];
+    startDate: Date | null;
+    targetDate: Date | null;
+    completedAt: Date | null;
+    archivedAt: Date | null;
+    folderId: GoalFolderId | null;
+    parentGoalId: GoalId | null;
+    sortOrder: number;
+    reminderConfig: GoalReminderConfig | null;
+    version: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
+    keyResults: KeyResult[];
+    goalReviews: GoalReview[];
+    weightSnapshots: KeyResultWeightSnapshot[];
+  }) {
+    super(params.id);
     
     this._props = {
-      identityId: props.identityId as IdentityId,
-      name: props.name,
-      description: props.description ?? null,
-      color: props.color,
-      feasibilityAnalysis: props.feasibilityAnalysis ?? null,
-      motivation: props.motivation ?? null,
-      status: props.status,
-      importance: props.importance,
-      priority: props.priority ?? 0,
-      category: props.category ?? null,
-      tags: props.tags ?? [],
-      startDate: props.startDate ? new Date(props.startDate) : null,
-      targetDate: props.targetDate ? new Date(props.targetDate) : null,
-      completedAt: props.completedAt ? new Date(props.completedAt) : null,
-      archivedAt: props.archivedAt ? new Date(props.archivedAt) : null,
-      folderId: props.folderId ?? null,
-      parentGoalId: (props.parentGoalId ?? null) as GoalId | null,
-      sortOrder: props.sortOrder,
-      reminderConfig: props.reminderConfig ? GoalReminderConfig.fromDTO(props.reminderConfig) : null,
-      version: props.version ?? 1,
-      createdAt: new Date(props.createdAt),
-      updatedAt: new Date(props.updatedAt),
-      deletedAt: props.deletedAt ? new Date(props.deletedAt) : null,
-      keyResults,
-      goalReviews,
-      weightSnapshots,
+      id: params.id,
+      identityId: params.identityId,
+      name: params.name,
+      description: params.description ?? null,
+      color: params.color,
+      feasibilityAnalysis: params.feasibilityAnalysis ?? null,
+      motivation: params.motivation ?? null,
+      status: params.status,
+      importance: params.importance,
+      priority: params.priority ?? 0,
+      category: params.category ?? null,
+      tags: params.tags ?? [],
+      startDate: params.startDate ?? null,
+      targetDate: params.targetDate ?? null,
+      completedAt: params.completedAt ?? null,
+      archivedAt: params.archivedAt ?? null,
+      folderId: params.folderId ?? null,
+      parentGoalId: params.parentGoalId ?? null,
+      sortOrder: params.sortOrder,
+      reminderConfig: params.reminderConfig ?? null,
+      version: params.version ?? 1,
+      createdAt: params.createdAt,
+      updatedAt: params.updatedAt,
+      deletedAt: params.deletedAt ?? null,
+      keyResults: params.keyResults ?? [],
+      goalReviews: params.goalReviews ?? [],
+      weightSnapshots: params.weightSnapshots ?? [],
     };
   }
 
@@ -394,26 +388,24 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
       motivation: params.motivation?.trim() || null,
       status: GoalStatus.Active,
       importance: params.importance ?? ('MEDIUM' as ImportanceLevel),
+      priority: 0,
       category: params.category?.trim() || null,
       tags: params.tags ?? [],
-      startDate: params.startDate?.getTime() ?? null,
-      targetDate: params.targetDate?.getTime() ?? null,
+      startDate: params.startDate ?? null,
+      targetDate: params.targetDate ?? null,
+      completedAt: null,
+      archivedAt: null,
       folderId: params.folderId ?? null,
       parentGoalId: params.parentGoalId ?? null,
       sortOrder: 0,
       reminderConfig: params.reminderConfig ?? null,
-
-      goalReviews: null,
-
-      createdAt: now.getTime(),
-      updatedAt: now.getTime(),
-      completedAt: null,
-      archivedAt: null,
-      keyResults: null,
-      priority: 0,
-      weightSnapshots: null,
       version: 1,
+      createdAt: now,
+      updatedAt: now,
       deletedAt: null,
+      keyResults: [],
+      goalReviews: [],
+      weightSnapshots: [],
     });
 
     // 🔢 初始化优先级分数
@@ -432,8 +424,46 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * 🏭 恢复工厂：从 Server DTO 恢复
    */
   public static fromServerDTO(dto: GoalServerDTO): Goal {
-    // Child entities are now initialized in constructor
-    return new Goal(dto);
+    // Initialize child entities from DTO
+    const keyResults = (dto.keyResults || []).map((kr: KeyResultServerDTO) =>
+      KeyResult.fromServerDTO(kr),
+    );
+    const goalReviews = (dto.goalReviews || []).map((r: GoalReviewServerDTO) =>
+      GoalReview.fromServerDTO(r),
+    );
+    const weightSnapshots = (dto.weightSnapshots || []).map((ws: KeyResultWeightSnapshotDTO) =>
+      KeyResultWeightSnapshot.fromDTO(ws),
+    );
+
+    return new Goal({
+      id: GoalId.of(dto.id),
+      identityId: IdentityId.of(dto.identityId),
+      name: dto.name,
+      description: dto.description ?? null,
+      color: dto.color,
+      feasibilityAnalysis: dto.feasibilityAnalysis ?? null,
+      motivation: dto.motivation ?? null,
+      status: dto.status,
+      importance: dto.importance,
+      priority: dto.priority ?? 0,
+      category: dto.category ?? null,
+      tags: dto.tags ?? [],
+      startDate: dto.startDate ? new Date(dto.startDate) : null,
+      targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
+      completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
+      archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
+      folderId: dto.folderId ? GoalFolderId.of(dto.folderId) : null,
+      parentGoalId: dto.parentGoalId ? GoalId.of(dto.parentGoalId) : null,
+      sortOrder: dto.sortOrder,
+      reminderConfig: dto.reminderConfig ? GoalReminderConfig.fromDTO(dto.reminderConfig) : null,
+      version: dto.version ?? 1,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+      keyResults,
+      goalReviews,
+      weightSnapshots,
+    });
   }
 
   /**
@@ -748,7 +778,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   /**
    * ✅ 移动到文件夹
    */
-  public moveToFolder(folderId: string | null): void {
+  public moveToFolder(folderId: GoalFolderId | null): void {
     this._props.folderId = folderId;
     this._props.updatedAt = new Date();
   }

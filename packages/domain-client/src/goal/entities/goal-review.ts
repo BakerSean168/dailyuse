@@ -20,12 +20,30 @@ import type {
 import { Entity } from '@dailyuse/utils';
 import { GoalReviewId, GoalId } from '@dailyuse/domain-shared/goal';
 
+// 内部状态接口
+interface GoalReviewState {
+  id: GoalReviewId;
+  goalId: GoalId;
+  type: ReviewType;
+  rating: number;
+  summary: string;
+  achievements: string | null;
+  challenges: string | null;
+  improvements: string | null;
+  keyResultSnapshots: KeyResultSnapshot[];
+  version: number;
+  reviewedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 export class GoalReview extends Entity<GoalReviewId> implements GoalReviewClient {
   // ================= 1. Props =================
-  private readonly _props: GoalReviewClient;
+  private readonly _props: GoalReviewState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: GoalReviewClient) {
+  private constructor(props: GoalReviewState) {
     super(props.id);
     this._props = props;
   }

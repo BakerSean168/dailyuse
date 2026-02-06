@@ -20,12 +20,32 @@ import { AggregateRoot } from '@dailyuse/utils';
 import { GoalFolderId } from '@dailyuse/domain-shared/goal';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 
+// 内部状态接口
+interface GoalFolderState {
+  id: GoalFolderId;
+  identityId: IdentityId;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  color: string | null;
+  parentFolderId: GoalFolderId | null;
+  sortOrder: number;
+  isSystemFolder: boolean;
+  folderType: FolderType | null;
+  goalCount: number;
+  completedGoalCount: number;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolderClient {
   // ================= 1. Props =================
-  private readonly _props: GoalFolderClient;
+  private readonly _props: GoalFolderState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: GoalFolderClient) {
+  private constructor(props: GoalFolderState) {
     super(props.id);
     this._props = props;
   }

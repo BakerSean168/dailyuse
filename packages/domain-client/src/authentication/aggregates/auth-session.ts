@@ -20,12 +20,25 @@ import {
 } from '@dailyuse/domain-shared/authentication';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 
+// 内部状态接口
+interface AuthSessionState {
+  id: AuthSessionId;
+  identityId: IdentityId;
+  deviceInfo: DeviceInfo;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  expiresAt: Date;
+  lastActiveAt: Date;
+  deletedAt: Date | null;
+}
+
 export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSessionClient {
-  private readonly _props: AuthSessionClient;
+  private readonly _props: AuthSessionState;
   private readonly _isCurrentSession: boolean;
 
   // ================= 构造函数 (Private) =================
-  private constructor(props: AuthSessionClient, isCurrentSession: boolean) {
+  private constructor(props: AuthSessionState, isCurrentSession: boolean) {
     super(props.id);
     this._props = props;
     this._isCurrentSession = isCurrentSession;

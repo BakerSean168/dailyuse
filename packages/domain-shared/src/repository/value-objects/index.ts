@@ -6,6 +6,7 @@
 // IDs
 export { RepositoryId } from './repository-id';
 export { ResourceId } from './resource-id';
+export { FolderId } from './folder-id';
 
 // Type Value Objects (Enums)
 export { RepositoryType } from './repository-type';

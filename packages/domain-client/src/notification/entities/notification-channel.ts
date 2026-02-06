@@ -26,13 +26,32 @@ import {
   ChannelResponse,
 } from '@dailyuse/domain-shared/notification';
 
+// 内部状态接口
+interface NotificationChannelState {
+  id: NotificationChannelId;
+  notificationId: NotificationId;
+  channelType: NotificationChannelType;
+  status: ChannelStatus;
+  recipient: string | null;
+  sendAttempts: number;
+  maxRetries: number;
+  error: ChannelError | null;
+  response: ChannelResponse | null;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  sentAt: Date | null;
+  failedAt: Date | null;
+}
+
 export class NotificationChannel extends Entity<NotificationChannelId> implements NotificationChannelClient {
   // ================= 1. Props =================
-  private readonly _props: NotificationChannelClient;
+  private readonly _props: NotificationChannelState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: NotificationChannelClient) {
-    super(props.id as NotificationChannelId);
+  private constructor(props: NotificationChannelState) {
+    super(NotificationChannelId.of(props.id));
     this._props = props;
   }
 

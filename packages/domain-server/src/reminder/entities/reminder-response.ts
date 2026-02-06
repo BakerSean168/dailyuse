@@ -10,12 +10,14 @@ import type {
   ReminderResponsePersistenceDTO,
   ReminderResponseAction,
 } from '@dailyuse/contracts/reminder';
-import { Entity, generateUUID } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils';
+import { ReminderResponseId } from '@dailyuse/domain-shared/reminder';
 
 /**
- * ReminderResponse props 接口
+ * ReminderResponse 内部状态接口
  */
-interface ReminderResponseProps {
+interface ReminderResponseState {
+  id: ReminderResponseId;
   reminderTemplateUuid: string;
   action: ReminderResponseAction;
   responseTime: Date | null;
@@ -31,9 +33,9 @@ interface ReminderResponseProps {
  * - 记录用户对提醒的响应行为
  * - 用于计算提醒效果指标
  */
-export class ReminderResponse extends Entity<string> implements ReminderResponseServer {
+export class ReminderResponse extends Entity<ReminderResponseId> implements ReminderResponseServer {
   // ===== 私有字段 =====
-  private _props: ReminderResponseProps;
+  private _props: ReminderResponseState;
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
@@ -43,8 +45,10 @@ export class ReminderResponse extends Entity<string> implements ReminderResponse
     responseTime?: number | null;
     timestamp: number;
   }) {
-    super(params.uuid || generateUUID());
+    const id = params.uuid ? ReminderResponseId.of(params.uuid) : ReminderResponseId.generate();
+    super(id);
     this._props = {
+      id,
       reminderTemplateUuid: params.reminderTemplateUuid,
       action: params.action,
       responseTime: params.responseTime != null ? new Date(params.responseTime) : null,

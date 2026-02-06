@@ -23,12 +23,31 @@ import { AggregateRoot } from '@dailyuse/utils';
 import { TaskInstanceId, TaskTemplateId } from '@dailyuse/domain-shared/task';
 import { IdentityId } from '@dailyuse/domain-shared';
 
+// 内部状态接口
+interface TaskInstanceState {
+  id: TaskInstanceId;
+  templateId: TaskTemplateId;
+  identityId: IdentityId;
+  instanceDate: Date;
+  timeConfig: TaskTimeConfig;
+  importance: ImportanceLevel | undefined;
+  priority: number | undefined;
+  status: TaskInstanceStatus;
+  actualStartTime: Date | null;
+  actualEndTime: Date | null;
+  comment: string | null;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskInstanceClient {
   // ================= 1. Props =================
-  private readonly _props: TaskInstanceClient;
+  private readonly _props: TaskInstanceState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: TaskInstanceClient) {
+  private constructor(props: TaskInstanceState) {
     super(props.id);
     this._props = props;
   }

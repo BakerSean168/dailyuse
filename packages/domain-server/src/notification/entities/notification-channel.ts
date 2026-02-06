@@ -21,8 +21,8 @@ import {
   ChannelStatus as ChannelStatusType,
 } from '@dailyuse/domain-shared/notification';
 
-/** Props interface for NotificationChannel */
-interface NotificationChannelProps {
+/** 内部状态接口 for NotificationChannel */
+interface NotificationChannelState {
   notificationId: NotificationId;
   channelType: NotificationChannelType;
   status: ChannelStatus;
@@ -44,7 +44,7 @@ export class NotificationChannel
   implements NotificationChannelServer
 {
   // ===== 私有属性容器 =====
-  private _props: NotificationChannelProps;
+  private _props: NotificationChannelState;
 
   // ===== 构造函数（私有） =====
   private constructor(

@@ -27,10 +27,11 @@ import type {
   KeyResultSnapshotDTO,
 } from '@dailyuse/contracts/goal';
 import { ReviewType } from '@dailyuse/contracts/goal';
-import { GoalReviewId } from '@dailyuse/domain-shared';
+import { GoalReviewId, GoalId } from '@dailyuse/domain-shared';
 
-/** Internal props type for GoalReview entity */
-interface GoalReviewProps {
+// 内部状态接口
+interface GoalReviewState {
+  id: IGoalReviewId;
   goalId: IGoalId;
   type: ReviewType;
   rating: number;
@@ -50,14 +51,43 @@ interface GoalReviewProps {
  * GoalReview 实体
  */
 export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServer {
-  private _props: GoalReviewProps;
+  private _props: GoalReviewState;
 
   private constructor(
     id: IGoalReviewId,
-    params: GoalReviewProps
+    params: {
+      goalId: IGoalId;
+      type: ReviewType;
+      rating: number;
+      summary: string;
+      achievements: string | null;
+      challenges: string | null;
+      improvements: string | null;
+      keyResultSnapshots: KeyResultSnapshotDTO[];
+      reviewedAt: Date;
+      version: number;
+      createdAt: Date;
+      updatedAt: Date;
+      deletedAt: Date | null;
+    }
   ) {
     super(id);
-    this._props = { ...params };
+    this._props = {
+      id,
+      goalId: params.goalId,
+      type: params.type,
+      rating: params.rating,
+      summary: params.summary,
+      achievements: params.achievements ?? null,
+      challenges: params.challenges ?? null,
+      improvements: params.improvements ?? null,
+      keyResultSnapshots: params.keyResultSnapshots ?? [],
+      reviewedAt: params.reviewedAt,
+      version: params.version ?? 1,
+      createdAt: params.createdAt,
+      updatedAt: params.updatedAt,
+      deletedAt: params.deletedAt ?? null,
+    };
   }
 
   // ================= Getters =================
@@ -166,16 +196,16 @@ export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServe
   public static fromServerDTO(dto: GoalReviewServerDTO): GoalReview {
     const id = GoalReviewId.of(dto.id);
     return new GoalReview(id, {
-      goalId: dto.goalId,
+      goalId: GoalId.of(dto.goalId),
       type: dto.type,
       rating: dto.rating,
       summary: dto.summary,
-      achievements: dto.achievements,
-      challenges: dto.challenges,
-      improvements: dto.improvements,
-      keyResultSnapshots: dto.keyResultSnapshots,
+      achievements: dto.achievements ?? null,
+      challenges: dto.challenges ?? null,
+      improvements: dto.improvements ?? null,
+      keyResultSnapshots: dto.keyResultSnapshots ?? [],
       reviewedAt: new Date(dto.reviewedAt),
-      version: dto.version,
+      version: dto.version ?? 1,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
       deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
@@ -192,12 +222,12 @@ export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServe
       : [];
 
     return new GoalReview(id, {
-      goalId: dto.goalId,
+      goalId: GoalId.of(dto.goalId),
       type: dto.type as ReviewType,
       rating: dto.rating,
       summary: dto.summary,
-      achievements: dto.achievements,
-      challenges: dto.challenges,
+      achievements: dto.achievements ?? null,
+      challenges: dto.challenges ?? null,
       improvements: dto.improvements,
       keyResultSnapshots: snapshots,
       reviewedAt: dto.reviewedAt,

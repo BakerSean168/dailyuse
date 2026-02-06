@@ -12,6 +12,7 @@ export * from './editor-workspace-id';
 export * from './editor-session-id';
 export * from './editor-group-id';
 export * from './editor-tab-id';
+export * from './document-id';
 
 // Enum-like Value Objects
 export * from './project-type';

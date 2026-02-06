@@ -18,10 +18,33 @@ import type {
 import { Entity } from '@dailyuse/utils';
 import { ScheduleExecutionId, ScheduleTaskId } from '@dailyuse/domain-shared/schedule';
 
-export class ScheduleExecution extends Entity<ScheduleExecutionId> implements ScheduleExecutionClient {
-  private readonly _props: ScheduleExecutionClient;
+// 内部状态接口
+interface ScheduleExecutionState {
+  id: ScheduleExecutionId;
+  scheduleTaskId: ScheduleTaskId;
+  executionTime: Date;
+  status: ExecutionStatus;
+  duration: number | null;
+  result: Record<string, any> | null;
+  error: string | null;
+  retryCount: number;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  executionTimeFormatted: string;
+  statusDisplay: string;
+  statusColor: string;
+  durationFormatted: string;
+  hasError: boolean;
+  hasResult: boolean;
+  resultSummary: string;
+}
 
-  private constructor(props: ScheduleExecutionClient) {
+export class ScheduleExecution extends Entity<ScheduleExecutionId> implements ScheduleExecutionClient {
+  private readonly _props: ScheduleExecutionState;
+
+  private constructor(props: ScheduleExecutionState) {
     super(props.id);
     this._props = props;
   }

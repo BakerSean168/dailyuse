@@ -19,14 +19,14 @@ import type {
   EditorSessionClientDTO,
   SessionLayoutClient,
 } from '@dailyuse/contracts/editor';
-import type { EditorSessionId, DomainDate } from '@dailyuse/contracts/primitives';
+import type { EditorSessionId as IEditorSessionId, DomainDate } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
-import { EditorWorkspaceId } from '@dailyuse/domain-shared/editor';
+import { EditorWorkspaceId, EditorSessionId } from '@dailyuse/domain-shared/editor';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { EditorGroup } from './editor-group';
 
-// Internal props type using EditorGroup class instead of EditorGroupClient interface
-interface EditorSessionInternalProps {
+// 内部状态接口：使用 domain-shared 类类型
+interface EditorSessionState {
   id: EditorSessionId;
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
@@ -41,12 +41,12 @@ interface EditorSessionInternalProps {
   updatedAt: Date;
 }
 
-export class EditorSession extends Entity<EditorSessionId> implements EditorSessionClient {
+export class EditorSession extends Entity<IEditorSessionId> implements EditorSessionClient {
   // ================= 1. Backing Field =================
-  private readonly _props: EditorSessionInternalProps;
+  private readonly _props: EditorSessionState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: EditorSessionInternalProps) {
+  private constructor(props: EditorSessionState) {
     super(props.id);
     this._props = props;
   }
@@ -103,7 +103,7 @@ export class EditorSession extends Entity<EditorSessionId> implements EditorSess
   // ================= 4. Factory Methods =================
   public static fromDTO(dto: EditorSessionClientDTO): EditorSession {
     return new EditorSession({
-      id: dto.id as EditorSessionId,
+      id: EditorSessionId.of(dto.id),
       workspaceId: EditorWorkspaceId.of(dto.workspaceId),
       identityId: IdentityId.of(dto.identityId),
       name: dto.name,

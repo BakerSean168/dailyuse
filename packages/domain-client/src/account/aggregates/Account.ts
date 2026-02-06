@@ -17,8 +17,8 @@ import {
   ContactPhone,
 } from '@dailyuse/domain-shared/account';
 
-// Internal props type using domain-shared class types (which implement the contracts interfaces)
-interface AccountInternalProps {
+// 内部状态接口：使用 domain-shared 类类型（有 .toDTO() 等方法）
+interface AccountState {
   id: IdentityId;
   profile: AccountProfile;
   email: ContactEmail;
@@ -32,9 +32,9 @@ interface AccountInternalProps {
 }
 
 export class Account extends AggregateRoot<IdentityId> implements AccountClient {
-  private readonly _props: AccountInternalProps;
+  private readonly _props: AccountState;
 
-  private constructor(props: AccountInternalProps) {
+  private constructor(props: AccountState) {
     super(props.id);
     this._props = props;
   }

@@ -27,8 +27,9 @@ import {
 // 1. 引入 Contract 定义的类型，用于类型提示 (可选，但推荐)
 import type { AccountEventMap } from '@dailyuse/contracts/account';
 
-/** Props interface for Account */
-interface AccountProps {
+/** 内部状态接口 for Account */
+interface AccountState {
+  id: IdentityId;
   profile: AccountProfile;
   email: ContactEmail;
   settings: AccountSettings;
@@ -43,14 +44,16 @@ interface AccountProps {
 export class Account extends AggregateRoot<IdentityId> implements AccountServer {
   
   // ================= 1. 私有属性容器 =================
-  private _props: AccountProps;
+  private _props: AccountState;
 
   // ================= 2. 构造函数 (Private) =================
   // 仅用于通过 Factory 还原或创建对象
   private constructor(props: AccountServerDTO) {
-    super(IdentityId.of(props.id)); // 使用值对象还原 ID
+    const id = IdentityId.of(props.id);
+    super(id); // 使用值对象还原 ID
     
     this._props = {
+      id,
       profile: AccountProfile.create(props.profile),
       email: ContactEmail.create(props.email),
       settings: AccountSettings.create(props.settings),

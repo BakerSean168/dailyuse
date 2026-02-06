@@ -234,10 +234,40 @@ class TaskMetadataVO implements TaskMetadataClient {
 
 // ============ Aggregate Root ============
 
-export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements ScheduleTaskClient {
-  private readonly _props: ScheduleTaskClient;
+// 内部状态接口
+interface ScheduleTaskState {
+  id: ScheduleTaskId;
+  identityId: IdentityId;
+  name: string;
+  description: string | null;
+  sourceModule: SourceModule;
+  sourceEntityId: string;
+  status: ScheduleTaskStatus;
+  enabled: boolean;
+  schedule: ScheduleConfigClient;
+  execution: ExecutionInfoClient;
+  retryPolicy: RetryPolicyClient;
+  metadata: TaskMetadataClient;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  statusDisplay: string;
+  statusColor: string;
+  sourceModuleDisplay: string;
+  enabledDisplay: string;
+  nextRunAtFormatted: string;
+  lastRunAtFormatted: string;
+  executionSummary: string;
+  healthStatus: string;
+  isOverdue: boolean;
+  executions: ScheduleExecution[] | null;
+}
 
-  private constructor(props: ScheduleTaskClient) {
+export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements ScheduleTaskClient {
+  private readonly _props: ScheduleTaskState;
+
+  private constructor(props: ScheduleTaskState) {
     super(props.id);
     this._props = props;
   }

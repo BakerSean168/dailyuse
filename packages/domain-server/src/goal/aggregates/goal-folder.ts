@@ -35,10 +35,9 @@ import type {
   GoalFolderServerDTO,
 } from '@dailyuse/contracts/goal';
 
-/**
- * GoalFolder 属性接口
- */
-interface GoalFolderProps {
+// 内部状态接口
+interface GoalFolderState {
+  id: GoalFolderId;
   identityId: IdentityId;
   name: string;
   description: string | null;
@@ -61,7 +60,7 @@ interface GoalFolderProps {
  */
 export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolderServer {
   // ================= 1. 内部状态 (Props) =================
-  private _props: GoalFolderProps;
+  private _props: GoalFolderState;
 
   // ================= 2. 构造函数 (Private) =================
   /**
@@ -91,6 +90,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
   }) {
     super(params.id);
     this._props = {
+      id: params.id,
       identityId: params.identityId,
       name: params.name,
       description: params.description ?? null,
@@ -213,7 +213,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
     }
 
     const now = new Date();
-    const id = Math.random().toString(36).substring(2) as GoalFolderId; // 简化的 UUID 生成
+    const id = GoalFolderId.generate();
     const folder = new GoalFolder({
       id,
       identityId: params.identityId,
@@ -252,13 +252,13 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
    */
   public static fromServerDTO(dto: GoalFolderServerDTO): GoalFolder {
     return new GoalFolder({
-      id: dto.id,
-      identityId: dto.identityId,
+      id: GoalFolderId.of(dto.id),
+      identityId: IdentityId.of(dto.identityId),
       name: dto.name,
       description: dto.description ?? null,
       icon: dto.icon ?? null,
       color: dto.color ?? null,
-      parentFolderId: dto.parentFolderId ?? null,
+      parentFolderId: dto.parentFolderId ? GoalFolderId.of(dto.parentFolderId) : null,
       sortOrder: dto.sortOrder,
       isSystemFolder: dto.isSystemFolder,
       folderType: dto.folderType ?? null,
@@ -283,13 +283,13 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
    */
   public static fromPersistenceDTO(dto: GoalFolderPersistenceDTO): GoalFolder {
     return new GoalFolder({
-      id: dto.id,
-      identityId: dto.identityId,
+      id: GoalFolderId.of(dto.id),
+      identityId: IdentityId.of(dto.identityId),
       name: dto.name,
       description: dto.description ?? null,
       icon: dto.icon ?? null,
       color: dto.color ?? null,
-      parentFolderId: dto.parentFolderId ?? null,
+      parentFolderId: dto.parentFolderId ? GoalFolderId.of(dto.parentFolderId) : null,
       sortOrder: dto.sortOrder,
       isSystemFolder: false, // PersistenceDTO 中没有此字段，使用默认值
       folderType: dto.folderType ?? null,

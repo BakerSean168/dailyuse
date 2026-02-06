@@ -30,8 +30,36 @@ import { TaskTemplateId } from '@dailyuse/domain-shared/task';
 import { GoalFolderId } from '@dailyuse/domain-shared/goal';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-// Extended props type that includes computed fields for internal use
-interface TaskTemplateInternalProps extends TaskTemplateClient {
+// 内部状态接口
+interface TaskTemplateState {
+  id: TaskTemplateId;
+  identityId: IdentityId;
+  name: string;
+  description: string | null;
+  timeConfig: TaskTimeConfig;
+  recurrenceRule: RecurrenceRule | null;
+  reminderConfig: TaskReminderConfig | null;
+  importance: ImportanceLevel;
+  priority: number | undefined;
+  goalBinding: TaskGoalBinding | null;
+  folderId: GoalFolderId | null;
+  tags: string[];
+  color: string | null;
+  status: TaskTemplateStatus;
+  lastGeneratedDate: Date | null;
+  generateAheadDays: number | null;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  parentTaskId: TaskTemplateId | null;
+  startDate: Date | null;
+  dueDate: Date | null;
+  completedAt: Date | null;
+  estimatedMinutes: number | null;
+  actualMinutes: number | null;
+  comment: string | null;
+  blockingReason: string | null;
   dependencyStatus?: string;
   isBlocked?: boolean;
   instanceCount: number;
@@ -44,10 +72,10 @@ interface TaskTemplateInternalProps extends TaskTemplateClient {
 
 export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskTemplateClient {
   // ================= 1. Props =================
-  private readonly _props: TaskTemplateInternalProps;
+  private readonly _props: TaskTemplateState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: TaskTemplateInternalProps) {
+  private constructor(props: TaskTemplateState) {
     super(props.id);
     this._props = props;
   }

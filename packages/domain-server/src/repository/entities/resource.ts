@@ -13,11 +13,11 @@ import type {
 import type { ResourceId, RepositoryId, FolderId } from '@dailyuse/contracts/primitives';
 import { ResourceStatus, ResourceType } from '@dailyuse/contracts/repository';
 import { Entity } from '@dailyuse/utils';
-import { ResourceId as ResourceIdType } from '@dailyuse/domain-shared/repository';
+import { ResourceId as ResourceIdType, RepositoryId as RepositoryIdType } from '@dailyuse/domain-shared/repository';
 import { ResourceMetadata, ResourceStats } from '../value-objects';
 
-/** Props interface for Resource */
-interface ResourceProps {
+/** 内部状态接口 for Resource */
+interface ResourceState {
   repositoryId: RepositoryId;
   folderId: FolderId | null;
   type: ResourceType;
@@ -39,7 +39,7 @@ interface ResourceProps {
 
 export class Resource extends Entity<ResourceId> implements ResourceServer {
   // ===== 私有属性容器 =====
-  private _props: ResourceProps;
+  private _props: ResourceState;
 
   // ===== 构造函数（私有） =====
   private constructor(
@@ -317,8 +317,8 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
     const id = ResourceIdType.of(dto.id);
 
     return new Resource(id, {
-      repositoryId: dto.repositoryId as RepositoryId,
-      folderId: dto.folderId as FolderId | null,
+      repositoryId: RepositoryIdType.of(dto.repositoryId),
+      folderId: dto.folderId ? dto.folderId as FolderId : null,
       type: dto.type,
       name: dto.name,
       path: dto.path,
@@ -341,8 +341,8 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
     const id = ResourceIdType.of(dto.id);
 
     return new Resource(id, {
-      repositoryId: dto.repositoryId as RepositoryId,
-      folderId: dto.folderId as FolderId | null,
+      repositoryId: RepositoryIdType.of(dto.repositoryId),
+      folderId: dto.folderId ? dto.folderId as FolderId : null,
       type: dto.type,
       name: dto.name,
       path: dto.path,

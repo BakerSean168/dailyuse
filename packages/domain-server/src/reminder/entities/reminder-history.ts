@@ -10,12 +10,14 @@ import type {
   ReminderHistoryPersistenceDTO,
 } from '@dailyuse/contracts/reminder';
 import { TriggerResult, NotificationChannel } from '@dailyuse/contracts/reminder';
-import { Entity, generateUUID } from '@dailyuse/utils';
+import { Entity } from '@dailyuse/utils';
+import { ReminderHistoryId } from '@dailyuse/domain-shared/reminder';
 
 /**
- * ReminderHistory props 接口
+ * ReminderHistory 内部状态接口
  */
-interface ReminderHistoryProps {
+interface ReminderHistoryState {
+  id: ReminderHistoryId;
   templateUuid: string;
   triggeredAt: Date;
   result: TriggerResult;
@@ -33,9 +35,9 @@ interface ReminderHistoryProps {
  * - 有生命周期
  * - 属于 ReminderTemplate 聚合根
  */
-export class ReminderHistory extends Entity<string> implements ReminderHistoryServer {
+export class ReminderHistory extends Entity<ReminderHistoryId> implements ReminderHistoryServer {
   // ===== 私有字段 =====
-  private _props: ReminderHistoryProps;
+  private _props: ReminderHistoryState;
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
@@ -48,8 +50,10 @@ export class ReminderHistory extends Entity<string> implements ReminderHistorySe
     notificationChannels?: NotificationChannel[] | null;
     createdAt: number;
   }) {
-    super(params.uuid || generateUUID());
+    const id = params.uuid ? ReminderHistoryId.of(params.uuid) : ReminderHistoryId.generate();
+    super(id);
     this._props = {
+      id,
       templateUuid: params.templateUuid,
       triggeredAt: new Date(params.triggeredAt),
       result: params.result,

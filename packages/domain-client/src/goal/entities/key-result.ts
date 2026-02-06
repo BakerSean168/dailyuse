@@ -19,12 +19,26 @@ import type {
 import { Entity } from '@dailyuse/utils';
 import { KeyResultId } from '@dailyuse/domain-shared/goal';
 
+// 内部状态接口
+interface KeyResultState {
+  id: KeyResultId;
+  title: string;
+  description: string | null;
+  progress: KeyResultProgress;
+  weight: number;
+  order: number;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 export class KeyResult extends Entity<KeyResultId> implements KeyResultClient {
   // ================= 1. Props =================
-  private readonly _props: KeyResultClient;
+  private readonly _props: KeyResultState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: KeyResultClient) {
+  private constructor(props: KeyResultState) {
     super(props.id);
     this._props = props;
   }

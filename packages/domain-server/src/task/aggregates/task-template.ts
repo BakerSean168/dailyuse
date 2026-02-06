@@ -52,7 +52,7 @@ import {
  * - �������??
  */
 export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskTemplateServer {
-  private _props: TaskTemplatePropsInternal;
+  private _props: TaskTemplateState;
 
   // ===== ��ʵ�弯??=====
   private _history: TaskTemplateHistory[];
@@ -914,8 +914,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         attemptedAction: 'linkToGoal',
       });
     }
-    this._props.goalId = goalUuid as GoalId;
-    this._props.keyResultId = (keyResultUuid || null) as KeyResultId | null;
+    this._props.goalId = GoalId.of(goalUuid);
+    this._props.keyResultId = keyResultUuid ? KeyResultId.of(keyResultUuid) : null;
     this._props.updatedAt = new Date();
     this.addHistory('linked_to_goal', { goalUuid, keyResultUuid });
   }
@@ -1512,7 +1512,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   public static fromServerDTO(dto: TaskTemplateServerDTO): TaskTemplate {
     const template = new TaskTemplate(
       {
-        identityId: dto.identityId as IdentityId,
+        identityId: IdentityId.of(dto.identityId),
         title: dto.name,
         description: dto.description,
         taskType: TaskType.RECURRING, // Default, can be inferred from recurrenceRule
@@ -1526,7 +1526,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         importance: dto.importance as ImportanceLevel,
         goalBinding: dto.goalBinding ? TaskGoalBinding.fromDTO(dto.goalBinding) : null,
         checklist: dto.checklist ? dto.checklist.map((c) => ChecklistItemDefinition.fromDTO(c)) : [],
-        folderId: dto.folderId as TaskFolderId | null,
+        folderId: dto.folderId ? TaskFolderId.of(dto.folderId) : null,
         tags: dto.tags,
         color: dto.color,
         status: dto.status as TaskTemplateStatus,
@@ -1536,12 +1536,12 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         updatedAt: new Date(dto.updatedAt),
         deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
         version: dto.version ?? 1,
-        parentTaskId: dto.parentTaskId as TaskTemplateId | null,
+        parentTaskId: dto.parentTaskId ? TaskTemplateId.of(dto.parentTaskId) : null,
         dependencyStatus: dto.dependencyStatus,
         isBlocked: dto.isBlocked,
         blockingReason: dto.blockingReason,
       },
-      dto.id as TaskTemplateId,
+      TaskTemplateId.of(dto.id),
     );
 
     // �ָ�ʵ��
@@ -1601,7 +1601,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     const tags = dto.tags ? JSON.parse(dto.tags) : [];
 
     const props: TaskTemplateProps = {
-      identityId: dto.identityId as IdentityId,
+      identityId: IdentityId.of(dto.identityId),
       title: dto.name,
       description: dto.description,
       taskType: recurrenceRule ? TaskType.RECURRING : TaskType.ONE_TIME,
@@ -1610,13 +1610,13 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       reminderConfig,
       importance: dto.importance as ImportanceLevel, // Now stored as string
       goalBinding,
-      folderId: dto.folderId as TaskFolderId | null,
+      folderId: dto.folderId ? TaskFolderId.of(dto.folderId) : null,
       tags,
       color: dto.color,
       status: dto.status as TaskTemplateStatus,
       lastGeneratedDate: dto.lastGeneratedDate,
       generateAheadDays: dto.generateAheadDays,
-      parentTaskId: dto.parentTaskId as TaskTemplateId | null,
+      parentTaskId: dto.parentTaskId ? TaskTemplateId.of(dto.parentTaskId) : null,
       dependencyStatus: dto.dependencyStatus,
       isBlocked: dto.isBlocked,
       blockingReason: dto.blockingReason,
@@ -1625,7 +1625,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       deletedAt: dto.deletedAt,
       version: dto.version ?? 1,
     };
-    return new TaskTemplate(props, dto.id as TaskTemplateId);
+    return new TaskTemplate(props, TaskTemplateId.of(dto.id));
   }
 
   // ===== �������� =====
@@ -1663,7 +1663,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
 /**
  * Internal props storage interface - all fields are required/non-optional
  */
-interface TaskTemplatePropsInternal {
+interface TaskTemplateState {
   identityId: IdentityId;
   title: string;
   description: string | null;

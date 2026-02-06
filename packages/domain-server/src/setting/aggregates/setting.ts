@@ -6,7 +6,7 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import type { SettingId, SettingGroupId, SettingEntryId, TransferDate, PersistenceDate, DomainDate } from '@dailyuse/contracts/primitives';
 import { SettingScope, SettingValueType, type ValidationRuleDTO, type UIConfigDTO, type SyncConfigDTO } from '@dailyuse/contracts/setting';
-import { SettingId as SettingIdType, ValidationRule, UIConfig, SyncConfig } from '@dailyuse/domain-shared/setting';
+import { SettingId as SettingIdType, ValidationRule, UIConfig, SyncConfig, SettingGroupId as SettingGroupIdType } from '@dailyuse/domain-shared/setting';
 import { SettingHistory, type OperatorType } from '../entities/setting-history';
 
 // ============ Local Type Definitions ============
@@ -95,8 +95,8 @@ export interface SettingPersistenceDTO {
   deletedAt: PersistenceDate | null;
 }
 
-/** Props interface for Setting */
-interface SettingProps {
+/** 内部状态接口 for Setting */
+interface SettingState {
   key: string;
   name: string;
   description: string | null;
@@ -124,7 +124,7 @@ interface SettingProps {
  */
 export class Setting extends AggregateRoot<SettingId> implements SettingServer {
   // ===== 私有属性容器 =====
-  private _props: SettingProps;
+  private _props: SettingState;
 
   private constructor(
     id: SettingId,
@@ -409,7 +409,7 @@ export class Setting extends AggregateRoot<SettingId> implements SettingServer {
       scope: dto.scope,
       accountId: dto.accountId,
       deviceId: dto.deviceId,
-      groupId: dto.groupId as SettingGroupId | null,
+      groupId: dto.groupId ? SettingGroupIdType.of(dto.groupId) : null,
       validation: dto.validation ? ValidationRule.fromDTO(dto.validation) : null,
       ui: dto.ui ? UIConfig.fromDTO(dto.ui) : null,
       isEncrypted: dto.isEncrypted,
@@ -435,7 +435,7 @@ export class Setting extends AggregateRoot<SettingId> implements SettingServer {
       scope: dto.scope,
       accountId: dto.accountId,
       deviceId: dto.deviceId,
-      groupId: dto.groupId as SettingGroupId | null,
+      groupId: dto.groupId ? SettingGroupIdType.of(dto.groupId) : null,
       validation: dto.validation ? ValidationRule.fromDTO(JSON.parse(dto.validation)) : null,
       ui: dto.ui ? UIConfig.fromDTO(JSON.parse(dto.ui)) : null,
       isEncrypted: dto.isEncrypted,

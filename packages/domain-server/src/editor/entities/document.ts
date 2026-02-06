@@ -26,9 +26,9 @@ import { Entity, generateUUID } from '@dailyuse/utils';
 import { DocumentMetadata } from '@dailyuse/domain-shared/editor';
 
 /**
- * Document 属性接口
+ * Document 内部状态接口
  */
-interface DocumentProps {
+interface DocumentState {
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
   path: string;
@@ -49,10 +49,10 @@ interface DocumentProps {
  */
 export class Document extends Entity<IDocumentId> implements DocumentServer {
   // ===== 私有属性 =====
-  private _props: DocumentProps;
+  private _props: DocumentState;
 
   // ===== 构造函数（私有） =====
-  private constructor(id: IDocumentId, props: DocumentProps) {
+  private constructor(id: IDocumentId, props: DocumentState) {
     super(id);
     this._props = props;
   }

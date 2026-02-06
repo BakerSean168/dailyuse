@@ -19,10 +19,28 @@ import type {
 import { Entity } from '@dailyuse/utils';
 import { ReminderInstanceId, ReminderTemplateId } from '@dailyuse/domain-shared/reminder';
 
-export class ReminderHistory extends Entity<ReminderInstanceId> implements ReminderHistoryClient {
-  private readonly _props: ReminderHistoryClient;
+// 内部状态接口
+interface ReminderHistoryState {
+  id: ReminderInstanceId;
+  templateId: ReminderTemplateId;
+  triggeredAt: Date;
+  result: TriggerResult;
+  error: string | null;
+  notificationSent: boolean;
+  notificationChannels: NotificationChannel[] | null;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  resultText: string;
+  timeAgo: string;
+  channelsText: string | null;
+}
 
-  private constructor(props: ReminderHistoryClient) {
+export class ReminderHistory extends Entity<ReminderInstanceId> implements ReminderHistoryClient {
+  private readonly _props: ReminderHistoryState;
+
+  private constructor(props: ReminderHistoryState) {
     super(props.id);
     this._props = props;
   }

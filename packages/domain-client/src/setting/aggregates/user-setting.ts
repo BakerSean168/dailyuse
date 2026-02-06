@@ -8,7 +8,7 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import type {
   SettingId as ISettingId,
-  IdentityId,
+  IdentityId as IIdentityId,
 } from '@dailyuse/contracts/primitives';
 import type {
   UserSettingClient,
@@ -17,11 +17,12 @@ import type {
   SettingEntryClientDTO,
 } from '@dailyuse/contracts/setting';
 import { SettingId } from '@dailyuse/domain-shared/setting';
+import { IdentityId } from '@dailyuse/domain-shared';
 import { SettingEntry } from '../entities';
 
-// Internal props type using domain-shared class types
-interface UserSettingInternalProps {
-  id: ISettingId;
+// 内部状态接口：使用 domain-shared 类类型
+interface UserSettingState {
+  id: SettingId;
   identityId: IdentityId;
   entries: Map<string, SettingEntry>;
   version: number;
@@ -31,16 +32,16 @@ interface UserSettingInternalProps {
 }
 
 export class UserSetting extends AggregateRoot<ISettingId> implements UserSettingClient {
-  private readonly _props: UserSettingInternalProps;
+  private readonly _props: UserSettingState;
 
-  private constructor(props: UserSettingInternalProps) {
+  private constructor(props: UserSettingState) {
     super(props.id);
     this._props = props;
   }
 
   // ===== Getters =====
 
-  public get identityId(): IdentityId {
+  public get identityId(): IIdentityId {
     return this._props.identityId;
   }
 
@@ -103,7 +104,7 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
 
     return new UserSetting({
       id: SettingId.of(dto.id),
-      identityId: dto.identityId as IdentityId,
+      identityId: IdentityId.of(dto.identityId),
       entries,
       version: dto.version,
       createdAt: new Date(dto.createdAt),

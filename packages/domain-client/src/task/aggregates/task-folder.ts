@@ -19,12 +19,26 @@ import { AggregateRoot } from '@dailyuse/utils';
 import { TaskFolderId } from '@dailyuse/domain-shared/task';
 import { IdentityId } from '@dailyuse/domain-shared';
 
+// 内部状态接口
+interface TaskFolderState {
+  id: TaskFolderId;
+  identityId: IdentityId;
+  name: string;
+  color: string | null;
+  icon: string | null;
+  order: number;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 export class TaskFolder extends AggregateRoot<TaskFolderId> implements TaskFolderClient {
   // ================= 1. Props =================
-  private readonly _props: TaskFolderClient;
+  private readonly _props: TaskFolderState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: TaskFolderClient) {
+  private constructor(props: TaskFolderState) {
     super(props.id);
     this._props = props;
   }

@@ -18,16 +18,18 @@ import type {
   ResourceStatsDTO,
 } from '@dailyuse/contracts/repository';
 import type { ResourceType, ResourceStatus } from '@dailyuse/contracts/repository';
-import type { RepositoryId, FolderId } from '@dailyuse/contracts/primitives';
+import type { RepositoryId as IRepositoryId, FolderId as IFolderId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
 import {
   ResourceId,
   ResourceMetadata,
   ResourceStats,
+  RepositoryId,
+  FolderId,
 } from '@dailyuse/domain-shared/repository';
 
-// Internal props type using domain-shared class types
-interface ResourceInternalProps {
+// 内部状态接口：使用 domain-shared 类类型（有 .toDTO() 等方法）
+interface ResourceState {
   id: ResourceId;
   repositoryId: RepositoryId;
   folderId: FolderId | null;
@@ -47,19 +49,19 @@ interface ResourceInternalProps {
 }
 
 export class Resource extends Entity<ResourceId> implements ResourceClient {
-  private readonly _props: ResourceInternalProps;
+  private readonly _props: ResourceState;
 
-  private constructor(props: ResourceInternalProps) {
+  private constructor(props: ResourceState) {
     super(props.id);
     this._props = props;
   }
 
   // ================= Getters =================
-  get repositoryId(): RepositoryId {
+  get repositoryId(): IRepositoryId {
     return this._props.repositoryId;
   }
 
-  get folderId(): FolderId | null {
+  get folderId(): IFolderId | null {
     return this._props.folderId;
   }
 
@@ -220,8 +222,8 @@ export class Resource extends Entity<ResourceId> implements ResourceClient {
   public static fromDTO(dto: ResourceClientDTO): Resource {
     return new Resource({
       id: ResourceId.of(dto.id),
-      repositoryId: dto.repositoryId as RepositoryId,
-      folderId: dto.folderId as FolderId | null,
+      repositoryId: RepositoryId.of(dto.repositoryId),
+      folderId: dto.folderId ? FolderId.of(dto.folderId) : null,
       name: dto.name,
       type: dto.type,
       mimeType: dto.mimeType,

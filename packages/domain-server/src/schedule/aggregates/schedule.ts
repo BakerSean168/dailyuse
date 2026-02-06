@@ -12,12 +12,13 @@
  * @since Story 9.1 (EPIC-SCHEDULE-001)
  */
 
-import { AggregateRoot, generateUUID } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils';
 import type {
   ConflictDetail,
   ConflictDetectionResult,
   ConflictSuggestion,
 } from '@dailyuse/contracts/schedule';
+import { ScheduleId } from '@dailyuse/domain-shared/schedule';
 
 // TODO: 当 contracts 中定义了 ScheduleServerDTO 和 ScheduleClientDTO 后，移除这些临时类型
 // Story 9.1 用户日程的 DTO 接口暂未定义
@@ -56,9 +57,9 @@ interface ScheduleClientDTO {
 }
 
 /**
- * Schedule Props interface for simplified aggregate pattern
+ * Schedule 内部状态接口 for simplified aggregate pattern
  */
-interface ScheduleProps {
+interface ScheduleState {
   accountUuid: string;
   title: string;
   description: string | null;
@@ -80,9 +81,9 @@ interface ScheduleProps {
  * 注意：这是用户面向的日程（会议、约会等），不是 ScheduleTask（cron任务调度）
  * TODO: 定义 ScheduleServer 接口后实现
  */
-export class Schedule extends AggregateRoot<string> {
+export class Schedule extends AggregateRoot<ScheduleId> {
   // ===== 私有字段 =====
-  private _props: ScheduleProps;
+  private _props: ScheduleState;
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
@@ -100,7 +101,7 @@ export class Schedule extends AggregateRoot<string> {
     createdAt?: number;
     updatedAt?: number;
   }) {
-    super(params.uuid || generateUUID());
+    super(params.uuid ? ScheduleId.of(params.uuid) : ScheduleId.generate());
     
     // Validation: startTime must be before endTime
     if (params.startTime >= params.endTime) {

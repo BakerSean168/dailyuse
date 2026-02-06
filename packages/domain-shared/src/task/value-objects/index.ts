@@ -8,6 +8,7 @@ export { TaskTemplateId } from './task-template-id';
 export { TaskInstanceId } from './task-instance-id';
 export { TaskDependencyId } from './task-dependency-id';
 export { TaskFolderId } from './task-folder-id';
+export { SubtaskId } from './subtask-id';
 
 // Type Value Objects (Enums)
 export { TaskTemplateStatus } from './task-template-status';

@@ -29,13 +29,33 @@ import {
 import { IdentityId } from '@dailyuse/domain-shared';
 import { NotificationChannel } from '../entities/notification-channel.js';
 
+// 内部状态接口
+interface NotificationState {
+  id: NotificationId;
+  identityId: IdentityId;
+  title: string;
+  content: string;
+  type: NotificationType;
+  category: NotificationCategory;
+  importance: ImportanceLevel;
+  status: NotificationStatus;
+  readAt: Date | null;
+  actions: NotificationAction[] | null;
+  metadata: NotificationMetadata | null;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  notificationChannels: NotificationChannel[] | null;
+}
+
 export class Notification extends AggregateRoot<NotificationId> implements NotificationClient {
   // ================= 1. Props =================
-  private readonly _props: NotificationClient;
+  private readonly _props: NotificationState;
 
   // ================= 2. Constructor (Private) =================
-  private constructor(props: NotificationClient) {
-    super(props.id as NotificationId);
+  private constructor(props: NotificationState) {
+    super(NotificationId.of(props.id));
     this._props = props;
   }
 

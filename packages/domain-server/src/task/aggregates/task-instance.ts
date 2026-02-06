@@ -28,7 +28,7 @@ import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../value-objects';
 /**
  * Internal props interface for TaskInstance
  */
-interface TaskInstanceProps {
+interface TaskInstanceState {
   templateId: TaskTemplateId;
   identityId: IdentityId;
   instanceDate: number;
@@ -51,10 +51,10 @@ interface TaskInstanceProps {
  * TaskInstance 聚合根
  */
 export class TaskInstance extends AggregateRoot<TaskInstanceId> {
-  private _props: TaskInstanceProps;
+  private _props: TaskInstanceState;
 
-  // ===== 2. 构造函�?(Private) =====
-  private constructor(id: TaskInstanceId, props: TaskInstanceProps) {
+  // ===== 2. 构造函数 (Private) =====
+  private constructor(id: TaskInstanceId, props: TaskInstanceState) {
     super(id);
     this._props = props;
   }
@@ -352,9 +352,9 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
    * 🏭 恢复工厂：从 ServerDTO 恢复
    */
   public static fromServerDTO(dto: TaskInstanceServerDTO): TaskInstance {
-    return new TaskInstance(dto.id as TaskInstanceId, {
-      templateId: dto.templateId as TaskTemplateId,
-      identityId: dto.identityId as IdentityId,
+    return new TaskInstance(TaskInstanceId.of(dto.id), {
+      templateId: TaskTemplateId.of(dto.templateId),
+      identityId: IdentityId.of(dto.identityId),
       instanceDate: dto.instanceDate,
       timeConfig: TaskTimeConfig.fromDTO(dto.timeConfig),
       importance: dto.importance,
@@ -376,9 +376,9 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
    * 🏭 恢复工厂：从 PersistenceDTO 恢复
    */
   public static fromPersistenceDTO(dto: TaskInstancePersistenceDTO): TaskInstance {
-    return new TaskInstance(dto.id as TaskInstanceId, {
-      templateId: dto.templateId as TaskTemplateId,
-      identityId: dto.identityId as IdentityId,
+    return new TaskInstance(TaskInstanceId.of(dto.id), {
+      templateId: TaskTemplateId.of(dto.templateId),
+      identityId: IdentityId.of(dto.identityId),
       instanceDate: dto.instanceDate.getTime(),
       timeConfig: TaskTimeConfig.fromDTO(JSON.parse(dto.timeConfig)),
       importance: dto.importance as ImportanceLevel,

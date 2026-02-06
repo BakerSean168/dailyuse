@@ -35,8 +35,8 @@ export interface CreateRepositoryParams {
   config?: Partial<RepositoryConfigDTO>;
 }
 
-/** Props interface for Repository */
-interface RepositoryProps {
+/** 内部状态接口 for Repository */
+interface RepositoryState {
   identityId: IdentityId;
   name: string;
   type: RepositoryType;
@@ -56,7 +56,7 @@ export class Repository
   implements RepositoryServer
 {
   // ===== 私有属性容器 =====
-  private _props: RepositoryProps;
+  private _props: RepositoryState;
 
   // ===== 私有构造函数 =====
   private constructor(

@@ -21,6 +21,7 @@ import type {
   SettingEntryServerDTO,
 } from '@dailyuse/contracts/setting';
 import { SettingId, SettingEntryId } from '@dailyuse/domain-shared/setting';
+import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 
 // ============ Local SettingEntry Entity ============
 
@@ -82,8 +83,8 @@ class SettingEntry implements SettingEntryServer {
 
 // ============ UserSetting Aggregate ============
 
-/** Props interface for UserSetting */
-interface UserSettingProps {
+/** 内部状态接口 for UserSetting */
+interface UserSettingState {
   identityId: IdentityId;
   entries: Map<string, SettingEntry>;
   version: number;
@@ -97,7 +98,7 @@ interface UserSettingProps {
  */
 export class UserSetting extends AggregateRoot<ISettingId> implements UserSettingServer {
   // ===== 私有属性容器 =====
-  private _props: UserSettingProps;
+  private _props: UserSettingState;
 
   private constructor(
     id: ISettingId,
@@ -297,7 +298,7 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
     }
 
     return new UserSetting(id, {
-      identityId: dto.identityId as IdentityId,
+      identityId: IdentityIdType.of(dto.identityId),
       entries,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
@@ -329,7 +330,7 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
     }
 
     return new UserSetting(id, {
-      identityId: dto.identityId as IdentityId,
+      identityId: IdentityIdType.of(dto.identityId),
       entries,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
