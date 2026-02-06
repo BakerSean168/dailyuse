@@ -25,7 +25,7 @@ export { AuthCredentialMemoryRepository } from './adapters/memory/auth-credentia
 export { AuthSessionMemoryRepository } from './adapters/memory/auth-session-memory.repository';
 
 // Encryptors
-export { BcryptPasswordEncryptor, createBcryptEncryptor } from './encryptors';
+export { Argon2Hasher } from './encryptors';
 
 // Strategies
 export { createJwtStrategy, createLocalStrategy } from './strategies';

@@ -94,14 +94,27 @@
     "./shared/config": {
       "types": "./dist/shared/config/index.d.ts",
       "import": "./dist/shared/config/index.js"
+    },
+    "./prisma/client": {
+      "types": "./src/generated/prisma/client.d.ts",
+      "import": "./src/generated/prisma/client.js"
     }
+  },
+  "scripts": {
+    "prisma:generate": "prisma generate --config ./prisma/prisma.config.ts",
+    "prisma:migrate:dev": "prisma migrate dev --config ./prisma/prisma.config.ts",
+    "prisma:migrate:deploy": "prisma migrate deploy --config ./prisma/prisma.config.ts",
+    "prisma:migrate:reset": "prisma migrate reset --config ./prisma/prisma.config.ts",
+    "prisma:studio": "prisma studio --config ./prisma/prisma.config.ts",
+    "prisma:seed": "prisma db seed --config ./prisma/prisma.config.ts",
+    "prisma:push": "prisma db push --config ./prisma/prisma.config.ts"
   },
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/domain-server": "workspace:*",
     "@dailyuse/application-server": "workspace:*",
     "@dailyuse/utils": "workspace:*",
-    "@prisma/client": "^6.19.1",
+    "@prisma/client": "^7.0.0",
     "better-sqlite3": "^11.8.0",
     "bcryptjs": "^2.4.3",
     "passport-jwt": "^4.0.1",
@@ -109,7 +122,9 @@
   },
   "devDependencies": {
     "typescript": "^5.9.3",
-    "prisma": "^6.19.1",
+    "prisma": "^7.0.0",
+    "tsx": "^4.7.0",
+    "dotenv": "^16.4.0",
     "@types/better-sqlite3": "^7.6.11",
     "@types/bcryptjs": "^2.4.6",
     "@types/passport-jwt": "^4.0.1",

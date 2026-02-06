@@ -1,4 +1,4 @@
-import type { PrismaClient, goal as PrismaGoal } from '@prisma/client';
+﻿import type { PrismaClient, goal as PrismaGoal } from '../../../generated/prisma/client';
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { Goal, KeyResult, GoalReview } from '@dailyuse/domain-server/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
@@ -9,7 +9,7 @@ import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalReques
 export class PrismaGoalRepository implements IGoalRepository {
   constructor(private prisma: PrismaClient) {}
 
-  // importance �?Prisma schema 涓�?String 绫诲�?
+  // importance is a String type in Prisma schema
   private importanceMap: Record<ImportanceLevel, string> = {
     [ImportanceLevel.Vital]: 'Vital',
     [ImportanceLevel.Important]: 'Important',
@@ -43,11 +43,11 @@ export class PrismaGoalRepository implements IGoalRepository {
   };
 
   /**
-   * �?Prisma 妯″瀷鏄犲皠涓洪鍩熷疄�?
-   * 娉ㄦ剰锛歅risma Client 鑷姩灏?@map 鐨勫瓧娈佃浆鎹�?camelCase
+   * Map Prisma model to domain entity
+   * Note: Prisma Client automatically converts @map fields to camelCase
    */
   private mapToEntity(data: PrismaGoal & { keyResults?: any[]; keyResult?: any[]; goalReview?: any[] }): Goal {
-    console.log('[PrismaGoalRepository.mapToEntity] 寮€濮嬫槧灏? Goal UUID:', data.uuid);
+    console.log('[PrismaGoalRepository.mapToEntity] Starting to map Goal UUID:', data.uuid);
     console.log('[PrismaGoalRepository.mapToEntity] data.keyResults:', data.keyResults);
     console.log('[PrismaGoalRepository.mapToEntity] data.keyResult:', data.keyResult);
     console.log('[PrismaGoalRepository.mapToEntity] data.goalReview:', data.goalReview);
@@ -57,9 +57,9 @@ export class PrismaGoalRepository implements IGoalRepository {
       accountUuid: data.accountUuid, // Prisma camelCase
       name: data.name,
       description: data.description,
-      color: data.color, // 鏂板瓧娈?
-      feasibilityAnalysis: data.feasibilityAnalysis, // 鏂板瓧娈?(Prisma camelCase)
-      motivation: data.motivation, // 鏂板瓧娈?
+      color: data.color, // new field
+      feasibilityAnalysis: data.feasibilityAnalysis, // new field (Prisma camelCase)
+      motivation: data.motivation, // new field
       status: data.status as GoalStatus,
       importance: this.reverseImportanceMap[data.importance],
       // urgency: removed - priority now computed from importance + targetDate
@@ -78,21 +78,21 @@ export class PrismaGoalRepository implements IGoalRepository {
       deletedAt: data.deletedAt ? data.deletedAt.getTime() : null, // Prisma camelCase
     });
 
-    // 鎭㈠�?KeyResults锛堝鏋滄湁�?
-    // �?鏀寔 keyResults �?keyResult (鍗曞鏁伴兘鏀寔)
+    // Restore KeyResults (if any)
+    // Support both keyResults and keyResult (singular/plural)
     const keyResultsData = data.keyResults || data.keyResult || [];
-    console.log('[PrismaGoalRepository.mapToEntity] keyResultsData 闀垮害:', keyResultsData.length);
+    console.log('[PrismaGoalRepository.mapToEntity] keyResultsData length:', keyResultsData.length);
     
     if (keyResultsData.length > 0) {
-      console.log('[PrismaGoalRepository.mapToEntity] 寮€濮嬫仮澶?KeyResults...');
+      console.log('[PrismaGoalRepository.mapToEntity] Starting to restore KeyResults...');
       for (const krData of keyResultsData) {
-        console.log('[PrismaGoalRepository.mapToEntity] KeyResult 鍘熷鏁版嵁:', {
+        console.log('[PrismaGoalRepository.mapToEntity] KeyResult original data:', {
           uuid: krData.uuid,
           name: krData.name,
           goalRecordCount: krData.goalRecord?.length || 0,
         });
         
-        // �?浠庢暟鎹簱鎵佸钩鍖栧瓧娈垫瀯寤?KeyResult
+        // Build KeyResult from flattened database fields
         const keyResult = KeyResult.fromServerDTO({
           uuid: krData.uuid,
           goalUuid: data.uuid,
@@ -101,7 +101,7 @@ export class PrismaGoalRepository implements IGoalRepository {
           progress: {
             valueType: krData.valueType as any,
             aggregationMethod: krData.aggregationMethod as any,
-            initialValue: undefined, // 鏁版嵁搴撲腑鏆傛棤姝ゅ瓧�?
+            initialValue: undefined, // Field not available in database yet
             targetValue: krData.targetValue,
             currentValue: krData.currentValue,
             unit: krData.unit,
@@ -113,15 +113,15 @@ export class PrismaGoalRepository implements IGoalRepository {
           records: null,
         });
         
-        // �?鎭㈠�?GoalRecords锛堝鏋滄湁�?
+        // Restore GoalRecords (if any)
         if (krData.goalRecord && krData.goalRecord.length > 0) {
-          console.log(`[PrismaGoalRepository.mapToEntity] 鎭㈠�?${krData.goalRecord.length} �?GoalRecords...`);
+          console.log(`[PrismaGoalRepository.mapToEntity] Restoring ${krData.goalRecord.length} GoalRecords...`);
           for (const recordData of krData.goalRecord) {
             keyResult.addRecord({
               uuid: recordData.uuid,
               keyResultUuid: krData.uuid,
               goalUuid: data.uuid,
-              value: recordData.value,  // �?鏈璁板綍鐨勭嫭绔嬪€?
+              value: recordData.value,  // Independent value for each record
               note: recordData.note,
               recordedAt: recordData.recordedAt instanceof Date 
                 ? recordData.recordedAt.getTime() 
@@ -131,22 +131,22 @@ export class PrismaGoalRepository implements IGoalRepository {
                 : recordData.createdAt,
             });
           }
-          console.log(`[PrismaGoalRepository.mapToEntity] �?GoalRecords 宸叉仮澶�?;
+          console.log(`[PrismaGoalRepository.mapToEntity] All GoalRecords restored`);
         }
         
         goal.addKeyResult(keyResult);
-        console.log('[PrismaGoalRepository.mapToEntity] KeyResult 宸叉坊鍔犲埌 Goal');
+        console.log('[PrismaGoalRepository.mapToEntity] KeyResult added to Goal');
       }
     } else {
-      console.log('[PrismaGoalRepository.mapToEntity] 娌℃�?KeyResults 鏁版�?);
+      console.log('[PrismaGoalRepository.mapToEntity] No KeyResults data');
     }
 
-    console.log('[PrismaGoalRepository.mapToEntity] Goal 瀹炰綋鐨?keyResults 鏁伴�?', goal.keyResults?.length || 0);
+    console.log('[PrismaGoalRepository.mapToEntity] Goal entity keyResults count:', goal.keyResults?.length || 0);
 
-    // 鎭㈠�?GoalReviews锛堝鏋滄湁�?
+    // Restore GoalReviews (if any)
     const reviewsData = data.goalReview || [];
     if (reviewsData.length > 0) {
-      console.log(`[PrismaGoalRepository.mapToEntity] 寮€濮嬫仮澶?${reviewsData.length} �?GoalReviews...`);
+      console.log(`[PrismaGoalRepository.mapToEntity] Starting to restore ${reviewsData.length} GoalReviews...`);
       for (const reviewData of reviewsData) {
         const review = GoalReview.fromServerDTO({
           uuid: reviewData.uuid,
@@ -157,7 +157,7 @@ export class PrismaGoalRepository implements IGoalRepository {
           achievements: reviewData.achievements,
           challenges: reviewData.challenges,
           improvements: reviewData.lessonsLearned,
-          keyResultSnapshots: [], // 鏆備笉鏀寔蹇�?
+          keyResultSnapshots: [], // Snapshots not supported yet
           reviewedAt: reviewData.createdAt instanceof Date 
             ? reviewData.createdAt.getTime() 
             : reviewData.createdAt,
@@ -166,20 +166,20 @@ export class PrismaGoalRepository implements IGoalRepository {
             : reviewData.createdAt,
         });
         goal.addReview(review);
-        console.log(`[PrismaGoalRepository.mapToEntity] GoalReview ${reviewData.uuid} 宸叉坊鍔犲埌 Goal`);
+        console.log(`[PrismaGoalRepository.mapToEntity] GoalReview ${reviewData.uuid} added to Goal`);
       }
-      console.log(`[PrismaGoalRepository.mapToEntity] �?${reviewsData.length} �?GoalReviews 宸叉仮澶�?;
+      console.log(`[PrismaGoalRepository.mapToEntity] All ${reviewsData.length} GoalReviews restored`);
     } else {
-      console.log('[PrismaGoalRepository.mapToEntity] 娌℃�?GoalReviews 鏁版�?);
+      console.log('[PrismaGoalRepository.mapToEntity] No GoalReviews data');
     }
 
     return goal;
   }
 
   /**
-   * 淇濆瓨棰嗗煙瀹炰綋鍒版暟鎹�?
-   * 娉ㄦ剰锛氳繖閲屽鐞?camelCase (PersistenceDTO) �?snake_case (鏁版嵁搴? 鐨勬槧灏?
-   * 绾ц仈淇濆瓨瀛愬疄浣擄細KeyResults �?GoalReviews
+   * Save domain entity to database
+   * Note: This handles mapping between camelCase (PersistenceDTO) and snake_case (database)
+   * Cascade save child entities: KeyResults and GoalReviews
    */
   async save(goal: Goal): Promise<void> {
     const persistence = goal.toPersistenceDTO();
@@ -207,24 +207,24 @@ export class PrismaGoalRepository implements IGoalRepository {
       where: { uuid: persistence.uuid },
       create: {
         uuid: persistence.uuid,
-        accountUuid: persistence.accountUuid, // PersistenceDTO �?database
-        createdAt: new Date(persistence.createdAt), // PersistenceDTO �?database
+        accountUuid: persistence.accountUuid, // PersistenceDTO to database
+        createdAt: new Date(persistence.createdAt), // PersistenceDTO to database
         ...data,
       },
       update: data,
     });
 
-    // 绾ц仈淇濆�?KeyResults锛堜娇鐢?ServerDTO 鑾峰彇瀹屾暣鏁版嵁�?
+    // Cascade save KeyResults (using ServerDTO to get complete data)
     const serverDTO = goal.toServerDTO(true); // includeChildren=true
     if (serverDTO.keyResults && serverDTO.keyResults.length > 0) {
       for (const kr of serverDTO.keyResults) {
-        // 闃插尽鎬ф鏌? 纭繚progress瀵硅薄瀛樺�?
+        // Defensive check: ensure progress object exists
         if (!kr.progress) {
           console.error(`KeyResult ${kr.uuid} has no progress data, skipping save`);
           continue;
         }
 
-        // 闃插尽鎬ф鏌? 纭繚progress瀵硅薄瀛樺�?
+        // Defensive check: ensure progress object exists
         if (!kr.progress) {
           console.error(`KeyResult ${kr.uuid} has no progress data, skipping save`);
           continue;
@@ -239,14 +239,14 @@ export class PrismaGoalRepository implements IGoalRepository {
             valueType: kr.progress.valueType,
             aggregationMethod: kr.progress.aggregationMethod,
             targetValue: kr.progress.targetValue,
-            currentValue: kr.progress.currentValue ?? 0, // �?榛樿鍊?0 濡傛灉涓?null
+            currentValue: kr.progress.currentValue ?? 0, // Default to 0 if null
             unit: kr.progress.unit || null,
-            weight: kr.weight ?? 0, // �?娣诲�?weight
+            weight: kr.weight ?? 0, // Add weight field
             order: kr.order,
             createdAt: new Date(kr.createdAt),
             updatedAt: new Date(kr.updatedAt),
             goal: {
-              connect: { uuid: goal.uuid }, // 鍏宠仈鐜版湁�?Goal
+              connect: { uuid: goal.uuid }, // Connect to existing Goal
             },
           },
           update: {
@@ -255,32 +255,32 @@ export class PrismaGoalRepository implements IGoalRepository {
             valueType: kr.progress.valueType,
             aggregationMethod: kr.progress.aggregationMethod,
             targetValue: kr.progress.targetValue,
-            currentValue: kr.progress.currentValue ?? 0, // �?榛樿鍊?0 濡傛灉涓?null
+            currentValue: kr.progress.currentValue ?? 0, // Default to 0 if null
             unit: kr.progress.unit || null,
-            weight: kr.weight ?? 0, // �?娣诲�?weight
+            weight: kr.weight ?? 0, // Add weight field
             order: kr.order,
             updatedAt: new Date(kr.updatedAt),
           },
         });
 
-        // 绾ц仈淇濆�?GoalRecords锛堣繘搴﹁褰曪�?
+        // Cascade save GoalRecords (progress records)
         if (kr.records && kr.records.length > 0) {
-          console.log(`[PrismaGoalRepository.save] 淇濆�?${kr.records.length} �?GoalRecords for KeyResult ${kr.uuid}`);
+          console.log(`[PrismaGoalRepository.save] Saving ${kr.records.length} GoalRecords for KeyResult ${kr.uuid}`);
           for (const record of kr.records) {
             await (this.prisma as any).goalRecord.upsert({
               where: { uuid: record.uuid },
               create: {
                 uuid: record.uuid,
-                value: record.value ?? 0,  // �?鏈璁板綍鐨勭嫭绔嬪€?
+                value: record.value ?? 0,  // Independent value for each record
                 note: record.note || null,
                 recordedAt: new Date(record.recordedAt),
                 createdAt: new Date(record.createdAt),
                 keyResult: {
-                  connect: { uuid: kr.uuid }, // �?鍏宠仈鐜版湁�?KeyResult
+                  connect: { uuid: kr.uuid }, // Connect to existing KeyResult
                 },
               },
               update: {
-                value: record.value ?? 0,  // �?鏈璁板綍鐨勭嫭绔嬪€?
+                value: record.value ?? 0,  // Independent value for each record
                 note: record.note || null,
                 recordedAt: new Date(record.recordedAt),
               },
@@ -290,9 +290,9 @@ export class PrismaGoalRepository implements IGoalRepository {
       }
     }
 
-    // 绾ц仈淇濆�?GoalReviews
+    // Cascade save GoalReviews
     if (serverDTO.reviews && serverDTO.reviews.length > 0) {
-      console.log(`[PrismaGoalRepository.save] 淇濆�?${serverDTO.reviews.length} �?GoalReviews for Goal ${goal.uuid}`);
+      console.log(`[PrismaGoalRepository.save] Saving ${serverDTO.reviews.length} GoalReviews for Goal ${goal.uuid}`);
       for (const review of serverDTO.reviews) {
         await (this.prisma as any).goalReview.upsert({
           where: { uuid: review.uuid },
@@ -304,10 +304,10 @@ export class PrismaGoalRepository implements IGoalRepository {
             achievements: review.achievements || null,
             challenges: review.challenges || null,
             lessonsLearned: review.improvements || null,
-            nextSteps: null, // 濡傛灉闇€瑕佸彲浠ヤ�?improvements 鏄犲�?
+            nextSteps: null, // Can map from improvements if needed
             rating: review.rating,
             createdAt: new Date(review.createdAt),
-            updatedAt: new Date(review.createdAt), // 鍒濇鍒涘缓�?updatedAt = createdAt
+            updatedAt: new Date(review.createdAt), // On initial creation, updatedAt = createdAt
           },
           update: {
             reviewType: review.type,
@@ -316,7 +316,7 @@ export class PrismaGoalRepository implements IGoalRepository {
             challenges: review.challenges || null,
             lessonsLearned: review.improvements || null,
             rating: review.rating,
-            updatedAt: new Date(), // 鏇存柊鏃朵娇鐢ㄥ綋鍓嶆椂�?
+            updatedAt: new Date(), // Use current time on update
           },
         });
       }
@@ -328,10 +328,10 @@ export class PrismaGoalRepository implements IGoalRepository {
       ? {
           keyResult: {
             include: {
-              goalRecord: true, // �?鍖呭�?KeyResult 鐨勬墍鏈?GoalRecords
+              goalRecord: true, // Include all GoalRecords for each KeyResult
             },
           },
-          goalReview: true, // �?鍖呭惈鎵€鏈?GoalReviews
+          goalReview: true, // Include all GoalReviews
         }
       : undefined;
 
@@ -343,7 +343,7 @@ export class PrismaGoalRepository implements IGoalRepository {
     });
     
     if (data) {
-      console.log('[PrismaGoalRepository.findById] Prisma杩斿洖鏁版嵁:', {
+      console.log('[PrismaGoalRepository.findById] Prisma returned data:', {
         uuid: data.uuid,
         name: data.name,
         keyResultCount: (data as any).keyResult?.length || 0,
@@ -371,12 +371,12 @@ export class PrismaGoalRepository implements IGoalRepository {
       where.folderUuid = options.folderUuid;
     }
     
-    // �?娣诲�?include 閫夐」浠ュ姞�?KeyResults �?GoalRecords
+    // Add include options to load KeyResults and GoalRecords
     const includeOptions = options?.includeChildren
       ? {
           keyResult: {
             include: {
-              goalRecord: true, // �?鍖呭�?KeyResult 鐨勬墍鏈?GoalRecords
+              goalRecord: true, // Include all GoalRecords for each KeyResult
             },
           },
         }
@@ -389,25 +389,25 @@ export class PrismaGoalRepository implements IGoalRepository {
       include: includeOptions as any,
     });
     
-    console.log('[PrismaGoalRepository.findByAccountUuid] Prisma杩斿洖鏁版嵁鏁伴�?', data.length);
+    console.log('[PrismaGoalRepository.findByAccountUuid] Prisma returned data count:', data.length);
     if (data.length > 0) {
-      console.log('[PrismaGoalRepository.findByAccountUuid] 绗竴鏉℃暟鎹殑keyResult鏁伴�?', (data[0] as any)?.keyResult?.length || 0);
+      console.log('[PrismaGoalRepository.findByAccountUuid] First record keyResult count:', (data[0] as any)?.keyResult?.length || 0);
       if ((data[0] as any)?.keyResult?.length > 0) {
         const firstKr = (data[0] as any).keyResult[0];
-        console.log('[PrismaGoalRepository.findByAccountUuid] 绗竴涓狵eyResult鐨刧oalRecord鏁伴�?', firstKr?.goalRecord?.length || 0);
+        console.log('[PrismaGoalRepository.findByAccountUuid] First KeyResult goalRecord count:', firstKr?.goalRecord?.length || 0);
       }
     }
     
     const entities = data.map((d) => this.mapToEntity(d));
-    console.log('[PrismaGoalRepository.findByAccountUuid] 杞崲鍚庡疄浣撴暟閲?', entities.length);
-    console.log('[PrismaGoalRepository.findByAccountUuid] 绗竴涓疄浣撶殑KeyResults鏁伴�?', entities[0]?.keyResults?.length || 0);
+    console.log('[PrismaGoalRepository.findByAccountUuid] Converted entity count:', entities.length);
+    console.log('[PrismaGoalRepository.findByAccountUuid] First entity KeyResults count:', entities[0]?.keyResults?.length || 0);
     
     return entities;
   }
 
   async findByFolderUuid(folderUuid: string): Promise<Goal[]> {
     const data = await this.prisma.goal.findMany({
-      where: { folderUuid: folderUuid, deletedAt: null }, // Prisma 鑷姩杞崲�?camelCase
+      where: { folderUuid: folderUuid, deletedAt: null }, // Prisma automatically converts to camelCase
     });
     return data.map((d) => this.mapToEntity(d));
   }

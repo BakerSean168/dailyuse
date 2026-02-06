@@ -13,7 +13,7 @@
  * - 搴旂敤鏈嶅姟鍗忚皟All鏈変緷锟?
  */
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '../../generated/prisma/client';
 import { prisma } from '../../shared/config/prisma';
 import { AIGenerationValidationService } from '@dailyuse/domain-server/ai';
 import {

@@ -3,7 +3,7 @@
  *
  * Prisma implementation of IAccountRepository.
  */
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../../generated/prisma/client';
 import type { IAccountRepository } from '@dailyuse/domain-server/account';
 import { Account } from '@dailyuse/domain-server/account';
 import { IdentityId } from '@dailyuse/domain-server/account';

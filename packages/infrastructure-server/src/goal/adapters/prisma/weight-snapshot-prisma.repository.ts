@@ -5,7 +5,7 @@
  * 璐熻矗鏉冮噸蹇収鐨勬寔涔呭寲鎿嶄綔銆?
  */
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '../../../generated/prisma/client';
 import type { IWeightSnapshotRepository, SnapshotQueryResult } from '@dailyuse/domain-server/goal';
 import { KeyResultWeightSnapshot } from '@dailyuse/domain-server/goal';
 import { PrismaWeightSnapshotMapper } from '../../mappers/prisma-weight-snapshot-mapper';

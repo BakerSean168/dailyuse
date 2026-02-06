@@ -5,7 +5,7 @@
  * Supports both Prisma (PostgreSQL for API) and SQLite (better-sqlite3 for Desktop).
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../generated/prisma/client';
 import type Database from 'better-sqlite3';
 
 /**

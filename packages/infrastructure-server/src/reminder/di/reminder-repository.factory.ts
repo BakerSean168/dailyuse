@@ -9,7 +9,7 @@
  * This factory provides just the main repository for now
  */
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '../../generated/prisma/client';
 import type Database from 'better-sqlite3';
 
 import { ReminderPrismaRepository } from '../adapters/prisma';

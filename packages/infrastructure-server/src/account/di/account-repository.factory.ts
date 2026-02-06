@@ -6,7 +6,7 @@
  * (AuthCredential, AuthSession) and TransactionManager
  */
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '../../generated/prisma/client';
 import type Database from 'better-sqlite3';
 
 import { AccountPrismaRepository } from '../adapters/prisma';

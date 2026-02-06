@@ -6,7 +6,7 @@
  * @since Story 9.3 (EPIC-SCHEDULE-001)
  */
 
-import type {  PrismaClient  } from "@prisma/client";
+import type {  PrismaClient  } from "../../../generated/prisma/client";
 import type { IScheduleRepository } from '@dailyuse/domain-server/schedule';
 import { Schedule } from '@dailyuse/domain-server/schedule';
 

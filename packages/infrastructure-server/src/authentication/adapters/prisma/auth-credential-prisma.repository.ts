@@ -6,8 +6,8 @@
  * Migrated from apps/api/src/modules/authentication/infrastructure
  */
 
-import type { PrismaClient } from '@prisma/client';
-import type { authCredential as PrismaAuthCredential } from '@prisma/client';
+import type { PrismaClient } from '../../../generated/prisma/client';
+import type { authCredential as PrismaAuthCredential } from '../../../generated/prisma/client';
 import type { IAuthCredentialRepository, PrismaTransactionClient } from '../../ports/auth-credential-repository.port';
 import { AuthCredential } from '@dailyuse/domain-server/authentication';
 import type { AuthCredentialPersistenceDTO } from '@dailyuse/contracts/authentication';

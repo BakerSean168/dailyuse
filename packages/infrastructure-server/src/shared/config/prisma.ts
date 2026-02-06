@@ -1,23 +1,23 @@
-/**
+﻿/**
  * Prisma Client Singleton
- * 鍗曚竴 Prisma 瀹㈡埛绔疄锟?
+ * Single Prisma Client Instance
  *
- * 鑱岃矗锟?
- * - 鎻愪緵鍏ㄥ眬 PrismaClient 鍗曚緥
- * - 纭繚鏁翠釜搴旂敤鍙湁涓€涓暟鎹簱杩炴帴
+ * Responsibilities:
+ * - Provide global PrismaClient singleton
+ * - Ensure only one database connection in the application
  *
  * @module Shared/Infrastructure
  */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../../generated/prisma/client";
 
 /**
- * 鍏ㄥ眬 Prisma 瀹㈡埛绔疄锟?
+ * Global Prisma Client Instance
  */
 export const prisma = new PrismaClient();
 
 /**
- * 纭繚 Prisma 瀹㈡埛绔凡杩炴帴
+ * Ensure Prisma Client is connected
  */
 export async function ensurePrismaConnected(): Promise<void> {
   try {
@@ -29,10 +29,10 @@ export async function ensurePrismaConnected(): Promise<void> {
 }
 
 /**
- * 浼橀泤鏂紑 Prisma 杩炴帴
+ * Gracefully disconnect Prisma connection
  */
 export async function disconnectPrisma(): Promise<void> {
   await prisma.$disconnect();
 }
 
-export type { PrismaClient } from '@prisma/client';
+export type { PrismaClient } from '../../generated/prisma/client';

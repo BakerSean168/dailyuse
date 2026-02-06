@@ -1,4 +1,4 @@
-import type {  PrismaClient  } from "@prisma/client";
+import type {  PrismaClient  } from "../../../generated/prisma/client";
 import type { ITaskStatisticsRepository } from '@dailyuse/domain-server/task';
 import { TaskStatistics } from '@dailyuse/domain-server/task';
 

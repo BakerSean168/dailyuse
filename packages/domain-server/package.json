@@ -66,8 +66,8 @@
   },
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/utils": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
+    "@dailyuse/utils": "workspace:*",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
@@ -75,11 +75,13 @@
   },
   "devDependencies": {
     "@ai-sdk/openai": "2.0.80",
+    "@prisma/client": "7.3.0",
     "@types/bcryptjs": "^3.0.0",
     "@types/jsonwebtoken": "^9.0.6",
     "@vitest/coverage-v8": "^4.0.15",
     "@vitest/ui": "^4.0.15",
     "ai": "5.0.110",
+    "prisma": "7.3.0",
     "tsup": "^8.0.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15",

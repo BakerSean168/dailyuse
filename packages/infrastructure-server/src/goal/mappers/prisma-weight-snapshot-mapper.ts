@@ -6,7 +6,7 @@
  */
 
 import { KeyResultWeightSnapshot } from '@dailyuse/domain-server/goal';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '../../generated/prisma/client';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, SnapshotTrigger } from '@dailyuse/contracts/goal';
 
 

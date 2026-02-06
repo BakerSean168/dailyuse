@@ -7,7 +7,7 @@
  * - 灏?ScheduleExecution 瀹炰綋杞崲涓?Prisma 鎸佷箙鍖栨暟鎹?
  */
 
-import type { scheduleExecution as PrismaScheduleExecution } from '@prisma/client';
+import type { scheduleExecution as PrismaScheduleExecution } from '../../generated/prisma/client';
 import { ScheduleExecution } from '@dailyuse/domain-server/schedule';
 import type { ExecutionStatus } from '@dailyuse/contracts/schedule';
 

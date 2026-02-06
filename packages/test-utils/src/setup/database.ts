@@ -6,7 +6,8 @@
  */
 
 import { execSync } from 'child_process';
-import { PrismaClient } from '@prisma/client';
+// Import PrismaClient from infrastructure-server's generated client
+import { PrismaClient } from '@dailyuse/infrastructure-server/prisma/client';
 import type { BeforeAllListener, AfterAllListener, BeforeEachListener } from 'vitest';
 
 export interface DatabaseTestConfig {

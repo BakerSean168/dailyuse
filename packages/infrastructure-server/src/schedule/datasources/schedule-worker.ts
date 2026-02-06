@@ -12,14 +12,14 @@
  * - 浣跨敤 workerData 鎺ユ敹鐖惰繘绋嬩紶閫掔殑Parameter
  * - 閫氳繃 parentPort 涓庣埗杩涚▼閫氫俊
  * 
- * 鏋舵瀯娉ㄦ剰锟?
- * - 涓轰簡閬垮厤寰幆渚濊禆锛屼笉鐩存帴瀵煎叆搴旂敤鏈嶅姟
- * - 鏀逛负閫氳繃 workerData 浼犻€掑繀Need鐨勫洖璋冩垨鏁版嵁
- * - 鐖惰繘绋嬭礋璐ｈ皟鐢ㄥ簲鐢ㄥ眰鐨勪笟鍔￠€昏緫
+ * Architecture notes
+ * - To avoid circular dependencies, do not directly import application services
+ * - Pass necessary callbacks or data through workerData instead
+ * - Parent process is responsible for calling application layer business logic
  */
 
 import { parentPort, workerData } from 'worker_threads';
-import type {  PrismaClient  } from "@prisma/client";
+import type {  PrismaClient  } from "../../../generated/prisma/client";
 import {
   NotificationType,
   NotificationCategory,

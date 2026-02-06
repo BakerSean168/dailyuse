@@ -1,5 +1,5 @@
 // @ts-nocheck
-import type {  PrismaClient  } from "@prisma/client";
+import type {  PrismaClient  } from "../../../generated/prisma/client";
 import type { IGoalStatisticsRepository } from '@dailyuse/domain-server/goal';
 import { GoalStatistics } from '@dailyuse/domain-server/goal';
 

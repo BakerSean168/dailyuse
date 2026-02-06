@@ -3,7 +3,7 @@
  * Provides repository implementations for different data sources
  */
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '../../generated/prisma/client';
 import type Database from 'better-sqlite3';
 
 import type { IDashboardConfigRepository } from '@dailyuse/domain-server/dashboard';

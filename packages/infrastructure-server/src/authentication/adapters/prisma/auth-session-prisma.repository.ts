@@ -6,8 +6,8 @@
  * Migrated from apps/api/src/modules/authentication/infrastructure
  */
 
-import type { PrismaClient } from '@prisma/client';
-import type { authSession as PrismaAuthSession } from '@prisma/client';
+import type { PrismaClient } from '../../../generated/prisma/client';
+import type { authSession as PrismaAuthSession } from '../../../generated/prisma/client';
 import type { IAuthSessionRepository } from '../../ports/auth-session-repository.port';
 import { AuthSession } from '@dailyuse/domain-server/authentication';
 import type { AuthSessionPersistenceDTO } from '@dailyuse/contracts/authentication';

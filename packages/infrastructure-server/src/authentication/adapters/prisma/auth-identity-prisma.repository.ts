@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../../generated/prisma/client';
 import { eventBus } from '@dailyuse/utils'; // 你的 EventBus 接口
 import { 
   AuthIdentityRepository 

@@ -4,7 +4,7 @@
  * 鏍囧噯 Express/TypeScript 妯″紡 - 绉婚櫎浜?NestJS @Injectable 瑁呴グ鍣?
  */
 
-import type {  PrismaClient  } from "@prisma/client";
+import type {  PrismaClient  } from "../../../generated/prisma/client";
 import type { ITaskDependencyRepository } from '@dailyuse/domain-server/task';
 import type {
   TaskDependencyServerDTO,

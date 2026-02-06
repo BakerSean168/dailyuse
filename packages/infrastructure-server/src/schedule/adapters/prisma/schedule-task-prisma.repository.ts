@@ -11,7 +11,7 @@
  * @implements {IScheduleTaskRepository}
  */
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '../../../generated/prisma/client';
 import type { IScheduleTaskRepository } from '@dailyuse/domain-server/schedule';
 import { ScheduleTask, ScheduleExecution } from '@dailyuse/domain-server/schedule';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';

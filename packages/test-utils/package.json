@@ -14,7 +14,7 @@
     "./helpers": "./src/helpers/index.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.1",
+    "@dailyuse/infrastructure-server": "workspace:*",
     "vitest": "^4.0.15"
   },
   "devDependencies": {
