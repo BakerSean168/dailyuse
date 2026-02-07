@@ -1,7 +1,11 @@
+import type { Router } from 'express';
+import { Router as ExpressRouter } from 'express';
 import type { GovernanceModule } from '../../module';
 
-export type GovernanceCrudRoutesRegistrar = (governanceModule: GovernanceModule) => void;
+export type GovernanceCrudRoutesRegistrar = (governanceModule: GovernanceModule) => Router;
 
-export const registerGovernanceCrudRoutes: GovernanceCrudRoutesRegistrar = () => {
-  // Placeholder for governance CRUD route registration.
+export const registerGovernanceCrudRoutes: GovernanceCrudRoutesRegistrar = (_governanceModule) => {
+  const router = ExpressRouter();
+
+  return router;
 };

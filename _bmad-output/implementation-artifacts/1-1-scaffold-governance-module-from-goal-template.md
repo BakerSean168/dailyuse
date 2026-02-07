@@ -1,6 +1,6 @@
 # Story 1.1: Scaffold Governance Module from Goal Template
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -118,6 +118,7 @@ GPT-5.2-Codex
 - Task 2 scaffolded governance DDD folders, layer indexes, and module assembly; removed default lib stub. Tests not run (no governance test target; scaffolding only per story requirements).
 - Task 3 scaffolded API governance wiring, added interface route aggregator and initialization tasks; added governance package interface/express placeholders. Tests not run (scaffold-only).
 - Task 4 scaffolded web governance presentation folders, store, composable, router, and placeholder views. Tests not run (scaffold-only).
+- Code review fixes: added governance route aggregator in package, ensured CRUD registrar returns router, registered governance init tasks, and added widget registration stub.
 
 ### File List
 
@@ -138,6 +139,23 @@ GPT-5.2-Codex
 - apps/web/src/modules/governance/presentation/views/GovernanceListView.vue
 - apps/web/src/modules/governance/presentation/views/GovernanceDetailView.vue
 - apps/web/src/modules/governance/presentation/widgets/index.ts
+- apps/web/src/modules/governance/presentation/widgets/registerGovernanceWidgets.ts
 - packages/governance/src/module.ts
 - packages/governance/src/index.ts
 - packages/governance/src/lib/governance.ts (deleted)
+- apps/api/src/shared/initialization/initializer.ts
+
+### Senior Developer Review (AI)
+
+- Date: 2026-02-07
+- Scope: Governance scaffold story 1.1
+- Findings addressed:
+  - Package governance routes now return a Router and include a package-level aggregator.
+  - DDD layer entrypoints now expose named exports for application/contracts/domain/infrastructure.
+  - Governance initialization tasks are registered at API startup.
+  - Governance widgets entrypoint now exports a stub registrar.
+- Notes: Unrelated metrics interface deletions present in git; excluded from this story scope per user.
+
+### Change Log
+
+- 2026-02-07: Code review fixes applied for governance package routing, API initialization registration, and web widgets entrypoint.

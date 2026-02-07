@@ -41,7 +41,7 @@ story_location: /_bmad-output/implementation-artifacts
 
 development_status:
   epic-1: in-progress
-  1-1-scaffold-governance-module-from-goal-template: in-progress
+  1-1-scaffold-governance-module-from-goal-template: done
   1-2-create-rule-with-validation-and-rbac: backlog
   1-3-update-rule-content: backlog
   1-4-enforce-rule-lifecycle-transitions: backlog

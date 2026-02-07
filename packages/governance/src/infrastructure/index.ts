@@ -1,1 +1,1 @@
-export {};
+export interface GovernanceInfrastructureLayer {}

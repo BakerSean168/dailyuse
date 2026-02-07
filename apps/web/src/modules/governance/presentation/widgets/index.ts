@@ -1,1 +1,1 @@
-export {};
+export { registerGovernanceWidgets } from './registerGovernanceWidgets';
