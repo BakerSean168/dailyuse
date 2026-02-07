@@ -21,15 +21,15 @@ so that new governance features follow existing DDD conventions from day one.
 - [x] Task 1: Baseline Goal module reference structure (AC: 1, 2, 3, 4)
   - [x] Identify Goal module folder layout and entrypoints to mirror
   - [x] Note naming conventions and route aggregation patterns
-- [ ] Task 2: Scaffold packages/governance vertical slice (AC: 2)
-  - [ ] Create folders: contracts, domain, application, infrastructure, interface
-  - [ ] Add module assembly file (module.ts) and indexes for each layer
-- [ ] Task 3: Scaffold API module wiring (AC: 3, 5)
-  - [ ] Add apps/api/src/modules/governance/interface/index.ts
-  - [ ] Add apps/api/src/modules/governance/initialization/governanceInitialization.ts
-- [ ] Task 4: Scaffold Web module wiring (AC: 4)
-  - [ ] Add apps/web/src/modules/governance/presentation/{stores,views,router,composables,widgets}
-  - [ ] Add governance store and routing entrypoints mirroring Goal patterns
+- [x] Task 2: Scaffold packages/governance vertical slice (AC: 2)
+  - [x] Create folders: contracts, domain, application, infrastructure, interface
+  - [x] Add module assembly file (module.ts) and indexes for each layer
+- [x] Task 3: Scaffold API module wiring (AC: 3, 5)
+  - [x] Add apps/api/src/modules/governance/interface/index.ts
+  - [x] Add apps/api/src/modules/governance/initialization/governanceInitialization.ts
+- [x] Task 4: Scaffold Web module wiring (AC: 4)
+  - [x] Add apps/web/src/modules/governance/presentation/{stores,views,router,composables,widgets}
+  - [x] Add governance store and routing entrypoints mirroring Goal patterns
 
 ## Dev Notes
 
@@ -106,15 +106,38 @@ GPT-5.2-Codex
 
 ### Debug Log References
 
+### Implementation Plan
+
+- Scaffold DDD layer directories and barrel exports inside packages/governance.
+- Replace the default library entrypoint with a Governance module assembly file and root exports.
+
 ### Completion Notes List
 
 - Ultimate context engine analysis completed - comprehensive developer guide created
 - Task 1 baseline: API routes aggregate in apps/api/src/modules/goal/interface/index.ts over kebab-case goal-*.routes.ts; API init in apps/api/src/modules/goal/initialization/goalInitialization.ts. Web module layout in apps/web/src/modules/goal/presentation/{stores,router,composables,widgets} with router/index.ts and stores/goalStore.ts; module exports in apps/web/src/modules/goal/index.ts. DI-first module class in packages/infrastructure-server/src/goal/goal.module.ts.
+- Task 2 scaffolded governance DDD folders, layer indexes, and module assembly; removed default lib stub. Tests not run (no governance test target; scaffolding only per story requirements).
+- Task 3 scaffolded API governance wiring, added interface route aggregator and initialization tasks; added governance package interface/express placeholders. Tests not run (scaffold-only).
+- Task 4 scaffolded web governance presentation folders, store, composable, router, and placeholder views. Tests not run (scaffold-only).
 
 ### File List
 
-- packages/governance/src/... (scaffold folders and index/module files)
+- packages/governance/src/application/index.ts
+- packages/governance/src/contracts/index.ts
+- packages/governance/src/domain/index.ts
+- packages/governance/src/infrastructure/index.ts
+- packages/governance/src/interface/index.ts
+- packages/governance/src/interface/express/index.ts
+- packages/governance/src/interface/express/governance-crud.routes.ts
 - apps/api/src/modules/governance/interface/index.ts
+- apps/api/src/modules/governance/interface/governance-crud.routes.ts
 - apps/api/src/modules/governance/initialization/governanceInitialization.ts
-- apps/web/src/modules/governance/presentation/... (scaffold folders and entrypoints)
-- _bmad-output/implementation-artifacts/sprint-status.yaml
+- apps/web/src/modules/governance/index.ts
+- apps/web/src/modules/governance/presentation/stores/governanceStore.ts
+- apps/web/src/modules/governance/presentation/composables/useGovernance.ts
+- apps/web/src/modules/governance/presentation/router/index.ts
+- apps/web/src/modules/governance/presentation/views/GovernanceListView.vue
+- apps/web/src/modules/governance/presentation/views/GovernanceDetailView.vue
+- apps/web/src/modules/governance/presentation/widgets/index.ts
+- packages/governance/src/module.ts
+- packages/governance/src/index.ts
+- packages/governance/src/lib/governance.ts (deleted)
