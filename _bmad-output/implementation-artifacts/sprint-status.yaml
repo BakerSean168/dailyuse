@@ -1,0 +1,77 @@
+# generated: 2026-02-07
+# project: dailyuse
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: /_bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog -> in-progress: Automatically when first story is created (via create-story)
+#   - in-progress -> done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-02-07
+project: dailyuse
+project_key: NOKEY
+tracking_system: file-system
+story_location: /_bmad-output/implementation-artifacts
+
+development_status:
+  epic-1: in-progress
+  1-1-scaffold-governance-module-from-goal-template: in-progress
+  1-2-create-rule-with-validation-and-rbac: backlog
+  1-3-update-rule-content: backlog
+  1-4-enforce-rule-lifecycle-transitions: backlog
+  1-5-require-deprecation-reason-and-replacement-link: backlog
+  1-6-archive-or-deactivate-rules: backlog
+  1-7-draft-proposals-and-publish-control: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-browse-rules-by-tag: backlog
+  2-2-search-rules-by-keyword: backlog
+  2-3-filter-by-status-and-severity: backlog
+  2-4-view-rule-detail-with-markdown-and-examples: backlog
+  2-5-show-anti-pattern-guidance: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-link-to-live-reference-code: backlog
+  3-2-flag-missing-or-changed-references: backlog
+  3-3-record-immutable-rule-revisions: backlog
+  3-4-view-rule-revision-history: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-seed-core-architecture-rules: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-export-active-rules-to-markdown-handbook: backlog
+  5-2-export-active-rules-to-pdf: backlog
+  5-3-export-rules-to-machine-readable-lint-config: backlog
+  5-4-expose-rules-for-ide-integration: backlog
+  epic-5-retrospective: optional
