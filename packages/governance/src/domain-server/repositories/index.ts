@@ -30,5 +30,5 @@
  * 使用 Symbol 作为 DI 容器的注入标识，避免字符串冲突
  */
 
-export type { IExampleRepository } from './IExampleRepository';
-export { EXAMPLE_REPOSITORY_TOKEN } from './IExampleRepository';
+export type { IRuleRepository } from './i-rule-repository';
+export { RULE_REPOSITORY_TOKEN } from './i-rule-repository';

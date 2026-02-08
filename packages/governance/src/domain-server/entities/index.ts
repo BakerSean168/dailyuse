@@ -25,4 +25,4 @@
  * - 转换方法：toServerDTO(), toPersistenceDTO()
  */
 
-export { ExampleTag } from './example-tag';
+export { RuleRevision } from './rule-revision';

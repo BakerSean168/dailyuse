@@ -3,16 +3,11 @@
  */
 
 // ============ Governance Value Objects ============
-export * from './rule-status';
-export * from './rule-severity';
-export * from './language';
-export * from './snippet-type';
-export * from './code-snippet';
+export { RuleStatus} from './rule-status';
+export { RuleSeverity } from './rule-severity';
+export { Language } from './language';
+export { SnippetType} from './snippet-type';
+export type { CodeSnippet, CodeSnippetDTO, CodeSnippetPersistenceDTO } from './code-snippet';
+export type { RuleTag, RuleTagDTO, RuleTagPersistenceDTO } from './rule-tag';
 
-// ============ Legacy Example Value Objects (temporary) ============
-// ============ Statuses ============
-export { ExampleStatus } from './example-status';
-
-// ============ Properties ============
-export type {  ExampleProperty, ExamplePropertyDTO, ExamplePropertyPersistenceDTO } from './example-property';
 

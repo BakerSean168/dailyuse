@@ -1,8 +1,8 @@
 /**
  * RuleRevision Entity - Domain Client
- * 规则修订记录实体 - 领域客户�?
+ * 规则修订记录实体 - 领域客户�?
  *
- * Client 端的修订记录提供�?
+ * Client 端的修订记录提供�?
  * - 审计历史查看
  * - 变更详情展示
  * - UI 辅助方法（时间格式化、变更摘要）
@@ -11,20 +11,22 @@
 import type {
   RuleRevisionClient,
   RuleRevisionClientDTO,
-} from '@dailyuse/contracts/governance';
+  
+} from '@/contracts';
 import { Entity } from '@dailyuse/utils';
-import type { RuleId, UserId } from '@dailyuse/contracts/governance';
-
-// ================= 内部状态接�?=================
+import type { RuleId } from '@/contracts';
+import type { IdentityId } from '@dailyuse/contracts/primitives';
+import { RuleRevisionId } from '@/domain-shared';
+// ================= 内部状态接�?=================
 
 /**
- * RuleRevision 客户端内部状�?
+ * RuleRevision 客户端内部状�?
  */
 interface RuleRevisionState {
-  id: string;
+  id: RuleRevisionId;
   ruleId: RuleId;
   revisionNumber: number;
-  authorId: UserId;
+  authorId: IdentityId;
   changedFields: readonly string[];
   previousValues: Record<string, unknown>;
   newValues: Record<string, unknown>;
@@ -35,21 +37,21 @@ interface RuleRevisionState {
 // ================= 实体实现 =================
 
 /**
- * RuleRevision 实体 - Client �?
+ * RuleRevision 实体 - Client 端
  * 
  * 提供修订记录的客户端视图，支持：
- * - �?API 响应创建实例
+ * - 从 API 响应创建实例
  * - UI 辅助方法（变更摘要、字段对比）
- * - 数据转换（toDTO�?
+ * - 数据转换（toDTO）
  */
-export class RuleRevision extends Entity<string> implements RuleRevisionClient {
+export class RuleRevision extends Entity<RuleRevisionId> implements RuleRevisionClient {
   private readonly _props: RuleRevisionState;
 
-  // ================= 构造函�?(Private) =================
+  // ================= 构造函�?(Private) =================
 
   private constructor(state: RuleRevisionState) {
     super(state.id);
-    // 防御性复制，确保不可变�?
+    // 防御性复制，确保不可变�?
     this._props = {
       ...state,
       changedFields: [...state.changedFields],
@@ -58,45 +60,45 @@ export class RuleRevision extends Entity<string> implements RuleRevisionClient {
     };
   }
 
-  // ================= 公共属�?(Getters) =================
+  // ================= 公共属�?(Getters) =================
 
   /**
-   * 关联的规�?ID
+   * 关联的规�?ID
    */
   get ruleId(): RuleId {
     return this._props.ruleId;
   }
 
   /**
-   * 修订版本号（�?1 开始递增�?
+   * 修订版本号（�?1 开始递增�?
    */
   get revisionNumber(): number {
     return this._props.revisionNumber;
   }
 
   /**
-   * 修改�?ID
+   * 修改�?ID
    */
-  get authorId(): UserId {
+  get authorId(): IdentityId {
     return this._props.authorId;
   }
 
   /**
-   * 变更的字段列�?
+   * 变更的字段列�?
    */
   get changedFields(): readonly string[] {
     return this._props.changedFields;
   }
 
   /**
-   * 修改前的�?
+   * 修改前的�?
    */
   get previousValues(): Record<string, unknown> {
     return { ...this._props.previousValues };
   }
 
   /**
-   * 修改后的�?
+   * 修改后的�?
    */
   get newValues(): Record<string, unknown> {
     return { ...this._props.newValues };
@@ -119,23 +121,23 @@ export class RuleRevision extends Entity<string> implements RuleRevisionClient {
   // ================= UI 辅助方法 =================
 
   /**
-   * 获取变更类型的中文显示名�?
+   * 获取变更类型的中文显示名�?
    * 
    * @example
-   * revision.displayChangeType // '已更�?
+   * revision.displayChangeType // '已更�?
    */
   get displayChangeType(): string {
     const typeMap: Record<typeof this._props.changeType, string> = {
       Created: '新建',
-      Updated: '已更�?,
-      Deprecated: '已废�?,
-      Reactivated: '重新激�?,
+      Updated: '已更新',
+      Deprecated: '已废弃',
+      Reactivated: '重新激活',
     };
     return typeMap[this._props.changeType];
   }
 
   /**
-   * 获取变更类型�?UI 标签颜色
+   * 获取变更类型�?UI 标签颜色
    * 
    * @returns 'success' | 'info' | 'warning' | 'error'
    */
@@ -150,9 +152,9 @@ export class RuleRevision extends Entity<string> implements RuleRevisionClient {
   }
 
   /**
-   * 获取相对时间格式（例如：'5分钟�?�?2小时�?�?
+   * 获取相对时间格式（例如：'5分钟�?�?2小时�?�?
    * 
-   * @returns 相对时间字符�?
+   * @returns 相对时间字符�?
    */
   get relativeCreatedAt(): string {
     const now = new Date();
@@ -179,10 +181,10 @@ export class RuleRevision extends Entity<string> implements RuleRevisionClient {
    */
   get changeSummary(): string {
     if (this._props.changeType === 'Created') {
-      return '创建了规�?;
+      return '创建了规则';
     }
     if (this._props.changeType === 'Deprecated') {
-      return '废弃了规�?;
+      return '废弃了规则';
     }
     if (this._props.changeType === 'Reactivated') {
       return '重新激活了规则';
@@ -194,15 +196,15 @@ export class RuleRevision extends Entity<string> implements RuleRevisionClient {
   }
 
   /**
-   * 获取指定字段的变更详�?
+   * 获取指定字段的变更详�?
    * 
-   * @param field - 字段�?
+   * @param field - 字段�?
    * @returns { before: unknown, after: unknown } | null
    * 
    * @example
    * const change = revision.getFieldChange('title');
    * if (change) {
-   *   console.log(`�?"${change.before}" 改为 "${change.after}"`);
+   *   console.log(`�?"${change.before}" 改为 "${change.after}"`);
    * }
    */
   public getFieldChange(field: string): { before: unknown; after: unknown } | null {
@@ -218,10 +220,10 @@ export class RuleRevision extends Entity<string> implements RuleRevisionClient {
   /**
    * 检查是否修改了指定字段
    * 
-   * @param field - 字段�?
+   * @param field - 字段�?
    * @example
    * if (revision.hasFieldChanged('severity')) {
-   *   console.log('严重程度已变�?);
+   *   console.log('严重程度已变�?);
    * }
    */
   public hasFieldChanged(field: string): boolean {
@@ -231,7 +233,7 @@ export class RuleRevision extends Entity<string> implements RuleRevisionClient {
   // ================= 工厂方法 (Factory Methods) =================
 
   /**
-   * �?Client DTO 创建 RuleRevision 实例
+   * �?Client DTO 创建 RuleRevision 实例
    * 
    * @param dto - API 响应中的 RuleRevisionClientDTO
    * @returns RuleRevision 实例
@@ -256,16 +258,16 @@ export class RuleRevision extends Entity<string> implements RuleRevisionClient {
   // ================= DTO 转换 =================
 
   /**
-   * 转换�?Client DTO
+   * 转换�?Client DTO
    * 
-   * @returns RuleRevisionClientDTO（可用于 API 请求�?
+   * @returns RuleRevisionClientDTO（可用于 API 请求�?
    * 
    * @example
    * const dto = revision.toDTO();
    */
   public toDTO(): RuleRevisionClientDTO {
     return {
-      id: this._props.id,
+      id: this.id,
       ruleId: this._props.ruleId,
       revisionNumber: this._props.revisionNumber,
       authorId: this._props.authorId,

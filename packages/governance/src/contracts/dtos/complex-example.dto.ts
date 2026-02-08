@@ -1,7 +1,7 @@
-import type { ExampleClientDTO } from "../aggregates";
+// import type { ExampleClientDTO } from "../aggregates";
 
-export interface ComplexExampleDTO {
-  description?: string;
-  clientDetails: ExampleClientDTO;
-  otherProperties?: Record<string, any>;
-}
+// export interface ComplexExampleDTO {
+//   description?: string;
+//   clientDetails: ExampleClientDTO;
+//   otherProperties?: Record<string, any>;
+// }

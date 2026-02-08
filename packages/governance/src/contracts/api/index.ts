@@ -44,9 +44,6 @@ export * from './rules';
 // 规则修订记录查询：历史列表、详情查询
 export * from './rule-revisions';
 
-// ===== Legacy Example APIs (待清理) =====
-export * from './examples';
-export * from './get-view';
 
 /**
  * 【扩展指南】

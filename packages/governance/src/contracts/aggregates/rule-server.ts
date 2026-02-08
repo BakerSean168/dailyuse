@@ -3,7 +3,8 @@
  * 规则聚合根 - 服务端契约
  */
 
-import type { TransferDate, PersistenceDate, RuleId, IdentityId } from '@dailyuse/contracts/primitives';
+import type { TransferDate, PersistenceDate, IdentityId } from '@dailyuse/contracts/primitives';
+import type { RuleId, RuleTag, RuleTagDTO } from '@/contracts';
 import type { RuleStatus } from '../value-objects/rule-status';
 import type { RuleSeverity } from '../value-objects/rule-severity';
 import type { CodeSnippet, CodeSnippetDTO, CodeSnippetPersistenceDTO } from '../value-objects/code-snippet';
@@ -24,7 +25,7 @@ export interface RuleServer {
   deprecationReason: string | null;
   replacementRuleId: RuleId | null;
   liveReferenceLocation: string | null;
-  tags: string[];
+  tags: RuleTag[];
   goodExamples: CodeSnippet[];
   badExamples: CodeSnippet[];
   authorId: IdentityId;
@@ -59,7 +60,7 @@ export interface RuleServerDTO {
   deprecationReason: string | null;
   replacementRuleId: RuleId | null;
   liveReferenceLocation: string | null;
-  tags: string[];
+  tags: RuleTagDTO[];
   goodExamples: CodeSnippetDTO[];
   badExamples: CodeSnippetDTO[];
   authorId: IdentityId;

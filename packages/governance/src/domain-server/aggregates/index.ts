@@ -18,4 +18,4 @@
  * - 时间类型转换（DomainDate ↔ TransferDate ↔ PersistenceDate）
  */
 
-export { Example } from './example';
+export { Rule } from './rule';

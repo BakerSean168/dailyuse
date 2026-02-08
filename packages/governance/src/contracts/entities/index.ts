@@ -26,6 +26,3 @@ export type {
   RuleRevisionPersistenceDTO,
 } from './rule-revision-server';
 
-// ============ Legacy Example Entity (temporary) ============
-export type { ExampleTagClient, ExampleTagClientDTO } from './example-tag-client';
-export type { ExampleTagServer, ExampleTagServerDTO, ExampleTagPersistenceDTO } from './example-tag-server';

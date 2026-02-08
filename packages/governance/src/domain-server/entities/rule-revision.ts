@@ -37,8 +37,11 @@
  */
 
 import { Entity } from '@dailyuse/utils/domain';
-import type { RuleRevisionServer } from '../../contracts/entities/rule-revision-server';
+import type { RuleRevisionServer, RuleRevisionPersistenceDTO } from '../../contracts/entities/rule-revision-server';
+import type { RuleRevisionClientDTO } from '../../contracts/entities/rule-revision-client';
 import { RuleRevisionId } from '../../domain-shared/value-objects/rule-revision-id';
+import { RuleId } from '../../domain-shared/value-objects/rule-id';
+import type { IdentityId } from '@dailyuse/contracts/primitives';
 
 // ================= Props Object（参数对象） =================
 
@@ -49,16 +52,16 @@ import { RuleRevisionId } from '../../domain-shared/value-objects/rule-revision-
  */
 interface RuleRevisionProps {
   /** 修订记录 ID */
-  id: string;
+  id: RuleRevisionId;
   
   /** 关联的规则 ID */
-  ruleId: string;
+  ruleId: RuleId;
   
   /** 修订版本号（从 1 开始递增） */
   revisionNumber: number;
   
   /** 修改人 ID */
-  authorId: string;
+  authorId: IdentityId;
   
   /** 变更的字段列表 */
   changedFields: string[];
@@ -91,9 +94,9 @@ export class RuleRevision extends Entity<RuleRevisionId> implements RuleRevision
   // ================= 私有 readonly 字段 =================
   // 所有字段不可变，保证审计记录完整性
   
-  private readonly _ruleId: string;
+  private readonly _ruleId: RuleId;
   private readonly _revisionNumber: number;
-  private readonly _authorId: string;
+  private readonly _authorId: IdentityId;
   private readonly _changedFields: string[];
   private readonly _previousValues: Record<string, unknown>;
   private readonly _newValues: Record<string, unknown>;
@@ -136,13 +139,13 @@ export class RuleRevision extends Entity<RuleRevisionId> implements RuleRevision
    *   changeType: 'Updated',
    * });
    */
-  static create(props: Omit<RuleRevisionProps, 'id' | 'createdAt'> & { id?: string }): RuleRevision {
+  static create(props: Omit<RuleRevisionProps, 'id' | 'createdAt'> & { id?: RuleRevisionId }): RuleRevision {
     if (props.changedFields.length === 0) {
       throw new Error('RuleRevision must have at least one changed field');
     }
 
     return new RuleRevision({
-      id: props.id || crypto.randomUUID(),
+      id: props.id || RuleRevisionId.generate(),
       ruleId: props.ruleId,
       revisionNumber: props.revisionNumber,
       authorId: props.authorId,
@@ -166,12 +169,48 @@ export class RuleRevision extends Entity<RuleRevisionId> implements RuleRevision
 
   // ============ Readonly Getters ============
 
-  get ruleId(): string { return this._ruleId; }
+  get ruleId(): RuleId { return this._ruleId; }
   get revisionNumber(): number { return this._revisionNumber; }
-  get authorId(): string { return this._authorId; }
+  get authorId(): IdentityId { return this._authorId; }
   get changedFields(): readonly string[] { return this._changedFields; }
   get previousValues(): Readonly<Record<string, unknown>> { return this._previousValues; }
   get newValues(): Readonly<Record<string, unknown>> { return this._newValues; }
   get changeType(): 'Created' | 'Updated' | 'Deprecated' | 'Reactivated' { return this._changeType; }
   get createdAt(): Date { return this._createdAt; }
+
+  // ================= 序列化方法 =================
+
+  /**
+   * 转换为 Client DTO（用于 API 响应）
+   */
+  toClientDTO(): RuleRevisionClientDTO {
+    return {
+      id: this.id,
+      ruleId: this._ruleId,
+      revisionNumber: this._revisionNumber,
+      authorId: this._authorId,
+      changedFields: [...this._changedFields],
+      previousValues: { ...this._previousValues },
+      newValues: { ...this._newValues },
+      changeType: this._changeType,
+      createdAt: this._createdAt.getTime(),
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO（用于数据库存储）
+   */
+  toPersistenceDTO(): RuleRevisionPersistenceDTO {
+    return {
+      id: this.id,
+      ruleId: this._ruleId,
+      revisionNumber: this._revisionNumber,
+      authorId: this._authorId,
+      changedFields: JSON.stringify(this._changedFields),
+      previousValues: JSON.stringify(this._previousValues),
+      newValues: JSON.stringify(this._newValues),
+      changeType: this._changeType,
+      createdAt: this._createdAt,
+    };
+  }
 }

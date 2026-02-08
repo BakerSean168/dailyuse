@@ -8,7 +8,8 @@
  * - 提供用户友好的变更摘要
  */
 
-import type { DomainDate, TransferDate, RuleRevisionId, RuleId, IdentityId } from '@dailyuse/contracts/primitives';
+import type { DomainDate, TransferDate,  IdentityId } from '@dailyuse/contracts/primitives';
+import type { RuleRevisionId, RuleId } from '@/contracts';
 
 // ============ Domain Shape ============
 

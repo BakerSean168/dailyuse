@@ -8,7 +8,8 @@
  * - 内部实现细节
  */
 
-import type { TransferDate, PersistenceDate, RuleRevisionId, RuleId, IdentityId } from '@dailyuse/contracts/primitives';
+import type { TransferDate, PersistenceDate, IdentityId } from '@dailyuse/contracts/primitives';
+import type { RuleRevisionId, RuleId } from '@/contracts';
 
 // ============ Domain Shape ============
 

@@ -38,6 +38,3 @@ export * from './aggregates';
 // ===== Entities =====
 export * from './entities';
 
-// ===== Value Objects (re-export from domain-shared) =====
-export * from '@dailyuse/domain-shared/governance';
-

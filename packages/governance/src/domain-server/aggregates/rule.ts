@@ -14,7 +14,7 @@
  * ✅ Props Object 模式：CreateRuleProps, UpdateRuleProps
  * ✅ 私有构造函数 + 工厂方法：Rule.create()
  * ✅ 私有backing字段 + readonly getters：_code, _title, etc.
- * ✅ 状态机强制：RuleStatusCompanion.canTransitionTo()
+ * ✅ 状态机强制：RuleStatus.canTransitionTo()
  * ✅ 领域事件发布：rule:created, rule:updated, rule:deprecated, etc.
  * ✅ Result<T> 模式：所有业务方法返回 Result
  * ✅ 防御性校验：参数合法性、业务规则约束
@@ -32,18 +32,21 @@
  * 
  * @see {@link CreateRuleProps} 创建规则的参数对象
  * @see {@link UpdateRuleProps} 更新规则的参数对象
- * @see {@link RuleStatusCompanion} 状态转换规则
+ * @see {@link RuleStatus} 状态转换规则
  */
 
-import { AggregateRoot } from '@dailyuse/utils/domain';
+import { AggregateRoot } from '@dailyuse/utils';
 import { RuleId } from '../../domain-shared/value-objects/rule-id';
 import { RuleTag } from '../../domain-shared/value-objects/rule-tag';
 import { CodeSnippet } from '../../domain-shared/value-objects/code-snippet';
-import { RuleStatusCompanion } from '../../domain-shared/value-objects/rule-status-companion';
-import { RuleStatus } from '../../contracts/value-objects/rule-status';
-import { RuleSeverity } from '../../contracts/value-objects/rule-severity';
-import type { Result, ok, fail } from '@dailyuse/contracts/result';
-import type { RuleServer } from '../../contracts/aggregates/rule-server';
+import { RuleStatus } from '../../domain-shared/value-objects/rule-status';
+import { RuleSeverity } from '../../domain-shared/value-objects/rule-severity';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
+import type { RuleServer, RulePersistenceDTO } from '../../contracts/aggregates/rule-server';
+import type { RuleClientDTO } from '../../contracts/aggregates/rule-client';
+import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { GovernanceEventMap } from '../../contracts/protocol/governance-event-map';
 
 // ================= Props Objects（参数对象模式） =================
 
@@ -122,7 +125,7 @@ interface RuleProps {
   liveReferenceLocation?: string;
   tags: RuleTag[];
   codeSnippets: CodeSnippet[];
-  authorId: string;
+  authorId: IdentityId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -174,7 +177,7 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
   private _codeSnippets: CodeSnippet[];
   
   /** 创建人 ID（不可变） */
-  private readonly _authorId: string;
+  private readonly _authorId: IdentityId;
   
   /** 创建时间（不可变） */
   private readonly _createdAt: Date;
@@ -217,59 +220,69 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
   static create(props: CreateRuleProps): Result<Rule> {
     // Validate code pattern
     if (!/^[A-Z]+-[0-9]+$/.test(props.code)) {
-      return fail('Code must match pattern: PREFIX-NUMBER (e.g., DDD-001)');
+      return error('VALIDATION_ERROR', 'Code must match pattern: PREFIX-NUMBER (e.g., DDD-001)');
     }
 
     // Validate title length
     if (props.title.length < 3 || props.title.length > 100) {
-      return fail('Title must be 3-100 characters');
+      return error('VALIDATION_ERROR', 'Title must be 3-100 characters');
     }
 
     // Validate description length
     if (props.description.length < 10 || props.description.length > 5000) {
-      return fail('Description must be 10-5000 characters');
+      return error('VALIDATION_ERROR', 'Description must be 10-5000 characters');
     }
 
     // Validate min 1 tag
     if (props.tags.length === 0) {
-      return fail('At least one tag is required');
+      return error('VALIDATION_ERROR', 'At least one tag is required');
     }
 
     // Normalize tags
     const tagResults = props.tags.map(RuleTag.create);
-    const failedTag = tagResults.find(r => !r.isSuccess);
+    const failedTag = tagResults.find(r => !r.ok);
     if (failedTag) {
-      return fail(failedTag.error!);
+      return failedTag as any;
     }
-    const tags = tagResults.map(r => r.getValue()!);
+    const tags = tagResults.filter(r => r.ok).map(r => (r as any).data);
 
     // Validate and create Good examples (min 1)
     if (props.goodExamples.length === 0) {
-      return fail('At least one Good Example is required');
+      return error('VALIDATION_ERROR', 'At least one Good Example is required');
     }
     const goodSnippetResults = props.goodExamples.map(ex => 
-      CodeSnippet.create({ ...ex, type: 'GoodExample' as any, language: ex.language as any })
+      CodeSnippet.create({ 
+        ...ex, 
+        type: 'GoodExample' as any, 
+        language: ex.language as any,
+        caption: ex.caption ?? null
+      })
     );
-    const failedGood = goodSnippetResults.find(r => !r.isSuccess);
+    const failedGood = goodSnippetResults.find(r => !r.ok);
     if (failedGood) {
-      return fail(`Good Example: ${failedGood.error}`);
+      return failedGood as any;
     }
 
     // Validate and create Bad examples (min 1)
     if (props.badExamples.length === 0) {
-      return fail('At least one Bad Example is required');
+      return error('VALIDATION_ERROR', 'At least one Bad Example is required');
     }
     const badSnippetResults = props.badExamples.map(ex => 
-      CodeSnippet.create({ ...ex, type: 'BadExample' as any, language: ex.language as any })
+      CodeSnippet.create({ 
+        ...ex, 
+        type: 'BadExample' as any, 
+        language: ex.language as any,
+        caption: ex.caption ?? null
+      })
     );
-    const failedBad = badSnippetResults.find(r => !r.isSuccess);
+    const failedBad = badSnippetResults.find(r => !r.ok);
     if (failedBad) {
-      return fail(`Bad Example: ${failedBad.error}`);
+      return failedBad as any;
     }
 
     const codeSnippets = [
-      ...goodSnippetResults.map(r => r.getValue()!),
-      ...badSnippetResults.map(r => r.getValue()!),
+      ...goodSnippetResults.filter(r => r.ok).map(r => (r as any).data),
+      ...badSnippetResults.filter(r => r.ok).map(r => (r as any).data),
     ];
 
     const rule = new Rule({
@@ -282,22 +295,18 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
       liveReferenceLocation: props.liveReferenceLocation,
       tags,
       codeSnippets,
-      authorId: props.authorId,
+      authorId: props.authorId as IdentityId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
 
     // Emit domain event
-    rule.addDomainEvent({
-      eventName: 'rule:created',
-      aggregateId: rule.id,
-      occurredAt: new Date(),
-      payload: {
-        ruleId: rule.id,
-        code: rule._code,
-        title: rule._title,
-        authorId: rule._authorId,
-      },
+    rule.addDomainEvent<GovernanceEventMap['governance:rule-created']>('governance:rule-created', {
+      code: rule._code,
+      title: rule._title,
+      severity: rule._severity,
+      tags: rule._tags.map(tag => tag.value),
+      authorId: rule._authorId,
     });
 
     return ok(rule);
@@ -316,23 +325,25 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
    * Publishes rule (Draft → Active)
    */
   activate(): Result<void> {
-    if (!RuleStatusCompanion.canTransitionTo(this._status, RuleStatus.Active, this._severity)) {
-      return fail('Cannot activate rule from current status');
+    const transitionResult = RuleStatus.canTransitionTo(
+      this._status,
+      RuleStatus.Active,
+      { severity: this._severity }
+    );
+
+    if (!transitionResult.ok) {
+      return transitionResult as any;
     }
 
     const oldStatus = this._status;
     this._status = RuleStatus.Active;
     this._updatedAt = new Date();
 
-    this.addDomainEvent({
-      eventName: 'rule:status-changed',
-      aggregateId: this.id,
-      occurredAt: new Date(),
-      payload: {
-        ruleId: this.id,
-        oldStatus,
-        newStatus: RuleStatus.Active,
-      },
+    this.addDomainEvent<GovernanceEventMap['governance:rule-status-changed']>('governance:rule-status-changed', {
+      ruleId: this.id,
+      code: this._code,
+      previousStatus: oldStatus,
+      newStatus: RuleStatus.Active,
     });
 
     return ok(undefined);
@@ -340,27 +351,24 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
 
   /**
    * Deprecates rule (Active → Deprecated)
-   * 
-   * Validates:
-   * - Status is Active
-   * - Severity is RECOMMENDED (MANDATORY must downgrade first)
-   * - Reason is provided
    */
   deprecate(reason: string, replacementRuleId?: RuleId): Result<void> {
-    if (this._severity === RuleSeverity.Mandatory) {
-      return fail('MANDATORY rules must be downgraded to RECOMMENDED before deprecation');
-    }
+    const transitionResult = RuleStatus.canTransitionTo(
+      this._status,
+      RuleStatus.Deprecated,
+      { severity: this._severity }
+    );
 
-    if (!RuleStatusCompanion.canTransitionTo(this._status, RuleStatus.Deprecated, this._severity)) {
-      return fail('Invalid status transition to Deprecated');
+    if (!transitionResult.ok) {
+      return transitionResult as any;
     }
 
     if (!reason || reason.trim().length === 0) {
-      return fail('Deprecation reason is required');
+      return error('VALIDATION_ERROR', 'Deprecation reason is required');
     }
 
     if (reason.length < 10 || reason.length > 500) {
-      return fail('Deprecation reason must be 10-500 characters');
+      return error('VALIDATION_ERROR', 'Deprecation reason must be 10-500 characters');
     }
 
     this._status = RuleStatus.Deprecated;
@@ -368,15 +376,11 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
     this._replacementRuleId = replacementRuleId;
     this._updatedAt = new Date();
 
-    this.addDomainEvent({
-      eventName: 'rule:deprecated',
-      aggregateId: this.id,
-      occurredAt: new Date(),
-      payload: {
-        ruleId: this.id,
-        reason,
-        replacementRuleId,
-      },
+    this.addDomainEvent<GovernanceEventMap['governance:rule-deprecated']>('governance:rule-deprecated', {
+      ruleId: this.id,
+      code: this._code,
+      reason,
+      replacementRuleId,
     });
 
     return ok(undefined);
@@ -386,8 +390,14 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
    * Reactivates deprecated rule (Deprecated → Active)
    */
   reactivate(): Result<void> {
-    if (!RuleStatusCompanion.canTransitionTo(this._status, RuleStatus.Active, this._severity)) {
-      return fail('Cannot reactivate rule from current status');
+    const transitionResult = RuleStatus.canTransitionTo(
+      this._status,
+      RuleStatus.Active,
+      { severity: this._severity }
+    );
+
+    if (!transitionResult.ok) {
+      return transitionResult as any;
     }
 
     this._status = RuleStatus.Active;
@@ -395,13 +405,10 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
     this._replacementRuleId = undefined;
     this._updatedAt = new Date();
 
-    this.addDomainEvent({
-      eventName: 'rule:reactivated',
-      aggregateId: this.id,
-      occurredAt: new Date(),
-      payload: {
-        ruleId: this.id,
-      },
+    this.addDomainEvent<GovernanceEventMap['governance:rule-reactivated']>('governance:rule-reactivated', {
+      ruleId: this.id,
+      code: this._code,
+      title: this._title,
     });
 
     return ok(undefined);
@@ -419,7 +426,7 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
 
     if (props.title) {
       if (props.title.length < 3 || props.title.length > 100) {
-        return fail('Title must be 3-100 characters');
+        return error('VALIDATION_ERROR', 'Title must be 3-100 characters');
       }
       this._title = props.title;
       changedFields.push('title');
@@ -427,7 +434,7 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
 
     if (props.description) {
       if (props.description.length < 10 || props.description.length > 5000) {
-        return fail('Description must be 10-5000 characters');
+        return error('VALIDATION_ERROR', 'Description must be 10-5000 characters');
       }
       this._description = props.description;
       changedFields.push('description');
@@ -435,14 +442,14 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
 
     if (props.tags) {
       if (props.tags.length === 0) {
-        return fail('At least one tag is required');
+        return error('VALIDATION_ERROR', 'At least one tag is required');
       }
       const tagResults =props.tags.map(RuleTag.create);
-      const failedTag = tagResults.find(r => !r.isSuccess);
+      const failedTag = tagResults.find(r => !r.ok);
       if (failedTag) {
-        return fail(failedTag.error!);
+        return failedTag as any;
       }
-      this._tags = tagResults.map(r => r.getValue()!);
+      this._tags = tagResults.filter(r => r.ok).map(r => (r as any).data);
       changedFields.push('tags');
     }
 
@@ -454,15 +461,20 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
     if (changedFields.length > 0) {
       this._updatedAt = new Date();
 
-      this.addDomainEvent({
-        eventName: 'rule:updated',
-        aggregateId: this.id,
-        occurredAt: new Date(),
-        payload: {
-          ruleId: this.id,
-          changedFields,
-        },
-      });
+      const eventPayload: GovernanceEventMap['governance:rule-updated'] = {
+        ruleId: this.id,
+        changedFields,
+      };
+      
+      if (props.title) {
+        eventPayload.title = this._title;
+      }
+      
+      if (props.tags) {
+        eventPayload.tags = this._tags.map(tag => tag.value);
+      }
+
+      this.addDomainEvent<GovernanceEventMap['governance:rule-updated']>('governance:rule-updated', eventPayload);
     }
 
     return ok(undefined);
@@ -489,11 +501,11 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
    */
   addTag(rawTag: string): Result<void> {
     const tagResult = RuleTag.create(rawTag);
-    if (!tagResult.isSuccess) {
-      return fail(tagResult.error!);
+    if (!tagResult.ok) {
+      return tagResult as any;
     }
 
-    const tag = tagResult.getValue()!;
+    const tag = (tagResult as any).data;
     
     // Check for duplicates
     const exists = this._tags.some(t => t.equals(tag));
@@ -512,15 +524,15 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
    */
   removeTag(rawTag: string): Result<void> {
     const tagResult = RuleTag.create(rawTag);
-    if (!tagResult.isSuccess) {
-      return fail(tagResult.error!);
+    if (!tagResult.ok) {
+      return tagResult as any;
     }
 
     if (this._tags.length <= 1) {
-      return fail('Cannot remove last tag - at least one tag is required');
+      return error('BUSINESS_ERROR', 'Cannot remove last tag - at least one tag is required');
     }
 
-    const tag = tagResult.getValue()!;
+    const tag = (tagResult as any).data;
     this._tags = this._tags.filter(t => !t.equals(tag));
     this._updatedAt = new Date();
 
@@ -542,7 +554,7 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
   removeCodeSnippet(snippetId: string): Result<void> {
     const snippet = this._codeSnippets.find(s => s.id === snippetId);
     if (!snippet) {
-      return fail('Code snippet not found');
+      return error('NOT_FOUND', 'Code snippet not found');
     }
 
     // Count Good and Bad examples after removal
@@ -551,11 +563,11 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
     const badCount = remaining.filter(s => s.type === 'BadExample').length;
 
     if (goodCount === 0) {
-      return fail('Cannot remove last Good Example - at least one is required');
+      return error('BUSINESS_ERROR', 'Cannot remove last Good Example - at least one is required');
     }
 
     if (badCount === 0) {
-      return fail('Cannot remove last Bad Example - at least one is required');
+      return error('BUSINESS_ERROR', 'Cannot remove last Bad Example - at least one is required');
     }
 
     this._codeSnippets = remaining;
@@ -571,12 +583,67 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
   get description(): string { return this._description; }
   get severity(): RuleSeverity { return this._severity; }
   get status(): RuleStatus { return this._status; }
-  get deprecationReason(): string | undefined { return this._deprecationReason; }
-  get replacementRuleId(): RuleId | undefined { return this._replacementRuleId; }
-  get liveReferenceLocation(): string | undefined { return this._liveReferenceLocation; }
-  get tags(): ReadonlyArray<RuleTag> { return this._tags; }
+  get deprecationReason(): string | null { return this._deprecationReason ?? null; }
+  get replacementRuleId(): RuleId | null { return this._replacementRuleId ?? null; }
+  get liveReferenceLocation(): string | null { return this._liveReferenceLocation ?? null; }
+  get tags(): RuleTag[] { return this._tags; }
   get codeSnippets(): ReadonlyArray<CodeSnippet> { return this._codeSnippets; }
-  get authorId(): string { return this._authorId; }
+  get goodExamples(): CodeSnippet[] { 
+    return this._codeSnippets.filter(snippet => snippet.isGoodExample); 
+  }
+  get badExamples(): CodeSnippet[] { 
+    return this._codeSnippets.filter(snippet => snippet.isBadExample); 
+  }
+  get authorId(): IdentityId { return this._authorId; }
   get createdAt(): Date { return this._createdAt; }
   get updatedAt(): Date { return this._updatedAt; }
+
+  // ================= 序列化方法 =================
+
+  /**
+   * 转换为 Client DTO（用于 API 响应）
+   */
+  toClientDTO(): RuleClientDTO {
+    return {
+      id: this.id,
+      code: this._code,
+      title: this._title,
+      description: this._description,
+      severity: this._severity,
+      status: this._status,
+      deprecationReason: this._deprecationReason ?? null,
+      replacementRuleId: this._replacementRuleId ?? null,
+      liveReferenceLocation: this._liveReferenceLocation ?? null,
+      tags: this._tags.map(tag => tag.toDTO()),
+      goodExamples: this.goodExamples.map(snippet => snippet.toDTO()),
+      badExamples: this.badExamples.map(snippet => snippet.toDTO()),
+      authorId: this._authorId,
+      createdAt: this._createdAt.getTime(),
+      updatedAt: this._updatedAt.getTime(),
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO（用于数据库存储）
+   */
+  toPersistenceDTO(): RulePersistenceDTO {
+    return {
+      id: this.id,
+      code: this._code,
+      title: this._title,
+      description: this._description,
+      severity: this._severity,
+      status: this._status,
+      deprecationReason: this._deprecationReason ?? null,
+      replacementRuleId: this._replacementRuleId ?? null,
+      liveReferenceLocation: this._liveReferenceLocation ?? null,
+      tags: JSON.stringify(this._tags.map(tag => tag.value)),
+      goodExamples: JSON.stringify(this.goodExamples.map(snippet => snippet.toPersistenceDTO())),
+      badExamples: JSON.stringify(this.badExamples.map(snippet => snippet.toPersistenceDTO())),
+      authorId: this._authorId,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
+    };
+ 
+  }
 }

@@ -11,15 +11,5 @@ export { RuleId } from './rule-id';
 export { RuleRevisionId } from './rule-revision-id';
 export { RuleTag } from './rule-tag';
 export { CodeSnippet } from './code-snippet';
-export { RuleStatusCompanion } from './rule-status-companion';
-export { RuleSeverityCompanion } from './rule-severity-companion';
-
-// ============ Legacy Example Value Objects ============
-// ============ 品牌化 ID ============
-export { ExampleId } from './example-id';
-
-// ============ 枚举类型 ============
-export { ExampleStatus } from './example-status';
-
-// ============ Class 类型值对象 ============
-export { ExampleProperty } from './example-property';
+export { RuleStatus } from './rule-status';
+export { RuleSeverity } from './rule-severity';

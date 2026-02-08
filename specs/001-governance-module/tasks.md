@@ -23,9 +23,9 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 **Purpose**: Basic project structure and tooling configuration
 
-- [ ] T001 Verify Nx workspace configuration recognizes governance package in nx.json
-- [ ] T002 [P] Configure TypeScript strict mode in packages/governance/tsconfig.json
-- [ ] T003 [P] Setup Vitest configuration in packages/governance/vitest.config.ts
+- [x] T001 Verify Nx workspace configuration recognizes governance package in nx.json
+- [x] T002 [P] Configure TypeScript strict mode in packages/governance/tsconfig.json
+- [x] T003 [P] Setup Vitest configuration in packages/governance/vitest.config.ts
 
 ---
 
@@ -35,14 +35,14 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Setup Prisma client generation script in packages/governance/package.json
-- [ ] T005 Create base Result<T> type (if not exists) in packages/utils/src/result.ts
-- [ ] T006 [P] Create base ValueObject<T> class in packages/utils/src/value-object.ts
-- [ ] T007 [P] Create base Entity<T> class in packages/utils/src/entity.ts
-- [ ] T008 [P] Create createIdType utility in packages/utils/src/id-type.ts
-- [ ] T009 Setup EventBus interface in packages/infrastructure-server/src/event-bus.interface.ts
-- [ ] T010 Configure authentication middleware in apps/api/src/middleware/auth.ts
-- [ ] T011 Configure RBAC middleware in apps/api/src/middleware/rbac.ts
+- [x] T004 Setup Prisma client generation script in packages/governance/package.json
+- [x] T005 Create base Result<T> type (if not exists) in packages/utils/src/result.ts
+- [x] T006 [P] Create base ValueObject<T> class in packages/utils/src/value-object.ts
+- [x] T007 [P] Create base Entity<T> class in packages/utils/src/entity.ts
+- [x] T008 [P] Create createIdType utility in packages/utils/src/id-type.ts
+- [x] T009 Setup EventBus interface in packages/infrastructure-server/src/event-bus.interface.ts
+- [x] T010 Configure authentication middleware in apps/api/src/middleware/auth.ts
+- [x] T011 Configure RBAC middleware in apps/api/src/middleware/rbac.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -56,18 +56,18 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 ### Implementation for User Story 5
 
-- [ ] T012 [US5] Delete old standalone governance package (if exists) in packages/governance/
-- [ ] T013 [US5] Rename packages/example-sample directory to packages/governance using git mv
-- [ ] T014 [US5] Update package name in packages/governance/package.json from @dailyuse/example-sample to @dailyuse/governance
-- [ ] T015 [US5] Update Nx project name in packages/governance/project.json
-- [ ] T016 [US5] Update path mappings in tsconfig.base.json from @dailyuse/example-sample to @dailyuse/governance
-- [ ] T017 [US5] Update barrel export namespace in packages/governance/src/index.ts from ExampleSample to Governance
-- [ ] T018 [US5] Find and replace all import statements referencing example-sample in apps/api/src/
-- [ ] T019 [US5] Find and replace all import statements referencing example-sample in apps/web/src/
-- [ ] T020 [US5] Find and replace all import statements referencing example-sample in apps/desktop/src/
-- [ ] T021 [US5] Build governance package to verify no errors: `pnpm nx build governance`
-- [ ] T022 [US5] Run Nx graph visualization to verify governance node appears: `pnpm nx graph`
-- [ ] T023 [US5] Commit package restructuring with message "refactor: rename example-sample to governance package"
+- [x] T012 [US5] Delete old standalone governance package (if exists) in packages/governance/
+- [x] T013 [US5] Rename packages/example-sample directory to packages/governance using git mv
+- [x] T014 [US5] Update package name in packages/governance/package.json from @dailyuse/example-sample to @dailyuse/governance
+- [x] T015 [US5] Update Nx project name in packages/governance/project.json
+- [x] T016 [US5] Update path mappings in tsconfig.base.json from @dailyuse/example-sample to @dailyuse/governance
+- [x] T017 [US5] Update barrel export namespace in packages/governance/src/index.ts from ExampleSample to Governance
+- [x] T018 [US5] Find and replace all import statements referencing example-sample in apps/api/src/
+- [x] T019 [US5] Find and replace all import statements referencing example-sample in apps/web/src/
+- [x] T020 [US5] Find and replace all import statements referencing example-sample in apps/desktop/src/
+- [x] T021 [US5] Build governance package to verify no errors: `pnpm nx build governance`
+- [x] T022 [US5] Run Nx graph visualization to verify governance node appears: `pnpm nx graph`
+- [x] T023 [US5] Commit package restructuring with message "refactor: rename example-sample to governance package"
 
 **Checkpoint**: Package renamed, all references updated, build passes. Ready for domain implementation.
 
@@ -94,42 +94,42 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 **Contracts Layer** (packages/governance/src/contracts/)
 
-- [ ] T030 [P] [US2] Create RuleStatus const object enum in packages/governance/src/contracts/value-objects/rule-status.ts
-- [ ] T031 [P] [US2] Create RuleSeverity const object enum in packages/governance/src/contracts/value-objects/rule-severity.ts
-- [ ] T032 [P] [US2] Create Language enum in packages/governance/src/contracts/value-objects/language.ts
-- [ ] T033 [P] [US2] Create SnippetType enum in packages/governance/src/contracts/value-objects/snippet-type.ts
-- [ ] T034 [P] [US2] Create RuleClientDTO interface in packages/governance/src/contracts/aggregates/rule-client.ts
-- [ ] T035 [P] [US2] Create RuleServerDTO interface in packages/governance/src/contracts/aggregates/rule-server.ts
-- [ ] T036 [P] [US2] Create RuleRevisionDTO interface in packages/governance/src/contracts/entities/rule-revision.ts
+- [x] T030 [P] [US2] Create RuleStatus const object enum in packages/governance/src/contracts/value-objects/rule-status.ts
+- [x] T031 [P] [US2] Create RuleSeverity const object enum in packages/governance/src/contracts/value-objects/rule-severity.ts
+- [x] T032 [P] [US2] Create Language enum in packages/governance/src/contracts/value-objects/language.ts
+- [x] T033 [P] [US2] Create SnippetType enum in packages/governance/src/contracts/value-objects/snippet-type.ts
+- [x] T034 [P] [US2] Create RuleClientDTO interface in packages/governance/src/contracts/aggregates/rule-client.ts
+- [x] T035 [P] [US2] Create RuleServerDTO interface in packages/governance/src/contracts/aggregates/rule-server.ts
+- [x] T036 [P] [US2] Create RuleRevisionDTO interface in packages/governance/src/contracts/entities/rule-revision.ts
 
 **Domain-Shared (Value Objects)** (packages/governance/src/domain-shared/value-objects/)
 
-- [ ] T037 [P] [US2] Implement RuleId branded type using createIdType in packages/governance/src/domain-shared/value-objects/rule-id.ts
-- [ ] T038 [P] [US2] Implement RuleTag with normalization (lowercase-kebab-case) in packages/governance/src/domain-shared/value-objects/rule-tag.ts
-- [ ] T039 [P] [US2] Implement RuleStatus companion with canTransitionTo() method in packages/governance/src/domain-shared/value-objects/rule-status-companion.ts
-- [ ] T040 [P] [US2] Implement RuleSeverity companion with factory methods in packages/governance/src/domain-shared/value-objects/rule-severity-companion.ts
-- [ ] T041 [P] [US2] Implement CodeSnippet value object with validation (max 10KB) in packages/governance/src/domain-shared/value-objects/code-snippet.ts
+- [x] T037 [P] [US2] Implement RuleId branded type using createIdType in packages/governance/src/domain-shared/value-objects/rule-id.ts
+- [x] T038 [P] [US2] Implement RuleTag with normalization (lowercase-kebab-case) in packages/governance/src/domain-shared/value-objects/rule-tag.ts
+- [x] T039 [P] [US2] Implement RuleStatus companion with canTransitionTo() method in packages/governance/src/domain-shared/value-objects/rule-status-companion.ts
+- [x] T040 [P] [US2] Implement RuleSeverity companion with factory methods in packages/governance/src/domain-shared/value-objects/rule-severity-companion.ts
+- [x] T041 [P] [US2] Implement CodeSnippet value object with validation (max 10KB) in packages/governance/src/domain-shared/value-objects/code-snippet.ts
 
 **Domain-Server (Aggregates & Entities)** (packages/governance/src/domain-server/)
 
-- [ ] T042 [US2] Implement Rule aggregate with private constructor and Props Object pattern in packages/governance/src/domain-server/aggregates/rule.ts
-- [ ] T043 [US2] Add Rule.create() factory method with validation in packages/governance/src/domain-server/aggregates/rule.ts
-- [ ] T044 [US2] Add Rule.activate() method for Draft→Active transition in packages/governance/src/domain-server/aggregates/rule.ts
-- [ ] T045 [US2] Add Rule.deprecate() method with severity validation in packages/governance/src/domain-server/aggregates/rule.ts
-- [ ] T046 [US2] Add Rule.reactivate() method for Deprecated→Active transition in packages/governance/src/domain-server/aggregates/rule.ts
-- [ ] T047 [US2] Add Rule.update() method with domain event emission in packages/governance/src/domain-server/aggregates/rule.ts
-- [ ] T048 [US2] Add Rule.changeSeverity() method with lifecycle validation in packages/governance/src/domain-server/aggregates/rule.ts
-- [ ] T049 [US2] Add Rule.addTag() and Rule.removeTag() methods in packages/governance/src/domain-server/aggregates/rule.ts
-- [ ] T050 [US2] Add Rule.addCodeSnippet() and Rule.removeCodeSnippet() methods in packages/governance/src/domain-server/aggregates/rule.ts
-- [ ] T051 [US2] Implement RuleRevision entity as immutable (no update/delete methods) in packages/governance/src/domain-server/entities/rule-revision.ts
-- [ ] T052 [US2] Add RuleRevision.create() factory with sequential revision numbering in packages/governance/src/domain-server/entities/rule-revision.ts
+- [x] T042 [US2] Implement Rule aggregate with private constructor and Props Object pattern in packages/governance/src/domain-server/aggregates/rule.ts
+- [x] T043 [US2] Add Rule.create() factory method with validation in packages/governance/src/domain-server/aggregates/rule.ts
+- [x] T044 [US2] Add Rule.activate() method for Draft→Active transition in packages/governance/src/domain-server/aggregates/rule.ts
+- [x] T045 [US2] Add Rule.deprecate() method with severity validation in packages/governance/src/domain-server/aggregates/rule.ts
+- [x] T046 [US2] Add Rule.reactivate() method for Deprecated→Active transition in packages/governance/src/domain-server/aggregates/rule.ts
+- [x] T047 [US2] Add Rule.update() method with domain event emission in packages/governance/src/domain-server/aggregates/rule.ts
+- [x] T048 [US2] Add Rule.changeSeverity() method with lifecycle validation in packages/governance/src/domain-server/aggregates/rule.ts
+- [x] T049 [US2] Add Rule.addTag() and Rule.removeTag() methods in packages/governance/src/domain-server/aggregates/rule.ts
+- [x] T050 [US2] Add Rule.addCodeSnippet() and Rule.removeCodeSnippet() methods in packages/governance/src/domain-server/aggregates/rule.ts
+- [x] T051 [US2] Implement RuleRevision entity as immutable (no update/delete methods) in packages/governance/src/domain-server/entities/rule-revision.ts
+- [x] T052 [US2] Add RuleRevision.create() factory with sequential revision numbering in packages/governance/src/domain-server/entities/rule-revision.ts
 
 **Domain-Server (Repository Interface)**
 
-- [ ] T053 [US2] Create IRuleRepository interface with CRUD methods in packages/governance/src/domain-server/repositories/i-rule-repository.ts
-- [ ] T054 [US2] Define RULE_REPOSITORY_TOKEN DI symbol in packages/governance/src/domain-server/repositories/i-rule-repository.ts
+- [x] T053 [US2] Create IRuleRepository interface with CRUD methods in packages/governance/src/domain-server/repositories/i-rule-repository.ts
+- [x] T054 [US2] Define RULE_REPOSITORY_TOKEN DI symbol in packages/governance/src/domain-server/repositories/i-rule-repository.ts
 
-**Checkpoint**: Domain layer complete with all business rules enforced. Ready for application services.
+**Checkpoint**: ✅ Domain layer complete with all business rules enforced. Ready for application services.
 
 ---
 

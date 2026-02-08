@@ -10,13 +10,41 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./winston": {
-      "types": "./dist/winston.d.ts",
-      "import": "./dist/winston.js"
+    "./domain": {
+      "types": "./dist/domain/index.d.ts",
+      "import": "./dist/domain/index.js"
+    },
+    "./errors": {
+      "types": "./dist/errors/index.d.ts",
+      "import": "./dist/errors/index.js"
+    },
+    "./frontend": {
+      "types": "./dist/frontend/index.d.ts",
+      "import": "./dist/frontend/index.js"
+    },
+    "./logger": {
+      "types": "./dist/logger/index.d.ts",
+      "import": "./dist/logger/index.js"
+    },
+    "./result": {
+      "types": "./dist/result/index.d.ts",
+      "import": "./dist/result/index.js"
+    },
+    "./response": {
+      "types": "./dist/response/index.d.ts",
+      "import": "./dist/response/index.js"
+    },
+    "./shared": {
+      "types": "./dist/shared/index.d.ts",
+      "import": "./dist/shared/index.js"
     },
     "./validation": {
       "types": "./dist/validation/index.d.ts",
       "import": "./dist/validation/index.js"
+    },
+    "./winston": {
+      "types": "./dist/winston.d.ts",
+      "import": "./dist/winston.js"
     }
   },
   "dependencies": {

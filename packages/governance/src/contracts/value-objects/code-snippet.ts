@@ -3,7 +3,8 @@
  * 代码片段值对象
  */
 
-import type { DomainDate, TransferDate, PersistenceDate, CodeSnippetId } from '@dailyuse/contracts/primitives';
+import type { DomainDate, TransferDate, PersistenceDate } from '@dailyuse/contracts/primitives';
+import type { CodeSnippetId } from '@/contracts';
 import type { Language } from './language';
 import type { SnippetType } from './snippet-type';
 

@@ -38,4 +38,7 @@
  * - transferOwnership: 复杂的跨实体操作
  */
 
-export { FeatureOne } from './feature-one';
+// export { FeatureOne } from './feature-one';
+
+// 空导出使此文件成为模块
+export {};

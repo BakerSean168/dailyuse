@@ -61,7 +61,7 @@ export const CreateRuleSchema = z.object({
     .max(5000, '描述不能超过5000字符'),
   
   severity: z.enum(['Mandatory', 'Recommended'], {
-    errorMap: () => ({ message: '严重程度必须是 Mandatory 或 Recommended' }),
+    message: '严重程度必须是 Mandatory 或 Recommended',
   }),
   
   tags: z.array(z.string().min(1).max(50))

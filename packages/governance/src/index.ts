@@ -67,10 +67,3 @@
  * 8. 仓储模式 - 依赖倒置
  */
 
-// 使用命名空间导出避免命名冲突
-export * as Governance from './governance-exports';
-
-// 兼容旧的 Todo 示例导出（临时保留）
-export * as Contracts from './contracts';
-export * as DomainShared from './domain-shared';
-export * as DomainServer from './domain-server';
