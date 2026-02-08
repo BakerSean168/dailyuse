@@ -1,9 +1,38 @@
 /**
- * Rule Aggregate Root
+ * Rule Aggregate Root - Domain Server
+ * 规则聚合根 - 领域服务端
  * 
- * Represents an architectural rule with strict lifecycle enforcement.
- * Demonstrates canonical DDD patterns (Props Object, private constructors,
- * factory methods, domain events, state machine).
+ * 【业务职责】
+ * 表示一条架构规则，其完整的生命周期管理和业务规则强制执行：
+ * - 规则的创建、激活、更新、废弃、重新激活
+ * - 严重程度（Mandatory/Recommended）管理
+ * - 标签和代码示例管理
+ * - 状态机约束（Draft → Active → Deprecated）
+ * 
+ * 【DDD 模式示范】
+ * 本聚合根作为 Governance 模块的样例，展示了以下 DDD 最佳实践：
+ * ✅ Props Object 模式：CreateRuleProps, UpdateRuleProps
+ * ✅ 私有构造函数 + 工厂方法：Rule.create()
+ * ✅ 私有backing字段 + readonly getters：_code, _title, etc.
+ * ✅ 状态机强制：RuleStatusCompanion.canTransitionTo()
+ * ✅ 领域事件发布：rule:created, rule:updated, rule:deprecated, etc.
+ * ✅ Result<T> 模式：所有业务方法返回 Result
+ * ✅ 防御性校验：参数合法性、业务规则约束
+ * 
+ * 【状态机规则】
+ * - Draft → Active: 激活规则
+ * - Active → Deprecated: 仅允许 Recommended 规则废弃（Mandatory 必须先降级）
+ * - Deprecated → Active: 重新激活
+ * - Draft → Deprecated: ❌ 禁止（草稿必须先激活）
+ * 
+ * 【不可变性保证】
+ * - 所有修改通过业务方法进行，不暴露 setters
+ * - 数组/对象防御性复制
+ * - 每次修改自动更新 updatedAt 时间戳
+ * 
+ * @see {@link CreateRuleProps} 创建规则的参数对象
+ * @see {@link UpdateRuleProps} 更新规则的参数对象
+ * @see {@link RuleStatusCompanion} 状态转换规则
  */
 
 import { AggregateRoot } from '@dailyuse/utils/domain';
@@ -15,33 +44,70 @@ import { RuleStatus } from '../../contracts/value-objects/rule-status';
 import { RuleSeverity } from '../../contracts/value-objects/rule-severity';
 import type { Result, ok, fail } from '@dailyuse/contracts/result';
 
+// ================= Props Objects（参数对象模式） =================
+
 /**
- * Props Object for Rule creation
+ * 创建规则的参数对象
+ * 
+ * 使用 Props Object 模式的优势：
+ * - 参数清晰，避免位置混淆
+ * - 易于扩展，新增参数不破坏现有调用
+ * - 便于验证，集中校验逻辑
  */
 export interface CreateRuleProps {
-  code: string; // Pattern: PREFIX-NUMBER (e.g., DDD-001)
-  title: string; // 3-100 chars
-  description: string; // 10-5000 chars, Markdown
+  /** 规则编码，格式：PREFIX-NUMBER (例如：DDD-001) */
+  code: string;
+  
+  /** 规则标题，长度：3-100 字符 */
+  title: string;
+  
+  /** 规则描述，长度：10-5000 字符，支持 Markdown 格式 */
+  description: string;
+  
+  /** 严重程度：Mandatory（强制执行）或 Recommended（推荐遵守） */
   severity: RuleSeverity;
-  tags: string[]; // Will be normalized
+  
+  /** 标签列表，将自动规范化为 lowercase-kebab-case */
+  tags: string[];
+  
+  /** Good Example 代码示例列表（至少 1 个） */
   goodExamples: Array<{ language: string; content: string; caption?: string }>;
+  
+  /** Bad Example 代码示例列表（至少 1 个） */
   badExamples: Array<{ language: string; content: string; caption?: string }>;
+  
+  /** 实际应用位置（可选），例如：'packages/domain-server/src/account/aggregates/account.ts' */
   liveReferenceLocation?: string;
+  
+  /** 创建人 ID */
   authorId: string;
 }
 
 /**
- * Props Object for Rule updates
+ * 更新规则的参数对象
+ * 
+ * 所有字段为可选，仅更新指定的字段
  */
 export interface UpdateRuleProps {
+  /** 更新标题 */
   title?: string;
+  
+  /** 更新描述 */
   description?: string;
+  
+  /** 更新标签列表 */
   tags?: string[];
+  
+  /** 更新实际应用位置 */
   liveReferenceLocation?: string;
 }
 
+// ================= 内部状态（私有backing字段） =================
+
 /**
- * Internal Rule properties (private backing fields)
+ * Rule 的内部 Props 结构
+ * 
+ * 仅用于内部状态管理，外部通过业务方法或 readonly getters 访问
  */
 interface RuleProps {
   id: RuleId;
@@ -60,23 +126,64 @@ interface RuleProps {
   updatedAt: Date;
 }
 
+// ================= 聚合根实现 =================
+
+/**
+ * Rule 聚合根类
+ * 
+ * 【设计原则】
+ * - 所有业务逻辑集中在此聚合根中
+ * - 状态变更只能通过业务方法进行
+ * - 每个业务方法返回 Result<T>，表示成功或失败
+ * - 状态变更自动触发领域事件
+ * - 使用值对象（RuleTag, CodeSnippet）封装验证逻辑
+ */
 export class Rule extends AggregateRoot<RuleId> {
-  // Private backing fields with readonly getters
+  // ================= 私有 backing 字段 =================
+  // 遵循 DDD 原则：封装内部状态，仅通过 readonly getters 暴露
+  
+  /** 规则编码（不可变） */
   private _code: string;
+  
+  /** 规则标题 */
   private _title: string;
+  
+  /** 规则描述 */
   private _description: string;
+  
+  /** 严重程度 */
   private _severity: RuleSeverity;
+  
+  /** 规则状态（受状态机约束）*/
   private _status: RuleStatus;
+  
+  /** 废弃原因（仅当状态为 Deprecated 时有值） */
   private _deprecationReason?: string;
+  
+  /** 替代规则 ID（仅当状态为 Deprecated 时有值） */
   private _replacementRuleId?: RuleId;
+  
+  /** 实际应用位置 */
   private _liveReferenceLocation?: string;
+  
+  /** 标签列表（值对象数组） */
   private _tags: RuleTag[];
+  
+  /** 代码示例列表（值对象数组） */
   private _codeSnippets: CodeSnippet[];
+  
+  /** 创建人 ID（不可变） */
   private readonly _authorId: string;
+  
+  /** 创建时间（不可变） */
   private readonly _createdAt: Date;
+  
+  /** 更新时间（每次修改自动更新） */
   private _updatedAt: Date;
 
-  // Private constructor - use factory methods
+  // ================= 构造函数（私有） =================
+  // 外部不能直接 new Rule()，必须通过工厂方法创建
+  
   private constructor(props: RuleProps) {
     super(props.id);
     this._code = props.code;
@@ -94,7 +201,7 @@ export class Rule extends AggregateRoot<RuleId> {
     this._updatedAt = props.updatedAt;
   }
 
-  // ============ Factory Methods ============
+  // ================= 工厂方法（Factory Methods） =================
 
   /**
    * Creates new Rule in Draft status

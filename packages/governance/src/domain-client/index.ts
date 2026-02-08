@@ -1,5 +1,6 @@
 /**
- * Example 模块 - Client 端领域模型
+ * Governance Module - Domain Client
+ * 规则治理模块 - 领域客户端
  * 
  * 【模块职责】
  * 提供 Client 端的领域对象，专注于：
@@ -18,20 +19,25 @@
  * 
  * 【使用示例】
  * ```typescript
- * import { Example, ExampleHistory } from '@dailyuse/domain-client/example';
+ * import { Rule, RuleRevision } from '@dailyuse/governance/domain-client';
  * 
  * // 从 API 响应创建
- * const example = Example.fromClientDTO(response.data);
- * const history = ExampleHistory.fromClientDTO(historyDTO);
+ * const rule = Rule.fromDTO(response.data);
+ * const revision = RuleRevision.fromDTO(historyDTO);
  * 
  * // 使用 UI 辅助方法
- * console.log(example.displayStatus); // '已发布'
- * console.log(history.relativeCreatedAt); // '5分钟前'
+ * console.log(rule.displayStatus); // '生效中'
+ * console.log(revision.relativeCreatedAt); // '5分钟前'
+ * console.log(rule.hasTag('ddd')); // true
  * ```
  */
 
-// 导出聚合根
+// ===== Aggregates =====
 export * from './aggregates';
 
-// 导出实体
+// ===== Entities =====
 export * from './entities';
+
+// ===== Value Objects (re-export from domain-shared) =====
+export * from '@dailyuse/domain-shared/governance';
+
