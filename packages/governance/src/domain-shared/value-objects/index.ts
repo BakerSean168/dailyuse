@@ -6,6 +6,15 @@
  * 注意只需要直接导出。如 export { ExampleStatus } from './example-status'; 不需要重复导出类型：export type { ExampleStatus };
  */
 
+// ============ Governance Value Objects ============
+export { RuleId } from './rule-id';
+export { RuleRevisionId } from './rule-revision-id';
+export { RuleTag } from './rule-tag';
+export { CodeSnippet } from './code-snippet';
+export { RuleStatusCompanion } from './rule-status-companion';
+export { RuleSeverityCompanion } from './rule-severity-companion';
+
+// ============ Legacy Example Value Objects ============
 // ============ 品牌化 ID ============
 export { ExampleId } from './example-id';
 

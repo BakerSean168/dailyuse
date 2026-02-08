@@ -8,10 +8,9 @@
  * - 提供用户友好的变更摘要
  */
 
-import type { DomainDate, TransferDate } from '@dailyuse/contracts/shared';
-import type { RuleId } from '../value-objects';
+import type { DomainDate, TransferDate, RuleRevisionId, RuleId, IdentityId } from '@dailyuse/contracts/primitives';
 
-// ============ 实体接口 ============
+// ============ Domain Shape ============
 
 /**
  * Client 端规则修订记录
@@ -22,71 +21,28 @@ import type { RuleId } from '../value-objects';
  * - 修改前后的值对比
  */
 export interface RuleRevisionClient {
-  /**
-   * 修订记录 ID
-   */
-  id: string;
-
-  /**
-   * 关联的规则 ID
-   */
+  id: RuleRevisionId;
   ruleId: RuleId;
-
-  /**
-   * 修订版本号（从 1 开始递增）
-   * 例如：规则的第 3 次修改，revisionNumber = 3
-   */
   revisionNumber: number;
-
-  /**
-   * 修改人 ID
-   */
-  authorId: string;
-
-  /**
-   * 变更的字段列表
-   * 例如：['title', 'severity', 'tags']
-   */
+  authorId: IdentityId;
   changedFields: readonly string[];
-
-  /**
-   * 修改前的值
-   * 例如：{ title: '旧标题', severity: 'Recommended' }
-   */
   previousValues: Record<string, unknown>;
-
-  /**
-   * 修改后的值
-   * 例如：{ title: '新标题', severity: 'Mandatory' }
-   */
   newValues: Record<string, unknown>;
-
-  /**
-   * 变更类型
-   * - Created: 新建规则
-   * - Updated: 更新内容
-   * - Deprecated: 废弃规则
-   * - Reactivated: 重新激活
-   */
   changeType: 'Created' | 'Updated' | 'Deprecated' | 'Reactivated';
-
-  /**
-   * 创建时间
-   */
   createdAt: DomainDate;
 }
 
-// ============ DTO 定义 ============
+// ============ Transfer DTO (传输层) ============
 
 /**
  * Client DTO (API Response)
  * 这就是返回给前端的数据结构
  */
 export interface RuleRevisionClientDTO {
-  id: string;
+  id: RuleRevisionId;
   ruleId: RuleId;
   revisionNumber: number;
-  authorId: string;
+  authorId: IdentityId;
   changedFields: string[];
   previousValues: Record<string, unknown>;
   newValues: Record<string, unknown>;

@@ -1,35 +1,78 @@
 /**
- * Rule Aggregate - Server DTO
+ * Rule Aggregate Root - Server Contracts
+ * 规则聚合根 - 服务端契约
  */
 
-import type { TransferDate } from '@dailyuse/contracts/shared';
+import type { TransferDate, PersistenceDate, RuleId, IdentityId } from '@dailyuse/contracts/primitives';
 import type { RuleStatus } from '../value-objects/rule-status';
 import type { RuleSeverity } from '../value-objects/rule-severity';
-import type { CodeSnippet, RuleTag } from './rule-client';
+import type { CodeSnippet, CodeSnippetDTO, CodeSnippetPersistenceDTO } from '../value-objects/code-snippet';
+
+// ============ Domain Shape ============
 
 /**
- * Exports same structure as Client DTO for now
- * Future: May add server-only fields (e.g., internal metadata)
+ * Rule aggregate - Server Domain Shape
+ * 服务端领域接口（用于 domain-server 实现）
  */
-export interface RuleServerDTO {
-  id: string;
+export interface RuleServer {
+  id: RuleId;
   code: string;
   title: string;
   description: string;
   severity: RuleSeverity;
   status: RuleStatus;
-  deprecationReason?: string;
-  replacementRuleId?: string;
-  liveReferenceLocation?: string;
-  tags: RuleTag[];
-  codeSnippets: CodeSnippet[];
-  authorId: string;
+  deprecationReason: string | null;
+  replacementRuleId: RuleId | null;
+  liveReferenceLocation: string | null;
+  tags: string[];
+  goodExamples: CodeSnippet[];
+  badExamples: CodeSnippet[];
+  authorId: IdentityId;
+  createdAt: Date;
+  updatedAt: Date;
+
+  // ================= 实体操作方法 =================
+  /**
+   * 转换为 Client DTO
+   */
+  toClientDTO(): import('./rule-client').RuleClientDTO;
+
+  /**
+   * 转换为 Persistence DTO
+   */
+  toPersistenceDTO(): RulePersistenceDTO;
+}
+
+// ============ Transfer DTO (传输层) ============
+
+/**
+ * Rule Server DTO
+ * API 传输对象
+ */
+export interface RuleServerDTO {
+  id: RuleId;
+  code: string;
+  title: string;
+  description: string;
+  severity: RuleSeverity;
+  status: RuleStatus;
+  deprecationReason: string | null;
+  replacementRuleId: RuleId | null;
+  liveReferenceLocation: string | null;
+  tags: string[];
+  goodExamples: CodeSnippetDTO[];
+  badExamples: CodeSnippetDTO[];
+  authorId: IdentityId;
   createdAt: TransferDate;
   updatedAt: TransferDate;
 }
 
+// ============ Persistence DTO (持久化层) ============
+
 /**
- * RulePersistenceDTO - Database representation (for Prisma)
+ * Rule Persistence DTO
+ * 数据库存储用
+ * 注意：使用 camelCase 命名
  */
 export interface RulePersistenceDTO {
   id: string;
@@ -41,9 +84,10 @@ export interface RulePersistenceDTO {
   deprecationReason: string | null;
   replacementRuleId: string | null;
   liveReferenceLocation: string | null;
-  tags: string; // JSON
-  codeSnippets: string; // JSON
+  tags: string; // JSON array
+  goodExamples: string; // JSON array of CodeSnippetPersistenceDTO
+  badExamples: string; // JSON array of CodeSnippetPersistenceDTO
   authorId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: PersistenceDate;
+  updatedAt: PersistenceDate;
 }

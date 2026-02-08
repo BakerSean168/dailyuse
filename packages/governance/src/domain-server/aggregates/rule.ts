@@ -43,6 +43,7 @@ import { RuleStatusCompanion } from '../../domain-shared/value-objects/rule-stat
 import { RuleStatus } from '../../contracts/value-objects/rule-status';
 import { RuleSeverity } from '../../contracts/value-objects/rule-severity';
 import type { Result, ok, fail } from '@dailyuse/contracts/result';
+import type { RuleServer } from '../../contracts/aggregates/rule-server';
 
 // ================= Props Objects（参数对象模式） =================
 
@@ -138,7 +139,7 @@ interface RuleProps {
  * - 状态变更自动触发领域事件
  * - 使用值对象（RuleTag, CodeSnippet）封装验证逻辑
  */
-export class Rule extends AggregateRoot<RuleId> {
+export class Rule extends AggregateRoot<RuleId> implements RuleServer {
   // ================= 私有 backing 字段 =================
   // 遵循 DDD 原则：封装内部状态，仅通过 readonly getters 暴露
   

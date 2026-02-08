@@ -5,7 +5,7 @@
  * Uses createIdType utility per constitution
  */
 
-import { createIdType } from '@dailyuse/utils/domain';
+import { createIdType } from '@dailyuse/utils';
 
 interface IRuleId {
   __brand: 'RuleId';

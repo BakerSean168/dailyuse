@@ -14,12 +14,18 @@
  * - RuleRevision-Server: 后端完整的审计记录
  */
 
-// RuleRevision - Client/Server 分离
-export * from './rule-revision-client';
-export * from './rule-revision-server'; * 在这个模块中：
- * - Example 是 Aggregate Root（定义在 aggregates/ 中）
- * - ExampleTag 是 Entity（定义在 entities/ 中）
- */
+// ============ RuleRevision Entity (Client/Server 分离) ============
+export type {
+  RuleRevisionClient,
+  RuleRevisionClientDTO,
+} from './rule-revision-client';
 
+export type {
+  RuleRevisionServer,
+  RuleRevisionServerDTO,
+  RuleRevisionPersistenceDTO,
+} from './rule-revision-server';
+
+// ============ Legacy Example Entity (temporary) ============
 export type { ExampleTagClient, ExampleTagClientDTO } from './example-tag-client';
 export type { ExampleTagServer, ExampleTagServerDTO, ExampleTagPersistenceDTO } from './example-tag-server';

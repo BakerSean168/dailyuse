@@ -184,3 +184,12 @@ export type AiProviderConfigId = string & { readonly __brand: 'AiProviderConfigI
 
 /** AI 使用配额 ID */
 export type AiUsageQuotaId = string & { readonly __brand: 'AiUsageQuotaId' };
+
+/** 治理规则 ID */
+export type RuleId = string & { readonly __brand: 'RuleId' };
+
+/** 规则修订记录 ID */
+export type RuleRevisionId = string & { readonly __brand: 'RuleRevisionId' };
+
+/** 代码片段 ID */
+export type CodeSnippetId = string & { readonly __brand: 'CodeSnippetId' };

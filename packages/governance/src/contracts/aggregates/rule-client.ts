@@ -1,101 +1,57 @@
 /**
- * Rule Aggregate DTOs
- * 
- * Separated into Client, Server, and Persistence DTOs per architecture
+ * Rule Aggregate Root - Client Contracts
+ * 规则聚合根 - 客户端契约
  */
 
-import type { TransferDate } from '@dailyuse/contracts/shared';
+import type { DomainDate, TransferDate, RuleId, IdentityId } from '@dailyuse/contracts/primitives';
 import type { RuleStatus } from '../value-objects/rule-status';
 import type { RuleSeverity } from '../value-objects/rule-severity';
-import type { Language } from '../value-objects/language';
-import type { SnippetType } from '../value-objects/snippet-type';
+import type { CodeSnippet, CodeSnippetDTO } from '../value-objects/code-snippet';
+
+// ============ Domain Shape ============
 
 /**
- * RuleId - Branded type for Rule identifiers
+ * Rule aggregate - Client Domain Shape
+ * 客户端领域接口（用于 domain-client 实现）
  */
-export interface RuleId {
-  __brand: 'RuleId';
-}
-
-/**
- * UserId - Branded type for User identifiers
- */
-export interface UserId {
-  __brand: 'UserId';
-}
-
-/**
- * CodeSnippet - Code example attached to a Rule
- */
-export interface CodeSnippet {
-  id: string;
-  language: Language;
-  content: string; // Max 10KB
-  type: SnippetType;
-  caption?: string; // Max 200 chars
-}
-
-/**
- * RuleTag - Normalized tag label
- */
-export type RuleTag = string; // Must be lowercase-kebab-case
-
-/**
- * RuleClientDTO - Client-side representation (for web/desktop UI)
- */
-export interface RuleClientDTO {
-  id: string;
-  code: string;
-  title: string;
-  description: string; // Markdown
-  severity: RuleSeverity;
-  status: RuleStatus;
-  deprecationReason?: string;
-  replacementRuleId?: string;
-  liveReferenceLocation?: string;
-  tags: RuleTag[];
-  codeSnippets: CodeSnippet[];
-  authorId: string;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-}
-
-/**
- * RuleServerDTO - Server-side representation (for API responses)
- */
-export interface RuleServerDTO {
-  id: string;
-  code: string;
-  title: string;
-  description: string; // Markdown
-  severity: RuleSeverity;
-  status: RuleStatus;
-  deprecationReason?: string;
-  replacementRuleId?: string;
-  liveReferenceLocation?: string;
-  tags: RuleTag[];
-  codeSnippets: CodeSnippet[];
-  authorId: string;
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-}
-
-/**
- * RulePersistenceDTO - Database representation (for Prisma)
- */
-export interface RulePersistenceDTO {
-  id: string;
+export interface RuleClient {
+  id: RuleId;
   code: string;
   title: string;
   description: string;
-  severity: string; // Enum string
-  status: string; // Enum string
+  severity: RuleSeverity;
+  status: RuleStatus;
   deprecationReason: string | null;
-  replacementRuleId: string | null;
+  replacementRuleId: RuleId | null;
   liveReferenceLocation: string | null;
-  tags: string; // JSON array
-  codeSnippets: string; // JSON array
-  authorId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  tags: string[];
+  goodExamples: CodeSnippet[];
+  badExamples: CodeSnippet[];
+  authorId: IdentityId;
+  createdAt: DomainDate;
+  updatedAt: DomainDate;
+}
+
+// ============ Transfer DTO (传输层) ============
+
+/**
+ * Rule Client DTO
+ * 客户端数据传输对象（API 响应）
+ */
+export interface RuleClientDTO {
+  id: RuleId;
+  code: string;
+  title: string;
+  description: string;
+  severity: RuleSeverity;
+  status: RuleStatus;
+  deprecationReason: string | null;
+  replacementRuleId: RuleId | null;
+  liveReferenceLocation: string | null;
+  tags: string[];
+  goodExamples: CodeSnippetDTO[];
+  badExamples: CodeSnippetDTO[];
+  authorId: IdentityId;
+  createdAt: TransferDate;
+  updatedAt: TransferDate;
 }

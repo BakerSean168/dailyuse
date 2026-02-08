@@ -7,6 +7,7 @@ export * from './rule-status';
 export * from './rule-severity';
 export * from './language';
 export * from './snippet-type';
+export * from './code-snippet';
 
 // ============ Legacy Example Value Objects (temporary) ============
 // ============ Statuses ============

@@ -11,6 +11,19 @@
  */
 
 // ============ Events ============
+/**
+ * Governance Module - Domain Events
+ * 规则治理模块 - 领域事件导出
+ */
+
+// Rule Events
+export type { RuleCreatedEvent } from './rule-created.event';
+export type { RuleUpdatedEvent } from './rule-updated.event';
+export type { RuleDeprecatedEvent } from './rule-deprecated.event';
+export type { RuleReactivatedEvent } from './rule-reactivated.event';
+export type { RuleStatusChangedEvent } from './rule-status-changed.event';
+
+// Legacy Example Events (待清理)
 export type { ExampleCreatedEvent } from './example-created.event';
 export type { ExampleDeletedEvent } from './example-deleted.event';
 export type { ExampleStatusChangedEvent } from './example-status-changed.event';

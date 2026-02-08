@@ -1,9 +1,9 @@
 /**
  * Rule Aggregate Root - Domain Client
- * 规则聚合根 - 领域客户端
+ * 规则聚合�?- 领域客户�?
  *
- * Client 端的规则提供：
- * - 规则浏览和搜索
+ * Client 端的规则提供�?
+ * - 规则浏览和搜�?
  * - UI 展示逻辑（格式化、状态标签）
  * - 乐观更新支持
  */
@@ -19,10 +19,10 @@ import type {
 import { AggregateRoot } from '@dailyuse/utils';
 import type { RuleId, UserId } from '@dailyuse/contracts/governance';
 
-// ================= 内部状态接口 =================
+// ================= 内部状态接�?=================
 
 /**
- * Rule 客户端内部状态
+ * Rule 客户端内部状�?
  */
 interface RuleState {
   id: RuleId;
@@ -42,7 +42,7 @@ interface RuleState {
 }
 
 /**
- * CodeSnippet 客户端内部状态
+ * CodeSnippet 客户端内部状�?
  */
 interface CodeSnippetState {
   id: string;
@@ -52,117 +52,117 @@ interface CodeSnippetState {
   caption: string;
 }
 
-// ================= 聚合根实现 =================
+// ================= 聚合根实�?=================
 
 /**
- * Rule 聚合根 - Client 端
+ * Rule 聚合�?- Client �?
  * 
  * 提供规则的客户端视图，支持：
- * - 从 API 响应创建实例
+ * - �?API 响应创建实例
  * - UI 辅助方法（状态格式化、标签过滤）
- * - 数据转换（toDTO）
+ * - 数据转换（toDTO�?
  */
 export class Rule extends AggregateRoot<RuleId> implements RuleClient {
-  private readonly _state: RuleState;
+  private readonly _props: RuleState;
 
-  // ================= 构造函数 (Private) =================
+  // ================= 构造函�?(Private) =================
 
   private constructor(state: RuleState) {
     super(state.id);
-    this._state = state;
+    this._props = state;
   }
 
-  // ================= 公共属性 (Getters) =================
+  // ================= 公共属�?(Getters) =================
 
   /**
-   * 规则编码（例如：DDD-001）
+   * 规则编码（例如：DDD-001�?
    */
   get code(): string {
-    return this._state.code;
+    return this._props.code;
   }
 
   /**
    * 规则标题
    */
   get title(): string {
-    return this._state.title;
+    return this._props.title;
   }
 
   /**
    * 规则描述
    */
   get description(): string {
-    return this._state.description;
+    return this._props.description;
   }
 
   /**
-   * 严重程度：Mandatory（强制）或 Recommended（推荐）
+   * 严重程度：Mandatory（强制）�?Recommended（推荐）
    */
   get severity(): RuleSeverity {
-    return this._state.severity;
+    return this._props.severity;
   }
 
   /**
    * 规则状态：Draft（草稿）、Active（生效）、Deprecated（废弃）
    */
   get status(): RuleStatus {
-    return this._state.status;
+    return this._props.status;
   }
 
   /**
    * 废弃原因（仅当状态为 Deprecated 时有值）
    */
   get deprecationReason(): string | null {
-    return this._state.deprecationReason;
+    return this._props.deprecationReason;
   }
 
   /**
-   * 替代规则的 ID（仅当状态为 Deprecated 时有值）
+   * 替代规则�?ID（仅当状态为 Deprecated 时有值）
    */
   get replacementRuleId(): RuleId | null {
-    return this._state.replacementRuleId;
+    return this._props.replacementRuleId;
   }
 
   /**
-   * 代码中的实际应用位置（文件路径或 URL）
+   * 代码中的实际应用位置（文件路径或 URL�?
    */
   get liveReferenceLocation(): string | null {
-    return this._state.liveReferenceLocation;
+    return this._props.liveReferenceLocation;
   }
 
   /**
-   * 标签列表（例如：['ddd', 'entity', 'value-object']）
+   * 标签列表（例如：['ddd', 'entity', 'value-object']�?
    */
   get tags(): readonly string[] {
-    return this._state.tags;
+    return this._props.tags;
   }
 
   /**
-   * 代码示例列表（Good Example 和 Bad Example）
+   * 代码示例列表（Good Example �?Bad Example�?
    */
   get codeSnippets(): readonly CodeSnippetState[] {
-    return this._state.codeSnippets;
+    return this._props.codeSnippets;
   }
 
   /**
-   * 创建人 ID
+   * 创建�?ID
    */
   get authorId(): UserId {
-    return this._state.authorId;
+    return this._props.authorId;
   }
 
   /**
    * 创建时间
    */
   get createdAt(): Date {
-    return this._state.createdAt;
+    return this._props.createdAt;
   }
 
   /**
    * 更新时间
    */
   get updatedAt(): Date {
-    return this._state.updatedAt;
+    return this._props.updatedAt;
   }
 
   // ================= UI 辅助方法 =================
@@ -171,19 +171,19 @@ export class Rule extends AggregateRoot<RuleId> implements RuleClient {
    * 获取状态的中文显示名称
    * 
    * @example
-   * rule.displayStatus // '生效中'
+   * rule.displayStatus // '生效�?
    */
   get displayStatus(): string {
     const statusMap: Record<RuleStatus, string> = {
       Draft: '草稿',
-      Active: '生效中',
-      Deprecated: '已废弃',
+      Active: '生效�?,
+      Deprecated: '已废�?,
     };
-    return statusMap[this._state.status];
+    return statusMap[this._props.status];
   }
 
   /**
-   * 获取严重程度的中文显示名称
+   * 获取严重程度的中文显示名�?
    * 
    * @example
    * rule.displaySeverity // '强制执行'
@@ -193,16 +193,16 @@ export class Rule extends AggregateRoot<RuleId> implements RuleClient {
       Mandatory: '强制执行',
       Recommended: '建议遵守',
     };
-    return this._state.severity;
+    return this._props.severity;
   }
 
   /**
-   * 获取严重程度的 UI 标签颜色
+   * 获取严重程度�?UI 标签颜色
    * 
    * @returns 'error' | 'warning'
    */
   get severityColor(): 'error' | 'warning' {
-    return this._state.severity === 'Mandatory' ? 'error' : 'warning';
+    return this._props.severity === 'Mandatory' ? 'error' : 'warning';
   }
 
   /**
@@ -216,59 +216,59 @@ export class Rule extends AggregateRoot<RuleId> implements RuleClient {
       Active: 'success',
       Deprecated: 'default',
     };
-    return colorMap[this._state.status];
+    return colorMap[this._props.status];
   }
 
   /**
-   * 获取所有 Good Example 代码示例
+   * 获取所�?Good Example 代码示例
    */
   get goodExamples(): readonly CodeSnippetState[] {
-    return this._state.codeSnippets.filter(s => s.type === 'GoodExample');
+    return this._props.codeSnippets.filter(s => s.type === 'GoodExample');
   }
 
   /**
-   * 获取所有 Bad Example 代码示例
+   * 获取所�?Bad Example 代码示例
    */
   get badExamples(): readonly CodeSnippetState[] {
-    return this._state.codeSnippets.filter(s => s.type === 'BadExample');
+    return this._props.codeSnippets.filter(s => s.type === 'BadExample');
   }
 
   /**
-   * 检查规则是否包含指定标签
+   * 检查规则是否包含指定标�?
    * 
-   * @param tag - 标签名（不区分大小写）
+   * @param tag - 标签名（不区分大小写�?
    * @example
    * rule.hasTag('ddd') // true
    */
   public hasTag(tag: string): boolean {
-    return this._state.tags.some(t => t.toLowerCase() === tag.toLowerCase());
+    return this._props.tags.some(t => t.toLowerCase() === tag.toLowerCase());
   }
 
   /**
    * 检查规则是否已废弃
    */
   public isDeprecated(): boolean {
-    return this._state.status === 'Deprecated';
+    return this._props.status === 'Deprecated';
   }
 
   /**
    * 检查规则是否为草稿
    */
   public isDraft(): boolean {
-    return this._state.status === 'Draft';
+    return this._props.status === 'Draft';
   }
 
   /**
    * 检查规则是否已生效
    */
   public isActive(): boolean {
-    return this._state.status === 'Active';
+    return this._props.status === 'Active';
   }
 
   // ================= 工厂方法 (Factory Methods) =================
 
   /**
-   * 从 Client DTO 创建 Rule 实例
+   * �?Client DTO 创建 Rule 实例
    * 
    * @param dto - API 响应中的 RuleClientDTO
    * @returns Rule 实例
@@ -287,8 +287,8 @@ export class Rule extends AggregateRoot<RuleId> implements RuleClient {
       deprecationReason: dto.deprecationReason,
       replacementRuleId: dto.replacementRuleId,
       liveReferenceLocation: dto.liveReferenceLocation,
-      tags: [...dto.tags], // 防御性复制
-      codeSnippets: dto.codeSnippets.map(s => ({ ...s })), // 防御性复制
+      tags: [...dto.tags], // 防御性复�?
+      codeSnippets: dto.codeSnippets.map(s => ({ ...s })), // 防御性复�?
       authorId: dto.authorId,
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
@@ -298,9 +298,9 @@ export class Rule extends AggregateRoot<RuleId> implements RuleClient {
   // ================= DTO 转换 =================
 
   /**
-   * 转换为 Client DTO
+   * 转换�?Client DTO
    * 
-   * @returns RuleClientDTO（可用于 API 请求）
+   * @returns RuleClientDTO（可用于 API 请求�?
    * 
    * @example
    * const dto = rule.toDTO();
@@ -308,20 +308,20 @@ export class Rule extends AggregateRoot<RuleId> implements RuleClient {
    */
   public toDTO(): RuleClientDTO {
     return {
-      id: this._state.id,
-      code: this._state.code,
-      title: this._state.title,
-      description: this._state.description,
-      severity: this._state.severity,
-      status: this._state.status,
-      deprecationReason: this._state.deprecationReason,
-      replacementRuleId: this._state.replacementRuleId,
-      liveReferenceLocation: this._state.liveReferenceLocation,
-      tags: [...this._state.tags],
-      codeSnippets: this._state.codeSnippets.map(s => ({ ...s })),
-      authorId: this._state.authorId,
-      createdAt: this._state.createdAt.getTime(),
-      updatedAt: this._state.updatedAt.getTime(),
+      id: this._props.id,
+      code: this._props.code,
+      title: this._props.title,
+      description: this._props.description,
+      severity: this._props.severity,
+      status: this._props.status,
+      deprecationReason: this._props.deprecationReason,
+      replacementRuleId: this._props.replacementRuleId,
+      liveReferenceLocation: this._props.liveReferenceLocation,
+      tags: [...this._props.tags],
+      codeSnippets: this._props.codeSnippets.map(s => ({ ...s })),
+      authorId: this._props.authorId,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
     };
   }
 }
