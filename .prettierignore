@@ -1,5 +1,10 @@
 # Add files here to ignore them from prettier formatting
 /dist
+/build
 /coverage
 /.nx/cache
 /.nx/workspace-data
+/node_modules
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

@@ -1,20 +1,20 @@
 /**
  * Reminder API Client Port Interface
  *
- * 定义提醒模块的 API 客户端接口。
- * 包含模板管理、分组管理和统计功能。
+ * 定义提醒模块�?API 客户端接口�?
+ * 包含模板管理、分组管理和统计功能�?
  */
 
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
-  ReminderStatisticsClientDTO,
-  CreateReminderTemplateRequest,
-  UpdateReminderTemplateRequest,
-  CreateReminderGroupRequest,
-  UpdateReminderGroupRequest,
-  UpcomingRemindersResponseDTO,
-  TemplateScheduleStatusDTO,
+  ReminderStatsClientDTO,
+  CreateReminderTemplateReq,
+  UpdateReminderTemplateReq,
+  CreateReminderGroupReq,
+  UpdateReminderGroupReq,
+  GetUpcomingRemindersRes,
+  TemplateScheduleStatusRes,
 } from '@dailyuse/contracts/reminder';
 
 /**
@@ -42,7 +42,7 @@ export interface ReminderGroupsResponse {
 /**
  * IReminderApiClient
  *
- * 提醒模块 API 客户端接口
+ * 提醒模块 API 客户端接�?
  */
 export interface IReminderApiClient {
   // ===== 模板 CRUD =====
@@ -51,7 +51,7 @@ export interface IReminderApiClient {
    * 创建提醒模板
    */
   createReminderTemplate(
-    request: CreateReminderTemplateRequest,
+    request: CreateReminderTemplateReq,
   ): Promise<ReminderTemplateClientDTO>;
 
   /**
@@ -68,7 +68,7 @@ export interface IReminderApiClient {
   }): Promise<ReminderTemplatesResponse>;
 
   /**
-   * 获取用户的所有提醒模板
+   * 获取用户的所有提醒模�?
    */
   getUserTemplates(accountUuid: string): Promise<ReminderTemplateClientDTO[]>;
 
@@ -77,7 +77,7 @@ export interface IReminderApiClient {
    */
   updateReminderTemplate(
     uuid: string,
-    request: UpdateReminderTemplateRequest,
+    request: UpdateReminderTemplateReq,
   ): Promise<ReminderTemplateClientDTO>;
 
   /**
@@ -86,12 +86,12 @@ export interface IReminderApiClient {
   deleteReminderTemplate(uuid: string): Promise<void>;
 
   /**
-   * 切换模板启用状态
+   * 切换模板启用状�?
    */
   toggleTemplateEnabled(uuid: string): Promise<ReminderTemplateClientDTO>;
 
   /**
-   * 移动模板到指定分组
+   * 移动模板到指定分�?
    */
   moveTemplateToGroup(
     templateUuid: string,
@@ -107,26 +107,26 @@ export interface IReminderApiClient {
   ): Promise<ReminderTemplateClientDTO[]>;
 
   /**
-   * 获取模板的调度状态
+   * 获取模板的调度状�?
    */
-  getTemplateScheduleStatus(templateUuid: string): Promise<TemplateScheduleStatusDTO>;
+  getTemplateScheduleStatus(templateUuid: string): Promise<TemplateScheduleStatusRes>;
 
   /**
-   * 获取即将到来的提醒
+   * 获取即将到来的提�?
    */
   getUpcomingReminders(params?: {
     days?: number;
     limit?: number;
     importanceLevel?: string;
     type?: string;
-  }): Promise<UpcomingRemindersResponseDTO>;
+  }): Promise<GetUpcomingRemindersRes>;
 
   // ===== 分组 CRUD =====
 
   /**
    * 创建提醒分组
    */
-  createReminderGroup(request: CreateReminderGroupRequest): Promise<ReminderGroupClientDTO>;
+  createReminderGroup(request: CreateReminderGroupReq): Promise<ReminderGroupClientDTO>;
 
   /**
    * 获取分组详情
@@ -142,7 +142,7 @@ export interface IReminderApiClient {
   }): Promise<ReminderGroupsResponse>;
 
   /**
-   * 获取指定用户的所有分组
+   * 获取指定用户的所有分�?
    */
   getUserReminderGroups(accountUuid: string): Promise<ReminderGroupClientDTO[]>;
 
@@ -151,7 +151,7 @@ export interface IReminderApiClient {
    */
   updateReminderGroup(
     uuid: string,
-    request: UpdateReminderGroupRequest,
+    request: UpdateReminderGroupReq,
   ): Promise<ReminderGroupClientDTO>;
 
   /**
@@ -160,7 +160,7 @@ export interface IReminderApiClient {
   deleteReminderGroup(uuid: string): Promise<void>;
 
   /**
-   * 切换分组启用状态
+   * 切换分组启用状�?
    */
   toggleReminderGroupStatus(uuid: string): Promise<ReminderGroupClientDTO>;
 
@@ -174,5 +174,5 @@ export interface IReminderApiClient {
   /**
    * 获取提醒统计
    */
-  getReminderStatistics(accountUuid: string): Promise<ReminderStatisticsClientDTO>;
+  getReminderStatistics(accountUuid: string): Promise<ReminderStatsClientDTO>;
 }

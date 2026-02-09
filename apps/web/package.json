@@ -15,6 +15,7 @@
     "@dailyuse/assets": "workspace:*",
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/domain-client": "workspace:*",
+    "@dailyuse/governance": "workspace:*",
     "@dailyuse/ui-vuetify": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "@mdi/font": "^7.4.47",

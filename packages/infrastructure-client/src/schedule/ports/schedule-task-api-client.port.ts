@@ -9,9 +9,25 @@ import type { SourceModule } from '@dailyuse/contracts/schedule';
 import type {
   ScheduleTaskClientDTO,
   CreateScheduleTaskRequest,
-  ScheduleStatisticsClientDTO,
-  ModuleStatisticsClientDTO,
 } from '@dailyuse/contracts/schedule';
+
+/**
+ * 调度统计信息 DTO（合约包暂未定义，临时本地声明）
+ */
+export interface ScheduleStatisticsClientDTO {
+  totalTasks: number;
+  activeTasks: number;
+  completedTasks: number;
+  cancelledTasks: number;
+  pausedTasks: number;
+}
+
+export interface ModuleStatisticsClientDTO {
+  module: SourceModule;
+  totalTasks: number;
+  activeTasks: number;
+  completedTasks: number;
+}
 
 /**
  * IScheduleTaskApiClient

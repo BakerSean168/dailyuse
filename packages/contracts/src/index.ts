@@ -38,23 +38,12 @@
  */
 
 // ============================================================
-// 响应系统（旧版，保留向后兼容，新代码请使用 result）
+// 响应系统（旧版已移除，请使用 @dailyuse/contracts/result）
 // ============================================================
-export {
-  ResponseStatus,
-  ResponseSeverity,
-} from './response';
-
-export type {
-  ErrorDetail,
-  PaginationInfo,
-  BaseResponse,
-  ApiErrorResponse,
-  TResponse,
-  ResponseBuilderOptions,
-  ListResponse,
-  BatchResponse,
-} from './response';
+// NOTE: ./response 模块已被删除，相关类型现在通过
+// @dailyuse/contracts/result 的 Legacy compatibility 导出提供：
+// - ResponseCode, ResponseBuilder, createResponseBuilder
+// - ApiResponse, SuccessResponse, ErrorResponse
 
 // ============================================================
 // Result Pattern（Protocol Agnostic 统一结果类型，推荐）

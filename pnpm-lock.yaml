@@ -596,6 +596,9 @@ importers:
       '@dailyuse/domain-client':
         specifier: workspace:*
         version: link:../../packages/domain-client
+      '@dailyuse/governance':
+        specifier: workspace:*
+        version: link:../../packages/governance
       '@dailyuse/ui-vuetify':
         specifier: workspace:*
         version: link:../../packages/ui-vuetify
@@ -945,12 +948,19 @@ importers:
       '@prisma/client':
         specifier: ^6.2.0
         version: 6.19.2(prisma@6.19.2(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
+      express:
+        specifier: ^4.21.0
+        version: 4.22.1
       prisma:
         specifier: ^6.2.0
         version: 6.19.2(magicast@0.3.5)(typescript@5.9.3)
       tslib:
         specifier: ^2.3.0
         version: 2.8.1
+    devDependencies:
+      '@types/express':
+        specifier: ^5.0.0
+        version: 5.0.6
 
   packages/http-client:
     dependencies:

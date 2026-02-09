@@ -12,13 +12,13 @@ import type {
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
-  ReminderStatisticsClientDTO,
-  CreateReminderTemplateRequest,
-  UpdateReminderTemplateRequest,
-  CreateReminderGroupRequest,
-  UpdateReminderGroupRequest,
-  UpcomingRemindersResponseDTO,
-  TemplateScheduleStatusDTO,
+  ReminderStatsClientDTO,
+  CreateReminderTemplateReq,
+  UpdateReminderTemplateReq,
+  CreateReminderGroupReq,
+  UpdateReminderGroupReq,
+  GetUpcomingRemindersRes,
+  TemplateScheduleStatusRes,
 } from '@dailyuse/contracts/reminder';
 
 /**
@@ -60,7 +60,7 @@ interface IpcApi {
 /**
  * ReminderIpcAdapter
  *
- * IPC 实现的提醒 API 客户端（用于 Electron 桌面应用）
+ * IPC 实现的提�?API 客户端（用于 Electron 桌面应用�?
  */
 export class ReminderIpcAdapter implements IReminderApiClient {
   constructor(private readonly ipcApi: IpcApi) {}
@@ -68,7 +68,7 @@ export class ReminderIpcAdapter implements IReminderApiClient {
   // ===== 模板 CRUD =====
 
   async createReminderTemplate(
-    request: CreateReminderTemplateRequest,
+    request: CreateReminderTemplateReq,
   ): Promise<ReminderTemplateClientDTO> {
     return this.ipcApi.invoke(REMINDER_CHANNELS.CREATE_TEMPLATE, request);
   }
@@ -90,7 +90,7 @@ export class ReminderIpcAdapter implements IReminderApiClient {
 
   async updateReminderTemplate(
     uuid: string,
-    request: UpdateReminderTemplateRequest,
+    request: UpdateReminderTemplateReq,
   ): Promise<ReminderTemplateClientDTO> {
     return this.ipcApi.invoke(REMINDER_CHANNELS.UPDATE_TEMPLATE, uuid, request);
   }
@@ -117,7 +117,7 @@ export class ReminderIpcAdapter implements IReminderApiClient {
     return this.ipcApi.invoke(REMINDER_CHANNELS.SEARCH_TEMPLATES, accountUuid, query);
   }
 
-  async getTemplateScheduleStatus(templateUuid: string): Promise<TemplateScheduleStatusDTO> {
+  async getTemplateScheduleStatus(templateUuid: string): Promise<TemplateScheduleStatusRes> {
     return this.ipcApi.invoke(REMINDER_CHANNELS.GET_SCHEDULE_STATUS, templateUuid);
   }
 
@@ -126,14 +126,14 @@ export class ReminderIpcAdapter implements IReminderApiClient {
     limit?: number;
     importanceLevel?: string;
     type?: string;
-  }): Promise<UpcomingRemindersResponseDTO> {
+  }): Promise<GetUpcomingRemindersRes> {
     return this.ipcApi.invoke(REMINDER_CHANNELS.GET_UPCOMING, params);
   }
 
   // ===== 分组 CRUD =====
 
   async createReminderGroup(
-    request: CreateReminderGroupRequest,
+    request: CreateReminderGroupReq,
   ): Promise<ReminderGroupClientDTO> {
     return this.ipcApi.invoke(REMINDER_CHANNELS.CREATE_GROUP, request);
   }
@@ -155,7 +155,7 @@ export class ReminderIpcAdapter implements IReminderApiClient {
 
   async updateReminderGroup(
     uuid: string,
-    request: UpdateReminderGroupRequest,
+    request: UpdateReminderGroupReq,
   ): Promise<ReminderGroupClientDTO> {
     return this.ipcApi.invoke(REMINDER_CHANNELS.UPDATE_GROUP, uuid, request);
   }
@@ -174,7 +174,7 @@ export class ReminderIpcAdapter implements IReminderApiClient {
 
   // ===== 统计 =====
 
-  async getReminderStatistics(accountUuid: string): Promise<ReminderStatisticsClientDTO> {
+  async getReminderStatistics(accountUuid: string): Promise<ReminderStatsClientDTO> {
     return this.ipcApi.invoke(REMINDER_CHANNELS.GET_STATISTICS, accountUuid);
   }
 }

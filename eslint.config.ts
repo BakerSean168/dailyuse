@@ -8,10 +8,12 @@ export default tseslint.config([
   {
     ignores: [
       '**/dist/**',
+      '**/build/**',
       '**/node_modules/**',
       '**/coverage/**',
       '**/.nx/**',
       '**/dist-electron/**',
+      '**/*.min.js',
       '**/*.d.ts',
     ],
   },

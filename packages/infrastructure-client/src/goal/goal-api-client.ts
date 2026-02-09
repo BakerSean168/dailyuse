@@ -3,25 +3,53 @@ import type {
   KeyResultServerDTO,
   GoalClientDTO,
   KeyResultClientDTO,
-  CreateGoalRequest,
-  GoalsResponse,
-  UpdateGoalRequest,
-  AddKeyResultRequest,
-  KeyResultsResponse,
-  UpdateKeyResultRequest,
+  CreateGoalReq,
+  UpdateGoalReq,
+  AddKeyResultReq,
+  UpdateKeyResultReq,
   ProgressBreakdown,
-  CreateGoalReviewRequest,
+  CreateGoalReviewReq,
   GoalReviewClientDTO,
-  GoalReviewsResponse,
-  GoalAggregateViewResponse,
-  CreateGoalRecordRequest,
+  GetGoalAggregateRes,
   GoalRecordClientDTO,
-  GoalRecordsResponse,
-  CreateGoalFolderRequest,
+  CreateGoalFolderReq,
   GoalFolderClientDTO,
-  GoalFolderListResponse,
-  UpdateGoalFolderRequest,
+  QueryGoalFoldersRes,
+  UpdateGoalFolderReq,
+  GetGoalReviewsRes,
+  GetKeyResultsRes,
+  QueryGoalsRes,
 } from '@dailyuse/contracts/goal';
+
+/**
+ * 以下类型别名保持 API 客户端代码与旧命名一致（合约包已重命名）
+ */
+type CreateGoalRequest = CreateGoalReq;
+type UpdateGoalRequest = UpdateGoalReq;
+type AddKeyResultRequest = AddKeyResultReq;
+type UpdateKeyResultRequest = UpdateKeyResultReq;
+type CreateGoalReviewRequest = CreateGoalReviewReq;
+type CreateGoalFolderRequest = CreateGoalFolderReq;
+type UpdateGoalFolderRequest = UpdateGoalFolderReq;
+type GoalsResponse = QueryGoalsRes;
+type KeyResultsResponse = GetKeyResultsRes;
+type GoalReviewsResponse = GetGoalReviewsRes;
+type GoalAggregateViewResponse = GetGoalAggregateRes;
+type GoalFolderListResponse = QueryGoalFoldersRes;
+
+/**
+ * GoalRecord 相关响应类型（合约包暂未导出独立类型，临时本地声明）
+ */
+interface CreateGoalRecordRequest {
+  value: number;
+  note?: string;
+  recordedAt?: string;
+}
+
+interface GoalRecordsResponse {
+  records: GoalRecordClientDTO[];
+  total: number;
+}
 
 // 这是一个接口/抽象层 - 具体实现由消费端提供
 export interface IHttpClient {

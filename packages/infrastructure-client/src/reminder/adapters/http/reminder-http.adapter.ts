@@ -12,20 +12,20 @@ import type {
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
-  ReminderStatisticsClientDTO,
-  CreateReminderTemplateRequest,
-  UpdateReminderTemplateRequest,
-  CreateReminderGroupRequest,
-  UpdateReminderGroupRequest,
-  UpcomingRemindersResponseDTO,
-  TemplateScheduleStatusDTO,
+  ReminderStatsClientDTO,
+  CreateReminderTemplateReq,
+  UpdateReminderTemplateReq,
+  CreateReminderGroupReq,
+  UpdateReminderGroupReq,
+  GetUpcomingRemindersRes,
+  TemplateScheduleStatusRes,
 } from '@dailyuse/contracts/reminder';
 import type { IHttpClient } from '../../../shared/http-client.types';
 
 /**
  * ReminderHttpAdapter
  *
- * HTTP 实现的提醒 API 客户端
+ * HTTP 实现的提�?API 客户�?
  */
 export class ReminderHttpAdapter implements IReminderApiClient {
   private readonly templatesUrl = '/reminders/templates';
@@ -36,7 +36,7 @@ export class ReminderHttpAdapter implements IReminderApiClient {
   // ===== 模板 CRUD =====
 
   async createReminderTemplate(
-    request: CreateReminderTemplateRequest,
+    request: CreateReminderTemplateReq,
   ): Promise<ReminderTemplateClientDTO> {
     return this.httpClient.post(this.templatesUrl, request);
   }
@@ -58,7 +58,7 @@ export class ReminderHttpAdapter implements IReminderApiClient {
 
   async updateReminderTemplate(
     uuid: string,
-    request: UpdateReminderTemplateRequest,
+    request: UpdateReminderTemplateReq,
   ): Promise<ReminderTemplateClientDTO> {
     return this.httpClient.patch(`${this.templatesUrl}/${uuid}`, request);
   }
@@ -89,7 +89,7 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     });
   }
 
-  async getTemplateScheduleStatus(templateUuid: string): Promise<TemplateScheduleStatusDTO> {
+  async getTemplateScheduleStatus(templateUuid: string): Promise<TemplateScheduleStatusRes> {
     return this.httpClient.get(`${this.templatesUrl}/${templateUuid}/schedule-status`);
   }
 
@@ -98,14 +98,14 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     limit?: number;
     importanceLevel?: string;
     type?: string;
-  }): Promise<UpcomingRemindersResponseDTO> {
+  }): Promise<GetUpcomingRemindersRes> {
     return this.httpClient.get('/reminders/upcoming', { params });
   }
 
   // ===== 分组 CRUD =====
 
   async createReminderGroup(
-    request: CreateReminderGroupRequest,
+    request: CreateReminderGroupReq,
   ): Promise<ReminderGroupClientDTO> {
     return this.httpClient.post(this.groupsUrl, request);
   }
@@ -127,7 +127,7 @@ export class ReminderHttpAdapter implements IReminderApiClient {
 
   async updateReminderGroup(
     uuid: string,
-    request: UpdateReminderGroupRequest,
+    request: UpdateReminderGroupReq,
   ): Promise<ReminderGroupClientDTO> {
     return this.httpClient.patch(`${this.groupsUrl}/${uuid}`, request);
   }
@@ -146,7 +146,7 @@ export class ReminderHttpAdapter implements IReminderApiClient {
 
   // ===== 统计 =====
 
-  async getReminderStatistics(accountUuid: string): Promise<ReminderStatisticsClientDTO> {
+  async getReminderStatistics(accountUuid: string): Promise<ReminderStatsClientDTO> {
     return this.httpClient.get(`/reminders/statistics/${accountUuid}`);
   }
 }

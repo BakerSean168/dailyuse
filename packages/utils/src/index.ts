@@ -27,9 +27,6 @@ export * from './validation/index';
 // Result Pattern 工具（新）
 export * from './result/index';
 
-// HTTP 响应工具（旧，保留兼容）
-export * from './response/index';
-
 // 前端工具
 export * from './frontend/index';
 

@@ -2,7 +2,7 @@ import { defineConfig } from 'tsup';
 
 export default defineConfig({
   // Entry point
-  entry: ['src/index.ts'],
+  entry: ['src/main.ts'],
 
   // Output format: ESM only (matches package.json "type": "module")
   format: ['esm'],

@@ -52,10 +52,8 @@ export const ApiTestHelpers = {
    * 创建测试用的 Express 应用
    */
   createTestApp: async () => {
-    // 这里应该导入并创建你的 Express 应用
-    // 但避免实际启动服务器
-    const appModule = await import('../app.js');
-    return appModule.default || appModule;
+    const { createApp } = await import('./app-factory');
+    return createApp();
   },
 
   /**

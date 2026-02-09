@@ -10,76 +10,21 @@ import {
   type InitializationTask,
 } from '@dailyuse/utils';
 
-// 每个模块的初始化任务
+// 已注册为 IApiModule 的模块在各自 register() 内处理初始化，
+// 此文件仅保留尚未迁移到模块化注册的全局初始化逻辑。
 
-// 已实现的模块
+// 旧模块初始化任务（等各模块完成 IApiModule 迁移后可删除）
 import { registerAuthenticationInitializationTasks } from '../../modules/authentication/initialization/authenticationInitialization';
-import { registerGoalInitializationTasks } from '../../modules/goal/initialization/goalInitialization';
-// import { registerScheduleInitializationTasks } from '../../modules/schedule/initialization/scheduleInitialization';
-import { registerDashboardInitializationTasks } from '../../modules/dashboard/initialization/dashboardInitialization';
-import { registerReminderInitializationTasks } from '../../modules/reminder/initialization/reminderInitialization';
-import { registerGovernanceInitializationTasks } from '../../modules/governance/initialization/governanceInitialization';
-
-// TODO: 以下模块尚未实现，待实现后取消注释
-// import { registerAccountInitializationTasks } from '../../modules/account';
-// import { registerGoalInitializationTasks } from '../../modules/goal';
-// import { registerNotificationInitializationTasks } from '../../modules/notification/initialization/notificationInitialization';
-// import { registerSettingInitializationTasks } from '../../modules/setting/initialization/settingInitialization';
-// import { registerThemeInitializationTasks } from '../../modules/theme/initialization/themeInitialization';
-// import { registerTaskInitializationTasks } from '../../modules/Task/initialization/taskInitialization';
-// import { registerGoalInitializationTasks } from '../../modules/goal/initialization/goalInitialization';
-// import { registerSessionLoggingInitializationTasks } from '../../modules/SessionLogging/initialization/sessionLoggingInitialization';
-// import { registerRepositoryInitializationTasks } from '../../modules/Repository/initialization/repositoryInitialization';
-// import { registerReminderInitializationTasks } from '../../modules/Reminder/initialization/reminderInitialization';
-// import { registerInitializationEventsTask } from './application/events/initializationEventHandlers';
-
-/**
- * 基础设施模块的初始化任务
- */
-// 数据库初始化
-// const databaseInitTask: InitializationTask = {
-//   name: 'database',
-//   phase: InitializationPhase.APP_STARTUP,
-//   priority: 5,
-//   initialize: async () => {
-//     await initializeDatabase();
-//     console.log('✓ Database initialized');
-//   }
-// };
-
-// const eventSystemInitTask: InitializationTask = {
-//   name: 'eventSystem',
-//   phase: InitializationPhase.APP_STARTUP,
-//   priority: 10,
-//   initialize: async () => {
-//     await initializeUnifiedEventHandlers();
-//     console.log('✓ Event system initialized');
-//   },
-// };
 
 /**
  * 注册所有模块的初始化任务。
  *
  * @remarks
- * 调用各模块的注册函数，将任务添加到 InitializationManager 中。
+ * 新模块（如 Governance）已在各自 IApiModule.register() 中处理初始化，
+ * 此处仅保留尚未迁移的旧模块初始化任务。
  */
 export function registerAllInitializationTasks(): void {
-  const manager = InitializationManager.getInstance();
-
-  // 注册各模块的任务
-  registerAuthenticationInitializationTasks(); // ✅ 已实现（事件处理器）
-  registerGoalInitializationTasks(); // ✅ 已实现（Goal 统计事件处理器）
-  // registerScheduleInitializationTasks(); // TODO: scheduleInitialization 文件缺失
-  registerDashboardInitializationTasks(); // ✅ 已实现（Dashboard 缓存失效监听器）
-  registerReminderInitializationTasks(); // ✅ 新增（Reminder SSE 事件桥接）
-  registerGovernanceInitializationTasks(); // ✅ Governance scaffolding init tasks
-
-  // TODO: 待相应模块实现后取消注释
-  // registerAccountInitializationTasks();
-  // registerGoalInitializationTasks();
-  // registerNotificationInitializationTasks();
-  // registerSettingInitializationTasks();
-  // registerThemeInitializationTasks();
+  registerAuthenticationInitializationTasks(); // ⚠️ 旧模块 — 待 IApiModule 迁移后移除
 
   console.log('All initialization tasks registered');
 }

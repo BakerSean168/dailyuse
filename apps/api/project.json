@@ -8,7 +8,7 @@
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node ../../node_modules/tsx/dist/cli.mjs watch src/index.ts",
+        "command": "node ../../node_modules/tsx/dist/cli.mjs watch src/main.ts",
         "cwd": "apps/api"
       }
     },

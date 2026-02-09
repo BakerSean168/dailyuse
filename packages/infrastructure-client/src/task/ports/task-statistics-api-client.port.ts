@@ -5,7 +5,19 @@
  * 使用依赖注入模式，适配器在运行时注入。
  */
 
-import type { TaskStatisticsServerDTO } from '@dailyuse/contracts/task';
+/**
+ * 任务统计 DTO（合约包暂未定义，临时本地声明）
+ */
+export interface TaskStatisticsServerDTO {
+  accountUuid: string;
+  totalTemplates: number;
+  totalInstances: number;
+  completedToday: number;
+  completedThisWeek: number;
+  completionRate: number;
+  efficiencyTrend: 'UP' | 'DOWN' | 'STABLE';
+  updatedAt: string;
+}
 
 /**
  * ITaskStatisticsApiClient

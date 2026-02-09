@@ -190,38 +190,38 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 ### Tests for User Story 2 API (OPTIONAL) ⚠️
 
-- [ ] T081 [P] [US2] Contract test for POST /api/rules endpoint in apps/api/src/modules/governance/__tests__/governance-crud.routes.spec.ts
-- [ ] T082 [P] [US2] Contract test for PUT /api/rules/:id endpoint in apps/api/src/modules/governance/__tests__/governance-crud.routes.spec.ts
-- [ ] T083 [P] [US2] Contract test for DELETE /api/rules/:id endpoint in apps/api/src/modules/governance/__tests__/governance-crud.routes.spec.ts
+- [x] T081 [P] [US2] Contract test for POST /api/rules endpoint in apps/api/src/modules/governance/__tests__/governance-crud.routes.spec.ts
+- [x] T082 [P] [US2] Contract test for PUT /api/rules/:id endpoint in apps/api/src/modules/governance/__tests__/governance-crud.routes.spec.ts
+- [x] T083 [P] [US2] Contract test for DELETE /api/rules/:id endpoint in apps/api/src/modules/governance/__tests__/governance-crud.routes.spec.ts
 
 ### Implementation for User Story 2 API
 
 **API Layer** (apps/api/src/modules/governance/)
 
-- [ ] T084 [P] [US2] Create Zod CreateRuleSchema in apps/api/src/modules/governance/schemas/create-rule.schema.ts
-- [ ] T085 [P] [US2] Create Zod UpdateRuleSchema in apps/api/src/modules/governance/schemas/update-rule.schema.ts
-- [ ] T086 [US2] Implement POST /api/rules route with requireRole(['TechLead', 'Architect']) in apps/api/src/modules/governance/routes/governance-crud.routes.ts
-- [ ] T087 [US2] Implement PUT /api/rules/:id route with RBAC middleware in apps/api/src/modules/governance/routes/governance-crud.routes.ts
-- [ ] T088 [US2] Implement DELETE /api/rules/:id route with soft delete logic in apps/api/src/modules/governance/routes/governance-crud.routes.ts
-- [ ] T089 [US2] Implement GET /api/rules/:id route (all authenticated users) in apps/api/src/modules/governance/routes/governance-crud.routes.ts
-- [ ] T090 [US2] Implement GET /api/rules route with query filters in apps/api/src/modules/governance/routes/governance-crud.routes.ts
-- [ ] T091 [P] [US2] Implement GET /api/rules/:id/revisions route in apps/api/src/modules/governance/routes/governance-crud.routes.ts
-- [ ] T092 [US2] Register governance routes in apps/api/src/app.ts
+- [x] T084 [P] [US2] Create Zod CreateRuleSchema in apps/api/src/modules/governance/schemas/create-rule.schema.ts
+- [x] T085 [P] [US2] Create Zod UpdateRuleSchema in apps/api/src/modules/governance/schemas/update-rule.schema.ts
+- [x] T086 [US2] Implement POST /api/rules route with requireRole(['TechLead', 'Architect']) in apps/api/src/modules/governance/routes/governance-crud.routes.ts
+- [x] T087 [US2] Implement PUT /api/rules/:id route with RBAC middleware in apps/api/src/modules/governance/routes/governance-crud.routes.ts
+- [x] T088 [US2] Implement DELETE /api/rules/:id route with soft delete logic in apps/api/src/modules/governance/routes/governance-crud.routes.ts
+- [x] T089 [US2] Implement GET /api/rules/:id route (all authenticated users) in apps/api/src/modules/governance/routes/governance-crud.routes.ts
+- [x] T090 [US2] Implement GET /api/rules route with query filters in apps/api/src/modules/governance/routes/governance-crud.routes.ts
+- [x] T091 [P] [US2] Implement GET /api/rules/:id/revisions route in apps/api/src/modules/governance/routes/governance-crud.routes.ts
+- [x] T092 [US2] Register governance routes in apps/api/src/app.ts
 
 ### Implementation for User Story 2 Web UI Editor
 
 **Web UI - Editor** (apps/web/src/modules/governance/)
 
-- [ ] T093 [P] [US2] Create Pinia governanceStore with rules state in apps/web/src/modules/governance/stores/governance-store.ts
-- [ ] T094 [P] [US2] Add governanceStore.createRule action in apps/web/src/modules/governance/stores/governance-store.ts
-- [ ] T095 [P] [US2] Add governanceStore.updateRule action in apps/web/src/modules/governance/stores/governance-store.ts
-- [ ] T096 [P] [US2] Add governanceStore.deleteRule action in apps/web/src/modules/governance/stores/governance-store.ts
-- [ ] T097 [US2] Implement RuleEditorView component with form validation in apps/web/src/modules/governance/views/RuleEditorView.vue
-- [ ] T098 [US2] Add RuleForm component with title/description/severity fields in apps/web/src/modules/governance/components/RuleForm.vue
-- [ ] T099 [US2] Add CodeSnippetEditor component for Good/Bad examples in apps/web/src/modules/governance/components/CodeSnippetEditor.vue
-- [ ] T100 [US2] Add TagInput component with normalization preview in apps/web/src/modules/governance/components/TagInput.vue
-- [ ] T101 [US2] Add StatusBadge component for Draft/Active/Deprecated in apps/web/src/modules/governance/components/StatusBadge.vue
-- [ ] T102 [US2] Wire RuleEditorView to Vuetify router in apps/web/src/router/governance-routes.ts
+- [x] T093 [P] [US2] Create Pinia governanceStore with rules state in apps/web/src/modules/governance/stores/governance-store.ts
+- [x] T094 [P] [US2] Add governanceStore.createRule action in apps/web/src/modules/governance/stores/governance-store.ts
+- [x] T095 [P] [US2] Add governanceStore.updateRule action in apps/web/src/modules/governance/stores/governance-store.ts
+- [x] T096 [P] [US2] Add governanceStore.deleteRule action in apps/web/src/modules/governance/stores/governance-store.ts
+- [x] T097 [US2] Implement RuleEditorView component with form validation in apps/web/src/modules/governance/views/RuleEditorView.vue
+- [x] T098 [US2] Add RuleForm component with title/description/severity fields in apps/web/src/modules/governance/components/RuleForm.vue
+- [x] T099 [US2] Add CodeSnippetEditor component for Good/Bad examples in apps/web/src/modules/governance/components/CodeSnippetEditor.vue
+- [x] T100 [US2] Add TagInput component with normalization preview in apps/web/src/modules/governance/components/TagInput.vue
+- [x] T101 [US2] Add StatusBadge component for Draft/Active/Deprecated in apps/web/src/modules/governance/components/StatusBadge.vue
+- [x] T102 [US2] Wire RuleEditorView to Vuetify router in apps/web/src/router/governance-routes.ts
 
 **Checkpoint**: User Story 2 complete - Rule CRUD functional via API and UI editor
 
@@ -242,19 +242,19 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 **Web UI - Discovery** (apps/web/src/modules/governance/)
 
-- [ ] T105 [P] [US1] Add governanceStore.fetchRules action in apps/web/src/modules/governance/stores/governance-store.ts
-- [ ] T106 [P] [US1] Add governanceStore.fetchRuleById action in apps/web/src/modules/governance/stores/governance-store.ts
-- [ ] T107 [P] [US1] Add governanceStore.filterByTag selector in apps/web/src/modules/governance/stores/governance-store.ts
-- [ ] T108 [P] [US1] Add governanceStore.filterByStatus selector in apps/web/src/modules/governance/stores/governance-store.ts
-- [ ] T109 [US1] Implement GovernanceListView component with tag filter chips in apps/web/src/modules/governance/views/GovernanceListView.vue
-- [ ] T110 [US1] Implement GovernanceDetailView component with Markdown rendering in apps/web/src/modules/governance/views/GovernanceDetailView.vue
-- [ ] T111 [US1] Add RuleCard component for list items in apps/web/src/modules/governance/components/RuleCard.vue
-- [ ] T112 [US1] Add CodeSnippetView component with Prism.js syntax highlighting in apps/web/src/modules/governance/components/CodeSnippetView.vue
-- [ ] T113 [US1] Add TagFilterChips component for tag selection in apps/web/src/modules/governance/components/TagFilterChips.vue
-- [ ] T114 [US1] Add LiveReferenceLink component for monorepo navigation in apps/web/src/modules/governance/components/LiveReferenceLink.vue
-- [ ] T115 [US1] Add DeprecationWarning component for deprecated rules in apps/web/src/modules/governance/components/DeprecationWarning.vue
-- [ ] T116 [US1] Wire GovernanceListView and GovernanceDetailView to router in apps/web/src/router/governance-routes.ts
-- [ ] T117 [US1] Install Prism.js for syntax highlighting: `pnpm add -F @dailyuse/web prismjs`
+- [x] T105 [P] [US1] Add governanceStore.fetchRules action in apps/web/src/modules/governance/stores/governance-store.ts
+- [x] T106 [P] [US1] Add governanceStore.fetchRuleById action in apps/web/src/modules/governance/stores/governance-store.ts
+- [x] T107 [P] [US1] Add governanceStore.filterByTag selector in apps/web/src/modules/governance/stores/governance-store.ts
+- [x] T108 [P] [US1] Add governanceStore.filterByStatus selector in apps/web/src/modules/governance/stores/governance-store.ts
+- [x] T109 [US1] Implement GovernanceListView component with tag filter chips in apps/web/src/modules/governance/views/GovernanceListView.vue
+- [x] T110 [US1] Implement GovernanceDetailView component with Markdown rendering in apps/web/src/modules/governance/views/GovernanceDetailView.vue
+- [x] T111 [US1] Add RuleCard component for list items in apps/web/src/modules/governance/components/RuleCard.vue
+- [x] T112 [US1] Add CodeSnippetView component with Prism.js syntax highlighting in apps/web/src/modules/governance/components/CodeSnippetView.vue
+- [x] T113 [US1] Add TagFilterChips component for tag selection in apps/web/src/modules/governance/components/TagFilterChips.vue
+- [x] T114 [US1] Add LiveReferenceLink component for monorepo navigation in apps/web/src/modules/governance/components/LiveReferenceLink.vue
+- [x] T115 [US1] Add DeprecationWarning component for deprecated rules in apps/web/src/modules/governance/components/DeprecationWarning.vue
+- [x] T116 [US1] Wire GovernanceListView and GovernanceDetailView to router in apps/web/src/router/governance-routes.ts
+- [x] T117 [US1] Install Prism.js for syntax highlighting: `pnpm add -F @dailyuse/web prismjs`
 
 **Checkpoint**: User Story 1 complete - Pattern discovery functional with browsing, filtering, and detailed views
 
@@ -295,11 +295,11 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 **Web UI - Search** (apps/web/src/modules/governance/)
 
-- [ ] T127 [P] [US3] Add governanceStore.searchRules action in apps/web/src/modules/governance/stores/governance-store.ts
-- [ ] T128 [US3] Add SearchBar component with debounce (300ms) in apps/web/src/modules/governance/components/SearchBar.vue
-- [ ] T129 [US3] Add SearchResultsList component with relevance indicators in apps/web/src/modules/governance/components/SearchResultsList.vue
-- [ ] T130 [US3] Wire SearchBar to GovernanceListView in apps/web/src/modules/governance/views/GovernanceListView.vue
-- [ ] T131 [US3] Add keyboard shortcut (/) for search focus in apps/web/src/modules/governance/views/GovernanceListView.vue
+- [x] T127 [P] [US3] Add governanceStore.searchRules action in apps/web/src/modules/governance/stores/governance-store.ts
+- [x] T128 [US3] Add SearchBar component with debounce (300ms) in apps/web/src/modules/governance/components/SearchBar.vue
+- [x] T129 [US3] Add SearchResultsList component with relevance indicators in apps/web/src/modules/governance/components/SearchResultsList.vue
+- [x] T130 [US3] Wire SearchBar to GovernanceListView in apps/web/src/modules/governance/views/GovernanceListView.vue
+- [x] T131 [US3] Add keyboard shortcut (/) for search focus in apps/web/src/modules/governance/views/GovernanceListView.vue
 
 **Checkpoint**: User Story 3 complete - Keyword search functional with relevance scoring
 
