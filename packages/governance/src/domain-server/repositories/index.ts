@@ -32,3 +32,6 @@
 
 export type { IRuleRepository } from './i-rule-repository';
 export { RULE_REPOSITORY_TOKEN } from './i-rule-repository';
+
+export type { IRuleRevisionRepository } from './i-rule-revision-repository';
+export { RULE_REVISION_REPOSITORY_TOKEN } from './i-rule-revision-repository';

@@ -181,6 +181,23 @@ export class RuleRevision extends Entity<RuleRevisionId> implements RuleRevision
   // ================= 序列化方法 =================
 
   /**
+   * 转换为 Server DTO（用于内部服务通信）
+   */
+  toServerDTO(): import('../../contracts/entities/rule-revision-server').RuleRevisionServerDTO {
+    return {
+      id: this.id,
+      ruleId: this._ruleId,
+      revisionNumber: this._revisionNumber,
+      authorId: this._authorId,
+      changedFields: [...this._changedFields],
+      previousValues: { ...this._previousValues },
+      newValues: { ...this._newValues },
+      changeType: this._changeType,
+      createdAt: this._createdAt.getTime(),
+    };
+  }
+
+  /**
    * 转换为 Client DTO（用于 API 响应）
    */
   toClientDTO(): RuleRevisionClientDTO {

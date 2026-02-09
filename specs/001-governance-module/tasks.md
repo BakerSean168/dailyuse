@@ -149,34 +149,34 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 **Application Layer** (packages/governance/src/application/)
 
-- [ ] T058 [P] [US2] Create CreateRuleReq and CreateRuleRes types in packages/governance/src/application/dtos/create-rule.dto.ts
-- [ ] T059 [P] [US2] Create UpdateRuleReq and UpdateRuleRes types in packages/governance/src/application/dtos/update-rule.dto.ts
-- [ ] T060 [P] [US2] Create GetRuleReq and GetRuleRes types in packages/governance/src/application/dtos/get-rule.dto.ts
-- [ ] T061 [P] [US2] Create DeleteRuleReq and DeleteRuleRes types in packages/governance/src/application/dtos/delete-rule.dto.ts
-- [ ] T062 [P] [US2] Create ListRulesReq and ListRulesRes types in packages/governance/src/application/dtos/list-rules.dto.ts
-- [ ] T063 [US2] Implement RuleApplicationService with createRule use case in packages/governance/src/application/services/rule-application-service.ts
-- [ ] T064 [US2] Add RuleApplicationService.updateRule use case in packages/governance/src/application/services/rule-application-service.ts
-- [ ] T065 [US2] Add RuleApplicationService.deleteRule use case (soft delete logic) in packages/governance/src/application/services/rule-application-service.ts
-- [ ] T066 [US2] Add RuleApplicationService.getRule use case in packages/governance/src/application/services/rule-application-service.ts
-- [ ] T067 [US2] Add RuleApplicationService.listRules use case with filters in packages/governance/src/application/services/rule-application-service.ts
-- [ ] T068 [P] [US2] Implement RuleRevisionApplicationService.getRevisions in packages/governance/src/application/services/rule-revision-application-service.ts
-- [ ] T069 [P] [US2] Create RuleMapper for domain ↔ DTO conversion in packages/governance/src/application/mappers/rule-mapper.ts
+- [x] T058 [P] [US2] Create CreateRuleReq and CreateRuleRes types in packages/governance/src/application/dtos/create-rule.dto.ts
+- [x] T059 [P] [US2] Create UpdateRuleReq and UpdateRuleRes types in packages/governance/src/application/dtos/update-rule.dto.ts
+- [x] T060 [P] [US2] Create GetRuleReq and GetRuleRes types in packages/governance/src/application/dtos/get-rule.dto.ts
+- [x] T061 [P] [US2] Create DeleteRuleReq and DeleteRuleRes types in packages/governance/src/application/dtos/delete-rule.dto.ts
+- [x] T062 [P] [US2] Create ListRulesReq and ListRulesRes types in packages/governance/src/application/dtos/list-rules.dto.ts
+- [x] T063 [US2] Implement RuleApplicationService with createRule use case in packages/governance/src/application/services/rule-application-service.ts
+- [x] T064 [US2] Add RuleApplicationService.updateRule use case in packages/governance/src/application/services/rule-application-service.ts
+- [x] T065 [US2] Add RuleApplicationService.deleteRule use case (soft delete logic) in packages/governance/src/application/services/rule-application-service.ts
+- [x] T066 [US2] Add RuleApplicationService.getRule use case in packages/governance/src/application/services/rule-application-service.ts
+- [x] T067 [US2] Add RuleApplicationService.listRules use case with filters in packages/governance/src/application/services/rule-application-service.ts
+- [x] T068 [P] [US2] Implement RuleRevisionApplicationService.getRevisions in packages/governance/src/application/services/rule-revision-application-service.ts
+- [x] T069 [P] [US2] Create RuleMapper for domain ↔ DTO conversion in packages/governance/src/application/mappers/rule-mapper.ts
 
 ### Implementation for User Story 2 Infrastructure
 
 **Infrastructure Layer** (packages/governance/src/infrastructure/)
 
-- [ ] T070 [US2] Create Prisma schema for Rule model in packages/governance/src/infrastructure/prisma/schema.prisma
-- [ ] T071 [US2] Add RuleRevision model to Prisma schema with unique constraint on [ruleId, revisionNumber] in packages/governance/src/infrastructure/prisma/schema.prisma
-- [ ] T072 [US2] Generate Prisma client: `pnpm nx run governance:prisma-generate`
-- [ ] T073 [US2] Create migration for rules table: `pnpm nx run governance:prisma-migrate`
-- [ ] T074 [US2] Implement PrismaRuleRepository.save() method in packages/governance/src/infrastructure/repositories/prisma-rule-repository.ts
-- [ ] T075 [US2] Implement PrismaRuleRepository.findById() method in packages/governance/src/infrastructure/repositories/prisma-rule-repository.ts
-- [ ] T076 [US2] Implement PrismaRuleRepository.findByCode() method in packages/governance/src/infrastructure/repositories/prisma-rule-repository.ts
-- [ ] T077 [US2] Implement PrismaRuleRepository.findAll() with filters in packages/governance/src/infrastructure/repositories/prisma-rule-repository.ts
-- [ ] T078 [US2] Implement PrismaRuleRepository.delete() method in packages/governance/src/infrastructure/repositories/prisma-rule-repository.ts
-- [ ] T079 [US2] Implement PrismaRuleRepository.exists() method in packages/governance/src/infrastructure/repositories/prisma-rule-repository.ts
-- [ ] T080 [P] [US2] Create RulePersistenceMapper for Prisma ↔ domain conversion in packages/governance/src/infrastructure/mappers/rule-persistence-mapper.ts
+- [x] T070 [US2] Create Prisma schema for Rule model in packages/governance/src/infrastructure/prisma/schema.prisma
+- [x] T071 [US2] Add RuleRevision model to Prisma schema with unique constraint on [ruleId, revisionNumber] in packages/governance/src/infrastructure/prisma/schema.prisma
+- [x] T072 [US2] Generate Prisma client: `pnpm nx run governance:prisma-generate`
+- [x] T073 [US2] Create migration for rules table: `pnpm nx run governance:prisma-migrate`
+- [x] T074 [US2] Implement PrismaRuleRepository.save() method in packages/governance/src/infrastructure/repositories/prisma-rule-repository.ts
+- [x] T075 [US2] Implement PrismaRuleRepository.findById() method in packages/governance/src/infrastructure/repositories/prisma-rule-repository.ts
+- [x] T076 [US2] Implement PrismaRuleRepository.findByCode() method in packages/governance/src/infrastructure/repositories/prisma-rule-repository.ts
+- [x] T077 [US2] Implement PrismaRuleRepository.findAll() with filters in packages/governance/src/infrastructure/repositories/prisma-rule-repository.ts
+- [x] T078 [US2] Implement PrismaRuleRepository.delete() method in packages/governance/src/infrastructure/repositories/prisma-rule-repository.ts
+- [x] T079 [US2] Implement PrismaRuleRepository.exists() method in packages/governance/src/infrastructure/repositories/prisma-rule-repository.ts
+- [x] T080 [P] [US2] Create RulePersistenceMapper for Prisma ↔ domain conversion in packages/governance/src/infrastructure/mappers/rule-persistence-mapper.ts
 
 **Checkpoint**: Application services and repository complete. Ready for API layer.
 

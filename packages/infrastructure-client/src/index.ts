@@ -293,6 +293,26 @@ export {
 } from './shared';
 
 // ============================================================
+// HTTP Module (Axios Clients)
+// ============================================================
+export {
+  // IHttpClient 实现（兼容现有 DI 体系）
+  AxiosHttpClient,
+  HttpClientError,
+  // Result HTTP Client（新代码推荐）
+  ResultHttpClient,
+  // 工厂函数
+  createHttpClient,
+  createResultHttpClient,
+  createAxiosInstance,
+  // Types
+  type AxiosHttpClientConfig,
+  type TokenProvider,
+  type TokenRefreshHandler,
+  DEFAULT_HTTP_CLIENT_CONFIG,
+} from './http';
+
+// ============================================================
 // Dependency Injection (DI)
 // ============================================================
 export {

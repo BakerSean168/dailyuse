@@ -1,0 +1,69 @@
+// Governance Module - Prisma Schema
+// This schema defines the data model for the Governance module
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../node_modules/@prisma/client-governance"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("GOVERNANCE_DATABASE_URL")
+}
+
+// ============ Rule Aggregate ============
+
+/// Rule aggregate root
+/// Represents an architectural rule with lifecycle management
+model Rule {
+  id                      String   @id
+  code                    String   @unique // e.g., DDD-001, ARCH-002
+  title                   String
+  description             String // Markdown format, 10-5000 chars
+  severity                String // Mandatory | Recommended
+  status                  String // Draft | Active | Deprecated
+  deprecationReason       String? // Required when status=Deprecated
+  replacementRuleId       String? // Points to another Rule.id
+  liveReferenceLocation   String? // Relative monorepo path
+  tags                    String // JSON array of normalized tags
+  goodExamples            String // JSON array of CodeSnippet objects
+  badExamples             String // JSON array of CodeSnippet objects
+  authorId                String
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  // Relations
+  revisions               RuleRevision[]
+  replacedBy              Rule?              @relation("RuleReplacement", fields: [replacementRuleId], references: [id], onDelete: SetNull)
+  replaces                Rule[]             @relation("RuleReplacement")
+
+  @@index([code])
+  @@index([status])
+  @@index([severity])
+  @@index([authorId])
+  @@map("rules")
+}
+
+// ============ RuleRevision Entity ============
+
+/// RuleRevision immutable entity
+/// Append-only audit trail for Rule changes
+model RuleRevision {
+  id              String   @id
+  ruleId          String
+  revisionNumber  Int // Sequential: 1, 2, 3...
+  authorId        String
+  changedFields   String // JSON array of field names
+  previousValues  String? // JSON object of old values
+  newValues       String? // JSON object of new values
+  changeType      String // Created | Updated | Deprecated | Reactivated
+  createdAt       DateTime @default(now())
+
+  // Relations
+  rule            Rule     @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@unique([ruleId, revisionNumber])
+  @@index([ruleId])
+  @@index([authorId])
+  @@map("rule_revisions")
+}

@@ -23,7 +23,6 @@ export default {
     'src/frontend/index.ts',
     'src/logger/index.ts',
     'src/result/index.ts',
-    'src/response/index.ts',
     'src/shared/index.ts',
     'src/validation/index.ts',
     'src/winston.ts',

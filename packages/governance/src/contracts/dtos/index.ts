@@ -1,20 +1,15 @@
 /**
- * Example Module - DTOs Export
+ * DTOs - Barrel Export
+ * 数据传输对象 - 统一导出
  * 
- * 【规范说明：DTOs 文件夹】
- * 这个文件夹用于存放特殊的 DTO 定义，通常是：
- * - 统计数据 DTO
- * - 复杂查询结果 DTO
- * - 报表数据 DTO
+ * 【设计说明】
+ * 此目录仅存放特殊的、需要组合的 DTO 对象
+ * 简单的 Request/Response 类型应该定义在 api/ 目录中
  * 
- * 注意：普通的 DTO 应该定义在相应的地方：
- * - Client DTO → aggregates/*-client.ts
- * - Server DTO → aggregates/*-server.ts
- * - Request DTO → api/requests.ts
- * - Response DTO → api/responses.ts
+ * 【示例】
+ * - RuleWithHistoryDTO: 规则 + 修订记录历史的组合
+ * - RuleSearchResultDTO: 搜索结果 + 相关度评分的组合
  */
 
-// 目前没有特殊的 DTO 定义
-// 如果需要添加统计或报表 DTO，在这里导出
-
-// export type { ComplexExampleDTO } from './complex-example.dto';
+// 当前没有特殊的组合 DTO
+// export * from './rule-with-history.dto';

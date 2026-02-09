@@ -67,3 +67,36 @@
  * 8. 仓储模式 - 依赖倒置
  */
 
+// ================= Contracts Layer (契约层) =================
+// Type definitions, DTOs, Events, API Schemas
+export * from './contracts';
+
+// ================= Domain Layer (领域层) =================
+// Domain-Shared: Value objects and shared logic (exported from contracts)
+// Domain-Server: Aggregates, entities, repositories (server-side)
+// Domain-Client: Client-side domain models (UI view models)
+export { Rule } from './domain-server/aggregates/rule';
+export { RuleRevision } from './domain-server/entities/rule-revision';
+export * from './domain-server/repositories';
+export * from './domain-server/services';
+
+// Note: domain-client exports Rule and RuleRevision classes with same names
+// Consumers should import from specific paths to avoid conflicts
+// export * from './domain-client';
+
+// ================= Application Layer (应用层) =================
+// Application-Server: Use cases (server-side)
+// Application-Client: Client services, view model mappers
+// Note: DTOs are already exported from contracts layer
+export * from './application-server';
+export * from './application-client';
+
+// ================= Infrastructure Layer (基础设施层) =================
+// Infrastructure-Server: Repositories, persistence (server-side)
+// Infrastructure-Client: Local storage, caching (client-side)
+export { 
+  PrismaRuleRepository,
+  PrismaRuleRevisionRepository 
+} from './infrastructure-server/repositories';
+
+export * from './infrastructure-client';

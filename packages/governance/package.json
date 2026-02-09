@@ -22,12 +22,39 @@
     "./domain-server": {
       "types": "./dist/domain-server/index.d.ts",
       "import": "./dist/domain-server/index.js"
+    },
+    "./domain-client": {
+      "types": "./dist/domain-client/index.d.ts",
+      "import": "./dist/domain-client/index.js"
+    },
+    "./application-server": {
+      "types": "./dist/application-server/index.d.ts",
+      "import": "./dist/application-server/index.js"
+    },
+    "./application-client": {
+      "types": "./dist/application-client/index.d.ts",
+      "import": "./dist/application-client/index.js"
+    },
+    "./infrastructure-server": {
+      "types": "./dist/infrastructure-server/index.d.ts",
+      "import": "./dist/infrastructure-server/index.js"
+    },
+    "./infrastructure-client": {
+      "types": "./dist/infrastructure-client/index.d.ts",
+      "import": "./dist/infrastructure-client/index.js"
     }
+  },
+  "scripts": {
+    "prisma-generate": "prisma generate --schema=./src/infrastructure/prisma/schema.prisma",
+    "prisma-migrate": "prisma migrate dev --schema=./src/infrastructure/prisma/schema.prisma",
+    "prisma-studio": "prisma studio --schema=./src/infrastructure/prisma/schema.prisma"
   },
   "dependencies": {
     "tslib": "^2.3.0",
     "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/utils": "workspace:*"
+    "@dailyuse/utils": "workspace:*",
+    "@prisma/client": "^6.2.0",
+    "prisma": "^6.2.0"
   },
   "devDependencies": {}
 }

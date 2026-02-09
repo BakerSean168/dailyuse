@@ -17,43 +17,10 @@ export class ActivateGoal {
   private constructor(private readonly apiClient: IGoalApiClient) {}
 
   /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(apiClient?: IGoalApiClient): ActivateGoal {
-    const container = GoalContainer.getInstance();
-    const client = apiClient || container.getApiClient();
-    ActivateGoal.instance = new ActivateGoal(client);
-    return ActivateGoal.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(): ActivateGoal {
-    if (!ActivateGoal.instance) {
-      ActivateGoal.instance = ActivateGoal.createInstance();
-    }
-    return ActivateGoal.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    ActivateGoal.instance = undefined as unknown as ActivateGoal;
-  }
-
-  /**
    * 执行用例
    */
-  async execute(uuid: string): Promise<Goal> {
-    const data = await this.apiClient.activateGoal(uuid);
+  async execute(id: string): Promise<Goal> {
+    const data = await this.apiClient.activateGoal(id);
     return Goal.fromClientDTO(data);
   }
 }
-
-/**
- * 便捷函数
- */
-export const activateGoal = (uuid: string): Promise<Goal> =>
-  ActivateGoal.getInstance().execute(uuid);

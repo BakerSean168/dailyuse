@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Example Module Exports
  * 示例模块 - 统一导出子文件夹中的命名导出的内容
  */
@@ -23,6 +23,9 @@ export * from './configs';
 
 // ============ API Requests/Responses ============
 export * from './api';
+
+// ============ DTOs ============
+// export * from './dtos'; // 暂无组合 DTO，待需要时再导出
 
 // ============ Primitives ============
 export * from './primitives';
