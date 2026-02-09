@@ -1,84 +1,28 @@
-/**
- * HTTP Module — 统一导出
+﻿/**
+ * HTTP Module  Re-exports from @dailyuse/http-client
  *
- * 提供两种风格的 HTTP 客户端，满足不同使用场景：
- *
- * 1. **AxiosHttpClient** — 实现 `IHttpClient` 接口
- *    - 返回 `Promise<T>`，与现有 DI 体系完全兼容
- *    - 用于所有已有的 HTTP Adapter（GoalHttpAdapter、TaskHttpAdapter 等）
- *    - 出错时抛出 `HttpClientError`
- *
- * 2. **ResultHttpClient** — 返回 `Promise<Result<T>>`
- *    - 永不抛出异常，所有错误转化为 `Result.fail`
- *    - 适合新代码、Vue Composables 中直接使用
- *    - 无需 try-catch
+ * 所有 HTTP 客户端功能已提取至独立包 @dailyuse/http-client。
+ * 此处保留 re-export 以保证向后兼容。
  *
  * @module @dailyuse/infrastructure-client/http
- *
- * @example
- * ```ts
- * // ── 方式 1: 与现有 DI 体系集成 ──
- * import { AxiosHttpClient, configureWebDependencies } from '@dailyuse/infrastructure-client';
- *
- * const httpClient = new AxiosHttpClient({
- *   baseURL: '/api/v1',
- *   tokenProvider: { getAccessToken: () => authStore.token },
- * });
- * configureWebDependencies(httpClient);
- *
- * // ── 方式 2: 新代码直接使用 ResultHttpClient ──
- * import { createResultHttpClient } from '@dailyuse/infrastructure-client';
- *
- * const api = createResultHttpClient({ baseURL: '/api/v1' });
- * const result = await api.get<User[]>('/users');
- *
- * if (result.ok) {
- *   console.log(result.data); // User[]
- * } else {
- *   console.error(result.error.message); // 无需 try-catch
- * }
- * ```
  */
 
-// ── Types ──
+//  Types 
 export type {
   AxiosHttpClientConfig,
   TokenProvider,
   TokenRefreshHandler,
-} from './types';
-export { DEFAULT_HTTP_CLIENT_CONFIG } from './types';
+} from '@dailyuse/http-client';
+export { DEFAULT_HTTP_CLIENT_CONFIG } from '@dailyuse/http-client';
 
-// ── Axios Instance Factory ──
-export { createAxiosInstance } from './axios-instance';
+//  Axios Instance Factory 
+export { createAxiosInstance } from '@dailyuse/http-client';
 
-// ── IHttpClient 实现（兼容现有 DI）──
-export { AxiosHttpClient, HttpClientError } from './axios-http-client';
+//  IHttpClient 实现 
+export { AxiosHttpClient, HttpClientError } from '@dailyuse/http-client';
 
-// ── Result HTTP Client（新代码推荐）──
-export { ResultHttpClient } from './result-http-client';
+//  Result HTTP Client 
+export { ResultHttpClient } from '@dailyuse/http-client';
 
-// ── 便捷工厂函数 ──
-import type { AxiosHttpClientConfig } from './types';
-import { AxiosHttpClient } from './axios-http-client';
-import { ResultHttpClient } from './result-http-client';
-
-/**
- * 创建 AxiosHttpClient 实例
- *
- * 工厂函数，等价于 `new AxiosHttpClient(config)`。
- * 返回的实例实现了 `IHttpClient` 接口，可直接传入
- * `configureWebDependencies()`。
- */
-export function createHttpClient(config?: AxiosHttpClientConfig): AxiosHttpClient {
-  return new AxiosHttpClient(config);
-}
-
-/**
- * 创建 ResultHttpClient 实例
- *
- * 工厂函数，等价于 `new ResultHttpClient(config)`。
- * 返回的实例所有方法都返回 `Promise<Result<T>>`，永不抛出异常。
- */
-export function createResultHttpClient(config?: AxiosHttpClientConfig): ResultHttpClient {
-  return new ResultHttpClient(config);
-}
+//  便捷工厂函数 
+export { createHttpClient, createResultHttpClient } from '@dailyuse/http-client';
