@@ -6,7 +6,7 @@
 
 import type { GetRuleReq, GetRuleRes } from '@/contracts/api';
 import { Rule } from '../../domain-client/aggregates/rule';
-import type { IRuleApiClient } from '../api-client.types';
+import type { IRuleApiClient } from '@/contracts/api';
 
 /**
  * Get Rule

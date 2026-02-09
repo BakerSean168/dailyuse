@@ -5,4 +5,3 @@
 
 export * from './services';
 export * from './mappers';
-export * from './api-client.types';

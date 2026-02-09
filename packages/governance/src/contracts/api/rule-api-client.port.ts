@@ -1,6 +1,9 @@
 /**
- * Rule API Client Interface
+ * Rule API Client Port Interface
  * 规则 API 客户端接口
+ * 
+ * Defines the contract for Rule API operations.
+ * Implementations: RuleHttpAdapter (web), RuleIpcAdapter (desktop)
  */
 
 import type {
@@ -16,7 +19,7 @@ import type {
   ListRulesRes,
   SearchRulesQuery,
   SearchRulesRes,
-} from '@/contracts/api';
+} from './rules';
 
 /**
  * Rule API Client Interface

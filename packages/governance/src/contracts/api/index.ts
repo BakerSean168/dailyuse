@@ -44,6 +44,10 @@ export * from './rules';
 // 规则修订记录查询：历史列表、详情查询
 export * from './rule-revisions';
 
+// ===== Rule API Client Interface =====
+// 规则 API 客户端接口（Port）
+export * from './rule-api-client.port';
+
 
 /**
  * 【扩展指南】

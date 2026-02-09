@@ -16,6 +16,7 @@
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/domain-client": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
+    "@dailyuse/ipc-client": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "@octokit/rest": "22.0.1",
     "axios": "1.13.2",

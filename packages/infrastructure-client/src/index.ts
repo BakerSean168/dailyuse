@@ -290,7 +290,25 @@ export {
   MemoryCacheAdapter,
   createIpcClient,
   getElectronAPI,
+  IpcClientError,
 } from './shared';
+
+// ============================================================
+// IPC Module (Result IPC Client)
+// ============================================================
+export {
+  // IpcClient 实现（兼容现有 IPC Adapter）
+  IpcClientImpl,
+  // Result IPC Client（新代码推荐）
+  ResultIpcClient,
+  // 工厂函数
+  createResultIpcClient,
+  // Types
+  type IpcClientConfig,
+  type ElectronBridge,
+  DEFAULT_IPC_CLIENT_CONFIG,
+  getElectronBridge,
+} from '@dailyuse/ipc-client';
 
 // ============================================================
 // HTTP Module (Axios Clients)
