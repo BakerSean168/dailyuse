@@ -10,6 +10,7 @@
  */
 
 import { Router } from 'express';
+import { prisma } from '@dailyuse/database';
 import {
   PrismaRuleRepository,
   PrismaRuleRevisionRepository,
@@ -58,9 +59,9 @@ export const GovernanceApiModule: GovernanceApiModuleDef = {
   register(context) {
     const { router, middleware } = context;
 
-    // 1. Composition Root — 组装依赖
-    const ruleRepository = new PrismaRuleRepository();
-    const revisionRepository = new PrismaRuleRevisionRepository();
+    // 1. Composition Root — 组装依赖（使用共享数据库单例）
+    const ruleRepository = new PrismaRuleRepository(prisma);
+    const revisionRepository = new PrismaRuleRevisionRepository(prisma);
 
     const handlers = {
       createRule: (req: any, cx: any) =>

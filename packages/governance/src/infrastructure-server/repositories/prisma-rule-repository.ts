@@ -11,7 +11,7 @@
  * - Transaction management (future)
  */
 
-import { PrismaClient } from '@prisma/client-governance';
+import type { PrismaClient } from '@dailyuse/database';
 import type { IRuleRepository, RuleFilter } from '../../domain-server/repositories/i-rule-repository';
 import type { Rule } from '../../domain-server/aggregates/rule';
 import { RuleId } from '../../domain-shared/value-objects/rule-id';
@@ -25,18 +25,10 @@ import { RulePersistenceMapper } from '../mappers/rule-persistence-mapper';
  * Uses PrismaClient for database access
  */
 export class PrismaRuleRepository implements IRuleRepository {
-  private prisma: PrismaClient;
+  private readonly prisma: PrismaClient;
 
-  constructor() {
-    // Initialize Prisma client
-    // In production, this should be injected via DI
-    this.prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.GOVERNANCE_DATABASE_URL || 'file:./governance.db',
-        },
-      },
-    });
+  constructor(prismaClient: PrismaClient) {
+    this.prisma = prismaClient;
   }
 
   /**
@@ -243,12 +235,4 @@ export class PrismaRuleRepository implements IRuleRepository {
     }
   }
 
-  /**
-   * Disconnect Prisma client
-   * 
-   * Should be called on application shutdown
-   */
-  async disconnect(): Promise<void> {
-    await this.prisma.$disconnect();
-  }
 }

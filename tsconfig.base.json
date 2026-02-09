@@ -19,6 +19,7 @@
     "useDefineForClassFields": true,
     "allowJs": false,
     "paths": {
+      "@dailyuse/database": ["packages/database/src/index.ts"],
       "@dailyuse/patterns": ["./packages/patterns/src/index.ts"],
       "@api/shared": ["./apps/api/src/shared/index.ts"],
       "@dailyuse/domain-shared": ["packages/domain-shared/src/index.ts"],

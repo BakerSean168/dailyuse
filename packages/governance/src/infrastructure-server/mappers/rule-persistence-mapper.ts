@@ -13,7 +13,7 @@
  * - Date handling
  */
 
-import type { Rule as PrismaRule } from '@prisma/client-governance';
+import type { Rule as PrismaRule } from '@dailyuse/database';
 import { Rule } from '../../domain-server/aggregates/rule';
 import { RuleId } from '../../domain-shared/value-objects/rule-id';
 import { RuleTag } from '../../domain-shared/value-objects/rule-tag';

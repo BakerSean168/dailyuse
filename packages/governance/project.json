@@ -12,7 +12,7 @@
         "command": "tsup",
         "cwd": "packages/governance"
       },
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build", "database:build"]
     },
     "lint": {
       "executor": "@nx/eslint:lint",

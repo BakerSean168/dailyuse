@@ -5,7 +5,7 @@
  * Implements IRuleRevisionRepository for read-only revision history access
  */
 
-import { PrismaClient } from '@prisma/client-governance';
+import type { PrismaClient } from '@dailyuse/database';
 import type { IRuleRevisionRepository } from '../../domain-server/repositories/i-rule-revision-repository';
 import { RuleRevision } from '../../domain-server/entities/rule-revision';
 import { RuleId, RuleRevisionId } from '../../domain-shared/value-objects';
@@ -18,16 +18,10 @@ import { ok, error } from '@dailyuse/contracts/result';
  * Provides read-only access to revision history
  */
 export class PrismaRuleRevisionRepository implements IRuleRevisionRepository {
-  private prisma: PrismaClient;
+  private readonly prisma: PrismaClient;
 
-  constructor() {
-    this.prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.GOVERNANCE_DATABASE_URL || 'file:./governance.db',
-        },
-      },
-    });
+  constructor(prismaClient: PrismaClient) {
+    this.prisma = prismaClient;
   }
 
   /**
@@ -141,10 +135,4 @@ export class PrismaRuleRevisionRepository implements IRuleRevisionRepository {
     }
   }
 
-  /**
-   * Disconnect Prisma client
-   */
-  async disconnect(): Promise<void> {
-    await this.prisma.$disconnect();
-  }
 }

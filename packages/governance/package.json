@@ -48,18 +48,13 @@
       "import": "./dist/infrastructure-client/index.js"
     }
   },
-  "scripts": {
-    "prisma-generate": "prisma generate --schema=./src/infrastructure/prisma/schema.prisma",
-    "prisma-migrate": "prisma migrate dev --schema=./src/infrastructure/prisma/schema.prisma",
-    "prisma-studio": "prisma studio --schema=./src/infrastructure/prisma/schema.prisma"
-  },
+  "scripts": {},
   "dependencies": {
     "tslib": "^2.3.0",
     "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/database": "workspace:*",
     "@dailyuse/utils": "workspace:*",
-    "@prisma/client": "^6.2.0",
-    "express": "^4.21.0",
-    "prisma": "^6.2.0"
+    "express": "^4.21.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0"
