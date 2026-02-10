@@ -7,7 +7,8 @@ import type {
   SessionInvalidatedEvent,
   IdentityActivatedEvent,
   IdentityDisabledEvent,
-  SessionCreatedEvent
+  SessionCreatedEvent,
+  IdentityCreatedEvent
 } from '../domain/events';
 import type { SessionRevokedEvent } from '../domain/events/session-revoked.event';
 
@@ -66,6 +67,12 @@ export type AuthEventMap = {
    * Triggered when user identity is disabled
    */
   'auth:identity-disabled': IdentityDisabledEvent;
+
+  /**
+   * Identity created event
+   * Triggered when a new AuthIdentity is created
+   */
+  'auth:identity-created': IdentityCreatedEvent;
 
   'auth:session-created': SessionCreatedEvent;
   'auth:session-revoked': SessionRevokedEvent;

@@ -2,35 +2,34 @@
  * 个人资料信息
  */
 
-import type { DomainDate, PersistenceDate } from "@/primitives";
-import type { TransferDate } from "@/primitives";
+import type { DomainDate, PersistenceDate } from '@/primitives';
+import type { TransferDate } from '@/primitives';
 
-import type { GenderType } from "./gender-type";
+import type { GenderType } from './gender-type';
 
 export interface AccountProfile {
-  nickname: string;     // 昵称
-  realName: string | null;    // 实名
-  avatarUrl: string | null;   // 头像链接
-  bio: string | null;         // 个人简介
+  nickname: string;
+  realName: string | null;
+  avatarUrl: string | null;
+  bio: string | null;
   gender: GenderType;
-  birthday: DomainDate | null; // 生日
+  birthday: DomainDate | null;
 }
 
-
 export interface AccountProfileDTO {
-  nickname: string;     // 昵称
-  realName: string | null;    // 实名
-  avatarUrl: string | null;   // 头像链接
-  bio: string | null;         // 个人简介
+  nickname: string;
+  realName: string | null;
+  avatarUrl: string | null;
+  bio: string | null;
   gender: GenderType;
-  birthday: TransferDate | null; // 生日
+  birthday: TransferDate | null;
 }
 
 export interface AccountProfilePersistenceDTO {
-  nickname: string;     // 昵称
-  realName: string | null;    // 实名
-  avatarUrl: string | null;   // 头像链接
-  bio: string | null;         // 个人简介
+  nickname: string;
+  realName: string | null;
+  avatarUrl: string | null;
+  bio: string | null;
   gender: GenderType;
-  birthday: PersistenceDate | null; // 生日
+  birthday: PersistenceDate | null;
 }

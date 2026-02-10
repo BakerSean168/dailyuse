@@ -14,7 +14,7 @@ import type { AuthSessionClientDTO } from './auth-session-client';
 import type { AuthSessionId } from '../value-objects/auth-session-id';
 import type { IdentityId } from '../value-objects/identity-id';
 import { SessionStatus } from '../value-objects/session-status';
-import type { DomainDate } from '@/primitives/domain-date';
+import type { DomainDate } from '@/primitives';
 import type { TransferDate } from '@/primitives';
 import type { PersistenceDate } from '@/primitives';
 
@@ -41,12 +41,6 @@ export interface AuthSessionServer {
    * ✅ 设备信息 (包含指纹、IP、User-Agent 等)
    */
   deviceInfo: DeviceInfo;
-
-  /**
-   * 会话令牌 (JWT JTI)
-   * Server 端用于 Redis/数据库验证
-   */
-  token: string;
 
   /**
    * 刷新令牌哈希 (如果支持刷新)
@@ -89,7 +83,6 @@ export interface AuthSessionServerDTO {
   id: AuthSessionId;
   identityId: IdentityId;
   deviceInfo: DeviceInfo;
-  token: string;
   refreshTokenHash?: string;
   status: SessionStatus;
   createdAt: TransferDate;
@@ -106,7 +99,6 @@ export interface AuthSessionPersistenceDTO {
   id: AuthSessionId;
   identityId: IdentityId;
   deviceInfo: DeviceInfo;
-  token: string;
   refreshTokenHash?: string;
   status: SessionStatus;
   createdAt: PersistenceDate;

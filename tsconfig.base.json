@@ -23,8 +23,13 @@
       "@dailyuse/patterns": ["./packages/patterns/src/index.ts"],
       "@api/shared": ["./apps/api/src/shared/index.ts"],
       "@dailyuse/domain-shared": ["packages/domain-shared/src/index.ts"],
+      "@dailyuse/domain-shared/*": ["packages/domain-shared/src/*/index.ts"],
       "@dailyuse/governance": ["packages/governance/src/index.ts"],
-      "@dailyuse/governance/*": ["packages/governance/src/*/index.ts"]
+      "@dailyuse/governance/*": ["packages/governance/src/*/index.ts"],
+      "@dailyuse/account": ["packages/account/src/index.ts"],
+      "@dailyuse/account/*": ["packages/account/src/*/index.ts"],
+      "@dailyuse/authentication": ["packages/authentication/src/index.ts"],
+      "@dailyuse/authentication/*": ["packages/authentication/src/*/index.ts"]
     }
   }
 }

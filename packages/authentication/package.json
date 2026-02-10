@@ -1,0 +1,60 @@
+{
+  "name": "@dailyuse/authentication",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./domain-shared": {
+      "types": "./dist/domain-shared.d.ts",
+      "import": "./dist/domain-shared.js"
+    },
+    "./domain-server": {
+      "types": "./dist/domain-server.d.ts",
+      "import": "./dist/domain-server.js"
+    },
+    "./application-server": {
+      "types": "./dist/application-server.d.ts",
+      "import": "./dist/application-server.js"
+    },
+    "./infrastructure-server": {
+      "types": "./dist/infrastructure-server.d.ts",
+      "import": "./dist/infrastructure-server.js"
+    },
+    "./infrastructure-client": {
+      "types": "./dist/infrastructure-client.d.ts",
+      "import": "./dist/infrastructure-client.js"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/database": "workspace:*",
+    "@dailyuse/utils": "workspace:*",
+    "@dailyuse/domain-shared": "workspace:*",
+    "argon2": "^0.43.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/passport-jwt": "^4.0.1",
+    "@types/passport-local": "^1.0.38",
+    "typescript": "~5.9.2"
+  }
+}
