@@ -31,10 +31,6 @@
       "types": "./dist/reminder/index.d.ts",
       "import": "./dist/reminder/index.js"
     },
-    "./account": {
-      "types": "./dist/account/index.d.ts",
-      "import": "./dist/account/index.js"
-    },
     "./repository": {
       "types": "./dist/repository/index.d.ts",
       "import": "./dist/repository/index.js"
@@ -62,7 +58,6 @@
   },
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/domain-server": "workspace:*",
     "@dailyuse/patterns": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "bcryptjs": "^2.4.3",

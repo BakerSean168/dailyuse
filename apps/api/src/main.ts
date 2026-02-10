@@ -5,25 +5,24 @@
  * 每个模块实现 IApiModule 接口，自治管理依赖和路由。
  *
  * 模块注册策略：
- * - 新模块：直接实现 IApiModule（如 GovernanceApiModule）
- * - 旧模块：通过 legacy-adapters 适配（如 LegacyAccountModule）
+ * - 每个模块实现 IApiModule 接口（如 GovernanceApiModule）
+ * - 模块内部自行管理数据库访问（通过 @dailyuse/database）
  * - 故障模块：注释掉即可，不影响其他模块启动
  */
 
 // 环境配置必须最先加载（包含 dotenv 加载逻辑）
 import { env } from './shared/infrastructure/config/env.js';
-import { connectPrisma, disconnectPrisma, prisma } from './shared/infrastructure/config/prisma';
+import { prisma, connectDatabase, disconnectDatabase } from '@dailyuse/database';
 import { initializeLogger, getStartupInfo } from './shared/infrastructure/config/logger.config';
 import { createLogger } from '@dailyuse/utils';
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
-import { DataSourceManager } from '@dailyuse/infrastructure-server';
 import { ApiBootstrapper } from './bootstrap';
 
 // === 模块导入 ===
 // 新模块（来自独立包，完全自治）
 import { GovernanceApiModule } from '@dailyuse/governance/api';
-// 旧模块适配器（临时胶水代码，待各模块重构后删除）
-import { LegacyAccountModule, LegacyAuthenticationModule } from './legacy-adapters';
+import { AccountApiModule } from '@dailyuse/account/api';
+import { AuthenticationApiModule } from '@dailyuse/authentication/api';
 
 // 初始化日志系统
 initializeLogger();
@@ -41,36 +40,30 @@ async function bootstrap(): Promise<void> {
 
   // 1. 数据库连接
   try {
-    await connectPrisma();
+    await connectDatabase();
     logger.info('Database connected successfully');
   } catch (dbError) {
     logger.warn('Database connection failed, starting in limited mode', dbError);
   }
 
-  // 2. DataSourceManager 初始化（兼容旧模块 DI）
-  DataSourceManager.initialize({
-    type: 'prisma',
-    prismaClient: prisma,
-  });
-
-  // 3. 白名单注册 & 启动
+  // 2. 白名单注册 & 启动
   bootstrapper = new ApiBootstrapper(prisma);
 
   const app = await bootstrapper
     // === 核心：白名单注册 ===
-    .register(GovernanceApiModule)         // ✅ 新模块（自治）
-    .register(LegacyAccountModule)         // ✅ 旧模块适配
-    .register(LegacyAuthenticationModule)  // ✅ 旧模块适配
+    .register(GovernanceApiModule)         // ✅ 治理模块
+    .register(AccountApiModule)            // ✅ 账户模块
+    .register(AuthenticationApiModule)     // ✅ 认证模块
     // .register(LegacyGoalModule)         // ❌ 暂不加载
     // .register(LegacyTaskModule)         // ❌ 暂不加载
     .init();
 
-  // 4. 执行 InitializationManager 中的启动任务（各模块在 register 阶段注册的初始化任务）
+  // 3. 执行 InitializationManager 中的启动任务（各模块在 register 阶段注册的初始化任务）
   const initManager = InitializationManager.getInstance();
   await initManager.executePhase(InitializationPhase.APP_STARTUP);
   logger.info('✅ Initialization tasks executed');
 
-  // 5. 启动监听
+  // 4. 启动监听
   app.listen(env.API_PORT, env.API_HOST, () => {
     logger.info(`✅ API server listening on http://${env.API_HOST}:${env.API_PORT}`);
   });
@@ -89,7 +82,7 @@ async function gracefulShutdown(signal: string): Promise<void> {
     await bootstrapper.destroy();
   }
 
-  await disconnectPrisma();
+  await disconnectDatabase();
   logger.info('Database disconnected');
 
   process.exit(0);

@@ -42,7 +42,6 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
   // ================= 1. 内部状态 (Backing Fields) =================
   private _identityId: IdentityId;
   private _deviceInfo: DeviceInfo;
-  private _token: string;
   private _refreshTokenHash: string | undefined;
   private _status: typeof SessionStatus.ACTIVE;
   private _createdAt: Date;
@@ -56,7 +55,6 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
 
     this._identityId = props.identityId;
     this._deviceInfo = DeviceInfo.fromDTO(props.deviceInfo);
-    this._token = props.token;
     this._refreshTokenHash = props.refreshTokenHash;
     this._status = SessionStatus.of(props.status);
     this._createdAt = new Date(props.createdAt);
@@ -72,10 +70,6 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
 
   get deviceInfo(): IDeviceInfo {
     return this._deviceInfo.toDTO();
-  }
-
-  get token(): string {
-    return this._token;
   }
 
   get refreshTokenHash(): string | undefined {
@@ -111,7 +105,6 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
     id: AuthSessionId;
     identityId: IdentityId;
     deviceInfo: IDeviceInfo;
-    token: string;
     refreshTokenHash?: string;
     durationMs?: number;
   }): AuthSession {
@@ -122,7 +115,6 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
       id: params.id,
       identityId: params.identityId,
       deviceInfo: params.deviceInfo,
-      token: params.token,
       refreshTokenHash: params.refreshTokenHash,
       status: SessionStatus.ACTIVE,
       createdAt: now,
@@ -148,7 +140,6 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
       id: dto.id,
       identityId: dto.identityId,
       deviceInfo: dto.deviceInfo,
-      token: dto.token,
       refreshTokenHash: dto.refreshTokenHash,
       status: dto.status,
       createdAt: dto.createdAt.getTime(),
@@ -287,8 +278,8 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
   /**
    * ✅ 检查是否是当前会话
    */
-  public isCurrentSession(currentToken: string): boolean {
-    return this._token === currentToken;
+  public isCurrentSession(sessionId: string): boolean {
+    return this.id === sessionId;
   }
 
   // ================= 6. 序列化 (Serialization) =================
@@ -301,7 +292,6 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
       id: this.id,
       identityId: this._identityId,
       deviceInfo: this._deviceInfo.toDTO(),
-      token: this._token,
       refreshTokenHash: this._refreshTokenHash,
       status: this._status,
       createdAt: this._createdAt.getTime(),
@@ -337,7 +327,6 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
       id: this.id,
       identityId: this._identityId,
       deviceInfo: this._deviceInfo.toDTO(),
-      token: this._token,
       refreshTokenHash: this._refreshTokenHash,
       status: this._status,
       createdAt: this._createdAt,

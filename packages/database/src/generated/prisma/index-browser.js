@@ -577,6 +577,36 @@ exports.Prisma.KeyResultWeightSnapshotScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.RuleScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  title: 'title',
+  description: 'description',
+  severity: 'severity',
+  status: 'status',
+  deprecationReason: 'deprecationReason',
+  replacementRuleId: 'replacementRuleId',
+  liveReferenceLocation: 'liveReferenceLocation',
+  tags: 'tags',
+  goodExamples: 'goodExamples',
+  badExamples: 'badExamples',
+  authorId: 'authorId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RuleRevisionScalarFieldEnum = {
+  id: 'id',
+  ruleId: 'ruleId',
+  revisionNumber: 'revisionNumber',
+  authorId: 'authorId',
+  changedFields: 'changedFields',
+  previousValues: 'previousValues',
+  newValues: 'newValues',
+  changeType: 'changeType',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.NotificationScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -1356,6 +1386,8 @@ exports.Prisma.ModelName = {
   GoalReview: 'GoalReview',
   GoalStatistic: 'GoalStatistic',
   KeyResultWeightSnapshot: 'KeyResultWeightSnapshot',
+  Rule: 'Rule',
+  RuleRevision: 'RuleRevision',
   Notification: 'Notification',
   NotificationChannel: 'NotificationChannel',
   NotificationHistory: 'NotificationHistory',

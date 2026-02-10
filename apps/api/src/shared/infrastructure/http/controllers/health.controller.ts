@@ -5,7 +5,7 @@
  */
 
 import type { Request, Response } from 'express';
-import { prisma } from '@/shared/infrastructure/config/prisma';
+import { prisma } from '@dailyuse/database';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('HealthController');

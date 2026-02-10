@@ -15,7 +15,7 @@ import { ApiBootstrapper } from '../bootstrap';
 export async function createApp(db?: DatabaseClient): Promise<Express> {
   // 使用新的 ApiBootstrapper 创建测试应用
   // 传入 db 或使用默认的 prisma 实例
-  const { prisma } = await import('../shared/infrastructure/config/prisma');
+  const { prisma } = await import('@dailyuse/database');
   const bootstrapper = new ApiBootstrapper(db ?? prisma);
   return bootstrapper.init();
 }

@@ -26,9 +26,6 @@ export * from './schedule';
 // Reminder module
 export * from './reminder';
 
-// Account module
-export * from './account';
-
 // Repository module
 export * from './repository';
 
@@ -40,9 +37,6 @@ export * from './setting';
 
 // Notification module
 export * from './notification';
-
-// Authentication module
-export * from './authentication';
 
 // AI module
 export * from './ai';

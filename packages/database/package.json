@@ -16,6 +16,8 @@
     }
   },
   "scripts": {
+    "postinstall": "prisma generate --config ./prisma/prisma.config.ts",
+    "build": "pnpm run postinstall",
     "prisma:generate": "prisma generate --config ./prisma/prisma.config.ts",
     "prisma:migrate:dev": "prisma migrate dev --config ./prisma/prisma.config.ts",
     "prisma:migrate:deploy": "prisma migrate deploy --config ./prisma/prisma.config.ts",
@@ -24,12 +26,14 @@
     "prisma:push": "prisma db push --config ./prisma/prisma.config.ts"
   },
   "dependencies": {
-    "@prisma/client": "^7.0.0"
+    "@prisma/adapter-pg": "7.3.0",
+    "@prisma/client": "^7.0.0",
+    "pg": "8.18.0"
   },
   "devDependencies": {
+    "dotenv": "^16.4.0",
     "prisma": "^7.0.0",
     "tsx": "^4.7.0",
-    "dotenv": "^16.4.0",
     "typescript": "^5.9.3"
   },
   "files": [
