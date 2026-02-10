@@ -4,4 +4,4 @@
  * 从 @dailyuse/infrastructure-client 重导出 Container
  */
 
-export { GoalContainer } from '@dailyuse/infrastructure-client';
+export { GoalContainer } from '@dailyuse/goal/infrastructure-client';

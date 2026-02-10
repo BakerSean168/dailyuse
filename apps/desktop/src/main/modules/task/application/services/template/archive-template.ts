@@ -2,7 +2,7 @@
  * Archive Task Template Use Case
  */
 
-import { TaskContainer } from '@dailyuse/infrastructure-server';
+import { TaskContainer } from '@dailyuse/task/infrastructure-server';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 
 export async function archiveTemplateUseCase(uuid: string): Promise<TaskTemplateClientDTO> {

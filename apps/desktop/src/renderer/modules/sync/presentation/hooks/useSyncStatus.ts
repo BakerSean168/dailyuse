@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { syncApplicationService } from '@dailyuse/application-client/sync';
+import { syncApplicationService } from '@dailyuse/sync/application-client';
 import type { SyncStatusResponse } from '@dailyuse/contracts/sync';
 
 export interface UseSyncStatusResult {

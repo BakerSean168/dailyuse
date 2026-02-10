@@ -9,7 +9,7 @@
  */
 
 import { ref, computed } from 'vue';
-import { aiApplicationService as documentSummarizerApplicationService } from '@dailyuse/application-client/ai';
+import { aiApplicationService as documentSummarizerApplicationService } from '@dailyuse/ai/application-client';
 import type { SummaryResult } from '../types/summarization';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 

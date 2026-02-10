@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { taskApplicationService } from '@dailyuse/application-client/task';
+import { taskApplicationService } from '@dailyuse/task/application-client';
 import type { GetTaskStatisticsRequest } from '@dailyuse/contracts/task';
 
 // ===== Types =====

@@ -1,4 +1,4 @@
-import { NotificationService } from '@dailyuse/application-server';
+import { NotificationService } from '@dailyuse/notification/application-server';
 import type {
   NotificationPreferenceClientDTO,
   NotificationCategory,

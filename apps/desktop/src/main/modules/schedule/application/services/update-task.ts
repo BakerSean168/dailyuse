@@ -1,4 +1,4 @@
-import { ScheduleContainer } from '@dailyuse/infrastructure-server';
+import { ScheduleContainer } from '@dailyuse/schedule/infrastructure-server';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { createLogger } from '@dailyuse/utils';
 

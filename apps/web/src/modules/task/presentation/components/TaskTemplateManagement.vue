@@ -150,9 +150,9 @@ import TaskDAGVisualization from './dag/TaskDAGVisualization.vue';
 import TaskTemplateDialog from './dialogs/TaskTemplateDialog.vue';
 import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/contracts/task';
 import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
-import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
+import { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
 // composables
-import { getTaskDependencyApiClient } from '@dailyuse/infrastructure-client';
+import { getTaskDependencyApiClient } from '@dailyuse/task/infrastructure-client';
 import { useTaskTemplate } from '../composables/useTaskTemplate';
 
 const taskDependencyApiClient = getTaskDependencyApiClient();

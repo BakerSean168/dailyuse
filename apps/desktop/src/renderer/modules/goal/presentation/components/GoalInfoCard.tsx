@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import type { Goal } from '@dailyuse/domain-client/goal';
+import type { Goal } from '@dailyuse/goal/domain-client';
 import {
   Card,
   CardContent,

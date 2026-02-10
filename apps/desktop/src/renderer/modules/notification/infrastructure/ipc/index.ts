@@ -7,4 +7,4 @@
 export {
   NotificationIpcAdapter,
   createNotificationIpcAdapter,
-} from '@dailyuse/infrastructure-client';
+} from '@dailyuse/notification/infrastructure-client';

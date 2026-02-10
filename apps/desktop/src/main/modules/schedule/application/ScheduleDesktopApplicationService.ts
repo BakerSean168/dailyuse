@@ -1,7 +1,7 @@
 /**
  * Schedule Desktop Application Service - Facade Pattern
  *
- * 包装 @dailyuse/application-server/schedule 的所有 Use Cases
+ * 包装 @dailyuse/schedule/application-server 的所有 Use Cases
  * 为 Desktop IPC handlers 提供统一的应用服务入口
  * 
  * 所有具体的业务逻辑都委托给 services 文件夹中的专门服务

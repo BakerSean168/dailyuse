@@ -11,7 +11,7 @@ import type {
 } from '@dailyuse/contracts/reminder';
 import { ReminderType, TriggerType } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { reminderApplicationService } from '@dailyuse/application-client/reminder';
+import { reminderApplicationService } from '@dailyuse/reminder/application-client';
 
 interface ReminderEditDialogProps {
   template: ReminderTemplateClientDTO;

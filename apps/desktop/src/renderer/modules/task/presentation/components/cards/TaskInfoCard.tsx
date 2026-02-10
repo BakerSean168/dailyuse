@@ -6,7 +6,7 @@
  * EPIC-015 重构: 使用 Entity 类型
  */
 
-import type { TaskTemplate } from '@dailyuse/domain-client/task';
+import type { TaskTemplate } from '@dailyuse/task/domain-client';
 import { UrgencyLevel } from '@dailyuse/contracts/shared';
 import {
   Card,

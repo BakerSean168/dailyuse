@@ -379,7 +379,7 @@ import { useDebounceFn } from '@vueuse/core';
 import ProviderTemplateSelector from './ProviderTemplateSelector.vue';
 import { AIProviderType, getTemplateById, type AIProviderTemplate, type AIModelInfo } from '@dailyuse/contracts/ai';
 import type { AIProviderConfigClientDTO } from '@dailyuse/contracts/ai';
-import { getAIProviderConfigApiClient } from '@dailyuse/infrastructure-client';
+import { getAIProviderConfigApiClient } from '@dailyuse/ai/infrastructure-client';
 
 const aiProviderApiClient = getAIProviderConfigApiClient();
 

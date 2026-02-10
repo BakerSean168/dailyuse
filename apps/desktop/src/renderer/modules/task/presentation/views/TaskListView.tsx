@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import type { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
+import type { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
 import { TaskCard } from '../components/TaskCard';
 import { TaskCreateDialog } from '../components/TaskCreateDialog';
 import { TaskStatistics } from '../components/TaskStatistics';

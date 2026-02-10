@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import type { KeyResult, Goal } from '@dailyuse/domain-client/goal';
+import type { KeyResult, Goal } from '@dailyuse/goal/domain-client';
 import type {
   AddKeyResultRequest,
   UpdateKeyResultRequest,

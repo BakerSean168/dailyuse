@@ -5,7 +5,7 @@ import {
   DeactivateFocusMode,
   GetActiveFocusMode,
   GetFocusModeHistory,
-} from '@dailyuse/application-client/goal';
+} from '@dailyuse/goal/application-client';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 /**

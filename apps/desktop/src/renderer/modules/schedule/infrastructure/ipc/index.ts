@@ -9,4 +9,4 @@ export {
   ScheduleEventIpcAdapter,
   createScheduleTaskIpcAdapter,
   createScheduleEventIpcAdapter,
-} from '@dailyuse/infrastructure-client';
+} from '@dailyuse/schedule/infrastructure-client';

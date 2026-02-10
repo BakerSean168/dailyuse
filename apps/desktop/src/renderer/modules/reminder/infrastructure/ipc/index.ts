@@ -7,4 +7,4 @@
 export {
   ReminderIpcAdapter,
   createReminderIpcAdapter,
-} from '@dailyuse/infrastructure-client';
+} from '@dailyuse/reminder/infrastructure-client';

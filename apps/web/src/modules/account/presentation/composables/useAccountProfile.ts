@@ -40,7 +40,7 @@ import {
   ActivateAccount,
   DeleteAccount,
   GetAccountHistory,
-} from '@dailyuse/application-client/account';
+} from '@dailyuse/account/application-client';
 
 export function useAccountProfile() {
   const accountStore = useAccountStore();

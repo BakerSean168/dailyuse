@@ -6,4 +6,4 @@
 
 export {
   DashboardIpcAdapter,
-} from '@dailyuse/infrastructure-client';
+} from '@dailyuse/dashboard/infrastructure-client';

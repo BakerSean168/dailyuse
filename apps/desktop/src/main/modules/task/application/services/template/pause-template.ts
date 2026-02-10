@@ -2,7 +2,7 @@
  * Pause Task Template Use Case
  */
 
-import { PauseTaskTemplate } from '@dailyuse/application-server';
+import { PauseTaskTemplate } from '@dailyuse/task/application-server';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 
 export async function pauseTemplateUseCase(uuid: string): Promise<TaskTemplateClientDTO> {

@@ -4,7 +4,7 @@
  */
 
 import { ref, computed, onMounted } from 'vue';
-import { settingApplicationService as UserSettingWebApplicationService } from '@dailyuse/application-client/setting';
+import { settingApplicationService as UserSettingWebApplicationService } from '@dailyuse/setting/application-client';
 import { useUserSettingStore } from '../stores/userSettingStore';
 import { useMessage } from '@dailyuse/ui-vuetify';
 import type {

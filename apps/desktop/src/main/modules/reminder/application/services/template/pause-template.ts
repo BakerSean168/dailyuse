@@ -2,7 +2,7 @@
  * Pause Reminder Template Service
  */
 
-import { ReminderContainer } from '@dailyuse/infrastructure-server';
+import { ReminderContainer } from '@dailyuse/reminder/infrastructure-server';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { createLogger } from '@dailyuse/utils';
 

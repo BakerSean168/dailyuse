@@ -6,7 +6,7 @@ import type {
   UpdateGoalRequest,
   KeyResultWeightSnapshotServerDTO,
 } from '@dailyuse/contracts/goal';
-import { goalApplicationService as WeightSnapshotWebApplicationService } from '@dailyuse/application-client/goal';
+import { goalApplicationService as WeightSnapshotWebApplicationService } from '@dailyuse/goal/application-client';
 import { getGoalStore } from '../stores/goalStore';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 

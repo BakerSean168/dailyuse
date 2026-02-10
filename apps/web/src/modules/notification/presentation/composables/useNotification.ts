@@ -10,7 +10,7 @@
 
 // @ts-nocheck - Some types not yet defined, needs refactoring
 import { ref, computed } from 'vue';
-import { notificationApplicationService } from '@dailyuse/application-client/notification';
+import { notificationApplicationService } from '@dailyuse/notification/application-client';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import { useWebSocket } from './useWebSocket';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';

@@ -16,7 +16,7 @@ import {
   UpdateReminderGroup,
   DeleteReminderGroup,
   ToggleReminderGroupStatus,
-} from '@dailyuse/application-client/reminder';
+} from '@dailyuse/reminder/application-client';
 import { getReminderStore } from '../stores/reminderStore';
 import { useMessage } from '@dailyuse/ui-vuetify';
 

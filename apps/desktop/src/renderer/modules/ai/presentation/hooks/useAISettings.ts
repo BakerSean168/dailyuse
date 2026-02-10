@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { aiApplicationService } from '@dailyuse/application-client/ai';
+import { aiApplicationService } from '@dailyuse/ai/application-client';
 import type {
   AIProviderConfigClientDTO,
   AIProviderConfigSummary,

@@ -6,7 +6,7 @@
 
 export {
   SettingIpcAdapter,
-} from '@dailyuse/infrastructure-client';
+} from '@dailyuse/setting/infrastructure-client';
 
 // 本地类型定义（尚未提取到 contracts）
 export * from './setting.ipc-client';

@@ -25,7 +25,7 @@ import {
   ChangePassword,
   GetActiveSessions,
   RevokeSession,
-} from '@dailyuse/application-client/authentication';
+} from '@dailyuse/authentication/application-client';
 
 export function useAuth() {
   const authStore = useAuthenticationStore();

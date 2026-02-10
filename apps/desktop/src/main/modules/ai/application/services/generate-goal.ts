@@ -1,4 +1,4 @@
-import { GenerateGoal } from '@dailyuse/application-server';
+import { GenerateGoal } from '@dailyuse/ai/application-server';
 import type { GenerateGoalRequest, GenerateGoalResponse } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 

@@ -7,7 +7,7 @@
 export * from './application/services';
 
 // 应用层事件
-export { AUTH_EVENTS } from '@dailyuse/application-client/authentication';
+export { AUTH_EVENTS } from '@dailyuse/authentication/application-client';
 
 // 基础设施层 API 客户端
 export * from './infrastructure/api';

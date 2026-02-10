@@ -5,8 +5,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { NotificationType, NotificationStatus } from '@dailyuse/contracts/notification';
-import { NotificationClient } from '@dailyuse/domain-client/notification';
-import { notificationApplicationService } from '@dailyuse/application-client/notification';
+import { NotificationClient } from '@dailyuse/notification/domain-client';
+import { notificationApplicationService } from '@dailyuse/notification/application-client';
 
 // Re-export for backward compatibility
 export type { NotificationType, NotificationStatus };

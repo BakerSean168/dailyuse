@@ -113,7 +113,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
-import { TaskTemplate } from '@dailyuse/domain-client/task';
+import { TaskTemplate } from '@dailyuse/task/domain-client';
 
 // 本地类型定义
 interface ReminderAlert {

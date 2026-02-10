@@ -100,7 +100,7 @@
 
 import { ref, computed, watch, reactive, defineEmits } from 'vue';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
-import { TaskTemplate } from '@dailyuse/domain-client/task';
+import { TaskTemplate } from '@dailyuse/task/domain-client';
 import { useTaskTemplate } from '../../composables/useTaskTemplate';
 import { useTaskStore } from '../../stores/taskStore';
 

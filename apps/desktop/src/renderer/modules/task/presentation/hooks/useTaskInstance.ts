@@ -15,8 +15,8 @@
 
 import { useCallback } from 'react';
 import { useTaskStore } from '../stores/taskStore';
-import { taskApplicationService } from '@dailyuse/application-client/task';
-import type { TaskInstance } from '@dailyuse/domain-client/task';
+import { taskApplicationService } from '@dailyuse/task/application-client';
+import type { TaskInstance } from '@dailyuse/task/domain-client';
 
 // ===== Types =====
 

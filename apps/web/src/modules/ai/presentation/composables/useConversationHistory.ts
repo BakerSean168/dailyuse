@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue';
 import type { Conversation, ConversationGroup, DateGroup } from '../types/conversation';
-import { ListConversations, DeleteConversation } from '@dailyuse/application-client/ai';
+import { ListConversations, DeleteConversation } from '@dailyuse/ai/application-client';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 // Conversation history management (migrated from legacy ai-chat module)

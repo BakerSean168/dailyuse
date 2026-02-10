@@ -11,7 +11,7 @@ import {
 import { useAuthStore } from '../presentation/stores/authenticationStore';
 import { useAccountStore } from '@/modules/account';
 import { AuthManager } from '../../../shared/api/core/interceptors';
-import { Account } from '@dailyuse/domain-client/account';
+import { Account } from '@dailyuse/account/domain-client';
 /**
  * 注册认证模块的所有初始化任务
  */

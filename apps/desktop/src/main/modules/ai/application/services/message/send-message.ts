@@ -1,4 +1,4 @@
-import { SendMessage } from '@dailyuse/application-server';
+import { SendMessage } from '@dailyuse/ai/application-server';
 import type { MessageResponse } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 

@@ -240,11 +240,11 @@ import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGene
 import { useMessage } from '@dailyuse/ui-vuetify';
 import { api } from '@/shared/api/instances';
 import { aiService } from '@/shared/services/aiService';
-import { getRepositoryApiClient } from '@dailyuse/infrastructure-client';
+import { getRepositoryApiClient } from '@dailyuse/ai/infrastructure-client';
 import { useRepositoryStore } from '@/modules/repository/presentation/stores/repositoryStore';
 import { useFolderStore } from '@/modules/repository/presentation/stores/folderStore';
 import { useResourceStore } from '@/modules/repository/presentation/stores/resourceStore';
-import { Folder, Resource } from '@dailyuse/domain-client/repository';
+import { Folder, Resource } from '@dailyuse/repository/domain-client';
 
 const repositoryApiClient = getRepositoryApiClient();
 

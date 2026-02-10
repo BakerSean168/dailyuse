@@ -10,7 +10,7 @@
 
 import { eventBus, type DomainEvent } from '@dailyuse/utils';
 import { GoalContainer } from '@dailyuse/infrastructure-server';
-import { GoalRecord, type KeyResult } from '@dailyuse/domain-server/goal';
+import { GoalRecord, type KeyResult } from '@dailyuse/goal/domain-server';
 
 let isInitialized = false;
 

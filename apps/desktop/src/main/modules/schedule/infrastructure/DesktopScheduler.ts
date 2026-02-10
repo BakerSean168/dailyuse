@@ -15,7 +15,7 @@ import {
   type ScheduledItem,
   type ScheduleTaskQueueStatus,
   type IScheduleTaskLoader,
-} from '@dailyuse/application-server';
+} from '@dailyuse/schedule/application-server';
 import { DesktopScheduleMonitor } from './DesktopScheduleMonitor';
 
 /**

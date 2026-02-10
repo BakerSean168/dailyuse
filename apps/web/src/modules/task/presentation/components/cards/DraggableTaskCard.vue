@@ -53,7 +53,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
+import { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
 import TaskTemplateCard from './TaskTemplateCard.vue';
 import { useDragAndDrop } from '@/shared/composables/useDragAndDrop';
 import { TaskDependencyDragDropService } from '@/modules/task/application/services/TaskDependencyDragDropService';

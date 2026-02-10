@@ -13,7 +13,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authenticationApplicationService } from '@dailyuse/application-client/authentication';
+import { authenticationApplicationService } from '@dailyuse/authentication/application-client';
 import type { LoginRequest, RegisterRequest } from '@dailyuse/contracts/authentication';
 
 // ===== Types =====

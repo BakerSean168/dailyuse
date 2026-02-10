@@ -9,8 +9,8 @@
  */
 
 import { ref, onMounted } from 'vue';
-import { scheduleApplicationService as scheduleWebApplicationService } from '@dailyuse/application-client/schedule';
-import { scheduleApplicationService as scheduleConflictApplicationService } from '@dailyuse/application-client/schedule';
+import { scheduleApplicationService as scheduleWebApplicationService } from '@dailyuse/schedule/application-client';
+import { scheduleApplicationService as scheduleConflictApplicationService } from '@dailyuse/schedule/application-client';
 import { SourceModule } from '@dailyuse/contracts/schedule';
 import type {
   ScheduleStatisticsClientDTO,
@@ -21,7 +21,7 @@ import type {
   CreateScheduleRequest,
   ResolveConflictRequest,
 } from '@dailyuse/contracts/schedule';
-import { ScheduleTask } from '@dailyuse/domain-client/schedule';
+import { ScheduleTask } from '@dailyuse/schedule/domain-client';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 /**

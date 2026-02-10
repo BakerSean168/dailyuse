@@ -26,7 +26,7 @@ import {
   SubscribePlan,
   CancelSubscription,
   GetAccountStats,
-} from '@dailyuse/application-client/account';
+} from '@dailyuse/account/application-client';
 
 export function useAccountSubscription() {
   const accountStore = useAccountStore();

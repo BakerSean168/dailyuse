@@ -1,4 +1,4 @@
-import { GetWidgetConfig } from '@dailyuse/application-server';
+import { GetWidgetConfig } from '@dailyuse/dashboard/application-server';
 import type { WidgetConfigData } from '@dailyuse/contracts/dashboard';
 import { createLogger } from '@dailyuse/utils';
 

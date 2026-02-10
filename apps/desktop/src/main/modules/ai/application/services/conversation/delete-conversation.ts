@@ -1,4 +1,4 @@
-import { DeleteConversation } from '@dailyuse/application-server';
+import { DeleteConversation } from '@dailyuse/ai/application-server';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('deleteConversationService');

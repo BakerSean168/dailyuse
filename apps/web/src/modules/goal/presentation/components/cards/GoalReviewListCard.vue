@@ -146,7 +146,7 @@
 <script setup lang="ts">
 import { ref, computed, defineExpose, watch } from 'vue';
 import type { GoalClient } from '@dailyuse/contracts/goal';
-import { Goal, GoalReview } from '@dailyuse/domain-client/goal';
+import { Goal, GoalReview } from '@dailyuse/goal/domain-client';
 import { format } from 'date-fns';
 import { useRouter } from 'vue-router';
 import { useGoal } from '../../composables/useGoal';

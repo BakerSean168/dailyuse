@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import type { GoalRecord, KeyResult } from '@dailyuse/domain-client/goal';
+import type { GoalRecord, KeyResult } from '@dailyuse/goal/domain-client';
 import type { CreateGoalRecordRequest } from '@dailyuse/contracts/goal';
 import {
   Dialog,

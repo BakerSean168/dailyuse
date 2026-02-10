@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import type { GoalReview, Goal } from '@dailyuse/domain-client/goal';
+import type { GoalReview, Goal } from '@dailyuse/goal/domain-client';
 import type {
   CreateGoalReviewRequest,
   UpdateGoalReviewRequest,

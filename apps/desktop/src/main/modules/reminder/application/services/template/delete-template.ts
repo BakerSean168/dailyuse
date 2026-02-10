@@ -2,7 +2,7 @@
  * Delete Reminder Template Service
  */
 
-import { DeleteReminderTemplate } from '@dailyuse/application-server';
+import { DeleteReminderTemplate } from '@dailyuse/reminder/application-server';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('deleteTemplateService');

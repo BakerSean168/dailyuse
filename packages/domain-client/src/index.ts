@@ -26,28 +26,28 @@ export * from './account/index.js';
 export * from './authentication/index.js';
 
 // Repository 模块
-export * from './repository/index.js';
+export * from '@dailyuse/repository/domain-client';
 
 // Task 模块
-export * from './task/index.js';
+export * from '@dailyuse/task/domain-client';
 
 // Setting 模块
-export * from './setting/index.js';
+export * from '@dailyuse/setting/domain-client';
 
 // Goal 模块
-export * from './goal/index.js';
+export * from '@dailyuse/goal/domain-client';
 
 // Reminder 模块
-export * from './reminder/index.js';
+export * from '@dailyuse/reminder/domain-client';
 
 // Notification 模块
-export * from './notification/index.js';
+export * from '@dailyuse/notification/domain-client';
 
 // Editor 模块
-export * from './editor/index.js';
+export * from '@dailyuse/editor/domain-client';
 
 // Schedule 模块
-export * from './schedule/index.js';
+export * from '@dailyuse/schedule/domain-client';
 
 // AI 模块
 export * from './ai/index.js';

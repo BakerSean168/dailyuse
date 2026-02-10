@@ -1,7 +1,7 @@
 /**
  * Dashboard Desktop Application Service
  *
- * 包装 @dailyuse/application-server/dashboard 的所有 Use Cases
+ * 包装 @dailyuse/dashboard/application-server 的所有 Use Cases
  * 为 Desktop IPC handlers 提供统一的应用服务入口
  */
 
@@ -12,7 +12,7 @@ import {
   ResetWidgetConfig,
   InvalidateDashboardCache,
   DashboardContainer,
-} from '@dailyuse/application-server';
+} from '@dailyuse/dashboard/application-server';
 
 import type {
   DashboardStatisticsClientDTO,
@@ -23,7 +23,7 @@ import {
   TaskContainer,
   ScheduleContainer,
   ReminderContainer,
-} from '@dailyuse/infrastructure-server';
+} from '@dailyuse/dashboard/infrastructure-server';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('DashboardDesktopAppService');

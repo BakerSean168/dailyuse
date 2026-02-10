@@ -27,7 +27,7 @@
 
 import { computed } from 'vue';
 import { useAIGenerationStore } from '@/stores/ai/aiGenerationStore';
-import { AIGenerateKeyResults, GetQuota } from '@dailyuse/application-client/ai';
+import { AIGenerateKeyResults, GetQuota } from '@dailyuse/ai/application-client';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 /**

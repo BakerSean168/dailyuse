@@ -11,7 +11,7 @@
 import { computed } from 'vue';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import type { LoginRequestDTO } from '@dailyuse/contracts/account';
-import { Login, Logout, RefreshToken } from '@dailyuse/application-client/authentication';
+import { Login, Logout, RefreshToken } from '@dailyuse/authentication/application-client';
 
 export function useLogin() {
   const authStore = useAuthenticationStore();

@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { accountApplicationService } from '@dailyuse/application-client/account';
+import { accountApplicationService } from '@dailyuse/account/application-client';
 import type { AccountClientDTO, AccountStatsResponseDTO } from '@dailyuse/contracts/account';
 
 export interface UseAccountProfileReturn {

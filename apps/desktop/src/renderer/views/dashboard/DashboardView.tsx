@@ -17,10 +17,10 @@ import { goalApplicationService } from '../../modules/goal/application/services/
 import { scheduleApplicationService } from '../../modules/schedule/application/services/ScheduleApplicationService';
 import { reminderApplicationService } from '../../modules/reminder/application/services/ReminderApplicationService';
 import { GoalStatus } from '@dailyuse/contracts/goal';
-import type { TaskTemplate } from '@dailyuse/domain-client/task';
+import type { TaskTemplate } from '@dailyuse/task/domain-client';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
-import type { Goal } from '@dailyuse/domain-client/goal';
-import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
+import type { Goal } from '@dailyuse/goal/domain-client';
+import type { ScheduleTask } from '@dailyuse/schedule/domain-client';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { useTaskTemplate } from '../../modules/task/presentation/hooks/useTaskTemplate';

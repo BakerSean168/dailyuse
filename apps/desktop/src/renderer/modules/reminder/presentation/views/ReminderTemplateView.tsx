@@ -10,7 +10,7 @@ import type {
   ReminderGroupClientDTO,
   CreateReminderGroupRequest,
 } from '@dailyuse/contracts/reminder';
-import { reminderApplicationService } from '@dailyuse/application-client/reminder';
+import { reminderApplicationService } from '@dailyuse/reminder/application-client';
 
 type ViewTab = 'templates' | 'groups';
 

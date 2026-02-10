@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import type { Goal, KeyResult, GoalRecord } from '@dailyuse/domain-client/goal';
+import type { Goal, KeyResult, GoalRecord } from '@dailyuse/goal/domain-client';
 import { goalApplicationService } from '../../application/services';
 import {
   Card,

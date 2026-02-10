@@ -40,7 +40,7 @@ import {
   GetGoalReviews,
   UpdateGoalReview,
   DeleteGoalReview,
-} from '@dailyuse/application-client/goal';
+} from '@dailyuse/goal/application-client';
 import { getGoalStore } from '../stores/goalStore';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 

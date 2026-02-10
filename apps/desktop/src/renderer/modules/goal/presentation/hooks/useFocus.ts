@@ -9,7 +9,7 @@
 
 import { useCallback } from 'react';
 import { useFocusStore } from '../stores/focusStore';
-import { goalApplicationService } from '@dailyuse/application-client/goal';
+import { goalApplicationService } from '@dailyuse/goal/application-client';
 import type {
   FocusSessionClientDTO,
   FocusStatusDTO,

@@ -38,13 +38,13 @@ import {
   SyncConflictApplicationService,
   SyncStateApplicationService,
   PendingChangeApplicationService,
-} from '@dailyuse/application-server/sync';
+} from '@dailyuse/sync/application-server';
 import {
   SyncProfileMemoryRepository,
   SyncSessionMemoryRepository,
   SyncConflictMemoryRepository,
   PendingChangeMemoryRepository,
-} from '@dailyuse/infrastructure-server/sync';
+} from '@dailyuse/sync/infrastructure-server';
 import * as os from 'os';
 
 /**

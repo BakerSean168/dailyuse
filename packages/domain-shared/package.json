@@ -75,6 +75,14 @@
   "license": "MIT",
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/editor": "workspace:*",
+    "@dailyuse/goal": "workspace:*",
+    "@dailyuse/notification": "workspace:*",
+    "@dailyuse/reminder": "workspace:*",
+    "@dailyuse/repository": "workspace:*",
+    "@dailyuse/schedule": "workspace:*",
+    "@dailyuse/setting": "workspace:*",
+    "@dailyuse/task": "workspace:*",
     "@dailyuse/utils": "workspace:*"
   },
   "devDependencies": {

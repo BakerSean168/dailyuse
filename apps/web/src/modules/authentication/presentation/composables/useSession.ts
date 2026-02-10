@@ -26,7 +26,7 @@ import {
   GetTrustedDevices,
   TrustDevice,
   RevokeTrustedDevice,
-} from '@dailyuse/application-client/authentication';
+} from '@dailyuse/authentication/application-client';
 
 export function useSession() {
   const authStore = useAuthenticationStore();

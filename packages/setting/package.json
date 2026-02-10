@@ -1,0 +1,55 @@
+{
+  "name": "@dailyuse/setting",
+  "version": "0.0.1",
+  "description": "设置模块 - 用户与系统配置",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./domain-shared": {
+      "types": "./dist/domain-shared/index.d.ts",
+      "import": "./dist/domain-shared/index.js"
+    },
+    "./domain-server": {
+      "types": "./dist/domain-server/index.d.ts",
+      "import": "./dist/domain-server/index.js"
+    },
+    "./domain-client": {
+      "types": "./dist/domain-client/index.d.ts",
+      "import": "./dist/domain-client/index.js"
+    },
+    "./application-server": {
+      "types": "./dist/application-server/index.d.ts",
+      "import": "./dist/application-server/index.js"
+    },
+    "./infrastructure-server": {
+      "types": "./dist/infrastructure-server/index.d.ts",
+      "import": "./dist/infrastructure-server/index.js"
+    },
+    "./application-client": {
+      "types": "./dist/application-client/index.d.ts",
+      "import": "./dist/application-client/index.js"
+    },
+    "./infrastructure-client": {
+      "types": "./dist/infrastructure-client/index.d.ts",
+      "import": "./dist/infrastructure-client/index.js"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/database": "workspace:*",
+    "@dailyuse/domain-shared": "workspace:*",
+    "@dailyuse/utils": "workspace:*",
+    "zod": "^3.24.0",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0"
+  }
+}

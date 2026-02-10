@@ -135,7 +135,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { KeyResult } from '@dailyuse/domain-client/goal';
+import type { KeyResult } from '@dailyuse/goal/domain-client';
 import type { KeyResultClient } from '@dailyuse/contracts/goal';
 import {
   weightRecommendationService,

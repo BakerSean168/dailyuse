@@ -2,7 +2,7 @@
  * Get Reminder Statistics Summary Service
  */
 
-import { ReminderContainer } from '@dailyuse/infrastructure-server';
+import { ReminderContainer } from '@dailyuse/reminder/infrastructure-server';
 import type { ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
 import { createLogger } from '@dailyuse/utils';
 

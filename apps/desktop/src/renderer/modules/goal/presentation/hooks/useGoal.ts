@@ -11,8 +11,8 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useGoalStore } from '../stores/goalStore';
-import { goalApplicationService } from '@dailyuse/application-client/goal';
-import type { Goal } from '@dailyuse/domain-client/goal';
+import { goalApplicationService } from '@dailyuse/goal/application-client';
+import type { Goal } from '@dailyuse/goal/domain-client';
 import type { CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 
 /** Search goals input type */

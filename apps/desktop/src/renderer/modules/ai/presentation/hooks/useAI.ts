@@ -6,8 +6,8 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { aiApplicationService } from '@dailyuse/application-client/ai';
-import type { AIConversation, AIMessage } from '@dailyuse/domain-client/ai';
+import { aiApplicationService } from '@dailyuse/ai/application-client';
+import type { AIConversation, AIMessage } from '@dailyuse/ai/domain-client';
 import { MessageRole } from '@dailyuse/contracts/ai';
 
 // Chat message for UI display

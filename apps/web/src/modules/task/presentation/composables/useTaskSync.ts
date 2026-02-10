@@ -13,7 +13,7 @@
  */
 
 import { ref, computed, readonly, onMounted, onBeforeUnmount } from 'vue';
-import { taskApplicationService as taskSyncApplicationService } from '@dailyuse/application-client/task';
+import { taskApplicationService as taskSyncApplicationService } from '@dailyuse/task/application-client';
 import { useTaskStore } from '../stores/taskStore';
 import { useMessage } from '@dailyuse/ui-vuetify';
 

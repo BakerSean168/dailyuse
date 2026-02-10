@@ -10,7 +10,7 @@ import type {
   IScheduleMonitor,
   ScheduleExecutionStats,
   ScheduleExecutionRecord,
-} from '@dailyuse/application-server';
+} from '@dailyuse/schedule/application-server';
 
 /**
  * Desktop 调度监控实现

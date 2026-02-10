@@ -19,7 +19,7 @@ import type {
   TaskInstanceClientDTO,
   TaskTimeConfigClientDTO,
 } from '@dailyuse/contracts/task';
-import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client/task';
+import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/task/domain-client';
 import {
   ListTaskInstances,
   GetTaskInstance,
@@ -27,7 +27,7 @@ import {
   CompleteTaskInstance,
   SkipTaskInstance,
   DeleteTaskInstance,
-} from '@dailyuse/application-client/task';
+} from '@dailyuse/task/application-client';
 import { useTaskStore } from '../stores/taskStore';
 import { useMessage } from '@dailyuse/ui-vuetify';
 

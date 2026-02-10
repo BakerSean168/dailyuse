@@ -4,7 +4,7 @@
  * 调用 Application Server 的 listGoalFolders use case
  */
 
-import { ListGoalFolders } from '@dailyuse/application-server/goal';
+import { ListGoalFolders } from '@dailyuse/goal/application-server';
 import type { QueryGoalFoldersRequest, GoalFoldersResponse } from '@dailyuse/contracts/goal';
 
 /**

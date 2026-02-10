@@ -8,7 +8,7 @@
  */
 
 import { ref, type Ref, type ComputedRef } from 'vue';
-import { GenerateGoal } from '@dailyuse/application-client/ai';
+import { GenerateGoal } from '@dailyuse/ai/application-client';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 import type { GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 

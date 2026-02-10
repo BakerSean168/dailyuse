@@ -41,10 +41,10 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import { useFolderStore } from '../../stores';
-import { getRepositoryApiClient } from '@dailyuse/infrastructure-client';
+import { getRepositoryApiClient } from '@dailyuse/repository/infrastructure-client';
 
 const repositoryApiClient = getRepositoryApiClient();
-import { Folder } from '@dailyuse/domain-client/repository';
+import { Folder } from '@dailyuse/repository/domain-client';
 
 // Props
 interface Props {

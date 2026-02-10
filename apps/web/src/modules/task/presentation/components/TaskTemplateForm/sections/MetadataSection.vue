@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { computed, watch } from 'vue';
-import type { TaskTemplate } from '@dailyuse/domain-client/task';
+import type { TaskTemplate } from '@dailyuse/task/domain-client';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 interface Props {

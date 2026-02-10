@@ -2,7 +2,7 @@
  * List Goals Service
  */
 
-import { ListGoals } from '@dailyuse/application-server';
+import { ListGoals } from '@dailyuse/goal/application-server';
 import type { QueryGoalsRequest, GoalClientDTO, GoalStatus } from '@dailyuse/contracts/goal';
 
 export async function listGoalsService(params: {

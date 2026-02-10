@@ -11,7 +11,7 @@
  */
 
 // ===== Application Layer (from packages) =====
-export { goalApplicationService } from '@dailyuse/application-client/goal';
+export { goalApplicationService } from '@dailyuse/goal/application-client';
 
 // ===== Presentation Layer =====
 export {

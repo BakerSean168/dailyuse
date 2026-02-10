@@ -2,9 +2,9 @@
  * List Reminder Groups Service
  */
 
-import { ReminderContainer } from '@dailyuse/infrastructure-server';
+import { ReminderContainer } from '@dailyuse/reminder/infrastructure-server';
 import type { ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
-import type { ReminderGroup } from '@dailyuse/domain-server/reminder';
+import type { ReminderGroup } from '@dailyuse/reminder/domain-server';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('listGroupsService');

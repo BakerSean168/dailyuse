@@ -9,7 +9,7 @@
  */
 
 import { ref, computed, readonly } from 'vue';
-import { GetTaskStatistics } from '@dailyuse/application-client/task';
+import { GetTaskStatistics } from '@dailyuse/task/application-client';
 import { useTaskStore } from '../stores/taskStore';
 import { useMessage } from '@dailyuse/ui-vuetify';
 

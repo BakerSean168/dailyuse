@@ -2,7 +2,7 @@
  * Create Task Template Use Case
  */
 
-import { CreateTaskTemplate } from '@dailyuse/application-server';
+import { CreateTaskTemplate } from '@dailyuse/task/application-server';
 import type { TaskTemplateClientDTO, CreateTaskTemplateRequest } from '@dailyuse/contracts/task';
 import { createLogger } from '@dailyuse/utils';
 

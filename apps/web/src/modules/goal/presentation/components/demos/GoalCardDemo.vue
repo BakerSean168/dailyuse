@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { Goal } from '@dailyuse/domain-client/goal';
+import { Goal } from '@dailyuse/goal/domain-client';
 import { useGoal } from '../../composables/useGoal';
 import GoalCard from '../cards/GoalCard.vue';
 

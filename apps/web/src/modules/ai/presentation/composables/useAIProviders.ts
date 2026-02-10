@@ -14,7 +14,7 @@ import {
   CreateProvider,
   TestProviderConnection,
   SetDefaultProvider,
-} from '@dailyuse/application-client/ai';
+} from '@dailyuse/ai/application-client';
 import type {
   AIProviderConfigClientDTO,
   CreateAIProviderRequest,

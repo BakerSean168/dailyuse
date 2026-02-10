@@ -1,4 +1,4 @@
-import { GetScheduleTask } from '@dailyuse/application-server';
+import { GetScheduleTask } from '@dailyuse/schedule/application-server';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { createLogger } from '@dailyuse/utils';
 

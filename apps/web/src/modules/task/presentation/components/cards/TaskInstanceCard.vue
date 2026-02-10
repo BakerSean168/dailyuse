@@ -39,7 +39,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { format } from 'date-fns';
-import type { TaskInstance } from '@dailyuse/domain-client/task';
+import type { TaskInstance } from '@dailyuse/task/domain-client';
 import { useTaskStore } from '../../stores/taskStore';
 
 // Props

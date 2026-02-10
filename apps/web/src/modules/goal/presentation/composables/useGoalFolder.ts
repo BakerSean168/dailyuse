@@ -11,13 +11,13 @@
 
 import { ref, computed, readonly } from 'vue';
 import type { CreateGoalFolderRequest, UpdateGoalFolderRequest } from '@dailyuse/contracts/goal';
-import type { GoalFolder } from '@dailyuse/domain-client/goal';
+import type { GoalFolder } from '@dailyuse/goal/domain-client';
 import {
   CreateGoalFolder,
   ListGoalFolders,
   UpdateGoalFolder,
   DeleteGoalFolder,
-} from '@dailyuse/application-client/goal';
+} from '@dailyuse/goal/application-client';
 import { getGoalStore } from '../stores/goalStore';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 

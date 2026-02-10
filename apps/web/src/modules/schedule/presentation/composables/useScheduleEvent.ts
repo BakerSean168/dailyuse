@@ -5,7 +5,7 @@ import type {
   UpdateScheduleRequest,
   GetSchedulesByTimeRangeRequest,
 } from '@dailyuse/contracts/schedule';
-import { scheduleApplicationService as scheduleEventApplicationService } from '@dailyuse/application-client/schedule';
+import { scheduleApplicationService as scheduleEventApplicationService } from '@dailyuse/schedule/application-client';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 /**

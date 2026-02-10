@@ -13,4 +13,4 @@ export {
   createTaskInstanceIpcAdapter,
   createTaskDependencyIpcAdapter,
   createTaskStatisticsIpcAdapter,
-} from '@dailyuse/infrastructure-client';
+} from '@dailyuse/task/infrastructure-client';

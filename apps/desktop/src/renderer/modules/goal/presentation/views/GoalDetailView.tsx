@@ -7,7 +7,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import type { Goal, KeyResult, GoalReview } from '@dailyuse/domain-client/goal';
+import type { Goal, KeyResult, GoalReview } from '@dailyuse/goal/domain-client';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import { goalApplicationService } from '../../application/services';
 import {

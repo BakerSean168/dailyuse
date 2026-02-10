@@ -11,8 +11,8 @@
 
 import { useState, useCallback } from 'react';
 import { useGoalStore } from '../stores/goalStore';
-import { goalApplicationService } from '@dailyuse/application-client/goal';
-import type { GoalReview } from '@dailyuse/domain-client/goal';
+import { goalApplicationService } from '@dailyuse/goal/application-client';
+import type { GoalReview } from '@dailyuse/goal/domain-client';
 import type { CreateGoalReviewRequest, UpdateGoalReviewRequest } from '@dailyuse/contracts/goal';
 
 // ===== Types =====

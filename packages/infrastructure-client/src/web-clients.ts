@@ -9,7 +9,7 @@
  */
 
 import { AccountContainer, type IAccountApiClient } from './account';
-import { ReminderContainer, type IReminderApiClient } from './reminder';
+import { ReminderContainer, type IReminderApiClient } from '@dailyuse/reminder/infrastructure-client';
 import {
   AIContainer,
   type IAIProviderConfigApiClient,
@@ -21,9 +21,9 @@ import {
   type ITaskTemplateApiClient,
   type ITaskInstanceApiClient,
   type ITaskDependencyApiClient,
-} from './task';
-import { GoalContainer, type IGoalApiClient } from './goal';
-import { RepositoryContainer, type IRepositoryApiClient } from './repository';
+} from '@dailyuse/task/infrastructure-client';
+import { GoalContainer, type IGoalApiClient } from '@dailyuse/goal/infrastructure-client';
+import { RepositoryContainer, type IRepositoryApiClient } from '@dailyuse/repository/infrastructure-client';
 
 /**
  * 获取 Account API 客户端实例

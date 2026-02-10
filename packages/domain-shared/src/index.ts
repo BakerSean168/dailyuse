@@ -9,29 +9,14 @@ export * from './authentication';
 // AI 模块
 export * from './ai';
 
-// Editor 模块
-export * from './editor';
-
-// Goal 模块
-export * from './goal';
-
-// Notification 模块
-export * from './notification';
-
-// Reminder 模块
-export * from './reminder';
-
-// Repository 模块
-export * from './repository';
-
-// Schedule 模块
-export * from './schedule';
-
-// Setting 模块
-export * from './setting';
-
+// Editor 模块export * from '@dailyuse/editor/domain-shared';
+// Goal 模块export * from '@dailyuse/goal/domain-shared';
+// Notification 模块export * from '@dailyuse/notification/domain-shared';
+// Reminder 模块export * from '@dailyuse/reminder/domain-shared';
+// Repository 模块export * from '@dailyuse/repository/domain-shared';
+// Schedule 模块export * from '@dailyuse/schedule/domain-shared';
+// Setting 模块export * from '@dailyuse/setting/domain-shared';
 // Sync 模块
 export * from './sync';
 
-// Task 模块
-export * from './task';
+// Task 模块export * from '@dailyuse/task/domain-shared';

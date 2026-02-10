@@ -2,7 +2,7 @@
  * Restore Task Template Use Case
  */
 
-import { TaskContainer } from '@dailyuse/infrastructure-server';
+import { TaskContainer } from '@dailyuse/task/infrastructure-server';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 
 export async function restoreTemplateUseCase(uuid: string): Promise<TaskTemplateClientDTO> {

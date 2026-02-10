@@ -93,7 +93,7 @@
 import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGeneration';
-import { getTaskTemplateApiClient } from '@dailyuse/infrastructure-client';
+import { getTaskTemplateApiClient } from '@dailyuse/task/infrastructure-client';
 
 const taskTemplateApiClient = getTaskTemplateApiClient();
 import { useMessage } from '@dailyuse/ui-vuetify';

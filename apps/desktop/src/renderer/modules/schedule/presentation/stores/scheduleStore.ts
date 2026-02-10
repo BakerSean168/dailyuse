@@ -24,7 +24,7 @@ import type {
   CreateScheduleRequest,
   UpdateScheduleRequest,
 } from '@dailyuse/contracts/schedule';
-import { scheduleApplicationService } from '@dailyuse/application-client/schedule';
+import { scheduleApplicationService } from '@dailyuse/schedule/application-client';
 
 // Re-export types from contracts for backward compatibility
 export type { ScheduleClientDTO, CreateScheduleRequest, UpdateScheduleRequest };

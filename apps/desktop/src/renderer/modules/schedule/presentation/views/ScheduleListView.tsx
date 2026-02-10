@@ -7,8 +7,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { scheduleApplicationService } from '@dailyuse/application-client/schedule';
-import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
+import { scheduleApplicationService } from '@dailyuse/schedule/application-client';
+import type { ScheduleTask } from '@dailyuse/schedule/domain-client';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import { ScheduleCard } from '../components/ScheduleCard';
 import { ScheduleCreateDialog } from '../components/ScheduleCreateDialog';

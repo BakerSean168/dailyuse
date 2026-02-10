@@ -17,7 +17,7 @@ import type {
   UpdateGoalRequest,
 } from '@dailyuse/contracts/goal';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
+import { Goal, GoalFolder } from '@dailyuse/goal/domain-client';
 import { goalApplicationService } from '../../application/services';
 
 // ============ State Interface ============

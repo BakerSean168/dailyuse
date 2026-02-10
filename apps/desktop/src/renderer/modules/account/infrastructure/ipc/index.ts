@@ -7,4 +7,4 @@
 export {
   AccountIpcAdapter,
   createAccountIpcAdapter,
-} from '@dailyuse/infrastructure-client';
+} from '@dailyuse/account/infrastructure-client';

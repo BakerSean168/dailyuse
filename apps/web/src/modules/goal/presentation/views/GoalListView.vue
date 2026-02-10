@@ -131,7 +131,7 @@ import { useGoalManagement } from '../composables/useGoalManagement';
 import { useGoalFolder } from '../composables/useGoalFolder';
 import { useGoalStore } from '../stores/goalStore';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
-import type { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
+import type { Goal, GoalFolder } from '@dailyuse/goal/domain-client';
 
 // 组件导入
 import GoalCard from '../components/cards/GoalCard.vue';

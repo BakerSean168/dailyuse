@@ -1,4 +1,4 @@
-import { CreateConversation } from '@dailyuse/application-server';
+import { CreateConversation } from '@dailyuse/ai/application-server';
 import type { ConversationResponse } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 

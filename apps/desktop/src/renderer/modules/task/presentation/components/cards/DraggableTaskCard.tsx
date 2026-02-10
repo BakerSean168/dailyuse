@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
+import type { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
 import { Badge } from '@dailyuse/ui-shadcn';
 import { Button } from '@dailyuse/ui-shadcn';
 import {

@@ -11,8 +11,8 @@
 
 import { useCallback, useEffect } from 'react';
 import { useGoalStore } from '../stores/goalStore';
-import { goalApplicationService } from '@dailyuse/application-client/goal';
-import type { GoalFolder } from '@dailyuse/domain-client/goal';
+import { goalApplicationService } from '@dailyuse/goal/application-client';
+import type { GoalFolder } from '@dailyuse/goal/domain-client';
 import type { CreateGoalFolderRequest, UpdateGoalFolderRequest } from '@dailyuse/contracts/goal';
 
 // ===== Types =====

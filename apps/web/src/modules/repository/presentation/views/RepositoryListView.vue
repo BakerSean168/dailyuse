@@ -139,7 +139,7 @@ import RepoDialog from '../components/dialogs/RepoDialog.vue';
 // composables
 import { useRepository } from '../composables/useRepository';
 // types
-import { Repository } from '@dailyuse/domain-client/repository';
+import { Repository } from '@dailyuse/repository/domain-client';
 import { RepositoryStatus, RepositoryType, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO } from '@dailyuse/contracts/repository';
 
 // component refs

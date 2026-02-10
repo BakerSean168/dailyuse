@@ -23,7 +23,7 @@ import {
   DeleteKeyResult,
   BatchUpdateKeyResultWeights,
   GetProgressBreakdown,
-} from '@dailyuse/application-client/goal';
+} from '@dailyuse/goal/application-client';
 import { getGoalStore } from '../stores/goalStore';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 

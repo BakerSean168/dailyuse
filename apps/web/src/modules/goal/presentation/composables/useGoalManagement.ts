@@ -15,7 +15,7 @@
 
 import { ref, computed, readonly } from 'vue';
 import type { CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
-import type { Goal } from '@dailyuse/domain-client/goal';
+import type { Goal } from '@dailyuse/goal/domain-client';
 import {
   ListGoals,
   GetGoal,
@@ -27,7 +27,7 @@ import {
   CompleteGoal,
   ArchiveGoal,
   GetGoalAggregateView,
-} from '@dailyuse/application-client/goal';
+} from '@dailyuse/goal/application-client';
 import { getGoalStore } from '../stores/goalStore';
 import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 

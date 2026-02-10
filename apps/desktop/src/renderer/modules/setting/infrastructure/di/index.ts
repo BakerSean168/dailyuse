@@ -4,7 +4,7 @@
  * 从 @dailyuse/infrastructure-client 重导出 Container
  */
 
-import { SettingContainer } from '@dailyuse/infrastructure-client';
+import { SettingContainer } from '@dailyuse/setting/infrastructure-client';
 
 export { SettingContainer };
 

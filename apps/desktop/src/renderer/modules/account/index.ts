@@ -9,7 +9,7 @@
 export {
   AccountApplicationService,
   accountApplicationService,
-} from '@dailyuse/application-client/account';
+} from '@dailyuse/account/application-client';
 
 // ===== Presentation Layer =====
 // Hooks

@@ -210,8 +210,8 @@ import { useTaskStore } from '../stores/taskStore';
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
 import { format, startOfDay, isToday, isSameDay } from 'date-fns';
 // types
-import { TaskInstance, TaskTemplate } from '@dailyuse/domain-client/task';
-import { Goal, KeyResult } from '@dailyuse/domain-client/goal';
+import { TaskInstance, TaskTemplate } from '@dailyuse/task/domain-client';
+import { Goal, KeyResult } from '@dailyuse/goal/domain-client';
 
 // composables
 import { useTaskInstance } from '../composables/useTaskInstance';

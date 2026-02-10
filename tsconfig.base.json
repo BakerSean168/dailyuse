@@ -33,22 +33,6 @@
       // ✅ 领域层包（分层架构）
       "@dailyuse/domain-shared": ["packages/domain-shared/src/index.ts"],
       "@dailyuse/domain-shared/*": ["packages/domain-shared/src/*/index.ts"],
-      "@dailyuse/domain-server": ["packages/domain-server/src/index.ts"],
-      "@dailyuse/domain-server/*": ["packages/domain-server/src/*/index.ts"],
-      "@dailyuse/domain-client": ["packages/domain-client/src/index.ts"],
-      "@dailyuse/domain-client/*": ["packages/domain-client/src/*/index.ts"],
-      
-      // ✅ 应用层包
-      "@dailyuse/application-server": ["packages/application-server/src/index.ts"],
-      "@dailyuse/application-server/*": ["packages/application-server/src/*/index.ts"],
-      "@dailyuse/application-client": ["packages/application-client/src/index.ts"],
-      "@dailyuse/application-client/*": ["packages/application-client/src/*/index.ts"],
-      
-      // ✅ 基础设施层包
-      "@dailyuse/infrastructure-server": ["packages/infrastructure-server/src/index.ts"],
-      "@dailyuse/infrastructure-server/*": ["packages/infrastructure-server/src/*/index.ts"],
-      "@dailyuse/infrastructure-client": ["packages/infrastructure-client/src/index.ts"],
-      "@dailyuse/infrastructure-client/*": ["packages/infrastructure-client/src/*/index.ts"],
       
       // ✅ 业务模块包
       "@dailyuse/governance": ["packages/governance/src/index.ts"],
@@ -57,6 +41,24 @@
       "@dailyuse/account/*": ["packages/account/src/*/index.ts"],
       "@dailyuse/authentication": ["packages/authentication/src/index.ts"],
       "@dailyuse/authentication/*": ["packages/authentication/src/*/index.ts"],
+      "@dailyuse/goal": ["packages/goal/src/index.ts"],
+      "@dailyuse/goal/*": ["packages/goal/src/*/index.ts"],
+      "@dailyuse/task": ["packages/task/src/index.ts"],
+      "@dailyuse/task/*": ["packages/task/src/*/index.ts"],
+      "@dailyuse/repository": ["packages/repository/src/index.ts"],
+      "@dailyuse/repository/*": ["packages/repository/src/*/index.ts"],
+      "@dailyuse/editor": ["packages/editor/src/index.ts"],
+      "@dailyuse/editor/*": ["packages/editor/src/*/index.ts"],
+      "@dailyuse/reminder": ["packages/reminder/src/index.ts"],
+      "@dailyuse/reminder/*": ["packages/reminder/src/*/index.ts"],
+      "@dailyuse/notification": ["packages/notification/src/index.ts"],
+      "@dailyuse/notification/*": ["packages/notification/src/*/index.ts"],
+      "@dailyuse/schedule": ["packages/schedule/src/index.ts"],
+      "@dailyuse/schedule/*": ["packages/schedule/src/*/index.ts"],
+      "@dailyuse/setting": ["packages/setting/src/index.ts"],
+      "@dailyuse/setting/*": ["packages/setting/src/*/index.ts"],
+      "@dailyuse/ai": ["packages/ai/src/index.ts"],
+      "@dailyuse/ai/*": ["packages/ai/src/*/index.ts"],
       
       // ✅ 客户端工具包
       "@dailyuse/http-client": ["packages/http-client/src/index.ts"],

@@ -1,4 +1,4 @@
-import { DashboardContainer, InvalidateDashboardCache } from '@dailyuse/application-server';
+import { DashboardContainer, InvalidateDashboardCache } from '@dailyuse/dashboard/application-server';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('invalidateCacheService');

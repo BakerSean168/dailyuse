@@ -11,7 +11,7 @@
 import { computed } from 'vue';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import type { RegisterRequestDTO } from '@dailyuse/contracts/account';
-import { Register } from '@dailyuse/application-client/authentication';
+import { Register } from '@dailyuse/authentication/application-client';
 
 export function useRegistration() {
   const authStore = useAuthenticationStore();

@@ -6,4 +6,4 @@
 
 export {
   RepositoryIpcAdapter,
-} from '@dailyuse/infrastructure-client';
+} from '@dailyuse/repository/infrastructure-client';

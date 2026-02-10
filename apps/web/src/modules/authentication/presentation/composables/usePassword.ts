@@ -26,7 +26,7 @@ import {
   Enable2FA,
   Disable2FA,
   Verify2FA,
-} from '@dailyuse/application-client/authentication';
+} from '@dailyuse/authentication/application-client';
 
 export function usePassword() {
   const authStore = useAuthenticationStore();

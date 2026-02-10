@@ -10,4 +10,4 @@ export {
   AIGenerationTaskIpcAdapter,
   AIUsageQuotaIpcAdapter,
   AIProviderConfigIpcAdapter,
-} from '@dailyuse/infrastructure-client';
+} from '@dailyuse/ai/infrastructure-client';

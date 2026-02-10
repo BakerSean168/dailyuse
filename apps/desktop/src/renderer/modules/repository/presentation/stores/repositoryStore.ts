@@ -17,8 +17,8 @@ import type {
   RepositoryStatus,
   SearchResultItem,
 } from '@dailyuse/contracts/repository';
-import { Repository, Folder, Resource } from '@dailyuse/domain-client/repository';
-import { repositoryApplicationService } from '@dailyuse/application-client/repository';
+import { Repository, Folder, Resource } from '@dailyuse/repository/domain-client';
+import { repositoryApplicationService } from '@dailyuse/repository/application-client';
 
 // ============ State Interface ============
 export interface RepositoryState {
