@@ -10,14 +10,14 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import type { TaskInstance, TaskTemplate } from '@dailyuse/task/domain-client';
-import { Badge } from '@dailyuse/ui-shadcn';
-import { Button } from '@dailyuse/ui-shadcn';
+import { Badge } from '@dailyuse/ui-react-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 import {
   Check,
   CheckCircle,
@@ -32,7 +32,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 interface TaskInstanceCardProps {
   instance: TaskInstance;
@@ -42,7 +42,7 @@ interface TaskInstanceCardProps {
   onClick?: (uuid: string) => void;
 }
 
-// 状态颜色配置
+// 状态颜色配�?
 const STATUS_COLORS: Record<string, { bg: string; text: string; icon: typeof Circle }> = {
   PENDING: { bg: 'bg-blue-100', text: 'text-blue-800', icon: Circle },
   COMPLETED: { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircle },
@@ -76,7 +76,7 @@ export function TaskInstanceCard({
     onClick?.(instance.uuid);
   };
 
-  // 格式化时间显示
+  // 格式化时间显�?
   const getTimeLabel = () => {
     const timeConfig = instance.timeConfig;
 
@@ -146,7 +146,7 @@ export function TaskInstanceCard({
           <Clock className="h-3.5 w-3.5" />
           <span>
             {instance.isCompleted
-              ? `完成于 ${instance.actualEndTime ? format(instance.actualEndTime, 'HH:mm', { locale: zhCN }) : ''}`
+              ? `完成�?${instance.actualEndTime ? format(instance.actualEndTime, 'HH:mm', { locale: zhCN }) : ''}`
               : getTimeLabel()}
           </span>
         </div>

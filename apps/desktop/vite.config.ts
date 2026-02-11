@@ -7,14 +7,11 @@ import react from '@vitejs/plugin-react';
 // 原生模块列表
 const nativeModules = ['better-sqlite3', 'electron'];
 
-// 本地工作区包（避免被 optimizeDeps 处理）
+// 本地工作区包（避免被 optimizeDeps 处理�?
 const workspacePkgs = [
   '@dailyuse/utils',
-  '@dailyuse/domain-client',
-  '@dailyuse/domain-server',
   '@dailyuse/contracts',
-  '@dailyuse/infrastructure-server',
-  '@dailyuse/ui-shadcn',
+  '@dailyuse/ui-react-shadcn',
 ];
 
 // https://vitejs.dev/config/
@@ -25,14 +22,14 @@ export default defineConfig({
       '@main': path.resolve(__dirname, './src/main'),
       '@preload': path.resolve(__dirname, './src/preload'),
       '@renderer': path.resolve(__dirname, './src/renderer'),
-      // 浏览器环境 Node.js polyfills
+      // 浏览器环�?Node.js polyfills
       'crypto': 'crypto-browserify',
       'stream': 'stream-browserify',
       'buffer': 'buffer',
     },
   },
   define: {
-    // 为 crypto-browserify 提供全局 Buffer
+    // �?crypto-browserify 提供全局 Buffer
     'global': 'globalThis',
   },
   base: './',

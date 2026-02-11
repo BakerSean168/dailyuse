@@ -1,10 +1,10 @@
 /**
  * Account Status Indicator Component
  *
- * 显示当前账户状态，包括：
+ * 显示当前账户状态，包括�?
  * - 用户头像和用户名
- * - 在线/离线状态
- * - 快速操作入口（账户设置、登出等）
+ * - 在线/离线状�?
+ * - 快速操作入口（账户设置、登出等�?
  *
  * Part of EPIC-004: Desktop Authentication - Sprint 3.2
  *
@@ -23,7 +23,7 @@ import {
   RefreshCw,
   Shield,
 } from 'lucide-react';
-import { cn } from '@dailyuse/ui-shadcn';
+import { cn } from '@dailyuse/ui-react-shadcn';
 
 // ============ Types ============
 
@@ -44,9 +44,9 @@ interface AuthStatusResponse {
 }
 
 interface AccountStatusIndicatorProps {
-  /** 附加的 CSS 类名 */
+  /** 附加�?CSS 类名 */
   className?: string;
-  /** 是否折叠模式（只显示头像） */
+  /** 是否折叠模式（只显示头像�?*/
   collapsed?: boolean;
 }
 
@@ -81,14 +81,14 @@ function useAccountStatus() {
   useEffect(() => {
     fetchStatus();
 
-    // 监听网络状态变化
+    // 监听网络状态变�?
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // 定期刷新状态 (每 30 秒)
+    // 定期刷新状�?(�?30 �?
     const intervalId = setInterval(fetchStatus, 30000);
 
     return () => {
@@ -172,7 +172,7 @@ function Avatar({
 }
 
 /**
- * 下拉菜单项
+ * 下拉菜单�?
  */
 function MenuItem({
   icon: Icon,
@@ -214,7 +214,7 @@ export function AccountStatusIndicator({
     setShowMenu(false);
     try {
       await window.electronAPI?.invoke('auth:logout');
-      // 刷新状态
+      // 刷新状�?
       setTimeout(refresh, 100);
     } catch (error) {
       console.error('Logout failed:', error);
@@ -223,13 +223,13 @@ export function AccountStatusIndicator({
 
   const handleSettings = () => {
     setShowMenu(false);
-    // 导航到账户设置页面
+    // 导航到账户设置页�?
     window.location.hash = '#/account';
   };
 
   const handleSecurity = () => {
     setShowMenu(false);
-    // 导航到安全设置页面
+    // 导航到安全设置页�?
     window.location.hash = '#/account/security';
   };
 
@@ -241,8 +241,8 @@ export function AccountStatusIndicator({
     );
   }
 
-  // 未登录状态 or 本地模式
-  const displayName = user?.displayName ?? user?.username ?? (authMode === 'LOCAL' ? '本地账户' : '未登录');
+  // 未登录状�?or 本地模式
+  const displayName = user?.displayName ?? user?.username ?? (authMode === 'LOCAL' ? '本地账户' : '未登�?);
   const displayEmail = user?.email ?? (authMode === 'LOCAL' ? '离线模式' : '');
 
   return (
@@ -319,7 +319,7 @@ export function AccountStatusIndicator({
                 )}
               </div>
 
-              {/* 菜单项 */}
+              {/* 菜单�?*/}
               <div className="p-1">
                 <MenuItem 
                   icon={Settings} 
@@ -335,7 +335,7 @@ export function AccountStatusIndicator({
                 )}
                 <MenuItem 
                   icon={RefreshCw} 
-                  label="刷新状态" 
+                  label="刷新状�? 
                   onClick={refresh}
                 />
               </div>
@@ -345,7 +345,7 @@ export function AccountStatusIndicator({
                 <div className="p-1 border-t">
                   <MenuItem 
                     icon={LogOut} 
-                    label="退出登录" 
+                    label="退出登�? 
                     onClick={handleLogout}
                     variant="danger"
                   />

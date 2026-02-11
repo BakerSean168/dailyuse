@@ -14,7 +14,6 @@
     "./helpers": "./src/helpers/index.ts"
   },
   "dependencies": {
-    "@dailyuse/infrastructure-server": "workspace:*",
     "vitest": "^4.0.15"
   },
   "devDependencies": {

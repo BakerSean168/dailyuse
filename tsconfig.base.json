@@ -69,7 +69,8 @@
       "@dailyuse/ui-core": ["packages/ui-core/src/index.ts"],
       "@dailyuse/ui-react": ["packages/ui-react/src/index.ts"],
       "@dailyuse/ui-vue": ["packages/ui-vue/src/index.ts"],
-      "@dailyuse/ui-shadcn": ["packages/ui-shadcn/src/index.ts"],
+      "@dailyuse/ui-react-shadcn": ["packages/ui-react-shadcn/src/index.ts"],
+      "@dailyuse/ui-vue-shadcn": ["packages/ui-vue-shadcn/src/index.ts"],
       "@dailyuse/ui-vuetify": ["packages/ui-vuetify/src/index.ts"],
       
       // ✅ 调度服务包

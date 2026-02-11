@@ -1,7 +1,7 @@
 /**
  * TimeRangeSelector Component
  *
- * 时间范围选择器
+ * 时间范围选择�?
  * Story 11-7: Advanced Features
  */
 
@@ -19,7 +19,7 @@ import {
   PopoverTrigger,
   Calendar as CalendarComponent,
   cn,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear, addDays, addWeeks, addMonths, addQuarters, addYears, subDays, subWeeks, subMonths, subQuarters, subYears } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
@@ -40,12 +40,12 @@ interface TimeRangeSelectorProps {
 }
 
 const rangeLabels: Record<TimeRangeType, string> = {
-  day: '日',
-  week: '周',
-  month: '月',
+  day: '�?,
+  week: '�?,
+  month: '�?,
   quarter: '季度',
-  year: '年',
-  custom: '自定义',
+  year: '�?,
+  custom: '自定�?,
 };
 
 // Get range for a specific date and type
@@ -72,11 +72,11 @@ function formatRangeText(range: TimeRange): string {
 
   switch (type) {
     case 'day':
-      return format(start, 'yyyy年M月d日', { locale: zhCN });
+      return format(start, 'yyyy年M月d�?, { locale: zhCN });
     case 'week':
-      return `${format(start, 'M月d日', { locale: zhCN })} - ${format(end, 'M月d日', { locale: zhCN })}`;
+      return `${format(start, 'M月d�?, { locale: zhCN })} - ${format(end, 'M月d�?, { locale: zhCN })}`;
     case 'month':
-      return format(start, 'yyyy年M月', { locale: zhCN });
+      return format(start, 'yyyy年M�?, { locale: zhCN });
     case 'quarter':
       const quarter = Math.floor(start.getMonth() / 3) + 1;
       return `${start.getFullYear()}年Q${quarter}`;

@@ -1,8 +1,8 @@
 /**
- * @dailyuse/ui-shadcn
+ * @dailyuse/ui-react-shadcn
  *
- * shadcn/ui styled React components for DailyUse Electron desktop application.
- * Built on top of @dailyuse/ui-react hooks and Radix UI primitives.
+ * shadcn/ui styled React components for DailyUse applications.
+ * Built on top of Radix UI primitives.
  * 
  * 组件分类：
  * 1. ui/ - shadcn/ui 官方组件（不可修改）
@@ -11,33 +11,6 @@
 
 // Utilities
 export { cn } from './lib/utils';
-
-// Re-export React hooks from ui-react
-export {
-  useFormValidation,
-  usePasswordStrength,
-  useLoading,
-  useMessage,
-  useDialog,
-  useColorPicker,
-  // Core types
-  type ValidationRule,
-  type ValidationRules,
-  type PasswordStrengthLevel,
-  type PasswordStrengthResult,
-  type LoadingState,
-  type MessageType,
-  type MessageOptions,
-  type MessageState,
-  type DialogState,
-  type ColorPickerState,
-  // Core utilities
-  VALIDATION_RULES,
-  generatePassword,
-  isLightColor,
-  hexToRgb,
-  rgbToHex,
-} from '@dailyuse/ui-react';
 
 // ============================================
 // UI Components - Official shadcn/ui (DO NOT MODIFY)

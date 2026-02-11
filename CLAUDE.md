@@ -76,7 +76,7 @@ import { logger } from '@dailyuse/utils';
 
 // UI components
 import { Button } from '@dailyuse/ui-vuetify';  // Vue
-import { Button } from '@dailyuse/ui-shadcn';   // React
+import { Button } from '@dailyuse/ui-react-shadcn';   // React
 ```
 
 ### Key Path Aliases (tsconfig.base.json)

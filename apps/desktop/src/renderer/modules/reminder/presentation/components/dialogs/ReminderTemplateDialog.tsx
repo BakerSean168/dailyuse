@@ -1,10 +1,10 @@
 /**
- * ReminderTemplateDialog - 提醒模板创建/编辑对话框
+ * ReminderTemplateDialog - 提醒模板创建/编辑对话�?
  *
- * 功能：
- * - 创建新模板
+ * 功能�?
+ * - 创建新模�?
  * - 编辑现有模板
- * - 设置标题、描述、分组
+ * - 设置标题、描述、分�?
  * - 配置触发器类型和时间
  * - 设置外观（图标、颜色、标签）
  * - 高级通知设置
@@ -32,7 +32,7 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import {
   Info,
@@ -58,8 +58,8 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 // ============ Types ============
 
 /**
- * 表单 UI 状态（内部使用，扁平化便于表单绑定）
- * 最终会转换为 CreateReminderTemplateRequest 或 UpdateReminderTemplateRequest
+ * 表单 UI 状态（内部使用，扁平化便于表单绑定�?
+ * 最终会转换�?CreateReminderTemplateRequest �?UpdateReminderTemplateRequest
  */
 interface FormState {
   title: string;
@@ -79,9 +79,9 @@ interface FormState {
 export interface ReminderTemplateDialogProps {
   /** 是否打开 */
   open: boolean;
-  /** 编辑的模板（为空则为创建模式） */
+  /** 编辑的模板（为空则为创建模式�?*/
   template?: ReminderTemplateClientDTO | null;
-  /** 可用的分组列表 */
+  /** 可用的分组列�?*/
   groups: ReminderGroupClientDTO[];
   /** 关闭回调 */
   onClose: () => void;
@@ -144,7 +144,7 @@ function formStateToCreateRequest(form: FormState): CreateReminderTemplateReques
 
   return {
     title: form.title,
-    type: ReminderType.RECURRING, // 默认为循环提醒
+    type: ReminderType.RECURRING, // 默认为循环提�?
     trigger: {
       type: form.triggerType,
       fixedTime: form.triggerType === TriggerType.FIXED_TIME 
@@ -215,7 +215,7 @@ export function ReminderTemplateDialog({
 
   const isEditMode = !!template?.uuid;
 
-  // 初始化表单数据
+  // 初始化表单数�?
   useEffect(() => {
     if (open) {
       if (template) {
@@ -245,7 +245,7 @@ export function ReminderTemplateDialog({
   // 分组选项
   const groupOptions = useMemo(() => {
     return [
-      { value: '', label: '无分组' },
+      { value: '', label: '无分�? },
       ...groups.map((g) => ({ value: g.uuid, label: g.name })),
     ];
   }, [groups]);
@@ -274,7 +274,7 @@ export function ReminderTemplateDialog({
     return Object.keys(newErrors).length === 0;
   }, [formState]);
 
-  // 处理保存 - 转换为 contracts 类型
+  // 处理保存 - 转换�?contracts 类型
   const handleSave = useCallback(async () => {
     if (!validateForm()) return;
 
@@ -336,7 +336,7 @@ export function ReminderTemplateDialog({
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-        {/* 标题栏 */}
+        {/* 标题�?*/}
         <DialogHeader>
           <div className="flex items-center justify-between">
             <Button
@@ -353,7 +353,7 @@ export function ReminderTemplateDialog({
               onClick={handleSave}
               disabled={!isFormValid || isSaving}
             >
-              {isSaving ? '保存中...' : '完成'}
+              {isSaving ? '保存�?..' : '完成'}
             </Button>
           </div>
         </DialogHeader>
@@ -367,7 +367,7 @@ export function ReminderTemplateDialog({
             </div>
             <Separator />
 
-            {/* 标题和颜色 */}
+            {/* 标题和颜�?*/}
             <div className="flex items-start gap-4">
               <div className="flex-1 space-y-2">
                 <Label htmlFor="title">标题 *</Label>
@@ -375,7 +375,7 @@ export function ReminderTemplateDialog({
                   id="title"
                   value={formState.title}
                   onChange={(e) => updateField('title', e.target.value)}
-                  placeholder="例如：每日喝水提醒"
+                  placeholder="例如：每日喝水提�?
                   autoFocus
                 />
                 {errors.title && (
@@ -417,10 +417,10 @@ export function ReminderTemplateDialog({
               />
             </div>
 
-            {/* 分组和重要程度 */}
+            {/* 分组和重要程�?*/}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>所属分组</Label>
+                <Label>所属分�?/Label>
                 <Select
                   value={formState.groupUuid || ''}
                   onValueChange={(value) => updateField('groupUuid', value || null)}
@@ -523,7 +523,7 @@ export function ReminderTemplateDialog({
                 {errors.intervalMinutes && (
                   <p className="text-xs text-destructive">{errors.intervalMinutes}</p>
                 )}
-                <p className="text-xs text-muted-foreground">每隔多少分钟触发一次</p>
+                <p className="text-xs text-muted-foreground">每隔多少分钟触发一�?/p>
               </div>
             )}
           </div>
@@ -574,14 +574,14 @@ export function ReminderTemplateDialog({
                 <div className="flex items-center gap-2">
                   <Settings className="h-4 w-4" />
                   <span className="font-medium">高级通知设置</span>
-                  <Badge variant="outline" className="text-xs">可选</Badge>
+                  <Badge variant="outline" className="text-xs">可�?/Badge>
                 </div>
                 <ChevronDown className={`h-4 w-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`} />
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-4 pt-4">
               <p className="text-xs text-muted-foreground">
-                自定义通知文案。留空则使用模板的标题和描述。
+                自定义通知文案。留空则使用模板的标题和描述�?
               </p>
               <div className="space-y-2">
                 <Label htmlFor="notificationTitle">通知标题</Label>
@@ -589,7 +589,7 @@ export function ReminderTemplateDialog({
                   id="notificationTitle"
                   value={formState.notificationTitle}
                   onChange={(e) => updateField('notificationTitle', e.target.value)}
-                  placeholder="留空则使用模板标题"
+                  placeholder="留空则使用模板标�?
                 />
               </div>
               <div className="space-y-2">
@@ -598,7 +598,7 @@ export function ReminderTemplateDialog({
                   id="notificationBody"
                   value={formState.notificationBody}
                   onChange={(e) => updateField('notificationBody', e.target.value)}
-                  placeholder="留空则使用模板描述"
+                  placeholder="留空则使用模板描�?
                   rows={2}
                 />
               </div>

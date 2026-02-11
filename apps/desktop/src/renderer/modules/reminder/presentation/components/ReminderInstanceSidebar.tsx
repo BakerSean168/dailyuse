@@ -2,7 +2,7 @@
  * ReminderInstanceSidebar - 即将到来的提醒侧边栏
  *
  * 显示即将触发的提醒列表：
- * - 统计信息（总数、今天、逾期）
+ * - 统计信息（总数、今天、逾期�?
  * - 按日期分组的提醒列表
  * - 支持筛选和刷新
  * - 提醒操作（延期、完成、忽略）
@@ -27,7 +27,7 @@ import {
   CollapsibleTrigger,
   ScrollArea,
   cn,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import {
   Bell,
@@ -68,9 +68,9 @@ export interface UpcomingData {
 }
 
 export interface ReminderInstanceSidebarProps {
-  /** 即将到来的提醒数据 */
+  /** 即将到来的提醒数�?*/
   upcomingData?: UpcomingData | null;
-  /** 加载状态 */
+  /** 加载状�?*/
   isLoading?: boolean;
   /** 错误信息 */
   error?: string | null;
@@ -115,7 +115,7 @@ function formatGroupDate(dateString: string): string {
     return '明天';
   }
   
-  return format(date, 'M月d日 EEEE', { locale: zhCN });
+  return format(date, 'M月d�?EEEE', { locale: zhCN });
 }
 
 function isOverdue(dateInput: string | Date): boolean {
@@ -153,7 +153,7 @@ export function ReminderInstanceSidebar({
   });
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // 按日期分组提醒
+  // 按日期分组提�?
   const groupedReminders = useMemo((): GroupedReminders[] => {
     if (!upcomingData?.reminders) return [];
 
@@ -169,7 +169,7 @@ export function ReminderInstanceSidebar({
       groups[dateKey].push(reminder);
     });
 
-    // 按日期排序
+    // 按日期排�?
     return Object.entries(groups)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([date, reminders]) => ({
@@ -211,11 +211,11 @@ export function ReminderInstanceSidebar({
 
   return (
     <div className="w-[380px] h-full flex flex-col border-l bg-background">
-      {/* 标题栏 */}
+      {/* 标题�?*/}
       <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground">
         <div className="flex items-center gap-2">
           <Bell className="h-5 w-5" />
-          <span className="font-semibold">即将到来的提醒</span>
+          <span className="font-semibold">即将到来的提�?/span>
         </div>
         <div className="flex items-center gap-1">
           <Button
@@ -244,7 +244,7 @@ export function ReminderInstanceSidebar({
           <Button variant="ghost" className="w-full justify-between rounded-none border-b">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
-              <span>筛选</span>
+              <span>筛�?/span>
             </div>
             <ChevronDown className={cn("h-4 w-4 transition-transform", showFilters && "rotate-180")} />
           </Button>
@@ -263,7 +263,7 @@ export function ReminderInstanceSidebar({
                 <SelectItem value="1">今天</SelectItem>
                 <SelectItem value="3">3天内</SelectItem>
                 <SelectItem value="7">一周内</SelectItem>
-                <SelectItem value="30">一个月内</SelectItem>
+                <SelectItem value="30">一个月�?/SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -290,7 +290,7 @@ export function ReminderInstanceSidebar({
 
       {/* 提醒列表 */}
       <ScrollArea className="flex-1">
-        {/* 加载状态 */}
+        {/* 加载状�?*/}
         {isLoading && (
           <div className="p-4 space-y-3">
             {[1, 2, 3].map((i) => (
@@ -299,7 +299,7 @@ export function ReminderInstanceSidebar({
           </div>
         )}
 
-        {/* 错误状态 */}
+        {/* 错误状�?*/}
         {!isLoading && error && (
           <div className="p-4 text-center">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-2" />
@@ -310,11 +310,11 @@ export function ReminderInstanceSidebar({
           </div>
         )}
 
-        {/* 空状态 */}
+        {/* 空状�?*/}
         {!isLoading && !error && groupedReminders.length === 0 && (
           <div className="p-4 text-center">
             <BellOff className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">暂无即将到来的提醒</p>
+            <p className="text-sm text-muted-foreground">暂无即将到来的提�?/p>
           </div>
         )}
 
@@ -357,7 +357,7 @@ export function ReminderInstanceSidebar({
                             </p>
                           )}
 
-                          {/* 时间和标签 */}
+                          {/* 时间和标�?*/}
                           <div className="flex items-center gap-2 mt-2">
                             <Badge
                               variant={isOverdue(reminder.nextTriggerAt) ? "destructive" : "secondary"}
@@ -393,7 +393,7 @@ export function ReminderInstanceSidebar({
       <div className="p-3 border-t flex items-center justify-between">
         <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters)}>
           <Filter className="h-4 w-4 mr-1" />
-          筛选
+          筛�?
         </Button>
         <Button variant="ghost" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
           <RefreshCw className={cn("h-4 w-4 mr-1", isRefreshing && "animate-spin")} />

@@ -1,10 +1,10 @@
 /**
- * ReminderWidget - 即将到来的提醒 Widget
+ * ReminderWidget - 即将到来的提�?Widget
  *
- * 显示：
- * - 即将触发的提醒列表
- * - 时间倒计时
- * - 快速确认/延期操作
+ * 显示�?
+ * - 即将触发的提醒列�?
+ * - 时间倒计�?
+ * - 快速确�?延期操作
  *
  * @module dashboard/presentation/components/widgets
  */
@@ -15,7 +15,7 @@ import {
   Button,
   ScrollArea,
   cn,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import { Bell, ArrowRight, Clock, Check, AlarmClockPlus } from 'lucide-react';
 import { format, formatDistanceToNow, isBefore, addMinutes } from 'date-fns';
@@ -50,7 +50,7 @@ export interface ReminderWidgetProps {
 
 const mockReminders: ReminderItem[] = [
   { uuid: '1', title: '喝水提醒', triggerAt: addMinutes(new Date(), 15), priority: 'normal' },
-  { uuid: '2', title: '会议开始', triggerAt: addMinutes(new Date(), 45), priority: 'high' },
+  { uuid: '2', title: '会议开�?, triggerAt: addMinutes(new Date(), 45), priority: 'high' },
   { uuid: '3', title: '休息提醒', triggerAt: addMinutes(new Date(), 90), priority: 'low' },
   { uuid: '4', title: '项目截止', triggerAt: addMinutes(new Date(), 180), priority: 'urgent' },
 ];
@@ -99,23 +99,23 @@ export function ReminderWidget({
   const getPriorityInfo = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return { color: 'bg-red-500', label: '紧急' };
+        return { color: 'bg-red-500', label: '紧�? };
       case 'high':
-        return { color: 'bg-orange-500', label: '高' };
+        return { color: 'bg-orange-500', label: '�? };
       case 'normal':
-        return { color: 'bg-blue-500', label: '普通' };
+        return { color: 'bg-blue-500', label: '普�? };
       case 'low':
-        return { color: 'bg-gray-400', label: '低' };
+        return { color: 'bg-gray-400', label: '�? };
       default:
         return { color: 'bg-gray-400', label: '未知' };
     }
   };
 
-  // 格式化时间
+  // 格式化时�?
   const formatTriggerTime = (date: Date) => {
     const now = new Date();
     if (isBefore(date, now)) {
-      return '已过期';
+      return '已过�?;
     }
     return formatDistanceToNow(date, { addSuffix: true, locale: zhCN });
   };
@@ -157,11 +157,11 @@ export function ReminderWidget({
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="text-center p-2 rounded-lg bg-accent">
           <p className="text-xl font-bold text-primary">{stats.upcoming}</p>
-          <p className="text-xs text-muted-foreground">待触发</p>
+          <p className="text-xs text-muted-foreground">待触�?/p>
         </div>
         <div className="text-center p-2 rounded-lg bg-accent">
           <p className="text-xl font-bold text-red-500">{stats.urgent}</p>
-          <p className="text-xs text-muted-foreground">紧急</p>
+          <p className="text-xs text-muted-foreground">紧�?/p>
         </div>
       </div>
 
@@ -171,7 +171,7 @@ export function ReminderWidget({
           {reminders.length === 0 ? (
             <div className="text-center py-6 text-muted-foreground">
               <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">暂无即将到来的提醒</p>
+              <p className="text-sm">暂无即将到来的提�?/p>
             </div>
           ) : (
             reminders.map((reminder) => {

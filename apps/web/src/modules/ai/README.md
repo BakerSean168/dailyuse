@@ -404,7 +404,7 @@ VITE_API_BASE_URL=http://localhost:3000
 ### OpenAI 配置（后端）
 
 ```bash
-# apps/api/.env
+# .env.local
 OPENAI_API_KEY=sk-...
 OPENAI_MODEL=gpt-4
 ```

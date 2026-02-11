@@ -1,7 +1,7 @@
 /**
  * SyncConflictItem Component
  *
- * 同步冲突项组件
+ * 同步冲突项组�?
  */
 
 import { AlertTriangle, ArrowLeft, ArrowRight, Check } from 'lucide-react';
@@ -13,7 +13,7 @@ import {
   CardTitle,
   Button,
   Badge,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 import type { SyncConflictClientDTO } from '@dailyuse/contracts/sync';
 
 interface SyncConflictItemProps {

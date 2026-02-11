@@ -4,9 +4,9 @@
  */
 
 import * as React from 'react';
-import { cn } from '@dailyuse/ui-shadcn';
+import { cn } from '@dailyuse/ui-react-shadcn';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '@dailyuse/ui-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
 
 export interface PageContainerProps {
   /** 页面标题 */
@@ -19,15 +19,15 @@ export interface PageContainerProps {
   showBack?: boolean;
   /** 返回回调 */
   onBack?: () => void;
-  /** 子内容 */
+  /** 子内�?*/
   children: React.ReactNode;
-  /** 自定义类名 */
+  /** 自定义类�?*/
   className?: string;
   /** 内容区域类名 */
   contentClassName?: string;
   /** 是否有内边距 */
   noPadding?: boolean;
-  /** 是否可滚动 */
+  /** 是否可滚�?*/
   scrollable?: boolean;
 }
 

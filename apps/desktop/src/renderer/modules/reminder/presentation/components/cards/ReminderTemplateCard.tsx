@@ -1,11 +1,11 @@
 /**
  * ReminderTemplateCard - 提醒模板详情卡片
  *
- * 显示模板详细信息的对话框：
- * - 标题栏带启用/禁用开关
- * - 状态指示
+ * 显示模板详细信息的对话框�?
+ * - 标题栏带启用/禁用开�?
+ * - 状态指�?
  * - 基本信息（标题、描述、触发器、配置）
- * - 统计数据（总实例、已完成、待处理）
+ * - 统计数据（总实例、已完成、待处理�?
  * - 时间信息（创建、更新时间）
  * - 操作按钮（编辑、查看实例）
  *
@@ -26,7 +26,7 @@ import {
   Card,
   CardContent,
   cn,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import {
   Bell,
@@ -68,7 +68,7 @@ export interface ReminderTemplateCardProps {
   onEdit?: (template: ReminderTemplateClientDTO) => void;
   /** 查看实例 */
   onViewInstances?: (template: ReminderTemplateClientDTO) => void;
-  /** 切换启用状态 */
+  /** 切换启用状�?*/
   onToggleEnabled?: (template: ReminderTemplateClientDTO, enabled: boolean) => Promise<void>;
 }
 
@@ -81,7 +81,7 @@ function formatDate(dateValue?: string | number | Date): string {
     : typeof dateValue === 'string' 
       ? new Date(dateValue) 
       : dateValue;
-  return format(date, 'yyyy年MM月dd日 HH:mm', { locale: zhCN });
+  return format(date, 'yyyy年MM月dd�?HH:mm', { locale: zhCN });
 }
 
 function getStatusInfo(template: ReminderTemplateClientDTO) {
@@ -89,10 +89,10 @@ function getStatusInfo(template: ReminderTemplateClientDTO) {
     return {
       color: 'secondary' as const,
       icon: PauseCircle,
-      text: '已暂停',
+      text: '已暂�?,
     };
   }
-  // 可以根据 nextTriggerTime 等字段判断更多状态
+  // 可以根据 nextTriggerTime 等字段判断更多状�?
   return {
     color: 'default' as const,
     icon: CheckCircle,
@@ -101,18 +101,18 @@ function getStatusInfo(template: ReminderTemplateClientDTO) {
 }
 
 function getTriggerText(template: ReminderTemplateClientDTO): string {
-  // 从 trigger 配置获取触发器描述
+  // �?trigger 配置获取触发器描�?
   if (template.triggerText) {
     return template.triggerText;
   }
   if (!template.trigger) {
-    return '未设置';
+    return '未设�?;
   }
 
   const { type } = template.trigger;
   switch (type) {
     case 'FIXED_TIME':
-      return `固定时间: ${template.trigger.fixedTime?.time || '未设置'}`;
+      return `固定时间: ${template.trigger.fixedTime?.time || '未设�?}`;
     case 'INTERVAL':
       return `间隔: ${template.trigger.interval?.minutes || 0} 分钟`;
     default:
@@ -134,13 +134,13 @@ export function ReminderTemplateCard({
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [localEnabled, setLocalEnabled] = useState(template?.effectiveEnabled ?? true);
 
-  // 状态信息
+  // 状态信�?
   const statusInfo = useMemo(() => {
     if (!template) return null;
     return getStatusInfo(template);
   }, [template]);
 
-  // 处理切换启用状态
+  // 处理切换启用状�?
   const handleToggleStatus = useCallback(async (checked: boolean) => {
     if (!template || !onToggleEnabled) return;
 
@@ -174,7 +174,7 @@ export function ReminderTemplateCard({
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        {/* 标题栏 */}
+        {/* 标题�?*/}
         <DialogHeader className="bg-primary text-primary-foreground -m-6 mb-4 p-6 rounded-t-lg">
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2 text-primary-foreground">
@@ -189,7 +189,7 @@ export function ReminderTemplateCard({
                   disabled={isTogglingStatus}
                 />
                 <Label className="text-sm text-primary-foreground">
-                  {localEnabled ? '已启用' : '已禁用'}
+                  {localEnabled ? '已启�? : '已禁�?}
                 </Label>
               </div>
               <Button
@@ -204,7 +204,7 @@ export function ReminderTemplateCard({
           </div>
         </DialogHeader>
 
-        {/* 状态指示 */}
+        {/* 状态指�?*/}
         <div className="flex items-center gap-2 py-2 bg-muted -mx-6 px-6">
           <Badge variant={statusInfo?.color}>
             <StatusIcon className="h-3 w-3 mr-1" />
@@ -213,7 +213,7 @@ export function ReminderTemplateCard({
           {template.groupUuid && (
             <Badge variant="outline">
               <Folder className="h-3 w-3 mr-1" />
-              分组内
+              分组�?
             </Badge>
           )}
         </div>
@@ -247,11 +247,11 @@ export function ReminderTemplateCard({
               </div>
             )}
 
-            {/* 触发器 */}
+            {/* 触发�?*/}
             <div className="flex items-start gap-3">
               <Clock className="h-4 w-4 text-green-500 mt-0.5" />
               <div>
-                <p className="text-xs text-muted-foreground">触发器</p>
+                <p className="text-xs text-muted-foreground">触发�?/p>
                 <Badge variant="outline" className="mt-1">
                   {getTriggerText(template)}
                 </Badge>
@@ -297,19 +297,19 @@ export function ReminderTemplateCard({
             <Card className="bg-primary/10">
               <CardContent className="pt-4 text-center">
                 <p className="text-2xl font-bold text-primary">{stats.total}</p>
-                <p className="text-xs text-muted-foreground">总实例</p>
+                <p className="text-xs text-muted-foreground">总实�?/p>
               </CardContent>
             </Card>
             <Card className="bg-green-500/10">
               <CardContent className="pt-4 text-center">
                 <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
-                <p className="text-xs text-muted-foreground">已完成</p>
+                <p className="text-xs text-muted-foreground">已完�?/p>
               </CardContent>
             </Card>
             <Card className="bg-orange-500/10">
               <CardContent className="pt-4 text-center">
                 <p className="text-2xl font-bold text-orange-600">{stats.pending}</p>
-                <p className="text-xs text-muted-foreground">待处理</p>
+                <p className="text-xs text-muted-foreground">待处�?/p>
               </CardContent>
             </Card>
           </div>

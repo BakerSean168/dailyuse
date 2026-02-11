@@ -41,3 +41,6 @@ export { useLoading, type UseLoadingReturn } from './hooks/useLoading';
 export { useMessage, type UseMessageReturn } from './hooks/useMessage';
 export { useDialog, type UseDialogReturn } from './hooks/useDialog';
 export { useColorPicker, type UseColorPickerReturn } from './hooks/useColorPicker';
+
+// Optional UI bundle (shadcn/ui React components)
+export * from '@dailyuse/ui-react-shadcn';

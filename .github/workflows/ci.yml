@@ -265,7 +265,7 @@ jobs:
         uses: nrwl/nx-set-shas@v4
 
       - name: 🏗️ Build affected apps
-        run: pnpm nx affected -t build --parallel=3 --exclude='contracts,domain-server,domain-client,application-server,application-client,infrastructure-server,infrastructure-client,utils,ui-core,ui-vue,ui-vuetify,ui-react,ui-shadcn,assets,sync-client'
+        run: pnpm nx affected -t build --parallel=3 --exclude='contracts,domain-server,domain-client,application-server,application-client,infrastructure-server,infrastructure-client,utils,ui-core,ui-vue,ui-vuetify,ui-react,ui-react-shadcn,assets,sync-client'
 
   # ========== Job 7: CI 状态检查 ==========
   ci-success:

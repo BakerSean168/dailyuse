@@ -1,7 +1,7 @@
 /**
  * GoalRecordDialog Component
  *
- * 目标进度记录对话框 - 用于添加/编辑进度记录
+ * 目标进度记录对话�?- 用于添加/编辑进度记录
  */
 
 import { useState, useEffect } from 'react';
@@ -14,12 +14,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@dailyuse/ui-shadcn';
-import { Button } from '@dailyuse/ui-shadcn';
-import { Input } from '@dailyuse/ui-shadcn';
-import { Label } from '@dailyuse/ui-shadcn';
-import { Textarea } from '@dailyuse/ui-shadcn';
-import { Badge } from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
+import { Input } from '@dailyuse/ui-react-shadcn';
+import { Label } from '@dailyuse/ui-react-shadcn';
+import { Textarea } from '@dailyuse/ui-react-shadcn';
+import { Badge } from '@dailyuse/ui-react-shadcn';
 import { PlusCircle, Zap } from 'lucide-react';
 
 interface GoalRecordDialogProps {
@@ -34,7 +34,7 @@ interface GoalRecordDialogProps {
   onSave: (data: CreateGoalRecordRequest) => Promise<void>;
 }
 
-// 快速选择值
+// 快速选择�?
 const QUICK_VALUES = [1, 2, 5, 10];
 
 export function GoalRecordDialog({
@@ -72,7 +72,7 @@ export function GoalRecordDialog({
 
   const handleSave = async () => {
     if (!isValid) {
-      setError('请输入有效的增加值（大于0且不超过10000）');
+      setError('请输入有效的增加值（大于0且不超过10000�?);
       return;
     }
 
@@ -103,20 +103,20 @@ export function GoalRecordDialog({
           </DialogTitle>
           {keyResult && (
             <DialogDescription>
-              为关键结果 "{keyResult.title}" 添加进度记录
+              为关键结�?"{keyResult.title}" 添加进度记录
             </DialogDescription>
           )}
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* 增加值输入 */}
+          {/* 增加值输�?*/}
           <div className="space-y-2">
-            <Label htmlFor="value">增加值 *</Label>
+            <Label htmlFor="value">增加�?*</Label>
             <div className="relative">
               <Input
                 id="value"
                 type="number"
-                placeholder="请输入本次增加的数值"
+                placeholder="请输入本次增加的数�?
                 value={value || ''}
                 onChange={(e) => setValue(Number(e.target.value))}
                 min={0.1}
@@ -132,7 +132,7 @@ export function GoalRecordDialog({
               </Badge>
             </div>
             {value > 10000 && (
-              <p className="text-sm text-destructive">增加值不能超过10000</p>
+              <p className="text-sm text-destructive">增加值不能超�?0000</p>
             )}
           </div>
 
@@ -167,7 +167,7 @@ export function GoalRecordDialog({
             <Label htmlFor="note">备注说明</Label>
             <Textarea
               id="note"
-              placeholder="添加关于此次记录的详细说明..."
+              placeholder="添加关于此次记录的详细说�?.."
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
@@ -179,15 +179,15 @@ export function GoalRecordDialog({
             <div className="rounded-lg border p-4 space-y-2">
               <div className="text-sm font-medium">进度预览</div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">当前值</span>
+                <span className="text-muted-foreground">当前�?/span>
                 <span>{keyResult.progress.currentValue}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">增加值</span>
+                <span className="text-muted-foreground">增加�?/span>
                 <span style={{ color: goalColor }}>+{value}</span>
               </div>
               <div className="border-t pt-2 flex items-center justify-between text-sm font-medium">
-                <span>预计新值</span>
+                <span>预计新�?/span>
                 <span>{keyResult.progress.currentValue + value}</span>
               </div>
             </div>
@@ -210,7 +210,7 @@ export function GoalRecordDialog({
             disabled={!isValid || loading}
             style={{ backgroundColor: isValid ? goalColor : undefined }}
           >
-            {loading ? '保存中...' : '保存'}
+            {loading ? '保存�?..' : '保存'}
           </Button>
         </DialogFooter>
       </DialogContent>

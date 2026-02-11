@@ -1,15 +1,15 @@
 /**
  * ErrorBoundary Component
- * 错误边界组件，捕获子组件的 JS 错误
+ * 错误边界组件，捕获子组件�?JS 错误
  */
 
 import * as React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@dailyuse/ui-shadcn';
+import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@dailyuse/ui-react-shadcn';
 
 export interface ErrorBoundaryProps {
   children: React.ReactNode;
-  /** 自定义错误 UI */
+  /** 自定义错�?UI */
   fallback?: React.ReactNode;
   /** 错误回调 */
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
@@ -67,12 +67,12 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-5 w-5" />
-                出错了
+                出错�?
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                抱歉，页面发生了一些错误。
+                抱歉，页面发生了一些错误�?
               </p>
               
               {this.props.showDetails && this.state.error && (

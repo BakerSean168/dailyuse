@@ -2,22 +2,22 @@
  * TaskManagementView Component
  *
  * 任务模板管理视图
- * 功能：
+ * 功能�?
  * 1. 任务模板列表展示（按状态筛选）
  * 2. 批量操作（批量删除、批量归档）
- * 3. 依赖关系图查看
+ * 3. 依赖关系图查�?
  * 4. 模板创建/编辑入口
  */
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import type { TaskTemplateClientDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@dailyuse/ui-shadcn';
-import { Button } from '@dailyuse/ui-shadcn';
-import { Badge } from '@dailyuse/ui-shadcn';
-import { Input } from '@dailyuse/ui-shadcn';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-shadcn';
-import { ScrollArea } from '@dailyuse/ui-shadcn';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@dailyuse/ui-react-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
+import { Badge } from '@dailyuse/ui-react-shadcn';
+import { Input } from '@dailyuse/ui-react-shadcn';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-react-shadcn';
+import { ScrollArea } from '@dailyuse/ui-react-shadcn';
 import {
   Dialog,
   DialogContent,
@@ -25,7 +25,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,14 +35,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 import {
   Plus,
   Search,
@@ -74,10 +74,10 @@ interface TaskManagementViewProps {
 // ===================== 工具函数 =====================
 
 const statusConfig: Record<TaskTemplateStatus, { label: string; icon: typeof PlayCircle; color: string }> = {
-  [TaskTemplateStatus.ACTIVE]: { label: '进行中', icon: PlayCircle, color: 'text-green-600' },
-  [TaskTemplateStatus.PAUSED]: { label: '已暂停', icon: PauseCircle, color: 'text-yellow-600' },
-  [TaskTemplateStatus.ARCHIVED]: { label: '已归档', icon: Archive, color: 'text-gray-600' },
-  [TaskTemplateStatus.DELETED]: { label: '已删除', icon: Trash2, color: 'text-red-600' },
+  [TaskTemplateStatus.ACTIVE]: { label: '进行�?, icon: PlayCircle, color: 'text-green-600' },
+  [TaskTemplateStatus.PAUSED]: { label: '已暂�?, icon: PauseCircle, color: 'text-yellow-600' },
+  [TaskTemplateStatus.ARCHIVED]: { label: '已归�?, icon: Archive, color: 'text-gray-600' },
+  [TaskTemplateStatus.DELETED]: { label: '已删�?, icon: Trash2, color: 'text-red-600' },
 };
 
 const taskTypeLabels: Record<string, string> = {
@@ -138,7 +138,7 @@ export function TaskManagementView({
     return result;
   }, [templates, currentStatus, searchQuery]);
 
-  // 按状态统计
+  // 按状态统�?
   const statusCounts = useMemo(() => {
     return {
       [TaskTemplateStatus.ACTIVE]: templates.filter((t) => t.status === TaskTemplateStatus.ACTIVE).length,
@@ -161,7 +161,7 @@ export function TaskManagementView({
     });
   }, []);
 
-  // 全选/取消全选
+  // 全�?取消全�?
   const toggleSelectAll = useCallback(() => {
     if (selectedTemplates.size === filteredTemplates.length) {
       setSelectedTemplates(new Set());
@@ -216,28 +216,28 @@ export function TaskManagementView({
     }
   }, [archiveTemplate]);
 
-  // 空状态配置
+  // 空状态配�?
   const getEmptyState = () => {
     switch (currentStatus) {
       case TaskTemplateStatus.ACTIVE:
         return {
           icon: <LayoutTemplate className="h-16 w-16 text-muted-foreground/50" />,
           title: '暂无进行中的任务',
-          description: '创建你的第一个任务模板开始管理日常任务',
+          description: '创建你的第一个任务模板开始管理日常任�?,
           showCreate: true,
         };
       case TaskTemplateStatus.PAUSED:
         return {
           icon: <PauseCircle className="h-16 w-16 text-yellow-500/50" />,
           title: '暂无已暂停的任务',
-          description: '暂停的任务会显示在这里',
+          description: '暂停的任务会显示在这�?,
           showCreate: false,
         };
       case TaskTemplateStatus.ARCHIVED:
         return {
           icon: <Archive className="h-16 w-16 text-gray-500/50" />,
           title: '暂无已归档的任务',
-          description: '归档的任务会显示在这里',
+          description: '归档的任务会显示在这�?,
           showCreate: false,
         };
       case TaskTemplateStatus.DELETED:
@@ -261,7 +261,7 @@ export function TaskManagementView({
           <div>
             <h1 className="text-2xl font-bold">任务模板管理</h1>
             <p className="text-sm text-muted-foreground">
-              管理和组织你的任务模板
+              管理和组织你的任务模�?
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -271,7 +271,7 @@ export function TaskManagementView({
                 onClick={() => setShowDependencyDialog(true)}
               >
                 <GitBranch className="h-4 w-4 mr-2" />
-                依赖关系图
+                依赖关系�?
               </Button>
             )}
             <Button onClick={onCreateTemplate}>
@@ -322,10 +322,10 @@ export function TaskManagementView({
         {selectedTemplates.size > 0 && (
           <div className="flex items-center gap-4 p-3 bg-secondary/50 rounded-lg">
             <span className="text-sm">
-              已选择 <strong>{selectedTemplates.size}</strong> 个模板
+              已选择 <strong>{selectedTemplates.size}</strong> 个模�?
             </span>
             <Button variant="outline" size="sm" onClick={toggleSelectAll}>
-              {selectedTemplates.size === filteredTemplates.length ? '取消全选' : '全选'}
+              {selectedTemplates.size === filteredTemplates.length ? '取消全�? : '全�?}
             </Button>
             <Button
               variant="destructive"
@@ -344,7 +344,7 @@ export function TaskManagementView({
         <div className="p-6">
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
-              <div className="text-muted-foreground">加载中...</div>
+              <div className="text-muted-foreground">加载�?..</div>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-64 gap-4">
@@ -363,7 +363,7 @@ export function TaskManagementView({
                 {emptyState.showCreate && (
                   <Button className="mt-4" onClick={onCreateTemplate}>
                     <Plus className="h-4 w-4 mr-2" />
-                    创建第一个模板
+                    创建第一个模�?
                   </Button>
                 )}
               </CardContent>
@@ -399,15 +399,15 @@ export function TaskManagementView({
             <AlertDialogDescription asChild>
               <div className="space-y-4">
                 <p>
-                  您确定要删除选中的 <strong>{selectedTemplates.size}</strong> 个任务模板吗？
+                  您确定要删除选中�?<strong>{selectedTemplates.size}</strong> 个任务模板吗�?
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  这将同时删除所有关联的任务实例和历史记录。此操作不可撤销。
+                  这将同时删除所有关联的任务实例和历史记录。此操作不可撤销�?
                 </p>
                 <Input
                   value={deleteConfirmText}
                   onChange={(e) => setDeleteConfirmText(e.target.value)}
-                  placeholder="请输入 DELETE 确认删除"
+                  placeholder="请输�?DELETE 确认删除"
                   className="mt-4"
                 />
               </div>
@@ -420,7 +420,7 @@ export function TaskManagementView({
               onClick={handleBulkDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? '删除中...' : '确认删除'}
+              {isDeleting ? '删除�?..' : '确认删除'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -432,10 +432,10 @@ export function TaskManagementView({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <GitBranch className="h-5 w-5" />
-              任务依赖关系图
+              任务依赖关系�?
             </DialogTitle>
             <DialogDescription>
-              查看任务模板之间的依赖关系
+              查看任务模板之间的依赖关�?
             </DialogDescription>
           </DialogHeader>
           <div className="h-[500px] border rounded-lg flex items-center justify-center">
@@ -453,7 +453,7 @@ export function TaskManagementView({
   );
 }
 
-// ===================== 子组件 =====================
+// ===================== 子组�?=====================
 
 interface TemplateCardProps {
   template: TaskTemplateClientDTO;
@@ -568,8 +568,8 @@ function TemplateCard({
 
         {/* Stats */}
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <span>实例数: {template.instanceCount || 0}</span>
-          <span>完成率: {Math.round((template.completionRate || 0) * 100)}%</span>
+          <span>实例�? {template.instanceCount || 0}</span>
+          <span>完成�? {Math.round((template.completionRate || 0) * 100)}%</span>
         </div>
 
         {/* Tags */}

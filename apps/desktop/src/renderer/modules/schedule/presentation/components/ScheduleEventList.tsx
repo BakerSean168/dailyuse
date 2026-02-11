@@ -2,7 +2,7 @@
  * ScheduleEventList Component
  *
  * 日程事件列表组件
- * 功能：
+ * 功能�?
  * 1. 显示日程事件列表
  * 2. 时间排序
  * 3. 快速操作（编辑、删除）
@@ -13,10 +13,10 @@ import { useMemo, useCallback } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import type { ScheduleClientDTO } from '../stores/scheduleStore';
-import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-shadcn';
-import { Button } from '@dailyuse/ui-shadcn';
-import { Badge } from '@dailyuse/ui-shadcn';
-import { ScrollArea } from '@dailyuse/ui-shadcn';
+import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-react-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
+import { Badge } from '@dailyuse/ui-react-shadcn';
+import { ScrollArea } from '@dailyuse/ui-react-shadcn';
 import {
   Plus,
   Calendar,
@@ -43,7 +43,7 @@ interface ScheduleEventListProps {
 
 function formatDateTime(date: Date | number): string {
   const d = typeof date === 'number' ? new Date(date) : date;
-  return format(d, 'M月d日 HH:mm', { locale: zhCN });
+  return format(d, 'M月d�?HH:mm', { locale: zhCN });
 }
 
 function getPriorityColor(priority?: number | null): string {
@@ -73,7 +73,7 @@ export function ScheduleEventList({
   onDelete,
   onCreate,
 }: ScheduleEventListProps) {
-  // 按开始时间排序
+  // 按开始时间排�?
   const sortedSchedules = useMemo(() => {
     return [...schedules].sort((a, b) => {
       const timeA = typeof a.startTime === 'number' ? a.startTime : new Date(a.startTime).getTime();
@@ -104,13 +104,13 @@ export function ScheduleEventList({
       <CardContent className="flex-1 p-0 overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center h-32">
-            <div className="text-muted-foreground">加载中...</div>
+            <div className="text-muted-foreground">加载�?..</div>
           </div>
         ) : sortedSchedules.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
             <Calendar className="h-8 w-8 mb-2 opacity-50" />
             <p>暂无日程</p>
-            <p className="text-xs mt-1">点击上方按钮创建第一个日程</p>
+            <p className="text-xs mt-1">点击上方按钮创建第一个日�?/p>
           </div>
         ) : (
           <ScrollArea className="h-full">

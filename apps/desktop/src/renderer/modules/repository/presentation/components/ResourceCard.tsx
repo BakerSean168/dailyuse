@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   cn,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
@@ -92,7 +92,7 @@ const typeLabels: Record<Resource['type'], string> = {
   image: '图片',
   video: '视频',
   audio: '音频',
-  archive: '压缩包',
+  archive: '压缩�?,
   code: '代码',
   other: '其他',
 };

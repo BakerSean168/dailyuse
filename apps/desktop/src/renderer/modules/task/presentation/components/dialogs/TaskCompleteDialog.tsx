@@ -1,13 +1,13 @@
 /**
  * TaskCompleteDialog Component
  *
- * 任务完成确认对话框
- * 功能：
+ * 任务完成确认对话�?
+ * 功能�?
  * 1. 显示任务信息
- * 2. 显示关联的 Goal/KeyResult 信息
- * 3. 根据 AggregationMethod 显示不同的输入提示
- * 4. 用户手动输入 Record 值
- * 5. 防止误触，提供二次确认
+ * 2. 显示关联�?Goal/KeyResult 信息
+ * 3. 根据 AggregationMethod 显示不同的输入提�?
+ * 4. 用户手动输入 Record �?
+ * 5. 防止误触，提供二次确�?
  */
 
 import { useState, useCallback, useMemo } from 'react';
@@ -21,14 +21,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@dailyuse/ui-shadcn';
-import { Button } from '@dailyuse/ui-shadcn';
-import { Badge } from '@dailyuse/ui-shadcn';
-import { Progress } from '@dailyuse/ui-shadcn';
-import { Input } from '@dailyuse/ui-shadcn';
-import { Textarea } from '@dailyuse/ui-shadcn';
-import { Label } from '@dailyuse/ui-shadcn';
-import { Alert, AlertDescription } from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
+import { Badge } from '@dailyuse/ui-react-shadcn';
+import { Progress } from '@dailyuse/ui-react-shadcn';
+import { Input } from '@dailyuse/ui-react-shadcn';
+import { Textarea } from '@dailyuse/ui-react-shadcn';
+import { Label } from '@dailyuse/ui-react-shadcn';
+import { Alert, AlertDescription } from '@dailyuse/ui-react-shadcn';
 import {
   CheckCircle,
   Target,
@@ -79,11 +79,11 @@ interface CompleteTaskData {
 
 const getAggregationMethodText = (method?: AggregationMethod): string => {
   const textMap: Record<AggregationMethod, string> = {
-    [AggregationMethod.SUM]: '累加型',
-    [AggregationMethod.MAX]: '最大值',
-    [AggregationMethod.AVERAGE]: '平均值',
-    [AggregationMethod.MIN]: '最小值',
-    [AggregationMethod.LAST]: '最新值',
+    [AggregationMethod.SUM]: '累加�?,
+    [AggregationMethod.MAX]: '最大�?,
+    [AggregationMethod.AVERAGE]: '平均�?,
+    [AggregationMethod.MIN]: '最小�?,
+    [AggregationMethod.LAST]: '最新�?,
   };
   return method ? textMap[method] || '未知' : '未知';
 };
@@ -117,25 +117,25 @@ const getAggregationMethodIcon = (method?: AggregationMethod) => {
 };
 
 const getInputLabel = (method?: AggregationMethod, hasGoalBinding?: boolean): string => {
-  if (!hasGoalBinding) return '本次完成量';
+  if (!hasGoalBinding) return '本次完成�?;
   
   const labelMap: Record<AggregationMethod, string> = {
-    [AggregationMethod.SUM]: '本次完成量（将累加到当前进度）',
-    [AggregationMethod.MAX]: '本次达到的最高值',
+    [AggregationMethod.SUM]: '本次完成量（将累加到当前进度�?,
+    [AggregationMethod.MAX]: '本次达到的最高�?,
     [AggregationMethod.AVERAGE]: '本次的值（将计算平均值）',
-    [AggregationMethod.MIN]: '本次的最小值',
+    [AggregationMethod.MIN]: '本次的最小�?,
     [AggregationMethod.LAST]: '最新的值（将覆盖当前值）',
   };
-  return method ? labelMap[method] || '本次完成量' : '本次完成量';
+  return method ? labelMap[method] || '本次完成�? : '本次完成�?;
 };
 
 const getInputHint = (method?: AggregationMethod): string => {
   const hintMap: Record<AggregationMethod, string> = {
-    [AggregationMethod.SUM]: '例如：跑步 5 公里，输入 5',
+    [AggregationMethod.SUM]: '例如：跑�?5 公里，输�?5',
     [AggregationMethod.MAX]: '例如：考试分数 85 分，输入 85',
-    [AggregationMethod.AVERAGE]: '例如：每日学习 2 小时，输入 2',
-    [AggregationMethod.MIN]: '输入本次的最小值',
-    [AggregationMethod.LAST]: '输入最新的值',
+    [AggregationMethod.AVERAGE]: '例如：每日学�?2 小时，输�?2',
+    [AggregationMethod.MIN]: '输入本次的最小�?,
+    [AggregationMethod.LAST]: '输入最新的�?,
   };
   return method ? hintMap[method] || '请输入本次完成的数量' : '请输入本次完成的数量';
 };
@@ -170,7 +170,7 @@ export function TaskCompleteDialog({
   const [note, setNote] = useState('');
   const [duration, setDuration] = useState<number | null>(null);
 
-  // 快捷值
+  // 快捷�?
   const quickValues = useMemo(() => {
     if (!goalBinding) return [];
 
@@ -275,7 +275,7 @@ export function TaskCompleteDialog({
             <DialogTitle>完成任务</DialogTitle>
           </div>
           <DialogDescription>
-            确认完成任务并记录相关信息
+            确认完成任务并记录相关信�?
           </DialogDescription>
         </DialogHeader>
 
@@ -296,17 +296,17 @@ export function TaskCompleteDialog({
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm">
                     <Target className="h-4 w-4 text-blue-600" />
-                    <span className="font-medium">关联目标：</span>
+                    <span className="font-medium">关联目标�?/span>
                     <span>{goalBinding.goalTitle}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Key className="h-4 w-4 text-blue-600" />
-                    <span className="font-medium">关键结果：</span>
+                    <span className="font-medium">关键结果�?/span>
                     <span>{goalBinding.keyResultTitle}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Calculator className="h-4 w-4 text-blue-600" />
-                    <span className="font-medium">计算方式：</span>
+                    <span className="font-medium">计算方式�?/span>
                     <Badge className={getAggregationMethodColor(goalBinding.aggregationMethod)}>
                       {getAggregationMethodText(goalBinding.aggregationMethod)}
                     </Badge>
@@ -342,7 +342,7 @@ export function TaskCompleteDialog({
             </Alert>
           )}
 
-          {/* 输入完成值 */}
+          {/* 输入完成�?*/}
           {goalBinding && (
             <div className="space-y-3">
               <div className="space-y-2">
@@ -377,7 +377,7 @@ export function TaskCompleteDialog({
                 </Alert>
               )}
 
-              {/* 快捷值 */}
+              {/* 快捷�?*/}
               {showQuickValues && quickValues.length > 0 && (
                 <div className="space-y-2">
                   <span className="text-sm text-muted-foreground">快捷值：</span>
@@ -398,12 +398,12 @@ export function TaskCompleteDialog({
             </div>
           )}
 
-          {/* 无目标绑定提示 */}
+          {/* 无目标绑定提�?*/}
           {!goalBinding && (
             <Alert className="border-green-200 bg-green-50">
               <Info className="h-4 w-4 text-green-600" />
               <AlertDescription>
-                此任务未关联目标，点击确认后将直接完成。
+                此任务未关联目标，点击确认后将直接完成�?
               </AlertDescription>
             </Alert>
           )}
@@ -417,7 +417,7 @@ export function TaskCompleteDialog({
             <Textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="记录本次完成的情况..."
+              placeholder="记录本次完成的情�?.."
               rows={3}
             />
           </div>
@@ -433,7 +433,7 @@ export function TaskCompleteDialog({
                 type="number"
                 value={duration || ''}
                 onChange={(e) => setDuration(e.target.value ? Number(e.target.value) : null)}
-                placeholder="记录实际花费的时间"
+                placeholder="记录实际花费的时�?
                 min={0}
                 step={5}
                 className="flex-1"

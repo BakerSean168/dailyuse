@@ -7,7 +7,7 @@
  * @module renderer/shared/components/common/CircularProgress
  */
 
-import { cn } from '@dailyuse/ui-shadcn';
+import { cn } from '@dailyuse/ui-react-shadcn';
 import type { HTMLAttributes } from 'react';
 
 export interface CircularProgressProps extends HTMLAttributes<HTMLDivElement> {

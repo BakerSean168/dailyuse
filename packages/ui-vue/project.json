@@ -27,6 +27,21 @@
       "options": {
         "lintFilePatterns": ["packages/ui-vue/**/*.ts"]
       }
+    },
+    "storybook": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "storybook dev -p 4402 -c packages/ui-vue/.storybook",
+        "cwd": "."
+      }
+    },
+    "build-storybook": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/storybook/ui-vue"],
+      "options": {
+        "command": "storybook build -c packages/ui-vue/.storybook -o dist/storybook/ui-vue",
+        "cwd": "."
+      }
     }
   },
   "implicitDependencies": ["ui-core"]

@@ -1,11 +1,11 @@
 /**
  * TemplateSelectionDialog Component
  *
- * 任务模板选择对话框
- * 功能：
- * 1. 显示可用的任务模板列表
- * 2. 支持搜索和过滤
- * 3. 选择模板后回调
+ * 任务模板选择对话�?
+ * 功能�?
+ * 1. 显示可用的任务模板列�?
+ * 2. 支持搜索和过�?
+ * 3. 选择模板后回�?
  * 
  * EPIC-015 重构: 使用 Entity 类型
  */
@@ -19,11 +19,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@dailyuse/ui-shadcn';
-import { Button } from '@dailyuse/ui-shadcn';
-import { Input } from '@dailyuse/ui-shadcn';
-import { Badge } from '@dailyuse/ui-shadcn';
-import { ScrollArea } from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
+import { Input } from '@dailyuse/ui-react-shadcn';
+import { Badge } from '@dailyuse/ui-react-shadcn';
+import { ScrollArea } from '@dailyuse/ui-react-shadcn';
 import {
   Search,
   LayoutTemplate,
@@ -51,7 +51,7 @@ const getTaskTypeLabel = (taskType: string): string => {
   const labelMap: Record<string, string> = {
     HABIT: '习惯',
     EVENT: '事件',
-    DEADLINE: '截止日',
+    DEADLINE: '截止�?,
     GENERAL: '通用',
   };
   return labelMap[taskType] || taskType;
@@ -81,7 +81,7 @@ const getRecurrenceLabel = (rule?: { frequency?: string; interval?: number }): s
   const typeLabel = typeMap[rule.frequency] || rule.frequency;
   
   if (interval === 1) return typeLabel;
-  return `每${interval}${typeLabel.slice(1)}`;
+  return `�?{interval}${typeLabel.slice(1)}`;
 };
 
 // ===================== 组件 =====================
@@ -111,7 +111,7 @@ export function TemplateSelectionDialog({
     );
   }, [templates, searchQuery]);
 
-  // 选中的模板
+  // 选中的模�?
   const selectedTemplate = useMemo(() => {
     if (!selectedUuid) return null;
     return templates.find((t) => t.uuid === selectedUuid) || null;
@@ -145,7 +145,7 @@ export function TemplateSelectionDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* 搜索框 */}
+          {/* 搜索�?*/}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -160,7 +160,7 @@ export function TemplateSelectionDialog({
           <ScrollArea className="h-[400px] pr-4">
             {isLoading ? (
               <div className="flex items-center justify-center h-32">
-                <div className="text-muted-foreground">加载中...</div>
+                <div className="text-muted-foreground">加载�?..</div>
               </div>
             ) : filteredTemplates.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
@@ -181,7 +181,7 @@ export function TemplateSelectionDialog({
                       `}
                       onClick={() => setSelectedUuid(template.uuid)}
                     >
-                      {/* 选中指示器 */}
+                      {/* 选中指示�?*/}
                       {isSelected && (
                         <div className="absolute top-2 right-2 p-1 rounded-full bg-primary">
                           <Check className="h-3 w-3 text-primary-foreground" />
@@ -204,7 +204,7 @@ export function TemplateSelectionDialog({
                             </p>
                           )}
 
-                          {/* 元信息 */}
+                          {/* 元信�?*/}
                           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                             {template.recurrenceRule && (
                               <div className="flex items-center gap-1">
@@ -216,7 +216,7 @@ export function TemplateSelectionDialog({
                             {template.goalBinding && (
                               <div className="flex items-center gap-1">
                                 <Target className="h-3 w-3" />
-                                <span>已关联目标</span>
+                                <span>已关联目�?/span>
                               </div>
                             )}
                           </div>
@@ -252,7 +252,7 @@ export function TemplateSelectionDialog({
           </Button>
           <Button onClick={handleSelect} disabled={!selectedTemplate}>
             <Check className="h-4 w-4 mr-2" />
-            选择此模板
+            选择此模�?
           </Button>
         </DialogFooter>
       </DialogContent>

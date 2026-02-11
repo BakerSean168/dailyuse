@@ -1,8 +1,8 @@
 /**
  * StatisticsWidget - 统计数据 Widget
  *
- * 显示：
- * - 周/月完成统计
+ * 显示�?
+ * - �?月完成统�?
  * - 趋势图表（简化版柱状图）
  * - 关键指标
  *
@@ -17,7 +17,7 @@ import {
   TabsList,
   TabsTrigger,
   cn,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import { BarChart3, ArrowRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { DashboardWidget, type WidgetSize } from '../DashboardWidget';
@@ -107,7 +107,7 @@ export function StatisticsWidget({
     return { totalTasks, totalProgress, avgTasks, maxTasks, trend };
   }, [data]);
 
-  // 获取趋势图标和颜色
+  // 获取趋势图标和颜�?
   const getTrendInfo = () => {
     if (stats.trend > 0) {
       return { icon: TrendingUp, color: 'text-green-500', label: '上升' };
@@ -133,8 +133,8 @@ export function StatisticsWidget({
         <>
           <Tabs value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
             <TabsList className="h-8">
-              <TabsTrigger value="week" className="text-xs px-2 h-6">周</TabsTrigger>
-              <TabsTrigger value="month" className="text-xs px-2 h-6">月</TabsTrigger>
+              <TabsTrigger value="week" className="text-xs px-2 h-6">�?/TabsTrigger>
+              <TabsTrigger value="month" className="text-xs px-2 h-6">�?/TabsTrigger>
             </TabsList>
           </Tabs>
           {onViewMore && (
@@ -199,7 +199,7 @@ export function StatisticsWidget({
       {/* 底部总结 */}
       <div className="pt-3 border-t flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          日均完成 <span className="font-semibold text-foreground">{stats.avgTasks}</span> 个任务
+          日均完成 <span className="font-semibold text-foreground">{stats.avgTasks}</span> 个任�?
         </div>
         <Badge variant="secondary" className="flex items-center gap-1">
           <TrendIcon className={cn("h-3 w-3", trendInfo.color)} />

@@ -1,7 +1,7 @@
 /**
  * GoalDetailView Component
  *
- * 目标详情视图 - 完整展示目标信息、关键结果、复盘记录
+ * 目标详情视图 - 完整展示目标信息、关键结果、复盘记�?
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -16,13 +16,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@dailyuse/ui-shadcn';
-import { Button } from '@dailyuse/ui-shadcn';
-import { Badge } from '@dailyuse/ui-shadcn';
-import { Progress } from '@dailyuse/ui-shadcn';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-shadcn';
-import { ScrollArea } from '@dailyuse/ui-shadcn';
-import { Separator } from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
+import { Badge } from '@dailyuse/ui-react-shadcn';
+import { Progress } from '@dailyuse/ui-react-shadcn';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-react-shadcn';
+import { ScrollArea } from '@dailyuse/ui-react-shadcn';
+import { Separator } from '@dailyuse/ui-react-shadcn';
 import {
   ArrowLeft,
   Calendar,
@@ -45,7 +45,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 // Components
 import { KeyResultCard } from '../components/KeyResultCard';
@@ -69,12 +69,12 @@ interface GoalDetailViewProps {
   onGoalUpdated?: () => void;
 }
 
-// 状态配置
+// 状态配�?
 const STATUS_CONFIG: Record<GoalStatus, { label: string; color: string; icon: typeof Target }> = {
   [GoalStatus.DRAFT]: { label: '草稿', color: 'bg-gray-100 text-gray-800', icon: Edit },
-  [GoalStatus.ACTIVE]: { label: '进行中', color: 'bg-blue-100 text-blue-800', icon: Play },
-  [GoalStatus.COMPLETED]: { label: '已完成', color: 'bg-green-100 text-green-800', icon: CheckCircle },
-  [GoalStatus.ARCHIVED]: { label: '已归档', color: 'bg-yellow-100 text-yellow-800', icon: Archive },
+  [GoalStatus.ACTIVE]: { label: '进行�?, color: 'bg-blue-100 text-blue-800', icon: Play },
+  [GoalStatus.COMPLETED]: { label: '已完�?, color: 'bg-green-100 text-green-800', icon: CheckCircle },
+  [GoalStatus.ARCHIVED]: { label: '已归�?, color: 'bg-yellow-100 text-yellow-800', icon: Archive },
 };
 
 export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailViewProps) {
@@ -177,7 +177,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
   };
 
   const handleDeleteKeyResult = async (keyResultUuid: string) => {
-    if (!goal || !confirm('确定要删除这个关键结果吗？相关记录也会被删除。')) return;
+    if (!goal || !confirm('确定要删除这个关键结果吗？相关记录也会被删除�?)) return;
 
     try {
       await deleteKeyResult(goal.uuid, keyResultUuid);
@@ -191,11 +191,11 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
     if (!goal) return;
 
     if (selectedKeyResult) {
-      // Update 模式 - data 是 UpdateKeyResultRequest
+      // Update 模式 - data �?UpdateKeyResultRequest
       const updateData = data as UpdateKeyResultRequest;
       await updateKeyResult(goal.uuid, selectedKeyResult.uuid, updateData);
     } else {
-      // Create 模式 - data 是 AddKeyResultRequest
+      // Create 模式 - data �?AddKeyResultRequest
       const createData = data as AddKeyResultRequest;
       await createKeyResult(goal.uuid, createData);
     }
@@ -214,13 +214,13 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
   const handleSaveReview = async (data: CreateGoalReviewRequest | UpdateGoalReviewRequest) => {
     if (!goal) return;
 
-    // 直接传递 contracts 类型
+    // 直接传�?contracts 类型
     await createReview(goal.uuid, data as CreateGoalReviewRequest);
     setShowReviewDialog(false);
   };
 
   const handleDeleteReview = async (reviewUuid: string) => {
-    if (!goal || !confirm('确定要删除这条复盘记录吗？')) return;
+    if (!goal || !confirm('确定要删除这条复盘记录吗�?)) return;
 
     try {
       await deleteReview(goal.uuid, reviewUuid);
@@ -253,7 +253,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <Target className="h-16 w-16 text-muted-foreground" />
-        <div className="text-muted-foreground">目标不存在</div>
+        <div className="text-muted-foreground">目标不存�?/div>
         <Button onClick={onBack}>返回列表</Button>
       </div>
     );
@@ -325,7 +325,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
                 {goal.status === GoalStatus.ARCHIVED && (
                   <DropdownMenuItem onClick={() => handleStatusChange('activate')}>
                     <Play className="h-4 w-4 mr-2" />
-                    重新激活
+                    重新激�?
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
@@ -368,12 +368,12 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
           {goal.folderUuid && (
             <div className="flex items-center gap-1">
               <Folder className="h-4 w-4" />
-              <span>文件夹</span>
+              <span>文件�?/span>
             </div>
           )}
           <div className="flex items-center gap-1">
             <Target className="h-4 w-4" />
-            <span>{goal.keyResultCount} 个关键结果</span>
+            <span>{goal.keyResultCount} 个关键结�?/span>
           </div>
         </div>
       </div>
@@ -423,7 +423,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
                   ))
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    暂无关键结果，点击"添加"创建第一个
+                    暂无关键结果，点�?添加"创建第一�?
                   </div>
                 )}
                 {goal.keyResults && goal.keyResults.length > 3 && (
@@ -432,7 +432,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
                     className="w-full"
                     onClick={() => setActiveTab('keyresults')}
                   >
-                    查看全部 {goal.keyResults.length} 个关键结果
+                    查看全部 {goal.keyResults.length} 个关键结�?
                   </Button>
                 )}
               </CardContent>
@@ -445,11 +445,11 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
               </CardHeader>
               <CardContent className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm text-muted-foreground mb-1">开始时间</div>
+                  <div className="text-sm text-muted-foreground mb-1">开始时�?/div>
                   <div className="font-medium">
                     {goal.startDate
                       ? format(new Date(goal.startDate), 'yyyy-MM-dd', { locale: zhCN })
-                      : '未设置'}
+                      : '未设�?}
                   </div>
                 </div>
                 <div>
@@ -457,7 +457,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
                   <div className="font-medium">
                     {goal.targetDate
                       ? format(new Date(goal.targetDate), 'yyyy-MM-dd', { locale: zhCN })
-                      : '未设置'}
+                      : '未设�?}
                   </div>
                 </div>
                 <div>
@@ -505,7 +505,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
                   <p className="mb-4">暂无关键结果</p>
                   <Button onClick={handleAddKeyResult}>
                     <Plus className="h-4 w-4 mr-1" />
-                    添加第一个关键结果
+                    添加第一个关键结�?
                   </Button>
                 </div>
               )}
@@ -543,7 +543,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
                   <p className="mb-4">暂无复盘记录</p>
                   <Button onClick={() => setShowReviewDialog(true)}>
                     <Plus className="h-4 w-4 mr-1" />
-                    创建第一条复盘
+                    创建第一条复�?
                   </Button>
                 </div>
               )}

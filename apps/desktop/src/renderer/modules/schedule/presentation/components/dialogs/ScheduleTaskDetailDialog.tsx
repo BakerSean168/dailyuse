@@ -1,8 +1,8 @@
 /**
  * ScheduleTaskDetailDialog Component
  *
- * 调度任务详情对话框
- * 功能：
+ * 调度任务详情对话�?
+ * 功能�?
  * 1. 显示任务基本信息
  * 2. 显示执行信息
  * 3. 显示调度配置
@@ -21,13 +21,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@dailyuse/ui-shadcn';
-import { Button } from '@dailyuse/ui-shadcn';
-import { Badge } from '@dailyuse/ui-shadcn';
-import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-shadcn';
-import { ScrollArea } from '@dailyuse/ui-shadcn';
-import { Separator } from '@dailyuse/ui-shadcn';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
+import { Badge } from '@dailyuse/ui-react-shadcn';
+import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-react-shadcn';
+import { ScrollArea } from '@dailyuse/ui-react-shadcn';
+import { Separator } from '@dailyuse/ui-react-shadcn';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-react-shadcn';
 import {
   CalendarClock,
   Clock,
@@ -73,8 +73,8 @@ function formatDate(date: Date | number | string | null | undefined): string {
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Check }> = {
   [ScheduleTaskStatus.ACTIVE]: { label: '活跃', color: 'bg-green-100 text-green-800', icon: Play },
   [ScheduleTaskStatus.PAUSED]: { label: '暂停', color: 'bg-yellow-100 text-yellow-800', icon: Pause },
-  [ScheduleTaskStatus.COMPLETED]: { label: '已完成', color: 'bg-blue-100 text-blue-800', icon: Check },
-  [ScheduleTaskStatus.CANCELLED]: { label: '已取消', color: 'bg-gray-100 text-gray-800', icon: X },
+  [ScheduleTaskStatus.COMPLETED]: { label: '已完�?, color: 'bg-blue-100 text-blue-800', icon: Check },
+  [ScheduleTaskStatus.CANCELLED]: { label: '已取�?, color: 'bg-gray-100 text-gray-800', icon: X },
   [ScheduleTaskStatus.FAILED]: { label: '失败', color: 'bg-red-100 text-red-800', icon: AlertTriangle },
 };
 
@@ -186,7 +186,7 @@ export function ScheduleTaskDetailDialog({
                       )}
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">任务状态</p>
+                      <p className="text-xs text-muted-foreground">任务状�?/p>
                       {status && (
                         <Badge className={status.color}>
                           <status.icon className="h-3 w-3 mr-1" />
@@ -195,9 +195,9 @@ export function ScheduleTaskDetailDialog({
                       )}
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">启用状态</p>
+                      <p className="text-xs text-muted-foreground">启用状�?/p>
                       <Badge className={task.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                        {task.enabled ? '已启用' : '已禁用'}
+                        {task.enabled ? '已启�? : '已禁�?}
                       </Badge>
                     </div>
                   </CardContent>
@@ -214,7 +214,7 @@ export function ScheduleTaskDetailDialog({
                   <CardContent className="space-y-3">
                     <div>
                       <p className="text-xs text-muted-foreground">执行次数</p>
-                      <p className="font-medium">{task.execution.executionCount} 次</p>
+                      <p className="font-medium">{task.execution.executionCount} �?/p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">下次执行</p>
@@ -226,7 +226,7 @@ export function ScheduleTaskDetailDialog({
                     </div>
                     {task.execution.lastExecutionStatus && (
                       <div>
-                        <p className="text-xs text-muted-foreground">上次执行状态</p>
+                        <p className="text-xs text-muted-foreground">上次执行状�?/p>
                         {executionStatus && (
                           <Badge className={executionStatus.color}>
                             {executionStatus.label}
@@ -238,7 +238,7 @@ export function ScheduleTaskDetailDialog({
                       <div>
                         <p className="text-xs text-muted-foreground">连续失败</p>
                         <Badge variant="destructive">
-                          {task.execution.consecutiveFailures} 次
+                          {task.execution.consecutiveFailures} �?
                         </Badge>
                       </div>
                     )}
@@ -259,7 +259,7 @@ export function ScheduleTaskDetailDialog({
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
-                      <p className="text-xs text-muted-foreground">Cron 表达式</p>
+                      <p className="text-xs text-muted-foreground">Cron 表达�?/p>
                       <p className="font-mono text-sm">{task.schedule.cronExpression}</p>
                     </div>
                     <div>
@@ -267,7 +267,7 @@ export function ScheduleTaskDetailDialog({
                       <p className="text-sm">{task.schedule.timezone}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">开始日期</p>
+                      <p className="text-xs text-muted-foreground">开始日�?/p>
                       <p className="text-sm">{formatDate(task.schedule.startDate)}</p>
                     </div>
                     <div>
@@ -290,7 +290,7 @@ export function ScheduleTaskDetailDialog({
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-center h-32 text-muted-foreground">
-                    <p>执行历史记录加载中...</p>
+                    <p>执行历史记录加载�?..</p>
                   </div>
                 </CardContent>
               </Card>

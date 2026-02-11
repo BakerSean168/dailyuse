@@ -23,10 +23,8 @@ import { ZodError } from 'zod';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// 项目根目录（从 apps/api/src/shared/infrastructure/config 向上 6 级）
+// Project root (from apps/api/src/shared/infrastructure/config up 6 levels)
 const PROJECT_ROOT = resolve(__dirname, '../../../../../../');
-// API 应用目录
-const API_ROOT = resolve(__dirname, '../../../../');
 
 /**
  * 加载 .env 文件
@@ -45,19 +43,13 @@ function loadEnvFile(filePath: string, override = true): void {
 function loadAllEnvFiles(): void {
   const nodeEnv = process.env.NODE_ENV || 'development';
   
-  // 定义加载顺序（优先级从低到高）
+  // Load order (low to high priority)
   const envFiles = [
-    // 项目根目录
+    // Workspace root (centralized env files)
     resolve(PROJECT_ROOT, '.env'),
     resolve(PROJECT_ROOT, `.env.${nodeEnv}`),
     resolve(PROJECT_ROOT, '.env.local'),
     resolve(PROJECT_ROOT, `.env.${nodeEnv}.local`),
-    
-    // API 应用目录（更高优先级）
-    resolve(API_ROOT, '.env'),
-    resolve(API_ROOT, `.env.${nodeEnv}`),
-    resolve(API_ROOT, '.env.local'),
-    resolve(API_ROOT, `.env.${nodeEnv}.local`),
   ];
   
   // 按顺序加载，后面的覆盖前面的

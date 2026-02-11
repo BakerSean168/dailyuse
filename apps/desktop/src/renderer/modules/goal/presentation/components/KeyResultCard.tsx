@@ -11,16 +11,16 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@dailyuse/ui-shadcn';
-import { Badge } from '@dailyuse/ui-shadcn';
-import { Button } from '@dailyuse/ui-shadcn';
-import { Progress } from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
+import { Badge } from '@dailyuse/ui-react-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
+import { Progress } from '@dailyuse/ui-react-shadcn';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 import {
   Target,
   Plus,
@@ -78,7 +78,7 @@ export function KeyResultCard({
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
     >
-      {/* 进度背景层 */}
+      {/* 进度背景�?*/}
       <div
         className="absolute top-0 left-0 h-full opacity-10 transition-all duration-500"
         style={{
@@ -122,7 +122,7 @@ export function KeyResultCard({
       </CardHeader>
 
       <CardContent className="relative z-10 pt-0">
-        {/* 数值显示 */}
+        {/* 数值显�?*/}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge

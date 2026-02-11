@@ -1,7 +1,7 @@
 /**
  * SettingsView Component
  *
- * 设置页面主视图
+ * 设置页面主视�?
  * Story 11-6: Auxiliary Modules
  */
 
@@ -26,7 +26,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import { ThemeSettings } from '../components/ThemeSettings';
 import { GeneralSettings } from '../components/GeneralSettings';
@@ -36,11 +36,11 @@ import type { AppSettings } from '../stores/settingStore';
 
 // 简单的消息提示函数
 const showMessage = (title: string, _description?: string) => {
-  // TODO: 替换为统一的消息提示组件
+  // TODO: 替换为统一的消息提示组�?
   console.log(`[Settings] ${title}`);
 };
 
-// 主题映射：本地格式 -> contracts 格式
+// 主题映射：本地格�?-> contracts 格式
 const themeToContractFormat = (theme: 'light' | 'dark' | 'system'): 'LIGHT' | 'DARK' | 'AUTO' => {
   const map = { light: 'LIGHT', dark: 'DARK', system: 'AUTO' } as const;
   return map[theme];
@@ -58,13 +58,13 @@ export function SettingsView() {
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      // 保存外观设置到后端 (language 属于 updateLocale)
+      // 保存外观设置到后�?(language 属于 updateLocale)
       await updateAppearance({
         theme: themeToContractFormat(settings.theme),
       });
-      showMessage('设置已保存', '您的设置已成功保存');
+      showMessage('设置已保�?, '您的设置已成功保�?);
     } catch {
-      showMessage('保存失败', '保存设置时发生错误');
+      showMessage('保存失败', '保存设置时发生错�?);
     } finally {
       setSaving(false);
     }
@@ -74,7 +74,7 @@ export function SettingsView() {
   const handleReset = useCallback(() => {
     resetToDefault();
     setShowResetConfirm(false);
-    showMessage('设置已重置', '所有设置已恢复为默认值');
+    showMessage('设置已重�?, '所有设置已恢复为默认�?);
   }, [resetToDefault]);
 
   // Export settings
@@ -147,7 +147,7 @@ export function SettingsView() {
                 导入
               </Button>
               <Button size="sm" onClick={handleSave} disabled={saving}>
-                {saving ? '保存中...' : '保存更改'}
+                {saving ? '保存�?..' : '保存更改'}
               </Button>
             </div>
           </div>
@@ -244,7 +244,7 @@ export function SettingsView() {
                     variant="destructive"
                     onClick={() => setShowResetConfirm(true)}
                   >
-                    重置所有设置
+                    重置所有设�?
                   </Button>
                 </CardContent>
               </Card>
@@ -268,11 +268,11 @@ export function SettingsView() {
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  DailyUse 是一款专注于日常效率的个人管理工具，帮助您管理目标、任务、日程和提醒。
+                  DailyUse 是一款专注于日常效率的个人管理工具，帮助您管理目标、任务、日程和提醒�?
                 </p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm">
-                    检查更新
+                    检查更�?
                   </Button>
                   <Button variant="outline" size="sm">
                     查看文档
@@ -291,9 +291,9 @@ export function SettingsView() {
       <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>确定要重置所有设置吗？</AlertDialogTitle>
+            <AlertDialogTitle>确定要重置所有设置吗�?/AlertDialogTitle>
             <AlertDialogDescription>
-              此操作将把所有设置恢复为默认值，包括主题、通知、同步等设置。此操作无法撤销。
+              此操作将把所有设置恢复为默认值，包括主题、通知、同步等设置。此操作无法撤销�?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

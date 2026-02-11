@@ -1,7 +1,7 @@
 /**
  * FocusModePanel Component
  *
- * 专注模式主面板
+ * 专注模式主面�?
  * Story 11-7: Advanced Features
  */
 
@@ -20,7 +20,7 @@ import {
   TabsTrigger,
   ScrollArea,
   cn,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import { PomodoroTimer } from './PomodoroTimer';
 import { FocusStatistics } from './FocusStatistics';
@@ -55,9 +55,9 @@ interface FocusModePanelProps {
 
 // Priority configurations
 const priorityConfig = {
-  high: { label: '高', color: 'bg-red-500' },
-  medium: { label: '中', color: 'bg-yellow-500' },
-  low: { label: '低', color: 'bg-green-500' },
+  high: { label: '�?, color: 'bg-red-500' },
+  medium: { label: '�?, color: 'bg-yellow-500' },
+  low: { label: '�?, color: 'bg-green-500' },
 };
 
 // Task Item Component
@@ -196,7 +196,7 @@ export function FocusModePanel({
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="timer" className="gap-2">
             <Clock className="h-4 w-4" />
-            计时器
+            计时�?
           </TabsTrigger>
           <TabsTrigger value="tasks" className="gap-2">
             <List className="h-4 w-4" />
@@ -236,7 +236,7 @@ export function FocusModePanel({
             {!selectedTask && pendingTasks.length > 0 && (
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">选择一个任务开始专注</CardTitle>
+                  <CardTitle className="text-sm">选择一个任务开始专�?/CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
@@ -266,7 +266,7 @@ export function FocusModePanel({
               <div>
                 <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
                   <Clock className="h-4 w-4" />
-                  待完成 ({pendingTasks.length})
+                  待完�?({pendingTasks.length})
                 </h3>
                 <div className="space-y-2">
                   {pendingTasks.length === 0 ? (
@@ -292,7 +292,7 @@ export function FocusModePanel({
                 <div>
                   <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
                     <CheckSquare className="h-4 w-4 text-green-500" />
-                    已完成 ({completedTasks.length})
+                    已完�?({completedTasks.length})
                   </h3>
                   <div className="space-y-2">
                     {completedTasks.map((task) => (

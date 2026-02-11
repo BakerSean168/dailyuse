@@ -1,10 +1,10 @@
 /**
  * EmptyState Component
- * 显示空状态时的占位组件
+ * 显示空状态时的占位组�?
  */
 
 import * as React from 'react';
-import { cn } from '@dailyuse/ui-shadcn';
+import { cn } from '@dailyuse/ui-react-shadcn';
 import type { LucideIcon } from 'lucide-react';
 import { FileQuestion } from 'lucide-react';
 
@@ -19,7 +19,7 @@ export interface EmptyStateProps {
   iconSize?: number;
   /** 操作按钮 */
   action?: React.ReactNode;
-  /** 自定义类名 */
+  /** 自定义类�?*/
   className?: string;
 }
 

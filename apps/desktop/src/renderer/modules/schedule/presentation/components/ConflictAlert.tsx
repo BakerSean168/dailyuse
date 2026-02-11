@@ -2,19 +2,19 @@
  * ConflictAlert Component
  *
  * 时间冲突警告组件
- * 功能：
- * 1. 显示冲突数量和详情
+ * 功能�?
+ * 1. 显示冲突数量和详�?
  * 2. 提供解决建议
- * 3. 可关闭
+ * 3. 可关�?
  */
 
 import { useMemo } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import type { ConflictDetectionResult, ConflictSuggestion } from '@dailyuse/contracts/schedule';
-import { Alert, AlertDescription, AlertTitle } from '@dailyuse/ui-shadcn';
-import { Badge } from '@dailyuse/ui-shadcn';
-import { Button } from '@dailyuse/ui-shadcn';
+import { Alert, AlertDescription, AlertTitle } from '@dailyuse/ui-react-shadcn';
+import { Badge } from '@dailyuse/ui-react-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
 import { AlertTriangle, Clock, X, Lightbulb } from 'lucide-react';
 
 // ===================== 接口定义 =====================
@@ -48,13 +48,13 @@ function formatSuggestion(suggestion: ConflictSuggestion): string {
 
   switch (suggestion.type) {
     case 'move_earlier':
-      return `提前到 ${startTime}-${endTime}`;
+      return `提前�?${startTime}-${endTime}`;
     case 'move_later':
-      return `延后到 ${startTime}-${endTime}`;
+      return `延后�?${startTime}-${endTime}`;
     case 'shorten':
-      return `缩短到 ${startTime}-${endTime}`;
+      return `缩短�?${startTime}-${endTime}`;
     default:
-      return `调整到 ${startTime}-${endTime}`;
+      return `调整�?${startTime}-${endTime}`;
   }
 }
 
@@ -102,7 +102,7 @@ export function ConflictAlert({
       <AlertTriangle className="h-4 w-4 text-yellow-600" />
       
       <AlertTitle className="text-yellow-800 flex items-center gap-2">
-        检测到 {conflicts.length} 个时间冲突
+        检测到 {conflicts.length} 个时间冲�?
       </AlertTitle>
 
       <AlertDescription className="mt-2 space-y-3">
@@ -115,7 +115,7 @@ export function ConflictAlert({
             >
               <Clock className="h-3 w-3 shrink-0" />
               <span>
-                与「{conflict.scheduleTitle}」重叠 {formatDuration(conflict.overlapDuration)}
+                与「{conflict.scheduleTitle}」重�?{formatDuration(conflict.overlapDuration)}
               </span>
             </div>
           ))}

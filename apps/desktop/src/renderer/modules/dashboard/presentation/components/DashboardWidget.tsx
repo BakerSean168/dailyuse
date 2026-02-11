@@ -1,11 +1,11 @@
 /**
- * DashboardWidget - 仪表板 Widget 基础容器组件
+ * DashboardWidget - 仪表�?Widget 基础容器组件
  *
  * 提供 Widget 的通用布局和功能：
  * - 标题栏（图标、标题、刷新按钮）
  * - 加载状态骨架屏
- * - 错误状态显示
- * - 可折叠内容区域
+ * - 错误状态显�?
+ * - 可折叠内容区�?
  *
  * @module dashboard/presentation/components
  */
@@ -22,7 +22,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
   cn,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import { RefreshCw, ChevronDown, AlertCircle } from 'lucide-react';
 
@@ -37,19 +37,19 @@ export interface DashboardWidgetProps {
   icon?: React.ReactNode;
   /** Widget 尺寸 */
   size?: WidgetSize;
-  /** 是否加载中 */
+  /** 是否加载�?*/
   loading?: boolean;
   /** 错误信息 */
   error?: string | null;
   /** 刷新回调 */
   onRefresh?: () => Promise<void> | void;
-  /** 是否可折叠 */
+  /** 是否可折�?*/
   collapsible?: boolean;
   /** 默认是否展开 */
   defaultExpanded?: boolean;
-  /** 额外的 CSS 类名 */
+  /** 额外�?CSS 类名 */
   className?: string;
-  /** 子内容 */
+  /** 子内�?*/
   children: React.ReactNode;
   /** 头部右侧额外操作 */
   headerActions?: React.ReactNode;
@@ -99,7 +99,7 @@ export function DashboardWidget({
     }
   };
 
-  // 骨架屏高度
+  // 骨架屏高�?
   const getSkeletonHeight = () => {
     switch (size) {
       case 'small':
@@ -145,7 +145,7 @@ export function DashboardWidget({
     return children;
   };
 
-  // 可折叠 Widget
+  // 可折�?Widget
   if (collapsible) {
     return (
       <Collapsible
@@ -199,7 +199,7 @@ export function DashboardWidget({
     );
   }
 
-  // 普通 Widget
+  // 普�?Widget
   return (
     <Card className={cn("h-full", getSizeClasses(), className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

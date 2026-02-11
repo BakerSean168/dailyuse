@@ -5,13 +5,6 @@ export default defineConfig({
   format: ['esm'],
   dts: true,
   clean: true,
-  external: [
-    'react',
-    'react-dom',
-    '@dailyuse/ui-react',
-    '@dailyuse/ui-core',
-  ],
+  external: ['vue'],
   sourcemap: true,
-  // Include CSS
-  injectStyle: false,
 });

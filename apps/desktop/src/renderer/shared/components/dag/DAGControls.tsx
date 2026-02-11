@@ -1,7 +1,7 @@
 /**
  * DAGControls Component
  *
- * DAG 图控制组件 - 缩放、布局、导出
+ * DAG 图控制组�?- 缩放、布局、导�?
  * Story 11-7: Advanced Features
  */
 
@@ -21,7 +21,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
   cn,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 export type LayoutType = 'tree' | 'radial' | 'force';
 
@@ -135,7 +135,7 @@ export const DAGControls = memo(function DAGControls({
                       <Icon className="mr-2 h-4 w-4" />
                       {label}
                       {currentLayout === key && (
-                        <span className="ml-auto text-primary">✓</span>
+                        <span className="ml-auto text-primary">�?/span>
                       )}
                     </DropdownMenuItem>
                   );
@@ -175,13 +175,13 @@ export const DAGControls = memo(function DAGControls({
                 <DropdownMenuLabel>导出格式</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => onExport?.('png')}>
-                  导出为 PNG
+                  导出�?PNG
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onExport?.('svg')}>
-                  导出为 SVG
+                  导出�?SVG
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onExport?.('json')}>
-                  导出为 JSON
+                  导出�?JSON
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

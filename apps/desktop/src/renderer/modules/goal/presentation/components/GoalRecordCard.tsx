@@ -5,15 +5,15 @@
  */
 
 import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
-import { Card, CardContent } from '@dailyuse/ui-shadcn';
-import { Badge } from '@dailyuse/ui-shadcn';
-import { Button } from '@dailyuse/ui-shadcn';
+import { Card, CardContent } from '@dailyuse/ui-react-shadcn';
+import { Badge } from '@dailyuse/ui-react-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 import { Plus, Clock, FileText, Trash2 } from 'lucide-react';
 
 interface GoalRecordCardProps {
@@ -48,7 +48,7 @@ export function GoalRecordCard({
     >
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
-          {/* 记录值 */}
+          {/* 记录�?*/}
           <div className="flex items-center gap-3">
             <div
               className="flex items-center justify-center w-8 h-8 rounded-full"
@@ -58,11 +58,11 @@ export function GoalRecordCard({
             </div>
             <div>
               <div className="text-lg font-bold">{record.value}</div>
-              <div className="text-xs text-muted-foreground">本次记录值</div>
+              <div className="text-xs text-muted-foreground">本次记录�?/div>
             </div>
           </div>
 
-          {/* 分隔线 */}
+          {/* 分隔�?*/}
           <div className="h-8 w-px bg-border" />
 
           {/* 记录时间 */}
