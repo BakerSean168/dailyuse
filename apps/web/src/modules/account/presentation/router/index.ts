@@ -20,6 +20,19 @@ export const accountRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
+        path: '',
+        redirect: '/account/center',
+      },
+      {
+        path: 'center',
+        name: 'account-center',
+        component: () => import('../views/AccountCenterView.vue'),
+        meta: {
+          title: '个人中心',
+          requiresAuth: true,
+        },
+      },
+      {
         path: 'profile',
         name: 'account-profile',
         component: () => import('../views/ProfileView.vue'),

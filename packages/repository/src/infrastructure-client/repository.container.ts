@@ -15,7 +15,7 @@
  */
 
 import { DIContainer, ModuleContainerBase } from '../shared/di';
-import type { IRepositoryApiClient } from './ports/repository-api-client.port';
+import type { IRepositoryApiClient } from './adapters/types';
 
 /**
  * Repository 模块依赖键

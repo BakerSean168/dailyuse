@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 ---
 
 # DailyUse - 迁移指南

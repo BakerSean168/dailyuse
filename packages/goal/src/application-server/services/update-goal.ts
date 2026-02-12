@@ -1,50 +1,70 @@
 /**
- * Update Goal Service
+ * Update Goal Use Case
  *
  * 更新目标基本信息的应用服务
+ * 遵循 governance 模块 Result<T> 规范
  */
 
 import type { IGoalRepository } from '@/domain-server';
-import { GoalDomainService, Goal } from '@/domain-server';
-import type { UpdateGoalRequest, GoalResponse } from '@dailyuse/contracts/goal';
-import { eventBus } from '@dailyuse/utils';
+import type { UpdateGoalReq, UpdateGoalRes } from '@dailyuse/contracts/goal';
+import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
+import { GoalEventPublisher } from './goal-event-publisher';
 
 /**
- * Update Goal Service
+ * Update Goal Use Case
  */
 export class UpdateGoal {
-  private readonly domainService: GoalDomainService;
+  constructor(private readonly goalRepository: IGoalRepository) {}
 
-  constructor(private readonly goalRepository: IGoalRepository) {
-    this.domainService = new GoalDomainService();
-  }
-
-  async execute(uuid: string, input: UpdateGoalRequest): Promise<GoalResponse> {
+  async execute(uuid: string, input: UpdateGoalReq): Promise<Result<UpdateGoalRes>> {
     // 1. 查询目标
-    const goal = await this.goalRepository.findById(uuid);
+    const goal = await this.goalRepository.findById(uuid, { includeChildren: true });
     if (!goal) {
-      throw new Error(`Goal not found: ${uuid}`);
+      return error('NOT_FOUND', `Goal not found: ${uuid}`);
     }
 
-    // 2. 委托领域服务更新
-    this.domainService.updateGoalBasicInfo(goal, input);
+    // 2. 使用聚合根方法更新基本信息
+    goal.updateBasicInfo({
+      name: input.title,
+      description: input.description,
+      importance: input.importance as ImportanceLevel | undefined,
+      category: input.category,
+      color: input.color ?? undefined,
+      feasibilityAnalysis: input.feasibilityAnalysis,
+      motivation: input.motivation,
+    });
 
-    // 3. 持久化
+    // 3. 更新标签
+    if (input.tags !== undefined) {
+      goal.updateTags(input.tags ?? []);
+    }
+
+    // 4. 更新时间范围
+    if (input.startDate !== undefined || input.targetDate !== undefined) {
+      goal.updateTimeRange({
+        startDate: input.startDate !== undefined
+          ? (input.startDate ? new Date(input.startDate) : null)
+          : undefined,
+        targetDate: input.targetDate !== undefined
+          ? (input.targetDate ? new Date(input.targetDate) : null)
+          : undefined,
+      });
+    }
+
+    // 5. 更新文件夹
+    if (input.folderUuid !== undefined) {
+      goal.moveToFolder(input.folderUuid ? (input.folderUuid as any) : null);
+    }
+
+    // 6. 持久化
     await this.goalRepository.save(goal);
 
-    // 4. 发布领域事件
-    await this.publishEvents(goal);
+    // 7. 发布领域事件
+    await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 5. 返回结果
-    return {
-      goal: goal.toClientDTO(),
-    };
-  }
-
-  private async publishEvents(goal: Goal): Promise<void> {
-    const events = goal.getUncommittedDomainEvents();
-    for (const event of events) {
-      await eventBus.emit(event.eventType, event);
-    }
+    // 8. 返回 Result
+    return ok(goal.toClientDTO(true));
   }
 }

@@ -7,7 +7,7 @@
  */
 
 import { DIContainer, ModuleContainerBase } from '../shared/di';
-import type { INotificationApiClient } from './ports/notification-api-client.port';
+import type { INotificationApiClient } from './adapters/types';
 
 /**
  * Notification 模块依赖键

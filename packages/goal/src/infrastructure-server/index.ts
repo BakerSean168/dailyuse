@@ -1,15 +1,13 @@
 /**
  * Goal Module - Infrastructure Server
  *
- * Repository implementations and DI Module for Goal domain.
+ * Repository implementations for Goal domain.
  * Supports both Prisma (API) and SQLite (Desktop) data sources.
+ *
+ * 遵循 Governance 模块架构：
+ * - 此层只包含仓储实现、映射器、端口定义
+ * - DI 组装在 api/module.ts 中完成
  */
-
-// ============ DI Module ============
-export { GoalModule } from './goal.module';
-
-// ============ Repository Factory ============
-export { GoalRepositoryFactory } from './di/repository-factory';
 
 // ============ Adapters - Prisma ============
 export { GoalPrismaRepository } from './adapters/prisma/goal-prisma.repository';

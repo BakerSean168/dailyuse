@@ -1,4 +1,5 @@
-import { eventBus, type DomainEvent } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils';
+import type { IDomainEvent } from '@dailyuse/contracts/shared';
 import { GoalStatisticsApplicationService } from './goal-statistics-application-service';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
@@ -6,10 +7,10 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { Goal } from '@/domain-server';
 
 /**
- * Goal 领域事件发布器
- * 负责：
+ * Goal 领域事件发布�?
+ * 负责�?
  * 1. 发布 Goal 聚合根的领域事件到事件总线
- * 2. 将领域事件转换为统计事件并更新统计
+ * 2. 将领域事件转换为统计事件并更新统�?
  */
 export class GoalEventPublisher {
   private static isInitialized = false;
@@ -28,10 +29,10 @@ export class GoalEventPublisher {
     const statisticsService = await GoalStatisticsApplicationService.getInstance();
 
     // 监听 goal.created 事件
-    eventBus.on('goal.created', async (event: DomainEvent) => {
+    eventBus.on('goal.created', async (event: IDomainEvent) => {
       try {
         if (!event.accountUuid) {
-          console.error('❌ [GoalEventPublisher] Missing accountUuid in goal.created event');
+          console.error('�?[GoalEventPublisher] Missing accountUuid in goal.created event');
           return;
         }
 
@@ -50,17 +51,17 @@ export class GoalEventPublisher {
           },
         });
 
-        console.log(`✅ [GoalEventPublisher] Handled goal.created for ${goal.uuid}`);
+        console.log(`�?[GoalEventPublisher] Handled goal.created for ${goal.uuid}`);
       } catch (error) {
-        console.error('❌ [GoalEventPublisher] Error handling goal.created:', error);
+        console.error('�?[GoalEventPublisher] Error handling goal.created:', error);
       }
     });
 
     // 监听 goal.deleted 事件
-    eventBus.on('goal.deleted', async (event: DomainEvent) => {
+    eventBus.on('goal.deleted', async (event: IDomainEvent) => {
       try {
         if (!event.accountUuid) {
-          console.error('❌ [GoalEventPublisher] Missing accountUuid in goal.deleted event');
+          console.error('�?[GoalEventPublisher] Missing accountUuid in goal.deleted event');
           return;
         }
 
@@ -81,17 +82,17 @@ export class GoalEventPublisher {
           },
         });
 
-        console.log(`✅ [GoalEventPublisher] Handled goal.deleted for ${event.aggregateId}`);
+        console.log(`�?[GoalEventPublisher] Handled goal.deleted for ${event.aggregateId}`);
       } catch (error) {
-        console.error('❌ [GoalEventPublisher] Error handling goal.deleted:', error);
+        console.error('�?[GoalEventPublisher] Error handling goal.deleted:', error);
       }
     });
 
     // 监听 goal.status_changed 事件
-    eventBus.on('goal.status_changed', async (event: DomainEvent) => {
+    eventBus.on('goal.status_changed', async (event: IDomainEvent) => {
       try {
         if (!event.accountUuid) {
-          console.error('❌ [GoalEventPublisher] Missing accountUuid in goal.status_changed event');
+          console.error('�?[GoalEventPublisher] Missing accountUuid in goal.status_changed event');
           return;
         }
 
@@ -111,18 +112,18 @@ export class GoalEventPublisher {
         });
 
         console.log(
-          `✅ [GoalEventPublisher] Handled goal.status_changed: ${previousStatus} → ${newStatus}`,
+          `�?[GoalEventPublisher] Handled goal.status_changed: ${previousStatus} �?${newStatus}`,
         );
       } catch (error) {
-        console.error('❌ [GoalEventPublisher] Error handling goal.status_changed:', error);
+        console.error('�?[GoalEventPublisher] Error handling goal.status_changed:', error);
       }
     });
 
     // 监听 goal.completed 事件
-    eventBus.on('goal.completed', async (event: DomainEvent) => {
+    eventBus.on('goal.completed', async (event: IDomainEvent) => {
       try {
         if (!event.accountUuid) {
-          console.error('❌ [GoalEventPublisher] Missing accountUuid in goal.completed event');
+          console.error('�?[GoalEventPublisher] Missing accountUuid in goal.completed event');
           return;
         }
 
@@ -140,17 +141,17 @@ export class GoalEventPublisher {
           },
         });
 
-        console.log(`✅ [GoalEventPublisher] Handled goal.completed for ${event.aggregateId}`);
+        console.log(`�?[GoalEventPublisher] Handled goal.completed for ${event.aggregateId}`);
       } catch (error) {
-        console.error('❌ [GoalEventPublisher] Error handling goal.completed:', error);
+        console.error('�?[GoalEventPublisher] Error handling goal.completed:', error);
       }
     });
 
     // 监听 goal.archived 事件
-    eventBus.on('goal.archived', async (event: DomainEvent) => {
+    eventBus.on('goal.archived', async (event: IDomainEvent) => {
       try {
         if (!event.accountUuid) {
-          console.error('❌ [GoalEventPublisher] Missing accountUuid in goal.archived event');
+          console.error('�?[GoalEventPublisher] Missing accountUuid in goal.archived event');
           return;
         }
 
@@ -163,17 +164,17 @@ export class GoalEventPublisher {
           },
         });
 
-        console.log(`✅ [GoalEventPublisher] Handled goal.archived for ${event.aggregateId}`);
+        console.log(`�?[GoalEventPublisher] Handled goal.archived for ${event.aggregateId}`);
       } catch (error) {
-        console.error('❌ [GoalEventPublisher] Error handling goal.archived:', error);
+        console.error('�?[GoalEventPublisher] Error handling goal.archived:', error);
       }
     });
 
     // 监听 goal.activated 事件
-    eventBus.on('goal.activated', async (event: DomainEvent) => {
+    eventBus.on('goal.activated', async (event: IDomainEvent) => {
       try {
         if (!event.accountUuid) {
-          console.error('❌ [GoalEventPublisher] Missing accountUuid in goal.activated event');
+          console.error('�?[GoalEventPublisher] Missing accountUuid in goal.activated event');
           return;
         }
 
@@ -191,17 +192,17 @@ export class GoalEventPublisher {
           },
         });
 
-        console.log(`✅ [GoalEventPublisher] Handled goal.activated for ${event.aggregateId}`);
+        console.log(`�?[GoalEventPublisher] Handled goal.activated for ${event.aggregateId}`);
       } catch (error) {
-        console.error('❌ [GoalEventPublisher] Error handling goal.activated:', error);
+        console.error('�?[GoalEventPublisher] Error handling goal.activated:', error);
       }
     });
 
     // 监听 key_result.created 事件
-    eventBus.on('key_result.created', async (event: DomainEvent) => {
+    eventBus.on('key_result.created', async (event: IDomainEvent) => {
       try {
         if (!event.accountUuid) {
-          console.error('❌ [GoalEventPublisher] Missing accountUuid in key_result.created event');
+          console.error('�?[GoalEventPublisher] Missing accountUuid in key_result.created event');
           return;
         }
 
@@ -212,17 +213,17 @@ export class GoalEventPublisher {
           payload: {},
         });
 
-        console.log(`✅ [GoalEventPublisher] Handled key_result.created for ${event.aggregateId}`);
+        console.log(`�?[GoalEventPublisher] Handled key_result.created for ${event.aggregateId}`);
       } catch (error) {
-        console.error('❌ [GoalEventPublisher] Error handling key_result.created:', error);
+        console.error('�?[GoalEventPublisher] Error handling key_result.created:', error);
       }
     });
 
     // 监听 key_result.deleted 事件
-    eventBus.on('key_result.deleted', async (event: DomainEvent) => {
+    eventBus.on('key_result.deleted', async (event: IDomainEvent) => {
       try {
         if (!event.accountUuid) {
-          console.error('❌ [GoalEventPublisher] Missing accountUuid in key_result.deleted event');
+          console.error('�?[GoalEventPublisher] Missing accountUuid in key_result.deleted event');
           return;
         }
 
@@ -239,18 +240,18 @@ export class GoalEventPublisher {
           },
         });
 
-        console.log(`✅ [GoalEventPublisher] Handled key_result.deleted for ${event.aggregateId}`);
+        console.log(`�?[GoalEventPublisher] Handled key_result.deleted for ${event.aggregateId}`);
       } catch (error) {
-        console.error('❌ [GoalEventPublisher] Error handling key_result.deleted:', error);
+        console.error('�?[GoalEventPublisher] Error handling key_result.deleted:', error);
       }
     });
 
     // 监听 key_result.completed 事件
-    eventBus.on('key_result.completed', async (event: DomainEvent) => {
+    eventBus.on('key_result.completed', async (event: IDomainEvent) => {
       try {
         if (!event.accountUuid) {
           console.error(
-            '❌ [GoalEventPublisher] Missing accountUuid in key_result.completed event',
+            '�?[GoalEventPublisher] Missing accountUuid in key_result.completed event',
           );
           return;
         }
@@ -263,18 +264,18 @@ export class GoalEventPublisher {
         });
 
         console.log(
-          `✅ [GoalEventPublisher] Handled key_result.completed for ${event.aggregateId}`,
+          `�?[GoalEventPublisher] Handled key_result.completed for ${event.aggregateId}`,
         );
       } catch (error) {
-        console.error('❌ [GoalEventPublisher] Error handling key_result.completed:', error);
+        console.error('�?[GoalEventPublisher] Error handling key_result.completed:', error);
       }
     });
 
     // 监听 review.created 事件
-    eventBus.on('review.created', async (event: DomainEvent) => {
+    eventBus.on('review.created', async (event: IDomainEvent) => {
       try {
         if (!event.accountUuid) {
-          console.error('❌ [GoalEventPublisher] Missing accountUuid in review.created event');
+          console.error('�?[GoalEventPublisher] Missing accountUuid in review.created event');
           return;
         }
 
@@ -291,17 +292,17 @@ export class GoalEventPublisher {
           },
         });
 
-        console.log(`✅ [GoalEventPublisher] Handled review.created for ${event.aggregateId}`);
+        console.log(`�?[GoalEventPublisher] Handled review.created for ${event.aggregateId}`);
       } catch (error) {
-        console.error('❌ [GoalEventPublisher] Error handling review.created:', error);
+        console.error('�?[GoalEventPublisher] Error handling review.created:', error);
       }
     });
 
     // 监听 review.deleted 事件
-    eventBus.on('review.deleted', async (event: DomainEvent) => {
+    eventBus.on('review.deleted', async (event: IDomainEvent) => {
       try {
         if (!event.accountUuid) {
-          console.error('❌ [GoalEventPublisher] Missing accountUuid in review.deleted event');
+          console.error('�?[GoalEventPublisher] Missing accountUuid in review.deleted event');
           return;
         }
 
@@ -318,18 +319,18 @@ export class GoalEventPublisher {
           },
         });
 
-        console.log(`✅ [GoalEventPublisher] Handled review.deleted for ${event.aggregateId}`);
+        console.log(`�?[GoalEventPublisher] Handled review.deleted for ${event.aggregateId}`);
       } catch (error) {
-        console.error('❌ [GoalEventPublisher] Error handling review.deleted:', error);
+        console.error('�?[GoalEventPublisher] Error handling review.deleted:', error);
       }
     });
 
     // 监听 focus_session.completed 事件
-    eventBus.on('focus_session.completed', async (event: DomainEvent) => {
+    eventBus.on('focus_session.completed', async (event: IDomainEvent) => {
       try {
         if (!event.accountUuid) {
           console.error(
-            '❌ [GoalEventPublisher] Missing accountUuid in focus_session.completed event',
+            '�?[GoalEventPublisher] Missing accountUuid in focus_session.completed event',
           );
           return;
         }
@@ -348,19 +349,19 @@ export class GoalEventPublisher {
         });
 
         console.log(
-          `✅ [GoalEventPublisher] Handled focus_session.completed for ${event.aggregateId}`,
+          `�?[GoalEventPublisher] Handled focus_session.completed for ${event.aggregateId}`,
         );
       } catch (error) {
-        console.error('❌ [GoalEventPublisher] Error handling focus_session.completed:', error);
+        console.error('�?[GoalEventPublisher] Error handling focus_session.completed:', error);
       }
     });
 
     // 监听 task.instance.completed 事件
-    eventBus.on('task.instance.completed', async (event: DomainEvent) => {
+    eventBus.on('task.instance.completed', async (event: IDomainEvent) => {
       try {
         if (!event.accountUuid) {
           console.error(
-            '❌ [GoalEventPublisher] Missing accountUuid in task.instance.completed event',
+            '�?[GoalEventPublisher] Missing accountUuid in task.instance.completed event',
           );
           return;
         }
@@ -375,7 +376,7 @@ export class GoalEventPublisher {
           title: string;
         };
 
-        // 如果任务没有关联目标，直接返回
+        // 如果任务没有关联目标，直接返�?
         if (!goalBinding) {
           console.log(
             `ℹ️ [GoalEventPublisher] Task ${taskInstanceUuid} completed without goal binding`,
@@ -389,63 +390,64 @@ export class GoalEventPublisher {
           incrementValue: goalBinding.incrementValue,
         });
 
-        // 如果有指定关键结果，通过添加记录来增加进度
+        // 如果有指定关键结果，通过添加记录来增加进�?
         if (goalBinding.keyResultUuid) {
-          // 导入必要的服务
+          // 导入必要的服�?
           const { GoalRecordApplicationService } = await import('./GoalRecordApplicationService');
           const recordService = await GoalRecordApplicationService.getInstance();
 
-          // 创建进度记录（会根据聚合方式自动更新关键结果进度）
+          // 创建进度记录（会根据聚合方式自动更新关键结果进度�?
           await recordService.createGoalRecord(goalBinding.goalUuid, goalBinding.keyResultUuid, {
             value: goalBinding.incrementValue,
             note: `任务完成: ${title}`,
           });
 
           console.log(
-            `✅ [GoalEventPublisher] Added progress record for key result ${goalBinding.keyResultUuid} with value ${goalBinding.incrementValue}`,
+            `�?[GoalEventPublisher] Added progress record for key result ${goalBinding.keyResultUuid} with value ${goalBinding.incrementValue}`,
           );
         } else {
-          // TODO: 如果没有指定关键结果，可以更新目标的整体进度或记录
+          // TODO: 如果没有指定关键结果，可以更新目标的整体进度或记�?
           console.log(
             `ℹ️ [GoalEventPublisher] Task completed for goal ${goalBinding.goalUuid}, but no key result specified`,
           );
         }
       } catch (error) {
-        console.error('❌ [GoalEventPublisher] Error handling task.instance.completed:', error);
+        console.error('�?[GoalEventPublisher] Error handling task.instance.completed:', error);
       }
     });
 
     this.isInitialized = true;
-    console.log('✅ [GoalEventPublisher] All event listeners registered successfully!');
+    console.log('�?[GoalEventPublisher] All event listeners registered successfully!');
   }
 
   /**
    * 发布 Goal 聚合根的领域事件
-   * @param goal Goal 聚合根实例
+   * @param goal Goal 聚合根实�?
    */
   static async publishGoalEvents(goal: Goal): Promise<void> {
-    const events = goal.getDomainEvents();
+    const events = goal.pullDomainEvents();
     if (events.length === 0) {
       return;
     }
 
-    console.log(`📤 [GoalEventPublisher] Publishing ${events.length} events for goal ${goal.uuid}`);
+    console.log(`📤 [GoalEventPublisher] Publishing ${events.length} events for goal ${goal.id}`);
 
     for (const event of events) {
-      await eventBus.publish(event);
+      try {
+        (eventBus as any).send(event.eventType, event);
+      } catch (err) {
+        console.error(`�?[GoalEventPublisher] Failed to publish event ${event.eventType}:`, err);
+      }
     }
-
-    // 清除已发布的事件
-    goal.clearDomainEvents();
   }
 
   /**
-   * 重置事件监听器（主要用于测试）
+   * 重置事件监听器（主要用于测试�?
    */
   static reset(): void {
     console.log('🔄 [GoalEventPublisher] Resetting event listeners...');
 
-    // 移除所有 Goal 相关的事件监听器
+    // 移除所�?Goal 相关的事件监听器
     const eventTypes = [
       'goal.created',
       'goal.deleted',

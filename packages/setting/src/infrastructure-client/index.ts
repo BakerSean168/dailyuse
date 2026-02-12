@@ -1,18 +1,17 @@
 /**
  * Setting Module - Infrastructure Client
  *
- * Exports:
- * - Container: SettingContainer
- * - Ports: ISettingApiClient
- * - Adapters: HTTP and IPC implementations
+ * Adapters and container for Setting module communication.
  */
 
 // Container
 export { SettingContainer, SettingDependencyKeys } from './setting.container';
 
-// Ports
-export type { ISettingApiClient } from './ports';
+// Port Interfaces
+export type { ISettingApiClient, IHttpClient, IIpcClient } from './adapters/types';
 
-// Adapters
-export { SettingHttpAdapter } from './adapters/http';
-export { SettingIpcAdapter } from './adapters/ipc';
+// HTTP Adapters
+export { SettingHttpAdapter, createSettingHttpAdapters, type SettingHttpAdapters } from './adapters/http';
+
+// IPC Adapters
+export { SettingIpcAdapter, createSettingIpcAdapters, type SettingIpcAdapters } from './adapters/ipc';

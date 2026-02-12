@@ -4,15 +4,17 @@
  * HTTP implementation of IScheduleTaskApiClient.
  */
 
-import type { IScheduleTaskApiClient } from '../../ports/schedule-task-api-client.port';
+import type {
+  IHttpClient,
+  IScheduleTaskApiClient,
+  ScheduleStatisticsClientDTO,
+  ModuleStatisticsClientDTO,
+} from '../types';
 import type { SourceModule } from '@dailyuse/contracts/schedule';
 import type {
   ScheduleTaskClientDTO,
   CreateScheduleTaskRequest,
-  ScheduleStatisticsClientDTO,
-  ModuleStatisticsClientDTO,
 } from '@dailyuse/contracts/schedule';
-import type { IHttpClient } from '../../../shared/http-client.types';
 
 /**
  * ScheduleTaskHttpAdapter

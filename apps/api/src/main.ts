@@ -23,6 +23,8 @@ import { ApiBootstrapper } from './bootstrap';
 import { GovernanceApiModule } from '@dailyuse/governance/api';
 import { AccountApiModule } from '@dailyuse/account/api';
 import { AuthenticationApiModule } from '@dailyuse/authentication/api';
+import { GoalApiModule } from '@dailyuse/goal/api';
+import { TaskApiModule } from '@dailyuse/task/api';
 
 // 初始化日志系统
 initializeLogger();
@@ -54,6 +56,8 @@ async function bootstrap(): Promise<void> {
     .register(GovernanceApiModule)         // ✅ 治理模块
     .register(AccountApiModule)            // ✅ 账户模块
     .register(AuthenticationApiModule)     // ✅ 认证模块
+    .register(TaskApiModule)              // ✅ 任务模块
+    .register(GoalApiModule)              // ✅ 目标模块
     // .register(LegacyGoalModule)         // ❌ 暂不加载
     // .register(LegacyTaskModule)         // ❌ 暂不加载
     .init();

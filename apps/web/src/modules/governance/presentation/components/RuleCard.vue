@@ -1,81 +1,74 @@
 <template>
-  <v-card
-    class="rule-card"
-    :class="{ 'rule-card--deprecated': rule.status === 'Deprecated' }"
-    variant="outlined"
-    hover
+  <div
+    class="group border rounded-lg p-4 cursor-pointer transition-colors hover:border-primary/50 hover:shadow-sm"
+    :class="{ 'opacity-60': rule.status === 'Deprecated' }"
     @click="$emit('click', rule)"
   >
-    <v-card-item>
-      <template #prepend>
-        <v-icon
-          :icon="severityIcon"
-          :color="severityColor"
-          size="small"
+    <!-- Header -->
+    <div class="flex items-start justify-between gap-2 mb-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <component
+          :is="severityIcon"
+          :size="16"
+          :class="rule.severity === 'Mandatory' ? 'text-destructive' : 'text-blue-500'"
+          class="shrink-0"
         />
-      </template>
-
-      <v-card-title class="text-subtitle-1 font-weight-medium">
-        <span class="text-medium-emphasis mr-2">{{ rule.code }}</span>
-        {{ rule.title }}
-      </v-card-title>
-
-      <template #append>
-        <RuleStatusBadge :status="rule.status" />
-      </template>
-    </v-card-item>
-
-    <v-card-text class="pt-0">
-      <p class="text-body-2 text-medium-emphasis description-text">
-        {{ truncatedDescription }}
-      </p>
-
-      <div class="d-flex align-center mt-2 flex-wrap ga-1">
-        <v-chip
-          v-for="tag in rule.tags"
-          :key="tag"
-          size="x-small"
-          variant="tonal"
-          color="info"
-          label
-        >
-          {{ tag }}
-        </v-chip>
-
-        <v-spacer />
-
-        <div class="d-flex align-center ga-2 text-caption text-medium-emphasis">
-          <span v-if="rule.goodExamples.length > 0">
-            <v-icon size="x-small" icon="mdi-check" color="success" />
-            {{ rule.goodExamples.length }}
-          </span>
-          <span v-if="rule.badExamples.length > 0">
-            <v-icon size="x-small" icon="mdi-close" color="error" />
-            {{ rule.badExamples.length }}
-          </span>
-          <span>
-            {{ formatDate(rule.updatedAt) }}
-          </span>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-muted-foreground font-mono">{{ rule.code }}</span>
+            <span class="text-sm font-medium truncate">{{ rule.title }}</span>
+          </div>
         </div>
       </div>
+      <RuleStatusBadge :status="rule.status" />
+    </div>
 
-      <!-- Deprecation warning -->
-      <v-alert
-        v-if="rule.status === 'Deprecated' && rule.deprecationReason"
-        type="warning"
-        variant="tonal"
-        density="compact"
-        class="mt-2"
-        icon="mdi-alert"
-      >
-        {{ rule.deprecationReason }}
-      </v-alert>
-    </v-card-text>
-  </v-card>
+    <!-- Description -->
+    <p class="text-sm text-muted-foreground line-clamp-2 mb-3">
+      {{ truncatedDescription }}
+    </p>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-between">
+      <!-- Tags -->
+      <div class="flex items-center gap-1 flex-wrap">
+        <span
+          v-for="tag in rule.tags"
+          :key="tag"
+          class="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+        >
+          {{ tag }}
+        </span>
+      </div>
+
+      <!-- Counters -->
+      <div class="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+        <span v-if="rule.goodExamples.length > 0" class="flex items-center gap-0.5">
+          <CheckCircle :size="12" class="text-green-500" />
+          {{ rule.goodExamples.length }}
+        </span>
+        <span v-if="rule.badExamples.length > 0" class="flex items-center gap-0.5">
+          <XCircle :size="12" class="text-destructive" />
+          {{ rule.badExamples.length }}
+        </span>
+        <span>{{ formatDate(rule.updatedAt) }}</span>
+      </div>
+    </div>
+
+    <!-- Deprecation warning -->
+    <div
+      v-if="rule.status === 'Deprecated' && rule.deprecationReason"
+      class="mt-3 p-2 rounded-md bg-yellow-50 dark:bg-yellow-900/20 text-sm text-yellow-800 dark:text-yellow-400 flex items-start gap-2"
+    >
+      <AlertTriangle :size="14" class="shrink-0 mt-0.5" />
+      {{ rule.deprecationReason }}
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { AlertCircle, Info, CheckCircle, XCircle, AlertTriangle } from 'lucide-vue-next';
 import type { RuleClientDTO } from '../../types';
 import RuleStatusBadge from './RuleStatusBadge.vue';
 
@@ -93,11 +86,7 @@ const truncatedDescription = computed(() => {
 });
 
 const severityIcon = computed(() =>
-  props.rule.severity === 'Mandatory' ? 'mdi-alert-circle' : 'mdi-information',
-);
-
-const severityColor = computed(() =>
-  props.rule.severity === 'Mandatory' ? 'error' : 'info',
+  props.rule.severity === 'Mandatory' ? AlertCircle : Info,
 );
 
 function formatDate(dateStr: string): string {
@@ -105,20 +94,3 @@ function formatDate(dateStr: string): string {
   return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
 }
 </script>
-
-<style scoped>
-.rule-card {
-  transition: border-color 0.2s;
-}
-
-.rule-card--deprecated {
-  opacity: 0.7;
-}
-
-.description-text {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>

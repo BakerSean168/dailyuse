@@ -9,6 +9,8 @@ import type {
   TaskInstanceClientDTO,
   TaskInstancesResponse,
 } from '@dailyuse/contracts/task';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok } from '@dailyuse/contracts/result';
 
 /**
  * Get Task Instances By Date Range Service
@@ -16,17 +18,17 @@ import type {
 export class GetTaskInstancesByDateRange {
   constructor(private readonly instanceRepository: ITaskInstanceRepository) {}
 
-  async execute(accountUuid: string, startDate: number, endDate: number): Promise<TaskInstancesResponse> {
+  async execute(accountUuid: string, startDate: number, endDate: number): Promise<Result<TaskInstancesResponse>> {
     const instances = await this.instanceRepository.findByDateRange(
       accountUuid,
       startDate,
       endDate,
     );
 
-    return {
+    return ok({
       instances: instances.map((i) => i.toClientDTO()),
       total: instances.length,
-    };
+    });
   }
 }
 

@@ -5,11 +5,11 @@
  */
 
 import type {
+  IHttpClient,
   IRepositoryApiClient,
   CreateRepositoryRequest,
   CreateFolderRequest,
-} from '../../ports/repository-api-client.port';
-import type { HttpClient } from '../../../shared/http-client.types';
+} from '../types';
 import type {
   RepositoryClientDTO,
   FolderClientDTO,
@@ -27,7 +27,7 @@ import type {
 export class RepositoryHttpAdapter implements IRepositoryApiClient {
   private readonly baseUrl = '/repositories';
 
-  constructor(private readonly httpClient: HttpClient) {}
+  constructor(private readonly httpClient: IHttpClient) {}
 
   // ===== Repository CRUD =====
 

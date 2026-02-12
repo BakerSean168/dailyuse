@@ -4,8 +4,7 @@
  * IPC implementation of IAIProviderConfigApiClient for Electron desktop app.
  */
 
-import type { IAIProviderConfigApiClient } from '../../ports/ai-provider-config-api-client.port';
-import type { IpcClient } from '../../../shared/ipc-client.types';
+import type { IIpcClient, IAIProviderConfigApiClient } from '../types';
 import type {
   AIProviderConfigClientDTO,
   AIProviderConfigSummary,
@@ -24,7 +23,7 @@ import type {
 export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
   private readonly channel = 'ai:provider';
 
-  constructor(private readonly ipcClient: IpcClient) {}
+  constructor(private readonly ipcClient: IIpcClient) {}
 
   // ===== Provider CRUD =====
 

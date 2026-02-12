@@ -1,87 +1,73 @@
 /**
- * Create Goal Service
+ * Create Goal Use Case
  *
  * 创建新目标的应用服务
+ * 遵循 governance 模块 Result<T> 规范
  */
 
 import type { IGoalRepository } from '@/domain-server';
-import { GoalDomainService, Goal } from '@/domain-server';
-import type { CreateGoalRequest, GoalResponse } from '@dailyuse/contracts/goal';
-import { eventBus } from '@dailyuse/utils';
+import { Goal } from '@/domain-server';
+import { IdentityId } from '@dailyuse/domain-shared';
+import type { CreateGoalReq, CreateGoalRes } from '@dailyuse/contracts/goal';
+import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
+import { GoalEventPublisher } from './goal-event-publisher';
+import type { ExecutionContext } from '../types';
 
 /**
- * Create Goal Service
+ * Create Goal Use Case
  */
 export class CreateGoal {
-  private readonly domainService: GoalDomainService;
+  constructor(private readonly goalRepository: IGoalRepository) {}
 
-  constructor(private readonly goalRepository: IGoalRepository) {
-    this.domainService = new GoalDomainService();
-  }
-
-  async execute(accountUuid: string, input: CreateGoalRequest): Promise<GoalResponse> {
+  async execute(input: CreateGoalReq, context: ExecutionContext): Promise<Result<CreateGoalRes>> {
     // 1. 验证输入
-    this.validateInput(accountUuid, input);
+    if (!input.title?.trim()) {
+      return error('VALIDATION_ERROR', 'Title is required');
+    }
+    if (!context.identityId?.trim()) {
+      return error('UNAUTHORIZED', 'Identity ID is required');
+    }
 
     // 2. 如果有父目标，先查询
     let parentGoal: Goal | undefined;
     if (input.parentGoalUuid) {
       const found = await this.goalRepository.findById(input.parentGoalUuid);
       if (!found) {
-        throw new Error(`Parent goal not found: ${input.parentGoalUuid}`);
+        return error('NOT_FOUND', `Parent goal not found: ${input.parentGoalUuid}`);
       }
       parentGoal = found;
     }
 
-    // 3. 委托领域服务创建聚合根
-    const goal = this.domainService.createGoal(
+    // 3. 创建目标聚合根（直接使用工厂方法）
+    const goal = Goal.create(
       {
-        accountUuid,
-        ...input,
+        identityId: IdentityId.of(context.identityId),
         name: input.title,
+        description: input.description ?? null,
+        color: input.color ?? '#3B82F6',
+        feasibilityAnalysis: input.feasibilityAnalysis ?? null,
+        motivation: input.motivation ?? null,
+        importance: (input.importance ?? 'medium') as ImportanceLevel,
+        category: input.category ?? null,
+        tags: input.tags ?? [],
+        startDate: input.startDate ? new Date(input.startDate) : null,
+        targetDate: input.targetDate ? new Date(input.targetDate) : null,
+        folderId: input.folderUuid ? (input.folderUuid as any) : null,
+        parentGoalId: input.parentGoalUuid ? (input.parentGoalUuid as any) : null,
+        reminderConfig: null,
       },
       parentGoal,
     );
 
-    // 4. 如果有 keyResults，添加到目标中
-    // if (input.keyResults && input.keyResults.length > 0) {
-    //   for (const krParams of input.keyResults) {
-    //     this.domainService.addKeyResultToGoal(goal, {
-    //       title: krParams.title,
-    //       description: krParams.description,
-    //       valueType: krParams.valueType || 'INCREMENTAL',
-    //       targetValue: krParams.targetValue ?? 100,
-    //       unit: krParams.unit,
-    //       weight: krParams.weight ?? 5,
-    //     });
-    //   }
-    // }
-
-    // 5. 持久化
+    // 4. 持久化
     await this.goalRepository.save(goal);
 
-    // 6. 发布领域事件
-    await this.publishEvents(goal);
+    // 5. 发布领域事件
+    await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 7. 返回结果
-    return {
-      goal: goal.toClientDTO(true),
-    };
-  }
-
-  private validateInput(accountUuid: string, input: CreateGoalRequest): void {
-    if (!input.title?.trim()) {
-      throw new Error('Title is required');
-    }
-    if (!accountUuid?.trim()) {
-      throw new Error('Account UUID is required');
-    }
-  }
-
-  private async publishEvents(goal: Goal): Promise<void> {
-    const events = goal.getUncommittedDomainEvents();
-    for (const event of events) {
-      await eventBus.emit(event.eventType, event);
-    }
+    // 6. 返回 Result
+    return ok(goal.toClientDTO(true));
   }
 }

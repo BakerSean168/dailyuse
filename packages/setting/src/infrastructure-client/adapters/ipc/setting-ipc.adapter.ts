@@ -4,8 +4,7 @@
  * IPC implementation of ISettingApiClient for Electron desktop app.
  */
 
-import type { ISettingApiClient } from '../../ports/setting-api-client.port';
-import type { IpcClient } from '../../../shared/ipc-client.types';
+import type { IIpcClient, ISettingApiClient } from '../types';
 import type {
   UserSettingClientDTO,
   AppConfigClientDTO,
@@ -23,7 +22,7 @@ import type {
 export class SettingIpcAdapter implements ISettingApiClient {
   private readonly channel = 'setting';
 
-  constructor(private readonly ipcClient: IpcClient) {}
+  constructor(private readonly ipcClient: IIpcClient) {}
 
   // ===== User Settings =====
 

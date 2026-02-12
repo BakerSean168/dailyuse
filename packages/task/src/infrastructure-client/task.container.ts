@@ -10,10 +10,12 @@
  */
 
 import { DIContainer, ModuleContainerBase } from '../shared/di';
-import type { ITaskTemplateApiClient } from './ports/task-template-api-client.port';
-import type { ITaskInstanceApiClient } from './ports/task-instance-api-client.port';
-import type { ITaskDependencyApiClient } from './ports/task-dependency-api-client.port';
-import type { ITaskStatisticsApiClient } from './ports/task-statistics-api-client.port';
+import type {
+  ITaskTemplateApiClient,
+  ITaskInstanceApiClient,
+  ITaskDependencyApiClient,
+  ITaskStatisticsApiClient,
+} from './adapters/types';
 
 /**
  * Task 模块依赖键

@@ -15,6 +15,8 @@ import type {
   TaskInstanceResponse,
 } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 
 /**
  * Complete Task Instance Service
@@ -25,14 +27,14 @@ export class CompleteTaskInstance {
     private readonly templateRepository: ITaskTemplateRepository,
   ) {}
 
-  async execute(uuid: string, request?: CompleteTaskInstanceRequest): Promise<TaskInstanceResponse> {
+  async execute(uuid: string, request?: CompleteTaskInstanceRequest): Promise<Result<TaskInstanceResponse>> {
     const instance = await this.instanceRepository.findByUuid(uuid);
     if (!instance) {
-      throw new Error(`TaskInstance ${uuid} not found`);
+      return error('NOT_FOUND', `TaskInstance ${uuid} not found`);
     }
 
     if (!instance.canComplete()) {
-      throw new Error('Cannot complete this task instance');
+      return error('VALIDATION_ERROR', 'Cannot complete this task instance');
     }
 
     // 标记为完�?
@@ -42,9 +44,9 @@ export class CompleteTaskInstance {
     // 发布事件
     await this.publishTaskCompletedEvent(instance);
 
-    return {
+    return ok({
       instance: instance.toClientDTO(),
-    };
+    });
   }
 
   /**

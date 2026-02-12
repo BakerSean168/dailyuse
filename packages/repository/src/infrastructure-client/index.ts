@@ -1,18 +1,23 @@
 /**
  * Repository Module - Infrastructure Client
  *
- * Exports:
- * - Container: RepositoryContainer
- * - Ports: IRepositoryApiClient
- * - Adapters: HTTP and IPC implementations
+ * Adapters and container for Repository module communication.
  */
 
 // Container
 export { RepositoryContainer, RepositoryDependencyKeys } from './repository.container';
 
-// Ports
-export type { IRepositoryApiClient, CreateRepositoryRequest, CreateFolderRequest } from './ports';
+// Port Interfaces
+export type {
+  IRepositoryApiClient,
+  CreateRepositoryRequest,
+  CreateFolderRequest,
+  IHttpClient,
+  IIpcClient,
+} from './adapters/types';
 
-// Adapters
-export { RepositoryHttpAdapter } from './adapters/http';
-export { RepositoryIpcAdapter } from './adapters/ipc';
+// HTTP Adapters
+export { RepositoryHttpAdapter, createRepositoryHttpAdapters, type RepositoryHttpAdapters } from './adapters/http';
+
+// IPC Adapters
+export { RepositoryIpcAdapter, createRepositoryIpcAdapters, type RepositoryIpcAdapters } from './adapters/ipc';

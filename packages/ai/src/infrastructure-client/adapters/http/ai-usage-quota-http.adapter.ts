@@ -4,8 +4,7 @@
  * HTTP implementation of IAIUsageQuotaApiClient.
  */
 
-import type { IAIUsageQuotaApiClient } from '../../ports/ai-usage-quota-api-client.port';
-import type { HttpClient } from '../../../shared/http-client.types';
+import type { IHttpClient, IAIUsageQuotaApiClient } from '../types';
 import type {
   AIUsageQuotaClientDTO,
   UpdateQuotaLimitRequest,
@@ -19,7 +18,7 @@ import type {
 export class AIUsageQuotaHttpAdapter implements IAIUsageQuotaApiClient {
   private readonly baseUrl = '/ai/quota';
 
-  constructor(private readonly httpClient: HttpClient) {}
+  constructor(private readonly httpClient: IHttpClient) {}
 
   // ===== Quota Operations =====
 

@@ -39,3 +39,9 @@ export type {
   FocusSessionClientDTO,
   FocusSessionClient,
 } from './focus-session-client';
+
+// GoalRecord 实体
+export type {
+  GoalRecordClientDTO,
+  GoalRecordClient,
+} from './goal-record-client';

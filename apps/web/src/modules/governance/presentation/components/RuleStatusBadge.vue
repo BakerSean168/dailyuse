@@ -1,54 +1,48 @@
 <template>
-  <v-chip
-    :color="chipColor"
-    :variant="variant"
-    :size="size"
-    :prepend-icon="prependIcon"
-    label
+  <span
+    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium"
+    :class="badgeClasses"
   >
+    <component :is="iconComponent" :size="12" v-if="iconComponent" />
     {{ label }}
-  </v-chip>
+  </span>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { CheckCircle, Pencil, AlertTriangle } from 'lucide-vue-next';
 import { RuleStatus } from '../../types';
 
 const props = withDefaults(
   defineProps<{
     status: string;
-    size?: 'x-small' | 'small' | 'default' | 'large';
-    variant?: 'flat' | 'outlined' | 'tonal';
   }>(),
-  {
-    size: 'small',
-    variant: 'tonal',
-  },
+  {},
 );
 
-const chipColor = computed(() => {
+const badgeClasses = computed(() => {
   switch (props.status) {
     case RuleStatus.Active:
-      return 'success';
+      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
     case RuleStatus.Draft:
-      return 'warning';
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
     case RuleStatus.Deprecated:
-      return 'error';
+      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
     default:
-      return 'grey';
+      return 'bg-muted text-muted-foreground';
   }
 });
 
-const prependIcon = computed(() => {
+const iconComponent = computed(() => {
   switch (props.status) {
     case RuleStatus.Active:
-      return 'mdi-check-circle';
+      return CheckCircle;
     case RuleStatus.Draft:
-      return 'mdi-pencil';
+      return Pencil;
     case RuleStatus.Deprecated:
-      return 'mdi-alert';
+      return AlertTriangle;
     default:
-      return undefined;
+      return null;
   }
 });
 

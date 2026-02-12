@@ -1,12 +1,13 @@
 import type { IGoalRepository } from '@/domain-server';
-import { GoalDomainService } from '@/domain-server';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
-import { KeyResultValueType, AggregationMethod } from '@dailyuse/contracts/goal';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 import { GoalEventPublisher } from './goal-event-publisher';
 
 /**
  * GoalKeyResult 应用服务
  * 负责关键结果的管理
+ * 遵循 governance 模块 Result<T> 规范
  *
  * 职责：
  * - 添加关键结果
@@ -15,11 +16,7 @@ import { GoalEventPublisher } from './goal-event-publisher';
  * - 删除关键结果
  */
 export class GoalKeyResultApplicationService {
-  private domainService: GoalDomainService;
-
-  constructor(private readonly goalRepository: IGoalRepository) {
-    this.domainService = new GoalDomainService();
-  }
+  constructor(private readonly goalRepository: IGoalRepository) {}
 
   /**
    * 添加关键结果
@@ -28,31 +25,24 @@ export class GoalKeyResultApplicationService {
     goalUuid: string,
     keyResult: {
       title: string;
-      valueType: KeyResultValueType;
-      aggregationMethod?: AggregationMethod;
+      valueType: string;
+      aggregationMethod?: string;
       targetValue: number;
       currentValue?: number;
       unit?: string;
       weight: number;
     },
-  ): Promise<GoalClientDTO> {
-    // 1. 查询目标（包含子实体）
+  ): Promise<Result<GoalClientDTO>> {
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
     if (!goal) {
-      throw new Error(`Goal not found: ${goalUuid}`);
+      return error('NOT_FOUND', `Goal not found: ${goalUuid}`);
     }
 
-    // 2. 委托领域服务添加关键结果
-    this.domainService.addKeyResultToGoal(goal, keyResult);
-
-    // 3. 持久化
+    goal.createAndAddKeyResult(keyResult);
     await this.goalRepository.save(goal);
-
-    // 4. 发布领域事件
     await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 5. 返回 ClientDTO（包含子实体）
-    return goal.toClientDTO(true);
+    return ok(goal.toClientDTO(true));
   }
 
   /**
@@ -68,20 +58,17 @@ export class GoalKeyResultApplicationService {
       targetValue?: number;
       unit?: string;
     },
-  ): Promise<GoalClientDTO> {
-    // 1. 查询目标（包含子实体）
+  ): Promise<Result<GoalClientDTO>> {
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
     if (!goal) {
-      throw new Error(`Goal not found: ${goalUuid}`);
+      return error('NOT_FOUND', `Goal not found: ${goalUuid}`);
     }
 
-    // 2. 查找关键结果
-    const keyResult = goal.keyResults.find((kr) => kr.uuid === keyResultUuid);
+    const keyResult = goal.keyResults.find((kr) => kr.id === keyResultUuid);
     if (!keyResult) {
-      throw new Error(`KeyResult not found: ${keyResultUuid}`);
+      return error('NOT_FOUND', `KeyResult not found: ${keyResultUuid}`);
     }
 
-    // 3. 更新关键结果属性
     if (updates.title !== undefined) {
       keyResult.updateTitle(updates.title);
     }
@@ -92,14 +79,10 @@ export class GoalKeyResultApplicationService {
       keyResult.updateWeight(updates.weight);
     }
 
-    // 4. 持久化
     await this.goalRepository.save(goal);
-
-    // 5. 发布领域事件
     await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 6. 返回 ClientDTO（包含子实体）
-    return goal.toClientDTO(true);
+    return ok(goal.toClientDTO(true));
   }
 
   /**
@@ -110,46 +93,32 @@ export class GoalKeyResultApplicationService {
     keyResultUuid: string,
     currentValue: number,
     note?: string,
-  ): Promise<GoalClientDTO> {
-    // 1. 查询目标（包含子实体）
+  ): Promise<Result<GoalClientDTO>> {
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
     if (!goal) {
-      throw new Error(`Goal not found: ${goalUuid}`);
+      return error('NOT_FOUND', `Goal not found: ${goalUuid}`);
     }
 
-    // 2. 委托领域服务更新进度
-    this.domainService.updateKeyResultProgress(goal, keyResultUuid, currentValue, note);
-
-    // 3. 持久化
+    goal.updateKeyResultProgress(keyResultUuid, currentValue, note);
     await this.goalRepository.save(goal);
-
-    // 4. 发布领域事件
     await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 5. 返回 ClientDTO（包含子实体）
-    return goal.toClientDTO(true);
+    return ok(goal.toClientDTO(true));
   }
 
   /**
    * 删除关键结果
    */
-  async deleteKeyResult(goalUuid: string, keyResultUuid: string): Promise<GoalClientDTO> {
-    // 1. 查询目标（包含子实体）
+  async deleteKeyResult(goalUuid: string, keyResultUuid: string): Promise<Result<GoalClientDTO>> {
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
     if (!goal) {
-      throw new Error(`Goal not found: ${goalUuid}`);
+      return error('NOT_FOUND', `Goal not found: ${goalUuid}`);
     }
 
-    // 2. 调用聚合根方法删除关键结果
     goal.removeKeyResult(keyResultUuid);
-
-    // 3. 持久化
     await this.goalRepository.save(goal);
-
-    // 4. 发布领域事件
     await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 5. 返回 ClientDTO（包含子实体）
-    return goal.toClientDTO(true);
+    return ok(goal.toClientDTO(true));
   }
 }

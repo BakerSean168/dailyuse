@@ -5,12 +5,13 @@
  */
 
 import type {
+  IIpcClient,
   INotificationApiClient,
   CreateNotificationRequest,
   QueryNotificationsRequest,
   NotificationListResponse,
   UnreadCountResponse,
-} from '../../ports/notification-api-client.port';
+} from '../types';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
 
@@ -28,57 +29,45 @@ const NOTIFICATION_CHANNELS = {
   GET_UNREAD_COUNT: 'notification:unread-count',
 } as const;
 
-/**
- * IPC API interface for Electron renderer process
- */
-interface IpcApi {
-  invoke<T>(channel: string, ...args: unknown[]): Promise<T>;
-}
-
-/**
- * NotificationIpcAdapter
- *
- * IPC 实现的通知 API 客户端（用于 Electron 桌面应用）
- */
 export class NotificationIpcAdapter implements INotificationApiClient {
-  constructor(private readonly ipcApi: IpcApi) {}
+  constructor(private readonly ipcClient: IIpcClient) {}
 
   async createNotification(request: CreateNotificationRequest): Promise<NotificationClientDTO> {
-    return this.ipcApi.invoke(NOTIFICATION_CHANNELS.CREATE, request);
+    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.CREATE, request);
   }
 
   async findNotifications(query?: QueryNotificationsRequest): Promise<NotificationListResponse> {
-    return this.ipcApi.invoke(NOTIFICATION_CHANNELS.FIND_ALL, query);
+    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.FIND_ALL, query);
   }
 
   async findNotificationByUuid(uuid: string): Promise<NotificationClientDTO> {
-    return this.ipcApi.invoke(NOTIFICATION_CHANNELS.FIND_BY_UUID, uuid);
+    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.FIND_BY_UUID, uuid);
   }
 
   async markAsRead(uuid: string): Promise<NotificationClientDTO> {
-    return this.ipcApi.invoke(NOTIFICATION_CHANNELS.MARK_AS_READ, uuid);
+    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.MARK_AS_READ, uuid);
   }
 
   async markAllAsRead(): Promise<CountResult> {
-    return this.ipcApi.invoke(NOTIFICATION_CHANNELS.MARK_ALL_AS_READ);
+    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.MARK_ALL_AS_READ);
   }
 
   async deleteNotification(uuid: string): Promise<ActionResult> {
-    return this.ipcApi.invoke(NOTIFICATION_CHANNELS.DELETE, uuid);
+    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.DELETE, uuid);
   }
 
   async batchDeleteNotifications(uuids: string[]): Promise<CountResult> {
-    return this.ipcApi.invoke(NOTIFICATION_CHANNELS.BATCH_DELETE, uuids);
+    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.BATCH_DELETE, uuids);
   }
 
   async getUnreadCount(): Promise<UnreadCountResponse> {
-    return this.ipcApi.invoke(NOTIFICATION_CHANNELS.GET_UNREAD_COUNT);
+    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.GET_UNREAD_COUNT);
   }
 }
 
 /**
  * Factory function to create NotificationIpcAdapter
  */
-export function createNotificationIpcAdapter(ipcApi: IpcApi): NotificationIpcAdapter {
-  return new NotificationIpcAdapter(ipcApi);
+export function createNotificationIpcAdapter(ipcClient: IIpcClient): NotificationIpcAdapter {
+  return new NotificationIpcAdapter(ipcClient);
 }

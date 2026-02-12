@@ -8,6 +8,7 @@
 // 从 feature-based DTO files 导出
 export * from './goal-crud.dto';
 export * from './key-result.dto';
+export * from './goal-record.dto';
 export * from './focus-session.dto';
 export * from './goal-folder.dto';
 export * from './goal-review.dto';

@@ -1,27 +1,26 @@
 /**
  * Goal Folder IPC Adapter
  *
- * IPC implementation of IGoalFolderApiClient for Electron desktop.
+ * IPC implementation of IGoalFolderApiClient using ResultIpcClient.
  */
 
-import type { IGoalFolderApiClient } from '../../ports/goal-folder-api-client.port';
-import type { IpcClient } from '../../../shared/ipc-client.types';
+import type { Result } from '@dailyuse/contracts/result';
+import type { IGoalFolderApiClient, IResultIpcClient } from '../types';
 import type {
   GoalFolderClientDTO,
-  GoalFolderListResponse,
-  CreateGoalFolderRequest,
-  UpdateGoalFolderRequest,
+  QueryGoalFoldersRes,
+  CreateGoalFolderReq,
+  UpdateGoalFolderReq,
 } from '@dailyuse/contracts/goal';
 
-/**
- * Goal Folder IPC Adapter
- */
 export class GoalFolderIpcAdapter implements IGoalFolderApiClient {
   private readonly channel = 'goal-folder';
 
-  constructor(private readonly ipcClient: IpcClient) {}
+  constructor(private readonly ipcClient: IResultIpcClient) {}
 
-  async createGoalFolder(request: CreateGoalFolderRequest): Promise<GoalFolderClientDTO> {
+  async createGoalFolder(
+    request: CreateGoalFolderReq,
+  ): Promise<Result<GoalFolderClientDTO>> {
     return this.ipcClient.invoke(`${this.channel}:create`, request);
   }
 
@@ -30,29 +29,24 @@ export class GoalFolderIpcAdapter implements IGoalFolderApiClient {
     limit?: number;
     status?: string;
     parentUuid?: string | null;
-  }): Promise<GoalFolderListResponse> {
+  }): Promise<Result<QueryGoalFoldersRes>> {
     return this.ipcClient.invoke(`${this.channel}:list`, params);
   }
 
-  async getGoalFolderById(uuid: string): Promise<GoalFolderClientDTO> {
+  async getGoalFolderById(
+    uuid: string,
+  ): Promise<Result<GoalFolderClientDTO>> {
     return this.ipcClient.invoke(`${this.channel}:get`, uuid);
   }
 
   async updateGoalFolder(
     uuid: string,
-    request: UpdateGoalFolderRequest,
-  ): Promise<GoalFolderClientDTO> {
+    request: UpdateGoalFolderReq,
+  ): Promise<Result<GoalFolderClientDTO>> {
     return this.ipcClient.invoke(`${this.channel}:update`, uuid, request);
   }
 
-  async deleteGoalFolder(uuid: string): Promise<void> {
+  async deleteGoalFolder(uuid: string): Promise<Result<void>> {
     return this.ipcClient.invoke(`${this.channel}:delete`, uuid);
   }
-}
-
-/**
- * Factory function to create GoalFolderIpcAdapter
- */
-export function createGoalFolderIpcAdapter(ipcClient: IpcClient): IGoalFolderApiClient {
-  return new GoalFolderIpcAdapter(ipcClient);
 }

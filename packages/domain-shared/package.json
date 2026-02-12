@@ -11,57 +11,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./account": {
-      "types": "./dist/account/index.d.ts",
-      "import": "./dist/account/index.js"
-    },
-    "./ai": {
-      "types": "./dist/ai/index.d.ts",
-      "import": "./dist/ai/index.js"
-    },
-    "./authentication": {
-      "types": "./dist/authentication/index.d.ts",
-      "import": "./dist/authentication/index.js"
-    },
-    "./editor": {
-      "types": "./dist/editor/index.d.ts",
-      "import": "./dist/editor/index.js"
-    },
-    "./goal": {
-      "types": "./dist/goal/index.d.ts",
-      "import": "./dist/goal/index.js"
-    },
-    "./notification": {
-      "types": "./dist/notification/index.d.ts",
-      "import": "./dist/notification/index.js"
-    },
-    "./reminder": {
-      "types": "./dist/reminder/index.d.ts",
-      "import": "./dist/reminder/index.js"
-    },
-    "./repository": {
-      "types": "./dist/repository/index.d.ts",
-      "import": "./dist/repository/index.js"
-    },
-    "./schedule": {
-      "types": "./dist/schedule/index.d.ts",
-      "import": "./dist/schedule/index.js"
-    },
-    "./setting": {
-      "types": "./dist/setting/index.d.ts",
-      "import": "./dist/setting/index.js"
-    },
     "./shared": {
       "types": "./dist/shared/index.d.ts",
       "import": "./dist/shared/index.js"
-    },
-    "./sync": {
-      "types": "./dist/sync/index.d.ts",
-      "import": "./dist/sync/index.js"
-    },
-    "./task": {
-      "types": "./dist/task/index.d.ts",
-      "import": "./dist/task/index.js"
     }
   },
   "scripts": {},
@@ -75,14 +27,6 @@
   "license": "MIT",
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/editor": "workspace:*",
-    "@dailyuse/goal": "workspace:*",
-    "@dailyuse/notification": "workspace:*",
-    "@dailyuse/reminder": "workspace:*",
-    "@dailyuse/repository": "workspace:*",
-    "@dailyuse/schedule": "workspace:*",
-    "@dailyuse/setting": "workspace:*",
-    "@dailyuse/task": "workspace:*",
     "@dailyuse/utils": "workspace:*"
   },
   "devDependencies": {

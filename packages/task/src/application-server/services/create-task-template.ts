@@ -19,6 +19,8 @@ import {
 import type { TaskTemplateClientDTO, CreateTaskTemplateRequest } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok } from '@dailyuse/contracts/result';
 
 /**
  * Create Task Template Service
@@ -35,8 +37,8 @@ export class CreateTaskTemplate {
 
   async execute(
     request: CreateTaskTemplateRequest,
-  ): Promise<{ template: TaskTemplateClientDTO; instanceCount: number }> {
-    // 转换值对�?
+  ): Promise<Result<{ template: TaskTemplateClientDTO; instanceCount: number }>> {
+
     const timeConfig = TaskTimeConfig.fromServerDTO(request.timeConfig);
     const recurrenceRule = request.recurrenceRule
       ? RecurrenceRule.fromServerDTO(request.recurrenceRule)
@@ -45,7 +47,6 @@ export class CreateTaskTemplate {
       ? TaskReminderConfig.fromServerDTO(request.reminderConfig)
       : undefined;
 
-    // 使用领域模型的工厂方法创�?
     const template = TaskTemplate.create({
       accountUuid: request.accountUuid,
       title: request.name,
@@ -60,20 +61,20 @@ export class CreateTaskTemplate {
       color: request.color,
     });
 
-    // 保存到仓�?
+    // 保存到仓储
     await this.templateRepository.save(template);
 
     let instanceCount = 0;
 
-    // 如果状态是 ACTIVE，立即生成初始实�?
+    // 如果状态是 ACTIVE，立即生成初始实例
     if (template.status === TaskTemplateStatus.ACTIVE) {
       instanceCount = await this.generateInitialInstances(template);
     }
 
-    return {
+    return ok({
       template: template.toClientDTO(),
       instanceCount,
-    };
+    });
   }
 
   /**
@@ -105,7 +106,7 @@ export class CreateTaskTemplate {
 
       return instances.length;
     } catch (error) {
-      console.error(`�?[CreateTaskTemplate] 生成初始实例失败:`, error);
+      console.error(`[CreateTaskTemplate] 生成初始实例失败:`, error);
       return 0;
     }
   }

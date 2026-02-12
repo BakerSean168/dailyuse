@@ -4,8 +4,7 @@
  * HTTP implementation of IAIConversationApiClient.
  */
 
-import type { IAIConversationApiClient } from '../../ports/ai-conversation-api-client.port';
-import type { HttpClient } from '../../../shared/http-client.types';
+import type { IHttpClient, IAIConversationApiClient } from '../types';
 import type {
   AIConversationClientDTO,
   ConversationListResponse,
@@ -21,7 +20,7 @@ import type {
 export class AIConversationHttpAdapter implements IAIConversationApiClient {
   private readonly baseUrl = '/ai/conversations';
 
-  constructor(private readonly httpClient: HttpClient) {}
+  constructor(private readonly httpClient: IHttpClient) {}
 
   // ===== Conversation CRUD =====
 

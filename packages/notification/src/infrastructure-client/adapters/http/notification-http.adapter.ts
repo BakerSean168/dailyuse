@@ -5,14 +5,14 @@
  */
 
 import type {
+  IHttpClient,
   INotificationApiClient,
   CreateNotificationRequest,
   QueryNotificationsRequest,
   NotificationListResponse,
   UnreadCountResponse,
-} from '../../ports/notification-api-client.port';
+} from '../types';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
-import type { IHttpClient } from '../../../shared/http-client.types';
 import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
 
 /**

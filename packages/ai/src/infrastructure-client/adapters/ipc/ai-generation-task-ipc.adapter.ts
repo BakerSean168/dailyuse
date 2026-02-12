@@ -4,8 +4,7 @@
  * IPC implementation of IAIGenerationTaskApiClient for Electron desktop app.
  */
 
-import type { IAIGenerationTaskApiClient } from '../../ports/ai-generation-task-api-client.port';
-import type { IpcClient } from '../../../shared/ipc-client.types';
+import type { IIpcClient, IAIGenerationTaskApiClient } from '../types';
 import type {
   AIGenerationTaskClientDTO,
   GenerationTaskListResponse,
@@ -25,7 +24,7 @@ import type {
 export class AIGenerationTaskIpcAdapter implements IAIGenerationTaskApiClient {
   private readonly channel = 'ai:generation-task';
 
-  constructor(private readonly ipcClient: IpcClient) {}
+  constructor(private readonly ipcClient: IIpcClient) {}
 
   // ===== Generation Task CRUD =====
 

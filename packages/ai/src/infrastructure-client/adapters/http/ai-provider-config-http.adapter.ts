@@ -4,8 +4,7 @@
  * HTTP implementation of IAIProviderConfigApiClient.
  */
 
-import type { IAIProviderConfigApiClient } from '../../ports/ai-provider-config-api-client.port';
-import type { HttpClient } from '../../../shared/http-client.types';
+import type { IHttpClient, IAIProviderConfigApiClient } from '../types';
 import type {
   AIProviderConfigClientDTO,
   AIProviderConfigSummary,
@@ -24,7 +23,7 @@ import type {
 export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
   private readonly baseUrl = '/ai/providers';
 
-  constructor(private readonly httpClient: HttpClient) {}
+  constructor(private readonly httpClient: IHttpClient) {}
 
   // ===== Provider CRUD =====
 

@@ -161,11 +161,6 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
     });
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM weight_snapshots WHERE uuid = ?`);
-    stmt.run(uuid);
-  }
-
   async deleteByKeyResult(krUuid: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM weight_snapshots WHERE key_result_uuid = ?`);
     stmt.run(krUuid);

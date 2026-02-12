@@ -2,9 +2,19 @@
  * Account Infrastructure Client Layer - Barrel Export
  */
 
-// HTTP Adapter
-export { AccountHttpAdapter, createAccountHttpAdapter } from './http/account-http.adapter';
-export type { HttpClient } from './http/account-http.adapter';
+// Types (port interfaces + transport interfaces)
+export type {
+  IHttpClient,
+  IIpcClient,
+  IAccountApiClient,
+} from './adapters/types';
 
-// IPC Adapter
-export { AccountIpcAdapter, createAccountIpcAdapter } from './ipc/account-ipc.adapter';
+// Adapters
+export {
+  AccountHttpAdapter,
+  createAccountHttpAdapter,
+  createAccountHttpAdapters,
+  AccountIpcAdapter,
+  createAccountIpcAdapter,
+  createAccountIpcAdapters,
+} from './adapters';

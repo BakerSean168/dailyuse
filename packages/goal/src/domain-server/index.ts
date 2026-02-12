@@ -61,3 +61,7 @@ export type {
   GoalRecordQueryOptions,
 } from './repositories';
 
+export type {
+  IGoalStatisticsRepository,
+} from './repositories';
+

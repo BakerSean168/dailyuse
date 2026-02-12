@@ -5,13 +5,15 @@
  * Uses IHttpClient for making HTTP requests.
  */
 
-import type { ITaskInstanceApiClient } from '../../ports/task-instance-api-client.port';
+import type {
+  ITaskInstanceApiClient,
+  IHttpClient,
+} from '../types';
 import type {
   TaskInstanceClientDTO,
   CompleteTaskInstanceRequest,
   SkipTaskInstanceRequest,
 } from '@dailyuse/contracts/task';
-import type { IHttpClient } from '../../../shared/http-client.types';
 
 /**
  * TaskInstanceHttpAdapter

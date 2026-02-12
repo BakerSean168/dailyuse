@@ -15,6 +15,8 @@ import type {
 } from '@/domain-server';
 import type { TaskTemplateClientDTO, TaskTemplateResponse } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 
 /**
  * Pause Task Template Service
@@ -28,10 +30,10 @@ export class PauseTaskTemplate {
   async execute(
     uuid: string,
     reason?: string,
-  ): Promise<{ template: TaskTemplateClientDTO; instancesSkipped: number }> {
+  ): Promise<Result<{ template: TaskTemplateClientDTO; instancesSkipped: number }>> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
-      throw new Error(`TaskTemplate ${uuid} not found`);
+      return error('NOT_FOUND', `TaskTemplate ${uuid} not found`);
     }
 
     // 1. 暂停模板状�?
@@ -57,10 +59,10 @@ export class PauseTaskTemplate {
       console.error(`�?[PauseTaskTemplate] 发布暂停事件失败:`, error);
     }
 
-    return {
+    return ok({
       template: template.toClientDTO(),
       instancesSkipped,
-    };
+    });
   }
 
   /**

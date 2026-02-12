@@ -3,7 +3,7 @@
  *
  * Exports:
  * - Container: AIContainer
- * - Ports: IAIConversationApiClient, IAIMessageApiClient, IAIGenerationTaskApiClient, etc.
+ * - Types: IAIConversationApiClient, IAIMessageApiClient, IAIGenerationTaskApiClient, etc.
  * - Adapters: HTTP and IPC implementations
  * - Providers: OpenAI and other LLM providers
  * - Prompts: AI prompt templates
@@ -12,14 +12,16 @@
 // Container
 export { AIContainer, AIDependencyKeys } from './ai.container';
 
-// Ports
+// Types (port interfaces + transport interfaces)
 export type {
+  IHttpClient,
+  IIpcClient,
   IAIConversationApiClient,
   IAIMessageApiClient,
   IAIGenerationTaskApiClient,
   IAIUsageQuotaApiClient,
   IAIProviderConfigApiClient,
-} from './ports';
+} from './adapters/types';
 
 // Adapters
 export {
@@ -29,12 +31,14 @@ export {
   AIGenerationTaskHttpAdapter,
   AIUsageQuotaHttpAdapter,
   AIProviderConfigHttpAdapter,
+  createAIHttpAdapters,
   // IPC
   AIConversationIpcAdapter,
   AIMessageIpcAdapter,
   AIGenerationTaskIpcAdapter,
   AIUsageQuotaIpcAdapter,
   AIProviderConfigIpcAdapter,
+  createAIIpcAdapters,
 } from './adapters';
 
 // Providers

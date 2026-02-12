@@ -5,9 +5,12 @@
  * Uses IHttpClient for making HTTP requests.
  */
 
-import type { ITaskStatisticsApiClient } from '../../ports/task-statistics-api-client.port';
-import type { TaskStatisticsServerDTO } from '@dailyuse/contracts/task';
-import type { IHttpClient } from '../../../shared/http-client.types';
+import type {
+  ITaskStatisticsApiClient,
+  IHttpClient,
+  TaskStatisticsServerDTO,
+} from '../types';
+
 
 /**
  * TaskStatisticsHttpAdapter

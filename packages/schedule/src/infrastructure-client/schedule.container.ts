@@ -8,8 +8,8 @@
  */
 
 import { DIContainer, ModuleContainerBase } from '../shared/di';
-import type { IScheduleTaskApiClient } from './ports/schedule-task-api-client.port';
-import type { IScheduleEventApiClient } from './ports/schedule-event-api-client.port';
+import type { IScheduleTaskApiClient } from './adapters/types';
+import type { IScheduleEventApiClient } from './adapters/types';
 
 /**
  * Schedule 模块依赖键

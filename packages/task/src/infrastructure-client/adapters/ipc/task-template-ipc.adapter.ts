@@ -5,7 +5,10 @@
  * Uses Electron's contextBridge API for secure IPC communication.
  */
 
-import type { ITaskTemplateApiClient } from '../../ports/task-template-api-client.port';
+import type {
+  ITaskTemplateApiClient,
+  IIpcClient,
+} from '../types';
 import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
@@ -14,7 +17,6 @@ import type {
   GenerateInstancesRequest,
   BindToGoalRequest,
 } from '@dailyuse/contracts/task';
-import type { IpcClient } from '../../../shared/ipc-client.types';
 
 /**
  * TaskTemplateIpcAdapter
@@ -22,7 +24,7 @@ import type { IpcClient } from '../../../shared/ipc-client.types';
  * IPC 实现的任务模�?API 客户端（用于 Electron 桌面应用�?
  */
 export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
-  constructor(private readonly ipcClient: IpcClient) {}
+  constructor(private readonly ipcClient: IIpcClient) {}
 
   // ===== Task Template CRUD =====
 
@@ -134,6 +136,6 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
 /**
  * Factory function to create TaskTemplateIpcAdapter
  */
-export function createTaskTemplateIpcAdapter(ipcClient: IpcClient): TaskTemplateIpcAdapter {
+export function createTaskTemplateIpcAdapter(ipcClient: IIpcClient): TaskTemplateIpcAdapter {
   return new TaskTemplateIpcAdapter(ipcClient);
 }

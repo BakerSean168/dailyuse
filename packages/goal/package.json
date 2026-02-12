@@ -31,6 +31,10 @@
       "types": "./dist/infrastructure-server/index.d.ts",
       "import": "./dist/infrastructure-server/index.js"
     },
+    "./api": {
+      "types": "./dist/api/index.d.ts",
+      "import": "./dist/api/index.js"
+    },
     "./application-client": {
       "types": "./dist/application-client/index.d.ts",
       "import": "./dist/application-client/index.js"

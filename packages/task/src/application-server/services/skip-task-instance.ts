@@ -10,6 +10,8 @@ import type {
   SkipTaskInstanceRequest,
   TaskInstanceResponse,
 } from '@dailyuse/contracts/task';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 
 /**
  * Skip Task Instance Service
@@ -17,22 +19,22 @@ import type {
 export class SkipTaskInstance {
   constructor(private readonly instanceRepository: ITaskInstanceRepository) {}
 
-  async execute(uuid: string, request?: SkipTaskInstanceRequest): Promise<TaskInstanceResponse> {
+  async execute(uuid: string, request?: SkipTaskInstanceRequest): Promise<Result<TaskInstanceResponse>> {
     const instance = await this.instanceRepository.findByUuid(uuid);
     if (!instance) {
-      throw new Error(`TaskInstance ${uuid} not found`);
+      return error('NOT_FOUND', `TaskInstance ${uuid} not found`);
     }
 
     if (!instance.canSkip()) {
-      throw new Error('Cannot skip this task instance');
+      return error('VALIDATION_ERROR', 'Cannot skip this task instance');
     }
 
     instance.skip(request?.reason);
     await this.instanceRepository.save(instance);
 
-    return {
+    return ok({
       instance: instance.toClientDTO(),
-    };
+    });
   }
 }
 

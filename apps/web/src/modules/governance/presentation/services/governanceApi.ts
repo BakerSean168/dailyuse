@@ -14,7 +14,7 @@ import type {
   ListRulesRes,
   SearchRulesQuery,
   SearchRulesRes,
-} from '../types';
+} from '../../types';
 
 const BASE_URL = '/api/v1/governance/rules';
 

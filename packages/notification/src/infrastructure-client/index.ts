@@ -1,7 +1,7 @@
 /**
  * Notification Module - Infrastructure Client
  *
- * Ports and Adapters for Notification module communication.
+ * Adapters and container for Notification module communication.
  */
 
 // Container
@@ -11,23 +11,27 @@ export {
   type INotificationRepository,
 } from './notification.container';
 
-// Ports (Interfaces)
-export {
-  type INotificationApiClient,
-  type CreateNotificationRequest,
-  type QueryNotificationsRequest,
-  type NotificationListResponse,
-  type UnreadCountResponse,
-} from './ports/notification-api-client.port';
+// Port Interfaces
+export type {
+  INotificationApiClient,
+  CreateNotificationRequest,
+  QueryNotificationsRequest,
+  NotificationListResponse,
+  UnreadCountResponse,
+  IHttpClient,
+  IIpcClient,
+} from './adapters/types';
 
 // HTTP Adapters
 export {
   NotificationHttpAdapter,
-  createNotificationHttpAdapter,
-} from './adapters/http/notification-http.adapter';
+  createNotificationHttpAdapters,
+  type NotificationHttpAdapters,
+} from './adapters/http';
 
 // IPC Adapters
 export {
   NotificationIpcAdapter,
-  createNotificationIpcAdapter,
-} from './adapters/ipc/notification-ipc.adapter';
+  createNotificationIpcAdapters,
+  type NotificationIpcAdapters,
+} from './adapters/ipc';

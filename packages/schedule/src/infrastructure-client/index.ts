@@ -1,7 +1,7 @@
 /**
  * Schedule Module - Infrastructure Client
  *
- * Ports and Adapters for Schedule module communication.
+ * Adapters and container for Schedule module communication.
  */
 
 // Container
@@ -12,26 +12,28 @@ export {
   type IScheduleEventRepository,
 } from './schedule.container';
 
-// Ports (Interfaces)
-export { type IScheduleTaskApiClient } from './ports/schedule-task-api-client.port';
-export { type IScheduleEventApiClient } from './ports/schedule-event-api-client.port';
+// Port Interfaces
+export type {
+  IScheduleTaskApiClient,
+  IScheduleEventApiClient,
+  IHttpClient,
+  IIpcClient,
+  ScheduleStatisticsClientDTO,
+  ModuleStatisticsClientDTO,
+} from './adapters/types';
 
 // HTTP Adapters
 export {
-  ScheduleTaskHttpAdapter,
-  createScheduleTaskHttpAdapter,
-} from './adapters/http/schedule-task-http.adapter';
-export {
   ScheduleEventHttpAdapter,
-  createScheduleEventHttpAdapter,
-} from './adapters/http/schedule-event-http.adapter';
+  ScheduleTaskHttpAdapter,
+  createScheduleHttpAdapters,
+  type ScheduleHttpAdapters,
+} from './adapters/http';
 
 // IPC Adapters
 export {
-  ScheduleTaskIpcAdapter,
-  createScheduleTaskIpcAdapter,
-} from './adapters/ipc/schedule-task-ipc.adapter';
-export {
   ScheduleEventIpcAdapter,
-  createScheduleEventIpcAdapter,
-} from './adapters/ipc/schedule-event-ipc.adapter';
+  ScheduleTaskIpcAdapter,
+  createScheduleIpcAdapters,
+  type ScheduleIpcAdapters,
+} from './adapters/ipc';

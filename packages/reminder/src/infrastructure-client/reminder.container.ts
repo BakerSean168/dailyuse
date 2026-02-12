@@ -7,7 +7,7 @@
  */
 
 import { DIContainer, ModuleContainerBase } from '../shared/di';
-import type { IReminderApiClient } from './ports/reminder-api-client.port';
+import type { IReminderApiClient } from './adapters/types';
 
 /**
  * Reminder 模块依赖键

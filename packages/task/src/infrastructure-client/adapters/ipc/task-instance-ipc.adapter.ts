@@ -4,13 +4,15 @@
  * IPC implementation of ITaskInstanceApiClient for Electron desktop.
  */
 
-import type { ITaskInstanceApiClient } from '../../ports/task-instance-api-client.port';
+import type {
+  ITaskInstanceApiClient,
+  IIpcClient,
+} from '../types';
 import type {
   TaskInstanceClientDTO,
   CompleteTaskInstanceRequest,
   SkipTaskInstanceRequest,
 } from '@dailyuse/contracts/task';
-import type { IpcClient } from '../../../shared/ipc-client.types';
 
 /**
  * TaskInstanceIpcAdapter
@@ -18,7 +20,7 @@ import type { IpcClient } from '../../../shared/ipc-client.types';
  * IPC 实现的任务实�?API 客户端（用于 Electron 桌面应用�?
  */
 export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
-  constructor(private readonly ipcClient: IpcClient) {}
+  constructor(private readonly ipcClient: IIpcClient) {}
 
   // ===== Task Instance CRUD =====
 
@@ -74,6 +76,6 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
 /**
  * Factory function to create TaskInstanceIpcAdapter
  */
-export function createTaskInstanceIpcAdapter(ipcClient: IpcClient): TaskInstanceIpcAdapter {
+export function createTaskInstanceIpcAdapter(ipcClient: IIpcClient): TaskInstanceIpcAdapter {
   return new TaskInstanceIpcAdapter(ipcClient);
 }

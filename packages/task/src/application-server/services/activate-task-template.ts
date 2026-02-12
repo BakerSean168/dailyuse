@@ -15,6 +15,8 @@ import type {
 import { TaskInstanceGenerationService } from '@/domain-server';
 import type { TaskTemplateClientDTO, TaskTemplateResponse } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 
 /**
  * Activate Task Template Service
@@ -29,10 +31,10 @@ export class ActivateTaskTemplate {
     this.generationService = new TaskInstanceGenerationService();
   }
 
-  async execute(uuid: string): Promise<{ template: TaskTemplateClientDTO; instancesGenerated: number }> {
+  async execute(uuid: string): Promise<Result<{ template: TaskTemplateClientDTO; instancesGenerated: number }>> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
-      throw new Error(`TaskTemplate ${uuid} not found`);
+      return error('NOT_FOUND', `TaskTemplate ${uuid} not found`);
     }
 
     // 1. 激活模板状�?
@@ -66,10 +68,10 @@ export class ActivateTaskTemplate {
       console.error(`�?[ActivateTaskTemplate] 发布恢复事件失败:`, error);
     }
 
-    return {
+    return ok({
       template: template.toClientDTO(),
       instancesGenerated,
-    };
+    });
   }
 }
 

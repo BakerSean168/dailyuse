@@ -1,13 +1,17 @@
 /**
  * @file GoalApplicationService.ts
  * @description 目标应用服务，处理目标的 CRUD 和基本状态管理。
+ * 遵循 governance 模块 Result<T> 规范
  * @date 2025-01-22
  */
 
 import type { IGoalRepository } from '@/domain-server';
-import { GoalDomainService, Goal } from '@/domain-server';
+import { Goal } from '@/domain-server';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
+import { IdentityId } from '@dailyuse/domain-shared';
 import { GoalEventPublisher } from './goal-event-publisher';
 
 /**
@@ -17,15 +21,11 @@ import { GoalEventPublisher } from './goal-event-publisher';
  * 负责目标（Goal）的生命周期管理，包括：
  * - 创建、查询、更新、删除目标。
  * - 归档、激活、完成目标。
- * - 协调 DomainService 和 Repository。
+ * - 协调 Repository。
  * - 发布相关领域事件。
  */
 export class GoalApplicationService {
-  private domainService: GoalDomainService;
-
-  constructor(private readonly goalRepository: IGoalRepository) {
-    this.domainService = new GoalDomainService();
-  }
+  constructor(private readonly goalRepository: IGoalRepository) {}
 
   // ===== Goal CRUD 操作 =====
 
@@ -37,7 +37,6 @@ export class GoalApplicationService {
     title: string;
     description?: string;
     importance: ImportanceLevel;
-    urgency: UrgencyLevel;
     parentGoalUuid?: string;
     folderUuid?: string;
     startDate?: number;
@@ -51,26 +50,39 @@ export class GoalApplicationService {
       title: string;
       description?: string;
       valueType?: string;
+      aggregationMethod?: string;
       targetValue?: number;
       unit?: string;
       weight?: number;
     }>;
-  }): Promise<GoalClientDTO> {
+  }): Promise<Result<GoalClientDTO>> {
     // 1. 如果有父目标，先查询
     let parentGoal: Goal | undefined;
     if (params.parentGoalUuid) {
       const found = await this.goalRepository.findById(params.parentGoalUuid);
       if (!found) {
-        throw new Error(`Parent goal not found: ${params.parentGoalUuid}`);
+        return error('NOT_FOUND', `Parent goal not found: ${params.parentGoalUuid}`);
       }
       parentGoal = found;
     }
 
-    // 2. 委托领域服务创建聚合根（不持久化）
-    const goal = this.domainService.createGoal(
+    // 2. 直接使用聚合根工厂方法创建
+    const goal = Goal.create(
       {
-        ...params,
+        identityId: IdentityId.of(params.accountUuid),
         name: params.title,
+        description: params.description ?? null,
+        color: params.color ?? '#3B82F6',
+        feasibilityAnalysis: params.feasibilityAnalysis ?? null,
+        motivation: params.motivation ?? null,
+        importance: params.importance ?? ('MEDIUM' as ImportanceLevel),
+        category: null,
+        tags: params.tags ?? [],
+        startDate: params.startDate ? new Date(params.startDate) : null,
+        targetDate: params.targetDate ? new Date(params.targetDate) : null,
+        folderId: params.folderUuid ? (params.folderUuid as any) : null,
+        parentGoalId: params.parentGoalUuid ? (params.parentGoalUuid as any) : null,
+        reminderConfig: null,
       },
       parentGoal,
     );
@@ -78,10 +90,11 @@ export class GoalApplicationService {
     // 3. 如果有 keyResults，添加到目标中
     if (params.keyResults && params.keyResults.length > 0) {
       for (const krParams of params.keyResults) {
-        this.domainService.addKeyResultToGoal(goal, {
+        goal.createAndAddKeyResult({
           title: krParams.title,
           description: krParams.description,
-          valueType: krParams.valueType || 'INCREMENTAL',
+          valueType: krParams.valueType || 'Incremental',
+          aggregationMethod: krParams.aggregationMethod || 'Last',
           targetValue: krParams.targetValue ?? 100,
           unit: krParams.unit,
           weight: krParams.weight ?? 5,
@@ -95,8 +108,8 @@ export class GoalApplicationService {
     // 5. 发布领域事件
     await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 6. 返回 ClientDTO（包含 keyResults）
-    return goal.toClientDTO(true);
+    // 6. 返回 Result
+    return ok(goal.toClientDTO(true));
   }
 
   /**
@@ -105,9 +118,12 @@ export class GoalApplicationService {
   async getGoal(
     uuid: string,
     options?: { includeChildren?: boolean },
-  ): Promise<GoalClientDTO | null> {
+  ): Promise<Result<GoalClientDTO>> {
     const goal = await this.goalRepository.findById(uuid, options);
-    return goal ? goal.toClientDTO(true) : null;
+    if (!goal) {
+      return error('NOT_FOUND', `Goal not found: ${uuid}`);
+    }
+    return ok(goal.toClientDTO(true));
   }
 
   /**
@@ -120,11 +136,9 @@ export class GoalApplicationService {
       status?: string;
       folderUuid?: string;
     },
-  ): Promise<GoalClientDTO[]> {
+  ): Promise<Result<GoalClientDTO[]>> {
     const goals = await this.goalRepository.findByAccountUuid(accountUuid, options);
-    const dtos = goals.map((g: Goal) => g.toClientDTO(true));
-
-    return dtos;
+    return ok(goals.map((g: Goal) => g.toClientDTO(true)));
   }
 
   /**
@@ -136,7 +150,6 @@ export class GoalApplicationService {
       title: string;
       description: string;
       importance: ImportanceLevel;
-      urgency: UrgencyLevel;
       category: string;
       deadline: number;
       tags: string[];
@@ -145,46 +158,51 @@ export class GoalApplicationService {
       feasibilityAnalysis: string;
       motivation: string;
     }>,
-  ): Promise<GoalClientDTO> {
-    // 1. 查询目标
-    const goal = await this.goalRepository.findById(uuid);
+  ): Promise<Result<GoalClientDTO>> {
+    const goal = await this.goalRepository.findById(uuid, { includeChildren: true });
     if (!goal) {
-      throw new Error(`Goal not found: ${uuid}`);
+      return error('NOT_FOUND', `Goal not found: ${uuid}`);
     }
 
-    // 2. 委托领域服务更新（业务逻辑）
-    this.domainService.updateGoalBasicInfo(goal, updates);
+    goal.updateBasicInfo({
+      name: updates.title,
+      description: updates.description,
+      importance: updates.importance,
+      category: updates.category,
+      color: updates.color,
+      feasibilityAnalysis: updates.feasibilityAnalysis,
+      motivation: updates.motivation,
+    });
 
-    // 3. 持久化
+    if (updates.tags !== undefined) {
+      goal.updateTags(updates.tags);
+    }
+
     await this.goalRepository.save(goal);
-
-    // 4. 发布领域事件
     await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 5. 返回 ClientDTO
-    return goal.toClientDTO();
+    return ok(goal.toClientDTO(true));
   }
 
   /**
    * 检查目标关联依赖（删除前检查）。
    */
-  async checkGoalDependencies(uuid: string): Promise<{
+  async checkGoalDependencies(uuid: string): Promise<Result<{
     hasKeyResults: boolean;
     keyResultCount: number;
     hasReviews: boolean;
     reviewCount: number;
-    hasTaskLinks: boolean; // 未来扩展：检查 Task 模块关联
+    hasTaskLinks: boolean;
     canDelete: boolean;
     warnings: string[];
-  }> {
-    // 1. 查询目标（包含子实体）
+  }>> {
     const goal = await this.goalRepository.findById(uuid, { includeChildren: true });
     if (!goal) {
-      throw new Error(`Goal not found: ${uuid}`);
+      return error('NOT_FOUND', `Goal not found: ${uuid}`);
     }
 
     const keyResults = goal.keyResults || [];
-    const reviews = goal.reviews || [];
+    const reviews = goal.goalReviews || [];
     const keyResultCount = keyResults.length;
     const reviewCount = reviews.length;
 
@@ -198,108 +216,79 @@ export class GoalApplicationService {
       warnings.push(`该目标包含 ${reviewCount} 条复盘记录`);
     }
 
-    // TODO: 未来检查 Task 模块关联
-    // const hasTaskLinks = await this.checkTaskLinks(uuid);
-    const hasTaskLinks = false;
-
-    return {
+    return ok({
       hasKeyResults: keyResultCount > 0,
       keyResultCount,
       hasReviews: reviewCount > 0,
       reviewCount,
-      hasTaskLinks,
-      canDelete: true, // 即使有关联也允许删除（级联删除）
+      hasTaskLinks: false,
+      canDelete: true,
       warnings,
-    };
+    });
   }
 
   /**
    * 删除目标（软删除）。
    */
-  async deleteGoal(uuid: string): Promise<void> {
-    // 1. 查询目标（包含子实体）
+  async deleteGoal(uuid: string): Promise<Result<void>> {
     const goal = await this.goalRepository.findById(uuid, { includeChildren: true });
     if (!goal) {
-      throw new Error(`Goal not found: ${uuid}`);
+      return error('NOT_FOUND', `Goal not found: ${uuid}`);
     }
 
-    // 2. 调用聚合根的软删除方法
     goal.softDelete();
-
-    // 3. 持久化（包括子实体）
     await this.goalRepository.save(goal);
-
-    // 4. 发布领域事件
     await GoalEventPublisher.publishGoalEvents(goal);
+
+    return ok(undefined as void);
   }
 
   /**
    * 归档目标。
    */
-  async archiveGoal(uuid: string): Promise<GoalClientDTO> {
-    // 1. 查询目标
+  async archiveGoal(uuid: string): Promise<Result<GoalClientDTO>> {
     const goal = await this.goalRepository.findById(uuid);
     if (!goal) {
-      throw new Error(`Goal not found: ${uuid}`);
+      return error('NOT_FOUND', `Goal not found: ${uuid}`);
     }
 
-    // 2. 调用聚合根方法
     goal.archive();
-
-    // 3. 持久化
     await this.goalRepository.save(goal);
-
-    // 4. 发布领域事件
     await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 5. 返回 ClientDTO
-    return goal.toClientDTO();
+    return ok(goal.toClientDTO());
   }
 
   /**
    * 激活目标。
    */
-  async activateGoal(uuid: string): Promise<GoalClientDTO> {
-    // 1. 查询目标
+  async activateGoal(uuid: string): Promise<Result<GoalClientDTO>> {
     const goal = await this.goalRepository.findById(uuid);
     if (!goal) {
-      throw new Error(`Goal not found: ${uuid}`);
+      return error('NOT_FOUND', `Goal not found: ${uuid}`);
     }
 
-    // 2. 调用聚合根方法
     goal.activate();
-
-    // 3. 持久化
     await this.goalRepository.save(goal);
-
-    // 4. 发布领域事件
     await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 5. 返回 ClientDTO
-    return goal.toClientDTO();
+    return ok(goal.toClientDTO());
   }
 
   /**
    * 完成目标。
    */
-  async completeGoal(uuid: string): Promise<GoalClientDTO> {
-    // 1. 查询目标
+  async completeGoal(uuid: string): Promise<Result<GoalClientDTO>> {
     const goal = await this.goalRepository.findById(uuid);
     if (!goal) {
-      throw new Error(`Goal not found: ${uuid}`);
+      return error('NOT_FOUND', `Goal not found: ${uuid}`);
     }
 
-    // 2. 调用聚合根方法
-    goal.complete();
-
-    // 3. 持久化
+    goal.markAsCompleted();
     await this.goalRepository.save(goal);
-
-    // 4. 发布领域事件
     await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 5. 返回 ClientDTO
-    return goal.toClientDTO();
+    return ok(goal.toClientDTO());
   }
 
   // ===== 查询操作 =====
@@ -307,10 +296,12 @@ export class GoalApplicationService {
   /**
    * 搜索目标。
    */
-  async searchGoals(accountUuid: string, query: string): Promise<GoalClientDTO[]> {
+  async searchGoals(accountUuid: string, query: string): Promise<Result<GoalClientDTO[]>> {
     const goals = await this.goalRepository.findByAccountUuid(accountUuid, {});
-    return goals
-      .filter((g) => g.name.includes(query) || g.description?.includes(query))
-      .map((g: Goal) => g.toClientDTO());
+    return ok(
+      goals
+        .filter((g) => g.name.includes(query) || g.description?.includes(query))
+        .map((g: Goal) => g.toClientDTO()),
+    );
   }
 }

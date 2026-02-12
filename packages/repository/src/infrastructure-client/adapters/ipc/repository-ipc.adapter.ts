@@ -5,11 +5,11 @@
  */
 
 import type {
+  IIpcClient,
   IRepositoryApiClient,
   CreateRepositoryRequest,
   CreateFolderRequest,
-} from '../../ports/repository-api-client.port';
-import type { IpcClient } from '../../../shared/ipc-client.types';
+} from '../types';
 import type {
   RepositoryClientDTO,
   FolderClientDTO,
@@ -27,7 +27,7 @@ import type {
 export class RepositoryIpcAdapter implements IRepositoryApiClient {
   private readonly channel = 'repository';
 
-  constructor(private readonly ipcClient: IpcClient) {}
+  constructor(private readonly ipcClient: IIpcClient) {}
 
   // ===== Repository CRUD =====
 

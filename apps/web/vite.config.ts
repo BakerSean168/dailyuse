@@ -2,7 +2,6 @@
 import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'node:path';
-import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig(({ mode, command }) => {
   // Load env files from workspace root (centralized .env files)
@@ -123,7 +122,7 @@ export default defineConfig(({ mode, command }) => {
       // Mock CSS and asset imports
       server: {
         deps: {
-          inline: ['vuetify'],
+          inline: [],
         },
       },
     },

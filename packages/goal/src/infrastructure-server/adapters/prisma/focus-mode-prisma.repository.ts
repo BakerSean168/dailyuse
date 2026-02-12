@@ -1,4 +1,4 @@
-import type { PrismaClient, focusMode as PrismaFocusMode } from '../../../generated/prisma/client';
+import type { PrismaClient, focusMode as PrismaFocusMode } from '@dailyuse/database';
 import type { IFocusModeRepository } from '@/domain-server';
 import { FocusMode } from '@/domain-server';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';

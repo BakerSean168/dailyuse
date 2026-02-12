@@ -4,8 +4,7 @@
  * IPC implementation of IAIMessageApiClient for Electron desktop app.
  */
 
-import type { IAIMessageApiClient } from '../../ports/ai-message-api-client.port';
-import type { IpcClient } from '../../../shared/ipc-client.types';
+import type { IIpcClient, IAIMessageApiClient } from '../types';
 import type {
   MessageClientDTO,
   MessageListResponse,
@@ -22,7 +21,7 @@ import type {
 export class AIMessageIpcAdapter implements IAIMessageApiClient {
   private readonly channel = 'ai:message';
 
-  constructor(private readonly ipcClient: IpcClient) {}
+  constructor(private readonly ipcClient: IIpcClient) {}
 
   // ===== Message CRUD =====
 

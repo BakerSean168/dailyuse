@@ -32,7 +32,7 @@ export const BUILT_IN_RULES: StatusRule[] = [
       },
     ],
     action: {
-      status: GoalStatus.ACTIVE,
+      status: GoalStatus.Active,
       notify: true,
       message: '🎉 太棒了！所有关键结果进度都达到 80% 以上',
     },
@@ -57,7 +57,7 @@ export const BUILT_IN_RULES: StatusRule[] = [
       },
     ],
     action: {
-      status: GoalStatus.ACTIVE,
+      status: GoalStatus.Active,
       notify: true,
       message: '⚠️ 注意：有关键结果进度低于 30%',
     },
@@ -82,7 +82,7 @@ export const BUILT_IN_RULES: StatusRule[] = [
       },
     ],
     action: {
-      status: GoalStatus.COMPLETED,
+      status: GoalStatus.Completed,
       notify: true,
       message: '🎊 恭喜！目标已完成，所有关键结果都达到 100%',
     },
@@ -111,7 +111,7 @@ export const BUILT_IN_RULES: StatusRule[] = [
       },
     ],
     action: {
-      status: GoalStatus.DRAFT,
+      status: GoalStatus.Active,
       notify: false,
     },
     createdAt: Date.now(),
@@ -141,7 +141,7 @@ export const BUILT_IN_RULES: StatusRule[] = [
       },
     ],
     action: {
-      status: GoalStatus.ACTIVE,
+      status: GoalStatus.Active,
       notify: false,
     },
     createdAt: Date.now(),
@@ -212,7 +212,7 @@ export const RULE_TEMPLATES = {
       },
     ],
     action: {
-      status: GoalStatus.ACTIVE,
+      status: GoalStatus.Active,
       notify: true,
       message: `权重总和${operator === '=' ? '正确' : '异常'}`,
     },

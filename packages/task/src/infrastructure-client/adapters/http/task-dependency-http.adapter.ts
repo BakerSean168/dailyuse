@@ -5,7 +5,10 @@
  * Uses IHttpClient for making HTTP requests.
  */
 
-import type { ITaskDependencyApiClient } from '../../ports/task-dependency-api-client.port';
+import type {
+  ITaskDependencyApiClient,
+  IHttpClient,
+} from '../types';
 import type {
   TaskDependencyClientDTO,
   CreateTaskDependencyRequest,
@@ -14,7 +17,6 @@ import type {
   ValidateDependencyResponse,
   DependencyChainClientDTO,
 } from '@dailyuse/contracts/task';
-import type { IHttpClient } from '../../../shared/http-client.types';
 
 /**
  * TaskDependencyHttpAdapter

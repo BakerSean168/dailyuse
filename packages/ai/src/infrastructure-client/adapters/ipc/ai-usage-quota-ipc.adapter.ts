@@ -4,8 +4,7 @@
  * IPC implementation of IAIUsageQuotaApiClient for Electron desktop app.
  */
 
-import type { IAIUsageQuotaApiClient } from '../../ports/ai-usage-quota-api-client.port';
-import type { IpcClient } from '../../../shared/ipc-client.types';
+import type { IIpcClient, IAIUsageQuotaApiClient } from '../types';
 import type {
   AIUsageQuotaClientDTO,
   UpdateQuotaLimitRequest,
@@ -19,7 +18,7 @@ import type {
 export class AIUsageQuotaIpcAdapter implements IAIUsageQuotaApiClient {
   private readonly channel = 'ai:quota';
 
-  constructor(private readonly ipcClient: IpcClient) {}
+  constructor(private readonly ipcClient: IIpcClient) {}
 
   // ===== Quota Operations =====
 

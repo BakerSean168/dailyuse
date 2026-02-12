@@ -10,6 +10,8 @@ import type {
   TaskInstanceCompletedEvent,
 } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 
 /**
  * TaskInstance Application Service
@@ -40,9 +42,9 @@ export class TaskInstanceApplicationService {
   /**
    * Get Task Instance Details
    */
-  async getTaskInstance(uuid: string): Promise<TaskInstanceClientDTO | null> {
+  async getTaskInstance(uuid: string): Promise<Result<TaskInstanceClientDTO | null>> {
     const instance = await this.instanceRepository.findByUuid(uuid);
-    return instance ? instance.toClientDTO() : null;
+    return ok(instance ? instance.toClientDTO() : null);
   }
 
   /**
@@ -50,9 +52,9 @@ export class TaskInstanceApplicationService {
    */
   async getTaskInstancesByAccount(
     accountUuid: string,
-  ): Promise<TaskInstanceClientDTO[]> {
+  ): Promise<Result<TaskInstanceClientDTO[]>> {
     const instances = await this.instanceRepository.findByAccount(accountUuid);
-    return instances.map((i) => i.toClientDTO());
+    return ok(instances.map((i) => i.toClientDTO()));
   }
 
   /**
@@ -60,9 +62,9 @@ export class TaskInstanceApplicationService {
    */
   async getTaskInstancesByTemplate(
     templateUuid: string,
-  ): Promise<TaskInstanceClientDTO[]> {
+  ): Promise<Result<TaskInstanceClientDTO[]>> {
     const instances = await this.instanceRepository.findByTemplate(templateUuid);
-    return instances.map((i) => i.toClientDTO());
+    return ok(instances.map((i) => i.toClientDTO()));
   }
 
   /**
@@ -72,13 +74,13 @@ export class TaskInstanceApplicationService {
     accountUuid: string,
     startDate: number,
     endDate: number,
-  ): Promise<TaskInstanceClientDTO[]> {
+  ): Promise<Result<TaskInstanceClientDTO[]>> {
     const instances = await this.instanceRepository.findByDateRange(
       accountUuid,
       startDate,
       endDate,
     );
-    return instances.map((i) => i.toClientDTO());
+    return ok(instances.map((i) => i.toClientDTO()));
   }
 
   /**
@@ -87,28 +89,28 @@ export class TaskInstanceApplicationService {
   async getTaskInstancesByStatus(
     accountUuid: string,
     status: TaskInstanceStatus,
-  ): Promise<TaskInstanceClientDTO[]> {
+  ): Promise<Result<TaskInstanceClientDTO[]>> {
     const instances = await this.instanceRepository.findByStatus(accountUuid, status);
-    return instances.map((i) => i.toClientDTO());
+    return ok(instances.map((i) => i.toClientDTO()));
   }
 
   /**
    * Start Task Instance
    */
-  async startTaskInstance(uuid: string): Promise<TaskInstanceClientDTO> {
+  async startTaskInstance(uuid: string): Promise<Result<TaskInstanceClientDTO>> {
     const instance = await this.instanceRepository.findByUuid(uuid);
     if (!instance) {
-      throw new Error(`TaskInstance ${uuid} not found`);
+      return error('NOT_FOUND', `TaskInstance ${uuid} not found`);
     }
 
     if (!instance.canStart()) {
-      throw new Error('Cannot start this task instance');
+      return error('VALIDATION_ERROR', 'Cannot start this task instance');
     }
 
     instance.start();
     await this.instanceRepository.save(instance);
 
-    return instance.toClientDTO();
+    return ok(instance.toClientDTO());
   }
 
   /**
@@ -121,14 +123,14 @@ export class TaskInstanceApplicationService {
       note?: string;
       rating?: number;
     },
-  ): Promise<TaskInstanceClientDTO> {
+  ): Promise<Result<TaskInstanceClientDTO>> {
     const instance = await this.instanceRepository.findByUuid(uuid);
     if (!instance) {
-      throw new Error(`TaskInstance ${uuid} not found`);
+      return error('NOT_FOUND', `TaskInstance ${uuid} not found`);
     }
 
     if (!instance.canComplete()) {
-      throw new Error('Cannot complete this task instance');
+      return error('VALIDATION_ERROR', 'Cannot complete this task instance');
     }
 
     // Mark as completed
@@ -138,7 +140,7 @@ export class TaskInstanceApplicationService {
     // Publish event
     await this.publishTaskCompletedEvent(instance);
 
-    return instance.toClientDTO();
+    return ok(instance.toClientDTO());
   }
 
   /**
@@ -147,26 +149,26 @@ export class TaskInstanceApplicationService {
   async skipTaskInstance(
     uuid: string,
     reason?: string,
-  ): Promise<TaskInstanceClientDTO> {
+  ): Promise<Result<TaskInstanceClientDTO>> {
     const instance = await this.instanceRepository.findByUuid(uuid);
     if (!instance) {
-      throw new Error(`TaskInstance ${uuid} not found`);
+      return error('NOT_FOUND', `TaskInstance ${uuid} not found`);
     }
 
     if (!instance.canSkip()) {
-      throw new Error('Cannot skip this task instance');
+      return error('VALIDATION_ERROR', 'Cannot skip this task instance');
     }
 
     instance.skip(reason);
     await this.instanceRepository.save(instance);
 
-    return instance.toClientDTO();
+    return ok(instance.toClientDTO());
   }
 
   /**
    * Check and mark expired instances
    */
-  async checkExpiredInstances(accountUuid: string): Promise<TaskInstanceClientDTO[]> {
+  async checkExpiredInstances(accountUuid: string): Promise<Result<TaskInstanceClientDTO[]>> {
     // 1. Find all overdue instances
     const overdueInstances = await this.instanceRepository.findOverdueInstances(accountUuid);
 
@@ -178,14 +180,15 @@ export class TaskInstanceApplicationService {
       await this.instanceRepository.saveMany(expiredInstances);
     }
 
-    return expiredInstances.map((i) => i.toClientDTO());
+    return ok(expiredInstances.map((i) => i.toClientDTO()));
   }
 
   /**
    * Delete Task Instance
    */
-  async deleteTaskInstance(uuid: string): Promise<void> {
+  async deleteTaskInstance(uuid: string): Promise<Result<void>> {
     await this.instanceRepository.delete(uuid);
+    return ok(undefined);
   }
 
   /**

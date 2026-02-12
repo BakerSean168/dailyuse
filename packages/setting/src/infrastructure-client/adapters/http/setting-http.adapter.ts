@@ -4,8 +4,7 @@
  * HTTP implementation of ISettingApiClient.
  */
 
-import type { ISettingApiClient } from '../../ports/setting-api-client.port';
-import type { HttpClient } from '../../../shared/http-client.types';
+import type { IHttpClient, ISettingApiClient } from '../types';
 import type {
   UserSettingClientDTO,
   AppConfigClientDTO,
@@ -23,7 +22,7 @@ import type {
 export class SettingHttpAdapter implements ISettingApiClient {
   private readonly baseUrl = '/settings';
 
-  constructor(private readonly httpClient: HttpClient) {}
+  constructor(private readonly httpClient: IHttpClient) {}
 
   // ===== User Settings =====
 

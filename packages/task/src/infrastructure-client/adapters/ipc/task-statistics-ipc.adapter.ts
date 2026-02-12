@@ -4,9 +4,12 @@
  * IPC implementation of ITaskStatisticsApiClient for Electron desktop.
  */
 
-import type { ITaskStatisticsApiClient } from '../../ports/task-statistics-api-client.port';
-import type { TaskStatisticsServerDTO } from '@dailyuse/contracts/task';
-import type { IpcClient } from '../../../shared/ipc-client.types';
+import type {
+  ITaskStatisticsApiClient,
+  IIpcClient,
+  TaskStatisticsServerDTO,
+} from '../types';
+
 
 /**
  * TaskStatisticsIpcAdapter
@@ -14,7 +17,7 @@ import type { IpcClient } from '../../../shared/ipc-client.types';
  * IPC 实现的任务统�?API 客户端（用于 Electron 桌面应用�?
  */
 export class TaskStatisticsIpcAdapter implements ITaskStatisticsApiClient {
-  constructor(private readonly ipcClient: IpcClient) {}
+  constructor(private readonly ipcClient: IIpcClient) {}
 
   // ===== Task Statistics 查询 =====
 
@@ -75,7 +78,7 @@ export class TaskStatisticsIpcAdapter implements ITaskStatisticsApiClient {
  * Factory function to create TaskStatisticsIpcAdapter
  */
 export function createTaskStatisticsIpcAdapter(
-  ipcClient: IpcClient,
+  ipcClient: IIpcClient,
 ): TaskStatisticsIpcAdapter {
   return new TaskStatisticsIpcAdapter(ipcClient);
 }

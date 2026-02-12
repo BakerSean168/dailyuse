@@ -4,7 +4,10 @@
  * IPC implementation of ITaskDependencyApiClient for Electron desktop.
  */
 
-import type { ITaskDependencyApiClient } from '../../ports/task-dependency-api-client.port';
+import type {
+  ITaskDependencyApiClient,
+  IIpcClient,
+} from '../types';
 import type {
   TaskDependencyClientDTO,
   CreateTaskDependencyRequest,
@@ -13,7 +16,6 @@ import type {
   ValidateDependencyResponse,
   DependencyChainClientDTO,
 } from '@dailyuse/contracts/task';
-import type { IpcClient } from '../../../shared/ipc-client.types';
 
 /**
  * TaskDependencyIpcAdapter
@@ -21,7 +23,7 @@ import type { IpcClient } from '../../../shared/ipc-client.types';
  * IPC 实现的任务依赖关�?API 客户端（用于 Electron 桌面应用�?
  */
 export class TaskDependencyIpcAdapter implements ITaskDependencyApiClient {
-  constructor(private readonly ipcClient: IpcClient) {}
+  constructor(private readonly ipcClient: IIpcClient) {}
 
   async createDependency(
     taskUuid: string,
@@ -64,7 +66,7 @@ export class TaskDependencyIpcAdapter implements ITaskDependencyApiClient {
  * Factory function to create TaskDependencyIpcAdapter
  */
 export function createTaskDependencyIpcAdapter(
-  ipcClient: IpcClient,
+  ipcClient: IIpcClient,
 ): TaskDependencyIpcAdapter {
   return new TaskDependencyIpcAdapter(ipcClient);
 }

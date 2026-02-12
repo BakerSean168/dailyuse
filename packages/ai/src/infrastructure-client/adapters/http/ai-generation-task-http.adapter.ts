@@ -4,8 +4,7 @@
  * HTTP implementation of IAIGenerationTaskApiClient.
  */
 
-import type { IAIGenerationTaskApiClient } from '../../ports/ai-generation-task-api-client.port';
-import type { HttpClient } from '../../../shared/http-client.types';
+import type { IHttpClient, IAIGenerationTaskApiClient } from '../types';
 import type {
   AIGenerationTaskClientDTO,
   GenerationTaskListResponse,
@@ -25,7 +24,7 @@ import type {
 export class AIGenerationTaskHttpAdapter implements IAIGenerationTaskApiClient {
   private readonly baseUrl = '/ai/generation-tasks';
 
-  constructor(private readonly httpClient: HttpClient) {}
+  constructor(private readonly httpClient: IHttpClient) {}
 
   // ===== Generation Task CRUD =====
 

@@ -6,6 +6,8 @@
 
 import type { ITaskTemplateRepository } from '@/domain-server';
 import { eventBus } from '@dailyuse/utils';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok } from '@dailyuse/contracts/result';
 
 /**
  * Delete Task Template Service
@@ -13,11 +15,11 @@ import { eventBus } from '@dailyuse/utils';
 export class DeleteTaskTemplate {
   constructor(private readonly templateRepository: ITaskTemplateRepository) {}
 
-  async execute(uuid: string, soft = false): Promise<{ success: boolean }> {
+  async execute(uuid: string, soft = false): Promise<Result<{ success: boolean }>> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
       // 幂等性：如果模板不存在，直接返回成功
-      return { success: true };
+      return ok({ success: true });
     }
 
     if (soft) {
@@ -41,7 +43,7 @@ export class DeleteTaskTemplate {
       console.error(`�?[DeleteTaskTemplate] 发布删除事件失败:`, error);
     }
 
-    return { success: true };
+    return ok({ success: true });
   }
 }
 

@@ -4,8 +4,7 @@
  * IPC implementation of IAIConversationApiClient for Electron desktop app.
  */
 
-import type { IAIConversationApiClient } from '../../ports/ai-conversation-api-client.port';
-import type { IpcClient } from '../../../shared/ipc-client.types';
+import type { IIpcClient, IAIConversationApiClient } from '../types';
 import type {
   AIConversationClientDTO,
   ConversationListResponse,
@@ -21,7 +20,7 @@ import type {
 export class AIConversationIpcAdapter implements IAIConversationApiClient {
   private readonly channel = 'ai:conversation';
 
-  constructor(private readonly ipcClient: IpcClient) {}
+  constructor(private readonly ipcClient: IIpcClient) {}
 
   // ===== Conversation CRUD =====
 

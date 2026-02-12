@@ -136,8 +136,8 @@ const greeting = computed(() => {
 
 // 用户名
 const userName = computed(() => {
-  const currentUser = authStore.getCurrentUser;
-  return currentUser?.profile?.displayName || currentUser?.username || '用户';
+  const currentUser = authStore.currentUser;
+  return currentUser?.username || currentUser?.email || '用户';
 });
 
 // 快速创建任务

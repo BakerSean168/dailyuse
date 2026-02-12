@@ -4,7 +4,10 @@
  * HTTP implementation of IScheduleEventApiClient.
  */
 
-import type { IScheduleEventApiClient } from '../../ports/schedule-event-api-client.port';
+import type {
+  IHttpClient,
+  IScheduleEventApiClient,
+} from '../types';
 import type {
   ScheduleClientDTO,
   CreateScheduleRequest,
@@ -13,7 +16,6 @@ import type {
   ConflictDetectionResult,
   ResolveConflictRequest,
 } from '@dailyuse/contracts/schedule';
-import type { IHttpClient } from '../../../shared/http-client.types';
 
 /**
  * ScheduleEventHttpAdapter

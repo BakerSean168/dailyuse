@@ -4,8 +4,7 @@
  * HTTP implementation of IAIMessageApiClient.
  */
 
-import type { IAIMessageApiClient } from '../../ports/ai-message-api-client.port';
-import type { HttpClient } from '../../../shared/http-client.types';
+import type { IHttpClient, IAIMessageApiClient } from '../types';
 import type {
   MessageClientDTO,
   MessageListResponse,
@@ -22,7 +21,7 @@ import type {
 export class AIMessageHttpAdapter implements IAIMessageApiClient {
   private readonly baseUrl = '/ai/messages';
 
-  constructor(private readonly httpClient: HttpClient) {}
+  constructor(private readonly httpClient: IHttpClient) {}
 
   // ===== Message CRUD =====
 

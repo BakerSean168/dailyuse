@@ -1,73 +1,84 @@
 /**
  * Goal Focus IPC Adapter
  *
- * IPC implementation of IGoalFocusApiClient for Electron desktop.
- * Communicates with main process for focus session operations.
+ * IPC implementation of IGoalFocusApiClient using ResultIpcClient.
+ * Focus functionality is only available in Electron desktop.
  */
 
-import type { IGoalFocusApiClient } from '../../ports/goal-focus-api-client.port';
-import type { IpcClient } from '../../../shared/ipc-client.types';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok } from '@dailyuse/contracts/result';
+import type { IGoalFocusApiClient, IResultIpcClient } from '../types';
 import type {
   FocusSessionClientDTO,
-  FocusStatusDTO,
-  FocusHistoryDTO,
-  FocusStatisticsDTO,
-  StartFocusRequest,
-  GetFocusHistoryRequest,
+  StartFocusReq,
+  GetFocusHistoryReq,
+  GetFocusStatusRes,
+  GetFocusHistoryRes,
+  GetFocusStatisticsRes,
 } from '@dailyuse/contracts/goal';
 
-/**
- * Goal Focus IPC Adapter
- *
- * Uses Electron IPC to communicate with main process for focus operations.
- */
 export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
   private readonly channel = 'goal:focus';
 
-  constructor(private readonly ipcClient: IpcClient) {}
+  constructor(private readonly ipcClient: IResultIpcClient) {}
 
   // ===== Session Management =====
 
-  async startSession(request: StartFocusRequest): Promise<FocusSessionClientDTO> {
+  async startSession(
+    request: StartFocusReq,
+  ): Promise<Result<FocusSessionClientDTO>> {
     return this.ipcClient.invoke(`${this.channel}:start`, request);
   }
 
-  async pauseSession(): Promise<FocusSessionClientDTO> {
+  async pauseSession(): Promise<Result<FocusSessionClientDTO>> {
     return this.ipcClient.invoke(`${this.channel}:pause`);
   }
 
-  async resumeSession(): Promise<FocusSessionClientDTO> {
+  async resumeSession(): Promise<Result<FocusSessionClientDTO>> {
     return this.ipcClient.invoke(`${this.channel}:resume`);
   }
 
-  async stopSession(notes?: string): Promise<FocusSessionClientDTO | null> {
+  async stopSession(
+    notes?: string,
+  ): Promise<Result<FocusSessionClientDTO | null>> {
     return this.ipcClient.invoke(`${this.channel}:stop`, { notes });
   }
 
   // ===== Status & History =====
 
-  async getStatus(): Promise<FocusStatusDTO> {
+  async getStatus(): Promise<Result<GetFocusStatusRes>> {
     return this.ipcClient.invoke(`${this.channel}:status`);
   }
 
-  async getHistory(request: GetFocusHistoryRequest): Promise<FocusHistoryDTO> {
+  async getHistory(
+    request: GetFocusHistoryReq,
+  ): Promise<Result<GetFocusHistoryRes>> {
     return this.ipcClient.invoke(`${this.channel}:history`, request);
   }
 
-  async getStatistics(goalUuid?: string): Promise<FocusStatisticsDTO> {
+  async getStatistics(
+    goalUuid?: string,
+  ): Promise<Result<GetFocusStatisticsRes>> {
     return this.ipcClient.invoke(`${this.channel}:statistics`, { goalUuid });
   }
 
   // ===== Convenience Methods =====
 
-  async isActive(): Promise<boolean> {
-    const status = await this.getStatus();
-    return status.isActive;
+  async isActive(): Promise<Result<boolean>> {
+    const result = await this.getStatus();
+    if (!result.ok) return result;
+    return ok(result.data.isActive);
   }
 
-  async getTodayHistory(goalUuid?: string): Promise<FocusHistoryDTO> {
+  async getTodayHistory(
+    goalUuid?: string,
+  ): Promise<Result<GetFocusHistoryRes>> {
     const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const startOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    ).getTime();
     const endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
 
     return this.getHistory({
@@ -77,13 +88,15 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
     });
   }
 
-  async getWeekHistory(goalUuid?: string): Promise<FocusHistoryDTO> {
+  async getWeekHistory(
+    goalUuid?: string,
+  ): Promise<Result<GetFocusHistoryRes>> {
     const now = new Date();
     const dayOfWeek = now.getDay();
     const startOfWeek = new Date(
       now.getFullYear(),
       now.getMonth(),
-      now.getDate() - dayOfWeek
+      now.getDate() - dayOfWeek,
     ).getTime();
     const endOfWeek = startOfWeek + 7 * 24 * 60 * 60 * 1000 - 1;
 
@@ -93,11 +106,4 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
       endDate: endOfWeek,
     });
   }
-}
-
-/**
- * Create GoalFocusIpcAdapter instance
- */
-export function createGoalFocusIpcAdapter(ipcClient: IpcClient): GoalFocusIpcAdapter {
-  return new GoalFocusIpcAdapter(ipcClient);
 }

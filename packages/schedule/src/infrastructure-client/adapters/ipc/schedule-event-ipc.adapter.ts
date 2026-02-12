@@ -4,7 +4,10 @@
  * IPC implementation of IScheduleEventApiClient for Electron desktop apps.
  */
 
-import type { IScheduleEventApiClient } from '../../ports/schedule-event-api-client.port';
+import type {
+  IIpcClient,
+  IScheduleEventApiClient,
+} from '../types';
 import type {
   ScheduleClientDTO,
   CreateScheduleRequest,
@@ -32,53 +35,41 @@ const SCHEDULE_EVENT_CHANNELS = {
   RESOLVE_CONFLICT: 'schedule:event:resolve-conflict',
 } as const;
 
-/**
- * IPC API interface for Electron renderer process
- */
-interface IpcApi {
-  invoke<T>(channel: string, ...args: unknown[]): Promise<T>;
-}
-
-/**
- * ScheduleEventIpcAdapter
- *
- * IPC 实现的日程事件 API 客户端（用于 Electron 桌面应用）
- */
 export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
-  constructor(private readonly ipcApi: IpcApi) {}
+  constructor(private readonly ipcClient: IIpcClient) {}
 
   // ===== Schedule Event CRUD =====
 
   async createSchedule(data: CreateScheduleRequest): Promise<ScheduleClientDTO> {
-    return this.ipcApi.invoke(SCHEDULE_EVENT_CHANNELS.CREATE_SCHEDULE, data);
+    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.CREATE_SCHEDULE, data);
   }
 
   async getSchedule(uuid: string): Promise<ScheduleClientDTO> {
-    return this.ipcApi.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULE, uuid);
+    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULE, uuid);
   }
 
   async getSchedulesByAccount(): Promise<ScheduleClientDTO[]> {
-    return this.ipcApi.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_ACCOUNT);
+    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_ACCOUNT);
   }
 
   async getSchedulesByTimeRange(
     params: GetSchedulesByTimeRangeRequest,
   ): Promise<ScheduleClientDTO[]> {
-    return this.ipcApi.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_TIME_RANGE, params);
+    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_TIME_RANGE, params);
   }
 
   async updateSchedule(uuid: string, data: UpdateScheduleRequest): Promise<ScheduleClientDTO> {
-    return this.ipcApi.invoke(SCHEDULE_EVENT_CHANNELS.UPDATE_SCHEDULE, uuid, data);
+    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.UPDATE_SCHEDULE, uuid, data);
   }
 
   async deleteSchedule(uuid: string): Promise<void> {
-    await this.ipcApi.invoke(SCHEDULE_EVENT_CHANNELS.DELETE_SCHEDULE, uuid);
+    await this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.DELETE_SCHEDULE, uuid);
   }
 
   // ===== Schedule Conflict Detection =====
 
   async getScheduleConflicts(uuid: string): Promise<ConflictDetectionResult> {
-    return this.ipcApi.invoke(SCHEDULE_EVENT_CHANNELS.GET_CONFLICTS, uuid);
+    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_CONFLICTS, uuid);
   }
 
   async detectConflicts(params: {
@@ -87,7 +78,7 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
     endTime: number;
     excludeUuid?: string;
   }): Promise<ConflictDetectionResult> {
-    return this.ipcApi.invoke(SCHEDULE_EVENT_CHANNELS.DETECT_CONFLICTS, params);
+    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.DETECT_CONFLICTS, params);
   }
 
   async createScheduleWithConflictDetection(
@@ -96,7 +87,7 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
     schedule: ScheduleClientDTO;
     conflicts?: ConflictDetectionResult;
   }> {
-    return this.ipcApi.invoke(
+    return this.ipcClient.invoke(
       SCHEDULE_EVENT_CHANNELS.CREATE_WITH_CONFLICT_DETECTION,
       request,
     );
@@ -115,7 +106,7 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
       changes: string[];
     };
   }> {
-    return this.ipcApi.invoke(
+    return this.ipcClient.invoke(
       SCHEDULE_EVENT_CHANNELS.RESOLVE_CONFLICT,
       scheduleUuid,
       request,
@@ -126,6 +117,6 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
 /**
  * Factory function to create ScheduleEventIpcAdapter
  */
-export function createScheduleEventIpcAdapter(ipcApi: IpcApi): ScheduleEventIpcAdapter {
-  return new ScheduleEventIpcAdapter(ipcApi);
+export function createScheduleEventIpcAdapter(ipcClient: IIpcClient): ScheduleEventIpcAdapter {
+  return new ScheduleEventIpcAdapter(ipcClient);
 }

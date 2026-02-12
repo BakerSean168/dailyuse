@@ -5,6 +5,8 @@ import type {
 } from '@/domain-server';
 import { TaskStatistics } from '@/domain-server';
 import type { TaskStatisticsServerDTO } from '@dailyuse/contracts/task';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok } from '@dailyuse/contracts/result';
 
 /**
  * TaskStatistics 应用服务
@@ -40,17 +42,21 @@ export class TaskStatisticsApplicationService {
   async getStatistics(
     accountUuid: string,
     forceRecalculate = false,
-  ): Promise<TaskStatisticsServerDTO> {
+  ): Promise<Result<TaskStatisticsServerDTO>> {
     // 1. 尝试从数据库获取现有统计数据
     let statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
 
     // 2. 如果不存在或需要强制重算，则重新计算
     if (!statistics || forceRecalculate) {
-      statistics = await this.recalculateStatistics(accountUuid);
+      const recalcResult = await this.recalculateStatistics(accountUuid);
+      if (!recalcResult.ok) {
+        return recalcResult as any;
+      }
+      statistics = recalcResult.data;
     }
 
     // 3. 返回 ServerDTO
-    return statistics.toServerDTO();
+    return ok(statistics.toServerDTO());
   }
 
   /**
@@ -61,13 +67,13 @@ export class TaskStatisticsApplicationService {
   async recalculateStatistics(
     accountUuid: string,
     force = false,
-  ): Promise<TaskStatistics> {
+  ): Promise<Result<TaskStatistics>> {
     // 1. 获取现有统计（如果存在）
     const existing = await this.statisticsRepository.findByAccountUuid(accountUuid);
 
     // 2. 如果存在且不强制重算，直接返回
     if (existing && !force) {
-      return existing;
+      return ok(existing);
     }
 
     // 3. 计算新统计数据
@@ -80,6 +86,6 @@ export class TaskStatisticsApplicationService {
     // 4. 保存
     await this.statisticsRepository.save(newStats);
 
-    return newStats;
+    return ok(newStats);
   }
 }

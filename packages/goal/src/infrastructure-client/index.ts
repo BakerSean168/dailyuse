@@ -1,34 +1,34 @@
 /**
  * Goal Module - Infrastructure Client
  *
- * Ports and Adapters for Goal module communication.
+ * Adapters and container for Goal module communication.
  */
 
 // Container
 export { GoalContainer, GoalDependencyKeys, type IGoalRepository } from './goal.container';
 
-// Core API Clients (Framework-agnostic)
-export { GoalApiClient, GoalFolderApiClient, type IHttpClient } from './goal-api-client';
-
-// Ports (Interfaces)
-export { type IGoalApiClient } from './ports/goal-api-client.port';
-export { type IGoalFolderApiClient } from './ports/goal-folder-api-client.port';
-export { type IGoalFocusApiClient } from './ports/goal-focus-api-client.port';
+// Port Interfaces
+export type {
+  IGoalApiClient,
+  IGoalFolderApiClient,
+  IGoalFocusApiClient,
+  IResultHttpClient,
+  IResultIpcClient,
+} from './adapters/types';
 
 // HTTP Adapters
-export { GoalHttpAdapter, createGoalHttpAdapter } from './adapters/http/goal-http.adapter';
 export {
+  GoalHttpAdapter,
   GoalFolderHttpAdapter,
-  createGoalFolderHttpAdapter,
-} from './adapters/http/goal-folder-http.adapter';
+  createGoalHttpAdapters,
+  type GoalHttpAdapters,
+} from './adapters/http';
 
 // IPC Adapters
-export { GoalIpcAdapter, createGoalIpcAdapter } from './adapters/ipc/goal-ipc.adapter';
 export {
+  GoalIpcAdapter,
   GoalFolderIpcAdapter,
-  createGoalFolderIpcAdapter,
-} from './adapters/ipc/goal-folder-ipc.adapter';
-export {
   GoalFocusIpcAdapter,
-  createGoalFocusIpcAdapter,
-} from './adapters/ipc/goal-focus-ipc.adapter';
+  createGoalIpcAdapters,
+  type GoalIpcAdapters,
+} from './adapters/ipc';

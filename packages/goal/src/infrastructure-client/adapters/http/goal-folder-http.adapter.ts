@@ -1,27 +1,26 @@
 /**
  * Goal Folder HTTP Adapter
  *
- * HTTP implementation of IGoalFolderApiClient.
+ * HTTP implementation of IGoalFolderApiClient using ResultHttpClient.
  */
 
-import type { IGoalFolderApiClient } from '../../ports/goal-folder-api-client.port';
-import type { HttpClient } from '../../../shared/http-client.types';
+import type { Result } from '@dailyuse/contracts/result';
+import type { IGoalFolderApiClient, IResultHttpClient } from '../types';
 import type {
   GoalFolderClientDTO,
-  GoalFolderListResponse,
-  CreateGoalFolderRequest,
-  UpdateGoalFolderRequest,
+  QueryGoalFoldersRes,
+  CreateGoalFolderReq,
+  UpdateGoalFolderReq,
 } from '@dailyuse/contracts/goal';
 
-/**
- * Goal Folder HTTP Adapter
- */
 export class GoalFolderHttpAdapter implements IGoalFolderApiClient {
   private readonly baseUrl = '/goal-folders';
 
-  constructor(private readonly httpClient: HttpClient) {}
+  constructor(private readonly httpClient: IResultHttpClient) {}
 
-  async createGoalFolder(request: CreateGoalFolderRequest): Promise<GoalFolderClientDTO> {
+  async createGoalFolder(
+    request: CreateGoalFolderReq,
+  ): Promise<Result<GoalFolderClientDTO>> {
     return this.httpClient.post(this.baseUrl, request);
   }
 
@@ -30,29 +29,24 @@ export class GoalFolderHttpAdapter implements IGoalFolderApiClient {
     limit?: number;
     status?: string;
     parentUuid?: string | null;
-  }): Promise<GoalFolderListResponse> {
+  }): Promise<Result<QueryGoalFoldersRes>> {
     return this.httpClient.get(this.baseUrl, { params });
   }
 
-  async getGoalFolderById(uuid: string): Promise<GoalFolderClientDTO> {
+  async getGoalFolderById(
+    uuid: string,
+  ): Promise<Result<GoalFolderClientDTO>> {
     return this.httpClient.get(`${this.baseUrl}/${uuid}`);
   }
 
   async updateGoalFolder(
     uuid: string,
-    request: UpdateGoalFolderRequest,
-  ): Promise<GoalFolderClientDTO> {
+    request: UpdateGoalFolderReq,
+  ): Promise<Result<GoalFolderClientDTO>> {
     return this.httpClient.put(`${this.baseUrl}/${uuid}`, request);
   }
 
-  async deleteGoalFolder(uuid: string): Promise<void> {
+  async deleteGoalFolder(uuid: string): Promise<Result<void>> {
     return this.httpClient.delete(`${this.baseUrl}/${uuid}`);
   }
-}
-
-/**
- * Factory function to create GoalFolderHttpAdapter
- */
-export function createGoalFolderHttpAdapter(httpClient: HttpClient): IGoalFolderApiClient {
-  return new GoalFolderHttpAdapter(httpClient);
 }

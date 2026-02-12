@@ -63,22 +63,22 @@ import {
 } from './services';
 
 import type {
-  CreateGoalRequest,
-  UpdateGoalRequest,
-  AddKeyResultRequest,
-  UpdateKeyResultRequest,
-  CreateGoalFolderRequest,
-  UpdateGoalFolderRequest,
-  CreateGoalRecordRequest,
-  CreateGoalReviewRequest,
-  UpdateGoalReviewRequest,
-  StartFocusRequest,
-  GetFocusHistoryRequest,
+  CreateGoalReq,
+  UpdateGoalReq,
+  AddKeyResultReq,
+  UpdateKeyResultReq,
+  CreateGoalFolderReq,
+  UpdateGoalFolderReq,
+  CreateGoalRecordReq,
+  CreateGoalReviewReq,
+  UpdateGoalReviewReq,
+  StartFocusReq,
+  GetFocusHistoryReq,
   ProgressBreakdown,
   FocusSessionClientDTO,
-  FocusStatusDTO,
-  FocusHistoryDTO,
-  FocusStatisticsDTO,
+  GetFocusStatusRes,
+  GetFocusHistoryRes,
+  GetFocusStatisticsRes,
 } from '@dailyuse/contracts/goal';
 
 import type { Goal, GoalFolder, KeyResult } from '@/domain-client';
@@ -130,7 +130,7 @@ export class GoalApplicationService {
   /**
    * Create a new goal
    */
-  async createGoal(request: CreateGoalRequest): Promise<Goal> {
+  async createGoal(request: CreateGoalReq): Promise<Goal> {
     return CreateGoal.getInstance().execute(request);
   }
 
@@ -144,14 +144,14 @@ export class GoalApplicationService {
   /**
    * List all goals for current user
    */
-  async listGoals(): Promise<Goal[]> {
-    return ListGoals.getInstance().execute();
+  async listGoals(params?: { page?: number; limit?: number; status?: string; dirUuid?: string; startDate?: string; endDate?: string }): Promise<{ goals: Goal[]; pagination: { page: number; limit: number; total: number } }> {
+    return ListGoals.getInstance().execute(params);
   }
 
   /**
    * Update a goal
    */
-  async updateGoal(uuid: string, request: UpdateGoalRequest): Promise<Goal> {
+  async updateGoal(uuid: string, request: UpdateGoalReq): Promise<Goal> {
     return UpdateGoal.getInstance().execute(uuid, request);
   }
 
@@ -166,7 +166,7 @@ export class GoalApplicationService {
    * Activate a goal
    */
   async activateGoal(uuid: string): Promise<Goal> {
-    return ActivateGoal.getInstance().execute(uuid);
+    return (ActivateGoal as any).getInstance().execute(uuid);
   }
 
   /**
@@ -193,8 +193,8 @@ export class GoalApplicationService {
   /**
    * Search goals by query
    */
-  async searchGoals(query: string): Promise<Goal[]> {
-    return SearchGoals.getInstance().execute(query);
+  async searchGoals(params?: { keywords?: string; status?: string; dirUuid?: string; page?: number; limit?: number }): Promise<{ goals: Goal[]; pagination: { page: number; limit: number; total: number } }> {
+    return SearchGoals.getInstance().execute(params);
   }
 
   /**
@@ -216,14 +216,14 @@ export class GoalApplicationService {
   /**
    * Create a key result for a goal
    */
-  async createKeyResult(goalUuid: string, request: AddKeyResultRequest): Promise<KeyResult> {
+  async createKeyResult(goalUuid: string, request: AddKeyResultReq): Promise<KeyResult> {
     return CreateKeyResult.getInstance().execute(goalUuid, request);
   }
 
   /**
    * Get key results for a goal
    */
-  async getKeyResults(goalUuid: string): Promise<KeyResult[]> {
+  async getKeyResults(goalUuid: string): Promise<{ keyResults: KeyResult[] }> {
     return GetKeyResults.getInstance().execute(goalUuid);
   }
 
@@ -233,7 +233,7 @@ export class GoalApplicationService {
   async updateKeyResult(
     goalUuid: string,
     krUuid: string,
-    request: UpdateKeyResultRequest,
+    request: UpdateKeyResultReq,
   ): Promise<KeyResult> {
     return UpdateKeyResult.getInstance().execute(goalUuid, krUuid, request);
   }
@@ -250,9 +250,9 @@ export class GoalApplicationService {
    */
   async batchUpdateKeyResultWeights(
     goalUuid: string,
-    weights: Record<string, number>,
-  ): Promise<KeyResult[]> {
-    return BatchUpdateKeyResultWeights.getInstance().execute(goalUuid, weights);
+    updates: Array<{ keyResultUuid: string; weight: number }>,
+  ): Promise<any> {
+    return BatchUpdateKeyResultWeights.getInstance().execute(goalUuid, updates);
   }
 
   /**
@@ -265,8 +265,8 @@ export class GoalApplicationService {
   /**
    * Generate key results using AI
    */
-  async generateKeyResults(goalUuid: string): Promise<KeyResult[]> {
-    return GenerateKeyResults.getInstance().execute(goalUuid);
+  async generateKeyResults(params: { goalTitle: string; goalDescription?: string; startDate: number; endDate: number; goalContext?: string }): Promise<any> {
+    return GenerateKeyResults.getInstance().execute(params);
   }
 
   // ===== Goal Record Use Cases =====
@@ -274,29 +274,29 @@ export class GoalApplicationService {
   /**
    * Create a goal record
    */
-  async createGoalRecord(request: CreateGoalRecordRequest): Promise<any> {
-    return CreateGoalRecord.getInstance().execute(request);
+  async createGoalRecord(goalUuid: string, keyResultUuid: string, request: CreateGoalRecordReq): Promise<any> {
+    return CreateGoalRecord.getInstance().execute(goalUuid, keyResultUuid, request);
   }
 
   /**
    * Get goal records by key result
    */
-  async getGoalRecordsByKeyResult(krUuid: string): Promise<any[]> {
-    return GetGoalRecordsByKeyResult.getInstance().execute(krUuid);
+  async getGoalRecordsByKeyResult(goalUuid: string, krUuid: string, params?: { page?: number; limit?: number }): Promise<any> {
+    return GetGoalRecordsByKeyResult.getInstance().execute(goalUuid, krUuid, params);
   }
 
   /**
    * Get goal records by goal
    */
-  async getGoalRecordsByGoal(goalUuid: string): Promise<any[]> {
-    return GetGoalRecordsByGoal.getInstance().execute(goalUuid);
+  async getGoalRecordsByGoal(goalUuid: string, params?: { page?: number; limit?: number }): Promise<{ records: any[]; total: number }> {
+    return GetGoalRecordsByGoal.getInstance().execute(goalUuid, params);
   }
 
   /**
    * Delete a goal record
    */
-  async deleteGoalRecord(uuid: string): Promise<void> {
-    return DeleteGoalRecord.getInstance().execute(uuid);
+  async deleteGoalRecord(goalUuid: string, krUuid: string, recordUuid: string): Promise<void> {
+    return DeleteGoalRecord.getInstance().execute(goalUuid, krUuid, recordUuid);
   }
 
   // ===== Goal Review Use Cases =====
@@ -304,29 +304,29 @@ export class GoalApplicationService {
   /**
    * Create a goal review
    */
-  async createGoalReview(request: CreateGoalReviewRequest): Promise<any> {
-    return CreateGoalReview.getInstance().execute(request);
+  async createGoalReview(goalUuid: string, request: CreateGoalReviewReq): Promise<any> {
+    return CreateGoalReview.getInstance().execute(goalUuid, request);
   }
 
   /**
    * Get goal reviews
    */
-  async getGoalReviews(goalUuid: string): Promise<any[]> {
+  async getGoalReviews(goalUuid: string): Promise<{ reviews: any[] }> {
     return GetGoalReviews.getInstance().execute(goalUuid);
   }
 
   /**
    * Update a goal review
    */
-  async updateGoalReview(uuid: string, request: UpdateGoalReviewRequest): Promise<any> {
-    return UpdateGoalReview.getInstance().execute(uuid, request);
+  async updateGoalReview(goalUuid: string, reviewUuid: string, request: UpdateGoalReviewReq): Promise<any> {
+    return UpdateGoalReview.getInstance().execute(goalUuid, reviewUuid, request);
   }
 
   /**
    * Delete a goal review
    */
-  async deleteGoalReview(uuid: string): Promise<void> {
-    return DeleteGoalReview.getInstance().execute(uuid);
+  async deleteGoalReview(goalUuid: string, reviewUuid: string): Promise<void> {
+    return DeleteGoalReview.getInstance().execute(goalUuid, reviewUuid);
   }
 
   // ===== Goal Folder Use Cases =====
@@ -334,7 +334,7 @@ export class GoalApplicationService {
   /**
    * Create a goal folder
    */
-  async createGoalFolder(request: CreateGoalFolderRequest): Promise<GoalFolder> {
+  async createGoalFolder(request: CreateGoalFolderReq): Promise<GoalFolder> {
     return CreateGoalFolder.getInstance().execute(request);
   }
 
@@ -355,7 +355,7 @@ export class GoalApplicationService {
   /**
    * Update a goal folder
    */
-  async updateGoalFolder(uuid: string, request: UpdateGoalFolderRequest): Promise<GoalFolder> {
+  async updateGoalFolder(uuid: string, request: UpdateGoalFolderReq): Promise<GoalFolder> {
     return UpdateGoalFolder.getInstance().execute(uuid, request);
   }
 
@@ -371,7 +371,7 @@ export class GoalApplicationService {
   /**
    * Start a focus session
    */
-  async startFocusSession(request: StartFocusRequest): Promise<FocusSessionClientDTO> {
+  async startFocusSession(request: StartFocusReq): Promise<FocusSessionClientDTO> {
     return StartFocusSession.getInstance().execute(request);
   }
 
@@ -399,7 +399,7 @@ export class GoalApplicationService {
   /**
    * Get current focus status
    */
-  async getFocusStatus(): Promise<FocusStatusDTO> {
+  async getFocusStatus(): Promise<GetFocusStatusRes> {
     return GetFocusStatus.getInstance().execute();
   }
 
@@ -415,8 +415,8 @@ export class GoalApplicationService {
    * const history = await goalApplicationService.getFocusHistory({ range: 'week', goalUuid })
    */
   async getFocusHistory(
-    request?: GetFocusHistoryRequest & { range?: 'today' | 'week' },
-  ): Promise<FocusHistoryDTO> {
+    request?: GetFocusHistoryReq & { range?: 'today' | 'week' },
+  ): Promise<GetFocusHistoryRes> {
     if (!request) {
       return GetFocusHistory.getInstance().execute();
     }
@@ -432,13 +432,13 @@ export class GoalApplicationService {
       return GetFocusHistory.getInstance().getWeekHistory(params.goalUuid);
     }
 
-    return GetFocusHistory.getInstance().execute(params as GetFocusHistoryRequest);
+    return GetFocusHistory.getInstance().execute(params as GetFocusHistoryReq);
   }
 
   /**
    * Get focus statistics
    */
-  async getFocusStatistics(goalUuid?: string): Promise<FocusStatisticsDTO> {
+  async getFocusStatistics(goalUuid?: string): Promise<GetFocusStatisticsRes> {
     return GetFocusStatistics.getInstance().execute(goalUuid);
   }
 }

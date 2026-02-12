@@ -23,12 +23,14 @@
  * ```
  */
 
-import { ModuleContainerBase } from '@dailyuse/ai/infrastructure-client';
-import type { IAIConversationApiClient } from './ports/ai-conversation-api-client.port';
-import type { IAIMessageApiClient } from './ports/ai-message-api-client.port';
-import type { IAIGenerationTaskApiClient } from './ports/ai-generation-task-api-client.port';
-import type { IAIUsageQuotaApiClient } from './ports/ai-usage-quota-api-client.port';
-import type { IAIProviderConfigApiClient } from './ports/ai-provider-config-api-client.port';
+import { ModuleContainerBase } from '../shared/di';
+import type {
+  IAIConversationApiClient,
+  IAIMessageApiClient,
+  IAIGenerationTaskApiClient,
+  IAIUsageQuotaApiClient,
+  IAIProviderConfigApiClient,
+} from './adapters/types';
 
 /**
  * AI 模块依赖键

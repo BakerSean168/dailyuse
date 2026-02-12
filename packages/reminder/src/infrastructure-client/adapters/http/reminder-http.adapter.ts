@@ -5,10 +5,11 @@
  */
 
 import type {
+  IHttpClient,
   IReminderApiClient,
   ReminderTemplatesResponse,
   ReminderGroupsResponse,
-} from '../../ports/reminder-api-client.port';
+} from '../types';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
@@ -20,7 +21,6 @@ import type {
   GetUpcomingRemindersRes,
   TemplateScheduleStatusRes,
 } from '@dailyuse/contracts/reminder';
-import type { IHttpClient } from '../../../shared/http-client.types';
 
 /**
  * ReminderHttpAdapter

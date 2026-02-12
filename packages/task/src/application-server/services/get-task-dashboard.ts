@@ -7,6 +7,8 @@
 import type { ITaskTemplateRepository, TaskFilters } from '@/domain-server';
 import type { TaskTemplateClientDTO, TaskDashboardResponse } from '@dailyuse/contracts/task';
 import { TaskType } from '@dailyuse/contracts/task';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok } from '@dailyuse/contracts/result';
 
 /**
  * Get Task Dashboard Service
@@ -14,7 +16,7 @@ import { TaskType } from '@dailyuse/contracts/task';
 export class GetTaskDashboard {
   constructor(private readonly templateRepository: ITaskTemplateRepository) {}
 
-  async execute(accountUuid: string): Promise<TaskDashboardResponse> {
+  async execute(accountUuid: string): Promise<Result<TaskDashboardResponse>> {
 
     // 并行查询所有数�?
     const [
@@ -42,7 +44,7 @@ export class GetTaskDashboard {
         ? Math.round((totalCompleted / (totalActive + totalCompleted)) * 100)
         : 0;
 
-    return {
+    return ok({
       todayTasks: today as any,
       overdueTasks: overdue as any,
       upcomingTasks: upcoming as any,
@@ -55,7 +57,7 @@ export class GetTaskDashboard {
         upcoming: upcoming.length,
         highPriority: highPriority.length,
       },
-    };
+    });
   }
 
   private async getTodayTasks(accountUuid: string): Promise<TaskTemplateClientDTO[]> {

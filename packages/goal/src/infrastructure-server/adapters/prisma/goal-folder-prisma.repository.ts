@@ -1,4 +1,4 @@
-import type { PrismaClient, goalFolder as PrismaGoalFolder } from '../../../generated/prisma/client';
+import type { PrismaClient, goalFolder as PrismaGoalFolder } from '@dailyuse/database';
 import type { IGoalFolderRepository } from '@/domain-server';
 import { GoalFolder } from '@/domain-server';
 import { GoalStatus, FolderType } from '@dailyuse/contracts/goal';

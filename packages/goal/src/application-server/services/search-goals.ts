@@ -1,24 +1,23 @@
 /**
- * Search Goals Service
+ * Search Goals Use Case
  *
  * 搜索目标的应用服务
+ * 遵循 governance 模块 Result<T> 规范
  */
 
 import type { IGoalRepository } from '@/domain-server';
 import { Goal } from '@/domain-server';
-import type { GoalsResponse } from '@dailyuse/contracts/goal';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok } from '@dailyuse/contracts/result';
+import type { GoalsResponse } from '../types';
 
 /**
- * Search Goals Service
+ * Search Goals Use Case
  */
 export class SearchGoals {
   constructor(private readonly goalRepository: IGoalRepository) {}
 
-  /**
-   * 获取服务单例
-   */
-
-  async execute(accountUuid: string, query: string): Promise<GoalsResponse> {
+  async execute(accountUuid: string, query: string): Promise<Result<GoalsResponse>> {
     const allGoals = await this.goalRepository.findByAccountUuid(accountUuid, {});
 
     const filteredGoals = allGoals.filter(
@@ -27,11 +26,11 @@ export class SearchGoals {
         g.description?.toLowerCase().includes(query.toLowerCase()),
     );
 
-    return {
+    return ok({
       goals: filteredGoals.map((g: Goal) => g.toClientDTO()),
       total: filteredGoals.length,
       page: 1,
       pageSize: filteredGoals.length,
-    };
+    });
   }
 }

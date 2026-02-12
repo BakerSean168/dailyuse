@@ -16,7 +16,8 @@
     "dist"
   ],
   "dependencies": {
-    "@dailyuse/ui-core": "workspace:*"
+    "@dailyuse/ui-core": "workspace:*",
+    "@dailyuse/ui-vue-shadcn": "workspace:*"
   },
   "peerDependencies": {
     "vue": "^3.4.0"

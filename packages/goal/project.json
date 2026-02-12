@@ -39,6 +39,13 @@
         "command": "tsc --noEmit",
         "cwd": "packages/goal"
       }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run",
+        "cwd": "packages/goal"
+      }
     }
   }
 }

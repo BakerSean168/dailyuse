@@ -13,7 +13,6 @@ import type {
   ITaskTemplateRepository,
 } from '@/domain-server';
 import { TaskDependencyService } from '@/domain-server';
-// import { TaskContainer } from '@dailyuse/task/infrastructure-server';
 import type {
   TaskDependencyServerDTO,
   CreateTaskDependencyRequest,
@@ -22,6 +21,8 @@ import type {
   ValidateDependencyResponse,
   DependencyChainServerDTO,
 } from '@dailyuse/contracts/task';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 
 export class TaskDependencyApplicationService {
   private dependencyService: TaskDependencyService;
@@ -50,7 +51,7 @@ export class TaskDependencyApplicationService {
   /**
    * 创建依赖关系
    */
-  async createDependency(request: CreateTaskDependencyRequest): Promise<TaskDependencyServerDTO> {
+  async createDependency(request: CreateTaskDependencyRequest): Promise<Result<TaskDependencyServerDTO>> {
     // 1. 验证任务存在
     const [predecessor, successor] = await Promise.all([
       this.taskRepository.findByUuid(request.predecessorTaskUuid),
@@ -58,11 +59,11 @@ export class TaskDependencyApplicationService {
     ]);
 
     if (!predecessor) {
-      throw new Error(`前置任务不存在: ${request.predecessorTaskUuid}`);
+      return error('NOT_FOUND', `前置任务不存在: ${request.predecessorTaskUuid}`);
     }
 
     if (!successor) {
-      throw new Error(`后续任务不存在: ${request.successorTaskUuid}`);
+      return error('NOT_FOUND', `后续任务不存在: ${request.successorTaskUuid}`);
     }
 
     // 2. 检查是否已存在
@@ -72,7 +73,7 @@ export class TaskDependencyApplicationService {
     );
 
     if (existing) {
-      throw new Error('依赖关系已存在');
+      return error('VALIDATION_ERROR', '依赖关系已存在');
     }
 
     // 3. 获取所有相关依赖，用于循环检测
@@ -89,7 +90,7 @@ export class TaskDependencyApplicationService {
     );
 
     if (!validation.isValid) {
-      throw new Error(validation.message);
+      return error('VALIDATION_ERROR', validation.message!);
     }
 
     // 5. 委托给领域服务创建实体
@@ -105,36 +106,40 @@ export class TaskDependencyApplicationService {
     // 7. 更新后续任务的依赖状态
     await this.updateTaskDependencyStatus(successor.uuid);
 
-    return dependency.toServerDTO();
+    return ok(dependency.toServerDTO());
   }
 
   /**
    * 获取任务的所有前置依赖
    */
-  async getDependencies(taskUuid: string): Promise<TaskDependencyServerDTO[]> {
-    return await this.dependencyRepository.findBySuccessor(taskUuid);
+  async getDependencies(taskUuid: string): Promise<Result<TaskDependencyServerDTO[]>> {
+    const deps = await this.dependencyRepository.findBySuccessor(taskUuid);
+    return ok(deps);
   }
 
   /**
    * 获取依赖此任务的所有任务
    */
-  async getDependents(taskUuid: string): Promise<TaskDependencyServerDTO[]> {
-    return await this.dependencyRepository.findByPredecessor(taskUuid);
+  async getDependents(taskUuid: string): Promise<Result<TaskDependencyServerDTO[]>> {
+    const deps = await this.dependencyRepository.findByPredecessor(taskUuid);
+    return ok(deps);
   }
 
   /**
    * 删除依赖关系
    */
-  async deleteDependency(uuid: string): Promise<void> {
+  async deleteDependency(uuid: string): Promise<Result<void>> {
     const dependency = await this.dependencyRepository.findByUuid(uuid);
     if (!dependency) {
-      throw new Error('依赖关系不存在');
+      return error('NOT_FOUND', '依赖关系不存在');
     }
 
     await this.dependencyRepository.delete(uuid);
 
     // 更新后续任务的状态
     await this.updateTaskDependencyStatus(dependency.successorTaskUuid);
+    
+    return ok(undefined);
   }
 
   /**
@@ -142,7 +147,7 @@ export class TaskDependencyApplicationService {
    */
   async validateDependency(
     request: ValidateDependencyRequest,
-  ): Promise<ValidateDependencyResponse> {
+  ): Promise<Result<ValidateDependencyResponse>> {
     const errors: string[] = [];
 
     // 验证任务存在
@@ -194,19 +199,19 @@ export class TaskDependencyApplicationService {
     }
 
     if (errors.length > 0) {
-      return { isValid: false, errors };
+      return ok({ isValid: false, errors });
     }
 
-    return {
+    return ok({
       isValid: true,
       message: '依赖关系有效，可以创建',
-    };
+    });
   }
 
   /**
    * 获取依赖链信息
    */
-  async getDependencyChain(taskUuid: string): Promise<DependencyChainServerDTO> {
+  async getDependencyChain(taskUuid: string): Promise<Result<DependencyChainServerDTO>> {
     const [allPredecessors, allSuccessors] = await Promise.all([
       this.dependencyRepository.findAllPredecessors(taskUuid),
       this.dependencyRepository.findAllSuccessors(taskUuid),
@@ -215,20 +220,20 @@ export class TaskDependencyApplicationService {
     // 获取所有相关依赖用于计算深度
     // 这里可以优化，只获取相关的
     const task = await this.taskRepository.findByUuid(taskUuid);
-    if (!task) throw new Error('Task not found');
+    if (!task) return error('NOT_FOUND', 'Task not found');
 
     const allDependencies = await this.dependencyRepository.findAllByAccount(task.accountUuid);
 
     // 计算深度
     const depth = this.dependencyService.calculateDepth(taskUuid, allDependencies);
 
-    return {
+    return ok({
       taskUuid,
       allPredecessors,
       allSuccessors,
       depth,
       isOnCriticalPath: false, // TODO: Implement critical path
-    };
+    });
   }
 
   /**
@@ -237,8 +242,9 @@ export class TaskDependencyApplicationService {
   async updateDependency(
     uuid: string,
     request: UpdateTaskDependencyRequest,
-  ): Promise<TaskDependencyServerDTO> {
-    return await this.dependencyRepository.update(uuid, request);
+  ): Promise<Result<TaskDependencyServerDTO>> {
+    const updated = await this.dependencyRepository.update(uuid, request);
+    return ok(updated);
   }
 
   /**

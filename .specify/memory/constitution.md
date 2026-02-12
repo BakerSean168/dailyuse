@@ -1,10 +1,11 @@
-<!-- SYNC IMPACT REPORT (2026-02-03)
-Version: 1.1.0 → 1.2.0 (Example Modules as Living Documentation)
-Added Principle VII: Example modules as executable code standards and authoritative reference
-New Guidance: Example modules required in every module-bearing package with strict governance
-Templates Updated: None (constitution-only change; example modules already exist and compliant)
-Reference Implementation: packages/contracts/src/modules/example/ (currently exemplifies principle)
-Follow-up Action: Document example module governance in developer guide
+<!-- SYNC IMPACT REPORT (2026-02-11)
+Version: 1.2.0 → 1.3.0 (Application Layer Service Conventions & Enhanced Contract Specifications)
+Added Principle VIII: Application Layer Service Parameter Conventions (input and cx)
+Enhanced Principle VI: Detailed contracts package architecture and domain events specifications
+Reference Implementation: packages/contracts/src/modules/authentication/ (authoritative architecture standard)
+Templates Updated: ✅ None required (constitution-only changes)
+Breaking Changes: None (additive guidance only)
+Follow-up Action: Audit existing services for compliance with input/cx parameter conventions
 -->
 
 # DailyUse Constitution
@@ -83,54 +84,99 @@ Unit tests and integration tests MUST be written for all business logic. Coverag
 
 **Rationale:** Tests serve as executable specifications, prevent regressions, and give confidence during refactoring. High coverage ensures reliability across platforms.
 
-### VI. Contract Standardization (Protocol/API/DTOs Layering)
+### VI. Contract Standardization & Domain Architecture (Package Structure Specification)
 
-All inter-module communication contracts MUST follow a strict three-layer architecture: Protocol (RPC/Event definitions) → API (Request/Response types with validation) → DTOs (Complex composed types).
+All inter-module communication contracts MUST follow the standardized `packages/contracts/src/modules/{domain}/` architecture as exemplified by the `authentication` module. The authentication module structure IS the authoritative reference implementation for all domain modules.
 
 **Non-negotiable rules:**
 
-**Protocol Layer** (`packages/contracts/src/modules/{domain}/protocol/`):
-- MUST contain `{domain}-rpc-map.ts` defining all RPC operations as a discriminated union type
-- MUST contain `{domain}-event-map.ts` defining all domain events with timestamp, aggregateId, and event-specific payload
-- RPC map signature format MUST be: `'domain:operation': [RequestType, ResponseType]` where RequestType and ResponseType are ALWAYS imported from `../api`, NEVER defined inline
-- ALL types in RPC maps and event maps MUST be imported from API or aggregates layers; inline custom object definitions are FORBIDDEN
-- Namespace format for operations MUST be `domain:kebab-case-operation` (e.g., `'goal:create'`, `'task:update'`, `'notification:batch-notify'`)
-- Event naming format MUST be `domain:PascalCaseEvent` (e.g., `'goal:GoalCreated'`, `'task:TaskCompleted'`)
+**Required Directory Structure** (`packages/contracts/src/modules/{domain}/`):
+```
+{domain}/
+├── aggregates/           # Domain aggregate contracts (client/server separated)
+├── api/                 # Request/Response types with Zod validation schemas  
+├── domain/              # Domain layer contracts
+│   └── events/          # Domain event definitions
+├── dtos/                # Complex composed/presentation DTOs
+├── entities/            # Entity contracts and interfaces
+├── protocol/            # Type-safe RPC and Event maps
+│   ├── {domain}-event-map.ts
+│   └── {domain}-rpc-map.ts
+├── value-objects/       # Value object contracts
+└── index.ts             # Public API exports
+```
 
-**API Layer** (`packages/contracts/src/modules/{domain}/api/`):
-- MUST export all Request types (`*Req`), Response types (`*Res`), and Query types (`*Query`) used by Protocol layer
-- MUST use Zod schemas for complex request/query types (e.g., `CreateGoalSchema`, `ListGoalQuerySchema`) with validation rules
-- MAY re-export aggregates and DTOs needed for API type composition; MUST NOT define new types not re-exported
-- Response types (`*Res`) MUST be entity/aggregate types from aggregates layer, NEVER inline objects
-- Simple types (like `void`) MAY be used directly; complex responses MUST come from aggregates or be typed interfaces
-- MUST have an `index.ts` that exports all types used by protocol and consumers
+**Protocol Layer** (`protocol/`):
+- MUST contain `{domain}-rpc-map.ts` defining all RPC operations as a discriminated union type: `'domain:operation': [RequestType, ResponseType]`
+- MUST contain `{domain}-event-map.ts` defining all domain events with strict event naming: `'domain:EventName': EventPayloadType`
+- RPC map signature format MUST be: `'domain:kebab-case-operation': [RequestType, ResponseType]` (e.g., `'auth:login-email'`, `'goal:create'`)
+- Event naming format MUST be: `'domain:PascalCaseEvent': EventType` (e.g., `'auth:login': UserLoggedInEvent`)
+- ALL types MUST be imported from API, domain, or aggregates layers—inline custom object definitions are FORBIDDEN
 
-**DTOs Layer** (`packages/contracts/src/modules/{domain}/dtos/`):
-- MUST contain composed/complex types that combine multiple aggregates or add presentation-layer concerns
-- DTOs are INTERMEDIATE types between API responses and presentation/consumption code
+**API Layer** (`api/`):
+- MUST organize by feature area (e.g., `login.dto.ts`, `registration.dto.ts`, `password.dto.ts`)
+- MUST export Request types (`*Req`), Response types (`*Res`), and Query types (`*Query`) used by Protocol layer  
+- MUST use Zod schemas for ALL complex request/query types with validation rules (e.g., `LoginByEmailSchema`, `CreateGoalSchema`)
+- Request/Response type generation pattern: `export type LoginByEmailReq = z.infer<typeof LoginByEmailSchema>;`
+- Response types MUST reference aggregates layer types: `export type LoginByEmailRes = AuthResponseDTO;`
+- MUST have an `index.ts` that exports ALL types used by protocol and application consumers
+- Simple types (like `void`) MAY be used directly; complex responses MUST import from aggregates or dtos layers
+
+**Domain Layer** (`domain/`):
+- MUST contain `events/` subdirectory with all domain event definitions
+- Domain events MUST follow naming: `{AggregateAction}Event` (e.g., `UserLoggedInEvent`, `GoalCreatedEvent`, `TaskCompletedEvent`)
+- Domain events MUST include: `aggregateId`, `timestamp`, and event-specific payload properties
+- Domain events MUST extend base event interface with proper typing
+- Domain events are FORBIDDEN from importing API or DTOs; they are pure domain concepts
+
+**Aggregates Layer** (`aggregates/`):
+- MUST separate client and server DTOs: `{aggregate}-client.ts` and `{aggregate}-server.ts`
+- Client DTOs (`*ClientDTO`) contain presentation-safe data for frontend consumption
+- Server DTOs (`*ServerDTO`) contain complete aggregate data including sensitive fields
+- Aggregates MUST have `index.ts` exporting all client/server contracts
+- Aggregates represent complete domain object contracts, not just entity data
+
+**DTOs Layer** (`dtos/`):
+- MUST contain composed/complex types that combine multiple aggregates or add presentation concerns
+- DTOs are INTERMEDIATE types for complex view/presentation requirements
 - DTOs MUST import from aggregates; MUST NOT be imported by API or Protocol layers (unidirectional dependency)
-- Use case: When a view needs data from multiple entities, compose it in a DTO; API exports the base entity, DTO adds the composition
-- Example: `ComplexExampleDTO` imports `ExampleClientDTO` from aggregates and adds `clientDetails` composition
+- Use case: When API response needs data from multiple entities, compose in DTOs (e.g., `UserWithSessionsDTO`)
 
-**Dependency Flow** (unidirectional):
+**Entities Layer** (`entities/`):
+- MUST contain simple entity contracts and base interfaces
+- Entity contracts are building blocks used by aggregates
+- Entities MUST NOT contain business logic; they are pure data contracts
+
+**Value Objects Layer** (`value-objects/`):
+- MUST contain domain value object contracts (shared primitive concepts) 
+- Value objects are immutable data types representing domain concepts (e.g., `EmailAddress`, `PhoneNumber`)
+- Value objects MUST be used consistently across aggregates and APIs in the same domain
+
+**Dependency Flow** (unidirectional, enforced by TypeScript imports):
 ```
-Protocol → imports types from → API
-API → imports types from → Aggregates, DTOs
-DTOs → imports from → Aggregates
+Protocol → API → Aggregates → Entities
+       ↘ DTOs → Aggregates → Value Objects
+Domain/Events → (imports nothing, pure domain)
 ```
 
-**Prohibited:**
-- ❌ Defining request/response types inline in RPC map (MUST move to API layer)
-- ❌ Custom objects in protocol layer without API layer re-export (MUST be defined in API with Zod schema or as typed interface)
-- ❌ DTOs importing from Protocol or API layers
-- ❌ API layer creating types not defined in files (MUST be traceable and re-exportable)
+**Authentication Module as Reference** (AUTHORITATIVE STANDARD):
+- ALL new domain modules MUST replicate `packages/contracts/src/modules/authentication/` structure exactly
+- File naming, folder organization, import patterns, and export conventions established in authentication module are MANDATORY
+- When in doubt about contracts architecture, authentication module patterns take precedence over other interpretations
 
-**Verification:**
-- Every type in an RPC map entry MUST be traceable to a file in the `../api` directory
+**Prohibited Patterns:**
+- ❌ Defining request/response types inline in RPC map (MUST move to API layer)  
+- ❌ API layer defining types not exported in `api/index.ts` (MUST be re-exportable)
+- ❌ DTOs importing from Protocol or API layers (breaks unidirectional dependency)
+- ❌ Domain events importing application layer concerns (domain must be pure)
+- ❌ Client/Server DTOs mixed in same file (MUST separate for security/clarity)
+
+**Verification Commands:**
 - `pnpm nx build contracts` MUST pass with zero TypeScript errors
 - Type exports in `api/index.ts` MUST match all types used in `protocol/{domain}-rpc-map.ts`
+- Import graph analysis: `nx graph` MUST show no circular dependencies in contracts package
 
-**Rationale:** This strict layering ensures type contracts between modules are explicit, validated, and compose cleanly. Moving complex types to API layer (with Zod schemas) enables validation at boundaries, preventing invalid data from crossing module boundaries. DTOs enable custom compositions for specific use cases without polluting core API definitions. This prevents the anti-pattern of inline custom object types that lose validation and become difficult to maintain as the codebase scales.
+**Rationale:** This comprehensive structure ensures type safety across all architectural layers, enables proper separation of concerns between client/server boundaries, and provides a clear place for every type of contract. The authentication module serves as the living standard, eliminating architectural ambiguity and ensuring consistency as the codebase scales. Strict dependency flows prevent circular imports and maintain clear boundaries between domain concerns and application concerns.
 
 ### VII. Example Modules as Executable Code Standards (Living Documentation)
 
@@ -181,6 +227,106 @@ Every package and app containing business modules MUST include an `example` modu
 - Example module refactors MUST be documented in `docs/guides/` for developer awareness
 
 **Rationale:** Making example modules mandatory and authoritative ensures every developer learns from a single, tested source of truth. This prevents pattern drift where different modules solve the same problem differently, reduces code review friction ("does this match the pattern?"), accelerates onboarding, and creates living documentation that evolves with the codebase. By treating examples as production-quality code, they stay relevant and trustworthy. This principle directly supports Principle IV (Code Consistency & Maintainability) by anchoring all patterns to an executable reference.
+
+### VIII. Application Layer Service Parameter Conventions
+
+All application layer services (use cases, command handlers, query handlers) MUST follow standardized parameter conventions for consistency and clarity across the entire codebase.
+
+**Non-negotiable rules:**
+
+**Dual Parameter Pattern** (MANDATORY for all application services):
+- Application services MUST accept exactly two parameters: `input` and `cx`
+- `input` parameter: Contains API interface data directly from frontend/client requests
+- `cx` parameter: Contains contextual information extracted by middleware or infrastructure layers
+
+**Input Parameter Requirements**:
+- MUST be typed using contracts from `packages/contracts/src/modules/{domain}/api/`
+- MUST represent the complete API request payload as defined in Zod schemas
+- MUST NOT contain infrastructure concerns (tokens, device info, session data)
+- Examples: `CreateGoalReq`, `UpdateTaskReq`, `LoginByEmailReq`
+- Simple operations MAY use primitive types: `string`, `number`, but complex operations MUST use contract types
+
+**Context Parameter Requirements** (`cx`):
+- MUST contain contextual/meta information NOT available in the API request
+- MUST include identity information: `identityId` (extracted from JWT/authentication middleware)
+- MUST include device/session information: `deviceInfo`, `sessionId`, `ipAddress` when relevant
+- MAY include tenant/organization context: `tenantId`, `workspaceId` for multi-tenant scenarios
+- MAY include request metadata: `requestId`, `correlationId`, `timestamp` for observability
+- MUST be typed using a context interface specific to the application layer (e.g., `AuthenticatedContext`, `SystemContext`)
+
+**Standard Context Interface Pattern**:
+```typescript
+// Application layer context interface
+interface AuthenticatedContext {
+  identityId: string;               // From JWT/auth middleware
+  sessionId?: string;               // From session middleware  
+  deviceInfo?: DeviceInfo;          // From device detection middleware
+  requestId: string;                // For tracing/observability
+  timestamp: Date;                  // Request timestamp
+  ipAddress?: string;               // For security auditing
+}
+
+interface SystemContext {
+  correlationId: string;            // For system-initiated operations
+  systemUserId: string;             // System actor identifier
+  requestId: string;                // For tracing
+  timestamp: Date;                  // Operation timestamp
+}
+```
+
+**Service Method Signatures** (REQUIRED PATTERN):
+```typescript
+// Correct: Dual parameter pattern
+export class CreateGoalUseCase {
+  async execute(input: CreateGoalReq, cx: AuthenticatedContext): Promise<CreateGoalRes> {
+    // Implementation uses input for business data, cx for identity/context
+  }
+}
+
+// Correct: Query with context  
+export class ListGoalsUseCase {
+  async execute(input: ListGoalsQuery, cx: AuthenticatedContext): Promise<ListGoalsRes> {
+    // Filter goals by cx.identityId, use input for pagination/filtering
+  }
+}
+
+// Correct: Simple operations
+export class GetGoalUseCase {
+  async execute(input: string, cx: AuthenticatedContext): Promise<GoalDTO> {
+    // input is goalId, cx provides identity context
+  }
+}
+```
+
+**Context Source Mapping**:
+- **Express/NestJS middleware**: JWT token → `identityId`, device headers → `deviceInfo`, session data → `sessionId`
+- **GraphQL context**: Resolver context → `cx` parameter passed to application services  
+- **Background jobs**: System context → `SystemContext` with job/correlation IDs
+- **Direct API calls**: Service layer constructs appropriate context from available information
+
+**Prohibited Patterns**:
+- ❌ Single parameter containing mixed API data and context: `(inputWithContext: {...})`
+- ❌ Multiple discrete parameters: `(goalTitle: string, identityId: string, deviceInfo: DeviceInfo)`
+- ❌ Context passed as optional parameter: `(input: CreateGoalReq, identityId?: string)`
+- ❌ Services accessing request/session data directly instead of via `cx` parameter
+- ❌ Embedding infrastructure concerns in `input` parameter (tokens, session IDs)
+
+**Domain Layer Considerations**:
+- Domain services MAY accept context when needed for domain logic (e.g., audit trails, multi-tenancy)  
+- Domain entities MUST NOT depend on application context directly
+- Repository implementations MAY use context for filtering/security (e.g., tenant isolation)
+
+**Testing Implications**:
+- Unit tests MUST provide both `input` and `cx` parameters with appropriate test data
+- Integration tests MUST verify context is correctly extracted from middleware and passed through
+- Mock contexts SHOULD be provided as test utilities: `createTestContext()`, `createSystemContext()`
+
+**Verification**:
+- Code review MUST verify all application services follow the `(input, cx)` pattern
+- Linting rules SHOULD enforce parameter naming consistency where possible
+- Service signatures MUST be auditable via static analysis for compliance
+
+**Rationale:** The standardized `input` and `cx` parameter pattern creates clear separation between API contract data and infrastructure context. This improves testability (easy to mock contexts), enhances security (context data extracted by trusted middleware), and provides consistency across all application services. The pattern scales from simple operations to complex multi-tenant scenarios while maintaining the same interface contract. This supports both Principle I (DDD Architecture) and Principle IV (Code Consistency) by creating predictable service signatures across all domains.
 
 ## Technology Stack Requirements
 
@@ -262,4 +408,4 @@ Constitution versions follow **Semantic Versioning**:
 
 ---
 
-**Version**: 1.2.0 | **Ratified**: 2026-02-02 | **Last Amended**: 2026-02-03
+**Version**: 1.3.0 | **Ratified**: 2026-02-02 | **Last Amended**: 2026-02-11

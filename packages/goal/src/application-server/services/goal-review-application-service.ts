@@ -1,12 +1,13 @@
 import type { IGoalRepository } from '@/domain-server';
-
-import { GoalDomainService } from '@/domain-server';
-import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 import { GoalEventPublisher } from './goal-event-publisher';
 
 /**
  * GoalReview 应用服务
  * 负责目标回顾的管理
+ * 遵循 governance 模块 Result<T> 规范
  *
  * 职责：
  * - 添加目标回顾
@@ -15,13 +16,7 @@ import { GoalEventPublisher } from './goal-event-publisher';
  * - 删除回顾
  */
 export class GoalReviewApplicationService {
-  private domainService: GoalDomainService;
-  private goalRepository: IGoalRepository;
-
-  constructor(goalRepository: IGoalRepository) {
-    this.domainService = new GoalDomainService();
-    this.goalRepository = goalRepository;
-  }
+  constructor(private readonly goalRepository: IGoalRepository) {}
 
   /**
    * 添加目标回顾
@@ -37,23 +32,16 @@ export class GoalReviewApplicationService {
       challenges?: string;
       nextActions?: string;
     },
-  ): Promise<GoalClientDTO> {
-    // 1. 查询目标（包含子实体）
+  ): Promise<Result<GoalClientDTO>> {
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
     if (!goal) {
-      throw new Error(`Goal not found: ${goalUuid}`);
+      return error('NOT_FOUND', `Goal not found: ${goalUuid}`);
     }
 
-    // 2. 委托领域服务添加回顾
-    this.domainService.addReviewToGoal(goal, params);
-
-    // 3. 持久化
+    goal.createAndAddReview(params);
     await this.goalRepository.save(goal);
-
-    // 4. 发布领域事件
     await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 5. 返回 ClientDTO
-    return goal.toClientDTO();
+    return ok(goal.toClientDTO());
   }
 }

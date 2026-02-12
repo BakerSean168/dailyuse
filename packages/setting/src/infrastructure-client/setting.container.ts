@@ -15,7 +15,7 @@
  */
 
 import { DIContainer, ModuleContainerBase } from '../shared/di';
-import type { ISettingApiClient } from './ports/setting-api-client.port';
+import type { ISettingApiClient } from './adapters/types';
 
 /**
  * Setting 模块依赖键

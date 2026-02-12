@@ -5,7 +5,10 @@
  * Uses IHttpClient for making HTTP requests.
  */
 
-import type { ITaskTemplateApiClient } from '../../ports/task-template-api-client.port';
+import type {
+  ITaskTemplateApiClient,
+  IHttpClient,
+} from '../types';
 import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
@@ -14,7 +17,6 @@ import type {
   GenerateInstancesRequest,
   BindToGoalRequest,
 } from '@dailyuse/contracts/task';
-import type { IHttpClient } from '../../../shared/http-client.types';
 
 /**
  * TaskTemplateHttpAdapter

@@ -12,6 +12,10 @@ import {
   TaskReminderConfig,
 } from '@/domain-server';
 
+// Result pattern imports
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
+
 // Cross-module imports
 import type { IScheduleTaskRepository } from '@dailyuse/schedule/domain-server';
 import { ScheduleTaskFactory } from '@dailyuse/schedule/domain-server';
@@ -76,7 +80,7 @@ export class TaskTemplateApplicationService {
     folderUuid?: string;
     tags?: string[];
     color?: string;
-  }): Promise<TaskTemplateServerDTO> {
+  }): Promise<Result<TaskTemplateServerDTO>> {
     // Note: Account existence is implicitly validated by the database foreign key constraint.
     // If account doesn't exist, Prisma will throw a foreign key constraint error.
     // For more explicit validation, check account in a separate repository if needed.
@@ -116,7 +120,7 @@ export class TaskTemplateApplicationService {
       await this.generateInitialInstances(template);
     }
 
-    return template.toClientDTO();
+    return ok(template.toClientDTO());
   }
 
   /**
@@ -248,12 +252,12 @@ export class TaskTemplateApplicationService {
   async getTaskTemplate(
     uuid: string,
     includeChildren: boolean = false,
-  ): Promise<TaskTemplateServerDTO | null> {
+  ): Promise<Result<TaskTemplateServerDTO | null>> {
     const template = includeChildren
       ? await this.templateRepository.findByUuidWithChildren(uuid)
       : await this.templateRepository.findByUuid(uuid);
 
-    return template ? template.toClientDTO(includeChildren) : null;
+    return ok(template ? template.toClientDTO(includeChildren) : null);
   }
 
   /**
@@ -262,7 +266,7 @@ export class TaskTemplateApplicationService {
    */
   async getTaskTemplatesByAccount(
     accountUuid: string,
-  ): Promise<TaskTemplateServerDTO[]> {
+  ): Promise<Result<TaskTemplateServerDTO[]>> {
     const templates = await this.templateRepository.findByAccount(accountUuid);
 
     // 🔥 自动检查并补充每个 ACTIVE 模板的实例
@@ -274,7 +278,7 @@ export class TaskTemplateApplicationService {
       }
     }
 
-    return templates.map((t) => t.toClientDTO());
+    return ok(templates.map((t) => t.toClientDTO()));
   }
 
   /**
@@ -313,9 +317,9 @@ export class TaskTemplateApplicationService {
   async getTaskTemplatesByStatus(
     accountUuid: string,
     status: TaskTemplateStatus,
-  ): Promise<TaskTemplateServerDTO[]> {
+  ): Promise<Result<TaskTemplateServerDTO[]>> {
     const templates = await this.templateRepository.findByStatus(accountUuid, status);
-    return templates.map((t) => t.toClientDTO());
+    return ok(templates.map((t) => t.toClientDTO()));
   }
 
   /**
@@ -324,7 +328,7 @@ export class TaskTemplateApplicationService {
    */
   async getActiveTaskTemplates(
     accountUuid: string,
-  ): Promise<TaskTemplateServerDTO[]> {
+  ): Promise<Result<TaskTemplateServerDTO[]>> {
     const templates = await this.templateRepository.findActiveTemplates(accountUuid);
 
     // 🔥 自动检查并补充每个模板的实例
@@ -334,7 +338,7 @@ export class TaskTemplateApplicationService {
       });
     }
 
-    return templates.map((t) => t.toClientDTO());
+    return ok(templates.map((t) => t.toClientDTO()));
   }
 
   /**
@@ -342,17 +346,17 @@ export class TaskTemplateApplicationService {
    */
   async getTaskTemplatesByFolder(
     folderUuid: string,
-  ): Promise<TaskTemplateServerDTO[]> {
+  ): Promise<Result<TaskTemplateServerDTO[]>> {
     const templates = await this.templateRepository.findByFolder(folderUuid);
-    return templates.map((t) => t.toClientDTO());
+    return ok(templates.map((t) => t.toClientDTO()));
   }
 
   /**
    * 根据目标获取任务模板
    */
-  async getTaskTemplatesByGoal(goalUuid: string): Promise<TaskTemplateServerDTO[]> {
+  async getTaskTemplatesByGoal(goalUuid: string): Promise<Result<TaskTemplateServerDTO[]>> {
     const templates = await this.templateRepository.findByGoal(goalUuid);
-    return templates.map((t) => t.toClientDTO());
+    return ok(templates.map((t) => t.toClientDTO()));
   }
 
   /**
@@ -361,9 +365,9 @@ export class TaskTemplateApplicationService {
   async getTaskTemplatesByTags(
     accountUuid: string,
     tags: string[],
-  ): Promise<TaskTemplateServerDTO[]> {
+  ): Promise<Result<TaskTemplateServerDTO[]>> {
     const templates = await this.templateRepository.findByTags(accountUuid, tags);
-    return templates.map((t) => t.toClientDTO());
+    return ok(templates.map((t) => t.toClientDTO()));
   }
 
   /**
@@ -382,10 +386,10 @@ export class TaskTemplateApplicationService {
       tags?: string[];
       color?: string;
     },
-  ): Promise<TaskTemplateServerDTO> {
+  ): Promise<Result<TaskTemplateServerDTO>> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
-      throw new Error(`TaskTemplate ${uuid} not found`);
+      return error('NOT_FOUND', `TaskTemplate ${uuid} not found`);
     }
 
     // 注意：这里简化了更新逻辑，实际应该在聚合根中添加更新方法
@@ -416,7 +420,7 @@ export class TaskTemplateApplicationService {
       }
     }
 
-    return template.toClientDTO();
+    return ok(template.toClientDTO());
   }
 
   /**
@@ -427,10 +431,10 @@ export class TaskTemplateApplicationService {
    * 2. 立即生成实例到今天
    * 3. 发布恢复事件，触发提醒调度恢复
    */
-  async activateTaskTemplate(uuid: string): Promise<TaskTemplateServerDTO> {
+  async activateTaskTemplate(uuid: string): Promise<Result<TaskTemplateServerDTO>> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
-      throw new Error(`TaskTemplate ${uuid} not found`);
+      return error('NOT_FOUND', `TaskTemplate ${uuid} not found`);
     }
 
     console.log(`[TaskTemplateApplicationService] 开始激活模板: ${template.title}`);
@@ -465,7 +469,7 @@ export class TaskTemplateApplicationService {
     }
 
     console.log(`✅ [TaskTemplateApplicationService] 模板 "${template.title}" 已激活并生成实例`);
-    return template.toClientDTO();
+    return ok(template.toClientDTO());
   }
 
   /**
@@ -477,10 +481,10 @@ export class TaskTemplateApplicationService {
    * 3. 处理已存在的未完成实例（标记为 SKIPPED）
    * 4. 发布暂停事件，触发提醒调度暂停
    */
-  async pauseTaskTemplate(uuid: string): Promise<TaskTemplateServerDTO> {
+  async pauseTaskTemplate(uuid: string): Promise<Result<TaskTemplateServerDTO>> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
-      throw new Error(`TaskTemplate ${uuid} not found`);
+      return error('NOT_FOUND', `TaskTemplate ${uuid} not found`);
     }
 
     console.log(`[TaskTemplateApplicationService] 开始暂停模板: ${template.title}`);
@@ -511,7 +515,7 @@ export class TaskTemplateApplicationService {
     }
 
     console.log(`✅ [TaskTemplateApplicationService] 模板 "${template.title}" 已暂停`);
-    return template.toClientDTO();
+    return ok(template.toClientDTO());
   }
 
   /**
@@ -551,47 +555,48 @@ export class TaskTemplateApplicationService {
   /**
    * 归档任务模板
    */
-  async archiveTaskTemplate(uuid: string): Promise<TaskTemplateServerDTO> {
+  async archiveTaskTemplate(uuid: string): Promise<Result<TaskTemplateServerDTO>> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
-      throw new Error(`TaskTemplate ${uuid} not found`);
+      return error('NOT_FOUND', `TaskTemplate ${uuid} not found`);
     }
 
     template.archive();
     await this.templateRepository.save(template);
 
-    return template.toClientDTO();
+    return ok(template.toClientDTO());
   }
 
   /**
    * 软删除任务模板
    */
-  async softDeleteTaskTemplate(uuid: string): Promise<void> {
+  async softDeleteTaskTemplate(uuid: string): Promise<Result<void>> {
     await this.templateRepository.softDelete(uuid);
+    return ok(undefined);
   }
 
   /**
    * 恢复任务模板
    */
-  async restoreTaskTemplate(uuid: string): Promise<TaskTemplateServerDTO> {
+  async restoreTaskTemplate(uuid: string): Promise<Result<TaskTemplateServerDTO>> {
     await this.templateRepository.restore(uuid);
 
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
-      throw new Error(`TaskTemplate ${uuid} not found after restore`);
+      return error('NOT_FOUND', `TaskTemplate ${uuid} not found after restore`);
     }
 
-    return template.toClientDTO();
+    return ok(template.toClientDTO());
   }
 
   /**
    * 删除任务模板
    */
-  async deleteTaskTemplate(uuid: string): Promise<void> {
+  async deleteTaskTemplate(uuid: string): Promise<Result<void>> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
       // 如果模板不存在，直接返回（幂等性）
-      return;
+      return ok(undefined);
     }
 
     await this.templateRepository.delete(uuid);
@@ -611,6 +616,8 @@ export class TaskTemplateApplicationService {
     } catch (error) {
       console.error(`❌ [TaskTemplateApplicationService] 发布删除事件失败:`, error);
     }
+
+    return ok(undefined);
   }
 
   /**

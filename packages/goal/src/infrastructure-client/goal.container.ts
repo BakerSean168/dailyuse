@@ -18,9 +18,7 @@
  */
 
 import { DIContainer, ModuleContainerBase } from '../shared/di';
-import type { IGoalApiClient } from './ports/goal-api-client.port';
-import type { IGoalFolderApiClient } from './ports/goal-folder-api-client.port';
-import type { IGoalFocusApiClient } from './ports/goal-focus-api-client.port';
+import type { IGoalApiClient, IGoalFolderApiClient, IGoalFocusApiClient } from './adapters/types';
 
 /**
  * Goal 模块依赖键
@@ -164,7 +162,10 @@ export class GoalContainer extends ModuleContainerBase {
    * 尝试获取 Repository，如果未注册返回 undefined
    */
   tryGetRepository(): IGoalRepository | undefined {
-    return this.container.tryResolve<IGoalRepository>(KEYS.REPOSITORY);
+    if (!this.container.has(KEYS.REPOSITORY)) {
+      return undefined;
+    }
+    return this.container.resolve<IGoalRepository>(KEYS.REPOSITORY);
   }
 
   /**
@@ -187,10 +188,8 @@ export class GoalContainer extends ModuleContainerBase {
    * 清空 Goal 模块的所有依赖
    */
   clear(): void {
-    this.container.unregister(KEYS.API_CLIENT);
-    this.container.unregister(KEYS.FOLDER_API_CLIENT);
-    this.container.unregister(KEYS.FOCUS_API_CLIENT);
-    this.container.unregister(KEYS.REPOSITORY);
+    // DIContainer 不支持 unregister，重新创建容器实例
+    this.container = new DIContainer();
   }
 }
 

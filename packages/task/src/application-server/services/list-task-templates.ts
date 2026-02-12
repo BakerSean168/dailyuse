@@ -18,6 +18,8 @@ import type {
 } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok } from '@dailyuse/contracts/result';
 
 /**
  * List Task Templates Service
@@ -32,7 +34,7 @@ export class ListTaskTemplates {
     this.generationService = new TaskInstanceGenerationService();
   }
 
-  async execute(request: QueryTaskTemplatesRequest): Promise<TaskTemplatesResponse> {
+  async execute(request: QueryTaskTemplatesRequest): Promise<Result<TaskTemplatesResponse>> {
     let templates: TaskTemplate[];
 
     // 根据不同条件查询
@@ -57,10 +59,10 @@ export class ListTaskTemplates {
       }
     }
 
-    return {
+    return ok({
       templates: templates.map((t) => t.toClientDTO()),
       total: templates.length,
-    };
+    });
   }
 
   /**

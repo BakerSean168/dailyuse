@@ -1,297 +1,288 @@
 <template>
-  <v-container fluid class="rule-editor-view">
+  <div class="max-w-[1100px] mx-auto p-6">
     <!-- Breadcrumb -->
-    <v-breadcrumbs density="compact" class="pa-0 mb-4">
-      <v-breadcrumbs-item :to="{ name: 'governance-list' }">
+    <nav class="flex items-center gap-1 text-sm text-muted-foreground mb-4">
+      <router-link :to="{ name: 'governance-list' }" class="hover:text-foreground transition-colors">
         治理规则
-      </v-breadcrumbs-item>
-      <v-breadcrumbs-divider />
-      <v-breadcrumbs-item>
-        {{ isEdit ? '编辑规则' : '新建规则' }}
-      </v-breadcrumbs-item>
-    </v-breadcrumbs>
+      </router-link>
+      <ChevronRight :size="14" />
+      <span class="text-foreground">{{ isEdit ? '编辑规则' : '新建规则' }}</span>
+    </nav>
 
-    <h1 class="text-h5 font-weight-bold mb-4">
+    <h1 class="text-2xl font-bold mb-4">
       {{ isEdit ? '编辑规则' : '新建规则' }}
     </h1>
 
     <!-- Loading -->
-    <v-progress-linear
-      v-if="isLoading"
-      indeterminate
-      color="primary"
-      class="mb-4"
-    />
+    <div v-if="isLoading" class="flex justify-center py-8">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
 
     <!-- Error -->
-    <v-alert
-      v-if="error"
-      type="error"
-      variant="tonal"
-      closable
-      class="mb-4"
-    >
+    <div v-if="error" class="p-4 rounded-md bg-destructive/10 text-destructive text-sm mb-4">
       {{ error }}
-    </v-alert>
+    </div>
 
-    <v-form ref="formRef" v-model="formValid" @submit.prevent="handleSubmit">
-      <v-row>
+    <form @submit.prevent="handleSubmit">
+      <div class="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-6">
         <!-- Left column: Main Info -->
-        <v-col cols="12" md="8">
-          <v-card variant="outlined" class="mb-4">
-            <v-card-title class="text-subtitle-1">基本信息</v-card-title>
-            <v-card-text>
-              <v-row dense>
-                <v-col cols="12" sm="4">
-                  <v-text-field
+        <div class="space-y-6">
+          <!-- Basic Info Card -->
+          <div class="border rounded-lg">
+            <div class="px-4 py-3 border-b bg-muted/30">
+              <h2 class="text-sm font-medium">基本信息</h2>
+            </div>
+            <div class="p-4 space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-4">
+                <div>
+                  <label class="block text-sm font-medium mb-1.5">
+                    规则代码 <span class="text-destructive">*</span>
+                  </label>
+                  <input
                     v-model="form.code"
-                    label="规则代码"
+                    type="text"
                     placeholder="GOV-001"
-                    :rules="[rules.required, rules.codeFormat]"
                     :disabled="isEdit"
-                    hint="格式: 大写字母-数字 (如 GOV-001)"
-                    persistent-hint
-                    variant="outlined"
-                    density="compact"
+                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+                    required
+                    pattern="^[A-Z]+-[0-9]+$"
                   />
-                </v-col>
-
-                <v-col cols="12" sm="8">
-                  <v-text-field
+                  <p class="text-[11px] text-muted-foreground mt-1">格式: 大写字母-数字 (如 GOV-001)</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1.5">
+                    标题 <span class="text-destructive">*</span>
+                  </label>
+                  <input
                     v-model="form.title"
-                    label="标题"
-                    :rules="[rules.required, rules.minLen(3), rules.maxLen(100)]"
-                    variant="outlined"
-                    density="compact"
+                    type="text"
+                    placeholder="规则标题"
+                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                    required
+                    minlength="3"
+                    maxlength="100"
                   />
-                </v-col>
-              </v-row>
+                </div>
+              </div>
 
-              <v-textarea
-                v-model="form.description"
-                label="描述"
-                :rules="[rules.required, rules.minLen(10), rules.maxLen(5000)]"
-                variant="outlined"
-                density="compact"
-                rows="4"
-                auto-grow
-                counter="5000"
-                class="mt-2"
-              />
+              <div>
+                <label class="block text-sm font-medium mb-1.5">
+                  描述 <span class="text-destructive">*</span>
+                </label>
+                <textarea
+                  v-model="form.description"
+                  rows="4"
+                  class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-y"
+                  required
+                  minlength="10"
+                  maxlength="5000"
+                  placeholder="规则描述..."
+                ></textarea>
+                <p class="text-[11px] text-muted-foreground mt-1 text-right">
+                  {{ form.description.length }} / 5000
+                </p>
+              </div>
 
-              <v-row dense class="mt-2">
-                <v-col cols="12" sm="6">
-                  <v-select
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium mb-1.5">
+                    严重级别 <span class="text-destructive">*</span>
+                  </label>
+                  <select
                     v-model="form.severity"
-                    label="严重级别"
-                    :items="severityOptions"
-                    :rules="[rules.required]"
-                    variant="outlined"
-                    density="compact"
-                  />
-                </v-col>
-
-                <v-col cols="12" sm="6">
-                  <v-text-field
+                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                    required
+                  >
+                    <option v-for="opt in severityOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.label }}
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1.5">实际引用位置 (可选)</label>
+                  <input
                     v-model="form.liveReferenceLocation"
-                    label="实际引用位置 (可选)"
-                    placeholder="packages/governance/src/domain-server/aggregates/rule.ts"
-                    variant="outlined"
-                    density="compact"
+                    type="text"
+                    placeholder="packages/governance/src/..."
+                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
                   />
-                </v-col>
-              </v-row>
+                </div>
+              </div>
 
               <TagInput
                 :tags="form.tags"
                 :suggestions="allTags"
-                class="mt-2"
                 @update:tags="form.tags = $event"
               />
-            </v-card-text>
-          </v-card>
+            </div>
+          </div>
 
-          <!-- Good Examples -->
-          <v-card variant="outlined" class="mb-4">
-            <v-card-title class="d-flex align-center justify-space-between">
-              <span class="text-subtitle-1">
-                <v-icon size="small" icon="mdi-check-circle" color="success" class="mr-1" />
+          <!-- Good Examples Card -->
+          <div class="border rounded-lg">
+            <div class="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
+              <h2 class="text-sm font-medium flex items-center gap-1.5">
+                <CheckCircle :size="14" class="text-green-500" />
                 正确示例
-              </span>
-              <v-btn
-                size="small"
-                variant="text"
-                prepend-icon="mdi-plus"
+              </h2>
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs hover:bg-muted transition-colors"
                 @click="addExample('good')"
               >
+                <Plus :size="14" />
                 添加
-              </v-btn>
-            </v-card-title>
-            <v-card-text>
-              <div v-if="form.goodExamples.length === 0" class="text-body-2 text-medium-emphasis">
+              </button>
+            </div>
+            <div class="p-4">
+              <p v-if="form.goodExamples.length === 0" class="text-sm text-muted-foreground">
                 至少需要一个正确示例
-              </div>
+              </p>
 
               <div
                 v-for="(example, index) in form.goodExamples"
                 :key="`good-${index}`"
-                class="snippet-editor mb-3"
+                class="mb-4 last:mb-0"
               >
-                <div class="d-flex align-center ga-2 mb-1">
-                  <v-select
+                <div class="flex items-center gap-2 mb-2">
+                  <select
                     v-model="example.language"
-                    :items="languageOptions"
-                    label="语言"
-                    variant="outlined"
-                    density="compact"
-                    hide-details
-                    style="max-width: 160px"
-                  />
-                  <v-text-field
+                    class="rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring w-[140px]"
+                  >
+                    <option v-for="lang in languageOptions" :key="lang.value" :value="lang.value">
+                      {{ lang.label }}
+                    </option>
+                  </select>
+                  <input
                     v-model="example.caption"
-                    label="说明 (可选)"
-                    variant="outlined"
-                    density="compact"
-                    hide-details
+                    type="text"
+                    placeholder="说明 (可选)"
+                    class="flex-1 rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
                   />
-                  <v-btn
-                    icon="mdi-delete"
-                    size="small"
-                    variant="text"
-                    color="error"
+                  <button
+                    type="button"
+                    class="p-1.5 rounded-md text-destructive hover:bg-destructive/10 transition-colors"
                     @click="removeExample('good', index)"
-                  />
+                  >
+                    <Trash2 :size="14" />
+                  </button>
                 </div>
-                <v-textarea
+                <textarea
                   v-model="example.content"
-                  label="代码"
-                  variant="outlined"
-                  density="compact"
                   rows="6"
-                  auto-grow
-                  monospace
-                  class="code-textarea"
-                />
+                  placeholder="// 代码..."
+                  class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-y font-mono"
+                ></textarea>
               </div>
-            </v-card-text>
-          </v-card>
+            </div>
+          </div>
 
-          <!-- Bad Examples -->
-          <v-card variant="outlined" class="mb-4">
-            <v-card-title class="d-flex align-center justify-space-between">
-              <span class="text-subtitle-1">
-                <v-icon size="small" icon="mdi-close-circle" color="error" class="mr-1" />
+          <!-- Bad Examples Card -->
+          <div class="border rounded-lg">
+            <div class="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
+              <h2 class="text-sm font-medium flex items-center gap-1.5">
+                <XCircle :size="14" class="text-destructive" />
                 错误示例
-              </span>
-              <v-btn
-                size="small"
-                variant="text"
-                prepend-icon="mdi-plus"
+              </h2>
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs hover:bg-muted transition-colors"
                 @click="addExample('bad')"
               >
+                <Plus :size="14" />
                 添加
-              </v-btn>
-            </v-card-title>
-            <v-card-text>
-              <div v-if="form.badExamples.length === 0" class="text-body-2 text-medium-emphasis">
+              </button>
+            </div>
+            <div class="p-4">
+              <p v-if="form.badExamples.length === 0" class="text-sm text-muted-foreground">
                 至少需要一个错误示例
-              </div>
+              </p>
 
               <div
                 v-for="(example, index) in form.badExamples"
                 :key="`bad-${index}`"
-                class="snippet-editor mb-3"
+                class="mb-4 last:mb-0"
               >
-                <div class="d-flex align-center ga-2 mb-1">
-                  <v-select
+                <div class="flex items-center gap-2 mb-2">
+                  <select
                     v-model="example.language"
-                    :items="languageOptions"
-                    label="语言"
-                    variant="outlined"
-                    density="compact"
-                    hide-details
-                    style="max-width: 160px"
-                  />
-                  <v-text-field
+                    class="rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring w-[140px]"
+                  >
+                    <option v-for="lang in languageOptions" :key="lang.value" :value="lang.value">
+                      {{ lang.label }}
+                    </option>
+                  </select>
+                  <input
                     v-model="example.caption"
-                    label="说明 (可选)"
-                    variant="outlined"
-                    density="compact"
-                    hide-details
+                    type="text"
+                    placeholder="说明 (可选)"
+                    class="flex-1 rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
                   />
-                  <v-btn
-                    icon="mdi-delete"
-                    size="small"
-                    variant="text"
-                    color="error"
+                  <button
+                    type="button"
+                    class="p-1.5 rounded-md text-destructive hover:bg-destructive/10 transition-colors"
                     @click="removeExample('bad', index)"
-                  />
+                  >
+                    <Trash2 :size="14" />
+                  </button>
                 </div>
-                <v-textarea
+                <textarea
                   v-model="example.content"
-                  label="代码"
-                  variant="outlined"
-                  density="compact"
                   rows="6"
-                  auto-grow
-                  monospace
-                  class="code-textarea"
-                />
+                  placeholder="// 代码..."
+                  class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-y font-mono"
+                ></textarea>
               </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
+            </div>
+          </div>
+        </div>
 
-        <!-- Right column: Actions & Preview -->
-        <v-col cols="12" md="4">
-          <v-card variant="outlined" class="mb-4 sticky-card">
-            <v-card-title class="text-subtitle-1">操作</v-card-title>
-            <v-card-text>
-              <v-btn
+        <!-- Right column: Actions Sidebar -->
+        <div>
+          <div class="border rounded-lg sticky top-20">
+            <div class="px-4 py-3 border-b bg-muted/30">
+              <h2 class="text-sm font-medium">操作</h2>
+            </div>
+            <div class="p-4 space-y-2">
+              <button
                 type="submit"
-                color="primary"
-                block
-                :loading="isSaving"
-                :disabled="!formValid"
-                class="mb-2"
+                class="w-full px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="isSaving"
               >
-                {{ isEdit ? '保存更改' : '创建规则' }}
-              </v-btn>
+                {{ isSaving ? '保存中...' : isEdit ? '保存更改' : '创建规则' }}
+              </button>
 
-              <v-btn
-                variant="outlined"
-                block
+              <router-link
                 :to="{ name: 'governance-list' }"
+                class="block w-full px-4 py-2 rounded-md border text-sm text-center hover:bg-muted transition-colors"
               >
                 取消
-              </v-btn>
-            </v-card-text>
+              </router-link>
+            </div>
 
-            <v-divider />
-
-            <v-card-text>
-              <div class="text-caption text-medium-emphasis">
-                <div class="mb-1">
-                  标签: {{ form.tags.length }}
-                </div>
-                <div class="mb-1">
-                  正确示例: {{ form.goodExamples.length }}
-                </div>
-                <div>
-                  错误示例: {{ form.badExamples.length }}
-                </div>
+            <div class="border-t px-4 py-3">
+              <div class="text-xs text-muted-foreground space-y-1">
+                <div>标签: {{ form.tags.length }}</div>
+                <div>正确示例: {{ form.goodExamples.length }}</div>
+                <div>错误示例: {{ form.badExamples.length }}</div>
               </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-form>
-  </v-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
+import {
+  ChevronRight,
+  Plus,
+  CheckCircle,
+  XCircle,
+  Trash2,
+} from 'lucide-vue-next';
 import { useGovernance } from '../composables/useGovernance';
 import TagInput from '../components/TagInput.vue';
 import type { CreateRuleReq, UpdateRuleReq, RuleSeverity } from '../../types';
@@ -300,7 +291,6 @@ const props = defineProps<{
   id?: string;
 }>();
 
-const route = useRoute();
 const router = useRouter();
 const {
   currentRule,
@@ -313,8 +303,6 @@ const {
   updateRule,
 } = useGovernance();
 
-const formRef = ref();
-const formValid = ref(false);
 const isEdit = computed(() => !!props.id);
 
 interface SnippetForm {
@@ -335,26 +323,16 @@ const form = reactive({
 });
 
 const severityOptions = [
-  { title: '强制 (Mandatory)', value: 'Mandatory' },
-  { title: '推荐 (Recommended)', value: 'Recommended' },
+  { label: '强制 (Mandatory)', value: 'Mandatory' },
+  { label: '推荐 (Recommended)', value: 'Recommended' },
 ];
 
 const languageOptions = [
-  { title: 'TypeScript', value: 'TypeScript' },
-  { title: 'JSON', value: 'JSON' },
-  { title: 'YAML', value: 'YAML' },
-  { title: 'Prisma', value: 'Prisma' },
+  { label: 'TypeScript', value: 'TypeScript' },
+  { label: 'JSON', value: 'JSON' },
+  { label: 'YAML', value: 'YAML' },
+  { label: 'Prisma', value: 'Prisma' },
 ];
-
-// Validation rules
-const rules = {
-  required: (v: unknown) => !!v || '此字段为必填',
-  codeFormat: (v: string) => /^[A-Z]+-[0-9]+$/.test(v) || '格式应为 大写-数字 (如 GOV-001)',
-  minLen: (min: number) => (v: string) =>
-    (v && v.length >= min) || `至少 ${min} 个字符`,
-  maxLen: (max: number) => (v: string) =>
-    (!v || v.length <= max) || `最多 ${max} 个字符`,
-};
 
 function addExample(type: 'good' | 'bad') {
   const example: SnippetForm = { language: 'TypeScript', content: '', caption: '' };
@@ -374,9 +352,6 @@ function removeExample(type: 'good' | 'bad', index: number) {
 }
 
 async function handleSubmit() {
-  const valid = await formRef.value?.validate();
-  if (!valid?.valid) return;
-
   if (isEdit.value && props.id) {
     const req: UpdateRuleReq = {
       title: form.title,
@@ -446,26 +421,8 @@ onMounted(() => {
   if (isEdit.value) {
     loadEditData();
   } else {
-    // Default: add one empty good + bad example
     addExample('good');
     addExample('bad');
   }
 });
 </script>
-
-<style scoped>
-.rule-editor-view {
-  max-width: 1100px;
-}
-
-.sticky-card {
-  position: sticky;
-  top: 80px;
-}
-
-.code-textarea :deep(textarea) {
-  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace !important;
-  font-size: 13px !important;
-  line-height: 1.5 !important;
-}
-</style>
