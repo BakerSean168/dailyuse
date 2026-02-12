@@ -24,7 +24,7 @@ import {
   NotificationId,
   ChannelError,
   ChannelResponse,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';
 
 // 内部状态接口
 interface NotificationChannelState {

@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { ReminderTemplate } from '@/domain-server';
-import type { IReminderTemplateRepository } from '@/domain-server';
+import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';
+import type { IReminderTemplateRepository } from '../../../domain-server/repositories/IReminderTemplateRepository';
 import type { ReminderStatus, ReminderType, ImportanceLevel } from '@dailyuse/contracts/reminder';
 
 export class SqliteReminderTemplateRepository implements IReminderTemplateRepository {

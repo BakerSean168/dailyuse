@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { ReminderGroup } from '@/domain-server';
-import type { IReminderGroupRepository } from '@/domain-server';
+import { ReminderGroup } from '../../../domain-server/aggregates/reminder-group';
+import type { IReminderGroupRepository } from '../../../domain-server/repositories/IReminderGroupRepository';
 
 export class SqliteReminderGroupRepository implements IReminderGroupRepository {
   constructor(private db: Database.Database) {}

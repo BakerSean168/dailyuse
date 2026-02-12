@@ -1,8 +1,6 @@
-import type {
-  IScheduleTaskRepository,
-  IScheduleStatisticsRepository,
-} from '@/domain-server';
-import { ScheduleDomainService } from '@/domain-server';
+import type { IScheduleTaskRepository } from '../../domain-server/repositories/IScheduleTaskRepository';
+import type { IScheduleStatisticsRepository } from '../../domain-server/repositories/IScheduleStatisticsRepository';
+import { ScheduleDomainService } from '../../domain-server/services/ScheduleDomainService';
 import type {
   ScheduleTaskClientDTO,
   ScheduleConfigServerDTO,

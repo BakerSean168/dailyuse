@@ -4,9 +4,9 @@
  * 搜索资源用例
  */
 
-import type { IRepositoryApiClient } from '@/infrastructure-client';
+import type { IRepositoryApiClient } from '../../infrastructure-client/adapters/types';
 import type { SearchRequest, SearchResponse } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@/infrastructure-client';
+import { RepositoryContainer } from '../../infrastructure-client/repository.container';
 
 /**
  * Search Resources Input

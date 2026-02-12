@@ -4,13 +4,13 @@
  * 获取未读通知的应用服务
  */
 
-import { NotificationDomainService } from '@/domain-server';
+import { NotificationDomainService } from '../../domain-server/services/NotificationDomainService';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import type {
   INotificationRepository,
   INotificationTemplateRepository,
   INotificationPreferenceRepository,
-} from '@/domain-server';
+} from '../../domain-server/repositories';
 import { toNotificationClientDTO } from './notification-dto-converters';
 
 /**

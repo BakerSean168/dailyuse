@@ -1,1 +1,1 @@
-export { ResourceStats } from '@/domain-shared';
+export { ResourceStats } from '../../domain-shared/value-objects/resource-stats';

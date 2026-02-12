@@ -4,7 +4,7 @@
  * 删除任务模板
  */
 
-import type { ITaskTemplateRepository } from '@/domain-server';
+import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
 import { eventBus } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';

@@ -5,4 +5,4 @@
  */
 
 // Re-export from domain-server (canonical definition)
-export type { IAIProviderConfigRepository } from '@/domain-server';
+export type { IAIProviderConfigRepository } from '../../domain-server/repositories/IAIProviderConfigRepository';

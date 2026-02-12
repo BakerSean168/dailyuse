@@ -7,7 +7,7 @@ import type {
 } from '@dailyuse/contracts/ai';
 import { ConversationStatus } from '@dailyuse/contracts/ai';
 import type { IdentityId as IIdentityId } from '@dailyuse/contracts/primitives';
-import { AiConversationId } from '@/domain-shared';
+import { AiConversationId } from '../../domain-shared/value-objects/ai-conversation-id';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { Message } from '../entities/message';
 

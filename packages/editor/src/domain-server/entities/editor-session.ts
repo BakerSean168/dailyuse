@@ -25,7 +25,7 @@ import type {
   EditorWorkspaceId,
   IdentityId,
 } from '@dailyuse/contracts/primitives';
-import { EditorSessionId as EditorSessionIdType } from '@/domain-shared';
+import { EditorSessionId as EditorSessionIdType } from '../../domain-shared/value-objects/editor-session-id';
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 import { SessionLayout } from '../value-objects/SessionLayout';
 import { EditorGroup } from './editor-group';

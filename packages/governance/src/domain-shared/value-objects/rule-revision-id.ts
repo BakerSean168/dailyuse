@@ -4,7 +4,7 @@
  */
 
 
-import type { RuleRevisionId as IRuleRevisionId } from '@/contracts';
+import type { RuleRevisionId as IRuleRevisionId } from '@/contracts/primitives/ids';
 
 import { createIdType } from '@dailyuse/utils';
 

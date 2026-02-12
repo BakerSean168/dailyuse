@@ -7,8 +7,8 @@ import type { IRuleRepository } from '../../domain-server/repositories/i-rule-re
 import type { Rule } from '../../domain-server/aggregates/rule';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
-import type { ListRulesQuery, ListRulesRes } from '@/contracts';
-import type { RuleClientDTO } from '@/contracts/aggregates';
+import type { ListRulesQuery, ListRulesRes } from '@/contracts/api/rules';
+import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
 
 /**
  * List Rules Use Case

@@ -4,9 +4,9 @@
  * 导入设置用例
  */
 
-import type { ISettingApiClient } from '@/infrastructure-client';
+import type { ISettingApiClient } from '@/infrastructure-client/adapters/types';
 import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
-import { SettingContainer } from '@/infrastructure-client';
+import { SettingContainer } from '@/infrastructure-client/setting.container';
 
 /**
  * Import Settings

@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { TaskStatistics } from '@/domain-server';
-import type { ITaskStatisticsRepository } from '@/domain-server';
+import { TaskStatistics } from '../../../domain-server/aggregates/task-statistics';
+import type { ITaskStatisticsRepository } from '../../../domain-server/repositories/ITaskStatisticsRepository';
 
 export class SqliteTaskStatisticsRepository implements ITaskStatisticsRepository {
   constructor(private db: Database.Database) {}

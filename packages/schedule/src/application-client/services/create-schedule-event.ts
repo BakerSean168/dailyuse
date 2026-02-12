@@ -6,12 +6,12 @@
  * **返回 Entity 对象**
  */
 
-import type { IScheduleEventApiClient } from '@/infrastructure-client';
+import type { IScheduleEventApiClient } from '../../infrastructure-client/adapters/types';
 import type { CreateScheduleRequest } from '@dailyuse/contracts/schedule';
 import { eventBus } from '@dailyuse/utils';
-import { ScheduleContainer } from '@/infrastructure-client';
+import { ScheduleContainer } from '../../infrastructure-client/schedule.container';
 import { ScheduleEventEvents, type ScheduleEventRefreshEvent } from './schedule-events';
-import { Schedule } from '@/domain-client';
+import { Schedule } from '../../domain-client/aggregates/schedule';
 
 /**
  * Create Schedule Event Input

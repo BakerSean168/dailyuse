@@ -1,28 +1,28 @@
 /**
  * AI Module DI Container
- * AI 妯″潡渚濊禆娉ㄥ叆瀹瑰�?
+ * AI 妯″潡渚濊禆娉ㄥ叆瀹瑰�?
  *
  * 鑱岃矗锟?
- * - 绠＄悊鏈嶅姟瀹炰緥鐢熷懡鍛ㄦ�?
+ * - 绠＄悊鏈嶅姟瀹炰緥鐢熷懡鍛ㄦ�?
  * - 鎻愪緵缁熶竴鐨勪緷璧栨敞鍏ユ帴锟?
  * - 鍗曚緥妯″紡
  *
- * 鏋舵瀯璇存槑�?
- * - 棰嗗煙鏈嶅姟�?@dailyuse/domain-server 瀵煎叆锛堢函楠岃瘉閫昏緫�?
- * - 鍩虹璁炬柦鏈嶅姟浠庢湰�?infrastructure/ 瀵煎叆锛圓dapter銆丵uota銆丳rompts�?
+ * 鏋舵瀯璇存槑�?
+ * - 棰嗗煙鏈嶅姟�?@dailyuse/domain-server 瀵煎叆锛堢函楠岃瘉閫昏緫�?
+ * - 鍩虹璁炬柦鏈嶅姟浠庢湰�?infrastructure/ 瀵煎叆锛圓dapter銆丵uota銆丳rompts�?
  * - 搴旂敤鏈嶅姟鍗忚皟All鏈変緷锟?
  */
 
 import type { PrismaClient } from '../../generated/prisma/client';
 import { prisma } from '../../shared/config/prisma';
-import { AIGenerationValidationService } from '@/domain-server';
+import { AIGenerationValidationService } from '../../domain-server/services/AIGenerationValidationService';
 import {
   AIGenerationApplicationService,
   AIConversationService,
   AIProviderConfigService,
   AIProviderSwitchingService,
   GoalGenerationApplicationService,
-} from '@/application-server';
+} from '../../application-server/services';
 import { PrismaAIUsageQuotaRepository } from '../repositories/PrismaAIUsageQuotaRepository';
 import { PrismaAIConversationRepository } from '../repositories/PrismaAIConversationRepository';
 import { PrismaAIProviderConfigRepository } from '../repositories/PrismaAIProviderConfigRepository';
@@ -31,7 +31,7 @@ import { AIAdapterFactory } from '../adapters/AIAdapterFactory';
 import type { BaseAIAdapter } from '../adapters/BaseAIAdapter';
 
 /**
- * AI Container 鍗曚�?
+ * AI Container 鍗曚�?
  */
 export class AIContainer {
   private static instance: AIContainer;
@@ -49,7 +49,7 @@ export class AIContainer {
   private aiAdapter?: BaseAIAdapter;
 
   private constructor() {
-    // 浣跨敤鍏ㄥ眬鍏变韩锟?Prisma 瀹炰緥锛堝凡鍦ㄥ簲鐢ㄥ惎鍔ㄦ椂杩炴帴�?
+    // 浣跨敤鍏ㄥ眬鍏变韩锟?Prisma 瀹炰緥锛堝凡鍦ㄥ簲鐢ㄥ惎鍔ㄦ椂杩炴帴�?
     this.prisma = prisma;
   }
 
@@ -106,10 +106,10 @@ export class AIContainer {
   /**
    * Get AI Adapter锛堝熀纭€璁炬柦锟?
    *
-   * 娉ㄦ剰锛氳繖涓柟娉曚粎鐢ㄤ簬Need瑕佸揩閫熻幏鍙栦竴锟?AI Adapter 鐨勫満�?
-   * 瀵逛簬鐢ㄦ埛鐩稿叧�?AI 璋冪敤锛屽簲璇ヤ娇锟?getProviderConfigService().getAdapterForProvider()
+   * 娉ㄦ剰锛氳繖涓柟娉曚粎鐢ㄤ簬Need瑕佸揩閫熻幏鍙栦竴锟?AI Adapter 鐨勫満�?
+   * 瀵逛簬鐢ㄦ埛鐩稿叧�?AI 璋冪敤锛屽簲璇ヤ娇锟?getProviderConfigService().getAdapterForProvider()
    *
-   * @deprecated 浣跨�?getProviderConfigService().getAdapterForProvider() Get鎸囧畾鐢ㄦ埛 Provider �?Adapter
+   * @deprecated 浣跨�?getProviderConfigService().getAdapterForProvider() Get鎸囧畾鐢ㄦ埛 Provider �?Adapter
    */
   getAIAdapter(): BaseAIAdapter {
     if (!this.aiAdapter) {
@@ -133,7 +133,7 @@ export class AIContainer {
   }
 
   /**
-   * Get Provider Config Service锛圥rovider CRUD + 閫傞厤鍣ㄧ鐞嗭�?
+   * Get Provider Config Service锛圥rovider CRUD + 閫傞厤鍣ㄧ鐞嗭�?
    */
   getProviderConfigService(): AIProviderConfigService {
     if (!this.providerConfigService) {
@@ -144,7 +144,7 @@ export class AIContainer {
   }
 
   /**
-   * Get Provider Switching Service锛堟櫤鑳藉垏�?+ 鏁呴殰杞Щ锟?
+   * Get Provider Switching Service锛堟櫤鑳藉垏�?+ 鏁呴殰杞Щ锟?
    */
   getProviderSwitchingService(): AIProviderSwitchingService {
     if (!this.providerSwitchingService) {
@@ -155,7 +155,7 @@ export class AIContainer {
   }
 
   /**
-   * Get AIGenerationValidationService锛堥鍩熸湇�?- 绾獙璇侊級
+   * Get AIGenerationValidationService锛堥鍩熸湇�?- 绾獙璇侊級
    */
   getValidationService(): AIGenerationValidationService {
     if (!this.validationService) {
@@ -178,8 +178,8 @@ export class AIContainer {
   /**
    * Get GoalGenerationApplicationService锛堢洰鏍囩敓鎴愭湇鍔★級
    *
-   * 娉ㄦ剰锛氭鏈嶅姟涓嶅啀缁戝畾鍥哄畾�?AI Adapter
-   * 姣忔璋冪敤鏃朵細鏍规嵁鐢ㄦ埛閰嶇疆鍔ㄦ€佽幏鍙栧搴旂�?AI Provider
+   * 娉ㄦ剰锛氭鏈嶅姟涓嶅啀缁戝畾鍥哄畾�?AI Adapter
+   * 姣忔璋冪敤鏃朵細鏍规嵁鐢ㄦ埛閰嶇疆鍔ㄦ€佽幏鍙栧搴旂�?AI Provider
    */
   getGoalGenerationService(): GoalGenerationApplicationService {
     if (!this.goalGenerationService) {
@@ -201,7 +201,7 @@ export class AIContainer {
    */
   getApplicationService(): AIGenerationApplicationService {
     if (!this.applicationService) {
-      // Create渚濊�?
+      // Create渚濊�?
       const validationService = this.getValidationService();
       const aiAdapter = this.getAIAdapter();
       const quotaRepository = this.getQuotaRepository();
@@ -215,7 +215,7 @@ export class AIContainer {
         quotaRepository,
         conversationRepository,
         taskRepository,
-        null, // documentService - 閬垮厤寰幆渚濊禆锛岀◢鍚庤�?
+        null, // documentService - 閬垮厤寰幆渚濊禆锛岀◢鍚庤�?
       );
     }
 
@@ -224,7 +224,7 @@ export class AIContainer {
 
   /**
    * 娓呯悊Resource
-   * 娉ㄦ剰锛氫笉鏂�?Prisma 杩炴帴锛屽洜涓轰娇鐢ㄧ殑鏄叏灞€鍏变韩瀹炰�?
+   * 娉ㄦ剰锛氫笉鏂�?Prisma 杩炴帴锛屽洜涓轰娇鐢ㄧ殑鏄叏灞€鍏变韩瀹炰�?
    */
   async dispose(): Promise<void> {
     // 娓呯悊鏈嶅姟瀹炰緥缂撳瓨锛屼絾涓嶆柇寮€ Prisma 杩炴帴锛堢敱搴旂敤鍏ㄥ眬绠＄悊锟?

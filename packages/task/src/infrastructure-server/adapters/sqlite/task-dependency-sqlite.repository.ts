@@ -6,10 +6,12 @@
 import type Database from 'better-sqlite3';
 import type {
   ITaskDependencyRepository,
+} from '../../../domain-server/repositories/ITaskDependencyRepository';
+import type {
   CreateTaskDependencyRequest,
   TaskDependencyServerDTO,
   CircularDependencyValidationResult,
-} from '@/domain-server';
+} from '@dailyuse/contracts/task';
 
 export class SqliteTaskDependencyRepository implements ITaskDependencyRepository {
   constructor(private db: Database.Database) {}

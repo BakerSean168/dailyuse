@@ -4,7 +4,7 @@
  * Delete鏂囦欢澶癸紙绾ц仈锛?
  */
 
-import type { IFolderRepository } from '@/domain-server';
+import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
 
 /**
  * Delete Folder Input

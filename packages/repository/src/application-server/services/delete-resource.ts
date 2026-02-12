@@ -4,7 +4,7 @@
  * Delete asset
  */
 
-import type { IResourceRepository } from '@/domain-server';
+import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
 
 /**
  * Delete Resource Input

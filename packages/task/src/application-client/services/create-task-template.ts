@@ -4,11 +4,11 @@
  * 创建任务模板用例
  */
 
-import type { ITaskTemplateApiClient } from '@/infrastructure-client';
+import type { ITaskTemplateApiClient } from '../../infrastructure-client/adapters/types';
 import type { CreateTaskTemplateRequest } from '@dailyuse/contracts/task';
-import { TaskTemplate } from '@/domain-client';
+import { TaskTemplate } from '../../domain-client/aggregates/task-template';
 import { eventBus } from '@dailyuse/utils';
-import { TaskContainer } from '@/infrastructure-client';
+import { TaskContainer } from '../../infrastructure-client/task.container';
 import { TaskEvents, type TaskTemplateRefreshEvent } from './task-events';
 
 /**

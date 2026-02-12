@@ -4,7 +4,7 @@
  * Update Markdown 鍐呭
  */
 
-import type { IResourceRepository } from '@/domain-server';
+import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 /**

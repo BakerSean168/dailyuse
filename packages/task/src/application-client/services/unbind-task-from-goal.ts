@@ -4,10 +4,10 @@
  * 解绑任务模板与目标用例
  */
 
-import type { ITaskTemplateApiClient } from '@/infrastructure-client';
+import type { ITaskTemplateApiClient } from '../../infrastructure-client/adapters/types';
 import { eventBus } from '@dailyuse/utils';
-import { TaskTemplate } from '@/domain-client';
-import { TaskContainer } from '@/infrastructure-client';
+import { TaskTemplate } from '../../domain-client/aggregates/task-template';
+import { TaskContainer } from '../../infrastructure-client/task.container';
 import { TaskEvents } from './task-events';
 
 /**

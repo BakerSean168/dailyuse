@@ -5,7 +5,7 @@
  */
 
 import type { IFolderRepository } from '../../ports/folder-repository.port';
-import type { Folder } from '@/domain-server';
+import type { Folder } from '../../../domain-server/entities/folder';
 
 /**
  * Folder Memory Repository

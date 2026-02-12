@@ -1,1 +1,1 @@
-export { ScheduleConfig } from '@/domain-shared';
+export { ScheduleConfig } from '../../domain-shared/value-objects/schedule-config';

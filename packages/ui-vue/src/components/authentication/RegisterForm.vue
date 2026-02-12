@@ -1,11 +1,21 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Button } from '@dailyuse/ui-vue-shadcn/components/ui/button';
-import { Input } from '@dailyuse/ui-vue-shadcn/components/ui/input';
-import { Label } from '@dailyuse/ui-vue-shadcn/components/ui/label';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@dailyuse/ui-vue-shadcn/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn/components/ui/tabs';
-import { Progress } from '@dailyuse/ui-vue-shadcn/components/ui/progress';
+import {
+  Button,
+  Input,
+  Label,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Progress
+} from '@dailyuse/ui-vue-shadcn';
 import type { RegisterByEmailReq, RegisterByPhoneReq } from '@dailyuse/contracts/authentication';
 
 interface RegisterFormProps {

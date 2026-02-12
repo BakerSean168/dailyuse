@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { EditorWorkspace } from '@/domain-server';
-import type { IEditorWorkspaceRepository } from '@/domain-server';
+import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
+import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
 
 export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceRepository {
   constructor(private db: Database.Database) {}

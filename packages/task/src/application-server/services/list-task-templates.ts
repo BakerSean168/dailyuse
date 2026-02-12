@@ -5,12 +5,10 @@
  * 获取时自动检查并补充实例
  */
 
-import type {
-  ITaskTemplateRepository,
-  ITaskInstanceRepository,
-  TaskTemplate,
-} from '@/domain-server';
-import { TaskInstanceGenerationService } from '@/domain-server';
+import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import type { TaskTemplate } from '../../domain-server/aggregates/task-template';
+import { TaskInstanceGenerationService } from '../../domain-server/services/TaskInstanceGenerationService';
 import type {
   TaskTemplateClientDTO,
   QueryTaskTemplatesRequest,

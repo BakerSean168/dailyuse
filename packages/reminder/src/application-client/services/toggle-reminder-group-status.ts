@@ -4,10 +4,10 @@
  * 切换提醒分组启用状态用例
  */
 
-import type { IReminderApiClient } from '@/infrastructure-client';
-import { ReminderGroup } from '@/domain-client';
+import type { IReminderApiClient } from '../../infrastructure-client/adapters/types';
+import { ReminderGroup } from '../../domain-client/aggregates/reminder-group';
 import { eventBus } from '@dailyuse/utils';
-import { ReminderContainer } from '@/infrastructure-client';
+import { ReminderContainer } from '../../infrastructure-client/reminder.container';
 import { ReminderGroupEvents, type ReminderGroupRefreshEvent } from './reminder-events';
 
 /**

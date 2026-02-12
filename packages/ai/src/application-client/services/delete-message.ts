@@ -4,8 +4,8 @@
  * 删除 AI 消息用例
  */
 
-import type { IAIMessageApiClient } from '@/infrastructure-client';
-import { AIContainer } from '@/infrastructure-client';
+import type { IAIMessageApiClient } from '../../infrastructure-client/adapters/types';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * Delete Message

@@ -4,7 +4,7 @@
  * Get鏂囦欢澶硅鎯?
  */
 
-import type { IFolderRepository } from '@/domain-server';
+import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
 import type { FolderClientDTO } from '@dailyuse/contracts/repository';
 
 /**

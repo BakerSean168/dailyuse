@@ -4,9 +4,9 @@
  * 重新计算任务统计用例
  */
 
-import type { ITaskStatisticsApiClient } from '@/infrastructure-client';
+import type { ITaskStatisticsApiClient } from '../../infrastructure-client/adapters/types';
 import type { TaskStatisticsServerDTO } from '@dailyuse/contracts/task';
-import { TaskContainer } from '@/infrastructure-client';
+import { TaskContainer } from '../../infrastructure-client/task.container';
 
 /**
  * Recalculate Task Statistics

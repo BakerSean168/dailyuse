@@ -12,7 +12,9 @@
  * @module application-client/task
  */
 
-import type { TaskTemplate, TaskInstance, TaskDependency } from '@/domain-client';
+import type { TaskTemplate } from '../domain-client/aggregates/task-template';
+import type { TaskInstance } from '../domain-client/aggregates/task-instance';
+import type { TaskDependency } from '../domain-client/aggregates/task-dependency';
 import type {
   CreateTaskTemplateRequest,
   UpdateTaskTemplateRequest,

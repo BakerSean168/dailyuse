@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { EditorSession } from '@/domain-server';
-import type { IEditorSessionRepository } from '@/domain-server';
+import { EditorSession } from '../../../domain-server/entities/editor-session';
+import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
 
 export class SqliteEditorSessionRepository implements IEditorSessionRepository {
   constructor(private db: Database.Database) {}

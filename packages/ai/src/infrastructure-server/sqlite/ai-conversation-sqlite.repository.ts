@@ -1,11 +1,11 @@
 /**
  * SQLite AIConversation Repository Implementation
- * AI 瀵硅瘽鐨?SQLite Repository瀹炵�?
+ * AI 瀵硅瘽鐨?SQLite Repository瀹炵�?
  */
 
 import type Database from 'better-sqlite3';
-import { AIConversation } from '@/domain-server';
-import type { IAIConversationRepository, AIConversationQueryOptions } from '@/domain-server';
+import { AIConversation } from '../../domain-server/aggregates/ai-conversation';
+import type { IAIConversationRepository, AIConversationQueryOptions } from '../../domain-server/repositories/IAIConversationRepository';
 
 export class SqliteAIConversationRepository implements IAIConversationRepository {
   constructor(private db: Database.Database) {}

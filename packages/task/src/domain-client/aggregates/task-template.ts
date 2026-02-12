@@ -26,7 +26,7 @@ import type {
 } from '@dailyuse/contracts/task';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
-import { TaskTemplateId } from '@/domain-shared';
+import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
 import { GoalFolderId } from '@dailyuse/domain-shared/goal';
 import { IdentityId } from '@dailyuse/domain-shared';
 

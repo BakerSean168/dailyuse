@@ -4,7 +4,7 @@
  * 获取配额应用服务
  */
 
-import type { IAIUsageQuotaRepository } from '@/domain-server';
+import type { IAIUsageQuotaRepository } from '../../domain-server/repositories/IAIUsageQuotaRepository';
 import type { QuotaResponse } from '@dailyuse/contracts/ai';
 import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
 // import { AIContainer } from '@dailyuse/ai/infrastructure-server';

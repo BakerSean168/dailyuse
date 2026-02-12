@@ -1,16 +1,9 @@
-import type {
-  ITaskInstanceRepository,
-  ITaskTemplateRepository,
-  TaskFilters,
-} from '@/domain-server';
-import {
-  TaskTemplate,
-  TaskInstance,
-  TaskInstanceGenerationService,
-  TaskTimeConfig,
-  RecurrenceRule,
-  TaskReminderConfig,
-} from '@/domain-server';
+import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskTemplateRepository, TaskFilters } from '../../domain-server/repositories/ITaskTemplateRepository';
+import { TaskTemplate } from '../../domain-server/aggregates/task-template';
+import { TaskInstance } from '../../domain-server/aggregates/task-instance';
+import { TaskInstanceGenerationService } from '../../domain-server/services/TaskInstanceGenerationService';
+import { TaskTimeConfig, RecurrenceRule, TaskReminderConfig } from '../../domain-server/value-objects';
 
 // Result pattern imports
 import type { Result } from '@dailyuse/contracts/result';

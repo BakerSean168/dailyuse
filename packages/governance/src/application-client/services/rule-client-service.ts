@@ -15,7 +15,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type { RuleClientDTO } from '@/contracts';
+import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
 
 export interface FetchRulesOptions {
   status?: string | string[];

@@ -4,7 +4,7 @@
  */
 
 import type { DomainDate, TransferDate, PersistenceDate } from '@dailyuse/contracts/primitives';
-import type { CodeSnippetId } from '@/contracts';
+import type { CodeSnippetId } from '../primitives/ids';
 import type { Language } from './language';
 import type { SnippetType } from './snippet-type';
 

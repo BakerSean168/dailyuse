@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { ReminderStatistics } from '@/domain-server';
-import type { IReminderStatisticsRepository } from '@/domain-server';
+import { ReminderStatistics } from '../../../domain-server/aggregates/reminder-statistics';
+import type { IReminderStatisticsRepository } from '../../../domain-server/repositories/IReminderStatisticsRepository';
 
 export class SqliteReminderStatisticsRepository implements IReminderStatisticsRepository {
   constructor(private db: Database.Database) {}

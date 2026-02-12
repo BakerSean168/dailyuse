@@ -4,8 +4,8 @@
  * Obsidian 椋庢牸鎼滅储鍜岄珮绾ф悳绱㈠姛鑳斤紙property 妯″紡锛?
  */
 
-import type { IResourceRepository } from '@/domain-server';
-import { Resource } from '@/domain-server';
+import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
+import { Resource } from '../../domain-server/entities/resource';
 import type {
   SearchRequest,
   SearchResponse,

@@ -1,1 +1,1 @@
-export { WorkspaceLayout } from '@/domain-shared';
+export { WorkspaceLayout } from '../../domain-shared/value-objects/workspace-layout';

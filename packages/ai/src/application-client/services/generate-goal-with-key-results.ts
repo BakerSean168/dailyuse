@@ -1,12 +1,12 @@
 /**
  * Generate Goal With Key Results
  *
- * AI 生成目标及关键结果用�?
+ * AI 生成目标及关键结果用�?
  */
 
-import type { IAIGenerationTaskApiClient } from '@/infrastructure-client';
+import type { IAIGenerationTaskApiClient } from '../../infrastructure-client/adapters/types';
 import type { GenerateGoalWithKRsRequest, GenerateGoalWithKRsResponse } from '@dailyuse/contracts/ai';
-import { AIContainer } from '@/infrastructure-client';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * Generate Goal With Key Results Input

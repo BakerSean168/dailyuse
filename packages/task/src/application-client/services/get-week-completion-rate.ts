@@ -4,8 +4,8 @@
  * 获取本周完成率用例
  */
 
-import type { ITaskStatisticsApiClient } from '@/infrastructure-client';
-import { TaskContainer } from '@/infrastructure-client';
+import type { ITaskStatisticsApiClient } from '../../infrastructure-client/adapters/types';
+import { TaskContainer } from '../../infrastructure-client/task.container';
 
 /**
  * Get Week Completion Rate

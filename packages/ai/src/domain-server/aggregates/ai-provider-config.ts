@@ -20,14 +20,14 @@ import type {
   AIProviderConfigServer as IAIProviderConfigServer,
 } from '@dailyuse/contracts/ai';
 import type { IdentityId as IIdentityId } from '@dailyuse/contracts/primitives';
-import { AiProviderConfigId } from '@/domain-shared';
+import { AiProviderConfigId } from '../../domain-shared/value-objects/ai-provider-config-id';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 /**
- * AIProviderConfig 聚合�?
+ * AIProviderConfig 聚合�?
  *
- * 职责�?
- * - 管理用户自定义的 AI 服务提供商配�?
+ * 职责�?
+ * - 管理用户自定义的 AI 服务提供商配�?
  * - API Key 安全处理（掩码生成）
  * - 默认 Provider 管理
  */
@@ -169,14 +169,14 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
   }
 
   /**
-   * �?ServerDTO 重建聚合�?
+   * �?ServerDTO 重建聚合�?
    */
   public static fromServerDTO(dto: AIProviderConfigServerDTO): AIProviderConfig {
     return new AIProviderConfig(dto);
   }
 
   /**
-   * �?PersistenceDTO 重建聚合�?
+   * �?PersistenceDTO 重建聚合�?
    */
   public static fromPersistenceDTO(dto: AIProviderConfigPersistenceDTO): AIProviderConfig {
     return new AIProviderConfig({
@@ -258,7 +258,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
   }
 
   /**
-   * 激活配�?
+   * 激活配�?
    */
   public activate(): void {
     this._isActive = true;
@@ -270,7 +270,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
    */
   public deactivate(): void {
     this._isActive = false;
-    // 停用时自动取消默�?
+    // 停用时自动取消默�?
     if (this._isDefault) {
       this._isDefault = false;
     }
@@ -303,7 +303,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
   }
 
   /**
-   * 更新优先�?
+   * 更新优先�?
    * @param priority 优先级数字，数字越小优先级越高（1 最高）
    */
   public updatePriority(priority: number): void {
@@ -317,7 +317,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
   // ===== DTO Conversion =====
 
   /**
-   * 转换为服务端 DTO（包含完�?API Key�?
+   * 转换为服务端 DTO（包含完�?API Key�?
    */
   public toServerDTO(): AIProviderConfigServerDTO {
     return {
@@ -340,7 +340,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
   }
 
   /**
-   * 转换�?PersistenceDTO
+   * 转换�?PersistenceDTO
    */
   public toPersistenceDTO(): AIProviderConfigPersistenceDTO {
     return {
@@ -363,7 +363,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
   }
 
   /**
-   * 转换为客户端 DTO（API Key 掩码处理�?
+   * 转换为客户端 DTO（API Key 掩码处理�?
    */
   public toClientDTO(): AIProviderConfigClientDTO {
     return {
@@ -401,7 +401,7 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> implemen
   }
 
   /**
-   * 规范�?API 地址
+   * 规范�?API 地址
    * - 移除尾部斜杠
    * - 确保 https 协议（生产环境）
    */

@@ -6,7 +6,9 @@
 import { Entity } from '@dailyuse/utils';
 import type { SettingEntryId, SettingGroupId, TransferDate, PersistenceDate, DomainDate } from '@dailyuse/contracts/primitives';
 import { SettingValueType, type UIConfigDTO } from '@dailyuse/contracts/setting';
-import { SettingEntryId as SettingEntryIdType, SettingGroupId as SettingGroupIdType, UIConfig } from '@/domain-shared';
+import { SettingEntryId as SettingEntryIdType } from '@/domain-shared/value-objects/setting-entry-id';
+import { SettingGroupId as SettingGroupIdType } from '@/domain-shared/value-objects/setting-group-id';
+import { UIConfig } from '@/domain-shared/value-objects/ui-config';
 
 // ============ Local Type Definitions ============
 // TODO: Move these to @dailyuse/contracts/setting when finalizing API

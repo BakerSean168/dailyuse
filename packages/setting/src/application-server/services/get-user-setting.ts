@@ -4,8 +4,8 @@
  * 获取用户设置（如果不存在则创建默认设置）
  */
 
-import type { IUserSettingRepository } from '@/domain-server';
-import { UserSetting } from '@/domain-server';
+import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
+import { UserSetting } from '@/domain-server/aggregates/user-setting';
 import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 
 /**

@@ -4,9 +4,9 @@
  * 获取资源详情用例
  */
 
-import type { IRepositoryApiClient } from '@/infrastructure-client';
+import type { IRepositoryApiClient } from '../../infrastructure-client/adapters/types';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@/infrastructure-client';
+import { RepositoryContainer } from '../../infrastructure-client/repository.container';
 
 /**
  * Get Resource

@@ -8,7 +8,8 @@ import type { RuleRevision } from '../../domain-server/entities/rule-revision';
 import { RuleId } from '../../domain-shared/value-objects/rule-id';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
-import type { RuleRevisionServerDTO, GetRuleRevisionsQuery, GetRuleRevisionsRes } from '@/contracts';
+import type { RuleRevisionServerDTO } from '@/contracts/entities/rule-revision-server';
+import type { GetRuleRevisionsQuery, GetRuleRevisionsRes } from '@/contracts/api/rule-revisions';
 
 /**
  * Get Rule Revisions Use Case

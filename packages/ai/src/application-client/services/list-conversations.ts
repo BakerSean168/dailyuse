@@ -4,9 +4,9 @@
  * 获取 AI 对话列表用例
  */
 
-import type { IAIConversationApiClient } from '@/infrastructure-client';
-import { AIConversation } from '@/domain-client';
-import { AIContainer } from '@/infrastructure-client';
+import type { IAIConversationApiClient } from '../../infrastructure-client/adapters/types';
+import { AIConversation } from '../../domain-client/aggregates/ai-conversation';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * List Conversations

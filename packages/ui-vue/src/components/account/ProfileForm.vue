@@ -1,14 +1,29 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { Button } from '@dailyuse/ui-vue-shadcn/components/ui/button';
-import { Input } from '@dailyuse/ui-vue-shadcn/components/ui/input';
-import { Label } from '@dailyuse/ui-vue-shadcn/components/ui/label';
-import { Textarea } from '@dailyuse/ui-vue-shadcn/components/ui/textarea';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@dailyuse/ui-vue-shadcn/components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from '@dailyuse/ui-vue-shadcn/components/ui/avatar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@dailyuse/ui-vue-shadcn/components/ui/select';
-import { Calendar } from '@dailyuse/ui-vue-shadcn/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@dailyuse/ui-vue-shadcn/components/ui/popover';
+import { computed, ref, watch } from 'vue';
+import { fromDate, getLocalTimeZone, type DateValue } from '@internationalized/date';
+import {
+  Button,
+  Input,
+  Label,
+  Textarea,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Calendar,
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from '@dailyuse/ui-vue-shadcn';
 import type { AccountProfileDTO, GenderType } from '@dailyuse/contracts/account';
 
 interface ProfileFormProps {
@@ -31,6 +46,7 @@ const props = withDefaults(defineProps<ProfileFormProps>(), {
 const emit = defineEmits<ProfileFormEmits>();
 
 const formData = ref<AccountProfileDTO>({ ...props.profile });
+const timeZone = getLocalTimeZone();
 
 watch(
   () => props.profile,
@@ -46,7 +62,7 @@ const initials = computed(() => {
   return formData.value.nickname.slice(0, 2).toUpperCase();
 });
 
-const formatDate = (date: string | null) => {
+const formatDate = (date: number | null) => {
   if (!date) return '';
   try {
     const d = new Date(date);
@@ -69,13 +85,32 @@ const handleUploadAvatar = () => {
   emit('uploadAvatar');
 };
 
-const handleDateSelect = (date: Date | undefined) => {
-  if (date) {
-    formData.value.birthday = date.toISOString();
+const calendarValue = computed<DateValue | undefined>(() => {
+  if (!formData.value.birthday) return undefined;
+  return fromDate(new Date(formData.value.birthday), timeZone);
+});
+
+const handleDateSelect = (date: DateValue | undefined) => {
+  if (!date) {
+    formData.value.birthday = null;
+    return;
   }
+  formData.value.birthday = date.toDate(timeZone).getTime();
 };
 
-import { computed } from 'vue';
+const realNameValue = computed({
+  get: () => formData.value.realName ?? '',
+  set: (value: string) => {
+    formData.value.realName = value.trim() ? value : null;
+  }
+});
+
+const bioValue = computed({
+  get: () => formData.value.bio ?? '',
+  set: (value: string) => {
+    formData.value.bio = value.trim() ? value : null;
+  }
+});
 </script>
 
 <template>
@@ -123,7 +158,7 @@ import { computed } from 'vue';
         <Label for="realName">真实姓名</Label>
         <Input
           id="realName"
-          v-model="formData.realName"
+          v-model="realNameValue"
           type="text"
           placeholder="请输入真实姓名（可选）"
           :disabled="loading"
@@ -135,7 +170,7 @@ import { computed } from 'vue';
         <Label for="bio">个人简介</Label>
         <Textarea
           id="bio"
-          v-model="formData.bio"
+          v-model="bioValue"
           placeholder="介绍一下自己吧..."
           rows="4"
           :disabled="loading"
@@ -174,7 +209,7 @@ import { computed } from 'vue';
           </PopoverTrigger>
           <PopoverContent class="w-auto p-0">
             <Calendar
-              :model-value="formData.birthday ? new Date(formData.birthday) : undefined"
+              :model-value="calendarValue"
               @update:model-value="handleDateSelect"
             />
           </PopoverContent>

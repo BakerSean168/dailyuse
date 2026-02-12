@@ -6,4 +6,4 @@
  * 这里使用 TaskMetadata 作为别名以保持向后兼容
  */
 
-export { ScheduleTaskMetadata as TaskMetadata } from '@/domain-shared';
+export { ScheduleTaskMetadata as TaskMetadata } from '../../domain-shared/value-objects/schedule-task-metadata';

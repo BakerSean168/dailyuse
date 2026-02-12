@@ -4,7 +4,7 @@
  * 删除对话应用服务
  */
 
-import type { IAIConversationRepository } from '@/domain-server';
+import type { IAIConversationRepository } from '../../domain-server/repositories/IAIConversationRepository';
 import { eventBus } from '@dailyuse/utils';
 // import { AIContainer } from '@dailyuse/ai/infrastructure-server';
 

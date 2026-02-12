@@ -10,7 +10,7 @@
 
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO, ValidateDependencyRequest, ValidateDependencyResponse } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '../types/task-dag.types';
-import { taskDependencyApiClient } from '@/infrastructure-client';
+import { taskDependencyApiClient } from '../../infrastructure-client/task.container';
 
 /**
  * 验证结果

@@ -4,12 +4,12 @@
  * 验证任务依赖关系（不实际创建）用例
  */
 
-import type { ITaskDependencyApiClient } from '@/infrastructure-client';
+import type { ITaskDependencyApiClient } from '../../infrastructure-client/adapters/types';
 import type {
   ValidateDependencyRequest,
   ValidateDependencyResponse,
 } from '@dailyuse/contracts/task';
-import { TaskContainer } from '@/infrastructure-client';
+import { TaskContainer } from '../../infrastructure-client/task.container';
 
 /**
  * Validate Task Dependency

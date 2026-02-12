@@ -5,7 +5,7 @@
  */
 
 import type { Goal } from '@dailyuse/goal/domain-server';
-import type { ReminderTemplate } from '@/domain-server';
+import type { ReminderTemplate } from '../../domain-server/aggregates/reminder-template';
 import { createLogger, eventBus } from '@dailyuse/utils';
 
 const logger = createLogger('ReminderEventPublisher');

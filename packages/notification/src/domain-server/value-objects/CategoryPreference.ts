@@ -1,1 +1,1 @@
-export { CategoryPreference } from '@/domain-shared';
+export { CategoryPreference } from '../../domain-shared/value-objects/category-preference';

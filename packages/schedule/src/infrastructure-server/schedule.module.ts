@@ -1,11 +1,9 @@
 import type { PrismaClient } from '../generated/prisma/client';
 import type Database from 'better-sqlite3';
 
-import {
-  ScheduleApplicationService,
-  ScheduleStatisticsApplicationService,
-  ScheduleEventApplicationService,
-} from '@/application-server';
+import { ScheduleApplicationService } from '../application-server/services/schedule-application-service';
+import { ScheduleStatisticsApplicationService } from '../application-server/services/schedule-statistics-application-service';
+import { ScheduleEventApplicationService } from '../application-server/services/schedule-event-application-service';
 import { ScheduleRepositoryFactory } from './di';
 
 type BetterSQLiteDB = Database.Database;

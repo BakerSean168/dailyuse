@@ -5,4 +5,4 @@
  */
 
 // Re-export from domain-server (canonical definition)
-export type { IAIConversationRepository, AIConversationQueryOptions } from '@/domain-server';
+export type { IAIConversationRepository, AIConversationQueryOptions } from '../../domain-server/repositories/IAIConversationRepository';

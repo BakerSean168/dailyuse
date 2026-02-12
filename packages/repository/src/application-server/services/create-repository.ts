@@ -4,8 +4,8 @@
  * Create repository
  */
 
-import type { IRepositoryRepository } from '@/domain-server';
-import { Repository } from '@/domain-server';
+import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
+import { Repository } from '../../domain-server/aggregates/repository';
 import type {
   RepositoryClientDTO,
   RepositoryConfigServerDTO,

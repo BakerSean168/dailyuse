@@ -5,4 +5,4 @@
  */
 
 // Re-export from domain-server (canonical definition)
-export type { IRepositoryRepository } from '@/domain-server';
+export type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';

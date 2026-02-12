@@ -18,7 +18,7 @@ import type {
   ConflictDetectionResult,
   ConflictSuggestion,
 } from '@dailyuse/contracts/schedule';
-import { ScheduleId } from '@/domain-shared';
+import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
 
 // TODO: 当 contracts 中定义了 ScheduleServerDTO 和 ScheduleClientDTO 后，移除这些临时类型
 // Story 9.1 用户日程的 DTO 接口暂未定义

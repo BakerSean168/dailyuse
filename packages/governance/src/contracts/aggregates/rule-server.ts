@@ -4,7 +4,8 @@
  */
 
 import type { TransferDate, PersistenceDate, IdentityId } from '@dailyuse/contracts/primitives';
-import type { RuleId, RuleTag, RuleTagDTO } from '@/contracts';
+import type { RuleId } from '../primitives/ids';
+import type { RuleTag, RuleTagDTO } from '../value-objects/rule-tag';
 import type { RuleStatus } from '../value-objects/rule-status';
 import type { RuleSeverity } from '../value-objects/rule-severity';
 import type { CodeSnippet, CodeSnippetDTO, CodeSnippetPersistenceDTO } from '../value-objects/code-snippet';

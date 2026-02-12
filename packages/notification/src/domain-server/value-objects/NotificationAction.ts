@@ -1,1 +1,1 @@
-export { NotificationAction } from '@/domain-shared';
+export { NotificationAction } from '../../domain-shared/value-objects/notification-action';

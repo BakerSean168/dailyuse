@@ -5,7 +5,7 @@
  * Converts between client DTOs and view models for UI consumption
  */
 
-import type { RuleClientDTO } from '@/contracts';
+import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
 
 export interface RuleViewModel extends RuleClientDTO {
   // UI-specific computed properties

@@ -11,7 +11,7 @@ import type {
 } from '@dailyuse/contracts/reminder';
 import { TriggerResult, NotificationChannel } from '@dailyuse/contracts/reminder';
 import { Entity } from '@dailyuse/utils';
-import { ReminderHistoryId } from '@/domain-shared';
+import { ReminderHistoryId } from '../../domain-shared/value-objects/reminder-history-id';
 
 /**
  * ReminderHistory 内部状态接口

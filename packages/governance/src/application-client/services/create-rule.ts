@@ -4,9 +4,9 @@
  * 创建规则用例
  */
 
-import type { CreateRuleReq, CreateRuleRes } from '@/contracts/api';
+import type { CreateRuleReq, CreateRuleRes } from '@/contracts/api/rules';
 import { Rule } from '../../domain-client/aggregates/rule';
-import type { IRuleApiClient } from '@/contracts/api';
+import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
 
 /**
  * Create Rule

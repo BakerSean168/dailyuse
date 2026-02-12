@@ -4,7 +4,7 @@
  * 更新提醒模板
  */
 
-import type { IReminderTemplateRepository } from '@/domain-server';
+import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
 import type {
   ReminderTemplateClientDTO,
   UpdateReminderTemplateRequest,

@@ -4,9 +4,9 @@
  * 获取用户设置用例
  */
 
-import type { ISettingApiClient } from '@/infrastructure-client';
-import { SettingContainer } from '@/infrastructure-client';
-import { UserSetting } from '@/domain-client';
+import type { ISettingApiClient } from '@/infrastructure-client/adapters/types';
+import { SettingContainer } from '@/infrastructure-client/setting.container';
+import { UserSetting } from '@/domain-client/aggregates/user-setting';
 
 /**
  * Get User Settings

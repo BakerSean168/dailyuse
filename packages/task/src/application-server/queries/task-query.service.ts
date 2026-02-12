@@ -11,11 +11,9 @@
  * 4. 支持批量操作以提升性能
  */
 
-import type {
-  ITaskTemplateRepository,
-  ITaskInstanceRepository,
-} from '@/domain-server';
-import { calculateTaskPriority } from '@/domain-server';
+import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import { calculateTaskPriority } from '../../domain-server/services/priority-calculator.service';
 import type { TaskTemplateServerDTO, TaskInstanceServerDTO } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus, TimeType } from '@dailyuse/contracts/task';
 

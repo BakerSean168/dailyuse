@@ -9,7 +9,7 @@
  */
 
 import { z } from 'zod';
-import type { RuleRevisionClientDTO } from '../entities';
+import type { RuleRevisionClientDTO } from '../entities/rule-revision-client';
 
 // ============================================================================
 // GET Operation - 获取修订记录历史

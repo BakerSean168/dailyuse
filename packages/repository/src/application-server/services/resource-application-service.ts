@@ -3,8 +3,8 @@
  * Resource 搴旂敤鏈嶅姟 - Story 10-2
  */
 import { v4 as uuidv4 } from 'uuid';
-import { Resource } from '@/domain-server';
-import type { IResourceRepository } from '@/domain-server';
+import { Resource } from '../../domain-server/entities/resource';
+import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
 import { ResourceType } from '@dailyuse/contracts/repository';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
 

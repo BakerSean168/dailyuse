@@ -9,7 +9,7 @@ import type {
   AIUsageQuotaServerDTO,
 } from '@dailyuse/contracts/ai';
 import type { IdentityId as IIdentityId } from '@dailyuse/contracts/primitives';
-import { AiUsageQuotaId } from '@/domain-shared';
+import { AiUsageQuotaId } from '../domain-shared/value-objects/ai-usage-quota-id';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 

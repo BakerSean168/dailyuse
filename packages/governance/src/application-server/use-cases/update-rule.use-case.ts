@@ -7,9 +7,9 @@ import type { IRuleRepository } from '../../domain-server/repositories/i-rule-re
 import type { Result } from '@dailyuse/contracts/result';
 import { error } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
-import type { UpdateRuleReq, UpdateRuleRes } from '@/contracts/api';
-import type { RuleClientDTO } from '@/contracts/aggregates';
-import type { RuleId } from '@/contracts';
+import type { UpdateRuleReq, UpdateRuleRes } from '@/contracts/api/rules';
+import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
+import type { RuleId } from '@/contracts/primitives/ids';
 import type { ExecutionContext } from './create-rule.use-case';
 
 /**

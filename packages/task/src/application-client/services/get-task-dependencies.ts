@@ -4,9 +4,9 @@
  * 获取任务的前置依赖用例
  */
 
-import type { ITaskDependencyApiClient } from '@/infrastructure-client';
+import type { ITaskDependencyApiClient } from '../../infrastructure-client/adapters/types';
 import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
-import { TaskContainer } from '@/infrastructure-client';
+import { TaskContainer } from '../../infrastructure-client/task.container';
 
 /**
  * Get Task Dependencies

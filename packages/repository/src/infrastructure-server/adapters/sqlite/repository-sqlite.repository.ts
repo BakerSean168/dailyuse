@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { Repository } from '@/domain-server';
-import type { IRepositoryRepository } from '@/domain-server';
+import { Repository } from '../../../domain-server/aggregates/repository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
 import type { RepositoryStatus } from '@dailyuse/contracts/repository';
 
 export class SqliteRepositoryRepository implements IRepositoryRepository {

@@ -1,5 +1,6 @@
-import type { IFolderRepository } from '@/domain-server';
-import { Folder, FolderHierarchyService } from '@/domain-server';
+import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
+import { Folder } from '../../domain-server/entities/folder';
+import { FolderHierarchyService } from '../../domain-server/services/FolderHierarchyService';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, FolderClientDTO, FolderMetadataServerDTO } from '@dailyuse/contracts/repository';
 
 /**

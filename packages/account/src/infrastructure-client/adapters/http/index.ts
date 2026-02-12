@@ -5,7 +5,7 @@
 import type { IHttpClient } from '../types';
 import { AccountHttpAdapter } from './account-http.adapter';
 
-export { AccountHttpAdapter } from './account-http.adapter';
+export { AccountHttpAdapter, createAccountHttpAdapter } from './account-http.adapter';
 
 export interface AccountHttpAdapters {
   account: AccountHttpAdapter;

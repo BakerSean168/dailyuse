@@ -1,1 +1,1 @@
-export { WorkspaceSettings } from '@/domain-shared';
+export { WorkspaceSettings } from '../../domain-shared/value-objects/workspace-settings';

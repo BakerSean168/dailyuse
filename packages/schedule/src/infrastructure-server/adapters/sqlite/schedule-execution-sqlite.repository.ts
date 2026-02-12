@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { ScheduleExecution } from '@/domain-server';
-import type { IScheduleExecutionRepository } from '@/domain-server';
+import { ScheduleExecution } from '../../../domain-server/entities/schedule-execution';
+import type { IScheduleExecutionRepository } from '../../../domain-server/repositories/IScheduleExecutionRepository';
 import type { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepository {

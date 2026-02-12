@@ -1,11 +1,11 @@
 /**
  * Check Quota Availability
  *
- * 检�?AI 配额是否足够用例
+ * 检�?AI 配额是否足够用例
  */
 
-import type { IAIUsageQuotaApiClient } from '@/infrastructure-client';
-import { AIContainer } from '@/infrastructure-client';
+import type { IAIUsageQuotaApiClient } from '../../infrastructure-client/adapters/types';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * Check Quota Availability

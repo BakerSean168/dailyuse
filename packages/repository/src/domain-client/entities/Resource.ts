@@ -20,13 +20,11 @@ import type {
 import type { ResourceType, ResourceStatus } from '@dailyuse/contracts/repository';
 import type { RepositoryId as IRepositoryId, FolderId as IFolderId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
-import {
-  ResourceId,
-  ResourceMetadata,
-  ResourceStats,
-  RepositoryId,
-  FolderId,
-} from '@/domain-shared';
+import { ResourceId } from '../../domain-shared/value-objects/resource-id';
+import { ResourceMetadata } from '../../domain-shared/value-objects/resource-metadata';
+import { ResourceStats } from '../../domain-shared/value-objects/resource-stats';
+import { RepositoryId } from '../../domain-shared/value-objects/repository-id';
+import { FolderId } from '../../domain-shared/value-objects/folder-id';
 
 // 内部状态接口：使用 domain-shared 类类型（有 .toDTO() 等方法）
 interface ResourceState {

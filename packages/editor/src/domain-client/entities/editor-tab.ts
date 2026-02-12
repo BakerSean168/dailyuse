@@ -19,12 +19,10 @@ import type {
 } from '@dailyuse/contracts/editor';
 import type { DocumentId, DomainDate } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
-import {
-  EditorTabId,
-  EditorGroupId,
-  EditorSessionId,
-  EditorWorkspaceId,
-} from '@/domain-shared';
+import { EditorTabId } from '../../domain-shared/value-objects/editor-tab-id';
+import { EditorGroupId } from '../../domain-shared/value-objects/editor-group-id';
+import { EditorSessionId } from '../../domain-shared/value-objects/editor-session-id';
+import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-workspace-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 // 内部状态接口

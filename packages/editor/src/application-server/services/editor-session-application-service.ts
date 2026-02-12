@@ -3,9 +3,13 @@
  * 编辑器会话应用服务
  */
 
-import type { IEditorSessionRepository, IEditorWorkspaceRepository, IEditorGroupRepository, IEditorTabRepository } from '@/domain-server';
+import type { IEditorSessionRepository } from '../../domain-server/repositories/IEditorSessionRepository';
+import type { IEditorWorkspaceRepository } from '../../domain-server/repositories/IEditorWorkspaceRepository';
+import type { IEditorGroupRepository } from '../../domain-server/repositories/IEditorGroupRepository';
+import type { IEditorTabRepository } from '../../domain-server/repositories/IEditorTabRepository';
 import type { CreateEditorSessionRequest, EditorSessionClientDTO, UpdateEditorSessionRequest } from '@dailyuse/contracts/editor';
-import { EditorSession, SessionLayout } from '@/domain-server';
+import { EditorSession } from '../../domain-server/entities/editor-session';
+import { SessionLayout } from '../../domain-server/value-objects/SessionLayout';
 
 /**
  * EditorSession 应用服务

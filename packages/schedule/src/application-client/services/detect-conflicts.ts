@@ -4,10 +4,10 @@
  * 检测日程冲突用例
  */
 
-import type { IScheduleEventApiClient } from '@/infrastructure-client';
+import type { IScheduleEventApiClient } from '../../infrastructure-client/adapters/types';
 import type { ConflictDetectionResult } from '@dailyuse/contracts/schedule';
 import { eventBus } from '@dailyuse/utils';
-import { ScheduleContainer } from '@/infrastructure-client';
+import { ScheduleContainer } from '../../infrastructure-client/schedule.container';
 import { ScheduleEventEvents, type ScheduleConflictEvent } from './schedule-events';
 
 /**

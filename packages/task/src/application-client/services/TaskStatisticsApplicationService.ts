@@ -10,7 +10,7 @@
  * - 获取完成率和效率趋势
  */
 
-import type { ITaskStatisticsApiClient } from '@/infrastructure-client';
+import type { ITaskStatisticsApiClient } from '../../infrastructure-client/adapters/types';
 import type { TaskStatisticsServerDTO } from '@dailyuse/contracts/task';
 
 /**

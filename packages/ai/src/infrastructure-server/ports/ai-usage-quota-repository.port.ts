@@ -5,4 +5,4 @@
  */
 
 // Re-export from domain-server (canonical definition)
-export type { IAIUsageQuotaRepository } from '@/domain-server';
+export type { IAIUsageQuotaRepository } from '../../domain-server/repositories/IAIUsageQuotaRepository';

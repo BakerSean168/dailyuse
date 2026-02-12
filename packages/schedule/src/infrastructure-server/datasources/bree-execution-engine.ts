@@ -15,10 +15,10 @@ import path from 'path';
 import {
   type IScheduleExecutionEngine,
   type TaskExecutionContext,
-  ScheduleTask,
-  type IScheduleExecutionRepository,
-  ScheduleExecution,
-} from '@/domain-server';
+} from '../../domain-server/services/ScheduleExecutionEngine';
+import { ScheduleTask } from '../../domain-server/aggregates/schedule-task';
+import type { IScheduleExecutionRepository } from '../../domain-server/repositories/IScheduleExecutionRepository';
+import { ScheduleExecution } from '../../domain-server/entities/schedule-execution';
 import { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 /**

@@ -4,8 +4,8 @@
  * 批量删除通知用例
  */
 
-import type { INotificationApiClient } from '@/infrastructure-client';
-import { NotificationContainer } from '@/infrastructure-client';
+import type { INotificationApiClient } from '../../infrastructure-client/adapters/types';
+import { NotificationContainer } from '../../infrastructure-client/notification.container';
 import type { CountResult } from '@dailyuse/contracts/result';
 
 /**

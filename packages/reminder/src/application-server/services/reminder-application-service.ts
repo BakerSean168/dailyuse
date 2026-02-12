@@ -1,12 +1,8 @@
-import { 
-  ReminderDomainService, 
-  ReminderGroup,
-} from '@/domain-server';
-import type {
-  IReminderTemplateRepository,
-  IReminderGroupRepository,
-  IReminderStatisticsRepository,
-} from '@/domain-server';
+import { ReminderDomainService } from '../../domain-server/services/ReminderDomainService';
+import { ReminderGroup } from '../../domain-server/aggregates/reminder-group';
+import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderGroupRepository } from '../../domain-server/repositories/IReminderGroupRepository';
+import type { IReminderStatisticsRepository } from '../../domain-server/repositories/IReminderStatisticsRepository';
 import type { 
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,

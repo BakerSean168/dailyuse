@@ -4,9 +4,9 @@
  * 获取规则列表用例
  */
 
-import type { ListRulesQuery, ListRulesRes } from '@/contracts/api';
+import type { ListRulesQuery, ListRulesRes } from '@/contracts/api/rules';
 import { Rule } from '../../domain-client/aggregates/rule';
-import type { IRuleApiClient } from '@/contracts/api';
+import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
 
 /**
  * List Rules

@@ -2,9 +2,13 @@ import type { PrismaClient } from '../../generated/prisma/client';
 import type Database from 'better-sqlite3';
 import type {
   ITaskInstanceRepository,
+} from '../../domain-server/repositories/ITaskInstanceRepository';
+import type {
   ITaskDependencyRepository,
+} from '../../domain-server/repositories/ITaskDependencyRepository';
+import type {
   ITaskStatisticsRepository,
-} from '@/domain-server';
+} from '../../domain-server/repositories/ITaskStatisticsRepository';
 import { TaskInstancePrismaRepository } from '../adapters/prisma/task-instance-prisma.repository';
 import { TaskDependencyPrismaRepository } from '../adapters/prisma/task-dependency-prisma.repository';
 import { TaskStatisticsPrismaRepository } from '../adapters/prisma/task-statistics-prisma.repository';

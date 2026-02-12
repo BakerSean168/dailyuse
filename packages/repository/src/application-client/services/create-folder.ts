@@ -4,9 +4,9 @@
  * 创建文件夹用例
  */
 
-import type { IRepositoryApiClient, CreateFolderRequest } from '@/infrastructure-client';
+import type { IRepositoryApiClient, CreateFolderRequest } from '../../infrastructure-client/adapters/types';
 import type { FolderClientDTO } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@/infrastructure-client';
+import { RepositoryContainer } from '../../infrastructure-client/repository.container';
 
 /**
  * Create Folder Input

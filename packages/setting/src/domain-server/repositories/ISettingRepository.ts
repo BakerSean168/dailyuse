@@ -12,6 +12,13 @@
 import type { Setting } from '../aggregates/setting';
 import { SettingScope } from '@dailyuse/contracts/setting';
 
+export interface SettingQueryOptions {
+  category?: string;
+  isDefault?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
 /**
  * ISettingRepository 仓储接口
  *

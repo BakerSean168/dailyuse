@@ -4,9 +4,9 @@
  * 获取提醒统计数据用例
  */
 
-import type { IReminderApiClient } from '@/infrastructure-client';
+import type { IReminderApiClient } from '../../infrastructure-client/adapters/types';
 import type { ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
-import { ReminderContainer } from '@/infrastructure-client';
+import { ReminderContainer } from '../../infrastructure-client/reminder.container';
 
 /**
  * Get Reminder Statistics

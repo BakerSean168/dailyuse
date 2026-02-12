@@ -12,9 +12,11 @@
 
 import type {
   IScheduleExecutionRepository,
+} from '../../domain-server/repositories/IScheduleExecutionRepository';
+import type {
   IScheduleTaskRepository,
-} from '@/domain-server';
-import { ScheduleTask } from '@/domain-server';
+} from '../../domain-server/repositories/IScheduleTaskRepository';
+import { ScheduleTask } from '../../domain-server/aggregates/schedule-task';
 
 /**
  * Execution Engine interface - to be provided by infrastructure layer

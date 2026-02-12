@@ -16,7 +16,7 @@ import type {
   NotificationChannelType,
 } from '@dailyuse/contracts/notification';
 import { AggregateRoot } from '@dailyuse/utils';
-import { NotificationPreferenceId } from '@/domain-shared';
+import { NotificationPreferenceId } from '../../domain-shared/value-objects/notification-preference-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 // 内部状态接口

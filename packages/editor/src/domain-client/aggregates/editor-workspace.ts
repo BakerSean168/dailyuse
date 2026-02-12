@@ -20,10 +20,8 @@ import type {
 } from '@dailyuse/contracts/editor';
 import type { DomainDate } from '@dailyuse/contracts/primitives';
 import { AggregateRoot } from '@dailyuse/utils';
-import {
-  EditorWorkspaceId,
-  EditorSessionId,
-} from '@/domain-shared';
+import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-workspace-id';
+import { EditorSessionId } from '../../domain-shared/value-objects/editor-session-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { EditorSession } from '../entities/editor-session';
 

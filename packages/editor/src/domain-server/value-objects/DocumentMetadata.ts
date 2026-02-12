@@ -1,1 +1,1 @@
-export { DocumentMetadata } from '@/domain-shared';
+export { DocumentMetadata } from '../../domain-shared/value-objects/document-metadata';

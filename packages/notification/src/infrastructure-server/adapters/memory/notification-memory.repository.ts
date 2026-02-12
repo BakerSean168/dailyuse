@@ -5,7 +5,7 @@
  */
 
 import type { INotificationRepository } from '../../ports/notification-repository.port';
-import type { Notification } from '@/domain-server';
+import type { Notification } from '../../../domain-server/aggregates/notification';
 import type { NotificationCategory, NotificationStatus } from '@dailyuse/contracts/notification';
 
 /**

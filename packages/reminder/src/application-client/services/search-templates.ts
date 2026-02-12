@@ -4,9 +4,9 @@
  * 搜索提醒模板用例
  */
 
-import type { IReminderApiClient } from '@/infrastructure-client';
-import { ReminderTemplate } from '@/domain-client';
-import { ReminderContainer } from '@/infrastructure-client';
+import type { IReminderApiClient } from '../../infrastructure-client/adapters/types';
+import { ReminderTemplate } from '../../domain-client/aggregates/reminder-template';
+import { ReminderContainer } from '../../infrastructure-client/reminder.container';
 
 /**
  * Search Templates

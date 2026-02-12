@@ -7,7 +7,8 @@ import type {
 } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
 import type { AiConversationId as IAiConversationId } from '@dailyuse/contracts/primitives';
-import { AiMessageId, AiConversationId } from '@/domain-shared';
+import { AiMessageId } from '../../domain-shared/value-objects/ai-message-id';
+import { AiConversationId } from '../../domain-shared/value-objects/ai-conversation-id';
 
 export class Message extends Entity<AiMessageId> implements MessageServer {
   private _conversationId: IAiConversationId;

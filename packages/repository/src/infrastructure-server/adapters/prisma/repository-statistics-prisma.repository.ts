@@ -6,7 +6,7 @@
  */
 
 import type { IRepositoryStatisticsRepository } from '../../ports/repository-statistics-repository.port';
-import type { RepositoryStatistics } from '@/domain-server';
+import type { RepositoryStatistics } from '../../../domain-server/aggregates/repository-statistics';
 
 /**
  * RepositoryStatistics Prisma Repository

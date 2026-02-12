@@ -4,7 +4,7 @@
  * 获取任务仪表板数�?
  */
 
-import type { ITaskTemplateRepository, TaskFilters } from '@/domain-server';
+import type { ITaskTemplateRepository, TaskFilters } from '../../domain-server/repositories/ITaskTemplateRepository';
 import type { TaskTemplateClientDTO, TaskDashboardResponse } from '@dailyuse/contracts/task';
 import { TaskType } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';

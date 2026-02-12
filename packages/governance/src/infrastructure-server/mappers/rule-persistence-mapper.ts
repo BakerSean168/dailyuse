@@ -20,7 +20,7 @@ import { RuleTag } from '../../domain-shared/value-objects/rule-tag';
 import { CodeSnippet } from '../../domain-shared/value-objects/code-snippet';
 import { RuleStatus } from '../../contracts/value-objects/rule-status';
 import { RuleSeverity } from '../../contracts/value-objects/rule-severity';
-import type { CodeSnippetPersistenceDTO } from '@/contracts';
+import type { CodeSnippetPersistenceDTO } from '../../contracts/value-objects/code-snippet';
 
 /**
  * Rule Persistence Mapper

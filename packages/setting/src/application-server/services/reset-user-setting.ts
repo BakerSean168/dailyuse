@@ -4,8 +4,8 @@
  * 重置用户设置为默认值
  */
 
-import type { IUserSettingRepository } from '@/domain-server';
-import { UserSetting } from '@/domain-server';
+import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
+import { UserSetting } from '@/domain-server/aggregates/user-setting';
 import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 
 /**

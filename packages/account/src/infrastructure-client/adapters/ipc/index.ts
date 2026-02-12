@@ -5,7 +5,7 @@
 import type { IIpcClient } from '../types';
 import { AccountIpcAdapter } from './account-ipc.adapter';
 
-export { AccountIpcAdapter } from './account-ipc.adapter';
+export { AccountIpcAdapter, createAccountIpcAdapter } from './account-ipc.adapter';
 
 export interface AccountIpcAdapters {
   account: AccountIpcAdapter;

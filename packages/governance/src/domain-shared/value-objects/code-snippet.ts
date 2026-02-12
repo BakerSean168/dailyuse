@@ -20,7 +20,7 @@ import type {
 } from '../../contracts/value-objects/code-snippet';
 import type { Language } from '../../contracts/value-objects/language';
 import type { SnippetType } from '../../contracts/value-objects/snippet-type';
-import type { CodeSnippetId } from '@/contracts';
+import type { CodeSnippetId } from '@/contracts/primitives/ids';
 
 const MAX_CONTENT_SIZE = 10 * 1024; // 10KB
 const MAX_CAPTION_LENGTH = 200;

@@ -4,7 +4,7 @@
  * 导出用户设置为 JSON 对象
  */
 
-import type { IUserSettingRepository } from '@/domain-server';
+import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
 
 /**
  * Export Settings

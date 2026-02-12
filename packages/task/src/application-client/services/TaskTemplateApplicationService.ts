@@ -11,7 +11,7 @@
  * - 目标绑定管理
  */
 
-import type { ITaskTemplateApiClient } from '@/infrastructure-client';
+import type { ITaskTemplateApiClient } from '../../infrastructure-client/adapters/types';
 import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
@@ -20,7 +20,8 @@ import type {
   GenerateInstancesRequest,
   BindToGoalRequest,
 } from '@dailyuse/contracts/task';
-import { TaskTemplate, TaskInstance } from '@/domain-client';
+import { TaskTemplate } from '../../domain-client/aggregates/task-template';
+import { TaskInstance } from '../../domain-client/aggregates/task-instance';
 import { eventBus } from '@dailyuse/utils';
 
 // Task Events

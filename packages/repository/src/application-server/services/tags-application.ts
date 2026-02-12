@@ -4,7 +4,7 @@
  * 鏍囩缁熻涓庤繃婊ゆ湇鍔?
  */
 
-import type { IResourceRepository } from '@/domain-server';
+import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
 import type { TagStatisticsDto } from '@dailyuse/contracts/repository';
 
 /**

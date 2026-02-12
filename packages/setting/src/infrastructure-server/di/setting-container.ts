@@ -1,4 +1,4 @@
-import type { IUserSettingRepository } from '@/domain-server';
+import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
 import { PrismaUserSettingRepository } from '../repositories/PrismaUserSettingRepository';
 import { prisma } from '../../shared/config/prisma';
 

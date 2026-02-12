@@ -1,4 +1,6 @@
-import type { ITaskInstanceRepository, ITaskDependencyRepository, ITaskStatisticsRepository } from '@/domain-server';
+import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskDependencyRepository } from '../../domain-server/repositories/ITaskDependencyRepository';
+import type { ITaskStatisticsRepository } from '../../domain-server/repositories/ITaskStatisticsRepository';
 import { DataSourceManager } from '../../shared/config/data-source-manager';
 import { TaskRepositoryFactory } from './task-repository.factory';
 import { prisma } from '../../shared/config/prisma';

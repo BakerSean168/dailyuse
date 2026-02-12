@@ -20,7 +20,8 @@ import type {
 } from '@dailyuse/contracts/editor';
 import type { DocumentId as IDocumentId, DomainDate } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
-import { EditorWorkspaceId, DocumentId } from '@/domain-shared';
+import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-workspace-id';
+import { DocumentId } from '../../domain-shared/value-objects/document-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 // 内部状态接口

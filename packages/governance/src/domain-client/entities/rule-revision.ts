@@ -11,12 +11,11 @@
 import type {
   RuleRevisionClient,
   RuleRevisionClientDTO,
-  
-} from '@/contracts';
+} from '@/contracts/entities/rule-revision-client';
 import { Entity } from '@dailyuse/utils';
-import type { RuleId } from '@/contracts';
+import type { RuleId } from '@/contracts/primitives/ids';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
-import { RuleRevisionId } from '@/domain-shared';
+import { RuleRevisionId } from '../../domain-shared/value-objects/rule-revision-id';
 // ================= 内部状态接�?=================
 
 /**

@@ -4,9 +4,9 @@
  * 搜索规则用例
  */
 
-import type { SearchRulesQuery, SearchRulesRes } from '@/contracts/api';
+import type { SearchRulesQuery, SearchRulesRes } from '@/contracts/api/rules';
 import { Rule } from '../../domain-client/aggregates/rule';
-import type { IRuleApiClient } from '@/contracts/api';
+import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
 
 /**
  * Search Rules

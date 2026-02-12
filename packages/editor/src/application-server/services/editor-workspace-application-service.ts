@@ -1,5 +1,5 @@
-import type { IEditorWorkspaceRepository } from '@/domain-server';
-import { EditorWorkspaceDomainService } from '@/domain-server';
+import type { IEditorWorkspaceRepository } from '../../domain-server/repositories/IEditorWorkspaceRepository';
+import { EditorWorkspaceDomainService } from '../../domain-server/services/EditorWorkspaceDomainService';
 import type { 
   DocumentClientDTO,
   EditorWorkspaceServerDTO,

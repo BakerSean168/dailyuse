@@ -6,12 +6,10 @@
 import type { PrismaClient } from '../../generated/prisma/client';
 import type Database from 'better-sqlite3';
 
-import type {
-  IRepositoryRepository,
-  IResourceRepository,
-  IFolderRepository,
-  IRepositoryStatisticsRepository,
-} from '@/domain-server';
+import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
+import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
+import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
+import type { IRepositoryStatisticsRepository } from '../../domain-server/repositories/IRepositoryStatisticsRepository';
 
 import {
   RepositoryPrismaRepository,

@@ -19,7 +19,7 @@ import type {
 import type {
   IReminderApiClient,
   ReminderTemplatesResponse,
-} from '@/infrastructure-client';
+} from '../../infrastructure-client/adapters/types';
 
 /**
  * Reminder Template Application Service

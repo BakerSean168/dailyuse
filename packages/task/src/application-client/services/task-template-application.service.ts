@@ -13,14 +13,15 @@
  * - Service 直接抛出错误，由 Composable 层统一处理
  */
 
-import { TaskTemplate, TaskInstance } from '@/domain-client';
+import { TaskTemplate } from '../../domain-client/aggregates/task-template';
+import { TaskInstance } from '../../domain-client/aggregates/task-instance';
 import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
   CreateTaskTemplateRequest,
   UpdateTaskTemplateRequest,
 } from '@dailyuse/contracts/task';
-import { taskTemplateApiClient } from '@/infrastructure-client';
+import { taskTemplateApiClient } from '../../infrastructure-client/task.container';
 
 export class TaskTemplateApplicationService {
   private static instance: TaskTemplateApplicationService;

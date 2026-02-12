@@ -14,7 +14,8 @@
 
 import * as cron from 'node-cron';
 import { ReminderContainer } from '../di/ReminderContainer';
-import { ReminderSchedulerService, ReminderTriggerService } from '@/domain-server';
+import { ReminderSchedulerService } from '../../domain-server/services/ReminderSchedulerService';
+import { ReminderTriggerService } from '../../domain-server/services/ReminderTriggerService';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ReminderTriggerCronJob');

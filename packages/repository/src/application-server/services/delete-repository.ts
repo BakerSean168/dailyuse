@@ -4,7 +4,7 @@
  * Delete repository
  */
 
-import type { IRepositoryRepository } from '@/domain-server';
+import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
 
 /**
  * Delete Repository Input

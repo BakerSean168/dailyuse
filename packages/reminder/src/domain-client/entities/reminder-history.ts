@@ -17,7 +17,8 @@ import type {
   NotificationChannel,
 } from '@dailyuse/contracts/reminder';
 import { Entity } from '@dailyuse/utils';
-import { ReminderInstanceId, ReminderTemplateId } from '@/domain-shared';
+import { ReminderInstanceId } from '../../domain-shared/value-objects/reminder-instance-id';
+import { ReminderTemplateId } from '../../domain-shared/value-objects/reminder-template-id';
 
 // 内部状态接口
 interface ReminderHistoryState {

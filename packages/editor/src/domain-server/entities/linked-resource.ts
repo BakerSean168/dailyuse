@@ -22,7 +22,7 @@ import type {
   PersistenceDate,
 } from '@dailyuse/contracts/primitives';
 import { Entity, generateUUID } from '@dailyuse/utils';
-import { EditorWorkspaceId as EditorWorkspaceIdType } from '@/domain-shared';
+import { EditorWorkspaceId as EditorWorkspaceIdType } from '../../domain-shared/value-objects/editor-workspace-id';
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 
 /**

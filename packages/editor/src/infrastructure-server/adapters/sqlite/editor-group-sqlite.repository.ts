@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { EditorGroup } from '@/domain-server';
-import type { IEditorGroupRepository } from '@/domain-server';
+import { EditorGroup } from '../../../domain-server/entities/editor-group';
+import type { IEditorGroupRepository } from '../../../domain-server/repositories/IEditorGroupRepository';
 
 export class SqliteEditorGroupRepository implements IEditorGroupRepository {
   constructor(private db: Database.Database) {}

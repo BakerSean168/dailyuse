@@ -11,15 +11,16 @@
 import type {
   RuleClientDTO,
   RuleClient,
-  RuleStatus,
-  RuleSeverity,
-  Language,
-  SnippetType,
-} from '@/contracts';
+} from '@/contracts/aggregates/rule-client';
+import type { RuleStatus } from '@/contracts/value-objects/rule-status';
+import type { RuleSeverity } from '@/contracts/value-objects/rule-severity';
+import type { Language } from '@/contracts/value-objects/language';
+import type { SnippetType } from '@/contracts/value-objects/snippet-type';
 import { AggregateRoot } from '@dailyuse/utils';
-import type { RuleId } from '@/contracts';
+import type { RuleId } from '@/contracts/primitives/ids';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
-import { CodeSnippet, RuleTag } from '@/domain-shared';
+import { CodeSnippet } from '../../domain-shared/value-objects/code-snippet';
+import { RuleTag } from '../../domain-shared/value-objects/rule-tag';
 
 // ================= 内部状态接�?=================
 

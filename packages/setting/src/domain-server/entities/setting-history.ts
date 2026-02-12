@@ -5,7 +5,8 @@
 
 import { Entity } from '@dailyuse/utils';
 import type { SettingHistoryId, SettingEntryId, TransferDate, PersistenceDate, DomainDate } from '@dailyuse/contracts/primitives';
-import { SettingHistoryId as SettingHistoryIdType, SettingEntryId as SettingEntryIdType } from '@/domain-shared';
+import { SettingHistoryId as SettingHistoryIdType } from '@/domain-shared/value-objects/setting-history-id';
+import { SettingEntryId as SettingEntryIdType } from '@/domain-shared/value-objects/setting-entry-id';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 

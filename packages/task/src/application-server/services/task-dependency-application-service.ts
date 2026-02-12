@@ -8,11 +8,9 @@
  * - DTO 转换
  */
 
-import type {
-  ITaskDependencyRepository,
-  ITaskTemplateRepository,
-} from '@/domain-server';
-import { TaskDependencyService } from '@/domain-server';
+import type { ITaskDependencyRepository } from '../../domain-server/repositories/ITaskDependencyRepository';
+import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
+import { TaskDependencyService } from '../../domain-server/services/TaskDependencyService';
 import type {
   TaskDependencyServerDTO,
   CreateTaskDependencyRequest,

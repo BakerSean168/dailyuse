@@ -1,10 +1,10 @@
 /**
  * SQLite AIGenerationTask Repository Implementation
- * AI 鐢熸垚浠诲姟�?SQLite Repository瀹炵�?
+ * AI 鐢熸垚浠诲姟�?SQLite Repository瀹炵�?
  */
 
 import type Database from 'better-sqlite3';
-import type { IAIGenerationTaskRepository, AIGenerationTaskServerDTO, TaskStatus } from '@/domain-server';
+import type { IAIGenerationTaskRepository, AIGenerationTaskServerDTO, TaskStatus } from '../../domain-server/repositories/IAIGenerationTaskRepository';
 import { GenerationTaskType } from '@dailyuse/contracts/ai';
 
 export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskRepository {

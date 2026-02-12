@@ -4,12 +4,12 @@
  * 测试 AI Provider 连接用例
  */
 
-import type { IAIProviderConfigApiClient } from '@/infrastructure-client';
+import type { IAIProviderConfigApiClient } from '../../infrastructure-client/adapters/types';
 import type {
   TestAIProviderConnectionRequest,
   TestAIProviderConnectionResponse,
 } from '@dailyuse/contracts/ai';
-import { AIContainer } from '@/infrastructure-client';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * Test Provider Connection Input

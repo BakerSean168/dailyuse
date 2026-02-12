@@ -7,7 +7,7 @@
 // Smart Container
 export { ReminderApplicationService, reminderApplicationService } from './reminder-application.service';
 
-export { ReminderContainer } from '@/infrastructure-client';
+export { ReminderContainer } from '../infrastructure-client/reminder.container';
 
 export {
   // Events

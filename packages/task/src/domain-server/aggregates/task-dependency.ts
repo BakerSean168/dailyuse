@@ -7,7 +7,7 @@ import { AggregateRoot } from '@dailyuse/utils';
 import type {
   TaskDependencyServerDTO,
 } from '@dailyuse/contracts/task';
-import { TaskDependencyId } from '@/domain-shared';
+import { TaskDependencyId } from '../../domain-shared/value-objects/task-dependency-id';
 import {
   DependencyType,
   DependencyStatus,

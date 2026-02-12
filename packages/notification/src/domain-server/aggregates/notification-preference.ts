@@ -13,7 +13,7 @@ import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { AggregateRoot } from '@dailyuse/utils';
 import {
   NotificationPreferenceId,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects/notification-preference-id';
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 
 /**

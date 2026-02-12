@@ -5,4 +5,4 @@
  */
 
 // Re-export from domain-server (canonical definition)
-export type { IAIGenerationTaskRepository } from '@/domain-server';
+export type { IAIGenerationTaskRepository } from '../../domain-server/repositories/IAIGenerationTaskRepository';

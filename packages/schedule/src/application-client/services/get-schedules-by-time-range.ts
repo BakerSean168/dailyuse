@@ -6,10 +6,10 @@
  * **返回 Entity 对象**
  */
 
-import type { IScheduleEventApiClient } from '@/infrastructure-client';
+import type { IScheduleEventApiClient } from '../../infrastructure-client/adapters/types';
 import type { GetSchedulesByTimeRangeRequest } from '@dailyuse/contracts/schedule';
-import { ScheduleContainer } from '@/infrastructure-client';
-import { Schedule } from '@/domain-client';
+import { ScheduleContainer } from '../../infrastructure-client/schedule.container';
+import { Schedule } from '../../domain-client/aggregates/schedule';
 
 /**
  * Get Schedules By Time Range Input

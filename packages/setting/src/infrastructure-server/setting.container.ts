@@ -4,11 +4,9 @@
  * 渚濊禆娉ㄥ叆瀹瑰櫒锛岀鐞?Setting 妯″潡鐨?repository 瀹炰緥
  */
 
-import type {
-  IAppConfigRepository,
-  ISettingRepository,
-  IUserSettingRepository,
-} from '@/domain-server';
+import type { IAppConfigRepository } from '@/domain-server/repositories/IAppConfigRepository';
+import type { ISettingRepository } from '@/domain-server/repositories/ISettingRepository';
+import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
 
 /**
  * Setting 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒

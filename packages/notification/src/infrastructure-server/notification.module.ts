@@ -5,7 +5,7 @@ import {
   NotificationApplicationService,
   NotificationTemplateApplicationService,
   NotificationChannelApplicationService,
-} from '@/application-server';
+} from '../application-server/services/notification-application-services';
 import { NotificationRepositoryFactory } from './di';
 
 type BetterSQLiteDB = Database.Database;

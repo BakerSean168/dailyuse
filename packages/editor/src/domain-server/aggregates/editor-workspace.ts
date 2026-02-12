@@ -22,7 +22,8 @@ import type {
 } from '@dailyuse/contracts/editor';
 import { ProjectType } from '@dailyuse/contracts/editor';
 import { EditorWorkspaceId } from '@dailyuse/domain-shared';
-import { WorkspaceLayout, WorkspaceSettings } from '@/domain-shared';
+import { WorkspaceLayout } from '../../domain-shared/value-objects/workspace-layout';
+import { WorkspaceSettings } from '../../domain-shared/value-objects/workspace-settings';
 import { EditorSession } from '../entities/editor-session';
 
 /**

@@ -4,8 +4,8 @@
  * 更新用户设置
  */
 
-import type { IUserSettingRepository } from '@/domain-server';
-import { UserSetting } from '@/domain-server';
+import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
+import { UserSetting } from '@/domain-server/aggregates/user-setting';
 import type {
   UserSettingClientDTO,
   UpdateUserSettingRequest,

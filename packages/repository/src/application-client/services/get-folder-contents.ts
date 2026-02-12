@@ -4,9 +4,9 @@
  * 获取文件夹内容用例
  */
 
-import type { IRepositoryApiClient } from '@/infrastructure-client';
+import type { IRepositoryApiClient } from '../../infrastructure-client/adapters/types';
 import type { FolderClientDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '@/infrastructure-client';
+import { RepositoryContainer } from '../../infrastructure-client/repository.container';
 
 /**
  * Get Folder Contents

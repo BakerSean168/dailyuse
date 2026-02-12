@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import type { Schedule } from '@/domain-server';
-import type { IScheduleRepository } from '@/domain-server';
+import type { Schedule } from '../../../domain-server/aggregates/schedule';
+import type { IScheduleRepository } from '../../../domain-server/repositories/IScheduleRepository';
 
 export class SqliteScheduleRepository implements IScheduleRepository {
   constructor(private db: Database.Database) {}

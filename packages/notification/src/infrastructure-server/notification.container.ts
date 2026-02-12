@@ -8,7 +8,7 @@ import type {
   INotificationRepository,
   INotificationPreferenceRepository,
   INotificationTemplateRepository,
-} from '@/domain-server';
+} from '../domain-server/repositories';
 
 /**
  * Notification 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒

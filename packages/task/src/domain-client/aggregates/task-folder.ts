@@ -16,7 +16,7 @@ import type {
   TaskFolderClientDTO,
 } from '@dailyuse/contracts/task';
 import { AggregateRoot } from '@dailyuse/utils';
-import { TaskFolderId } from '@/domain-shared';
+import { TaskFolderId } from '../../domain-shared/value-objects/task-folder-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 // 内部状态接口

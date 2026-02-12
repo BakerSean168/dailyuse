@@ -4,9 +4,9 @@
  * 根据 UUID 获取通知详情用例
  */
 
-import type { INotificationApiClient } from '@/infrastructure-client';
-import { NotificationContainer } from '@/infrastructure-client';
-import { NotificationClient } from '@/domain-client';
+import type { INotificationApiClient } from '../../infrastructure-client/adapters/types';
+import { NotificationContainer } from '../../infrastructure-client/notification.container';
+import { NotificationClient } from '../../domain-client/aggregates/notification';
 
 /**
  * Find Notification By Uuid

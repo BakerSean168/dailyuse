@@ -4,8 +4,8 @@
  * 删除规则用例
  */
 
-import type { DeleteRuleReq, DeleteRuleRes } from '@/contracts/api';
-import type { IRuleApiClient } from '@/contracts/api';
+import type { DeleteRuleReq, DeleteRuleRes } from '@/contracts/api/rules';
+import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
 
 /**
  * Delete Rule

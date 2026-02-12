@@ -1,8 +1,10 @@
 import type {
   IScheduleStatisticsRepository,
+} from '../../domain-server/repositories/IScheduleStatisticsRepository';
+import type {
   IScheduleTaskRepository,
-} from '@/domain-server';
-import { ScheduleStatisticsDomainService } from '@/domain-server';
+} from '../../domain-server/repositories/IScheduleTaskRepository';
+import { ScheduleStatisticsDomainService } from '../../domain-server/services/ScheduleStatisticsDomainService';
 import type { ScheduleStatisticsClientDTO, SourceModule, ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 /**

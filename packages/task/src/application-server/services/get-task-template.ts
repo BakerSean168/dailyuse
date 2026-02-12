@@ -4,7 +4,7 @@
  * 获取任务模板详情
  */
 
-import type { ITaskTemplateRepository } from '@/domain-server';
+import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
 import type { TaskTemplateClientDTO, TaskTemplateResponse } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';

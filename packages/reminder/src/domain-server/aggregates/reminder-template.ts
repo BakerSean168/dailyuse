@@ -30,7 +30,7 @@ import {
 } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
-import { ReminderTemplateId } from '@/domain-shared';
+import { ReminderTemplateId } from '../../domain-shared/value-objects/reminder-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { AggregateRoot, generateUUID } from '@dailyuse/utils';
 import {

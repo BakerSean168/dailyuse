@@ -4,9 +4,9 @@
  * 获取应用配置用例
  */
 
-import type { ISettingApiClient } from '@/infrastructure-client';
+import type { ISettingApiClient } from '@/infrastructure-client/adapters/types';
 import type { AppConfigClientDTO } from '@dailyuse/contracts/setting';
-import { SettingContainer } from '@/infrastructure-client';
+import { SettingContainer } from '@/infrastructure-client/setting.container';
 
 /**
  * Get App Config

@@ -1,6 +1,4 @@
-import type {
-  IReminderStatisticsRepository,
-} from '@/domain-server';
+import type { IReminderStatisticsRepository } from '../../domain-server/repositories/IReminderStatisticsRepository';
 import type { ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
 
 export class ReminderStatisticsApplicationService {

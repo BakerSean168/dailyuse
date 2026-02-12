@@ -40,15 +40,16 @@
     "vue": "^3.4.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
     "clsx": "^2.1.1",
-    "esbuild-plugin-vue": "0.2.4",
     "rimraf": "^6.0.1",
     "shadcn-vue": "^0.11.4",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17",
     "tailwindcss-animate": "^1.0.7",
-    "tsup": "^8.0.0",
     "typescript": "^5.9.3",
+    "vite": "^5.4.20",
+    "vite-plugin-dts": "^4.5.4",
     "vue": "^3.4.0"
   }
 }

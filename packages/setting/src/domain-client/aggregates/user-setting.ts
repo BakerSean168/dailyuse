@@ -16,7 +16,7 @@ import type {
   SettingEntryClient,
   SettingEntryClientDTO,
 } from '@dailyuse/contracts/setting';
-import { SettingId } from '@/domain-shared';
+import { SettingId } from '@/domain-shared/value-objects/setting-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { SettingEntry } from '../entities';
 

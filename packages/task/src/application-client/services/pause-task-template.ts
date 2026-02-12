@@ -4,10 +4,10 @@
  * 暂停任务模板用例
  */
 
-import type { ITaskTemplateApiClient } from '@/infrastructure-client';
-import { TaskTemplate } from '@/domain-client';
+import type { ITaskTemplateApiClient } from '../../infrastructure-client/adapters/types';
+import { TaskTemplate } from '../../domain-client/aggregates/task-template';
 import { eventBus } from '@dailyuse/utils';
-import { TaskContainer } from '@/infrastructure-client';
+import { TaskContainer } from '../../infrastructure-client/task.container';
 import { TaskEvents, type TaskTemplateRefreshEvent } from './task-events';
 
 /**

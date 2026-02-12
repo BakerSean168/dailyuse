@@ -9,10 +9,8 @@
  * 4. 发布暂停事件，触发提醒调度暂�?
  */
 
-import type {
-  ITaskTemplateRepository,
-  ITaskInstanceRepository,
-} from '@/domain-server';
+import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
 import type { TaskTemplateClientDTO, TaskTemplateResponse } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';

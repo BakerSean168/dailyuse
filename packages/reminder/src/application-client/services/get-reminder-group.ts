@@ -4,9 +4,9 @@
  * 获取提醒分组详情用例
  */
 
-import type { IReminderApiClient } from '@/infrastructure-client';
-import { ReminderGroup } from '@/domain-client';
-import { ReminderContainer } from '@/infrastructure-client';
+import type { IReminderApiClient } from '../../infrastructure-client/adapters/types';
+import { ReminderGroup } from '../../domain-client/aggregates/reminder-group';
+import { ReminderContainer } from '../../infrastructure-client/reminder.container';
 
 /**
  * Get Reminder Group

@@ -1,6 +1,6 @@
 import type {  PrismaClient  } from "../../../generated/prisma/client";
-import type { IScheduleStatisticsRepository } from '@/domain-server';
-import { ScheduleStatistics } from '@/domain-server';
+import type { IScheduleStatisticsRepository } from '../../../domain-server/repositories/IScheduleStatisticsRepository';
+import { ScheduleStatistics } from '../../../domain-server/aggregates/schedule-statistics';
 
 /**
  * ScheduleStatistics 鑱氬悎鏍?Prisma Repository瀹炵幇

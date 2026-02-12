@@ -4,8 +4,8 @@
  * 标记所有通知为已读用例
  */
 
-import type { INotificationApiClient } from '@/infrastructure-client';
-import { NotificationContainer } from '@/infrastructure-client';
+import type { INotificationApiClient } from '../../infrastructure-client/adapters/types';
+import { NotificationContainer } from '../../infrastructure-client/notification.container';
 import type { CountResult } from '@dailyuse/contracts/result';
 
 /**

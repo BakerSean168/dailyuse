@@ -4,7 +4,7 @@
  * 创建通知的应用服务
  */
 
-import { NotificationDomainService } from '@/domain-server';
+import { NotificationDomainService } from '../../domain-server/services/NotificationDomainService';
 import { createLogger } from '@dailyuse/utils';
 import type {
   NotificationServerDTO,
@@ -20,7 +20,7 @@ import type {
   INotificationRepository,
   INotificationTemplateRepository,
   INotificationPreferenceRepository,
-} from '@/domain-server';
+} from '../../domain-server/repositories';
 import { toNotificationClientDTO } from './notification-dto-converters';
 
 const logger = createLogger('CreateNotification');

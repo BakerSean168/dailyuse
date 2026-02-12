@@ -6,7 +6,11 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import type { SettingId, SettingGroupId, SettingEntryId, TransferDate, PersistenceDate, DomainDate } from '@dailyuse/contracts/primitives';
 import { SettingScope, SettingValueType, type ValidationRuleDTO, type UIConfigDTO, type SyncConfigDTO } from '@dailyuse/contracts/setting';
-import { SettingId as SettingIdType, ValidationRule, UIConfig, SyncConfig, SettingGroupId as SettingGroupIdType } from '@/domain-shared';
+import { SettingId as SettingIdType } from '@/domain-shared/value-objects/setting-id';
+import { SettingGroupId as SettingGroupIdType } from '@/domain-shared/value-objects/setting-group-id';
+import { ValidationRule } from '@/domain-shared/value-objects/validation-rule';
+import { UIConfig } from '@/domain-shared/value-objects/ui-config';
+import { SyncConfig } from '@/domain-shared/value-objects/sync-config';
 import { SettingHistory, type OperatorType } from '../entities/setting-history';
 
 // ============ Local Type Definitions ============

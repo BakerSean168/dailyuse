@@ -6,7 +6,7 @@
  */
 
 import type { IUserSettingRepository } from '../../ports/user-setting-repository.port';
-import type { UserSetting } from '@/domain-server';
+import type { UserSetting } from '@/domain-server/aggregates/user-setting';
 
 /**
  * UserSetting Prisma Repository

@@ -7,9 +7,9 @@
 import type {
   INotificationApiClient,
   QueryNotificationsRequest,
-} from '@/infrastructure-client';
-import { NotificationContainer } from '@/infrastructure-client';
-import { NotificationClient } from '@/domain-client';
+} from '../../infrastructure-client/adapters/types';
+import { NotificationContainer } from '../../infrastructure-client/notification.container';
+import { NotificationClient } from '../../domain-client/aggregates/notification';
 
 /**
  * Find Notifications Input

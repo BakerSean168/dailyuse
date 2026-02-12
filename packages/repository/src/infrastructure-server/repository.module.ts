@@ -17,21 +17,17 @@
 import type { PrismaClient } from '../generated/prisma/client';
 import type Database from 'better-sqlite3';
 
-import type {
-  IRepositoryRepository,
-  IResourceRepository,
-  IFolderRepository,
-  IRepositoryStatisticsRepository,
-} from '@/domain-server';
+import type { IRepositoryRepository } from '../domain-server/repositories/IRepositoryRepository';
+import type { IResourceRepository } from '../domain-server/repositories/IResourceRepository';
+import type { IFolderRepository } from '../domain-server/repositories/IFolderRepository';
+import type { IRepositoryStatisticsRepository } from '../domain-server/repositories/IRepositoryStatisticsRepository';
 
-import {
-  RepositoryApplicationService,
-  RepositorySyncApplicationService,
-  RepositoryPermissionApplicationService,
-  ResourceApplicationService,
-  FolderApplicationService,
-  RepositoryStatisticsApplicationService,
-} from '@/application-server';
+import { RepositoryApplicationService } from '../application-server/services/repository-application-service';
+import { RepositorySyncApplicationService } from '../application-server/services/repository-sync-application-service';
+import { RepositoryPermissionApplicationService } from '../application-server/services/repository-permission-application-service';
+import { ResourceApplicationService } from '../application-server/services/resource-application-service';
+import { FolderApplicationService } from '../application-server/services/folder-application-service';
+import { RepositoryStatisticsApplicationService } from '../application-server/services/repository-statistics-application-service';
 
 import { RepositoryRepositoryFactory } from './di/repository-repository.factory';
 

@@ -5,7 +5,7 @@
  * 鏍囧噯 Express/TypeScript 妯″紡 - 绉婚櫎浜?NestJS @Injectable 瑁呴グ鍣?
  */
 
-import type { IResourceRepository } from '@/domain-server';
+import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagStatisticsDto } from '@dailyuse/contracts/repository';
 
 export class TagsApplicationService {

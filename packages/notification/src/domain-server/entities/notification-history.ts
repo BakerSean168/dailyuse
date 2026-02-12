@@ -4,7 +4,7 @@
  */
 
 import { Entity } from '@dailyuse/utils';
-import { NotificationHistoryId } from '@/domain-shared';
+import { NotificationHistoryId } from '../../domain-shared/value-objects/notification-history-id';
 import type { NotificationId, NotificationHistoryId as INotificationHistoryId } from '@dailyuse/contracts/primitives';
 
 // ============ 本地类型定义 ============

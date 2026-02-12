@@ -13,7 +13,8 @@ import type {
 import type { ResourceId, RepositoryId, FolderId } from '@dailyuse/contracts/primitives';
 import { ResourceStatus, ResourceType } from '@dailyuse/contracts/repository';
 import { Entity } from '@dailyuse/utils';
-import { ResourceId as ResourceIdType, RepositoryId as RepositoryIdType } from '@/domain-shared';
+import { ResourceId as ResourceIdType } from '../../domain-shared/value-objects/resource-id';
+import { RepositoryId as RepositoryIdType } from '../../domain-shared/value-objects/repository-id';
 import { ResourceMetadata, ResourceStats } from '../value-objects';
 
 /** 内部状态接口 for Resource */

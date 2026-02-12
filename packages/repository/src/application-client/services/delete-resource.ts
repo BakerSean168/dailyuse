@@ -4,8 +4,8 @@
  * 删除资源用例
  */
 
-import type { IRepositoryApiClient } from '@/infrastructure-client';
-import { RepositoryContainer } from '@/infrastructure-client';
+import type { IRepositoryApiClient } from '../../infrastructure-client/adapters/types';
+import { RepositoryContainer } from '../../infrastructure-client/repository.container';
 
 /**
  * Delete Resource

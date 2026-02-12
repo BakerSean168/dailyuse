@@ -4,9 +4,9 @@
  * 获取任务的完整依赖链用例
  */
 
-import type { ITaskDependencyApiClient } from '@/infrastructure-client';
+import type { ITaskDependencyApiClient } from '../../infrastructure-client/adapters/types';
 import type { DependencyChainClientDTO } from '@dailyuse/contracts/task';
-import { TaskContainer } from '@/infrastructure-client';
+import { TaskContainer } from '../../infrastructure-client/task.container';
 
 /**
  * Get Dependency Chain

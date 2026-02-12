@@ -3,11 +3,11 @@
  */
 
 import type Database from 'better-sqlite3';
-import { ScheduleTask } from '@/domain-server';
+import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
 import type {
   IScheduleTaskRepository,
   IScheduleTaskQueryOptions,
-} from '@/domain-server';
+} from '../../../domain-server/repositories/IScheduleTaskRepository';
 import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 
 export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {

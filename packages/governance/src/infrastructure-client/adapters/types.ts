@@ -22,7 +22,7 @@ export type {
   ListRulesRes,
   SearchRulesQuery,
   SearchRulesRes,
-} from '@/contracts/api';
+} from '@/contracts/api/rules';
 
 /**
  * HTTP Client interface - local abstraction over HTTP transport

@@ -11,7 +11,7 @@
  */
 
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO, ValidateDependencyRequest, CreateTaskDependencyRequest, DependencyType } from '@dailyuse/contracts/task';
-import { taskDependencyApiClient } from '@/infrastructure-client';
+import { taskDependencyApiClient } from '../../infrastructure-client/task.container';
 
 
 /**

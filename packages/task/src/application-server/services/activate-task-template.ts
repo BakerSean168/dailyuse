@@ -8,11 +8,9 @@
  * 3. 发布恢复事件，触发提醒调度恢�?
  */
 
-import type {
-  ITaskTemplateRepository,
-  ITaskInstanceRepository,
-} from '@/domain-server';
-import { TaskInstanceGenerationService } from '@/domain-server';
+import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import { TaskInstanceGenerationService } from '../../domain-server/services/TaskInstanceGenerationService';
 import type { TaskTemplateClientDTO, TaskTemplateResponse } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';

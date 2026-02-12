@@ -12,8 +12,9 @@
  */
 
 import type { PrismaClient } from '../../../generated/prisma/client';
-import type { IScheduleTaskRepository } from '@/domain-server';
-import { ScheduleTask, ScheduleExecution } from '@/domain-server';
+import type { IScheduleTaskRepository } from '../../../domain-server/repositories/IScheduleTaskRepository';
+import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
+import { ScheduleExecution } from '../../../domain-server/entities/schedule-execution';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import type { SourceModule, ScheduleTaskPersistenceDTO } from '@dailyuse/contracts/schedule';
 

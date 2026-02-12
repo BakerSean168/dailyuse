@@ -4,13 +4,13 @@
  * 更新任务依赖关系用例
  */
 
-import type { ITaskDependencyApiClient } from '@/infrastructure-client';
+import type { ITaskDependencyApiClient } from '../../infrastructure-client/adapters/types';
 import type {
   UpdateTaskDependencyRequest,
   TaskDependencyClientDTO,
 } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
-import { TaskContainer } from '@/infrastructure-client';
+import { TaskContainer } from '../../infrastructure-client/task.container';
 import { TaskDependencyEvents } from './task-dependency-events';
 
 /**

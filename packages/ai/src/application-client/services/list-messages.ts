@@ -4,9 +4,9 @@
  * 获取 AI 消息列表用例
  */
 
-import type { IAIMessageApiClient } from '@/infrastructure-client';
-import { AIMessage } from '@/domain-client';
-import { AIContainer } from '@/infrastructure-client';
+import type { IAIMessageApiClient } from '../../infrastructure-client/adapters/types';
+import { Message as AIMessage } from '../../domain-client/entities/message';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * List Messages

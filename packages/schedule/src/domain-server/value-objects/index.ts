@@ -11,7 +11,7 @@ export {
   ScheduleTaskId,
   ScheduleExecutionId,
   ScheduleStatisticId,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';
 
 // Enum-like Value Objects
 export {
@@ -21,7 +21,7 @@ export {
   SourceModule,
   Timezone,
   ConflictSeverity,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';
 
 // Class-type Value Objects
 export {
@@ -30,7 +30,7 @@ export {
   RetryPolicy,
   ScheduleTaskMetadata,
   ConflictDetectionResult,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';
 
 // ============ 领域服务器特有的错误类 ============
 export * from './errors';

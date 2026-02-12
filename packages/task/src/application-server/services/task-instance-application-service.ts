@@ -1,9 +1,7 @@
-import type {
-  ITaskInstanceRepository,
-  ITaskTemplateRepository,
-  TaskInstance,
-} from '@/domain-server';
-import { TaskExpirationService } from '@/domain-server';
+import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
+import type { TaskInstance } from '../../domain-server/aggregates/task-instance';
+import { TaskExpirationService } from '../../domain-server/services/TaskExpirationService';
 import type {
   TaskInstanceClientDTO,
   TaskInstanceStatus,

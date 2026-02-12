@@ -19,7 +19,8 @@
 
 import type { TaskInstanceClientDTO, TaskInstancePersistenceDTO, TaskInstanceServer, TaskInstanceServerDTO, TaskEventMap } from '@dailyuse/contracts/task';
 import { TaskInstanceStatus, TaskTimeType as TimeType } from '@dailyuse/contracts/task';
-import { TaskTemplateId, TaskInstanceId } from '@/domain-shared';
+import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
+import { TaskInstanceId } from '../../domain-shared/value-objects/task-instance-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';

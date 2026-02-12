@@ -4,9 +4,9 @@
  * 创建 AI Provider 配置用例
  */
 
-import type { IAIProviderConfigApiClient } from '@/infrastructure-client';
+import type { IAIProviderConfigApiClient } from '../../infrastructure-client/adapters/types';
 import type { CreateAIProviderRequest, AIProviderConfigClientDTO } from '@dailyuse/contracts/ai';
-import { AIContainer } from '@/infrastructure-client';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * Create Provider Input

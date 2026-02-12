@@ -4,10 +4,10 @@
  * 移动提醒模板到指定分组用例
  */
 
-import type { IReminderApiClient } from '@/infrastructure-client';
-import { ReminderTemplate } from '@/domain-client';
+import type { IReminderApiClient } from '../../infrastructure-client/adapters/types';
+import { ReminderTemplate } from '../../domain-client/aggregates/reminder-template';
 import { eventBus } from '@dailyuse/utils';
-import { ReminderContainer } from '@/infrastructure-client';
+import { ReminderContainer } from '../../infrastructure-client/reminder.container';
 import { ReminderTemplateEvents, type ReminderTemplateRefreshEvent } from './reminder-events';
 
 /**

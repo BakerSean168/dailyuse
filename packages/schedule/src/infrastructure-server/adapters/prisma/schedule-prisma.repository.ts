@@ -7,8 +7,8 @@
  */
 
 import type {  PrismaClient  } from "../../../generated/prisma/client";
-import type { IScheduleRepository } from '@/domain-server';
-import { Schedule } from '@/domain-server';
+import type { IScheduleRepository } from '../../../domain-server/repositories/IScheduleRepository';
+import { Schedule } from '../../../domain-server/aggregates/schedule';
 
 export class SchedulePrismaRepository implements IScheduleRepository {
   constructor(private prisma: PrismaClient) {}

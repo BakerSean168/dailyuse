@@ -10,14 +10,14 @@
       "outputs": ["{workspaceRoot}/packages/ui-vue/dist"],
       "dependsOn": ["^build"],
       "options": {
-        "command": "tsup",
+        "command": "vite build",
         "cwd": "packages/ui-vue"
       }
     },
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsup --watch",
+        "command": "vite build --watch",
         "cwd": "packages/ui-vue"
       }
     },

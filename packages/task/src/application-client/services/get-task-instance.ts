@@ -4,9 +4,9 @@
  * 获取单个任务实例用例
  */
 
-import type { ITaskInstanceApiClient } from '@/infrastructure-client';
-import { TaskInstance } from '@/domain-client';
-import { TaskContainer } from '@/infrastructure-client';
+import type { ITaskInstanceApiClient } from '../../infrastructure-client/adapters/types';
+import { TaskInstance } from '../../domain-client/aggregates/task-instance';
+import { TaskContainer } from '../../infrastructure-client/task.container';
 
 /**
  * Get Task Instance

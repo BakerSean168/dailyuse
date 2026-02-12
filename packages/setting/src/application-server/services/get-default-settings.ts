@@ -4,7 +4,7 @@
  * 获取默认设置
  */
 
-import { UserSetting } from '@/domain-server';
+import { UserSetting } from '@/domain-server/aggregates/user-setting';
 import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 
 /**

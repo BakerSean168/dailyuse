@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { Document } from '@/domain-server';
-import type { IDocumentRepository, IndexStatus } from '@/domain-server';
+import { Document } from '../../../domain-server/entities/document';
+import type { IDocumentRepository, IndexStatus } from '../../../domain-server/repositories/IDocumentRepository';
 
 export class SqliteDocumentRepository implements IDocumentRepository {
   constructor(private db: Database.Database) {}

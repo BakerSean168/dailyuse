@@ -6,8 +6,8 @@
 import type { IRuleRepository } from '../../domain-server/repositories/i-rule-repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { DeleteRuleReq, DeleteRuleRes } from '@/contracts/api';
-import type { RuleId } from '@/contracts/primitives';
+import type { DeleteRuleReq, DeleteRuleRes } from '@/contracts/api/rules';
+import type { RuleId } from '@/contracts/primitives/ids';
 import type { ExecutionContext } from './create-rule.use-case';
 
 /**

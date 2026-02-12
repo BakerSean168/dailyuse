@@ -4,9 +4,9 @@
  * 删除统计信息用例
  */
 
-import type { IScheduleTaskApiClient } from '@/infrastructure-client';
+import type { IScheduleTaskApiClient } from '../../infrastructure-client/adapters/types';
 import { eventBus } from '@dailyuse/utils';
-import { ScheduleContainer } from '@/infrastructure-client';
+import { ScheduleContainer } from '../../infrastructure-client/schedule.container';
 import { ScheduleTaskEvents, type ScheduleTaskRefreshEvent } from './schedule-events';
 
 /**

@@ -4,12 +4,10 @@
  * 涓?Prisma 鏁版嵁搴撴彁渚涜€呭垵濮嬪寲All鏈変粨鍌ㄥ疄鐜?
  */
 
-import type {
-  IRepositoryRepository,
-  IResourceRepository,
-  IFolderRepository,
-  IRepositoryStatisticsRepository,
-} from '@/domain-server';
+import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
+import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
+import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
+import type { IRepositoryStatisticsRepository } from '../../domain-server/repositories/IRepositoryStatisticsRepository';
 
 import { RepositoryPrismaRepository } from '../adapters/prisma/repository-prisma.repository';
 import { ResourcePrismaRepository } from '../adapters/prisma/resource-prisma.repository';

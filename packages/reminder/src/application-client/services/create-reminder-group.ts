@@ -4,11 +4,11 @@
  * 创建提醒分组用例
  */
 
-import type { IReminderApiClient } from '@/infrastructure-client';
+import type { IReminderApiClient } from '../../infrastructure-client/adapters/types';
 import type { CreateReminderGroupRequest } from '@dailyuse/contracts/reminder';
-import { ReminderGroup } from '@/domain-client';
+import { ReminderGroup } from '../../domain-client/aggregates/reminder-group';
 import { eventBus } from '@dailyuse/utils';
-import { ReminderContainer } from '@/infrastructure-client';
+import { ReminderContainer } from '../../infrastructure-client/reminder.container';
 import { ReminderGroupEvents, type ReminderGroupRefreshEvent } from './reminder-events';
 
 /**

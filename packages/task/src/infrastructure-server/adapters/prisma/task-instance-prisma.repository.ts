@@ -1,6 +1,6 @@
 import type { PrismaClient } from '../../../generated/prisma/client';
-import type { ITaskInstanceRepository } from '@/domain-server';
-import { TaskInstance } from '@/domain-server';
+import type { ITaskInstanceRepository } from '../../../domain-server/repositories/ITaskInstanceRepository';
+import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 
 /**

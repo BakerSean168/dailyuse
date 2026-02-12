@@ -4,9 +4,9 @@
  * 获取调度统计信息用例
  */
 
-import type { IScheduleTaskApiClient } from '@/infrastructure-client';
+import type { IScheduleTaskApiClient } from '../../infrastructure-client/adapters/types';
 import type { ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
-import { ScheduleContainer } from '@/infrastructure-client';
+import { ScheduleContainer } from '../../infrastructure-client/schedule.container';
 
 /**
  * Get Schedule Statistics

@@ -4,10 +4,10 @@
  * 更新外观设置用例
  */
 
-import type { ISettingApiClient } from '@/infrastructure-client';
+import type { ISettingApiClient } from '@/infrastructure-client/adapters/types';
 import type { UpdateAppearanceRequest } from '@dailyuse/contracts/setting';
-import { SettingContainer } from '@/infrastructure-client';
-import { UserSetting } from '@/domain-client';
+import { SettingContainer } from '@/infrastructure-client/setting.container';
+import { UserSetting } from '@/domain-client/aggregates/user-setting';
 
 /**
  * Update Appearance Input

@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { SearchEngine } from '@/domain-server';
-import type { ISearchEngineRepository } from '@/domain-server';
+import { SearchEngine } from '../../../domain-server/entities/search-engine';
+import type { ISearchEngineRepository } from '../../../domain-server/repositories/ISearchEngineRepository';
 
 export class SqliteSearchEngineRepository implements ISearchEngineRepository {
   constructor(private db: Database.Database) {}

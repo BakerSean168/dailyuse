@@ -17,11 +17,9 @@ import type {
 } from '@dailyuse/contracts/editor';
 import type { DomainDate } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
-import {
-  EditorGroupId,
-  EditorSessionId,
-  EditorWorkspaceId,
-} from '@/domain-shared';
+import { EditorGroupId } from '../../domain-shared/value-objects/editor-group-id';
+import { EditorSessionId } from '../../domain-shared/value-objects/editor-session-id';
+import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-workspace-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { EditorTab } from './editor-tab';
 

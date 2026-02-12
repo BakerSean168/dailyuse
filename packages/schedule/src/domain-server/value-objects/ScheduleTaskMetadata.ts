@@ -1,1 +1,1 @@
-export { ScheduleTaskMetadata } from '@/domain-shared';
+export { ScheduleTaskMetadata } from '../../domain-shared/value-objects/schedule-task-metadata';

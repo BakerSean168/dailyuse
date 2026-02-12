@@ -4,8 +4,8 @@
  * 获取未读通知数量用例
  */
 
-import type { INotificationApiClient, UnreadCountResponse } from '@/infrastructure-client';
-import { NotificationContainer } from '@/infrastructure-client';
+import type { INotificationApiClient, UnreadCountResponse } from '../../infrastructure-client/adapters/types';
+import { NotificationContainer } from '../../infrastructure-client/notification.container';
 
 /**
  * Get Unread Count Output

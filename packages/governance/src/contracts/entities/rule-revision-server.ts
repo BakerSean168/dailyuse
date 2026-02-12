@@ -9,7 +9,7 @@
  */
 
 import type { TransferDate, PersistenceDate, IdentityId } from '@dailyuse/contracts/primitives';
-import type { RuleRevisionId, RuleId } from '@/contracts';
+import type { RuleRevisionId, RuleId } from '../primitives/ids';
 
 // ============ Domain Shape ============
 

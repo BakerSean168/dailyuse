@@ -20,7 +20,8 @@ import type {
   TransferDate,
 } from '@dailyuse/contracts/primitives';
 import { Entity, generateUUID } from '@dailyuse/utils';
-import { EditorGroupId as EditorGroupIdType, EditorSessionId as EditorSessionIdType } from '@/domain-shared';
+import { EditorGroupId as EditorGroupIdType } from '../../domain-shared/value-objects/editor-group-id';
+import { EditorSessionId as EditorSessionIdType } from '../../domain-shared/value-objects/editor-session-id';
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 import { EditorTab } from './editor-tab';
 

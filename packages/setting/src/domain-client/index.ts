@@ -29,4 +29,4 @@ export * from './aggregates';
 export * from './entities';
 
 // ===== Value Objects (re-export from domain-shared) =====
-export * from '@/domain-shared';
+export * from '../domain-shared/value-objects';

@@ -4,8 +4,8 @@
  * 閲嶅懡鍚嶆枃浠跺す
  */
 
-import type { IFolderRepository } from '@/domain-server';
-import { FolderHierarchyService } from '@/domain-server';
+import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
+import { FolderHierarchyService } from '../../domain-server/services/FolderHierarchyService';
 import type { FolderClientDTO } from '@dailyuse/contracts/repository';
 
 /**

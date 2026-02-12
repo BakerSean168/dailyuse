@@ -11,7 +11,9 @@ import type {
 } from '@dailyuse/contracts/task';
 import { RecurrenceFrequency, RecurrenceEndConditionType, TaskTimeType as TimeType, TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { ImportanceLevel, PriorityLevel } from '@dailyuse/contracts/shared';
-import { TaskTemplateStatus, TaskTemplateId, TaskFolderId } from '@/domain-shared';
+import { TaskTemplateStatus } from '../../domain-shared/value-objects/task-template-status';
+import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
+import { TaskFolderId } from '../../domain-shared/value-objects/task-folder-id';
 import { IdentityId, GoalId, KeyResultId } from '@dailyuse/domain-shared';
 
 // TaskType is a simple string literal type, not exported from domain-shared

@@ -4,9 +4,9 @@
  * 获取日程冲突详情用例
  */
 
-import type { IScheduleEventApiClient } from '@/infrastructure-client';
+import type { IScheduleEventApiClient } from '../../infrastructure-client/adapters/types';
 import type { ConflictDetectionResult } from '@dailyuse/contracts/schedule';
-import { ScheduleContainer } from '@/infrastructure-client';
+import { ScheduleContainer } from '../../infrastructure-client/schedule.container';
 
 /**
  * Get Schedule Conflicts

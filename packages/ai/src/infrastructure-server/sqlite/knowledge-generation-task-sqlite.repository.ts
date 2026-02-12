@@ -1,11 +1,11 @@
 /**
  * SQLite KnowledgeGenerationTask Repository Implementation
- * 鐭ヨ瘑鐢熸垚浠诲姟鐨?SQLite Repository瀹炵�?
+ * 鐭ヨ瘑鐢熸垚浠诲姟鐨?SQLite Repository瀹炵�?
  */
 
 import type Database from 'better-sqlite3';
-import { KnowledgeGenerationTask } from '@/domain-server';
-import type { IKnowledgeGenerationTaskRepository } from '@/domain-server';
+import { KnowledgeGenerationTask } from '../../domain-server/entities/knowledge-generation-task';
+import type { IKnowledgeGenerationTaskRepository } from '../../domain-server/repositories/IKnowledgeGenerationTaskRepository';
 
 export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenerationTaskRepository {
   constructor(private db: Database.Database) {}

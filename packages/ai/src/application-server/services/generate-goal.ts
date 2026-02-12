@@ -4,7 +4,8 @@
  * AI 生成目标应用服务
  */
 
-import type { IAIGenerationTaskRepository, IAIProviderConfigRepository } from '@/domain-server';
+import type { IAIGenerationTaskRepository } from '../../domain-server/repositories/IAIGenerationTaskRepository';
+import type { IAIProviderConfigRepository } from '../../domain-server/repositories/IAIProviderConfigRepository';
 import type { GenerateGoalRequest, GenerateGoalResponse, GoalCategory } from '@dailyuse/contracts/ai';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 // import { AIContainer } from '@dailyuse/ai/infrastructure-server';

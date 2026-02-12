@@ -18,7 +18,7 @@
 import { createLogger, eventBus } from '@dailyuse/utils';
 import { TaskReminderScheduleHandler } from './task-reminder-schedule.handler';
 import { TaskEventHandler } from '../services/task-event-handler';
-import type { ITaskInstanceRepository } from '@/domain-server';
+import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
 
 const logger = createLogger('TaskEventListeners');
 

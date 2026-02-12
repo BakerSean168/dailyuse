@@ -4,9 +4,9 @@
  * 获取 AI Provider 列表用例
  */
 
-import type { IAIProviderConfigApiClient } from '@/infrastructure-client';
+import type { IAIProviderConfigApiClient } from '../../infrastructure-client/adapters/types';
 import type { AIProviderConfigSummary } from '@dailyuse/contracts/ai';
-import { AIContainer } from '@/infrastructure-client';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * List Providers

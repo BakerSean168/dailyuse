@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { ScheduleStatistics } from '@/domain-server';
-import type { IScheduleStatisticsRepository } from '@/domain-server';
+import { ScheduleStatistics } from '../../../domain-server/aggregates/schedule-statistics';
+import type { IScheduleStatisticsRepository } from '../../../domain-server/repositories/IScheduleStatisticsRepository';
 
 export class SqliteScheduleStatisticsRepository implements IScheduleStatisticsRepository {
   constructor(private db: Database.Database) {}

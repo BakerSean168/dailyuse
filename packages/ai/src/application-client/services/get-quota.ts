@@ -4,9 +4,9 @@
  * 获取 AI 使用配额用例
  */
 
-import type { IAIUsageQuotaApiClient } from '@/infrastructure-client';
+import type { IAIUsageQuotaApiClient } from '../../infrastructure-client/adapters/types';
 import type { AIUsageQuotaClientDTO } from '@dailyuse/contracts/ai';
-import { AIContainer } from '@/infrastructure-client';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * Get Quota

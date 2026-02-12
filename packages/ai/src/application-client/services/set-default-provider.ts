@@ -4,8 +4,8 @@
  * 设置默认 AI Provider 用例
  */
 
-import type { IAIProviderConfigApiClient } from '@/infrastructure-client';
-import { AIContainer } from '@/infrastructure-client';
+import type { IAIProviderConfigApiClient } from '../../infrastructure-client/adapters/types';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * Set Default Provider

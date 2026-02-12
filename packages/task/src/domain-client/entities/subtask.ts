@@ -17,7 +17,7 @@ import type {
 } from '@dailyuse/contracts/task';
 import type { SubtaskId as ISubtaskId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
-import { SubtaskId } from '@/domain-shared';
+import { SubtaskId } from '../../domain-shared/value-objects/subtask-id';
 
 // 内部状态接口
 interface SubtaskState {

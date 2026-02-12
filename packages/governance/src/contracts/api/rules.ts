@@ -21,7 +21,7 @@
  */
 
 import { z } from 'zod';
-import type { RuleClientDTO } from '../aggregates';
+import type { RuleClientDTO } from '../aggregates/rule-client';
 
 // ============================================================================
 // CREATE Operation - 创建规则

@@ -11,14 +11,14 @@ export {
   TaskInstanceId,
   TaskDependencyId,
   TaskFolderId,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';
 
 // Type Value Objects (Enums)
 export {
   TaskTemplateStatus,
   TaskInstanceStatus,
   TaskTimeType,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';
 
 // 从 contracts 重新导出 DependencyType 和 DependencyStatus
 export { DependencyType, DependencyStatus } from '@dailyuse/contracts/task';
@@ -31,7 +31,7 @@ export {
   TaskTimeConfig,
   CompletionRecord,
   ChecklistItemDefinition,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';
 
 // Server-specific Value Objects
 export { SkipRecord } from './SkipRecord';

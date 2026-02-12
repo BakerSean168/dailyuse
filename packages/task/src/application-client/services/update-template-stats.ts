@@ -4,8 +4,8 @@
  * 更新模板统计信息用例
  */
 
-import type { ITaskStatisticsApiClient } from '@/infrastructure-client';
-import { TaskContainer } from '@/infrastructure-client';
+import type { ITaskStatisticsApiClient } from '../../infrastructure-client/adapters/types';
+import { TaskContainer } from '../../infrastructure-client/task.container';
 
 /**
  * Update Template Stats

@@ -20,7 +20,8 @@ import type {
   SettingEntryServer,
   SettingEntryServerDTO,
 } from '@dailyuse/contracts/setting';
-import { SettingId, SettingEntryId } from '@/domain-shared';
+import { SettingId } from '@/domain-shared/value-objects/setting-id';
+import { SettingEntryId } from '@/domain-shared/value-objects/setting-entry-id';
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 
 // ============ Local SettingEntry Entity ============

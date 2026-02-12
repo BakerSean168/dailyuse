@@ -15,7 +15,7 @@ import type {
   ScheduleJobClientDTO,
 } from '@dailyuse/contracts/schedule';
 import { AggregateRoot } from '@dailyuse/utils';
-import { ScheduleId } from '@/domain-shared';
+import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 // 内部状态接口

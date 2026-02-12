@@ -19,7 +19,7 @@ import {
   ChannelError,
   ChannelResponse,
   ChannelStatus as ChannelStatusType,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';
 
 /** 内部状态接口 for NotificationChannel */
 interface NotificationChannelState {

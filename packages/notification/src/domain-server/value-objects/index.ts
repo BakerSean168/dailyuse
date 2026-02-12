@@ -5,7 +5,7 @@
  */
 
 // 从 domain-shared 重新导出所有值对象
-export * from '@/domain-shared';
+export * from '../../domain-shared/value-objects';
 
 // ============================================================
 // 单独重新导出文件

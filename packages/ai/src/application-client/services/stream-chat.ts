@@ -4,9 +4,9 @@
  * AI 流式对话用例
  */
 
-import type { IAIMessageApiClient } from '@/infrastructure-client';
+import type { IAIMessageApiClient } from '../../infrastructure-client/adapters/types';
 import type { ChatStreamRequest, ChatStreamChunk } from '@dailyuse/contracts/ai';
-import { AIContainer } from '@/infrastructure-client';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * Stream Chat Input
@@ -49,7 +49,7 @@ export class StreamChat {
   }
 
   /**
-   * 执行用例 - 返回异步生成�?
+   * 执行用例 - 返回异步生成�?
    */
   async *execute(input: StreamChatInput): AsyncGenerator<ChatStreamChunk, void, unknown> {
     yield* this.apiClient.streamChat(input);

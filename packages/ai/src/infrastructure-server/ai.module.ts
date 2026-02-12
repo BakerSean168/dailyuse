@@ -1,7 +1,7 @@
 import type { PrismaClient } from '../generated/prisma/client';
 import type Database from 'better-sqlite3';
 
-import { AIGenerationValidationService } from '@/domain-server';
+import { AIGenerationValidationService } from '../domain-server/services/AIGenerationValidationService';
 import { AIAdapterFactory } from './adapters/a-i-adapter-factory';
 import { AIRepositoryFactory } from './di';
 
@@ -18,7 +18,7 @@ import {
   AIProviderConfigService,
   AIGenerationApplicationService,
   AIChatApplicationService,
-} from '@/application-server';
+} from '../application-server/services';
 
 type BetterSQLiteDB = Database.Database;
 

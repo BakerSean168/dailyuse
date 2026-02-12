@@ -1363,16 +1363,25 @@ importers:
       '@dailyuse/ui-vue-shadcn':
         specifier: workspace:*
         version: link:../ui-vue-shadcn
+      '@internationalized/date':
+        specifier: ^3.11.0
+        version: 3.11.0
     devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: 6.0.4
+        version: 6.0.4(vite@7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.25(typescript@5.9.3))
       rimraf:
         specifier: ^6.0.1
         version: 6.1.2
-      tsup:
-        specifier: ^8.0.0
-        version: 8.5.1(@microsoft/api-extractor@7.55.2(@types/node@22.13.14))(@swc/core@1.15.3(@swc/helpers@0.5.17))(jiti@2.4.2)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      vite:
+        specifier: ^7.1.7
+        version: 7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)
+      vite-plugin-dts:
+        specifier: ^4.5.4
+        version: 4.5.4(@types/node@22.13.14)(rollup@4.53.3)(typescript@5.9.3)(vite@7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2))
       vue:
         specifier: ^3.4.0
         version: 3.5.25(typescript@5.9.3)
@@ -1428,12 +1437,12 @@ importers:
         specifier: 3.24.0
         version: 3.24.0
     devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: ^5.2.1
+        version: 5.2.4(vite@7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.25(typescript@5.9.3))
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
-      esbuild-plugin-vue:
-        specifier: 0.2.4
-        version: 0.2.4(esbuild@0.27.1)
       rimraf:
         specifier: ^6.0.1
         version: 6.1.2
@@ -1449,12 +1458,15 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@4.1.18)
-      tsup:
-        specifier: ^8.0.0
-        version: 8.5.1(@microsoft/api-extractor@7.55.2(@types/node@22.13.14))(@swc/core@1.15.3(@swc/helpers@0.5.17))(jiti@2.4.2)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      vite:
+        specifier: ^7.1.7
+        version: 7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)
+      vite-plugin-dts:
+        specifier: ^4.5.4
+        version: 4.5.4(@types/node@22.13.14)(rollup@4.53.3)(typescript@5.9.3)(vite@7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2))
       vue:
         specifier: ^3.4.0
         version: 3.5.25(typescript@5.9.3)
@@ -4289,6 +4301,9 @@ packages:
   '@rolldown/pluginutils@1.0.0-beta.53':
     resolution: {integrity: sha512-vENRlFU4YbrwVqNDZ7fLvy+JR1CRkyr01jhSiDpE1u6py3OMzQfztQU2jxykW3ALNxO4kSlqIDeYyD0Y9RcQeQ==}
 
+  '@rolldown/pluginutils@1.0.0-rc.2':
+    resolution: {integrity: sha512-izyXV/v+cHiRfozX62W9htOAvwMo4/bXKDrQ+vom1L1qRuexPock/7VZDAhnpHCLNejd3NJ6hiab+tO0D44Rgw==}
+
   '@rollup/pluginutils@5.3.0':
     resolution: {integrity: sha512-5EdhGZtnu3V88ces7s53hhfK5KSASnJZv8Lulpc04cWO3REESroJXg73DFsOmgbU2BhwV0E20bu2IDZb3VKW4Q==}
     engines: {node: '>=14.0.0'}
@@ -5531,6 +5546,13 @@ packages:
 
   '@vitejs/plugin-vue@6.0.2':
     resolution: {integrity: sha512-iHmwV3QcVGGvSC1BG5bZ4z6iwa1SOpAPWmnjOErd4Ske+lZua5K9TtAVdx0gMBClJ28DViCbSmZitjWZsWO3LA==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    peerDependencies:
+      vite: ^7.1.7
+      vue: ^3.2.25
+
+  '@vitejs/plugin-vue@6.0.4':
+    resolution: {integrity: sha512-uM5iXipgYIn13UUQCZNdWkYk+sysBeA97d5mHsAoAt1u/wpN3+zxOmsVJWosuzX+IMGRzeYUNytztrYznboIkQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
       vite: ^7.1.7
@@ -15847,6 +15869,8 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.0-beta.53': {}
 
+  '@rolldown/pluginutils@1.0.0-rc.2': {}
+
   '@rollup/pluginutils@5.3.0(rollup@4.53.3)':
     dependencies:
       '@types/estree': 1.0.8
@@ -17371,6 +17395,12 @@ snapshots:
   '@vitejs/plugin-vue@6.0.2(vite@7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.25(typescript@5.9.3))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-beta.50
+      vite: 7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)
+      vue: 3.5.25(typescript@5.9.3)
+
+  '@vitejs/plugin-vue@6.0.4(vite@7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.25(typescript@5.9.3))':
+    dependencies:
+      '@rolldown/pluginutils': 1.0.0-rc.2
       vite: 7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)
       vue: 3.5.25(typescript@5.9.3)
 

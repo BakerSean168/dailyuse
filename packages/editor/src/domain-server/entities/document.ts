@@ -23,7 +23,7 @@ import {
   IndexStatus,
 } from '@dailyuse/contracts/editor';
 import { Entity, generateUUID } from '@dailyuse/utils';
-import { DocumentMetadata } from '@/domain-shared';
+import { DocumentMetadata } from '../../domain-shared/value-objects/document-metadata';
 
 /**
  * Document 内部状态接口

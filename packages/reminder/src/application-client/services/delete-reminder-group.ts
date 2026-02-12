@@ -4,9 +4,9 @@
  * 删除提醒分组用例
  */
 
-import type { IReminderApiClient } from '@/infrastructure-client';
+import type { IReminderApiClient } from '../../infrastructure-client/adapters/types';
 import { eventBus } from '@dailyuse/utils';
-import { ReminderContainer } from '@/infrastructure-client';
+import { ReminderContainer } from '../../infrastructure-client/reminder.container';
 import { ReminderGroupEvents, type ReminderGroupRefreshEvent } from './reminder-events';
 
 /**

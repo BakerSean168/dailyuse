@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { Resource } from '@/domain-server';
-import type { IResourceRepository } from '@/domain-server';
+import { Resource } from '../../../domain-server/entities/resource';
+import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
 
 export class SqliteResourceRepository implements IResourceRepository {
   constructor(private db: Database.Database) {}

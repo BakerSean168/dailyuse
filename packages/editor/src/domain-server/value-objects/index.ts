@@ -10,7 +10,7 @@ export {
   EditorSessionId,
   EditorGroupId,
   EditorTabId,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';
 
 // Enum-like Value Objects
 export {
@@ -24,7 +24,7 @@ export {
   LinkedTargetType,
   ViewMode,
   SidebarActiveTab,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';
 
 // Class-type Value Objects
 export {
@@ -33,4 +33,4 @@ export {
   SessionLayout,
   TabViewState,
   DocumentMetadata,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';

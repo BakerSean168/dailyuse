@@ -5,4 +5,4 @@
  */
 
 // Re-export from domain-server (canonical definition)
-export type { INotificationPreferenceRepository } from '@/domain-server';
+export type { INotificationPreferenceRepository } from '../../domain-server/repositories/INotificationPreferenceRepository';

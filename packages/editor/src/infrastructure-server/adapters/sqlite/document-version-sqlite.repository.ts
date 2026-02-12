@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { DocumentVersion } from '@/domain-server';
-import type { IDocumentVersionRepository, VersionChangeType } from '@/domain-server';
+import { DocumentVersion } from '../../../domain-server/entities/document-version';
+import type { IDocumentVersionRepository, VersionChangeType } from '../../../domain-server/repositories/IDocumentVersionRepository';
 
 export class SqliteDocumentVersionRepository implements IDocumentVersionRepository {
   constructor(private db: Database.Database) {}

@@ -5,4 +5,4 @@
  */
 
 // Re-export from domain-server (canonical definition)
-export type { IUserSettingRepository } from '@/domain-server';
+export type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';

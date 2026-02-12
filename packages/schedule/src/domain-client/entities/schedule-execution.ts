@@ -16,7 +16,8 @@ import type {
   ExecutionStatus,
 } from '@dailyuse/contracts/schedule';
 import { Entity } from '@dailyuse/utils';
-import { ScheduleExecutionId, ScheduleTaskId } from '@/domain-shared';
+import { ScheduleExecutionId } from '../../domain-shared/value-objects/schedule-execution-id';
+import { ScheduleTaskId } from '../../domain-shared/value-objects/schedule-task-id';
 
 // 内部状态接口
 interface ScheduleExecutionState {

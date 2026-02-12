@@ -38,7 +38,7 @@ export type {
 // Smart Container
 export { NotificationApplicationService, notificationApplicationService } from './notification-application.service';
 
-export { NotificationContainer } from '@/infrastructure-client';
+export { NotificationContainer } from '../infrastructure-client/notification.container';
 
 // Services
 export {

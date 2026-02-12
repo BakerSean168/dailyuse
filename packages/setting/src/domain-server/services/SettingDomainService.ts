@@ -14,7 +14,9 @@ import { Setting } from '../aggregates/setting';
 import type { ValidationRuleDTO, UIConfigDTO, SyncConfigDTO } from '@dailyuse/contracts/setting';
 import type { SettingGroupId } from '@dailyuse/contracts/primitives';
 import { SettingScope, SettingValueType } from '@dailyuse/contracts/setting';
-import { ValidationRule, UIConfig, SyncConfig } from '@/domain-shared';
+import { ValidationRule } from '@/domain-shared/value-objects/validation-rule';
+import { UIConfig } from '@/domain-shared/value-objects/ui-config';
+import { SyncConfig } from '@/domain-shared/value-objects/sync-config';
 
 /**
  * SettingDomainService

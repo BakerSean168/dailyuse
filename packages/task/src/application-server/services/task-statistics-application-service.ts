@@ -1,9 +1,7 @@
-import type {
-  ITaskStatisticsRepository,
-  ITaskTemplateRepository,
-  ITaskInstanceRepository,
-} from '@/domain-server';
-import { TaskStatistics } from '@/domain-server';
+import type { ITaskStatisticsRepository } from '../../domain-server/repositories/ITaskStatisticsRepository';
+import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import { TaskStatistics } from '../../domain-server/aggregates/task-statistics';
 import type { TaskStatisticsServerDTO } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';

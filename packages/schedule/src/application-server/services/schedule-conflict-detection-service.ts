@@ -1,5 +1,5 @@
-import type { IScheduleRepository } from '@/domain-server';
-import { Schedule as DomainSchedule } from '@/domain-server';
+import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
+import { Schedule as DomainSchedule } from '../../domain-server/aggregates/schedule';
 import type { ConflictDetectionResult, ScheduleServerDTO } from '@dailyuse/contracts/schedule';
 
 export class ScheduleConflictDetectionService {

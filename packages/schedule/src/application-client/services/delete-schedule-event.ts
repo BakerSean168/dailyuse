@@ -4,9 +4,9 @@
  * 删除日程事件用例
  */
 
-import type { IScheduleEventApiClient } from '@/infrastructure-client';
+import type { IScheduleEventApiClient } from '../../infrastructure-client/adapters/types';
 import { eventBus } from '@dailyuse/utils';
-import { ScheduleContainer } from '@/infrastructure-client';
+import { ScheduleContainer } from '../../infrastructure-client/schedule.container';
 import { ScheduleEventEvents, type ScheduleEventRefreshEvent } from './schedule-events';
 
 /**

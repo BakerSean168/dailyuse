@@ -4,9 +4,9 @@
  * 更新规则用例
  */
 
-import type { UpdateRuleReq, UpdateRuleRes } from '@/contracts/api';
+import type { UpdateRuleReq, UpdateRuleRes } from '@/contracts/api/rules';
 import { Rule } from '../../domain-client/aggregates/rule';
-import type { IRuleApiClient } from '@/contracts/api';
+import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
 
 /**
  * Update Rule

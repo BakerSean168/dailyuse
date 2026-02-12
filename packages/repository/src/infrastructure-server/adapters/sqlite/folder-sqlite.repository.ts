@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { Folder } from '@/domain-server';
-import type { IFolderRepository } from '@/domain-server';
+import { Folder } from '../../../domain-server/entities/folder';
+import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
 
 export class SqliteFolderRepository implements IFolderRepository {
   constructor(private db: Database.Database) {}

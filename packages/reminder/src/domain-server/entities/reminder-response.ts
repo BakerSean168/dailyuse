@@ -11,7 +11,7 @@ import type {
   ReminderResponseAction,
 } from '@dailyuse/contracts/reminder';
 import { Entity } from '@dailyuse/utils';
-import { ReminderResponseId } from '@/domain-shared';
+import { ReminderResponseId } from '../../domain-shared/value-objects/reminder-response-id';
 
 /**
  * ReminderResponse 内部状态接口

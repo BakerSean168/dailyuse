@@ -17,7 +17,7 @@ import type {
   ScheduleTaskServerDTO,
 } from '@dailyuse/contracts/schedule';
 import { ExecutionStatus, ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
-import { ScheduleTaskId } from '@/domain-shared';
+import { ScheduleTaskId } from '../../domain-shared/value-objects/schedule-task-id';
 import { ScheduleConfig } from '../value-objects/ScheduleConfig';
 import { ExecutionInfo } from '../value-objects/ExecutionInfo';
 import { RetryPolicy } from '../value-objects/RetryPolicy';

@@ -13,8 +13,8 @@ import type {
   SearchResultItem,
   MatchType,
 } from '@dailyuse/contracts/repository';
-import { Resource } from '@/domain-server';
-import type { IResourceRepository } from '@/domain-server';
+import { Resource } from '../../domain-server/entities/resource';
+import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
 
 export class SearchApplicationService {
   private resourceRepository: IResourceRepository;

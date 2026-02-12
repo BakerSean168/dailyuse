@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { ReminderResponse } from '@/domain-server';
-import type { IReminderResponseRepository } from '@/domain-server';
+import { ReminderResponse } from '../../../domain-server/entities/reminder-response';
+import type { IReminderResponseRepository } from '../../../domain-server/repositories/IReminderResponseRepository';
 
 export class SqliteReminderResponseRepository implements IReminderResponseRepository {
   constructor(private db: Database.Database) {}

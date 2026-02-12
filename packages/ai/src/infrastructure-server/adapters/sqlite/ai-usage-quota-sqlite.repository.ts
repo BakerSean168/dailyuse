@@ -1,10 +1,10 @@
 /**
  * SQLite AIUsageQuota Repository Implementation
- * AI 浣跨敤閰嶉�?SQLite Repository瀹炵�?
+ * AI 浣跨敤閰嶉�?SQLite Repository瀹炵�?
  */
 
 import type Database from 'better-sqlite3';
-import type { IAIUsageQuotaRepository, AIUsageQuotaServerDTO } from '@/domain-server';
+import type { IAIUsageQuotaRepository, AIUsageQuotaServerDTO } from '../../../domain-server/repositories/IAIUsageQuotaRepository';
 
 export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
   constructor(private db: Database.Database) {}

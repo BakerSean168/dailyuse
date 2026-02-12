@@ -39,6 +39,13 @@ example/
 
 ## 🎯 核心概念
 
+### 0. **依赖宪法（Import Constitution）**
+
+**内部引用走具体路径，外部引用走包名入口。**
+
+这条规则用于避免 barrel re-export 造成的循环依赖和 Rollup 分块问题。
+内部模块请直接引用具体文件路径；对外只暴露 `index.ts` 入口。
+
 ### 1. **Aggregate Root（聚合根）vs Entity（实体）**
 
 | 特性 | Aggregate Root | Entity |

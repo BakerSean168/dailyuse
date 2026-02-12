@@ -3,7 +3,7 @@
  * 支持多设备之间的设置同步和版本管理
  */
 
-import type { IUserSettingRepository } from '@/domain-server';
+import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('SettingCloudSyncService');

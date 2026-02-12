@@ -10,7 +10,7 @@
  * - 依赖链查询
  */
 
-import type { ITaskDependencyApiClient } from '@/infrastructure-client';
+import type { ITaskDependencyApiClient } from '../../infrastructure-client/adapters/types';
 import type {
   TaskDependencyClientDTO,
   CreateTaskDependencyRequest,

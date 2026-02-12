@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { RepositoryStatistics } from '@/domain-server';
-import type { IRepositoryStatisticsRepository } from '@/domain-server';
+import { RepositoryStatistics } from '../../../domain-server/aggregates/repository-statistics';
+import type { IRepositoryStatisticsRepository } from '../../../domain-server/repositories/IRepositoryStatisticsRepository';
 
 export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisticsRepository {
   constructor(private db: Database.Database) {}

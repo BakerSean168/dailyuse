@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { TaskInstance } from '@/domain-server';
-import type { ITaskInstanceRepository } from '@/domain-server';
+import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
+import type { ITaskInstanceRepository } from '../../../domain-server/repositories/ITaskInstanceRepository';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 
 export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {

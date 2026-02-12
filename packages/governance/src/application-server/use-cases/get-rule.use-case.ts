@@ -6,9 +6,9 @@
 import type { IRuleRepository } from '../../domain-server/repositories/i-rule-repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { GetRuleReq, GetRuleRes } from '@/contracts/api';
-import type { RuleClientDTO } from '@/contracts/aggregates';
-import type { RuleId } from '@/contracts';
+import type { GetRuleReq, GetRuleRes } from '@/contracts/api/rules';
+import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
+import type { RuleId } from '@/contracts/primitives/ids';
 
 /**
  * Get Rule Use Case

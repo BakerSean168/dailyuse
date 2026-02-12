@@ -1,18 +1,16 @@
 /**
  * AI Container (Server)
  *
- * 渚濊禆娉ㄥ叆瀹瑰櫒锛岀鐞?AI 妯″潡�?repository 瀹炰�?
+ * 渚濊禆娉ㄥ叆瀹瑰櫒锛岀鐞?AI 妯″潡�?repository 瀹炰�?
  */
 
-import type { 
-  IAIConversationRepository,
-  IAIGenerationTaskRepository,
-  IAIUsageQuotaRepository,
-  IAIProviderConfigRepository,
-} from '@/domain-server';
+import type { IAIConversationRepository } from '../domain-server/repositories/IAIConversationRepository';
+import type { IAIGenerationTaskRepository } from '../domain-server/repositories/IAIGenerationTaskRepository';
+import type { IAIUsageQuotaRepository } from '../domain-server/repositories/IAIUsageQuotaRepository';
+import type { IAIProviderConfigRepository } from '../domain-server/repositories/IAIProviderConfigRepository';
 
 /**
- * AI 妯″潡渚濊禆娉ㄥ叆瀹瑰�?
+ * AI 妯″潡渚濊禆娉ㄥ叆瀹瑰�?
  */
 export class AIContainer {
   private static instance: AIContainer;

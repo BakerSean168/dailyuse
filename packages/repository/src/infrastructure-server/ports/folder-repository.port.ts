@@ -5,4 +5,4 @@
  */
 
 // Re-export from domain-server (canonical definition)
-export type { IFolderRepository } from '@/domain-server';
+export type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';

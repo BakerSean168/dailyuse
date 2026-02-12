@@ -20,7 +20,8 @@ import type {
 } from '@dailyuse/contracts/task';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
-import { TaskInstanceId, TaskTemplateId } from '@/domain-shared';
+import { TaskInstanceId } from '../../domain-shared/value-objects/task-instance-id';
+import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 // 内部状态接口

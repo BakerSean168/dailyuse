@@ -1,1 +1,1 @@
-export { SessionLayout } from '@/domain-shared';
+export { SessionLayout } from '../../domain-shared/value-objects/session-layout';

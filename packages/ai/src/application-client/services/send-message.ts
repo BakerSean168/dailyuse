@@ -1,13 +1,13 @@
 /**
  * Send Message
  *
- * 发�?AI 消息用例
+ * 发�?AI 消息用例
  */
 
-import type { IAIMessageApiClient } from '@/infrastructure-client';
+import type { IAIMessageApiClient } from '../../infrastructure-client/adapters/types';
 import type { SendMessageRequest } from '@dailyuse/contracts/ai';
-import { AIMessage } from '@/domain-client';
-import { AIContainer } from '@/infrastructure-client';
+import { Message as AIMessage } from '../../domain-client/entities/message';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * Send Message Input

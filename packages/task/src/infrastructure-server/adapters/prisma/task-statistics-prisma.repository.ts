@@ -1,6 +1,6 @@
 import type {  PrismaClient  } from "../../../generated/prisma/client";
-import type { ITaskStatisticsRepository } from '@/domain-server';
-import { TaskStatistics } from '@/domain-server';
+import type { ITaskStatisticsRepository } from '../../../domain-server/repositories/ITaskStatisticsRepository';
+import { TaskStatistics } from '../../../domain-server/aggregates/task-statistics';
 
 /**
  * TaskStatistics Prisma Repository瀹炵幇

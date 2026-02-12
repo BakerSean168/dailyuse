@@ -4,9 +4,9 @@
  * 按日期范围获取任务实例用例
  */
 
-import type { ITaskTemplateApiClient } from '@/infrastructure-client';
-import { TaskInstance } from '@/domain-client';
-import { TaskContainer } from '@/infrastructure-client';
+import type { ITaskTemplateApiClient } from '../../infrastructure-client/adapters/types';
+import { TaskInstance } from '../../domain-client/aggregates/task-instance';
+import { TaskContainer } from '../../infrastructure-client/task.container';
 
 /**
  * Get Task Instances By Date Range

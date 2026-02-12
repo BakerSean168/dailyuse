@@ -9,7 +9,7 @@ import type {
   SettingEntryClientDTO,
 } from '@dailyuse/contracts/setting';
 import { SettingCategory } from '@dailyuse/contracts/setting';
-import { SettingEntryId } from '@/domain-shared';
+import { SettingEntryId } from '@/domain-shared/value-objects/setting-entry-id';
 
 // 内部状态接口
 interface SettingEntryState {

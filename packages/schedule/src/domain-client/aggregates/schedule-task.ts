@@ -30,7 +30,7 @@ import type {
   ExecutionStatus,
 } from '@dailyuse/contracts/schedule';
 import { AggregateRoot } from '@dailyuse/utils';
-import { ScheduleTaskId } from '@/domain-shared';
+import { ScheduleTaskId } from '../../domain-shared/value-objects/schedule-task-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ScheduleExecution } from '../entities/schedule-execution.js';
 

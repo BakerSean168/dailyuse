@@ -5,7 +5,7 @@
  */
 
 // Container
-export { ReminderContainer } from '@/infrastructure-client';
+export { ReminderContainer } from '../../infrastructure-client/reminder.container';
 
 // Events
 export {

@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { UserSetting } from '@/domain-server';
-import type { IUserSettingRepository, UserSettingQueryOptions } from '@/domain-server';
+import { UserSetting } from '@/domain-server/aggregates/user-setting';
+import type { IUserSettingRepository, UserSettingQueryOptions } from '@/domain-server/repositories/IUserSettingRepository';
 
 export class SqliteUserSettingRepository implements IUserSettingRepository {
   constructor(private db: Database.Database) {}

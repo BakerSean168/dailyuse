@@ -6,12 +6,12 @@
  * **返回 Entity 对象**
  */
 
-import type { IScheduleTaskApiClient } from '@/infrastructure-client';
+import type { IScheduleTaskApiClient } from '../../infrastructure-client/adapters/types';
 import type { CreateScheduleTaskRequest } from '@dailyuse/contracts/schedule';
 import { eventBus } from '@dailyuse/utils';
-import { ScheduleContainer } from '@/infrastructure-client';
+import { ScheduleContainer } from '../../infrastructure-client/schedule.container';
 import { ScheduleTaskEvents, type ScheduleTaskRefreshEvent } from './schedule-events';
-import { ScheduleTask } from '@/domain-client';
+import { ScheduleTask } from '../../domain-client/aggregates/schedule-task';
 
 /**
  * Create Schedule Tasks Batch Input

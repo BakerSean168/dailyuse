@@ -1,5 +1,5 @@
-import type { IScheduleExecutionRepository } from '@/domain-server';
-import { ScheduleExecution } from '@/domain-server';
+import type { IScheduleExecutionRepository } from '../../../domain-server/repositories/IScheduleExecutionRepository';
+import { ScheduleExecution } from '../../../domain-server/entities/schedule-execution';
 import type { PrismaClient, scheduleExecution as PrismaScheduleExecution } from '../../../generated/prisma/client';
 
 export class ScheduleExecutionPrismaRepository implements IScheduleExecutionRepository {

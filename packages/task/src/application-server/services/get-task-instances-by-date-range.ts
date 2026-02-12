@@ -4,7 +4,7 @@
  * 根据日期范围获取任务实例
  */
 
-import type { ITaskInstanceRepository } from '@/domain-server';
+import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
 import type {
   TaskInstanceClientDTO,
   TaskInstancesResponse,

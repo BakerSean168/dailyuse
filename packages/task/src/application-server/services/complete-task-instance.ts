@@ -4,10 +4,8 @@
  * 完成任务实例
  */
 
-import type {
-  ITaskInstanceRepository,
-  ITaskTemplateRepository,
-} from '@/domain-server';
+import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
 import type {
   TaskInstanceClientDTO,
   TaskInstanceCompletedEvent,

@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { AppConfig } from '@/domain-server';
-import type { IAppConfigRepository } from '@/domain-server';
+import { AppConfig } from '@/domain-server/aggregates/app-config';
+import type { IAppConfigRepository } from '@/domain-server/repositories/IAppConfigRepository';
 
 export class SqliteAppConfigRepository implements IAppConfigRepository {
   constructor(private db: Database.Database) {}

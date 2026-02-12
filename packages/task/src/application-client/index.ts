@@ -9,7 +9,7 @@
 // ============================================================
 export { TaskApplicationService, taskApplicationService } from './task-application.service';
 
-export { TaskContainer } from '@/infrastructure-client';
+export { TaskContainer } from '../infrastructure-client/task.container';
 
 export {
   // Types

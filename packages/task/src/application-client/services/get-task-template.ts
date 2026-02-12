@@ -4,9 +4,9 @@
  * 获取任务模板详情用例
  */
 
-import type { ITaskTemplateApiClient } from '@/infrastructure-client';
-import { TaskTemplate } from '@/domain-client';
-import { TaskContainer } from '@/infrastructure-client';
+import type { ITaskTemplateApiClient } from '../../infrastructure-client/adapters/types';
+import { TaskTemplate } from '../../domain-client/aggregates/task-template';
+import { TaskContainer } from '../../infrastructure-client/task.container';
 
 /**
  * Get Task Template

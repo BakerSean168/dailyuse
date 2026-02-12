@@ -4,9 +4,9 @@
  * 标记通知为已读用例
  */
 
-import type { INotificationApiClient } from '@/infrastructure-client';
-import { NotificationContainer } from '@/infrastructure-client';
-import { NotificationClient } from '@/domain-client';
+import type { INotificationApiClient } from '../../infrastructure-client/adapters/types';
+import { NotificationContainer } from '../../infrastructure-client/notification.container';
+import { NotificationClient } from '../../domain-client/aggregates/notification';
 
 /**
  * Mark As Read

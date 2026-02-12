@@ -5,7 +5,7 @@
  */
 
 import type { INotificationPreferenceRepository } from '../../ports/notification-preference-repository.port';
-import type { NotificationPreference } from '@/domain-server';
+import type { NotificationPreference } from '../../../domain-server/aggregates/notification-preference';
 
 /**
  * NotificationPreference Memory Repository

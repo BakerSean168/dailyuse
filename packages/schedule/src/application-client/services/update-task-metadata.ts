@@ -4,9 +4,9 @@
  * 更新任务元数据用例
  */
 
-import type { IScheduleTaskApiClient } from '@/infrastructure-client';
+import type { IScheduleTaskApiClient } from '../../infrastructure-client/adapters/types';
 import { eventBus } from '@dailyuse/utils';
-import { ScheduleContainer } from '@/infrastructure-client';
+import { ScheduleContainer } from '../../infrastructure-client/schedule.container';
 import { ScheduleTaskEvents, type ScheduleTaskRefreshEvent } from './schedule-events';
 import type { UpdateTaskMetadataRequest } from '@dailyuse/contracts/schedule';
 

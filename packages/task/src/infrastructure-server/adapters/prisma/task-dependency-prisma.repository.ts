@@ -5,7 +5,7 @@
  */
 
 import type {  PrismaClient  } from "../../../generated/prisma/client";
-import type { ITaskDependencyRepository } from '@/domain-server';
+import type { ITaskDependencyRepository } from '../../../domain-server/repositories/ITaskDependencyRepository';
 import type {
   TaskDependencyServerDTO,
   CreateTaskDependencyRequest,

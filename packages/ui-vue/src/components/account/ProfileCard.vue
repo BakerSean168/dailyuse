@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Card, CardHeader, CardContent } from '@dailyuse/ui-vue-shadcn/components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from '@dailyuse/ui-vue-shadcn/components/ui/avatar';
-import { Badge } from '@dailyuse/ui-vue-shadcn/components/ui/badge';
-import { Button } from '@dailyuse/ui-vue-shadcn/components/ui/button';
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+  Badge,
+  Button
+} from '@dailyuse/ui-vue-shadcn';
 import type { AccountProfileDTO } from '@dailyuse/contracts/account';
 
 interface ProfileCardProps {
@@ -43,7 +49,7 @@ const genderText = computed(() => {
   }
 });
 
-const formatBirthday = (birthday: string | null) => {
+const formatBirthday = (birthday: number | null) => {
   if (!birthday) return '未设置';
   try {
     const date = new Date(birthday);

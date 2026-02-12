@@ -1,13 +1,13 @@
 /**
  * AI Generate Key Results
  *
- * 通过 AI API 为目标生成关键结果用�?
- * 注意：这�?AI 模块的版本，使用 AI Generation Task API
+ * 通过 AI API 为目标生成关键结果用�?
+ * 注意：这�?AI 模块的版本，使用 AI Generation Task API
  */
 
-import type { IAIGenerationTaskApiClient } from '@/infrastructure-client';
+import type { IAIGenerationTaskApiClient } from '../../infrastructure-client/adapters/types';
 import type { GenerateKeyResultsResponse } from '@dailyuse/contracts/ai';
-import { AIContainer } from '@/infrastructure-client';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * AI Generate Key Results - 通过 AI API 生成关键结果

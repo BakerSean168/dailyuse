@@ -21,7 +21,7 @@
  */
 
 
-import type { RuleId as IRuleId } from '@/contracts';
+import type { RuleId as IRuleId } from '@/contracts/primitives/ids';
 
 import { createIdType } from '@dailyuse/utils';
 

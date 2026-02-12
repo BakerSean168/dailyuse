@@ -7,8 +7,8 @@ import type { IRuleRepository } from '../../domain-server/repositories/i-rule-re
 import { Rule } from '../../domain-server/aggregates/rule';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { CreateRuleReq, CreateRuleRes } from '@/contracts/api';
-import type { RuleClientDTO } from '@/contracts/aggregates';
+import type { CreateRuleReq, CreateRuleRes } from '@/contracts/api/rules';
+import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 
 /**

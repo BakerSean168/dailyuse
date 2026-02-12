@@ -4,8 +4,8 @@
  * Create folder
  */
 
-import type { IFolderRepository } from '@/domain-server';
-import { Folder } from '@/domain-server';
+import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
+import { Folder } from '../../domain-server/entities/folder';
 import type { FolderClientDTO, FolderMetadataServerDTO } from '@dailyuse/contracts/repository';
 
 /**

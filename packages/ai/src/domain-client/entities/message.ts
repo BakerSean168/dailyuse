@@ -1,6 +1,6 @@
 /**
  * Message Entity - Domain Client
- * 消息实体 - 领域客户�?
+ * 消息实体 - 领域客户�?
  */
 
 import { Entity } from '@dailyuse/utils';
@@ -10,9 +10,10 @@ import type {
 } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
 import type { AiConversationId as IAiConversationId } from '@dailyuse/contracts/primitives';
-import { AiMessageId, AiConversationId } from '@/domain-shared';
+import { AiMessageId } from '../../domain-shared/value-objects/ai-message-id';
+import { AiConversationId } from '../../domain-shared/value-objects/ai-conversation-id';
 
-// 内部状态接�?
+// 内部状态接�?
 interface MessageState {
   id: AiMessageId;
   conversationId: AiConversationId;
@@ -67,7 +68,7 @@ export class Message extends Entity<AiMessageId> implements MessageClient {
     return this._props.deletedAt;
   }
 
-  // ===== 计算属�?=====
+  // ===== 计算属�?=====
 
   public get isUser(): boolean {
     return this._props.role === MessageRole.User;

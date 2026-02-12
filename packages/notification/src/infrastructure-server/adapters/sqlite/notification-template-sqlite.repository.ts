@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { NotificationTemplate } from '@/domain-server';
-import type { INotificationTemplateRepository } from '@/domain-server';
+import { NotificationTemplate } from '../../../domain-server/aggregates/notification-template';
+import type { INotificationTemplateRepository } from '../../../domain-server/repositories/INotificationTemplateRepository';
 
 export class SqliteNotificationTemplateRepository implements INotificationTemplateRepository {
   constructor(private db: Database.Database) {}

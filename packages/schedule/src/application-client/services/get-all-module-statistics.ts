@@ -4,9 +4,9 @@
  * 获取所有模块统计信息用例
  */
 
-import type { IScheduleTaskApiClient } from '@/infrastructure-client';
+import type { IScheduleTaskApiClient } from '../../infrastructure-client/adapters/types';
 import type { ModuleStatisticsClientDTO, SourceModule } from '@dailyuse/contracts/schedule';
-import { ScheduleContainer } from '@/infrastructure-client';
+import { ScheduleContainer } from '../../infrastructure-client/schedule.container';
 
 /**
  * Get All Module Statistics

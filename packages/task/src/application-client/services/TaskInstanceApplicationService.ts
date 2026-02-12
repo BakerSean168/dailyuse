@@ -10,13 +10,13 @@
  * - 批量操作
  */
 
-import type { ITaskInstanceApiClient } from '@/infrastructure-client';
+import type { ITaskInstanceApiClient } from '../../infrastructure-client/adapters/types';
 import type {
   TaskInstanceClientDTO,
   CompleteTaskInstanceRequest,
   SkipTaskInstanceRequest,
 } from '@dailyuse/contracts/task';
-import { TaskInstance } from '@/domain-client';
+import { TaskInstance } from '../../domain-client/aggregates/task-instance';
 import { eventBus } from '@dailyuse/utils';
 
 // Task Instance Events

@@ -8,7 +8,7 @@
  */
 
 import type { scheduleExecution as PrismaScheduleExecution } from '../../generated/prisma/client';
-import { ScheduleExecution } from '@/domain-server';
+import { ScheduleExecution } from '../../domain-server/entities/schedule-execution';
 import type { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 /**

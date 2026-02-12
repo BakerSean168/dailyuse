@@ -4,8 +4,8 @@
  * 删除 AI 对话用例
  */
 
-import type { IAIConversationApiClient } from '@/infrastructure-client';
-import { AIContainer } from '@/infrastructure-client';
+import type { IAIConversationApiClient } from '../../infrastructure-client/adapters/types';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * Delete Conversation

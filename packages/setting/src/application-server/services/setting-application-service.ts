@@ -1,6 +1,6 @@
 // @ts-nocheck
-import type { IUserSettingRepository } from '@/domain-server';
-import { UserSetting } from '@/domain-server';
+import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
+import { UserSetting } from '@/domain-server/aggregates/user-setting';
 import type { UserSettingServerDTO, UpdateUserSettingDTO } from '@dailyuse/contracts/setting'; // Added UpdateUserSettingDTO import explicitly if needed or inferred
 import type { UserSettingDTO } from '@dailyuse/contracts/setting'; // Fix DTO type name matching usage
 

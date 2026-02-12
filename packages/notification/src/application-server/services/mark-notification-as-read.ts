@@ -4,12 +4,12 @@
  * 标记通知为已读的应用服务
  */
 
-import { NotificationDomainService } from '@/domain-server';
+import { NotificationDomainService } from '../../domain-server/services/NotificationDomainService';
 import type {
   INotificationRepository,
   INotificationTemplateRepository,
   INotificationPreferenceRepository,
-} from '@/domain-server';
+} from '../../domain-server/repositories';
 
 /**
  * Mark Notification As Read Service

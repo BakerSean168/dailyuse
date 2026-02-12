@@ -19,11 +19,9 @@ import type {
 } from '@dailyuse/contracts/repository';
 import type { RepositoryType, RepositoryStatus } from '@dailyuse/contracts/repository';
 import { AggregateRoot } from '@dailyuse/utils';
-import {
-  RepositoryId,
-  RepositoryConfig,
-  RepositoryStats,
-} from '@/domain-shared';
+import { RepositoryId } from '../../domain-shared/value-objects/repository-id';
+import { RepositoryConfig } from '../../domain-shared/value-objects/repository-config';
+import { RepositoryStats } from '../../domain-shared/value-objects/repository-stats';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 // 内部状态接口：使用 domain-shared 类类型（有 .toDTO() 等方法）

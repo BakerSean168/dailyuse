@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { EditorTab } from '@/domain-server';
-import type { IEditorTabRepository } from '@/domain-server';
+import { EditorTab } from '../../../domain-server/entities/editor-tab';
+import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
 
 export class SqliteEditorTabRepository implements IEditorTabRepository {
   constructor(private db: Database.Database) {}

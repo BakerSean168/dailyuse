@@ -1,6 +1,6 @@
 /**
  * AIConversation Aggregate Root - Domain Client
- * AI对话聚合�?- 领域客户�?
+ * AI对话聚合�?- 领域客户�?
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
@@ -10,11 +10,11 @@ import type {
 } from '@dailyuse/contracts/ai';
 import { ConversationStatus } from '@dailyuse/contracts/ai';
 import type { IdentityId as IIdentityId } from '@dailyuse/contracts/primitives';
-import { AiConversationId } from '@/domain-shared';
+import { AiConversationId } from '../domain-shared/value-objects/ai-conversation-id';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { Message } from '../entities/message';
 
-// 内部状态接�?
+// 内部状态接�?
 interface AIConversationState {
   id: AiConversationId;
   identityId: IdentityId;

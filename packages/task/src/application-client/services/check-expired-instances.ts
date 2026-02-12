@@ -4,10 +4,10 @@
  * 检查过期任务实例用例
  */
 
-import type { ITaskInstanceApiClient } from '@/infrastructure-client';
+import type { ITaskInstanceApiClient } from '../../infrastructure-client/adapters/types';
 import { eventBus } from '@dailyuse/utils';
-import { TaskInstance } from '@/domain-client';
-import { TaskContainer } from '@/infrastructure-client';
+import { TaskInstance } from '../../domain-client/aggregates/task-instance';
+import { TaskContainer } from '../../infrastructure-client/task.container';
 import { TaskInstanceEvents } from './task-events';
 
 /**

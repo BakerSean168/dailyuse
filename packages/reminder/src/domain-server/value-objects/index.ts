@@ -11,7 +11,7 @@ export {
   ReminderInstanceId,
   ReminderHistoryId,
   ReminderResponseId,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';
 
 // Enum-like Value Objects
 export {
@@ -24,7 +24,7 @@ export {
   ReminderNotificationChannel,
   ReminderResponseAction,
   TriggerResult,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';
 
 // Class-type Value Objects
 export {
@@ -37,7 +37,7 @@ export {
   GroupStats,
   ResponseMetrics,
   FrequencyAdjustment,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';
 
 // 为保持向后兼容，提供别名
-export { ReminderNotificationConfig as NotificationConfig } from '@/domain-shared';
+export { ReminderNotificationConfig as NotificationConfig } from '../../domain-shared/value-objects/reminder-notification-config';

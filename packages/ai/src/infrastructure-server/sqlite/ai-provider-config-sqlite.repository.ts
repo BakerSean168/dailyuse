@@ -1,10 +1,10 @@
 /**
  * SQLite AIProviderConfig Repository Implementation
- * AI 鏈嶅姟鍟嗛厤缃�?SQLite Repository瀹炵�?
+ * AI 鏈嶅姟鍟嗛厤缃�?SQLite Repository瀹炵�?
  */
 
 import type Database from 'better-sqlite3';
-import type { IAIProviderConfigRepository, AIProviderConfigServerDTO } from '@/domain-server';
+import type { IAIProviderConfigRepository, AIProviderConfigServerDTO } from '../../domain-server/repositories/IAIProviderConfigRepository';
 
 export class SqliteAIProviderConfigRepository implements IAIProviderConfigRepository {
   constructor(private db: Database.Database) {}

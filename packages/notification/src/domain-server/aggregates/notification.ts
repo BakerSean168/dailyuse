@@ -23,7 +23,7 @@ import {
   NotificationId,
   NotificationAction,
   NotificationMetadata,
-} from '@/domain-shared';
+} from '../../domain-shared/value-objects';
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 import { NotificationChannel } from '../entities/notification-channel';
 

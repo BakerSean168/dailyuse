@@ -16,6 +16,7 @@
     "dist"
   ],
   "dependencies": {
+    "@internationalized/date": "^3.11.0",
     "@dailyuse/ui-core": "workspace:*",
     "@dailyuse/ui-vue-shadcn": "workspace:*"
   },
@@ -23,9 +24,11 @@
     "vue": "^3.4.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-vue": "6.0.4",
     "rimraf": "^6.0.1",
-    "tsup": "^8.0.0",
     "typescript": "^5.9.3",
+    "vite": "^7.2.7",
+    "vite-plugin-dts": "^4.5.4",
     "vue": "^3.4.0"
   }
 }

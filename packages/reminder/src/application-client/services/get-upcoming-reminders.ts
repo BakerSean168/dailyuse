@@ -4,9 +4,9 @@
  * 获取即将到来的提醒用例
  */
 
-import type { IReminderApiClient } from '@/infrastructure-client';
+import type { IReminderApiClient } from '../../infrastructure-client/adapters/types';
 import type { UpcomingRemindersResponseDTO } from '@dailyuse/contracts/reminder';
-import { ReminderContainer } from '@/infrastructure-client';
+import { ReminderContainer } from '../../infrastructure-client/reminder.container';
 
 /**
  * Get Upcoming Reminders Params

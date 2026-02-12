@@ -4,9 +4,9 @@
  * 获取模板的调度状态用例
  */
 
-import type { IReminderApiClient } from '@/infrastructure-client';
+import type { IReminderApiClient } from '../../infrastructure-client/adapters/types';
 import type { TemplateScheduleStatusDTO } from '@dailyuse/contracts/reminder';
-import { ReminderContainer } from '@/infrastructure-client';
+import { ReminderContainer } from '../../infrastructure-client/reminder.container';
 
 /**
  * Get Template Schedule Status

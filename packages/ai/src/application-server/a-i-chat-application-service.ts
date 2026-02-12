@@ -1,17 +1,20 @@
 /**
  * AI Chat Application Service
  *
- * AI 聊天应用服务 - 管理对话、消息处理、流式响�?
- * 依赖注入模式：所有依赖通过构造函数注入，不直接依赖具体实�?
+ * AI 聊天应用服务 - 管理对话、消息处理、流式响�?
+ * 依赖注入模式：所有依赖通过构造函数注入，不直接依赖具体实�?
  */
 
 import type {
   IAIConversationRepository,
+} from '../domain-server/repositories/IAIConversationRepository';
+import type {
   IAIAdapter,
   AIGenerationRequest,
   AIStreamChunk,
-} from '@/domain-server';
-import { AIConversationServer, MessageServer } from '@/domain-server';
+} from '../domain-server/interfaces/adapter-types';
+import { AIConversation as AIConversationServer } from '../domain-server/aggregates/ai-conversation';
+import { Message as MessageServer } from '../domain-server/entities/message';
 import type { MessageClientDTO, MessageResponse } from '@dailyuse/contracts/ai';
 import { MessageRole, GenerationTaskType } from '@dailyuse/contracts/ai';
 import { createLogger, eventBus } from '@dailyuse/utils';

@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { Setting } from '@/domain-server';
-import type { ISettingRepository, SettingQueryOptions } from '@/domain-server';
+import { Setting } from '@/domain-server/aggregates/setting';
+import type { ISettingRepository, SettingQueryOptions } from '@/domain-server/repositories/ISettingRepository';
 
 export class SqliteSettingRepository implements ISettingRepository {
   constructor(private db: Database.Database) {}

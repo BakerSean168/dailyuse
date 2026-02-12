@@ -4,8 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { LinkedResource } from '@/domain-server';
-import type { ILinkedResourceRepository, LinkedSourceType, LinkedTargetType } from '@/domain-server';
+import { LinkedResource } from '../../../domain-server/entities/linked-resource';
+import type { ILinkedResourceRepository, LinkedSourceType, LinkedTargetType } from '../../../domain-server/repositories/ILinkedResourceRepository';
 
 export class SqliteLinkedResourceRepository implements ILinkedResourceRepository {
   constructor(private db: Database.Database) {}

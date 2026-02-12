@@ -1,5 +1,11 @@
 import type { UserSetting } from '../aggregates/user-setting';
 
+export interface UserSettingQueryOptions {
+  category?: string;
+  limit?: number;
+  offset?: number;
+}
+
 /**
  * UserSetting 仓储接口
  * 定义持久化操作

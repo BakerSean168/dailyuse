@@ -4,9 +4,9 @@
  * 获取仓库详情用例
  */
 
-import type { IRepositoryApiClient } from '@/infrastructure-client';
-import { RepositoryContainer } from '@/infrastructure-client';
-import { Repository } from '@/domain-client';
+import type { IRepositoryApiClient } from '../../infrastructure-client/adapters/types';
+import { RepositoryContainer } from '../../infrastructure-client/repository.container';
+import { Repository } from '../../domain-client/aggregates/Repository';
 
 /**
  * Get Repository

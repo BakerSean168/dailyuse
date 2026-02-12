@@ -4,9 +4,9 @@
  * AI 生成目标建议用例
  */
 
-import type { IAIGenerationTaskApiClient } from '@/infrastructure-client';
+import type { IAIGenerationTaskApiClient } from '../../infrastructure-client/adapters/types';
 import type { GenerateGoalRequest, GenerateGoalResponse } from '@dailyuse/contracts/ai';
-import { AIContainer } from '@/infrastructure-client';
+import { AIContainer } from '../../infrastructure-client/ai.container';
 
 /**
  * Generate Goal Input

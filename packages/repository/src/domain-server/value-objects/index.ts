@@ -5,25 +5,19 @@
  */
 
 // IDs
-export {
-  RepositoryId,
-  ResourceId,
-} from '@/domain-shared';
+export { RepositoryId } from '../../domain-shared/value-objects/repository-id';
+export { ResourceId } from '../../domain-shared/value-objects/resource-id';
 
 // Type Value Objects (Enums)
-export {
-  RepositoryType,
-  RepositoryStatus,
-  ResourceType,
-  ResourceStatus,
-} from '@/domain-shared';
+export { RepositoryType } from '../../domain-shared/value-objects/repository-type';
+export { RepositoryStatus } from '../../domain-shared/value-objects/repository-status';
+export { ResourceType } from '../../domain-shared/value-objects/resource-type';
+export { ResourceStatus } from '../../domain-shared/value-objects/resource-status';
 
 // Class Value Objects
-export {
-  RepositoryConfig,
-  RepositoryStats,
-  FolderMetadata,
-  ResourceMetadata,
-  ResourceStats,
-  ExternalLink,
-} from '@/domain-shared';
+export { RepositoryConfig } from '../../domain-shared/value-objects/repository-config';
+export { RepositoryStats } from '../../domain-shared/value-objects/repository-stats';
+export { FolderMetadata } from '../../domain-shared/value-objects/folder-metadata';
+export { ResourceMetadata } from '../../domain-shared/value-objects/resource-metadata';
+export { ResourceStats } from '../../domain-shared/value-objects/resource-stats';
+export { ExternalLink } from '../../domain-shared/value-objects/external-link';
