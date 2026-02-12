@@ -1,6 +1,5 @@
 /**
  * Reminder 模块初始化任务
- * 参考 Goal 模块架构，遵循新的开发规范
  */
 
 import {
@@ -8,8 +7,6 @@ import {
   InitializationPhase,
   type InitializationTask,
 } from '@dailyuse/utils';
-
-import { reminderTemplateApplicationService } from '../application/services/ReminderTemplateApplicationService';
 import { useReminderStore } from '../presentation/stores/reminderStore';
 
 /**
@@ -29,29 +26,22 @@ export function registerReminderInitializationTasks(): void {
   const reminderModuleInitTask: InitializationTask = {
     name: 'reminder-module',
     phase: InitializationPhase.APP_STARTUP,
-    priority: 30, // 在Goal模块之后初始化
+    priority: 30,
     initialize: async () => {
       console.log('📔 [Reminder] 开始初始化 Reminder 模块...');
-
       try {
-        // 延迟一小段时间，确保 Pinia 完全初始化
         await new Promise((resolve) => setTimeout(resolve, 100));
-       
         console.log('✅ [Reminder] Reminder 模块初始化完成');
       } catch (error) {
         console.error('❌ [Reminder] Reminder 模块初始化失败:', error);
-        // 不抛出错误，允许应用继续启动
         console.warn('Reminder 模块初始化失败，但应用将继续启动');
       }
     },
     cleanup: async () => {
       console.log('🧹 [Reminder] 清理 Reminder 模块数据...');
-
       try {
         const store = useReminderStore();
-
-        // 清空所有数据
-        store.clearAll();
+        store.$reset();
         console.log('✅ [Reminder] Reminder 模块数据清理完成');
       } catch (error) {
         console.error('❌ [Reminder] Reminder 模块清理失败:', error);
@@ -66,30 +56,18 @@ export function registerReminderInitializationTasks(): void {
     priority: 20,
     initialize: async (context?: { accountUuid?: string }) => {
       console.log(`📔 [Reminder] 开始用户登录数据同步: ${context?.accountUuid || 'unknown'}`);
-
       try {
-        
-
-        // 获取 ReminderTemplates
-        console.log('📥 [Reminder] 获取 ReminderTemplate 列表...');
-        
-
-        console.log(`✅ [Reminder] 用户登录数据同步完成: ${context?.accountUuid || 'unknown'}`);
+        console.log(`✅ [Reminder] Reminder 数据将按需加载`);
       } catch (error) {
-        console.error(
-          `❌ [Reminder] 用户登录数据同步失败: ${context?.accountUuid || 'unknown'}`,
-          error,
-        );
-        // 数据同步失败不应阻止用户登录
+        console.error(`❌ [Reminder] 用户登录数据同步失败:`, error);
         console.warn('Reminder 数据同步失败，但用户登录将继续');
       }
     },
     cleanup: async () => {
       console.log('🧹 [Reminder] 清理用户数据...');
-
       try {
         const store = useReminderStore();
-        store.clearAll();
+        store.$reset();
         console.log('✅ [Reminder] 用户数据清理完成');
       } catch (error) {
         console.error('❌ [Reminder] 用户数据清理失败:', error);
@@ -97,7 +75,6 @@ export function registerReminderInitializationTasks(): void {
     },
   };
 
-  // 注册任务
   manager.registerTask(reminderModuleInitTask);
   manager.registerTask(reminderUserDataSyncTask);
 

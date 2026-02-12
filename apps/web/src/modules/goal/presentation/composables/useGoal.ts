@@ -1,567 +1,164 @@
 /**
- * Goal 业务逻辑 Composable - 统一入口
+ * useGoal - 目标模块主 composable
  *
- * 这个 composable 聚合了所有 goal 相关的功能，提供向后兼容的 API
- *
- * 🔄 重构说明：
- * - 这是一个聚合版本，组合多个细粒度 composable
- * - 大部分操作委托给专门的 composable
- * - 保持向后兼容性
- *
- * 推荐使用方式：
- * - 如果只需要目标管理功能，使用 useGoalManagement()
- * - 如果只需要文件夹功能，使用 useGoalFolder()
- * - 如果只需要关键结果功能，使用 useKeyResult()
- * - 如果需要所有功能，使用 useGoal()（向后兼容）
+ * 编排 API 调用 + Store 更新 + 错误处理。
  */
 
-import { ref, computed, reactive, readonly } from 'vue';
+import { computed, ref } from 'vue';
+import { useGoalStore } from '../stores/goalStore';
+import { goalApi, GoalApiError } from '../services/goalApi';
 import type {
-  CreateGoalRequest,
-  UpdateGoalRequest,
-  AddKeyResultRequest,
-  UpdateKeyResultRequest,
-  ProgressBreakdown,
-  CreateGoalRecordRequest,
-  CreateGoalReviewRequest,
-  UpdateGoalReviewRequest,
-  CreateGoalFolderRequest,
-  UpdateGoalFolderRequest,
+  GoalClientDTO,
+  CreateGoalReq,
+  UpdateGoalReq,
+  GoalStatus,
+  CreateGoalFolderReq,
+  UpdateGoalFolderReq,
+  AddKeyResultReq,
+  UpdateKeyResultReq,
+  CreateGoalRecordReq,
+  CreateGoalReviewReq,
+  UpdateGoalReviewReq,
 } from '@dailyuse/contracts/goal';
-import { useGoalManagement } from './useGoalManagement';
-import { useGoalFolder } from './useGoalFolder';
-import { useKeyResult } from './useKeyResult';
-import {
-  CreateGoalRecord,
-  GetGoalRecordsByKeyResult,
-  GetGoalRecordsByGoal,
-  DeleteGoalRecord,
-  CreateGoalReview,
-  GetGoalReviews,
-  UpdateGoalReview,
-  DeleteGoalReview,
-} from '@dailyuse/goal/application-client';
-import { getGoalStore } from '../stores/goalStore';
-import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
-/**
- * Goal 业务逻辑 Composable - 聚合版本
- * 整合所有 goal 相关的功能
- */
 export function useGoal() {
-  const goalStore = getGoalStore();
-  const { success: showSuccess, error: showError, info: showInfo } = getGlobalMessage();
+  const store = useGoalStore();
+  const savingId = ref<string | null>(null);
 
-  // 使用拆分后的 composables
-  const goalManagement = useGoalManagement();
-  const goalFolder = useGoalFolder();
-  const keyResult = useKeyResult();
+  const goals = computed(() => store.goals);
+  const currentGoal = computed(() => store.currentGoal);
+  const keyResults = computed(() => store.keyResults);
+  const goalFolders = computed(() => store.goalFolders);
+  const goalReviews = computed(() => store.goalReviews);
+  const goalRecords = computed(() => store.goalRecords);
+  const isLoading = computed(() => store.isLoading);
+  const error = computed(() => store.error);
+  const pagination = computed(() => store.pagination);
+  const hasActiveFilter = computed(() => store.hasActiveFilter);
+  const isSaving = computed(() => savingId.value !== null);
 
-  // ===== 响应式状态 =====
-  const isLoading = computed(() => goalStore.isLoading);
-  const error = computed(() => goalStore.error);
-  const goals = computed(() => goalStore.getAllGoals);
-  const GoalFolders = computed(() => goalStore.getAllGoalFolders);
-  const currentGoal = computed(() => goalStore.getSelectedGoal);
+  function handleError(err: unknown, fallback: string): void {
+    const msg = err instanceof GoalApiError ? err.message : err instanceof Error ? err.message : fallback;
+    store.setError(msg);
+    console.error(fallback, err);
+  }
 
-  // ===== 本地状态 =====
-  const editingGoal = ref<any | null>(null);
-  const showCreateDialog = ref(false);
-  const showEditDialog = ref(false);
-  const searchQuery = ref('');
-  const filters = reactive({
-    status: '',
-    dirUuid: '',
-    startDate: '',
-    endDate: '',
-  });
-
-  // ===== 缓存优先的数据获取方法 =====
-
-  /**
-   * 获取目标列表 - 委托给 useGoalManagement
-   */
-  const fetchGoals = goalManagement.fetchGoals;
-
-  /**
-   * 获取目标目录列表 - 委托给 useGoalFolder
-   */
-  const fetchGoalFolders = goalFolder.fetchFolders;
-
-  /**
-   * 获取目标详情 - 委托给 useGoalManagement
-   */
-  const fetchGoalById = goalManagement.fetchGoalByUuid;
-
-  /**
-   * 初始化数据 - 委托给 useGoalManagement
-   */
-  const initializeData = goalManagement.initializeData;
-
-  // ===== Goal CRUD 操作 - 委托给 useGoalManagement =====
-  const createGoal = goalManagement.createGoal;
-  const updateGoal = goalManagement.updateGoal;
-  const deleteGoal = goalManagement.deleteGoal;
-
-  // ===== Goal 状态管理 - 委托给 useGoalManagement =====
-  const activateGoal = goalManagement.activateGoal;
-  const pauseGoal = goalManagement.pauseGoal;
-  const completeGoal = goalManagement.completeGoal;
-  const archiveGoal = goalManagement.archiveGoal;
-
-  // ===== Goal 聚合视图 - 委托给 useGoalManagement =====
-  const getGoalAggregateView = goalManagement.getGoalAggregateView;
-
-  // ===== GoalFolder 操作 - 委托给 useGoalFolder =====
-  const createGoalFolder = goalFolder.createFolder;
-  const updateGoalFolder = goalFolder.updateFolder;
-  const deleteGoalFolder = goalFolder.deleteFolder;
-
-  // ===== 搜索和筛选 =====
-
-  /**
-   * 搜索目标
-   */
-  const searchGoals = async (
-    query: string,
-    options?: {
-      page?: number;
-      limit?: number;
-      status?: string;
-      dirUuid?: string;
-    },
-  ) => {
-    // TODO: 可以添加到 useGoalManagement
-    return goalManagement.fetchGoals(true, {
-      ...options,
-    });
-  };
-
-  /**
-   * 应用筛选器
-   */
-  const applyFilters = async () => {
-    const params = {
-      ...filters,
-      ...Object.fromEntries(Object.entries(filters).filter(([_, value]) => value !== '')),
-    };
-
-    await goalManagement.fetchGoals(true, params);
-  };
-
-  /**
-   * 清除筛选器
-   */
-  const clearFilters = async () => {
-    Object.assign(filters, {
-      status: '',
-      dirUuid: '',
-      startDate: '',
-      endDate: '',
-    });
-    await goalManagement.fetchGoals(true);
-  };
-
-  // ===== UI 交互方法 =====
-
-  const openCreateDialog = () => {
-    editingGoal.value = null;
-    showCreateDialog.value = true;
-  };
-
-  const openEditDialog = (goal: any) => {
-    editingGoal.value = goal;
-    showEditDialog.value = true;
-  };
-
-  const closeDialogs = () => {
-    showCreateDialog.value = false;
-    showEditDialog.value = false;
-    editingGoal.value = null;
-  };
-
-  const selectGoal = (goal: any) => {
-    goalStore.setSelectedGoal(goal.uuid);
-  };
-
-  const toggleGoalSelection = (goal: any) => {
-    if (currentGoal.value?.uuid === goal.uuid) {
-      goalStore.setSelectedGoal(null);
-    } else {
-      goalStore.setSelectedGoal(goal.uuid);
-    }
-  };
-
-  const clearSelection = () => {
-    goalStore.setSelectedGoal(null);
-  };
-
-  // ===== DDD聚合根控制：KeyResult管理 - 委托给 useKeyResult =====
-  const createKeyResultForGoal = keyResult.createKeyResult;
-  const getKeyResultsByGoal = keyResult.fetchKeyResultsByGoal;
-  const updateKeyResultForGoal = keyResult.updateKeyResult;
-  const deleteKeyResultForGoal = keyResult.deleteKeyResult;
-  const batchUpdateKeyResultWeights = keyResult.batchUpdateWeights;
-  const fetchProgressBreakdown = keyResult.fetchProgressBreakdown;
-
-  // ===== DDD聚合根控制：GoalRecord管理 =====
-
-  /**
-   * 通过KeyResult创建目标记录
-   */
-  const createGoalRecord = async (
-    goalUuid: string,
-    keyResultUuid: string,
-    request: CreateGoalRecordRequest,
-  ) => {
+  async function fetchGoals() {
+    store.setLoading(true);
+    store.setError(null);
     try {
-      const response = await new CreateGoalRecord().execute({
-        ...request,
-        goalUuid,
-        keyResultUuid,
+      const res = await goalApi.queryGoals({
+        status: store.filterStatus ? [store.filterStatus] : undefined,
+        keyword: store.searchQuery || undefined,
+        page: store.pagination.page,
+        pageSize: store.pagination.pageSize,
       });
+      store.setGoals(res.data, res.pagination.total);
+    } catch (e) { handleError(e, '加载目标列表失败'); }
+    finally { store.setLoading(false); }
+  }
 
-      showSuccess('目标记录创建成功');
-      return response;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '创建目标记录失败';
-      showError(errorMessage);
-      throw err;
-    }
-  };
+  async function fetchGoal(id: string): Promise<GoalClientDTO | null> {
+    store.setLoading(true);
+    store.setError(null);
+    try { const g = await goalApi.getGoal(id); store.setCurrentGoal(g); return g; }
+    catch (e) { handleError(e, '加载目标失败'); return null; }
+    finally { store.setLoading(false); }
+  }
 
-  /**
-   * 获取关键结果的所有记录
-   */
-  const getGoalRecordsByKeyResult = async (
-    goalUuid: string,
-    keyResultUuid: string,
-    params?: {
-      page?: number;
-      limit?: number;
-      dateRange?: { start?: string; end?: string };
-    },
-  ) => {
-    try {
-      return await new GetGoalRecordsByKeyResult().execute(goalUuid, keyResultUuid, params);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '获取关键结果记录失败';
-      showError(errorMessage);
-      throw err;
-    }
-  };
+  async function createGoal(req: CreateGoalReq) {
+    savingId.value = 'new'; store.setError(null);
+    try { const g = await goalApi.createGoal(req); store.addGoal(g); return g; }
+    catch (e) { handleError(e, '创建目标失败'); return null; }
+    finally { savingId.value = null; }
+  }
 
-  /**
-   * 获取目标的所有记录
-   */
-  const getGoalRecordsByGoal = async (
-    goalUuid: string,
-    params?: {
-      page?: number;
-      limit?: number;
-      dateRange?: { start?: string; end?: string };
-    },
-  ) => {
-    try {
-      return await new GetGoalRecordsByGoal().execute(goalUuid, params);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '获取目标所有记录失败';
-      showError(errorMessage);
-      throw err;
-    }
-  };
+  async function updateGoal(id: string, req: UpdateGoalReq) {
+    savingId.value = id; store.setError(null);
+    try { const g = await goalApi.updateGoal(id, req); store.updateGoal(g); return g; }
+    catch (e) { handleError(e, '更新目标失败'); return null; }
+    finally { savingId.value = null; }
+  }
 
-  // ===== DDD聚合根控制：GoalReview管理 =====
+  async function deleteGoal(id: string) {
+    savingId.value = id; store.setError(null);
+    try { await goalApi.deleteGoal(id); store.removeGoal(id); return true; }
+    catch (e) { handleError(e, '删除目标失败'); return false; }
+    finally { savingId.value = null; }
+  }
 
-  /**
-   * 通过Goal聚合根创建目标复盘
-   */
-  const createGoalReview = async (goalUuid: string, request: CreateGoalReviewRequest) => {
-    try {
-      const response = await new CreateGoalReview().execute({
-        ...request,
-        goalUuid,
-      });
-      showSuccess('目标复盘创建成功');
-      return response;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '创建目标复盘失败';
-      showError(errorMessage);
-      throw err;
-    }
-  };
+  async function fetchFolders() {
+    try { const r = await goalApi.listFolders(); store.setGoalFolders(r.data); }
+    catch (e) { handleError(e, '加载文件夹失败'); }
+  }
 
-  /**
-   * 获取目标的所有复盘
-   */
-  const getGoalReviewsByGoal = async (goalUuid: string) => {
-    try {
-      return await new GetGoalReviews().execute({ goalUuid });
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '获取目标复盘失败';
-      showError(errorMessage);
-      throw err;
-    }
-  };
+  async function createFolder(req: CreateGoalFolderReq) {
+    try { const f = await goalApi.createFolder(req); store.addGoalFolder(f); return f; }
+    catch (e) { handleError(e, '创建文件夹失败'); return null; }
+  }
 
-  /**
-   * 通过Goal聚合根更新目标复盘
-   */
-  const updateGoalReview = async (
-    goalUuid: string,
-    reviewUuid: string,
-    request: Partial<UpdateGoalReviewRequest>,
-  ) => {
-    try {
-      const response = await new UpdateGoalReview().execute(reviewUuid, request);
-      showSuccess('目标复盘更新成功');
-      return response;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '更新目标复盘失败';
-      showError(errorMessage);
-      throw err;
-    }
-  };
+  async function updateFolder(id: string, req: UpdateGoalFolderReq) {
+    try { const f = await goalApi.updateFolder(id, req); store.updateGoalFolder(f); return f; }
+    catch (e) { handleError(e, '更新文件夹失败'); return null; }
+  }
 
-  /**
-   * 通过Goal聚合根删除目标复盘
-   */
-  const deleteGoalReview = async (goalUuid: string, reviewUuid: string) => {
-    try {
-      await new DeleteGoalReview().execute(reviewUuid);
-      showSuccess('目标复盘删除成功');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '删除目标复盘失败';
-      showError(errorMessage);
-      throw err;
-    }
-  };
+  async function deleteFolder(id: string) {
+    try { await goalApi.deleteFolder(id); store.removeGoalFolder(id); return true; }
+    catch (e) { handleError(e, '删除文件夹失败'); return false; }
+  }
 
-  // ===== 实体状态管理 =====
+  async function fetchKeyResults(goalId: string) {
+    try { const r = await goalApi.getKeyResults(goalId); store.setKeyResults(r.data); }
+    catch (e) { handleError(e, '加载关键结果失败'); }
+  }
 
-  const currentGoalKeyResults = ref<any[]>([]);
-  const currentKeyResultRecords = ref<any[]>([]);
-  const currentGoalReviews = ref<any[]>([]);
+  async function addKeyResult(goalId: string, req: AddKeyResultReq) {
+    try { const kr = await goalApi.addKeyResult(goalId, req); store.addKeyResult(kr); return kr; }
+    catch (e) { handleError(e, '添加关键结果失败'); return null; }
+  }
 
-  const loadCurrentGoalKeyResults = async (goalUuid: string) => {
-    try {
-      const response = await getKeyResultsByGoal(goalUuid);
-      currentGoalKeyResults.value = response.keyResults || [];
-      return response;
-    } catch (error) {
-      currentGoalKeyResults.value = [];
-      throw error;
-    }
-  };
+  async function updateKeyResult(goalId: string, krId: string, req: UpdateKeyResultReq) {
+    try { const kr = await goalApi.updateKeyResult(goalId, krId, req); store.updateKeyResult(kr); return kr; }
+    catch (e) { handleError(e, '更新关键结果失败'); return null; }
+  }
 
-  const loadCurrentKeyResultRecords = async (goalUuid: string, keyResultUuid: string) => {
-    try {
-      const response = await getGoalRecordsByKeyResult(goalUuid, keyResultUuid);
-      currentKeyResultRecords.value = response.records || [];
-      return response;
-    } catch (error) {
-      currentKeyResultRecords.value = [];
-      throw error;
-    }
-  };
+  async function deleteKeyResult(goalId: string, krId: string) {
+    try { await goalApi.deleteKeyResult(goalId, krId); store.removeKeyResult(krId); return true; }
+    catch (e) { handleError(e, '删除关键结果失败'); return false; }
+  }
 
-  const loadCurrentGoalReviews = async (goalUuid: string) => {
-    try {
-      const response = await getGoalReviewsByGoal(goalUuid);
-      currentGoalReviews.value = response.reviews || [];
-      return response;
-    } catch (error) {
-      currentGoalReviews.value = [];
-      throw error;
-    }
-  };
+  async function fetchRecords(goalId: string) {
+    try { const r = await goalApi.getRecords(goalId); store.setGoalRecords(r.data); }
+    catch (e) { handleError(e, '加载进度记录失败'); }
+  }
 
-  const clearCurrentEntityState = () => {
-    currentGoalKeyResults.value = [];
-    currentKeyResultRecords.value = [];
-    currentGoalReviews.value = [];
-  };
+  async function createRecord(goalId: string, req: CreateGoalRecordReq) {
+    try { const r = await goalApi.createRecord(goalId, req); store.addGoalRecord(r); return r; }
+    catch (e) { handleError(e, '创建进度记录失败'); return null; }
+  }
 
-  // ===== 工具方法 =====
+  async function fetchReviews(goalId: string) {
+    try { const r = await goalApi.getReviews(goalId); store.setGoalReviews(r.data); }
+    catch (e) { handleError(e, '加载复盘失败'); }
+  }
 
-  const refresh = goalManagement.refresh;
+  async function createReview(goalId: string, req: CreateGoalReviewReq) {
+    try { const r = await goalApi.createReview(goalId, req); store.addGoalReview(r); return r; }
+    catch (e) { handleError(e, '创建复盘失败'); return null; }
+  }
 
-  const initialize = async () => {
-    try {
-      await initializeData();
-    } catch (error) {
-      showError('初始化失败');
-      throw error;
-    }
-  };
-
-  // ===== 计算属性 =====
-
-  const filteredGoals = computed(() => goalStore.getFilteredGoals);
-  const goalStats = computed(() => goalStore.getGoalStatistics);
-  const GoalFolderStats = computed(() => goalStore.getGoalFolderStatistics);
-  const hasSelection = computed(() => !!currentGoal.value);
-
-  // ===== 时间工具方法 =====
-  const DAY_MS = 1000 * 60 * 60 * 24;
-  const DEFAULT_DURATION = 30 * DAY_MS;
-
-  const toTimestamp = (value?: number | string | Date | null) => {
-    if (value === null || value === undefined) return null;
-    if (typeof value === 'number') return value;
-    if (value instanceof Date) return value.getTime();
-    const date = new Date(value);
-    const time = date.getTime();
-    return Number.isNaN(time) ? null : time;
-  };
-
-  const resolveGoalTimeRange = (goal: any) => {
-    if (!goal) return { start: null, end: null };
-
-    const startCandidates = [goal.startDate, goal.startTime, goal.createdAt];
-    const endCandidates = [
-      goal.targetDate,
-      goal.endDate,
-      goal.endTime,
-      goal.completedAt,
-      goal.updatedAt,
-    ];
-
-    const start = startCandidates.map(toTimestamp).find((value) => value !== null) ?? null;
-    const end = endCandidates.map(toTimestamp).find((value) => value !== null) ?? null;
-
-    if (start && (!end || end <= start)) {
-      end = start + DEFAULT_DURATION;
-    }
-
-    return { start, end };
-  };
-
-  const getTimeProgress = (goal: any) => {
-    if (!goal) return 0;
-    if (typeof goal.timeProgressRatio === 'number' && !Number.isNaN(goal.timeProgressRatio)) {
-      return Math.min(Math.max(goal.timeProgressRatio, 0), 1);
-    }
-    if (
-      typeof goal.timeProgressPercentage === 'number' &&
-      !Number.isNaN(goal.timeProgressPercentage)
-    ) {
-      return Math.min(Math.max(goal.timeProgressPercentage / 100, 0), 1);
-    }
-    if (goal.timeRangeSummary?.elapsedDays !== undefined && goal.timeRangeSummary?.durationDays) {
-      const ratio = goal.timeRangeSummary.elapsedDays / goal.timeRangeSummary.durationDays;
-      return Math.min(Math.max(ratio, 0), 1);
-    }
-    const { start, end } = resolveGoalTimeRange(goal);
-    if (!start || !end || end <= start) return 0;
-    const now = Date.now();
-    if (now <= start) return 0;
-    if (now >= end) return 1;
-    return (now - start) / (end - start);
-  };
-
-  const getRemainingDays = (goal: any) => {
-    if (!goal) return 0;
-    const summaryRemaining = goal.timeRangeSummary?.remainingDays;
-    if (summaryRemaining !== undefined && summaryRemaining !== null) {
-      return summaryRemaining;
-    }
-    const { end } = resolveGoalTimeRange(goal);
-    if (!end) return 0;
-    const diff = end - Date.now();
-    if (diff <= 0) return 0;
-    return Math.ceil(diff / DAY_MS);
-  };
+  function setFilterStatus(s: GoalStatus | null) { store.setFilterStatus(s); fetchGoals(); }
+  function setPage(p: number) { store.setPage(p); fetchGoals(); }
+  function clearFilters() { store.clearFilters(); fetchGoals(); }
+  function search(q: string) { store.setSearchQuery(q); fetchGoals(); }
 
   return {
-    // 响应式状态
-    isLoading: readonly(isLoading),
-    error: readonly(error),
-    goals: readonly(goals),
-    GoalFolders: readonly(GoalFolders),
-    currentGoal: readonly(currentGoal),
-    filteredGoals: readonly(filteredGoals),
-    goalStats: readonly(goalStats),
-    GoalFolderStats: readonly(GoalFolderStats),
-    hasSelection: readonly(hasSelection),
-
-    // 本地状态
-    editingGoal,
-    showCreateDialog,
-    showEditDialog,
-    searchQuery,
-    filters,
-
-    // 数据获取方法（缓存优先）
-    fetchGoals,
-    fetchGoalFolders,
-    fetchGoalById,
-    initializeData,
-
-    // Goal 操作
-    createGoal,
-    updateGoal,
-    deleteGoal,
-
-    // Goal 状态管理
-    activateGoal,
-    pauseGoal,
-    completeGoal,
-    archiveGoal,
-
-    // Goal 聚合视图
-    getGoalAggregateView,
-
-    // GoalFolder 操作
-    createGoalFolder,
-    updateGoalFolder,
-    deleteGoalFolder,
-
-    // 搜索和筛选
-    searchGoals,
-    applyFilters,
-    clearFilters,
-
-    // UI 交互
-    openCreateDialog,
-    openEditDialog,
-    closeDialogs,
-    selectGoal,
-    toggleGoalSelection,
-    clearSelection,
-
-    // 工具方法
-    refresh,
-    initialize,
-    getTimeProgress,
-    getRemainingDays,
-
-    // DDD聚合根控制：KeyResult管理
-    createKeyResultForGoal,
-    getKeyResultsByGoal,
-    updateKeyResultForGoal,
-    deleteKeyResultForGoal,
-    batchUpdateKeyResultWeights,
-    fetchProgressBreakdown,
-
-    // DDD聚合根控制：GoalRecord管理
-    createGoalRecord,
-    getGoalRecordsByKeyResult,
-    getGoalRecordsByGoal,
-
-    // DDD聚合根控制：GoalReview管理
-    createGoalReview,
-    getGoalReviewsByGoal,
-    updateGoalReview,
-    deleteGoalReview,
-
-    // 实体状态管理
-    currentGoalKeyResults,
-    currentKeyResultRecords,
-    currentGoalReviews,
-    loadCurrentGoalKeyResults,
-    loadCurrentKeyResultRecords,
-    loadCurrentGoalReviews,
-    clearCurrentEntityState,
+    goals, currentGoal, keyResults, goalFolders, goalReviews, goalRecords,
+    isLoading, isSaving, error, pagination, hasActiveFilter,
+    fetchGoals, fetchGoal, createGoal, updateGoal, deleteGoal,
+    fetchFolders, createFolder, updateFolder, deleteFolder,
+    fetchKeyResults, addKeyResult, updateKeyResult, deleteKeyResult,
+    fetchRecords, createRecord, fetchReviews, createReview,
+    setFilterStatus, setPage, clearFilters, search,
   };
 }

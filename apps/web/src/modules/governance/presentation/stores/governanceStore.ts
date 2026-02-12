@@ -233,7 +233,7 @@ export const useGovernanceStore = defineStore('governance', {
   },
 
   persist: {
-    paths: ['filter.status', 'filter.severity', 'pagination.pageSize'],
+    pick: ['filter.status', 'filter.severity', 'pagination.pageSize'] as string[],
   },
 });
 

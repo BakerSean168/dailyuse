@@ -1,111 +1,31 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 import { LoginForm, RegisterForm } from '@dailyuse/ui-vue';
 import type { LoginByEmailReq, LoginByPhoneReq, RegisterByEmailReq, RegisterByPhoneReq } from '@dailyuse/contracts/authentication';
-import { useAuthenticationStore } from '../stores/authenticationStore';
-import { toast } from 'vue-sonner';
+import { useAuth } from '../composables/useAuth';
 
-const router = useRouter();
-const authStore = useAuthenticationStore();
+const { loginByEmail, loginByPhone, registerByEmail, registerByPhone, sendSmsCode, isLoading } = useAuth();
 
 const showRegister = ref(false);
-const loading = ref(false);
 
 const handleLoginByEmail = async (data: LoginByEmailReq) => {
-  loading.value = true;
-  try {
-    // TODO: 调用 authentication service 进行登录
-    console.log('Login by email:', data);
-    
-    toast.success('登录成功', {
-      description: '欢迎回来！',
-    });
-    
-    // 登录成功后跳转到首页
-    router.push('/');
-  } catch (error) {
-    toast.error('登录失败', {
-      description: error instanceof Error ? error.message : '未知错误',
-    });
-  } finally {
-    loading.value = false;
-  }
+  await loginByEmail(data);
 };
 
 const handleLoginByPhone = async (data: LoginByPhoneReq) => {
-  loading.value = true;
-  try {
-    // TODO: 调用 authentication service 进行登录
-    console.log('Login by phone:', data);
-    
-    toast.success('登录成功', {
-      description: '欢迎回来！',
-    });
-    
-    router.push('/');
-  } catch (error) {
-    toast.error('登录失败', {
-      description: error instanceof Error ? error.message : '未知错误',
-    });
-  } finally {
-    loading.value = false;
-  }
+  await loginByPhone(data);
 };
 
 const handleRegisterByEmail = async (data: RegisterByEmailReq) => {
-  loading.value = true;
-  try {
-    // TODO: 调用 authentication service 进行注册
-    console.log('Register by email:', data);
-    
-    toast.success('注册成功', {
-      description: '欢迎加入！',
-    });
-    
-    router.push('/');
-  } catch (error) {
-    toast.error('注册失败', {
-      description: error instanceof Error ? error.message : '未知错误',
-    });
-  } finally {
-    loading.value = false;
-  }
+  await registerByEmail(data);
 };
 
 const handleRegisterByPhone = async (data: RegisterByPhoneReq) => {
-  loading.value = true;
-  try {
-    // TODO: 调用 authentication service 进行注册
-    console.log('Register by phone:', data);
-    
-    toast.success('注册成功', {
-      description: '欢迎加入！',
-    });
-    
-    router.push('/');
-  } catch (error) {
-    toast.error('注册失败', {
-      description: error instanceof Error ? error.message : '未知错误',
-    });
-  } finally {
-    loading.value = false;
-  }
+  await registerByPhone(data);
 };
 
 const handleSendSmsCode = async (phoneNumber: string) => {
-  try {
-    // TODO: 调用 authentication service 发送验证码
-    console.log('Send SMS code to:', phoneNumber);
-    
-    toast.success('验证码已发送', {
-      description: '请查收手机短信',
-    });
-  } catch (error) {
-    toast.error('发送失败', {
-      description: error instanceof Error ? error.message : '未知错误',
-    });
-  }
+  await sendSmsCode(phoneNumber);
 };
 
 const handleRegister = () => {
@@ -117,7 +37,7 @@ const handleLogin = () => {
 };
 
 const handleForgotPassword = () => {
-  router.push('/auth/forgot-password');
+  // TODO: 路由到忘记密码页面
 };
 </script>
 
@@ -133,7 +53,7 @@ const handleForgotPassword = () => {
       
       <LoginForm
         v-if="!showRegister"
-        :loading="loading"
+        :loading="isLoading"
         @login-by-email="handleLoginByEmail"
         @login-by-phone="handleLoginByPhone"
         @send-sms-code="handleSendSmsCode"
@@ -143,7 +63,7 @@ const handleForgotPassword = () => {
       
       <RegisterForm
         v-else
-        :loading="loading"
+        :loading="isLoading"
         @register-by-email="handleRegisterByEmail"
         @register-by-phone="handleRegisterByPhone"
         @send-sms-code="handleSendSmsCode"

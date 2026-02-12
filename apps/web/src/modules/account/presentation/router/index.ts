@@ -32,34 +32,6 @@ export const accountRoutes: RouteRecordRaw[] = [
           requiresAuth: true,
         },
       },
-      {
-        path: 'profile',
-        name: 'account-profile',
-        component: () => import('../views/ProfileView.vue'),
-        meta: {
-          title: '个人资料',
-          requiresAuth: true,
-        },
-      },
-      {
-        path: 'settings',
-        name: 'account-settings',
-        component: () => import('../views/SettingsView.vue'),
-        meta: {
-          title: '账户设置',
-          requiresAuth: true,
-        },
-      },
-      {
-        path: 'security',
-        name: 'account-security',
-        component: () => import('../views/SecurityView.vue'),
-        meta: {
-          title: '安全设置',
-          requiresAuth: true,
-          permissions: ['account:security'],
-        },
-      },
     ],
   },
 ];

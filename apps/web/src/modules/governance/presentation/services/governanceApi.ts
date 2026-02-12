@@ -85,7 +85,7 @@ export const governanceApi = {
    * 获取规则列表
    */
   async listRules(query?: ListRulesQuery): Promise<ListRulesRes> {
-    const qs = buildQuery(query as Record<string, unknown>);
+    const qs = buildQuery(query as unknown as Record<string, unknown>);
     const response = await fetch(`${BASE_URL}${qs}`);
     return handleResponse<ListRulesRes>(response);
   },
@@ -124,7 +124,7 @@ export const governanceApi = {
    * 搜索规则
    */
   async searchRules(query: SearchRulesQuery): Promise<SearchRulesRes> {
-    const qs = buildQuery(query as Record<string, unknown>);
+    const qs = buildQuery(query as unknown as Record<string, unknown>);
     const response = await fetch(`${BASE_URL}/search${qs}`);
     return handleResponse<SearchRulesRes>(response);
   },

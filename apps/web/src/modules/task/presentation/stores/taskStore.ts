@@ -1,90 +1,88 @@
 /**
  * Task Store - Pinia 状态管理
- * 管理 Task 模块的所有状态
+ * 纯状态容器 — API 调用由 composables 执行。
  */
 
 import { defineStore } from 'pinia';
-import type { TaskDTO, TaskListResponseDTO } from '@dailyuse/contracts/task';
+import type {
+  TaskTemplateClientDTO,
+  TaskInstanceClientDTO,
+  TaskFolderClientDTO,
+} from '@dailyuse/contracts/task';
 
 export interface TaskState {
-  tasks: TaskDTO[];
-  currentTask: TaskDTO | null;
+  templates: TaskTemplateClientDTO[];
+  instances: TaskInstanceClientDTO[];
+  folders: TaskFolderClientDTO[];
+  currentTemplate: TaskTemplateClientDTO | null;
+  currentInstance: TaskInstanceClientDTO | null;
   isLoading: boolean;
   error: string | null;
-  currentPage: number;
-  pageSize: number;
-  total: number;
+  pagination: { page: number; pageSize: number; total: number };
+  isInitialized: boolean;
 }
 
 export const useTaskStore = defineStore('task', {
   state: (): TaskState => ({
-    tasks: [],
-    currentTask: null,
+    templates: [],
+    instances: [],
+    folders: [],
+    currentTemplate: null,
+    currentInstance: null,
     isLoading: false,
     error: null,
-    currentPage: 1,
-    pageSize: 20,
-    total: 0,
+    pagination: { page: 1, pageSize: 20, total: 0 },
+    isInitialized: false,
   }),
 
   getters: {
-    getTaskById: (state) => (id: string) => state.tasks.find((t) => t.id === id),
-    getTotalTasks: (state) => state.total,
-    getCompletedCount: (state) => state.tasks.filter((t) => t.status === 'completed').length,
-    getPendingCount: (state) => state.tasks.filter((t) => t.status === 'pending').length,
+    getTemplateById: (state) => (id: string) => state.templates.find((t) => t.id === id),
+    getInstanceById: (state) => (id: string) => state.instances.find((i) => i.id === id),
+    activeTemplateCount: (state): number => state.templates.filter((t) => t.status === 'Active').length,
+    totalPages: (state): number => Math.ceil(state.pagination.total / state.pagination.pageSize),
   },
 
   actions: {
-    setTasks(tasks: TaskDTO[]) {
-      this.tasks = tasks;
+    setTemplates(t: TaskTemplateClientDTO[], total?: number) {
+      this.templates = t;
+      if (total !== undefined) this.pagination.total = total;
     },
+    addTemplate(t: TaskTemplateClientDTO) { this.templates.unshift(t); this.pagination.total++; },
+    updateTemplate(t: TaskTemplateClientDTO) {
+      const i = this.templates.findIndex((x) => x.id === t.id);
+      if (i !== -1) this.templates[i] = t;
+      if (this.currentTemplate?.id === t.id) this.currentTemplate = t;
+    },
+    removeTemplate(id: string) {
+      this.templates = this.templates.filter((t) => t.id !== id);
+      this.pagination.total--;
+      if (this.currentTemplate?.id === id) this.currentTemplate = null;
+    },
+    setCurrentTemplate(t: TaskTemplateClientDTO | null) { this.currentTemplate = t; },
 
-    addTask(task: TaskDTO) {
-      this.tasks.push(task);
-      this.total++;
+    setInstances(i: TaskInstanceClientDTO[]) { this.instances = i; },
+    addInstance(i: TaskInstanceClientDTO) { this.instances.push(i); },
+    updateInstance(i: TaskInstanceClientDTO) {
+      const idx = this.instances.findIndex((x) => x.id === i.id);
+      if (idx !== -1) this.instances[idx] = i;
+      if (this.currentInstance?.id === i.id) this.currentInstance = i;
     },
+    removeInstance(id: string) { this.instances = this.instances.filter((i) => i.id !== id); },
+    setCurrentInstance(i: TaskInstanceClientDTO | null) { this.currentInstance = i; },
 
-    updateTask(task: TaskDTO) {
-      const idx = this.tasks.findIndex((t) => t.id === task.id);
-      if (idx !== -1) this.tasks[idx] = task;
-    },
+    setFolders(f: TaskFolderClientDTO[]) { this.folders = f; },
 
-    deleteTask(id: string) {
-      this.tasks = this.tasks.filter((t) => t.id !== id);
-      this.total--;
-    },
+    setLoading(v: boolean) { this.isLoading = v; },
+    setError(e: string | null) { this.error = e; },
+    setPage(p: number) { this.pagination.page = p; },
+    setInitialized(v: boolean) { this.isInitialized = v; },
 
-    setCurrentTask(task: TaskDTO | null) {
-      this.currentTask = task;
-    },
-
-    setLoading(loading: boolean) {
-      this.isLoading = loading;
-    },
-
-    setError(error: string | null) {
-      this.error = error;
-    },
-
-    setCurrentPage(page: number) {
-      this.currentPage = page;
-    },
-
-    setTotal(total: number) {
-      this.total = total;
-    },
-
-    reset() {
-      this.tasks = [];
-      this.currentTask = null;
-      this.isLoading = false;
-      this.error = null;
-      this.currentPage = 1;
-      this.total = 0;
-    },
+    reset() { this.$reset(); },
   },
 
   persist: {
-    paths: ['pageSize'],
+    pick: ['pagination'] as string[],
   },
 });
+
+export type TaskStoreType = ReturnType<typeof useTaskStore>;

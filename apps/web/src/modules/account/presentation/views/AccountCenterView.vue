@@ -3,19 +3,18 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ProfileCard, ProfileForm } from '@dailyuse/ui-vue';
 import type { AccountProfileDTO } from '@dailyuse/contracts/account';
-import { useAccountStore } from '../stores/accountStore';
+import { useAccount } from '../composables/useAccount';
 import { toast } from 'vue-sonner';
 import { Button } from '@dailyuse/ui-vue-shadcn/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@dailyuse/ui-vue-shadcn/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn/components/ui/tabs';
 
 const router = useRouter();
-const accountStore = useAccountStore();
+const { currentAccount, isLoading, loadMyProfile, updateMyProfile } = useAccount();
 
 const isEditing = ref(false);
-const loading = ref(false);
 
-// Mock profile data - 实际应该从 store 或 API 获取
+// 从 store 获取 profile 数据
 const profile = ref<AccountProfileDTO>({
   nickname: '用户昵称',
   realName: null,
@@ -26,8 +25,10 @@ const profile = ref<AccountProfileDTO>({
 });
 
 onMounted(async () => {
-  // TODO: 从 store 或 API 加载用户资料
-  // await loadProfile();
+  await loadMyProfile();
+  if (currentAccount.value?.profile) {
+    profile.value = { ...currentAccount.value.profile };
+  }
 });
 
 const handleEdit = () => {
@@ -35,24 +36,15 @@ const handleEdit = () => {
 };
 
 const handleSave = async (data: AccountProfileDTO) => {
-  loading.value = true;
-  try {
-    // TODO: 调用 account service 保存资料
-    console.log('Save profile:', data);
-    
+  const success = await updateMyProfile({
+    nickname: data.nickname,
+    avatar: data.avatarUrl,
+    bio: data.bio,
+  });
+
+  if (success) {
     profile.value = data;
     isEditing.value = false;
-    
-    toast({
-      tit.success('保存成功', {
-      description: '您的个人资料已更新',
-    });
-  } catch (error) {
-    toast.error('保存失败', {
-      description: error instanceof Error ? error.message : '未知错误',
-    });
-  } finally {
-    loading.value = false;
   }
 };
 
@@ -61,9 +53,7 @@ const handleCancel = () => {
 };
 
 const handleUploadAvatar = () => {
-  // TODO: 实现头像上传
-  toast.info('功能开发中', {像上传功能即将推出',
-  });
+  toast.info('功能开发中', { description: '头像上传功能即将推出' });
 };
 
 const handleChangePassword = () => {
@@ -92,7 +82,7 @@ const handleChangePassword = () => {
         <div v-if="!isEditing" class="space-y-6">
           <ProfileCard
             :profile="profile"
-            :loading="loading"
+            :loading="isLoading"
             @edit="handleEdit"
           />
         </div>
@@ -100,7 +90,7 @@ const handleChangePassword = () => {
         <div v-else class="flex justify-center">
           <ProfileForm
             :profile="profile"
-            :loading="loading"
+            :loading="isLoading"
             @save="handleSave"
             @cancel="handleCancel"
             @upload-avatar="handleUploadAvatar"

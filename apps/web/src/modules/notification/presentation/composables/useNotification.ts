@@ -1,265 +1,84 @@
 /**
- * useNotification Composable
- * 通知管理 Composable
- *
- * 🔄 重构说明（方案 A - 简化版）：
- * - Composable 负责协调 ApplicationService 和状态管理
- * - Service 直接返回 DTO 或抛出错误
- * - Composable 使用 try/catch 处理错误 + 显示通知
+ * useNotification - 通知模块主 composable
  */
 
-// @ts-nocheck - Some types not yet defined, needs refactoring
-import { ref, computed } from 'vue';
-import { notificationApplicationService } from '@dailyuse/notification/application-client';
+import { computed } from 'vue';
+import { useNotificationStore } from '../stores/notificationStore';
+import { notificationApi, NotificationApiError } from '../services/notificationApi';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
-import { useWebSocket } from './useWebSocket';
-import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 export function useNotification() {
-  const notifications = ref<NotificationClientDTO[]>([]);
-  const unreadCount = ref(0);
-  const loading = ref(false);
-  const error = ref<string | null>(null);
-  const total = ref(0);
-  const page = ref(1);
-  const limit = ref(20);
+  const store = useNotificationStore();
 
-  // WebSocket 连接
-  const { connect, disconnect, isConnected } = useWebSocket();
-  const { success: showSuccess, error: showError } = getGlobalMessage();
+  const notifications = computed(() => store.notifications);
+  const unreadCount = computed(() => store.unreadCount);
+  const isLoading = computed(() => store.isLoading);
+  const error = computed(() => store.error);
+  const pagination = computed(() => store.pagination);
+  const hasUnread = computed(() => store.unreadCount > 0);
 
-  /**
-   * 加载通知列表
-   */
-  async function loadNotifications(query: QueryNotificationsRequest = {}) {
+  function handleError(err: unknown, fallback: string): void {
+    const msg = err instanceof NotificationApiError ? err.message : err instanceof Error ? err.message : fallback;
+    store.setError(msg);
+    console.error(fallback, err);
+  }
+
+  async function fetchNotifications(query?: Record<string, unknown>) {
+    store.setLoading(true); store.setError(null);
     try {
-      loading.value = true;
-      error.value = null;
-
-      const response = await notificationApplicationService.findNotifications({
-        page: page.value,
-        limit: limit.value,
+      const res = await notificationApi.query({
         ...query,
+        page: store.pagination.page,
+        pageSize: store.pagination.pageSize,
       });
-
-      notifications.value = response.notifications;
-      total.value = response.total;
-      unreadCount.value = response.unreadCount;
-    } catch (err: any) {
-      error.value = err.message || '加载通知失败';
-      showError(error.value);
-    } finally {
-      loading.value = false;
-    }
+      store.setNotifications(res.data as NotificationClientDTO[], res.total);
+    } catch (e) { handleError(e, '加载通知列表失败'); }
+    finally { store.setLoading(false); }
   }
 
-  /**
-   * 刷新通知列表
-   */
-  async function refreshNotifications() {
-    await loadNotifications();
-  }
-
-  /**
-   * 标记通知为已读
-   */
-  async function markAsRead(uuid: string) {
+  async function markAsRead(id: string) {
     try {
-      await notificationApplicationService.markAsRead(uuid);
-
-      // 更新本地状态
-      const notification = notifications.value.find((n) => n.uuid === uuid);
-      if (notification && !notification.isRead) {
-        notification.isRead = true;
-        notification.readAt = new Date().toISOString();
-        unreadCount.value = Math.max(0, unreadCount.value - 1);
+      await notificationApi.markAsRead(id);
+      const n = store.notifications.find((x) => x.id === id);
+      if (n) {
+        store.updateNotification({ ...n, isRead: true, readAt: Date.now() } as NotificationClientDTO);
+        store.decrementUnread();
       }
-    } catch (err: any) {
-      error.value = err.message || '标记已读失败';
-      showError(error.value);
-      throw err;
-    }
+    } catch (e) { handleError(e, '标记已读失败'); }
   }
 
-  /**
-   * 标记所有通知为已读
-   */
   async function markAllAsRead() {
     try {
-      const response = await notificationApplicationService.markAllAsRead();
-
-      // 更新本地状态
-      notifications.value.forEach((n) => {
-        n.isRead = true;
-        n.readAt = new Date().toISOString();
+      await notificationApi.markAllAsRead();
+      store.notifications.forEach((n) => {
+        if (!n.isRead) store.updateNotification({ ...n, isRead: true, readAt: Date.now() } as NotificationClientDTO);
       });
-      unreadCount.value = 0;
-
-      showSuccess('已标记所有通知为已读');
-      return response;
-    } catch (err: any) {
-      error.value = err.message || '标记所有已读失败';
-      showError(error.value);
-      throw err;
-    }
+      store.setUnreadCount(0);
+    } catch (e) { handleError(e, '全部标记已读失败'); }
   }
 
-  /**
-   * 删除通知
-   */
-  async function deleteNotification(uuid: string) {
+  async function dismiss(id: string) {
+    try { await notificationApi.dismiss(id); store.removeNotification(id); }
+    catch (e) { handleError(e, '删除通知失败'); }
+  }
+
+  async function dismissAll() {
+    try { await notificationApi.dismissAll(); store.clearAll(); store.setUnreadCount(0); }
+    catch (e) { handleError(e, '清空通知失败'); }
+  }
+
+  async function refreshStats() {
     try {
-      await notificationApplicationService.deleteNotification(uuid);
-
-      // 从列表中移除
-      const index = notifications.value.findIndex((n) => n.uuid === uuid);
-      if (index !== -1) {
-        const notification = notifications.value[index];
-        if (!notification.isRead) {
-          unreadCount.value = Math.max(0, unreadCount.value - 1);
-        }
-        notifications.value.splice(index, 1);
-        total.value = Math.max(0, total.value - 1);
-      }
-
-      showSuccess('通知已删除');
-    } catch (err: any) {
-      error.value = err.message || '删除通知失败';
-      showError(error.value);
-      throw err;
-    }
+      const stats = await notificationApi.getStats();
+      store.setUnreadCount(stats.unreadCount);
+    } catch (e) { handleError(e, '刷新统计失败'); }
   }
 
-  /**
-   * 批量删除通知
-   */
-  async function batchDeleteNotifications(uuids: string[]) {
-    try {
-      const response = await notificationApplicationService.batchDeleteNotifications(uuids);
-
-      // 从列表中移除
-      notifications.value = notifications.value.filter((n) => !uuids.includes(n.uuid));
-
-      // 刷新未读数量
-      await refreshUnreadCount();
-
-      showSuccess(`已删除 ${response.count} 条通知`);
-      return response;
-    } catch (err: any) {
-      error.value = err.message || '批量删除失败';
-      showError(error.value);
-      throw err;
-    }
-  }
-
-  /**
-   * 刷新未读数量
-   */
-  async function refreshUnreadCount() {
-    try {
-      const response = await notificationApplicationService.getUnreadCount();
-      unreadCount.value = response.count;
-    } catch (err: any) {
-      // 静默失败，不显示错误
-    }
-  }
-
-  /**
-   * 连接 WebSocket 并监听实时通知
-   */
-  function connectWebSocket() {
-    connect((event, data) => {
-      switch (event) {
-        case 'notification:new':
-          handleNewNotification(data as NotificationClientDTO);
-          break;
-        case 'notification:read':
-          handleNotificationRead(data as { uuid: string });
-          break;
-        case 'notification:deleted':
-          handleNotificationDeleted(data as { uuid: string });
-          break;
-        case 'notification:unread-count':
-          handleUnreadCountUpdate(data as { count: number });
-          break;
-      }
-    });
-  }
-
-  /**
-   * 处理新通知
-   */
-  function handleNewNotification(notification: NotificationClientDTO) {
-    // 添加到列表顶部
-    notifications.value.unshift(notification);
-    total.value += 1;
-    if (!notification.isRead) {
-      unreadCount.value += 1;
-    }
-  }
-
-  /**
-   * 处理通知已读
-   */
-  function handleNotificationRead(data: { uuid: string }) {
-    const notification = notifications.value.find((n) => n.uuid === data.uuid);
-    if (notification && !notification.isRead) {
-      notification.isRead = true;
-      notification.readAt = new Date().toISOString();
-      unreadCount.value = Math.max(0, unreadCount.value - 1);
-    }
-  }
-
-  /**
-   * 处理通知删除
-   */
-  function handleNotificationDeleted(data: { uuid: string }) {
-    const index = notifications.value.findIndex((n) => n.uuid === data.uuid);
-    if (index !== -1) {
-      const notification = notifications.value[index];
-      if (!notification.isRead) {
-        unreadCount.value = Math.max(0, unreadCount.value - 1);
-      }
-      notifications.value.splice(index, 1);
-      total.value = Math.max(0, total.value - 1);
-    }
-  }
-
-  /**
-   * 处理未读数量更新
-   */
-  function handleUnreadCountUpdate(data: { count: number }) {
-    unreadCount.value = data.count;
-  }
-
-  // Computed
-  const hasUnread = computed(() => unreadCount.value > 0);
-  const unreadNotifications = computed(() => notifications.value.filter((n) => !n.isRead));
+  function setPage(p: number) { store.setPage(p); fetchNotifications(); }
 
   return {
-    // State
-    notifications,
-    unreadCount,
-    loading,
-    error,
-    total,
-    page,
-    limit,
-    isConnected,
-
-    // Computed
-    hasUnread,
-    unreadNotifications,
-
-    // Methods
-    loadNotifications,
-    refreshNotifications,
-    markAsRead,
-    markAllAsRead,
-    deleteNotification,
-    batchDeleteNotifications,
-    refreshUnreadCount,
-    connectWebSocket,
-    disconnect,
+    notifications, unreadCount, hasUnread, isLoading, error, pagination,
+    fetchNotifications, markAsRead, markAllAsRead, dismiss, dismissAll,
+    refreshStats, setPage,
   };
 }
