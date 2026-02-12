@@ -4,4 +4,4 @@
  * 从 @dailyuse/infrastructure-client 重导出 Container
  */
 
-export { AIContainer } from '@dailyuse/infrastructure-client';
+export { AIContainer } from '@dailyuse/ai/infrastructure-client';

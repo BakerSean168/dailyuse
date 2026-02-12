@@ -1,0 +1,2 @@
+# This file ensures the ui/ directory is tracked by git
+# Components will be added via: pnpm dlx shadcn-vue@latest add <component>

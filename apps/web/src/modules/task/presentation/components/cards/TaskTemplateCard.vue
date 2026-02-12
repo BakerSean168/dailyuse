@@ -222,8 +222,8 @@ import { format } from 'date-fns';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { UrgencyLevel } from '@dailyuse/contracts/shared';
 // types
-import type { TaskTemplate } from '@dailyuse/domain-client/task';
-import type { Goal, KeyResult } from '@dailyuse/domain-client/goal';
+import type { TaskTemplate } from '@dailyuse/task/domain-client';
+import type { Goal, KeyResult } from '@dailyuse/goal/domain-client';
 // styles - Story 2.4
 import '@/styles/priority-colors.css';
 

@@ -4,4 +4,4 @@
  * 从 @dailyuse/infrastructure-client 重导出 Container
  */
 
-export { TaskContainer } from '@dailyuse/infrastructure-client';
+export { TaskContainer } from '@dailyuse/task/infrastructure-client';

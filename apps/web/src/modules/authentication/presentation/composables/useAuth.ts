@@ -1,292 +1,189 @@
 /**
- * Auth Composable
- * 认证组合式 API
+ * useAuth - 核心认证 Composable
  *
- * 职责:
- * - 调用 AuthApplicationService 获取数据
- * - 管理 Pinia Store 中的认证状态
- * - 处理登录、登出、权限检查等
- * - 为组件提供响应式的认证接口
+ * 处理登录、注册、登出等核心认证操作。
+ * 通过 authApi 服务直接调用 API，使用 store 管理状态。
+ *
+ * @module authentication/presentation/composables
  */
 
 import { computed } from 'vue';
-import { useAuthenticationStore } from '../stores/authenticationStore';
+import { useRouter } from 'vue-router';
+import { toast } from 'vue-sonner';
 import type {
-  LoginRequestDTO,
-  ChangePasswordRequestDTO,
-  AccountClientDTO,
-  DeviceInfoClientDTO,
-  AuthSessionClientDTO,
-} from '@dailyuse/contracts/account';
-import {
-  Login,
-  Logout,
-  RefreshToken,
-  ChangePassword,
-  GetActiveSessions,
-  RevokeSession,
-} from '@dailyuse/application-client/authentication';
+  LoginByEmailReq,
+  LoginByPhoneReq,
+  RegisterByEmailReq,
+  RegisterByPhoneReq,
+  SendSmsCodeReq,
+  RefreshTokenReq,
+  AuthResponseDTO,
+} from '@dailyuse/contracts/authentication';
+import { useAuthenticationStore } from '../stores/authenticationStore';
+import { authApi, AuthApiError } from '../services/authApi';
 
 export function useAuth() {
-  const authStore = useAuthenticationStore();
+  const store = useAuthenticationStore();
+  const router = useRouter();
 
-  // Use Cases from application-client
-  const loginUseCase = Login.getInstance();
-  const logoutUseCase = Logout.getInstance();
-  const refreshTokenUseCase = RefreshToken.getInstance();
-  const changePasswordUseCase = ChangePassword.getInstance();
-  const getActiveSessionsUseCase = GetActiveSessions.getInstance();
-  const revokeSessionUseCase = RevokeSession.getInstance();
+  // ========== Computed State ==========
+  const isAuthenticated = computed(() => store.isAuthenticated);
+  const isLoading = computed(() => store.isLoading);
+  const error = computed(() => store.error);
+  const currentIdentity = computed(() => store.currentIdentity);
+  const accessToken = computed(() => store.accessToken);
 
-  // ============ State (from store) ============
-  const currentUser = computed(() => authStore.currentUser);
-  const isAuthenticated = computed(() => authStore.isAuthenticated);
-  const isLoading = computed(() => authStore.isLoading);
-  const error = computed(() => authStore.error);
-  const isInitializing = computed(() => authStore.isInitializing);
-  const requiresMFA = computed(() => authStore.requiresMFA);
+  // ========== 认证响应统一处理 ==========
+  function handleAuthSuccess(data: AuthResponseDTO) {
+    store.handleAuthResponse(data);
+    store.setError(null);
+  }
 
-  // ============ Auth Methods ============
+  // ========== 登录 ==========
 
-  /**
-   * 登录
-   */
-  async function login(request: LoginRequestDTO): Promise<boolean> {
-    authStore.setLoading(true);
+  async function loginByEmail(req: LoginByEmailReq): Promise<boolean> {
+    store.setLoading(true);
+    store.setError(null);
     try {
-      const response = await loginUseCase.execute(request);
-      authStore.setAccessToken(response.accessToken || response.token, response.expiresIn);
-      authStore.setRefreshToken(response.refreshToken);
-      authStore.setError(null);
-
-      // 如果需要 MFA，设置状态但不加载用户信息
-      if (response.requiresMFA) {
-        authStore.setRequiresMFA(true);
-        return false;
-      }
-
-      // 加载当前用户信息
-      await loadCurrentUser();
+      const data = await authApi.loginByEmail(req);
+      handleAuthSuccess(data);
+      toast.success('登录成功', { description: '欢迎回来！' });
+      router.push('/');
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '登录失败';
-      authStore.setError(errorMessage);
-      console.error('❌ [useAuth] 登录失败:', err);
+      const message = err instanceof AuthApiError ? err.message : '登录失败';
+      store.setError(message);
+      toast.error('登录失败', { description: message });
       return false;
     } finally {
-      authStore.setLoading(false);
+      store.setLoading(false);
     }
   }
 
-  /**
-   * 登出
-   */
-  async function logout(): Promise<void> {
-    authStore.setLoading(true);
+  async function loginByPhone(req: LoginByPhoneReq): Promise<boolean> {
+    store.setLoading(true);
+    store.setError(null);
     try {
-      await logoutUseCase.execute();
-      authStore.reset();
-      authStore.setError(null);
+      const data = await authApi.loginByPhone(req);
+      handleAuthSuccess(data);
+      toast.success('登录成功', { description: '欢迎回来！' });
+      router.push('/');
+      return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '登出失败';
-      authStore.setError(errorMessage);
-      console.error('❌ [useAuth] 登出失败:', err);
+      const message = err instanceof AuthApiError ? err.message : '登录失败';
+      store.setError(message);
+      toast.error('登录失败', { description: message });
+      return false;
     } finally {
-      authStore.setLoading(false);
+      store.setLoading(false);
     }
   }
 
-  /**
-   * 刷新令牌
-   */
+  // ========== 注册 ==========
+
+  async function registerByEmail(req: RegisterByEmailReq): Promise<boolean> {
+    store.setLoading(true);
+    store.setError(null);
+    try {
+      const data = await authApi.registerByEmail(req);
+      handleAuthSuccess(data);
+      toast.success('注册成功', { description: '欢迎加入！' });
+      router.push('/');
+      return true;
+    } catch (err) {
+      const message = err instanceof AuthApiError ? err.message : '注册失败';
+      store.setError(message);
+      toast.error('注册失败', { description: message });
+      return false;
+    } finally {
+      store.setLoading(false);
+    }
+  }
+
+  async function registerByPhone(req: RegisterByPhoneReq): Promise<boolean> {
+    store.setLoading(true);
+    store.setError(null);
+    try {
+      const data = await authApi.registerByPhone(req);
+      handleAuthSuccess(data);
+      toast.success('注册成功', { description: '欢迎加入！' });
+      router.push('/');
+      return true;
+    } catch (err) {
+      const message = err instanceof AuthApiError ? err.message : '注册失败';
+      store.setError(message);
+      toast.error('注册失败', { description: message });
+      return false;
+    } finally {
+      store.setLoading(false);
+    }
+  }
+
+  // ========== 验证码 ==========
+
+  async function sendSmsCode(phoneNumber: string, purpose: SendSmsCodeReq['purpose'] = 'LOGIN'): Promise<boolean> {
+    try {
+      await authApi.sendSmsCode({ phoneNumber, purpose });
+      toast.success('验证码已发送', { description: '请查收手机短信' });
+      return true;
+    } catch (err) {
+      const message = err instanceof AuthApiError ? err.message : '发送验证码失败';
+      toast.error('发送失败', { description: message });
+      return false;
+    }
+  }
+
+  // ========== 令牌刷新 ==========
+
   async function refreshToken(): Promise<boolean> {
-    authStore.setLoading(true);
+    const currentRefreshToken = store.refreshToken;
+    if (!currentRefreshToken) return false;
+
     try {
-      const result = await refreshTokenUseCase.execute();
-      authStore.setAccessToken(result.token || result.accessToken);
-      authStore.setError(null);
+      const req: RefreshTokenReq = { refreshToken: currentRefreshToken };
+      const data = await authApi.refreshToken(req, store.accessToken);
+      handleAuthSuccess(data);
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '刷新令牌失败';
-      authStore.setError(errorMessage);
-      console.error('❌ [useAuth] 刷新令牌失败:', err);
+      console.error('Token refresh failed:', err);
+      // 刷新失败，清除认证状态
+      store.reset();
       return false;
-    } finally {
-      authStore.setLoading(false);
     }
   }
 
-  /**
-   * 获取当前用户
-   */
-  async function loadCurrentUser(): Promise<AccountClientDTO | null> {
-    authStore.setLoading(true);
+  // ========== 登出 ==========
+
+  async function logout(): Promise<void> {
     try {
-      // TODO: Need to get current user from use case
-      // const user = await getCurrentUserUseCase.execute();
-      // authStore.setCurrentUser(user);
-      authStore.setError(null);
-      return null;
+      if (store.accessToken) {
+        await authApi.logout(store.accessToken);
+      }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '获取用户信息失败';
-      authStore.setError(errorMessage);
-      console.error('❌ [useAuth] 获取用户信息失败:', err);
-      return null;
+      // 登出 API 调用失败不影响客户端清理
+      console.warn('Logout API call failed:', err);
     } finally {
-      authStore.setLoading(false);
+      store.reset();
+      toast.success('已登出');
+      router.push('/auth');
     }
-  }
-
-  /**
-   * 初始化认证
-   */
-  async function initAuth(): Promise<boolean> {
-    authStore.setIsInitializing(true);
-    try {
-      // TODO: Implement init auth
-      authStore.setError(null);
-      return true;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '初始化认证失败';
-      authStore.setError(errorMessage);
-      console.error('❌ [useAuth] 初始化认证失败:', err);
-      return false;
-    } finally {
-      authStore.setIsInitializing(false);
-    }
-  }
-
-  /**
-   * 修改密码
-   */
-  async function changePassword(data: ChangePasswordRequestDTO): Promise<boolean> {
-    authStore.setLoading(true);
-    try {
-      await changePasswordUseCase.execute(data.oldPassword, data.newPassword);
-      authStore.setError(null);
-      return true;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '修改密码失败';
-      authStore.setError(errorMessage);
-      console.error('❌ [useAuth] 修改密码失败:', err);
-      return false;
-    } finally {
-      authStore.setLoading(false);
-    }
-  }
-
-  /**
-   * 获取 MFA 设备列表
-   */
-  async function loadMFADevices(): Promise<void> {
-    authStore.setLoading(true);
-    try {
-      // TODO: Implement get MFA devices
-      authStore.setError(null);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '获取 MFA 设备列表失败';
-      authStore.setError(errorMessage);
-      console.error('❌ [useAuth] 获取 MFA 设备列表失败:', err);
-    } finally {
-      authStore.setLoading(false);
-    }
-  }
-
-  /**
-   * 删除 MFA 设备
-   */
-  async function deleteMFADevice(deviceId: string): Promise<boolean> {
-    authStore.setLoading(true);
-    try {
-      // TODO: Implement delete MFA device
-      authStore.removeMFADevice(deviceId);
-      authStore.setError(null);
-      return true;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '删除 MFA 设备失败';
-      authStore.setError(errorMessage);
-      console.error('❌ [useAuth] 删除 MFA 设备失败:', err);
-      return false;
-    } finally {
-      authStore.setLoading(false);
-    }
-  }
-
-  /**
-   * 获取会话列表
-   */
-  async function loadSessions(): Promise<void> {
-    authStore.setLoading(true);
-    try {
-      const sessions = await getActiveSessionsUseCase.execute();
-      authStore.setActiveSessions(sessions);
-      authStore.setError(null);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '获取会话列表失败';
-      authStore.setError(errorMessage);
-      console.error('❌ [useAuth] 获取会话列表失败:', err);
-    } finally {
-      authStore.setLoading(false);
-    }
-  }
-
-  /**
-   * 终止会话
-   */
-  async function terminateSession(sessionId: string): Promise<boolean> {
-    authStore.setLoading(true);
-    try {
-      await revokeSessionUseCase.execute(sessionId);
-      authStore.removeActiveSession(sessionId);
-      authStore.setError(null);
-      return true;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '终止会话失败';
-      authStore.setError(errorMessage);
-      console.error('❌ [useAuth] 终止会话失败:', err);
-      return false;
-    } finally {
-      authStore.setLoading(false);
-    }
-  }
-
-  /**
-   * 检查权限
-   */
-  function hasPermission(permission: string): boolean {
-    // TODO: Implement permission check
-    return true;
-  }
-
-  /**
-   * 检查角色
-   */
-  function hasRole(role: string): boolean {
-    // TODO: Implement role check
-    return true;
   }
 
   return {
     // State
-    currentUser,
     isAuthenticated,
     isLoading,
     error,
-    isInitializing,
-    requiresMFA,
+    currentIdentity,
+    accessToken,
 
     // Actions
-    login,
-    logout,
+    loginByEmail,
+    loginByPhone,
+    registerByEmail,
+    registerByPhone,
+    sendSmsCode,
     refreshToken,
-    loadCurrentUser,
-    initAuth,
-    changePassword,
-    loadMFADevices,
-    deleteMFADevice,
-    loadSessions,
-    terminateSession,
-    hasPermission,
-    hasRole,
+    logout,
   };
 }

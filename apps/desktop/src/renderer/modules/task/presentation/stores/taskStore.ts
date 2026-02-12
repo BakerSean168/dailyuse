@@ -17,8 +17,8 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
-import { taskApplicationService } from '@dailyuse/application-client/task';
+import { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
+import { taskApplicationService } from '@dailyuse/task/application-client';
 
 // ============ State Interface ============
 export interface TaskState {

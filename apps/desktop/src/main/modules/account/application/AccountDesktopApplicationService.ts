@@ -16,7 +16,7 @@
 import {
   GetAccountProfile,
   UpdateAccountProfile,
-} from '@dailyuse/application-server';
+} from '@dailyuse/account/application-server';
 
 import type { AccountClientDTO, UpdateAccountProfileRequest } from '@dailyuse/contracts/account';
 import { createLogger, type ILogger } from '@dailyuse/utils';

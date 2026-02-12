@@ -1,10 +1,10 @@
 /**
  * TaskWidget - 今日任务 Widget
  *
- * 显示：
+ * 显示�?
  * - 今日任务列表
  * - 完成进度
- * - 快速完成操作
+ * - 快速完成操�?
  *
  * @module dashboard/presentation/components/widgets
  */
@@ -17,7 +17,7 @@ import {
   Checkbox,
   ScrollArea,
   cn,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import { ListTodo, ArrowRight, Clock, CheckCircle2 } from 'lucide-react';
 import { DashboardWidget, type WidgetSize } from '../DashboardWidget';
@@ -94,7 +94,7 @@ export function TaskWidget({
     return { total, completed, progress };
   }, [tasks]);
 
-  // 处理完成状态切换
+  // 处理完成状态切�?
   const handleToggleComplete = useCallback((taskUuid: string, completed: boolean) => {
     setTasks(prev => prev.map(t => 
       t.uuid === taskUuid ? { ...t, completed } : t
@@ -102,7 +102,7 @@ export function TaskWidget({
     onTaskComplete?.(taskUuid, completed);
   }, [onTaskComplete]);
 
-  // 获取优先级颜色
+  // 获取优先级颜�?
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'text-red-500';
@@ -129,11 +129,11 @@ export function TaskWidget({
         )
       }
     >
-      {/* 进度条 */}
+      {/* 进度�?*/}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-muted-foreground">
-            已完成 {stats.completed}/{stats.total}
+            已完�?{stats.completed}/{stats.total}
           </span>
           <span className="text-sm font-semibold">{stats.progress}%</span>
         </div>
@@ -182,7 +182,7 @@ export function TaskWidget({
       <div className="mt-4 pt-4 border-t flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <CheckCircle2 className="h-4 w-4" />
-          <span>今日完成率</span>
+          <span>今日完成�?/span>
         </div>
         <Badge variant={stats.progress >= 80 ? 'default' : 'secondary'}>
           {stats.progress}%

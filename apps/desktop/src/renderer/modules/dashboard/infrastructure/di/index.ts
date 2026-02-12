@@ -4,4 +4,4 @@
  * 从 @dailyuse/infrastructure-client 重导出 Container
  */
 
-export { DashboardContainer } from '@dailyuse/infrastructure-client';
+export { DashboardContainer } from '@dailyuse/dashboard/infrastructure-client';

@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import type { TaskTemplate } from '@dailyuse/domain-client/task';
+import type { TaskTemplate } from '@dailyuse/task/domain-client';
 import type { UpdateTaskTemplateRequest } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { TimeEstimationCard } from '../../../../shared/components/task/TimeEstimationCard';

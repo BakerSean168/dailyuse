@@ -1,7 +1,7 @@
 /**
  * ProgressChart Component
  *
- * 进度图表组件（环形/条形）
+ * 进度图表组件（环�?条形�?
  * Story 11-7: Advanced Features
  */
 
@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
   cn,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 export interface ProgressDataPoint {
   label: string;

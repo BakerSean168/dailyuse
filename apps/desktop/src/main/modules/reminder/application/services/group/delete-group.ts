@@ -2,7 +2,7 @@
  * Delete Reminder Group Service
  */
 
-import { ReminderContainer } from '@dailyuse/infrastructure-server';
+import { ReminderContainer } from '@dailyuse/reminder/infrastructure-server';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('deleteGroupService');

@@ -1,0 +1,76 @@
+{
+  "name": "database",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "root": "packages/database",
+  "sourceRoot": "packages/database/src",
+  "projectType": "library",
+  "tags": ["scope:shared", "type:infrastructure", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/src/generated/prisma"],
+      "options": {
+        "cwd": "packages/database",
+        "command": "prisma generate --config ./prisma/prisma.config.ts"
+      },
+      "inputs": [
+        "{projectRoot}/prisma/schema.prisma",
+        "{projectRoot}/prisma/prisma.config.ts"
+      ],
+      "cache": true
+    },
+    "prisma-generate": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/src/generated/prisma"],
+      "options": {
+        "cwd": "packages/database",
+        "command": "prisma generate --config ./prisma/prisma.config.ts"
+      },
+      "inputs": [
+        "{projectRoot}/prisma/schema.prisma",
+        "{projectRoot}/prisma/prisma.config.ts"
+      ],
+      "cache": true
+    },
+    "prisma-migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/database",
+        "command": "prisma migrate dev --config ./prisma/prisma.config.ts"
+      },
+      "cache": false
+    },
+    "prisma-migrate-deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/database",
+        "command": "prisma migrate deploy --config ./prisma/prisma.config.ts"
+      },
+      "cache": false
+    },
+    "prisma-migrate-reset": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/database",
+        "command": "prisma migrate reset --config ./prisma/prisma.config.ts"
+      },
+      "cache": false
+    },
+    "prisma-studio": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/database",
+        "command": "prisma studio --config ./prisma/prisma.config.ts"
+      },
+      "cache": false
+    },
+    "prisma-push": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/database",
+        "command": "prisma db push --config ./prisma/prisma.config.ts"
+      },
+      "cache": false
+    }
+  }
+}

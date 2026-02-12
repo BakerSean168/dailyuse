@@ -16,8 +16,8 @@
 
 import React, { useCallback, useRef, useEffect } from 'react';
 import { useTaskStore } from '../stores/taskStore';
-import { taskApplicationService } from '@dailyuse/application-client/task';
-import type { TaskTemplate } from '@dailyuse/domain-client/task';
+import { taskApplicationService } from '@dailyuse/task/application-client';
+import type { TaskTemplate } from '@dailyuse/task/domain-client';
 import type {
   UpdateTaskTemplateRequest,
   CreateTaskTemplateRequest,

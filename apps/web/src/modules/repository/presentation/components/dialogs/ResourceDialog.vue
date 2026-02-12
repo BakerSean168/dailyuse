@@ -248,7 +248,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { Resource } from '@dailyuse/domain-client/repository';
+import { Resource } from '@dailyuse/repository/domain-client';
 import { ResourceType, ResourceStatus, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO } from '@dailyuse/contracts/repository';
 // composables
 import { useRepository } from '../../composables/useRepository';

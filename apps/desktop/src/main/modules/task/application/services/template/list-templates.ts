@@ -2,7 +2,7 @@
  * List Task Templates Use Case
  */
 
-import { ListTaskTemplates } from '@dailyuse/application-server';
+import { ListTaskTemplates } from '@dailyuse/task/application-server';
 import type { TaskTemplateClientDTO, QueryTaskTemplatesRequest } from '@dailyuse/contracts/task';
 
 export async function listTemplatesUseCase(

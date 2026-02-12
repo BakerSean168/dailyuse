@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { GoalFolder } from '@dailyuse/domain-client/goal';
+import type { GoalFolder } from '@dailyuse/goal/domain-client';
 import { useGoalFolder } from '../hooks';
 
 interface GoalFolderManagerProps {

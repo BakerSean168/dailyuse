@@ -1,1 +1,1 @@
-export * from './rule.enums';
+export * from './events';

@@ -3,13 +3,13 @@
  *
  * 时间预估卡片 - 显示和管理任务的时间预估
  * 
- * TODO: 完整实现待 EPIC-013 AI 辅助功能
+ * TODO: 完整实现�?EPIC-013 AI 辅助功能
  */
 
 import type { TimeEstimate } from '@dailyuse/contracts/goal';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@dailyuse/ui-shadcn';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@dailyuse/ui-react-shadcn';
 import { Clock, Loader2 } from 'lucide-react';
-import { Button } from '@dailyuse/ui-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
 
 export interface TimeEstimationCardProps {
   estimate?: TimeEstimate | null;
@@ -76,7 +76,7 @@ export function TimeEstimationCard({
       <CardContent className="pt-0">
         {showDetails && estimate.confidenceScore !== undefined && (
           <p className="text-xs text-muted-foreground">
-            置信度: {Math.round(estimate.confidenceScore * 100)}%
+            置信�? {Math.round(estimate.confidenceScore * 100)}%
           </p>
         )}
         {showDetails && estimate.reasoning && (

@@ -1,0 +1,107 @@
+/**
+ * Create Task Template Service
+ *
+ * 创建任务模板（循环任务）
+ * 创建后自动生成初始实例（100�?最�?00个）
+ */
+
+import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
+import { TaskTemplate } from '../../domain-server/aggregates/task-template';
+import { TaskTimeConfig, RecurrenceRule, TaskReminderConfig } from '../../domain-server/value-objects';
+import { TaskInstanceGenerationService } from '../../domain-server/services/TaskInstanceGenerationService';
+import type { TaskTemplateClientDTO, CreateTaskTemplateRequest } from '@dailyuse/contracts/task';
+import { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { eventBus } from '@dailyuse/utils';
+import type { Result } from '@dailyuse/contracts/result';
+import { ok } from '@dailyuse/contracts/result';
+
+/**
+ * Create Task Template Service
+ */
+export class CreateTaskTemplate {
+  private readonly generationService: TaskInstanceGenerationService;
+
+  constructor(
+    private readonly templateRepository: ITaskTemplateRepository,
+    private readonly instanceRepository: ITaskInstanceRepository,
+  ) {
+    this.generationService = new TaskInstanceGenerationService();
+  }
+
+  async execute(
+    request: CreateTaskTemplateRequest,
+  ): Promise<Result<{ template: TaskTemplateClientDTO; instanceCount: number }>> {
+
+    const timeConfig = TaskTimeConfig.fromServerDTO(request.timeConfig);
+    const recurrenceRule = request.recurrenceRule
+      ? RecurrenceRule.fromServerDTO(request.recurrenceRule)
+      : undefined;
+    const reminderConfig = request.reminderConfig
+      ? TaskReminderConfig.fromServerDTO(request.reminderConfig)
+      : undefined;
+
+    const template = TaskTemplate.create({
+      accountUuid: request.accountUuid,
+      title: request.name,
+      description: request.description,
+      taskType: request.taskType,
+      timeConfig,
+      recurrenceRule,
+      reminderConfig,
+      importance: request.importance,
+      folderUuid: request.folderUuid,
+      tags: request.tags,
+      color: request.color,
+    });
+
+    // 保存到仓储
+    await this.templateRepository.save(template);
+
+    let instanceCount = 0;
+
+    // 如果状态是 ACTIVE，立即生成初始实例
+    if (template.status === TaskTemplateStatus.ACTIVE) {
+      instanceCount = await this.generateInitialInstances(template);
+    }
+
+    return ok({
+      template: template.toClientDTO(),
+      instanceCount,
+    });
+  }
+
+  /**
+   * 生成初始实例
+   */
+  private async generateInitialInstances(template: TaskTemplate): Promise<number> {
+    try {
+      const instances = this.generationService.generateInstances(template);
+
+      if (instances.length > 0) {
+        await this.instanceRepository.saveMany(instances);
+        await this.templateRepository.save(template);
+
+        // 发布事件
+        eventBus.emit('task.instances.generated', {
+          eventType: 'task_template.instances_generated',
+          version: '1.0',
+          aggregateId: template.uuid,
+          occurredOn: new Date(),
+          accountUuid: template.accountUuid,
+          payload: {
+            templateUuid: template.uuid,
+            templateTitle: template.title,
+            instanceCount: instances.length,
+            strategy: instances.length <= 20 ? 'full' : 'summary',
+          },
+        });
+      }
+
+      return instances.length;
+    } catch (error) {
+      console.error(`[CreateTaskTemplate] 生成初始实例失败:`, error);
+      return 0;
+    }
+  }
+}

@@ -173,7 +173,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { format, formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { getReminderApiClient } from '@dailyuse/infrastructure-client';
+import { getReminderApiClient } from '@dailyuse/reminder/infrastructure-client';
 
 const reminderApiClient = getReminderApiClient();
 

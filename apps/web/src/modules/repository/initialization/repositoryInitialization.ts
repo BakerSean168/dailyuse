@@ -1,21 +1,25 @@
-// @ts-nocheck
 import {
   InitializationManager,
   InitializationPhase,
   type InitializationTask,
 } from '@dailyuse/utils';
-import { RepositoryWebApplicationService } from '../application/services/RepositoryWebApplicationService';
+import { useRepositoryStore } from '../presentation/stores/repositoryStore';
 
 const repositorySyncStatusTask: InitializationTask = {
   name: 'repository-sync-status',
   phase: InitializationPhase.USER_LOGIN,
   priority: 20,
-  dependencies: [],
   initialize: async () => {
-    // 初始化仓库同步状态处理器
-    const repositoryService = new RepositoryWebApplicationService();
-    repositoryService.syncAllRepositories();
-    console.log('✓ Repository sync status handlers registered');
+    console.log('✅ [Repository] 仓库数据将按需加载');
+  },
+  cleanup: async () => {
+    try {
+      const store = useRepositoryStore();
+      store.$reset();
+      console.log('✅ [Repository] 仓库数据已清理');
+    } catch (error) {
+      console.error('❌ [Repository] 仓库数据清理失败:', error);
+    }
   },
 };
 
@@ -23,5 +27,5 @@ export function registerRepositoryInitializationTasks(): void {
   const manager = InitializationManager.getInstance();
   manager.registerTask(repositorySyncStatusTask);
 
-  console.log('Repository module initialization tasks registered');
+  console.log('📝 [Repository] Repository 模块初始化任务已注册');
 }

@@ -1,7 +1,7 @@
 /**
  * NotificationCenter Component
  *
- * 通知中心 - 显示所有通知的弹出面板
+ * 通知中心 - 显示所有通知的弹出面�?
  * Story 11-6: Auxiliary Modules
  */
 
@@ -27,7 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   Skeleton,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import { NotificationItem } from './NotificationItem';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
@@ -221,7 +221,7 @@ export function NotificationCenter({
                   <h3 className="font-medium mb-1">暂无通知</h3>
                   <p className="text-sm text-muted-foreground">
                     {activeTab === 'unread'
-                      ? '所有通知都已读'
+                      ? '所有通知都已�?
                       : '您还没有收到任何通知'}
                   </p>
                 </div>

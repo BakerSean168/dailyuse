@@ -13,6 +13,6 @@ export type { SessionInvalidatedEvent } from './session-invalidated.event';
 export type { IdentityActivatedEvent } from './identity-activated.event';
 export type { IdentityDisabledEvent } from './identity-disabled.event';
 export type { SessionCreatedEvent } from './session-created.event';
-
+export type { IdentityCreatedEvent } from './identity-created.event';
 // Re-export union type
 export type { UserLoggedInEvent as AuthenticationDomainEvent } from './user-logged-in.event';

@@ -1,4 +1,4 @@
-import { ListConversations } from '@dailyuse/application-server';
+import { ListConversations } from '@dailyuse/ai/application-server';
 import type { AIConversationClientDTO } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 

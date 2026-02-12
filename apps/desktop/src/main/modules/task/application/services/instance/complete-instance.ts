@@ -2,7 +2,7 @@
  * Complete Task Instance Use Case
  */
 
-import { CompleteTaskInstance } from '@dailyuse/application-server';
+import { CompleteTaskInstance } from '@dailyuse/task/application-server';
 import type { TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 
 export async function completeInstanceUseCase(

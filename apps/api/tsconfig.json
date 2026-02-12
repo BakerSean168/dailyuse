@@ -89,6 +89,7 @@
     "dist",
     "**/*.test.ts",
     "**/*.spec.ts",
+    "**/*.deprecated.ts",
     "src/**/__tests__/manual/**/*"
   ]
 

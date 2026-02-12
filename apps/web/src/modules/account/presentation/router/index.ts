@@ -20,31 +20,16 @@ export const accountRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
-        path: 'profile',
-        name: 'account-profile',
-        component: () => import('../views/ProfileView.vue'),
-        meta: {
-          title: '个人资料',
-          requiresAuth: true,
-        },
+        path: '',
+        redirect: '/account/center',
       },
       {
-        path: 'settings',
-        name: 'account-settings',
-        component: () => import('../views/SettingsView.vue'),
+        path: 'center',
+        name: 'account-center',
+        component: () => import('../views/AccountCenterView.vue'),
         meta: {
-          title: '账户设置',
+          title: '个人中心',
           requiresAuth: true,
-        },
-      },
-      {
-        path: 'security',
-        name: 'account-security',
-        component: () => import('../views/SecurityView.vue'),
-        meta: {
-          title: '安全设置',
-          requiresAuth: true,
-          permissions: ['account:security'],
         },
       },
     ],

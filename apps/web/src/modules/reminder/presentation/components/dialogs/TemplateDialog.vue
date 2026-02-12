@@ -224,7 +224,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue';
-import { ReminderTemplate } from '@dailyuse/domain-client/reminder';
+import { ReminderTemplate } from '@dailyuse/reminder/domain-client';
 import { TriggerType, ReminderType, NotificationChannel } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, CreateReminderTemplateRequest, UpdateReminderTemplateRequest, TriggerConfigServerDTO, ActiveTimeConfigServerDTO, NotificationConfigServerDTO } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';

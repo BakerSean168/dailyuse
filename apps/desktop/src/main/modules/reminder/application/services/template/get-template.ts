@@ -2,7 +2,7 @@
  * Get Reminder Template Service
  */
 
-import { GetReminderTemplate } from '@dailyuse/application-server';
+import { GetReminderTemplate } from '@dailyuse/reminder/application-server';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { createLogger } from '@dailyuse/utils';
 

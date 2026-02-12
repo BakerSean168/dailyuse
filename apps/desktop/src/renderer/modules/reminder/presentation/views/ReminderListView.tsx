@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
-import { reminderApplicationService } from '@dailyuse/application-client/reminder';
+import { reminderApplicationService } from '@dailyuse/reminder/application-client';
 import { ReminderCard } from '../components/ReminderCard';
 import { ReminderCreateDialog } from '../components/ReminderCreateDialog';
 import { ReminderEditDialog } from '../components/ReminderEditDialog';

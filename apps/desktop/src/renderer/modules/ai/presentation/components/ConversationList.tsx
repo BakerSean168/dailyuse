@@ -6,7 +6,7 @@
  */
 
 import { memo } from 'react';
-import type { AIConversation } from '@dailyuse/domain-client/ai';
+import type { AIConversation } from '@dailyuse/ai/domain-client';
 
 interface ConversationListProps {
   conversations: AIConversation[];

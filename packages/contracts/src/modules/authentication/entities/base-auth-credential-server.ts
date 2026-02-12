@@ -1,4 +1,4 @@
-﻿/**
+/**
  * AuthCredential Entity - Server Interface
  *
  * Base interface for authentication credentials

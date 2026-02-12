@@ -20,8 +20,8 @@
  */
 
 import { createLogger, type ILogger } from '@dailyuse/utils';
-import type { IAuthSessionRepository, IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
-import type { AuthSession } from '@dailyuse/domain-server/authentication';
+import type { IAuthSessionRepository, IAuthCredentialRepository } from '@dailyuse/authentication/domain-server';
+import type { AuthSession } from '@dailyuse/authentication/domain-server';
 import {
   // Result Pattern - 统一响应格式
   type IpcResult,

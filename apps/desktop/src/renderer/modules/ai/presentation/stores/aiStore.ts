@@ -7,9 +7,9 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { AIConversation, AIMessage } from '@dailyuse/domain-client/ai';
+import { AIConversation, AIMessage } from '@dailyuse/ai/domain-client';
 import type { AIConversationClientDTO } from '@dailyuse/contracts/ai';
-import { aiApplicationService } from '@dailyuse/application-client/ai';
+import { aiApplicationService } from '@dailyuse/ai/application-client';
 
 // ============ Types ============
 export interface AIState {

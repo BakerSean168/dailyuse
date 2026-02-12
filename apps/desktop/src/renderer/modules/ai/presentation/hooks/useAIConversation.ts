@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { aiApplicationService } from '@dailyuse/application-client/ai';
+import { aiApplicationService } from '@dailyuse/ai/application-client';
 import type { CreateConversationRequest, SendMessageRequest } from '@dailyuse/contracts/ai';
 
 // Local type aliases for consistency with hook interface

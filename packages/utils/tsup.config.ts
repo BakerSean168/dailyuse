@@ -16,7 +16,17 @@ const config = baseLibraryConfig('@dailyuse/utils');
 
 export default {
   ...config,
-  entry: ['src/index.ts', 'src/winston.ts', 'src/validation/index.ts'],
+  entry: [
+    'src/index.ts',
+    'src/domain/index.ts',
+    'src/errors/index.ts',
+    'src/frontend/index.ts',
+    'src/logger/index.ts',
+    'src/result/index.ts',
+    'src/shared/index.ts',
+    'src/validation/index.ts',
+    'src/winston.ts',
+  ],
   external: [
     ...(config.external || []),
     'winston',

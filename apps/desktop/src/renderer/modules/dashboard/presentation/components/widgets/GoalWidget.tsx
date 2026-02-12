@@ -1,7 +1,7 @@
 /**
  * GoalWidget - 目标进度摘要 Widget
  *
- * 显示：
+ * 显示�?
  * - 活跃目标数量
  * - 总体进度
  * - 最近更新的目标列表
@@ -16,7 +16,7 @@ import {
   Button,
   ScrollArea,
   cn,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import { Target, TrendingUp, ArrowRight, CheckCircle, Clock } from 'lucide-react';
 import { DashboardWidget, type WidgetSize } from '../DashboardWidget';
@@ -91,7 +91,7 @@ export function GoalWidget({
     return { activeCount, completedCount, avgProgress };
   }, [goals]);
 
-  // 获取状态颜色
+  // 获取状态颜�?
   const getProgressColor = (progress: number) => {
     if (progress >= 80) return 'text-green-500';
     if (progress >= 50) return 'text-blue-500';
@@ -120,11 +120,11 @@ export function GoalWidget({
       <div className="grid grid-cols-3 gap-4 mb-4">
         <div className="text-center">
           <p className="text-2xl font-bold text-primary">{stats.activeCount}</p>
-          <p className="text-xs text-muted-foreground">进行中</p>
+          <p className="text-xs text-muted-foreground">进行�?/p>
         </div>
         <div className="text-center">
           <p className="text-2xl font-bold text-green-500">{stats.completedCount}</p>
-          <p className="text-xs text-muted-foreground">已完成</p>
+          <p className="text-xs text-muted-foreground">已完�?/p>
         </div>
         <div className="text-center">
           <p className="text-2xl font-bold">{stats.avgProgress}%</p>

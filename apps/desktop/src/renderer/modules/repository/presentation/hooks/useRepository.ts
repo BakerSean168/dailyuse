@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { repositoryApplicationService } from '@dailyuse/application-client/repository';
+import { repositoryApplicationService } from '@dailyuse/repository/application-client';
 import type {
   RepositoryClientDTO,
   FolderClientDTO,

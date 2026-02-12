@@ -2,20 +2,20 @@
  * WeekViewCalendar Component
  *
  * 周历视图组件
- * 功能：
- * 1. 7天周视图 x 24小时时间轴
- * 2. 事件块显示
+ * 功能�?
+ * 1. 7天周视图 x 24小时时间�?
+ * 2. 事件块显�?
  * 3. 支持周导航和今日跳转
- * 4. 事件点击和创建回调
+ * 4. 事件点击和创建回�?
  */
 
 import { useState, useMemo, useCallback } from 'react';
 import type { ScheduleClientDTO } from '../stores/scheduleStore';
-import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-shadcn';
-import { Button } from '@dailyuse/ui-shadcn';
-import { Badge } from '@dailyuse/ui-shadcn';
-import { ScrollArea } from '@dailyuse/ui-shadcn';
-import { Skeleton } from '@dailyuse/ui-shadcn';
+import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-react-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
+import { Badge } from '@dailyuse/ui-react-shadcn';
+import { ScrollArea } from '@dailyuse/ui-react-shadcn';
+import { Skeleton } from '@dailyuse/ui-react-shadcn';
 import {
   ChevronLeft,
   ChevronRight,
@@ -46,7 +46,7 @@ interface WeekDay {
 function getWeekStart(date: Date): Date {
   const d = new Date(date);
   const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day; // 周一为一周开始
+  const diff = day === 0 ? -6 : 1 - day; // 周一为一周开�?
   d.setDate(d.getDate() + diff);
   d.setHours(0, 0, 0, 0);
   return d;
@@ -107,7 +107,7 @@ export function WeekViewCalendar({
     return days;
   }, [currentWeekStart]);
 
-  // 周范围文本
+  // 周范围文�?
   const weekRange = useMemo(() => {
     const start = currentWeekStart;
     const end = new Date(start);
@@ -116,7 +116,7 @@ export function WeekViewCalendar({
     const format = (date: Date) => {
       const month = date.getMonth() + 1;
       const day = date.getDate();
-      return `${month}月${day}日`;
+      return `${month}�?{day}日`;
     };
 
     return `${format(start)} - ${format(end)}`;
@@ -125,7 +125,7 @@ export function WeekViewCalendar({
   // 24小时
   const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
 
-  // 获取某天的事件
+  // 获取某天的事�?
   const getEventsForDay = useCallback((dateStr: string): ScheduleClientDTO[] => {
     return schedules.filter((event) => {
       const eventDate = new Date(event.startTime).toISOString().split('T')[0];
@@ -212,7 +212,7 @@ export function WeekViewCalendar({
           </div>
         ) : (
           <div className="h-full flex flex-col">
-            {/* 表头：星期 */}
+            {/* 表头：星�?*/}
             <div className="flex border-b sticky top-0 bg-background z-10">
               <div className="w-16 shrink-0 border-r" />
               {weekDays.map((day) => (
@@ -233,7 +233,7 @@ export function WeekViewCalendar({
             {/* 日历主体 */}
             <ScrollArea className="flex-1">
               <div className="flex">
-                {/* 时间列 */}
+                {/* 时间�?*/}
                 <div className="w-16 shrink-0 border-r">
                   {hours.map((hour) => (
                     <div
@@ -253,12 +253,12 @@ export function WeekViewCalendar({
                       day.isToday ? 'bg-primary/5' : ''
                     }`}
                   >
-                    {/* 时间槽网格背景 */}
+                    {/* 时间槽网格背�?*/}
                     {hours.map((hour) => (
                       <div key={hour} className="h-12 border-b" />
                     ))}
 
-                    {/* 当天的事件 */}
+                    {/* 当天的事�?*/}
                     {getEventsForDay(day.date).map((event) => (
                       <div
                         key={event.uuid}

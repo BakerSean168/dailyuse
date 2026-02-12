@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { notificationApplicationService } from '@dailyuse/application-client/notification';
+import { notificationApplicationService } from '@dailyuse/notification/application-client';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 
 /**

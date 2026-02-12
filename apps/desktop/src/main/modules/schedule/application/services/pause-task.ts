@@ -1,4 +1,4 @@
-import { PauseScheduleTask } from '@dailyuse/application-server';
+import { PauseScheduleTask } from '@dailyuse/schedule/application-server';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('pauseTaskService');

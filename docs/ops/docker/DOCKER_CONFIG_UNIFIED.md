@@ -86,7 +86,7 @@ dailyuse-test-db     docker-entrypoint.sh      Up (healthy)   0.0.0.0:5433->5432
 
 ### 1. 应用配置文件
 
-**`apps/api/.env`** 已更新：
+**`.env`** 已更新：
 
 ```diff
 - REDIS_PORT=6379
@@ -184,7 +184,7 @@ docker exec dailyuse-test-db pg_isready -U test_user -d dailyuse_test
 ### 4. 更新应用配置（如需要）
 
 检查以下文件中的 Redis 配置：
-- `apps/api/.env` ✅ 已更新
+- `.env` ✅ 已更新
 - 其他可能的配置文件
 
 确保 Redis 端口从 `6379` 改为 `6384`。

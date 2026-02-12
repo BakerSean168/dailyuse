@@ -14,7 +14,7 @@ import type { WidgetConfig } from '@dailyuse/contracts/dashboard';
 import { WidgetSize } from '@dailyuse/contracts/dashboard';
 import { useTaskStore } from '@/modules/task/presentation/stores/taskStore';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
-import type { TaskInstance } from '@dailyuse/domain-client/task';
+import type { TaskInstance } from '@dailyuse/task/domain-client';
 
 // ===== Props =====
 interface Props {

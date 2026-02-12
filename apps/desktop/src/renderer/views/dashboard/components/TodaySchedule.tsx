@@ -7,7 +7,7 @@
  * EPIC-015 重构: 使用 Entity 类型代替 DTO
  */
 
-import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
+import type { ScheduleTask } from '@dailyuse/schedule/domain-client';
 
 export interface TodayScheduleProps {
   /** 日程任务列表 */

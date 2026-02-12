@@ -14,9 +14,9 @@ import {
   UpdateMyProfile,
   UpdateAccountPreferences,
   ChangeMyPassword,
-} from '@dailyuse/application-client';
+} from '@dailyuse/account/application-client';
 import type { UpdateAccountPreferencesRequestDTO, UpdateAccountProfileRequestDTO } from '@dailyuse/contracts/account';
-import type { Account } from '@dailyuse/domain-client/account';
+import type { Account } from '@dailyuse/account/domain-client';
 
 interface AccountState {
   account: Account | null;

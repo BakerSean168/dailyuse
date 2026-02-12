@@ -223,10 +223,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRepositoryStore } from '../../stores';
-import { getRepositoryApiClient } from '@dailyuse/infrastructure-client';
+import { getRepositoryApiClient } from '@dailyuse/repository/infrastructure-client';
 
 const repositoryApiClient = getRepositoryApiClient();
-import { Repository } from '@dailyuse/domain-client/repository';
+import { Repository } from '@dailyuse/repository/domain-client';
 import { RepositoryStatus, RepositoryType, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO } from '@dailyuse/contracts/repository';
 
 // Props

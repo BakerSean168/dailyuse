@@ -176,10 +176,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, RecurrenceConfigClient  } from '@dailyuse/contracts/reminder';
-import { ReminderGroup } from '@dailyuse/domain-client/reminder';
+import { ReminderGroup } from '@dailyuse/reminder/domain-client';
 import { useReminder } from '../../composables/useReminder';
 import { useMessage } from '@dailyuse/ui-vuetify';
-import { reminderGroupApplicationService } from '@dailyuse/application-client/reminder';
+import { reminderGroupApplicationService } from '@dailyuse/reminder/application-client';
 import TemplateDesktopCard from './TemplateDesktopCard.vue';
 
 type ReminderGroupDTO = ReminderGroupClientDTO;

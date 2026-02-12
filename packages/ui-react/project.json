@@ -27,7 +27,22 @@
       "options": {
         "lintFilePatterns": ["packages/ui-react/**/*.{ts,tsx}"]
       }
+    },
+    "storybook": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "storybook dev -p 4401 -c packages/ui-react/.storybook",
+        "cwd": "."
+      }
+    },
+    "build-storybook": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/storybook/ui-react"],
+      "options": {
+        "command": "storybook build -c packages/ui-react/.storybook -o dist/storybook/ui-react",
+        "cwd": "."
+      }
     }
   },
-  "implicitDependencies": ["ui-core"]
+  "implicitDependencies": ["ui-core", "ui-react-shadcn"]
 }

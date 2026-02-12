@@ -2,7 +2,7 @@
  * List Instances By Date Range Use Case
  */
 
-import { GetTaskInstancesByDateRange } from '@dailyuse/application-server';
+import { GetTaskInstancesByDateRange } from '@dailyuse/task/application-server';
 import type { TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 
 export async function listInstancesByDateRangeUseCase(

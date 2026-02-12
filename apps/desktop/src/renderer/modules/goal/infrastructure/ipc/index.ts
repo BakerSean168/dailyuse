@@ -11,4 +11,4 @@ export {
   createGoalIpcAdapter,
   createGoalFolderIpcAdapter,
   createGoalFocusIpcAdapter,
-} from '@dailyuse/infrastructure-client';
+} from '@dailyuse/goal/infrastructure-client';

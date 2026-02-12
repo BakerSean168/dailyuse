@@ -1,7 +1,7 @@
 /**
  * GoalTimeline Component
  *
- * 目标时间线视图
+ * 目标时间线视�?
  * Story 11-7: Advanced Features
  */
 
@@ -18,7 +18,7 @@ import {
   ScrollArea,
   ScrollBar,
   cn,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import { TimeRangeSelector, type TimeRange } from '@/renderer/shared/components/selectors/TimeRangeSelector';
 
@@ -61,9 +61,9 @@ const statusColors: Record<string, string> = {
 };
 
 const statusLabels: Record<string, string> = {
-  not_started: '未开始',
-  in_progress: '进行中',
-  completed: '已完成',
+  not_started: '未开�?,
+  in_progress: '进行�?,
+  completed: '已完�?,
   overdue: '已逾期',
 };
 
@@ -255,7 +255,7 @@ export function GoalTimeline({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Target className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">目标时间线</h2>
+          <h2 className="text-lg font-semibold">目标时间�?/h2>
         </div>
         <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
       </div>
@@ -268,11 +268,11 @@ export function GoalTimeline({
         </Badge>
         <Badge variant="outline" className="gap-1">
           <Circle className="h-3 w-3 fill-blue-500 text-blue-500" />
-          进行中: {stats.inProgress}
+          进行�? {stats.inProgress}
         </Badge>
         <Badge variant="outline" className="gap-1">
           <Circle className="h-3 w-3 fill-green-500 text-green-500" />
-          已完成: {stats.completed}
+          已完�? {stats.completed}
         </Badge>
         {stats.overdue > 0 && (
           <Badge variant="destructive" className="gap-1">
@@ -343,15 +343,15 @@ export function GoalTimeline({
       <div className="flex flex-wrap gap-4 text-sm">
         <div className="flex items-center gap-2">
           <div className="w-4 h-2 rounded bg-gray-400" />
-          <span className="text-muted-foreground">未开始</span>
+          <span className="text-muted-foreground">未开�?/span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-2 rounded bg-blue-500" />
-          <span className="text-muted-foreground">进行中</span>
+          <span className="text-muted-foreground">进行�?/span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-2 rounded bg-green-500" />
-          <span className="text-muted-foreground">已完成</span>
+          <span className="text-muted-foreground">已完�?/span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-2 rounded bg-red-500" />
@@ -359,7 +359,7 @@ export function GoalTimeline({
         </div>
         <div className="flex items-center gap-2">
           <Flag className="h-4 w-4 text-yellow-500" />
-          <span className="text-muted-foreground">里程碑</span>
+          <span className="text-muted-foreground">里程�?/span>
         </div>
         <div className="flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-green-600" />

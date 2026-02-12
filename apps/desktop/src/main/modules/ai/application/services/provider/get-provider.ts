@@ -1,4 +1,4 @@
-import { ListProviders } from '@dailyuse/application-server';
+import { ListProviders } from '@dailyuse/ai/application-server';
 import type { AIProviderConfigClientDTO } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 

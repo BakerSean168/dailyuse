@@ -6,8 +6,8 @@
  */
 
 import { useState, useEffect } from 'react';
-import { scheduleApplicationService } from '@dailyuse/application-client/schedule';
-import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
+import { scheduleApplicationService } from '@dailyuse/schedule/application-client';
+import type { ScheduleTask } from '@dailyuse/schedule/domain-client';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 
 interface ScheduleEditDialogProps {

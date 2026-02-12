@@ -13,8 +13,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { ReminderStatus } from '@dailyuse/contracts/reminder';
-import { ReminderTemplate, ReminderGroup } from '@dailyuse/domain-client/reminder';
-import { reminderApplicationService } from '@dailyuse/application-client/reminder';
+import { ReminderTemplate, ReminderGroup } from '@dailyuse/reminder/domain-client';
+import { reminderApplicationService } from '@dailyuse/reminder/application-client';
 
 // ============ State Interface ============
 export interface ReminderState {

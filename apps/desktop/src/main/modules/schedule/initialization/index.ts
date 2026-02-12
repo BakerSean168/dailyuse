@@ -8,8 +8,8 @@
  */
 
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
-import { ScheduleContainer, type ScheduledItem } from '@dailyuse/application-server';
-import type { ScheduleTask } from '@dailyuse/domain-server';
+import { ScheduleContainer, type ScheduledItem } from '@dailyuse/schedule/application-server';
+import type { ScheduleTask } from '@dailyuse/schedule/domain-server';
 import { DesktopScheduler } from '../infrastructure';
 import { executeScheduleTask } from '../application/services';
 

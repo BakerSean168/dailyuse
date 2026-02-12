@@ -1,6 +1,6 @@
 /**
  * ConfirmDialog Component
- * 确认对话框组件
+ * 确认对话框组�?
  */
 
 import * as React from 'react';
@@ -13,7 +13,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 export interface ConfirmDialogProps {
   /** 是否显示 */
@@ -32,7 +32,7 @@ export interface ConfirmDialogProps {
   onConfirm: () => void | Promise<void>;
   /** 取消回调 */
   onCancel?: () => void;
-  /** 是否为危险操作（红色按钮） */
+  /** 是否为危险操作（红色按钮�?*/
   destructive?: boolean;
   /** 是否正在加载 */
   loading?: boolean;
@@ -87,7 +87,7 @@ export function ConfirmDialog({
             disabled={isDisabled}
             className={destructive ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
           >
-            {isDisabled ? '处理中...' : confirmText}
+            {isDisabled ? '处理�?..' : confirmText}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -28,7 +28,7 @@
 //   CreateApiKey,
 //   ListApiKeys,
 //   RevokeApiKey,
-// } from '@dailyuse/application-server';
+// } from '@dailyuse/authentication/application-server';
 
 import { createLogger, type ILogger } from '@dailyuse/utils';
 

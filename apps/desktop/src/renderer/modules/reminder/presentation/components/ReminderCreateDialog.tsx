@@ -8,7 +8,7 @@ import { useState } from 'react';
 import type { CreateReminderTemplateRequest } from '@dailyuse/contracts/reminder';
 import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { reminderApplicationService } from '@dailyuse/application-client/reminder';
+import { reminderApplicationService } from '@dailyuse/reminder/application-client';
 
 interface ReminderCreateDialogProps {
   onClose: () => void;

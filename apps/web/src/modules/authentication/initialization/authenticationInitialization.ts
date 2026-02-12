@@ -1,6 +1,8 @@
 /**
  * 认证模块初始化任务注册
  * Authentication Module Initialization Tasks
+ *
+ * 使用 authApi 和 authenticationStore 管理认证状态恢复。
  */
 
 import {
@@ -8,10 +10,9 @@ import {
   InitializationPhase,
   type InitializationTask,
 } from '@dailyuse/utils';
-import { useAuthStore } from '../presentation/stores/authenticationStore';
-import { useAccountStore } from '@/modules/account';
-import { AuthManager } from '../../../shared/api/core/interceptors';
-import { Account } from '@dailyuse/domain-client/account';
+import { useAuthenticationStore } from '../presentation/stores/authenticationStore';
+import { authApi } from '../presentation/services/authApi';
+
 /**
  * 注册认证模块的所有初始化任务
  */
@@ -25,80 +26,45 @@ export function registerAuthenticationInitializationTasks(): void {
     priority: 15,
     initialize: async () => {
       console.log('🔐 [AuthModule] 恢复认证状态');
-      const accountStore = useAccountStore();
+      const authStore = useAuthenticationStore();
 
-      // 直接从 AuthManager 读取 token 信息
-      const accessToken = AuthManager.getAccessToken();
-      const isTokenExpired = AuthManager.isTokenExpired();
+      // 从 Pinia 持久化中恢复的 token
+      const accessToken = authStore.accessToken;
 
-      // 🔥 修复：只检查 Access Token
-      // Refresh Token 存储在 httpOnly Cookie 中，前端无法读取
-      // 如果 Access Token 过期，会自动触发 refresh（浏览器会自动带上 Cookie）
       if (!accessToken) {
-        console.log('ℹ️ [AuthModule] 未发现 Access Token，清除旧数据');
-        // 清除可能残留的认证数据
-        localStorage.removeItem('authentication');
-        localStorage.removeItem('auth');
-        accountStore.currentAccount = null;
-        // 确保 loading 状态为 false
-        const authStore = useAuthStore();
+        console.log('ℹ️ [AuthModule] 未发现 Access Token，跳过状态恢复');
         authStore.setLoading(false);
         return;
       }
 
-      if (isTokenExpired) {
-        console.log('⚠️ [AuthModule] Token已过期，清除认证状态');
-        AuthManager.clearTokens();
-        // 清除 Pinia 持久化的数据
-        localStorage.removeItem('authentication');
-        localStorage.removeItem('auth'); // 兼容旧版本
-        // 清除账户信息
-        accountStore.currentAccount = null;
-        // 确保 loading 状态为 false
-        const authStore = useAuthStore();
-        authStore.setLoading(false);
-        return;
-      }
-
-      console.log('✅ [AuthModule] 发现有效的 token，恢复账户信息');
-
-      // 从 localStorage 读取持久化的账户数据
-      const persistedData = localStorage.getItem('authentication');
-      if (persistedData) {
-        try {
-          const authData = JSON.parse(persistedData);
-          if (authData.user) {
-            // 恢复账户信息到 accountStore
-            const accountEntity = Account.fromClientDTO(authData.user);
-            accountStore.currentAccount = accountEntity.toClientDTO() as any;
-            console.log('✅ [AuthModule] 账户信息已恢复:', accountEntity.username);
-
-            // 触发自动登录流程
-            console.log(`🚀 [AuthModule] 触发自动登录: ${accountEntity.uuid}`);
-            const { AppInitializationManager } = await import(
-              '../../../shared/initialization/AppInitializationManager'
-            );
-            await AppInitializationManager.initializeUserSession(accountEntity.uuid);
-            console.log('✅ [AuthModule] 自动登录完成');
+      // 检查 token 是否过期
+      if (authStore.isTokenExpired) {
+        console.log('⚠️ [AuthModule] Token 已过期，尝试刷新');
+        const refreshToken = authStore.refreshToken;
+        if (refreshToken) {
+          try {
+            const data = await authApi.refreshToken({ refreshToken }, accessToken);
+            authStore.handleAuthResponse(data);
+            console.log('✅ [AuthModule] Token 刷新成功');
+          } catch (error) {
+            console.warn('❌ [AuthModule] Token 刷新失败，清除认证状态:', error);
+            authStore.reset();
           }
-        } catch (error) {
-          console.error('❌ [AuthModule] 解析持久化数据失败:', error);
-          localStorage.removeItem('authentication');
-          // 确保 loading 状态为 false
-          const authStore = useAuthStore();
-          authStore.setLoading(false);
+        } else {
+          console.log('⚠️ [AuthModule] 无 Refresh Token，清除认证状态');
+          authStore.reset();
         }
-      } else {
-        console.log('ℹ️ [AuthModule] 未发现持久化的账户信息');
-        // 确保 loading 状态为 false
-        const authStore = useAuthStore();
         authStore.setLoading(false);
+        return;
       }
+
+      console.log('✅ [AuthModule] 有效的 token，认证状态已恢复');
+      authStore.setLoading(false);
     },
     cleanup: async () => {
       console.log('🧹 [AuthModule] 清理认证状态');
-      // 清理认证相关的状态
-      AuthManager.clearTokens();
+      const authStore = useAuthenticationStore();
+      authStore.reset();
     },
   };
 
@@ -109,8 +75,6 @@ export function registerAuthenticationInitializationTasks(): void {
     priority: 10,
     initialize: async () => {
       console.log('⚙️ [AuthModule] 初始化认证配置');
-      // 初始化认证相关的配置
-      // 例如：API 端点、超时设置、重试策略等
     },
   };
 
@@ -118,11 +82,11 @@ export function registerAuthenticationInitializationTasks(): void {
   const userSessionStartTask: InitializationTask = {
     name: 'user-session-start',
     phase: InitializationPhase.USER_LOGIN,
-    priority: 5, // 最高优先级，用户登录时首先执行
+    priority: 5,
     initialize: async (context?: { accountUuid: string }) => {
       if (context?.accountUuid) {
         console.log(`👤 [AuthModule] 启动用户会话: ${context.accountUuid}`);
-        
+
         // 加载完整的语言包（包含所有业务模块的翻译）
         try {
           const { loadFullLanguageMessages } = await import('@/shared/i18n');
@@ -131,78 +95,30 @@ export function registerAuthenticationInitializationTasks(): void {
         } catch (error) {
           console.warn('⚠️ [AuthModule] 加载完整语言包失败:', error);
         }
-        
-        // 启动用户会话相关的服务
-        // 例如：心跳检测、会话保活等
       }
     },
     cleanup: async () => {
       console.log('🔚 [AuthModule] 结束用户会话');
-      // 清理用户会话
     },
   };
 
-  // 4. Token 刷新事件处理器注册任务
-  const registerEventHandlersTask: InitializationTask = {
-    name: 'authentication:event-handlers',
-    phase: InitializationPhase.APP_STARTUP,
-    priority: 15,
-    initialize: async () => {
-      console.log('🎯 [AuthModule] 注册事件处理器');
-      
-      // 动态导入事件处理器
-      const { TokenRefreshRequestedHandler } = await import(
-        '../application/event-handlers/TokenRefreshRequestedHandler'
-      );
-      
-      // 获取处理器单例
-      const handler = TokenRefreshRequestedHandler.getInstance();
-      
-      // 注册 token 刷新请求事件监听器
-      const eventListener = ((event: CustomEvent) => {
-        handler.handle(event).catch((error) => {
-          console.error('❌ [AuthModule] Token refresh handler error:', error);
-        });
-      }) as EventListener;
-      
-      window.addEventListener('auth:token-refresh-requested', eventListener);
-      
-      // 存储监听器引用以便清理
-      (registerEventHandlersTask as any)._eventListener = eventListener;
-      
-      console.log('✅ [AuthModule] 事件处理器已注册');
-    },
-    cleanup: async () => {
-      console.log('🧹 [AuthModule] 移除事件处理器');
-      
-      // 移除事件监听器
-      const eventListener = (registerEventHandlersTask as any)._eventListener;
-      if (eventListener) {
-        window.removeEventListener('auth:token-refresh-requested', eventListener);
-      }
-    },
-  };
-
-  // 5. Token 刷新服务任务（已废弃，保留以兼容）
+  // 4. Token 刷新服务任务
   const tokenRefreshServiceTask: InitializationTask = {
     name: 'token-refresh-service',
     phase: InitializationPhase.USER_LOGIN,
     priority: 10,
-    dependencies: ['user-session-start'], // 依赖会话启动
+    dependencies: ['user-session-start'],
     initialize: async () => {
       console.log('🔄 [AuthModule] 启动 Token 刷新服务');
-      // 启动 Token 自动刷新服务
     },
     cleanup: async () => {
       console.log('🛑 [AuthModule] 停止 Token 刷新服务');
-      // 停止 Token 刷新服务
     },
   };
 
   // 注册所有任务
   manager.registerTask(authConfigInitTask);
   manager.registerTask(authStateRestoreTask);
-  manager.registerTask(registerEventHandlersTask); // 事件处理器注册（新增）
   manager.registerTask(userSessionStartTask);
   manager.registerTask(tokenRefreshServiceTask);
 

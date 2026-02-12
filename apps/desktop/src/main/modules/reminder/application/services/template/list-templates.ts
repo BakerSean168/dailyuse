@@ -2,7 +2,7 @@
  * List Reminder Templates Service
  */
 
-import { ListReminderTemplates } from '@dailyuse/application-server';
+import { ListReminderTemplates } from '@dailyuse/reminder/application-server';
 import type { ReminderTemplateClientDTO, QueryReminderTemplatesRequest } from '@dailyuse/contracts/reminder';
 import { createLogger } from '@dailyuse/utils';
 

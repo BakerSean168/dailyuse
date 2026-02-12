@@ -1,0 +1,55 @@
+/**
+ * Task HTTP Adapters - Registration
+ *
+ * Barrel file for all HTTP-based Task adapters.
+ * Provides factory function to create all HTTP adapters at once.
+ */
+
+import type { IHttpClient } from '../types';
+import { TaskTemplateHttpAdapter } from './task-template-http.adapter';
+import { TaskInstanceHttpAdapter } from './task-instance-http.adapter';
+import { TaskDependencyHttpAdapter } from './task-dependency-http.adapter';
+import { TaskStatisticsHttpAdapter } from './task-statistics-http.adapter';
+
+// Re-export adapters
+export { TaskTemplateHttpAdapter } from './task-template-http.adapter';
+export { TaskInstanceHttpAdapter } from './task-instance-http.adapter';
+export { TaskDependencyHttpAdapter } from './task-dependency-http.adapter';
+export { TaskStatisticsHttpAdapter } from './task-statistics-http.adapter';
+
+/**
+ * All HTTP adapters for the Task module
+ */
+export interface TaskHttpAdapters {
+  template: TaskTemplateHttpAdapter;
+  instance: TaskInstanceHttpAdapter;
+  dependency: TaskDependencyHttpAdapter;
+  statistics: TaskStatisticsHttpAdapter;
+}
+
+/**
+ * Create all Task HTTP adapters from a single IHttpClient instance.
+ * The concrete implementation (e.g. AxiosHttpClient) is created at the App layer.
+ *
+ * @example
+ * ```ts
+ * // apps/web/src/infrastructure/task.ts
+ * const httpClient = createHttpClient({ baseURL: '/api' });
+ * const adapters = createTaskHttpAdapters(httpClient);
+ * TaskContainer.getInstance()
+ *   .registerTemplateApiClient(adapters.template)
+ *   .registerInstanceApiClient(adapters.instance)
+ *   .registerDependencyApiClient(adapters.dependency)
+ *   .registerStatisticsApiClient(adapters.statistics);
+ * ```
+ */
+export function createTaskHttpAdapters(
+  httpClient: IHttpClient,
+): TaskHttpAdapters {
+  return {
+    template: new TaskTemplateHttpAdapter(httpClient),
+    instance: new TaskInstanceHttpAdapter(httpClient),
+    dependency: new TaskDependencyHttpAdapter(httpClient),
+    statistics: new TaskStatisticsHttpAdapter(httpClient),
+  };
+}

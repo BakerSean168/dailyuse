@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 import { MoreVertical } from 'lucide-react';
 import type { SyncProfileClientDTO, SyncProviderType } from '@dailyuse/contracts/sync';
 
@@ -74,7 +74,7 @@ export function SyncProfileCard({
               {onActivate && !isActive && (
                 <DropdownMenuItem onClick={onActivate}>
                   <Zap className="h-4 w-4 mr-2" />
-                  激活
+                  激�?
                 </DropdownMenuItem>
               )}
               {onSetDefault && !isDefault && (

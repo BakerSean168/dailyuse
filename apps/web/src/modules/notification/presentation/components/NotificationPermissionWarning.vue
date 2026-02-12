@@ -18,9 +18,24 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { NotificationService } from '@/modules/notification/application/services/NotificationService';
 
-const notificationService = NotificationService.getInstance();
+// Simplified permission check (no longer relies on application layer service)
+const notificationService = {
+  async checkPermissionStatus() {
+    if (!('Notification' in window)) return 'unsupported';
+    return Notification.permission;
+  },
+  async getPermissionDescription() {
+    const p = Notification.permission;
+    if (p === 'granted') return '通知权限已授予';
+    if (p === 'denied') return '通知权限已被拒绝';
+    return '通知权限未设置';
+  },
+  async requestPermission() {
+    if ('Notification' in window) return Notification.requestPermission();
+    return 'denied';
+  },
+};
 
 const showWarning = ref(false);
 const statusMessage = ref('');

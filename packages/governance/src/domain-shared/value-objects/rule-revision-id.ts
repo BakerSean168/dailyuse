@@ -1,0 +1,18 @@
+/**
+ * RuleRevisionId Value Object
+ * 规则修订记录ID值对象
+ */
+
+
+import type { RuleRevisionId as IRuleRevisionId } from '@/contracts/primitives/ids';
+
+import { createIdType } from '@dailyuse/utils';
+
+
+
+/**
+ * RuleRevisionId 值对象
+ * 用于强类型化规则修订记录 ID
+ */
+export const RuleRevisionId = createIdType<IRuleRevisionId>('RuleRevisionId');
+export type RuleRevisionId = IRuleRevisionId;

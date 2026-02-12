@@ -111,7 +111,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { format } from 'date-fns';
-import { KeyResult, Goal } from '@dailyuse/domain-client/goal';
+import { KeyResult, Goal } from '@dailyuse/goal/domain-client';
 import { useMessage } from '@dailyuse/ui-vuetify';
 // composables
 import { useGoal } from '../../composables/useGoal';

@@ -15,7 +15,7 @@
  */
 
 import { useState } from 'react';
-import type { TaskTemplate } from '@dailyuse/domain-client/task';
+import type { TaskTemplate } from '@dailyuse/task/domain-client';
 import { UrgencyLevel } from '@dailyuse/contracts/shared';
 import { TaskDetailDialog } from './TaskDetailDialog';
 import { useTaskTemplate } from '../hooks/useTaskTemplate';

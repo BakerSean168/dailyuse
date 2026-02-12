@@ -8,15 +8,15 @@
 import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
-import { Badge } from '@dailyuse/ui-shadcn';
-import { Button } from '@dailyuse/ui-shadcn';
+import type { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
+import { Badge } from '@dailyuse/ui-react-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 import {
   Check,
   Circle,
@@ -30,7 +30,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 interface DraggableTaskCardProps {
   id: string;
@@ -41,7 +41,7 @@ interface DraggableTaskCardProps {
   onClick?: (uuid: string) => void;
 }
 
-// 状态颜色配置
+// 状态颜色配�?
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   PENDING: { bg: 'bg-blue-100', text: 'text-blue-800' },
   COMPLETED: { bg: 'bg-green-100', text: 'text-green-800' },
@@ -89,7 +89,7 @@ export function DraggableTaskCard({
     onClick?.(instance.uuid);
   };
 
-  // 格式化时间显示
+  // 格式化时间显�?
   const getTimeLabel = () => {
     const timeConfig = instance.timeConfig;
 

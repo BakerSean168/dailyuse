@@ -28,5 +28,6 @@ export {
   ThemeType
 } from './theme-type';
 export {
-    LanguageCode
+  LanguageCode
 } from './language-code';
+export type { IdentityId } from './identity-id';

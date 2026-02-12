@@ -2,7 +2,7 @@
  * Create Reminder Group Service
  */
 
-import { ReminderContainer } from '@dailyuse/infrastructure-server';
+import { ReminderContainer } from '@dailyuse/reminder/infrastructure-server';
 import type { ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
 import { createLogger } from '@dailyuse/utils';
 
@@ -19,7 +19,7 @@ export async function createGroupService(params: {
   const container = ReminderContainer.getInstance();
   const repo = container.getGroupRepository();
 
-  const { ReminderGroup } = await import('@dailyuse/domain-server/reminder');
+  const { ReminderGroup } = await import('@dailyuse/reminder/domain-server');
   const group = ReminderGroup.create({
     accountUuid: params.accountUuid,
     name: params.name,

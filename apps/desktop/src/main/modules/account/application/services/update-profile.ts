@@ -1,4 +1,4 @@
-import { UpdateAccountProfile } from '@dailyuse/application-server';
+import { UpdateAccountProfile } from '@dailyuse/account/application-server';
 import type { AccountClientDTO, UpdateAccountProfileRequest } from '@dailyuse/contracts/account';
 import { createLogger } from '@dailyuse/utils';
 

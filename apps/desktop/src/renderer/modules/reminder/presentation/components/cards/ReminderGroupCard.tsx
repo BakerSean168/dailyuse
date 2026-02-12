@@ -1,11 +1,11 @@
 /**
  * ReminderGroupCard - 提醒分组展示卡片
  *
- * 显示分组详情弹窗：
+ * 显示分组详情弹窗�?
  * - 分组标题栏和编辑按钮
- * - 控制模式（组控制/个体控制）和启用状态开关
+ * - 控制模式（组控制/个体控制）和启用状态开�?
  * - 分组内模板九宫格展示
- * - 支持点击模板和右键菜单
+ * - 支持点击模板和右键菜�?
  *
  * @module reminder/presentation/components/cards
  */
@@ -20,7 +20,7 @@ import {
   Switch,
   Label,
   cn,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import {
   Folder,
@@ -57,9 +57,9 @@ export interface ReminderGroupCardProps {
   onTemplateContextMenu?: (template: ReminderTemplateClientDTO, event: React.MouseEvent) => void;
   /** 切换控制模式 */
   onToggleControlMode?: (group: ReminderGroupClientDTO, isGroupControl: boolean) => Promise<void>;
-  /** 切换启用状态 */
+  /** 切换启用状�?*/
   onToggleEnabled?: (group: ReminderGroupClientDTO, enabled: boolean) => Promise<void>;
-  /** 查看所有模板 */
+  /** 查看所有模�?*/
   onShowAll?: (group: ReminderGroupClientDTO) => void;
 }
 
@@ -88,12 +88,12 @@ export function ReminderGroupCard({
   );
   const [localEnabled, setLocalEnabled] = useState(group?.enabled ?? true);
 
-  // 显示的模板（最多显示 maxDisplayCount 个）
+  // 显示的模板（最多显�?maxDisplayCount 个）
   const displayTemplates = useMemo(() => {
     return templates.slice(0, maxDisplayCount);
   }, [templates, maxDisplayCount]);
 
-  // 是否有更多模板
+  // 是否有更多模�?
   const hasMore = templates.length > maxDisplayCount;
   const moreCount = templates.length - maxDisplayCount;
 
@@ -110,7 +110,7 @@ export function ReminderGroupCard({
     }
   }, [group, onToggleControlMode]);
 
-  // 处理切换启用状态
+  // 处理切换启用状�?
   const handleToggleStatus = useCallback(async (checked: boolean) => {
     if (!group || !onToggleEnabled) return;
 
@@ -151,7 +151,7 @@ export function ReminderGroupCard({
     onTemplateContextMenu?.(template, event);
   }, [onTemplateContextMenu]);
 
-  // 处理查看所有
+  // 处理查看所�?
   const handleShowAll = useCallback(() => {
     if (group && onShowAll) {
       onShowAll(group);
@@ -163,7 +163,7 @@ export function ReminderGroupCard({
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-lg">
-        {/* 标题栏 */}
+        {/* 标题�?*/}
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
@@ -183,7 +183,7 @@ export function ReminderGroupCard({
           </div>
         </DialogHeader>
 
-        {/* 控制选项栏 */}
+        {/* 控制选项�?*/}
         <div className="space-y-4 border-y py-4">
           {/* 控制模式 */}
           <div className="flex items-center justify-between">
@@ -198,16 +198,16 @@ export function ReminderGroupCard({
                 disabled={isTogglingMode}
               />
               <Label className="text-sm">
-                {localGroupControl ? '组控制' : '个体控制'}
+                {localGroupControl ? '组控�? : '个体控制'}
               </Label>
             </div>
           </div>
 
-          {/* 当前状态 */}
+          {/* 当前状�?*/}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Power className="h-4 w-4" />
-              <span>当前状态</span>
+              <span>当前状�?/span>
             </div>
             <div className="flex items-center gap-2">
               <Switch
@@ -216,19 +216,19 @@ export function ReminderGroupCard({
                 disabled={isTogglingStatus}
               />
               <Label className="text-sm">
-                {localEnabled ? '已启用' : '已禁用'}
+                {localEnabled ? '已启�? : '已禁�?}
               </Label>
             </div>
           </div>
         </div>
 
-        {/* 九宫格容器 */}
+        {/* 九宫格容�?*/}
         <div className="py-4">
           {templates.length === 0 ? (
-            /* 空状态 */
+            /* 空状�?*/
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Folder className="h-12 w-12 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground mb-3">该分组暂无提醒</p>
+              <p className="text-sm text-muted-foreground mb-3">该分组暂无提�?/p>
               <Button
                 variant="outline"
                 size="sm"
@@ -239,7 +239,7 @@ export function ReminderGroupCard({
               </Button>
             </div>
           ) : (
-            /* 模板图标九宫格 */
+            /* 模板图标九宫�?*/
             <div className="grid grid-cols-3 gap-4">
               {displayTemplates.map((template) => (
                 <div

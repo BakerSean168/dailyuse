@@ -109,7 +109,7 @@ import { BarChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 
 use([GridComponent, TooltipComponent, TitleComponent, BarChart, CanvasRenderer]);
-import type { GoalReview, Goal, KeyResult } from '@dailyuse/domain-client/goal';
+import type { GoalReview, Goal, KeyResult } from '@dailyuse/goal/domain-client';
 
 defineOptions({ name: 'ReviewProgressChart' });
 

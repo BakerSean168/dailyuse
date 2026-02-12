@@ -61,7 +61,7 @@ import ReminderSection from './sections/ReminderSection.vue';
 import MetadataSection from './sections/MetadataSection.vue';
 import KeyResultLinksSection from './sections/KeyResultLinksSection.vue';
 import { useTaskTemplateForm } from '../../composables/useTaskTemplateForm';
-import type { TaskTemplate } from '@dailyuse/domain-client/task';
+import type { TaskTemplate } from '@dailyuse/task/domain-client';
 
 // ===== Props 定义 =====
 interface Props {

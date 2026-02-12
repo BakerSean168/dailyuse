@@ -35,9 +35,9 @@ export default createTsupConfig({
     'src/modules/sync/index.ts',
     // 其他模块入口
     'src/document.contracts.ts',
-    'src/response/index.ts',
     'src/result/index.ts',
     'src/shared/index.ts',
+
     // 原语类型入口
     'src/primitives/index.ts',
   ],

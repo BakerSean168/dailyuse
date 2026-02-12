@@ -298,7 +298,7 @@
 import { computed, ref, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { format } from 'date-fns';
-import { Repository, Resource } from '@dailyuse/domain-client/repository';
+import { Repository, Resource } from '@dailyuse/repository/domain-client';
 import { RepositoryStatus } from '@dailyuse/contracts/repository';
 // 组件导入
 import RepoDialog from '../components/dialogs/RepoDialog.vue';

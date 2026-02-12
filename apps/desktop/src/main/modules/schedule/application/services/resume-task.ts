@@ -1,4 +1,4 @@
-import { ResumeScheduleTask } from '@dailyuse/application-server';
+import { ResumeScheduleTask } from '@dailyuse/schedule/application-server';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('resumeTaskService');

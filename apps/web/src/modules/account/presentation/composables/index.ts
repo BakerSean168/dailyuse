@@ -1,9 +1,6 @@
 /**
- * Account Composables 聚合导出
- *
- * 统一导出 Account 模块的所有 Composables
- * 便于组件导入使用
+ * Account Composables
+ * 账户模块组合式 API 导出
  */
 
-export { useAccountProfile } from './useAccountProfile';
-export { useAccountSubscription } from './useAccountSubscription';
+export { useAccount } from './useAccount';

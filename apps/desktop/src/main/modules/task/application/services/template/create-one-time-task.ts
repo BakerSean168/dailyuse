@@ -2,7 +2,7 @@
  * Create One Time Task Use Case
  */
 
-import { CreateTaskTemplate } from '@dailyuse/application-server';
+import { CreateTaskTemplate } from '@dailyuse/task/application-server';
 import type { TaskTemplateClientDTO, CreateOneTimeTaskRequest } from '@dailyuse/contracts/task';
 import { TaskType } from '@dailyuse/contracts/task';
 import { createLogger } from '@dailyuse/utils';

@@ -1,16 +1,14 @@
 /**
- * Reminder Module Exports
- * DDD 架构分层导出
+ * Reminder Module - Public API
  */
+
+// ===== Presentation Layer =====
+export { useReminderStore } from './presentation/stores/reminderStore';
+export type { ReminderStoreType } from './presentation/stores/reminderStore';
+export { useReminder } from './presentation/composables/useReminder';
+
+// Views
+export { default as ReminderDesktopView } from './presentation/views/ReminderDesktopView.vue';
 
 // Initialization
 export { registerReminderInitializationTasks } from './initialization';
-
-// Presentation Layer - Composables
-export { useReminder } from './presentation/composables/useReminder';
-
-// Presentation Layer - Store
-export { useReminderStore } from './presentation/stores/reminderStore';
-
-// Presentation Layer - Views (Desktop Grid Style)
-export { default as ReminderDesktopView } from './presentation/views/ReminderDesktopView.vue';

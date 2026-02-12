@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { Repository } from '@dailyuse/domain-client/repository';
+import { Repository } from '@dailyuse/repository/domain-client';
 import { useI18n } from 'vue-i18n';
 import { format } from 'date-fns';
 

@@ -2,7 +2,7 @@ import { defineConfig } from 'tsup';
 
 export default defineConfig({
   // Entry point
-  entry: ['src/index.ts'],
+  entry: ['src/main.ts'],
 
   // Output format: ESM only (matches package.json "type": "module")
   format: ['esm'],
@@ -38,12 +38,10 @@ export default defineConfig({
 
   // External dependencies (don't bundle these)
   external: [
-    // Workspace packages
-    '@dailyuse/contracts',
-    '@dailyuse/domain-server',
-    '@dailyuse/utils',
+    // ✅ 所有 @dailyuse/* workspace 包（运行时从 node_modules 加载）
+    /^@dailyuse\//,
 
-    // Prisma client (should be loaded at runtime)
+    // ✅ Prisma Client（必须外部化，包含二进制引擎）
     '@prisma/client',
 
     // All @nestjs packages
@@ -66,6 +64,11 @@ export default defineConfig({
     'zod',
     'ioredis',
     'dotenv',
+    'reflect-metadata',
+    'rxjs',
+    'diff-match-patch',
+    'uuid',
+    'bree',
   ],
 
   // Watch mode in development

@@ -16,9 +16,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@dailyuse/ui-shadcn';
-import { Button } from '@dailyuse/ui-shadcn';
-import { Label } from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
+import { Button } from '@dailyuse/ui-react-shadcn';
+import { Label } from '@dailyuse/ui-react-shadcn';
 import {
   Github,
   Cloud,
@@ -33,7 +33,7 @@ import {
   Settings,
   Plus,
 } from 'lucide-react';
-import { cn } from '@dailyuse/ui-shadcn';
+import { cn } from '@dailyuse/ui-react-shadcn';
 
 // Types
 interface SyncProvider {
@@ -391,7 +391,7 @@ export const SyncSettingsView: React.FC<{ onAddProvider?: () => void }> = ({
     },
     {
       id: 'nutstore',
-      name: '坚果云 (Nutstore)',
+      name: '坚果�?(Nutstore)',
       icon: <Cloud className="w-8 h-8" />,
       connected: false,
       status: 'disconnected',
@@ -522,7 +522,7 @@ export const SyncSettingsView: React.FC<{ onAddProvider?: () => void }> = ({
             🔑 Change Encryption Password
           </Button>
           <Button variant="outline" className="w-full justify-start text-red-600">
-            🗑️ Clear Sync History
+            🗑�?Clear Sync History
           </Button>
         </CardContent>
       </Card>

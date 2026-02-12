@@ -7,10 +7,10 @@ import { beforeEach, afterEach, vi } from 'vitest';
 import { mockPrismaClient, resetMockData } from './mocks/prismaMock';
 
 // Mock Prisma config module (unified config after cleanup)
-vi.mock('../shared/infrastructure/config/prisma.js', () => ({
+vi.mock('@dailyuse/database', () => ({
   prisma: mockPrismaClient,
-  connectPrisma: vi.fn(),
-  disconnectPrisma: vi.fn(),
+  connectDatabase: vi.fn(),
+  disconnectDatabase: vi.fn(),
 }));
 
 // Mock PrismaClient 构造函数
@@ -52,10 +52,8 @@ export const ApiTestHelpers = {
    * 创建测试用的 Express 应用
    */
   createTestApp: async () => {
-    // 这里应该导入并创建你的 Express 应用
-    // 但避免实际启动服务器
-    const appModule = await import('../app.js');
-    return appModule.default || appModule;
+    const { createApp } = await import('./app-factory');
+    return createApp();
   },
 
   /**

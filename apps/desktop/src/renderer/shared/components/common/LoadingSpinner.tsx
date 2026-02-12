@@ -4,13 +4,13 @@
  */
 
 import * as React from 'react';
-import { cn } from '@dailyuse/ui-shadcn';
+import { cn } from '@dailyuse/ui-react-shadcn';
 import { Loader2 } from 'lucide-react';
 
 export interface LoadingSpinnerProps {
   /** 大小 */
   size?: 'sm' | 'md' | 'lg' | 'xl';
-  /** 自定义类名 */
+  /** 自定义类�?*/
   className?: string;
   /** 加载文本 */
   text?: string;

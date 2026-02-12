@@ -5,8 +5,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import VChart from 'vue-echarts';
-import type { Goal } from '@dailyuse/domain-client/goal';
-import type { GoalRecord } from '@dailyuse/domain-client/goal';
+import type { Goal } from '@dailyuse/goal/domain-client';
+import type { GoalRecord } from '@dailyuse/goal/domain-client';
 import { useTheme } from 'vuetify';
 const props = defineProps<{
   goal: Goal | null;

@@ -1,61 +1,36 @@
 /**
  * Goal Store - Pinia 状态管理
  *
- * 管理 Goal 模块的所有状态
- * - Vue 3 + Pinia（Web 应用专用）
- *
- * EPIC-018 重构:
- * - 框架无关的 Service 只返回数据
- * - Store 在 Composables 中被调用
- * - Composables 处理 Store 更新和 UI 状态
+ * 纯状态容器 — API 调用由 composables 执行。
  *
  * @module goal/presentation/stores
  */
 
 import { defineStore } from 'pinia';
 import type {
-  GoalDTO,
-  KeyResultDTO,
-  GoalFolderDTO,
-  GoalReviewDTO,
-  GoalRecordDTO,
+  GoalClientDTO,
+  KeyResultClientDTO,
+  GoalFolderClientDTO,
+  GoalReviewClientDTO,
+  GoalRecordClientDTO,
 } from '@dailyuse/contracts/goal';
+import type { GoalStatus } from '@dailyuse/contracts/goal';
 
-// ============ State Interface ============
 export interface GoalState {
-  // 目标列表
-  goals: GoalDTO[];
-
-  // 当前选中的目标
-  currentGoal: GoalDTO | null;
-
-  // 关键结果列表
-  keyResults: KeyResultDTO[];
-
-  // 目标文件夹
-  goalFolders: GoalFolderDTO[];
-
-  // 目标评审
-  goalReviews: GoalReviewDTO[];
-
-  // 目标记录
-  goalRecords: GoalRecordDTO[];
-
-  // UI 状态
+  goals: GoalClientDTO[];
+  currentGoal: GoalClientDTO | null;
+  keyResults: KeyResultClientDTO[];
+  goalFolders: GoalFolderClientDTO[];
+  goalReviews: GoalReviewClientDTO[];
+  goalRecords: GoalRecordClientDTO[];
   isLoading: boolean;
   error: string | null;
-
-  // 搜索和过滤
   searchQuery: string;
-  filterStatus: string | null;
-
-  // 分页
-  currentPage: number;
-  pageSize: number;
-  total: number;
+  filterStatus: GoalStatus | null;
+  pagination: { page: number; pageSize: number; total: number };
+  isInitialized: boolean;
 }
 
-// ============ Store ============
 export const useGoalStore = defineStore('goal', {
   state: (): GoalState => ({
     goals: [],
@@ -68,172 +43,77 @@ export const useGoalStore = defineStore('goal', {
     error: null,
     searchQuery: '',
     filterStatus: null,
-    currentPage: 1,
-    pageSize: 20,
-    total: 0,
+    pagination: { page: 1, pageSize: 20, total: 0 },
+    isInitialized: false,
   }),
 
   getters: {
-    // ========== 目标查询 ==========
     getGoalById: (state) => (id: string) => state.goals.find((g) => g.id === id),
-
-    getGoalsByStatus: (state) => (status: string) => state.goals.filter((g) => g.status === status),
-
-    getGoalsByFolder: (state) => (folderId: string) =>
-      state.goals.filter((g) => g.folderId === folderId),
-
-    // ========== 关键结果查询 ==========
-    getKeyResultsByGoal: (state) => (goalId: string) =>
-      state.keyResults.filter((kr) => kr.goalId === goalId),
-
-    // ========== 统计 ==========
-    getTotalGoals: (state) => state.goals.length,
-
-    getCompletedGoalsCount: (state) => state.goals.filter((g) => g.status === 'completed').length,
-
-    getActiveGoalsCount: (state) => state.goals.filter((g) => g.status === 'active').length,
-
-    // ========== 分页 ==========
-    getTotalPages: (state) => Math.ceil(state.total / state.pageSize),
+    getGoalsByStatus: (state) => (status: GoalStatus) => state.goals.filter((g) => g.status === status),
+    getGoalsByFolder: (state) => (folderId: string) => state.goals.filter((g) => g.folderId === folderId),
+    activeGoalCount: (state): number => state.goals.filter((g) => g.status === 'Active').length,
+    completedGoalCount: (state): number => state.goals.filter((g) => g.status === 'Completed').length,
+    totalPages: (state): number => Math.ceil(state.pagination.total / state.pagination.pageSize),
+    hasActiveFilter: (state): boolean => state.filterStatus !== null || state.searchQuery.length > 0,
   },
 
   actions: {
-    // ========== Goal Actions ==========
-    setGoals(goals: GoalDTO[]) {
+    setGoals(goals: GoalClientDTO[], total?: number) {
       this.goals = goals;
+      if (total !== undefined) this.pagination.total = total;
     },
+    addGoal(goal: GoalClientDTO) { this.goals.unshift(goal); this.pagination.total++; },
+    updateGoal(goal: GoalClientDTO) {
+      const i = this.goals.findIndex((g) => g.id === goal.id);
+      if (i !== -1) this.goals[i] = goal;
+      if (this.currentGoal?.id === goal.id) this.currentGoal = goal;
+    },
+    removeGoal(id: string) {
+      this.goals = this.goals.filter((g) => g.id !== id);
+      this.pagination.total--;
+      if (this.currentGoal?.id === id) this.currentGoal = null;
+    },
+    setCurrentGoal(goal: GoalClientDTO | null) { this.currentGoal = goal; },
 
-    addGoal(goal: GoalDTO) {
-      this.goals.push(goal);
-      this.total++;
+    setKeyResults(krs: KeyResultClientDTO[]) { this.keyResults = krs; },
+    addKeyResult(kr: KeyResultClientDTO) { this.keyResults.push(kr); },
+    updateKeyResult(kr: KeyResultClientDTO) {
+      const i = this.keyResults.findIndex((k) => k.id === kr.id);
+      if (i !== -1) this.keyResults[i] = kr;
     },
+    removeKeyResult(id: string) { this.keyResults = this.keyResults.filter((k) => k.id !== id); },
 
-    updateGoal(goal: GoalDTO) {
-      const index = this.goals.findIndex((g) => g.id === goal.id);
-      if (index !== -1) {
-        this.goals[index] = goal;
-      }
+    setGoalFolders(folders: GoalFolderClientDTO[]) { this.goalFolders = folders; },
+    addGoalFolder(f: GoalFolderClientDTO) { this.goalFolders.push(f); },
+    updateGoalFolder(f: GoalFolderClientDTO) {
+      const i = this.goalFolders.findIndex((x) => x.id === f.id);
+      if (i !== -1) this.goalFolders[i] = f;
     },
+    removeGoalFolder(id: string) { this.goalFolders = this.goalFolders.filter((f) => f.id !== id); },
 
-    deleteGoal(goalId: string) {
-      this.goals = this.goals.filter((g) => g.id !== goalId);
-      this.total--;
-    },
+    setGoalReviews(r: GoalReviewClientDTO[]) { this.goalReviews = r; },
+    addGoalReview(r: GoalReviewClientDTO) { this.goalReviews.push(r); },
 
-    setCurrentGoal(goal: GoalDTO | null) {
-      this.currentGoal = goal;
-    },
+    setGoalRecords(r: GoalRecordClientDTO[]) { this.goalRecords = r; },
+    addGoalRecord(r: GoalRecordClientDTO) { this.goalRecords.push(r); },
 
-    // ========== KeyResult Actions ==========
-    setKeyResults(keyResults: KeyResultDTO[]) {
-      this.keyResults = keyResults;
-    },
+    setSearchQuery(q: string) { this.searchQuery = q; this.pagination.page = 1; },
+    setFilterStatus(s: GoalStatus | null) { this.filterStatus = s; this.pagination.page = 1; },
+    clearFilters() { this.filterStatus = null; this.searchQuery = ''; this.pagination.page = 1; },
 
-    addKeyResult(kr: KeyResultDTO) {
-      this.keyResults.push(kr);
-    },
+    setPage(p: number) { this.pagination.page = p; },
+    setPageSize(s: number) { this.pagination.pageSize = s; this.pagination.page = 1; },
 
-    updateKeyResult(kr: KeyResultDTO) {
-      const index = this.keyResults.findIndex((k) => k.id === kr.id);
-      if (index !== -1) {
-        this.keyResults[index] = kr;
-      }
-    },
+    setLoading(v: boolean) { this.isLoading = v; },
+    setError(e: string | null) { this.error = e; },
+    setInitialized(v: boolean) { this.isInitialized = v; },
 
-    deleteKeyResult(krId: string) {
-      this.keyResults = this.keyResults.filter((k) => k.id !== krId);
-    },
-
-    // ========== Folder Actions ==========
-    setGoalFolders(folders: GoalFolderDTO[]) {
-      this.goalFolders = folders;
-    },
-
-    addGoalFolder(folder: GoalFolderDTO) {
-      this.goalFolders.push(folder);
-    },
-
-    updateGoalFolder(folder: GoalFolderDTO) {
-      const index = this.goalFolders.findIndex((f) => f.id === folder.id);
-      if (index !== -1) {
-        this.goalFolders[index] = folder;
-      }
-    },
-
-    deleteGoalFolder(folderId: string) {
-      this.goalFolders = this.goalFolders.filter((f) => f.id !== folderId);
-    },
-
-    // ========== Review Actions ==========
-    setGoalReviews(reviews: GoalReviewDTO[]) {
-      this.goalReviews = reviews;
-    },
-
-    addGoalReview(review: GoalReviewDTO) {
-      this.goalReviews.push(review);
-    },
-
-    // ========== Record Actions ==========
-    setGoalRecords(records: GoalRecordDTO[]) {
-      this.goalRecords = records;
-    },
-
-    addGoalRecord(record: GoalRecordDTO) {
-      this.goalRecords.push(record);
-    },
-
-    // ========== Search & Filter ==========
-    setSearchQuery(query: string) {
-      this.searchQuery = query;
-      this.currentPage = 1;
-    },
-
-    setFilterStatus(status: string | null) {
-      this.filterStatus = status;
-      this.currentPage = 1;
-    },
-
-    // ========== Pagination ==========
-    setCurrentPage(page: number) {
-      this.currentPage = page;
-    },
-
-    setPageSize(size: number) {
-      this.pageSize = size;
-      this.currentPage = 1;
-    },
-
-    setTotal(total: number) {
-      this.total = total;
-    },
-
-    // ========== Status Actions ==========
-    setLoading(loading: boolean) {
-      this.isLoading = loading;
-    },
-
-    setError(error: string | null) {
-      this.error = error;
-    },
-
-    // ========== Lifecycle ==========
-    reset() {
-      this.goals = [];
-      this.currentGoal = null;
-      this.keyResults = [];
-      this.goalFolders = [];
-      this.goalReviews = [];
-      this.goalRecords = [];
-      this.isLoading = false;
-      this.error = null;
-      this.searchQuery = '';
-      this.filterStatus = null;
-      this.currentPage = 1;
-      this.total = 0;
-    },
+    reset() { this.$reset(); },
   },
 
   persist: {
-    paths: ['filterStatus', 'pageSize'],
+    pick: ['filterStatus', 'pagination'] as string[],
   },
 });
+
+export type GoalStoreType = ReturnType<typeof useGoalStore>;

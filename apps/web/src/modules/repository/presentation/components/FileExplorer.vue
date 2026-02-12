@@ -122,10 +122,10 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useFolderStore } from '../stores';
 import { useBookmarkStore } from '../stores/bookmarkStore';
-import { getRepositoryApiClient } from '@dailyuse/infrastructure-client';
+import { getRepositoryApiClient } from '@dailyuse/repository/infrastructure-client';
 
 const repositoryApiClient = getRepositoryApiClient();
-import { Folder } from '@dailyuse/domain-client/repository';
+import { Folder } from '@dailyuse/repository/domain-client';
 import type { FolderClient } from '@dailyuse/contracts/repository';
 
 // Props

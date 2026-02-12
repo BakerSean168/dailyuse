@@ -140,7 +140,7 @@ import { storeToRefs } from 'pinia';
 import { useRepositoryStore } from '../../stores/repositoryStore';
 import { useMessage } from '@dailyuse/ui-vuetify';
 import { RepositoryStatus, RepositoryType, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO } from '@dailyuse/contracts/repository';
-import { repositoryApplicationService } from '@dailyuse/application-client/repository';
+import { repositoryApplicationService } from '@dailyuse/repository/application-client';
 
 const repositoryManagementService = repositoryApplicationService;
 

@@ -122,7 +122,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
-import type { Goal } from '@dailyuse/domain-client/goal';
+import type { Goal } from '@dailyuse/goal/domain-client';
 
 const goalStore = useGoalStore();
 const dayWidth = 32; // 每个日期的宽度

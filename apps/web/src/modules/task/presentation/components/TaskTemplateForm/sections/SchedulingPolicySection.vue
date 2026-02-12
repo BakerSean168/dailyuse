@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { TaskTemplate } from '@dailyuse/domain-client/task';
+import type { TaskTemplate } from '@dailyuse/task/domain-client';
 
 interface Props {
   modelValue: TaskTemplate;

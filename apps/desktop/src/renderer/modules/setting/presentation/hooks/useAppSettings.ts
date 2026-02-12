@@ -5,9 +5,9 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { settingApplicationService } from '@dailyuse/application-client/setting';
+import { settingApplicationService } from '@dailyuse/setting/application-client';
 import type { UserSettingClientDTO, AppConfigClientDTO } from '@dailyuse/contracts/setting';
-import type { UpdateAppearanceInput, UpdateLocaleInput } from '@dailyuse/application-client';
+import type { UpdateAppearanceInput, UpdateLocaleInput } from '@dailyuse/setting/application-client';
 
 export interface AppSettingsState {
   userSettings: UserSettingClientDTO | null;

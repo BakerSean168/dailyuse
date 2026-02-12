@@ -140,7 +140,7 @@ import TaskDAGVisualization from '@/modules/task/presentation/components/dag/Tas
 import {
   getTaskTemplateApiClient,
   getTaskDependencyApiClient,
-} from '@dailyuse/infrastructure-client';
+} from '@dailyuse/task/infrastructure-client';
 import { taskAutoStatusService } from '@/modules/task/application/services/TaskAutoStatusService';
 
 // 类型别名

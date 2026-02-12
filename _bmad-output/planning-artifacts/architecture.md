@@ -293,7 +293,9 @@ packages/
         value-objects/
         response/
         index.ts
-      domain/
+      domain-shared/
+      domain-client/
+      domain-server/
         aggregates/
           rule.ts
         entities/

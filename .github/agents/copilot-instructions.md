@@ -5,6 +5,8 @@ Auto-generated from all feature plans. Last updated: 2026-02-02
 ## Active Technologies
 - [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION] (001-daily-productivity)
 - [if applicable, e.g., PostgreSQL, CoreData, files or N/A] (001-daily-productivity)
+- TypeScript 5.8.3+ (strict mode) (001-goal-api-backend)
+- Prisma with SQLite (local persistence), PostgreSQL (production) (001-goal-api-backend)
 
 - TypeScript ~5.9 (Node >=22) + Nx 22.x, pnpm 10.x, zod 4.x (main)
 
@@ -24,6 +26,7 @@ npm test; npm run lint
 TypeScript ~5.9 (Node >=22): Follow standard conventions
 
 ## Recent Changes
+- 001-goal-api-backend: Added TypeScript 5.8.3+ (strict mode)
 - 001-daily-productivity: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 
 - main: Added TypeScript ~5.9 (Node >=22) + Nx 22.x, pnpm 10.x, zod 4.x

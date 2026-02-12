@@ -5,9 +5,9 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { scheduleApplicationService } from '@dailyuse/application-client/schedule';
+import { scheduleApplicationService } from '@dailyuse/schedule/application-client';
 import type { ScheduleClientDTO } from '../stores/scheduleStore';
-import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
+import type { ScheduleTask } from '@dailyuse/schedule/domain-client';
 import type {
   CreateScheduleTaskRequest,
   GetSchedulesByTimeRangeRequest,

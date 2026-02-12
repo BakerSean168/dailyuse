@@ -3,10 +3,6 @@
  *
  * 管理 Authentication 模块的所有状态
  * - Vue 3 + Pinia（Web 应用专用）
- * - 对应 desktop 应用的 Zustand store
- *
- * EPIC-018 重构:
- * - 框架无关的 Service 只返回数据
  * - Store 在 Composables 中被调用
  * - Composables 处理 Store 更新和 UI 状态
  *
@@ -15,16 +11,15 @@
 
 import { defineStore } from 'pinia';
 import type {
-  AccountClientDTO,
+  AuthIdentityClientDTO,
   AuthSessionClientDTO,
-  TrustedDevicesResponseDTO,
-  DeviceInfoClientDTO,
-} from '@dailyuse/contracts/account';
+  AuthResponseDTO,
+} from '@dailyuse/contracts/authentication';
 
 // ============ State Interface ============
 export interface AuthenticationState {
-  // 当前认证用户
-  currentUser: AccountClientDTO | null;
+  // 当前认证身份
+  currentIdentity: AuthIdentityClientDTO | null;
 
   // 访问令牌
   accessToken: string | null;
@@ -35,11 +30,8 @@ export interface AuthenticationState {
   // 活动会话列表
   activeSessions: AuthSessionClientDTO[];
 
-  // 信任的设备
-  trustedDevices: TrustedDevicesResponseDTO | null;
-
-  // MFA 设备列表
-  mfaDevices: DeviceInfoClientDTO[];
+  // 当前会话
+  currentSession: AuthSessionClientDTO | null;
 
   // UI 状态
   isLoading: boolean;
@@ -49,9 +41,6 @@ export interface AuthenticationState {
   // 令牌过期时间
   tokenExpiresAt: number | null;
 
-  // 是否需要 MFA 验证
-  requiresMFA: boolean;
-
   // 是否正在初始化
   isInitializing: boolean;
 }
@@ -59,27 +48,23 @@ export interface AuthenticationState {
 // ============ Store ============
 export const useAuthenticationStore = defineStore('authentication', {
   state: (): AuthenticationState => ({
-    currentUser: null,
+    currentIdentity: null,
     accessToken: null,
     refreshToken: null,
     activeSessions: [],
-    trustedDevices: null,
-    mfaDevices: [],
+    currentSession: null,
     isLoading: false,
     isAuthenticated: false,
     error: null,
     tokenExpiresAt: null,
-    requiresMFA: false,
     isInitializing: false,
   }),
 
   getters: {
     // ========== 认证状态 ==========
-    getCurrentUserId: (state) => state.currentUser?.uuid ?? null,
+    getIdentityId: (state) => state.currentIdentity?.id ?? null,
 
-    getCurrentUserEmail: (state) => state.currentUser?.email ?? null,
-
-    getCurrentUserRole: (state) => state.currentUser?.role ?? null,
+    getIdentityStatus: (state) => state.currentIdentity?.status ?? null,
 
     isTokenExpired: (state) => {
       if (!state.tokenExpiresAt) return true;
@@ -92,27 +77,19 @@ export const useAuthenticationStore = defineStore('authentication', {
       return Math.max(0, remaining);
     },
 
-    // ========== MFA 状态 ==========
-    hasMFAEnabled: (state) => (state.mfaDevices?.length ?? 0) > 0,
-
-    getMFADeviceCount: (state) => state.mfaDevices?.length ?? 0,
-
     // ========== 会话状态 ==========
     getActiveSessionCount: (state) => state.activeSessions?.length ?? 0,
-
-    // ========== 设备状态 ==========
-    getTrustedDeviceCount: (state) => state.trustedDevices?.devices?.length ?? 0,
   },
 
   actions: {
-    // ========== User Actions ==========
-    setCurrentUser(user: AccountClientDTO | null) {
-      this.currentUser = user;
-      this.isAuthenticated = user !== null;
+    // ========== Identity Actions ==========
+    setCurrentIdentity(identity: AuthIdentityClientDTO | null) {
+      this.currentIdentity = identity;
+      this.isAuthenticated = identity !== null;
     },
 
-    clearCurrentUser() {
-      this.currentUser = null;
+    clearCurrentIdentity() {
+      this.currentIdentity = null;
       this.isAuthenticated = false;
     },
 
@@ -135,46 +112,21 @@ export const useAuthenticationStore = defineStore('authentication', {
     },
 
     // ========== Session Actions ==========
+    setCurrentSession(session: AuthSessionClientDTO | null) {
+      this.currentSession = session;
+    },
+
     setActiveSessions(sessions: AuthSessionClientDTO[]) {
       this.activeSessions = sessions;
     },
 
     clearActiveSessions() {
       this.activeSessions = [];
+      this.currentSession = null;
     },
 
     removeActiveSession(sessionId: string) {
       this.activeSessions = this.activeSessions.filter((s) => s.id !== sessionId);
-    },
-
-    // ========== Trusted Devices Actions ==========
-    setTrustedDevices(devices: TrustedDevicesResponseDTO | null) {
-      this.trustedDevices = devices;
-    },
-
-    clearTrustedDevices() {
-      this.trustedDevices = null;
-    },
-
-    removeTrustedDevice(deviceId: string) {
-      if (this.trustedDevices?.devices) {
-        this.trustedDevices.devices = this.trustedDevices.devices.filter(
-          (d: any) => d.id !== deviceId,
-        );
-      }
-    },
-
-    // ========== MFA Actions ==========
-    setMFADevices(devices: DeviceInfoClientDTO[]) {
-      this.mfaDevices = devices;
-    },
-
-    clearMFADevices() {
-      this.mfaDevices = [];
-    },
-
-    removeMFADevice(deviceId: string) {
-      this.mfaDevices = this.mfaDevices.filter((d) => d.id !== deviceId);
     },
 
     // ========== Status Actions ==========
@@ -186,33 +138,40 @@ export const useAuthenticationStore = defineStore('authentication', {
       this.error = error;
     },
 
-    setRequiresMFA(value: boolean) {
-      this.requiresMFA = value;
-    },
-
     setIsInitializing(value: boolean) {
       this.isInitializing = value;
     },
 
+    // ========== Auth Response Handler ==========
+    /**
+     * 处理认证响应（登录/注册成功后统一调用）
+     */
+    handleAuthResponse(data: AuthResponseDTO) {
+      this.setAccessToken(data.accessToken);
+      if (data.refreshToken) {
+        this.setRefreshToken(data.refreshToken);
+      }
+      this.setCurrentIdentity(data.identity);
+      this.setCurrentSession(data.session);
+    },
+
     // ========== Lifecycle ==========
     reset() {
-      this.currentUser = null;
+      this.currentIdentity = null;
       this.accessToken = null;
       this.refreshToken = null;
       this.activeSessions = [];
-      this.trustedDevices = null;
-      this.mfaDevices = [];
+      this.currentSession = null;
       this.isLoading = false;
       this.isAuthenticated = false;
       this.error = null;
       this.tokenExpiresAt = null;
-      this.requiresMFA = false;
       this.isInitializing = false;
     },
   },
 
   persist: {
-    // 持久化用户偏好和令牌
-    paths: ['accessToken', 'refreshToken', 'currentUser'],
+    // 持久化令牌和身份
+    pick: ['accessToken', 'refreshToken', 'currentIdentity'] as string[],
   },
 });

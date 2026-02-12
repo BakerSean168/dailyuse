@@ -248,7 +248,7 @@ import TemplateBrowser from '../template/TemplateBrowser.vue';
 import StatusRuleEditor from '../rules/StatusRuleEditor.vue';
 // types
 import { useGoalStore } from '../../stores/goalStore';
-import { Goal, KeyResult } from '@dailyuse/domain-client/goal';
+import { Goal, KeyResult } from '@dailyuse/goal/domain-client';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';

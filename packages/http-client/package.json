@@ -1,0 +1,28 @@
+{
+  "name": "@dailyuse/http-client",
+  "version": "0.0.1",
+  "private": false,
+  "description": "DailyUse HTTP Client — Axios wrapper with Result Pattern support",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@dailyuse/contracts": "workspace:*",
+    "axios": "1.13.2"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false
+}

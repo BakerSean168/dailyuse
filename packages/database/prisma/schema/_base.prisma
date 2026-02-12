@@ -1,0 +1,16 @@
+// =============================================================
+// DailyUse Database Schema — Base Configuration
+// =============================================================
+//
+// This file contains the generator and datasource configuration
+// All model files in this folder will be automatically included
+// =============================================================
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}

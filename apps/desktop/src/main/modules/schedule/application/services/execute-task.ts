@@ -6,8 +6,8 @@
  * @module desktop/main/modules/schedule/application/services
  */
 
-import type { ScheduledItem } from '@dailyuse/application-server';
-import { ScheduleContainer } from '@dailyuse/infrastructure-server';
+import type { ScheduledItem } from '@dailyuse/schedule/application-server';
+import { ScheduleContainer } from '@dailyuse/schedule/infrastructure-server';
 import { eventBus } from '@dailyuse/utils';
 
 /**

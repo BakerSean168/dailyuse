@@ -4,7 +4,7 @@
  * 从 @dailyuse/infrastructure-client 重导出 Container
  */
 
-import { AccountContainer } from '@dailyuse/infrastructure-client';
+import { AccountContainer } from '@dailyuse/account/infrastructure-client';
 
 export { AccountContainer };
 

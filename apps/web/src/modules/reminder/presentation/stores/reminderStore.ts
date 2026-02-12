@@ -1,81 +1,76 @@
 /**
  * Reminder Store - Pinia 状态管理
- * 管理 Reminder 模块的所有状态
+ * 纯状态容器 — API 调用由 composables 执行。
  */
 
 import { defineStore } from 'pinia';
-import type { ReminderDTO, ReminderGroupDTO } from '@dailyuse/contracts/reminder';
+import type {
+  ReminderTemplateClientDTO,
+  ReminderGroupClientDTO,
+} from '@dailyuse/contracts/reminder';
 
 export interface ReminderState {
-  reminders: ReminderDTO[];
-  reminderGroups: ReminderGroupDTO[];
-  currentReminder: ReminderDTO | null;
+  templates: ReminderTemplateClientDTO[];
+  groups: ReminderGroupClientDTO[];
+  currentTemplate: ReminderTemplateClientDTO | null;
+  currentGroup: ReminderGroupClientDTO | null;
   isLoading: boolean;
   error: string | null;
-  searchQuery: string;
+  pagination: { page: number; pageSize: number; total: number };
+  isInitialized: boolean;
 }
 
 export const useReminderStore = defineStore('reminder', {
   state: (): ReminderState => ({
-    reminders: [],
-    reminderGroups: [],
-    currentReminder: null,
+    templates: [],
+    groups: [],
+    currentTemplate: null,
+    currentGroup: null,
     isLoading: false,
     error: null,
-    searchQuery: '',
+    pagination: { page: 1, pageSize: 20, total: 0 },
+    isInitialized: false,
   }),
 
-  getters: {
-    getReminderById: (state) => (id: string) => state.reminders.find((r) => r.id === id),
-    getTotalReminders: (state) => state.reminders.length,
-    getPendingReminders: (state) => state.reminders.filter((r) => !r.isCompleted),
-  },
-
   actions: {
-    setReminders(reminders: ReminderDTO[]) {
-      this.reminders = reminders;
+    // Templates
+    setTemplates(items: ReminderTemplateClientDTO[], total?: number) {
+      this.templates = items;
+      if (total !== undefined) this.pagination.total = total;
     },
+    addTemplate(t: ReminderTemplateClientDTO) { this.templates.push(t); },
+    updateTemplate(t: ReminderTemplateClientDTO) {
+      const idx = this.templates.findIndex((x) => x.id === t.id);
+      if (idx >= 0) this.templates[idx] = t;
+    },
+    removeTemplate(id: string) {
+      this.templates = this.templates.filter((t) => t.id !== id);
+    },
+    setCurrentTemplate(t: ReminderTemplateClientDTO | null) { this.currentTemplate = t; },
 
-    addReminder(reminder: ReminderDTO) {
-      this.reminders.push(reminder);
+    // Groups
+    setGroups(items: ReminderGroupClientDTO[]) { this.groups = items; },
+    addGroup(g: ReminderGroupClientDTO) { this.groups.push(g); },
+    updateGroup(g: ReminderGroupClientDTO) {
+      const idx = this.groups.findIndex((x) => x.id === g.id);
+      if (idx >= 0) this.groups[idx] = g;
     },
+    removeGroup(id: string) {
+      this.groups = this.groups.filter((g) => g.id !== id);
+    },
+    setCurrentGroup(g: ReminderGroupClientDTO | null) { this.currentGroup = g; },
 
-    updateReminder(reminder: ReminderDTO) {
-      const idx = this.reminders.findIndex((r) => r.id === reminder.id);
-      if (idx !== -1) this.reminders[idx] = reminder;
-    },
+    setLoading(v: boolean) { this.isLoading = v; },
+    setError(e: string | null) { this.error = e; },
+    setPage(p: number) { this.pagination.page = p; },
+    setInitialized(v: boolean) { this.isInitialized = v; },
 
-    deleteReminder(id: string) {
-      this.reminders = this.reminders.filter((r) => r.id !== id);
-    },
-
-    setReminderGroups(groups: ReminderGroupDTO[]) {
-      this.reminderGroups = groups;
-    },
-
-    setCurrentReminder(reminder: ReminderDTO | null) {
-      this.currentReminder = reminder;
-    },
-
-    setLoading(loading: boolean) {
-      this.isLoading = loading;
-    },
-
-    setError(error: string | null) {
-      this.error = error;
-    },
-
-    reset() {
-      this.reminders = [];
-      this.reminderGroups = [];
-      this.currentReminder = null;
-      this.isLoading = false;
-      this.error = null;
-      this.searchQuery = '';
-    },
+    reset() { this.$reset(); },
   },
 
   persist: {
-    paths: ['searchQuery'],
+    pick: ['pagination'] as string[],
   },
 });
+
+export type ReminderStoreType = ReturnType<typeof useReminderStore>;

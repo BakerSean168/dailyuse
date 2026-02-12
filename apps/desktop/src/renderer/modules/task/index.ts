@@ -6,7 +6,7 @@
  */
 
 // ===== Application Layer =====
-export { TaskApplicationService, taskApplicationService } from '@dailyuse/application-client/task';
+export { TaskApplicationService, taskApplicationService } from '@dailyuse/task/application-client';
 
 // ===== Presentation Layer =====
 // Hooks

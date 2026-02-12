@@ -20,7 +20,7 @@ import {
   AvatarFallback,
   AvatarImage,
   Separator,
-} from '@dailyuse/ui-shadcn';
+} from '@dailyuse/ui-react-shadcn';
 
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
@@ -28,7 +28,7 @@ import type { AccountClientDTO, SubscriptionPlan } from '@dailyuse/contracts/acc
 
 /**
  * 账户资料展示类型
- * 从 AccountClientDTO 提取展示所需的字段
+ * �?AccountClientDTO 提取展示所需的字�?
  */
 export interface AccountProfile {
   uuid: string;
@@ -46,7 +46,7 @@ export interface AccountProfile {
 }
 
 /**
- * 从 AccountClientDTO 转换为 AccountProfile
+ * �?AccountClientDTO 转换�?AccountProfile
  * 便于组件使用简化的展示数据
  */
 export function accountClientToProfile(account: AccountClientDTO): AccountProfile {
@@ -103,7 +103,7 @@ export function AccountProfileCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* 头像和基本信息 */}
+        {/* 头像和基本信�?*/}
         <div className="flex items-center gap-4">
           <div className="relative group">
             <Avatar className="h-20 w-20">
@@ -132,11 +132,11 @@ export function AccountProfileCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-semibold truncate">
-                {profile.displayName || profile.username || '未设置昵称'}
+                {profile.displayName || profile.username || '未设置昵�?}
               </h3>
               {profile.isVerified && (
                 <Badge variant="secondary" className="shrink-0">
-                  已认证
+                  已认�?
                 </Badge>
               )}
               {profile.isPremium && (
@@ -183,7 +183,7 @@ export function AccountProfileCard({
             <div className="flex items-center gap-3 text-sm">
               <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
               <span>
-                {format(new Date(profile.createdAt), 'yyyy年M月d日加入', {
+                {format(new Date(profile.createdAt), 'yyyy年M月d日加�?, {
                   locale: zhCN,
                 })}
               </span>
@@ -197,7 +197,7 @@ export function AccountProfileCard({
             <Separator />
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">界面语言</span>
-              <span>{profile.language === 'zh-CN' ? '简体中文' : 'English'}</span>
+              <span>{profile.language === 'zh-CN' ? '简体中�? : 'English'}</span>
             </div>
           </>
         )}

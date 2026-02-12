@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react';
-import { scheduleApplicationService } from '@dailyuse/application-client/schedule';
+import { scheduleApplicationService } from '@dailyuse/schedule/application-client';
 import type {
   CreateScheduleTaskRequest,
   ScheduleConfigServerDTO,

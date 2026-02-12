@@ -7,7 +7,7 @@
  * @module renderer/shared/components/common/Toolbar
  */
 
-import { cn } from '@dailyuse/ui-shadcn';
+import { cn } from '@dailyuse/ui-react-shadcn';
 import type { HTMLAttributes, ReactNode } from 'react';
 
 export interface ToolbarProps extends HTMLAttributes<HTMLDivElement> {

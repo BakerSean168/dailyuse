@@ -1,4 +1,4 @@
-import { GetDashboardStatistics } from '@dailyuse/application-server';
+import { GetDashboardStatistics } from '@dailyuse/dashboard/application-server';
 import type { DashboardStatisticsClientDTO } from '@dailyuse/contracts/dashboard';
 import { createLogger } from '@dailyuse/utils';
 

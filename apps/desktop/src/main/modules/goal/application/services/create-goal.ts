@@ -2,7 +2,7 @@
  * Create Goal Service
  */
 
-import { CreateGoal } from '@dailyuse/application-server';
+import { CreateGoal } from '@dailyuse/goal/application-server';
 import type { CreateGoalRequest, GoalClientDTO } from '@dailyuse/contracts/goal';
 import { createLogger } from '@dailyuse/utils';
 

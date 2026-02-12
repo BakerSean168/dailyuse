@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { reminderApplicationService } from '@dailyuse/application-client/reminder';
+import { reminderApplicationService } from '@dailyuse/reminder/application-client';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,

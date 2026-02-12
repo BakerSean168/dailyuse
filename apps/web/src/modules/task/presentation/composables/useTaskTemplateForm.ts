@@ -1,48 +1,27 @@
+/**
+ * @deprecated This is a backward compatibility shim.
+ */
 import { ref, computed } from 'vue';
 
 export function useTaskTemplateForm() {
-  // 表单验证状态
-  const formValidations = ref({
-    basic: true,
-    time: true,
-    recurrence: true,
-    reminder: true,
-    metadata: true,
+  const isFormValid = ref(true);
+  const validationState = ref<Record<string, boolean>>({
+    basic: true, time: true, recurrence: true, reminder: true, metadata: true,
   });
 
-  // 整体表单验证状态
-  const isFormValid = computed(() => Object.values(formValidations.value).every((valid) => valid));
+  function validateForm() { return isFormValid.value; }
+  function updateBasicValidation(v: boolean) { validationState.value.basic = v; recalc(); }
+  function updateTimeValidation(v: boolean) { validationState.value.time = v; recalc(); }
+  function updateRecurrenceValidation(v: boolean) { validationState.value.recurrence = v; recalc(); }
+  function updateReminderValidation(v: boolean) { validationState.value.reminder = v; recalc(); }
+  function updateMetadataValidation(v: boolean) { validationState.value.metadata = v; recalc(); }
 
-  // 验证更新函数
-  const updateBasicValidation = (isValid: boolean) => {
-    formValidations.value.basic = isValid;
-  };
-
-  const updateTimeValidation = (isValid: boolean) => {
-    formValidations.value.time = isValid;
-  };
-
-  const updateRecurrenceValidation = (isValid: boolean) => {
-    formValidations.value.recurrence = isValid;
-  };
-
-  const updateReminderValidation = (isValid: boolean) => {
-    formValidations.value.reminder = isValid;
-  };
-
-  const updateMetadataValidation = (isValid: boolean) => {
-    formValidations.value.metadata = isValid;
-  };
-
-  // 统一验证方法
-  const validateForm = async () => {
-    // 这里可以添加跨字段验证逻辑
-    return isFormValid.value;
-  };
+  function recalc() {
+    isFormValid.value = Object.values(validationState.value).every(Boolean);
+  }
 
   return {
-    formValidations,
-    isFormValid,
+    isFormValid: computed(() => isFormValid.value),
     validateForm,
     updateBasicValidation,
     updateTimeValidation,

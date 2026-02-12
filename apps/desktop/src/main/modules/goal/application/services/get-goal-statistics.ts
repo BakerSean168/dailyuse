@@ -2,8 +2,8 @@
  * Get Goal Statistics Service
  */
 
-import type { Goal } from '@dailyuse/domain-server/goal';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
+import type { Goal } from '@dailyuse/goal/domain-server';
+import { GoalContainer } from '@dailyuse/goal/infrastructure-server';
 
 export async function getGoalStatisticsService(accountUuid?: string) {
   const container = GoalContainer.getInstance();

@@ -5,6 +5,6 @@ export default defineConfig({
   format: ['esm'],
   dts: true,
   clean: true,
-  external: ['react', '@dailyuse/ui-core'],
+  external: ['react', '@dailyuse/ui-core', '@dailyuse/ui-react-shadcn'],
   sourcemap: true,
 });

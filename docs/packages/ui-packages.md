@@ -1,38 +1,38 @@
-# 📦 UI 包系列文档
+# 📦 UI 包系列文�?
 
-> DailyUse 多框架 UI 组件库
+> DailyUse 多框�?UI 组件�?
 
 ## 概述
 
-DailyUse 采用多框架 UI 策略，支持 Vue 3 (Web) 和 React 19 (Desktop) 两套前端技术栈。UI 包分为以下几个层次：
+DailyUse 采用多框�?UI 策略，支�?Vue 3 (Web) �?React 19 (Desktop) 两套前端技术栈。UI 包分为以下几个层次：
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    UI 包层级结构                         │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  Framework-Specific (框架特定)                          │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐ │
-│  │  ui-vuetify │  │  ui-shadcn  │  │   (future...)   │ │
-│  │  (Web)      │  │  (Desktop)  │  │                 │ │
-│  └──────┬──────┘  └──────┬──────┘  └────────┬────────┘ │
-│         │                │                   │          │
-│         ▼                ▼                   ▼          │
-│  Framework Base (框架基础)                              │
-│  ┌─────────────────────┐  ┌─────────────────────────┐  │
-│  │      ui-vue         │  │       ui-react          │  │
-│  │  (Vue 3 通用组件)    │  │  (React 通用组件)        │  │
-│  └──────────┬──────────┘  └───────────┬─────────────┘  │
-│             │                         │                 │
-│             └───────────┬─────────────┘                 │
-│                         ▼                               │
-│  Framework Agnostic (框架无关)                          │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │                    ui-core                        │  │
-│  │  (通用逻辑、样式、类型定义)                         │  │
-│  └──────────────────────────────────────────────────┘  │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────�?
+�?                   UI 包层级结�?                        �?
+├─────────────────────────────────────────────────────────�?
+�?                                                        �?
+�? Framework-Specific (框架特定)                          �?
+�? ┌─────────────�? ┌─────────────�? ┌─────────────────�?�?
+�? �? ui-vuetify �? �? ui-react-shadcn  �? �?  (future...)   �?�?
+�? �? (Web)      �? �? (Desktop)  �? �?                �?�?
+�? └──────┬──────�? └──────┬──────�? └────────┬────────�?�?
+�?        �?               �?                  �?         �?
+�?        �?               �?                  �?         �?
+�? Framework Base (框架基础)                              �?
+�? ┌─────────────────────�? ┌─────────────────────────�? �?
+�? �?     ui-vue         �? �?      ui-react          �? �?
+�? �? (Vue 3 通用组件)    �? �? (React 通用组件)        �? �?
+�? └──────────┬──────────�? └───────────┬─────────────�? �?
+�?            �?                        �?                �?
+�?            └───────────┬─────────────�?                �?
+�?                        �?                              �?
+�? Framework Agnostic (框架无关)                          �?
+�? ┌──────────────────────────────────────────────────�? �?
+�? �?                   ui-core                        �? �?
+�? �? (通用逻辑、样式、类型定�?                         �? �?
+�? └──────────────────────────────────────────────────�? �?
+�?                                                        �?
+└─────────────────────────────────────────────────────────�?
 ```
 
 ---
@@ -41,26 +41,26 @@ DailyUse 采用多框架 UI 策略，支持 Vue 3 (Web) 和 React 19 (Desktop) �
 
 ### 概述
 
-框架无关的 UI 核心包，提供通用逻辑、样式和类型定义。
+框架无关�?UI 核心包，提供通用逻辑、样式和类型定义�?
 
 ### 主要内容
 
 ```
 packages/ui-core/
 ├── src/
-│   ├── styles/              # 共享样式
-│   │   ├── variables.css    # CSS 变量
-│   │   ├── typography.css   # 排版样式
-│   │   └── utilities.css    # 工具类
-│   ├── types/               # 类型定义
-│   │   ├── component.ts     # 组件通用类型
-│   │   └── theme.ts         # 主题类型
-│   ├── constants/           # 常量
-│   │   ├── colors.ts        # 颜色常量
-│   │   └── spacing.ts       # 间距常量
-│   └── utils/               # 工具函数
-│       ├── cn.ts            # 类名合并
-│       └── responsive.ts    # 响应式工具
+�?  ├── styles/              # 共享样式
+�?  �?  ├── variables.css    # CSS 变量
+�?  �?  ├── typography.css   # 排版样式
+�?  �?  └── utilities.css    # 工具�?
+�?  ├── types/               # 类型定义
+�?  �?  ├── component.ts     # 组件通用类型
+�?  �?  └── theme.ts         # 主题类型
+�?  ├── constants/           # 常量
+�?  �?  ├── colors.ts        # 颜色常量
+�?  �?  └── spacing.ts       # 间距常量
+�?  └── utils/               # 工具函数
+�?      ├── cn.ts            # 类名合并
+�?      └── responsive.ts    # 响应式工�?
 ├── package.json
 └── tsconfig.json
 ```
@@ -86,16 +86,16 @@ const padding = spacing.md;
 
 ### 概述
 
-Vue 3 通用组件库，提供基础 Vue 组件。
+Vue 3 通用组件库，提供基础 Vue 组件�?
 
 ### 主要组件
 
 | 组件 | 描述 |
 |------|------|
 | `BaseButton` | 基础按钮 |
-| `BaseInput` | 基础输入框 |
+| `BaseInput` | 基础输入�?|
 | `BaseCard` | 基础卡片 |
-| `BaseDialog` | 基础对话框 |
+| `BaseDialog` | 基础对话�?|
 | `BaseDropdown` | 基础下拉菜单 |
 | `BaseIcon` | 图标组件 |
 
@@ -104,16 +104,16 @@ Vue 3 通用组件库，提供基础 Vue 组件。
 ```
 packages/ui-vue/
 ├── src/
-│   ├── components/
-│   │   ├── BaseButton.vue
-│   │   ├── BaseInput.vue
-│   │   ├── BaseCard.vue
-│   │   └── ...
-│   ├── composables/
-│   │   ├── useForm.ts
-│   │   ├── useDialog.ts
-│   │   └── useToast.ts
-│   └── index.ts
+�?  ├── components/
+�?  �?  ├── BaseButton.vue
+�?  �?  ├── BaseInput.vue
+�?  �?  ├── BaseCard.vue
+�?  �?  └── ...
+�?  ├── composables/
+�?  �?  ├── useForm.ts
+�?  �?  ├── useDialog.ts
+�?  �?  └── useToast.ts
+�?  └── index.ts
 ├── package.json
 └── tsconfig.json
 ```
@@ -123,7 +123,7 @@ packages/ui-vue/
 ```vue
 <template>
   <BaseButton variant="primary" @click="handleClick">
-    点击我
+    点击�?
   </BaseButton>
 </template>
 
@@ -138,7 +138,7 @@ import { BaseButton } from '@dailyuse/ui-vue';
 
 ### 概述
 
-基于 Vuetify 3 的 Material Design 组件库，用于 Web 应用。
+基于 Vuetify 3 �?Material Design 组件库，用于 Web 应用�?
 
 ### 主要组件
 
@@ -156,19 +156,19 @@ import { BaseButton } from '@dailyuse/ui-vue';
 ```
 packages/ui-vuetify/
 ├── src/
-│   ├── components/
-│   │   ├── layout/
-│   │   │   ├── AppBar.vue
-│   │   │   └── NavigationDrawer.vue
-│   │   ├── goal/
-│   │   │   ├── GoalCard.vue
-│   │   │   └── GoalProgress.vue
-│   │   ├── task/
-│   │   │   ├── TaskList.vue
-│   │   │   └── TaskItem.vue
-│   │   └── calendar/
-│   │       └── CalendarView.vue
-│   └── index.ts
+�?  ├── components/
+�?  �?  ├── layout/
+�?  �?  �?  ├── AppBar.vue
+�?  �?  �?  └── NavigationDrawer.vue
+�?  �?  ├── goal/
+�?  �?  �?  ├── GoalCard.vue
+�?  �?  �?  └── GoalProgress.vue
+�?  �?  ├── task/
+�?  �?  �?  ├── TaskList.vue
+�?  �?  �?  └── TaskItem.vue
+�?  �?  └── calendar/
+�?  �?      └── CalendarView.vue
+�?  └── index.ts
 ├── package.json
 └── tsconfig.json
 ```
@@ -197,16 +197,16 @@ import { GoalCard } from '@dailyuse/ui-vuetify';
 
 ### 概述
 
-React 通用组件库，提供基础 React 组件。
+React 通用组件库，提供基础 React 组件�?
 
 ### 主要组件
 
 | 组件 | 描述 |
 |------|------|
 | `Button` | 基础按钮 |
-| `Input` | 基础输入框 |
+| `Input` | 基础输入�?|
 | `Card` | 基础卡片 |
-| `Dialog` | 基础对话框 |
+| `Dialog` | 基础对话�?|
 | `Dropdown` | 基础下拉菜单 |
 | `Icon` | 图标组件 |
 
@@ -215,16 +215,16 @@ React 通用组件库，提供基础 React 组件。
 ```
 packages/ui-react/
 ├── src/
-│   ├── components/
-│   │   ├── Button.tsx
-│   │   ├── Input.tsx
-│   │   ├── Card.tsx
-│   │   └── ...
-│   ├── hooks/
-│   │   ├── useForm.ts
-│   │   ├── useDialog.ts
-│   │   └── useToast.ts
-│   └── index.ts
+�?  ├── components/
+�?  �?  ├── Button.tsx
+�?  �?  ├── Input.tsx
+�?  �?  ├── Card.tsx
+�?  �?  └── ...
+�?  ├── hooks/
+�?  �?  ├── useForm.ts
+�?  �?  ├── useDialog.ts
+�?  �?  └── useToast.ts
+�?  └── index.ts
 ├── package.json
 └── tsconfig.json
 ```
@@ -237,7 +237,7 @@ import { Button } from '@dailyuse/ui-react';
 function MyComponent() {
   return (
     <Button variant="primary" onClick={handleClick}>
-      点击我
+      点击�?
     </Button>
   );
 }
@@ -245,17 +245,17 @@ function MyComponent() {
 
 ---
 
-## @dailyuse/ui-shadcn
+## @dailyuse/ui-react-shadcn
 
 ### 概述
 
-基于 shadcn/ui 的组件库，用于 Desktop 应用 (React 19)。
+基于 shadcn/ui 的组件库，用�?Desktop 应用 (React 19)�?
 
 ### 主要组件
 
 | 组件 | 描述 |
 |------|------|
-| `Sidebar` | 侧边栏 |
+| `Sidebar` | 侧边�?|
 | `Header` | 顶栏 |
 | `GoalCard` | 目标卡片 |
 | `TaskList` | 任务列表 |
@@ -265,24 +265,24 @@ function MyComponent() {
 ### 目录结构
 
 ```
-packages/ui-shadcn/
+packages/ui-react-shadcn/
 ├── src/
-│   ├── components/
-│   │   ├── ui/              # shadcn/ui 基础组件
-│   │   │   ├── button.tsx
-│   │   │   ├── card.tsx
-│   │   │   ├── dialog.tsx
-│   │   │   └── ...
-│   │   ├── layout/
-│   │   │   ├── Sidebar.tsx
-│   │   │   └── Header.tsx
-│   │   ├── goal/
-│   │   │   ├── GoalCard.tsx
-│   │   │   └── GoalProgress.tsx
-│   │   └── task/
-│   │       ├── TaskList.tsx
-│   │       └── TaskItem.tsx
-│   └── index.ts
+�?  ├── components/
+�?  �?  ├── ui/              # shadcn/ui 基础组件
+�?  �?  �?  ├── button.tsx
+�?  �?  �?  ├── card.tsx
+�?  �?  �?  ├── dialog.tsx
+�?  �?  �?  └── ...
+�?  �?  ├── layout/
+�?  �?  �?  ├── Sidebar.tsx
+�?  �?  �?  └── Header.tsx
+�?  �?  ├── goal/
+�?  �?  �?  ├── GoalCard.tsx
+�?  �?  �?  └── GoalProgress.tsx
+�?  �?  └── task/
+�?  �?      ├── TaskList.tsx
+�?  �?      └── TaskItem.tsx
+�?  └── index.ts
 ├── package.json
 └── tsconfig.json
 ```
@@ -290,7 +290,7 @@ packages/ui-shadcn/
 ### 使用示例
 
 ```tsx
-import { GoalCard, Button } from '@dailyuse/ui-shadcn';
+import { GoalCard, Button } from '@dailyuse/ui-react-shadcn';
 
 function GoalList({ goals }) {
   return (
@@ -309,12 +309,12 @@ function GoalList({ goals }) {
 
 ---
 
-## 包使用规则
+## 包使用规�?
 
-| 应用 | 可用包 |
+| 应用 | 可用�?|
 |------|--------|
 | **Web (Vue 3)** | ui-core, ui-vue, ui-vuetify |
-| **Desktop (React 19)** | ui-core, ui-react, ui-shadcn |
+| **Desktop (React 19)** | ui-core, ui-react, ui-react-shadcn |
 
 ---
 

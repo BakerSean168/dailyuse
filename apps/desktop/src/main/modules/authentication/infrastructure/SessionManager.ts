@@ -16,8 +16,8 @@ import { app } from 'electron';
 import { machineIdSync } from 'node-machine-id';
 import * as os from 'os';
 import { createLogger, generateUUID, type ILogger } from '@dailyuse/utils';
-import { AuthSession, DeviceInfo } from '@dailyuse/domain-server/authentication';
-import type { IAuthSessionRepository, IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
+import { AuthSession, DeviceInfo } from '@dailyuse/authentication/domain-server';
+import type { IAuthSessionRepository, IAuthCredentialRepository } from '@dailyuse/authentication/domain-server';
 import type {
   TokenStorageData,
   TokenStatus,

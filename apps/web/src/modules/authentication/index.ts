@@ -3,25 +3,15 @@
  * 认证 Web 模块导出
  */
 
-// 应用层服务
-export * from './application/services';
+// 展示层 - API Service
+export { authApi, AuthApiError } from './presentation/services/authApi';
 
-// 应用层事件
-export { AUTH_EVENTS } from '@dailyuse/application-client/authentication';
-
-// 基础设施层 API 客户端
-export * from './infrastructure/api';
-
-// 展示层
+// 展示层 - Store
 export { useAuthenticationStore } from './presentation/stores/authenticationStore';
-export {
-  useAuth,
-  useLogin,
-  useRegistration,
-  useSession,
-  usePassword,
-  useApiKey,
-} from './presentation/composables';
+export type { AuthenticationState } from './presentation/stores/authenticationStore';
+
+// 展示层 - Composables
+export { useAuth, useSession, usePassword } from './presentation/composables';
 
 // 初始化
 export { registerAuthenticationInitializationTasks } from './initialization/authenticationInitialization';

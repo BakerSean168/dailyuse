@@ -2,11 +2,11 @@
 import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'node:path';
-import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig(({ mode, command }) => {
-  // 从当前目录（apps/web）加载环境变量
-  const env = loadEnv(mode, __dirname, '');
+  // Load env files from workspace root (centralized .env files)
+  const workspaceRoot = path.resolve(__dirname, '../..');
+  const env = loadEnv(mode, workspaceRoot, '');
   
   // 开发模式判断：serve 命令或非 production mode
   const isDev = command === 'serve' || mode !== 'production';
@@ -25,9 +25,9 @@ export default defineConfig(({ mode, command }) => {
   console.log(`[Vite Config] Is Dev: ${isDev}`);
   
   return {
-    // 明确指定环境变量目录和根目录
+    // Keep app root, but read env files from workspace root
     root: __dirname,
-    envDir: __dirname,
+    envDir: workspaceRoot,
     envPrefix: 'VITE_',
     resolve: {
       alias: {
@@ -122,7 +122,7 @@ export default defineConfig(({ mode, command }) => {
       // Mock CSS and asset imports
       server: {
         deps: {
-          inline: ['vuetify'],
+          inline: [],
         },
       },
     },

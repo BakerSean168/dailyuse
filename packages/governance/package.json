@@ -1,10 +1,62 @@
 {
   "name": "@dailyuse/governance",
   "version": "0.0.1",
-  "type": "commonjs",
-  "main": "./src/index.js",
-  "types": "./src/index.d.ts",
+  "description": "治理模块 - DailyUse 架构规则与代码标准的活文档库",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./contracts": {
+      "types": "./dist/contracts/index.d.ts",
+      "import": "./dist/contracts/index.js"
+    },
+    "./domain-shared": {
+      "types": "./dist/domain-shared/index.d.ts",
+      "import": "./dist/domain-shared/index.js"
+    },
+    "./domain-server": {
+      "types": "./dist/domain-server/index.d.ts",
+      "import": "./dist/domain-server/index.js"
+    },
+    "./api": {
+      "types": "./dist/api/index.d.ts",
+      "import": "./dist/api/index.js"
+    },
+    "./domain-client": {
+      "types": "./dist/domain-client/index.d.ts",
+      "import": "./dist/domain-client/index.js"
+    },
+    "./application-server": {
+      "types": "./dist/application-server/index.d.ts",
+      "import": "./dist/application-server/index.js"
+    },
+    "./application-client": {
+      "types": "./dist/application-client/index.d.ts",
+      "import": "./dist/application-client/index.js"
+    },
+    "./infrastructure-server": {
+      "types": "./dist/infrastructure-server/index.d.ts",
+      "import": "./dist/infrastructure-server/index.js"
+    },
+    "./infrastructure-client": {
+      "types": "./dist/infrastructure-client/index.d.ts",
+      "import": "./dist/infrastructure-client/index.js"
+    }
+  },
+  "scripts": {},
   "dependencies": {
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/database": "workspace:*",
+    "@dailyuse/utils": "workspace:*",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0"
   }
 }

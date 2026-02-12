@@ -3,23 +3,22 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/governance/src",
   "projectType": "library",
-  "release": {
-    "version": {
-      "manifestRootsToUpdate": ["dist/{projectRoot}"],
-      "currentVersionResolver": "git-tag",
-      "fallbackCurrentVersionResolver": "disk"
-    }
-  },
-  "tags": [],
+  "tags": ["scope:governance", "type:lib"],
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
       "options": {
-        "outputPath": "dist/packages/governance",
-        "main": "packages/governance/src/index.ts",
-        "tsConfig": "packages/governance/tsconfig.lib.json",
-        "assets": ["packages/governance/*.md"]
+        "command": "tsup",
+        "cwd": "packages/governance"
+      },
+      "dependsOn": ["^build", "database:build"]
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/governance/**/*.{ts,js}"]
       }
     },
     "test": {
@@ -34,8 +33,11 @@
       "parallelism": true
     },
     "nx-release-publish": {
+    "typecheck": {
+      "executor": "nx:run-commands",
       "options": {
-        "packageRoot": "dist/{projectRoot}"
+        "command": "tsc --noEmit",
+        "cwd": "packages/governance"
       }
     }
   }
