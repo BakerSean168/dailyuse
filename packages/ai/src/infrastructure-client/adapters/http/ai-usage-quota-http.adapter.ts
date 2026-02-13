@@ -7,7 +7,7 @@
 import type { IHttpClient, IAIUsageQuotaApiClient } from '../types';
 import type {
   AIUsageQuotaClientDTO,
-  UpdateQuotaLimitRequest,
+  UpdateQuotaLimitReq,
 } from '@dailyuse/contracts/ai';
 
 /**
@@ -26,7 +26,7 @@ export class AIUsageQuotaHttpAdapter implements IAIUsageQuotaApiClient {
     return this.httpClient.get(this.baseUrl);
   }
 
-  async updateQuotaLimit(request: UpdateQuotaLimitRequest): Promise<AIUsageQuotaClientDTO> {
+  async updateQuotaLimit(request: UpdateQuotaLimitReq): Promise<AIUsageQuotaClientDTO> {
     return this.httpClient.patch(`${this.baseUrl}/limit`, request);
   }
 

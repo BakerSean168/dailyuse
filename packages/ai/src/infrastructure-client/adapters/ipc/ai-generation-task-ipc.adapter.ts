@@ -7,13 +7,11 @@
 import type { IIpcClient, IAIGenerationTaskApiClient } from '../types';
 import type {
   AIGenerationTaskClientDTO,
-  GenerationTaskListResponse,
-  CreateGenerationTaskRequest,
-  GenerateGoalRequest,
-  GenerateGoalResponse,
-  GenerateGoalWithKRsRequest,
-  GenerateGoalWithKRsResponse,
-  GenerateKeyResultsResponse,
+  GenerationTaskListRes,
+  CreateGenerationTaskReq,
+  GenerateGoalReq,
+  GenerateGoalRes,
+  GenerateKeyResultsRes,
 } from '@dailyuse/contracts/ai';
 
 /**
@@ -28,7 +26,7 @@ export class AIGenerationTaskIpcAdapter implements IAIGenerationTaskApiClient {
 
   // ===== Generation Task CRUD =====
 
-  async createGenerationTask(request: CreateGenerationTaskRequest): Promise<AIGenerationTaskClientDTO> {
+  async createGenerationTask(request: CreateGenerationTaskReq): Promise<AIGenerationTaskClientDTO> {
     return this.ipcClient.invoke(`${this.channel}:create`, request);
   }
 
@@ -37,7 +35,7 @@ export class AIGenerationTaskIpcAdapter implements IAIGenerationTaskApiClient {
     pageSize?: number;
     type?: string;
     status?: string;
-  }): Promise<GenerationTaskListResponse> {
+  }): Promise<GenerationTaskListRes> {
     return this.ipcClient.invoke(`${this.channel}:list`, params);
   }
 
@@ -55,15 +53,15 @@ export class AIGenerationTaskIpcAdapter implements IAIGenerationTaskApiClient {
 
   // ===== Goal Generation =====
 
-  async generateGoal(request: GenerateGoalRequest): Promise<GenerateGoalResponse> {
+  async generateGoal(request: GenerateGoalReq): Promise<GenerateGoalRes> {
     return this.ipcClient.invoke('ai:generate:goal', request);
   }
 
-  async generateGoalWithKeyResults(request: GenerateGoalWithKRsRequest): Promise<GenerateGoalWithKRsResponse> {
+  async generateGoalWithKeyResults(request: GenerateGoalReq): Promise<GenerateGoalRes> {
     return this.ipcClient.invoke('ai:generate:goal-with-key-results', request);
   }
 
-  async generateKeyResults(goalUuid: string): Promise<GenerateKeyResultsResponse> {
+  async generateKeyResults(goalUuid: string): Promise<GenerateKeyResultsRes> {
     return this.ipcClient.invoke('ai:generate:key-results', goalUuid);
   }
 }

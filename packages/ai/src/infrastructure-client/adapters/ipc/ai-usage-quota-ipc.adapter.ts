@@ -7,7 +7,7 @@
 import type { IIpcClient, IAIUsageQuotaApiClient } from '../types';
 import type {
   AIUsageQuotaClientDTO,
-  UpdateQuotaLimitRequest,
+  UpdateQuotaLimitReq,
 } from '@dailyuse/contracts/ai';
 
 /**
@@ -26,7 +26,7 @@ export class AIUsageQuotaIpcAdapter implements IAIUsageQuotaApiClient {
     return this.ipcClient.invoke(`${this.channel}:get`);
   }
 
-  async updateQuotaLimit(request: UpdateQuotaLimitRequest): Promise<AIUsageQuotaClientDTO> {
+  async updateQuotaLimit(request: UpdateQuotaLimitReq): Promise<AIUsageQuotaClientDTO> {
     return this.ipcClient.invoke(`${this.channel}:update-limit`, request);
   }
 

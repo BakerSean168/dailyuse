@@ -32,7 +32,6 @@
       "cache": true,
       "parallelism": true
     },
-    "nx-release-publish": {
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {

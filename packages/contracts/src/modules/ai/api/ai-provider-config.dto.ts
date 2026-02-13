@@ -79,3 +79,11 @@ export const TestAIProviderSchema = z.object({
 
 export type TestAIProviderReq = z.infer<typeof TestAIProviderSchema>;
 export type TestAIProviderRes = TestAIProviderResultDTO;
+
+/**
+ * Refresh Provider Models - refreshes the available model list for a provider
+ */
+export type RefreshProviderModelsReq = void;
+export interface RefreshProviderModelsRes {
+  models: import('../aggregates/ai-provider-config-client').AIModelInfo[];
+}

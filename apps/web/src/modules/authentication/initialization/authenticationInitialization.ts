@@ -2,7 +2,7 @@
  * 认证模块初始化任务注册
  * Authentication Module Initialization Tasks
  *
- * 使用 authApi 和 authenticationStore 管理认证状态恢复。
+ * 使用 DI 注入的 AuthClientService 和 authenticationStore 管理认证状态恢复。
  */
 
 import {
@@ -11,7 +11,7 @@ import {
   type InitializationTask,
 } from '@dailyuse/utils';
 import { useAuthenticationStore } from '../presentation/stores/authenticationStore';
-import { authApi } from '../presentation/services/authApi';
+import { authService } from '@/shared/di';
 
 /**
  * 注册认证模块的所有初始化任务
@@ -43,7 +43,7 @@ export function registerAuthenticationInitializationTasks(): void {
         const refreshToken = authStore.refreshToken;
         if (refreshToken) {
           try {
-            const data = await authApi.refreshToken({ refreshToken }, accessToken);
+            const data = await authService.refreshToken({ refreshToken });
             authStore.handleAuthResponse(data);
             console.log('✅ [AuthModule] Token 刷新成功');
           } catch (error) {

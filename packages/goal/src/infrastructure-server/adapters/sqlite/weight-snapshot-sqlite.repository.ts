@@ -1,11 +1,12 @@
 /**
  * SQLite Weight Snapshot Repository Implementation
- * 鏉冮噸蹇収鐨?SQLite Repository瀹炵幇
+ * 权重快照的 SQLite 仓储实现
  */
 
 import type Database from 'better-sqlite3';
 import { KeyResultWeightSnapshot } from '@/domain-server';
 import type { IWeightSnapshotRepository, SnapshotQueryResult } from '@/domain-server';
+import type { KeyResultWeightSnapshotPersistenceDTO } from '@dailyuse/contracts/goal';
 
 export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository {
   constructor(private db: Database.Database) {}
@@ -13,47 +14,57 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
   async save(snapshot: KeyResultWeightSnapshot): Promise<void> {
     const dto = snapshot.toPersistenceDTO();
 
-    const stmt = this.db.prepare(`
-      INSERT INTO weight_snapshots (
-        uuid, goal_uuid, key_result_uuid, weight, snapshot_time, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
-        weight = excluded.weight,
-        updated_at = excluded.updated_at
-    `);
-
-    stmt.run(
-      dto.uuid,
-      dto.goalUuid,
-      dto.keyResultUuid,
-      dto.newWeight,
-      dto.snapshotTime,
-      dto.createdAt,
-      dto.updatedAt,
-    );
+    this.db
+      .prepare(
+        `INSERT INTO weight_snapshots (
+        id, goal_id, key_result_id, old_weight, new_weight, weight_delta,
+        snapshot_time, trigger, reason, operator_id, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        new_weight = excluded.new_weight,
+        weight_delta = excluded.weight_delta`,
+      )
+      .run(
+        dto.id as string,
+        dto.goalId as string,
+        dto.keyResultId as string,
+        dto.oldWeight,
+        dto.newWeight,
+        dto.weightDelta,
+        dto.snapshotTime instanceof Date ? dto.snapshotTime.getTime() : dto.snapshotTime,
+        dto.trigger,
+        dto.reason,
+        dto.operatorId as string,
+        dto.createdAt instanceof Date ? dto.createdAt.getTime() : dto.createdAt,
+      );
   }
 
   async saveMany(snapshots: KeyResultWeightSnapshot[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO weight_snapshots (
-        uuid, goal_uuid, key_result_uuid, weight, snapshot_time, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
-        weight = excluded.weight,
-        updated_at = excluded.updated_at
+        id, goal_id, key_result_id, old_weight, new_weight, weight_delta,
+        snapshot_time, trigger, reason, operator_id, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        new_weight = excluded.new_weight,
+        weight_delta = excluded.weight_delta
     `);
 
     const transaction = this.db.transaction((items: KeyResultWeightSnapshot[]) => {
       for (const snapshot of items) {
         const dto = snapshot.toPersistenceDTO();
         insertStmt.run(
-          dto.uuid,
-          dto.goalUuid,
-          dto.keyResultUuid,
-          dto.weight,
-          dto.snapshotTime,
-          dto.createdAt,
-          dto.updatedAt,
+          dto.id as string,
+          dto.goalId as string,
+          dto.keyResultId as string,
+          dto.oldWeight,
+          dto.newWeight,
+          dto.weightDelta,
+          dto.snapshotTime instanceof Date ? dto.snapshotTime.getTime() : dto.snapshotTime,
+          dto.trigger,
+          dto.reason,
+          dto.operatorId as string,
+          dto.createdAt instanceof Date ? dto.createdAt.getTime() : dto.createdAt,
         );
       }
     });
@@ -61,44 +72,50 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
     transaction(snapshots);
   }
 
-  async findByGoal(goalUuid: string, page: number = 1, pageSize: number = 50): Promise<SnapshotQueryResult> {
+  async findByGoal(
+    goalUuid: string,
+    page: number = 1,
+    pageSize: number = 50,
+  ): Promise<SnapshotQueryResult> {
     const offset = (page - 1) * pageSize;
 
-    const countStmt = this.db.prepare(
-      `SELECT COUNT(*) as total FROM weight_snapshots WHERE goal_uuid = ?`
-    );
-    const countResult = countStmt.get(goalUuid) as any;
+    const countResult = this.db
+      .prepare(`SELECT COUNT(*) as total FROM weight_snapshots WHERE goal_id = ?`)
+      .get(goalUuid) as any;
 
-    const stmt = this.db.prepare(
-      `SELECT * FROM weight_snapshots WHERE goal_uuid = ? ORDER BY snapshot_time DESC LIMIT ? OFFSET ?`
-    );
-    const rows = stmt.all(goalUuid, pageSize, offset) as any[];
-
-    const snapshots = rows.map((row) => this.rowToSnapshot(row));
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM weight_snapshots WHERE goal_id = ? ORDER BY snapshot_time DESC LIMIT ? OFFSET ?`,
+      )
+      .all(goalUuid, pageSize, offset) as any[];
 
     return {
-      snapshots,
+      snapshots: rows.map((row) => this.rowToSnapshot(row)),
       total: countResult.total,
     };
   }
 
-  async findByKeyResult(krUuid: string, page: number = 1, pageSize: number = 50): Promise<SnapshotQueryResult> {
+  async findByKeyResult(
+    krUuid: string,
+    page: number = 1,
+    pageSize: number = 50,
+  ): Promise<SnapshotQueryResult> {
     const offset = (page - 1) * pageSize;
 
-    const countStmt = this.db.prepare(
-      `SELECT COUNT(*) as total FROM weight_snapshots WHERE key_result_uuid = ?`
-    );
-    const countResult = countStmt.get(krUuid) as any;
+    const countResult = this.db
+      .prepare(
+        `SELECT COUNT(*) as total FROM weight_snapshots WHERE key_result_id = ?`,
+      )
+      .get(krUuid) as any;
 
-    const stmt = this.db.prepare(
-      `SELECT * FROM weight_snapshots WHERE key_result_uuid = ? ORDER BY snapshot_time DESC LIMIT ? OFFSET ?`
-    );
-    const rows = stmt.all(krUuid, pageSize, offset) as any[];
-
-    const snapshots = rows.map((row) => this.rowToSnapshot(row));
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM weight_snapshots WHERE key_result_id = ? ORDER BY snapshot_time DESC LIMIT ? OFFSET ?`,
+      )
+      .all(krUuid, pageSize, offset) as any[];
 
     return {
-      snapshots,
+      snapshots: rows.map((row) => this.rowToSnapshot(row)),
       total: countResult.total,
     };
   }
@@ -111,27 +128,28 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
   ): Promise<SnapshotQueryResult> {
     const offset = (page - 1) * pageSize;
 
-    const countStmt = this.db.prepare(
-      `SELECT COUNT(*) as total FROM weight_snapshots WHERE snapshotTime >= ? AND snapshotTime <= ?`
-    );
-    const countResult = countStmt.get(startTime, endTime) as any;
+    const countResult = this.db
+      .prepare(
+        `SELECT COUNT(*) as total FROM weight_snapshots WHERE snapshot_time >= ? AND snapshot_time <= ?`,
+      )
+      .get(startTime, endTime) as any;
 
-    const stmt = this.db.prepare(
-      `SELECT * FROM weight_snapshots WHERE snapshotTime >= ? AND snapshotTime <= ? ORDER BY snapshotTime ASC LIMIT ? OFFSET ?`
-    );
-    const rows = stmt.all(startTime, endTime, pageSize, offset) as any[];
-
-    const snapshots = rows.map((row) => this.rowToSnapshot(row));
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM weight_snapshots WHERE snapshot_time >= ? AND snapshot_time <= ? ORDER BY snapshot_time ASC LIMIT ? OFFSET ?`,
+      )
+      .all(startTime, endTime, pageSize, offset) as any[];
 
     return {
-      snapshots,
+      snapshots: rows.map((row) => this.rowToSnapshot(row)),
       total: countResult.total,
     };
   }
 
   async findById(uuid: string): Promise<KeyResultWeightSnapshot | null> {
-    const stmt = this.db.prepare(`SELECT * FROM weight_snapshots WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+    const row = this.db
+      .prepare(`SELECT * FROM weight_snapshots WHERE id = ? LIMIT 1`)
+      .get(uuid) as any;
 
     if (!row) return null;
 
@@ -139,32 +157,36 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM weight_snapshots WHERE uuid = ?`);
-    stmt.run(uuid);
+    this.db.prepare(`DELETE FROM weight_snapshots WHERE id = ?`).run(uuid);
   }
 
   async deleteByGoal(goalUuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM weight_snapshots WHERE goal_uuid = ?`);
-    stmt.run(goalUuid);
-  }
-
-  private rowToSnapshot(row: any): KeyResultWeightSnapshot {
-    // 从蛇形的行对象属性转换为驼峰的 DTO 对象
-    return KeyResultWeightSnapshot.fromPersistenceDTO({
-      uuid: row.uuid,
-      goal_uuid: row.goal_uuid,
-      kr_uuid: row.key_result_uuid,
-      weight: row.weight,
-      snapshot_time: row.snapshot_time,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-    });
+    this.db
+      .prepare(`DELETE FROM weight_snapshots WHERE goal_id = ?`)
+      .run(goalUuid);
   }
 
   async deleteByKeyResult(krUuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM weight_snapshots WHERE key_result_uuid = ?`);
-    stmt.run(krUuid);
+    this.db
+      .prepare(`DELETE FROM weight_snapshots WHERE key_result_id = ?`)
+      .run(krUuid);
+  }
+
+  private rowToSnapshot(row: any): KeyResultWeightSnapshot {
+    const dto: KeyResultWeightSnapshotPersistenceDTO = {
+      id: row.id,
+      goalId: row.goal_id,
+      keyResultId: row.key_result_id,
+      oldWeight: row.old_weight,
+      newWeight: row.new_weight,
+      weightDelta: row.weight_delta,
+      snapshotTime: new Date(row.snapshot_time),
+      trigger: row.trigger,
+      reason: row.reason ?? null,
+      operatorId: row.operator_id,
+      createdAt: new Date(row.created_at),
+    };
+
+    return KeyResultWeightSnapshot.fromPersistenceDTO(dto);
   }
 }
-
-

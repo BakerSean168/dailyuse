@@ -32,13 +32,14 @@
 export * from '@dailyuse/contracts/ai';
 
 // ================= Domain Layer =================
-export * from './domain-shared';
+// domain-shared and domain-client are available via subpath exports only
+// (e.g., @dailyuse/ai/domain-shared, @dailyuse/ai/domain-client)
 export * from './domain-server';
-export * from './domain-client';
 
 // ================= Application Layer =================
 export * from './application-server';
-export * from './application-client';
+// application-client is available via subpath export only
+// (e.g., @dailyuse/ai/application-client) to avoid name conflicts
 
 // ================= Infrastructure Layer =================
 export * from './infrastructure-server';

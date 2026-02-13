@@ -1,7 +1,8 @@
 /**
  * Editor Module Value Objects - Domain Server
- * 
- * 从 @dailyuse/domain-shared 重新导出值对象
+ *
+ * IDs and class-type VOs only. Enum-like VOs (ProjectType, DocumentLanguage, etc.)
+ * and types (WorkspaceLayout, WorkspaceSettings) come from @dailyuse/contracts/editor.
  */
 
 // IDs
@@ -12,24 +13,8 @@ export {
   EditorTabId,
 } from '../../domain-shared/value-objects';
 
-// Enum-like Value Objects
+// Class-type Value Objects (no conflict with contracts)
 export {
-  ProjectType,
-  DocumentLanguage,
-  VersionChangeType,
-  TabType,
-  SplitDirection,
-  IndexStatus,
-  LinkedSourceType,
-  LinkedTargetType,
-  ViewMode,
-  SidebarActiveTab,
-} from '../../domain-shared/value-objects';
-
-// Class-type Value Objects
-export {
-  WorkspaceLayout,
-  WorkspaceSettings,
   SessionLayout,
   TabViewState,
   DocumentMetadata,

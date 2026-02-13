@@ -2,4 +2,4 @@
  * AI Service Interfaces
  */
 
-export type { IAIService, AIServiceConfig } from './IAIService';
+export type { IAIService, AIServiceConfig, DecompositionRequest, DecompositionResult } from './IAIService';

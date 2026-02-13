@@ -1,7 +1,7 @@
 import type { PrismaClient } from '../generated/prisma/client';
 import type Database from 'better-sqlite3';
 
-import { SettingApplicationService } from '@dailyuse/setting/application-server';
+import { SettingApplicationService } from '../application-server';
 import { SettingRepositoryFactory } from './di';
 
 type BetterSQLiteDB = Database.Database;

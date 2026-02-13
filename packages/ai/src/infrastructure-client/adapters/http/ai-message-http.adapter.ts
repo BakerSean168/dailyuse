@@ -7,9 +7,9 @@
 import type { IHttpClient, IAIMessageApiClient } from '../types';
 import type {
   MessageClientDTO,
-  MessageListResponse,
-  SendMessageRequest,
-  ChatStreamRequest,
+  MessageListRes,
+  SendMessageReq,
+  ChatStreamReq,
   ChatStreamChunk,
 } from '@dailyuse/contracts/ai';
 
@@ -25,7 +25,7 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
 
   // ===== Message CRUD =====
 
-  async sendMessage(request: SendMessageRequest): Promise<MessageClientDTO> {
+  async sendMessage(request: SendMessageReq): Promise<MessageClientDTO> {
     return this.httpClient.post(this.baseUrl, request);
   }
 
@@ -35,7 +35,7 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
       page?: number;
       pageSize?: number;
     },
-  ): Promise<MessageListResponse> {
+  ): Promise<MessageListRes> {
     return this.httpClient.get(`/ai/conversations/${conversationUuid}/messages`, { params });
   }
 
@@ -45,7 +45,7 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
 
   // ===== Streaming Chat =====
 
-  async *streamChat(request: ChatStreamRequest): AsyncGenerator<ChatStreamChunk, void, unknown> {
+  async *streamChat(request: ChatStreamReq): AsyncGenerator<ChatStreamChunk, void, unknown> {
     // 流式聊天需要 SSE 或 WebSocket，这里提供基本实现框架
     // 实际实现需要根据后端 API 调整
     const response = await fetch(`/api/ai/chat/stream`, {

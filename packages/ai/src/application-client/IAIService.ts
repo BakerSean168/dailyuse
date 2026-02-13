@@ -1,7 +1,6 @@
 /**
- * Re-export IAIService from contracts
- * The actual interface is defined in @dailyuse/contracts/ai
+ * Re-export IAIService from local interfaces
  */
 
-export type { IAIService, AIServiceConfig } from '@dailyuse/contracts/ai';
+export type { IAIService, AIServiceConfig } from './interfaces/IAIService';
 

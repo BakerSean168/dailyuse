@@ -7,13 +7,11 @@
 import type { IHttpClient, IAIGenerationTaskApiClient } from '../types';
 import type {
   AIGenerationTaskClientDTO,
-  GenerationTaskListResponse,
-  CreateGenerationTaskRequest,
-  GenerateGoalRequest,
-  GenerateGoalResponse,
-  GenerateGoalWithKRsRequest,
-  GenerateGoalWithKRsResponse,
-  GenerateKeyResultsResponse,
+  GenerationTaskListRes,
+  CreateGenerationTaskReq,
+  GenerateGoalReq,
+  GenerateGoalRes,
+  GenerateKeyResultsRes,
 } from '@dailyuse/contracts/ai';
 
 /**
@@ -28,7 +26,7 @@ export class AIGenerationTaskHttpAdapter implements IAIGenerationTaskApiClient {
 
   // ===== Generation Task CRUD =====
 
-  async createGenerationTask(request: CreateGenerationTaskRequest): Promise<AIGenerationTaskClientDTO> {
+  async createGenerationTask(request: CreateGenerationTaskReq): Promise<AIGenerationTaskClientDTO> {
     return this.httpClient.post(this.baseUrl, request);
   }
 
@@ -37,7 +35,7 @@ export class AIGenerationTaskHttpAdapter implements IAIGenerationTaskApiClient {
     pageSize?: number;
     type?: string;
     status?: string;
-  }): Promise<GenerationTaskListResponse> {
+  }): Promise<GenerationTaskListRes> {
     return this.httpClient.get(this.baseUrl, { params });
   }
 
@@ -55,15 +53,15 @@ export class AIGenerationTaskHttpAdapter implements IAIGenerationTaskApiClient {
 
   // ===== Goal Generation =====
 
-  async generateGoal(request: GenerateGoalRequest): Promise<GenerateGoalResponse> {
+  async generateGoal(request: GenerateGoalReq): Promise<GenerateGoalRes> {
     return this.httpClient.post('/ai/generate/goal', request);
   }
 
-  async generateGoalWithKeyResults(request: GenerateGoalWithKRsRequest): Promise<GenerateGoalWithKRsResponse> {
+  async generateGoalWithKeyResults(request: GenerateGoalReq): Promise<GenerateGoalRes> {
     return this.httpClient.post('/ai/generate/goal-with-key-results', request);
   }
 
-  async generateKeyResults(goalUuid: string): Promise<GenerateKeyResultsResponse> {
+  async generateKeyResults(goalUuid: string): Promise<GenerateKeyResultsRes> {
     return this.httpClient.post(`/ai/generate/key-results/${goalUuid}`);
   }
 }

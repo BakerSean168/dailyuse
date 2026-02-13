@@ -1,68 +1,255 @@
 /**
  * SQLite Goal Repository Implementation
- * 鐩爣鐨?SQLite Repository瀹炵幇
+ * 目标的 SQLite 仓储实现
+ *
+ * 使用 better-sqlite3 同步 API，外层 async 包装以满足接口
+ * 事务内级联保存 Goal 聚合（KeyResult, GoalReview, WeightSnapshot）
  */
 
 import type Database from 'better-sqlite3';
-import { Goal } from '@/domain-server';
+import { Goal, KeyResult, GoalReview } from '@/domain-server';
 import type { IGoalRepository } from '@/domain-server';
+import type {
+  GoalPersistenceDTO,
+  KeyResultPersistenceDTO,
+  GoalReviewPersistenceDTO,
+  KeyResultWeightSnapshotDTO,
+} from '@dailyuse/contracts/goal';
+
+// ============ Helper: Date → INTEGER (millis) ============
+
+function dateToInt(d: Date | null | undefined): number | null {
+  if (!d) return null;
+  return d instanceof Date ? d.getTime() : (d as number);
+}
 
 export class SqliteGoalRepository implements IGoalRepository {
   constructor(private db: Database.Database) {}
 
+  // ============ Save (Cascade Transaction) ============
+
   async save(goal: Goal): Promise<void> {
     const dto = goal.toPersistenceDTO();
 
-    const stmt = this.db.prepare(`
-      INSERT INTO goals (
-        uuid, account_uuid, title, description, status, importance, tags,
-        folder_uuid, sort_order, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
-        title = excluded.title,
-        description = excluded.description,
-        status = excluded.status,
-        importance = excluded.importance,
-        tags = excluded.tags,
-        folder_uuid = excluded.folder_uuid,
-        sort_order = excluded.sort_order,
-        updated_at = excluded.updated_at
-    `);
+    const transaction = this.db.transaction(() => {
+      // 1. Upsert Goal root
+      this.db
+        .prepare(
+          `INSERT INTO goals (
+          id, identity_id, name, description, color, feasibility_analysis,
+          motivation, status, importance, priority, category, tags,
+          start_date, target_date, completed_at, archived_at,
+          folder_id, parent_goal_id, sort_order, reminder_config,
+          version, created_at, updated_at, deleted_at
+        ) VALUES (
+          ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?,
+          ?, ?, ?, ?,
+          ?, ?, ?, ?
+        )
+        ON CONFLICT(id) DO UPDATE SET
+          name = excluded.name,
+          description = excluded.description,
+          color = excluded.color,
+          feasibility_analysis = excluded.feasibility_analysis,
+          motivation = excluded.motivation,
+          status = excluded.status,
+          importance = excluded.importance,
+          priority = excluded.priority,
+          category = excluded.category,
+          tags = excluded.tags,
+          start_date = excluded.start_date,
+          target_date = excluded.target_date,
+          completed_at = excluded.completed_at,
+          archived_at = excluded.archived_at,
+          folder_id = excluded.folder_id,
+          parent_goal_id = excluded.parent_goal_id,
+          sort_order = excluded.sort_order,
+          reminder_config = excluded.reminder_config,
+          version = excluded.version,
+          updated_at = excluded.updated_at,
+          deleted_at = excluded.deleted_at`,
+        )
+        .run(
+          dto.id as string,
+          dto.identityId as string,
+          dto.name,
+          dto.description,
+          dto.color,
+          dto.feasibilityAnalysis,
+          dto.motivation,
+          dto.status,
+          dto.importance,
+          dto.priority,
+          dto.category,
+          JSON.stringify(dto.tags),
+          dateToInt(dto.startDate),
+          dateToInt(dto.targetDate),
+          dateToInt(dto.completedAt),
+          dateToInt(dto.archivedAt),
+          dto.folderId ? (dto.folderId as string) : null,
+          dto.parentGoalId ? (dto.parentGoalId as string) : null,
+          dto.sortOrder,
+          dto.reminderConfig ? JSON.stringify(dto.reminderConfig) : null,
+          dto.version,
+          dateToInt(dto.createdAt),
+          dateToInt(dto.updatedAt),
+          dateToInt(dto.deletedAt),
+        );
 
-    stmt.run(
-      dto.uuid,
-      dto.accountUuid,
-      dto.name,
-      dto.description || null,
-      dto.status,
-      dto.importance,
-      dto.tags,
-      dto.folderUuid || null,
-      dto.sortOrder,
-      dto.createdAt,
-      dto.updatedAt,
-    );
+      // 2. Sync KeyResults
+      if (dto.keyResults) {
+        const currentKrIds = dto.keyResults.map((kr) => kr.id as string);
+
+        // Delete removed KRs
+        if (currentKrIds.length > 0) {
+          const placeholders = currentKrIds.map(() => '?').join(',');
+          this.db
+            .prepare(
+              `DELETE FROM key_results WHERE goal_id = ? AND id NOT IN (${placeholders})`,
+            )
+            .run(dto.id as string, ...currentKrIds);
+        } else {
+          this.db
+            .prepare(`DELETE FROM key_results WHERE goal_id = ?`)
+            .run(dto.id as string);
+        }
+
+        // Upsert each KR
+        const krStmt = this.db.prepare(`
+          INSERT INTO key_results (
+            id, goal_id, title, description, progress, weight,
+            sort_order, version, created_at, updated_at, deleted_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            title = excluded.title,
+            description = excluded.description,
+            progress = excluded.progress,
+            weight = excluded.weight,
+            sort_order = excluded.sort_order,
+            version = excluded.version,
+            updated_at = excluded.updated_at,
+            deleted_at = excluded.deleted_at
+        `);
+
+        for (const kr of dto.keyResults) {
+          krStmt.run(
+            kr.id as string,
+            dto.id as string,
+            kr.title,
+            kr.description,
+            kr.progress, // already JSON string from toPersistenceDTO
+            kr.weight,
+            kr.sortOrder,
+            kr.version,
+            dateToInt(kr.createdAt),
+            dateToInt(kr.updatedAt),
+            dateToInt(kr.deletedAt),
+          );
+        }
+      }
+
+      // 3. Sync GoalReviews
+      if (dto.goalReviews) {
+        const currentReviewIds = dto.goalReviews.map((r) => r.id as string);
+
+        if (currentReviewIds.length > 0) {
+          const placeholders = currentReviewIds.map(() => '?').join(',');
+          this.db
+            .prepare(
+              `DELETE FROM goal_reviews WHERE goal_id = ? AND id NOT IN (${placeholders})`,
+            )
+            .run(dto.id as string, ...currentReviewIds);
+        } else {
+          this.db
+            .prepare(`DELETE FROM goal_reviews WHERE goal_id = ?`)
+            .run(dto.id as string);
+        }
+
+        const reviewStmt = this.db.prepare(`
+          INSERT INTO goal_reviews (
+            id, goal_id, type, rating, summary, achievements,
+            challenges, improvements, key_result_snapshots,
+            reviewed_at, version, created_at, updated_at, deleted_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            type = excluded.type,
+            rating = excluded.rating,
+            summary = excluded.summary,
+            achievements = excluded.achievements,
+            challenges = excluded.challenges,
+            improvements = excluded.improvements,
+            key_result_snapshots = excluded.key_result_snapshots,
+            reviewed_at = excluded.reviewed_at,
+            version = excluded.version,
+            updated_at = excluded.updated_at,
+            deleted_at = excluded.deleted_at
+        `);
+
+        for (const review of dto.goalReviews) {
+          reviewStmt.run(
+            review.id as string,
+            dto.id as string,
+            review.type,
+            review.rating,
+            review.summary,
+            review.achievements,
+            review.challenges,
+            review.improvements,
+            review.keyResultSnapshots, // already JSON string
+            dateToInt(review.reviewedAt),
+            review.version,
+            dateToInt(review.createdAt),
+            dateToInt(review.updatedAt),
+            dateToInt(review.deletedAt),
+          );
+        }
+      }
+
+      // 4. Sync WeightSnapshots (append-only, no delete)
+      if (dto.weightSnapshots && dto.weightSnapshots.length > 0) {
+        const wsStmt = this.db.prepare(`
+          INSERT OR IGNORE INTO weight_snapshots (
+            id, goal_id, key_result_id, old_weight, new_weight, weight_delta,
+            snapshot_time, trigger, reason, operator_id, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        for (const ws of dto.weightSnapshots) {
+          wsStmt.run(
+            ws.id as string,
+            ws.goalId as string,
+            ws.keyResultId as string,
+            ws.oldWeight,
+            ws.newWeight,
+            ws.weightDelta,
+            ws.snapshotTime,
+            ws.trigger,
+            ws.reason,
+            ws.operatorId as string,
+            ws.createdAt,
+          );
+        }
+      }
+    });
+
+    transaction();
   }
 
-  async findById(uuid: string, options?: { includeChildren?: boolean }): Promise<Goal | null> {
-    const stmt = this.db.prepare(`SELECT * FROM goals WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  // ============ Find ============
+
+  async findById(
+    uuid: string,
+    options?: { includeChildren?: boolean },
+  ): Promise<Goal | null> {
+    const row = this.db
+      .prepare(`SELECT * FROM goals WHERE id = ? LIMIT 1`)
+      .get(uuid) as any;
 
     if (!row) return null;
 
-    return Goal.fromPersistenceDTO({
-      uuid: row.uuid,
-      accountUuid: row.account_uuid,
-      name: row.title,
-      description: row.description,
-      status: row.status,
-      importance: row.importance,
-      tags: row.tags || '[]',
-      folderUuid: row.folder_uuid,
-      sortOrder: row.sort_order,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    });
+    return this.rowToGoal(row, options?.includeChildren ?? false);
   }
 
   async findByAccountUuid(
@@ -73,7 +260,7 @@ export class SqliteGoalRepository implements IGoalRepository {
       folderUuid?: string;
     },
   ): Promise<Goal[]> {
-    let query = `SELECT * FROM goals WHERE account_uuid = ?`;
+    let query = `SELECT * FROM goals WHERE identity_id = ? AND deleted_at IS NULL`;
     const params: any[] = [accountUuid];
 
     if (options?.status) {
@@ -82,87 +269,225 @@ export class SqliteGoalRepository implements IGoalRepository {
     }
 
     if (options?.folderUuid) {
-      query += ` AND folder_uuid = ?`;
+      query += ` AND folder_id = ?`;
       params.push(options.folderUuid);
     }
 
-    query += ` ORDER BY created_at DESC`;
+    query += ` ORDER BY sort_order ASC, created_at DESC`;
 
-    const stmt = this.db.prepare(query);
-    const rows = stmt.all(...params) as any[];
+    const rows = this.db.prepare(query).all(...params) as any[];
 
     return rows.map((row) =>
-      Goal.fromPersistenceDTO({
-        uuid: row.uuid,
-        accountUuid: row.account_uuid,
-        name: row.title,
-        description: row.description,
-        status: row.status,
-        importance: row.importance,
-        tags: row.tags || '[]',
-        folderUuid: row.folder_uuid,
-        sortOrder: row.sort_order,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-      })
+      this.rowToGoal(row, options?.includeChildren ?? false),
     );
   }
 
   async findByFolderUuid(folderUuid: string): Promise<Goal[]> {
-    const stmt = this.db.prepare(
-      `SELECT * FROM goals WHERE folder_uuid = ? ORDER BY created_at DESC`
-    );
-    const rows = stmt.all(folderUuid) as any[];
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM goals WHERE folder_id = ? AND deleted_at IS NULL ORDER BY sort_order ASC, created_at DESC`,
+      )
+      .all(folderUuid) as any[];
 
-    return rows.map((row) =>
-      Goal.fromPersistenceDTO({
-        uuid: row.uuid,
-        accountUuid: row.account_uuid,
-        name: row.title,
-        description: row.description,
-        status: row.status,
-        importance: row.importance,
-        tags: row.tags || '[]',
-        folderUuid: row.folder_uuid,
-        sortOrder: row.sort_order,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-      })
-    );
+    return rows.map((row) => this.rowToGoal(row, false));
   }
 
+  // ============ Delete ============
+
   async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM goals WHERE uuid = ?`);
-    stmt.run(uuid);
+    this.db.transaction(() => {
+      // CASCADE via FK will handle sub-entities, but be explicit
+      this.db.prepare(`DELETE FROM goal_reviews WHERE goal_id = ?`).run(uuid);
+      this.db.prepare(`DELETE FROM key_results WHERE goal_id = ?`).run(uuid);
+      this.db
+        .prepare(`DELETE FROM weight_snapshots WHERE goal_id = ?`)
+        .run(uuid);
+      this.db.prepare(`DELETE FROM goals WHERE id = ?`).run(uuid);
+    })();
   }
 
   async softDelete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(
-      `UPDATE goals SET status = 'DELETED', updatedAt = ? WHERE uuid = ?`
-    );
-    stmt.run(Date.now(), uuid);
+    const now = Date.now();
+    this.db
+      .prepare(`UPDATE goals SET deleted_at = ?, updated_at = ? WHERE id = ?`)
+      .run(now, now, uuid);
   }
 
+  // ============ Utilities ============
+
   async exists(uuid: string): Promise<boolean> {
-    const stmt = this.db.prepare(`SELECT 1 FROM goals WHERE uuid = ? LIMIT 1`);
-    return stmt.get(uuid) !== undefined;
+    const row = this.db
+      .prepare(`SELECT 1 FROM goals WHERE id = ? LIMIT 1`)
+      .get(uuid);
+    return row !== undefined;
   }
 
   async batchUpdateStatus(uuids: string[], status: string): Promise<void> {
+    if (uuids.length === 0) return;
     const placeholders = uuids.map(() => '?').join(',');
-    const stmt = this.db.prepare(
-      `UPDATE goals SET status = ?, updatedAt = ? WHERE uuid IN (${placeholders})`
-    );
-    stmt.run(status, Date.now(), ...uuids);
+    this.db
+      .prepare(
+        `UPDATE goals SET status = ?, updated_at = ? WHERE id IN (${placeholders})`,
+      )
+      .run(status, Date.now(), ...uuids);
   }
 
-  async batchMoveToFolder(uuids: string[], folderUuid: string | null): Promise<void> {
+  async batchMoveToFolder(
+    uuids: string[],
+    folderUuid: string | null,
+  ): Promise<void> {
+    if (uuids.length === 0) return;
     const placeholders = uuids.map(() => '?').join(',');
-    const stmt = this.db.prepare(
-      `UPDATE goals SET folder_uuid = ?, updated_at = ? WHERE uuid IN (${placeholders})`
-    );
-    stmt.run(folderUuid || null, Date.now(), ...uuids);
+    this.db
+      .prepare(
+        `UPDATE goals SET folder_id = ?, updated_at = ? WHERE id IN (${placeholders})`,
+      )
+      .run(folderUuid, Date.now(), ...uuids);
+  }
+
+  // ============ Hierarchy ============
+
+  async isAncestor(
+    potentialAncestorId: string,
+    potentialDescendantId: string,
+  ): Promise<boolean> {
+    let currentId: string | null = potentialDescendantId;
+    const visited = new Set<string>();
+
+    while (currentId) {
+      if (currentId === potentialAncestorId) return true;
+      if (visited.has(currentId)) break; // circular reference guard
+      visited.add(currentId);
+
+      const row = this.db
+        .prepare(`SELECT parent_goal_id FROM goals WHERE id = ?`)
+        .get(currentId) as any;
+      currentId = row?.parent_goal_id ?? null;
+    }
+
+    return false;
+  }
+
+  async findChildren(parentId: string): Promise<Goal[]> {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM goals WHERE parent_goal_id = ? AND deleted_at IS NULL ORDER BY sort_order ASC`,
+      )
+      .all(parentId) as any[];
+
+    return rows.map((row) => this.rowToGoal(row, false));
+  }
+
+  // ============ Private Helpers ============
+
+  private rowToGoal(row: any, includeChildren: boolean): Goal {
+    const dto: GoalPersistenceDTO = {
+      id: row.id,
+      identityId: row.identity_id,
+      name: row.name,
+      description: row.description ?? null,
+      color: row.color ?? '#4A90D9',
+      feasibilityAnalysis: row.feasibility_analysis ?? null,
+      motivation: row.motivation ?? null,
+      status: row.status,
+      importance: row.importance ?? 'MEDIUM',
+      priority: row.priority ?? 0,
+      category: row.category ?? null,
+      tags: row.tags ? JSON.parse(row.tags) : [],
+      startDate: row.start_date ? new Date(row.start_date) : null,
+      targetDate: row.target_date ? new Date(row.target_date) : null,
+      completedAt: row.completed_at ? new Date(row.completed_at) : null,
+      archivedAt: row.archived_at ? new Date(row.archived_at) : null,
+      folderId: row.folder_id ?? null,
+      parentGoalId: row.parent_goal_id ?? null,
+      sortOrder: row.sort_order ?? 0,
+      reminderConfig: row.reminder_config
+        ? JSON.parse(row.reminder_config)
+        : null,
+      version: row.version ?? 1,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
+      keyResults: null,
+      goalReviews: null,
+      weightSnapshots: null,
+    };
+
+    if (includeChildren) {
+      dto.keyResults = this.loadKeyResults(row.id);
+      dto.goalReviews = this.loadGoalReviews(row.id);
+      dto.weightSnapshots = this.loadWeightSnapshots(row.id);
+    }
+
+    return Goal.fromPersistenceDTO(dto);
+  }
+
+  private loadKeyResults(goalId: string): KeyResultPersistenceDTO[] {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM key_results WHERE goal_id = ? AND deleted_at IS NULL ORDER BY sort_order ASC`,
+      )
+      .all(goalId) as any[];
+
+    return rows.map((row) => ({
+      id: row.id,
+      goalId: row.goal_id,
+      title: row.title,
+      description: row.description ?? null,
+      progress: row.progress ?? '{}',
+      weight: row.weight,
+      sortOrder: row.sort_order,
+      version: row.version ?? 1,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
+    }));
+  }
+
+  private loadGoalReviews(goalId: string): GoalReviewPersistenceDTO[] {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM goal_reviews WHERE goal_id = ? AND deleted_at IS NULL ORDER BY reviewed_at DESC`,
+      )
+      .all(goalId) as any[];
+
+    return rows.map((row) => ({
+      id: row.id,
+      goalId: row.goal_id,
+      type: row.type,
+      rating: row.rating,
+      summary: row.summary ?? '',
+      achievements: row.achievements ?? null,
+      challenges: row.challenges ?? null,
+      improvements: row.improvements ?? null,
+      keyResultSnapshots: row.key_result_snapshots ?? '[]',
+      reviewedAt: new Date(row.reviewed_at),
+      version: row.version ?? 1,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
+    }));
+  }
+
+  private loadWeightSnapshots(goalId: string): KeyResultWeightSnapshotDTO[] {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM weight_snapshots WHERE goal_id = ? ORDER BY snapshot_time DESC`,
+      )
+      .all(goalId) as any[];
+
+    return rows.map((row) => ({
+      id: row.id,
+      goalId: row.goal_id,
+      keyResultId: row.key_result_id,
+      oldWeight: row.old_weight,
+      newWeight: row.new_weight,
+      weightDelta: row.weight_delta,
+      snapshotTime: row.snapshot_time,
+      trigger: row.trigger,
+      reason: row.reason ?? null,
+      operatorId: row.operator_id,
+      createdAt: row.created_at,
+    }));
   }
 }
-
-

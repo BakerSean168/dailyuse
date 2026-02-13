@@ -578,15 +578,45 @@ importers:
 
   apps/web:
     dependencies:
+      '@dailyuse/account':
+        specifier: workspace:*
+        version: link:../../packages/account
       '@dailyuse/assets':
         specifier: workspace:*
         version: link:../../packages/assets
+      '@dailyuse/authentication':
+        specifier: workspace:*
+        version: link:../../packages/authentication
       '@dailyuse/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@dailyuse/goal':
+        specifier: workspace:*
+        version: link:../../packages/goal
       '@dailyuse/governance':
         specifier: workspace:*
         version: link:../../packages/governance
+      '@dailyuse/http-client':
+        specifier: workspace:*
+        version: link:../../packages/http-client
+      '@dailyuse/notification':
+        specifier: workspace:*
+        version: link:../../packages/notification
+      '@dailyuse/reminder':
+        specifier: workspace:*
+        version: link:../../packages/reminder
+      '@dailyuse/repository':
+        specifier: workspace:*
+        version: link:../../packages/repository
+      '@dailyuse/schedule':
+        specifier: workspace:*
+        version: link:../../packages/schedule
+      '@dailyuse/setting':
+        specifier: workspace:*
+        version: link:../../packages/setting
+      '@dailyuse/task':
+        specifier: workspace:*
+        version: link:../../packages/task
       '@dailyuse/ui-vue':
         specifier: workspace:*
         version: link:../../packages/ui-vue
@@ -694,9 +724,16 @@ importers:
       ai:
         specifier: ^4.0.0
         version: 4.3.19(react@19.2.1)(zod@3.25.76)
+      better-sqlite3:
+        specifier: ^12.5.0
+        version: 12.5.0
       zod:
         specifier: ^3.24.0
         version: 3.25.76
+    devDependencies:
+      '@types/better-sqlite3':
+        specifier: ^7.6.13
+        version: 7.6.13
 
   packages/assets:
     devDependencies:
@@ -867,6 +904,9 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
+      better-sqlite3:
+        specifier: ^12.5.0
+        version: 12.5.0
       express:
         specifier: ^5.1.0
         version: 5.2.1
@@ -874,6 +914,9 @@ importers:
         specifier: ^3.24.0
         version: 3.25.76
     devDependencies:
+      '@types/better-sqlite3':
+        specifier: ^7.6.13
+        version: 7.6.13
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -1083,6 +1126,9 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
       express:
         specifier: ^5.1.0
         version: 5.2.1

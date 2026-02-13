@@ -1,18 +1,26 @@
-/**
+﻿/**
  * AI Application Service
  * @module application-client/ai
+ *
+ * Provides client-side AI operations through simple service methods.
  */
-import { GenerateTaskName, GenerateContent, AnalyzeTasks } from './services';
 
+/**
+ * AIApplicationService
+ *
+ * Client-side service for AI operations.
+ * Use-case classes (CreateConversation, SendMessage, etc.) should be
+ * imported directly from ./services for more granular control.
+ */
 export class AIApplicationService {
-  async generateTaskName(context: any): Promise<string> {
-    return GenerateTaskName.getInstance().execute(context);
+  async generateTaskName(_context: any): Promise<string> {
+    throw new Error('AIApplicationService.generateTaskName not implemented. Use application-server services.');
   }
-  async generateContent(prompt: string): Promise<string> {
-    return GenerateContent.getInstance().execute(prompt);
+  async generateContent(_prompt: string): Promise<string> {
+    throw new Error('AIApplicationService.generateContent not implemented. Use application-server services.');
   }
-  async analyzeTasks(tasks: any[]): Promise<any> {
-    return AnalyzeTasks.getInstance().execute(tasks);
+  async analyzeTasks(_tasks: any[]): Promise<any> {
+    throw new Error('AIApplicationService.analyzeTasks not implemented. Use application-server services.');
   }
 }
 

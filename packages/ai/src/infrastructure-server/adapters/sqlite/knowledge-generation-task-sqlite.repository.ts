@@ -1,32 +1,36 @@
-/**
+﻿/**
  * SQLite KnowledgeGenerationTask Repository Implementation
- * 鐭ヨ瘑鐢熸垚浠诲姟鐨?SQLite Repository瀹炵�?
  */
 
 import type Database from 'better-sqlite3';
-import { KnowledgeGenerationTask } from '../../../domain-server/entities/knowledge-generation-task';
+import type { KnowledgeGenerationTask } from '../../../domain-server/entities/knowledge-generation-task';
 import type { IKnowledgeGenerationTaskRepository } from '../../../domain-server/repositories/IKnowledgeGenerationTaskRepository';
 
 export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenerationTaskRepository {
   constructor(private db: Database.Database) {}
 
   async create(task: KnowledgeGenerationTask): Promise<KnowledgeGenerationTask> {
-    const dto = task.toPersistenceDTO();
-
     const stmt = this.db.prepare(`
       INSERT INTO knowledge_generation_tasks (
-        uuid, accountUuid, title, description, status, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        id, identityId, topic, documentCount, targetAudience,
+        folderPath, status, progress, generatedDocumentIds, error,
+        createdAt, completedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.accountUuid,
-      dto.title,
-      dto.description || null,
-      dto.status,
-      dto.createdAt,
-      dto.updatedAt,
+      task.id,
+      task.identityId,
+      task.topic,
+      task.documentCount,
+      task.targetAudience || null,
+      task.folderPath,
+      task.status,
+      task.progress,
+      JSON.stringify(task.generatedDocumentIds),
+      task.error || null,
+      task.createdAt,
+      task.completedAt || null,
     );
 
     return task;
@@ -34,65 +38,61 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
 
   async findByUuid(uuid: string): Promise<KnowledgeGenerationTask | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM knowledge_generation_tasks WHERE uuid = ? LIMIT 1`
+      `SELECT * FROM knowledge_generation_tasks WHERE id = ? LIMIT 1`
     );
     const row = stmt.get(uuid) as any;
-
     if (!row) return null;
-
-    return KnowledgeGenerationTask.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
-      title: row.title,
-      description: row.description,
-      status: row.status,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToEntity(row);
   }
 
   async findByAccountUuid(accountUuid: string): Promise<KnowledgeGenerationTask[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM knowledge_generation_tasks WHERE accountUuid = ? ORDER BY createdAt DESC`
+      `SELECT * FROM knowledge_generation_tasks WHERE identityId = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(accountUuid) as any[];
-
-    return rows.map((row) =>
-      KnowledgeGenerationTask.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row.accountUuid,
-        title: row.title,
-        description: row.description,
-        status: row.status,
-        createdAt: new Date(row.createdAt),
-        updatedAt: new Date(row.updatedAt),
-      })
-    );
+    return rows.map((row) => this.rowToEntity(row));
   }
 
   async update(task: KnowledgeGenerationTask): Promise<KnowledgeGenerationTask> {
-    const dto = task.toPersistenceDTO();
-
     const stmt = this.db.prepare(`
       UPDATE knowledge_generation_tasks
-      SET title = ?, description = ?, status = ?, updatedAt = ?
-      WHERE uuid = ?
+      SET topic = ?, status = ?, progress = ?,
+          generatedDocumentIds = ?, error = ?, completedAt = ?
+      WHERE id = ?
     `);
 
     stmt.run(
-      dto.title,
-      dto.description || null,
-      dto.status,
-      dto.updatedAt,
-      dto.uuid,
+      task.topic,
+      task.status,
+      task.progress,
+      JSON.stringify(task.generatedDocumentIds),
+      task.error || null,
+      task.completedAt || null,
+      task.id,
     );
 
     return task;
   }
 
   async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM knowledge_generation_tasks WHERE uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM knowledge_generation_tasks WHERE id = ?`);
     stmt.run(uuid);
   }
-}
 
+  private rowToEntity(row: any): KnowledgeGenerationTask {
+    return {
+      id: row.id,
+      identityId: row.identityId,
+      topic: row.topic,
+      documentCount: row.documentCount,
+      targetAudience: row.targetAudience || undefined,
+      folderPath: row.folderPath,
+      status: row.status,
+      progress: row.progress,
+      generatedDocumentIds: JSON.parse(row.generatedDocumentIds || '[]'),
+      error: row.error || undefined,
+      createdAt: row.createdAt,
+      completedAt: row.completedAt || undefined,
+    };
+  }
+}

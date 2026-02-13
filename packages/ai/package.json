@@ -42,13 +42,16 @@
   },
   "scripts": {},
   "dependencies": {
+    "@ai-sdk/openai": "^1.0.0",
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
     "@dailyuse/utils": "workspace:*",
-    "@ai-sdk/openai": "^1.0.0",
     "ai": "^4.0.0",
+    "better-sqlite3": "^12.5.0",
     "zod": "^3.24.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13"
+  }
 }

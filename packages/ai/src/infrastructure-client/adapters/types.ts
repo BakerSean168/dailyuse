@@ -9,31 +9,29 @@
 
 import type {
   AIConversationClientDTO,
-  ConversationListResponse,
-  CreateConversationRequest,
-  UpdateConversationRequest,
+  ConversationListRes,
+  CreateConversationReq,
+  UpdateConversationReq,
   MessageClientDTO,
-  MessageListResponse,
-  SendMessageRequest,
-  ChatStreamRequest,
+  MessageListRes,
+  SendMessageReq,
+  ChatStreamReq,
   ChatStreamChunk,
   AIGenerationTaskClientDTO,
-  GenerationTaskListResponse,
-  CreateGenerationTaskRequest,
-  GenerateGoalRequest,
-  GenerateGoalResponse,
-  GenerateGoalWithKRsRequest,
-  GenerateGoalWithKRsResponse,
-  GenerateKeyResultsResponse,
+  GenerationTaskListRes,
+  CreateGenerationTaskReq,
+  GenerateGoalReq,
+  GenerateGoalRes,
+  GenerateKeyResultsRes,
   AIProviderConfigClientDTO,
   AIProviderConfigSummary,
-  CreateAIProviderRequest,
-  UpdateAIProviderRequest,
-  TestAIProviderConnectionRequest,
-  TestAIProviderConnectionResponse,
-  RefreshProviderModelsResponse,
+  CreateAIProviderConfigReq,
+  UpdateAIProviderConfigReq,
+  TestAIProviderReq,
+  TestAIProviderRes,
+  RefreshProviderModelsRes,
   AIUsageQuotaClientDTO,
-  UpdateQuotaLimitRequest,
+  UpdateQuotaLimitReq,
 } from '@dailyuse/contracts/ai';
 
 // ============ Transport Client Interfaces ============
@@ -53,46 +51,46 @@ export interface IIpcClient {
 // ============ Port Interfaces ============
 
 export interface IAIConversationApiClient {
-  createConversation(request: CreateConversationRequest): Promise<AIConversationClientDTO>;
-  getConversations(params?: { page?: number; pageSize?: number; status?: string }): Promise<ConversationListResponse>;
+  createConversation(request: CreateConversationReq): Promise<AIConversationClientDTO>;
+  getConversations(params?: { page?: number; pageSize?: number; status?: string }): Promise<ConversationListRes>;
   getConversationById(uuid: string): Promise<AIConversationClientDTO>;
-  updateConversation(uuid: string, request: UpdateConversationRequest): Promise<AIConversationClientDTO>;
+  updateConversation(uuid: string, request: UpdateConversationReq): Promise<AIConversationClientDTO>;
   deleteConversation(uuid: string): Promise<void>;
   closeConversation(uuid: string): Promise<AIConversationClientDTO>;
   archiveConversation(uuid: string): Promise<AIConversationClientDTO>;
 }
 
 export interface IAIMessageApiClient {
-  sendMessage(request: SendMessageRequest): Promise<MessageClientDTO>;
-  getMessages(conversationUuid: string, params?: { page?: number; pageSize?: number }): Promise<MessageListResponse>;
+  sendMessage(request: SendMessageReq): Promise<MessageClientDTO>;
+  getMessages(conversationUuid: string, params?: { page?: number; pageSize?: number }): Promise<MessageListRes>;
   deleteMessage(uuid: string): Promise<void>;
-  streamChat(request: ChatStreamRequest): AsyncGenerator<ChatStreamChunk, void, unknown>;
+  streamChat(request: ChatStreamReq): AsyncGenerator<ChatStreamChunk, void, unknown>;
 }
 
 export interface IAIGenerationTaskApiClient {
-  createGenerationTask(request: CreateGenerationTaskRequest): Promise<AIGenerationTaskClientDTO>;
-  getGenerationTasks(params?: { page?: number; pageSize?: number; type?: string; status?: string }): Promise<GenerationTaskListResponse>;
+  createGenerationTask(request: CreateGenerationTaskReq): Promise<AIGenerationTaskClientDTO>;
+  getGenerationTasks(params?: { page?: number; pageSize?: number; type?: string; status?: string }): Promise<GenerationTaskListRes>;
   getGenerationTaskById(uuid: string): Promise<AIGenerationTaskClientDTO>;
   cancelGenerationTask(uuid: string): Promise<void>;
   retryGenerationTask(uuid: string): Promise<AIGenerationTaskClientDTO>;
-  generateGoal(request: GenerateGoalRequest): Promise<GenerateGoalResponse>;
-  generateGoalWithKeyResults(request: GenerateGoalWithKRsRequest): Promise<GenerateGoalWithKRsResponse>;
-  generateKeyResults(goalUuid: string): Promise<GenerateKeyResultsResponse>;
+  generateGoal(request: GenerateGoalReq): Promise<GenerateGoalRes>;
+  generateGoalWithKeyResults(request: GenerateGoalReq): Promise<GenerateGoalRes>;
+  generateKeyResults(goalUuid: string): Promise<GenerateKeyResultsRes>;
 }
 
 export interface IAIProviderConfigApiClient {
-  createProvider(request: CreateAIProviderRequest): Promise<AIProviderConfigClientDTO>;
+  createProvider(request: CreateAIProviderConfigReq): Promise<AIProviderConfigClientDTO>;
   getProviders(): Promise<AIProviderConfigSummary[]>;
   getProviderById(uuid: string): Promise<AIProviderConfigClientDTO>;
-  updateProvider(uuid: string, request: UpdateAIProviderRequest): Promise<AIProviderConfigClientDTO>;
+  updateProvider(uuid: string, request: UpdateAIProviderConfigReq): Promise<AIProviderConfigClientDTO>;
   deleteProvider(uuid: string): Promise<void>;
-  testConnection(request: TestAIProviderConnectionRequest): Promise<TestAIProviderConnectionResponse>;
+  testConnection(request: TestAIProviderReq): Promise<TestAIProviderRes>;
   setDefaultProvider(uuid: string): Promise<void>;
-  refreshModels(uuid: string): Promise<RefreshProviderModelsResponse>;
+  refreshModels(uuid: string): Promise<RefreshProviderModelsRes>;
 }
 
 export interface IAIUsageQuotaApiClient {
   getQuota(): Promise<AIUsageQuotaClientDTO>;
-  updateQuotaLimit(request: UpdateQuotaLimitRequest): Promise<AIUsageQuotaClientDTO>;
+  updateQuotaLimit(request: UpdateQuotaLimitReq): Promise<AIUsageQuotaClientDTO>;
   checkQuotaAvailability(tokensNeeded: number): Promise<boolean>;
 }

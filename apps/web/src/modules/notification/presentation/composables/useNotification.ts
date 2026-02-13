@@ -1,11 +1,16 @@
 /**
  * useNotification - 通知模块主 composable
+ *
+ * 使用 @dailyuse/http-client 的 AxiosHttpClient 进行 HTTP 调用。
  */
 
 import { computed } from 'vue';
 import { useNotificationStore } from '../stores/notificationStore';
-import { notificationApi, NotificationApiError } from '../services/notificationApi';
+import { httpClient } from '@/shared/http';
+import { HttpClientError } from '@dailyuse/http-client';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+
+const BASE = '/notifications';
 
 export function useNotification() {
   const store = useNotificationStore();
@@ -18,7 +23,7 @@ export function useNotification() {
   const hasUnread = computed(() => store.unreadCount > 0);
 
   function handleError(err: unknown, fallback: string): void {
-    const msg = err instanceof NotificationApiError ? err.message : err instanceof Error ? err.message : fallback;
+    const msg = err instanceof HttpClientError ? err.message : err instanceof Error ? err.message : fallback;
     store.setError(msg);
     console.error(fallback, err);
   }
@@ -26,10 +31,12 @@ export function useNotification() {
   async function fetchNotifications(query?: Record<string, unknown>) {
     store.setLoading(true); store.setError(null);
     try {
-      const res = await notificationApi.query({
-        ...query,
-        page: store.pagination.page,
-        pageSize: store.pagination.pageSize,
+      const res = await httpClient.get<{ data: NotificationClientDTO[]; total: number }>(BASE, {
+        params: {
+          ...query,
+          page: store.pagination.page,
+          pageSize: store.pagination.pageSize,
+        },
       });
       store.setNotifications(res.data as NotificationClientDTO[], res.total);
     } catch (e) { handleError(e, '加载通知列表失败'); }
@@ -38,7 +45,7 @@ export function useNotification() {
 
   async function markAsRead(id: string) {
     try {
-      await notificationApi.markAsRead(id);
+      await httpClient.patch<unknown>(`${BASE}/${id}/read`);
       const n = store.notifications.find((x) => x.id === id);
       if (n) {
         store.updateNotification({ ...n, isRead: true, readAt: Date.now() } as NotificationClientDTO);
@@ -49,7 +56,7 @@ export function useNotification() {
 
   async function markAllAsRead() {
     try {
-      await notificationApi.markAllAsRead();
+      await httpClient.patch<void>(`${BASE}/read-all`);
       store.notifications.forEach((n) => {
         if (!n.isRead) store.updateNotification({ ...n, isRead: true, readAt: Date.now() } as NotificationClientDTO);
       });
@@ -58,18 +65,18 @@ export function useNotification() {
   }
 
   async function dismiss(id: string) {
-    try { await notificationApi.dismiss(id); store.removeNotification(id); }
+    try { await httpClient.delete<void>(`${BASE}/${id}`); store.removeNotification(id); }
     catch (e) { handleError(e, '删除通知失败'); }
   }
 
   async function dismissAll() {
-    try { await notificationApi.dismissAll(); store.clearAll(); store.setUnreadCount(0); }
+    try { await httpClient.delete<void>(`${BASE}/dismiss-all`); store.clearAll(); store.setUnreadCount(0); }
     catch (e) { handleError(e, '清空通知失败'); }
   }
 
   async function refreshStats() {
     try {
-      const stats = await notificationApi.getStats();
+      const stats = await httpClient.get<{ unreadCount: number; total: number }>(`${BASE}/stats`);
       store.setUnreadCount(stats.unreadCount);
     } catch (e) { handleError(e, '刷新统计失败'); }
   }

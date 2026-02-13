@@ -7,9 +7,9 @@
 import type { IIpcClient, IAIConversationApiClient } from '../types';
 import type {
   AIConversationClientDTO,
-  ConversationListResponse,
-  CreateConversationRequest,
-  UpdateConversationRequest,
+  ConversationListRes,
+  CreateConversationReq,
+  UpdateConversationReq,
 } from '@dailyuse/contracts/ai';
 
 /**
@@ -24,7 +24,7 @@ export class AIConversationIpcAdapter implements IAIConversationApiClient {
 
   // ===== Conversation CRUD =====
 
-  async createConversation(request: CreateConversationRequest): Promise<AIConversationClientDTO> {
+  async createConversation(request: CreateConversationReq): Promise<AIConversationClientDTO> {
     return this.ipcClient.invoke(`${this.channel}:create`, request);
   }
 
@@ -32,7 +32,7 @@ export class AIConversationIpcAdapter implements IAIConversationApiClient {
     page?: number;
     pageSize?: number;
     status?: string;
-  }): Promise<ConversationListResponse> {
+  }): Promise<ConversationListRes> {
     return this.ipcClient.invoke(`${this.channel}:list`, params);
   }
 
@@ -42,7 +42,7 @@ export class AIConversationIpcAdapter implements IAIConversationApiClient {
 
   async updateConversation(
     uuid: string,
-    request: UpdateConversationRequest,
+    request: UpdateConversationReq,
   ): Promise<AIConversationClientDTO> {
     return this.ipcClient.invoke(`${this.channel}:update`, { uuid, ...request });
   }

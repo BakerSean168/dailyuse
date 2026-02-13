@@ -1,19 +1,21 @@
 /**
  * useSession - 会话管理 Composable
  *
- * 处理会话列表、撤销会话等操作。
- * 通过 authApi 服务直接调用 API，使用 store 管理状态。
+ * 通过 DI 注入的 AuthClientService 与后端交互。
+ * Service 负责 API 调用，Composable 负责 Store 更新 + UI 状态。
  *
  * @module authentication/presentation/composables
  */
 
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import { toast } from 'vue-sonner';
+import { HttpClientError } from '@dailyuse/http-client';
 import { useAuthenticationStore } from '../stores/authenticationStore';
-import { authApi, AuthApiError } from '../services/authApi';
+import { AUTH_SERVICE_KEY, authService as fallbackService } from '@/shared/di';
 
 export function useSession() {
   const store = useAuthenticationStore();
+  const service = inject(AUTH_SERVICE_KEY, fallbackService);
 
   // ========== Computed State ==========
   const activeSessions = computed(() => store.activeSessions);
@@ -27,11 +29,11 @@ export function useSession() {
 
     store.setLoading(true);
     try {
-      const data = await authApi.listSessions(store.accessToken);
+      const data = await service.listSessions();
       store.setActiveSessions(data.sessions as any);
       return true;
     } catch (err) {
-      const message = err instanceof AuthApiError ? err.message : '加载会话列表失败';
+      const message = err instanceof HttpClientError ? err.message : '加载会话列表失败';
       store.setError(message);
       toast.error('加载失败', { description: message });
       return false;
@@ -45,12 +47,12 @@ export function useSession() {
 
     store.setLoading(true);
     try {
-      await authApi.revokeSession({ sessionId }, store.accessToken);
+      await service.revokeSession({ sessionId });
       store.removeActiveSession(sessionId);
       toast.success('会话已撤销');
       return true;
     } catch (err) {
-      const message = err instanceof AuthApiError ? err.message : '撤销会话失败';
+      const message = err instanceof HttpClientError ? err.message : '撤销会话失败';
       store.setError(message);
       toast.error('操作失败', { description: message });
       return false;

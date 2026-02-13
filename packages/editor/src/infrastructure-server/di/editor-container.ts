@@ -1,19 +1,20 @@
-import type { IEditorWorkspaceRepository } from '../../domain-server/repositories/IEditorWorkspaceRepository';
-import { PrismaEditorWorkspaceRepository } from '../repositories/prisma/PrismaEditorWorkspaceRepository';
-import { prisma } from '../../shared/config/prisma';
+﻿import type { IEditorWorkspaceRepository } from '../../domain-server/repositories/IEditorWorkspaceRepository';
+import type Database from 'better-sqlite3';
+import { SqliteEditorWorkspaceRepository } from '../adapters/sqlite/editor-workspace-sqlite.repository';
 
 /**
  * Editor Module DI Container
- * 绠＄悊 Editor 妯″潡鐨勬墍鏈変粨鍌ㄥ疄锟?
+ * Manages all repository instances for the Editor module
  */
 export class EditorContainer {
   private static instance: EditorContainer;
   private editorWorkspaceRepository: IEditorWorkspaceRepository | null = null;
+  private db?: Database.Database;
 
   private constructor() {}
 
   /**
-   * Get瀹瑰櫒鍗曚緥
+   * Get singleton instance
    */
   static getInstance(): EditorContainer {
     if (!EditorContainer.instance) {
@@ -23,21 +24,38 @@ export class EditorContainer {
   }
 
   /**
-   * Get EditorWorkspace 鑱氬悎鏍逛粨锟?
-   * 浣跨敤鎳掑姞杞斤紝绗竴娆¤闂椂Create瀹炰緥
+   * Initialize with a better-sqlite3 database instance
+   */
+  initialize(db: Database.Database): void {
+    this.db = db;
+  }
+
+  /**
+   * Get EditorWorkspace aggregate repository
+   * Uses lazy loading - creates instance on first access
    */
   getEditorWorkspaceRepository(): IEditorWorkspaceRepository {
     if (!this.editorWorkspaceRepository) {
-      this.editorWorkspaceRepository = new PrismaEditorWorkspaceRepository(prisma);
+      if (!this.db) {
+        throw new Error('EditorContainer not initialized. Call initialize(db) first.');
+      }
+      this.editorWorkspaceRepository = new SqliteEditorWorkspaceRepository(this.db);
     }
     return this.editorWorkspaceRepository;
   }
 
   /**
-   * 璁剧疆 EditorWorkspace 鑱氬悎鏍逛粨鍌紙鐢ㄤ簬娴嬭瘯锟?
+   * Set EditorWorkspace aggregate repository (for testing)
    */
   setEditorWorkspaceRepository(repository: IEditorWorkspaceRepository): void {
     this.editorWorkspaceRepository = repository;
   }
-}
 
+  /**
+   * Reset all repository instances
+   */
+  reset(): void {
+    this.editorWorkspaceRepository = null;
+    this.db = undefined;
+  }
+}

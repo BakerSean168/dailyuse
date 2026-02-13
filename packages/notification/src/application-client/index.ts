@@ -1,10 +1,11 @@
 /**
- * Notification Module
+ * Notification Application Client Layer
+ * 通知模块客户端应用层
  *
- * 通知模块 - 应用层服务
+ * 简化版 - 只导出必要的类型和事件
  */
 
-// Events & Constants
+// Re-export events if still needed
 export {
   NOTIFICATION_EVENTS,
   SCHEDULE_EVENTS,
@@ -25,6 +26,7 @@ export {
   onScheduleReminderTriggered,
   removeNotificationEventListeners,
 } from './notificationEvents';
+
 export type {
   NotificationCreatedPayload,
   NotificationShownPayload,
@@ -34,21 +36,3 @@ export type {
   NotificationErrorPayload,
 } from './notificationEvents';
 
-// Container
-// Smart Container
-export { NotificationApplicationService, notificationApplicationService } from './notification-application.service';
-
-export { NotificationContainer } from '../infrastructure-client/notification.container';
-
-// Services
-export {
-  CreateNotification,
-  FindNotifications,
-  FindNotificationByUuid,
-  MarkAsRead,
-  MarkAllAsRead,
-  DeleteNotification,
-  BatchDeleteNotifications,
-  GetUnreadCount,
-  type FindNotificationsOutput,
-} from './services';

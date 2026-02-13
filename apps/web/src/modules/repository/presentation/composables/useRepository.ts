@@ -1,11 +1,16 @@
 /**
  * useRepository - 仓储模块主 composable
+ *
+ * 使用 @dailyuse/http-client 的 AxiosHttpClient 进行 HTTP 调用。
  */
 
 import { computed, ref } from 'vue';
 import { useRepositoryStore } from '../stores/repositoryStore';
-import { repositoryApi, RepositoryApiError } from '../services/repositoryApi';
+import { httpClient } from '@/shared/http';
+import { HttpClientError } from '@dailyuse/http-client';
 import type { RepositoryClientDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
+
+const BASE = '/repositories';
 
 export function useRepository() {
   const store = useRepositoryStore();
@@ -21,7 +26,7 @@ export function useRepository() {
   const isSaving = computed(() => savingId.value !== null);
 
   function handleError(err: unknown, fallback: string): void {
-    const msg = err instanceof RepositoryApiError ? err.message : err instanceof Error ? err.message : fallback;
+    const msg = err instanceof HttpClientError ? err.message : err instanceof Error ? err.message : fallback;
     store.setError(msg);
     console.error(fallback, err);
   }
@@ -30,8 +35,8 @@ export function useRepository() {
   async function fetchRepositories(query?: Record<string, unknown>) {
     store.setLoading(true); store.setError(null);
     try {
-      const res = await repositoryApi.listRepositories({
-        ...query, page: store.pagination.page, pageSize: store.pagination.pageSize,
+      const res = await httpClient.get<{ data: RepositoryClientDTO[]; total: number }>(BASE, {
+        params: { ...query, page: store.pagination.page, pageSize: store.pagination.pageSize },
       });
       store.setRepositories(res.data as RepositoryClientDTO[], res.total);
     } catch (e) { handleError(e, '加载仓库列表失败'); }
@@ -41,7 +46,7 @@ export function useRepository() {
   async function fetchRepository(id: string) {
     store.setLoading(true); store.setError(null);
     try {
-      const r = await repositoryApi.getRepository(id) as RepositoryClientDTO;
+      const r = await httpClient.get<RepositoryClientDTO>(`${BASE}/${id}`);
       store.setCurrentRepository(r);
       return r;
     } catch (e) { handleError(e, '加载仓库失败'); return null; }
@@ -51,7 +56,7 @@ export function useRepository() {
   async function createRepository(data: Record<string, unknown>) {
     savingId.value = 'new'; store.setError(null);
     try {
-      const r = await repositoryApi.createRepository(data) as RepositoryClientDTO;
+      const r = await httpClient.post<RepositoryClientDTO>(BASE, data);
       store.addRepository(r);
       return r;
     } catch (e) { handleError(e, '创建仓库失败'); return null; }
@@ -61,7 +66,7 @@ export function useRepository() {
   async function updateRepository(id: string, data: Record<string, unknown>) {
     savingId.value = id; store.setError(null);
     try {
-      const r = await repositoryApi.updateRepository(id, data) as RepositoryClientDTO;
+      const r = await httpClient.put<RepositoryClientDTO>(`${BASE}/${id}`, data);
       store.updateRepository(r);
       return r;
     } catch (e) { handleError(e, '更新仓库失败'); return null; }
@@ -70,7 +75,7 @@ export function useRepository() {
 
   async function deleteRepository(id: string) {
     savingId.value = id; store.setError(null);
-    try { await repositoryApi.deleteRepository(id); store.removeRepository(id); return true; }
+    try { await httpClient.delete<void>(`${BASE}/${id}`); store.removeRepository(id); return true; }
     catch (e) { handleError(e, '删除仓库失败'); return false; }
     finally { savingId.value = null; }
   }
@@ -79,7 +84,7 @@ export function useRepository() {
   async function fetchResources(repoId: string, query?: Record<string, unknown>) {
     store.setLoading(true); store.setError(null);
     try {
-      const res = await repositoryApi.listResources(repoId, query);
+      const res = await httpClient.get<{ data: ResourceClientDTO[]; total: number }>(`${BASE}/${repoId}/resources`, { params: query });
       store.setResources(res.data as ResourceClientDTO[]);
     } catch (e) { handleError(e, '加载资源列表失败'); }
     finally { store.setLoading(false); }
@@ -88,7 +93,7 @@ export function useRepository() {
   async function createResource(repoId: string, data: Record<string, unknown>) {
     savingId.value = 'new-resource'; store.setError(null);
     try {
-      const r = await repositoryApi.createResource(repoId, data) as ResourceClientDTO;
+      const r = await httpClient.post<ResourceClientDTO>(`${BASE}/${repoId}/resources`, data);
       store.addResource(r);
       return r;
     } catch (e) { handleError(e, '创建资源失败'); return null; }
@@ -97,7 +102,7 @@ export function useRepository() {
 
   async function deleteResource(repoId: string, resourceId: string) {
     savingId.value = resourceId; store.setError(null);
-    try { await repositoryApi.deleteResource(repoId, resourceId); store.removeResource(resourceId); return true; }
+    try { await httpClient.delete<void>(`${BASE}/${repoId}/resources/${resourceId}`); store.removeResource(resourceId); return true; }
     catch (e) { handleError(e, '删除资源失败'); return false; }
     finally { savingId.value = null; }
   }

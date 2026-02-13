@@ -10,10 +10,8 @@ export { NotificationModule } from './notification.module';
 // DI Factory
 export { NotificationRepositoryFactory } from './di';
 
-// Ports (Interfaces)
-export { type INotificationRepository } from './ports/notification-repository.port';
-export { type INotificationPreferenceRepository } from './ports/notification-preference-repository.port';
-export { type INotificationTemplateRepository } from './ports/notification-template-repository.port';
+// Ports - Repository interfaces are exported from domain-server layer
+// Use @dailyuse/notification/domain-server for INotificationRepository etc.
 
 // Prisma Adapters
 export {

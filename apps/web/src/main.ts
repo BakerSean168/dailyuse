@@ -1,8 +1,7 @@
 /**
  * Web App Entry Point (精简版)
  *
- * 仅注册：Vue 3 + Pinia + Router + Tailwind CSS
- * 不再依赖 Vuetify、i18n、AppInitializationManager
+ * 仅注册：Vue 3 + Pinia + Router + Tailwind CSS + Module DI
  */
 
 import { createApp } from 'vue';
@@ -10,6 +9,7 @@ import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import App from './App.vue';
 import router from './router';
+import { installModuleServices } from './shared/di';
 import './assets/index.css';
 
 // Polyfill crypto.randomUUID for non-secure contexts or older browsers
@@ -31,6 +31,9 @@ async function startApp() {
 
   app.use(pinia);
   app.use(router);
+
+  // 注入模块服务（AccountClientService、AuthClientService、IRuleApiClient）
+  app.use(installModuleServices);
 
   app.mount('#app');
   console.log('[Web] Application started');

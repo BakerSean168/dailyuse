@@ -1,13 +1,19 @@
 /**
- * AI Module Value Objects 导出 - 服务�?
+ * AI Module Value Objects - Server
  *
- * �?domain-shared 重新导出公共值对象（IDs、Enums�?
- * 定义服务端专用的复合值对象类
+ * Re-export IDs from domain-shared (no conflict with contracts)
+ * Enum-like VOs (AIModel, AIProvider, etc.) come from contracts only
  */
 
-// �?domain-shared 重新导出 IDs �?Enums
-export * from '../../domain-shared/value-objects';
+// IDs only (no conflict with contracts)
+export {
+  AiConversationId,
+  AiMessageId,
+  AiGenerationTaskId,
+  AiProviderConfigId,
+  AiUsageQuotaId,
+} from '../../domain-shared/value-objects';
 
-// 服务端专用的复合值对象类
+// Server-only value objects
 export * from './GenerationInput';
 export * from './TokenUsage';

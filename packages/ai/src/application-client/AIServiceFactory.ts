@@ -1,16 +1,16 @@
 /**
- * AI Service Factory - 管理 AI 提供商的注册和获�?
+ * AI Service Factory - 管理 AI 提供商的注册和获�?
  * @module @/application-client
  */
 
-import type { IAIService, AIServiceConfig } from '@dailyuse/contracts/ai';
+import type { IAIService, AIServiceConfig } from './interfaces/IAIService';
 
 /**
  * AI 服务工厂
- * 使用工厂模式管理不同�?AI 提供�?
+ * 使用工厂模式管理不同�?AI 提供�?
  * 
  * 注意: OpenAIProvider 通过动态导入从 infrastructure-client 加载
- * 以避免循环依�?
+ * 以避免循环依�?
  */
 export class AIServiceFactory {
   private static providers = new Map<string, IAIService>();
@@ -18,7 +18,7 @@ export class AIServiceFactory {
   private static initialized = false;
 
   /**
-   * 初始化工�?- 注册默认提供�?
+   * 初始化工�?- 注册默认提供�?
    */
   static initialize(config: AIServiceConfig) {
     const provider = this.createProvider(config.provider, config);
@@ -33,19 +33,19 @@ export class AIServiceFactory {
   }
 
   /**
-   * 创建提供商实�?
+   * 创建提供商实�?
    * 使用动态导入以避免循环依赖
    */
   static createProvider(
     providerType: 'openai' | 'anthropic' | 'local',
     config: AIServiceConfig
   ): IAIService {
-    // 由于循环依赖问题，我们在运行时动态导�?
+    // 由于循环依赖问题，我们在运行时动态导�?
     // 调用者需要在应用启动时初始化正确的提供商
     
     switch (providerType) {
       case 'openai':
-        // 动态导入由调用者处�?
+        // 动态导入由调用者处�?
         // 或者在应用初始化时直接注册
         throw new Error(
           'OpenAI provider must be registered manually. ' +
@@ -61,7 +61,7 @@ export class AIServiceFactory {
   }
 
   /**
-   * 注册提供�?
+   * 注册提供�?
    */
   static registerProvider(name: string, provider: IAIService): void {
     this.providers.set(name, provider);
@@ -76,7 +76,7 @@ export class AIServiceFactory {
   }
 
   /**
-   * 获取默认提供�?
+   * 获取默认提供�?
    */
   static getDefaultProvider(): IAIService {
     if (!this.initialized) {
@@ -93,7 +93,7 @@ export class AIServiceFactory {
   }
 
   /**
-   * 检查提供商是否已注�?
+   * 检查提供商是否已注�?
    */
   static hasProvider(name: string): boolean {
     return this.providers.has(name);

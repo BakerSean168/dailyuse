@@ -1,13 +1,8 @@
 /**
- * Setting Module - Application Client
- *
- * Use Cases for Setting operations including:
- * - User settings (get, update appearance, update locale, reset)
- * - App config (get)
- * - Import/Export settings
+ * Setting Application Client Layer
+ * 
+ * Simplified - currently no exports, use infrastructure-client adapters directly
  */
 
-// Smart Container
-export { SettingApplicationService, settingApplicationService } from './setting-application.service';
-
-export * from './services';
+// Placeholder export to make this a valid module
+export {};

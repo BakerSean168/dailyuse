@@ -1,16 +1,12 @@
 /**
- * OpenAI AI 服务提供商实�?
+ * OpenAI AI 服务提供商实�?
  * @module @/infrastructure-client/providers
  */
 
 import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
-import type { IAIService, AIServiceConfig } from '@dailyuse/contracts/ai';
-import type {
-  DecompositionResult,
-  DecompositionRequest,
-} from '@dailyuse/contracts/goal';
+import type { IAIService, AIServiceConfig, DecompositionResult, DecompositionRequest } from '../../application-client/interfaces/IAIService';
 import {
   TASK_DECOMPOSITION_SYSTEM_PROMPT,
   TASK_DECOMPOSITION_USER_PROMPT_TEMPLATE,
@@ -18,51 +14,51 @@ import {
   PRIORITY_SUGGESTION_PROMPT,
 } from '../prompts/decomposition';
 
-// 定义 Zod schema 用于 AI 结构化输�?
+// Zod schemas for AI structured output
 const DecomposedTaskSchema = z.object({
-  title: z.string().describe('任务标题'),
-  description: z.string().describe('任务描述'),
-  estimatedMinutes: z.number().describe('预估分钟�?),
-  complexity: z.enum(['simple', 'medium', 'complex']).describe('复杂�?),
-  dependencies: z.array(z.string()).describe('依赖的任务标�?),
-  suggestedOrder: z.number().describe('建议的执行顺�?),
+  title: z.string().describe('Task title'),
+  description: z.string().describe('Task description'),
+  estimatedMinutes: z.number().describe('Estimated minutes'),
+  complexity: z.enum(['simple', 'medium', 'complex']).describe('Complexity level'),
+  dependencies: z.array(z.string()).describe('Dependent task titles'),
+  suggestedOrder: z.number().describe('Suggested execution order'),
 });
 
 const DecompositionResultSchema = z.object({
-  tasks: z.array(DecomposedTaskSchema).describe('分解的任务列�?),
+  tasks: z.array(DecomposedTaskSchema).describe('Decomposed tasks list'),
   timeline: z.object({
-    totalEstimatedHours: z.number().describe('总预估小时数'),
-    estimatedDays: z.number().optional().describe('预估天数'),
-  }).describe('时间线信�?),
+    totalEstimatedHours: z.number().describe('Total estimated hours'),
+    estimatedDays: z.number().optional().describe('Estimated days'),
+  }).describe('Timeline info'),
   risks: z.array(
     z.object({
-      description: z.string().describe('风险描述'),
-      mitigation: z.string().describe('缓解方案'),
+      description: z.string().describe('Risk description'),
+      mitigation: z.string().describe('Mitigation strategy'),
     })
-  ).describe('识别的风�?),
-  confidence: z.number().optional().describe('置信�?0-1'),
+  ).describe('Identified risks'),
+  confidence: z.number().optional().describe('Confidence score 0-1'),
 });
 
 const TimeEstimateSchema = z.object({
-  estimatedMinutes: z.number().describe('预估分钟�?),
-  confidence: z.number().describe('置信�?),
-  reasoning: z.string().optional().describe('理由'),
+  estimatedMinutes: z.number().describe('Estimated minutes'),
+  confidence: z.number().describe('Confidence score'),
+  reasoning: z.string().optional().describe('Reasoning'),
 });
 
 const PrioritySuggestionSchema = z.object({
   priorities: z.array(
     z.object({
-      title: z.string().describe('任务标题'),
-      priority: z.number().describe('优先级分�?1-10'),
-      reasoning: z.string().optional().describe('理由'),
+      title: z.string().describe('Task title'),
+      priority: z.number().describe('Priority score 1-10'),
+      reasoning: z.string().optional().describe('Reasoning'),
     })
-  ).describe('优先级列�?),
-  overallStrategy: z.string().optional().describe('整体建议'),
+  ).describe('Priority list'),
+  overallStrategy: z.string().optional().describe('Overall strategy'),
 });
 
 /**
  * OpenAI AI 服务实现
- * 使用 AI SDK �?structured output 获取结构化的 JSON 响应
+ * 使用 AI SDK �?structured output 获取结构化的 JSON 响应
  */
 export class OpenAIProvider implements IAIService {
   private config: AIServiceConfig;
@@ -81,7 +77,7 @@ export class OpenAIProvider implements IAIService {
   }
 
   /**
-   * 将目标分解为子任�?
+   * 将目标分解为子任�?
    */
   async decomposeGoal(request: DecompositionRequest): Promise<DecompositionResult> {
     try {
@@ -136,7 +132,7 @@ export class OpenAIProvider implements IAIService {
   }
 
   /**
-   * 建议任务优先�?
+   * 建议任务优先�?
    */
   async suggestPriority(
     tasks: Array<{ title: string; description: string }>
@@ -167,7 +163,7 @@ export class OpenAIProvider implements IAIService {
   }
 
   /**
-   * 检查服务可用�?
+   * 检查服务可用�?
    */
   async isAvailable(): Promise<boolean> {
     try {

@@ -24,6 +24,8 @@ export { SqliteGoalStatisticsRepository } from './adapters/sqlite/goal-statistic
 export { SqliteFocusModeRepository } from './adapters/sqlite/focus-mode-sqlite.repository';
 export { SqliteFocusSessionRepository } from './adapters/sqlite/focus-session-sqlite.repository';
 export { SqliteWeightSnapshotRepository } from './adapters/sqlite/weight-snapshot-sqlite.repository';
+export { SqliteGoalRecordRepository } from './adapters/sqlite/goal-record-sqlite.repository';
+export { GOAL_MODULE_SCHEMA } from './adapters/sqlite/schema';
 
 // ============ Ports (Interfaces) ============
 export type { IGoalRepository } from './ports/goal-repository.port';

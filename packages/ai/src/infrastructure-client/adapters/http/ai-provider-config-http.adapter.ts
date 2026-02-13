@@ -8,11 +8,11 @@ import type { IHttpClient, IAIProviderConfigApiClient } from '../types';
 import type {
   AIProviderConfigClientDTO,
   AIProviderConfigSummary,
-  CreateAIProviderRequest,
-  UpdateAIProviderRequest,
-  TestAIProviderConnectionRequest,
-  TestAIProviderConnectionResponse,
-  RefreshProviderModelsResponse,
+  CreateAIProviderConfigReq,
+  UpdateAIProviderConfigReq,
+  TestAIProviderReq,
+  TestAIProviderRes,
+  RefreshProviderModelsRes,
 } from '@dailyuse/contracts/ai';
 
 /**
@@ -27,7 +27,7 @@ export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
 
   // ===== Provider CRUD =====
 
-  async createProvider(request: CreateAIProviderRequest): Promise<AIProviderConfigClientDTO> {
+  async createProvider(request: CreateAIProviderConfigReq): Promise<AIProviderConfigClientDTO> {
     return this.httpClient.post(this.baseUrl, request);
   }
 
@@ -41,7 +41,7 @@ export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
 
   async updateProvider(
     uuid: string,
-    request: UpdateAIProviderRequest,
+    request: UpdateAIProviderConfigReq,
   ): Promise<AIProviderConfigClientDTO> {
     return this.httpClient.patch(`${this.baseUrl}/${uuid}`, request);
   }
@@ -52,7 +52,7 @@ export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
 
   // ===== Provider Operations =====
 
-  async testConnection(request: TestAIProviderConnectionRequest): Promise<TestAIProviderConnectionResponse> {
+  async testConnection(request: TestAIProviderReq): Promise<TestAIProviderRes> {
     return this.httpClient.post(`${this.baseUrl}/test-connection`, request);
   }
 
@@ -60,7 +60,7 @@ export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
     return this.httpClient.post(`${this.baseUrl}/${uuid}/set-default`);
   }
 
-  async refreshModels(uuid: string): Promise<RefreshProviderModelsResponse> {
+  async refreshModels(uuid: string): Promise<RefreshProviderModelsRes> {
     return this.httpClient.post(`${this.baseUrl}/${uuid}/refresh-models`);
   }
 }

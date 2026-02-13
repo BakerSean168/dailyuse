@@ -37,6 +37,7 @@ export type { IAuthIdentityRepository, IAuthSessionRepository } from './domain-s
 
 // ================= Application Layer =================
 export * from './application-server';
+export * from './application-client';
 
 // ================= Infrastructure Layer =================
 export {
@@ -45,3 +46,4 @@ export {
   Argon2Hasher,
   AuthenticationContainer,
 } from './infrastructure-server';
+export * from './infrastructure-client';

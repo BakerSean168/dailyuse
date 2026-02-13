@@ -7,9 +7,9 @@
 import type { IIpcClient, IAIMessageApiClient } from '../types';
 import type {
   MessageClientDTO,
-  MessageListResponse,
-  SendMessageRequest,
-  ChatStreamRequest,
+  MessageListRes,
+  SendMessageReq,
+  ChatStreamReq,
   ChatStreamChunk,
 } from '@dailyuse/contracts/ai';
 
@@ -25,7 +25,7 @@ export class AIMessageIpcAdapter implements IAIMessageApiClient {
 
   // ===== Message CRUD =====
 
-  async sendMessage(request: SendMessageRequest): Promise<MessageClientDTO> {
+  async sendMessage(request: SendMessageReq): Promise<MessageClientDTO> {
     return this.ipcClient.invoke(`${this.channel}:send`, request);
   }
 
@@ -35,7 +35,7 @@ export class AIMessageIpcAdapter implements IAIMessageApiClient {
       page?: number;
       pageSize?: number;
     },
-  ): Promise<MessageListResponse> {
+  ): Promise<MessageListRes> {
     return this.ipcClient.invoke(`${this.channel}:list`, { conversationUuid, ...params });
   }
 
@@ -45,7 +45,7 @@ export class AIMessageIpcAdapter implements IAIMessageApiClient {
 
   // ===== Streaming Chat =====
 
-  async *streamChat(request: ChatStreamRequest): AsyncGenerator<ChatStreamChunk, void, unknown> {
+  async *streamChat(request: ChatStreamReq): AsyncGenerator<ChatStreamChunk, void, unknown> {
     // IPC 流式实现需要使用 IPC 事件监听
     // 这里提供基本框架，实际需要结合 Electron IPC 事件
     const streamId = await this.ipcClient.invoke(`${this.channel}:stream:start`, request);

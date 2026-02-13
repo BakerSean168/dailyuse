@@ -8,11 +8,11 @@ import type { IIpcClient, IAIProviderConfigApiClient } from '../types';
 import type {
   AIProviderConfigClientDTO,
   AIProviderConfigSummary,
-  CreateAIProviderRequest,
-  UpdateAIProviderRequest,
-  TestAIProviderConnectionRequest,
-  TestAIProviderConnectionResponse,
-  RefreshProviderModelsResponse,
+  CreateAIProviderConfigReq,
+  UpdateAIProviderConfigReq,
+  TestAIProviderReq,
+  TestAIProviderRes,
+  RefreshProviderModelsRes,
 } from '@dailyuse/contracts/ai';
 
 /**
@@ -27,7 +27,7 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
 
   // ===== Provider CRUD =====
 
-  async createProvider(request: CreateAIProviderRequest): Promise<AIProviderConfigClientDTO> {
+  async createProvider(request: CreateAIProviderConfigReq): Promise<AIProviderConfigClientDTO> {
     return this.ipcClient.invoke(`${this.channel}:create`, request);
   }
 
@@ -41,7 +41,7 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
 
   async updateProvider(
     uuid: string,
-    request: UpdateAIProviderRequest,
+    request: UpdateAIProviderConfigReq,
   ): Promise<AIProviderConfigClientDTO> {
     return this.ipcClient.invoke(`${this.channel}:update`, { uuid, ...request });
   }
@@ -52,7 +52,7 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
 
   // ===== Provider Operations =====
 
-  async testConnection(request: TestAIProviderConnectionRequest): Promise<TestAIProviderConnectionResponse> {
+  async testConnection(request: TestAIProviderReq): Promise<TestAIProviderRes> {
     return this.ipcClient.invoke(`${this.channel}:test-connection`, request);
   }
 
@@ -60,7 +60,7 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
     return this.ipcClient.invoke(`${this.channel}:set-default`, uuid);
   }
 
-  async refreshModels(uuid: string): Promise<RefreshProviderModelsResponse> {
+  async refreshModels(uuid: string): Promise<RefreshProviderModelsRes> {
     return this.ipcClient.invoke(`${this.channel}:refresh-models`, uuid);
   }
 }

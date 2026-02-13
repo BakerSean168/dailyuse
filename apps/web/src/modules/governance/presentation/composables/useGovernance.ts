@@ -1,13 +1,16 @@
 /**
  * useGovernance - 治理模块主 composable
  *
- * 编排 API 调用 + Store 更新 + 消息提示。
- * 组件通过此 composable 与治理模块交互。
+ * 通过 DI 注入的 IRuleApiClient 与后端交互。
+ * API Client 负责 HTTP 调用，Composable 负责 Store 更新 + 消息提示。
+ *
+ * @module governance/presentation/composables
  */
 
-import { computed, ref } from 'vue';
+import { computed, ref, inject } from 'vue';
+import { HttpClientError } from '@dailyuse/http-client';
 import { useGovernanceStore } from '../stores/governanceStore';
-import { governanceApi, GovernanceApiError } from '../services/governanceApi';
+import { RULE_API_CLIENT_KEY, ruleApiClient as fallbackClient } from '@/shared/di';
 import type {
   RuleClientDTO,
   CreateRuleReq,
@@ -19,6 +22,9 @@ import type {
 export function useGovernance() {
   const store = useGovernanceStore();
   const savingId = ref<string | null>(null);
+
+  // 优先从 provide/inject 获取，降级使用单例
+  const apiClient = inject(RULE_API_CLIENT_KEY, fallbackClient);
 
   // ============ Computed State ============
 
@@ -44,8 +50,8 @@ export function useGovernance() {
     store.setError(null);
     try {
       const query = store.currentListQuery;
-      const res = await governanceApi.listRules(query);
-      store.setRules(res.items, res.total);
+      const res = await apiClient.listRules(query as any);
+      store.setRules(res.items as unknown as RuleClientDTO[], res.total);
     } catch (err) {
       handleError(err, '加载规则列表失败');
     } finally {
@@ -60,9 +66,9 @@ export function useGovernance() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const rule = await governanceApi.getRule(id);
-      store.setCurrentRule(rule);
-      return rule;
+      const rule = await apiClient.getRule({ id } as any);
+      store.setCurrentRule(rule as unknown as RuleClientDTO);
+      return rule as unknown as RuleClientDTO;
     } catch (err) {
       handleError(err, '加载规则失败');
       return null;
@@ -78,9 +84,9 @@ export function useGovernance() {
     savingId.value = 'new';
     store.setError(null);
     try {
-      const rule = await governanceApi.createRule(req);
-      store.addRule(rule);
-      return rule;
+      const rule = await apiClient.createRule(req as any);
+      store.addRule(rule as unknown as RuleClientDTO);
+      return rule as unknown as RuleClientDTO;
     } catch (err) {
       handleError(err, '创建规则失败');
       return null;
@@ -96,9 +102,9 @@ export function useGovernance() {
     savingId.value = id;
     store.setError(null);
     try {
-      const rule = await governanceApi.updateRule(id, req);
-      store.updateRule(rule);
-      return rule;
+      const rule = await apiClient.updateRule(id, req as any);
+      store.updateRule(rule as unknown as RuleClientDTO);
+      return rule as unknown as RuleClientDTO;
     } catch (err) {
       handleError(err, '更新规则失败');
       return null;
@@ -114,7 +120,7 @@ export function useGovernance() {
     savingId.value = id;
     store.setError(null);
     try {
-      await governanceApi.deleteRule(id);
+      await apiClient.deleteRule({ id } as any);
       store.removeRule(id);
       return true;
     } catch (err) {
@@ -137,15 +143,15 @@ export function useGovernance() {
         await fetchRules();
         return;
       }
-      const res = await governanceApi.searchRules({
+      const res = await apiClient.searchRules({
         query,
         status: store.filter.status ?? undefined,
         tags: store.filter.tags.length > 0 ? store.filter.tags : undefined,
         severity: store.filter.severity ?? undefined,
         page: store.pagination.page,
         pageSize: store.pagination.pageSize,
-      });
-      store.setRules(res.items, res.total);
+      } as any);
+      store.setRules(res.items as unknown as RuleClientDTO[], res.total);
     } catch (err) {
       handleError(err, '搜索规则失败');
     } finally {
@@ -155,10 +161,14 @@ export function useGovernance() {
 
   /**
    * 加载修订历史
+   * 注：IRuleApiClient 暂不含 getRevisions，保持降级使用 fetch
    */
   async function fetchRevisions(ruleId: string): Promise<void> {
     try {
-      const revisions = await governanceApi.getRevisions(ruleId);
+      // IRuleApiClient 尚未暴露 getRevisions
+      // 暂时使用 httpClient 直接请求
+      const { httpClient } = await import('@/shared/http');
+      const revisions = await httpClient.get<any>(`/governance/rules/${ruleId}/revisions`);
       store.setRevisions(revisions);
     } catch (err) {
       handleError(err, '加载修订历史失败');
@@ -195,7 +205,7 @@ export function useGovernance() {
   // ============ Error Handling ============
 
   function handleError(err: unknown, fallbackMessage: string): void {
-    if (err instanceof GovernanceApiError) {
+    if (err instanceof HttpClientError) {
       store.setError(err.message);
     } else if (err instanceof Error) {
       store.setError(err.message);

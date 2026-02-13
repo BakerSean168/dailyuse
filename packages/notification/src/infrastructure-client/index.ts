@@ -8,7 +8,6 @@
 export {
   NotificationContainer,
   NotificationDependencyKeys,
-  type INotificationRepository,
 } from './notification.container';
 
 // Port Interfaces

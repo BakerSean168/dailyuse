@@ -73,7 +73,8 @@
   "include": ["src/**/*", "env.d.ts"],
 
   // 排除的文件
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts", "**/*.bench.ts", "src/benchmarks/**/*"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts", "**/*.bench.ts", "src/benchmarks/**/*",
+  "src/modules/ai/**/*"],
 
   // 取消 TS Project References；前端类型由各包的 tsup d.ts 提供
 }

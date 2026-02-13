@@ -32,10 +32,11 @@
  * - 外部 I/O 库（fs, axios, prisma, ioredis 等）
  */
 
-// ============ 值对象 ============
-export { ValidationRule } from './value-objects/ValidationRule';
-export { UIConfig } from './value-objects/UIConfig';
-export { SyncConfig } from './value-objects/SyncConfig';
+// ============ Value Objects ============
+// ValidationRule, UIConfig, SyncConfig are available via
+// @dailyuse/setting/domain-server value-objects directly.
+// They conflict with @dailyuse/contracts/setting type exports,
+// so we don't re-export them here.
 
 // ============ 实体 ============
 export { SettingHistory } from './entities/setting-history';

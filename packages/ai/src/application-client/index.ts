@@ -11,7 +11,7 @@
  */
 
 // Smart Container
-export { AiApplicationService, aiApplicationService } from './ai-application.service';
+export { AIApplicationService, AIApplicationService as AiApplicationService, aiApplicationService } from './ai-application.service';
 
 export {
   // Conversation
