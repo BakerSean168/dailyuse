@@ -48,4 +48,3 @@ export function registerScheduleModule(): void {
 // Re-export sub-modules
 export * from './application/ScheduleDesktopApplicationService';
 export * from './ipc/schedule-task.ipc-handlers';
-export * from './ipc/schedule-statistics.ipc-handlers';

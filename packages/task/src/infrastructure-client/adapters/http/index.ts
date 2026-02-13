@@ -9,13 +9,11 @@ import type { IHttpClient } from '../types';
 import { TaskTemplateHttpAdapter } from './task-template-http.adapter';
 import { TaskInstanceHttpAdapter } from './task-instance-http.adapter';
 import { TaskDependencyHttpAdapter } from './task-dependency-http.adapter';
-import { TaskStatisticsHttpAdapter } from './task-statistics-http.adapter';
 
 // Re-export adapters
 export { TaskTemplateHttpAdapter } from './task-template-http.adapter';
 export { TaskInstanceHttpAdapter } from './task-instance-http.adapter';
 export { TaskDependencyHttpAdapter } from './task-dependency-http.adapter';
-export { TaskStatisticsHttpAdapter } from './task-statistics-http.adapter';
 
 /**
  * All HTTP adapters for the Task module
@@ -24,7 +22,6 @@ export interface TaskHttpAdapters {
   template: TaskTemplateHttpAdapter;
   instance: TaskInstanceHttpAdapter;
   dependency: TaskDependencyHttpAdapter;
-  statistics: TaskStatisticsHttpAdapter;
 }
 
 /**
@@ -50,6 +47,5 @@ export function createTaskHttpAdapters(
     template: new TaskTemplateHttpAdapter(httpClient),
     instance: new TaskInstanceHttpAdapter(httpClient),
     dependency: new TaskDependencyHttpAdapter(httpClient),
-    statistics: new TaskStatisticsHttpAdapter(httpClient),
   };
 }

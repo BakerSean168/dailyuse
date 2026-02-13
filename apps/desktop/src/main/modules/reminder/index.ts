@@ -46,4 +46,3 @@ export function registerReminderModule(): void {
 export * from './application/ReminderDesktopApplicationService';
 export * from './ipc/reminder-template.ipc-handlers';
 export * from './ipc/reminder-group.ipc-handlers';
-export * from './ipc/reminder-statistics.ipc-handlers';

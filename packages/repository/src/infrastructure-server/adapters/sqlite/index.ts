@@ -4,6 +4,5 @@
 
 export { SqliteFolderRepository } from './folder-sqlite.repository';
 export { SqliteRepositoryRepository } from './repository-sqlite.repository';
-export { SqliteRepositoryStatisticsRepository } from './repository-statistics-sqlite.repository';
 export { SqliteResourceRepository } from './resource-sqlite.repository';
 

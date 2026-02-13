@@ -9,13 +9,11 @@ import type { IIpcClient } from '../types';
 import { TaskTemplateIpcAdapter } from './task-template-ipc.adapter';
 import { TaskInstanceIpcAdapter } from './task-instance-ipc.adapter';
 import { TaskDependencyIpcAdapter } from './task-dependency-ipc.adapter';
-import { TaskStatisticsIpcAdapter } from './task-statistics-ipc.adapter';
 
 // Re-export adapters
 export { TaskTemplateIpcAdapter } from './task-template-ipc.adapter';
 export { TaskInstanceIpcAdapter } from './task-instance-ipc.adapter';
 export { TaskDependencyIpcAdapter } from './task-dependency-ipc.adapter';
-export { TaskStatisticsIpcAdapter } from './task-statistics-ipc.adapter';
 
 /**
  * All IPC adapters for the Task module
@@ -24,7 +22,6 @@ export interface TaskIpcAdapters {
   template: TaskTemplateIpcAdapter;
   instance: TaskInstanceIpcAdapter;
   dependency: TaskDependencyIpcAdapter;
-  statistics: TaskStatisticsIpcAdapter;
 }
 
 /**
@@ -50,6 +47,5 @@ export function createTaskIpcAdapters(
     template: new TaskTemplateIpcAdapter(ipcClient),
     instance: new TaskInstanceIpcAdapter(ipcClient),
     dependency: new TaskDependencyIpcAdapter(ipcClient),
-    statistics: new TaskStatisticsIpcAdapter(ipcClient),
   };
 }
