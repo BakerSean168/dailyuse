@@ -22,3 +22,4 @@
 export type { INotificationRepository } from './INotificationRepository';
 export type { INotificationTemplateRepository } from './INotificationTemplateRepository';
 export type { INotificationPreferenceRepository } from './INotificationPreferenceRepository';
+export type { INotificationChannelRepository } from './INotificationChannelRepository';
