@@ -398,6 +398,31 @@ export class TaskTemplatePrismaRepository implements ITaskTemplateRepository {
         tags: dto.tags,
         folderId: dto.folderId,
         parentTaskId: dto.parentTaskId,
+        timeConfigType: dto.timeConfigType,
+        timeConfigStartTime: dto.timeConfigStartTime
+          ? new Date(dto.timeConfigStartTime)
+          : null,
+        timeConfigEndTime: dto.timeConfigEndTime
+          ? new Date(dto.timeConfigEndTime)
+          : null,
+        timeConfigDurationMinutes: dto.timeConfigDurationMinutes,
+        recurrenceRuleType: dto.recurrenceRuleType,
+        recurrenceRuleInterval: dto.recurrenceRuleInterval,
+        recurrenceRuleDaysOfWeek: dto.recurrenceRuleDaysOfWeek,
+        recurrenceRuleDayOfMonth: dto.recurrenceRuleDayOfMonth,
+        recurrenceRuleMonthOfYear: dto.recurrenceRuleMonthOfYear,
+        recurrenceRuleEndDate: dto.recurrenceRuleEndDate
+          ? new Date(dto.recurrenceRuleEndDate)
+          : null,
+        recurrenceRuleCount: dto.recurrenceRuleCount,
+        reminderConfigEnabled: dto.reminderConfigEnabled,
+        reminderConfigTimeOffsetMinutes: dto.reminderConfigTimeOffsetMinutes,
+        reminderConfigUnit: dto.reminderConfigUnit,
+        reminderConfigChannel: dto.reminderConfigChannel,
+        lastGeneratedDate: dto.lastGeneratedDate
+          ? new Date(dto.lastGeneratedDate)
+          : null,
+        generateAheadDays: dto.generateAheadDays,
         goalBinding: dto.goalBinding ? JSON.stringify(dto.goalBinding) : null,
         blockingReason: dto.blockingReason,
         dependencyStatus: dto.dependencyStatus ?? 'NONE',

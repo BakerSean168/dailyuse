@@ -26,7 +26,7 @@ export class TaskFolderPrismaRepository implements ITaskFolderRepository {
   }
 
   async save(folder: TaskFolderServerDTO): Promise<void> {
-    await (this.prisma as any).taskFolder.upsert({
+    await this.prisma.taskFolder.upsert({
       where: { id: folder.id },
       create: {
         id: folder.id,
@@ -48,14 +48,14 @@ export class TaskFolderPrismaRepository implements ITaskFolderRepository {
   }
 
   async findByUuid(uuid: string): Promise<TaskFolderServerDTO | null> {
-    const data = await (this.prisma as any).taskFolder.findUnique({
+    const data = await this.prisma.taskFolder.findUnique({
       where: { id: uuid },
     });
     return data ? this.mapToDTO(data) : null;
   }
 
   async findByAccount(accountUuid: string): Promise<TaskFolderServerDTO[]> {
-    const data = await (this.prisma as any).taskFolder.findMany({
+    const data = await this.prisma.taskFolder.findMany({
       where: { identityId: accountUuid, deletedAt: null },
       orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
     });
@@ -63,13 +63,13 @@ export class TaskFolderPrismaRepository implements ITaskFolderRepository {
   }
 
   async delete(uuid: string): Promise<void> {
-    await (this.prisma as any).taskFolder.delete({
+    await this.prisma.taskFolder.delete({
       where: { id: uuid },
     });
   }
 
   async exists(uuid: string): Promise<boolean> {
-    const count = await (this.prisma as any).taskFolder.count({
+    const count = await this.prisma.taskFolder.count({
       where: { id: uuid },
     });
     return count > 0;

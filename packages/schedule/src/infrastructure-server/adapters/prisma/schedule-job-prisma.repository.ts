@@ -28,7 +28,7 @@ export class ScheduleJobPrismaRepository implements IScheduleJobRepository {
   }
 
   async save(job: ScheduleJobServerDTO): Promise<void> {
-    await (this.prisma as any).scheduleJob.upsert({
+    await this.prisma.scheduleJob.upsert({
       where: { id: job.id },
       create: {
         id: job.id,
@@ -52,14 +52,14 @@ export class ScheduleJobPrismaRepository implements IScheduleJobRepository {
   }
 
   async findByUuid(uuid: string): Promise<ScheduleJobServerDTO | null> {
-    const data = await (this.prisma as any).scheduleJob.findUnique({
+    const data = await this.prisma.scheduleJob.findUnique({
       where: { id: uuid },
     });
     return data ? this.mapToDTO(data) : null;
   }
 
   async findByAccountUuid(accountUuid: string): Promise<ScheduleJobServerDTO[]> {
-    const data = await (this.prisma as any).scheduleJob.findMany({
+    const data = await this.prisma.scheduleJob.findMany({
       where: { identityId: accountUuid },
       orderBy: { nextRunAt: 'asc' },
     });
@@ -70,7 +70,7 @@ export class ScheduleJobPrismaRepository implements IScheduleJobRepository {
     sourceModule: string,
     sourceId: string,
   ): Promise<ScheduleJobServerDTO[]> {
-    const data = await (this.prisma as any).scheduleJob.findMany({
+    const data = await this.prisma.scheduleJob.findMany({
       where: { sourceModule, sourceId },
       orderBy: { nextRunAt: 'asc' },
     });
@@ -78,7 +78,7 @@ export class ScheduleJobPrismaRepository implements IScheduleJobRepository {
   }
 
   async findDueJobs(beforeTime: Date): Promise<ScheduleJobServerDTO[]> {
-    const data = await (this.prisma as any).scheduleJob.findMany({
+    const data = await this.prisma.scheduleJob.findMany({
       where: {
         nextRunAt: { lte: beforeTime },
       },
@@ -88,7 +88,7 @@ export class ScheduleJobPrismaRepository implements IScheduleJobRepository {
   }
 
   async delete(uuid: string): Promise<void> {
-    await (this.prisma as any).scheduleJob.delete({
+    await this.prisma.scheduleJob.delete({
       where: { id: uuid },
     });
   }
@@ -97,7 +97,7 @@ export class ScheduleJobPrismaRepository implements IScheduleJobRepository {
     sourceModule: string,
     sourceId: string,
   ): Promise<void> {
-    await (this.prisma as any).scheduleJob.deleteMany({
+    await this.prisma.scheduleJob.deleteMany({
       where: { sourceModule, sourceId },
     });
   }

@@ -37,7 +37,7 @@ export class UserReminderPreferencePrismaRepository
   async upsert(
     preferences: UserReminderPreferencesServerDTO,
   ): Promise<UserReminderPreferencesServerDTO> {
-    const data = await (this.prisma as any).userReminderPreference.upsert({
+    const data = await this.prisma.userReminderPreference.upsert({
       where: { identityId: preferences.accountUuid },
       create: {
         id: preferences.uuid,
@@ -58,7 +58,7 @@ export class UserReminderPreferencePrismaRepository
   async findByAccountUuid(
     accountUuid: string,
   ): Promise<UserReminderPreferencesServerDTO | null> {
-    const data = await (this.prisma as any).userReminderPreference.findUnique({
+    const data = await this.prisma.userReminderPreference.findUnique({
       where: { identityId: accountUuid },
     });
     return data ? this.mapToDTO(data) : null;
@@ -66,7 +66,7 @@ export class UserReminderPreferencePrismaRepository
 
   async delete(accountUuid: string): Promise<boolean> {
     try {
-      await (this.prisma as any).userReminderPreference.delete({
+      await this.prisma.userReminderPreference.delete({
         where: { identityId: accountUuid },
       });
       return true;
@@ -76,7 +76,7 @@ export class UserReminderPreferencePrismaRepository
   }
 
   async exists(accountUuid: string): Promise<boolean> {
-    const count = await (this.prisma as any).userReminderPreference.count({
+    const count = await this.prisma.userReminderPreference.count({
       where: { identityId: accountUuid },
     });
     return count > 0;
