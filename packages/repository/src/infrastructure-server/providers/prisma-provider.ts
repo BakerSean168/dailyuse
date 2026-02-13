@@ -7,12 +7,10 @@
 import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
 import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
 import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
-import type { IRepositoryStatisticsRepository } from '../../domain-server/repositories/IRepositoryStatisticsRepository';
 
 import { RepositoryPrismaRepository } from '../adapters/prisma/repository-prisma.repository';
 import { ResourcePrismaRepository } from '../adapters/prisma/resource-prisma.repository';
 import { FolderPrismaRepository } from '../adapters/prisma/folder-prisma.repository';
-import { RepositoryStatisticsPrismaRepository } from '../adapters/prisma/repository-statistics-prisma.repository';
 
 import type { RepositoryContainer } from '../repository.container';
 import type {
@@ -46,10 +44,8 @@ export class PrismaProviderInitializer implements IProviderInitializer {
     );
     const resourceRepository: IResourceRepository = new ResourcePrismaRepository(this.prisma);
     const folderRepository: IFolderRepository = new FolderPrismaRepository(this.prisma);
-    const statisticsRepository: IRepositoryStatisticsRepository =
-      new RepositoryStatisticsPrismaRepository(this.prisma);
 
-    // 娉ㄥ唽鍒板鍣?
+    // 娉ㄥ唽鍒板鍣?
     (container as unknown as RepositoryContainer).registerRepositoryRepository(
       repositoryRepository,
     );
@@ -57,9 +53,6 @@ export class PrismaProviderInitializer implements IProviderInitializer {
       resourceRepository,
     );
     (container as unknown as RepositoryContainer).registerFolderRepository(folderRepository);
-    (container as unknown as RepositoryContainer).registerRepositoryStatisticsRepository(
-      statisticsRepository,
-    );
 
     console.log('鉁?Prisma provider initialized successfully');
   }
@@ -74,13 +67,13 @@ export class PrismaProviderInitializer implements IProviderInitializer {
   async healthCheck(): Promise<boolean> {
     try {
       if (this.prisma) {
-        // 鎵ц绠€鍗曟煡璇㈡鏌ヨ繛鎺?
+        // 鎵ц绠€鍗曟煡璇㈡鏌ヨ繛鎺?
         await this.prisma.$queryRaw`SELECT 1`;
         return true;
       }
       return false;
     } catch (error) {
-      console.error('鉂?Prisma health check failed:', error);
+      console.error('Prisma health check failed:', error);
       return false;
     }
   }
