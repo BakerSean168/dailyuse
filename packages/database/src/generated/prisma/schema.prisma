@@ -63,13 +63,16 @@ model Account {
   reminderTemplates               ReminderTemplate[]
   reminderInstances               ReminderInstance[]
   reminderStatistics              ReminderStatistic?
+  userReminderPreferences         UserReminderPreference?
   repositories                    Repository[]
   repositoryExplorers             RepositoryExplorer[]
   repositoryStatistics            RepositoryStatistic?
   schedules                       Schedule[]
+  scheduleJobs                    ScheduleJob[]
   scheduleTasks                   ScheduleTask[]
   scheduleStatistics              ScheduleStatistic?
   settings_                       Setting[]
+  taskFolders                     TaskFolder[]
   taskTemplates                   TaskTemplate[]
   taskInstances                   TaskInstance[]
   taskStatistics                  TaskStatistic?
@@ -561,247 +564,360 @@ model EditorWorkspaceSessionGroupTab {
 }
 
 // ==========================================
-// Focus Module
-// 专注会话、专注模式
-// ==========================================
-
-model FocusSession {
-  id                    String    @id
-  identityId            String    @map("identity_id")
-  goalId                String?   @map("goal_id")
-  status                String    @default("DRAFT")
-  durationMinutes       Int       @map("duration_minutes")
-  actualDurationMinutes Int       @default(0) @map("actual_duration_minutes")
-  description           String?
-  startedAt             DateTime? @map("started_at")
-  pausedAt              DateTime? @map("paused_at")
-  resumedAt             DateTime? @map("resumed_at")
-  completedAt           DateTime? @map("completed_at")
-  cancelledAt           DateTime? @map("cancelled_at")
-  pauseCount            Int       @default(0) @map("pause_count")
-  pausedDurationMinutes Int       @default(0) @map("paused_duration_minutes")
-  version               Int       @default(1)
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
-  deletedAt             DateTime? @map("deleted_at")
-
-  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
-  goal    Goal?   @relation(fields: [goalId], references: [id])
-
-  @@index([status])
-  @@map("focus_sessions")
-}
-
-model FocusMode {
-  id              String    @id
-  identityId      String    @map("identity_id")
-  focusedGoalIds  String[]  @map("focused_goal_ids")
-  startTime       DateTime  @map("start_time")
-  endTime         DateTime  @map("end_time")
-  hiddenGoalsMode String    @map("hidden_goals_mode")
-  isActive        Boolean   @default(true) @map("is_active")
-  actualEndTime   DateTime? @map("actual_end_time")
-  version         Int       @default(1)
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-  deletedAt       DateTime? @map("deleted_at")
-
-  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  @@index([identityId])
-  @@index([isActive])
-  @@index([endTime])
-  @@map("focus_modes")
-}
-
-// ==========================================
 // Goal Module
 // 目标聚合根、关键结果、文件夹、记录、评审、统计
 // ==========================================
 
+/// Goal 聚合根 - 用户目标（OKR）
+/// 管理目标的完整生命周期，包括状态、进度、关键结果等
 model Goal {
-  id                  String    @id
-  identityId          String    @map("identity_id")
-  name                String
-  description         String?
-  status              String    @default("pending")
-  importance          String    @default("moderate") // ImportanceLevel
-  priority            Int       @default(0)
-  category            String?
-  tags                String[]  @default([])
-  startDate           DateTime? @map("start_date")
-  targetDate          DateTime? @map("target_date")
-  completedAt         DateTime? @map("completed_at")
-  archivedAt          DateTime? @map("archived_at")
-  folderId            String?   @map("folder_id")
-  parentGoalId        String?   @map("parent_goal_id")
-  sortOrder           Int       @default(0) @map("sort_order")
-  reminderConfig      String?   @map("reminder_config")
-  version             Int       @default(1)
-  createdAt           DateTime  @default(now()) @map("created_at")
-  updatedAt           DateTime  @updatedAt @map("updated_at")
-  deletedAt           DateTime? @map("deleted_at")
-  color               String?
-  feasibilityAnalysis String?   @map("feasibility_analysis")
-  motivation          String?
+  // ============ 主键与外键 ============
+  id         String @id
+  identityId String @map("identity_id")
 
-  focusSessions            FocusSession[]
-  reviews                  GoalReview[]
+  // ============ 基础信息 ============
+  name                String /// 目标名称（1-200字符）
+  description         String? /// 详细描述（最多2000字符）
+  color               String  @default("#3B82F6") /// UI 显示颜色（必需，默认蓝色）
+  feasibilityAnalysis String? @map("feasibility_analysis") /// AI 可行性分析结果
+  motivation          String? /// 目标动机说明
+
+  // ============ 状态与优先级 ============
+  status     String   @default("pending") /// 目标状态（pending/active/completed/archived）
+  importance String   @default("moderate") /// 重要性级别（ImportanceLevel）
+  priority   Int      @default(0) /// 动态计算的优先级分数（0-100，用于排序）
+  category   String? /// 目标分类
+  tags       String[] @default([]) /// 标签列表（最多20个，每个最多50字符）
+
+  // ============ 时间管理 ============
+  startDate   DateTime? @map("start_date") /// 开始日期
+  targetDate  DateTime? @map("target_date") /// 目标完成日期
+  completedAt DateTime? @map("completed_at") /// 实际完成时间
+  archivedAt  DateTime? @map("archived_at") /// 归档时间
+
+  // ============ 层级与组织 ============
+  folderId     String? @map("folder_id") /// 所属文件夹
+  parentGoalId String? @map("parent_goal_id") /// 父目标ID（支持目标层级）
+  sortOrder    Int     @default(0) @map("sort_order") /// 排序顺序
+
+  // ============ 扩展功能 ============
+  reminderConfig String? @map("reminder_config") /// 提醒配置（JSON序列化）
+
+  // ============ 版本与审计 ============
+  version   Int       @default(1)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // ============ 关系映射 ============
   account                  Account                   @relation(fields: [identityId], references: [id], onDelete: Cascade)
   folder                   GoalFolder?               @relation(fields: [folderId], references: [id])
   parentGoal               Goal?                     @relation("GoalHierarchy", fields: [parentGoalId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   childGoals               Goal[]                    @relation("GoalHierarchy")
-  keyResultWeightSnapshots KeyResultWeightSnapshot[]
-  keyResults               KeyResult[]
-  taskTemplates            TaskTemplate[]
+  keyResults               KeyResult[] /// 关键结果列表（一对多，级联删除）
+  reviews                  GoalReview[] /// 目标评审记录（一对多，级联删除）
+  keyResultWeightSnapshots KeyResultWeightSnapshot[] /// KR权重快照（一对多，级联删除）
+  focusSessions            FocusSession[] /// 专注会话记录（一对多，级联删除）
 
-  @@index([targetDate])
+  // ============ 索引优化 ============
+  @@index([identityId, status]) /// 按用户+状态查询（常用）
+  @@index([identityId, targetDate]) /// 按用户+截止日期查询（日历视图）
+  @@index([identityId, priority]) /// 按用户+优先级排序（列表视图）
+  @@index([folderId]) /// 按文件夹查询
+  @@index([parentGoalId]) /// 按父目标查询（层级视图）
+  @@index([targetDate]) /// 按截止日期查询（全局日历）
+  @@index([deletedAt]) /// 软删除过滤
   @@map("goals")
 }
 
+/// GoalFolder 聚合根 - 目标文件夹
+/// 用于组织和分类目标，支持层级结构
 model GoalFolder {
-  id                 String    @id
-  identityId         String    @map("identity_id")
-  name               String
-  description        String?
-  color              String?
-  icon               String?
-  version            Int       @default(1)
-  createdAt          DateTime  @default(now()) @map("created_at")
-  updatedAt          DateTime  @updatedAt @map("updated_at")
-  deletedAt          DateTime? @map("deleted_at")
-  completedGoalCount Int       @default(0) @map("completed_goal_count")
-  folderType         String?   @map("folder_type")
-  goalCount          Int       @default(0) @map("goal_count")
-  isSystemFolder     Boolean   @default(false) @map("is_system_folder")
-  parentFolderId     String?   @map("parent_folder_id")
-  sortOrder          Int       @default(0) @map("sort_order")
+  // ============ 主键与外键 ============
+  id         String @id
+  identityId String @map("identity_id")
 
+  // ============ 基础信息 ============
+  name        String /// 文件夹名称
+  description String? /// 描述说明
+  color       String? /// 显示颜色
+  icon        String? /// 图标标识
+
+  // ============ 文件夹特性 ============
+  folderType     String? @map("folder_type") /// 文件夹类型（系统/用户）
+  isSystemFolder Boolean @default(false) @map("is_system_folder") /// 是否为系统文件夹
+  parentFolderId String? @map("parent_folder_id") /// 父文件夹ID（支持嵌套）
+  sortOrder      Int     @default(0) @map("sort_order") /// 排序顺序
+
+  // ============ 统计信息（冗余字段，提升查询性能） ============
+  goalCount          Int @default(0) @map("goal_count") /// 目标总数
+  completedGoalCount Int @default(0) @map("completed_goal_count") /// 已完成目标数
+
+  // ============ 版本与审计 ============
+  version   Int       @default(1)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // ============ 关系映射 ============
   account      Account      @relation(fields: [identityId], references: [id], onDelete: Cascade)
   parentFolder GoalFolder?  @relation("GoalFolderHierarchy", fields: [parentFolderId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  childFolders GoalFolder[] @relation("GoalFolderHierarchy")
-  goals        Goal[]
+  childFolders GoalFolder[] @relation("GoalFolderHierarchy") /// 子文件夹列表
+  goals        Goal[] /// 包含的目标列表
 
-  @@index([parentFolderId])
+  // ============ 索引优化 ============
+  @@index([identityId]) /// 按用户查询
+  @@index([parentFolderId]) /// 按父文件夹查询（层级视图）
+  @@index([identityId, isSystemFolder]) /// 用户文件夹分类查询
   @@map("goal_folders")
 }
 
+/// KeyResult 实体 - 关键结果
+/// 衡量目标进度的具体指标（OKR 中的 KR）
 model KeyResult {
-  id                String    @id
-  goalId            String    @map("goal_id")
-  title             String
-  description       String?
-  valueType         String    @map("value_type")
-  aggregationMethod String    @map("aggregation_method")
-  targetValue       Float     @map("target_value")
-  currentValue      Float     @default(0) @map("current_value")
-  unit              String?
-  weight            Float     @default(1)
-  order             Int       @default(0)
-  version           Int       @default(1)
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
-  deletedAt         DateTime? @map("deleted_at")
+  // ============ 主键与外键 ============
+  id     String @id
+  goalId String @map("goal_id")
 
-  records                  GoalRecord[]
-  keyResultWeightSnapshots KeyResultWeightSnapshot[]
+  // ============ 基础信息 ============
+  title       String /// KR 标题
+  description String? /// 详细说明
+
+  // ============ 度量配置 ============
+  valueType         String  @map("value_type") /// 数值类型（numeric/boolean/percentage）
+  aggregationMethod String  @map("aggregation_method") /// 聚合方法（sum/average/latest）
+  targetValue       Float   @map("target_value") /// 目标值
+  currentValue      Float   @default(0) @map("current_value") /// 当前值（冗余字段，提升查询性能）
+  unit              String? /// 单位（如：个、%、小时）
+
+  // ============ 权重与排序 ============
+  weight Float @default(1) /// 权重系数（计算目标进度时使用）
+  order  Int   @default(0) /// 显示顺序
+
+  // ============ 版本与审计 ============
+  version   Int       @default(1)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // ============ 关系映射 ============
   goal                     Goal                      @relation(fields: [goalId], references: [id], onDelete: Cascade)
-  taskTemplates            TaskTemplate[]
+  records                  GoalRecord[] /// 记录历史数据（一对多，级联删除）
+  keyResultWeightSnapshots KeyResultWeightSnapshot[] /// 权重变更快照（一对多，级联删除）
 
-  @@index([goalId])
+  // ============ 索引优化 ============
+  @@index([goalId]) /// 按目标查询KR列表
+  @@index([goalId, order]) /// 按目标查询并按顺序排序
   @@map("key_results")
 }
 
+/// GoalRecord 实体 - 关键结果记录
+/// 记录 KR 的历史数据点，用于趋势分析和进度跟踪
 model GoalRecord {
-  id          String    @id
-  keyResultId String    @map("key_result_id")
-  value       Float
-  note        String?
-  recordedAt  DateTime  @map("recorded_at")
-  version     Int       @default(1)
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
+  // ============ 主键与外键 ============
+  id          String @id
+  keyResultId String @map("key_result_id")
 
+  // ============ 记录数据 ============
+  value      Float /// 记录的数值
+  note       String? /// 备注说明
+  recordedAt DateTime @map("recorded_at") /// 记录时间（业务时间，非创建时间）
+
+  // ============ 版本与审计 ============
+  version   Int       @default(1)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // ============ 关系映射 ============
   keyResult KeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
 
-  @@index([recordedAt])
+  // ============ 索引优化 ============
+  @@index([keyResultId, recordedAt]) /// 按KR查询时间序列数据（常用）
+  @@index([recordedAt]) /// 按时间查询全局记录
   @@map("goal_records")
 }
 
+/// GoalReview 实体 - 目标评审
+/// 记录目标的回顾与反思（复盘）
 model GoalReview {
-  id             String    @id
-  goalId         String    @map("goal_id")
-  reviewType     String    @map("review_type")
-  content        String
-  achievements   String?
-  challenges     String?
-  lessonsLearned String?   @map("lessons_learned")
-  nextSteps      String?   @map("next_steps")
-  rating         Int?
-  version        Int       @default(1)
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-  deletedAt      DateTime? @map("deleted_at")
+  // ============ 主键与外键 ============
+  id     String @id
+  goalId String @map("goal_id")
 
+  // ============ 评审内容 ============
+  reviewType     String  @map("review_type") /// 评审类型（weekly/monthly/milestone/completion）
+  content        String /// 主要内容
+  achievements   String? /// 成就总结
+  challenges     String? /// 遇到的挑战
+  lessonsLearned String? @map("lessons_learned") /// 经验教训
+  nextSteps      String? @map("next_steps") /// 下一步计划
+  rating         Int? /// 评分（1-5星）
+
+  // ============ 版本与审计 ============
+  version   Int       @default(1)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // ============ 关系映射 ============
   goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
 
-  @@index([goalId])
+  // ============ 索引优化 ============
+  @@index([goalId, createdAt]) /// 按目标查询评审时间线（常用）
+  @@index([reviewType]) /// 按评审类型分类查询
   @@map("goal_reviews")
 }
 
-model GoalStatistic {
-  id                      Int      @id @default(autoincrement())
-  identityId              String   @unique @map("identity_id")
-  totalGoals              Int      @default(0) @map("total_goals")
-  activeGoals             Int      @default(0) @map("active_goals")
-  completedGoals          Int      @default(0) @map("completed_goals")
-  archivedGoals           Int      @default(0) @map("archived_goals")
-  overdueGoals            Int      @default(0) @map("overdue_goals")
-  totalKeyResults         Int      @default(0) @map("total_key_results")
-  completedKeyResults     Int      @default(0) @map("completed_key_results")
-  averageProgress         Float    @default(0) @map("average_progress")
-  goalsByImportance       String   @default("{}") @map("goals_by_importance")
-  goalsByUrgency          String   @default("{}") @map("goals_by_urgency")
-  goalsByCategory         String   @default("{}") @map("goals_by_category")
-  goalsByStatus           String   @default("{}") @map("goals_by_status")
-  goalsCreatedThisWeek    Int      @default(0) @map("goals_created_this_week")
-  goalsCompletedThisWeek  Int      @default(0) @map("goals_completed_this_week")
-  goalsCreatedThisMonth   Int      @default(0) @map("goals_created_this_month")
-  goalsCompletedThisMonth Int      @default(0) @map("goals_completed_this_month")
-  totalReviews            Int      @default(0) @map("total_reviews")
-  averageRating           Float?   @map("average_rating")
-  totalFocusSessions      Int      @default(0) @map("total_focus_sessions")
-  completedFocusSessions  Int      @default(0) @map("completed_focus_sessions")
-  totalFocusMinutes       Int      @default(0) @map("total_focus_minutes")
-  lastCalculatedAt        DateTime @default(now()) @map("last_calculated_at")
-  createdAt               DateTime @default(now()) @map("created_at")
-  updatedAt               DateTime @updatedAt @map("updated_at")
-
-  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  @@index([identityId])
-  @@map("goal_statistics")
-}
-
+/// KeyResultWeightSnapshot 值对象 - KR权重快照
+/// 记录关键结果权重的历史变更，用于审计和回溯分析
 model KeyResultWeightSnapshot {
-  id           String   @id
-  goalId       String   @map("goal_id")
-  keyResultId  String   @map("key_result_id")
-  oldWeight    Float    @map("old_weight")
-  newWeight    Float    @map("new_weight")
-  weightDelta  Float    @map("weight_delta")
-  snapshotTime DateTime @map("snapshot_time")
-  trigger      String
-  reason       String?
-  operatorId   String   @map("operator_id")
-  createdAt    DateTime @default(now()) @map("created_at")
+  // ============ 主键与外键 ============
+  id          String @id
+  goalId      String @map("goal_id")
+  keyResultId String @map("key_result_id")
 
+  // ============ 权重变更数据 ============
+  oldWeight   Float @map("old_weight") /// 旧权重值
+  newWeight   Float @map("new_weight") /// 新权重值
+  weightDelta Float @map("weight_delta") /// 权重变化量（新-旧）
+
+  // ============ 变更元数据 ============
+  snapshotTime DateTime @map("snapshot_time") /// 快照时间
+  trigger      String /// 触发原因（manual/auto/normalize）
+  reason       String? /// 变更原因说明
+  operatorId   String   @map("operator_id") /// 操作人ID
+
+  // ============ 审计 ============
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // ============ 关系映射 ============
   goal      Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
   keyResult KeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
 
-  @@index([snapshotTime])
+  // ============ 索引优化 ============
+  @@index([goalId, snapshotTime]) /// 按目标查询权重变更历史（常用）
+  @@index([keyResultId, snapshotTime]) /// 按KR查询权重变更历史
+  @@index([snapshotTime]) /// 按时间查询全局快照
   @@map("key_result_weight_snapshots")
+}
+
+/// FocusSession 聚合根 - 专注会话
+/// 管理番茄钟/专注时间的完整生命周期，支持暂停/恢复/完成等状态转换
+model FocusSession {
+  // ============ 主键与外键 ============
+  id         String  @id
+  identityId String  @map("identity_id")
+  goalId     String? @map("goal_id") /// 关联的目标ID（可选）
+
+  // ============ 状态与时长 ============
+  status                String  @default("Active") /// 会话状态（Active/Completed/Cancelled）
+  durationMinutes       Int     @map("duration_minutes") /// 计划时长（分钟）
+  actualDurationMinutes Int     @default(0) @map("actual_duration_minutes") /// 实际时长（分钟，排除暂停）
+  description           String? /// 会话描述/备注
+
+  // ============ 时间追踪 ============
+  startedAt   DateTime? @map("started_at") /// 开始时间
+  pausedAt    DateTime? @map("paused_at") /// 最后暂停时间
+  resumedAt   DateTime? @map("resumed_at") /// 最后恢复时间
+  completedAt DateTime? @map("completed_at") /// 完成时间
+  cancelledAt DateTime? @map("cancelled_at") /// 取消时间
+
+  // ============ 暂停统计 ============
+  pauseCount            Int @default(0) @map("pause_count") /// 暂停次数
+  pausedDurationMinutes Int @default(0) @map("paused_duration_minutes") /// 累计暂停时长（分钟）
+
+  // ============ 版本与审计 ============
+  version   Int       @default(1)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // ============ 关系映射 ============
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  goal    Goal?   @relation(fields: [goalId], references: [id], onDelete: SetNull) /// 目标删除时解除关联
+
+  // ============ 索引优化 ============
+  @@index([identityId, status]) /// 按用户+状态查询（常用）
+  @@index([identityId, createdAt]) /// 按用户+时间查询（统计分析）
+  @@index([goalId]) /// 按目标查询专注记录
+  @@index([status]) /// 按状态查询（全局统计）
+  @@index([completedAt]) /// 按完成时间查询（报表统计）
+  @@map("focus_sessions")
+}
+
+/// FocusMode 值对象 - 专注模式
+/// 用户在特定时间段内聚焦于少数目标（1-3个），隐藏其他目标以减少干扰
+model FocusMode {
+  // ============ 主键与外键 ============
+  id         String @id
+  identityId String @map("identity_id")
+
+  // ============ 聚焦配置 ============
+  focusedGoalIds  String[] @map("focused_goal_ids") /// 聚焦的目标ID列表（1-3个）
+  hiddenGoalsMode String   @map("hidden_goals_mode") /// 隐藏模式（hide/dim/collapse）
+
+  // ============ 时间范围 ============
+  startTime     DateTime  @map("start_time") /// 开始时间
+  endTime       DateTime  @map("end_time") /// 计划结束时间
+  actualEndTime DateTime? @map("actual_end_time") /// 实际结束时间（提前结束或延长）
+
+  // ============ 状态 ============
+  isActive Boolean @default(true) @map("is_active") /// 是否激活中
+
+  // ============ 版本与审计 ============
+  version   Int       @default(1)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // ============ 关系映射 ============
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  // ============ 索引优化 ============
+  @@index([identityId, isActive]) /// 按用户查询激活状态（常用）
+  @@index([identityId, endTime]) /// 按用户+结束时间查询（历史记录）
+  @@index([isActive]) /// 查询全局激活的专注模式
+  @@index([endTime]) /// 按结束时间查询（清理过期模式）
+  @@map("focus_modes")
+}
+
+/// GoalStatistic 值对象 - 目标统计
+/// 缓存目标模块的统计数据，定期更新
+model GoalStatistic {
+  // ============ 主键与外键 ============
+  id         String @id
+  identityId String @unique @map("identity_id")
+
+  // ============ 目标统计 ============
+  totalGoals     Int @default(0) @map("total_goals")
+  activeGoals    Int @default(0) @map("active_goals")
+  completedGoals Int @default(0) @map("completed_goals")
+  archivedGoals  Int @default(0) @map("archived_goals")
+
+  // ============ KR 统计 ============
+  totalKeyResults     Int @default(0) @map("total_key_results")
+  completedKeyResults Int @default(0) @map("completed_key_results")
+
+  // ============ 专注统计 ============
+  totalFocusSessions Int @default(0) @map("total_focus_sessions")
+  totalFocusMinutes  Int @default(0) @map("total_focus_minutes")
+
+  // ============ 评审统计 ============
+  totalReviews  Int    @default(0) @map("total_reviews")
+  averageRating Float? @map("average_rating")
+
+  // ============ 时间 ============
+  calculatedAt DateTime @map("calculated_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // ============ 关系映射 ============
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  // ============ 索引优化 ============
+  @@index([identityId])
+  @@map("goal_statistics")
 }
 
 // ==========================================
@@ -1114,6 +1230,32 @@ model ReminderResponse {
   @@map("reminder_responses")
 }
 
+/// UserReminderPreference 聚合根 - 用户提醒偏好
+/// 存储用户的最佳/最差响应时间段和智能频率配置
+model UserReminderPreference {
+  // ============ 主键与外键 ============
+  id         String @id
+  identityId String @unique @map("identity_id")
+
+  // ============ 时间段偏好 ============
+  bestTimeSlots  String @map("best_time_slots") /// JSON: TimeSlotDTO[]
+  worstTimeSlots String @map("worst_time_slots") /// JSON: TimeSlotDTO[]
+
+  // ============ 智能频率 ============
+  globalSmartFrequency Boolean @default(true) @map("global_smart_frequency")
+
+  // ============ 审计 ============
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // ============ 关系映射 ============
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  // ============ 索引优化 ============
+  @@index([identityId])
+  @@map("user_reminder_preferences")
+}
+
 // ==========================================
 // Repository Module
 // 仓库聚合根、资源、文件夹、浏览器、统计
@@ -1322,7 +1464,7 @@ model RepositoryStatistic {
 
 // ==========================================
 // Schedule Module
-// 日程聚合根、任务、执行、统计
+// 日程聚合根、调度任务、调度作业、执行、统计
 // ==========================================
 
 model Schedule {
@@ -1345,6 +1487,39 @@ model Schedule {
 
   @@index([startTime, endTime])
   @@map("schedules")
+}
+
+/// ScheduleJob 聚合根 - 调度作业
+/// 跨模块的调度触发器，关联到业务模块的具体资源
+model ScheduleJob {
+  // ============ 主键与外键 ============
+  id         String @id
+  identityId String @map("identity_id")
+
+  // ============ 调度配置 ============
+  nextRunAt      DateTime @map("next_run_at")
+  cronExpression String?  @map("cron_expression")
+
+  // ============ 来源 ============
+  sourceModule String @map("source_module") /// 来源模块
+  sourceId     String @map("source_id") /// 来源实体ID
+
+  // ============ 触发配置 ============
+  triggerEvent String  @map("trigger_event")
+  payload      String? /// JSON: Record<string, any>
+
+  // ============ 审计 ============
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // ============ 关系映射 ============
+  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  // ============ 索引优化 ============
+  @@index([identityId])
+  @@index([nextRunAt])
+  @@index([sourceModule, sourceId])
+  @@map("schedule_jobs")
 }
 
 model ScheduleTask {
@@ -1688,47 +1863,66 @@ model PendingChange {
 
 // ==========================================
 // Task Module
-// 任务模板聚合根、实例、依赖、历史、统计
+// 任务模板聚合根、实例、文件夹、依赖、历史、统计
 // ==========================================
 
+/// TaskFolder 聚合根 - 任务文件夹
+/// 用于组织和分类任务模板
+model TaskFolder {
+  // ============ 主键与外键 ============
+  id         String @id
+  identityId String @map("identity_id")
+
+  // ============ 基础信息 ============
+  name  String /// 文件夹名称
+  color String? /// 显示颜色
+  icon  String? /// 图标标识
+
+  // ============ 排序 ============
+  order Int @default(0) /// 排序顺序
+
+  // ============ 版本与审计 ============
+  version   Int       @default(1)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // ============ 关系映射 ============
+  account   Account        @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  templates TaskTemplate[]
+
+  // ============ 索引优化 ============
+  @@index([identityId])
+  @@map("task_folders")
+}
+
+/// TaskTemplate 聚合根 - 任务模板
+/// 管理任务的完整定义，包括时间配置、重复规则、提醒、Goal绑定等
 model TaskTemplate {
-  id          String  @id
-  identityId  String  @map("identity_id")
+  // ============ 主键与外键 ============
+  id         String @id
+  identityId String @map("identity_id")
+
+  // ============ 基础信息 ============
   name        String
   description String?
-  taskType    String  @map("task_type") // 'ONE_TIME' | 'RECURRING'
-  status      String
-  importance  String  @default("moderate") // ImportanceLevel
+  status      String /// TaskTemplateStatus
+  importance  String  @default("moderate") /// ImportanceLevel
+  priority    Int? /// 动态计算的优先级分数
   color       String?
-  tags        String // JSON: string[]
-  folderId    String? @map("folder_id")
+  tags        String /// JSON: string[]
 
-  // === Goal/KR 关联 ===
-  goalId      String? @map("goal_id")
-  keyResultId String? @map("key_result_id")
-
-  // === 子任务支持 ===
+  // ============ 组织与层级 ============
+  folderId     String? @map("folder_id")
   parentTaskId String? @map("parent_task_id")
 
-  // === 一次性任务专用字段 ===
-  startDate        DateTime? @map("start_date")
-  dueDate          DateTime? @map("due_date")
-  completedAt      DateTime? @map("completed_at")
-  estimatedMinutes Int?      @map("estimated_minutes")
-  actualMinutes    Int?      @map("actual_minutes")
-  note             String?   @db.Text
-
-  // === 循环任务专用字段 ===
-  lastGeneratedDate DateTime? @map("last_generated_date")
-  generateAheadDays Int?      @map("generate_ahead_days")
-
-  // === 时间配置（循环任务用） ===
+  // ============ 时间配置（展开值对象） ============
   timeConfigType            String?   @map("time_config_type")
   timeConfigStartTime       DateTime? @map("time_config_start_time")
   timeConfigEndTime         DateTime? @map("time_config_end_time")
   timeConfigDurationMinutes Int?      @map("time_config_duration_minutes")
 
-  // === 重复规则（循环任务用） ===
+  // ============ 重复规则（展开值对象） ============
   recurrenceRuleType        String?   @map("recurrence_rule_type")
   recurrenceRuleInterval    Int?      @map("recurrence_rule_interval")
   recurrenceRuleDaysOfWeek  String?   @map("recurrence_rule_days_of_week")
@@ -1737,32 +1931,36 @@ model TaskTemplate {
   recurrenceRuleEndDate     DateTime? @map("recurrence_rule_end_date")
   recurrenceRuleCount       Int?      @map("recurrence_rule_count")
 
-  // === 提醒配置（循环任务用） ===
+  // ============ 提醒配置（展开值对象） ============
   reminderConfigEnabled           Boolean? @map("reminder_config_enabled")
   reminderConfigTimeOffsetMinutes Int?     @map("reminder_config_time_offset_minutes")
   reminderConfigUnit              String?  @map("reminder_config_unit")
   reminderConfigChannel           String?  @map("reminder_config_channel")
 
-  // === Goal 绑定（循环任务用） ===
-  goalBindingGoalId         String? @map("goal_binding_goal_id")
-  goalBindingKeyResultId    String? @map("goal_binding_key_result_id")
-  goalBindingIncrementValue Float?  @map("goal_binding_increment_value")
+  // ============ 循环任务生成 ============
+  lastGeneratedDate DateTime? @map("last_generated_date")
+  generateAheadDays Int?      @map("generate_ahead_days")
 
-  // === 依赖关系 ===
+  // ============ Goal 绑定（JSON值对象） ============
+  goalBinding String? @map("goal_binding") /// JSON: TaskGoalBindingPersistenceDTO
+
+  // ============ 检查列表（JSON值对象） ============
+  checklist String? @map("checklist") /// JSON: ChecklistItemDefinition[]
+
+  // ============ 依赖关系状态 ============
   blockingReason   String? @map("blocking_reason")
   dependencyStatus String  @default("NONE") @map("dependency_status")
   isBlocked        Boolean @default(false) @map("is_blocked")
 
-  // === 审计字段 ===
+  // ============ 版本与审计 ============
   version   Int       @default(1)
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  // === 关系 ===
-  account   Account    @relation(fields: [identityId], references: [id], onDelete: Cascade)
-  goal      Goal?      @relation(fields: [goalId], references: [id], onDelete: SetNull)
-  keyResult KeyResult? @relation(fields: [keyResultId], references: [id], onDelete: SetNull)
+  // ============ 关系映射 ============
+  account Account     @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  folder  TaskFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
 
   // 子任务关系
   parentTask TaskTemplate?  @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
@@ -1772,43 +1970,56 @@ model TaskTemplate {
   predecessorDependencies TaskDependency[] @relation("PredecessorTaskDeps")
   successorDependencies   TaskDependency[] @relation("SuccessorTaskDeps")
 
-  // 实例（仅 RECURRING 生成）
+  // 实例
   instances TaskInstance[]
   history   TaskTemplateHistory[]
 
+  // ============ 索引优化 ============
   @@index([identityId])
-  @@index([taskType])
   @@index([status])
   @@index([importance])
-  @@index([goalId])
-  @@index([keyResultId])
+  @@index([folderId])
   @@index([parentTaskId])
-  @@index([dueDate])
   @@index([deletedAt])
   @@map("task_templates")
 }
 
+/// TaskInstance 聚合根 - 任务实例
+/// 从模板生成的具体任务实例，包含执行状态和时间追踪
 model TaskInstance {
-  id               String    @id
-  templateId       String    @map("template_id")
-  identityId       String    @map("identity_id")
-  instanceDate     DateTime  @map("instance_date")
-  status           String
-  note             String?
-  actualStartTime  DateTime? @map("actual_start_time")
-  actualEndTime    DateTime? @map("actual_end_time")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
-  timeConfig       String    @map("time_config")
-  completionRecord String?   @map("completion_record")
-  skipRecord       String?   @map("skip_record")
-  version          Int       @default(1)
-  deletedAt        DateTime? @map("deleted_at")
+  // ============ 主键与外键 ============
+  id         String @id
+  templateId String @map("template_id")
+  identityId String @map("identity_id")
 
+  // ============ 实例基本信息 ============
+  instanceDate DateTime @map("instance_date")
+  status       String /// TaskInstanceStatus
+  importance   String   @default("moderate") /// ImportanceLevel
+  priority     Int? /// 动态计算的优先级分数
+
+  // ============ 时间追踪 ============
+  timeConfig      String    @map("time_config") /// JSON: TaskTimeConfigDTO
+  actualStartTime DateTime? @map("actual_start_time")
+  actualEndTime   DateTime? @map("actual_end_time")
+
+  // ============ 备注 ============
+  comment String? /// 实例备注
+
+  // ============ 版本与审计 ============
+  version   Int       @default(1)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // ============ 关系映射 ============
   account  Account      @relation(fields: [identityId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   template TaskTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
+  // ============ 索引优化 ============
   @@index([templateId, instanceDate])
+  @@index([identityId, status])
+  @@index([identityId, instanceDate])
   @@map("task_instances")
 }
 

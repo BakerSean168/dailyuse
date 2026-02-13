@@ -94,3 +94,6 @@ docs/.obsidian
 
 # Windows
 D:/.e2e-test-credentials.json
+
+# Vitest HTML reports
+html/
