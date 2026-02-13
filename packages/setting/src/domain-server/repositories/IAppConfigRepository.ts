@@ -1,75 +1,75 @@
 /**
  * AppConfig Repository Interface
- * 应用配置仓储接口
+ * 搴旂敤閰嶇疆浠撳偍鎺ュ彛
  *
- * DDD 仓储模式：
- * - 只定义接口，不实现
- * - 由基础设施层实现
+ * DDD 浠撳偍妯″紡锛?
+ * - 鍙畾涔夋帴鍙ｏ紝涓嶅疄鐜?
+ * - 鐢卞熀纭€璁炬柦灞傚疄鐜?
  */
 
 // import type { AppConfigServer } from '../aggregates/AppConfigServer';
 
 /**
- * IAppConfigRepository 仓储接口
+ * IAppConfigRepository 浠撳偍鎺ュ彛
  *
- * 职责：
- * - 定义 AppConfig 聚合根的持久化操作
- * - 应用配置通常是单例
+ * 鑱岃矗锛?
+ * - 瀹氫箟 AppConfig 鑱氬悎鏍圭殑鎸佷箙鍖栨搷浣?
+ * - 搴旂敤閰嶇疆閫氬父鏄崟渚?
  */
 export interface IAppConfigRepository {
   /**
-   * 保存应用配置（创建或更新）
+   * 淇濆瓨搴旂敤閰嶇疆锛堝垱寤烘垨鏇存柊锛?
    */
   save(config: any): Promise<void>;
 
   /**
-   * 通过 UUID 查找应用配置
+   * 閫氳繃 UUID 鏌ユ壘搴旂敤閰嶇疆
    *
-   * @param uuid 配置 UUID
-   * @returns 聚合根实例，不存在则返回 null
+   * @param id 閰嶇疆 UUID
+   * @returns 鑱氬悎鏍瑰疄渚嬶紝涓嶅瓨鍦ㄥ垯杩斿洖 null
    */
-  findById(uuid: string): Promise<any | null>;
+  findById(id: string): Promise<any | null>;
 
   /**
-   * 获取当前应用配置
+   * 鑾峰彇褰撳墠搴旂敤閰嶇疆
    *
-   * @returns 当前生效的配置
+   * @returns 褰撳墠鐢熸晥鐨勯厤缃?
    */
   getCurrent(): Promise<any | null>;
 
   /**
-   * 通过版本号查找配置
+   * 閫氳繃鐗堟湰鍙锋煡鎵鹃厤缃?
    *
-   * @param version 版本号
-   * @returns 聚合根实例，不存在则返回 null
+   * @param version 鐗堟湰鍙?
+   * @returns 鑱氬悎鏍瑰疄渚嬶紝涓嶅瓨鍦ㄥ垯杩斿洖 null
    */
   findByVersion(version: string): Promise<any | null>;
 
   /**
-   * 获取所有历史版本
+   * 鑾峰彇鎵€鏈夊巻鍙茬増鏈?
    *
-   * @returns 配置历史列表（按时间倒序）
+   * @returns 閰嶇疆鍘嗗彶鍒楄〃锛堟寜鏃堕棿鍊掑簭锛?
    */
   findAllVersions(): Promise<any[]>;
 
   /**
-   * 删除配置
+   * 鍒犻櫎閰嶇疆
    *
-   * @param uuid 配置 UUID
+   * @param id 閰嶇疆 UUID
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 检查配置是否存在
+   * 妫€鏌ラ厤缃槸鍚﹀瓨鍦?
    *
-   * @param uuid 配置 UUID
+   * @param id 閰嶇疆 UUID
    */
-  exists(uuid: string): Promise<boolean>;
+  exists(id: string): Promise<boolean>;
 
   /**
-   * 检查版本是否存在
+   * 妫€鏌ョ増鏈槸鍚﹀瓨鍦?
    *
-   * @param version 版本号
+   * @param version 鐗堟湰鍙?
    */
   existsByVersion(version: string): Promise<boolean>;
 }

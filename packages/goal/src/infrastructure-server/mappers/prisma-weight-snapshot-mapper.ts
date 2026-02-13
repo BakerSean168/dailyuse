@@ -1,122 +1,70 @@
-/**
+﻿/**
  * Prisma Weight Snapshot Mapper
- * 鏉冮噸蹇収 Prisma 鏄犲皠鍣?
  *
- * 璐熻矗鍦?Domain 瀵硅薄鍜?Prisma 妯″瀷涔嬮棿杩涜杞崲銆?
+ * Maps between KeyResultWeightSnapshot domain objects and Prisma model.
+ * Since Prisma now uses the same field names as PersistenceDTO (id, goalId,
+ * keyResultId, operatorId) with DateTime fields, the mapping is straightforward.
  */
 
 import { KeyResultWeightSnapshot } from '@/domain-server';
-import type { Prisma } from '../../generated/prisma/client';
-import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, SnapshotTrigger } from '@dailyuse/contracts/goal';
-
-
-/**
- * Prisma Weight Snapshot 绫诲瀷 (鐢熸垚鍚庡彲鐢?
- * 娉ㄦ剰: Need瑕佸湪 prisma generate 鍚庢墠鑳戒娇鐢ㄥ叿浣撶被鍨?
- */
-type PrismaWeightSnapshot = {
-  uuid: string;
-  goalUuid: string;
-  keyResultUuid: string;
-  oldWeight: number;
-  newWeight: number;
-  weightDelta: number;
-  snapshotTime: bigint;
-  trigger: string;
-  reason: string | null;
-  operatorUuid: string;
-  createdAt: Date;
-};
+import type { KeyResultWeightSnapshotPersistenceDTO } from '@dailyuse/contracts/goal';
 
 /**
  * Weight Snapshot Mapper
  *
- * **鑱岃矗**:
- * - Domain瀵硅薄 鈫?Prisma妯″瀷 (toPrisma)
- * - Prisma妯″瀷 鈫?Domain瀵硅薄 (toDomain)
- * - 澶勭悊绫诲瀷杞崲 (BigInt, Date, etc.)
+ * Converts between domain value objects and Prisma model data.
+ * Prisma DateTime fields map directly to PersistenceDate (= Date).
  */
 export class PrismaWeightSnapshotMapper {
   /**
-   * Domain 杞?Prisma Create Input
+   * Domain -> Prisma create input
    *
-   * **杞崲瑙勫垯**:
-   * - snapshotTime: number 鈫?BigInt
-   * - createdAt: number | undefined 鈫?Date
-   * - reason: string | undefined 鈫?string | null
-   *
-   * @param snapshot - Domain灞傜殑蹇収瀵硅薄
-   * @returns Prisma create input鏁版嵁
-   *
-   * @example
-   * ```typescript
-   * const snapshot = new KeyResultWeightSnapshot(...);
-   * const prismaData = PrismaWeightSnapshotMapper.toPrisma(snapshot);
-   * await prisma.keyResultWeightSnapshot.create({ data: prismaData });
-   * ```
+   * Uses toPersistenceDTO() which returns Date objects for time fields,
+   * matching Prisma DateTime columns directly.
    */
   static toPrisma(snapshot: KeyResultWeightSnapshot) {
+    const dto = snapshot.toPersistenceDTO();
     return {
-      uuid: snapshot.uuid,
-      goalUuid: snapshot.goalUuid,
-      keyResultUuid: snapshot.keyResultUuid,
-      oldWeight: snapshot.oldWeight,
-      newWeight: snapshot.newWeight,
-      weightDelta: snapshot.weightDelta,
-      snapshotTime: BigInt(snapshot.snapshotTime), // number 鈫?BigInt
-      trigger: snapshot.trigger,
-      reason: snapshot.reason ?? null, // undefined 鈫?null
-      operatorUuid: snapshot.operatorUuid,
-      createdAt: new Date(snapshot.createdAt ?? Date.now()), // number 鈫?Date
+      id: dto.id as string,
+      goalId: dto.goalId as string,
+      keyResultId: dto.keyResultId as string,
+      oldWeight: dto.oldWeight,
+      newWeight: dto.newWeight,
+      weightDelta: dto.weightDelta,
+      snapshotTime: dto.snapshotTime,
+      trigger: dto.trigger,
+      reason: dto.reason,
+      operatorId: dto.operatorId as string,
+      createdAt: dto.createdAt,
     };
   }
 
   /**
-   * Prisma Model 杞?Domain Object
+   * Prisma row -> Domain value object
    *
-   * **杞崲瑙勫垯**:
-   * - snapshotTime: BigInt 鈫?number
-   * - createdAt: Date 鈫?number (timestamp)
-   * - reason: string | null 鈫?string | undefined
-   *
-   * @param prismaSnapshot - Prisma鏌ヨ缁撴灉
-   * @returns Domain灞傜殑蹇収瀵硅薄
-   *
-   * @example
-   * ```typescript
-   * const prismaSnapshot = await prisma.keyResultWeightSnapshot.findUnique(...);
-   * const domainSnapshot = PrismaWeightSnapshotMapper.toDomain(prismaSnapshot);
-   * ```
+   * Prisma row fields now match PersistenceDTO field names directly.
    */
-  static toDomain(prismaSnapshot: PrismaWeightSnapshot): KeyResultWeightSnapshot {
-    return new KeyResultWeightSnapshot(
-      prismaSnapshot.uuid,
-      prismaSnapshot.goalUuid,
-      prismaSnapshot.keyResultUuid,
-      prismaSnapshot.oldWeight,
-      prismaSnapshot.newWeight,
-      Number(prismaSnapshot.snapshotTime), // BigInt 鈫?number
-      prismaSnapshot.trigger as SnapshotTrigger, // string 鈫?SnapshotTrigger
-      prismaSnapshot.operatorUuid,
-      prismaSnapshot.reason ?? undefined, // null 鈫?undefined
-      prismaSnapshot.createdAt.getTime(), // Date 鈫?number (timestamp)
-    );
+  static toDomain(prismaSnapshot: any): KeyResultWeightSnapshot {
+    const dto: KeyResultWeightSnapshotPersistenceDTO = {
+      id: prismaSnapshot.id,
+      goalId: prismaSnapshot.goalId,
+      keyResultId: prismaSnapshot.keyResultId,
+      oldWeight: prismaSnapshot.oldWeight,
+      newWeight: prismaSnapshot.newWeight,
+      weightDelta: prismaSnapshot.weightDelta,
+      snapshotTime: prismaSnapshot.snapshotTime,
+      trigger: prismaSnapshot.trigger,
+      reason: prismaSnapshot.reason,
+      operatorId: prismaSnapshot.operatorId,
+      createdAt: prismaSnapshot.createdAt,
+    };
+    return KeyResultWeightSnapshot.fromPersistenceDTO(dto);
   }
 
   /**
-   * 鎵归噺杞崲: Prisma 鈫?Domain
-   *
-   * @param prismaSnapshots - Prisma鏌ヨ缁撴灉鏁扮粍
-   * @returns Domain瀵硅薄鏁扮粍
-   *
-   * @example
-   * ```typescript
-   * const snapshots = await prisma.keyResultWeightSnapshot.findMany(...);
-   * const domainSnapshots = PrismaWeightSnapshotMapper.toDomainList(snapshots);
-   * ```
+   * Batch convert: Prisma -> Domain
    */
-  static toDomainList(prismaSnapshots: PrismaWeightSnapshot[]): KeyResultWeightSnapshot[] {
+  static toDomainList(prismaSnapshots: any[]): KeyResultWeightSnapshot[] {
     return prismaSnapshots.map((snapshot) => this.toDomain(snapshot));
   }
 }
-

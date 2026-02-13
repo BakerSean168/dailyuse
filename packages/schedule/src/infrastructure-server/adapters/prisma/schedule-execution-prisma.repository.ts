@@ -1,6 +1,6 @@
 import type { IScheduleExecutionRepository } from '../../../domain-server/repositories/IScheduleExecutionRepository';
 import { ScheduleExecution } from '../../../domain-server/entities/schedule-execution';
-import type { PrismaClient, scheduleExecution as PrismaScheduleExecution } from '../../../generated/prisma/client';
+import type { PrismaClient, scheduleExecution as PrismaScheduleExecution } from '@dailyuse/database';
 
 export class ScheduleExecutionPrismaRepository implements IScheduleExecutionRepository {
   constructor(private prisma: PrismaClient) {}
@@ -9,8 +9,8 @@ export class ScheduleExecutionPrismaRepository implements IScheduleExecutionRepo
     const dto = execution.toPersistenceDTO();
 
     const data = {
-      uuid: dto.uuid,
-      taskUuid: dto.taskUuid,
+      id: dto.id,
+      taskId: dto.taskId,
       executionTime: new Date(dto.executionTime),
       status: dto.status,
       duration: dto.duration,
@@ -21,22 +21,22 @@ export class ScheduleExecutionPrismaRepository implements IScheduleExecutionRepo
     };
 
     await this.prisma.scheduleExecution.upsert({
-      where: { uuid: data.uuid },
+      where: { id: data.id },
       update: data,
       create: data,
     });
   }
 
-  async findByUuid(uuid: string): Promise<ScheduleExecution | null> {
+  async findById(id: string): Promise<ScheduleExecution | null> {
     const data = await this.prisma.scheduleExecution.findUnique({
-      where: { uuid },
+      where: { id },
     });
     return data ? ScheduleExecution.fromPersistenceDTO(data) : null;
   }
 
-  async findByTaskUuid(taskUuid: string): Promise<ScheduleExecution[]> {
+  async findByTaskId(taskId: string): Promise<ScheduleExecution[]> {
     const data = await this.prisma.scheduleExecution.findMany({
-      where: { taskUuid },
+      where: { taskId },
       orderBy: { executionTime: 'desc' },
     });
     return data.map((d) => ScheduleExecution.fromPersistenceDTO(d));

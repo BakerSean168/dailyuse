@@ -179,20 +179,20 @@ export class GoalPrismaRepository implements IGoalRepository {
     return Goal.fromPersistenceDTO(dto);
   }
 
-  async findByAccountUuid(
-    accountUuid: string,
+  async findByIdentityId(
+    identityId: string,
     options?: {
       includeChildren?: boolean;
       status?: string;
-      folderUuid?: string;
+      folderId?: string;
     },
   ): Promise<Goal[]> {
     const rows = await (this.prisma as any).goal.findMany({
       where: {
-        identityId: accountUuid,
+        identityId,
         deletedAt: null,
         ...(options?.status && { status: options.status }),
-        ...(options?.folderUuid && { folderId: options.folderUuid }),
+        ...(options?.folderId && { folderId: options.folderId }),
       },
       include: options?.includeChildren ? GOAL_INCLUDE_ALL : undefined,
       orderBy: { createdAt: 'desc' },
@@ -200,9 +200,9 @@ export class GoalPrismaRepository implements IGoalRepository {
     return rows.map((row: any) => Goal.fromPersistenceDTO(mapPrismaToGoalDTO(row)));
   }
 
-  async findByFolderUuid(folderUuid: string): Promise<Goal[]> {
+  async findByFolderId(folderId: string): Promise<Goal[]> {
     const rows = await (this.prisma as any).goal.findMany({
-      where: { folderId: folderUuid, deletedAt: null },
+      where: { folderId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
     return rows.map((row: any) => Goal.fromPersistenceDTO(mapPrismaToGoalDTO(row)));

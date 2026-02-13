@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Get Task Template Service
  *
- * 获取任务模板详情
+ * 鑾峰彇浠诲姟妯℃澘璇︽儏
  */
 
 import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
@@ -17,8 +17,8 @@ export class GetTaskTemplate {
 
   async execute(uuid: string, includeChildren = false): Promise<Result<TaskTemplateResponse>> {
     const template = includeChildren
-      ? await this.templateRepository.findByUuidWithChildren(uuid)
-      : await this.templateRepository.findByUuid(uuid);
+      ? await this.templateRepository.findByIdWithChildren(uuid)
+      : await this.templateRepository.findById(uuid);
 
     return ok({
       template: template ? template.toClientDTO(includeChildren) : (null as unknown as TaskTemplateClientDTO),

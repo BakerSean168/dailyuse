@@ -1,8 +1,8 @@
-/**
- * Prisma Weight Snapshot Repository Implementation
- * 鏉冮噸蹇収Repository Prisma 瀹炵幇
+﻿/**
+ * Prisma Weight Snapshot Repository
  *
- * 璐熻矗鏉冮噸蹇収鐨勬寔涔呭寲鎿嶄綔銆?
+ * Implements IWeightSnapshotRepository using Prisma.
+ * Handles CRUD and query operations for KeyResultWeightSnapshot.
  */
 
 import type { PrismaClient } from '@dailyuse/database';
@@ -13,92 +13,46 @@ import { PrismaWeightSnapshotMapper } from '../../mappers/prisma-weight-snapshot
 /**
  * Prisma Weight Snapshot Repository
  *
- * **璁捐妯″紡**: Repository Pattern
- * **鑱岃矗**:
- * - 瀹炵幇 IWeightSnapshotRepository 鎺ュ彛
- * - 澶勭悊All鏈夋暟鎹簱鎿嶄綔 (CRUD + 鏌ヨ)
- * - 浣跨敤 Mapper 杩涜 Domain 鈫?Prisma 杞崲
- *
- * **鏌ヨ鐗规€?*:
- * - 鍒嗛〉鏀寔 (page, pageSize)
- * - 鏃堕棿鍊掑簭鎺掑簭 (鏈€鏂扮殑鍦ㄥ墠)
- * - 澶氱淮搴︽煡璇?(Goal, KeyResult, TimeRange)
+ * Supports pagination, time-range queries, and batch operations.
  */
 export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   /**
-   * Save鍗曚釜蹇収
-   *
-   * **浜嬪姟**: 浣跨敤 Prisma 鑷姩浜嬪姟
-   * **鍐茬獊**: UUID 鍐茬獊鏃朵細鎶涘嚭 Prisma 閿欒
-   *
-   * @param snapshot - Domain蹇収瀵硅薄
-   * @throws {PrismaClientKnownRequestError} 褰?UUID 鍐茬獊鏃?
-   *
-   * @example
-   * ```typescript
-   * const snapshot = new KeyResultWeightSnapshot(...);
-   * await repository.save(snapshot);
-   * ```
+   * Save a single snapshot
    */
   async save(snapshot: KeyResultWeightSnapshot): Promise<void> {
     const data = PrismaWeightSnapshotMapper.toPrisma(snapshot);
-    await this.prisma.keyResultWeightSnapshot.create({ data });
+    await (this.prisma as any).keyResultWeightSnapshot.create({ data });
   }
 
   /**
-   * 鎵归噺Save蹇収
-   *
-   * **鎬ц兘浼樺寲**: 浣跨敤 Prisma createMany 鎵归噺鎻掑叆
-   * **浜嬪姟**: 鏁翠釜鎵归噺鎿嶄綔鍦ㄥ崟涓簨鍔′腑鎵ц
-   *
-   * @param snapshots - Domain蹇収瀵硅薄鏁扮粍
-   *
-   * @example
-   * ```typescript
-   * const snapshots = [...]; // KeyResultWeightSnapshot[]
-   * await repository.saveMany(snapshots);
-   * ```
+   * Batch save snapshots
    */
   async saveMany(snapshots: KeyResultWeightSnapshot[]): Promise<void> {
     const data = snapshots.map((s) => PrismaWeightSnapshotMapper.toPrisma(s));
-    await this.prisma.keyResultWeightSnapshot.createMany({ data });
+    await (this.prisma as any).keyResultWeightSnapshot.createMany({ data });
   }
 
   /**
-   * 鏌ヨ Goal 鐨勬墍鏈夊揩鐓?
-   *
-   * **鎺掑簭**: 鎸?snapshotTime 鍊掑簭 (鏈€鏂扮殑鍦ㄥ墠)
-   * **鍒嗛〉**: 鏀寔 page 鍜?pageSize Parameter
-   *
-   * @param goalUuid - Goal UUID
-   * @param page - 椤电爜 (浠?1 寮€濮?
-   * @param pageSize - 姣忛〉鏁伴噺
-   * @returns 蹇収List鍜屾€绘暟
-   *
-   * @example
-   * ```typescript
-   * const { snapshots, total } = await repository.findByGoal('goal-123', 1, 20);
-   * console.log(`Found ${total} snapshots, showing page 1`);
-   * ```
+   * Find all snapshots for a goal (paginated, newest first)
    */
   async findByGoal(
-    goalUuid: string,
+    goalId: string,
     page: number = 1,
     pageSize: number = 20,
   ): Promise<SnapshotQueryResult> {
     const skip = (page - 1) * pageSize;
 
     const [snapshots, total] = await Promise.all([
-      this.prisma.keyResultWeightSnapshot.findMany({
-        where: { goalUuid },
+      (this.prisma as any).keyResultWeightSnapshot.findMany({
+        where: { goalId },
         orderBy: { snapshotTime: 'desc' },
         skip,
         take: pageSize,
       }),
-      this.prisma.keyResultWeightSnapshot.count({
-        where: { goalUuid },
+      (this.prisma as any).keyResultWeightSnapshot.count({
+        where: { goalId },
       }),
     ]);
 
@@ -109,37 +63,24 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 鏌ヨ KeyResult 鐨勬墍鏈夊揩鐓?
-   *
-   * **鎺掑簭**: 鎸?snapshotTime 鍊掑簭 (鏈€鏂扮殑鍦ㄥ墠)
-   * **鍒嗛〉**: 鏀寔 page 鍜?pageSize Parameter
-   *
-   * @param krUuid - KeyResult UUID
-   * @param page - 椤电爜 (浠?1 寮€濮?
-   * @param pageSize - 姣忛〉鏁伴噺
-   * @returns 蹇収List鍜屾€绘暟
-   *
-   * @example
-   * ```typescript
-   * const { snapshots, total } = await repository.findByKeyResult('kr-456', 1, 10);
-   * ```
+   * Find all snapshots for a key result (paginated, newest first)
    */
   async findByKeyResult(
-    krUuid: string,
+    keyResultId: string,
     page: number = 1,
     pageSize: number = 20,
   ): Promise<SnapshotQueryResult> {
     const skip = (page - 1) * pageSize;
 
     const [snapshots, total] = await Promise.all([
-      this.prisma.keyResultWeightSnapshot.findMany({
-        where: { keyResultUuid: krUuid },
+      (this.prisma as any).keyResultWeightSnapshot.findMany({
+        where: { keyResultId },
         orderBy: { snapshotTime: 'desc' },
         skip,
         take: pageSize,
       }),
-      this.prisma.keyResultWeightSnapshot.count({
-        where: { keyResultUuid: krUuid },
+      (this.prisma as any).keyResultWeightSnapshot.count({
+        where: { keyResultId },
       }),
     ]);
 
@@ -150,24 +91,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 鏌ヨ鏃堕棿鑼冨洿鍐呯殑蹇収
-   *
-   * **鎺掑簭**: 鎸?snapshotTime 鍗囧簭 (鏃堕棿绾块『搴忥紝鐢ㄤ簬瓒嬪娍鍒嗘瀽)
-   * **杈圭晫**: 鍖呭惈璧锋鏃堕棿 (gte, lte)
-   * **鍒嗛〉**: 鏀寔 page 鍜?pageSize Parameter
-   *
-   * @param startTime - 寮€濮嬫椂闂存埑 (ms)
-   * @param endTime - 缁撴潫鏃堕棿鎴?(ms)
-   * @param page - 椤电爜 (浠?1 寮€濮?
-   * @param pageSize - 姣忛〉鏁伴噺
-   * @returns 蹇収List鍜屾€绘暟
-   *
-   * @example
-   * ```typescript
-   * const start = Date.parse('2025-01-01');
-   * const end = Date.parse('2025-12-31');
-   * const { snapshots, total } = await repository.findByTimeRange(start, end, 1, 50);
-   * ```
+   * Find snapshots within a time range (ascending order for trend analysis)
    */
   async findByTimeRange(
     startTime: number,
@@ -176,24 +100,26 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
     pageSize: number = 20,
   ): Promise<SnapshotQueryResult> {
     const skip = (page - 1) * pageSize;
+    const startDate = new Date(startTime);
+    const endDate = new Date(endTime);
 
     const [snapshots, total] = await Promise.all([
-      this.prisma.keyResultWeightSnapshot.findMany({
+      (this.prisma as any).keyResultWeightSnapshot.findMany({
         where: {
           snapshotTime: {
-            gte: BigInt(startTime), // number 鈫?BigInt 杞崲
-            lte: BigInt(endTime),
+            gte: startDate,
+            lte: endDate,
           },
         },
-        orderBy: { snapshotTime: 'asc' }, // 鏃堕棿绾块『搴?(鐢ㄤ簬瓒嬪娍鍥?
+        orderBy: { snapshotTime: 'asc' },
         skip,
         take: pageSize,
       }),
-      this.prisma.keyResultWeightSnapshot.count({
+      (this.prisma as any).keyResultWeightSnapshot.count({
         where: {
           snapshotTime: {
-            gte: BigInt(startTime),
-            lte: BigInt(endTime),
+            gte: startDate,
+            lte: endDate,
           },
         },
       }),
@@ -206,107 +132,40 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   /**
-   * 鏍规嵁 UUID 鏌ヨ鍗曚釜蹇収
-   *
-   * @param uuid - 蹇収 UUID
-   * @returns 蹇収瀵硅薄鎴?null
-   *
-   * @example
-   * ```typescript
-   * const snapshot = await repository.findById('snapshot-123');
-   * if (snapshot) {
-   *   console.log(`Found: ${snapshot.uuid}`);
-   * }
-   * ```
+   * Find a single snapshot by ID
    */
-  async findById(uuid: string): Promise<KeyResultWeightSnapshot | null> {
-    const prismaSnapshot = await this.prisma.keyResultWeightSnapshot.findUnique({
-      where: { uuid },
+  async findById(id: string): Promise<KeyResultWeightSnapshot | null> {
+    const prismaSnapshot = await (this.prisma as any).keyResultWeightSnapshot.findUnique({
+      where: { id },
     });
 
     return prismaSnapshot ? PrismaWeightSnapshotMapper.toDomain(prismaSnapshot) : null;
   }
 
   /**
-   * Delete鍗曚釜蹇収
-   *
-   * @param uuid - 蹇収 UUID
-   *
-   * @example
-   * ```typescript
-   * await repository.delete('snapshot-123');
-   * ```
+   * Delete a single snapshot
    */
-  async delete(uuid: string): Promise<void> {
-    await this.prisma.keyResultWeightSnapshot.delete({
-      where: { uuid },
+  async delete(id: string): Promise<void> {
+    await (this.prisma as any).keyResultWeightSnapshot.delete({
+      where: { id },
     });
   }
 
   /**
-   * Delete Goal 鐨勬墍鏈夊揩鐓?
-   *
-   * **鎵归噺鎿嶄綔**: 浣跨敤 deleteMany 鎵归噺Delete
-   * **绾ц仈**: Goal Delete鏃朵細鑷姩绾ц仈Delete (onDelete: Cascade)
-   *
-   * @param goalUuid - Goal UUID
-   *
-   * @example
-   * ```typescript
-   * await repository.deleteByGoal('goal-123');
-   * ```
+   * Delete all snapshots for a goal
    */
-  async deleteByGoal(goalUuid: string): Promise<void> {
-    await this.prisma.keyResultWeightSnapshot.deleteMany({
-      where: { goalUuid },
+  async deleteByGoal(goalId: string): Promise<void> {
+    await (this.prisma as any).keyResultWeightSnapshot.deleteMany({
+      where: { goalId },
     });
   }
 
   /**
-   * Delete KeyResult 鐨勬墍鏈夊揩鐓?
-   *
-   * **鎵归噺鎿嶄綔**: 浣跨敤 deleteMany 鎵归噺Delete
-   * **绾ц仈**: KR Delete鏃朵細鑷姩绾ц仈Delete (onDelete: Cascade)
-   *
-   * @param krUuid - KeyResult UUID
-   *
-   * @example
-   * ```typescript
-   * await repository.deleteByKeyResult('kr-456');
-   * ```
+   * Delete all snapshots for a key result
    */
-  async deleteByKeyResult(krUuid: string): Promise<void> {
-    await this.prisma.keyResultWeightSnapshot.deleteMany({
-      where: { keyResultUuid: krUuid },
+  async deleteByKeyResult(keyResultId: string): Promise<void> {
+    await (this.prisma as any).keyResultWeightSnapshot.deleteMany({
+      where: { keyResultId },
     });
-  }
-
-  /**
-   * Delete鏃堕棿鑼冨洿鍐呯殑蹇収
-   *
-   * **鐢ㄩ€?*: 娓呯悊鍘嗗彶鏁版嵁銆佹暟鎹綊妗?
-   * **鎵归噺鎿嶄綔**: 浣跨敤 deleteMany 鎵归噺Delete
-   *
-   * @param startTime - 寮€濮嬫椂闂存埑 (ms)
-   * @param endTime - 缁撴潫鏃堕棿鎴?(ms)
-   * @returns Delete鐨勮褰曟暟閲?
-   *
-   * @example
-   * ```typescript
-   * const oneYearAgo = Date.now() - 365 * 24 * 60 * 60 * 1000;
-   * const count = await repository.deleteByTimeRange(0, oneYearAgo);
-   * console.log(`Archived ${count} old snapshots`);
-   * ```
-   */
-  async deleteByTimeRange(startTime: number, endTime: number): Promise<number> {
-    const result = await this.prisma.keyResultWeightSnapshot.deleteMany({
-      where: {
-        snapshotTime: {
-          gte: BigInt(startTime),
-          lte: BigInt(endTime),
-        },
-      },
-    });
-    return result.count;
   }
 }

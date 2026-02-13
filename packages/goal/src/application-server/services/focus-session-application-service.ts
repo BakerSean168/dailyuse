@@ -65,7 +65,7 @@ export class FocusSessionApplicationService {
     },
   ): Promise<FocusSessionClientDTO> {
     // 1. 查询已有活跃会话（验证单个活跃会话规则）
-    const existingSessions = await this.sessionRepository.findByAccountUuid(accountUuid, {
+    const existingSessions = await this.sessionRepository.findByIdentityId(accountUuid, {
       status: [FocusSessionStatus.IN_PROGRESS, FocusSessionStatus.PAUSED],
     });
 
@@ -190,8 +190,8 @@ export class FocusSessionApplicationService {
       orderDirection?: 'asc' | 'desc';
     },
   ): Promise<FocusSessionClientDTO[]> {
-    const sessions = await this.sessionRepository.findByAccountUuid(accountUuid, {
-      goalUuid: filters?.goalUuid,
+    const sessions = await this.sessionRepository.findByIdentityId(accountUuid, {
+      goalId: filters?.goalUuid,
       status: filters?.status,
       limit: filters?.limit || 50,
       offset: filters?.offset || 0,
@@ -269,8 +269,8 @@ export class FocusSessionApplicationService {
     completionRate: number;
   }> {
     // 查询符合条件的所有会�?
-    const sessions = await this.sessionRepository.findByAccountUuid(accountUuid, {
-      goalUuid: options?.goalUuid,
+    const sessions = await this.sessionRepository.findByIdentityId(accountUuid, {
+      goalId: options?.goalUuid,
       limit: 1000, // 获取所有会话用于统�?
     });
 

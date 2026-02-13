@@ -19,10 +19,10 @@ export class ListGoals {
   constructor(private readonly goalRepository: IGoalRepository) {}
 
   async execute(input: QueryGoalsReq): Promise<Result<GoalsResponse>> {
-    const goals = await this.goalRepository.findByAccountUuid(input.accountUuid, {
+    const goals = await this.goalRepository.findByIdentityId(input.accountUuid, {
       includeChildren: input.includeKeyResults,
       status: input.status?.[0],
-      folderUuid: input.folderUuid,
+      folderId: input.folderUuid,
     });
 
     return ok({

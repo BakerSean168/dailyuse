@@ -1,59 +1,59 @@
-/**
+﻿/**
  * IEditorGroupRepository
- * EditorGroup 实体仓储接口
+ * EditorGroup 瀹炰綋浠撳偍鎺ュ彛
  */
 
 import type { EditorGroup } from '../entities/editor-group';
 
 /**
- * EditorGroup 仓储接口
+ * EditorGroup 浠撳偍鎺ュ彛
  */
 export interface IEditorGroupRepository {
   /**
-   * 根据 UUID 查找分组
+   * 鏍规嵁 UUID 鏌ユ壘鍒嗙粍
    */
-  findByUuid(uuid: string): Promise<EditorGroup | null>;
+  findById(id: string): Promise<EditorGroup | null>;
 
   /**
-   * 根据会话 UUID 查找所有分组
+   * 鏍规嵁浼氳瘽 UUID 鏌ユ壘鎵€鏈夊垎缁?
    */
-  findBySessionUuid(sessionUuid: string): Promise<EditorGroup[]>;
+  findBySessionId(sessionId: string): Promise<EditorGroup[]>;
 
   /**
-   * 根据会话 UUID 和分组索引查找分组
+   * 鏍规嵁浼氳瘽 UUID 鍜屽垎缁勭储寮曟煡鎵惧垎缁?
    */
-  findBySessionUuidAndGroupIndex(
-    sessionUuid: string,
+  findBySessionIdAndGroupIndex(
+    sessionId: string,
     groupIndex: number,
   ): Promise<EditorGroup | null>;
 
   /**
-   * 保存分组
+   * 淇濆瓨鍒嗙粍
    */
   save(group: EditorGroup): Promise<void>;
 
   /**
-   * 删除分组
+   * 鍒犻櫎鍒嗙粍
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 批量保存分组
+   * 鎵归噺淇濆瓨鍒嗙粍
    */
   saveBatch(groups: EditorGroup[]): Promise<void>;
 
   /**
-   * 删除会话的所有分组
+   * 鍒犻櫎浼氳瘽鐨勬墍鏈夊垎缁?
    */
-  deleteBySessionUuid(sessionUuid: string): Promise<void>;
+  deleteBySessionId(sessionId: string): Promise<void>;
 
   /**
-   * 统计会话的分组数量
+   * 缁熻浼氳瘽鐨勫垎缁勬暟閲?
    */
-  countBySessionUuid(sessionUuid: string): Promise<number>;
+  countBySessionId(sessionId: string): Promise<number>;
 
   /**
-   * 获取会话的最大分组索引
+   * 鑾峰彇浼氳瘽鐨勬渶澶у垎缁勭储寮?
    */
-  getMaxGroupIndex(sessionUuid: string): Promise<number>;
+  getMaxGroupIndex(sessionId: string): Promise<number>;
 }

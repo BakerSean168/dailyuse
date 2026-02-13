@@ -252,25 +252,25 @@ export class SqliteGoalRepository implements IGoalRepository {
     return this.rowToGoal(row, options?.includeChildren ?? false);
   }
 
-  async findByAccountUuid(
-    accountUuid: string,
+  async findByIdentityId(
+    identityId: string,
     options?: {
       includeChildren?: boolean;
       status?: string;
-      folderUuid?: string;
+      folderId?: string;
     },
   ): Promise<Goal[]> {
     let query = `SELECT * FROM goals WHERE identity_id = ? AND deleted_at IS NULL`;
-    const params: any[] = [accountUuid];
+    const params: any[] = [identityId];
 
     if (options?.status) {
       query += ` AND status = ?`;
       params.push(options.status);
     }
 
-    if (options?.folderUuid) {
+    if (options?.folderId) {
       query += ` AND folder_id = ?`;
-      params.push(options.folderUuid);
+      params.push(options.folderId);
     }
 
     query += ` ORDER BY sort_order ASC, created_at DESC`;
@@ -282,67 +282,67 @@ export class SqliteGoalRepository implements IGoalRepository {
     );
   }
 
-  async findByFolderUuid(folderUuid: string): Promise<Goal[]> {
+  async findByFolderId(folderId: string): Promise<Goal[]> {
     const rows = this.db
       .prepare(
         `SELECT * FROM goals WHERE folder_id = ? AND deleted_at IS NULL ORDER BY sort_order ASC, created_at DESC`,
       )
-      .all(folderUuid) as any[];
+      .all(folderId) as any[];
 
     return rows.map((row) => this.rowToGoal(row, false));
   }
 
   // ============ Delete ============
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     this.db.transaction(() => {
       // CASCADE via FK will handle sub-entities, but be explicit
-      this.db.prepare(`DELETE FROM goal_reviews WHERE goal_id = ?`).run(uuid);
-      this.db.prepare(`DELETE FROM key_results WHERE goal_id = ?`).run(uuid);
+      this.db.prepare(`DELETE FROM goal_reviews WHERE goal_id = ?`).run(id);
+      this.db.prepare(`DELETE FROM key_results WHERE goal_id = ?`).run(id);
       this.db
         .prepare(`DELETE FROM weight_snapshots WHERE goal_id = ?`)
-        .run(uuid);
-      this.db.prepare(`DELETE FROM goals WHERE id = ?`).run(uuid);
+        .run(id);
+      this.db.prepare(`DELETE FROM goals WHERE id = ?`).run(id);
     })();
   }
 
-  async softDelete(uuid: string): Promise<void> {
+  async softDelete(id: string): Promise<void> {
     const now = Date.now();
     this.db
       .prepare(`UPDATE goals SET deleted_at = ?, updated_at = ? WHERE id = ?`)
-      .run(now, now, uuid);
+      .run(now, now, id);
   }
 
   // ============ Utilities ============
 
-  async exists(uuid: string): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     const row = this.db
       .prepare(`SELECT 1 FROM goals WHERE id = ? LIMIT 1`)
-      .get(uuid);
+      .get(id);
     return row !== undefined;
   }
 
-  async batchUpdateStatus(uuids: string[], status: string): Promise<void> {
-    if (uuids.length === 0) return;
-    const placeholders = uuids.map(() => '?').join(',');
+  async batchUpdateStatus(ids: string[], status: string): Promise<void> {
+    if (ids.length === 0) return;
+    const placeholders = ids.map(() => '?').join(',');
     this.db
       .prepare(
         `UPDATE goals SET status = ?, updated_at = ? WHERE id IN (${placeholders})`,
       )
-      .run(status, Date.now(), ...uuids);
+      .run(status, Date.now(), ...ids);
   }
 
   async batchMoveToFolder(
-    uuids: string[],
-    folderUuid: string | null,
+    ids: string[],
+    folderId: string | null,
   ): Promise<void> {
-    if (uuids.length === 0) return;
-    const placeholders = uuids.map(() => '?').join(',');
+    if (ids.length === 0) return;
+    const placeholders = ids.map(() => '?').join(',');
     this.db
       .prepare(
         `UPDATE goals SET folder_id = ?, updated_at = ? WHERE id IN (${placeholders})`,
       )
-      .run(folderUuid, Date.now(), ...uuids);
+      .run(folderId, Date.now(), ...ids);
   }
 
   // ============ Hierarchy ============

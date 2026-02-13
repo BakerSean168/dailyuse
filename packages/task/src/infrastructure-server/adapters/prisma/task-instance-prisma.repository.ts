@@ -1,228 +1,216 @@
-import type { PrismaClient } from '../../../generated/prisma/client';
-import type { ITaskInstanceRepository } from '../../../domain-server/repositories/ITaskInstanceRepository';
+﻿/**
+ * TaskInstancePrismaRepository - Prisma Implementation of ITaskInstanceRepository
+ * 任务实例仓储 - Prisma 实现
+ *
+ * 聚合根：TaskInstance
+ */
+
+import type { PrismaClient } from '@dailyuse/database';
 import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
+import type { ITaskInstanceRepository } from '../../../domain-server/repositories/ITaskInstanceRepository';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 
-/**
- * Prisma implementation of ITaskInstanceRepository
- */
 export class TaskInstancePrismaRepository implements ITaskInstanceRepository {
   constructor(private prisma: PrismaClient) {}
 
+  /**
+   * Prisma record  TaskInstance 聚合根
+   */
   private mapToEntity(data: any): TaskInstance {
     return TaskInstance.fromPersistenceDTO({
-      uuid: data.uuid,
-      templateUuid: data.templateUuid,
-      accountUuid: data.accountUuid,
-      instanceDate: typeof data.instanceDate === 'bigint' ? Number(data.instanceDate) : data.instanceDate,
+      id: data.id,
+      templateId: data.templateId,
+      identityId: data.identityId,
+      instanceDate: data.instanceDate,
       timeConfig: data.timeConfig || '{}',
       importance: data.importance || 'Moderate',
-      priority: data.priority || undefined,
+      priority: data.priority ?? undefined,
       status: data.status,
-      completionRecord: data.completionRecord || undefined,
-      skipRecord: data.skipRecord || undefined,
-      actualStartTime: data.actualStartTime ? (typeof data.actualStartTime === 'bigint' ? Number(data.actualStartTime) : data.actualStartTime) : undefined,
-      actualEndTime: data.actualEndTime ? (typeof data.actualEndTime === 'bigint' ? Number(data.actualEndTime) : data.actualEndTime) : undefined,
-      note: data.note || undefined,
-      createdAt: typeof data.createdAt === 'bigint' ? Number(data.createdAt) : data.createdAt,
-      updatedAt: typeof data.updatedAt === 'bigint' ? Number(data.updatedAt) : data.updatedAt,
+      actualStartTime: data.actualStartTime ?? null,
+      actualEndTime: data.actualEndTime ?? null,
+      comment: data.comment ?? null,
+      version: data.version,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+      deletedAt: data.deletedAt ?? null,
     });
   }
 
+  /**
+   * TaskInstance 聚合根  Prisma write data
+   */
+  private toWriteData(dto: ReturnType<TaskInstance['toPersistenceDTO']>) {
+    return {
+      templateId: dto.templateId,
+      identityId: dto.identityId,
+      instanceDate: dto.instanceDate instanceof Date ? dto.instanceDate : new Date(dto.instanceDate as any),
+      timeConfig: dto.timeConfig || '{}',
+      importance: dto.importance || 'Moderate',
+      priority: dto.priority ?? null,
+      status: dto.status,
+      actualStartTime: dto.actualStartTime
+        ? (dto.actualStartTime instanceof Date ? dto.actualStartTime : new Date(dto.actualStartTime as any))
+        : null,
+      actualEndTime: dto.actualEndTime
+        ? (dto.actualEndTime instanceof Date ? dto.actualEndTime : new Date(dto.actualEndTime as any))
+        : null,
+      comment: dto.comment ?? null,
+      version: dto.version,
+    };
+  }
+
   async save(instance: TaskInstance): Promise<void> {
-    const data = instance.toPersistenceDTO();
-    const updateData: any = {
-      templateUuid: data.templateUuid,
-      accountUuid: data.accountUuid,
-      instanceDate: new Date(data.instanceDate),
-      timeConfig: data.timeConfig || '{}',
-      importance: data.importance || 'Moderate',
-      priority: data.priority || undefined,
-      status: data.status,
-      actualStartTime: data.actualStartTime ? new Date(data.actualStartTime) : undefined,
-      actualEndTime: data.actualEndTime ? new Date(data.actualEndTime) : undefined,
-      note: data.note || undefined,
-      updatedAt: new Date(data.updatedAt),
-    };
-
-    // Only set completion/skip records if they exist
-    if (data.completionRecord) {
-      updateData.completionRecord = data.completionRecord;
-    }
-    if (data.skipRecord) {
-      updateData.skipRecord = data.skipRecord;
-    }
-
-    const createData = {
-      ...updateData,
-      uuid: data.uuid,
-      createdAt: new Date(data.createdAt),
-    };
+    const dto = instance.toPersistenceDTO();
+    const data = this.toWriteData(dto);
 
     await this.prisma.taskInstance.upsert({
-      where: { uuid: data.uuid },
-      update: updateData,
-      create: createData,
+      where: { id: dto.id },
+      create: {
+        id: dto.id,
+        ...data,
+        createdAt: dto.createdAt instanceof Date ? dto.createdAt : new Date(dto.createdAt as any),
+      },
+      update: data,
     });
   }
 
   async saveMany(instances: TaskInstance[]): Promise<void> {
-    const transaction = instances.map((instance) => {
-      const data = instance.toPersistenceDTO();
-      const updateData: any = {
-        templateUuid: data.templateUuid,
-        accountUuid: data.accountUuid,
-        instanceDate: new Date(data.instanceDate),
-        timeConfig: data.timeConfig || '{}',
-        importance: data.importance || 'Moderate',
-        priority: data.priority || undefined,
-        status: data.status,
-        actualStartTime: data.actualStartTime ? new Date(data.actualStartTime) : undefined,
-        actualEndTime: data.actualEndTime ? new Date(data.actualEndTime) : undefined,
-        note: data.note || undefined,
-        updatedAt: new Date(data.updatedAt),
-      };
-
-      // Only set completion/skip records if they exist
-      if (data.completionRecord) {
-        updateData.completionRecord = data.completionRecord;
-      }
-      if (data.skipRecord) {
-        updateData.skipRecord = data.skipRecord;
-      }
-
-      const createData = {
-        ...updateData,
-        uuid: data.uuid,
-        createdAt: new Date(data.createdAt),
-      };
-
+    const operations = instances.map((instance) => {
+      const dto = instance.toPersistenceDTO();
+      const data = this.toWriteData(dto);
       return this.prisma.taskInstance.upsert({
-        where: { uuid: data.uuid },
-        update: updateData,
-        create: createData,
+        where: { id: dto.id },
+        create: {
+          id: dto.id,
+          ...data,
+          createdAt: dto.createdAt instanceof Date ? dto.createdAt : new Date(dto.createdAt as any),
+        },
+        update: data,
       });
     });
-    await this.prisma.$transaction(transaction);
+    await this.prisma.$transaction(operations);
   }
 
-  async findByUuid(uuid: string): Promise<TaskInstance | null> {
+  async findById(id: string): Promise<TaskInstance | null> {
     const data = await this.prisma.taskInstance.findUnique({
-      where: { uuid },
+      where: { id },
     });
     return data ? this.mapToEntity(data) : null;
   }
 
-  async findByTemplate(templateUuid: string): Promise<TaskInstance[]> {
+  async findByTemplateId(templateId: string): Promise<TaskInstance[]> {
     const data = await this.prisma.taskInstance.findMany({
-      where: { templateUuid },
+      where: { templateId },
+      orderBy: { instanceDate: 'desc' },
     });
-    return data.map((d) => this.mapToEntity(d));
+    return data.map((d: any) => this.mapToEntity(d));
   }
 
-  async findByAccount(accountUuid: string): Promise<TaskInstance[]> {
+  async findByIdentityId(identityId: string): Promise<TaskInstance[]> {
     const data = await this.prisma.taskInstance.findMany({
-      where: { accountUuid },
+      where: { identityId },
+      orderBy: { instanceDate: 'desc' },
     });
-    return data.map((d) => this.mapToEntity(d));
+    return data.map((d: any) => this.mapToEntity(d));
   }
 
   async findByDateRange(
-    accountUuid: string,
+    identityId: string,
     startDate: number,
     endDate: number,
   ): Promise<TaskInstance[]> {
     const data = await this.prisma.taskInstance.findMany({
       where: {
-        accountUuid,
+        identityId,
         instanceDate: {
           gte: new Date(startDate),
           lte: new Date(endDate),
         },
       },
+      orderBy: { instanceDate: 'asc' },
     });
-    return data.map((d) => this.mapToEntity(d));
+    return data.map((d: any) => this.mapToEntity(d));
   }
 
   async findByStatus(
-    accountUuid: string,
+    identityId: string,
     status: TaskInstanceStatus,
   ): Promise<TaskInstance[]> {
     const data = await this.prisma.taskInstance.findMany({
-      where: {
-        accountUuid,
-        status,
-      },
+      where: { identityId, status },
+      orderBy: { instanceDate: 'desc' },
     });
-    return data.map((d) => this.mapToEntity(d));
+    return data.map((d: any) => this.mapToEntity(d));
   }
 
-  async findOverdueInstances(accountUuid: string): Promise<TaskInstance[]> {
+  async findOverdueInstances(identityId: string): Promise<TaskInstance[]> {
     const now = new Date();
     const data = await this.prisma.taskInstance.findMany({
       where: {
-        accountUuid,
-        status: 'PENDING',
+        identityId,
+        status: 'Pending',
         instanceDate: { lt: now },
       },
+      orderBy: { instanceDate: 'asc' },
     });
-    return data.map((d) => this.mapToEntity(d));
+    return data.map((d: any) => this.mapToEntity(d));
   }
 
-  async delete(uuid: string): Promise<void> {
-    await this.prisma.taskInstance.delete({
-      where: { uuid },
-    });
+  async delete(id: string): Promise<void> {
+    await this.prisma.taskInstance.delete({ where: { id } });
   }
 
-  async deleteMany(uuids: string[]): Promise<void> {
+  async deleteMany(ids: string[]): Promise<void> {
     await this.prisma.taskInstance.deleteMany({
-      where: { uuid: { in: uuids } },
+      where: { id: { in: ids } },
     });
   }
 
-  async deleteByTemplate(templateUuid: string): Promise<void> {
+  async deleteByTemplateId(templateId: string): Promise<void> {
     await this.prisma.taskInstance.deleteMany({
-      where: { templateUuid },
+      where: { templateId },
     });
   }
 
   async countFutureInstances(
-    templateUuid: string,
+    templateId: string,
     fromDate: number = Date.now(),
   ): Promise<number> {
-    const count = await this.prisma.taskInstance.count({
+    return this.prisma.taskInstance.count({
       where: {
-        templateUuid,
+        templateId,
         instanceDate: { gte: new Date(fromDate) },
       },
     });
-    return count;
   }
 
-  async findByTemplateUuidAndDateRange(
-    templateUuid: string,
+  async findByTemplateIdAndDateRange(
+    templateId: string,
     startDate: number,
     endDate: number,
   ): Promise<TaskInstance[]> {
     const data = await this.prisma.taskInstance.findMany({
       where: {
-        templateUuid,
+        templateId,
         instanceDate: {
           gte: new Date(startDate),
           lte: new Date(endDate),
         },
       },
+      orderBy: { instanceDate: 'asc' },
     });
-    return data.map((d) => this.mapToEntity(d));
+    return data.map((d: any) => this.mapToEntity(d));
   }
 
-  async deleteFuturePendingInstances(templateUuid: string, fromDate: number): Promise<void> {
+  async deleteFuturePendingInstances(
+    templateId: string,
+    fromDate: number,
+  ): Promise<void> {
     await this.prisma.taskInstance.deleteMany({
       where: {
-        templateUuid,
+        templateId,
         instanceDate: { gte: new Date(fromDate) },
-        status: 'PENDING',
+        status: 'Pending',
       },
     });
   }

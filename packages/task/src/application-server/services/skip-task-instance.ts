@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Skip Task Instance Service
  *
- * 跳过任务实例
+ * 璺宠繃浠诲姟瀹炰緥
  */
 
 import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
@@ -20,7 +20,7 @@ export class SkipTaskInstance {
   constructor(private readonly instanceRepository: ITaskInstanceRepository) {}
 
   async execute(uuid: string, request?: SkipTaskInstanceRequest): Promise<Result<TaskInstanceResponse>> {
-    const instance = await this.instanceRepository.findByUuid(uuid);
+    const instance = await this.instanceRepository.findById(uuid);
     if (!instance) {
       return error('NOT_FOUND', `TaskInstance ${uuid} not found`);
     }

@@ -1,115 +1,119 @@
-import type { PrismaClient, focusMode as PrismaFocusMode } from '@dailyuse/database';
+﻿import type { PrismaClient } from '@dailyuse/database';
 import type { IFocusModeRepository } from '@/domain-server';
 import { FocusMode } from '@/domain-server';
-import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
+import type { FocusModeDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
 
 /**
- * FocusMode Prisma Repository瀹炵幇
+ * FocusMode Prisma Repository
+ *
+ * Prisma implementation of IFocusModeRepository.
+ * Uses FocusMode.fromDTO() to include focusedGoalIds (fromPersistenceDTO hardcodes them to []).
  */
 export class FocusModePrismaRepository implements IFocusModeRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 灏?Prisma 妯″瀷鏄犲皠涓洪鍩熷€煎璞?
+   * Map Prisma row to domain value object.
+   * Converts DateTime fields to timestamps for FocusModeDTO.
    */
-  private mapToValueObject(data: PrismaFocusMode): FocusMode {
-    return FocusMode.fromServerDTO({
-      uuid: data.uuid,
-      accountUuid: data.accountUuid,
-      focusedGoalUuids: data.focusedGoalUuids,
-      startTime: Number(data.startTime),
-      endTime: Number(data.endTime),
+  private mapToValueObject(data: any): FocusMode {
+    const dto: FocusModeDTO = {
+      id: data.id,
+      identityId: data.identityId,
+      focusedGoalIds: data.focusedGoalIds ?? [],
+      startTime: (data.startTime as Date).getTime(),
+      endTime: (data.endTime as Date).getTime(),
       hiddenGoalsMode: data.hiddenGoalsMode as HiddenGoalsMode,
       isActive: data.isActive,
-      actualEndTime: data.actualEndTime ? Number(data.actualEndTime) : null,
-      createdAt: Number(data.createdAt),
-      updatedAt: Number(data.updatedAt),
-    });
+      actualEndTime: data.actualEndTime ? (data.actualEndTime as Date).getTime() : null,
+      createdAt: (data.createdAt as Date).getTime(),
+      updatedAt: (data.updatedAt as Date).getTime(),
+    };
+    return FocusMode.fromDTO(dto);
   }
 
   /**
-   * Save涓撴敞鍛ㄦ湡锛堝垱寤烘垨Update锛?
+   * Save focus mode (upsert).
+   * Uses toPersistenceDTO() for Date fields + toDTO() for focusedGoalIds.
    */
   async save(focusMode: FocusMode): Promise<void> {
-    const dto = focusMode.toServerDTO();
+    const persistenceDto = focusMode.toPersistenceDTO();
+    const fullDto = focusMode.toDTO();
 
-    await this.prisma.focusMode.upsert({
-      where: { uuid: dto.uuid },
+    await (this.prisma as any).focusMode.upsert({
+      where: { id: persistenceDto.id as string },
       create: {
-        uuid: dto.uuid,
-        accountUuid: dto.accountUuid,
-        focusedGoalUuids: dto.focusedGoalUuids,
-        startTime: BigInt(dto.startTime),
-        endTime: BigInt(dto.endTime),
-        hiddenGoalsMode: dto.hiddenGoalsMode,
-        isActive: dto.isActive,
-        actualEndTime: dto.actualEndTime ? BigInt(dto.actualEndTime) : null,
-        createdAt: BigInt(dto.createdAt),
-        updatedAt: BigInt(dto.updatedAt),
+        id: persistenceDto.id as string,
+        identityId: persistenceDto.identityId as string,
+        focusedGoalIds: fullDto.focusedGoalIds as string[],
+        startTime: persistenceDto.startTime,
+        endTime: persistenceDto.endTime,
+        hiddenGoalsMode: persistenceDto.hiddenGoalsMode,
+        isActive: persistenceDto.isActive,
+        actualEndTime: persistenceDto.actualEndTime,
+        createdAt: persistenceDto.createdAt,
+        updatedAt: persistenceDto.updatedAt,
       },
       update: {
-        focusedGoalUuids: dto.focusedGoalUuids,
-        endTime: BigInt(dto.endTime),
-        isActive: dto.isActive,
-        actualEndTime: dto.actualEndTime ? BigInt(dto.actualEndTime) : null,
-        updatedAt: BigInt(dto.updatedAt),
+        focusedGoalIds: fullDto.focusedGoalIds as string[],
+        endTime: persistenceDto.endTime,
+        isActive: persistenceDto.isActive,
+        actualEndTime: persistenceDto.actualEndTime,
+        updatedAt: persistenceDto.updatedAt,
       },
     });
   }
 
   /**
-   * 閫氳繃 UUID 鏌ユ壘涓撴敞鍛ㄦ湡
+   * Find focus mode by ID
    */
-  async findById(uuid: string): Promise<FocusMode | null> {
-    const data = await this.prisma.focusMode.findUnique({
-      where: { uuid },
+  async findById(id: string): Promise<FocusMode | null> {
+    const data = await (this.prisma as any).focusMode.findUnique({
+      where: { id },
     });
-
     return data ? this.mapToValueObject(data) : null;
   }
 
   /**
-   * 鏌ユ壘璐︽埛褰撳墠娲昏穬鐨勪笓娉ㄥ懆鏈?
+   * Find active focus mode for an identity
    */
-  async findActiveByAccountUuid(accountUuid: string): Promise<FocusMode | null> {
-    const data = await this.prisma.focusMode.findFirst({
+  async findActiveByIdentityId(identityId: string): Promise<FocusMode | null> {
+    const data = await (this.prisma as any).focusMode.findFirst({
       where: {
-        accountUuid,
+        identityId,
         isActive: true,
       },
       orderBy: { createdAt: 'desc' },
     });
-
     return data ? this.mapToValueObject(data) : null;
   }
 
   /**
-   * 鏌ユ壘璐︽埛鐨勬墍鏈変笓娉ㄥ懆鏈燂紙鍖呮嫭鍘嗗彶锛?
+   * Find all focus modes for an identity (including history)
    */
-  async findByAccountUuid(accountUuid: string): Promise<FocusMode[]> {
-    const data = await this.prisma.focusMode.findMany({
-      where: { accountUuid },
+  async findByIdentityId(identityId: string): Promise<FocusMode[]> {
+    const data = await (this.prisma as any).focusMode.findMany({
+      where: { identityId },
       orderBy: { createdAt: 'desc' },
     });
-
-    return data.map((item) => this.mapToValueObject(item));
+    return data.map((item: any) => this.mapToValueObject(item));
   }
 
   /**
-   * 鎵归噺澶辨晥杩囨湡鐨勪笓娉ㄥ懆鏈?
+   * Deactivate expired focus modes
    */
   async deactivateExpired(): Promise<number> {
-    const currentTime = BigInt(Date.now());
+    const now = new Date();
 
-    const result = await this.prisma.focusMode.updateMany({
+    const result = await (this.prisma as any).focusMode.updateMany({
       where: {
         isActive: true,
-        endTime: { lt: currentTime },
+        endTime: { lt: now },
       },
       data: {
         isActive: false,
-        actualEndTime: currentTime,
-        updatedAt: currentTime,
+        actualEndTime: now,
+        updatedAt: now,
       },
     });
 
@@ -117,12 +121,11 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
   }
 
   /**
-   * Delete涓撴敞鍛ㄦ湡
+   * Delete focus mode by ID
    */
-  async delete(uuid: string): Promise<void> {
-    await this.prisma.focusMode.delete({
-      where: { uuid },
+  async delete(id: string): Promise<void> {
+    await (this.prisma as any).focusMode.delete({
+      where: { id },
     });
   }
 }
-

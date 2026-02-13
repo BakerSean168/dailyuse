@@ -1,4 +1,4 @@
-/**
+﻿/**
  * IScheduleJobRepository
  * Interface for schedule job (cross-module triggers) repository
  *
@@ -16,12 +16,12 @@ export interface IScheduleJobRepository {
   /**
    * Find a schedule job by its UUID
    */
-  findByUuid(uuid: string): Promise<ScheduleJobServerDTO | null>;
+  findById(id: string): Promise<ScheduleJobServerDTO | null>;
 
   /**
    * Find all schedule jobs for an account
    */
-  findByAccountUuid(accountUuid: string): Promise<ScheduleJobServerDTO[]>;
+  findByIdentityId(identityId: string): Promise<ScheduleJobServerDTO[]>;
 
   /**
    * Find schedule jobs by source module and source entity
@@ -36,7 +36,7 @@ export interface IScheduleJobRepository {
   /**
    * Delete schedule job by UUID
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
    * Delete all schedule jobs for a source entity

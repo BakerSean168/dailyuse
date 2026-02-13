@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Delete Task Template Service
  *
- * 删除任务模板
+ * 鍒犻櫎浠诲姟妯℃澘
  */
 
 import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
@@ -16,9 +16,9 @@ export class DeleteTaskTemplate {
   constructor(private readonly templateRepository: ITaskTemplateRepository) {}
 
   async execute(uuid: string, soft = false): Promise<Result<{ success: boolean }>> {
-    const template = await this.templateRepository.findByUuid(uuid);
+    const template = await this.templateRepository.findById(uuid);
     if (!template) {
-      // 幂等性：如果模板不存在，直接返回成功
+      // 骞傜瓑鎬э細濡傛灉妯℃澘涓嶅瓨鍦紝鐩存帴杩斿洖鎴愬姛
       return ok({ success: true });
     }
 
@@ -28,19 +28,19 @@ export class DeleteTaskTemplate {
       await this.templateRepository.delete(uuid);
     }
 
-    // 发布删除事件
+    // 鍙戝竷鍒犻櫎浜嬩欢
     try {
       await eventBus.publish({
         eventType: 'task.template.deleted',
         payload: {
-          taskTemplateUuid: uuid,
-          accountUuid: template.accountUuid,
+          taskTemplateId: uuid,
+          identityId: template.identityId,
           deletedAt: Date.now(),
         },
         timestamp: Date.now(),
       });
     } catch (error) {
-      console.error(`�?[DeleteTaskTemplate] 发布删除事件失败:`, error);
+      console.error(`锟?[DeleteTaskTemplate] 鍙戝竷鍒犻櫎浜嬩欢澶辫触:`, error);
     }
 
     return ok({ success: true });

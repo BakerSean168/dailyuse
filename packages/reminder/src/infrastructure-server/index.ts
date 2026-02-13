@@ -7,13 +7,14 @@
 // DI Module
 export { ReminderModule } from './reminder.module';
 
-// Adapters
-export { ReminderPrismaRepository } from './adapters/prisma/reminder-prisma.repository';
+// Prisma Adapters
+export { ReminderGroupPrismaRepository } from './adapters/prisma/reminder-group-prisma.repository';
+export { ReminderTemplatePrismaRepository } from './adapters/prisma/reminder-template-prisma.repository';
+export { ReminderResponsePrismaRepository } from './adapters/prisma/reminder-response-prisma.repository';
+export { UserReminderPreferencePrismaRepository } from './adapters/prisma/user-reminder-preference-prisma.repository';
+
+// SQLite Adapters
 export { SqliteReminderGroupRepository } from './adapters/sqlite/reminder-group-sqlite.repository';
 export { SqliteReminderResponseRepository } from './adapters/sqlite/reminder-response-sqlite.repository';
-export { SqliteReminderStatisticsRepository } from './adapters/sqlite/reminder-statistics-sqlite.repository';
 export { SqliteReminderTemplateRepository } from './adapters/sqlite/reminder-template-sqlite.repository';
-
-// Container (Legacy support during transition if needed, otherwise removed)
-// export { ReminderContainer } from './reminder.container';
 

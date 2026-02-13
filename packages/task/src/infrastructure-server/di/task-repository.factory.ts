@@ -1,34 +1,38 @@
-import type { PrismaClient } from '../../generated/prisma/client';
+﻿/**
+ * Task Repository Factory
+ * 任务仓储工厂
+ *
+ * 根据数据源类型创建对应的仓储实例
+ * 支持: Prisma (API/Server), SQLite (Desktop)
+ */
+
+import type { PrismaClient } from '@dailyuse/database';
 import type Database from 'better-sqlite3';
-import type {
-  ITaskInstanceRepository,
-} from '../../domain-server/repositories/ITaskInstanceRepository';
-import type {
-  ITaskDependencyRepository,
-} from '../../domain-server/repositories/ITaskDependencyRepository';
-import type {
-  ITaskStatisticsRepository,
-} from '../../domain-server/repositories/ITaskStatisticsRepository';
+import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskDependencyRepository } from '../../domain-server/repositories/ITaskDependencyRepository';
+import type { ITaskFolderRepository } from '../../domain-server/repositories/ITaskFolderRepository';
+import { TaskTemplatePrismaRepository } from '../adapters/prisma/task-template-prisma.repository';
 import { TaskInstancePrismaRepository } from '../adapters/prisma/task-instance-prisma.repository';
 import { TaskDependencyPrismaRepository } from '../adapters/prisma/task-dependency-prisma.repository';
-import { TaskStatisticsPrismaRepository } from '../adapters/prisma/task-statistics-prisma.repository';
+import { TaskFolderPrismaRepository } from '../adapters/prisma/task-folder-prisma.repository';
+import { SqliteTaskTemplateRepository } from '../adapters/sqlite/task-template-sqlite.repository';
 import { SqliteTaskInstanceRepository } from '../adapters/sqlite/task-instance-sqlite.repository';
 import { SqliteTaskDependencyRepository } from '../adapters/sqlite/task-dependency-sqlite.repository';
-import { SqliteTaskStatisticsRepository } from '../adapters/sqlite/task-statistics-sqlite.repository';
 
-/**
- * Task Repository Factory
- *
- * Creates repository instances based on data source type
- * Supports: Prisma (API/Server), SQLite (Desktop)
- *
- * 用法:
- * const instanceRepo = TaskRepositoryFactory.createTaskInstanceRepository(dataSourceType, dbConnection);
- */
 export class TaskRepositoryFactory {
-  /**
-   * Create TaskInstanceRepository
-   */
+  static createTaskTemplateRepository(
+    dataSourceType: 'prisma' | 'sqlite',
+    dbConnection: PrismaClient | Database,
+  ): ITaskTemplateRepository {
+    if (dataSourceType === 'prisma') {
+      return new TaskTemplatePrismaRepository(dbConnection as PrismaClient);
+    } else if (dataSourceType === 'sqlite') {
+      return new SqliteTaskTemplateRepository(dbConnection as Database);
+    }
+    throw new Error(`Unknown data source type: ${dataSourceType}`);
+  }
+
   static createTaskInstanceRepository(
     dataSourceType: 'prisma' | 'sqlite',
     dbConnection: PrismaClient | Database,
@@ -41,9 +45,6 @@ export class TaskRepositoryFactory {
     throw new Error(`Unknown data source type: ${dataSourceType}`);
   }
 
-  /**
-   * Create TaskDependencyRepository
-   */
   static createTaskDependencyRepository(
     dataSourceType: 'prisma' | 'sqlite',
     dbConnection: PrismaClient | Database,
@@ -56,19 +57,15 @@ export class TaskRepositoryFactory {
     throw new Error(`Unknown data source type: ${dataSourceType}`);
   }
 
-  /**
-   * Create TaskStatisticsRepository
-   */
-  static createTaskStatisticsRepository(
+  static createTaskFolderRepository(
     dataSourceType: 'prisma' | 'sqlite',
     dbConnection: PrismaClient | Database,
-  ): ITaskStatisticsRepository {
+  ): ITaskFolderRepository {
     if (dataSourceType === 'prisma') {
-      return new TaskStatisticsPrismaRepository(dbConnection as PrismaClient);
-    } else if (dataSourceType === 'sqlite') {
-      return new SqliteTaskStatisticsRepository(dbConnection as Database);
+      return new TaskFolderPrismaRepository(dbConnection as PrismaClient);
     }
-    throw new Error(`Unknown data source type: ${dataSourceType}`);
+    // TODO: SQLite folder adapter not yet implemented
+    throw new Error(`TaskFolder SQLite adapter not implemented. Use Prisma.`);
   }
 
   /**
@@ -79,9 +76,12 @@ export class TaskRepositoryFactory {
     dbConnection: PrismaClient | Database,
   ) {
     return {
+      taskTemplateRepository: this.createTaskTemplateRepository(dataSourceType, dbConnection),
       taskInstanceRepository: this.createTaskInstanceRepository(dataSourceType, dbConnection),
       taskDependencyRepository: this.createTaskDependencyRepository(dataSourceType, dbConnection),
-      taskStatisticsRepository: this.createTaskStatisticsRepository(dataSourceType, dbConnection),
+      ...(dataSourceType === 'prisma'
+        ? { taskFolderRepository: this.createTaskFolderRepository(dataSourceType, dbConnection) }
+        : {}),
     };
   }
 }

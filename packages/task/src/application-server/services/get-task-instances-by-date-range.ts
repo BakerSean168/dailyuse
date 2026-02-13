@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Get Task Instances By Date Range Service
  *
- * 根据日期范围获取任务实例
+ * 鏍规嵁鏃ユ湡鑼冨洿鑾峰彇浠诲姟瀹炰緥
  */
 
 import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
@@ -18,9 +18,9 @@ import { ok } from '@dailyuse/contracts/result';
 export class GetTaskInstancesByDateRange {
   constructor(private readonly instanceRepository: ITaskInstanceRepository) {}
 
-  async execute(accountUuid: string, startDate: number, endDate: number): Promise<Result<TaskInstancesResponse>> {
+  async execute(identityId: string, startDate: number, endDate: number): Promise<Result<TaskInstancesResponse>> {
     const instances = await this.instanceRepository.findByDateRange(
-      accountUuid,
+      identityId,
       startDate,
       endDate,
     );

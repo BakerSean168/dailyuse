@@ -1,6 +1,6 @@
-/**
- * TaskFolder Repository Interface
- * 任务文件夹仓储接口
+﻿/**
+ * TaskFolder 仓储接口
+ * 任务文件夹聚合根仓储
  *
  * DDD 仓储职责：
  * - 任务文件夹的持久化
@@ -16,22 +16,22 @@ export interface ITaskFolderRepository {
   save(folder: TaskFolderServerDTO): Promise<void>;
 
   /**
-   * 根据 UUID 查找任务文件夹
+   * 根据 ID 查找任务文件夹
    */
-  findByUuid(uuid: string): Promise<TaskFolderServerDTO | null>;
+  findById(id: string): Promise<TaskFolderServerDTO | null>;
 
   /**
-   * 根据账户 UUID 查找所有任务文件夹
+   * 根据用户 ID 查找所有任务文件夹
    */
-  findByAccount(accountUuid: string): Promise<TaskFolderServerDTO[]>;
+  findByIdentityId(identityId: string): Promise<TaskFolderServerDTO[]>;
 
   /**
    * 删除任务文件夹
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
    * 检查文件夹是否存在
    */
-  exists(uuid: string): Promise<boolean>;
+  exists(id: string): Promise<boolean>;
 }

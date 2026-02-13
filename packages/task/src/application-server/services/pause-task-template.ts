@@ -1,12 +1,12 @@
-/**
+﻿/**
  * Pause Task Template Service
  *
- * 暂停任务模板
- * 业务逻辑：
- * 1. 修改模板状态为 PAUSED
- * 2. 停止生成新的任务实例
- * 3. 处理已存在的未完成实例（标记为 SKIPPED）
- * 4. 发布暂停事件，触发提醒调度暂�?
+ * 鏆傚仠浠诲姟妯℃澘
+ * 涓氬姟閫昏緫锛?
+ * 1. 淇敼妯℃澘鐘舵€佷负 PAUSED
+ * 2. 鍋滄鐢熸垚鏂扮殑浠诲姟瀹炰緥
+ * 3. 澶勭悊宸插瓨鍦ㄧ殑鏈畬鎴愬疄渚嬶紙鏍囪涓?SKIPPED锛?
+ * 4. 鍙戝竷鏆傚仠浜嬩欢锛岃Е鍙戞彁閱掕皟搴︽殏锟?
  */
 
 import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
@@ -29,32 +29,32 @@ export class PauseTaskTemplate {
     uuid: string,
     reason?: string,
   ): Promise<Result<{ template: TaskTemplateClientDTO; instancesSkipped: number }>> {
-    const template = await this.templateRepository.findByUuid(uuid);
+    const template = await this.templateRepository.findById(uuid);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${uuid} not found`);
     }
 
-    // 1. 暂停模板状�?
+    // 1. 鏆傚仠妯℃澘鐘讹拷?
     template.pause();
     await this.templateRepository.save(template);
 
-    // 2. 处理未完成的任务实例
+    // 2. 澶勭悊鏈畬鎴愮殑浠诲姟瀹炰緥
     const instancesSkipped = await this.handleInstancesOnPause(uuid);
 
-    // 3. 发布暂停事件
+    // 3. 鍙戝竷鏆傚仠浜嬩欢
     try {
       await eventBus.publish({
         eventType: 'task.template.paused',
         payload: {
-          taskTemplateUuid: template.uuid,
-          accountUuid: template.accountUuid,
+          taskTemplateId: template.id,
+          identityId: template.identityId,
           pausedAt: Date.now(),
-          reason: reason || '用户手动暂停',
+          reason: reason || '鐢ㄦ埛鎵嬪姩鏆傚仠',
         },
         timestamp: Date.now(),
       });
     } catch (error) {
-      console.error(`�?[PauseTaskTemplate] 发布暂停事件失败:`, error);
+      console.error(`锟?[PauseTaskTemplate] 鍙戝竷鏆傚仠浜嬩欢澶辫触:`, error);
     }
 
     return ok({
@@ -64,11 +64,11 @@ export class PauseTaskTemplate {
   }
 
   /**
-   * 处理暂停时的任务实例
+   * 澶勭悊鏆傚仠鏃剁殑浠诲姟瀹炰緥
    */
-  private async handleInstancesOnPause(templateUuid: string): Promise<number> {
+  private async handleInstancesOnPause(templateId: string): Promise<number> {
     try {
-      const instances = await this.instanceRepository.findByTemplate(templateUuid);
+      const instances = await this.instanceRepository.findByTemplateId(templateId);
       const pendingInstances = instances.filter(
         (inst) => inst.status === 'PENDING' || inst.status === 'IN_PROGRESS',
       );
@@ -78,13 +78,13 @@ export class PauseTaskTemplate {
       }
 
       for (const instance of pendingInstances) {
-        instance.skip('模板已暂停');
+        instance.skip('妯℃澘宸叉殏鍋?);
         await this.instanceRepository.save(instance);
       }
 
       return pendingInstances.length;
     } catch (error) {
-      console.error(`[PauseTaskTemplate] 处理实例失败:`, error);
+      console.error(`[PauseTaskTemplate] 澶勭悊瀹炰緥澶辫触:`, error);
       return 0;
     }
   }

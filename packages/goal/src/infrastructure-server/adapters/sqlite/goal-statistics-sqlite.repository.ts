@@ -11,10 +11,10 @@ import type { GoalStatisticsPersistenceDTO } from '@/domain-server/aggregates/Go
 export class SqliteGoalStatisticsRepository implements IGoalStatisticsRepository {
   constructor(private db: Database.Database) {}
 
-  async findByAccountUuid(accountUuid: string): Promise<GoalStatistics | null> {
+  async findByIdentityId(identityId: string): Promise<GoalStatistics | null> {
     const row = this.db
       .prepare(`SELECT * FROM goal_statistics WHERE account_uuid = ? LIMIT 1`)
-      .get(accountUuid) as any;
+      .get(identityId) as any;
 
     if (!row) return null;
 
@@ -55,7 +55,7 @@ export class SqliteGoalStatisticsRepository implements IGoalStatisticsRepository
         last_calculated_at = excluded.last_calculated_at`,
       )
       .run(
-        dto.accountUuid,
+        dto.identityId,
         dto.totalGoals,
         dto.activeGoals,
         dto.completedGoals,
@@ -79,23 +79,23 @@ export class SqliteGoalStatisticsRepository implements IGoalStatisticsRepository
     return statistics;
   }
 
-  async delete(accountUuid: string): Promise<boolean> {
+  async delete(identityId: string): Promise<boolean> {
     const result = this.db
       .prepare(`DELETE FROM goal_statistics WHERE account_uuid = ?`)
-      .run(accountUuid);
+      .run(identityId);
     return (result.changes ?? 0) > 0;
   }
 
-  async exists(accountUuid: string): Promise<boolean> {
+  async exists(identityId: string): Promise<boolean> {
     const row = this.db
       .prepare(`SELECT 1 FROM goal_statistics WHERE account_uuid = ? LIMIT 1`)
-      .get(accountUuid);
+      .get(identityId);
     return row !== undefined;
   }
 
   private rowToStatistics(row: any): GoalStatistics {
     const dto: GoalStatisticsPersistenceDTO = {
-      accountUuid: row.account_uuid,
+      identityId: row.account_uuid,
       totalGoals: row.total_goals ?? 0,
       activeGoals: row.active_goals ?? 0,
       completedGoals: row.completed_goals ?? 0,

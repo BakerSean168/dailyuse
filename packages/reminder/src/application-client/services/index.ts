@@ -38,9 +38,6 @@ export { DeleteReminderGroup } from './delete-reminder-group';
 export { ToggleReminderGroupStatus } from './toggle-reminder-group-status';
 export { ToggleReminderGroupControlMode } from './toggle-reminder-group-control-mode';
 
-// Reminder Statistics Use Cases
-export { GetReminderStatistics } from './get-reminder-statistics';
-
 // Legacy exports for backward compatibility (deprecated)
 export {
   ReminderTemplateApplicationService,
@@ -51,8 +48,3 @@ export {
   ReminderGroupApplicationService,
   createReminderGroupApplicationService,
 } from './ReminderGroupApplicationService';
-
-export {
-  ReminderStatisticsApplicationService,
-  createReminderStatisticsApplicationService,
-} from './ReminderStatisticsApplicationService';

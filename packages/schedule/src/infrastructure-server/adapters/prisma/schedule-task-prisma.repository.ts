@@ -1,17 +1,17 @@
 /**
  * Prisma Schedule Task Repository
- * ScheduleTask 鑱氬悎鏍?Prisma Repository瀹炵幇
+ * ScheduleTask 閼辨艾鎮庨弽?Prisma Repository鐎圭偟骞?
  *
- * 鑱岃矗锛?
- * - 瀹炵幇 IScheduleTaskRepository 鎺ュ彛
- * - 浣跨敤 toPersistenceDTO/fromPersistenceDTO 杩涜鏁版嵁杞崲
- * - 澶勭悊 ScheduleExecution 瀛愬疄浣撶殑绾ц仈鎿嶄綔
- * - 鎻愪緵瀹屾暣鐨勬煡璇㈠拰鎸佷箙鍖栧姛鑳?
+ * 閼卞矁鐭楅敍?
+ * - 鐎圭偟骞?IScheduleTaskRepository 閹恒儱褰?
+ * - 娴ｈ法鏁?toPersistenceDTO/fromPersistenceDTO 鏉╂稖顢戦弫鐗堝祦鏉烆剚宕?
+ * - 婢跺嫮鎮?ScheduleExecution 鐎涙劕鐤勬担鎾舵畱缁狙嗕粓閹垮秳缍?
+ * - 閹绘劒绶电€瑰本鏆ｉ惃鍕叀鐠囥垹鎷伴幐浣风畽閸栨牕濮涢懗?
  *
  * @implements {IScheduleTaskRepository}
  */
 
-import type { PrismaClient } from '../../../generated/prisma/client';
+import type { PrismaClient } from '@dailyuse/database';
 import type { IScheduleTaskRepository } from '../../../domain-server/repositories/IScheduleTaskRepository';
 import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
 import { ScheduleExecution } from '../../../domain-server/entities/schedule-execution';
@@ -19,10 +19,10 @@ import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import type { SourceModule, ScheduleTaskPersistenceDTO } from '@dailyuse/contracts/schedule';
 
 /**
- * ScheduleTask 鏌ヨ閫夐」
+ * ScheduleTask 閺屻儴顕楅柅澶愩€?
  */
 interface IScheduleTaskQueryOptions {
-  accountUuid?: string;
+  identityId?: string;
   sourceModule?: SourceModule;
   sourceEntityId?: string;
   status?: ScheduleTaskStatus;
@@ -33,66 +33,66 @@ interface IScheduleTaskQueryOptions {
 
 /**
  * ScheduleTaskRepository
- * 瀹屾暣鐨?DDD Repository瀹炵幇锛屾棤涓存椂閫傞厤浠ｇ爜
+ * 鐎瑰本鏆ｉ惃?DDD Repository鐎圭偟骞囬敍灞炬￥娑撳瓨妞傞柅鍌炲帳娴狅絿鐖?
  */
 export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
   constructor(private prisma: PrismaClient) {}
 
-  // ===== 鏁版嵁杞崲鏂规硶 =====
+  // ===== 閺佺増宓佹潪顒佸床閺傝纭?=====
 
   /**
-   * 浠?Prisma 妯″瀷杞崲涓?ScheduleTask 鑱氬悎鏍?
-   * 浣跨敤鑱氬悎鏍圭殑 fromPersistenceDTO 鏂规硶
+   * 娴?Prisma 濡€崇€锋潪顒佸床娑?ScheduleTask 閼辨艾鎮庨弽?
+   * 娴ｈ法鏁ら懕姘値閺嶅湱娈?fromPersistenceDTO 閺傝纭?
    */
   private toDomain(data: any): ScheduleTask {
-    // 鏋勫缓 PersistenceDTO锛堟墍鏈夊瓧娈甸兘鏄墎骞冲寲鐨勶級
+    // 閺嬪嫬缂?PersistenceDTO閿涘牊澧嶉張澶婄摟濞堢敻鍏橀弰顖涘楠炲啿瀵查惃鍕剁礆
     const persistenceDTO: ScheduleTaskPersistenceDTO = {
-      uuid: data.uuid,
-      accountUuid: data.accountUuid,
+      id: data.id,
+      identityId: data.identityId,
       name: data.name,
       description: data.description,
       sourceModule: data.sourceModule,
       sourceEntityId: data.sourceEntityId,
       status: data.status,
       enabled: data.enabled,
-      // ScheduleConfig 鎵佸钩鍖栧瓧娈?
+      // ScheduleConfig 閹典礁閽╅崠鏍х摟濞?
       cronExpression: data.cronExpression,
       timezone: data.timezone,
       startDate: data.startDate ? data.startDate.getTime() : null,
       endDate: data.endDate ? data.endDate.getTime() : null,
       maxExecutions: data.maxExecutions,
-      // ExecutionInfo 鎵佸钩鍖栧瓧娈?
+      // ExecutionInfo 閹典礁閽╅崠鏍х摟濞?
       nextRunAt: data.nextRunAt ? data.nextRunAt.getTime() : null,
       lastRunAt: data.lastRunAt ? data.lastRunAt.getTime() : null,
       executionCount: data.executionCount,
       lastExecutionStatus: data.lastExecutionStatus,
       lastExecutionDuration: data.lastExecutionDuration,
       consecutiveFailures: data.consecutiveFailures,
-      // RetryPolicy 鎵佸钩鍖栧瓧娈?
+      // RetryPolicy 閹典礁閽╅崠鏍х摟濞?
       maxRetries: data.maxRetries,
       initialDelayMs: data.initialDelayMs,
       maxDelayMs: data.maxDelayMs,
       backoffMultiplier: data.backoffMultiplier,
       retryableStatuses: data.retryableStatuses,
-      // TaskMetadata 鎵佸钩鍖栧瓧娈?
+      // TaskMetadata 閹典礁閽╅崠鏍х摟濞?
       payload: data.payload,
       tags: data.tags,
       priority: data.priority,
       timeout: data.timeout,
-      // 鏃堕棿鎴?
+      // 閺冨爼妫块幋?
       createdAt: data.createdAt.getTime(),
       updatedAt: data.updatedAt.getTime(),
     };
 
-    // 浣跨敤鑱氬悎鏍圭殑 fromPersistenceDTO 鏂规硶Create瀹炰緥
+    // 娴ｈ法鏁ら懕姘値閺嶅湱娈?fromPersistenceDTO 閺傝纭禖reate鐎圭偘绶?
     const task = ScheduleTask.fromPersistenceDTO(persistenceDTO);
 
-    // 鎭㈠鎵цRecord瀛愬疄浣?
+    // 閹垹顦查幍褑顢慠ecord鐎涙劕鐤勬担?
     if (data.scheduleExecution && data.scheduleExecution.length > 0) {
       for (const execData of data.scheduleExecution) {
         const execution = ScheduleExecution.fromPersistenceDTO({
-          uuid: execData.uuid,
-          taskUuid: execData.taskUuid,
+          id: execData.id,
+          taskId: execData.taskId,
           executionTime: execData.executionTime.getTime(),
           status: execData.status,
           duration: execData.duration ?? undefined,
@@ -109,72 +109,72 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
   }
 
   /**
-   * 浠?ScheduleTask 鑱氬悎鏍硅浆鎹负 Prisma 鎸佷箙鍖栨暟鎹?
-   * 浣跨敤鑱氬悎鏍圭殑 toPersistenceDTO 鏂规硶
+   * 娴?ScheduleTask 閼辨艾鎮庨弽纭呮祮閹诡澀璐?Prisma 閹镐椒绠欓崠鏍ㄦ殶閹?
+   * 娴ｈ法鏁ら懕姘値閺嶅湱娈?toPersistenceDTO 閺傝纭?
    */
   private toPrisma(task: ScheduleTask): any {
     const dto = task.toPersistenceDTO();
 
     return {
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
+      id: dto.id,
+      identityId: dto.identityId,
       name: dto.name,
       description: dto.description,
       sourceModule: dto.sourceModule,
       sourceEntityId: dto.sourceEntityId,
       status: dto.status,
       enabled: dto.enabled,
-      // ScheduleConfig 鎵佸钩鍖栧瓧娈?
+      // ScheduleConfig 閹典礁閽╅崠鏍х摟濞?
       cronExpression: dto.cronExpression,
       timezone: dto.timezone,
       startDate: dto.startDate ? new Date(dto.startDate) : null,
       endDate: dto.endDate ? new Date(dto.endDate) : null,
       maxExecutions: dto.maxExecutions,
-      // ExecutionInfo 鎵佸钩鍖栧瓧娈?
+      // ExecutionInfo 閹典礁閽╅崠鏍х摟濞?
       nextRunAt: dto.nextRunAt ? new Date(dto.nextRunAt) : null,
       lastRunAt: dto.lastRunAt ? new Date(dto.lastRunAt) : null,
       executionCount: dto.executionCount,
       lastExecutionStatus: dto.lastExecutionStatus,
       lastExecutionDuration: dto.lastExecutionDuration,
       consecutiveFailures: dto.consecutiveFailures,
-      // RetryPolicy 鎵佸钩鍖栧瓧娈?
+      // RetryPolicy 閹典礁閽╅崠鏍х摟濞?
       maxRetries: dto.maxRetries ?? 3,
       initialDelayMs: dto.initialDelayMs ?? 1000,
       maxDelayMs: dto.maxDelayMs ?? 30000,
       backoffMultiplier: dto.backoffMultiplier ?? 2,
       retryableStatuses: dto.retryableStatuses ?? '[]',
-      // TaskMetadata 鎵佸钩鍖栧瓧娈?
+      // TaskMetadata 閹典礁閽╅崠鏍х摟濞?
       payload: typeof dto.payload === 'string' ? dto.payload : JSON.stringify(dto.payload),
       tags: dto.tags,
       priority: dto.priority,
       timeout: dto.timeout,
-      // 鏃堕棿鎴?
+      // 閺冨爼妫块幋?
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
     };
   }
 
-  // ===== 鍩烘湰 CRUD =====
+  // ===== 閸╃儤婀?CRUD =====
 
   async save(task: ScheduleTask): Promise<void> {
     const data = this.toPrisma(task);
 
     await this.prisma.scheduleTask.upsert({
-      where: { uuid: data.uuid },
+      where: { id: data.id },
       create: data,
       update: data,
     });
 
-    // Save鎵цRecord锛堝鏋滄湁锛?
+    // Save閹笛嗩攽Record閿涘牆顩ч弸婊勬箒閿?
     const executions = task.executions;
     if (executions && executions.length > 0) {
       for (const execution of executions) {
         const execDto = execution.toPersistenceDTO();
         await this.prisma.scheduleExecution.upsert({
-          where: { uuid: execDto.uuid },
+          where: { id: execDto.id },
           create: {
-            uuid: execDto.uuid,
-            taskUuid: execDto.taskUuid,
+            id: execDto.id,
+            taskId: execDto.taskId,
             executionTime: new Date(execDto.executionTime),
             status: execDto.status,
             duration: execDto.duration ?? null,
@@ -194,13 +194,13 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
     }
   }
 
-  async findByUuid(uuid: string): Promise<ScheduleTask | null> {
+  async findById(id: string): Promise<ScheduleTask | null> {
     const data = await this.prisma.scheduleTask.findUnique({
-      where: { uuid },
+      where: { id },
       include: {
         scheduleExecution: {
           orderBy: { createdAt: 'desc' },
-          take: 10, // 鏈€杩?10 鏉℃墽琛岃褰?
+          take: 10, // 閺堚偓鏉?10 閺夆剝澧界悰宀冾唶瑜?
         },
       },
     });
@@ -208,17 +208,17 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
     return data ? this.toDomain(data) : null;
   }
 
-  async deleteByUuid(uuid: string): Promise<void> {
+  async deleteById(id: string): Promise<void> {
     await this.prisma.scheduleTask.delete({
-      where: { uuid },
+      where: { id },
     });
   }
 
-  // ===== 鏌ヨ鏂规硶 =====
+  // ===== 閺屻儴顕楅弬瑙勭《 =====
 
-  async findByAccountUuid(accountUuid: string): Promise<ScheduleTask[]> {
+  async findByIdentityId(identityId: string): Promise<ScheduleTask[]> {
     const tasks = await this.prisma.scheduleTask.findMany({
-      where: { accountUuid },
+      where: { identityId },
       include: {
         scheduleExecution: {
           orderBy: { createdAt: 'desc' },
@@ -230,11 +230,11 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
     return tasks.map((task) => this.toDomain(task));
   }
 
-  async findBySourceModule(module: SourceModule, accountUuid?: string): Promise<ScheduleTask[]> {
+  async findBySourceModule(module: SourceModule, identityId?: string): Promise<ScheduleTask[]> {
     const tasks = await this.prisma.scheduleTask.findMany({
       where: {
         sourceModule: module,
-        ...(accountUuid && { accountUuid }),
+        ...(identityId && { identityId }),
       },
       include: {
         scheduleExecution: {
@@ -250,13 +250,13 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
   async findBySourceEntity(
     module: SourceModule,
     entityId: string,
-    accountUuid?: string,
+    identityId?: string,
   ): Promise<ScheduleTask[]> {
     const tasks = await this.prisma.scheduleTask.findMany({
       where: {
         sourceModule: module,
         sourceEntityId: entityId,
-        ...(accountUuid && { accountUuid }),
+        ...(identityId && { identityId }),
       },
       include: {
         scheduleExecution: {
@@ -269,11 +269,11 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
     return tasks.map((task) => this.toDomain(task));
   }
 
-  async findByStatus(status: ScheduleTaskStatus, accountUuid?: string): Promise<ScheduleTask[]> {
+  async findByStatus(status: ScheduleTaskStatus, identityId?: string): Promise<ScheduleTask[]> {
     const tasks = await this.prisma.scheduleTask.findMany({
       where: {
         status: status,
-        ...(accountUuid && { accountUuid }),
+        ...(identityId && { identityId }),
       },
       include: {
         scheduleExecution: {
@@ -286,11 +286,11 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
     return tasks.map((task) => this.toDomain(task));
   }
 
-  async findEnabled(accountUuid?: string): Promise<ScheduleTask[]> {
+  async findEnabled(identityId?: string): Promise<ScheduleTask[]> {
     const tasks = await this.prisma.scheduleTask.findMany({
       where: {
         enabled: true,
-        ...(accountUuid && { accountUuid }),
+        ...(identityId && { identityId }),
       },
       include: {
         scheduleExecution: {
@@ -304,17 +304,17 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
   }
 
   async findDueTasksForExecution(beforeTime: Date, limit?: number): Promise<ScheduleTask[]> {
-    // 鉁?浼樺寲瀹屾垚锛佺幇鍦?nextRunAt 鏄嫭绔嬪瓧娈碉紝鍙互鐩存帴鐢?SQL 鏌ヨ
+    // 閴?娴兼ê瀵茬€瑰本鍨氶敍浣哄箛閸?nextRunAt 閺勵垳瀚粩瀣摟濞堢绱濋崣顖欎簰閻╁瓨甯撮悽?SQL 閺屻儴顕?
     const tasks = await this.prisma.scheduleTask.findMany({
       where: {
         enabled: true,
         status: ScheduleTaskStatus.ACTIVE,
         nextRunAt: {
-          lte: beforeTime, // 猸?鐩存帴 SQL 鏌ヨ锛?
+          lte: beforeTime, // 鐚?閻╁瓨甯?SQL 閺屻儴顕楅敍?
         },
       },
       orderBy: {
-        nextRunAt: 'asc', // 鎸夋墽琛屾椂闂存帓搴?
+        nextRunAt: 'asc', // 閹稿澧界悰灞炬闂傚瓨甯撴惔?
       },
       take: limit,
       include: {
@@ -331,7 +331,7 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
   async query(options: IScheduleTaskQueryOptions): Promise<ScheduleTask[]> {
     const where: any = {};
 
-    if (options.accountUuid) where.accountUuid = options.accountUuid;
+    if (options.identityId) where.identityId = options.identityId;
     if (options.sourceModule) where.sourceModule = options.sourceModule;
     if (options.sourceEntityId) where.sourceEntityId = options.sourceEntityId;
     if (options.status) where.status = options.status;
@@ -355,7 +355,7 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
   async count(options: IScheduleTaskQueryOptions): Promise<number> {
     const where: any = {};
 
-    if (options.accountUuid) where.accountUuid = options.accountUuid;
+    if (options.identityId) where.identityId = options.identityId;
     if (options.sourceModule) where.sourceModule = options.sourceModule;
     if (options.sourceEntityId) where.sourceEntityId = options.sourceEntityId;
     if (options.status) where.status = options.status;
@@ -364,7 +364,7 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
     return this.prisma.scheduleTask.count({ where });
   }
 
-  // ===== 鎵归噺鎿嶄綔 =====
+  // ===== 閹靛綊鍣洪幙宥勭稊 =====
 
   async saveBatch(tasks: ScheduleTask[]): Promise<void> {
     for (const task of tasks) {
@@ -372,17 +372,17 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
     }
   }
 
-  async deleteBatch(uuids: string[]): Promise<void> {
+  async deleteBatch(ids: string[]): Promise<void> {
     await this.prisma.scheduleTask.deleteMany({
       where: {
-        uuid: {
-          in: uuids,
+        id: {
+          in: ids,
         },
       },
     });
   }
 
-  // ===== 浜嬪姟鏀寔 =====
+  // ===== 娴滃濮熼弨顖涘瘮 =====
 
   async withTransaction<T>(fn: (repo: IScheduleTaskRepository) => Promise<T>): Promise<T> {
     return this.prisma.$transaction(async (tx) => {

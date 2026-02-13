@@ -61,34 +61,34 @@ export class SqliteGoalFolderRepository implements IGoalFolderRepository {
       );
   }
 
-  async findById(uuid: string): Promise<GoalFolder | null> {
+  async findById(id: string): Promise<GoalFolder | null> {
     const row = this.db
       .prepare(`SELECT * FROM goal_folders WHERE id = ? LIMIT 1`)
-      .get(uuid) as any;
+      .get(id) as any;
 
     if (!row) return null;
 
     return this.rowToGoalFolder(row);
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<GoalFolder[]> {
+  async findByIdentityId(identityId: string): Promise<GoalFolder[]> {
     const rows = this.db
       .prepare(
         `SELECT * FROM goal_folders WHERE identity_id = ? AND deleted_at IS NULL ORDER BY sort_order ASC, created_at DESC`,
       )
-      .all(accountUuid) as any[];
+      .all(identityId) as any[];
 
     return rows.map((row) => this.rowToGoalFolder(row));
   }
 
-  async delete(uuid: string): Promise<void> {
-    this.db.prepare(`DELETE FROM goal_folders WHERE id = ?`).run(uuid);
+  async delete(id: string): Promise<void> {
+    this.db.prepare(`DELETE FROM goal_folders WHERE id = ?`).run(id);
   }
 
-  async exists(uuid: string): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     const row = this.db
       .prepare(`SELECT 1 FROM goal_folders WHERE id = ? LIMIT 1`)
-      .get(uuid);
+      .get(id);
     return row !== undefined;
   }
 

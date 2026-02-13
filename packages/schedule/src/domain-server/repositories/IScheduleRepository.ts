@@ -1,4 +1,4 @@
-/**
+﻿/**
  * IScheduleRepository
  * Interface for user-facing calendar schedule repository
  *
@@ -17,30 +17,30 @@ export interface IScheduleRepository {
   /**
    * Find a schedule by its UUID
    */
-  findByUuid(uuid: string): Promise<Schedule | null>;
+  findById(id: string): Promise<Schedule | null>;
 
   /**
    * Find all schedules for an account
    */
-  findByAccountUuid(accountUuid: string): Promise<Schedule[]>;
+  findByIdentityId(identityId: string): Promise<Schedule[]>;
 
   /**
    * Delete schedule by UUID
    */
-  deleteByUuid(uuid: string): Promise<void>;
+  deleteById(id: string): Promise<void>;
 
   /**
    * Find schedules that overlap a given time range for an account.
-   * @param accountUuid The account to query
+   * @param identityId The account to query
    * @param startTime Start of the query range (timestamp ms)
    * @param endTime End of the query range (timestamp ms)
-   * @param excludeUuid Optional schedule UUID to exclude (editing scenario)
+   * @param excludeId Optional schedule UUID to exclude (editing scenario)
    */
   findByTimeRange(
-    accountUuid: string,
+    identityId: string,
     startTime: number,
     endTime: number,
-    excludeUuid?: string
+    excludeId?: string
   ): Promise<Schedule[]>;
 
   /**

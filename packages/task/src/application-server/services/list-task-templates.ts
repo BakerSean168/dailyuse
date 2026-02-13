@@ -1,8 +1,8 @@
-/**
+﻿/**
  * List Task Templates Service
  *
- * 获取任务模板列表（按账户�?
- * 获取时自动检查并补充实例
+ * 鑾峰彇浠诲姟妯℃澘鍒楄〃锛堟寜璐︽埛锟?
+ * 鑾峰彇鏃惰嚜鍔ㄦ鏌ュ苟琛ュ厖瀹炰緥
  */
 
 import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
@@ -35,24 +35,24 @@ export class ListTaskTemplates {
   async execute(request: QueryTaskTemplatesRequest): Promise<Result<TaskTemplatesResponse>> {
     let templates: TaskTemplate[];
 
-    // 根据不同条件查询
+    // 鏍规嵁涓嶅悓鏉′欢鏌ヨ
     if (request.status && request.status.length > 0) {
-      templates = await this.templateRepository.findByStatus(request.accountUuid, request.status[0]);
-    } else if (request.folderUuid) {
-      templates = await this.templateRepository.findByFolder(request.folderUuid);
-    } else if (request.goalUuid) {
-      templates = await this.templateRepository.findByGoal(request.goalUuid);
+      templates = await this.templateRepository.findByStatus(request.identityId, request.status[0]);
+    } else if (request.folderId) {
+      templates = await this.templateRepository.findByFolderId(request.folderId);
+    } else if (request.goalId) {
+      templates = await this.templateRepository.findByGoalId(request.goalId);
     } else if (request.tags && request.tags.length > 0) {
-      templates = await this.templateRepository.findByTags(request.accountUuid, request.tags);
+      templates = await this.templateRepository.findByTags(request.identityId, request.tags);
     } else {
-      templates = await this.templateRepository.findByAccount(request.accountUuid);
+      templates = await this.templateRepository.findByIdentityId(request.identityId);
     }
 
-    // 自动检查并补充每个 ACTIVE 模板的实例（异步执行，不阻塞�?
+    // 鑷姩妫€鏌ュ苟琛ュ厖姣忎釜 ACTIVE 妯℃澘鐨勫疄渚嬶紙寮傛鎵ц锛屼笉闃诲锟?
     for (const template of templates) {
       if (template.status === TaskTemplateStatus.ACTIVE) {
         this.checkAndRefillInstances(template).catch((error) => {
-          console.error(`�?补充模板 "${template.title}" 实例失败:`, error);
+          console.error(`锟?琛ュ厖妯℃澘 "${template.title}" 瀹炰緥澶辫触:`, error);
         });
       }
     }
@@ -64,7 +64,7 @@ export class ListTaskTemplates {
   }
 
   /**
-   * 检查并补充模板实例
+   * 妫€鏌ュ苟琛ュ厖妯℃澘瀹炰緥
    */
   private async checkAndRefillInstances(template: TaskTemplate): Promise<void> {
     try {
@@ -77,10 +77,10 @@ export class ListTaskTemplates {
 
           eventBus.emit('task.instances.generated', {
             eventType: 'task_template.instances_generated',
-            aggregateId: template.uuid,
-            accountUuid: template.accountUuid,
+            aggregateId: template.id,
+            identityId: template.identityId,
             payload: {
-              templateUuid: template.uuid,
+              templateId: template.id,
               templateTitle: template.title,
               instanceCount: instances.length,
             },
@@ -88,7 +88,7 @@ export class ListTaskTemplates {
         }
       }
     } catch (error) {
-      console.error(`�?[ListTaskTemplates] 补充实例失败:`, error);
+      console.error(`锟?[ListTaskTemplates] 琛ュ厖瀹炰緥澶辫触:`, error);
     }
   }
 }

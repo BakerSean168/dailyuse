@@ -16,6 +16,7 @@ export { GoalStatisticsPrismaRepository } from './adapters/prisma/goal-statistic
 export { FocusModePrismaRepository } from './adapters/prisma/focus-mode-prisma.repository';
 export { FocusSessionPrismaRepository } from './adapters/prisma/focus-session-prisma.repository';
 export { PrismaWeightSnapshotRepository } from './adapters/prisma/weight-snapshot-prisma.repository';
+export { GoalRecordPrismaRepository } from './adapters/prisma/goal-record-prisma.repository';
 
 // ============ Adapters - SQLite ============
 export { SqliteGoalRepository } from './adapters/sqlite/goal-sqlite.repository';

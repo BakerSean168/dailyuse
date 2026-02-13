@@ -1,88 +1,88 @@
-/**
+﻿/**
  * ILinkedResourceRepository
- * LinkedResource 实体仓储接口
+ * LinkedResource 瀹炰綋浠撳偍鎺ュ彛
  */
 
 import type { LinkedResource } from '../entities/linked-resource';
 import type { LinkedSourceType, LinkedTargetType } from '@dailyuse/contracts/editor';
 
 /**
- * LinkedResource 仓储接口
+ * LinkedResource 浠撳偍鎺ュ彛
  */
 export interface ILinkedResourceRepository {
   /**
-   * 根据 UUID 查找链接资源
+   * 鏍规嵁 UUID 鏌ユ壘閾炬帴璧勬簮
    */
-  findByUuid(uuid: string): Promise<LinkedResource | null>;
+  findById(id: string): Promise<LinkedResource | null>;
 
   /**
-   * 根据源文档 UUID 查找所有链接资源
+   * 鏍规嵁婧愭枃妗?UUID 鏌ユ壘鎵€鏈夐摼鎺ヨ祫婧?
    */
-  findBySourceDocumentUuid(sourceDocumentUuid: string): Promise<LinkedResource[]>;
+  findBySourceDocumentId(sourceDocumentId: string): Promise<LinkedResource[]>;
 
   /**
-   * 根据目标文档 UUID 查找所有链接资源（反向查找）
+   * 鏍规嵁鐩爣鏂囨。 UUID 鏌ユ壘鎵€鏈夐摼鎺ヨ祫婧愶紙鍙嶅悜鏌ユ壘锛?
    */
-  findByTargetDocumentUuid(targetDocumentUuid: string): Promise<LinkedResource[]>;
+  findByTargetDocumentId(targetDocumentId: string): Promise<LinkedResource[]>;
 
   /**
-   * 根据源类型查找链接资源
+   * 鏍规嵁婧愮被鍨嬫煡鎵鹃摼鎺ヨ祫婧?
    */
   findBySourceType(
-    sourceDocumentUuid: string,
+    sourceDocumentId: string,
     sourceType: LinkedSourceType,
   ): Promise<LinkedResource[]>;
 
   /**
-   * 根据目标类型查找链接资源
+   * 鏍规嵁鐩爣绫诲瀷鏌ユ壘閾炬帴璧勬簮
    */
   findByTargetType(
-    sourceDocumentUuid: string,
+    sourceDocumentId: string,
     targetType: LinkedTargetType,
   ): Promise<LinkedResource[]>;
 
   /**
-   * 查找无效的链接资源
+   * 鏌ユ壘鏃犳晥鐨勯摼鎺ヨ祫婧?
    */
-  findInvalid(workspaceUuid: string): Promise<LinkedResource[]>;
+  findInvalid(workspaceId: string): Promise<LinkedResource[]>;
 
   /**
-   * 查找需要验证的链接资源（超过指定阈值未验证）
+   * 鏌ユ壘闇€瑕侀獙璇佺殑閾炬帴璧勬簮锛堣秴杩囨寚瀹氶槇鍊兼湭楠岃瘉锛?
    */
   findNeedingValidation(threshold: number): Promise<LinkedResource[]>;
 
   /**
-   * 保存链接资源
+   * 淇濆瓨閾炬帴璧勬簮
    */
   save(resource: LinkedResource): Promise<void>;
 
   /**
-   * 删除链接资源
+   * 鍒犻櫎閾炬帴璧勬簮
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 批量保存链接资源
+   * 鎵归噺淇濆瓨閾炬帴璧勬簮
    */
   saveBatch(resources: LinkedResource[]): Promise<void>;
 
   /**
-   * 删除源文档的所有链接资源
+   * 鍒犻櫎婧愭枃妗ｇ殑鎵€鏈夐摼鎺ヨ祫婧?
    */
-  deleteBySourceDocumentUuid(sourceDocumentUuid: string): Promise<void>;
+  deleteBySourceDocumentId(sourceDocumentId: string): Promise<void>;
 
   /**
-   * 删除目标文档的所有链接资源（当文档被删除时）
+   * 鍒犻櫎鐩爣鏂囨。鐨勬墍鏈夐摼鎺ヨ祫婧愶紙褰撴枃妗ｈ鍒犻櫎鏃讹級
    */
-  deleteByTargetDocumentUuid(targetDocumentUuid: string): Promise<void>;
+  deleteByTargetDocumentId(targetDocumentId: string): Promise<void>;
 
   /**
-   * 统计源文档的链接资源数量
+   * 缁熻婧愭枃妗ｇ殑閾炬帴璧勬簮鏁伴噺
    */
-  countBySourceDocumentUuid(sourceDocumentUuid: string): Promise<number>;
+  countBySourceDocumentId(sourceDocumentId: string): Promise<number>;
 
   /**
-   * 统计无效链接数量
+   * 缁熻鏃犳晥閾炬帴鏁伴噺
    */
-  countInvalid(workspaceUuid: string): Promise<number>;
+  countInvalid(workspaceId: string): Promise<number>;
 }

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Complete Task Instance Service
  *
- * 完成任务实例
+ * 瀹屾垚浠诲姟瀹炰緥
  */
 
 import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
@@ -26,7 +26,7 @@ export class CompleteTaskInstance {
   ) {}
 
   async execute(uuid: string, request?: CompleteTaskInstanceRequest): Promise<Result<TaskInstanceResponse>> {
-    const instance = await this.instanceRepository.findByUuid(uuid);
+    const instance = await this.instanceRepository.findById(uuid);
     if (!instance) {
       return error('NOT_FOUND', `TaskInstance ${uuid} not found`);
     }
@@ -35,11 +35,11 @@ export class CompleteTaskInstance {
       return error('VALIDATION_ERROR', 'Cannot complete this task instance');
     }
 
-    // 标记为完�?
+    // 鏍囪涓哄畬锟?
     instance.complete(request?.duration, request?.note, request?.rating);
     await this.instanceRepository.save(instance);
 
-    // 发布事件
+    // 鍙戝竷浜嬩欢
     await this.publishTaskCompletedEvent(instance);
 
     return ok({
@@ -48,13 +48,13 @@ export class CompleteTaskInstance {
   }
 
   /**
-   * 发布任务完成事件
+   * 鍙戝竷浠诲姟瀹屾垚浜嬩欢
    */
   private async publishTaskCompletedEvent(instance: any): Promise<void> {
     try {
-      const template = await this.templateRepository.findByUuid(instance.templateUuid);
+      const template = await this.templateRepository.findById(instance.templateId);
       if (!template) {
-        console.warn(`[CompleteTaskInstance] Template not found: ${instance.templateUuid}`);
+        console.warn(`[CompleteTaskInstance] Template not found: ${instance.templateId}`);
         return;
       }
 
@@ -63,15 +63,15 @@ export class CompleteTaskInstance {
       const event: TaskInstanceCompletedEvent = {
         eventType: 'task.instance.completed',
         payload: {
-          taskInstanceUuid: instance.uuid,
-          taskTemplateUuid: instance.templateUuid,
+          taskInstanceId: instance.id,
+          taskTemplateId: instance.templateId,
           title: template.title,
           completedAt,
-          accountUuid: instance.accountUuid,
+          identityId: instance.identityId,
           goalBinding: template.goalBinding
             ? {
-                goalUuid: template.goalBinding.goalUuid,
-                keyResultUuid: template.goalBinding.keyResultUuid,
+                goalId: template.goalBinding.goalId,
+                keyResultId: template.goalBinding.keyResultId,
                 incrementValue: template.goalBinding.incrementValue,
               }
             : undefined,
@@ -80,7 +80,7 @@ export class CompleteTaskInstance {
 
       await eventBus.publish(event);
     } catch (error) {
-      console.error('�?[CompleteTaskInstance] Failed to publish event', error);
+      console.error('锟?[CompleteTaskInstance] Failed to publish event', error);
     }
   }
 }

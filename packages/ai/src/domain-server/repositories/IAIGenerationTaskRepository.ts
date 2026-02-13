@@ -1,69 +1,69 @@
-/**
+﻿/**
  * AI Generation Task Repository Interface
- * AI 生成任务仓储接口
+ * AI 鐢熸垚浠诲姟浠撳偍鎺ュ彛
  *
- * DDD 仓储模式：
- * - 操作领域对象（ServerDTO），不直接操作数据库模型
- * - 由基础设施层实现（Prisma）
- * - 隐藏持久化细节
+ * DDD 浠撳偍妯″紡锛?
+ * - 鎿嶄綔棰嗗煙瀵硅薄锛圫erverDTO锛夛紝涓嶇洿鎺ユ搷浣滄暟鎹簱妯″瀷
+ * - 鐢卞熀纭€璁炬柦灞傚疄鐜帮紙Prisma锛?
+ * - 闅愯棌鎸佷箙鍖栫粏鑺?
  */
 
 import type { AIGenerationTaskServerDTO, TaskStatus } from '@dailyuse/contracts/ai';
 import { GenerationTaskType } from '@dailyuse/contracts/ai';
 
 /**
- * IAIGenerationTaskRepository 仓储接口
+ * IAIGenerationTaskRepository 浠撳偍鎺ュ彛
  *
- * 职责：
- * - AI 生成任务的持久化操作
- * - 按账户、类型、状态查询任务
- * - 任务历史记录
+ * 鑱岃矗锛?
+ * - AI 鐢熸垚浠诲姟鐨勬寔涔呭寲鎿嶄綔
+ * - 鎸夎处鎴枫€佺被鍨嬨€佺姸鎬佹煡璇换鍔?
+ * - 浠诲姟鍘嗗彶璁板綍
  */
 export interface IAIGenerationTaskRepository {
   /**
-   * 保存任务（创建或更新）
+   * 淇濆瓨浠诲姟锛堝垱寤烘垨鏇存柊锛?
    */
   save(task: AIGenerationTaskServerDTO): Promise<void>;
 
   /**
-   * 根据 UUID 查找任务
+   * 鏍规嵁 UUID 鏌ユ壘浠诲姟
    */
-  findByUuid(uuid: string): Promise<AIGenerationTaskServerDTO | null>;
+  findById(id: string): Promise<AIGenerationTaskServerDTO | null>;
 
   /**
-   * 根据账户 UUID 查找所有任务
+   * 鏍规嵁璐︽埛 UUID 鏌ユ壘鎵€鏈変换鍔?
    */
-  findByAccountUuid(accountUuid: string): Promise<AIGenerationTaskServerDTO[]>;
+  findByIdentityId(identityId: string): Promise<AIGenerationTaskServerDTO[]>;
 
   /**
-   * 根据任务类型查找任务
+   * 鏍规嵁浠诲姟绫诲瀷鏌ユ壘浠诲姟
    */
   findByTaskType(
-    accountUuid: string,
+    identityId: string,
     taskType: GenerationTaskType,
   ): Promise<AIGenerationTaskServerDTO[]>;
 
   /**
-   * 根据状态查找任务
+   * 鏍规嵁鐘舵€佹煡鎵句换鍔?
    */
-  findByStatus(accountUuid: string, status: TaskStatus): Promise<AIGenerationTaskServerDTO[]>;
+  findByStatus(identityId: string, status: TaskStatus): Promise<AIGenerationTaskServerDTO[]>;
 
   /**
-   * 查找最近的任务（分页）
+   * 鏌ユ壘鏈€杩戠殑浠诲姟锛堝垎椤碉級
    */
   findRecent(
-    accountUuid: string,
+    identityId: string,
     limit: number,
     offset?: number,
   ): Promise<AIGenerationTaskServerDTO[]>;
 
   /**
-   * 删除任务
+   * 鍒犻櫎浠诲姟
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 检查任务是否存在
+   * 妫€鏌ヤ换鍔℃槸鍚﹀瓨鍦?
    */
-  exists(uuid: string): Promise<boolean>;
+  exists(id: string): Promise<boolean>;
 }

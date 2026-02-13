@@ -1,56 +1,56 @@
-/**
+﻿/**
  * IEditorSessionRepository
- * EditorSession 聚合根仓储接口
+ * EditorSession 鑱氬悎鏍逛粨鍌ㄦ帴鍙?
  */
 
 import type { EditorSession } from '../entities/editor-session';
 
 /**
- * EditorSession 仓储接口
+ * EditorSession 浠撳偍鎺ュ彛
  */
 export interface IEditorSessionRepository {
   /**
-   * 根据 UUID 查找会话
+   * 鏍规嵁 UUID 鏌ユ壘浼氳瘽
    */
-  findByUuid(uuid: string): Promise<EditorSession | null>;
+  findById(id: string): Promise<EditorSession | null>;
 
   /**
-   * 根据工作区 UUID 查找所有会话
+   * 鏍规嵁宸ヤ綔鍖?UUID 鏌ユ壘鎵€鏈変細璇?
    */
-  findByWorkspaceUuid(workspaceUuid: string): Promise<EditorSession[]>;
+  findByWorkspaceId(workspaceId: string): Promise<EditorSession[]>;
 
   /**
-   * 根据工作区 UUID 和名称查找会话
+   * 鏍规嵁宸ヤ綔鍖?UUID 鍜屽悕绉版煡鎵句細璇?
    */
-  findByWorkspaceUuidAndName(workspaceUuid: string, name: string): Promise<EditorSession | null>;
+  findByWorkspaceIdAndName(workspaceId: string, name: string): Promise<EditorSession | null>;
 
   /**
-   * 查找活动会话
+   * 鏌ユ壘娲诲姩浼氳瘽
    */
-  findActiveByWorkspaceUuid(workspaceUuid: string): Promise<EditorSession | null>;
+  findActiveByWorkspaceId(workspaceId: string): Promise<EditorSession | null>;
 
   /**
-   * 保存会话
+   * 淇濆瓨浼氳瘽
    */
   save(session: EditorSession): Promise<void>;
 
   /**
-   * 删除会话
+   * 鍒犻櫎浼氳瘽
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 批量保存会话
+   * 鎵归噺淇濆瓨浼氳瘽
    */
   saveBatch(sessions: EditorSession[]): Promise<void>;
 
   /**
-   * 删除工作区的所有会话
+   * 鍒犻櫎宸ヤ綔鍖虹殑鎵€鏈変細璇?
    */
-  deleteByWorkspaceUuid(workspaceUuid: string): Promise<void>;
+  deleteByWorkspaceId(workspaceId: string): Promise<void>;
 
   /**
-   * 统计工作区的会话数量
+   * 缁熻宸ヤ綔鍖虹殑浼氳瘽鏁伴噺
    */
-  countByWorkspaceUuid(workspaceUuid: string): Promise<number>;
+  countByWorkspaceId(workspaceId: string): Promise<number>;
 }

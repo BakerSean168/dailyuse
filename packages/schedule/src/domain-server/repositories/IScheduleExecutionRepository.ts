@@ -1,22 +1,22 @@
-import type { ScheduleExecution } from '../entities/schedule-execution';
+﻿import type { ScheduleExecution } from '../entities/schedule-execution';
 
 /**
  * IScheduleExecutionRepository - Repository Interface
- * ScheduleExecution 仓储接口
+ * ScheduleExecution 浠撳偍鎺ュ彛
  */
 export interface IScheduleExecutionRepository {
   /**
-   * 保存 ScheduleExecution 实体
+   * 淇濆瓨 ScheduleExecution 瀹炰綋
    */
   save(execution: ScheduleExecution): Promise<void>;
 
   /**
-   * 根据 UUID 查找 ScheduleExecution
+   * 鏍规嵁 UUID 鏌ユ壘 ScheduleExecution
    */
-  findByUuid(uuid: string): Promise<ScheduleExecution | null>;
+  findById(id: string): Promise<ScheduleExecution | null>;
 
   /**
-   * 根据 Task UUID 查找所有执行记录
+   * 鏍规嵁 Task UUID 鏌ユ壘鎵€鏈夋墽琛岃褰?
    */
-  findByTaskUuid(taskUuid: string): Promise<ScheduleExecution[]>;
+  findByTaskId(taskId: string): Promise<ScheduleExecution[]>;
 }

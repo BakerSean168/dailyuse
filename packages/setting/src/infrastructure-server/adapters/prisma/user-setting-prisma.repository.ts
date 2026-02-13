@@ -1,4 +1,4 @@
-/**
+﻿/**
  * UserSetting Prisma Repository
  *
  * Prisma implementation of IUserSettingRepository.
@@ -16,7 +16,7 @@ import type { UserSetting } from '@/domain-server/aggregates/user-setting';
 export class UserSettingPrismaRepository implements IUserSettingRepository {
   constructor(private readonly prisma: any) {}
 
-  async findByAccountUuid(accountUuid: string): Promise<UserSetting | null> {
+  async findByIdentityId(identityId: string): Promise<UserSetting | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
@@ -24,7 +24,7 @@ export class UserSettingPrismaRepository implements IUserSettingRepository {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async delete(accountUuid: string): Promise<void> {
+  async delete(identityId: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 }

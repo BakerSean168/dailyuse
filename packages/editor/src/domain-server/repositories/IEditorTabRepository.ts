@@ -1,86 +1,86 @@
-/**
+﻿/**
  * IEditorTabRepository
- * EditorTab 实体仓储接口
+ * EditorTab 瀹炰綋浠撳偍鎺ュ彛
  */
 
 import type { EditorTab } from '../entities/editor-tab';
 
 /**
- * EditorTab 仓储接口
+ * EditorTab 浠撳偍鎺ュ彛
  */
 export interface IEditorTabRepository {
   /**
-   * 根据 UUID 查找标签
+   * 鏍规嵁 UUID 鏌ユ壘鏍囩
    */
-  findByUuid(uuid: string): Promise<EditorTab | null>;
+  findById(id: string): Promise<EditorTab | null>;
 
   /**
-   * 根据分组 UUID 查找所有标签
+   * 鏍规嵁鍒嗙粍 UUID 鏌ユ壘鎵€鏈夋爣绛?
    */
-  findByGroupUuid(groupUuid: string): Promise<EditorTab[]>;
+  findByGroupId(groupId: string): Promise<EditorTab[]>;
 
   /**
-   * 根据文档 UUID 查找所有标签
+   * 鏍规嵁鏂囨。 UUID 鏌ユ壘鎵€鏈夋爣绛?
    */
-  findByDocumentUuid(documentUuid: string): Promise<EditorTab[]>;
+  findByDocumentId(documentId: string): Promise<EditorTab[]>;
 
   /**
-   * 根据分组 UUID 和标签索引查找标签
+   * 鏍规嵁鍒嗙粍 UUID 鍜屾爣绛剧储寮曟煡鎵炬爣绛?
    */
-  findByGroupUuidAndTabIndex(groupUuid: string, tabIndex: number): Promise<EditorTab | null>;
+  findByGroupIdAndTabIndex(groupId: string, tabIndex: number): Promise<EditorTab | null>;
 
   /**
-   * 查找固定的标签
+   * 鏌ユ壘鍥哄畾鐨勬爣绛?
    */
-  findPinnedByGroupUuid(groupUuid: string): Promise<EditorTab[]>;
+  findPinnedByGroupId(groupId: string): Promise<EditorTab[]>;
 
   /**
-   * 查找脏标签（未保存的）
+   * 鏌ユ壘鑴忔爣绛撅紙鏈繚瀛樼殑锛?
    */
-  findDirtyByGroupUuid(groupUuid: string): Promise<EditorTab[]>;
+  findDirtyByGroupId(groupId: string): Promise<EditorTab[]>;
 
   /**
-   * 查找最近访问的标签
+   * 鏌ユ壘鏈€杩戣闂殑鏍囩
    */
-  findRecentlyAccessed(groupUuid: string, limit: number): Promise<EditorTab[]>;
+  findRecentlyAccessed(groupId: string, limit: number): Promise<EditorTab[]>;
 
   /**
-   * 保存标签
+   * 淇濆瓨鏍囩
    */
   save(tab: EditorTab): Promise<void>;
 
   /**
-   * 删除标签
+   * 鍒犻櫎鏍囩
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 批量保存标签
+   * 鎵归噺淇濆瓨鏍囩
    */
   saveBatch(tabs: EditorTab[]): Promise<void>;
 
   /**
-   * 删除分组的所有标签
+   * 鍒犻櫎鍒嗙粍鐨勬墍鏈夋爣绛?
    */
-  deleteByGroupUuid(groupUuid: string): Promise<void>;
+  deleteByGroupId(groupId: string): Promise<void>;
 
   /**
-   * 删除文档的所有标签
+   * 鍒犻櫎鏂囨。鐨勬墍鏈夋爣绛?
    */
-  deleteByDocumentUuid(documentUuid: string): Promise<void>;
+  deleteByDocumentId(documentId: string): Promise<void>;
 
   /**
-   * 统计分组的标签数量
+   * 缁熻鍒嗙粍鐨勬爣绛炬暟閲?
    */
-  countByGroupUuid(groupUuid: string): Promise<number>;
+  countByGroupId(groupId: string): Promise<number>;
 
   /**
-   * 统计脏标签数量
+   * 缁熻鑴忔爣绛炬暟閲?
    */
-  countDirtyByGroupUuid(groupUuid: string): Promise<number>;
+  countDirtyByGroupId(groupId: string): Promise<number>;
 
   /**
-   * 获取分组的最大标签索引
+   * 鑾峰彇鍒嗙粍鐨勬渶澶ф爣绛剧储寮?
    */
-  getMaxTabIndex(groupUuid: string): Promise<number>;
+  getMaxTabIndex(groupId: string): Promise<number>;
 }

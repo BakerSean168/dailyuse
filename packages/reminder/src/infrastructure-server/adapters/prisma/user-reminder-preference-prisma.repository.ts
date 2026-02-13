@@ -2,82 +2,71 @@
  * UserReminderPreferencePrismaRepository
  * Prisma implementation of IUserReminderPreferenceRepository
  *
- * 用户提醒偏好仓储 - Prisma实现
+ * 鑱氬悎鏍癸細UserReminderPreferences
  */
 
 import type { PrismaClient } from '@dailyuse/database';
 import type { IUserReminderPreferenceRepository } from '../../../domain-server/repositories/IUserReminderPreferenceRepository';
-import type { UserReminderPreferencesServerDTO } from '@dailyuse/contracts/reminder';
+import { UserReminderPreferences } from '../../../domain-server/aggregates/user-reminder-preferences';
 
 export class UserReminderPreferencePrismaRepository
   implements IUserReminderPreferenceRepository
 {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
-  private mapToDTO(data: any): UserReminderPreferencesServerDTO {
-    return {
-      uuid: data.id,
-      accountUuid: data.identityId,
-      bestTimeSlots: data.bestTimeSlots
-        ? JSON.parse(data.bestTimeSlots)
-        : [],
-      worstTimeSlots: data.worstTimeSlots
-        ? JSON.parse(data.worstTimeSlots)
-        : [],
+  /**
+   * Prisma record 鈫?UserReminderPreferences 鑱氬悎鏍?
+   */
+  private mapToEntity(data: any): UserReminderPreferences {
+    return UserReminderPreferences.fromPersistenceDTO({
+      id: data.id,
+      identityId: data.identityId,
+      bestTimeSlots: data.bestTimeSlots ?? '[]',
+      worstTimeSlots: data.worstTimeSlots ?? '[]',
       globalSmartFrequency: data.globalSmartFrequency,
-      createdAt: data.createdAt instanceof Date
-        ? data.createdAt.getTime()
-        : data.createdAt,
-      updatedAt: data.updatedAt instanceof Date
-        ? data.updatedAt.getTime()
-        : data.updatedAt,
-    };
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    });
   }
 
-  async upsert(
-    preferences: UserReminderPreferencesServerDTO,
-  ): Promise<UserReminderPreferencesServerDTO> {
-    const data = await this.prisma.userReminderPreference.upsert({
-      where: { identityId: preferences.accountUuid },
+  async save(preferences: UserReminderPreferences): Promise<void> {
+    const dto = preferences.toPersistenceDTO();
+
+    await this.prisma.userReminderPreference.upsert({
+      where: { identityId: dto.identityId },
       create: {
-        id: preferences.uuid,
-        identityId: preferences.accountUuid,
-        bestTimeSlots: JSON.stringify(preferences.bestTimeSlots),
-        worstTimeSlots: JSON.stringify(preferences.worstTimeSlots),
-        globalSmartFrequency: preferences.globalSmartFrequency,
+        id: dto.id,
+        identityId: dto.identityId,
+        bestTimeSlots: dto.bestTimeSlots,
+        worstTimeSlots: dto.worstTimeSlots,
+        globalSmartFrequency: dto.globalSmartFrequency,
       },
       update: {
-        bestTimeSlots: JSON.stringify(preferences.bestTimeSlots),
-        worstTimeSlots: JSON.stringify(preferences.worstTimeSlots),
-        globalSmartFrequency: preferences.globalSmartFrequency,
+        bestTimeSlots: dto.bestTimeSlots,
+        worstTimeSlots: dto.worstTimeSlots,
+        globalSmartFrequency: dto.globalSmartFrequency,
       },
     });
-    return this.mapToDTO(data);
   }
 
-  async findByAccountUuid(
-    accountUuid: string,
-  ): Promise<UserReminderPreferencesServerDTO | null> {
+  async findByIdentityId(
+    identityId: string,
+  ): Promise<UserReminderPreferences | null> {
     const data = await this.prisma.userReminderPreference.findUnique({
-      where: { identityId: accountUuid },
+      where: { identityId },
     });
-    return data ? this.mapToDTO(data) : null;
+    return data ? this.mapToEntity(data) : null;
   }
 
-  async delete(accountUuid: string): Promise<boolean> {
-    try {
-      await this.prisma.userReminderPreference.delete({
-        where: { identityId: accountUuid },
-      });
-      return true;
-    } catch {
-      return false;
-    }
+  async delete(identityId: string): Promise<void> {
+    await this.prisma.userReminderPreference.delete({
+      where: { identityId },
+    });
   }
 
-  async exists(accountUuid: string): Promise<boolean> {
+  async exists(identityId: string): Promise<boolean> {
     const count = await this.prisma.userReminderPreference.count({
-      where: { identityId: accountUuid },
+      where: { identityId },
     });
     return count > 0;
   }

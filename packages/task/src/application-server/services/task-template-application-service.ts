@@ -1,4 +1,4 @@
-import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+﻿import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
 import type { ITaskTemplateRepository, TaskFilters } from '../../domain-server/repositories/ITaskTemplateRepository';
 import { TaskTemplate } from '../../domain-server/aggregates/task-template';
 import { TaskInstance } from '../../domain-server/aggregates/task-instance';
@@ -29,14 +29,14 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { eventBus } from '@dailyuse/utils';
 
 /**
- * TaskTemplate 应用服务
- * 负责协调领域服务和仓储，处理业务用例
+ * TaskTemplate 搴旂敤鏈嶅姟
+ * 璐熻矗鍗忚皟棰嗗煙鏈嶅姟鍜屼粨鍌紝澶勭悊涓氬姟鐢ㄤ緥
  *
- * 架构职责：
- * - 委托给 DomainService 处理业务逻辑
- * - 协调多个领域服务
- * - 事务管理
- * - DTO 转换（Domain ↔ Contracts）
+ * 鏋舵瀯鑱岃矗锛?
+ * - 濮旀墭缁?DomainService 澶勭悊涓氬姟閫昏緫
+ * - 鍗忚皟澶氫釜棰嗗煙鏈嶅姟
+ * - 浜嬪姟绠＄悊
+ * - DTO 杞崲锛圖omain 鈫?Contracts锛?
  */
 export class TaskTemplateApplicationService {
   private generationService: TaskInstanceGenerationService;
@@ -55,14 +55,14 @@ export class TaskTemplateApplicationService {
     this.scheduleRepository = scheduleRepository;
   }
 
-  // ===== TaskTemplate 管理 =====
+  // ===== TaskTemplate 绠＄悊 =====
 
   /**
-   * 创建任务模板
-   * 创建后自动生成初始实例（100天/最多100个）
+   * 鍒涘缓浠诲姟妯℃澘
+   * 鍒涘缓鍚庤嚜鍔ㄧ敓鎴愬垵濮嬪疄渚嬶紙100澶?鏈€澶?00涓級
    */
   async createTaskTemplate(params: {
-    accountUuid: string;
+    identityId: string;
     title: string;
     description?: string;
     taskType: TaskType;
@@ -70,7 +70,7 @@ export class TaskTemplateApplicationService {
     recurrenceRule?: RecurrenceRuleServerDTO;
     reminderConfig?: TaskReminderConfigServerDTO;
     importance?: ImportanceLevel;
-    folderUuid?: string;
+    folderId?: string;
     tags?: string[];
     color?: string;
   }): Promise<Result<TaskTemplateServerDTO>> {
@@ -78,7 +78,7 @@ export class TaskTemplateApplicationService {
     // If account doesn't exist, Prisma will throw a foreign key constraint error.
     // For more explicit validation, check account in a separate repository if needed.
 
-    // 转换值对象
+    // 杞崲鍊煎璞?
     const timeConfig = TaskTimeConfig.fromServerDTO(params.timeConfig);
     const recurrenceRule = params.recurrenceRule
       ? RecurrenceRule.fromServerDTO(params.recurrenceRule)
@@ -87,9 +87,9 @@ export class TaskTemplateApplicationService {
       ? TaskReminderConfig.fromServerDTO(params.reminderConfig)
       : undefined;
 
-    // 使用领域模型的工厂方法创建
+    // 浣跨敤棰嗗煙妯″瀷鐨勫伐鍘傛柟娉曞垱寤?
     const template = TaskTemplate.create({
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       title: params.title,
       description: params.description,
       taskType: params.taskType,
@@ -97,18 +97,18 @@ export class TaskTemplateApplicationService {
       recurrenceRule,
       reminderConfig,
       importance: params.importance,
-      folderUuid: params.folderUuid,
+      folderId: params.folderId,
       tags: params.tags,
       color: params.color,
     });
 
-    // 保存到仓储
+    // 淇濆瓨鍒颁粨鍌?
     await this.templateRepository.save(template);
 
-    // 🔥 如果状态是 ACTIVE，立即生成初始实例
+    // 馃敟 濡傛灉鐘舵€佹槸 ACTIVE锛岀珛鍗崇敓鎴愬垵濮嬪疄渚?
     if (template.status === TaskTemplateStatus.ACTIVE) {
       console.log(
-        `[TaskTemplateApplicationService] 模板 "${template.title}" 已创建，开始生成初始实例...`,
+        `[TaskTemplateApplicationService] 妯℃澘 "${template.title}" 宸插垱寤猴紝寮€濮嬬敓鎴愬垵濮嬪疄渚?..`,
       );
       await this.generateInitialInstances(template);
     }
@@ -117,58 +117,58 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 生成初始实例（私有方法）
+   * 鐢熸垚鍒濆瀹炰緥锛堢鏈夋柟娉曪級
    *
-   * 实施策略（方案 C - 混合方案）：
-   * 1. 生成未来100天内的TaskInstance（用于前端展示和允许用户修改）
-   * 2. 创建1个循环ScheduleTask（用于提醒）
-   * 3. ScheduleTask触发时，检查当天Instance的实际时间，发送提醒
+   * 瀹炴柦绛栫暐锛堟柟妗?C - 娣峰悎鏂规锛夛細
+   * 1. 鐢熸垚鏈潵100澶╁唴鐨凾askInstance锛堢敤浜庡墠绔睍绀哄拰鍏佽鐢ㄦ埛淇敼锛?
+   * 2. 鍒涘缓1涓惊鐜疭cheduleTask锛堢敤浜庢彁閱掞級
+   * 3. ScheduleTask瑙﹀彂鏃讹紝妫€鏌ュ綋澶㊣nstance鐨勫疄闄呮椂闂达紝鍙戦€佹彁閱?
    *
-   * 收益：
-   * - 用户体验好（可修改单天时间）
-   * - 性能合理（只有1个ScheduleTask）
-   * - 提醒准确（使用Instance的实际时间）
+   * 鏀剁泭锛?
+   * - 鐢ㄦ埛浣撻獙濂斤紙鍙慨鏀瑰崟澶╂椂闂达級
+   * - 鎬ц兘鍚堢悊锛堝彧鏈?涓猄cheduleTask锛?
+   * - 鎻愰啋鍑嗙‘锛堜娇鐢↖nstance鐨勫疄闄呮椂闂达級
    */
   private async generateInitialInstances(template: TaskTemplate): Promise<void> {
     try {
-      // 1. 生成 100 天的 TaskInstance（用于展示和修改）
+      // 1. 鐢熸垚 100 澶╃殑 TaskInstance锛堢敤浜庡睍绀哄拰淇敼锛?
       const instances = this.generationService.generateInstances(template);
 
       if (instances.length > 0) {
         await this.instanceRepository.saveMany(instances);
-        // 更新模板的 lastGeneratedDate
+        // 鏇存柊妯℃澘鐨?lastGeneratedDate
         await this.templateRepository.save(template);
 
         console.log(
-          `✅ [TaskTemplateApplicationService] 模板 "${template.title}" 生成了 ${instances.length} 个实例（未来100天）`,
+          `鉁?[TaskTemplateApplicationService] 妯℃澘 "${template.title}" 鐢熸垚浜?${instances.length} 涓疄渚嬶紙鏈潵100澶╋級`,
         );
 
-        // 发布生成事件
+        // 鍙戝竷鐢熸垚浜嬩欢
         this.publishInstancesGeneratedEvent(template, instances);
       }
 
-      // 2. 🔥 如果配置了提醒，创建循环 ScheduleTask（只创建1个）
+      // 2. 馃敟 濡傛灉閰嶇疆浜嗘彁閱掞紝鍒涘缓寰幆 ScheduleTask锛堝彧鍒涘缓1涓級
       if (template.reminderConfig?.enabled) {
         await this.createScheduleTaskForTemplate(template);
       }
 
-      console.log(`✅ [TaskTemplateApplicationService] 模板 "${template.title}" 初始化完成`);
+      console.log(`鉁?[TaskTemplateApplicationService] 妯℃澘 "${template.title}" 鍒濆鍖栧畬鎴恅);
     } catch (error) {
       console.error(
-        `❌ [TaskTemplateApplicationService] 模板 "${template.title}" 初始化失败:`,
+        `鉂?[TaskTemplateApplicationService] 妯℃澘 "${template.title}" 鍒濆鍖栧け璐?`,
         error,
       );
-      // 不抛出错误，模板已经创建成功，实例生成失败不影响模板创建
+      // 涓嶆姏鍑洪敊璇紝妯℃澘宸茬粡鍒涘缓鎴愬姛锛屽疄渚嬬敓鎴愬け璐ヤ笉褰卞搷妯℃澘鍒涘缓
     }
   }
 
   /**
-   * 发布实例生成事件
+   * 鍙戝竷瀹炰緥鐢熸垚浜嬩欢
    */
   private publishInstancesGeneratedEvent(template: TaskTemplate, instances: TaskInstance[]): void {
     const SMALL_BATCH_THRESHOLD = 20;
     const eventPayload: any = {
-      templateUuid: template.uuid,
+      templateId: template.id,
       templateTitle: template.title,
       instanceCount: instances.length,
       dateRange: {
@@ -187,86 +187,86 @@ export class TaskTemplateApplicationService {
     eventBus.emit('task.instances.generated', {
       eventType: 'task_template.instances_generated',
       version: '1.0',
-      aggregateId: template.uuid,
+      aggregateId: template.id,
       occurredOn: new Date(),
-      accountUuid: template.accountUuid,
+      identityId: template.identityId,
       payload: eventPayload,
     });
   }
 
   /**
-   * 为TaskTemplate创建循环ScheduleTask（用于提醒）
+   * 涓篢askTemplate鍒涘缓寰幆ScheduleTask锛堢敤浜庢彁閱掞級
    */
   private async createScheduleTaskForTemplate(template: TaskTemplate): Promise<void> {
     if (!this.scheduleRepository) {
-      console.warn(`⚠️ [TaskTemplateApplicationService] ScheduleRepository not injected. Skipping schedule task creation.`);
+      console.warn(`鈿狅笍 [TaskTemplateApplicationService] ScheduleRepository not injected. Skipping schedule task creation.`);
       return;
     }
 
     try {
-      // 创建 ScheduleTaskFactory
+      // 鍒涘缓 ScheduleTaskFactory
       const factory = new ScheduleTaskFactory();
       const templateDTO = template.toServerDTO();
 
-      // 使用 TaskScheduleStrategy 创建 ScheduleTask
+      // 浣跨敤 TaskScheduleStrategy 鍒涘缓 ScheduleTask
       const scheduleTask = factory.createFromSourceEntity({
-        accountUuid: template.accountUuid,
+        identityId: template.identityId,
         sourceModule: SourceModule.TASK,
-        sourceEntityId: template.uuid,
+        sourceEntityId: template.id,
         sourceEntity: templateDTO,
       });
 
-      // 保存到仓储
+      // 淇濆瓨鍒颁粨鍌?
       await this.scheduleRepository.save(scheduleTask);
 
       console.log(
-        `✅ [TaskTemplateApplicationService] 为模板 "${template.title}" 创建了循环 ScheduleTask: ${scheduleTask.uuid}`,
+        `鉁?[TaskTemplateApplicationService] 涓烘ā鏉?"${template.title}" 鍒涘缓浜嗗惊鐜?ScheduleTask: ${scheduleTask.id}`,
       );
     } catch (error: any) {
-      // 如果是"不需要调度"错误，不报错
+      // 濡傛灉鏄?涓嶉渶瑕佽皟搴?閿欒锛屼笉鎶ラ敊
       if (error?.name === 'SourceEntityNoScheduleRequiredError') {
         console.log(
-          `ℹ️  [TaskTemplateApplicationService] 模板 "${template.title}" 不需要创建 ScheduleTask（未配置提醒或不满足条件）`,
+          `鈩癸笍  [TaskTemplateApplicationService] 妯℃澘 "${template.title}" 涓嶉渶瑕佸垱寤?ScheduleTask锛堟湭閰嶇疆鎻愰啋鎴栦笉婊¤冻鏉′欢锛塦,
         );
         return;
       }
 
       console.error(
-        `❌ [TaskTemplateApplicationService] 为模板 "${template.title}" 创建 ScheduleTask 失败:`,
+        `鉂?[TaskTemplateApplicationService] 涓烘ā鏉?"${template.title}" 鍒涘缓 ScheduleTask 澶辫触:`,
         error,
       );
-      // 不抛出错误，ScheduleTask 创建失败不影响 TaskTemplate 创建
+      // 涓嶆姏鍑洪敊璇紝ScheduleTask 鍒涘缓澶辫触涓嶅奖鍝?TaskTemplate 鍒涘缓
     }
   }
 
   /**
-   * 获取任务模板详情
+   * 鑾峰彇浠诲姟妯℃澘璇︽儏
    */
   async getTaskTemplate(
     uuid: string,
     includeChildren: boolean = false,
   ): Promise<Result<TaskTemplateServerDTO | null>> {
     const template = includeChildren
-      ? await this.templateRepository.findByUuidWithChildren(uuid)
-      : await this.templateRepository.findByUuid(uuid);
+      ? await this.templateRepository.findByIdWithChildren(uuid)
+      : await this.templateRepository.findById(uuid);
 
     return ok(template ? template.toClientDTO(includeChildren) : null);
   }
 
   /**
-   * 根据账户获取任务模板列表
-   * 获取时自动检查并补充实例
+   * 鏍规嵁璐︽埛鑾峰彇浠诲姟妯℃澘鍒楄〃
+   * 鑾峰彇鏃惰嚜鍔ㄦ鏌ュ苟琛ュ厖瀹炰緥
    */
   async getTaskTemplatesByAccount(
-    accountUuid: string,
+    identityId: string,
   ): Promise<Result<TaskTemplateServerDTO[]>> {
-    const templates = await this.templateRepository.findByAccount(accountUuid);
+    const templates = await this.templateRepository.findByIdentityId(identityId);
 
-    // 🔥 自动检查并补充每个 ACTIVE 模板的实例
+    // 馃敟 鑷姩妫€鏌ュ苟琛ュ厖姣忎釜 ACTIVE 妯℃澘鐨勫疄渚?
     for (const template of templates) {
       if (template.status === TaskTemplateStatus.ACTIVE) {
         this.checkAndRefillInstances(template).catch((error) => {
-          console.error(`❌ 补充模板 "${template.title}" 实例失败:`, error);
+          console.error(`鉂?琛ュ厖妯℃澘 "${template.title}" 瀹炰緥澶辫触:`, error);
         });
       }
     }
@@ -275,59 +275,59 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 检查并补充模板实例（异步执行，不阻塞返回）
+   * 妫€鏌ュ苟琛ュ厖妯℃澘瀹炰緥锛堝紓姝ユ墽琛岋紝涓嶉樆濉炶繑鍥烇級
    */
   private async checkAndRefillInstances(template: TaskTemplate): Promise<void> {
     try {
-      // 1. 检查是否需要补充
+      // 1. 妫€鏌ユ槸鍚﹂渶瑕佽ˉ鍏?
       if (this.generationService.shouldRefillInstances(template)) {
-        console.log(`🔄 [TaskTemplateApplicationService] 模板 "${template.title}" 需要补充实例...`);
+        console.log(`馃攧 [TaskTemplateApplicationService] 妯℃澘 "${template.title}" 闇€瑕佽ˉ鍏呭疄渚?..`);
 
-        // 2. 生成实例
+        // 2. 鐢熸垚瀹炰緥
         const instances = this.generationService.generateInstances(template);
 
         if (instances.length > 0) {
-          // 3. 保存实例和模板
+          // 3. 淇濆瓨瀹炰緥鍜屾ā鏉?
           await this.instanceRepository.saveMany(instances);
           await this.templateRepository.save(template);
 
           console.log(
-            `✅ [TaskTemplateApplicationService] 为模板 "${template.title}" 补充了 ${instances.length} 个实例`,
+            `鉁?[TaskTemplateApplicationService] 涓烘ā鏉?"${template.title}" 琛ュ厖浜?${instances.length} 涓疄渚媊,
           );
 
-          // 4. 发布事件
+          // 4. 鍙戝竷浜嬩欢
           this.publishInstancesGeneratedEvent(template, instances);
         }
       }
     } catch (error) {
-      console.error(`❌ [TaskTemplateApplicationService] 补充实例失败:`, error);
+      console.error(`鉂?[TaskTemplateApplicationService] 琛ュ厖瀹炰緥澶辫触:`, error);
     }
   }
 
   /**
-   * 根据状态获取任务模板
+   * 鏍规嵁鐘舵€佽幏鍙栦换鍔℃ā鏉?
    */
   async getTaskTemplatesByStatus(
-    accountUuid: string,
+    identityId: string,
     status: TaskTemplateStatus,
   ): Promise<Result<TaskTemplateServerDTO[]>> {
-    const templates = await this.templateRepository.findByStatus(accountUuid, status);
+    const templates = await this.templateRepository.findByStatus(identityId, status);
     return ok(templates.map((t) => t.toClientDTO()));
   }
 
   /**
-   * 获取活跃的任务模板
-   * 获取时自动检查并补充实例
+   * 鑾峰彇娲昏穬鐨勪换鍔℃ā鏉?
+   * 鑾峰彇鏃惰嚜鍔ㄦ鏌ュ苟琛ュ厖瀹炰緥
    */
   async getActiveTaskTemplates(
-    accountUuid: string,
+    identityId: string,
   ): Promise<Result<TaskTemplateServerDTO[]>> {
-    const templates = await this.templateRepository.findActiveTemplates(accountUuid);
+    const templates = await this.templateRepository.findActiveTemplates(identityId);
 
-    // 🔥 自动检查并补充每个模板的实例
+    // 馃敟 鑷姩妫€鏌ュ苟琛ュ厖姣忎釜妯℃澘鐨勫疄渚?
     for (const template of templates) {
       this.checkAndRefillInstances(template).catch((error) => {
-        console.error(`❌ 补充模板 "${template.title}" 实例失败:`, error);
+        console.error(`鉂?琛ュ厖妯℃澘 "${template.title}" 瀹炰緥澶辫触:`, error);
       });
     }
 
@@ -335,36 +335,36 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 根据文件夹获取任务模板
+   * 鏍规嵁鏂囦欢澶硅幏鍙栦换鍔℃ā鏉?
    */
   async getTaskTemplatesByFolder(
-    folderUuid: string,
+    folderId: string,
   ): Promise<Result<TaskTemplateServerDTO[]>> {
-    const templates = await this.templateRepository.findByFolder(folderUuid);
+    const templates = await this.templateRepository.findByFolderId(folderId);
     return ok(templates.map((t) => t.toClientDTO()));
   }
 
   /**
-   * 根据目标获取任务模板
+   * 鏍规嵁鐩爣鑾峰彇浠诲姟妯℃澘
    */
-  async getTaskTemplatesByGoal(goalUuid: string): Promise<Result<TaskTemplateServerDTO[]>> {
-    const templates = await this.templateRepository.findByGoal(goalUuid);
+  async getTaskTemplatesByGoal(goalId: string): Promise<Result<TaskTemplateServerDTO[]>> {
+    const templates = await this.templateRepository.findByGoalId(goalId);
     return ok(templates.map((t) => t.toClientDTO()));
   }
 
   /**
-   * 根据标签获取任务模板
+   * 鏍规嵁鏍囩鑾峰彇浠诲姟妯℃澘
    */
   async getTaskTemplatesByTags(
-    accountUuid: string,
+    identityId: string,
     tags: string[],
   ): Promise<Result<TaskTemplateServerDTO[]>> {
-    const templates = await this.templateRepository.findByTags(accountUuid, tags);
+    const templates = await this.templateRepository.findByTags(identityId, tags);
     return ok(templates.map((t) => t.toClientDTO()));
   }
 
   /**
-   * 更新任务模板
+   * 鏇存柊浠诲姟妯℃澘
    */
   async updateTaskTemplate(
     uuid: string,
@@ -375,41 +375,41 @@ export class TaskTemplateApplicationService {
       recurrenceRule?: RecurrenceRuleServerDTO;
       reminderConfig?: TaskReminderConfigServerDTO;
       importance?: ImportanceLevel;
-      folderUuid?: string;
+      folderId?: string;
       tags?: string[];
       color?: string;
     },
   ): Promise<Result<TaskTemplateServerDTO>> {
-    const template = await this.templateRepository.findByUuid(uuid);
+    const template = await this.templateRepository.findById(uuid);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${uuid} not found`);
     }
 
-    // 注意：这里简化了更新逻辑，实际应该在聚合根中添加更新方法
-    // 由于时间关系，这里直接修改私有字段（不推荐，应该添加公开的更新方法）
-    // TODO: 在 TaskTemplate 聚合根中添加 update() 方法
+    // 娉ㄦ剰锛氳繖閲岀畝鍖栦簡鏇存柊閫昏緫锛屽疄闄呭簲璇ュ湪鑱氬悎鏍逛腑娣诲姞鏇存柊鏂规硶
+    // 鐢变簬鏃堕棿鍏崇郴锛岃繖閲岀洿鎺ヤ慨鏀圭鏈夊瓧娈碉紙涓嶆帹鑽愶紝搴旇娣诲姞鍏紑鐨勬洿鏂版柟娉曪級
+    // TODO: 鍦?TaskTemplate 鑱氬悎鏍逛腑娣诲姞 update() 鏂规硶
 
     await this.templateRepository.save(template);
 
-    // 🔥 如果更新了调度相关配置，发布变更事件
+    // 馃敟 濡傛灉鏇存柊浜嗚皟搴︾浉鍏抽厤缃紝鍙戝竷鍙樻洿浜嬩欢
     if (params.timeConfig || params.recurrenceRule || params.reminderConfig) {
       try {
         await eventBus.publish({
           eventType: 'task.template.schedule_changed',
           payload: {
-            taskTemplateUuid: template.uuid,
+            taskTemplateId: template.id,
             taskTemplateTitle: template.title,
-            accountUuid: template.accountUuid,
+            identityId: template.identityId,
             changedAt: Date.now(),
             taskTemplateData: template.toServerDTO(),
           },
           timestamp: Date.now(),
         });
         console.log(
-          `📤 [TaskTemplateApplicationService] 已发布 task.template.schedule_changed 事件`,
+          `馃摛 [TaskTemplateApplicationService] 宸插彂甯?task.template.schedule_changed 浜嬩欢`,
         );
       } catch (error) {
-        console.error(`❌ [TaskTemplateApplicationService] 发布调度变更事件失败:`, error);
+        console.error(`鉂?[TaskTemplateApplicationService] 鍙戝竷璋冨害鍙樻洿浜嬩欢澶辫触:`, error);
       }
     }
 
@@ -417,139 +417,139 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 激活任务模板
+   * 婵€娲讳换鍔℃ā鏉?
    *
-   * 业务逻辑：
-   * 1. 修改模板状态为 ACTIVE
-   * 2. 立即生成实例到今天
-   * 3. 发布恢复事件，触发提醒调度恢复
+   * 涓氬姟閫昏緫锛?
+   * 1. 淇敼妯℃澘鐘舵€佷负 ACTIVE
+   * 2. 绔嬪嵆鐢熸垚瀹炰緥鍒颁粖澶?
+   * 3. 鍙戝竷鎭㈠浜嬩欢锛岃Е鍙戞彁閱掕皟搴︽仮澶?
    */
   async activateTaskTemplate(uuid: string): Promise<Result<TaskTemplateServerDTO>> {
-    const template = await this.templateRepository.findByUuid(uuid);
+    const template = await this.templateRepository.findById(uuid);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${uuid} not found`);
     }
 
-    console.log(`[TaskTemplateApplicationService] 开始激活模板: ${template.title}`);
+    console.log(`[TaskTemplateApplicationService] 寮€濮嬫縺娲绘ā鏉? ${template.title}`);
 
-    // 1. 激活模板状态
+    // 1. 婵€娲绘ā鏉跨姸鎬?
     template.activate();
     await this.templateRepository.save(template);
-    console.log(`✅ [TaskTemplateApplicationService] 模板状态已更新为 ACTIVE`);
+    console.log(`鉁?[TaskTemplateApplicationService] 妯℃澘鐘舵€佸凡鏇存柊涓?ACTIVE`);
 
-    // 2. 立即生成实例到今天
+    // 2. 绔嬪嵆鐢熸垚瀹炰緥鍒颁粖澶?
     console.log(
-      `[TaskTemplateApplicationService] 模板 "${template.title}" 已激活，开始生成实例...`,
+      `[TaskTemplateApplicationService] 妯℃澘 "${template.title}" 宸叉縺娲伙紝寮€濮嬬敓鎴愬疄渚?..`,
     );
     await this.generateInitialInstances(template);
 
-    // 3. 🔥 发布恢复事件，触发提醒调度恢复
+    // 3. 馃敟 鍙戝竷鎭㈠浜嬩欢锛岃Е鍙戞彁閱掕皟搴︽仮澶?
     try {
       await eventBus.publish({
         eventType: 'task.template.resumed',
         payload: {
-          taskTemplateUuid: template.uuid,
+          taskTemplateId: template.id,
           taskTemplateTitle: template.title,
-          accountUuid: template.accountUuid,
+          identityId: template.identityId,
           resumedAt: Date.now(),
           taskTemplateData: template.toServerDTO(),
         },
         timestamp: Date.now(),
       });
-      console.log(`📤 [TaskTemplateApplicationService] 已发布 task.template.resumed 事件`);
+      console.log(`馃摛 [TaskTemplateApplicationService] 宸插彂甯?task.template.resumed 浜嬩欢`);
     } catch (error) {
-      console.error(`❌ [TaskTemplateApplicationService] 发布恢复事件失败:`, error);
+      console.error(`鉂?[TaskTemplateApplicationService] 鍙戝竷鎭㈠浜嬩欢澶辫触:`, error);
     }
 
-    console.log(`✅ [TaskTemplateApplicationService] 模板 "${template.title}" 已激活并生成实例`);
+    console.log(`鉁?[TaskTemplateApplicationService] 妯℃澘 "${template.title}" 宸叉縺娲诲苟鐢熸垚瀹炰緥`);
     return ok(template.toClientDTO());
   }
 
   /**
-   * 暂停任务模板
+   * 鏆傚仠浠诲姟妯℃澘
    *
-   * 业务逻辑：
-   * 1. 修改模板状态为 PAUSED
-   * 2. 停止生成新的任务实例
-   * 3. 处理已存在的未完成实例（标记为 SKIPPED）
-   * 4. 发布暂停事件，触发提醒调度暂停
+   * 涓氬姟閫昏緫锛?
+   * 1. 淇敼妯℃澘鐘舵€佷负 PAUSED
+   * 2. 鍋滄鐢熸垚鏂扮殑浠诲姟瀹炰緥
+   * 3. 澶勭悊宸插瓨鍦ㄧ殑鏈畬鎴愬疄渚嬶紙鏍囪涓?SKIPPED锛?
+   * 4. 鍙戝竷鏆傚仠浜嬩欢锛岃Е鍙戞彁閱掕皟搴︽殏鍋?
    */
   async pauseTaskTemplate(uuid: string): Promise<Result<TaskTemplateServerDTO>> {
-    const template = await this.templateRepository.findByUuid(uuid);
+    const template = await this.templateRepository.findById(uuid);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${uuid} not found`);
     }
 
-    console.log(`[TaskTemplateApplicationService] 开始暂停模板: ${template.title}`);
+    console.log(`[TaskTemplateApplicationService] 寮€濮嬫殏鍋滄ā鏉? ${template.title}`);
 
-    // 1. 暂停模板状态
+    // 1. 鏆傚仠妯℃澘鐘舵€?
     template.pause();
     await this.templateRepository.save(template);
-    console.log(`✅ [TaskTemplateApplicationService] 模板状态已更新为 PAUSED`);
+    console.log(`鉁?[TaskTemplateApplicationService] 妯℃澘鐘舵€佸凡鏇存柊涓?PAUSED`);
 
-    // 2. 处理未完成的任务实例
+    // 2. 澶勭悊鏈畬鎴愮殑浠诲姟瀹炰緥
     await this.handleInstancesOnPause(uuid);
 
-    // 3. 🔥 发布暂停事件，触发提醒调度暂停
+    // 3. 馃敟 鍙戝竷鏆傚仠浜嬩欢锛岃Е鍙戞彁閱掕皟搴︽殏鍋?
     try {
       await eventBus.publish({
         eventType: 'task.template.paused',
         payload: {
-          taskTemplateUuid: template.uuid,
-          accountUuid: template.accountUuid,
+          taskTemplateId: template.id,
+          identityId: template.identityId,
           pausedAt: Date.now(),
-          reason: '用户手动暂停',
+          reason: '鐢ㄦ埛鎵嬪姩鏆傚仠',
         },
         timestamp: Date.now(),
       });
-      console.log(`📤 [TaskTemplateApplicationService] 已发布 task.template.paused 事件`);
+      console.log(`馃摛 [TaskTemplateApplicationService] 宸插彂甯?task.template.paused 浜嬩欢`);
     } catch (error) {
-      console.error(`❌ [TaskTemplateApplicationService] 发布暂停事件失败:`, error);
+      console.error(`鉂?[TaskTemplateApplicationService] 鍙戝竷鏆傚仠浜嬩欢澶辫触:`, error);
     }
 
-    console.log(`✅ [TaskTemplateApplicationService] 模板 "${template.title}" 已暂停`);
+    console.log(`鉁?[TaskTemplateApplicationService] 妯℃澘 "${template.title}" 宸叉殏鍋渀);
     return ok(template.toClientDTO());
   }
 
   /**
-   * 处理暂停时的任务实例
-   * - 将所有未完成的实例标记为 SKIPPED
+   * 澶勭悊鏆傚仠鏃剁殑浠诲姟瀹炰緥
+   * - 灏嗘墍鏈夋湭瀹屾垚鐨勫疄渚嬫爣璁颁负 SKIPPED
    */
-  private async handleInstancesOnPause(templateUuid: string): Promise<void> {
+  private async handleInstancesOnPause(templateId: string): Promise<void> {
     try {
-      // 获取该模板的所有未完成实例
-      const instances = await this.instanceRepository.findByTemplate(templateUuid);
+      // 鑾峰彇璇ユā鏉跨殑鎵€鏈夋湭瀹屾垚瀹炰緥
+      const instances = await this.instanceRepository.findByTemplateId(templateId);
       const pendingInstances = instances.filter(
         (inst) => inst.status === 'PENDING' || inst.status === 'IN_PROGRESS',
       );
 
       if (pendingInstances.length === 0) {
-        console.log(`[TaskTemplateApplicationService] 没有未完成的实例需要处理`);
+        console.log(`[TaskTemplateApplicationService] 娌℃湁鏈畬鎴愮殑瀹炰緥闇€瑕佸鐞哷);
         return;
       }
 
       console.log(
-        `[TaskTemplateApplicationService] 找到 ${pendingInstances.length} 个未完成实例，标记为 SKIPPED`,
+        `[TaskTemplateApplicationService] 鎵惧埌 ${pendingInstances.length} 涓湭瀹屾垚瀹炰緥锛屾爣璁颁负 SKIPPED`,
       );
 
-      // 批量标记为跳过
+      // 鎵归噺鏍囪涓鸿烦杩?
       for (const instance of pendingInstances) {
-        instance.skip('模板已暂停');
+        instance.skip('妯℃澘宸叉殏鍋?);
         await this.instanceRepository.save(instance);
       }
 
-      console.log(`✅ [TaskTemplateApplicationService] 已处理 ${pendingInstances.length} 个实例`);
+      console.log(`鉁?[TaskTemplateApplicationService] 宸插鐞?${pendingInstances.length} 涓疄渚媊);
     } catch (error) {
-      console.error(`❌ [TaskTemplateApplicationService] 处理实例失败:`, error);
-      // 不抛出错误，允许暂停继续
+      console.error(`鉂?[TaskTemplateApplicationService] 澶勭悊瀹炰緥澶辫触:`, error);
+      // 涓嶆姏鍑洪敊璇紝鍏佽鏆傚仠缁х画
     }
   }
 
   /**
-   * 归档任务模板
+   * 褰掓。浠诲姟妯℃澘
    */
   async archiveTaskTemplate(uuid: string): Promise<Result<TaskTemplateServerDTO>> {
-    const template = await this.templateRepository.findByUuid(uuid);
+    const template = await this.templateRepository.findById(uuid);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${uuid} not found`);
     }
@@ -561,7 +561,7 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 软删除任务模板
+   * 杞垹闄や换鍔℃ā鏉?
    */
   async softDeleteTaskTemplate(uuid: string): Promise<Result<void>> {
     await this.templateRepository.softDelete(uuid);
@@ -569,12 +569,12 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 恢复任务模板
+   * 鎭㈠浠诲姟妯℃澘
    */
   async restoreTaskTemplate(uuid: string): Promise<Result<TaskTemplateServerDTO>> {
     await this.templateRepository.restore(uuid);
 
-    const template = await this.templateRepository.findByUuid(uuid);
+    const template = await this.templateRepository.findById(uuid);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${uuid} not found after restore`);
     }
@@ -583,63 +583,63 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 删除任务模板
+   * 鍒犻櫎浠诲姟妯℃澘
    */
   async deleteTaskTemplate(uuid: string): Promise<Result<void>> {
-    const template = await this.templateRepository.findByUuid(uuid);
+    const template = await this.templateRepository.findById(uuid);
     if (!template) {
-      // 如果模板不存在，直接返回（幂等性）
+      // 濡傛灉妯℃澘涓嶅瓨鍦紝鐩存帴杩斿洖锛堝箓绛夋€э級
       return ok(undefined);
     }
 
     await this.templateRepository.delete(uuid);
 
-    // 🔥 发布删除事件，触发提醒调度删除
+    // 馃敟 鍙戝竷鍒犻櫎浜嬩欢锛岃Е鍙戞彁閱掕皟搴﹀垹闄?
     try {
       await eventBus.publish({
         eventType: 'task.template.deleted',
         payload: {
-          taskTemplateUuid: uuid,
-          accountUuid: template.accountUuid,
+          taskTemplateId: uuid,
+          identityId: template.identityId,
           deletedAt: Date.now(),
         },
         timestamp: Date.now(),
       });
-      console.log(`📤 [TaskTemplateApplicationService] 已发布 task.template.deleted 事件`);
+      console.log(`馃摛 [TaskTemplateApplicationService] 宸插彂甯?task.template.deleted 浜嬩欢`);
     } catch (error) {
-      console.error(`❌ [TaskTemplateApplicationService] 发布删除事件失败:`, error);
+      console.error(`鉂?[TaskTemplateApplicationService] 鍙戝竷鍒犻櫎浜嬩欢澶辫触:`, error);
     }
 
     return ok(undefined);
   }
 
   /**
-   * 绑定到目标
+   * 缁戝畾鍒扮洰鏍?
    */
   async bindToGoal(
     uuid: string,
     params: {
-      goalUuid: string;
-      keyResultUuid: string;
+      goalId: string;
+      keyResultId: string;
       incrementValue: number;
     },
   ): Promise<TaskTemplateServerDTO> {
-    const template = await this.templateRepository.findByUuid(uuid);
+    const template = await this.templateRepository.findById(uuid);
     if (!template) {
       throw new Error(`TaskTemplate ${uuid} not found`);
     }
 
-    template.bindToGoal(params.goalUuid, params.keyResultUuid, params.incrementValue);
+    template.bindToGoal(params.goalId, params.keyResultId, params.incrementValue);
     await this.templateRepository.save(template);
 
     return template.toClientDTO();
   }
 
   /**
-   * 解除目标绑定
+   * 瑙ｉ櫎鐩爣缁戝畾
    */
   async unbindFromGoal(uuid: string): Promise<TaskTemplateServerDTO> {
-    const template = await this.templateRepository.findByUuid(uuid);
+    const template = await this.templateRepository.findById(uuid);
     if (!template) {
       throw new Error(`TaskTemplate ${uuid} not found`);
     }
@@ -651,19 +651,19 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 为模板生成实例
-   * @deprecated 使用新的自动维护机制，不再需要手动指定 toDate
+   * 涓烘ā鏉跨敓鎴愬疄渚?
+   * @deprecated 浣跨敤鏂扮殑鑷姩缁存姢鏈哄埗锛屼笉鍐嶉渶瑕佹墜鍔ㄦ寚瀹?toDate
    */
   async generateInstances(
     uuid: string,
     toDate?: number,
   ): Promise<TaskInstanceClientDTO[]> {
-    const template = await this.templateRepository.findByUuid(uuid);
+    const template = await this.templateRepository.findById(uuid);
     if (!template) {
       throw new Error(`TaskTemplate ${uuid} not found`);
     }
 
-    // 使用强制生成模式，重新生成实例
+    // 浣跨敤寮哄埗鐢熸垚妯″紡锛岄噸鏂扮敓鎴愬疄渚?
     const instances = this.generationService.generateInstances(template, { forceGenerate: true });
 
     if (instances.length > 0) {
@@ -675,15 +675,15 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 检查并生成待生成的实例
+   * 妫€鏌ュ苟鐢熸垚寰呯敓鎴愮殑瀹炰緥
    */
   async checkAndGenerateInstances(): Promise<void> {
-    // 查找所有需要补充的模板
-    // 注意：这里需要支持所有账户，可能需要调整 Repository 接口
+    // 鏌ユ壘鎵€鏈夐渶瑕佽ˉ鍏呯殑妯℃澘
+    // 娉ㄦ剰锛氳繖閲岄渶瑕佹敮鎸佹墍鏈夎处鎴凤紝鍙兘闇€瑕佽皟鏁?Repository 鎺ュ彛
     const templates = await this.templateRepository.findActiveTemplates('');
 
     console.log(
-      `[TaskTemplateApplicationService] 开始检查 ${templates.length} 个活跃模板的实例数量`,
+      `[TaskTemplateApplicationService] 寮€濮嬫鏌?${templates.length} 涓椿璺冩ā鏉跨殑瀹炰緥鏁伴噺`,
     );
 
     for (const template of templates) {
@@ -691,13 +691,13 @@ export class TaskTemplateApplicationService {
     }
   }
 
-  // ===== ONE_TIME 任务管理 =====
+  // ===== ONE_TIME 浠诲姟绠＄悊 =====
 
   /**
-   * 创建一次性任务
+   * 鍒涘缓涓€娆℃€т换鍔?
    */
   async createOneTimeTask(params: {
-    accountUuid: string;
+    identityId: string;
     title: string;
     description?: string;
     importance?: ImportanceLevel;
@@ -705,16 +705,16 @@ export class TaskTemplateApplicationService {
     dueDate?: number;
     estimatedMinutes?: number;
     note?: string;
-    goalUuid?: string;
-    keyResultUuid?: string;
+    goalId?: string;
+    keyResultId?: string;
     parentTaskUuid?: string;
-    folderUuid?: string;
+    folderId?: string;
     tags?: string[];
     color?: string;
   }): Promise<TaskTemplateClientDTO> {
-    // 使用领域模型的工厂方法创建一次性任务
+    // 浣跨敤棰嗗煙妯″瀷鐨勫伐鍘傛柟娉曞垱寤轰竴娆℃€т换鍔?
     const task = TaskTemplate.createOneTimeTask({
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       title: params.title,
       description: params.description,
       importance: params.importance,
@@ -722,25 +722,25 @@ export class TaskTemplateApplicationService {
       dueDate: params.dueDate,
       estimatedMinutes: params.estimatedMinutes,
       note: params.note,
-      goalUuid: params.goalUuid,
-      keyResultUuid: params.keyResultUuid,
+      goalId: params.goalId,
+      keyResultId: params.keyResultId,
       parentTaskUuid: params.parentTaskUuid,
-      folderUuid: params.folderUuid,
+      folderId: params.folderId,
       tags: params.tags,
       color: params.color,
     });
 
-    // 保存到仓储
+    // 淇濆瓨鍒颁粨鍌?
     await this.templateRepository.save(task);
 
     return task.toClientDTO();
   }
 
   /**
-   * 阻塞任务模板
+   * 闃诲浠诲姟妯℃澘
    */
   async blockTask(uuid: string, reason: string): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findByUuid(uuid);
+    const task = await this.templateRepository.findById(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
     }
@@ -752,10 +752,10 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 解除阻塞任务模板
+   * 瑙ｉ櫎闃诲浠诲姟妯℃澘
    */
   async unblockTask(uuid: string): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findByUuid(uuid);
+    const task = await this.templateRepository.findById(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
     }
@@ -767,13 +767,13 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 更新截止时间
+   * 鏇存柊鎴鏃堕棿
    */
   async updateDueDate(
     uuid: string,
     newDueDate: number | null,
   ): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findByUuid(uuid);
+    const task = await this.templateRepository.findById(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
     }
@@ -785,13 +785,13 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 更新预估时间
+   * 鏇存柊棰勪及鏃堕棿
    */
   async updateEstimatedTime(
     uuid: string,
     estimatedMinutes: number,
   ): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findByUuid(uuid);
+    const task = await this.templateRepository.findById(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
     }
@@ -803,8 +803,8 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 更新一次性任务（通用更新方法）
-   * 支持更新标题、描述、日期、优先级、标签等属性
+   * 鏇存柊涓€娆℃€т换鍔★紙閫氱敤鏇存柊鏂规硶锛?
+   * 鏀寔鏇存柊鏍囬銆佹弿杩般€佹棩鏈熴€佷紭鍏堢骇銆佹爣绛剧瓑灞炴€?
    */
   async updateOneTimeTask(
     uuid: string,
@@ -820,12 +820,12 @@ export class TaskTemplateApplicationService {
       note?: string;
     },
   ): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findByUuid(uuid);
+    const task = await this.templateRepository.findById(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
     }
 
-    // 更新各个属性
+    // 鏇存柊鍚勪釜灞炴€?
     if (updates.title !== undefined) {
       task.updateTitle(updates.title);
     }
@@ -860,10 +860,10 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 获取任务历史记录
+   * 鑾峰彇浠诲姟鍘嗗彶璁板綍
    */
   async getTaskHistory(uuid: string): Promise<TaskTemplateHistoryClientDTO[]> {
-    const task = await this.templateRepository.findByUuidWithChildren(uuid);
+    const task = await this.templateRepository.findByIdWithChildren(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
     }
@@ -871,108 +871,108 @@ export class TaskTemplateApplicationService {
     return task.history.map((h) => h.toClientDTO());
   }
 
-  // ===== ONE_TIME 任务查询 =====
+  // ===== ONE_TIME 浠诲姟鏌ヨ =====
 
   /**
-   * 查找一次性任务
+   * 鏌ユ壘涓€娆℃€т换鍔?
    */
   async findOneTimeTasks(
-    accountUuid: string,
+    identityId: string,
     filters?: TaskFilters,
   ): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findOneTimeTasks(accountUuid, filters);
+    const tasks = await this.templateRepository.findOneTimeTasks(identityId, filters);
     return tasks.map((t) => t.toClientDTO());
   }
 
   /**
-   * 查找循环任务
+   * 鏌ユ壘寰幆浠诲姟
    */
   async findRecurringTasks(
-    accountUuid: string,
+    identityId: string,
     filters?: TaskFilters,
   ): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findRecurringTasks(accountUuid, filters);
+    const tasks = await this.templateRepository.findRecurringTasks(identityId, filters);
     return tasks.map((t) => t.toClientDTO());
   }
 
   /**
-   * 查找逾期任务
+   * 鏌ユ壘閫炬湡浠诲姟
    */
-  async getOverdueTasks(accountUuid: string): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findOverdueTasks(accountUuid);
+  async getOverdueTasks(identityId: string): Promise<TaskTemplateClientDTO[]> {
+    const tasks = await this.templateRepository.findOverdueTasks(identityId);
     return tasks.map((t) => t.toClientDTO());
   }
 
   /**
-   * 查找今日任务
+   * 鏌ユ壘浠婃棩浠诲姟
    */
-  async getTodayTasks(accountUuid: string): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findTodayTasks(accountUuid);
+  async getTodayTasks(identityId: string): Promise<TaskTemplateClientDTO[]> {
+    const tasks = await this.templateRepository.findTodayTasks(identityId);
     return tasks.map((t) => t.toClientDTO());
   }
 
   /**
-   * 查找即将到期的任务
+   * 鏌ユ壘鍗冲皢鍒版湡鐨勪换鍔?
    */
   async getUpcomingTasks(
-    accountUuid: string,
+    identityId: string,
     daysAhead: number,
   ): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findUpcomingTasks(accountUuid, daysAhead);
+    const tasks = await this.templateRepository.findUpcomingTasks(identityId, daysAhead);
     return tasks.map((t) => t.toClientDTO());
   }
 
   /**
-   * 按优先级排序查找任务
+   * 鎸変紭鍏堢骇鎺掑簭鏌ユ壘浠诲姟
    */
   async getTasksSortedByPriority(
-    accountUuid: string,
+    identityId: string,
     limit?: number,
   ): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findTasksSortedByPriority(accountUuid, limit);
+    const tasks = await this.templateRepository.findSortedByPriority(identityId, limit);
     return tasks.map((t) => t.toClientDTO());
   }
 
   /**
-   * 根据 Goal 查找任务（新版本，支持 ONE_TIME）
+   * 鏍规嵁 Goal 鏌ユ壘浠诲姟锛堟柊鐗堟湰锛屾敮鎸?ONE_TIME锛?
    */
-  async getTasksByGoal(goalUuid: string): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findTasksByGoal(goalUuid);
+  async getTasksByGoal(goalId: string): Promise<TaskTemplateClientDTO[]> {
+    const tasks = await this.templateRepository.findByGoalId(goalId);
     return tasks.map((t) => t.toClientDTO());
   }
 
   /**
-   * 根据 KeyResult 查找任务
+   * 鏍规嵁 KeyResult 鏌ユ壘浠诲姟
    */
-  async getTasksByKeyResult(keyResultUuid: string): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findTasksByKeyResult(keyResultUuid);
+  async getTasksByKeyResult(keyResultId: string): Promise<TaskTemplateClientDTO[]> {
+    const tasks = await this.templateRepository.findByKeyResultId(keyResultId);
     return tasks.map((t) => t.toClientDTO());
   }
 
   /**
-   * 查找被阻塞的任务
+   * 鏌ユ壘琚樆濉炵殑浠诲姟
    */
-  async getBlockedTasks(accountUuid: string): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findBlockedTasks(accountUuid);
+  async getBlockedTasks(identityId: string): Promise<TaskTemplateClientDTO[]> {
+    const tasks = await this.templateRepository.findBlockedTasks(identityId);
     return tasks.map((t) => t.toClientDTO());
   }
 
   /**
-   * 统计任务数量
+   * 缁熻浠诲姟鏁伴噺
    */
-  async countTasks(accountUuid: string, filters?: TaskFilters): Promise<number> {
-    return await this.templateRepository.countTasks(accountUuid, filters);
+  async countTasks(identityId: string, filters?: TaskFilters): Promise<number> {
+    return await this.templateRepository.countTasks(identityId, filters);
   }
 
-  // ===== 子任务管理 =====
+  // ===== 瀛愪换鍔＄鐞?=====
 
   /**
-   * 创建子任务
+   * 鍒涘缓瀛愪换鍔?
    */
   async createSubtask(
     parentUuid: string,
     params: {
-      accountUuid: string;
+      identityId: string;
       title: string;
       description?: string;
       importance?: ImportanceLevel;
@@ -980,15 +980,15 @@ export class TaskTemplateApplicationService {
       estimatedMinutes?: number;
     },
   ): Promise<TaskTemplateClientDTO> {
-    // 验证父任务存在
-    const parentTask = await this.templateRepository.findByUuid(parentUuid);
+    // 楠岃瘉鐖朵换鍔″瓨鍦?
+    const parentTask = await this.templateRepository.findById(parentUuid);
     if (!parentTask) {
       throw new Error(`Parent task ${parentUuid} not found`);
     }
 
-    // 创建子任务
+    // 鍒涘缓瀛愪换鍔?
     const subtask = TaskTemplate.createOneTimeTask({
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       title: params.title,
       description: params.description,
       importance: params.importance,
@@ -999,15 +999,15 @@ export class TaskTemplateApplicationService {
 
     await this.templateRepository.save(subtask);
 
-    // 记录父任务添加子任务
-    parentTask.addSubtask(subtask.uuid);
+    // 璁板綍鐖朵换鍔℃坊鍔犲瓙浠诲姟
+    parentTask.addSubtask(subtask.id);
     await this.templateRepository.save(parentTask);
 
     return subtask.toClientDTO();
   }
 
   /**
-   * 获取子任务列表
+   * 鑾峰彇瀛愪换鍔″垪琛?
    */
   async getSubtasks(parentUuid: string): Promise<TaskTemplateClientDTO[]> {
     const subtasks = await this.templateRepository.findSubtasks(parentUuid);
@@ -1015,10 +1015,10 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 移除子任务
+   * 绉婚櫎瀛愪换鍔?
    */
   async removeSubtask(parentUuid: string, subtaskUuid: string): Promise<void> {
-    const parentTask = await this.templateRepository.findByUuid(parentUuid);
+    const parentTask = await this.templateRepository.findById(parentUuid);
     if (!parentTask) {
       throw new Error(`Parent task ${parentUuid} not found`);
     }
@@ -1027,32 +1027,32 @@ export class TaskTemplateApplicationService {
     await this.templateRepository.save(parentTask);
   }
 
-  // ===== Goal/KR 关联管理 (ONE_TIME 任务新版本) =====
+  // ===== Goal/KR 鍏宠仈绠＄悊 (ONE_TIME 浠诲姟鏂扮増鏈? =====
 
   /**
-   * 链接到目标
+   * 閾炬帴鍒扮洰鏍?
    */
   async linkToGoal(
     uuid: string,
-    goalUuid: string,
-    keyResultUuid?: string,
+    goalId: string,
+    keyResultId?: string,
   ): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findByUuid(uuid);
+    const task = await this.templateRepository.findById(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
     }
 
-    task.linkToGoal(goalUuid, keyResultUuid);
+    task.linkToGoal(goalId, keyResultId);
     await this.templateRepository.save(task);
 
     return task.toClientDTO();
   }
 
   /**
-   * 解除目标链接
+   * 瑙ｉ櫎鐩爣閾炬帴
    */
   async unlinkFromGoal(uuid: string): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findByUuid(uuid);
+    const task = await this.templateRepository.findById(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
     }
@@ -1063,17 +1063,17 @@ export class TaskTemplateApplicationService {
     return task.toClientDTO();
   }
 
-  // ===== 依赖管理 =====
+  // ===== 渚濊禆绠＄悊 =====
 
   /**
-   * 标记为被阻塞
+   * 鏍囪涓鸿闃诲
    */
   async markAsBlocked(
     uuid: string,
     reason: string,
     dependencyTaskUuid?: string,
   ): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findByUuid(uuid);
+    const task = await this.templateRepository.findById(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
     }
@@ -1085,10 +1085,10 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 标记为就绪
+   * 鏍囪涓哄氨缁?
    */
   async markAsReady(uuid: string): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findByUuid(uuid);
+    const task = await this.templateRepository.findById(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
     }
@@ -1100,13 +1100,13 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 更新依赖状态
+   * 鏇存柊渚濊禆鐘舵€?
    */
   async updateDependencyStatus(
     uuid: string,
     status: 'PENDING' | 'READY' | 'BLOCKED',
   ): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findByUuid(uuid);
+    const task = await this.templateRepository.findById(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
     }
@@ -1117,33 +1117,33 @@ export class TaskTemplateApplicationService {
     return task.toClientDTO();
   }
 
-  // ===== 批量操作 =====
+  // ===== 鎵归噺鎿嶄綔 =====
 
   /**
-   * 批量创建任务
+   * 鎵归噺鍒涘缓浠诲姟
    */
   async createTasksBatch(
     tasks: Array<{
-      accountUuid: string;
+      identityId: string;
       title: string;
       description?: string;
       importance?: ImportanceLevel;
       dueDate?: number;
       estimatedMinutes?: number;
-      goalUuid?: string;
-      keyResultUuid?: string;
+      goalId?: string;
+      keyResultId?: string;
     }>,
   ): Promise<TaskTemplateClientDTO[]> {
     const taskEntities = tasks.map((params) =>
       TaskTemplate.createOneTimeTask({
-        accountUuid: params.accountUuid,
+        identityId: params.identityId,
         title: params.title,
         description: params.description,
         importance: params.importance,
         dueDate: params.dueDate,
         estimatedMinutes: params.estimatedMinutes,
-        goalUuid: params.goalUuid,
-        keyResultUuid: params.keyResultUuid,
+        goalId: params.goalId,
+        keyResultId: params.keyResultId,
       }),
     );
 
@@ -1153,29 +1153,29 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 批量删除任务
+   * 鎵归噺鍒犻櫎浠诲姟
    */
   async deleteTasksBatch(uuids: string[]): Promise<void> {
     await this.templateRepository.deleteBatch(uuids);
   }
 
-  // ===== 仪表板/统计查询 =====
+  // ===== 浠〃鏉?缁熻鏌ヨ =====
 
   /**
-   * 获取最近完成的任务
+   * 鑾峰彇鏈€杩戝畬鎴愮殑浠诲姟
    */
   async getRecentCompletedTasks(
-    accountUuid: string,
+    identityId: string,
     limit: number = 10,
   ): Promise<TaskTemplateClientDTO[]> {
-    // 获取最近7天完成的任务
+    // 鑾峰彇鏈€杩?澶╁畬鎴愮殑浠诲姟
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const tasks = await this.templateRepository.findOneTimeTasks(accountUuid, {
+    const tasks = await this.templateRepository.findOneTimeTasks(identityId, {
       taskType: TaskType.ONE_TIME,
       status: 'COMPLETED' as any,
     });
 
-    // 筛选并排序：最近完成的任务（按更新时间倒序）
+    // 绛涢€夊苟鎺掑簭锛氭渶杩戝畬鎴愮殑浠诲姟锛堟寜鏇存柊鏃堕棿鍊掑簭锛?
     return tasks
       .filter((t) => t.updatedAt && t.updatedAt >= sevenDaysAgo)
       .sort((a, b) => {
@@ -1188,9 +1188,9 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 获取任务仪表板数据
+   * 鑾峰彇浠诲姟浠〃鏉挎暟鎹?
    */
-  async getTaskDashboard(accountUuid: string): Promise<{
+  async getTaskDashboard(identityId: string): Promise<{
     todayTasks: TaskTemplateClientDTO[];
     overdueTasks: TaskTemplateClientDTO[];
     blockedTasks: TaskTemplateClientDTO[];
@@ -1205,7 +1205,7 @@ export class TaskTemplateApplicationService {
       completionRate: number;
     };
   }> {
-    // 并行查询所有数据
+    // 骞惰鏌ヨ鎵€鏈夋暟鎹?
     const [
       today,
       overdue,
@@ -1216,17 +1216,17 @@ export class TaskTemplateApplicationService {
       totalActive,
       totalCompleted,
     ] = await Promise.all([
-      this.getTodayTasks(accountUuid),
-      this.getOverdueTasks(accountUuid),
-      this.getBlockedTasks(accountUuid),
-      this.getUpcomingTasks(accountUuid, 7), // 未来7天
-      this.getTasksSortedByPriority(accountUuid, 5), // 前5个高优先级任务
-      this.getRecentCompletedTasks(accountUuid, 10), // 最近10个完成的任务
-      this.countTasks(accountUuid, {
+      this.getTodayTasks(identityId),
+      this.getOverdueTasks(identityId),
+      this.getBlockedTasks(identityId),
+      this.getUpcomingTasks(identityId, 7), // 鏈潵7澶?
+      this.getTasksSortedByPriority(identityId, 5), // 鍓?涓珮浼樺厛绾т换鍔?
+      this.getRecentCompletedTasks(identityId, 10), // 鏈€杩?0涓畬鎴愮殑浠诲姟
+      this.countTasks(identityId, {
         taskType: TaskType.ONE_TIME,
         status: 'TODO' as any,
       }),
-      this.countTasks(accountUuid, {
+      this.countTasks(identityId, {
         taskType: TaskType.ONE_TIME,
         status: 'COMPLETED' as any,
       }),
@@ -1255,24 +1255,24 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 根据日期范围获取模板实例
-   * 用于前端按需加载任务实例
+   * 鏍规嵁鏃ユ湡鑼冨洿鑾峰彇妯℃澘瀹炰緥
+   * 鐢ㄤ簬鍓嶇鎸夐渶鍔犺浇浠诲姟瀹炰緥
    */
   async getInstancesByDateRange(
-    templateUuid: string,
+    templateId: string,
     fromDate: number,
     toDate: number,
   ): Promise<TaskInstanceClientDTO[]> {
-    // 验证模板是否存在
-    const template = await this.templateRepository.findByUuid(templateUuid);
+    // 楠岃瘉妯℃澘鏄惁瀛樺湪
+    const template = await this.templateRepository.findById(templateId);
     if (!template) {
-      throw new Error(`Task template not found: ${templateUuid}`);
+      throw new Error(`Task template not found: ${templateId}`);
     }
 
-    // 从仓储中获取该模板的所有实例
-    const allInstances = await this.instanceRepository.findByTemplate(templateUuid);
+    // 浠庝粨鍌ㄤ腑鑾峰彇璇ユā鏉跨殑鎵€鏈夊疄渚?
+    const allInstances = await this.instanceRepository.findByTemplateId(templateId);
 
-    // 在内存中按日期范围过滤
+    // 鍦ㄥ唴瀛樹腑鎸夋棩鏈熻寖鍥磋繃婊?
     const filteredInstances = allInstances.filter((instance) => {
       const instanceDate = instance.instanceDate as any;
       const timestamp =
@@ -1280,7 +1280,7 @@ export class TaskTemplateApplicationService {
       return timestamp >= fromDate && timestamp <= toDate;
     });
 
-    // 转换为客户端 DTO
+    // 杞崲涓哄鎴风 DTO
     return filteredInstances.map((instance) => instance.toClientDTO());
   }
 }

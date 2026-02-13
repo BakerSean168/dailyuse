@@ -9,7 +9,7 @@
  */
 
 import type { ReminderGroup } from '../aggregates/reminder-group';
-import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
+import type { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 
 /**
  * IReminderGroupRepository 仓储接口
@@ -22,42 +22,40 @@ export interface IReminderGroupRepository {
   /**
    * 保存聚合根（创建或更新）
    *
-   * 注意：
-   * - 这是事务操作
-   * - 如果 UUID 已存在则更新，否则插入
+   * @param group ReminderGroup 聚合根
    */
   save(group: ReminderGroup): Promise<void>;
 
   /**
-   * 通过 UUID 查找聚合根
+   * 通过 ID 查找聚合根
    *
-   * @param uuid 提醒分组 UUID
+   * @param id 提醒分组 ID
    * @returns 聚合根实例，不存在则返回 null
    */
-  findById(uuid: string): Promise<ReminderGroup | null>;
+  findById(id: string): Promise<ReminderGroup | null>;
 
   /**
-   * 通过账户 UUID 查找所有提醒分组
+   * 通过身份 ID 查找所有提醒分组
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 身份 ID
    * @param options.includeDeleted 是否包含已删除的分组（默认 false）
    * @returns 提醒分组列表
    */
-  findByAccountUuid(
-    accountUuid: string,
+  findByIdentityId(
+    identityId: string,
     options?: { includeDeleted?: boolean },
   ): Promise<ReminderGroup[]>;
 
   /**
    * 通过控制模式查找提醒分组
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 身份 ID
    * @param controlMode 控制模式
    * @param options.includeDeleted 是否包含已删除的分组
    * @returns 提醒分组列表
    */
   findByControlMode(
-    accountUuid: string,
+    identityId: string,
     controlMode: ControlMode,
     options?: { includeDeleted?: boolean },
   ): Promise<ReminderGroup[]>;
@@ -65,62 +63,57 @@ export interface IReminderGroupRepository {
   /**
    * 查找所有活跃的提醒分组
    *
-   * @param accountUuid 账户 UUID（可选，不传则查找所有账户）
+   * @param identityId 身份 ID（可选，不传则查找所有）
    * @returns 活跃的提醒分组列表
    */
-  findActive(accountUuid?: string): Promise<ReminderGroup[]>;
+  findActive(identityId?: string): Promise<ReminderGroup[]>;
 
   /**
    * 批量查找提醒分组
    *
-   * @param uuids UUID 列表
-   * @returns 提醒分组列表（顺序与传入的 UUID 列表一致）
+   * @param ids ID 列表
+   * @returns 提醒分组列表
    */
-  findByIds(uuids: string[]): Promise<ReminderGroup[]>;
+  findByIds(ids: string[]): Promise<ReminderGroup[]>;
 
   /**
-   * 通过名称查找分组
-   * （用于防重复检查）
+   * 通过名称查找分组（用于防重复检查）
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 身份 ID
    * @param name 分组名称
-   * @param excludeUuid 排除的 UUID（用于更新时检查）
+   * @param excludeId 排除的 ID（用于更新时检查）
    * @returns 分组实例，不存在则返回 null
    */
   findByName(
-    accountUuid: string,
+    identityId: string,
     name: string,
-    excludeUuid?: string,
+    excludeId?: string,
   ): Promise<ReminderGroup | null>;
 
   /**
    * 删除聚合根
    *
-   * 注意：
-   * - 这是事务操作
-   * - 需要先处理分组下的模板（移除分组关联或一起删除）
-   *
-   * @param uuid 提醒分组 UUID
+   * @param id 提醒分组 ID
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
    * 检查提醒分组是否存在
    *
-   * @param uuid 提醒分组 UUID
+   * @param id 提醒分组 ID
    */
-  exists(uuid: string): Promise<boolean>;
+  exists(id: string): Promise<boolean>;
 
   /**
-   * 统计账户下的提醒分组数量
+   * 统计身份下的提醒分组数量
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 身份 ID
    * @param options.status 按状态筛选
    * @param options.includeDeleted 是否包含已删除的分组
    * @returns 提醒分组数量
    */
   count(
-    accountUuid: string,
+    identityId: string,
     options?: { status?: ReminderStatus; includeDeleted?: boolean },
   ): Promise<number>;
 }

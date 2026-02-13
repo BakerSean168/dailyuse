@@ -39,14 +39,9 @@ export {
   ToggleReminderGroupStatus,
   ToggleReminderGroupControlMode,
   
-  // Reminder Statistics Use Cases
-  GetReminderStatistics,
-  
   // Legacy exports (deprecated)
   ReminderTemplateApplicationService,
   createReminderTemplateApplicationService,
   ReminderGroupApplicationService,
   createReminderGroupApplicationService,
-  ReminderStatisticsApplicationService,
-  createReminderStatisticsApplicationService,
 } from './services';

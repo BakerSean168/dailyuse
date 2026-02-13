@@ -6,7 +6,7 @@
  * @since Story 9.3 (EPIC-SCHEDULE-001)
  */
 
-import type {  PrismaClient  } from "../../../generated/prisma/client";
+import type {  PrismaClient  } from '@dailyuse/database';
 import type { IScheduleRepository } from '../../../domain-server/repositories/IScheduleRepository';
 import { Schedule } from '../../../domain-server/aggregates/schedule';
 
@@ -18,13 +18,13 @@ export class SchedulePrismaRepository implements IScheduleRepository {
    */
   private mapToEntity(data: any): Schedule {
     // Convert Prisma data to ScheduleServerDTO format first
-    return Schedule.fromServerDTO({
-      uuid: data.uuid,
-      accountUuid: data.accountUuid,
+    return Schedule.fromPersistenceDTO({
+      id: data.id,
+      identityId: data.identityId,
       name: data.name,
       description: data.description,
-      startTime: Number(data.startTime), // BigInt �?number (milliseconds)
-      endTime: Number(data.endTime), // BigInt �?number (milliseconds)
+      startTime: Number(data.startTime), // BigInt 锟?number (milliseconds)
+      endTime: Number(data.endTime), // BigInt 锟?number (milliseconds)
       duration: data.duration,
       hasConflict: data.hasConflict,
       conflictingSchedules: data.conflictingSchedules
@@ -33,8 +33,8 @@ export class SchedulePrismaRepository implements IScheduleRepository {
       priority: data.priority,
       location: data.location,
       attendees: data.attendees ? JSON.parse(data.attendees) : undefined,
-      createdAt: data.createdAt.getTime(), // Date �?number (milliseconds)
-      updatedAt: data.updatedAt.getTime(), // Date �?number (milliseconds)
+      createdAt: data.createdAt.getTime(), // Date 锟?number (milliseconds)
+      updatedAt: data.updatedAt.getTime(), // Date 锟?number (milliseconds)
     });
   }
 
@@ -42,15 +42,15 @@ export class SchedulePrismaRepository implements IScheduleRepository {
    * Convert Domain Schedule entity to Prisma data
    */
   private mapToPrisma(schedule: Schedule): any {
-    const dto = schedule.toServerDTO();
+    const dto = schedule.toPersistenceDTO();
 
     return {
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
+      id: dto.id,
+      identityId: dto.identityId,
       name: dto.name,
       description: dto.description ?? null,
-      startTime: BigInt(dto.startTime), // number → BigInt (milliseconds)
-      endTime: BigInt(dto.endTime), // number → BigInt (milliseconds)
+      startTime: BigInt(dto.startTime), // number 鈫?BigInt (milliseconds)
+      endTime: BigInt(dto.endTime), // number 鈫?BigInt (milliseconds)
       duration: dto.duration,
       hasConflict: dto.hasConflict,
       conflictingSchedules: dto.conflictingSchedules && dto.conflictingSchedules.length > 0
@@ -59,8 +59,8 @@ export class SchedulePrismaRepository implements IScheduleRepository {
       priority: dto.priority ?? null,
       location: dto.location ?? null,
       attendees: dto.attendees ? JSON.stringify(dto.attendees) : null,
-      createdAt: new Date(dto.createdAt), // number �?Date
-      updatedAt: new Date(dto.updatedAt), // number �?Date
+      createdAt: new Date(dto.createdAt), // number 锟?Date
+      updatedAt: new Date(dto.updatedAt), // number 锟?Date
     };
   }
 
@@ -71,7 +71,7 @@ export class SchedulePrismaRepository implements IScheduleRepository {
     const data = this.mapToPrisma(schedule);
 
     await this.prisma.schedule.upsert({
-      where: { uuid: data.uuid },
+      where: { id: data.id },
       create: data,
       update: data,
     });
@@ -80,9 +80,9 @@ export class SchedulePrismaRepository implements IScheduleRepository {
   /**
    * Find schedule by UUID
    */
-  async findByUuid(uuid: string): Promise<Schedule | null> {
+  async findById(id: string): Promise<Schedule | null> {
     const data = await this.prisma.schedule.findUnique({
-      where: { uuid },
+      where: { id },
     });
 
     return data ? this.mapToEntity(data) : null;
@@ -91,9 +91,9 @@ export class SchedulePrismaRepository implements IScheduleRepository {
   /**
    * Find all schedules for an account
    */
-  async findByAccountUuid(accountUuid: string): Promise<Schedule[]> {
+  async findByIdentityId(identityId: string): Promise<Schedule[]> {
     const schedules = await this.prisma.schedule.findMany({
-      where: { accountUuid },
+      where: { identityId },
       orderBy: { startTime: 'asc' },
     });
 
@@ -107,20 +107,20 @@ export class SchedulePrismaRepository implements IScheduleRepository {
    * Time overlap condition: (A.start < B.end) AND (A.end > B.start)
    */
   async findByTimeRange(
-    accountUuid: string,
+    identityId: string,
     startTime: number,
     endTime: number,
-    excludeUuid?: string
+    excludeId?: string
   ): Promise<Schedule[]> {
     const schedules = await this.prisma.schedule.findMany({
       where: {
-        accountUuid,
+        identityId,
         // Time overlap: schedule starts before query end
         startTime: { lt: BigInt(endTime) },
         // AND schedule ends after query start
         endTime: { gt: BigInt(startTime) },
         // Exclude current schedule (for editing scenarios)
-        ...(excludeUuid && { uuid: { not: excludeUuid } }),
+        ...(excludeId && { id: { not: excludeId } }),
       },
       orderBy: { startTime: 'asc' },
     });
@@ -131,9 +131,9 @@ export class SchedulePrismaRepository implements IScheduleRepository {
   /**
    * Delete schedule by UUID
    */
-  async deleteByUuid(uuid: string): Promise<void> {
+  async deleteById(id: string): Promise<void> {
     await this.prisma.schedule.delete({
-      where: { uuid },
+      where: { id },
     });
   }
 

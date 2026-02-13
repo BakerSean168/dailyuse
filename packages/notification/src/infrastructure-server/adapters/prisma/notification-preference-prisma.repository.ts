@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NotificationPreference Prisma Repository
  *
  * Prisma implementation of INotificationPreferenceRepository.
@@ -20,27 +20,27 @@ export class NotificationPreferencePrismaRepository implements INotificationPref
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findById(uuid: string): Promise<NotificationPreference | null> {
+  async findById(id: string): Promise<NotificationPreference | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<NotificationPreference | null> {
+  async findByIdentityId(identityId: string): Promise<NotificationPreference | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async exists(uuid: string): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async existsForAccount(accountUuid: string): Promise<boolean> {
+  async existsForIdentity(identityId: string): Promise<boolean> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async getOrCreate(accountUuid: string): Promise<NotificationPreference> {
+  async getOrCreate(identityId: string): Promise<NotificationPreference> {
     throw new Error('Not implemented - extract from apps/api');
   }
 }

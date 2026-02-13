@@ -73,7 +73,7 @@ export class GoalFolderApplicationService {
     }
 
     // 3. 查询现有文件夹（检查重名）
-    const existingFolders = await this.folderRepository.findByAccountUuid(accountUuid);
+    const existingFolders = await this.folderRepository.findByIdentityId(accountUuid);
     this.domainService.checkDuplicateName(params.name, accountUuid, existingFolders);
 
     // 4. 如果指定了父文件夹，验证父文件夹
@@ -125,7 +125,7 @@ export class GoalFolderApplicationService {
    * @returns {Promise<GoalFolderClientDTO[]>} 文件夹列表
    */
   async getFoldersByAccount(accountUuid: string): Promise<GoalFolderClientDTO[]> {
-    const folders = await this.folderRepository.findByAccountUuid(accountUuid);
+    const folders = await this.folderRepository.findByIdentityId(accountUuid);
     return folders.map((folder) => folder.toClientDTO());
   }
 
@@ -165,7 +165,7 @@ export class GoalFolderApplicationService {
     if (params.name) {
       this.domainService.validateFolderName(params.name);
 
-      const existingFolders = await this.folderRepository.findByAccountUuid(folder.accountUuid);
+      const existingFolders = await this.folderRepository.findByIdentityId(folder.accountUuid);
       this.domainService.checkDuplicateName(params.name, folder.accountUuid, existingFolders, uuid);
     }
 
@@ -215,7 +215,7 @@ export class GoalFolderApplicationService {
     this.domainService.validateFolderDeletion(folder);
 
     // 3. 查询文件夹中的所有目标
-    const goalsInFolder = await this.goalRepository.findByAccountUuid(folder.accountUuid, {});
+    const goalsInFolder = await this.goalRepository.findByIdentityId(folder.accountUuid, {});
     const affectedGoals = goalsInFolder.filter((g) => g.folderUuid === uuid);
 
     // 4. 将目标移至根目录（folderUuid = null）
@@ -407,7 +407,7 @@ export class GoalFolderApplicationService {
     if (!folder) return;
 
     // 2. 查询文件夹中的所有目标
-    const allGoals = await this.goalRepository.findByAccountUuid(folder.accountUuid, {});
+    const allGoals = await this.goalRepository.findByIdentityId(folder.accountUuid, {});
     const goalsInFolder = allGoals.filter((g) => g.folderUuid === folderUuid);
 
     // 3. 委托给 DomainService 更新统计
@@ -424,7 +424,7 @@ export class GoalFolderApplicationService {
    * @returns {Promise<void>}
    */
   async updateAllFolderStatistics(accountUuid: string): Promise<void> {
-    const folders = await this.folderRepository.findByAccountUuid(accountUuid);
+    const folders = await this.folderRepository.findByIdentityId(accountUuid);
 
     for (const folder of folders) {
       await this.updateFolderStatisticsInternal(folder.uuid);

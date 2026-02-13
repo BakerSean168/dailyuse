@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ScheduleJobPrismaRepository
  * Prisma implementation of IScheduleJobRepository
  *
@@ -51,16 +51,16 @@ export class ScheduleJobPrismaRepository implements IScheduleJobRepository {
     });
   }
 
-  async findByUuid(uuid: string): Promise<ScheduleJobServerDTO | null> {
+  async findById(id: string): Promise<ScheduleJobServerDTO | null> {
     const data = await this.prisma.scheduleJob.findUnique({
-      where: { id: uuid },
+      where: { id },
     });
     return data ? this.mapToDTO(data) : null;
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<ScheduleJobServerDTO[]> {
+  async findByIdentityId(identityId: string): Promise<ScheduleJobServerDTO[]> {
     const data = await this.prisma.scheduleJob.findMany({
-      where: { identityId: accountUuid },
+      where: { identityId: identityId },
       orderBy: { nextRunAt: 'asc' },
     });
     return data.map((item: any) => this.mapToDTO(item));
@@ -87,9 +87,9 @@ export class ScheduleJobPrismaRepository implements IScheduleJobRepository {
     return data.map((item: any) => this.mapToDTO(item));
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.scheduleJob.delete({
-      where: { id: uuid },
+      where: { id },
     });
   }
 

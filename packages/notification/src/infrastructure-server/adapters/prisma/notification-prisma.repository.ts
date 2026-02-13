@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Notification Prisma Repository
  *
  * Prisma implementation of INotificationRepository.
@@ -25,12 +25,12 @@ export class NotificationPrismaRepository implements INotificationRepository {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findById(uuid: string, options?: { includeChildren?: boolean }): Promise<Notification | null> {
+  async findById(id: string, options?: { includeChildren?: boolean }): Promise<Notification | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByAccountUuid(
-    accountUuid: string,
+  async findByIdentityId(
+    identityId: string,
     options?: {
       includeChildren?: boolean;
       includeRead?: boolean;
@@ -43,7 +43,7 @@ export class NotificationPrismaRepository implements INotificationRepository {
   }
 
   async findByStatus(
-    accountUuid: string,
+    identityId: string,
     status: NotificationStatus,
     options?: { limit?: number; offset?: number },
   ): Promise<Notification[]> {
@@ -51,50 +51,50 @@ export class NotificationPrismaRepository implements INotificationRepository {
   }
 
   async findByCategory(
-    accountUuid: string,
+    identityId: string,
     category: NotificationCategory,
     options?: { limit?: number; offset?: number },
   ): Promise<Notification[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findUnread(accountUuid: string, options?: { limit?: number }): Promise<Notification[]> {
+  async findUnread(identityId: string, options?: { limit?: number }): Promise<Notification[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByRelatedEntity(relatedEntityType: string, relatedEntityUuid: string): Promise<Notification[]> {
+  async findByRelatedEntity(relatedEntityType: string, relatedEntityId: string): Promise<Notification[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async deleteMany(uuids: string[]): Promise<void> {
+  async deleteMany(ids: string[]): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async softDelete(uuid: string): Promise<void> {
+  async softDelete(id: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async exists(uuid: string): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async countUnread(accountUuid: string): Promise<number> {
+  async countUnread(identityId: string): Promise<number> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async countByCategory(accountUuid: string): Promise<Record<NotificationCategory, number>> {
+  async countByCategory(identityId: string): Promise<Record<NotificationCategory, number>> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async markManyAsRead(uuids: string[]): Promise<void> {
+  async markManyAsRead(ids: string[]): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async markAllAsRead(accountUuid: string): Promise<void> {
+  async markAllAsRead(identityId: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 

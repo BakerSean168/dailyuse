@@ -70,7 +70,7 @@ export class FocusModeApplicationService {
     const { accountUuid, focusedGoalUuids, startTime, endTime, hiddenGoalsMode } = params;
 
     // 1. 校验账户是否已有活跃周期
-    const existingActive = await this.focusModeRepository.findActiveByAccountUuid(accountUuid);
+    const existingActive = await this.focusModeRepository.findActiveByIdentityId(accountUuid);
     if (existingActive) {
       throw new Error(`Account ${accountUuid} already has an active focus mode`);
     }
@@ -166,7 +166,7 @@ export class FocusModeApplicationService {
    * @returns {Promise<FocusModeClientDTO | null>} 活跃周期或 null
    */
   async getActiveFocusMode(accountUuid: string): Promise<FocusModeClientDTO | null> {
-    const focusMode = await this.focusModeRepository.findActiveByAccountUuid(accountUuid);
+    const focusMode = await this.focusModeRepository.findActiveByIdentityId(accountUuid);
     return focusMode ? focusMode.toClientDTO() : null;
   }
 
@@ -177,7 +177,7 @@ export class FocusModeApplicationService {
    * @returns {Promise<FocusModeClientDTO[]>} 周期列表（按创建时间倒序）
    */
   async getFocusModeHistory(accountUuid: string): Promise<FocusModeClientDTO[]> {
-    const focusModes = await this.focusModeRepository.findByAccountUuid(accountUuid);
+    const focusModes = await this.focusModeRepository.findByIdentityId(accountUuid);
     return focusModes.map((fm) => fm.toClientDTO());
   }
 

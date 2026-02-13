@@ -1,61 +1,61 @@
-/**
- * NotificationPreference 仓储接口
+﻿/**
+ * NotificationPreference 浠撳偍鎺ュ彛
  *
- * DDD 仓储模式：
- * - 只定义接口，不实现
- * - 由基础设施层实现
+ * DDD 浠撳偍妯″紡锛?
+ * - 鍙畾涔夋帴鍙ｏ紝涓嶅疄鐜?
+ * - 鐢卞熀纭€璁炬柦灞傚疄鐜?
  */
 
 import type { NotificationPreference } from '../aggregates/notification-preference';
 
 /**
- * INotificationPreferenceRepository 仓储接口
+ * INotificationPreferenceRepository 浠撳偍鎺ュ彛
  *
- * 职责：
- * - 管理用户通知偏好的持久化
- * - 每个账户只有一个偏好设置
+ * 鑱岃矗锛?
+ * - 绠＄悊鐢ㄦ埛閫氱煡鍋忓ソ鐨勬寔涔呭寲
+ * - 姣忎釜璐︽埛鍙湁涓€涓亸濂借缃?
  */
 export interface INotificationPreferenceRepository {
   /**
-   * 保存偏好设置（创建或更新）
+   * 淇濆瓨鍋忓ソ璁剧疆锛堝垱寤烘垨鏇存柊锛?
    */
   save(preference: NotificationPreference): Promise<void>;
 
   /**
-   * 通过 UUID 查找偏好设置
+   * 閫氳繃 UUID 鏌ユ壘鍋忓ソ璁剧疆
    */
-  findById(uuid: string): Promise<NotificationPreference | null>;
+  findById(id: string): Promise<NotificationPreference | null>;
 
   /**
-   * 通过账户 UUID 查找偏好设置
+   * 閫氳繃璐︽埛 UUID 鏌ユ壘鍋忓ソ璁剧疆
    *
-   * @param accountUuid 账户 UUID
-   * @returns 偏好设置，不存在则返回 null
+   * @param identityId 璐︽埛 UUID
+   * @returns 鍋忓ソ璁剧疆锛屼笉瀛樺湪鍒欒繑鍥?null
    */
-  findByAccountUuid(accountUuid: string): Promise<NotificationPreference | null>;
+  findByIdentityId(identityId: string): Promise<NotificationPreference | null>;
 
   /**
-   * 删除偏好设置
+   * 鍒犻櫎鍋忓ソ璁剧疆
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 检查偏好设置是否存在
+   * 妫€鏌ュ亸濂借缃槸鍚﹀瓨鍦?
    */
-  exists(uuid: string): Promise<boolean>;
+  exists(id: string): Promise<boolean>;
 
   /**
-   * 检查账户是否已有偏好设置
+   * 妫€鏌ヨ处鎴锋槸鍚﹀凡鏈夊亸濂借缃?
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 璐︽埛 UUID
    */
-  existsForAccount(accountUuid: string): Promise<boolean>;
+  existsForIdentity(identityId: string): Promise<boolean>;
 
   /**
-   * 获取或创建偏好设置
+   * 鑾峰彇鎴栧垱寤哄亸濂借缃?
    *
-   * @param accountUuid 账户 UUID
-   * @returns 偏好设置（如果不存在则创建默认设置）
+   * @param identityId 璐︽埛 UUID
+   * @returns 鍋忓ソ璁剧疆锛堝鏋滀笉瀛樺湪鍒欏垱寤洪粯璁よ缃級
    */
-  getOrCreate(accountUuid: string): Promise<NotificationPreference>;
+  getOrCreate(identityId: string): Promise<NotificationPreference>;
 }

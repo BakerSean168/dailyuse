@@ -17,12 +17,6 @@ export { AdjustReminderFrequency } from './adjust-reminder-frequency';
 export { RecordReminderResponse } from './record-reminder-response';
 
 /**
- * Statistics & Analytics
- * Services for analyzing and reporting reminder statistics
- */
-export { ReminderStatisticsApplicationService } from './reminder-statistics-application-service';
-
-/**
  * Event Publishing (Internal)
  * Centralized event publishing orchestrator
  */

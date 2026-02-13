@@ -1,11 +1,11 @@
-/**
+﻿/**
  * IScheduleTaskRepository - Repository Interface
- * ScheduleTask 仓储接口
+ * ScheduleTask 浠撳偍鎺ュ彛
  *
  * DDD Repository Pattern:
- * - 抽象聚合根的持久化逻辑
- * - 提供类集合的操作接口
- * - 面向领域模型，而非数据库表
+ * - 鎶借薄鑱氬悎鏍圭殑鎸佷箙鍖栭€昏緫
+ * - 鎻愪緵绫婚泦鍚堢殑鎿嶄綔鎺ュ彛
+ * - 闈㈠悜棰嗗煙妯″瀷锛岃€岄潪鏁版嵁搴撹〃
  *
  * @domain-server/schedule
  */
@@ -14,10 +14,10 @@ import type { ScheduleTask } from '../aggregates/schedule-task';
 import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 
 /**
- * ScheduleTask 查询选项
+ * ScheduleTask 鏌ヨ閫夐」
  */
 export interface IScheduleTaskQueryOptions {
-  accountUuid?: string;
+  identityId?: string;
   sourceModule?: SourceModule;
   sourceEntityId?: string;
   status?: ScheduleTaskStatus;
@@ -27,90 +27,90 @@ export interface IScheduleTaskQueryOptions {
 }
 
 /**
- * ScheduleTask 仓储接口
+ * ScheduleTask 浠撳偍鎺ュ彛
  */
 export interface IScheduleTaskRepository {
-  // ============ 基本 CRUD ============
+  // ============ 鍩烘湰 CRUD ============
 
   /**
-   * 保存 ScheduleTask 聚合根
-   * - 新建: INSERT
-   * - 更新: UPDATE (基于版本号进行乐观锁)
+   * 淇濆瓨 ScheduleTask 鑱氬悎鏍?
+   * - 鏂板缓: INSERT
+   * - 鏇存柊: UPDATE (鍩轰簬鐗堟湰鍙疯繘琛屼箰瑙傞攣)
    */
   save(task: ScheduleTask): Promise<void>;
 
   /**
-   * 根据 UUID 查找 ScheduleTask
+   * 鏍规嵁 UUID 鏌ユ壘 ScheduleTask
    */
-  findByUuid(uuid: string): Promise<ScheduleTask | null>;
+  findById(id: string): Promise<ScheduleTask | null>;
 
   /**
-   * 根据 UUID 删除 ScheduleTask
+   * 鏍规嵁 UUID 鍒犻櫎 ScheduleTask
    */
-  deleteByUuid(uuid: string): Promise<void>;
+  deleteById(id: string): Promise<void>;
 
-  // ============ 查询方法 ============
+  // ============ 鏌ヨ鏂规硶 ============
 
   /**
-   * 查询账户下的所有任务
+   * 鏌ヨ璐︽埛涓嬬殑鎵€鏈変换鍔?
    */
-  findByAccountUuid(accountUuid: string): Promise<ScheduleTask[]>;
+  findByIdentityId(identityId: string): Promise<ScheduleTask[]>;
 
   /**
-   * 查询指定来源模块的所有任务
+   * 鏌ヨ鎸囧畾鏉ユ簮妯″潡鐨勬墍鏈変换鍔?
    */
-  findBySourceModule(module: SourceModule, accountUuid?: string): Promise<ScheduleTask[]>;
+  findBySourceModule(module: SourceModule, identityId?: string): Promise<ScheduleTask[]>;
 
   /**
-   * 查询指定来源实体的任务
+   * 鏌ヨ鎸囧畾鏉ユ簮瀹炰綋鐨勪换鍔?
    */
   findBySourceEntity(
     module: SourceModule,
     entityId: string,
-    accountUuid?: string,
+    identityId?: string,
   ): Promise<ScheduleTask[]>;
 
   /**
-   * 查询指定状态的任务
+   * 鏌ヨ鎸囧畾鐘舵€佺殑浠诲姟
    */
-  findByStatus(status: ScheduleTaskStatus, accountUuid?: string): Promise<ScheduleTask[]>;
+  findByStatus(status: ScheduleTaskStatus, identityId?: string): Promise<ScheduleTask[]>;
 
   /**
-   * 查询启用的任务
+   * 鏌ヨ鍚敤鐨勪换鍔?
    */
-  findEnabled(accountUuid?: string): Promise<ScheduleTask[]>;
+  findEnabled(identityId?: string): Promise<ScheduleTask[]>;
 
   /**
-   * 查询需要执行的任务 (到时间 + 已启用 + 活跃状态)
+   * 鏌ヨ闇€瑕佹墽琛岀殑浠诲姟 (鍒版椂闂?+ 宸插惎鐢?+ 娲昏穬鐘舵€?
    */
   findDueTasksForExecution(beforeTime: Date, limit?: number): Promise<ScheduleTask[]>;
 
   /**
-   * 高级查询
+   * 楂樼骇鏌ヨ
    */
   query(options: IScheduleTaskQueryOptions): Promise<ScheduleTask[]>;
 
   /**
-   * 计数查询
+   * 璁℃暟鏌ヨ
    */
   count(options: IScheduleTaskQueryOptions): Promise<number>;
 
-  // ============ 批量操作 ============
+  // ============ 鎵归噺鎿嶄綔 ============
 
   /**
-   * 批量保存
+   * 鎵归噺淇濆瓨
    */
   saveBatch(tasks: ScheduleTask[]): Promise<void>;
 
   /**
-   * 批量删除
+   * 鎵归噺鍒犻櫎
    */
-  deleteBatch(uuids: string[]): Promise<void>;
+  deleteBatch(ids: string[]): Promise<void>;
 
-  // ============ 事务支持 ============
+  // ============ 浜嬪姟鏀寔 ============
 
   /**
-   * 在事务中执行操作
+   * 鍦ㄤ簨鍔′腑鎵ц鎿嶄綔
    */
   withTransaction<T>(fn: (repo: IScheduleTaskRepository) => Promise<T>): Promise<T>;
 }

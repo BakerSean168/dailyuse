@@ -1,6 +1,8 @@
-/**
+﻿/**
  * TaskFolderPrismaRepository - Prisma Implementation of ITaskFolderRepository
- * 任务文件夹仓储 - Prisma实现
+ * 任务文件夹仓储 - Prisma 实现
+ *
+ * 聚合根：TaskFolder
  */
 
 import type { PrismaClient } from '@dailyuse/database';
@@ -10,6 +12,9 @@ import type { TaskFolderServerDTO } from '@dailyuse/contracts/task';
 export class TaskFolderPrismaRepository implements ITaskFolderRepository {
   constructor(private prisma: PrismaClient) {}
 
+  /**
+   * Prisma record  TaskFolderServerDTO
+   */
   private mapToDTO(data: any): TaskFolderServerDTO {
     return {
       id: data.id,
@@ -19,9 +24,11 @@ export class TaskFolderPrismaRepository implements ITaskFolderRepository {
       icon: data.icon ?? null,
       order: data.order,
       version: data.version,
-      createdAt: data.createdAt instanceof Date ? data.createdAt.toISOString() : data.createdAt,
-      updatedAt: data.updatedAt instanceof Date ? data.updatedAt.toISOString() : data.updatedAt,
-      deletedAt: data.deletedAt ? (data.deletedAt instanceof Date ? data.deletedAt.toISOString() : data.deletedAt) : null,
+      createdAt: data.createdAt instanceof Date ? data.createdAt.getTime() : data.createdAt,
+      updatedAt: data.updatedAt instanceof Date ? data.updatedAt.getTime() : data.updatedAt,
+      deletedAt: data.deletedAt
+        ? (data.deletedAt instanceof Date ? data.deletedAt.getTime() : data.deletedAt)
+        : null,
     };
   }
 
@@ -47,30 +54,28 @@ export class TaskFolderPrismaRepository implements ITaskFolderRepository {
     });
   }
 
-  async findByUuid(uuid: string): Promise<TaskFolderServerDTO | null> {
+  async findById(id: string): Promise<TaskFolderServerDTO | null> {
     const data = await this.prisma.taskFolder.findUnique({
-      where: { id: uuid },
+      where: { id },
     });
     return data ? this.mapToDTO(data) : null;
   }
 
-  async findByAccount(accountUuid: string): Promise<TaskFolderServerDTO[]> {
+  async findByIdentityId(identityId: string): Promise<TaskFolderServerDTO[]> {
     const data = await this.prisma.taskFolder.findMany({
-      where: { identityId: accountUuid, deletedAt: null },
+      where: { identityId, deletedAt: null },
       orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
     });
     return data.map((item: any) => this.mapToDTO(item));
   }
 
-  async delete(uuid: string): Promise<void> {
-    await this.prisma.taskFolder.delete({
-      where: { id: uuid },
-    });
+  async delete(id: string): Promise<void> {
+    await this.prisma.taskFolder.delete({ where: { id } });
   }
 
-  async exists(uuid: string): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     const count = await this.prisma.taskFolder.count({
-      where: { id: uuid },
+      where: { id },
     });
     return count > 0;
   }

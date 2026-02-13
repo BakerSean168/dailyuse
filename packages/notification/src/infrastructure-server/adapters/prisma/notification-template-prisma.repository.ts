@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NotificationTemplate Prisma Repository
  *
  * Prisma implementation of INotificationTemplateRepository.
@@ -21,7 +21,7 @@ export class NotificationTemplatePrismaRepository implements INotificationTempla
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findById(uuid: string): Promise<NotificationTemplate | null> {
+  async findById(id: string): Promise<NotificationTemplate | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
@@ -48,15 +48,15 @@ export class NotificationTemplatePrismaRepository implements INotificationTempla
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async exists(uuid: string): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async isNameUsed(name: string, excludeUuid?: string): Promise<boolean> {
+  async isNameUsed(name: string, excludeId?: string): Promise<boolean> {
     throw new Error('Not implemented - extract from apps/api');
   }
 

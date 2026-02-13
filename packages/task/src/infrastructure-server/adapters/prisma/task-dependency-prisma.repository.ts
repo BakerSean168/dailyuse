@@ -1,49 +1,55 @@
-/**
- * TaskDependency Prisma Repository
- * 浠诲姟渚濊禆鍏崇郴 Prisma Repository瀹炵幇
- * 鏍囧噯 Express/TypeScript 妯″紡 - 绉婚櫎浜?NestJS @Injectable 瑁呴グ鍣?
+﻿/**
+ * TaskDependencyPrismaRepository - Prisma Implementation of ITaskDependencyRepository
+ * 任务依赖关系仓储 - Prisma 实现
+ *
+ * 聚合根：TaskDependency
  */
 
-import type {  PrismaClient  } from "../../../generated/prisma/client";
+import type { PrismaClient } from '@dailyuse/database';
 import type { ITaskDependencyRepository } from '../../../domain-server/repositories/ITaskDependencyRepository';
-import type {
-  TaskDependencyServerDTO,
-  CreateTaskDependencyRequest,
-  UpdateTaskDependencyRequest,
-} from '@dailyuse/contracts/task';
+import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import type { DependencyType } from '@dailyuse/contracts/task';
+import { TaskDependency } from '../../../domain-server/aggregates/task-dependency';
 
-/**
- * Prisma 瀹炵幇鐨勪换鍔′緷璧栦粨鍌?
- */
 export class TaskDependencyPrismaRepository implements ITaskDependencyRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   /**
-   * 灏?Prisma 妯″瀷杞崲涓?DTO
+   * Prisma record  TaskDependencyServerDTO
    */
   private mapToDTO(data: any): TaskDependencyServerDTO {
     return {
-      uuid: data.uuid,
-      predecessorTaskUuid: data.predecessorTaskUuid,
-      successorTaskUuid: data.successorTaskUuid,
-      dependencyType: data.dependencyType,
-      lagDays: data.lagDays,
+      id: data.id,
+      predecessorTaskId: data.predecessorTaskId,
+      successorTaskId: data.successorTaskId,
+      dependencyType: data.dependencyType as DependencyType,
+      lagDays: data.lagDays ?? undefined,
       createdAt: data.createdAt.getTime(),
       updatedAt: data.updatedAt.getTime(),
     };
   }
 
-  /**
-   * Create渚濊禆鍏崇郴
-   */
-  async create(data: CreateTaskDependencyRequest): Promise<TaskDependencyServerDTO> {
+  async create(data: {
+    predecessorTaskId: string;
+    successorTaskId: string;
+    dependencyType?: DependencyType;
+    lagDays?: number;
+  }): Promise<TaskDependencyServerDTO> {
+    const entity = TaskDependency.create({
+      predecessorTaskId: data.predecessorTaskId,
+      successorTaskId: data.successorTaskId,
+      dependencyType: data.dependencyType,
+      lagDays: data.lagDays,
+    });
+    const dto = entity.toDTO();
+
     const dependency = await this.prisma.taskDependency.create({
       data: {
-        uuid: crypto.randomUUID(),
-        predecessorTaskUuid: data.predecessorTaskUuid,
-        successorTaskUuid: data.successorTaskUuid,
-        dependencyType: String(data.dependencyType || 'FINISH_TO_START'),
-        lagDays: data.lagDays ?? 0,
+        id: dto.id,
+        predecessorTaskId: dto.predecessorTaskId,
+        successorTaskId: dto.successorTaskId,
+        dependencyType: String(dto.dependencyType),
+        lagDays: dto.lagDays ?? null,
         updatedAt: new Date(),
       },
     });
@@ -51,197 +57,146 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
     return this.mapToDTO(dependency);
   }
 
-  /**
-   * 鏍规嵁 UUID 鏌ユ壘
-   */
-  async findByUuid(uuid: string): Promise<TaskDependencyServerDTO | null> {
+  async findById(id: string): Promise<TaskDependencyServerDTO | null> {
     const dependency = await this.prisma.taskDependency.findUnique({
-      where: { uuid },
+      where: { id },
     });
-
     return dependency ? this.mapToDTO(dependency) : null;
   }
 
-  /**
-   * 鏌ユ壘鎸囧畾浠诲姟鐨勬墍鏈夊墠缃緷璧栵紙姝や换鍔℃槸鍚庣画浠诲姟锛?
-   */
-  async findBySuccessor(taskUuid: string): Promise<TaskDependencyServerDTO[]> {
+  async findBySuccessorId(taskId: string): Promise<TaskDependencyServerDTO[]> {
     const dependencies = await this.prisma.taskDependency.findMany({
-      where: { successorTaskUuid: taskUuid },
+      where: { successorTaskId: taskId },
       orderBy: { createdAt: 'asc' },
     });
-
-    return dependencies.map((dep) => this.mapToDTO(dep));
+    return dependencies.map((dep: any) => this.mapToDTO(dep));
   }
 
-  /**
-   * 鏌ユ壘渚濊禆鎸囧畾浠诲姟鐨勬墍鏈変换鍔★紙姝や换鍔℃槸鍓嶇疆浠诲姟锛?
-   */
-  async findByPredecessor(taskUuid: string): Promise<TaskDependencyServerDTO[]> {
+  async findByPredecessorId(taskId: string): Promise<TaskDependencyServerDTO[]> {
     const dependencies = await this.prisma.taskDependency.findMany({
-      where: { predecessorTaskUuid: taskUuid },
+      where: { predecessorTaskId: taskId },
       orderBy: { createdAt: 'asc' },
     });
-
-    return dependencies.map((dep) => this.mapToDTO(dep));
+    return dependencies.map((dep: any) => this.mapToDTO(dep));
   }
 
-  /**
-   * 鏌ユ壘鐗瑰畾鐨勫墠缃?鍚庣画渚濊禆鍏崇郴
-   */
-  async findByPredecessorAndSuccessor(
-    predecessorTaskUuid: string,
-    successorTaskUuid: string,
+  async findByPredecessorAndSuccessorId(
+    predecessorId: string,
+    successorId: string,
   ): Promise<TaskDependencyServerDTO | null> {
     const dependency = await this.prisma.taskDependency.findFirst({
       where: {
-        predecessorTaskUuid,
-        successorTaskUuid,
+        predecessorTaskId: predecessorId,
+        successorTaskId: successorId,
       },
     });
-
     return dependency ? this.mapToDTO(dependency) : null;
   }
 
   /**
-   * 閫掑綊鏌ユ壘All鏈夊墠缃换鍔★紙瀹屾暣渚濊禆閾撅級
+   * 递归查找所有前置任务（完整依赖链）
    */
-  async findAllPredecessors(taskUuid: string): Promise<string[]> {
+  async findAllPredecessorIds(taskId: string): Promise<string[]> {
     const visited = new Set<string>();
     const result: string[] = [];
-
-    await this.traversePredecessors(taskUuid, visited, result);
-
+    await this.traversePredecessors(taskId, visited, result);
     return result;
   }
 
-  /**
-   * 閫掑綊閬嶅巻鍓嶇疆浠诲姟
-   * @private
-   */
   private async traversePredecessors(
-    taskUuid: string,
+    taskId: string,
     visited: Set<string>,
     result: string[],
   ): Promise<void> {
-    if (visited.has(taskUuid)) {
-      return;
-    }
+    if (visited.has(taskId)) return;
+    visited.add(taskId);
 
-    visited.add(taskUuid);
-
-    const dependencies = await this.findBySuccessor(taskUuid);
-
-    for (const dep of dependencies) {
-      const predecessorUuid = dep.predecessorTaskUuid;
-      if (!result.includes(predecessorUuid)) {
-        result.push(predecessorUuid);
+    const deps = await this.findBySuccessorId(taskId);
+    for (const dep of deps) {
+      if (!result.includes(dep.predecessorTaskId)) {
+        result.push(dep.predecessorTaskId);
       }
-      await this.traversePredecessors(predecessorUuid, visited, result);
+      await this.traversePredecessors(dep.predecessorTaskId, visited, result);
     }
   }
 
   /**
-   * 閫掑綊鏌ユ壘All鏈夊悗缁换鍔★紙瀹屾暣渚濊禆閾撅級
+   * 递归查找所有后续任务（完整依赖链）
    */
-  async findAllSuccessors(taskUuid: string): Promise<string[]> {
+  async findAllSuccessorIds(taskId: string): Promise<string[]> {
     const visited = new Set<string>();
     const result: string[] = [];
-
-    await this.traverseSuccessors(taskUuid, visited, result);
-
+    await this.traverseSuccessors(taskId, visited, result);
     return result;
   }
 
-  /**
-   * 閫掑綊閬嶅巻鍚庣画浠诲姟
-   * @private
-   */
   private async traverseSuccessors(
-    taskUuid: string,
+    taskId: string,
     visited: Set<string>,
     result: string[],
   ): Promise<void> {
-    if (visited.has(taskUuid)) {
-      return;
-    }
+    if (visited.has(taskId)) return;
+    visited.add(taskId);
 
-    visited.add(taskUuid);
-
-    const dependencies = await this.findByPredecessor(taskUuid);
-
-    for (const dep of dependencies) {
-      const successorUuid = dep.successorTaskUuid;
-      if (!result.includes(successorUuid)) {
-        result.push(successorUuid);
+    const deps = await this.findByPredecessorId(taskId);
+    for (const dep of deps) {
+      if (!result.includes(dep.successorTaskId)) {
+        result.push(dep.successorTaskId);
       }
-      await this.traverseSuccessors(successorUuid, visited, result);
+      await this.traverseSuccessors(dep.successorTaskId, visited, result);
     }
   }
 
-  /**
-   * Delete渚濊禆鍏崇郴
-   */
-  async delete(uuid: string): Promise<void> {
-    await this.prisma.taskDependency.delete({
-      where: { uuid },
-    });
+  async delete(id: string): Promise<void> {
+    await this.prisma.taskDependency.delete({ where: { id } });
   }
 
-  /**
-   * Delete涓庢寚瀹氫换鍔＄浉鍏崇殑All鏈変緷璧栧叧绯?
-   */
-  async deleteByTask(taskUuid: string): Promise<void> {
+  async deleteByTaskId(taskId: string): Promise<void> {
     await this.prisma.taskDependency.deleteMany({
       where: {
-        OR: [{ predecessorTaskUuid: taskUuid }, { successorTaskUuid: taskUuid }],
+        OR: [
+          { predecessorTaskId: taskId },
+          { successorTaskId: taskId },
+        ],
       },
     });
   }
 
-  /**
-   * Update渚濊禆鍏崇郴
-   */
-  async update(uuid: string, data: UpdateTaskDependencyRequest): Promise<TaskDependencyServerDTO> {
+  async update(
+    id: string,
+    data: { dependencyType?: DependencyType; lagDays?: number },
+  ): Promise<TaskDependencyServerDTO> {
     const dependency = await this.prisma.taskDependency.update({
-      where: { uuid },
+      where: { id },
       data: {
-        dependencyType: data.dependencyType,
-        lagDays: data.lagDays,
+        ...(data.dependencyType !== undefined
+          ? { dependencyType: String(data.dependencyType) }
+          : {}),
+        ...(data.lagDays !== undefined ? { lagDays: data.lagDays } : {}),
       },
     });
-
     return this.mapToDTO(dependency);
   }
 
-  /**
-   * Get璐︽埛鐨勬墍鏈変緷璧栧叧绯?
-   * 閫氳繃鍏宠仈鐨勪换鍔℃ā鏉胯幏鍙栬处鎴蜂俊鎭?
-   */
-  async findAllByAccount(accountUuid: string): Promise<TaskDependencyServerDTO[]> {
-    // 鍏堣幏鍙栬处鎴风殑All鏈変换鍔℃ā鏉?UUID
+  async findAllByIdentityId(identityId: string): Promise<TaskDependencyServerDTO[]> {
     const templates = await this.prisma.taskTemplate.findMany({
-      where: { accountUuid },
-      select: { uuid: true },
+      where: { identityId },
+      select: { id: true },
     });
 
-    const templateUuids = templates.map((t) => t.uuid);
+    const templateIds = templates.map((t: any) => t.id);
+    if (templateIds.length === 0) return [];
 
-    if (templateUuids.length === 0) {
-      return [];
-    }
-
-    // 鏌ユ壘All鏈夌浉鍏崇殑渚濊禆鍏崇郴
     const dependencies = await this.prisma.taskDependency.findMany({
       where: {
         OR: [
-          { predecessorTaskUuid: { in: templateUuids } },
-          { successorTaskUuid: { in: templateUuids } },
+          { predecessorTaskId: { in: templateIds } },
+          { successorTaskId: { in: templateIds } },
         ],
       },
       orderBy: { createdAt: 'asc' },
     });
 
-    return dependencies.map((dep) => this.mapToDTO(dep));
+    return dependencies.map((dep: any) => this.mapToDTO(dep));
   }
 }

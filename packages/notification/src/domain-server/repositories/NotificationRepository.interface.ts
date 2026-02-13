@@ -1,48 +1,48 @@
-/**
- * NotificationRepository 接口定义
- * 通知仓储接口
+﻿/**
+ * NotificationRepository 鎺ュ彛瀹氫箟
+ * 閫氱煡浠撳偍鎺ュ彛
  */
 
 import type { Notification } from '../aggregates/notification';
 
 export interface NotificationRepository {
   /**
-   * 保存通知
+   * 淇濆瓨閫氱煡
    */
   save(notification: Notification): Promise<void>;
 
   /**
-   * 根据 UUID 查找通知
+   * 鏍规嵁 UUID 鏌ユ壘閫氱煡
    */
-  findByUuid(uuid: string): Promise<Notification | null>;
+  findById(id: string): Promise<Notification | null>;
 
   /**
-   * 根据用户 UUID 查找通知列表
+   * 鏍规嵁鐢ㄦ埛 UUID 鏌ユ壘閫氱煡鍒楄〃
    */
-  findByAccountUuid(
-    accountUuid: string,
+  findByIdentityId(
+    identityId: string,
     options?: FindNotificationsOptions
   ): Promise<{ notifications: Notification[]; total: number }>;
 
   /**
-   * 获取未读数量
+   * 鑾峰彇鏈鏁伴噺
    */
-  countUnread(accountUuid: string): Promise<number>;
+  countUnread(identityId: string): Promise<number>;
 
   /**
-   * 批量标记已读
+   * 鎵归噺鏍囪宸茶
    */
-  markAllAsRead(accountUuid: string): Promise<number>;
+  markAllAsRead(identityId: string): Promise<number>;
 
   /**
-   * 批量删除
+   * 鎵归噺鍒犻櫎
    */
-  deleteMany(uuids: string[]): Promise<number>;
+  deleteMany(ids: string[]): Promise<number>;
 
   /**
-   * 删除通知
+   * 鍒犻櫎閫氱煡
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 }
 
 export interface FindNotificationsOptions {

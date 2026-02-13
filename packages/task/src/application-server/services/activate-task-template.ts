@@ -1,11 +1,11 @@
-/**
+﻿/**
  * Activate Task Template Service
  *
- * 激活任务模�?
- * 业务逻辑�?
- * 1. 修改模板状态为 ACTIVE
- * 2. 立即生成实例
- * 3. 发布恢复事件，触发提醒调度恢�?
+ * 婵€娲讳换鍔℃ā锟?
+ * 涓氬姟閫昏緫锟?
+ * 1. 淇敼妯℃澘鐘舵€佷负 ACTIVE
+ * 2. 绔嬪嵆鐢熸垚瀹炰緥
+ * 3. 鍙戝竷鎭㈠浜嬩欢锛岃Е鍙戞彁閱掕皟搴︽仮锟?
  */
 
 import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
@@ -30,16 +30,16 @@ export class ActivateTaskTemplate {
   }
 
   async execute(uuid: string): Promise<Result<{ template: TaskTemplateClientDTO; instancesGenerated: number }>> {
-    const template = await this.templateRepository.findByUuid(uuid);
+    const template = await this.templateRepository.findById(uuid);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${uuid} not found`);
     }
 
-    // 1. 激活模板状�?
+    // 1. 婵€娲绘ā鏉跨姸锟?
     template.activate();
     await this.templateRepository.save(template);
 
-    // 2. 生成实例
+    // 2. 鐢熸垚瀹炰緥
     const instances = this.generationService.generateInstances(template);
     let instancesGenerated = 0;
 
@@ -49,21 +49,21 @@ export class ActivateTaskTemplate {
       instancesGenerated = instances.length;
     }
 
-    // 3. 发布恢复事件
+    // 3. 鍙戝竷鎭㈠浜嬩欢
     try {
       await eventBus.publish({
         eventType: 'task.template.resumed',
         payload: {
-          taskTemplateUuid: template.uuid,
+          taskTemplateId: template.id,
           taskTemplateTitle: template.title,
-          accountUuid: template.accountUuid,
+          identityId: template.identityId,
           resumedAt: Date.now(),
           taskTemplateData: template.toServerDTO(),
         },
         timestamp: Date.now(),
       });
     } catch (error) {
-      console.error(`�?[ActivateTaskTemplate] 发布恢复事件失败:`, error);
+      console.error(`锟?[ActivateTaskTemplate] 鍙戝竷鎭㈠浜嬩欢澶辫触:`, error);
     }
 
     return ok({

@@ -57,7 +57,7 @@ export class GoalCrossModuleQueryService {
     // 默认只返回进行中和未开始的目标
     const statusFilter = params.status || ['IN_PROGRESS', 'NOT_STARTED'];
 
-    const goals = await this.goalRepository.findByAccountUuid(params.accountUuid);
+    const goals = await this.goalRepository.findByIdentityId(params.accountUuid);
 
     return goals
       .filter((goal: any) => (statusFilter as string[]).includes(goal.status))

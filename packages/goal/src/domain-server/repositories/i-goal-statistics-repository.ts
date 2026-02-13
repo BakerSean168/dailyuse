@@ -6,7 +6,7 @@ import type { GoalStatistics } from '../aggregates';
 
 export interface IGoalStatisticsRepository {
   upsert(statistics: GoalStatistics): Promise<GoalStatistics>;
-  findByAccountUuid(accountUuid: string): Promise<GoalStatistics | null>;
-  delete(accountUuid: string): Promise<boolean>;
-  exists(accountUuid: string): Promise<boolean>;
+  findByIdentityId(identityId: string): Promise<GoalStatistics | null>;
+  delete(identityId: string): Promise<boolean>;
+  exists(identityId: string): Promise<boolean>;
 }

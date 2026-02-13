@@ -1,56 +1,56 @@
-/**
+﻿/**
  * IEditorWorkspaceRepository
- * EditorWorkspace 聚合根仓储接口
+ * EditorWorkspace 鑱氬悎鏍逛粨鍌ㄦ帴鍙?
  */
 
 import type { EditorWorkspace } from '../aggregates/editor-workspace';
 
 /**
- * EditorWorkspace 仓储接口
+ * EditorWorkspace 浠撳偍鎺ュ彛
  */
 export interface IEditorWorkspaceRepository {
   /**
-   * 根据 UUID 查找工作区
+   * 鏍规嵁 UUID 鏌ユ壘宸ヤ綔鍖?
    */
-  findByUuid(uuid: string): Promise<EditorWorkspace | null>;
+  findById(id: string): Promise<EditorWorkspace | null>;
 
   /**
-   * 根据账户 UUID 查找所有工作区
+   * 鏍规嵁璐︽埛 UUID 鏌ユ壘鎵€鏈夊伐浣滃尯
    */
-  findByAccountUuid(accountUuid: string): Promise<EditorWorkspace[]>;
+  findByIdentityId(identityId: string): Promise<EditorWorkspace[]>;
 
   /**
-   * 根据账户 UUID 和名称查找工作区
+   * 鏍规嵁璐︽埛 UUID 鍜屽悕绉版煡鎵惧伐浣滃尯
    */
-  findByAccountUuidAndName(accountUuid: string, name: string): Promise<EditorWorkspace | null>;
+  findByIdentityIdAndName(identityId: string, name: string): Promise<EditorWorkspace | null>;
 
   /**
-   * 查找活动工作区
+   * 鏌ユ壘娲诲姩宸ヤ綔鍖?
    */
-  findActiveByAccountUuid(accountUuid: string): Promise<EditorWorkspace | null>;
+  findActiveByIdentityId(identityId: string): Promise<EditorWorkspace | null>;
 
   /**
-   * 保存工作区
+   * 淇濆瓨宸ヤ綔鍖?
    */
   save(workspace: EditorWorkspace): Promise<void>;
 
   /**
-   * 删除工作区
+   * 鍒犻櫎宸ヤ綔鍖?
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 批量保存工作区
+   * 鎵归噺淇濆瓨宸ヤ綔鍖?
    */
   saveBatch(workspaces: EditorWorkspace[]): Promise<void>;
 
   /**
-   * 判断工作区名称是否已存在
+   * 鍒ゆ柇宸ヤ綔鍖哄悕绉版槸鍚﹀凡瀛樺湪
    */
-  existsByName(accountUuid: string, name: string): Promise<boolean>;
+  existsByName(identityId: string, name: string): Promise<boolean>;
 
   /**
-   * 统计账户的工作区数量
+   * 缁熻璐︽埛鐨勫伐浣滃尯鏁伴噺
    */
-  countByAccountUuid(accountUuid: string): Promise<number>;
+  countByIdentityId(identityId: string): Promise<number>;
 }

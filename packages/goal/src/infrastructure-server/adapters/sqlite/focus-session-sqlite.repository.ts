@@ -73,34 +73,34 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
       );
   }
 
-  async findById(uuid: string): Promise<FocusSession | null> {
+  async findById(id: string): Promise<FocusSession | null> {
     const row = this.db
       .prepare(`SELECT * FROM focus_sessions WHERE id = ? LIMIT 1`)
-      .get(uuid) as any;
+      .get(id) as any;
 
     if (!row) return null;
 
     return this.rowToFocusSession(row);
   }
 
-  async findActiveSession(accountUuid: string): Promise<FocusSession | null> {
+  async findActiveSession(identityId: string): Promise<FocusSession | null> {
     const row = this.db
       .prepare(
         `SELECT * FROM focus_sessions
        WHERE identity_id = ? AND status IN ('IN_PROGRESS', 'PAUSED')
        ORDER BY started_at DESC LIMIT 1`,
       )
-      .get(accountUuid) as any;
+      .get(identityId) as any;
 
     if (!row) return null;
 
     return this.rowToFocusSession(row);
   }
 
-  async findByAccountUuid(
-    accountUuid: string,
+  async findByIdentityId(
+    identityId: string,
     options?: {
-      goalUuid?: string | null;
+      goalId?: string | null;
       status?: FocusSessionStatus[];
       limit?: number;
       offset?: number;
@@ -109,11 +109,11 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
     },
   ): Promise<FocusSession[]> {
     let query = `SELECT * FROM focus_sessions WHERE identity_id = ?`;
-    const params: any[] = [accountUuid];
+    const params: any[] = [identityId];
 
-    if (options?.goalUuid) {
+    if (options?.goalId) {
       query += ` AND goal_id = ?`;
-      params.push(options.goalUuid);
+      params.push(options.goalId);
     }
 
     if (options?.status && options.status.length > 0) {
@@ -141,8 +141,8 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
     return rows.map((row) => this.rowToFocusSession(row));
   }
 
-  async findByGoalUuid(
-    goalUuid: string,
+  async findByGoalId(
+    goalId: string,
     options?: {
       status?: FocusSessionStatus[];
       limit?: number;
@@ -150,7 +150,7 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
     },
   ): Promise<FocusSession[]> {
     let query = `SELECT * FROM focus_sessions WHERE goal_id = ?`;
-    const params: any[] = [goalUuid];
+    const params: any[] = [goalId];
 
     if (options?.status && options.status.length > 0) {
       const placeholders = options.status.map(() => '?').join(',');
@@ -174,21 +174,21 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
     return rows.map((row) => this.rowToFocusSession(row));
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     this.db
       .prepare(`DELETE FROM focus_sessions WHERE id = ?`)
-      .run(uuid);
+      .run(id);
   }
 
-  async exists(uuid: string): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     const row = this.db
       .prepare(`SELECT 1 FROM focus_sessions WHERE id = ? LIMIT 1`)
-      .get(uuid);
+      .get(id);
     return row !== undefined;
   }
 
   async count(
-    accountUuid: string,
+    identityId: string,
     options?: {
       status?: FocusSessionStatus[];
       startDate?: number;
@@ -196,7 +196,7 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
     },
   ): Promise<number> {
     let query = `SELECT COUNT(*) as count FROM focus_sessions WHERE identity_id = ?`;
-    const params: any[] = [accountUuid];
+    const params: any[] = [identityId];
 
     if (options?.status && options.status.length > 0) {
       const placeholders = options.status.map(() => '?').join(',');

@@ -2,11 +2,11 @@
  * GoalStatistics - 目标统计聚合根
  *
  * 负责维护某账户下目标相关的统计数据。
- * 每个 accountUuid 对应一条统计记录（UPSERT 语义）。
+ * 每个 identityId 对应一条统计记录（UPSERT 语义）。
  */
 
 export interface GoalStatisticsPersistenceDTO {
-  accountUuid: string;
+  identityId: string;
   totalGoals: number;
   activeGoals: number;
   completedGoals: number;
@@ -30,8 +30,8 @@ export interface GoalStatisticsPersistenceDTO {
 export class GoalStatistics {
   private constructor(private readonly data: GoalStatisticsPersistenceDTO) {}
 
-  get accountUuid(): string {
-    return this.data.accountUuid;
+  get identityId(): string {
+    return this.data.identityId;
   }
 
   get totalGoals(): number {
@@ -86,9 +86,9 @@ export class GoalStatistics {
     return new GoalStatistics(dto);
   }
 
-  static createEmpty(accountUuid: string): GoalStatistics {
+  static createEmpty(identityId: string): GoalStatistics {
     return new GoalStatistics({
-      accountUuid,
+      identityId,
       totalGoals: 0,
       activeGoals: 0,
       completedGoals: 0,

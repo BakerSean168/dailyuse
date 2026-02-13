@@ -20,18 +20,6 @@ CREATE TABLE IF NOT EXISTS reminder_responses (
 CREATE INDEX IF NOT EXISTS idx_reminder_responses_account_uuid ON reminder_responses(account_uuid);
 CREATE INDEX IF NOT EXISTS idx_reminder_responses_template_uuid ON reminder_responses(template_uuid);
 
--- Reminder Statistics Table
-CREATE TABLE IF NOT EXISTS reminder_statistics (
-  uuid TEXT PRIMARY KEY,
-  account_uuid TEXT NOT NULL UNIQUE,
-  total_reminders INTEGER DEFAULT 0,
-  active_reminders INTEGER DEFAULT 0,
-  completed_reminders INTEGER DEFAULT 0,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL,
-  FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
-);
-
 -- Reminder Groups Table
 CREATE TABLE IF NOT EXISTS reminder_groups (
   uuid TEXT PRIMARY KEY,

@@ -73,7 +73,7 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   async findByGoal(
-    goalUuid: string,
+    goalId: string,
     page: number = 1,
     pageSize: number = 50,
   ): Promise<SnapshotQueryResult> {
@@ -81,13 +81,13 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
 
     const countResult = this.db
       .prepare(`SELECT COUNT(*) as total FROM weight_snapshots WHERE goal_id = ?`)
-      .get(goalUuid) as any;
+      .get(goalId) as any;
 
     const rows = this.db
       .prepare(
         `SELECT * FROM weight_snapshots WHERE goal_id = ? ORDER BY snapshot_time DESC LIMIT ? OFFSET ?`,
       )
-      .all(goalUuid, pageSize, offset) as any[];
+      .all(goalId, pageSize, offset) as any[];
 
     return {
       snapshots: rows.map((row) => this.rowToSnapshot(row)),
@@ -96,7 +96,7 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   async findByKeyResult(
-    krUuid: string,
+    keyResultId: string,
     page: number = 1,
     pageSize: number = 50,
   ): Promise<SnapshotQueryResult> {
@@ -106,13 +106,13 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
       .prepare(
         `SELECT COUNT(*) as total FROM weight_snapshots WHERE key_result_id = ?`,
       )
-      .get(krUuid) as any;
+      .get(keyResultId) as any;
 
     const rows = this.db
       .prepare(
         `SELECT * FROM weight_snapshots WHERE key_result_id = ? ORDER BY snapshot_time DESC LIMIT ? OFFSET ?`,
       )
-      .all(krUuid, pageSize, offset) as any[];
+      .all(keyResultId, pageSize, offset) as any[];
 
     return {
       snapshots: rows.map((row) => this.rowToSnapshot(row)),
@@ -146,30 +146,30 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
     };
   }
 
-  async findById(uuid: string): Promise<KeyResultWeightSnapshot | null> {
+  async findById(id: string): Promise<KeyResultWeightSnapshot | null> {
     const row = this.db
       .prepare(`SELECT * FROM weight_snapshots WHERE id = ? LIMIT 1`)
-      .get(uuid) as any;
+      .get(id) as any;
 
     if (!row) return null;
 
     return this.rowToSnapshot(row);
   }
 
-  async delete(uuid: string): Promise<void> {
-    this.db.prepare(`DELETE FROM weight_snapshots WHERE id = ?`).run(uuid);
+  async delete(id: string): Promise<void> {
+    this.db.prepare(`DELETE FROM weight_snapshots WHERE id = ?`).run(id);
   }
 
-  async deleteByGoal(goalUuid: string): Promise<void> {
+  async deleteByGoal(goalId: string): Promise<void> {
     this.db
       .prepare(`DELETE FROM weight_snapshots WHERE goal_id = ?`)
-      .run(goalUuid);
+      .run(goalId);
   }
 
-  async deleteByKeyResult(krUuid: string): Promise<void> {
+  async deleteByKeyResult(keyResultId: string): Promise<void> {
     this.db
       .prepare(`DELETE FROM weight_snapshots WHERE key_result_id = ?`)
-      .run(krUuid);
+      .run(keyResultId);
   }
 
   private rowToSnapshot(row: any): KeyResultWeightSnapshot {

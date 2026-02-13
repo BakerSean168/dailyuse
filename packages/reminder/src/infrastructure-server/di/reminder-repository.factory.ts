@@ -1,24 +1,24 @@
 /**
  * Reminder Repository Factory
- * Provides repository implementations for different data sources
- * 
- * Note: Reminder has an architectural mismatch:
- * - Prisma: Single ReminderPrismaRepository
- * - SQLite: Multiple repositories (Group, Template, Response, Statistics)
- * 
- * This factory provides just the main repository for now
+ * 提醒仓储工厂
+ *
+ * 根据数据源类型创建对应的仓储实例
+ * 支持: Prisma (API/Server), SQLite (Desktop)
  */
 
 import type { PrismaClient } from '../../generated/prisma/client';
 import type Database from 'better-sqlite3';
-
-import { ReminderPrismaRepository } from '../adapters/prisma';
-import {
-  SqliteReminderGroupRepository,
-  SqliteReminderTemplateRepository,
-  SqliteReminderResponseRepository,
-  SqliteReminderStatisticsRepository,
-} from '../adapters/sqlite';
+import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderGroupRepository } from '../../domain-server/repositories/IReminderGroupRepository';
+import type { IReminderResponseRepository } from '../../domain-server/repositories/IReminderResponseRepository';
+import type { IUserReminderPreferenceRepository } from '../../domain-server/repositories/IUserReminderPreferenceRepository';
+import { ReminderTemplatePrismaRepository } from '../adapters/prisma/reminder-template-prisma.repository';
+import { ReminderGroupPrismaRepository } from '../adapters/prisma/reminder-group-prisma.repository';
+import { ReminderResponsePrismaRepository } from '../adapters/prisma/reminder-response-prisma.repository';
+import { UserReminderPreferencePrismaRepository } from '../adapters/prisma/user-reminder-preference-prisma.repository';
+import { SqliteReminderTemplateRepository } from '../adapters/sqlite/reminder-template-sqlite.repository';
+import { SqliteReminderGroupRepository } from '../adapters/sqlite/reminder-group-sqlite.repository';
+import { SqliteReminderResponseRepository } from '../adapters/sqlite/reminder-response-sqlite.repository';
 
 type BetterSQLiteDB = Database.Database;
 
@@ -26,41 +26,68 @@ type BetterSQLiteDB = Database.Database;
  * Reminder Repository Factory
  */
 export class ReminderRepositoryFactory {
-  /**
-   * Create repositories using Prisma (for API/PostgreSQL)
-   */
-  static createPrismaRepositories(prisma: PrismaClient) {
-    return {
-      reminderRepository: new ReminderPrismaRepository(prisma),
-    };
-  }
-
-  /**
-   * Create repositories using SQLite (for Desktop/better-sqlite3)
-   * 
-   * Note: Returns multiple repositories due to architectural differences
-   */
-  static createSqliteRepositories(db: BetterSQLiteDB) {
-    return {
-      reminderGroupRepository: new SqliteReminderGroupRepository(db),
-      reminderTemplateRepository: new SqliteReminderTemplateRepository(db),
-      reminderResponseRepository: new SqliteReminderResponseRepository(db),
-      reminderStatisticsRepository: new SqliteReminderStatisticsRepository(db),
-    };
-  }
-
-  /**
-   * Create repositories based on data source type
-   */
-  static create(
-    dataSource: 'prisma' | 'sqlite',
-    client: PrismaClient | BetterSQLiteDB,
-  ): ReturnType<typeof ReminderRepositoryFactory.createPrismaRepositories> {
-    if (dataSource === 'prisma') {
-      return this.createPrismaRepositories(client as PrismaClient) as any;
-    } else {
-      return this.createSqliteRepositories(client as BetterSQLiteDB) as any;
+  static createReminderTemplateRepository(
+    dataSourceType: 'prisma' | 'sqlite',
+    dbConnection: PrismaClient | BetterSQLiteDB,
+  ): IReminderTemplateRepository {
+    if (dataSourceType === 'prisma') {
+      return new ReminderTemplatePrismaRepository(dbConnection as PrismaClient);
+    } else if (dataSourceType === 'sqlite') {
+      return new SqliteReminderTemplateRepository(dbConnection as BetterSQLiteDB);
     }
+    throw new Error(`Unknown data source type: ${dataSourceType}`);
+  }
+
+  static createReminderGroupRepository(
+    dataSourceType: 'prisma' | 'sqlite',
+    dbConnection: PrismaClient | BetterSQLiteDB,
+  ): IReminderGroupRepository {
+    if (dataSourceType === 'prisma') {
+      return new ReminderGroupPrismaRepository(dbConnection as PrismaClient);
+    } else if (dataSourceType === 'sqlite') {
+      return new SqliteReminderGroupRepository(dbConnection as BetterSQLiteDB);
+    }
+    throw new Error(`Unknown data source type: ${dataSourceType}`);
+  }
+
+  static createReminderResponseRepository(
+    dataSourceType: 'prisma' | 'sqlite',
+    dbConnection: PrismaClient | BetterSQLiteDB,
+  ): IReminderResponseRepository {
+    if (dataSourceType === 'prisma') {
+      return new ReminderResponsePrismaRepository(dbConnection as PrismaClient);
+    } else if (dataSourceType === 'sqlite') {
+      return new SqliteReminderResponseRepository(dbConnection as BetterSQLiteDB);
+    }
+    throw new Error(`Unknown data source type: ${dataSourceType}`);
+  }
+
+  static createUserReminderPreferenceRepository(
+    dataSourceType: 'prisma' | 'sqlite',
+    dbConnection: PrismaClient | BetterSQLiteDB,
+  ): IUserReminderPreferenceRepository {
+    if (dataSourceType === 'prisma') {
+      return new UserReminderPreferencePrismaRepository(dbConnection as PrismaClient);
+    }
+    // TODO: SQLite user preference adapter not yet implemented
+    throw new Error(`UserReminderPreference SQLite adapter not implemented. Use Prisma.`);
+  }
+
+  /**
+   * Create all Reminder repositories at once (convenience method)
+   */
+  static createAllRepositories(
+    dataSourceType: 'prisma' | 'sqlite',
+    dbConnection: PrismaClient | BetterSQLiteDB,
+  ) {
+    return {
+      reminderTemplateRepository: this.createReminderTemplateRepository(dataSourceType, dbConnection),
+      reminderGroupRepository: this.createReminderGroupRepository(dataSourceType, dbConnection),
+      reminderResponseRepository: this.createReminderResponseRepository(dataSourceType, dbConnection),
+      ...(dataSourceType === 'prisma'
+        ? { userReminderPreferenceRepository: this.createUserReminderPreferenceRepository(dataSourceType, dbConnection) }
+        : {}),
+    };
   }
 }
 

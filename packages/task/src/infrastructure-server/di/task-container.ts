@@ -1,25 +1,22 @@
+﻿/**
+ * Task Module DI Container
+ * 任务模块依赖注入容器
+ *
+ * 管理 Task 仓储实例（单例模式）
+ * 支持 Prisma 和 SQLite 数据源
+ */
+
+import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
 import type { ITaskDependencyRepository } from '../../domain-server/repositories/ITaskDependencyRepository';
-import type { ITaskStatisticsRepository } from '../../domain-server/repositories/ITaskStatisticsRepository';
-import { DataSourceManager } from '../../shared/config/data-source-manager';
-import { TaskRepositoryFactory } from './task-repository.factory';
-import { prisma } from '../../shared/config/prisma';
+import type { ITaskFolderRepository } from '../../domain-server/repositories/ITaskFolderRepository';
 
-/**
- * Task Module DI Container
- *
- * Manages Task repository instances with Singleton pattern
- * Supports both Prisma and SQLite data sources
- *
- * 用法:
- * const container = TaskContainer.getInstance();
- * const taskInstanceRepo = container.getTaskInstanceRepository();
- */
 export class TaskContainer {
   private static instance: TaskContainer;
+  private taskTemplateRepository?: ITaskTemplateRepository;
   private taskInstanceRepository?: ITaskInstanceRepository;
   private taskDependencyRepository?: ITaskDependencyRepository;
-  private taskStatisticsRepository?: ITaskStatisticsRepository;
+  private taskFolderRepository?: ITaskFolderRepository;
 
   private constructor() {}
 
@@ -30,82 +27,42 @@ export class TaskContainer {
     return TaskContainer.instance;
   }
 
-  /**
-   * Get TaskInstanceRepository (lazy load with caching)
-   * Automatically selects Prisma or SQLite based on DataSourceManager
-   */
+  // ============ Getters ============
+
+  getTaskTemplateRepository(): ITaskTemplateRepository {
+    if (!this.taskTemplateRepository) {
+      throw new Error('TaskTemplateRepository not registered in TaskContainer');
+    }
+    return this.taskTemplateRepository;
+  }
+
   getTaskInstanceRepository(): ITaskInstanceRepository {
     if (!this.taskInstanceRepository) {
-      const dsManager = DataSourceManager.getInstance();
-
-      if (dsManager.isPrisma()) {
-        this.taskInstanceRepository = TaskRepositoryFactory.createTaskInstanceRepository(
-          'prisma',
-          prisma,
-        );
-      } else if (dsManager.isSQLite()) {
-        this.taskInstanceRepository = TaskRepositoryFactory.createTaskInstanceRepository(
-          'sqlite',
-          dsManager.getSQLiteDb(),
-        );
-      } else {
-        throw new Error('Unknown data source type in TaskContainer');
-      }
+      throw new Error('TaskInstanceRepository not registered in TaskContainer');
     }
     return this.taskInstanceRepository;
   }
 
-  /**
-   * Get TaskDependencyRepository (lazy load with caching)
-   */
   getTaskDependencyRepository(): ITaskDependencyRepository {
     if (!this.taskDependencyRepository) {
-      const dsManager = DataSourceManager.getInstance();
-
-      if (dsManager.isPrisma()) {
-        this.taskDependencyRepository = TaskRepositoryFactory.createTaskDependencyRepository(
-          'prisma',
-          prisma,
-        );
-      } else if (dsManager.isSQLite()) {
-        this.taskDependencyRepository = TaskRepositoryFactory.createTaskDependencyRepository(
-          'sqlite',
-          dsManager.getSQLiteDb(),
-        );
-      } else {
-        throw new Error('Unknown data source type in TaskContainer');
-      }
+      throw new Error('TaskDependencyRepository not registered in TaskContainer');
     }
     return this.taskDependencyRepository;
   }
 
-  /**
-   * Get TaskStatisticsRepository (lazy load with caching)
-   */
-  getTaskStatisticsRepository(): ITaskStatisticsRepository {
-    if (!this.taskStatisticsRepository) {
-      const dsManager = DataSourceManager.getInstance();
-
-      if (dsManager.isPrisma()) {
-        this.taskStatisticsRepository = TaskRepositoryFactory.createTaskStatisticsRepository(
-          'prisma',
-          prisma,
-        );
-      } else if (dsManager.isSQLite()) {
-        this.taskStatisticsRepository = TaskRepositoryFactory.createTaskStatisticsRepository(
-          'sqlite',
-          dsManager.getSQLiteDb(),
-        );
-      } else {
-        throw new Error('Unknown data source type in TaskContainer');
-      }
+  getTaskFolderRepository(): ITaskFolderRepository {
+    if (!this.taskFolderRepository) {
+      throw new Error('TaskFolderRepository not registered in TaskContainer');
     }
-    return this.taskStatisticsRepository;
+    return this.taskFolderRepository;
   }
 
-  /**
-   * Set repositories (for testing)
-   */
+  // ============ Setters (Registration) ============
+
+  setTaskTemplateRepository(repository: ITaskTemplateRepository): void {
+    this.taskTemplateRepository = repository;
+  }
+
   setTaskInstanceRepository(repository: ITaskInstanceRepository): void {
     this.taskInstanceRepository = repository;
   }
@@ -114,16 +71,16 @@ export class TaskContainer {
     this.taskDependencyRepository = repository;
   }
 
-  setTaskStatisticsRepository(repository: ITaskStatisticsRepository): void {
-    this.taskStatisticsRepository = repository;
+  setTaskFolderRepository(repository: ITaskFolderRepository): void {
+    this.taskFolderRepository = repository;
   }
 
-  /**
-   * Reset container (for testing)
-   */
+  // ============ Reset (Testing) ============
+
   reset(): void {
+    this.taskTemplateRepository = undefined;
     this.taskInstanceRepository = undefined;
     this.taskDependencyRepository = undefined;
-    this.taskStatisticsRepository = undefined;
+    this.taskFolderRepository = undefined;
   }
 }

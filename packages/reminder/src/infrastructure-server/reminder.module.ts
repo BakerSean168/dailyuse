@@ -1,37 +1,54 @@
+/**
+ * Reminder Module - Composition Root
+ * 提醒模块组合根
+ *
+ * 负责初始化仓储和应用服务
+ * 支持 Prisma (API) 和 SQLite (Desktop) 数据源
+ */
+
 import type { PrismaClient } from '../generated/prisma/client';
 import type Database from 'better-sqlite3';
-
+import type { IReminderTemplateRepository } from '../domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderGroupRepository } from '../domain-server/repositories/IReminderGroupRepository';
+import type { IReminderResponseRepository } from '../domain-server/repositories/IReminderResponseRepository';
+import type { IUserReminderPreferenceRepository } from '../domain-server/repositories/IUserReminderPreferenceRepository';
 import { ReminderRepositoryFactory } from './di';
 
 type BetterSQLiteDB = Database.Database;
 
 /**
  * Reminder Module
- * 
- * WARNING: This module has architectural inconsistency:
- * - Prisma uses single ReminderPrismaRepository
- * - SQLite uses multiple repositories (Group, Template, Response, Statistics)
- * 
- * For now, we only expose the main repositories. Full alignment needed.
+ * Composition Root for Reminder domain
  */
 export class ReminderModule {
-  public readonly reminderRepository: any;
-  // SQLite uses: reminderGroupRepository, reminderTemplateRepository, etc.
+  public readonly reminderTemplateRepository: IReminderTemplateRepository;
+  public readonly reminderGroupRepository: IReminderGroupRepository;
+  public readonly reminderResponseRepository: IReminderResponseRepository;
+  public readonly userReminderPreferenceRepository?: IUserReminderPreferenceRepository;
 
   constructor(
     dataSourceType: 'prisma' | 'sqlite',
     dbConnection: PrismaClient | BetterSQLiteDB,
   ) {
-    // 1. Initialize Repositories using Factory
-    const repositories = ReminderRepositoryFactory.create(dataSourceType, dbConnection);
-    
+    // Initialize Repositories using Factory
+    this.reminderTemplateRepository = ReminderRepositoryFactory.createReminderTemplateRepository(
+      dataSourceType,
+      dbConnection,
+    );
+    this.reminderGroupRepository = ReminderRepositoryFactory.createReminderGroupRepository(
+      dataSourceType,
+      dbConnection,
+    );
+    this.reminderResponseRepository = ReminderRepositoryFactory.createReminderResponseRepository(
+      dataSourceType,
+      dbConnection,
+    );
+
     if (dataSourceType === 'prisma') {
-      this.reminderRepository = repositories.reminderRepository;
-    } else {
-      // SQLite returns multiple repositories
-      // TODO: Refactor Reminder module to have unified interface
-      // For now, expose all of them
-      Object.assign(this, repositories);
+      this.userReminderPreferenceRepository = ReminderRepositoryFactory.createUserReminderPreferenceRepository(
+        dataSourceType,
+        dbConnection,
+      );
     }
   }
 }

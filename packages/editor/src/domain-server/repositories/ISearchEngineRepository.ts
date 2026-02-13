@@ -1,56 +1,56 @@
-/**
+﻿/**
  * ISearchEngineRepository
- * SearchEngine 实体仓储接口
+ * SearchEngine 瀹炰綋浠撳偍鎺ュ彛
  */
 
 import type { SearchEngine } from '../entities/search-engine';
 
 /**
- * SearchEngine 仓储接口
+ * SearchEngine 浠撳偍鎺ュ彛
  */
 export interface ISearchEngineRepository {
   /**
-   * 根据 UUID 查找搜索引擎
+   * 鏍规嵁 UUID 鏌ユ壘鎼滅储寮曟搸
    */
-  findByUuid(uuid: string): Promise<SearchEngine | null>;
+  findById(id: string): Promise<SearchEngine | null>;
 
   /**
-   * 根据工作区 UUID 查找搜索引擎
+   * 鏍规嵁宸ヤ綔鍖?UUID 鏌ユ壘鎼滅储寮曟搸
    */
-  findByWorkspaceUuid(workspaceUuid: string): Promise<SearchEngine | null>;
+  findByWorkspaceId(workspaceId: string): Promise<SearchEngine | null>;
 
   /**
-   * 查找正在索引的搜索引擎
+   * 鏌ユ壘姝ｅ湪绱㈠紩鐨勬悳绱㈠紩鎿?
    */
   findIndexing(): Promise<SearchEngine[]>;
 
   /**
-   * 查找索引过期的搜索引擎（超过指定阈值）
+   * 鏌ユ壘绱㈠紩杩囨湡鐨勬悳绱㈠紩鎿庯紙瓒呰繃鎸囧畾闃堝€硷級
    */
   findOutdated(threshold: number): Promise<SearchEngine[]>;
 
   /**
-   * 保存搜索引擎
+   * 淇濆瓨鎼滅储寮曟搸
    */
   save(engine: SearchEngine): Promise<void>;
 
   /**
-   * 删除搜索引擎
+   * 鍒犻櫎鎼滅储寮曟搸
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 删除工作区的搜索引擎
+   * 鍒犻櫎宸ヤ綔鍖虹殑鎼滅储寮曟搸
    */
-  deleteByWorkspaceUuid(workspaceUuid: string): Promise<void>;
+  deleteByWorkspaceId(workspaceId: string): Promise<void>;
 
   /**
-   * 判断工作区是否已有搜索引擎
+   * 鍒ゆ柇宸ヤ綔鍖烘槸鍚﹀凡鏈夋悳绱㈠紩鎿?
    */
-  existsByWorkspaceUuid(workspaceUuid: string): Promise<boolean>;
+  existsByWorkspaceId(workspaceId: string): Promise<boolean>;
 
   /**
-   * 统计正在索引的搜索引擎数量
+   * 缁熻姝ｅ湪绱㈠紩鐨勬悳绱㈠紩鎿庢暟閲?
    */
   countIndexing(): Promise<number>;
 }

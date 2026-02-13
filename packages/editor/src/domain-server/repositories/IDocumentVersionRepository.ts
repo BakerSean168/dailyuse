@@ -1,79 +1,79 @@
-/**
+﻿/**
  * IDocumentVersionRepository
- * DocumentVersion 实体仓储接口
+ * DocumentVersion 瀹炰綋浠撳偍鎺ュ彛
  */
 
 import type { DocumentVersion } from '../entities/document-version';
 import type { VersionChangeType } from '@dailyuse/contracts/editor';
 
 /**
- * DocumentVersion 仓储接口
+ * DocumentVersion 浠撳偍鎺ュ彛
  */
 export interface IDocumentVersionRepository {
   /**
-   * 根据 UUID 查找版本
+   * 鏍规嵁 UUID 鏌ユ壘鐗堟湰
    */
-  findByUuid(uuid: string): Promise<DocumentVersion | null>;
+  findById(id: string): Promise<DocumentVersion | null>;
 
   /**
-   * 根据文档 UUID 查找所有版本
+   * 鏍规嵁鏂囨。 UUID 鏌ユ壘鎵€鏈夌増鏈?
    */
-  findByDocumentUuid(documentUuid: string): Promise<DocumentVersion[]>;
+  findByDocumentId(documentId: string): Promise<DocumentVersion[]>;
 
   /**
-   * 根据文档 UUID 查找最新版本
+   * 鏍规嵁鏂囨。 UUID 鏌ユ壘鏈€鏂扮増鏈?
    */
-  findLatestByDocumentUuid(documentUuid: string): Promise<DocumentVersion | null>;
+  findLatestByDocumentId(documentId: string): Promise<DocumentVersion | null>;
 
   /**
-   * 根据文档 UUID 和版本号查找版本
+   * 鏍规嵁鏂囨。 UUID 鍜岀増鏈彿鏌ユ壘鐗堟湰
    */
-  findByDocumentUuidAndVersionNumber(
-    documentUuid: string,
+  findByDocumentIdAndVersionNumber(
+    documentId: string,
     versionNumber: number,
   ): Promise<DocumentVersion | null>;
 
   /**
-   * 根据变更类型查找版本
+   * 鏍规嵁鍙樻洿绫诲瀷鏌ユ壘鐗堟湰
    */
-  findByChangeType(documentUuid: string, changeType: VersionChangeType): Promise<DocumentVersion[]>;
+  findByChangeType(documentId: string, changeType: VersionChangeType): Promise<DocumentVersion[]>;
 
   /**
-   * 查找指定时间范围内的版本
+   * 鏌ユ壘鎸囧畾鏃堕棿鑼冨洿鍐呯殑鐗堟湰
    */
   findByTimeRange(
-    documentUuid: string,
+    documentId: string,
     startTime: number,
     endTime: number,
   ): Promise<DocumentVersion[]>;
 
   /**
-   * 保存版本
+   * 淇濆瓨鐗堟湰
    */
   save(version: DocumentVersion): Promise<void>;
 
   /**
-   * 删除版本
+   * 鍒犻櫎鐗堟湰
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 批量保存版本
+   * 鎵归噺淇濆瓨鐗堟湰
    */
   saveBatch(versions: DocumentVersion[]): Promise<void>;
 
   /**
-   * 删除文档的所有版本
+   * 鍒犻櫎鏂囨。鐨勬墍鏈夌増鏈?
    */
-  deleteByDocumentUuid(documentUuid: string): Promise<void>;
+  deleteByDocumentId(documentId: string): Promise<void>;
 
   /**
-   * 统计文档的版本数量
+   * 缁熻鏂囨。鐨勭増鏈暟閲?
    */
-  countByDocumentUuid(documentUuid: string): Promise<number>;
+  countByDocumentId(documentId: string): Promise<number>;
 
   /**
-   * 获取文档的最新版本号
+   * 鑾峰彇鏂囨。鐨勬渶鏂扮増鏈彿
    */
-  getLatestVersionNumber(documentUuid: string): Promise<number>;
+  getLatestVersionNumber(documentId: string): Promise<number>;
 }

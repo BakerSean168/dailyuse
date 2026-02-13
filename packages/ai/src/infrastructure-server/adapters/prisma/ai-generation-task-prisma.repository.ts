@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AIGenerationTask Prisma Repository
  *
  * Prisma implementation of IAIGenerationTaskRepository.
@@ -20,31 +20,31 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByUuid(uuid: string): Promise<AIGenerationTaskServerDTO | null> {
+  async findById(id: string): Promise<AIGenerationTaskServerDTO | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<AIGenerationTaskServerDTO[]> {
+  async findByIdentityId(identityId: string): Promise<AIGenerationTaskServerDTO[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByTaskType(accountUuid: string, taskType: GenerationTaskType): Promise<AIGenerationTaskServerDTO[]> {
+  async findByTaskType(identityId: string, taskType: GenerationTaskType): Promise<AIGenerationTaskServerDTO[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByStatus(accountUuid: string, status: TaskStatus): Promise<AIGenerationTaskServerDTO[]> {
+  async findByStatus(identityId: string, status: TaskStatus): Promise<AIGenerationTaskServerDTO[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findRecent(accountUuid: string, limit: number, offset?: number): Promise<AIGenerationTaskServerDTO[]> {
+  async findRecent(identityId: string, limit: number, offset?: number): Promise<AIGenerationTaskServerDTO[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async exists(uuid: string): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     throw new Error('Not implemented - extract from apps/api');
   }
 }

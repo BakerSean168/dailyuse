@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Repository Prisma Repository
  *
  * Prisma implementation of IRepositoryRepository.
@@ -21,23 +21,23 @@ export class RepositoryPrismaRepository implements IRepositoryRepository {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByUuid(uuid: string): Promise<Repository | null> {
+  async findById(id: string): Promise<Repository | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<Repository[]> {
+  async findByIdentityId(identityId: string): Promise<Repository[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByAccountUuidAndStatus(accountUuid: string, status: RepositoryStatus): Promise<Repository[]> {
+  async findByIdentityIdAndStatus(identityId: string, status: RepositoryStatus): Promise<Repository[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async exists(uuid: string): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     throw new Error('Not implemented - extract from apps/api');
   }
 }

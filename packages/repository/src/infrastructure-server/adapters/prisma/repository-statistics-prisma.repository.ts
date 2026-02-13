@@ -20,15 +20,15 @@ export class RepositoryStatisticsPrismaRepository implements IRepositoryStatisti
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<RepositoryStatistics | null> {
+  async findByIdentityId(identityId: string): Promise<RepositoryStatistics | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByUuid(uuid: string): Promise<RepositoryStatistics | null> {
+  async findById(id: string): Promise<RepositoryStatistics | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByAccountUuids(accountUuids: string[]): Promise<RepositoryStatistics[]> {
+  async findByIdentityIds(identityIds: string[]): Promise<RepositoryStatistics[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
@@ -40,7 +40,7 @@ export class RepositoryStatisticsPrismaRepository implements IRepositoryStatisti
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 }

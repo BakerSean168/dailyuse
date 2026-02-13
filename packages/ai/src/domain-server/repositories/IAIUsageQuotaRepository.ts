@@ -1,51 +1,51 @@
-/**
+﻿/**
  * AI Usage Quota Repository Interface
- * AI 使用配额仓储接口
+ * AI 浣跨敤閰嶉浠撳偍鎺ュ彛
  *
- * DDD 仓储模式：
- * - 操作领域对象（ServerDTO），不直接操作数据库模型
- * - 由基础设施层实现（Prisma）
- * - 隐藏持久化细节
+ * DDD 浠撳偍妯″紡锛?
+ * - 鎿嶄綔棰嗗煙瀵硅薄锛圫erverDTO锛夛紝涓嶇洿鎺ユ搷浣滄暟鎹簱妯″瀷
+ * - 鐢卞熀纭€璁炬柦灞傚疄鐜帮紙Prisma锛?
+ * - 闅愯棌鎸佷箙鍖栫粏鑺?
  */
 
 import type { AIUsageQuotaServerDTO } from '@dailyuse/contracts/ai';
 
 /**
- * IAIUsageQuotaRepository 仓储接口
+ * IAIUsageQuotaRepository 浠撳偍鎺ュ彛
  *
- * 职责：
- * - AI 使用配额的持久化操作
- * - 按账户查询配额
- * - 更新配额使用情况
+ * 鑱岃矗锛?
+ * - AI 浣跨敤閰嶉鐨勬寔涔呭寲鎿嶄綔
+ * - 鎸夎处鎴锋煡璇㈤厤棰?
+ * - 鏇存柊閰嶉浣跨敤鎯呭喌
  */
 export interface IAIUsageQuotaRepository {
   /**
-   * 保存配额（创建或更新）
+   * 淇濆瓨閰嶉锛堝垱寤烘垨鏇存柊锛?
    */
   save(quota: AIUsageQuotaServerDTO): Promise<void>;
 
   /**
-   * 根据 UUID 查找配额
+   * 鏍规嵁 UUID 鏌ユ壘閰嶉
    */
-  findByUuid(uuid: string): Promise<AIUsageQuotaServerDTO | null>;
+  findById(id: string): Promise<AIUsageQuotaServerDTO | null>;
 
   /**
-   * 根据账户 UUID 查找配额（每个账户只有一条配额记录）
+   * 鏍规嵁璐︽埛 UUID 鏌ユ壘閰嶉锛堟瘡涓处鎴峰彧鏈変竴鏉￠厤棰濊褰曪級
    */
-  findByAccountUuid(accountUuid: string): Promise<AIUsageQuotaServerDTO | null>;
+  findByIdentityId(identityId: string): Promise<AIUsageQuotaServerDTO | null>;
 
   /**
-   * 创建默认配额（如果不存在）
+   * 鍒涘缓榛樿閰嶉锛堝鏋滀笉瀛樺湪锛?
    */
-  createDefaultQuota(accountUuid: string): Promise<AIUsageQuotaServerDTO>;
+  createDefaultQuota(identityId: string): Promise<AIUsageQuotaServerDTO>;
 
   /**
-   * 删除配额
+   * 鍒犻櫎閰嶉
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 检查配额是否存在
+   * 妫€鏌ラ厤棰濇槸鍚﹀瓨鍦?
    */
-  exists(accountUuid: string): Promise<boolean>;
+  exists(identityId: string): Promise<boolean>;
 }

@@ -1,62 +1,62 @@
 /**
- * Notification 仓储接口
+ * Notification 浠撳偍鎺ュ彛
  *
- * DDD 仓储模式：
- * - 只定义接口，不实现
- * - 由基础设施层实现
- * - 使用依赖注入
- * - 隐藏数据访问细节
+ * DDD 浠撳偍妯″紡锛?
+ * - 鍙畾涔夋帴鍙ｏ紝涓嶅疄鐜?
+ * - 鐢卞熀纭€璁炬柦灞傚疄鐜?
+ * - 浣跨敤渚濊禆娉ㄥ叆
+ * - 闅愯棌鏁版嵁璁块棶缁嗚妭
  */
 
 import type { Notification } from '../aggregates/notification';
 import { NotificationCategory, NotificationStatus } from '@dailyuse/contracts/notification';
 
 /**
- * INotificationRepository 仓储接口
+ * INotificationRepository 浠撳偍鎺ュ彛
  *
- * 职责：
- * - 定义持久化操作的契约
- * - 聚合根是操作的基本单位
- * - 级联保存/加载子实体（channels, history）
+ * 鑱岃矗锛?
+ * - 瀹氫箟鎸佷箙鍖栨搷浣滅殑濂戠害
+ * - 鑱氬悎鏍规槸鎿嶄綔鐨勫熀鏈崟浣?
+ * - 绾ц仈淇濆瓨/鍔犺浇瀛愬疄浣擄紙channels, history锛?
  */
 export interface INotificationRepository {
   /**
-   * 保存聚合根（创建或更新）
+   * 淇濆瓨鑱氬悎鏍癸紙鍒涘缓鎴栨洿鏂帮級
    *
-   * 注意：
-   * - 这是事务操作
-   * - 级联保存所有子实体（channels, history）
-   * - 如果 UUID 已存在则更新，否则插入
+   * 娉ㄦ剰锛?
+   * - 杩欐槸浜嬪姟鎿嶄綔
+   * - 绾ц仈淇濆瓨鎵€鏈夊瓙瀹炰綋锛坈hannels, history锛?
+   * - 濡傛灉 UUID 宸插瓨鍦ㄥ垯鏇存柊锛屽惁鍒欐彃鍏?
    */
   save(notification: Notification): Promise<void>;
 
   /**
-   * 批量保存通知
+   * 鎵归噺淇濆瓨閫氱煡
    */
   saveMany(notifications: Notification[]): Promise<void>;
 
   /**
-   * 通过 UUID 查找聚合根
+   * 閫氳繃 UUID 鏌ユ壘鑱氬悎鏍?
    *
-   * @param uuid 通知 UUID
-   * @param options.includeChildren 是否加载子实体（默认 false，懒加载）
-   * @returns 聚合根实例，不存在则返回 null
+   * @param id 閫氱煡 UUID
+   * @param options.includeChildren 鏄惁鍔犺浇瀛愬疄浣擄紙榛樿 false锛屾噿鍔犺浇锛?
+   * @returns 鑱氬悎鏍瑰疄渚嬶紝涓嶅瓨鍦ㄥ垯杩斿洖 null
    */
-  findById(uuid: string, options?: { includeChildren?: boolean }): Promise<Notification | null>;
+  findById(id: string, options?: { includeChildren?: boolean }): Promise<Notification | null>;
 
   /**
-   * 通过账户 UUID 查找所有通知
+   * 閫氳繃璐︽埛 UUID 鏌ユ壘鎵€鏈夐€氱煡
    *
-   * @param accountUuid 账户 UUID
-   * @param options.includeChildren 是否加载子实体
-   * @param options.includeRead 是否包含已读通知（默认 true）
-   * @param options.includeDeleted 是否包含已删除通知（默认 false）
-   * @param options.limit 限制数量
-   * @param options.offset 偏移量
-   * @returns 通知列表
+   * @param identityId 璐︽埛 UUID
+   * @param options.includeChildren 鏄惁鍔犺浇瀛愬疄浣?
+   * @param options.includeRead 鏄惁鍖呭惈宸茶閫氱煡锛堥粯璁?true锛?
+   * @param options.includeDeleted 鏄惁鍖呭惈宸插垹闄ら€氱煡锛堥粯璁?false锛?
+   * @param options.limit 闄愬埗鏁伴噺
+   * @param options.offset 鍋忕Щ閲?
+   * @returns 閫氱煡鍒楄〃
    */
-  findByAccountUuid(
-    accountUuid: string,
+  findByIdentityId(
+    identityId: string,
     options?: {
       includeChildren?: boolean;
       includeRead?: boolean;
@@ -67,119 +67,119 @@ export interface INotificationRepository {
   ): Promise<Notification[]>;
 
   /**
-   * 通过状态查找通知
+   * 閫氳繃鐘舵€佹煡鎵鹃€氱煡
    *
-   * @param accountUuid 账户 UUID
-   * @param status 通知状态
-   * @param options.limit 限制数量
-   * @param options.offset 偏移量
+   * @param identityId 璐︽埛 UUID
+   * @param status 閫氱煡鐘舵€?
+   * @param options.limit 闄愬埗鏁伴噺
+   * @param options.offset 鍋忕Щ閲?
    */
   findByStatus(
-    accountUuid: string,
+    identityId: string,
     status: NotificationStatus,
     options?: { limit?: number; offset?: number },
   ): Promise<Notification[]>;
 
   /**
-   * 通过分类查找通知
+   * 閫氳繃鍒嗙被鏌ユ壘閫氱煡
    *
-   * @param accountUuid 账户 UUID
-   * @param category 通知分类
-   * @param options.limit 限制数量
-   * @param options.offset 偏移量
+   * @param identityId 璐︽埛 UUID
+   * @param category 閫氱煡鍒嗙被
+   * @param options.limit 闄愬埗鏁伴噺
+   * @param options.offset 鍋忕Щ閲?
    */
   findByCategory(
-    accountUuid: string,
+    identityId: string,
     category: NotificationCategory,
     options?: { limit?: number; offset?: number },
   ): Promise<Notification[]>;
 
   /**
-   * 查找未读通知
+   * 鏌ユ壘鏈閫氱煡
    *
-   * @param accountUuid 账户 UUID
-   * @param options.limit 限制数量
+   * @param identityId 璐︽埛 UUID
+   * @param options.limit 闄愬埗鏁伴噺
    */
-  findUnread(accountUuid: string, options?: { limit?: number }): Promise<Notification[]>;
+  findUnread(identityId: string, options?: { limit?: number }): Promise<Notification[]>;
 
   /**
-   * 查找相关实体的通知
+   * 鏌ユ壘鐩稿叧瀹炰綋鐨勯€氱煡
    *
-   * @param relatedEntityType 相关实体类型
-   * @param relatedEntityUuid 相关实体 UUID
+   * @param relatedEntityType 鐩稿叧瀹炰綋绫诲瀷
+   * @param relatedEntityId 鐩稿叧瀹炰綋 UUID
    */
   findByRelatedEntity(
     relatedEntityType: string,
-    relatedEntityUuid: string,
+    relatedEntityId: string,
   ): Promise<Notification[]>;
 
   /**
-   * 删除聚合根
+   * 鍒犻櫎鑱氬悎鏍?
    *
-   * 注意：
-   * - 这是事务操作
-   * - 级联删除所有子实体
+   * 娉ㄦ剰锛?
+   * - 杩欐槸浜嬪姟鎿嶄綔
+   * - 绾ц仈鍒犻櫎鎵€鏈夊瓙瀹炰綋
    *
-   * @param uuid 通知 UUID
+   * @param id 閫氱煡 UUID
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 批量删除通知
+   * 鎵归噺鍒犻櫎閫氱煡
    */
-  deleteMany(uuids: string[]): Promise<void>;
+  deleteMany(ids: string[]): Promise<void>;
 
   /**
-   * 软删除通知（标记为已删除）
+   * 杞垹闄ら€氱煡锛堟爣璁颁负宸插垹闄わ級
    */
-  softDelete(uuid: string): Promise<void>;
+  softDelete(id: string): Promise<void>;
 
   /**
-   * 检查通知是否存在
+   * 妫€鏌ラ€氱煡鏄惁瀛樺湪
    *
-   * @param uuid 通知 UUID
+   * @param id 閫氱煡 UUID
    */
-  exists(uuid: string): Promise<boolean>;
+  exists(id: string): Promise<boolean>;
 
   /**
-   * 统计未读通知数量
+   * 缁熻鏈閫氱煡鏁伴噺
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 璐︽埛 UUID
    */
-  countUnread(accountUuid: string): Promise<number>;
+  countUnread(identityId: string): Promise<number>;
 
   /**
-   * 统计各分类通知数量
+   * 缁熻鍚勫垎绫婚€氱煡鏁伴噺
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 璐︽埛 UUID
    */
-  countByCategory(accountUuid: string): Promise<Record<NotificationCategory, number>>;
+  countByCategory(identityId: string): Promise<Record<NotificationCategory, number>>;
 
   /**
-   * 批量标记为已读
+   * 鎵归噺鏍囪涓哄凡璇?
    *
-   * @param uuids 通知 UUID 列表
+   * @param ids 閫氱煡 UUID 鍒楄〃
    */
-  markManyAsRead(uuids: string[]): Promise<void>;
+  markManyAsRead(ids: string[]): Promise<void>;
 
   /**
-   * 标记所有为已读
+   * 鏍囪鎵€鏈変负宸茶
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 璐︽埛 UUID
    */
-  markAllAsRead(accountUuid: string): Promise<void>;
+  markAllAsRead(identityId: string): Promise<void>;
 
   /**
-   * 清理过期通知
+   * 娓呯悊杩囨湡閫氱煡
    *
-   * @param beforeTimestamp 在此时间之前的通知
+   * @param beforeTimestamp 鍦ㄦ鏃堕棿涔嬪墠鐨勯€氱煡
    */
   cleanupExpired(beforeTimestamp: number): Promise<number>;
 
   /**
-   * 清理已删除通知
+   * 娓呯悊宸插垹闄ら€氱煡
    *
-   * @param beforeTimestamp 在此时间之前删除的通知
+   * @param beforeTimestamp 鍦ㄦ鏃堕棿涔嬪墠鍒犻櫎鐨勯€氱煡
    */
   cleanupDeleted(beforeTimestamp: number): Promise<number>;
 }

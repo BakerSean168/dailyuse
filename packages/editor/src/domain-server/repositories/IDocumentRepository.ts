@@ -1,77 +1,77 @@
-/**
+﻿/**
  * IDocumentRepository
- * Document 实体仓储接口
+ * Document 瀹炰綋浠撳偍鎺ュ彛
  */
 
 import type { Document } from '../entities/document';
 import type { IndexStatus } from '@dailyuse/contracts/editor';
 
 /**
- * Document 仓储接口
+ * Document 浠撳偍鎺ュ彛
  */
 export interface IDocumentRepository {
   /**
-   * 根据 UUID 查找文档
+   * 鏍规嵁 UUID 鏌ユ壘鏂囨。
    */
-  findByUuid(uuid: string): Promise<Document | null>;
+  findById(id: string): Promise<Document | null>;
 
   /**
-   * 根据工作区 UUID 查找所有文档
+   * 鏍规嵁宸ヤ綔鍖?UUID 鏌ユ壘鎵€鏈夋枃妗?
    */
-  findByWorkspaceUuid(workspaceUuid: string): Promise<Document[]>;
+  findByWorkspaceId(workspaceId: string): Promise<Document[]>;
 
   /**
-   * 根据路径查找文档
+   * 鏍规嵁璺緞鏌ユ壘鏂囨。
    */
-  findByPath(workspaceUuid: string, path: string): Promise<Document | null>;
+  findByPath(workspaceId: string, path: string): Promise<Document | null>;
 
   /**
-   * 根据内容哈希查找文档
+   * 鏍规嵁鍐呭鍝堝笇鏌ユ壘鏂囨。
    */
   findByContentHash(contentHash: string): Promise<Document[]>;
 
   /**
-   * 查找需要索引的文档（索引状态为 OUTDATED 或 FAILED）
+   * 鏌ユ壘闇€瑕佺储寮曠殑鏂囨。锛堢储寮曠姸鎬佷负 OUTDATED 鎴?FAILED锛?
    */
-  findDocumentsNeedingIndex(workspaceUuid: string): Promise<Document[]>;
+  findDocumentsNeedingIndex(workspaceId: string): Promise<Document[]>;
 
   /**
-   * 根据索引状态查找文档
+   * 鏍规嵁绱㈠紩鐘舵€佹煡鎵炬枃妗?
    */
-  findByIndexStatus(workspaceUuid: string, status: IndexStatus): Promise<Document[]>;
+  findByIndexStatus(workspaceId: string, status: IndexStatus): Promise<Document[]>;
 
   /**
-   * 查找最近修改的文档
+   * 鏌ユ壘鏈€杩戜慨鏀圭殑鏂囨。
    */
-  findRecentlyModified(workspaceUuid: string, limit: number): Promise<Document[]>;
+  findRecentlyModified(workspaceId: string, limit: number): Promise<Document[]>;
 
   /**
-   * 保存文档
+   * 淇濆瓨鏂囨。
    */
   save(document: Document): Promise<void>;
 
   /**
-   * 删除文档
+   * 鍒犻櫎鏂囨。
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 批量保存文档
+   * 鎵归噺淇濆瓨鏂囨。
    */
   saveBatch(documents: Document[]): Promise<void>;
 
   /**
-   * 删除工作区的所有文档
+   * 鍒犻櫎宸ヤ綔鍖虹殑鎵€鏈夋枃妗?
    */
-  deleteByWorkspaceUuid(workspaceUuid: string): Promise<void>;
+  deleteByWorkspaceId(workspaceId: string): Promise<void>;
 
   /**
-   * 统计工作区的文档数量
+   * 缁熻宸ヤ綔鍖虹殑鏂囨。鏁伴噺
    */
-  countByWorkspaceUuid(workspaceUuid: string): Promise<number>;
+  countByWorkspaceId(workspaceId: string): Promise<number>;
 
   /**
-   * 统计需要索引的文档数量
+   * 缁熻闇€瑕佺储寮曠殑鏂囨。鏁伴噺
    */
-  countDocumentsNeedingIndex(workspaceUuid: string): Promise<number>;
+  countDocumentsNeedingIndex(workspaceId: string): Promise<number>;
 }

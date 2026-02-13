@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Folder Prisma Repository
  *
  * Prisma implementation of IFolderRepository.
@@ -20,31 +20,31 @@ export class FolderPrismaRepository implements IFolderRepository {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByUuid(uuid: string): Promise<Folder | null> {
+  async findById(id: string): Promise<Folder | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByRepositoryUuid(repositoryUuid: string): Promise<Folder[]> {
+  async findByRepositoryId(repositoryId: string): Promise<Folder[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByParentUuid(parentUuid: string): Promise<Folder[]> {
+  async findByParentId(parentId: string): Promise<Folder[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findRootFolders(repositoryUuid: string): Promise<Folder[]> {
+  async findRootFolders(repositoryId: string): Promise<Folder[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async deleteByRepositoryUuid(repositoryUuid: string): Promise<void> {
+  async deleteByRepositoryId(repositoryId: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async exists(uuid: string): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     throw new Error('Not implemented - extract from apps/api');
   }
 }

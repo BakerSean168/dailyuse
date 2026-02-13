@@ -1,51 +1,46 @@
-/**
- * IResourceRepository - 资源仓储接口
+﻿/**
+ * IResourceRepository - 璧勬簮浠撳偍鎺ュ彛
  * 
- * 职责：
- * - 资源的 CRUD 操作
- * - 资源查询
+ * 鑱岃矗锛?
+ * - 璧勬簮鐨?CRUD 鎿嶄綔
+ * - 璧勬簮鏌ヨ
  */
 
 import type { Resource } from '../entities/resource';
 
 export interface IResourceRepository {
   /**
-   * 保存资源
+   * 淇濆瓨璧勬簮
    */
   save(resource: Resource): Promise<void>;
 
   /**
-   * 根据 UUID 查找资源
+   * 鏍规嵁 ID 鏌ユ壘璧勬簮
    */
-  findByUuid(uuid: string): Promise<Resource | null>;
+  findById(id: string): Promise<Resource | null>;
 
   /**
-   * 根据 ID 查找资源 (别名为 findByUuid)
+   * 鏍规嵁浠撳簱 ID 鏌ユ壘璧勬簮
    */
-  findById(uuid: string): Promise<Resource | null>;
+  findByRepositoryId(repositoryId: string): Promise<Resource[]>;
 
   /**
-   * 根据仓库 UUID 查找资源
+   * 鏍规嵁鏂囦欢澶?UUID 鏌ユ壘璧勬簮
    */
-  findByRepositoryUuid(repositoryUuid: string): Promise<Resource[]>;
+  findByFolderId(folderId: string): Promise<Resource[]>;
 
   /**
-   * 根据文件夹 UUID 查找资源
+   * 鏍规嵁璐︽埛 UUID 鏌ユ壘璧勬簮
    */
-  findByFolderUuid(folderUuid: string): Promise<Resource[]>;
+  findByIdentityId(identityId: string): Promise<Resource[]>;
 
   /**
-   * 根据账户 UUID 查找资源
+   * 妫€鏌ヨ矾寰勬槸鍚﹀凡瀛樺湪璧勬簮
    */
-  findByAccountUuid(accountUuid: string): Promise<Resource[]>;
+  existsByPath(repositoryId: string, path: string): Promise<boolean>;
 
   /**
-   * 检查路径是否已存在资源
+   * 鍒犻櫎璧勬簮
    */
-  existsByPath(repositoryUuid: string, path: string): Promise<boolean>;
-
-  /**
-   * 删除资源
-   */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 }

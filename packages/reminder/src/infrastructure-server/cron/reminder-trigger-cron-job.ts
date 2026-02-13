@@ -46,23 +46,20 @@ class ReminderTriggerCronJob {
     try {
       const container = ReminderContainer.getInstance();
       const templateRepo = container.getReminderTemplateRepository();
-      const statsRepo = container.getReminderStatisticsRepository();
       const groupRepo = container.getReminderGroupRepository();
       
-      // Create ControlService锛堥渶瑕?group repository锛?
+      // Create ControlService（需要 group repository）
       const controlService = container.getControlService();
       
       // Create TriggerService
       const triggerService = new ReminderTriggerService(
         templateRepo,
-        statsRepo,
         controlService,
       );
 
       // Create SchedulerService
       this.schedulerService = new ReminderSchedulerService(
         templateRepo,
-        statsRepo,
         triggerService,
       );
 

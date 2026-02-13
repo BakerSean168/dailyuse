@@ -5,7 +5,7 @@
  */
 
 import type { IGoalApiClient } from '@/infrastructure-client';
-import type { UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import type { UpdateGoalReq } from '@dailyuse/contracts/goal';
 import { Goal } from '@/domain-client';
 import { GoalContainer } from '@/infrastructure-client';
 
@@ -47,8 +47,8 @@ export class UpdateGoal {
   /**
    * 执行用例
    */
-  async execute(uuid: string, request: UpdateGoalRequest): Promise<Goal> {
+  async execute(uuid: string, request: UpdateGoalReq): Promise<Goal> {
     const data = await this.apiClient.updateGoal(uuid, request);
-    return Goal.fromClientDTO(data);
+    return Goal.fromDTO(data);
   }
 }

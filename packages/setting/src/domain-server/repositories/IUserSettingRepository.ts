@@ -1,4 +1,4 @@
-import type { UserSetting } from '../aggregates/user-setting';
+﻿import type { UserSetting } from '../aggregates/user-setting';
 
 export interface UserSettingQueryOptions {
   category?: string;
@@ -7,22 +7,22 @@ export interface UserSettingQueryOptions {
 }
 
 /**
- * UserSetting 仓储接口
- * 定义持久化操作
+ * UserSetting 浠撳偍鎺ュ彛
+ * 瀹氫箟鎸佷箙鍖栨搷浣?
  */
 export interface IUserSettingRepository {
   /**
-   * 根据账户UUID查找用户设置
+   * 鏍规嵁璐︽埛UUID鏌ユ壘鐢ㄦ埛璁剧疆
    */
-  findByAccountUuid(accountUuid: string): Promise<UserSetting | null>;
+  findByIdentityId(identityId: string): Promise<UserSetting | null>;
 
   /**
-   * 保存用户设置
+   * 淇濆瓨鐢ㄦ埛璁剧疆
    */
   save(setting: UserSetting): Promise<void>;
 
   /**
-   * 删除用户设置
+   * 鍒犻櫎鐢ㄦ埛璁剧疆
    */
-  delete(accountUuid: string): Promise<void>;
+  delete(identityId: string): Promise<void>;
 }

@@ -67,36 +67,36 @@ export class SqliteFocusModeRepository implements IFocusModeRepository {
     })();
   }
 
-  async findById(uuid: string): Promise<FocusMode | null> {
+  async findById(id: string): Promise<FocusMode | null> {
     const row = this.db
       .prepare(`SELECT * FROM focus_modes WHERE id = ? LIMIT 1`)
-      .get(uuid) as any;
+      .get(id) as any;
 
     if (!row) return null;
 
     return this.rowToFocusMode(row);
   }
 
-  async findActiveByAccountUuid(accountUuid: string): Promise<FocusMode | null> {
+  async findActiveByIdentityId(identityId: string): Promise<FocusMode | null> {
     const row = this.db
       .prepare(
         `SELECT * FROM focus_modes
        WHERE identity_id = ? AND is_active = 1
        ORDER BY start_time DESC LIMIT 1`,
       )
-      .get(accountUuid) as any;
+      .get(identityId) as any;
 
     if (!row) return null;
 
     return this.rowToFocusMode(row);
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<FocusMode[]> {
+  async findByIdentityId(identityId: string): Promise<FocusMode[]> {
     const rows = this.db
       .prepare(
         `SELECT * FROM focus_modes WHERE identity_id = ? ORDER BY created_at DESC`,
       )
-      .all(accountUuid) as any[];
+      .all(identityId) as any[];
 
     return rows.map((row) => this.rowToFocusMode(row));
   }
@@ -114,14 +114,14 @@ export class SqliteFocusModeRepository implements IFocusModeRepository {
     return result.changes ?? 0;
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     this.db.transaction(() => {
       this.db
         .prepare(`DELETE FROM focus_mode_goals WHERE focus_mode_id = ?`)
-        .run(uuid);
+        .run(id);
       this.db
         .prepare(`DELETE FROM focus_modes WHERE id = ?`)
-        .run(uuid);
+        .run(id);
     })();
   }
 

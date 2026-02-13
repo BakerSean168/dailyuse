@@ -6,7 +6,8 @@
 
 import type { IGoalFolderRepository } from '@/domain-server';
 import { GoalFolder } from '@/domain-server';
-import type { CreateGoalFolderRequest, GoalFolderResponse } from '@dailyuse/contracts/goal';
+import type { IdentityId } from '@dailyuse/domain-shared';
+import type { CreateGoalFolderReq, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 
 /**
  * Create Goal Folder Service
@@ -18,20 +19,18 @@ export class CreateGoalFolder {
    * 获取服务单例
    */
 
-  async execute(accountUuid: string, input: CreateGoalFolderRequest): Promise<GoalFolderResponse> {
+  async execute(identityId: IdentityId, input: CreateGoalFolderReq): Promise<GoalFolderClientDTO> {
     const folder = GoalFolder.create({
-      accountUuid,
+      identityId,
       name: input.name,
       description: input.description,
       color: input.color,
       icon: input.icon,
-      parentFolderUuid: input.parentFolderUuid,
+      parentFolderId: input.parentFolderUuid,
     });
 
     await this.goalFolderRepository.save(folder);
 
-    return {
-      folder: folder.toClientDTO(),
-    };
+    return folder.toClientDTO();
   }
 }

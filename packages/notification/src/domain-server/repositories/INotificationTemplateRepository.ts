@@ -1,49 +1,49 @@
-/**
- * NotificationTemplate 仓储接口
+﻿/**
+ * NotificationTemplate 浠撳偍鎺ュ彛
  *
- * DDD 仓储模式：
- * - 只定义接口，不实现
- * - 由基础设施层实现
+ * DDD 浠撳偍妯″紡锛?
+ * - 鍙畾涔夋帴鍙ｏ紝涓嶅疄鐜?
+ * - 鐢卞熀纭€璁炬柦灞傚疄鐜?
  */
 
 import type { NotificationTemplate } from '../aggregates/notification-template';
 import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
 
 /**
- * INotificationTemplateRepository 仓储接口
+ * INotificationTemplateRepository 浠撳偍鎺ュ彛
  *
- * 职责：
- * - 管理通知模板的持久化
- * - 支持模板查询和筛选
+ * 鑱岃矗锛?
+ * - 绠＄悊閫氱煡妯℃澘鐨勬寔涔呭寲
+ * - 鏀寔妯℃澘鏌ヨ鍜岀瓫閫?
  */
 export interface INotificationTemplateRepository {
   /**
-   * 保存模板（创建或更新）
+   * 淇濆瓨妯℃澘锛堝垱寤烘垨鏇存柊锛?
    */
   save(template: NotificationTemplate): Promise<void>;
 
   /**
-   * 通过 UUID 查找模板
+   * 閫氳繃 UUID 鏌ユ壘妯℃澘
    */
-  findById(uuid: string): Promise<NotificationTemplate | null>;
+  findById(id: string): Promise<NotificationTemplate | null>;
 
   /**
-   * 查找所有模板
+   * 鏌ユ壘鎵€鏈夋ā鏉?
    *
-   * @param options.includeInactive 是否包含未激活的模板（默认 false）
+   * @param options.includeInactive 鏄惁鍖呭惈鏈縺娲荤殑妯℃澘锛堥粯璁?false锛?
    */
   findAll(options?: { includeInactive?: boolean }): Promise<NotificationTemplate[]>;
 
   /**
-   * 通过名称查找模板
+   * 閫氳繃鍚嶇О鏌ユ壘妯℃澘
    */
   findByName(name: string): Promise<NotificationTemplate | null>;
 
   /**
-   * 通过分类查找模板
+   * 閫氳繃鍒嗙被鏌ユ壘妯℃澘
    *
-   * @param category 通知分类
-   * @param options.activeOnly 只返回激活的模板（默认 true）
+   * @param category 閫氱煡鍒嗙被
+   * @param options.activeOnly 鍙繑鍥炴縺娲荤殑妯℃澘锛堥粯璁?true锛?
    */
   findByCategory(
     category: NotificationCategory,
@@ -51,10 +51,10 @@ export interface INotificationTemplateRepository {
   ): Promise<NotificationTemplate[]>;
 
   /**
-   * 通过类型查找模板
+   * 閫氳繃绫诲瀷鏌ユ壘妯℃澘
    *
-   * @param type 通知类型
-   * @param options.activeOnly 只返回激活的模板（默认 true）
+   * @param type 閫氱煡绫诲瀷
+   * @param options.activeOnly 鍙繑鍥炴縺娲荤殑妯℃澘锛堥粯璁?true锛?
    */
   findByType(
     type: NotificationType,
@@ -62,30 +62,30 @@ export interface INotificationTemplateRepository {
   ): Promise<NotificationTemplate[]>;
 
   /**
-   * 查找系统预设模板
+   * 鏌ユ壘绯荤粺棰勮妯℃澘
    */
   findSystemTemplates(): Promise<NotificationTemplate[]>;
 
   /**
-   * 删除模板
+   * 鍒犻櫎妯℃澘
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 检查模板是否存在
+   * 妫€鏌ユā鏉挎槸鍚﹀瓨鍦?
    */
-  exists(uuid: string): Promise<boolean>;
+  exists(id: string): Promise<boolean>;
 
   /**
-   * 检查模板名称是否已被使用
+   * 妫€鏌ユā鏉垮悕绉版槸鍚﹀凡琚娇鐢?
    *
-   * @param name 模板名称
-   * @param excludeUuid 排除的 UUID（用于更新时检查）
+   * @param name 妯℃澘鍚嶇О
+   * @param excludeId 鎺掗櫎鐨?UUID锛堢敤浜庢洿鏂版椂妫€鏌ワ級
    */
-  isNameUsed(name: string, excludeUuid?: string): Promise<boolean>;
+  isNameUsed(name: string, excludeId?: string): Promise<boolean>;
 
   /**
-   * 统计模板数量
+   * 缁熻妯℃澘鏁伴噺
    */
   count(options?: { activeOnly?: boolean }): Promise<number>;
 }

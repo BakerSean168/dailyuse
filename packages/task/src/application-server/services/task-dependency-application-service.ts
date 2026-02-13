@@ -1,11 +1,11 @@
-/**
+﻿/**
  * TaskDependency Application Service
- * 任务依赖关系应用服务
+ * 浠诲姟渚濊禆鍏崇郴搴旂敤鏈嶅姟
  *
- * 职责：
- * - 协调领域服务和仓储
- * - 处理依赖关系业务用例
- * - DTO 转换
+ * 鑱岃矗锛?
+ * - 鍗忚皟棰嗗煙鏈嶅姟鍜屼粨鍌?
+ * - 澶勭悊渚濊禆鍏崇郴涓氬姟鐢ㄤ緥
+ * - DTO 杞崲
  */
 
 import type { ITaskDependencyRepository } from '../../domain-server/repositories/ITaskDependencyRepository';
@@ -37,7 +37,7 @@ export class TaskDependencyApplicationService {
   }
 
   /**
-   * 创建应用服务实例
+   * 鍒涘缓搴旂敤鏈嶅姟瀹炰緥
    */
   static createInstance(
     dependencyRepository: ITaskDependencyRepository,
@@ -47,43 +47,43 @@ export class TaskDependencyApplicationService {
   }
 
   /**
-   * 创建依赖关系
+   * 鍒涘缓渚濊禆鍏崇郴
    */
   async createDependency(request: CreateTaskDependencyRequest): Promise<Result<TaskDependencyServerDTO>> {
-    // 1. 验证任务存在
+    // 1. 楠岃瘉浠诲姟瀛樺湪
     const [predecessor, successor] = await Promise.all([
-      this.taskRepository.findByUuid(request.predecessorTaskUuid),
-      this.taskRepository.findByUuid(request.successorTaskUuid),
+      this.taskRepository.findById(request.predecessorTaskId),
+      this.taskRepository.findById(request.successorTaskId),
     ]);
 
     if (!predecessor) {
-      return error('NOT_FOUND', `前置任务不存在: ${request.predecessorTaskUuid}`);
+      return error('NOT_FOUND', `鍓嶇疆浠诲姟涓嶅瓨鍦? ${request.predecessorTaskId}`);
     }
 
     if (!successor) {
-      return error('NOT_FOUND', `后续任务不存在: ${request.successorTaskUuid}`);
+      return error('NOT_FOUND', `鍚庣画浠诲姟涓嶅瓨鍦? ${request.successorTaskId}`);
     }
 
-    // 2. 检查是否已存在
-    const existing = await this.dependencyRepository.findByPredecessorAndSuccessor(
-      request.predecessorTaskUuid,
-      request.successorTaskUuid,
+    // 2. 妫€鏌ユ槸鍚﹀凡瀛樺湪
+    const existing = await this.dependencyRepository.findByPredecessorAndSuccessorId(
+      request.predecessorTaskId,
+      request.successorTaskId,
     );
 
     if (existing) {
-      return error('VALIDATION_ERROR', '依赖关系已存在');
+      return error('VALIDATION_ERROR', '渚濊禆鍏崇郴宸插瓨鍦?);
     }
 
-    // 3. 获取所有相关依赖，用于循环检测
-    // 这里简化处理，只获取 successor 的所有后续依赖和 predecessor 的所有前置依赖
-    // 更好的做法可能是获取整个账户的依赖图，或者在数据库层面做递归查询
-    // 暂时使用全量查询（注意性能）
-    const allDependencies = await this.dependencyRepository.findAllByAccount(request.accountUuid);
+    // 3. 鑾峰彇鎵€鏈夌浉鍏充緷璧栵紝鐢ㄤ簬寰幆妫€娴?
+    // 杩欓噷绠€鍖栧鐞嗭紝鍙幏鍙?successor 鐨勬墍鏈夊悗缁緷璧栧拰 predecessor 鐨勬墍鏈夊墠缃緷璧?
+    // 鏇村ソ鐨勫仛娉曞彲鑳芥槸鑾峰彇鏁翠釜璐︽埛鐨勪緷璧栧浘锛屾垨鑰呭湪鏁版嵁搴撳眰闈㈠仛閫掑綊鏌ヨ
+    // 鏆傛椂浣跨敤鍏ㄩ噺鏌ヨ锛堟敞鎰忔€ц兘锛?
+    const allDependencies = await this.dependencyRepository.findAllByIdentityId(request.identityId);
 
-    // 4. 委托给领域服务进行循环依赖检测
+    // 4. 濮旀墭缁欓鍩熸湇鍔¤繘琛屽惊鐜緷璧栨娴?
     const validation = this.dependencyService.detectCircularDependency(
-      request.predecessorTaskUuid,
-      request.successorTaskUuid,
+      request.predecessorTaskId,
+      request.successorTaskId,
       allDependencies,
     );
 
@@ -91,98 +91,98 @@ export class TaskDependencyApplicationService {
       return error('VALIDATION_ERROR', validation.message!);
     }
 
-    // 5. 委托给领域服务创建实体
+    // 5. 濮旀墭缁欓鍩熸湇鍔″垱寤哄疄浣?
     const dependency = this.dependencyService.createDependency(
       predecessor,
       successor,
-      request.accountUuid,
+      request.identityId,
     );
 
-    // 6. 保存到仓储
+    // 6. 淇濆瓨鍒颁粨鍌?
     await this.dependencyRepository.create(request);
 
-    // 7. 更新后续任务的依赖状态
-    await this.updateTaskDependencyStatus(successor.uuid);
+    // 7. 鏇存柊鍚庣画浠诲姟鐨勪緷璧栫姸鎬?
+    await this.updateTaskDependencyStatus(successor.id);
 
     return ok(dependency.toServerDTO());
   }
 
   /**
-   * 获取任务的所有前置依赖
+   * 鑾峰彇浠诲姟鐨勬墍鏈夊墠缃緷璧?
    */
   async getDependencies(taskUuid: string): Promise<Result<TaskDependencyServerDTO[]>> {
-    const deps = await this.dependencyRepository.findBySuccessor(taskUuid);
+    const deps = await this.dependencyRepository.findBySuccessorId(taskUuid);
     return ok(deps);
   }
 
   /**
-   * 获取依赖此任务的所有任务
+   * 鑾峰彇渚濊禆姝や换鍔＄殑鎵€鏈変换鍔?
    */
   async getDependents(taskUuid: string): Promise<Result<TaskDependencyServerDTO[]>> {
-    const deps = await this.dependencyRepository.findByPredecessor(taskUuid);
+    const deps = await this.dependencyRepository.findByPredecessorId(taskUuid);
     return ok(deps);
   }
 
   /**
-   * 删除依赖关系
+   * 鍒犻櫎渚濊禆鍏崇郴
    */
   async deleteDependency(uuid: string): Promise<Result<void>> {
-    const dependency = await this.dependencyRepository.findByUuid(uuid);
+    const dependency = await this.dependencyRepository.findById(uuid);
     if (!dependency) {
-      return error('NOT_FOUND', '依赖关系不存在');
+      return error('NOT_FOUND', '渚濊禆鍏崇郴涓嶅瓨鍦?);
     }
 
     await this.dependencyRepository.delete(uuid);
 
-    // 更新后续任务的状态
-    await this.updateTaskDependencyStatus(dependency.successorTaskUuid);
+    // 鏇存柊鍚庣画浠诲姟鐨勭姸鎬?
+    await this.updateTaskDependencyStatus(dependency.successorTaskId);
     
     return ok(undefined);
   }
 
   /**
-   * 验证依赖关系（不实际创建）
+   * 楠岃瘉渚濊禆鍏崇郴锛堜笉瀹為檯鍒涘缓锛?
    */
   async validateDependency(
     request: ValidateDependencyRequest,
   ): Promise<Result<ValidateDependencyResponse>> {
     const errors: string[] = [];
 
-    // 验证任务存在
+    // 楠岃瘉浠诲姟瀛樺湪
     const [predecessor, successor] = await Promise.all([
-      this.taskRepository.findByUuid(request.predecessorTaskUuid),
-      this.taskRepository.findByUuid(request.successorTaskUuid),
+      this.taskRepository.findById(request.predecessorTaskId),
+      this.taskRepository.findById(request.successorTaskId),
     ]);
 
     if (!predecessor) {
-      errors.push('前置任务不存在');
+      errors.push('鍓嶇疆浠诲姟涓嶅瓨鍦?);
     }
 
     if (!successor) {
-      errors.push('后续任务不存在');
+      errors.push('鍚庣画浠诲姟涓嶅瓨鍦?);
     }
 
     if (errors.length > 0) {
       return { isValid: false, errors };
     }
 
-    // 检查是否已存在
-    const existing = await this.dependencyRepository.findByPredecessorAndSuccessor(
-      request.predecessorTaskUuid,
-      request.successorTaskUuid,
+    // 妫€鏌ユ槸鍚﹀凡瀛樺湪
+    const existing = await this.dependencyRepository.findByPredecessorAndSuccessorId(
+      request.predecessorTaskId,
+      request.successorTaskId,
     );
 
     if (existing) {
-      errors.push('依赖关系已存在');
+      errors.push('渚濊禆鍏崇郴宸插瓨鍦?);
     }
 
-    // 循环依赖检测
-    const allDependencies = await this.dependencyRepository.findAllByAccount(
-      predecessor!.accountUuid,
+    // 寰幆渚濊禆妫€娴?
+    const allDependencies = await this.dependencyRepository.findAllByIdentityId(
+      predecessor!.identityId,
     );
     const validation = this.dependencyService.detectCircularDependency(
-      request.predecessorTaskUuid,
-      request.successorTaskUuid,
+      request.predecessorTaskId,
+      request.successorTaskId,
       allDependencies,
     );
 
@@ -202,27 +202,27 @@ export class TaskDependencyApplicationService {
 
     return ok({
       isValid: true,
-      message: '依赖关系有效，可以创建',
+      message: '渚濊禆鍏崇郴鏈夋晥锛屽彲浠ュ垱寤?,
     });
   }
 
   /**
-   * 获取依赖链信息
+   * 鑾峰彇渚濊禆閾句俊鎭?
    */
   async getDependencyChain(taskUuid: string): Promise<Result<DependencyChainServerDTO>> {
     const [allPredecessors, allSuccessors] = await Promise.all([
-      this.dependencyRepository.findAllPredecessors(taskUuid),
-      this.dependencyRepository.findAllSuccessors(taskUuid),
+      this.dependencyRepository.findAllPredecessorIds(taskUuid),
+      this.dependencyRepository.findAllSuccessorIds(taskUuid),
     ]);
 
-    // 获取所有相关依赖用于计算深度
-    // 这里可以优化，只获取相关的
-    const task = await this.taskRepository.findByUuid(taskUuid);
+    // 鑾峰彇鎵€鏈夌浉鍏充緷璧栫敤浜庤绠楁繁搴?
+    // 杩欓噷鍙互浼樺寲锛屽彧鑾峰彇鐩稿叧鐨?
+    const task = await this.taskRepository.findById(taskUuid);
     if (!task) return error('NOT_FOUND', 'Task not found');
 
-    const allDependencies = await this.dependencyRepository.findAllByAccount(task.accountUuid);
+    const allDependencies = await this.dependencyRepository.findAllByIdentityId(task.identityId);
 
-    // 计算深度
+    // 璁＄畻娣卞害
     const depth = this.dependencyService.calculateDepth(taskUuid, allDependencies);
 
     return ok({
@@ -235,7 +235,7 @@ export class TaskDependencyApplicationService {
   }
 
   /**
-   * 更新依赖关系
+   * 鏇存柊渚濊禆鍏崇郴
    */
   async updateDependency(
     uuid: string,
@@ -246,25 +246,25 @@ export class TaskDependencyApplicationService {
   }
 
   /**
-   * 更新任务的依赖状态（私有辅助方法）
+   * 鏇存柊浠诲姟鐨勪緷璧栫姸鎬侊紙绉佹湁杈呭姪鏂规硶锛?
    */
   private async updateTaskDependencyStatus(taskUuid: string): Promise<void> {
-    // 1. 获取任务的前置依赖
-    const dependencies = await this.dependencyRepository.findBySuccessor(taskUuid);
+    // 1. 鑾峰彇浠诲姟鐨勫墠缃緷璧?
+    const dependencies = await this.dependencyRepository.findBySuccessorId(taskUuid);
 
-    // 2. 获取前置任务详情
+    // 2. 鑾峰彇鍓嶇疆浠诲姟璇︽儏
     const predecessorTasks = await Promise.all(
-      dependencies.map((dep) => this.taskRepository.findByUuid(dep.predecessorTaskUuid)),
+      dependencies.map((dep) => this.taskRepository.findById(dep.predecessorTaskId)),
     );
 
-    // 3. 计算新状态
+    // 3. 璁＄畻鏂扮姸鎬?
     const statusResult = this.dependencyService.calculateDependencyStatus(
       taskUuid,
       dependencies,
       predecessorTasks,
     );
 
-    // 4. 更新任务状态 (映射 DependencyStatus 到 updateDependencyStatus 参数类型)
+    // 4. 鏇存柊浠诲姟鐘舵€?(鏄犲皠 DependencyStatus 鍒?updateDependencyStatus 鍙傛暟绫诲瀷)
     const statusMap: Record<string, 'PENDING' | 'READY' | 'BLOCKED'> = {
       NONE: 'READY',
       WAITING: 'PENDING',
@@ -273,10 +273,10 @@ export class TaskDependencyApplicationService {
     };
     const mappedStatus = statusMap[statusResult.status] ?? 'PENDING';
 
-    const task = await this.taskRepository.findByUuid(taskUuid);
+    const task = await this.taskRepository.findById(taskUuid);
     if (task) {
       task.updateDependencyStatus(mappedStatus);
-      // 如果被阻塞，记录原因
+      // 濡傛灉琚樆濉烇紝璁板綍鍘熷洜
       if (statusResult.isBlocked && statusResult.blockingReason) {
         task.markAsBlocked(statusResult.blockingReason);
       } else if (!statusResult.isBlocked && task.isBlocked) {

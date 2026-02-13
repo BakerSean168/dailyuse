@@ -1,12 +1,12 @@
 /**
  * Setting Repository Interface
- * 设置仓储接口
+ * 璁剧疆浠撳偍鎺ュ彛
  *
- * DDD 仓储模式：
- * - 只定义接口，不实现
- * - 由基础设施层实现
- * - 使用依赖注入
- * - 隐藏数据访问细节
+ * DDD 浠撳偍妯″紡锛?
+ * - 鍙畾涔夋帴鍙ｏ紝涓嶅疄鐜?
+ * - 鐢卞熀纭€璁炬柦灞傚疄鐜?
+ * - 浣跨敤渚濊禆娉ㄥ叆
+ * - 闅愯棌鏁版嵁璁块棶缁嗚妭
  */
 
 import type { Setting } from '../aggregates/setting';
@@ -20,132 +20,132 @@ export interface SettingQueryOptions {
 }
 
 /**
- * ISettingRepository 仓储接口
+ * ISettingRepository 浠撳偍鎺ュ彛
  *
- * 职责：
- * - 定义 Setting 聚合根的持久化操作
- * - 聚合根是操作的基本单位
- * - 级联保存/加载子实体（如 history）
+ * 鑱岃矗锛?
+ * - 瀹氫箟 Setting 鑱氬悎鏍圭殑鎸佷箙鍖栨搷浣?
+ * - 鑱氬悎鏍规槸鎿嶄綔鐨勫熀鏈崟浣?
+ * - 绾ц仈淇濆瓨/鍔犺浇瀛愬疄浣擄紙濡?history锛?
  */
 export interface ISettingRepository {
   /**
-   * 保存聚合根（创建或更新）
+   * 淇濆瓨鑱氬悎鏍癸紙鍒涘缓鎴栨洿鏂帮級
    *
-   * 注意：
-   * - 这是事务操作
-   * - 级联保存历史记录
-   * - 如果 UUID 已存在则更新，否则插入
+   * 娉ㄦ剰锛?
+   * - 杩欐槸浜嬪姟鎿嶄綔
+   * - 绾ц仈淇濆瓨鍘嗗彶璁板綍
+   * - 濡傛灉 UUID 宸插瓨鍦ㄥ垯鏇存柊锛屽惁鍒欐彃鍏?
    */
   save(setting: Setting): Promise<void>;
 
   /**
-   * 通过 UUID 查找聚合根
+   * 閫氳繃 UUID 鏌ユ壘鑱氬悎鏍?
    *
-   * @param uuid 设置 UUID
-   * @param options.includeHistory 是否加载历史记录（默认 false，懒加载）
-   * @returns 聚合根实例，不存在则返回 null
+   * @param id 璁剧疆 UUID
+   * @param options.includeHistory 鏄惁鍔犺浇鍘嗗彶璁板綍锛堥粯璁?false锛屾噿鍔犺浇锛?
+   * @returns 鑱氬悎鏍瑰疄渚嬶紝涓嶅瓨鍦ㄥ垯杩斿洖 null
    */
-  findById(uuid: string, options?: { includeHistory?: boolean }): Promise<Setting | null>;
+  findById(id: string, options?: { includeHistory?: boolean }): Promise<Setting | null>;
 
   /**
-   * 通过 key 查找设置
+   * 閫氳繃 key 鏌ユ壘璁剧疆
    *
-   * @param key 设置键
-   * @param scope 作用域
-   * @param contextUuid 上下文 UUID（accountUuid 或 deviceId）
-   * @returns 聚合根实例，不存在则返回 null
+   * @param key 璁剧疆閿?
+   * @param scope 浣滅敤鍩?
+   * @param contextId 涓婁笅鏂?ID锛坕dentityId 鎴?deviceId锛?
+   * @returns 鑱氬悎鏍瑰疄渚嬶紝涓嶅瓨鍦ㄥ垯杩斿洖 null
    */
-  findByKey(key: string, scope: SettingScope, contextUuid?: string): Promise<Setting | null>;
+  findByKey(key: string, scope: SettingScope, contextId?: string): Promise<Setting | null>;
 
   /**
-   * 按作用域查找所有设置
+   * 鎸変綔鐢ㄥ煙鏌ユ壘鎵€鏈夎缃?
    *
-   * @param scope 作用域
-   * @param contextUuid 上下文 UUID（accountUuid 或 deviceId）
-   * @param options.includeHistory 是否加载历史记录
-   * @returns 设置列表
+   * @param scope 浣滅敤鍩?
+   * @param contextId 涓婁笅鏂?ID锛坕dentityId 鎴?deviceId锛?
+   * @param options.includeHistory 鏄惁鍔犺浇鍘嗗彶璁板綍
+   * @returns 璁剧疆鍒楄〃
    */
   findByScope(
     scope: SettingScope,
-    contextUuid?: string,
+    contextId?: string,
     options?: { includeHistory?: boolean },
   ): Promise<Setting[]>;
 
   /**
-   * 按分组查找设置
+   * 鎸夊垎缁勬煡鎵捐缃?
    *
-   * @param groupUuid 分组 UUID
-   * @param options.includeHistory 是否加载历史记录
-   * @returns 设置列表
+   * @param groupId 鍒嗙粍 UUID
+   * @param options.includeHistory 鏄惁鍔犺浇鍘嗗彶璁板綍
+   * @returns 璁剧疆鍒楄〃
    */
-  findByGroup(groupUuid: string, options?: { includeHistory?: boolean }): Promise<Setting[]>;
+  findByGroup(groupId: string, options?: { includeHistory?: boolean }): Promise<Setting[]>;
 
   /**
-   * 查找所有系统设置
+   * 鏌ユ壘鎵€鏈夌郴缁熻缃?
    *
-   * @param options.includeHistory 是否加载历史记录
-   * @returns 系统设置列表
+   * @param options.includeHistory 鏄惁鍔犺浇鍘嗗彶璁板綍
+   * @returns 绯荤粺璁剧疆鍒楄〃
    */
   findSystemSettings(options?: { includeHistory?: boolean }): Promise<Setting[]>;
 
   /**
-   * 查找用户设置
+   * 鏌ユ壘鐢ㄦ埛璁剧疆
    *
-   * @param accountUuid 账户 UUID
-   * @param options.includeHistory 是否加载历史记录
-   * @returns 用户设置列表
+   * @param identityId 璐︽埛 UUID
+   * @param options.includeHistory 鏄惁鍔犺浇鍘嗗彶璁板綍
+   * @returns 鐢ㄦ埛璁剧疆鍒楄〃
    */
-  findUserSettings(accountUuid: string, options?: { includeHistory?: boolean }): Promise<Setting[]>;
+  findUserSettings(identityId: string, options?: { includeHistory?: boolean }): Promise<Setting[]>;
 
   /**
-   * 查找设备设置
+   * 鏌ユ壘璁惧璁剧疆
    *
-   * @param deviceId 设备 ID
-   * @param options.includeHistory 是否加载历史记录
-   * @returns 设备设置列表
+   * @param deviceId 璁惧 ID
+   * @param options.includeHistory 鏄惁鍔犺浇鍘嗗彶璁板綍
+   * @returns 璁惧璁剧疆鍒楄〃
    */
   findDeviceSettings(deviceId: string, options?: { includeHistory?: boolean }): Promise<Setting[]>;
 
   /**
-   * 删除聚合根（软删除）
+   * 鍒犻櫎鑱氬悎鏍癸紙杞垹闄わ級
    *
-   * 注意：
-   * - 这是软删除操作
-   * - 设置 deletedAt 时间戳
+   * 娉ㄦ剰锛?
+   * - 杩欐槸杞垹闄ゆ搷浣?
+   * - 璁剧疆 deletedAt 鏃堕棿鎴?
    *
-   * @param uuid 设置 UUID
+   * @param id 璁剧疆 UUID
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
-   * 检查设置是否存在
+   * 妫€鏌ヨ缃槸鍚﹀瓨鍦?
    *
-   * @param uuid 设置 UUID
+   * @param id 璁剧疆 UUID
    */
-  exists(uuid: string): Promise<boolean>;
+  exists(id: string): Promise<boolean>;
 
   /**
-   * 检查 key 是否已被使用
+   * 妫€鏌?key 鏄惁宸茶浣跨敤
    *
-   * @param key 设置键
-   * @param scope 作用域
-   * @param contextUuid 上下文 UUID
+   * @param key 璁剧疆閿?
+   * @param scope 浣滅敤鍩?
+   * @param contextId 涓婁笅鏂?UUID
    */
-  existsByKey(key: string, scope: SettingScope, contextUuid?: string): Promise<boolean>;
+  existsByKey(key: string, scope: SettingScope, contextId?: string): Promise<boolean>;
 
   /**
-   * 批量保存设置
+   * 鎵归噺淇濆瓨璁剧疆
    *
-   * @param settings 设置列表
+   * @param settings 璁剧疆鍒楄〃
    */
   saveMany(settings: Setting[]): Promise<void>;
 
   /**
-   * 搜索设置
+   * 鎼滅储璁剧疆
    *
-   * @param query 搜索查询
-   * @param scope 可选的作用域过滤
-   * @returns 匹配的设置列表
+   * @param query 鎼滅储鏌ヨ
+   * @param scope 鍙€夌殑浣滅敤鍩熻繃婊?
+   * @returns 鍖归厤鐨勮缃垪琛?
    */
   search(query: string, scope?: SettingScope): Promise<Setting[]>;
 }

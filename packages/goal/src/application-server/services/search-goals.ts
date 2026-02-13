@@ -18,7 +18,7 @@ export class SearchGoals {
   constructor(private readonly goalRepository: IGoalRepository) {}
 
   async execute(accountUuid: string, query: string): Promise<Result<GoalsResponse>> {
-    const allGoals = await this.goalRepository.findByAccountUuid(accountUuid, {});
+    const allGoals = await this.goalRepository.findByIdentityId(accountUuid, {});
 
     const filteredGoals = allGoals.filter(
       (g) =>

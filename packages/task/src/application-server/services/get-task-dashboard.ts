@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Get Task Dashboard Service
  *
- * 获取任务仪表板数�?
+ * 鑾峰彇浠诲姟浠〃鏉挎暟锟?
  */
 
 import type { ITaskTemplateRepository, TaskFilters } from '../../domain-server/repositories/ITaskTemplateRepository';
@@ -16,9 +16,9 @@ import { ok } from '@dailyuse/contracts/result';
 export class GetTaskDashboard {
   constructor(private readonly templateRepository: ITaskTemplateRepository) {}
 
-  async execute(accountUuid: string): Promise<Result<TaskDashboardResponse>> {
+  async execute(identityId: string): Promise<Result<TaskDashboardResponse>> {
 
-    // 并行查询所有数�?
+    // 骞惰鏌ヨ鎵€鏈夋暟锟?
     const [
       today,
       overdue,
@@ -29,14 +29,14 @@ export class GetTaskDashboard {
       totalActive,
       totalCompleted,
     ] = await Promise.all([
-      this.getTodayTasks(accountUuid),
-      this.getOverdueTasks(accountUuid),
-      this.getBlockedTasks(accountUuid),
-      this.getUpcomingTasks(accountUuid, 7),
-      this.getHighPriorityTasks(accountUuid, 5),
-      this.getRecentCompletedTasks(accountUuid, 10),
-      this.countTasks(accountUuid, { taskType: TaskType.ONE_TIME, status: 'TODO' as any }),
-      this.countTasks(accountUuid, { taskType: TaskType.ONE_TIME, status: 'COMPLETED' as any }),
+      this.getTodayTasks(identityId),
+      this.getOverdueTasks(identityId),
+      this.getBlockedTasks(identityId),
+      this.getUpcomingTasks(identityId, 7),
+      this.getHighPriorityTasks(identityId, 5),
+      this.getRecentCompletedTasks(identityId, 10),
+      this.countTasks(identityId, { taskType: TaskType.ONE_TIME, status: 'TODO' as any }),
+      this.countTasks(identityId, { taskType: TaskType.ONE_TIME, status: 'COMPLETED' as any }),
     ]);
 
     const completionRate =
@@ -60,34 +60,34 @@ export class GetTaskDashboard {
     });
   }
 
-  private async getTodayTasks(accountUuid: string): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findTodayTasks(accountUuid);
+  private async getTodayTasks(identityId: string): Promise<TaskTemplateClientDTO[]> {
+    const tasks = await this.templateRepository.findTodayTasks(identityId);
     return tasks.map((t) => t.toClientDTO());
   }
 
-  private async getOverdueTasks(accountUuid: string): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findOverdueTasks(accountUuid);
+  private async getOverdueTasks(identityId: string): Promise<TaskTemplateClientDTO[]> {
+    const tasks = await this.templateRepository.findOverdueTasks(identityId);
     return tasks.map((t) => t.toClientDTO());
   }
 
-  private async getBlockedTasks(accountUuid: string): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findBlockedTasks(accountUuid);
+  private async getBlockedTasks(identityId: string): Promise<TaskTemplateClientDTO[]> {
+    const tasks = await this.templateRepository.findBlockedTasks(identityId);
     return tasks.map((t) => t.toClientDTO());
   }
 
-  private async getUpcomingTasks(accountUuid: string, daysAhead: number): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findUpcomingTasks(accountUuid, daysAhead);
+  private async getUpcomingTasks(identityId: string, daysAhead: number): Promise<TaskTemplateClientDTO[]> {
+    const tasks = await this.templateRepository.findUpcomingTasks(identityId, daysAhead);
     return tasks.map((t) => t.toClientDTO());
   }
 
-  private async getHighPriorityTasks(accountUuid: string, limit: number): Promise<TaskTemplateClientDTO[]> {
-    const tasks = await this.templateRepository.findTasksSortedByPriority(accountUuid, limit);
+  private async getHighPriorityTasks(identityId: string, limit: number): Promise<TaskTemplateClientDTO[]> {
+    const tasks = await this.templateRepository.findSortedByPriority(identityId, limit);
     return tasks.map((t) => t.toClientDTO());
   }
 
-  private async getRecentCompletedTasks(accountUuid: string, limit: number): Promise<TaskTemplateClientDTO[]> {
+  private async getRecentCompletedTasks(identityId: string, limit: number): Promise<TaskTemplateClientDTO[]> {
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const tasks = await this.templateRepository.findOneTimeTasks(accountUuid, {
+    const tasks = await this.templateRepository.findOneTimeTasks(identityId, {
       taskType: TaskType.ONE_TIME,
       status: 'COMPLETED' as any,
     });
@@ -99,8 +99,8 @@ export class GetTaskDashboard {
       .map((t) => t.toClientDTO());
   }
 
-  private async countTasks(accountUuid: string, filters?: TaskFilters): Promise<number> {
-    return await this.templateRepository.countTasks(accountUuid, filters);
+  private async countTasks(identityId: string, filters?: TaskFilters): Promise<number> {
+    return await this.templateRepository.countTasks(identityId, filters);
   }
 }
 

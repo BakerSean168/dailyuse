@@ -1,10 +1,10 @@
 /**
- * FocusMode Repository Interface
- * 专注周期模式仓储接口
+ * FocusMode 仓储接口
+ * 专注模式仓储接口
  *
  * DDD 仓储模式：
  * - 只定义接口，不实现
- * - 由基础设施层实现
+ * - 由基础设施层实现（Prisma / SQLite）
  * - 使用依赖注入
  * - 隐藏数据访问细节
  */
@@ -16,57 +16,57 @@ import type { FocusMode } from '../value-objects';
  *
  * 职责：
  * - FocusMode 值对象的持久化操作
- * - 提供按账户查询活跃周期
- * - 支持批量失效过期周期
+ * - 提供按用户查询活跃模式
+ * - 支持批量失效过期模式
  */
 export interface IFocusModeRepository {
   /**
-   * 保存专注周期（创建或更新）
+   * 保存专注模式（创建或更新）
    *
    * @param focusMode - FocusMode 值对象
    */
   save(focusMode: FocusMode): Promise<void>;
 
   /**
-   * 通过 UUID 查找专注周期
+   * 通过 ID 查找专注模式
    *
-   * @param uuid - 专注周期 UUID
-   * @returns 专注周期实例，不存在则返回 null
+   * @param id - 专注模式 ID
+   * @returns 专注模式实例，不存在则返回 null
    */
-  findById(uuid: string): Promise<FocusMode | null>;
+  findById(id: string): Promise<FocusMode | null>;
 
   /**
-   * 查找账户当前活跃的专注周期
+   * 查找用户当前活跃的专注模式
    *
-   * @param accountUuid - 账户 UUID
-   * @returns 活跃的专注周期，不存在则返回 null
+   * @param identityId - 用户身份 ID
+   * @returns 活跃的专注模式，不存在则返回 null
    */
-  findActiveByAccountUuid(accountUuid: string): Promise<FocusMode | null>;
+  findActiveByIdentityId(identityId: string): Promise<FocusMode | null>;
 
   /**
-   * 查找账户的所有专注周期（包括历史）
+   * 查找用户的所有专注模式（包括历史）
    *
-   * @param accountUuid - 账户 UUID
-   * @returns 专注周期列表（按创建时间倒序）
+   * @param identityId - 用户身份 ID
+   * @returns 专注模式列表（按创建时间倒序）
    */
-  findByAccountUuid(accountUuid: string): Promise<FocusMode[]>;
+  findByIdentityId(identityId: string): Promise<FocusMode[]>;
 
   /**
-   * 批量失效过期的专注周期
+   * 批量失效过期的专注模式
    *
    * 注意：
-   * - 查找所有 isActive=true 且 endTime < currentTime 的周期
+   * - 查找所有 isActive=true 且 endTime < currentTime 的模式
    * - 批量设置 isActive=false 和 actualEndTime=endTime
    * - 由 Cron Job 定时调用
    *
-   * @returns 失效的周期数量
+   * @returns 失效的模式数量
    */
   deactivateExpired(): Promise<number>;
 
   /**
-   * 删除专注周期
+   * 删除专注模式
    *
-   * @param uuid - 专注周期 UUID
+   * @param id - 专注模式 ID
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 }

@@ -1,8 +1,8 @@
-/**
+﻿/**
  * Create Task Template Service
  *
- * 创建任务模板（循环任务）
- * 创建后自动生成初始实例（100�?最�?00个）
+ * 鍒涘缓浠诲姟妯℃澘锛堝惊鐜换鍔★級
+ * 鍒涘缓鍚庤嚜鍔ㄧ敓鎴愬垵濮嬪疄渚嬶紙100锟?鏈€锟?00涓級
  */
 
 import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
@@ -42,7 +42,7 @@ export class CreateTaskTemplate {
       : undefined;
 
     const template = TaskTemplate.create({
-      accountUuid: request.accountUuid,
+      identityId: request.identityId,
       title: request.name,
       description: request.description,
       taskType: request.taskType,
@@ -50,17 +50,17 @@ export class CreateTaskTemplate {
       recurrenceRule,
       reminderConfig,
       importance: request.importance,
-      folderUuid: request.folderUuid,
+      folderId: request.folderId,
       tags: request.tags,
       color: request.color,
     });
 
-    // 保存到仓储
+    // 淇濆瓨鍒颁粨鍌?
     await this.templateRepository.save(template);
 
     let instanceCount = 0;
 
-    // 如果状态是 ACTIVE，立即生成初始实例
+    // 濡傛灉鐘舵€佹槸 ACTIVE锛岀珛鍗崇敓鎴愬垵濮嬪疄渚?
     if (template.status === TaskTemplateStatus.ACTIVE) {
       instanceCount = await this.generateInitialInstances(template);
     }
@@ -72,7 +72,7 @@ export class CreateTaskTemplate {
   }
 
   /**
-   * 生成初始实例
+   * 鐢熸垚鍒濆瀹炰緥
    */
   private async generateInitialInstances(template: TaskTemplate): Promise<number> {
     try {
@@ -82,15 +82,15 @@ export class CreateTaskTemplate {
         await this.instanceRepository.saveMany(instances);
         await this.templateRepository.save(template);
 
-        // 发布事件
+        // 鍙戝竷浜嬩欢
         eventBus.emit('task.instances.generated', {
           eventType: 'task_template.instances_generated',
           version: '1.0',
-          aggregateId: template.uuid,
+          aggregateId: template.id,
           occurredOn: new Date(),
-          accountUuid: template.accountUuid,
+          identityId: template.identityId,
           payload: {
-            templateUuid: template.uuid,
+            templateId: template.id,
             templateTitle: template.title,
             instanceCount: instances.length,
             strategy: instances.length <= 20 ? 'full' : 'summary',
@@ -100,7 +100,7 @@ export class CreateTaskTemplate {
 
       return instances.length;
     } catch (error) {
-      console.error(`[CreateTaskTemplate] 生成初始实例失败:`, error);
+      console.error(`[CreateTaskTemplate] 鐢熸垚鍒濆瀹炰緥澶辫触:`, error);
       return 0;
     }
   }

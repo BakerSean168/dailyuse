@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Setting Prisma Repository
  *
  * Prisma implementation of ISettingRepository.
@@ -21,23 +21,23 @@ export class SettingPrismaRepository implements ISettingRepository {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findById(uuid: string, options?: { includeHistory?: boolean }): Promise<Setting | null> {
+  async findById(id: string, options?: { includeHistory?: boolean }): Promise<Setting | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByKey(key: string, scope: SettingScope, contextUuid?: string): Promise<Setting | null> {
+  async findByKey(key: string, scope: SettingScope, contextId?: string): Promise<Setting | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
   async findByScope(
     scope: SettingScope,
-    contextUuid?: string,
+    contextId?: string,
     options?: { includeHistory?: boolean },
   ): Promise<Setting[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByGroup(groupUuid: string, options?: { includeHistory?: boolean }): Promise<Setting[]> {
+  async findByGroup(groupId: string, options?: { includeHistory?: boolean }): Promise<Setting[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
@@ -45,7 +45,7 @@ export class SettingPrismaRepository implements ISettingRepository {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findUserSettings(accountUuid: string, options?: { includeHistory?: boolean }): Promise<Setting[]> {
+  async findUserSettings(identityId: string, options?: { includeHistory?: boolean }): Promise<Setting[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
@@ -53,15 +53,15 @@ export class SettingPrismaRepository implements ISettingRepository {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async exists(uuid: string): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async existsByKey(key: string, scope: SettingScope, contextUuid?: string): Promise<boolean> {
+  async existsByKey(key: string, scope: SettingScope, contextId?: string): Promise<boolean> {
     throw new Error('Not implemented - extract from apps/api');
   }
 

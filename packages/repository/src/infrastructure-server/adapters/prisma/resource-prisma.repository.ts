@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Resource Prisma Repository
  *
  * Prisma implementation of IResourceRepository.
@@ -20,31 +20,27 @@ export class ResourcePrismaRepository implements IResourceRepository {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByUuid(uuid: string): Promise<Resource | null> {
+  async findById(id: string): Promise<Resource | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findById(uuid: string): Promise<Resource | null> {
-    return this.findByUuid(uuid);
-  }
-
-  async findByRepositoryUuid(repositoryUuid: string): Promise<Resource[]> {
+  async findByRepositoryId(repositoryId: string): Promise<Resource[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByFolderUuid(folderUuid: string): Promise<Resource[]> {
+  async findByFolderId(folderId: string): Promise<Resource[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<Resource[]> {
+  async findByIdentityId(identityId: string): Promise<Resource[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async existsByPath(repositoryUuid: string, path: string): Promise<boolean> {
+  async existsByPath(repositoryId: string, path: string): Promise<boolean> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 }

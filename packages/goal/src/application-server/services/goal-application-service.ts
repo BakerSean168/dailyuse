@@ -137,7 +137,7 @@ export class GoalApplicationService {
       folderUuid?: string;
     },
   ): Promise<Result<GoalClientDTO[]>> {
-    const goals = await this.goalRepository.findByAccountUuid(accountUuid, options);
+    const goals = await this.goalRepository.findByIdentityId(accountUuid, options);
     return ok(goals.map((g: Goal) => g.toClientDTO(true)));
   }
 
@@ -297,7 +297,7 @@ export class GoalApplicationService {
    * 搜索目标。
    */
   async searchGoals(accountUuid: string, query: string): Promise<Result<GoalClientDTO[]>> {
-    const goals = await this.goalRepository.findByAccountUuid(accountUuid, {});
+    const goals = await this.goalRepository.findByIdentityId(accountUuid, {});
     return ok(
       goals
         .filter((g) => g.name.includes(query) || g.description?.includes(query))

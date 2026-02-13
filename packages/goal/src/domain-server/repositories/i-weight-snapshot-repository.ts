@@ -1,10 +1,9 @@
 /**
- * KeyResult Weight Snapshot Repository Interface
  * KR 权重快照仓储接口
  *
  * DDD 仓储模式：
  * - 只定义接口，不实现
- * - 由基础设施层实现
+ * - 由基础设施层实现（Prisma / SQLite）
  * - 使用依赖注入
  * - 隐藏数据访问细节
  */
@@ -23,7 +22,7 @@ export interface SnapshotQueryResult {
  * IWeightSnapshotRepository 仓储接口
  *
  * 职责：
- * - 权重快照的持久化操作
+ * - 权重快照的持久化操作（不可变，只增不改）
  * - 提供多维度查询（按 Goal、按 KR、按时间范围）
  * - 支持分页查询
  */
@@ -45,22 +44,22 @@ export interface IWeightSnapshotRepository {
   /**
    * 查询 Goal 的所有快照
    *
-   * @param goalUuid - Goal UUID
+   * @param goalId - Goal ID
    * @param page - 页码（从 1 开始）
    * @param pageSize - 每页数量
    * @returns 快照列表和总数（按时间倒序）
    */
-  findByGoal(goalUuid: string, page?: number, pageSize?: number): Promise<SnapshotQueryResult>;
+  findByGoal(goalId: string, page?: number, pageSize?: number): Promise<SnapshotQueryResult>;
 
   /**
    * 查询 KeyResult 的所有快照
    *
-   * @param krUuid - KeyResult UUID
+   * @param keyResultId - KeyResult ID
    * @param page - 页码（从 1 开始）
    * @param pageSize - 每页数量
    * @returns 快照列表和总数（按时间倒序）
    */
-  findByKeyResult(krUuid: string, page?: number, pageSize?: number): Promise<SnapshotQueryResult>;
+  findByKeyResult(keyResultId: string, page?: number, pageSize?: number): Promise<SnapshotQueryResult>;
 
   /**
    * 查询时间范围内的快照
@@ -79,31 +78,31 @@ export interface IWeightSnapshotRepository {
   ): Promise<SnapshotQueryResult>;
 
   /**
-   * 通过 UUID 查找快照
+   * 通过 ID 查找快照
    *
-   * @param uuid - 快照 UUID
+   * @param id - 快照 ID
    * @returns 快照实例，不存在则返回 null
    */
-  findById(uuid: string): Promise<KeyResultWeightSnapshot | null>;
+  findById(id: string): Promise<KeyResultWeightSnapshot | null>;
 
   /**
    * 删除快照
    *
-   * @param uuid - 快照 UUID
+   * @param id - 快照 ID
    */
-  delete(uuid: string): Promise<void>;
+  delete(id: string): Promise<void>;
 
   /**
    * 删除 Goal 的所有快照
    *
-   * @param goalUuid - Goal UUID
+   * @param goalId - Goal ID
    */
-  deleteByGoal(goalUuid: string): Promise<void>;
+  deleteByGoal(goalId: string): Promise<void>;
 
   /**
    * 删除 KeyResult 的所有快照
    *
-   * @param krUuid - KeyResult UUID
+   * @param keyResultId - KeyResult ID
    */
-  deleteByKeyResult(krUuid: string): Promise<void>;
+  deleteByKeyResult(keyResultId: string): Promise<void>;
 }
