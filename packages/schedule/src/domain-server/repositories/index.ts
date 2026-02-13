@@ -23,3 +23,4 @@
 export * from './IScheduleTaskRepository';
 export * from './IScheduleExecutionRepository';
 export * from './IScheduleRepository';
+export * from './IScheduleJobRepository';
