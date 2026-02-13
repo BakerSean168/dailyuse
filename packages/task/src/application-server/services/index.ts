@@ -22,5 +22,4 @@ export { GetTaskDashboard } from './get-task-dashboard';
 // ===== Application Services (Complex Orchestration) =====
 export { TaskInstanceApplicationService } from './task-instance-application-service';
 export { TaskTemplateApplicationService } from './task-template-application-service';
-export { TaskStatisticsApplicationService } from './task-statistics-application-service';
 export { TaskDependencyApplicationService } from './task-dependency-application-service';

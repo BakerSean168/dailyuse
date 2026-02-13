@@ -23,7 +23,6 @@ export {
   GetTaskDashboard,
   TaskInstanceApplicationService,
   TaskTemplateApplicationService,
-  TaskStatisticsApplicationService,
   TaskDependencyApplicationService
 } from './services';
 

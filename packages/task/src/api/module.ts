@@ -14,7 +14,6 @@ import { prisma } from '@dailyuse/database';
 import { TaskModule } from '../infrastructure-server/task.module';
 import { TaskTemplateController } from './controllers/task-template.controller';
 import { TaskInstanceController } from './controllers/task-instance.controller';
-import { TaskStatsController } from './controllers/task-stats.controller';
 import { registerTaskRoutes } from './routes';
 import { registerTaskInitializationTasks } from './initialization';
 
@@ -61,16 +60,12 @@ export const TaskApiModule: TaskApiModuleDef = {
     const instanceController = new TaskInstanceController(
       taskModule.taskInstanceService,
     );
-    const statsController = new TaskStatsController(
-      taskModule.taskStatisticsService,
-    );
 
     // 3. Register routes (inject platform middleware)
     registerTaskRoutes(
       {
         templateController,
         instanceController,
-        statsController,
       },
       middleware,
       router,

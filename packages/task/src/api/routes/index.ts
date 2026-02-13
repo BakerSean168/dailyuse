@@ -8,10 +8,8 @@
 import { Router, type RequestHandler } from 'express';
 import type { TaskTemplateController } from '../controllers/task-template.controller';
 import type { TaskInstanceController } from '../controllers/task-instance.controller';
-import type { TaskStatsController } from '../controllers/task-stats.controller';
 import { registerTaskTemplateRoutes } from './task-template.routes';
 import { registerTaskInstanceRoutes } from './task-instance.routes';
-import { registerTaskStatsRoutes } from './task-stats.routes';
 
 // ============ Types ============
 
@@ -23,7 +21,6 @@ interface PlatformMiddleware {
 interface TaskControllers {
   templateController: TaskTemplateController;
   instanceController: TaskInstanceController;
-  statsController: TaskStatsController;
 }
 
 // ============ Route Registration ============
@@ -49,11 +46,4 @@ export function registerTaskRoutes(
     middleware,
   );
   rootRouter.use('/task-instances', instanceRouter);
-
-  // Task Stats: /api/tasks
-  const statsRouter = registerTaskStatsRoutes(
-    controllers.statsController,
-    middleware,
-  );
-  rootRouter.use('/tasks', statsRouter);
 }

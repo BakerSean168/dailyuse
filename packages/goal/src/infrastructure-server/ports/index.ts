@@ -5,7 +5,6 @@
 export type {
   IGoalRepository,
   IGoalFolderRepository,
-  IGoalStatisticsRepository,
   IFocusModeRepository,
   IFocusSessionRepository,
   IWeightSnapshotRepository,
