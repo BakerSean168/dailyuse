@@ -36,17 +36,17 @@ model Setting {
 }
 
 model SettingGroup {
-  id          String   @id
-  key         String   @unique
+  id          String    @id
+  key         String    @unique
   name        String
   description String?
-  parentId    String?  @map("parent_id")
-  order       Int      @default(0)
+  parentId    String?   @map("parent_id")
+  order       Int       @default(0)
   icon        String?
-  isCollapsed Boolean  @default(false) @map("is_collapsed")
-  version     Int      @default(1)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  isCollapsed Boolean   @default(false) @map("is_collapsed")
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
   parent   SettingGroup?  @relation("SettingGroupHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
@@ -59,15 +59,15 @@ model SettingGroup {
 }
 
 model SettingItem {
-  id          String   @id
-  groupId     String   @map("group_id")
-  settingKey  String   @map("setting_key")
-  order       Int      @default(0)
-  isVisible   Boolean  @default(true) @map("is_visible")
-  customLabel String?  @map("custom_label")
-  version     Int      @default(1)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id          String    @id
+  groupId     String    @map("group_id")
+  settingKey  String    @map("setting_key")
+  order       Int       @default(0)
+  isVisible   Boolean   @default(true) @map("is_visible")
+  customLabel String?   @map("custom_label")
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
   group SettingGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -85,31 +85,31 @@ model UserSetting {
   updatedAt                   DateTime  @updatedAt @map("updated_at")
   deletedAt                   DateTime? @map("deleted_at")
   appearanceAccentColor       String    @default("#3B82F6") @map("appearance_accent_color")
-  appearanceCompactMode       Boolean  @default(false) @map("appearance_compact_mode")
-  appearanceFontFamily        String?  @map("appearance_font_family")
-  appearanceFontSize          String   @default("MEDIUM") @map("appearance_font_size")
-  appearanceTheme             String   @default("AUTO") @map("appearance_theme")
-  experimentalEnabled         Boolean  @default(false) @map("experimental_enabled")
-  experimentalFeatures        String   @default("[]") @map("experimental_features")
-  localeCurrency              String   @default("CNY") @map("locale_currency")
-  localeDateFormat            String   @default("YYYY-MM-DD") @map("locale_date_format")
-  localeLanguage              String   @default("zh-CN") @map("locale_language")
-  localeTimeFormat            String   @default("24H") @map("locale_time_format")
-  localeTimezone              String   @default("Asia/Shanghai") @map("locale_timezone")
-  localeWeekStartsOn          Int      @default(1) @map("locale_week_starts_on")
-  privacyAllowSearchByEmail   Boolean  @default(true) @map("privacy_allow_search_by_email")
-  privacyAllowSearchByPhone   Boolean  @default(false) @map("privacy_allow_search_by_phone")
-  privacyProfileVisibility    String   @default("PRIVATE") @map("privacy_profile_visibility")
-  privacyShareUsageData       Boolean  @default(false) @map("privacy_share_usage_data")
-  privacyShowOnlineStatus     Boolean  @default(true) @map("privacy_show_online_status")
-  shortcutsCustom             String   @default("{}") @map("shortcuts_custom")
-  shortcutsEnabled            Boolean  @default(true) @map("shortcuts_enabled")
-  workflowAutoSave            Boolean  @default(true) @map("workflow_auto_save")
-  workflowAutoSaveInterval    Int      @default(30000) @map("workflow_auto_save_interval")
-  workflowConfirmBeforeDelete Boolean  @default(true) @map("workflow_confirm_before_delete")
-  workflowDefaultGoalView     String   @default("LIST") @map("workflow_default_goal_view")
-  workflowDefaultScheduleView String   @default("WEEK") @map("workflow_default_schedule_view")
-  workflowDefaultTaskView     String   @default("LIST") @map("workflow_default_task_view")
+  appearanceCompactMode       Boolean   @default(false) @map("appearance_compact_mode")
+  appearanceFontFamily        String?   @map("appearance_font_family")
+  appearanceFontSize          String    @default("MEDIUM") @map("appearance_font_size")
+  appearanceTheme             String    @default("AUTO") @map("appearance_theme")
+  experimentalEnabled         Boolean   @default(false) @map("experimental_enabled")
+  experimentalFeatures        String    @default("[]") @map("experimental_features")
+  localeCurrency              String    @default("CNY") @map("locale_currency")
+  localeDateFormat            String    @default("YYYY-MM-DD") @map("locale_date_format")
+  localeLanguage              String    @default("zh-CN") @map("locale_language")
+  localeTimeFormat            String    @default("24H") @map("locale_time_format")
+  localeTimezone              String    @default("Asia/Shanghai") @map("locale_timezone")
+  localeWeekStartsOn          Int       @default(1) @map("locale_week_starts_on")
+  privacyAllowSearchByEmail   Boolean   @default(true) @map("privacy_allow_search_by_email")
+  privacyAllowSearchByPhone   Boolean   @default(false) @map("privacy_allow_search_by_phone")
+  privacyProfileVisibility    String    @default("PRIVATE") @map("privacy_profile_visibility")
+  privacyShareUsageData       Boolean   @default(false) @map("privacy_share_usage_data")
+  privacyShowOnlineStatus     Boolean   @default(true) @map("privacy_show_online_status")
+  shortcutsCustom             String    @default("{}") @map("shortcuts_custom")
+  shortcutsEnabled            Boolean   @default(true) @map("shortcuts_enabled")
+  workflowAutoSave            Boolean   @default(true) @map("workflow_auto_save")
+  workflowAutoSaveInterval    Int       @default(30000) @map("workflow_auto_save_interval")
+  workflowConfirmBeforeDelete Boolean   @default(true) @map("workflow_confirm_before_delete")
+  workflowDefaultGoalView     String    @default("LIST") @map("workflow_default_goal_view")
+  workflowDefaultScheduleView String    @default("WEEK") @map("workflow_default_schedule_view")
+  workflowDefaultTaskView     String    @default("LIST") @map("workflow_default_task_view")
 
   // 通知偏好设置
   notificationEmail Boolean @default(true) @map("notification_email")

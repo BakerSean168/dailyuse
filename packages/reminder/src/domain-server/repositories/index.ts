@@ -22,3 +22,4 @@
 export type { IReminderTemplateRepository } from './IReminderTemplateRepository';
 export type { IReminderGroupRepository } from './IReminderGroupRepository';
 export type { IReminderResponseRepository, ResponseAction } from './IReminderResponseRepository';
+export type { IUserReminderPreferenceRepository } from './IUserReminderPreferenceRepository';

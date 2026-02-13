@@ -4,19 +4,19 @@
 // ==========================================
 
 model EditorWorkspace {
-  id          String   @id
-  identityId  String   @map("identity_id")
+  id          String    @id
+  identityId  String    @map("identity_id")
   name        String
   description String?
-  projectPath String   @unique @map("project_path")
-  projectType String   @map("project_type")
+  projectPath String    @unique @map("project_path")
+  projectType String    @map("project_type")
   layout      Json
   setting     Json
-  isActive    Boolean  @default(true) @map("is_active")
-  version     Int      @default(1)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  accessedAt  DateTime @default(now()) @map("accessed_at")
+  isActive    Boolean   @default(true) @map("is_active")
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  accessedAt  DateTime  @default(now()) @map("accessed_at")
   deletedAt   DateTime? @map("deleted_at")
 
   sessions EditorWorkspaceSession[]
@@ -27,15 +27,15 @@ model EditorWorkspace {
 }
 
 model EditorWorkspaceSession {
-  id          String   @id
-  workspaceId String   @map("workspace_id")
-  identityId  String   @map("identity_id")
+  id          String    @id
+  workspaceId String    @map("workspace_id")
+  identityId  String    @map("identity_id")
   name        String
   layout      Json
-  isActive    Boolean  @default(true) @map("is_active")
-  version     Int      @default(1)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  isActive    Boolean   @default(true) @map("is_active")
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
   groups    EditorWorkspaceSessionGroup[]
@@ -47,16 +47,16 @@ model EditorWorkspaceSession {
 }
 
 model EditorWorkspaceSessionGroup {
-  id             String   @id
-  sessionId      String   @map("session_id")
-  workspaceId    String   @map("workspace_id")
-  identityId     String   @map("identity_id")
-  groupIndex     Int      @map("group_index")
+  id             String    @id
+  sessionId      String    @map("session_id")
+  workspaceId    String    @map("workspace_id")
+  identityId     String    @map("identity_id")
+  groupIndex     Int       @map("group_index")
   name           String?
-  splitDirection String   @map("split_direction")
-  version        Int      @default(1)
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  splitDirection String    @map("split_direction")
+  version        Int       @default(1)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
   deletedAt      DateTime? @map("deleted_at")
 
   tabs    EditorWorkspaceSessionGroupTab[]
@@ -68,21 +68,21 @@ model EditorWorkspaceSessionGroup {
 }
 
 model EditorWorkspaceSessionGroupTab {
-  id          String   @id
-  groupId     String   @map("group_id")
-  sessionId   String   @map("session_id")
-  workspaceId String   @map("workspace_id")
-  identityId  String   @map("identity_id")
-  documentId  String?  @map("document_id")
-  tabIndex    Int      @map("tab_index")
-  tabType     String   @map("tab_type")
+  id          String    @id
+  groupId     String    @map("group_id")
+  sessionId   String    @map("session_id")
+  workspaceId String    @map("workspace_id")
+  identityId  String    @map("identity_id")
+  documentId  String?   @map("document_id")
+  tabIndex    Int       @map("tab_index")
+  tabType     String    @map("tab_type")
   title       String
-  viewState   Json     @map("view_state")
-  isPinned    Boolean  @default(false) @map("is_pinned")
-  isActive    Boolean  @default(false) @map("is_active")
-  version     Int      @default(1)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  viewState   Json      @map("view_state")
+  isPinned    Boolean   @default(false) @map("is_pinned")
+  isActive    Boolean   @default(false) @map("is_active")
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
   account Account                     @relation(fields: [identityId], references: [id], onDelete: Cascade)

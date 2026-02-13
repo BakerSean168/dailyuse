@@ -119,10 +119,10 @@ model AuthSession {
   location Json? // { country, city, timezone }
 
   // 生命周期
-  version      Int      @default(1)
-  createdAt    DateTime @default(now()) @map("created_at")
-  expiresAt    DateTime @map("expires_at")
-  lastActiveAt DateTime @default(now()) @map("last_active_at")
+  version      Int       @default(1)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  expiresAt    DateTime  @map("expires_at")
+  lastActiveAt DateTime  @default(now()) @map("last_active_at")
   deletedAt    DateTime? @map("deleted_at")
 
   @@index([identityId])

@@ -67,16 +67,16 @@ model AiGenerationTask {
 }
 
 model AiUsageQuota {
-  id           String   @id
-  identityId   String   @unique @map("identity_id")
-  quotaLimit   Int      @default(50) @map("quota_limit")
-  currentUsage Int      @default(0) @map("current_usage")
-  resetPeriod  String   @default("DAILY") @map("reset_period") // DAILY, WEEKLY, MONTHLY
-  lastResetAt  DateTime @default(now()) @map("last_reset_at")
-  nextResetAt  DateTime @map("next_reset_at")
-  version      Int      @default(1)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id           String    @id
+  identityId   String    @unique @map("identity_id")
+  quotaLimit   Int       @default(50) @map("quota_limit")
+  currentUsage Int       @default(0) @map("current_usage")
+  resetPeriod  String    @default("DAILY") @map("reset_period") // DAILY, WEEKLY, MONTHLY
+  lastResetAt  DateTime  @default(now()) @map("last_reset_at")
+  nextResetAt  DateTime  @map("next_reset_at")
+  version      Int       @default(1)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")
 
   account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
@@ -87,20 +87,20 @@ model AiUsageQuota {
 }
 
 model AiProviderConfig {
-  id              String   @id
-  identityId      String   @map("identity_id")
+  id              String    @id
+  identityId      String    @map("identity_id")
   name            String // 配置名称
-  providerType    String   @map("provider_type") // OPENAI, QINIU, ANTHROPIC, CUSTOM_OPENAI_COMPATIBLE
-  baseUrl         String   @map("base_url") // API 基础地址
-  apiKeyEncrypted String   @map("api_key_encrypted") // AES-256-GCM 加密的 API Key
-  defaultModel    String?  @map("default_model")
-  availableModels String   @default("[]") @map("available_models") // 可用模型列表 JSON
-  isActive        Boolean  @default(true) @map("is_active")
-  isDefault       Boolean  @default(false) @map("is_default")
-  priority        Int      @default(100) // 优先级
-  version         Int      @default(1)
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  providerType    String    @map("provider_type") // OPENAI, QINIU, ANTHROPIC, CUSTOM_OPENAI_COMPATIBLE
+  baseUrl         String    @map("base_url") // API 基础地址
+  apiKeyEncrypted String    @map("api_key_encrypted") // AES-256-GCM 加密的 API Key
+  defaultModel    String?   @map("default_model")
+  availableModels String    @default("[]") @map("available_models") // 可用模型列表 JSON
+  isActive        Boolean   @default(true) @map("is_active")
+  isDefault       Boolean   @default(false) @map("is_default")
+  priority        Int       @default(100) // 优先级
+  version         Int       @default(1)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
 
   account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
