@@ -19,7 +19,6 @@ import {
   getPreferenceService,
   getOrCreatePreferenceService,
   updatePreferenceService,
-  getStatisticsSummaryService,
 } from './services';
 
 import type { CreateNotificationRequest } from '@dailyuse/contracts/notification';
@@ -96,15 +95,5 @@ export class NotificationDesktopApplicationService {
     }>,
   ): Promise<NotificationPreferenceClientDTO> {
     return updatePreferenceService(accountUuid, updates);
-  }
-
-  // ===== Statistics =====
-
-  async getStatisticsSummary(accountUuid: string): Promise<{
-    total: number;
-    unread: number;
-    read: number;
-  }> {
-    return getStatisticsSummaryService(accountUuid);
   }
 }
