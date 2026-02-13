@@ -46,13 +46,16 @@ model Account {
   reminderTemplates               ReminderTemplate[]
   reminderInstances               ReminderInstance[]
   reminderStatistics              ReminderStatistic?
+  userReminderPreferences         UserReminderPreference?
   repositories                    Repository[]
   repositoryExplorers             RepositoryExplorer[]
   repositoryStatistics            RepositoryStatistic?
   schedules                       Schedule[]
+  scheduleJobs                    ScheduleJob[]
   scheduleTasks                   ScheduleTask[]
   scheduleStatistics              ScheduleStatistic?
   settings_                       Setting[]
+  taskFolders                     TaskFolder[]
   taskTemplates                   TaskTemplate[]
   taskInstances                   TaskInstance[]
   taskStatistics                  TaskStatistic?

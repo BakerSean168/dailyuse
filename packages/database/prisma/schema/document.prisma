@@ -55,15 +55,15 @@ model DocumentVersion {
 }
 
 model DocumentLink {
-  id               String   @id
-  sourceDocumentId String   @map("source_document_id")
-  targetDocumentId String?  @map("target_document_id")
-  linkText         String   @map("link_text")
-  linkPosition     Int      @map("link_position")
-  isBroken         Boolean  @default(false) @map("is_broken")
-  version          Int      @default(1)
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  id               String    @id
+  sourceDocumentId String    @map("source_document_id")
+  targetDocumentId String?   @map("target_document_id")
+  linkText         String    @map("link_text")
+  linkPosition     Int       @map("link_position")
+  isBroken         Boolean   @default(false) @map("is_broken")
+  version          Int       @default(1)
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
   deletedAt        DateTime? @map("deleted_at")
 
   sourceDocument Document  @relation("source_links", fields: [sourceDocumentId], references: [id], onDelete: Cascade)

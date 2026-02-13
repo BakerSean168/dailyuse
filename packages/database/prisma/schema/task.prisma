@@ -1,46 +1,65 @@
 // ==========================================
 // Task Module
-// 任务模板聚合根、实例、依赖、历史、统计
+// 任务模板聚合根、实例、文件夹、依赖、历史、统计
 // ==========================================
 
+/// TaskFolder 聚合根 - 任务文件夹
+/// 用于组织和分类任务模板
+model TaskFolder {
+  // ============ 主键与外键 ============
+  id         String @id
+  identityId String @map("identity_id")
+
+  // ============ 基础信息 ============
+  name  String /// 文件夹名称
+  color String? /// 显示颜色
+  icon  String? /// 图标标识
+
+  // ============ 排序 ============
+  order Int @default(0) /// 排序顺序
+
+  // ============ 版本与审计 ============
+  version   Int       @default(1)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // ============ 关系映射 ============
+  account   Account        @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  templates TaskTemplate[]
+
+  // ============ 索引优化 ============
+  @@index([identityId])
+  @@map("task_folders")
+}
+
+/// TaskTemplate 聚合根 - 任务模板
+/// 管理任务的完整定义，包括时间配置、重复规则、提醒、Goal绑定等
 model TaskTemplate {
-  id          String  @id
-  identityId  String  @map("identity_id")
+  // ============ 主键与外键 ============
+  id         String @id
+  identityId String @map("identity_id")
+
+  // ============ 基础信息 ============
   name        String
   description String?
-  taskType    String  @map("task_type") // 'ONE_TIME' | 'RECURRING'
-  status      String
-  importance  String  @default("moderate") // ImportanceLevel
+  status      String /// TaskTemplateStatus
+  importance  String  @default("moderate") /// ImportanceLevel
+  priority    Int? /// 动态计算的优先级分数
   color       String?
-  tags        String // JSON: string[]
-  folderId    String? @map("folder_id")
+  tags        String /// JSON: string[]
 
-  // === Goal/KR 关联 ===
-  goalId      String? @map("goal_id")
-  keyResultId String? @map("key_result_id")
-
-  // === 子任务支持 ===
+  // ============ 组织与层级 ============
+  folderId     String? @map("folder_id")
   parentTaskId String? @map("parent_task_id")
 
-  // === 一次性任务专用字段 ===
-  startDate        DateTime? @map("start_date")
-  dueDate          DateTime? @map("due_date")
-  completedAt      DateTime? @map("completed_at")
-  estimatedMinutes Int?      @map("estimated_minutes")
-  actualMinutes    Int?      @map("actual_minutes")
-  note             String?   @db.Text
-
-  // === 循环任务专用字段 ===
-  lastGeneratedDate DateTime? @map("last_generated_date")
-  generateAheadDays Int?      @map("generate_ahead_days")
-
-  // === 时间配置（循环任务用） ===
+  // ============ 时间配置（展开值对象） ============
   timeConfigType            String?   @map("time_config_type")
   timeConfigStartTime       DateTime? @map("time_config_start_time")
   timeConfigEndTime         DateTime? @map("time_config_end_time")
   timeConfigDurationMinutes Int?      @map("time_config_duration_minutes")
 
-  // === 重复规则（循环任务用） ===
+  // ============ 重复规则（展开值对象） ============
   recurrenceRuleType        String?   @map("recurrence_rule_type")
   recurrenceRuleInterval    Int?      @map("recurrence_rule_interval")
   recurrenceRuleDaysOfWeek  String?   @map("recurrence_rule_days_of_week")
@@ -49,32 +68,36 @@ model TaskTemplate {
   recurrenceRuleEndDate     DateTime? @map("recurrence_rule_end_date")
   recurrenceRuleCount       Int?      @map("recurrence_rule_count")
 
-  // === 提醒配置（循环任务用） ===
+  // ============ 提醒配置（展开值对象） ============
   reminderConfigEnabled           Boolean? @map("reminder_config_enabled")
   reminderConfigTimeOffsetMinutes Int?     @map("reminder_config_time_offset_minutes")
   reminderConfigUnit              String?  @map("reminder_config_unit")
   reminderConfigChannel           String?  @map("reminder_config_channel")
 
-  // === Goal 绑定（循环任务用） ===
-  goalBindingGoalId         String? @map("goal_binding_goal_id")
-  goalBindingKeyResultId    String? @map("goal_binding_key_result_id")
-  goalBindingIncrementValue Float?  @map("goal_binding_increment_value")
+  // ============ 循环任务生成 ============
+  lastGeneratedDate DateTime? @map("last_generated_date")
+  generateAheadDays Int?      @map("generate_ahead_days")
 
-  // === 依赖关系 ===
+  // ============ Goal 绑定（JSON值对象） ============
+  goalBinding String? @map("goal_binding") /// JSON: TaskGoalBindingPersistenceDTO
+
+  // ============ 检查列表（JSON值对象） ============
+  checklist String? @map("checklist") /// JSON: ChecklistItemDefinition[]
+
+  // ============ 依赖关系状态 ============
   blockingReason   String? @map("blocking_reason")
   dependencyStatus String  @default("NONE") @map("dependency_status")
   isBlocked        Boolean @default(false) @map("is_blocked")
 
-  // === 审计字段 ===
+  // ============ 版本与审计 ============
   version   Int       @default(1)
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  // === 关系 ===
-  account   Account    @relation(fields: [identityId], references: [id], onDelete: Cascade)
-  goal      Goal?      @relation(fields: [goalId], references: [id], onDelete: SetNull)
-  keyResult KeyResult? @relation(fields: [keyResultId], references: [id], onDelete: SetNull)
+  // ============ 关系映射 ============
+  account Account     @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  folder  TaskFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
 
   // 子任务关系
   parentTask TaskTemplate?  @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
@@ -84,55 +107,68 @@ model TaskTemplate {
   predecessorDependencies TaskDependency[] @relation("PredecessorTaskDeps")
   successorDependencies   TaskDependency[] @relation("SuccessorTaskDeps")
 
-  // 实例（仅 RECURRING 生成）
+  // 实例
   instances TaskInstance[]
   history   TaskTemplateHistory[]
 
+  // ============ 索引优化 ============
   @@index([identityId])
-  @@index([taskType])
   @@index([status])
   @@index([importance])
-  @@index([goalId])
-  @@index([keyResultId])
+  @@index([folderId])
   @@index([parentTaskId])
-  @@index([dueDate])
   @@index([deletedAt])
   @@map("task_templates")
 }
 
+/// TaskInstance 聚合根 - 任务实例
+/// 从模板生成的具体任务实例，包含执行状态和时间追踪
 model TaskInstance {
-  id               String    @id
-  templateId       String    @map("template_id")
-  identityId       String    @map("identity_id")
-  instanceDate     DateTime  @map("instance_date")
-  status           String
-  note             String?
-  actualStartTime  DateTime? @map("actual_start_time")
-  actualEndTime    DateTime? @map("actual_end_time")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
-  timeConfig       String    @map("time_config")
-  completionRecord String?   @map("completion_record")
-  skipRecord       String?   @map("skip_record")
-  version          Int       @default(1)
-  deletedAt        DateTime? @map("deleted_at")
+  // ============ 主键与外键 ============
+  id         String @id
+  templateId String @map("template_id")
+  identityId String @map("identity_id")
 
+  // ============ 实例基本信息 ============
+  instanceDate DateTime @map("instance_date")
+  status       String /// TaskInstanceStatus
+  importance   String   @default("moderate") /// ImportanceLevel
+  priority     Int? /// 动态计算的优先级分数
+
+  // ============ 时间追踪 ============
+  timeConfig      String    @map("time_config") /// JSON: TaskTimeConfigDTO
+  actualStartTime DateTime? @map("actual_start_time")
+  actualEndTime   DateTime? @map("actual_end_time")
+
+  // ============ 备注 ============
+  comment String? /// 实例备注
+
+  // ============ 版本与审计 ============
+  version   Int       @default(1)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // ============ 关系映射 ============
   account  Account      @relation(fields: [identityId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   template TaskTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
+  // ============ 索引优化 ============
   @@index([templateId, instanceDate])
+  @@index([identityId, status])
+  @@index([identityId, instanceDate])
   @@map("task_instances")
 }
 
 model TaskDependency {
-  id                String   @id
-  predecessorTaskId String   @map("predecessor_task_id")
-  successorTaskId   String   @map("successor_task_id")
-  dependencyType    String   @default("FINISH_TO_START") @map("dependency_type")
-  lagDays           Int?     @map("lag_days")
-  version           Int      @default(1)
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id                String    @id
+  predecessorTaskId String    @map("predecessor_task_id")
+  successorTaskId   String    @map("successor_task_id")
+  dependencyType    String    @default("FINISH_TO_START") @map("dependency_type")
+  lagDays           Int?      @map("lag_days")
+  version           Int       @default(1)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
   deletedAt         DateTime? @map("deleted_at")
 
   predecessorTask TaskTemplate @relation("PredecessorTaskDeps", fields: [predecessorTaskId], references: [id], onDelete: Cascade)

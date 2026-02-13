@@ -66,12 +66,12 @@ model NotificationHistory {
 }
 
 model NotificationPreference {
-  id           String   @id
-  identityId   String   @unique @map("identity_id")
-  enabled      Boolean  @default(true)
+  id           String    @id
+  identityId   String    @unique @map("identity_id")
+  enabled      Boolean   @default(true)
   channels     String
   categories   String
-  doNotDisturb String?  @map("do_not_disturb")
+  doNotDisturb String?   @map("do_not_disturb")
   rateLimit    String?   @map("rate_limit")
   version      Int       @default(1)
   createdAt    DateTime  @default(now()) @map("created_at")
