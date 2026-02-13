@@ -14,6 +14,20 @@ export class NotificationChannelPrismaRepository
 {
   constructor(private prisma: PrismaClient) {}
 
+  /**
+   * Serialize optional JSON field for database storage
+   */
+  private serializeJsonField(value: any | null): string | null {
+    return value ? JSON.stringify(value) : null;
+  }
+
+  /**
+   * Parse optional JSON field from database
+   */
+  private parseJsonField(value: string | null): any | null {
+    return value ? JSON.parse(value) : null;
+  }
+
   private mapToDTO(data: any): NotificationChannelServerDTO {
     return {
       id: data.id,
@@ -21,10 +35,10 @@ export class NotificationChannelPrismaRepository
       channelType: data.channelType,
       status: data.status,
       recipient: data.recipient ?? null,
-      sendAttempts: data.retryCount ?? 0,
+      sendAttempts: data.retryCount,
       maxRetries: data.maxRetries,
-      error: data.error ? JSON.parse(data.error) : null,
-      response: data.response ? JSON.parse(data.response) : null,
+      error: this.parseJsonField(data.error),
+      response: this.parseJsonField(data.response),
       createdAt: data.createdAt instanceof Date
         ? data.createdAt.toISOString()
         : data.createdAt,
@@ -41,27 +55,33 @@ export class NotificationChannelPrismaRepository
     };
   }
 
+  private mapToPersistence(channel: NotificationChannelServerDTO) {
+    return {
+      id: channel.id,
+      notificationId: channel.notificationId,
+      channelType: channel.channelType,
+      status: channel.status,
+      recipient: channel.recipient,
+      retryCount: channel.sendAttempts,
+      maxRetries: channel.maxRetries,
+      error: this.serializeJsonField(channel.error),
+      response: this.serializeJsonField(channel.response),
+    };
+  }
+
   async save(channel: NotificationChannelServerDTO): Promise<void> {
+    const persistence = this.mapToPersistence(channel);
+    
     await this.prisma.notificationChannel.upsert({
       where: { id: channel.id },
-      create: {
-        id: channel.id,
-        notificationId: channel.notificationId,
-        channelType: channel.channelType,
-        status: channel.status,
-        recipient: channel.recipient,
-        retryCount: channel.sendAttempts,
-        maxRetries: channel.maxRetries,
-        error: channel.error ? JSON.stringify(channel.error) : null,
-        response: channel.response ? JSON.stringify(channel.response) : null,
-      },
+      create: persistence,
       update: {
-        status: channel.status,
-        recipient: channel.recipient,
-        retryCount: channel.sendAttempts,
-        maxRetries: channel.maxRetries,
-        error: channel.error ? JSON.stringify(channel.error) : null,
-        response: channel.response ? JSON.stringify(channel.response) : null,
+        status: persistence.status,
+        recipient: persistence.recipient,
+        retryCount: persistence.retryCount,
+        maxRetries: persistence.maxRetries,
+        error: persistence.error,
+        response: persistence.response,
       },
     });
   }
