@@ -7,6 +7,7 @@
 // Container
 // Smart Container
 export { ScheduleApplicationService, scheduleApplicationService } from './schedule-application.service';
+export { ScheduleClientService } from './schedule-client-service';
 
 export { ScheduleContainer } from '../infrastructure-client/schedule.container';
 

@@ -7,7 +7,8 @@
  * Types imported from @dailyuse/contracts/schedule.
  */
 
-import type { IHttpClient } from '@dailyuse/http-client';
+import type { Result } from '@dailyuse/contracts/result';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   ScheduleClientDTO,
   CreateScheduleRequest,
@@ -23,7 +24,7 @@ import type {
 // ============ Transport Client Interfaces ============
 // Module only defines what it needs — concrete implementations injected from App layer.
 
-// IHttpClient imported from @dailyuse/http-client
+// IResultHttpClient imported from @dailyuse/http-client
 
 /**
  * IPC Client interface.
@@ -60,31 +61,31 @@ export interface ModuleStatisticsClientDTO {
  */
 export interface IScheduleEventApiClient {
   // ===== Schedule Event CRUD =====
-  createSchedule(data: CreateScheduleRequest): Promise<ScheduleClientDTO>;
-  getSchedule(uuid: string): Promise<ScheduleClientDTO>;
-  getSchedulesByAccount(): Promise<ScheduleClientDTO[]>;
-  getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequest): Promise<ScheduleClientDTO[]>;
-  updateSchedule(uuid: string, data: UpdateScheduleRequest): Promise<ScheduleClientDTO>;
-  deleteSchedule(uuid: string): Promise<void>;
+  createSchedule(data: CreateScheduleRequest): Promise<Result<ScheduleClientDTO>>;
+  getSchedule(uuid: string): Promise<Result<ScheduleClientDTO>>;
+  getSchedulesByAccount(): Promise<Result<ScheduleClientDTO[]>>;
+  getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequest): Promise<Result<ScheduleClientDTO[]>>;
+  updateSchedule(uuid: string, data: UpdateScheduleRequest): Promise<Result<ScheduleClientDTO>>;
+  deleteSchedule(uuid: string): Promise<Result<void>>;
 
   // ===== Schedule Conflict Detection =====
-  getScheduleConflicts(uuid: string): Promise<ConflictDetectionResult>;
+  getScheduleConflicts(uuid: string): Promise<Result<ConflictDetectionResult>>;
   detectConflicts(params: {
     userId: string;
     startTime: number;
     endTime: number;
     excludeUuid?: string;
-  }): Promise<ConflictDetectionResult>;
+  }): Promise<Result<ConflictDetectionResult>>;
   createScheduleWithConflictDetection(
     request: CreateScheduleRequest,
-  ): Promise<{
+  ): Promise<Result<{
     schedule: ScheduleClientDTO;
     conflicts?: ConflictDetectionResult;
-  }>;
+  }>>;
   resolveConflict(
     scheduleUuid: string,
     request: ResolveConflictRequest,
-  ): Promise<{
+  ): Promise<Result<{
     schedule: ScheduleClientDTO;
     conflicts: ConflictDetectionResult;
     applied: {
@@ -93,7 +94,7 @@ export interface IScheduleEventApiClient {
       previousEndTime?: number;
       changes: string[];
     };
-  }>;
+  }>>;
 }
 
 /**
@@ -103,30 +104,30 @@ export interface IScheduleEventApiClient {
  */
 export interface IScheduleTaskApiClient {
   // ===== Schedule Task CRUD =====
-  createTask(request: CreateScheduleTaskRequest): Promise<ScheduleTaskClientDTO>;
-  createTasksBatch(tasks: CreateScheduleTaskRequest[]): Promise<ScheduleTaskClientDTO[]>;
-  getTasks(): Promise<{ tasks: ScheduleTaskClientDTO[]; total: number }>;
-  getTaskById(taskUuid: string): Promise<ScheduleTaskClientDTO>;
-  getDueTasks(params?: { beforeTime?: string; limit?: number }): Promise<ScheduleTaskClientDTO[]>;
-  getTaskBySource(sourceModule: SourceModule, sourceEntityId: string): Promise<ScheduleTaskClientDTO[]>;
+  createTask(request: CreateScheduleTaskRequest): Promise<Result<ScheduleTaskClientDTO>>;
+  createTasksBatch(tasks: CreateScheduleTaskRequest[]): Promise<Result<ScheduleTaskClientDTO[]>>;
+  getTasks(): Promise<Result<{ tasks: ScheduleTaskClientDTO[]; total: number }>>;
+  getTaskById(taskUuid: string): Promise<Result<ScheduleTaskClientDTO>>;
+  getDueTasks(params?: { beforeTime?: string; limit?: number }): Promise<Result<ScheduleTaskClientDTO[]>>;
+  getTaskBySource(sourceModule: SourceModule, sourceEntityId: string): Promise<Result<ScheduleTaskClientDTO[]>>;
 
   // ===== Schedule Task Status Management =====
-  pauseTask(taskUuid: string): Promise<void>;
-  resumeTask(taskUuid: string): Promise<void>;
-  completeTask(taskUuid: string, reason?: string): Promise<void>;
-  cancelTask(taskUuid: string, reason?: string): Promise<void>;
-  deleteTask(taskUuid: string): Promise<void>;
-  deleteTasksBatch(taskUuids: string[]): Promise<void>;
+  pauseTask(taskUuid: string): Promise<Result<void>>;
+  resumeTask(taskUuid: string): Promise<Result<void>>;
+  completeTask(taskUuid: string, reason?: string): Promise<Result<void>>;
+  cancelTask(taskUuid: string, reason?: string): Promise<Result<void>>;
+  deleteTask(taskUuid: string): Promise<Result<void>>;
+  deleteTasksBatch(taskUuids: string[]): Promise<Result<void>>;
   updateTaskMetadata(
     taskUuid: string,
     metadata: { payload?: unknown; tagsToAdd?: string[]; tagsToRemove?: string[] },
-  ): Promise<void>;
+  ): Promise<Result<void>>;
 
   // ===== Schedule Statistics =====
-  getStatistics(): Promise<ScheduleStatisticsClientDTO>;
-  getModuleStatistics(module: SourceModule): Promise<ModuleStatisticsClientDTO>;
-  getAllModuleStatistics(): Promise<Record<SourceModule, ModuleStatisticsClientDTO>>;
-  recalculateStatistics(): Promise<ScheduleStatisticsClientDTO>;
-  resetStatistics(): Promise<void>;
-  deleteStatistics(): Promise<void>;
+  getStatistics(): Promise<Result<ScheduleStatisticsClientDTO>>;
+  getModuleStatistics(module: SourceModule): Promise<Result<ModuleStatisticsClientDTO>>;
+  getAllModuleStatistics(): Promise<Result<Record<SourceModule, ModuleStatisticsClientDTO>>>;
+  recalculateStatistics(): Promise<Result<ScheduleStatisticsClientDTO>>;
+  resetStatistics(): Promise<Result<void>>;
+  deleteStatistics(): Promise<Result<void>>;
 }

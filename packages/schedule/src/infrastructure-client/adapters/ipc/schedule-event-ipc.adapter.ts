@@ -4,6 +4,8 @@
  * IPC implementation of IScheduleEventApiClient for Electron desktop apps.
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import { tryCatch } from '@dailyuse/contracts/result';
 import type {
   IIpcClient,
   IScheduleEventApiClient,
@@ -40,36 +42,36 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
 
   // ===== Schedule Event CRUD =====
 
-  async createSchedule(data: CreateScheduleRequest): Promise<ScheduleClientDTO> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.CREATE_SCHEDULE, data);
+  async createSchedule(data: CreateScheduleRequest): Promise<Result<ScheduleClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.CREATE_SCHEDULE, data));
   }
 
-  async getSchedule(uuid: string): Promise<ScheduleClientDTO> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULE, uuid);
+  async getSchedule(uuid: string): Promise<Result<ScheduleClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULE, uuid));
   }
 
-  async getSchedulesByAccount(): Promise<ScheduleClientDTO[]> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_ACCOUNT);
+  async getSchedulesByAccount(): Promise<Result<ScheduleClientDTO[]>> {
+    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_ACCOUNT));
   }
 
   async getSchedulesByTimeRange(
     params: GetSchedulesByTimeRangeRequest,
-  ): Promise<ScheduleClientDTO[]> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_TIME_RANGE, params);
+  ): Promise<Result<ScheduleClientDTO[]>> {
+    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_TIME_RANGE, params));
   }
 
-  async updateSchedule(uuid: string, data: UpdateScheduleRequest): Promise<ScheduleClientDTO> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.UPDATE_SCHEDULE, uuid, data);
+  async updateSchedule(uuid: string, data: UpdateScheduleRequest): Promise<Result<ScheduleClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.UPDATE_SCHEDULE, uuid, data));
   }
 
-  async deleteSchedule(uuid: string): Promise<void> {
-    await this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.DELETE_SCHEDULE, uuid);
+  async deleteSchedule(uuid: string): Promise<Result<void>> {
+    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.DELETE_SCHEDULE, uuid));
   }
 
   // ===== Schedule Conflict Detection =====
 
-  async getScheduleConflicts(uuid: string): Promise<ConflictDetectionResult> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_CONFLICTS, uuid);
+  async getScheduleConflicts(uuid: string): Promise<Result<ConflictDetectionResult>> {
+    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_CONFLICTS, uuid));
   }
 
   async detectConflicts(params: {
@@ -77,26 +79,26 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
     startTime: number;
     endTime: number;
     excludeUuid?: string;
-  }): Promise<ConflictDetectionResult> {
-    return this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.DETECT_CONFLICTS, params);
+  }): Promise<Result<ConflictDetectionResult>> {
+    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.DETECT_CONFLICTS, params));
   }
 
   async createScheduleWithConflictDetection(
     request: CreateScheduleRequest,
-  ): Promise<{
+  ): Promise<Result<{
     schedule: ScheduleClientDTO;
     conflicts?: ConflictDetectionResult;
-  }> {
-    return this.ipcClient.invoke(
+  }>> {
+    return tryCatch(() => this.ipcClient.invoke(
       SCHEDULE_EVENT_CHANNELS.CREATE_WITH_CONFLICT_DETECTION,
       request,
-    );
+    ));
   }
 
   async resolveConflict(
     scheduleUuid: string,
     request: ResolveConflictRequest,
-  ): Promise<{
+  ): Promise<Result<{
     schedule: ScheduleClientDTO;
     conflicts: ConflictDetectionResult;
     applied: {
@@ -105,12 +107,12 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
       previousEndTime?: number;
       changes: string[];
     };
-  }> {
-    return this.ipcClient.invoke(
+  }>> {
+    return tryCatch(() => this.ipcClient.invoke(
       SCHEDULE_EVENT_CHANNELS.RESOLVE_CONFLICT,
       scheduleUuid,
       request,
-    );
+    ));
   }
 }
 

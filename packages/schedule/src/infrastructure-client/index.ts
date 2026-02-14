@@ -16,7 +16,6 @@ export {
 export type {
   IScheduleTaskApiClient,
   IScheduleEventApiClient,
-  IHttpClient,
   IIpcClient,
   ScheduleStatisticsClientDTO,
   ModuleStatisticsClientDTO,
