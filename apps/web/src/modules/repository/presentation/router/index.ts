@@ -9,13 +9,23 @@ export const repositoryRoutes: RouteRecordRaw[] = [
   {
     path: '/repositories',
     name: 'repositories',
-    component: () => import('../views/RepositoryView.vue'), // ✅ Obsidian 风格主界面
+    component: () => import('../views/RepositoryLinearView.vue'),
     meta: {
       title: '知识仓库',
       showInNav: true,
-      icon: 'mdi-book-open-variant',
+      icon: 'lucide:book-open',
       order: 7,
       requiresAuth: true,
+    },
+  },
+  {
+    path: '/document/:id',
+    name: 'document-edit',
+    component: () => import('../../../editor/presentation/views/EditorLinearView.vue'),
+    meta: {
+      title: '编辑文档',
+      requiresAuth: true,
+      hideSidebar: true, // Assuming there is a layout logic to hide sidebar
     },
   },
 ];

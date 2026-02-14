@@ -5,7 +5,7 @@
  * Modules define their own transport interfaces and accept injected implementations.
  */
 
-import type { IHttpClient } from '@dailyuse/http-client';
+export type { IHttpClient } from '@dailyuse/http-client';
 
 // Re-export the port interface
 export type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';

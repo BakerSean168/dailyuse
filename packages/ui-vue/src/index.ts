@@ -88,3 +88,8 @@ export * from './components/task';
 // ==========================================
 // 业务代码应在入口处引入：
 // import '@dailyuse/ui-core/styles/globals.css';
+
+// ==========================================
+// 6. Linear Components (Custom Composite)
+// ==========================================
+export * from './components/linear';
