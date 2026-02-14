@@ -15,7 +15,6 @@ export {
   SchedulePrismaRepository,
   ScheduleTaskPrismaRepository,
   ScheduleExecutionPrismaRepository,
-  ScheduleStatisticsPrismaRepository,
 } from './adapters/prisma';
 
 // Adapters - SQLite
@@ -23,7 +22,6 @@ export {
   SqliteScheduleRepository,
   SqliteScheduleTaskRepository,
   SqliteScheduleExecutionRepository,
-  SqliteScheduleStatisticsRepository,
 } from './adapters/sqlite';
 export { SchedulerBootstrap } from './scheduler-bootstrap';
 
