@@ -5,6 +5,8 @@
  * Uses Electron's contextBridge API for secure IPC communication.
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import { tryCatch } from '@dailyuse/contracts/result';
 import type {
   ITaskTemplateApiClient,
   IIpcClient,
@@ -21,15 +23,15 @@ import type {
 /**
  * TaskTemplateIpcAdapter
  *
- * IPC 实现的任务模�?API 客户端（用于 Electron 桌面应用�?
+ * IPC 实现的任务模板 API 客户端（用于 Electron 桌面应用）
  */
 export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
   constructor(private readonly ipcClient: IIpcClient) {}
 
   // ===== Task Template CRUD =====
 
-  async createTaskTemplate(request: CreateTaskTemplateRequest): Promise<TaskTemplateClientDTO> {
-    return this.ipcClient.invoke('task-template:create', request);
+  async createTaskTemplate(request: CreateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-template:create', request));
   }
 
   async getTaskTemplates(params?: {
@@ -41,55 +43,57 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     importance?: string;
     urgency?: string;
     tags?: string[];
-  }): Promise<{ templates: TaskTemplateClientDTO[]; total: number }> {
-    return this.ipcClient.invoke('task-template:list', params);
+  }): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>> {
+    return tryCatch(() => this.ipcClient.invoke('task-template:list', params));
   }
 
-  async getTaskTemplateById(uuid: string, includeChildren = false): Promise<TaskTemplateClientDTO> {
-    return this.ipcClient.invoke('task-template:get', { uuid, includeChildren });
+  async getTaskTemplateById(uuid: string, includeChildren = false): Promise<Result<TaskTemplateClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-template:get', { uuid, includeChildren }));
   }
 
   async updateTaskTemplate(
     uuid: string,
     request: UpdateTaskTemplateRequest,
-  ): Promise<TaskTemplateClientDTO> {
-    return this.ipcClient.invoke('task-template:update', { uuid, ...request });
+  ): Promise<Result<TaskTemplateClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-template:update', { uuid, ...request }));
   }
 
-  async deleteTaskTemplate(uuid: string): Promise<void> {
-    await this.ipcClient.invoke('task-template:delete', { uuid });
+  async deleteTaskTemplate(uuid: string): Promise<Result<void>> {
+    return tryCatch(() => this.ipcClient.invoke('task-template:delete', { uuid }));
   }
+
   // ===== 方法别名（为了兼容 View 层调用）=====
 
-  async create(request: CreateTaskTemplateRequest): Promise<TaskTemplateClientDTO> {
+  async create(request: CreateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>> {
     return this.createTaskTemplate(request);
   }
 
-  async getByUuid(uuid: string): Promise<TaskTemplateClientDTO> {
+  async getByUuid(uuid: string): Promise<Result<TaskTemplateClientDTO>> {
     return this.getTaskTemplateById(uuid);
   }
 
-  async update(uuid: string, request: UpdateTaskTemplateRequest): Promise<TaskTemplateClientDTO> {
+  async update(uuid: string, request: UpdateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>> {
     return this.updateTaskTemplate(uuid, request);
   }
 
   // ===== 特殊查询方法 =====
 
-  async getTasksWithPrioritySorting(params?: { limit?: number }): Promise<TaskTemplateClientDTO[]> {
-    return this.ipcClient.invoke('task-template:get-by-priority', { params });
-  }
-  // ===== Task Template 状态管�?=====
-
-  async activateTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {
-    return this.ipcClient.invoke('task-template:activate', { uuid });
+  async getTasksWithPrioritySorting(params?: { limit?: number }): Promise<Result<TaskTemplateClientDTO[]>> {
+    return tryCatch(() => this.ipcClient.invoke('task-template:get-by-priority', { params }));
   }
 
-  async pauseTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {
-    return this.ipcClient.invoke('task-template:pause', { uuid });
+  // ===== Task Template 状态管理 =====
+
+  async activateTaskTemplate(uuid: string): Promise<Result<TaskTemplateClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-template:activate', { uuid }));
   }
 
-  async archiveTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {
-    return this.ipcClient.invoke('task-template:archive', { uuid });
+  async pauseTaskTemplate(uuid: string): Promise<Result<TaskTemplateClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-template:pause', { uuid }));
+  }
+
+  async archiveTaskTemplate(uuid: string): Promise<Result<TaskTemplateClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-template:archive', { uuid }));
   }
 
   // ===== 聚合根控制：任务实例管理 =====
@@ -97,23 +101,23 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
   async generateInstances(
     templateUuid: string,
     request: GenerateInstancesRequest,
-  ): Promise<TaskInstanceClientDTO[]> {
-    return this.ipcClient.invoke('task-template:generate-instances', {
+  ): Promise<Result<TaskInstanceClientDTO[]>> {
+    return tryCatch(() => this.ipcClient.invoke('task-template:generate-instances', {
       templateUuid,
       request,
-    });
+    }));
   }
 
   async getInstancesByDateRange(
     templateUuid: string,
     from: number,
     to: number,
-  ): Promise<TaskInstanceClientDTO[]> {
-    return this.ipcClient.invoke('task-template:get-instances', {
+  ): Promise<Result<TaskInstanceClientDTO[]>> {
+    return tryCatch(() => this.ipcClient.invoke('task-template:get-instances', {
       templateUuid,
       from,
       to,
-    });
+    }));
   }
 
   // ===== 聚合根控制：目标关联管理 =====
@@ -121,15 +125,15 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
   async bindToGoal(
     templateUuid: string,
     request: BindToGoalRequest,
-  ): Promise<TaskTemplateClientDTO> {
-    return this.ipcClient.invoke('task-template:bind-goal', {
+  ): Promise<Result<TaskTemplateClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-template:bind-goal', {
       templateUuid,
       request,
-    });
+    }));
   }
 
-  async unbindFromGoal(templateUuid: string): Promise<TaskTemplateClientDTO> {
-    return this.ipcClient.invoke('task-template:unbind-goal', { templateUuid });
+  async unbindFromGoal(templateUuid: string): Promise<Result<TaskTemplateClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-template:unbind-goal', { templateUuid }));
   }
 }
 

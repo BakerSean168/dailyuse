@@ -4,6 +4,8 @@
  * IPC implementation of ITaskInstanceApiClient for Electron desktop.
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import { tryCatch } from '@dailyuse/contracts/result';
 import type {
   ITaskInstanceApiClient,
   IIpcClient,
@@ -17,7 +19,7 @@ import type {
 /**
  * TaskInstanceIpcAdapter
  *
- * IPC 实现的任务实�?API 客户端（用于 Electron 桌面应用�?
+ * IPC 实现的任务实例 API 客户端（用于 Electron 桌面应用）
  */
 export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
   constructor(private readonly ipcClient: IIpcClient) {}
@@ -31,45 +33,45 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
     status?: string;
     startDate?: number;
     endDate?: number;
-  }): Promise<TaskInstanceClientDTO[]> {
-    return this.ipcClient.invoke('task-instance:list', params);
+  }): Promise<Result<TaskInstanceClientDTO[]>> {
+    return tryCatch(() => this.ipcClient.invoke('task-instance:list', params));
   }
 
-  async getTaskInstanceById(uuid: string): Promise<TaskInstanceClientDTO> {
-    return this.ipcClient.invoke('task-instance:get', { uuid });
+  async getTaskInstanceById(uuid: string): Promise<Result<TaskInstanceClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-instance:get', { uuid }));
   }
 
-  async deleteTaskInstance(uuid: string): Promise<void> {
-    await this.ipcClient.invoke('task-instance:delete', { uuid });
+  async deleteTaskInstance(uuid: string): Promise<Result<void>> {
+    return tryCatch(() => this.ipcClient.invoke('task-instance:delete', { uuid }));
   }
 
-  // ===== Task Instance 状态管�?=====
+  // ===== Task Instance 状态管理 =====
 
-  async startTaskInstance(uuid: string): Promise<TaskInstanceClientDTO> {
-    return this.ipcClient.invoke('task-instance:start', { uuid });
+  async startTaskInstance(uuid: string): Promise<Result<TaskInstanceClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-instance:start', { uuid }));
   }
 
   async completeTaskInstance(
     uuid: string,
     request?: CompleteTaskInstanceRequest,
-  ): Promise<TaskInstanceClientDTO> {
-    return this.ipcClient.invoke('task-instance:complete', { uuid, request });
+  ): Promise<Result<TaskInstanceClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-instance:complete', { uuid, request }));
   }
 
   async skipTaskInstance(
     uuid: string,
     request?: SkipTaskInstanceRequest,
-  ): Promise<TaskInstanceClientDTO> {
-    return this.ipcClient.invoke('task-instance:skip', { uuid, request });
+  ): Promise<Result<TaskInstanceClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-instance:skip', { uuid, request }));
   }
 
   // ===== 批量操作 =====
 
-  async checkExpiredInstances(): Promise<{
+  async checkExpiredInstances(): Promise<Result<{
     count: number;
     instances: TaskInstanceClientDTO[];
-  }> {
-    return this.ipcClient.invoke('task-instance:check-expired');
+  }>> {
+    return tryCatch(() => this.ipcClient.invoke('task-instance:check-expired'));
   }
 }
 

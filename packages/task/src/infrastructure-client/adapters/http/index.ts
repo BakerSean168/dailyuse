@@ -5,7 +5,7 @@
  * Provides factory function to create all HTTP adapters at once.
  */
 
-import type { IHttpClient } from '../types';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 import { TaskTemplateHttpAdapter } from './task-template-http.adapter';
 import { TaskInstanceHttpAdapter } from './task-instance-http.adapter';
 import { TaskDependencyHttpAdapter } from './task-dependency-http.adapter';
@@ -25,13 +25,13 @@ export interface TaskHttpAdapters {
 }
 
 /**
- * Create all Task HTTP adapters from a single IHttpClient instance.
- * The concrete implementation (e.g. AxiosHttpClient) is created at the App layer.
+ * Create all Task HTTP adapters from a single IResultHttpClient instance.
+ * The concrete implementation (e.g. ResultHttpClient) is created at the App layer.
  *
  * @example
  * ```ts
  * // apps/web/src/infrastructure/task.ts
- * const httpClient = createHttpClient({ baseURL: '/api' });
+ * const httpClient = createResultHttpClient({ baseURL: '/api' });
  * const adapters = createTaskHttpAdapters(httpClient);
  * TaskContainer.getInstance()
  *   .registerTemplateApiClient(adapters.template)
@@ -40,7 +40,7 @@ export interface TaskHttpAdapters {
  * ```
  */
 export function createTaskHttpAdapters(
-  httpClient: IHttpClient,
+  httpClient: IResultHttpClient,
 ): TaskHttpAdapters {
   return {
     template: new TaskTemplateHttpAdapter(httpClient),

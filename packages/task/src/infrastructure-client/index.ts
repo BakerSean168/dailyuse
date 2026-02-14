@@ -18,7 +18,6 @@ export type {
   ITaskInstanceApiClient,
   ITaskDependencyApiClient,
   ITaskStatisticsApiClient,
-  IHttpClient,
   IIpcClient,
 } from './adapters/types';
 
@@ -27,7 +26,6 @@ export {
   TaskTemplateHttpAdapter,
   TaskInstanceHttpAdapter,
   TaskDependencyHttpAdapter,
-  TaskStatisticsHttpAdapter,
   createTaskHttpAdapters,
   type TaskHttpAdapters,
 } from './adapters/http';
@@ -37,7 +35,6 @@ export {
   TaskTemplateIpcAdapter,
   TaskInstanceIpcAdapter,
   TaskDependencyIpcAdapter,
-  TaskStatisticsIpcAdapter,
   createTaskIpcAdapters,
   type TaskIpcAdapters,
 } from './adapters/ipc';

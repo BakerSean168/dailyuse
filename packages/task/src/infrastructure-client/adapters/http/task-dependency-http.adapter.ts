@@ -5,9 +5,10 @@
  * Uses IHttpClient for making HTTP requests.
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   ITaskDependencyApiClient,
-  IHttpClient,
 } from '../types';
 import type {
   TaskDependencyClientDTO,
@@ -26,41 +27,41 @@ import type {
 export class TaskDependencyHttpAdapter implements ITaskDependencyApiClient {
   private readonly baseUrl = '/tasks';
 
-  constructor(private readonly httpClient: IHttpClient) {}
+  constructor(private readonly httpClient: IResultHttpClient) {}
 
   async createDependency(
     taskUuid: string,
     request: CreateTaskDependencyRequest,
-  ): Promise<TaskDependencyClientDTO> {
+  ): Promise<Result<TaskDependencyClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${taskUuid}/dependencies`, request);
   }
 
-  async getDependencies(taskUuid: string): Promise<TaskDependencyClientDTO[]> {
+  async getDependencies(taskUuid: string): Promise<Result<TaskDependencyClientDTO[]>> {
     return this.httpClient.get(`${this.baseUrl}/${taskUuid}/dependencies`);
   }
 
-  async getDependents(taskUuid: string): Promise<TaskDependencyClientDTO[]> {
+  async getDependents(taskUuid: string): Promise<Result<TaskDependencyClientDTO[]>> {
     return this.httpClient.get(`${this.baseUrl}/${taskUuid}/dependents`);
   }
 
-  async getDependencyChain(taskUuid: string): Promise<DependencyChainClientDTO> {
+  async getDependencyChain(taskUuid: string): Promise<Result<DependencyChainClientDTO>> {
     return this.httpClient.get(`${this.baseUrl}/${taskUuid}/dependency-chain`);
   }
 
   async validateDependency(
     request: ValidateDependencyRequest,
-  ): Promise<ValidateDependencyResponse> {
+  ): Promise<Result<ValidateDependencyResponse>> {
     return this.httpClient.post(`${this.baseUrl}/dependencies/validate`, request);
   }
 
-  async deleteDependency(uuid: string): Promise<void> {
-    await this.httpClient.delete(`${this.baseUrl}/dependencies/${uuid}`);
+  async deleteDependency(uuid: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.baseUrl}/dependencies/${uuid}`);
   }
 
   async updateDependency(
     uuid: string,
     request: UpdateTaskDependencyRequest,
-  ): Promise<TaskDependencyClientDTO> {
+  ): Promise<Result<TaskDependencyClientDTO>> {
     return this.httpClient.put(`${this.baseUrl}/dependencies/${uuid}`, request);
   }
 }
@@ -69,7 +70,7 @@ export class TaskDependencyHttpAdapter implements ITaskDependencyApiClient {
  * Factory function to create TaskDependencyHttpAdapter
  */
 export function createTaskDependencyHttpAdapter(
-  httpClient: IHttpClient,
+  httpClient: IResultHttpClient,
 ): TaskDependencyHttpAdapter {
   return new TaskDependencyHttpAdapter(httpClient);
 }

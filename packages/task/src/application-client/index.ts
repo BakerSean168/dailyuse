@@ -8,6 +8,7 @@
 // Smart Container (Single Source of Truth)
 // ============================================================
 export { TaskApplicationService, taskApplicationService } from './task-application.service';
+export { TaskClientService } from './task-client-service';
 
 export { TaskContainer } from '../infrastructure-client/task.container';
 
