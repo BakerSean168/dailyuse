@@ -54,6 +54,24 @@ export interface HttpClient {
 export type IHttpClient = HttpClient;
 
 // ============================================================================
+// Result HTTP Client Interface
+// ============================================================================
+
+/**
+ * Result HTTP Client 接口
+ *
+ * 所有方法返回 `Promise<Result<T>>`，永不抛出异常。
+ * 适配器可以依赖此接口而不依赖具体实现。
+ */
+export interface IResultHttpClient {
+  get<T = unknown>(url: string, config?: { params?: Record<string, unknown> }): Promise<import('@dailyuse/contracts/result').Result<T>>;
+  post<T = unknown>(url: string, data?: unknown, config?: { params?: Record<string, unknown> }): Promise<import('@dailyuse/contracts/result').Result<T>>;
+  put<T = unknown>(url: string, data?: unknown, config?: { params?: Record<string, unknown> }): Promise<import('@dailyuse/contracts/result').Result<T>>;
+  patch<T = unknown>(url: string, data?: unknown, config?: { params?: Record<string, unknown> }): Promise<import('@dailyuse/contracts/result').Result<T>>;
+  delete<T = unknown>(url: string, config?: { params?: Record<string, unknown> }): Promise<import('@dailyuse/contracts/result').Result<T>>;
+}
+
+// ============================================================================
 // Axios HTTP Client Configuration
 // ============================================================================
 
