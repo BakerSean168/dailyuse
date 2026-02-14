@@ -20,6 +20,9 @@ export type { GoalTemplate, KeyResultTemplate } from './GoalTemplates';
 // ===== Smart Container Pattern - RECOMMENDED =====
 export { GoalApplicationService, goalApplicationService } from './goal-application.service';
 
+// ===== Constructor-Injected Service (Result-based) =====
+export { GoalClientService } from './goal-client-service';
+
 // ===== Use Cases (for direct access if needed) =====
 export {
   // Goal Management Use Cases
