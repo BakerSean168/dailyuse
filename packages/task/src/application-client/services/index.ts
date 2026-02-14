@@ -44,9 +44,6 @@ export { UpdateTaskDependency } from './update-task-dependency';
 export { DeleteTaskDependency } from './delete-task-dependency';
 
 // Task Statistics Use Cases
-export { GetTaskStatistics } from './get-task-statistics';
-export { RecalculateTaskStatistics } from './recalculate-task-statistics';
-export { DeleteTaskStatistics } from './delete-task-statistics';
 export { UpdateTemplateStats } from './update-template-stats';
 export { UpdateInstanceStats } from './update-instance-stats';
 export { UpdateCompletionStats } from './update-completion-stats';
