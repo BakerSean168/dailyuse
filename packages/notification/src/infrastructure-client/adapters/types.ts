@@ -7,6 +7,7 @@
  * Types imported from @dailyuse/contracts/notification.
  */
 
+import type { IHttpClient } from '@dailyuse/http-client';
 import type {
   NotificationClientDTO,
 } from '@dailyuse/contracts/notification';
@@ -14,13 +15,7 @@ import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
 
 // ============ Transport Client Interfaces ============
 
-export interface IHttpClient {
-  get<T>(url: string, options?: { params?: Record<string, unknown> }): Promise<T>;
-  post<T>(url: string, data?: unknown, options?: { params?: Record<string, unknown> }): Promise<T>;
-  put<T>(url: string, data?: unknown, options?: { params?: Record<string, unknown> }): Promise<T>;
-  patch<T>(url: string, data?: unknown, options?: { params?: Record<string, unknown> }): Promise<T>;
-  delete<T>(url: string, options?: { params?: Record<string, unknown> }): Promise<T>;
-}
+// IHttpClient imported from @dailyuse/http-client
 
 export interface IIpcClient {
   invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;

@@ -5,18 +5,12 @@
  * Modules define their own transport interfaces and accept injected implementations.
  */
 
+import type { IHttpClient } from '@dailyuse/http-client';
+
 // Re-export the port interface from application-client
 export type { IAccountApiClient } from '../../application-client';
 
-/**
- * HTTP Client interface - local abstraction over HTTP transport
- */
-export interface IHttpClient {
-  get<T = any>(url: string, config?: { params?: any }): Promise<T>;
-  post<T = any>(url: string, data?: any): Promise<T>;
-  put<T = any>(url: string, data?: any): Promise<T>;
-  delete<T = any>(url: string): Promise<T>;
-}
+// IHttpClient imported from @dailyuse/http-client
 
 /**
  * IPC Client interface - local abstraction over IPC transport (Electron)

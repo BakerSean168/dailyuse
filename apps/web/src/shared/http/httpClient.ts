@@ -12,6 +12,7 @@
 
 import {
   AxiosHttpClient,
+  ResultHttpClient,
   type TokenProvider,
 } from '@dailyuse/http-client';
 
@@ -49,16 +50,11 @@ export const tokenProvider: TokenProvider = {
 // HTTP Client 实例
 // ────────────────────────────────────────
 
-/**
- * 全局 HTTP Client 实例
- *
- * 由 web app 独占，负责：
- * - 注入 Auth Token
- * - 剥离后端 HttpResponse<T> 信封
- * - 错误统一转换为 HttpClientError
- * - 401 Token 刷新 + 重试
- */
-export const httpClient = new AxiosHttpClient({
+// ────────────────────────────────────────
+// HTTP Client Configuration (Shared)
+// ────────────────────────────────────────
+
+const httpClientConfig = {
   baseURL: '/api/v1',
   timeout: 15000,
   tokenProvider,
@@ -105,4 +101,35 @@ export const httpClient = new AxiosHttpClient({
     window.location.href = '/auth';
   },
   enableLogging: import.meta.env.DEV,
-});
+};
+
+/**
+ * 全局 HTTP Client 实例 (Legacy - throws errors)
+ *
+ * 由 web app 独占，负责：
+ * - 注入 Auth Token
+ * - 剥离后端 HttpResponse<T> 信封
+ * - 错误统一转换为 HttpClientError
+ * - 401 Token 刷新 + 重试
+ *
+ * @deprecated 新代码请使用 resultHttpClient
+ */
+export const httpClient = new AxiosHttpClient(httpClientConfig);
+
+/**
+ * Result HTTP Client 实例 (Recommended)
+ *
+ * 所有方法返回 Promise<Result<T>>，永不抛出异常。
+ * 用于所有新的模块和重构后的模块。
+ *
+ * @example
+ * ```ts
+ * const result = await resultHttpClient.get<User[]>('/users');
+ * if (result.ok) {
+ *   console.log(result.data);
+ * } else {
+ *   console.error(result.error.message);
+ * }
+ * ```
+ */
+export const resultHttpClient = new ResultHttpClient(httpClientConfig);

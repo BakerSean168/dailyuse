@@ -43,6 +43,7 @@
 export type {
   HttpClient,
   IHttpClient,
+  IResultHttpClient,
   HttpRequestOptions,
   HttpClientConfig,
   AxiosHttpClientConfig,

@@ -7,6 +7,7 @@
  * Types imported from @dailyuse/contracts/schedule.
  */
 
+import type { IHttpClient } from '@dailyuse/http-client';
 import type {
   ScheduleClientDTO,
   CreateScheduleRequest,
@@ -22,17 +23,7 @@ import type {
 // ============ Transport Client Interfaces ============
 // Module only defines what it needs — concrete implementations injected from App layer.
 
-/**
- * HTTP Client interface.
- * Satisfied by AxiosHttpClient / ResultHttpClient at the App level.
- */
-export interface IHttpClient {
-  get<T>(url: string, options?: { params?: Record<string, unknown> }): Promise<T>;
-  post<T>(url: string, data?: unknown, options?: { params?: Record<string, unknown> }): Promise<T>;
-  put<T>(url: string, data?: unknown, options?: { params?: Record<string, unknown> }): Promise<T>;
-  patch<T>(url: string, data?: unknown, options?: { params?: Record<string, unknown> }): Promise<T>;
-  delete<T>(url: string, options?: { params?: Record<string, unknown> }): Promise<T>;
-}
+// IHttpClient imported from @dailyuse/http-client
 
 /**
  * IPC Client interface.
