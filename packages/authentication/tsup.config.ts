@@ -17,8 +17,10 @@ export default defineConfig({
   external: [
     '@dailyuse/utils',
     '@dailyuse/contracts',
+    '@dailyuse/contracts/result',
     '@dailyuse/database',
     '@dailyuse/domain-shared',
+    '@dailyuse/http-client',
     'argon2',
     'express',
     'jsonwebtoken',

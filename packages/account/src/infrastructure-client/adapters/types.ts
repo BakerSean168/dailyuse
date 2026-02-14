@@ -2,15 +2,15 @@
  * Account Module - Adapter Types
  *
  * Local transport interfaces for dependency inversion.
- * Modules define their own transport interfaces and accept injected implementations.
  */
 
-import type { IHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 
 // Re-export the port interface from application-client
 export type { IAccountApiClient } from '../../application-client';
 
-// IHttpClient imported from @dailyuse/http-client
+// Re-export IResultHttpClient for adapter use
+export type { IResultHttpClient };
 
 /**
  * IPC Client interface - local abstraction over IPC transport (Electron)

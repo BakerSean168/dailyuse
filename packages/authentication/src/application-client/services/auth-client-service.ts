@@ -4,8 +4,10 @@
  *
  * 框架无关的纯 TypeScript 类，
  * 可在 Vue / React / Electron 中复用。
+ * 所有方法返回 Result<T>，不抛出异常。
  */
 
+import type { Result } from '@dailyuse/contracts/result';
 import type { IAuthApiClient } from '../ports/auth-api-client.port';
 import type {
   LoginByEmailReq,
@@ -32,65 +34,65 @@ export class AuthClientService {
 
   // ========== Login ==========
 
-  async loginByEmail(req: LoginByEmailReq): Promise<LoginByEmailRes> {
+  async loginByEmail(req: LoginByEmailReq): Promise<Result<LoginByEmailRes>> {
     return this.apiClient.loginByEmail(req);
   }
 
-  async loginByPhone(req: LoginByPhoneReq): Promise<LoginByPhoneRes> {
+  async loginByPhone(req: LoginByPhoneReq): Promise<Result<LoginByPhoneRes>> {
     return this.apiClient.loginByPhone(req);
   }
 
   // ========== Register ==========
 
-  async registerByEmail(req: RegisterByEmailReq): Promise<RegisterByEmailRes> {
+  async registerByEmail(req: RegisterByEmailReq): Promise<Result<RegisterByEmailRes>> {
     return this.apiClient.registerByEmail(req);
   }
 
-  async registerByPhone(req: RegisterByPhoneReq): Promise<RegisterByPhoneRes> {
+  async registerByPhone(req: RegisterByPhoneReq): Promise<Result<RegisterByPhoneRes>> {
     return this.apiClient.registerByPhone(req);
   }
 
   // ========== SMS ==========
 
-  async sendSmsCode(req: SendSmsCodeReq): Promise<void> {
+  async sendSmsCode(req: SendSmsCodeReq): Promise<Result<void>> {
     return this.apiClient.sendSmsCode(req);
   }
 
   // ========== Token ==========
 
-  async refreshToken(req: RefreshTokenReq): Promise<RefreshTokenRes> {
+  async refreshToken(req: RefreshTokenReq): Promise<Result<RefreshTokenRes>> {
     return this.apiClient.refreshToken(req);
   }
 
   // ========== Session ==========
 
-  async logout(): Promise<void> {
+  async logout(): Promise<Result<void>> {
     return this.apiClient.logout();
   }
 
-  async getCurrentUser(): Promise<GetCurrentUserRes> {
+  async getCurrentUser(): Promise<Result<GetCurrentUserRes>> {
     return this.apiClient.getCurrentUser();
   }
 
-  async listSessions(): Promise<ListSessionsRes> {
+  async listSessions(): Promise<Result<ListSessionsRes>> {
     return this.apiClient.listSessions();
   }
 
-  async revokeSession(req: RevokeSessionReq): Promise<void> {
+  async revokeSession(req: RevokeSessionReq): Promise<Result<void>> {
     return this.apiClient.revokeSession(req);
   }
 
   // ========== Password ==========
 
-  async changePassword(req: ChangePasswordReq): Promise<void> {
+  async changePassword(req: ChangePasswordReq): Promise<Result<void>> {
     return this.apiClient.changePassword(req);
   }
 
-  async forgotPassword(req: ForgotPasswordReq): Promise<void> {
+  async forgotPassword(req: ForgotPasswordReq): Promise<Result<void>> {
     return this.apiClient.forgotPassword(req);
   }
 
-  async resetPassword(req: ResetPasswordReq): Promise<void> {
+  async resetPassword(req: ResetPasswordReq): Promise<Result<void>> {
     return this.apiClient.resetPassword(req);
   }
 }

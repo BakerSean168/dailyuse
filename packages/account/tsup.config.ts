@@ -16,5 +16,5 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
-  external: ['@dailyuse/utils', '@dailyuse/contracts', '@dailyuse/database', '@dailyuse/domain-shared', '@dailyuse/domain-shared/shared', 'express', 'zod'],
+  external: ['@dailyuse/utils', '@dailyuse/contracts', '@dailyuse/contracts/result', '@dailyuse/database', '@dailyuse/domain-shared', '@dailyuse/domain-shared/shared', '@dailyuse/http-client', 'express', 'zod'],
 });

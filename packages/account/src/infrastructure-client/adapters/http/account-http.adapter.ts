@@ -2,9 +2,11 @@
  * Account HTTP Adapter
  *
  * HTTP implementation of IAccountApiClient.
+ * 使用 IResultHttpClient，所有方法返回 Promise<Result<T>>。
  */
 
-import type { IAccountApiClient, IHttpClient } from '../types';
+import type { Result } from '@dailyuse/contracts/result';
+import type { IAccountApiClient, IResultHttpClient } from '../types';
 import type {
   AccountClientDTO,
   UpdateAccountReq,
@@ -16,25 +18,25 @@ import type {
 export class AccountHttpAdapter implements IAccountApiClient {
   private readonly baseUrl = '/api/accounts';
 
-  constructor(private readonly httpClient: IHttpClient) {}
+  constructor(private readonly httpClient: IResultHttpClient) {}
 
-  async getMyProfile(): Promise<AccountClientDTO> {
-    return this.httpClient.get(`${this.baseUrl}/me`);
+  async getMyProfile(): Promise<Result<AccountClientDTO>> {
+    return this.httpClient.get<AccountClientDTO>(`${this.baseUrl}/me`);
   }
 
-  async updateMyProfile(request: UpdateAccountReq): Promise<AccountClientDTO> {
-    return this.httpClient.put(`${this.baseUrl}/me`, request);
+  async updateMyProfile(request: UpdateAccountReq): Promise<Result<AccountClientDTO>> {
+    return this.httpClient.put<AccountClientDTO>(`${this.baseUrl}/me`, request);
   }
 
-  async checkAvailability(request: CheckAvailabilityReq): Promise<CheckAvailabilityRes> {
-    return this.httpClient.post(`${this.baseUrl}/availability`, request);
+  async checkAvailability(request: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>> {
+    return this.httpClient.post<CheckAvailabilityRes>(`${this.baseUrl}/availability`, request);
   }
 
-  async closeAccount(request: CloseAccountReq): Promise<void> {
-    await this.httpClient.post(`${this.baseUrl}/me/close`, request);
+  async closeAccount(request: CloseAccountReq): Promise<Result<void>> {
+    return this.httpClient.post<void>(`${this.baseUrl}/me/close`, request);
   }
 }
 
-export function createAccountHttpAdapter(httpClient: IHttpClient): IAccountApiClient {
+export function createAccountHttpAdapter(httpClient: IResultHttpClient): IAccountApiClient {
   return new AccountHttpAdapter(httpClient);
 }

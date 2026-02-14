@@ -11,7 +11,8 @@
       "@dailyuse/domain-shared": ["../domain-shared/src/index.ts"],
       "@dailyuse/domain-shared/*": ["../domain-shared/src/*/index.ts"],
       "@dailyuse/contracts": ["../contracts/src/index.ts"],
-      "@dailyuse/contracts/*": ["../contracts/src/modules/*/index.ts"],
+      "@dailyuse/contracts/*": ["../contracts/src/*/index.ts", "../contracts/src/modules/*/index.ts"],
+      "@dailyuse/http-client": ["../http-client/src/index.ts"],
       "@dailyuse/utils": ["../utils/src/index.ts"]
     }
   },

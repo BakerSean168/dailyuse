@@ -4,12 +4,13 @@
  * Local transport interfaces for dependency inversion.
  */
 
-import type { IHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 
 // Re-export the port interface from application-client
 export type { IAuthApiClient } from '../../application-client';
 
-// IHttpClient imported from @dailyuse/http-client
+// Re-export IResultHttpClient for adapter use
+export type { IResultHttpClient };
 
 /**
  * IPC Client interface - local abstraction over IPC transport (Electron)
