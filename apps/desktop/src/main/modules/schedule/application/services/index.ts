@@ -10,8 +10,6 @@ export { listTasksByAccountService } from './list-tasks-by-account';
 export { rescheduleTaskService } from './reschedule-task';
 export { batchRescheduleService } from './batch-reschedule';
 export { findDueTasksService } from './find-due-tasks';
-export { getStatisticsSummaryService } from './get-statistics-summary';
-export { getStatisticsByDateRangeService } from './get-statistics-by-date-range';
 export { getUpcomingService } from './get-upcoming';
 
 // 调度执行

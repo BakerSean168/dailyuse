@@ -117,24 +117,6 @@ export class ScheduleIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取统计摘要
-    ipcMain.handle('schedule:get-statistics-summary', async (event, accountUuid?: string) => {
-      return this.handleRequest(
-        'schedule:get-statistics-summary',
-        () => this.scheduleService.getStatisticsSummary(accountUuid),
-        { accountUuid },
-      );
-    });
-
-    // 按日期范围获取统计
-    ipcMain.handle('schedule:get-statistics-by-date-range', async (event, payload: { startDate: number; endDate: number; accountUuid?: string }) => {
-      return this.handleRequest(
-        'schedule:get-statistics-by-date-range',
-        () => this.scheduleService.getStatisticsByDateRange(payload.startDate, payload.endDate, payload.accountUuid),
-        { accountUuid: payload.accountUuid },
-      );
-    });
-
     // 获取即将到期的任务
     ipcMain.handle('schedule:get-upcoming', async (event, payload: { days?: number; accountUuid?: string }) => {
       return this.handleRequest(

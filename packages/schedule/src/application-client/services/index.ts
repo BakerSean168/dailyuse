@@ -29,12 +29,6 @@ export { CancelScheduleTask } from './cancel-schedule-task';
 export { DeleteScheduleTask } from './delete-schedule-task';
 export { DeleteScheduleTasksBatch } from './delete-schedule-tasks-batch';
 export { UpdateTaskMetadata } from './update-task-metadata';
-export { GetScheduleStatistics } from './get-schedule-statistics';
-export { GetModuleStatistics } from './get-module-statistics';
-export { GetAllModuleStatistics } from './get-all-module-statistics';
-export { RecalculateStatistics } from './recalculate-statistics';
-export { ResetStatistics } from './reset-statistics';
-export { DeleteStatistics } from './delete-statistics';
 
 // ===== Schedule Event Use Cases =====
 

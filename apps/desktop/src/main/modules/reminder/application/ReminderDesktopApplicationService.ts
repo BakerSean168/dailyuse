@@ -22,7 +22,6 @@ import {
   listGroupsService,
   updateGroupService,
   deleteGroupService,
-  getStatisticsSummaryService,
   getUpcomingService,
 } from './services';
 
@@ -127,11 +126,7 @@ export class ReminderDesktopApplicationService {
     return deleteGroupService(uuid);
   }
 
-  // ===== Reminder Statistics =====
-
-  async getStatisticsSummary(accountUuid: string): Promise<ReminderStatisticsClientDTO | null> {
-    return getStatisticsSummaryService(accountUuid);
-  }
+  // ===== Reminder Upcoming =====
 
   async getUpcoming(days: number = 7, accountUuid: string): Promise<{
     templates: ReminderTemplateClientDTO[];

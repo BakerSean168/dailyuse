@@ -133,21 +133,6 @@ export class GoalIPCHandler extends BaseIPCHandler {
       );
     });
 
-    /**
-     * @description 获取目标统计
-     * Channel Name: goal:get-statistics
-     * Payload: accountUuid (string, optional)
-     * Return: GoalStatistics
-     * Security: Requires authentication
-     */
-    ipcMain.handle('goal:get-statistics', async (event, accountUuid?: string) => {
-      return this.handleRequest(
-        'goal:get-statistics',
-        () => this.goalService.getGoalStatistics(accountUuid),
-        { accountUuid },
-      );
-    });
-
     this.logger.info('Registered Goal IPC handlers');
   }
 }

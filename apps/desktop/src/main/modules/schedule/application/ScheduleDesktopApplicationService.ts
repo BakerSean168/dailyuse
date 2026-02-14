@@ -20,8 +20,6 @@ import {
   rescheduleTaskService,
   batchRescheduleService,
   findDueTasksService,
-  getStatisticsSummaryService,
-  getStatisticsByDateRangeService,
   getUpcomingService,
 } from './services';
 
@@ -109,25 +107,6 @@ export class ScheduleDesktopApplicationService {
     total: number;
   }> {
     return findDueTasksService(params);
-  }
-
-  // ===== Statistics =====
-
-  async getStatisticsSummary(accountUuid?: string): Promise<{
-    total: number;
-    active: number;
-    completed: number;
-    overdue: number;
-  }> {
-    return getStatisticsSummaryService(accountUuid);
-  }
-
-  async getStatisticsByDateRange(
-    startDate: number,
-    endDate: number,
-    accountUuid?: string,
-  ): Promise<{ data: Array<{ date: number; active: number; completed: number }> }> {
-    return getStatisticsByDateRangeService(startDate, endDate, accountUuid);
   }
 
   async getUpcoming(days: number = 7, accountUuid?: string): Promise<{

@@ -11,7 +11,6 @@ export { TaskDependencyPrismaRepository } from './adapters/prisma/task-dependenc
 // export { SqliteTaskInstanceRepository } from './adapters/sqlite/task-instance-sqlite.repository'; // TODO: Fix and re-enable
 // export { SqliteTaskTemplateRepository } from './adapters/sqlite/task-template-sqlite.repository'; // TODO: Fix and re-enable
 // export { SqliteTaskDependencyRepository } from './adapters/sqlite/task-dependency-sqlite.repository'; // TODO: Fix and re-enable
-// export { SqliteTaskStatisticsRepository } from './adapters/sqlite/task-statistics-sqlite.repository'; // TODO: Fix and re-enable
 
 // DI Module
 export { TaskModule } from './task.module';

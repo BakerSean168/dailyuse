@@ -13,7 +13,6 @@ import type {
   GoalFolderUpdatedEvent,
   GoalFolderDeletedEvent,
   GoalFolderStatsUpdatedEvent,
-  GoalStatisticsRecalculatedEvent,
   FocusSessionStartedEvent,
   FocusSessionPausedEvent,
   FocusSessionResumedEvent,
@@ -120,14 +119,6 @@ export type GoalEventMap = {
    * Triggered when folder stats are recalculated
    */
   'goal:folder-stats-update': GoalFolderStatsUpdatedEvent;
-
-  // ============ Statistics Events ============
-
-  /**
-   * Statistics recalculated event
-   * Triggered when user goal statistics need refresh
-   */
-  'goal:statistics-recalculate': GoalStatisticsRecalculatedEvent;
 
   // ============ FocusSession Events ============
 
