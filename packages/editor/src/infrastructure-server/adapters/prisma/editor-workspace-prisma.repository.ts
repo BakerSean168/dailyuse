@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@dailyuse/database';
-import type { IEditorWorkspaceRepository } from '../../../../domain-server/repositories/IEditorWorkspaceRepository';
-import { EditorWorkspace } from '../../../../domain-server/aggregates/editor-workspace';
+import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
+import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
 
 export class EditorWorkspacePrismaRepository implements IEditorWorkspaceRepository {
   constructor(private readonly prisma: PrismaClient) {}
