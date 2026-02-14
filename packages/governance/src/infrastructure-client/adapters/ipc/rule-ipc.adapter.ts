@@ -5,6 +5,8 @@
  * Communicates with main process which handles actual data operations.
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import { tryCatch } from '@dailyuse/contracts/result';
 import type {
   IRuleApiClient,
   IIpcClient,
@@ -34,28 +36,28 @@ export class RuleIpcAdapter implements IRuleApiClient {
 
   // ===== Rule CRUD =====
 
-  async createRule(req: CreateRuleReq): Promise<CreateRuleRes> {
-    return this.ipcClient.invoke(`${this.channel}:create`, req);
+  async createRule(req: CreateRuleReq): Promise<Result<CreateRuleRes>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:create`, req));
   }
 
-  async getRule(req: GetRuleReq): Promise<GetRuleRes> {
-    return this.ipcClient.invoke(`${this.channel}:get`, req);
+  async getRule(req: GetRuleReq): Promise<Result<GetRuleRes>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:get`, req));
   }
 
-  async updateRule(ruleId: string, req: UpdateRuleReq): Promise<UpdateRuleRes> {
-    return this.ipcClient.invoke(`${this.channel}:update`, { ruleId, ...req });
+  async updateRule(ruleId: string, req: UpdateRuleReq): Promise<Result<UpdateRuleRes>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:update`, { ruleId, ...req }));
   }
 
-  async deleteRule(req: DeleteRuleReq): Promise<DeleteRuleRes> {
-    return this.ipcClient.invoke(`${this.channel}:delete`, req);
+  async deleteRule(req: DeleteRuleReq): Promise<Result<DeleteRuleRes>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:delete`, req));
   }
 
-  async listRules(query?: ListRulesQuery): Promise<ListRulesRes> {
-    return this.ipcClient.invoke(`${this.channel}:list`, query);
+  async listRules(query?: ListRulesQuery): Promise<Result<ListRulesRes>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:list`, query));
   }
 
-  async searchRules(query: SearchRulesQuery): Promise<SearchRulesRes> {
-    return this.ipcClient.invoke(`${this.channel}:search`, query);
+  async searchRules(query: SearchRulesQuery): Promise<Result<SearchRulesRes>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:search`, query));
   }
 }
 

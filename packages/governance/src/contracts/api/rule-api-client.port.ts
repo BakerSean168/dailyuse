@@ -6,6 +6,7 @@
  * Implementations: RuleHttpAdapter (web), RuleIpcAdapter (desktop)
  */
 
+import type { Result } from '@dailyuse/contracts/result';
 import type {
   CreateRuleReq,
   CreateRuleRes,
@@ -30,30 +31,30 @@ export interface IRuleApiClient {
   /**
    * 创建规则
    */
-  createRule(req: CreateRuleReq): Promise<CreateRuleRes>;
+  createRule(req: CreateRuleReq): Promise<Result<CreateRuleRes>>;
 
   /**
    * 获取单个规则（通过 ID 或 code）
    */
-  getRule(req: GetRuleReq): Promise<GetRuleRes>;
+  getRule(req: GetRuleReq): Promise<Result<GetRuleRes>>;
 
   /**
    * 更新规则
    */
-  updateRule(ruleId: string, req: UpdateRuleReq): Promise<UpdateRuleRes>;
+  updateRule(ruleId: string, req: UpdateRuleReq): Promise<Result<UpdateRuleRes>>;
 
   /**
    * 删除规则
    */
-  deleteRule(req: DeleteRuleReq): Promise<DeleteRuleRes>;
+  deleteRule(req: DeleteRuleReq): Promise<Result<DeleteRuleRes>>;
 
   /**
    * 列出规则（带过滤和分页）
    */
-  listRules(query?: ListRulesQuery): Promise<ListRulesRes>;
+  listRules(query?: ListRulesQuery): Promise<Result<ListRulesRes>>;
 
   /**
    * 搜索规则（关键词搜索）
    */
-  searchRules(query: SearchRulesQuery): Promise<SearchRulesRes>;
+  searchRules(query: SearchRulesQuery): Promise<Result<SearchRulesRes>>;
 }

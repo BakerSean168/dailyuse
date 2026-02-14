@@ -4,7 +4,8 @@
  * 获取规则用例
  */
 
-import type { GetRuleReq, GetRuleRes } from '@/contracts/api/rules';
+import type { Result } from '@dailyuse/contracts/result';
+import type { GetRuleReq } from '@/contracts/api/rules';
 import { Rule } from '../../domain-client/aggregates/rule';
 import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
 
@@ -47,8 +48,9 @@ export class GetRule {
   /**
    * 执行用例：通过 ID 或 code 获取规则
    */
-  async execute(req: GetRuleReq): Promise<Rule> {
-    const data = await this.apiClient.getRule(req);
-    return Rule.fromDTO(data);
+  async execute(req: GetRuleReq): Promise<Result<Rule>> {
+    const result = await this.apiClient.getRule(req);
+    if (!result.ok) return result;
+    return { ok: true, data: Rule.fromDTO(result.data) };
   }
 }

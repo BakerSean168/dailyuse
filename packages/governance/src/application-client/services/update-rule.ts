@@ -4,7 +4,8 @@
  * 更新规则用例
  */
 
-import type { UpdateRuleReq, UpdateRuleRes } from '@/contracts/api/rules';
+import type { Result } from '@dailyuse/contracts/result';
+import type { UpdateRuleReq } from '@/contracts/api/rules';
 import { Rule } from '../../domain-client/aggregates/rule';
 import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
 
@@ -47,8 +48,9 @@ export class UpdateRule {
   /**
    * 执行用例：更新规则
    */
-  async execute(ruleId: string, req: UpdateRuleReq): Promise<Rule> {
-    const data = await this.apiClient.updateRule(ruleId, req);
-    return Rule.fromDTO(data);
+  async execute(ruleId: string, req: UpdateRuleReq): Promise<Result<Rule>> {
+    const result = await this.apiClient.updateRule(ruleId, req);
+    if (!result.ok) return result;
+    return { ok: true, data: Rule.fromDTO(result.data) };
   }
 }

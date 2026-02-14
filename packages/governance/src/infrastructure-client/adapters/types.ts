@@ -5,7 +5,7 @@
  * Modules define their own transport interfaces and accept injected implementations.
  */
 
-import type { IHttpClient } from '@dailyuse/http-client';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 
 // Re-export the port interface
 export type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
@@ -26,11 +26,13 @@ export type {
   SearchRulesRes,
 } from '@/contracts/api/rules';
 
-// IHttpClient imported from @dailyuse/http-client
+// IResultHttpClient imported from @dailyuse/http-client
+
+export type { IResultHttpClient };
 
 /**
  * IPC Client interface - local abstraction over IPC transport (Electron)
  */
 export interface IIpcClient {
-  invoke<T = any>(channel: string, ...args: any[]): Promise<T>;
+  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
 }
