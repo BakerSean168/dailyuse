@@ -1,26 +1,21 @@
 /**
  * useTask - 任务模块主 composable
  *
- * 使用 @dailyuse/http-client 的 AxiosHttpClient 进行 HTTP 调用。
+ * 通过 inject 获取 TaskClientService，所有方法返回 Result<T>。
  */
 
-import { computed, ref } from 'vue';
+import { computed, inject, ref } from 'vue';
 import { useTaskStore } from '../stores/taskStore';
-import { httpClient } from '@/shared/http';
-import { HttpClientError } from '@dailyuse/http-client';
+import { TASK_SERVICE_KEY } from '@/shared/di';
+import { resultHttpClient } from '@/shared/http';
 import type {
-  TaskTemplateClientDTO,
-  TaskInstanceClientDTO,
   TaskFolderClientDTO,
   CreateTaskReq,
   UpdateTaskReq,
-  GetInstancesByRangeRes,
 } from '@dailyuse/contracts/task';
 
-const TEMPLATE_URL = '/task-templates';
-const INSTANCE_URL = '/task-instances';
-
 export function useTask() {
+  const service = inject(TASK_SERVICE_KEY)!;
   const store = useTaskStore();
   const savingId = ref<string | null>(null);
 
@@ -34,94 +29,122 @@ export function useTask() {
   const pagination = computed(() => store.pagination);
   const isSaving = computed(() => savingId.value !== null);
 
-  function handleError(err: unknown, fallback: string): void {
-    const msg = err instanceof HttpClientError ? err.message : err instanceof Error ? err.message : fallback;
-    store.setError(msg);
-    console.error(fallback, err);
+  function handleError(message: string): void {
+    store.setError(message);
+    console.error(message);
   }
 
   // ========== Templates ==========
   async function fetchTemplates(query?: Record<string, unknown>) {
     store.setLoading(true); store.setError(null);
-    try {
-      const res = await httpClient.get<{ data: TaskTemplateClientDTO[]; total: number }>(TEMPLATE_URL, {
-        params: { ...query, page: store.pagination.page, pageSize: store.pagination.pageSize },
-      });
-      store.setTemplates(res.data, res.total);
-    } catch (e) { handleError(e, '加载任务模板失败'); }
-    finally { store.setLoading(false); }
+    const result = await service.listTemplates({
+      ...query,
+      page: store.pagination.page,
+      limit: store.pagination.pageSize,
+    } as Parameters<typeof service.listTemplates>[0]);
+    if (result.ok) {
+      store.setTemplates(result.data.templates.map((t) => t.toDTO()), result.data.total);
+    } else {
+      handleError(result.error.message || '加载任务模板失败');
+    }
+    store.setLoading(false);
   }
 
   async function fetchTemplate(id: string) {
     store.setLoading(true); store.setError(null);
-    try { const t = await httpClient.get<TaskTemplateClientDTO>(`${TEMPLATE_URL}/${id}`); store.setCurrentTemplate(t); return t; }
-    catch (e) { handleError(e, '加载任务模板失败'); return null; }
-    finally { store.setLoading(false); }
+    const result = await service.getTemplate(id);
+    store.setLoading(false);
+    if (result.ok) { const dto = result.data.toDTO(); store.setCurrentTemplate(dto); return dto; }
+    handleError(result.error.message || '加载任务模板失败');
+    return null;
   }
 
   async function createTemplate(req: CreateTaskReq) {
     savingId.value = 'new'; store.setError(null);
-    try { const t = await httpClient.post<TaskTemplateClientDTO>(TEMPLATE_URL, req); store.addTemplate(t); return t; }
-    catch (e) { handleError(e, '创建任务失败'); return null; }
-    finally { savingId.value = null; }
+    const result = await service.createTemplate(req);
+    savingId.value = null;
+    if (result.ok) { const dto = result.data.toDTO(); store.addTemplate(dto); return dto; }
+    handleError(result.error.message || '创建任务失败');
+    return null;
   }
 
   async function updateTemplate(id: string, req: UpdateTaskReq) {
     savingId.value = id; store.setError(null);
-    try { const t = await httpClient.put<TaskTemplateClientDTO>(`${TEMPLATE_URL}/${id}`, req); store.updateTemplate(t); return t; }
-    catch (e) { handleError(e, '更新任务失败'); return null; }
-    finally { savingId.value = null; }
+    const result = await service.updateTemplate(id, req);
+    savingId.value = null;
+    if (result.ok) { const dto = result.data.toDTO(); store.updateTemplate(dto); return dto; }
+    handleError(result.error.message || '更新任务失败');
+    return null;
   }
 
   async function deleteTemplate(id: string) {
     savingId.value = id; store.setError(null);
-    try { await httpClient.delete<void>(`${TEMPLATE_URL}/${id}`); store.removeTemplate(id); return true; }
-    catch (e) { handleError(e, '删除任务失败'); return false; }
-    finally { savingId.value = null; }
+    const result = await service.deleteTemplate(id);
+    savingId.value = null;
+    if (result.ok) { store.removeTemplate(id); return true; }
+    handleError(result.error.message || '删除任务失败');
+    return false;
   }
 
   async function activateTemplate(id: string) {
-    try { const t = await httpClient.post<TaskTemplateClientDTO>(`${TEMPLATE_URL}/${id}/activate`); store.updateTemplate(t); return t; }
-    catch (e) { handleError(e, '激活任务失败'); return null; }
+    const result = await service.activateTemplate(id);
+    if (result.ok) { const dto = result.data.toDTO(); store.updateTemplate(dto); return dto; }
+    handleError(result.error.message || '激活任务失败');
+    return null;
   }
 
   async function pauseTemplate(id: string) {
-    try { const t = await httpClient.post<TaskTemplateClientDTO>(`${TEMPLATE_URL}/${id}/pause`); store.updateTemplate(t); return t; }
-    catch (e) { handleError(e, '暂停任务失败'); return null; }
+    const result = await service.pauseTemplate(id);
+    if (result.ok) { const dto = result.data.toDTO(); store.updateTemplate(dto); return dto; }
+    handleError(result.error.message || '暂停任务失败');
+    return null;
   }
 
   async function archiveTemplate(id: string) {
-    try { const t = await httpClient.post<TaskTemplateClientDTO>(`${TEMPLATE_URL}/${id}/archive`); store.updateTemplate(t); return t; }
-    catch (e) { handleError(e, '归档任务失败'); return null; }
+    const result = await service.archiveTemplate(id);
+    if (result.ok) { const dto = result.data.toDTO(); store.updateTemplate(dto); return dto; }
+    handleError(result.error.message || '归档任务失败');
+    return null;
   }
 
   // ========== Instances ==========
   async function fetchInstances(query?: Record<string, unknown>) {
     store.setLoading(true); store.setError(null);
-    try { const res = await httpClient.get<GetInstancesByRangeRes>(INSTANCE_URL, { params: query }); store.setInstances(res.data); }
-    catch (e) { handleError(e, '加载任务实例失败'); }
-    finally { store.setLoading(false); }
+    const result = await service.listInstances(query as Parameters<typeof service.listInstances>[0]);
+    if (result.ok) {
+      store.setInstances(result.data.map((i) => i.toDTO()));
+    } else {
+      handleError(result.error.message || '加载任务实例失败');
+    }
+    store.setLoading(false);
   }
 
   async function startInstance(id: string) {
-    try { const i = await httpClient.post<TaskInstanceClientDTO>(`${INSTANCE_URL}/${id}/start`); store.updateInstance(i); return i; }
-    catch (e) { handleError(e, '开始任务失败'); return null; }
+    const result = await service.startInstance(id);
+    if (result.ok) { const dto = result.data.toDTO(); store.updateInstance(dto); return dto; }
+    handleError(result.error.message || '开始任务失败');
+    return null;
   }
 
   async function completeInstance(id: string) {
-    try { const i = await httpClient.post<TaskInstanceClientDTO>(`${INSTANCE_URL}/${id}/complete`); store.updateInstance(i); return i; }
-    catch (e) { handleError(e, '完成任务失败'); return null; }
+    const result = await service.completeInstance(id);
+    if (result.ok) { const dto = result.data.toDTO(); store.updateInstance(dto); return dto; }
+    handleError(result.error.message || '完成任务失败');
+    return null;
   }
 
   async function skipInstance(id: string) {
-    try { const i = await httpClient.post<TaskInstanceClientDTO>(`${INSTANCE_URL}/${id}/skip`); store.updateInstance(i); return i; }
-    catch (e) { handleError(e, '跳过任务失败'); return null; }
+    const result = await service.skipInstance(id);
+    if (result.ok) { const dto = result.data.toDTO(); store.updateInstance(dto); return dto; }
+    handleError(result.error.message || '跳过任务失败');
+    return null;
   }
 
   // ========== Folders ==========
   async function fetchFolders() {
-    try { const res = await httpClient.get<{ data: TaskFolderClientDTO[]; total: number }>(`${TEMPLATE_URL}/folders`); store.setFolders(res.data); }
-    catch (e) { handleError(e, '加载任务文件夹失败'); }
+    const result = await resultHttpClient.get<{ data: TaskFolderClientDTO[]; total: number }>('/task-templates/folders');
+    if (result.ok) { store.setFolders(result.data.data); }
+    else { handleError(result.error.message || '加载任务文件夹失败'); }
   }
 
   function setPage(p: number) { store.setPage(p); fetchTemplates(); }
