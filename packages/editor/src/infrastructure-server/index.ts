@@ -1,8 +1,14 @@
 /**
  * Editor Module - Infrastructure Server
  *
- * SQLite repository implementations for Editor domain.
+ * Repository implementations for Editor domain.
  */
 
 // DI Container
 export { EditorContainer } from './di/editor-container';
+
+// Prisma Adapters
+export {
+  EditorWorkspacePrismaRepository,
+  DocumentPrismaRepository,
+} from './adapters/prisma';

@@ -37,7 +37,6 @@ export interface TaskIpcAdapters {
  *   .registerTemplateApiClient(adapters.template)
  *   .registerInstanceApiClient(adapters.instance)
  *   .registerDependencyApiClient(adapters.dependency)
- *   .registerStatisticsApiClient(adapters.statistics);
  * ```
  */
 export function createTaskIpcAdapters(
