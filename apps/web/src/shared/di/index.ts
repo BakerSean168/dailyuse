@@ -2,8 +2,11 @@
  * Web Application — Module DI Container
  *
  * 集中管理所有模块的依赖注入。
- * 在 app 启动时创建 AxiosHttpClient，
- * 然后通过工厂函数将其注入到各模块的 Adapter → Service → Container。
+ * 在 app 启动时创建 ResultHttpClient，
+ * 然后通过工厂函数将其注入到各模块的 Adapter → Service。
+ *
+ * Phase 1 模块 (Auth / Account) 使用 resultHttpClient + provide/inject。
+ * Phase 2 模块暂时仍使用旧 httpClient + Container 单例。
  *
  * @module shared/di
  */
@@ -26,7 +29,7 @@ import { SettingContainer, createSettingHttpAdapters } from '@dailyuse/setting';
 import { TaskContainer, createTaskHttpAdapters } from '@dailyuse/task';
 
 // ── Web App HTTP Client ──
-import { httpClient } from '@/shared/http';
+import { httpClient, resultHttpClient } from '@/shared/http';
 
 // ============================================================================
 // Injection Keys
@@ -37,22 +40,22 @@ export const AUTH_SERVICE_KEY: InjectionKey<AuthClientService> = Symbol('AuthCli
 export const RULE_API_CLIENT_KEY: InjectionKey<IRuleApiClient> = Symbol('IRuleApiClient');
 
 // ============================================================================
-// Service Instances (Singleton) — Phase 1 modules
+// Service Instances (Singleton) — Phase 1 modules (using resultHttpClient)
 // ============================================================================
 
-/** Account Service — 注入 httpClient → AccountHttpAdapter → AccountClientService */
-const accountApiClient = createAccountHttpAdapter(httpClient as unknown as Parameters<typeof createAccountHttpAdapter>[0]);
+/** Account Service — resultHttpClient → AccountHttpAdapter → AccountClientService */
+const accountApiClient = createAccountHttpAdapter(resultHttpClient);
 export const accountService = new AccountClientService(accountApiClient);
 
-/** Auth Service — 注入 httpClient → AuthHttpAdapter → AuthClientService */
-const authApiClient = createAuthHttpAdapter(httpClient as unknown as Parameters<typeof createAuthHttpAdapter>[0]);
+/** Auth Service — resultHttpClient → AuthHttpAdapter → AuthClientService */
+const authApiClient = createAuthHttpAdapter(resultHttpClient);
 export const authService = new AuthClientService(authApiClient);
 
 /** Governance Rule API Client — 注入 httpClient → RuleHttpAdapter */
 export const ruleApiClient = createRuleHttpAdapter(httpClient as unknown as Parameters<typeof createRuleHttpAdapter>[0]);
 
 // ============================================================================
-// Container Registration — Phase 2 modules
+// Container Registration — Phase 2 modules (still using legacy httpClient)
 // ============================================================================
 
 // ── Goal ──

@@ -2,7 +2,7 @@
  * usePassword - 密码管理 Composable
  *
  * 通过 DI 注入的 AuthClientService 与后端交互。
- * Service 负责 API 调用，Composable 负责 UI 状态。
+ * Service 返回 Result<T>，Composable 负责 Result 处理 + UI 状态。
  *
  * @module authentication/presentation/composables
  */
@@ -14,7 +14,6 @@ import type {
   ForgotPasswordReq,
   ResetPasswordReq,
 } from '@dailyuse/contracts/authentication';
-import { HttpClientError } from '@dailyuse/http-client';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY, authService as fallbackService } from '@/shared/di';
 
@@ -33,13 +32,14 @@ export function usePassword() {
 
     isLoading.value = true;
     try {
-      await service.changePassword(req);
-      toast.success('密码已修改', { description: '请使用新密码重新登录' });
-      return true;
-    } catch (err) {
-      const message = err instanceof HttpClientError ? err.message : '修改密码失败';
-      toast.error('操作失败', { description: message });
-      return false;
+      const result = await service.changePassword(req);
+      if (result.ok) {
+        toast.success('密码已修改', { description: '请使用新密码重新登录' });
+        return true;
+      } else {
+        toast.error('操作失败', { description: result.error.message });
+        return false;
+      }
     } finally {
       isLoading.value = false;
     }
@@ -50,13 +50,14 @@ export function usePassword() {
   async function forgotPassword(req: ForgotPasswordReq): Promise<boolean> {
     isLoading.value = true;
     try {
-      await service.forgotPassword(req);
-      toast.success('重置邮件已发送', { description: '请查收邮件并点击重置链接' });
-      return true;
-    } catch (err) {
-      const message = err instanceof HttpClientError ? err.message : '发送重置邮件失败';
-      toast.error('操作失败', { description: message });
-      return false;
+      const result = await service.forgotPassword(req);
+      if (result.ok) {
+        toast.success('重置邮件已发送', { description: '请查收邮件并点击重置链接' });
+        return true;
+      } else {
+        toast.error('操作失败', { description: result.error.message });
+        return false;
+      }
     } finally {
       isLoading.value = false;
     }
@@ -67,13 +68,14 @@ export function usePassword() {
   async function resetPassword(req: ResetPasswordReq): Promise<boolean> {
     isLoading.value = true;
     try {
-      await service.resetPassword(req);
-      toast.success('密码已重置', { description: '请使用新密码登录' });
-      return true;
-    } catch (err) {
-      const message = err instanceof HttpClientError ? err.message : '重置密码失败';
-      toast.error('操作失败', { description: message });
-      return false;
+      const result = await service.resetPassword(req);
+      if (result.ok) {
+        toast.success('密码已重置', { description: '请使用新密码登录' });
+        return true;
+      } else {
+        toast.error('操作失败', { description: result.error.message });
+        return false;
+      }
     } finally {
       isLoading.value = false;
     }

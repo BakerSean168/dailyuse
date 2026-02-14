@@ -2,7 +2,7 @@
  * useAuth - 核心认证 Composable
  *
  * 通过 DI 注入的 AuthClientService 与后端交互。
- * Service 负责 API 调用，Composable 负责 Store 更新 + UI 状态。
+ * Service 返回 Result<T>，Composable 负责 Result 处理 + Store 更新 + UI 状态。
  *
  * @module authentication/presentation/composables
  */
@@ -18,7 +18,6 @@ import type {
   SendSmsCodeReq,
   AuthResponseDTO,
 } from '@dailyuse/contracts/authentication';
-import { HttpClientError } from '@dailyuse/http-client';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY, authService as fallbackService } from '@/shared/di';
 
@@ -48,16 +47,17 @@ export function useAuth() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const data = await service.loginByEmail(req);
-      handleAuthSuccess(data);
-      toast.success('登录成功', { description: '欢迎回来！' });
-      router.push('/');
-      return true;
-    } catch (err) {
-      const message = err instanceof HttpClientError ? err.message : '登录失败';
-      store.setError(message);
-      toast.error('登录失败', { description: message });
-      return false;
+      const result = await service.loginByEmail(req);
+      if (result.ok) {
+        handleAuthSuccess(result.data);
+        toast.success('登录成功', { description: '欢迎回来！' });
+        router.push('/');
+        return true;
+      } else {
+        store.setError(result.error.message);
+        toast.error('登录失败', { description: result.error.message });
+        return false;
+      }
     } finally {
       store.setLoading(false);
     }
@@ -67,16 +67,17 @@ export function useAuth() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const data = await service.loginByPhone(req);
-      handleAuthSuccess(data);
-      toast.success('登录成功', { description: '欢迎回来！' });
-      router.push('/');
-      return true;
-    } catch (err) {
-      const message = err instanceof HttpClientError ? err.message : '登录失败';
-      store.setError(message);
-      toast.error('登录失败', { description: message });
-      return false;
+      const result = await service.loginByPhone(req);
+      if (result.ok) {
+        handleAuthSuccess(result.data);
+        toast.success('登录成功', { description: '欢迎回来！' });
+        router.push('/');
+        return true;
+      } else {
+        store.setError(result.error.message);
+        toast.error('登录失败', { description: result.error.message });
+        return false;
+      }
     } finally {
       store.setLoading(false);
     }
@@ -88,16 +89,17 @@ export function useAuth() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const data = await service.registerByEmail(req);
-      handleAuthSuccess(data);
-      toast.success('注册成功', { description: '欢迎加入！' });
-      router.push('/');
-      return true;
-    } catch (err) {
-      const message = err instanceof HttpClientError ? err.message : '注册失败';
-      store.setError(message);
-      toast.error('注册失败', { description: message });
-      return false;
+      const result = await service.registerByEmail(req);
+      if (result.ok) {
+        handleAuthSuccess(result.data);
+        toast.success('注册成功', { description: '欢迎加入！' });
+        router.push('/');
+        return true;
+      } else {
+        store.setError(result.error.message);
+        toast.error('注册失败', { description: result.error.message });
+        return false;
+      }
     } finally {
       store.setLoading(false);
     }
@@ -107,16 +109,17 @@ export function useAuth() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const data = await service.registerByPhone(req);
-      handleAuthSuccess(data);
-      toast.success('注册成功', { description: '欢迎加入！' });
-      router.push('/');
-      return true;
-    } catch (err) {
-      const message = err instanceof HttpClientError ? err.message : '注册失败';
-      store.setError(message);
-      toast.error('注册失败', { description: message });
-      return false;
+      const result = await service.registerByPhone(req);
+      if (result.ok) {
+        handleAuthSuccess(result.data);
+        toast.success('注册成功', { description: '欢迎加入！' });
+        router.push('/');
+        return true;
+      } else {
+        store.setError(result.error.message);
+        toast.error('注册失败', { description: result.error.message });
+        return false;
+      }
     } finally {
       store.setLoading(false);
     }
@@ -125,13 +128,12 @@ export function useAuth() {
   // ========== 验证码 ==========
 
   async function sendSmsCode(phoneNumber: string, purpose: SendSmsCodeReq['purpose'] = 'LOGIN'): Promise<boolean> {
-    try {
-      await service.sendSmsCode({ phoneNumber, purpose });
+    const result = await service.sendSmsCode({ phoneNumber, purpose });
+    if (result.ok) {
       toast.success('验证码已发送', { description: '请查收手机短信' });
       return true;
-    } catch (err) {
-      const message = err instanceof HttpClientError ? err.message : '发送验证码失败';
-      toast.error('发送失败', { description: message });
+    } else {
+      toast.error('发送失败', { description: result.error.message });
       return false;
     }
   }
@@ -142,12 +144,12 @@ export function useAuth() {
     const currentRefreshToken = store.refreshToken;
     if (!currentRefreshToken) return false;
 
-    try {
-      const data = await service.refreshToken({ refreshToken: currentRefreshToken });
-      handleAuthSuccess(data);
+    const result = await service.refreshToken({ refreshToken: currentRefreshToken });
+    if (result.ok) {
+      handleAuthSuccess(result.data);
       return true;
-    } catch (err) {
-      console.error('Token refresh failed:', err);
+    } else {
+      console.error('Token refresh failed:', result.error.message);
       // 刷新失败，清除认证状态
       store.reset();
       return false;
@@ -157,18 +159,16 @@ export function useAuth() {
   // ========== 登出 ==========
 
   async function logout(): Promise<void> {
-    try {
-      if (store.accessToken) {
-        await service.logout();
+    if (store.accessToken) {
+      const result = await service.logout();
+      if (!result.ok) {
+        // 登出 API 调用失败不影响客户端清理
+        console.warn('Logout API call failed:', result.error.message);
       }
-    } catch (err) {
-      // 登出 API 调用失败不影响客户端清理
-      console.warn('Logout API call failed:', err);
-    } finally {
-      store.reset();
-      toast.success('已登出');
-      router.push('/auth');
     }
+    store.reset();
+    toast.success('已登出');
+    router.push('/auth');
   }
 
   return {

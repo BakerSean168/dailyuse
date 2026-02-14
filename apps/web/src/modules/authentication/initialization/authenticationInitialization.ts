@@ -43,11 +43,16 @@ export function registerAuthenticationInitializationTasks(): void {
         const refreshToken = authStore.refreshToken;
         if (refreshToken) {
           try {
-            const data = await authService.refreshToken({ refreshToken });
-            authStore.handleAuthResponse(data);
-            console.log('✅ [AuthModule] Token 刷新成功');
+            const result = await authService.refreshToken({ refreshToken });
+            if (result.ok) {
+              authStore.handleAuthResponse(result.data);
+              console.log('✅ [AuthModule] Token 刷新成功');
+            } else {
+              console.warn('❌ [AuthModule] Token 刷新失败，清除认证状态:', result.error.message);
+              authStore.reset();
+            }
           } catch (error) {
-            console.warn('❌ [AuthModule] Token 刷新失败，清除认证状态:', error);
+            console.warn('❌ [AuthModule] Token 刷新异常，清除认证状态:', error);
             authStore.reset();
           }
         } else {
