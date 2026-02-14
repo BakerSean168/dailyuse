@@ -4,10 +4,12 @@
  * Transport-agnostic interfaces for Repository API operations.
  * Implementations: HTTP adapters (web), IPC adapters (desktop)
  *
+ * All methods return Result<T> for consistent error handling.
  * Types imported from @dailyuse/contracts/repository.
  */
 
-import type { IHttpClient } from '@dailyuse/http-client';
+import type { Result } from '@dailyuse/contracts/result';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   RepositoryClientDTO,
   FolderClientDTO,
@@ -18,9 +20,14 @@ import type {
 } from '@dailyuse/contracts/repository';
 
 // ============ Transport Client Interfaces ============
+// Module only defines what it needs — concrete implementations injected from App layer.
 
-// IHttpClient imported from @dailyuse/http-client
+// IResultHttpClient imported from @dailyuse/http-client
 
+/**
+ * IPC Client interface.
+ * Satisfied by IpcClientImpl / ResultIpcClient at the App level.
+ */
 export interface IIpcClient {
   invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
 }
@@ -47,30 +54,30 @@ export interface CreateFolderRequest {
  */
 export interface IRepositoryApiClient {
   // ===== Repository CRUD =====
-  createRepository(request: CreateRepositoryRequest): Promise<RepositoryClientDTO>;
-  getRepositories(): Promise<RepositoryClientDTO[]>;
-  getRepositoryById(uuid: string): Promise<RepositoryClientDTO>;
-  deleteRepository(uuid: string): Promise<void>;
+  createRepository(request: CreateRepositoryRequest): Promise<Result<RepositoryClientDTO>>;
+  getRepositories(): Promise<Result<RepositoryClientDTO[]>>;
+  getRepositoryById(uuid: string): Promise<Result<RepositoryClientDTO>>;
+  deleteRepository(uuid: string): Promise<Result<void>>;
 
   // ===== Folder Operations =====
-  createFolder(request: CreateFolderRequest): Promise<FolderClientDTO>;
-  getFolderContents(folderUuid: string): Promise<{
+  createFolder(request: CreateFolderRequest): Promise<Result<FolderClientDTO>>;
+  getFolderContents(folderUuid: string): Promise<Result<{
     folders: FolderClientDTO[];
     resources: ResourceClientDTO[];
-  }>;
-  renameFolder(uuid: string, name: string): Promise<FolderClientDTO>;
-  moveFolder(uuid: string, targetParentUuid: string): Promise<FolderClientDTO>;
-  deleteFolder(uuid: string): Promise<void>;
+  }>>;
+  renameFolder(uuid: string, name: string): Promise<Result<FolderClientDTO>>;
+  moveFolder(uuid: string, targetParentUuid: string): Promise<Result<FolderClientDTO>>;
+  deleteFolder(uuid: string): Promise<Result<void>>;
 
   // ===== File Tree =====
-  getFileTree(repositoryUuid: string): Promise<FileTreeResponse>;
+  getFileTree(repositoryUuid: string): Promise<Result<FileTreeResponse>>;
 
   // ===== Search =====
-  search(request: SearchRequest): Promise<SearchResponse>;
+  search(request: SearchRequest): Promise<Result<SearchResponse>>;
 
   // ===== Resource Operations =====
-  getResource(uuid: string): Promise<ResourceClientDTO>;
-  renameResource(uuid: string, name: string): Promise<ResourceClientDTO>;
-  moveResource(uuid: string, targetFolderUuid: string): Promise<ResourceClientDTO>;
-  deleteResource(uuid: string): Promise<void>;
+  getResource(uuid: string): Promise<Result<ResourceClientDTO>>;
+  renameResource(uuid: string, name: string): Promise<Result<ResourceClientDTO>>;
+  moveResource(uuid: string, targetFolderUuid: string): Promise<Result<ResourceClientDTO>>;
+  deleteResource(uuid: string): Promise<Result<void>>;
 }

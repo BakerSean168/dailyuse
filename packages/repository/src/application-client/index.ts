@@ -10,6 +10,7 @@
 
 // Smart Container
 export { RepositoryApplicationService, repositoryApplicationService } from './repository-application.service';
+export { RepositoryClientService } from './repository-client-service';
 
 export {
   // Repository
