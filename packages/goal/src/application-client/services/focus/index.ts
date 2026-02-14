@@ -21,5 +21,3 @@ export { GetFocusStatus } from './get-focus-status';
 
 // History
 export { GetFocusHistory } from './get-focus-history';
-
-// Statistics

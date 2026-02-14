@@ -10,5 +10,4 @@ export { deleteGoalService } from './delete-goal';
 export { activateGoalService } from './activate-goal';
 export { archiveGoalService } from './archive-goal';
 export { completeGoalService } from './complete-goal';
-export { getGoalStatisticsService } from './get-goal-statistics';
 export { listGoalFoldersService } from './list-goal-folders';

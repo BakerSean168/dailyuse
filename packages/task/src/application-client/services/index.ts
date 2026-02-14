@@ -43,14 +43,6 @@ export { ValidateTaskDependency } from './validate-task-dependency';
 export { UpdateTaskDependency } from './update-task-dependency';
 export { DeleteTaskDependency } from './delete-task-dependency';
 
-// Task Statistics Use Cases
-export { UpdateTemplateStats } from './update-template-stats';
-export { UpdateInstanceStats } from './update-instance-stats';
-export { UpdateCompletionStats } from './update-completion-stats';
-export { GetTodayCompletionRate } from './get-today-completion-rate';
-export { GetWeekCompletionRate } from './get-week-completion-rate';
-export { GetEfficiencyTrend } from './get-efficiency-trend';
-
 // Integration Services
 export { TaskInstanceSyncService, taskInstanceSyncService } from './task-instance-sync.service';
 
@@ -123,8 +115,3 @@ export {
   TaskDependencyApplicationService,
   createTaskDependencyService,
 } from './TaskDependencyApplicationService';
-
-export {
-  TaskStatisticsApplicationService,
-  createTaskStatisticsService,
-} from './TaskStatisticsApplicationService';

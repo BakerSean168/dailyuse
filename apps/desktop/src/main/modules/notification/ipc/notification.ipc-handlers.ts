@@ -117,16 +117,6 @@ export class NotificationIPCHandler extends BaseIPCHandler {
         );
       },
     );
-
-    // 获取统计摘要
-    ipcMain.handle(
-      'notification:statistics:summary',
-      async (_, accountUuid: string) => {
-        return this.handleRequest('notification:statistics:summary', () =>
-          this.notificationService.getStatisticsSummary(accountUuid),
-        );
-      },
-    );
   }
 }
 

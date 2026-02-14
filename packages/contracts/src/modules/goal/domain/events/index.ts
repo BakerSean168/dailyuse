@@ -22,8 +22,6 @@ export type { GoalFolderUpdatedEvent } from './goal-folder-updated.event';
 export type { GoalFolderDeletedEvent } from './goal-folder-deleted.event';
 export type { GoalFolderStatsUpdatedEvent } from './goal-folder-stats-updated.event';
 
-export type { GoalStatisticsRecalculatedEvent } from './goal-statistics-recalculated.event';
-
 export type { FocusSessionStartedEvent } from './focus-session-started.event';
 export type { FocusSessionPausedEvent } from './focus-session-paused.event';
 export type { FocusSessionResumedEvent } from './focus-session-resumed.event';

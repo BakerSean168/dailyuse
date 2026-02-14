@@ -9,4 +9,3 @@ export { deleteNotificationService } from './delete-notification';
 export { getPreferenceService } from './get-preference';
 export { getOrCreatePreferenceService } from './get-or-create-preference';
 export { updatePreferenceService } from './update-preference';
-export { getStatisticsSummaryService } from './get-statistics-summary';

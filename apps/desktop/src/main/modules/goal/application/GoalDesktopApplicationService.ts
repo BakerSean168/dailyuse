@@ -18,7 +18,6 @@ import {
   activateGoalService,
   archiveGoalService,
   completeGoalService,
-  getGoalStatisticsService,
   listGoalFoldersService,
 } from './services';
 
@@ -66,12 +65,6 @@ export class GoalDesktopApplicationService {
 
   async completeGoal(uuid: string): Promise<GoalClientDTO> {
     return completeGoalService(uuid);
-  }
-
-  // ===== Statistics =====
-
-  async getGoalStatistics(accountUuid?: string) {
-    return getGoalStatisticsService(accountUuid);
   }
 
   // ===== Goal Folders =====
