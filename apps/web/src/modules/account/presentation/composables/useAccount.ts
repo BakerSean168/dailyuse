@@ -15,7 +15,6 @@ import type {
   CloseAccountReq,
   UpdateAccountSettingsReq,
 } from '@dailyuse/contracts/account';
-import { HttpClientError } from '@dailyuse/http-client';
 import { useAccountStore } from '../stores/accountStore';
 import { ACCOUNT_SERVICE_KEY, accountService as fallbackService } from '@/shared/di';
 
@@ -38,44 +37,42 @@ export function useAccount() {
   async function loadMyProfile(): Promise<boolean> {
     accountStore.setLoading(true);
     accountStore.setError(null);
-    try {
-      const account = await service.getMyProfile();
-      accountStore.setCurrentAccount(account.toDTO());
+    const result = await service.getMyProfile();
+    accountStore.setLoading(false);
+    if (result.ok) {
+      accountStore.setCurrentAccount(result.data.toDTO());
       return true;
-    } catch (err) {
-      const message = err instanceof HttpClientError ? err.message : '获取资料失败';
+    } else {
+      const message = result.error.message || '获取资料失败';
       accountStore.setError(message);
       toast.error('加载失败', { description: message });
       return false;
-    } finally {
-      accountStore.setLoading(false);
     }
   }
 
   async function updateMyProfile(req: UpdateAccountReq): Promise<boolean> {
     accountStore.setLoading(true);
     accountStore.setError(null);
-    try {
-      const updated = await service.updateMyProfile(req);
-      accountStore.setCurrentAccount(updated.toDTO());
+    const result = await service.updateMyProfile(req);
+    accountStore.setLoading(false);
+    if (result.ok) {
+      accountStore.setCurrentAccount(result.data.toDTO());
       toast.success('资料已更新');
       return true;
-    } catch (err) {
-      const message = err instanceof HttpClientError ? err.message : '更新资料失败';
+    } else {
+      const message = result.error.message || '更新资料失败';
       accountStore.setError(message);
       toast.error('更新失败', { description: message });
       return false;
-    } finally {
-      accountStore.setLoading(false);
     }
   }
 
   async function checkAvailability(req: CheckAvailabilityReq): Promise<boolean> {
-    try {
-      const result = await service.checkAvailability(req);
-      return result.available;
-    } catch (err) {
-      const message = err instanceof HttpClientError ? err.message : '检查可用性失败';
+    const result = await service.checkAvailability(req);
+    if (result.ok) {
+      return result.data.available;
+    } else {
+      const message = result.error.message || '检查可用性失败';
       toast.error('检查失败', { description: message });
       return false;
     }
@@ -83,34 +80,25 @@ export function useAccount() {
 
   async function updateSettings(req: UpdateAccountSettingsReq): Promise<boolean> {
     accountStore.setLoading(true);
-    try {
-      // TODO: AccountClientService 尚未暴露 updateSettings，暂时通过 apiClient 调用
-      toast.success('设置已更新');
-      return true;
-    } catch (err) {
-      const message = err instanceof HttpClientError ? err.message : '更新设置失败';
-      accountStore.setError(message);
-      toast.error('更新失败', { description: message });
-      return false;
-    } finally {
-      accountStore.setLoading(false);
-    }
+    // TODO: AccountClientService 尚未暴露 updateSettings，暂时通过 apiClient 调用
+    toast.success('设置已更新');
+    accountStore.setLoading(false);
+    return true;
   }
 
   async function closeAccount(req: CloseAccountReq): Promise<boolean> {
     accountStore.setLoading(true);
-    try {
-      await service.closeAccount(req);
+    const result = await service.closeAccount(req);
+    accountStore.setLoading(false);
+    if (result.ok) {
       accountStore.clearCurrentAccount();
       toast.success('账户已注销');
       return true;
-    } catch (err) {
-      const message = err instanceof HttpClientError ? err.message : '注销账户失败';
+    } else {
+      const message = result.error.message || '注销账户失败';
       accountStore.setError(message);
       toast.error('注销失败', { description: message });
       return false;
-    } finally {
-      accountStore.setLoading(false);
     }
   }
 
