@@ -31,6 +31,7 @@
     "build:web": "nx build web",
     "build:desktop": "nx build desktop",
     "build:affected": "nx affected -t build",
+    "build:packages": "nx run-many -t build --all --exclude=api,web,desktop",
     "// ========== Type Checking ==========": "",
     "typecheck": "nx run-many -t typecheck --all --parallel=5",
     "typecheck:api": "nx typecheck api",

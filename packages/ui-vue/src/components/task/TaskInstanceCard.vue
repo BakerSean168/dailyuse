@@ -79,26 +79,26 @@ const formatCompletionTime = computed(() => {
 
 const timeLabel = computed(() => {
   const timeConfig = props.task.timeConfig;
-  
+
   if (timeConfig?.timeType === 'ALL_DAY') {
     return 'All Day';
   }
-  
+
   if (timeConfig?.timeType === 'TIME_POINT' && timeConfig.timePoint !== null) {
     const hours = Math.floor(timeConfig.timePoint / 60);
     const minutes = timeConfig.timePoint % 60;
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   }
-  
+
   if (timeConfig?.timeType === 'TIME_RANGE' && timeConfig.timeRange) {
     const startHours = Math.floor(timeConfig.timeRange.start / 60);
     const startMinutes = timeConfig.timeRange.start % 60;
     const endHours = Math.floor(timeConfig.timeRange.end / 60);
     const endMinutes = timeConfig.timeRange.end % 60;
-    
+
     return `${startHours.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')} - ${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
   }
-  
+
   return 'All Day';
 });
 
