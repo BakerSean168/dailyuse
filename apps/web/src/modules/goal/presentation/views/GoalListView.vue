@@ -1,407 +1,301 @@
-<!--
-  Goal List View
-  目标列表页面
--->
 <template>
-  <v-container fluid class="pa-0 h-100">
-    <!-- 页面头部 -->
-    <v-card class="goal-header flex-shrink-0" elevation="1" rounded="0">
-      <v-card-text class="pa-4">
-        <div class="d-flex align-center justify-space-between">
-          <div class="d-flex align-center">
-            <v-avatar size="48" color="primary" variant="tonal" class="mr-4">
-              <v-icon size="24">mdi-target</v-icon>
-            </v-avatar>
-            <div>
-              <h1 class="text-h4 font-weight-bold text-primary mb-1">目标管理</h1>
-              <p class="text-subtitle-1 text-medium-emphasis mb-0">管理您的目标和关键结果</p>
-            </div>
-          </div>
+  <div class="flex h-screen w-full overflow-hidden bg-background">
+    <!-- Sidebar -->
+    <aside class="w-64 border-r bg-sidebar flex flex-col hidden md:flex">
+      <div class="p-4 border-b h-14 flex items-center">
+        <div class="flex items-center gap-2 font-semibold">
+          <Target class="h-5 w-5 text-primary" />
+          <span>Goals</span>
+        </div>
+      </div>
 
-          <div class="d-flex gap-2">
-            <v-btn color="secondary" size="large" prepend-icon="mdi-compare" variant="outlined" @click="goToComparison">
-              对比目标
-            </v-btn>
-            <v-btn color="secondary" size="large" prepend-icon="mdi-robot" variant="tonal"
-              @click="aiGoalCreatorRef?.open()">
-              AI 创建
-            </v-btn>
-            <v-btn color="primary" size="large" prepend-icon="mdi-plus" variant="elevated"
-              @click="goalDialogRef?.openForCreate()">
-              创建目标
-            </v-btn>
+      <ScrollArea class="flex-1">
+        <div class="p-2">
+          <GoalFolderComponent
+            :goal-folders="mockFolders"
+            :selected-folder-id="selectedDirUuid"
+            @select="onSelectedGoalFolder"
+            @create="mockAction('Create Folder')"
+          />
+        </div>
+      </ScrollArea>
+
+      <div class="p-4 border-t text-xs text-muted-foreground">
+        Workspace: Personal
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-hidden min-w-0">
+      <!-- Header -->
+      <header class="h-14 border-b flex items-center justify-between px-6 flex-shrink-0 bg-background/50 backdrop-blur-sm z-10">
+        <div class="flex items-center gap-4">
+          <h1 class="text-lg font-medium text-foreground">Overview</h1>
+          <div class="h-4 w-[1px] bg-border mx-2"></div>
+          <div class="flex items-center gap-1">
+            <Button
+              v-for="tab in statusTabs"
+              :key="tab.value"
+              variant="ghost"
+              size="sm"
+              :class="['h-7 px-2 text-muted-foreground hover:text-foreground', selectedStatusIndex === statusTabs.indexOf(tab) ? 'bg-secondary text-foreground font-medium' : '']"
+              @click="selectedStatusIndex = statusTabs.indexOf(tab)"
+            >
+              {{ tab.label }}
+              <span class="ml-1.5 text-xs opacity-50">{{ getGoalCountByStatus(tab.value) }}</span>
+            </Button>
           </div>
         </div>
-      </v-card-text>
-    </v-card>
 
-    <!-- 主体内容 -->
-    <div class="main-content flex-grow-1 pa-6 overflow-hidden">
-      <div class="content-wrapper h-100">
-        <v-row no-gutters class="h-100">
-          <!-- 侧边栏 - 目标分类 -->
-          <v-col cols="12" md="3" class="pr-md-6 mb-6 mb-md-0 h-100">
-            <GoalFolderComponent :goal-folders="GoalFolders" @selected-goal-folder="onSelectedGoalFolder"
-              @create-goal-folder="GoalFolderDialogRef?.openForCreate"
-              @edit-goal-folder="GoalFolderDialogRef?.openForEdit" @delete-goal-folder="handleDeleteFolder"
-              class="h-100" />
-          </v-col>
+        <div class="flex items-center gap-2">
+          <div class="relative w-64 mr-2 hidden lg:block">
+            <Search class="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search goals..."
+              class="h-8 pl-8 w-full bg-secondary/50 border-transparent focus-visible:bg-background focus-visible:border-ring"
+            />
+          </div>
 
-          <!-- 目标列表区域 -->
-          <v-col cols="12" md="9" class="h-100">
-            <v-card class="goal-main h-100 d-flex flex-column" elevation="2">
-              <!-- 状态过滤器 -->
-              <v-card-title class="pa-4 flex-shrink-0">
-                <div class="d-flex align-center justify-space-between w-100">
-                  <h2 class="text-h6 font-weight-medium">目标列表</h2>
+          <Button variant="outline" size="sm" class="h-8 gap-2" @click="mockAction('Compare Goals')">
+            <LayoutGrid class="h-4 w-4" />
+            <span>Compare</span>
+          </Button>
 
-                  <!-- 状态标签 -->
-                  <v-chip-group v-model="selectedStatusIndex" selected-class="text-primary" mandatory
-                    class="status-tabs">
-                    <v-chip v-for="(tab, index) in statusTabs" :key="tab.value" :value="index" variant="outlined" filter
-                      class="status-chip">
-                      {{ tab.label }}
-                      <v-badge :content="getGoalCountByStatus(tab.value)"
-                        :color="selectedStatusIndex === index ? 'primary' : 'surface-bright'" inline class="ml-2" />
-                    </v-chip>
-                  </v-chip-group>
-                </div>
-              </v-card-title>
+          <Button size="sm" class="h-8 gap-2" @click="goalDialogRef?.openForCreate()">
+            <Plus class="h-4 w-4" />
+            <span>New Goal</span>
+          </Button>
+        </div>
+      </header>
 
-              <v-divider class="flex-shrink-0" />
+      <!-- Content Area -->
+      <ScrollArea class="flex-1 p-6">
+        <div class="max-w-7xl mx-auto">
+          <div v-if="filteredGoals.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <GoalCard
+              v-for="goal in filteredGoals"
+              :key="goal.uuid"
+              :goal="goal"
+              @edit="mockAction('Edit Goal')"
+              @delete="mockAction('Delete Goal')"
+            />
+          </div>
 
-              <!-- 目标列表内容 -->
-              <v-card-text class="goal-list-content pa-4 flex-grow-1 overflow-y-auto">
-                <!-- 加载状态 -->
-                <div v-if="isLoading" class="d-flex justify-center align-center h-100">
-                  <v-progress-circular indeterminate color="primary" size="64" />
-                </div>
+          <div v-else class="flex flex-col items-center justify-center h-[50vh] text-muted-foreground">
+            <div class="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-4">
+              <Target class="h-6 w-6 opacity-50" />
+            </div>
+            <h3 class="text-lg font-medium text-foreground mb-1">No goals found</h3>
+            <p class="text-sm mb-6">Create a new goal to get started with tracking.</p>
+            <Button @click="goalDialogRef?.openForCreate()">
+              <Plus class="h-4 w-4 mr-2" />
+              Create Goal
+            </Button>
+          </div>
+        </div>
+      </ScrollArea>
+    </main>
 
-                <!-- 有目标时显示 -->
-                <div v-else-if="filteredGoals?.length">
-                  <v-row>
-                    <v-col v-for="goal in filteredGoals" :key="goal.uuid" cols="12" lg="6" xl="4">
-                      <goal-card :goal="goal" @edit-goal="handleEditGoal" @delete-goal="confirmDeleteGoal"
-                        @toggle-status="onToggleGoalStatus" />
-                    </v-col>
-                  </v-row>
-                </div>
-
-                <!-- 空状态 -->
-                <div v-else class="d-flex align-center justify-center h-100">
-                  <v-empty-state icon="mdi-target" title="暂无目标" text="创建您的第一个目标，开始目标管理之旅">
-                    <template v-slot:actions>
-                      <v-btn color="primary" variant="elevated" prepend-icon="mdi-plus"
-                        @click="goalDialogRef?.openForCreate()">
-                        创建第一个目标
-                      </v-btn>
-                    </template>
-                  </v-empty-state>
-                </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-      </div>
-    </div>
-
-    <!-- 确认删除对话框 -->
-    <v-dialog v-model="deleteDialog.show" max-width="400">
-      <v-card>
-        <v-card-title class="text-h6">确认删除</v-card-title>
-        <v-card-text> 您确定要删除这个目标吗？此操作无法撤销。 </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="grey" variant="text" @click="deleteDialog.show = false"> 取消 </v-btn>
-          <v-btn color="error" variant="text" @click="handleDeleteGoal"> 删除 </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
+    <!-- Dialogs -->
     <GoalDialog ref="goalDialogRef" />
-    <GoalFolderDialog ref="GoalFolderDialogRef" />
-    <AIGoalCreator ref="aiGoalCreatorRef" @goal-created="handleAIGoalCreated" />
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue';
-import { useRouter } from 'vue-router';
-import { useGoalManagement } from '../composables/useGoalManagement';
-import { useGoalFolder } from '../composables/useGoalFolder';
-import { useGoalStore } from '../stores/goalStore';
-import { getGlobalMessage } from '@dailyuse/ui-vuetify';
-import type { Goal, GoalFolder } from '@dailyuse/goal/domain-client';
+import { ref, computed } from 'vue';
+import {
+  Button,
+  ScrollArea,
+  Input,
+  Separator,
+  Badge
+} from '@dailyuse/ui-vue-shadcn';
+import {
+  Target,
+  Plus,
+  LayoutGrid,
+  Search,
+  Filter,
+  MoreHorizontal
+} from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
 
-// 组件导入
 import GoalCard from '../components/cards/GoalCard.vue';
 import GoalFolderComponent from '../components/GoalFolder.vue';
 import GoalDialog from '../components/dialogs/GoalDialog.vue';
-import GoalFolderDialog from '../components/dialogs/GoalFolderDialog.vue';
-import AIGoalCreator from '../../../../modules/ai/presentation/components/AIGoalCreator.vue';
-// composables
 
-const router = useRouter();
+// --- Mock Data ---
 
-// 使用拆分后的 composables
-const goalManagement = useGoalManagement();
-const goalFolderComposable = useGoalFolder();
-
-// 解构需要的方法和状态
-const {
-  isLoading,
-  error,
-  goals,
-  fetchGoals,
-  deleteGoal,
-  refresh,
-  initializeData,
-} = goalManagement;
-
-const { folders: GoalFolders, fetchFolders: fetchGoalFolders } = goalFolderComposable;
-
-const goalStore = useGoalStore();
-
-// 获取 message 用于错误提示
-const message = getGlobalMessage();
-
-// ===== 本地状态 =====
-
-const selectedDirUuid = ref<string>('all');
-const selectedStatusIndex = ref(0);
-
-// dialogs
-const goalDialogRef = ref<InstanceType<typeof GoalDialog> | null>(null);
-const GoalFolderDialogRef = ref<InstanceType<typeof GoalFolderDialog> | null>(null);
-const aiGoalCreatorRef = ref<InstanceType<typeof AIGoalCreator> | null>(null);
-
-const deleteDialog = reactive({
-  show: false,
-  goalUuid: '',
-});
-
-// const snackbar = reactive({
-//     show: false,
-//     message: '',
-//     color: 'success',
-//     timeout: 3000
-// });
-
-// 状态标签配置
-const statusTabs = [
-  { label: '全部', value: 'all' },
-  { label: '进行中', value: 'active' },
-  { label: '已暂停', value: 'paused' },
-  { label: '已完成', value: 'completed' },
-  { label: '已归档', value: 'archived' },
+const mockFolders = [
+  { uuid: 'all', name: 'All Goals', icon: 'LayoutGrid', count: 12 },
+  { uuid: 'q1', name: 'Q1 2024', icon: 'Folder', count: 5 },
+  { uuid: 'q2', name: 'Q2 2024', icon: 'Folder', count: 3 },
+  { uuid: 'marketing', name: 'Marketing', icon: 'Folder', count: 2 },
+  { uuid: 'product', name: 'Product', icon: 'Folder', count: 2 },
+  { uuid: 'archived', name: 'Archived', icon: 'Archive', count: 4 },
 ];
 
-// ===== 计算属性 =====
-
-/**
- * 根据选中的分类过滤目标
- */
-const goalsInSelectedFolder = computed(() => {
-  let result = goals.value;
-
-  // 按目录过滤
-  if (selectedDirUuid.value && selectedDirUuid.value !== 'all') {
-    if (selectedDirUuid.value === 'archived') {
-      result = goalStore.getGoalsByStatus('ARCHIVED');
-    } else {
-      result = goalStore.getGoalsByDir(selectedDirUuid.value);
-    }
+const mockGoals = [
+  {
+    uuid: '1',
+    title: 'Increase Monthly Active Users to 50k',
+    description: 'Focus on retention and referral programs to boost organic growth.',
+    status: 'ACTIVE',
+    statusText: 'On Track',
+    color: '#5E6AD2', // Linear-like purple
+    overallProgress: 65,
+    startDate: '2024-01-01',
+    targetDate: '2024-03-31',
+    daysRemaining: 45,
+    keyResultCount: 3,
+    completedKeyResultCount: 1,
+    isOverdue: false,
+    isCompleted: false,
+    isArchived: false,
+    owner: { name: 'Alice', avatar: '' },
+    team: 'Product'
+  },
+  {
+    uuid: '2',
+    title: 'Launch Mobile App v2.0',
+    description: 'Complete redesign of the mobile experience with new navigation.',
+    status: 'ACTIVE',
+    statusText: 'At Risk',
+    color: '#F5A623', // Warning orange
+    overallProgress: 30,
+    startDate: '2024-02-01',
+    targetDate: '2024-04-15',
+    daysRemaining: 60,
+    keyResultCount: 5,
+    completedKeyResultCount: 0,
+    isOverdue: false,
+    isCompleted: false,
+    isArchived: false,
+    owner: { name: 'Bob', avatar: '' },
+    team: 'Engineering'
+  },
+  {
+    uuid: '3',
+    title: 'Close $1M in Series A Funding',
+    description: 'Secure funding to scale operations and hire key talent.',
+    status: 'COMPLETED',
+    statusText: 'Completed',
+    color: '#27AE60', // Success green
+    overallProgress: 100,
+    startDate: '2023-10-01',
+    targetDate: '2024-01-15',
+    daysRemaining: 0,
+    keyResultCount: 2,
+    completedKeyResultCount: 2,
+    isOverdue: false,
+    isCompleted: true,
+    isArchived: false,
+    owner: { name: 'Charlie', avatar: '' },
+    team: 'Executive'
+  },
+  {
+    uuid: '4',
+    title: 'Establish Design System',
+    description: 'Create a unified design language across web and mobile platforms.',
+    status: 'DRAFT',
+    statusText: 'Paused',
+    color: '#95A5A6', // Gray
+    overallProgress: 15,
+    startDate: '2024-03-01',
+    targetDate: '2024-06-30',
+    daysRemaining: 120,
+    keyResultCount: 4,
+    completedKeyResultCount: 0,
+    isOverdue: false,
+    isCompleted: false,
+    isArchived: false,
+    owner: { name: 'Diana', avatar: '' },
+    team: 'Design'
+  },
+  {
+    uuid: '5',
+    title: 'Customer Satisfaction Score > 90',
+    description: 'Improve support response times and ticket resolution quality.',
+    status: 'ACTIVE',
+    statusText: 'On Track',
+    color: '#5E6AD2',
+    overallProgress: 88,
+    startDate: '2024-01-01',
+    targetDate: '2024-12-31',
+    daysRemaining: 300,
+    keyResultCount: 1,
+    completedKeyResultCount: 0,
+    isOverdue: false,
+    isCompleted: false,
+    isArchived: false,
+    owner: { name: 'Eve', avatar: '' },
+    team: 'Support'
   }
+];
 
-  return result;
-});
+// --- State ---
 
-/**
- * 过滤后的目标列表（分类 + 状态双重过滤）
- */
+const selectedDirUuid = ref('all');
+const selectedStatusIndex = ref(0);
+const goalDialogRef = ref<InstanceType<typeof GoalDialog> | null>(null);
+
+const statusTabs = [
+  { label: 'All', value: 'all' },
+  { label: 'Active', value: 'active' },
+  { label: 'Paused', value: 'paused' },
+  { label: 'Completed', value: 'completed' },
+];
+
+// --- Computed ---
+
 const filteredGoals = computed(() => {
-  let result = goalsInSelectedFolder.value;
+  let result = mockGoals;
 
-  // 按状态过滤
-  const currentStatus = statusTabs[selectedStatusIndex.value]?.value;
-  if (currentStatus && currentStatus !== 'all') {
-    result = result.filter((goal: Goal) => goal.status === currentStatus.toUpperCase());
+  // Folder filter
+  if (selectedDirUuid.value !== 'all') {
+    if (selectedDirUuid.value === 'archived') {
+       // Mock archived logic
+       return [];
+    }
+    // Mock folder filtering logic (just return subset for demo)
+    result = mockGoals.filter((_, i) => i % 2 === 0);
+  }
+
+  // Status filter
+  const currentTab = statusTabs[selectedStatusIndex.value];
+  if (currentTab.value === 'active') {
+    result = result.filter(g => g.status === 'ACTIVE');
+  } else if (currentTab.value === 'paused') {
+    result = result.filter(g => g.status === 'DRAFT');
+  } else if (currentTab.value === 'completed') {
+    result = result.filter(g => g.status === 'COMPLETED');
   }
 
   return result;
 });
 
-// ===== 方法 =====
+// --- Methods ---
 
-/**
- * 根据状态获取目标数量的计算属性（基于当前选中的分类）
- */
-const goalCountByStatus = computed(() => {
-  const goalsInFolder = goalsInSelectedFolder.value;
-
-  return {
-    all: goalsInFolder.length,
-    active: goalsInFolder.filter((goal: Goal) => goal.status === 'ACTIVE').length,
-    paused: goalsInFolder.filter((goal: Goal) => goal.status === 'DRAFT').length,
-    completed: goalsInFolder.filter((goal: Goal) => goal.status === 'COMPLETED').length,
-    archived: goalsInFolder.filter((goal: Goal) => goal.status === 'ARCHIVED').length,
-  };
-});
-
-/**
- * 根据状态获取目标数量
- */
 const getGoalCountByStatus = (status: string) => {
-  return goalCountByStatus.value[status as keyof typeof goalCountByStatus.value] || 0;
+  if (status === 'all') return mockGoals.length;
+  if (status === 'active') return mockGoals.filter(g => g.status === 'ACTIVE').length;
+  if (status === 'paused') return mockGoals.filter(g => g.status === 'DRAFT').length;
+  if (status === 'completed') return mockGoals.filter(g => g.status === 'COMPLETED').length;
+  return 0;
 };
 
-/**
- * 选择目录
- */
-const onSelectedGoalFolder = (dirUuid: string) => {
-  selectedDirUuid.value = dirUuid;
+const onSelectedGoalFolder = (uuid: string) => {
+  selectedDirUuid.value = uuid;
 };
 
-/**
- * 跳转到多目标对比页面
- */
-const goToComparison = () => {
-  router.push('/goals/compare');
+const mockAction = (name: string) => {
+  toast.info(`Action triggered: ${name}`, {
+    description: 'This is a mock action for the UI demo.'
+  });
 };
 
-/**
- * 处理编辑目标
- */
-const handleEditGoal = (goal: Goal) => {
-  goalDialogRef.value?.openForEdit(goal);
-};
-
-/**
- * 确认删除目标
- */
-const confirmDeleteGoal = (goalUuid: string) => {
-  deleteDialog.goalUuid = goalUuid;
-  deleteDialog.show = true;
-};
-
-/**
- * 删除目标
- */
-const handleDeleteGoal = async () => {
-  try {
-    await deleteGoal(deleteDialog.goalUuid);
-    deleteDialog.show = false;
-    message.success('删除目标成功');
-  } catch (error) {
-    console.error('删除目标失败:', error);
-    message.error('删除目标失败');
-  }
-};
-
-/**
- * 删除分类
- */
-const handleDeleteFolder = async (folderUuid: string) => {
-  // TODO: 添加确认对话框
-  if (confirm('确定要删除这个分类吗？此操作无法撤销。')) {
-    try {
-      await goalFolderComposable.deleteFolder(folderUuid);
-      // 如果删除的是当前选中的分类，切换到"全部"
-      if (selectedDirUuid.value === folderUuid) {
-        selectedDirUuid.value = 'all';
-      }
-      message.success('删除分类成功');
-    } catch (error) {
-      console.error('删除分类失败:', error);
-      message.error('删除分类失败');
-    }
-  }
-};
-
-/**
- * 切换目标状态
- */
-const onToggleGoalStatus = () => { };
-
-/**
- * 处理 AI 创建的目标
- */
-const handleAIGoalCreated = async (goalData: any) => {
-  console.log('AI 创建的目标数据:', goalData);
-  // 打开 GoalDialog 并预填充 AI 生成的数据
-  goalDialogRef.value?.openForCreate(goalData);
-  message.success('AI 生成的目标已加载，请确认后保存');
-};
-
-/**
- * 显示提示消息
- */
-// const showSnackbar = (message: string, color: string = 'success') => {
-//     snackbar.message = message;
-//     snackbar.color = color;
-//     snackbar.show = true;
-// };
-
-/**
- * 打开创建目录对话框
- */
-const openCreateDirDialog = () => {
-  // TODO: 实现创建目录对话框
-};
-
-/**
- * 打开编辑目录对话框
- */
-const openEditDirDialog = (folder: GoalFolder) => {
-  // TODO: 实现编辑目录对话框
-};
-
-// ===== 生命周期 =====
-
-onMounted(async () => {
-  try {
-    await initializeData();
-    await fetchGoals();
-    await fetchGoalFolders();
-  } catch (error) {
-    console.error('初始化失败:', error);
-    message.error('初始化失败');
-  }
-});
 </script>
 
 <style scoped>
-.main-content {
-  height: calc(100vh - 120px);
-}
-
-.content-wrapper {
-  max-height: 100%;
-}
-
-.goal-header {
-  background: linear-gradient(135deg,
-      rgba(var(--v-theme-primary), 0.05),
-      rgba(var(--v-theme-surface), 1));
-}
-
-.goal-main {
-  border-radius: 12px;
-}
-
-.goal-list-content {
-  min-height: 400px;
-}
-
-.status-tabs {
-  gap: 8px;
-}
-
-.status-chip {
-  transition: all 0.2s ease;
-}
-
-.status-chip:hover {
-  transform: translateY(-1px);
-}
+/* Scoped styles if needed, but Tailwind handles most */
 </style>
