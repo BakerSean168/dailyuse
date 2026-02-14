@@ -5,6 +5,9 @@
  * 简化版 - 只导出必要的类型和事件
  */
 
+// Client Service
+export { NotificationClientService } from './notification-client-service';
+
 // Re-export events if still needed
 export {
   NOTIFICATION_EVENTS,

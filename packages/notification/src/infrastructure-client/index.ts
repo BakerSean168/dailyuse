@@ -17,7 +17,6 @@ export type {
   QueryNotificationsRequest,
   NotificationListResponse,
   UnreadCountResponse,
-  IHttpClient,
   IIpcClient,
 } from './adapters/types';
 

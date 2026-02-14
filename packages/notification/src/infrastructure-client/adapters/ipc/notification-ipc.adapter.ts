@@ -4,6 +4,8 @@
  * IPC implementation of INotificationApiClient for Electron desktop apps.
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import { tryCatch } from '@dailyuse/contracts/result';
 import type {
   IIpcClient,
   INotificationApiClient,
@@ -32,36 +34,36 @@ const NOTIFICATION_CHANNELS = {
 export class NotificationIpcAdapter implements INotificationApiClient {
   constructor(private readonly ipcClient: IIpcClient) {}
 
-  async createNotification(request: CreateNotificationRequest): Promise<NotificationClientDTO> {
-    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.CREATE, request);
+  async createNotification(request: CreateNotificationRequest): Promise<Result<NotificationClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(NOTIFICATION_CHANNELS.CREATE, request));
   }
 
-  async findNotifications(query?: QueryNotificationsRequest): Promise<NotificationListResponse> {
-    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.FIND_ALL, query);
+  async findNotifications(query?: QueryNotificationsRequest): Promise<Result<NotificationListResponse>> {
+    return tryCatch(() => this.ipcClient.invoke(NOTIFICATION_CHANNELS.FIND_ALL, query));
   }
 
-  async findNotificationByUuid(uuid: string): Promise<NotificationClientDTO> {
-    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.FIND_BY_UUID, uuid);
+  async findNotificationByUuid(uuid: string): Promise<Result<NotificationClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(NOTIFICATION_CHANNELS.FIND_BY_UUID, uuid));
   }
 
-  async markAsRead(uuid: string): Promise<NotificationClientDTO> {
-    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.MARK_AS_READ, uuid);
+  async markAsRead(uuid: string): Promise<Result<NotificationClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(NOTIFICATION_CHANNELS.MARK_AS_READ, uuid));
   }
 
-  async markAllAsRead(): Promise<CountResult> {
-    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.MARK_ALL_AS_READ);
+  async markAllAsRead(): Promise<Result<CountResult>> {
+    return tryCatch(() => this.ipcClient.invoke(NOTIFICATION_CHANNELS.MARK_ALL_AS_READ));
   }
 
-  async deleteNotification(uuid: string): Promise<ActionResult> {
-    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.DELETE, uuid);
+  async deleteNotification(uuid: string): Promise<Result<ActionResult>> {
+    return tryCatch(() => this.ipcClient.invoke(NOTIFICATION_CHANNELS.DELETE, uuid));
   }
 
-  async batchDeleteNotifications(uuids: string[]): Promise<CountResult> {
-    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.BATCH_DELETE, uuids);
+  async batchDeleteNotifications(uuids: string[]): Promise<Result<CountResult>> {
+    return tryCatch(() => this.ipcClient.invoke(NOTIFICATION_CHANNELS.BATCH_DELETE, uuids));
   }
 
-  async getUnreadCount(): Promise<UnreadCountResponse> {
-    return this.ipcClient.invoke(NOTIFICATION_CHANNELS.GET_UNREAD_COUNT);
+  async getUnreadCount(): Promise<Result<UnreadCountResponse>> {
+    return tryCatch(() => this.ipcClient.invoke(NOTIFICATION_CHANNELS.GET_UNREAD_COUNT));
   }
 }
 

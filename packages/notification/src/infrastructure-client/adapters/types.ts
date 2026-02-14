@@ -7,7 +7,8 @@
  * Types imported from @dailyuse/contracts/notification.
  */
 
-import type { IHttpClient } from '@dailyuse/http-client';
+import type { Result } from '@dailyuse/contracts/result';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   NotificationClientDTO,
 } from '@dailyuse/contracts/notification';
@@ -15,7 +16,7 @@ import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
 
 // ============ Transport Client Interfaces ============
 
-// IHttpClient imported from @dailyuse/http-client
+// IResultHttpClient imported from @dailyuse/http-client
 
 export interface IIpcClient {
   invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
@@ -60,12 +61,12 @@ export interface UnreadCountResponse {
  * 通知模块 API 客户端接口
  */
 export interface INotificationApiClient {
-  createNotification(request: CreateNotificationRequest): Promise<NotificationClientDTO>;
-  findNotifications(query?: QueryNotificationsRequest): Promise<NotificationListResponse>;
-  findNotificationByUuid(uuid: string): Promise<NotificationClientDTO>;
-  markAsRead(uuid: string): Promise<NotificationClientDTO>;
-  markAllAsRead(): Promise<CountResult>;
-  deleteNotification(uuid: string): Promise<ActionResult>;
-  batchDeleteNotifications(uuids: string[]): Promise<CountResult>;
-  getUnreadCount(): Promise<UnreadCountResponse>;
+  createNotification(request: CreateNotificationRequest): Promise<Result<NotificationClientDTO>>;
+  findNotifications(query?: QueryNotificationsRequest): Promise<Result<NotificationListResponse>>;
+  findNotificationByUuid(uuid: string): Promise<Result<NotificationClientDTO>>;
+  markAsRead(uuid: string): Promise<Result<NotificationClientDTO>>;
+  markAllAsRead(): Promise<Result<CountResult>>;
+  deleteNotification(uuid: string): Promise<Result<ActionResult>>;
+  batchDeleteNotifications(uuids: string[]): Promise<Result<CountResult>>;
+  getUnreadCount(): Promise<Result<UnreadCountResponse>>;
 }

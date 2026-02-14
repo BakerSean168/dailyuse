@@ -4,8 +4,9 @@
  * HTTP implementation of INotificationApiClient.
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
-  IHttpClient,
   INotificationApiClient,
   CreateNotificationRequest,
   QueryNotificationsRequest,
@@ -23,39 +24,39 @@ import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
 export class NotificationHttpAdapter implements INotificationApiClient {
   private readonly baseUrl = '/api/v1/notifications';
 
-  constructor(private readonly httpClient: IHttpClient) {}
+  constructor(private readonly httpClient: IResultHttpClient) {}
 
-  async createNotification(request: CreateNotificationRequest): Promise<NotificationClientDTO> {
+  async createNotification(request: CreateNotificationRequest): Promise<Result<NotificationClientDTO>> {
     return this.httpClient.post(this.baseUrl, request);
   }
 
-  async findNotifications(query?: QueryNotificationsRequest): Promise<NotificationListResponse> {
+  async findNotifications(query?: QueryNotificationsRequest): Promise<Result<NotificationListResponse>> {
     return this.httpClient.get(this.baseUrl, {
       params: query as unknown as Record<string, unknown>,
     });
   }
 
-  async findNotificationByUuid(uuid: string): Promise<NotificationClientDTO> {
+  async findNotificationByUuid(uuid: string): Promise<Result<NotificationClientDTO>> {
     return this.httpClient.get(`${this.baseUrl}/${uuid}`);
   }
 
-  async markAsRead(uuid: string): Promise<NotificationClientDTO> {
+  async markAsRead(uuid: string): Promise<Result<NotificationClientDTO>> {
     return this.httpClient.patch(`${this.baseUrl}/${uuid}/read`);
   }
 
-  async markAllAsRead(): Promise<CountResult> {
+  async markAllAsRead(): Promise<Result<CountResult>> {
     return this.httpClient.patch(`${this.baseUrl}/read-all`);
   }
 
-  async deleteNotification(uuid: string): Promise<ActionResult> {
+  async deleteNotification(uuid: string): Promise<Result<ActionResult>> {
     return this.httpClient.delete(`${this.baseUrl}/${uuid}`);
   }
 
-  async batchDeleteNotifications(uuids: string[]): Promise<CountResult> {
+  async batchDeleteNotifications(uuids: string[]): Promise<Result<CountResult>> {
     return this.httpClient.post(`${this.baseUrl}/batch-delete`, { uuids });
   }
 
-  async getUnreadCount(): Promise<UnreadCountResponse> {
+  async getUnreadCount(): Promise<Result<UnreadCountResponse>> {
     return this.httpClient.get(`${this.baseUrl}/unread-count`);
   }
 }
@@ -63,6 +64,6 @@ export class NotificationHttpAdapter implements INotificationApiClient {
 /**
  * Factory function to create NotificationHttpAdapter
  */
-export function createNotificationHttpAdapter(httpClient: IHttpClient): NotificationHttpAdapter {
+export function createNotificationHttpAdapter(httpClient: IResultHttpClient): NotificationHttpAdapter {
   return new NotificationHttpAdapter(httpClient);
 }
