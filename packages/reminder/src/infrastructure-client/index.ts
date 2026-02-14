@@ -16,7 +16,6 @@ export type {
   IReminderApiClient,
   ReminderTemplatesResponse,
   ReminderGroupsResponse,
-  IHttpClient,
   IIpcClient,
 } from './adapters/types';
 

@@ -4,6 +4,8 @@
  * IPC implementation of IReminderApiClient for Electron desktop apps.
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import { tryCatch } from '@dailyuse/contracts/result';
 import type {
   IIpcClient,
   IReminderApiClient,
@@ -58,56 +60,56 @@ export class ReminderIpcAdapter implements IReminderApiClient {
 
   async createReminderTemplate(
     request: CreateReminderTemplateReq,
-  ): Promise<ReminderTemplateClientDTO> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.CREATE_TEMPLATE, request);
+  ): Promise<Result<ReminderTemplateClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.CREATE_TEMPLATE, request));
   }
 
-  async getReminderTemplate(uuid: string): Promise<ReminderTemplateClientDTO> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_TEMPLATE, uuid);
+  async getReminderTemplate(uuid: string): Promise<Result<ReminderTemplateClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.GET_TEMPLATE, uuid));
   }
 
   async getReminderTemplates(params?: {
     page?: number;
     limit?: number;
-  }): Promise<ReminderTemplatesResponse> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_TEMPLATES, params);
+  }): Promise<Result<ReminderTemplatesResponse>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.GET_TEMPLATES, params));
   }
 
-  async getUserTemplates(accountUuid: string): Promise<ReminderTemplateClientDTO[]> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_USER_TEMPLATES, accountUuid);
+  async getUserTemplates(accountUuid: string): Promise<Result<ReminderTemplateClientDTO[]>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.GET_USER_TEMPLATES, accountUuid));
   }
 
   async updateReminderTemplate(
     uuid: string,
     request: UpdateReminderTemplateReq,
-  ): Promise<ReminderTemplateClientDTO> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.UPDATE_TEMPLATE, uuid, request);
+  ): Promise<Result<ReminderTemplateClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.UPDATE_TEMPLATE, uuid, request));
   }
 
-  async deleteReminderTemplate(uuid: string): Promise<void> {
-    await this.ipcClient.invoke(REMINDER_CHANNELS.DELETE_TEMPLATE, uuid);
+  async deleteReminderTemplate(uuid: string): Promise<Result<void>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.DELETE_TEMPLATE, uuid));
   }
 
-  async toggleTemplateEnabled(uuid: string): Promise<ReminderTemplateClientDTO> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.TOGGLE_TEMPLATE, uuid);
+  async toggleTemplateEnabled(uuid: string): Promise<Result<ReminderTemplateClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.TOGGLE_TEMPLATE, uuid));
   }
 
   async moveTemplateToGroup(
     templateUuid: string,
     targetGroupUuid: string | null,
-  ): Promise<ReminderTemplateClientDTO> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.MOVE_TEMPLATE, templateUuid, targetGroupUuid);
+  ): Promise<Result<ReminderTemplateClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.MOVE_TEMPLATE, templateUuid, targetGroupUuid));
   }
 
   async searchTemplates(
     accountUuid: string,
     query: string,
-  ): Promise<ReminderTemplateClientDTO[]> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.SEARCH_TEMPLATES, accountUuid, query);
+  ): Promise<Result<ReminderTemplateClientDTO[]>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.SEARCH_TEMPLATES, accountUuid, query));
   }
 
-  async getTemplateScheduleStatus(templateUuid: string): Promise<TemplateScheduleStatusRes> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_SCHEDULE_STATUS, templateUuid);
+  async getTemplateScheduleStatus(templateUuid: string): Promise<Result<TemplateScheduleStatusRes>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.GET_SCHEDULE_STATUS, templateUuid));
   }
 
   async getUpcomingReminders(params?: {
@@ -115,56 +117,56 @@ export class ReminderIpcAdapter implements IReminderApiClient {
     limit?: number;
     importanceLevel?: string;
     type?: string;
-  }): Promise<GetUpcomingRemindersRes> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_UPCOMING, params);
+  }): Promise<Result<GetUpcomingRemindersRes>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.GET_UPCOMING, params));
   }
 
   // ===== 分组 CRUD =====
 
   async createReminderGroup(
     request: CreateReminderGroupReq,
-  ): Promise<ReminderGroupClientDTO> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.CREATE_GROUP, request);
+  ): Promise<Result<ReminderGroupClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.CREATE_GROUP, request));
   }
 
-  async getReminderGroup(uuid: string): Promise<ReminderGroupClientDTO> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_GROUP, uuid);
+  async getReminderGroup(uuid: string): Promise<Result<ReminderGroupClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.GET_GROUP, uuid));
   }
 
   async getReminderGroups(params?: {
     page?: number;
     limit?: number;
-  }): Promise<ReminderGroupsResponse> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_GROUPS, params);
+  }): Promise<Result<ReminderGroupsResponse>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.GET_GROUPS, params));
   }
 
-  async getUserReminderGroups(accountUuid: string): Promise<ReminderGroupClientDTO[]> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_USER_GROUPS, accountUuid);
+  async getUserReminderGroups(accountUuid: string): Promise<Result<ReminderGroupClientDTO[]>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.GET_USER_GROUPS, accountUuid));
   }
 
   async updateReminderGroup(
     uuid: string,
     request: UpdateReminderGroupReq,
-  ): Promise<ReminderGroupClientDTO> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.UPDATE_GROUP, uuid, request);
+  ): Promise<Result<ReminderGroupClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.UPDATE_GROUP, uuid, request));
   }
 
-  async deleteReminderGroup(uuid: string): Promise<void> {
-    await this.ipcClient.invoke(REMINDER_CHANNELS.DELETE_GROUP, uuid);
+  async deleteReminderGroup(uuid: string): Promise<Result<void>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.DELETE_GROUP, uuid));
   }
 
-  async toggleReminderGroupStatus(uuid: string): Promise<ReminderGroupClientDTO> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.TOGGLE_GROUP_STATUS, uuid);
+  async toggleReminderGroupStatus(uuid: string): Promise<Result<ReminderGroupClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.TOGGLE_GROUP_STATUS, uuid));
   }
 
-  async toggleReminderGroupControlMode(uuid: string): Promise<ReminderGroupClientDTO> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.TOGGLE_GROUP_CONTROL_MODE, uuid);
+  async toggleReminderGroupControlMode(uuid: string): Promise<Result<ReminderGroupClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.TOGGLE_GROUP_CONTROL_MODE, uuid));
   }
 
   // ===== 统计 =====
 
-  async getReminderStatistics(accountUuid: string): Promise<ReminderStatsClientDTO> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_STATISTICS, accountUuid);
+  async getReminderStatistics(accountUuid: string): Promise<Result<ReminderStatsClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.GET_STATISTICS, accountUuid));
   }
 }
 

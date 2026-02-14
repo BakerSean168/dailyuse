@@ -4,6 +4,9 @@
  * Re-exports all reminder-related application services.
  */
 
+// Client Service
+export { ReminderClientService } from './reminder-client-service';
+
 // Smart Container
 export { ReminderApplicationService, reminderApplicationService } from './reminder-application.service';
 
