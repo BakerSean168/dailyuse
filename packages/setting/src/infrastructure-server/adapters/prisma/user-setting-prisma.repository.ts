@@ -6,7 +6,7 @@
 
 import type { PrismaClient } from '@dailyuse/database';
 import type { IUserSettingRepository } from '../../../../domain-server/repositories/IUserSettingRepository';
-import { UserSetting } from '../../../../domain-server/aggregates/user-setting';
+import { UserSetting } from '../../../domain-server/aggregates/user-setting';
 
 export class UserSettingPrismaRepository implements IUserSettingRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -37,10 +37,12 @@ export class UserSettingPrismaRepository implements IUserSettingRepository {
     });
   }
 
-  private toPrisma(setting: UserSetting) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private toPrisma(setting: UserSetting): any {
     const dto = setting.toPersistenceDTO();
     const entries = JSON.parse(dto.entries);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const flatData: any = {
       id: dto.id,
       identityId: dto.identityId,
@@ -50,6 +52,7 @@ export class UserSettingPrismaRepository implements IUserSettingRepository {
       deletedAt: dto.deletedAt,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     for (const entry of entries) {
       flatData[entry.key] = entry.value;
     }
