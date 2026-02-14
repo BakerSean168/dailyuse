@@ -1,8 +1,8 @@
 /**
- * PrismaRuleRepository - Prisma Implementation of IRuleRepository
+ * Rule Prisma Repository
  * 规则仓储 - Prisma实现
  * 
- * Implements IRuleRepository using Prisma ORM with SQLite database
+ * Implements IRuleRepository using Prisma ORM with PostgreSQL/SQLite database
  * 
  * Responsibilities:
  * - CRUD operations for Rule aggregate
@@ -12,19 +12,19 @@
  */
 
 import type { PrismaClient } from '@dailyuse/database';
-import type { IRuleRepository, RuleFilter } from '../../domain-server/repositories/i-rule-repository';
-import type { Rule } from '../../domain-server/aggregates/rule';
-import { RuleId } from '../../domain-shared/value-objects/rule-id';
+import type { IRuleRepository, RuleFilter } from '../../../domain-server/repositories/i-rule-repository';
+import type { Rule } from '../../../domain-server/aggregates/rule';
+import { RuleId } from '../../../domain-shared/value-objects/rule-id';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import { RulePersistenceMapper } from '../mappers/rule-persistence-mapper';
+import { RulePersistenceMapper } from '../../mappers/rule-persistence-mapper';
 
 /**
  * Prisma Rule Repository
  * 
  * Uses PrismaClient for database access
  */
-export class PrismaRuleRepository implements IRuleRepository {
+export class RulePrismaRepository implements IRuleRepository {
   private readonly prisma: PrismaClient;
 
   constructor(prismaClient: PrismaClient) {

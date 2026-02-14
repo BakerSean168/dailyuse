@@ -1,14 +1,14 @@
 /**
- * PrismaRuleRevisionRepository - Prisma Implementation of IRuleRevisionRepository
+ * RuleRevision Prisma Repository
  * 规则修订记录仓储 - Prisma实现
  * 
  * Implements IRuleRevisionRepository for read-only revision history access
  */
 
 import type { PrismaClient } from '@dailyuse/database';
-import type { IRuleRevisionRepository } from '../../domain-server/repositories/i-rule-revision-repository';
-import { RuleRevision } from '../../domain-server/entities/rule-revision';
-import { RuleId, RuleRevisionId } from '../../domain-shared/value-objects';
+import type { IRuleRevisionRepository } from '../../../domain-server/repositories/i-rule-revision-repository';
+import { RuleRevision } from '../../../domain-server/entities/rule-revision';
+import { RuleId, RuleRevisionId } from '../../../domain-shared/value-objects';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 
@@ -17,7 +17,7 @@ import { ok, error } from '@dailyuse/contracts/result';
  * 
  * Provides read-only access to revision history
  */
-export class PrismaRuleRevisionRepository implements IRuleRevisionRepository {
+export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
   private readonly prisma: PrismaClient;
 
   constructor(prismaClient: PrismaClient) {

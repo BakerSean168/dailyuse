@@ -8,5 +8,9 @@
  * - Database connections
  */
 
-export * from './repositories';
+// ============ Adapters - Prisma ============
+export { RulePrismaRepository } from './adapters/prisma/rule-prisma.repository';
+export { RuleRevisionPrismaRepository } from './adapters/prisma/rule-revision-prisma.repository';
+
+// ============ Mappers ============
 export * from './mappers';

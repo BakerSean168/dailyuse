@@ -28,13 +28,7 @@ import {
   CreateRuleSchema,
   UpdateRuleSchema,
 } from '../contracts';
-import {
-  createResponseBuilder,
-  errorCodeToHttpStatus,
-  isOk,
-  type Result,
-  type ResultErrorDetail,
-} from '@dailyuse/contracts/result';
+import { createExpressHelper, isOk, type Result } from '@dailyuse/utils/result';
 import type { ExecutionContext } from '../application-server';
 
 // ============ Types ============
@@ -54,6 +48,9 @@ interface PlatformMiddleware {
 }
 
 interface AuthenticatedRequest extends Request {
+  id?: string;
+  traceId?: string;
+  startTime?: number;
   user?: {
     accountUuid: string;
     sessionUuid?: string;
@@ -63,28 +60,6 @@ interface AuthenticatedRequest extends Request {
 }
 
 // ============ Helpers ============
-
-const responseBuilder = createResponseBuilder();
-
-function buildValidationDetails(
-  details: { field?: string; message: string }[],
-): ResultErrorDetail[] {
-  return details.map((detail) => ({
-    field: detail.field,
-    code: 'INVALID_FIELD',
-    message: detail.message,
-  }));
-}
-
-function respondWithResult<T>(res: Response, result: Result<T>, okStatus = 200) {
-  if (isOk(result as any)) {
-    res.status(okStatus).json(responseBuilder.success(result.data as T));
-    return;
-  }
-
-  const status = errorCodeToHttpStatus(result.error?.code ?? 'INTERNAL_ERROR');
-  res.status(status).json(responseBuilder.fromResult(result as any));
-}
 
 function parseString(value: unknown): string | undefined {
   if (Array.isArray(value)) {
@@ -140,51 +115,48 @@ export function registerGovernanceCrudRoutes(
     auth,
     requireRole(['TechLead', 'Architect']),
     async (req: AuthenticatedRequest, res: Response) => {
+      const helper = createExpressHelper(res, req);
       const parsed = CreateRuleSchema.safeParse(req.body);
       if (!parsed.success) {
         const details = parsed.error.issues.map((issue) => ({
           field: issue.path.join('.'),
           message: issue.message,
         }));
-        res
-          .status(400)
-          .json(responseBuilder.validationError(buildValidationDetails(details)));
-        return;
+        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
       }
 
       const cx = getExecutionContext(req);
       if (!cx) {
-        res.status(401).json(responseBuilder.unauthorized());
-        return;
+        return helper.unauthorized();
       }
 
       const result = await handlers.createRule(parsed.data, cx);
-      respondWithResult(res, result, 201);
+      if (isOk(result)) {
+        return helper.created(result.data, '规则创建成功');
+      }
+      return helper.send(result);
     },
   );
 
   // PUT/PATCH /:id — 更新规则
   const updateHandler = async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     const parsed = UpdateRuleSchema.safeParse(req.body);
     if (!parsed.success) {
       const details = parsed.error.issues.map((issue) => ({
         field: issue.path.join('.'),
         message: issue.message,
       }));
-      res
-        .status(400)
-        .json(responseBuilder.validationError(buildValidationDetails(details)));
-      return;
+      return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
     }
 
     const cx = getExecutionContext(req);
     if (!cx) {
-      res.status(401).json(responseBuilder.unauthorized());
-      return;
+      return helper.unauthorized();
     }
 
     const result = await handlers.updateRule(req.params.id, parsed.data, cx);
-    respondWithResult(res, result, 200);
+    return helper.send(result);
   };
 
   router.put('/:id', auth, requireRole(['TechLead', 'Architect']), updateHandler);
@@ -196,26 +168,23 @@ export function registerGovernanceCrudRoutes(
     auth,
     requireRole(['TechLead', 'Architect']),
     async (req: AuthenticatedRequest, res: Response) => {
+      const helper = createExpressHelper(res, req);
       const parsed = DeleteRuleSchema.safeParse({ id: req.params.id });
       if (!parsed.success) {
         const details = parsed.error.issues.map((issue) => ({
           field: issue.path.join('.'),
           message: issue.message,
         }));
-        res
-          .status(400)
-          .json(responseBuilder.validationError(buildValidationDetails(details)));
-        return;
+        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
       }
 
       const cx = getExecutionContext(req);
       if (!cx) {
-        res.status(401).json(responseBuilder.unauthorized());
-        return;
+        return helper.unauthorized();
       }
 
       const result = await handlers.deleteRule(parsed.data, cx);
-      respondWithResult(res, result, 200);
+      return helper.send(result);
     },
   );
 
@@ -224,43 +193,40 @@ export function registerGovernanceCrudRoutes(
     '/by-code/:code',
     auth,
     async (req: AuthenticatedRequest, res: Response) => {
+      const helper = createExpressHelper(res, req);
       const parsed = GetRuleSchema.safeParse({ code: req.params.code });
       if (!parsed.success) {
         const details = parsed.error.issues.map((issue) => ({
           field: issue.path.join('.'),
           message: issue.message,
         }));
-        res
-          .status(400)
-          .json(responseBuilder.validationError(buildValidationDetails(details)));
-        return;
+        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
       }
 
       const result = await handlers.getRule(parsed.data);
-      respondWithResult(res, result, 200);
+      return helper.send(result);
     },
   );
 
   // GET /:id — 按 ID 获取规则
   router.get('/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     const parsed = GetRuleSchema.safeParse({ id: req.params.id });
     if (!parsed.success) {
       const details = parsed.error.issues.map((issue) => ({
         field: issue.path.join('.'),
         message: issue.message,
       }));
-      res
-        .status(400)
-        .json(responseBuilder.validationError(buildValidationDetails(details)));
-      return;
+      return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
     }
 
     const result = await handlers.getRule(parsed.data);
-    respondWithResult(res, result, 200);
+    return helper.send(result);
   });
 
   // GET / — 列表查询规则
   router.get('/', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     const parsed = ListRulesQuerySchema.safeParse({
       status: parseString(req.query.status),
       severity: parseString(req.query.severity),
@@ -274,14 +240,11 @@ export function registerGovernanceCrudRoutes(
         field: issue.path.join('.'),
         message: issue.message,
       }));
-      res
-        .status(400)
-        .json(responseBuilder.validationError(buildValidationDetails(details)));
-      return;
+      return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
     }
 
     const result = await handlers.listRules(parsed.data);
-    respondWithResult(res, result, 200);
+    return helper.send(result);
   });
 
   // GET /:id/revisions — 获取修订历史
@@ -289,6 +252,7 @@ export function registerGovernanceCrudRoutes(
     '/:id/revisions',
     auth,
     async (req: AuthenticatedRequest, res: Response) => {
+      const helper = createExpressHelper(res, req);
       const parsed = GetRuleRevisionsQuerySchema.safeParse({
         ruleId: req.params.id,
         page: parseNumber(req.query.page),
@@ -300,14 +264,11 @@ export function registerGovernanceCrudRoutes(
           field: issue.path.join('.'),
           message: issue.message,
         }));
-        res
-          .status(400)
-          .json(responseBuilder.validationError(buildValidationDetails(details)));
-        return;
+        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
       }
 
       const result = await handlers.getRevisions(parsed.data);
-      respondWithResult(res, result, 200);
+      return helper.send(result);
     },
   );
 
