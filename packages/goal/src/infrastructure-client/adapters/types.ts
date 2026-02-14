@@ -9,6 +9,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
 
   GoalClientDTO,
@@ -42,17 +43,7 @@ import type {
 // ============ Transport Client Interfaces ============
 // Module only defines what it needs — concrete implementations injected from App layer.
 
-/**
- * HTTP Client interface (Result-returning).
- * Satisfied by ResultHttpClient from @dailyuse/http-client at the App level.
- */
-export interface IResultHttpClient {
-  get<T = unknown>(url: string, config?: { params?: Record<string, unknown> }): Promise<Result<T>>;
-  post<T = unknown>(url: string, data?: unknown, config?: { params?: Record<string, unknown> }): Promise<Result<T>>;
-  put<T = unknown>(url: string, data?: unknown, config?: { params?: Record<string, unknown> }): Promise<Result<T>>;
-  patch<T = unknown>(url: string, data?: unknown, config?: { params?: Record<string, unknown> }): Promise<Result<T>>;
-  delete<T = unknown>(url: string, config?: { params?: Record<string, unknown> }): Promise<Result<T>>;
-}
+// IResultHttpClient imported from @dailyuse/http-client
 
 /**
  * IPC Client interface (Result-returning).
