@@ -8,7 +8,7 @@
 export { SettingContainer, SettingDependencyKeys } from './setting.container';
 
 // Port Interfaces
-export type { ISettingApiClient, IHttpClient, IIpcClient } from './adapters/types';
+export type { ISettingApiClient, IResultHttpClient, IIpcClient } from './adapters/types';
 
 // HTTP Adapters
 export { SettingHttpAdapter, createSettingHttpAdapters, type SettingHttpAdapters } from './adapters/http';
