@@ -4,20 +4,18 @@
     <header class="task-header">
       <div class="header-content">
         <!-- 标签页导航 -->
-        <div class="task-tabs">
-          <v-btn-toggle v-model="activeTab" mandatory variant="outlined" divided class="tab-group">
-            <v-btn
-              v-for="tab in tabs"
-              :key="tab.value"
-              :value="tab.value"
-              class="tab-button"
-              size="large"
-            >
-              <v-icon :icon="tab.icon" start />
-              {{ tab.label }}
-            </v-btn>
-          </v-btn-toggle>
-        </div>
+        <v-btn-toggle v-model="activeTab" mandatory variant="outlined" divided class="tab-group">
+          <v-btn
+            v-for="tab in tabs"
+            :key="tab.value"
+            :value="tab.value"
+            class="tab-button"
+            size="large"
+          >
+            <v-icon :icon="tab.icon" start />
+            {{ tab.label }}
+          </v-btn>
+        </v-btn-toggle>
       </div>
     </header>
 
@@ -40,8 +38,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import TaskTemplateManagement from '../components/TaskTemplateManagement.vue';
-import TaskInstanceManagement from '../components/TaskInstanceManagement.vue';
+import { TaskTemplateManagement, TaskInstanceManagement } from '@dailyuse/ui-vue';
 
 const activeTab = ref('daily');
 const tabs = [

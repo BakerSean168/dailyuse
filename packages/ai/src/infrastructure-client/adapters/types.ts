@@ -7,7 +7,7 @@
  * Types imported from @dailyuse/contracts/ai.
  */
 
-import type { IHttpClient } from '@dailyuse/http-client';
+export type { IHttpClient } from '@dailyuse/http-client';
 import type {
   AIConversationClientDTO,
   ConversationListRes,

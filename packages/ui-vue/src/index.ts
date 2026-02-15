@@ -75,13 +75,21 @@ export * from '@dailyuse/ui-vue-shadcn';
 // 4. Business Components (业务组件)
 // ==========================================
 // Authentication Components
-export * from './components/authentication';
+// export * from './components/authentication'; // Commented out until implementation confirmed
 
 // Account Components
-export * from './components/account';
+// export * from './components/account'; // Commented out until implementation confirmed
+
+// Task Components
+export * from './components/task';
 
 // ==========================================
 // 5. Styles (CSS 变量和 Tailwind)
 // ==========================================
 // 业务代码应在入口处引入：
 // import '@dailyuse/ui-core/styles/globals.css';
+
+// ==========================================
+// 6. Linear Components (Custom Composite)
+// ==========================================
+export * from './components/linear';
