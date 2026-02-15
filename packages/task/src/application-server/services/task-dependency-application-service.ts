@@ -6,16 +6,38 @@
  * - 鍗忚皟棰嗗煙鏈嶅姟鍜屼粨鍌?
  * - 澶勭悊渚濊禆鍏崇郴涓氬姟鐢ㄤ緥
  * - DTO 杞崲
- */
 
-import type { ITaskDependencyRepository } from '../../domain-server/repositories/ITaskDependencyRepository';
-import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
-import { TaskDependencyService } from '../../domain-server/services/TaskDependencyService';
-import type {
-  TaskDependencyServerDTO,
-  CreateTaskDependencyRequest,
-  UpdateTaskDependencyRequest,
-  ValidateDependencyRequest,
+/**
+ * TaskDependency Application Service
+ * Responsible for orchestrating TaskDependency domain logic and persistence.
+ *
+ * @deprecated This service is deprecated. Consider extracting individual use-cases:
+ * - createDependency -> create-task-dependency.use-case.ts
+ * - deleteDependency -> delete-task-dependency.use-case.ts
+ * - validateDependency -> move to domain service
+ * - checkCircular -> move to domain service
+ * 
+ * DDD Refactoring Rationale:
+ * - Violates Single Responsibility Principle
+ * - Business logic should be in domain service
+ * - New architecture: Use-cases for commands, domain service for validation
+ *
+ * Responsibilities:
+ * - Delegate business rules to DomainService
+ * - Coordinate repositories
+ * - Transaction management
+ * - DTO conversion
+ */
+export class TaskDependencyApplicationService {
+
+
+
+
+
+
+
+
+
   ValidateDependencyResponse,
   DependencyChainServerDTO,
 } from '@dailyuse/contracts/task';
