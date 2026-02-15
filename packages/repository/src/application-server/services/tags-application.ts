@@ -1,4 +1,9 @@
 /**
+ * @deprecated Extract tag operations to individual use-case files.
+ * Note: Naming inconsistency - consolidate to use-case pattern.
+ */
+
+/**
  * Tags Service
  *
  * 鏍囩缁熻涓庤繃婊ゆ湇鍔?

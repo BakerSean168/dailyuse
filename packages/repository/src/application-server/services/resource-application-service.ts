@@ -1,4 +1,13 @@
 /**
+ * @deprecated Use individual use-case services instead:
+ * - createResource -> use create-resource.ts
+ * - getResource -> use get-resource.ts
+ * - listResources -> use list-resources.ts
+ * - updateResourceContent -> use update-resource-content.ts
+ * - deleteResource -> use delete-resource.ts
+ */
+
+/**
  * Resource Application Service
  * Resource 搴旂敤鏈嶅姟 - Story 10-2
  */

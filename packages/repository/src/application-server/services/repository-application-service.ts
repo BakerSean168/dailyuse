@@ -1,3 +1,15 @@
+/**
+ * @deprecated Use individual use-case services instead:
+ * - createRepository -> use create-repository.ts
+ * - getRepository -> use get-repository.ts
+ * - listRepositories -> use list-repositories.ts
+ * - updateRepositoryConfig -> use update-repository-config.ts
+ * - activateRepository -> use activate-repository.ts
+ * - archiveRepository -> use archive-repository.ts
+ * - deleteRepository -> use delete-repository.ts
+ * - updateRepositoryStats -> use update-repository-stats.ts
+ */
+
 import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
 import { Repository } from '../../domain-server/aggregates/repository';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, RepositoryClientDTO, RepositoryConfigServerDTO, RepositoryStatsServerDTO } from '@dailyuse/contracts/repository';

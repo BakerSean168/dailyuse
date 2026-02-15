@@ -1,4 +1,9 @@
 /**
+ * @deprecated Extract search operations to individual use-case files.
+ * Note: Naming inconsistency - consolidate to use-case pattern.
+ */
+
+/**
  * Search Application Service
  * Story 11.2: Obsidian 椋庢牸鎼滅储
  * Story 11.6: 楂樼骇鎼滅储鍔熻兘锛坧roperty 妯″紡锛?
