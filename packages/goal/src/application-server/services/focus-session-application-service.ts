@@ -1,4 +1,9 @@
 /**
+ * @deprecated Extract operations to individual use-case files following DDD patterns.
+ * Each business operation should have its own use-case service.
+ */
+
+/**
  * @file FocusSessionApplicationService.ts
  * @description 专注会话应用服务，处理专注会话的生命周期管理
  * @date 2025-01-22

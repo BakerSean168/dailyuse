@@ -5,17 +5,29 @@ import type { UserSettingServerDTO, UpdateUserSettingDTO } from '@dailyuse/contr
 import type { UserSettingDTO } from '@dailyuse/contracts/setting'; // Fix DTO type name matching usage
 
 /**
- * Setting 应用服务
- * 负责协调领域服务和仓储，处理业务用例
+ * Setting Application Service
+ * Responsible for orchestrating setting domain logic and persistence.
  *
- * 架构职责：
- * - 委托给 DomainService 处理业务逻辑
- * - 协调多个领域服务
- * - 事务管理
- * - DTO 转换（Domain → ClientDTO）
- * - 调用 Repository 进行持久化
+ * @deprecated This service is deprecated. Use individual use-case services instead:
+ * - getUserSetting -> use get-user-setting.ts
+ * - updateUserSetting -> use update-user-setting.ts
+ * - resetUserSetting -> use reset-user-setting.ts
+ * - exportSettings -> use export-settings.ts
+ * - importSettings -> use import-settings.ts
+ * - getDefaultSettings -> use get-default-settings.ts
+ * 
+ * DDD Refactoring Rationale:
+ * - Violates Single Responsibility Principle (too many business scenarios)
+ * - New architecture: Each business scenario = separate service file
  *
- * 注意：返回给客户端的数据必须使用 ClientDTO（通过 toClientDTO() 方法）
+ * Architecture Responsibilities:
+ * - Delegate business logic to DomainService
+ * - Coordinate multiple domain services
+ * - Transaction management
+ * - DTO conversion (Domain → ClientDTO)
+ * - Repository calls for persistence
+ *
+ * Note: Data returned to client must use ClientDTO (via toClientDTO() method)
  */
 export class SettingApplicationService {
   private userSettingRepository: IUserSettingRepository;

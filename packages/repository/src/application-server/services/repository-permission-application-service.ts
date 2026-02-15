@@ -1,4 +1,9 @@
 /**
+ * @deprecated Extract permission operations to individual use-case files.
+ * Business logic for permission checks should be in domain services.
+ */
+
+/**
  * Repository Permission Application Service
  * 处理仓库的权限管理
  */

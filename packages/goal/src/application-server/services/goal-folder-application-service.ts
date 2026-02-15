@@ -1,4 +1,12 @@
 /**
+ * @deprecated Use individual use-case services instead:
+ * - createGoalFolder -> use create-goal-folder.ts
+ * - getGoalFolder -> use get-goal-folder.ts
+ * - listGoalFolders -> use list-goal-folders.ts
+ * - deleteGoalFolder -> use delete-goal-folder.ts
+ */
+
+/**
  * @file GoalFolderApplicationService.ts
  * @description 目标文件夹应用服务，协调领域服务和仓储处理业务逻辑。
  * @date 2025-01-22

@@ -1,4 +1,9 @@
 /**
+ * @deprecated Extract operations to individual use-case files following DDD patterns.
+ * Each business operation should have its own use-case service.
+ */
+
+/**
  * @file FocusModeApplicationService.ts
  * @description 专注周期模式应用服务，负责专注周期的创建、查询、延期、失效和自动过期检查。
  * @date 2025-01-22

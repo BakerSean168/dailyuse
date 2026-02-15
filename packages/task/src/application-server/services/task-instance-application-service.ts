@@ -11,9 +11,20 @@ import { eventBus } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 
+
 /**
  * TaskInstance Application Service
  * Responsible for orchestrating TaskInstance domain logic and persistence.
+ *
+ * @deprecated This service is deprecated. Use individual use-case services instead:
+ * - completeTaskInstance -> use complete-task-instance.ts
+ * - skipTaskInstance -> use skip-task-instance.ts
+ * - getTaskInstance -> implement get-task-instance.use-case.ts
+ * - getTaskInstances -> implement get-task-instances-by-date-range.ts
+ * 
+ * DDD Refactoring Rationale:
+ * - Violates Single Responsibility Principle (too many business scenarios)
+ * - New architecture: Each business scenario = separate service file
  *
  * Responsibilities:
  * - Delegate business rules to DomainService
@@ -22,6 +33,16 @@ import { ok, error } from '@dailyuse/contracts/result';
  * - DTO conversion
  */
 export class TaskInstanceApplicationService {
+
+
+
+
+
+
+
+
+
+
   private expirationService: TaskExpirationService;
   private instanceRepository: ITaskInstanceRepository;
   private templateRepository: ITaskTemplateRepository;

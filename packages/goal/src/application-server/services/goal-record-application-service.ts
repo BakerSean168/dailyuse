@@ -1,4 +1,9 @@
 /**
+ * @deprecated Extract operations to individual use-case files following DDD patterns.
+ * Each business operation should have its own use-case service.
+ */
+
+/**
  * @file GoalRecordApplicationService.ts
  * @description 目标记录应用服务，处理目标进度记录的创建和查询�?
  * @date 2025-01-22

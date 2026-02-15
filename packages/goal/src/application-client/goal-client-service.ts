@@ -1,4 +1,10 @@
 /**
+ * @deprecated Extract operations to individual service files following governance pattern.
+ * Each API operation should have its own service file for better maintainability.
+ * Example: create-goal.ts, update-goal.ts, delete-goal.ts, list-goals.ts
+ */
+
+/**
  * Goal Client Service
  *
  * Constructor-injected application service for goal management.

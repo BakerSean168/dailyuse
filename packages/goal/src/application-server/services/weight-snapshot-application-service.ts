@@ -1,4 +1,9 @@
 /**
+ * @deprecated Extract operations to individual use-case files following DDD patterns.
+ * Each business operation should have its own use-case service.
+ */
+
+/**
  * Weight Snapshot Application Service
  * 权重快照应用服务
  *

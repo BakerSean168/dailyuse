@@ -1,4 +1,9 @@
 /**
+ * @deprecated Extract search operations to individual use-case files.
+ * Note: Naming inconsistency - consolidate to use-case pattern.
+ */
+
+/**
  * Search Service
  *
  * Obsidian 椋庢牸鎼滅储鍜岄珮绾ф悳绱㈠姛鑳斤紙property 妯″紡锛?

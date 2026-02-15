@@ -28,17 +28,17 @@ import type {
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { eventBus } from '@dailyuse/utils';
 
-/**
- * TaskTemplate 搴旂敤鏈嶅姟
- * 璐熻矗鍗忚皟棰嗗煙鏈嶅姟鍜屼粨鍌紝澶勭悊涓氬姟鐢ㄤ緥
- *
- * 鏋舵瀯鑱岃矗锛?
- * - 濮旀墭缁?DomainService 澶勭悊涓氬姟閫昏緫
- * - 鍗忚皟澶氫釜棰嗗煙鏈嶅姟
- * - 浜嬪姟绠＄悊
- * - DTO 杞崲锛圖omain 鈫?Contracts锛?
- */
-export class TaskTemplateApplicationService {
+
+
+
+
+
+
+
+
+
+
+
   private generationService: TaskInstanceGenerationService;
   private templateRepository: ITaskTemplateRepository;
   private instanceRepository: ITaskInstanceRepository;

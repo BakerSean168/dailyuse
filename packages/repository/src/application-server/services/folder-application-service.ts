@@ -1,3 +1,13 @@
+/**
+ * @deprecated Use individual use-case services instead:
+ * - createFolder -> use create-folder.ts
+ * - getFolder -> use get-folder.ts
+ * - getFolderTree -> use get-folder-tree.ts
+ * - renameFolder -> use rename-folder.ts
+ * - moveFolder -> use move-folder.ts
+ * - deleteFolder -> use delete-folder.ts
+ */
+
 import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
 import { Folder } from '../../domain-server/entities/folder';
 import { FolderHierarchyService } from '../../domain-server/services/FolderHierarchyService';

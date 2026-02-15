@@ -1,4 +1,9 @@
 /**
+ * @deprecated Extract operations to individual service files following governance pattern.
+ * Each API operation should have its own service file for better maintainability.
+ */
+
+/**
  * Setting Client Service
  *
  * Application service with constructor injection of ISettingApiClient.

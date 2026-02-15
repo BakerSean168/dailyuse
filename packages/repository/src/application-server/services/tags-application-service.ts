@@ -1,4 +1,9 @@
 /**
+ * @deprecated Extract tag operations to individual use-case files.
+ * Note: Naming inconsistency - consolidate to use-case pattern.
+ */
+
+/**
  * Story 11.5: 鏍囩缁熻涓庤繃婊?
  * 
  * 鏍囩搴旂敤鏈嶅姟 - 鎻愪緵鏍囩缁熻鍔熻兘
