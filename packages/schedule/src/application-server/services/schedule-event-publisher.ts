@@ -8,7 +8,13 @@ import {
   SourceEntityNoScheduleRequiredError,
   ScheduleTaskCreationError,
 } from '../../domain-server/value-objects/errors';
-import { ScheduleApplicationService } from './ScheduleApplicationService';
+import type {
+  CreateScheduleTaskUseCase,
+  DeleteScheduleTaskUseCase,
+  ListScheduleTasksBySourceUseCase,
+  PauseScheduleTaskUseCase,
+  ResumeScheduleTaskUseCase,
+} from '../use-cases';
 import type { GoalServerDTO } from '@dailyuse/contracts/goal';
 import type { TaskTemplateServerDTO } from '@dailyuse/contracts/task';
 import { SourceModule } from '@dailyuse/contracts/schedule';
@@ -23,6 +29,23 @@ import { SourceModule } from '@dailyuse/contracts/schedule';
 export class ScheduleEventPublisher {
   private static isInitialized = false;
   private static taskFactory: ScheduleTaskFactory;
+  private static useCases: {
+    createScheduleTask: CreateScheduleTaskUseCase;
+    listScheduleTasksBySource: ListScheduleTasksBySourceUseCase;
+    deleteScheduleTask: DeleteScheduleTaskUseCase;
+    pauseScheduleTask: PauseScheduleTaskUseCase;
+    resumeScheduleTask: ResumeScheduleTaskUseCase;
+  } | null = null;
+
+  static configure(useCases: {
+    createScheduleTask: CreateScheduleTaskUseCase;
+    listScheduleTasksBySource: ListScheduleTasksBySourceUseCase;
+    deleteScheduleTask: DeleteScheduleTaskUseCase;
+    pauseScheduleTask: PauseScheduleTaskUseCase;
+    resumeScheduleTask: ResumeScheduleTaskUseCase;
+  }): void {
+    this.useCases = useCases;
+  }
 
   /**
    * 初始化事件监听器（在应用启动时调用一次）
@@ -451,6 +474,11 @@ export class ScheduleEventPublisher {
     goal: GoalServerDTO,
   ): Promise<void> {
     try {
+      if (!this.useCases) {
+        console.error('❌ [ScheduleEventPublisher] Use cases not configured');
+        return;
+      }
+
       // 使用工厂创建调度任务
       const scheduleTask = this.taskFactory.createFromSourceEntity({
         accountUuid,
@@ -460,19 +488,18 @@ export class ScheduleEventPublisher {
       });
 
       // 保存调度任务
-      const scheduleService = await ScheduleApplicationService.getInstance();
       const metadataDTO = scheduleTask.metadata.toServerDTO();
 
-      await scheduleService.createScheduleTask({
+      await this.useCases.createScheduleTask.execute({
         accountUuid,
         name: scheduleTask.name,
         description: scheduleTask.description ?? undefined,
         sourceModule: scheduleTask.sourceModule,
-        sourceEntityId: scheduleTask.sourceEntityId,
-        schedule: scheduleTask.schedule.toServerDTO(),
-        retryConfig: scheduleTask.retryPolicy,
-        payload: metadataDTO.payload,
-        tags: metadataDTO.tags,
+        sourceId: scheduleTask.sourceEntityId,
+        scheduleConfig: scheduleTask.schedule.toServerDTO(),
+        handlerType: 'domain-event',
+        handlerPayload: metadataDTO.payload,
+        retryPolicy: scheduleTask.retryPolicy,
       });
 
       console.log(`✅ [ScheduleEventPublisher] Created schedule task for Goal ${goal.uuid}`);
@@ -549,8 +576,17 @@ export class ScheduleEventPublisher {
     sourceId: string,
   ): Promise<void> {
     try {
-      const scheduleService = await ScheduleApplicationService.getInstance();
-      await scheduleService.deleteScheduleTasksBySource(sourceType, sourceId, accountUuid);
+      if (!this.useCases) {
+        console.error('❌ [ScheduleEventPublisher] Use cases not configured');
+        return;
+      }
+
+      const tasks = await this.useCases.listScheduleTasksBySource.execute(sourceType, sourceId);
+      const deletions = tasks
+        .filter((task) => task.accountUuid === accountUuid)
+        .map((task) => this.useCases!.deleteScheduleTask.execute(task.uuid));
+
+      await Promise.all(deletions);
       console.log(
         `✅ [ScheduleEventPublisher] Triggered deletion for tasks related to ${sourceType} ${sourceId}`,
       );
@@ -571,12 +607,16 @@ export class ScheduleEventPublisher {
     sourceId: string,
   ): Promise<void> {
     try {
-      const scheduleService = await ScheduleApplicationService.getInstance();
-      const tasks = await scheduleService.getScheduleTaskBySource(sourceType, sourceId);
+      if (!this.useCases) {
+        console.error('❌ [ScheduleEventPublisher] Use cases not configured');
+        return;
+      }
+
+      const tasks = await this.useCases.listScheduleTasksBySource.execute(sourceType, sourceId);
 
       for (const task of tasks) {
         if (task.accountUuid !== accountUuid) continue;
-        await scheduleService.pauseScheduleTask(task.uuid);
+        await this.useCases.pauseScheduleTask.execute(task.uuid);
       }
 
       console.log(
@@ -599,12 +639,16 @@ export class ScheduleEventPublisher {
     sourceId: string,
   ): Promise<void> {
     try {
-      const scheduleService = await ScheduleApplicationService.getInstance();
-      const tasks = await scheduleService.getScheduleTaskBySource(sourceType, sourceId);
+      if (!this.useCases) {
+        console.error('❌ [ScheduleEventPublisher] Use cases not configured');
+        return;
+      }
+
+      const tasks = await this.useCases.listScheduleTasksBySource.execute(sourceType, sourceId);
 
       for (const task of tasks) {
         if (task.accountUuid !== accountUuid) continue;
-        await scheduleService.resumeScheduleTask(task.uuid);
+        await this.useCases.resumeScheduleTask.execute(task.uuid);
       }
 
       console.log(
@@ -626,6 +670,11 @@ export class ScheduleEventPublisher {
     task: any, // TaskServerDTO
   ): Promise<void> {
     try {
+      if (!this.useCases) {
+        console.error('❌ [ScheduleEventPublisher] Use cases not configured');
+        return;
+      }
+
       // 使用工厂创建调度任务
       const scheduleTask = this.taskFactory.createFromSourceEntity({
         accountUuid,
@@ -635,19 +684,18 @@ export class ScheduleEventPublisher {
       });
 
       // 保存调度任务
-      const scheduleService = await ScheduleApplicationService.getInstance();
       const metadataDTO = scheduleTask.metadata.toServerDTO();
 
-      await scheduleService.createScheduleTask({
+      await this.useCases.createScheduleTask.execute({
         accountUuid,
         name: scheduleTask.name,
         description: scheduleTask.description ?? undefined,
         sourceModule: scheduleTask.sourceModule,
-        sourceEntityId: scheduleTask.sourceEntityId,
-        schedule: scheduleTask.schedule.toServerDTO(),
-        retryConfig: scheduleTask.retryPolicy,
-        payload: metadataDTO.payload,
-        tags: metadataDTO.tags,
+        sourceId: scheduleTask.sourceEntityId,
+        scheduleConfig: scheduleTask.schedule.toServerDTO(),
+        handlerType: 'domain-event',
+        handlerPayload: metadataDTO.payload,
+        retryPolicy: scheduleTask.retryPolicy,
       });
 
       console.log(`✅ [ScheduleEventPublisher] Created schedule task for Task ${task.uuid}`);
@@ -693,6 +741,11 @@ export class ScheduleEventPublisher {
     const operationId = `handle-reminder-created-${reminder.uuid}-${Date.now()}`;
 
     try {
+      if (!this.useCases) {
+        console.error('❌ [ScheduleEventPublisher] Use cases not configured');
+        return;
+      }
+
       // 使用工厂创建调度任务
       const scheduleTask = this.taskFactory.createFromSourceEntity({
         accountUuid,
@@ -702,19 +755,18 @@ export class ScheduleEventPublisher {
       });
 
       // 保存调度任务
-      const scheduleService = await ScheduleApplicationService.getInstance();
       const metadataDTO = scheduleTask.metadata.toServerDTO();
 
-      await scheduleService.createScheduleTask({
+      await this.useCases.createScheduleTask.execute({
         accountUuid,
         name: scheduleTask.name,
         description: scheduleTask.description ?? undefined,
         sourceModule: scheduleTask.sourceModule,
-        sourceEntityId: scheduleTask.sourceEntityId,
-        schedule: scheduleTask.schedule.toServerDTO(),
-        retryConfig: scheduleTask.retryPolicy,
-        payload: metadataDTO.payload,
-        tags: metadataDTO.tags,
+        sourceId: scheduleTask.sourceEntityId,
+        scheduleConfig: scheduleTask.schedule.toServerDTO(),
+        handlerType: 'domain-event',
+        handlerPayload: metadataDTO.payload,
+        retryPolicy: scheduleTask.retryPolicy,
       });
 
       console.log(

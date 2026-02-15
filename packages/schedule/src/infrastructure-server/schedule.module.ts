@@ -1,9 +1,21 @@
 import type { PrismaClient } from '../generated/prisma/client';
 import type Database from 'better-sqlite3';
 
-import { ScheduleApplicationService } from '../application-server/services/schedule-application-service';
+import {
+  CreateScheduleTaskUseCase,
+  DeleteScheduleTaskUseCase,
+  ListScheduleTasksBySourceUseCase,
+  PauseScheduleTaskUseCase,
+  ResumeScheduleTaskUseCase,
+  GetScheduleTaskUseCase,
+  ListScheduleTasksByAccountUseCase,
+  ListScheduleTasksByStatusUseCase,
+  TriggerScheduleTaskUseCase,
+  UpdateScheduleTaskUseCase,
+} from '../application-server/use-cases';
 import { ScheduleStatisticsApplicationService } from '../application-server/services/schedule-statistics-application-service';
 import { ScheduleEventApplicationService } from '../application-server/services/schedule-event-application-service';
+import { ScheduleEventPublisher } from '../application-server/services/schedule-event-publisher';
 import { ScheduleRepositoryFactory } from './di';
 
 type BetterSQLiteDB = Database.Database;
@@ -18,7 +30,16 @@ export class ScheduleModule {
   public readonly scheduleStatisticsRepository: ScheduleRepositories['scheduleStatisticsRepository'];
   public readonly scheduleTaskRepository: ScheduleRepositories['scheduleTaskRepository'];
 
-  public readonly scheduleService: ScheduleApplicationService;
+  public readonly createScheduleTask: CreateScheduleTaskUseCase;
+  public readonly updateScheduleTask: UpdateScheduleTaskUseCase;
+  public readonly deleteScheduleTask: DeleteScheduleTaskUseCase;
+  public readonly pauseScheduleTask: PauseScheduleTaskUseCase;
+  public readonly resumeScheduleTask: ResumeScheduleTaskUseCase;
+  public readonly triggerScheduleTask: TriggerScheduleTaskUseCase;
+  public readonly getScheduleTask: GetScheduleTaskUseCase;
+  public readonly listScheduleTasksByAccount: ListScheduleTasksByAccountUseCase;
+  public readonly listScheduleTasksBySource: ListScheduleTasksBySourceUseCase;
+  public readonly listScheduleTasksByStatus: ListScheduleTasksByStatusUseCase;
   public readonly scheduleStatisticsService: ScheduleStatisticsApplicationService;
   public readonly scheduleEventService: ScheduleEventApplicationService;
 
@@ -34,10 +55,19 @@ export class ScheduleModule {
     this.scheduleTaskRepository = repositories.scheduleTaskRepository;
 
     // 2. Initialize Services
-    this.scheduleService = new ScheduleApplicationService(
+    this.createScheduleTask = new CreateScheduleTaskUseCase(
       this.scheduleTaskRepository,
       this.scheduleStatisticsRepository,
     );
+    this.updateScheduleTask = new UpdateScheduleTaskUseCase(this.scheduleTaskRepository);
+    this.deleteScheduleTask = new DeleteScheduleTaskUseCase(this.scheduleTaskRepository);
+    this.pauseScheduleTask = new PauseScheduleTaskUseCase(this.scheduleTaskRepository);
+    this.resumeScheduleTask = new ResumeScheduleTaskUseCase(this.scheduleTaskRepository);
+    this.triggerScheduleTask = new TriggerScheduleTaskUseCase(this.scheduleTaskRepository);
+    this.getScheduleTask = new GetScheduleTaskUseCase(this.scheduleTaskRepository);
+    this.listScheduleTasksByAccount = new ListScheduleTasksByAccountUseCase(this.scheduleTaskRepository);
+    this.listScheduleTasksBySource = new ListScheduleTasksBySourceUseCase(this.scheduleTaskRepository);
+    this.listScheduleTasksByStatus = new ListScheduleTasksByStatusUseCase(this.scheduleTaskRepository);
 
     this.scheduleStatisticsService = new ScheduleStatisticsApplicationService(
       this.scheduleStatisticsRepository,
@@ -47,5 +77,13 @@ export class ScheduleModule {
     this.scheduleEventService = new ScheduleEventApplicationService(
       this.scheduleRepository,
     );
+
+    ScheduleEventPublisher.configure({
+      createScheduleTask: this.createScheduleTask,
+      listScheduleTasksBySource: this.listScheduleTasksBySource,
+      deleteScheduleTask: this.deleteScheduleTask,
+      pauseScheduleTask: this.pauseScheduleTask,
+      resumeScheduleTask: this.resumeScheduleTask,
+    });
   }
 }

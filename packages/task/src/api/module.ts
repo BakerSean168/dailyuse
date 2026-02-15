@@ -57,9 +57,17 @@ export const TaskApiModule: TaskApiModuleDef = {
     const templateController = new TaskTemplateController(
       taskModule.taskTemplateService,
     );
-    const instanceController = new TaskInstanceController(
-      taskModule.taskInstanceService,
-    );
+    const instanceController = new TaskInstanceController({
+      getTaskInstance: taskModule.getTaskInstance,
+      listByAccount: taskModule.listTaskInstancesByAccount,
+      listByTemplate: taskModule.listTaskInstancesByTemplate,
+      listByStatus: taskModule.listTaskInstancesByStatus,
+      getByDateRange: taskModule.getTaskInstancesByDateRange,
+      complete: taskModule.completeTaskInstance,
+      skip: taskModule.skipTaskInstance,
+      start: taskModule.startTaskInstance,
+      deleteInstance: taskModule.deleteTaskInstance,
+    });
 
     // 3. Register routes (inject platform middleware)
     registerTaskRoutes(

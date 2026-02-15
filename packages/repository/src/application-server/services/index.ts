@@ -4,20 +4,8 @@
  * 瀵煎嚭All鏈?Repository 妯″潡鐨?Services
  */
 
-// ===== Repository Application Service =====
-export { RepositoryApplicationService } from './repository-application-service';
-
 // ===== Repository Sync Application Service =====
 export { RepositorySyncApplicationService } from './repository-sync-application-service';
-
-// ===== Repository Permission Application Service =====
-export { RepositoryPermissionApplicationService } from './repository-permission-application-service';
-
-// ===== Resource Application Service =====
-export { ResourceApplicationService } from './resource-application-service';
-
-// ===== Folder Application Service =====
-export { FolderApplicationService } from './folder-application-service';
 
 // ===== Repository Statistics Application Service =====
 export { RepositoryStatisticsApplicationService } from './repository-statistics-application-service';
@@ -69,11 +57,6 @@ export { MoveFolder } from './move-folder';
 
 export { DeleteFolder } from './delete-folder';
 
-// ===== Search Service =====
-export { SearchService, createSearchService } from './search-application';
-
-// ===== Tags Service =====
-export { TagsService, createTagsService } from './tags-application';
 
 // ===== Repository Statistics Service =====
 export {

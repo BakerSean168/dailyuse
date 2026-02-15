@@ -36,16 +36,19 @@ export { UpdateGoalFolder } from './update-goal-folder';
 export { DeleteGoalFolder } from './delete-goal-folder';
 
 // ============================================================
-// Legacy: GoalApplicationService (保留向后兼容)
+// Key Result Services
 // ============================================================
 
-export { GoalApplicationService } from './goal-application-service';
+export { AddGoalKeyResult } from './add-goal-key-result';
+export { UpdateGoalKeyResult } from './update-goal-key-result';
+export { UpdateGoalKeyResultProgress } from './update-goal-key-result-progress';
+export { DeleteGoalKeyResult } from './delete-goal-key-result';
 
-export { GoalKeyResultApplicationService } from './goal-key-result-application-service';
+// ============================================================
+// Review Services
+// ============================================================
 
-export { GoalRecordApplicationService } from './goal-record-application-service';
-
-export { GoalReviewApplicationService } from './goal-review-application-service';
+export { AddGoalReview } from './add-goal-review';
 
 // ============================================================
 // Internal Services

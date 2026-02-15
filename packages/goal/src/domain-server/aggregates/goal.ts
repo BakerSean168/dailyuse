@@ -905,50 +905,6 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   }
 
   /**
-   * 🏭 创建关键结果（工厂方法）
-   * @deprecated 使用 createAndAddKeyResult 代替，它会自动添加并验证
-   */
-  public createKeyResult(params: {
-    title: string;
-    description?: string | null;
-    valueType: string;
-    aggregationMethod?: string;
-    targetValue: number;
-    currentValue?: number;
-    unit?: string;
-    weight: number;
-  }): KeyResult {
-    const keyResult = KeyResult.create({
-      title: params.title,
-      description: params.description ?? undefined,
-      progress: {
-        initialValue: 0,
-        currentValue: params.currentValue ?? 0,
-        targetValue: params.targetValue,
-        valueType: params.valueType as any,
-        aggregationMethod: (params.aggregationMethod || 'LAST') as any,
-        unit: params.unit ?? null,
-      },
-      weight: params.weight,
-      sortOrder: this._props.keyResults.length,
-    });
-    return keyResult;
-  }
-
-  /**
-   * ✅ 添加关键结果
-   * @deprecated 使用 createAndAddKeyResult 代替，它会自动验证
-   */
-  public addKeyResult(keyResult: KeyResult): void {
-    this._props.keyResults.push(keyResult);
-    this._props.updatedAt = new Date();
-
-    this.addDomainEvent<GoalEventMap['goal:key-result-add']>('goal:key-result-add', {
-      keyResultId: keyResult.id,
-    });
-  }
-
-  /**
    * ✅ 更新关键结果属性（标题、描述等）
    * @throws {GoalDeletedError} 当目标已删除时
    * @throws {GoalKeyResultNotFoundError} 当关键结果不存在时
@@ -1242,55 +1198,6 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   }
 
   /**
-   * 🏭 创建回顾（工厂方法）
-   * @deprecated 使用 createAndAddReview 代替
-   */
-  public createReview(params: {
-    title: string;
-    content: string;
-    reviewType: string;
-    rating?: number;
-    achievements?: string;
-    challenges?: string;
-    nextActions?: string;
-  }): GoalReview {
-    // 创建关键结果快照
-    const keyResultSnapshots: KeyResultSnapshotDTO[] = this._props.keyResults.map((kr) => ({
-      keyResultId: kr.id as any,
-      title: kr.title,
-      targetValue: kr.progress.targetValue,
-      currentValue: kr.progress.currentValue,
-      progressPercentage: kr.calculatePercentage(),
-    }));
-
-    const review = GoalReview.create({
-      goalId: this.id,
-      type: params.reviewType as any,
-      rating: params.rating || 3,
-      summary: params.content,
-      achievements: params.achievements,
-      challenges: params.challenges,
-      improvements: params.nextActions,
-      keyResultSnapshots,
-    });
-
-    return review;
-  }
-
-  /**
-   * ✅ 添加回顾
-   * @deprecated 使用 createAndAddReview 代替
-   */
-  public addReview(review: GoalReview): void {
-    this._props.goalReviews.push(review);
-    this._props.updatedAt = new Date();
-
-    this.addDomainEvent<GoalEventMap['goal:review-add']>('goal:review-add', {
-      reviewId: review.id,
-    });
-  }
-
-  /**
    * 📊 获取最新的回顾记录
    */
   public getLatestReview(): GoalReview | null {
@@ -1371,14 +1278,6 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     if (!this._props.targetDate) return null;
     const diff = this._props.targetDate.getTime() - Date.now();
     return Math.ceil(diff / DAY_MS);
-  }
-
-  /**
-   * 📊 获取优先级得分
-   * @deprecated 使用 priority getter 替代
-   */
-  public getPriorityScore(): number {
-    return this.priority;
   }
 
   // ================= 8. 序列化 (Serialization) =================

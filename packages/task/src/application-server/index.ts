@@ -20,10 +20,14 @@ export {
   CompleteTaskInstance,
   SkipTaskInstance,
   GetTaskInstancesByDateRange,
+  GetTaskInstance,
+  ListTaskInstancesByAccount,
+  ListTaskInstancesByTemplate,
+  ListTaskInstancesByStatus,
+  StartTaskInstance,
+  DeleteTaskInstance,
   GetTaskDashboard,
-  TaskInstanceApplicationService,
-  TaskTemplateApplicationService,
-  TaskDependencyApplicationService
+  TaskTemplateApplicationService
 } from './services';
 
 // ===== Query Services (Advanced Querying) =====

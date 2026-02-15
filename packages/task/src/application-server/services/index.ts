@@ -17,9 +17,13 @@ export { DeleteTaskTemplate } from './delete-task-template';
 export { CompleteTaskInstance } from './complete-task-instance';
 export { SkipTaskInstance } from './skip-task-instance';
 export { GetTaskInstancesByDateRange } from './get-task-instances-by-date-range';
+export { GetTaskInstance } from './get-task-instance';
+export { ListTaskInstancesByAccount } from './list-task-instances-by-account';
+export { ListTaskInstancesByTemplate } from './list-task-instances-by-template';
+export { ListTaskInstancesByStatus } from './list-task-instances-by-status';
+export { StartTaskInstance } from './start-task-instance';
+export { DeleteTaskInstance } from './delete-task-instance';
 export { GetTaskDashboard } from './get-task-dashboard';
 
 // ===== Application Services (Complex Orchestration) =====
-export { TaskInstanceApplicationService } from './task-instance-application-service';
 export { TaskTemplateApplicationService } from './task-template-application-service';
-export { TaskDependencyApplicationService } from './task-dependency-application-service';

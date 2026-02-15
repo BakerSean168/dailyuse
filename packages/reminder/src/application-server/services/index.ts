@@ -28,16 +28,3 @@ export { ReminderEventPublisher } from './reminder-event-publisher';
  */
 export { ReminderQueryApplicationService } from './reminder-query-application-service';
 
-/**
- * @deprecated Use individual services instead (CreateReminderTemplate, UpdateReminderTemplate, DeleteReminderTemplate, etc.)
- * This service is kept for backward compatibility but should not be used in new code.
- * Each operation has been extracted into its own service following the Single Responsibility Principle.
- * 
- * Migration Guide:
- * - createReminderTemplate() → CreateReminderTemplate.execute()
- * - updateReminderTemplate() → UpdateReminderTemplate.execute()
- * - deleteReminderTemplate() → DeleteReminderTemplate.execute()
- * - getReminderTemplate() → GetReminderTemplate.execute()
- * - getReminderTemplatesByAccount() → ListReminderTemplates.execute()
- */
-export { ReminderApplicationService } from './reminder-application-service';

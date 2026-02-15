@@ -27,11 +27,13 @@ export {
   GetGoalFolder,
   UpdateGoalFolder,
   DeleteGoalFolder,
-  // Legacy (向后兼容)
-  GoalApplicationService,
-  GoalKeyResultApplicationService,
-  GoalRecordApplicationService,
-  GoalReviewApplicationService,
+  // Key Result Services
+  AddGoalKeyResult,
+  UpdateGoalKeyResult,
+  UpdateGoalKeyResultProgress,
+  DeleteGoalKeyResult,
+  // Review Services
+  AddGoalReview,
 } from './services';
 
 // ============================================================

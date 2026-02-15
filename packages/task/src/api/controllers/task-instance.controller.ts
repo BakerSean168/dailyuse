@@ -6,22 +6,43 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { isOk, ok } from '@dailyuse/contracts/result';
 import type { TaskInstanceClientDTO, TaskInstanceStatus } from '@dailyuse/contracts/task';
-import type { TaskInstanceApplicationService } from '../../application-server/services/task-instance-application-service';
+import type { CompleteTaskInstance } from '../../application-server/services/complete-task-instance';
+import type { DeleteTaskInstance } from '../../application-server/services/delete-task-instance';
+import type { GetTaskInstance } from '../../application-server/services/get-task-instance';
+import type { GetTaskInstancesByDateRange } from '../../application-server/services/get-task-instances-by-date-range';
+import type { ListTaskInstancesByAccount } from '../../application-server/services/list-task-instances-by-account';
+import type { ListTaskInstancesByStatus } from '../../application-server/services/list-task-instances-by-status';
+import type { ListTaskInstancesByTemplate } from '../../application-server/services/list-task-instances-by-template';
+import type { SkipTaskInstance } from '../../application-server/services/skip-task-instance';
+import type { StartTaskInstance } from '../../application-server/services/start-task-instance';
+
+interface TaskInstanceUseCases {
+  getTaskInstance: GetTaskInstance;
+  listByAccount: ListTaskInstancesByAccount;
+  listByTemplate: ListTaskInstancesByTemplate;
+  listByStatus: ListTaskInstancesByStatus;
+  getByDateRange: GetTaskInstancesByDateRange;
+  complete: CompleteTaskInstance;
+  skip: SkipTaskInstance;
+  start: StartTaskInstance;
+  deleteInstance: DeleteTaskInstance;
+}
 
 /**
  * TaskInstance Controller
  */
 export class TaskInstanceController {
   constructor(
-    private readonly taskInstanceService: TaskInstanceApplicationService
+    private readonly useCases: TaskInstanceUseCases
   ) {}
 
   /**
    * Get instance by ID
    */
   async getInstance(uuid: string): Promise<Result<TaskInstanceClientDTO | null>> {
-    return await this.taskInstanceService.getTaskInstance(uuid);
+    return await this.useCases.getTaskInstance.execute(uuid);
   }
 
   /**
@@ -35,11 +56,11 @@ export class TaskInstanceController {
     }
   ): Promise<Result<TaskInstanceClientDTO[]>> {
     if (filters?.templateUuid) {
-      return await this.taskInstanceService.getTaskInstancesByTemplate(filters.templateUuid);
+      return await this.useCases.listByTemplate.execute(filters.templateUuid);
     } else if (filters?.status) {
-      return await this.taskInstanceService.getTaskInstancesByStatus(accountUuid, filters.status);
+      return await this.useCases.listByStatus.execute(accountUuid, filters.status);
     } else {
-      return await this.taskInstanceService.getTaskInstancesByAccount(accountUuid);
+      return await this.useCases.listByAccount.execute(accountUuid);
     }
   }
 
@@ -51,11 +72,17 @@ export class TaskInstanceController {
     startDate: number,
     endDate: number
   ): Promise<Result<TaskInstanceClientDTO[]>> {
-    return await this.taskInstanceService.getTaskInstancesByDateRange(
+    const result = await this.useCases.getByDateRange.execute(
       accountUuid,
       startDate,
-      endDate
+      endDate,
     );
+
+    if (!isOk(result)) {
+      return result as Result<TaskInstanceClientDTO[]>;
+    }
+
+    return ok(result.data.instances);
   }
 
   /**
@@ -69,7 +96,12 @@ export class TaskInstanceController {
       rating?: number;
     }
   ): Promise<Result<TaskInstanceClientDTO>> {
-    return await this.taskInstanceService.completeTaskInstance(uuid, params);
+    const result = await this.useCases.complete.execute(uuid, params);
+    if (!isOk(result)) {
+      return result as Result<TaskInstanceClientDTO>;
+    }
+
+    return ok(result.data.instance);
   }
 
   /**
@@ -79,20 +111,25 @@ export class TaskInstanceController {
     uuid: string,
     reason?: string
   ): Promise<Result<TaskInstanceClientDTO>> {
-    return await this.taskInstanceService.skipTaskInstance(uuid, reason);
+    const result = await this.useCases.skip.execute(uuid, { reason });
+    if (!isOk(result)) {
+      return result as Result<TaskInstanceClientDTO>;
+    }
+
+    return ok(result.data.instance);
   }
 
   /**
    * Start instance
    */
   async startInstance(uuid: string): Promise<Result<TaskInstanceClientDTO>> {
-    return await this.taskInstanceService.startTaskInstance(uuid);
+    return await this.useCases.start.execute(uuid);
   }
 
   /**
    * Delete instance
    */
   async deleteInstance(uuid: string): Promise<Result<void>> {
-    return await this.taskInstanceService.deleteTaskInstance(uuid);
+    return await this.useCases.deleteInstance.execute(uuid);
   }
 }

@@ -52,8 +52,11 @@ import type {
   ArchiveGoal,
   ActivateGoal,
   SearchGoals,
-  GoalKeyResultApplicationService,
-  GoalReviewApplicationService,
+  AddGoalKeyResult,
+  UpdateGoalKeyResult,
+  UpdateGoalKeyResultProgress,
+  DeleteGoalKeyResult,
+  AddGoalReview,
 } from '../application-server';
 
 const logger = createLogger('GoalRoutes');
@@ -69,8 +72,11 @@ export interface GoalRouteHandlers {
   archiveGoal: ArchiveGoal;
   activateGoal: ActivateGoal;
   searchGoals: SearchGoals;
-  keyResultService: GoalKeyResultApplicationService;
-  reviewService: GoalReviewApplicationService;
+  addKeyResult: AddGoalKeyResult;
+  updateKeyResult: UpdateGoalKeyResult;
+  updateKeyResultProgress: UpdateGoalKeyResultProgress;
+  deleteKeyResult: DeleteGoalKeyResult;
+  addReview: AddGoalReview;
 }
 
 interface PlatformMiddleware {
@@ -300,7 +306,7 @@ export function registerGoalRoutes(
       return;
     }
 
-    const result = await handlers.keyResultService.addKeyResult(
+    const result = await handlers.addKeyResult.execute(
         req.params.id,
         {
           title: parsed.data.title,
@@ -331,7 +337,7 @@ export function registerGoalRoutes(
         return;
       }
 
-      const result = await handlers.keyResultService.updateKeyResult(
+      const result = await handlers.updateKeyResult.execute(
           req.params.id,
           req.params.krId,
           {
@@ -365,7 +371,7 @@ export function registerGoalRoutes(
         return;
       }
 
-      const result = await handlers.keyResultService.updateKeyResultProgress(
+        const result = await handlers.updateKeyResultProgress.execute(
           req.params.id,
           req.params.krId,
           parsed.data.newValue,
@@ -380,7 +386,7 @@ export function registerGoalRoutes(
     '/:id/key-results/:krId',
     auth,
     async (req: AuthenticatedRequest, res: Response) => {
-      const result = await handlers.keyResultService.deleteKeyResult(
+      const result = await handlers.deleteKeyResult.execute(
           req.params.id,
           req.params.krId,
         );
@@ -406,7 +412,7 @@ export function registerGoalRoutes(
       return;
     }
 
-    const result = await handlers.reviewService.addReview(
+    const result = await handlers.addReview.execute(
         req.params.id,
         {
           title: parsed.data.title,

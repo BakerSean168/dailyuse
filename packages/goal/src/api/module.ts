@@ -20,8 +20,11 @@ import {
   ArchiveGoal,
   ActivateGoal,
   SearchGoals,
-  GoalKeyResultApplicationService,
-  GoalReviewApplicationService,
+  AddGoalKeyResult,
+  UpdateGoalKeyResult,
+  UpdateGoalKeyResultProgress,
+  DeleteGoalKeyResult,
+  AddGoalReview,
 } from '../application-server';
 import { GoalPrismaRepository } from '../infrastructure-server';
 import { registerGoalRoutes } from './routes';
@@ -61,8 +64,11 @@ export const GoalApiModule: GoalApiModuleDef = {
     const archiveGoal = new ArchiveGoal(goalRepository);
     const activateGoal = new ActivateGoal(goalRepository);
     const searchGoals = new SearchGoals(goalRepository);
-    const keyResultService = new GoalKeyResultApplicationService(goalRepository);
-    const reviewService = new GoalReviewApplicationService(goalRepository);
+    const addKeyResult = new AddGoalKeyResult(goalRepository);
+    const updateKeyResult = new UpdateGoalKeyResult(goalRepository);
+    const updateKeyResultProgress = new UpdateGoalKeyResultProgress(goalRepository);
+    const deleteKeyResult = new DeleteGoalKeyResult(goalRepository);
+    const addReview = new AddGoalReview(goalRepository);
 
     // 3. 创建 Handlers（函数引用）
     const handlers = {
@@ -74,8 +80,11 @@ export const GoalApiModule: GoalApiModuleDef = {
       archiveGoal,
       activateGoal,
       searchGoals,
-      keyResultService,
-      reviewService,
+      addKeyResult,
+      updateKeyResult,
+      updateKeyResultProgress,
+      deleteKeyResult,
+      addReview,
     };
 
     // 4. 注册路由

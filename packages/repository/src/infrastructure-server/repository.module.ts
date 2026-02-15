@@ -22,11 +22,7 @@ import type { IResourceRepository } from '../domain-server/repositories/IResourc
 import type { IFolderRepository } from '../domain-server/repositories/IFolderRepository';
 import type { IRepositoryStatisticsRepository } from '../domain-server/repositories/IRepositoryStatisticsRepository';
 
-import { RepositoryApplicationService } from '../application-server/services/repository-application-service';
 import { RepositorySyncApplicationService } from '../application-server/services/repository-sync-application-service';
-import { RepositoryPermissionApplicationService } from '../application-server/services/repository-permission-application-service';
-import { ResourceApplicationService } from '../application-server/services/resource-application-service';
-import { FolderApplicationService } from '../application-server/services/folder-application-service';
 import { RepositoryStatisticsApplicationService } from '../application-server/services/repository-statistics-application-service';
 
 import { RepositoryRepositoryFactory } from './di/repository-repository.factory';
@@ -41,11 +37,7 @@ export class RepositoryModule {
   public readonly statisticsRepository: IRepositoryStatisticsRepository;
 
   // ============ Application Services (Public - injected into routes) ============
-  public readonly repositoryService: RepositoryApplicationService;
   public readonly syncService: RepositorySyncApplicationService;
-  public readonly permissionService: RepositoryPermissionApplicationService;
-  public readonly resourceService: ResourceApplicationService;
-  public readonly folderService: FolderApplicationService;
   public readonly statisticsService: RepositoryStatisticsApplicationService;
 
   constructor(dataSourceType: 'prisma' | 'sqlite', dbConnection: PrismaClient | BetterSQLiteDB) {
@@ -58,11 +50,7 @@ export class RepositoryModule {
     this.statisticsRepository = repositories.statisticsRepository;
 
     // ============ Step 2: Initialize Application Services (Pure DI) ============
-    this.repositoryService = new RepositoryApplicationService(this.repositoryRepository);
     this.syncService = new RepositorySyncApplicationService();
-    this.permissionService = new RepositoryPermissionApplicationService();
-    this.resourceService = new ResourceApplicationService(this.resourceRepository);
-    this.folderService = new FolderApplicationService(this.folderRepository);
     this.statisticsService = new RepositoryStatisticsApplicationService(this.statisticsRepository);
   }
 }

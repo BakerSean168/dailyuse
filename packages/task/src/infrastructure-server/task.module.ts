@@ -14,8 +14,15 @@ import type { ITaskDependencyRepository } from '../domain-server/repositories/IT
 import type { ITaskFolderRepository } from '../domain-server/repositories/ITaskFolderRepository';
 import { TaskRepositoryFactory } from './di/task-repository.factory';
 import { TaskTemplateApplicationService } from '../application-server/services/task-template-application-service';
-import { TaskInstanceApplicationService } from '../application-server/services/task-instance-application-service';
-import { TaskDependencyApplicationService } from '../application-server/services/task-dependency-application-service';
+import { CompleteTaskInstance } from '../application-server/services/complete-task-instance';
+import { SkipTaskInstance } from '../application-server/services/skip-task-instance';
+import { GetTaskInstancesByDateRange } from '../application-server/services/get-task-instances-by-date-range';
+import { GetTaskInstance } from '../application-server/services/get-task-instance';
+import { ListTaskInstancesByAccount } from '../application-server/services/list-task-instances-by-account';
+import { ListTaskInstancesByTemplate } from '../application-server/services/list-task-instances-by-template';
+import { ListTaskInstancesByStatus } from '../application-server/services/list-task-instances-by-status';
+import { StartTaskInstance } from '../application-server/services/start-task-instance';
+import { DeleteTaskInstance } from '../application-server/services/delete-task-instance';
 
 type BetterSQLiteDB = Database.Database;
 
@@ -30,8 +37,15 @@ export class TaskModule {
   public readonly taskFolderRepository?: ITaskFolderRepository;
 
   public readonly taskTemplateService: TaskTemplateApplicationService;
-  public readonly taskInstanceService: TaskInstanceApplicationService;
-  public readonly taskDependencyService: TaskDependencyApplicationService;
+  public readonly getTaskInstance: GetTaskInstance;
+  public readonly listTaskInstancesByAccount: ListTaskInstancesByAccount;
+  public readonly listTaskInstancesByTemplate: ListTaskInstancesByTemplate;
+  public readonly listTaskInstancesByStatus: ListTaskInstancesByStatus;
+  public readonly getTaskInstancesByDateRange: GetTaskInstancesByDateRange;
+  public readonly completeTaskInstance: CompleteTaskInstance;
+  public readonly skipTaskInstance: SkipTaskInstance;
+  public readonly startTaskInstance: StartTaskInstance;
+  public readonly deleteTaskInstance: DeleteTaskInstance;
 
   constructor(
     dataSourceType: 'prisma' | 'sqlite',
@@ -64,14 +78,17 @@ export class TaskModule {
       this.taskInstanceRepository,
     );
 
-    this.taskInstanceService = new TaskInstanceApplicationService(
+    this.getTaskInstance = new GetTaskInstance(this.taskInstanceRepository);
+    this.listTaskInstancesByAccount = new ListTaskInstancesByAccount(this.taskInstanceRepository);
+    this.listTaskInstancesByTemplate = new ListTaskInstancesByTemplate(this.taskInstanceRepository);
+    this.listTaskInstancesByStatus = new ListTaskInstancesByStatus(this.taskInstanceRepository);
+    this.getTaskInstancesByDateRange = new GetTaskInstancesByDateRange(this.taskInstanceRepository);
+    this.completeTaskInstance = new CompleteTaskInstance(
       this.taskInstanceRepository,
       this.taskTemplateRepository,
     );
-
-    this.taskDependencyService = new TaskDependencyApplicationService(
-      this.taskDependencyRepository,
-      this.taskTemplateRepository,
-    );
+    this.skipTaskInstance = new SkipTaskInstance(this.taskInstanceRepository);
+    this.startTaskInstance = new StartTaskInstance(this.taskInstanceRepository);
+    this.deleteTaskInstance = new DeleteTaskInstance(this.taskInstanceRepository);
   }
 }
