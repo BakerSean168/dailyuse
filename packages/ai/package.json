@@ -46,6 +46,7 @@
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
+    "@dailyuse/http-client": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "ai": "^4.0.0",
     "better-sqlite3": "^12.5.0",

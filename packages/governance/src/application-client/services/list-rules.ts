@@ -4,9 +4,15 @@
  * 获取规则列表用例
  */
 
-import type { ListRulesQuery, ListRulesRes } from '@/contracts/api/rules';
+import type { Result } from '@dailyuse/contracts/result';
+import type { ListRulesQuery } from '@/contracts/api/rules';
 import { Rule } from '../../domain-client/aggregates/rule';
 import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
+
+interface ListRulesResult {
+  rules: Rule[];
+  pagination: { page: number; pageSize: number; total: number };
+}
 
 /**
  * List Rules
@@ -47,20 +53,22 @@ export class ListRules {
   /**
    * 执行用例：获取规则列表
    */
-  async execute(query?: ListRulesQuery): Promise<{
-    rules: Rule[];
-    pagination: { page: number; pageSize: number; total: number };
-  }> {
-    const response = await this.apiClient.listRules(query);
+  async execute(query?: ListRulesQuery): Promise<Result<ListRulesResult>> {
+    const result = await this.apiClient.listRules(query);
+    if (!result.ok) return result;
 
+    const response = result.data;
     const rules = response.items.map((dto) => Rule.fromDTO(dto));
 
     return {
-      rules,
-      pagination: {
-        page: response.page,
-        pageSize: response.pageSize,
-        total: response.total,
+      ok: true,
+      data: {
+        rules,
+        pagination: {
+          page: response.page,
+          pageSize: response.pageSize,
+          total: response.total,
+        },
       },
     };
   }

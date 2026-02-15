@@ -4,8 +4,9 @@
  * HTTP implementation of IReminderApiClient.
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
-  IHttpClient,
   IReminderApiClient,
   ReminderTemplatesResponse,
   ReminderGroupsResponse,
@@ -31,50 +32,50 @@ export class ReminderHttpAdapter implements IReminderApiClient {
   private readonly templatesUrl = '/reminders/templates';
   private readonly groupsUrl = '/reminder-groups';
 
-  constructor(private readonly httpClient: IHttpClient) {}
+  constructor(private readonly httpClient: IResultHttpClient) {}
 
   // ===== 模板 CRUD =====
 
   async createReminderTemplate(
     request: CreateReminderTemplateReq,
-  ): Promise<ReminderTemplateClientDTO> {
+  ): Promise<Result<ReminderTemplateClientDTO>> {
     return this.httpClient.post(this.templatesUrl, request);
   }
 
-  async getReminderTemplate(uuid: string): Promise<ReminderTemplateClientDTO> {
+  async getReminderTemplate(uuid: string): Promise<Result<ReminderTemplateClientDTO>> {
     return this.httpClient.get(`${this.templatesUrl}/${uuid}`);
   }
 
   async getReminderTemplates(params?: {
     page?: number;
     limit?: number;
-  }): Promise<ReminderTemplatesResponse> {
+  }): Promise<Result<ReminderTemplatesResponse>> {
     return this.httpClient.get(this.templatesUrl, { params });
   }
 
-  async getUserTemplates(accountUuid: string): Promise<ReminderTemplateClientDTO[]> {
+  async getUserTemplates(accountUuid: string): Promise<Result<ReminderTemplateClientDTO[]>> {
     return this.httpClient.get(`${this.templatesUrl}/user/${accountUuid}`);
   }
 
   async updateReminderTemplate(
     uuid: string,
     request: UpdateReminderTemplateReq,
-  ): Promise<ReminderTemplateClientDTO> {
+  ): Promise<Result<ReminderTemplateClientDTO>> {
     return this.httpClient.patch(`${this.templatesUrl}/${uuid}`, request);
   }
 
-  async deleteReminderTemplate(uuid: string): Promise<void> {
-    await this.httpClient.delete(`${this.templatesUrl}/${uuid}`);
+  async deleteReminderTemplate(uuid: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.templatesUrl}/${uuid}`);
   }
 
-  async toggleTemplateEnabled(uuid: string): Promise<ReminderTemplateClientDTO> {
+  async toggleTemplateEnabled(uuid: string): Promise<Result<ReminderTemplateClientDTO>> {
     return this.httpClient.post(`${this.templatesUrl}/${uuid}/toggle`, {});
   }
 
   async moveTemplateToGroup(
     templateUuid: string,
     targetGroupUuid: string | null,
-  ): Promise<ReminderTemplateClientDTO> {
+  ): Promise<Result<ReminderTemplateClientDTO>> {
     return this.httpClient.post(`${this.templatesUrl}/${templateUuid}/move`, {
       targetGroupUuid,
     });
@@ -83,13 +84,13 @@ export class ReminderHttpAdapter implements IReminderApiClient {
   async searchTemplates(
     accountUuid: string,
     query: string,
-  ): Promise<ReminderTemplateClientDTO[]> {
+  ): Promise<Result<ReminderTemplateClientDTO[]>> {
     return this.httpClient.get(`${this.templatesUrl}/search`, {
       params: { accountUuid, query },
     });
   }
 
-  async getTemplateScheduleStatus(templateUuid: string): Promise<TemplateScheduleStatusRes> {
+  async getTemplateScheduleStatus(templateUuid: string): Promise<Result<TemplateScheduleStatusRes>> {
     return this.httpClient.get(`${this.templatesUrl}/${templateUuid}/schedule-status`);
   }
 
@@ -98,7 +99,7 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     limit?: number;
     importanceLevel?: string;
     type?: string;
-  }): Promise<GetUpcomingRemindersRes> {
+  }): Promise<Result<GetUpcomingRemindersRes>> {
     return this.httpClient.get('/reminders/upcoming', { params });
   }
 
@@ -106,47 +107,47 @@ export class ReminderHttpAdapter implements IReminderApiClient {
 
   async createReminderGroup(
     request: CreateReminderGroupReq,
-  ): Promise<ReminderGroupClientDTO> {
+  ): Promise<Result<ReminderGroupClientDTO>> {
     return this.httpClient.post(this.groupsUrl, request);
   }
 
-  async getReminderGroup(uuid: string): Promise<ReminderGroupClientDTO> {
+  async getReminderGroup(uuid: string): Promise<Result<ReminderGroupClientDTO>> {
     return this.httpClient.get(`${this.groupsUrl}/${uuid}`);
   }
 
   async getReminderGroups(params?: {
     page?: number;
     limit?: number;
-  }): Promise<ReminderGroupsResponse> {
+  }): Promise<Result<ReminderGroupsResponse>> {
     return this.httpClient.get(this.groupsUrl, { params });
   }
 
-  async getUserReminderGroups(accountUuid: string): Promise<ReminderGroupClientDTO[]> {
+  async getUserReminderGroups(accountUuid: string): Promise<Result<ReminderGroupClientDTO[]>> {
     return this.httpClient.get(`${this.groupsUrl}/user/${accountUuid}`);
   }
 
   async updateReminderGroup(
     uuid: string,
     request: UpdateReminderGroupReq,
-  ): Promise<ReminderGroupClientDTO> {
+  ): Promise<Result<ReminderGroupClientDTO>> {
     return this.httpClient.patch(`${this.groupsUrl}/${uuid}`, request);
   }
 
-  async deleteReminderGroup(uuid: string): Promise<void> {
-    await this.httpClient.delete(`${this.groupsUrl}/${uuid}`);
+  async deleteReminderGroup(uuid: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.groupsUrl}/${uuid}`);
   }
 
-  async toggleReminderGroupStatus(uuid: string): Promise<ReminderGroupClientDTO> {
+  async toggleReminderGroupStatus(uuid: string): Promise<Result<ReminderGroupClientDTO>> {
     return this.httpClient.post(`${this.groupsUrl}/${uuid}/toggle-status`, {});
   }
 
-  async toggleReminderGroupControlMode(uuid: string): Promise<ReminderGroupClientDTO> {
+  async toggleReminderGroupControlMode(uuid: string): Promise<Result<ReminderGroupClientDTO>> {
     return this.httpClient.post(`${this.groupsUrl}/${uuid}/toggle-control-mode`, {});
   }
 
   // ===== 统计 =====
 
-  async getReminderStatistics(accountUuid: string): Promise<ReminderStatsClientDTO> {
+  async getReminderStatistics(accountUuid: string): Promise<Result<ReminderStatsClientDTO>> {
     return this.httpClient.get(`/reminders/statistics/${accountUuid}`);
   }
 }
@@ -154,6 +155,6 @@ export class ReminderHttpAdapter implements IReminderApiClient {
 /**
  * Factory function to create ReminderHttpAdapter
  */
-export function createReminderHttpAdapter(httpClient: IHttpClient): ReminderHttpAdapter {
+export function createReminderHttpAdapter(httpClient: IResultHttpClient): ReminderHttpAdapter {
   return new ReminderHttpAdapter(httpClient);
 }

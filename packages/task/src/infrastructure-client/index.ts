@@ -1,16 +1,8 @@
 /**
  * Task Module - Infrastructure Client
  *
- * Adapters and container for Task module communication.
+ * Adapters for Task module communication.
  */
-
-// Container
-export {
-  TaskContainer,
-  TaskDependencyKeys,
-  type ITaskTemplateRepository,
-  type ITaskInstanceRepository,
-} from './task.container';
 
 // Port Interfaces
 export type {
@@ -18,7 +10,6 @@ export type {
   ITaskInstanceApiClient,
   ITaskDependencyApiClient,
   ITaskStatisticsApiClient,
-  IHttpClient,
   IIpcClient,
 } from './adapters/types';
 
@@ -27,7 +18,6 @@ export {
   TaskTemplateHttpAdapter,
   TaskInstanceHttpAdapter,
   TaskDependencyHttpAdapter,
-  TaskStatisticsHttpAdapter,
   createTaskHttpAdapters,
   type TaskHttpAdapters,
 } from './adapters/http';
@@ -37,7 +27,6 @@ export {
   TaskTemplateIpcAdapter,
   TaskInstanceIpcAdapter,
   TaskDependencyIpcAdapter,
-  TaskStatisticsIpcAdapter,
   createTaskIpcAdapters,
   type TaskIpcAdapters,
 } from './adapters/ipc';

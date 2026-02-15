@@ -16,7 +16,7 @@ export default defineConfig({
   splitting: false,
   external: [
     '@dailyuse/utils',
-    '@dailyuse/contracts',
+    '@dailyuse/contracts', '@dailyuse/http-client',
     '@dailyuse/database',
     '@dailyuse/domain-shared',
     'argon2',

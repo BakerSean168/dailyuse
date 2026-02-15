@@ -7,7 +7,8 @@
  * Types imported from @dailyuse/contracts/setting.
  */
 
-import type { IHttpClient } from '@dailyuse/http-client';
+import type { Result } from '@dailyuse/contracts/result';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   UserSettingClientDTO,
   AppConfigClientDTO,
@@ -19,7 +20,9 @@ import type {
 
 // ============ Transport Client Interfaces ============
 
-// IHttpClient imported from @dailyuse/http-client
+// IResultHttpClient imported from @dailyuse/http-client
+
+export type { IResultHttpClient };
 
 export interface IIpcClient {
   invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
@@ -32,24 +35,24 @@ export interface IIpcClient {
  */
 export interface ISettingApiClient {
   // ===== User Settings =====
-  getUserSettings(): Promise<UserSettingClientDTO>;
-  updateAppearance(request: UpdateAppearanceRequest): Promise<UserSettingClientDTO>;
-  updateLocale(request: UpdateLocaleRequest): Promise<UserSettingClientDTO>;
-  updateWorkflow(request: UpdateWorkflowRequest): Promise<UserSettingClientDTO>;
-  updatePrivacy(request: UpdatePrivacyRequest): Promise<UserSettingClientDTO>;
-  resetUserSettings(): Promise<UserSettingClientDTO>;
+  getUserSettings(): Promise<Result<UserSettingClientDTO>>;
+  updateAppearance(request: UpdateAppearanceRequest): Promise<Result<UserSettingClientDTO>>;
+  updateLocale(request: UpdateLocaleRequest): Promise<Result<UserSettingClientDTO>>;
+  updateWorkflow(request: UpdateWorkflowRequest): Promise<Result<UserSettingClientDTO>>;
+  updatePrivacy(request: UpdatePrivacyRequest): Promise<Result<UserSettingClientDTO>>;
+  resetUserSettings(): Promise<Result<UserSettingClientDTO>>;
 
   // ===== App Config =====
-  getAppConfig(): Promise<AppConfigClientDTO>;
+  getAppConfig(): Promise<Result<AppConfigClientDTO>>;
 
   // ===== Sync =====
-  syncSettings(): Promise<UserSettingClientDTO>;
-  exportSettings(): Promise<string>;
-  importSettings(data: string): Promise<UserSettingClientDTO>;
+  syncSettings(): Promise<Result<UserSettingClientDTO>>;
+  exportSettings(): Promise<Result<string>>;
+  importSettings(data: string): Promise<Result<UserSettingClientDTO>>;
 
   // ===== 向后兼容别名 =====
   /** @deprecated 请使用 getUserSettings() */
-  getAll(): Promise<unknown>;
+  getAll(): Promise<Result<unknown>>;
   /** @deprecated 请使用 updateAppearance/updateLocale 等方法 */
-  setAll(settings: unknown): Promise<unknown>;
+  setAll(settings: unknown): Promise<Result<unknown>>;
 }

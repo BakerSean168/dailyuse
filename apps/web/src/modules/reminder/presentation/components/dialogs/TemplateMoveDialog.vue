@@ -149,12 +149,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, inject } from 'vue';
 import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
 // 导入根分组常量和工具函数（从主包导出，不是从命名空间）
 import { ROOT_GROUP_CONFIG, isRootGroup, getRootGroupUuid, isOnDesktop } from '@dailyuse/contracts/reminder';
 import { useReminder } from '../../composables/useReminder';
 import { useMessage } from '@dailyuse/ui-vuetify';
+import { REMINDER_SERVICE_KEY } from '@/shared/di';
 
 type ReminderTemplate = ReminderTemplateClientDTO;
 type ReminderTemplateGroup = ReminderGroupClientDTO;
@@ -179,6 +180,7 @@ const emit = defineEmits<{
 // Composables
 const { reminderTemplates, reminderGroups, refreshAll } = useReminder();
 const message = useMessage();
+const reminderService = inject(REMINDER_SERVICE_KEY)!;
 
 // 响应式状态
 const visible = ref(false);
@@ -283,15 +285,18 @@ const handleMove = async () => {
     });
 
     // 调用应用服务移动模板
-    const { reminderTemplateApplicationService } = await import('../../../application/services');
-    await reminderTemplateApplicationService.moveTemplateToGroup(
+    const result = await reminderService.moveTemplateToGroup(
       props.template.uuid,
       targetGroupUuid
     );
 
-    // 触发刷新（应用服务已经更新了 store）
-    emit('moved', props.template.uuid, targetGroupUuid || getRootGroupUuid());
-    close();
+    if (result.ok) {
+      // 触发刷新
+      emit('moved', props.template.uuid, targetGroupUuid || getRootGroupUuid());
+      close();
+    } else {
+      console.error('移动模板失败:', result.error.message);
+    }
   } catch (error) {
     console.error('移动模板失败:', error);
     // 错误提示已在应用服务中处理

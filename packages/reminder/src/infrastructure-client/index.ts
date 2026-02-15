@@ -1,22 +1,14 @@
 /**
  * Reminder Module - Infrastructure Client
  *
- * Adapters and container for Reminder module communication.
+ * Adapters for Reminder module communication.
  */
-
-// Container
-export {
-  ReminderContainer,
-  ReminderDependencyKeys,
-  type IReminderRepository,
-} from './reminder.container';
 
 // Port Interfaces
 export type {
   IReminderApiClient,
   ReminderTemplatesResponse,
   ReminderGroupsResponse,
-  IHttpClient,
   IIpcClient,
 } from './adapters/types';
 

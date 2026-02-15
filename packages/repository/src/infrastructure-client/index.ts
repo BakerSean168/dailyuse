@@ -1,18 +1,14 @@
 /**
  * Repository Module - Infrastructure Client
  *
- * Adapters and container for Repository module communication.
+ * Adapters for Repository module communication.
  */
-
-// Container
-export { RepositoryContainer, RepositoryDependencyKeys } from './repository.container';
 
 // Port Interfaces
 export type {
   IRepositoryApiClient,
   CreateRepositoryRequest,
   CreateFolderRequest,
-  IHttpClient,
   IIpcClient,
 } from './adapters/types';
 

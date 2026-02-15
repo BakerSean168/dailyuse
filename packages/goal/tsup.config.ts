@@ -17,7 +17,7 @@ export default defineConfig({
   sourcemap: true,
   external: [
     '@dailyuse/utils',
-    '@dailyuse/contracts',
+    '@dailyuse/contracts', '@dailyuse/http-client',
     '@dailyuse/database',
     '@dailyuse/domain-shared',
     '@dailyuse/domain-shared/shared',

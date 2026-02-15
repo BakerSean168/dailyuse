@@ -135,14 +135,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, inject } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRepositoryStore } from '../../stores/repositoryStore';
 import { useMessage } from '@dailyuse/ui-vuetify';
 import { RepositoryStatus, RepositoryType, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO } from '@dailyuse/contracts/repository';
-import { repositoryApplicationService } from '@dailyuse/repository/application-client';
+import { REPOSITORY_SERVICE_KEY } from '@/shared/di';
 
-const repositoryManagementService = repositoryApplicationService;
+const service = inject(REPOSITORY_SERVICE_KEY)!;
 
 const props = defineProps<{
   modelValue: boolean;
@@ -277,20 +277,20 @@ function closeCreateDialog() {
 async function createRepository() {
   if (!isValid.value) return;
 
+  creating.value = true;
   try {
-    creating.value = true;
-
-    await repositoryManagementService.createRepository({
+    const result = await service.createRepository({
       name: newRepository.value.name,
-      path: newRepository.value.path,
       type: newRepository.value.type,
       description: newRepository.value.description,
     });
 
-    message.success('仓库创建成功');
-    closeCreateDialog();
-  } catch (error: any) {
-    message.error(error.message || '创建失败');
+    if (result.ok) {
+      message.success('仓库创建成功');
+      closeCreateDialog();
+    } else {
+      message.error(result.error.message || '创建失败');
+    }
   } finally {
     creating.value = false;
   }
@@ -307,12 +307,16 @@ async function deleteRepository(uuid: string) {
   try {
     await message.delConfirm('确定要删除此仓库吗？此操作不可撤销。');
 
-    await repositoryManagementService.deleteRepository(uuid);
-    message.success('删除成功');
+    const result = await service.deleteRepository(uuid);
+    if (result.ok) {
+      message.success('删除成功');
 
-    // 如果删除的是当前选中的仓库，清除选中状态
-    if (currentRepositoryUuid.value === uuid) {
-      currentRepositoryUuid.value = null;
+      // 如果删除的是当前选中的仓库，清除选中状态
+      if (currentRepositoryUuid.value === uuid) {
+        currentRepositoryUuid.value = null;
+      }
+    } else {
+      message.error(result.error.message || '删除失败');
     }
   } catch {
     // 用户取消

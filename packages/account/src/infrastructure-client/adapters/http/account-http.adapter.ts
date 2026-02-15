@@ -2,9 +2,12 @@
  * Account HTTP Adapter
  *
  * HTTP implementation of IAccountApiClient.
+ * Uses IResultHttpClient — all methods return Result<T>, never throw.
  */
 
-import type { IAccountApiClient, IHttpClient } from '../types';
+import type { IAccountApiClient } from '../types';
+import type { IResultHttpClient } from '@dailyuse/http-client';
+import type { Result } from '@dailyuse/contracts/result';
 import type {
   AccountClientDTO,
   UpdateAccountReq,
@@ -16,25 +19,25 @@ import type {
 export class AccountHttpAdapter implements IAccountApiClient {
   private readonly baseUrl = '/api/accounts';
 
-  constructor(private readonly httpClient: IHttpClient) {}
+  constructor(private readonly httpClient: IResultHttpClient) {}
 
-  async getMyProfile(): Promise<AccountClientDTO> {
+  async getMyProfile(): Promise<Result<AccountClientDTO>> {
     return this.httpClient.get(`${this.baseUrl}/me`);
   }
 
-  async updateMyProfile(request: UpdateAccountReq): Promise<AccountClientDTO> {
+  async updateMyProfile(request: UpdateAccountReq): Promise<Result<AccountClientDTO>> {
     return this.httpClient.put(`${this.baseUrl}/me`, request);
   }
 
-  async checkAvailability(request: CheckAvailabilityReq): Promise<CheckAvailabilityRes> {
+  async checkAvailability(request: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>> {
     return this.httpClient.post(`${this.baseUrl}/availability`, request);
   }
 
-  async closeAccount(request: CloseAccountReq): Promise<void> {
-    await this.httpClient.post(`${this.baseUrl}/me/close`, request);
+  async closeAccount(request: CloseAccountReq): Promise<Result<void>> {
+    return this.httpClient.post(`${this.baseUrl}/me/close`, request);
   }
 }
 
-export function createAccountHttpAdapter(httpClient: IHttpClient): IAccountApiClient {
+export function createAccountHttpAdapter(httpClient: IResultHttpClient): IAccountApiClient {
   return new AccountHttpAdapter(httpClient);
 }

@@ -4,7 +4,8 @@
  * 创建规则用例
  */
 
-import type { CreateRuleReq, CreateRuleRes } from '@/contracts/api/rules';
+import type { Result } from '@dailyuse/contracts/result';
+import type { CreateRuleReq } from '@/contracts/api/rules';
 import { Rule } from '../../domain-client/aggregates/rule';
 import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
 
@@ -47,8 +48,9 @@ export class CreateRule {
   /**
    * 执行用例
    */
-  async execute(req: CreateRuleReq): Promise<Rule> {
-    const data = await this.apiClient.createRule(req);
-    return Rule.fromDTO(data);
+  async execute(req: CreateRuleReq): Promise<Result<Rule>> {
+    const result = await this.apiClient.createRule(req);
+    if (!result.ok) return result;
+    return { ok: true, data: Rule.fromDTO(result.data) };
   }
 }

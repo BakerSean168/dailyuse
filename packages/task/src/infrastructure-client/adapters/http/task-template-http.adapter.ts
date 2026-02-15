@@ -5,9 +5,10 @@
  * Uses IHttpClient for making HTTP requests.
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   ITaskTemplateApiClient,
-  IHttpClient,
 } from '../types';
 import type {
   TaskTemplateClientDTO,
@@ -26,11 +27,11 @@ import type {
 export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
   private readonly baseUrl = '/tasks/templates';
 
-  constructor(private readonly httpClient: IHttpClient) {}
+  constructor(private readonly httpClient: IResultHttpClient) {}
 
   // ===== Task Template CRUD =====
 
-  async createTaskTemplate(request: CreateTaskTemplateRequest): Promise<TaskTemplateClientDTO> {
+  async createTaskTemplate(request: CreateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>> {
     return this.httpClient.post(this.baseUrl, request);
   }
 
@@ -43,14 +44,14 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     importance?: string;
     urgency?: string;
     tags?: string[];
-  }): Promise<{ templates: TaskTemplateClientDTO[]; total: number }> {
+  }): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>> {
     return this.httpClient.get(this.baseUrl, { params });
   }
 
   async getTaskTemplateById(
     uuid: string,
     includeChildren = false,
-  ): Promise<TaskTemplateClientDTO> {
+  ): Promise<Result<TaskTemplateClientDTO>> {
     return this.httpClient.get(`${this.baseUrl}/${uuid}`, {
       params: { includeChildren },
     });
@@ -59,28 +60,28 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
   async updateTaskTemplate(
     uuid: string,
     request: UpdateTaskTemplateRequest,
-  ): Promise<TaskTemplateClientDTO> {
+  ): Promise<Result<TaskTemplateClientDTO>> {
     return this.httpClient.put(`${this.baseUrl}/${uuid}`, request);
   }
 
-  async deleteTaskTemplate(uuid: string): Promise<void> {
-    await this.httpClient.delete(`${this.baseUrl}/${uuid}`);
+  async deleteTaskTemplate(uuid: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.baseUrl}/${uuid}`);
   }
 
   // ===== 方法别名（为了兼容 View 层调用）=====
 
-  async create(request: CreateTaskTemplateRequest): Promise<TaskTemplateClientDTO> {
+  async create(request: CreateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>> {
     return this.createTaskTemplate(request);
   }
 
-  async getByUuid(uuid: string): Promise<TaskTemplateClientDTO> {
+  async getByUuid(uuid: string): Promise<Result<TaskTemplateClientDTO>> {
     return this.getTaskTemplateById(uuid);
   }
 
   async update(
     uuid: string,
     request: UpdateTaskTemplateRequest,
-  ): Promise<TaskTemplateClientDTO> {
+  ): Promise<Result<TaskTemplateClientDTO>> {
     return this.updateTaskTemplate(uuid, request);
   }
 
@@ -88,21 +89,21 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
 
   async getTasksWithPrioritySorting(params?: {
     limit?: number;
-  }): Promise<TaskTemplateClientDTO[]> {
+  }): Promise<Result<TaskTemplateClientDTO[]>> {
     return this.httpClient.get(`${this.baseUrl}/by-priority`, { params });
   }
 
   // ===== Task Template 状态管理 =====
 
-  async activateTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {
+  async activateTaskTemplate(uuid: string): Promise<Result<TaskTemplateClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${uuid}/activate`);
   }
 
-  async pauseTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {
+  async pauseTaskTemplate(uuid: string): Promise<Result<TaskTemplateClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${uuid}/pause`);
   }
 
-  async archiveTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {
+  async archiveTaskTemplate(uuid: string): Promise<Result<TaskTemplateClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${uuid}/archive`);
   }
 
@@ -111,7 +112,7 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
   async generateInstances(
     templateUuid: string,
     request: GenerateInstancesRequest,
-  ): Promise<TaskInstanceClientDTO[]> {
+  ): Promise<Result<TaskInstanceClientDTO[]>> {
     return this.httpClient.post(`${this.baseUrl}/${templateUuid}/generate-instances`, request);
   }
 
@@ -119,7 +120,7 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     templateUuid: string,
     from: number,
     to: number,
-  ): Promise<TaskInstanceClientDTO[]> {
+  ): Promise<Result<TaskInstanceClientDTO[]>> {
     return this.httpClient.get(`${this.baseUrl}/${templateUuid}/instances`, {
       params: { from, to },
     });
@@ -130,11 +131,11 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
   async bindToGoal(
     templateUuid: string,
     request: BindToGoalRequest,
-  ): Promise<TaskTemplateClientDTO> {
+  ): Promise<Result<TaskTemplateClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${templateUuid}/bind-goal`, request);
   }
 
-  async unbindFromGoal(templateUuid: string): Promise<TaskTemplateClientDTO> {
+  async unbindFromGoal(templateUuid: string): Promise<Result<TaskTemplateClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${templateUuid}/unbind-goal`);
   }
 }
@@ -142,6 +143,6 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
 /**
  * Factory function to create TaskTemplateHttpAdapter
  */
-export function createTaskTemplateHttpAdapter(httpClient: IHttpClient): TaskTemplateHttpAdapter {
+export function createTaskTemplateHttpAdapter(httpClient: IResultHttpClient): TaskTemplateHttpAdapter {
   return new TaskTemplateHttpAdapter(httpClient);
 }

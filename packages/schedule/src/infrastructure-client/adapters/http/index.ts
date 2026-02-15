@@ -5,7 +5,7 @@
  * Provides factory function to create all HTTP adapters at once.
  */
 
-import type { IHttpClient } from '../types';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 import { ScheduleEventHttpAdapter } from './schedule-event-http.adapter';
 import { ScheduleTaskHttpAdapter } from './schedule-task-http.adapter';
 
@@ -22,11 +22,11 @@ export interface ScheduleHttpAdapters {
 }
 
 /**
- * Create all Schedule HTTP adapters from a single IHttpClient instance.
- * The concrete implementation (e.g. AxiosHttpClient) is created at the App layer.
+ * Create all Schedule HTTP adapters from a single IResultHttpClient instance.
+ * The concrete implementation (e.g. ResultHttpClient) is created at the App layer.
  */
 export function createScheduleHttpAdapters(
-  httpClient: IHttpClient,
+  httpClient: IResultHttpClient,
 ): ScheduleHttpAdapters {
   return {
     event: new ScheduleEventHttpAdapter(httpClient),

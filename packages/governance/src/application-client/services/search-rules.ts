@@ -4,9 +4,15 @@
  * 搜索规则用例
  */
 
-import type { SearchRulesQuery, SearchRulesRes } from '@/contracts/api/rules';
+import type { Result } from '@dailyuse/contracts/result';
+import type { SearchRulesQuery } from '@/contracts/api/rules';
 import { Rule } from '../../domain-client/aggregates/rule';
 import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
+
+interface SearchRulesResult {
+  rules: Rule[];
+  pagination: { page: number; pageSize: number; total: number };
+}
 
 /**
  * Search Rules
@@ -47,20 +53,22 @@ export class SearchRules {
   /**
    * 执行用例：搜索规则
    */
-  async execute(query: SearchRulesQuery): Promise<{
-    rules: Rule[];
-    pagination: { page: number; pageSize: number; total: number };
-  }> {
-    const response = await this.apiClient.searchRules(query);
+  async execute(query: SearchRulesQuery): Promise<Result<SearchRulesResult>> {
+    const result = await this.apiClient.searchRules(query);
+    if (!result.ok) return result;
 
+    const response = result.data;
     const rules = response.items.map((dto) => Rule.fromDTO(dto));
 
     return {
-      rules,
-      pagination: {
-        page: response.page,
-        pageSize: response.pageSize,
-        total: response.total,
+      ok: true,
+      data: {
+        rules,
+        pagination: {
+          page: response.page,
+          pageSize: response.pageSize,
+          total: response.total,
+        },
       },
     };
   }

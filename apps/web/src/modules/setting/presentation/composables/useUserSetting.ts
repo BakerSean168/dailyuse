@@ -1,18 +1,18 @@
 /**
  * useUserSetting - 设置模块主 composable
  *
- * 使用 @dailyuse/http-client 的 AxiosHttpClient 进行 HTTP 调用。
+ * 通过 inject 获取 SettingClientService，所有方法返回 Result<T>。
  */
 
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import { useUserSettingStore } from '../stores/userSettingStore';
-import { httpClient } from '@/shared/http';
-import { HttpClientError } from '@dailyuse/http-client';
-import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
+import { SETTING_SERVICE_KEY } from '@/shared/di';
+import { resultHttpClient } from '@/shared/http';
 
 const BASE = '/settings';
 
 export function useUserSetting() {
+  const service = inject(SETTING_SERVICE_KEY)!;
   const store = useUserSettingStore();
 
   const entries = computed(() => store.entries);
@@ -21,10 +21,9 @@ export function useUserSetting() {
   const error = computed(() => store.error);
   const userSetting = computed(() => store.userSetting);
 
-  function handleError(err: unknown, fallback: string): void {
-    const msg = err instanceof HttpClientError ? err.message : err instanceof Error ? err.message : fallback;
-    store.setError(msg);
-    console.error(fallback, err);
+  function handleError(message: string): void {
+    store.setError(message);
+    console.error(message);
   }
 
   function getEntry(key: string): unknown { return store.entries[key]; }
@@ -32,55 +31,54 @@ export function useUserSetting() {
 
   async function loadSettings() {
     store.setLoading(true); store.setError(null);
-    try {
-      const setting = await httpClient.get<UserSettingClientDTO>(BASE);
-      store.setUserSetting(setting);
-    } catch (e) { handleError(e, '加载设置失败'); }
-    finally { store.setLoading(false); }
+    const result = await service.getUserSettings();
+    if (result.ok) {
+      store.setUserSetting(result.data);
+    } else {
+      handleError(result.error.message || '加载设置失败');
+    }
+    store.setLoading(false);
   }
 
   async function loadDefaults() {
-    try {
-      const defs = await httpClient.get<Record<string, unknown>>(`${BASE}/defaults`);
-      store.setDefaults(defs);
-    } catch (e) { handleError(e, '加载默认设置失败'); }
+    const result = await resultHttpClient.get<Record<string, unknown>>(`${BASE}/defaults`);
+    if (result.ok) { store.setDefaults(result.data); }
+    else { handleError(result.error.message || '加载默认设置失败'); }
   }
 
   async function updateEntry(key: string, value: unknown) {
     store.setError(null);
-    try {
-      await httpClient.put<unknown>(`${BASE}/entries/${key}`, { value });
-      store.setEntry(key, value);
-    } catch (e) { handleError(e, '更新设置失败'); }
+    const result = await resultHttpClient.put<unknown>(`${BASE}/entries/${key}`, { value });
+    if (result.ok) { store.setEntry(key, value); }
+    else { handleError(result.error.message || '更新设置失败'); }
   }
 
   async function batchUpdate(items: Array<{ key: string; value: unknown }>) {
     store.setError(null);
-    try {
-      await httpClient.put<unknown>(`${BASE}/entries/batch`, { entries: items });
-      items.forEach(({ key, value }) => store.setEntry(key, value));
-    } catch (e) { handleError(e, '批量更新设置失败'); }
+    const result = await resultHttpClient.put<unknown>(`${BASE}/entries/batch`, { entries: items });
+    if (result.ok) { items.forEach(({ key, value }) => store.setEntry(key, value)); }
+    else { handleError(result.error.message || '批量更新设置失败'); }
   }
 
   async function resetToDefaults() {
     store.setError(null);
-    try {
-      const setting = await httpClient.post<UserSettingClientDTO>(`${BASE}/reset`);
-      store.setUserSetting(setting);
-    } catch (e) { handleError(e, '重置设置失败'); }
+    const result = await service.resetUserSettings();
+    if (result.ok) { store.setUserSetting(result.data); }
+    else { handleError(result.error.message || '重置设置失败'); }
   }
 
   async function exportSettings() {
-    try { return await httpClient.get<unknown>(`${BASE}/export`); }
-    catch (e) { handleError(e, '导出设置失败'); return null; }
+    const result = await service.exportSettings();
+    if (result.ok) { return result.data; }
+    handleError(result.error.message || '导出设置失败');
+    return null;
   }
 
   async function importSettings(data: unknown) {
     store.setError(null);
-    try {
-      const setting = await httpClient.post<UserSettingClientDTO>(`${BASE}/import`, data);
-      store.setUserSetting(setting);
-    } catch (e) { handleError(e, '导入设置失败'); }
+    const result = await service.importSettings(data as string);
+    if (result.ok) { store.setUserSetting(result.data); }
+    else { handleError(result.error.message || '导入设置失败'); }
   }
 
   return {

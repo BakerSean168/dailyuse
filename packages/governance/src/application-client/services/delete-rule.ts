@@ -4,6 +4,7 @@
  * 删除规则用例
  */
 
+import type { Result } from '@dailyuse/contracts/result';
 import type { DeleteRuleReq, DeleteRuleRes } from '@/contracts/api/rules';
 import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
 
@@ -46,7 +47,7 @@ export class DeleteRule {
   /**
    * 执行用例：删除规则
    */
-  async execute(req: DeleteRuleReq): Promise<DeleteRuleRes> {
-    return await this.apiClient.deleteRule(req);
+  async execute(req: DeleteRuleReq): Promise<Result<DeleteRuleRes>> {
+    return this.apiClient.deleteRule(req);
   }
 }

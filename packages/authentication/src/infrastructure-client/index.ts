@@ -4,7 +4,6 @@
 
 // Types (port interfaces + transport interfaces)
 export type {
-  IHttpClient,
   IIpcClient,
   IAuthApiClient,
 } from './adapters/types';

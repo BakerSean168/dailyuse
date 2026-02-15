@@ -4,6 +4,8 @@
  * IPC implementation of ITaskDependencyApiClient for Electron desktop.
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import { tryCatch } from '@dailyuse/contracts/result';
 import type {
   ITaskDependencyApiClient,
   IIpcClient,
@@ -20,7 +22,7 @@ import type {
 /**
  * TaskDependencyIpcAdapter
  *
- * IPC 实现的任务依赖关�?API 客户端（用于 Electron 桌面应用�?
+ * IPC 实现的任务依赖关系 API 客户端（用于 Electron 桌面应用）
  */
 export class TaskDependencyIpcAdapter implements ITaskDependencyApiClient {
   constructor(private readonly ipcClient: IIpcClient) {}
@@ -28,37 +30,37 @@ export class TaskDependencyIpcAdapter implements ITaskDependencyApiClient {
   async createDependency(
     taskUuid: string,
     request: CreateTaskDependencyRequest,
-  ): Promise<TaskDependencyClientDTO> {
-    return this.ipcClient.invoke('task-dependency:create', { taskUuid, request });
+  ): Promise<Result<TaskDependencyClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-dependency:create', { taskUuid, request }));
   }
 
-  async getDependencies(taskUuid: string): Promise<TaskDependencyClientDTO[]> {
-    return this.ipcClient.invoke('task-dependency:list', { taskUuid });
+  async getDependencies(taskUuid: string): Promise<Result<TaskDependencyClientDTO[]>> {
+    return tryCatch(() => this.ipcClient.invoke('task-dependency:list', { taskUuid }));
   }
 
-  async getDependents(taskUuid: string): Promise<TaskDependencyClientDTO[]> {
-    return this.ipcClient.invoke('task-dependency:dependents', { taskUuid });
+  async getDependents(taskUuid: string): Promise<Result<TaskDependencyClientDTO[]>> {
+    return tryCatch(() => this.ipcClient.invoke('task-dependency:dependents', { taskUuid }));
   }
 
-  async getDependencyChain(taskUuid: string): Promise<DependencyChainClientDTO> {
-    return this.ipcClient.invoke('task-dependency:chain', { taskUuid });
+  async getDependencyChain(taskUuid: string): Promise<Result<DependencyChainClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-dependency:chain', { taskUuid }));
   }
 
   async validateDependency(
     request: ValidateDependencyRequest,
-  ): Promise<ValidateDependencyResponse> {
-    return this.ipcClient.invoke('task-dependency:validate', request);
+  ): Promise<Result<ValidateDependencyResponse>> {
+    return tryCatch(() => this.ipcClient.invoke('task-dependency:validate', request));
   }
 
-  async deleteDependency(uuid: string): Promise<void> {
-    await this.ipcClient.invoke('task-dependency:delete', { uuid });
+  async deleteDependency(uuid: string): Promise<Result<void>> {
+    return tryCatch(() => this.ipcClient.invoke('task-dependency:delete', { uuid }));
   }
 
   async updateDependency(
     uuid: string,
     request: UpdateTaskDependencyRequest,
-  ): Promise<TaskDependencyClientDTO> {
-    return this.ipcClient.invoke('task-dependency:update', { uuid, request });
+  ): Promise<Result<TaskDependencyClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task-dependency:update', { uuid, request }));
   }
 }
 

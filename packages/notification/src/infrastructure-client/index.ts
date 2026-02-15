@@ -1,14 +1,8 @@
 /**
  * Notification Module - Infrastructure Client
  *
- * Adapters and container for Notification module communication.
+ * Adapters for Notification module communication.
  */
-
-// Container
-export {
-  NotificationContainer,
-  NotificationDependencyKeys,
-} from './notification.container';
 
 // Port Interfaces
 export type {
@@ -17,7 +11,6 @@ export type {
   QueryNotificationsRequest,
   NotificationListResponse,
   UnreadCountResponse,
-  IHttpClient,
   IIpcClient,
 } from './adapters/types';
 

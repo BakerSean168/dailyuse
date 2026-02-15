@@ -2,15 +2,11 @@
  * AI Module - Infrastructure Client
  *
  * Exports:
- * - Container: AIContainer
  * - Types: IAIConversationApiClient, IAIMessageApiClient, IAIGenerationTaskApiClient, etc.
  * - Adapters: HTTP and IPC implementations
  * - Providers: OpenAI and other LLM providers
  * - Prompts: AI prompt templates
  */
-
-// Container
-export { AIContainer, AIDependencyKeys } from './ai.container';
 
 // Types (port interfaces + transport interfaces)
 export type {

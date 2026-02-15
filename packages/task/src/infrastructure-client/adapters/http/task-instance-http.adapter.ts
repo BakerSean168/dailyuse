@@ -5,9 +5,10 @@
  * Uses IHttpClient for making HTTP requests.
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   ITaskInstanceApiClient,
-  IHttpClient,
 } from '../types';
 import type {
   TaskInstanceClientDTO,
@@ -23,7 +24,7 @@ import type {
 export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
   private readonly baseUrl = '/tasks/templates/instances';
 
-  constructor(private readonly httpClient: IHttpClient) {}
+  constructor(private readonly httpClient: IResultHttpClient) {}
 
   // ===== Task Instance CRUD =====
 
@@ -34,44 +35,44 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
     status?: string;
     startDate?: number;
     endDate?: number;
-  }): Promise<TaskInstanceClientDTO[]> {
+  }): Promise<Result<TaskInstanceClientDTO[]>> {
     return this.httpClient.get(this.baseUrl, { params });
   }
 
-  async getTaskInstanceById(uuid: string): Promise<TaskInstanceClientDTO> {
+  async getTaskInstanceById(uuid: string): Promise<Result<TaskInstanceClientDTO>> {
     return this.httpClient.get(`${this.baseUrl}/${uuid}`);
   }
 
-  async deleteTaskInstance(uuid: string): Promise<void> {
-    await this.httpClient.delete(`${this.baseUrl}/${uuid}`);
+  async deleteTaskInstance(uuid: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.baseUrl}/${uuid}`);
   }
 
   // ===== Task Instance 状态管理 =====
 
-  async startTaskInstance(uuid: string): Promise<TaskInstanceClientDTO> {
+  async startTaskInstance(uuid: string): Promise<Result<TaskInstanceClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${uuid}/start`);
   }
 
   async completeTaskInstance(
     uuid: string,
     request?: CompleteTaskInstanceRequest,
-  ): Promise<TaskInstanceClientDTO> {
+  ): Promise<Result<TaskInstanceClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${uuid}/complete`, request);
   }
 
   async skipTaskInstance(
     uuid: string,
     request?: SkipTaskInstanceRequest,
-  ): Promise<TaskInstanceClientDTO> {
+  ): Promise<Result<TaskInstanceClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${uuid}/skip`, request);
   }
 
   // ===== 批量操作 =====
 
-  async checkExpiredInstances(): Promise<{
+  async checkExpiredInstances(): Promise<Result<{
     count: number;
     instances: TaskInstanceClientDTO[];
-  }> {
+  }>> {
     return this.httpClient.post(`${this.baseUrl}/check-expired`);
   }
 }
@@ -79,6 +80,6 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
 /**
  * Factory function to create TaskInstanceHttpAdapter
  */
-export function createTaskInstanceHttpAdapter(httpClient: IHttpClient): TaskInstanceHttpAdapter {
+export function createTaskInstanceHttpAdapter(httpClient: IResultHttpClient): TaskInstanceHttpAdapter {
   return new TaskInstanceHttpAdapter(httpClient);
 }

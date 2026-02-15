@@ -49,10 +49,11 @@
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
+    "@dailyuse/http-client": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "better-sqlite3": "^12.5.0",
-    "zod": "^3.24.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
