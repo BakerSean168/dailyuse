@@ -160,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue';
+import { ref, computed, onMounted, reactive, inject } from 'vue';
 
 // 组件导入
 import TemplateDialog from '../components/dialogs/TemplateDialog.vue';
@@ -173,7 +173,7 @@ import ReminderInstanceSidebar from '../components/ReminderInstanceSidebar.vue';
 // Composables
 import { useReminder } from '../composables/useReminder';
 import { useMessage } from '@dailyuse/ui-vuetify';
-import { reminderGroupApplicationService } from '@dailyuse/reminder/application-client';
+import { REMINDER_SERVICE_KEY } from '@/shared/di';
 
 // 类型导入 - 使用 Contracts DTO
 import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
@@ -188,6 +188,7 @@ const { isLoading, error, reminderTemplates, reminderGroups, initialize, refresh
   useReminder();
 
 const message = useMessage();
+const reminderService = inject(REMINDER_SERVICE_KEY)!;
 
 // 别名以保持兼容性
 const templates = computed(() => reminderTemplates.value);
@@ -213,11 +214,11 @@ const loadGroups = async () => {
 };
 
 const deleteGroup = async (uuid: string) => {
-  try {
-    await reminderGroupApplicationService.deleteReminderGroup(uuid);
+  const result = await reminderService.deleteReminderGroup(uuid);
+  if (result.ok) {
     message.success('分组删除成功');
-  } catch (error: any) {
-    console.error('删除分组失败:', error);
+  } else {
+    console.error('删除分组失败:', result.error.message);
     message.error('删除分组失败');
   }
 };
@@ -505,14 +506,11 @@ const toggleTemplateEnabled = async (template: ReminderTemplate) => {
  * 切换分组启用状态
  */
 const toggleGroupEnabled = async (group: ReminderTemplateGroup) => {
-  try {
-    // 调用 API 切换分组启用状态（该方法内部已包含 snackbar 提示）
-    await reminderGroupApplicationService.toggleReminderGroupStatus(group.uuid);
-    // 刷新列表
+  const result = await reminderService.toggleReminderGroupStatus(group.uuid);
+  if (result.ok) {
     await refreshAll();
-  } catch (error) {
-    console.error('切换分组状态失败:', error);
-    // 错误提示已在 service 中处理
+  } else {
+    console.error('切换分组状态失败:', result.error.message);
   }
 };
 

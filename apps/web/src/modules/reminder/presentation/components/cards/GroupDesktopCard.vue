@@ -174,12 +174,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, inject } from 'vue';
 import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, RecurrenceConfigClient  } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '@dailyuse/reminder/domain-client';
 import { useReminder } from '../../composables/useReminder';
 import { useMessage } from '@dailyuse/ui-vuetify';
-import { reminderGroupApplicationService } from '@dailyuse/reminder/application-client';
+import { REMINDER_SERVICE_KEY } from '@/shared/di';
 import TemplateDesktopCard from './TemplateDesktopCard.vue';
 
 type ReminderGroupDTO = ReminderGroupClientDTO;
@@ -188,6 +188,7 @@ type ReminderTemplate = ReminderTemplateClientDTO;
 // Composables
 const { reminderTemplates, toggleTemplateStatus, getReminderGroupByUuid } = useReminder();
 const message = useMessage();
+const reminderService = inject(REMINDER_SERVICE_KEY)!;
 
 // Emits
 const emit = defineEmits<{
@@ -301,11 +302,12 @@ const handleToggleStatus = async (enabled: boolean | null) => {
 
   isTogglingStatus.value = true;
   try {
-    await reminderGroupApplicationService.toggleReminderGroupStatus(group.value.uuid);
-    message.success(enabled ? '已启用分组' : '已禁用分组');
-  } catch (error) {
-    console.error('切换分组状态失败:', error);
-    message.error('切换状态失败');
+    const result = await reminderService.toggleReminderGroupStatus(group.value.uuid);
+    if (result.ok) {
+      message.success(enabled ? '已启用分组' : '已禁用分组');
+    } else {
+      message.error(result.error.message || '切换状态失败');
+    }
   } finally {
     isTogglingStatus.value = false;
   }
@@ -320,11 +322,12 @@ const handleToggleControlMode = async (isGroup: boolean | null) => {
 
   isTogglingMode.value = true;
   try {
-    await reminderGroupApplicationService.toggleReminderGroupControlMode(group.value.uuid);
-    message.success(isGroup ? '已切换到组控制' : '已切换到个体控制');
-  } catch (error) {
-    console.error('切换控制模式失败:', error);
-    message.error('切换控制模式失败');
+    const result = await reminderService.toggleReminderGroupControlMode(group.value.uuid);
+    if (result.ok) {
+      message.success(isGroup ? '已切换到组控制' : '已切换到个体控制');
+    } else {
+      message.error(result.error.message || '切换控制模式失败');
+    }
   } finally {
     isTogglingMode.value = false;
   }
