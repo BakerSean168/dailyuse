@@ -13,6 +13,22 @@ import type {
  * Schedule Application Service
  * Responsible for coordinating domain services and repositories to handle scheduling tasks.
  *
+ * @deprecated 此服务已废弃，请使用独立的 Use Case 替代：
+ * - CreateScheduleTaskUseCase
+ * - UpdateScheduleTaskUseCase
+ * - DeleteScheduleTaskUseCase
+ * - PauseScheduleTaskUseCase
+ * - ResumeScheduleTaskUseCase
+ * - TriggerScheduleTaskUseCase
+ * - GetScheduleTaskUseCase
+ * - ListScheduleTasksByAccountUseCase
+ * - ListScheduleTasksBySourceUseCase
+ * - ListScheduleTasksByStatusUseCase
+ * 
+ * 【DDD 重构说明】
+ * 原因：违反单一职责原则，包含过多业务场景。
+ * 新架构：每个业务场景对应一个独立的 Use Case 类。
+ * 
  * Responsibilities:
  * - Delegate business logic to DomainService
  * - Coordinate repositories
