@@ -2,346 +2,245 @@
  * Desktop Main Process - Composition Root
  *
  * Configures Dependency Injection (DI) for the main process.
- * Follows the Container pattern from `@dailyuse/infrastructure-server`.
- * Implements lazy loading for non-core modules to optimize startup performance.
+ * Phase 4: Integration & Wiring - Wire up Editor, Repository, Goal, Task, Reminder, and Notification modules.
  *
  * Responsibilities:
- * 1. Initialize database connections (implicitly via repositories).
- * 2. Instantiate SQLite Repository adapters.
- * 3. Register repositories to their respective Containers.
- * 4. Load core modules immediately and schedule lazy loading for others.
- *
- * Module Categorization:
- * - Core Modules (Loaded Immediately): Goal, Task, Dashboard, Account, Auth, Schedule
- * - Non-Core Modules (Lazy Loaded): AI, Notification, Repository, Setting, Reminder
+ * 1. Initialize repository adapters (File System Storage).
+ * 2. Instantiate domain services (Policies and Calculators).
+ * 3. Register repositories and services to their respective modules.
+ * 4. Wire up module dependencies (e.g., Editor depends on Repository).
  *
  * @module di/desktop-main
  */
 
-import {
-  GoalContainer,
-  TaskContainer,
-  ScheduleContainer,
-  ReminderContainer,
-  AccountContainer,
-  AuthContainer,
-  NotificationContainer,
-  AIContainer,
-  DashboardContainer,
-  RepositoryContainer,
-  SettingContainer,
-  // SQLite Adapters (imported from infrastructure-server)
-  // Goal
+// Import repositories and containers from individual packages
+// Goal
+import { 
   SqliteGoalRepository,
   SqliteGoalFolderRepository,
-  SqliteGoalStatisticsRepository,
   SqliteFocusModeRepository,
   SqliteFocusSessionRepository,
   SqliteWeightSnapshotRepository,
-  // Account
-  SqliteAccountRepository,
-  // Auth
-  SqliteAuthCredentialRepository,
-  SqliteAuthSessionRepository,
-  // Task
+} from '@dailyuse/goal/infrastructure-server';
+import { SqliteGoalRecordRepository } from '@dailyuse/goal/infrastructure-server';
+import { GoalPolicy, GoalProgressCalculator } from '@dailyuse/goal/domain-server';
+
+// Task
+import { 
+  TaskContainer,
   SqliteTaskInstanceRepository,
   SqliteTaskTemplateRepository,
   SqliteTaskDependencyRepository,
-  SqliteTaskStatisticsRepository,
-  // Schedule
-  SqliteScheduleRepository,
-  SqliteScheduleTaskRepository,
-  SqliteScheduleExecutionRepository,
-  SqliteScheduleStatisticsRepository,
-  // Reminder
-  SqliteReminderGroupRepository,
-  SqliteReminderTemplateRepository,
-  SqliteReminderStatisticsRepository,
-  SqliteReminderResponseRepository,
-  // AI
-  SqliteAIConversationRepository,
-  SqliteAIGenerationTaskRepository,
-  SqliteAIUsageQuotaRepository,
-  SqliteAIProviderConfigRepository,
-  SqliteKnowledgeGenerationTaskRepository,
-  // Notification
-  SqliteNotificationRepository,
-  SqliteNotificationPreferenceRepository,
-  SqliteNotificationTemplateRepository,
-  // Dashboard
-  SqliteDashboardConfigRepository,
-  // Repository
+} from '@dailyuse/task/infrastructure-server';
+import { TaskDependencyPolicy, TaskStatisticsCalculator } from '@dailyuse/task/domain-server';
+
+// Editor
+import { EditorContainer } from '@dailyuse/editor/infrastructure-server';
+import { EditorSessionApplicationService } from '@dailyuse/editor/application-server';
+
+// Repository
+import { RepositoryContainer } from '@dailyuse/repository/infrastructure-server';
+import { 
   SqliteRepositoryRepository,
   SqliteResourceRepository,
   SqliteFolderRepository,
-  SqliteRepositoryStatisticsRepository,
-  // Setting
-  SqliteAppConfigRepository,
-  SqliteSettingRepository,
-  SqliteUserSettingRepository,
-  // Sync
-  SqliteSyncSessionRepository,
-  SqliteSyncProfileRepository,
-  SqliteSyncConflictRepository,
-  SqlitePendingChangeRepository,
-  // Editor
-  SqliteDocumentRepository,
-  SqliteDocumentVersionRepository,
-  SqliteEditorWorkspaceRepository,
-  SqliteEditorGroupRepository,
-  SqliteEditorTabRepository,
-  SqliteEditorSessionRepository,
-  SqliteLinkedResourceRepository,
-  SqliteSearchEngineRepository,
-} from '@dailyuse/infrastructure-server';
+} from '@dailyuse/repository/infrastructure-server';
 
-import { registerLazyModule, ensureModuleLoaded, preloadModules } from './lazy-module-loader';
+// Reminder
+import { ReminderPolicy, ReminderRecurrenceCalculator } from '@dailyuse/reminder/domain-server';
+
+// Notification
+import { NotificationPolicy } from '@dailyuse/notification/domain-server';
+
+// Authentication
+import { AuthenticationContainer } from '@dailyuse/authentication/infrastructure-server';
+
+// Adapters from desktop app
+import { FileSystemStorageAdapter } from '../modules/repository/infrastructure/FileSystemStorageAdapter';
+import { RepositoryContentAdapter } from '../modules/editor/infrastructure/RepositoryContentAdapter';
 
 /**
- * Configures dependency injection for all main process modules.
- *
- * Strategy:
- * - **Core Modules**: Loaded synchronously at startup because they are essential for the app to function immediately.
- * - **Lazy Modules**: Registered to be loaded only when first requested.
- * - **Preloading**: Frequently used lazy modules are scheduled to load after a short delay (e.g., 3s) to avoid jank during startup.
+ * Configures dependency injection for requested modules only.
+ * 
+ * Phase 4 Integration: Wire up Goal, Task, Editor, Reminder, and Notification modules.
  */
 export function configureMainProcessDependencies(): void {
   const startTime = performance.now();
   console.log('[DI] Configuring main process dependencies...');
 
-  // ========== Core Modules - Immediate Load ==========
-  // These are required immediately upon startup
+  // Configure core modules
+  configureRepositoryModule(); // Must be first, as Editor depends on it
+  configureEditorModule();
   configureGoalModule();
-  configureAccountModule();
-  configureAuthModule();
   configureTaskModule();
-  configureScheduleModule();
-  configureDashboardModule();
+  configureReminderModule();
+  configureNotificationModule();
 
   const coreLoadTime = performance.now() - startTime;
   console.log(`[DI] Core modules loaded in ${coreLoadTime.toFixed(2)}ms`);
-
-  // ========== Non-Core Modules - Lazy Load ==========
-  // These are loaded on first use
-  registerLazyModule('ai', async () => configureAIModule());
-  registerLazyModule('notification', async () => configureNotificationModule());
-  registerLazyModule('repository', async () => configureRepositoryModule());
-  registerLazyModule('setting', async () => configureSettingModule());
-  registerLazyModule('reminder', async () => configureReminderModule());
-
-  console.log('[DI] Lazy modules registered (AI, Notification, Repository, Setting, Reminder)');
-
-  // Preload frequently used modules after 3 seconds of idle time
-  setTimeout(() => {
-    console.log('[DI] Preloading frequently used modules...');
-    preloadModules(['reminder', 'notification', 'setting']);
-  }, 3000);
 
   console.log('[DI] Main process dependencies configured successfully');
 }
 
 /**
- * Configures dependencies for the Goal module.
- */
-function configureGoalModule(): void {
-  const goalRepository = new SqliteGoalRepository();
-  const goalFolderRepository = new SqliteGoalFolderRepository();
-  const goalStatisticsRepository = new SqliteGoalStatisticsRepository();
-
-  GoalContainer.getInstance()
-    .registerGoalRepository(goalRepository)
-    .registerGoalFolderRepository(goalFolderRepository)
-    .registerStatisticsRepository(goalStatisticsRepository);
-
-  console.log('[DI] Goal module configured');
-}
-
-/**
- * Configures dependencies for the Account module.
- */
-function configureAccountModule(): void {
-  const accountRepository = new SqliteAccountRepository();
-  
-  // Use type assertion if necessary to bypass minor interface mismatches
-  AccountContainer.getInstance()
-    .registerAccountRepository(accountRepository);
-
-  console.log('[DI] Account module configured');
-}
-
-/**
- * Configures dependencies for the Auth module.
- */
-function configureAuthModule(): void {
-  const credentialRepository = new SqliteAuthCredentialRepository();
-  const sessionRepository = new SqliteAuthSessionRepository();
-
-  AuthContainer.getInstance()
-    .registerCredentialRepository(credentialRepository)
-    .registerSessionRepository(sessionRepository);
-
-  console.log('[DI] Auth module configured');
-}
-
-/**
- * Configures dependencies for the Task module.
- */
-function configureTaskModule(): void {
-  const templateRepository = new SqliteTaskTemplateRepository();
-  const instanceRepository = new SqliteTaskInstanceRepository();
-  const statisticsRepository = new SqliteTaskStatisticsRepository();
-
-  TaskContainer.getInstance()
-    .registerTemplateRepository(templateRepository)
-    .registerInstanceRepository(instanceRepository)
-    .registerStatisticsRepository(statisticsRepository);
-
-  console.log('[DI] Task module configured');
-}
-
-/**
- * Configures dependencies for the Schedule module.
- */
-function configureScheduleModule(): void {
-  const scheduleTaskRepository = new SqliteScheduleTaskRepository();
-  const statisticsRepository = new SqliteScheduleStatisticsRepository();
-
-  ScheduleContainer.getInstance()
-    .registerScheduleTaskRepository(scheduleTaskRepository)
-    .registerStatisticsRepository(statisticsRepository);
-
-  console.log('[DI] Schedule module configured');
-}
-
-/**
- * Configures dependencies for the Reminder module.
- */
-function configureReminderModule(): void {
-  const templateRepository = new SqliteReminderTemplateRepository();
-  const groupRepository = new SqliteReminderGroupRepository();
-  const statisticsRepository = new SqliteReminderStatisticsRepository();
-
-  ReminderContainer.getInstance()
-    .registerTemplateRepository(templateRepository)
-    .registerGroupRepository(groupRepository)
-    .registerStatisticsRepository(statisticsRepository);
-
-  console.log('[DI] Reminder module configured');
-}
-
-/**
- * Configures dependencies for the AI module.
- */
-function configureAIModule(): void {
-  const conversationRepository = new SqliteAIConversationRepository();
-  const generationTaskRepository = new SqliteAIGenerationTaskRepository();
-  const usageQuotaRepository = new SqliteAIUsageQuotaRepository();
-  const providerConfigRepository = new SqliteAIProviderConfigRepository();
-
-  AIContainer.getInstance()
-    .registerConversationRepository(conversationRepository)
-    .registerGenerationTaskRepository(generationTaskRepository)
-    .registerUsageQuotaRepository(usageQuotaRepository)
-    .registerProviderConfigRepository(providerConfigRepository);
-
-  console.log('[DI] AI module configured');
-}
-
-/**
- * Configures dependencies for the Notification module.
- */
-function configureNotificationModule(): void {
-  const notificationRepository = new SqliteNotificationRepository();
-  const preferenceRepository = new SqliteNotificationPreferenceRepository();
-  const templateRepository = new SqliteNotificationTemplateRepository();
-
-  NotificationContainer.getInstance()
-    .registerNotificationRepository(notificationRepository)
-    .registerPreferenceRepository(preferenceRepository)
-    .registerTemplateRepository(templateRepository);
-
-  console.log('[DI] Notification module configured');
-}
-
-/**
- * Configures dependencies for the Dashboard module.
- */
-function configureDashboardModule(): void {
-  const dashboardConfigRepository = new SqliteDashboardConfigRepository();
-
-  DashboardContainer.getInstance()
-    .registerDashboardConfigRepository(dashboardConfigRepository);
-
-  // Register a simple in-memory cache service (stub implementation for now)
-  DashboardContainer.getInstance()
-    .registerStatisticsCacheService({
-      async get<T>(_key: string): Promise<T | null> { return null; },
-      async set<T>(_key: string, _value: T, _ttl?: number): Promise<void> {},
-      async invalidate(_key: string): Promise<void> {},
-      async invalidatePattern(_pattern: string): Promise<void> {},
-    });
-
-  console.log('[DI] Dashboard module configured');
-}
-
-/**
  * Configures dependencies for the Repository module.
+ * Must be configured first as Editor module depends on it.
  */
 function configureRepositoryModule(): void {
   const repositoryRepository = new SqliteRepositoryRepository();
   const resourceRepository = new SqliteResourceRepository();
   const folderRepository = new SqliteFolderRepository();
-  const statisticsRepository = new SqliteRepositoryStatisticsRepository();
+
+  // Create storage adapter for file operations
+  const storageAdapter = new FileSystemStorageAdapter();
 
   RepositoryContainer.getInstance()
     .registerRepositoryRepository(repositoryRepository)
     .registerResourceRepository(resourceRepository)
-    .registerFolderRepository(folderRepository)
-    .registerRepositoryStatisticsRepository(statisticsRepository);
+    .registerFolderRepository(folderRepository);
+
+  // Store storage adapter for Editor module to access
+  (RepositoryContainer.getInstance() as any)._storageAdapter = storageAdapter;
 
   console.log('[DI] Repository module configured');
 }
 
 /**
- * Configures dependencies for the Setting module.
+ * Configures dependencies for the Editor module.
  */
-function configureSettingModule(): void {
-  const appConfigRepository = new SqliteAppConfigRepository();
-  const settingRepository = new SqliteSettingRepository();
-  const userSettingRepository = new SqliteUserSettingRepository();
+function configureEditorModule(): void {
+  // Get Repository dependencies
+  const repositoryContainer = RepositoryContainer.getInstance();
+  const resourceRepository = repositoryContainer.getResourceRepository();
+  const repositoryRepository = repositoryContainer.getRepositoryRepository();
+  const storageAdapter = (repositoryContainer as any)._storageAdapter;
 
-  SettingContainer.getInstance()
-    .registerAppConfigRepository(appConfigRepository)
-    .registerSettingRepository(settingRepository)
-    .registerUserSettingRepository(userSettingRepository);
+  if (!storageAdapter) {
+    throw new Error('Storage adapter not found. Configure Repository module first.');
+  }
 
-  console.log('[DI] Setting module configured');
+  // Create the content adapter that bridges Editor to Repository
+  const repositoryContentAdapter = new RepositoryContentAdapter(
+    resourceRepository,
+    repositoryRepository,
+    storageAdapter,
+  );
+
+  // Store for use by application services
+  (EditorContainer.getInstance() as any)._repositoryContentAdapter = repositoryContentAdapter;
+
+  console.log('[DI] Editor module configured');
 }
 
 /**
- * Resets all singleton Containers.
+ * Configures dependencies for the Goal module.
+ * Injects GoalPolicy and GoalProgressCalculator into application services.
+ */
+function configureGoalModule(): void {
+  const goalRepository = new SqliteGoalRepository();
+  const goalFolderRepository = new SqliteGoalFolderRepository();
+  const goalRecordRepository = new SqliteGoalRecordRepository();
+
+  // Create domain services
+  const goalPolicy = new GoalPolicy();
+  const goalProgressCalculator = new GoalProgressCalculator(goalRecordRepository);
+
+  // Note: Actual Goal application services would be instantiated here
+  // For now, just storing the repositories and services for retrieval
+  // TODO: Create a proper GoalContainer that can store policies and calculators
+  const goalContainer = {
+    goalRepository,
+    goalFolderRepository,
+    goalRecordRepository,
+    goalPolicy,
+    goalProgressCalculator,
+  };
+  (global as any)._goalContainer = goalContainer;
+
+  console.log('[DI] Goal module configured');
+}
+
+/**
+ * Configures dependencies for the Task module.
+ * Injects TaskDependencyPolicy and TaskStatisticsCalculator into application services.
+ */
+function configureTaskModule(): void {
+  const templateRepository = new SqliteTaskTemplateRepository();
+  const instanceRepository = new SqliteTaskInstanceRepository();
+  const dependencyRepository = new SqliteTaskDependencyRepository();
+
+  // Create domain services
+  const taskDependencyPolicy = new TaskDependencyPolicy();
+  const taskStatisticsCalculator = new TaskStatisticsCalculator();
+
+  TaskContainer.getInstance()
+    .setTaskTemplateRepository(templateRepository)
+    .setTaskInstanceRepository(instanceRepository)
+    .setTaskDependencyRepository(dependencyRepository);
+
+  // Store policies for use by application services
+  (TaskContainer.getInstance() as any)._taskDependencyPolicy = taskDependencyPolicy;
+  (TaskContainer.getInstance() as any)._taskStatisticsCalculator = taskStatisticsCalculator;
+
+  console.log('[DI] Task module configured');
+}
+
+/**
+ * Configures dependencies for the Reminder module.
+ * Injects ReminderPolicy and ReminderRecurrenceCalculator into application services.
+ */
+function configureReminderModule(): void {
+  // Create domain services
+  const reminderPolicy = new ReminderPolicy();
+  const reminderRecurrenceCalculator = new ReminderRecurrenceCalculator();
+
+  // Store for use by application services
+  const reminderContainer = {
+    reminderPolicy,
+    reminderRecurrenceCalculator,
+  };
+  (global as any)._reminderContainer = reminderContainer;
+
+  console.log('[DI] Reminder module configured');
+}
+
+/**
+ * Configures dependencies for the Notification module.
+ * Injects NotificationPolicy into application services.
+ */
+function configureNotificationModule(): void {
+  // Create domain services
+  const notificationPolicy = new NotificationPolicy();
+
+  // Store for use by application services
+  const notificationContainer = {
+    notificationPolicy,
+  };
+  (global as any)._notificationContainer = notificationContainer;
+
+  console.log('[DI] Notification module configured');
+}
+
+/**
+ * Resets all configured containers.
  * Use this primarily for testing purposes to ensure a clean state between tests.
  */
 export function resetAllContainers(): void {
-  GoalContainer.resetInstance();
-  TaskContainer.resetInstance();
-  ScheduleContainer.resetInstance();
-  ReminderContainer.resetInstance();
-  AccountContainer.resetInstance();
-  AuthContainer.resetInstance();
-  NotificationContainer.resetInstance();
-  AIContainer.resetInstance();
-  DashboardContainer.resetInstance();
-  RepositoryContainer.resetInstance();
-  SettingContainer.resetInstance();
+  TaskContainer.getInstance().reset();
+  EditorContainer.getInstance().reset();
+  RepositoryContainer.getInstance().clear();
+  // Clear global containers
+  (global as any)._goalContainer = null;
+  (global as any)._reminderContainer = null;
+  (global as any)._notificationContainer = null;
   console.log('[DI] All containers reset');
 }
 
 /**
  * Checks if the Dependency Injection system is configured.
  *
- * @returns {boolean} True if the GoalContainer (as a proxy for core modules) is configured.
+ * @returns {boolean} True if core containers are configured.
  */
 export function isDIConfigured(): boolean {
-  return GoalContainer.getInstance().isConfigured();
+  return RepositoryContainer.getInstance().isConfigured();
 }
