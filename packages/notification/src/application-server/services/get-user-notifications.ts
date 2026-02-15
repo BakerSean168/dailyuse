@@ -4,12 +4,9 @@
  * 获取用户通知的应用服务
  */
 
-import { NotificationDomainService } from '../../domain-server/services/NotificationDomainService';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import type {
   INotificationRepository,
-  INotificationTemplateRepository,
-  INotificationPreferenceRepository,
 } from '../../domain-server/repositories';
 import { toNotificationClientDTO } from './notification-dto-converters';
 
@@ -17,25 +14,20 @@ import { toNotificationClientDTO } from './notification-dto-converters';
  * Get User Notifications Service
  */
 export class GetUserNotifications {
-  private domainService: NotificationDomainService;
-
   constructor(
     private readonly notificationRepository: INotificationRepository,
-    private readonly templateRepository: INotificationTemplateRepository,
-    private readonly preferenceRepository: INotificationPreferenceRepository,
-  ) {
-    this.domainService = new NotificationDomainService(
-      notificationRepository,
-      templateRepository,
-      preferenceRepository,
-    );
-  }
+  ) {}
 
   async execute(
     accountUuid: string,
     options?: { includeRead?: boolean; limit?: number; offset?: number },
   ): Promise<NotificationClientDTO[]> {
-    const notifications = await this.domainService.getUserNotifications(accountUuid, options);
+    const notifications = await this.notificationRepository.findByAccountUuid(accountUuid, {
+      includeRead: options?.includeRead ?? true,
+      includeDeleted: false,
+      limit: options?.limit,
+      offset: options?.offset,
+    });
     return notifications.map((n) => toNotificationClientDTO(n.toServerDTO()));
   }
 }

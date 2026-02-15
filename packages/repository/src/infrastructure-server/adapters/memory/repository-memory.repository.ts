@@ -17,29 +17,41 @@ export class RepositoryMemoryRepository implements IRepositoryRepository {
   private repositories = new Map<string, Repository>();
 
   async save(repository: Repository): Promise<void> {
-    this.repositories.set((repository as any).uuid, repository);
+    this.repositories.set(String(repository.id), repository);
   }
 
-  async findByUuid(uuid: string): Promise<Repository | null> {
-    return this.repositories.get(uuid) ?? null;
+  async findById(id: string): Promise<Repository | null> {
+    return this.repositories.get(id) ?? null;
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<Repository[]> {
-    return Array.from(this.repositories.values()).filter((r: any) => r.accountUuid === accountUuid);
+  async findByIdentityId(identityId: string): Promise<Repository[]> {
+    return Array.from(this.repositories.values()).filter((r) => String(r.identityId) === identityId);
   }
 
-  async findByAccountUuidAndStatus(accountUuid: string, status: RepositoryStatus): Promise<Repository[]> {
+  async findByIdentityIdAndStatus(identityId: string, status: RepositoryStatus): Promise<Repository[]> {
     return Array.from(this.repositories.values()).filter(
-      (r: any) => r.accountUuid === accountUuid && r.status === status,
+      (r) => String(r.identityId) === identityId && r.status === status,
     );
   }
 
-  async delete(uuid: string): Promise<void> {
-    this.repositories.delete(uuid);
+  async delete(id: string): Promise<void> {
+    this.repositories.delete(id);
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    return this.repositories.has(uuid);
+  async exists(id: string): Promise<boolean> {
+    return this.repositories.has(id);
+  }
+
+  async findByUuid(uuid: string): Promise<Repository | null> {
+    return this.findById(uuid);
+  }
+
+  async findByAccountUuid(accountUuid: string): Promise<Repository[]> {
+    return this.findByIdentityId(accountUuid);
+  }
+
+  async findByAccountUuidAndStatus(accountUuid: string, status: RepositoryStatus): Promise<Repository[]> {
+    return this.findByIdentityIdAndStatus(accountUuid, status);
   }
 
   // Test helpers
@@ -48,6 +60,6 @@ export class RepositoryMemoryRepository implements IRepositoryRepository {
   }
 
   seed(repositories: Repository[]): void {
-    repositories.forEach((r: any) => this.repositories.set(r.uuid, r));
+    repositories.forEach((r) => this.repositories.set(String(r.id), r));
   }
 }

@@ -18,6 +18,9 @@ export type {
   GroupAssignmentValidation,
 } from './ReminderTemplateBusinessService';
 
+export { ReminderPolicy } from './ReminderPolicy';
+export { ReminderRecurrenceCalculator } from './ReminderRecurrenceCalculator';
+
 export { ReminderGroupBusinessService } from './ReminderGroupBusinessService';
 export type {
   GroupStatistics,

@@ -5,6 +5,10 @@
  */
 
 import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
+import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
+import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
+import type { IStoragePort } from '../ports/IStoragePort';
+import type { Folder } from '../../domain-server/entities/folder';
 
 /**
  * Delete Folder Input
@@ -17,32 +21,67 @@ export interface DeleteFolderInput {
  * Delete Folder
  */
 export class DeleteFolder {
-
-  constructor(private readonly folderRepository: IFolderRepository) {}
+  constructor(
+    private readonly folderRepository: IFolderRepository,
+    private readonly resourceRepository: IResourceRepository,
+    private readonly repositoryRepository: IRepositoryRepository,
+    private readonly storagePort: IStoragePort,
+  ) {}
 
   async execute(input: DeleteFolderInput): Promise<void> {
-    const folder = await this.folderRepository.findByUuid(input.uuid);
+    const folder = await this.folderRepository.findById(input.uuid);
     if (!folder) {
       throw new Error(`Folder not found: ${input.uuid}`);
     }
 
-    const collectChildrenUuids = async (folderUuid: string): Promise<string[]> => {
-      const uuids = [folderUuid];
-      const children = await this.folderRepository.findByParentUuid(folderUuid);
+    const repository = await this.repositoryRepository.findById(folder.repositoryId);
+    if (!repository) {
+      throw new Error(`Repository not found: ${folder.repositoryId}`);
+    }
+
+    const collectFolders = async (root: Folder): Promise<Folder[]> => {
+      const folders: Folder[] = [root];
+      const children = await this.folderRepository.findByParentId(String(root.id));
 
       for (const child of children) {
-        const childUuids = await collectChildrenUuids(child.uuid);
-        uuids.push(...childUuids);
+        const descendants = await collectFolders(child);
+        folders.push(...descendants);
       }
 
-      return uuids;
+      return folders;
     };
 
-    const uuidsToDelete = await collectChildrenUuids(input.uuid);
+    const foldersToDelete = await collectFolders(folder);
+    const resourcesToDelete = new Map<string, number>();
 
-    for (const folderUuid of uuidsToDelete.reverse()) {
-      await this.folderRepository.delete(folderUuid);
+    for (const current of foldersToDelete) {
+      const resources = await this.resourceRepository.findByFolderId(String(current.id));
+      for (const resource of resources) {
+        resourcesToDelete.set(String(resource.id), resource.size ?? 0);
+        if (resource.isFolder()) {
+          repository.recordFolderRemoved();
+        } else {
+          repository.recordResourceRemoved(resource.size ?? 0);
+        }
+      }
     }
+
+    await this.storagePort.delete({
+      repositoryId: String(repository.id),
+      path: folder.path,
+      isFolder: true,
+    });
+
+    for (const resourceId of resourcesToDelete.keys()) {
+      await this.resourceRepository.delete(resourceId);
+    }
+
+    for (const current of foldersToDelete.reverse()) {
+      await this.folderRepository.delete(String(current.id));
+      repository.recordFolderRemoved();
+    }
+
+    await this.repositoryRepository.save(repository);
   }
 }
 

@@ -6,6 +6,7 @@
  */
 
 import type { IGoalRepository } from '@/domain-server';
+import { GoalPolicy } from '@/domain-server';
 import type { DeleteGoalRes } from '@dailyuse/contracts/goal';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
@@ -15,7 +16,10 @@ import { GoalEventPublisher } from './goal-event-publisher';
  * Delete Goal Use Case
  */
 export class DeleteGoal {
-  constructor(private readonly goalRepository: IGoalRepository) {}
+  constructor(
+    private readonly goalRepository: IGoalRepository,
+    private readonly goalPolicy: GoalPolicy,
+  ) {}
 
   /**
    * 检查目标依赖项
@@ -68,6 +72,8 @@ export class DeleteGoal {
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${uuid}`);
     }
+
+    this.goalPolicy.ensureGoalCanBeDeleted(goal);
 
     const dto = goal.toClientDTO(true);
     goal.softDelete();

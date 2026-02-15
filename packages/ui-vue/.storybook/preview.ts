@@ -1,4 +1,5 @@
 import type { Preview } from '@storybook/vue3';
+import '@dailyuse/ui-core/styles/globals.css';
 
 const preview: Preview = {
   parameters: {

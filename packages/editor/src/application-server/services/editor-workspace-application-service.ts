@@ -1,7 +1,11 @@
 import type { IEditorWorkspaceRepository } from '../../domain-server/repositories/IEditorWorkspaceRepository';
-import { EditorWorkspaceDomainService } from '../../domain-server/services/EditorWorkspaceDomainService';
+import type { IEditorSessionRepository } from '../../domain-server/repositories/IEditorSessionRepository';
+import type { IEditorGroupRepository } from '../../domain-server/repositories/IEditorGroupRepository';
+import type { IEditorTabRepository } from '../../domain-server/repositories/IEditorTabRepository';
+import { EditorSession } from '../../domain-server/entities/editor-session';
+import { EditorWorkspace } from '../../domain-server/aggregates/editor-workspace';
+import { SessionRestorer } from '../../domain-server/services/SessionRestorer';
 import type { 
-  DocumentClientDTO,
   EditorWorkspaceServerDTO,
   WorkspaceLayoutServerDTO,
   WorkspaceSettingsServerDTO,
@@ -24,12 +28,21 @@ import { ProjectType, SplitDirection, TabType } from '@dailyuse/contracts/editor
  * - DTO 转换（Domain ↔ Contracts）
  */
 export class EditorWorkspaceApplicationService {
-  private domainService: EditorWorkspaceDomainService;
-  private repository: IEditorWorkspaceRepository;
+  private readonly sessionRepository: IEditorSessionRepository;
+  private readonly groupRepository: IEditorGroupRepository;
+  private readonly tabRepository: IEditorTabRepository;
+  private readonly restorer: SessionRestorer;
 
-  constructor(repository: IEditorWorkspaceRepository) {
-    this.domainService = new EditorWorkspaceDomainService(repository);
-    this.repository = repository;
+  constructor(
+    private readonly workspaceRepository: IEditorWorkspaceRepository,
+    sessionRepository: IEditorSessionRepository,
+    groupRepository: IEditorGroupRepository,
+    tabRepository: IEditorTabRepository,
+  ) {
+    this.sessionRepository = sessionRepository;
+    this.groupRepository = groupRepository;
+    this.tabRepository = tabRepository;
+    this.restorer = new SessionRestorer();
   }
 
   // ===== Workspace 管理 =====
@@ -47,9 +60,18 @@ export class EditorWorkspaceApplicationService {
     settings?: Partial<WorkspaceSettingsServerDTO>;
   }): Promise<EditorWorkspaceServerDTO> {
     // 委托给领域服务处理业务逻辑
-    const workspace = await this.domainService.createWorkspace(params);
+    const workspace = EditorWorkspace.create({
+      identityId: params.accountUuid,
+      name: params.name,
+      description: params.description,
+      projectPath: params.projectPath,
+      projectType: params.projectType,
+      layout: params.layout as WorkspaceLayoutServerDTO | undefined,
+      settings: params.settings as WorkspaceSettingsServerDTO | undefined,
+    });
 
-    // 转换为 DTO
+    await this.workspaceRepository.save(workspace);
+
     return workspace.toClientDTO();
   }
 
@@ -61,8 +83,7 @@ export class EditorWorkspaceApplicationService {
     options?: { includeSessions?: boolean },
   ): Promise<EditorWorkspaceServerDTO | null> {
     // 委托给领域服务处理
-    const workspace = await this.domainService.getWorkspace(uuid, options);
-
+    const workspace = await this.workspaceRepository.findById(uuid);
     return workspace ? workspace.toClientDTO() : null;
   }
 
@@ -74,9 +95,7 @@ export class EditorWorkspaceApplicationService {
     options?: { includeSessions?: boolean },
   ): Promise<EditorWorkspaceServerDTO[]> {
     // 委托给领域服务处理
-    const workspaces = await this.domainService.getWorkspacesByAccount(accountUuid, options);
-
-    // 转换为 DTO 数组
+    const workspaces = await this.workspaceRepository.findByIdentityId(accountUuid);
     return workspaces.map((workspace) => workspace.toClientDTO());
   }
 
@@ -90,7 +109,26 @@ export class EditorWorkspaceApplicationService {
     isActive?: boolean;
   }): Promise<EditorWorkspaceServerDTO> {
     // 委托给领域服务处理
-    const workspace = await this.domainService.updateWorkspace(params);
+    const workspace = await this.workspaceRepository.findById(params.uuid);
+    if (!workspace) {
+      throw new Error(`Workspace not found: ${params.uuid}`);
+    }
+
+    if (params.name !== undefined) {
+      workspace.updateName(params.name);
+    }
+    if (params.description !== undefined) {
+      workspace.updateDescription(params.description);
+    }
+    if (params.isActive !== undefined) {
+      if (params.isActive) {
+        workspace.activate();
+      } else {
+        workspace.deactivate();
+      }
+    }
+
+    await this.workspaceRepository.save(workspace);
 
     return workspace.toClientDTO();
   }
@@ -100,7 +138,13 @@ export class EditorWorkspaceApplicationService {
    */
   async deleteWorkspace(uuid: string): Promise<boolean> {
     // 委托给领域服务处理
-    return await this.domainService.deleteWorkspace(uuid);
+    const workspace = await this.workspaceRepository.findById(uuid);
+    if (!workspace) {
+      return false;
+    }
+
+    await this.workspaceRepository.delete(uuid);
+    return true;
   }
 
   // ===== Session 管理 =====
@@ -113,20 +157,32 @@ export class EditorWorkspaceApplicationService {
     name: string;
     layout?: Partial<SessionLayoutServerDTO>;
   }): Promise<EditorSessionServerDTO> {
-    // 委托给领域服务处理
-    const session = await this.domainService.addSession(params);
+    const workspace = await this.workspaceRepository.findById(params.workspaceUuid);
+    if (!workspace) {
+      throw new Error(`Workspace not found: ${params.workspaceUuid}`);
+    }
 
-    return session.toClientDTO();
+    const session = EditorSession.create({
+      workspaceId: workspace.id,
+      identityId: workspace.identityId,
+      name: params.name,
+      layout: params.layout ?? undefined,
+    });
+
+    await this.persistSessionState(session);
+
+    return session.toServerDTO();
   }
 
   /**
    * 获取工作区的所有会话
    */
   async getSessions(workspaceUuid: string): Promise<EditorSessionServerDTO[]> {
-    // 委托给领域服务处理
-    const sessions = await this.domainService.getSessions(workspaceUuid);
-
-    return sessions.map((session) => session.toClientDTO());
+    const sessions = await this.sessionRepository.findByWorkspaceId(workspaceUuid);
+    const restored = await Promise.all(
+      sessions.map((session) => this.loadSessionWithGroups(String(session.id))),
+    );
+    return restored.filter(Boolean).map((session) => session!.toServerDTO());
   }
 
   /**
@@ -139,18 +195,46 @@ export class EditorWorkspaceApplicationService {
     layout?: Partial<SessionLayoutServerDTO>;
     isActive?: boolean;
   }): Promise<EditorSessionServerDTO> {
-    // 委托给领域服务处理
-    const session = await this.domainService.updateSession(params);
+    const session = await this.loadSessionWithGroups(params.sessionUuid);
+    if (!session) {
+      throw new Error(`Session not found: ${params.sessionUuid}`);
+    }
 
-    return session.toClientDTO();
+    if (params.name !== undefined) {
+      session.rename(params.name);
+    }
+
+    if (params.layout) {
+      session.updateLayout(params.layout);
+    }
+
+    if (params.isActive === true) {
+      session.activate();
+    } else if (params.isActive === false) {
+      session.deactivate();
+    }
+
+    await this.persistSessionState(session);
+
+    return session.toServerDTO();
   }
 
   /**
    * 删除会话
    */
   async removeSession(workspaceUuid: string, sessionUuid: string): Promise<boolean> {
-    // 委托给领域服务处理
-    return await this.domainService.removeSession(workspaceUuid, sessionUuid);
+    const session = await this.sessionRepository.findById(sessionUuid);
+    if (!session) {
+      return false;
+    }
+
+    const groups = await this.groupRepository.findBySessionId(sessionUuid);
+    for (const group of groups) {
+      await this.tabRepository.deleteByGroupId(String(group.id));
+    }
+    await this.groupRepository.deleteBySessionId(sessionUuid);
+    await this.sessionRepository.delete(sessionUuid);
+    return true;
   }
 
   // ===== Group 管理 =====
@@ -164,10 +248,19 @@ export class EditorWorkspaceApplicationService {
     groupIndex: number;
     name?: string;
   }): Promise<EditorGroupServerDTO> {
-    // 委托给领域服务处理
-    const group = await this.domainService.addGroup(params);
+    const session = await this.loadSessionWithGroups(params.sessionUuid);
+    if (!session) {
+      throw new Error(`Session not found: ${params.sessionUuid}`);
+    }
 
-    return group.toClientDTO();
+    const group = session.addGroup({
+      groupIndex: params.groupIndex,
+      name: params.name,
+    });
+
+    await this.persistSessionState(session);
+
+    return group.toServerDTO();
   }
 
   /**
@@ -181,10 +274,21 @@ export class EditorWorkspaceApplicationService {
     name?: string;
     splitDirection?: SplitDirection;
   }): Promise<EditorGroupServerDTO> {
-    // 委托给领域服务处理
-    const group = await this.domainService.updateGroup(params);
+    const group = await this.groupRepository.findById(params.groupUuid);
+    if (!group) {
+      throw new Error(`Group not found: ${params.groupUuid}`);
+    }
 
-    return group.toClientDTO();
+    if (params.groupIndex !== undefined) {
+      group.updateGroupIndex(params.groupIndex);
+    }
+    if (params.name !== undefined) {
+      group.rename(params.name);
+    }
+
+    await this.groupRepository.save(group);
+
+    return group.toServerDTO();
   }
 
   /**
@@ -195,8 +299,14 @@ export class EditorWorkspaceApplicationService {
     sessionUuid: string,
     groupUuid: string,
   ): Promise<boolean> {
-    // 委托给领域服务处理
-    return await this.domainService.removeGroup(workspaceUuid, sessionUuid, groupUuid);
+    const session = await this.loadSessionWithGroups(sessionUuid);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionUuid}`);
+    }
+
+    session.removeGroup(groupUuid);
+    await this.persistSessionState(session);
+    return true;
   }
 
   // ===== Tab 管理 =====
@@ -215,10 +325,22 @@ export class EditorWorkspaceApplicationService {
     viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
   }): Promise<EditorTabServerDTO> {
-    // 委托给领域服务处理
-    const tab = await this.domainService.addTab(params);
+    const session = await this.loadSessionWithGroups(params.sessionUuid);
+    if (!session) {
+      throw new Error(`Session not found: ${params.sessionUuid}`);
+    }
 
-    return tab.toClientDTO();
+    const tab = session.openTab(params.documentUuid ?? '', {
+      groupId: params.groupUuid,
+      tabType: params.tabType,
+      viewState: params.viewState,
+      name: params.title,
+      isPinned: params.isPinned,
+    });
+
+    await this.persistSessionState(session);
+
+    return tab.toServerDTO();
   }
 
   /**
@@ -234,10 +356,27 @@ export class EditorWorkspaceApplicationService {
     viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
   }): Promise<EditorTabServerDTO> {
-    // 委托给领域服务处理
-    const tab = await this.domainService.updateTab(params);
+    const tab = await this.tabRepository.findById(params.tabUuid);
+    if (!tab) {
+      throw new Error(`Tab not found: ${params.tabUuid}`);
+    }
 
-    return tab.toClientDTO();
+    if (params.tabIndex !== undefined) {
+      tab.updateTabIndex(params.tabIndex);
+    }
+    if (params.title !== undefined) {
+      tab.updateName(params.title);
+    }
+    if (params.viewState !== undefined) {
+      tab.updateViewState(params.viewState);
+    }
+    if (params.isPinned !== undefined && tab.isPinned !== params.isPinned) {
+      tab.togglePinned();
+    }
+
+    await this.tabRepository.save(tab);
+
+    return tab.toServerDTO();
   }
 
   /**
@@ -249,8 +388,14 @@ export class EditorWorkspaceApplicationService {
     groupUuid: string,
     tabUuid: string,
   ): Promise<boolean> {
-    // 委托给领域服务处理
-    return await this.domainService.removeTab(workspaceUuid, sessionUuid, groupUuid, tabUuid);
+    const session = await this.loadSessionWithGroups(sessionUuid);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionUuid}`);
+    }
+
+    session.closeTab(tabUuid);
+    await this.persistSessionState(session);
+    return true;
   }
 
   // ===== 激活状态管理 =====
@@ -259,14 +404,26 @@ export class EditorWorkspaceApplicationService {
    * 激活会话
    */
   async activateSession(workspaceUuid: string, sessionUuid: string): Promise<void> {
-    await this.domainService.activateSession(workspaceUuid, sessionUuid);
+    const session = await this.loadSessionWithGroups(sessionUuid);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionUuid}`);
+    }
+
+    session.activate();
+    await this.persistSessionState(session);
   }
 
   /**
    * 停用会话
    */
   async deactivateSession(workspaceUuid: string, sessionUuid: string): Promise<void> {
-    await this.domainService.deactivateSession(workspaceUuid, sessionUuid);
+    const session = await this.loadSessionWithGroups(sessionUuid);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionUuid}`);
+    }
+
+    session.deactivate();
+    await this.persistSessionState(session);
   }
 
   /**
@@ -278,7 +435,13 @@ export class EditorWorkspaceApplicationService {
     groupUuid: string,
     tabUuid: string,
   ): Promise<void> {
-    await this.domainService.activateTab(workspaceUuid, sessionUuid, groupUuid, tabUuid);
+    const session = await this.loadSessionWithGroups(sessionUuid);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionUuid}`);
+    }
+
+    session.setActiveTab(tabUuid);
+    await this.persistSessionState(session);
   }
 
   /**
@@ -290,7 +453,40 @@ export class EditorWorkspaceApplicationService {
     groupUuid: string,
     tabUuid: string,
   ): Promise<void> {
-    await this.domainService.deactivateTab(workspaceUuid, sessionUuid, groupUuid, tabUuid);
+    const session = await this.loadSessionWithGroups(sessionUuid);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionUuid}`);
+    }
+
+    session.setActiveTab(tabUuid);
+    await this.persistSessionState(session);
+  }
+
+  private async persistSessionState(session: EditorSession): Promise<void> {
+    await this.sessionRepository.save(session);
+
+    if (session.groups.length > 0) {
+      await this.groupRepository.saveBatch(session.groups);
+      const tabs = session.groups.flatMap((group) => group.tabs);
+      if (tabs.length > 0) {
+        await this.tabRepository.saveBatch(tabs);
+      }
+    }
+  }
+
+  private async loadSessionWithGroups(sessionId: string): Promise<EditorSession | null> {
+    const session = await this.sessionRepository.findById(sessionId);
+    if (!session) {
+      return null;
+    }
+
+    const groups = await this.groupRepository.findBySessionId(sessionId);
+    for (const group of groups) {
+      const tabs = await this.tabRepository.findByGroupId(String(group.id));
+      group.restoreTabs(tabs);
+    }
+
+    return this.restorer.restore(session, groups);
   }
 }
 

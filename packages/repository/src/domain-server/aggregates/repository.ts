@@ -20,6 +20,7 @@ import { RepositoryId } from '../../domain-shared/value-objects/repository-id';
 import { RepositoryConfig } from '../../domain-shared/value-objects/repository-config';
 import { RepositoryStats } from '../../domain-shared/value-objects/repository-stats';
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
+import { BusinessRuleViolationError } from '@dailyuse/utils';
 
 /**
  * 创建仓库参数
@@ -143,6 +144,9 @@ export class Repository
   // ===== 业务方法 =====
 
   public updateName(name: string): void {
+    if (!name || name.trim().length === 0) {
+      throw new BusinessRuleViolationError('Repository name cannot be empty.');
+    }
     this._props.name = name;
     this._props.updatedAt = new Date();
   }
@@ -160,6 +164,42 @@ export class Repository
   public updateConfig(config: Partial<RepositoryConfigDTO>): void {
     const currentConfig = this._props.config.toDTO();
     this._props.config = RepositoryConfig.fromDTO({ ...currentConfig, ...config });
+    this._props.updatedAt = new Date();
+  }
+
+  public updateStats(stats: Partial<RepositoryStatsDTO>): void {
+    const currentStats = this._props.stats.toDTO();
+    this._props.stats = RepositoryStats.fromDTO({ ...currentStats, ...stats });
+    this._props.updatedAt = new Date();
+  }
+
+  public recordResourceAdded(sizeBytes: number = 0): void {
+    this._props.stats = this._props.stats.incrementResources().addSize(sizeBytes);
+    this._props.updatedAt = new Date();
+  }
+
+  public recordResourceRemoved(sizeBytes: number = 0): void {
+    const current = this._props.stats.toDTO();
+    this._props.stats = RepositoryStats.fromDTO({
+      resourceCount: Math.max(0, current.resourceCount - 1),
+      folderCount: current.folderCount,
+      totalSize: Math.max(0, current.totalSize - sizeBytes),
+    });
+    this._props.updatedAt = new Date();
+  }
+
+  public recordFolderAdded(): void {
+    this._props.stats = this._props.stats.incrementFolders();
+    this._props.updatedAt = new Date();
+  }
+
+  public recordFolderRemoved(): void {
+    const current = this._props.stats.toDTO();
+    this._props.stats = RepositoryStats.fromDTO({
+      resourceCount: current.resourceCount,
+      folderCount: Math.max(0, current.folderCount - 1),
+      totalSize: current.totalSize,
+    });
     this._props.updatedAt = new Date();
   }
 
@@ -234,9 +274,58 @@ export class Repository
     };
   }
 
+  public toClientDTO(): import('@dailyuse/contracts/repository').RepositoryClientDTO {
+    const isDeleted = this._props.status === RepositoryStatus.Deleted;
+    const isArchived = this._props.status === RepositoryStatus.Archived;
+    const isActive = this._props.status === RepositoryStatus.Active;
+
+    const statusTextMap: Record<RepositoryStatus, string> = {
+      Active: '活跃',
+      Archived: '已归档',
+      Deleted: '已删除',
+    };
+
+    const typeTextMap: Record<RepositoryType, string> = {
+      Markdown: 'Markdown',
+      Code: '代码',
+      Mixed: '混合',
+    };
+
+    return {
+      id: String(this.id),
+      identityId: String(this._props.identityId),
+      name: this._props.name,
+      type: this._props.type,
+      path: this._props.path,
+      description: this._props.description,
+      config: this._props.config.toDTO(),
+      stats: this._props.stats.toDTO(),
+      status: this._props.status,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
+      isDeleted,
+      isArchived,
+      isActive,
+      statusText: statusTextMap[this._props.status] ?? this._props.status,
+      typeText: typeTextMap[this._props.type] ?? this._props.type,
+      folderCount: this._props.stats.folderCount,
+      resourceCount: this._props.stats.resourceCount,
+      totalSize: this._props.stats.totalSize,
+      formattedSize: this._props.stats.formattedSize,
+      createdAtText: this._props.createdAt.toLocaleString(),
+      updatedAtText: this._props.updatedAt.toLocaleString(),
+    };
+  }
+
   // ===== 静态工厂方法 =====
 
   public static create(params: CreateRepositoryParams): Repository {
+    if (!params.name || params.name.trim().length === 0) {
+      throw new BusinessRuleViolationError('Repository name cannot be empty.');
+    }
+
     const id = RepositoryId.of(RepositoryId.generate());
     const now = new Date();
 

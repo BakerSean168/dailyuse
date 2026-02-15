@@ -29,7 +29,7 @@ export class GetRepository {
   constructor(private readonly repositoryRepository: IRepositoryRepository) {}
 
   async execute(input: GetRepositoryInput): Promise<GetRepositoryOutput> {
-    const repository = await this.repositoryRepository.findByUuid(input.uuid);
+    const repository = await this.repositoryRepository.findById(input.uuid);
     return { repository: repository ? repository.toClientDTO() : null };
   }
 }

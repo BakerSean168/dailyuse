@@ -26,6 +26,7 @@ import {
   DeleteGoalKeyResult,
   AddGoalReview,
 } from '../application-server';
+import { GoalPolicy } from '../domain-server';
 import { GoalPrismaRepository } from '../infrastructure-server';
 import { registerGoalRoutes } from './routes';
 import { registerGoalInitializationTasks } from './initialization';
@@ -56,19 +57,21 @@ export const GoalApiModule: GoalApiModuleDef = {
     const goalRepository = new GoalPrismaRepository(prisma);
 
     // 2. 创建 Use Cases / Services
-    const createGoal = new CreateGoal(goalRepository);
+    const goalPolicy = new GoalPolicy();
+
+    const createGoal = new CreateGoal(goalRepository, goalPolicy);
     const getGoal = new GetGoal(goalRepository);
     const listGoals = new ListGoals(goalRepository);
-    const updateGoal = new UpdateGoal(goalRepository);
-    const deleteGoal = new DeleteGoal(goalRepository);
-    const archiveGoal = new ArchiveGoal(goalRepository);
-    const activateGoal = new ActivateGoal(goalRepository);
+    const updateGoal = new UpdateGoal(goalRepository, goalPolicy);
+    const deleteGoal = new DeleteGoal(goalRepository, goalPolicy);
+    const archiveGoal = new ArchiveGoal(goalRepository, goalPolicy);
+    const activateGoal = new ActivateGoal(goalRepository, goalPolicy);
     const searchGoals = new SearchGoals(goalRepository);
-    const addKeyResult = new AddGoalKeyResult(goalRepository);
-    const updateKeyResult = new UpdateGoalKeyResult(goalRepository);
-    const updateKeyResultProgress = new UpdateGoalKeyResultProgress(goalRepository);
-    const deleteKeyResult = new DeleteGoalKeyResult(goalRepository);
-    const addReview = new AddGoalReview(goalRepository);
+    const addKeyResult = new AddGoalKeyResult(goalRepository, goalPolicy);
+    const updateKeyResult = new UpdateGoalKeyResult(goalRepository, goalPolicy);
+    const updateKeyResultProgress = new UpdateGoalKeyResultProgress(goalRepository, goalPolicy);
+    const deleteKeyResult = new DeleteGoalKeyResult(goalRepository, goalPolicy);
+    const addReview = new AddGoalReview(goalRepository, goalPolicy);
 
     // 3. 创建 Handlers（函数引用）
     const handlers = {

@@ -16,41 +16,57 @@ export class FolderMemoryRepository implements IFolderRepository {
   private folders = new Map<string, Folder>();
 
   async save(folder: Folder): Promise<void> {
-    this.folders.set((folder as any).uuid, folder);
+    this.folders.set(String(folder.id), folder);
   }
 
-  async findByUuid(uuid: string): Promise<Folder | null> {
-    return this.folders.get(uuid) ?? null;
+  async findById(id: string): Promise<Folder | null> {
+    return this.folders.get(id) ?? null;
   }
 
-  async findByRepositoryUuid(repositoryUuid: string): Promise<Folder[]> {
-    return Array.from(this.folders.values()).filter((f: any) => f.repositoryUuid === repositoryUuid);
+  async findByRepositoryId(repositoryId: string): Promise<Folder[]> {
+    return Array.from(this.folders.values()).filter((f) => f.repositoryId === repositoryId);
   }
 
-  async findByParentUuid(parentUuid: string): Promise<Folder[]> {
-    return Array.from(this.folders.values()).filter((f: any) => f.parentUuid === parentUuid);
+  async findByParentId(parentId: string): Promise<Folder[]> {
+    return Array.from(this.folders.values()).filter((f) => f.parentId === parentId);
   }
 
-  async findRootFolders(repositoryUuid: string): Promise<Folder[]> {
+  async findRootFolders(repositoryId: string): Promise<Folder[]> {
     return Array.from(this.folders.values()).filter(
-      (f: any) => f.repositoryUuid === repositoryUuid && !f.parentUuid,
+      (f) => f.repositoryId === repositoryId && !f.parentId,
     );
   }
 
-  async delete(uuid: string): Promise<void> {
-    this.folders.delete(uuid);
+  async delete(id: string): Promise<void> {
+    this.folders.delete(id);
   }
 
-  async deleteByRepositoryUuid(repositoryUuid: string): Promise<void> {
-    this.folders.forEach((f: any, uuid) => {
-      if (f.repositoryUuid === repositoryUuid) {
-        this.folders.delete(uuid);
+  async deleteByRepositoryId(repositoryId: string): Promise<void> {
+    this.folders.forEach((folder, id) => {
+      if (folder.repositoryId === repositoryId) {
+        this.folders.delete(id);
       }
     });
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    return this.folders.has(uuid);
+  async exists(id: string): Promise<boolean> {
+    return this.folders.has(id);
+  }
+
+  async findByUuid(uuid: string): Promise<Folder | null> {
+    return this.findById(uuid);
+  }
+
+  async findByRepositoryUuid(repositoryUuid: string): Promise<Folder[]> {
+    return this.findByRepositoryId(repositoryUuid);
+  }
+
+  async findByParentUuid(parentUuid: string): Promise<Folder[]> {
+    return this.findByParentId(parentUuid);
+  }
+
+  async deleteByRepositoryUuid(repositoryUuid: string): Promise<void> {
+    await this.deleteByRepositoryId(repositoryUuid);
   }
 
   // Test helpers
@@ -59,6 +75,6 @@ export class FolderMemoryRepository implements IFolderRepository {
   }
 
   seed(folders: Folder[]): void {
-    folders.forEach((f: any) => this.folders.set(f.uuid, f));
+    folders.forEach((f) => this.folders.set(String(f.id), f));
   }
 }

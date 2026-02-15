@@ -29,7 +29,7 @@ export class ListResources {
   constructor(private readonly resourceRepository: IResourceRepository) {}
 
   async execute(input: ListResourcesInput): Promise<ListResourcesOutput> {
-    const resources = await this.resourceRepository.findByRepositoryUuid(input.repositoryUuid);
+    const resources = await this.resourceRepository.findByRepositoryId(input.repositoryUuid);
     return { resources: resources.map((r) => r.toClientDTO()) };
   }
 }

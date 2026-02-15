@@ -35,12 +35,12 @@ export class ListRepositories {
     let repositories: Repository[];
 
     if (input.status) {
-      repositories = await this.repositoryRepository.findByAccountUuidAndStatus(
+      repositories = await this.repositoryRepository.findByIdentityIdAndStatus(
         input.accountUuid,
         input.status,
       );
     } else {
-      repositories = await this.repositoryRepository.findByAccountUuid(input.accountUuid);
+      repositories = await this.repositoryRepository.findByIdentityId(input.accountUuid);
     }
 
     return { repositories: repositories.map((r) => r.toClientDTO()) };

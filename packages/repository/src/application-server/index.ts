@@ -6,3 +6,6 @@
 
 // ===== Services =====
 export * from './services';
+
+// ===== Ports =====
+export * from './ports/IStoragePort';

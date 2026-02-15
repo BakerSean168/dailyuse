@@ -6,6 +6,7 @@ import type {
 } from '@dailyuse/contracts/repository';
 import { Entity } from '@dailyuse/utils';
 import { FolderMetadata, ResourceId } from '../value-objects';
+import { BusinessRuleViolationError } from '@dailyuse/utils';
 
 // ============ 本地类型定义 ============
 // TODO: 这些类型应该移到 @dailyuse/contracts/repository
@@ -109,6 +110,8 @@ interface FolderState {
   children: Folder[] | null;
 }
 
+const ILLEGAL_NAME_CHARS = /[\\/:*?"<>|\x00-\x1F]/;
+
 export class Folder extends Entity<ResourceId> implements FolderServer {
   // ===== 私有属性容器 =====
   private _props: FolderState;
@@ -188,7 +191,10 @@ export class Folder extends Entity<ResourceId> implements FolderServer {
   // ===== 业务方法 =====
   rename(newName: string): void {
     if (!newName || newName.trim() === '') {
-      throw new Error('Folder name cannot be empty');
+      throw new BusinessRuleViolationError('Folder name cannot be empty');
+    }
+    if (ILLEGAL_NAME_CHARS.test(newName)) {
+      throw new BusinessRuleViolationError('Folder name contains illegal characters');
     }
 
     const oldPath = this._props.path;
@@ -318,6 +324,13 @@ export class Folder extends Entity<ResourceId> implements FolderServer {
     order?: number;
     metadata?: Partial<FolderMetadataDTO>;
   }): Folder {
+    if (!params.name || params.name.trim() === '') {
+      throw new BusinessRuleViolationError('Folder name cannot be empty');
+    }
+    if (ILLEGAL_NAME_CHARS.test(params.name)) {
+      throw new BusinessRuleViolationError('Folder name contains illegal characters');
+    }
+
     const path = params.parentPath ? `${params.parentPath}/${params.name}` : `/${params.name}`;
     const metadata = FolderMetadata.create(params.metadata ?? {});
     const now = new Date();

@@ -171,15 +171,18 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
     durationMinutes: number;
     description?: string | null;
   }): FocusSession {
-    // 验证时长
-    if (params.durationMinutes <= 0) {
-      throw new Error('专注时长必须大于 0 分钟');
+    // 不变量校验
+    if (params.durationMinutes <= 0 || params.durationMinutes > 240) {
+      throw new Error('专注时长必须在 1-240 分钟之间');
     }
-    if (params.durationMinutes > 240) {
-      throw new Error('专注时长不能超过 4 小时（240 分钟）');
+    if (params.description && params.description.length > 500) {
+      throw new Error('会话描述不能超过 500 个字符');
+    }
+    if (params.durationMinutes % 5 !== 0) {
+      console.warn(`建议将专注时长设置为 5 分钟的倍数，当前值：${params.durationMinutes} 分钟`);
     }
 
-    const now = Date.now();
+    const now = new Date();
     const id = FocusSessionId.generate();
 
     const session = new FocusSession({
@@ -190,15 +193,15 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
       durationMinutes: params.durationMinutes,
       actualDurationMinutes: 0,
       description: params.description ?? null,
-      startedAt: null,
+      startedAt: now,
       pausedAt: null,
       resumedAt: null,
       completedAt: null,
       cancelledAt: null,
       pauseCount: 0,
       pausedDurationMinutes: 0,
-      createdAt: new Date(now),
-      updatedAt: new Date(now),
+      createdAt: now,
+      updatedAt: now,
       version: 1,
       deletedAt: null,
     });
@@ -272,6 +275,10 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
       throw new Error('只能从活跃状态开始专注周期');
     }
 
+    if (this._props.startedAt !== null) {
+      throw new Error('专注周期已开始');
+    }
+
     const now = new Date();
     this._props.startedAt = now;
     this._props.updatedAt = now;
@@ -333,10 +340,7 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
       this._props.pausedDurationMinutes += lastPauseDurationMinutes;
     }
 
-    // 计算实际时长 = 总时长 - 暂停时长
-    const totalDurationMs = now.getTime() - this._props.startedAt.getTime();
-    const totalDurationMinutes = Math.round(totalDurationMs / 1000 / 60);
-    this._props.actualDurationMinutes = Math.max(0, totalDurationMinutes - this._props.pausedDurationMinutes);
+    this._props.actualDurationMinutes = this.calculateActualDurationMinutes(now);
 
     this._props.status = FocusSessionStatus.Completed;
     this._props.pausedAt = null;
@@ -372,6 +376,38 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
   }
 
   /**
+   * 📊 校验会话所有权
+   */
+  public assertOwnedBy(identityId: IdentityId): void {
+    if (this._props.identityId !== identityId) {
+      throw new Error('无权操作此专注周期，会话不属于当前账户');
+    }
+  }
+
+  /**
+   * 📊 校验会话是否可删除
+   */
+  public assertDeletable(): void {
+    if (
+      this._props.status !== FocusSessionStatus.Completed &&
+      this._props.status !== FocusSessionStatus.Cancelled
+    ) {
+      throw new Error(`只能删除已完成或已取消的专注周期，当前状态：${this._props.status}`);
+    }
+  }
+
+  /**
+   * 📊 获取暂停次数提醒
+   */
+  public getPauseWarning(maxRecommendedPauses = 3): string | null {
+    if (this._props.pauseCount > maxRecommendedPauses) {
+      return `当前暂停次数（${this._props.pauseCount}）超过推荐值（${maxRecommendedPauses}），可能影响专注效果`;
+    }
+
+    return null;
+  }
+
+  /**
    * 📊 获取剩余时间（分钟）
    */
   public getRemainingMinutes(): number {
@@ -396,6 +432,39 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
     const remaining = this._props.durationMinutes - elapsedMinutes;
 
     return Math.max(0, remaining);
+  }
+
+  /**
+   * 📊 剩余时间（分钟）
+   */
+  public get remainingMinutes(): number {
+    return this.getRemainingMinutes();
+  }
+
+  /**
+   * 📊 进度百分比（0-100）
+   */
+  public get progressPercentage(): number {
+    if (
+      this._props.status === FocusSessionStatus.Completed ||
+      this._props.status === FocusSessionStatus.Cancelled
+    ) {
+      return 100;
+    }
+
+    if (this._props.durationMinutes === 0) {
+      return 0;
+    }
+
+    const progress =
+      ((this._props.durationMinutes - this.remainingMinutes) / this._props.durationMinutes) * 100;
+    return Math.round(Math.max(0, Math.min(100, progress)));
+  }
+
+  private calculateActualDurationMinutes(completedAt: Date): number {
+    const totalDurationMs = completedAt.getTime() - this._props.startedAt!.getTime();
+    const totalDurationMinutes = Math.round(totalDurationMs / 1000 / 60);
+    return Math.max(0, totalDurationMinutes - this._props.pausedDurationMinutes);
   }
 
   // ================= 6. 序列化 (Serialization) =================
@@ -430,10 +499,8 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
    * 转换为 Client DTO
    */
   public toClientDTO(): import('@dailyuse/contracts/goal').FocusSessionClientDTO {
-    const remainingMinutes = this.getRemainingMinutes();
-    const progressPercentage = this._props.durationMinutes > 0
-      ? Math.min(100, Math.round(((this._props.durationMinutes - remainingMinutes) / this._props.durationMinutes) * 100))
-      : 0;
+    const remainingMinutes = this.remainingMinutes;
+    const progressPercentage = this.progressPercentage;
 
     return {
       id: this.id,

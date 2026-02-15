@@ -6,6 +6,9 @@
 import type Database from 'better-sqlite3';
 import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
 import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
+import { WorkspaceLayout } from '../../../domain-shared/value-objects/workspace-layout';
+import { WorkspaceSettings } from '../../../domain-shared/value-objects/workspace-settings';
+import { ProjectType } from '@dailyuse/contracts/editor';
 
 export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceRepository {
   constructor(private db: Database.Database) {}
@@ -20,7 +23,14 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
       id: row.uuid,
       identityId: row.accountUuid,
       name: row.name,
+      description: row.description ?? null,
+      project_path: row.project_path ?? row.projectPath ?? '',
+      project_type: row.project_type ?? row.projectType ?? ProjectType.Other,
+      layout: row.layout ?? JSON.stringify(WorkspaceLayout.createDefault().toServerDTO()),
+      settings: row.settings ?? JSON.stringify(WorkspaceSettings.createDefault().toServerDTO()),
       is_active: row.is_active === 1,
+      last_active_session_id: row.last_active_session_id ?? null,
+      lastAccessedAt: row.lastAccessedAt ?? null,
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
     });
@@ -37,7 +47,14 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
         id: row.uuid,
         identityId: row.accountUuid,
         name: row.name,
+        description: row.description ?? null,
+        project_path: row.project_path ?? row.projectPath ?? '',
+        project_type: row.project_type ?? row.projectType ?? ProjectType.Other,
+        layout: row.layout ?? JSON.stringify(WorkspaceLayout.createDefault().toServerDTO()),
+        settings: row.settings ?? JSON.stringify(WorkspaceSettings.createDefault().toServerDTO()),
         is_active: row.is_active === 1,
+        last_active_session_id: row.last_active_session_id ?? null,
+        lastAccessedAt: row.lastAccessedAt ?? null,
         createdAt: new Date(row.createdAt),
         updatedAt: new Date(row.updatedAt),
       })
@@ -56,7 +73,14 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
       id: row.uuid,
       identityId: row.accountUuid,
       name: row.name,
+      description: row.description ?? null,
+      project_path: row.project_path ?? row.projectPath ?? '',
+      project_type: row.project_type ?? row.projectType ?? ProjectType.Other,
+      layout: row.layout ?? JSON.stringify(WorkspaceLayout.createDefault().toServerDTO()),
+      settings: row.settings ?? JSON.stringify(WorkspaceSettings.createDefault().toServerDTO()),
       is_active: row.is_active === 1,
+      last_active_session_id: row.last_active_session_id ?? null,
+      lastAccessedAt: row.lastAccessedAt ?? null,
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
     });
@@ -74,7 +98,14 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
       id: row.uuid,
       identityId: row.accountUuid,
       name: row.name,
+      description: row.description ?? null,
+      project_path: row.project_path ?? row.projectPath ?? '',
+      project_type: row.project_type ?? row.projectType ?? ProjectType.Other,
+      layout: row.layout ?? JSON.stringify(WorkspaceLayout.createDefault().toServerDTO()),
+      settings: row.settings ?? JSON.stringify(WorkspaceSettings.createDefault().toServerDTO()),
       is_active: row.is_active === 1,
+      last_active_session_id: row.last_active_session_id ?? null,
+      lastAccessedAt: row.lastAccessedAt ?? null,
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
     });

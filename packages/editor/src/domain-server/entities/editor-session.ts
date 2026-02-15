@@ -19,7 +19,9 @@ import type {
   EditorSessionPersistenceDTO,
   EditorSessionServerDTO,
   SessionLayoutServerDTO,
+  TabViewStateServerDTO,
 } from '@dailyuse/contracts/editor';
+import { TabType } from '@dailyuse/contracts/editor';
 import type {
   EditorSessionId,
   EditorWorkspaceId,
@@ -29,6 +31,8 @@ import { EditorSessionId as EditorSessionIdType } from '../../domain-shared/valu
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 import { SessionLayout } from '../value-objects/SessionLayout';
 import { EditorGroup } from './editor-group';
+import { EditorTab } from './editor-tab';
+import { BusinessRuleViolationError } from '@dailyuse/utils';
 
 /**
  * EditorSession 内部状态接口
@@ -160,6 +164,7 @@ export class EditorSession extends Entity<EditorSessionId> {
     name: string;
     description?: string;
     layout?: Partial<SessionLayoutServerDTO>;
+    createDefaultGroup?: boolean;
   }): EditorSession {
     const id = EditorSessionIdType.of(EditorSessionIdType.generate());
     const now = new Date();
@@ -171,7 +176,7 @@ export class EditorSession extends Entity<EditorSessionId> {
         })
       : SessionLayout.createDefault();
 
-    return new EditorSession({
+    const session = new EditorSession({
       id,
       workspaceId: params.workspaceId,
       identityId: params.identityId,
@@ -184,6 +189,13 @@ export class EditorSession extends Entity<EditorSessionId> {
       createdAt: now,
       updatedAt: now,
     });
+
+    if (params.createDefaultGroup !== false) {
+      session.addGroup({ groupIndex: 0, name: 'Main' });
+      session.setActiveGroup(0);
+    }
+
+    return session;
   }
 
   // ===== 子实体管理方法 =====
@@ -247,6 +259,70 @@ export class EditorSession extends Entity<EditorSessionId> {
     }
   }
 
+  public openTab(resourceId: string, params?: {
+    groupId?: string;
+    tabType?: TabType;
+    name?: string;
+    viewState?: Partial<TabViewStateServerDTO>;
+    isPinned?: boolean;
+  }): EditorTab {
+    const group = this.resolveTargetGroup(params?.groupId);
+    const existing = group.tabs.find((tab) => tab.documentId === resourceId);
+    if (existing) {
+      group.setActiveTabById(existing.id);
+      this._props.activeGroupIndex = this._groups.indexOf(group);
+      this.updateTimestamp();
+      return existing;
+    }
+
+    const tab = group.addTab({
+      documentId: resourceId,
+      type: params?.tabType,
+      viewState: params?.viewState,
+      name: params?.name,
+      isPinned: params?.isPinned,
+    });
+
+    this._props.activeGroupIndex = this._groups.indexOf(group);
+    this.updateTimestamp();
+
+    return tab;
+  }
+
+  public closeTab(tabId: string): void {
+    const groupIndex = this._groups.findIndex((group) => group.getTab(tabId));
+    if (groupIndex < 0) {
+      return;
+    }
+
+    const group = this._groups[groupIndex];
+    group.removeTab(tabId);
+
+    if (!group.hasActiveTab && this._groups.some((g) => g.hasActiveTab)) {
+      const nextIndex = this._groups.findIndex((g) => g.hasActiveTab);
+      if (nextIndex >= 0) {
+        this._props.activeGroupIndex = nextIndex;
+      }
+    } else if (this._props.activeGroupIndex >= this._groups.length) {
+      this._props.activeGroupIndex = Math.max(0, this._groups.length - 1);
+    }
+
+    this.normalizeActiveState();
+    this.updateTimestamp();
+  }
+
+  public setActiveTab(tabId: string): void {
+    const groupIndex = this._groups.findIndex((group) => group.getTab(tabId));
+    if (groupIndex < 0) {
+      throw new BusinessRuleViolationError('Active tab must exist in the current session');
+    }
+
+    const group = this._groups[groupIndex];
+    group.setActiveTabById(tabId);
+    this._props.activeGroupIndex = groupIndex;
+    this.updateTimestamp();
+  }
+
   // ===== 业务方法 =====
 
   /**
@@ -300,6 +376,43 @@ export class EditorSession extends Entity<EditorSessionId> {
    */
   private updateTimestamp(): void {
     this._props.updatedAt = new Date();
+  }
+
+  private resolveTargetGroup(groupId?: string): EditorGroup {
+    if (groupId) {
+      const target = this._groups.find((group) => group.id === groupId);
+      if (!target) {
+        throw new Error(`Group not found: ${groupId}`);
+      }
+      return target;
+    }
+
+    if (this._groups.length === 0) {
+      return this.addGroup({ groupIndex: 0, name: 'Main' });
+    }
+
+    return this._groups[this._props.activeGroupIndex] ?? this._groups[0];
+  }
+
+  public normalizeActiveState(): void {
+    if (this._groups.length === 0) {
+      this._props.activeGroupIndex = 0;
+      return;
+    }
+
+    if (this._props.activeGroupIndex < 0 || this._props.activeGroupIndex >= this._groups.length) {
+      this._props.activeGroupIndex = 0;
+    }
+
+    for (const group of this._groups) {
+      group.ensureActiveTabInvariant();
+    }
+  }
+
+  public restoreGroups(groups: EditorGroup[]): void {
+    this._groups = groups;
+    this.normalizeActiveState();
+    this.updateTimestamp();
   }
 
   // ===== DTO 转换方法 =====

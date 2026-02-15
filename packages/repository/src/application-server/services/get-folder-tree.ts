@@ -34,7 +34,7 @@ export class GetFolderTree {
   }
 
   async execute(input: GetFolderTreeInput): Promise<GetFolderTreeOutput> {
-    const allFolders = await this.folderRepository.findByRepositoryUuid(input.repositoryUuid);
+    const allFolders = await this.folderRepository.findByRepositoryId(input.repositoryUuid);
     const tree = this.hierarchyService.buildTree(allFolders);
 
     const convertTreeNode = (node: any): FolderClientDTO => {

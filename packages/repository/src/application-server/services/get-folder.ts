@@ -29,7 +29,7 @@ export class GetFolder {
   constructor(private readonly folderRepository: IFolderRepository) {}
 
   async execute(input: GetFolderInput): Promise<GetFolderOutput> {
-    const folder = await this.folderRepository.findByUuid(input.uuid);
+    const folder = await this.folderRepository.findById(input.uuid);
     return { folder: folder ? folder.toClientDTO() : null };
   }
 }

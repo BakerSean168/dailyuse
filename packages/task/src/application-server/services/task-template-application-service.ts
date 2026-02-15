@@ -11,7 +11,7 @@ import { ok, error } from '@dailyuse/contracts/result';
 
 // Cross-module imports
 import type { IScheduleTaskRepository } from '@dailyuse/schedule/domain-server';
-import { ScheduleTaskFactory } from '@dailyuse/schedule/domain-server';
+import { ScheduleTaskFactory } from '@dailyuse/schedule/application-server';
 import { SourceModule } from '@dailyuse/contracts/schedule';
 
 import { TaskType, TaskTemplateStatus } from '@dailyuse/contracts/task';
@@ -64,11 +64,11 @@ import { eventBus } from '@dailyuse/utils';
    */
   async checkAndGenerateInstances(): Promise<void> {
     // 查找所有需要补充的模板
-    // 注意：这里需要支持所有账户，可能需要调�?Repository 接口
+    // 注意：这里需要支持所有账户，可能需要调�?Repository 接口
     const templates = await this.templateRepository.findActiveTemplates('');
 
     console.log(
-      `[TaskTemplateApplicationService] 开始检�?${templates.length} 个活跃模板的实例数量`,
+      `[TaskTemplateApplicationService] 开始检�?${templates.length} 个活跃模板的实例数量`,
     );
 
     for (const template of templates) {
@@ -79,7 +79,7 @@ import { eventBus } from '@dailyuse/utils';
   // ===== ONE_TIME 任务管理 =====
 
   /**
-   * 创建一次性任�?
+   * 创建一次性任�?
    */
   async createOneTimeTask(params: {
     identityId: string;
@@ -97,7 +97,7 @@ import { eventBus } from '@dailyuse/utils';
     tags?: string[];
     color?: string;
   }): Promise<TaskTemplateClientDTO> {
-    // 使用领域模型的工厂方法创建一次性任�?
+    // 使用领域模型的工厂方法创建一次性任�?
     const task = TaskTemplate.createOneTimeTask({
       identityId: params.identityId,
       title: params.title,
@@ -115,7 +115,7 @@ import { eventBus } from '@dailyuse/utils';
       color: params.color,
     });
 
-    // 保存到仓�?
+    // 保存到仓�?
     await this.templateRepository.save(task);
 
     return task.toClientDTO();
@@ -188,8 +188,8 @@ import { eventBus } from '@dailyuse/utils';
   }
 
   /**
-   * 更新一次性任务（通用更新方法�?
-   * 支持更新标题、描述、日期、优先级、标签等属�?
+   * 更新一次性任务（通用更新方法�?
+   * 支持更新标题、描述、日期、优先级、标签等属�?
    */
   async updateOneTimeTask(
     uuid: string,
@@ -210,7 +210,7 @@ import { eventBus } from '@dailyuse/utils';
       throw new Error(`Task ${uuid} not found`);
     }
 
-    // 更新各个属�?
+    // 更新各个属�?
     if (updates.title !== undefined) {
       task.updateTitle(updates.title);
     }
@@ -259,7 +259,7 @@ import { eventBus } from '@dailyuse/utils';
   // ===== ONE_TIME 任务查询 =====
 
   /**
-   * 查找一次性任�?
+   * 查找一次性任�?
    */
   async findOneTimeTasks(
     identityId: string,
@@ -297,7 +297,7 @@ import { eventBus } from '@dailyuse/utils';
   }
 
   /**
-   * 查找即将到期的任�?
+   * 查找即将到期的任�?
    */
   async getUpcomingTasks(
     identityId: string,
@@ -319,7 +319,7 @@ import { eventBus } from '@dailyuse/utils';
   }
 
   /**
-   * 根据 Goal 查找任务（新版本，支�?ONE_TIME�?
+   * 根据 Goal 查找任务（新版本，支�?ONE_TIME�?
    */
   async getTasksByGoal(goalId: string): Promise<TaskTemplateClientDTO[]> {
     const tasks = await this.templateRepository.findByGoalId(goalId);
@@ -349,10 +349,10 @@ import { eventBus } from '@dailyuse/utils';
     return await this.templateRepository.countTasks(identityId, filters);
   }
 
-  // ===== 子任务管�?=====
+  // ===== 子任务管�?=====
 
   /**
-   * 创建子任�?
+   * 创建子任�?
    */
   async createSubtask(
     parentUuid: string,
@@ -365,13 +365,13 @@ import { eventBus } from '@dailyuse/utils';
       estimatedMinutes?: number;
     },
   ): Promise<TaskTemplateClientDTO> {
-    // 验证父任务存�?
+    // 验证父任务存�?
     const parentTask = await this.templateRepository.findById(parentUuid);
     if (!parentTask) {
       throw new Error(`Parent task ${parentUuid} not found`);
     }
 
-    // 创建子任�?
+    // 创建子任�?
     const subtask = TaskTemplate.createOneTimeTask({
       identityId: params.identityId,
       title: params.title,
@@ -392,7 +392,7 @@ import { eventBus } from '@dailyuse/utils';
   }
 
   /**
-   * 获取子任务列�?
+   * 获取子任务列�?
    */
   async getSubtasks(parentUuid: string): Promise<TaskTemplateClientDTO[]> {
     const subtasks = await this.templateRepository.findSubtasks(parentUuid);
@@ -400,7 +400,7 @@ import { eventBus } from '@dailyuse/utils';
   }
 
   /**
-   * 移除子任�?
+   * 移除子任�?
    */
   async removeSubtask(parentUuid: string, subtaskUuid: string): Promise<void> {
     const parentTask = await this.templateRepository.findById(parentUuid);
@@ -412,10 +412,10 @@ import { eventBus } from '@dailyuse/utils';
     await this.templateRepository.save(parentTask);
   }
 
-  // ===== Goal/KR 关联管理 (ONE_TIME 任务新版�? =====
+  // ===== Goal/KR 关联管理 (ONE_TIME 任务新版�? =====
 
   /**
-   * 链接到目�?
+   * 链接到目�?
    */
   async linkToGoal(
     uuid: string,
@@ -470,7 +470,7 @@ import { eventBus } from '@dailyuse/utils';
   }
 
   /**
-   * 标记为就�?
+   * 标记为就�?
    */
   async markAsReady(uuid: string): Promise<TaskTemplateClientDTO> {
     const task = await this.templateRepository.findById(uuid);
@@ -485,7 +485,7 @@ import { eventBus } from '@dailyuse/utils';
   }
 
   /**
-   * 更新依赖状�?
+   * 更新依赖状�?
    */
   async updateDependencyStatus(
     uuid: string,
@@ -544,7 +544,7 @@ import { eventBus } from '@dailyuse/utils';
     await this.templateRepository.deleteBatch(uuids);
   }
 
-  // ===== 仪表�?统计查询 =====
+  // ===== 仪表�?统计查询 =====
 
   /**
    * 获取最近完成的任务
@@ -553,14 +553,14 @@ import { eventBus } from '@dailyuse/utils';
     identityId: string,
     limit: number = 10,
   ): Promise<TaskTemplateClientDTO[]> {
-    // 获取最�?天完成的任务
+    // 获取最�?天完成的任务
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const tasks = await this.templateRepository.findOneTimeTasks(identityId, {
       taskType: TaskType.ONE_TIME,
       status: 'COMPLETED' as any,
     });
 
-    // 筛选并排序：最近完成的任务（按更新时间倒序�?
+    // 筛选并排序：最近完成的任务（按更新时间倒序�?
     return tasks
       .filter((t) => t.updatedAt && t.updatedAt >= sevenDaysAgo)
       .sort((a, b) => {
@@ -573,7 +573,7 @@ import { eventBus } from '@dailyuse/utils';
   }
 
   /**
-   * 获取任务仪表板数�?
+   * 获取任务仪表板数�?
    */
   async getTaskDashboard(identityId: string): Promise<{
     todayTasks: TaskTemplateClientDTO[];
@@ -590,7 +590,7 @@ import { eventBus } from '@dailyuse/utils';
       completionRate: number;
     };
   }> {
-    // 并行查询所有数�?
+    // 并行查询所有数�?
     const [
       today,
       overdue,
@@ -604,9 +604,9 @@ import { eventBus } from '@dailyuse/utils';
       this.getTodayTasks(identityId),
       this.getOverdueTasks(identityId),
       this.getBlockedTasks(identityId),
-      this.getUpcomingTasks(identityId, 7), // 未来7�?
-      this.getTasksSortedByPriority(identityId, 5), // �?个高优先级任�?
-      this.getRecentCompletedTasks(identityId, 10), // 最�?0个完成的任务
+      this.getUpcomingTasks(identityId, 7), // 未来7�?
+      this.getTasksSortedByPriority(identityId, 5), // �?个高优先级任�?
+      this.getRecentCompletedTasks(identityId, 10), // 最�?0个完成的任务
       this.countTasks(identityId, {
         taskType: TaskType.ONE_TIME,
         status: 'TODO' as any,
@@ -654,10 +654,10 @@ import { eventBus } from '@dailyuse/utils';
       throw new Error(`Task template not found: ${templateId}`);
     }
 
-    // 从仓储中获取该模板的所有实�?
+    // 从仓储中获取该模板的所有实�?
     const allInstances = await this.instanceRepository.findByTemplateId(templateId);
 
-    // 在内存中按日期范围过�?
+    // 在内存中按日期范围过�?
     const filteredInstances = allInstances.filter((instance) => {
       const instanceDate = instance.instanceDate as any;
       const timestamp =

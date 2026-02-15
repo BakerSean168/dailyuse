@@ -44,6 +44,7 @@ import {
   FrequencyAdjustment,
 } from '../value-objects';
 import { ReminderHistory } from '../entities';
+import { ReminderRecurrenceCalculator } from '../services/ReminderRecurrenceCalculator';
 
 /**
  * ReminderTemplate 内部状态接口
@@ -688,24 +689,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
    * 重构说明：使用 activatedAt 作为循环提醒的计算基准
    */
   public calculateNextTrigger(): number | null {
-    // 这是一个简化版本，实际实现需要根据 trigger 和 recurrence 配置计算
-    // 建议在领域服务中实现复杂的计算逻辑
-    const now = Date.now();
-
-    // 检查模板状态，只有 ACTIVE 状态才触发
-    if (this._props.status !== ReminderStatus.Active) {
-      return null;
-    }
-
-    // 检查是否已激活（now >= activatedAt）
-    if (now < this._props.activeTime.activatedAt) {
-      // 尚未到激活时间，下次触发时间就是激活时间
-      return this._props.activeTime.activatedAt;
-    }
-
-    // 已激活，根据 recurrence 计算下次触发时间
-    // 简化版本：返回1小时后（实际应基于 activatedAt + interval）
-    return now + 3600000;
+    return ReminderRecurrenceCalculator.calculateNextTriggerTime(this);
   }
 
   /**

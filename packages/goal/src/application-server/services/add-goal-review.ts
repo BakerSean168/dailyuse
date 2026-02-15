@@ -3,13 +3,17 @@
  */
 
 import type { IGoalRepository } from '@/domain-server';
+import { GoalPolicy } from '@/domain-server';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import { GoalEventPublisher } from './goal-event-publisher';
 
 export class AddGoalReview {
-  constructor(private readonly goalRepository: IGoalRepository) {}
+  constructor(
+    private readonly goalRepository: IGoalRepository,
+    private readonly goalPolicy: GoalPolicy,
+  ) {}
 
   async execute(
     goalUuid: string,
@@ -28,6 +32,7 @@ export class AddGoalReview {
       return error('NOT_FOUND', `Goal not found: ${goalUuid}`);
     }
 
+    this.goalPolicy.ensureGoalCanBeModified(goal);
     goal.createAndAddReview(params);
     await this.goalRepository.save(goal);
     await GoalEventPublisher.publishGoalEvents(goal);

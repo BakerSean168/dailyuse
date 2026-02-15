@@ -7,6 +7,8 @@ import type Database from 'better-sqlite3';
 import { Repository } from '../../../domain-server/aggregates/repository';
 import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
 import type { RepositoryStatus } from '@dailyuse/contracts/repository';
+import { RepositoryConfig } from '../../../domain-shared/value-objects/repository-config';
+import { RepositoryStats } from '../../../domain-shared/value-objects/repository-stats';
 
 export class SqliteRepositoryRepository implements IRepositoryRepository {
   constructor(private db: Database.Database) {}
@@ -29,56 +31,103 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.accountUuid,
+      dto.id,
+      dto.identityId,
       dto.name,
       dto.description || null,
       dto.type,
       dto.status,
-      dto.config ? JSON.stringify(dto.config) : null,
+      dto.config || null,
       dto.createdAt,
       dto.updatedAt,
     );
   }
 
-  async findByUuid(uuid: string): Promise<Repository | null> {
+  async findById(id: string): Promise<Repository | null> {
     const stmt = this.db.prepare(
       `SELECT * FROM repositories WHERE uuid = ? LIMIT 1`,
     );
-    const row = stmt.get(uuid) as any;
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
+    const config = row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO());
+    const stats = row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO());
+
     return Repository.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
+      id: row.uuid,
+      identityId: row.accountUuid,
       name: row.name,
       description: row.description,
       type: row.type,
+      path: row.path ?? null,
       status: row.status,
-      config: row.config ? JSON.parse(row.config) : undefined,
+      config,
+      stats,
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
+      version: row.version ?? 1,
+      deletedAt: row.deletedAt ?? null,
     });
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<Repository[]> {
+  async findByUuid(uuid: string): Promise<Repository | null> {
+    return this.findById(uuid);
+  }
+
+  async findByIdentityId(identityId: string): Promise<Repository[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM repositories WHERE accountUuid = ? ORDER BY createdAt DESC`,
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) =>
       Repository.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row.accountUuid,
+        id: row.uuid,
+        identityId: row.accountUuid,
         name: row.name,
         description: row.description,
         type: row.type,
+        path: row.path ?? null,
         status: row.status,
-        config: row.config ? JSON.parse(row.config) : undefined,
+        config: row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO()),
+        stats: row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO()),
         createdAt: new Date(row.createdAt),
         updatedAt: new Date(row.updatedAt),
+        version: row.version ?? 1,
+        deletedAt: row.deletedAt ?? null,
+      }),
+    );
+  }
+
+  async findByAccountUuid(accountUuid: string): Promise<Repository[]> {
+    return this.findByIdentityId(accountUuid);
+  }
+
+  async findByIdentityIdAndStatus(
+    identityId: string,
+    status: RepositoryStatus,
+  ): Promise<Repository[]> {
+    const stmt = this.db.prepare(
+      `SELECT * FROM repositories WHERE accountUuid = ? AND status = ? ORDER BY createdAt DESC`,
+    );
+    const rows = stmt.all(identityId, status) as any[];
+
+    return rows.map((row) =>
+      Repository.fromPersistenceDTO({
+        id: row.uuid,
+        identityId: row.accountUuid,
+        name: row.name,
+        description: row.description,
+        type: row.type,
+        path: row.path ?? null,
+        status: row.status,
+        config: row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO()),
+        stats: row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO()),
+        createdAt: new Date(row.createdAt),
+        updatedAt: new Date(row.updatedAt),
+        version: row.version ?? 1,
+        deletedAt: row.deletedAt ?? null,
       }),
     );
   }
@@ -87,24 +136,7 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     accountUuid: string,
     status: RepositoryStatus,
   ): Promise<Repository[]> {
-    const stmt = this.db.prepare(
-      `SELECT * FROM repositories WHERE accountUuid = ? AND status = ? ORDER BY createdAt DESC`,
-    );
-    const rows = stmt.all(accountUuid, status) as any[];
-
-    return rows.map((row) =>
-      Repository.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row.accountUuid,
-        name: row.name,
-        description: row.description,
-        type: row.type,
-        status: row.status,
-        config: row.config ? JSON.parse(row.config) : undefined,
-        createdAt: new Date(row.createdAt),
-        updatedAt: new Date(row.updatedAt),
-      }),
-    );
+    return this.findByIdentityIdAndStatus(accountUuid, status);
   }
 
   async delete(uuid: string): Promise<void> {

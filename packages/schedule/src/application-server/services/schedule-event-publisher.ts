@@ -1,8 +1,6 @@
 import { eventBus, type DomainEvent } from '@dailyuse/utils';
 import type { ScheduleTask } from '../../domain-server/aggregates/schedule-task';
-import {
-  ScheduleTaskFactory,
-} from '../../domain-server/services/ScheduleTaskFactory';
+import { ScheduleTaskFactory } from './schedule-task-factory';
 import {
   ScheduleStrategyNotFoundError,
   SourceEntityNoScheduleRequiredError,

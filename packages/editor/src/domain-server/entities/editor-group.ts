@@ -24,6 +24,7 @@ import { EditorGroupId as EditorGroupIdType } from '../../domain-shared/value-ob
 import { EditorSessionId as EditorSessionIdType } from '../../domain-shared/value-objects/editor-session-id';
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 import { EditorTab } from './editor-tab';
+import { BusinessRuleViolationError } from '@dailyuse/utils';
 
 /**
  * EditorGroup 内部状态接口
@@ -129,7 +130,7 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
       workspaceId: params.workspaceId,
       identityId: params.identityId,
       groupIndex: params.groupIndex,
-      activeTabIndex: 0,
+      activeTabIndex: -1,
       name: params.name ?? null,
       createdAt: now,
       updatedAt: now,
@@ -202,6 +203,8 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
     documentId?: string | null;
     type?: TabType;
     viewState?: Partial<TabViewStateServerDTO>;
+    name?: string;
+    isPinned?: boolean;
   }): EditorTab {
     const tab = EditorTab.create({
       groupId: this.id,
@@ -211,6 +214,8 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
       documentId: params.documentId,
       type: params.type,
       viewState: params.viewState,
+      name: params.name,
+      isPinned: params.isPinned,
       tabIndex: this._tabs.length,
     });
 
@@ -226,20 +231,36 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
     if (index !== -1) {
       this._tabs.splice(index, 1);
 
-      // 调整活动标签索引
-      if (this._props.activeTabIndex >= this._tabs.length) {
-        this._props.activeTabIndex = Math.max(0, this._tabs.length - 1);
-      }
+      this.normalizeActiveTabIndex();
 
       this.updateTimestamp();
     }
   }
 
   public setActiveTab(tabIndex: number): void {
-    if (tabIndex >= 0 && tabIndex < this._tabs.length) {
-      this._props.activeTabIndex = tabIndex;
-      this.updateTimestamp();
+    if (tabIndex < 0 || tabIndex >= this._tabs.length) {
+      throw new BusinessRuleViolationError('Active tab index must reference an open tab');
     }
+    this._props.activeTabIndex = tabIndex;
+    this.updateTimestamp();
+  }
+
+  public setActiveTabById(tabId: string): void {
+    const index = this._tabs.findIndex((tab) => tab.id === tabId);
+    if (index < 0) {
+      throw new BusinessRuleViolationError('Active tab must exist in open tabs');
+    }
+    this.setActiveTab(index);
+  }
+
+  public ensureActiveTabInvariant(): void {
+    this.normalizeActiveTabIndex();
+  }
+
+  public restoreTabs(tabs: EditorTab[]): void {
+    this._tabs = tabs;
+    this.normalizeActiveTabIndex();
+    this.updateTimestamp();
   }
 
   public rename(name: string | null): void {
@@ -275,6 +296,16 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
 
   public get hasActiveTab(): boolean {
     return this._props.activeTabIndex >= 0 && this._props.activeTabIndex < this._tabs.length;
+  }
+
+  private normalizeActiveTabIndex(): void {
+    if (this._tabs.length === 0) {
+      this._props.activeTabIndex = -1;
+      return;
+    }
+    if (this._props.activeTabIndex < 0 || this._props.activeTabIndex >= this._tabs.length) {
+      this._props.activeTabIndex = this._tabs.length - 1;
+    }
   }
 
   // ===== 序列化方法 =====

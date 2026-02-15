@@ -129,6 +129,37 @@ export class DocumentVersion extends Entity<DocumentVersionId> implements Docume
   }
 
   /**
+   * 基于上一版本创建新版本
+   */
+  public static createNext(params: {
+    documentId: DocumentId;
+    workspaceId: EditorWorkspaceId;
+    identityId: IdentityId;
+    changeType: VersionChangeType;
+    contentHash: string;
+    contentDiff?: string | null;
+    changeDescription?: string | null;
+    previous?: DocumentVersion | null;
+    createdBy?: string | null;
+  }): DocumentVersion {
+    const previousVersionId = params.previous?.id ?? null;
+    const versionNumber = params.previous ? params.previous.versionNumber + 1 : 1;
+
+    return DocumentVersion.create({
+      documentId: params.documentId,
+      workspaceId: params.workspaceId,
+      identityId: params.identityId,
+      versionNumber,
+      changeType: params.changeType,
+      contentHash: params.contentHash,
+      contentDiff: params.contentDiff ?? null,
+      changeDescription: params.changeDescription ?? null,
+      previousVersionId,
+      createdBy: params.createdBy ?? null,
+    });
+  }
+
+  /**
    * 从 ServerDTO 恢复
    */
   public static fromServerDTO(dto: DocumentVersionServerDTO): DocumentVersion {

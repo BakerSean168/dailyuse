@@ -29,12 +29,18 @@ export class ActivateRepository {
   constructor(private readonly repositoryRepository: IRepositoryRepository) {}
 
   async execute(input: ActivateRepositoryInput): Promise<ActivateRepositoryOutput> {
-    const repository = await this.repositoryRepository.findByUuid(input.uuid);
+    const repository = await this.repositoryRepository.findById(input.uuid);
     if (!repository) {
       throw new Error(`Repository not found: ${input.uuid}`);
     }
 
-    repository.activate();
+    if (repository.isDeleted()) {
+      throw new Error('Repository is deleted');
+    }
+
+    if (repository.isArchived()) {
+      repository.unarchive();
+    }
     await this.repositoryRepository.save(repository);
 
     return { repository: repository.toClientDTO() };

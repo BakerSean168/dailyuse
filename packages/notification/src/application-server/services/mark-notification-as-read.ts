@@ -4,40 +4,33 @@
  * 标记通知为已读的应用服务
  */
 
-import { NotificationDomainService } from '../../domain-server/services/NotificationDomainService';
 import type {
   INotificationRepository,
-  INotificationTemplateRepository,
-  INotificationPreferenceRepository,
 } from '../../domain-server/repositories';
 
 /**
  * Mark Notification As Read Service
  */
 export class MarkNotificationAsRead {
-  private domainService: NotificationDomainService;
-
   constructor(
     private readonly notificationRepository: INotificationRepository,
-    private readonly templateRepository: INotificationTemplateRepository,
-    private readonly preferenceRepository: INotificationPreferenceRepository,
-  ) {
-    this.domainService = new NotificationDomainService(
-      notificationRepository,
-      templateRepository,
-      preferenceRepository,
-    );
-  }
+  ) {}
 
   async execute(uuid: string): Promise<void> {
-    await this.domainService.markAsRead(uuid);
+    const notification = await this.notificationRepository.findById(uuid);
+    if (!notification) {
+      throw new Error(`Notification not found: ${uuid}`);
+    }
+
+    notification.markAsRead();
+    await this.notificationRepository.save(notification);
   }
 
   async executeMany(uuids: string[]): Promise<void> {
-    await this.domainService.markManyAsRead(uuids);
+    await this.notificationRepository.markManyAsRead(uuids);
   }
 
   async executeAll(accountUuid: string): Promise<void> {
-    await this.domainService.markAllAsRead(accountUuid);
+    await this.notificationRepository.markAllAsRead(accountUuid);
   }
 }

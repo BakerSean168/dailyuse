@@ -296,7 +296,7 @@ export class ReminderEventHandler {
     });
 
     try {
-      const { ScheduleTaskFactory } = await import('@dailyuse/reminder/domain-server');
+      const { ScheduleTaskFactory } = await import('@dailyuse/schedule/application-server');
       const { SourceModule } = await import('@dailyuse/contracts/schedule');
       const { ScheduleContainer } =
         await import('../../../schedule/infrastructure/di/ScheduleContainer');

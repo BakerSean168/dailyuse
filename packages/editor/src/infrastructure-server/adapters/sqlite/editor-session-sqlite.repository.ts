@@ -10,74 +10,44 @@ import type { IEditorSessionRepository } from '../../../domain-server/repositori
 export class SqliteEditorSessionRepository implements IEditorSessionRepository {
   constructor(private db: Database.Database) {}
 
-  async findByUuid(uuid: string): Promise<EditorSession | null> {
+  async findById(id: string): Promise<EditorSession | null> {
     const stmt = this.db.prepare(`SELECT * FROM editor_sessions WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
-    return EditorSession.fromPersistenceDTO({
-      uuid: row.uuid,
-      workspace_uuid: row.workspace_uuid,
-      name: row.name,
-      is_active: row.is_active === 1,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToSession(row);
   }
 
-  async findByWorkspaceUuid(workspaceUuid: string): Promise<EditorSession[]> {
+  async findByWorkspaceId(workspaceId: string): Promise<EditorSession[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM editor_sessions WHERE workspace_uuid = ? ORDER BY createdAt DESC`
     );
-    const rows = stmt.all(workspaceUuid) as any[];
+    const rows = stmt.all(workspaceId) as any[];
 
-    return rows.map((row) =>
-      EditorSession.fromPersistenceDTO({
-        uuid: row.uuid,
-        workspace_uuid: row.workspace_uuid,
-        name: row.name,
-        is_active: row.is_active === 1,
-        createdAt: new Date(row.createdAt),
-        updatedAt: new Date(row.updatedAt),
-      })
-    );
+    return rows.map((row) => this.rowToSession(row));
   }
 
-  async findByWorkspaceUuidAndName(workspaceUuid: string, name: string): Promise<EditorSession | null> {
+  async findByWorkspaceIdAndName(workspaceId: string, name: string): Promise<EditorSession | null> {
     const stmt = this.db.prepare(
       `SELECT * FROM editor_sessions WHERE workspace_uuid = ? AND name = ? LIMIT 1`
     );
-    const row = stmt.get(workspaceUuid, name) as any;
+    const row = stmt.get(workspaceId, name) as any;
 
     if (!row) return null;
 
-    return EditorSession.fromPersistenceDTO({
-      uuid: row.uuid,
-      workspace_uuid: row.workspace_uuid,
-      name: row.name,
-      is_active: row.is_active === 1,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToSession(row);
   }
 
-  async findActiveByWorkspaceUuid(workspaceUuid: string): Promise<EditorSession | null> {
+  async findActiveByWorkspaceId(workspaceId: string): Promise<EditorSession | null> {
     const stmt = this.db.prepare(
       `SELECT * FROM editor_sessions WHERE workspace_uuid = ? AND is_active = 1 ORDER BY updatedAt DESC LIMIT 1`
     );
-    const row = stmt.get(workspaceUuid) as any;
+    const row = stmt.get(workspaceId) as any;
 
     if (!row) return null;
 
-    return EditorSession.fromPersistenceDTO({
-      uuid: row.uuid,
-      workspace_uuid: row.workspace_uuid,
-      name: row.name,
-      is_active: row.is_active === 1,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToSession(row);
   }
 
   async save(session: EditorSession): Promise<void> {
@@ -94,8 +64,8 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.workspace_uuid,
+      dto.id,
+      dto.workspace_id,
       dto.name,
       dto.is_active ? 1 : 0,
       dto.createdAt,
@@ -103,9 +73,9 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
     );
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM editor_sessions WHERE uuid = ?`);
-    stmt.run(uuid);
+    stmt.run(id);
   }
 
   async saveBatch(sessions: EditorSession[]): Promise<void> {
@@ -123,8 +93,8 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
       for (const session of items) {
         const dto = session.toPersistenceDTO();
         insertStmt.run(
-          dto.uuid,
-          dto.workspace_uuid,
+          dto.id,
+          dto.workspace_id,
           dto.name,
           dto.is_active ? 1 : 0,
           dto.createdAt,
@@ -136,9 +106,62 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
     transaction(sessions);
   }
 
-  async deleteByWorkspaceUuid(workspaceUuid: string): Promise<void> {
+  async deleteByWorkspaceId(workspaceId: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM editor_sessions WHERE workspace_uuid = ?`);
-    stmt.run(workspaceUuid);
+    stmt.run(workspaceId);
+  }
+
+  async countByWorkspaceId(workspaceId: string): Promise<number> {
+    const stmt = this.db.prepare(
+      `SELECT COUNT(*) as count FROM editor_sessions WHERE workspace_uuid = ?`,
+    );
+    const result = stmt.get(workspaceId) as { count: number };
+    return result.count;
+  }
+
+  async findByUuid(uuid: string): Promise<EditorSession | null> {
+    return this.findById(uuid);
+  }
+
+  async findByWorkspaceUuid(workspaceUuid: string): Promise<EditorSession[]> {
+    return this.findByWorkspaceId(workspaceUuid);
+  }
+
+  async findByWorkspaceUuidAndName(workspaceUuid: string, name: string): Promise<EditorSession | null> {
+    return this.findByWorkspaceIdAndName(workspaceUuid, name);
+  }
+
+  async findActiveByWorkspaceUuid(workspaceUuid: string): Promise<EditorSession | null> {
+    return this.findActiveByWorkspaceId(workspaceUuid);
+  }
+
+  async deleteByWorkspaceUuid(workspaceUuid: string): Promise<void> {
+    await this.deleteByWorkspaceId(workspaceUuid);
+  }
+
+  private rowToSession(row: any): EditorSession {
+    const layout = row.layout
+      ? JSON.parse(row.layout)
+      : {
+          split_type: 'horizontal',
+          group_count: 1,
+          active_group_index: row.active_group_index ?? 0,
+        };
+
+    return EditorSession.fromPersistenceDTO({
+      id: row.uuid,
+      workspace_id: row.workspace_uuid,
+      identityId: row.identity_id ?? row.accountUuid ?? row.account_uuid ?? row.identityId,
+      name: row.name,
+      description: row.description ?? null,
+      groups: [],
+      is_active: row.is_active === 1,
+      active_group_index: row.active_group_index ?? 0,
+      layout,
+      lastAccessedAt: row.lastAccessedAt ?? null,
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
+    });
   }
 }
 

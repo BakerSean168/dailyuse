@@ -153,7 +153,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       throw new Error('Cannot start task in current state');
     }
 
-    this._props.status = 'InProgress' as TaskInstanceStatus;
+    this._props.status = TaskInstanceStatus.InProgress;
     this._props.actualStartTime = Date.now();
     this._props.updatedAt = Date.now();
   }
@@ -167,7 +167,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
 
     const now = Date.now();
-    this._props.status = 'Completed' as TaskInstanceStatus;
+    this._props.status = TaskInstanceStatus.Completed;
     this._props.actualEndTime = now;
 
     // 创建完成记录
@@ -200,7 +200,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
 
     const now = Date.now();
-    this._props.status = 'Skipped' as TaskInstanceStatus;
+    this._props.status = TaskInstanceStatus.Skipped;
 
     // 创建跳过记录
     this._props.skipRecord = SkipRecord.create({
@@ -219,8 +219,11 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
    * 标记为过�?
    */
   public markExpired(): void {
-    if (this._props.status === 'Pending' || this._props.status === 'InProgress') {
-      this._props.status = 'Expired' as TaskInstanceStatus;
+    if (
+      this._props.status === TaskInstanceStatus.Pending ||
+      this._props.status === TaskInstanceStatus.InProgress
+    ) {
+      this._props.status = TaskInstanceStatus.Expired;
       this._props.updatedAt = Date.now();
     }
   }
@@ -229,19 +232,28 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
    * 业务判断方法
    */
   public canStart(): boolean {
-    return this._props.status === 'Pending';
+    return this._props.status === TaskInstanceStatus.Pending;
   }
 
   public canComplete(): boolean {
-    return this._props.status === 'Pending' || this._props.status === 'InProgress';
+    return (
+      this._props.status === TaskInstanceStatus.Pending ||
+      this._props.status === TaskInstanceStatus.InProgress
+    );
   }
 
   public canSkip(): boolean {
-    return this._props.status === 'Pending' || this._props.status === 'InProgress';
+    return (
+      this._props.status === TaskInstanceStatus.Pending ||
+      this._props.status === TaskInstanceStatus.InProgress
+    );
   }
 
   public isOverdue(): boolean {
-    if (this._props.status !== 'Pending' && this._props.status !== 'InProgress') {
+    if (
+      this._props.status !== TaskInstanceStatus.Pending &&
+      this._props.status !== TaskInstanceStatus.InProgress
+    ) {
       return false;
     }
 
@@ -327,6 +339,19 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     timeConfig: TaskTimeConfig;
     importance: ImportanceLevel;
   }): TaskInstance {
+    if (!params.templateId) {
+      throw new Error('Template ID is required');
+    }
+    if (!params.identityId) {
+      throw new Error('Identity ID is required');
+    }
+    if (!Number.isFinite(params.instanceDate)) {
+      throw new Error('Instance date must be a valid timestamp');
+    }
+    if (!params.timeConfig) {
+      throw new Error('Time configuration is required');
+    }
+
     const now = Date.now();
     const instance = new TaskInstance(TaskInstanceId.generate(), {
       templateId: params.templateId,
@@ -334,7 +359,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
       instanceDate: params.instanceDate,
       timeConfig: params.timeConfig,
       importance: params.importance,
-      status: 'Pending' as TaskInstanceStatus,
+      status: TaskInstanceStatus.Pending,
       completionRecord: null,
       skipRecord: null,
       actualStartTime: null,

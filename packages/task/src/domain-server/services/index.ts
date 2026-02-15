@@ -16,8 +16,11 @@
  * 【TaskExpirationService】
  * - 任务过旧管理：判戵任务是否子上使消，服妡自处理
  * 
- * 【TaskDependencyService】
- * - 依赖顺序管理：根据依赖管管扩扩生性值攵方打帕
+ * 【TaskDependencyPolicy】
+ * - 依赖规则校验：循环依赖检测等
+ *
+ * 【TaskStatisticsCalculator】
+ * - 依赖统计计算：依赖深度、阻塞状态等
  * 
  * 【calculateTaskPriority】
  * - 优先级计算：根据多个条件加算优先级
@@ -25,5 +28,6 @@
 
 export { TaskInstanceGenerationService } from './TaskInstanceGenerationService';
 export { TaskExpirationService } from './TaskExpirationService';
-export { TaskDependencyService } from './TaskDependencyService';
+export { TaskDependencyPolicy } from './task-dependency-policy';
+export { TaskStatisticsCalculator } from './task-statistics-calculator';
 export { calculateTaskPriority } from './priority-calculator.service';

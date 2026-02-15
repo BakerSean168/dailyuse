@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FolderHierarchyService } from '../FolderHierarchyService';
-import { Folder } from '../../entities/Folder';
+import { Folder } from '../../entities/folder';
 import type { IFolderRepository } from '../../repositories/IFolderRepository';
 
 describe('FolderHierarchyService', () => {
@@ -13,12 +13,12 @@ describe('FolderHierarchyService', () => {
     // Create mock repository
     mockRepository = {
       save: vi.fn(),
-      findByUuid: vi.fn(),
-      findByRepositoryUuid: vi.fn(),
-      findByParentUuid: vi.fn(),
+      findById: vi.fn(),
+      findByRepositoryId: vi.fn(),
+      findByParentId: vi.fn(),
       findRootFolders: vi.fn(),
       delete: vi.fn(),
-      deleteByRepositoryUuid: vi.fn(),
+      deleteByRepositoryId: vi.fn(),
       exists: vi.fn(),
     } as any;
   });
@@ -29,7 +29,7 @@ describe('FolderHierarchyService', () => {
       const folderB = createTestFolder('folder-b', 'folder-a');
 
       // Mock repository返回
-      vi.mocked(mockRepository.findByUuid)
+      vi.mocked(mockRepository.findById)
         .mockResolvedValueOnce(folderA)  // 第一次查询返回 folderA
         .mockResolvedValueOnce(null);     // folderA.parentUuid = null, 结束
 
@@ -43,7 +43,7 @@ describe('FolderHierarchyService', () => {
       const folderC = createTestFolder('folder-c', 'folder-b');
 
       // 尝试将 folder-a 移动到 folder-c 下（会形成循环）
-      vi.mocked(mockRepository.findByUuid)
+      vi.mocked(mockRepository.findById)
         .mockResolvedValueOnce(folderC)  // 查找 folder-c
         .mockResolvedValueOnce(folderB)  // 查找 folder-b
         .mockResolvedValueOnce(folderA)  // 查找 folder-a (parent of folder-b)
@@ -58,15 +58,15 @@ describe('FolderHierarchyService', () => {
       const folderB = createTestFolder('folder-b', 'folder-a');
 
       // 尝试将 folder-b 移动到 root (正常操作)
-      vi.mocked(mockRepository.findByUuid).mockResolvedValueOnce(null);
+      vi.mocked(mockRepository.findById).mockResolvedValueOnce(null);
 
-      const cycleExists = await service.detectCycle('folder-b', null, mockRepository);
+      const cycleExists = await service.detectCycle('folder-b', 'root', mockRepository);
       expect(cycleExists).toBe(false);
     });
 
     it('应该检测超过最大深度', async () => {
       // 创建51层深的结构来测试 MAX_DEPTH (50)
-      vi.mocked(mockRepository.findByUuid).mockImplementation(async (uuid) => {
+      vi.mocked(mockRepository.findById).mockImplementation(async (uuid) => {
         // 模拟无限深度
         return createTestFolder(uuid, `parent-${uuid}`);
       });
@@ -85,11 +85,11 @@ describe('FolderHierarchyService', () => {
       const tree = service.buildTree([folder1, folder2, folder3]);
 
       expect(tree.length).toBe(1); // 只有一个根文件夹
-      expect(tree[0].folder.uuid).toBe('folder-1');
+      expect(String(tree[0].folder.id)).toBe('folder-1');
       expect(tree[0].children.length).toBe(1);
-      expect(tree[0].children[0].folder.uuid).toBe('folder-2');
+      expect(String(tree[0].children[0].folder.id)).toBe('folder-2');
       expect(tree[0].children[0].children.length).toBe(1);
-      expect(tree[0].children[0].children[0].folder.uuid).toBe('folder-3');
+      expect(String(tree[0].children[0].children[0].folder.id)).toBe('folder-3');
     });
 
     it('应该处理多个根文件夹', () => {
@@ -100,8 +100,8 @@ describe('FolderHierarchyService', () => {
       const tree = service.buildTree([root1, root2, child1]);
 
       expect(tree.length).toBe(2); // 两个根文件夹
-      expect(tree[0].folder.uuid).toBe('root-1');
-      expect(tree[1].folder.uuid).toBe('root-2');
+      expect(String(tree[0].folder.id)).toBe('root-1');
+      expect(String(tree[1].folder.id)).toBe('root-2');
       expect(tree[0].children.length).toBe(1);
     });
 
@@ -115,7 +115,7 @@ describe('FolderHierarchyService', () => {
       const tree = service.buildTree([orphan]);
 
       expect(tree.length).toBe(1); // 孤儿被视为根文件夹
-      expect(tree[0].folder.uuid).toBe('orphan');
+      expect(String(tree[0].folder.id)).toBe('orphan');
     });
   });
 
@@ -126,7 +126,7 @@ describe('FolderHierarchyService', () => {
       const folder3 = createTestFolder('folder-3', 'folder-2', '/Root/Child/Grandchild');
 
       // Mock repository返回
-      vi.mocked(mockRepository.findByParentUuid)
+      vi.mocked(mockRepository.findByParentId)
         .mockResolvedValueOnce([folder2])  // folder-1 的子文件夹
         .mockResolvedValueOnce([folder3])  // folder-2 的子文件夹
         .mockResolvedValueOnce([]);        // folder-3 没有子文件夹
@@ -138,7 +138,7 @@ describe('FolderHierarchyService', () => {
     });
 
     it('应该处理没有子文件夹的情况', async () => {
-      vi.mocked(mockRepository.findByParentUuid).mockResolvedValueOnce([]);
+      vi.mocked(mockRepository.findByParentId).mockResolvedValueOnce([]);
 
       await service.updateChildrenPaths('leaf-folder', '/Path', mockRepository);
 
@@ -148,13 +148,13 @@ describe('FolderHierarchyService', () => {
 });
 
 // Helper function to create test folders
-function createTestFolder(uuid: string, parentUuid: string | null, path?: string): Folder {
+function createTestFolder(id: string, parentId: string | null, path?: string): Folder {
   return {
-    uuid,
-    repositoryUuid: 'test-repo',
-    name: `Folder ${uuid}`,
-    path: path || `/Folder ${uuid}`,
-    parentUuid,
+    id,
+    repositoryId: 'test-repo',
+    name: `Folder ${id}`,
+    path: path || `/Folder ${id}`,
+    parentId,
     order: 0,
     isExpanded: true,
     metadata: {},

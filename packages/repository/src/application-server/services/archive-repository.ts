@@ -28,7 +28,7 @@ export class ArchiveRepository {
   constructor(private readonly repositoryRepository: IRepositoryRepository) {}
 
   async execute(input: ArchiveRepositoryInput): Promise<ArchiveRepositoryOutput> {
-    const repository = await this.repositoryRepository.findByUuid(input.uuid);
+    const repository = await this.repositoryRepository.findById(input.uuid);
     if (!repository) {
       throw new Error(`Repository not found: ${input.uuid}`);
     }

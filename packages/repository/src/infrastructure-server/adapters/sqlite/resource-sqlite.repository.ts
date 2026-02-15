@@ -5,6 +5,8 @@
 
 import type Database from 'better-sqlite3';
 import { Resource } from '../../../domain-server/entities/resource';
+import { ResourceMetadata } from '../../../domain-shared/value-objects/resource-metadata';
+import { ResourceStats } from '../../../domain-shared/value-objects/resource-stats';
 import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
 
 export class SqliteResourceRepository implements IResourceRepository {
@@ -31,127 +33,163 @@ export class SqliteResourceRepository implements IResourceRepository {
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.repositoryUuid,
-      dto.folderUuid || null,
+      dto.id,
+      dto.repositoryId,
+      dto.folderId || null,
       dto.name,
       dto.type,
       dto.path,
       dto.size || 0,
       dto.content || null,
-      dto.metadata ? JSON.stringify(dto.metadata) : null,
-      dto.stats ? JSON.stringify(dto.stats) : null,
+      dto.metadata || null,
+      dto.stats || null,
       dto.status,
       dto.createdAt,
       dto.updatedAt,
     );
   }
 
-  async findByUuid(uuid: string): Promise<Resource | null> {
+  async findById(id: string): Promise<Resource | null> {
     const stmt = this.db.prepare(
       `SELECT * FROM resources WHERE uuid = ? LIMIT 1`,
     );
-    const row = stmt.get(uuid) as any;
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
+    const metadata = row.metadata ?? JSON.stringify(ResourceMetadata.createEmpty().toDTO());
+    const stats = row.stats ?? JSON.stringify(ResourceStats.createEmpty().toDTO());
+
     return Resource.fromPersistenceDTO({
-      uuid: row.uuid,
-      repositoryUuid: row.repository_uuid,
-      folderUuid: row.folder_uuid,
+      id: row.uuid,
+      repositoryId: row.repository_uuid,
+      folderId: row.folder_uuid,
       name: row.name,
       type: row.type,
       path: row.path,
+      mimeType: row.mime_type ?? null,
       size: row.size,
       content: row.content,
-      metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
-      stats: row.stats ? JSON.parse(row.stats) : undefined,
+      metadata,
+      stats,
       status: row.status,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
+      version: row.version ?? 1,
+      deletedAt: row.deleted_at ?? null,
     });
   }
 
-  async findById(uuid: string): Promise<Resource | null> {
-    return this.findByUuid(uuid);
+  async findByUuid(uuid: string): Promise<Resource | null> {
+    return this.findById(uuid);
   }
 
-  async findByRepositoryUuid(repositoryUuid: string): Promise<Resource[]> {
+  async findByRepositoryId(repositoryId: string): Promise<Resource[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM resources WHERE repository_uuid = ? ORDER BY created_at DESC`,
     );
-    const rows = stmt.all(repositoryUuid) as any[];
+    const rows = stmt.all(repositoryId) as any[];
 
-    return rows.map((row) =>
-      Resource.fromPersistenceDTO({
-        uuid: row.uuid,
-        repository_uuid: row.repository_uuid,
-        folder_uuid: row.folder_uuid,
+    return rows.map((row) => {
+      const metadata = row.metadata ?? JSON.stringify(ResourceMetadata.createEmpty().toDTO());
+      const stats = row.stats ?? JSON.stringify(ResourceStats.createEmpty().toDTO());
+
+      return Resource.fromPersistenceDTO({
+        id: row.uuid,
+        repositoryId: row.repository_uuid,
+        folderId: row.folder_uuid,
         name: row.name,
         type: row.type,
         path: row.path,
+        mimeType: row.mime_type ?? null,
         size: row.size,
         content: row.content,
-        metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
-        stats: row.stats ? JSON.parse(row.stats) : undefined,
+        metadata,
+        stats,
         status: row.status,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
-      }),
-    );
+        version: row.version ?? 1,
+        deletedAt: row.deleted_at ?? null,
+      });
+    });
   }
 
-  async findByFolderUuid(folderUuid: string): Promise<Resource[]> {
+  async findByRepositoryUuid(repositoryUuid: string): Promise<Resource[]> {
+    return this.findByRepositoryId(repositoryUuid);
+  }
+
+  async findByFolderId(folderId: string): Promise<Resource[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM resources WHERE folder_uuid = ? ORDER BY name ASC`,
     );
-    const rows = stmt.all(folderUuid) as any[];
+    const rows = stmt.all(folderId) as any[];
 
-    return rows.map((row) =>
-      Resource.fromPersistenceDTO({
-        uuid: row.uuid,
-        repositoryUuid: row.repository_uuid,
-        folderUuid: row.folder_uuid,
+    return rows.map((row) => {
+      const metadata = row.metadata ?? JSON.stringify(ResourceMetadata.createEmpty().toDTO());
+      const stats = row.stats ?? JSON.stringify(ResourceStats.createEmpty().toDTO());
+
+      return Resource.fromPersistenceDTO({
+        id: row.uuid,
+        repositoryId: row.repository_uuid,
+        folderId: row.folder_uuid,
         name: row.name,
         type: row.type,
         path: row.path,
+        mimeType: row.mime_type ?? null,
         size: row.size,
         content: row.content,
-        metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
-        stats: row.stats ? JSON.parse(row.stats) : undefined,
+        metadata,
+        stats,
         status: row.status,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
-      }),
-    );
+        version: row.version ?? 1,
+        deletedAt: row.deleted_at ?? null,
+      });
+    });
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<Resource[]> {
+  async findByFolderUuid(folderUuid: string): Promise<Resource[]> {
+    return this.findByFolderId(folderUuid);
+  }
+
+  async findByIdentityId(identityId: string): Promise<Resource[]> {
     const stmt = this.db.prepare(
       `SELECT r.* FROM resources r
        JOIN repositories repo ON r.repository_uuid = repo.uuid
        WHERE repo.accountUuid = ?
        ORDER BY r.createdAt DESC`,
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
-    return rows.map((row) =>
-      Resource.fromPersistenceDTO({
-        uuid: row.uuid,
-        repositoryUuid: row.repository_uuid,
-        folderUuid: row.folder_uuid,
+    return rows.map((row) => {
+      const metadata = row.metadata ?? JSON.stringify(ResourceMetadata.createEmpty().toDTO());
+      const stats = row.stats ?? JSON.stringify(ResourceStats.createEmpty().toDTO());
+
+      return Resource.fromPersistenceDTO({
+        id: row.uuid,
+        repositoryId: row.repository_uuid,
+        folderId: row.folder_uuid,
         name: row.name,
         type: row.type,
         path: row.path,
+        mimeType: row.mime_type ?? null,
         size: row.size,
         content: row.content,
-        metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
-        stats: row.stats ? JSON.parse(row.stats) : undefined,
+        metadata,
+        stats,
         status: row.status,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
-      }),
-    );
+        version: row.version ?? 1,
+        deletedAt: row.deleted_at ?? null,
+      });
+    });
+  }
+
+  async findByAccountUuid(accountUuid: string): Promise<Resource[]> {
+    return this.findByIdentityId(accountUuid);
   }
 
   async existsByPath(repositoryUuid: string, path: string): Promise<boolean> {
@@ -161,9 +199,9 @@ export class SqliteResourceRepository implements IResourceRepository {
     return stmt.get(repositoryUuid, path) !== undefined;
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM resources WHERE uuid = ?`);
-    stmt.run(uuid);
+    stmt.run(id);
   }
 }
 

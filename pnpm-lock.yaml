@@ -1143,7 +1143,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@22.13.14)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jiti@2.4.2)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 1.6.1(@types/node@22.13.14)(@vitest/ui@4.0.15(vitest@4.0.15))(happy-dom@20.0.11)(jiti@2.4.2)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/setting:
     dependencies:
@@ -1452,9 +1452,21 @@ importers:
         specifier: ^3.11.0
         version: 3.11.0
     devDependencies:
+      '@dailyuse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@dailyuse/task':
+        specifier: workspace:*
+        version: link:../task
       '@vitejs/plugin-vue':
         specifier: 6.0.4
         version: 6.0.4(vite@7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.25(typescript@5.9.3))
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
+      lucide-vue-next:
+        specifier: 0.564.0
+        version: 0.564.0(vue@3.5.25(typescript@5.9.3))
       rimraf:
         specifier: ^6.0.1
         version: 6.1.2
@@ -9334,6 +9346,11 @@ packages:
 
   lucide-vue-next@0.511.0:
     resolution: {integrity: sha512-VSv0F3pHniGN7JMMzDcLFNMQbl8381+shNnHwV8hi+El7xl2ZL8qdNuzPoiBViKk8mTKK5K3ZDfmE/wEcTZVIQ==}
+    peerDependencies:
+      vue: '>=3.0.1'
+
+  lucide-vue-next@0.564.0:
+    resolution: {integrity: sha512-Zf51QMPVsRPpAmlVdzzp3vUofPMgxxRd/33O+7YsTCC2Aw9J5bSnJg2ZToMZ7SHkXkeDfvpWRZuRSU0+nK2okQ==}
     peerDependencies:
       vue: '>=3.0.1'
 
@@ -21918,6 +21935,10 @@ snapshots:
     dependencies:
       vue: 3.5.25(typescript@5.9.3)
 
+  lucide-vue-next@0.564.0(vue@3.5.25(typescript@5.9.3)):
+    dependencies:
+      vue: 3.5.25(typescript@5.9.3)
+
   luxon@3.7.2: {}
 
   lz-string@1.5.0: {}
@@ -25748,7 +25769,7 @@ snapshots:
       tsx: 4.21.0
       yaml: 2.8.2
 
-  vitest@1.6.1(@types/node@22.13.14)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jiti@2.4.2)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2):
+  vitest@1.6.1(@types/node@22.13.14)(@vitest/ui@4.0.15(vitest@4.0.15))(happy-dom@20.0.11)(jiti@2.4.2)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1

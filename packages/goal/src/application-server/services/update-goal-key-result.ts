@@ -3,13 +3,17 @@
  */
 
 import type { IGoalRepository } from '@/domain-server';
+import { GoalPolicy } from '@/domain-server';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import { GoalEventPublisher } from './goal-event-publisher';
 
 export class UpdateGoalKeyResult {
-  constructor(private readonly goalRepository: IGoalRepository) {}
+  constructor(
+    private readonly goalRepository: IGoalRepository,
+    private readonly goalPolicy: GoalPolicy,
+  ) {}
 
   async execute(
     goalUuid: string,
@@ -27,26 +31,19 @@ export class UpdateGoalKeyResult {
       return error('NOT_FOUND', `Goal not found: ${goalUuid}`);
     }
 
+    this.goalPolicy.ensureGoalCanBeModified(goal);
     const keyResult = goal.keyResults.find((kr) => kr.id === keyResultUuid);
     if (!keyResult) {
       return error('NOT_FOUND', `KeyResult not found: ${keyResultUuid}`);
     }
 
-    if (updates.title !== undefined) {
-      keyResult.updateTitle(updates.title);
-    }
-    if (updates.description !== undefined) {
-      keyResult.updateDescription(updates.description);
-    }
-    if (updates.weight !== undefined) {
-      keyResult.updateWeight(updates.weight);
-    }
-    if (updates.targetValue !== undefined) {
-      keyResult.updateTargetValue(updates.targetValue);
-    }
-    if (updates.unit !== undefined) {
-      keyResult.updateUnit(updates.unit);
-    }
+    goal.updateKeyResult(keyResultUuid, {
+      title: updates.title,
+      description: updates.description,
+      weight: updates.weight,
+      targetValue: updates.targetValue,
+      unit: updates.unit,
+    });
 
     await this.goalRepository.save(goal);
     await GoalEventPublisher.publishGoalEvents(goal);

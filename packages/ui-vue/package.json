@@ -16,15 +16,19 @@
     "dist"
   ],
   "dependencies": {
-    "@internationalized/date": "^3.11.0",
     "@dailyuse/ui-core": "workspace:*",
-    "@dailyuse/ui-vue-shadcn": "workspace:*"
+    "@dailyuse/ui-vue-shadcn": "workspace:*",
+    "@internationalized/date": "^3.11.0"
   },
   "peerDependencies": {
     "vue": "^3.4.0"
   },
   "devDependencies": {
+    "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/task": "workspace:*",
     "@vitejs/plugin-vue": "6.0.4",
+    "date-fns": "^4.1.0",
+    "lucide-vue-next": "0.564.0",
     "rimraf": "^6.0.1",
     "typescript": "^5.9.3",
     "vite": "^7.2.7",

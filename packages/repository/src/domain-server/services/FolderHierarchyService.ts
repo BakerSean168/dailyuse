@@ -33,7 +33,7 @@ export class FolderHierarchyService {
       }
       visited.add(currentUuid);
 
-      const parent = await folderRepository.findByUuid(currentUuid);
+      const parent = await folderRepository.findById(currentUuid);
       if (!parent) {
         break;
       }
@@ -53,7 +53,7 @@ export class FolderHierarchyService {
     newPath: string,
     folderRepository: IFolderRepository,
   ): Promise<void> {
-    const children = await folderRepository.findByParentUuid(folderUuid);
+    const children = await folderRepository.findByParentId(folderUuid);
 
     for (const child of children) {
       const childNewPath = `${newPath}/${child.name}`;

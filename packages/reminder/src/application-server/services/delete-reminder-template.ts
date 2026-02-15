@@ -6,6 +6,7 @@
 
 import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
 import { eventBus } from '@dailyuse/utils';
+import { ReminderPolicy } from '../../domain-server/services/ReminderPolicy';
 // import { ReminderContainer } from '@dailyuse/reminder/infrastructure-server';
 
 /**
@@ -21,8 +22,11 @@ export class DeleteReminderTemplate {
       return; // 幂等性
     }
 
-    // 直接通过仓储删除
-    await this.templateRepository.delete(uuid);
+    const policy = new ReminderPolicy();
+    policy.assertTemplateDeletable(template, false);
+
+    template.softDelete();
+    await this.templateRepository.save(template);
 
     // 发布删除事件
     try {

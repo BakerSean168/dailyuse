@@ -582,6 +582,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         attemptedAction: 'updateStartDate',
       });
     }
+    TaskTemplate.assertValidDateRange(newStartDate, this._props.dueDate);
     const oldStartDate = this._props.startDate;
     this._props.startDate = newStartDate;
     this._props.updatedAt = new Date();
@@ -607,6 +608,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         attemptedAction: 'updateDueDate',
       });
     }
+    TaskTemplate.assertValidDateRange(this._props.startDate, newDueDate);
     // Note: TaskTemplateStatus doesn't have COMPLETED/CANCELLED states
     // Those are TaskInstanceStatus states. This check has been removed.
     const oldDueDate = this._props.dueDate;
@@ -1361,10 +1363,26 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     tags?: string[];
     color?: string;
   }): TaskTemplate {
+    if (!params.identityId) {
+      throw new InvalidTaskTemplateStateError('Identity ID is required', {
+        templateId: '',
+        currentStatus: 'N/A',
+        attemptedAction: 'createOneTimeTask',
+      });
+    }
+    if (!params.title || params.title.trim().length === 0) {
+      throw new InvalidTaskTemplateStateError('Title is required', {
+        templateId: '',
+        currentStatus: 'N/A',
+        attemptedAction: 'createOneTimeTask',
+      });
+    }
+    TaskTemplate.assertValidDateRange(params.startDate ?? null, params.dueDate ?? null);
+
     const now = new Date();
     const template = new TaskTemplate({
       identityId: params.identityId,
-      title: params.title,
+      title: params.title.trim(),
       description: params.description || null,
       taskType: TaskType.ONE_TIME,
       importance: (params.importance ?? ImportanceLevel.Moderate) as ImportanceLevel,
@@ -1409,10 +1427,24 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     color?: string;
     generateAheadDays?: number;
   }): TaskTemplate {
+    if (!params.identityId) {
+      throw new InvalidTaskTemplateStateError('Identity ID is required', {
+        templateId: '',
+        currentStatus: 'N/A',
+        attemptedAction: 'createRecurringTask',
+      });
+    }
+    if (!params.title || params.title.trim().length === 0) {
+      throw new InvalidTaskTemplateStateError('Title is required', {
+        templateId: '',
+        currentStatus: 'N/A',
+        attemptedAction: 'createRecurringTask',
+      });
+    }
     const now = new Date();
     const template = new TaskTemplate({
       identityId: params.identityId,
-      title: params.title,
+      title: params.title.trim(),
       description: params.description || null,
       taskType: TaskType.RECURRING,
       timeConfig: params.timeConfig,
@@ -1475,11 +1507,18 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         attemptedAction: 'create',
       });
     }
+    if (params.taskType === TaskType.RECURRING && !params.recurrenceRule) {
+      throw new InvalidTaskTemplateStateError('Recurrence rule is required for recurring tasks', {
+        templateId: '',
+        currentStatus: 'N/A',
+        attemptedAction: 'create',
+      });
+    }
 
     const now = new Date();
     const template = new TaskTemplate({
       identityId: params.identityId,
-      title: params.title,
+      title: params.title.trim(),
       description: params.description,
       taskType: params.taskType,
       timeConfig: params.timeConfig,
@@ -1628,6 +1667,22 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       version: dto.version ?? 1,
     };
     return new TaskTemplate(props, TaskTemplateId.of(dto.id));
+  }
+
+  private static assertValidDateRange(
+    startDate: Date | null | undefined,
+    dueDate: Date | null | undefined,
+  ): void {
+    if (!startDate || !dueDate) {
+      return;
+    }
+
+    const start = startDate.getTime();
+    const due = dueDate.getTime();
+
+    if (start > due) {
+      throw new InvalidDateRangeError(start, due);
+    }
   }
 
   // ===== �������� =====

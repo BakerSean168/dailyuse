@@ -5,6 +5,7 @@
 
 import type Database from 'better-sqlite3';
 import { Folder } from '../../../domain-server/entities/folder';
+import { FolderMetadata } from '../../../domain-shared/value-objects/folder-metadata';
 import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
 
 export class SqliteFolderRepository implements IFolderRepository {
@@ -24,9 +25,9 @@ export class SqliteFolderRepository implements IFolderRepository {
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.repositoryUuid,
-      dto.parentUuid || null,
+      dto.id,
+      dto.repositoryId,
+      dto.parentId || null,
       dto.name,
       dto.path,
       dto.createdAt,
@@ -34,61 +35,88 @@ export class SqliteFolderRepository implements IFolderRepository {
     );
   }
 
-  async findByUuid(uuid: string): Promise<Folder | null> {
+  async findById(id: string): Promise<Folder | null> {
     const stmt = this.db.prepare(
       `SELECT * FROM folders WHERE uuid = ? LIMIT 1`,
     );
-    const row = stmt.get(uuid) as any;
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
+    const metadata = row.metadata ?? JSON.stringify(FolderMetadata.createDefault().toDTO());
+
     return Folder.fromPersistenceDTO({
-      uuid: row.uuid,
-      repositoryUuid: row.repository_uuid,
-      parentUuid: row.parent_uuid,
+      id: row.uuid,
+      repositoryId: row.repository_uuid,
+      parentId: row.parent_uuid,
       name: row.name,
       path: row.path,
+      order: row.order ?? 0,
+      isExpanded: row.is_expanded ?? false,
+      metadata,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
     });
   }
 
-  async findByRepositoryUuid(repositoryUuid: string): Promise<Folder[]> {
+  async findByUuid(uuid: string): Promise<Folder | null> {
+    return this.findById(uuid);
+  }
+
+  async findByRepositoryId(repositoryId: string): Promise<Folder[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM folders WHERE repository_uuid = ? ORDER BY path ASC`,
     );
-    const rows = stmt.all(repositoryUuid) as any[];
+    const rows = stmt.all(repositoryId) as any[];
 
-    return rows.map((row) =>
-      Folder.fromPersistenceDTO({
-        uuid: row.uuid,
-        repositoryUuid: row.repository_uuid,
-        parentUuid: row.parent_uuid,
+    return rows.map((row) => {
+      const metadata = row.metadata ?? JSON.stringify(FolderMetadata.createDefault().toDTO());
+
+      return Folder.fromPersistenceDTO({
+        id: row.uuid,
+        repositoryId: row.repository_uuid,
+        parentId: row.parent_uuid,
         name: row.name,
         path: row.path,
+        order: row.order ?? 0,
+        isExpanded: row.is_expanded ?? false,
+        metadata,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
-      }),
-    );
+      });
+    });
   }
 
-  async findByParentUuid(parentUuid: string): Promise<Folder[]> {
+  async findByRepositoryUuid(repositoryUuid: string): Promise<Folder[]> {
+    return this.findByRepositoryId(repositoryUuid);
+  }
+
+  async findByParentId(parentId: string): Promise<Folder[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM folders WHERE parent_uuid = ? ORDER BY name ASC`,
     );
-    const rows = stmt.all(parentUuid) as any[];
+    const rows = stmt.all(parentId) as any[];
 
-    return rows.map((row) =>
-      Folder.fromPersistenceDTO({
-        uuid: row.uuid,
-        repositoryUuid: row.repository_uuid,
-        parentUuid: row.parent_uuid,
+    return rows.map((row) => {
+      const metadata = row.metadata ?? JSON.stringify(FolderMetadata.createDefault().toDTO());
+
+      return Folder.fromPersistenceDTO({
+        id: row.uuid,
+        repositoryId: row.repository_uuid,
+        parentId: row.parent_uuid,
         name: row.name,
         path: row.path,
+        order: row.order ?? 0,
+        isExpanded: row.is_expanded ?? false,
+        metadata,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
-      }),
-    );
+      });
+    });
+  }
+
+  async findByParentUuid(parentUuid: string): Promise<Folder[]> {
+    return this.findByParentId(parentUuid);
   }
 
   async findByAccountUuid(accountUuid: string): Promise<Folder[]> {
@@ -100,17 +128,22 @@ export class SqliteFolderRepository implements IFolderRepository {
     );
     const rows = stmt.all(accountUuid) as any[];
 
-    return rows.map((row) =>
-      Folder.fromPersistenceDTO({
-        uuid: row.uuid,
-        repositoryUuid: row.repository_uuid,
-        parentUuid: row.parent_uuid,
+    return rows.map((row) => {
+      const metadata = row.metadata ?? JSON.stringify(FolderMetadata.createDefault().toDTO());
+
+      return Folder.fromPersistenceDTO({
+        id: row.uuid,
+        repositoryId: row.repository_uuid,
+        parentId: row.parent_uuid,
         name: row.name,
         path: row.path,
+        order: row.order ?? 0,
+        isExpanded: row.is_expanded ?? false,
+        metadata,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
-      }),
-    );
+      });
+    });
   }
 
   async existsByPath(repositoryUuid: string, path: string): Promise<boolean> {
@@ -120,33 +153,42 @@ export class SqliteFolderRepository implements IFolderRepository {
     return stmt.get(repositoryUuid, path) !== undefined;
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM folders WHERE uuid = ?`);
-    stmt.run(uuid);
+    stmt.run(id);
   }
 
-  async findRootFolders(repositoryUuid: string): Promise<Folder[]> {
+  async findRootFolders(repositoryId: string): Promise<Folder[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM folders WHERE repository_uuid = ? AND parent_uuid IS NULL ORDER BY name ASC`
     );
-    const rows = stmt.all(repositoryUuid) as any[];
+    const rows = stmt.all(repositoryId) as any[];
 
-    return rows.map((row) =>
-      Folder.fromPersistenceDTO({
-        uuid: row.uuid,
-        repositoryUuid: row.repository_uuid,
-        parentUuid: row.parent_uuid,
+    return rows.map((row) => {
+      const metadata = row.metadata ?? JSON.stringify(FolderMetadata.createDefault().toDTO());
+
+      return Folder.fromPersistenceDTO({
+        id: row.uuid,
+        repositoryId: row.repository_uuid,
+        parentId: row.parent_uuid,
         name: row.name,
         path: row.path,
+        order: row.order ?? 0,
+        isExpanded: row.is_expanded ?? false,
+        metadata,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
-      })
-    );
+      });
+    });
+  }
+
+  async deleteByRepositoryId(repositoryId: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM folders WHERE repository_uuid = ?`);
+    stmt.run(repositoryId);
   }
 
   async deleteByRepositoryUuid(repositoryUuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM folders WHERE repository_uuid = ?`);
-    stmt.run(repositoryUuid);
+    await this.deleteByRepositoryId(repositoryUuid);
   }
 
   async exists(uuid: string): Promise<boolean> {

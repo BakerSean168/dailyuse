@@ -8,3 +8,4 @@ export { ScheduleConflictDetectionService } from './schedule-conflict-detection-
 export { ScheduleEventApplicationService } from './schedule-event-application-service';
 export { ScheduleTaskExecutor } from './schedule-task-executor';
 export { ScheduleTaskExecutorAdapter } from './schedule-task-executor-adapter';
+export { ScheduleTaskFactory } from './schedule-task-factory';

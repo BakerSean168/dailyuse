@@ -14,7 +14,10 @@
 
 import type { IScheduleTaskRepository } from '../../domain-server/repositories/IScheduleTaskRepository';
 import type { IScheduleStatisticsRepository } from '../../domain-server/repositories/IScheduleStatisticsRepository';
-import { ScheduleDomainService } from '../../domain-server/services/ScheduleDomainService';
+import { ScheduleTask } from '../../domain-server/aggregates/schedule-task';
+import { ScheduleConfig } from '../../domain-server/value-objects/ScheduleConfig';
+import { RetryPolicy } from '../../domain-server/value-objects/RetryPolicy';
+import { TaskMetadata } from '../../domain-server/value-objects/TaskMetadata';
 import type {
   ScheduleTaskClientDTO,
   ScheduleConfigServerDTO,
@@ -48,31 +51,44 @@ export interface CreateScheduleTaskReq {
  * 3. 转换为 Client DTO 返回
  */
 export class CreateScheduleTaskUseCase {
-  private domainService: ScheduleDomainService;
-
   constructor(
     private readonly scheduleTaskRepository: IScheduleTaskRepository,
-    private readonly scheduleStatisticsRepository: IScheduleStatisticsRepository,
-  ) {
-    this.domainService = new ScheduleDomainService(
-      scheduleTaskRepository,
-      scheduleStatisticsRepository,
-    );
-  }
+    private readonly _scheduleStatisticsRepository: IScheduleStatisticsRepository,
+  ) {}
 
   async execute(req: CreateScheduleTaskReq): Promise<ScheduleTaskClientDTO> {
-    // 1. 调用领域服务创建调度任务
-    const task = await this.domainService.createScheduleTask({
+    const schedule = ScheduleConfig.fromDTO({
+      ...req.scheduleConfig,
+      startDate: req.scheduleConfig.startDate
+        ? new Date(req.scheduleConfig.startDate).toISOString()
+        : null,
+      endDate: req.scheduleConfig.endDate
+        ? new Date(req.scheduleConfig.endDate).toISOString()
+        : null,
+    });
+
+    const retryPolicy = req.retryPolicy ? RetryPolicy.fromDTO(req.retryPolicy) : undefined;
+    const metadata = req.handlerPayload
+      ? TaskMetadata.create({
+          payload: req.handlerPayload,
+          tags: [],
+          priority: 'Normal',
+          timeout: null,
+        })
+      : undefined;
+
+    const task = ScheduleTask.create({
       name: req.name,
+      description: req.description,
+      identityId: req.accountUuid,
       sourceModule: req.sourceModule,
       sourceEntityId: req.sourceId,
-      schedule: req.scheduleConfig,
-      payload: req.handlerPayload,
-      description: req.description,
-      accountUuid: req.accountUuid,
-      retryConfig: req.retryPolicy,
-      tags: [],
+      schedule,
+      metadata,
+      retryPolicy,
     });
+
+    await this.scheduleTaskRepository.save(task);
 
     // 2. 转换为 Client DTO 并返回
     return task.toClientDTO();

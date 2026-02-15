@@ -244,6 +244,31 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
   }
 
   /**
+   * ✅ 更新目标值
+   */
+  public updateTargetValue(targetValue: number): void {
+    if (!Number.isFinite(targetValue) || targetValue <= 0) {
+      throw new Error('Target value must be a positive number');
+    }
+    this._props.progress = {
+      ...this._props.progress,
+      targetValue,
+    };
+    this._props.updatedAt = new Date();
+  }
+
+  /**
+   * ✅ 更新单位
+   */
+  public updateUnit(unit?: string | null): void {
+    this._props.progress = {
+      ...this._props.progress,
+      unit: unit?.trim() || null,
+    };
+    this._props.updatedAt = new Date();
+  }
+
+  /**
    * ✅ 添加进度记录并重新计算进度
    */
   public addRecord(recordData: { value: number }): void {
@@ -260,6 +285,13 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
       currentValue: value,
     };
     this._props.updatedAt = new Date();
+  }
+
+  /**
+   * ✅ 更新进度值
+   */
+  public updateProgress(value: number): void {
+    this.recalculateProgress(value);
   }
 
   /**

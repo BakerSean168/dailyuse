@@ -6,31 +6,43 @@
 
 import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
 import type { IReminderGroupRepository } from '../../domain-server/repositories/IReminderGroupRepository';
-import { ReminderDomainService } from '../../domain-server/services/ReminderDomainService';
+import { ReminderPolicy } from '../../domain-server/services/ReminderPolicy';
+import { ReminderTemplate } from '../../domain-server/aggregates/reminder-template';
 import type {
   ReminderTemplateClientDTO,
   CreateReminderTemplateRequest,
 } from '@dailyuse/contracts/reminder';
 import { eventBus } from '@dailyuse/utils';
+import { IdentityId } from '@dailyuse/domain-shared';
 
 /**
  * Create Reminder Template Service
  */
 export class CreateReminderTemplate {
-  private readonly domainService: ReminderDomainService;
-
   constructor(
-    templateRepository: IReminderTemplateRepository,
-    groupRepository: IReminderGroupRepository,
+    private readonly templateRepository: IReminderTemplateRepository,
+    private readonly groupRepository: IReminderGroupRepository,
   ) {
-    this.domainService = new ReminderDomainService(
-      templateRepository,
-      groupRepository,
-    );
   }
 
   async execute(accountUuid: string, input: CreateReminderTemplateRequest): Promise<ReminderTemplateClientDTO> {
-    const template = await this.domainService.createReminderTemplate({ accountUuid, ...input });
+    const policy = new ReminderPolicy();
+    const group = input.groupUuid
+      ? await this.groupRepository.findById(input.groupUuid)
+      : null;
+
+    if (input.groupUuid && !group) {
+      throw new Error(`Invalid groupUuid: ${input.groupUuid}`);
+    }
+
+    const template = ReminderTemplate.create({
+      ...input,
+      identityId: IdentityId.of(accountUuid),
+    });
+
+    policy.assertValidGroupAssignment(template, group);
+    template.setEffectiveEnabled(policy.calculateEffectiveEnabled(template, group));
+    await this.templateRepository.save(template);
 
     // 发布领域事件
     const events = template.getDomainEvents();

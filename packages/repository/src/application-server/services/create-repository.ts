@@ -39,7 +39,14 @@ export class CreateRepository {
   constructor(private readonly repositoryRepository: IRepositoryRepository) {}
 
   async execute(input: CreateRepositoryInput): Promise<CreateRepositoryOutput> {
-    const repository = Repository.create(input);
+    const repository = Repository.create({
+      identityId: input.accountUuid,
+      name: input.name,
+      type: input.type,
+      path: input.path,
+      description: input.description ?? null,
+      config: input.config,
+    });
     await this.repositoryRepository.save(repository);
     return { repository: repository.toClientDTO() };
   }

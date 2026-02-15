@@ -76,6 +76,12 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
     dependencyType?: DependencyType;
     lagDays?: number;
   }): TaskDependency {
+    if (!props.predecessorTaskId || !props.successorTaskId) {
+      throw new Error('Dependency must include predecessor and successor task IDs');
+    }
+    if (props.predecessorTaskId === props.successorTaskId) {
+      throw new Error('Task cannot depend on itself');
+    }
     const id = props.id ? TaskDependencyId.of(props.id) : TaskDependencyId.generate();
     const now = new Date();
 

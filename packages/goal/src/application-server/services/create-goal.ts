@@ -6,7 +6,7 @@
  */
 
 import type { IGoalRepository } from '@/domain-server';
-import { Goal } from '@/domain-server';
+import { Goal, GoalPolicy } from '@/domain-server';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { CreateGoalReq, CreateGoalRes } from '@dailyuse/contracts/goal';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
@@ -19,7 +19,10 @@ import type { ExecutionContext } from '../types';
  * Create Goal Use Case
  */
 export class CreateGoal {
-  constructor(private readonly goalRepository: IGoalRepository) {}
+  constructor(
+    private readonly goalRepository: IGoalRepository,
+    private readonly goalPolicy: GoalPolicy,
+  ) {}
 
   async execute(input: CreateGoalReq, context: ExecutionContext): Promise<Result<CreateGoalRes>> {
     // 1. 验证输入
@@ -40,7 +43,10 @@ export class CreateGoal {
       parentGoal = found;
     }
 
-    // 3. 创建目标聚合根（直接使用工厂方法）
+    // 3. 领域策略校验
+    this.goalPolicy.ensureParentGoalValid(parentGoal ?? null);
+
+    // 4. 创建目标聚合根（直接使用工厂方法）
     const goal = Goal.create(
       {
         identityId: IdentityId.of(context.identityId),
@@ -61,13 +67,13 @@ export class CreateGoal {
       parentGoal,
     );
 
-    // 4. 持久化
+    // 5. 持久化
     await this.goalRepository.save(goal);
 
-    // 5. 发布领域事件
+    // 6. 发布领域事件
     await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 6. 返回 Result
+    // 7. 返回 Result
     return ok(goal.toClientDTO(true));
   }
 }

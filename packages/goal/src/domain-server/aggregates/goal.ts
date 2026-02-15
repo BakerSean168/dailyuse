@@ -746,6 +746,12 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    */
   public archive(): void {
     if (this._props.archivedAt) return; // 幂等
+    if (this._props.deletedAt) {
+      throw new GoalDeletedError(this.id);
+    }
+    if (this._props.status === GoalStatus.Active) {
+      throw new Error('Active goals must be completed before archiving');
+    }
 
     this._props.status = GoalStatus.Archived;
     this._props.updatedAt = new Date();
@@ -909,8 +915,17 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * @throws {GoalDeletedError} 当目标已删除时
    * @throws {GoalKeyResultNotFoundError} 当关键结果不存在时
    */
-  public updateKeyResult(keyResultId: string, updates: Partial<KeyResult>): void {
-    this.ensureNotDeleted();
+  public updateKeyResult(
+    keyResultId: string,
+    updates: {
+      title?: string;
+      description?: string | null;
+      weight?: number;
+      targetValue?: number;
+      unit?: string | null;
+    },
+  ): void {
+    this.ensureModifiable();
     
     const keyResult = this._props.keyResults.find((kr) => kr.id === keyResultId);
     if (!keyResult) {
@@ -920,6 +935,16 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
     if (updates.title) keyResult.updateTitle(updates.title);
     if (updates.description !== undefined) {
       keyResult.updateDescription(updates.description || '');
+    }
+    if (updates.weight !== undefined) {
+      Goal.validateKeyResultWeight(updates.weight);
+      keyResult.updateWeight(updates.weight);
+    }
+    if (updates.targetValue !== undefined) {
+      keyResult.updateTargetValue(updates.targetValue);
+    }
+    if (updates.unit !== undefined) {
+      keyResult.updateUnit(updates.unit);
     }
 
     this._props.updatedAt = new Date();
@@ -1002,7 +1027,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * @throws {GoalDeletedError} 当目标已删除时
    */
   public removeKeyResult(keyResultId: string): KeyResult | null {
-    this.ensureNotDeleted();
+    this.ensureModifiable();
     
     const index = this._props.keyResults.findIndex((kr) => kr.id === keyResultId);
     if (index !== -1) {

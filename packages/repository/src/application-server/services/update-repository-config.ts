@@ -33,7 +33,7 @@ export class UpdateRepositoryConfig {
   constructor(private readonly repositoryRepository: IRepositoryRepository) {}
 
   async execute(input: UpdateRepositoryConfigInput): Promise<UpdateRepositoryConfigOutput> {
-    const repository = await this.repositoryRepository.findByUuid(input.uuid);
+    const repository = await this.repositoryRepository.findById(input.uuid);
     if (!repository) {
       throw new Error(`Repository not found: ${input.uuid}`);
     }

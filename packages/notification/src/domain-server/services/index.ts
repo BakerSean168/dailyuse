@@ -21,5 +21,6 @@
  */
 
 export { NotificationDomainService } from './NotificationDomainService';
+export { NotificationPolicy } from './NotificationPolicy';
 export { NotificationTemplateDomainService } from './NotificationTemplateDomainService';
 export { NotificationPreferenceDomainService } from './NotificationPreferenceDomainService';
