@@ -50,6 +50,7 @@
   },
   "scripts": {},
   "dependencies": {
+    "tslib": "^2.3.0",
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
