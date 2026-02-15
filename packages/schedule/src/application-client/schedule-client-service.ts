@@ -1,4 +1,9 @@
 /**
+ * @deprecated Extract operations to individual service files following governance pattern.
+ * Each API operation should have its own service file for better maintainability.
+ */
+
+/**
  * Schedule Client Service
  *
  * Constructor-injected application service for schedule management.

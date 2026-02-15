@@ -1,4 +1,10 @@
 /**
+ * @deprecated Extract operations to individual service files following governance pattern.
+ * Each API operation should have its own service file for better maintainability.
+ * Example: create-task-template.ts, update-task-template.ts, delete-task-template.ts
+ */
+
+/**
  * Task Client Service
  *
  * Constructor-injected application service for task management.
