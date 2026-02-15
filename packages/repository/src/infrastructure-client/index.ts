@@ -12,7 +12,6 @@ export type {
   IRepositoryApiClient,
   CreateRepositoryRequest,
   CreateFolderRequest,
-  IHttpClient,
   IIpcClient,
 } from './adapters/types';
 

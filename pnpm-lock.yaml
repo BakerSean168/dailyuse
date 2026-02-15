@@ -687,6 +687,9 @@ importers:
       '@dailyuse/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
+      '@dailyuse/http-client':
+        specifier: workspace:*
+        version: link:../http-client
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -718,6 +721,9 @@ importers:
       '@dailyuse/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
+      '@dailyuse/http-client':
+        specifier: workspace:*
+        version: link:../http-client
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -761,6 +767,9 @@ importers:
       '@dailyuse/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
+      '@dailyuse/http-client':
+        specifier: workspace:*
+        version: link:../http-client
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -901,6 +910,9 @@ importers:
       '@dailyuse/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
+      '@dailyuse/http-client':
+        specifier: workspace:*
+        version: link:../http-client
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -929,6 +941,9 @@ importers:
       '@dailyuse/database':
         specifier: workspace:*
         version: link:../database
+      '@dailyuse/http-client':
+        specifier: workspace:*
+        version: link:../http-client
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -983,6 +998,9 @@ importers:
       '@dailyuse/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
+      '@dailyuse/http-client':
+        specifier: workspace:*
+        version: link:../http-client
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1017,6 +1035,9 @@ importers:
       '@dailyuse/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
+      '@dailyuse/http-client':
+        specifier: workspace:*
+        version: link:../http-client
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1042,6 +1063,9 @@ importers:
       '@dailyuse/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
+      '@dailyuse/http-client':
+        specifier: workspace:*
+        version: link:../http-client
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1067,6 +1091,9 @@ importers:
       '@dailyuse/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
+      '@dailyuse/http-client':
+        specifier: workspace:*
+        version: link:../http-client
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1110,7 +1137,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@22.13.14)(@vitest/ui@4.0.15(vitest@4.0.15))(happy-dom@20.0.11)(jiti@2.4.2)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 1.6.1(@types/node@22.13.14)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jiti@2.4.2)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/setting:
     dependencies:
@@ -1123,6 +1150,9 @@ importers:
       '@dailyuse/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
+      '@dailyuse/http-client':
+        specifier: workspace:*
+        version: link:../http-client
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1161,6 +1191,9 @@ importers:
       '@dailyuse/domain-shared':
         specifier: workspace:*
         version: link:../domain-shared
+      '@dailyuse/http-client':
+        specifier: workspace:*
+        version: link:../http-client
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -25701,7 +25734,7 @@ snapshots:
       tsx: 4.21.0
       yaml: 2.8.2
 
-  vitest@1.6.1(@types/node@22.13.14)(@vitest/ui@4.0.15(vitest@4.0.15))(happy-dom@20.0.11)(jiti@2.4.2)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2):
+  vitest@1.6.1(@types/node@22.13.14)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jiti@2.4.2)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1

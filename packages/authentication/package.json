@@ -40,8 +40,9 @@
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",
-    "@dailyuse/utils": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
+    "@dailyuse/http-client": "workspace:*",
+    "@dailyuse/utils": "workspace:*",
     "argon2": "^0.43.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",

@@ -19,7 +19,7 @@ import type {
   UpdateGoalFolderReq,
   CreateGoalRecordReq,
   CreateGoalReviewReq,
-  UpdateGoalReviewReq,
+  GoalReviewClientDTO,
   QueryGoalsRes,
   GetKeyResultsRes,
   GetGoalRecordsRes,
@@ -66,7 +66,7 @@ export class GoalClientService {
     dirUuid?: string;
     startDate?: string;
     endDate?: string;
-  }): Promise<Result<{ goals: Goal[]; pagination: { page: number; limit: number; total: number } }>> {
+  }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>> {
     const result = await this.goalApi.getGoals(params);
     return mapResult(result, (data: QueryGoalsRes) => ({
       goals: data.data.map((dto) => Goal.fromDTO(dto)),
@@ -109,7 +109,7 @@ export class GoalClientService {
     limit?: number;
     status?: string;
     dirUuid?: string;
-  }): Promise<Result<{ goals: Goal[]; pagination: { page: number; limit: number; total: number } }>> {
+  }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>> {
     const result = await this.goalApi.searchGoals(params);
     return mapResult(result, (data: QueryGoalsRes) => ({
       goals: data.data.map((dto) => Goal.fromDTO(dto)),
@@ -253,7 +253,7 @@ export class GoalClientService {
   async updateGoalReview(
     goalUuid: string,
     reviewUuid: string,
-    request: UpdateGoalReviewReq,
+    request: Partial<GoalReviewClientDTO>,
   ): Promise<Result<GoalReview>> {
     const result = await this.goalApi.updateGoalReview(goalUuid, reviewUuid, request);
     return mapResult(result, (dto) => GoalReview.fromDTO(dto));

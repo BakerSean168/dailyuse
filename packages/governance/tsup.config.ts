@@ -17,5 +17,5 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
-  external: ['@dailyuse/utils', '@dailyuse/database', 'express'],
+  external: ['@dailyuse/utils', '@dailyuse/contracts', '@dailyuse/http-client', '@dailyuse/database', 'express'],
 });

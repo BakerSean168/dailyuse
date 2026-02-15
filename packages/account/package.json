@@ -46,12 +46,13 @@
   },
   "scripts": {},
   "dependencies": {
-    "tslib": "^2.3.0",
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
+    "@dailyuse/http-client": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "express": "^4.21.0",
+    "tslib": "^2.3.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {

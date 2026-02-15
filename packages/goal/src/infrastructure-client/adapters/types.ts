@@ -44,6 +44,7 @@ import type {
 // Module only defines what it needs — concrete implementations injected from App layer.
 
 // IResultHttpClient imported from @dailyuse/http-client
+export type { IResultHttpClient };
 
 /**
  * IPC Client interface (Result-returning).

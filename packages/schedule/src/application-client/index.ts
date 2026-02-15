@@ -34,12 +34,6 @@ export {
   DeleteScheduleTask,
   DeleteScheduleTasksBatch,
   UpdateTaskMetadata,
-  GetScheduleStatistics,
-  GetModuleStatistics,
-  GetAllModuleStatistics,
-  RecalculateStatistics,
-  ResetStatistics,
-  DeleteStatistics,
   
   // Schedule Event Use Cases
   CreateScheduleEvent,
