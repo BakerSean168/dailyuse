@@ -1,11 +1,8 @@
 /**
  * Goal Module - Infrastructure Client
  *
- * Adapters and container for Goal module communication.
+ * Adapters for Goal module communication.
  */
-
-// Container
-export { GoalContainer, GoalDependencyKeys, type IGoalRepository } from './goal.container';
 
 // Port Interfaces
 export type {

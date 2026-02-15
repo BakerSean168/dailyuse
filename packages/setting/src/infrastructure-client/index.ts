@@ -1,11 +1,8 @@
 /**
  * Setting Module - Infrastructure Client
  *
- * Adapters and container for Setting module communication.
+ * Adapters for Setting module communication.
  */
-
-// Container
-export { SettingContainer, SettingDependencyKeys } from './setting.container';
 
 // Port Interfaces
 export type { ISettingApiClient, IResultHttpClient, IIpcClient } from './adapters/types';

@@ -1,50 +1,8 @@
 /**
  * Reminder Application Module (Client)
  *
- * Re-exports all reminder-related application services.
+ * Constructor-injected application service for reminder management.
+ * Uses Result<T> pattern for consistent error handling.
  */
 
-// Client Service
 export { ReminderClientService } from './reminder-client-service';
-
-// Smart Container
-export { ReminderApplicationService, reminderApplicationService } from './reminder-application.service';
-
-export { ReminderContainer } from '../infrastructure-client/reminder.container';
-
-export {
-  // Events
-  ReminderTemplateEvents,
-  ReminderGroupEvents,
-  type ReminderTemplateRefreshEvent,
-  type ReminderGroupRefreshEvent,
-  
-  // Reminder Template Use Cases
-  CreateReminderTemplate,
-  GetReminderTemplate,
-  ListReminderTemplates,
-  GetUserTemplates,
-  UpdateReminderTemplate,
-  DeleteReminderTemplate,
-  ToggleTemplateEnabled,
-  MoveTemplateToGroup,
-  SearchTemplates,
-  GetTemplateScheduleStatus,
-  GetUpcomingReminders,
-  
-  // Reminder Group Use Cases
-  CreateReminderGroup,
-  GetReminderGroup,
-  ListReminderGroups,
-  GetUserReminderGroups,
-  UpdateReminderGroup,
-  DeleteReminderGroup,
-  ToggleReminderGroupStatus,
-  ToggleReminderGroupControlMode,
-  
-  // Legacy exports (deprecated)
-  ReminderTemplateApplicationService,
-  createReminderTemplateApplicationService,
-  ReminderGroupApplicationService,
-  createReminderGroupApplicationService,
-} from './services';

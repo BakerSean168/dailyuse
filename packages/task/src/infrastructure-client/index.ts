@@ -1,16 +1,8 @@
 /**
  * Task Module - Infrastructure Client
  *
- * Adapters and container for Task module communication.
+ * Adapters for Task module communication.
  */
-
-// Container
-export {
-  TaskContainer,
-  TaskDependencyKeys,
-  type ITaskTemplateRepository,
-  type ITaskInstanceRepository,
-} from './task.container';
 
 // Port Interfaces
 export type {

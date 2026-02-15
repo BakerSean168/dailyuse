@@ -179,14 +179,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, inject } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRepositoryStore } from '../stores/repositoryStore';
 import { useMessage, useGlobalLoading } from '@dailyuse/ui-vuetify';
-import { repositoryApplicationService } from '@dailyuse/repository/application-client';
+import { REPOSITORY_SERVICE_KEY } from '@/shared/di';
 
-const repositoryManagementService = repositoryApplicationService;
-const resourceManagementService = repositoryApplicationService;
+const service = inject(REPOSITORY_SERVICE_KEY)!;
 import RepositoryManagementDialog from '../components/dialogs/RepositoryManagementDialog.vue';
 import RepoHeader from '../components/RepoHeader.vue';
 
@@ -260,11 +259,11 @@ async function handleRepositorySelected(uuid: string) {
 // 加载仓库资源
 async function loadRepositoryResources(repositoryUuid: string) {
   await globalLoading.withLoading(async () => {
-    try {
-      await resourceManagementService.getRepositoryResources(repositoryUuid);
+    const result = await service.getFileTree(repositoryUuid);
+    if (result.ok) {
       message.success('资源加载成功');
-    } catch (error: any) {
-      message.error(error.message || '加载失败');
+    } else {
+      message.error(result.error.message || '加载失败');
     }
   }, '正在加载资源...');
 }
@@ -318,15 +317,19 @@ function handleCreateResource() {
 
 // 编辑资源
 function editResource(uuid: string) {
-  message.info('编辑功能开发中');
+  message.error('编辑功能开发中');
 }
 
 // 删除资源
 async function deleteResource(uuid: string) {
   try {
     await message.delConfirm('确定要删除此文件吗？');
-    await resourceManagementService.deleteResource(uuid);
-    message.success('删除成功');
+    const result = await service.deleteResource(uuid);
+    if (result.ok) {
+      message.success('删除成功');
+    } else {
+      message.error(result.error.message || '删除失败');
+    }
   } catch {
     // 用户取消
   }
@@ -335,17 +338,16 @@ async function deleteResource(uuid: string) {
 // 初始化
 onMounted(async () => {
   await globalLoading.withLoading(async () => {
-    try {
-      await repositoryManagementService.getRepositories();
-
+    const result = await service.getRepositories();
+    if (result.ok) {
       // 如果有仓库，自动选择第一个
       if (repositories.value.length > 0 && !repositoryStore.selectedRepository) {
         const firstRepo = repositories.value[0];
         repositoryStore.setSelectedRepository(firstRepo.uuid);
         await loadRepositoryResources(firstRepo.uuid);
       }
-    } catch (error: any) {
-      message.error(error.message || '初始化失败');
+    } else {
+      message.error(result.error.message || '初始化失败');
     }
   }, '正在初始化...');
 });
