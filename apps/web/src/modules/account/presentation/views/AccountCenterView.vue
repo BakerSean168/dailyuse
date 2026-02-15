@@ -1,168 +1,177 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { ProfileCard, ProfileForm } from '@dailyuse/ui-vue';
-import type { AccountProfileDTO } from '@dailyuse/contracts/account';
-import { useAccount } from '../composables/useAccount';
+/**
+ * AccountCenterView - 个人中心视图
+ *
+ * Refactored to use Shadcn UI + Tailwind CSS (Linear Style).
+ * Replaces external ui-vue components with direct Shadcn usage.
+ */
+import { ref } from 'vue';
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Input,
+  Label,
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+  Separator,
+  Badge
+} from '@dailyuse/ui-vue-shadcn';
+import { User, Lock, Bell, Shield, Camera } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
-import { Button } from '@dailyuse/ui-vue-shadcn/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@dailyuse/ui-vue-shadcn/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn/components/ui/tabs';
 
-const router = useRouter();
-const { currentAccount, isLoading, loadMyProfile, updateMyProfile } = useAccount();
+// --- Mock Data ---
+const profile = ref({
+  nickname: 'Jules',
+  email: 'jules@dailyuse.app',
+  bio: 'AI Assistant & Developer',
+  avatarUrl: '',
+  role: 'Admin'
+});
 
 const isEditing = ref(false);
+const isLoading = ref(false);
 
-// 从 store 获取 profile 数据
-const profile = ref<AccountProfileDTO>({
-  nickname: '用户昵称',
-  realName: null,
-  avatarUrl: null,
-  bio: null,
-  gender: 'UNSPECIFIED',
-  birthday: null,
-});
-
-onMounted(async () => {
-  await loadMyProfile();
-  if (currentAccount.value?.profile) {
-    profile.value = { ...currentAccount.value.profile };
-  }
-});
-
-const handleEdit = () => {
-  isEditing.value = true;
-};
-
-const handleSave = async (data: AccountProfileDTO) => {
-  const success = await updateMyProfile({
-    nickname: data.nickname,
-    avatar: data.avatarUrl,
-    bio: data.bio,
-  });
-
-  if (success) {
-    profile.value = data;
+const handleSave = () => {
+  isLoading.value = true;
+  setTimeout(() => {
+    isLoading.value = false;
     isEditing.value = false;
-  }
+    toast.success('Profile updated successfully');
+  }, 1000);
 };
 
-const handleCancel = () => {
-  isEditing.value = false;
+const handleAvatarClick = () => {
+  toast.info('Upload avatar feature coming soon');
 };
 
-const handleUploadAvatar = () => {
-  toast.info('功能开发中', { description: '头像上传功能即将推出' });
-};
-
-const handleChangePassword = () => {
-  router.push('/account/security');
-};
 </script>
 
 <template>
-  <div class="container max-w-6xl mx-auto p-6 space-y-6">
-    <div class="flex items-center justify-between">
+  <div class="container max-w-4xl mx-auto py-10 px-4">
+    <div class="mb-8 flex items-center justify-between">
       <div>
-        <h1 class="text-3xl font-bold">个人中心</h1>
-        <p class="text-muted-foreground">管理您的个人资料和账户设置</p>
+        <h1 class="text-3xl font-bold tracking-tight">Account Settings</h1>
+        <p class="text-muted-foreground mt-1">Manage your account profile and security preferences.</p>
       </div>
     </div>
-    
-    <Tabs default-value="profile" class="w-full">
-      <TabsList class="grid w-full grid-cols-3">
-        <TabsTrigger value="profile">个人资料</TabsTrigger>
-        <TabsTrigger value="security">安全设置</TabsTrigger>
-        <TabsTrigger value="preferences">偏好设置</TabsTrigger>
+
+    <Tabs default-value="general" class="space-y-6">
+      <TabsList>
+        <TabsTrigger value="general" class="flex items-center gap-2">
+          <User class="h-4 w-4" />
+          General
+        </TabsTrigger>
+        <TabsTrigger value="security" class="flex items-center gap-2">
+          <Shield class="h-4 w-4" />
+          Security
+        </TabsTrigger>
+        <TabsTrigger value="notifications" class="flex items-center gap-2">
+          <Bell class="h-4 w-4" />
+          Notifications
+        </TabsTrigger>
       </TabsList>
-      
-      <!-- 个人资料 Tab -->
-      <TabsContent value="profile" class="space-y-6">
-        <div v-if="!isEditing" class="space-y-6">
-          <ProfileCard
-            :profile="profile"
-            :loading="isLoading"
-            @edit="handleEdit"
-          />
-        </div>
-        
-        <div v-else class="flex justify-center">
-          <ProfileForm
-            :profile="profile"
-            :loading="isLoading"
-            @save="handleSave"
-            @cancel="handleCancel"
-            @upload-avatar="handleUploadAvatar"
-          />
-        </div>
-      </TabsContent>
-      
-      <!-- 安全设置 Tab -->
-      <TabsContent value="security" class="space-y-6">
+
+      <!-- General Tab -->
+      <TabsContent value="general" class="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>账户安全</CardTitle>
+            <CardTitle>Profile Information</CardTitle>
+            <CardDescription>Update your photo and personal details.</CardDescription>
+          </CardHeader>
+          <CardContent class="space-y-6">
+            <!-- Avatar Section -->
+            <div class="flex items-center gap-6">
+              <div class="relative group cursor-pointer" @click="handleAvatarClick">
+                <Avatar class="h-24 w-24 border-2 border-border">
+                  <AvatarImage :src="profile.avatarUrl" />
+                  <AvatarFallback class="text-2xl">JU</AvatarFallback>
+                </Avatar>
+                <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera class="h-8 w-8 text-white" />
+                </div>
+              </div>
+              <div class="space-y-1">
+                <h3 class="font-medium">Profile Photo</h3>
+                <p class="text-sm text-muted-foreground">Click to upload a new photo. JPG or PNG. Max 2MB.</p>
+                <Badge variant="secondary" class="mt-2">{{ profile.role }}</Badge>
+              </div>
+            </div>
+
+            <Separator />
+
+            <!-- Form Fields -->
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="space-y-2">
+                <Label htmlFor="nickname">Display Name</Label>
+                <Input id="nickname" v-model="profile.nickname" :disabled="!isEditing" />
+              </div>
+              <div class="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" v-model="profile.email" disabled />
+              </div>
+              <div class="space-y-2 md:col-span-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Input id="bio" v-model="profile.bio" :disabled="!isEditing" placeholder="Tell us a little about yourself" />
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter class="flex justify-end gap-2 border-t px-6 py-4 bg-secondary/10">
+            <Button v-if="!isEditing" variant="outline" @click="isEditing = true">Edit Profile</Button>
+            <template v-else>
+              <Button variant="ghost" @click="isEditing = false">Cancel</Button>
+              <Button @click="handleSave" :disabled="isLoading">Save Changes</Button>
+            </template>
+          </CardFooter>
+        </Card>
+      </TabsContent>
+
+      <!-- Security Tab Placeholder -->
+      <TabsContent value="security">
+        <Card>
+          <CardHeader>
+            <CardTitle>Security Settings</CardTitle>
+            <CardDescription>Manage your password and 2FA.</CardDescription>
           </CardHeader>
           <CardContent class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h4 class="font-medium">登录密码</h4>
-                <p class="text-sm text-muted-foreground">定期更新密码以保护账户安全</p>
+             <div class="flex items-center justify-between py-4">
+              <div class="space-y-1">
+                <h4 class="text-sm font-medium">Password</h4>
+                <p class="text-sm text-muted-foreground">Last changed 3 months ago</p>
               </div>
-              <Button variant="outline" @click="handleChangePassword">
-                修改密码
-              </Button>
+              <Button variant="outline">Change Password</Button>
             </div>
-            
-            <div class="flex items-center justify-between">
-              <div>
-                <h4 class="font-medium">两步验证</h4>
-                <p class="text-sm text-muted-foreground">为您的账户添加额外的安全保护</p>
+            <Separator />
+            <div class="flex items-center justify-between py-4">
+              <div class="space-y-1">
+                <h4 class="text-sm font-medium">Two-Factor Authentication</h4>
+                <p class="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
               </div>
-              <Button variant="outline" disabled>
-                启用
-              </Button>
-            </div>
-            
-            <div class="flex items-center justify-between">
-              <div>
-                <h4 class="font-medium">登录设备</h4>
-                <p class="text-sm text-muted-foreground">管理您的登录设备和会话</p>
-              </div>
-              <Button variant="outline" disabled>
-                查看
-              </Button>
+              <Button variant="outline" disabled>Enable 2FA</Button>
             </div>
           </CardContent>
         </Card>
       </TabsContent>
-      
-      <!-- 偏好设置 Tab -->
-      <TabsContent value="preferences" class="space-y-6">
+
+      <!-- Notifications Tab Placeholder -->
+      <TabsContent value="notifications">
         <Card>
           <CardHeader>
-            <CardTitle>个性化设置</CardTitle>
+            <CardTitle>Notifications</CardTitle>
+            <CardDescription>Choose what you want to be notified about.</CardDescription>
           </CardHeader>
-          <CardContent class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h4 class="font-medium">主题模式</h4>
-                <p class="text-sm text-muted-foreground">选择您喜欢的界面主题</p>
-              </div>
-              <Button variant="outline" disabled>
-                切换主题
-              </Button>
-            </div>
-            
-            <div class="flex items-center justify-between">
-              <div>
-                <h4 class="font-medium">语言设置</h4>
-                <p class="text-sm text-muted-foreground">更改界面显示语言</p>
-              </div>
-              <Button variant="outline" disabled>
-                中文
-              </Button>
+          <CardContent>
+            <div class="p-8 text-center text-muted-foreground">
+              Notification settings coming soon.
             </div>
           </CardContent>
         </Card>

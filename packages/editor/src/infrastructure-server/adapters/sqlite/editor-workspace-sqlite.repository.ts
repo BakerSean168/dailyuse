@@ -10,15 +10,15 @@ import type { IEditorWorkspaceRepository } from '../../../domain-server/reposito
 export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceRepository {
   constructor(private db: Database.Database) {}
 
-  async findByUuid(uuid: string): Promise<EditorWorkspace | null> {
+  async findById(id: string): Promise<EditorWorkspace | null> {
     const stmt = this.db.prepare(`SELECT * FROM editor_workspaces WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return EditorWorkspace.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
+      id: row.uuid,
+      identityId: row.accountUuid,
       name: row.name,
       is_active: row.is_active === 1,
       createdAt: new Date(row.createdAt),
@@ -26,16 +26,16 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
     });
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<EditorWorkspace[]> {
+  async findByIdentityId(identityId: string): Promise<EditorWorkspace[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM editor_workspaces WHERE accountUuid = ? ORDER BY createdAt DESC`
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) =>
       EditorWorkspace.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row.accountUuid,
+        id: row.uuid,
+        identityId: row.accountUuid,
         name: row.name,
         is_active: row.is_active === 1,
         createdAt: new Date(row.createdAt),
@@ -44,17 +44,17 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
     );
   }
 
-  async findByAccountUuidAndName(accountUuid: string, name: string): Promise<EditorWorkspace | null> {
+  async findByIdentityIdAndName(identityId: string, name: string): Promise<EditorWorkspace | null> {
     const stmt = this.db.prepare(
       `SELECT * FROM editor_workspaces WHERE accountUuid = ? AND name = ? LIMIT 1`
     );
-    const row = stmt.get(accountUuid, name) as any;
+    const row = stmt.get(identityId, name) as any;
 
     if (!row) return null;
 
     return EditorWorkspace.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
+      id: row.uuid,
+      identityId: row.accountUuid,
       name: row.name,
       is_active: row.is_active === 1,
       createdAt: new Date(row.createdAt),
@@ -62,17 +62,17 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
     });
   }
 
-  async findActiveByAccountUuid(accountUuid: string): Promise<EditorWorkspace | null> {
+  async findActiveByIdentityId(identityId: string): Promise<EditorWorkspace | null> {
     const stmt = this.db.prepare(
       `SELECT * FROM editor_workspaces WHERE accountUuid = ? AND is_active = 1 ORDER BY updatedAt DESC LIMIT 1`
     );
-    const row = stmt.get(accountUuid) as any;
+    const row = stmt.get(identityId) as any;
 
     if (!row) return null;
 
     return EditorWorkspace.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
+      id: row.uuid,
+      identityId: row.accountUuid,
       name: row.name,
       is_active: row.is_active === 1,
       createdAt: new Date(row.createdAt),
@@ -94,8 +94,8 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.accountUuid,
+      dto.id,
+      dto.identityId,
       dto.name,
       dto.is_active ? 1 : 0,
       dto.createdAt,
@@ -103,9 +103,9 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
     );
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM editor_workspaces WHERE uuid = ?`);
-    stmt.run(uuid);
+    stmt.run(id);
   }
 
   async saveBatch(workspaces: EditorWorkspace[]): Promise<void> {
@@ -123,8 +123,8 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
       for (const workspace of items) {
         const dto = workspace.toPersistenceDTO();
         insertStmt.run(
-          dto.uuid,
-          dto.accountUuid,
+          dto.id,
+          dto.identityId,
           dto.name,
           dto.is_active ? 1 : 0,
           dto.createdAt,
@@ -136,11 +136,18 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
     transaction(workspaces);
   }
 
-  async existsByName(accountUuid: string, name: string): Promise<boolean> {
+  async existsByName(identityId: string, name: string): Promise<boolean> {
     const stmt = this.db.prepare(
       `SELECT 1 FROM editor_workspaces WHERE accountUuid = ? AND name = ? LIMIT 1`
     );
-    return stmt.get(accountUuid, name) !== undefined;
+    return stmt.get(identityId, name) !== undefined;
+  }
+
+  async countByIdentityId(identityId: string): Promise<number> {
+    const stmt = this.db.prepare(
+      `SELECT COUNT(*) as count FROM editor_workspaces WHERE accountUuid = ?`
+    );
+    const result = stmt.get(identityId) as { count: number };
+    return result.count;
   }
 }
-

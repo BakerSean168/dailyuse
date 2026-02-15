@@ -29,7 +29,7 @@
  */
 
 // ================= Contracts Layer =================
-export * from '@dailyuse/contracts/schedule';
+// export * from '@dailyuse/contracts/schedule'; // Removed to avoid duplicate exports
 
 // ================= Domain Layer =================
 export * from './domain-server';

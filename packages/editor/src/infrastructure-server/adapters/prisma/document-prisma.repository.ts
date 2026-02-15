@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@dailyuse/database';
-import type { IDocumentRepository } from '../../../../domain-server/repositories/IDocumentRepository';
-import { Document } from '../../../../domain-server/entities/document';
+import type { IDocumentRepository } from '../../../domain-server/repositories/IDocumentRepository';
+import { Document } from '../../../domain-server/entities/document';
 
 export class DocumentPrismaRepository implements IDocumentRepository {
   constructor(private readonly prisma: PrismaClient) {}
