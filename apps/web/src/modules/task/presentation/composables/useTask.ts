@@ -13,6 +13,7 @@ import type {
   CreateTaskReq,
   UpdateTaskReq,
 } from '@dailyuse/contracts/task';
+import type { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
 
 export function useTask() {
   const service = inject(TASK_SERVICE_KEY)!;
@@ -43,7 +44,7 @@ export function useTask() {
       limit: store.pagination.pageSize,
     } as Parameters<typeof service.listTemplates>[0]);
     if (result.ok) {
-      store.setTemplates(result.data.templates.map((t) => t.toDTO()), result.data.total);
+      store.setTemplates(result.data.templates.map((t: TaskTemplate) => t.toDTO()), result.data.total);
     } else {
       handleError(result.error.message || '加载任务模板失败');
     }
@@ -112,7 +113,7 @@ export function useTask() {
     store.setLoading(true); store.setError(null);
     const result = await service.listInstances(query as Parameters<typeof service.listInstances>[0]);
     if (result.ok) {
-      store.setInstances(result.data.map((i) => i.toDTO()));
+      store.setInstances(result.data.map((i: TaskInstance) => i.toDTO()));
     } else {
       handleError(result.error.message || '加载任务实例失败');
     }

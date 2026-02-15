@@ -42,14 +42,14 @@ export function registerAuthenticationInitializationTasks(): void {
         console.log('⚠️ [AuthModule] Token 已过期，尝试刷新');
         const refreshToken = authStore.refreshToken;
         if (refreshToken) {
-          try {
-            const data = await authService.refreshToken({ refreshToken });
-            authStore.handleAuthResponse(data);
-            console.log('✅ [AuthModule] Token 刷新成功');
-          } catch (error) {
-            console.warn('❌ [AuthModule] Token 刷新失败，清除认证状态:', error);
-            authStore.reset();
-          }
+            const result = await authService.refreshToken({ refreshToken });
+            if (result.ok) {
+              authStore.handleAuthResponse(result.data);
+              console.log('✅ [AuthModule] Token 刷新成功');
+            } else {
+              console.warn('❌ [AuthModule] Token 刷新失败，清除认证状态:', result.error);
+              authStore.reset();
+            }
         } else {
           console.log('⚠️ [AuthModule] 无 Refresh Token，清除认证状态');
           authStore.reset();

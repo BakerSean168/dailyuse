@@ -9,6 +9,7 @@
 import { computed, inject, ref } from 'vue';
 import { useGoalStore } from '../stores/goalStore';
 import { GOAL_SERVICE_KEY } from '@/shared/di';
+import type { Goal, GoalFolder, KeyResult, GoalReview, GoalRecord } from '@dailyuse/goal/domain-client';
 import type {
   GoalClientDTO,
   CreateGoalReq,
@@ -61,7 +62,7 @@ export function useGoal() {
 
       if (result.ok) {
         store.setGoals(
-          result.data.goals.map((g) => g.toDTO()),
+          result.data.goals.map((g: Goal) => g.toDTO()),
           result.data.pagination.total,
         );
       } else {
@@ -146,7 +147,7 @@ export function useGoal() {
   async function fetchFolders() {
     const result = await service.listGoalFolders();
     if (result.ok) {
-      store.setGoalFolders(result.data.map((f) => f.toDTO()));
+      store.setGoalFolders(result.data.map((f: GoalFolder) => f.toDTO()));
     } else {
       handleError(result.error.message || '加载文件夹失败');
     }
@@ -190,7 +191,7 @@ export function useGoal() {
   async function fetchKeyResults(goalId: string) {
     const result = await service.getKeyResults(goalId);
     if (result.ok) {
-      store.setKeyResults(result.data.keyResults.map((kr) => kr.toDTO()));
+      store.setKeyResults(result.data.keyResults.map((kr: KeyResult) => kr.toDTO()));
     } else {
       handleError(result.error.message || '加载关键结果失败');
     }
@@ -234,7 +235,7 @@ export function useGoal() {
   async function fetchRecords(goalId: string) {
     const result = await service.getGoalRecordsByGoal(goalId);
     if (result.ok) {
-      store.setGoalRecords(result.data.records.map((r) => r.toDTO()));
+      store.setGoalRecords(result.data.records.map((r: GoalRecord) => r.toDTO()));
     } else {
       handleError(result.error.message || '加载进度记录失败');
     }
@@ -256,7 +257,7 @@ export function useGoal() {
   async function fetchReviews(goalId: string) {
     const result = await service.getGoalReviews(goalId);
     if (result.ok) {
-      store.setGoalReviews(result.data.reviews.map((r) => r.toDTO()));
+      store.setGoalReviews(result.data.reviews.map((r: GoalReview) => r.toDTO()));
     } else {
       handleError(result.error.message || '加载复盘失败');
     }

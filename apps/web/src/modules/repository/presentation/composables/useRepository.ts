@@ -10,7 +10,8 @@ import { useRepositoryStore } from '../stores/repositoryStore';
 import { REPOSITORY_SERVICE_KEY } from '@/shared/di';
 import { resultHttpClient } from '@/shared/http';
 import type { RepositoryClientDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
-import type { CreateRepositoryRequest } from '@dailyuse/repository/infrastructure-client';
+import type { CreateRepositoryRequest } from '@dailyuse/repository';
+import type { Repository } from '@dailyuse/repository/domain-client';
 
 const BASE = '/repositories';
 
@@ -39,7 +40,7 @@ export function useRepository() {
     try {
       const result = await service.getRepositories();
       if (result.ok) {
-        store.setRepositories(result.data.map((r) => r.toDTO()));
+        store.setRepositories(result.data.map((r: Repository) => r.toDTO()));
       } else {
         handleError(result.error.message || '加载仓库列表失败');
       }

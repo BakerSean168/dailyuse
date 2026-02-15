@@ -13,6 +13,7 @@ import type {
   ScheduleExecutionClientDTO,
   CreateScheduleTaskRequest,
 } from '@dailyuse/contracts/schedule';
+import type { ScheduleTask } from '@dailyuse/schedule/domain-client';
 
 export function useSchedule() {
   const service = inject(SCHEDULE_SERVICE_KEY)!;
@@ -36,7 +37,7 @@ export function useSchedule() {
     store.setLoading(true); store.setError(null);
     const result = await service.getTasks();
     if (result.ok) {
-      store.setTasks(result.data.tasks.map((t) => t.toDTO()), result.data.total);
+      store.setTasks(result.data.tasks.map((t: ScheduleTask) => t.toDTO()), result.data.total);
     } else {
       handleError(result.error.message || '加载调度任务失败');
     }
