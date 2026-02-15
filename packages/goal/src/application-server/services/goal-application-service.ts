@@ -1,4 +1,17 @@
 /**
+ * @deprecated Use individual use-case services instead:
+ * - createGoal -> use create-goal.ts
+ * - updateGoal -> use update-goal.ts
+ * - deleteGoal -> use delete-goal.ts
+ * - activateGoal -> use activate-goal.ts
+ * - archiveGoal -> use archive-goal.ts
+ * - completeGoal -> use complete-goal.ts
+ * - getGoal -> use get-goal.ts
+ * - listGoals -> use list-goals.ts
+ * - searchGoals -> use search-goals.ts
+ */
+
+/**
  * @file GoalApplicationService.ts
  * @description 目标应用服务，处理目标的 CRUD 和基本状态管理。
  * 遵循 governance 模块 Result<T> 规范

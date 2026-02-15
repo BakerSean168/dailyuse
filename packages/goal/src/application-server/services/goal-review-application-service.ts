@@ -1,3 +1,8 @@
+/**
+ * @deprecated Extract operations to individual use-case files following DDD patterns.
+ * Each business operation should have its own use-case service.
+ */
+
 import type { IGoalRepository } from '@/domain-server';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import type { Result } from '@dailyuse/contracts/result';
