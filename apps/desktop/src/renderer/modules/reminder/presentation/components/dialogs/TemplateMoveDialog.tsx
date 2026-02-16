@@ -1,10 +1,10 @@
 /**
  * TemplateMoveDialog - 移动模板到其他分组对话框
  *
- * 功能�?
+ * 功能�?
  * - 显示当前模板信息
  * - 选择目标分组
- * - 支持移出所有分组（移动到根目录�?
+ * - 支持移出所有分组（移动到根目录�?
  * - 显示目标分组预览信息
  *
  * @module reminder/presentation/components/dialogs
@@ -49,9 +49,9 @@ export interface TemplateMoveDialogProps {
   open: boolean;
   /** 要移动的模板 */
   template: ReminderTemplateClientDTO | null;
-  /** 可用的分组列�?*/
+  /** 可用的分组列�?*/
   groups: ReminderGroupClientDTO[];
-  /** 获取分组内模板数�?*/
+  /** 获取分组内模板数�?*/
   getGroupTemplateCount?: (groupUuid: string) => number;
   /** 关闭回调 */
   onClose: () => void;
@@ -73,7 +73,7 @@ export function TemplateMoveDialog({
   const [moveToRoot, setMoveToRoot] = useState(false);
   const [isMoving, setIsMoving] = useState(false);
 
-  // 初始化状�?
+  // 初始化状�?
   useEffect(() => {
     if (open) {
       setSelectedGroupUuid('');
@@ -102,7 +102,7 @@ export function TemplateMoveDialog({
       }));
   }, [groups, template, getGroupTemplateCount]);
 
-  // 选中的分组信�?
+  // 选中的分组信�?
   const selectedGroup = useMemo(() => {
     if (!selectedGroupUuid) return null;
     return groups.find(g => g.uuid === selectedGroupUuid);
@@ -182,7 +182,7 @@ export function TemplateMoveDialog({
             >
               <SelectTrigger>
                 <Folder className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="选择要移动到的分�? />
+                <SelectValue placeholder="选择要移动到的分" />
               </SelectTrigger>
               <SelectContent>
                 {groupOptions.length === 0 ? (
@@ -217,16 +217,16 @@ export function TemplateMoveDialog({
               onCheckedChange={handleMoveToRootChange}
             />
             <Label htmlFor="moveToRoot" className="text-sm cursor-pointer">
-              移出所有分组（移动到根目录�?
+              移出所有分组（移动到根目录�?
             </Label>
           </div>
 
-          {/* 移到根目录提�?*/}
+          {/* 移到根目录提�?*/}
           {moveToRoot && (
             <Alert variant="default" className="bg-orange-50 border-orange-200">
               <AlertTriangle className="h-4 w-4 text-orange-500" />
               <AlertDescription className="text-orange-700">
-                模板将从当前分组移出，成为独立模�?
+                模板将从当前分组移出，成为独立模�?
               </AlertDescription>
             </Alert>
           )}
@@ -243,11 +243,11 @@ export function TemplateMoveDialog({
                   </div>
                   <div className="flex items-center gap-2">
                     <Folder className="h-4 w-4 text-muted-foreground" />
-                    <span>包含模板: {getGroupTemplateCount?.(selectedGroup.uuid) || 0} �?/span>
+                    <span>包含模板: {getGroupTemplateCount?.(selectedGroup.uuid) || 0} �?/span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-muted-foreground" />
-                    <span>状�? {selectedGroup.enabled ? '已启�? : '已禁�?}</span>
+                    <span>状态: {selectedGroup.enabled ? '已启用' : '已禁用'}</span>
                   </div>
                 </div>
               </CardContent>
@@ -270,7 +270,7 @@ export function TemplateMoveDialog({
             onClick={handleMove}
             disabled={!canMove || isMoving}
           >
-            {isMoving ? '移动�?..' : '移动'}
+            {isMoving ? '移动中...' : '移动'}
           </Button>
         </DialogFooter>
       </DialogContent>

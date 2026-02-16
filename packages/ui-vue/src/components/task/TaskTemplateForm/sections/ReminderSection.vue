@@ -77,27 +77,32 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { TaskTemplate, TaskReminderConfig } from '@dailyuse/task/domain-client';
 import { TaskReminderType, ReminderTimeUnit } from '@dailyuse/contracts/task';
 import type { TaskReminderConfigClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateViewModel } from '../../types';
 
 // 类型别名
 const ReminderType = TaskReminderType;
 
 interface Props {
-  modelValue: TaskTemplate;
+  modelValue: TaskTemplateViewModel;
 }
 
 interface Emits {
-  (e: 'update:modelValue', value: TaskTemplate): void;
+  (e: 'update:modelValue', value: TaskTemplateViewModel): void;
   (e: 'update:validation', isValid: boolean): void;
 }
 
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-const updateTemplate = (updater: (template: TaskTemplate) => void) => {
-  const updatedTemplate = props.modelValue.clone();
+const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
+  const updatedTemplate: TaskTemplateViewModel = {
+    ...props.modelValue,
+    reminderConfig: props.modelValue.reminderConfig
+      ? ({ ...(props.modelValue.reminderConfig as TaskReminderConfigClientDTO) } as any)
+      : null,
+  } as TaskTemplateViewModel;
   updater(updatedTemplate);
   emit('update:modelValue', updatedTemplate);
 };
@@ -129,8 +134,7 @@ const reminderEnabled = computed({
         reminderSummary: currentConfig?.reminderSummary ?? '',
         triggerDescriptions: currentConfig?.triggerDescriptions ?? [],
       };
-      const newConfig = TaskReminderConfig.fromClientDTO(newConfigDTO);
-      template.updateReminderConfig(newConfig);
+      (template as any).reminderConfig = newConfigDTO;
     });
   },
 });
@@ -147,7 +151,7 @@ const triggers = ref<
 
 // 初始化触发器
 const initializeTriggers = () => {
-  const config = props.modelValue.reminderConfig;
+  const config = props.modelValue.reminderConfig as TaskReminderConfigClientDTO | null | undefined;
   if (config?.triggers && config.triggers.length > 0) {
     triggers.value = config.triggers.map((t) => ({ ...t }));
   } else if (reminderEnabled.value && triggers.value.length === 0) {
@@ -211,8 +215,7 @@ const updateTriggers = () => {
       reminderSummary: '',
       triggerDescriptions: [],
     };
-    const newConfig = TaskReminderConfig.fromClientDTO(newConfigDTO);
-    template.updateReminderConfig(newConfig);
+    (template as any).reminderConfig = newConfigDTO;
   });
 };
 

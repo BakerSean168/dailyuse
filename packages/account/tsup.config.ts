@@ -11,10 +11,13 @@ export default defineConfig({
     'src/infrastructure-server/index.ts',
     'src/infrastructure-client/index.ts',
     'src/api/index.ts',
+    'src/electron-entry/index.ts',
   ],
   format: ['esm'],
   dts: true,
   clean: true,
   sourcemap: true,
-  external: ['@dailyuse/utils', '@dailyuse/contracts', '@dailyuse/http-client', '@dailyuse/database', '@dailyuse/domain-shared', '@dailyuse/domain-shared/shared', 'express', 'zod'],
+  external: [
+    'better-sqlite3',
+    'electron','@dailyuse/utils', '@dailyuse/contracts', '@dailyuse/http-client', '@dailyuse/database', '@dailyuse/domain-shared', '@dailyuse/domain-shared/shared', 'express', 'zod'],
 });

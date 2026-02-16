@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import { goalApplicationService } from '../../application/services/GoalApplicationService';
+import { goalApplicationService } from '@dailyuse/goal/application-client';
 import type { CreateGoalRequest } from '@dailyuse/contracts/goal';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 

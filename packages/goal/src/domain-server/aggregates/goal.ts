@@ -28,7 +28,8 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { GoalId, IdentityId, GoalFolderId, KeyResultWeightSnapshotId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@dailyuse/domain-shared';
+import { GoalId, GoalFolderId, KeyResultWeightSnapshotId } from '../../domain-shared';
 import type { GoalEventMap } from '@dailyuse/contracts/goal';
 import {
   GoalStatus,

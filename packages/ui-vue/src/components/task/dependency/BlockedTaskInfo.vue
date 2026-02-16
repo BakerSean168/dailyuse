@@ -60,7 +60,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 
 interface BlockingTask {
   uuid: string;

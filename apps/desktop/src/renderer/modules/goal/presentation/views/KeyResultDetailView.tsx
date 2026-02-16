@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Goal, KeyResult, GoalRecord } from '@dailyuse/goal/domain-client';
-import { goalApplicationService } from '../../application/services';
+import { goalApplicationService } from '@dailyuse/goal/application-client';
 import {
   Card,
   CardContent,
@@ -89,7 +89,7 @@ export function KeyResultDetailView({
 
       const goalData = await goalApplicationService.getGoal(goalUuid);
       if (!goalData) {
-        setError('目标不存�?);
+        setError('目标不存');
         return;
       }
       setGoal(goalData);
@@ -98,7 +98,7 @@ export function KeyResultDetailView({
       if (krData) {
         setKeyResult(krData);
       } else {
-        setError('关键结果不存�?);
+        setError('关键结果不存');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载失败');
@@ -116,7 +116,7 @@ export function KeyResultDetailView({
   const handleSaveKeyResult = async (data: AddKeyResultRequest | UpdateKeyResultRequest) => {
     if (!goal || !keyResult) return;
 
-    // 这里只处理更新场�?
+    // 这里只处理更新场�?
     await updateKeyResult(goal.uuid, keyResult.uuid, data as UpdateKeyResultRequest);
 
     await loadData();
@@ -134,7 +134,7 @@ export function KeyResultDetailView({
   };
 
   const handleDeleteRecord = async (recordUuid: string) => {
-    if (!goal || !keyResult || !confirm('确定要删除这条记录吗�?)) return;
+    if (!goal || !keyResult || !confirm('确定要删除这条记录吗')) return;
 
     try {
       await deleteRecord(goal.uuid, keyResult.uuid, recordUuid);
@@ -146,7 +146,7 @@ export function KeyResultDetailView({
   };
 
   const handleDelete = async () => {
-    if (!goal || !keyResult || !confirm('确定要删除这个关键结果吗？相关记录也会被删除�?)) {
+    if (!goal || !keyResult || !confirm('确定要删除这个关键结果吗？相关记录也会被删除')) {
       return;
     }
 
@@ -183,7 +183,7 @@ export function KeyResultDetailView({
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <Target className="h-16 w-16 text-muted-foreground" />
-        <div className="text-muted-foreground">关键结果不存�?/div>
+        <div className="text-muted-foreground">关键结果不存</div>
         <Button onClick={onBack}>返回</Button>
       </div>
     );
@@ -220,7 +220,7 @@ export function KeyResultDetailView({
             <div className="flex items-center gap-2 mb-1">
               <h1 className="text-xl font-bold truncate">{keyResult.title}</h1>
               {isCompleted && (
-                <Badge className="bg-green-100 text-green-800">已完�?/Badge>
+                <Badge className="bg-green-100 text-green-800">已完</Badge>
               )}
             </div>
             {keyResult.description && (
@@ -229,7 +229,7 @@ export function KeyResultDetailView({
               </p>
             )}
             <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-              <span>所属目�?</span>
+              <span>所属目标<</span>
               <Badge variant="outline" style={{ borderColor: goalColor, color: goalColor }}>
                 {goal.title}
               </Badge>
@@ -292,7 +292,7 @@ export function KeyResultDetailView({
               </Badge>
             </div>
             <div className="text-xs text-center text-muted-foreground mt-2">
-              当前�?�?目标�?
+              当前�?�?目标�?
             </div>
           </Card>
         </div>
@@ -309,7 +309,7 @@ export function KeyResultDetailView({
           </div>
           <div className="flex items-center gap-1">
             <Target className="h-4 w-4" />
-            <span>{records.length} 条记�?/span>
+            <span>{records.length} 条记�?/span>
           </div>
         </div>
       </div>
@@ -347,7 +347,7 @@ export function KeyResultDetailView({
                   <p className="mb-4">暂无进度记录</p>
                   <Button onClick={() => setShowRecordDialog(true)}>
                     <Plus className="h-4 w-4 mr-1" />
-                    添加第一条记�?
+                    添加第一条记�?
                   </Button>
                 </div>
               )}
@@ -365,25 +365,25 @@ export function KeyResultDetailView({
                   <div className="text-2xl font-bold" style={{ color: goalColor }}>
                     {records.length}
                   </div>
-                  <div className="text-sm text-muted-foreground">记录�?/div>
+                  <div className="text-sm text-muted-foreground">记录</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold">
                     {records.reduce((sum, r) => sum + r.value, 0)}
                   </div>
-                  <div className="text-sm text-muted-foreground">累计�?/div>
+                  <div className="text-sm text-muted-foreground">累计</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold">
                     {(records.reduce((sum, r) => sum + r.value, 0) / records.length).toFixed(1)}
                   </div>
-                  <div className="text-sm text-muted-foreground">平均�?/div>
+                  <div className="text-sm text-muted-foreground">平均</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold">
                     {Math.max(...records.map((r) => r.value))}
                   </div>
-                  <div className="text-sm text-muted-foreground">最大�?/div>
+                  <div className="text-sm text-muted-foreground">最大</div>
                 </div>
               </CardContent>
             </Card>

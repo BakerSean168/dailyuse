@@ -11,15 +11,15 @@ import {
   RepositoryContainer,
   type IProviderInitializer,
 } from '../index';
-import { prisma } from '../../shared/config/prisma';
 
 /**
- * 鍒濆鍖?API Repository灞?
+ * Initialize API Repository layer
  *
- * @returns 鍒濆鍖栧悗鐨勬彁渚涜€呭疄渚?
- * @throws 濡傛灉鍒濆鍖栧け璐?
+ * @param prisma - PrismaClient instance (injected by caller)
+ * @returns Initialized provider instance
+ * @throws If initialization fails
  */
-export async function initializeApiRepositories(): Promise<IProviderInitializer> {
+export async function initializeApiRepositories(prisma: any): Promise<IProviderInitializer> {
   const container = RepositoryContainer.getInstance();
 
   console.log('馃殌 Initializing API repositories with Prisma...');

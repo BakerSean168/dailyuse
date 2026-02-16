@@ -42,6 +42,10 @@
     "./infrastructure-client": {
       "types": "./dist/infrastructure-client/index.d.ts",
       "import": "./dist/infrastructure-client/index.js"
+    },
+    "./electron-entry": {
+      "types": "./dist/electron-entry/index.d.ts",
+      "import": "./dist/electron-entry/index.js"
     }
   },
   "scripts": {},

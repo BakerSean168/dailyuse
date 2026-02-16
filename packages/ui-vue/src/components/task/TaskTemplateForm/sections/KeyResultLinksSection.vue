@@ -136,18 +136,23 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import type { TaskTemplate } from '@dailyuse/task/domain-client';
-import { TaskGoalBinding } from '@dailyuse/task/domain-client';
-import { CrossModuleAPIClient } from '@/shared/api';
-import type { GoalBindingOption, KeyResultBindingOption } from '@/shared/api';
+import type {
+  TaskTemplateViewModel,
+  GoalBindingOption,
+  KeyResultBindingOption,
+} from '../../types';
 
 interface Props {
-  modelValue: TaskTemplate;
+  modelValue: TaskTemplateViewModel;
+  goals?: GoalBindingOption[];
+  keyResultsByGoal?: Record<string, KeyResultBindingOption[]>;
+  onRequestKeyResults?: (goalUuid: string) => Promise<KeyResultBindingOption[] | void> | void;
 }
 
 interface Emits {
-  (e: 'update:modelValue', value: TaskTemplate): void;
+  (e: 'update:modelValue', value: TaskTemplateViewModel): void;
   (e: 'update:validation', isValid: boolean): void;
+  (e: 'request-key-results', goalUuid: string): void;
 }
 
 const props = defineProps<Props>();
@@ -162,7 +167,6 @@ const loadingGoals = ref(false);
 const loadingKeyResults = ref(false);
 
 // 目标和关键结果数据
-const goals = ref<GoalBindingOption[]>([]);
 const keyResults = ref<KeyResultBindingOption[]>([]);
 
 // ===== 验证规则 =====
@@ -187,7 +191,7 @@ const hasCompleteBinding = computed(() => {
 });
 
 const goalItems = computed(() => {
-  return goals.value.map((g) => ({
+  return (props.goals || []).map((g) => ({
     value: g.uuid,
     title: g.title,
     raw: g,
@@ -208,7 +212,7 @@ const keyResultItems = computed(() => {
 
 const selectedGoalTitle = computed(() => {
   if (!selectedGoalUuid.value) return '';
-  const goal = goals.value.find((g) => g.uuid === selectedGoalUuid.value);
+  const goal = (props.goals || []).find((g) => g.uuid === selectedGoalUuid.value);
   return goal?.title || '';
 });
 
@@ -238,25 +242,19 @@ const getProgressColor = (percentage: number): string => {
 };
 
 // ===== 事件处理 =====
-const loadGoals = async () => {
-  try {
-    loadingGoals.value = true;
-    // accountUuid 可以省略，后端从认证 token 中获取
-    goals.value = await CrossModuleAPIClient.getGoalsForTaskBinding({
-      status: ['IN_PROGRESS', 'NOT_STARTED'],
-    });
-  } catch (error) {
-    console.error('Failed to load goals:', error);
-    goals.value = [];
-  } finally {
-    loadingGoals.value = false;
-  }
-};
-
 const loadKeyResults = async (goalUuid: string) => {
   try {
     loadingKeyResults.value = true;
-    keyResults.value = await CrossModuleAPIClient.getKeyResultsForTaskBinding(goalUuid);
+    const fromProps = props.keyResultsByGoal?.[goalUuid];
+    if (fromProps) {
+      keyResults.value = fromProps;
+      return;
+    }
+    emit('request-key-results', goalUuid);
+    const loaded = await props.onRequestKeyResults?.(goalUuid);
+    if (loaded && Array.isArray(loaded)) {
+      keyResults.value = loaded;
+    }
   } catch (error) {
     console.error('Failed to load key results:', error);
     keyResults.value = [];
@@ -268,8 +266,10 @@ const loadKeyResults = async (goalUuid: string) => {
 const handleLinkToggle = (enabled: boolean | null) => {
   if (!enabled) {
     // 清除关联
-    const updated = props.modelValue.clone();
-    updated.updateGoalBinding(null);
+    const updated: TaskTemplateViewModel = {
+      ...props.modelValue,
+      goalBinding: null,
+    };
     emit('update:modelValue', updated);
 
     // 重置选择
@@ -315,16 +315,16 @@ const updateBinding = () => {
     return;
   }
 
-  const updated = props.modelValue.clone();
-  const binding = TaskGoalBinding.fromClientDTO({
-    goalUuid: selectedGoalUuid.value,
-    keyResultUuid: selectedKeyResultUuid.value,
-    incrementValue: incrementValue.value,
-    displayText: `完成增加${incrementValue.value}点进度`,
-    hasPositiveIncrement: incrementValue.value > 0,
-  });
-
-  updated.updateGoalBinding(binding);
+  const updated: TaskTemplateViewModel = {
+    ...props.modelValue,
+    goalBinding: {
+      goalUuid: selectedGoalUuid.value,
+      keyResultUuid: selectedKeyResultUuid.value,
+      incrementValue: incrementValue.value,
+      goalTitle: selectedGoalTitle.value,
+      keyResultTitle: selectedKeyResultTitle.value,
+    },
+  };
   emit('update:modelValue', updated);
 };
 
@@ -358,9 +358,6 @@ const initializeFromModel = () => {
 
 // ===== 生命周期 =====
 onMounted(async () => {
-  // 加载目标列表
-  await loadGoals();
-
   // 从模型初始化表单
   initializeFromModel();
 

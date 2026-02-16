@@ -2,7 +2,7 @@
  * GoalInfoCard Component
  *
  * 目标信息展示卡片组件 - 展示目标的整体信息和关键结果列表
- * 用于首页或列表视图中的紧凑展�?
+ * 用于首页或列表视图中的紧凑展�?
  */
 
 import { useState } from 'react';
@@ -61,7 +61,7 @@ export function GoalInfoCard({
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
     >
-      {/* 顶部装饰�?*/}
+      {/* 顶部装饰�?*/}
       <div
         className="absolute top-0 left-0 right-0 h-0.5 opacity-80"
         style={{
@@ -81,7 +81,7 @@ export function GoalInfoCard({
               style={{ backgroundColor: `${goalColor}20`, color: goalColor }}
             >
               <Target className="h-3 w-3 mr-1" />
-              进行�?
+              进行�?
             </Badge>
           </div>
 
@@ -99,7 +99,7 @@ export function GoalInfoCard({
         {/* 主进度条 */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-muted-foreground">完成�?/span>
+            <span className="text-xs text-muted-foreground">完成</span>
             <span
               className="text-sm font-bold"
               style={{ color: goalColor }}
@@ -130,7 +130,7 @@ export function GoalInfoCard({
             </Badge>
           </div>
 
-          {/* 水平滚动的关键结果容�?*/}
+          {/* 水平滚动的关键结果容�?*/}
           {goal.keyResults && goal.keyResults.length > 0 ? (
             <ScrollArea className="w-full whitespace-nowrap">
               <div className="flex gap-3 pb-2">

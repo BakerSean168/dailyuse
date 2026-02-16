@@ -103,12 +103,10 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import * as echarts from 'echarts';
 import type { ECharts, EChartsOption } from 'echarts';
-import { taskDependencyGraphService } from '@/modules/task/application/services/TaskDependencyGraphService';
 import type { TaskTemplateClientDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
-import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
-import { taskTemplateToDAG } from '@/modules/task/types/task-dag.types';
+import type { TaskForDAGViewModel } from './types';
 
-type TaskClientDTO = TaskTemplateClientDTO;
+type TaskClientDTO = TaskTemplateClientDTO & TaskForDAGViewModel;
 
 // Props
 interface Props {
@@ -121,8 +119,102 @@ const props = withDefaults(defineProps<Props>(), {
   height: 600,
 });
 
-// 将 TaskTemplateClientDTO 转换为 TaskForDAG
-const tasksForDAG = computed<TaskForDAG[]>(() => props.tasks.map(taskTemplateToDAG));
+const adjacency = computed(() => {
+  const map = new Map<string, string[]>();
+  props.tasks.forEach((task) => {
+    map.set(task.uuid, []);
+  });
+  props.dependencies.forEach((dep) => {
+    const predecessor = dep.predecessorTaskUuid;
+    const successor = dep.successorTaskUuid;
+    if (!map.has(predecessor)) {
+      map.set(predecessor, []);
+    }
+    map.get(predecessor)?.push(successor);
+  });
+  return map;
+});
+
+const hasCycleInternal = () => {
+  const visited = new Set<string>();
+  const stack = new Set<string>();
+
+  const dfs = (node: string): boolean => {
+    if (stack.has(node)) return true;
+    if (visited.has(node)) return false;
+    visited.add(node);
+    stack.add(node);
+    const nextNodes = adjacency.value.get(node) || [];
+    for (const next of nextNodes) {
+      if (dfs(next)) return true;
+    }
+    stack.delete(node);
+    return false;
+  };
+
+  for (const task of props.tasks) {
+    if (dfs(task.uuid)) return true;
+  }
+  return false;
+};
+
+const calculateCriticalPath = () => {
+  const indegree = new Map<string, number>();
+  const duration = new Map<string, number>();
+  const predecessor = new Map<string, string | null>();
+
+  props.tasks.forEach((task) => {
+    indegree.set(task.uuid, 0);
+    duration.set(task.uuid, task.estimatedMinutes || 0);
+    predecessor.set(task.uuid, null);
+  });
+
+  props.dependencies.forEach((dep) => {
+    indegree.set(dep.successorTaskUuid, (indegree.get(dep.successorTaskUuid) || 0) + 1);
+  });
+
+  const queue: string[] = [];
+  indegree.forEach((degree, uuid) => {
+    if (degree === 0) queue.push(uuid);
+  });
+
+  const longest = new Map<string, number>();
+  props.tasks.forEach((task) => longest.set(task.uuid, task.estimatedMinutes || 0));
+
+  while (queue.length) {
+    const current = queue.shift()!;
+    const nextNodes = adjacency.value.get(current) || [];
+    for (const next of nextNodes) {
+      const candidate = (longest.get(current) || 0) + (duration.get(next) || 0);
+      if (candidate > (longest.get(next) || 0)) {
+        longest.set(next, candidate);
+        predecessor.set(next, current);
+      }
+      indegree.set(next, (indegree.get(next) || 0) - 1);
+      if ((indegree.get(next) || 0) === 0) {
+        queue.push(next);
+      }
+    }
+  }
+
+  let endTask: string | null = null;
+  let maxDuration = 0;
+  longest.forEach((value, uuid) => {
+    if (value > maxDuration) {
+      maxDuration = value;
+      endTask = uuid;
+    }
+  });
+
+  const path: string[] = [];
+  let current = endTask;
+  while (current) {
+    path.unshift(current);
+    current = predecessor.get(current) || null;
+  }
+
+  return { path, duration: maxDuration };
+};
 
 // State
 const chartContainer = ref<HTMLElement>();
@@ -137,22 +229,24 @@ const hasData = computed(() => props.tasks.length > 0);
 const chartHeight = computed(() => props.height);
 
 const graphStats = computed(() => {
-  const sorted = taskDependencyGraphService.topologicalSort(tasksForDAG.value, props.dependencies);
   return {
     totalTasks: props.tasks.length,
     totalDependencies: props.dependencies.length,
-    hasCycle: sorted.hasCycle,
+    hasCycle: hasCycleInternal(),
   };
 });
 
 const criticalPathInfo = computed(() => {
   if (!showCriticalPath.value || props.tasks.length === 0) return null;
-  try {
-    return taskDependencyGraphService.calculateCriticalPath(tasksForDAG.value, props.dependencies);
-  } catch {
-    return null;
-  }
+  return calculateCriticalPath();
 });
+
+const getTaskColor = (task: TaskClientDTO): string => {
+  if (task.status === 'COMPLETED') return '#4CAF50';
+  if (task.status === 'IN_PROGRESS') return '#2196F3';
+  if (task.status === 'BLOCKED') return '#F44336';
+  return '#9E9E9E';
+};
 
 // Methods
 function initChart() {
@@ -165,11 +259,36 @@ function updateChart() {
   if (!chartInstance.value) return;
 
   try {
-    let graphData = taskDependencyGraphService.transformToGraphData(tasksForDAG.value, props.dependencies);
+    const criticalPathSet = new Set(criticalPathInfo.value?.path || []);
 
-    if (showCriticalPath.value && criticalPathInfo.value) {
-      graphData = taskDependencyGraphService.highlightCriticalPath(graphData, criticalPathInfo.value);
-    }
+    const nodes = props.tasks.map((task) => ({
+      id: task.uuid,
+      name: task.title,
+      itemStyle: {
+        color: showCriticalPath.value && criticalPathSet.has(task.uuid) ? '#E53935' : getTaskColor(task),
+      },
+      symbolSize: showCriticalPath.value && criticalPathSet.has(task.uuid) ? 48 : 38,
+    }));
+
+    const edges = props.dependencies.map((dep) => ({
+      source: dep.predecessorTaskUuid,
+      target: dep.successorTaskUuid,
+      value: dep.dependencyType,
+      lineStyle: {
+        color:
+          showCriticalPath.value &&
+          criticalPathSet.has(dep.predecessorTaskUuid) &&
+          criticalPathSet.has(dep.successorTaskUuid)
+            ? '#E53935'
+            : '#9E9E9E',
+        width:
+          showCriticalPath.value &&
+          criticalPathSet.has(dep.predecessorTaskUuid) &&
+          criticalPathSet.has(dep.successorTaskUuid)
+            ? 3
+            : 1.5,
+      },
+    }));
 
     const option: EChartsOption = {
       tooltip: {
@@ -189,9 +308,8 @@ function updateChart() {
       series: [{
         type: 'graph',
         layout: layoutType.value,
-        data: graphData.nodes,
-        links: graphData.edges as any, // ECharts 类型限制，实际 value 可为 string
-        categories: graphData.categories,
+        data: nodes,
+        links: edges as any,
         roam: true,
         label: { show: true, position: 'right' },
         lineStyle: { curveness: 0.3 },
@@ -237,11 +355,13 @@ watch(showCriticalPath, updateChart);
 onMounted(async () => {
   await nextTick();
   initChart();
-  window.addEventListener('resize', () => chartInstance.value?.resize());
+  window.addEventListener('resize', handleResize);
 });
 
+const handleResize = () => chartInstance.value?.resize();
+
 onUnmounted(() => {
-  window.removeEventListener('resize', () => chartInstance.value?.resize());
+  window.removeEventListener('resize', handleResize);
   chartInstance.value?.dispose();
 });
 </script>

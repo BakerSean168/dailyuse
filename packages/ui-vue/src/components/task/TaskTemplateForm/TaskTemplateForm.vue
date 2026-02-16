@@ -61,11 +61,11 @@ import ReminderSection from './sections/ReminderSection.vue';
 import MetadataSection from './sections/MetadataSection.vue';
 import KeyResultLinksSection from './sections/KeyResultLinksSection.vue';
 import { useTaskTemplateForm } from '../../composables/useTaskTemplateForm';
-import type { TaskTemplate } from '@dailyuse/task/domain-client';
+import type { TaskTemplateViewModel } from '../types';
 
 // ===== Props 定义 =====
 interface Props {
-  modelValue?: TaskTemplate | null;
+  modelValue?: TaskTemplateViewModel | null;
   isEditMode?: boolean;
   readonly?: boolean;
 }
@@ -78,7 +78,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 // ===== Emits 定义 =====
 interface Emits {
-  'update:modelValue': [value: TaskTemplate];
+  'update:modelValue': [value: TaskTemplateViewModel];
   'update:validation': [validation: { isValid: boolean }];
   close: [];
 }
@@ -102,7 +102,7 @@ const {
 const taskTemplateBeingEdited = computed(() => props.modelValue);
 
 // ===== 方法 =====
-const handleTemplateUpdate = (updatedTemplate: TaskTemplate): void => {
+const handleTemplateUpdate = (updatedTemplate: TaskTemplateViewModel): void => {
   emit('update:modelValue', updatedTemplate);
 };
 

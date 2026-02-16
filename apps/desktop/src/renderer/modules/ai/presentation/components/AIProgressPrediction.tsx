@@ -95,7 +95,7 @@ interface AIProgressPredictionProps {
 // Risk level configurations
 const riskConfig = {
   low: {
-    label: '低风�?,
+    label: '低风',
     color: 'bg-green-100 text-green-700',
     icon: CheckCircle2,
     iconColor: 'text-green-500',
@@ -107,7 +107,7 @@ const riskConfig = {
     iconColor: 'text-yellow-500',
   },
   high: {
-    label: '高风�?,
+    label: '高风',
     color: 'bg-red-100 text-red-700',
     icon: AlertTriangle,
     iconColor: 'text-red-500',
@@ -179,11 +179,11 @@ async function generatePrediction(
     const recommendations: string[] = [];
     if (riskLevel === 'high') {
       recommendations.push('建议增加每日投入时间');
-      recommendations.push('考虑缩减目标范围或延长截止日�?);
-      recommendations.push('识别并消除主要阻碍因�?);
+      recommendations.push('考虑缩减目标范围或延长截止日');
+      recommendations.push('识别并消除主要阻碍因');
     } else if (riskLevel === 'medium') {
-      recommendations.push('保持当前进度，稍微加�?);
-      recommendations.push('确保关键里程碑按时完�?);
+      recommendations.push('保持当前进度，稍微加');
+      recommendations.push('确保关键里程碑按时完');
     } else {
       recommendations.push('保持当前良好势头');
       if (trend === 'improving') {
@@ -219,10 +219,10 @@ async function generatePrediction(
     insights.push(`${summary.behindSchedule} 个目标需要立即关注，存在延期风险`);
   }
   if (summary.onTrack === predictions.length) {
-    insights.push('🎉 所有目标都在正轨上，继续保�?');
+    insights.push('🎉 所有目标都在正轨上，继续保'');
   }
   const avgVelocity = predictions.reduce((sum, p) => sum + p.velocity, 0) / predictions.length;
-  insights.push(`平均日进�? ${avgVelocity.toFixed(1)}%�?{avgVelocity > 3 ? '效率较高' : '建议提升效率'}`);
+  insights.push(`平均日进` ${avgVelocity.toFixed(1)}%�?{avgVelocity > 3 ? '效率较高' : '建议提升效率'}`);
 
   return {
     predictions,
@@ -268,7 +268,7 @@ function PredictionCard({ prediction, onViewGoal }: PredictionCardProps) {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <Badge variant="outline">{prediction.confidence}% 置信�?/Badge>
+                <Badge variant="outline">{prediction.confidence}% 置信�?/Badge>
               </TooltipTrigger>
               <TooltipContent>
                 <p>AI 预测的可信度</p>
@@ -286,7 +286,7 @@ function PredictionCard({ prediction, onViewGoal }: PredictionCardProps) {
           <Progress value={prediction.currentProgress} className="h-2" />
 
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">预测进度 (截止�?</span>
+            <span className="text-muted-foreground">预测进度 (截止�?</span>
             <span className={cn('font-medium', prediction.predictedProgress < 100 && 'text-yellow-600')}>
               {prediction.predictedProgress}%
             </span>
@@ -304,7 +304,7 @@ function PredictionCard({ prediction, onViewGoal }: PredictionCardProps) {
             <span className="text-muted-foreground">预计完成:</span>
             {prediction.predictedCompletionDate ? (
               <span className={cn(prediction.onTrack ? 'text-green-600' : 'text-yellow-600')}>
-                {format(prediction.predictedCompletionDate, 'MM月dd�?, { locale: zhCN })}
+                {format(prediction.predictedCompletionDate, 'MM月dd', { locale: zhCN })}
               </span>
             ) : (
               <span className="text-muted-foreground">无法预测</span>
@@ -324,7 +324,7 @@ function PredictionCard({ prediction, onViewGoal }: PredictionCardProps) {
             <p className="text-xs font-medium mb-1">AI 建议:</p>
             {prediction.recommendations.slice(0, 2).map((rec, i) => (
               <p key={i} className="text-xs text-muted-foreground">
-                �?{rec}
+                �?{rec}
               </p>
             ))}
           </div>
@@ -378,7 +378,7 @@ export function AIProgressPrediction({
           ) : (
             <Zap className="h-4 w-4" />
           )}
-          <span className="ml-2">{prediction ? '刷新预测' : '开始分�?}</span>
+          <span className="ml-2">{prediction ? '刷新预测' : '开始分'}</span>
         </Button>
       </div>
 
@@ -388,7 +388,7 @@ export function AIProgressPrediction({
           <CardContent className="py-12 text-center text-muted-foreground">
             <Target className="h-12 w-12 mx-auto mb-2 opacity-50" />
             <p>没有可分析的目标</p>
-            <p className="text-sm">创建目标后即可使�?AI 预测功能</p>
+            <p className="text-sm">创建目标后即可使用 AI 预测功能</p>
           </CardContent>
         </Card>
       )}
@@ -414,7 +414,7 @@ export function AIProgressPrediction({
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
                   <span className="text-2xl font-bold">{prediction.summary.onTrack}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">正轨�?/p>
+                <p className="text-xs text-muted-foreground mt-1">正轨</p>
               </CardContent>
             </Card>
             <Card>
@@ -474,7 +474,7 @@ export function AIProgressPrediction({
 
           {/* Footer */}
           <p className="text-xs text-muted-foreground text-center">
-            预测生成�?{format(prediction.generatedAt, 'HH:mm:ss', { locale: zhCN })}
+            预测生成�?{format(prediction.generatedAt, 'HH:mm:ss', { locale: zhCN })}
             ，基于历史数据和 AI 分析
           </p>
         </>

@@ -87,14 +87,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import type { ValidationError } from '@/modules/task/application/services/TaskDependencyValidationService';
-import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
+import { computed } from 'vue';
+import type { TaskDependencyValidationError, TaskForDAGViewModel } from '../types';
 
 interface Props {
   modelValue: boolean;
-  error: ValidationError | null;
-  tasks?: TaskForDAG[];
+  error: TaskDependencyValidationError | null;
+  tasks?: TaskForDAGViewModel[];
 }
 
 interface Emits {

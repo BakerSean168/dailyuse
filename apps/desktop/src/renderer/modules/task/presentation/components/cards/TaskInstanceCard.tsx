@@ -42,7 +42,7 @@ interface TaskInstanceCardProps {
   onClick?: (uuid: string) => void;
 }
 
-// 状态颜色配�?
+// 状态颜色配�?
 const STATUS_COLORS: Record<string, { bg: string; text: string; icon: typeof Circle }> = {
   PENDING: { bg: 'bg-blue-100', text: 'text-blue-800', icon: Circle },
   COMPLETED: { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircle },
@@ -76,7 +76,7 @@ export function TaskInstanceCard({
     onClick?.(instance.uuid);
   };
 
-  // 格式化时间显�?
+  // 格式化时间显�?
   const getTimeLabel = () => {
     const timeConfig = instance.timeConfig;
 
@@ -146,7 +146,7 @@ export function TaskInstanceCard({
           <Clock className="h-3.5 w-3.5" />
           <span>
             {instance.isCompleted
-              ? `完成�?${instance.actualEndTime ? format(instance.actualEndTime, 'HH:mm', { locale: zhCN }) : ''}`
+              ? `完成`${instance.actualEndTime ? format(instance.actualEndTime, 'HH:mm', { locale: zhCN }) : ''}`
               : getTimeLabel()}
           </span>
         </div>

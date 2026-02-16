@@ -1,6 +1,6 @@
-import type { Preview } from '@storybook/vue3';
-import '@dailyuse/ui-core/styles/globals.css';
-
+import type { Preview } from '@storybook/vue3-vite';
+import '../src/assets/main.css';
+import '../../ui-core/src/styles/theme.css';
 const preview: Preview = {
   parameters: {
     actions: { argTypesRegex: '^on[A-Z].*' },
@@ -11,6 +11,8 @@ const preview: Preview = {
       },
     },
   },
+
+  tags: ['autodocs']
 };
 
 export default preview;

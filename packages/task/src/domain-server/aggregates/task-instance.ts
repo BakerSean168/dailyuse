@@ -259,7 +259,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
 
     const now = Date.now();
     // 检查是否超过实例日�?
-    return now > this._props.instanceDate + 86400000; // 超过1天视为过�?
+    return now > this._props.instanceDate + 86400000; // 超过1天视为过<
   }
 
   // ===== 6. 序列化(Serialization) =====

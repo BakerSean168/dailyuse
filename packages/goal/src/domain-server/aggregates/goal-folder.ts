@@ -26,7 +26,8 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { GoalFolderId, IdentityId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@dailyuse/domain-shared';
+import { GoalFolderId } from '../../domain-shared';
 import type {
   FolderType,
   GoalFolderClientDTO,

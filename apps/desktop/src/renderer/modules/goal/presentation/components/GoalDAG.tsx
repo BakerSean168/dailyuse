@@ -1,10 +1,10 @@
 /**
  * GoalDAG Component
  *
- * 目标层级 DAG 可视�?
+ * 目标层级 DAG 可视�?
  * Story 11-7: Advanced Features
  *
- * 使用自定�?SVG 实现（不依赖 reactflow�?
+ * 使用自定�?SVG 实现（不依赖 reactflow�?
  */
 
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
@@ -68,10 +68,10 @@ const statusBadgeVariants: Record<string, 'secondary' | 'default' | 'outline'> =
 };
 
 const statusLabels: Record<string, string> = {
-  not_started: '未开�?,
-  in_progress: '进行�?,
-  completed: '已完�?,
-  paused: '已暂�?,
+  not_started: '未开',
+  in_progress: '进行',
+  completed: '已完',
+  paused: '已暂',
 };
 
 // Build tree from flat goals
@@ -237,7 +237,7 @@ function GoalNodeComponent({
               <DropdownMenuContent>
                 <DropdownMenuItem onClick={onAddChild}>
                   <Plus className="mr-2 h-4 w-4" />
-                  添加子目�?
+                  添加子目�?
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <ExternalLink className="mr-2 h-4 w-4" />

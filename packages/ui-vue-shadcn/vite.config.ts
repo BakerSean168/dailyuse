@@ -25,7 +25,11 @@ export default defineConfig({
         // 这几个组件的类型有问题，先排除掉
         'src/components/ui/carousel/**',
         'src/components/ui/drawer/**',
-        'src/components/ui/stepper/**'
+        'src/components/ui/stepper/**',
+        'src/**/*.stories.ts', 
+        'src/**/*.stories.vue',
+        'src/**/*.test.ts',
+        'src/stories/**' // 如果有单独的 stories 文件夹
       ],
       outDir: path.resolve(__dirname, 'dist')
     })

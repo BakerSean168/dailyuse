@@ -52,16 +52,16 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
-import { TaskTemplate, TaskTimeConfig } from '@dailyuse/task/domain-client';
 import { TimeType } from '@dailyuse/contracts/task';
 import type { TaskTimeConfigClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateViewModel } from '../../types';
 
 const props = defineProps<{
-  modelValue: TaskTemplate;
+  modelValue: TaskTemplateViewModel;
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: TaskTemplate): void;
+  (e: 'update:modelValue', value: TaskTemplateViewModel): void;
   (e: 'update:validation', valid: boolean): void;
 }>();
 
@@ -77,7 +77,7 @@ const validationError = ref<string>('');
  * 初始化表单数据
  */
 const initializeFormData = () => {
-  const config = props.modelValue.timeConfig;
+  const config = props.modelValue.timeConfig as TaskTimeConfigClientDTO | undefined;
 
   if (!config) {
     // 默认配置
@@ -170,10 +170,14 @@ const parseDateTimeInput = (datetimeStr: string): number | null => {
 const handleTimeTypeChange = () => {
   try {
     validationError.value = '';
-    
-    // 直接调用实体方法，自动初始化默认时间
-    const updated = props.modelValue.clone();
-    updated.updateTimeType(timeType.value);
+
+    const updated: TaskTemplateViewModel = {
+      ...props.modelValue,
+      timeConfig: {
+        ...(props.modelValue.timeConfig || {}),
+        timeType: timeType.value,
+      } as any,
+    };
     emit('update:modelValue', updated);
     
     // 更新表单显示
@@ -259,11 +263,11 @@ const updateTimeConfig = () => {
       return;
     }
 
-    // 创建新的 TaskTimeConfig 值对象
-    const newTimeConfig = TaskTimeConfig.fromClientDTO(newConfig);
-
-    // 使用 TaskTemplate 的更新方法
-    props.modelValue.updateTimeConfig(newTimeConfig);
+    const updated: TaskTemplateViewModel = {
+      ...props.modelValue,
+      timeConfig: newConfig as any,
+    };
+    emit('update:modelValue', updated);
 
     // 发出验证成功事件
     emit('update:validation', true);

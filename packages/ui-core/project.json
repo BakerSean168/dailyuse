@@ -9,14 +9,25 @@
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/packages/ui-core/dist"],
       "options": {
-        "command": "tsup",
+        "parallel": false,
+        "commands": [
+          {
+            "command": "tsup",
+            "forwardAllArgs": false
+          }
+        ],
         "cwd": "packages/ui-core"
       }
     },
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsup --watch",
+        "commands": [
+          {
+            "command": "tsup --watch",
+            "forwardAllArgs": false
+          }
+        ],
         "cwd": "packages/ui-core"
       }
     },

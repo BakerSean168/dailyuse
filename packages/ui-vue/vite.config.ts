@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import path from 'path';
 import vue from '@vitejs/plugin-vue';
+import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
@@ -17,6 +18,7 @@ const external = [
 export default defineConfig({
   plugins: [
     vue(),
+    tailwindcss(),
     dts({
       tsconfigPath: path.resolve(__dirname, 'tsconfig.dts.json'),
       entryRoot: path.resolve(__dirname, 'src'),

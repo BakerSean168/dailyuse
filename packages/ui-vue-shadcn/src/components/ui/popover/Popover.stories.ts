@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { Popover, PopoverContent, PopoverTrigger } from '.';
 import { Button } from '../button';
 import { Input } from '../input';

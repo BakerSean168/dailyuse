@@ -78,7 +78,7 @@ export class PauseTaskTemplate {
       }
 
       for (const instance of pendingInstances) {
-        instance.skip('妯℃澘宸叉殏鍋?);
+        instance.skip('模板已暂停');
         await this.instanceRepository.save(instance);
       }
 

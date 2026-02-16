@@ -12,3 +12,20 @@ export type { GoalTemplate, KeyResultTemplate } from './GoalTemplates';
 
 // ===== Constructor-Injected Service (Result-based) =====
 export { GoalClientService } from './goal-client-service';
+
+// ===== Singleton Proxy =====
+// Singleton placeholder - will be replaced during module initialization
+let _goalApplicationService: any = null;
+
+export function setGoalApplicationService(service: any) {
+  _goalApplicationService = service;
+}
+
+export const goalApplicationService: any = new Proxy({} as any, {
+  get(_target, prop) {
+    if (!_goalApplicationService) {
+      throw new Error('goalApplicationService not initialized. Call setGoalApplicationService first.');
+    }
+    return (_goalApplicationService as any)[prop];
+  }
+});

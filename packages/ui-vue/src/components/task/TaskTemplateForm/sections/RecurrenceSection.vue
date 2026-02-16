@@ -80,10 +80,10 @@
 </template>
 
 <script setup lang="ts">
-import { TaskTemplate, RecurrenceRule } from '@dailyuse/task/domain-client';
 import { computed, ref, watch } from 'vue';
 import { RecurrenceFrequency, DayOfWeek, RECURRENCE_RULE_DEFAULTS } from '@dailyuse/contracts/task';
 import type { RecurrenceRuleClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateViewModel } from '../../types';
 
 /**
  * 获取默认结束日期（今天 + 配置的天数）
@@ -95,19 +95,25 @@ const getDefaultEndDate = (): string => {
 };
 
 interface Props {
-  modelValue: TaskTemplate;
+  modelValue: TaskTemplateViewModel;
 }
 
 interface Emits {
-  (e: 'update:modelValue', value: TaskTemplate): void;
+  (e: 'update:modelValue', value: TaskTemplateViewModel): void;
   (e: 'update:validation', isValid: boolean): void;
 }
 
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-const updateTemplate = (updater: (template: TaskTemplate) => void) => {
-  const updatedTemplate = props.modelValue.clone();
+const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
+  const updatedTemplate: TaskTemplateViewModel = {
+    ...props.modelValue,
+    timeConfig: { ...(props.modelValue.timeConfig || {}) },
+    recurrenceRule: props.modelValue.recurrenceRule
+      ? { ...(props.modelValue.recurrenceRule as RecurrenceRuleClientDTO) }
+      : null,
+  } as TaskTemplateViewModel;
   updater(updatedTemplate);
   emit('update:modelValue', updatedTemplate);
 };
@@ -133,7 +139,7 @@ const dayOptions = [
 
 // 重复启用状态
 const recurrenceEnabled = computed({
-  get: () => props.modelValue.recurrenceRule !== null && props.modelValue.recurrenceRule !== undefined,
+  get: () => !!props.modelValue.recurrenceRule,
   set: (value: boolean) => {
     if (value && !props.modelValue.recurrenceRule) {
       // 启用重复：创建默认规则
@@ -149,13 +155,12 @@ const recurrenceEnabled = computed({
         hasEndCondition: false,
       };
       updateTemplate((template) => {
-        const rule = RecurrenceRule.fromClientDTO(defaultRule);
-        template.updateRecurrenceRule(rule);
+        (template as any).recurrenceRule = defaultRule;
       });
     } else if (!value) {
       // 禁用重复：清空规则
       updateTemplate((template) => {
-        template.updateRecurrenceRule(null);
+        (template as any).recurrenceRule = null;
       });
     }
   },
@@ -163,7 +168,7 @@ const recurrenceEnabled = computed({
 
 // 频率
 const frequency = computed({
-  get: () => props.modelValue.recurrenceRule?.frequency ?? RecurrenceFrequency.DAILY,
+  get: () => ((props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.frequency ?? RecurrenceFrequency.DAILY),
   set: (value: RecurrenceFrequency) => {
     updateRecurrenceRule({ frequency: value });
   },
@@ -171,7 +176,7 @@ const frequency = computed({
 
 // 间隔
 const interval = computed({
-  get: () => props.modelValue.recurrenceRule?.interval ?? 1,
+  get: () => ((props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.interval ?? 1),
   set: (value: number) => {
     updateRecurrenceRule({ interval: value });
   },
@@ -179,7 +184,7 @@ const interval = computed({
 
 // 选中的星期
 const selectedDays = computed({
-  get: () => props.modelValue.recurrenceRule?.daysOfWeek ?? [],
+  get: () => ((props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.daysOfWeek ?? []),
   set: (value: DayOfWeek[]) => {
     updateRecurrenceRule({ daysOfWeek: value });
   },
@@ -215,7 +220,7 @@ const initializeEndCondition = () => {
 
 // 更新重复规则
 const updateRecurrenceRule = (updates: Partial<RecurrenceRuleClientDTO>) => {
-  const currentRule = props.modelValue.recurrenceRule;
+  const currentRule = props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null;
   if (!currentRule) return;
 
   const newRuleDTO: RecurrenceRuleClientDTO = {
@@ -231,8 +236,7 @@ const updateRecurrenceRule = (updates: Partial<RecurrenceRuleClientDTO>) => {
   };
 
   updateTemplate((template) => {
-    const newRule = RecurrenceRule.fromClientDTO(newRuleDTO);
-    template.updateRecurrenceRule(newRule);
+    (template as any).recurrenceRule = newRuleDTO;
   });
 };
 
@@ -305,7 +309,7 @@ const intervalHint = computed(() => {
 const hasRecurrence = computed(() => recurrenceEnabled.value);
 
 const recurrenceDescription = computed(() => {
-  return props.modelValue.recurrenceRule?.recurrenceDisplayText ?? '';
+  return (props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.recurrenceDisplayText ?? '';
 });
 
 // 验证

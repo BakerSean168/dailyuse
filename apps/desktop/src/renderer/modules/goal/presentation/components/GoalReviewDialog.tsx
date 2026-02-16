@@ -1,7 +1,7 @@
 /**
  * GoalReviewDialog Component
  *
- * 目标复盘对话�?- 用于创建/查看复盘记录
+ * 目标复盘对话�?- 用于创建/查看复盘记录
  */
 
 import { useState, useEffect, useMemo } from 'react';
@@ -43,7 +43,7 @@ interface GoalReviewDialogProps {
 }
 
 /**
- * 表单 UI 状态（内部使用�?
+ * 表单 UI 状态（内部使用�?
  */
 interface FormState {
   type: ReviewType;
@@ -56,8 +56,8 @@ interface FormState {
 
 // 复盘类型选项
 const REVIEW_TYPES = [
-  { value: ReviewType.WEEKLY, label: '周复�? },
-  { value: ReviewType.MONTHLY, label: '月复�? },
+  { value: ReviewType.WEEKLY, label: '周复' },
+  { value: ReviewType.MONTHLY, label: '月复' },
   { value: ReviewType.QUARTERLY, label: '季度复盘' },
   { value: ReviewType.ANNUAL, label: '年度复盘' },
   { value: ReviewType.ADHOC, label: '临时复盘' },
@@ -156,14 +156,14 @@ export function GoalReviewDialog({
 
   const handleSave = async () => {
     if (!isValid) {
-      setError('请填写必要信�?);
+      setError('请填写必要信');
       return;
     }
 
     try {
       setLoading(true);
       setError(null);
-      // 转换�?contracts 类型
+      // 转换�?contracts 类型
       const request = isEditing 
         ? formStateToUpdateRequest(formState)
         : formStateToCreateRequest(goalUuid, formState);
@@ -211,7 +211,7 @@ export function GoalReviewDialog({
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? '查看或编辑复盘记�?
+              ? '查看或编辑复盘记'
               : '记录目标的复盘总结，帮助反思和改进'}
           </DialogDescription>
         </DialogHeader>
@@ -260,7 +260,7 @@ export function GoalReviewDialog({
             <Label htmlFor="achievements">主要成果</Label>
             <Textarea
               id="achievements"
-              placeholder="本阶段取得了哪些主要成果�?
+              placeholder="本阶段取得了哪些主要成果"
               value={formState.achievements}
               onChange={(e) => handleChange('achievements', e.target.value)}
               rows={3}
@@ -269,7 +269,7 @@ export function GoalReviewDialog({
 
           {/* 挑战 */}
           <div className="space-y-2">
-            <Label htmlFor="challenges">遇到的挑�?/Label>
+            <Label htmlFor="challenges">遇到的挑</Label>
             <Textarea
               id="challenges"
               placeholder="在实现目标过程中遇到了哪些挑战？"
@@ -284,7 +284,7 @@ export function GoalReviewDialog({
             <Label htmlFor="improvements">改进措施</Label>
             <Textarea
               id="improvements"
-              placeholder="下一阶段有哪些可以改进的地方�?
+              placeholder="下一阶段有哪些可以改进的地方"
               value={formState.improvements}
               onChange={(e) => handleChange('improvements', e.target.value)}
               rows={3}
@@ -308,7 +308,7 @@ export function GoalReviewDialog({
             disabled={!isValid || loading}
             style={{ backgroundColor: isValid ? goalColor : undefined }}
           >
-            {loading ? '保存�?..' : isEditing ? '更新' : '创建'}
+            {loading ? '保存中...' : isEditing ? '更新' : '创建'}
           </Button>
         </DialogFooter>
       </DialogContent>

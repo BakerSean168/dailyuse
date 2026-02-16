@@ -42,6 +42,10 @@
     "./api": {
       "types": "./dist/api/index.d.ts",
       "import": "./dist/api/index.js"
+    },
+    "./electron-entry": {
+      "types": "./dist/electron-entry/index.d.ts",
+      "import": "./dist/electron-entry/index.js"
     }
   },
   "scripts": {},

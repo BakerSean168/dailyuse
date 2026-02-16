@@ -10,8 +10,14 @@
 import { useState } from 'react';
 import type { CreateTaskTemplateRequest } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { TaskType, TimeType } from '@dailyuse/contracts/task';
+import { TaskTimeType } from '@dailyuse/contracts/task';
 import { useTaskTemplate } from '../hooks/useTaskTemplate';
+
+/** Local TaskType constant — not exported from contracts */
+const TaskType = {
+  ONE_TIME: 'ONE_TIME',
+  RECURRING: 'RECURRING',
+} as const;
 
 interface TaskCreateDialogProps {
   open: boolean;
@@ -49,7 +55,7 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
         description: description.trim() || undefined,
         taskType: TaskType.ONE_TIME,
         timeConfig: {
-          timeType: TimeType.ALL_DAY,
+          timeType: TaskTimeType.AllDay,
         },
         importance,
       };

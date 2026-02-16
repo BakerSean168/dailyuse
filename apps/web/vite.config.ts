@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import tailwindcss from '@tailwindcss/vite';
 import path from 'node:path';
 
 export default defineConfig(({ mode, command }) => {
@@ -49,6 +50,7 @@ export default defineConfig(({ mode, command }) => {
           },
         },
       }),
+      tailwindcss(),
       // 打包分析插件（仅生产模式）
       // 生产分析在本地执行，Docker/CI 环境不启用以避免打开浏览器/PowerShell
       // （如需启用请设置环境变量并在宿主机运行）

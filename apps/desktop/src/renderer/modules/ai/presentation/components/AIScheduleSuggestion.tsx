@@ -177,14 +177,14 @@ async function generateScheduleSuggestion(
   const tips = [
     '建议在高精力时段处理复杂任务',
     '每完成一个专注周期，休息5-10分钟',
-    '午饭后适合处理例行性工�?,
-    '傍晚时分可以进行回顾和规�?,
+    '午饭后适合处理例行性工',
+    '傍晚时分可以进行回顾和规',
   ];
 
   return {
     date: today,
     slots,
-    summary: `已为 ${slots.length} 个任务安排时间，预计总时�?${Math.round(tasks.reduce((sum, t) => sum + t.estimatedMinutes, 0) / 60)} 小时`,
+    summary: `已为 ${slots.length} 个任务安排时间，预计总时�?${Math.round(tasks.reduce((sum, t) => sum + t.estimatedMinutes, 0) / 60)} 小时`,
     tips: tips.slice(0, 3),
   };
 }
@@ -317,7 +317,7 @@ export function AIScheduleSuggestion({
       ? '今天'
       : isTomorrow(suggestion.date)
         ? '明天'
-        : format(suggestion.date, 'MM月dd�?, { locale: zhCN })
+        : format(suggestion.date, 'MM月dd', { locale: zhCN })
     : '';
 
   return (
@@ -337,7 +337,7 @@ export function AIScheduleSuggestion({
             AI 日程建议
           </DialogTitle>
           <DialogDescription>
-            AI 会根据任务优先级、预估时长和你的精力曲线，智能安排最佳时�?
+            AI 会根据任务优先级、预估时长和你的精力曲线，智能安排最佳时�?
           </DialogDescription>
         </DialogHeader>
 
@@ -346,10 +346,10 @@ export function AIScheduleSuggestion({
           <CardContent className="py-3">
             <div className="flex items-center justify-between">
               <span className="text-sm">
-                待安�? <strong>{tasks.length}</strong> 个任�?
+                待安�? <strong>{tasks.length}</strong> 个任<
               </span>
               <span className="text-sm text-muted-foreground">
-                总时�? {Math.round(tasks.reduce((sum, t) => sum + t.estimatedMinutes, 0) / 60)} 小时
+                总时�? {Math.round(tasks.reduce((sum, t) => sum + t.estimatedMinutes, 0) / 60)} 小时
               </span>
             </div>
           </CardContent>
@@ -392,7 +392,7 @@ export function AIScheduleSuggestion({
                   size="sm"
                   onClick={handleSelectAll}
                 >
-                  {selectedSlots.size === suggestion.slots.length ? '取消全�? : '全�?}
+                  {selectedSlots.size === suggestion.slots.length ? '取消全' : '全'}
                 </Button>
                 <Button
                   variant="ghost"
@@ -427,7 +427,7 @@ export function AIScheduleSuggestion({
                   <div className="space-y-1">
                     {suggestion.tips.map((tip, i) => (
                       <p key={i} className="text-xs text-muted-foreground">
-                        �?{tip}
+                        �?{tip}
                       </p>
                     ))}
                   </div>
@@ -447,7 +447,7 @@ export function AIScheduleSuggestion({
             className="gap-2"
           >
             <Check className="h-4 w-4" />
-            应用 {selectedSlots.size} 个日�?
+            应用 {selectedSlots.size} 个日�?
           </Button>
         </DialogFooter>
       </DialogContent>

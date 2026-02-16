@@ -16,7 +16,7 @@ import {
   ForgotPassword,
   ResetPassword,
   ChangePassword,
-} from '@dailyuse/application-client';
+} from '@dailyuse/authentication/application-server';
 import type { LoginRequest, RegisterRequest, LoginResponse } from '@dailyuse/contracts/authentication';
 
 // ============ Types ============

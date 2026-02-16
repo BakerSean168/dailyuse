@@ -29,16 +29,7 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { eventBus } from '@dailyuse/utils';
 
 
-
-
-
-
-
-
-
-
-
-
+export class TaskTemplateApplicationService {
   private generationService: TaskInstanceGenerationService;
   private templateRepository: ITaskTemplateRepository;
   private instanceRepository: ITaskInstanceRepository;

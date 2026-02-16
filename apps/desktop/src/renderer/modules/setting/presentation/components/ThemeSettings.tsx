@@ -29,13 +29,13 @@ const themeOptions = [
   {
     value: 'light' as const,
     label: '浅色模式',
-    description: '明亮的界面风�?,
+    description: '明亮的界面风',
     icon: Sun,
   },
   {
     value: 'dark' as const,
     label: '深色模式',
-    description: '护眼的深色界�?,
+    description: '护眼的深色界',
     icon: Moon,
   },
   {
@@ -121,7 +121,7 @@ export function ThemeSettings({
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Palette className="h-4 w-4" />
-            主题�?
+            主题�?
           </CardTitle>
           <CardDescription>选择应用的主题强调色</CardDescription>
         </CardHeader>
@@ -167,7 +167,7 @@ export function ThemeSettings({
               />
               <div>
                 <p className="font-medium">示例标题</p>
-                <p className="text-sm text-muted-foreground">这是一段示例描述文�?/p>
+                <p className="text-sm text-muted-foreground">这是一段示例描述文</p>
               </div>
             </div>
             <div className="flex gap-2">

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '.';
 import { Button } from '../button';
 import { ref } from 'vue';

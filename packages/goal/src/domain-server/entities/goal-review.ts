@@ -27,7 +27,7 @@ import type {
   KeyResultSnapshotDTO,
 } from '@dailyuse/contracts/goal';
 import { ReviewType } from '@dailyuse/contracts/goal';
-import { GoalReviewId, GoalId } from '@dailyuse/domain-shared';
+import { GoalReviewId, GoalId } from '../../domain-shared';
 
 // 内部状态接口
 interface GoalReviewState {

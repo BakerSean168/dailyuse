@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import LinearPanel from './LinearPanel.vue';
 import LinearSidebarItem from './LinearSidebarItem.vue';
 

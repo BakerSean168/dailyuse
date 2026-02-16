@@ -92,7 +92,7 @@ const typeLabels: Record<Resource['type'], string> = {
   image: '图片',
   video: '视频',
   audio: '音频',
-  archive: '压缩�?,
+  archive: '压缩',
   code: '代码',
   other: '其他',
 };

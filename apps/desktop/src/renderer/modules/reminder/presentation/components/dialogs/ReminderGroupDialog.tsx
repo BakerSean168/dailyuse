@@ -1,11 +1,11 @@
 /**
- * ReminderGroupDialog - 提醒分组创建/编辑对话�?
+ * ReminderGroupDialog - 提醒分组创建/编辑对话�?
  *
- * 功能�?
- * - 创建新分�?
+ * 功能�?
+ * - 创建新分�?
  * - 编辑现有分组
- * - 设置名称、描述、图标、颜�?
- * - 设置控制模式和排序权�?
+ * - 设置名称、描述、图标、颜�?
+ * - 设置控制模式和排序权�?
  *
  * @module reminder/presentation/components/dialogs
  */
@@ -53,8 +53,8 @@ import { ControlMode } from '@dailyuse/contracts/reminder';
 // ============ Types ============
 
 /**
- * 表单 UI 状态（内部使用�?
- * 最终会转换�?CreateReminderGroupRequest �?UpdateReminderGroupRequest
+ * 表单 UI 状态（内部使用�?
+ * 最终会转换�?CreateReminderGroupRequest �?UpdateReminderGroupRequest
  */
 interface FormState {
   name: string;
@@ -68,7 +68,7 @@ interface FormState {
 export interface ReminderGroupDialogProps {
   /** 是否打开 */
   open: boolean;
-  /** 编辑的分组（为空则为创建模式�?*/
+  /** 编辑的分组（为空则为创建模式�?*/
   group?: ReminderGroupClientDTO | null;
   /** 关闭回调 */
   onClose: () => void;
@@ -79,7 +79,7 @@ export interface ReminderGroupDialogProps {
 // ============ Constants ============
 
 const ICON_OPTIONS = [
-  { value: 'folder', label: '文件�?, icon: Folder },
+  { value: 'folder', label: '文件', icon: Folder },
   { value: 'briefcase', label: '工作', icon: Briefcase },
   { value: 'home', label: '家庭', icon: Home },
   { value: 'graduation-cap', label: '学习', icon: GraduationCap },
@@ -106,12 +106,12 @@ const CONTROL_MODE_OPTIONS = [
   {
     value: ControlMode.INDIVIDUAL,
     title: '个体控制',
-    description: '每个模板独立控制启用/禁用状�?,
+    description: '每个模板独立控制启用/禁用状',
   },
   {
     value: ControlMode.GROUP,
-    title: '组控�?,
-    description: '分组统一控制所有模板的启用/禁用状�?,
+    title: '组控',
+    description: '分组统一控制所有模板的启用/禁用状',
   },
 ];
 
@@ -168,7 +168,7 @@ export function ReminderGroupDialog({
 
   const isEditMode = !!group?.uuid;
 
-  // 初始化表单数�?
+  // 初始化表单数�?
   useEffect(() => {
     if (open) {
       if (group) {
@@ -194,18 +194,18 @@ export function ReminderGroupDialog({
     if (!formState.name.trim()) {
       newErrors.name = '分组名称不能为空';
     } else if (formState.name.length > 50) {
-      newErrors.name = '分组名称不能超过50个字�?;
+      newErrors.name = '分组名称不能超过50个字';
     }
 
     if (formState.description && formState.description.length > 200) {
-      newErrors.description = '描述不能超过200个字�?;
+      newErrors.description = '描述不能超过200个字';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formState]);
 
-  // 处理保存 - 转换�?contracts 类型
+  // 处理保存 - 转换�?contracts 类型
   const handleSave = useCallback(async () => {
     if (!validateForm()) return;
 
@@ -246,7 +246,7 @@ export function ReminderGroupDialog({
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
-        {/* 标题�?*/}
+        {/* 标题�?*/}
         <DialogHeader>
           <div className="flex items-center justify-between">
             <Button
@@ -263,7 +263,7 @@ export function ReminderGroupDialog({
               onClick={handleSave}
               disabled={!isFormValid || isSaving}
             >
-              {isSaving ? '保存�?..' : '完成'}
+              {isSaving ? '保存中...' : '完成'}
             </Button>
           </div>
         </DialogHeader>
@@ -277,7 +277,7 @@ export function ReminderGroupDialog({
             </div>
             <Separator />
 
-            {/* 分组名称和颜�?*/}
+            {/* 分组名称和颜�?*/}
             <div className="flex items-start gap-4">
               <div className="flex-1 space-y-2">
                 <Label htmlFor="name">分组名称 *</Label>
@@ -285,7 +285,7 @@ export function ReminderGroupDialog({
                   id="name"
                   value={formState.name}
                   onChange={(e) => updateField('name', e.target.value)}
-                  placeholder="例如: 工作提醒、生活提�?
+                  placeholder="例如: 工作提醒、生活提"
                   maxLength={50}
                   autoFocus
                 />
@@ -326,7 +326,7 @@ export function ReminderGroupDialog({
                 id="description"
                 value={formState.description}
                 onChange={(e) => updateField('description', e.target.value)}
-                placeholder="描述该分组的用�?.."
+                placeholder="描述该分组的用".."
                 rows={3}
                 maxLength={200}
               />
@@ -382,7 +382,7 @@ export function ReminderGroupDialog({
                 onChange={(e) => updateField('order', parseInt(e.target.value) || 0)}
                 placeholder="0"
               />
-              <p className="text-xs text-muted-foreground">数字越小越靠�?/p>
+              <p className="text-xs text-muted-foreground">数字越小越靠</p>
             </div>
           </div>
 

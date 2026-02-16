@@ -18,7 +18,7 @@ import type {
   UpdateKeyResultRequest,
   CreateGoalRecordRequest,
 } from '@dailyuse/contracts/goal';
-import { KeyResultValueType, AggregationMethod } from '@dailyuse/contracts/goal';
+import { KeyResultValueType, KeyResultCalculationMethod as AggregationMethod } from '@dailyuse/contracts/goal';
 
 // ===== Types =====
 

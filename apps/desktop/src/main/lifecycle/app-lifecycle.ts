@@ -23,8 +23,7 @@ import { registerSystemIpcHandlers } from '../ipc/system-handlers';
 import { getTrayManager, getShortcutManager, getAutoLaunchManager } from '../desktop-features';
 import { initNotificationService } from '../services';
 import { stopMemoryCleanup, closeDatabase } from '../database';
-import { shutdownAllModules } from '../modules';
-import { initializeEventListeners } from '../events/initialize-event-listeners';
+import { getBootstrapper } from '../main';
 import { getWindowManager } from './WindowManager';
 import { getAccountStore, getTokenManager, registerAccountStoreIpcHandlers } from '../modules/authentication/infrastructure';
 
@@ -108,10 +107,6 @@ export function getMainWindow(): BrowserWindow | null {
 async function handleAppReady(initializeApp: () => Promise<void>): Promise<void> {
   // Application core initialization
   await initializeApp();
-
-  // Initialize event listeners
-  await initializeEventListeners();
-  console.log('[Lifecycle] Event listeners initialized');
 
   // Register system IPC handlers BEFORE creating window
   registerSystemIpcHandlers(null, null, null);
@@ -233,8 +228,11 @@ async function handleBeforeQuit(): Promise<void> {
   // Cleanup desktop feature resources
   await cleanupDesktopFeatures();
 
-  // Shutdown all modules (graceful shutdown)
-  await shutdownAllModules();
+  // Shutdown all modules via bootstrapper (graceful shutdown)
+  const bootstrapper = getBootstrapper();
+  if (bootstrapper) {
+    await bootstrapper.destroy();
+  }
 
   // Close database connection
   closeDatabase();

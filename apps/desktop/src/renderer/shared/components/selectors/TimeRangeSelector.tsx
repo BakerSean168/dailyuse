@@ -1,7 +1,7 @@
 /**
  * TimeRangeSelector Component
  *
- * 时间范围选择�?
+ * 时间范围选择�?
  * Story 11-7: Advanced Features
  */
 
@@ -40,12 +40,12 @@ interface TimeRangeSelectorProps {
 }
 
 const rangeLabels: Record<TimeRangeType, string> = {
-  day: '�?,
-  week: '�?,
-  month: '�?,
+  day: '',
+  week: '',
+  month: '',
   quarter: '季度',
-  year: '�?,
-  custom: '自定�?,
+  year: '',
+  custom: '自定',
 };
 
 // Get range for a specific date and type
@@ -72,11 +72,11 @@ function formatRangeText(range: TimeRange): string {
 
   switch (type) {
     case 'day':
-      return format(start, 'yyyy年M月d�?, { locale: zhCN });
+      return format(start, 'yyyy年M月d', { locale: zhCN });
     case 'week':
-      return `${format(start, 'M月d�?, { locale: zhCN })} - ${format(end, 'M月d�?, { locale: zhCN })}`;
+      return `${format(start, 'M月d', { locale: zhCN })} - ${format(end, 'M月d', { locale: zhCN })}`;
     case 'month':
-      return format(start, 'yyyy年M�?, { locale: zhCN });
+      return format(start, 'yyyy年M', { locale: zhCN });
     case 'quarter':
       const quarter = Math.floor(start.getMonth() / 3) + 1;
       return `${start.getFullYear()}年Q${quarter}`;

@@ -87,7 +87,7 @@ export function LoginView() {
                   type="text"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="请输入邮箱或用户�?
+                  placeholder="请输入邮箱或用户"
                   className="pl-9"
                   required
                   autoFocus
@@ -103,7 +103,7 @@ export function LoginView() {
                   to="/forgot-password"
                   className="text-sm text-primary hover:underline"
                 >
-                  忘记密码�?
+                  忘记密码�?
                 </Link>
               </div>
               <div className="relative">
@@ -113,7 +113,7 @@ export function LoginView() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="请输入密�?
+                  placeholder="请输入密"
                   className="pl-9 pr-10"
                   required
                 />
@@ -141,7 +141,7 @@ export function LoginView() {
                 onCheckedChange={(checked) => setRememberMe(checked === true)}
               />
               <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
-                记住�?
+                记住�?
               </Label>
             </div>
 
@@ -150,7 +150,7 @@ export function LoginView() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  登录�?..
+                  登录�?..
                 </>
               ) : (
                 '登录'
@@ -164,7 +164,7 @@ export function LoginView() {
               <div className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">�?/span>
+              <span className="bg-card px-2 text-muted-foreground"></span>
             </div>
           </div>
 

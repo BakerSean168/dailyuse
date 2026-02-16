@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '.';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../card';
 import { Button } from '../button';

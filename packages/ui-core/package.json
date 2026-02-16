@@ -12,19 +12,17 @@
       "import": "./dist/index.js"
     },
     "./styles/globals.css": "./src/styles/globals.css",
-    "./tailwind.preset": "./tailwind.preset.js"
+    "./theme.css": "./src/styles/theme.css"
   },
   "files": [
     "dist",
-    "src/styles",
-    "tailwind.preset.js"
+    "src/styles"
   ],
   "dependencies": {
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "rimraf": "^6.0.1",
-    "tailwindcss": "4.1.18",
     "tsup": "^8.0.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"

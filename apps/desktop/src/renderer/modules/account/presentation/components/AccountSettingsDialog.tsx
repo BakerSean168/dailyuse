@@ -1,7 +1,7 @@
 /**
  * AccountSettingsDialog Component
  *
- * 账户设置对话�?
+ * 账户设置对话�?
  * Story 11-6: Auxiliary Modules
  * 
  * 使用 contracts 中的 UpdateAccountProfileRequest 作为保存类型
@@ -139,7 +139,7 @@ export function AccountSettingsDialog({
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>账户设置</DialogTitle>
-            <DialogDescription>管理您的账户信息和偏好设�?/DialogDescription>
+            <DialogDescription>管理您的账户信息和偏好设</DialogDescription>
           </DialogHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
@@ -172,12 +172,12 @@ export function AccountSettingsDialog({
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="bio">个人简�?/Label>
+                  <Label htmlFor="bio">个人简</Label>
                   <Textarea
                     id="bio"
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    placeholder="简单介绍一下自�?
+                    placeholder="简单介绍一下自"
                     rows={3}
                   />
                 </div>
@@ -222,7 +222,7 @@ export function AccountSettingsDialog({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="zh-CN">简体中�?/SelectItem>
+                        <SelectItem value="zh-CN">简体中</SelectItem>
                         <SelectItem value="en-US">English</SelectItem>
                       </SelectContent>
                     </Select>
@@ -236,7 +236,7 @@ export function AccountSettingsDialog({
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">通知偏好</CardTitle>
-                  <CardDescription>选择您希望接收通知的方�?/CardDescription>
+                  <CardDescription>选择您希望接收通知的方</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -269,7 +269,7 @@ export function AccountSettingsDialog({
                     <div className="space-y-0.5">
                       <Label>提醒通知</Label>
                       <p className="text-sm text-muted-foreground">
-                        接收日程和任务提�?
+                        接收日程和任务提�?
                       </p>
                     </div>
                     <Switch
@@ -320,7 +320,7 @@ export function AccountSettingsDialog({
               取消
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? '保存�?..' : '保存更改'}
+              {saving ? '保存中...' : '保存更改'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -330,10 +330,10 @@ export function AccountSettingsDialog({
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>确定要删除账户吗�?/AlertDialogTitle>
+            <AlertDialogTitle>确定要删除账户吗</AlertDialogTitle>
             <AlertDialogDescription>
-              此操作将永久删除您的账户和所有相关数据，包括目标、任务、日程和提醒�?
-              此操作无法撤销�?
+              此操作将永久删除您的账户和所有相关数据，包括目标、任务、日程和提醒�?
+              此操作无法撤销�?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -4,7 +4,7 @@
  * Imports the Design System source of truth from @dailyuse/ui-core.
  */
 
-@import "@dailyuse/ui-core/styles/globals.css";
+@import "@dailyuse/ui-core/theme.css";
 
 @layer base {
   body {

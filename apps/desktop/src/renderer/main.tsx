@@ -9,15 +9,14 @@
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { configureDesktopDependencies } from '@dailyuse/infrastructure-client';
 import App from './App';
 import './styles.css';
 
+// TODO: configureDesktopDependencies - renderer DI setup pending @dailyuse/infrastructure-client implementation
 // Initialize DI configuration for the renderer process
 // Uses the `electronAPI` exposed via the preload script (contextBridge)
 if (window.electronAPI) {
-  configureDesktopDependencies(window.electronAPI);
-  console.log('[Renderer] DI configured with ElectronAPI');
+  console.log('[Renderer] ElectronAPI available, DI configuration pending');
 } else {
   // Fallback or development mode behavior
   console.warn('[Renderer] ElectronAPI not available, running in browser mode');

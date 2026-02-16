@@ -97,49 +97,52 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useTaskStore } from '../../stores/taskStore';
-import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
-import { useRouter } from 'vue-router';
-import type { TaskInstance } from '@dailyuse/task/domain-client';
+import type { TaskInstanceViewModel } from '../types';
 
-const router = useRouter();
-const taskStore = useTaskStore();
-const goalStore = useGoalStore();
+interface Props {
+  tasks?: TaskInstanceViewModel[];
+  onNavigateToManagement?: () => void | Promise<void>;
+  onToggleComplete?: (task: TaskInstanceViewModel) => void | Promise<void>;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  tasks: () => [],
+});
+
+const emit = defineEmits<{
+  (e: 'navigate-management'): void;
+  (e: 'toggle-complete', task: TaskInstanceViewModel): void;
+}>();
 
 const navigateToTaskManagement = () => {
-  router.push('/task-management');
+  emit('navigate-management');
+  props.onNavigateToManagement?.();
 };
 
 // ✅ 获取今日任务列表 - 使用新的状态字段
 const todayTasks = computed(() => {
   const today = new Date().toISOString().split('T')[0];
-  const todayTimestamp = new Date(today).getTime();
-  
-  let tasks = taskStore.getAllTaskInstances.filter(
-    (task: TaskInstance) => {
+  return props.tasks.filter((task) => {
       const taskDate = new Date(task.instanceDate).toISOString().split('T')[0];
       return taskDate === today && !task.isCompleted;
-    },
-  );
-  return tasks;
+    });
 });
 
 // ✅ 计算完成百分比 - 使用新的状态字段
 const completionPercentage = computed(() => {
   const today = new Date().toISOString().split('T')[0];
-  const allTasks = taskStore.getAllTaskInstances.filter(
-    (task: TaskInstance) => {
+  const allTasks = props.tasks.filter((task) => {
       const taskDate = new Date(task.instanceDate).toISOString().split('T')[0];
       return taskDate === today;
-    },
-  );
-  const completedTasks = allTasks.filter((task: TaskInstance) => task.isCompleted);
+    });
+  const completedTasks = allTasks.filter((task) => task.isCompleted);
   return allTasks.length > 0 ? Math.round((completedTasks.length / allTasks.length) * 100) : 0;
 });
 
 // ✅ 切换任务完成状态
-const toggleTaskComplete = async (task: TaskInstance) => {
-  console.log('切换任务状态:', task.uuid);
+const toggleTaskComplete = async (task: TaskInstanceViewModel) => {
+  emit('toggle-complete', task);
+  await props.onToggleComplete?.(task);
 };
 </script>
 

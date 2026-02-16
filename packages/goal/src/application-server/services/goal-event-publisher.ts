@@ -33,4 +33,13 @@ export class GoalEventPublisher {
 
     this.isInitialized = true;
   }
+
+  /**
+   * Publish domain events accumulated on a Goal entity.
+   * Currently a no-op — event forwarding is handled by the bus listeners above.
+   */
+  static async publishGoalEvents(_goal: unknown): Promise<void> {
+    // Placeholder — statistics service was removed.
+    // Individual event bus listeners are set up in initialize().
+  }
 }

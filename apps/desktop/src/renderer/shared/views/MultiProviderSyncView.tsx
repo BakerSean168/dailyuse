@@ -7,7 +7,7 @@
  * - Manage multiple concurrent providers
  * - Compare provider features and pricing
  *
- * 多云提供商管�?- 在不同云服务间切换和迁移
+ * 多云提供商管�?- 在不同云服务间切换和迁移
  *
  * @module views/sync/MultiProviderSync
  */
@@ -312,7 +312,7 @@ export const MultiProviderSyncView: React.FC = () => {
     },
     {
       id: 'nutstore',
-      name: '坚果�?,
+      name: '坚果',
       description: 'WebDAV-based cloud storage optimized for China',
       icon: <Cloud className="w-10 h-10" />,
       connected: false,

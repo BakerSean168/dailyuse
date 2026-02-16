@@ -38,6 +38,10 @@
     "./infrastructure-client": {
       "types": "./dist/infrastructure-client/index.d.ts",
       "import": "./dist/infrastructure-client/index.js"
+    },
+    "./electron-entry": {
+      "types": "./dist/electron-entry/index.d.ts",
+      "import": "./dist/electron-entry/index.js"
     }
   },
   "scripts": {},
@@ -45,7 +49,9 @@
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
+    "@dailyuse/goal": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
+    "@dailyuse/schedule": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "express": "^5.1.0",
     "zod": "^3.24.0"

@@ -16,6 +16,9 @@
       "@dailyuse/database": [
         "../database/src/index.ts"
       ],
+      "@dailyuse/http-client": [
+        "../http-client/src/index.ts"
+      ],
       "@dailyuse/domain-shared": [
         "../domain-shared/src/index.ts"
       ],

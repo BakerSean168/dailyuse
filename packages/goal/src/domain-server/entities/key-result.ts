@@ -29,7 +29,7 @@
  */
 
 import { Entity } from '@dailyuse/utils';
-import { KeyResultId } from '@dailyuse/domain-shared';
+import { KeyResultId } from '../../domain-shared';
 import type {
   KeyResultPersistenceDTO,
   KeyResultServer,

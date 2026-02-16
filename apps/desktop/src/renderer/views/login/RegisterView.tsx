@@ -4,7 +4,7 @@
  * 用户注册界面，支持：
  * - 邮箱注册
  * - 密码强度验证
- * - 用户名设�?
+ * - 用户名设�?
  * - 服务条款确认
  */
 
@@ -27,7 +27,7 @@ import { cn } from '@dailyuse/ui-react-shadcn';
 // ============ Types ============
 
 interface RegisterViewProps {
-  /** 切换到登录页�?*/
+  /** 切换到登录页�?*/
   onSwitchToLogin: () => void;
   /** 注册成功回调 */
   onRegisterSuccess?: () => void;
@@ -54,11 +54,11 @@ function calculatePasswordStrength(password: string): PasswordStrength {
   if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score++;
 
   const strengthMap: Record<number, { label: string; color: string }> = {
-    0: { label: '非常�?, color: 'bg-red-500' },
-    1: { label: '�?, color: 'bg-orange-500' },
-    2: { label: '一�?, color: 'bg-yellow-500' },
-    3: { label: '�?, color: 'bg-green-500' },
-    4: { label: '非常�?, color: 'bg-emerald-500' },
+    0: { label: '非常', color: 'bg-red-500' },
+    1: { label: '', color: 'bg-orange-500' },
+    2: { label: '一', color: 'bg-yellow-500' },
+    3: { label: '', color: 'bg-green-500' },
+    4: { label: '非常', color: 'bg-emerald-500' },
   };
 
   const strength = strengthMap[Math.min(score, 4)];
@@ -75,7 +75,7 @@ function isValidEmail(email: string): boolean {
 // ============ Components ============
 
 /**
- * 自定义标题栏（无边框窗口�?
+ * 自定义标题栏（无边框窗口�?
  */
 function TitleBar({ onBack }: { onBack: () => void }) {
   const handleMinimize = () => {
@@ -117,7 +117,7 @@ function TitleBar({ onBack }: { onBack: () => void }) {
 }
 
 /**
- * 输入框组�?
+ * 输入框组�?
  */
 function Input({
   icon: Icon,
@@ -161,7 +161,7 @@ function Input({
 }
 
 /**
- * 密码强度指示�?
+ * 密码强度指示�?
  */
 function PasswordStrengthIndicator({ strength }: { strength: PasswordStrength }) {
   return (
@@ -185,7 +185,7 @@ function PasswordStrengthIndicator({ strength }: { strength: PasswordStrength })
 }
 
 /**
- * 主按�?
+ * 主按�?
  */
 function PrimaryButton({
   children,
@@ -212,7 +212,7 @@ function PrimaryButton({
       {loading ? (
         <div className="flex items-center justify-center gap-2">
           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          <span>注册�?..</span>
+          <span>注册中...</span>
         </div>
       ) : (
         children
@@ -234,7 +234,7 @@ export function RegisterView({ onSwitchToLogin, onRegisterSuccess }: RegisterVie
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // 表单验证状�?
+  // 表单验证状�?
   const [touched, setTouched] = useState({
     username: false,
     email: false,
@@ -246,22 +246,22 @@ export function RegisterView({ onSwitchToLogin, onRegisterSuccess }: RegisterVie
 
   // 验证
   const usernameError = touched.username && username.length > 0 && username.length < 3 
-    ? '用户名至�?3 个字�? : undefined;
+    ? '用户名至少3个字符' : undefined;
   const emailError = touched.email && email.length > 0 && !isValidEmail(email) 
     ? '请输入有效的邮箱地址' : undefined;
-  // 密码验证：服务器要求至少8位，包含大写字母和特殊字�?
+  // 密码验证：服务器要求至少8位，包含大写字母和特殊字�?
   const getPasswordError = () => {
     if (!touched.password || password.length === 0) return undefined;
-    if (password.length < 8) return '密码至少 8 个字�?;
-    if (!/[A-Z]/.test(password)) return '密码需包含至少一个大写字�?;
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return '密码需包含至少一个特殊字�?;
+    if (password.length < 8) return '密码至少 8 个字';
+    if (!/[A-Z]/.test(password)) return '密码需包含至少一个大写字';
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return '密码需包含至少一个特殊字';
     return undefined;
   };
   const passwordError = getPasswordError();
   const confirmPasswordError = touched.confirmPassword && confirmPassword.length > 0 && confirmPassword !== password 
-    ? '两次输入的密码不一�? : undefined;
+    ? '两次输入的密码不一' : undefined;
 
-  // 密码是否满足服务器要�?
+  // 密码是否满足服务器要�?
   const isPasswordValid = 
     password.length >= 8 &&
     /[A-Z]/.test(password) &&
@@ -281,7 +281,7 @@ export function RegisterView({ onSwitchToLogin, onRegisterSuccess }: RegisterVie
     setError(null);
 
     try {
-      // 统一�?IpcResult 格式: { ok: boolean; data?: T; error?: { code, message } }
+      // 统一�?IpcResult 格式: { ok: boolean; data?: T; error?: { code, message } }
       const result = await window.electronAPI?.invoke<{
         ok: boolean;
         data?: { accountUuid: string; message: string };
@@ -293,7 +293,7 @@ export function RegisterView({ onSwitchToLogin, onRegisterSuccess }: RegisterVie
       });
 
       if (result?.ok) {
-        // 注册成功，切换到主窗�?
+        // 注册成功，切换到主窗�?
         onRegisterSuccess?.();
         await window.electronAPI?.invoke('window:transition-to-main');
       } else {
@@ -303,7 +303,7 @@ export function RegisterView({ onSwitchToLogin, onRegisterSuccess }: RegisterVie
       }
     } catch (err) {
       console.error('Registration error:', err);
-      setError('注册请求失败，请检查网络连�?);
+      setError('注册请求失败，请检查网络连');
     } finally {
       setLoading(false);
     }
@@ -311,10 +311,10 @@ export function RegisterView({ onSwitchToLogin, onRegisterSuccess }: RegisterVie
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* 标题�?*/}
+      {/* 标题�?*/}
       <TitleBar onBack={onSwitchToLogin} />
 
-      {/* 主内�?*/}
+      {/* 主内�?*/}
       <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto">
         {/* Logo */}
         <motion.div 
@@ -347,11 +347,11 @@ export function RegisterView({ onSwitchToLogin, onRegisterSuccess }: RegisterVie
           <Input
             icon={User}
             type="text"
-            placeholder="用户�?
+            placeholder="用户"
             value={username}
             onChange={(v) => { setUsername(v); setTouched(t => ({ ...t, username: true })); }}
             error={usernameError}
-            hint="3-20 个字符，字母、数字或下划�?
+            hint="3-20 个字符，字母、数字或下划"
           />
 
           <Input
@@ -371,7 +371,7 @@ export function RegisterView({ onSwitchToLogin, onRegisterSuccess }: RegisterVie
               value={password}
               onChange={(v) => { setPassword(v); setTouched(t => ({ ...t, password: true })); }}
               error={passwordError}
-              hint="至少8位，包含大写字母和特殊字�?
+              hint="至少8位，包含大写字母和特殊字"
               rightElement={
                 <button 
                   onClick={() => setShowPassword(!showPassword)}
@@ -433,7 +433,7 @@ export function RegisterView({ onSwitchToLogin, onRegisterSuccess }: RegisterVie
             loading={loading}
             disabled={!isFormValid}
           >
-            �?�?
+            �?�?
           </PrimaryButton>
 
           <div className="text-center text-sm text-white/50">

@@ -1,7 +1,7 @@
 /**
  * RepositoryExplorer Component
  *
- * 仓库浏览器视�?
+ * 仓库浏览器视�?
  * Story 11-6: Auxiliary Modules
  */
 
@@ -156,7 +156,7 @@ export function RepositoryExplorer({
             </Button>
             <Button variant="outline" size="sm" onClick={() => onCreateFolder?.(currentFolderId || null)}>
               <FolderPlus className="h-4 w-4 mr-1" />
-              新建文件�?
+              新建文件�?
             </Button>
             <Button variant="ghost" size="icon" onClick={onRefresh}>
               <RefreshCw className="h-4 w-4" />
@@ -189,7 +189,7 @@ export function RepositoryExplorer({
               <SelectItem value="image">图片</SelectItem>
               <SelectItem value="video">视频</SelectItem>
               <SelectItem value="audio">音频</SelectItem>
-              <SelectItem value="archive">压缩�?/SelectItem>
+              <SelectItem value="archive">压缩</SelectItem>
               <SelectItem value="code">代码</SelectItem>
               <SelectItem value="other">其他</SelectItem>
             </SelectContent>
@@ -211,16 +211,16 @@ export function RepositoryExplorer({
               <DropdownMenuLabel>排序方式</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setSortBy('name')}>
-                名称 {sortBy === 'name' && '�?}
+                名称 {sortBy === 'name' && ''}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSortBy('date')}>
-                日期 {sortBy === 'date' && '�?}
+                日期 {sortBy === 'date' && ''}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSortBy('size')}>
-                大小 {sortBy === 'size' && '�?}
+                大小 {sortBy === 'size' && ''}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSortBy('type')}>
-                类型 {sortBy === 'type' && '�?}
+                类型 {sortBy === 'type' && ''}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={toggleSortOrder}>
@@ -257,7 +257,7 @@ export function RepositoryExplorer({
         <ResizablePanel defaultSize={25} minSize={15} maxSize={40}>
           <ScrollArea className="h-full">
             <div className="p-4">
-              <h3 className="text-sm font-medium mb-3">文件�?/h3>
+              <h3 className="text-sm font-medium mb-3">文件</h3>
               <FolderTree
                 nodes={folders}
                 selectedId={currentFolderId}
@@ -328,8 +328,8 @@ export function RepositoryExplorer({
                   <h3 className="font-medium mb-1">暂无资源</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     {searchQuery
-                      ? '没有找到匹配的资�?
-                      : '点击上传按钮添加您的第一个资�?}
+                      ? '没有找到匹配的资'
+                      : '点击上传按钮添加您的第一个资'}
                   </p>
                   {!searchQuery && (
                     <Button onClick={onUpload}>
@@ -363,7 +363,7 @@ export function RepositoryExplorer({
 
             {/* Footer Stats */}
             <div className="border-t px-4 py-2 text-sm text-muted-foreground">
-              {filteredResources.length} 个资�?
+              {filteredResources.length} 个资�?
               {searchQuery && ` · 搜索: "${searchQuery}"`}
               {typeFilter !== 'all' && ` · 类型: ${typeFilter}`}
             </div>

@@ -1,33 +1,32 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import TaskInstanceCard from './TaskInstanceCard.vue';
-import { TaskInstance } from '@dailyuse/task/domain-client';
+import type { TaskInstanceViewModel } from './types';
 
 const now = Date.now();
 
 function createMockTask(overrides: Record<string, unknown> = {}) {
-  return TaskInstance.fromDTO({
-    id: '550e8400-e29b-41d4-a716-446655440000',
-    templateId: '660e8400-e29b-41d4-a716-446655440001',
-    identityId: '770e8400-e29b-41d4-a716-446655440002',
+  const base: TaskInstanceViewModel = {
+    uuid: '550e8400-e29b-41d4-a716-446655440000',
+    templateUuid: '660e8400-e29b-41d4-a716-446655440001',
+    templateTitle: '每日复盘',
+    isCompleted: false,
+    statusText: 'PENDING',
     instanceDate: now,
     timeConfig: {
-      timeType: 'TimePoint' as const,
+      timeType: 'TIME_POINT' as const,
       startDate: now,
       timePoint: 540, // 9:00 AM
       timeRange: null,
     },
-    importance: 'Important' as const,
-    priority: 1,
-    status: 'Pending' as const,
-    actualStartTime: null,
     actualEndTime: null,
-    comment: null,
-    version: 1,
-    createdAt: now,
-    updatedAt: now,
-    deletedAt: null,
+    note: '',
+    instanceDateFormatted: new Date(now).toLocaleDateString(),
+  };
+
+  return {
+    ...base,
     ...overrides,
-  });
+  } as TaskInstanceViewModel;
 }
 
 const meta = {
@@ -54,7 +53,8 @@ export const Pending: Story = {
 export const Completed: Story = {
   args: {
     task: createMockTask({
-      status: 'Completed',
+      isCompleted: true,
+      statusText: 'COMPLETED',
       actualEndTime: now,
     }),
   },
@@ -64,7 +64,7 @@ export const AllDay: Story = {
   args: {
     task: createMockTask({
       timeConfig: {
-        timeType: 'AllDay',
+        timeType: 'ALL_DAY',
         startDate: now,
         timePoint: null,
         timeRange: null,
@@ -77,7 +77,7 @@ export const TimeRange: Story = {
   args: {
     task: createMockTask({
       timeConfig: {
-        timeType: 'TimeRange',
+        timeType: 'TIME_RANGE',
         startDate: now,
         timePoint: null,
         timeRange: { start: 540, end: 660 }, // 9:00 - 11:00
@@ -98,21 +98,21 @@ export const TaskList: Story = {
     components: { TaskInstanceCard },
     setup() {
       const tasks = [
-        createMockTask({ id: '1', status: 'Completed', actualEndTime: now }),
+        createMockTask({ uuid: '1', isCompleted: true, statusText: 'COMPLETED', actualEndTime: now }),
         createMockTask({
-          id: '2',
-          status: 'Pending',
-          timeConfig: { timeType: 'TimePoint', startDate: now, timePoint: 600, timeRange: null },
+          uuid: '2',
+          statusText: 'PENDING',
+          timeConfig: { timeType: 'TIME_POINT', startDate: now, timePoint: 600, timeRange: null },
         }),
         createMockTask({
-          id: '3',
-          status: 'Pending',
-          timeConfig: { timeType: 'TimeRange', startDate: now, timePoint: null, timeRange: { start: 780, end: 840 } },
+          uuid: '3',
+          statusText: 'PENDING',
+          timeConfig: { timeType: 'TIME_RANGE', startDate: now, timePoint: null, timeRange: { start: 780, end: 840 } },
         }),
         createMockTask({
-          id: '4',
-          status: 'Pending',
-          timeConfig: { timeType: 'AllDay', startDate: now, timePoint: null, timeRange: null },
+          uuid: '4',
+          statusText: 'PENDING',
+          timeConfig: { timeType: 'ALL_DAY', startDate: now, timePoint: null, timeRange: null },
         }),
       ];
       return { tasks };
@@ -121,9 +121,10 @@ export const TaskList: Story = {
       <div class="border rounded-md max-w-lg">
         <TaskInstanceCard
           v-for="task in tasks"
-          :key="String(task.id)"
+          :key="String(task.uuid)"
           :task="task"
           @complete="(id) => console.log('Complete:', id)"
+          @undo="(id) => console.log('Undo:', id)"
         />
       </div>
     `,

@@ -6,8 +6,8 @@
  */
 
 import type { PrismaClient } from '@dailyuse/database';
-import type { IAccountRepository } from '../../domain-server';
-import { Account } from '../../domain-server';
+import type { IAccountRepository } from '../../../domain-server';
+import { Account } from '../../../domain-server';
 import type { AccountPersistenceDTO } from '@dailyuse/contracts/account';
 
 export class PrismaAccountRepository implements IAccountRepository {
@@ -65,7 +65,7 @@ export class PrismaAccountRepository implements IAccountRepository {
 
   async findByUsername(username: string, tx?: unknown): Promise<Account | null> {
     const client = (tx || this.prisma) as any;
-    // Nickname stored in profile JSON â€?search by nickname
+    // Nickname stored in profile JSON ï¿½?search by nickname
     const rows = await client.account.findMany({
       where: { profile: { path: ['nickname'], equals: username } },
       take: 1,

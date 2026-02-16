@@ -240,13 +240,13 @@ export function FocusStatistics({
       <div className="grid grid-cols-2 gap-3">
         <StatCard
           icon={Zap}
-          label="总专注次�?
+          label="总专注次"
           value={stats.totalSessions}
           subtext={`完成 ${stats.completedSessions} 次`}
         />
         <StatCard
           icon={Clock}
-          label="总专注时�?
+          label="总专注时"
           value={formatDuration(stats.totalTime)}
           color="text-blue-500"
         />
@@ -268,14 +268,14 @@ export function FocusStatistics({
       {/* Recent Sessions */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">最近专�?/CardTitle>
+          <CardTitle className="text-base">最近专</CardTitle>
         </CardHeader>
         <CardContent>
           {sessions.length === 0 ? (
             <div className="text-center py-6 text-muted-foreground">
               <Coffee className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">还没有专注记�?/p>
-              <p className="text-xs">开始你的第一个番茄钟�?</p>
+              <p className="text-sm">还没有专注记</p>
+              <p className="text-xs">开始你的第一个番茄钟吧</p>
             </div>
           ) : (
             <div className="space-y-2">

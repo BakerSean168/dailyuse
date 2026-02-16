@@ -8,7 +8,6 @@
     "build": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/packages/ui-vue/dist"],
-      "dependsOn": ["^build"],
       "options": {
         "command": "vite build",
         "cwd": "packages/ui-vue"

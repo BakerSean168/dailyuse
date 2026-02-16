@@ -6,7 +6,7 @@
 
 import type { IGoalFolderRepository } from '@/domain-server';
 import { GoalFolder } from '@/domain-server';
-import type { GoalFolderResponse } from '@dailyuse/contracts/goal';
+import type { GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 
 /**
  * Get Goal Folder Service
@@ -18,20 +18,13 @@ export class GetGoalFolder {
    * 获取服务单例
    */
 
-  async execute(uuid: string, accountUuid: string): Promise<GoalFolderResponse> {
+  async execute(uuid: string): Promise<GoalFolderClientDTO | null> {
     const folder = await this.goalFolderRepository.findById(uuid);
 
     if (!folder) {
-      throw new Error(`Goal folder not found: ${uuid}`);
+      return null;
     }
 
-    // 验证所属账户
-    if (folder.accountUuid !== accountUuid) {
-      throw new Error('Unauthorized access to goal folder');
-    }
-
-    return {
-      folder: folder.toClientDTO(),
-    };
+    return folder.toClientDTO();
   }
 }

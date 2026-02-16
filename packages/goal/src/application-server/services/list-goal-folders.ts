@@ -6,7 +6,7 @@
 
 import type { IGoalFolderRepository } from '@/domain-server';
 import { GoalFolder } from '@/domain-server';
-import type { QueryGoalFoldersRequest, GoalFoldersResponse } from '@dailyuse/contracts/goal';
+import type { QueryGoalFoldersReq, QueryGoalFoldersRes } from '@dailyuse/contracts/goal';
 
 /**
  * List Goal Folders Service
@@ -14,11 +14,11 @@ import type { QueryGoalFoldersRequest, GoalFoldersResponse } from '@dailyuse/con
 export class ListGoalFolders {
   constructor(private readonly goalFolderRepository: IGoalFolderRepository) {}
 
-  async execute(input: QueryGoalFoldersRequest): Promise<GoalFoldersResponse> {
+  async execute(input: QueryGoalFoldersReq): Promise<QueryGoalFoldersRes> {
     const folders = await this.goalFolderRepository.findByIdentityId(input.accountUuid);
 
     return {
-      folders: folders.map((f: GoalFolder) => f.toClientDTO()),
+      data: folders.map((f: GoalFolder) => f.toClientDTO()),
       total: folders.length,
     };
   }

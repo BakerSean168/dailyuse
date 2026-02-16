@@ -1,10 +1,10 @@
 /**
  * ScheduleWeekView Component
  *
- * 周历主视�?
- * 功能�?
+ * 周历主视�?
+ * 功能�?
  * 1. 集成 WeekViewCalendar
- * 2. 创建/编辑日程对话�?
+ * 2. 创建/编辑日程对话�?
  * 3. 事件详情查看
  * 4. 周导航和事件管理
  */
@@ -12,7 +12,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-// 使用 Store 导出的类型别�?
+// 使用 Store 导出的类型别�?
 import type { ScheduleClientDTO } from '../stores/scheduleStore';
 import { useScheduleStore } from '../stores/scheduleStore';
 import { WeekViewCalendar } from '../components/WeekViewCalendar';
@@ -110,12 +110,12 @@ export function ScheduleWeekView({ className }: ScheduleWeekViewProps) {
     fetchSchedules(currentWeekStart, weekEnd);
   }, [currentWeekStart, fetchSchedules]);
 
-  // 处理周切�?
+  // 处理周切�?
   const handleWeekChange = useCallback((startDate: Date, endDate: Date) => {
     setCurrentWeekStart(startDate);
   }, []);
 
-  // 打开创建对话�?
+  // 打开创建对话�?
   const handleCreate = useCallback(() => {
     setEditingSchedule(null);
     setShowCreateDialog(true);
@@ -176,9 +176,9 @@ export function ScheduleWeekView({ className }: ScheduleWeekViewProps) {
     }
   }, [editingSchedule, createSchedule, updateScheduleById]);
 
-  // 从列表删�?
+  // 从列表删�?
   const handleDeleteFromList = useCallback(async (uuid: string) => {
-    if (!confirm('确定要删除这个日程吗�?)) return;
+    if (!confirm('确定要删除这个日程吗')) return;
     
     try {
       await deleteSchedule(uuid);
@@ -222,7 +222,7 @@ export function ScheduleWeekView({ className }: ScheduleWeekViewProps) {
         </div>
       </div>
 
-      {/* 创建/编辑对话�?*/}
+      {/* 创建/编辑对话�?*/}
       <CreateScheduleDialog
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
@@ -235,7 +235,7 @@ export function ScheduleWeekView({ className }: ScheduleWeekViewProps) {
         }}
       />
 
-      {/* 事件详情对话�?*/}
+      {/* 事件详情对话�?*/}
       <Dialog open={showEventDetails} onOpenChange={setShowEventDetails}>
         <DialogContent className="sm:max-w-[500px]">
           {selectedEvent && (
@@ -279,11 +279,11 @@ export function ScheduleWeekView({ className }: ScheduleWeekViewProps) {
                   </div>
                 )}
 
-                {/* 优先�?*/}
+                {/* 优先�?*/}
                 {selectedEvent.priority && (
                   <div className="flex items-center gap-2 text-sm">
                     <Flag className="h-4 w-4 text-muted-foreground" />
-                    <span>优先�? {selectedEvent.priority}</span>
+                    <span>优先级: {selectedEvent.priority}</span>
                   </div>
                 )}
               </div>
@@ -306,13 +306,13 @@ export function ScheduleWeekView({ className }: ScheduleWeekViewProps) {
         </DialogContent>
       </Dialog>
 
-      {/* 删除确认对话�?*/}
+      {/* 删除确认对话�?*/}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>确认删除</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要删除日程「{selectedEvent?.title}」吗？此操作不可撤销�?
+              确定要删除日程「{selectedEvent?.title}」吗？此操作不可撤销�?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -322,7 +322,7 @@ export function ScheduleWeekView({ className }: ScheduleWeekViewProps) {
               disabled={isSubmitting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isSubmitting ? '删除�?..' : '确认删除'}
+              {isSubmitting ? '删除中...' : '确认删除'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

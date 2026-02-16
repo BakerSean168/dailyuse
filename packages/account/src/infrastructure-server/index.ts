@@ -3,4 +3,4 @@
  * Prisma 仓储实现
  */
 
-export { PrismaAccountRepository } from './repositories/prisma-account-repository';
+export { AccountPrismaRepository as PrismaAccountRepository } from './adapters/prisma/account-prisma.repository';

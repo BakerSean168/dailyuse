@@ -30,13 +30,13 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { useBasicInfoValidation } from '../../../composables/useBasicInfoValidation';
-import type { TaskTemplate } from '@dailyuse/task/domain-client';
+import type { TaskTemplateViewModel } from '../../types';
 interface Props {
-  modelValue: TaskTemplate;
+  modelValue: TaskTemplateViewModel;
 }
 
 interface Emits {
-  (e: 'update:modelValue', value: TaskTemplate): void;
+  (e: 'update:modelValue', value: TaskTemplateViewModel): void;
   (e: 'update:validation', isValid: boolean): void;
 }
 
@@ -45,8 +45,13 @@ const emit = defineEmits<Emits>();
 
 const { validate, validationErrors, isValid } = useBasicInfoValidation();
 
-const updateTemplate = (updater: (template: TaskTemplate) => void) => {
-  const updatedTemplate = props.modelValue.clone();
+const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
+  const updatedTemplate: TaskTemplateViewModel = {
+    ...props.modelValue,
+    timeConfig: { ...(props.modelValue.timeConfig || {}) },
+    tags: [...(props.modelValue.tags || [])],
+    goalBinding: props.modelValue.goalBinding ? { ...props.modelValue.goalBinding } : null,
+  };
   updater(updatedTemplate);
   emit('update:modelValue', updatedTemplate);
 };
@@ -55,7 +60,7 @@ const title = computed({
   get: () => props.modelValue.title,
   set: (value: string) => {
     updateTemplate((template) => {
-      template.updateTitle(value);
+      template.title = value;
     });
   },
 });
@@ -64,7 +69,7 @@ const description = computed({
   get: () => props.modelValue.description,
   set: (value: string) => {
     updateTemplate((template) => {
-      template.updateDescription(value || null);
+      template.description = value || '';
     });
   },
 });

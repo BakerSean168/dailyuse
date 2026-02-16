@@ -34,13 +34,13 @@ const statusConfig: Record<
 > = {
   idle: {
     icon: Cloud,
-    label: '已同�?,
+    label: '已同',
     variant: 'secondary',
     color: 'text-muted-foreground',
   },
   syncing: {
     icon: Loader2,
-    label: '同步�?,
+    label: '同步',
     variant: 'default',
     color: 'text-blue-500',
   },
@@ -52,7 +52,7 @@ const statusConfig: Record<
   },
   conflict: {
     icon: AlertCircle,
-    label: '有冲�?,
+    label: '有冲',
     variant: 'destructive',
     color: 'text-orange-500',
   },
@@ -85,9 +85,9 @@ export function SyncStatusIndicator({
   };
 
   const tooltipContent = () => {
-    if (loading) return '加载�?..';
+    if (loading) return '加载中...';
     if (error) return `错误: ${error.message}`;
-    if (!status) return '未知状�?;
+    if (!status) return '未知状';
 
     const parts = [config.label];
     if (status.state?.lastSyncAt) {
@@ -95,10 +95,10 @@ export function SyncStatusIndicator({
       parts.push(`上次同步: ${date.toLocaleString()}`);
     }
     if (status.pendingChangesCount && status.pendingChangesCount > 0) {
-      parts.push(`待同�? ${status.pendingChangesCount} 项`);
+      parts.push(`待同` ${status.pendingChangesCount} 项`);
     }
     if (status.state?.statusDescription) {
-      parts.push(`状�? ${status.state.statusDescription}`);
+      parts.push(`状` ${status.state.statusDescription}`);
     }
     return parts.join('\n');
   };

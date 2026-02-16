@@ -12,8 +12,8 @@ export function EditorView() {
     <div className="container mx-auto p-6">
       <Card>
         <CardHeader>
-          <CardTitle>📝 编辑�?/CardTitle>
-          <CardDescription>文档编辑和管�?/CardDescription>
+          <CardTitle>编辑器</CardTitle>
+          <CardDescription>文档编辑和管理</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -25,7 +25,7 @@ export function EditorView() {
                 <CardContent className="p-4">
                   <div className="text-2xl mb-2">📄</div>
                   <h3 className="font-semibold">文档管理</h3>
-                  <p className="text-sm text-muted-foreground">创建和编辑文�?/p>
+                  <p className="text-sm text-muted-foreground">创建和编辑文档</p>
                 </CardContent>
               </Card>
               <Card>

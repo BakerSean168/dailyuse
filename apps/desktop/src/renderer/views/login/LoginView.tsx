@@ -3,7 +3,7 @@
  *
  * Steam-like 登录窗口，支持：
  * - 邮箱/密码登录
- * - 快速登录（已保存的账号�?
+ * - 快速登录（已保存的账号�?
  * - 扫码登录入口
  * - 离线模式入口
  * - 自动登录选项
@@ -40,9 +40,9 @@ interface QuickLoginAccount {
 }
 
 interface LoginViewProps {
-  /** 快速登录账号列�?*/
+  /** 快速登录账号列�?*/
   quickLoginAccounts?: QuickLoginAccount[];
-  /** 初始显示的视�?*/
+  /** 初始显示的视�?*/
   initialView?: 'login' | 'quick' | 'qrcode';
 }
 
@@ -51,7 +51,7 @@ type ViewMode = 'login' | 'quick' | 'qrcode' | 'register' | 'forgot';
 // ============ Components ============
 
 /**
- * 自定义标题栏（无边框窗口�?
+ * 自定义标题栏（无边框窗口�?
  */
 function TitleBar() {
   const handleMinimize = () => {
@@ -117,7 +117,7 @@ function Avatar({ account, size = 'md' }: { account: QuickLoginAccount; size?: '
 }
 
 /**
- * 快速登录账号卡�?
+ * 快速登录账号卡�?
  */
 function QuickLoginCard({ 
   account, 
@@ -170,7 +170,7 @@ function QuickLoginCard({
 }
 
 /**
- * 输入框组�?
+ * 输入框组�?
  */
 function Input({
   icon: Icon,
@@ -211,7 +211,7 @@ function Input({
 }
 
 /**
- * 主按�?
+ * 主按�?
  */
 function PrimaryButton({
   children,
@@ -238,7 +238,7 @@ function PrimaryButton({
       {loading ? (
         <div className="flex items-center justify-center gap-2">
           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          <span>登录�?..</span>
+          <span>登录中...</span>
         </div>
       ) : (
         children
@@ -298,7 +298,7 @@ function LoginForm({
         }
       />
 
-      {/* 选项�?*/}
+      {/* 选项�?*/}
       <div className="flex items-center justify-between text-sm">
         <label className="flex items-center gap-2 cursor-pointer text-white/60 hover:text-white/80">
           <div 
@@ -328,7 +328,7 @@ function LoginForm({
       )}
 
       <PrimaryButton onClick={handleSubmit} loading={loading}>
-        �?�?
+        �?�?
       </PrimaryButton>
 
       <div className="text-center text-sm text-white/50">
@@ -342,7 +342,7 @@ function LoginForm({
 }
 
 /**
- * 快速登录视�?
+ * 快速登录视�?
  */
 function QuickLoginView({
   accounts,
@@ -405,7 +405,7 @@ function QRCodeView({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
       </div>
       
       <p className="text-sm text-white/50">
-        使用 DailyUse 手机 App 扫描二维码登�?
+        使用 DailyUse 手机 App 扫描二维码登�?
       </p>
 
       <button
@@ -433,7 +433,7 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
     setError(null);
 
     try {
-      // 统一�?IpcResult 格式: { ok: boolean; data?: T; error?: { code, message } }
+      // 统一�?IpcResult 格式: { ok: boolean; data?: T; error?: { code, message } }
       const result = await window.electronAPI?.invoke<{
         ok: boolean;
         data?: { accountUuid: string; sessionUuid: string };
@@ -445,7 +445,7 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
       });
 
       if (result?.ok) {
-        // 登录成功，切换到主窗�?
+        // 登录成功，切换到主窗�?
         await window.electronAPI?.invoke('window:transition-to-main');
       } else {
         // 显示错误信息
@@ -460,21 +460,21 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
     }
   }, []);
 
-  // 快速登录处�?
+  // 快速登录处�?
   const handleQuickLogin = useCallback(async (account: QuickLoginAccount) => {
     if (account.hasValidSession) {
-      // 有有�?Session，直接进�?
+      // 有有�?Session，直接进�?
       setLoading(true);
       try {
-        // 更新最后登录时�?
+        // 更新最后登录时�?
         await window.electronAPI?.invoke('auth:update-last-login', account.uuid);
         await window.electronAPI?.invoke('window:transition-to-main');
       } finally {
         setLoading(false);
       }
     } else {
-      // 需要输入密�?
-      // TODO: 显示密码输入�?
+      // 需要输入密�?
+      // TODO: 显示密码输入�?
       setViewMode('login');
     }
   }, []);
@@ -488,7 +488,7 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
   // 离线模式
   const handleOfflineMode = useCallback(async () => {
     try {
-      // 统一�?IpcResult 格式: { ok: boolean; data?: T; error?: { code, message } }
+      // 统一�?IpcResult 格式: { ok: boolean; data?: T; error?: { code, message } }
       const result = await window.electronAPI?.invoke<{
         ok: boolean;
         data?: { accountUuid: string; mode: string; message: string };
@@ -496,7 +496,7 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
       }>('auth:enter-offline-mode');
       
       if (result?.ok) {
-        // 成功后跳转到主窗�?
+        // 成功后跳转到主窗�?
         await window.electronAPI?.invoke('window:transition-to-main');
       } else {
         console.error('Error entering offline mode:', result?.error?.message);
@@ -504,16 +504,16 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
       }
     } catch (error) {
       console.error('Error entering offline mode:', error);
-      setError('进入离线模式时发生错�?);
+      setError('进入离线模式时发生错');
     }
   }, []);
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* 标题�?*/}
+      {/* 标题�?*/}
       <TitleBar />
 
-      {/* 主内�?*/}
+      {/* 主内�?*/}
       <div className="flex-1 flex flex-col items-center justify-center p-6">
         {/* Logo */}
         <div className="mb-8">
@@ -523,7 +523,7 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
           </div>
         </div>
 
-        {/* 内容�?*/}
+        {/* 内容�?*/}
         <div className="w-full max-w-sm">
           <AnimatePresence mode="wait">
             {viewMode === 'quick' && quickLoginAccounts.length > 0 && (

@@ -37,6 +37,7 @@ export default createTsupConfig({
     'src/document.contracts.ts',
     'src/result/index.ts',
     'src/shared/index.ts',
+    'src/electron/index.ts',
 
     // 原语类型入口
     'src/primitives/index.ts',

@@ -24,7 +24,7 @@ export class DeleteGoalFolder {
     }
 
     // 验证所属账户
-    if (folder.accountUuid !== accountUuid) {
+    if (folder.identityId !== accountUuid) {
       throw new Error('Unauthorized access to goal folder');
     }
 

@@ -9,7 +9,7 @@
  */
 
 import { eventBus, type DomainEvent } from '@dailyuse/utils';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
+import { getGoalRepository } from '@dailyuse/goal/electron-entry';
 import { GoalRecord, type KeyResult } from '@dailyuse/goal/domain-server';
 
 let isInitialized = false;
@@ -78,8 +78,7 @@ function initializeTaskToGoalProgressListener(): void {
 
       // If a Key Result is specified, add a progress record
       if (goalBinding.keyResultUuid) {
-        const container = GoalContainer.getInstance();
-        const goalRepository = container.getGoalRepository();
+        const goalRepository = getGoalRepository();
 
         // 1. Fetch goal with children (Key Results)
         const goal = await goalRepository.findById(goalBinding.goalUuid, { includeChildren: true });

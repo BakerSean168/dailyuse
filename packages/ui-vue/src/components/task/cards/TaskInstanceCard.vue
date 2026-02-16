@@ -42,11 +42,11 @@ import { computed } from 'vue';
 import { format } from 'date-fns';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { CheckCircle2, Circle, Clock, Check } from 'lucide-vue-next';
-import type { TaskInstance } from '@dailyuse/task/domain-client';
+import type { TaskInstanceViewModel } from '../types';
 
 // Props
 interface Props {
-  task: TaskInstance;
+  task: TaskInstanceViewModel;
   showBorder?: boolean;
   goalStore?: any;
 }

@@ -4,15 +4,15 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
   <div
     data-testid="draggable-task-card"
     :data-task-uuid="template.uuid"
-    :data-dragging="isDragging && draggedTask?.uuid === template.uuid"
-    :data-valid-drop="isValidDrop && dropTarget?.uuid === template.uuid"
-    :data-invalid-drop="!isValidDrop && dropTarget?.uuid === template.uuid && isDragging"
+    :data-dragging="isDragging && draggedTaskUuid === template.uuid"
+    :data-valid-drop="isValidDrop && dropTargetUuid === template.uuid"
+    :data-invalid-drop="!isValidDrop && dropTargetUuid === template.uuid && isDragging"
     :class="{
       'draggable-task-card': true,
-      'draggable-task-card--dragging': isDragging && draggedTask?.uuid === template.uuid,
-      'draggable-task-card--drag-over': isValidDrop && dropTarget?.uuid === template.uuid,
+      'draggable-task-card--dragging': isDragging && draggedTaskUuid === template.uuid,
+      'draggable-task-card--drag-over': isValidDrop && dropTargetUuid === template.uuid,
       'draggable-task-card--invalid-drop':
-        !isValidDrop && dropTarget?.uuid === template.uuid && isDragging,
+        !isValidDrop && dropTargetUuid === template.uuid && isDragging,
     }"
     :draggable="enableDrag"
     @dragstart="onDragStart"
@@ -28,7 +28,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
 
     <!-- Drop Zone Indicator (when valid drop target) -->
     <div
-      v-if="isValidDrop && dropTarget?.uuid === template.uuid"
+      v-if="isValidDrop && dropTargetUuid === template.uuid"
       class="drop-zone-indicator"
       data-testid="drop-zone-valid"
     >
@@ -38,7 +38,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
 
     <!-- Invalid Drop Indicator -->
     <div
-      v-else-if="!isValidDrop && dropTarget?.uuid === template.uuid && isDragging"
+      v-else-if="!isValidDrop && dropTargetUuid === template.uuid && isDragging"
       class="drop-zone-indicator invalid"
       data-testid="drop-zone-invalid"
     >
@@ -52,17 +52,20 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
+import { ref } from 'vue';
 import TaskTemplateCard from './TaskTemplateCard.vue';
-import { useDragAndDrop } from '@/shared/composables/useDragAndDrop';
-import { TaskDependencyDragDropService } from '@/modules/task/application/services/TaskDependencyDragDropService';
+import type { TaskTemplateViewModel } from '../types';
 
 
 // Props
 interface Props {
-  template: TaskTemplate;
+  template: TaskTemplateViewModel;
   enableDrag?: boolean;
+  canDrop?: (source: TaskTemplateViewModel, target: TaskTemplateViewModel) => boolean;
+  onCreateDependency?: (
+    source: TaskTemplateViewModel,
+    target: TaskTemplateViewModel,
+  ) => Promise<boolean> | boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -72,8 +75,8 @@ const props = withDefaults(defineProps<Props>(), {
 // Emits
 const emit = defineEmits<{
   edit: [templateUuid: string]; // Changed: TaskTemplateCard emits uuid string, not full DTO
-  delete: [template: TaskTemplate];
-  resume: [template: TaskTemplate];
+  delete: [template: TaskTemplateViewModel];
+  resume: [template: TaskTemplateViewModel];
   dependencyCreated: [sourceUuid: string, targetUuid: string];
 }>();
 
@@ -83,53 +86,32 @@ const handleEdit = (templateUuid: string) => {
   emit('edit', templateUuid);
 };
 
-const handleDelete = (template: TaskTemplate) => {
+const handleDelete = (template: TaskTemplateViewModel) => {
   emit('delete', template);
 };
 
-const handleResume = (template: TaskTemplate) => {
+const handleResume = (template: TaskTemplateViewModel) => {
   emit('resume', template);
 };
 
-// Services
-const dragDropService = new TaskDependencyDragDropService();
+const isDragging = ref(false);
+const draggedTaskUuid = ref<string | null>(null);
+const dropTargetUuid = ref<string | null>(null);
+const isValidDrop = ref(false);
 
-// Composable
-const {
-  isDragging,
-  draggedTask,
-  dropTarget,
-  isValidDrop,
-  handleDragStart,
-  handleDragOver,
-  handleDrop,
-  handleDragEnd,
-} = useDragAndDrop({
-  mode: 'dependency', // Only dependency creation, not reordering
-  validateDrop: (source, target) => {
-    // Use service's quick validation
-    return dragDropService.canDropOn(source, target);
-  },
-  onDependencyCreate: async (source, target) => {
-    console.log('[DraggableTaskCard] Creating dependency:', {
-      source: source.title,
-      target: target.title,
-    });
-
-    const result = await dragDropService.createDependencyFromDrop(source, target);
-
-    if (result.success) {
-      // Emit event so parent can refresh DAG
-      emit('dependencyCreated', source.uuid, target.uuid);
-    }
-  },
-});
+const validateDrop = (source: TaskTemplateViewModel, target: TaskTemplateViewModel): boolean => {
+  if (source.uuid === target.uuid) return false;
+  if (props.canDrop) {
+    return props.canDrop(source, target);
+  }
+  return true;
+};
 
 // Drag event handlers
 const onDragStart = (event: DragEvent) => {
   if (!props.enableDrag) return;
-
-  handleDragStart(props.template);
+  isDragging.value = true;
+  draggedTaskUuid.value = props.template.uuid;
 
   // Set drag data for native drag-and-drop
   if (event.dataTransfer) {
@@ -146,14 +128,22 @@ const onDragStart = (event: DragEvent) => {
 };
 
 const onDragEnd = (event: DragEvent) => {
-  handleDragEnd();
+  isDragging.value = false;
+  draggedTaskUuid.value = null;
+  dropTargetUuid.value = null;
+  isValidDrop.value = false;
 };
 
 const onDragOver = (event: DragEvent) => {
   if (!isDragging.value) return;
-  if (draggedTask.value?.uuid === props.template.uuid) return; // Can't drop on self
+  if (draggedTaskUuid.value === props.template.uuid) return;
 
-  handleDragOver(props.template);
+  const source: TaskTemplateViewModel = {
+    ...props.template,
+    uuid: draggedTaskUuid.value || props.template.uuid,
+  };
+  dropTargetUuid.value = props.template.uuid;
+  isValidDrop.value = validateDrop(source, props.template);
 
   // Set drop effect based on validation
   if (event.dataTransfer) {
@@ -162,15 +152,36 @@ const onDragOver = (event: DragEvent) => {
 };
 
 const onDragLeave = (event: DragEvent) => {
-  // Clear drop target when leaving
-  handleDragOver(null);
+  dropTargetUuid.value = null;
+  isValidDrop.value = false;
 };
 
 const onDrop = async (event: DragEvent) => {
-  if (!isDragging.value || !draggedTask.value) return;
-  if (draggedTask.value.uuid === props.template.uuid) return;
+  if (!isDragging.value || !draggedTaskUuid.value) return;
+  if (draggedTaskUuid.value === props.template.uuid) return;
 
-  await handleDrop(props.template);
+  const source: TaskTemplateViewModel = {
+    ...props.template,
+    uuid: draggedTaskUuid.value,
+  };
+
+  if (!validateDrop(source, props.template)) {
+    return;
+  }
+
+  let created = true;
+  if (props.onCreateDependency) {
+    created = await props.onCreateDependency(source, props.template);
+  }
+
+  if (created) {
+    emit('dependencyCreated', source.uuid, props.template.uuid);
+  }
+
+  isDragging.value = false;
+  draggedTaskUuid.value = null;
+  dropTargetUuid.value = null;
+  isValidDrop.value = false;
 };
 </script>
 

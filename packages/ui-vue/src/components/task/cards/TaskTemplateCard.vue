@@ -176,7 +176,7 @@
         color="primary"
         variant="outlined"
         size="small"
-        @click="pauseTaskTemplate(template.uuid)"
+        @click="handlePauseTemplate"
       >
         <v-icon start size="small">mdi-pause</v-icon>
         暂停
@@ -198,7 +198,7 @@
         color="info"
         variant="outlined"
         size="small"
-        @click="activateTaskTemplate(template.uuid)"
+        @click="handleActivateTemplate"
       >
         <v-icon start size="small">mdi-play</v-icon>
         激活
@@ -216,39 +216,33 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
+import { computed } from 'vue';
 import { format } from 'date-fns';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { UrgencyLevel } from '@dailyuse/contracts/shared';
-// types
-import type { TaskTemplate } from '@dailyuse/task/domain-client';
-import type { Goal, KeyResult } from '@dailyuse/goal/domain-client';
-// styles - Story 2.4
-import '@/styles/priority-colors.css';
-
-// composables
-import { useTaskTemplate } from '../../composables/useTaskTemplate';
-import { getGlobalMessage } from '@dailyuse/ui-vuetify';
-
-const { deleteTaskTemplate, pauseTaskTemplate, activateTaskTemplate } = useTaskTemplate();
-// 🔥 使用全局单例，确保与 DuMessageProvider 共享同一个实例
-const message = getGlobalMessage();
+import type { TaskTemplateViewModel, TaskGoalBindingViewModel } from '../types';
 
 interface Props {
-  template: TaskTemplate;
+  template: TaskTemplateViewModel;
   statusFilters?: Array<{
     label: string;
     value: string;
     icon: string;
   }>;
+  onDelete?: (template: TaskTemplateViewModel) => void | Promise<void>;
+  onPause?: (template: TaskTemplateViewModel) => void | Promise<void>;
+  onActivate?: (template: TaskTemplateViewModel) => void | Promise<void>;
+  resolveGoalBindingName?: (
+    binding: TaskGoalBindingViewModel,
+    template: TaskTemplateViewModel,
+  ) => string;
 }
 
 interface Emits {
   (e: 'edit', templateId: string): void;
-  (e: 'delete', template: TaskTemplate): void;
-  (e: 'pause', template: TaskTemplate): void;
-  (e: 'resume', template: TaskTemplate): void;
+  (e: 'delete', template: TaskTemplateViewModel): void;
+  (e: 'pause', template: TaskTemplateViewModel): void;
+  (e: 'resume', template: TaskTemplateViewModel): void;
+  (e: 'activate', template: TaskTemplateViewModel): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -261,17 +255,16 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<Emits>();
-const goalStore = useGoalStore();
 
 // 状态相关方法
-const getTemplateStatusColor = (template: TaskTemplate) => {
+const getTemplateStatusColor = (template: TaskTemplateViewModel) => {
   if (template.isActive) return 'success';
   if (template.isPaused) return 'warning';
   if (template.isArchived) return 'default';
   return 'default';
 };
 
-const getTemplateStatusIcon = (template: TaskTemplate) => {
+const getTemplateStatusIcon = (template: TaskTemplateViewModel) => {
   const statusMap: Record<string, string> = {
     ACTIVE: 'mdi-play-circle',
     PAUSED: 'mdi-pause-circle',
@@ -281,30 +274,8 @@ const getTemplateStatusIcon = (template: TaskTemplate) => {
   return statusMap[template.status] || 'mdi-circle';
 };
 
-const getTemplateStatusText = (template: TaskTemplate) => {
-  return template.statusText;
-};
-
-const getImportanceText = (importance: ImportanceLevel) => {
-  const map: Record<ImportanceLevel, string> = {
-    [ImportanceLevel.Trivial]: '无关紧要',
-    [ImportanceLevel.Minor]: '不太重要',
-    [ImportanceLevel.Moderate]: '中等重要',
-    [ImportanceLevel.Important]: '非常重要',
-    [ImportanceLevel.Vital]: '极其重要',
-  };
-  return map[importance];
-};
-
-const getUrgencyText = (urgency: UrgencyLevel) => {
-  const map: Record<UrgencyLevel, string> = {
-    [UrgencyLevel.None]: '无期限',
-    [UrgencyLevel.Low]: '低度紧急',
-    [UrgencyLevel.Medium]: '中等紧急',
-    [UrgencyLevel.High]: '高度紧急',
-    [UrgencyLevel.Critical]: '非常紧急',
-  };
-  return map[urgency];
+const getTemplateStatusText = (template: TaskTemplateViewModel) => {
+  return template.statusText || template.status;
 };
 
 const getImportanceColor = (importance: ImportanceLevel) => {
@@ -318,23 +289,6 @@ const getImportanceColor = (importance: ImportanceLevel) => {
     case ImportanceLevel.Important:
       return 'warning';
     case ImportanceLevel.Vital:
-      return 'error';
-    default:
-      return 'default';
-  }
-};
-
-const getUrgencyColor = (urgency: UrgencyLevel) => {
-  switch (urgency) {
-    case UrgencyLevel.None:
-      return 'white';
-    case UrgencyLevel.Low:
-      return 'success';
-    case UrgencyLevel.Medium:
-      return 'info';
-    case UrgencyLevel.High:
-      return 'warning';
-    case UrgencyLevel.Critical:
       return 'error';
     default:
       return 'default';
@@ -395,21 +349,12 @@ const getIndicatorClass = (priority: number): string => {
 };
 
 // 关键结果相关
-const getGoalBindingName = (binding: any) => {
+const getGoalBindingName = (binding: TaskGoalBindingViewModel | null | undefined) => {
   if (!binding) return '';
-  const goal = goalStore.getGoalByUuid(binding.goalUuid);
-  const kr = goal?.keyResults.find((k: any) => k.uuid === binding.keyResultUuid);
-  return kr ? `${goal.title} - ${kr.title}` : '关联目标';
-};
-
-const formatCompletionTime = (minutes: number): string => {
-  if (minutes < 60) {
-    return `${Math.round(minutes)}分钟`;
-  } else {
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = Math.round(minutes % 60);
-    return remainingMinutes > 0 ? `${hours}小时${remainingMinutes}分钟` : `${hours}小时`;
+  if (props.resolveGoalBindingName) {
+    return props.resolveGoalBindingName(binding, props.template);
   }
+  return '关联目标';
 };
 
 /**
@@ -452,25 +397,26 @@ const handleEdit = () => {
 };
 
 const handleDelete = async () => {
-  try {
-    await message.delConfirm(
-      `确定要删除任务模板 "${props.template.title}" 吗？\n此操作不可恢复，相关的任务实例也会被删除。`,
-      '删除任务模板'
-    );
-    
-    await deleteTaskTemplate(props.template.uuid);
-    message.success('任务模板删除成功');
-  } catch {
-    // 用户取消删除，静默处理
+  emit('delete', props.template);
+  if (props.onDelete) {
+    await props.onDelete(props.template);
   }
 };
 
 const handlePauseTemplate = () => {
   emit('pause', props.template);
+  props.onPause?.(props.template);
 };
 
 const handleResume = () => {
   emit('resume', props.template);
+};
+
+const handleActivateTemplate = async () => {
+  emit('activate', props.template);
+  if (props.onActivate) {
+    await props.onActivate(props.template);
+  }
 };
 </script>
 

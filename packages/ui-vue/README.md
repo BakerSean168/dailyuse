@@ -138,27 +138,24 @@ packages/ui-vue/
 │   │   ├── useFormValidation.ts
 │   │   ├── useColorPicker.ts
 │   │   └── ...
+│   ├── assets/main.css       # Tailwind v4 主题入口
 │   └── index.ts              # 统一导出（聚合层）
-├── tailwind.config.js        # 继承 ui-core 的 Preset
 ├── package.json
 └── README.md
 ```
 
 ## 🎨 Tailwind 配置
 
-此包的 `tailwind.config.js` 继承自 `ui-core/tailwind.preset.js`：
+此包采用 Tailwind v4 CSS-first 架构：
 
-```javascript
-module.exports = {
-  presets: [require('../ui-core/tailwind.preset.js')],
-  content: [
-    'src/**/*.{ts,vue}',
-    '../ui-vue-shadcn/src/**/*.{ts,vue}', // 扫描依赖组件
-  ],
-};
+```css
+/* src/assets/main.css */
+@import "@dailyuse/ui-core/theme.css";
 ```
 
-**修改主题颜色：** 只需修改 `ui-core/src/styles/globals.css` 中的 CSS 变量，所有组件自动同步。
+并在 Vite/Storybook 中启用 `@tailwindcss/vite` 插件。
+
+**修改主题颜色：** 只需修改 `ui-core/src/styles/theme.css` 中的 CSS 变量和 `@theme` 令牌，所有组件自动同步。
 
 ## 🚀 Storybook
 

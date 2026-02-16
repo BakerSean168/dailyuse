@@ -13,9 +13,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { DashboardSkeleton } from '../../shared/components/Skeleton';
 import { useNavigate } from 'react-router-dom';
-import { goalApplicationService } from '../../modules/goal/application/services/GoalApplicationService';
-import { scheduleApplicationService } from '../../modules/schedule/application/services/ScheduleApplicationService';
-import { reminderApplicationService } from '../../modules/reminder/application/services/ReminderApplicationService';
+import { goalApplicationService } from '@dailyuse/goal/application-client';
+import { scheduleApplicationService } from '@dailyuse/schedule/application-client';
+import { reminderApplicationService } from '@dailyuse/reminder/application-client';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import type { TaskTemplate } from '@dailyuse/task/domain-client';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';

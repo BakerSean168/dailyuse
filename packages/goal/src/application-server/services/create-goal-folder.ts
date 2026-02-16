@@ -7,6 +7,7 @@
 import type { IGoalFolderRepository } from '@/domain-server';
 import { GoalFolder } from '@/domain-server';
 import type { IdentityId } from '@dailyuse/domain-shared';
+import type { GoalFolderId } from '@/domain-shared';
 import type { CreateGoalFolderReq, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 
 /**
@@ -26,7 +27,7 @@ export class CreateGoalFolder {
       description: input.description,
       color: input.color,
       icon: input.icon,
-      parentFolderId: input.parentFolderUuid,
+      parentFolderId: input.parentFolderUuid as GoalFolderId | undefined,
     });
 
     await this.goalFolderRepository.save(folder);

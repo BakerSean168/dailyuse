@@ -106,7 +106,7 @@ const SYNC_PROVIDERS: SyncProvider[] = [
   },
   {
     id: 'nutstore',
-    name: '坚果�?(Nutstore)',
+    name: '坚果云 (Nutstore)',
     description: 'Secure cloud storage optimized for Chinese users',
     icon: <Cloud className="w-12 h-12" />,
     features: ['30GB free', 'WebDAV support', 'Optimized for China'],
@@ -139,7 +139,7 @@ const SYNC_PROVIDERS: SyncProvider[] = [
 // Entity types for sync
 const ENTITY_TYPES = [
   { id: 'goals', label: 'Goals', icon: '🎯' },
-  { id: 'tasks', label: 'Tasks', icon: '�? },
+  { id: 'tasks', label: 'Tasks', icon: '✅' },
   { id: 'reminders', label: 'Reminders', icon: '🔔' },
   { id: 'schedules', label: 'Schedules', icon: '📅' },
   { id: 'accounts', label: 'Accounts', icon: '👤' },
@@ -310,7 +310,7 @@ const Step2Authentication: React.FC<StepProps> = ({
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="•••••••�?
+                  placeholder="••••••••"
                   value={config.credentials.token || ''}
                   onChange={e => handleCredentialChange('token', e.target.value)}
                 />
@@ -384,7 +384,7 @@ const Step2Authentication: React.FC<StepProps> = ({
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="•••••••�?
+                  placeholder="••••••••"
                   value={config.credentials.password || ''}
                   onChange={e =>
                     handleCredentialChange('password', e.target.value)
@@ -574,11 +574,11 @@ const Step3EncryptionPassword: React.FC<StepProps> = ({
             className="h-2"
           />
           <div className="text-xs text-gray-500 mt-2">
-            �?Use at least 8 characters
+            �?Use at least 8 characters
             <br />
-            �?Include uppercase and lowercase letters
+            �?Include uppercase and lowercase letters
             <br />
-            �?Include numbers and special characters
+            �?Include numbers and special characters
           </div>
         </div>
 
@@ -869,7 +869,7 @@ export const SyncConfigWizard: React.FC<{ onComplete?: () => void }> = ({
                       : 'bg-gray-300 text-gray-600'
                 )}
               >
-                {step < currentStep ? '�? : step}
+                {step < currentStep ? '✓' : step}
               </div>
               {step < 4 && (
                 <div
@@ -943,7 +943,7 @@ export const SyncConfigWizard: React.FC<{ onComplete?: () => void }> = ({
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-sm text-gray-600">
-            Step {currentStep} of 4 �?All your data is encrypted and secure
+            Step {currentStep} of 4 �?All your data is encrypted and secure
           </p>
         </div>
       </div>

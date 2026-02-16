@@ -52,8 +52,8 @@ const defaultSettings: PomodoroSettings = {
 // Phase configs
 const phaseConfig: Record<TimerPhase, { label: string; color: string; icon: typeof Zap }> = {
   work: { label: '专注时间', color: 'text-primary', icon: Zap },
-  short_break: { label: '短休�?, color: 'text-green-500', icon: Coffee },
-  long_break: { label: '长休�?, color: 'text-blue-500', icon: Coffee },
+  short_break: { label: '短休', color: 'text-green-500', icon: Coffee },
+  long_break: { label: '长休', color: 'text-blue-500', icon: Coffee },
 };
 
 // Format time as MM:SS
@@ -84,7 +84,7 @@ function TimerSettings({ settings, onChange }: TimerSettingsProps) {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="short">短休息时�?(分钟)</Label>
+        <Label htmlFor="short">短休息时间(分钟)</Label>
         <Input
           id="short"
           type="number"
@@ -95,7 +95,7 @@ function TimerSettings({ settings, onChange }: TimerSettingsProps) {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="long">长休息时�?(分钟)</Label>
+        <Label htmlFor="long">长休息时间(分钟)</Label>
         <Input
           id="long"
           type="number"
@@ -106,7 +106,7 @@ function TimerSettings({ settings, onChange }: TimerSettingsProps) {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="sessions">长休息间�?(次数)</Label>
+        <Label htmlFor="sessions">长休息间隔(次数)</Label>
         <Input
           id="sessions"
           type="number"
@@ -261,7 +261,7 @@ export function PomodoroTimer({
             <PhaseIcon className={cn('h-5 w-5', color)} />
             <span className={cn('font-medium', color)}>{label}</span>
             <Badge variant="secondary" className="ml-2">
-              �?{completedSessions + 1} 个番�?
+              �?{completedSessions + 1} 个番�?
             </Badge>
           </div>
 
@@ -303,7 +303,7 @@ export function PomodoroTimer({
                 {formatTime(timeLeft)}
               </span>
               <span className="text-sm text-muted-foreground">
-                {status === 'running' ? '专注�?..' : status === 'paused' ? '已暂�? : '准备开�?}
+                {status === 'running' ? '专注中...' : status === 'paused' ? '已暂' : '准备开'}
               </span>
             </div>
           </div>
@@ -323,7 +323,7 @@ export function PomodoroTimer({
             ) : (
               <Button size="lg" onClick={handleStart}>
                 <Play className="h-5 w-5 mr-2" />
-                {status === 'paused' ? '继续' : '开�?}
+                {status === 'paused' ? '继续' : '开'}
               </Button>
             )}
 
@@ -339,7 +339,7 @@ export function PomodoroTimer({
               variant="outline"
               size="icon"
               onClick={() => setSoundEnabled(!soundEnabled)}
-              title={soundEnabled ? '关闭声音' : '开启声�?}
+              title={soundEnabled ? '关闭声音' : '开启声'}
             >
               {soundEnabled ? (
                 <Volume2 className="h-5 w-5" />

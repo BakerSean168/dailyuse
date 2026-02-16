@@ -1,32 +1,27 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { Card, CardHeader, CardTitle, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Calendar } from 'lucide-vue-next';
-import type { TaskInstance } from '@dailyuse/task/domain-client';
+import type { TaskInstanceViewModel } from '../types';
 
 // ===== Props =====
 interface Props {
-    size?: string; // 'small' | 'medium' | 'large'
+  size?: string; // 'small' | 'medium' | 'large'
+  tasks?: TaskInstanceViewModel[];
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
     size: 'medium',
+  tasks: () => [],
 });
 
 // ===== State =====
-const isLoading = ref(true);
-const todayTasks = ref<TaskInstance[]>([]); // TODO: Fetch from store
+const isLoading = ref(false);
 
 // ===== Computed =====
 const taskStats = computed(() => ({
-    total: todayTasks.value.length,
+  total: props.tasks.length,
 }));
-
-// ===== Lifecycle =====
-onMounted(async () => {
-    isLoading.value = false;
-    // TODO: Load tasks
-});
 </script>
 
 <template>
@@ -44,7 +39,7 @@ onMounted(async () => {
       </p>
       <!-- Task List Placeholder -->
       <div v-if="isLoading" class="mt-4 text-center text-sm text-muted-foreground">Loading...</div>
-      <div v-else-if="todayTasks.length === 0" class="mt-4 text-center text-sm text-muted-foreground">No tasks for today</div>
+      <div v-else-if="props.tasks.length === 0" class="mt-4 text-center text-sm text-muted-foreground">No tasks for today</div>
       <div v-else class="mt-4 space-y-2">
         <!-- Task Items would go here -->
       </div>

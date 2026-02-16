@@ -1,11 +1,11 @@
 /**
  * DashboardView - 仪表板主视图
  *
- * 功能�?
+ * 功能�?
  * - Widget 网格布局
- * - 响应式设�?
+ * - 响应式设�?
  * - Widget 配置面板
- * - 刷新所�?Widget
+ * - 刷新所�?Widget
  *
  * @module dashboard/presentation/views
  */
@@ -59,7 +59,7 @@ export function DashboardView() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // Widget 配置状�?
+  // Widget 配置状�?
   const [widgetConfigs, setWidgetConfigs] = useState<WidgetConfig[]>([
     { id: 'goal', name: '目标进度', icon: <Target className="h-4 w-4" />, visible: true, size: 'small' },
     { id: 'task', name: '今日任务', icon: <ListTodo className="h-4 w-4" />, visible: true, size: 'small' },
@@ -67,7 +67,7 @@ export function DashboardView() {
     { id: 'statistics', name: '统计数据', icon: <BarChart3 className="h-4 w-4" />, visible: true, size: 'medium' },
   ]);
 
-  // 刷新所�?Widget
+  // 刷新所�?Widget
   const handleRefreshAll = useCallback(async () => {
     setIsRefreshing(true);
     // 模拟刷新
@@ -75,14 +75,14 @@ export function DashboardView() {
     setIsRefreshing(false);
   }, []);
 
-  // 切换 Widget 可见�?
+  // 切换 Widget 可见�?
   const toggleWidgetVisibility = useCallback((widgetId: string) => {
     setWidgetConfigs(prev =>
       prev.map(w => w.id === widgetId ? { ...w, visible: !w.visible } : w)
     );
   }, []);
 
-  // 可见�?Widget
+  // 可见�?Widget
   const visibleWidgets = widgetConfigs.filter(w => w.visible);
 
   return (
@@ -91,7 +91,7 @@ export function DashboardView() {
       <header className="flex items-center justify-between mb-6 pb-4 border-b">
         <div className="flex items-center gap-3">
           <LayoutDashboard className="h-8 w-8 text-primary" />
-          <h1 className="text-2xl font-bold">仪表�?/h1>
+          <h1 className="text-2xl font-bold">仪表</h1>
         </div>
 
         <div className="flex items-center gap-2">
@@ -167,12 +167,12 @@ export function DashboardView() {
         </div>
       </header>
 
-      {/* 空状�?*/}
+      {/* 空状�?*/}
       {visibleWidgets.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 bg-card rounded-lg shadow-sm">
           <LayoutDashboard className="h-16 w-16 text-muted-foreground mb-4" />
           <h2 className="text-xl font-semibold mb-2">暂无 Widget</h2>
-          <p className="text-muted-foreground mb-6">点击右上角设置按钮添�?Widget</p>
+          <p className="text-muted-foreground mb-6">点击右上角设置按钮添加 Widget</p>
           <Button onClick={() => setSettingsOpen(true)}>
             打开设置
           </Button>

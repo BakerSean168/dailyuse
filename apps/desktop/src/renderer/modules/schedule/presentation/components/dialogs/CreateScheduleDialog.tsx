@@ -1,9 +1,9 @@
 /**
  * CreateScheduleDialog Component
  *
- * 创建日程事件对话�?
- * 功能�?
- * 1. 表单输入：标题、描述、时间、地�?
+ * 创建日程事件对话�?
+ * 功能�?
+ * 1. 表单输入：标题、描述、时间、地�?
  * 2. 支持编辑模式
  * 3. 表单验证
  */
@@ -54,7 +54,7 @@ interface FormData {
   attendees: string[];
 }
 
-// ===================== 初始�?=====================
+// ===================== 初始�?=====================
 
 const initialFormData: FormData = {
   title: '',
@@ -69,11 +69,11 @@ const initialFormData: FormData = {
 };
 
 const priorityOptions = [
-  { label: '最�?(1)', value: '1' },
-  { label: '�?(2)', value: '2' },
-  { label: '�?(3)', value: '3' },
-  { label: '�?(4)', value: '4' },
-  { label: '最�?(5)', value: '5' },
+  { label: '最高(1)', value: '1' },
+  { label: ''(2)', value: '2' },
+  { label: ''(3)', value: '3' },
+  { label: ''(4)', value: '4' },
+  { label: '最低(5)', value: '5' },
 ];
 
 // ===================== 组件 =====================
@@ -91,7 +91,7 @@ export function CreateScheduleDialog({
 
   const isEditing = !!editingSchedule;
 
-  // 编辑模式时填充表�?
+  // 编辑模式时填充表�?
   useEffect(() => {
     if (editingSchedule) {
       const startDate = new Date(editingSchedule.startTime);
@@ -125,17 +125,17 @@ export function CreateScheduleDialog({
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = '请输入标�?;
+      newErrors.title = '请输入标';
     } else if (formData.title.length > 200) {
-      newErrors.title = '标题最�?00个字�?;
+      newErrors.title = '标题最'00个字';
     }
 
     if (!formData.startDate) {
-      newErrors.startDate = '请选择开始日�?;
+      newErrors.startDate = '请选择开始日';
     }
 
     if (!formData.startTime) {
-      newErrors.startTime = '请选择开始时�?;
+      newErrors.startTime = '请选择开始时';
     }
 
     if (!formData.endDate) {
@@ -146,12 +146,12 @@ export function CreateScheduleDialog({
       newErrors.endTime = '请选择结束时间';
     }
 
-    // 检查结束时间是否晚于开始时�?
+    // 检查结束时间是否晚于开始时�?
     if (formData.startDate && formData.startTime && formData.endDate && formData.endTime) {
       const startTimestamp = new Date(`${formData.startDate}T${formData.startTime}`).getTime();
       const endTimestamp = new Date(`${formData.endDate}T${formData.endTime}`).getTime();
       if (endTimestamp <= startTimestamp) {
-        newErrors.endTime = '结束时间必须晚于开始时�?;
+        newErrors.endTime = '结束时间必须晚于开始时';
       }
     }
 
@@ -198,7 +198,7 @@ export function CreateScheduleDialog({
             <DialogTitle>{isEditing ? '编辑日程事件' : '创建日程事件'}</DialogTitle>
           </div>
           <DialogDescription>
-            {isEditing ? '修改日程事件信息' : '填写日程事件信息并创�?}
+            {isEditing ? '修改日程事件信息' : '填写日程事件信息并创'}
           </DialogDescription>
         </DialogHeader>
 
@@ -233,7 +233,7 @@ export function CreateScheduleDialog({
           {/* 时间选择 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startDate">开始日�?*</Label>
+              <Label htmlFor="startDate">开始日值 *</Label>
               <Input
                 id="startDate"
                 type="date"
@@ -244,7 +244,7 @@ export function CreateScheduleDialog({
               {errors.startDate && <p className="text-xs text-destructive">{errors.startDate}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="startTime">开始时�?*</Label>
+              <Label htmlFor="startTime">开始时值 *</Label>
               <Input
                 id="startTime"
                 type="time"
@@ -281,15 +281,15 @@ export function CreateScheduleDialog({
             </div>
           </div>
 
-          {/* 优先�?*/}
+          {/* 优先�?*/}
           <div className="space-y-2">
-            <Label>优先�?/Label>
+            <Label>优先</Label>
             <Select
               value={formData.priority?.toString() || ''}
               onValueChange={(value) => updateField('priority', value ? parseInt(value) : null)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="选择优先�? />
+                <SelectValue placeholder="选择优先" />
               </SelectTrigger>
               <SelectContent>
                 {priorityOptions.map((option) => (
@@ -322,7 +322,7 @@ export function CreateScheduleDialog({
             取消
           </Button>
           <Button onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? '处理�?..' : isEditing ? '保存' : '创建'}
+            {isLoading ? '处理中...' : isEditing ? '保存' : '创建'}
           </Button>
         </DialogFooter>
       </DialogContent>

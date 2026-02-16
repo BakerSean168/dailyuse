@@ -104,7 +104,7 @@ export class TaskEventHandler {
       const sent = sseManager.sendMessage(identityId, 'task:instances-generated', pushData);
 
       if (sent) {
-        logger.info('馃摛 [SSE鎺ㄩ€乚 task:instances-generated 浜嬩欢宸插彂閫?, {
+        logger.info('[SSE] task:instances-generated event sent', {
           identityId,
           templateId,
           instanceCount,
@@ -112,7 +112,7 @@ export class TaskEventHandler {
           dataSize: strategy === 'full' ? 'full' : 'summary-only',
         });
       } else {
-        logger.warn('鈿狅笍 [SSE鎺ㄩ€乚 task:instances-generated 浜嬩欢鍙戦€佸け璐ワ紙鐢ㄦ埛鍙兘鏈繛鎺ワ級', {
+        logger.warn('[SSE] task:instances-generated send failed (user may not be connected)', {
           identityId,
           templateId,
         });

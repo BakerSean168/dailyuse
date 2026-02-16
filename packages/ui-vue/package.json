@@ -25,7 +25,6 @@
   },
   "devDependencies": {
     "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/task": "workspace:*",
     "@vitejs/plugin-vue": "6.0.4",
     "date-fns": "^4.1.0",
     "lucide-vue-next": "0.564.0",

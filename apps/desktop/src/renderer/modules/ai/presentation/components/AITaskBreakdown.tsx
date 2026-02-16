@@ -69,21 +69,21 @@ async function generateSubtasks(
   // Customize based on keywords
   if (taskName.includes('设计') || taskName.includes('界面')) {
     return [
-      { id: '1', name: '收集设计灵感和参�?, estimatedMinutes: 30, selected: true },
-      { id: '2', name: '创建线框�?, estimatedMinutes: 45, selected: true },
+      { id: '1', name: '收集设计灵感和参', estimatedMinutes: 30, selected: true },
+      { id: '2', name: '创建线框', estimatedMinutes: 45, selected: true },
       { id: '3', name: '设计视觉风格', estimatedMinutes: 60, selected: true },
-      { id: '4', name: '制作高保真原�?, estimatedMinutes: 90, selected: true },
-      { id: '5', name: '收集反馈并迭�?, estimatedMinutes: 30, selected: true },
+      { id: '4', name: '制作高保真原', estimatedMinutes: 90, selected: true },
+      { id: '5', name: '收集反馈并迭', estimatedMinutes: 30, selected: true },
     ];
   }
 
-  if (taskName.includes('开�?) || taskName.includes('编程') || taskName.includes('代码')) {
+  if (taskName.includes('开') || taskName.includes('编程') || taskName.includes('代码')) {
     return [
-      { id: '1', name: '分析技术方�?, estimatedMinutes: 30, selected: true },
-      { id: '2', name: '搭建开发环�?, estimatedMinutes: 20, selected: true },
+      { id: '1', name: '分析技术方', estimatedMinutes: 30, selected: true },
+      { id: '2', name: '搭建开发环', estimatedMinutes: 20, selected: true },
       { id: '3', name: '编写核心逻辑', estimatedMinutes: 120, selected: true },
       { id: '4', name: '编写单元测试', estimatedMinutes: 45, selected: true },
-      { id: '5', name: '代码审查和优�?, estimatedMinutes: 30, selected: true },
+      { id: '5', name: '代码审查和优', estimatedMinutes: 30, selected: true },
     ];
   }
 
@@ -92,7 +92,7 @@ async function generateSubtasks(
       { id: '1', name: '收集相关资料', estimatedMinutes: 30, selected: true },
       { id: '2', name: '整理大纲结构', estimatedMinutes: 20, selected: true },
       { id: '3', name: '撰写初稿', estimatedMinutes: 90, selected: true },
-      { id: '4', name: '审阅和修�?, estimatedMinutes: 30, selected: true },
+      { id: '4', name: '审阅和修', estimatedMinutes: 30, selected: true },
       { id: '5', name: '格式化和定稿', estimatedMinutes: 15, selected: true },
     ];
   }
@@ -274,7 +274,7 @@ export function AITaskBreakdown({
             AI 任务分解
           </DialogTitle>
           <DialogDescription>
-            AI 会将任务拆分为可执行的子任务，你可以选择、编辑或添加新的子任�?
+            AI 会将任务拆分为可执行的子任务，你可以选择、编辑或添加新的子任�?
           </DialogDescription>
         </DialogHeader>
 
@@ -308,7 +308,7 @@ export function AITaskBreakdown({
             ) : (
               <>
                 <Sparkles className="h-4 w-4" />
-                开始智能分�?
+                开始智能分�?
               </>
             )}
           </Button>
@@ -319,7 +319,7 @@ export function AITaskBreakdown({
           <>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
-                已�?{selectedCount} 个子任务，预�?{totalMinutes} 分钟
+                已�?{selectedCount} 个子任务，预�?{totalMinutes} 分钟
               </span>
               <Button
                 variant="ghost"

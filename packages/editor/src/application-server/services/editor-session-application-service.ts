@@ -283,22 +283,21 @@ export class EditorSessionApplicationService {
       if (tabs.length > 0) {
         await this.tabRepository.saveBatch(tabs);
       }
-
-      private async loadSessionWithGroups(sessionId: string): Promise<EditorSession | null> {
-        const session = await this.sessionRepository.findById(sessionId);
-        if (!session) {
-          return null;
-        }
-
-        const groups = await this.groupRepository.findBySessionId(sessionId);
-        for (const group of groups) {
-          const tabs = await this.tabRepository.findByGroupId(String(group.id));
-          group.restoreTabs(tabs);
-        }
-
-        return this.restorer.restore(session, groups);
-      }
     }
   }
 
+  private async loadSessionWithGroups(sessionId: string): Promise<EditorSession | null> {
+    const session = await this.sessionRepository.findById(sessionId);
+    if (!session) {
+      return null;
+    }
+
+    const groups = await this.groupRepository.findBySessionId(sessionId);
+    for (const group of groups) {
+      const tabs = await this.tabRepository.findByGroupId(String(group.id));
+      group.restoreTabs(tabs);
+    }
+
+    return this.restorer.restore(session, groups);
+  }
 }

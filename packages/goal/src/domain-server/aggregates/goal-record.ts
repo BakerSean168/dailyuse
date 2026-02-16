@@ -27,7 +27,7 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { GoalRecordId, KeyResultId } from '@dailyuse/domain-shared';
+import { GoalRecordId, KeyResultId } from '../../domain-shared';
 import type {
   GoalRecordPersistenceDTO,
   GoalRecordServer,

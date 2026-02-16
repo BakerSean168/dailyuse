@@ -1,7 +1,7 @@
 /**
  * KeyResultDialog Component
  *
- * 关键结果对话�?- 用于创建/编辑关键结果
+ * 关键结果对话�?- 用于创建/编辑关键结果
  */
 
 import { useState, useEffect, useMemo } from 'react';
@@ -10,7 +10,7 @@ import type {
   AddKeyResultRequest,
   UpdateKeyResultRequest,
 } from '@dailyuse/contracts/goal';
-import { AggregationMethod, KeyResultValueType } from '@dailyuse/contracts/goal';
+import { KeyResultCalculationMethod as AggregationMethod, KeyResultValueType } from '@dailyuse/contracts/goal';
 import {
   Dialog,
   DialogContent,
@@ -44,7 +44,7 @@ interface KeyResultDialogProps {
 }
 
 /**
- * 表单 UI 状态（内部使用�?
+ * 表单 UI 状态（内部使用�?
  */
 interface FormState {
   title: string;
@@ -58,11 +58,11 @@ interface FormState {
 
 // 聚合方法选项
 const AGGREGATION_METHODS = [
-  { value: AggregationMethod.SUM, label: '求和', hint: '适合累计型指�? },
-  { value: AggregationMethod.AVERAGE, label: '求平�?, hint: '适合平均值型指标' },
-  { value: AggregationMethod.MAX, label: '取最大�?, hint: '适合峰值型指标' },
-  { value: AggregationMethod.MIN, label: '取最小�?, hint: '适合低值型指标' },
-  { value: AggregationMethod.LAST, label: '取最后一�?, hint: '适合绝对值型指标' },
+  { value: AggregationMethod.Sum, label: '求和', hint: '适合累计型指' },
+  { value: AggregationMethod.Average, label: '求平', hint: '适合平均值型指标' },
+  { value: AggregationMethod.Max, label: '取最大', hint: '适合峰值型指标' },
+  { value: AggregationMethod.Min, label: '取最小', hint: '适合低值型指标' },
+  { value: AggregationMethod.Last, label: '取最后一', hint: '适合绝对值型指标' },
 ];
 
 const DEFAULT_FORM_STATE: FormState = {
@@ -72,7 +72,7 @@ const DEFAULT_FORM_STATE: FormState = {
   targetValue: 100,
   currentValue: 0,
   weight: 1,
-  aggregationMethod: AggregationMethod.SUM,
+  aggregationMethod: AggregationMethod.Sum,
 };
 
 // ============ Helper Functions ============
@@ -85,7 +85,7 @@ function formStateToAddRequest(goalUuid: string, form: FormState): AddKeyResultR
     goalUuid,
     title: form.title,
     description: form.description || undefined,
-    valueType: KeyResultValueType.INCREMENTAL, // 默认使用累积值类�?
+    valueType: KeyResultValueType.INCREMENTAL, // 默认使用累积值类�?
     aggregationMethod: form.aggregationMethod,
     targetValue: form.targetValue,
     currentValue: form.currentValue,
@@ -132,7 +132,7 @@ export function KeyResultDialog({
           targetValue: keyResult.progress.targetValue,
           currentValue: keyResult.progress.currentValue,
           weight: keyResult.weight,
-          aggregationMethod: keyResult.progress.aggregationMethod || AggregationMethod.SUM,
+          aggregationMethod: keyResult.progress.aggregationMethod || AggregationMethod.Sum,
         });
       } else {
         setFormState(DEFAULT_FORM_STATE);
@@ -169,14 +169,14 @@ export function KeyResultDialog({
 
   const handleSave = async () => {
     if (!isValid) {
-      setError('请检查表单填写是否正�?);
+      setError('请检查表单填写是否正');
       return;
     }
 
     try {
       setLoading(true);
       setError(null);
-      // 转换�?contracts 类型
+      // 转换�?contracts 类型
       const request = isEditing 
         ? formStateToUpdateRequest(formState)
         : formStateToAddRequest(goalUuid, formState);
@@ -200,7 +200,7 @@ export function KeyResultDialog({
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? '修改关键结果的信�?
+              ? '修改关键结果的信'
               : '为目标添加一个新的关键结果，用于衡量目标进度'}
           </DialogDescription>
         </DialogHeader>
@@ -214,7 +214,7 @@ export function KeyResultDialog({
               <Label htmlFor="title">名称 *</Label>
               <Input
                 id="title"
-                placeholder="例如：新增活跃用户数�?
+                placeholder="例如：新增活跃用户数"
                 value={formState.title}
                 onChange={(e) => handleChange('title', e.target.value)}
               />
@@ -232,42 +232,42 @@ export function KeyResultDialog({
             </div>
           </div>
 
-          {/* 数值配�?*/}
+          {/* 数值配�?*/}
           <div className="space-y-4">
-            <h4 className="font-medium">数值配�?/h4>
+            <h4 className="font-medium">数值配</h4>
 
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="startValue">起始�?/Label>
+                <Label htmlFor="startValue">起始</Label>
                 <Input
                   id="startValue"
                   type="number"
                   value={formState.startValue}
                   onChange={(e) => handleChange('startValue', Number(e.target.value))}
                 />
-                <p className="text-xs text-muted-foreground">初始数�?/p>
+                <p className="text-xs text-muted-foreground">初始数</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="targetValue">目标�?*</Label>
+                <Label htmlFor="targetValue">目标值 *</Label>
                 <Input
                   id="targetValue"
                   type="number"
                   value={formState.targetValue}
                   onChange={(e) => handleChange('targetValue', Number(e.target.value))}
                 />
-                <p className="text-xs text-muted-foreground">期望达到的数�?/p>
+                <p className="text-xs text-muted-foreground">期望达到的数</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="currentValue">当前�?/Label>
+                <Label htmlFor="currentValue">当前</Label>
                 <Input
                   id="currentValue"
                   type="number"
                   value={formState.currentValue}
                   onChange={(e) => handleChange('currentValue', Number(e.target.value))}
                 />
-                <p className="text-xs text-muted-foreground">目前的实际数�?/p>
+                <p className="text-xs text-muted-foreground">目前的实际数</p>
               </div>
             </div>
           </div>
@@ -365,7 +365,7 @@ export function KeyResultDialog({
             disabled={!isValid || loading}
             style={{ backgroundColor: isValid ? goalColor : undefined }}
           >
-            {loading ? '保存�?..' : isEditing ? '更新' : '创建'}
+            {loading ? '保存中...' : isEditing ? '更新' : '创建'}
           </Button>
         </DialogFooter>
       </DialogContent>

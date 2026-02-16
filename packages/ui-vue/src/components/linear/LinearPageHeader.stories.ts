@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import LinearPageHeader from './LinearPageHeader.vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 

@@ -1,7 +1,7 @@
 /**
  * FolderTree Component
  *
- * 文件夹树形结构组�?
+ * 文件夹树形结构组�?
  * Story 11-6: Auxiliary Modules
  */
 
@@ -162,7 +162,7 @@ const FolderItem = memo(function FolderItem({
             )}
             <DropdownMenuItem onClick={handleRename}>
               <Edit2 className="mr-2 h-4 w-4" />
-              重命�?
+              重命�?
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleDelete} className="text-destructive">
               <Trash2 className="mr-2 h-4 w-4" />
@@ -213,7 +213,7 @@ export function FolderTree({
           onClick={() => onCreateFolder(null)}
         >
           <Plus className="h-4 w-4" />
-          新建文件�?
+          新建文件�?
         </Button>
       )}
 
@@ -235,7 +235,7 @@ export function FolderTree({
       {nodes.length === 0 && (
         <div className="py-8 text-center text-sm text-muted-foreground">
           <Folder className="h-8 w-8 mx-auto mb-2 opacity-50" />
-          <p>暂无文件�?/p>
+          <p>暂无文件</p>
         </div>
       )}
     </div>

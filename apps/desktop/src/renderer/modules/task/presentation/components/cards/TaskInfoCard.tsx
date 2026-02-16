@@ -1,7 +1,7 @@
 /**
  * TaskInfoCard Component
  *
- * 任务信息展示卡片 - 显示任务模板的详细信�?
+ * 任务信息展示卡片 - 显示任务模板的详细信�?
  * 
  * EPIC-015 重构: 使用 Entity 类型
  */
@@ -31,7 +31,7 @@ interface TaskInfoCardProps {
   onClick?: (uuid: string) => void;
 }
 
-// 重要性颜�?
+// 重要性颜�?
 const IMPORTANCE_COLORS: Record<string, string> = {
   Vital: 'bg-red-100 text-red-800 border-red-200',
   Important: 'bg-orange-100 text-orange-800 border-orange-200',
@@ -49,7 +49,7 @@ const URGENCY_COLORS: Record<string, string> = {
   None: 'bg-gray-100 text-gray-600',
 };
 
-// 状态颜�?
+// 状态颜�?
 const STATUS_COLORS: Record<string, string> = {
   ACTIVE: 'bg-green-100 text-green-800',
   PAUSED: 'bg-yellow-100 text-yellow-800',
@@ -157,13 +157,13 @@ export function TaskInfoCard({ template, onClick }: TaskInfoCardProps) {
         {template.instanceCount > 0 && (
           <div className="space-y-2 pt-2 border-t">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">完成�?/span>
+              <span className="text-muted-foreground">完成</span>
               <span className="font-medium">{completionRate}%</span>
             </div>
             <Progress value={completionRate} className="h-2" />
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>已完�?{template.completedInstanceCount} �?/span>
-              <span>�?{template.instanceCount} �?/span>
+              <span>已完成 {template.completedInstanceCount} �?/span>
+              <span><{template.instanceCount} �?/span>
             </div>
           </div>
         )}
@@ -171,7 +171,7 @@ export function TaskInfoCard({ template, onClick }: TaskInfoCardProps) {
         {/* Created Date */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2 border-t">
           <Calendar className="h-3.5 w-3.5" />
-          <span>创建�?{template.formattedCreatedAt}</span>
+          <span>创建于 {template.formattedCreatedAt}</span>
         </div>
       </CardContent>
     </Card>

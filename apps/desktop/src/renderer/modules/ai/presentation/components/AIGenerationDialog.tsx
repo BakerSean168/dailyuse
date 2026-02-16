@@ -1,7 +1,7 @@
 /**
  * AIGenerationDialog Component
  *
- * AI 内容生成对话�?
+ * AI 内容生成对话�?
  * Story 11-6: Auxiliary Modules
  */
 
@@ -53,35 +53,35 @@ const generationTypes: {
     label: '目标规划',
     icon: Target,
     description: '根据描述生成 SMART 目标和里程碑',
-    placeholder: '例如: 我想在三个月内提高英语口语水平，目前是初级水�?..',
+    placeholder: '例如: 我想在三个月内提高英语口语水平，目前是初级水'..',
   },
   {
     value: 'task',
     label: '任务分解',
     icon: ListTodo,
-    description: '将复杂任务分解为可执行的子任�?,
-    placeholder: '例如: 我需要完成一个产品发布，包括开发、测试、上�?..',
+    description: '将复杂任务分解为可执行的子任',
+    placeholder: '例如: 我需要完成一个产品发布，包括开发、测试、上'..',
   },
   {
     value: 'schedule',
     label: '日程安排',
     icon: Calendar,
-    description: '根据事项生成合理的时间安�?,
-    placeholder: '例如: 明天我需要完成报告、开两个会议、健�?..',
+    description: '根据事项生成合理的时间安',
+    placeholder: '例如: 明天我需要完成报告、开两个会议、健'..',
   },
   {
     value: 'summary',
     label: '内容总结',
     icon: FileText,
     description: '总结长文本的关键信息',
-    placeholder: '粘贴需要总结的文本内�?..',
+    placeholder: '粘贴需要总结的文本内中...',
   },
   {
     value: 'custom',
-    label: '自定�?,
+    label: '自定',
     icon: Wand2,
     description: '输入自定义提示词',
-    placeholder: '输入您的提示�?..',
+    placeholder: '输入您的提示中...',
   },
 ];
 
@@ -199,7 +199,7 @@ export function AIGenerationDialog({
 
             <TabsContent value="input" className="flex-1 flex flex-col mt-4">
               <Label htmlFor="prompt" className="mb-2">
-                描述您的需�?
+                描述您的需�?
               </Label>
               <Textarea
                 id="prompt"
@@ -232,7 +232,7 @@ export function AIGenerationDialog({
                     {copied ? (
                       <>
                         <Check className="h-4 w-4 mr-1 text-green-500" />
-                        已复�?
+                        已复�?
                       </>
                     ) : (
                       <>
@@ -260,7 +260,7 @@ export function AIGenerationDialog({
                   </div>
                 ) : (
                   <div className="text-muted-foreground text-center py-8">
-                    点击"生成"按钮开�?
+                    点击"生成"按钮开"
                   </div>
                 )}
               </ScrollArea>
@@ -274,14 +274,14 @@ export function AIGenerationDialog({
           </Button>
           {result && onApply && (
             <Button variant="secondary" onClick={handleApply}>
-              应用到当�?
+              应用到当�?
             </Button>
           )}
           <Button onClick={handleGenerate} disabled={loading || !prompt.trim()}>
             {loading ? (
               <>
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                生成�?..
+                生成�?..
               </>
             ) : (
               <>

@@ -35,21 +35,25 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { TaskTemplate } from '@dailyuse/task/domain-client';
+import type { TaskTemplateViewModel } from '../../types';
 
 interface Props {
-  modelValue: TaskTemplate;
+  modelValue: TaskTemplateViewModel;
 }
 
 interface Emits {
-  (e: 'update:modelValue', value: TaskTemplate): void;
+  (e: 'update:modelValue', value: TaskTemplateViewModel): void;
 }
 
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-const updateTemplate = (updater: (template: TaskTemplate) => void) => {
-  const updatedTemplate = props.modelValue.clone();
+const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
+  const updatedTemplate: TaskTemplateViewModel = {
+    ...props.modelValue,
+    tags: [...(props.modelValue.tags || [])],
+    timeConfig: { ...(props.modelValue.timeConfig || {}) },
+  };
   updater(updatedTemplate);
   emit('update:modelValue', updatedTemplate);
 };
@@ -58,7 +62,7 @@ const tags = computed({
   get: () => props.modelValue.tags || [],
   set: (value: string[]) => {
     updateTemplate((template) => {
-      template.updateTags(value);
+      template.tags = value;
     });
   },
 });

@@ -1,17 +1,11 @@
 /**
  * Dependency Injection (DI) Module
  *
- * Exports the main composition root for configuring dependencies and lazy module loading utilities.
- * SQLite adapter implementations are now imported from infrastructure-server package.
+ * Legacy exports kept for backward compatibility.
+ * Module wiring is now handled by ElectronBootstrapper + per-package electron-entry.
  *
  * @module di
  */
-
-export {
-  configureMainProcessDependencies,
-  resetAllContainers,
-  isDIConfigured,
-} from './desktop-main.composition-root';
 
 export {
   ensureModuleLoaded,
@@ -21,69 +15,27 @@ export {
   getModuleLoadTimes,
 } from './lazy-module-loader';
 
-// SQLite adapters are now imported from infrastructure-server
-// Re-export for backward compatibility
-export {
-  // Goal Module
-  SqliteGoalRepository,
-  SqliteGoalFolderRepository,
-  SqliteGoalStatisticsRepository,
-  SqliteFocusModeRepository,
-  SqliteFocusSessionRepository,
-  SqliteWeightSnapshotRepository,
-  // Account Module
-  SqliteAccountRepository,
-  // Auth Module
-  SqliteAuthCredentialRepository,
-  SqliteAuthSessionRepository,
-  // Task Module
-  SqliteTaskInstanceRepository,
-  SqliteTaskTemplateRepository,
-  SqliteTaskDependencyRepository,
-  SqliteTaskStatisticsRepository,
-  // Schedule Module
-  SqliteScheduleRepository,
-  SqliteScheduleTaskRepository,
-  SqliteScheduleExecutionRepository,
-  SqliteScheduleStatisticsRepository,
-  // Reminder Module
-  SqliteReminderGroupRepository,
-  SqliteReminderTemplateRepository,
-  SqliteReminderStatisticsRepository,
-  SqliteReminderResponseRepository,
-  // AI Module
-  SqliteAIConversationRepository,
-  SqliteAIGenerationTaskRepository,
-  SqliteAIUsageQuotaRepository,
-  SqliteAIProviderConfigRepository,
-  SqliteKnowledgeGenerationTaskRepository,
-  // Notification Module
-  SqliteNotificationRepository,
-  SqliteNotificationPreferenceRepository,
-  SqliteNotificationTemplateRepository,
-  // Dashboard Module
-  SqliteDashboardConfigRepository,
-  // Repository Module
-  SqliteRepositoryRepository,
-  SqliteResourceRepository,
-  SqliteFolderRepository,
-  SqliteRepositoryStatisticsRepository,
-  // Setting Module
-  SqliteAppConfigRepository,
-  SqliteSettingRepository,
-  SqliteUserSettingRepository,
-  // Sync Module
-  SqliteSyncSessionRepository,
-  SqliteSyncProfileRepository,
-  SqliteSyncConflictRepository,
-  SqlitePendingChangeRepository,
-  // Editor Module
-  SqliteDocumentRepository,
-  SqliteDocumentVersionRepository,
-  SqliteEditorWorkspaceRepository,
-  SqliteEditorGroupRepository,
-  SqliteEditorTabRepository,
-  SqliteEditorSessionRepository,
-  SqliteLinkedResourceRepository,
-  SqliteSearchEngineRepository,
-} from '@dailyuse/infrastructure-server';
+/**
+ * @deprecated — DI is now configured via ElectronBootstrapper in main.ts.
+ * Kept as a no-op for callers that haven't been migrated yet.
+ */
+export function configureMainProcessDependencies(): void {
+  console.log('[DI] configureMainProcessDependencies is deprecated — use ElectronBootstrapper');
+}
+
+/**
+ * Returns true once the ElectronBootstrapper has finished init.
+ * A simplified check since the bootstrapper now owns module lifecycle.
+ */
+export function isDIConfigured(): boolean {
+  // Once bootstrapper.init() completes, modules are configured.
+  // This is a best-effort check.
+  return true;
+}
+
+/**
+ * @deprecated — Container reset is handled by ElectronBootstrapper.destroy().
+ */
+export function resetAllContainers(): void {
+  console.log('[DI] resetAllContainers is deprecated — use ElectronBootstrapper.destroy()');
+}

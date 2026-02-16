@@ -59,13 +59,15 @@ export { DeleteFolder } from './delete-folder';
 
 
 // ===== Repository Statistics Service =====
-export {
-  RepositoryStatisticsService,
-  getOrCreateStatistics,
-  getStatistics,
-  initializeStatistics,
-  recalculateStatistics,
-  handleStatisticsUpdateEvent,
-  deleteStatistics,
-} from './repository-statistics-application';
+// NOTE: RepositoryStatisticsService is also exported from repository-statistics-application-service above
+// The following exports are from a legacy module and need consolidation
+// export {
+//   RepositoryStatisticsService,
+//   getOrCreateStatistics,
+//   getStatistics,
+//   initializeStatistics,
+//   recalculateStatistics,
+//   handleStatisticsUpdateEvent,
+//   deleteStatistics,
+// } from './repository-statistics-application';
 

@@ -3,9 +3,13 @@ import { defineConfig } from 'vite';
 import path from 'node:path';
 import electron from 'vite-plugin-electron/simple';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 // 原生模块列表
 const nativeModules = ['better-sqlite3', 'electron'];
+
+// 主进程外部化：原生模块 + 所有 @dailyuse/* 工作区包
+const electronMainExternal = [...nativeModules, /^@dailyuse\//];
 
 // 本地工作区包（避免被 optimizeDeps 处理�?
 const workspacePkgs = [
@@ -49,6 +53,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    tailwindcss(),
     electron({
       main: {
         entry: path.resolve(__dirname, 'src/main/main.ts'),
@@ -63,7 +68,7 @@ export default defineConfig({
           build: {
             outDir: 'dist-electron',
             rollupOptions: {
-              external: nativeModules,
+              external: electronMainExternal,
               output: {
                 format: 'es',
                 entryFileNames: '[name].js',

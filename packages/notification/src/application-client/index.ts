@@ -39,3 +39,22 @@ export type {
   NotificationErrorPayload,
 } from './notificationEvents';
 
+// Re-export as alias for backward compatibility
+export { NotificationClientService as NotificationApplicationService } from './notification-client-service';
+
+// Singleton placeholder
+let _notificationApplicationService: any = null;
+
+export function setNotificationApplicationService(service: any) {
+  _notificationApplicationService = service;
+}
+
+export const notificationApplicationService: any = new Proxy({} as any, {
+  get(_target, prop) {
+    if (!_notificationApplicationService) {
+      throw new Error('notificationApplicationService not initialized. Call setNotificationApplicationService first.');
+    }
+    return (_notificationApplicationService as any)[prop];
+  }
+});
+

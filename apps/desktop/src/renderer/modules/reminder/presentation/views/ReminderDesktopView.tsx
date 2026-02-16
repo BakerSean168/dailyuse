@@ -1,11 +1,11 @@
 /**
- * ReminderDesktopView - 提醒桌面主视�?
+ * ReminderDesktopView - 提醒桌面主视�?
  *
  * 手机桌面风格的提醒管理界面：
- * - 左侧主内容区：网格布局显示模板和分�?
- * - 右侧侧边栏：即将到来的提醒列�?
- * - 支持右键菜单、删除确�?
- * - 集成所�?Dialogs �?Cards 组件
+ * - 左侧主内容区：网格布局显示模板和分�?
+ * - 右侧侧边栏：即将到来的提醒列�?
+ * - 支持右键菜单、删除确�?
+ * - 集成所�?Dialogs �?Cards 组件
  *
  * @module reminder/presentation/views
  */
@@ -106,10 +106,10 @@ export function ReminderDesktopView() {
     refresh,
   } = useReminder();
 
-  // 本地状�?
+  // 本地状�?
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Dialog 状�?
+  // Dialog 状�?
   const [templateDialog, setTemplateDialog] = useState<{
     open: boolean;
     template: ReminderTemplateClientDTO | null;
@@ -125,7 +125,7 @@ export function ReminderDesktopView() {
     template: ReminderTemplateClientDTO | null;
   }>({ open: false, template: null });
 
-  // Card 状�?
+  // Card 状�?
   const [templateCard, setTemplateCard] = useState<{
     open: boolean;
     template: ReminderTemplateClientDTO | null;
@@ -152,10 +152,10 @@ export function ReminderDesktopView() {
     name: '',
   });
 
-  // 模拟账户 UUID（实际应�?context 获取�?
+  // 模拟账户 UUID（实际应�?context 获取�?
   const accountUuid = 'demo-account';
 
-  // 初始化数�?
+  // 初始化数�?
   useEffect(() => {
     refresh(accountUuid);
   }, [accountUuid, refresh]);
@@ -165,7 +165,7 @@ export function ReminderDesktopView() {
     return templates.filter(t => !t.groupUuid);
   }, [templates]);
 
-  // 获取分组内模板数�?
+  // 获取分组内模板数�?
   const getGroupTemplateCount = useCallback((groupUuid: string) => {
     return templates.filter(t => t.groupUuid === groupUuid).length;
   }, [templates]);
@@ -231,7 +231,7 @@ export function ReminderDesktopView() {
         request: data as UpdateReminderTemplateRequest,
       });
     } else {
-      // 创建模板 - 直接传�?CreateReminderTemplateRequest
+      // 创建模板 - 直接传�?CreateReminderTemplateRequest
       await createTemplate(data as CreateReminderTemplateRequest);
     }
     setTemplateDialog({ open: false, template: null });
@@ -290,7 +290,7 @@ export function ReminderDesktopView() {
         request: data as UpdateReminderGroupRequest,
       });
     } else {
-      // 创建分组 - 直接传�?CreateReminderGroupRequest
+      // 创建分组 - 直接传�?CreateReminderGroupRequest
       await createGroup(data as CreateReminderGroupRequest);
     }
     setGroupDialog({ open: false, group: null });
@@ -326,7 +326,7 @@ export function ReminderDesktopView() {
         },
         {
           icon: <FolderInput className="h-4 w-4" />,
-          title: '移动到分�?,
+          title: '移动到分',
           action: () => handleMoveTemplate(template),
         },
         { divider: true } as ContextMenuItem,
@@ -460,7 +460,7 @@ export function ReminderDesktopView() {
                 </div>
               ))}
 
-              {/* 分组图标（文件夹风格�?*/}
+              {/* 分组图标（文件夹风格�?*/}
               {groups.map((group) => (
                 <div
                   key={group.uuid}
@@ -501,7 +501,7 @@ export function ReminderDesktopView() {
           </div>
         </div>
 
-        {/* 底部工具�?*/}
+        {/* 底部工具�?*/}
         <div className="p-4 border-t flex items-center justify-center gap-4">
           <Button
             variant="outline"
@@ -531,7 +531,7 @@ export function ReminderDesktopView() {
         </div>
       </div>
 
-      {/* 右侧提醒实例侧边�?*/}
+      {/* 右侧提醒实例侧边�?*/}
       <ReminderInstanceSidebar
         upcomingData={upcomingData}
         isLoading={loading}
@@ -612,7 +612,7 @@ export function ReminderDesktopView() {
         onTemplateContextMenu={handleTemplateContextMenu}
       />
 
-      {/* 模板编辑对话�?*/}
+      {/* 模板编辑对话�?*/}
       <ReminderTemplateDialog
         open={templateDialog.open}
         template={templateDialog.template}
@@ -621,7 +621,7 @@ export function ReminderDesktopView() {
         onSave={handleSaveTemplate}
       />
 
-      {/* 分组编辑对话�?*/}
+      {/* 分组编辑对话�?*/}
       <ReminderGroupDialog
         open={groupDialog.open}
         group={groupDialog.group}
@@ -629,7 +629,7 @@ export function ReminderDesktopView() {
         onSave={handleSaveGroup}
       />
 
-      {/* 移动模板对话�?*/}
+      {/* 移动模板对话�?*/}
       <TemplateMoveDialog
         open={moveDialog.open}
         template={moveDialog.template}
@@ -639,14 +639,14 @@ export function ReminderDesktopView() {
         onMove={handleMoveTemplateSave}
       />
 
-      {/* 删除确认对话�?*/}
+      {/* 删除确认对话�?*/}
       <AlertDialog open={deleteDialog.show} onOpenChange={(open) => !open && setDeleteDialog(prev => ({ ...prev, show: false }))}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>确认删除</AlertDialogTitle>
             <AlertDialogDescription>
               确定要删除{deleteDialog.type === 'template' ? '模板' : '分组'} "{deleteDialog.name}" 吗？
-              此操作无法撤销�?
+              此操作无法撤销�?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

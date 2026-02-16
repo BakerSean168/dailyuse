@@ -5,7 +5,7 @@
  */
 
 import type { IGoalFolderRepository } from '@/domain-server';
-import type { UpdateGoalFolderRequest, GoalFolderResponse } from '@dailyuse/contracts/goal';
+import type { UpdateGoalFolderReq, UpdateGoalFolderRes } from '@dailyuse/contracts/goal';
 
 /**
  * Update Goal Folder Service
@@ -16,8 +16,8 @@ export class UpdateGoalFolder {
   async execute(
     uuid: string,
     accountUuid: string,
-    input: UpdateGoalFolderRequest,
-  ): Promise<GoalFolderResponse> {
+    input: UpdateGoalFolderReq,
+  ): Promise<UpdateGoalFolderRes> {
     const folder = await this.goalFolderRepository.findById(uuid);
 
     if (!folder) {
@@ -25,7 +25,7 @@ export class UpdateGoalFolder {
     }
 
     // 验证所属账户
-    if (folder.accountUuid !== accountUuid) {
+    if (folder.identityId !== accountUuid) {
       throw new Error('Unauthorized access to goal folder');
     }
 
@@ -34,19 +34,17 @@ export class UpdateGoalFolder {
       folder.rename(input.name);
     }
     if (input.description !== undefined) {
-      folder.updateDescription(input.description);
+      folder.updateDescription(input.description ?? '');
     }
     if (input.color !== undefined) {
-      folder.updateColor(input.color);
+      folder.updateColor(input.color ?? '');
     }
     if (input.icon !== undefined) {
-      folder.updateIcon(input.icon);
+      folder.updateIcon(input.icon ?? '');
     }
 
     await this.goalFolderRepository.save(folder);
 
-    return {
-      folder: folder.toClientDTO(),
-    };
+    return folder.toClientDTO();
   }
 }

@@ -42,12 +42,12 @@ const reviewTypeConfig: Record<ReviewType, {
   icon: typeof Calendar;
 }> = {
   [ReviewType.WEEKLY]: {
-    label: '周复�?,
+    label: '周复',
     color: 'text-blue-600 bg-blue-100',
     icon: Calendar,
   },
   [ReviewType.MONTHLY]: {
-    label: '月复�?,
+    label: '月复',
     color: 'text-purple-600 bg-purple-100',
     icon: CalendarDays,
   },
@@ -111,7 +111,7 @@ export function GoalReviewCard({
         <div className="flex items-start gap-4">
           {/* 左侧信息 */}
           <div className="flex-1 min-w-0">
-            {/* 标题和类�?*/}
+            {/* 标题和类�?*/}
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <TypeIcon className="h-4 w-4 text-muted-foreground shrink-0" />
               <h4 className="font-medium truncate">{review.summary}</h4>
@@ -120,7 +120,7 @@ export function GoalReviewCard({
               </Badge>
             </div>
 
-            {/* 时间和评�?*/}
+            {/* 时间和评�?*/}
             <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
               <div className="flex items-center gap-1">
                 <Clock className="h-3.5 w-3.5" />

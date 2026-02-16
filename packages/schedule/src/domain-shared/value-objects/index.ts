@@ -7,6 +7,7 @@
 export { ScheduleId } from './schedule-id';
 export { ScheduleTaskId } from './schedule-task-id';
 export { ScheduleExecutionId } from './schedule-execution-id';
+export { ScheduleStatisticId } from './schedule-statistic-id';
 
 // Enum-like Value Objects
 export { ScheduleTaskStatus } from './schedule-task-status';

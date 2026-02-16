@@ -87,7 +87,7 @@ export * from './components/task';
 // 5. Styles (CSS 变量和 Tailwind)
 // ==========================================
 // 业务代码应在入口处引入：
-// import '@dailyuse/ui-core/styles/globals.css';
+// import '@dailyuse/ui-core/theme.css';
 
 // ==========================================
 // 6. Linear Components (Custom Composite)

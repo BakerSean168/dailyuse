@@ -32,7 +32,7 @@ function checkPasswordStrength(password: string): {
   checks: { label: string; passed: boolean }[];
 } {
   const checks = [
-    { label: '至少8个字�?, passed: password.length >= 8 },
+    { label: '至少8个字', passed: password.length >= 8 },
     { label: '包含大写字母', passed: /[A-Z]/.test(password) },
     { label: '包含小写字母', passed: /[a-z]/.test(password) },
     { label: '包含数字', passed: /[0-9]/.test(password) },
@@ -67,11 +67,11 @@ export function RegisterView() {
   // Validate username
   const validateUsername = (value: string) => {
     if (value.length < 3) {
-      setUsernameError('用户名至�?个字�?);
+      setUsernameError('用户名至少3个字符');
       return false;
     }
     if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-      setUsernameError('用户名只能包含字母、数字和下划�?);
+      setUsernameError('用户名只能包含字母、数字和下划');
       return false;
     }
     setUsernameError('');
@@ -121,7 +121,7 @@ export function RegisterView() {
         confirmPassword,
       });
       navigate('/login', {
-        state: { message: '注册成功！请登录您的账户�? },
+        state: { message: '注册成功！请登录您的账户' },
       });
     } catch {
       // Error is handled in useAuth
@@ -136,10 +136,10 @@ export function RegisterView() {
   };
 
   const getStrengthLabel = (score: number) => {
-    if (score < 40) return '�?;
-    if (score < 60) return '一�?;
+    if (score < 40) return '';
+    if (score < 60) return '一';
     if (score < 80) return '良好';
-    return '�?;
+    return '';
   };
 
   return (
@@ -152,7 +152,7 @@ export function RegisterView() {
             </div>
           </div>
           <CardTitle className="text-2xl">创建账户</CardTitle>
-          <CardDescription>开始使�?DailyUse 管理您的日常</CardDescription>
+          <CardDescription>开始使用 DailyUse 管理您的日常</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -165,7 +165,7 @@ export function RegisterView() {
 
             {/* Username */}
             <div className="space-y-2">
-              <Label htmlFor="username">用户�?/Label>
+              <Label htmlFor="username">用户</Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -200,7 +200,7 @@ export function RegisterView() {
                     setEmail(e.target.value);
                     if (e.target.value) validateEmail(e.target.value);
                   }}
-                  placeholder="请输入邮�?
+                  placeholder="请输入邮"
                   className="pl-9"
                   required
                 />
@@ -220,7 +220,7 @@ export function RegisterView() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="请输入密�?
+                  placeholder="请输入密"
                   className="pl-9 pr-10"
                   required
                 />
@@ -282,7 +282,7 @@ export function RegisterView() {
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="请再次输入密�?
+                  placeholder="请再次输入密"
                   className="pl-9 pr-10"
                   required
                 />
@@ -301,7 +301,7 @@ export function RegisterView() {
                 </Button>
               </div>
               {confirmPassword && password !== confirmPassword && (
-                <p className="text-sm text-destructive">两次输入的密码不一�?/p>
+                <p className="text-sm text-destructive">两次输入的密码不一</p>
               )}
             </div>
 
@@ -338,7 +338,7 @@ export function RegisterView() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  注册�?..
+                  注册�?..
                 </>
               ) : (
                 '注册'

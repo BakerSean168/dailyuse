@@ -35,12 +35,10 @@
 </template>
 
 <script setup lang="ts">
-import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
-import type { TaskInstance } from '@dailyuse/task/domain-client';
-import type { KeyResult, Goal } from '@dailyuse/goal/domain-client';
+import type { TaskInstanceViewModel } from '../types';
 const props = defineProps<{
   visible: boolean;
-  task: TaskInstance;
+  task: TaskInstanceViewModel;
 }>();
 
 const emit = defineEmits<{

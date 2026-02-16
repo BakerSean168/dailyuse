@@ -9,28 +9,32 @@
       "import": "./dist/index.js"
     },
     "./domain-shared": {
-      "types": "./dist/domain-shared.d.ts",
-      "import": "./dist/domain-shared.js"
+      "types": "./dist/domain-shared/index.d.ts",
+      "import": "./dist/domain-shared/index.js"
     },
     "./domain-server": {
-      "types": "./dist/domain-server.d.ts",
-      "import": "./dist/domain-server.js"
+      "types": "./dist/domain-server/index.d.ts",
+      "import": "./dist/domain-server/index.js"
     },
     "./application-server": {
-      "types": "./dist/application-server.d.ts",
-      "import": "./dist/application-server.js"
+      "types": "./dist/application-server/index.d.ts",
+      "import": "./dist/application-server/index.js"
     },
     "./infrastructure-server": {
-      "types": "./dist/infrastructure-server.d.ts",
-      "import": "./dist/infrastructure-server.js"
+      "types": "./dist/infrastructure-server/index.d.ts",
+      "import": "./dist/infrastructure-server/index.js"
     },
     "./infrastructure-client": {
-      "types": "./dist/infrastructure-client.d.ts",
-      "import": "./dist/infrastructure-client.js"
+      "types": "./dist/infrastructure-client/index.d.ts",
+      "import": "./dist/infrastructure-client/index.js"
     },
     "./api": {
-      "types": "./dist/api.d.ts",
-      "import": "./dist/api.js"
+      "types": "./dist/api/index.d.ts",
+      "import": "./dist/api/index.js"
+    },
+    "./electron-entry": {
+      "types": "./dist/electron-entry/index.d.ts",
+      "import": "./dist/electron-entry/index.js"
     }
   },
   "scripts": {

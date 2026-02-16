@@ -25,7 +25,8 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { FocusSessionId, IdentityId, GoalId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@dailyuse/domain-shared';
+import { FocusSessionId, GoalId } from '../../domain-shared';
 import { FocusSessionStatus } from '@dailyuse/contracts/goal';
 import type {
   FocusSessionPersistenceDTO,

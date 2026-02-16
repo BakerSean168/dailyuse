@@ -200,7 +200,7 @@ export class TaskQueryService {
   /**
    * 检查重要性是否匹配过滤条�?
    *
-   * 过滤逻辑: filterBy=importance:important 返回 importance >= Important 的任�?
+   * 过滤逻辑: filterBy=importance:important 返回 importance >= Important 的任<
    */
   private matchesImportanceFilter(importance: ImportanceLevel, level: string): boolean {
     const importanceLevels = [
