@@ -17,11 +17,11 @@ export class CreateConversation {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
   async execute(
-    accountUuid: string,
+    identityId: string,
     input: CreateConversationRequest,
   ): Promise<ConversationResponse> {
     const conversation = AIConversation.create({
-      accountUuid,
+      identityId,
       name: input.title || 'New Conversation',
     });
 

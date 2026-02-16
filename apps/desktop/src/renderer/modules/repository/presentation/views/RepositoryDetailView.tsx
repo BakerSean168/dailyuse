@@ -36,7 +36,7 @@ export function RepositoryDetailView() {
   const [newFolderName, setNewFolderName] = useState('');
   const [renameTarget, setRenameTarget] = useState<{
     type: 'folder' | 'resource';
-    uuid: string;
+    id: string;
     name: string;
   } | null>(null);
 
@@ -44,10 +44,10 @@ export function RepositoryDetailView() {
   const breadcrumbItems = useMemo(() => {
     const items = [];
     if (currentRepository) {
-      items.push({ uuid: currentRepository.uuid, name: currentRepository.name });
+      items.push({ id: currentRepository.id, name: currentRepository.name });
     }
     if (currentFolder) {
-      items.push({ uuid: currentFolder.uuid, name: currentFolder.name });
+      items.push({ id: currentFolder.id, name: currentFolder.name });
     }
     return items;
   }, [currentRepository, currentFolder]);
@@ -76,7 +76,7 @@ export function RepositoryDetailView() {
   const handleCreateFolder = useCallback(async () => {
     if (!newFolderName.trim()) return;
 
-    await createFolder(newFolderName.trim(), currentFolder?.uuid);
+    await createFolder(newFolderName.trim(), currentFolder?.id);
     setIsCreatingFolder(false);
     setNewFolderName('');
   }, [newFolderName, currentFolder, createFolder]);
@@ -86,9 +86,9 @@ export function RepositoryDetailView() {
     if (!renameTarget || !renameTarget.name.trim()) return;
 
     if (renameTarget.type === 'folder') {
-      await renameFolder(renameTarget.uuid, renameTarget.name.trim());
+      await renameFolder(renameTarget.id, renameTarget.name.trim());
     } else {
-      await renameResource(renameTarget.uuid, renameTarget.name.trim());
+      await renameResource(renameTarget.id, renameTarget.name.trim());
     }
 
     setRenameTarget(null);
@@ -96,23 +96,23 @@ export function RepositoryDetailView() {
 
   // 打开重命名对话框
   const openRenameDialog = useCallback(
-    (type: 'folder' | 'resource', uuid: string) => {
+    (type: 'folder' | 'resource', id: string) => {
       const item =
         type === 'folder'
-          ? folders.find((f) => f.uuid === uuid)
-          : resources.find((r) => r.uuid === uuid);
+          ? folders.find((f) => f.id === id)
+          : resources.find((r) => r.id === id);
 
       if (item) {
-        setRenameTarget({ type, uuid, name: item.name });
+        setRenameTarget({ type, id, name: item.name });
       }
     },
     [folders, resources]
   );
 
   // 资源点击
-  const handleResourceClick = useCallback((uuid: string) => {
+  const handleResourceClick = useCallback((id: string) => {
     // TODO: 打开资源详情或编辑器
-    console.log('Open resource:', uuid);
+    console.log('Open resource:', id);
   }, []);
 
   if (!currentRepository) {
@@ -188,10 +188,10 @@ export function RepositoryDetailView() {
               </div>
               {searchResults.map((resource) => (
                 <ResourceItem
-                  key={resource.uuid}
+                  key={resource.id}
                   resource={resource}
                   onClick={handleResourceClick}
-                  onRename={(uuid) => openRenameDialog('resource', uuid)}
+                  onRename={(id) => openRenameDialog('resource', id)}
                   onDelete={deleteResource}
                 />
               ))}
@@ -201,10 +201,10 @@ export function RepositoryDetailView() {
               {/* 文件夹列表 */}
               {folders.map((folder) => (
                 <FolderItem
-                  key={folder.uuid}
+                  key={folder.id}
                   folder={folder}
                   onClick={selectFolder}
-                  onRename={(uuid) => openRenameDialog('folder', uuid)}
+                  onRename={(id) => openRenameDialog('folder', id)}
                   onDelete={deleteFolder}
                 />
               ))}
@@ -212,10 +212,10 @@ export function RepositoryDetailView() {
               {/* 资源列表 */}
               {resources.map((resource) => (
                 <ResourceItem
-                  key={resource.uuid}
+                  key={resource.id}
                   resource={resource}
                   onClick={handleResourceClick}
-                  onRename={(uuid) => openRenameDialog('resource', uuid)}
+                  onRename={(id) => openRenameDialog('resource', id)}
                   onDelete={deleteResource}
                 />
               ))}

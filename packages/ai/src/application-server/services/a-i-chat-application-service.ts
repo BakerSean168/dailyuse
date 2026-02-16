@@ -34,20 +34,20 @@ export class AIChatApplicationService {
    * Send a message and get a complete response
    */
   async sendMessage(
-    accountUuid: string,
-    conversationUuid: string,
+    identityId: string,
+    conversationId: string,
     content: string,
     provider?: string,
     model?: string,
   ): Promise<MessageResponse> {
     // 1. Validate & Save User Message
-    const conversation = await this.validateAndGetConversation(accountUuid, conversationUuid);
+    const conversation = await this.validateAndGetConversation(identityId, conversationId);
     const userMessage = await this.saveMessage(conversation, MessageRole.USER, content);
 
     // 2. Prepare Context (History)
     // For simplicity, we just use the current message as prompt or fetch recent history
     // Ideally we should format history into a prompt string or use a chat-capable adapter
-    const history = await this.getConversationHistory(conversationUuid);
+    const history = await this.getConversationHistory(conversationId);
     const prompt = this.formatChatPrompt(history, content);
 
     // 3. Call AI
@@ -83,17 +83,17 @@ export class AIChatApplicationService {
    * Send a message and stream the response
    */
   async sendMessageStream(
-    accountUuid: string,
-    conversationUuid: string,
+    identityId: string,
+    conversationId: string,
     content: string,
     onChunk: (chunk: any) => void,
     provider?: string,
     model?: string,
   ): Promise<void> {
-    const conversation = await this.validateAndGetConversation(accountUuid, conversationUuid);
+    const conversation = await this.validateAndGetConversation(identityId, conversationId);
     await this.saveMessage(conversation, MessageRole.USER, content);
 
-    const history = await this.getConversationHistory(conversationUuid);
+    const history = await this.getConversationHistory(conversationId);
     const prompt = this.formatChatPrompt(history, content);
 
     const request: AIGenerationRequest = {
@@ -125,16 +125,16 @@ export class AIChatApplicationService {
   // --- Helper Methods ---
 
   private async validateAndGetConversation(
-    accountUuid: string,
-    conversationUuid: string,
+    identityId: string,
+    conversationId: string,
   ): Promise<AIConversationServer> {
-    const conversation = await this.conversationRepository.findByUuid(conversationUuid, {
+    const conversation = await this.conversationRepository.findById(conversationId, {
       includeChildren: true,
     });
     if (!conversation) {
       throw new Error('Conversation not found');
     }
-    if (conversation.accountUuid !== accountUuid) {
+    if (conversation.identityId !== identityId) {
       throw new Error('Not authorized');
     }
     return conversation;
@@ -146,7 +146,7 @@ export class AIChatApplicationService {
     content: string,
   ): Promise<MessageClientDTO> {
     const message = MessageServer.create({
-      conversationUuid: conversation.uuid,
+      conversationId: conversation.id,
       role,
       content,
     });
@@ -163,8 +163,8 @@ export class AIChatApplicationService {
     return message.toClientDTO();
   }
 
-  private async getConversationHistory(conversationUuid: string): Promise<MessageClientDTO[]> {
-    const conversation = await this.conversationRepository.findByUuid(conversationUuid, {
+  private async getConversationHistory(conversationId: string): Promise<MessageClientDTO[]> {
+    const conversation = await this.conversationRepository.findById(conversationId, {
       includeChildren: true,
     });
     if (!conversation) return [];

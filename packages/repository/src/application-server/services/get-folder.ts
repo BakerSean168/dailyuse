@@ -11,7 +11,7 @@ import type { FolderClientDTO } from '@dailyuse/contracts/repository';
  * Get Folder Input
  */
 export interface GetFolderInput {
-  uuid: string;
+  id: string;
 }
 
 /**
@@ -29,7 +29,7 @@ export class GetFolder {
   constructor(private readonly folderRepository: IFolderRepository) {}
 
   async execute(input: GetFolderInput): Promise<GetFolderOutput> {
-    const folder = await this.folderRepository.findById(input.uuid);
+    const folder = await this.folderRepository.findById(input.id);
     return { folder: folder ? folder.toClientDTO() : null };
   }
 }

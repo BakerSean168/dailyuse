@@ -102,7 +102,7 @@ interface AuthIPC {
  * Auth User type
  */
 interface AuthUser {
-  uuid: string;
+  id: string;
   email: string;
   name: string;
   avatar?: string;

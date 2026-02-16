@@ -264,7 +264,6 @@ export {
   // IPC
   toIpcResult,
   fromIpcResult,
-  createIpcHandler,
   createIpcClientWrapper,
 } from '@dailyuse/contracts/result';
 

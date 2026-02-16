@@ -13,7 +13,7 @@ export type SearchMode = 'all' | 'file' | 'tag' | 'line' | 'section' | 'path' | 
  * 搜索请求
  */
 export interface SearchRequest {
-  repositoryUuid: string;
+  repositoryId: string;
   query: string;
   mode: SearchMode;
   caseSensitive?: boolean;
@@ -45,7 +45,7 @@ export type MatchType = 'filename' | 'tag' | 'content' | 'section' | 'path' | 'p
  */
 export interface SearchResultItem {
   // 资源信息
-  resourceUuid: string;
+  resourceId: string;
   resourceName: string;
   resourcePath: string;
   resourceType: string;

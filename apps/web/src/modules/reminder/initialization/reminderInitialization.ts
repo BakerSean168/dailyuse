@@ -54,8 +54,8 @@ export function registerReminderInitializationTasks(): void {
     name: 'reminder-user-data-sync',
     phase: InitializationPhase.USER_LOGIN,
     priority: 20,
-    initialize: async (context?: { accountUuid?: string }) => {
-      console.log(`📔 [Reminder] 开始用户登录数据同步: ${context?.accountUuid || 'unknown'}`);
+    initialize: async (context?: { identityId?: string }) => {
+      console.log(`📔 [Reminder] 开始用户登录数据同步: ${context?.identityId || 'unknown'}`);
       try {
         console.log(`✅ [Reminder] Reminder 数据将按需加载`);
       } catch (error) {

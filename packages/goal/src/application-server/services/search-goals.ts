@@ -17,8 +17,8 @@ import type { GoalsResponse } from '../types';
 export class SearchGoals {
   constructor(private readonly goalRepository: IGoalRepository) {}
 
-  async execute(accountUuid: string, query: string): Promise<Result<GoalsResponse>> {
-    const allGoals = await this.goalRepository.findByIdentityId(accountUuid, {});
+  async execute(identityId: string, query: string): Promise<Result<GoalsResponse>> {
+    const allGoals = await this.goalRepository.findByIdentityId(identityId, {});
 
     const filteredGoals = allGoals.filter(
       (g) =>

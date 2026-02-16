@@ -49,7 +49,7 @@ export interface ITriggerReminderResult {
   /** 消息 */
   message: string;
   /** 历史记录 UUID */
-  historyUuid?: string;
+  historyId?: string;
 }
 
 /**
@@ -111,7 +111,7 @@ export class ReminderTriggerService {
       triggerTime,
       nextTriggerTime,
       message: '触发成功',
-      historyUuid: history.uuid,
+      historyId: history.id,
     };
   }
 
@@ -191,15 +191,15 @@ export class ReminderTriggerService {
    * 获取待触发的提醒模板
    *
    * @param beforeTime 在此时间之前触发的模板
-   * @param accountUuid 账户 UUID（可选）
+   * @param identityId 账户 ID（可选）
    */
   async getPendingReminders(
     beforeTime: number = Date.now(),
-    accountUuid?: string,
+    identityId?: string,
   ): Promise<ReminderTemplate[]> {
     const templates = await this.templateRepository.findByNextTriggerBefore(
       beforeTime,
-      accountUuid,
+      identityId,
     );
 
     // 过滤出真正启用的模板
@@ -217,7 +217,7 @@ export class ReminderTriggerService {
         }
       } catch (error) {
         // 如果检查失败，记录错误但继续处理其他模板
-        console.error(`Error checking template ${template.uuid} enabled status:`, error);
+        console.error(`Error checking template ${template.id} enabled status:`, error);
       }
     }
 
@@ -228,8 +228,8 @@ export class ReminderTriggerService {
   //  * 更新统计数据
   //  * Commented out - ReminderStatistics and IReminderStatisticsRepository have been deleted
   //  */
-  // private async updateStatistics(accountUuid: string, result: TriggerResult): Promise<void> {
-  //   const statistics = await this.statisticsRepository.findOrCreate(accountUuid);
+  // private async updateStatistics(identityId: string, result: TriggerResult): Promise<void> {
+  //   const statistics = await this.statisticsRepository.findOrCreate(identityId);
   //   // 这里只是简单更新，实际的统计计算由 ReminderStatistics 聚合根的 calculate() 方法完成
   //   // 在实际使用时，应该定期调用 statistics.calculate() 来重新计算完整统计
   //   await this.statisticsRepository.save(statistics);

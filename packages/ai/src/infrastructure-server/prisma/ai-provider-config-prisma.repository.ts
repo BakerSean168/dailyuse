@@ -20,31 +20,31 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByUuid(uuid: string): Promise<AIProviderConfigServerDTO | null> {
+  async findById(id: string): Promise<AIProviderConfigServerDTO | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<AIProviderConfigServerDTO[]> {
+  async findByAccountId(identityId: string): Promise<AIProviderConfigServerDTO[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findDefaultByAccountUuid(accountUuid: string): Promise<AIProviderConfigServerDTO | null> {
+  async findDefaultByAccountId(identityId: string): Promise<AIProviderConfigServerDTO | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByAccountUuidAndName(accountUuid: string, name: string): Promise<AIProviderConfigServerDTO | null> {
+  async findByIdentityIdAndName(identityId: string, name: string): Promise<AIProviderConfigServerDTO | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async exists(uuid: string): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async clearDefaultForAccount(accountUuid: string): Promise<void> {
+  async clearDefaultForAccount(identityId: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 }

@@ -14,21 +14,21 @@ import { NotificationCategory } from '../value-objects';
 // ============================================================================
 
 export const MarkAsReadBatchSchema = z.object({
-  notificationUuids: z.array(z.string().uuid()).min(1),
+  notificationIds: z.array(z.string().uuid()).min(1),
 });
 
 export type MarkAsReadBatchReq = z.infer<typeof MarkAsReadBatchSchema>;
 export type MarkAsReadBatchRes = BatchOperationResultDTO;
 
 export const DeleteNotificationsBatchSchema = z.object({
-  notificationUuids: z.array(z.string().uuid()).min(1),
+  notificationIds: z.array(z.string().uuid()).min(1),
 });
 
 export type DeleteNotificationsBatchReq = z.infer<typeof DeleteNotificationsBatchSchema>;
 export type DeleteNotificationsBatchRes = BatchOperationResultDTO;
 
 export const CleanupOldNotificationsSchema = z.object({
-  accountUuid: z.string().uuid(),
+  identityId: z.string().uuid(),
   beforeDays: z.number().int().min(1),
   category: z.nativeEnum(NotificationCategory).optional(),
 });

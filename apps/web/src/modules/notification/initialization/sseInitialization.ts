@@ -23,7 +23,7 @@ export function registerSSEInitializationTasks(): void {
     phase: InitializationPhase.USER_LOGIN,
     priority: 16, // 在 SSE 连接（priority 15）之后
     initialize: async (context) => {
-      console.log(`🎧 [SSE] 注册用户 SSE 事件监听器: ${context?.accountUuid}`);
+      console.log(`🎧 [SSE] 注册用户 SSE 事件监听器: ${context?.identityId}`);
 
       try {
         // 这里可以注册用户特定的事件监听器
@@ -34,7 +34,7 @@ export function registerSSEInitializationTasks(): void {
       }
     },
     cleanup: async (context) => {
-      console.log(`🔇 [SSE] 清理用户 SSE 事件监听器: ${context?.accountUuid}`);
+      console.log(`🔇 [SSE] 清理用户 SSE 事件监听器: ${context?.identityId}`);
 
       try {
         // 清理用户特定的事件监听器

@@ -17,19 +17,19 @@ export class NotificationMemoryRepository implements INotificationRepository {
   private notifications = new Map<string, Notification>();
 
   async save(notification: Notification): Promise<void> {
-    this.notifications.set((notification as any).uuid, notification);
+    this.notifications.set((notification as any).id, notification);
   }
 
   async saveMany(notifications: Notification[]): Promise<void> {
-    notifications.forEach((n: any) => this.notifications.set(n.uuid, n));
+    notifications.forEach((n: any) => this.notifications.set(n.id, n));
   }
 
-  async findById(uuid: string, _options?: { includeChildren?: boolean }): Promise<Notification | null> {
-    return this.notifications.get(uuid) ?? null;
+  async findById(id: string, _options?: { includeChildren?: boolean }): Promise<Notification | null> {
+    return this.notifications.get(id) ?? null;
   }
 
-  async findByAccountUuid(
-    accountUuid: string,
+  async findByAccountId(
+    identityId: string,
     options?: {
       includeChildren?: boolean;
       includeRead?: boolean;
@@ -38,7 +38,7 @@ export class NotificationMemoryRepository implements INotificationRepository {
       offset?: number;
     },
   ): Promise<Notification[]> {
-    let result = Array.from(this.notifications.values()).filter((n: any) => n.accountUuid === accountUuid);
+    let result = Array.from(this.notifications.values()).filter((n: any) => n.identityId === identityId);
 
     if (!options?.includeRead) {
       result = result.filter((n: any) => n.status !== 'READ');
@@ -53,12 +53,12 @@ export class NotificationMemoryRepository implements INotificationRepository {
   }
 
   async findByStatus(
-    accountUuid: string,
+    identityId: string,
     status: NotificationStatus,
     options?: { limit?: number; offset?: number },
   ): Promise<Notification[]> {
     const filtered = Array.from(this.notifications.values()).filter(
-      (n: any) => n.accountUuid === accountUuid && n.status === status,
+      (n: any) => n.identityId === identityId && n.status === status,
     );
     const offset = options?.offset ?? 0;
     const limit = options?.limit ?? filtered.length;
@@ -66,82 +66,82 @@ export class NotificationMemoryRepository implements INotificationRepository {
   }
 
   async findByCategory(
-    accountUuid: string,
+    identityId: string,
     category: NotificationCategory,
     options?: { limit?: number; offset?: number },
   ): Promise<Notification[]> {
     const filtered = Array.from(this.notifications.values()).filter(
-      (n: any) => n.accountUuid === accountUuid && n.category === category,
+      (n: any) => n.identityId === identityId && n.category === category,
     );
     const offset = options?.offset ?? 0;
     const limit = options?.limit ?? filtered.length;
     return filtered.slice(offset, offset + limit);
   }
 
-  async findUnread(accountUuid: string, options?: { limit?: number }): Promise<Notification[]> {
+  async findUnread(identityId: string, options?: { limit?: number }): Promise<Notification[]> {
     const filtered = Array.from(this.notifications.values()).filter(
-      (n: any) => n.accountUuid === accountUuid && n.status === 'UNREAD',
+      (n: any) => n.identityId === identityId && n.status === 'UNREAD',
     );
     const limit = options?.limit ?? filtered.length;
     return filtered.slice(0, limit);
   }
 
-  async findByRelatedEntity(relatedEntityType: string, relatedEntityUuid: string): Promise<Notification[]> {
+  async findByRelatedEntity(relatedEntityType: string, relatedEntityId: string): Promise<Notification[]> {
     return Array.from(this.notifications.values()).filter(
-      (n: any) => n.relatedEntityType === relatedEntityType && n.relatedEntityUuid === relatedEntityUuid,
+      (n: any) => n.relatedEntityType === relatedEntityType && n.relatedEntityId === relatedEntityId,
     );
   }
 
-  async delete(uuid: string): Promise<void> {
-    this.notifications.delete(uuid);
+  async delete(id: string): Promise<void> {
+    this.notifications.delete(id);
   }
 
-  async deleteMany(uuids: string[]): Promise<void> {
-    uuids.forEach((uuid) => this.notifications.delete(uuid));
+  async deleteMany(ids: string[]): Promise<void> {
+    ids.forEach((id) => this.notifications.delete(id));
   }
 
-  async softDelete(uuid: string): Promise<void> {
-    const notification = this.notifications.get(uuid) as any;
+  async softDelete(id: string): Promise<void> {
+    const notification = this.notifications.get(id) as any;
     if (notification) {
       notification.deletedAt = Date.now();
-      this.notifications.set(uuid, notification);
+      this.notifications.set(id, notification);
     }
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    return this.notifications.has(uuid);
+  async exists(id: string): Promise<boolean> {
+    return this.notifications.has(id);
   }
 
-  async countUnread(accountUuid: string): Promise<number> {
+  async countUnread(identityId: string): Promise<number> {
     return Array.from(this.notifications.values()).filter(
-      (n: any) => n.accountUuid === accountUuid && n.status === 'UNREAD',
+      (n: any) => n.identityId === identityId && n.status === 'UNREAD',
     ).length;
   }
 
-  async countByCategory(accountUuid: string): Promise<Record<NotificationCategory, number>> {
+  async countByCategory(identityId: string): Promise<Record<NotificationCategory, number>> {
     const result: Partial<Record<NotificationCategory, number>> = {};
     Array.from(this.notifications.values())
-      .filter((n: any) => n.accountUuid === accountUuid)
+      .filter((n: any) => n.identityId === identityId)
       .forEach((n: any) => {
         result[n.category as NotificationCategory] = (result[n.category as NotificationCategory] ?? 0) + 1;
       });
     return result as Record<NotificationCategory, number>;
   }
 
-  async markManyAsRead(uuids: string[]): Promise<void> {
-    uuids.forEach((uuid) => {
-      const notification = this.notifications.get(uuid) as any;
+  async markManyAsRead(ids: string[]): Promise<void> {
+    ids.forEach((id) => {
+      const notification = this.notifications.get(id) as any;
       if (notification) {
         notification.status = 'READ';
         notification.readAt = Date.now();
-        this.notifications.set(uuid, notification);
+        this.notifications.set(id, notification);
       }
     });
   }
 
-  async markAllAsRead(accountUuid: string): Promise<void> {
+  async markAllAsRead(identityId: string): Promise<void> {
     this.notifications.forEach((n: any) => {
-      if (n.accountUuid === accountUuid && n.status === 'UNREAD') {
+      if (n.identityId === identityId && n.status === 'UNREAD') {
         n.status = 'READ';
         n.readAt = Date.now();
       }
@@ -150,9 +150,9 @@ export class NotificationMemoryRepository implements INotificationRepository {
 
   async cleanupExpired(beforeTimestamp: number): Promise<number> {
     let count = 0;
-    this.notifications.forEach((n: any, uuid) => {
+    this.notifications.forEach((n: any, id) => {
       if (n.expiresAt && n.expiresAt < beforeTimestamp) {
-        this.notifications.delete(uuid);
+        this.notifications.delete(id);
         count++;
       }
     });
@@ -161,9 +161,9 @@ export class NotificationMemoryRepository implements INotificationRepository {
 
   async cleanupDeleted(beforeTimestamp: number): Promise<number> {
     let count = 0;
-    this.notifications.forEach((n: any, uuid) => {
+    this.notifications.forEach((n: any, id) => {
       if (n.deletedAt && n.deletedAt < beforeTimestamp) {
-        this.notifications.delete(uuid);
+        this.notifications.delete(id);
         count++;
       }
     });
@@ -176,6 +176,6 @@ export class NotificationMemoryRepository implements INotificationRepository {
   }
 
   seed(notifications: Notification[]): void {
-    notifications.forEach((n: any) => this.notifications.set(n.uuid, n));
+    notifications.forEach((n: any) => this.notifications.set(n.id, n));
   }
 }

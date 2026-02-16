@@ -11,7 +11,7 @@ import type {
   IScheduleEventApiClient,
 } from '../types';
 import type {
-  ScheduleClientDTO,
+  ScheduleJobClientDTO,
   CreateScheduleRequest,
   UpdateScheduleRequest,
   GetSchedulesByTimeRangeRequest,
@@ -24,17 +24,17 @@ import type {
  */
 const SCHEDULE_EVENT_CHANNELS = {
   // CRUD
-  CREATE_SCHEDULE: 'schedule:event:create',
-  GET_SCHEDULE: 'schedule:event:get',
-  GET_SCHEDULES_BY_ACCOUNT: 'schedule:event:get-by-account',
-  GET_SCHEDULES_BY_TIME_RANGE: 'schedule:event:get-by-time-range',
-  UPDATE_SCHEDULE: 'schedule:event:update',
-  DELETE_SCHEDULE: 'schedule:event:delete',
+  CREATE_SCHEDULE: 'schedule:create',
+  GET_SCHEDULE: 'schedule:get',
+  GET_SCHEDULES_BY_ACCOUNT: 'schedule:list',
+  GET_SCHEDULES_BY_TIME_RANGE: 'schedule:list-by-date-range',
+  UPDATE_SCHEDULE: 'schedule:update',
+  DELETE_SCHEDULE: 'schedule:delete',
   // Conflict Detection
-  GET_CONFLICTS: 'schedule:event:get-conflicts',
-  DETECT_CONFLICTS: 'schedule:event:detect-conflicts',
-  CREATE_WITH_CONFLICT_DETECTION: 'schedule:event:create-with-conflict-detection',
-  RESOLVE_CONFLICT: 'schedule:event:resolve-conflict',
+  GET_CONFLICTS: 'schedule:get-conflicts',
+  DETECT_CONFLICTS: 'schedule:detect-conflicts',
+  CREATE_WITH_CONFLICT_DETECTION: 'schedule:create-with-conflict-detection',
+  RESOLVE_CONFLICT: 'schedule:resolve-conflict',
 } as const;
 
 export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
@@ -42,43 +42,43 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
 
   // ===== Schedule Event CRUD =====
 
-  async createSchedule(data: CreateScheduleRequest): Promise<Result<ScheduleClientDTO>> {
+  async createSchedule(data: CreateScheduleRequest): Promise<Result<ScheduleJobClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.CREATE_SCHEDULE, data));
   }
 
-  async getSchedule(uuid: string): Promise<Result<ScheduleClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULE, uuid));
+  async getSchedule(id: string): Promise<Result<ScheduleJobClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULE, id));
   }
 
-  async getSchedulesByAccount(): Promise<Result<ScheduleClientDTO[]>> {
+  async getSchedulesByAccount(): Promise<Result<ScheduleJobClientDTO[]>> {
     return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_ACCOUNT));
   }
 
   async getSchedulesByTimeRange(
     params: GetSchedulesByTimeRangeRequest,
-  ): Promise<Result<ScheduleClientDTO[]>> {
+  ): Promise<Result<ScheduleJobClientDTO[]>> {
     return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_TIME_RANGE, params));
   }
 
-  async updateSchedule(uuid: string, data: UpdateScheduleRequest): Promise<Result<ScheduleClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.UPDATE_SCHEDULE, uuid, data));
+  async updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<ScheduleJobClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.UPDATE_SCHEDULE, id, data));
   }
 
-  async deleteSchedule(uuid: string): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.DELETE_SCHEDULE, uuid));
+  async deleteSchedule(id: string): Promise<Result<void>> {
+    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.DELETE_SCHEDULE, id));
   }
 
   // ===== Schedule Conflict Detection =====
 
-  async getScheduleConflicts(uuid: string): Promise<Result<ConflictDetectionResult>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_CONFLICTS, uuid));
+  async getScheduleConflicts(id: string): Promise<Result<ConflictDetectionResult>> {
+    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_CONFLICTS, id));
   }
 
   async detectConflicts(params: {
     userId: string;
     startTime: number;
     endTime: number;
-    excludeUuid?: string;
+    excludeId?: string;
   }): Promise<Result<ConflictDetectionResult>> {
     return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.DETECT_CONFLICTS, params));
   }
@@ -86,7 +86,7 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
   async createScheduleWithConflictDetection(
     request: CreateScheduleRequest,
   ): Promise<Result<{
-    schedule: ScheduleClientDTO;
+    schedule: ScheduleJobClientDTO;
     conflicts?: ConflictDetectionResult;
   }>> {
     return tryCatch(() => this.ipcClient.invoke(
@@ -96,10 +96,10 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
   }
 
   async resolveConflict(
-    scheduleUuid: string,
+    scheduleId: string,
     request: ResolveConflictRequest,
   ): Promise<Result<{
-    schedule: ScheduleClientDTO;
+    schedule: ScheduleJobClientDTO;
     conflicts: ConflictDetectionResult;
     applied: {
       strategy: string;
@@ -110,7 +110,7 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
   }>> {
     return tryCatch(() => this.ipcClient.invoke(
       SCHEDULE_EVENT_CHANNELS.RESOLVE_CONFLICT,
-      scheduleUuid,
+      scheduleId,
       request,
     ));
   }

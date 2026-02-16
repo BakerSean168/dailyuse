@@ -15,12 +15,12 @@ import type {
 
 // Local input types for hook interface
 export interface CompleteScheduleTaskInput {
-  taskUuid: string;
+  taskId: string;
   reason?: string;
 }
 
 export interface CancelScheduleTaskInput {
-  taskUuid: string;
+  taskId: string;
   reason?: string;
 }
 
@@ -152,7 +152,7 @@ export function useSchedule(): UseScheduleReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      await scheduleApplicationService.completeScheduleTask(input.taskUuid, input.reason);
+      await scheduleApplicationService.completeScheduleTask(input.taskId, input.reason);
       // Reload tasks after complete
       const tasks = await scheduleApplicationService.listScheduleTasks();
       setState((prev) => ({
@@ -171,7 +171,7 @@ export function useSchedule(): UseScheduleReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      await scheduleApplicationService.cancelScheduleTask(input.taskUuid, input.reason);
+      await scheduleApplicationService.cancelScheduleTask(input.taskId, input.reason);
       // Reload tasks after cancel
       const tasks = await scheduleApplicationService.listScheduleTasks();
       setState((prev) => ({
@@ -193,8 +193,8 @@ export function useSchedule(): UseScheduleReturn {
       await scheduleApplicationService.deleteScheduleTask(id);
       setState((prev) => ({
         ...prev,
-        tasks: prev.tasks.filter((t) => t.uuid !== id),
-        selectedTask: prev.selectedTask?.uuid === id ? null : prev.selectedTask,
+        tasks: prev.tasks.filter((t) => t.id !== id),
+        selectedTask: prev.selectedTask?.id === id ? null : prev.selectedTask,
         loading: false,
       }));
     } catch (e) {

@@ -17,20 +17,20 @@ import { eventBus } from '@dailyuse/utils';
 export class SendMessage {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
-  async execute(accountUuid: string, input: SendMessageRequest): Promise<MessageResponse> {
+  async execute(identityId: string, input: SendMessageRequest): Promise<MessageResponse> {
     // 1. 获取对话
-    const conversation = await this.conversationRepository.findByUuid(input.conversationUuid);
+    const conversation = await this.conversationRepository.findById(input.conversationId);
     if (!conversation) {
       throw new Error('Conversation not found');
     }
 
-    if (conversation.accountUuid !== accountUuid) {
+    if (conversation.identityId !== identityId) {
       throw new Error('Not authorized');
     }
 
     // 2. 创建消息实体
     const message = Message.create({
-      conversationUuid: input.conversationUuid,
+      conversationId: input.conversationId,
       role: MessageRole.USER,
       content: input.content,
     });

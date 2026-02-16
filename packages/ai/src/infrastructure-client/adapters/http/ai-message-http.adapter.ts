@@ -30,17 +30,17 @@ export class AIMessageHttpAdapter implements IAIMessageApiClient {
   }
 
   async getMessages(
-    conversationUuid: string,
+    conversationId: string,
     params?: {
       page?: number;
       pageSize?: number;
     },
   ): Promise<MessageListRes> {
-    return this.httpClient.get(`/ai/conversations/${conversationUuid}/messages`, { params });
+    return this.httpClient.get(`/ai/conversations/${conversationId}/messages`, { params });
   }
 
-  async deleteMessage(uuid: string): Promise<void> {
-    return this.httpClient.delete(`${this.baseUrl}/${uuid}`);
+  async deleteMessage(id: string): Promise<void> {
+    return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
   // ===== Streaming Chat =====

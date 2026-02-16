@@ -63,8 +63,8 @@ export function GoalListView() {
   // 手动刷新函数 - 用于按钮点击等场景
   const loadGoals = useCallback(async () => {
     try {
-      if (selectedFolder?.uuid) {
-        await searchGoalsRef.current({ dirUuid: selectedFolder.uuid });
+      if (selectedFolder?.id) {
+        await searchGoalsRef.current({ dirId: selectedFolder.id });
       } else {
         await fetchGoalsRef.current();
       }
@@ -75,12 +75,12 @@ export function GoalListView() {
 
   // 当选择的文件夹改变时，重新加载 goals
   useEffect(() => {
-    if (selectedFolder?.uuid) {
-      searchGoalsRef.current({ dirUuid: selectedFolder.uuid }).catch((err) => {
+    if (selectedFolder?.id) {
+      searchGoalsRef.current({ dirId: selectedFolder.id }).catch((err) => {
         console.error('[GoalListView] Failed to load goals for folder:', err);
       });
     }
-  }, [selectedFolder?.uuid]); // 只依赖 uuid
+  }, [selectedFolder?.id]); // 只依赖 id
 
   const handleGoalCreated = () => {
     setShowCreateDialog(false);
@@ -245,7 +245,7 @@ export function GoalListView() {
         <VirtualList
           items={filteredGoals}
           renderItem={(goal) => <GoalCard goal={goal} onUpdate={loadGoals} />}
-          getItemKey={(goal) => goal.uuid}
+          getItemKey={(goal) => goal.id}
           estimateSize={140}
           threshold={30}
           height="calc(100vh - 280px)"
@@ -256,7 +256,7 @@ export function GoalListView() {
         /* 网格视图 */
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredGoals.map((goal) => (
-            <GoalCard key={goal.uuid} goal={goal} onUpdate={loadGoals} />
+            <GoalCard key={goal.id} goal={goal} onUpdate={loadGoals} />
           ))}
         </div>
       )}
@@ -275,7 +275,7 @@ export function GoalListView() {
         open={showFolderManager}
         onClose={() => setShowFolderManager(false)}
         onFolderSelect={handleFolderSelect}
-        selectedFolderUuid={selectedFolder?.uuid ?? null}
+        selectedFolderId={selectedFolder?.id ?? null}
       />
     </div>
   );

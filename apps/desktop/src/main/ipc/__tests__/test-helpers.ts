@@ -97,16 +97,16 @@ export function expectPaginatedResponse(response: unknown) {
 }
 
 /**
- * 创建 mock 账户 UUID
+ * 创建 mock 账户 ID
  */
-export function createMockAccountUuid(): string {
+export function createMockAccountId(): string {
   return `account-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
 /**
  * 创建 mock UUID
  */
-export function createMockUuid(): string {
+export function createMockId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 

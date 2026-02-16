@@ -33,13 +33,13 @@ export interface UseFocusReturn {
   defaultDuration: number;
 
   // Actions
-  startFocus: (goalUuid: string, duration?: number) => Promise<FocusSessionClientDTO>;
+  startFocus: (goalId: string, duration?: number) => Promise<FocusSessionClientDTO>;
   pauseFocus: () => Promise<void>;
   resumeFocus: () => Promise<void>;
   stopFocus: (notes?: string) => Promise<FocusSessionClientDTO | null>;
   refreshStatus: () => Promise<void>;
-  fetchTodayHistory: (goalUuid?: string) => Promise<void>;
-  fetchWeekHistory: (goalUuid?: string) => Promise<void>;
+  fetchTodayHistory: (goalId?: string) => Promise<void>;
+  fetchWeekHistory: (goalId?: string) => Promise<void>;
 
   // Utilities
   clearError: () => void;
@@ -65,14 +65,14 @@ export function useFocus(): UseFocusReturn {
   // ===== Actions =====
 
   const startFocus = useCallback(
-    async (goalUuid: string, duration?: number): Promise<FocusSessionClientDTO> => {
+    async (goalId: string, duration?: number): Promise<FocusSessionClientDTO> => {
       const store = useFocusStore.getState();
       store.setLoading(true);
       store.setError(null);
 
       try {
         const session = await goalApplicationService.startFocusSession({
-          goalUuid,
+          goalId,
           durationMinutes: duration ?? store.defaultDuration,
         });
 
@@ -157,20 +157,20 @@ export function useFocus(): UseFocusReturn {
     }
   }, []);
 
-  const fetchTodayHistory = useCallback(async (goalUuid?: string): Promise<void> => {
+  const fetchTodayHistory = useCallback(async (goalId?: string): Promise<void> => {
     const store = useFocusStore.getState();
     try {
-      const history = await goalApplicationService.getFocusHistory({ range: 'today', goalUuid });
+      const history = await goalApplicationService.getFocusHistory({ range: 'today', goalId });
       store.setTodayHistory(history);
     } catch (e) {
       store.setError(e instanceof Error ? e.message : 'Failed to fetch today history');
     }
   }, []);
 
-  const fetchWeekHistory = useCallback(async (goalUuid?: string): Promise<void> => {
+  const fetchWeekHistory = useCallback(async (goalId?: string): Promise<void> => {
     const store = useFocusStore.getState();
     try {
-      const history = await goalApplicationService.getFocusHistory({ range: 'week', goalUuid });
+      const history = await goalApplicationService.getFocusHistory({ range: 'week', goalId });
       store.setWeekHistory(history);
     } catch (e) {
       store.setError(e instanceof Error ? e.message : 'Failed to fetch week history');

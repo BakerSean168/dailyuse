@@ -14,7 +14,7 @@ import type {
  * 结合了 TaskTemplate 和 TaskInstance 的信息
  */
 export interface TaskForDAG {
-  uuid: string;
+  id: string;
   title: string;
   description?: string | null;
   status: string; // TaskInstanceStatus or TaskTemplateStatus
@@ -24,7 +24,7 @@ export interface TaskForDAG {
   estimatedMinutes?: number | null;
   dueDate?: string;
   tags?: string[];
-  templateUuid?: string; // 如果是实例，指向模板
+  templateId?: string; // 如果是实例，指向模板
   instanceDate?: number; // 如果是实例
 }
 
@@ -33,7 +33,7 @@ export interface TaskForDAG {
  */
 export function taskTemplateToDAG(template: TaskTemplateClientDTO): TaskForDAG {
   return {
-    uuid: template.uuid,
+    id: template.id,
     title: template.title,
     description: template.description,
     status: template.status,
@@ -53,8 +53,8 @@ export function taskInstanceToDAG(
   template?: TaskTemplateClientDTO,
 ): TaskForDAG {
   return {
-    uuid: instance.uuid,
-    title: template?.title || `Task ${instance.uuid.slice(0, 8)}`,
+    id: instance.id,
+    title: template?.title || `Task ${instance.id.slice(0, 8)}`,
     description: template?.description,
     status: instance.status,
     priorityLevel: template ? mapPriorityScoreToLevel(template.priority) : 'MEDIUM',
@@ -62,7 +62,7 @@ export function taskInstanceToDAG(
     importance: template?.importance,
     estimatedMinutes: extractEstimatedMinutes(instance.timeConfig),
     tags: template?.tags || [],
-    templateUuid: instance.templateUuid,
+    templateId: instance.templateId,
     instanceDate: instance.instanceDate,
   };
 }
@@ -102,7 +102,7 @@ function extractEstimatedMinutes(timeConfig: any): number | undefined {
  * 结合了 TaskInstance 和 TaskTemplate 的显示信息
  */
 export interface TaskForWidget {
-  uuid: string;
+  id: string;
   title: string;
   description?: string | null;
   status: string;
@@ -110,7 +110,7 @@ export interface TaskForWidget {
   priorityScore?: number;
   scheduledTime?: number | null;
   dueDate?: number | null;
-  templateUuid: string;
+  templateId: string;
   templateTitle?: string;
   instanceDate: number;
 }
@@ -123,15 +123,15 @@ export function taskInstanceToWidget(
   template?: TaskTemplateClientDTO,
 ): TaskForWidget {
   return {
-    uuid: instance.uuid,
-    title: template?.title || `Task ${instance.uuid.slice(0, 8)}`,
+    id: instance.id,
+    title: template?.title || `Task ${instance.id.slice(0, 8)}`,
     description: template?.description,
     status: instance.status,
     priority: template ? mapPriorityScoreToLevel(template.priority) : 'MEDIUM',
     priorityScore: template?.priority,
     scheduledTime: instance.timeConfig?.timePoint ?? null,
     dueDate: template?.dueDate ?? null,
-    templateUuid: instance.templateUuid,
+    templateId: instance.templateId,
     templateTitle: template?.title,
     instanceDate: instance.instanceDate,
   };

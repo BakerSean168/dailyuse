@@ -21,10 +21,10 @@ import { KeyResultCard } from './KeyResultCard';
 
 interface GoalInfoCardProps {
   goal: Goal;
-  onClick?: (goalUuid: string) => void;
-  onKeyResultClick?: (keyResultUuid: string) => void;
-  onAddRecord?: (keyResultUuid: string) => void;
-  onDeleteKeyResult?: (keyResultUuid: string) => void;
+  onClick?: (goalId: string) => void;
+  onKeyResultClick?: (keyResultId: string) => void;
+  onAddRecord?: (keyResultId: string) => void;
+  onDeleteKeyResult?: (keyResultId: string) => void;
 }
 
 export function GoalInfoCard({
@@ -46,7 +46,7 @@ export function GoalInfoCard({
     if ((e.target as HTMLElement).closest('.key-results-section')) {
       return;
     }
-    onClick?.(goal.uuid);
+    onClick?.(goal.id);
   };
 
   return (
@@ -135,7 +135,7 @@ export function GoalInfoCard({
             <ScrollArea className="w-full whitespace-nowrap">
               <div className="flex gap-3 pb-2">
                 {goal.keyResults.map((keyResult) => (
-                  <div key={keyResult.uuid} className="w-64 shrink-0">
+                  <div key={keyResult.id} className="w-64 shrink-0">
                     <KeyResultCard
                       keyResult={keyResult}
                       goal={goal}

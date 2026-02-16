@@ -48,15 +48,15 @@ export class TaskPage {
     }
 
     // Try UUID first
-    const byUuid = this.page.locator(`[data-task-uuid="${taskIdentifier}"]`);
-    if (byUuid) return byUuid;
+    const byId = this.page.locator(`[data-task-id="${taskIdentifier}"]`);
+    if (byId) return byId;
 
     // Then try title
     return this.page.locator(`[data-testid="draggable-task-card"]:has-text("${taskIdentifier}")`);
   }
 
-  taskCardByUuid(uuid: string): Locator {
-    return this.page.locator(`[data-task-uuid="${uuid}"]`);
+  taskCardById(id: string): Locator {
+    return this.page.locator(`[data-task-id="${id}"]`);
   }
 
   taskCardByTitle(title: string): Locator {

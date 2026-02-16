@@ -107,7 +107,7 @@ export class ScheduleExecutionService {
   /**
    * 从执行引擎移除调度任务
    *
-   * @param taskId 任务 UUID
+   * @param taskId 任务 ID
    */
   async removeTask(taskId: string): Promise<void> {
     if (!this.executionEngine.isEngineRunning()) {
@@ -121,7 +121,7 @@ export class ScheduleExecutionService {
   /**
    * 暂停任务执行
    *
-   * @param taskId 任务 UUID
+   * @param taskId 任务 ID
    */
   async pauseTask(taskId: string): Promise<void> {
     if (!this.executionEngine.isEngineRunning()) {
@@ -134,7 +134,7 @@ export class ScheduleExecutionService {
   /**
    * 恢复任务执行
    *
-   * @param taskId 任务 UUID
+   * @param taskId 任务 ID
    */
   async resumeTask(taskId: string): Promise<void> {
     if (!this.executionEngine.isEngineRunning()) {
@@ -147,7 +147,7 @@ export class ScheduleExecutionService {
   /**
    * 立即执行任务（手动触发）
    *
-   * @param taskId 任务 UUID
+   * @param taskId 任务 ID
    */
   async runTaskNow(taskId: string): Promise<void> {
     if (!this.executionEngine.isEngineRunning()) {

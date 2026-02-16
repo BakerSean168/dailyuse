@@ -13,18 +13,18 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
   async save(task: AIGenerationTaskServerDTO): Promise<void> {
     const stmt = this.db.prepare(`
       INSERT INTO ai_generation_tasks (
-        uuid, accountUuid, task_type, status, input_data, output_data,
+        id, identityId, task_type, status, input_data, output_data,
         createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         status = excluded.status,
         output_data = excluded.output_data,
         updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
-      task.uuid,
-      task.accountUuid,
+      task.id,
+      task.identityId,
       task.task_type,
       task.status,
       task.input_data ? JSON.stringify(task.input_data) : null,
@@ -34,72 +34,72 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
     );
   }
 
-  async findByUuid(uuid: string): Promise<AIGenerationTaskServerDTO | null> {
+  async findById(id: string): Promise<AIGenerationTaskServerDTO | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_generation_tasks WHERE uuid = ? LIMIT 1`
+      `SELECT * FROM ai_generation_tasks WHERE id = ? LIMIT 1`
     );
-    const row = stmt.get(uuid) as any;
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return this.rowToDTO(row);
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<AIGenerationTaskServerDTO[]> {
+  async findByAccountId(identityId: string): Promise<AIGenerationTaskServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_generation_tasks WHERE accountUuid = ? ORDER BY createdAt DESC`
+      `SELECT * FROM ai_generation_tasks WHERE identityId = ? ORDER BY createdAt DESC`
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) => this.rowToDTO(row));
   }
 
   async findByTaskType(
-    accountUuid: string,
+    identityId: string,
     taskType: GenerationTaskType,
   ): Promise<AIGenerationTaskServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_generation_tasks WHERE accountUuid = ? AND task_type = ? ORDER BY createdAt DESC`
+      `SELECT * FROM ai_generation_tasks WHERE identityId = ? AND task_type = ? ORDER BY createdAt DESC`
     );
-    const rows = stmt.all(accountUuid, taskType) as any[];
+    const rows = stmt.all(identityId, taskType) as any[];
 
     return rows.map((row) => this.rowToDTO(row));
   }
 
-  async findByStatus(accountUuid: string, status: TaskStatus): Promise<AIGenerationTaskServerDTO[]> {
+  async findByStatus(identityId: string, status: TaskStatus): Promise<AIGenerationTaskServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_generation_tasks WHERE accountUuid = ? AND status = ? ORDER BY createdAt DESC`
+      `SELECT * FROM ai_generation_tasks WHERE identityId = ? AND status = ? ORDER BY createdAt DESC`
     );
-    const rows = stmt.all(accountUuid, status) as any[];
+    const rows = stmt.all(identityId, status) as any[];
 
     return rows.map((row) => this.rowToDTO(row));
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM ai_generation_tasks WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM ai_generation_tasks WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async findRecent(accountUuid: string, limit: number, offset?: number): Promise<AIGenerationTaskServerDTO[]> {
+  async findRecent(identityId: string, limit: number, offset?: number): Promise<AIGenerationTaskServerDTO[]> {
     const limitVal = Math.min(limit, 100);
     const offsetVal = offset || 0;
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_generation_tasks WHERE accountUuid = ? ORDER BY createdAt DESC LIMIT ? OFFSET ?`
+      `SELECT * FROM ai_generation_tasks WHERE identityId = ? ORDER BY createdAt DESC LIMIT ? OFFSET ?`
     );
-    const rows = stmt.all(accountUuid, limitVal, offsetVal) as any[];
+    const rows = stmt.all(identityId, limitVal, offsetVal) as any[];
 
     return rows.map((row) => this.rowToDTO(row));
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    const stmt = this.db.prepare(`SELECT 1 FROM ai_generation_tasks WHERE uuid = ? LIMIT 1`);
-    return stmt.get(uuid) !== undefined;
+  async exists(id: string): Promise<boolean> {
+    const stmt = this.db.prepare(`SELECT 1 FROM ai_generation_tasks WHERE id = ? LIMIT 1`);
+    return stmt.get(id) !== undefined;
   }
 
   private rowToDTO(row: any): AIGenerationTaskServerDTO {
     return {
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
+      id: row.id,
+      identity_id: row.identityId,
       task_type: row.task_type,
       status: row.status,
       input_data: row.input_data ? JSON.parse(row.input_data) : undefined,

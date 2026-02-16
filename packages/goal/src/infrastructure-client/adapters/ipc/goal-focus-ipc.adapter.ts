@@ -57,9 +57,9 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
   }
 
   async getStatistics(
-    goalUuid?: string,
+    goalId?: string,
   ): Promise<Result<GetFocusStatisticsRes>> {
-    return this.ipcClient.invoke(`${this.channel}:statistics`, { goalUuid });
+    return this.ipcClient.invoke(`${this.channel}:statistics`, { goalId });
   }
 
   // ===== Convenience Methods =====
@@ -71,7 +71,7 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
   }
 
   async getTodayHistory(
-    goalUuid?: string,
+    goalId?: string,
   ): Promise<Result<GetFocusHistoryRes>> {
     const now = new Date();
     const startOfDay = new Date(
@@ -82,14 +82,16 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
     const endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
 
     return this.getHistory({
-      goalUuid,
+      goalId,
       startDate: startOfDay,
       endDate: endOfDay,
+      limit: 100,
+      offset: 0,
     });
   }
 
   async getWeekHistory(
-    goalUuid?: string,
+    goalId?: string,
   ): Promise<Result<GetFocusHistoryRes>> {
     const now = new Date();
     const dayOfWeek = now.getDay();
@@ -101,9 +103,11 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
     const endOfWeek = startOfWeek + 7 * 24 * 60 * 60 * 1000 - 1;
 
     return this.getHistory({
-      goalUuid,
+      goalId,
       startDate: startOfWeek,
       endDate: endOfWeek,
+      limit: 100,
+      offset: 0,
     });
   }
 }

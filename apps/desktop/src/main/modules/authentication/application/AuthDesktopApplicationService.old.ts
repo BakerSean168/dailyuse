@@ -79,7 +79,7 @@ export interface TwoFactorStatus {
  * API Key 信息
  */
 export interface ApiKeyInfo {
-  uuid: string;
+  id: string;
   name: string;
   scopes: string[];
   createdAt: string;
@@ -90,7 +90,7 @@ export interface ApiKeyInfo {
  * Session 信息
  */
 export interface SessionInfo {
-  uuid: string;
+  id: string;
   deviceName: string;
   deviceType: string;
   ipAddress: string;
@@ -102,7 +102,7 @@ export interface SessionInfo {
  * Device 信息
  */
 export interface DeviceInfo {
-  uuid: string;
+  id: string;
   name: string;
   type: string;
 }
@@ -111,7 +111,7 @@ export interface DeviceInfo {
  * 当前 Desktop 设备
  */
 const CURRENT_DESKTOP_DEVICE: DeviceInfo = {
-  uuid: 'desktop-local',
+  id: 'desktop-local',
   name: 'Desktop App',
   type: 'desktop',
 };
@@ -265,7 +265,7 @@ export class AuthDesktopApplicationService {
    * 创建 API Key
    * @description 仅在线模式可用
    */
-  async createApiKey(request: { name: string; scopes?: string[] }): Promise<{ uuid: string; key: string } | null> {
+  async createApiKey(request: { name: string; scopes?: string[] }): Promise<{ id: string; key: string } | null> {
     this.logger.debug('Create API key', { name: request.name });
     return null;
   }
@@ -365,7 +365,7 @@ export class AuthDesktopApplicationService {
    */
   async revokeDevice(deviceId: string): Promise<AuthOperationResult> {
     this.logger.debug('Revoke device', { deviceId });
-    if (deviceId === CURRENT_DESKTOP_DEVICE.uuid) {
+    if (deviceId === CURRENT_DESKTOP_DEVICE.id) {
       return { success: false, error: 'Cannot revoke current device' };
     }
     return { success: false, error: 'Desktop offline mode - device management not available' };
@@ -377,7 +377,7 @@ export class AuthDesktopApplicationService {
    */
   async renameDevice(deviceId: string, name: string): Promise<AuthOperationResult> {
     this.logger.debug('Rename device', { deviceId, name });
-    if (deviceId === CURRENT_DESKTOP_DEVICE.uuid) {
+    if (deviceId === CURRENT_DESKTOP_DEVICE.id) {
       // TODO: 持久化设备名称到本地设置
       return { success: true };
     }

@@ -18,15 +18,15 @@ export class ResetUserSetting {
   /**
    * 执行用例
    */
-  async execute(accountUuid: string): Promise<UserSettingClientDTO> {
-    const setting = await this.userSettingRepository.findByAccountUuid(accountUuid);
+  async execute(identityId: string): Promise<UserSettingClientDTO> {
+    const setting = await this.userSettingRepository.findByAccountId(identityId);
 
     if (!setting) {
       throw new Error('User setting not found');
     }
 
-    const newSetting = UserSetting.create({ accountUuid });
-    (newSetting as any)._uuid = setting.uuid;
+    const newSetting = UserSetting.create({ identityId });
+    (newSetting as any)._id = setting.id;
 
     await this.userSettingRepository.save(newSetting);
     return newSetting.toClientDTO();

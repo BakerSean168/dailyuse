@@ -15,7 +15,7 @@ import type { FocusSessionClientDTO } from '../aggregates';
  * 开始专注 Schema
  */
 export const StartFocusSchema = z.object({
-  goalUuid: z.string().uuid().optional(),
+  goalId: z.string().uuid().optional(),
   durationMinutes: z.number().int().min(1, '时长必须至少 1 分钟').max(480, '时长不能超过 480 分钟'),
   description: z.string().max(500).optional(),
 });
@@ -62,7 +62,7 @@ export interface GetFocusStatusRes {
  * 查询专注历史 Schema
  */
 export const GetFocusHistorySchema = z.object({
-  goalUuid: z.string().uuid().optional(),
+  goalId: z.string().uuid().optional(),
   startDate: z.number().int().optional(),
   endDate: z.number().int().optional(),
   limit: z.number().int().min(1).max(100).optional().default(20),

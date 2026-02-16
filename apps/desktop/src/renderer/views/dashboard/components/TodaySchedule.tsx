@@ -131,7 +131,7 @@ export function TodaySchedule({
         <div className="space-y-2">
           {displaySchedules.map((schedule) => (
             <div
-              key={schedule.uuid}
+              key={schedule.id}
               className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer transition-colors"
               onClick={() => onScheduleClick?.(schedule)}
             >

@@ -139,61 +139,6 @@ export function fromIpcResult<T>(ipcResult: IpcResult<T>): Result<T, ResultError
 // ============================================================================
 
 /**
- * 创建带自动 Result 包装的 IPC 处理函数
- * 自动处理错误并转换为 IpcResult 格式
- *
- * @example
- * ```ts
- * // Main Process
- * const handler = createIpcHandler(async (id: string) => {
- *   const user = await db.users.findById(id);
- *   if (!user) {
- *     return ResultErrors.notFound('User not found');
- *   }
- *   return ok(user);
- * });
- *
- * ipcMain.handle('user:get', (_, id) => handler(id));
- * ```
- */
-export function createIpcHandler<TArgs extends unknown[], TResult>(
-  handler: (...args: TArgs) => Promise<Result<TResult>>,
-): (...args: TArgs) => Promise<IpcResult<TResult>> {
-  return async (...args: TArgs): Promise<IpcResult<TResult>> => {
-    const startTime = Date.now();
-
-    try {
-      const result = await handler(...args);
-
-      // 添加耗时信息
-      const meta: ResultMeta = {
-        ...result.meta,
-        duration: Date.now() - startTime,
-        timestamp: startTime,
-      };
-
-      if (isOk(result)) {
-        return toIpcResult(ok(result.data, meta));
-      }
-      return toIpcResult(fail(result.error, meta));
-    } catch (err) {
-      // 未预期的错误
-      return {
-        ok: false,
-        error: {
-          code: ResultCode.INTERNAL_ERROR,
-          message: err instanceof Error ? err.message : 'Internal error',
-        },
-        meta: {
-          duration: Date.now() - startTime,
-          timestamp: startTime,
-        },
-      };
-    }
-  };
-}
-
-/**
  * 创建 IPC 客户端调用包装器
  * 自动将 IpcResult 转换为 Result
  *

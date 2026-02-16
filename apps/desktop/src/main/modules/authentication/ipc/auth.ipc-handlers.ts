@@ -71,7 +71,7 @@ const { handle, register, getChannels } = createModuleIpcHandlers('Auth', logger
  * @description 初始化认证服务（应用启动时调用）
  * Channel Name: auth:initialize
  * Payload: void
- * Return: SessionRestoreResult { success, hasValidSession, accountUuid?, needsRefresh?, needsReLogin? }
+ * Return: SessionRestoreResult { success, hasValidSession, identityId?, needsRefresh?, needsReLogin? }
  * Security: None
  */
 handle<void, SessionRestoreResult>(
@@ -86,7 +86,7 @@ handle<void, SessionRestoreResult>(
  * @description 自动登录（使用存储的 Token）
  * Channel Name: auth:auto-login
  * Payload: void
- * Return: AutoLoginResult { success, authenticated, accountUuid?, sessionUuid?, needsReLogin? }
+ * Return: AutoLoginResult { success, authenticated, identityId?, sessionId?, needsReLogin? }
  * Security: None
  */
 handle<void, AutoLoginResult>(
@@ -141,10 +141,10 @@ handle<void, number>(
  * @description 用户登录
  * Channel Name: auth:login
  * Payload: LoginCredentials { email, password, rememberMe? }
- * Return: IpcResult<{ accountUuid, sessionUuid }> - 统一格式 { ok, data?, error? }
+ * Return: IpcResult<{ identityId, sessionId }> - 统一格式 { ok, data?, error? }
  * Security: None
  */
-handle<LoginCredentials, IpcResult<{ accountUuid: string; sessionUuid: string }>>(
+handle<LoginCredentials, IpcResult<{ identityId: string; sessionId: string }>>(
   'auth:login',
   (credentials) => {
     ensureRepositoriesInjected();
@@ -156,10 +156,10 @@ handle<LoginCredentials, IpcResult<{ accountUuid: string; sessionUuid: string }>
  * @description 用户注册
  * Channel Name: auth:register
  * Payload: RegisterRequest { email, password, username }
- * Return: IpcResult<{ accountUuid, message }> - 统一格式 { ok, data?, error? }
+ * Return: IpcResult<{ identityId, message }> - 统一格式 { ok, data?, error? }
  * Security: None
  */
-handle<RegisterRequest, IpcResult<{ accountUuid: string; message: string }>>(
+handle<RegisterRequest, IpcResult<{ identityId: string; message: string }>>(
   'auth:register',
   (request) => {
     ensureRepositoriesInjected();
@@ -195,10 +195,10 @@ handle<void, IpcResult<{ accessToken: string; expiresIn: number }>>(
  * @description 进入离线模式
  * Channel Name: auth:enter-offline-mode
  * Payload: void
- * Return: IpcResult<{ accountUuid, mode, message }> - 统一格式 { ok, data?, error? }
+ * Return: IpcResult<{ identityId, mode, message }> - 统一格式 { ok, data?, error? }
  * Security: None
  */
-handle<void, IpcResult<{ accountUuid: string; mode: string; message: string }>>(
+handle<void, IpcResult<{ identityId: string; mode: string; message: string }>>(
   'auth:enter-offline-mode',
   () => {
     ensureRepositoriesInjected();
@@ -302,10 +302,10 @@ handle<void, { codes: string[] }>(
  * @description 创建 API 密钥
  * Channel Name: auth:api-key:create
  * Payload: { name: string; scopes?: string[] }
- * Return: { uuid: string; key: string } | null
+ * Return: { id: string; key: string } | null
  * Security: Requires authentication
  */
-handle<{ name: string; scopes?: string[] }, { uuid: string; key: string } | null>(
+handle<{ name: string; scopes?: string[] }, { id: string; key: string } | null>(
   'auth:api-key:create',
   (request) => getService().createApiKey(request),
 );

@@ -26,7 +26,7 @@ export function GoalCard({ goal, onUpdate }: GoalCardProps) {
   const handleComplete = async () => {
     try {
       setIsUpdating(true);
-      await completeGoalAction(goal.uuid);
+      await completeGoalAction(goal.id);
       onUpdate();
     } catch (err) {
       console.error('[GoalCard] Failed to complete goal:', err);
@@ -38,7 +38,7 @@ export function GoalCard({ goal, onUpdate }: GoalCardProps) {
   const handleArchive = async () => {
     try {
       setIsUpdating(true);
-      await archiveGoalAction(goal.uuid);
+      await archiveGoalAction(goal.id);
       onUpdate();
     } catch (err) {
       console.error('[GoalCard] Failed to archive goal:', err);
@@ -50,7 +50,7 @@ export function GoalCard({ goal, onUpdate }: GoalCardProps) {
   const handleActivate = async () => {
     try {
       setIsUpdating(true);
-      await activateGoalAction(goal.uuid);
+      await activateGoalAction(goal.id);
       onUpdate();
     } catch (err) {
       console.error('[GoalCard] Failed to activate goal:', err);
@@ -214,7 +214,7 @@ export function GoalCard({ goal, onUpdate }: GoalCardProps) {
 
       {/* Detail Dialog */}
       <GoalDetailDialog
-        goalUuid={goal.uuid}
+        goalId={goal.id}
         open={showDetail}
         onClose={handleDetailClose}
         onUpdated={handleDetailUpdate}

@@ -10,11 +10,11 @@ export type TreeNodeType = 'folder' | 'file';
  * 可以表示文件夹或文件
  */
 export interface TreeNode {
-  uuid: string;
+  id: string;
   name: string;
   type: TreeNodeType;
-  parentUuid: string | null;
-  repositoryUuid: string;
+  parentId: string | null;
+  repositoryId: string;
   path: string;
 
   // 文件夹特有属性
@@ -40,6 +40,6 @@ export interface TreeNode {
  * 文件树 API 响应
  */
 export interface FileTreeResponse {
-  repositoryUuid: string;
+  repositoryId: string;
   tree: TreeNode[];
 }

@@ -43,35 +43,3 @@ export {
   invalidatesCache,
   registerCacheIpcHandlers,
 } from './ipc-cache';
-
-// IPC Compression
-export {
-  compressForIpc,
-  decompressFromIpc,
-  isCompressedPayload,
-  getCompressionStats,
-  withCompression,
-  autoDecompress,
-  compressBatch,
-  decompressBatch,
-  IpcCompressionClient,
-  getCompressionClient,
-  analyzeCompressionBenefit,
-  COMPRESSION_THRESHOLD,
-  DEFAULT_COMPRESSION_LEVEL,
-  type CompressionStats,
-  type CompressedPayload,
-  type CompressionOptions,
-} from './ipc-compression';
-
-// IPC Handler Utilities
-export {
-  createIpcHandler,
-  registerIpcHandler,
-  registerIpcHandlers,
-  createModuleIpcHandlers,
-  removeIpcHandlers,
-  type IpcHandlerFn,
-  type IpcHandlerOptions,
-  type IpcHandlerDefinition,
-} from './ipc-handler';

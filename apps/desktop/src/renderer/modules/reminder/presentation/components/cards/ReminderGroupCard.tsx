@@ -50,7 +50,7 @@ export interface ReminderGroupCardProps {
   /** 编辑分组 */
   onEditGroup?: (group: ReminderGroupClientDTO) => void;
   /** 创建模板 */
-  onCreateTemplate?: (groupUuid: string) => void;
+  onCreateTemplate?: (groupId: string) => void;
   /** 点击模板 */
   onTemplateClick?: (template: ReminderTemplateClientDTO) => void;
   /** 模板右键菜单 */
@@ -133,7 +133,7 @@ export function ReminderGroupCard({
   // 处理创建模板
   const handleCreateTemplate = useCallback(() => {
     if (group && onCreateTemplate) {
-      onCreateTemplate(group.uuid);
+      onCreateTemplate(group.id);
     }
   }, [group, onCreateTemplate]);
 
@@ -243,7 +243,7 @@ export function ReminderGroupCard({
             <div className="grid grid-cols-3 gap-4">
               {displayTemplates.map((template) => (
                 <div
-                  key={template.uuid}
+                  key={template.id}
                   className={cn(
                     "flex flex-col items-center cursor-pointer group",
                     !template.effectiveEnabled && "opacity-50"

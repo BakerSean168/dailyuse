@@ -14,7 +14,7 @@ import type { IStoragePort } from '../ports/IStoragePort';
  * Update Resource Content Input
  */
 export interface UpdateResourceContentInput {
-  uuid: string;
+  id: string;
   content: string;
 }
 
@@ -40,9 +40,9 @@ export class UpdateResourceContent {
   }
 
   async execute(input: UpdateResourceContentInput): Promise<UpdateResourceContentOutput> {
-    const resource = await this.resourceRepository.findById(input.uuid);
+    const resource = await this.resourceRepository.findById(input.id);
     if (!resource) {
-      throw new Error(`Resource not found: ${input.uuid}`);
+      throw new Error(`Resource not found: ${input.id}`);
     }
 
     const repository = await this.repositoryRepository.findById(String(resource.repositoryId));

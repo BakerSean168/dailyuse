@@ -18,7 +18,7 @@ import { ReminderResponseId } from '../../domain-shared/value-objects/reminder-r
  */
 interface ReminderResponseState {
   id: ReminderResponseId;
-  reminderTemplateUuid: string;
+  reminderTemplateId: string;
   action: ReminderResponseAction;
   responseTime: Date | null;
   timestamp: Date;
@@ -39,17 +39,17 @@ export class ReminderResponse extends Entity<ReminderResponseId> implements Remi
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
-    uuid?: string;
-    reminderTemplateUuid: string;
+    id?: string;
+    reminderTemplateId: string;
     action: ReminderResponseAction;
     responseTime?: number | null;
     timestamp: number;
   }) {
-    const id = params.uuid ? ReminderResponseId.of(params.uuid) : ReminderResponseId.generate();
+    const id = params.id ? ReminderResponseId.of(params.id) : ReminderResponseId.generate();
     super(id);
     this._props = {
       id,
-      reminderTemplateUuid: params.reminderTemplateUuid,
+      reminderTemplateId: params.reminderTemplateId,
       action: params.action,
       responseTime: params.responseTime != null ? new Date(params.responseTime) : null,
       timestamp: new Date(params.timestamp),
@@ -57,12 +57,10 @@ export class ReminderResponse extends Entity<ReminderResponseId> implements Remi
   }
 
   // ===== Getter 属性 =====
-  public get uuid(): string {
-    return this.id;
-  }
 
-  public get reminderTemplateUuid(): string {
-    return this._props.reminderTemplateUuid;
+
+  public get reminderTemplateId(): string {
+    return this._props.reminderTemplateId;
   }
 
   public get action(): ReminderResponseAction {
@@ -83,13 +81,13 @@ export class ReminderResponse extends Entity<ReminderResponseId> implements Remi
    * 创建新的 ReminderResponse 实体
    */
   public static create(params: {
-    reminderTemplateUuid: string;
+    reminderTemplateId: string;
     action: ReminderResponseAction;
     responseTime?: number;
     timestamp?: number;
   }): ReminderResponse {
     return new ReminderResponse({
-      reminderTemplateUuid: params.reminderTemplateUuid,
+      reminderTemplateId: params.reminderTemplateId,
       action: params.action,
       responseTime: params.responseTime,
       timestamp: params.timestamp ?? Date.now(),
@@ -101,8 +99,8 @@ export class ReminderResponse extends Entity<ReminderResponseId> implements Remi
    */
   public static fromServerDTO(dto: ReminderResponseServerDTO): ReminderResponse {
     return new ReminderResponse({
-      uuid: dto.uuid,
-      reminderTemplateUuid: dto.reminderTemplateUuid,
+      id: dto.id,
+      reminderTemplateId: dto.reminderTemplateId,
       action: dto.action,
       responseTime: dto.responseTime,
       timestamp: dto.timestamp,
@@ -114,8 +112,8 @@ export class ReminderResponse extends Entity<ReminderResponseId> implements Remi
    */
   public static fromPersistenceDTO(dto: ReminderResponsePersistenceDTO): ReminderResponse {
     return new ReminderResponse({
-      uuid: dto.uuid,
-      reminderTemplateUuid: dto.reminderTemplateUuid,
+      id: dto.id,
+      reminderTemplateId: dto.reminderTemplateId,
       action: dto.action,
       responseTime: dto.responseTime?.getTime() ?? null,
       timestamp: dto.timestamp.getTime(),
@@ -201,8 +199,8 @@ export class ReminderResponse extends Entity<ReminderResponseId> implements Remi
    */
   public toServerDTO(): ReminderResponseServerDTO {
     return {
-      uuid: this.id,
-      reminderTemplateUuid: this._props.reminderTemplateUuid,
+      id: this.id,
+      reminderTemplateId: this._props.reminderTemplateId,
       action: this._props.action,
       responseTime: this._props.responseTime?.getTime() ?? null,
       timestamp: this._props.timestamp.getTime(),
@@ -238,8 +236,8 @@ export class ReminderResponse extends Entity<ReminderResponseId> implements Remi
     }
 
     return {
-      uuid: this.id,
-      reminderTemplateUuid: this._props.reminderTemplateUuid,
+      id: this.id,
+      reminderTemplateId: this._props.reminderTemplateId,
       action: this._props.action,
       responseTime: this._props.responseTime?.getTime() ?? null,
       timestamp: this._props.timestamp.getTime(),
@@ -253,8 +251,8 @@ export class ReminderResponse extends Entity<ReminderResponseId> implements Remi
    */
   public toPersistenceDTO(): ReminderResponsePersistenceDTO {
     return {
-      uuid: this.id,
-      reminderTemplateUuid: this._props.reminderTemplateUuid,
+      id: this.id,
+      reminderTemplateId: this._props.reminderTemplateId,
       action: this._props.action,
       responseTime: this._props.responseTime,
       timestamp: this._props.timestamp,

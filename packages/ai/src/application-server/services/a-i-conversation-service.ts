@@ -23,11 +23,11 @@ export class AIConversationService {
   /**
    * 创建新对�?
    */
-  async createConversation(accountUuid: string, title?: string): Promise<AIConversationClientDTO> {
+  async createConversation(identityId: string, title?: string): Promise<AIConversationClientDTO> {
     try {
       // 创建聚合�?
       const conversation = AIConversationServer.create({
-        accountUuid,
+        identityId,
         name: title ?? 'New Chat',
       });
 
@@ -35,15 +35,15 @@ export class AIConversationService {
       await this.conversationRepository.save(conversation);
 
       logger.info('Conversation created', {
-        uuid: conversation.uuid,
-        accountUuid,
+        id: conversation.id,
+        identityId,
         name: conversation.name,
       });
 
       // 返回 ClientDTO
       return conversation.toClientDTO();
     } catch (error) {
-      logger.error('Failed to create conversation', { error, accountUuid, title });
+      logger.error('Failed to create conversation', { error, identityId, title });
       throw error;
     }
   }
@@ -52,22 +52,22 @@ export class AIConversationService {
    * 获取对话详情（包含消息）
    */
   async getConversation(
-    conversationUuid: string,
+    conversationId: string,
     includeMessages: boolean = true,
   ): Promise<AIConversationServer | null> {
     try {
-      const conversation = await this.conversationRepository.findByUuid(conversationUuid, {
+      const conversation = await this.conversationRepository.findById(conversationId, {
         includeChildren: includeMessages,
       });
       if (!conversation) {
         return null;
       }
 
-      logger.info('Conversation retrieved', { uuid: conversationUuid });
+      logger.info('Conversation retrieved', { id: conversationId });
 
       return conversation;
     } catch (error) {
-      logger.error('Failed to get conversation', { error, conversationUuid });
+      logger.error('Failed to get conversation', { error, conversationId });
       throw error;
     }
   }
@@ -76,7 +76,7 @@ export class AIConversationService {
    * 获取用户的所有对话（列表视图 - 不包含消息）
    */
   async listConversations(
-    accountUuid: string,
+    identityId: string,
     page: number = 1,
     limit: number = 20,
   ): Promise<{
@@ -89,7 +89,7 @@ export class AIConversationService {
   }> {
     try {
       // 获取所有对话（接口中无findRecent方法�?
-      const allConversations = await this.conversationRepository.findByAccountUuid(accountUuid);
+      const allConversations = await this.conversationRepository.findByAccountId(identityId);
       const total = allConversations.length;
 
       // 手动分页
@@ -102,7 +102,7 @@ export class AIConversationService {
       );
 
       logger.info('Conversations listed', {
-        accountUuid,
+        identityId,
         page,
         limit,
         count: conversations.length,
@@ -118,7 +118,7 @@ export class AIConversationService {
         },
       };
     } catch (error) {
-      logger.error('Failed to list conversations', { error, accountUuid, page, limit });
+      logger.error('Failed to list conversations', { error, identityId, page, limit });
       throw error;
     }
   }
@@ -126,20 +126,20 @@ export class AIConversationService {
   /**
    * 删除对话（软删除�?
    */
-  async deleteConversation(conversationUuid: string): Promise<void> {
+  async deleteConversation(conversationId: string): Promise<void> {
     try {
       // 检查对话是否存在（接口中无exists方法�?
-      const conversation = await this.conversationRepository.findByUuid(conversationUuid);
+      const conversation = await this.conversationRepository.findById(conversationId);
       if (!conversation) {
         throw new Error('Conversation not found');
       }
 
       // 软删�?
-      await this.conversationRepository.delete(conversationUuid);
+      await this.conversationRepository.delete(conversationId);
 
-      logger.info('Conversation deleted', { uuid: conversationUuid });
+      logger.info('Conversation deleted', { id: conversationId });
     } catch (error) {
-      logger.error('Failed to delete conversation', { error, conversationUuid });
+      logger.error('Failed to delete conversation', { error, conversationId });
       throw error;
     }
   }
@@ -148,14 +148,14 @@ export class AIConversationService {
    * 添加消息到对�?
    */
   async addMessage(
-    conversationUuid: string,
+    conversationId: string,
     role: MessageRole,
     content: string,
     tokenCount?: number,
   ): Promise<MessageClientDTO> {
     try {
       // 获取对话聚合�?
-      const conversation = await this.conversationRepository.findByUuid(conversationUuid, {
+      const conversation = await this.conversationRepository.findById(conversationId, {
         includeChildren: true,
       });
       if (!conversation) {
@@ -164,7 +164,7 @@ export class AIConversationService {
 
       // 创建消息实体
       const message = MessageServer.create({
-        conversationUuid,
+        conversationId,
         role,
         content,
         tokenCount,
@@ -177,14 +177,14 @@ export class AIConversationService {
       await this.conversationRepository.save(conversation);
 
       logger.info('Message added to conversation', {
-        conversationUuid,
-        messageUuid: message.uuid,
+        conversationId,
+        messageId: message.id,
         role,
       });
 
       return message.toClientDTO();
     } catch (error) {
-      logger.error('Failed to add message', { error, conversationUuid, role });
+      logger.error('Failed to add message', { error, conversationId, role });
       throw error;
     }
   }
@@ -193,12 +193,12 @@ export class AIConversationService {
    * 获取对话历史（按状态过滤）
    */
   async getConversationsByStatus(
-    accountUuid: string,
+    identityId: string,
     status: ConversationStatus,
   ): Promise<AIConversationClientDTO[]> {
     try {
       // 获取所有对话（接口中无findByStatus方法�?
-      const allConversations = await this.conversationRepository.findByAccountUuid(accountUuid);
+      const allConversations = await this.conversationRepository.findByAccountId(identityId);
 
       // 手动过滤状�?
       const filteredConversations = allConversations.filter((conv) => {
@@ -209,14 +209,14 @@ export class AIConversationService {
       const conversations = filteredConversations.map((conversation) => conversation.toClientDTO());
 
       logger.info('Conversations retrieved by status', {
-        accountUuid,
+        identityId,
         status,
         count: conversations.length,
       });
 
       return conversations;
     } catch (error) {
-      logger.error('Failed to get conversations by status', { error, accountUuid, status });
+      logger.error('Failed to get conversations by status', { error, identityId, status });
       throw error;
     }
   }
@@ -225,11 +225,11 @@ export class AIConversationService {
    * 更新对话状�?
    */
   async updateConversationStatus(
-    conversationUuid: string,
+    conversationId: string,
     status: ConversationStatus,
   ): Promise<void> {
     try {
-      const conversation = await this.conversationRepository.findByUuid(conversationUuid);
+      const conversation = await this.conversationRepository.findById(conversationId);
       if (!conversation) {
         throw new Error('Conversation not found');
       }
@@ -238,9 +238,9 @@ export class AIConversationService {
 
       await this.conversationRepository.save(conversation);
 
-      logger.info('Conversation status updated', { uuid: conversationUuid, status });
+      logger.info('Conversation status updated', { id: conversationId, status });
     } catch (error) {
-      logger.error('Failed to update conversation status', { error, conversationUuid, status });
+      logger.error('Failed to update conversation status', { error, conversationId, status });
       throw error;
     }
   }

@@ -35,7 +35,7 @@ export interface ConflictDetail {
   /**
    * UUID of the conflicting schedule
    */
-  readonly scheduleUuid: string;
+  readonly scheduleId: string;
 
   /**
    * Title of the conflicting schedule

@@ -83,9 +83,9 @@ export function registerAuthenticationInitializationTasks(): void {
     name: 'user-session-start',
     phase: InitializationPhase.USER_LOGIN,
     priority: 5,
-    initialize: async (context?: { accountUuid: string }) => {
-      if (context?.accountUuid) {
-        console.log(`👤 [AuthModule] 启动用户会话: ${context.accountUuid}`);
+    initialize: async (context?: { identityId: string }) => {
+      if (context?.identityId) {
+        console.log(`👤 [AuthModule] 启动用户会话: ${context.identityId}`);
 
         // 加载完整的语言包（包含所有业务模块的翻译）
         try {

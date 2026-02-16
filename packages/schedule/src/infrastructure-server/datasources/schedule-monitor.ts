@@ -26,7 +26,7 @@ export interface ScheduleExecutionStats {
  * Task Execution Record
  */
 interface ExecutionRecord {
-  taskUuid: string;
+  taskId: string;
   startTime: Date;
   endTime?: Date;
   duration?: number;
@@ -47,10 +47,10 @@ export class ScheduleMonitor {
   private static instance: ScheduleMonitor | null = null;
   private logger: ReturnType<typeof createLogger>;
 
-  /** Task statistics mapping <taskUuid, stats> */
+  /** Task statistics mapping <taskId, stats> */
   private taskStats: Map<string, ScheduleExecutionStats> = new Map();
 
-  /** Currently running tasks mapping <taskUuid, record> */
+  /** Currently running tasks mapping <taskId, record> */
   private runningTasks: Map<string, ExecutionRecord> = new Map();
 
   /** Execution history (keep last 100 records) */
@@ -83,17 +83,17 @@ export class ScheduleMonitor {
   /**
    * Record task execution start
    */
-  public recordExecutionStart(taskUuid: string, taskName: string): void {
+  public recordExecutionStart(taskId: string, taskName: string): void {
     const record: ExecutionRecord = {
-      taskUuid,
+      taskId,
       startTime: new Date(),
       status: 'running',
     };
 
-    this.runningTasks.set(taskUuid, record);
+    this.runningTasks.set(taskId, record);
 
     this.logger.info('Task execution started', {
-      taskUuid,
+      taskId,
       taskName,
       startTime: record.startTime.toISOString(),
     });
@@ -102,10 +102,10 @@ export class ScheduleMonitor {
   /**
    * Record task execution success
    */
-  public recordExecutionSuccess(taskUuid: string, taskName: string): void {
-    const record = this.runningTasks.get(taskUuid);
+  public recordExecutionSuccess(taskId: string, taskName: string): void {
+    const record = this.runningTasks.get(taskId);
     if (!record) {
-      this.logger.warn('Execution record not found', { taskUuid });
+      this.logger.warn('Execution record not found', { taskId });
       return;
     }
 
@@ -113,12 +113,12 @@ export class ScheduleMonitor {
     record.duration = record.endTime.getTime() - record.startTime.getTime();
     record.status = 'success';
 
-    this.runningTasks.delete(taskUuid);
+    this.runningTasks.delete(taskId);
     this.addToHistory(record);
-    this.updateStats(taskUuid, 'success', record.duration);
+    this.updateStats(taskId, 'success', record.duration);
 
     this.logger.info('Task execution succeeded', {
-      taskUuid,
+      taskId,
       taskName,
       duration: `${record.duration}ms`,
       startTime: record.startTime.toISOString(),
@@ -129,10 +129,10 @@ export class ScheduleMonitor {
   /**
    * Record task execution failure
    */
-  public recordExecutionFailure(taskUuid: string, taskName: string, error: Error): void {
-    const record = this.runningTasks.get(taskUuid);
+  public recordExecutionFailure(taskId: string, taskName: string, error: Error): void {
+    const record = this.runningTasks.get(taskId);
     if (!record) {
-      this.logger.warn('Execution record not found', { taskUuid });
+      this.logger.warn('Execution record not found', { taskId });
       return;
     }
 
@@ -141,12 +141,12 @@ export class ScheduleMonitor {
     record.status = 'failure';
     record.error = error;
 
-    this.runningTasks.delete(taskUuid);
+    this.runningTasks.delete(taskId);
     this.addToHistory(record);
-    this.updateStats(taskUuid, 'failure', record.duration);
+    this.updateStats(taskId, 'failure', record.duration);
 
     this.logger.error('Task execution failed', {
-      taskUuid,
+      taskId,
       taskName,
       duration: `${record.duration}ms`,
       error: error.message,
@@ -154,17 +154,17 @@ export class ScheduleMonitor {
     });
 
     // Failure alert
-    this.alertOnFailure(taskUuid, taskName, error);
+    this.alertOnFailure(taskId, taskName, error);
   }
 
   /**
    * Record task skipped
    */
-  public recordExecutionSkipped(taskUuid: string, taskName: string, reason: string): void {
-    this.updateStats(taskUuid, 'skipped', 0);
+  public recordExecutionSkipped(taskId: string, taskName: string, reason: string): void {
+    this.updateStats(taskId, 'skipped', 0);
 
     this.logger.warn('Task execution skipped', {
-      taskUuid,
+      taskId,
       taskName,
       reason,
     });
@@ -173,8 +173,8 @@ export class ScheduleMonitor {
   /**
    * Get task statistics
    */
-  public getTaskStats(taskUuid: string): ScheduleExecutionStats | undefined {
-    return this.taskStats.get(taskUuid);
+  public getTaskStats(taskId: string): ScheduleExecutionStats | undefined {
+    return this.taskStats.get(taskId);
   }
 
   /**
@@ -220,7 +220,7 @@ export class ScheduleMonitor {
     if (runningCount > 0) {
       this.logger.info(`Currently running tasks (${runningCount}):`, {
         tasks: Array.from(this.runningTasks.values()).map((record) => ({
-          taskUuid: record.taskUuid,
+          taskId: record.taskId,
           startTime: record.startTime.toISOString(),
           runningTime: `${Date.now() - record.startTime.getTime()}ms`,
         })),
@@ -230,8 +230,8 @@ export class ScheduleMonitor {
     // Print task-level statistics
     if (this.taskStats.size > 0) {
       this.logger.info(`Task Statistics (${this.taskStats.size} tasks):`, {
-        tasks: Array.from(this.taskStats.entries()).map(([uuid, stat]) => ({
-          taskUuid: uuid,
+        tasks: Array.from(this.taskStats.entries()).map(([id, stat]) => ({
+          taskId: id,
           totalExecutions: stat.totalExecutions,
           successCount: stat.successCount,
           failureCount: stat.failureCount,
@@ -265,9 +265,9 @@ export class ScheduleMonitor {
   /**
    * Update statistics
    */
-  private updateStats(taskUuid: string, status: 'success' | 'failure' | 'skipped', duration: number): void {
+  private updateStats(taskId: string, status: 'success' | 'failure' | 'skipped', duration: number): void {
     // Update task-level statistics
-    let taskStat = this.taskStats.get(taskUuid);
+    let taskStat = this.taskStats.get(taskId);
     if (!taskStat) {
       taskStat = {
         totalExecutions: 0,
@@ -279,7 +279,7 @@ export class ScheduleMonitor {
         lastSuccessTime: null,
         lastFailureTime: null,
       };
-      this.taskStats.set(taskUuid, taskStat);
+      this.taskStats.set(taskId, taskStat);
     }
 
     const now = new Date();
@@ -329,19 +329,19 @@ export class ScheduleMonitor {
   /**
    * Alert on failure
    */
-  private alertOnFailure(taskUuid: string, taskName: string, error: Error): void {
-    const taskStat = this.taskStats.get(taskUuid);
+  private alertOnFailure(taskId: string, taskName: string, error: Error): void {
+    const taskStat = this.taskStats.get(taskId);
     if (!taskStat) return;
 
     // Consecutive failure alert
     const recentFailures = this.executionHistory
-      .filter((r) => r.taskUuid === taskUuid)
+      .filter((r) => r.taskId === taskId)
       .slice(0, 5)
       .filter((r) => r.status === 'failure').length;
 
     if (recentFailures >= 3) {
       this.logger.error('Consecutive task failures alert', {
-        taskUuid,
+        taskId,
         taskName,
         consecutiveFailures: recentFailures,
         totalFailures: taskStat.failureCount,
@@ -354,7 +354,7 @@ export class ScheduleMonitor {
       const failureRate = taskStat.failureCount / taskStat.totalExecutions;
       if (failureRate > 0.5) {
         this.logger.error('High task failure rate alert', {
-          taskUuid,
+          taskId,
           taskName,
           failureRate: `${(failureRate * 100).toFixed(2)}%`,
           totalExecutions: taskStat.totalExecutions,

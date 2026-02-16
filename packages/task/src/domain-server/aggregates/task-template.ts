@@ -903,7 +903,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   /**
    * �󶨵�Ŀ??(ONE_TIME) - �°汾֧�����ֶ�
    */
-  public linkToGoal(goalUuid: string, keyResultUuid?: string): void {
+  public linkToGoal(goalId: string, keyResultId?: string): void {
     if (this._props.taskType !== 'ONE_TIME') {
       throw new InvalidTaskTemplateStateError('Only ONE_TIME tasks can be linked to goals', {
         templateId: this.id,
@@ -918,10 +918,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         attemptedAction: 'linkToGoal',
       });
     }
-    this._props.goalId = GoalId.of(goalUuid);
-    this._props.keyResultId = keyResultUuid ? KeyResultId.of(keyResultUuid) : null;
+    this._props.goalId = GoalId.of(goalId);
+    this._props.keyResultId = keyResultId ? KeyResultId.of(keyResultId) : null;
     this._props.updatedAt = new Date();
-    this.addHistory('linked_to_goal', { goalUuid, keyResultUuid });
+    this.addHistory('linked_to_goal', { goalId, keyResultId });
   }
 
   /**
@@ -942,12 +942,12 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         attemptedAction: 'unlinkFromGoal',
       });
     }
-    const oldGoalUuid = this._props.goalId;
-    const oldKeyResultUuid = this._props.keyResultId;
+    const oldGoalId = this._props.goalId;
+    const oldKeyResultId = this._props.keyResultId;
     this._props.goalId = null;
     this._props.keyResultId = null;
     this._props.updatedAt = new Date();
-    this.addHistory('unlinked_from_goal', { oldGoalUuid, oldKeyResultUuid });
+    this.addHistory('unlinked_from_goal', { oldGoalId, oldKeyResultId });
   }
 
   // ===== �����������??(ONE_TIME) =====
@@ -955,7 +955,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   /**
    * ��������??
    */
-  public addSubtask(subtaskUuid: string): void {
+  public addSubtask(subtaskId: string): void {
     if (this._props.taskType !== 'ONE_TIME') {
       throw new InvalidTaskTemplateStateError('Only ONE_TIME tasks can have subtasks', {
         templateId: this.id,
@@ -963,15 +963,15 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         attemptedAction: 'addSubtask',
       });
     }
-    // ʵ��ʵ����Ӧ��ͨ�� repository ��֤ subtaskUuid �Ƿ����?
+    // ʵ��ʵ����Ӧ��ͨ�� repository ��֤ subtaskId �Ƿ����?
     this._props.updatedAt = new Date();
-    this.addHistory('subtask_added', { subtaskUuid });
+    this.addHistory('subtask_added', { subtaskId });
   }
 
   /**
    * �Ƴ�����??
    */
-  public removeSubtask(subtaskUuid: string): void {
+  public removeSubtask(subtaskId: string): void {
     if (this._props.taskType !== 'ONE_TIME') {
       throw new InvalidTaskTemplateStateError('Only ONE_TIME tasks can have subtasks', {
         templateId: this.id,
@@ -980,7 +980,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       });
     }
     this._props.updatedAt = new Date();
-    this.addHistory('subtask_removed', { subtaskUuid });
+    this.addHistory('subtask_removed', { subtaskId });
   }
 
   /**
@@ -993,7 +993,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   /**
    * ��ȡ������UUID
    */
-  public getParentTaskUuid(): string | null {
+  public getParentTaskId(): string | null {
     return this._props.parentTaskId;
   }
 
@@ -1061,7 +1061,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   /**
    * ���Ϊ������?
    */
-  public markAsBlocked(reason: string, dependencyTaskUuid?: string): void {
+  public markAsBlocked(reason: string, dependencyTaskId?: string): void {
     if (this._props.taskType !== 'ONE_TIME') {
       throw new InvalidTaskTemplateStateError(
         'Only ONE_TIME tasks can be blocked by dependencies',
@@ -1076,7 +1076,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
     this._props.blockingReason = reason;
     this._props.dependencyStatus = 'BLOCKED';
     this._props.updatedAt = new Date();
-    this.addHistory('marked_as_blocked', { reason, dependencyTaskUuid });
+    this.addHistory('marked_as_blocked', { reason, dependencyTaskId });
   }
 
   /**
@@ -1121,7 +1121,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
    */
   public addHistory(action: string, changes?: any): void {
     const history = TaskTemplateHistory.create({
-      templateUuid: this.id,
+      templateId: this.id,
       action,
       changes: changes ? JSON.stringify(changes) : null,
     });
@@ -1183,8 +1183,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   /**
    * �Ƴ�ʵ��
    */
-  public removeInstance(instanceUuid: string): TaskInstance | null {
-    const index = this._instances.findIndex((i) => i.id === instanceUuid);
+  public removeInstance(instanceId: string): TaskInstance | null {
+    const index = this._instances.findIndex((i) => i.id === instanceId);
     if (index === -1) return null;
     const [removed] = this._instances.splice(index, 1);
     this._props.updatedAt = new Date();
@@ -1194,8 +1194,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   /**
    * ��ȡʵ��
    */
-  public getInstance(instanceUuid: string): TaskInstance | null {
-    return this._instances.find((i) => i.id === instanceUuid) ?? null;
+  public getInstance(instanceId: string): TaskInstance | null {
+    return this._instances.find((i) => i.id === instanceId) ?? null;
   }
 
   /**

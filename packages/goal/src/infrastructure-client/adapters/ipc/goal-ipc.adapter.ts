@@ -41,7 +41,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
     page?: number;
     limit?: number;
     status?: string;
-    dirUuid?: string;
+    dirId?: string;
     startDate?: string;
     endDate?: string;
     includeChildren?: boolean;
@@ -50,43 +50,43 @@ export class GoalIpcAdapter implements IGoalApiClient {
   }
 
   async getGoalById(
-    uuid: string,
+    id: string,
     includeChildren = true,
   ): Promise<Result<GoalClientDTO>> {
     return this.ipcClient.invoke(
       `${this.channel}:get`,
-      uuid,
+      id,
       includeChildren,
     );
   }
 
   async updateGoal(
-    uuid: string,
+    id: string,
     request: UpdateGoalReq,
   ): Promise<Result<GoalClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:update`, uuid, request);
+    return this.ipcClient.invoke(`${this.channel}:update`, id, request);
   }
 
-  async deleteGoal(uuid: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(`${this.channel}:delete`, uuid);
+  async deleteGoal(id: string): Promise<Result<void>> {
+    return this.ipcClient.invoke(`${this.channel}:delete`, id);
   }
 
   // ===== Goal Status =====
 
-  async activateGoal(uuid: string): Promise<Result<GoalClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:activate`, uuid);
+  async activateGoal(id: string): Promise<Result<GoalClientDTO>> {
+    return this.ipcClient.invoke(`${this.channel}:activate`, id);
   }
 
-  async pauseGoal(uuid: string): Promise<Result<GoalClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:pause`, uuid);
+  async pauseGoal(id: string): Promise<Result<GoalClientDTO>> {
+    return this.ipcClient.invoke(`${this.channel}:pause`, id);
   }
 
-  async completeGoal(uuid: string): Promise<Result<GoalClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:complete`, uuid);
+  async completeGoal(id: string): Promise<Result<GoalClientDTO>> {
+    return this.ipcClient.invoke(`${this.channel}:complete`, id);
   }
 
-  async archiveGoal(uuid: string): Promise<Result<GoalClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:archive`, uuid);
+  async archiveGoal(id: string): Promise<Result<GoalClientDTO>> {
+    return this.ipcClient.invoke(`${this.channel}:archive`, id);
   }
 
   // ===== Search =====
@@ -96,7 +96,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
     page?: number;
     limit?: number;
     status?: string;
-    dirUuid?: string;
+    dirId?: string;
   }): Promise<Result<QueryGoalsRes>> {
     return this.ipcClient.invoke(`${this.channel}:search`, params);
   }
@@ -104,177 +104,177 @@ export class GoalIpcAdapter implements IGoalApiClient {
   // ===== KeyResult Management =====
 
   async addKeyResultForGoal(
-    goalUuid: string,
-    request: Omit<AddKeyResultReq, 'goalUuid'>,
+    goalId: string,
+    request: Omit<AddKeyResultReq, 'goalId'>,
   ): Promise<Result<KeyResultClientDTO>> {
     return this.ipcClient.invoke(
       `${this.channel}:keyResult:add`,
-      goalUuid,
+      goalId,
       request,
     );
   }
 
   async getKeyResultsByGoal(
-    goalUuid: string,
+    goalId: string,
   ): Promise<Result<GetKeyResultsRes>> {
     return this.ipcClient.invoke(
       `${this.channel}:keyResult:list`,
-      goalUuid,
+      goalId,
     );
   }
 
   async updateKeyResultForGoal(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
     request: UpdateKeyResultReq,
   ): Promise<Result<KeyResultClientDTO>> {
     return this.ipcClient.invoke(
       `${this.channel}:keyResult:update`,
-      goalUuid,
-      keyResultUuid,
+      goalId,
+      keyResultId,
       request,
     );
   }
 
   async deleteKeyResultForGoal(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
   ): Promise<Result<void>> {
     return this.ipcClient.invoke(
       `${this.channel}:keyResult:delete`,
-      goalUuid,
-      keyResultUuid,
+      goalId,
+      keyResultId,
     );
   }
 
   async batchUpdateKeyResultWeights(
-    goalUuid: string,
-    request: { updates: Array<{ keyResultUuid: string; weight: number }> },
+    goalId: string,
+    request: { updates: Array<{ keyResultId: string; weight: number }> },
   ): Promise<Result<GetKeyResultsRes>> {
     return this.ipcClient.invoke(
       `${this.channel}:keyResult:batchUpdateWeights`,
-      goalUuid,
+      goalId,
       request,
     );
   }
 
   async getProgressBreakdown(
-    goalUuid: string,
+    goalId: string,
   ): Promise<Result<ProgressBreakdown>> {
     return this.ipcClient.invoke(
       `${this.channel}:progressBreakdown`,
-      goalUuid,
+      goalId,
     );
   }
 
   // ===== GoalReview Management =====
 
   async createGoalReview(
-    goalUuid: string,
+    goalId: string,
     request: CreateGoalReviewReq,
   ): Promise<Result<GoalReviewClientDTO>> {
     return this.ipcClient.invoke(
       `${this.channel}:review:create`,
-      goalUuid,
+      goalId,
       request,
     );
   }
 
   async getGoalReviewsByGoal(
-    goalUuid: string,
+    goalId: string,
   ): Promise<Result<GetGoalReviewsRes>> {
     return this.ipcClient.invoke(
       `${this.channel}:review:list`,
-      goalUuid,
+      goalId,
     );
   }
 
   async updateGoalReview(
-    goalUuid: string,
-    reviewUuid: string,
+    goalId: string,
+    reviewId: string,
     request: Partial<GoalReviewClientDTO>,
   ): Promise<Result<GoalReviewClientDTO>> {
     return this.ipcClient.invoke(
       `${this.channel}:review:update`,
-      goalUuid,
-      reviewUuid,
+      goalId,
+      reviewId,
       request,
     );
   }
 
   async deleteGoalReview(
-    goalUuid: string,
-    reviewUuid: string,
+    goalId: string,
+    reviewId: string,
   ): Promise<Result<void>> {
     return this.ipcClient.invoke(
       `${this.channel}:review:delete`,
-      goalUuid,
-      reviewUuid,
+      goalId,
+      reviewId,
     );
   }
 
   // ===== GoalRecord Management =====
 
   async createGoalRecord(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
     request: Pick<CreateGoalRecordReq, 'value' | 'note'>,
   ): Promise<Result<GoalRecordClientDTO>> {
     return this.ipcClient.invoke(
       `${this.channel}:record:create`,
-      goalUuid,
-      keyResultUuid,
+      goalId,
+      keyResultId,
       request,
     );
   }
 
   async getGoalRecordsByKeyResult(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
     params?: { limit?: number; offset?: number },
   ): Promise<Result<GetGoalRecordsRes>> {
     return this.ipcClient.invoke(
       `${this.channel}:record:listByKeyResult`,
-      goalUuid,
-      keyResultUuid,
+      goalId,
+      keyResultId,
       params,
     );
   }
 
   async getGoalRecordsByGoal(
-    goalUuid: string,
+    goalId: string,
     params?: { limit?: number; offset?: number },
   ): Promise<Result<GetGoalRecordsRes>> {
     return this.ipcClient.invoke(
       `${this.channel}:record:listByGoal`,
-      goalUuid,
+      goalId,
       params,
     );
   }
 
   async deleteGoalRecord(
-    goalUuid: string,
-    keyResultUuid: string,
-    recordUuid: string,
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
   ): Promise<Result<void>> {
     return this.ipcClient.invoke(
       `${this.channel}:record:delete`,
-      goalUuid,
-      keyResultUuid,
-      recordUuid,
+      goalId,
+      keyResultId,
+      recordId,
     );
   }
 
   // ===== Aggregate View =====
 
   async getGoalAggregateView(
-    goalUuid: string,
+    goalId: string,
   ): Promise<Result<GetGoalAggregateRes>> {
-    return this.ipcClient.invoke(`${this.channel}:aggregate`, goalUuid);
+    return this.ipcClient.invoke(`${this.channel}:aggregate`, goalId);
   }
 
   async cloneGoal(
-    goalUuid: string,
+    goalId: string,
     request: {
       name?: string;
       description?: string;
@@ -284,7 +284,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
   ): Promise<Result<GoalClientDTO>> {
     return this.ipcClient.invoke(
       `${this.channel}:clone`,
-      goalUuid,
+      goalId,
       request,
     );
   }

@@ -27,7 +27,7 @@ export class CreateGoalFolder {
       description: input.description,
       color: input.color,
       icon: input.icon,
-      parentFolderId: input.parentFolderUuid as GoalFolderId | undefined,
+      parentFolderId: input.parentFolderId as GoalFolderId | undefined,
     });
 
     await this.goalFolderRepository.save(folder);

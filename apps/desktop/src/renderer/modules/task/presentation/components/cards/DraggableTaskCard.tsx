@@ -36,12 +36,12 @@ interface DraggableTaskCardProps {
   id: string;
   instance: TaskInstance;
   template?: TaskTemplate | null;
-  onComplete?: (uuid: string) => void;
-  onSkip?: (uuid: string) => void;
-  onClick?: (uuid: string) => void;
+  onComplete?: (id: string) => void;
+  onSkip?: (id: string) => void;
+  onClick?: (id: string) => void;
 }
 
-// 状态颜色配�?
+// 状态颜色配�?
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   PENDING: { bg: 'bg-blue-100', text: 'text-blue-800' },
   COMPLETED: { bg: 'bg-green-100', text: 'text-green-800' },
@@ -77,19 +77,19 @@ export function DraggableTaskCard({
 
   const handleComplete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onComplete?.(instance.uuid);
+    onComplete?.(instance.id);
   };
 
   const handleSkip = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onSkip?.(instance.uuid);
+    onSkip?.(instance.id);
   };
 
   const handleClick = () => {
-    onClick?.(instance.uuid);
+    onClick?.(instance.id);
   };
 
-  // 格式化时间显�?
+  // 格式化时间显�?
   const getTimeLabel = () => {
     const timeConfig = instance.timeConfig;
 

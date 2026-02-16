@@ -11,14 +11,14 @@ describe('Schedule Aggregate', () => {
   // ===== Test Data Fixtures =====
   
   const createTestSchedule = (params: {
-    uuid?: string;
-    accountUuid?: string;
+    id?: string;
+    identityId?: string;
     title?: string;
     startTime: number;
     endTime: number;
   }): Schedule => {
     return Schedule.create({
-      accountUuid: params.accountUuid || 'acc-123',
+      identityId: params.identityId || 'acc-123',
       title: params.title || 'Test Meeting',
       startTime: params.startTime,
       endTime: params.endTime,
@@ -35,7 +35,7 @@ describe('Schedule Aggregate', () => {
   describe('create()', () => {
     it('should create a schedule with valid parameters', () => {
       const schedule = Schedule.create({
-        accountUuid: 'acc-123',
+        identityId: 'acc-123',
         title: 'Team Meeting',
         description: 'Weekly sync',
         startTime: hour(14), // 2:00 PM
@@ -46,8 +46,8 @@ describe('Schedule Aggregate', () => {
       });
 
       expect(schedule).toBeDefined();
-      expect(schedule.uuid).toBeDefined();
-      expect(schedule.accountUuid).toBe('acc-123');
+      expect(schedule.id).toBeDefined();
+      expect(schedule.identityId).toBe('acc-123');
       expect(schedule.title).toBe('Team Meeting');
       expect(schedule.description).toBe('Weekly sync');
       expect(schedule.duration).toBe(60); // 1 hour in minutes
@@ -58,7 +58,7 @@ describe('Schedule Aggregate', () => {
     it('should throw error if startTime >= endTime', () => {
       expect(() => {
         Schedule.create({
-          accountUuid: 'acc-123',
+          identityId: 'acc-123',
           title: 'Invalid Schedule',
           startTime: hour(15),
           endTime: hour(14), // endTime before startTime
@@ -69,7 +69,7 @@ describe('Schedule Aggregate', () => {
     it('should throw error if startTime === endTime', () => {
       expect(() => {
         Schedule.create({
-          accountUuid: 'acc-123',
+          identityId: 'acc-123',
           title: 'Zero Duration',
           startTime: hour(14),
           endTime: hour(14), // Same time
@@ -79,7 +79,7 @@ describe('Schedule Aggregate', () => {
 
     it('should calculate duration correctly', () => {
       const schedule = Schedule.create({
-        accountUuid: 'acc-123',
+        identityId: 'acc-123',
         title: 'Long Meeting',
         startTime: hour(9),  // 9:00 AM
         endTime: hour(12),   // 12:00 PM
@@ -92,8 +92,8 @@ describe('Schedule Aggregate', () => {
   describe('fromServerDTO()', () => {
     it('should create schedule from ServerDTO', () => {
       const dto = {
-        uuid: 'sched-456',
-        accountUuid: 'acc-789',
+        id: 'sched-456',
+        identityId: 'acc-789',
         title: 'Client Meeting',
         description: 'Discuss project',
         startTime: hour(10),
@@ -110,8 +110,8 @@ describe('Schedule Aggregate', () => {
 
       const schedule = Schedule.fromServerDTO(dto);
 
-      expect(schedule.uuid).toBe('sched-456');
-      expect(schedule.accountUuid).toBe('acc-789');
+      expect(schedule.id).toBe('sched-456');
+      expect(schedule.identityId).toBe('acc-789');
       expect(schedule.title).toBe('Client Meeting');
       expect(schedule.hasConflict).toBe(true);
       expect(schedule.conflictingSchedules).toEqual(['sched-111', 'sched-222']);
@@ -173,7 +173,7 @@ describe('Schedule Aggregate', () => {
       expect(result.conflicts).toHaveLength(1);
       
       const conflict = result.conflicts[0];
-      expect(conflict.scheduleUuid).toBe(schedule2.uuid);
+      expect(conflict.scheduleId).toBe(schedule2.id);
       expect(conflict.scheduleTitle).toBe('Meeting B');
       expect(conflict.overlapStart).toBe(hour(15));  // Overlap starts at 3:00 PM
       expect(conflict.overlapEnd).toBe(hour(15.5));  // Overlap ends at 3:30 PM
@@ -558,7 +558,7 @@ describe('Schedule Aggregate', () => {
   describe('toServerDTO()', () => {
     it('should convert to ServerDTO correctly', () => {
       const schedule = Schedule.create({
-        accountUuid: 'acc-123',
+        identityId: 'acc-123',
         title: 'Team Standup',
         description: 'Daily sync',
         startTime: hour(9),
@@ -570,8 +570,8 @@ describe('Schedule Aggregate', () => {
 
       const dto = schedule.toServerDTO();
 
-      expect(dto.uuid).toBe(schedule.uuid);
-      expect(dto.accountUuid).toBe('acc-123');
+      expect(dto.id).toBe(schedule.id);
+      expect(dto.identityId).toBe('acc-123');
       expect(dto.title).toBe('Team Standup');
       expect(dto.description).toBe('Daily sync');
       expect(dto.duration).toBe(15);
@@ -584,7 +584,7 @@ describe('Schedule Aggregate', () => {
 
     it('should handle nullable fields correctly', () => {
       const schedule = Schedule.create({
-        accountUuid: 'acc-123',
+        identityId: 'acc-123',
         title: 'Simple Meeting',
         startTime: hour(10),
         endTime: hour(11),

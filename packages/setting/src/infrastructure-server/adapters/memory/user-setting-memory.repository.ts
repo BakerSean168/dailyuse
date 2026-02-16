@@ -13,18 +13,18 @@ import type { UserSetting } from '@/domain-server/aggregates/user-setting';
  * In-memory implementation for testing purposes.
  */
 export class UserSettingMemoryRepository implements IUserSettingRepository {
-  private settings = new Map<string, UserSetting>(); // keyed by accountUuid
+  private settings = new Map<string, UserSetting>(); // keyed by identityId
 
-  async findByAccountUuid(accountUuid: string): Promise<UserSetting | null> {
-    return this.settings.get(accountUuid) ?? null;
+  async findByAccountId(identityId: string): Promise<UserSetting | null> {
+    return this.settings.get(identityId) ?? null;
   }
 
   async save(setting: UserSetting): Promise<void> {
-    this.settings.set((setting as any).accountUuid, setting);
+    this.settings.set((setting as any).identityId, setting);
   }
 
-  async delete(accountUuid: string): Promise<void> {
-    this.settings.delete(accountUuid);
+  async delete(identityId: string): Promise<void> {
+    this.settings.delete(identityId);
   }
 
   // Test helpers
@@ -33,6 +33,6 @@ export class UserSettingMemoryRepository implements IUserSettingRepository {
   }
 
   seed(settings: UserSetting[]): void {
-    settings.forEach((s: any) => this.settings.set(s.accountUuid, s));
+    settings.forEach((s: any) => this.settings.set(s.identityId, s));
   }
 }

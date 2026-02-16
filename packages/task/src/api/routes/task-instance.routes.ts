@@ -23,8 +23,8 @@ interface PlatformMiddleware {
 
 interface AuthenticatedRequest extends Request {
   user?: {
-    accountUuid: string;
-    sessionUuid?: string;
+    identityId: string;
+    sessionId?: string;
   };
 }
 
@@ -56,17 +56,17 @@ export function registerTaskInstanceRoutes(
     '/',
     auth,
     async (req: AuthenticatedRequest, res: Response) => {
-      if (!req.user?.accountUuid) {
+      if (!req.user?.identityId) {
         res.status(401).json(responseBuilder.unauthorized());
         return;
       }
 
       const filters = {
-        templateUuid: req.query.templateUuid as string,
+        templateId: req.query.templateId as string,
         status: req.query.status as any,
       };
 
-      const result = await controller.listInstances(req.user.accountUuid, filters);
+      const result = await controller.listInstances(req.user.identityId, filters);
       respondWithResult(res, result);
     },
   );
@@ -76,7 +76,7 @@ export function registerTaskInstanceRoutes(
     '/by-date-range',
     auth,
     async (req: AuthenticatedRequest, res: Response) => {
-      if (!req.user?.accountUuid) {
+      if (!req.user?.identityId) {
         res.status(401).json(responseBuilder.unauthorized());
         return;
       }
@@ -85,7 +85,7 @@ export function registerTaskInstanceRoutes(
       const endDate = req.query.endDate ? Number(req.query.endDate) : Date.now() + 86400000 * 7;
 
       const result = await controller.getInstancesByDateRange(
-        req.user.accountUuid,
+        req.user.identityId,
         startDate,
         endDate
       );

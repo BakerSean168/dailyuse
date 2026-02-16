@@ -39,8 +39,8 @@ export class DailyAnalysisCronJob {
       await this.initialize();
 
       // GetAll鏈夋椿璺冭处锟?
-      const accountUuids = await this.getAllActiveAccounts();
-      console.log(`[DailyAnalysisCronJob] Found ${accountUuids.length} active accounts`);
+      const identityIds = await this.getAllActiveAccounts();
+      console.log(`[DailyAnalysisCronJob] Found ${identityIds.length} active accounts`);
 
       // 鍒嗘瀽缁撴灉缁熻
       let totalTemplatesAnalyzed = 0;
@@ -48,21 +48,21 @@ export class DailyAnalysisCronJob {
       const failedAccounts: string[] = [];
 
       // 閫愪釜鍒嗘瀽璐︽埛
-      for (const accountUuid of accountUuids) {
+      for (const identityId of identityIds) {
         try {
-          const result = await this.analyzeAccount(accountUuid);
+          const result = await this.analyzeAccount(identityId);
           totalTemplatesAnalyzed += result.templatesAnalyzed;
           totalAdjustmentsMade += result.adjustmentsMade;
         } catch (error) {
-          console.error(`[DailyAnalysisCronJob] Failed to analyze account ${accountUuid}:`, error);
-          failedAccounts.push(accountUuid);
+          console.error(`[DailyAnalysisCronJob] Failed to analyze account ${identityId}:`, error);
+          failedAccounts.push(identityId);
         }
       }
 
       const duration = Date.now() - startTime;
       console.log('[DailyAnalysisCronJob] Daily analysis completed:', {
         duration: `${(duration / 1000).toFixed(2)}s`,
-        totalAccounts: accountUuids.length,
+        totalAccounts: identityIds.length,
         totalTemplatesAnalyzed,
         totalAdjustmentsMade,
         failedAccounts: failedAccounts.length,
@@ -72,7 +72,7 @@ export class DailyAnalysisCronJob {
       await this.saveAnalysisReport({
         executedAt: startTime,
         duration,
-        totalAccounts: accountUuids.length,
+        totalAccounts: identityIds.length,
         totalTemplatesAnalyzed,
         totalAdjustmentsMade,
         failedAccounts,
@@ -87,17 +87,17 @@ export class DailyAnalysisCronJob {
    * 鍒嗘瀽鍗曚釜璐︽埛
    */
   private async analyzeAccount(
-    accountUuid: string,
+    identityId: string,
   ): Promise<{ templatesAnalyzed: number; adjustmentsMade: number }> {
-    console.log(`[DailyAnalysisCronJob] Analyzing account ${accountUuid}...`);
+    console.log(`[DailyAnalysisCronJob] Analyzing account ${identityId}...`);
 
     // 1. 鐢熸垚鏁堟灉鍒嗘瀽鎶ュ憡
-    const report = await this.analysisService.analyzeAllTemplates(accountUuid);
+    const report = await this.analysisService.analyzeAllTemplates(identityId);
 
     // 2. 鑷姩璋冩暣浣庢晥鎻愰啋
-    const adjustments = await this.adjustmentService.batchAutoAdjust(accountUuid);
+    const adjustments = await this.adjustmentService.batchAutoAdjust(identityId);
 
-    console.log(`[DailyAnalysisCronJob] Account ${accountUuid} analyzed:`, {
+    console.log(`[DailyAnalysisCronJob] Account ${identityId} analyzed:`, {
       totalTemplates: report.totalTemplates,
       avgClickRate: `${report.avgClickRate.toFixed(2)}%`,
       avgEffectiveness: report.avgEffectivenessScore.toFixed(2),
@@ -134,12 +134,12 @@ export class DailyAnalysisCronJob {
         },
       },
       select: {
-        accountUuid: true,
+        identityId: true,
       },
-      distinct: ['accountUuid'],
+      distinct: ['identityId'],
     });
 
-    return accounts.map((a) => a.accountUuid);
+    return accounts.map((a) => a.identityId);
   }
 
   /**

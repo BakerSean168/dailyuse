@@ -39,7 +39,7 @@ export interface CreateScheduleTaskReq {
   retryPolicy?: RetryPolicyServerDTO;
   enabled?: boolean;
   description?: string;
-  accountUuid: string;
+  identityId: string;
 }
 
 /**
@@ -80,7 +80,7 @@ export class CreateScheduleTaskUseCase {
     const task = ScheduleTask.create({
       name: req.name,
       description: req.description,
-      identityId: req.accountUuid,
+      identityId: req.identityId,
       sourceModule: req.sourceModule,
       sourceEntityId: req.sourceId,
       schedule,

@@ -1,6 +1,6 @@
 import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
 import { Schedule } from '../../domain-server/aggregates/schedule';
-import type { ScheduleClientDTO, ConflictDetectionResult } from '@dailyuse/contracts/schedule';
+import type { ScheduleJobClientDTO, ConflictDetectionResult } from '@dailyuse/contracts/schedule';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ScheduleEventApplicationService');
@@ -22,7 +22,7 @@ export class ScheduleEventApplicationService {
    * Create Schedule Event
    */
   async createSchedule(params: {
-    accountUuid: string;
+    identityId: string;
     title: string;
     startTime: number;
     endTime: number;
@@ -30,9 +30,9 @@ export class ScheduleEventApplicationService {
     location?: string;
     priority?: number;
     attendees?: string[];
-  }): Promise<ScheduleClientDTO> {
+  }): Promise<ScheduleJobClientDTO> {
     const schedule = Schedule.create({
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       title: params.title,
       startTime: params.startTime,
       endTime: params.endTime,
@@ -50,7 +50,7 @@ export class ScheduleEventApplicationService {
    * Update Schedule Event
    */
   async updateSchedule(
-    uuid: string,
+    id: string,
     params: {
       title?: string;
       startTime?: number;
@@ -60,10 +60,10 @@ export class ScheduleEventApplicationService {
       priority?: number;
       attendees?: string[];
     }
-  ): Promise<ScheduleClientDTO> {
-    const schedule = await this.scheduleRepository.findByUuid(uuid);
+  ): Promise<ScheduleJobClientDTO> {
+    const schedule = await this.scheduleRepository.findById(id);
     if (!schedule) {
-      throw new Error(`Schedule event ${uuid} not found`);
+      throw new Error(`Schedule event ${id} not found`);
     }
 
     if (params.title !== undefined) schedule.updateTitle(params.title);
@@ -83,19 +83,19 @@ export class ScheduleEventApplicationService {
   /**
    * Delete Schedule Event
    */
-  async deleteSchedule(uuid: string): Promise<void> {
-    const schedule = await this.scheduleRepository.findByUuid(uuid);
+  async deleteSchedule(id: string): Promise<void> {
+    const schedule = await this.scheduleRepository.findById(id);
     if (!schedule) {
-      throw new Error(`Schedule event ${uuid} not found`);
+      throw new Error(`Schedule event ${id} not found`);
     }
-    await this.scheduleRepository.deleteByUuid(uuid);
+    await this.scheduleRepository.deleteById(id);
   }
 
   /**
    * Get Schedule Event
    */
-  async getSchedule(uuid: string): Promise<ScheduleClientDTO | null> {
-    const schedule = await this.scheduleRepository.findByUuid(uuid);
+  async getSchedule(id: string): Promise<ScheduleJobClientDTO | null> {
+    const schedule = await this.scheduleRepository.findById(id);
     return schedule ? schedule.toClientDTO() : null;
   }
 
@@ -103,11 +103,11 @@ export class ScheduleEventApplicationService {
    * Get Schedules by Date Range
    */
   async getSchedulesByRange(
-    accountUuid: string,
+    identityId: string,
     startTime: number,
     endTime: number
-  ): Promise<ScheduleClientDTO[]> {
-    const schedules = await this.scheduleRepository.findByTimeRange(accountUuid, startTime, endTime);
+  ): Promise<ScheduleJobClientDTO[]> {
+    const schedules = await this.scheduleRepository.findByTimeRange(identityId, startTime, endTime);
     return schedules.map((s: any) => s.toClientDTO());
   }
 }

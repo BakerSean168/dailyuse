@@ -17,10 +17,10 @@ export class SqliteResourceRepository implements IResourceRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO resources (
-        uuid, repository_uuid, folder_uuid, name, type, path, size,
+        id, repository_id, folder_id, name, type, path, size,
         content, metadata, stats, status, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         type = excluded.type,
         path = excluded.path,
@@ -51,7 +51,7 @@ export class SqliteResourceRepository implements IResourceRepository {
 
   async findById(id: string): Promise<Resource | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM resources WHERE uuid = ? LIMIT 1`,
+      `SELECT * FROM resources WHERE id = ? LIMIT 1`,
     );
     const row = stmt.get(id) as any;
 
@@ -61,9 +61,9 @@ export class SqliteResourceRepository implements IResourceRepository {
     const stats = row.stats ?? JSON.stringify(ResourceStats.createEmpty().toDTO());
 
     return Resource.fromPersistenceDTO({
-      id: row.uuid,
-      repositoryId: row.repository_uuid,
-      folderId: row.folder_uuid,
+      id: row.id,
+      repositoryId: row.repository_id,
+      folderId: row.folder_id,
       name: row.name,
       type: row.type,
       path: row.path,
@@ -80,13 +80,13 @@ export class SqliteResourceRepository implements IResourceRepository {
     });
   }
 
-  async findByUuid(uuid: string): Promise<Resource | null> {
-    return this.findById(uuid);
+  async findById(id: string): Promise<Resource | null> {
+    return this.findById(id);
   }
 
   async findByRepositoryId(repositoryId: string): Promise<Resource[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM resources WHERE repository_uuid = ? ORDER BY created_at DESC`,
+      `SELECT * FROM resources WHERE repository_id = ? ORDER BY created_at DESC`,
     );
     const rows = stmt.all(repositoryId) as any[];
 
@@ -95,9 +95,9 @@ export class SqliteResourceRepository implements IResourceRepository {
       const stats = row.stats ?? JSON.stringify(ResourceStats.createEmpty().toDTO());
 
       return Resource.fromPersistenceDTO({
-        id: row.uuid,
-        repositoryId: row.repository_uuid,
-        folderId: row.folder_uuid,
+        id: row.id,
+        repositoryId: row.repository_id,
+        folderId: row.folder_id,
         name: row.name,
         type: row.type,
         path: row.path,
@@ -115,13 +115,13 @@ export class SqliteResourceRepository implements IResourceRepository {
     });
   }
 
-  async findByRepositoryUuid(repositoryUuid: string): Promise<Resource[]> {
-    return this.findByRepositoryId(repositoryUuid);
+  async findByRepositoryId(repositoryId: string): Promise<Resource[]> {
+    return this.findByRepositoryId(repositoryId);
   }
 
   async findByFolderId(folderId: string): Promise<Resource[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM resources WHERE folder_uuid = ? ORDER BY name ASC`,
+      `SELECT * FROM resources WHERE folder_id = ? ORDER BY name ASC`,
     );
     const rows = stmt.all(folderId) as any[];
 
@@ -130,9 +130,9 @@ export class SqliteResourceRepository implements IResourceRepository {
       const stats = row.stats ?? JSON.stringify(ResourceStats.createEmpty().toDTO());
 
       return Resource.fromPersistenceDTO({
-        id: row.uuid,
-        repositoryId: row.repository_uuid,
-        folderId: row.folder_uuid,
+        id: row.id,
+        repositoryId: row.repository_id,
+        folderId: row.folder_id,
         name: row.name,
         type: row.type,
         path: row.path,
@@ -150,15 +150,15 @@ export class SqliteResourceRepository implements IResourceRepository {
     });
   }
 
-  async findByFolderUuid(folderUuid: string): Promise<Resource[]> {
-    return this.findByFolderId(folderUuid);
+  async findByFolderId(folderId: string): Promise<Resource[]> {
+    return this.findByFolderId(folderId);
   }
 
   async findByIdentityId(identityId: string): Promise<Resource[]> {
     const stmt = this.db.prepare(
       `SELECT r.* FROM resources r
-       JOIN repositories repo ON r.repository_uuid = repo.uuid
-       WHERE repo.accountUuid = ?
+       JOIN repositories repo ON r.repository_id = repo.id
+       WHERE repo.identityId = ?
        ORDER BY r.createdAt DESC`,
     );
     const rows = stmt.all(identityId) as any[];
@@ -168,9 +168,9 @@ export class SqliteResourceRepository implements IResourceRepository {
       const stats = row.stats ?? JSON.stringify(ResourceStats.createEmpty().toDTO());
 
       return Resource.fromPersistenceDTO({
-        id: row.uuid,
-        repositoryId: row.repository_uuid,
-        folderId: row.folder_uuid,
+        id: row.id,
+        repositoryId: row.repository_id,
+        folderId: row.folder_id,
         name: row.name,
         type: row.type,
         path: row.path,
@@ -188,19 +188,19 @@ export class SqliteResourceRepository implements IResourceRepository {
     });
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<Resource[]> {
-    return this.findByIdentityId(accountUuid);
+  async findByAccountId(identityId: string): Promise<Resource[]> {
+    return this.findByIdentityId(identityId);
   }
 
-  async existsByPath(repositoryUuid: string, path: string): Promise<boolean> {
+  async existsByPath(repositoryId: string, path: string): Promise<boolean> {
     const stmt = this.db.prepare(
-      `SELECT 1 FROM resources WHERE repository_uuid = ? AND path = ? LIMIT 1`,
+      `SELECT 1 FROM resources WHERE repository_id = ? AND path = ? LIMIT 1`,
     );
-    return stmt.get(repositoryUuid, path) !== undefined;
+    return stmt.get(repositoryId, path) !== undefined;
   }
 
   async delete(id: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM resources WHERE uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM resources WHERE id = ?`);
     stmt.run(id);
   }
 }

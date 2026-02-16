@@ -29,40 +29,40 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
   async getTaskInstances(params?: {
     page?: number;
     limit?: number;
-    templateUuid?: string;
+    templateId?: string;
     status?: string;
     startDate?: number;
     endDate?: number;
   }): Promise<Result<TaskInstanceClientDTO[]>> {
-    return tryCatch(() => this.ipcClient.invoke('task-instance:list', params));
+    return tryCatch(() => this.ipcClient.invoke('task:instance:list', params));
   }
 
-  async getTaskInstanceById(uuid: string): Promise<Result<TaskInstanceClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke('task-instance:get', { uuid }));
+  async getTaskInstanceById(id: string): Promise<Result<TaskInstanceClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task:instance:get', { id }));
   }
 
-  async deleteTaskInstance(uuid: string): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke('task-instance:delete', { uuid }));
+  async deleteTaskInstance(id: string): Promise<Result<void>> {
+    return tryCatch(() => this.ipcClient.invoke('task:instance:delete', { id }));
   }
 
   // ===== Task Instance 状态管理 =====
 
-  async startTaskInstance(uuid: string): Promise<Result<TaskInstanceClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke('task-instance:start', { uuid }));
+  async startTaskInstance(id: string): Promise<Result<TaskInstanceClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task:instance:start', { id }));
   }
 
   async completeTaskInstance(
-    uuid: string,
+    id: string,
     request?: CompleteTaskInstanceRequest,
   ): Promise<Result<TaskInstanceClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke('task-instance:complete', { uuid, request }));
+    return tryCatch(() => this.ipcClient.invoke('task:instance:complete', { id, request }));
   }
 
   async skipTaskInstance(
-    uuid: string,
+    id: string,
     request?: SkipTaskInstanceRequest,
   ): Promise<Result<TaskInstanceClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke('task-instance:skip', { uuid, request }));
+    return tryCatch(() => this.ipcClient.invoke('task:instance:skip', { id, request }));
   }
 
   // ===== 批量操作 =====
@@ -71,7 +71,7 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
     count: number;
     instances: TaskInstanceClientDTO[];
   }>> {
-    return tryCatch(() => this.ipcClient.invoke('task-instance:check-expired'));
+    return tryCatch(() => this.ipcClient.invoke('task:instance:check-expired'));
   }
 }
 

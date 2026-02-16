@@ -39,8 +39,8 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     page?: number;
     limit?: number;
     status?: string;
-    folderUuid?: string;
-    goalUuid?: string;
+    folderId?: string;
+    goalId?: string;
     importance?: string;
     urgency?: string;
     tags?: string[];
@@ -49,23 +49,23 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
   }
 
   async getTaskTemplateById(
-    uuid: string,
+    id: string,
     includeChildren = false,
   ): Promise<Result<TaskTemplateClientDTO>> {
-    return this.httpClient.get(`${this.baseUrl}/${uuid}`, {
+    return this.httpClient.get(`${this.baseUrl}/${id}`, {
       params: { includeChildren },
     });
   }
 
   async updateTaskTemplate(
-    uuid: string,
+    id: string,
     request: UpdateTaskTemplateRequest,
   ): Promise<Result<TaskTemplateClientDTO>> {
-    return this.httpClient.put(`${this.baseUrl}/${uuid}`, request);
+    return this.httpClient.put(`${this.baseUrl}/${id}`, request);
   }
 
-  async deleteTaskTemplate(uuid: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.baseUrl}/${uuid}`);
+  async deleteTaskTemplate(id: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
   // ===== 方法别名（为了兼容 View 层调用）=====
@@ -74,15 +74,15 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     return this.createTaskTemplate(request);
   }
 
-  async getByUuid(uuid: string): Promise<Result<TaskTemplateClientDTO>> {
-    return this.getTaskTemplateById(uuid);
+  async getById(id: string): Promise<Result<TaskTemplateClientDTO>> {
+    return this.getTaskTemplateById(id);
   }
 
   async update(
-    uuid: string,
+    id: string,
     request: UpdateTaskTemplateRequest,
   ): Promise<Result<TaskTemplateClientDTO>> {
-    return this.updateTaskTemplate(uuid, request);
+    return this.updateTaskTemplate(id, request);
   }
 
   // ===== 特殊查询方法 =====
@@ -95,33 +95,33 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
 
   // ===== Task Template 状态管理 =====
 
-  async activateTaskTemplate(uuid: string): Promise<Result<TaskTemplateClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/activate`);
+  async activateTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/activate`);
   }
 
-  async pauseTaskTemplate(uuid: string): Promise<Result<TaskTemplateClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/pause`);
+  async pauseTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/pause`);
   }
 
-  async archiveTaskTemplate(uuid: string): Promise<Result<TaskTemplateClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/archive`);
+  async archiveTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/archive`);
   }
 
   // ===== 聚合根控制：任务实例管理 =====
 
   async generateInstances(
-    templateUuid: string,
+    templateId: string,
     request: GenerateInstancesRequest,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
-    return this.httpClient.post(`${this.baseUrl}/${templateUuid}/generate-instances`, request);
+    return this.httpClient.post(`${this.baseUrl}/${templateId}/generate-instances`, request);
   }
 
   async getInstancesByDateRange(
-    templateUuid: string,
+    templateId: string,
     from: number,
     to: number,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
-    return this.httpClient.get(`${this.baseUrl}/${templateUuid}/instances`, {
+    return this.httpClient.get(`${this.baseUrl}/${templateId}/instances`, {
       params: { from, to },
     });
   }
@@ -129,14 +129,14 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
   // ===== 聚合根控制：目标关联管理 =====
 
   async bindToGoal(
-    templateUuid: string,
+    templateId: string,
     request: BindToGoalRequest,
   ): Promise<Result<TaskTemplateClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${templateUuid}/bind-goal`, request);
+    return this.httpClient.post(`${this.baseUrl}/${templateId}/bind-goal`, request);
   }
 
-  async unbindFromGoal(templateUuid: string): Promise<Result<TaskTemplateClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${templateUuid}/unbind-goal`);
+  async unbindFromGoal(templateId: string): Promise<Result<TaskTemplateClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${templateId}/unbind-goal`);
   }
 }
 

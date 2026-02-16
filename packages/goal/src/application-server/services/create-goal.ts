@@ -35,10 +35,10 @@ export class CreateGoal {
 
     // 2. 如果有父目标，先查询
     let parentGoal: Goal | undefined;
-    if (input.parentGoalUuid) {
-      const found = await this.goalRepository.findById(input.parentGoalUuid);
+    if (input.parentGoalId) {
+      const found = await this.goalRepository.findById(input.parentGoalId);
       if (!found) {
-        return error('NOT_FOUND', `Parent goal not found: ${input.parentGoalUuid}`);
+        return error('NOT_FOUND', `Parent goal not found: ${input.parentGoalId}`);
       }
       parentGoal = found;
     }
@@ -60,8 +60,8 @@ export class CreateGoal {
         tags: input.tags ?? [],
         startDate: input.startDate ? new Date(input.startDate) : null,
         targetDate: input.targetDate ? new Date(input.targetDate) : null,
-        folderId: input.folderUuid ? (input.folderUuid as any) : null,
-        parentGoalId: input.parentGoalUuid ? (input.parentGoalUuid as any) : null,
+        folderId: input.folderId ? (input.folderId as any) : null,
+        parentGoalId: input.parentGoalId ? (input.parentGoalId as any) : null,
         reminderConfig: null,
       },
       parentGoal,

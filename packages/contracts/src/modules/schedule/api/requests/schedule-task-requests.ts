@@ -83,7 +83,7 @@ export const ScheduleTaskQueryParamsSchema = z.object({
 });
 
 export const BatchScheduleTaskOperationRequestSchema = z.object({
-  taskUuids: z.array(z.string().uuid()).min(1),
+  taskIds: z.array(z.string().uuid()).min(1),
   operation: z.enum(['pause', 'resume', 'cancel', 'enable', 'disable']),
   reason: z.string().max(500).optional(),
 });
@@ -156,7 +156,7 @@ export interface ScheduleTaskQueryParamsDTO {
  * 批量操作请求
  */
 export interface BatchScheduleTaskOperationRequest {
-  readonly taskUuids: readonly string[];
+  readonly taskIds: readonly string[];
   readonly operation: 'pause' | 'resume' | 'cancel' | 'enable' | 'disable';
   readonly reason?: string;
 }
@@ -184,7 +184,7 @@ export interface ScheduleTaskListResponseDTO {
 export interface BatchOperationResponseDTO {
   readonly success: readonly string[];
   readonly failed: readonly {
-    taskUuid: string;
+    taskId: string;
     error: string;
   }[];
   readonly total: number;

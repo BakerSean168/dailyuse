@@ -34,12 +34,12 @@ export const ScheduleElectronModule: IElectronModule = {
 
     ipcMain.handle(Ch.LIST, (_, params) => mod.listScheduleTasksByAccount.execute(params));
     ipcMain.handle(Ch.LIST_BY_DATE_RANGE, (_, params) => mod.listScheduleTasksByStatus.execute(params));
-    ipcMain.handle(Ch.GET, (_, uuid) => mod.getScheduleTask.execute(uuid));
+    ipcMain.handle(Ch.GET, (_, id) => mod.getScheduleTask.execute(id));
     ipcMain.handle(Ch.CREATE, (_, dto) => mod.createScheduleTask.execute(dto));
     ipcMain.handle(Ch.UPDATE, (_, dto) => mod.updateScheduleTask.execute(dto));
-    ipcMain.handle(Ch.DELETE, (_, uuid) => mod.deleteScheduleTask.execute(uuid));
-    ipcMain.handle(Ch.COMPLETE, (_, uuid) => mod.triggerScheduleTask.execute(uuid));
-    ipcMain.handle(Ch.CANCEL, (_, uuid) => mod.pauseScheduleTask.execute(uuid));
+    ipcMain.handle(Ch.DELETE, (_, id) => mod.deleteScheduleTask.execute(id));
+    ipcMain.handle(Ch.COMPLETE, (_, id) => mod.triggerScheduleTask.execute(id));
+    ipcMain.handle(Ch.CANCEL, (_, id) => mod.pauseScheduleTask.execute(id));
     ipcMain.handle(Ch.RESCHEDULE, (_, dto) => mod.resumeScheduleTask.execute(dto));
     // TODO: implement when ScheduleStatisticsApplicationService has methods
     // ipcMain.handle(Ch.STATISTICS_GET, (_, params) => mod.scheduleStatisticsService.getStatistics(params));

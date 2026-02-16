@@ -47,9 +47,9 @@ import {
 // ===================== 接口定义 =====================
 
 interface GoalBinding {
-  goalUuid: string;
+  goalId: string;
   goalTitle: string;
-  keyResultUuid: string;
+  keyResultId: string;
   keyResultTitle: string;
   aggregationMethod: AggregationMethod;
   currentValue: number;

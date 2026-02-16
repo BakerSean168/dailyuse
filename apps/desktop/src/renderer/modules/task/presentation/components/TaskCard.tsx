@@ -35,7 +35,7 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
   const handleActivate = async () => {
     try {
       setIsUpdating(true);
-      await activateTemplate(template.uuid);
+      await activateTemplate(template.id);
       onUpdate();
     } catch (err) {
       console.error('[TaskCard] Failed to activate:', err);
@@ -47,7 +47,7 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
   const handlePause = async () => {
     try {
       setIsUpdating(true);
-      await pauseTemplate(template.uuid);
+      await pauseTemplate(template.id);
       onUpdate();
     } catch (err) {
       console.error('[TaskCard] Failed to pause:', err);
@@ -59,7 +59,7 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
   const handleArchive = async () => {
     try {
       setIsUpdating(true);
-      await archiveTemplate(template.uuid);
+      await archiveTemplate(template.id);
       onUpdate();
     } catch (err) {
       console.error('[TaskCard] Failed to archive:', err);
@@ -286,7 +286,7 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
 
       {/* Detail Dialog */}
       <TaskDetailDialog
-        templateUuid={template.uuid}
+        templateId={template.id}
         open={showDetail}
         onClose={handleDetailClose}
         onUpdated={handleDetailUpdate}

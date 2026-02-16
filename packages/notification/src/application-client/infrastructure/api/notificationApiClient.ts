@@ -40,9 +40,9 @@ export class NotificationApiClient {
   /**
    * 根据 UUID 查询通知
    */
-  async findNotificationByUuid(uuid: string): Promise<NotificationClientDTO> {
+  async findNotificationById(id: string): Promise<NotificationClientDTO> {
     const response = await apiClient.get<NotificationClientDTO>(
-      `${this.baseUrl}/${uuid}`
+      `${this.baseUrl}/${id}`
     );
     return response.data;
   }
@@ -50,9 +50,9 @@ export class NotificationApiClient {
   /**
    * 标记通知为已读
    */
-  async markAsRead(uuid: string): Promise<NotificationClientDTO> {
+  async markAsRead(id: string): Promise<NotificationClientDTO> {
     const response = await apiClient.patch<NotificationClientDTO>(
-      `${this.baseUrl}/${uuid}/read`
+      `${this.baseUrl}/${id}/read`
     );
     return response.data;
   }
@@ -70,9 +70,9 @@ export class NotificationApiClient {
   /**
    * 删除通知
    */
-  async deleteNotification(uuid: string): Promise<{ success: boolean }> {
+  async deleteNotification(id: string): Promise<{ success: boolean }> {
     const response = await apiClient.delete<{ success: boolean }>(
-      `${this.baseUrl}/${uuid}`
+      `${this.baseUrl}/${id}`
     );
     return response.data;
   }
@@ -81,11 +81,11 @@ export class NotificationApiClient {
    * 批量删除通知
    */
   async batchDeleteNotifications(
-    uuids: string[]
+    ids: string[]
   ): Promise<{ success: boolean; count: number }> {
     const response = await apiClient.delete<{ success: boolean; count: number }>(
       this.baseUrl,
-      { data: { uuids } as BatchDeleteNotificationsRequest }
+      { data: { ids } as BatchDeleteNotificationsRequest }
     );
     return response.data;
   }

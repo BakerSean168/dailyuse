@@ -10,8 +10,8 @@ import { ok } from '@dailyuse/contracts/result';
 export class GetTaskInstance {
   constructor(private readonly instanceRepository: ITaskInstanceRepository) {}
 
-  async execute(uuid: string): Promise<Result<TaskInstanceClientDTO | null>> {
-    const instance = await this.instanceRepository.findById(uuid);
+  async execute(id: string): Promise<Result<TaskInstanceClientDTO | null>> {
+    const instance = await this.instanceRepository.findById(id);
     return ok(instance ? instance.toClientDTO() : null);
   }
 }

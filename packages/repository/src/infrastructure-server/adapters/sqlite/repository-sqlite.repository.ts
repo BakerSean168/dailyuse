@@ -18,10 +18,10 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO repositories (
-        uuid, accountUuid, name, description, type, status, config,
+        id, identityId, name, description, type, status, config,
         createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         description = excluded.description,
         type = excluded.type,
@@ -45,7 +45,7 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
 
   async findById(id: string): Promise<Repository | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM repositories WHERE uuid = ? LIMIT 1`,
+      `SELECT * FROM repositories WHERE id = ? LIMIT 1`,
     );
     const row = stmt.get(id) as any;
 
@@ -55,8 +55,8 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     const stats = row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO());
 
     return Repository.fromPersistenceDTO({
-      id: row.uuid,
-      identityId: row.accountUuid,
+      id: row.id,
+      identityId: row.identityId,
       name: row.name,
       description: row.description,
       type: row.type,
@@ -71,20 +71,20 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     });
   }
 
-  async findByUuid(uuid: string): Promise<Repository | null> {
-    return this.findById(uuid);
+  async findById(id: string): Promise<Repository | null> {
+    return this.findById(id);
   }
 
   async findByIdentityId(identityId: string): Promise<Repository[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM repositories WHERE accountUuid = ? ORDER BY createdAt DESC`,
+      `SELECT * FROM repositories WHERE identityId = ? ORDER BY createdAt DESC`,
     );
     const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) =>
       Repository.fromPersistenceDTO({
-        id: row.uuid,
-        identityId: row.accountUuid,
+        id: row.id,
+        identityId: row.identityId,
         name: row.name,
         description: row.description,
         type: row.type,
@@ -100,8 +100,8 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     );
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<Repository[]> {
-    return this.findByIdentityId(accountUuid);
+  async findByAccountId(identityId: string): Promise<Repository[]> {
+    return this.findByIdentityId(identityId);
   }
 
   async findByIdentityIdAndStatus(
@@ -109,14 +109,14 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     status: RepositoryStatus,
   ): Promise<Repository[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM repositories WHERE accountUuid = ? AND status = ? ORDER BY createdAt DESC`,
+      `SELECT * FROM repositories WHERE identityId = ? AND status = ? ORDER BY createdAt DESC`,
     );
     const rows = stmt.all(identityId, status) as any[];
 
     return rows.map((row) =>
       Repository.fromPersistenceDTO({
-        id: row.uuid,
-        identityId: row.accountUuid,
+        id: row.id,
+        identityId: row.identityId,
         name: row.name,
         description: row.description,
         type: row.type,
@@ -132,23 +132,23 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     );
   }
 
-  async findByAccountUuidAndStatus(
-    accountUuid: string,
+  async findByIdentityIdAndStatus(
+    identityId: string,
     status: RepositoryStatus,
   ): Promise<Repository[]> {
-    return this.findByIdentityIdAndStatus(accountUuid, status);
+    return this.findByIdentityIdAndStatus(identityId, status);
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM repositories WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM repositories WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async exists(uuid: string): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     const stmt = this.db.prepare(
-      `SELECT 1 FROM repositories WHERE uuid = ? LIMIT 1`,
+      `SELECT 1 FROM repositories WHERE id = ? LIMIT 1`,
     );
-    return stmt.get(uuid) !== undefined;
+    return stmt.get(id) !== undefined;
   }
 }
 

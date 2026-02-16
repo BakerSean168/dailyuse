@@ -32,9 +32,9 @@ interface UseAIReturn extends AIState {
   // Conversation management
   loadConversations: () => Promise<void>;
   createConversation: (title?: string) => Promise<AIConversation>;
-  selectConversation: (uuid: string) => Promise<void>;
-  closeConversation: (uuid: string) => Promise<void>;
-  deleteConversation: (uuid: string) => Promise<void>;
+  selectConversation: (id: string) => Promise<void>;
+  closeConversation: (id: string) => Promise<void>;
+  deleteConversation: (id: string) => Promise<void>;
 
   // Messages
   sendMessage: (content: string) => Promise<void>;
@@ -106,12 +106,12 @@ export function useAI(): UseAIReturn {
   }, []);
 
   // Select and load a conversation
-  const selectConversation = useCallback(async (uuid: string) => {
+  const selectConversation = useCallback(async (id: string) => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const conversation = await aiApplicationService.getConversation(uuid);
-      const messagesResponse = await aiApplicationService.listMessages(uuid, { pageSize: 100 });
+      const conversation = await aiApplicationService.getConversation(id);
+      const messagesResponse = await aiApplicationService.listMessages(id, { pageSize: 100 });
 
       // Convert to ChatMessage format
       const chatMessages: ChatMessage[] = (messagesResponse.messages || []).map(
@@ -123,7 +123,7 @@ export function useAI(): UseAIReturn {
           else if (msg.isSystemMessage()) role = 'system';
 
           return {
-            id: msg.uuid,
+            id: msg.id,
             role,
             content: msg.content,
             timestamp: msg.createdAt,
@@ -149,14 +149,14 @@ export function useAI(): UseAIReturn {
   }, []);
 
   // Close conversation
-  const closeConversation = useCallback(async (uuid: string) => {
+  const closeConversation = useCallback(async (id: string) => {
     try {
-      const closedConversation = await aiApplicationService.closeConversation(uuid);
+      const closedConversation = await aiApplicationService.closeConversation(id);
       setState((prev) => ({
         ...prev,
-        conversations: prev.conversations.map((c) => (c.uuid === uuid ? closedConversation : c)),
+        conversations: prev.conversations.map((c) => (c.id === id ? closedConversation : c)),
         currentConversation:
-          prev.currentConversation?.uuid === uuid ? closedConversation : prev.currentConversation,
+          prev.currentConversation?.id === id ? closedConversation : prev.currentConversation,
       }));
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '关闭对话失败';
@@ -168,15 +168,15 @@ export function useAI(): UseAIReturn {
   }, []);
 
   // Delete conversation
-  const deleteConversation = useCallback(async (uuid: string) => {
+  const deleteConversation = useCallback(async (id: string) => {
     try {
-      await aiApplicationService.deleteConversation(uuid);
+      await aiApplicationService.deleteConversation(id);
       setState((prev) => ({
         ...prev,
-        conversations: prev.conversations.filter((c) => c.uuid !== uuid),
+        conversations: prev.conversations.filter((c) => c.id !== id),
         currentConversation:
-          prev.currentConversation?.uuid === uuid ? null : prev.currentConversation,
-        messages: prev.currentConversation?.uuid === uuid ? [] : prev.messages,
+          prev.currentConversation?.id === id ? null : prev.currentConversation,
+        messages: prev.currentConversation?.id === id ? [] : prev.messages,
       }));
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '删除对话失败';
@@ -222,12 +222,12 @@ export function useAI(): UseAIReturn {
 
       try {
         // Check if we have a current conversation, if not create one
-        let conversationUuid = state.currentConversation?.uuid;
-        if (!conversationUuid) {
+        let conversationId = state.currentConversation?.id;
+        if (!conversationId) {
           const newConversation = await aiApplicationService.createConversation({
             title: content.slice(0, 50),
           });
-          conversationUuid = newConversation.uuid;
+          conversationId = newConversation.id;
           setState((prev) => ({
             ...prev,
             currentConversation: newConversation,
@@ -238,7 +238,7 @@ export function useAI(): UseAIReturn {
         // Try streaming first, fall back to regular send
         try {
           const stream = aiApplicationService.streamChat({
-            conversationUuid,
+            conversationId,
             message: content.trim(),
           });
 
@@ -266,7 +266,7 @@ export function useAI(): UseAIReturn {
         } catch {
           // Fallback to non-streaming
           const response = await aiApplicationService.sendMessage({
-            conversationUuid,
+            conversationId,
             content: content.trim(),
           });
 
@@ -277,7 +277,7 @@ export function useAI(): UseAIReturn {
               msg.id === assistantMessage.id
                 ? {
                     ...msg,
-                    id: response.uuid,
+                    id: response.id,
                     content: response.content,
                     isStreaming: false,
                   }
@@ -295,7 +295,7 @@ export function useAI(): UseAIReturn {
         }));
       }
     },
-    [state.currentConversation?.uuid],
+    [state.currentConversation?.id],
   );
 
   // Clear messages (new conversation)

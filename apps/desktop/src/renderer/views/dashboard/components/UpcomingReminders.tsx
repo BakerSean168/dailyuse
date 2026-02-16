@@ -93,7 +93,7 @@ export function UpcomingReminders({
         <div className="space-y-2">
           {displayReminders.map((reminder) => (
             <div
-              key={reminder.uuid}
+              key={reminder.id}
               className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer transition-colors"
               onClick={() => onReminderClick?.(reminder)}
             >

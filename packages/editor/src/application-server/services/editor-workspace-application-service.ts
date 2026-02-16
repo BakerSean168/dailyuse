@@ -51,7 +51,7 @@ export class EditorWorkspaceApplicationService {
    * 创建工作区
    */
   async createWorkspace(params: {
-    accountUuid: string;
+    identityId: string;
     name: string;
     description?: string;
     projectPath: string;
@@ -61,7 +61,7 @@ export class EditorWorkspaceApplicationService {
   }): Promise<EditorWorkspaceServerDTO> {
     // 委托给领域服务处理业务逻辑
     const workspace = EditorWorkspace.create({
-      identityId: params.accountUuid,
+      identityId: params.identityId,
       name: params.name,
       description: params.description,
       projectPath: params.projectPath,
@@ -79,11 +79,11 @@ export class EditorWorkspaceApplicationService {
    * 获取工作区详情
    */
   async getWorkspace(
-    uuid: string,
+    id: string,
     options?: { includeSessions?: boolean },
   ): Promise<EditorWorkspaceServerDTO | null> {
     // 委托给领域服务处理
-    const workspace = await this.workspaceRepository.findById(uuid);
+    const workspace = await this.workspaceRepository.findById(id);
     return workspace ? workspace.toClientDTO() : null;
   }
 
@@ -91,11 +91,11 @@ export class EditorWorkspaceApplicationService {
    * 获取账户的所有工作区
    */
   async getWorkspacesByAccount(
-    accountUuid: string,
+    identityId: string,
     options?: { includeSessions?: boolean },
   ): Promise<EditorWorkspaceServerDTO[]> {
     // 委托给领域服务处理
-    const workspaces = await this.workspaceRepository.findByIdentityId(accountUuid);
+    const workspaces = await this.workspaceRepository.findByIdentityId(identityId);
     return workspaces.map((workspace) => workspace.toClientDTO());
   }
 
@@ -103,15 +103,15 @@ export class EditorWorkspaceApplicationService {
    * 更新工作区
    */
   async updateWorkspace(params: {
-    uuid: string;
+    id: string;
     name?: string;
     description?: string;
     isActive?: boolean;
   }): Promise<EditorWorkspaceServerDTO> {
     // 委托给领域服务处理
-    const workspace = await this.workspaceRepository.findById(params.uuid);
+    const workspace = await this.workspaceRepository.findById(params.id);
     if (!workspace) {
-      throw new Error(`Workspace not found: ${params.uuid}`);
+      throw new Error(`Workspace not found: ${params.id}`);
     }
 
     if (params.name !== undefined) {
@@ -136,14 +136,14 @@ export class EditorWorkspaceApplicationService {
   /**
    * 删除工作区
    */
-  async deleteWorkspace(uuid: string): Promise<boolean> {
+  async deleteWorkspace(id: string): Promise<boolean> {
     // 委托给领域服务处理
-    const workspace = await this.workspaceRepository.findById(uuid);
+    const workspace = await this.workspaceRepository.findById(id);
     if (!workspace) {
       return false;
     }
 
-    await this.workspaceRepository.delete(uuid);
+    await this.workspaceRepository.delete(id);
     return true;
   }
 
@@ -153,13 +153,13 @@ export class EditorWorkspaceApplicationService {
    * 添加会话到工作区
    */
   async addSession(params: {
-    workspaceUuid: string;
+    workspaceId: string;
     name: string;
     layout?: Partial<SessionLayoutServerDTO>;
   }): Promise<EditorSessionServerDTO> {
-    const workspace = await this.workspaceRepository.findById(params.workspaceUuid);
+    const workspace = await this.workspaceRepository.findById(params.workspaceId);
     if (!workspace) {
-      throw new Error(`Workspace not found: ${params.workspaceUuid}`);
+      throw new Error(`Workspace not found: ${params.workspaceId}`);
     }
 
     const session = EditorSession.create({
@@ -177,8 +177,8 @@ export class EditorWorkspaceApplicationService {
   /**
    * 获取工作区的所有会话
    */
-  async getSessions(workspaceUuid: string): Promise<EditorSessionServerDTO[]> {
-    const sessions = await this.sessionRepository.findByWorkspaceId(workspaceUuid);
+  async getSessions(workspaceId: string): Promise<EditorSessionServerDTO[]> {
+    const sessions = await this.sessionRepository.findByWorkspaceId(workspaceId);
     const restored = await Promise.all(
       sessions.map((session) => this.loadSessionWithGroups(String(session.id))),
     );
@@ -189,15 +189,15 @@ export class EditorWorkspaceApplicationService {
    * 更新会话
    */
   async updateSession(params: {
-    workspaceUuid: string;
-    sessionUuid: string;
+    workspaceId: string;
+    sessionId: string;
     name?: string;
     layout?: Partial<SessionLayoutServerDTO>;
     isActive?: boolean;
   }): Promise<EditorSessionServerDTO> {
-    const session = await this.loadSessionWithGroups(params.sessionUuid);
+    const session = await this.loadSessionWithGroups(params.sessionId);
     if (!session) {
-      throw new Error(`Session not found: ${params.sessionUuid}`);
+      throw new Error(`Session not found: ${params.sessionId}`);
     }
 
     if (params.name !== undefined) {
@@ -222,18 +222,18 @@ export class EditorWorkspaceApplicationService {
   /**
    * 删除会话
    */
-  async removeSession(workspaceUuid: string, sessionUuid: string): Promise<boolean> {
-    const session = await this.sessionRepository.findById(sessionUuid);
+  async removeSession(workspaceId: string, sessionId: string): Promise<boolean> {
+    const session = await this.sessionRepository.findById(sessionId);
     if (!session) {
       return false;
     }
 
-    const groups = await this.groupRepository.findBySessionId(sessionUuid);
+    const groups = await this.groupRepository.findBySessionId(sessionId);
     for (const group of groups) {
       await this.tabRepository.deleteByGroupId(String(group.id));
     }
-    await this.groupRepository.deleteBySessionId(sessionUuid);
-    await this.sessionRepository.delete(sessionUuid);
+    await this.groupRepository.deleteBySessionId(sessionId);
+    await this.sessionRepository.delete(sessionId);
     return true;
   }
 
@@ -243,14 +243,14 @@ export class EditorWorkspaceApplicationService {
    * 添加组到会话
    */
   async addGroup(params: {
-    workspaceUuid: string;
-    sessionUuid: string;
+    workspaceId: string;
+    sessionId: string;
     groupIndex: number;
     name?: string;
   }): Promise<EditorGroupServerDTO> {
-    const session = await this.loadSessionWithGroups(params.sessionUuid);
+    const session = await this.loadSessionWithGroups(params.sessionId);
     if (!session) {
-      throw new Error(`Session not found: ${params.sessionUuid}`);
+      throw new Error(`Session not found: ${params.sessionId}`);
     }
 
     const group = session.addGroup({
@@ -267,16 +267,16 @@ export class EditorWorkspaceApplicationService {
    * 更新组
    */
   async updateGroup(params: {
-    workspaceUuid: string;
-    sessionUuid: string;
-    groupUuid: string;
+    workspaceId: string;
+    sessionId: string;
+    groupId: string;
     groupIndex?: number;
     name?: string;
     splitDirection?: SplitDirection;
   }): Promise<EditorGroupServerDTO> {
-    const group = await this.groupRepository.findById(params.groupUuid);
+    const group = await this.groupRepository.findById(params.groupId);
     if (!group) {
-      throw new Error(`Group not found: ${params.groupUuid}`);
+      throw new Error(`Group not found: ${params.groupId}`);
     }
 
     if (params.groupIndex !== undefined) {
@@ -295,16 +295,16 @@ export class EditorWorkspaceApplicationService {
    * 删除组
    */
   async removeGroup(
-    workspaceUuid: string,
-    sessionUuid: string,
-    groupUuid: string,
+    workspaceId: string,
+    sessionId: string,
+    groupId: string,
   ): Promise<boolean> {
-    const session = await this.loadSessionWithGroups(sessionUuid);
+    const session = await this.loadSessionWithGroups(sessionId);
     if (!session) {
-      throw new Error(`Session not found: ${sessionUuid}`);
+      throw new Error(`Session not found: ${sessionId}`);
     }
 
-    session.removeGroup(groupUuid);
+    session.removeGroup(groupId);
     await this.persistSessionState(session);
     return true;
   }
@@ -315,23 +315,23 @@ export class EditorWorkspaceApplicationService {
    * 添加标签到组
    */
   async addTab(params: {
-    workspaceUuid: string;
-    sessionUuid: string;
-    groupUuid: string;
-    documentUuid?: string;
+    workspaceId: string;
+    sessionId: string;
+    groupId: string;
+    documentId?: string;
     tabIndex: number;
     tabType: TabType;
     title: string;
     viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
   }): Promise<EditorTabServerDTO> {
-    const session = await this.loadSessionWithGroups(params.sessionUuid);
+    const session = await this.loadSessionWithGroups(params.sessionId);
     if (!session) {
-      throw new Error(`Session not found: ${params.sessionUuid}`);
+      throw new Error(`Session not found: ${params.sessionId}`);
     }
 
-    const tab = session.openTab(params.documentUuid ?? '', {
-      groupId: params.groupUuid,
+    const tab = session.openTab(params.documentId ?? '', {
+      groupId: params.groupId,
       tabType: params.tabType,
       viewState: params.viewState,
       name: params.title,
@@ -347,18 +347,18 @@ export class EditorWorkspaceApplicationService {
    * 更新标签
    */
   async updateTab(params: {
-    workspaceUuid: string;
-    sessionUuid: string;
-    groupUuid: string;
-    tabUuid: string;
+    workspaceId: string;
+    sessionId: string;
+    groupId: string;
+    tabId: string;
     tabIndex?: number;
     title?: string;
     viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
   }): Promise<EditorTabServerDTO> {
-    const tab = await this.tabRepository.findById(params.tabUuid);
+    const tab = await this.tabRepository.findById(params.tabId);
     if (!tab) {
-      throw new Error(`Tab not found: ${params.tabUuid}`);
+      throw new Error(`Tab not found: ${params.tabId}`);
     }
 
     if (params.tabIndex !== undefined) {
@@ -383,17 +383,17 @@ export class EditorWorkspaceApplicationService {
    * 删除标签
    */
   async removeTab(
-    workspaceUuid: string,
-    sessionUuid: string,
-    groupUuid: string,
-    tabUuid: string,
+    workspaceId: string,
+    sessionId: string,
+    groupId: string,
+    tabId: string,
   ): Promise<boolean> {
-    const session = await this.loadSessionWithGroups(sessionUuid);
+    const session = await this.loadSessionWithGroups(sessionId);
     if (!session) {
-      throw new Error(`Session not found: ${sessionUuid}`);
+      throw new Error(`Session not found: ${sessionId}`);
     }
 
-    session.closeTab(tabUuid);
+    session.closeTab(tabId);
     await this.persistSessionState(session);
     return true;
   }
@@ -403,10 +403,10 @@ export class EditorWorkspaceApplicationService {
   /**
    * 激活会话
    */
-  async activateSession(workspaceUuid: string, sessionUuid: string): Promise<void> {
-    const session = await this.loadSessionWithGroups(sessionUuid);
+  async activateSession(workspaceId: string, sessionId: string): Promise<void> {
+    const session = await this.loadSessionWithGroups(sessionId);
     if (!session) {
-      throw new Error(`Session not found: ${sessionUuid}`);
+      throw new Error(`Session not found: ${sessionId}`);
     }
 
     session.activate();
@@ -416,10 +416,10 @@ export class EditorWorkspaceApplicationService {
   /**
    * 停用会话
    */
-  async deactivateSession(workspaceUuid: string, sessionUuid: string): Promise<void> {
-    const session = await this.loadSessionWithGroups(sessionUuid);
+  async deactivateSession(workspaceId: string, sessionId: string): Promise<void> {
+    const session = await this.loadSessionWithGroups(sessionId);
     if (!session) {
-      throw new Error(`Session not found: ${sessionUuid}`);
+      throw new Error(`Session not found: ${sessionId}`);
     }
 
     session.deactivate();
@@ -430,17 +430,17 @@ export class EditorWorkspaceApplicationService {
    * 激活标签
    */
   async activateTab(
-    workspaceUuid: string,
-    sessionUuid: string,
-    groupUuid: string,
-    tabUuid: string,
+    workspaceId: string,
+    sessionId: string,
+    groupId: string,
+    tabId: string,
   ): Promise<void> {
-    const session = await this.loadSessionWithGroups(sessionUuid);
+    const session = await this.loadSessionWithGroups(sessionId);
     if (!session) {
-      throw new Error(`Session not found: ${sessionUuid}`);
+      throw new Error(`Session not found: ${sessionId}`);
     }
 
-    session.setActiveTab(tabUuid);
+    session.setActiveTab(tabId);
     await this.persistSessionState(session);
   }
 
@@ -448,17 +448,17 @@ export class EditorWorkspaceApplicationService {
    * 停用标签
    */
   async deactivateTab(
-    workspaceUuid: string,
-    sessionUuid: string,
-    groupUuid: string,
-    tabUuid: string,
+    workspaceId: string,
+    sessionId: string,
+    groupId: string,
+    tabId: string,
   ): Promise<void> {
-    const session = await this.loadSessionWithGroups(sessionUuid);
+    const session = await this.loadSessionWithGroups(sessionId);
     if (!session) {
-      throw new Error(`Session not found: ${sessionUuid}`);
+      throw new Error(`Session not found: ${sessionId}`);
     }
 
-    session.setActiveTab(tabUuid);
+    session.setActiveTab(tabId);
     await this.persistSessionState(session);
   }
 

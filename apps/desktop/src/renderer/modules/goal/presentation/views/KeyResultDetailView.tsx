@@ -48,15 +48,15 @@ import type { AddKeyResultRequest, UpdateKeyResultRequest } from '@dailyuse/cont
 import { useKeyResult } from '../hooks';
 
 interface KeyResultDetailViewProps {
-  goalUuid: string;
-  keyResultUuid: string;
+  goalId: string;
+  keyResultId: string;
   onBack?: () => void;
   onGoalUpdated?: () => void;
 }
 
 export function KeyResultDetailView({
-  goalUuid,
-  keyResultUuid,
+  goalId,
+  keyResultId,
   onBack,
   onGoalUpdated,
 }: KeyResultDetailViewProps) {
@@ -87,14 +87,14 @@ export function KeyResultDetailView({
       setLoading(true);
       setError(null);
 
-      const goalData = await goalApplicationService.getGoal(goalUuid);
+      const goalData = await goalApplicationService.getGoal(goalId);
       if (!goalData) {
         setError('目标不存');
         return;
       }
       setGoal(goalData);
 
-      const krData = goalData.keyResults?.find((kr) => kr.uuid === keyResultUuid);
+      const krData = goalData.keyResults?.find((kr) => kr.id === keyResultId);
       if (krData) {
         setKeyResult(krData);
       } else {
@@ -106,7 +106,7 @@ export function KeyResultDetailView({
     } finally {
       setLoading(false);
     }
-  }, [goalUuid, keyResultUuid]);
+  }, [goalId, keyResultId]);
 
   useEffect(() => {
     loadData();
@@ -117,7 +117,7 @@ export function KeyResultDetailView({
     if (!goal || !keyResult) return;
 
     // 这里只处理更新场�?
-    await updateKeyResult(goal.uuid, keyResult.uuid, data as UpdateKeyResultRequest);
+    await updateKeyResult(goal.id, keyResult.id, data as UpdateKeyResultRequest);
 
     await loadData();
     onGoalUpdated?.();
@@ -127,17 +127,17 @@ export function KeyResultDetailView({
   const handleSaveRecord = async (data: { value: number; note?: string }) => {
     if (!goal || !keyResult) return;
 
-    await createRecord(goal.uuid, keyResult.uuid, data);
+    await createRecord(goal.id, keyResult.id, data);
     await loadData();
     onGoalUpdated?.();
     setShowRecordDialog(false);
   };
 
-  const handleDeleteRecord = async (recordUuid: string) => {
+  const handleDeleteRecord = async (recordId: string) => {
     if (!goal || !keyResult || !confirm('确定要删除这条记录吗')) return;
 
     try {
-      await deleteRecord(goal.uuid, keyResult.uuid, recordUuid);
+      await deleteRecord(goal.id, keyResult.id, recordId);
       await loadData();
       onGoalUpdated?.();
     } catch (err) {
@@ -151,7 +151,7 @@ export function KeyResultDetailView({
     }
 
     try {
-      await deleteKeyResult(goal.uuid, keyResult.uuid);
+      await deleteKeyResult(goal.id, keyResult.id);
       onGoalUpdated?.();
       onBack?.();
     } catch (err) {
@@ -335,7 +335,7 @@ export function KeyResultDetailView({
               {records.length > 0 ? (
                 records.map((record) => (
                   <GoalRecordCard
-                    key={record.uuid}
+                    key={record.id}
                     record={record}
                     goalColor={goalColor}
                     onDelete={handleDeleteRecord}
@@ -394,7 +394,7 @@ export function KeyResultDetailView({
       {/* Dialogs */}
       <KeyResultDialog
         open={showEditDialog}
-        goalUuid={goal.uuid}
+        goalId={goal.id}
         goal={goal}
         keyResult={keyResult}
         onClose={() => setShowEditDialog(false)}
@@ -403,8 +403,8 @@ export function KeyResultDetailView({
 
       <GoalRecordDialog
         open={showRecordDialog}
-        goalUuid={goal.uuid}
-        keyResultUuid={keyResult.uuid}
+        goalId={goal.id}
+        keyResultId={keyResult.id}
         keyResult={keyResult}
         goalColor={goalColor}
         onClose={() => setShowRecordDialog(false)}

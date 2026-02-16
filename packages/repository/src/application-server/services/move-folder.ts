@@ -16,8 +16,8 @@ import type { IStoragePort } from '../ports/IStoragePort';
  * Move Folder Input
  */
 export interface MoveFolderInput {
-  uuid: string;
-  newParentUuid: string | null;
+  id: string;
+  newParentId: string | null;
 }
 
 /**
@@ -57,9 +57,9 @@ export class MoveFolder {
   }
 
   async execute(input: MoveFolderInput): Promise<MoveFolderOutput> {
-    const folder = await this.folderRepository.findById(input.uuid);
+    const folder = await this.folderRepository.findById(input.id);
     if (!folder) {
-      throw new Error(`Folder not found: ${input.uuid}`);
+      throw new Error(`Folder not found: ${input.id}`);
     }
 
     const repository = await this.repositoryRepository.findById(folder.repositoryId);
@@ -67,10 +67,10 @@ export class MoveFolder {
       throw new Error(`Repository not found: ${folder.repositoryId}`);
     }
 
-    if (input.newParentUuid) {
+    if (input.newParentId) {
       const hasCycle = await this.hierarchyService.detectCycle(
         String(folder.id),
-        input.newParentUuid,
+        input.newParentId,
         this.folderRepository,
       );
       if (hasCycle) {
@@ -79,10 +79,10 @@ export class MoveFolder {
     }
 
     let newParentPath: string | null = null;
-    if (input.newParentUuid) {
-      const newParent = await this.folderRepository.findById(input.newParentUuid);
+    if (input.newParentId) {
+      const newParent = await this.folderRepository.findById(input.newParentId);
       if (!newParent) {
-        throw new Error(`New parent folder not found: ${input.newParentUuid}`);
+        throw new Error(`New parent folder not found: ${input.newParentId}`);
       }
       if (newParent.repositoryId !== folder.repositoryId) {
         throw new Error('New parent folder does not belong to the same repository');
@@ -91,7 +91,7 @@ export class MoveFolder {
     }
 
     const previousPath = folder.path;
-    folder.moveTo(input.newParentUuid, newParentPath ?? undefined);
+    folder.moveTo(input.newParentId, newParentPath ?? undefined);
 
     await this.storagePort.move({
       repositoryId: String(repository.id),

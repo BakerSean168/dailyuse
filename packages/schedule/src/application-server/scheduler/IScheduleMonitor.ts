@@ -28,7 +28,7 @@ export interface ScheduleExecutionStats {
  * 执行记录
  */
 export interface ScheduleExecutionRecord {
-  taskUuid: string;
+  taskId: string;
   taskName: string;
   startedAt: Date;
   completedAt?: Date;
@@ -46,34 +46,34 @@ export interface ScheduleExecutionRecord {
 export interface IScheduleMonitor {
   /**
    * 记录任务执行开始
-   * @param taskUuid 任务 UUID
+   * @param taskId 任务 ID
    * @param taskName 任务名称
    */
-  recordExecutionStart(taskUuid: string, taskName: string): void;
+  recordExecutionStart(taskId: string, taskName: string): void;
 
   /**
    * 记录任务执行成功
-   * @param taskUuid 任务 UUID
+   * @param taskId 任务 ID
    * @param taskName 任务名称
    * @param duration 执行时长（毫秒）
    */
-  recordExecutionSuccess(taskUuid: string, taskName: string, duration?: number): void;
+  recordExecutionSuccess(taskId: string, taskName: string, duration?: number): void;
 
   /**
    * 记录任务执行失败
-   * @param taskUuid 任务 UUID
+   * @param taskId 任务 ID
    * @param taskName 任务名称
    * @param error 错误信息
    */
-  recordExecutionFailure(taskUuid: string, taskName: string, error: Error): void;
+  recordExecutionFailure(taskId: string, taskName: string, error: Error): void;
 
   /**
    * 记录任务执行跳过
-   * @param taskUuid 任务 UUID
+   * @param taskId 任务 ID
    * @param taskName 任务名称
    * @param reason 跳过原因
    */
-  recordExecutionSkipped(taskUuid: string, taskName: string, reason: string): void;
+  recordExecutionSkipped(taskId: string, taskName: string, reason: string): void;
 
   /**
    * 获取执行统计
@@ -150,18 +150,18 @@ export class InMemoryScheduleMonitor implements IScheduleMonitor {
     this.maxRecords = maxRecords;
   }
 
-  recordExecutionStart(taskUuid: string, taskName: string): void {
+  recordExecutionStart(taskId: string, taskName: string): void {
     const record: ScheduleExecutionRecord = {
-      taskUuid,
+      taskId,
       taskName,
       startedAt: new Date(),
       status: 'started',
     };
-    this.pendingExecutions.set(taskUuid, record);
+    this.pendingExecutions.set(taskId, record);
   }
 
-  recordExecutionSuccess(taskUuid: string, taskName: string, duration?: number): void {
-    const pending = this.pendingExecutions.get(taskUuid);
+  recordExecutionSuccess(taskId: string, taskName: string, duration?: number): void {
+    const pending = this.pendingExecutions.get(taskId);
     const now = new Date();
 
     const record: ScheduleExecutionRecord = pending
@@ -172,7 +172,7 @@ export class InMemoryScheduleMonitor implements IScheduleMonitor {
           status: 'success',
         }
       : {
-          taskUuid,
+          taskId,
           taskName,
           startedAt: now,
           completedAt: now,
@@ -181,7 +181,7 @@ export class InMemoryScheduleMonitor implements IScheduleMonitor {
         };
 
     this.addRecord(record);
-    this.pendingExecutions.delete(taskUuid);
+    this.pendingExecutions.delete(taskId);
 
     this.stats.totalExecutions++;
     this.stats.successfulExecutions++;
@@ -194,8 +194,8 @@ export class InMemoryScheduleMonitor implements IScheduleMonitor {
     }
   }
 
-  recordExecutionFailure(taskUuid: string, taskName: string, error: Error): void {
-    const pending = this.pendingExecutions.get(taskUuid);
+  recordExecutionFailure(taskId: string, taskName: string, error: Error): void {
+    const pending = this.pendingExecutions.get(taskId);
     const now = new Date();
 
     const record: ScheduleExecutionRecord = pending
@@ -207,7 +207,7 @@ export class InMemoryScheduleMonitor implements IScheduleMonitor {
           error,
         }
       : {
-          taskUuid,
+          taskId,
           taskName,
           startedAt: now,
           completedAt: now,
@@ -216,18 +216,18 @@ export class InMemoryScheduleMonitor implements IScheduleMonitor {
         };
 
     this.addRecord(record);
-    this.pendingExecutions.delete(taskUuid);
+    this.pendingExecutions.delete(taskId);
 
     this.stats.totalExecutions++;
     this.stats.failedExecutions++;
     this.stats.lastExecutionAt = now;
   }
 
-  recordExecutionSkipped(taskUuid: string, taskName: string, reason: string): void {
+  recordExecutionSkipped(taskId: string, taskName: string, reason: string): void {
     const now = new Date();
 
     const record: ScheduleExecutionRecord = {
-      taskUuid,
+      taskId,
       taskName,
       startedAt: now,
       status: 'skipped',

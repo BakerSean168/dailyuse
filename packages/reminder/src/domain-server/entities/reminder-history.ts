@@ -18,7 +18,7 @@ import { ReminderHistoryId } from '../../domain-shared/value-objects/reminder-hi
  */
 interface ReminderHistoryState {
   id: ReminderHistoryId;
-  templateUuid: string;
+  templateId: string;
   triggeredAt: Date;
   result: TriggerResult;
   error: string | null;
@@ -41,8 +41,8 @@ export class ReminderHistory extends Entity<ReminderHistoryId> implements Remind
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
-    uuid?: string;
-    templateUuid: string;
+    id?: string;
+    templateId: string;
     triggeredAt: number;
     result: TriggerResult;
     error?: string | null;
@@ -50,11 +50,11 @@ export class ReminderHistory extends Entity<ReminderHistoryId> implements Remind
     notificationChannels?: NotificationChannel[] | null;
     createdAt: number;
   }) {
-    const id = params.uuid ? ReminderHistoryId.of(params.uuid) : ReminderHistoryId.generate();
+    const id = params.id ? ReminderHistoryId.of(params.id) : ReminderHistoryId.generate();
     super(id);
     this._props = {
       id,
-      templateUuid: params.templateUuid,
+      templateId: params.templateId,
       triggeredAt: new Date(params.triggeredAt),
       result: params.result,
       error: params.error ?? null,
@@ -67,12 +67,10 @@ export class ReminderHistory extends Entity<ReminderHistoryId> implements Remind
   }
 
   // ===== Getter 属性 =====
-  public get uuid(): string {
-    return this.id;
-  }
 
-  public get templateUuid(): string {
-    return this._props.templateUuid;
+
+  public get templateId(): string {
+    return this._props.templateId;
   }
 
   public get triggeredAt(): number {
@@ -101,7 +99,7 @@ export class ReminderHistory extends Entity<ReminderHistoryId> implements Remind
 
   // ===== 工厂方法 =====
   public static create(params: {
-    templateUuid: string;
+    templateId: string;
     triggeredAt?: number;
     result: TriggerResult;
     error?: string | null;
@@ -110,7 +108,7 @@ export class ReminderHistory extends Entity<ReminderHistoryId> implements Remind
   }): ReminderHistory {
     const now = Date.now();
     return new ReminderHistory({
-      templateUuid: params.templateUuid,
+      templateId: params.templateId,
       triggeredAt: params.triggeredAt ?? now,
       result: params.result,
       error: params.error ?? null,
@@ -122,8 +120,8 @@ export class ReminderHistory extends Entity<ReminderHistoryId> implements Remind
 
   public static fromServerDTO(dto: ReminderHistoryServerDTO): ReminderHistory {
     return new ReminderHistory({
-      uuid: dto.uuid,
-      templateUuid: dto.templateUuid,
+      id: dto.id,
+      templateId: dto.templateId,
       triggeredAt: dto.triggeredAt,
       result: dto.result,
       error: dto.error ?? null,
@@ -141,8 +139,8 @@ export class ReminderHistory extends Entity<ReminderHistoryId> implements Remind
       : null;
 
     return new ReminderHistory({
-      uuid: dto.uuid,
-      templateUuid: dto.templateUuid,
+      id: dto.id,
+      templateId: dto.templateId,
       triggeredAt: dto.triggeredAt,
       result: dto.result,
       error: dto.error ?? null,
@@ -193,8 +191,8 @@ export class ReminderHistory extends Entity<ReminderHistoryId> implements Remind
   // ===== 序列化方法 =====
   public toServerDTO(): ReminderHistoryServerDTO {
     return {
-      uuid: this.id,
-      templateUuid: this._props.templateUuid,
+      id: this.id,
+      templateId: this._props.templateId,
       triggeredAt: this._props.triggeredAt.getTime(),
       result: this._props.result,
       error: this._props.error,
@@ -212,7 +210,7 @@ export class ReminderHistory extends Entity<ReminderHistoryId> implements Remind
 
     return {
       id: this.id,
-      templateId: this._props.templateUuid,
+      templateId: this._props.templateId,
       triggeredAt: this._props.triggeredAt.getTime(),
       result: this._props.result,
       error: this._props.error,
@@ -231,8 +229,8 @@ export class ReminderHistory extends Entity<ReminderHistoryId> implements Remind
 
   public toPersistenceDTO(): ReminderHistoryPersistenceDTO {
     return {
-      uuid: this.id,
-      templateUuid: this._props.templateUuid,
+      id: this.id,
+      templateId: this._props.templateId,
       triggeredAt: this._props.triggeredAt.getTime(),
       result: this._props.result,
       error: this._props.error,

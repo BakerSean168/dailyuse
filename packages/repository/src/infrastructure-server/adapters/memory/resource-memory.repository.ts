@@ -23,8 +23,8 @@ export class ResourceMemoryRepository implements IResourceRepository {
     return this.resources.get(id) ?? null;
   }
 
-  async findByUuid(uuid: string): Promise<Resource | null> {
-    return this.findById(uuid);
+  async findById(id: string): Promise<Resource | null> {
+    return this.findById(id);
   }
 
   async findByRepositoryId(repositoryId: string): Promise<Resource[]> {
@@ -39,9 +39,9 @@ export class ResourceMemoryRepository implements IResourceRepository {
     return Array.from(this.resources.values()).filter((r: any) => r.identityId === identityId);
   }
 
-  async existsByPath(repositoryUuid: string, path: string): Promise<boolean> {
+  async existsByPath(repositoryId: string, path: string): Promise<boolean> {
     return Array.from(this.resources.values()).some(
-      (r: any) => String(r.repositoryId) === repositoryUuid && r.path === path,
+      (r: any) => String(r.repositoryId) === repositoryId && r.path === path,
     );
   }
 
@@ -49,16 +49,16 @@ export class ResourceMemoryRepository implements IResourceRepository {
     this.resources.delete(id);
   }
 
-  async findByRepositoryUuid(repositoryUuid: string): Promise<Resource[]> {
-    return this.findByRepositoryId(repositoryUuid);
+  async findByRepositoryId(repositoryId: string): Promise<Resource[]> {
+    return this.findByRepositoryId(repositoryId);
   }
 
-  async findByFolderUuid(folderUuid: string): Promise<Resource[]> {
-    return this.findByFolderId(folderUuid);
+  async findByFolderId(folderId: string): Promise<Resource[]> {
+    return this.findByFolderId(folderId);
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<Resource[]> {
-    return this.findByIdentityId(accountUuid);
+  async findByAccountId(identityId: string): Promise<Resource[]> {
+    return this.findByIdentityId(identityId);
   }
 
   // Test helpers

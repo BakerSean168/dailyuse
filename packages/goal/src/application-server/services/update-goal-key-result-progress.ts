@@ -16,18 +16,18 @@ export class UpdateGoalKeyResultProgress {
   ) {}
 
   async execute(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
     currentValue: number,
     note?: string,
   ): Promise<Result<GoalClientDTO>> {
-    const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
+    const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
     if (!goal) {
-      return error('NOT_FOUND', `Goal not found: ${goalUuid}`);
+      return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }
 
     this.goalPolicy.ensureGoalCanBeModified(goal);
-    goal.updateKeyResultProgress(keyResultUuid, currentValue, note);
+    goal.updateKeyResultProgress(keyResultId, currentValue, note);
     await this.goalRepository.save(goal);
     await GoalEventPublisher.publishGoalEvents(goal);
 

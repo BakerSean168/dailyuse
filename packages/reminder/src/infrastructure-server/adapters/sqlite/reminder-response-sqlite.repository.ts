@@ -15,17 +15,17 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
 
     const stmt = this.db.prepare(`
       INSERT INTO reminder_responses (
-        uuid, reminder_template_uuid, action, response_time, timestamp
+        id, reminder_template_id, action, response_time, timestamp
       ) VALUES (?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         action = excluded.action,
         response_time = excluded.response_time,
         timestamp = excluded.timestamp
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.reminderTemplateUuid,
+      dto.id,
+      dto.reminderTemplateId,
       dto.action,
       dto.responseTime || null,
       dto.timestamp,
@@ -34,24 +34,24 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
     return response;
   }
 
-  async findById(uuid: string): Promise<ReminderResponse | null> {
-    const stmt = this.db.prepare(`SELECT * FROM reminder_responses WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<ReminderResponse | null> {
+    const stmt = this.db.prepare(`SELECT * FROM reminder_responses WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return ReminderResponse.fromPersistenceDTO({
-      uuid: row.uuid,
-      reminderTemplateUuid: row.reminder_template_uuid,
+      id: row.id,
+      reminderTemplateId: row.reminder_template_id,
       action: row.action,
       responseTime: row.response_time || null,
       timestamp: row.timestamp,
     });
   }
 
-  async findByTemplateUuid(templateUuid: string, limit?: number): Promise<ReminderResponse[]> {
-    let query = `SELECT * FROM reminder_responses WHERE reminder_template_uuid = ? ORDER BY timestamp DESC`;
-    const params: any[] = [templateUuid];
+  async findByTemplateId(templateId: string, limit?: number): Promise<ReminderResponse[]> {
+    let query = `SELECT * FROM reminder_responses WHERE reminder_template_id = ? ORDER BY timestamp DESC`;
+    const params: any[] = [templateId];
 
     if (limit) {
       query += ` LIMIT ?`;
@@ -65,7 +65,7 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
   }
 
   async getResponseStats(
-    templateUuid: string,
+    templateId: string,
     lookbackDays: number = 30,
   ): Promise<{
     total: number;
@@ -88,10 +88,10 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
         SUM(CASE WHEN action = 'completed' THEN 1 ELSE 0 END) as completed,
         AVG(response_time) as avgResponseTime
       FROM reminder_responses
-      WHERE reminder_template_uuid = ? AND timestamp >= ?
+      WHERE reminder_template_id = ? AND timestamp >= ?
     `);
 
-    const result = stmt.get(templateUuid, cutoffTime) as any;
+    const result = stmt.get(templateId, cutoffTime) as any;
 
     return {
       total: result?.total || 0,
@@ -104,14 +104,14 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
     };
   }
 
-  async deleteByTemplateUuid(templateUuid: string): Promise<number> {
-    const stmt = this.db.prepare(`DELETE FROM reminder_responses WHERE reminder_template_uuid = ?`);
-    const result = stmt.run(templateUuid);
+  async deleteByTemplateId(templateId: string): Promise<number> {
+    const stmt = this.db.prepare(`DELETE FROM reminder_responses WHERE reminder_template_id = ?`);
+    const result = stmt.run(templateId);
     return result.changes || 0;
   }
 
   async getResponseDistribution(
-    templateUuid: string,
+    templateId: string,
     lookbackDays: number = 30,
   ): Promise<Record<string, number>> {
     const cutoffTime = Date.now() - lookbackDays * 24 * 60 * 60 * 1000;
@@ -119,11 +119,11 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
     const stmt = this.db.prepare(`
       SELECT action, COUNT(*) as count
       FROM reminder_responses
-      WHERE reminder_template_uuid = ? AND timestamp >= ?
+      WHERE reminder_template_id = ? AND timestamp >= ?
       GROUP BY action
     `);
 
-    const rows = stmt.all(templateUuid, cutoffTime) as any[];
+    const rows = stmt.all(templateId, cutoffTime) as any[];
     const distribution: Record<string, number> = {
       clicked: 0,
       ignored: 0,
@@ -143,8 +143,8 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
 
   private rowToResponse(row: any): ReminderResponse {
     return ReminderResponse.fromPersistenceDTO({
-      uuid: row.uuid,
-      reminderTemplateUuid: row.reminder_template_uuid,
+      id: row.id,
+      reminderTemplateId: row.reminder_template_id,
       action: row.action,
       responseTime: row.response_time || null,
       timestamp: row.timestamp,

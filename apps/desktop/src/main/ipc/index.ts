@@ -17,16 +17,3 @@
  */
 
 export { registerSystemIpcHandlers } from './system-handlers';
-export { lazyHandle, registerLazyHandlers, createLazyModule } from './lazy-ipc-handler';
-
-
-/**
- * @deprecated All IPC handlers are now registered via the module system.
- * This function is kept for backward compatibility but does nothing.
- * Use registerAllModules() and initializeAllModules() instead.
- */
-export function registerAllIpcHandlers(): void {
-  console.log('[IPC] All handlers are now managed by the module system.');
-  console.log('[IPC] Use registerAllModules() and initializeAllModules() instead.');
-}
-

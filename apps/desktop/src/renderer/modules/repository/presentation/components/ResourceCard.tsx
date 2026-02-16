@@ -24,7 +24,7 @@ import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 
 export interface Resource {
-  uuid: string;
+  id: string;
   name: string;
   type: 'document' | 'image' | 'video' | 'audio' | 'archive' | 'code' | 'other';
   mimeType?: string;

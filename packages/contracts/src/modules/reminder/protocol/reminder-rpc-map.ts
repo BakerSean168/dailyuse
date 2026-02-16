@@ -23,10 +23,10 @@ export type ReminderRpcMap = {
   'reminder:get-upcoming': [GetUpcomingRemindersReq, GetUpcomingRemindersRes];
   
   // === Template Control ===
-  'reminder:enable-template': [{ templateUuid: string }, ReminderTemplateClientDTO];
-  'reminder:pause-template': [{ templateUuid: string }, ReminderTemplateClientDTO];
-  'reminder:disable-template': [{ templateUuid: string }, ReminderTemplateClientDTO];
-  'reminder:delete-template': [{ templateUuid: string }, void];
+  'reminder:enable-template': [{ templateId: string }, ReminderTemplateClientDTO];
+  'reminder:pause-template': [{ templateId: string }, ReminderTemplateClientDTO];
+  'reminder:disable-template': [{ templateId: string }, ReminderTemplateClientDTO];
+  'reminder:delete-template': [{ templateId: string }, void];
   
   // === Group Operations ===
   'reminder-group:create': [CreateReminderGroupReq, CreateReminderGroupRes];

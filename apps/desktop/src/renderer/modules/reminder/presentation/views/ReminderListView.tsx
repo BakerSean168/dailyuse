@@ -46,18 +46,18 @@ export function ReminderListView() {
     loadTemplates();
   };
 
-  const handleToggleEnabled = async (uuid: string) => {
+  const handleToggleEnabled = async (id: string) => {
     try {
-      await reminderApplicationService.toggleTemplateEnabled(uuid);
+      await reminderApplicationService.toggleTemplateEnabled(id);
       loadTemplates();
     } catch (err) {
       console.error('[ReminderListView] Failed to toggle template:', err);
     }
   };
 
-  const handleDeleteTemplate = async (uuid: string) => {
+  const handleDeleteTemplate = async (id: string) => {
     try {
-      await reminderApplicationService.deleteReminderTemplate(uuid);
+      await reminderApplicationService.deleteReminderTemplate(id);
       loadTemplates();
     } catch (err) {
       console.error('[ReminderListView] Failed to delete template:', err);
@@ -80,7 +80,7 @@ export function ReminderListView() {
       if (statusFilter === 'PAUSED' && template.effectiveEnabled) return false;
     }
     // 分组过滤
-    if (groupFilter !== 'ALL' && template.groupUuid !== groupFilter) {
+    if (groupFilter !== 'ALL' && template.groupId !== groupFilter) {
       return false;
     }
     return true;
@@ -104,7 +104,7 @@ export function ReminderListView() {
   };
 
   // 获取所有分组
-  const groups = Array.from(new Set(templates.map((t) => t.groupUuid).filter(Boolean)));
+  const groups = Array.from(new Set(templates.map((t) => t.groupId).filter(Boolean)));
 
   if (loading) {
     return (
@@ -214,10 +214,10 @@ export function ReminderListView() {
         <div className="space-y-4">
           {sortedTemplates.map((template) => (
             <ReminderCard
-              key={template.uuid}
+              key={template.id}
               template={template}
-              onToggle={() => handleToggleEnabled(template.uuid)}
-              onDelete={() => handleDeleteTemplate(template.uuid)}
+              onToggle={() => handleToggleEnabled(template.id)}
+              onDelete={() => handleDeleteTemplate(template.id)}
               onEdit={() => setEditingTemplate(template)}
             />
           ))}

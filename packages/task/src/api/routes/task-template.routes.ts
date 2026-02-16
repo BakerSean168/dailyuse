@@ -30,8 +30,8 @@ interface PlatformMiddleware {
 
 interface AuthenticatedRequest extends Request {
   user?: {
-    accountUuid: string;
-    sessionUuid?: string;
+    identityId: string;
+    sessionId?: string;
   };
 }
 
@@ -85,12 +85,12 @@ export function registerTaskTemplateRoutes(
         return;
       }
 
-      if (!req.user?.accountUuid) {
+      if (!req.user?.identityId) {
         res.status(401).json(responseBuilder.unauthorized());
         return;
       }
 
-      const result = await controller.createTemplate(parsed.data, req.user.accountUuid);
+      const result = await controller.createTemplate(parsed.data, req.user.identityId);
       respondWithResult(res, result, 201);
     },
   );
@@ -100,19 +100,19 @@ export function registerTaskTemplateRoutes(
     '/',
     auth,
     async (req: AuthenticatedRequest, res: Response) => {
-      if (!req.user?.accountUuid) {
+      if (!req.user?.identityId) {
         res.status(401).json(responseBuilder.unauthorized());
         return;
       }
 
       const filters = {
         status: req.query.status as any,
-        folderUuid: req.query.folderUuid as string,
-        goalUuid: req.query.goalUuid as string,
+        folderId: req.query.folderId as string,
+        goalId: req.query.goalId as string,
         tags: req.query.tags ? (req.query.tags as string).split(',') : undefined,
       };
 
-      const result = await controller.listTemplates(req.user.accountUuid, filters);
+      const result = await controller.listTemplates(req.user.identityId, filters);
       respondWithResult(res, result);
     },
   );

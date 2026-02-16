@@ -110,7 +110,7 @@ export function ConflictAlert({
         <div className="space-y-1">
           {conflicts.map((conflict) => (
             <div
-              key={conflict.scheduleUuid}
+              key={conflict.scheduleId}
               className="flex items-center gap-2 text-sm text-yellow-700"
             >
               <Clock className="h-3 w-3 shrink-0" />

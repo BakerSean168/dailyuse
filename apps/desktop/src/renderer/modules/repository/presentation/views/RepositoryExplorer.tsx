@@ -349,7 +349,7 @@ export function RepositoryExplorer({
                 >
                   {filteredResources.map((resource) => (
                     <ResourceCard
-                      key={resource.uuid}
+                      key={resource.id}
                       resource={resource}
                       viewMode={viewMode}
                       onView={onResourceView}

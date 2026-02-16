@@ -44,9 +44,9 @@ export class SettingDomainService {
     value: any;
     defaultValue: any;
     scope: SettingScope;
-    accountUuid?: string;
+    identityId?: string;
     deviceId?: string;
-    groupUuid?: string;
+    groupId?: string;
     validation?: ValidationRuleDTO;
     ui?: UIConfigDTO;
     isEncrypted?: boolean;
@@ -58,7 +58,7 @@ export class SettingDomainService {
     const exists = await this.settingRepo.existsByKey(
       params.key,
       params.scope,
-      params.accountUuid || params.deviceId,
+      params.identityId || params.deviceId,
     );
     if (exists) {
       throw new Error(`Setting with key "${params.key}" already exists in scope ${params.scope}`);
@@ -80,9 +80,9 @@ export class SettingDomainService {
       value: params.value,
       defaultValue: params.defaultValue,
       scope: params.scope,
-      accountId: params.accountUuid,
+      accountId: params.identityId,
       deviceId: params.deviceId,
-      groupId: params.groupUuid as SettingGroupId | undefined,
+      groupId: params.groupId as SettingGroupId | undefined,
       validation,
       ui,
       isEncrypted: params.isEncrypted,
@@ -97,7 +97,7 @@ export class SettingDomainService {
     // 5. 触发领域事件
     // await this.eventBus.publish({
     //   type: 'setting.created',
-    //   aggregateId: setting.uuid,
+    //   aggregateId: setting.id,
     //   timestamp: Date.now(),
     //   payload: { setting: setting.toServerDTO() },
     // });
@@ -109,10 +109,10 @@ export class SettingDomainService {
    * 获取设置项
    */
   public async getSetting(
-    uuid: string,
+    id: string,
     options?: { includeHistory?: boolean },
   ): Promise<Setting | null> {
-    return await this.settingRepo.findById(uuid, options);
+    return await this.settingRepo.findById(id, options);
   }
 
   /**
@@ -121,23 +121,23 @@ export class SettingDomainService {
   public async getSettingByKey(
     key: string,
     scope: SettingScope,
-    contextUuid?: string,
+    contextId?: string,
   ): Promise<Setting | null> {
-    return await this.settingRepo.findByKey(key, scope, contextUuid);
+    return await this.settingRepo.findByKey(key, scope, contextId);
   }
 
   /**
    * 更新设置值
    */
   public async updateSettingValue(
-    uuid: string,
+    id: string,
     newValue: any,
-    operatorUuid?: string,
+    operatorId?: string,
   ): Promise<Setting> {
     // 1. 加载聚合根
-    const setting = await this.settingRepo.findById(uuid);
+    const setting = await this.settingRepo.findById(id);
     if (!setting) {
-      throw new Error(`Setting not found: ${uuid}`);
+      throw new Error(`Setting not found: ${id}`);
     }
 
     // 2. 业务逻辑：验证并更新
@@ -146,7 +146,7 @@ export class SettingDomainService {
       // TODO: Implement validation logic using setting.validation
     }
 
-    setting.setValue(newValue, operatorUuid);
+    setting.setValue(newValue, operatorId);
 
     // 3. 持久化
     await this.settingRepo.save(setting);
@@ -154,7 +154,7 @@ export class SettingDomainService {
     // 4. 触发领域事件
     // await this.eventBus.publish({
     //   type: 'setting.updated',
-    //   aggregateId: setting.uuid,
+    //   aggregateId: setting.id,
     //   timestamp: Date.now(),
     //   payload: { setting: setting.toServerDTO() },
     // });
@@ -165,10 +165,10 @@ export class SettingDomainService {
   /**
    * 重置设置为默认值
    */
-  public async resetSetting(uuid: string): Promise<Setting> {
-    const setting = await this.settingRepo.findById(uuid);
+  public async resetSetting(id: string): Promise<Setting> {
+    const setting = await this.settingRepo.findById(id);
     if (!setting) {
-      throw new Error(`Setting not found: ${uuid}`);
+      throw new Error(`Setting not found: ${id}`);
     }
 
     setting.resetToDefault();
@@ -181,12 +181,12 @@ export class SettingDomainService {
    * 批量更新设置
    */
   public async updateManySettings(
-    updates: Array<{ uuid: string; value: any; operatorUuid?: string }>,
+    updates: Array<{ id: string; value: any; operatorId?: string }>,
   ): Promise<Setting[]> {
     const results: Setting[] = [];
 
     for (const update of updates) {
-      const setting = await this.updateSettingValue(update.uuid, update.value, update.operatorUuid);
+      const setting = await this.updateSettingValue(update.id, update.value, update.operatorId);
       results.push(setting);
     }
 
@@ -196,10 +196,10 @@ export class SettingDomainService {
   /**
    * 同步设置到云端
    */
-  public async syncSetting(uuid: string): Promise<void> {
-    const setting = await this.settingRepo.findById(uuid);
+  public async syncSetting(id: string): Promise<void> {
+    const setting = await this.settingRepo.findById(id);
     if (!setting) {
-      throw new Error(`Setting not found: ${uuid}`);
+      throw new Error(`Setting not found: ${id}`);
     }
 
     // TODO: Implement sync logic using setting.syncConfig
@@ -214,20 +214,20 @@ export class SettingDomainService {
    */
   public async getSettingsByScope(
     scope: SettingScope,
-    contextUuid?: string,
+    contextId?: string,
     options?: { includeHistory?: boolean },
   ): Promise<Setting[]> {
-    return await this.settingRepo.findByScope(scope, contextUuid, options);
+    return await this.settingRepo.findByScope(scope, contextId, options);
   }
 
   /**
    * 获取用户所有设置
    */
   public async getUserSettings(
-    accountUuid: string,
+    identityId: string,
     options?: { includeHistory?: boolean },
   ): Promise<Setting[]> {
-    return await this.settingRepo.findUserSettings(accountUuid, options);
+    return await this.settingRepo.findUserSettings(identityId, options);
   }
 
   /**
@@ -247,10 +247,10 @@ export class SettingDomainService {
   /**
    * 删除设置（软删除）
    */
-  public async deleteSetting(uuid: string): Promise<void> {
-    const setting = await this.settingRepo.findById(uuid);
+  public async deleteSetting(id: string): Promise<void> {
+    const setting = await this.settingRepo.findById(id);
     if (!setting) {
-      throw new Error(`Setting not found: ${uuid}`);
+      throw new Error(`Setting not found: ${id}`);
     }
 
     // 检查是否为系统设置
@@ -264,7 +264,7 @@ export class SettingDomainService {
     // 触发领域事件
     // await this.eventBus.publish({
     //   type: 'setting.deleted',
-    //   aggregateId: setting.uuid,
+    //   aggregateId: setting.id,
     //   timestamp: Date.now(),
     // });
   }
@@ -273,12 +273,12 @@ export class SettingDomainService {
    * 验证设置值
    */
   public async validateSettingValue(
-    uuid: string,
+    id: string,
     value: any,
   ): Promise<{ valid: boolean; error?: string }> {
-    const setting = await this.settingRepo.findById(uuid);
+    const setting = await this.settingRepo.findById(id);
     if (!setting) {
-      throw new Error(`Setting not found: ${uuid}`);
+      throw new Error(`Setting not found: ${id}`);
     }
 
     // TODO: Implement validation logic using setting.validation
@@ -291,9 +291,9 @@ export class SettingDomainService {
    */
   public async exportSettings(
     scope: SettingScope,
-    contextUuid?: string,
+    contextId?: string,
   ): Promise<Record<string, any>> {
-    const settings = await this.settingRepo.findByScope(scope, contextUuid);
+    const settings = await this.settingRepo.findByScope(scope, contextId);
 
     const config: Record<string, any> = {};
     for (const setting of settings) {
@@ -309,16 +309,16 @@ export class SettingDomainService {
   public async importSettings(
     scope: SettingScope,
     config: Record<string, any>,
-    contextUuid?: string,
-    operatorUuid?: string,
+    contextId?: string,
+    operatorId?: string,
   ): Promise<void> {
     for (const [key, value] of Object.entries(config)) {
       // 尝试查找现有设置
-      const existing = await this.settingRepo.findByKey(key, scope, contextUuid);
+      const existing = await this.settingRepo.findByKey(key, scope, contextId);
 
       if (existing) {
         // 更新现有设置
-        existing.setValue(value, operatorUuid);
+        existing.setValue(value, operatorId);
         await this.settingRepo.save(existing);
       }
       // 如果不存在则忽略（或根据业务需求创建）

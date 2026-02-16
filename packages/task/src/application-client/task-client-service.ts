@@ -59,8 +59,8 @@ export class TaskClientService {
     page?: number;
     limit?: number;
     status?: string;
-    folderUuid?: string;
-    goalUuid?: string;
+    folderId?: string;
+    goalId?: string;
     importance?: string;
     urgency?: string;
     tags?: string[];
@@ -72,18 +72,18 @@ export class TaskClientService {
     }));
   }
 
-  async getTemplate(uuid: string): Promise<Result<TaskTemplate>> {
-    const result = await this.templateApi.getTaskTemplateById(uuid);
+  async getTemplate(id: string): Promise<Result<TaskTemplate>> {
+    const result = await this.templateApi.getTaskTemplateById(id);
     return mapResult(result, (dto) => TaskTemplate.fromDTO(dto));
   }
 
-  async updateTemplate(uuid: string, request: UpdateTaskTemplateRequest): Promise<Result<TaskTemplate>> {
-    const result = await this.templateApi.updateTaskTemplate(uuid, request);
+  async updateTemplate(id: string, request: UpdateTaskTemplateRequest): Promise<Result<TaskTemplate>> {
+    const result = await this.templateApi.updateTaskTemplate(id, request);
     return mapResult(result, (dto) => TaskTemplate.fromDTO(dto));
   }
 
-  async deleteTemplate(uuid: string): Promise<Result<void>> {
-    return this.templateApi.deleteTaskTemplate(uuid);
+  async deleteTemplate(id: string): Promise<Result<void>> {
+    return this.templateApi.deleteTaskTemplate(id);
   }
 
   async getTemplatesWithPrioritySorting(params?: { limit?: number }): Promise<Result<TaskTemplate[]>> {
@@ -91,38 +91,38 @@ export class TaskClientService {
     return mapResult(result, (dtos) => dtos.map((dto) => TaskTemplate.fromDTO(dto)));
   }
 
-  async activateTemplate(uuid: string): Promise<Result<TaskTemplate>> {
-    const result = await this.templateApi.activateTaskTemplate(uuid);
+  async activateTemplate(id: string): Promise<Result<TaskTemplate>> {
+    const result = await this.templateApi.activateTaskTemplate(id);
     return mapResult(result, (dto) => TaskTemplate.fromDTO(dto));
   }
 
-  async pauseTemplate(uuid: string): Promise<Result<TaskTemplate>> {
-    const result = await this.templateApi.pauseTaskTemplate(uuid);
+  async pauseTemplate(id: string): Promise<Result<TaskTemplate>> {
+    const result = await this.templateApi.pauseTaskTemplate(id);
     return mapResult(result, (dto) => TaskTemplate.fromDTO(dto));
   }
 
-  async archiveTemplate(uuid: string): Promise<Result<TaskTemplate>> {
-    const result = await this.templateApi.archiveTaskTemplate(uuid);
+  async archiveTemplate(id: string): Promise<Result<TaskTemplate>> {
+    const result = await this.templateApi.archiveTaskTemplate(id);
     return mapResult(result, (dto) => TaskTemplate.fromDTO(dto));
   }
 
-  async generateInstances(templateUuid: string, request: GenerateInstancesRequest): Promise<Result<TaskInstance[]>> {
-    const result = await this.templateApi.generateInstances(templateUuid, request);
+  async generateInstances(templateId: string, request: GenerateInstancesRequest): Promise<Result<TaskInstance[]>> {
+    const result = await this.templateApi.generateInstances(templateId, request);
     return mapResult(result, (dtos) => dtos.map((dto) => TaskInstance.fromDTO(dto)));
   }
 
-  async getInstancesByDateRange(templateUuid: string, from: number, to: number): Promise<Result<TaskInstance[]>> {
-    const result = await this.templateApi.getInstancesByDateRange(templateUuid, from, to);
+  async getInstancesByDateRange(templateId: string, from: number, to: number): Promise<Result<TaskInstance[]>> {
+    const result = await this.templateApi.getInstancesByDateRange(templateId, from, to);
     return mapResult(result, (dtos) => dtos.map((dto) => TaskInstance.fromDTO(dto)));
   }
 
-  async bindToGoal(templateUuid: string, request: BindToGoalRequest): Promise<Result<TaskTemplate>> {
-    const result = await this.templateApi.bindToGoal(templateUuid, request);
+  async bindToGoal(templateId: string, request: BindToGoalRequest): Promise<Result<TaskTemplate>> {
+    const result = await this.templateApi.bindToGoal(templateId, request);
     return mapResult(result, (dto) => TaskTemplate.fromDTO(dto));
   }
 
-  async unbindFromGoal(templateUuid: string): Promise<Result<TaskTemplate>> {
-    const result = await this.templateApi.unbindFromGoal(templateUuid);
+  async unbindFromGoal(templateId: string): Promise<Result<TaskTemplate>> {
+    const result = await this.templateApi.unbindFromGoal(templateId);
     return mapResult(result, (dto) => TaskTemplate.fromDTO(dto));
   }
 
@@ -131,7 +131,7 @@ export class TaskClientService {
   async listInstances(params?: {
     page?: number;
     limit?: number;
-    templateUuid?: string;
+    templateId?: string;
     status?: string;
     startDate?: number;
     endDate?: number;
@@ -140,27 +140,27 @@ export class TaskClientService {
     return mapResult(result, (dtos) => dtos.map((dto) => TaskInstance.fromDTO(dto)));
   }
 
-  async getInstance(uuid: string): Promise<Result<TaskInstance>> {
-    const result = await this.instanceApi.getTaskInstanceById(uuid);
+  async getInstance(id: string): Promise<Result<TaskInstance>> {
+    const result = await this.instanceApi.getTaskInstanceById(id);
     return mapResult(result, (dto) => TaskInstance.fromDTO(dto));
   }
 
-  async deleteInstance(uuid: string): Promise<Result<void>> {
-    return this.instanceApi.deleteTaskInstance(uuid);
+  async deleteInstance(id: string): Promise<Result<void>> {
+    return this.instanceApi.deleteTaskInstance(id);
   }
 
-  async startInstance(uuid: string): Promise<Result<TaskInstance>> {
-    const result = await this.instanceApi.startTaskInstance(uuid);
+  async startInstance(id: string): Promise<Result<TaskInstance>> {
+    const result = await this.instanceApi.startTaskInstance(id);
     return mapResult(result, (dto) => TaskInstance.fromDTO(dto));
   }
 
-  async completeInstance(uuid: string, request?: CompleteTaskInstanceRequest): Promise<Result<TaskInstance>> {
-    const result = await this.instanceApi.completeTaskInstance(uuid, request);
+  async completeInstance(id: string, request?: CompleteTaskInstanceRequest): Promise<Result<TaskInstance>> {
+    const result = await this.instanceApi.completeTaskInstance(id, request);
     return mapResult(result, (dto) => TaskInstance.fromDTO(dto));
   }
 
-  async skipInstance(uuid: string, request?: SkipTaskInstanceRequest): Promise<Result<TaskInstance>> {
-    const result = await this.instanceApi.skipTaskInstance(uuid, request);
+  async skipInstance(id: string, request?: SkipTaskInstanceRequest): Promise<Result<TaskInstance>> {
+    const result = await this.instanceApi.skipTaskInstance(id, request);
     return mapResult(result, (dto) => TaskInstance.fromDTO(dto));
   }
 
@@ -174,69 +174,69 @@ export class TaskClientService {
 
   // ===== Task Dependency Operations =====
 
-  async createDependency(taskUuid: string, request: CreateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>> {
-    return this.dependencyApi.createDependency(taskUuid, request);
+  async createDependency(taskId: string, request: CreateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>> {
+    return this.dependencyApi.createDependency(taskId, request);
   }
 
-  async getDependencies(taskUuid: string): Promise<Result<TaskDependencyClientDTO[]>> {
-    return this.dependencyApi.getDependencies(taskUuid);
+  async getDependencies(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
+    return this.dependencyApi.getDependencies(taskId);
   }
 
-  async getDependents(taskUuid: string): Promise<Result<TaskDependencyClientDTO[]>> {
-    return this.dependencyApi.getDependents(taskUuid);
+  async getDependents(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
+    return this.dependencyApi.getDependents(taskId);
   }
 
-  async getDependencyChain(taskUuid: string): Promise<Result<DependencyChainClientDTO>> {
-    return this.dependencyApi.getDependencyChain(taskUuid);
+  async getDependencyChain(taskId: string): Promise<Result<DependencyChainClientDTO>> {
+    return this.dependencyApi.getDependencyChain(taskId);
   }
 
   async validateDependency(request: ValidateDependencyRequest): Promise<Result<ValidateDependencyResponse>> {
     return this.dependencyApi.validateDependency(request);
   }
 
-  async updateDependency(uuid: string, request: UpdateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>> {
-    return this.dependencyApi.updateDependency(uuid, request);
+  async updateDependency(id: string, request: UpdateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>> {
+    return this.dependencyApi.updateDependency(id, request);
   }
 
-  async deleteDependency(uuid: string): Promise<Result<void>> {
-    return this.dependencyApi.deleteDependency(uuid);
+  async deleteDependency(id: string): Promise<Result<void>> {
+    return this.dependencyApi.deleteDependency(id);
   }
 
   // ===== Task Statistics Operations =====
 
-  async getStatistics(accountUuid: string, forceRecalculate?: boolean): Promise<Result<TaskStatisticsServerDTO>> {
-    return this.statisticsApi.getTaskStatistics(accountUuid, forceRecalculate);
+  async getStatistics(identityId: string, forceRecalculate?: boolean): Promise<Result<TaskStatisticsServerDTO>> {
+    return this.statisticsApi.getTaskStatistics(identityId, forceRecalculate);
   }
 
-  async recalculateStatistics(accountUuid: string, force?: boolean): Promise<Result<TaskStatisticsServerDTO>> {
-    return this.statisticsApi.recalculateTaskStatistics(accountUuid, force);
+  async recalculateStatistics(identityId: string, force?: boolean): Promise<Result<TaskStatisticsServerDTO>> {
+    return this.statisticsApi.recalculateTaskStatistics(identityId, force);
   }
 
-  async deleteStatistics(accountUuid: string): Promise<Result<void>> {
-    return this.statisticsApi.deleteTaskStatistics(accountUuid);
+  async deleteStatistics(identityId: string): Promise<Result<void>> {
+    return this.statisticsApi.deleteTaskStatistics(identityId);
   }
 
-  async updateTemplateStats(accountUuid: string): Promise<Result<void>> {
-    return this.statisticsApi.updateTemplateStats(accountUuid);
+  async updateTemplateStats(identityId: string): Promise<Result<void>> {
+    return this.statisticsApi.updateTemplateStats(identityId);
   }
 
-  async updateInstanceStats(accountUuid: string): Promise<Result<void>> {
-    return this.statisticsApi.updateInstanceStats(accountUuid);
+  async updateInstanceStats(identityId: string): Promise<Result<void>> {
+    return this.statisticsApi.updateInstanceStats(identityId);
   }
 
-  async updateCompletionStats(accountUuid: string): Promise<Result<void>> {
-    return this.statisticsApi.updateCompletionStats(accountUuid);
+  async updateCompletionStats(identityId: string): Promise<Result<void>> {
+    return this.statisticsApi.updateCompletionStats(identityId);
   }
 
-  async getTodayCompletionRate(accountUuid: string): Promise<Result<number>> {
-    return this.statisticsApi.getTodayCompletionRate(accountUuid);
+  async getTodayCompletionRate(identityId: string): Promise<Result<number>> {
+    return this.statisticsApi.getTodayCompletionRate(identityId);
   }
 
-  async getWeekCompletionRate(accountUuid: string): Promise<Result<number>> {
-    return this.statisticsApi.getWeekCompletionRate(accountUuid);
+  async getWeekCompletionRate(identityId: string): Promise<Result<number>> {
+    return this.statisticsApi.getWeekCompletionRate(identityId);
   }
 
-  async getEfficiencyTrend(accountUuid: string): Promise<Result<'UP' | 'DOWN' | 'STABLE'>> {
-    return this.statisticsApi.getEfficiencyTrend(accountUuid);
+  async getEfficiencyTrend(identityId: string): Promise<Result<'UP' | 'DOWN' | 'STABLE'>> {
+    return this.statisticsApi.getEfficiencyTrend(identityId);
   }
 }

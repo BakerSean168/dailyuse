@@ -55,8 +55,8 @@ export class TaskStatisticsCalculator {
     };
   }
 
-  calculateDependencyDepth(taskUuid: string, allDependencies: TaskDependencyServerDTO[]): number {
-    const dependencies = allDependencies.filter((d) => d.successorTaskId === taskUuid);
+  calculateDependencyDepth(taskId: string, allDependencies: TaskDependencyServerDTO[]): number {
+    const dependencies = allDependencies.filter((d) => d.successorTaskId === taskId);
 
     if (dependencies.length === 0) {
       return 0;

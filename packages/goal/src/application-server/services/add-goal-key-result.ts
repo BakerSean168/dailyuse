@@ -16,7 +16,7 @@ export class AddGoalKeyResult {
   ) {}
 
   async execute(
-    goalUuid: string,
+    goalId: string,
     keyResult: {
       title: string;
       valueType: string;
@@ -27,9 +27,9 @@ export class AddGoalKeyResult {
       weight: number;
     },
   ): Promise<Result<GoalClientDTO>> {
-    const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
+    const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
     if (!goal) {
-      return error('NOT_FOUND', `Goal not found: ${goalUuid}`);
+      return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }
 
     this.goalPolicy.ensureGoalCanBeModified(goal);

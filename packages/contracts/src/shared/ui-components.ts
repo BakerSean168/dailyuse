@@ -47,7 +47,7 @@ export interface ContextMenuItem {
  * 完整的 EditorTab 类型请使用 editorContracts.EditorTabClientDTO
  */
 export interface SimpleEditorTab {
-  uuid: string;
+  id: string;
   title: string;
   fileType: 'markdown' | 'image' | 'video' | 'audio';
   filePath: string;

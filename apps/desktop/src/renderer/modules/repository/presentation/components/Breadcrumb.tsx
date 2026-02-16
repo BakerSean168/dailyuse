@@ -8,14 +8,14 @@
 import { memo } from 'react';
 
 interface BreadcrumbItem {
-  uuid: string;
+  id: string;
   name: string;
   isLast?: boolean;
 }
 
 interface BreadcrumbProps {
   items: BreadcrumbItem[];
-  onNavigate: (uuid: string) => void;
+  onNavigate: (id: string) => void;
   onGoHome: () => void;
 }
 
@@ -36,7 +36,7 @@ export const Breadcrumb = memo(function Breadcrumb({
       </button>
 
       {items.map((item, index) => (
-        <div key={item.uuid} className="flex items-center gap-1 min-w-0">
+        <div key={item.id} className="flex items-center gap-1 min-w-0">
           {/* 分隔符 */}
           <span className="text-gray-400 flex-shrink-0">/</span>
 
@@ -47,7 +47,7 @@ export const Breadcrumb = memo(function Breadcrumb({
             </span>
           ) : (
             <button
-              onClick={() => onNavigate(item.uuid)}
+              onClick={() => onNavigate(item.id)}
               className="hover:text-blue-600 hover:underline truncate max-w-[150px]"
             >
               {item.name}

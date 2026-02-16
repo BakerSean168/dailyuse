@@ -82,7 +82,7 @@ export class LocalAccountManager {
     if (existingAccount) {
       this.currentAccount = existingAccount;
       this.isInitialized = true;
-      this.logger.info('Local account loaded', { uuid: existingAccount.uuid });
+      this.logger.info('Local account loaded', { id: existingAccount.id });
       return existingAccount;
     }
 
@@ -90,7 +90,7 @@ export class LocalAccountManager {
     const newAccount = await this.createLocalAccount();
     this.currentAccount = newAccount;
     this.isInitialized = true;
-    this.logger.info('Local account created', { uuid: newAccount.uuid });
+    this.logger.info('Local account created', { id: newAccount.id });
     return newAccount;
   }
 
@@ -111,7 +111,7 @@ export class LocalAccountManager {
     const username = os.userInfo().username || 'User';
 
     const account: LocalAccount = {
-      uuid: `local-${generateUUID()}`,
+      id: `local-${generateUUID()}`,
       type: 'LOCAL',
       username: username,
       email: 'local@desktop.app',
@@ -122,14 +122,14 @@ export class LocalAccountManager {
     };
 
     await this.saveAccount(account);
-    this.logger.info('Local account created', { uuid: account.uuid });
+    this.logger.info('Local account created', { id: account.id });
     return account;
   }
 
   /**
    * 更新本地账户
    */
-  async updateAccount(updates: Partial<Omit<LocalAccount, 'uuid' | 'type' | 'createdAt'>>): Promise<LocalAccount> {
+  async updateAccount(updates: Partial<Omit<LocalAccount, 'id' | 'type' | 'createdAt'>>): Promise<LocalAccount> {
     if (!this.currentAccount) {
       throw new Error('No local account exists');
     }
@@ -142,16 +142,16 @@ export class LocalAccountManager {
 
     await this.saveAccount(updatedAccount);
     this.currentAccount = updatedAccount;
-    this.logger.info('Local account updated', { uuid: updatedAccount.uuid });
+    this.logger.info('Local account updated', { id: updatedAccount.id });
     return updatedAccount;
   }
 
   /**
    * 关联云账户
    */
-  async linkCloudAccount(cloudAccountUuid: string): Promise<LocalAccount> {
+  async linkCloudAccount(cloudAccountId: string): Promise<LocalAccount> {
     return this.updateAccount({
-      cloudAccountUuid,
+      cloudAccountId,
       isOnline: true,
     });
   }
@@ -161,7 +161,7 @@ export class LocalAccountManager {
    */
   async unlinkCloudAccount(): Promise<LocalAccount> {
     return this.updateAccount({
-      cloudAccountUuid: undefined,
+      cloudAccountId: undefined,
       isOnline: false,
     });
   }

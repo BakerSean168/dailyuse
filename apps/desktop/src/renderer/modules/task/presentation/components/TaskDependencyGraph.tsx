@@ -7,7 +7,7 @@
  * EPIC-015 重构: 使用 Entity 类型
  * - Props 接受 TaskTemplate Entity 数组
  * 
- * TODO: 当前 TaskTemplate Entity 不包含 parentTaskUuid 属性
+ * TODO: 当前 TaskTemplate Entity 不包含 parentTaskId 属性
  * 需要重新设计依赖关系模型或使用 TaskDependency 专用 API
  */
 
@@ -33,7 +33,7 @@ export function TaskDependencyGraph({ tasks, onTaskClick }: TaskDependencyGraphP
 
     // 初始化所有节点
     tasks.forEach(task => {
-      nodes.set(task.uuid, {
+      nodes.set(task.id, {
         task,
         level: 0,
         dependencies: [], // 前置任务
@@ -41,15 +41,15 @@ export function TaskDependencyGraph({ tasks, onTaskClick }: TaskDependencyGraphP
       });
     });
 
-    // TODO: TaskTemplate Entity 不包含 parentTaskUuid，暂时跳过依赖解析
-    // 解析依赖关系（从 parentTaskUuid 推断）
+    // TODO: TaskTemplate Entity 不包含 parentTaskId，暂时跳过依赖解析
+    // 解析依赖关系（从 parentTaskId 推断）
     // tasks.forEach(task => {
-    //   if (task.parentTaskUuid) {
-    //     const parentNode = nodes.get(task.parentTaskUuid);
-    //     const currentNode = nodes.get(task.uuid);
+    //   if (task.parentTaskId) {
+    //     const parentNode = nodes.get(task.parentTaskId);
+    //     const currentNode = nodes.get(task.id);
     //     if (parentNode && currentNode) {
-    //       currentNode.dependencies.push(task.parentTaskUuid);
-    //       parentNode.dependents.push(task.uuid);
+    //       currentNode.dependencies.push(task.parentTaskId);
+    //       parentNode.dependents.push(task.id);
     //     }
     //   }
     // });
@@ -59,26 +59,26 @@ export function TaskDependencyGraph({ tasks, onTaskClick }: TaskDependencyGraphP
       const visited = new Set<string>();
       const levels = new Map<string, number>();
 
-      const dfs = (uuid: string, level: number): number => {
-        if (visited.has(uuid)) return levels.get(uuid) ?? 0;
-        visited.add(uuid);
+      const dfs = (id: string, level: number): number => {
+        if (visited.has(id)) return levels.get(id) ?? 0;
+        visited.add(id);
 
-        const node = nodes.get(uuid);
+        const node = nodes.get(id);
         if (!node) return level;
 
         let maxDependencyLevel = -1;
-        for (const depUuid of node.dependencies) {
-          const depLevel = dfs(depUuid, level);
+        for (const depId of node.dependencies) {
+          const depLevel = dfs(depId, level);
           maxDependencyLevel = Math.max(maxDependencyLevel, depLevel);
         }
 
         const myLevel = maxDependencyLevel + 1;
-        levels.set(uuid, myLevel);
+        levels.set(id, myLevel);
         node.level = myLevel;
         return myLevel;
       };
 
-      nodes.forEach((_, uuid) => dfs(uuid, 0));
+      nodes.forEach((_, id) => dfs(id, 0));
     };
 
     calculateLevels();
@@ -144,7 +144,7 @@ export function TaskDependencyGraph({ tasks, onTaskClick }: TaskDependencyGraphP
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {tasks.map(task => (
             <div
-              key={task.uuid}
+              key={task.id}
               onClick={() => onTaskClick?.(task)}
               className={`
                 p-3 border-2 rounded-lg cursor-pointer transition-all
@@ -194,7 +194,7 @@ export function TaskDependencyGraph({ tasks, onTaskClick }: TaskDependencyGraphP
             <div className="flex flex-wrap gap-3">
               {nodes.map(node => (
                 <div
-                  key={node.task.uuid}
+                  key={node.task.id}
                   onClick={() => onTaskClick?.(node.task)}
                   className={`
                     p-3 border-2 rounded-lg cursor-pointer transition-all min-w-[200px]

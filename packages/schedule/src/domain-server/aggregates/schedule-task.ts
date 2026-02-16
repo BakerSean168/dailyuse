@@ -57,7 +57,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
-    uuid?: string;
+    id?: string;
     identityId: string;
     name: string;
     description?: string | null;
@@ -74,7 +74,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
     version: number;
     deletedAt: Date | null;
   }) {
-    super(params.uuid ? ScheduleTaskId.of(params.uuid) : ScheduleTaskId.generate());
+    super(params.id ? ScheduleTaskId.of(params.id) : ScheduleTaskId.generate());
     this._props = {
       identityId: params.identityId,
       name: params.name,
@@ -96,14 +96,12 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
   }
 
   // ===== Getter 属性 =====
-  public get uuid(): string {
-    return this.id;
-  }
+
   public get identityId(): string {
     return this._props.identityId;
   }
   // Alias for interface compatibility
-  public get accountUuid(): string {
+  public get identityId(): string {
     return this._props.identityId;
   }
   public get name(): string {
@@ -221,7 +219,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
     status?: ExecutionStatus;
   }): ScheduleExecution {
     const execution = ScheduleExecution.create({
-      taskUuid: this.id,
+      taskId: this.id,
       executionTime: params.executionTime,
       status: params.status,
     });
@@ -240,8 +238,8 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
   /**
    * 获取执行记录
    */
-  public getExecution(uuid: string): ScheduleExecution | null {
-    return this._executions.find((e) => e.uuid === uuid) ?? null;
+  public getExecution(id: string): ScheduleExecution | null {
+    return this._executions.find((e) => e.id === id) ?? null;
   }
 
   /**
@@ -284,7 +282,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
 
     // 发布事件
     this.addDomainEvent('schedule.task.paused', {
-      taskUuid: this.id,
+      taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
       reason,
@@ -309,7 +307,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
 
     // 发布事件
     this.addDomainEvent('schedule.task.resumed', {
-      taskUuid: this.id,
+      taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
       nextRunAt,
@@ -325,7 +323,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
 
     // 发布事件
     this.addDomainEvent('schedule.task.completed', {
-      taskUuid: this.id,
+      taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
       totalExecutions: this._props.execution.executionCount,
@@ -344,7 +342,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
 
     // 发布事件
     this.addDomainEvent('schedule.task.cancelled', {
-      taskUuid: this.id,
+      taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
       reason,
@@ -360,7 +358,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
 
     // 发布事件
     this.addDomainEvent('schedule.task.failed', {
-      taskUuid: this.id,
+      taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
       error,
@@ -384,7 +382,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
 
     // 发布事件
     this.addDomainEvent('schedule.task.schedule.updated', {
-      taskUuid: this.id,
+      taskId: this.id,
       previousCronExpression: oldCron,
       newCronExpression: this._props.schedule.cronExpression,
       nextRunAt,
@@ -429,7 +427,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
     // 完整序列化 metadata DTO 以确保正确传递
     const metadataDTO = this._props.metadata.toServerDTO();
     this.addDomainEvent('schedule.task.triggered', {
-      taskUuid: this.id,
+      taskId: this.id,
       taskName: this._props.name,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
@@ -509,8 +507,8 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
 
     // 发布事件
     this.addDomainEvent('schedule.task.executed', {
-      taskUuid: this.id,
-      executionUuid: execution.uuid,
+      taskId: this.id,
+      executionId: execution.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
       status,
@@ -763,8 +761,8 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
    */
   public toServerDTO(includeChildren: boolean = false): ScheduleTaskServerDTO {
     return {
-      uuid: this.id,
-      accountUuid: this._props.identityId,
+      id: this.id,
+      identityId: this._props.identityId,
       name: this._props.name,
       description: this._props.description,
       sourceModule: this._props.sourceModule,
@@ -828,8 +826,8 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
     const metadataDTO = this._props.metadata.toServerDTO();
 
     return {
-      uuid: this.id,
-      accountUuid: this._props.identityId,
+      id: this.id,
+      identityId: this._props.identityId,
       name: this._props.name,
       description: this._props.description,
       sourceModule: this._props.sourceModule,
@@ -916,7 +914,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
 
     // 发布创建事件
     task.addDomainEvent('schedule.task.created', {
-      taskUuid: task.uuid,
+      taskId: task.id,
       name: params.name,
       sourceModule: params.sourceModule,
       sourceEntityId: params.sourceEntityId,
@@ -932,8 +930,8 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
    */
   public static fromServerDTO(dto: ScheduleTaskServerDTO): ScheduleTask {
     const task = new ScheduleTask({
-      uuid: dto.uuid,
-      identityId: dto.accountUuid,
+      id: dto.id,
+      identityId: dto.identityId,
       name: dto.name,
       description: dto.description,
       sourceModule: dto.sourceModule,
@@ -970,8 +968,8 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
 
     // 从 DTO 处理
     const task = new ScheduleTask({
-      uuid: dto.uuid,
-      identityId: dto.accountUuid,
+      id: dto.id,
+      identityId: dto.identityId,
       name: dto.name,
       description: dto.description,
       sourceModule: dto.sourceModule,
@@ -1002,8 +1000,8 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
    */
   public static fromPersistenceDTO(dto: any): ScheduleTask {
     return new ScheduleTask({
-      uuid: dto.uuid,
-      identityId: dto.accountUuid,
+      id: dto.id,
+      identityId: dto.identityId,
       name: dto.name,
       description: dto.description,
       sourceModule: dto.sourceModule,

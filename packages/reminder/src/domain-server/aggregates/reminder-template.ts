@@ -61,7 +61,7 @@ interface ReminderTemplateState {
   notificationConfig: NotificationConfig;
   selfEnabled: boolean;
   status: ReminderStatus;
-  groupUuid: string | null;
+  groupId: string | null;
   effectiveEnabled: boolean;
   importanceLevel: ImportanceLevel;
   tags: string[];
@@ -96,7 +96,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
-    uuid?: string;
+    id?: string;
     identityId: IdentityId;
     title: string;
     description?: string | null;
@@ -108,7 +108,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     notificationConfig: NotificationConfig;
     selfEnabled: boolean;
     status: ReminderStatus;
-    groupUuid?: string | null;
+    groupId?: string | null;
     importanceLevel: ImportanceLevel;
     tags?: string[];
     color?: string | null;
@@ -124,7 +124,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     frequencyAdjustment?: FrequencyAdjustment | null;
     smartFrequencyEnabled?: boolean;
   }) {
-    super(params.uuid ? ReminderTemplateId.of(params.uuid) : ReminderTemplateId.generate());
+    super(params.id ? ReminderTemplateId.of(params.id) : ReminderTemplateId.generate());
     this._props = {
       identityId: params.identityId,
       title: params.title,
@@ -137,7 +137,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       notificationConfig: params.notificationConfig,
       selfEnabled: params.selfEnabled,
       status: params.status,
-      groupUuid: params.groupUuid ?? null,
+      groupId: params.groupId ?? null,
       effectiveEnabled: params.selfEnabled, // 初始化时默认等于 selfEnabled
       importanceLevel: params.importanceLevel,
       tags: params.tags ? [...params.tags] : [],
@@ -158,9 +158,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
   }
 
   // ===== Getter 属性 =====
-  public get uuid(): string {
-    return this.id;
-  }
+
   public get identityId(): IdentityId {
     return this._props.identityId;
   }
@@ -194,8 +192,8 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
   public get status(): ReminderStatus {
     return this._props.status;
   }
-  public get groupUuid(): string | null {
-    return this._props.groupUuid;
+  public get groupId(): string | null {
+    return this._props.groupId;
   }
   public get importanceLevel(): ImportanceLevel {
     return this._props.importanceLevel;
@@ -269,9 +267,9 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     tags?: string[];
     color?: string;
     icon?: string;
-    groupUuid?: string;
+    groupId?: string;
   }): ReminderTemplate {
-    const uuid = generateUUID();
+    const newId = generateUUID();
     const now = Date.now();
 
     // 创建值对象
@@ -287,7 +285,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     const stats = ReminderStats.createEmpty();
 
     const template = new ReminderTemplate({
-      uuid,
+      id,
       identityId: params.identityId,
       title: params.title,
       description: params.description,
@@ -299,7 +297,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       notificationConfig,
       selfEnabled: true, // 默认启用
       status: ReminderStatus.Active,
-      groupUuid: params.groupUuid,
+      groupId: params.groupId,
       importanceLevel: params.importanceLevel ?? (ImportanceLevel.Moderate as ImportanceLevel),
       tags: params.tags,
       color: params.color,
@@ -315,7 +313,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
 
     // 发布创建事件
     template.addDomainEvent('reminder.template.created', {
-      templateUuid: uuid,
+      templateId: id,
       identityId: params.identityId,
       title: params.title,
       type: params.type,
@@ -336,7 +334,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     const stats = ReminderStats.fromDTO(dto.stats);
 
     const template = new ReminderTemplate({
-      uuid: dto.id as string,
+      id: dto.id as string,
       identityId: IdentityId.of(dto.identityId),
       title: dto.name,
       description: dto.description,
@@ -348,7 +346,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       notificationConfig,
       selfEnabled: dto.selfEnabled,
       status: dto.status,
-      groupUuid: dto.groupUuid,
+      groupId: dto.groupId,
       importanceLevel: dto.importanceLevel,
       tags: dto.tags,
       color: dto.color,
@@ -424,7 +422,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
         : null;
 
     return new ReminderTemplate({
-      uuid: dto.id as string,
+      id: dto.id as string,
       identityId: IdentityId.of(dto.identityId),
       title: dto.name,
       description: dto.description,
@@ -436,7 +434,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       notificationConfig,
       selfEnabled: dto.selfEnabled,
       status: dto.status,
-      groupUuid: dto.groupUuid,
+      groupId: dto.groupId,
       importanceLevel: dto.importanceLevel,
       tags,
       color: dto.color,
@@ -467,7 +465,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     error?: string;
   }): ReminderHistory {
     const history = ReminderHistory.create({
-      templateUuid: this.uuid,
+      templateId: this.id,
       triggeredAt: params.triggeredAt,
       result: params.result,
       error: params.error,
@@ -517,7 +515,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     tags?: string[];
     color?: string | null;
     icon?: string | null;
-    groupUuid?: string | null;
+    groupId?: string | null;
   }): void {
     const now = Date.now();
 
@@ -540,8 +538,8 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     if (updates.icon !== undefined) {
       this._props.icon = updates.icon;
     }
-    if (updates.groupUuid !== undefined) {
-      this._props.groupUuid = updates.groupUuid;
+    if (updates.groupId !== undefined) {
+      this._props.groupId = updates.groupId;
     }
 
     // 更新值对象
@@ -598,7 +596,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
 
     // 发布启用事件
     this.addDomainEvent('reminder.template.enabled', {
-      templateUuid: this.uuid,
+      templateId: this.id,
       activatedAt: now,
       identityId: this._props.identityId,
     });
@@ -619,7 +617,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
 
     // 发布暂停事件
     this.addDomainEvent('reminder.template.paused', {
-      templateUuid: this.uuid,
+      templateId: this.id,
       identityId: this._props.identityId,
     });
   }
@@ -638,27 +636,27 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
   /**
    * 移动到分组（专用方法）
    *
-   * @param targetGroupUuid 目标分组 UUID，null 表示移出分组
+   * @param targetGroupId 目标分组 ID，null 表示移出分组
    */
-  public moveToGroup(targetGroupUuid: string | null): void {
-    const oldGroupUuid = this._props.groupUuid;
+  public moveToGroup(targetGroupId: string | null): void {
+    const oldGroupId = this._props.groupId;
 
     // 如果分组没有变化，直接返回
-    if (oldGroupUuid === targetGroupUuid) {
+    if (oldGroupId === targetGroupId) {
       return;
     }
 
-    this._props.groupUuid = targetGroupUuid;
+    this._props.groupId = targetGroupId;
     this._props.updatedAt = new Date(Date.now());
 
-    // groupUuid 变化，effectiveEnabled 需要重新计算
+    // groupId 变化，effectiveEnabled 需要重新计算
     // 应用层需要调用 setEffectiveEnabled 来更新
 
     // 发布移动事件
     this.addDomainEvent('reminder.template.moved', {
-      templateUuid: this.uuid,
-      oldGroupUuid,
-      newGroupUuid: targetGroupUuid,
+      templateId: this.id,
+      oldGroupId,
+      newGroupId: targetGroupId,
       identityId: this._props.identityId,
     });
   }
@@ -758,7 +756,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
 
     // 发布触发事件
     this.addDomainEvent('reminder.template.triggered', {
-      templateUuid: this.uuid,
+      templateId: this.id,
       triggeredAt: now,
       nextTriggerAt: this._props.nextTriggerAt,
       identityId: this._props.identityId,
@@ -802,7 +800,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
 
     // 发布删除事件
     this.addDomainEvent('reminder.template.deleted', {
-      templateUuid: this.uuid,
+      templateId: this.id,
       templateTitle: this._props.title,
       identityId: this._props.identityId,
     });
@@ -977,7 +975,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       notificationConfig: this._props.notificationConfig.toServerDTO(),
       selfEnabled: this._props.selfEnabled,
       status: this._props.status,
-      groupUuid: this._props.groupUuid,
+      groupId: this._props.groupId,
       importanceLevel: this._props.importanceLevel,
       tags: [...this._props.tags],
       color: this._props.color,
@@ -1002,7 +1000,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     // from an application service that has the context of the group.
     // Here we default to the template's own state.
     const effectiveEnabled = this._props.selfEnabled;
-    const controlledByGroup = !!this._props.groupUuid;
+    const controlledByGroup = !!this._props.groupId;
 
     const typeText = this._props.type === ReminderType.OneTime ? '一次性' : '循环';
     const statusText = this._props.status === ReminderStatus.Active ? '活跃' : '暂停';
@@ -1073,7 +1071,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     };
 
     const clientDTO: ReminderTemplateClientDTO = {
-      id: this.uuid,
+      id: this.id,
       identityId: this._props.identityId,
       name: this._props.title,
       description: this._props.description,
@@ -1086,7 +1084,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       selfEnabled: this._props.selfEnabled,
       status: this._props.status,
       effectiveEnabled: effectiveEnabled,
-      groupId: this._props.groupUuid,
+      groupId: this._props.groupId,
       importanceLevel: this._props.importanceLevel,
       tags: [...this._props.tags],
       color: this._props.color,
@@ -1143,7 +1141,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
       notificationConfig: JSON.stringify(this._props.notificationConfig.toServerDTO()),
       selfEnabled: this._props.selfEnabled,
       status: this._props.status,
-      groupUuid: this._props.groupUuid,
+      groupId: this._props.groupId,
       importanceLevel: this._props.importanceLevel,
       tags: JSON.stringify(this._props.tags),
       color: this._props.color,

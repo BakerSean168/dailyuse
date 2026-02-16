@@ -33,7 +33,7 @@ export interface UseAIProviderReturn extends AIProviderState {
   loadQuota: () => Promise<void>;
   createProvider: (input: CreateProviderInput) => Promise<AIProvider>;
   testConnection: (input: TestProviderConnectionInput) => Promise<boolean>;
-  setDefaultProvider: (providerUuid: string) => Promise<void>;
+  setDefaultProvider: (providerId: string) => Promise<void>;
   checkQuotaAvailability: (tokensNeeded: number) => Promise<boolean>;
 }
 
@@ -140,14 +140,14 @@ export function useAIProvider(): UseAIProviderReturn {
   /**
    * 设置默认提供商
    */
-  const setDefaultProvider = useCallback(async (providerUuid: string) => {
+  const setDefaultProvider = useCallback(async (providerId: string) => {
     try {
-      await aiApplicationService.setDefaultProvider(providerUuid);
+      await aiApplicationService.setDefaultProvider(providerId);
       setState((prev) => ({
         ...prev,
         providers: prev.providers.map((p) => ({
           ...p,
-          isDefault: p.uuid === providerUuid,
+          isDefault: p.id === providerId,
         })),
       }));
     } catch (error) {

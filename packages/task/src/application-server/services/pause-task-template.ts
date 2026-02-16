@@ -26,12 +26,12 @@ export class PauseTaskTemplate {
   ) {}
 
   async execute(
-    uuid: string,
+    id: string,
     reason?: string,
   ): Promise<Result<{ template: TaskTemplateClientDTO; instancesSkipped: number }>> {
-    const template = await this.templateRepository.findById(uuid);
+    const template = await this.templateRepository.findById(id);
     if (!template) {
-      return error('NOT_FOUND', `TaskTemplate ${uuid} not found`);
+      return error('NOT_FOUND', `TaskTemplate ${id} not found`);
     }
 
     // 1. 鏆傚仠妯℃澘鐘讹拷?
@@ -39,7 +39,7 @@ export class PauseTaskTemplate {
     await this.templateRepository.save(template);
 
     // 2. 澶勭悊鏈畬鎴愮殑浠诲姟瀹炰緥
-    const instancesSkipped = await this.handleInstancesOnPause(uuid);
+    const instancesSkipped = await this.handleInstancesOnPause(id);
 
     // 3. 鍙戝竷鏆傚仠浜嬩欢
     try {

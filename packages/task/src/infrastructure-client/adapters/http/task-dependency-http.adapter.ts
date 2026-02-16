@@ -30,22 +30,22 @@ export class TaskDependencyHttpAdapter implements ITaskDependencyApiClient {
   constructor(private readonly httpClient: IResultHttpClient) {}
 
   async createDependency(
-    taskUuid: string,
+    taskId: string,
     request: CreateTaskDependencyRequest,
   ): Promise<Result<TaskDependencyClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${taskUuid}/dependencies`, request);
+    return this.httpClient.post(`${this.baseUrl}/${taskId}/dependencies`, request);
   }
 
-  async getDependencies(taskUuid: string): Promise<Result<TaskDependencyClientDTO[]>> {
-    return this.httpClient.get(`${this.baseUrl}/${taskUuid}/dependencies`);
+  async getDependencies(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
+    return this.httpClient.get(`${this.baseUrl}/${taskId}/dependencies`);
   }
 
-  async getDependents(taskUuid: string): Promise<Result<TaskDependencyClientDTO[]>> {
-    return this.httpClient.get(`${this.baseUrl}/${taskUuid}/dependents`);
+  async getDependents(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
+    return this.httpClient.get(`${this.baseUrl}/${taskId}/dependents`);
   }
 
-  async getDependencyChain(taskUuid: string): Promise<Result<DependencyChainClientDTO>> {
-    return this.httpClient.get(`${this.baseUrl}/${taskUuid}/dependency-chain`);
+  async getDependencyChain(taskId: string): Promise<Result<DependencyChainClientDTO>> {
+    return this.httpClient.get(`${this.baseUrl}/${taskId}/dependency-chain`);
   }
 
   async validateDependency(
@@ -54,15 +54,15 @@ export class TaskDependencyHttpAdapter implements ITaskDependencyApiClient {
     return this.httpClient.post(`${this.baseUrl}/dependencies/validate`, request);
   }
 
-  async deleteDependency(uuid: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.baseUrl}/dependencies/${uuid}`);
+  async deleteDependency(id: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.baseUrl}/dependencies/${id}`);
   }
 
   async updateDependency(
-    uuid: string,
+    id: string,
     request: UpdateTaskDependencyRequest,
   ): Promise<Result<TaskDependencyClientDTO>> {
-    return this.httpClient.put(`${this.baseUrl}/dependencies/${uuid}`, request);
+    return this.httpClient.put(`${this.baseUrl}/dependencies/${id}`, request);
   }
 }
 

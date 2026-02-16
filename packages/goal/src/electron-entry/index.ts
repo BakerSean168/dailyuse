@@ -126,20 +126,20 @@ export const GoalElectronModule: IElectronModule = {
 
     // 4. IPC Handlers
     ipcMain.handle(Ch.LIST, (_, params) => listGoals.execute(params));
-    ipcMain.handle(Ch.GET, (_, uuid) => getGoal.execute(uuid));
+    ipcMain.handle(Ch.GET, (_, id) => getGoal.execute(id));
     ipcMain.handle(Ch.CREATE, (_, dto) => createGoal.execute(dto, { identityId: dto.identityId }));
-    ipcMain.handle(Ch.UPDATE, (_, dto) => updateGoal.execute(dto.uuid, dto));
-    ipcMain.handle(Ch.DELETE, (_, uuid) => deleteGoal.execute(uuid));
-    ipcMain.handle(Ch.ARCHIVE, (_, uuid) => archiveGoal.execute(uuid));
-    ipcMain.handle(Ch.RESTORE, (_, uuid) => activateGoal.execute(uuid));
+    ipcMain.handle(Ch.UPDATE, (_, dto) => updateGoal.execute(dto.id, dto));
+    ipcMain.handle(Ch.DELETE, (_, id) => deleteGoal.execute(id));
+    ipcMain.handle(Ch.ARCHIVE, (_, id) => archiveGoal.execute(id));
+    ipcMain.handle(Ch.RESTORE, (_, id) => activateGoal.execute(id));
     ipcMain.handle(Ch.UPDATE_PROGRESS, (_, dto) =>
-      updateKeyResultProgress.execute(dto.goalUuid, dto.keyResultUuid, dto.currentValue, dto.note),
+      updateKeyResultProgress.execute(dto.goalId, dto.keyResultId, dto.currentValue, dto.note),
     );
 
     ipcMain.handle(Ch.FOLDER_LIST, (_, params) => listGoalFolders.execute(params));
     ipcMain.handle(Ch.FOLDER_CREATE, (_, dto) => createGoalFolder.execute(dto.identityId, dto));
-    ipcMain.handle(Ch.FOLDER_UPDATE, (_, dto) => updateGoalFolder.execute(dto.uuid, dto.accountUuid, dto));
-    ipcMain.handle(Ch.FOLDER_DELETE, (_, dto) => deleteGoalFolder.execute(dto.uuid, dto.accountUuid));
+    ipcMain.handle(Ch.FOLDER_UPDATE, (_, dto) => updateGoalFolder.execute(dto.id, dto.identityId, dto));
+    ipcMain.handle(Ch.FOLDER_DELETE, (_, dto) => deleteGoalFolder.execute(dto.id, dto.identityId));
 
     // Statistics: recalculate progress for a given goal
     ipcMain.handle(Ch.STATISTICS_GET, async (_, params) => {

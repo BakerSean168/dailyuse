@@ -23,7 +23,7 @@ import { env } from '../../shared/config/env';
  * 閫傞厤鍣ㄧ紦锟?Key 鐢熸垚
  */
 function getCacheKey(config: AIProviderConfigServerDTO): string {
-  return `${config.uuid}:${config.updatedAt}`;
+  return `${config.id}:${config.updatedAt}`;
 }
 
 /**
@@ -218,8 +218,8 @@ export class AIAdapterFactory {
 
     try {
       const tempConfig: AIProviderConfigServerDTO = {
-        uuid: 'test-' + Date.now(),
-        accountUuid: 'test',
+        id: 'test-' + Date.now(),
+        identityId: 'test',
         name: 'Test Connection',
         providerType: config.providerType,
         baseUrl: config.baseUrl,

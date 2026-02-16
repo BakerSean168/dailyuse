@@ -10,7 +10,7 @@ import type { ConflictDetectionResult as IConflictDetectionResult } from '@daily
 
 // 从接口复制的类型定义（因为 contracts 未导出这些类型）
 interface ConflictDetail {
-  readonly scheduleUuid: string;
+  readonly scheduleId: string;
   readonly scheduleTitle: string;
   readonly overlapStart: number;
   readonly overlapEnd: number;
@@ -94,7 +94,7 @@ export class ConflictDetectionResult extends ValueObject<ConflictDetectionResult
   }
 
   public get conflictingScheduleIds(): string[] {
-    return this.props.conflicts.map(c => c.scheduleUuid);
+    return this.props.conflicts.map(c => c.scheduleId);
   }
 
   // ================= 序列化 =================

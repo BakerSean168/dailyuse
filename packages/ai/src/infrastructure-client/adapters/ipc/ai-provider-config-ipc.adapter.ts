@@ -35,19 +35,19 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
     return this.ipcClient.invoke(`${this.channel}:list`);
   }
 
-  async getProviderById(uuid: string): Promise<AIProviderConfigClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:get`, uuid);
+  async getProviderById(id: string): Promise<AIProviderConfigClientDTO> {
+    return this.ipcClient.invoke(`${this.channel}:get`, id);
   }
 
   async updateProvider(
-    uuid: string,
+    id: string,
     request: UpdateAIProviderConfigReq,
   ): Promise<AIProviderConfigClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:update`, { uuid, ...request });
+    return this.ipcClient.invoke(`${this.channel}:update`, { id, ...request });
   }
 
-  async deleteProvider(uuid: string): Promise<void> {
-    return this.ipcClient.invoke(`${this.channel}:delete`, uuid);
+  async deleteProvider(id: string): Promise<void> {
+    return this.ipcClient.invoke(`${this.channel}:delete`, id);
   }
 
   // ===== Provider Operations =====
@@ -56,11 +56,11 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
     return this.ipcClient.invoke(`${this.channel}:test-connection`, request);
   }
 
-  async setDefaultProvider(uuid: string): Promise<void> {
-    return this.ipcClient.invoke(`${this.channel}:set-default`, uuid);
+  async setDefaultProvider(id: string): Promise<void> {
+    return this.ipcClient.invoke(`${this.channel}:set-default`, id);
   }
 
-  async refreshModels(uuid: string): Promise<RefreshProviderModelsRes> {
-    return this.ipcClient.invoke(`${this.channel}:refresh-models`, uuid);
+  async refreshModels(id: string): Promise<RefreshProviderModelsRes> {
+    return this.ipcClient.invoke(`${this.channel}:refresh-models`, id);
   }
 }

@@ -42,8 +42,8 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     return this.httpClient.post(this.templatesUrl, request);
   }
 
-  async getReminderTemplate(uuid: string): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.httpClient.get(`${this.templatesUrl}/${uuid}`);
+  async getReminderTemplate(id: string): Promise<Result<ReminderTemplateClientDTO>> {
+    return this.httpClient.get(`${this.templatesUrl}/${id}`);
   }
 
   async getReminderTemplates(params?: {
@@ -53,45 +53,45 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     return this.httpClient.get(this.templatesUrl, { params });
   }
 
-  async getUserTemplates(accountUuid: string): Promise<Result<ReminderTemplateClientDTO[]>> {
-    return this.httpClient.get(`${this.templatesUrl}/user/${accountUuid}`);
+  async getUserTemplates(identityId: string): Promise<Result<ReminderTemplateClientDTO[]>> {
+    return this.httpClient.get(`${this.templatesUrl}/user/${identityId}`);
   }
 
   async updateReminderTemplate(
-    uuid: string,
+    id: string,
     request: UpdateReminderTemplateReq,
   ): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.httpClient.patch(`${this.templatesUrl}/${uuid}`, request);
+    return this.httpClient.patch(`${this.templatesUrl}/${id}`, request);
   }
 
-  async deleteReminderTemplate(uuid: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.templatesUrl}/${uuid}`);
+  async deleteReminderTemplate(id: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.templatesUrl}/${id}`);
   }
 
-  async toggleTemplateEnabled(uuid: string): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.httpClient.post(`${this.templatesUrl}/${uuid}/toggle`, {});
+  async toggleTemplateEnabled(id: string): Promise<Result<ReminderTemplateClientDTO>> {
+    return this.httpClient.post(`${this.templatesUrl}/${id}/toggle`, {});
   }
 
   async moveTemplateToGroup(
-    templateUuid: string,
-    targetGroupUuid: string | null,
+    templateId: string,
+    targetGroupId: string | null,
   ): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.httpClient.post(`${this.templatesUrl}/${templateUuid}/move`, {
-      targetGroupUuid,
+    return this.httpClient.post(`${this.templatesUrl}/${templateId}/move`, {
+      targetGroupId,
     });
   }
 
   async searchTemplates(
-    accountUuid: string,
+    identityId: string,
     query: string,
   ): Promise<Result<ReminderTemplateClientDTO[]>> {
     return this.httpClient.get(`${this.templatesUrl}/search`, {
-      params: { accountUuid, query },
+      params: { identityId, query },
     });
   }
 
-  async getTemplateScheduleStatus(templateUuid: string): Promise<Result<TemplateScheduleStatusRes>> {
-    return this.httpClient.get(`${this.templatesUrl}/${templateUuid}/schedule-status`);
+  async getTemplateScheduleStatus(templateId: string): Promise<Result<TemplateScheduleStatusRes>> {
+    return this.httpClient.get(`${this.templatesUrl}/${templateId}/schedule-status`);
   }
 
   async getUpcomingReminders(params?: {
@@ -111,8 +111,8 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     return this.httpClient.post(this.groupsUrl, request);
   }
 
-  async getReminderGroup(uuid: string): Promise<Result<ReminderGroupClientDTO>> {
-    return this.httpClient.get(`${this.groupsUrl}/${uuid}`);
+  async getReminderGroup(id: string): Promise<Result<ReminderGroupClientDTO>> {
+    return this.httpClient.get(`${this.groupsUrl}/${id}`);
   }
 
   async getReminderGroups(params?: {
@@ -122,33 +122,33 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     return this.httpClient.get(this.groupsUrl, { params });
   }
 
-  async getUserReminderGroups(accountUuid: string): Promise<Result<ReminderGroupClientDTO[]>> {
-    return this.httpClient.get(`${this.groupsUrl}/user/${accountUuid}`);
+  async getUserReminderGroups(identityId: string): Promise<Result<ReminderGroupClientDTO[]>> {
+    return this.httpClient.get(`${this.groupsUrl}/user/${identityId}`);
   }
 
   async updateReminderGroup(
-    uuid: string,
+    id: string,
     request: UpdateReminderGroupReq,
   ): Promise<Result<ReminderGroupClientDTO>> {
-    return this.httpClient.patch(`${this.groupsUrl}/${uuid}`, request);
+    return this.httpClient.patch(`${this.groupsUrl}/${id}`, request);
   }
 
-  async deleteReminderGroup(uuid: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.groupsUrl}/${uuid}`);
+  async deleteReminderGroup(id: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.groupsUrl}/${id}`);
   }
 
-  async toggleReminderGroupStatus(uuid: string): Promise<Result<ReminderGroupClientDTO>> {
-    return this.httpClient.post(`${this.groupsUrl}/${uuid}/toggle-status`, {});
+  async toggleReminderGroupStatus(id: string): Promise<Result<ReminderGroupClientDTO>> {
+    return this.httpClient.post(`${this.groupsUrl}/${id}/toggle-status`, {});
   }
 
-  async toggleReminderGroupControlMode(uuid: string): Promise<Result<ReminderGroupClientDTO>> {
-    return this.httpClient.post(`${this.groupsUrl}/${uuid}/toggle-control-mode`, {});
+  async toggleReminderGroupControlMode(id: string): Promise<Result<ReminderGroupClientDTO>> {
+    return this.httpClient.post(`${this.groupsUrl}/${id}/toggle-control-mode`, {});
   }
 
   // ===== 统计 =====
 
-  async getReminderStatistics(accountUuid: string): Promise<Result<ReminderStatsClientDTO>> {
-    return this.httpClient.get(`/reminders/statistics/${accountUuid}`);
+  async getReminderStatistics(identityId: string): Promise<Result<ReminderStatsClientDTO>> {
+    return this.httpClient.get(`/reminders/statistics/${identityId}`);
   }
 }
 

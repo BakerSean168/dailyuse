@@ -7,7 +7,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 // ============ Types ============
 export interface User {
-  uuid: string;
+  id: string;
   email: string;
   name: string;
   avatar?: string;

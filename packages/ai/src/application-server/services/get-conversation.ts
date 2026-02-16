@@ -14,14 +14,14 @@ import type { ConversationResponse } from '@dailyuse/contracts/ai';
 export class GetConversation {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
-  async execute(uuid: string, accountUuid: string): Promise<ConversationResponse> {
-    const conversation = await this.conversationRepository.findByUuid(uuid);
+  async execute(id: string, identityId: string): Promise<ConversationResponse> {
+    const conversation = await this.conversationRepository.findById(id);
 
     if (!conversation) {
       throw new Error('Conversation not found');
     }
 
-    if (conversation.accountUuid !== accountUuid) {
+    if (conversation.identityId !== identityId) {
       throw new Error('Not authorized to access this conversation');
     }
 

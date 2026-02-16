@@ -14,14 +14,14 @@ export function initializeDashboardTables(database: Database.Database): void {
   // dashboard_configs 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS dashboard_configs (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT UNIQUE NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT UNIQUE NOT NULL,
       layout TEXT NOT NULL DEFAULT '[]',
       widgets TEXT NOT NULL DEFAULT '[]',
       theme TEXT,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
     )
   `);
 

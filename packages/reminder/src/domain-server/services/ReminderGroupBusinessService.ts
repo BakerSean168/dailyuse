@@ -142,23 +142,23 @@ export class ReminderGroupBusinessService {
   /**
    * 验证分组名称是否唯一
    * 
-   * @param accountUuid - 账户 UUID
+   * @param identityId - 账户 ID
    * @param name - 分组名称
    * @param existingGroups - 现有分组列表
-   * @param excludeGroupUuid - 排除的分组 UUID（用于更新时检查）
+   * @param excludeGroupId - 排除的分组 ID（用于更新时检查）
    * @returns 验证结果
    */
   public validateGroupNameUniqueness(
-    accountUuid: string,
+    identityId: string,
     name: string,
     existingGroups: ReminderGroup[],
-    excludeGroupUuid?: string,
+    excludeGroupId?: string,
   ): GroupNameValidation {
     const conflictingGroup = existingGroups.find(
       g =>
-        g.identityId === accountUuid &&
+        g.identityId === identityId &&
         g.name === name &&
-        g.id !== excludeGroupUuid &&
+        g.id !== excludeGroupId &&
         !g.deletedAt, // 忽略已删除的分组
     );
 

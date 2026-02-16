@@ -12,10 +12,10 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
   async save(quota: AIUsageQuotaServerDTO): Promise<void> {
     const stmt = this.db.prepare(`
       INSERT INTO ai_usage_quotas (
-        uuid, accountUuid, monthly_limit, used_count, reset_date,
+        id, identityId, monthly_limit, used_count, reset_date,
         createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(accountUuid) DO UPDATE SET
+      ON CONFLICT(identityId) DO UPDATE SET
         monthly_limit = excluded.monthly_limit,
         used_count = excluded.used_count,
         reset_date = excluded.reset_date,
@@ -23,8 +23,8 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
     `);
 
     stmt.run(
-      quota.uuid,
-      quota.accountUuid,
+      quota.id,
+      quota.identityId,
       quota.monthly_limit,
       quota.used_count,
       quota.reset_date,
@@ -33,42 +33,42 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
     );
   }
 
-  async findByUuid(uuid: string): Promise<AIUsageQuotaServerDTO | null> {
-    const stmt = this.db.prepare(`SELECT * FROM ai_usage_quotas WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<AIUsageQuotaServerDTO | null> {
+    const stmt = this.db.prepare(`SELECT * FROM ai_usage_quotas WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return this.rowToDTO(row);
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<AIUsageQuotaServerDTO | null> {
+  async findByAccountId(identityId: string): Promise<AIUsageQuotaServerDTO | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_usage_quotas WHERE accountUuid = ? LIMIT 1`
+      `SELECT * FROM ai_usage_quotas WHERE identityId = ? LIMIT 1`
     );
-    const row = stmt.get(accountUuid) as any;
+    const row = stmt.get(identityId) as any;
 
     if (!row) return null;
 
     return this.rowToDTO(row);
   }
 
-  async createDefaultQuota(accountUuid: string): Promise<AIUsageQuotaServerDTO> {
-    const uuid = this.generateUuid();
+  async createDefaultQuota(identityId: string): Promise<AIUsageQuotaServerDTO> {
+    const newId = this.generateUuid();
     const now = new Date();
 
     const stmt = this.db.prepare(`
       INSERT INTO ai_usage_quotas (
-        uuid, accountUuid, monthly_limit, used_count, reset_date,
+        id, identityId, monthly_limit, used_count, reset_date,
         createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
-    stmt.run(uuid, accountUuid, 1000, 0, now.getTime(), now.getTime(), now.getTime());
+    stmt.run(id, identityId, 1000, 0, now.getTime(), now.getTime(), now.getTime());
 
     return {
-      uuid,
-      account_uuid: accountUuid,
+      id,
+      identity_id: identityId,
       monthly_limit: 1000,
       used_count: 0,
       reset_date: now.getTime(),
@@ -77,22 +77,22 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
     };
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM ai_usage_quotas WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM ai_usage_quotas WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async exists(accountUuid: string): Promise<boolean> {
+  async exists(identityId: string): Promise<boolean> {
     const stmt = this.db.prepare(
-      `SELECT 1 FROM ai_usage_quotas WHERE accountUuid = ? LIMIT 1`
+      `SELECT 1 FROM ai_usage_quotas WHERE identityId = ? LIMIT 1`
     );
-    return stmt.get(accountUuid) !== undefined;
+    return stmt.get(identityId) !== undefined;
   }
 
   private rowToDTO(row: any): AIUsageQuotaServerDTO {
     return {
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
+      id: row.id,
+      identity_id: row.identityId,
       monthly_limit: row.monthly_limit,
       used_count: row.used_count,
       reset_date: row.reset_date,

@@ -52,7 +52,7 @@ export interface VirtualListProps<T> {
  * <VirtualList
  *   items={goals}
  *   renderItem={(goal) => <GoalCard goal={goal} />}
- *   getItemKey={(goal) => goal.uuid}
+ *   getItemKey={(goal) => goal.id}
  *   estimateSize={100}
  *   threshold={30}
  *   height="500px"

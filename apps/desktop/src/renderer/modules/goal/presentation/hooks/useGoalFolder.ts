@@ -29,7 +29,7 @@ export interface UseGoalFolderReturn {
 
   // Mutations
   createFolder: (input: CreateGoalFolderRequest) => Promise<GoalFolder>;
-  updateFolder: (uuid: string, request: UpdateGoalFolderRequest) => Promise<void>;
+  updateFolder: (id: string, request: UpdateGoalFolderRequest) => Promise<void>;
   deleteFolder: (id: string) => Promise<void>;
 
   // Utilities
@@ -95,14 +95,14 @@ export function useGoalFolder(): UseGoalFolderReturn {
   }, []);
 
   const updateFolder = useCallback(
-    async (uuid: string, request: UpdateGoalFolderRequest): Promise<void> => {
+    async (id: string, request: UpdateGoalFolderRequest): Promise<void> => {
       const store = useGoalStore.getState();
       store.setLoading(true);
       store.setError(null);
 
       try {
-        const folder = await goalApplicationService.updateFolder(uuid, request);
-        store.updateFolder(uuid, folder);
+        const folder = await goalApplicationService.updateFolder(id, request);
+        store.updateFolder(id, folder);
         store.setLoading(false);
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : '更新文件夹失败';

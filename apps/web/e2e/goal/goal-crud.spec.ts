@@ -25,10 +25,10 @@ test.describe('Goal CRUD - 目标管理基础功能', () => {
     page.on('console', (msg) => {
       const text = msg.text();
       if (text.includes('LoginService') || 
-          text.includes('accountUuid') || 
+          text.includes('identityId') || 
           text.includes('AccountStore') || 
           text.includes('getMyProfile') ||
-          text.includes('account.uuid')) {
+          text.includes('account.id')) {
         console.log(`浏览器: ${text}`);
       }
     });
@@ -62,7 +62,7 @@ test.describe('Goal CRUD - 目标管理基础功能', () => {
     page.on('console', (msg) => {
       const text = msg.text();
       if (text.includes('LoginService') || 
-          text.includes('accountUuid') || 
+          text.includes('identityId') || 
           text.includes('AccountStore') || 
           text.includes('GoalDialog') ||
           text.includes('getMyProfile')) {

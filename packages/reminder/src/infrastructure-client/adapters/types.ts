@@ -57,27 +57,27 @@ export interface ReminderGroupsResponse {
 export interface IReminderApiClient {
   // ===== 模板 CRUD =====
   createReminderTemplate(request: CreateReminderTemplateReq): Promise<Result<ReminderTemplateClientDTO>>;
-  getReminderTemplate(uuid: string): Promise<Result<ReminderTemplateClientDTO>>;
+  getReminderTemplate(id: string): Promise<Result<ReminderTemplateClientDTO>>;
   getReminderTemplates(params?: { page?: number; limit?: number }): Promise<Result<ReminderTemplatesResponse>>;
-  getUserTemplates(accountUuid: string): Promise<Result<ReminderTemplateClientDTO[]>>;
-  updateReminderTemplate(uuid: string, request: UpdateReminderTemplateReq): Promise<Result<ReminderTemplateClientDTO>>;
-  deleteReminderTemplate(uuid: string): Promise<Result<void>>;
-  toggleTemplateEnabled(uuid: string): Promise<Result<ReminderTemplateClientDTO>>;
-  moveTemplateToGroup(templateUuid: string, targetGroupUuid: string | null): Promise<Result<ReminderTemplateClientDTO>>;
-  searchTemplates(accountUuid: string, query: string): Promise<Result<ReminderTemplateClientDTO[]>>;
-  getTemplateScheduleStatus(templateUuid: string): Promise<Result<TemplateScheduleStatusRes>>;
+  getUserTemplates(identityId: string): Promise<Result<ReminderTemplateClientDTO[]>>;
+  updateReminderTemplate(id: string, request: UpdateReminderTemplateReq): Promise<Result<ReminderTemplateClientDTO>>;
+  deleteReminderTemplate(id: string): Promise<Result<void>>;
+  toggleTemplateEnabled(id: string): Promise<Result<ReminderTemplateClientDTO>>;
+  moveTemplateToGroup(templateId: string, targetGroupId: string | null): Promise<Result<ReminderTemplateClientDTO>>;
+  searchTemplates(identityId: string, query: string): Promise<Result<ReminderTemplateClientDTO[]>>;
+  getTemplateScheduleStatus(templateId: string): Promise<Result<TemplateScheduleStatusRes>>;
   getUpcomingReminders(params?: { days?: number; limit?: number; importanceLevel?: string; type?: string }): Promise<Result<GetUpcomingRemindersRes>>;
 
   // ===== 分组 CRUD =====
   createReminderGroup(request: CreateReminderGroupReq): Promise<Result<ReminderGroupClientDTO>>;
-  getReminderGroup(uuid: string): Promise<Result<ReminderGroupClientDTO>>;
+  getReminderGroup(id: string): Promise<Result<ReminderGroupClientDTO>>;
   getReminderGroups(params?: { page?: number; limit?: number }): Promise<Result<ReminderGroupsResponse>>;
-  getUserReminderGroups(accountUuid: string): Promise<Result<ReminderGroupClientDTO[]>>;
-  updateReminderGroup(uuid: string, request: UpdateReminderGroupReq): Promise<Result<ReminderGroupClientDTO>>;
-  deleteReminderGroup(uuid: string): Promise<Result<void>>;
-  toggleReminderGroupStatus(uuid: string): Promise<Result<ReminderGroupClientDTO>>;
-  toggleReminderGroupControlMode(uuid: string): Promise<Result<ReminderGroupClientDTO>>;
+  getUserReminderGroups(identityId: string): Promise<Result<ReminderGroupClientDTO[]>>;
+  updateReminderGroup(id: string, request: UpdateReminderGroupReq): Promise<Result<ReminderGroupClientDTO>>;
+  deleteReminderGroup(id: string): Promise<Result<void>>;
+  toggleReminderGroupStatus(id: string): Promise<Result<ReminderGroupClientDTO>>;
+  toggleReminderGroupControlMode(id: string): Promise<Result<ReminderGroupClientDTO>>;
 
   // ===== 统计 =====
-  getReminderStatistics(accountUuid: string): Promise<Result<ReminderStatsClientDTO>>;
+  getReminderStatistics(identityId: string): Promise<Result<ReminderStatsClientDTO>>;
 }

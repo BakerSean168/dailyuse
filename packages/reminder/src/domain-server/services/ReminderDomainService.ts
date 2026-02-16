@@ -48,7 +48,7 @@ export class ReminderDomainService {
   // --- ReminderTemplate Methods ---
 
   public async createReminderTemplate(params: {
-    accountUuid: string;
+    identityId: string;
     title: string;
     type: ReminderType;
     trigger: TriggerConfigServerDTO;
@@ -61,57 +61,57 @@ export class ReminderDomainService {
     tags?: string[];
     color?: string;
     icon?: string;
-    groupUuid?: string;
+    groupId?: string;
   }): Promise<ReminderTemplate> {
-    if (params.groupUuid) {
-      const group = await this.reminderGroupRepository.findById(params.groupUuid);
-      if (!group || group.identityId !== params.accountUuid) {
-        throw new Error(`Invalid groupUuid: ${params.groupUuid}`);
+    if (params.groupId) {
+      const group = await this.reminderGroupRepository.findById(params.groupId);
+      if (!group || group.identityId !== params.identityId) {
+        throw new Error(`Invalid groupId: ${params.groupId}`);
       }
     }
 
-    const template = ReminderTemplate.create({ ...params, identityId: params.accountUuid as IdentityId });
+    const template = ReminderTemplate.create({ ...params, identityId: params.identityId as IdentityId });
     await this.reminderTemplateRepository.save(template);
 
-    // TODO: Update group stats if groupUuid is present
-    if (params.groupUuid) {
-      await this.updateGroupStats(params.groupUuid);
+    // TODO: Update group stats if groupId is present
+    if (params.groupId) {
+      await this.updateGroupStats(params.groupId);
     }
 
     return template;
   }
 
   public async getTemplate(
-    uuid: string,
+    id: string,
     options?: { includeHistory?: boolean },
   ): Promise<ReminderTemplate | null> {
-    return this.reminderTemplateRepository.findById(uuid, options);
+    return this.reminderTemplateRepository.findById(id, options);
   }
 
-  public async deleteTemplate(uuid: string, softDelete: boolean = true): Promise<void> {
-    const template = await this.getTemplate(uuid);
+  public async deleteTemplate(id: string, softDelete: boolean = true): Promise<void> {
+    const template = await this.getTemplate(id);
     if (!template) {
-      throw new Error(`ReminderTemplate not found: ${uuid}`);
+      throw new Error(`ReminderTemplate not found: ${id}`);
     }
 
-    const groupUuid = template.groupUuid;
+    const groupId = template.groupId;
 
     if (softDelete) {
       template.softDelete();
       await this.reminderTemplateRepository.save(template);
     } else {
-      await this.reminderTemplateRepository.delete(uuid);
+      await this.reminderTemplateRepository.delete(id);
     }
 
-    if (groupUuid) {
-      await this.updateGroupStats(groupUuid);
+    if (groupId) {
+      await this.updateGroupStats(groupId);
     }
   }
 
   // --- ReminderGroup Methods ---
 
   public async createReminderGroup(params: {
-    accountUuid: string;
+    identityId: string;
     name: string;
     controlMode?: ControlMode;
     description?: string;
@@ -120,86 +120,86 @@ export class ReminderDomainService {
     order?: number;
   }): Promise<ReminderGroup> {
     const existingGroup = await this.reminderGroupRepository.findByName(
-      params.accountUuid,
+      params.identityId,
       params.name,
     );
     if (existingGroup) {
       throw new Error(`ReminderGroup with name "${params.name}" already exists.`);
     }
 
-    const group = ReminderGroup.create({ ...params, identityId: params.accountUuid });
+    const group = ReminderGroup.create({ ...params, identityId: params.identityId });
     await this.reminderGroupRepository.save(group);
     return group;
   }
 
-  public async getGroup(uuid: string): Promise<ReminderGroup | null> {
-    return this.reminderGroupRepository.findById(uuid);
+  public async getGroup(id: string): Promise<ReminderGroup | null> {
+    return this.reminderGroupRepository.findById(id);
   }
 
-  public async deleteGroup(uuid: string, softDelete: boolean = true): Promise<void> {
+  public async deleteGroup(id: string, softDelete: boolean = true): Promise<void> {
     // Business Rule: Cannot delete a group that still contains templates.
-    const templatesInGroup = await this.reminderTemplateRepository.findByGroupUuid(uuid);
+    const templatesInGroup = await this.reminderTemplateRepository.findByGroupId(id);
     if (templatesInGroup.length > 0) {
       throw new Error(
-        `Cannot delete group ${uuid} because it still contains ${templatesInGroup.length} templates.`,
+        `Cannot delete group ${id} because it still contains ${templatesInGroup.length} templates.`,
       );
     }
 
     if (softDelete) {
-      const group = await this.getGroup(uuid);
+      const group = await this.getGroup(id);
       if (group) {
         group.softDelete();
         await this.reminderGroupRepository.save(group);
       }
     } else {
-      await this.reminderGroupRepository.delete(uuid);
+      await this.reminderGroupRepository.delete(id);
     }
   }
 
   // --- Cross-Aggregate Methods ---
 
   public async assignTemplateToGroup(
-    templateUuid: string,
-    groupUuid: string | null,
+    templateId: string,
+    groupId: string | null,
   ): Promise<ReminderTemplate> {
-    const template = await this.getTemplate(templateUuid);
+    const template = await this.getTemplate(templateId);
     if (!template) {
-      throw new Error(`ReminderTemplate not found: ${templateUuid}`);
+      throw new Error(`ReminderTemplate not found: ${templateId}`);
     }
 
-    const oldGroupUuid = template.groupUuid;
+    const oldGroupId = template.groupId;
 
-    if (groupUuid) {
-      const group = await this.getGroup(groupUuid);
+    if (groupId) {
+      const group = await this.getGroup(groupId);
       if (!group || group.identityId !== template.identityId) {
-        throw new Error(`Invalid groupUuid: ${groupUuid}`);
+        throw new Error(`Invalid groupId: ${groupId}`);
       }
     }
 
     // This logic should be on the aggregate
-    // template.moveToGroup(groupUuid);
+    // template.moveToGroup(groupId);
     const newTemplate = ReminderTemplate.fromServerDTO({
       ...template.toServerDTO(),
-      groupUuid: groupUuid,
+      groupId: groupId,
     });
 
     await this.reminderTemplateRepository.save(newTemplate);
 
     // Update stats for both old and new groups
-    if (oldGroupUuid) {
-      await this.updateGroupStats(oldGroupUuid);
+    if (oldGroupId) {
+      await this.updateGroupStats(oldGroupId);
     }
-    if (groupUuid) {
-      await this.updateGroupStats(groupUuid);
+    if (groupId) {
+      await this.updateGroupStats(groupId);
     }
 
     return newTemplate;
   }
 
-  public async toggleGroupAndTemplates(uuid: string): Promise<ReminderGroup> {
-    const group = await this.getGroup(uuid);
+  public async toggleGroupAndTemplates(id: string): Promise<ReminderGroup> {
+    const group = await this.getGroup(id);
     if (!group) {
-      throw new Error(`ReminderGroup not found: ${uuid}`);
+      throw new Error(`ReminderGroup not found: ${id}`);
     }
 
     group.toggle();
@@ -207,7 +207,7 @@ export class ReminderDomainService {
 
     // If group control is active, update all templates within the group
     if (group.controlMode === ControlMode.Group) {
-      const templates = await this.reminderTemplateRepository.findByGroupUuid(uuid);
+      const templates = await this.reminderTemplateRepository.findByGroupId(id);
       for (const template of templates) {
         if (group.enabled) {
           template.enable(); // This should check group status internally
@@ -221,13 +221,13 @@ export class ReminderDomainService {
     return group;
   }
 
-  public async updateGroupStats(groupUuid: string): Promise<void> {
-    const group = await this.getGroup(groupUuid);
+  public async updateGroupStats(groupId: string): Promise<void> {
+    const group = await this.getGroup(groupId);
     if (!group) return;
 
     // This is a simplified stats update. A real implementation might use a
     // more efficient query.
-    const templates = await this.reminderTemplateRepository.findByGroupUuid(groupUuid, {
+    const templates = await this.reminderTemplateRepository.findByGroupId(groupId, {
       includeDeleted: false,
     });
 

@@ -21,31 +21,31 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByUuid(uuid: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {
+  async findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByAccountUuid(accountUuid: string, options?: AIConversationQueryOptions): Promise<AIConversation[]> {
+  async findByAccountId(identityId: string, options?: AIConversationQueryOptions): Promise<AIConversation[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
   async findByStatus(
-    accountUuid: string,
+    identityId: string,
     status: ConversationStatus,
     options?: AIConversationQueryOptions,
   ): Promise<AIConversation[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findRecent(accountUuid: string, limit: number, offset?: number): Promise<AIConversation[]> {
+  async findRecent(identityId: string, limit: number, offset?: number): Promise<AIConversation[]> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async exists(uuid: string): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     throw new Error('Not implemented - extract from apps/api');
   }
 }

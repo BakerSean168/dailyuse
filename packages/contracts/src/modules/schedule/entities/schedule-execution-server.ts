@@ -12,8 +12,8 @@ import type { ScheduleExecutionClientDTO } from './schedule-execution-client';
  * ScheduleExecution Server DTO
  */
 export interface ScheduleExecutionServerDTO {
-  uuid: string;
-  taskUuid: string;
+  id: string;
+  taskId: string;
   executionTime: number; // epoch ms
   status: ExecutionStatus;
   duration: number | null; // 执行时长（毫秒）
@@ -27,8 +27,8 @@ export interface ScheduleExecutionServerDTO {
  * ScheduleExecution Persistence DTO (数据库映射)
  */
 export interface ScheduleExecutionPersistenceDTO {
-  uuid: string;
-  taskUuid: string;
+  id: string;
+  taskId: string;
   executionTime: number;
   status: ExecutionStatus;
   duration: number | null;
@@ -45,8 +45,8 @@ export interface ScheduleExecutionPersistenceDTO {
  */
 export interface ScheduleExecutionServer {
   // 基础属性
-  uuid: string;
-  taskUuid: string;
+  id: string;
+  taskId: string;
   executionTime: number;
   status: ExecutionStatus;
   duration: number | null;
@@ -122,7 +122,7 @@ export interface ScheduleExecutionServerStatic {
    * 创建新的 ScheduleExecution 实体（静态工厂方法）
    */
   create(params: {
-    taskUuid: string;
+    taskId: string;
     executionTime: number;
     status?: ExecutionStatus;
   }): ScheduleExecutionServer;

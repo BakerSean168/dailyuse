@@ -14,48 +14,48 @@ import type { NotificationPreference } from '../../../domain-server/aggregates/n
  */
 export class NotificationPreferenceMemoryRepository implements INotificationPreferenceRepository {
   private preferences = new Map<string, NotificationPreference>();
-  private accountIndex = new Map<string, string>(); // accountUuid -> uuid
+  private accountIndex = new Map<string, string>(); // identityId -> id
 
   async save(preference: NotificationPreference): Promise<void> {
     const pref = preference as any;
-    this.preferences.set(pref.uuid, preference);
-    this.accountIndex.set(pref.accountUuid, pref.uuid);
+    this.preferences.set(pref.id, preference);
+    this.accountIndex.set(pref.identityId, pref.id);
   }
 
-  async findById(uuid: string): Promise<NotificationPreference | null> {
-    return this.preferences.get(uuid) ?? null;
+  async findById(id: string): Promise<NotificationPreference | null> {
+    return this.preferences.get(id) ?? null;
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<NotificationPreference | null> {
-    const uuid = this.accountIndex.get(accountUuid);
-    return uuid ? this.preferences.get(uuid) ?? null : null;
+  async findByAccountId(identityId: string): Promise<NotificationPreference | null> {
+    const id = this.accountIndex.get(identityId);
+    return id ? this.preferences.get(id) ?? null : null;
   }
 
-  async delete(uuid: string): Promise<void> {
-    const pref = this.preferences.get(uuid) as any;
+  async delete(id: string): Promise<void> {
+    const pref = this.preferences.get(id) as any;
     if (pref) {
-      this.accountIndex.delete(pref.accountUuid);
-      this.preferences.delete(uuid);
+      this.accountIndex.delete(pref.identityId);
+      this.preferences.delete(id);
     }
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    return this.preferences.has(uuid);
+  async exists(id: string): Promise<boolean> {
+    return this.preferences.has(id);
   }
 
-  async existsForAccount(accountUuid: string): Promise<boolean> {
-    return this.accountIndex.has(accountUuid);
+  async existsForAccount(identityId: string): Promise<boolean> {
+    return this.accountIndex.has(identityId);
   }
 
-  async getOrCreate(accountUuid: string): Promise<NotificationPreference> {
-    const existing = await this.findByAccountUuid(accountUuid);
+  async getOrCreate(identityId: string): Promise<NotificationPreference> {
+    const existing = await this.findByAccountId(identityId);
     if (existing) return existing;
 
     // Create default preference - in real implementation, use domain factory
-    const uuid = `pref-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const id = `pref-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const defaultPref = {
-      uuid,
-      accountUuid,
+      id,
+      identityId,
       emailEnabled: true,
       pushEnabled: true,
       inAppEnabled: true,
@@ -74,8 +74,8 @@ export class NotificationPreferenceMemoryRepository implements INotificationPref
 
   seed(preferences: NotificationPreference[]): void {
     preferences.forEach((p: any) => {
-      this.preferences.set(p.uuid, p);
-      this.accountIndex.set(p.accountUuid, p.uuid);
+      this.preferences.set(p.id, p);
+      this.accountIndex.set(p.identityId, p.id);
     });
   }
 }

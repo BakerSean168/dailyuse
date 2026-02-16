@@ -9,7 +9,7 @@
  * @architecture
  * - Infrastructure layer
  * - Use node-cron to manage scheduled tasks
- * - In-memory mapping of taskUuid to CronJob instances
+ * - In-memory mapping of taskId to CronJob instances
  */
 
 import cron from 'node-cron';
@@ -25,10 +25,10 @@ type CronJob = ReturnType<typeof cron.schedule>;
 export class CronJobManager {
   private static instance: CronJobManager;
 
-  /** taskUuid to CronJob instance map */
+  /** taskId to CronJob instance map */
   private jobs: Map<string, CronJob> = new Map();
 
-  /** taskUuid to cron expression map (for debugging) */
+  /** taskId to cron expression map (for debugging) */
   private cronExpressions: Map<string, string> = new Map();
 
   private executor: ScheduleTaskExecutor;
@@ -53,27 +53,27 @@ export class CronJobManager {
    * @returns Whether registration was successful
    */
   public registerTask(task: ScheduleTask): boolean {
-    const taskUuid = task.uuid;
+    const taskId = task.id;
     const cronExpression = task.schedule.cronExpression;
 
     if (!cronExpression) {
       logger.warn('Warning: Task has no cron expression, skipping registration', {
-        taskUuid,
+        taskId,
         taskName: task.name,
       });
       return false;
     }
 
     // If task is already registered, unregister first
-    if (this.jobs.has(taskUuid)) {
-      this.unregisterTask(taskUuid);
+    if (this.jobs.has(taskId)) {
+      this.unregisterTask(taskId);
     }
 
     try {
       // Validate cron expression
       if (!cron.validate(cronExpression)) {
         logger.error('Invalid cron expression', {
-          taskUuid,
+          taskId,
           cronExpression,
         });
         return false;
@@ -84,17 +84,17 @@ export class CronJobManager {
         cronExpression,
         async () => {
           logger.info('Cron triggered', {
-            taskUuid,
+            taskId,
             taskName: task.name,
             cronExpression,
             triggeredAt: new Date().toISOString(),
           });
 
           try {
-            await this.executor!.executeTaskByUuid(taskUuid);
+            await this.executor!.executeTaskById(taskId);
           } catch (error) {
             logger.error('Failed to execute task from cron', {
-              taskUuid,
+              taskId,
               error,
             });
           }
@@ -109,7 +109,7 @@ export class CronJobManager {
       if (task.isActive() && task.enabled) {
         job.start();
         logger.info('Task registered and started successfully', {
-          taskUuid,
+          taskId,
           taskName: task.name,
           cronExpression,
           timezone: task.schedule.timezone,
@@ -118,7 +118,7 @@ export class CronJobManager {
       } else {
         // Task is registered but not started (paused or disabled)
         logger.info('Task registered but not started (paused or disabled)', {
-          taskUuid,
+          taskId,
           taskName: task.name,
           status: task.status,
           enabled: task.enabled,
@@ -126,13 +126,13 @@ export class CronJobManager {
       }
 
       // Save to maps
-      this.jobs.set(taskUuid, job);
-      this.cronExpressions.set(taskUuid, cronExpression);
+      this.jobs.set(taskId, job);
+      this.cronExpressions.set(taskId, cronExpression);
 
       return true;
     } catch (error) {
       logger.error('Failed to register task', {
-        taskUuid,
+        taskId,
         cronExpression,
         error,
       });
@@ -143,26 +143,26 @@ export class CronJobManager {
   /**
    * Unregister task's Cron Job
    *
-   * @param taskUuid - Task UUID
+   * @param taskId - Task UUID
    * @returns Whether unregistration was successful
    */
-  public unregisterTask(taskUuid: string): boolean {
-    const job = this.jobs.get(taskUuid);
+  public unregisterTask(taskId: string): boolean {
+    const job = this.jobs.get(taskId);
 
     if (!job) {
-      logger.warn('Warning: Task not registered, cannot unregister', { taskUuid });
+      logger.warn('Warning: Task not registered, cannot unregister', { taskId });
       return false;
     }
 
     try {
       job.stop();
-      this.jobs.delete(taskUuid);
-      this.cronExpressions.delete(taskUuid);
+      this.jobs.delete(taskId);
+      this.cronExpressions.delete(taskId);
 
-      logger.info('Task unregistered successfully', { taskUuid });
+      logger.info('Task unregistered successfully', { taskId });
       return true;
     } catch (error) {
-      logger.error('Failed to unregister task', { taskUuid, error });
+      logger.error('Failed to unregister task', { taskId, error });
       return false;
     }
   }
@@ -170,32 +170,32 @@ export class CronJobManager {
   /**
    * Start task's Cron Job
    */
-  public startTask(taskUuid: string): boolean {
-    const job = this.jobs.get(taskUuid);
+  public startTask(taskId: string): boolean {
+    const job = this.jobs.get(taskId);
 
     if (!job) {
-      logger.warn('Warning: Task not registered, cannot start', { taskUuid });
+      logger.warn('Warning: Task not registered, cannot start', { taskId });
       return false;
     }
 
     job.start();
-    logger.info('Task started', { taskUuid });
+    logger.info('Task started', { taskId });
     return true;
   }
 
   /**
    * Stop task's Cron Job
    */
-  public stopTask(taskUuid: string): boolean {
-    const job = this.jobs.get(taskUuid);
+  public stopTask(taskId: string): boolean {
+    const job = this.jobs.get(taskId);
 
     if (!job) {
-      logger.warn('Warning: Task not registered, cannot stop', { taskUuid });
+      logger.warn('Warning: Task not registered, cannot stop', { taskId });
       return false;
     }
 
     job.stop();
-    logger.info('Task stopped', { taskUuid });
+    logger.info('Task stopped', { taskId });
     return true;
   }
 
@@ -203,7 +203,7 @@ export class CronJobManager {
    * Update task (re-register)
    */
   public async updateTask(task: ScheduleTask): Promise<boolean> {
-    this.unregisterTask(task.uuid);
+    this.unregisterTask(task.id);
     return await this.registerTask(task);
   }
 
@@ -226,13 +226,13 @@ export class CronJobManager {
    * Get information of all currently registered tasks
    */
   public getRegisteredTasks(): Array<{
-    taskUuid: string;
+    taskId: string;
     cronExpression: string;
     isRunning: boolean;
   }> {
-    return Array.from(this.jobs.entries()).map(([taskUuid, job]) => ({
-      taskUuid,
-      cronExpression: this.cronExpressions.get(taskUuid) || 'unknown',
+    return Array.from(this.jobs.entries()).map(([taskId, job]) => ({
+      taskId,
+      cronExpression: this.cronExpressions.get(taskId) || 'unknown',
       isRunning: job ? true : false,
     }));
   }
@@ -253,7 +253,7 @@ export class CronJobManager {
     if (registeredTasks.length > 0) {
       logger.info('Task List:', {
         tasks: registeredTasks.map((t) => ({
-          taskUuid: t.taskUuid,
+          taskId: t.taskId,
           'Cron Expression': t.cronExpression,
           'Status': t.isRunning ? 'Running' : 'Stopped',
         })),
@@ -268,9 +268,9 @@ export class CronJobManager {
    * Stop all jobs
    */
   public stopAll(): void {
-    for (const [taskUuid, job] of this.jobs.entries()) {
+    for (const [taskId, job] of this.jobs.entries()) {
       job.stop();
-      logger.info('Task stopped', { taskUuid });
+      logger.info('Task stopped', { taskId });
     }
   }
 

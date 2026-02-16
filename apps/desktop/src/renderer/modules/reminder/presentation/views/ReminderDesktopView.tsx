@@ -81,7 +81,7 @@ interface ContextMenu {
 interface DeleteDialog {
   show: boolean;
   type: 'template' | 'group';
-  uuid: string;
+  id: string;
   name: string;
 }
 
@@ -148,31 +148,31 @@ export function ReminderDesktopView() {
   const [deleteDialog, setDeleteDialog] = useState<DeleteDialog>({
     show: false,
     type: 'template',
-    uuid: '',
+    id: '',
     name: '',
   });
 
-  // 模拟账户 UUID（实际应�?context 获取�?
-  const accountUuid = 'demo-account';
+  // 模拟账户 ID（实际应�?context 获取�?
+  const identityId = 'demo-account';
 
   // 初始化数�?
   useEffect(() => {
-    refresh(accountUuid);
-  }, [accountUuid, refresh]);
+    refresh(identityId);
+  }, [identityId, refresh]);
 
   // 未分组的模板
   const ungroupedTemplates = useMemo(() => {
-    return templates.filter(t => !t.groupUuid);
+    return templates.filter(t => !t.groupId);
   }, [templates]);
 
   // 获取分组内模板数�?
-  const getGroupTemplateCount = useCallback((groupUuid: string) => {
-    return templates.filter(t => t.groupUuid === groupUuid).length;
+  const getGroupTemplateCount = useCallback((groupId: string) => {
+    return templates.filter(t => t.groupId === groupId).length;
   }, [templates]);
 
   // 获取分组内的模板
-  const getGroupTemplates = useCallback((groupUuid: string) => {
-    return templates.filter(t => t.groupUuid === groupUuid);
+  const getGroupTemplates = useCallback((groupId: string) => {
+    return templates.filter(t => t.groupId === groupId);
   }, [templates]);
 
   // 模拟的即将到来的提醒数据
@@ -181,12 +181,12 @@ export function ReminderDesktopView() {
     reminders: templates
       .filter(t => t.effectiveEnabled && t.nextTriggerAt)
       .map(t => ({
-        uuid: t.uuid,
+        id: t.id,
         title: t.title,
         message: t.description ?? undefined,
         nextTriggerAt: new Date(t.nextTriggerAt!).toISOString(),
         priority: 'normal' as const,
-        templateUuid: t.uuid,
+        templateId: t.id,
         metadata: { tags: t.tags ?? [] },
       }))
       .slice(0, 20),
@@ -197,11 +197,11 @@ export function ReminderDesktopView() {
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await refresh(accountUuid);
+      await refresh(identityId);
     } finally {
       setIsRefreshing(false);
     }
-  }, [accountUuid, refresh]);
+  }, [identityId, refresh]);
 
   // ============ 模板操作 ============
 
@@ -214,9 +214,9 @@ export function ReminderDesktopView() {
     setTemplateDialog({ open: true, template });
   }, []);
 
-  const handleCreateTemplate = useCallback((groupUuid?: string) => {
+  const handleCreateTemplate = useCallback((groupId?: string) => {
     // 创建新模板，预设分组
-    const newTemplate = groupUuid ? { groupUuid } as ReminderTemplateClientDTO : null;
+    const newTemplate = groupId ? { groupId } as ReminderTemplateClientDTO : null;
     setTemplateDialog({ open: true, template: newTemplate });
   }, []);
 
@@ -224,10 +224,10 @@ export function ReminderDesktopView() {
     data: CreateReminderTemplateRequest | UpdateReminderTemplateRequest, 
     isEdit: boolean
   ) => {
-    if (isEdit && templateDialog.template?.uuid) {
+    if (isEdit && templateDialog.template?.id) {
       // 更新模板 - 使用 contracts 类型
       await updateTemplate({
-        uuid: templateDialog.template.uuid,
+        id: templateDialog.template.id,
         request: data as UpdateReminderTemplateRequest,
       });
     } else {
@@ -241,24 +241,24 @@ export function ReminderDesktopView() {
     setDeleteDialog({
       show: true,
       type: 'template',
-      uuid: template.uuid,
+      id: template.id,
       name: template.title,
     });
   }, []);
 
   const handleToggleTemplateEnabled = useCallback(async (template: ReminderTemplateClientDTO) => {
-    await toggleTemplateEnabled(template.uuid);
+    await toggleTemplateEnabled(template.id);
   }, [toggleTemplateEnabled]);
 
   const handleMoveTemplate = useCallback((template: ReminderTemplateClientDTO) => {
     setMoveDialog({ open: true, template });
   }, []);
 
-  const handleMoveTemplateSave = useCallback(async (templateUuid: string, targetGroupUuid: string | null) => {
+  const handleMoveTemplateSave = useCallback(async (templateId: string, targetGroupId: string | null) => {
     await updateTemplate({
-      uuid: templateUuid,
+      id: templateId,
       request: {
-        groupUuid: targetGroupUuid || undefined,
+        groupId: targetGroupId || undefined,
       },
     });
     setMoveDialog({ open: false, template: null });
@@ -283,10 +283,10 @@ export function ReminderDesktopView() {
     data: CreateReminderGroupRequest | UpdateReminderGroupRequest, 
     isEdit: boolean
   ) => {
-    if (isEdit && groupDialog.group?.uuid) {
+    if (isEdit && groupDialog.group?.id) {
       // 更新分组 - 使用 contracts 类型
       await updateGroup({
-        uuid: groupDialog.group.uuid,
+        id: groupDialog.group.id,
         request: data as UpdateReminderGroupRequest,
       });
     } else {
@@ -300,7 +300,7 @@ export function ReminderDesktopView() {
     setDeleteDialog({
       show: true,
       type: 'group',
-      uuid: group.uuid,
+      id: group.id,
       name: group.name,
     });
   }, []);
@@ -355,7 +355,7 @@ export function ReminderDesktopView() {
         {
           icon: <Plus className="h-4 w-4" />,
           title: '添加模板',
-          action: () => handleCreateTemplate(group.uuid),
+          action: () => handleCreateTemplate(group.id),
         },
         { divider: true } as ContextMenuItem,
         {
@@ -403,11 +403,11 @@ export function ReminderDesktopView() {
 
   const confirmDelete = useCallback(async () => {
     if (deleteDialog.type === 'template') {
-      await deleteTemplate(deleteDialog.uuid);
+      await deleteTemplate(deleteDialog.id);
     } else {
-      await deleteGroup(deleteDialog.uuid);
+      await deleteGroup(deleteDialog.id);
     }
-    setDeleteDialog({ show: false, type: 'template', uuid: '', name: '' });
+    setDeleteDialog({ show: false, type: 'template', id: '', name: '' });
   }, [deleteDialog, deleteTemplate, deleteGroup]);
 
   // 模板统计（模拟）
@@ -431,7 +431,7 @@ export function ReminderDesktopView() {
               {/* 未分组的模板图标 */}
               {ungroupedTemplates.map((template) => (
                 <div
-                  key={template.uuid}
+                  key={template.id}
                   className={cn(
                     "flex flex-col items-center cursor-pointer group",
                     !template.effectiveEnabled && "opacity-50"
@@ -463,7 +463,7 @@ export function ReminderDesktopView() {
               {/* 分组图标（文件夹风格�?*/}
               {groups.map((group) => (
                 <div
-                  key={group.uuid}
+                  key={group.id}
                   className={cn(
                     "flex flex-col items-center cursor-pointer group",
                     !group.enabled && "opacity-50"
@@ -486,9 +486,9 @@ export function ReminderDesktopView() {
                       )}
                     />
                     {/* 模板数量角标 */}
-                    {getGroupTemplateCount(group.uuid) > 0 && (
+                    {getGroupTemplateCount(group.id) > 0 && (
                       <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
-                        {getGroupTemplateCount(group.uuid)}
+                        {getGroupTemplateCount(group.id)}
                       </span>
                     )}
                   </div>
@@ -538,7 +538,7 @@ export function ReminderDesktopView() {
         error={error}
         onRefresh={handleRefresh}
         onReminderClick={(reminder) => {
-          const template = templates.find(t => t.uuid === reminder.templateUuid);
+          const template = templates.find(t => t.id === reminder.templateId);
           if (template) {
             setTemplateCard({ open: true, template });
           }
@@ -603,11 +603,11 @@ export function ReminderDesktopView() {
       {/* 分组详情卡片 */}
       <ReminderGroupCard
         group={groupCard.group}
-        templates={groupCard.group ? getGroupTemplates(groupCard.group.uuid) : []}
+        templates={groupCard.group ? getGroupTemplates(groupCard.group.id) : []}
         open={groupCard.open}
         onClose={() => setGroupCard({ open: false, group: null })}
         onEditGroup={handleEditGroup}
-        onCreateTemplate={(groupUuid) => handleCreateTemplate(groupUuid)}
+        onCreateTemplate={(groupId) => handleCreateTemplate(groupId)}
         onTemplateClick={handleTemplateClick}
         onTemplateContextMenu={handleTemplateContextMenu}
       />

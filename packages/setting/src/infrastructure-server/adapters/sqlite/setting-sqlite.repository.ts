@@ -15,16 +15,16 @@ export class SqliteSettingRepository implements ISettingRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO settings (
-        uuid, category, key, value, is_default, createdAt, updatedAt
+        id, category, key, value, is_default, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         value = excluded.value,
         is_default = excluded.is_default,
         updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
-      dto.uuid,
+      dto.id,
       dto.category,
       dto.key,
       JSON.stringify(dto.value),
@@ -37,9 +37,9 @@ export class SqliteSettingRepository implements ISettingRepository {
   async saveMany(settings: Setting[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO settings (
-        uuid, category, key, value, is_default, createdAt, updatedAt
+        id, category, key, value, is_default, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         value = excluded.value,
         is_default = excluded.is_default,
         updatedAt = excluded.updatedAt
@@ -49,7 +49,7 @@ export class SqliteSettingRepository implements ISettingRepository {
       for (const setting of items) {
         const dto = setting.toPersistenceDTO();
         insertStmt.run(
-          dto.uuid,
+          dto.id,
           dto.category,
           dto.key,
           JSON.stringify(dto.value),
@@ -63,14 +63,14 @@ export class SqliteSettingRepository implements ISettingRepository {
     transaction(settings);
   }
 
-  async findByUuid(uuid: string): Promise<Setting | null> {
-    const stmt = this.db.prepare(`SELECT * FROM settings WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<Setting | null> {
+    const stmt = this.db.prepare(`SELECT * FROM settings WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return Setting.fromPersistenceDTO({
-      uuid: row.uuid,
+      id: row.id,
       category: row.category,
       key: row.key,
       value: JSON.parse(row.value),
@@ -88,7 +88,7 @@ export class SqliteSettingRepository implements ISettingRepository {
 
     return rows.map((row) =>
       Setting.fromPersistenceDTO({
-        uuid: row.uuid,
+        id: row.id,
         category: row.category,
         key: row.key,
         value: JSON.parse(row.value),
@@ -108,7 +108,7 @@ export class SqliteSettingRepository implements ISettingRepository {
     if (!row) return null;
 
     return Setting.fromPersistenceDTO({
-      uuid: row.uuid,
+      id: row.id,
       category: row.category,
       key: row.key,
       value: JSON.parse(row.value),
@@ -149,7 +149,7 @@ export class SqliteSettingRepository implements ISettingRepository {
 
     return rows.map((row) =>
       Setting.fromPersistenceDTO({
-        uuid: row.uuid,
+        id: row.id,
         category: row.category,
         key: row.key,
         value: JSON.parse(row.value),
@@ -160,9 +160,9 @@ export class SqliteSettingRepository implements ISettingRepository {
     );
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM settings WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM settings WHERE id = ?`);
+    stmt.run(id);
   }
 
   async deleteByCategory(category: string): Promise<number> {
@@ -171,9 +171,9 @@ export class SqliteSettingRepository implements ISettingRepository {
     return result.changes ?? 0;
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    const stmt = this.db.prepare(`SELECT 1 FROM settings WHERE uuid = ? LIMIT 1`);
-    return stmt.get(uuid) !== undefined;
+  async exists(id: string): Promise<boolean> {
+    const stmt = this.db.prepare(`SELECT 1 FROM settings WHERE id = ? LIMIT 1`);
+    return stmt.get(id) !== undefined;
   }
 }
 

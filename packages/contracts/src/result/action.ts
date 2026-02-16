@@ -59,9 +59,9 @@ export interface ActionResult {
  *
  * @example
  * ```ts
- * async createUser(request: CreateUserRequest): Promise<ActionResultWithData<{ uuid: string }>> {
- *   const uuid = await userService.create(request);
- *   return { ok: true, message: '用户创建成功', data: { uuid } };
+ * async createUser(request: CreateUserRequest): Promise<ActionResultWithData<{ id: string }>> {
+ *   const id = await userService.create(request);
+ *   return { ok: true, message: '用户创建成功', data: { id } };
  * }
  * ```
  */
@@ -89,7 +89,7 @@ export interface ActionResultWithData<T> extends ActionResult {
  *
  * // 实现
  * async markAllAsRead(): Promise<CountResult> {
- *   const count = await notificationRepo.markAllAsRead(accountUuid);
+ *   const count = await notificationRepo.markAllAsRead(identityId);
  *   return { ok: true, count, message: `已标记 ${count} 条通知为已读` };
  * }
  * ```
@@ -107,7 +107,7 @@ export interface CountResult extends ActionResult {
  *
  * @example
  * ```ts
- * async batchDelete(uuids: string[]): Promise<BatchActionResult> {
+ * async batchDelete(ids: string[]): Promise<BatchActionResult> {
  *   const succeeded: string[] = [];
  *   const failed: BatchFailure[] = [];
  *   // ... 逐个处理
@@ -132,7 +132,7 @@ export interface BatchActionResult extends ActionResult {
  */
 export interface BatchFailure {
   /** 失败项的 UUID */
-  uuid: string;
+  id: string;
   /** 失败原因 */
   error: string;
 }
@@ -142,8 +142,8 @@ export interface BatchFailure {
  *
  * @example
  * ```ts
- * async deleteNotification(uuid: string): Promise<DeleteResult> {
- *   const deleted = await repo.delete(uuid);
+ * async deleteNotification(id: string): Promise<DeleteResult> {
+ *   const deleted = await repo.delete(id);
  *   return { ok: deleted, message: deleted ? '删除成功' : '未找到记录' };
  * }
  * ```

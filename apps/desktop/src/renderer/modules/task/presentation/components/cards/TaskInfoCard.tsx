@@ -28,7 +28,7 @@ import {
 
 interface TaskInfoCardProps {
   template: TaskTemplate;
-  onClick?: (uuid: string) => void;
+  onClick?: (id: string) => void;
 }
 
 // 重要性颜�?
@@ -58,7 +58,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function TaskInfoCard({ template, onClick }: TaskInfoCardProps) {
   const handleClick = () => {
-    onClick?.(template.uuid);
+    onClick?.(template.id);
   };
 
   const completionRate = Math.round(template.completionRate * 100);

@@ -83,7 +83,7 @@ export class TaskTemplateApplicationService {
     note?: string;
     goalId?: string;
     keyResultId?: string;
-    parentTaskUuid?: string;
+    parentTaskId?: string;
     folderId?: string;
     tags?: string[];
     color?: string;
@@ -100,7 +100,7 @@ export class TaskTemplateApplicationService {
       note: params.note,
       goalId: params.goalId,
       keyResultId: params.keyResultId,
-      parentTaskUuid: params.parentTaskUuid,
+      parentTaskId: params.parentTaskId,
       folderId: params.folderId,
       tags: params.tags,
       color: params.color,
@@ -115,10 +115,10 @@ export class TaskTemplateApplicationService {
   /**
    * 阻塞任务模板
    */
-  async blockTask(uuid: string, reason: string): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findById(uuid);
+  async blockTask(id: string, reason: string): Promise<TaskTemplateClientDTO> {
+    const task = await this.templateRepository.findById(id);
     if (!task) {
-      throw new Error(`Task ${uuid} not found`);
+      throw new Error(`Task ${id} not found`);
     }
 
     task.markAsBlocked(reason);
@@ -130,10 +130,10 @@ export class TaskTemplateApplicationService {
   /**
    * 解除阻塞任务模板
    */
-  async unblockTask(uuid: string): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findById(uuid);
+  async unblockTask(id: string): Promise<TaskTemplateClientDTO> {
+    const task = await this.templateRepository.findById(id);
     if (!task) {
-      throw new Error(`Task ${uuid} not found`);
+      throw new Error(`Task ${id} not found`);
     }
 
     task.markAsReady();
@@ -146,12 +146,12 @@ export class TaskTemplateApplicationService {
    * 更新截止时间
    */
   async updateDueDate(
-    uuid: string,
+    id: string,
     newDueDate: number | null,
   ): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findById(uuid);
+    const task = await this.templateRepository.findById(id);
     if (!task) {
-      throw new Error(`Task ${uuid} not found`);
+      throw new Error(`Task ${id} not found`);
     }
 
     task.updateDueDate(newDueDate);
@@ -164,12 +164,12 @@ export class TaskTemplateApplicationService {
    * 更新预估时间
    */
   async updateEstimatedTime(
-    uuid: string,
+    id: string,
     estimatedMinutes: number,
   ): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findById(uuid);
+    const task = await this.templateRepository.findById(id);
     if (!task) {
-      throw new Error(`Task ${uuid} not found`);
+      throw new Error(`Task ${id} not found`);
     }
 
     task.updateEstimatedTime(estimatedMinutes);
@@ -183,7 +183,7 @@ export class TaskTemplateApplicationService {
    * 支持更新标题、描述、日期、优先级、标签等属�?
    */
   async updateOneTimeTask(
-    uuid: string,
+    id: string,
     updates: {
       title?: string;
       description?: string;
@@ -196,9 +196,9 @@ export class TaskTemplateApplicationService {
       note?: string;
     },
   ): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findById(uuid);
+    const task = await this.templateRepository.findById(id);
     if (!task) {
-      throw new Error(`Task ${uuid} not found`);
+      throw new Error(`Task ${id} not found`);
     }
 
     // 更新各个属�?
@@ -238,10 +238,10 @@ export class TaskTemplateApplicationService {
   /**
    * 获取任务历史记录
    */
-  async getTaskHistory(uuid: string): Promise<TaskTemplateHistoryClientDTO[]> {
-    const task = await this.templateRepository.findByIdWithChildren(uuid);
+  async getTaskHistory(id: string): Promise<TaskTemplateHistoryClientDTO[]> {
+    const task = await this.templateRepository.findByIdWithChildren(id);
     if (!task) {
-      throw new Error(`Task ${uuid} not found`);
+      throw new Error(`Task ${id} not found`);
     }
 
     return task.history.map((h) => h.toClientDTO());
@@ -346,7 +346,7 @@ export class TaskTemplateApplicationService {
    * 创建子任�?
    */
   async createSubtask(
-    parentUuid: string,
+    parentId: string,
     params: {
       identityId: string;
       title: string;
@@ -357,9 +357,9 @@ export class TaskTemplateApplicationService {
     },
   ): Promise<TaskTemplateClientDTO> {
     // 验证父任务存�?
-    const parentTask = await this.templateRepository.findById(parentUuid);
+    const parentTask = await this.templateRepository.findById(parentId);
     if (!parentTask) {
-      throw new Error(`Parent task ${parentUuid} not found`);
+      throw new Error(`Parent task ${parentId} not found`);
     }
 
     // 创建子任�?
@@ -370,7 +370,7 @@ export class TaskTemplateApplicationService {
       importance: params.importance,
       dueDate: params.dueDate,
       estimatedMinutes: params.estimatedMinutes,
-      parentTaskUuid: parentUuid,
+      parentTaskId: parentId,
     });
 
     await this.templateRepository.save(subtask);
@@ -385,21 +385,21 @@ export class TaskTemplateApplicationService {
   /**
    * 获取子任务列�?
    */
-  async getSubtasks(parentUuid: string): Promise<TaskTemplateClientDTO[]> {
-    const subtasks = await this.templateRepository.findSubtasks(parentUuid);
+  async getSubtasks(parentId: string): Promise<TaskTemplateClientDTO[]> {
+    const subtasks = await this.templateRepository.findSubtasks(parentId);
     return subtasks.map((t) => t.toClientDTO());
   }
 
   /**
    * 移除子任�?
    */
-  async removeSubtask(parentUuid: string, subtaskUuid: string): Promise<void> {
-    const parentTask = await this.templateRepository.findById(parentUuid);
+  async removeSubtask(parentId: string, subtaskId: string): Promise<void> {
+    const parentTask = await this.templateRepository.findById(parentId);
     if (!parentTask) {
-      throw new Error(`Parent task ${parentUuid} not found`);
+      throw new Error(`Parent task ${parentId} not found`);
     }
 
-    parentTask.removeSubtask(subtaskUuid);
+    parentTask.removeSubtask(subtaskId);
     await this.templateRepository.save(parentTask);
   }
 
@@ -409,13 +409,13 @@ export class TaskTemplateApplicationService {
    * 链接到目�?
    */
   async linkToGoal(
-    uuid: string,
+    id: string,
     goalId: string,
     keyResultId?: string,
   ): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findById(uuid);
+    const task = await this.templateRepository.findById(id);
     if (!task) {
-      throw new Error(`Task ${uuid} not found`);
+      throw new Error(`Task ${id} not found`);
     }
 
     task.linkToGoal(goalId, keyResultId);
@@ -427,10 +427,10 @@ export class TaskTemplateApplicationService {
   /**
    * 解除目标链接
    */
-  async unlinkFromGoal(uuid: string): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findById(uuid);
+  async unlinkFromGoal(id: string): Promise<TaskTemplateClientDTO> {
+    const task = await this.templateRepository.findById(id);
     if (!task) {
-      throw new Error(`Task ${uuid} not found`);
+      throw new Error(`Task ${id} not found`);
     }
 
     task.unlinkFromGoal();
@@ -445,16 +445,16 @@ export class TaskTemplateApplicationService {
    * 标记为被阻塞
    */
   async markAsBlocked(
-    uuid: string,
+    id: string,
     reason: string,
-    dependencyTaskUuid?: string,
+    dependencyTaskId?: string,
   ): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findById(uuid);
+    const task = await this.templateRepository.findById(id);
     if (!task) {
-      throw new Error(`Task ${uuid} not found`);
+      throw new Error(`Task ${id} not found`);
     }
 
-    task.markAsBlocked(reason, dependencyTaskUuid);
+    task.markAsBlocked(reason, dependencyTaskId);
     await this.templateRepository.save(task);
 
     return task.toClientDTO();
@@ -463,10 +463,10 @@ export class TaskTemplateApplicationService {
   /**
    * 标记为就�?
    */
-  async markAsReady(uuid: string): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findById(uuid);
+  async markAsReady(id: string): Promise<TaskTemplateClientDTO> {
+    const task = await this.templateRepository.findById(id);
     if (!task) {
-      throw new Error(`Task ${uuid} not found`);
+      throw new Error(`Task ${id} not found`);
     }
 
     task.markAsReady();
@@ -479,12 +479,12 @@ export class TaskTemplateApplicationService {
    * 更新依赖状�?
    */
   async updateDependencyStatus(
-    uuid: string,
+    id: string,
     status: 'PENDING' | 'READY' | 'BLOCKED',
   ): Promise<TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findById(uuid);
+    const task = await this.templateRepository.findById(id);
     if (!task) {
-      throw new Error(`Task ${uuid} not found`);
+      throw new Error(`Task ${id} not found`);
     }
 
     task.updateDependencyStatus(status);
@@ -531,8 +531,8 @@ export class TaskTemplateApplicationService {
   /**
    * 批量删除任务
    */
-  async deleteTasksBatch(uuids: string[]): Promise<void> {
-    await this.templateRepository.deleteBatch(uuids);
+  async deleteTasksBatch(ids: string[]): Promise<void> {
+    await this.templateRepository.deleteBatch(ids);
   }
 
   // ===== 仪表�?统计查询 =====

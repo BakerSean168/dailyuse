@@ -21,7 +21,7 @@ import {
  * 即将到来的提醒项
  */
 export interface UpcomingReminder {
-  templateUuid: string;
+  templateId: string;
   templateName: string;
   message: string;
   scheduledTime: Date;
@@ -264,7 +264,7 @@ function calculateMonthlyReminders(
  */
 function createUpcomingReminder(template: ReminderTemplate, scheduledTime: Date): UpcomingReminder {
   return {
-    templateUuid: template.uuid,
+    templateId: template.id,
     templateName: template.name,
     message: template.message,
     scheduledTime,

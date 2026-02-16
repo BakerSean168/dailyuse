@@ -25,11 +25,11 @@ export class PauseScheduleTaskUseCase {
     private readonly scheduleTaskRepository: IScheduleTaskRepository,
   ) {}
 
-  async execute(uuid: string): Promise<ScheduleTaskClientDTO> {
+  async execute(id: string): Promise<ScheduleTaskClientDTO> {
     // 1. 查询任务
-    const task = await this.scheduleTaskRepository.findByUuid(uuid);
+    const task = await this.scheduleTaskRepository.findById(id);
     if (!task) {
-      throw new Error(`Schedule task ${uuid} not found`);
+      throw new Error(`Schedule task ${id} not found`);
     }
 
     // 2. 调用聚合根的 disable 方法（业务逻辑在聚合根内）

@@ -136,7 +136,7 @@ export class SessionManager {
       return {
         ok: true,
         session: this.currentSession ?? undefined,
-        accountUuid: this.currentSession?.accountUuid,
+        identityId: this.currentSession?.identityId,
       };
     }
 
@@ -158,7 +158,7 @@ export class SessionManager {
     this.isInitialized = true;
     this.logger.info('SessionManager initialized', {
       hasSession: restoreResult.ok,
-      accountUuid: restoreResult.accountUuid,
+      identityId: restoreResult.identityId,
     });
 
     return restoreResult;
@@ -206,11 +206,11 @@ export class SessionManager {
       }
 
       // 3. 查找会话记录
-      const session = await this.sessionRepository.findByUuid(tokenData.sessionUuid);
+      const session = await this.sessionRepository.findById(tokenData.sessionId);
       if (!session) {
-        this.logger.warn('Session not found in database', { sessionUuid: tokenData.sessionUuid });
+        this.logger.warn('Session not found in database', { sessionId: tokenData.sessionId });
         // 尝试通过账户查找最近的活跃会话
-        const activeSessions = await this.sessionRepository.findActiveSessions(tokenData.accountUuid);
+        const activeSessions = await this.sessionRepository.findActiveSessions(tokenData.identityId);
         if (activeSessions.length === 0) {
           this.logger.info('No active sessions found for account');
           await this.tokenManager.clearTokens();
@@ -235,15 +235,15 @@ export class SessionManager {
       }
 
       this.logger.info('Session restored successfully', {
-        sessionUuid: this.currentSession.uuid,
-        accountUuid: this.currentSession.accountUuid,
+        sessionId: this.currentSession.id,
+        identityId: this.currentSession.identityId,
         needsRefresh,
       });
 
       return {
         ok: true,
         session: this.currentSession,
-        accountUuid: this.currentSession.accountUuid,
+        identityId: this.currentSession.identityId,
         needsRefresh,
       };
     } catch (error) {
@@ -287,7 +287,7 @@ export class SessionManager {
             ok: true,
             authenticated: true,
             session: restoreResult.session,
-            accountUuid: restoreResult.accountUuid,
+            identityId: restoreResult.identityId,
             isNewSession: false,
           };
         }
@@ -303,7 +303,7 @@ export class SessionManager {
         ok: true,
         authenticated: true,
         session: this.currentSession ?? undefined,
-        accountUuid: this.currentSession?.accountUuid,
+        identityId: this.currentSession?.identityId,
         isNewSession: false,
       };
     } catch (error) {
@@ -336,7 +336,7 @@ export class SessionManager {
       // 调用 API 刷新
       const result = await this.apiRefreshToken({
         refreshToken: tokenData.refreshToken,
-        sessionUuid: tokenData.sessionUuid,
+        sessionId: tokenData.sessionId,
       });
 
       if (result.ok && result.accessToken) {
@@ -409,8 +409,8 @@ export class SessionManager {
             accessToken: result.accessToken,
             refreshToken: result.refreshToken,
             accessTokenExpiresIn: result.expiresIn ?? 3600,
-            accountUuid: result.accountUuid!,
-            sessionUuid: result.sessionId ?? generateUUID(),
+            identityId: result.identityId!,
+            sessionId: result.sessionId ?? generateUUID(),
           });
 
           // 保存会话
@@ -420,7 +420,7 @@ export class SessionManager {
           this.startAutoRefresh();
           this.startActivityTracking();
 
-          this.logger.info('Login successful', { accountUuid: result.accountUuid });
+          this.logger.info('Login successful', { identityId: result.identityId });
         }
         return result;
       }
@@ -455,7 +455,7 @@ export class SessionManager {
 
     // 创建会话
     const session = AuthSession.create({
-      accountUuid: `local-${request.identifier}`,
+      identityId: `local-${request.identifier}`,
       accessToken: generateUUID(),
       refreshToken: generateUUID(),
       device,
@@ -472,21 +472,21 @@ export class SessionManager {
       refreshToken: (session.refreshToken as any).token,
       accessTokenExpiresIn: 3600, // 1 小时
       refreshTokenExpiresIn: 30 * 24 * 3600, // 30 �?
-      accountUuid: session.accountUuid,
-      sessionUuid: session.uuid,
+      identityId: session.identityId,
+      sessionId: session.id,
     });
 
     // 启动自动刷新
     this.startAutoRefresh();
     this.startActivityTracking();
 
-    this.logger.info('Local login successful', { accountUuid: session.accountUuid });
+    this.logger.info('Local login successful', { identityId: session.identityId });
 
     return {
       ok: true,
-      sessionId: session.uuid,
+      sessionId: session.id,
       accessToken: session.accessToken,
-      accountUuid: session.accountUuid,
+      identityId: session.identityId,
       expiresIn: 3600,
     };
   }
@@ -533,8 +533,8 @@ export class SessionManager {
 
     return {
       hasActiveSession: this.currentSession?.isValid() ?? false,
-      sessionUuid: this.currentSession?.uuid,
-      accountUuid: this.currentSession?.accountUuid,
+      sessionId: this.currentSession?.id,
+      identityId: this.currentSession?.identityId,
       tokenStatus,
       device: deviceInfo,
       lastActivityAt: this.currentSession?.lastActivityAt,
@@ -583,15 +583,15 @@ export class SessionManager {
   /**
    * 清理账户的所有会话（除当前会话外�?
    */
-  async cleanupOtherSessions(accountUuid: string): Promise<number> {
-    this.logger.info('Cleaning up other sessions', { accountUuid });
+  async cleanupOtherSessions(identityId: string): Promise<number> {
+    this.logger.info('Cleaning up other sessions', { identityId });
 
     try {
-      const sessions = await this.sessionRepository.findByAccountUuid(accountUuid);
+      const sessions = await this.sessionRepository.findByAccountId(identityId);
       let cleanedCount = 0;
 
       for (const session of sessions) {
-        if (session.uuid !== this.currentSession?.uuid) {
+        if (session.id !== this.currentSession?.id) {
           session.revoke();
           await this.sessionRepository.save(session);
           cleanedCount++;

@@ -10,8 +10,8 @@ import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 
 interface NotificationItemProps {
   notification: NotificationClientDTO;
-  onRead: (uuid: string) => void;
-  onDelete: (uuid: string) => void;
+  onRead: (id: string) => void;
+  onDelete: (id: string) => void;
   onClick?: (notification: NotificationClientDTO) => void;
 }
 
@@ -86,7 +86,7 @@ export const NotificationItem = memo(function NotificationItem({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onRead(notification.uuid);
+                    onRead(notification.id);
                   }}
                   className="p-1 hover:bg-muted rounded"
                   title="标记已读"
@@ -97,7 +97,7 @@ export const NotificationItem = memo(function NotificationItem({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDelete(notification.uuid);
+                  onDelete(notification.id);
                 }}
                 className="p-1 hover:bg-red-100 text-red-500 rounded"
                 title="删除"

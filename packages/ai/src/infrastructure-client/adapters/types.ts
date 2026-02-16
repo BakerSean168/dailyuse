@@ -48,40 +48,40 @@ export interface IIpcClient {
 export interface IAIConversationApiClient {
   createConversation(request: CreateConversationReq): Promise<AIConversationClientDTO>;
   getConversations(params?: { page?: number; pageSize?: number; status?: string }): Promise<ConversationListRes>;
-  getConversationById(uuid: string): Promise<AIConversationClientDTO>;
-  updateConversation(uuid: string, request: UpdateConversationReq): Promise<AIConversationClientDTO>;
-  deleteConversation(uuid: string): Promise<void>;
-  closeConversation(uuid: string): Promise<AIConversationClientDTO>;
-  archiveConversation(uuid: string): Promise<AIConversationClientDTO>;
+  getConversationById(id: string): Promise<AIConversationClientDTO>;
+  updateConversation(id: string, request: UpdateConversationReq): Promise<AIConversationClientDTO>;
+  deleteConversation(id: string): Promise<void>;
+  closeConversation(id: string): Promise<AIConversationClientDTO>;
+  archiveConversation(id: string): Promise<AIConversationClientDTO>;
 }
 
 export interface IAIMessageApiClient {
   sendMessage(request: SendMessageReq): Promise<MessageClientDTO>;
-  getMessages(conversationUuid: string, params?: { page?: number; pageSize?: number }): Promise<MessageListRes>;
-  deleteMessage(uuid: string): Promise<void>;
+  getMessages(conversationId: string, params?: { page?: number; pageSize?: number }): Promise<MessageListRes>;
+  deleteMessage(id: string): Promise<void>;
   streamChat(request: ChatStreamReq): AsyncGenerator<ChatStreamChunk, void, unknown>;
 }
 
 export interface IAIGenerationTaskApiClient {
   createGenerationTask(request: CreateGenerationTaskReq): Promise<AIGenerationTaskClientDTO>;
   getGenerationTasks(params?: { page?: number; pageSize?: number; type?: string; status?: string }): Promise<GenerationTaskListRes>;
-  getGenerationTaskById(uuid: string): Promise<AIGenerationTaskClientDTO>;
-  cancelGenerationTask(uuid: string): Promise<void>;
-  retryGenerationTask(uuid: string): Promise<AIGenerationTaskClientDTO>;
+  getGenerationTaskById(id: string): Promise<AIGenerationTaskClientDTO>;
+  cancelGenerationTask(id: string): Promise<void>;
+  retryGenerationTask(id: string): Promise<AIGenerationTaskClientDTO>;
   generateGoal(request: GenerateGoalReq): Promise<GenerateGoalRes>;
   generateGoalWithKeyResults(request: GenerateGoalReq): Promise<GenerateGoalRes>;
-  generateKeyResults(goalUuid: string): Promise<GenerateKeyResultsRes>;
+  generateKeyResults(goalId: string): Promise<GenerateKeyResultsRes>;
 }
 
 export interface IAIProviderConfigApiClient {
   createProvider(request: CreateAIProviderConfigReq): Promise<AIProviderConfigClientDTO>;
   getProviders(): Promise<AIProviderConfigSummary[]>;
-  getProviderById(uuid: string): Promise<AIProviderConfigClientDTO>;
-  updateProvider(uuid: string, request: UpdateAIProviderConfigReq): Promise<AIProviderConfigClientDTO>;
-  deleteProvider(uuid: string): Promise<void>;
+  getProviderById(id: string): Promise<AIProviderConfigClientDTO>;
+  updateProvider(id: string, request: UpdateAIProviderConfigReq): Promise<AIProviderConfigClientDTO>;
+  deleteProvider(id: string): Promise<void>;
   testConnection(request: TestAIProviderReq): Promise<TestAIProviderRes>;
-  setDefaultProvider(uuid: string): Promise<void>;
-  refreshModels(uuid: string): Promise<RefreshProviderModelsRes>;
+  setDefaultProvider(id: string): Promise<void>;
+  refreshModels(id: string): Promise<RefreshProviderModelsRes>;
 }
 
 export interface IAIUsageQuotaApiClient {

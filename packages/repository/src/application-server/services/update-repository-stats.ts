@@ -14,7 +14,7 @@ import type {
  * Update Repository Stats Input
  */
 export interface UpdateRepositoryStatsInput {
-  uuid: string;
+  id: string;
   stats: Partial<RepositoryStatsServerDTO>;
 }
 
@@ -33,9 +33,9 @@ export class UpdateRepositoryStats {
   constructor(private readonly repositoryRepository: IRepositoryRepository) {}
 
   async execute(input: UpdateRepositoryStatsInput): Promise<UpdateRepositoryStatsOutput> {
-    const repository = await this.repositoryRepository.findById(input.uuid);
+    const repository = await this.repositoryRepository.findById(input.id);
     if (!repository) {
-      throw new Error(`Repository not found: ${input.uuid}`);
+      throw new Error(`Repository not found: ${input.id}`);
     }
 
     repository.updateStats(input.stats);

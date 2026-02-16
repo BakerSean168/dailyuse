@@ -11,7 +11,7 @@ import { eventBus } from '@dailyuse/utils';
  * 调整结果
  */
 export interface AdjustmentResult {
-  templateUuid: string;
+  templateId: string;
   success: boolean;
   originalInterval: number;
   adjustedInterval: number;
@@ -23,10 +23,10 @@ export interface AdjustmentResult {
  * 频率调整请求
  */
 export interface AdjustFrequencyRequest {
-  templateUuid: string;
+  templateId: string;
   newInterval: number;
   reason: string;
-  accountUuid: string;
+  identityId: string;
 }
 
 /**
@@ -47,9 +47,9 @@ export class AdjustReminderFrequency {
    * @returns 调整结果
    */
   async execute(request: AdjustFrequencyRequest): Promise<AdjustmentResult> {
-    const template = await this.templateRepository.findById(request.templateUuid);
+    const template = await this.templateRepository.findById(request.templateId);
     if (!template) {
-      throw new Error(`Template ${request.templateUuid} not found`);
+      throw new Error(`Template ${request.templateId} not found`);
     }
 
     // Get current recurrence details for comparison
@@ -73,18 +73,18 @@ export class AdjustReminderFrequency {
     await eventBus.publish({
       eventType: 'reminder.frequency.adjusted',
       payload: {
-        templateUuid: request.templateUuid,
+        templateId: request.templateId,
         originalInterval,
         adjustedInterval: request.newInterval,
         reason: request.reason,
-        accountUuid: request.accountUuid,
+        identityId: request.identityId,
         adjustedAt: Date.now(),
       },
       timestamp: Date.now(),
     });
 
     return {
-      templateUuid: request.templateUuid,
+      templateId: request.templateId,
       success: true,
       originalInterval,
       adjustedInterval: request.newInterval,
@@ -96,20 +96,20 @@ export class AdjustReminderFrequency {
   /**
    * 拒绝频率调整
    *
-   * @param templateUuid - 模板UUID
-   * @param accountUuid - 账户UUID
+   * @param templateId - 模板UUID
+   * @param identityId - 账户 ID
    */
-  async reject(templateUuid: string, accountUuid: string): Promise<void> {
-    const template = await this.templateRepository.findById(templateUuid);
+  async reject(templateId: string, identityId: string): Promise<void> {
+    const template = await this.templateRepository.findById(templateId);
     if (!template) {
-      throw new Error(`Template ${templateUuid} not found`);
+      throw new Error(`Template ${templateId} not found`);
     }
 
     await eventBus.publish({
       eventType: 'reminder.frequency.adjustment.rejected',
       payload: {
-        templateUuid,
-        accountUuid,
+        templateId,
+        identityId,
         rejectedAt: Date.now(),
       },
       timestamp: Date.now(),

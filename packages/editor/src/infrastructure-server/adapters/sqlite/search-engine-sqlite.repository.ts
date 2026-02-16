@@ -10,15 +10,15 @@ import type { ISearchEngineRepository } from '../../../domain-server/repositorie
 export class SqliteSearchEngineRepository implements ISearchEngineRepository {
   constructor(private db: Database.Database) {}
 
-  async findByUuid(uuid: string): Promise<SearchEngine | null> {
-    const stmt = this.db.prepare(`SELECT * FROM search_engines WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<SearchEngine | null> {
+    const stmt = this.db.prepare(`SELECT * FROM search_engines WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return SearchEngine.fromPersistenceDTO({
-      uuid: row.uuid,
-      workspace_uuid: row.workspace_uuid,
+      id: row.id,
+      workspace_id: row.workspace_id,
       index_size: row.index_size,
       is_indexing: row.is_indexing === 1,
       last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
@@ -27,17 +27,17 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
     });
   }
 
-  async findByWorkspaceUuid(workspaceUuid: string): Promise<SearchEngine | null> {
+  async findByWorkspaceId(workspaceId: string): Promise<SearchEngine | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM search_engines WHERE workspace_uuid = ? LIMIT 1`
+      `SELECT * FROM search_engines WHERE workspace_id = ? LIMIT 1`
     );
-    const row = stmt.get(workspaceUuid) as any;
+    const row = stmt.get(workspaceId) as any;
 
     if (!row) return null;
 
     return SearchEngine.fromPersistenceDTO({
-      uuid: row.uuid,
-      workspace_uuid: row.workspace_uuid,
+      id: row.id,
+      workspace_id: row.workspace_id,
       index_size: row.index_size,
       is_indexing: row.is_indexing === 1,
       last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
@@ -54,8 +54,8 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
 
     return rows.map((row) =>
       SearchEngine.fromPersistenceDTO({
-        uuid: row.uuid,
-        workspace_uuid: row.workspace_uuid,
+        id: row.id,
+        workspace_id: row.workspace_id,
         index_size: row.index_size,
         is_indexing: row.is_indexing === 1,
         last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
@@ -73,8 +73,8 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
 
     return rows.map((row) =>
       SearchEngine.fromPersistenceDTO({
-        uuid: row.uuid,
-        workspace_uuid: row.workspace_uuid,
+        id: row.id,
+        workspace_id: row.workspace_id,
         index_size: row.index_size,
         is_indexing: row.is_indexing === 1,
         last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
@@ -89,10 +89,10 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO search_engines (
-        uuid, workspace_uuid, index_size, is_indexing, last_indexed_at,
+        id, workspace_id, index_size, is_indexing, last_indexed_at,
         createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         index_size = excluded.index_size,
         is_indexing = excluded.is_indexing,
         last_indexed_at = excluded.last_indexed_at,
@@ -100,8 +100,8 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.workspace_uuid,
+      dto.id,
+      dto.workspace_id,
       dto.index_size,
       dto.is_indexing ? 1 : 0,
       dto.last_indexed_at ? dto.last_indexed_at.getTime() : null,
@@ -110,21 +110,21 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
     );
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM search_engines WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM search_engines WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async deleteByWorkspaceUuid(workspaceUuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM search_engines WHERE workspace_uuid = ?`);
-    stmt.run(workspaceUuid);
+  async deleteByWorkspaceId(workspaceId: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM search_engines WHERE workspace_id = ?`);
+    stmt.run(workspaceId);
   }
 
-  async existsByWorkspaceUuid(workspaceUuid: string): Promise<boolean> {
+  async existsByWorkspaceId(workspaceId: string): Promise<boolean> {
     const stmt = this.db.prepare(
-      `SELECT 1 FROM search_engines WHERE workspace_uuid = ? LIMIT 1`
+      `SELECT 1 FROM search_engines WHERE workspace_id = ? LIMIT 1`
     );
-    return stmt.get(workspaceUuid) !== undefined;
+    return stmt.get(workspaceId) !== undefined;
   }
 }
 

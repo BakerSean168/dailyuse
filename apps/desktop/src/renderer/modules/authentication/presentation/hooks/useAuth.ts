@@ -19,7 +19,7 @@ import type { LoginRequest, RegisterRequest } from '@dailyuse/contracts/authenti
 // ===== Types =====
 
 export interface AuthUser {
-  uuid: string;
+  id: string;
   email: string;
   username?: string;
   displayName?: string;
@@ -85,7 +85,7 @@ export function useAuth(): UseAuthReturn {
 
         // 构建用户信息
         const user: AuthUser = {
-          uuid: response.sessionId || '',
+          id: response.sessionId || '',
           email: credentials.identifier,
         };
 

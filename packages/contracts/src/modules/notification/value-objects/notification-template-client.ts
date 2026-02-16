@@ -14,7 +14,7 @@ import type {
  * NotificationTemplate Client DTO (聚合根级别)
  */
 export interface NotificationTemplateAggregateClientDTO {
-  uuid: string;
+  id: string;
   name: string;
   description?: string | null;
   type: NotificationType;
@@ -40,7 +40,7 @@ export interface NotificationTemplateAggregateClientDTO {
  */
 export interface NotificationTemplateClient {
   // ===== 基础属性 =====
-  uuid: string;
+  id: string;
   name: string;
   description?: string | null;
   type: NotificationType;

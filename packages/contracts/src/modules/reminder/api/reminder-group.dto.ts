@@ -65,7 +65,7 @@ export interface BatchGroupTemplatesRes {
   successCount: number;
   failedCount: number;
   errors?: Array<{
-    uuid: string;
+    id: string;
     error: string;
   }>;
 }
@@ -88,7 +88,7 @@ export interface ReminderTriggerRes {
 }
 
 export interface TemplateScheduleStatusRes {
-  templateUuid: string;
+  templateId: string;
   hasSchedule: boolean;
   nextExecutionTime?: number | null;
   lastExecutionTime?: number | null;

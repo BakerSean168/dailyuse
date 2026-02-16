@@ -43,23 +43,23 @@ export class CreateNotification {
   }
 
   async execute(params: {
-    accountUuid: string;
+    identityId: string;
     title: string;
     content: string;
     type: NotificationType;
     category: NotificationCategory;
     relatedEntityType?: RelatedEntityType;
-    relatedEntityUuid?: string;
+    relatedEntityId?: string;
     channels?: NotificationChannelType[];
   }): Promise<NotificationClientDTO> {
     logger.info('📬 [应用服务] 接收创建通知请求', {
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       title: params.title,
       type: params.type,
       category: params.category,
     });
 
-    const preference = await this.preferenceRepository.findByAccountUuid(params.accountUuid);
+    const preference = await this.preferenceRepository.findByAccountId(params.identityId);
     const channels = params.channels ?? [ChannelTypeEnum.InApp];
 
     this.policy.assertCanSend({
@@ -69,7 +69,7 @@ export class CreateNotification {
     });
 
     const notification = Notification.create({
-      identityId: params.accountUuid as IdentityId,
+      identityId: params.identityId as IdentityId,
       title: params.title,
       content: params.content,
       type: params.type,
@@ -80,7 +80,7 @@ export class CreateNotification {
       const channel = NotificationChannel.create({
         notificationId: notification.id,
         channelType,
-        recipient: params.accountUuid,
+        recipient: params.identityId,
       });
       notification.addChannel(channel);
     }
@@ -90,20 +90,20 @@ export class CreateNotification {
     const clientDTO = toNotificationClientDTO(notification.toServerDTO());
 
     logger.info('✅✅✅ [应用服务] 通知创建完成', {
-      notificationUuid: clientDTO.uuid,
-      accountUuid: clientDTO.accountUuid,
+      notificationId: clientDTO.id,
+      identityId: clientDTO.identityId,
       title: clientDTO.title,
       status: clientDTO.status,
     });
 
     // 推送 SSE 事件
-    await this.pushSSEEvents(params.accountUuid, params.channels, clientDTO);
+    await this.pushSSEEvents(params.identityId, params.channels, clientDTO);
 
     return clientDTO;
   }
 
   private async pushSSEEvents(
-    accountUuid: string,
+    identityId: string,
     channels: NotificationChannelType[] | undefined,
     clientDTO: NotificationClientDTO,
   ): Promise<void> {
@@ -112,14 +112,14 @@ export class CreateNotification {
       // The SSE mechanism should be handled by the infrastructure layer
       // This ensures application layer doesn't depend on infrastructure concerns
       logger.debug('📬 [应用服务] Notification queued for SSE delivery', {
-        accountUuid,
-        notificationUuid: clientDTO.uuid,
+        identityId,
+        notificationId: clientDTO.id,
         channels,
       });
     } catch (error) {
       logger.error('❌ [SSE推送] SSE 推送失败', {
         error: error instanceof Error ? error.message : String(error),
-        accountUuid,
+        identityId,
       });
     }
   }

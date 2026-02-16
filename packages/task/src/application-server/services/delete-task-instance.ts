@@ -9,8 +9,8 @@ import { ok } from '@dailyuse/contracts/result';
 export class DeleteTaskInstance {
   constructor(private readonly instanceRepository: ITaskInstanceRepository) {}
 
-  async execute(uuid: string): Promise<Result<void>> {
-    await this.instanceRepository.delete(uuid);
+  async execute(id: string): Promise<Result<void>> {
+    await this.instanceRepository.delete(id);
     return ok(undefined);
   }
 }

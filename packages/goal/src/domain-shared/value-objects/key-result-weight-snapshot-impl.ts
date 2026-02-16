@@ -12,14 +12,14 @@ import { InvalidWeightError } from './errors';
 
 export class KeyResultWeightSnapshot {
   constructor(
-    public readonly uuid: string,
-    public readonly goalUuid: string,
-    public readonly keyResultUuid: string,
+    public readonly id: string,
+    public readonly goalId: string,
+    public readonly keyResultId: string,
     public readonly oldWeight: number,
     public readonly newWeight: number,
     public readonly snapshotTime: number,
     public readonly trigger: SnapshotTrigger,
-    public readonly operatorUuid: string,
+    public readonly operatorId: string,
     public readonly reason?: string,
     public readonly createdAt?: number,
   ) {
@@ -52,16 +52,16 @@ export class KeyResultWeightSnapshot {
    */
   public toDTO(): KeyResultWeightSnapshotDTO {
     return {
-      uuid: this.uuid,
-      goalUuid: this.goalUuid,
-      keyResultUuid: this.keyResultUuid,
+      id: this.id,
+      goalId: this.goalId,
+      keyResultId: this.keyResultId,
       oldWeight: this.oldWeight,
       newWeight: this.newWeight,
       weightDelta: this.weightDelta,
       snapshotTime: this.snapshotTime,
       trigger: this.trigger,
       reason: this.reason,
-      operatorUuid: this.operatorUuid,
+      operatorId: this.operatorId,
       createdAt: this.createdAt ?? Date.now(),
     };
   }
@@ -71,14 +71,14 @@ export class KeyResultWeightSnapshot {
    */
   public static fromDTO(dto: KeyResultWeightSnapshotDTO): KeyResultWeightSnapshot {
     return new KeyResultWeightSnapshot(
-      dto.uuid,
-      dto.goalUuid,
-      dto.keyResultUuid,
+      dto.id,
+      dto.goalId,
+      dto.keyResultId,
       dto.oldWeight,
       dto.newWeight,
       dto.snapshotTime,
       dto.trigger,
-      dto.operatorUuid,
+      dto.operatorId,
       dto.reason ?? undefined,
       dto.createdAt,
     );
@@ -89,16 +89,16 @@ export class KeyResultWeightSnapshot {
    */
   public toPersistenceDTO(): KeyResultWeightSnapshotPersistenceDTO {
     return {
-      uuid: this.uuid,
-      goalUuid: this.goalUuid,
-      keyResultUuid: this.keyResultUuid,
+      id: this.id,
+      goalId: this.goalId,
+      keyResultId: this.keyResultId,
       oldWeight: this.oldWeight,
       newWeight: this.newWeight,
       weightDelta: this.weightDelta,
       snapshotTime: this.snapshotTime,
       trigger: this.trigger,
       reason: this.reason ?? null,
-      operatorUuid: this.operatorUuid,
+      operatorId: this.operatorId,
       createdAt: new Date(this.createdAt ?? Date.now()),
     };
   }
@@ -108,14 +108,14 @@ export class KeyResultWeightSnapshot {
    */
   public static fromPersistenceDTO(dto: KeyResultWeightSnapshotPersistenceDTO): KeyResultWeightSnapshot {
     return new KeyResultWeightSnapshot(
-      dto.uuid,
-      dto.goalUuid,
-      dto.keyResultUuid,
+      dto.id,
+      dto.goalId,
+      dto.keyResultId,
       dto.oldWeight,
       dto.newWeight,
       dto.snapshotTime,
       dto.trigger,
-      dto.operatorUuid,
+      dto.operatorId,
       dto.reason ?? undefined,
       dto.createdAt.getTime(),
     );

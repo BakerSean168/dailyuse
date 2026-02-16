@@ -32,7 +32,7 @@ export function createJwtStrategy(config: JwtStrategyConfig): JwtStrategy {
   return new JwtStrategy(options, async (payload: any, done: any) => {
     try {
       // Verify identity exists
-      const identity = await identityRepository.findById(payload.identityId || payload.accountUuid);
+      const identity = await identityRepository.findById(payload.identityId || payload.identityId);
       if (!identity) {
         return done(null, false, { message: 'Identity not found' });
       }

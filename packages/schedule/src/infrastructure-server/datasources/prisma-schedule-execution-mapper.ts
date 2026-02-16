@@ -21,8 +21,8 @@ export class PrismaScheduleExecutionMapper {
    */
   public static toDomain(data: PrismaScheduleExecution): ScheduleExecution {
     return ScheduleExecution.fromPersistenceDTO({
-      uuid: data.uuid,
-      taskUuid: data.taskUuid,
+      id: data.id,
+      taskId: data.taskId,
       executionTime: data.executionTime.getTime(),
       status: data.status as ExecutionStatus,
       duration: data.duration ?? undefined,
@@ -40,8 +40,8 @@ export class PrismaScheduleExecutionMapper {
     const dto = execution.toPersistenceDTO();
 
     return {
-      uuid: dto.uuid,
-      taskUuid: dto.taskUuid,
+      id: dto.id,
+      taskId: dto.taskId,
       executionTime: new Date(dto.executionTime),
       status: dto.status,
       duration: dto.duration ?? null,

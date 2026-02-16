@@ -497,7 +497,7 @@ export function DashboardView() {
               <div className="space-y-2">
                 {todayTasks.map((task) => (
                   <div
-                    key={task.uuid}
+                    key={task.id}
                     className="p-2 rounded-md border bg-muted/30 hover:bg-muted/50 cursor-pointer transition-colors"
                     onClick={() => navigate('/tasks')}
                   >

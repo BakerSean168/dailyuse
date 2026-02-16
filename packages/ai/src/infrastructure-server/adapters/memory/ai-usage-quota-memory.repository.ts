@@ -14,28 +14,28 @@ import type { AIUsageQuotaServerDTO, QuotaResetPeriod } from '@dailyuse/contract
  */
 export class AIUsageQuotaMemoryRepository implements IAIUsageQuotaRepository {
   private quotas = new Map<string, AIUsageQuotaServerDTO>();
-  private accountIndex = new Map<string, string>(); // accountUuid -> uuid
+  private accountIndex = new Map<string, string>(); // identityId -> id
 
   async save(quota: AIUsageQuotaServerDTO): Promise<void> {
-    this.quotas.set(quota.uuid, quota);
-    this.accountIndex.set(quota.accountUuid, quota.uuid);
+    this.quotas.set(quota.id, quota);
+    this.accountIndex.set(quota.identityId, quota.id);
   }
 
-  async findByUuid(uuid: string): Promise<AIUsageQuotaServerDTO | null> {
-    return this.quotas.get(uuid) ?? null;
+  async findById(id: string): Promise<AIUsageQuotaServerDTO | null> {
+    return this.quotas.get(id) ?? null;
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<AIUsageQuotaServerDTO | null> {
-    const uuid = this.accountIndex.get(accountUuid);
-    return uuid ? this.quotas.get(uuid) ?? null : null;
+  async findByAccountId(identityId: string): Promise<AIUsageQuotaServerDTO | null> {
+    const id = this.accountIndex.get(identityId);
+    return id ? this.quotas.get(id) ?? null : null;
   }
 
-  async createDefaultQuota(accountUuid: string): Promise<AIUsageQuotaServerDTO> {
-    const uuid = `quota-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  async createDefaultQuota(identityId: string): Promise<AIUsageQuotaServerDTO> {
+    const id = `quota-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = Date.now();
     const quota: AIUsageQuotaServerDTO = {
-      uuid,
-      accountUuid,
+      id,
+      identityId,
       quotaLimit: 100000,
       currentUsage: 0,
       resetPeriod: 'DAILY' as QuotaResetPeriod,
@@ -48,16 +48,16 @@ export class AIUsageQuotaMemoryRepository implements IAIUsageQuotaRepository {
     return quota;
   }
 
-  async delete(uuid: string): Promise<void> {
-    const quota = this.quotas.get(uuid);
+  async delete(id: string): Promise<void> {
+    const quota = this.quotas.get(id);
     if (quota) {
-      this.accountIndex.delete(quota.accountUuid);
-      this.quotas.delete(uuid);
+      this.accountIndex.delete(quota.identityId);
+      this.quotas.delete(id);
     }
   }
 
-  async exists(accountUuid: string): Promise<boolean> {
-    return this.accountIndex.has(accountUuid);
+  async exists(identityId: string): Promise<boolean> {
+    return this.accountIndex.has(identityId);
   }
 
   // Test helpers
@@ -68,8 +68,8 @@ export class AIUsageQuotaMemoryRepository implements IAIUsageQuotaRepository {
 
   seed(quotas: AIUsageQuotaServerDTO[]): void {
     quotas.forEach((q) => {
-      this.quotas.set(q.uuid, q);
-      this.accountIndex.set(q.accountUuid, q.uuid);
+      this.quotas.set(q.id, q);
+      this.accountIndex.set(q.identityId, q.id);
     });
   }
 }

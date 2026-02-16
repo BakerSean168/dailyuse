@@ -49,7 +49,7 @@ export function registerAuthenticationModule(): void {
         const localAccountManager = getLocalAccountManager(logger);
         const localAccount = await localAccountManager.initialize();
         logger.info('LocalAccountManager initialized', {
-          uuid: localAccount.uuid,
+          id: localAccount.id,
           username: localAccount.username,
         });
 
@@ -66,8 +66,8 @@ export function registerAuthenticationModule(): void {
 
         if (result.hasValidSession) {
           logger.info('Session restored successfully', {
-            accountUuid: result.accountUuid,
-            sessionUuid: result.sessionUuid,
+            identityId: result.identityId,
+            sessionId: result.sessionId,
           });
           // 更新本地账户在线状态
           await localAccountManager.setOnlineStatus(true);

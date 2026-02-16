@@ -10,7 +10,7 @@ test('Store 状态调试', async ({ page }) => {
     const text = msg.text();
     if (text.includes('LoginService') || 
         text.includes('AccountStore') ||
-        text.includes('accountUuid') ||
+        text.includes('identityId') ||
         text.includes('用户信息')) {
       console.log('浏览器:', text);
     }

@@ -37,7 +37,7 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
   private _version: number;
 
   private constructor(params: {
-    uuid?: string;
+    id?: string;
     identityId: string;
     name: string;
     description?: string | null;
@@ -53,7 +53,7 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
     deletedAt?: number | null;
     version: number;
   }) {
-    super(params.uuid || generateUUID());
+    super(params.id || generateUUID());
     this._identityId = params.identityId as IdentityId;
     this._name = params.name;
     this._description = params.description ?? null;
@@ -122,11 +122,11 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
     icon?: string;
     order?: number;
   }): ReminderGroup {
-    const uuid = generateUUID();
+    const newId = generateUUID();
     const now = Date.now();
     const stats = GroupStats.createEmpty();
     const group = new ReminderGroup({
-      uuid,
+      id,
       identityId: params.identityId,
       name: params.name,
       description: params.description,
@@ -151,7 +151,7 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
   public static fromServerDTO(dto: ReminderGroupServerDTO): ReminderGroup {
     const stats = GroupStats.fromDTO(dto.stats);
     return new ReminderGroup({
-      uuid: dto.id,
+      id: dto.id,
       identityId: dto.identityId,
       name: dto.name,
       description: dto.description,
@@ -172,7 +172,7 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
   public static fromPersistenceDTO(dto: ReminderGroupPersistenceDTO): ReminderGroup {
     const stats = GroupStats.fromDTO(dto.stats);
     return new ReminderGroup({
-      uuid: dto.id,
+      id: dto.id,
       identityId: dto.identityId,
       name: dto.name,
       description: dto.description,

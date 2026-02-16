@@ -42,7 +42,7 @@ export type ValidateTokenReq = void;
 
 export interface ValidateTokenRes {
   valid: boolean;
-  accountUuid?: string;
+  identityId?: string;
   expiresAt?: number;
 }
 

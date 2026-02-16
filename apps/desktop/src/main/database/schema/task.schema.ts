@@ -14,8 +14,8 @@ export function initializeTaskTables(database: Database.Database): void {
   // task_templates 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS task_templates (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT NOT NULL,
       title TEXT NOT NULL,
       description TEXT,
       task_type TEXT NOT NULL CHECK (task_type IN ('ONE_TIME', 'RECURRING')),
@@ -24,10 +24,10 @@ export function initializeTaskTables(database: Database.Database): void {
       urgency INTEGER NOT NULL DEFAULT 2,
       color TEXT,
       tags TEXT,
-      folder_uuid TEXT,
-      goal_uuid TEXT,
-      key_result_uuid TEXT,
-      parent_task_uuid TEXT,
+      folder_id TEXT,
+      goal_id TEXT,
+      key_result_id TEXT,
+      parent_task_id TEXT,
       
       -- 一次性任务字段
       start_date INTEGER,
@@ -66,17 +66,17 @@ export function initializeTaskTables(database: Database.Database): void {
       updated_at INTEGER NOT NULL,
       deleted_at INTEGER,
       
-      FOREIGN KEY (goal_uuid) REFERENCES goals(uuid),
-      FOREIGN KEY (parent_task_uuid) REFERENCES task_templates(uuid)
+      FOREIGN KEY (goal_id) REFERENCES goals(id),
+      FOREIGN KEY (parent_task_id) REFERENCES task_templates(id)
     )
   `);
 
   // task_instances 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS task_instances (
-      uuid TEXT PRIMARY KEY,
-      template_uuid TEXT NOT NULL,
-      account_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      template_id TEXT NOT NULL,
+      identity_id TEXT NOT NULL,
       instance_date INTEGER NOT NULL,
       status TEXT NOT NULL,
       note TEXT,
@@ -87,16 +87,16 @@ export function initializeTaskTables(database: Database.Database): void {
       skip_record TEXT,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
-      FOREIGN KEY (template_uuid) REFERENCES task_templates(uuid) ON DELETE CASCADE,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid)
+      FOREIGN KEY (template_id) REFERENCES task_templates(id) ON DELETE CASCADE,
+      FOREIGN KEY (identity_id) REFERENCES accounts(id)
     )
   `);
 
   // task_statistics 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS task_statistics (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT UNIQUE NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT UNIQUE NOT NULL,
       calculated_at INTEGER NOT NULL,
       template_total INTEGER DEFAULT 0,
       template_active INTEGER DEFAULT 0,
@@ -128,49 +128,49 @@ export function initializeTaskTables(database: Database.Database): void {
       distribution_by_urgency TEXT,
       distribution_by_folder TEXT,
       distribution_by_tag TEXT,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
     )
   `);
 
   // task_dependencies 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS task_dependencies (
-      uuid TEXT PRIMARY KEY,
-      predecessor_task_uuid TEXT NOT NULL,
-      successor_task_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      predecessor_task_id TEXT NOT NULL,
+      successor_task_id TEXT NOT NULL,
       dependency_type TEXT DEFAULT 'FINISH_TO_START',
       lag_days INTEGER,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
-      FOREIGN KEY (predecessor_task_uuid) REFERENCES task_templates(uuid) ON DELETE CASCADE,
-      FOREIGN KEY (successor_task_uuid) REFERENCES task_templates(uuid) ON DELETE CASCADE,
-      UNIQUE(predecessor_task_uuid, successor_task_uuid)
+      FOREIGN KEY (predecessor_task_id) REFERENCES task_templates(id) ON DELETE CASCADE,
+      FOREIGN KEY (successor_task_id) REFERENCES task_templates(id) ON DELETE CASCADE,
+      UNIQUE(predecessor_task_id, successor_task_id)
     )
   `);
 
   // task_template_history 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS task_template_history (
-      uuid TEXT PRIMARY KEY,
-      template_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      template_id TEXT NOT NULL,
       action TEXT NOT NULL,
       changes TEXT,
       created_at INTEGER NOT NULL,
-      FOREIGN KEY (template_uuid) REFERENCES task_templates(uuid) ON DELETE CASCADE
+      FOREIGN KEY (template_id) REFERENCES task_templates(id) ON DELETE CASCADE
     )
   `);
 
   // 创建索引
   database.exec(`
-    CREATE INDEX IF NOT EXISTS idx_task_templates_account ON task_templates(account_uuid);
+    CREATE INDEX IF NOT EXISTS idx_task_templates_account ON task_templates(identity_id);
     CREATE INDEX IF NOT EXISTS idx_task_templates_status ON task_templates(status);
     CREATE INDEX IF NOT EXISTS idx_task_templates_type ON task_templates(task_type);
-    CREATE INDEX IF NOT EXISTS idx_task_templates_goal ON task_templates(goal_uuid);
-    CREATE INDEX IF NOT EXISTS idx_task_instances_template ON task_instances(template_uuid);
+    CREATE INDEX IF NOT EXISTS idx_task_templates_goal ON task_templates(goal_id);
+    CREATE INDEX IF NOT EXISTS idx_task_instances_template ON task_instances(template_id);
     CREATE INDEX IF NOT EXISTS idx_task_instances_date ON task_instances(instance_date);
     CREATE INDEX IF NOT EXISTS idx_task_instances_status ON task_instances(status);
-    CREATE INDEX IF NOT EXISTS idx_task_dependencies_successor ON task_dependencies(successor_task_uuid);
-    CREATE INDEX IF NOT EXISTS idx_task_history_template ON task_template_history(template_uuid);
+    CREATE INDEX IF NOT EXISTS idx_task_dependencies_successor ON task_dependencies(successor_task_id);
+    CREATE INDEX IF NOT EXISTS idx_task_history_template ON task_template_history(template_id);
   `);
 
   console.log('[Database] Task tables initialized');

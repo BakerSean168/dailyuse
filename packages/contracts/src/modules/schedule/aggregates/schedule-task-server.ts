@@ -28,8 +28,8 @@ import type {
  * ScheduleTask Server DTO
  */
 export interface ScheduleTaskServerDTO {
-  uuid: string;
-  accountUuid: string;
+  id: string;
+  identityId: string;
   name: string;
   description: string | null;
   sourceModule: SourceModule;
@@ -57,8 +57,8 @@ export interface ScheduleTaskServerDTO {
  * ScheduleTask Persistence DTO (数据库映射)
  */
 export interface ScheduleTaskPersistenceDTO {
-  uuid: string;
-  accountUuid: string;
+  id: string;
+  identityId: string;
   name: string;
   description: string | null;
   sourceModule: SourceModule;
@@ -110,10 +110,10 @@ export interface ScheduleTaskPersistenceDTO {
  */
 export interface ScheduleTaskCreatedEvent {
   type: 'schedule.task.created';
-  aggregateId: string; // taskUuid
+  aggregateId: string; // taskId
   timestamp: Date; // epoch ms
   payload: {
-    taskUuid: string;
+    taskId: string;
     name: string;
     sourceModule: SourceModule;
     sourceEntityId: string;
@@ -130,7 +130,7 @@ export interface ScheduleTaskPausedEvent {
   aggregateId: string;
   timestamp: Date;
   payload: {
-    taskUuid: string;
+    taskId: string;
     sourceModule: SourceModule;
     sourceEntityId: string;
     reason?: string;
@@ -145,7 +145,7 @@ export interface ScheduleTaskResumedEvent {
   aggregateId: string;
   timestamp: Date;
   payload: {
-    taskUuid: string;
+    taskId: string;
     sourceModule: SourceModule;
     sourceEntityId: string;
     nextRunAt: number;
@@ -160,7 +160,7 @@ export interface ScheduleTaskCompletedEvent {
   aggregateId: string;
   timestamp: Date;
   payload: {
-    taskUuid: string;
+    taskId: string;
     sourceModule: SourceModule;
     sourceEntityId: string;
     totalExecutions: number;
@@ -175,7 +175,7 @@ export interface ScheduleTaskCancelledEvent {
   aggregateId: string;
   timestamp: Date;
   payload: {
-    taskUuid: string;
+    taskId: string;
     sourceModule: SourceModule;
     sourceEntityId: string;
     reason: string;
@@ -190,7 +190,7 @@ export interface ScheduleTaskFailedEvent {
   aggregateId: string;
   timestamp: Date;
   payload: {
-    taskUuid: string;
+    taskId: string;
     sourceModule: SourceModule;
     sourceEntityId: string;
     error: string;
@@ -206,8 +206,8 @@ export interface ScheduleTaskExecutedEvent {
   aggregateId: string;
   timestamp: Date;
   payload: {
-    taskUuid: string;
-    executionUuid: string;
+    taskId: string;
+    executionId: string;
     sourceModule: SourceModule;
     sourceEntityId: string;
     status: ExecutionStatus;
@@ -224,7 +224,7 @@ export interface ScheduleTaskScheduleUpdatedEvent {
   aggregateId: string;
   timestamp: Date;
   payload: {
-    taskUuid: string;
+    taskId: string;
     previousCronExpression: string;
     newCronExpression: string;
     nextRunAt: number;
@@ -251,8 +251,8 @@ export type ScheduleTaskDomainEvent =
  */
 export interface ScheduleTaskServer {
   // 基础属性
-  uuid: string;
-  accountUuid: string;
+  id: string;
+  identityId: string;
   name: string;
   description: string | null;
   sourceModule: SourceModule;
@@ -365,7 +365,7 @@ export interface ScheduleTaskServerStatic {
    * @returns 新的 ScheduleTask 实例
    */
   create(params: {
-    accountUuid: string;
+    identityId: string;
     name: string;
     sourceModule: SourceModule;
     sourceEntityId: string;

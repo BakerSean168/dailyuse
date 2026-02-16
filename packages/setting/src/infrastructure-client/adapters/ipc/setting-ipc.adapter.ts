@@ -29,39 +29,39 @@ export class SettingIpcAdapter implements ISettingApiClient {
   // ===== User Settings =====
 
   async getUserSettings(): Promise<Result<UserSettingClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:user:get`));
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:all`));
   }
 
   async updateAppearance(request: UpdateAppearanceRequest): Promise<Result<UserSettingClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:user:appearance`, request));
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:update`, { section: 'appearance', ...request }));
   }
 
   async updateLocale(request: UpdateLocaleRequest): Promise<Result<UserSettingClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:user:locale`, request));
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:update`, { section: 'locale', ...request }));
   }
 
   async updateWorkflow(request: UpdateWorkflowRequest): Promise<Result<UserSettingClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:user:workflow`, request));
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:update`, { section: 'workflow', ...request }));
   }
 
   async updatePrivacy(request: UpdatePrivacyRequest): Promise<Result<UserSettingClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:user:privacy`, request));
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:update`, { section: 'privacy', ...request }));
   }
 
   async resetUserSettings(): Promise<Result<UserSettingClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:user:reset`));
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:reset`));
   }
 
   // ===== App Config =====
 
   async getAppConfig(): Promise<Result<AppConfigClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:app:get`));
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:get`, { key: 'app' }));
   }
 
   // ===== Sync =====
 
   async syncSettings(): Promise<Result<UserSettingClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:sync`));
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:update`, { sync: true }));
   }
 
   async exportSettings(): Promise<Result<string>> {

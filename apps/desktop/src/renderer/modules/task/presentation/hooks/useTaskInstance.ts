@@ -33,7 +33,7 @@ export interface UseTaskInstanceReturn {
   getCompletedInstances: () => TaskInstance[];
   getInstancesByTemplate: (templateId: string) => TaskInstance[];
   getFilteredInstances: () => TaskInstance[];
-  loadInstancesByDateRange: (templateUuid: string, startDate: Date, endDate: Date) => Promise<TaskInstance[]>;
+  loadInstancesByDateRange: (templateId: string, startDate: Date, endDate: Date) => Promise<TaskInstance[]>;
   getInstance: (id: string) => Promise<TaskInstance | null>;
   
   // Actions
@@ -63,12 +63,12 @@ export function useTaskInstance(): UseTaskInstanceReturn {
   }, []);
 
   const loadInstancesByDateRange = useCallback(async (
-    templateUuid: string, 
+    templateId: string, 
     startDate: Date, 
     endDate: Date
   ): Promise<TaskInstance[]> => {
     return taskApplicationService.getInstancesByDateRange({
-      templateUuid,
+      templateId,
       from: startDate.getTime(),
       to: endDate.getTime(),
     });
@@ -111,7 +111,7 @@ export function useTaskInstance(): UseTaskInstanceReturn {
     const store = useTaskStore.getState();
     try {
       const instance = await taskApplicationService.startInstance(id);
-      store.updateInstance(instance.uuid, instance);
+      store.updateInstance(instance.id, instance);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '开始任务失败';
       store.setError(errorMessage);

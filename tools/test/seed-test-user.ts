@@ -61,17 +61,17 @@ async function seedTestUser(userData: typeof TEST_USERS[0]) {
     // 更新密码（如果需要）
     const hashedPassword = await bcrypt.hash(userData.password, 12);
     const now = Date.now();
-    const passwordCredentialUuid = randomUUID();
+    const passwordCredentialId = randomUUID();
     
     // 查找并更新认证凭证
     const credential = await prisma.authCredential.findFirst({
-      where: { accountUuid: existingAccount.uuid },
+      where: { identityId: existingAccount.uuid },
     });
 
     if (credential) {
       // 构造新的 PasswordCredential 数据结构
       const passwordCredentialDTO = {
-        uuid: passwordCredentialUuid,
+        uuid: passwordCredentialId,
         credential_uuid: credential.uuid,
         hashed_password: hashedPassword,
         salt: '', // bcrypt 自带 salt
@@ -112,14 +112,14 @@ async function seedTestUser(userData: typeof TEST_USERS[0]) {
   const hashedPassword = await bcrypt.hash(userData.password, 12);
   const now = Date.now();
   
-  const accountUuid = randomUUID();
-  const credentialUuid = randomUUID();
-  const passwordCredentialUuid = randomUUID();
+  const identityId = randomUUID();
+  const credentialId = randomUUID();
+  const passwordCredentialId = randomUUID();
 
   // 2. 构造 PasswordCredential PersistenceDTO
   const passwordCredentialDTO = {
-    uuid: passwordCredentialUuid,
-    credential_uuid: credentialUuid,
+    uuid: passwordCredentialId,
+    credential_uuid: credentialId,
     hashed_password: hashedPassword,
     salt: '', // bcrypt 自带 salt
     algorithm: 'BCRYPT',
@@ -136,7 +136,7 @@ async function seedTestUser(userData: typeof TEST_USERS[0]) {
     // 创建 Account
     const account = await tx.account.create({
       data: {
-        uuid: accountUuid,
+        uuid: identityId,
         username: userData.username,
         email: userData.email,
         emailVerified: true, // 测试用户默认验证
@@ -184,8 +184,8 @@ async function seedTestUser(userData: typeof TEST_USERS[0]) {
     // 创建 AuthCredential（使用 JSON 字段）
     await tx.authCredential.create({
       data: {
-        uuid: credentialUuid,
-        accountUuid: accountUuid,
+        uuid: credentialId,
+        identityId: identityId,
         type: 'PASSWORD',
         data: JSON.stringify({
           password_credential: passwordCredentialDTO,

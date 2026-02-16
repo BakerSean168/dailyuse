@@ -30,17 +30,17 @@ export class AIMessageIpcAdapter implements IAIMessageApiClient {
   }
 
   async getMessages(
-    conversationUuid: string,
+    conversationId: string,
     params?: {
       page?: number;
       pageSize?: number;
     },
   ): Promise<MessageListRes> {
-    return this.ipcClient.invoke(`${this.channel}:list`, { conversationUuid, ...params });
+    return this.ipcClient.invoke(`${this.channel}:list`, { conversationId, ...params });
   }
 
-  async deleteMessage(uuid: string): Promise<void> {
-    return this.ipcClient.invoke(`${this.channel}:delete`, uuid);
+  async deleteMessage(id: string): Promise<void> {
+    return this.ipcClient.invoke(`${this.channel}:delete`, id);
   }
 
   // ===== Streaming Chat =====

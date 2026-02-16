@@ -31,7 +31,7 @@ describe('FolderHierarchyService', () => {
       // Mock repository返回
       vi.mocked(mockRepository.findById)
         .mockResolvedValueOnce(folderA)  // 第一次查询返回 folderA
-        .mockResolvedValueOnce(null);     // folderA.parentUuid = null, 结束
+        .mockResolvedValueOnce(null);     // folderA.parentId = null, 结束
 
       const cycleExists = await service.detectCycle('folder-b', 'folder-b', mockRepository);
       expect(cycleExists).toBe(true); // 移动到自己，立即检测到循环
@@ -66,9 +66,9 @@ describe('FolderHierarchyService', () => {
 
     it('应该检测超过最大深度', async () => {
       // 创建51层深的结构来测试 MAX_DEPTH (50)
-      vi.mocked(mockRepository.findById).mockImplementation(async (uuid) => {
+      vi.mocked(mockRepository.findById).mockImplementation(async (id) => {
         // 模拟无限深度
-        return createTestFolder(uuid, `parent-${uuid}`);
+        return createTestFolder(id, `parent-${id}`);
       });
 
       const cycleExists = await service.detectCycle('folder-x', 'start', mockRepository);

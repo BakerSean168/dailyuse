@@ -22,11 +22,11 @@ export class UpdateGoal {
     private readonly goalPolicy: GoalPolicy,
   ) {}
 
-  async execute(uuid: string, input: UpdateGoalReq): Promise<Result<UpdateGoalRes>> {
+  async execute(id: string, input: UpdateGoalReq): Promise<Result<UpdateGoalRes>> {
     // 1. 查询目标
-    const goal = await this.goalRepository.findById(uuid, { includeChildren: true });
+    const goal = await this.goalRepository.findById(id, { includeChildren: true });
     if (!goal) {
-      return error('NOT_FOUND', `Goal not found: ${uuid}`);
+      return error('NOT_FOUND', `Goal not found: ${id}`);
     }
 
     // 2. 领域策略校验
@@ -61,8 +61,8 @@ export class UpdateGoal {
     }
 
     // 6. 更新文件夹
-    if (input.folderUuid !== undefined) {
-      goal.moveToFolder(input.folderUuid ? (input.folderUuid as any) : null);
+    if (input.folderId !== undefined) {
+      goal.moveToFolder(input.folderId ? (input.folderId as any) : null);
     }
 
     // 7. 持久化

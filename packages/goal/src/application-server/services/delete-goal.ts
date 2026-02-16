@@ -24,7 +24,7 @@ export class DeleteGoal {
   /**
    * 检查目标依赖项
    */
-  async checkDependencies(uuid: string): Promise<Result<{
+  async checkDependencies(id: string): Promise<Result<{
     hasKeyResults: boolean;
     keyResultCount: number;
     hasReviews: boolean;
@@ -33,9 +33,9 @@ export class DeleteGoal {
     canDelete: boolean;
     warnings: string[];
   }>> {
-    const goal = await this.goalRepository.findById(uuid, { includeChildren: true });
+    const goal = await this.goalRepository.findById(id, { includeChildren: true });
     if (!goal) {
-      return error('NOT_FOUND', `Goal not found: ${uuid}`);
+      return error('NOT_FOUND', `Goal not found: ${id}`);
     }
 
     const keyResults = goal.keyResults || [];
@@ -67,10 +67,10 @@ export class DeleteGoal {
   /**
    * 执行软删除
    */
-  async execute(uuid: string): Promise<Result<DeleteGoalRes>> {
-    const goal = await this.goalRepository.findById(uuid, { includeChildren: true });
+  async execute(id: string): Promise<Result<DeleteGoalRes>> {
+    const goal = await this.goalRepository.findById(id, { includeChildren: true });
     if (!goal) {
-      return error('NOT_FOUND', `Goal not found: ${uuid}`);
+      return error('NOT_FOUND', `Goal not found: ${id}`);
     }
 
     this.goalPolicy.ensureGoalCanBeDeleted(goal);

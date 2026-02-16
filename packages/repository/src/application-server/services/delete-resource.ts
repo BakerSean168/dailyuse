@@ -12,7 +12,7 @@ import type { IStoragePort } from '../ports/IStoragePort';
  * Delete Resource Input
  */
 export interface DeleteResourceInput {
-  uuid: string;
+  id: string;
 }
 
 /**
@@ -26,9 +26,9 @@ export class DeleteResource {
   ) {}
 
   async execute(input: DeleteResourceInput): Promise<void> {
-    const resource = await this.resourceRepository.findById(input.uuid);
+    const resource = await this.resourceRepository.findById(input.id);
     if (!resource) {
-      throw new Error(`Resource not found: ${input.uuid}`);
+      throw new Error(`Resource not found: ${input.id}`);
     }
 
     const repository = await this.repositoryRepository.findById(String(resource.repositoryId));

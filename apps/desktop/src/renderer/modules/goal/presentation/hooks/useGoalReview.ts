@@ -29,16 +29,16 @@ export interface UseGoalReviewReturn {
   editingReview: GoalReview | null;
 
   // Query
-  loadReviews: (goalUuid: string) => Promise<GoalReview[]>;
+  loadReviews: (goalId: string) => Promise<GoalReview[]>;
 
   // Mutations
-  createReview: (goalUuid: string, data: CreateReviewInput) => Promise<GoalReview>;
+  createReview: (goalId: string, data: CreateReviewInput) => Promise<GoalReview>;
   updateReview: (
-    goalUuid: string,
-    reviewUuid: string,
+    goalId: string,
+    reviewId: string,
     data: UpdateReviewInput,
   ) => Promise<GoalReview>;
-  deleteReview: (goalUuid: string, reviewUuid: string) => Promise<void>;
+  deleteReview: (goalId: string, reviewId: string) => Promise<void>;
 
   // Editing State
   setEditingReview: (review: GoalReview | null) => void;
@@ -66,12 +66,12 @@ export function useGoalReview(): UseGoalReviewReturn {
   // ===== Query =====
 
   const loadReviews = useCallback(
-    async (goalUuid: string): Promise<GoalReview[]> => {
+    async (goalId: string): Promise<GoalReview[]> => {
       storeSetLoading(true);
       storeSetError(null);
 
       try {
-        const result = await goalApplicationService.getReviews(goalUuid);
+        const result = await goalApplicationService.getReviews(goalId);
         setReviews(result);
         storeSetLoading(false);
         return result;
@@ -88,12 +88,12 @@ export function useGoalReview(): UseGoalReviewReturn {
   // ===== Mutations =====
 
   const createReview = useCallback(
-    async (goalUuid: string, data: CreateReviewInput): Promise<GoalReview> => {
+    async (goalId: string, data: CreateReviewInput): Promise<GoalReview> => {
       storeSetLoading(true);
       storeSetError(null);
 
       try {
-        const review = await goalApplicationService.createReview(goalUuid, data);
+        const review = await goalApplicationService.createReview(goalId, data);
         setReviews((prev) => [...prev, review]);
         storeSetLoading(false);
         return review;
@@ -108,13 +108,13 @@ export function useGoalReview(): UseGoalReviewReturn {
   );
 
   const updateReview = useCallback(
-    async (goalUuid: string, reviewUuid: string, data: UpdateReviewInput): Promise<GoalReview> => {
+    async (goalId: string, reviewId: string, data: UpdateReviewInput): Promise<GoalReview> => {
       storeSetLoading(true);
       storeSetError(null);
 
       try {
-        const review = await goalApplicationService.updateReview(goalUuid, reviewUuid, data);
-        setReviews((prev) => prev.map((r) => (r.uuid === reviewUuid ? review : r)));
+        const review = await goalApplicationService.updateReview(goalId, reviewId, data);
+        setReviews((prev) => prev.map((r) => (r.id === reviewId ? review : r)));
         setEditingReviewState(null);
         storeSetLoading(false);
         return review;
@@ -129,13 +129,13 @@ export function useGoalReview(): UseGoalReviewReturn {
   );
 
   const deleteReview = useCallback(
-    async (goalUuid: string, reviewUuid: string): Promise<void> => {
+    async (goalId: string, reviewId: string): Promise<void> => {
       storeSetLoading(true);
       storeSetError(null);
 
       try {
-        await goalApplicationService.deleteReview(goalUuid, reviewUuid);
-        setReviews((prev) => prev.filter((r) => r.uuid !== reviewUuid));
+        await goalApplicationService.deleteReview(goalId, reviewId);
+        setReviews((prev) => prev.filter((r) => r.id !== reviewId));
         storeSetLoading(false);
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : '删除复盘失败';

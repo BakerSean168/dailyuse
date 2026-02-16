@@ -17,8 +17,8 @@ import {
 
 interface AuthenticatedRequest extends Request {
   user?: {
-    accountUuid: string;
-    sessionUuid?: string;
+    identityId: string;
+    sessionId?: string;
     tokenType?: string;
     exp?: number;
   };
@@ -45,15 +45,15 @@ export function registerAccountRoutes(
   const router = Router();
   const { auth } = middleware;
 
-  // GET /me �?获取当前用户资料
+  // GET /me �?获取当前用户资料
   router.get('/me', auth, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      if (!req.user?.accountUuid) {
+      if (!req.user?.identityId) {
         res.status(401).json({ success: false, message: 'Unauthorized' });
         return;
       }
 
-      const profile = await handlers.getProfile(req.user.accountUuid);
+      const profile = await handlers.getProfile(req.user.identityId);
       res.json({ success: true, data: profile });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Internal Server Error';
@@ -61,10 +61,10 @@ export function registerAccountRoutes(
     }
   });
 
-  // PUT /me �?更新当前用户资料
+  // PUT /me �?更新当前用户资料
   router.put('/me', auth, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      if (!req.user?.accountUuid) {
+      if (!req.user?.identityId) {
         res.status(401).json({ success: false, message: 'Unauthorized' });
         return;
       }
@@ -79,7 +79,7 @@ export function registerAccountRoutes(
         return;
       }
 
-      const result = await handlers.updateProfile(req.user.accountUuid, parsed.data);
+      const result = await handlers.updateProfile(req.user.identityId, parsed.data);
       res.json({ success: true, data: result });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Update failed';
@@ -87,7 +87,7 @@ export function registerAccountRoutes(
     }
   });
 
-  // POST /availability �?检查可用�?
+  // POST /availability �?检查可用�?
   router.post('/availability', auth, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const parsed = CheckAvailabilitySchema.safeParse(req.body);
@@ -108,10 +108,10 @@ export function registerAccountRoutes(
     }
   });
 
-  // POST /me/close �?注销账户
+  // POST /me/close �?注销账户
   router.post('/me/close', auth, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      if (!req.user?.accountUuid) {
+      if (!req.user?.identityId) {
         res.status(401).json({ success: false, message: 'Unauthorized' });
         return;
       }
@@ -126,7 +126,7 @@ export function registerAccountRoutes(
         return;
       }
 
-      await handlers.closeAccount(req.user.accountUuid, parsed.data);
+      await handlers.closeAccount(req.user.identityId, parsed.data);
       res.json({ success: true, message: 'Account closed' });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Close failed';
@@ -134,15 +134,15 @@ export function registerAccountRoutes(
     }
   });
 
-  // DELETE /me �?注销账户（别名）
+  // DELETE /me �?注销账户（别名）
   router.delete('/me', auth, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      if (!req.user?.accountUuid) {
+      if (!req.user?.identityId) {
         res.status(401).json({ success: false, message: 'Unauthorized' });
         return;
       }
 
-      await handlers.closeAccount(req.user.accountUuid, req.body);
+      await handlers.closeAccount(req.user.identityId, req.body);
       res.json({ success: true, message: 'Account closed' });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Close failed';

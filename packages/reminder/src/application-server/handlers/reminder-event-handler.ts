@@ -23,7 +23,7 @@ type ReminderGroupAction =
   | 'group-deleted';
 
 type ReminderTemplateRefreshPayload = {
-  templateUuid: string;
+  templateId: string;
   reason: ReminderTemplateAction;
   action: ReminderTemplateAction;
   timestamp: number;
@@ -32,7 +32,7 @@ type ReminderTemplateRefreshPayload = {
 };
 
 type ReminderGroupRefreshPayload = {
-  groupUuid: string;
+  groupId: string;
   reason: ReminderGroupAction;
   action: ReminderGroupAction;
   timestamp: number;
@@ -125,8 +125,8 @@ export class ReminderEventHandler {
     action: ReminderTemplateAction,
     options?: { includeSnapshotFromEvent?: boolean; skipSnapshot?: boolean },
   ): Promise<void> {
-    if (!event.accountUuid) {
-      logger.warn(`[ReminderEventHandler] Missing accountUuid for ${action}`, {
+    if (!event.identityId) {
+      logger.warn(`[ReminderEventHandler] Missing identityId for ${action}`, {
         eventType: event.eventType,
         aggregateId: event.aggregateId,
       });
@@ -139,7 +139,7 @@ export class ReminderEventHandler {
         : undefined;
 
     const payload: ReminderTemplateRefreshPayload = {
-      templateUuid: event.aggregateId,
+      templateId: event.aggregateId,
       reason: action,
       action,
       timestamp: Date.now(),
@@ -162,7 +162,7 @@ export class ReminderEventHandler {
       }
     }
 
-    await this.emitSse(event.accountUuid, 'reminder:template:refresh', payload);
+    await this.emitSse(event.identityId, 'reminder:template:refresh', payload);
   }
 
   private static async handleGroupEvent(
@@ -170,8 +170,8 @@ export class ReminderEventHandler {
     action: ReminderGroupAction,
     options?: { skipSnapshot?: boolean },
   ): Promise<void> {
-    if (!event.accountUuid) {
-      logger.warn(`[ReminderEventHandler] Missing accountUuid for ${action}`, {
+    if (!event.identityId) {
+      logger.warn(`[ReminderEventHandler] Missing identityId for ${action}`, {
         eventType: event.eventType,
         aggregateId: event.aggregateId,
       });
@@ -184,7 +184,7 @@ export class ReminderEventHandler {
         : undefined;
 
     const payload: ReminderGroupRefreshPayload = {
-      groupUuid: event.aggregateId,
+      groupId: event.aggregateId,
       reason: action,
       action,
       timestamp: Date.now(),
@@ -198,59 +198,59 @@ export class ReminderEventHandler {
       }
     }
 
-    await this.emitSse(event.accountUuid, 'reminder:group:refresh', payload);
+    await this.emitSse(event.identityId, 'reminder:group:refresh', payload);
   }
 
   private static async fetchTemplateSnapshot(
-    uuid: string,
+    id: string,
   ): Promise<ReminderTemplateServerDTO | undefined> {
     try {
       const repo = ReminderContainer.getInstance().getReminderTemplateRepository() as any;
       const template =
-        typeof repo.findByUuid === 'function'
-          ? await repo.findByUuid(uuid)
-          : await repo.findById(uuid);
+        typeof repo.findById === 'function'
+          ? await repo.findById(id)
+          : await repo.findById(id);
       return template?.toServerDTO();
     } catch (error) {
-      logger.error('[ReminderEventHandler] Failed to fetch template snapshot', { uuid, error });
+      logger.error('[ReminderEventHandler] Failed to fetch template snapshot', { id, error });
       return undefined;
     }
   }
 
   private static async fetchGroupSnapshot(
-    uuid: string,
+    id: string,
   ): Promise<ReminderGroupServerDTO | undefined> {
     try {
       const repo = ReminderContainer.getInstance().getReminderGroupRepository() as any;
       let group = null;
 
-      if (typeof repo.findByUuid === 'function') {
-        group = await repo.findByUuid(uuid);
+      if (typeof repo.findById === 'function') {
+        group = await repo.findById(id);
       } else if (typeof repo.findById === 'function') {
-        group = await repo.findById(uuid);
+        group = await repo.findById(id);
       }
 
       return group?.toServerDTO();
     } catch (error) {
-      logger.error('[ReminderEventHandler] Failed to fetch group snapshot', { uuid, error });
+      logger.error('[ReminderEventHandler] Failed to fetch group snapshot', { id, error });
       return undefined;
     }
   }
 
-  private static async emitSse(accountUuid: string, eventName: string, data: any): Promise<void> {
+  private static async emitSse(identityId: string, eventName: string, data: any): Promise<void> {
     try {
       const sseManager = await this.getSseManager();
-      const sent = sseManager.sendMessage(accountUuid, eventName, data);
+      const sent = sseManager.sendMessage(identityId, eventName, data);
 
       if (!sent) {
         logger.warn('[ReminderEventHandler] SSE message not delivered (no active connection)', {
-          accountUuid,
+          identityId,
           eventName,
         });
       }
     } catch (error) {
       logger.error('[ReminderEventHandler] Failed to emit SSE message', {
-        accountUuid,
+        identityId,
         eventName,
         error,
       });
@@ -268,10 +268,10 @@ export class ReminderEventHandler {
    * 为 ReminderTemplate 创建 ScheduleTask
    */
   private static async createScheduleTaskForReminder(event: DomainEvent): Promise<void> {
-    const { accountUuid, payload } = event as any;
+    const { identityId, payload } = event as any;
 
-    if (!accountUuid) {
-      logger.error('[ReminderEventHandler] Missing accountUuid in reminder.template.created event');
+    if (!identityId) {
+      logger.error('[ReminderEventHandler] Missing identityId in reminder.template.created event');
       return;
     }
 
@@ -288,8 +288,8 @@ export class ReminderEventHandler {
     }
 
     logger.info('📝 [ReminderEventHandler] Creating ScheduleTask for reminder', {
-      accountUuid,
-      reminderUuid: reminder.uuid,
+      identityId,
+      reminderId: reminder.id,
       reminderTitle: reminder.title,
       selfEnabled: reminder.selfEnabled,
       status: reminder.status,
@@ -306,9 +306,9 @@ export class ReminderEventHandler {
 
       // 使用 ReminderScheduleStrategy 创建 ScheduleTask
       const scheduleTask = factory.createFromSourceEntity({
-        accountUuid,
+        identityId,
         sourceModule: SourceModule.REMINDER,
-        sourceEntityId: reminder.uuid,
+        sourceEntityId: reminder.id,
         sourceEntity: reminder, // 使用 ServerDTO
       });
 
@@ -318,9 +318,9 @@ export class ReminderEventHandler {
       await repository.save(scheduleTask);
 
       logger.info(`✅ [ReminderEventHandler] 为提醒 "${reminder.title}" 创建了 ScheduleTask`, {
-        scheduleTaskUuid: scheduleTask.uuid,
-        reminderUuid: reminder.uuid,
-        accountUuid,
+        scheduleTaskId: scheduleTask.id,
+        reminderId: reminder.id,
+        identityId,
       });
     } catch (error: any) {
       // 如果是"不需要调度"错误，不报错
@@ -334,8 +334,8 @@ export class ReminderEventHandler {
       logger.error(`❌ [ReminderEventHandler] 为提醒 "${reminder.title}" 创建 ScheduleTask 失败`, {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        reminderUuid: reminder.uuid,
-        accountUuid,
+        reminderId: reminder.id,
+        identityId,
       });
       // 不抛出错误，ScheduleTask 创建失败不影响 ReminderTemplate 创建
     }
@@ -345,7 +345,7 @@ export class ReminderEventHandler {
    * 启用 Reminder 对应的 ScheduleTask
    */
   private static async enableScheduleTaskForReminder(event: DomainEvent): Promise<void> {
-    const reminderUuid = event.aggregateId;
+    const reminderId = event.aggregateId;
 
     try {
       const { ScheduleContainer } =
@@ -358,7 +358,7 @@ export class ReminderEventHandler {
       // 查找该 reminder 对应的 ScheduleTask（返回数组）
       const scheduleTasks = await repository.findBySourceEntity(
         SourceModule.REMINDER,
-        reminderUuid,
+        reminderId,
       );
 
       if (scheduleTasks && scheduleTasks.length > 0) {
@@ -367,19 +367,19 @@ export class ReminderEventHandler {
           await repository.save(scheduleTask);
 
           logger.info('✅ [ReminderEventHandler] 启用了 ScheduleTask', {
-            reminderUuid,
-            scheduleTaskUuid: scheduleTask.uuid,
+            reminderId,
+            scheduleTaskId: scheduleTask.id,
           });
         }
       } else {
         logger.warn('⚠️ [ReminderEventHandler] 未找到对应的 ScheduleTask', {
-          reminderUuid,
+          reminderId,
         });
       }
     } catch (error) {
       logger.error('❌ [ReminderEventHandler] 启用 ScheduleTask 失败', {
         error: error instanceof Error ? error.message : String(error),
-        reminderUuid,
+        reminderId,
       });
     }
   }
@@ -388,7 +388,7 @@ export class ReminderEventHandler {
    * 暂停 Reminder 对应的 ScheduleTask
    */
   private static async disableScheduleTaskForReminder(event: DomainEvent): Promise<void> {
-    const reminderUuid = event.aggregateId;
+    const reminderId = event.aggregateId;
 
     try {
       const { ScheduleContainer } =
@@ -401,7 +401,7 @@ export class ReminderEventHandler {
       // 查找该 reminder 对应的 ScheduleTask（返回数组）
       const scheduleTasks = await repository.findBySourceEntity(
         SourceModule.REMINDER,
-        reminderUuid,
+        reminderId,
       );
 
       if (scheduleTasks && scheduleTasks.length > 0) {
@@ -410,19 +410,19 @@ export class ReminderEventHandler {
           await repository.save(scheduleTask);
 
           logger.info('✅ [ReminderEventHandler] 暂停了 ScheduleTask', {
-            reminderUuid,
-            scheduleTaskUuid: scheduleTask.uuid,
+            reminderId,
+            scheduleTaskId: scheduleTask.id,
           });
         }
       } else {
         logger.warn('⚠️ [ReminderEventHandler] 未找到对应的 ScheduleTask', {
-          reminderUuid,
+          reminderId,
         });
       }
     } catch (error) {
       logger.error('❌ [ReminderEventHandler] 暂停 ScheduleTask 失败', {
         error: error instanceof Error ? error.message : String(error),
-        reminderUuid,
+        reminderId,
       });
     }
   }
@@ -431,7 +431,7 @@ export class ReminderEventHandler {
    * 删除 Reminder 对应的 ScheduleTask
    */
   private static async deleteScheduleTaskForReminder(event: DomainEvent): Promise<void> {
-    const reminderUuid = event.aggregateId;
+    const reminderId = event.aggregateId;
 
     try {
       const { ScheduleContainer } =
@@ -444,27 +444,27 @@ export class ReminderEventHandler {
       // 查找该 reminder 对应的 ScheduleTask（返回数组）
       const scheduleTasks = await repository.findBySourceEntity(
         SourceModule.REMINDER,
-        reminderUuid,
+        reminderId,
       );
 
       if (scheduleTasks && scheduleTasks.length > 0) {
         for (const scheduleTask of scheduleTasks) {
-          await repository.deleteByUuid(scheduleTask.uuid);
+          await repository.deleteById(scheduleTask.id);
 
           logger.info('✅ [ReminderEventHandler] 删除了 ScheduleTask', {
-            reminderUuid,
-            scheduleTaskUuid: scheduleTask.uuid,
+            reminderId,
+            scheduleTaskId: scheduleTask.id,
           });
         }
       } else {
         logger.warn('⚠️ [ReminderEventHandler] 未找到对应的 ScheduleTask', {
-          reminderUuid,
+          reminderId,
         });
       }
     } catch (error) {
       logger.error('❌ [ReminderEventHandler] 删除 ScheduleTask 失败', {
         error: error instanceof Error ? error.message : String(error),
-        reminderUuid,
+        reminderId,
       });
     }
   }

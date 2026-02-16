@@ -69,19 +69,19 @@ export class TaskEventHandler {
    */
   private static async handleTaskInstancesGenerated(event: IDomainEvent): Promise<void> {
     const eventData = event as any;
-    const accountUuid = eventData.accountUuid ?? eventData.payload?.accountUuid;
+    const identityId = eventData.identityId ?? eventData.payload?.identityId;
 
-    if (!accountUuid) {
-      logger.error('[TaskEventHandler] Missing accountUuid in task.instances.generated event');
+    if (!identityId) {
+      logger.error('[TaskEventHandler] Missing identityId in task.instances.generated event');
       return;
     }
 
-    const { templateUuid, templateTitle, instanceCount, instances, dateRange, strategy } =
+    const { templateId, templateTitle, instanceCount, instances, dateRange, strategy } =
       eventData.payload ?? eventData;
 
     logger.info('📦 [TaskEventHandler] Task instances generated', {
-      accountUuid,
-      templateUuid,
+      identityId,
+      templateId,
       templateTitle,
       instanceCount,
       strategy,
@@ -95,15 +95,15 @@ export class TaskEventHandler {
    * 处理任务模板创建事件
    */
   private static async handleTaskTemplateCreated(event: IDomainEvent): Promise<void> {
-    const { accountUuid, payload } = event as any;
+    const { identityId, payload } = event as any;
 
-    if (!accountUuid) {
+    if (!identityId) {
       return;
     }
 
     logger.info('📝 [TaskEventHandler] Task template created', {
-      accountUuid,
-      templateUuid: payload.templateUuid,
+      identityId,
+      templateId: payload.templateId,
     });
 
     // TODO: 推送给前端 - 应该通过事件总线由 infrastructure 层处理
@@ -111,7 +111,7 @@ export class TaskEventHandler {
     //   const { SSEConnectionManager } = await import('../../../notification/interface/sseRoutes');
     //   const sseManager = SSEConnectionManager.getInstance();
     //
-    //   sseManager.sendMessage(accountUuid, 'task:template-created', {
+    //   sseManager.sendMessage(identityId, 'task:template-created', {
     //     template: payload.template,
     //     timestamp: new Date().toISOString(),
     //   });
@@ -124,15 +124,15 @@ export class TaskEventHandler {
    * 处理任务实例完成事件
    */
   private static async handleTaskInstanceCompleted(event: IDomainEvent): Promise<void> {
-    const { accountUuid, payload } = event as any;
+    const { identityId, payload } = event as any;
 
-    if (!accountUuid) {
+    if (!identityId) {
       return;
     }
 
     logger.info('✅ [TaskEventHandler] Task instance completed', {
-      accountUuid,
-      instanceUuid: payload.instanceUuid,
+      identityId,
+      instanceId: payload.instanceId,
     });
 
     // TODO: 推送给前端 - 应该通过事件总线由 infrastructure 层处理
@@ -140,7 +140,7 @@ export class TaskEventHandler {
     //   const { SSEConnectionManager } = await import('../../../notification/interface/sseRoutes');
     //   const sseManager = SSEConnectionManager.getInstance();
     //
-    //   sseManager.sendMessage(accountUuid, 'task:instance-completed', {
+    //   sseManager.sendMessage(identityId, 'task:instance-completed', {
     //     instance: payload.instance,
     //     timestamp: new Date().toISOString(),
     //   });

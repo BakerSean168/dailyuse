@@ -13,7 +13,7 @@ import { AIUsageQuota } from '../aggregates/ai-usage-quota';
 export class QuotaExceededError extends Error {
   constructor(
     message: string,
-    public readonly accountUuid: string,
+    public readonly identityId: string,
     public readonly currentUsage: number,
     public readonly quotaLimit: number,
   ) {
@@ -25,7 +25,7 @@ export class QuotaExceededError extends Error {
 export class QuotaNotFoundError extends Error {
   constructor(
     message: string,
-    public readonly accountUuid: string,
+    public readonly identityId: string,
   ) {
     super(message);
     this.name = 'QuotaNotFoundError';
@@ -47,8 +47,8 @@ export class QuotaEnforcementService {
   /**
    * Check if the user has sufficient quota for the requested amount
    */
-  async checkQuota(accountUuid: string, requestedAmount: number = 1): Promise<QuotaCheckResult> {
-    const quota = await this.getOrCreateQuota(accountUuid);
+  async checkQuota(identityId: string, requestedAmount: number = 1): Promise<QuotaCheckResult> {
+    const quota = await this.getOrCreateQuota(identityId);
 
     // Auto-reset if needed
     if (quota.shouldReset()) {
@@ -73,8 +73,8 @@ export class QuotaEnforcementService {
    * Consume quota for a successful generation
    * @throws QuotaExceededError if quota is insufficient
    */
-  async consumeQuota(accountUuid: string, tokensUsed: number): Promise<void> {
-    const quota = await this.getOrCreateQuota(accountUuid);
+  async consumeQuota(identityId: string, tokensUsed: number): Promise<void> {
+    const quota = await this.getOrCreateQuota(identityId);
 
     // Auto-reset if needed
     if (quota.shouldReset()) {
@@ -85,8 +85,8 @@ export class QuotaEnforcementService {
 
     if (!consumed) {
       throw new QuotaExceededError(
-        `Quota exceeded for account ${accountUuid}. Current: ${quota.currentUsage}, Limit: ${quota.quotaLimit}, Requested: ${tokensUsed}`,
-        accountUuid,
+        `Quota exceeded for account ${identityId}. Current: ${quota.currentUsage}, Limit: ${quota.quotaLimit}, Requested: ${tokensUsed}`,
+        identityId,
         quota.currentUsage,
         quota.quotaLimit,
       );
@@ -98,8 +98,8 @@ export class QuotaEnforcementService {
   /**
    * Manually reset quota for an account
    */
-  async resetQuota(accountUuid: string): Promise<void> {
-    const quota = await this.getOrCreateQuota(accountUuid);
+  async resetQuota(identityId: string): Promise<void> {
+    const quota = await this.getOrCreateQuota(identityId);
     quota.reset();
     await this.quotaRepository.save(quota.toServerDTO());
   }
@@ -107,7 +107,7 @@ export class QuotaEnforcementService {
   /**
    * Get current quota status for an account
    */
-  async getQuotaStatus(accountUuid: string): Promise<{
+  async getQuotaStatus(identityId: string): Promise<{
     remainingQuota: number;
     quotaLimit: number;
     currentUsage: number;
@@ -115,7 +115,7 @@ export class QuotaEnforcementService {
     nextResetAt: number;
     isExceeded: boolean;
   }> {
-    const quota = await this.getOrCreateQuota(accountUuid);
+    const quota = await this.getOrCreateQuota(identityId);
 
     // Auto-reset if needed
     if (quota.shouldReset()) {
@@ -136,8 +136,8 @@ export class QuotaEnforcementService {
   /**
    * Update quota limit for an account
    */
-  async updateQuotaLimit(accountUuid: string, newLimit: number): Promise<void> {
-    const quota = await this.getOrCreateQuota(accountUuid);
+  async updateQuotaLimit(identityId: string, newLimit: number): Promise<void> {
+    const quota = await this.getOrCreateQuota(identityId);
     quota.updateLimit(newLimit);
     await this.quotaRepository.save(quota.toServerDTO());
   }
@@ -146,13 +146,13 @@ export class QuotaEnforcementService {
    * Get or create a default quota for an account
    * Private helper method
    */
-  private async getOrCreateQuota(accountUuid: string): Promise<AIUsageQuota> {
-    const quotaDTO = await this.quotaRepository.findByAccountUuid(accountUuid);
+  private async getOrCreateQuota(identityId: string): Promise<AIUsageQuota> {
+    const quotaDTO = await this.quotaRepository.findByAccountId(identityId);
 
     if (!quotaDTO) {
       // Create default quota: 50 requests per day
       const quota = AIUsageQuota.create({
-        identityId: accountUuid,
+        identityId: identityId,
         quotaLimit: 50,
         resetPeriod: QuotaResetPeriod.Daily,
       });

@@ -35,7 +35,7 @@ import { Target } from 'lucide-react';
 
 interface KeyResultDialogProps {
   open: boolean;
-  goalUuid: string;
+  goalId: string;
   goal?: Goal | null;
   keyResult?: KeyResult | null;
   onClose: () => void;
@@ -80,9 +80,9 @@ const DEFAULT_FORM_STATE: FormState = {
 /**
  * 将表单状态转换为 AddKeyResultRequest
  */
-function formStateToAddRequest(goalUuid: string, form: FormState): AddKeyResultRequest {
+function formStateToAddRequest(goalId: string, form: FormState): AddKeyResultRequest {
   return {
-    goalUuid,
+    goalId,
     title: form.title,
     description: form.description || undefined,
     valueType: KeyResultValueType.INCREMENTAL, // 默认使用累积值类�?
@@ -108,7 +108,7 @@ function formStateToUpdateRequest(form: FormState): UpdateKeyResultRequest {
 
 export function KeyResultDialog({
   open,
-  goalUuid,
+  goalId,
   goal,
   keyResult,
   onClose,
@@ -179,7 +179,7 @@ export function KeyResultDialog({
       // 转换�?contracts 类型
       const request = isEditing 
         ? formStateToUpdateRequest(formState)
-        : formStateToAddRequest(goalUuid, formState);
+        : formStateToAddRequest(goalId, formState);
       await onSave(request);
       onClose();
     } catch (err) {

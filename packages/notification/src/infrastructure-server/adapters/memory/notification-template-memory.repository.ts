@@ -17,11 +17,11 @@ export class NotificationTemplateMemoryRepository implements INotificationTempla
   private templates = new Map<string, NotificationTemplate>();
 
   async save(template: NotificationTemplate): Promise<void> {
-    this.templates.set((template as any).uuid, template);
+    this.templates.set((template as any).id, template);
   }
 
-  async findById(uuid: string): Promise<NotificationTemplate | null> {
-    return this.templates.get(uuid) ?? null;
+  async findById(id: string): Promise<NotificationTemplate | null> {
+    return this.templates.get(id) ?? null;
   }
 
   async findAll(options?: { includeInactive?: boolean }): Promise<NotificationTemplate[]> {
@@ -57,17 +57,17 @@ export class NotificationTemplateMemoryRepository implements INotificationTempla
     return Array.from(this.templates.values()).filter((t: any) => t.isSystem === true);
   }
 
-  async delete(uuid: string): Promise<void> {
-    this.templates.delete(uuid);
+  async delete(id: string): Promise<void> {
+    this.templates.delete(id);
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    return this.templates.has(uuid);
+  async exists(id: string): Promise<boolean> {
+    return this.templates.has(id);
   }
 
-  async isNameUsed(name: string, excludeUuid?: string): Promise<boolean> {
+  async isNameUsed(name: string, excludeId?: string): Promise<boolean> {
     return Array.from(this.templates.values()).some(
-      (t: any) => t.name === name && t.uuid !== excludeUuid,
+      (t: any) => t.name === name && t.id !== excludeId,
     );
   }
 
@@ -84,6 +84,6 @@ export class NotificationTemplateMemoryRepository implements INotificationTempla
   }
 
   seed(templates: NotificationTemplate[]): void {
-    templates.forEach((t: any) => this.templates.set(t.uuid, t));
+    templates.forEach((t: any) => this.templates.set(t.id, t));
   }
 }

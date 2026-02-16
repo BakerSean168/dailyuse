@@ -18,7 +18,7 @@
  */
 export interface HeapItem {
   /** 任务唯一标识 */
-  taskUuid: string;
+  taskId: string;
   /** 下次执行时间（毫秒时间戳） */
   nextRunAt: number;
 }
@@ -81,12 +81,12 @@ export class MinHeap<T extends HeapItem> {
   }
 
   /**
-   * 移除指定 taskUuid 的元素
-   * @param taskUuid 任务 UUID
+   * 移除指定 taskId 的元素
+   * @param taskId 任务 ID
    * @returns 是否成功移除
    */
-  remove(taskUuid: string): boolean {
-    const index = this.heap.findIndex((item) => item.taskUuid === taskUuid);
+  remove(taskId: string): boolean {
+    const index = this.heap.findIndex((item) => item.taskId === taskId);
     if (index === -1) return false;
 
     if (index === this.heap.length - 1) {
@@ -102,12 +102,12 @@ export class MinHeap<T extends HeapItem> {
 
   /**
    * 更新指定任务的执行时间
-   * @param taskUuid 任务 UUID
+   * @param taskId 任务 ID
    * @param newNextRunAt 新的执行时间（毫秒时间戳）
    * @returns 是否成功更新
    */
-  update(taskUuid: string, newNextRunAt: number): boolean {
-    const index = this.heap.findIndex((item) => item.taskUuid === taskUuid);
+  update(taskId: string, newNextRunAt: number): boolean {
+    const index = this.heap.findIndex((item) => item.taskId === taskId);
     if (index === -1) return false;
 
     const oldNextRunAt = this.heap[index].nextRunAt;
@@ -124,19 +124,19 @@ export class MinHeap<T extends HeapItem> {
 
   /**
    * 查找指定任务
-   * @param taskUuid 任务 UUID
+   * @param taskId 任务 ID
    * @returns 找到的元素，如果不存在则返回 undefined
    */
-  find(taskUuid: string): T | undefined {
-    return this.heap.find((item) => item.taskUuid === taskUuid);
+  find(taskId: string): T | undefined {
+    return this.heap.find((item) => item.taskId === taskId);
   }
 
   /**
    * 检查是否包含指定任务
-   * @param taskUuid 任务 UUID
+   * @param taskId 任务 ID
    */
-  has(taskUuid: string): boolean {
-    return this.heap.some((item) => item.taskUuid === taskUuid);
+  has(taskId: string): boolean {
+    return this.heap.some((item) => item.taskId === taskId);
   }
 
   /**

@@ -25,19 +25,19 @@ export class CreateReminderTemplate {
   ) {
   }
 
-  async execute(accountUuid: string, input: CreateReminderTemplateRequest): Promise<ReminderTemplateClientDTO> {
+  async execute(identityId: string, input: CreateReminderTemplateRequest): Promise<ReminderTemplateClientDTO> {
     const policy = new ReminderPolicy();
-    const group = input.groupUuid
-      ? await this.groupRepository.findById(input.groupUuid)
+    const group = input.groupId
+      ? await this.groupRepository.findById(input.groupId)
       : null;
 
-    if (input.groupUuid && !group) {
-      throw new Error(`Invalid groupUuid: ${input.groupUuid}`);
+    if (input.groupId && !group) {
+      throw new Error(`Invalid groupId: ${input.groupId}`);
     }
 
     const template = ReminderTemplate.create({
       ...input,
-      identityId: IdentityId.of(accountUuid),
+      identityId: IdentityId.of(identityId),
     });
 
     policy.assertValidGroupAssignment(template, group);

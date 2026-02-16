@@ -14,8 +14,8 @@ import type { IStoragePort } from '../ports/IStoragePort';
  * Create Folder Input
  */
 export interface CreateFolderInput {
-  repositoryUuid: string;
-  parentUuid?: string | null;
+  repositoryId: string;
+  parentId?: string | null;
   name: string;
   order?: number;
   metadata?: Partial<FolderMetadataServerDTO>;
@@ -39,26 +39,26 @@ export class CreateFolder {
   ) {}
 
   async execute(input: CreateFolderInput): Promise<CreateFolderOutput> {
-    const repository = await this.repositoryRepository.findById(input.repositoryUuid);
+    const repository = await this.repositoryRepository.findById(input.repositoryId);
     if (!repository) {
-      throw new Error(`Repository not found: ${input.repositoryUuid}`);
+      throw new Error(`Repository not found: ${input.repositoryId}`);
     }
 
     let parentPath: string | null = null;
-    if (input.parentUuid) {
-      const parent = await this.folderRepository.findById(input.parentUuid);
+    if (input.parentId) {
+      const parent = await this.folderRepository.findById(input.parentId);
       if (!parent) {
-        throw new Error(`Parent folder not found: ${input.parentUuid}`);
+        throw new Error(`Parent folder not found: ${input.parentId}`);
       }
-      if (parent.repositoryId !== input.repositoryUuid) {
+      if (parent.repositoryId !== input.repositoryId) {
         throw new Error('Parent folder does not belong to the target repository');
       }
       parentPath = parent.path;
     }
 
     const folder = Folder.create({
-      repositoryId: input.repositoryUuid,
-      parentId: input.parentUuid,
+      repositoryId: input.repositoryId,
+      parentId: input.parentId,
       name: input.name,
       parentPath,
       order: input.order,
@@ -66,7 +66,7 @@ export class CreateFolder {
     });
 
     await this.storagePort.write({
-      repositoryId: input.repositoryUuid,
+      repositoryId: input.repositoryId,
       path: folder.path,
       isFolder: true,
     });

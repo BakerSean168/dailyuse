@@ -95,7 +95,7 @@ export function ScheduleCalendarView({ tasks, onTaskClick, onTaskDrop }: Schedul
   const handleDragStart = useCallback((e: React.DragEvent, task: ScheduleTask) => {
     setDraggedTask(task);
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', task.uuid);
+    e.dataTransfer.setData('text/plain', task.id);
   }, []);
 
   const handleDragEnd = useCallback(() => {
@@ -206,7 +206,7 @@ export function ScheduleCalendarView({ tasks, onTaskClick, onTaskDrop }: Schedul
             <div className="space-y-1">
               {day.tasks.slice(0, 3).map((task) => (
                 <button
-                  key={task.uuid}
+                  key={task.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, task)}
                   onDragEnd={handleDragEnd}
@@ -215,7 +215,7 @@ export function ScheduleCalendarView({ tasks, onTaskClick, onTaskDrop }: Schedul
                     task.isOverdue
                       ? 'bg-red-100 text-red-700'
                       : 'bg-primary/10 text-primary hover:bg-primary/20'
-                  } ${draggedTask?.uuid === task.uuid ? 'opacity-50' : ''}`}
+                  } ${draggedTask?.id === task.id ? 'opacity-50' : ''}`}
                   title={`${task.name} (拖拽可调整日期)`}
                 >
                   {getSourceIcon(task.sourceModule)} {task.name}

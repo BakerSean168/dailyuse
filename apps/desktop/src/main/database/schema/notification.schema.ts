@@ -14,8 +14,8 @@ export function initializeNotificationTables(database: Database.Database): void 
   // notifications 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS notifications (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT NOT NULL,
       type TEXT NOT NULL,
       title TEXT NOT NULL,
       message TEXT NOT NULL,
@@ -30,15 +30,15 @@ export function initializeNotificationTables(database: Database.Database): void 
       expires_at INTEGER,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
     )
   `);
 
   // notification_preferences 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS notification_preferences (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT UNIQUE NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT UNIQUE NOT NULL,
       global_enabled INTEGER NOT NULL DEFAULT 1,
       sound_enabled INTEGER NOT NULL DEFAULT 1,
       desktop_enabled INTEGER NOT NULL DEFAULT 1,
@@ -47,14 +47,14 @@ export function initializeNotificationTables(database: Database.Database): void 
       quiet_hours TEXT,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
     )
   `);
 
   // notification_templates 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS notification_templates (
-      uuid TEXT PRIMARY KEY,
+      id TEXT PRIMARY KEY,
       type TEXT UNIQUE NOT NULL,
       title_template TEXT NOT NULL,
       message_template TEXT NOT NULL,
@@ -69,7 +69,7 @@ export function initializeNotificationTables(database: Database.Database): void 
 
   // 创建索引
   database.exec(`
-    CREATE INDEX IF NOT EXISTS idx_notifications_account ON notifications(account_uuid);
+    CREATE INDEX IF NOT EXISTS idx_notifications_account ON notifications(identity_id);
     CREATE INDEX IF NOT EXISTS idx_notifications_status ON notifications(status);
     CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at);
   `);

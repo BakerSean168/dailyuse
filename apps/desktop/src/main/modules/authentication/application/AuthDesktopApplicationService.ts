@@ -173,14 +173,14 @@ export class AuthDesktopApplicationService {
       this.isInitialized = true;
       this.logger.info('AuthDesktopApplicationService initialized', {
         hasSession: result.ok,
-        accountUuid: result.accountUuid,
+        identityId: result.identityId,
       });
 
       return {
         ok: true,
         hasValidSession: result.ok,
-        accountUuid: result.accountUuid,
-        sessionUuid: result.session?.uuid,
+        identityId: result.identityId,
+        sessionId: result.session?.id,
         needsRefresh: result.needsRefresh,
         needsReLogin: result.needsReLogin,
       };
@@ -204,7 +204,7 @@ export class AuthDesktopApplicationService {
    * 登录
    * @returns IpcResult<LoginData> - 统一的响应格式
    */
-  async login(credentials: LoginCredentials): Promise<IpcResult<{ accountUuid: string; sessionUuid: string }>> {
+  async login(credentials: LoginCredentials): Promise<IpcResult<{ identityId: string; sessionId: string }>> {
     this.logger.info('Login attempt', { email: credentials.email });
 
     if (!this.sessionManager) {
@@ -220,10 +220,10 @@ export class AuthDesktopApplicationService {
 
       if (result.ok) {
         this.authMode = 'LOCAL'; // 或根据实际情况设置为 ONLINE
-        this.logger.info('Login successful', { accountUuid: result.accountUuid });
+        this.logger.info('Login successful', { identityId: result.identityId });
         return toIpcResult(ok({
-          accountUuid: result.accountUuid!,
-          sessionUuid: result.sessionId!,
+          identityId: result.identityId!,
+          sessionId: result.sessionId!,
         }));
       }
 
@@ -245,7 +245,7 @@ export class AuthDesktopApplicationService {
    * @description 在线模式注册新账户
    * @returns IpcResult<RegisterData> - 统一的响应格式
    */
-  async register(request: RegisterRequest): Promise<IpcResult<{ accountUuid: string; message: string }>> {
+  async register(request: RegisterRequest): Promise<IpcResult<{ identityId: string; message: string }>> {
     this.logger.info('Register attempt', { email: request.email });
 
     try {
@@ -285,14 +285,14 @@ export class AuthDesktopApplicationService {
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
           accessTokenExpiresIn: data.expiresIn || 3600, // 默认 1 小时
-          accountUuid: data.accountUuid || data.user?.uuid || '',
-          sessionUuid: data.sessionUuid || crypto.randomUUID(),
+          identityId: data.identityId || data.user?.id || '',
+          sessionId: data.sessionId || crypto.randomUUID(),
         });
         this.authMode = 'ONLINE';
       }
 
       return toIpcResult(ok({
-        accountUuid: data.accountUuid || data.user?.uuid,
+        identityId: data.identityId || data.user?.id,
         message: '注册成功',
       }));
     } catch (error) {
@@ -318,7 +318,7 @@ export class AuthDesktopApplicationService {
    * @description 使用本地账户，无需网络连接
    * @returns IpcResult<OfflineModeData> - 统一的响应格式
    */
-  async enterOfflineMode(): Promise<IpcResult<{ accountUuid: string; mode: string; message: string }>> {
+  async enterOfflineMode(): Promise<IpcResult<{ identityId: string; mode: string; message: string }>> {
     this.logger.info('Entering offline mode');
 
     try {
@@ -330,10 +330,10 @@ export class AuthDesktopApplicationService {
       
       this.authMode = 'LOCAL';
       
-      this.logger.info('Offline mode activated', { accountUuid: localAccount.uuid });
+      this.logger.info('Offline mode activated', { identityId: localAccount.id });
       
       return toIpcResult(ok({
-        accountUuid: localAccount.uuid,
+        identityId: localAccount.id,
         mode: 'LOCAL',
         message: '已进入离线模式',
       }));
@@ -390,8 +390,8 @@ export class AuthDesktopApplicationService {
       return {
         ok: result.ok,
         authenticated: result.ok,
-        accountUuid: result.accountUuid,
-        sessionUuid: result.session?.uuid,
+        identityId: result.identityId,
+        sessionId: result.session?.id,
         error: result.error,
       };
     } catch (error) {
@@ -456,11 +456,11 @@ export class AuthDesktopApplicationService {
 
     const authenticated = session?.isValid() ?? false;
     const user: UserInfo | null = session ? {
-      uuid: session.accountUuid,
+      id: session.identityId,
     } : null;
 
     const sessionInfo: SessionInfo | null = session ? {
-      uuid: session.uuid,
+      id: session.id,
       deviceName: (session.device as any)?.deviceId ?? 'Unknown',
       deviceType: (session.device as any)?.deviceType ?? 'DESKTOP',
       ipAddress: session.ipAddress,
@@ -554,7 +554,7 @@ export class AuthDesktopApplicationService {
   /**
    * 创建 API Key
    */
-  async createApiKey(request: { name: string; scopes?: string[] }): Promise<{ uuid: string; key: string } | null> {
+  async createApiKey(request: { name: string; scopes?: string[] }): Promise<{ id: string; key: string } | null> {
     this.logger.debug('Create API key', { name: request.name });
 
     if (this.authMode === 'LOCAL') {
@@ -609,16 +609,16 @@ export class AuthDesktopApplicationService {
         return { sessions: [], total: 0 };
       }
 
-      const sessions = await this.sessionRepository.findByAccountUuid(currentSession.accountUuid);
+      const sessions = await this.sessionRepository.findByAccountId(currentSession.identityId);
       const sessionInfos: SessionInfo[] = sessions.map(s => ({
-        uuid: s.uuid,
+        id: s.id,
         deviceName: (s.device as any)?.deviceId ?? 'Unknown',
         deviceType: (s.device as any)?.deviceType ?? 'UNKNOWN',
         ipAddress: s.ipAddress,
         createdAt: new Date(s.createdAt).toISOString(),
         lastActiveAt: new Date(s.lastActivityAt).toISOString(),
         expiresAt: new Date(s.expiresAt).toISOString(),
-        isCurrentSession: s.uuid === currentSession.uuid,
+        isCurrentSession: s.id === currentSession.id,
       }));
 
       return { sessions: sessionInfos, total: sessionInfos.length };
@@ -640,7 +640,7 @@ export class AuthDesktopApplicationService {
     }
 
     return {
-      uuid: session.uuid,
+      id: session.id,
       deviceName: (session.device as any)?.deviceId ?? 'Unknown',
       deviceType: (session.device as any)?.deviceType ?? 'DESKTOP',
       ipAddress: session.ipAddress,
@@ -662,14 +662,14 @@ export class AuthDesktopApplicationService {
     }
 
     try {
-      const session = await this.sessionRepository.findByUuid(sessionId);
+      const session = await this.sessionRepository.findById(sessionId);
       if (!session) {
         return toIpcResult(fail({ code: 'NOT_FOUND', message: '会话不存在' }));
       }
 
       // 不能撤销当前会话
       const currentSession = this.sessionManager?.getCurrentSession();
-      if (currentSession && session.uuid === currentSession.uuid) {
+      if (currentSession && session.id === currentSession.id) {
         return toIpcResult(fail({ code: 'INVALID_OPERATION', message: '无法撤销当前会话，请使用登出' }));
       }
 
@@ -700,7 +700,7 @@ export class AuthDesktopApplicationService {
         return { ok: true, count: 0 };
       }
 
-      const count = await this.sessionManager.cleanupOtherSessions(currentSession.accountUuid);
+      const count = await this.sessionManager.cleanupOtherSessions(currentSession.identityId);
       return { ok: true, count };
     } catch (error) {
       this.logger.error('Failed to revoke all sessions', { error });
@@ -724,7 +724,7 @@ export class AuthDesktopApplicationService {
     }
 
     const currentDevice: DeviceInfo = {
-      uuid: deviceInfo.deviceId,
+      id: deviceInfo.deviceId,
       name: deviceInfo.deviceName ?? 'Desktop App',
       type: deviceInfo.deviceType,
       os: deviceInfo.os ?? undefined,
@@ -743,14 +743,14 @@ export class AuthDesktopApplicationService {
     const deviceInfo = this.sessionManager?.getDeviceInfo();
     if (!deviceInfo) {
       return {
-        uuid: 'unknown',
+        id: 'unknown',
         name: 'Desktop App',
         type: 'DESKTOP',
       };
     }
 
     return {
-      uuid: deviceInfo.deviceId,
+      id: deviceInfo.deviceId,
       name: deviceInfo.deviceName ?? 'Desktop App',
       type: deviceInfo.deviceType,
       os: deviceInfo.os ?? undefined,

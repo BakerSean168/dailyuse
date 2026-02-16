@@ -21,10 +21,10 @@ export class ArchiveGoal {
     private readonly goalPolicy: GoalPolicy,
   ) {}
 
-  async execute(uuid: string): Promise<Result<GoalClientDTO>> {
-    const goal = await this.goalRepository.findById(uuid);
+  async execute(id: string): Promise<Result<GoalClientDTO>> {
+    const goal = await this.goalRepository.findById(id);
     if (!goal) {
-      return error('NOT_FOUND', `Goal not found: ${uuid}`);
+      return error('NOT_FOUND', `Goal not found: ${id}`);
     }
 
     this.goalPolicy.ensureGoalCanBeArchived(goal);

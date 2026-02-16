@@ -52,11 +52,11 @@ export interface TemplateMoveDialogProps {
   /** 可用的分组列�?*/
   groups: ReminderGroupClientDTO[];
   /** 获取分组内模板数�?*/
-  getGroupTemplateCount?: (groupUuid: string) => number;
+  getGroupTemplateCount?: (groupId: string) => number;
   /** 关闭回调 */
   onClose: () => void;
   /** 移动回调 */
-  onMove: (templateUuid: string, targetGroupUuid: string | null) => Promise<void>;
+  onMove: (templateId: string, targetGroupId: string | null) => Promise<void>;
 }
 
 // ============ Component ============
@@ -69,60 +69,60 @@ export function TemplateMoveDialog({
   onClose,
   onMove,
 }: TemplateMoveDialogProps) {
-  const [selectedGroupUuid, setSelectedGroupUuid] = useState<string>('');
+  const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [moveToRoot, setMoveToRoot] = useState(false);
   const [isMoving, setIsMoving] = useState(false);
 
   // 初始化状�?
   useEffect(() => {
     if (open) {
-      setSelectedGroupUuid('');
+      setSelectedGroupId('');
       setMoveToRoot(false);
     }
   }, [open]);
 
   // 当前分组名称
   const currentGroupName = useMemo(() => {
-    if (!template?.groupUuid) return null;
-    const group = groups.find(g => g.uuid === template.groupUuid);
+    if (!template?.groupId) return null;
+    const group = groups.find(g => g.id === template.groupId);
     return group?.name || '未知分组';
   }, [template, groups]);
 
   // 分组选项（排除当前分组）
   const groupOptions = useMemo(() => {
     return groups
-      .filter(g => g.uuid !== template?.groupUuid)
+      .filter(g => g.id !== template?.groupId)
       .map(g => ({
-        value: g.uuid,
+        value: g.id,
         label: g.name,
         icon: g.icon,
         color: g.color,
-        templateCount: getGroupTemplateCount?.(g.uuid) || 0,
+        templateCount: getGroupTemplateCount?.(g.id) || 0,
         enabled: g.enabled,
       }));
   }, [groups, template, getGroupTemplateCount]);
 
   // 选中的分组信�?
   const selectedGroup = useMemo(() => {
-    if (!selectedGroupUuid) return null;
-    return groups.find(g => g.uuid === selectedGroupUuid);
-  }, [selectedGroupUuid, groups]);
+    if (!selectedGroupId) return null;
+    return groups.find(g => g.id === selectedGroupId);
+  }, [selectedGroupId, groups]);
 
   // 处理移出分组选项变化
   const handleMoveToRootChange = useCallback((checked: boolean) => {
     setMoveToRoot(checked);
     if (checked) {
-      setSelectedGroupUuid('');
+      setSelectedGroupId('');
     }
   }, []);
 
   // 是否可以移动
   const canMove = useMemo(() => {
     if (moveToRoot) return true;
-    if (!selectedGroupUuid) return false;
-    if (selectedGroupUuid === template?.groupUuid) return false;
+    if (!selectedGroupId) return false;
+    if (selectedGroupId === template?.groupId) return false;
     return true;
-  }, [moveToRoot, selectedGroupUuid, template]);
+  }, [moveToRoot, selectedGroupId, template]);
 
   // 处理移动
   const handleMove = useCallback(async () => {
@@ -130,15 +130,15 @@ export function TemplateMoveDialog({
 
     setIsMoving(true);
     try {
-      const targetGroupUuid = moveToRoot ? null : selectedGroupUuid;
-      await onMove(template.uuid, targetGroupUuid);
+      const targetGroupId = moveToRoot ? null : selectedGroupId;
+      await onMove(template.id, targetGroupId);
       onClose();
     } catch (error) {
       console.error('移动模板失败:', error);
     } finally {
       setIsMoving(false);
     }
-  }, [template, canMove, moveToRoot, selectedGroupUuid, onMove, onClose]);
+  }, [template, canMove, moveToRoot, selectedGroupId, onMove, onClose]);
 
   if (!template) return null;
 
@@ -176,8 +176,8 @@ export function TemplateMoveDialog({
           <div className="space-y-2">
             <Label>目标分组 *</Label>
             <Select
-              value={selectedGroupUuid}
-              onValueChange={setSelectedGroupUuid}
+              value={selectedGroupId}
+              onValueChange={setSelectedGroupId}
               disabled={moveToRoot}
             >
               <SelectTrigger>
@@ -198,7 +198,7 @@ export function TemplateMoveDialog({
                           style={{ color: option.color ?? undefined }}
                         />
                         <span>{option.label}</span>
-                        {option.value === template.groupUuid && (
+                        {option.value === template.groupId && (
                           <span className="text-xs text-primary ml-2">(当前分组)</span>
                         )}
                       </div>
@@ -243,7 +243,7 @@ export function TemplateMoveDialog({
                   </div>
                   <div className="flex items-center gap-2">
                     <Folder className="h-4 w-4 text-muted-foreground" />
-                    <span>包含模板: {getGroupTemplateCount?.(selectedGroup.uuid) || 0} �?/span>
+                    <span>包含模板: {getGroupTemplateCount?.(selectedGroup.id) || 0} �?/span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-muted-foreground" />

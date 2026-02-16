@@ -34,7 +34,7 @@ import { BookOpen, Star } from 'lucide-react';
 
 interface GoalReviewDialogProps {
   open: boolean;
-  goalUuid: string;
+  goalId: string;
   goal?: Goal | null;
   review?: GoalReview | null;
   onClose: () => void;
@@ -77,9 +77,9 @@ const DEFAULT_FORM_STATE: FormState = {
 /**
  * 将表单状态转换为 CreateGoalReviewRequest
  */
-function formStateToCreateRequest(goalUuid: string, form: FormState): CreateGoalReviewRequest {
+function formStateToCreateRequest(goalId: string, form: FormState): CreateGoalReviewRequest {
   return {
-    goalUuid,
+    goalId,
     title: form.summary, // 使用 summary 作为 title
     content: form.summary,
     reviewType: form.type,
@@ -106,7 +106,7 @@ function formStateToUpdateRequest(form: FormState): UpdateGoalReviewRequest {
 
 export function GoalReviewDialog({
   open,
-  goalUuid,
+  goalId,
   goal,
   review,
   onClose,
@@ -166,7 +166,7 @@ export function GoalReviewDialog({
       // 转换�?contracts 类型
       const request = isEditing 
         ? formStateToUpdateRequest(formState)
-        : formStateToCreateRequest(goalUuid, formState);
+        : formStateToCreateRequest(goalId, formState);
       await onSave(request);
       onClose();
     } catch (err) {

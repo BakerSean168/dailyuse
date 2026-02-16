@@ -56,36 +56,36 @@ export function ScheduleListView() {
     loadTasks();
   };
 
-  const handlePauseTask = async (taskUuid: string) => {
+  const handlePauseTask = async (taskId: string) => {
     try {
-      await scheduleApplicationService.pauseScheduleTask(taskUuid);
+      await scheduleApplicationService.pauseScheduleTask(taskId);
       loadTasks();
     } catch (err) {
       console.error('[ScheduleListView] Failed to pause task:', err);
     }
   };
 
-  const handleResumeTask = async (taskUuid: string) => {
+  const handleResumeTask = async (taskId: string) => {
     try {
-      await scheduleApplicationService.resumeScheduleTask(taskUuid);
+      await scheduleApplicationService.resumeScheduleTask(taskId);
       loadTasks();
     } catch (err) {
       console.error('[ScheduleListView] Failed to resume task:', err);
     }
   };
 
-  const handleCompleteTask = async (taskUuid: string) => {
+  const handleCompleteTask = async (taskId: string) => {
     try {
-      await scheduleApplicationService.completeScheduleTask(taskUuid);
+      await scheduleApplicationService.completeScheduleTask(taskId);
       loadTasks();
     } catch (err) {
       console.error('[ScheduleListView] Failed to complete task:', err);
     }
   };
 
-  const handleDeleteTask = async (taskUuid: string) => {
+  const handleDeleteTask = async (taskId: string) => {
     try {
-      await scheduleApplicationService.deleteScheduleTask(taskUuid);
+      await scheduleApplicationService.deleteScheduleTask(taskId);
       loadTasks();
     } catch (err) {
       console.error('[ScheduleListView] Failed to delete task:', err);
@@ -288,12 +288,12 @@ export function ScheduleListView() {
             <div className="space-y-4">
               {sortedTasks.map((task) => (
                 <ScheduleCard
-                  key={task.uuid}
+                  key={task.id}
                   task={task}
-                  onPause={() => handlePauseTask(task.uuid)}
-                  onResume={() => handleResumeTask(task.uuid)}
-                  onComplete={() => handleCompleteTask(task.uuid)}
-                  onDelete={() => handleDeleteTask(task.uuid)}
+                  onPause={() => handlePauseTask(task.id)}
+                  onResume={() => handleResumeTask(task.id)}
+                  onComplete={() => handleCompleteTask(task.id)}
+                  onDelete={() => handleDeleteTask(task.id)}
                   onEdit={() => setEditingTask(task)}
                 />
               ))}

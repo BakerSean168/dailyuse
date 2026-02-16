@@ -14,8 +14,8 @@ export type ReminderResponseAction = 'CLICKED' | 'IGNORED' | 'SNOOZED' | 'DISMIS
  * Reminder Response Server DTO
  */
 export interface ReminderResponseServerDTO {
-  uuid: string;
-  reminderTemplateUuid: string;
+  id: string;
+  reminderTemplateId: string;
   action: ReminderResponseAction;
   responseTime?: number | null; // 响应时间（从发送到响应的秒数，CLICKED/COMPLETED 时有值）
   timestamp: number; // 响应时间戳 (epoch ms)
@@ -25,8 +25,8 @@ export interface ReminderResponseServerDTO {
  * Reminder Response Client DTO
  */
 export interface ReminderResponseClientDTO {
-  uuid: string;
-  reminderTemplateUuid: string;
+  id: string;
+  reminderTemplateId: string;
   action: ReminderResponseAction;
   responseTime?: number | null;
   timestamp: number;
@@ -39,8 +39,8 @@ export interface ReminderResponseClientDTO {
  * Reminder Response Persistence DTO
  */
 export interface ReminderResponsePersistenceDTO {
-  uuid: string;
-  reminderTemplateUuid: string;
+  id: string;
+  reminderTemplateId: string;
   action: ReminderResponseAction;
   responseTime?: Date | null;
   timestamp: Date;
@@ -52,8 +52,8 @@ export interface ReminderResponsePersistenceDTO {
  * Reminder Response 实体接口
  */
 export interface ReminderResponseServer {
-  uuid: string;
-  reminderTemplateUuid: string;
+  id: string;
+  reminderTemplateId: string;
   action: ReminderResponseAction;
   responseTime?: Date | null;
   timestamp: Date;

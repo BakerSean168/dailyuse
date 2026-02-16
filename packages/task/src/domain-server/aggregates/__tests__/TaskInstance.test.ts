@@ -20,8 +20,8 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 describe('TaskInstance Aggregate', () => {
   // ==================== 测试数据 ====================
-  const mockTemplateUuid = 'template-uuid-123';
-  const mockAccountUuid = 'account-uuid-456';
+  const mockTemplateId = 'template-uuid-123';
+  const mockAccountId = 'account-uuid-456';
   const mockInstanceDate = Date.now();
 
   /**
@@ -42,18 +42,18 @@ describe('TaskInstance Aggregate', () => {
     describe('create()', () => {
       it('应该创建有效的 TaskInstance', () => {
         const instance = TaskInstance.create({
-          templateUuid: mockTemplateUuid,
-          accountUuid: mockAccountUuid,
+          templateId: mockTemplateId,
+          identityId: mockAccountId,
           instanceDate: mockInstanceDate,
           timeConfig: createTestTimeConfig(),
           importance: ImportanceLevel.Important,
         });
 
-        expect(instance.uuid).toBeDefined();
-        expect(typeof instance.uuid).toBe('string');
-        expect(instance.uuid.length).toBeGreaterThan(0);
-        expect(instance.templateUuid).toBe(mockTemplateUuid);
-        expect(instance.accountUuid).toBe(mockAccountUuid);
+        expect(instance.id).toBeDefined();
+        expect(typeof instance.id).toBe('string');
+        expect(instance.id.length).toBeGreaterThan(0);
+        expect(instance.templateId).toBe(mockTemplateId);
+        expect(instance.identityId).toBe(mockAccountId);
         expect(instance.instanceDate).toBe(mockInstanceDate);
         expect(instance.status).toBe('PENDING');
         expect(instance.completionRecord).toBeNull();
@@ -67,29 +67,29 @@ describe('TaskInstance Aggregate', () => {
 
       it('应该为每个实例生成唯一的 UUID', () => {
         const instance1 = TaskInstance.create({
-          templateUuid: mockTemplateUuid,
-          accountUuid: mockAccountUuid,
+          templateId: mockTemplateId,
+          identityId: mockAccountId,
           instanceDate: mockInstanceDate,
           timeConfig: createTestTimeConfig(),
           importance: ImportanceLevel.Important,
         });
 
         const instance2 = TaskInstance.create({
-          templateUuid: mockTemplateUuid,
-          accountUuid: mockAccountUuid,
+          templateId: mockTemplateId,
+          identityId: mockAccountId,
           instanceDate: mockInstanceDate,
           timeConfig: createTestTimeConfig(),
           importance: ImportanceLevel.Important,
         });
 
-        expect(instance1.uuid).not.toBe(instance2.uuid);
+        expect(instance1.id).not.toBe(instance2.id);
       });
 
       it('应该设置 createdAt 和 updatedAt 为当前时间', () => {
         const beforeCreate = Date.now();
         const instance = TaskInstance.create({
-          templateUuid: mockTemplateUuid,
-          accountUuid: mockAccountUuid,
+          templateId: mockTemplateId,
+          identityId: mockAccountId,
           instanceDate: mockInstanceDate,
           timeConfig: createTestTimeConfig(),
           importance: ImportanceLevel.Important,
@@ -107,9 +107,9 @@ describe('TaskInstance Aggregate', () => {
       it('应该从 ServerDTO 正确恢复实例', () => {
         const now = Date.now();
         const dto: TaskInstanceServerDTO = {
-          uuid: 'test-uuid',
-          templateUuid: mockTemplateUuid,
-          accountUuid: mockAccountUuid,
+          id: 'test-uuid',
+          templateId: mockTemplateId,
+          identityId: mockAccountId,
           instanceDate: mockInstanceDate,
           timeConfig: createTestTimeConfig().toServerDTO(),
           status: 'PENDING',
@@ -124,8 +124,8 @@ describe('TaskInstance Aggregate', () => {
 
         const instance = TaskInstance.fromServerDTO(dto);
 
-        expect(instance.uuid).toBe('test-uuid');
-        expect(instance.templateUuid).toBe(mockTemplateUuid);
+        expect(instance.id).toBe('test-uuid');
+        expect(instance.templateId).toBe(mockTemplateId);
         expect(instance.status).toBe('PENDING');
       });
 
@@ -136,14 +136,14 @@ describe('TaskInstance Aggregate', () => {
           actualDuration: 3600000,
           note: 'Test note',
           rating: 5,
-          taskUuid: 'test-uuid',
+          taskId: 'test-uuid',
           completionStatus: 'completed',
         };
 
         const dto: TaskInstanceServerDTO = {
-          uuid: 'test-uuid',
-          templateUuid: mockTemplateUuid,
-          accountUuid: mockAccountUuid,
+          id: 'test-uuid',
+          templateId: mockTemplateId,
+          identityId: mockAccountId,
           instanceDate: mockInstanceDate,
           timeConfig: createTestTimeConfig().toServerDTO(),
           status: 'COMPLETED',
@@ -172,9 +172,9 @@ describe('TaskInstance Aggregate', () => {
         };
 
         const dto: TaskInstanceServerDTO = {
-          uuid: 'test-uuid',
-          templateUuid: mockTemplateUuid,
-          accountUuid: mockAccountUuid,
+          id: 'test-uuid',
+          templateId: mockTemplateId,
+          identityId: mockAccountId,
           instanceDate: mockInstanceDate,
           timeConfig: createTestTimeConfig().toServerDTO(),
           status: 'SKIPPED',
@@ -201,9 +201,9 @@ describe('TaskInstance Aggregate', () => {
         const timeConfigDTO = createTestTimeConfig().toPersistenceDTO();
 
         const dto: TaskInstancePersistenceDTO = {
-          uuid: 'test-uuid',
-          templateUuid: mockTemplateUuid,
-          accountUuid: mockAccountUuid,
+          id: 'test-uuid',
+          templateId: mockTemplateId,
+          identityId: mockAccountId,
           instanceDate: mockInstanceDate,
           timeConfig: JSON.stringify(timeConfigDTO),
           status: 'PENDING',
@@ -218,7 +218,7 @@ describe('TaskInstance Aggregate', () => {
 
         const instance = TaskInstance.fromPersistenceDTO(dto);
 
-        expect(instance.uuid).toBe('test-uuid');
+        expect(instance.id).toBe('test-uuid');
         expect(instance.status).toBe('PENDING');
       });
     });
@@ -230,8 +230,8 @@ describe('TaskInstance Aggregate', () => {
 
     beforeEach(() => {
       instance = TaskInstance.create({
-        templateUuid: mockTemplateUuid,
-        accountUuid: mockAccountUuid,
+        templateId: mockTemplateId,
+        identityId: mockAccountId,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
         importance: ImportanceLevel.Important,
@@ -458,8 +458,8 @@ describe('TaskInstance Aggregate', () => {
 
     beforeEach(() => {
       instance = TaskInstance.create({
-        templateUuid: mockTemplateUuid,
-        accountUuid: mockAccountUuid,
+        templateId: mockTemplateId,
+        identityId: mockAccountId,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
         importance: ImportanceLevel.Important,
@@ -562,8 +562,8 @@ describe('TaskInstance Aggregate', () => {
     describe('isOverdue()', () => {
       it('PENDING 状态的过期任务应该返回 true', () => {
         const overdueInstance = TaskInstance.create({
-          templateUuid: mockTemplateUuid,
-          accountUuid: mockAccountUuid,
+          templateId: mockTemplateId,
+          identityId: mockAccountId,
           instanceDate: Date.now() - 86400000 - 1000, // 超过1天 + 1秒
           timeConfig: createTestTimeConfig(),
           importance: ImportanceLevel.Important,
@@ -575,8 +575,8 @@ describe('TaskInstance Aggregate', () => {
 
       it('IN_PROGRESS 状态的过期任务应该返回 true', () => {
         const overdueInstance = TaskInstance.create({
-          templateUuid: mockTemplateUuid,
-          accountUuid: mockAccountUuid,
+          templateId: mockTemplateId,
+          identityId: mockAccountId,
           instanceDate: Date.now() - 86400000 - 1000,
           timeConfig: createTestTimeConfig(),
           importance: ImportanceLevel.Important,
@@ -589,8 +589,8 @@ describe('TaskInstance Aggregate', () => {
 
       it('PENDING 状态的未过期任务应该返回 false', () => {
         const freshInstance = TaskInstance.create({
-          templateUuid: mockTemplateUuid,
-          accountUuid: mockAccountUuid,
+          templateId: mockTemplateId,
+          identityId: mockAccountId,
           instanceDate: Date.now(),
           timeConfig: createTestTimeConfig(),
           importance: ImportanceLevel.Important,
@@ -602,8 +602,8 @@ describe('TaskInstance Aggregate', () => {
 
       it('COMPLETED 状态应该返回 false', () => {
         const overdueInstance = TaskInstance.create({
-          templateUuid: mockTemplateUuid,
-          accountUuid: mockAccountUuid,
+          templateId: mockTemplateId,
+          identityId: mockAccountId,
           instanceDate: Date.now() - 86400000 - 1000,
           timeConfig: createTestTimeConfig(),
           importance: ImportanceLevel.Important,
@@ -616,8 +616,8 @@ describe('TaskInstance Aggregate', () => {
 
       it('SKIPPED 状态应该返回 false', () => {
         const overdueInstance = TaskInstance.create({
-          templateUuid: mockTemplateUuid,
-          accountUuid: mockAccountUuid,
+          templateId: mockTemplateId,
+          identityId: mockAccountId,
           instanceDate: Date.now() - 86400000 - 1000,
           timeConfig: createTestTimeConfig(),
           importance: ImportanceLevel.Important,
@@ -630,8 +630,8 @@ describe('TaskInstance Aggregate', () => {
 
       it('EXPIRED 状态应该返回 false', () => {
         const overdueInstance = TaskInstance.create({
-          templateUuid: mockTemplateUuid,
-          accountUuid: mockAccountUuid,
+          templateId: mockTemplateId,
+          identityId: mockAccountId,
           instanceDate: Date.now() - 86400000 - 1000,
           timeConfig: createTestTimeConfig(),
           importance: ImportanceLevel.Important,
@@ -650,8 +650,8 @@ describe('TaskInstance Aggregate', () => {
 
     beforeEach(() => {
       instance = TaskInstance.create({
-        templateUuid: mockTemplateUuid,
-        accountUuid: mockAccountUuid,
+        templateId: mockTemplateId,
+        identityId: mockAccountId,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
         importance: ImportanceLevel.Important,
@@ -662,9 +662,9 @@ describe('TaskInstance Aggregate', () => {
       it('应该正确转换为 ServerDTO', () => {
         const dto = instance.toServerDTO();
 
-        expect(dto.uuid).toBe(instance.uuid);
-        expect(dto.templateUuid).toBe(mockTemplateUuid);
-        expect(dto.accountUuid).toBe(mockAccountUuid);
+        expect(dto.id).toBe(instance.id);
+        expect(dto.templateId).toBe(mockTemplateId);
+        expect(dto.identityId).toBe(mockAccountId);
         expect(dto.instanceDate).toBe(mockInstanceDate);
         expect(dto.status).toBe('PENDING');
         expect(dto.importance).toBe(ImportanceLevel.Important);
@@ -701,7 +701,7 @@ describe('TaskInstance Aggregate', () => {
       it('应该正确转换为 ClientDTO', () => {
         const dto = instance.toClientDTO();
 
-        expect(dto.uuid).toBe(instance.uuid);
+        expect(dto.id).toBe(instance.id);
         expect(dto.status).toBe('PENDING');
         expect(dto.isPending).toBe(true);
         expect(dto.isCompleted).toBe(false);
@@ -772,9 +772,9 @@ describe('TaskInstance Aggregate', () => {
       it('应该正确转换为 PersistenceDTO', () => {
         const dto = instance.toPersistenceDTO();
 
-        expect(dto.uuid).toBe(instance.uuid);
-        expect(dto.templateUuid).toBe(mockTemplateUuid);
-        expect(dto.accountUuid).toBe(mockAccountUuid);
+        expect(dto.id).toBe(instance.id);
+        expect(dto.templateId).toBe(mockTemplateId);
+        expect(dto.identityId).toBe(mockAccountId);
         expect(dto.status).toBe('PENDING');
         expect(dto.importance).toBe(ImportanceLevel.Important);
         expect(typeof dto.timeConfig).toBe('string');
@@ -808,8 +808,8 @@ describe('TaskInstance Aggregate', () => {
 
     beforeEach(() => {
       instance = TaskInstance.create({
-        templateUuid: mockTemplateUuid,
-        accountUuid: mockAccountUuid,
+        templateId: mockTemplateId,
+        identityId: mockAccountId,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
         importance: ImportanceLevel.Important,
@@ -907,8 +907,8 @@ describe('TaskInstance Aggregate', () => {
       });
 
       const instance = TaskInstance.create({
-        templateUuid: mockTemplateUuid,
-        accountUuid: mockAccountUuid,
+        templateId: mockTemplateId,
+        identityId: mockAccountId,
         instanceDate: mockInstanceDate,
         timeConfig: allDayTimeConfig,
         importance: ImportanceLevel.Important,
@@ -919,8 +919,8 @@ describe('TaskInstance Aggregate', () => {
 
     it('应该正确处理往返转换（ServerDTO）', () => {
       const original = TaskInstance.create({
-        templateUuid: mockTemplateUuid,
-        accountUuid: mockAccountUuid,
+        templateId: mockTemplateId,
+        identityId: mockAccountId,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
         importance: ImportanceLevel.Important,
@@ -931,15 +931,15 @@ describe('TaskInstance Aggregate', () => {
       const dto = original.toServerDTO();
       const restored = TaskInstance.fromServerDTO(dto);
 
-      expect(restored.uuid).toBe(original.uuid);
+      expect(restored.id).toBe(original.id);
       expect(restored.status).toBe(original.status);
       expect(restored.completionRecord?.rating).toBe(5);
     });
 
     it('应该正确处理往返转换（PersistenceDTO）', () => {
       const original = TaskInstance.create({
-        templateUuid: mockTemplateUuid,
-        accountUuid: mockAccountUuid,
+        templateId: mockTemplateId,
+        identityId: mockAccountId,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
         importance: ImportanceLevel.Important,
@@ -950,15 +950,15 @@ describe('TaskInstance Aggregate', () => {
       const dto = original.toPersistenceDTO();
       const restored = TaskInstance.fromPersistenceDTO(dto);
 
-      expect(restored.uuid).toBe(original.uuid);
+      expect(restored.id).toBe(original.id);
       expect(restored.status).toBe(original.status);
       expect(restored.skipRecord?.reason).toBe('Busy');
     });
 
     it('应该处理没有 actualStartTime 的完成', () => {
       const testInstance = TaskInstance.create({
-        templateUuid: mockTemplateUuid,
-        accountUuid: mockAccountUuid,
+        templateId: mockTemplateId,
+        identityId: mockAccountId,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
         importance: ImportanceLevel.Important,
@@ -973,8 +973,8 @@ describe('TaskInstance Aggregate', () => {
 
     it('应该处理极小的时间间隔', () => {
       const testInstance = TaskInstance.create({
-        templateUuid: mockTemplateUuid,
-        accountUuid: mockAccountUuid,
+        templateId: mockTemplateId,
+        identityId: mockAccountId,
         instanceDate: mockInstanceDate,
         timeConfig: createTestTimeConfig(),
         importance: ImportanceLevel.Important,

@@ -36,24 +36,24 @@ export class NotificationHttpAdapter implements INotificationApiClient {
     });
   }
 
-  async findNotificationByUuid(uuid: string): Promise<Result<NotificationClientDTO>> {
-    return this.httpClient.get(`${this.baseUrl}/${uuid}`);
+  async findNotificationById(id: string): Promise<Result<NotificationClientDTO>> {
+    return this.httpClient.get(`${this.baseUrl}/${id}`);
   }
 
-  async markAsRead(uuid: string): Promise<Result<NotificationClientDTO>> {
-    return this.httpClient.patch(`${this.baseUrl}/${uuid}/read`);
+  async markAsRead(id: string): Promise<Result<NotificationClientDTO>> {
+    return this.httpClient.patch(`${this.baseUrl}/${id}/read`);
   }
 
   async markAllAsRead(): Promise<Result<CountResult>> {
     return this.httpClient.patch(`${this.baseUrl}/read-all`);
   }
 
-  async deleteNotification(uuid: string): Promise<Result<ActionResult>> {
-    return this.httpClient.delete(`${this.baseUrl}/${uuid}`);
+  async deleteNotification(id: string): Promise<Result<ActionResult>> {
+    return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
-  async batchDeleteNotifications(uuids: string[]): Promise<Result<CountResult>> {
-    return this.httpClient.post(`${this.baseUrl}/batch-delete`, { uuids });
+  async batchDeleteNotifications(ids: string[]): Promise<Result<CountResult>> {
+    return this.httpClient.post(`${this.baseUrl}/batch-delete`, { ids });
   }
 
   async getUnreadCount(): Promise<Result<UnreadCountResponse>> {

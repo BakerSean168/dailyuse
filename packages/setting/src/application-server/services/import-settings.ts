@@ -20,7 +20,7 @@ export class ImportSettings {
    * 执行用例
    */
   async execute(
-    accountUuid: string,
+    identityId: string,
     data: Record<string, any>,
     options?: { merge?: boolean; validate?: boolean },
   ): Promise<UserSettingClientDTO> {
@@ -34,20 +34,20 @@ export class ImportSettings {
 
     if (merge) {
       return await new UpdateUserSetting(this.userSettingRepository).execute(
-        accountUuid,
-        importedSettings as Omit<UpdateUserSettingRequest, 'uuid'>,
+        identityId,
+        importedSettings as Omit<UpdateUserSettingRequest, 'id'>,
       );
     } else {
-      let setting = await this.userSettingRepository.findByAccountUuid(accountUuid);
+      let setting = await this.userSettingRepository.findByAccountId(identityId);
 
       if (!setting) {
-        setting = UserSetting.create({ accountUuid });
+        setting = UserSetting.create({ identityId });
       }
 
       const newSetting = UserSetting.fromServerDTO({
         ...importedSettings,
-        accountUuid: accountUuid,
-        uuid: setting.uuid,
+        identityId: identityId,
+        id: setting.id,
       });
 
       await this.userSettingRepository.save(newSetting);

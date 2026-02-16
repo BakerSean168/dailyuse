@@ -104,10 +104,10 @@ export class SchedulerBootstrap {
         }
 
         try {
-          await this.scheduler.register(task.uuid, task.schedule.cronExpression, this.handler);
+          await this.scheduler.register(task.id, task.schedule.cronExpression, this.handler);
           registered++;
         } catch (error) {
-          logger.error(`❌ 注册任务失败: ${task.uuid}`, { error });
+          logger.error(`❌ 注册任务失败: ${task.id}`, { error });
         }
       }
 

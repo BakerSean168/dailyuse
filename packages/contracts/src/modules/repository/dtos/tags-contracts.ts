@@ -23,7 +23,7 @@ export interface TagStatisticsDto {
  */
 export interface TagResourceReferenceDto {
   /** 资源 UUID */
-  uuid: string;
+  id: string;
   
   /** 资源标题 */
   title: string;

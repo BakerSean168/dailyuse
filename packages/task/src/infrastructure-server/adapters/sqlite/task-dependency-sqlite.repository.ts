@@ -19,19 +19,19 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
   async create(data: CreateTaskDependencyRequest): Promise<TaskDependencyServerDTO> {
     const stmt = this.db.prepare(`
       INSERT INTO task_dependencies (
-        uuid, accountUuid, predecessor_uuid, successor_uuid,
+        id, identityId, predecessor_id, successor_id,
         dependency_type, lag_days, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const uuid = data.uuid || this.generateUuid();
+    const id = data.id || this.generateUuid();
     const now = Date.now();
 
     stmt.run(
-      uuid,
-      data.accountUuid,
-      data.predecessor_uuid,
-      data.successor_uuid,
+      id,
+      data.identityId,
+      data.predecessor_id,
+      data.successor_id,
       data.dependency_type || 'FINISH_TO_START',
       data.lag_days || 0,
       now,
@@ -39,10 +39,10 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
     );
 
     return {
-      uuid,
-      account_uuid: data.accountUuid,
-      predecessor_uuid: data.predecessor_uuid,
-      successor_uuid: data.successor_uuid,
+      id,
+      identity_id: data.identityId,
+      predecessor_id: data.predecessor_id,
+      successor_id: data.successor_id,
       dependency_type: data.dependency_type || 'FINISH_TO_START',
       lag_days: data.lag_days || 0,
       createdAt: new Date(now),
@@ -50,50 +50,50 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
     };
   }
 
-  async findByUuid(uuid: string): Promise<TaskDependencyServerDTO | null> {
-    const stmt = this.db.prepare(`SELECT * FROM task_dependencies WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<TaskDependencyServerDTO | null> {
+    const stmt = this.db.prepare(`SELECT * FROM task_dependencies WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return this.rowToDTO(row);
   }
 
-  async findBySuccessor(taskUuid: string): Promise<TaskDependencyServerDTO[]> {
+  async findBySuccessor(taskId: string): Promise<TaskDependencyServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_dependencies WHERE successor_uuid = ? ORDER BY createdAt ASC`
+      `SELECT * FROM task_dependencies WHERE successor_id = ? ORDER BY createdAt ASC`
     );
-    const rows = stmt.all(taskUuid) as any[];
+    const rows = stmt.all(taskId) as any[];
 
     return rows.map((row) => this.rowToDTO(row));
   }
 
-  async findByPredecessor(taskUuid: string): Promise<TaskDependencyServerDTO[]> {
+  async findByPredecessor(taskId: string): Promise<TaskDependencyServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_dependencies WHERE predecessor_uuid = ? ORDER BY createdAt ASC`
+      `SELECT * FROM task_dependencies WHERE predecessor_id = ? ORDER BY createdAt ASC`
     );
-    const rows = stmt.all(taskUuid) as any[];
+    const rows = stmt.all(taskId) as any[];
 
     return rows.map((row) => this.rowToDTO(row));
   }
 
   async findByPredecessorAndSuccessor(
-    predecessorUuid: string,
-    successorUuid: string,
+    predecessorId: string,
+    successorId: string,
   ): Promise<TaskDependencyServerDTO | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_dependencies WHERE predecessor_uuid = ? AND successor_uuid = ? LIMIT 1`
+      `SELECT * FROM task_dependencies WHERE predecessor_id = ? AND successor_id = ? LIMIT 1`
     );
-    const row = stmt.get(predecessorUuid, successorUuid) as any;
+    const row = stmt.get(predecessorId, successorId) as any;
 
     if (!row) return null;
 
     return this.rowToDTO(row);
   }
 
-  async findAllPredecessors(taskUuid: string): Promise<string[]> {
+  async findAllPredecessors(taskId: string): Promise<string[]> {
     const result: Set<string> = new Set();
-    const queue: string[] = [taskUuid];
+    const queue: string[] = [taskId];
     const visited: Set<string> = new Set();
 
     while (queue.length > 0) {
@@ -102,14 +102,14 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
       visited.add(current);
 
       const stmt = this.db.prepare(
-        `SELECT predecessor_uuid FROM task_dependencies WHERE successor_uuid = ?`
+        `SELECT predecessor_id FROM task_dependencies WHERE successor_id = ?`
       );
       const rows = stmt.all(current) as any[];
 
       for (const row of rows) {
-        if (!visited.has(row.predecessor_uuid)) {
-          result.add(row.predecessor_uuid);
-          queue.push(row.predecessor_uuid);
+        if (!visited.has(row.predecessor_id)) {
+          result.add(row.predecessor_id);
+          queue.push(row.predecessor_id);
         }
       }
     }
@@ -117,9 +117,9 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
     return Array.from(result);
   }
 
-  async findAllSuccessors(taskUuid: string): Promise<string[]> {
+  async findAllSuccessors(taskId: string): Promise<string[]> {
     const result: Set<string> = new Set();
-    const queue: string[] = [taskUuid];
+    const queue: string[] = [taskId];
     const visited: Set<string> = new Set();
 
     while (queue.length > 0) {
@@ -128,14 +128,14 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
       visited.add(current);
 
       const stmt = this.db.prepare(
-        `SELECT successor_uuid FROM task_dependencies WHERE predecessor_uuid = ?`
+        `SELECT successor_id FROM task_dependencies WHERE predecessor_id = ?`
       );
       const rows = stmt.all(current) as any[];
 
       for (const row of rows) {
-        if (!visited.has(row.successor_uuid)) {
-          result.add(row.successor_uuid);
-          queue.push(row.successor_uuid);
+        if (!visited.has(row.successor_id)) {
+          result.add(row.successor_id);
+          queue.push(row.successor_id);
         }
       }
     }
@@ -143,20 +143,20 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
     return Array.from(result);
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM task_dependencies WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM task_dependencies WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async deleteByTask(taskUuid: string): Promise<void> {
+  async deleteByTask(taskId: string): Promise<void> {
     const stmt = this.db.prepare(
-      `DELETE FROM task_dependencies WHERE predecessor_uuid = ? OR successor_uuid = ?`
+      `DELETE FROM task_dependencies WHERE predecessor_id = ? OR successor_id = ?`
     );
-    stmt.run(taskUuid, taskUuid);
+    stmt.run(taskId, taskId);
   }
 
   async update(
-    uuid: string,
+    id: string,
     data: { dependencyType?: string; lagDays?: number },
   ): Promise<TaskDependencyServerDTO> {
     const updates: string[] = [];
@@ -174,44 +174,44 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
 
     updates.push('updatedAt = ?');
     values.push(Date.now());
-    values.push(uuid);
+    values.push(id);
 
     if (updates.length === 1) {
       // Only updatedAt, just update it
       const stmt = this.db.prepare(
-        `UPDATE task_dependencies SET updatedAt = ? WHERE uuid = ?`
+        `UPDATE task_dependencies SET updatedAt = ? WHERE id = ?`
       );
-      stmt.run(Date.now(), uuid);
+      stmt.run(Date.now(), id);
     } else {
       const stmt = this.db.prepare(
-        `UPDATE task_dependencies SET ${updates.join(', ')} WHERE uuid = ?`
+        `UPDATE task_dependencies SET ${updates.join(', ')} WHERE id = ?`
       );
       stmt.run(...values);
     }
 
-    const dependency = await this.findByUuid(uuid);
+    const dependency = await this.findById(id);
     if (!dependency) {
-      throw new Error(`Dependency not found: ${uuid}`);
+      throw new Error(`Dependency not found: ${id}`);
     }
 
     return dependency;
   }
 
-  async findAllByAccount(accountUuid: string): Promise<TaskDependencyServerDTO[]> {
+  async findAllByAccount(identityId: string): Promise<TaskDependencyServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_dependencies WHERE accountUuid = ? ORDER BY createdAt ASC`
+      `SELECT * FROM task_dependencies WHERE identityId = ? ORDER BY createdAt ASC`
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) => this.rowToDTO(row));
   }
 
   private rowToDTO(row: any): TaskDependencyServerDTO {
     return {
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
-      predecessor_uuid: row.predecessor_uuid,
-      successor_uuid: row.successor_uuid,
+      id: row.id,
+      identity_id: row.identityId,
+      predecessor_id: row.predecessor_id,
+      successor_id: row.successor_id,
       dependency_type: row.dependency_type,
       lag_days: row.lag_days,
       createdAt: new Date(row.createdAt),

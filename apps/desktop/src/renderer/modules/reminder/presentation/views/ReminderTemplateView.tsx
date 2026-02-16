@@ -58,16 +58,16 @@ export function ReminderTemplateView() {
     if (selectedTemplates.size === templates.length) {
       setSelectedTemplates(new Set());
     } else {
-      setSelectedTemplates(new Set(templates.map((t) => t.uuid)));
+      setSelectedTemplates(new Set(templates.map((t) => t.id)));
     }
   };
 
-  const handleSelectTemplate = (uuid: string) => {
+  const handleSelectTemplate = (id: string) => {
     const newSelected = new Set(selectedTemplates);
-    if (newSelected.has(uuid)) {
-      newSelected.delete(uuid);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
     } else {
-      newSelected.add(uuid);
+      newSelected.add(id);
     }
     setSelectedTemplates(newSelected);
   };
@@ -79,8 +79,8 @@ export function ReminderTemplateView() {
     if (!confirmed) return;
 
     try {
-      for (const uuid of selectedTemplates) {
-        await reminderApplicationService.deleteReminderTemplate(uuid);
+      for (const id of selectedTemplates) {
+        await reminderApplicationService.deleteReminderTemplate(id);
       }
       setSelectedTemplates(new Set());
       loadData();
@@ -90,12 +90,12 @@ export function ReminderTemplateView() {
     }
   };
 
-  const handleBatchMoveToGroup = async (groupUuid: string | null) => {
+  const handleBatchMoveToGroup = async (groupId: string | null) => {
     if (selectedTemplates.size === 0) return;
 
     try {
-      for (const templateUuid of selectedTemplates) {
-        await reminderApplicationService.moveTemplateToGroup(templateUuid, groupUuid);
+      for (const templateId of selectedTemplates) {
+        await reminderApplicationService.moveTemplateToGroup(templateId, groupId);
       }
       setSelectedTemplates(new Set());
       loadData();
@@ -125,12 +125,12 @@ export function ReminderTemplateView() {
     }
   };
 
-  const handleDeleteGroup = async (uuid: string) => {
+  const handleDeleteGroup = async (id: string) => {
     const confirmed = confirm('确定要删除此分组吗？分组内的模板将移至未分组。');
     if (!confirmed) return;
 
     try {
-      await reminderApplicationService.deleteReminderGroup(uuid);
+      await reminderApplicationService.deleteReminderGroup(id);
       loadData();
     } catch (err) {
       console.error('[ReminderTemplateView] Delete group failed:', err);
@@ -138,9 +138,9 @@ export function ReminderTemplateView() {
     }
   };
 
-  const handleToggleGroupEnabled = async (uuid: string) => {
+  const handleToggleGroupEnabled = async (id: string) => {
     try {
-      await reminderApplicationService.toggleReminderGroupStatus(uuid);
+      await reminderApplicationService.toggleReminderGroupStatus(id);
       loadData();
     } catch (err) {
       console.error('[ReminderTemplateView] Toggle group failed:', err);
@@ -150,11 +150,11 @@ export function ReminderTemplateView() {
   // 按分组组织模板
   const templatesByGroup = templates.reduce(
     (acc, template) => {
-      const groupUuid = template.groupUuid || 'ungrouped';
-      if (!acc[groupUuid]) {
-        acc[groupUuid] = [];
+      const groupId = template.groupId || 'ungrouped';
+      if (!acc[groupId]) {
+        acc[groupId] = [];
       }
-      acc[groupUuid].push(template);
+      acc[groupId].push(template);
       return acc;
     },
     {} as Record<string, ReminderTemplateClientDTO[]>,
@@ -247,7 +247,7 @@ export function ReminderTemplateView() {
               </option>
               <option value="ungrouped">未分组</option>
               {groups.map((group) => (
-                <option key={group.uuid} value={group.uuid}>
+                <option key={group.id} value={group.id}>
                   {group.name}
                 </option>
               ))}
@@ -294,13 +294,13 @@ export function ReminderTemplateView() {
               <div className="space-y-2">
                 {templatesByGroup['ungrouped'].map((template) => (
                   <div
-                    key={template.uuid}
+                    key={template.id}
                     className="flex items-center gap-3 p-2 hover:bg-muted rounded-md"
                   >
                     <input
                       type="checkbox"
-                      checked={selectedTemplates.has(template.uuid)}
-                      onChange={() => handleSelectTemplate(template.uuid)}
+                      checked={selectedTemplates.has(template.id)}
+                      onChange={() => handleSelectTemplate(template.id)}
                       className="w-4 h-4"
                     />
                     <span className="text-lg">{template.icon || '🔔'}</span>
@@ -322,9 +322,9 @@ export function ReminderTemplateView() {
 
           {/* Grouped Templates */}
           {groups.map((group) => {
-            const groupTemplates = templatesByGroup[group.uuid] || [];
+            const groupTemplates = templatesByGroup[group.id] || [];
             return (
-              <div key={group.uuid} className="border rounded-lg p-4">
+              <div key={group.id} className="border rounded-lg p-4">
                 <h3 className="font-semibold mb-3 flex items-center gap-2">
                   <span className={group.enabled ? '' : 'opacity-50'}>📁 {group.name}</span>
                   <span className="text-sm font-normal text-muted-foreground">
@@ -342,13 +342,13 @@ export function ReminderTemplateView() {
                   <div className="space-y-2">
                     {groupTemplates.map((template) => (
                       <div
-                        key={template.uuid}
+                        key={template.id}
                         className="flex items-center gap-3 p-2 hover:bg-muted rounded-md"
                       >
                         <input
                           type="checkbox"
-                          checked={selectedTemplates.has(template.uuid)}
-                          onChange={() => handleSelectTemplate(template.uuid)}
+                          checked={selectedTemplates.has(template.id)}
+                          onChange={() => handleSelectTemplate(template.id)}
                           className="w-4 h-4"
                         />
                         <span className="text-lg">{template.icon || '🔔'}</span>
@@ -398,7 +398,7 @@ export function ReminderTemplateView() {
           ) : (
             groups.map((group) => (
               <div
-                key={group.uuid}
+                key={group.id}
                 className="border rounded-lg p-4 flex items-center justify-between"
               >
                 <div className="flex items-center gap-3">
@@ -411,14 +411,14 @@ export function ReminderTemplateView() {
                       <p className="text-sm text-muted-foreground">{group.description}</p>
                     )}
                     <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
-                      <span>{templatesByGroup[group.uuid]?.length || 0} 个模板</span>
+                      <span>{templatesByGroup[group.id]?.length || 0} 个模板</span>
                       {group.controlMode && <span className="text-blue-600">分组控制模式</span>}
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => handleToggleGroupEnabled(group.uuid)}
+                    onClick={() => handleToggleGroupEnabled(group.id)}
                     className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
                       group.enabled ? 'hover:bg-yellow-100' : 'hover:bg-green-100'
                     }`}
@@ -426,7 +426,7 @@ export function ReminderTemplateView() {
                     {group.enabled ? '⏸️ 禁用' : '▶️ 启用'}
                   </button>
                   <button
-                    onClick={() => handleDeleteGroup(group.uuid)}
+                    onClick={() => handleDeleteGroup(group.id)}
                     className="px-3 py-1.5 text-sm border rounded-md text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
                   >
                     🗑️

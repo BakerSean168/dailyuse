@@ -37,13 +37,13 @@ export class EditorSessionApplicationService {
    * 创建新会话
    */
   async createSession(
-    accountUuid: string,
+    identityId: string,
     request: CreateEditorSessionRequest,
   ): Promise<EditorSessionClientDTO> {
     // 检查工作区是否存在
-    const workspace = await this.workspaceRepository.findById(request.workspaceUuid);
+    const workspace = await this.workspaceRepository.findById(request.workspaceId);
     if (!workspace) {
-      throw new Error(`工作区不存在: ${request.workspaceUuid}`);
+      throw new Error(`工作区不存在: ${request.workspaceId}`);
     }
 
     // 创建会话
@@ -64,10 +64,10 @@ export class EditorSessionApplicationService {
   /**
    * 更新会话
    */
-  async updateSession(uuid: string, request: UpdateEditorSessionRequest): Promise<EditorSessionClientDTO> {
-    const session = await this.loadSessionWithGroups(uuid);
+  async updateSession(id: string, request: UpdateEditorSessionRequest): Promise<EditorSessionClientDTO> {
+    const session = await this.loadSessionWithGroups(id);
     if (!session) {
-      throw new Error(`会话不存在: ${uuid}`);
+      throw new Error(`会话不存在: ${id}`);
     }
 
     // 更新基本信息
@@ -101,15 +101,15 @@ export class EditorSessionApplicationService {
   /**
    * 激活会话
    */
-  async activateSession(uuid: string, workspaceUuid: string): Promise<EditorSessionClientDTO> {
-    const session = await this.loadSessionWithGroups(uuid);
+  async activateSession(id: string, workspaceId: string): Promise<EditorSessionClientDTO> {
+    const session = await this.loadSessionWithGroups(id);
     if (!session) {
-      throw new Error(`会话不存在: ${uuid}`);
+      throw new Error(`会话不存在: ${id}`);
     }
 
     // 取消其他会话的激活状态
-    const activeSession = await this.sessionRepository.findActiveByWorkspaceId(workspaceUuid);
-    if (activeSession && activeSession.id !== uuid) {
+    const activeSession = await this.sessionRepository.findActiveByWorkspaceId(workspaceId);
+    if (activeSession && activeSession.id !== id) {
       activeSession.deactivate();
       await this.sessionRepository.save(activeSession);
     }
@@ -124,57 +124,57 @@ export class EditorSessionApplicationService {
   /**
    * 删除会话
    */
-  async deleteSession(uuid: string): Promise<void> {
-    const session = await this.loadSessionWithGroups(uuid);
+  async deleteSession(id: string): Promise<void> {
+    const session = await this.loadSessionWithGroups(id);
     if (!session) {
-      throw new Error(`会话不存在: ${uuid}`);
+      throw new Error(`会话不存在: ${id}`);
     }
 
     // 删除所有分组和标签
-    const groups = await this.groupRepository.findBySessionId(uuid);
+    const groups = await this.groupRepository.findBySessionId(id);
     for (const group of groups) {
       await this.tabRepository.deleteByGroupId(String(group.id));
     }
-    await this.groupRepository.deleteBySessionId(uuid);
+    await this.groupRepository.deleteBySessionId(id);
 
     // 删除会话
-    await this.sessionRepository.delete(uuid);
+    await this.sessionRepository.delete(id);
   }
 
   /**
    * 获取会话详情
    */
-  async getSession(uuid: string): Promise<EditorSessionClientDTO | null> {
-    const session = await this.loadSessionWithGroups(uuid);
+  async getSession(id: string): Promise<EditorSessionClientDTO | null> {
+    const session = await this.loadSessionWithGroups(id);
     return session ? session.toClientDTO() : null;
   }
 
   /**
    * 获取工作区的所有会话
    */
-  async listSessions(workspaceUuid: string): Promise<EditorSessionClientDTO[]> {
-    const sessions = await this.sessionRepository.findByWorkspaceId(workspaceUuid);
+  async listSessions(workspaceId: string): Promise<EditorSessionClientDTO[]> {
+    const sessions = await this.sessionRepository.findByWorkspaceId(workspaceId);
     return sessions.map((s) => s.toClientDTO());
   }
 
   /**
    * 获取活动会话
    */
-  async getActiveSession(workspaceUuid: string): Promise<EditorSessionClientDTO | null> {
-    const session = await this.sessionRepository.findActiveByWorkspaceId(workspaceUuid);
+  async getActiveSession(workspaceId: string): Promise<EditorSessionClientDTO | null> {
+    const session = await this.sessionRepository.findActiveByWorkspaceId(workspaceId);
     return session ? session.toClientDTO() : null;
   }
 
   /**
    * 添加分组
    */
-  async addGroup(sessionUuid: string, name?: string): Promise<EditorSessionClientDTO> {
-    const session = await this.loadSessionWithGroups(sessionUuid);
+  async addGroup(sessionId: string, name?: string): Promise<EditorSessionClientDTO> {
+    const session = await this.loadSessionWithGroups(sessionId);
     if (!session) {
-      throw new Error(`会话不存在: ${sessionUuid}`);
+      throw new Error(`会话不存在: ${sessionId}`);
     }
 
-    const groupCount = await this.groupRepository.countBySessionId(sessionUuid);
+    const groupCount = await this.groupRepository.countBySessionId(sessionId);
     session.addGroup({ groupIndex: groupCount, name: name ?? undefined });
 
     await this.persistSessionState(session);
@@ -185,13 +185,13 @@ export class EditorSessionApplicationService {
   /**
    * 移除分组
    */
-  async removeGroup(sessionUuid: string, groupUuid: string): Promise<EditorSessionClientDTO> {
-    const session = await this.loadSessionWithGroups(sessionUuid);
+  async removeGroup(sessionId: string, groupId: string): Promise<EditorSessionClientDTO> {
+    const session = await this.loadSessionWithGroups(sessionId);
     if (!session) {
-      throw new Error(`会话不存在: ${sessionUuid}`);
+      throw new Error(`会话不存在: ${sessionId}`);
     }
 
-    session.removeGroup(groupUuid);
+    session.removeGroup(groupId);
 
     await this.persistSessionState(session);
 

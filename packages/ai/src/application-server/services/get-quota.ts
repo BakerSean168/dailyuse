@@ -15,8 +15,8 @@ import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
 export class GetQuota {
   constructor(private readonly quotaRepository: IAIUsageQuotaRepository) {}
 
-  async execute(accountUuid: string): Promise<QuotaResponse> {
-    const quota = await this.quotaRepository.findByAccountUuid(accountUuid);
+  async execute(identityId: string): Promise<QuotaResponse> {
+    const quota = await this.quotaRepository.findByAccountId(identityId);
 
     if (!quota) {
       // 返回默认配额
@@ -24,8 +24,8 @@ export class GetQuota {
       const nextReset = now + 30 * 24 * 60 * 60 * 1000;
       return {
         quota: {
-          uuid: '',
-          accountUuid,
+          id: '',
+          identityId,
           quotaLimit: 1000,
           currentUsage: 0,
           resetPeriod: QuotaResetPeriod.MONTHLY,

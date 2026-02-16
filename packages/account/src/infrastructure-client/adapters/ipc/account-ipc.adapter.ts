@@ -17,10 +17,10 @@ import type {
 } from '@dailyuse/contracts/account';
 
 const CHANNELS = {
-  GET_PROFILE: 'account:me:get',
-  UPDATE_PROFILE: 'account:me:update',
-  CHECK_AVAILABILITY: 'account:availability:check',
-  CLOSE_ACCOUNT: 'account:me:close',
+  GET_PROFILE: 'account:get',
+  UPDATE_PROFILE: 'account:update-profile',
+  CHECK_AVAILABILITY: 'account:check-availability',
+  CLOSE_ACCOUNT: 'account:close',
 } as const;
 
 export class AccountIpcAdapter implements IAccountApiClient {

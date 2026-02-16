@@ -34,21 +34,21 @@ export interface UseKeyResultReturn {
   editingKeyResult: KeyResult | null;
 
   // CRUD Operations
-  createKeyResult: (goalUuid: string, data: CreateKeyResultInput) => Promise<KeyResult>;
+  createKeyResult: (goalId: string, data: CreateKeyResultInput) => Promise<KeyResult>;
   updateKeyResult: (
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
     data: UpdateKeyResultInput,
   ) => Promise<KeyResult>;
-  deleteKeyResult: (goalUuid: string, keyResultUuid: string) => Promise<void>;
+  deleteKeyResult: (goalId: string, keyResultId: string) => Promise<void>;
 
   // Record Operations
   createRecord: (
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
     data: CreateRecordInput,
   ) => Promise<GoalRecord>;
-  deleteRecord: (goalUuid: string, keyResultUuid: string, recordUuid: string) => Promise<void>;
+  deleteRecord: (goalId: string, keyResultId: string, recordId: string) => Promise<void>;
 
   // Editing State
   setEditingKeyResult: (keyResult: KeyResult | null) => void;
@@ -74,7 +74,7 @@ export function useKeyResult(): UseKeyResultReturn {
   // ===== CRUD Operations =====
 
   const createKeyResult = useCallback(
-    async (goalUuid: string, data: CreateKeyResultInput): Promise<KeyResult> => {
+    async (goalId: string, data: CreateKeyResultInput): Promise<KeyResult> => {
       storeSetLoading(true);
       storeSetError(null);
 
@@ -90,7 +90,7 @@ export function useKeyResult(): UseKeyResultReturn {
           aggregationMethod: data.aggregationMethod ?? AggregationMethod.SUM,
         };
 
-        const result = await goalApplicationService.createKeyResult(goalUuid, request);
+        const result = await goalApplicationService.createKeyResult(goalId, request);
         storeSetLoading(false);
         return result;
       } catch (e) {
@@ -105,15 +105,15 @@ export function useKeyResult(): UseKeyResultReturn {
 
   const updateKeyResult = useCallback(
     async (
-      goalUuid: string,
-      keyResultUuid: string,
+      goalId: string,
+      keyResultId: string,
       data: UpdateKeyResultInput,
     ): Promise<KeyResult> => {
       storeSetLoading(true);
       storeSetError(null);
 
       try {
-        const result = await goalApplicationService.updateKeyResult(goalUuid, keyResultUuid, data);
+        const result = await goalApplicationService.updateKeyResult(goalId, keyResultId, data);
         setEditingKeyResultState(null);
         storeSetLoading(false);
         return result;
@@ -128,12 +128,12 @@ export function useKeyResult(): UseKeyResultReturn {
   );
 
   const deleteKeyResult = useCallback(
-    async (goalUuid: string, keyResultUuid: string): Promise<void> => {
+    async (goalId: string, keyResultId: string): Promise<void> => {
       storeSetLoading(true);
       storeSetError(null);
 
       try {
-        await goalApplicationService.deleteKeyResult(goalUuid, keyResultUuid);
+        await goalApplicationService.deleteKeyResult(goalId, keyResultId);
         storeSetLoading(false);
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : '删除关键结果失败';
@@ -149,8 +149,8 @@ export function useKeyResult(): UseKeyResultReturn {
 
   const createRecord = useCallback(
     async (
-      goalUuid: string,
-      keyResultUuid: string,
+      goalId: string,
+      keyResultId: string,
       data: CreateRecordInput,
     ): Promise<GoalRecord> => {
       storeSetLoading(true);
@@ -163,7 +163,7 @@ export function useKeyResult(): UseKeyResultReturn {
           recordedAt: data.recordedAt ?? Date.now(),
         };
 
-        const result = await goalApplicationService.createRecord(goalUuid, keyResultUuid, request);
+        const result = await goalApplicationService.createRecord(goalId, keyResultId, request);
         storeSetLoading(false);
         return result;
       } catch (e) {
@@ -177,12 +177,12 @@ export function useKeyResult(): UseKeyResultReturn {
   );
 
   const deleteRecord = useCallback(
-    async (goalUuid: string, keyResultUuid: string, recordUuid: string): Promise<void> => {
+    async (goalId: string, keyResultId: string, recordId: string): Promise<void> => {
       storeSetLoading(true);
       storeSetError(null);
 
       try {
-        await goalApplicationService.deleteRecord(goalUuid, keyResultUuid, recordUuid);
+        await goalApplicationService.deleteRecord(goalId, keyResultId, recordId);
         storeSetLoading(false);
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : '删除记录失败';

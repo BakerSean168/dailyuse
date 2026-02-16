@@ -18,8 +18,8 @@ export class GetGoalFolder {
    * 获取服务单例
    */
 
-  async execute(uuid: string): Promise<GoalFolderClientDTO | null> {
-    const folder = await this.goalFolderRepository.findById(uuid);
+  async execute(id: string): Promise<GoalFolderClientDTO | null> {
+    const folder = await this.goalFolderRepository.findById(id);
 
     if (!folder) {
       return null;

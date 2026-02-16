@@ -242,8 +242,8 @@ export function useGoal() {
   }
 
   async function createRecord(goalId: string, req: CreateGoalRecordReq) {
-    const { keyResultUuid, ...rest } = req;
-    const result = await service.createGoalRecord(goalId, keyResultUuid, rest);
+    const { keyResultId, ...rest } = req;
+    const result = await service.createGoalRecord(goalId, keyResultId, rest);
     if (result.ok) {
       const dto = result.data.toDTO();
       store.addGoalRecord(dto);

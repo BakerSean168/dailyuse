@@ -15,7 +15,7 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { map as mapResult } from '@dailyuse/contracts/result';
 import type {
-  ScheduleClientDTO,
+  ScheduleJobClientDTO,
   CreateScheduleRequest,
   UpdateScheduleRequest,
   GetSchedulesByTimeRangeRequest,
@@ -41,41 +41,41 @@ export class ScheduleClientService {
 
   // ===== Schedule Event CRUD =====
 
-  async createSchedule(data: CreateScheduleRequest): Promise<Result<ScheduleClientDTO>> {
+  async createSchedule(data: CreateScheduleRequest): Promise<Result<ScheduleJobClientDTO>> {
     return this.eventApi.createSchedule(data);
   }
 
-  async getSchedule(uuid: string): Promise<Result<ScheduleClientDTO>> {
-    return this.eventApi.getSchedule(uuid);
+  async getSchedule(id: string): Promise<Result<ScheduleJobClientDTO>> {
+    return this.eventApi.getSchedule(id);
   }
 
-  async getSchedulesByAccount(): Promise<Result<ScheduleClientDTO[]>> {
+  async getSchedulesByAccount(): Promise<Result<ScheduleJobClientDTO[]>> {
     return this.eventApi.getSchedulesByAccount();
   }
 
-  async getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequest): Promise<Result<ScheduleClientDTO[]>> {
+  async getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequest): Promise<Result<ScheduleJobClientDTO[]>> {
     return this.eventApi.getSchedulesByTimeRange(params);
   }
 
-  async updateSchedule(uuid: string, data: UpdateScheduleRequest): Promise<Result<ScheduleClientDTO>> {
-    return this.eventApi.updateSchedule(uuid, data);
+  async updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<ScheduleJobClientDTO>> {
+    return this.eventApi.updateSchedule(id, data);
   }
 
-  async deleteSchedule(uuid: string): Promise<Result<void>> {
-    return this.eventApi.deleteSchedule(uuid);
+  async deleteSchedule(id: string): Promise<Result<void>> {
+    return this.eventApi.deleteSchedule(id);
   }
 
   // ===== Schedule Conflict Detection =====
 
-  async getScheduleConflicts(uuid: string): Promise<Result<ConflictDetectionResult>> {
-    return this.eventApi.getScheduleConflicts(uuid);
+  async getScheduleConflicts(id: string): Promise<Result<ConflictDetectionResult>> {
+    return this.eventApi.getScheduleConflicts(id);
   }
 
   async detectConflicts(params: {
     userId: string;
     startTime: number;
     endTime: number;
-    excludeUuid?: string;
+    excludeId?: string;
   }): Promise<Result<ConflictDetectionResult>> {
     return this.eventApi.detectConflicts(params);
   }
@@ -83,17 +83,17 @@ export class ScheduleClientService {
   async createScheduleWithConflictDetection(
     request: CreateScheduleRequest,
   ): Promise<Result<{
-    schedule: ScheduleClientDTO;
+    schedule: ScheduleJobClientDTO;
     conflicts?: ConflictDetectionResult;
   }>> {
     return this.eventApi.createScheduleWithConflictDetection(request);
   }
 
   async resolveConflict(
-    scheduleUuid: string,
+    scheduleId: string,
     request: ResolveConflictRequest,
   ): Promise<Result<{
-    schedule: ScheduleClientDTO;
+    schedule: ScheduleJobClientDTO;
     conflicts: ConflictDetectionResult;
     applied: {
       strategy: string;
@@ -102,7 +102,7 @@ export class ScheduleClientService {
       changes: string[];
     };
   }>> {
-    return this.eventApi.resolveConflict(scheduleUuid, request);
+    return this.eventApi.resolveConflict(scheduleId, request);
   }
 
   // ===== Schedule Task CRUD =====
@@ -125,8 +125,8 @@ export class ScheduleClientService {
     }));
   }
 
-  async getTaskById(taskUuid: string): Promise<Result<ScheduleTask>> {
-    const result = await this.taskApi.getTaskById(taskUuid);
+  async getTaskById(taskId: string): Promise<Result<ScheduleTask>> {
+    const result = await this.taskApi.getTaskById(taskId);
     return mapResult(result, (dto) => ScheduleTask.fromDTO(dto));
   }
 
@@ -142,35 +142,35 @@ export class ScheduleClientService {
 
   // ===== Schedule Task Status Management =====
 
-  async pauseTask(taskUuid: string): Promise<Result<void>> {
-    return this.taskApi.pauseTask(taskUuid);
+  async pauseTask(taskId: string): Promise<Result<void>> {
+    return this.taskApi.pauseTask(taskId);
   }
 
-  async resumeTask(taskUuid: string): Promise<Result<void>> {
-    return this.taskApi.resumeTask(taskUuid);
+  async resumeTask(taskId: string): Promise<Result<void>> {
+    return this.taskApi.resumeTask(taskId);
   }
 
-  async completeTask(taskUuid: string, reason?: string): Promise<Result<void>> {
-    return this.taskApi.completeTask(taskUuid, reason);
+  async completeTask(taskId: string, reason?: string): Promise<Result<void>> {
+    return this.taskApi.completeTask(taskId, reason);
   }
 
-  async cancelTask(taskUuid: string, reason?: string): Promise<Result<void>> {
-    return this.taskApi.cancelTask(taskUuid, reason);
+  async cancelTask(taskId: string, reason?: string): Promise<Result<void>> {
+    return this.taskApi.cancelTask(taskId, reason);
   }
 
-  async deleteTask(taskUuid: string): Promise<Result<void>> {
-    return this.taskApi.deleteTask(taskUuid);
+  async deleteTask(taskId: string): Promise<Result<void>> {
+    return this.taskApi.deleteTask(taskId);
   }
 
-  async deleteTasksBatch(taskUuids: string[]): Promise<Result<void>> {
-    return this.taskApi.deleteTasksBatch(taskUuids);
+  async deleteTasksBatch(taskIds: string[]): Promise<Result<void>> {
+    return this.taskApi.deleteTasksBatch(taskIds);
   }
 
   async updateTaskMetadata(
-    taskUuid: string,
+    taskId: string,
     metadata: { payload?: unknown; tagsToAdd?: string[]; tagsToRemove?: string[] },
   ): Promise<Result<void>> {
-    return this.taskApi.updateTaskMetadata(taskUuid, metadata);
+    return this.taskApi.updateTaskMetadata(taskId, metadata);
   }
 
   // ===== Schedule Statistics =====

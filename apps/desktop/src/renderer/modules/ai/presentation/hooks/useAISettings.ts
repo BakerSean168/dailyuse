@@ -27,14 +27,14 @@ interface UseAISettingsReturn extends AISettingsState {
   // Provider management
   loadProviders: () => Promise<void>;
   createProvider: (request: CreateAIProviderRequest) => Promise<AIProviderConfigClientDTO>;
-  updateProvider: (uuid: string, request: UpdateAIProviderRequest) => Promise<void>;
-  deleteProvider: (uuid: string) => Promise<void>;
-  selectProvider: (uuid: string) => Promise<void>;
-  setDefaultProvider: (uuid: string) => Promise<void>;
+  updateProvider: (id: string, request: UpdateAIProviderRequest) => Promise<void>;
+  deleteProvider: (id: string) => Promise<void>;
+  selectProvider: (id: string) => Promise<void>;
+  setDefaultProvider: (id: string) => Promise<void>;
 
   // Testing
-  testConnection: (uuid: string) => Promise<void>;
-  refreshModels: (uuid: string) => Promise<void>;
+  testConnection: (id: string) => Promise<void>;
+  refreshModels: (id: string) => Promise<void>;
 
   // Utilities
   clearError: () => void;
@@ -101,15 +101,15 @@ export function useAISettings(): UseAISettingsReturn {
 
   // Update provider
   const updateProvider = useCallback(
-    async (uuid: string, request: UpdateAIProviderRequest) => {
+    async (id: string, request: UpdateAIProviderRequest) => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const provider = await aiApplicationService.updateProvider(uuid, request);
+        const provider = await aiApplicationService.updateProvider(id, request);
         await loadProviders();
         setState((prev) => ({
           ...prev,
-          currentProvider: prev.currentProvider?.uuid === uuid ? provider : prev.currentProvider,
+          currentProvider: prev.currentProvider?.id === id ? provider : prev.currentProvider,
           loading: false,
         }));
       } catch (e) {
@@ -126,15 +126,15 @@ export function useAISettings(): UseAISettingsReturn {
   );
 
   // Delete provider
-  const deleteProvider = useCallback(async (uuid: string) => {
+  const deleteProvider = useCallback(async (id: string) => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      await aiApplicationService.deleteProvider(uuid);
+      await aiApplicationService.deleteProvider(id);
       setState((prev) => ({
         ...prev,
-        providers: prev.providers.filter((p) => p.uuid !== uuid),
-        currentProvider: prev.currentProvider?.uuid === uuid ? null : prev.currentProvider,
+        providers: prev.providers.filter((p) => p.id !== id),
+        currentProvider: prev.currentProvider?.id === id ? null : prev.currentProvider,
         loading: false,
       }));
     } catch (e) {
@@ -149,11 +149,11 @@ export function useAISettings(): UseAISettingsReturn {
   }, []);
 
   // Select provider (get details)
-  const selectProvider = useCallback(async (uuid: string) => {
+  const selectProvider = useCallback(async (id: string) => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const provider = await aiApplicationService.getProvider(uuid);
+      const provider = await aiApplicationService.getProvider(id);
       setState((prev) => ({
         ...prev,
         currentProvider: provider,
@@ -171,11 +171,11 @@ export function useAISettings(): UseAISettingsReturn {
 
   // Set default provider
   const setDefaultProvider = useCallback(
-    async (uuid: string) => {
+    async (id: string) => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        await aiApplicationService.setDefaultProvider(uuid);
+        await aiApplicationService.setDefaultProvider(id);
         await loadProviders();
         setState((prev) => ({ ...prev, loading: false }));
       } catch (e) {
@@ -192,12 +192,12 @@ export function useAISettings(): UseAISettingsReturn {
   );
 
   // Test connection
-  const testConnection = useCallback(async (uuid: string) => {
+  const testConnection = useCallback(async (id: string) => {
     setState((prev) => ({ ...prev, testing: true, testResult: null }));
 
     try {
       // First get provider details, then test
-      const provider = await aiApplicationService.getProvider(uuid);
+      const provider = await aiApplicationService.getProvider(id);
       const result = await aiApplicationService.testProviderConnection({
         providerType: provider.providerType,
         baseUrl: provider.baseUrl,
@@ -223,13 +223,13 @@ export function useAISettings(): UseAISettingsReturn {
 
   // Refresh models
   const refreshModels = useCallback(
-    async (uuid: string) => {
+    async (id: string) => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        await aiApplicationService.refreshModels(uuid);
+        await aiApplicationService.refreshModels(id);
         // Reload provider to get updated models
-        await selectProvider(uuid);
+        await selectProvider(id);
         setState((prev) => ({ ...prev, loading: false }));
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : '刷新模型列表失败';

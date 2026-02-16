@@ -98,19 +98,19 @@ export class TaskQueryService {
   /**
    * 获取单个任务模板并计算优先级
    *
-   * @param uuid 任务模板 UUID
+   * @param uuid 任务模板 ID
    * @param includeChildren 是否包含子实例
    * @param currentTime 当前时间（用于优先级计算）
    * @returns 包含优先级分数的任务模板 DTO
    */
   async getTaskTemplateWithPriority(
-    uuid: string,
+    id: string,
     includeChildren = false,
     currentTime: Date = new Date(),
   ): Promise<(TaskTemplateServerDTO & { priority: number }) | null> {
     const template = includeChildren
-      ? await this.templateRepository.findByUuidWithChildren(uuid)
-      : await this.templateRepository.findByUuid(uuid);
+      ? await this.templateRepository.findByIdWithChildren(id)
+      : await this.templateRepository.findById(id);
 
     if (!template) {
       return null;
@@ -123,15 +123,15 @@ export class TaskQueryService {
   /**
    * 获取任务模板列表并为每个计算优先级
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 账户 ID
    * @param currentTime 当前时间（用于优先级计算）
    * @returns 包含优先级分数的任务模板 DTO 数组
    */
   async listTaskTemplatesWithPriority(
-    accountUuid: string,
+    identityId: string,
     currentTime: Date = new Date(),
   ): Promise<Array<TaskTemplateServerDTO & { priority: number }>> {
-    const templates = await this.templateRepository.findByAccount(accountUuid);
+    const templates = await this.templateRepository.findByAccount(identityId);
     const dtos = templates.map((t) => t.toServerDTO());
     return enrichMultipleWithPriority(dtos, currentTime);
   }
@@ -139,17 +139,17 @@ export class TaskQueryService {
   /**
    * 按状态查询任务模板
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 账户 ID
    * @param status 任务状态
    * @param currentTime 当前时间
    * @returns 包含优先级分数的任务模板 DTO 数组
    */
   async listTaskTemplatesByStatusWithPriority(
-    accountUuid: string,
+    identityId: string,
     status: TaskTemplateStatus,
     currentTime: Date = new Date(),
   ): Promise<Array<TaskTemplateServerDTO & { priority: number }>> {
-    const templates = await this.templateRepository.findByStatus(accountUuid, status);
+    const templates = await this.templateRepository.findByStatus(identityId, status);
     const dtos = templates.map((t) => t.toServerDTO());
     return enrichMultipleWithPriority(dtos, currentTime);
   }
@@ -157,20 +157,20 @@ export class TaskQueryService {
   /**
    * 获取日期范围内的任务实例并计算优先级
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 账户 ID
    * @param startDate 起始日期（时间戳 ms）
    * @param endDate 结束日期（时间戳 ms）
    * @param currentTime 当前时间（用于优先级计算）
    * @returns 包含优先级分数的任务实例 DTO 数组
    */
   async getTaskInstancesByDateRangeWithPriority(
-    accountUuid: string,
+    identityId: string,
     startDate: number,
     endDate: number,
     currentTime: Date = new Date(),
   ): Promise<Array<TaskInstanceServerDTO & { priority: number }>> {
     const instances = await this.instanceRepository.findByDateRange(
-      accountUuid,
+      identityId,
       startDate,
       endDate,
     );
@@ -182,15 +182,15 @@ export class TaskQueryService {
   /**
    * 获取单个任务实例并计算优先级
    *
-   * @param uuid 任务实例 UUID
+   * @param uuid 任务实例 ID
    * @param currentTime 当前时间（用于优先级计算）
    * @returns 包含优先级分数的任务实例 DTO
    */
   async getTaskInstanceWithPriority(
-    uuid: string,
+    id: string,
     currentTime: Date = new Date(),
   ): Promise<(TaskInstanceServerDTO & { priority: number }) | null> {
-    const instance = await this.instanceRepository.findByUuid(uuid);
+    const instance = await this.instanceRepository.findById(id);
 
     if (!instance) {
       return null;
@@ -215,27 +215,27 @@ export class TaskQueryService {
    * - O(n log n) 排序复杂度（JavaScript Array.sort()）
    * - 2000 个任务 < 100ms（在现代硬件上）
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 账户 ID
    * @param sortBy 排序字段（'priority' | 'completedAt'），默认 'priority'
    * @param currentTime 当前时间（用于优先级计算）
    * @returns 排序后的任务 DTO 数组，包含 priority 字段
    *
    * @example
-   * const sortedTasks = await service.getTasksWithPrioritySorting(accountUuid);
+   * const sortedTasks = await service.getTasksWithPrioritySorting(identityId);
    * // 返回按优先级降序的任务列表
    */
   async getTasksWithPrioritySorting(
-    accountUuid: string,
+    identityId: string,
     sortBy: 'priority' | 'completedAt' = 'priority',
     currentTime: Date = new Date(),
   ): Promise<Array<TaskTemplateServerDTO & { priority: number }>> {
     // 查询所有活跃任务（ACTIVE 和 PAUSED）
     const activeTemplates = await this.templateRepository.findByStatus(
-      accountUuid,
+      identityId,
       TaskTemplateStatus.ACTIVE,
     );
     const pausedTemplates = await this.templateRepository.findByStatus(
-      accountUuid,
+      identityId,
       TaskTemplateStatus.PAUSED,
     );
 

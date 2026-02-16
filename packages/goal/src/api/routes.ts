@@ -86,8 +86,8 @@ interface PlatformMiddleware {
 
 interface AuthenticatedRequest extends Request {
   user?: {
-    accountUuid: string;
-    sessionUuid?: string;
+    identityId: string;
+    sessionId?: string;
     tokenType?: string;
     exp?: number;
   };
@@ -98,7 +98,7 @@ interface AuthenticatedRequest extends Request {
 const responseBuilder = createResponseBuilder();
 
 function getIdentityId(req: AuthenticatedRequest): string | null {
-  return req.user?.accountUuid ?? null;
+  return req.user?.identityId ?? null;
 }
 
 function respondWithResult<T>(res: Response, result: Result<T>, okStatus = 200) {
@@ -176,12 +176,12 @@ export function registerGoalRoutes(
     }
 
     const parsed = QueryGoalsSchema.safeParse({
-      accountUuid: identityId,
+      identityId: identityId,
       status: parseStringArray(req.query.status),
       importance: parseStringArray(req.query.importance),
       category: req.query.category,
       tags: parseStringArray(req.query.tags),
-      folderUuid: req.query.folderUuid,
+      folderId: req.query.folderId,
       keyword: req.query.keyword,
       startDate: parseNumber(req.query.startDate),
       endDate: parseNumber(req.query.endDate),
@@ -294,7 +294,7 @@ export function registerGoalRoutes(
   router.post('/:id/key-results', auth, async (req: AuthenticatedRequest, res: Response) => {
     const parsed = AddKeyResultSchema.safeParse({
       ...req.body,
-      goalUuid: req.params.id,
+      goalId: req.params.id,
     });
     if (!parsed.success) {
       const details = parsed.error.issues.map((issue) => ({
@@ -359,7 +359,7 @@ export function registerGoalRoutes(
     async (req: AuthenticatedRequest, res: Response) => {
       const parsed = UpdateKeyResultProgressSchema.safeParse({
         ...req.body,
-        keyResultUuid: req.params.krId,
+        keyResultId: req.params.krId,
       });
       if (!parsed.success) {
         const details = parsed.error.issues.map((issue) => ({
@@ -400,7 +400,7 @@ export function registerGoalRoutes(
   router.post('/:id/reviews', auth, async (req: AuthenticatedRequest, res: Response) => {
     const parsed = CreateGoalReviewSchema.safeParse({
       ...req.body,
-      goalUuid: req.params.id,
+      goalId: req.params.id,
     });
     if (!parsed.success) {
       const details = parsed.error.issues.map((issue) => ({

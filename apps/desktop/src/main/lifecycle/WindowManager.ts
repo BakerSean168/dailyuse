@@ -42,7 +42,7 @@ export interface LoginWindowOptions {
 }
 
 export interface QuickLoginAccount {
-  uuid: string;
+  id: string;
   username: string;
   email: string;
   avatarUrl?: string;

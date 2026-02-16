@@ -25,7 +25,7 @@ import { DashboardWidget, type WidgetSize } from '../DashboardWidget';
 // ============ Types ============
 
 interface TaskItem {
-  uuid: string;
+  id: string;
   title: string;
   completed: boolean;
   priority: 'high' | 'medium' | 'low';
@@ -38,9 +38,9 @@ export interface TaskWidgetProps {
   /** 点击查看更多 */
   onViewMore?: () => void;
   /** 点击任务 */
-  onTaskClick?: (taskUuid: string) => void;
+  onTaskClick?: (taskId: string) => void;
   /** 完成任务 */
-  onTaskComplete?: (taskUuid: string, completed: boolean) => void;
+  onTaskComplete?: (taskId: string, completed: boolean) => void;
   /** 类名 */
   className?: string;
 }
@@ -48,11 +48,11 @@ export interface TaskWidgetProps {
 // ============ Mock Data ============
 
 const mockTasks: TaskItem[] = [
-  { uuid: '1', title: '完成代码审查', completed: false, priority: 'high', dueTime: '10:00' },
-  { uuid: '2', title: '更新项目文档', completed: true, priority: 'medium', dueTime: '14:00' },
-  { uuid: '3', title: '团队会议', completed: false, priority: 'high', dueTime: '15:30' },
-  { uuid: '4', title: '邮件回复', completed: false, priority: 'low' },
-  { uuid: '5', title: '测试用例编写', completed: true, priority: 'medium', dueTime: '17:00' },
+  { id: '1', title: '完成代码审查', completed: false, priority: 'high', dueTime: '10:00' },
+  { id: '2', title: '更新项目文档', completed: true, priority: 'medium', dueTime: '14:00' },
+  { id: '3', title: '团队会议', completed: false, priority: 'high', dueTime: '15:30' },
+  { id: '4', title: '邮件回复', completed: false, priority: 'low' },
+  { id: '5', title: '测试用例编写', completed: true, priority: 'medium', dueTime: '17:00' },
 ];
 
 // ============ Component ============
@@ -95,11 +95,11 @@ export function TaskWidget({
   }, [tasks]);
 
   // 处理完成状态切�?
-  const handleToggleComplete = useCallback((taskUuid: string, completed: boolean) => {
+  const handleToggleComplete = useCallback((taskId: string, completed: boolean) => {
     setTasks(prev => prev.map(t => 
-      t.uuid === taskUuid ? { ...t, completed } : t
+      t.id === taskId ? { ...t, completed } : t
     ));
-    onTaskComplete?.(taskUuid, completed);
+    onTaskComplete?.(taskId, completed);
   }, [onTaskComplete]);
 
   // 获取优先级颜�?
@@ -145,7 +145,7 @@ export function TaskWidget({
         <div className="space-y-2">
           {tasks.map((task) => (
             <div
-              key={task.uuid}
+              key={task.id}
               className={cn(
                 "flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors",
                 task.completed && "opacity-60"
@@ -153,11 +153,11 @@ export function TaskWidget({
             >
               <Checkbox
                 checked={task.completed}
-                onCheckedChange={(checked) => handleToggleComplete(task.uuid, !!checked)}
+                onCheckedChange={(checked) => handleToggleComplete(task.id, !!checked)}
               />
               <div
                 className="flex-1 min-w-0 cursor-pointer"
-                onClick={() => onTaskClick?.(task.uuid)}
+                onClick={() => onTaskClick?.(task.id)}
               >
                 <p className={cn(
                   "text-sm truncate",

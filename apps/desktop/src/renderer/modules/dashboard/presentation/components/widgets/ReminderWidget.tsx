@@ -25,7 +25,7 @@ import { DashboardWidget, type WidgetSize } from '../DashboardWidget';
 // ============ Types ============
 
 interface ReminderItem {
-  uuid: string;
+  id: string;
   title: string;
   triggerAt: Date;
   priority: 'urgent' | 'high' | 'normal' | 'low';
@@ -37,11 +37,11 @@ export interface ReminderWidgetProps {
   /** 点击查看更多 */
   onViewMore?: () => void;
   /** 点击提醒 */
-  onReminderClick?: (reminderUuid: string) => void;
+  onReminderClick?: (reminderId: string) => void;
   /** 确认提醒 */
-  onConfirm?: (reminderUuid: string) => void;
+  onConfirm?: (reminderId: string) => void;
   /** 延期提醒 */
-  onSnooze?: (reminderUuid: string, minutes: number) => void;
+  onSnooze?: (reminderId: string, minutes: number) => void;
   /** 类名 */
   className?: string;
 }
@@ -49,10 +49,10 @@ export interface ReminderWidgetProps {
 // ============ Mock Data ============
 
 const mockReminders: ReminderItem[] = [
-  { uuid: '1', title: '喝水提醒', triggerAt: addMinutes(new Date(), 15), priority: 'normal' },
-  { uuid: '2', title: '会议开', triggerAt: addMinutes(new Date(), 45), priority: 'high' },
-  { uuid: '3', title: '休息提醒', triggerAt: addMinutes(new Date(), 90), priority: 'low' },
-  { uuid: '4', title: '项目截止', triggerAt: addMinutes(new Date(), 180), priority: 'urgent' },
+  { id: '1', title: '喝水提醒', triggerAt: addMinutes(new Date(), 15), priority: 'normal' },
+  { id: '2', title: '会议开', triggerAt: addMinutes(new Date(), 45), priority: 'high' },
+  { id: '3', title: '休息提醒', triggerAt: addMinutes(new Date(), 90), priority: 'low' },
+  { id: '4', title: '项目截止', triggerAt: addMinutes(new Date(), 180), priority: 'urgent' },
 ];
 
 // ============ Component ============
@@ -121,19 +121,19 @@ export function ReminderWidget({
   };
 
   // 处理确认
-  const handleConfirm = useCallback((uuid: string, e: React.MouseEvent) => {
+  const handleConfirm = useCallback((id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setReminders(prev => prev.filter(r => r.uuid !== uuid));
-    onConfirm?.(uuid);
+    setReminders(prev => prev.filter(r => r.id !== id));
+    onConfirm?.(id);
   }, [onConfirm]);
 
   // 处理延期
-  const handleSnooze = useCallback((uuid: string, e: React.MouseEvent) => {
+  const handleSnooze = useCallback((id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setReminders(prev => prev.map(r => 
-      r.uuid === uuid ? { ...r, triggerAt: addMinutes(r.triggerAt, 15) } : r
+      r.id === id ? { ...r, triggerAt: addMinutes(r.triggerAt, 15) } : r
     ));
-    onSnooze?.(uuid, 15);
+    onSnooze?.(id, 15);
   }, [onSnooze]);
 
   return (
@@ -178,9 +178,9 @@ export function ReminderWidget({
               const priorityInfo = getPriorityInfo(reminder.priority);
               return (
                 <div
-                  key={reminder.uuid}
+                  key={reminder.id}
                   className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent cursor-pointer transition-colors"
-                  onClick={() => onReminderClick?.(reminder.uuid)}
+                  onClick={() => onReminderClick?.(reminder.id)}
                 >
                   <div className={cn("w-2 h-2 rounded-full", priorityInfo.color)} />
                   <div className="flex-1 min-w-0">
@@ -197,7 +197,7 @@ export function ReminderWidget({
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7"
-                      onClick={(e) => handleSnooze(reminder.uuid, e)}
+                      onClick={(e) => handleSnooze(reminder.id, e)}
                       title="延期15分钟"
                     >
                       <AlarmClockPlus className="h-4 w-4" />
@@ -206,7 +206,7 @@ export function ReminderWidget({
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 text-green-500"
-                      onClick={(e) => handleConfirm(reminder.uuid, e)}
+                      onClick={(e) => handleConfirm(reminder.id, e)}
                       title="确认"
                     >
                       <Check className="h-4 w-4" />

@@ -15,7 +15,7 @@ export class ListGoalFolders {
   constructor(private readonly goalFolderRepository: IGoalFolderRepository) {}
 
   async execute(input: QueryGoalFoldersReq): Promise<QueryGoalFoldersRes> {
-    const folders = await this.goalFolderRepository.findByIdentityId(input.accountUuid);
+    const folders = await this.goalFolderRepository.findByIdentityId(input.identityId);
 
     return {
       data: folders.map((f: GoalFolder) => f.toClientDTO()),

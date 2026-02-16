@@ -11,7 +11,7 @@ import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
  * List Resources Input
  */
 export interface ListResourcesInput {
-  repositoryUuid: string;
+  repositoryId: string;
 }
 
 /**
@@ -29,7 +29,7 @@ export class ListResources {
   constructor(private readonly resourceRepository: IResourceRepository) {}
 
   async execute(input: ListResourcesInput): Promise<ListResourcesOutput> {
-    const resources = await this.resourceRepository.findByRepositoryId(input.repositoryUuid);
+    const resources = await this.resourceRepository.findByRepositoryId(input.repositoryId);
     return { resources: resources.map((r) => r.toClientDTO()) };
   }
 }

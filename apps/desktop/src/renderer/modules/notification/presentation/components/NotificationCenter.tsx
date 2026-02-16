@@ -36,9 +36,9 @@ interface NotificationCenterProps {
   notifications: NotificationClientDTO[];
   unreadCount: number;
   loading?: boolean;
-  onRead: (uuid: string) => void;
+  onRead: (id: string) => void;
   onReadAll: () => void;
-  onDelete: (uuid: string) => void;
+  onDelete: (id: string) => void;
   onDeleteAll: () => void;
   onClick?: (notification: NotificationClientDTO) => void;
   onSettingsClick?: () => void;
@@ -229,7 +229,7 @@ export function NotificationCenter({
                 // Notification list
                 <div className="divide-y py-2">
                   {filteredNotifications.map((notification) => (
-                    <div key={notification.uuid} className="group relative">
+                    <div key={notification.id} className="group relative">
                       <NotificationItem
                         notification={notification}
                         onRead={onRead}
@@ -245,7 +245,7 @@ export function NotificationCenter({
                             className="h-7 w-7"
                             onClick={(e) => {
                               e.stopPropagation();
-                              onRead(notification.uuid);
+                              onRead(notification.id);
                             }}
                           >
                             <Check className="h-4 w-4" />
@@ -257,7 +257,7 @@ export function NotificationCenter({
                           className="h-7 w-7 text-destructive hover:text-destructive"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onDelete(notification.uuid);
+                            onDelete(notification.id);
                           }}
                         >
                           <X className="h-4 w-4" />

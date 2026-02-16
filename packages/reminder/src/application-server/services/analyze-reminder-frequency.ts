@@ -39,7 +39,7 @@ export interface EffectivenessReport {
  * 全局分析报告
  */
 export interface GlobalAnalysisReport {
-  accountUuid: string;
+  identityId: string;
   totalTemplates: number;
   avgClickRate: number;
   avgEffectivenessScore: number;
@@ -86,7 +86,7 @@ export class AnalyzeReminderFrequency {
     // TODO: 需要运行 Prisma migration 后才能使用 reminderResponse
     // const records = await this.prisma.reminderResponse.findMany({
     //   where: {
-    //     templateUuid: templateId,
+    //     templateId: templateId,
     //     timestamp: { gte: cutoffTime },
     //   },
     // });
@@ -99,24 +99,24 @@ export class AnalyzeReminderFrequency {
   /**
    * 分析账户下的全局效果
    *
-   * @param accountUuid - 账户UUID
+   * @param identityId - 账户 ID
    * @param lookbackDays - 回溯天数，默认30天
    * @returns 全局分析报告
    */
   async executeGlobal(
-    accountUuid: string,
+    identityId: string,
     lookbackDays: number = 30,
   ): Promise<GlobalAnalysisReport> {
-    const templates = await this.templateRepository.findByAccountUuid(accountUuid);
+    const templates = await this.templateRepository.findByAccountId(identityId);
 
     const reports: EffectivenessReport[] = [];
     let totalClickRate = 0;
     let totalEffectivenessScore = 0;
 
     for (const template of templates) {
-      const metrics = await this.execute(template.uuid, lookbackDays);
+      const metrics = await this.execute(template.id, lookbackDays);
       if (metrics) {
-        const report = this.generateEffectivenessReport(template.uuid, metrics);
+        const report = this.generateEffectivenessReport(template.id, metrics);
         reports.push(report);
         totalClickRate += report.clickRate;
         totalEffectivenessScore += report.effectivenessScore;
@@ -134,7 +134,7 @@ export class AnalyzeReminderFrequency {
       .slice(0, 5);
 
     return {
-      accountUuid,
+      identityId,
       totalTemplates: templates.length,
       avgClickRate: templates.length > 0 ? totalClickRate / templates.length : 0,
       avgEffectivenessScore:

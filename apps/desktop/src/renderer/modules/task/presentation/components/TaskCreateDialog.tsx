@@ -50,7 +50,7 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
       // 构建符合 contracts 类型的输入
       // Story 2.3: urgency 已移除 - Priority 由后端根据 importance 和 dueDate 自动计算
       const input: CreateTaskTemplateRequest = {
-        accountUuid: 'local-user', // Desktop 本地用户
+        identityId: 'local-user', // Desktop 本地用户
         title: title.trim(),
         description: description.trim() || undefined,
         taskType: TaskType.ONE_TIME,

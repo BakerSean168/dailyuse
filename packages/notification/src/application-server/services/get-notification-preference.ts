@@ -19,13 +19,13 @@ export class GetNotificationPreference {
     this.preferenceService = new NotificationPreferenceDomainService(preferenceRepository);
   }
 
-  async execute(accountUuid: string): Promise<NotificationPreferenceClientDTO | null> {
-    const preference = await this.preferenceService.getPreference(accountUuid);
+  async execute(identityId: string): Promise<NotificationPreferenceClientDTO | null> {
+    const preference = await this.preferenceService.getPreference(identityId);
     return preference ? toNotificationPreferenceClientDTO(preference.toServerDTO()) : null;
   }
 
-  async executeOrCreate(accountUuid: string): Promise<NotificationPreferenceClientDTO> {
-    const preference = await this.preferenceService.getOrCreatePreference(accountUuid);
+  async executeOrCreate(identityId: string): Promise<NotificationPreferenceClientDTO> {
+    const preference = await this.preferenceService.getOrCreatePreference(identityId);
     return toNotificationPreferenceClientDTO(preference.toServerDTO());
   }
 }

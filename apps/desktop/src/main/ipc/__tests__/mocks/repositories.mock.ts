@@ -14,9 +14,9 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 export interface MockGoalRepository {
   save: ReturnType<typeof vi.fn>;
   findById: ReturnType<typeof vi.fn>;
-  findByUuid: ReturnType<typeof vi.fn>;
-  findByAccountUuid: ReturnType<typeof vi.fn>;
-  findByFolderUuid: ReturnType<typeof vi.fn>;
+  findById: ReturnType<typeof vi.fn>;
+  findByAccountId: ReturnType<typeof vi.fn>;
+  findByFolderId: ReturnType<typeof vi.fn>;
   findByStatus: ReturnType<typeof vi.fn>;
   delete: ReturnType<typeof vi.fn>;
   exists: ReturnType<typeof vi.fn>;
@@ -26,9 +26,9 @@ export function createMockGoalRepository(): MockGoalRepository {
   return {
     save: vi.fn().mockResolvedValue(undefined),
     findById: vi.fn().mockResolvedValue(null),
-    findByUuid: vi.fn().mockResolvedValue(null),
-    findByAccountUuid: vi.fn().mockResolvedValue([]),
-    findByFolderUuid: vi.fn().mockResolvedValue([]),
+    findById: vi.fn().mockResolvedValue(null),
+    findByAccountId: vi.fn().mockResolvedValue([]),
+    findByFolderId: vi.fn().mockResolvedValue([]),
     findByStatus: vi.fn().mockResolvedValue([]),
     delete: vi.fn().mockResolvedValue(undefined),
     exists: vi.fn().mockResolvedValue(false),
@@ -39,16 +39,16 @@ export function createMockGoalRepository(): MockGoalRepository {
 
 export interface MockGoalStatisticsRepository {
   save: ReturnType<typeof vi.fn>;
-  findByAccountUuid: ReturnType<typeof vi.fn>;
-  findByUuid: ReturnType<typeof vi.fn>;
+  findByAccountId: ReturnType<typeof vi.fn>;
+  findById: ReturnType<typeof vi.fn>;
   delete: ReturnType<typeof vi.fn>;
 }
 
 export function createMockGoalStatisticsRepository(): MockGoalStatisticsRepository {
   return {
     save: vi.fn().mockResolvedValue(undefined),
-    findByAccountUuid: vi.fn().mockResolvedValue(null),
-    findByUuid: vi.fn().mockResolvedValue(null),
+    findByAccountId: vi.fn().mockResolvedValue(null),
+    findById: vi.fn().mockResolvedValue(null),
     delete: vi.fn().mockResolvedValue(undefined),
   };
 }
@@ -58,7 +58,7 @@ export function createMockGoalStatisticsRepository(): MockGoalStatisticsReposito
 export interface MockGoalFolderRepository {
   save: ReturnType<typeof vi.fn>;
   findById: ReturnType<typeof vi.fn>;
-  findByAccountUuid: ReturnType<typeof vi.fn>;
+  findByAccountId: ReturnType<typeof vi.fn>;
   findRootFolders: ReturnType<typeof vi.fn>;
   delete: ReturnType<typeof vi.fn>;
   exists: ReturnType<typeof vi.fn>;
@@ -68,7 +68,7 @@ export function createMockGoalFolderRepository(): MockGoalFolderRepository {
   return {
     save: vi.fn().mockResolvedValue(undefined),
     findById: vi.fn().mockResolvedValue(null),
-    findByAccountUuid: vi.fn().mockResolvedValue([]),
+    findByAccountId: vi.fn().mockResolvedValue([]),
     findRootFolders: vi.fn().mockResolvedValue([]),
     delete: vi.fn().mockResolvedValue(undefined),
     exists: vi.fn().mockResolvedValue(false),
@@ -80,8 +80,8 @@ export function createMockGoalFolderRepository(): MockGoalFolderRepository {
 export interface MockTaskTemplateRepository {
   save: ReturnType<typeof vi.fn>;
   findById: ReturnType<typeof vi.fn>;
-  findByGoalUuid: ReturnType<typeof vi.fn>;
-  findByAccountUuid: ReturnType<typeof vi.fn>;
+  findByGoalId: ReturnType<typeof vi.fn>;
+  findByAccountId: ReturnType<typeof vi.fn>;
   delete: ReturnType<typeof vi.fn>;
   exists: ReturnType<typeof vi.fn>;
 }
@@ -90,8 +90,8 @@ export function createMockTaskTemplateRepository(): MockTaskTemplateRepository {
   return {
     save: vi.fn().mockResolvedValue(undefined),
     findById: vi.fn().mockResolvedValue(null),
-    findByGoalUuid: vi.fn().mockResolvedValue([]),
-    findByAccountUuid: vi.fn().mockResolvedValue([]),
+    findByGoalId: vi.fn().mockResolvedValue([]),
+    findByAccountId: vi.fn().mockResolvedValue([]),
     delete: vi.fn().mockResolvedValue(undefined),
     exists: vi.fn().mockResolvedValue(false),
   };
@@ -100,8 +100,8 @@ export function createMockTaskTemplateRepository(): MockTaskTemplateRepository {
 export interface MockTaskInstanceRepository {
   save: ReturnType<typeof vi.fn>;
   findById: ReturnType<typeof vi.fn>;
-  findByTemplateUuid: ReturnType<typeof vi.fn>;
-  findByAccountUuid: ReturnType<typeof vi.fn>;
+  findByTemplateId: ReturnType<typeof vi.fn>;
+  findByAccountId: ReturnType<typeof vi.fn>;
   findByDateRange: ReturnType<typeof vi.fn>;
   delete: ReturnType<typeof vi.fn>;
   exists: ReturnType<typeof vi.fn>;
@@ -111,8 +111,8 @@ export function createMockTaskInstanceRepository(): MockTaskInstanceRepository {
   return {
     save: vi.fn().mockResolvedValue(undefined),
     findById: vi.fn().mockResolvedValue(null),
-    findByTemplateUuid: vi.fn().mockResolvedValue([]),
-    findByAccountUuid: vi.fn().mockResolvedValue([]),
+    findByTemplateId: vi.fn().mockResolvedValue([]),
+    findByAccountId: vi.fn().mockResolvedValue([]),
     findByDateRange: vi.fn().mockResolvedValue([]),
     delete: vi.fn().mockResolvedValue(undefined),
     exists: vi.fn().mockResolvedValue(false),
@@ -149,9 +149,9 @@ export function createMockGoalDTO(overrides: Partial<GoalServerDTO> = {}): GoalS
   goalCounter++;
   const now = Date.now();
   return {
-    uuid: `goal-${goalCounter}-${now}`,
-    accountUuid: 'test-account-uuid',
-    folderUuid: null,
+    id: `goal-${goalCounter}-${now}`,
+    identityId: 'test-account-uuid',
+    folderId: null,
     title: `Test Goal ${goalCounter}`,
     description: 'Test goal description',
     status: 'ACTIVE' as GoalStatus,

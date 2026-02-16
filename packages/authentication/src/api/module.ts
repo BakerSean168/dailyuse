@@ -2,7 +2,7 @@
  * Authentication API Module Definition
  *
  * Implements IApiModule standard interface:
- * 1. Composition Root (AuthenticationContainer â†?UseCases â†?Handlers)
+ * 1. Composition Root (AuthenticationContainer ï¿½?UseCases ï¿½?Handlers)
  * 2. Route definition and mounting
  * 3. Initialization task registration
  *
@@ -64,7 +64,7 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
   register(context) {
     const { router, middleware } = context;
 
-    // 1. Composition Root â€?create container with shared database client
+    // 1. Composition Root ï¿½?create container with shared database client
     const container = new AuthenticationContainer(prisma);
     const identityRepo = container.getIdentityRepository();
     const sessionRepo = container.getSessionRepository();
@@ -110,7 +110,7 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
       // revokeAllSessions: (identityId) => revokeAllSessionsService.executeForWeb(identityId),
       // enable2fa: (identityId, method) => enable2faService.execute(identityId, method),
       // disable2fa: (identityId) => disable2faService.execute(identityId),
-      // verify2fa: (sessionUuid, code) => verify2faService.execute(sessionUuid, code),
+      // verify2fa: (sessionId, code) => verify2faService.execute(sessionId, code),
       // createApiKey: (identityId, name, expiresInDays) => createApiKeyService.execute(identityId, name, expiresInDays),
       // listApiKeys: (identityId) => listApiKeysService.execute(identityId),
       // revokeApiKey: (keyId, identityId) => revokeApiKeyService.execute(keyId, identityId),

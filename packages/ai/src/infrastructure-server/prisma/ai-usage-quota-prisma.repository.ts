@@ -20,23 +20,23 @@ export class AIUsageQuotaPrismaRepository implements IAIUsageQuotaRepository {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByUuid(uuid: string): Promise<AIUsageQuotaServerDTO | null> {
+  async findById(id: string): Promise<AIUsageQuotaServerDTO | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<AIUsageQuotaServerDTO | null> {
+  async findByAccountId(identityId: string): Promise<AIUsageQuotaServerDTO | null> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async createDefaultQuota(accountUuid: string): Promise<AIUsageQuotaServerDTO> {
+  async createDefaultQuota(identityId: string): Promise<AIUsageQuotaServerDTO> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');
   }
 
-  async exists(accountUuid: string): Promise<boolean> {
+  async exists(identityId: string): Promise<boolean> {
     throw new Error('Not implemented - extract from apps/api');
   }
 }

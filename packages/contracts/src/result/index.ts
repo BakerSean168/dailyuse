@@ -415,7 +415,6 @@ export function okBatch<T, E = ResultError>(
 export {
   toIpcResult,
   fromIpcResult,
-  createIpcHandler,
   createIpcClientWrapper,
   type IpcResult,
 } from './ipc';

@@ -19,9 +19,9 @@ export class GenerateGoal {
     private readonly providerRepository: IAIProviderConfigRepository,
   ) {}
 
-  async execute(accountUuid: string, input: GenerateGoalRequest): Promise<GenerateGoalResponse> {
-    // 1. 获取 AI Provider（使�?findByAccountUuid�?
-    const providers = await this.providerRepository.findByAccountUuid(accountUuid);
+  async execute(identityId: string, input: GenerateGoalRequest): Promise<GenerateGoalResponse> {
+    // 1. 获取 AI Provider（使�?findByAccountId�?
+    const providers = await this.providerRepository.findByAccountId(identityId);
     const provider = providers.find((p: any) => p.isDefault) || providers[0];
     if (!provider) {
       throw new Error('No AI provider configured');

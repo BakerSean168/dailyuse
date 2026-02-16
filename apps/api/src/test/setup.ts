@@ -33,7 +33,7 @@ export const ApiTestHelpers = {
   /**
    * 创建测试用的认证 Token
    */
-  createTestToken: async (payload = { accountUuid: 'test-user-123' }) => {
+  createTestToken: async (payload = { identityId: 'test-user-123' }) => {
     const jwt = await import('jsonwebtoken');
     const secret = process.env.JWT_SECRET || 'test-secret';
     return jwt.sign(payload, secret, { expiresIn: '1h' });
@@ -42,9 +42,9 @@ export const ApiTestHelpers = {
   /**
    * 模拟认证中间件
    */
-  mockAuth: (accountUuid = 'test-user-123') => {
+  mockAuth: (identityId = 'test-user-123') => {
     return (req: any, res: any, next: any) => {
-      req.user = { accountUuid };
+      req.user = { identityId };
       next();
     };
   },

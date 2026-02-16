@@ -35,19 +35,19 @@ export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
     return this.httpClient.get(this.baseUrl);
   }
 
-  async getProviderById(uuid: string): Promise<AIProviderConfigClientDTO> {
-    return this.httpClient.get(`${this.baseUrl}/${uuid}`);
+  async getProviderById(id: string): Promise<AIProviderConfigClientDTO> {
+    return this.httpClient.get(`${this.baseUrl}/${id}`);
   }
 
   async updateProvider(
-    uuid: string,
+    id: string,
     request: UpdateAIProviderConfigReq,
   ): Promise<AIProviderConfigClientDTO> {
-    return this.httpClient.patch(`${this.baseUrl}/${uuid}`, request);
+    return this.httpClient.patch(`${this.baseUrl}/${id}`, request);
   }
 
-  async deleteProvider(uuid: string): Promise<void> {
-    return this.httpClient.delete(`${this.baseUrl}/${uuid}`);
+  async deleteProvider(id: string): Promise<void> {
+    return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
   // ===== Provider Operations =====
@@ -56,11 +56,11 @@ export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
     return this.httpClient.post(`${this.baseUrl}/test-connection`, request);
   }
 
-  async setDefaultProvider(uuid: string): Promise<void> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/set-default`);
+  async setDefaultProvider(id: string): Promise<void> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/set-default`);
   }
 
-  async refreshModels(uuid: string): Promise<RefreshProviderModelsRes> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/refresh-models`);
+  async refreshModels(id: string): Promise<RefreshProviderModelsRes> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/refresh-models`);
   }
 }

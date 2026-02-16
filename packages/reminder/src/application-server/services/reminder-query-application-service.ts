@@ -8,8 +8,8 @@ import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 export class ReminderQueryApplicationService {
   constructor(private reminderTemplateRepository: IReminderTemplateRepository) {}
 
-  async getUpcomingReminders(accountUuid: string): Promise<ReminderTemplateClientDTO[]> {
-    const templates = await this.reminderTemplateRepository.findByAccountUuid(accountUuid);
+  async getUpcomingReminders(identityId: string): Promise<ReminderTemplateClientDTO[]> {
+    const templates = await this.reminderTemplateRepository.findByAccountId(identityId);
     return templates.map((t: any) => t.toClientDTO());
   }
 }

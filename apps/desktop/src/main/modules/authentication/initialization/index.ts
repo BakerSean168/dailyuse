@@ -32,8 +32,8 @@ export function registerAuthenticationInitializationTasks(): void {
 
         if (result.hasValidSession) {
           logger.info('Session restored successfully', {
-            accountUuid: result.accountUuid,
-            sessionUuid: result.sessionUuid,
+            identityId: result.identityId,
+            sessionId: result.sessionId,
           });
         } else if (result.needsReLogin) {
           logger.info('No valid session, user needs to login');

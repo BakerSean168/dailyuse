@@ -60,7 +60,7 @@ export class AIGenerationApplicationService {
    * Generate goal
    */
   async generateGoal(params: any): Promise<any> {
-    logger.info('Generating goal', { accountUuid: params.accountUuid });
+    logger.info('Generating goal', { identityId: params.identityId });
     return {
       goal: {
         title: 'Generated Goal',
@@ -126,10 +126,10 @@ export class AIGenerationApplicationService {
    * Send message in conversation
    */
   async sendMessage(params: any): Promise<any> {
-    logger.info('Sending message', { accountUuid: params.accountUuid });
+    logger.info('Sending message', { identityId: params.identityId });
     return {
       message: {
-        uuid: 'msg-' + Date.now(),
+        id: 'msg-' + Date.now(),
         content: 'Response message',
         role: 'assistant',
       },
@@ -144,11 +144,11 @@ export class AIGenerationApplicationService {
   /**
    * Get quota status
    */
-  async getQuotaStatus(accountUuid: string): Promise<AIUsageQuotaClientDTO> {
-    logger.info('Getting quota status', { accountUuid });
+  async getQuotaStatus(identityId: string): Promise<AIUsageQuotaClientDTO> {
+    logger.info('Getting quota status', { identityId });
     return {
-      uuid: 'quota-' + accountUuid,
-      accountUuid,
+      id: 'quota-' + identityId,
+      identityId,
       quotaLimit: 100,
       currentUsage: 0,
       remainingQuota: 100,
@@ -167,10 +167,10 @@ export class AIGenerationApplicationService {
    * Create knowledge generation task
    */
   async createKnowledgeGenerationTask(params: any): Promise<any> {
-    logger.info('Creating knowledge generation task', { accountUuid: params.accountUuid });
+    logger.info('Creating knowledge generation task', { identityId: params.identityId });
     return {
-      uuid: 'task-' + Date.now(),
-      accountUuid: params.accountUuid,
+      id: 'task-' + Date.now(),
+      identityId: params.identityId,
       status: 'created',
       createdAt: Date.now(),
     };
@@ -179,10 +179,10 @@ export class AIGenerationApplicationService {
   /**
    * Get task status
    */
-  async getTaskStatus(taskUuid: string): Promise<any> {
-    logger.info('Getting task status', { taskUuid });
+  async getTaskStatus(taskId: string): Promise<any> {
+    logger.info('Getting task status', { taskId });
     return {
-      uuid: taskUuid,
+      id: taskId,
       status: 'pending',
       progress: 0,
       createdAt: Date.now(),

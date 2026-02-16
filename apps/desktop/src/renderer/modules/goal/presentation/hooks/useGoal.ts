@@ -19,14 +19,14 @@ import type { CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/g
 type SearchGoalsInput = {
   keywords?: string;
   status?: string;
-  dirUuid?: string;
+  dirId?: string;
   page?: number;
   limit?: number;
 };
 
 /** Clone goal input type */
 type CloneGoalInput = {
-  goalUuid: string;
+  goalId: string;
   name?: string;
   description?: string;
   includeKeyResults?: boolean;
@@ -49,7 +49,7 @@ export interface UseGoalReturn {
 
   // Mutations
   createGoal: (input: CreateGoalRequest) => Promise<Goal>;
-  updateGoal: (uuid: string, request: UpdateGoalRequest) => Promise<void>;
+  updateGoal: (id: string, request: UpdateGoalRequest) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
 
   // Status changes
@@ -142,17 +142,17 @@ export function useGoal(): UseGoalReturn {
   }, []);
 
   const updateGoal = useCallback(
-    async (uuid: string, request: UpdateGoalRequest): Promise<void> => {
+    async (id: string, request: UpdateGoalRequest): Promise<void> => {
       const store = useGoalStore.getState();
       store.setLoading(true);
       store.setError(null);
 
       try {
-        const goal = await goalApplicationService.updateGoal(uuid, request);
-        store.updateGoal(uuid, goal);
+        const goal = await goalApplicationService.updateGoal(id, request);
+        store.updateGoal(id, goal);
 
         // 如果更新的是当前选中的目标，更新选择状态
-        if (selectedGoalRef.current?.uuid === uuid) {
+        if (selectedGoalRef.current?.id === id) {
           setSelectedGoal(goal);
         }
         store.setLoading(false);
@@ -176,7 +176,7 @@ export function useGoal(): UseGoalReturn {
       store.removeGoal(id);
 
       // 如果删除的是当前选中的目标，清除选择
-      if (selectedGoalRef.current?.uuid === id) {
+      if (selectedGoalRef.current?.id === id) {
         setSelectedGoal(null);
       }
       store.setLoading(false);
@@ -196,7 +196,7 @@ export function useGoal(): UseGoalReturn {
       const goal = await goalApplicationService.activateGoal(id);
       store.updateGoal(id, goal);
 
-      if (selectedGoalRef.current?.uuid === id) {
+      if (selectedGoalRef.current?.id === id) {
         setSelectedGoal(goal);
       }
     } catch (e) {
@@ -211,7 +211,7 @@ export function useGoal(): UseGoalReturn {
       const goal = await goalApplicationService.pauseGoal(id);
       store.updateGoal(id, goal);
 
-      if (selectedGoalRef.current?.uuid === id) {
+      if (selectedGoalRef.current?.id === id) {
         setSelectedGoal(goal);
       }
     } catch (e) {
@@ -226,7 +226,7 @@ export function useGoal(): UseGoalReturn {
       const goal = await goalApplicationService.completeGoal(id);
       store.updateGoal(id, goal);
 
-      if (selectedGoalRef.current?.uuid === id) {
+      if (selectedGoalRef.current?.id === id) {
         setSelectedGoal(goal);
       }
     } catch (e) {
@@ -241,7 +241,7 @@ export function useGoal(): UseGoalReturn {
       const goal = await goalApplicationService.archiveGoal(id);
       store.updateGoal(id, goal);
 
-      if (selectedGoalRef.current?.uuid === id) {
+      if (selectedGoalRef.current?.id === id) {
         setSelectedGoal(goal);
       }
     } catch (e) {
@@ -253,8 +253,8 @@ export function useGoal(): UseGoalReturn {
   const cloneGoal = useCallback(async (input: CloneGoalInput): Promise<void> => {
     const store = useGoalStore.getState();
     try {
-      const { goalUuid, ...options } = input;
-      const goal = await goalApplicationService.cloneGoal(goalUuid, options);
+      const { goalId, ...options } = input;
+      const goal = await goalApplicationService.cloneGoal(goalId, options);
       store.addGoal(goal);
     } catch (e) {
       store.setError(e instanceof Error ? e.message : '克隆目标失败');

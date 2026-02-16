@@ -22,8 +22,8 @@ export interface NotificationState {
 
 export interface NotificationActions {
   addNotification: (notification: Pick<NotificationClient, 'title' | 'content' | 'type'>) => void;
-  removeNotification: (uuid: string) => void;
-  markAsRead: (uuid: string) => void;
+  removeNotification: (id: string) => void;
+  markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearAll: () => void;
   setLoading: (loading: boolean) => void;
@@ -32,7 +32,7 @@ export interface NotificationActions {
 
 export interface NotificationSelectors {
   getUnreadNotifications: () => NotificationClient[];
-  getNotificationById: (uuid: string) => NotificationClient | undefined;
+  getNotificationById: (id: string) => NotificationClient | undefined;
 }
 
 type NotificationStore = NotificationState & NotificationActions & NotificationSelectors;
@@ -70,19 +70,19 @@ export const useNotificationStore = create<NotificationStore>()(
           });
       },
 
-      removeNotification: (uuid) =>
+      removeNotification: (id) =>
         set((state) => {
-          const notification = state.notifications.find((n) => n.uuid === uuid);
+          const notification = state.notifications.find((n) => n.id === id);
           return {
-            notifications: state.notifications.filter((n) => n.uuid !== uuid),
+            notifications: state.notifications.filter((n) => n.id !== id),
             unreadCount:
               notification && !notification.isRead ? state.unreadCount - 1 : state.unreadCount,
           };
         }),
 
-      markAsRead: (uuid) =>
+      markAsRead: (id) =>
         set((state) => {
-          const notification = state.notifications.find((n) => n.uuid === uuid);
+          const notification = state.notifications.find((n) => n.id === id);
           if (!notification || notification.isRead) return state;
 
           // 调用 Entity 方法标记为已读，然后创建新数组触发更新
@@ -117,8 +117,8 @@ export const useNotificationStore = create<NotificationStore>()(
         return get().notifications.filter((n) => !n.isRead);
       },
 
-      getNotificationById: (uuid) => {
-        return get().notifications.find((n) => n.uuid === uuid);
+      getNotificationById: (id) => {
+        return get().notifications.find((n) => n.id === id);
       },
     }),
     {

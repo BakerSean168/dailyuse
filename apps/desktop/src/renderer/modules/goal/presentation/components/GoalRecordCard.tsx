@@ -19,8 +19,8 @@ import { Plus, Clock, FileText, Trash2 } from 'lucide-react';
 interface GoalRecordCardProps {
   record: GoalRecordClientDTO;
   goalColor?: string;
-  onDelete?: (recordUuid: string) => void;
-  onClick?: (recordUuid: string) => void;
+  onDelete?: (recordId: string) => void;
+  onClick?: (recordId: string) => void;
 }
 
 export function GoalRecordCard({
@@ -33,12 +33,12 @@ export function GoalRecordCard({
     if ((e.target as HTMLElement).closest('button')) {
       return;
     }
-    onClick?.(record.uuid);
+    onClick?.(record.id);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onDelete?.(record.uuid);
+    onDelete?.(record.id);
   };
 
   return (

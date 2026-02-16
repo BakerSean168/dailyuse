@@ -147,7 +147,7 @@ export function ScheduleWeekView({ className }: ScheduleWeekViewProps) {
 
     setIsSubmitting(true);
     try {
-      await deleteSchedule(selectedEvent.uuid);
+      await deleteSchedule(selectedEvent.id);
       setShowDeleteConfirm(false);
       setShowEventDetails(false);
       setSelectedEvent(null);
@@ -163,7 +163,7 @@ export function ScheduleWeekView({ className }: ScheduleWeekViewProps) {
     setIsSubmitting(true);
     try {
       if (editingSchedule) {
-        await updateScheduleById(editingSchedule.uuid, data);
+        await updateScheduleById(editingSchedule.id, data);
       } else {
         await createSchedule(data);
       }
@@ -177,11 +177,11 @@ export function ScheduleWeekView({ className }: ScheduleWeekViewProps) {
   }, [editingSchedule, createSchedule, updateScheduleById]);
 
   // 从列表删�?
-  const handleDeleteFromList = useCallback(async (uuid: string) => {
+  const handleDeleteFromList = useCallback(async (id: string) => {
     if (!confirm('确定要删除这个日程吗')) return;
     
     try {
-      await deleteSchedule(uuid);
+      await deleteSchedule(id);
     } catch (err) {
       console.error('Delete schedule failed:', err);
     }

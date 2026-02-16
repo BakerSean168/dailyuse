@@ -14,10 +14,10 @@ export function initializeGoalTables(database: Database.Database): void {
   // Goals 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS goals (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT NOT NULL,
-      folder_uuid TEXT,
-      parent_goal_uuid TEXT,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT NOT NULL,
+      folder_id TEXT,
+      parent_goal_id TEXT,
       title TEXT NOT NULL,
       description TEXT,
       color TEXT,
@@ -37,20 +37,20 @@ export function initializeGoalTables(database: Database.Database): void {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
       deleted_at INTEGER,
-      FOREIGN KEY (folder_uuid) REFERENCES goal_folders(uuid)
+      FOREIGN KEY (folder_id) REFERENCES goal_folders(id)
     )
   `);
 
   // Goal Folders 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS goal_folders (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT NOT NULL,
       name TEXT NOT NULL,
       description TEXT,
       color TEXT,
       icon TEXT,
-      parent_folder_uuid TEXT,
+      parent_folder_id TEXT,
       sort_order INTEGER DEFAULT 0,
       is_system_folder INTEGER DEFAULT 0,
       folder_type TEXT,
@@ -59,15 +59,15 @@ export function initializeGoalTables(database: Database.Database): void {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
       deleted_at INTEGER,
-      FOREIGN KEY (parent_folder_uuid) REFERENCES goal_folders(uuid)
+      FOREIGN KEY (parent_folder_id) REFERENCES goal_folders(id)
     )
   `);
 
   // Key Results 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS key_results (
-      uuid TEXT PRIMARY KEY,
-      goal_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      goal_id TEXT NOT NULL,
       title TEXT NOT NULL,
       description TEXT,
       progress TEXT NOT NULL,
@@ -75,15 +75,15 @@ export function initializeGoalTables(database: Database.Database): void {
       sort_order INTEGER DEFAULT 0,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
-      FOREIGN KEY (goal_uuid) REFERENCES goals(uuid) ON DELETE CASCADE
+      FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE
     )
   `);
 
   // Goal Reviews 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS goal_reviews (
-      uuid TEXT PRIMARY KEY,
-      goal_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      goal_id TEXT NOT NULL,
       type TEXT NOT NULL,
       content TEXT NOT NULL,
       rating INTEGER,
@@ -92,29 +92,29 @@ export function initializeGoalTables(database: Database.Database): void {
       next_actions TEXT,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
-      FOREIGN KEY (goal_uuid) REFERENCES goals(uuid) ON DELETE CASCADE
+      FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE
     )
   `);
 
   // Goal Records 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS goal_records (
-      uuid TEXT PRIMARY KEY,
-      goal_uuid TEXT NOT NULL,
-      key_result_uuid TEXT,
+      id TEXT PRIMARY KEY,
+      goal_id TEXT NOT NULL,
+      key_result_id TEXT,
       value REAL NOT NULL,
       note TEXT,
       recorded_at INTEGER NOT NULL,
       created_at INTEGER NOT NULL,
-      FOREIGN KEY (goal_uuid) REFERENCES goals(uuid) ON DELETE CASCADE,
-      FOREIGN KEY (key_result_uuid) REFERENCES key_results(uuid) ON DELETE SET NULL
+      FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE,
+      FOREIGN KEY (key_result_id) REFERENCES key_results(id) ON DELETE SET NULL
     )
   `);
 
   // Goal Statistics 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS goal_statistics (
-      account_uuid TEXT PRIMARY KEY,
+      identity_id TEXT PRIMARY KEY,
       total_goals INTEGER DEFAULT 0,
       active_goals INTEGER DEFAULT 0,
       completed_goals INTEGER DEFAULT 0,
@@ -139,12 +139,12 @@ export function initializeGoalTables(database: Database.Database): void {
 
   // 创建索引
   database.exec(`
-    CREATE INDEX IF NOT EXISTS idx_goals_account ON goals(account_uuid);
-    CREATE INDEX IF NOT EXISTS idx_goals_folder ON goals(folder_uuid);
+    CREATE INDEX IF NOT EXISTS idx_goals_account ON goals(identity_id);
+    CREATE INDEX IF NOT EXISTS idx_goals_folder ON goals(folder_id);
     CREATE INDEX IF NOT EXISTS idx_goals_status ON goals(status);
-    CREATE INDEX IF NOT EXISTS idx_key_results_goal ON key_results(goal_uuid);
-    CREATE INDEX IF NOT EXISTS idx_goal_reviews_goal ON goal_reviews(goal_uuid);
-    CREATE INDEX IF NOT EXISTS idx_goal_records_goal ON goal_records(goal_uuid);
+    CREATE INDEX IF NOT EXISTS idx_key_results_goal ON key_results(goal_id);
+    CREATE INDEX IF NOT EXISTS idx_goal_reviews_goal ON goal_reviews(goal_id);
+    CREATE INDEX IF NOT EXISTS idx_goal_records_goal ON goal_records(goal_id);
   `);
 
   console.log('[Database] Goal tables initialized');

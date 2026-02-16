@@ -14,14 +14,14 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
   constructor(private db: Database.Database) {}
 
   async findById(id: string): Promise<EditorWorkspace | null> {
-    const stmt = this.db.prepare(`SELECT * FROM editor_workspaces WHERE uuid = ? LIMIT 1`);
+    const stmt = this.db.prepare(`SELECT * FROM editor_workspaces WHERE id = ? LIMIT 1`);
     const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return EditorWorkspace.fromPersistenceDTO({
-      id: row.uuid,
-      identityId: row.accountUuid,
+      id: row.id,
+      identityId: row.identityId,
       name: row.name,
       description: row.description ?? null,
       project_path: row.project_path ?? row.projectPath ?? '',
@@ -38,14 +38,14 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
 
   async findByIdentityId(identityId: string): Promise<EditorWorkspace[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_workspaces WHERE accountUuid = ? ORDER BY createdAt DESC`
+      `SELECT * FROM editor_workspaces WHERE identityId = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) =>
       EditorWorkspace.fromPersistenceDTO({
-        id: row.uuid,
-        identityId: row.accountUuid,
+        id: row.id,
+        identityId: row.identityId,
         name: row.name,
         description: row.description ?? null,
         project_path: row.project_path ?? row.projectPath ?? '',
@@ -63,15 +63,15 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
 
   async findByIdentityIdAndName(identityId: string, name: string): Promise<EditorWorkspace | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_workspaces WHERE accountUuid = ? AND name = ? LIMIT 1`
+      `SELECT * FROM editor_workspaces WHERE identityId = ? AND name = ? LIMIT 1`
     );
     const row = stmt.get(identityId, name) as any;
 
     if (!row) return null;
 
     return EditorWorkspace.fromPersistenceDTO({
-      id: row.uuid,
-      identityId: row.accountUuid,
+      id: row.id,
+      identityId: row.identityId,
       name: row.name,
       description: row.description ?? null,
       project_path: row.project_path ?? row.projectPath ?? '',
@@ -88,15 +88,15 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
 
   async findActiveByIdentityId(identityId: string): Promise<EditorWorkspace | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_workspaces WHERE accountUuid = ? AND is_active = 1 ORDER BY updatedAt DESC LIMIT 1`
+      `SELECT * FROM editor_workspaces WHERE identityId = ? AND is_active = 1 ORDER BY updatedAt DESC LIMIT 1`
     );
     const row = stmt.get(identityId) as any;
 
     if (!row) return null;
 
     return EditorWorkspace.fromPersistenceDTO({
-      id: row.uuid,
-      identityId: row.accountUuid,
+      id: row.id,
+      identityId: row.identityId,
       name: row.name,
       description: row.description ?? null,
       project_path: row.project_path ?? row.projectPath ?? '',
@@ -116,9 +116,9 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
 
     const stmt = this.db.prepare(`
       INSERT INTO editor_workspaces (
-        uuid, accountUuid, name, is_active, createdAt, updatedAt
+        id, identityId, name, is_active, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         is_active = excluded.is_active,
         updatedAt = excluded.updatedAt
@@ -135,16 +135,16 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
   }
 
   async delete(id: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM editor_workspaces WHERE uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM editor_workspaces WHERE id = ?`);
     stmt.run(id);
   }
 
   async saveBatch(workspaces: EditorWorkspace[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO editor_workspaces (
-        uuid, accountUuid, name, is_active, createdAt, updatedAt
+        id, identityId, name, is_active, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         is_active = excluded.is_active,
         updatedAt = excluded.updatedAt
@@ -169,14 +169,14 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
 
   async existsByName(identityId: string, name: string): Promise<boolean> {
     const stmt = this.db.prepare(
-      `SELECT 1 FROM editor_workspaces WHERE accountUuid = ? AND name = ? LIMIT 1`
+      `SELECT 1 FROM editor_workspaces WHERE identityId = ? AND name = ? LIMIT 1`
     );
     return stmt.get(identityId, name) !== undefined;
   }
 
   async countByIdentityId(identityId: string): Promise<number> {
     const stmt = this.db.prepare(
-      `SELECT COUNT(*) as count FROM editor_workspaces WHERE accountUuid = ?`
+      `SELECT COUNT(*) as count FROM editor_workspaces WHERE identityId = ?`
     );
     const result = stmt.get(identityId) as { count: number };
     return result.count;

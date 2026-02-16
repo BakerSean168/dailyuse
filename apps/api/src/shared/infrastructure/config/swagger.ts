@@ -176,7 +176,7 @@ const options = {
                     user: {
                       type: 'object',
                       properties: {
-                        uuid: { type: 'string' },
+                        id: { type: 'string' },
                         username: { type: 'string' },
                         accountType: { type: 'string' },
                       },
@@ -249,7 +249,7 @@ const options = {
         Account: {
           type: 'object',
           properties: {
-            uuid: { type: 'string', description: '用户UUID' },
+            id: { type: 'string', description: '用户UUID' },
             username: { type: 'string', description: '用户名' },
             email: { type: 'string', format: 'email', description: '邮箱' },
             accountType: {
@@ -270,8 +270,8 @@ const options = {
         Repository: {
           type: 'object',
           properties: {
-            uuid: { type: 'string', description: '仓储唯一标识' },
-            accountUuid: { type: 'string', description: '账户UUID' },
+            id: { type: 'string', description: '仓储唯一标识' },
+            identityId: { type: 'string', description: '账户 ID' },
             name: { type: 'string', description: '仓储名称' },
             type: {
               type: 'string',
@@ -322,8 +322,8 @@ const options = {
         Resource: {
           type: 'object',
           properties: {
-            uuid: { type: 'string', description: '资源唯一标识' },
-            repositoryUuid: { type: 'string', description: '所属仓储UUID' },
+            id: { type: 'string', description: '资源唯一标识' },
+            repositoryId: { type: 'string', description: '所属仓储UUID' },
             name: { type: 'string', description: '资源名称' },
             type: {
               type: 'string',

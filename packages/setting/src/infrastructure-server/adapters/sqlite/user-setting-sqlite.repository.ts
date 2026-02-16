@@ -15,16 +15,16 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO user_settings (
-        uuid, accountUuid, category, key, value, createdAt, updatedAt
+        id, identityId, category, key, value, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         value = excluded.value,
         updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.accountUuid,
+      dto.id,
+      dto.identityId,
       dto.category,
       dto.key,
       JSON.stringify(dto.value),
@@ -36,9 +36,9 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
   async saveMany(settings: UserSetting[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO user_settings (
-        uuid, accountUuid, category, key, value, createdAt, updatedAt
+        id, identityId, category, key, value, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         value = excluded.value,
         updatedAt = excluded.updatedAt
     `);
@@ -47,8 +47,8 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
       for (const setting of items) {
         const dto = setting.toPersistenceDTO();
         insertStmt.run(
-          dto.uuid,
-          dto.accountUuid,
+          dto.id,
+          dto.identityId,
           dto.category,
           dto.key,
           JSON.stringify(dto.value),
@@ -61,15 +61,15 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
     transaction(settings);
   }
 
-  async findByUuid(uuid: string): Promise<UserSetting | null> {
-    const stmt = this.db.prepare(`SELECT * FROM user_settings WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<UserSetting | null> {
+    const stmt = this.db.prepare(`SELECT * FROM user_settings WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return UserSetting.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
+      id: row.id,
+      identity_id: row.identityId,
       category: row.category,
       key: row.key,
       value: JSON.parse(row.value),
@@ -78,16 +78,16 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
     });
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<UserSetting[]> {
+  async findByAccountId(identityId: string): Promise<UserSetting[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM user_settings WHERE accountUuid = ? ORDER BY category, key ASC`
+      `SELECT * FROM user_settings WHERE identityId = ? ORDER BY category, key ASC`
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) =>
       UserSetting.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row.accountUuid,
+        id: row.id,
+        identity_id: row.identityId,
         category: row.category,
         key: row.key,
         value: JSON.parse(row.value),
@@ -97,16 +97,16 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
     );
   }
 
-  async findByAccountUuidAndCategory(accountUuid: string, category: string): Promise<UserSetting[]> {
+  async findByIdentityIdAndCategory(identityId: string, category: string): Promise<UserSetting[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM user_settings WHERE accountUuid = ? AND category = ? ORDER BY key ASC`
+      `SELECT * FROM user_settings WHERE identityId = ? AND category = ? ORDER BY key ASC`
     );
-    const rows = stmt.all(accountUuid, category) as any[];
+    const rows = stmt.all(identityId, category) as any[];
 
     return rows.map((row) =>
       UserSetting.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row.accountUuid,
+        id: row.id,
+        identity_id: row.identityId,
         category: row.category,
         key: row.key,
         value: JSON.parse(row.value),
@@ -116,21 +116,21 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
     );
   }
 
-  async findByAccountUuidCategoryAndKey(
-    accountUuid: string,
+  async findByIdentityIdCategoryAndKey(
+    identityId: string,
     category: string,
     key: string,
   ): Promise<UserSetting | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM user_settings WHERE accountUuid = ? AND category = ? AND key = ? LIMIT 1`
+      `SELECT * FROM user_settings WHERE identityId = ? AND category = ? AND key = ? LIMIT 1`
     );
-    const row = stmt.get(accountUuid, category, key) as any;
+    const row = stmt.get(identityId, category, key) as any;
 
     if (!row) return null;
 
     return UserSetting.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
+      id: row.id,
+      identity_id: row.identityId,
       category: row.category,
       key: row.key,
       value: JSON.parse(row.value),
@@ -139,9 +139,9 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
     });
   }
 
-  async findByQuery(accountUuid: string, options: UserSettingQueryOptions): Promise<UserSetting[]> {
-    let query = `SELECT * FROM user_settings WHERE accountUuid = ?`;
-    const params: any[] = [accountUuid];
+  async findByQuery(identityId: string, options: UserSettingQueryOptions): Promise<UserSetting[]> {
+    let query = `SELECT * FROM user_settings WHERE identityId = ?`;
+    const params: any[] = [identityId];
 
     if (options.category) {
       query += ` AND category = ?`;
@@ -165,8 +165,8 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
 
     return rows.map((row) =>
       UserSetting.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row.accountUuid,
+        id: row.id,
+        identity_id: row.identityId,
         category: row.category,
         key: row.key,
         value: JSON.parse(row.value),
@@ -176,28 +176,28 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
     );
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM user_settings WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM user_settings WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async deleteByAccountUuid(accountUuid: string): Promise<number> {
-    const stmt = this.db.prepare(`DELETE FROM user_settings WHERE accountUuid = ?`);
-    const result = stmt.run(accountUuid);
+  async deleteByAccountId(identityId: string): Promise<number> {
+    const stmt = this.db.prepare(`DELETE FROM user_settings WHERE identityId = ?`);
+    const result = stmt.run(identityId);
     return result.changes ?? 0;
   }
 
-  async deleteByAccountUuidAndCategory(accountUuid: string, category: string): Promise<number> {
+  async deleteByIdentityIdAndCategory(identityId: string, category: string): Promise<number> {
     const stmt = this.db.prepare(
-      `DELETE FROM user_settings WHERE accountUuid = ? AND category = ?`
+      `DELETE FROM user_settings WHERE identityId = ? AND category = ?`
     );
-    const result = stmt.run(accountUuid, category);
+    const result = stmt.run(identityId, category);
     return result.changes ?? 0;
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    const stmt = this.db.prepare(`SELECT 1 FROM user_settings WHERE uuid = ? LIMIT 1`);
-    return stmt.get(uuid) !== undefined;
+  async exists(id: string): Promise<boolean> {
+    const stmt = this.db.prepare(`SELECT 1 FROM user_settings WHERE id = ? LIMIT 1`);
+    return stmt.get(id) !== undefined;
   }
 }
 

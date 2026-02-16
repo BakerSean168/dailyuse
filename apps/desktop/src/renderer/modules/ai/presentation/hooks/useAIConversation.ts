@@ -30,14 +30,14 @@ export interface UseAIConversationReturn extends AIConversationState {
   // Conversation operations
   loadConversations: (input?: ListConversationsInput) => Promise<void>;
   createConversation: (input: CreateConversationInput) => Promise<AIConversation>;
-  selectConversation: (conversationUuid: string) => Promise<void>;
-  updateConversation: (uuid: string, title: string) => Promise<void>;
-  deleteConversation: (conversationUuid: string) => Promise<void>;
-  closeConversation: (conversationUuid: string) => Promise<void>;
-  archiveConversation: (conversationUuid: string) => Promise<void>;
+  selectConversation: (conversationId: string) => Promise<void>;
+  updateConversation: (id: string, title: string) => Promise<void>;
+  deleteConversation: (conversationId: string) => Promise<void>;
+  closeConversation: (conversationId: string) => Promise<void>;
+  archiveConversation: (conversationId: string) => Promise<void>;
   // Message operations
-  sendMessage: (input: Omit<SendMessageInput, 'conversationUuid'>) => Promise<AIMessage>;
-  deleteMessage: (messageUuid: string) => Promise<void>;
+  sendMessage: (input: Omit<SendMessageInput, 'conversationId'>) => Promise<AIMessage>;
+  deleteMessage: (messageId: string) => Promise<void>;
   clearCurrentConversation: () => void;
 }
 
@@ -106,12 +106,12 @@ export function useAIConversation(): UseAIConversationReturn {
   /**
    * 选择对话
    */
-  const selectConversation = useCallback(async (conversationUuid: string) => {
+  const selectConversation = useCallback(async (conversationId: string) => {
     setState((prev) => ({ ...prev, loadingMessages: true, error: null }));
     try {
       const [conversation, messagesResult] = await Promise.all([
-        aiApplicationService.getConversation(conversationUuid),
-        aiApplicationService.listMessages(conversationUuid),
+        aiApplicationService.getConversation(conversationId),
+        aiApplicationService.listMessages(conversationId),
       ]);
       setState((prev) => ({
         ...prev,
@@ -131,14 +131,14 @@ export function useAIConversation(): UseAIConversationReturn {
   /**
    * 更新对话
    */
-  const updateConversation = useCallback(async (uuid: string, title: string) => {
+  const updateConversation = useCallback(async (id: string, title: string) => {
     try {
-      const updated = await aiApplicationService.updateConversation(uuid, { title });
+      const updated = await aiApplicationService.updateConversation(id, { title });
       setState((prev) => ({
         ...prev,
-        conversations: prev.conversations.map((c) => (c.uuid === uuid ? updated : c)),
+        conversations: prev.conversations.map((c) => (c.id === id ? updated : c)),
         currentConversation:
-          prev.currentConversation?.uuid === uuid ? updated : prev.currentConversation,
+          prev.currentConversation?.id === id ? updated : prev.currentConversation,
       }));
     } catch (error) {
       setState((prev) => ({
@@ -151,15 +151,15 @@ export function useAIConversation(): UseAIConversationReturn {
   /**
    * 删除对话
    */
-  const deleteConversation = useCallback(async (conversationUuid: string) => {
+  const deleteConversation = useCallback(async (conversationId: string) => {
     try {
-      await aiApplicationService.deleteConversation(conversationUuid);
+      await aiApplicationService.deleteConversation(conversationId);
       setState((prev) => ({
         ...prev,
-        conversations: prev.conversations.filter((c) => c.uuid !== conversationUuid),
+        conversations: prev.conversations.filter((c) => c.id !== conversationId),
         currentConversation:
-          prev.currentConversation?.uuid === conversationUuid ? null : prev.currentConversation,
-        messages: prev.currentConversation?.uuid === conversationUuid ? [] : prev.messages,
+          prev.currentConversation?.id === conversationId ? null : prev.currentConversation,
+        messages: prev.currentConversation?.id === conversationId ? [] : prev.messages,
       }));
     } catch (error) {
       setState((prev) => ({
@@ -172,12 +172,12 @@ export function useAIConversation(): UseAIConversationReturn {
   /**
    * 关闭对话
    */
-  const closeConversation = useCallback(async (conversationUuid: string) => {
+  const closeConversation = useCallback(async (conversationId: string) => {
     try {
-      const updated = await aiApplicationService.closeConversation(conversationUuid);
+      const updated = await aiApplicationService.closeConversation(conversationId);
       setState((prev) => ({
         ...prev,
-        conversations: prev.conversations.map((c) => (c.uuid === conversationUuid ? updated : c)),
+        conversations: prev.conversations.map((c) => (c.id === conversationId ? updated : c)),
       }));
     } catch (error) {
       setState((prev) => ({
@@ -190,12 +190,12 @@ export function useAIConversation(): UseAIConversationReturn {
   /**
    * 归档对话
    */
-  const archiveConversation = useCallback(async (conversationUuid: string) => {
+  const archiveConversation = useCallback(async (conversationId: string) => {
     try {
-      const updated = await aiApplicationService.archiveConversation(conversationUuid);
+      const updated = await aiApplicationService.archiveConversation(conversationId);
       setState((prev) => ({
         ...prev,
-        conversations: prev.conversations.map((c) => (c.uuid === conversationUuid ? updated : c)),
+        conversations: prev.conversations.map((c) => (c.id === conversationId ? updated : c)),
       }));
     } catch (error) {
       setState((prev) => ({
@@ -209,14 +209,14 @@ export function useAIConversation(): UseAIConversationReturn {
    * 发送消息
    */
   const sendMessage = useCallback(
-    async (input: Omit<SendMessageInput, 'conversationUuid'>): Promise<AIMessage> => {
+    async (input: Omit<SendMessageInput, 'conversationId'>): Promise<AIMessage> => {
       if (!state.currentConversation) {
         throw new Error('没有选中的对话');
       }
       try {
         const message = await aiApplicationService.sendMessage({
           ...input,
-          conversationUuid: state.currentConversation.uuid,
+          conversationId: state.currentConversation.id,
         });
         setState((prev) => ({
           ...prev,
@@ -237,12 +237,12 @@ export function useAIConversation(): UseAIConversationReturn {
   /**
    * 删除消息
    */
-  const deleteMessage = useCallback(async (messageUuid: string) => {
+  const deleteMessage = useCallback(async (messageId: string) => {
     try {
-      await aiApplicationService.deleteMessage(messageUuid);
+      await aiApplicationService.deleteMessage(messageId);
       setState((prev) => ({
         ...prev,
-        messages: prev.messages.filter((m) => m.uuid !== messageUuid),
+        messages: prev.messages.filter((m) => m.id !== messageId),
       }));
     } catch (error) {
       setState((prev) => ({

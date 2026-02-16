@@ -15,9 +15,9 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
 
     const stmt = this.db.prepare(`
       INSERT INTO notification_templates (
-        uuid, name, category, type, content, is_active, createdAt, updatedAt
+        id, name, category, type, content, is_active, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         content = excluded.content,
         is_active = excluded.is_active,
@@ -25,7 +25,7 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
     `);
 
     stmt.run(
-      dto.uuid,
+      dto.id,
       dto.name,
       dto.category,
       dto.type,
@@ -36,14 +36,14 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
     );
   }
 
-  async findById(uuid: string): Promise<NotificationTemplate | null> {
-    const stmt = this.db.prepare(`SELECT * FROM notification_templates WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<NotificationTemplate | null> {
+    const stmt = this.db.prepare(`SELECT * FROM notification_templates WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return NotificationTemplate.fromPersistenceDTO({
-      uuid: row.uuid,
+      id: row.id,
       name: row.name,
       category: row.category,
       type: row.type,
@@ -69,7 +69,7 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
 
     return rows.map((row) =>
       NotificationTemplate.fromPersistenceDTO({
-        uuid: row.uuid,
+        id: row.id,
         name: row.name,
         category: row.category,
         type: row.type,
@@ -90,7 +90,7 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
     if (!row) return null;
 
     return NotificationTemplate.fromPersistenceDTO({
-      uuid: row.uuid,
+      id: row.id,
       name: row.name,
       category: row.category,
       type: row.type,
@@ -119,7 +119,7 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
 
     return rows.map((row) =>
       NotificationTemplate.fromPersistenceDTO({
-        uuid: row.uuid,
+        id: row.id,
         name: row.name,
         category: row.category,
         type: row.type,
@@ -131,9 +131,9 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
     );
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM notification_templates WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM notification_templates WHERE id = ?`);
+    stmt.run(id);
   }
 }
 

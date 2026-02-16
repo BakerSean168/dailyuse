@@ -15,7 +15,7 @@ const logger = createLogger('GoalCrossModuleQueryService');
  * 目标绑定选项（供任务模块使用）
  */
 export interface GoalBindingOption {
-  uuid: string;
+  id: string;
   title: string;
   description?: string | null;
   status: GoalStatus;
@@ -27,10 +27,10 @@ export interface GoalBindingOption {
  * 关键结果绑定选项（供任务模块使用）
  */
 export interface KeyResultBindingOption {
-  uuid: string;
+  id: string;
   title: string;
   description?: string | null;
-  goalUuid: string;
+  goalId: string;
   progress: {
     current: number;
     target: number;
@@ -47,22 +47,22 @@ export class GoalCrossModuleQueryService {
 
   /**
    * 获取可用于任务绑定的目标列表
-   * @param accountUuid 账户 UUID
+   * @param identityId 账户 ID
    * @param status 目标状态筛选（默认：进行中、未开始）
    */
   async getGoalsForTaskBinding(params: {
-    accountUuid: string;
+    identityId: string;
     status?: GoalStatus[];
   }): Promise<GoalBindingOption[]> {
     // 默认只返回进行中和未开始的目标
     const statusFilter = params.status || ['IN_PROGRESS', 'NOT_STARTED'];
 
-    const goals = await this.goalRepository.findByIdentityId(params.accountUuid);
+    const goals = await this.goalRepository.findByIdentityId(params.identityId);
 
     return goals
       .filter((goal: any) => (statusFilter as string[]).includes(goal.status))
       .map((goal: any) => ({
-        uuid: goal.uuid,
+        id: goal.id,
         title: goal.title,
         description: goal.description,
         status: goal.status,
@@ -73,21 +73,21 @@ export class GoalCrossModuleQueryService {
 
   /**
    * 获取目标的关键结果列表（用于任务绑定）
-   * @param goalUuid 目标 UUID
+   * @param goalId 目标 UUID
    */
-  async getKeyResultsForTaskBinding(goalUuid: string): Promise<KeyResultBindingOption[]> {
-    const goal = await this.goalRepository.findById(goalUuid);
+  async getKeyResultsForTaskBinding(goalId: string): Promise<KeyResultBindingOption[]> {
+    const goal = await this.goalRepository.findById(goalId);
     if (!goal) {
-      throw new Error(`Goal not found: ${goalUuid}`);
+      throw new Error(`Goal not found: ${goalId}`);
     }
 
     const keyResults = goal.keyResults;
 
     return keyResults.map((kr: any) => ({
-      uuid: kr.uuid,
+      id: kr.id,
       title: kr.title,
       description: kr.description,
-      goalUuid: goal.uuid,
+      goalId: goal.id,
       progress: {
         current: kr.progress.current,
         target: kr.progress.target,
@@ -99,22 +99,22 @@ export class GoalCrossModuleQueryService {
 
   /**
    * 验证目标和关键结果的绑定是否有效
-   * @param goalUuid 目标 UUID
-   * @param keyResultUuid 关键结果 UUID
+   * @param goalId 目标 UUID
+   * @param keyResultId 关键结果 UUID
    */
   async validateGoalBinding(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const goal = await this.goalRepository.findById(goalUuid);
+      const goal = await this.goalRepository.findById(goalId);
       if (!goal) {
-        return { valid: false, error: `Goal not found: ${goalUuid}` };
+        return { valid: false, error: `Goal not found: ${goalId}` };
       }
 
-      const keyResult = goal.keyResults.find((kr: any) => kr.uuid === keyResultUuid);
+      const keyResult = goal.keyResults.find((kr: any) => kr.id === keyResultId);
       if (!keyResult) {
-        return { valid: false, error: `KeyResult not found in goal: ${keyResultUuid}` };
+        return { valid: false, error: `KeyResult not found in goal: ${keyResultId}` };
       }
 
       return { valid: true };

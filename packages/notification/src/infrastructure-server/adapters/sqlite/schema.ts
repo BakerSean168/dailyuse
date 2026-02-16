@@ -6,8 +6,8 @@
 export const NOTIFICATION_MODULE_SCHEMA = `
 -- Notifications Table
 CREATE TABLE IF NOT EXISTS notifications (
-  uuid TEXT PRIMARY KEY,
-  account_uuid TEXT NOT NULL,
+  id TEXT PRIMARY KEY,
+  identity_id TEXT NOT NULL,
   title TEXT NOT NULL,
   message TEXT,
   type TEXT NOT NULL,
@@ -15,16 +15,16 @@ CREATE TABLE IF NOT EXISTS notifications (
   read_at INTEGER,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
-  FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+  FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_notifications_account_uuid ON notifications(account_uuid);
+CREATE INDEX IF NOT EXISTS idx_notifications_account_id ON notifications(identity_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_status ON notifications(status);
 CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at);
 
 -- Notification Templates Table
 CREATE TABLE IF NOT EXISTS notification_templates (
-  uuid TEXT PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
   title TEXT NOT NULL,
   message_template TEXT NOT NULL,
@@ -39,8 +39,8 @@ CREATE INDEX IF NOT EXISTS idx_notification_templates_is_active ON notification_
 
 -- Notification Preferences Table
 CREATE TABLE IF NOT EXISTS notification_preferences (
-  uuid TEXT PRIMARY KEY,
-  account_uuid TEXT NOT NULL UNIQUE,
+  id TEXT PRIMARY KEY,
+  identity_id TEXT NOT NULL UNIQUE,
   email_enabled INTEGER DEFAULT 1,
   push_enabled INTEGER DEFAULT 1,
   sms_enabled INTEGER DEFAULT 0,
@@ -49,6 +49,6 @@ CREATE TABLE IF NOT EXISTS notification_preferences (
   quiet_hours_end TEXT,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
-  FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+  FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
 );
 `;

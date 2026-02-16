@@ -13,7 +13,7 @@ import type { FolderClientDTO } from '@dailyuse/contracts/repository';
  * Get Folder Tree Input
  */
 export interface GetFolderTreeInput {
-  repositoryUuid: string;
+  repositoryId: string;
 }
 
 /**
@@ -34,7 +34,7 @@ export class GetFolderTree {
   }
 
   async execute(input: GetFolderTreeInput): Promise<GetFolderTreeOutput> {
-    const allFolders = await this.folderRepository.findByRepositoryId(input.repositoryUuid);
+    const allFolders = await this.folderRepository.findByRepositoryId(input.repositoryId);
     const tree = this.hierarchyService.buildTree(allFolders);
 
     const convertTreeNode = (node: any): FolderClientDTO => {

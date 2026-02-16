@@ -42,16 +42,16 @@ export class RepositoryMemoryRepository implements IRepositoryRepository {
     return this.repositories.has(id);
   }
 
-  async findByUuid(uuid: string): Promise<Repository | null> {
-    return this.findById(uuid);
+  async findById(id: string): Promise<Repository | null> {
+    return this.findById(id);
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<Repository[]> {
-    return this.findByIdentityId(accountUuid);
+  async findByAccountId(identityId: string): Promise<Repository[]> {
+    return this.findByIdentityId(identityId);
   }
 
-  async findByAccountUuidAndStatus(accountUuid: string, status: RepositoryStatus): Promise<Repository[]> {
-    return this.findByIdentityIdAndStatus(accountUuid, status);
+  async findByIdentityIdAndStatus(identityId: string, status: RepositoryStatus): Promise<Repository[]> {
+    return this.findByIdentityIdAndStatus(identityId, status);
   }
 
   // Test helpers

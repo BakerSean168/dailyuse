@@ -53,20 +53,20 @@ export class FolderMemoryRepository implements IFolderRepository {
     return this.folders.has(id);
   }
 
-  async findByUuid(uuid: string): Promise<Folder | null> {
-    return this.findById(uuid);
+  async findById(id: string): Promise<Folder | null> {
+    return this.findById(id);
   }
 
-  async findByRepositoryUuid(repositoryUuid: string): Promise<Folder[]> {
-    return this.findByRepositoryId(repositoryUuid);
+  async findByRepositoryId(repositoryId: string): Promise<Folder[]> {
+    return this.findByRepositoryId(repositoryId);
   }
 
-  async findByParentUuid(parentUuid: string): Promise<Folder[]> {
-    return this.findByParentId(parentUuid);
+  async findByParentId(parentId: string): Promise<Folder[]> {
+    return this.findByParentId(parentId);
   }
 
-  async deleteByRepositoryUuid(repositoryUuid: string): Promise<void> {
-    await this.deleteByRepositoryId(repositoryUuid);
+  async deleteByRepositoryId(repositoryId: string): Promise<void> {
+    await this.deleteByRepositoryId(repositoryId);
   }
 
   // Test helpers

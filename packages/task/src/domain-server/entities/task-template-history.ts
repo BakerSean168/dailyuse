@@ -9,32 +9,32 @@ import { Entity, generateUUID } from '@dailyuse/utils';
  * Local DTO interfaces for TaskTemplateHistory
  */
 export interface TaskTemplateHistoryServerDTO {
-  uuid: string;
-  templateUuid: string;
+  id: string;
+  templateId: string;
   action: string;
   changes: any | null;
   createdAt: number;
 }
 
 export interface TaskTemplateHistoryClientDTO {
-  uuid: string;
-  templateUuid: string;
+  id: string;
+  templateId: string;
   action: string;
   changes: any | null;
   createdAt: number;
 }
 
 export interface TaskTemplateHistoryPersistenceDTO {
-  uuid: string;
-  templateUuid: string;
+  id: string;
+  templateId: string;
   action: string;
   changes: string | null;
   createdAt: number;
 }
 
 export interface TaskTemplateHistoryServer {
-  uuid: string;
-  templateUuid: string;
+  id: string;
+  templateId: string;
   action: string;
   changes: any | null;
   createdAt: Date;
@@ -49,32 +49,30 @@ export interface TaskTemplateHistoryServer {
  * - 可变性
  */
 export class TaskTemplateHistory extends Entity<string> implements TaskTemplateHistoryServer {
-  private _templateUuid: string;
+  private _templateId: string;
   private _action: string;
   private _changes: any | null;
   private _createdAt: Date;
 
   private constructor(params: {
-    uuid?: string;
-    templateUuid: string;
+    id?: string;
+    templateId: string;
     action: string;
     changes?: any | null;
     createdAt: number;
   }) {
-    super(params.uuid ?? generateUUID());
-    this._templateUuid = params.templateUuid;
+    super(params.id ?? generateUUID());
+    this._templateId = params.templateId;
     this._action = params.action;
     this._changes = params.changes ?? null;
     this._createdAt = new Date(params.createdAt);
   }
 
   // Getters
-  public get uuid(): string {
-    return this.id;
-  }
 
-  public get templateUuid(): string {
-    return this._templateUuid;
+
+  public get templateId(): string {
+    return this._templateId;
   }
 
   public get action(): string {
@@ -94,8 +92,8 @@ export class TaskTemplateHistory extends Entity<string> implements TaskTemplateH
    */
   public toServerDTO(): TaskTemplateHistoryServerDTO {
     return {
-      uuid: this.uuid,
-      templateUuid: this._templateUuid,
+      id: this.id,
+      templateId: this._templateId,
       action: this._action,
       changes: this._changes,
       createdAt: this._createdAt.getTime(),
@@ -104,8 +102,8 @@ export class TaskTemplateHistory extends Entity<string> implements TaskTemplateH
 
   public toClientDTO(): TaskTemplateHistoryClientDTO {
     return {
-      uuid: this.uuid,
-      templateUuid: this._templateUuid,
+      id: this.id,
+      templateId: this._templateId,
       action: this._action,
       changes: this._changes,
       createdAt: this._createdAt.getTime(),
@@ -114,8 +112,8 @@ export class TaskTemplateHistory extends Entity<string> implements TaskTemplateH
 
   public toPersistenceDTO(): TaskTemplateHistoryPersistenceDTO {
     return {
-      uuid: this.uuid,
-      templateUuid: this._templateUuid,
+      id: this.id,
+      templateId: this._templateId,
       action: this._action,
       changes: this._changes ? JSON.stringify(this._changes) : null,
       createdAt: this._createdAt.getTime(),
@@ -126,12 +124,12 @@ export class TaskTemplateHistory extends Entity<string> implements TaskTemplateH
    * 静态工厂方法
    */
   public static create(params: {
-    templateUuid: string;
+    templateId: string;
     action: string;
     changes?: any | null;
   }): TaskTemplateHistory {
     return new TaskTemplateHistory({
-      templateUuid: params.templateUuid,
+      templateId: params.templateId,
       action: params.action,
       changes: params.changes,
       createdAt: Date.now(),
@@ -140,8 +138,8 @@ export class TaskTemplateHistory extends Entity<string> implements TaskTemplateH
 
   public static fromServerDTO(dto: TaskTemplateHistoryServerDTO): TaskTemplateHistory {
     return new TaskTemplateHistory({
-      uuid: dto.uuid,
-      templateUuid: dto.templateUuid,
+      id: dto.id,
+      templateId: dto.templateId,
       action: dto.action,
       changes: dto.changes,
       createdAt: dto.createdAt,
@@ -150,8 +148,8 @@ export class TaskTemplateHistory extends Entity<string> implements TaskTemplateH
 
   public static fromPersistenceDTO(dto: TaskTemplateHistoryPersistenceDTO): TaskTemplateHistory {
     return new TaskTemplateHistory({
-      uuid: dto.uuid,
-      templateUuid: dto.templateUuid,
+      id: dto.id,
+      templateId: dto.templateId,
       action: dto.action,
       changes: dto.changes ? JSON.parse(dto.changes) : null,
       createdAt: dto.createdAt,

@@ -23,14 +23,14 @@ export class NotificationPreferenceDomainService {
   /**
    * Get preference for a specific account
    */
-  async getPreference(accountUuid: string): Promise<NotificationPreference | null> {
-    return this.preferenceRepo.findByAccountUuid(accountUuid);
+  async getPreference(identityId: string): Promise<NotificationPreference | null> {
+    return this.preferenceRepo.findByAccountId(identityId);
   }
 
   /**
    * Get or create default preference for an account
    */
-  async getOrCreatePreference(accountUuid: string): Promise<NotificationPreference> {
-    return this.preferenceRepo.getOrCreate(accountUuid);
+  async getOrCreatePreference(identityId: string): Promise<NotificationPreference> {
+    return this.preferenceRepo.getOrCreate(identityId);
   }
 }

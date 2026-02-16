@@ -15,8 +15,8 @@ import { editorContainer } from '../../infrastructure/di';
 
 // ============ Types ============
 export interface EditorDocument {
-  uuid: string;
-  accountUuid: string;
+  id: string;
+  identityId: string;
   title: string;
   content: string;
   format: 'markdown' | 'plaintext' | 'richtext';
@@ -29,8 +29,8 @@ export interface EditorDocument {
 }
 
 export interface DocumentVersion {
-  uuid: string;
-  documentUuid: string;
+  id: string;
+  documentId: string;
   version: number;
   content: string;
   createdAt: number;
@@ -142,16 +142,16 @@ export const useEditorStore = create<EditorState & EditorActions & EditorSelecto
       // ========== Document Actions ==========
       setDocuments: (documents) => set({
         documents,
-        documentsById: Object.fromEntries(documents.map(d => [d.uuid, d])),
+        documentsById: Object.fromEntries(documents.map(d => [d.id, d])),
       }),
       
       addDocument: (document) => set((state) => ({
         documents: [...state.documents, document],
-        documentsById: { ...state.documentsById, [document.uuid]: document },
+        documentsById: { ...state.documentsById, [document.id]: document },
       })),
       
       updateDocument: (id, updates) => set((state) => {
-        const index = state.documents.findIndex(d => d.uuid === id);
+        const index = state.documents.findIndex(d => d.id === id);
         if (index === -1) return state;
         
         const updated = { ...state.documents[index], ...updates };
@@ -167,7 +167,7 @@ export const useEditorStore = create<EditorState & EditorActions & EditorSelecto
       removeDocument: (id) => set((state) => {
         const { [id]: _, ...rest } = state.documentsById;
         return {
-          documents: state.documents.filter(d => d.uuid !== id),
+          documents: state.documents.filter(d => d.id !== id),
           documentsById: rest,
           activeDocumentId: state.activeDocumentId === id ? null : state.activeDocumentId,
         };
@@ -230,8 +230,8 @@ export const useEditorStore = create<EditorState & EditorActions & EditorSelecto
           const documents = await editorClient.listDocuments();
           
           const clientDocs: EditorDocument[] = documents.map((d: any) => ({
-            uuid: d.uuid,
-            accountUuid: d.accountUuid,
+            id: d.id,
+            identityId: d.identityId,
             title: d.title,
             content: d.content ?? '',
             format: (d as any).format ?? d.contentType ?? 'markdown',
@@ -262,8 +262,8 @@ export const useEditorStore = create<EditorState & EditorActions & EditorSelecto
           const doc = await editorClient.getDocument(id);
           
           const clientDoc: EditorDocument = {
-            uuid: doc.uuid,
-            accountUuid: doc.accountUuid,
+            id: doc.id,
+            identityId: doc.identityId,
             title: doc.title,
             content: doc.content ?? '',
             format: (doc as any).format ?? doc.contentType ?? 'markdown',
@@ -299,8 +299,8 @@ export const useEditorStore = create<EditorState & EditorActions & EditorSelecto
           });
           
           const clientDoc: EditorDocument = {
-            uuid: doc.uuid,
-            accountUuid: doc.accountUuid,
+            id: doc.id,
+            identityId: doc.identityId,
             title: doc.title,
             content: doc.content ?? '',
             format: (doc as any).format ?? doc.contentType ?? 'markdown',
@@ -313,7 +313,7 @@ export const useEditorStore = create<EditorState & EditorActions & EditorSelecto
           };
           
           addDocument(clientDoc);
-          setActiveDocumentId(clientDoc.uuid);
+          setActiveDocumentId(clientDoc.id);
           return clientDoc;
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to create document');
@@ -374,8 +374,8 @@ export const useEditorStore = create<EditorState & EditorActions & EditorSelecto
           const versions = await editorClient.listVersions(documentId);
           
           const clientVersions: DocumentVersion[] = versions.map((v: any) => ({
-            uuid: v.uuid,
-            documentUuid: v.documentUuid,
+            id: v.id,
+            documentId: v.documentId,
             version: v.version,
             content: v.content,
             createdAt: v.createdAt,
@@ -394,7 +394,7 @@ export const useEditorStore = create<EditorState & EditorActions & EditorSelecto
       restoreVersion: async (versionId) => {
         const { setLoading, versions, activeDocumentId, updateDocument, setError } = get();
         
-        const version = versions.find(v => v.uuid === versionId);
+        const version = versions.find(v => v.id === versionId);
         if (!version || !activeDocumentId) return;
         
         try {

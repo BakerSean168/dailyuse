@@ -97,7 +97,7 @@ export function TemplateSelectionDialog({
   description = '从现有模板中选择一个作为基础',
 }: TemplateSelectionDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // 过滤模板
   const filteredTemplates = useMemo(() => {
@@ -113,9 +113,9 @@ export function TemplateSelectionDialog({
 
   // 选中的模�?
   const selectedTemplate = useMemo(() => {
-    if (!selectedUuid) return null;
-    return templates.find((t) => t.uuid === selectedUuid) || null;
-  }, [templates, selectedUuid]);
+    if (!selectedId) return null;
+    return templates.find((t) => t.id === selectedId) || null;
+  }, [templates, selectedId]);
 
   const handleSelect = useCallback(() => {
     if (selectedTemplate) {
@@ -125,7 +125,7 @@ export function TemplateSelectionDialog({
   }, [selectedTemplate, onSelect, onOpenChange]);
 
   const handleCancel = useCallback(() => {
-    setSelectedUuid(null);
+    setSelectedId(null);
     setSearchQuery('');
     onCancel?.();
     onOpenChange(false);
@@ -170,16 +170,16 @@ export function TemplateSelectionDialog({
             ) : (
               <div className="space-y-2">
                 {filteredTemplates.map((template) => {
-                  const isSelected = selectedUuid === template.uuid;
+                  const isSelected = selectedId === template.id;
                   return (
                     <div
-                      key={template.uuid}
+                      key={template.id}
                       className={`
                         relative p-4 rounded-lg border cursor-pointer transition-all
                         hover:shadow-md hover:border-primary/30
                         ${isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-border'}
                       `}
-                      onClick={() => setSelectedUuid(template.uuid)}
+                      onClick={() => setSelectedId(template.id)}
                     >
                       {/* 选中指示�?*/}
                       {isSelected && (

@@ -22,10 +22,10 @@ import { eventBus } from '@dailyuse/utils';
 const logger = createLogger('ScheduleTaskExecutor');
 
 export interface IScheduleMonitor {
-  recordExecutionStart(taskUuid: string, taskName: string): void;
-  recordExecutionSuccess(taskUuid: string, taskName: string): void;
-  recordExecutionFailure(taskUuid: string, taskName: string, error: Error): void;
-  recordExecutionSkipped(taskUuid: string, taskName: string, reason: string): void;
+  recordExecutionStart(taskId: string, taskName: string): void;
+  recordExecutionSuccess(taskId: string, taskName: string): void;
+  recordExecutionFailure(taskId: string, taskName: string, error: Error): void;
+  recordExecutionSkipped(taskId: string, taskName: string, reason: string): void;
 }
 
 export class ScheduleTaskExecutor {
@@ -77,11 +77,11 @@ export class ScheduleTaskExecutor {
    * @param task - 要执行的任务
    */
   public async executeTask(task: ScheduleTask): Promise<void> {
-    const taskUuid = task.uuid;
+    const taskId = task.id;
     const taskName = task.taskName;
 
     // 记录任务开始执行
-    this.monitor.recordExecutionStart(taskUuid, taskName);
+    this.monitor.recordExecutionStart(taskId, taskName);
 
     try {
       // 执行任务
@@ -98,7 +98,7 @@ export class ScheduleTaskExecutor {
       const events = task.getDomainEvents();
       for (const event of events) {
         logger.debug(`发布领域事件: ${event.eventType}`, {
-          taskUuid: task.uuid,
+          taskId: task.id,
           eventType: event.eventType,
         });
 
@@ -107,11 +107,11 @@ export class ScheduleTaskExecutor {
       }
 
       // 记录任务执行成功
-      this.monitor.recordExecutionSuccess(taskUuid, taskName);
+      this.monitor.recordExecutionSuccess(taskId, taskName);
     } catch (error) {
       // 记录任务执行失败
       this.monitor.recordExecutionFailure(
-        taskUuid,
+        taskId,
         taskName,
         error instanceof Error ? error : new Error(String(error)),
       );
@@ -144,7 +144,7 @@ export class ScheduleTaskExecutor {
       try {
         if (!task.canExecute()) {
           const reason = this.getCannotExecuteReason(task);
-          this.monitor.recordExecutionSkipped(task.uuid, task.taskName, reason);
+          this.monitor.recordExecutionSkipped(task.id, task.taskName, reason);
           results.skipped++;
           continue;
         }
@@ -154,7 +154,7 @@ export class ScheduleTaskExecutor {
       } catch (error) {
         results.failed++;
         logger.error('❌ 任务执行异常', {
-          taskUuid: task.uuid,
+          taskId: task.id,
           error,
         });
       }
@@ -167,10 +167,10 @@ export class ScheduleTaskExecutor {
   /**
    * 执行指定 UUID 的任务
    */
-  public async executeTaskByUuid(taskUuid: string): Promise<void> {
-    const task = await this.repository.findByUuid(taskUuid);
+  public async executeTaskById(taskId: string): Promise<void> {
+    const task = await this.repository.findById(taskId);
     if (!task) {
-      const errorMsg = `任务不存在: ${taskUuid}`;
+      const errorMsg = `任务不存在: ${taskId}`;
       logger.error(errorMsg);
       throw new Error(errorMsg);
     }
@@ -180,8 +180,8 @@ export class ScheduleTaskExecutor {
     // 检查任务是否可以执行
     if (!task.canExecute()) {
       const reason = this.getCannotExecuteReason(task);
-      this.monitor.recordExecutionSkipped(taskUuid, taskName, reason);
-      logger.warn(`任务不满足执行条件，跳过执行`, { taskUuid, taskName, reason });
+      this.monitor.recordExecutionSkipped(taskId, taskName, reason);
+      logger.warn(`任务不满足执行条件，跳过执行`, { taskId, taskName, reason });
       return;
     }
 

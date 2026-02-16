@@ -10,9 +10,9 @@ import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 interface ResourceItemProps {
   resource: ResourceClientDTO;
-  onClick: (uuid: string) => void;
-  onRename: (uuid: string) => void;
-  onDelete: (uuid: string) => void;
+  onClick: (id: string) => void;
+  onRename: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 export const ResourceItem = memo(function ResourceItem({
@@ -36,20 +36,20 @@ export const ResourceItem = memo(function ResourceItem({
 
   const handleRename = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onRename(resource.uuid);
+    onRename(resource.id);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm(`确定要删除 "${resource.name}" 吗？`)) {
-      onDelete(resource.uuid);
+      onDelete(resource.id);
     }
   };
 
   return (
     <div
       className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer group transition-colors"
-      onClick={() => onClick(resource.uuid)}
+      onClick={() => onClick(resource.id)}
     >
       {/* 图标 */}
       <div className="text-xl flex-shrink-0">{icon}</div>

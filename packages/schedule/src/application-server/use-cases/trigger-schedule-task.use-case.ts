@@ -24,11 +24,11 @@ export class TriggerScheduleTaskUseCase {
     private readonly scheduleTaskRepository: IScheduleTaskRepository,
   ) {}
 
-  async execute(uuid: string): Promise<void> {
+  async execute(id: string): Promise<void> {
     // 1. 查询任务
-    const task = await this.scheduleTaskRepository.findByUuid(uuid);
+    const task = await this.scheduleTaskRepository.findById(id);
     if (!task) {
-      throw new Error(`Schedule task ${uuid} not found`);
+      throw new Error(`Schedule task ${id} not found`);
     }
 
     // 2. 触发执行

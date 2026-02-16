@@ -10,7 +10,7 @@ import type { ExecutionStatus } from '../../value-objects/execution-status';
 // ============ Zod Schemas ============
 
 export const ScheduleExecutionQueryParamsSchema = z.object({
-  taskUuid: z.string().uuid().optional(),
+  taskId: z.string().uuid().optional(),
   status: z.enum(['SUCCESS', 'FAILED', 'SKIPPED', 'TIMEOUT', 'RETRYING']).optional(),
   startTime: z.number().positive().optional(),
   endTime: z.number().positive().optional(),
@@ -26,7 +26,7 @@ export const ScheduleExecutionQueryParamsSchema = z.object({
  * 执行记录查询参数
  */
 export interface ScheduleExecutionQueryParamsDTO {
-  readonly taskUuid?: string;
+  readonly taskId?: string;
   readonly status?: ExecutionStatus;
   readonly startTime?: number;
   readonly endTime?: number;
@@ -57,7 +57,7 @@ export interface ScheduleExecutionListResponseDTO {
  * 执行历史统计响应
  */
 export interface ExecutionHistoryStatsDTO {
-  readonly taskUuid: string;
+  readonly taskId: string;
   readonly totalExecutions: number;
   readonly successfulExecutions: number;
   readonly failedExecutions: number;

@@ -27,10 +27,10 @@ export class TaskTemplateController {
    */
   async createTemplate(
     data: CreateTaskTemplateRequest,
-    accountUuid: string
+    identityId: string
   ): Promise<Result<TaskTemplateServerDTO>> {
     return await this.taskTemplateService.createTaskTemplate({
-      accountUuid,
+      identityId,
       title: data.name,
       description: data.description,
       taskType: data.taskType,
@@ -38,7 +38,7 @@ export class TaskTemplateController {
       recurrenceRule: data.recurrenceRule,
       reminderConfig: data.reminderConfig,
       importance: data.importance,
-      folderUuid: data.folderUuid,
+      folderId: data.folderId,
       tags: data.tags,
       color: data.color,
     });
@@ -48,34 +48,34 @@ export class TaskTemplateController {
    * Get template by ID
    */
   async getTemplate(
-    uuid: string,
+    id: string,
     includeChildren = false
   ): Promise<Result<TaskTemplateServerDTO | null>> {
-    return await this.taskTemplateService.getTaskTemplate(uuid, includeChildren);
+    return await this.taskTemplateService.getTaskTemplate(id, includeChildren);
   }
 
   /**
    * List templates for account
    */
   async listTemplates(
-    accountUuid: string,
+    identityId: string,
     filters?: {
       status?: TaskTemplateStatus;
-      folderUuid?: string;
-      goalUuid?: string;
+      folderId?: string;
+      goalId?: string;
       tags?: string[];
     }
   ): Promise<Result<TaskTemplateServerDTO[]>> {
     if (filters?.status) {
-      return await this.taskTemplateService.getTaskTemplatesByStatus(accountUuid, filters.status);
-    } else if (filters?.folderUuid) {
-      return await this.taskTemplateService.getTaskTemplatesByFolder(filters.folderUuid);
-    } else if (filters?.goalUuid) {
-      return await this.taskTemplateService.getTaskTemplatesByGoal(filters.goalUuid);
+      return await this.taskTemplateService.getTaskTemplatesByStatus(identityId, filters.status);
+    } else if (filters?.folderId) {
+      return await this.taskTemplateService.getTaskTemplatesByFolder(filters.folderId);
+    } else if (filters?.goalId) {
+      return await this.taskTemplateService.getTaskTemplatesByGoal(filters.goalId);
     } else if (filters?.tags) {
-      return await this.taskTemplateService.getTaskTemplatesByTags(accountUuid, filters.tags);
+      return await this.taskTemplateService.getTaskTemplatesByTags(identityId, filters.tags);
     } else {
-      return await this.taskTemplateService.getTaskTemplatesByAccount(accountUuid);
+      return await this.taskTemplateService.getTaskTemplatesByAccount(identityId);
     }
   }
 
@@ -83,17 +83,17 @@ export class TaskTemplateController {
    * Update template
    */
   async updateTemplate(
-    uuid: string,
+    id: string,
     data: Partial<UpdateTaskTemplateRequest>
   ): Promise<Result<TaskTemplateServerDTO>> {
-    return await this.taskTemplateService.updateTaskTemplate(uuid, {
+    return await this.taskTemplateService.updateTaskTemplate(id, {
       title: data.name,
       description: data.description,
       timeConfig: data.timeConfig,
       recurrenceRule: data.recurrenceRule,
       reminderConfig: data.reminderConfig,
       importance: data.importance,
-      folderUuid: data.folderUuid,
+      folderId: data.folderId,
       tags: data.tags,
       color: data.color,
     });
@@ -102,28 +102,28 @@ export class TaskTemplateController {
   /**
    * Delete template
    */
-  async deleteTemplate(uuid: string): Promise<Result<void>> {
-    return await this.taskTemplateService.deleteTaskTemplate(uuid);
+  async deleteTemplate(id: string): Promise<Result<void>> {
+    return await this.taskTemplateService.deleteTaskTemplate(id);
   }
 
   /**
    * Activate template
    */
-  async activateTemplate(uuid: string): Promise<Result<TaskTemplateServerDTO>> {
-    return await this.taskTemplateService.activateTaskTemplate(uuid);
+  async activateTemplate(id: string): Promise<Result<TaskTemplateServerDTO>> {
+    return await this.taskTemplateService.activateTaskTemplate(id);
   }
 
   /**
    * Pause template
    */
-  async pauseTemplate(uuid: string): Promise<Result<TaskTemplateServerDTO>> {
-    return await this.taskTemplateService.pauseTaskTemplate(uuid);
+  async pauseTemplate(id: string): Promise<Result<TaskTemplateServerDTO>> {
+    return await this.taskTemplateService.pauseTaskTemplate(id);
   }
 
   /**
    * Archive template
    */
-  async archiveTemplate(uuid: string): Promise<Result<TaskTemplateServerDTO>> {
-    return await this.taskTemplateService.archiveTaskTemplate(uuid);
+  async archiveTemplate(id: string): Promise<Result<TaskTemplateServerDTO>> {
+    return await this.taskTemplateService.archiveTaskTemplate(id);
   }
 }

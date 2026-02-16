@@ -32,7 +32,7 @@ export interface UseAIGenerationReturn extends AIGenerationState {
   ) => Promise<GenerateGoalWithKRsResult>;
   generateKeyResults: (goalDescription: string) => Promise<GenerateKeyResultsResult>;
   streamChat: (
-    conversationUuid: string,
+    conversationId: string,
     message: string,
     onChunk?: (content: string) => void,
   ) => Promise<string>;
@@ -111,7 +111,7 @@ export function useAIGeneration(): UseAIGenerationReturn {
    */
   const streamChat = useCallback(
     async (
-      conversationUuid: string,
+      conversationId: string,
       message: string,
       onChunk?: (content: string) => void,
     ): Promise<string> => {
@@ -119,7 +119,7 @@ export function useAIGeneration(): UseAIGenerationReturn {
       try {
         let fullContent = '';
         const stream = aiApplicationService.streamChat({
-          conversationUuid,
+          conversationId,
           message,
         });
 

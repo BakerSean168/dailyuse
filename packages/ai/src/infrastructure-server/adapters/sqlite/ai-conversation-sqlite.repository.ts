@@ -15,17 +15,17 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
 
     const stmt = this.db.prepare(`
       INSERT INTO ai_conversations (
-        uuid, accountUuid, title, status, createdAt, updatedAt
+        id, identityId, title, status, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         title = excluded.title,
         status = excluded.status,
         updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.accountUuid,
+      dto.id,
+      dto.identityId,
       dto.title,
       dto.status,
       dto.createdAt,
@@ -33,17 +33,17 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
     );
   }
 
-  async findByUuid(uuid: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {
+  async findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_conversations WHERE uuid = ? LIMIT 1`
+      `SELECT * FROM ai_conversations WHERE id = ? LIMIT 1`
     );
-    const row = stmt.get(uuid) as any;
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return AIConversation.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
+      id: row.id,
+      identity_id: row.identityId,
       title: row.title,
       status: row.status,
       createdAt: new Date(row.createdAt),
@@ -51,16 +51,16 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
     });
   }
 
-  async findByAccountUuid(accountUuid: string, options?: AIConversationQueryOptions): Promise<AIConversation[]> {
+  async findByAccountId(identityId: string, options?: AIConversationQueryOptions): Promise<AIConversation[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_conversations WHERE accountUuid = ? ORDER BY createdAt DESC`
+      `SELECT * FROM ai_conversations WHERE identityId = ? ORDER BY createdAt DESC`
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) =>
       AIConversation.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row.accountUuid,
+        id: row.id,
+        identity_id: row.identityId,
         title: row.title,
         status: row.status,
         createdAt: new Date(row.createdAt),
@@ -69,16 +69,16 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
     );
   }
 
-  async findByStatus(accountUuid: string, status: string): Promise<AIConversation[]> {
+  async findByStatus(identityId: string, status: string): Promise<AIConversation[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_conversations WHERE accountUuid = ? AND status = ? ORDER BY createdAt DESC`
+      `SELECT * FROM ai_conversations WHERE identityId = ? AND status = ? ORDER BY createdAt DESC`
     );
-    const rows = stmt.all(accountUuid, status) as any[];
+    const rows = stmt.all(identityId, status) as any[];
 
     return rows.map((row) =>
       AIConversation.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row.accountUuid,
+        id: row.id,
+        identity_id: row.identityId,
         title: row.title,
         status: row.status,
         createdAt: new Date(row.createdAt),
@@ -87,23 +87,23 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
     );
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM ai_conversations WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM ai_conversations WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async findRecent(accountUuid: string, limit: number, offset?: number): Promise<AIConversation[]> {
+  async findRecent(identityId: string, limit: number, offset?: number): Promise<AIConversation[]> {
     const limitVal = Math.min(limit, 100);
     const offsetVal = offset || 0;
     const stmt = this.db.prepare(
-      `SELECT * FROM ai_conversations WHERE accountUuid = ? ORDER BY createdAt DESC LIMIT ? OFFSET ?`
+      `SELECT * FROM ai_conversations WHERE identityId = ? ORDER BY createdAt DESC LIMIT ? OFFSET ?`
     );
-    const rows = stmt.all(accountUuid, limitVal, offsetVal) as any[];
+    const rows = stmt.all(identityId, limitVal, offsetVal) as any[];
 
     return rows.map((row) =>
       AIConversation.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row.accountUuid,
+        id: row.id,
+        identity_id: row.identityId,
         title: row.title,
         status: row.status,
         createdAt: new Date(row.createdAt),
@@ -112,9 +112,9 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
     );
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    const stmt = this.db.prepare(`SELECT 1 FROM ai_conversations WHERE uuid = ? LIMIT 1`);
-    return stmt.get(uuid) !== undefined;
+  async exists(id: string): Promise<boolean> {
+    const stmt = this.db.prepare(`SELECT 1 FROM ai_conversations WHERE id = ? LIMIT 1`);
+    return stmt.get(id) !== undefined;
   }
 }
 

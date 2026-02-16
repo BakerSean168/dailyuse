@@ -27,22 +27,22 @@ export function registerScheduleEventListeners(): void {
   eventBus.subscribe(ScheduleTaskEventTypes.TRIGGERED, async (event: any) => {
     try {
       logger.info(`📩 接收到 ${ScheduleTaskEventTypes.TRIGGERED} 事件`, {
-        taskUuid: event.payload?.taskUuid,
+        taskId: event.payload?.taskId,
         taskName: event.payload?.taskName,
         sourceModule: event.payload?.sourceModule,
-        accountUuid: event.accountUuid,
+        identityId: event.identityId,
         metadataType: typeof event.payload?.metadata,
         metadataKeys: event.payload?.metadata ? Object.keys(event.payload.metadata) : [],
       });
 
       // 验证必需字段
-      if (!event.accountUuid) {
-        logger.error('❌ 事件缺少 accountUuid', { event });
+      if (!event.identityId) {
+        logger.error('❌ 事件缺少 identityId', { event });
         return;
       }
 
-      if (!event.payload?.taskUuid) {
-        logger.error('❌ 事件缺少 taskUuid', { event });
+      if (!event.payload?.taskId) {
+        logger.error('❌ 事件缺少 taskId', { event });
         return;
       }
 
@@ -86,35 +86,35 @@ export function registerScheduleEventListeners(): void {
         content,
         channels,
         relatedEntityType: event.payload?.sourceModule,
-        relatedEntityUuid: event.payload?.sourceEntityId,
+        relatedEntityId: event.payload?.sourceEntityId,
       });
 
       const notification = await notificationService.createNotification({
-        accountUuid: event.accountUuid,
+        identityId: event.identityId,
         title,
         content,
         type: NotificationType.REMINDER,
         category: NotificationCategory.TASK,
         relatedEntityType: event.payload?.sourceModule?.toUpperCase() as RelatedEntityType,
-        relatedEntityUuid: event.payload?.sourceEntityId,
+        relatedEntityId: event.payload?.sourceEntityId,
         channels,
       });
 
       logger.info('✅ 成功创建通知', {
-        notificationUuid: notification.uuid,
-        taskUuid: event.payload?.taskUuid,
+        notificationId: notification.id,
+        taskId: event.payload?.taskId,
         title,
         channels,
         relatedEntityType: notification.relatedEntityType,
-        relatedEntityUuid: notification.relatedEntityUuid,
+        relatedEntityId: notification.relatedEntityId,
       });
     } catch (error) {
       logger.error(`❌ 处理 ${ScheduleTaskEventTypes.TRIGGERED} 事件失败`, {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         event: {
-          accountUuid: event.accountUuid,
-          taskUuid: event.payload?.taskUuid,
+          identityId: event.identityId,
+          taskId: event.payload?.taskId,
           taskName: event.payload?.taskName,
         },
       });

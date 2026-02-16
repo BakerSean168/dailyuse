@@ -14,8 +14,8 @@ export function initializeReminderTables(database: Database.Database): void {
   // reminder_groups 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS reminder_groups (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT NOT NULL,
       name TEXT NOT NULL,
       description TEXT,
       color TEXT,
@@ -28,21 +28,21 @@ export function initializeReminderTables(database: Database.Database): void {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
       deleted_at INTEGER,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
     )
   `);
 
   // reminder_templates 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS reminder_templates (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT NOT NULL,
       title TEXT NOT NULL,
       description TEXT,
       type TEXT NOT NULL,
       self_enabled INTEGER NOT NULL DEFAULT 1,
       status TEXT NOT NULL,
-      group_uuid TEXT,
+      group_id TEXT,
       importance_level TEXT NOT NULL,
       tags TEXT NOT NULL DEFAULT '[]',
       color TEXT,
@@ -79,17 +79,17 @@ export function initializeReminderTables(database: Database.Database): void {
       updated_at INTEGER NOT NULL,
       deleted_at INTEGER,
       
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE,
-      FOREIGN KEY (group_uuid) REFERENCES reminder_groups(uuid)
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE,
+      FOREIGN KEY (group_id) REFERENCES reminder_groups(id)
     )
   `);
 
   // reminder_instances 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS reminder_instances (
-      uuid TEXT PRIMARY KEY,
-      template_uuid TEXT NOT NULL,
-      account_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      template_id TEXT NOT NULL,
+      identity_id TEXT NOT NULL,
       trigger_at INTEGER NOT NULL,
       status TEXT NOT NULL,
       result TEXT,
@@ -98,62 +98,62 @@ export function initializeReminderTables(database: Database.Database): void {
       payload TEXT,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
-      FOREIGN KEY (template_uuid) REFERENCES reminder_templates(uuid) ON DELETE CASCADE,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid)
+      FOREIGN KEY (template_id) REFERENCES reminder_templates(id) ON DELETE CASCADE,
+      FOREIGN KEY (identity_id) REFERENCES accounts(id)
     )
   `);
 
   // reminder_statistics 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS reminder_statistics (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT UNIQUE NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT UNIQUE NOT NULL,
       template_stats TEXT NOT NULL,
       group_stats TEXT NOT NULL,
       trigger_stats TEXT NOT NULL,
       calculated_at INTEGER NOT NULL,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
     )
   `);
 
   // reminder_history 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS reminder_history (
-      uuid TEXT PRIMARY KEY,
-      template_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      template_id TEXT NOT NULL,
       triggered_at INTEGER NOT NULL,
       result TEXT NOT NULL,
       error TEXT,
       notification_sent INTEGER NOT NULL DEFAULT 0,
       notification_channel TEXT,
       created_at INTEGER NOT NULL,
-      FOREIGN KEY (template_uuid) REFERENCES reminder_templates(uuid) ON DELETE CASCADE
+      FOREIGN KEY (template_id) REFERENCES reminder_templates(id) ON DELETE CASCADE
     )
   `);
 
   // reminder_responses 表 (Smart Frequency)
   database.exec(`
     CREATE TABLE IF NOT EXISTS reminder_responses (
-      uuid TEXT PRIMARY KEY,
-      template_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      template_id TEXT NOT NULL,
       action TEXT NOT NULL CHECK (action IN ('clicked', 'ignored', 'snoozed', 'dismissed', 'completed')),
       response_time INTEGER,
       timestamp INTEGER NOT NULL,
       created_at INTEGER NOT NULL,
-      FOREIGN KEY (template_uuid) REFERENCES reminder_templates(uuid) ON DELETE CASCADE
+      FOREIGN KEY (template_id) REFERENCES reminder_templates(id) ON DELETE CASCADE
     )
   `);
 
   // 创建索引
   database.exec(`
-    CREATE INDEX IF NOT EXISTS idx_reminder_groups_account ON reminder_groups(account_uuid);
-    CREATE INDEX IF NOT EXISTS idx_reminder_templates_account ON reminder_templates(account_uuid);
+    CREATE INDEX IF NOT EXISTS idx_reminder_groups_account ON reminder_groups(identity_id);
+    CREATE INDEX IF NOT EXISTS idx_reminder_templates_account ON reminder_templates(identity_id);
     CREATE INDEX IF NOT EXISTS idx_reminder_templates_status ON reminder_templates(status);
-    CREATE INDEX IF NOT EXISTS idx_reminder_templates_group ON reminder_templates(group_uuid);
-    CREATE INDEX IF NOT EXISTS idx_reminder_instances_template ON reminder_instances(template_uuid);
+    CREATE INDEX IF NOT EXISTS idx_reminder_templates_group ON reminder_templates(group_id);
+    CREATE INDEX IF NOT EXISTS idx_reminder_instances_template ON reminder_instances(template_id);
     CREATE INDEX IF NOT EXISTS idx_reminder_instances_trigger ON reminder_instances(trigger_at);
-    CREATE INDEX IF NOT EXISTS idx_reminder_history_template ON reminder_history(template_uuid);
-    CREATE INDEX IF NOT EXISTS idx_reminder_responses_template ON reminder_responses(template_uuid, timestamp);
+    CREATE INDEX IF NOT EXISTS idx_reminder_history_template ON reminder_history(template_id);
+    CREATE INDEX IF NOT EXISTS idx_reminder_responses_template ON reminder_responses(template_id, timestamp);
   `);
 
   console.log('[Database] Reminder tables initialized');

@@ -71,7 +71,7 @@ export type GetNotificationStatsRes = NotificationStatsDTO;
  * 执行通知操作 Schema
  */
 export const ExecuteNotificationActionSchema = z.object({
-  notificationUuid: z.string().uuid(),
+  notificationId: z.string().uuid(),
   actionId: z.string(),
 });
 
@@ -82,7 +82,7 @@ export type ExecuteNotificationActionRes = NotificationServerDTO;
  * 发送通知 Schema
  */
 export const SendNotificationSchema = z.object({
-  notificationUuid: z.string().uuid(),
+  notificationId: z.string().uuid(),
   channels: z.array(z.nativeEnum(NotificationChannelType)).optional(),
 });
 
@@ -93,7 +93,7 @@ export type SendNotificationRes = SendNotificationResultDTO;
  * 重试渠道 Schema
  */
 export const RetryChannelSchema = z.object({
-  channelUuid: z.string().uuid(),
+  channelId: z.string().uuid(),
 });
 
 export type RetryChannelReq = z.infer<typeof RetryChannelSchema>;

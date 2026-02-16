@@ -14,31 +14,31 @@ export class FolderHierarchyService {
    * 检测循环引用
    */
   async detectCycle(
-    folderUuid: string,
-    newParentUuid: string,
+    folderId: string,
+    newParentId: string,
     folderRepository: IFolderRepository,
   ): Promise<boolean> {
-    let currentUuid: string | null = newParentUuid;
+    let currentId: string | null = newParentId;
     const visited = new Set<string>();
     let depth = 0;
     const MAX_DEPTH = 50;
 
-    while (currentUuid && depth < MAX_DEPTH) {
-      if (currentUuid === folderUuid) {
+    while (currentId && depth < MAX_DEPTH) {
+      if (currentId === folderId) {
         return true;
       }
 
-      if (visited.has(currentUuid)) {
+      if (visited.has(currentId)) {
         return true;
       }
-      visited.add(currentUuid);
+      visited.add(currentId);
 
-      const parent = await folderRepository.findById(currentUuid);
+      const parent = await folderRepository.findById(currentId);
       if (!parent) {
         break;
       }
 
-      currentUuid = parent.parentId;
+      currentId = parent.parentId;
       depth++;
     }
 
@@ -49,11 +49,11 @@ export class FolderHierarchyService {
    * 级联更新子文件夹路径
    */
   async updateChildrenPaths(
-    folderUuid: string,
+    folderId: string,
     newPath: string,
     folderRepository: IFolderRepository,
   ): Promise<void> {
-    const children = await folderRepository.findByParentId(folderUuid);
+    const children = await folderRepository.findByParentId(folderId);
 
     for (const child of children) {
       const childNewPath = `${newPath}/${child.name}`;

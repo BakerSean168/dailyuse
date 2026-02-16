@@ -135,18 +135,18 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
       setReminders: (reminders) =>
         set({
           reminders,
-          remindersById: Object.fromEntries(reminders.map((r) => [r.uuid, r])),
+          remindersById: Object.fromEntries(reminders.map((r) => [r.id, r])),
         }),
 
       addReminder: (reminder) =>
         set((state) => ({
           reminders: [...state.reminders, reminder],
-          remindersById: { ...state.remindersById, [reminder.uuid]: reminder },
+          remindersById: { ...state.remindersById, [reminder.id]: reminder },
         })),
 
       updateReminder: (id, reminder) =>
         set((state) => {
-          const index = state.reminders.findIndex((r) => r.uuid === id);
+          const index = state.reminders.findIndex((r) => r.id === id);
           if (index === -1) return state;
 
           const newReminders = [...state.reminders];
@@ -163,7 +163,7 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
           const newById = { ...state.remindersById };
           delete newById[id];
           return {
-            reminders: state.reminders.filter((r) => r.uuid !== id),
+            reminders: state.reminders.filter((r) => r.id !== id),
             remindersById: newById,
             selectedReminderId: state.selectedReminderId === id ? null : state.selectedReminderId,
           };
@@ -173,18 +173,18 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
       setGroups: (groups) =>
         set({
           groups,
-          groupsById: Object.fromEntries(groups.map((g) => [g.uuid, g])),
+          groupsById: Object.fromEntries(groups.map((g) => [g.id, g])),
         }),
 
       addGroup: (group) =>
         set((state) => ({
           groups: [...state.groups, group],
-          groupsById: { ...state.groupsById, [group.uuid]: group },
+          groupsById: { ...state.groupsById, [group.id]: group },
         })),
 
       updateGroup: (id, group) =>
         set((state) => {
-          const index = state.groups.findIndex((g) => g.uuid === id);
+          const index = state.groups.findIndex((g) => g.id === id);
           if (index === -1) return state;
 
           const newGroups = [...state.groups];
@@ -201,7 +201,7 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
           const newById = { ...state.groupsById };
           delete newById[id];
           return {
-            groups: state.groups.filter((g) => g.uuid !== id),
+            groups: state.groups.filter((g) => g.id !== id),
             groupsById: newById,
             selectedGroupId: state.selectedGroupId === id ? null : state.selectedGroupId,
           };
@@ -337,7 +337,7 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
 
       getRemindersByGroup: (groupId) => {
         const { reminders } = get();
-        return reminders.filter((r) => r.groupUuid === groupId);
+        return reminders.filter((r) => r.groupId === groupId);
       },
 
       getActiveReminders: () => {
@@ -372,7 +372,7 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
 
         // 按分组过滤
         if (filters.groupId) {
-          filtered = filtered.filter((r) => r.groupUuid === filters.groupId);
+          filtered = filtered.filter((r) => r.groupId === filters.groupId);
         }
 
         // 隐藏暂停的

@@ -15,17 +15,17 @@ import { ok } from '@dailyuse/contracts/result';
 export class DeleteTaskTemplate {
   constructor(private readonly templateRepository: ITaskTemplateRepository) {}
 
-  async execute(uuid: string, soft = false): Promise<Result<{ success: boolean }>> {
-    const template = await this.templateRepository.findById(uuid);
+  async execute(id: string, soft = false): Promise<Result<{ success: boolean }>> {
+    const template = await this.templateRepository.findById(id);
     if (!template) {
       // 骞傜瓑鎬э細濡傛灉妯℃澘涓嶅瓨鍦紝鐩存帴杩斿洖鎴愬姛
       return ok({ success: true });
     }
 
     if (soft) {
-      await this.templateRepository.softDelete(uuid);
+      await this.templateRepository.softDelete(id);
     } else {
-      await this.templateRepository.delete(uuid);
+      await this.templateRepository.delete(id);
     }
 
     // 鍙戝竷鍒犻櫎浜嬩欢
@@ -33,7 +33,7 @@ export class DeleteTaskTemplate {
       await eventBus.publish({
         eventType: 'task.template.deleted',
         payload: {
-          taskTemplateId: uuid,
+          taskTemplateId: id,
           identityId: template.identityId,
           deletedAt: Date.now(),
         },

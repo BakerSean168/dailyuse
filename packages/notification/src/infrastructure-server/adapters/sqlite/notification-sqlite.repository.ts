@@ -15,10 +15,10 @@ export class SqliteNotificationRepository implements INotificationRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO notifications (
-        uuid, accountUuid, title, content, category, status,
+        id, identityId, title, content, category, status,
         read_at, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         title = excluded.title,
         content = excluded.content,
         status = excluded.status,
@@ -27,8 +27,8 @@ export class SqliteNotificationRepository implements INotificationRepository {
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.accountUuid,
+      dto.id,
+      dto.identityId,
       dto.title,
       dto.content,
       dto.category,
@@ -42,10 +42,10 @@ export class SqliteNotificationRepository implements INotificationRepository {
   async saveMany(notifications: Notification[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO notifications (
-        uuid, accountUuid, title, content, category, status,
+        id, identityId, title, content, category, status,
         read_at, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         title = excluded.title,
         content = excluded.content,
         status = excluded.status,
@@ -57,8 +57,8 @@ export class SqliteNotificationRepository implements INotificationRepository {
       for (const notif of items) {
         const dto = notif.toPersistenceDTO();
         insertStmt.run(
-          dto.uuid,
-          dto.accountUuid,
+          dto.id,
+          dto.identityId,
           dto.title,
           dto.content,
           dto.category,
@@ -73,15 +73,15 @@ export class SqliteNotificationRepository implements INotificationRepository {
     transaction(notifications);
   }
 
-  async findById(uuid: string, options?: { includeChildren?: boolean }): Promise<Notification | null> {
-    const stmt = this.db.prepare(`SELECT * FROM notifications WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string, options?: { includeChildren?: boolean }): Promise<Notification | null> {
+    const stmt = this.db.prepare(`SELECT * FROM notifications WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return Notification.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
+      id: row.id,
+      identity_id: row.identityId,
       title: row.title,
       content: row.content,
       category: row.category,
@@ -92,16 +92,16 @@ export class SqliteNotificationRepository implements INotificationRepository {
     });
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<Notification[]> {
+  async findByAccountId(identityId: string): Promise<Notification[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM notifications WHERE accountUuid = ? ORDER BY createdAt DESC`
+      `SELECT * FROM notifications WHERE identityId = ? ORDER BY createdAt DESC`
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) =>
       Notification.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row.accountUuid,
+        id: row.id,
+        identity_id: row.identityId,
         title: row.title,
         content: row.content,
         category: row.category,
@@ -113,14 +113,14 @@ export class SqliteNotificationRepository implements INotificationRepository {
     );
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM notifications WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM notifications WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    const stmt = this.db.prepare(`SELECT 1 FROM notifications WHERE uuid = ? LIMIT 1`);
-    return stmt.get(uuid) !== undefined;
+  async exists(id: string): Promise<boolean> {
+    const stmt = this.db.prepare(`SELECT 1 FROM notifications WHERE id = ? LIMIT 1`);
+    return stmt.get(id) !== undefined;
   }
 }
 

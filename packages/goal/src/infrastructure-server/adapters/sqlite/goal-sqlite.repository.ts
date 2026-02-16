@@ -240,12 +240,12 @@ export class SqliteGoalRepository implements IGoalRepository {
   // ============ Find ============
 
   async findById(
-    uuid: string,
+    id: string,
     options?: { includeChildren?: boolean },
   ): Promise<Goal | null> {
     const row = this.db
       .prepare(`SELECT * FROM goals WHERE id = ? LIMIT 1`)
-      .get(uuid) as any;
+      .get(id) as any;
 
     if (!row) return null;
 

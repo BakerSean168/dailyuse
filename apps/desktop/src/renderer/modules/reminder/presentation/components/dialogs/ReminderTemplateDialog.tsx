@@ -64,7 +64,7 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 interface FormState {
   title: string;
   description: string;
-  groupUuid: string | null;
+  groupId: string | null;
   importanceLevel: ImportanceLevel;
   triggerType: TriggerType;
   fixedTime: string;
@@ -118,7 +118,7 @@ const COLOR_OPTIONS = [
 const DEFAULT_FORM_STATE: FormState = {
   title: '',
   description: '',
-  groupUuid: null,
+  groupId: null,
   importanceLevel: ImportanceLevel.Moderate,
   triggerType: TriggerType.FIXED_TIME,
   fixedTime: '09:00',
@@ -163,7 +163,7 @@ function formStateToCreateRequest(form: FormState): CreateReminderTemplateReques
     tags: form.tags.length > 0 ? form.tags : undefined,
     color: form.color,
     icon: form.icon,
-    groupUuid: form.groupUuid || undefined,
+    groupId: form.groupId || undefined,
   };
 }
 
@@ -194,7 +194,7 @@ function formStateToUpdateRequest(form: FormState): UpdateReminderTemplateReques
     tags: form.tags.length > 0 ? form.tags : undefined,
     color: form.color,
     icon: form.icon,
-    groupUuid: form.groupUuid || undefined,
+    groupId: form.groupId || undefined,
   };
 }
 
@@ -213,7 +213,7 @@ export function ReminderTemplateDialog({
   const [tagInput, setTagInput] = useState('');
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
-  const isEditMode = !!template?.uuid;
+  const isEditMode = !!template?.id;
 
   // 初始化表单数�?
   useEffect(() => {
@@ -222,7 +222,7 @@ export function ReminderTemplateDialog({
         setFormState({
           title: template.title || '',
           description: template.description || '',
-          groupUuid: template.groupUuid || null,
+          groupId: template.groupId || null,
           importanceLevel: template.importanceLevel || ImportanceLevel.Moderate,
           triggerType: (template.trigger?.type as TriggerType) || TriggerType.FIXED_TIME,
           fixedTime: template.trigger?.fixedTime?.time || '09:00',
@@ -246,7 +246,7 @@ export function ReminderTemplateDialog({
   const groupOptions = useMemo(() => {
     return [
       { value: '', label: '无分' },
-      ...groups.map((g) => ({ value: g.uuid, label: g.name })),
+      ...groups.map((g) => ({ value: g.id, label: g.name })),
     ];
   }, [groups]);
 
@@ -422,8 +422,8 @@ export function ReminderTemplateDialog({
               <div className="space-y-2">
                 <Label>所属分</Label>
                 <Select
-                  value={formState.groupUuid || ''}
-                  onValueChange={(value) => updateField('groupUuid', value || null)}
+                  value={formState.groupId || ''}
+                  onValueChange={(value) => updateField('groupId', value || null)}
                 >
                   <SelectTrigger>
                     <Folder className="h-4 w-4 mr-2" />

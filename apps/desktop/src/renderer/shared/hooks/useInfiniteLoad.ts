@@ -106,7 +106,7 @@ const DEFAULT_PAGE_SIZE = 20;
  *   refresh,
  * } = useInfiniteLoad({
  *   fetcher: (params) => goalApiClient.getGoals(params),
- *   getItemKey: (goal) => goal.uuid,
+ *   getItemKey: (goal) => goal.id,
  *   pageSize: 20,
  * });
  *

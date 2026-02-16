@@ -54,8 +54,8 @@ export function registerTaskInitializationTasks(): void {
     name: 'task-user-data-sync',
     phase: InitializationPhase.USER_LOGIN,
     priority: 20,
-    initialize: async (context?: { accountUuid?: string }) => {
-      console.log(`🔄 [Task] 同步用户 Task 数据: ${context?.accountUuid || 'unknown'}`);
+    initialize: async (context?: { identityId?: string }) => {
+      console.log(`🔄 [Task] 同步用户 Task 数据: ${context?.identityId || 'unknown'}`);
       try {
         console.log('✅ [Task] Task 数据将按需加载');
       } catch (error) {

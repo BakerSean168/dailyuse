@@ -29,10 +29,10 @@ export class ActivateTaskTemplate {
     this.generationService = new TaskInstanceGenerationService();
   }
 
-  async execute(uuid: string): Promise<Result<{ template: TaskTemplateClientDTO; instancesGenerated: number }>> {
-    const template = await this.templateRepository.findById(uuid);
+  async execute(id: string): Promise<Result<{ template: TaskTemplateClientDTO; instancesGenerated: number }>> {
+    const template = await this.templateRepository.findById(id);
     if (!template) {
-      return error('NOT_FOUND', `TaskTemplate ${uuid} not found`);
+      return error('NOT_FOUND', `TaskTemplate ${id} not found`);
     }
 
     // 1. 婵€娲绘ā鏉跨姸锟?

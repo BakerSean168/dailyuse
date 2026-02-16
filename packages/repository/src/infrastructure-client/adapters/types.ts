@@ -42,8 +42,8 @@ export interface CreateRepositoryRequest {
 }
 
 export interface CreateFolderRequest {
-  repositoryUuid: string;
-  parentUuid?: string;
+  repositoryId: string;
+  parentId?: string;
   name: string;
 }
 
@@ -56,28 +56,28 @@ export interface IRepositoryApiClient {
   // ===== Repository CRUD =====
   createRepository(request: CreateRepositoryRequest): Promise<Result<RepositoryClientDTO>>;
   getRepositories(): Promise<Result<RepositoryClientDTO[]>>;
-  getRepositoryById(uuid: string): Promise<Result<RepositoryClientDTO>>;
-  deleteRepository(uuid: string): Promise<Result<void>>;
+  getRepositoryById(id: string): Promise<Result<RepositoryClientDTO>>;
+  deleteRepository(id: string): Promise<Result<void>>;
 
   // ===== Folder Operations =====
   createFolder(request: CreateFolderRequest): Promise<Result<FolderClientDTO>>;
-  getFolderContents(folderUuid: string): Promise<Result<{
+  getFolderContents(folderId: string): Promise<Result<{
     folders: FolderClientDTO[];
     resources: ResourceClientDTO[];
   }>>;
-  renameFolder(uuid: string, name: string): Promise<Result<FolderClientDTO>>;
-  moveFolder(uuid: string, targetParentUuid: string): Promise<Result<FolderClientDTO>>;
-  deleteFolder(uuid: string): Promise<Result<void>>;
+  renameFolder(id: string, name: string): Promise<Result<FolderClientDTO>>;
+  moveFolder(id: string, targetParentId: string): Promise<Result<FolderClientDTO>>;
+  deleteFolder(id: string): Promise<Result<void>>;
 
   // ===== File Tree =====
-  getFileTree(repositoryUuid: string): Promise<Result<FileTreeResponse>>;
+  getFileTree(repositoryId: string): Promise<Result<FileTreeResponse>>;
 
   // ===== Search =====
   search(request: SearchRequest): Promise<Result<SearchResponse>>;
 
   // ===== Resource Operations =====
-  getResource(uuid: string): Promise<Result<ResourceClientDTO>>;
-  renameResource(uuid: string, name: string): Promise<Result<ResourceClientDTO>>;
-  moveResource(uuid: string, targetFolderUuid: string): Promise<Result<ResourceClientDTO>>;
-  deleteResource(uuid: string): Promise<Result<void>>;
+  getResource(id: string): Promise<Result<ResourceClientDTO>>;
+  renameResource(id: string, name: string): Promise<Result<ResourceClientDTO>>;
+  moveResource(id: string, targetFolderId: string): Promise<Result<ResourceClientDTO>>;
+  deleteResource(id: string): Promise<Result<void>>;
 }

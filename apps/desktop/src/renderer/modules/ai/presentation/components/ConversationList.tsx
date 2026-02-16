@@ -11,8 +11,8 @@ import type { AIConversation } from '@dailyuse/ai/domain-client';
 interface ConversationListProps {
   conversations: AIConversation[];
   currentId?: string;
-  onSelect: (uuid: string) => void;
-  onDelete: (uuid: string) => void;
+  onSelect: (id: string) => void;
+  onDelete: (id: string) => void;
   onNewConversation: () => void;
 }
 
@@ -46,13 +46,13 @@ export const ConversationList = memo(function ConversationList({
           <div className="space-y-1">
             {conversations.map((conversation) => (
               <div
-                key={conversation.uuid}
+                key={conversation.id}
                 className={`group flex items-center justify-between rounded-md px-3 py-2 cursor-pointer transition-colors ${
-                  currentId === conversation.uuid
+                  currentId === conversation.id
                     ? 'bg-primary/10 text-primary'
                     : 'hover:bg-muted'
                 }`}
-                onClick={() => onSelect(conversation.uuid)}
+                onClick={() => onSelect(conversation.id)}
               >
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">
@@ -78,7 +78,7 @@ export const ConversationList = memo(function ConversationList({
                     onClick={(e) => {
                       e.stopPropagation();
                       if (confirm('确定删除此对话？')) {
-                        onDelete(conversation.uuid);
+                        onDelete(conversation.id);
                       }
                     }}
                     className="p-1 hover:bg-red-100 rounded text-red-500"

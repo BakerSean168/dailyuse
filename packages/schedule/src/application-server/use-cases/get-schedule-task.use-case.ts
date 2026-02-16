@@ -22,9 +22,9 @@ export class GetScheduleTaskUseCase {
     private readonly scheduleTaskRepository: IScheduleTaskRepository,
   ) {}
 
-  async execute(uuid: string): Promise<ScheduleTaskClientDTO | null> {
+  async execute(id: string): Promise<ScheduleTaskClientDTO | null> {
     // 1. 查询任务
-    const task = await this.scheduleTaskRepository.findByUuid(uuid);
+    const task = await this.scheduleTaskRepository.findById(id);
 
     // 2. 转换为 Client DTO
     return task ? task.toClientDTO() : null;

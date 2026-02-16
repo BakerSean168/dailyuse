@@ -41,8 +41,8 @@ export class ScheduleTaskHttpAdapter implements IScheduleTaskApiClient {
     return this.httpClient.get(`${this.baseUrl}/tasks`);
   }
 
-  async getTaskById(taskUuid: string): Promise<Result<ScheduleTaskClientDTO>> {
-    return this.httpClient.get(`${this.baseUrl}/tasks/${taskUuid}`);
+  async getTaskById(taskId: string): Promise<Result<ScheduleTaskClientDTO>> {
+    return this.httpClient.get(`${this.baseUrl}/tasks/${taskId}`);
   }
 
   async getDueTasks(params?: {
@@ -63,39 +63,39 @@ export class ScheduleTaskHttpAdapter implements IScheduleTaskApiClient {
 
   // ===== Schedule Task Status Management =====
 
-  async pauseTask(taskUuid: string): Promise<Result<void>> {
-    return this.httpClient.post(`${this.baseUrl}/tasks/${taskUuid}/pause`);
+  async pauseTask(taskId: string): Promise<Result<void>> {
+    return this.httpClient.post(`${this.baseUrl}/tasks/${taskId}/pause`);
   }
 
-  async resumeTask(taskUuid: string): Promise<Result<void>> {
-    return this.httpClient.post(`${this.baseUrl}/tasks/${taskUuid}/resume`);
+  async resumeTask(taskId: string): Promise<Result<void>> {
+    return this.httpClient.post(`${this.baseUrl}/tasks/${taskId}/resume`);
   }
 
-  async completeTask(taskUuid: string, reason?: string): Promise<Result<void>> {
-    return this.httpClient.post(`${this.baseUrl}/tasks/${taskUuid}/complete`, { reason });
+  async completeTask(taskId: string, reason?: string): Promise<Result<void>> {
+    return this.httpClient.post(`${this.baseUrl}/tasks/${taskId}/complete`, { reason });
   }
 
-  async cancelTask(taskUuid: string, reason?: string): Promise<Result<void>> {
-    return this.httpClient.post(`${this.baseUrl}/tasks/${taskUuid}/cancel`, { reason });
+  async cancelTask(taskId: string, reason?: string): Promise<Result<void>> {
+    return this.httpClient.post(`${this.baseUrl}/tasks/${taskId}/cancel`, { reason });
   }
 
-  async deleteTask(taskUuid: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.baseUrl}/tasks/${taskUuid}`);
+  async deleteTask(taskId: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.baseUrl}/tasks/${taskId}`);
   }
 
-  async deleteTasksBatch(taskUuids: string[]): Promise<Result<void>> {
-    return this.httpClient.post(`${this.baseUrl}/tasks/batch/delete`, { taskUuids });
+  async deleteTasksBatch(taskIds: string[]): Promise<Result<void>> {
+    return this.httpClient.post(`${this.baseUrl}/tasks/batch/delete`, { taskIds });
   }
 
   async updateTaskMetadata(
-    taskUuid: string,
+    taskId: string,
     metadata: {
       payload?: unknown;
       tagsToAdd?: string[];
       tagsToRemove?: string[];
     },
   ): Promise<Result<void>> {
-    return this.httpClient.patch(`${this.baseUrl}/tasks/${taskUuid}/metadata`, metadata);
+    return this.httpClient.patch(`${this.baseUrl}/tasks/${taskId}/metadata`, metadata);
   }
 
   // ===== Schedule Statistics =====

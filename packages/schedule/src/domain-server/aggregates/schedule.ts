@@ -20,11 +20,11 @@ import type {
 } from '@dailyuse/contracts/schedule';
 import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
 
-// TODO: 当 contracts 中定义了 ScheduleServerDTO 和 ScheduleClientDTO 后，移除这些临时类型
+// TODO: 当 contracts 中定义了 ScheduleServerDTO 和 ScheduleJobClientDTO 后，移除这些临时类型
 // Story 9.1 用户日程的 DTO 接口暂未定义
 interface ScheduleServerDTO {
-  uuid: string;
-  accountUuid: string;
+  id: string;
+  identityId: string;
   name: string;
   description?: string;
   startTime: number;
@@ -39,9 +39,9 @@ interface ScheduleServerDTO {
   updatedAt: number;
 }
 
-interface ScheduleClientDTO {
-  uuid: string;
-  accountUuid: string;
+interface ScheduleJobClientDTO {
+  id: string;
+  identityId: string;
   name: string;
   description: string | null;
   startTime: number;
@@ -60,7 +60,7 @@ interface ScheduleClientDTO {
  * Schedule 内部状态接口 for simplified aggregate pattern
  */
 interface ScheduleState {
-  accountUuid: string;
+  identityId: string;
   title: string;
   description: string | null;
   startTime: number;
@@ -87,8 +87,8 @@ export class Schedule extends AggregateRoot<ScheduleId> {
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
-    uuid?: string;
-    accountUuid: string;
+    id?: string;
+    identityId: string;
     title: string;
     description?: string | null;
     startTime: number;
@@ -101,7 +101,7 @@ export class Schedule extends AggregateRoot<ScheduleId> {
     createdAt?: number;
     updatedAt?: number;
   }) {
-    super(params.uuid ? ScheduleId.of(params.uuid) : ScheduleId.generate());
+    super(params.id ? ScheduleId.of(params.id) : ScheduleId.generate());
     
     // Validation: startTime must be before endTime
     if (params.startTime >= params.endTime) {
@@ -109,7 +109,7 @@ export class Schedule extends AggregateRoot<ScheduleId> {
     }
 
     this._props = {
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       title: params.title,
       description: params.description ?? null,
       startTime: params.startTime,
@@ -126,12 +126,10 @@ export class Schedule extends AggregateRoot<ScheduleId> {
   }
 
   // ===== Getter 属性 =====
-  public get uuid(): string {
-    return this.id;
-  }
 
-  public get accountUuid(): string {
-    return this._props.accountUuid;
+
+  public get identityId(): string {
+    return this._props.identityId;
   }
 
   public get title(): string {
@@ -188,7 +186,7 @@ export class Schedule extends AggregateRoot<ScheduleId> {
    * 创建新的日程
    */
   public static create(params: {
-    accountUuid: string;
+    identityId: string;
     title: string;
     description?: string;
     startTime: number;
@@ -198,7 +196,7 @@ export class Schedule extends AggregateRoot<ScheduleId> {
     attendees?: string[];
   }): Schedule {
     return new Schedule({
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       title: params.title,
       description: params.description,
       startTime: params.startTime,
@@ -218,8 +216,8 @@ export class Schedule extends AggregateRoot<ScheduleId> {
    */
   public static fromServerDTO(dto: ScheduleServerDTO): Schedule {
     return new Schedule({
-      uuid: dto.uuid,
-      accountUuid: dto.accountUuid,
+      id: dto.id,
+      identityId: dto.identityId,
       title: dto.name,
       description: dto.description,
       startTime: dto.startTime,
@@ -258,7 +256,7 @@ export class Schedule extends AggregateRoot<ScheduleId> {
 
     // Generate conflict details
     const conflicts: ConflictDetail[] = conflictingSchedules.map((schedule) => ({
-      scheduleUuid: schedule.uuid,
+      scheduleId: schedule.id,
       scheduleTitle: schedule.title,
       overlapStart: Math.max(this._props.startTime, schedule.startTime),
       overlapEnd: Math.min(this._props.endTime, schedule.endTime),
@@ -371,10 +369,10 @@ export class Schedule extends AggregateRoot<ScheduleId> {
    * 转换为 ClientDTO (发送给前端)
    * Story 4-1: Schedule Event CRUD
    */
-  public toClientDTO(): ScheduleClientDTO {
+  public toClientDTO(): ScheduleJobClientDTO {
     return {
-      uuid: this.id,
-      accountUuid: this._props.accountUuid,
+      id: this.id,
+      identityId: this._props.identityId,
       name: this._props.title,
       description: this._props.description,
       startTime: this._props.startTime,
@@ -395,8 +393,8 @@ export class Schedule extends AggregateRoot<ScheduleId> {
    */
   public toServerDTO(): ScheduleServerDTO {
     return {
-      uuid: this.id,
-      accountUuid: this._props.accountUuid,
+      id: this.id,
+      identityId: this._props.identityId,
       name: this._props.title,
       description: this._props.description ?? undefined,
       startTime: this._props.startTime,
@@ -417,11 +415,11 @@ export class Schedule extends AggregateRoot<ScheduleId> {
   /**
    * 标记日程存在冲突
    * 
-   * @param conflictingUuids 冲突日程的UUID列表
+   * @param conflictingIds 冲突日程的UUID列表
    */
-  public markAsConflicting(conflictingUuids: string[]): void {
+  public markAsConflicting(conflictingIds: string[]): void {
     this._props.hasConflict = true;
-    this._props.conflictingSchedules = [...conflictingUuids];
+    this._props.conflictingSchedules = [...conflictingIds];
     this._props.updatedAt = new Date();
   }
 

@@ -14,54 +14,54 @@ import type { IGoalRepository } from '../../ports/goal-repository.port';
 export class GoalMemoryRepository implements IGoalRepository {
   private goals = new Map<string, any>();
 
-  async findById(uuid: string, options?: { includeChildren?: boolean }): Promise<any | null> {
-    return this.goals.get(uuid) || null;
+  async findById(id: string, options?: { includeChildren?: boolean }): Promise<any | null> {
+    return this.goals.get(id) || null;
   }
 
-  async findByAccountUuid(accountUuid: string, options?: any): Promise<any[]> {
-    return Array.from(this.goals.values()).filter((g) => g.accountUuid === accountUuid);
+  async findByAccountId(identityId: string, options?: any): Promise<any[]> {
+    return Array.from(this.goals.values()).filter((g) => g.identityId === identityId);
   }
 
-  async findByFolderUuid(folderUuid: string): Promise<any[]> {
-    return Array.from(this.goals.values()).filter((g) => g.folderUuid === folderUuid);
+  async findByFolderId(folderId: string): Promise<any[]> {
+    return Array.from(this.goals.values()).filter((g) => g.folderId === folderId);
   }
 
   async save(goal: any): Promise<void> {
-    this.goals.set(goal.uuid, goal);
+    this.goals.set(goal.id, goal);
   }
 
-  async delete(uuid: string): Promise<void> {
-    this.goals.delete(uuid);
+  async delete(id: string): Promise<void> {
+    this.goals.delete(id);
   }
 
-  async softDelete(uuid: string): Promise<void> {
-    const goal = this.goals.get(uuid);
+  async softDelete(id: string): Promise<void> {
+    const goal = this.goals.get(id);
     if (goal) {
       goal.deletedAt = new Date();
-      this.goals.set(uuid, goal);
+      this.goals.set(id, goal);
     }
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    return this.goals.has(uuid);
+  async exists(id: string): Promise<boolean> {
+    return this.goals.has(id);
   }
 
-  async batchUpdateStatus(uuids: string[], status: string): Promise<void> {
-    uuids.forEach((uuid) => {
-      const goal = this.goals.get(uuid);
+  async batchUpdateStatus(ids: string[], status: string): Promise<void> {
+    ids.forEach((id) => {
+      const goal = this.goals.get(id);
       if (goal) {
         goal.status = status;
-        this.goals.set(uuid, goal);
+        this.goals.set(id, goal);
       }
     });
   }
 
-  async batchMoveToFolder(uuids: string[], folderUuid: string | null): Promise<void> {
-    uuids.forEach((uuid) => {
-      const goal = this.goals.get(uuid);
+  async batchMoveToFolder(ids: string[], folderId: string | null): Promise<void> {
+    ids.forEach((id) => {
+      const goal = this.goals.get(id);
       if (goal) {
-        goal.folderUuid = folderUuid;
-        this.goals.set(uuid, goal);
+        goal.folderId = folderId;
+        this.goals.set(id, goal);
       }
     });
   }
@@ -72,6 +72,6 @@ export class GoalMemoryRepository implements IGoalRepository {
   }
 
   seed(goals: any[]): void {
-    goals.forEach((g) => this.goals.set(g.uuid, g));
+    goals.forEach((g) => this.goals.set(g.id, g));
   }
 }

@@ -11,7 +11,7 @@ import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
  * Archive Repository Input
  */
 export interface ArchiveRepositoryInput {
-  uuid: string;
+  id: string;
 }
 
 /**
@@ -28,9 +28,9 @@ export class ArchiveRepository {
   constructor(private readonly repositoryRepository: IRepositoryRepository) {}
 
   async execute(input: ArchiveRepositoryInput): Promise<ArchiveRepositoryOutput> {
-    const repository = await this.repositoryRepository.findById(input.uuid);
+    const repository = await this.repositoryRepository.findById(input.id);
     if (!repository) {
-      throw new Error(`Repository not found: ${input.uuid}`);
+      throw new Error(`Repository not found: ${input.id}`);
     }
 
     repository.archive();

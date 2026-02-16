@@ -90,7 +90,7 @@ export function useAccount(): UseAccountReturn {
   // Update preferences
   const updatePreferencesFn = useCallback(
     async (request: UpdateAccountPreferencesRequestDTO) => {
-      if (!state.account?.uuid) {
+      if (!state.account?.id) {
         setState((prev) => ({
           ...prev,
           error: '请先登录',
@@ -103,7 +103,7 @@ export function useAccount(): UseAccountReturn {
       try {
         // 使用 application-client Service Class
         const account = await UpdateAccountPreferences.getInstance().execute(
-          state.account.uuid,
+          state.account.id,
           request,
         );
         setState((prev) => ({ ...prev, account, loading: false }));
@@ -117,7 +117,7 @@ export function useAccount(): UseAccountReturn {
         throw e;
       }
     },
-    [state.account?.uuid],
+    [state.account?.id],
   );
 
   // Change password

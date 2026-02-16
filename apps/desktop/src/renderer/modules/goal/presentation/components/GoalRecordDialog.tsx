@@ -24,8 +24,8 @@ import { PlusCircle, Zap } from 'lucide-react';
 
 interface GoalRecordDialogProps {
   open: boolean;
-  goalUuid: string;
-  keyResultUuid: string;
+  goalId: string;
+  keyResultId: string;
   keyResult?: KeyResult | null;
   record?: GoalRecord | null;
   goalColor?: string;
@@ -39,8 +39,8 @@ const QUICK_VALUES = [1, 2, 5, 10];
 
 export function GoalRecordDialog({
   open,
-  goalUuid,
-  keyResultUuid,
+  goalId,
+  keyResultId,
   keyResult,
   record,
   goalColor = '#3b82f6',

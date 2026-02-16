@@ -16,7 +16,7 @@ import type { IStoragePort } from '../ports/IStoragePort';
  * Rename Folder Input
  */
 export interface RenameFolderInput {
-  uuid: string;
+  id: string;
   newName: string;
 }
 
@@ -57,9 +57,9 @@ export class RenameFolder {
   }
 
   async execute(input: RenameFolderInput): Promise<RenameFolderOutput> {
-    const folder = await this.folderRepository.findById(input.uuid);
+    const folder = await this.folderRepository.findById(input.id);
     if (!folder) {
-      throw new Error(`Folder not found: ${input.uuid}`);
+      throw new Error(`Folder not found: ${input.id}`);
     }
 
     const repository = await this.repositoryRepository.findById(folder.repositoryId);

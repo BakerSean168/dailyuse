@@ -19,10 +19,10 @@ import { ok, error } from '@dailyuse/contracts/result';
 export class SkipTaskInstance {
   constructor(private readonly instanceRepository: ITaskInstanceRepository) {}
 
-  async execute(uuid: string, request?: SkipTaskInstanceRequest): Promise<Result<TaskInstanceResponse>> {
-    const instance = await this.instanceRepository.findById(uuid);
+  async execute(id: string, request?: SkipTaskInstanceRequest): Promise<Result<TaskInstanceResponse>> {
+    const instance = await this.instanceRepository.findById(id);
     if (!instance) {
-      return error('NOT_FOUND', `TaskInstance ${uuid} not found`);
+      return error('NOT_FOUND', `TaskInstance ${id} not found`);
     }
 
     if (!instance.canSkip()) {

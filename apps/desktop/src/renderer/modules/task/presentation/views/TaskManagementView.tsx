@@ -73,8 +73,8 @@ import { useTaskStore } from '../stores/taskStore';
 
 interface TaskManagementViewProps {
   onCreateTemplate?: () => void;
-  onEditTemplate?: (uuid: string) => void;
-  onViewDependencies?: (uuid: string) => void;
+  onEditTemplate?: (id: string) => void;
+  onViewDependencies?: (id: string) => void;
 }
 
 // ===================== 工具函数 =====================
@@ -155,13 +155,13 @@ export function TaskManagementView({
   }, [templates]);
 
   // 选择模板
-  const toggleTemplateSelection = useCallback((uuid: string) => {
+  const toggleTemplateSelection = useCallback((id: string) => {
     setSelectedTemplates((prev) => {
       const next = new Set(prev);
-      if (next.has(uuid)) {
-        next.delete(uuid);
+      if (next.has(id)) {
+        next.delete(id);
       } else {
-        next.add(uuid);
+        next.add(id);
       }
       return next;
     });
@@ -172,7 +172,7 @@ export function TaskManagementView({
     if (selectedTemplates.size === filteredTemplates.length) {
       setSelectedTemplates(new Set());
     } else {
-      setSelectedTemplates(new Set(filteredTemplates.map((t) => t.uuid)));
+      setSelectedTemplates(new Set(filteredTemplates.map((t) => t.id)));
     }
   }, [filteredTemplates, selectedTemplates.size]);
 
@@ -182,8 +182,8 @@ export function TaskManagementView({
 
     setIsDeleting(true);
     try {
-      for (const uuid of selectedTemplates) {
-        await deleteTemplate(uuid);
+      for (const id of selectedTemplates) {
+        await deleteTemplate(id);
       }
       setSelectedTemplates(new Set());
       setShowDeleteAllDialog(false);
@@ -196,27 +196,27 @@ export function TaskManagementView({
   }, [selectedTemplates, deleteConfirmText, deleteTemplate]);
 
   // 恢复模板（从暂停/归档状态）
-  const handleResumeTemplate = useCallback(async (uuid: string) => {
+  const handleResumeTemplate = useCallback(async (id: string) => {
     try {
-      await activateTemplate(uuid);
+      await activateTemplate(id);
     } catch (err) {
       console.error('Resume template failed:', err);
     }
   }, [activateTemplate]);
 
   // 暂停模板
-  const handlePauseTemplate = useCallback(async (uuid: string) => {
+  const handlePauseTemplate = useCallback(async (id: string) => {
     try {
-      await pauseTemplate(uuid);
+      await pauseTemplate(id);
     } catch (err) {
       console.error('Pause template failed:', err);
     }
   }, [pauseTemplate]);
 
   // 归档模板
-  const handleArchiveTemplate = useCallback(async (uuid: string) => {
+  const handleArchiveTemplate = useCallback(async (id: string) => {
     try {
-      await archiveTemplate(uuid);
+      await archiveTemplate(id);
     } catch (err) {
       console.error('Archive template failed:', err);
     }
@@ -378,15 +378,15 @@ export function TaskManagementView({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredTemplates.map((template) => (
                 <TemplateCard
-                  key={template.uuid}
+                  key={template.id}
                   template={template}
-                  isSelected={selectedTemplates.has(template.uuid)}
-                  onSelect={() => toggleTemplateSelection(template.uuid)}
-                  onEdit={() => onEditTemplate?.(template.uuid)}
-                  onPause={() => handlePauseTemplate(template.uuid)}
-                  onResume={() => handleResumeTemplate(template.uuid)}
-                  onArchive={() => handleArchiveTemplate(template.uuid)}
-                  onDelete={() => deleteTemplate(template.uuid)}
+                  isSelected={selectedTemplates.has(template.id)}
+                  onSelect={() => toggleTemplateSelection(template.id)}
+                  onEdit={() => onEditTemplate?.(template.id)}
+                  onPause={() => handlePauseTemplate(template.id)}
+                  onResume={() => handleResumeTemplate(template.id)}
+                  onArchive={() => handleArchiveTemplate(template.id)}
+                  onDelete={() => deleteTemplate(template.id)}
                 />
               ))}
             </div>

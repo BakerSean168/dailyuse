@@ -41,40 +41,40 @@ export class ReminderClientService {
     return this.reminderApi.createReminderTemplate(request);
   }
 
-  async getReminderTemplate(uuid: string): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.reminderApi.getReminderTemplate(uuid);
+  async getReminderTemplate(id: string): Promise<Result<ReminderTemplateClientDTO>> {
+    return this.reminderApi.getReminderTemplate(id);
   }
 
   async getReminderTemplates(params?: { page?: number; limit?: number }): Promise<Result<ReminderTemplatesResponse>> {
     return this.reminderApi.getReminderTemplates(params);
   }
 
-  async getUserTemplates(accountUuid: string): Promise<Result<ReminderTemplateClientDTO[]>> {
-    return this.reminderApi.getUserTemplates(accountUuid);
+  async getUserTemplates(identityId: string): Promise<Result<ReminderTemplateClientDTO[]>> {
+    return this.reminderApi.getUserTemplates(identityId);
   }
 
-  async updateReminderTemplate(uuid: string, request: UpdateReminderTemplateReq): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.reminderApi.updateReminderTemplate(uuid, request);
+  async updateReminderTemplate(id: string, request: UpdateReminderTemplateReq): Promise<Result<ReminderTemplateClientDTO>> {
+    return this.reminderApi.updateReminderTemplate(id, request);
   }
 
-  async deleteReminderTemplate(uuid: string): Promise<Result<void>> {
-    return this.reminderApi.deleteReminderTemplate(uuid);
+  async deleteReminderTemplate(id: string): Promise<Result<void>> {
+    return this.reminderApi.deleteReminderTemplate(id);
   }
 
-  async toggleTemplateEnabled(uuid: string): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.reminderApi.toggleTemplateEnabled(uuid);
+  async toggleTemplateEnabled(id: string): Promise<Result<ReminderTemplateClientDTO>> {
+    return this.reminderApi.toggleTemplateEnabled(id);
   }
 
-  async moveTemplateToGroup(templateUuid: string, targetGroupUuid: string | null): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.reminderApi.moveTemplateToGroup(templateUuid, targetGroupUuid);
+  async moveTemplateToGroup(templateId: string, targetGroupId: string | null): Promise<Result<ReminderTemplateClientDTO>> {
+    return this.reminderApi.moveTemplateToGroup(templateId, targetGroupId);
   }
 
-  async searchTemplates(accountUuid: string, query: string): Promise<Result<ReminderTemplateClientDTO[]>> {
-    return this.reminderApi.searchTemplates(accountUuid, query);
+  async searchTemplates(identityId: string, query: string): Promise<Result<ReminderTemplateClientDTO[]>> {
+    return this.reminderApi.searchTemplates(identityId, query);
   }
 
-  async getTemplateScheduleStatus(templateUuid: string): Promise<Result<TemplateScheduleStatusRes>> {
-    return this.reminderApi.getTemplateScheduleStatus(templateUuid);
+  async getTemplateScheduleStatus(templateId: string): Promise<Result<TemplateScheduleStatusRes>> {
+    return this.reminderApi.getTemplateScheduleStatus(templateId);
   }
 
   async getUpcomingReminders(params?: { days?: number; limit?: number; importanceLevel?: string; type?: string }): Promise<Result<GetUpcomingRemindersRes>> {
@@ -87,37 +87,37 @@ export class ReminderClientService {
     return this.reminderApi.createReminderGroup(request);
   }
 
-  async getReminderGroup(uuid: string): Promise<Result<ReminderGroupClientDTO>> {
-    return this.reminderApi.getReminderGroup(uuid);
+  async getReminderGroup(id: string): Promise<Result<ReminderGroupClientDTO>> {
+    return this.reminderApi.getReminderGroup(id);
   }
 
   async getReminderGroups(params?: { page?: number; limit?: number }): Promise<Result<ReminderGroupsResponse>> {
     return this.reminderApi.getReminderGroups(params);
   }
 
-  async getUserReminderGroups(accountUuid: string): Promise<Result<ReminderGroupClientDTO[]>> {
-    return this.reminderApi.getUserReminderGroups(accountUuid);
+  async getUserReminderGroups(identityId: string): Promise<Result<ReminderGroupClientDTO[]>> {
+    return this.reminderApi.getUserReminderGroups(identityId);
   }
 
-  async updateReminderGroup(uuid: string, request: UpdateReminderGroupReq): Promise<Result<ReminderGroupClientDTO>> {
-    return this.reminderApi.updateReminderGroup(uuid, request);
+  async updateReminderGroup(id: string, request: UpdateReminderGroupReq): Promise<Result<ReminderGroupClientDTO>> {
+    return this.reminderApi.updateReminderGroup(id, request);
   }
 
-  async deleteReminderGroup(uuid: string): Promise<Result<void>> {
-    return this.reminderApi.deleteReminderGroup(uuid);
+  async deleteReminderGroup(id: string): Promise<Result<void>> {
+    return this.reminderApi.deleteReminderGroup(id);
   }
 
-  async toggleReminderGroupStatus(uuid: string): Promise<Result<ReminderGroupClientDTO>> {
-    return this.reminderApi.toggleReminderGroupStatus(uuid);
+  async toggleReminderGroupStatus(id: string): Promise<Result<ReminderGroupClientDTO>> {
+    return this.reminderApi.toggleReminderGroupStatus(id);
   }
 
-  async toggleReminderGroupControlMode(uuid: string): Promise<Result<ReminderGroupClientDTO>> {
-    return this.reminderApi.toggleReminderGroupControlMode(uuid);
+  async toggleReminderGroupControlMode(id: string): Promise<Result<ReminderGroupClientDTO>> {
+    return this.reminderApi.toggleReminderGroupControlMode(id);
   }
 
   // ===== 统计 =====
 
-  async getReminderStatistics(accountUuid: string): Promise<Result<ReminderStatsClientDTO>> {
-    return this.reminderApi.getReminderStatistics(accountUuid);
+  async getReminderStatistics(identityId: string): Promise<Result<ReminderStatsClientDTO>> {
+    return this.reminderApi.getReminderStatistics(identityId);
   }
 }

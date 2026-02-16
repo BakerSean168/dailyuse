@@ -42,12 +42,12 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
     return tryCatch(() => this.ipcClient.invoke(`${this.channel}:list`));
   }
 
-  async getRepositoryById(uuid: string): Promise<Result<RepositoryClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:get`, uuid));
+  async getRepositoryById(id: string): Promise<Result<RepositoryClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:get`, id));
   }
 
-  async deleteRepository(uuid: string): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:delete`, uuid));
+  async deleteRepository(id: string): Promise<Result<void>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:delete`, id));
   }
 
   // ===== Folder Operations =====
@@ -56,29 +56,29 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
     return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:create`, request));
   }
 
-  async getFolderContents(folderUuid: string): Promise<Result<{
+  async getFolderContents(folderId: string): Promise<Result<{
     folders: FolderClientDTO[];
     resources: ResourceClientDTO[];
   }>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:contents`, folderUuid));
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:list`, folderId));
   }
 
-  async renameFolder(uuid: string, name: string): Promise<Result<FolderClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:rename`, { uuid, name }));
+  async renameFolder(id: string, name: string): Promise<Result<FolderClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:update`, { id, name }));
   }
 
-  async moveFolder(uuid: string, targetParentUuid: string): Promise<Result<FolderClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:move`, { uuid, targetParentUuid }));
+  async moveFolder(id: string, targetParentId: string): Promise<Result<FolderClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:update`, { id, targetParentId }));
   }
 
-  async deleteFolder(uuid: string): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:delete`, uuid));
+  async deleteFolder(id: string): Promise<Result<void>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:delete`, id));
   }
 
   // ===== File Tree =====
 
-  async getFileTree(repositoryUuid: string): Promise<Result<FileTreeResponse>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:tree`, repositoryUuid));
+  async getFileTree(repositoryId: string): Promise<Result<FileTreeResponse>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:list`, repositoryId));
   }
 
   // ===== Search =====
@@ -89,20 +89,20 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
 
   // ===== Resource Operations =====
 
-  async getResource(uuid: string): Promise<Result<ResourceClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:get`, uuid));
+  async getResource(id: string): Promise<Result<ResourceClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:get`, id));
   }
 
-  async renameResource(uuid: string, name: string): Promise<Result<ResourceClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:rename`, { uuid, name }));
+  async renameResource(id: string, name: string): Promise<Result<ResourceClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:update`, { id, name }));
   }
 
-  async moveResource(uuid: string, targetFolderUuid: string): Promise<Result<ResourceClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:move`, { uuid, targetFolderUuid }));
+  async moveResource(id: string, targetFolderId: string): Promise<Result<ResourceClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:update`, { id, targetFolderId }));
   }
 
-  async deleteResource(uuid: string): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:delete`, uuid));
+  async deleteResource(id: string): Promise<Result<void>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:delete`, id));
   }
 }
 

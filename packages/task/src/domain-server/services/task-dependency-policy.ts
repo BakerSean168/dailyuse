@@ -10,16 +10,16 @@ export class TaskDependencyPolicy {
    * Ensure adding a dependency does not create a cycle.
    */
   ensureNoCircularDependency(
-    predecessorUuid: string,
-    successorUuid: string,
+    predecessorId: string,
+    successorId: string,
     allDependencies: TaskDependencyServerDTO[],
   ): CircularDependencyValidationResult {
     const visited = new Set<string>();
     const path: string[] = [];
 
     const hasCycle = this.detectCycle(
-      successorUuid,
-      predecessorUuid,
+      successorId,
+      predecessorId,
       visited,
       path,
       allDependencies,
@@ -28,8 +28,8 @@ export class TaskDependencyPolicy {
     if (hasCycle) {
       return {
         isValid: false,
-        cycle: [...path, predecessorUuid],
-        message: `Creating this dependency would introduce a cycle: ${[...path, predecessorUuid].join(' -> ')}`,
+        cycle: [...path, predecessorId],
+        message: `Creating this dependency would introduce a cycle: ${[...path, predecessorId].join(' -> ')}`,
       };
     }
 

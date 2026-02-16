@@ -29,32 +29,32 @@ async function main() {
         const uniqueUsername = `testuser_${Date.now()}`;
         testAccount = await prisma.account.create({
           data: {
-            uuid: generateUUID(),
+            id: generateUUID(),
             username: uniqueUsername,
             email: 'test@dailyuse.com',
             accountType: 'local',
             status: 'active',
           },
         });
-        console.log(`  ✅ Created test account: ${testAccount.uuid}`);
+        console.log(`  ✅ Created test account: ${testAccount.id}`);
       } else {
-        console.log(`  ✅ Using existing account: ${testAccount.uuid}`);
+        console.log(`  ✅ Using existing account: ${testAccount.id}`);
       }
     } else {
-      console.log(`  ✅ Found test account: ${testAccount.uuid}`);
+      console.log(`  ✅ Found test account: ${testAccount.id}`);
     }
 
-    const testAccountUuid = testAccount.uuid;
+    const testAccountId = testAccount.id;
 
     // Step 2: 创建 ReminderTemplate (每 1 分钟)
     console.log('\n📝 Step 2: Creating ReminderTemplate (every 1 minute)...');
-    const reminderUuid = generateUUID();
+    const reminderId = generateUUID();
     const now = new Date();
 
     const reminder = await prisma.reminderTemplate.create({
       data: {
-        uuid: reminderUuid,
-        accountUuid: testAccountUuid,
+        id: reminderId,
+        identityId: testAccountId,
         name: 'Manual Test - Every 1 Minute',
         description: 'Manual test reminder for E2E flow',
         message: '🔔 测试提醒：这是一个手动测试！',
@@ -91,7 +91,7 @@ async function main() {
     });
 
     console.log(`  ✅ ReminderTemplate created:`);
-    console.log(`     UUID: ${reminder.uuid}`);
+    console.log(`     UUID: ${reminder.id}`);
     console.log(`     Name: ${reminder.name}`);
     console.log(`     Interval: Every ${reminder.timeConfigDuration} seconds`);
     console.log(`     Sound: ${reminder.notificationSound}`);
@@ -103,7 +103,7 @@ async function main() {
 
     const scheduleTasks = await prisma.scheduleTask.findMany({
       where: {
-        accountUuid: testAccountUuid,
+        identityId: testAccountId,
         taskType: 'reminder',
         enabled: true,
       },
@@ -117,13 +117,13 @@ async function main() {
       console.log("  ℹ️  Let's create one manually for testing...");
 
       // 手动创建 ScheduleTask
-      const taskUuid = generateUUID();
+      const taskId = generateUUID();
       const scheduledTime = new Date(now.getTime() + 10000); // 10 秒后
 
       const manualTask = await prisma.scheduleTask.create({
         data: {
-          uuid: taskUuid,
-          accountUuid: testAccountUuid,
+          id: taskId,
+          identityId: testAccountId,
           title: reminder.name,
           description: reminder.description || '',
           taskType: 'reminder',
@@ -134,8 +134,8 @@ async function main() {
           nextScheduledAt: scheduledTime,
           payload: {
             sourceType: 'reminder',
-            sourceId: reminderUuid,
-            accountUuid: testAccountUuid,
+            sourceId: reminderId,
+            identityId: testAccountId,
             content: {
               title: reminder.name,
               message: reminder.message,
@@ -151,10 +151,10 @@ async function main() {
         },
       });
 
-      console.log(`  ✅ Manually created ScheduleTask: ${manualTask.uuid}`);
+      console.log(`  ✅ Manually created ScheduleTask: ${manualTask.id}`);
       scheduleTasks.push(manualTask);
     } else {
-      console.log(`  ✅ ScheduleTask found: ${scheduleTasks[0].uuid}`);
+      console.log(`  ✅ ScheduleTask found: ${scheduleTasks[0].id}`);
     }
 
     const scheduleTask = scheduleTasks[0];
@@ -167,7 +167,7 @@ async function main() {
     const executionTime = new Date();
 
     await prisma.scheduleTask.update({
-      where: { uuid: scheduleTask.uuid },
+      where: { id: scheduleTask.id },
       data: {
         lastExecutedAt: executionTime,
         executionCount: { increment: 1 },
@@ -180,13 +180,13 @@ async function main() {
 
     // Step 5: 创建 Notification
     console.log('\n📬 Step 5: Creating Notification...');
-    const notificationUuid = generateUUID();
+    const notificationId = generateUUID();
     const payload = scheduleTask.payload as any;
 
     const notification = await prisma.notification.create({
       data: {
-        uuid: notificationUuid,
-        accountUuid: testAccountUuid,
+        id: notificationId,
+        identityId: testAccountId,
         title: reminder.name,
         content: reminder.message,
         type: 'reminder',
@@ -195,8 +195,8 @@ async function main() {
         channels: JSON.stringify(['sse', 'in_app']),
         metadata: JSON.stringify({
           sourceType: 'reminder',
-          sourceId: reminderUuid,
-          taskId: scheduleTask.uuid,
+          sourceId: reminderId,
+          taskId: scheduleTask.id,
           notificationSound: reminder.notificationSound,
           notificationPopup: reminder.notificationPopup,
           soundFile: reminder.notificationSoundFile,
@@ -205,7 +205,7 @@ async function main() {
       },
     });
 
-    console.log(`  ✅ Notification created: ${notification.uuid}`);
+    console.log(`  ✅ Notification created: ${notification.id}`);
     console.log(`     Title: ${notification.title}`);
     console.log(`     Content: ${notification.content}`);
     console.log(`     Channels: ${notification.channels}`);
@@ -214,11 +214,11 @@ async function main() {
     console.log('\n📡 Step 6: Simulating SSE delivery...');
 
     // SSE Channel
-    const sseReceiptUuid = generateUUID();
+    const sseReceiptId = generateUUID();
     await prisma.deliveryReceipt.create({
       data: {
-        uuid: sseReceiptUuid,
-        notificationUuid: notification.uuid,
+        id: sseReceiptId,
+        notificationId: notification.id,
         channel: 'sse',
         status: 'pending',
       },
@@ -227,7 +227,7 @@ async function main() {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     await prisma.deliveryReceipt.update({
-      where: { uuid: sseReceiptUuid },
+      where: { id: sseReceiptId },
       data: {
         status: 'sent',
         sentAt: new Date(),
@@ -235,7 +235,7 @@ async function main() {
         metadata: JSON.stringify({
           event: 'notification',
           data: {
-            id: notification.uuid,
+            id: notification.id,
             title: notification.title,
             content: notification.content,
             sound: reminder.notificationSound,
@@ -249,11 +249,11 @@ async function main() {
     console.log(`  ✅ SSE delivered successfully`);
 
     // In-App Channel
-    const inAppReceiptUuid = generateUUID();
+    const inAppReceiptId = generateUUID();
     await prisma.deliveryReceipt.create({
       data: {
-        uuid: inAppReceiptUuid,
-        notificationUuid: notification.uuid,
+        id: inAppReceiptId,
+        notificationId: notification.id,
         channel: 'in_app',
         status: 'sent',
         sentAt: new Date(),
@@ -265,7 +265,7 @@ async function main() {
 
     // Update Notification status
     await prisma.notification.update({
-      where: { uuid: notification.uuid },
+      where: { id: notification.id },
       data: {
         status: 'sent',
         sentAt: new Date(),
@@ -278,15 +278,15 @@ async function main() {
     console.log('\n🔍 Step 7: Verifying complete flow...');
 
     const finalReminder = await prisma.reminderTemplate.findUnique({
-      where: { uuid: reminderUuid },
+      where: { id: reminderId },
     });
 
     const finalTask = await prisma.scheduleTask.findUnique({
-      where: { uuid: scheduleTask.uuid },
+      where: { id: scheduleTask.id },
     });
 
     const finalNotification = await prisma.notification.findUnique({
-      where: { uuid: notificationUuid },
+      where: { id: notificationId },
       include: { deliveryReceipts: true },
     });
 
@@ -294,19 +294,19 @@ async function main() {
     console.log('  ║           ✅ Complete E2E Flow Verified                    ║');
     console.log('  ╠════════════════════════════════════════════════════════════╣');
     console.log(
-      `  ║  1. ReminderTemplate   → ${finalReminder!.uuid.substring(0, 8)}...          ║`,
+      `  ║  1. ReminderTemplate   → ${finalReminder!.id.substring(0, 8)}...          ║`,
     );
     console.log(
       `  ║     Enabled: ${finalReminder!.enabled ? 'Yes' : 'No '}  Interval: ${finalReminder!.timeConfigDuration}s             ║`,
     );
     console.log('  ║         ↓                                                  ║');
-    console.log(`  ║  2. ScheduleTask       → ${finalTask!.uuid.substring(0, 8)}...          ║`);
+    console.log(`  ║  2. ScheduleTask       → ${finalTask!.id.substring(0, 8)}...          ║`);
     console.log(
       `  ║     Executed: ${finalTask!.executionCount}x  Next: ${finalTask!.nextScheduledAt ? 'Scheduled' : 'N/A'}              ║`,
     );
     console.log('  ║         ↓                                                  ║');
     console.log(
-      `  ║  3. Notification       → ${finalNotification!.uuid.substring(0, 8)}...          ║`,
+      `  ║  3. Notification       → ${finalNotification!.id.substring(0, 8)}...          ║`,
     );
     console.log(
       `  ║     Status: ${finalNotification!.status.padEnd(10)} Type: ${finalNotification!.type.padEnd(10)}        ║`,
@@ -351,20 +351,20 @@ async function main() {
 
     // Cleanup prompt
     console.log('🧹 Cleanup:');
-    console.log(`   ReminderTemplate UUID: ${reminderUuid}`);
-    console.log(`   ScheduleTask UUID: ${scheduleTask.uuid}`);
-    console.log(`   Notification UUID: ${notificationUuid}`);
+    console.log(`   ReminderTemplate UUID: ${reminderId}`);
+    console.log(`   ScheduleTask UUID: ${scheduleTask.id}`);
+    console.log(`   Notification UUID: ${notificationId}`);
     console.log('   Run cleanup? (Press Ctrl+C to skip, or wait 5 seconds)\n');
 
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
     console.log('🧹 Cleaning up test data...');
     await prisma.deliveryReceipt.deleteMany({
-      where: { notificationUuid },
+      where: { notificationId },
     });
-    await prisma.notification.delete({ where: { uuid: notificationUuid } });
-    await prisma.scheduleTask.delete({ where: { uuid: scheduleTask.uuid } });
-    await prisma.reminderTemplate.delete({ where: { uuid: reminderUuid } });
+    await prisma.notification.delete({ where: { id: notificationId } });
+    await prisma.scheduleTask.delete({ where: { id: scheduleTask.id } });
+    await prisma.reminderTemplate.delete({ where: { id: reminderId } });
     console.log('✅ Cleanup complete!\n');
   } catch (error) {
     console.error('\n❌ Error during test:');

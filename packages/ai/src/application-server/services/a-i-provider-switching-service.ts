@@ -33,8 +33,8 @@ export class AIProviderSwitchingService {
   /**
    * Switch to another provider
    */
-  async switchProvider(accountUuid: string, newProviderUuid: string): Promise<boolean> {
-    logger.info('Switching provider', { accountUuid, newProviderUuid });
+  async switchProvider(identityId: string, newProviderId: string): Promise<boolean> {
+    logger.info('Switching provider', { identityId, newProviderId });
     return true;
   }
 
@@ -52,16 +52,16 @@ export class AIProviderSwitchingService {
   /**
    * Get available providers
    */
-  async getAvailableProviders(accountUuid: string): Promise<any[]> {
-    logger.info('Getting available providers', { accountUuid });
+  async getAvailableProviders(identityId: string): Promise<any[]> {
+    logger.info('Getting available providers', { identityId });
     return [];
   }
 
   /**
    * Check provider health
    */
-  async checkProviderHealth(providerUuid: string): Promise<boolean> {
-    logger.info('Checking provider health', { providerUuid });
+  async checkProviderHealth(providerId: string): Promise<boolean> {
+    logger.info('Checking provider health', { providerId });
     return true;
   }
 

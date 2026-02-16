@@ -49,7 +49,7 @@ export function AIChatView() {
       {/* Sidebar - Conversation List */}
       <ConversationList
         conversations={conversations}
-        currentId={currentConversation?.uuid}
+        currentId={currentConversation?.id}
         onSelect={selectConversation}
         onDelete={deleteConversation}
         onNewConversation={handleNewConversation}

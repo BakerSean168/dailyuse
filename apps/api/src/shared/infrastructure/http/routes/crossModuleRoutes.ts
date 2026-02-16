@@ -19,27 +19,27 @@ const router: Router = Router();
  * 返回特定状态（如进行中）的目标列表，供前端在创建或编辑任务时选择关联目标。
  *
  * @route GET /api/v1/cross-module/goals/for-task-binding
- * @param req.query.accountUuid - 账户 UUID (可选，优先使用 Token 中的用户信息)
+ * @param req.query.identityId - 账户 ID (可选，优先使用 Token 中的用户信息)
  * @param req.query.status - 目标状态过滤 (可选，逗号分隔)
  */
 router.get('/goals/for-task-binding', async (req: Request, res: Response) => {
   try {
-    // accountUuid 可以从 query 参数获取，或从认证 token 中获取（如果使用了 authMiddleware）
-    const accountUuid = (req.query.accountUuid as string) || (req as any).user?.accountUuid;
+    // identityId 可以从 query 参数获取，或从认证 token 中获取（如果使用了 authMiddleware）
+    const identityId = (req.query.identityId as string) || (req as any).user?.identityId;
     const status = req.query.status
       ? (req.query.status as string).split(',')
       : undefined;
 
-    if (!accountUuid) {
+    if (!identityId) {
       return res.status(400).json({
         code: 400,
         success: false,
-        message: 'accountUuid is required or authentication is missing',
+        message: 'identityId is required or authentication is missing',
       });
     }
 
     const goals = await goalQueryService.getGoalsForTaskBinding({
-      accountUuid,
+      identityId,
       status: status as any,
     });
 
@@ -62,14 +62,14 @@ router.get('/goals/for-task-binding', async (req: Request, res: Response) => {
 /**
  * 获取目标的关键结果列表（用于任务绑定）。
  *
- * @route GET /api/v1/cross-module/goals/:goalUuid/key-results/for-task-binding
- * @param req.params.goalUuid - 目标 UUID
+ * @route GET /api/v1/cross-module/goals/:goalId/key-results/for-task-binding
+ * @param req.params.goalId - 目标 UUID
  */
-router.get('/goals/:goalUuid/key-results/for-task-binding', async (req: Request, res: Response) => {
+router.get('/goals/:goalId/key-results/for-task-binding', async (req: Request, res: Response) => {
   try {
-    const { goalUuid } = req.params;
+    const { goalId } = req.params;
 
-    const keyResults = await goalQueryService.getKeyResultsForTaskBinding(goalUuid);
+    const keyResults = await goalQueryService.getKeyResultsForTaskBinding(goalId);
 
     return res.json({
       code: 200,
@@ -94,22 +94,22 @@ router.get('/goals/:goalUuid/key-results/for-task-binding', async (req: Request,
  * 检查目标是否存在、关键结果是否属于该目标等业务规则。
  *
  * @route POST /api/v1/cross-module/goals/validate-binding
- * @param req.body.goalUuid - 目标 UUID
- * @param req.body.keyResultUuid - 关键结果 UUID
+ * @param req.body.goalId - 目标 UUID
+ * @param req.body.keyResultId - 关键结果 UUID
  */
 router.post('/goals/validate-binding', async (req: Request, res: Response) => {
   try {
-    const { goalUuid, keyResultUuid } = req.body;
+    const { goalId, keyResultId } = req.body;
 
-    if (!goalUuid || !keyResultUuid) {
+    if (!goalId || !keyResultId) {
       return res.status(400).json({
         code: 400,
         success: false,
-        message: 'goalUuid and keyResultUuid are required',
+        message: 'goalId and keyResultId are required',
       });
     }
 
-    const result = await goalQueryService.validateGoalBinding(goalUuid, keyResultUuid);
+    const result = await goalQueryService.validateGoalBinding(goalId, keyResultId);
 
     if (result.valid) {
       return res.json({

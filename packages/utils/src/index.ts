@@ -2,7 +2,7 @@
  * @dailyuse/utils - 通用工具库
  *
  * 模块结构:
- * - shared/     共享工具（uuid, date, time, recurrence, priority）
+ * - shared/     共享工具（id, date, time, recurrence, priority）
  * - domain/     DDD 基础类（Entity, AggregateRoot, ValueObject, EventBus）
  * - errors/     错误处理
  * - validation/ 验证工具

@@ -22,7 +22,7 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
  */
 export interface UpcomingReminderDTO {
   // 提醒信息
-  templateUuid: string;
+  templateId: string;
   title: string;
   description?: string;
   type: ReminderType;
@@ -42,7 +42,7 @@ export interface UpcomingReminderDTO {
   notificationChannels: string[];
 
   // 分组信息
-  groupUuid?: string | null;
+  groupId?: string | null;
 }
 
 /**
@@ -86,7 +86,7 @@ export class UpcomingReminderCalculationService {
     // 为每个提醒计算接下来的触发时间
     for (const reminder of reminders) {
       console.log(`📝 [UpcomingReminderCalculation] 处理提醒: ${reminder.name}`, {
-        uuid: reminder.id,
+        id: reminder.id,
         type: reminder.type,
         triggerType: reminder.trigger.type,
         selfEnabled: reminder.selfEnabled,
@@ -404,7 +404,7 @@ export class UpcomingReminderCalculationService {
     const daysUntilTrigger = Math.ceil((nextTriggerAt - baseTime) / (24 * 60 * 60 * 1000));
 
     return {
-      templateUuid: reminder.id,
+      templateId: reminder.id,
       title: reminder.name,
       description: reminder.description ?? undefined,
       type: reminder.type,
@@ -416,7 +416,7 @@ export class UpcomingReminderCalculationService {
       icon: reminder.icon || 'mdi-bell',
       color: reminder.color || '#1976D2',
       notificationChannels: reminder.notificationConfig?.channels || [],
-      groupUuid: reminder.groupUuid ?? undefined,
+      groupId: reminder.groupId ?? undefined,
     };
   }
 

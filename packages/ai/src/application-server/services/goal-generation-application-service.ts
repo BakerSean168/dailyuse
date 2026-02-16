@@ -23,10 +23,10 @@ const logger = createLogger('GoalGenerationApplicationService');
  * Generate goal request parameters
  */
 export interface GenerateGoalParams {
-  accountUuid: string;
+  identityId: string;
   idea: string;
   context?: string;
-  providerUuid?: string;
+  providerId?: string;
   category?: GoalCategory;
   timeRange?: string;
   startDate?: number;
@@ -43,13 +43,13 @@ export interface GenerateGoalParams {
  * Generate key results request parameters
  */
 export interface GenerateKeyResultsParams {
-  accountUuid: string;
+  identityId: string;
   goalTitle: string;
   goalDescription?: string;
   startDate: number;
   endDate: number;
   goalContext?: string;
-  providerUuid?: string;
+  providerId?: string;
 }
 
 /**
@@ -73,10 +73,10 @@ export class GoalGenerationApplicationService {
   async generateGoal(
     params: GenerateGoalParams,
   ): Promise<GenerateGoalResponse | GenerateGoalWithKRsResponse> {
-    const { accountUuid, idea, includeKeyResults, keyResultCount } = params;
+    const { identityId, idea, includeKeyResults, keyResultCount } = params;
 
     logger.info('Generating goal from idea', {
-      accountUuid,
+      identityId,
       ideaLength: idea.length,
       includeKeyResults,
     });
@@ -121,10 +121,10 @@ export class GoalGenerationApplicationService {
   async generateGoalWithKRs(
     params: GenerateGoalParams,
   ): Promise<GenerateGoalWithKRsResponse> {
-    const { accountUuid, idea } = params;
+    const { identityId, idea } = params;
 
     logger.info('Generating goal with key results', {
-      accountUuid,
+      identityId,
       ideaLength: idea.length,
     });
 
@@ -156,10 +156,10 @@ export class GoalGenerationApplicationService {
    * Generate key results
    */
   async generateKeyResults(params: GenerateKeyResultsParams): Promise<GenerateKeyResultsResponse> {
-    const { accountUuid, goalTitle } = params;
+    const { identityId, goalTitle } = params;
 
     logger.info('Generating key results', {
-      accountUuid,
+      identityId,
       goalTitle,
     });
 

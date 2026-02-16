@@ -60,7 +60,7 @@ let instance: SyncDesktopApplicationService | null = null;
 export class SyncDesktopApplicationService {
   private readonly logger: ILogger;
   private readonly deviceInfo: DeviceInfoDTO;
-  private readonly accountUuid = 'default-account';
+  private readonly identityId = 'default-account';
 
   // Application Services (initialized in constructor)
   private sessionService!: SyncSessionApplicationService;
@@ -105,23 +105,23 @@ export class SyncDesktopApplicationService {
     this.sessionService = new SyncSessionApplicationService(
       sessionRepository,
       profileRepository,
-      this.accountUuid,
+      this.identityId,
       this.deviceInfo
     );
 
     this.profileService = new SyncProfileApplicationService(
       profileRepository,
-      this.accountUuid
+      this.identityId
     );
 
     this.conflictService = new SyncConflictApplicationService(
       conflictRepository,
-      this.accountUuid
+      this.identityId
     );
 
     this.changeService = new PendingChangeApplicationService(
       changeRepository,
-      this.accountUuid
+      this.identityId
     );
 
     this.stateService = new SyncStateApplicationService(
@@ -129,7 +129,7 @@ export class SyncDesktopApplicationService {
       this.sessionService,
       this.changeService,
       this.conflictService,
-      this.accountUuid
+      this.identityId
     );
   }
 

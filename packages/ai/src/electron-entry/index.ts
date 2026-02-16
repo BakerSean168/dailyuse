@@ -42,10 +42,10 @@ export const AIElectronModule: IElectronModule = {
 
     ipcMain.handle(Ch.CHAT, (_, dto) => chatSvc.sendMessage(dto));
     ipcMain.handle(Ch.CONVERSATION_LIST, (_, params) => convSvc.listConversations(params));
-    ipcMain.handle(Ch.CONVERSATION_GET, (_, uuid) => convSvc.getConversation(uuid));
+    ipcMain.handle(Ch.CONVERSATION_GET, (_, id) => convSvc.getConversation(id));
     ipcMain.handle(Ch.CONVERSATION_CREATE, (_, dto) => convSvc.createConversation(dto));
-    ipcMain.handle(Ch.CONVERSATION_DELETE, (_, uuid) => convSvc.deleteConversation(uuid));
-    ipcMain.handle(Ch.CONVERSATION_CLEAR, (_, uuid) => convSvc.clearConversation(uuid));
+    ipcMain.handle(Ch.CONVERSATION_DELETE, (_, id) => convSvc.deleteConversation(id));
+    ipcMain.handle(Ch.CONVERSATION_CLEAR, (_, id) => convSvc.clearConversation(id));
     ipcMain.handle(Ch.ANALYZE_TASK, (_, dto) => genSvc.analyzeTask(dto));
     ipcMain.handle(Ch.ANALYZE_GOAL, (_, dto) => genSvc.analyzeGoal(dto));
     ipcMain.handle(Ch.SUGGEST_SCHEDULE, (_, dto) => genSvc.suggestSchedule(dto));

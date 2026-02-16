@@ -73,7 +73,7 @@ export class FocusMode extends ValueObject<FocusModeDTO> implements IFocusMode {
   public static create(
     id: string,
     identityId: string,
-    focusedGoalUuids: string[],
+    focusedGoalIds: string[],
     endTime: number,
     hiddenGoalsMode: HiddenGoalsMode = 'hide',
   ): FocusMode {
@@ -81,7 +81,7 @@ export class FocusMode extends ValueObject<FocusModeDTO> implements IFocusMode {
     return new FocusMode({
       id: id as FocusModeId,
       identityId: identityId as IdentityId,
-      focusedGoalIds: focusedGoalUuids as GoalId[],
+      focusedGoalIds: focusedGoalIds as GoalId[],
       startTime: now,
       endTime,
       hiddenGoalsMode,

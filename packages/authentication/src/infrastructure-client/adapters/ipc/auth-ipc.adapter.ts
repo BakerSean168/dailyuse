@@ -29,19 +29,19 @@ import type {
 } from '@dailyuse/contracts/authentication';
 
 const CHANNELS = {
-  LOGIN_EMAIL: 'auth:login-email',
-  LOGIN_PHONE: 'auth:login-phone',
-  REGISTER_EMAIL: 'auth:register-email',
-  REGISTER_PHONE: 'auth:register-phone',
+  LOGIN_EMAIL: 'auth:login',
+  LOGIN_PHONE: 'auth:login',
+  REGISTER_EMAIL: 'auth:register',
+  REGISTER_PHONE: 'auth:register',
   SEND_SMS: 'auth:send-sms-code',
   REFRESH_TOKEN: 'auth:refresh-token',
   LOGOUT: 'auth:logout',
-  GET_CURRENT_USER: 'auth:me',
-  LIST_SESSIONS: 'auth:sessions:list',
-  REVOKE_SESSION: 'auth:sessions:revoke',
-  CHANGE_PASSWORD: 'auth:password:change',
-  FORGOT_PASSWORD: 'auth:password:forgot',
-  RESET_PASSWORD: 'auth:password:reset',
+  GET_CURRENT_USER: 'auth:get-status',
+  LIST_SESSIONS: 'auth:session:list',
+  REVOKE_SESSION: 'auth:session:revoke',
+  CHANGE_PASSWORD: 'auth:change-password',
+  FORGOT_PASSWORD: 'auth:forgot-password',
+  RESET_PASSWORD: 'auth:reset-password',
 } as const;
 
 export class AuthIpcAdapter implements IAuthApiClient {

@@ -106,7 +106,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     this.bree.on('worker created', this.handleTaskStart);
 
     // Record娲昏穬浠诲姟
-    tasks.forEach((task) => this.activeTasks.set(task.uuid, task));
+    tasks.forEach((task) => this.activeTasks.set(task.id, task));
 
     // 鍚姩寮曟搸
     await this.bree.start();
@@ -149,19 +149,19 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
 
     // 妫€鏌ヤ换鍔＄姸鎬?
     if (task.status !== 'active') {
-      console.warn(`鈿狅笍  Task ${task.uuid} is not active, skipping`);
+      console.warn(`鈿狅笍  Task ${task.id} is not active, skipping`);
       return;
     }
 
     // 娣诲姞鍒?Bree
     const jobOptions = this.toJobOptions(task);
     await this.bree.add(jobOptions);
-    await this.bree.start(task.uuid);
+    await this.bree.start(task.id);
 
     // Record娲昏穬浠诲姟
-    this.activeTasks.set(task.uuid, task);
+    this.activeTasks.set(task.id, task);
 
-    console.log(`鉁?Added task ${task.uuid} to execution engine`);
+    console.log(`鉁?Added task ${task.id} to execution engine`);
   }
 
   /**
@@ -249,14 +249,14 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
         name: jobName,
         data: {
           [`${task.sourceModule}Id`]: task.sourceEntityId,
-          accountUuid: task.accountUuid,
+          identityId: task.identityId,
         },
       },
     };
 
     // 鍩虹閰嶇疆
     const jobOptions: JobOptions = {
-      name: task.uuid, // 浣跨敤 task.uuid 浣滀负 bree 鐨?job name
+      name: task.id, // 浣跨敤 task.id 浣滀负 bree 鐨?job name
       path: path.join(this.config.workerPath, 'schedule-worker.js'),
       worker: {
         workerData: context,
@@ -312,7 +312,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     const duration = Date.now() - startTime;
 
     // Get涓婁竴娆＄殑鎵цRecord
-    const previousExecutions = await this.executionRepository.findByTaskUuid(taskId);
+    const previousExecutions = await this.executionRepository.findByTaskId(taskId);
     const lastExecution = previousExecutions.sort((a, b) => b.executionTime - a.executionTime)[0];
     const currentRetryCount = lastExecution ? lastExecution.retryCount : 0;
 
@@ -326,7 +326,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
       console.log(`馃攣 Task ${taskId} failed. Retrying in ${delay}ms (attempt ${nextRetryCount}).`);
 
       execution = ScheduleExecution.create({
-        taskUuid: taskId,
+        taskId: taskId,
         executionTime: startTime,
         status: ExecutionStatus.RETRYING,
       });
@@ -364,7 +364,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     } else {
       console.log(`馃毇 Max retries reached for task ${taskId}. Marking as FAILED.`);
       execution = ScheduleExecution.create({
-        taskUuid: taskId,
+        taskId: taskId,
         executionTime: startTime,
         status: ExecutionStatus.FAILED,
       });
@@ -406,7 +406,7 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     const duration = Date.now() - startTime;
 
     const execution = ScheduleExecution.create({
-      taskUuid: taskId,
+      taskId: taskId,
       executionTime: startTime,
     });
 

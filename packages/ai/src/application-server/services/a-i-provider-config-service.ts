@@ -30,13 +30,13 @@ export class AIProviderConfigService {
    * Create AI provider configuration
    */
   async createProvider(
-    accountUuid: string,
+    identityId: string,
     request: CreateAIProviderRequest,
   ): Promise<AIProviderConfigClientDTO> {
-    logger.info('Creating provider', { accountUuid });
+    logger.info('Creating provider', { identityId });
     return {
-      uuid: 'provider-' + Date.now(),
-      accountUuid,
+      id: 'provider-' + Date.now(),
+      identityId,
       name: request.name,
       defaultModel: request.defaultModel || 'default',
       isActive: true,
@@ -51,13 +51,13 @@ export class AIProviderConfigService {
    * Update AI provider configuration
    */
   async updateProvider(
-    uuid: string,
+    id: string,
     request: UpdateAIProviderRequest,
   ): Promise<AIProviderConfigClientDTO> {
-    logger.info('Updating provider', { uuid });
+    logger.info('Updating provider', { id });
     return {
-      uuid,
-      accountUuid: 'account-uuid',
+      id,
+      identityId: 'account-uuid',
       name: request.name || 'Updated Provider',
       defaultModel: request.defaultModel || 'default',
       isActive: true,
@@ -71,19 +71,19 @@ export class AIProviderConfigService {
   /**
    * Delete AI provider configuration
    */
-  async deleteProvider(uuid: string): Promise<boolean> {
-    logger.info('Deleting provider', { uuid });
+  async deleteProvider(id: string): Promise<boolean> {
+    logger.info('Deleting provider', { id });
     return true;
   }
 
   /**
    * Get AI provider configuration
    */
-  async getProvider(uuid: string): Promise<AIProviderConfigClientDTO> {
-    logger.info('Getting provider', { uuid });
+  async getProvider(id: string): Promise<AIProviderConfigClientDTO> {
+    logger.info('Getting provider', { id });
     return {
-      uuid,
-      accountUuid: 'account-uuid',
+      id,
+      identityId: 'account-uuid',
       name: 'Provider',
       defaultModel: 'gpt-3.5-turbo',
       isActive: true,
@@ -97,8 +97,8 @@ export class AIProviderConfigService {
   /**
    * List AI providers for account
    */
-  async listProviders(accountUuid: string): Promise<AIProviderConfigClientDTO[]> {
-    logger.info('Listing providers', { accountUuid });
+  async listProviders(identityId: string): Promise<AIProviderConfigClientDTO[]> {
+    logger.info('Listing providers', { identityId });
     return [];
   }
 
@@ -118,16 +118,16 @@ export class AIProviderConfigService {
   /**
    * Set provider as default
    */
-  async setDefaultProvider(uuid: string, accountUuid: string): Promise<boolean> {
-    logger.info('Setting default provider', { uuid, accountUuid });
+  async setDefaultProvider(id: string, identityId: string): Promise<boolean> {
+    logger.info('Setting default provider', { id, identityId });
     return true;
   }
 
   /**
    * Get default provider for account
    */
-  async getDefaultProvider(accountUuid: string): Promise<AIProviderConfigClientDTO | null> {
-    logger.info('Getting default provider', { accountUuid });
+  async getDefaultProvider(identityId: string): Promise<AIProviderConfigClientDTO | null> {
+    logger.info('Getting default provider', { identityId });
     return null;
   }
 }

@@ -14,8 +14,8 @@ export function initializeAITables(database: Database.Database): void {
   // ai_conversations 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS ai_conversations (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT NOT NULL,
       title TEXT NOT NULL,
       context TEXT NOT NULL,
       messages TEXT NOT NULL DEFAULT '[]',
@@ -23,15 +23,15 @@ export function initializeAITables(database: Database.Database): void {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
       deleted_at INTEGER,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
     )
   `);
 
   // ai_generation_tasks 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS ai_generation_tasks (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT NOT NULL,
       type TEXT NOT NULL,
       prompt TEXT NOT NULL,
       result TEXT,
@@ -41,15 +41,15 @@ export function initializeAITables(database: Database.Database): void {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
       completed_at INTEGER,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
     )
   `);
 
   // ai_usage_quotas 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS ai_usage_quotas (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT UNIQUE NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT UNIQUE NOT NULL,
       daily_limit INTEGER NOT NULL DEFAULT 100,
       daily_used INTEGER NOT NULL DEFAULT 0,
       monthly_limit INTEGER NOT NULL DEFAULT 3000,
@@ -57,15 +57,15 @@ export function initializeAITables(database: Database.Database): void {
       last_reset_date INTEGER NOT NULL,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
     )
   `);
 
   // ai_provider_configs 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS ai_provider_configs (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT NOT NULL,
       provider TEXT NOT NULL,
       api_key TEXT NOT NULL,
       model TEXT,
@@ -73,16 +73,16 @@ export function initializeAITables(database: Database.Database): void {
       is_active INTEGER NOT NULL DEFAULT 1,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
     )
   `);
 
   // 创建索引
   database.exec(`
-    CREATE INDEX IF NOT EXISTS idx_ai_conversations_account ON ai_conversations(account_uuid);
-    CREATE INDEX IF NOT EXISTS idx_ai_generation_tasks_account ON ai_generation_tasks(account_uuid);
+    CREATE INDEX IF NOT EXISTS idx_ai_conversations_account ON ai_conversations(identity_id);
+    CREATE INDEX IF NOT EXISTS idx_ai_generation_tasks_account ON ai_generation_tasks(identity_id);
     CREATE INDEX IF NOT EXISTS idx_ai_generation_tasks_status ON ai_generation_tasks(status);
-    CREATE INDEX IF NOT EXISTS idx_ai_provider_configs_account ON ai_provider_configs(account_uuid);
+    CREATE INDEX IF NOT EXISTS idx_ai_provider_configs_account ON ai_provider_configs(identity_id);
   `);
 
   console.log('[Database] AI tables initialized');

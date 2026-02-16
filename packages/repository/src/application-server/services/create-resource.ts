@@ -18,8 +18,8 @@ import type { IStoragePort } from '../ports/IStoragePort';
  * Create Resource Input
  */
 export interface CreateResourceInput {
-  repositoryUuid: string;
-  folderUuid?: string;
+  repositoryId: string;
+  folderId?: string;
   name: string;
   type: ResourceType;
   path: string;
@@ -51,12 +51,12 @@ export class CreateResource {
   }
 
   async execute(input: CreateResourceInput): Promise<CreateResourceOutput> {
-    const repository = await this.repositoryRepository.findById(input.repositoryUuid);
+    const repository = await this.repositoryRepository.findById(input.repositoryId);
     if (!repository) {
-      throw new Error(`Repository not found: ${input.repositoryUuid}`);
+      throw new Error(`Repository not found: ${input.repositoryId}`);
     }
 
-    const exists = await this.resourceRepository.existsByPath(input.repositoryUuid, input.path);
+    const exists = await this.resourceRepository.existsByPath(input.repositoryId, input.path);
     if (exists) {
       throw new Error(`Resource already exists at path: ${input.path}`);
     }
@@ -75,8 +75,8 @@ export class CreateResource {
     }
 
     const resource = Resource.create({
-      repositoryId: RepositoryId.of(input.repositoryUuid),
-      folderId: input.folderUuid ? FolderId.of(input.folderUuid) : null,
+      repositoryId: RepositoryId.of(input.repositoryId),
+      folderId: input.folderId ? FolderId.of(input.folderId) : null,
       name: input.name,
       type: input.type,
       path: input.path,
@@ -86,7 +86,7 @@ export class CreateResource {
     });
 
     await this.storagePort.write({
-      repositoryId: input.repositoryUuid,
+      repositoryId: input.repositoryId,
       path: input.path,
       content: input.content ?? null,
       isFolder: input.type === ResourceType.FOLDER,

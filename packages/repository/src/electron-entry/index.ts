@@ -43,23 +43,23 @@ export const RepositoryElectronModule: IElectronModule = {
 
     // Repository CRUD
     ipcMain.handle(Ch.LIST, (_, params) => repoRepo.findAll(params));
-    ipcMain.handle(Ch.GET, (_, uuid) => repoRepo.findById(uuid));
+    ipcMain.handle(Ch.GET, (_, id) => repoRepo.findById(id));
     ipcMain.handle(Ch.CREATE, (_, dto) => repoRepo.save(dto));
     ipcMain.handle(Ch.UPDATE, (_, dto) => repoRepo.save(dto));
-    ipcMain.handle(Ch.DELETE, (_, uuid) => repoRepo.delete(uuid));
+    ipcMain.handle(Ch.DELETE, (_, id) => repoRepo.delete(id));
 
     // Resource CRUD
     ipcMain.handle(Ch.RESOURCE_LIST, (_, params) => resourceRepo.findAll(params));
-    ipcMain.handle(Ch.RESOURCE_GET, (_, uuid) => resourceRepo.findById(uuid));
+    ipcMain.handle(Ch.RESOURCE_GET, (_, id) => resourceRepo.findById(id));
     ipcMain.handle(Ch.RESOURCE_CREATE, (_, dto) => resourceRepo.save(dto));
     ipcMain.handle(Ch.RESOURCE_UPDATE, (_, dto) => resourceRepo.save(dto));
-    ipcMain.handle(Ch.RESOURCE_DELETE, (_, uuid) => resourceRepo.delete(uuid));
+    ipcMain.handle(Ch.RESOURCE_DELETE, (_, id) => resourceRepo.delete(id));
 
     // Folder CRUD
     ipcMain.handle(Ch.FOLDER_LIST, (_, params) => folderRepo.findAll(params));
     ipcMain.handle(Ch.FOLDER_CREATE, (_, dto) => folderRepo.save(dto));
     ipcMain.handle(Ch.FOLDER_UPDATE, (_, dto) => folderRepo.save(dto));
-    ipcMain.handle(Ch.FOLDER_DELETE, (_, uuid) => folderRepo.delete(uuid));
+    ipcMain.handle(Ch.FOLDER_DELETE, (_, id) => folderRepo.delete(id));
 
     // Search
     ipcMain.handle(Ch.SEARCH, (_, params) => mod.syncService.search(params));

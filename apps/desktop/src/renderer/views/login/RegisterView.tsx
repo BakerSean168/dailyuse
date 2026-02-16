@@ -284,7 +284,7 @@ export function RegisterView({ onSwitchToLogin, onRegisterSuccess }: RegisterVie
       // 统一�?IpcResult 格式: { ok: boolean; data?: T; error?: { code, message } }
       const result = await window.electronAPI?.invoke<{
         ok: boolean;
-        data?: { accountUuid: string; message: string };
+        data?: { identityId: string; message: string };
         error?: { code: string; message: string };
       }>('auth:register', {
         username,

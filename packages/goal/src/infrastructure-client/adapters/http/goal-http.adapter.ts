@@ -40,7 +40,7 @@ export class GoalHttpAdapter implements IGoalApiClient {
     page?: number;
     limit?: number;
     status?: string;
-    dirUuid?: string;
+    dirId?: string;
     startDate?: string;
     endDate?: string;
     includeChildren?: boolean;
@@ -53,41 +53,41 @@ export class GoalHttpAdapter implements IGoalApiClient {
   }
 
   async getGoalById(
-    uuid: string,
+    id: string,
     includeChildren = true,
   ): Promise<Result<GoalClientDTO>> {
     return this.httpClient.get(
-      `${this.baseUrl}/${uuid}?includeChildren=${includeChildren}`,
+      `${this.baseUrl}/${id}?includeChildren=${includeChildren}`,
     );
   }
 
   async updateGoal(
-    uuid: string,
+    id: string,
     request: UpdateGoalReq,
   ): Promise<Result<GoalClientDTO>> {
-    return this.httpClient.patch(`${this.baseUrl}/${uuid}`, request);
+    return this.httpClient.patch(`${this.baseUrl}/${id}`, request);
   }
 
-  async deleteGoal(uuid: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.baseUrl}/${uuid}`);
+  async deleteGoal(id: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
   // ===== Goal Status =====
 
-  async activateGoal(uuid: string): Promise<Result<GoalClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/activate`);
+  async activateGoal(id: string): Promise<Result<GoalClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/activate`);
   }
 
-  async pauseGoal(uuid: string): Promise<Result<GoalClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/pause`);
+  async pauseGoal(id: string): Promise<Result<GoalClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/pause`);
   }
 
-  async completeGoal(uuid: string): Promise<Result<GoalClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/complete`);
+  async completeGoal(id: string): Promise<Result<GoalClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/complete`);
   }
 
-  async archiveGoal(uuid: string): Promise<Result<GoalClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/archive`);
+  async archiveGoal(id: string): Promise<Result<GoalClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/archive`);
   }
 
   // ===== Search =====
@@ -97,7 +97,7 @@ export class GoalHttpAdapter implements IGoalApiClient {
     page?: number;
     limit?: number;
     status?: string;
-    dirUuid?: string;
+    dirId?: string;
   }): Promise<Result<QueryGoalsRes>> {
     return this.httpClient.get(`${this.baseUrl}/search`, { params });
   }
@@ -105,151 +105,151 @@ export class GoalHttpAdapter implements IGoalApiClient {
   // ===== KeyResult Management =====
 
   async addKeyResultForGoal(
-    goalUuid: string,
-    request: Omit<AddKeyResultReq, 'goalUuid'>,
+    goalId: string,
+    request: Omit<AddKeyResultReq, 'goalId'>,
   ): Promise<Result<KeyResultClientDTO>> {
-    const backendRequest: AddKeyResultReq = { goalUuid, ...request };
+    const backendRequest: AddKeyResultReq = { goalId, ...request };
     return this.httpClient.post(
-      `${this.baseUrl}/${goalUuid}/key-results`,
+      `${this.baseUrl}/${goalId}/key-results`,
       backendRequest,
     );
   }
 
   async getKeyResultsByGoal(
-    goalUuid: string,
+    goalId: string,
   ): Promise<Result<GetKeyResultsRes>> {
-    return this.httpClient.get(`${this.baseUrl}/${goalUuid}/key-results`);
+    return this.httpClient.get(`${this.baseUrl}/${goalId}/key-results`);
   }
 
   async updateKeyResultForGoal(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
     request: UpdateKeyResultReq,
   ): Promise<Result<KeyResultClientDTO>> {
     return this.httpClient.put(
-      `${this.baseUrl}/${goalUuid}/key-results/${keyResultUuid}`,
+      `${this.baseUrl}/${goalId}/key-results/${keyResultId}`,
       request,
     );
   }
 
   async deleteKeyResultForGoal(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
   ): Promise<Result<void>> {
     return this.httpClient.delete(
-      `${this.baseUrl}/${goalUuid}/key-results/${keyResultUuid}`,
+      `${this.baseUrl}/${goalId}/key-results/${keyResultId}`,
     );
   }
 
   async batchUpdateKeyResultWeights(
-    goalUuid: string,
-    request: { updates: Array<{ keyResultUuid: string; weight: number }> },
+    goalId: string,
+    request: { updates: Array<{ keyResultId: string; weight: number }> },
   ): Promise<Result<GetKeyResultsRes>> {
     return this.httpClient.put(
-      `${this.baseUrl}/${goalUuid}/key-results/batch-weight`,
+      `${this.baseUrl}/${goalId}/key-results/batch-weight`,
       request,
     );
   }
 
   async getProgressBreakdown(
-    goalUuid: string,
+    goalId: string,
   ): Promise<Result<ProgressBreakdown>> {
     return this.httpClient.get(
-      `${this.baseUrl}/${goalUuid}/progress-breakdown`,
+      `${this.baseUrl}/${goalId}/progress-breakdown`,
     );
   }
 
   // ===== GoalReview Management =====
 
   async createGoalReview(
-    goalUuid: string,
+    goalId: string,
     request: CreateGoalReviewReq,
   ): Promise<Result<GoalReviewClientDTO>> {
     return this.httpClient.post(
-      `${this.baseUrl}/${goalUuid}/reviews`,
+      `${this.baseUrl}/${goalId}/reviews`,
       request,
     );
   }
 
   async getGoalReviewsByGoal(
-    goalUuid: string,
+    goalId: string,
   ): Promise<Result<GetGoalReviewsRes>> {
-    return this.httpClient.get(`${this.baseUrl}/${goalUuid}/reviews`);
+    return this.httpClient.get(`${this.baseUrl}/${goalId}/reviews`);
   }
 
   async updateGoalReview(
-    goalUuid: string,
-    reviewUuid: string,
+    goalId: string,
+    reviewId: string,
     request: Partial<GoalReviewClientDTO>,
   ): Promise<Result<GoalReviewClientDTO>> {
     return this.httpClient.put(
-      `${this.baseUrl}/${goalUuid}/reviews/${reviewUuid}`,
+      `${this.baseUrl}/${goalId}/reviews/${reviewId}`,
       request,
     );
   }
 
   async deleteGoalReview(
-    goalUuid: string,
-    reviewUuid: string,
+    goalId: string,
+    reviewId: string,
   ): Promise<Result<void>> {
     return this.httpClient.delete(
-      `${this.baseUrl}/${goalUuid}/reviews/${reviewUuid}`,
+      `${this.baseUrl}/${goalId}/reviews/${reviewId}`,
     );
   }
 
   // ===== GoalRecord Management =====
 
   async createGoalRecord(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
     request: Pick<CreateGoalRecordReq, 'value' | 'note'>,
   ): Promise<Result<GoalRecordClientDTO>> {
     return this.httpClient.post(
-      `${this.baseUrl}/${goalUuid}/key-results/${keyResultUuid}/records`,
+      `${this.baseUrl}/${goalId}/key-results/${keyResultId}/records`,
       request,
     );
   }
 
   async getGoalRecordsByKeyResult(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
     params?: { limit?: number; offset?: number },
   ): Promise<Result<GetGoalRecordsRes>> {
     return this.httpClient.get(
-      `${this.baseUrl}/${goalUuid}/key-results/${keyResultUuid}/records`,
+      `${this.baseUrl}/${goalId}/key-results/${keyResultId}/records`,
       { params },
     );
   }
 
   async getGoalRecordsByGoal(
-    goalUuid: string,
+    goalId: string,
     params?: { limit?: number; offset?: number },
   ): Promise<Result<GetGoalRecordsRes>> {
-    return this.httpClient.get(`${this.baseUrl}/${goalUuid}/records`, {
+    return this.httpClient.get(`${this.baseUrl}/${goalId}/records`, {
       params,
     });
   }
 
   async deleteGoalRecord(
-    goalUuid: string,
-    keyResultUuid: string,
-    recordUuid: string,
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
   ): Promise<Result<void>> {
     return this.httpClient.delete(
-      `${this.baseUrl}/${goalUuid}/key-results/${keyResultUuid}/records/${recordUuid}`,
+      `${this.baseUrl}/${goalId}/key-results/${keyResultId}/records/${recordId}`,
     );
   }
 
   // ===== Aggregate View =====
 
   async getGoalAggregateView(
-    goalUuid: string,
+    goalId: string,
   ): Promise<Result<GetGoalAggregateRes>> {
-    return this.httpClient.get(`${this.baseUrl}/${goalUuid}/aggregate`);
+    return this.httpClient.get(`${this.baseUrl}/${goalId}/aggregate`);
   }
 
   async cloneGoal(
-    goalUuid: string,
+    goalId: string,
     request: {
       name?: string;
       description?: string;
@@ -257,7 +257,7 @@ export class GoalHttpAdapter implements IGoalApiClient {
       includeRecords?: boolean;
     },
   ): Promise<Result<GoalClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${goalUuid}/clone`, request);
+    return this.httpClient.post(`${this.baseUrl}/${goalId}/clone`, request);
   }
 
   // ===== AI Generation =====

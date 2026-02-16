@@ -10,7 +10,7 @@ import type { IRepositoryRepository } from '../../domain-server/repositories/IRe
  * Delete Repository Input
  */
 export interface DeleteRepositoryInput {
-  uuid: string;
+  id: string;
 }
 
 /**
@@ -21,9 +21,9 @@ export class DeleteRepository {
   constructor(private readonly repositoryRepository: IRepositoryRepository) {}
 
   async execute(input: DeleteRepositoryInput): Promise<void> {
-    const repository = await this.repositoryRepository.findById(input.uuid);
+    const repository = await this.repositoryRepository.findById(input.id);
     if (!repository) {
-      throw new Error(`Repository not found: ${input.uuid}`);
+      throw new Error(`Repository not found: ${input.id}`);
     }
 
     repository.delete();

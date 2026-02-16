@@ -54,7 +54,7 @@ export const goalRoutes: RouteRecordRaw[] = [
         props: true,
       },
       {
-        path: ':goalUuid/review/create',
+        path: ':goalId/review/create',
         name: 'goal-review-create',
         component: () => import('../views/GoalReviewCreationView.vue'),
         meta: {
@@ -64,7 +64,7 @@ export const goalRoutes: RouteRecordRaw[] = [
         props: true,
       },
       {
-        path: ':goalUuid/review/:reviewUuid',
+        path: ':goalId/review/:reviewId',
         name: 'goal-review-detail',
         component: () => import('../views/GoalReviewDetailView.vue'),
         meta: {
@@ -74,7 +74,7 @@ export const goalRoutes: RouteRecordRaw[] = [
         props: true,
       },
       {
-        path: ':goalUuid/key-results/:keyResultUuid',
+        path: ':goalId/key-results/:keyResultId',
         name: 'key-result-detail',
         component: () => import('../views/KeyResultDetailView.vue'),
         meta: {

@@ -44,20 +44,20 @@ export class TaskQueryService {
    * 3. 按过滤条件过�?
    * 4. 按排序字段排�?
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 账户 ID
    * @param sortBy 排序字段 (default: priority)
    * @param filterBy 过滤条件数组 (AND 关系)
    * @param currentTime 当前时间（用于优先级计算和相对日期过滤）
    * @returns 排序和过滤后的任�?DTO 数组（包�?priority 字段�?
    */
   async getTasksWithSortingAndFiltering(
-    accountUuid: string,
+    identityId: string,
     sortBy: TaskSortBy = TaskSortBy.PRIORITY,
     filterBy: TaskFilterBy[] = [],
     currentTime: Date = new Date(),
   ): Promise<Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }>> {
     // Step 1: 获取所有活跃任�?
-    const templates = await this.getAllActiveTemplates(accountUuid);
+    const templates = await this.getAllActiveTemplates(identityId);
 
     // Step 2: 转换�?DTO 并计算优先级
     const dtos = templates.map((t) => t.toServerDTO());
@@ -370,15 +370,15 @@ export class TaskQueryService {
    * 获取所有活跃任�?
    * 私有方法
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 账户 ID
    * @returns 活跃任务列表
    */
-  private async getAllActiveTemplates(accountUuid: string): Promise<TaskTemplate[]> {
+  private async getAllActiveTemplates(identityId: string): Promise<TaskTemplate[]> {
     const activeStatuses = [TaskTemplateStatus.Active, TaskTemplateStatus.Paused];
 
     const templates: TaskTemplate[] = [];
     for (const status of activeStatuses) {
-      const byStatus = await this.templateRepository.findByStatus(accountUuid, status);
+      const byStatus = await this.templateRepository.findByStatus(identityId, status);
       templates.push(...byStatus);
     }
 

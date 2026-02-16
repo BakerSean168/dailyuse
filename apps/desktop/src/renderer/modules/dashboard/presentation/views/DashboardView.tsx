@@ -187,7 +187,7 @@ export function DashboardView() {
             <GoalWidget
               size="small"
               onViewMore={() => console.log('Navigate to goals')}
-              onGoalClick={(uuid) => console.log('Goal clicked:', uuid)}
+              onGoalClick={(id) => console.log('Goal clicked:', id)}
             />
           )}
 
@@ -196,8 +196,8 @@ export function DashboardView() {
             <TaskWidget
               size="small"
               onViewMore={() => console.log('Navigate to tasks')}
-              onTaskClick={(uuid) => console.log('Task clicked:', uuid)}
-              onTaskComplete={(uuid, completed) => console.log('Task complete:', uuid, completed)}
+              onTaskClick={(id) => console.log('Task clicked:', id)}
+              onTaskComplete={(id, completed) => console.log('Task complete:', id, completed)}
             />
           )}
 
@@ -206,9 +206,9 @@ export function DashboardView() {
             <ReminderWidget
               size="small"
               onViewMore={() => console.log('Navigate to reminders')}
-              onReminderClick={(uuid) => console.log('Reminder clicked:', uuid)}
-              onConfirm={(uuid) => console.log('Reminder confirmed:', uuid)}
-              onSnooze={(uuid, minutes) => console.log('Reminder snoozed:', uuid, minutes)}
+              onReminderClick={(id) => console.log('Reminder clicked:', id)}
+              onConfirm={(id) => console.log('Reminder confirmed:', id)}
+              onSnooze={(id, minutes) => console.log('Reminder snoozed:', id, minutes)}
             />
           )}
 

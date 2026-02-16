@@ -144,16 +144,16 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
       // ========== CRUD Actions ==========
       setGoals: (goals) => set({
         goals,
-        goalsById: Object.fromEntries(goals.map(g => [g.uuid, g])),
+        goalsById: Object.fromEntries(goals.map(g => [g.id, g])),
       }),
       
       addGoal: (goal) => set((state) => ({
         goals: [...state.goals, goal],
-        goalsById: { ...state.goalsById, [goal.uuid]: goal },
+        goalsById: { ...state.goalsById, [goal.id]: goal },
       })),
       
       updateGoal: (id, goal) => set((state) => {
-        const index = state.goals.findIndex(g => g.uuid === id);
+        const index = state.goals.findIndex(g => g.id === id);
         if (index === -1) return state;
         
         const newGoals = [...state.goals];
@@ -169,7 +169,7 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
         const newById = { ...state.goalsById };
         delete newById[id];
         return {
-          goals: state.goals.filter(g => g.uuid !== id),
+          goals: state.goals.filter(g => g.id !== id),
           goalsById: newById,
           selectedGoalId: state.selectedGoalId === id ? null : state.selectedGoalId,
         };
@@ -178,16 +178,16 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
       // ========== Folder Actions ==========
       setFolders: (folders) => set({
         folders,
-        foldersById: Object.fromEntries(folders.map(f => [f.uuid, f])),
+        foldersById: Object.fromEntries(folders.map(f => [f.id, f])),
       }),
       
       addFolder: (folder) => set((state) => ({
         folders: [...state.folders, folder],
-        foldersById: { ...state.foldersById, [folder.uuid]: folder },
+        foldersById: { ...state.foldersById, [folder.id]: folder },
       })),
       
       updateFolder: (id, folder) => set((state) => {
-        const index = state.folders.findIndex(f => f.uuid === id);
+        const index = state.folders.findIndex(f => f.id === id);
         if (index === -1) return state;
         
         const newFolders = [...state.folders];
@@ -203,7 +203,7 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
         const newById = { ...state.foldersById };
         delete newById[id];
         return {
-          folders: state.folders.filter(f => f.uuid !== id),
+          folders: state.folders.filter(f => f.id !== id),
           foldersById: newById,
         };
       }),
@@ -341,8 +341,8 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
             setLoading(true);
             setError(null);
             
-            // 通过 ApplicationService 更新 folderUuid
-            const updatedGoal = await goalApplicationService.updateGoal(goalId, { folderUuid: folderId ?? undefined });
+            // 通过 ApplicationService 更新 folderId
+            const updatedGoal = await goalApplicationService.updateGoal(goalId, { folderId: folderId ?? undefined });
             updateGoal(goalId, updatedGoal);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to move goal';
@@ -358,17 +358,17 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
         
         getGoalsByFolder: (folderId) => {
           const { goals } = get();
-          return goals.filter(g => g.folderUuid === folderId);
+          return goals.filter(g => g.folderId === folderId);
         },
         
         getRootGoals: () => {
           const { goals } = get();
-          return goals.filter(g => !g.parentGoalUuid);
+          return goals.filter(g => !g.parentGoalId);
         },
         
         getChildGoals: (parentId) => {
           const { goals } = get();
-          return goals.filter(g => g.parentGoalUuid === parentId);
+          return goals.filter(g => g.parentGoalId === parentId);
         },
         
         getFilteredGoals: () => {
@@ -382,7 +382,7 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
           }
           
           if (filters.folderId !== undefined) {
-            filtered = filtered.filter(g => g.folderUuid === filters.folderId);
+            filtered = filtered.filter(g => g.folderId === filters.folderId);
           }
           
           if (filters.importance?.length) {

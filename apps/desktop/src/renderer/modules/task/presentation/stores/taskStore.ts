@@ -163,18 +163,18 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
       setInstances: (instances) =>
         set({
           instances,
-          instancesById: Object.fromEntries(instances.map((i) => [i.uuid, i])),
+          instancesById: Object.fromEntries(instances.map((i) => [i.id, i])),
         }),
 
       addInstance: (instance) =>
         set((state) => ({
           instances: [...state.instances, instance],
-          instancesById: { ...state.instancesById, [instance.uuid]: instance },
+          instancesById: { ...state.instancesById, [instance.id]: instance },
         })),
 
       updateInstance: (id, instance) =>
         set((state) => {
-          const index = state.instances.findIndex((i) => i.uuid === id);
+          const index = state.instances.findIndex((i) => i.id === id);
           if (index === -1) return state;
 
           const newInstances = [...state.instances];
@@ -191,7 +191,7 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
           const newById = { ...state.instancesById };
           delete newById[id];
           return {
-            instances: state.instances.filter((i) => i.uuid !== id),
+            instances: state.instances.filter((i) => i.id !== id),
             instancesById: newById,
             selectedInstanceId: state.selectedInstanceId === id ? null : state.selectedInstanceId,
           };
@@ -201,18 +201,18 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
       setTemplates: (templates) =>
         set({
           templates,
-          templatesById: Object.fromEntries(templates.map((t) => [t.uuid, t])),
+          templatesById: Object.fromEntries(templates.map((t) => [t.id, t])),
         }),
 
       addTemplate: (template) =>
         set((state) => ({
           templates: [...state.templates, template],
-          templatesById: { ...state.templatesById, [template.uuid]: template },
+          templatesById: { ...state.templatesById, [template.id]: template },
         })),
 
       updateTemplate: (id, template) =>
         set((state) => {
-          const index = state.templates.findIndex((t) => t.uuid === id);
+          const index = state.templates.findIndex((t) => t.id === id);
           if (index === -1) return state;
 
           const newTemplates = [...state.templates];
@@ -229,7 +229,7 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
           const newById = { ...state.templatesById };
           delete newById[id];
           return {
-            templates: state.templates.filter((t) => t.uuid !== id),
+            templates: state.templates.filter((t) => t.id !== id),
             templatesById: newById,
             selectedTemplateId: state.selectedTemplateId === id ? null : state.selectedTemplateId,
           };
@@ -282,7 +282,7 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
 
           for (const template of templates) {
             const instances = await taskApplicationService.getInstancesByDateRange({
-              templateUuid: template.uuid,
+              templateId: template.id,
               from: range.start.getTime(),
               to: range.end.getTime(),
             });
@@ -363,7 +363,7 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
 
       getInstancesByTemplate: (templateId) => {
         const { instances } = get();
-        return instances.filter((i) => i.templateUuid === templateId);
+        return instances.filter((i) => i.templateId === templateId);
       },
 
       getTodayInstances: () => {
@@ -408,7 +408,7 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
 
         // 按模板过滤
         if (filters.templateId) {
-          filtered = filtered.filter((i) => i.templateUuid === filters.templateId);
+          filtered = filtered.filter((i) => i.templateId === filters.templateId);
         }
 
         // 隐藏已完成

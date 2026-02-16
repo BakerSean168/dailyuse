@@ -13,7 +13,7 @@ export interface PreviewContent {
   url?: string;
   excerpt?: string;
   size?: number;
-  uuid?: string;
+  id?: string;
 }
 
 export interface UseLinkPreviewOptions {

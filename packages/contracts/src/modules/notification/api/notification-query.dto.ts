@@ -19,13 +19,13 @@ import {
 // ============================================================================
 
 export const NotificationQuerySchema = z.object({
-  accountUuid: z.string().uuid().optional(),
+  identityId: z.string().uuid().optional(),
   type: z.nativeEnum(NotificationType).optional(),
   category: z.nativeEnum(NotificationCategory).optional(),
   status: z.nativeEnum(NotificationStatus).optional(),
   isRead: z.boolean().optional(),
   relatedEntityType: z.nativeEnum(RelatedEntityType).optional(),
-  relatedEntityUuid: z.string().uuid().optional(),
+  relatedEntityId: z.string().uuid().optional(),
   startDate: z.number().int().optional(),
   endDate: z.number().int().optional(),
   keyword: z.string().optional(),

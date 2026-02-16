@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const TEST_USER_ACCOUNT_UUID = '9897aef0-7fad-4908-a0d1-31e9b22599c1';
+const TEST_USER_ACCOUNT_ID = '9897aef0-7fad-4908-a0d1-31e9b22599c1';
 
 async function updateNotificationPreferences() {
   try {
@@ -46,21 +46,21 @@ async function updateNotificationPreferences() {
 
     // 更新或创建通知偏好设置
     const result = await prisma.notificationPreference.upsert({
-      where: { accountUuid: TEST_USER_ACCOUNT_UUID },
+      where: { identityId: TEST_USER_ACCOUNT_ID },
       update: {
         enabledTypes: JSON.stringify(defaultEnabledTypes),
         channelPreferences: JSON.stringify(channelPreferences),
       },
       create: {
-        accountUuid: TEST_USER_ACCOUNT_UUID,
+        identityId: TEST_USER_ACCOUNT_ID,
         enabledTypes: JSON.stringify(defaultEnabledTypes),
         channelPreferences: JSON.stringify(channelPreferences),
       },
     });
 
     console.log('✅ 通知偏好设置已更新\n');
-    console.log('UUID:', result.uuid);
-    console.log('Account UUID:', result.accountUuid);
+    console.log('UUID:', result.id);
+    console.log('Account UUID:', result.identityId);
     console.log('\nEnabled Types:');
     console.log(JSON.parse(result.enabledTypes || '[]'));
     console.log('\nChannel Preferences:');

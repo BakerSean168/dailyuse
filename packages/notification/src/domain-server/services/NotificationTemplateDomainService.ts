@@ -44,7 +44,7 @@ export class NotificationTemplateDomainService {
     // 4. 触发领域事件
     // await this.eventBus.publish({
     //   type: 'notification.template.created',
-    //   aggregateId: template.uuid,
+    //   aggregateId: template.id,
     //   timestamp: Date.now(),
     //   payload: {
     //     template: template.toServerDTO(),
@@ -57,8 +57,8 @@ export class NotificationTemplateDomainService {
   /**
    * 获取模板
    */
-  public async getTemplate(uuid: string): Promise<NotificationTemplate | null> {
-    return await this.templateRepo.findById(uuid);
+  public async getTemplate(id: string): Promise<NotificationTemplate | null> {
+    return await this.templateRepo.findById(id);
   }
 
   /**
@@ -108,12 +108,12 @@ export class NotificationTemplateDomainService {
    * 更新模板配置
    */
   public async updateTemplateConfig(
-    uuid: string,
+    id: string,
     template: Partial<NotificationTemplateConfigServerDTO>,
   ): Promise<NotificationTemplate> {
-    const templateEntity = await this.templateRepo.findById(uuid);
+    const templateEntity = await this.templateRepo.findById(id);
     if (!templateEntity) {
-      throw new Error(`Template not found: ${uuid}`);
+      throw new Error(`Template not found: ${id}`);
     }
 
     templateEntity.updateTemplate(template);
@@ -125,10 +125,10 @@ export class NotificationTemplateDomainService {
   /**
    * 激活模板
    */
-  public async activateTemplate(uuid: string): Promise<void> {
-    const template = await this.templateRepo.findById(uuid);
+  public async activateTemplate(id: string): Promise<void> {
+    const template = await this.templateRepo.findById(id);
     if (!template) {
-      throw new Error(`Template not found: ${uuid}`);
+      throw new Error(`Template not found: ${id}`);
     }
 
     template.activate();
@@ -136,10 +136,10 @@ export class NotificationTemplateDomainService {
 
     // await this.eventBus.publish({
     //   type: 'notification.template.activation.changed',
-    //   aggregateId: uuid,
+    //   aggregateId: id,
     //   timestamp: Date.now(),
     //   payload: {
-    //     templateUuid: uuid,
+    //     templateId: id,
     //     isActive: true,
     //   },
     // });
@@ -148,10 +148,10 @@ export class NotificationTemplateDomainService {
   /**
    * 停用模板
    */
-  public async deactivateTemplate(uuid: string): Promise<void> {
-    const template = await this.templateRepo.findById(uuid);
+  public async deactivateTemplate(id: string): Promise<void> {
+    const template = await this.templateRepo.findById(id);
     if (!template) {
-      throw new Error(`Template not found: ${uuid}`);
+      throw new Error(`Template not found: ${id}`);
     }
 
     template.deactivate();
@@ -159,10 +159,10 @@ export class NotificationTemplateDomainService {
 
     // await this.eventBus.publish({
     //   type: 'notification.template.activation.changed',
-    //   aggregateId: uuid,
+    //   aggregateId: id,
     //   timestamp: Date.now(),
     //   payload: {
-    //     templateUuid: uuid,
+    //     templateId: id,
     //     isActive: false,
     //   },
     // });
@@ -171,29 +171,29 @@ export class NotificationTemplateDomainService {
   /**
    * 删除模板
    */
-  public async deleteTemplate(uuid: string): Promise<void> {
-    const template = await this.templateRepo.findById(uuid);
+  public async deleteTemplate(id: string): Promise<void> {
+    const template = await this.templateRepo.findById(id);
     if (!template) {
-      throw new Error(`Template not found: ${uuid}`);
+      throw new Error(`Template not found: ${id}`);
     }
 
     if (template.isSystemTemplate) {
       throw new Error('Cannot delete system template');
     }
 
-    await this.templateRepo.delete(uuid);
+    await this.templateRepo.delete(id);
   }
 
   /**
    * 预览模板渲染
    */
   public async previewTemplate(
-    uuid: string,
+    id: string,
     variables: Record<string, any>,
   ): Promise<{ title: string; content: string }> {
-    const template = await this.templateRepo.findById(uuid);
+    const template = await this.templateRepo.findById(id);
     if (!template) {
-      throw new Error(`Template not found: ${uuid}`);
+      throw new Error(`Template not found: ${id}`);
     }
 
     // 验证变量
@@ -209,12 +209,12 @@ export class NotificationTemplateDomainService {
    * 预览邮件模板
    */
   public async previewEmailTemplate(
-    uuid: string,
+    id: string,
     variables: Record<string, any>,
   ): Promise<{ subject: string; htmlBody: string; textBody?: string }> {
-    const template = await this.templateRepo.findById(uuid);
+    const template = await this.templateRepo.findById(id);
     if (!template) {
-      throw new Error(`Template not found: ${uuid}`);
+      throw new Error(`Template not found: ${id}`);
     }
 
     return template.renderEmail(variables);
@@ -224,12 +224,12 @@ export class NotificationTemplateDomainService {
    * 预览推送模板
    */
   public async previewPushTemplate(
-    uuid: string,
+    id: string,
     variables: Record<string, any>,
   ): Promise<{ title: string; body: string }> {
-    const template = await this.templateRepo.findById(uuid);
+    const template = await this.templateRepo.findById(id);
     if (!template) {
-      throw new Error(`Template not found: ${uuid}`);
+      throw new Error(`Template not found: ${id}`);
     }
 
     return template.renderPush(variables);
@@ -239,12 +239,12 @@ export class NotificationTemplateDomainService {
    * 验证模板变量
    */
   public async validateTemplateVariables(
-    uuid: string,
+    id: string,
     variables: Record<string, any>,
   ): Promise<{ isValid: boolean; missingVariables: string[] }> {
-    const template = await this.templateRepo.findById(uuid);
+    const template = await this.templateRepo.findById(id);
     if (!template) {
-      throw new Error(`Template not found: ${uuid}`);
+      throw new Error(`Template not found: ${id}`);
     }
 
     return template.validateVariables(variables);

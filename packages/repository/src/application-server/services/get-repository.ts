@@ -11,7 +11,7 @@ import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
  * Get Repository Input
  */
 export interface GetRepositoryInput {
-  uuid: string;
+  id: string;
 }
 
 /**
@@ -29,7 +29,7 @@ export class GetRepository {
   constructor(private readonly repositoryRepository: IRepositoryRepository) {}
 
   async execute(input: GetRepositoryInput): Promise<GetRepositoryOutput> {
-    const repository = await this.repositoryRepository.findById(input.uuid);
+    const repository = await this.repositoryRepository.findById(input.id);
     return { repository: repository ? repository.toClientDTO() : null };
   }
 }

@@ -46,17 +46,17 @@ export const TaskElectronModule: IElectronModule = {
     const svc = taskModule.taskTemplateService;
 
     ipcMain.handle(Ch.TEMPLATE_LIST, (_, params) => svc.listTemplates(params));
-    ipcMain.handle(Ch.TEMPLATE_GET, (_, uuid) => svc.getTemplate(uuid));
+    ipcMain.handle(Ch.TEMPLATE_GET, (_, id) => svc.getTemplate(id));
     ipcMain.handle(Ch.TEMPLATE_CREATE, (_, dto) => svc.createTemplate(dto));
     ipcMain.handle(Ch.TEMPLATE_UPDATE, (_, dto) => svc.updateTemplate(dto));
-    ipcMain.handle(Ch.TEMPLATE_DELETE, (_, uuid) => svc.deleteTemplate(uuid));
-    ipcMain.handle(Ch.TEMPLATE_ARCHIVE, (_, uuid) => svc.archiveTemplate(uuid));
-    ipcMain.handle(Ch.TEMPLATE_RESTORE, (_, uuid) => svc.restoreTemplate(uuid));
+    ipcMain.handle(Ch.TEMPLATE_DELETE, (_, id) => svc.deleteTemplate(id));
+    ipcMain.handle(Ch.TEMPLATE_ARCHIVE, (_, id) => svc.archiveTemplate(id));
+    ipcMain.handle(Ch.TEMPLATE_RESTORE, (_, id) => svc.restoreTemplate(id));
 
     ipcMain.handle(Ch.INSTANCE_LIST, (_, params) => taskModule.listInstancesByAccount.execute(params));
-    ipcMain.handle(Ch.INSTANCE_GET, (_, uuid) => taskModule.getTaskInstance.execute(uuid));
+    ipcMain.handle(Ch.INSTANCE_GET, (_, id) => taskModule.getTaskInstance.execute(id));
     ipcMain.handle(Ch.INSTANCE_CREATE, (_, dto) => taskModule.startTaskInstance.execute(dto));
-    ipcMain.handle(Ch.INSTANCE_DELETE, (_, uuid) => taskModule.deleteTaskInstance.execute(uuid));
+    ipcMain.handle(Ch.INSTANCE_DELETE, (_, id) => taskModule.deleteTaskInstance.execute(id));
     ipcMain.handle(Ch.INSTANCE_COMPLETE, (_, dto) => taskModule.completeTaskInstance.execute(dto));
     ipcMain.handle(Ch.INSTANCE_SKIP, (_, dto) => taskModule.skipTaskInstance.execute(dto));
 

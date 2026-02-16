@@ -20,9 +20,9 @@ export function registerAccountInitializationTasks(): void {
     name: 'account-data-preload',
     phase: InitializationPhase.USER_LOGIN,
     priority: 10,
-    initialize: async (context?: { accountUuid: string }) => {
-      if (context?.accountUuid) {
-        console.log(`🔄 [AccountModule] 预加载账户数据: ${context.accountUuid}`);
+    initialize: async (context?: { identityId: string }) => {
+      if (context?.identityId) {
+        console.log(`🔄 [AccountModule] 预加载账户数据: ${context.identityId}`);
       }
     },
     cleanup: async () => {
@@ -36,9 +36,9 @@ export function registerAccountInitializationTasks(): void {
     phase: InitializationPhase.USER_LOGIN,
     priority: 20,
     dependencies: ['account-data-preload'],
-    initialize: async (context?: { accountUuid: string }) => {
-      if (context?.accountUuid) {
-        console.log(`🔄 [AccountModule] 同步账户状态: ${context.accountUuid}`);
+    initialize: async (context?: { identityId: string }) => {
+      if (context?.identityId) {
+        console.log(`🔄 [AccountModule] 同步账户状态: ${context.identityId}`);
       }
     },
     cleanup: async () => {

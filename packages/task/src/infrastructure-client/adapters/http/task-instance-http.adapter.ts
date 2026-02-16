@@ -31,7 +31,7 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
   async getTaskInstances(params?: {
     page?: number;
     limit?: number;
-    templateUuid?: string;
+    templateId?: string;
     status?: string;
     startDate?: number;
     endDate?: number;
@@ -39,32 +39,32 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
     return this.httpClient.get(this.baseUrl, { params });
   }
 
-  async getTaskInstanceById(uuid: string): Promise<Result<TaskInstanceClientDTO>> {
-    return this.httpClient.get(`${this.baseUrl}/${uuid}`);
+  async getTaskInstanceById(id: string): Promise<Result<TaskInstanceClientDTO>> {
+    return this.httpClient.get(`${this.baseUrl}/${id}`);
   }
 
-  async deleteTaskInstance(uuid: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.baseUrl}/${uuid}`);
+  async deleteTaskInstance(id: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
   // ===== Task Instance 状态管理 =====
 
-  async startTaskInstance(uuid: string): Promise<Result<TaskInstanceClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/start`);
+  async startTaskInstance(id: string): Promise<Result<TaskInstanceClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/start`);
   }
 
   async completeTaskInstance(
-    uuid: string,
+    id: string,
     request?: CompleteTaskInstanceRequest,
   ): Promise<Result<TaskInstanceClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/complete`, request);
+    return this.httpClient.post(`${this.baseUrl}/${id}/complete`, request);
   }
 
   async skipTaskInstance(
-    uuid: string,
+    id: string,
     request?: SkipTaskInstanceRequest,
   ): Promise<Result<TaskInstanceClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/skip`, request);
+    return this.httpClient.post(`${this.baseUrl}/${id}/skip`, request);
   }
 
   // ===== 批量操作 =====

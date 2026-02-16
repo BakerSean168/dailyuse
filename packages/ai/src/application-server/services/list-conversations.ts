@@ -14,9 +14,9 @@ import type { ConversationListResponse } from '@dailyuse/contracts/ai';
 export class ListConversations {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
-  async execute(accountUuid: string, limit = 20, offset = 0): Promise<ConversationListResponse> {
+  async execute(identityId: string, limit = 20, offset = 0): Promise<ConversationListResponse> {
     const conversations = await this.conversationRepository.findRecent(
-      accountUuid,
+      identityId,
       limit,
       offset,
     );

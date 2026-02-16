@@ -14,7 +14,7 @@ import type {
 } from '@dailyuse/contracts/goal';
 
 export class GoalFolderIpcAdapter implements IGoalFolderApiClient {
-  private readonly channel = 'goal-folder';
+  private readonly channel = 'goal:folder';
 
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
@@ -28,25 +28,25 @@ export class GoalFolderIpcAdapter implements IGoalFolderApiClient {
     page?: number;
     limit?: number;
     status?: string;
-    parentUuid?: string | null;
+    parentId?: string | null;
   }): Promise<Result<QueryGoalFoldersRes>> {
     return this.ipcClient.invoke(`${this.channel}:list`, params);
   }
 
   async getGoalFolderById(
-    uuid: string,
+    id: string,
   ): Promise<Result<GoalFolderClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:get`, uuid);
+    return this.ipcClient.invoke(`${this.channel}:get`, id);
   }
 
   async updateGoalFolder(
-    uuid: string,
+    id: string,
     request: UpdateGoalFolderReq,
   ): Promise<Result<GoalFolderClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:update`, uuid, request);
+    return this.ipcClient.invoke(`${this.channel}:update`, id, request);
   }
 
-  async deleteGoalFolder(uuid: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(`${this.channel}:delete`, uuid);
+  async deleteGoalFolder(id: string): Promise<Result<void>> {
+    return this.ipcClient.invoke(`${this.channel}:delete`, id);
   }
 }

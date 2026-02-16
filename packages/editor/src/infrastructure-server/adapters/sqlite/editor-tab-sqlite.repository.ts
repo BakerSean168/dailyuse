@@ -11,18 +11,18 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
   constructor(private db: Database.Database) {}
 
   async findById(id: string): Promise<EditorTab | null> {
-    const stmt = this.db.prepare(`SELECT * FROM editor_tabs WHERE uuid = ? LIMIT 1`);
+    const stmt = this.db.prepare(`SELECT * FROM editor_tabs WHERE id = ? LIMIT 1`);
     const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return EditorTab.fromPersistenceDTO({
-      id: row.uuid,
-      group_id: row.group_uuid,
-      session_id: row.session_uuid,
-      workspace_id: row.workspace_id ?? row.workspaceUuid ?? row.workspace_uuid,
-      identityId: row.identity_id ?? row.accountUuid ?? row.account_uuid ?? row.identityId,
-      document_id: row.document_uuid,
+      id: row.id,
+      group_id: row.group_id,
+      session_id: row.session_id,
+      workspace_id: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
+      identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
+      document_id: row.document_id,
       tab_index: row.tab_index,
       tab_type: row.tab_type ?? row.tabType ?? 'Document',
       name: row.name ?? 'Untitled',
@@ -42,7 +42,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async findByGroupId(groupId: string): Promise<EditorTab[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE group_uuid = ? ORDER BY tab_index ASC`
+      `SELECT * FROM editor_tabs WHERE group_id = ? ORDER BY tab_index ASC`
     );
     const rows = stmt.all(groupId) as any[];
 
@@ -51,7 +51,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async findByDocumentId(documentId: string): Promise<EditorTab[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE document_uuid = ? ORDER BY createdAt DESC`
+      `SELECT * FROM editor_tabs WHERE document_id = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(documentId) as any[];
 
@@ -60,7 +60,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async findByGroupIdAndTabIndex(groupId: string, tabIndex: number): Promise<EditorTab | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE group_uuid = ? AND tab_index = ? LIMIT 1`
+      `SELECT * FROM editor_tabs WHERE group_id = ? AND tab_index = ? LIMIT 1`
     );
     const row = stmt.get(groupId, tabIndex) as any;
 
@@ -71,7 +71,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async findPinnedByGroupId(groupId: string): Promise<EditorTab[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE group_uuid = ? AND is_pinned = 1 ORDER BY tab_index ASC`
+      `SELECT * FROM editor_tabs WHERE group_id = ? AND is_pinned = 1 ORDER BY tab_index ASC`
     );
     const rows = stmt.all(groupId) as any[];
 
@@ -80,7 +80,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async findDirtyByGroupId(groupId: string): Promise<EditorTab[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE group_uuid = ? AND is_dirty = 1 ORDER BY updatedAt DESC`
+      `SELECT * FROM editor_tabs WHERE group_id = ? AND is_dirty = 1 ORDER BY updatedAt DESC`
     );
     const rows = stmt.all(groupId) as any[];
 
@@ -89,7 +89,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async findRecentlyAccessed(groupId: string, limit: number): Promise<EditorTab[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE group_uuid = ? ORDER BY updatedAt DESC LIMIT ?`
+      `SELECT * FROM editor_tabs WHERE group_id = ? ORDER BY updatedAt DESC LIMIT ?`
     );
     const rows = stmt.all(groupId, limit) as any[];
 
@@ -101,10 +101,10 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO editor_tabs (
-        uuid, group_uuid, document_uuid, tab_index, is_pinned, is_dirty,
+        id, group_id, document_id, tab_index, is_pinned, is_dirty,
         createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         tab_index = excluded.tab_index,
         is_pinned = excluded.is_pinned,
         is_dirty = excluded.is_dirty,
@@ -124,17 +124,17 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM editor_tabs WHERE uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM editor_tabs WHERE id = ?`);
     stmt.run(id);
   }
 
   async saveBatch(tabs: EditorTab[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO editor_tabs (
-        uuid, group_uuid, document_uuid, tab_index, is_pinned, is_dirty,
+        id, group_id, document_id, tab_index, is_pinned, is_dirty,
         createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         tab_index = excluded.tab_index,
         is_pinned = excluded.is_pinned,
         is_dirty = excluded.is_dirty,
@@ -161,18 +161,18 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
   }
 
   async deleteByGroupId(groupId: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM editor_tabs WHERE group_uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM editor_tabs WHERE group_id = ?`);
     stmt.run(groupId);
   }
 
   async deleteByDocumentId(documentId: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM editor_tabs WHERE document_uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM editor_tabs WHERE document_id = ?`);
     stmt.run(documentId);
   }
 
   async countByGroupId(groupId: string): Promise<number> {
     const stmt = this.db.prepare(
-      `SELECT COUNT(*) as count FROM editor_tabs WHERE group_uuid = ?`,
+      `SELECT COUNT(*) as count FROM editor_tabs WHERE group_id = ?`,
     );
     const result = stmt.get(groupId) as { count: number };
     return result.count;
@@ -180,7 +180,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async countDirtyByGroupId(groupId: string): Promise<number> {
     const stmt = this.db.prepare(
-      `SELECT COUNT(*) as count FROM editor_tabs WHERE group_uuid = ? AND is_dirty = 1`,
+      `SELECT COUNT(*) as count FROM editor_tabs WHERE group_id = ? AND is_dirty = 1`,
     );
     const result = stmt.get(groupId) as { count: number };
     return result.count;
@@ -188,44 +188,44 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async getMaxTabIndex(groupId: string): Promise<number> {
     const stmt = this.db.prepare(
-      `SELECT MAX(tab_index) as maxIndex FROM editor_tabs WHERE group_uuid = ?`,
+      `SELECT MAX(tab_index) as maxIndex FROM editor_tabs WHERE group_id = ?`,
     );
     const result = stmt.get(groupId) as { maxIndex: number | null };
     return result.maxIndex ?? -1;
   }
 
-  async findByUuid(uuid: string): Promise<EditorTab | null> {
-    return this.findById(uuid);
+  async findById(id: string): Promise<EditorTab | null> {
+    return this.findById(id);
   }
 
-  async findByGroupUuid(groupUuid: string): Promise<EditorTab[]> {
-    return this.findByGroupId(groupUuid);
+  async findByGroupId(groupId: string): Promise<EditorTab[]> {
+    return this.findByGroupId(groupId);
   }
 
-  async findByDocumentUuid(documentUuid: string): Promise<EditorTab[]> {
-    return this.findByDocumentId(documentUuid);
+  async findByDocumentId(documentId: string): Promise<EditorTab[]> {
+    return this.findByDocumentId(documentId);
   }
 
-  async findByGroupUuidAndTabIndex(groupUuid: string, tabIndex: number): Promise<EditorTab | null> {
-    return this.findByGroupIdAndTabIndex(groupUuid, tabIndex);
+  async findByGroupIdAndTabIndex(groupId: string, tabIndex: number): Promise<EditorTab | null> {
+    return this.findByGroupIdAndTabIndex(groupId, tabIndex);
   }
 
-  async findPinnedByGroupUuid(groupUuid: string): Promise<EditorTab[]> {
-    return this.findPinnedByGroupId(groupUuid);
+  async findPinnedByGroupId(groupId: string): Promise<EditorTab[]> {
+    return this.findPinnedByGroupId(groupId);
   }
 
-  async findDirtyByGroupUuid(groupUuid: string): Promise<EditorTab[]> {
-    return this.findDirtyByGroupId(groupUuid);
+  async findDirtyByGroupId(groupId: string): Promise<EditorTab[]> {
+    return this.findDirtyByGroupId(groupId);
   }
 
   private rowToTab(row: any): EditorTab {
     return EditorTab.fromPersistenceDTO({
-      id: row.uuid,
-      group_id: row.group_uuid,
-      session_id: row.session_uuid,
-      workspace_id: row.workspace_id ?? row.workspaceUuid ?? row.workspace_uuid,
-      identityId: row.identity_id ?? row.accountUuid ?? row.account_uuid ?? row.identityId,
-      document_id: row.document_uuid,
+      id: row.id,
+      group_id: row.group_id,
+      session_id: row.session_id,
+      workspace_id: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
+      identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
+      document_id: row.document_id,
       tab_index: row.tab_index,
       tab_type: row.tab_type ?? row.tabType ?? 'Document',
       name: row.name ?? 'Untitled',

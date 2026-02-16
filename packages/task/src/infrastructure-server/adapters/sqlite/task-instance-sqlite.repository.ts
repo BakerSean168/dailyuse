@@ -16,19 +16,19 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO task_instances (
-        uuid, template_uuid, accountUuid, scheduled_date, status,
+        id, template_id, identityId, scheduled_date, status,
         completedAt, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         status = excluded.status,
         completedAt = excluded.completedAt,
         updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.template_uuid,
-      dto.accountUuid,
+      dto.id,
+      dto.template_id,
+      dto.identityId,
       dto.scheduled_date,
       dto.status,
       dto.completedAt || null,
@@ -40,10 +40,10 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
   async saveMany(instances: TaskInstance[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO task_instances (
-        uuid, template_uuid, accountUuid, scheduled_date, status,
+        id, template_id, identityId, scheduled_date, status,
         completedAt, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         status = excluded.status,
         completedAt = excluded.completedAt,
         updatedAt = excluded.updatedAt
@@ -53,9 +53,9 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
       for (const instance of items) {
         const dto = instance.toPersistenceDTO();
         insertStmt.run(
-          dto.uuid,
-          dto.template_uuid,
-          dto.accountUuid,
+          dto.id,
+          dto.template_id,
+          dto.identityId,
           dto.scheduled_date,
           dto.status,
           dto.completedAt || null,
@@ -68,16 +68,16 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
     transaction(instances);
   }
 
-  async findByUuid(uuid: string): Promise<TaskInstance | null> {
-    const stmt = this.db.prepare(`SELECT * FROM task_instances WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<TaskInstance | null> {
+    const stmt = this.db.prepare(`SELECT * FROM task_instances WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return TaskInstance.fromPersistenceDTO({
-      uuid: row.uuid,
-      template_uuid: row.template_uuid,
-      account_uuid: row.accountUuid,
+      id: row.id,
+      template_id: row.template_id,
+      identity_id: row.identityId,
       scheduled_date: row.scheduled_date,
       status: row.status as TaskInstanceStatus,
       completed_at: row.completedAt ? new Date(row.completedAt) : null,
@@ -86,17 +86,17 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
     });
   }
 
-  async findByTemplate(templateUuid: string): Promise<TaskInstance[]> {
+  async findByTemplate(templateId: string): Promise<TaskInstance[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_instances WHERE template_uuid = ? ORDER BY scheduled_date DESC`
+      `SELECT * FROM task_instances WHERE template_id = ? ORDER BY scheduled_date DESC`
     );
-    const rows = stmt.all(templateUuid) as any[];
+    const rows = stmt.all(templateId) as any[];
 
     return rows.map((row) =>
       TaskInstance.fromPersistenceDTO({
-        uuid: row.uuid,
-        template_uuid: row.template_uuid,
-        account_uuid: row.accountUuid,
+        id: row.id,
+        template_id: row.template_id,
+        identity_id: row.identityId,
         scheduled_date: row.scheduled_date,
         status: row.status as TaskInstanceStatus,
         completed_at: row.completedAt ? new Date(row.completedAt) : null,
@@ -106,17 +106,17 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
     );
   }
 
-  async findByAccount(accountUuid: string): Promise<TaskInstance[]> {
+  async findByAccount(identityId: string): Promise<TaskInstance[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_instances WHERE accountUuid = ? ORDER BY scheduled_date DESC`
+      `SELECT * FROM task_instances WHERE identityId = ? ORDER BY scheduled_date DESC`
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) =>
       TaskInstance.fromPersistenceDTO({
-        uuid: row.uuid,
-        template_uuid: row.template_uuid,
-        account_uuid: row.accountUuid,
+        id: row.id,
+        template_id: row.template_id,
+        identity_id: row.identityId,
         scheduled_date: row.scheduled_date,
         status: row.status as TaskInstanceStatus,
         completed_at: row.completedAt ? new Date(row.completedAt) : null,
@@ -126,19 +126,19 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
     );
   }
 
-  async findByDateRange(accountUuid: string, startDate: number, endDate: number): Promise<TaskInstance[]> {
+  async findByDateRange(identityId: string, startDate: number, endDate: number): Promise<TaskInstance[]> {
     const stmt = this.db.prepare(`
       SELECT * FROM task_instances
-      WHERE accountUuid = ? AND scheduled_date >= ? AND scheduled_date <= ?
+      WHERE identityId = ? AND scheduled_date >= ? AND scheduled_date <= ?
       ORDER BY scheduled_date ASC
     `);
-    const rows = stmt.all(accountUuid, startDate, endDate) as any[];
+    const rows = stmt.all(identityId, startDate, endDate) as any[];
 
     return rows.map((row) =>
       TaskInstance.fromPersistenceDTO({
-        uuid: row.uuid,
-        template_uuid: row.template_uuid,
-        account_uuid: row.accountUuid,
+        id: row.id,
+        template_id: row.template_id,
+        identity_id: row.identityId,
         scheduled_date: row.scheduled_date,
         status: row.status as TaskInstanceStatus,
         completed_at: row.completedAt ? new Date(row.completedAt) : null,
@@ -148,17 +148,17 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
     );
   }
 
-  async findByStatus(accountUuid: string, status: TaskInstanceStatus): Promise<TaskInstance[]> {
+  async findByStatus(identityId: string, status: TaskInstanceStatus): Promise<TaskInstance[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_instances WHERE accountUuid = ? AND status = ? ORDER BY scheduled_date DESC`
+      `SELECT * FROM task_instances WHERE identityId = ? AND status = ? ORDER BY scheduled_date DESC`
     );
-    const rows = stmt.all(accountUuid, status) as any[];
+    const rows = stmt.all(identityId, status) as any[];
 
     return rows.map((row) =>
       TaskInstance.fromPersistenceDTO({
-        uuid: row.uuid,
-        template_uuid: row.template_uuid,
-        account_uuid: row.accountUuid,
+        id: row.id,
+        template_id: row.template_id,
+        identity_id: row.identityId,
         scheduled_date: row.scheduled_date,
         status: row.status as TaskInstanceStatus,
         completed_at: row.completedAt ? new Date(row.completedAt) : null,
@@ -168,20 +168,20 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
     );
   }
 
-  async findOverdueInstances(accountUuid: string): Promise<TaskInstance[]> {
+  async findOverdueInstances(identityId: string): Promise<TaskInstance[]> {
     const now = Date.now();
     const stmt = this.db.prepare(`
       SELECT * FROM task_instances
-      WHERE accountUuid = ? AND status != 'COMPLETED' AND scheduled_date < ?
+      WHERE identityId = ? AND status != 'COMPLETED' AND scheduled_date < ?
       ORDER BY scheduled_date ASC
     `);
-    const rows = stmt.all(accountUuid, now) as any[];
+    const rows = stmt.all(identityId, now) as any[];
 
     return rows.map((row) =>
       TaskInstance.fromPersistenceDTO({
-        uuid: row.uuid,
-        template_uuid: row.template_uuid,
-        account_uuid: row.accountUuid,
+        id: row.id,
+        template_id: row.template_id,
+        identity_id: row.identityId,
         scheduled_date: row.scheduled_date,
         status: row.status as TaskInstanceStatus,
         completed_at: row.completedAt ? new Date(row.completedAt) : null,
@@ -191,48 +191,48 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
     );
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM task_instances WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM task_instances WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async deleteMany(uuids: string[]): Promise<void> {
-    const placeholders = uuids.map(() => '?').join(',');
-    const stmt = this.db.prepare(`DELETE FROM task_instances WHERE uuid IN (${placeholders})`);
-    stmt.run(...uuids);
+  async deleteMany(ids: string[]): Promise<void> {
+    const placeholders = ids.map(() => '?').join(',');
+    const stmt = this.db.prepare(`DELETE FROM task_instances WHERE id IN (${placeholders})`);
+    stmt.run(...ids);
   }
 
-  async deleteByTemplate(templateUuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM task_instances WHERE template_uuid = ?`);
-    stmt.run(templateUuid);
+  async deleteByTemplate(templateId: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM task_instances WHERE template_id = ?`);
+    stmt.run(templateId);
   }
 
-  async countFutureInstances(templateUuid: string, fromDate?: number): Promise<number> {
+  async countFutureInstances(templateId: string, fromDate?: number): Promise<number> {
     const date = fromDate || Date.now();
     const stmt = this.db.prepare(
-      `SELECT COUNT(*) as count FROM task_instances WHERE template_uuid = ? AND scheduled_date >= ? AND status != 'COMPLETED'`
+      `SELECT COUNT(*) as count FROM task_instances WHERE template_id = ? AND scheduled_date >= ? AND status != 'COMPLETED'`
     );
-    const result = stmt.get(templateUuid, date) as any;
+    const result = stmt.get(templateId, date) as any;
     return result.count;
   }
 
-  async findByTemplateUuidAndDateRange(
-    templateUuid: string,
+  async findByTemplateIdAndDateRange(
+    templateId: string,
     startDate: number,
     endDate: number,
   ): Promise<TaskInstance[]> {
     const stmt = this.db.prepare(`
       SELECT * FROM task_instances
-      WHERE template_uuid = ? AND scheduled_date >= ? AND scheduled_date <= ?
+      WHERE template_id = ? AND scheduled_date >= ? AND scheduled_date <= ?
       ORDER BY scheduled_date ASC
     `);
-    const rows = stmt.all(templateUuid, startDate, endDate) as any[];
+    const rows = stmt.all(templateId, startDate, endDate) as any[];
 
     return rows.map((row) =>
       TaskInstance.fromPersistenceDTO({
-        uuid: row.uuid,
-        template_uuid: row.template_uuid,
-        account_uuid: row.accountUuid,
+        id: row.id,
+        template_id: row.template_id,
+        identity_id: row.identityId,
         scheduled_date: row.scheduled_date,
         status: row.status as TaskInstanceStatus,
         completed_at: row.completedAt ? new Date(row.completedAt) : null,
@@ -242,12 +242,12 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
     );
   }
 
-  async deleteFuturePendingInstances(templateUuid: string, fromDate: number): Promise<void> {
+  async deleteFuturePendingInstances(templateId: string, fromDate: number): Promise<void> {
     const stmt = this.db.prepare(`
       DELETE FROM task_instances
-      WHERE template_uuid = ? AND scheduled_date >= ? AND status IN ('PENDING', 'SCHEDULED')
+      WHERE template_id = ? AND scheduled_date >= ? AND status IN ('PENDING', 'SCHEDULED')
     `);
-    stmt.run(templateUuid, fromDate);
+    stmt.run(templateId, fromDate);
   }
 }
 

@@ -19,14 +19,14 @@ export class GetUnreadNotifications {
   ) {}
 
   async execute(
-    accountUuid: string,
+    identityId: string,
     options?: { limit?: number },
   ): Promise<NotificationClientDTO[]> {
-    const notifications = await this.notificationRepository.findUnread(accountUuid, options);
+    const notifications = await this.notificationRepository.findUnread(identityId, options);
     return notifications.map((n) => toNotificationClientDTO(n.toServerDTO()));
   }
 
-  async getCount(accountUuid: string): Promise<number> {
-    return this.notificationRepository.countUnread(accountUuid);
+  async getCount(identityId: string): Promise<number> {
+    return this.notificationRepository.countUnread(identityId);
   }
 }

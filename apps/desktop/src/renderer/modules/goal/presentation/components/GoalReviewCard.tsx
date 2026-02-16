@@ -31,8 +31,8 @@ import {
 interface GoalReviewCardProps {
   review: GoalReviewClientDTO;
   goalColor?: string;
-  onView?: (reviewUuid: string) => void;
-  onDelete?: (reviewUuid: string) => void;
+  onView?: (reviewId: string) => void;
+  onDelete?: (reviewId: string) => void;
 }
 
 // 复盘类型配置
@@ -79,12 +79,12 @@ export function GoalReviewCard({
 
   const handleView = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onView?.(review.uuid);
+    onView?.(review.id);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onDelete?.(review.uuid);
+    onDelete?.(review.id);
   };
 
   // 渲染评分星星

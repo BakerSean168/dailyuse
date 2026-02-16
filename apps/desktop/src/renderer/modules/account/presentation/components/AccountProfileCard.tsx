@@ -31,7 +31,7 @@ import type { AccountClientDTO, SubscriptionPlan } from '@dailyuse/contracts/acc
  * �?AccountClientDTO 提取展示所需的字�?
  */
 export interface AccountProfile {
-  uuid: string;
+  id: string;
   email: string;
   username?: string;
   displayName?: string;
@@ -51,7 +51,7 @@ export interface AccountProfile {
  */
 export function accountClientToProfile(account: AccountClientDTO): AccountProfile {
   return {
-    uuid: account.uuid,
+    id: account.id,
     email: account.email,
     username: account.username,
     displayName: account.profile.displayName,

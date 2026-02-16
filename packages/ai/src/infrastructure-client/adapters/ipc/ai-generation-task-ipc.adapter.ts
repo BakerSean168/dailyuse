@@ -39,16 +39,16 @@ export class AIGenerationTaskIpcAdapter implements IAIGenerationTaskApiClient {
     return this.ipcClient.invoke(`${this.channel}:list`, params);
   }
 
-  async getGenerationTaskById(uuid: string): Promise<AIGenerationTaskClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:get`, uuid);
+  async getGenerationTaskById(id: string): Promise<AIGenerationTaskClientDTO> {
+    return this.ipcClient.invoke(`${this.channel}:get`, id);
   }
 
-  async cancelGenerationTask(uuid: string): Promise<void> {
-    return this.ipcClient.invoke(`${this.channel}:cancel`, uuid);
+  async cancelGenerationTask(id: string): Promise<void> {
+    return this.ipcClient.invoke(`${this.channel}:cancel`, id);
   }
 
-  async retryGenerationTask(uuid: string): Promise<AIGenerationTaskClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:retry`, uuid);
+  async retryGenerationTask(id: string): Promise<AIGenerationTaskClientDTO> {
+    return this.ipcClient.invoke(`${this.channel}:retry`, id);
   }
 
   // ===== Goal Generation =====
@@ -61,7 +61,7 @@ export class AIGenerationTaskIpcAdapter implements IAIGenerationTaskApiClient {
     return this.ipcClient.invoke('ai:generate:goal-with-key-results', request);
   }
 
-  async generateKeyResults(goalUuid: string): Promise<GenerateKeyResultsRes> {
-    return this.ipcClient.invoke('ai:generate:key-results', goalUuid);
+  async generateKeyResults(goalId: string): Promise<GenerateKeyResultsRes> {
+    return this.ipcClient.invoke('ai:generate:key-results', goalId);
   }
 }

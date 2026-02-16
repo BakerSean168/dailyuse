@@ -17,10 +17,10 @@ import type {
 
 // Type aliases for backward compatibility
 type CreateReminderTemplateInput = CreateReminderTemplateRequest;
-type UpdateReminderTemplateInput = { uuid: string; request: UpdateReminderTemplateRequest };
-type SearchTemplatesInput = { accountUuid: string; query: string };
+type UpdateReminderTemplateInput = { id: string; request: UpdateReminderTemplateRequest };
+type SearchTemplatesInput = { identityId: string; query: string };
 type CreateReminderGroupInput = CreateReminderGroupRequest;
-type UpdateReminderGroupInput = { uuid: string; request: UpdateReminderGroupRequest };
+type UpdateReminderGroupInput = { id: string; request: UpdateReminderGroupRequest };
 
 // ===== Types =====
 
@@ -35,7 +35,7 @@ export interface ReminderState {
 
 export interface UseReminderReturn extends ReminderState {
   // Template Query
-  loadTemplates: (accountUuid: string) => Promise<void>;
+  loadTemplates: (identityId: string) => Promise<void>;
   getTemplate: (id: string) => Promise<ReminderTemplateClientDTO | null>;
   searchTemplates: (input: SearchTemplatesInput) => Promise<ReminderTemplateClientDTO[]>;
 
@@ -46,7 +46,7 @@ export interface UseReminderReturn extends ReminderState {
   toggleTemplateEnabled: (id: string) => Promise<void>;
 
   // Group Query
-  loadGroups: (accountUuid: string) => Promise<void>;
+  loadGroups: (identityId: string) => Promise<void>;
   getGroup: (id: string) => Promise<ReminderGroupClientDTO | null>;
 
   // Group Mutations
@@ -60,7 +60,7 @@ export interface UseReminderReturn extends ReminderState {
 
   // Utilities
   clearError: () => void;
-  refresh: (accountUuid: string) => Promise<void>;
+  refresh: (identityId: string) => Promise<void>;
 }
 
 // ===== Hook Implementation =====
@@ -77,11 +77,11 @@ export function useReminder(): UseReminderReturn {
 
   // ===== Template Query =====
 
-  const loadTemplates = useCallback(async (accountUuid: string) => {
+  const loadTemplates = useCallback(async (identityId: string) => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const templates = await reminderApplicationService.getUserTemplates(accountUuid);
+      const templates = await reminderApplicationService.getUserTemplates(identityId);
       setState((prev) => ({ ...prev, templates, loading: false }));
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '加载提醒模板失败';
@@ -94,7 +94,7 @@ export function useReminder(): UseReminderReturn {
   }, []);
 
   const searchTemplatesFn = useCallback(async (input: SearchTemplatesInput) => {
-    return reminderApplicationService.searchTemplates(input.accountUuid, input.query);
+    return reminderApplicationService.searchTemplates(input.identityId, input.query);
   }, []);
 
   // ===== Template Mutations =====
@@ -122,12 +122,12 @@ export function useReminder(): UseReminderReturn {
 
     try {
       const template = await reminderApplicationService.updateReminderTemplate(
-        input.uuid,
+        input.id,
         input.request,
       );
       setState((prev) => ({
         ...prev,
-        templates: prev.templates.map((t) => (t.uuid === input.uuid ? template : t)),
+        templates: prev.templates.map((t) => (t.id === input.id ? template : t)),
         loading: false,
       }));
       return template;
@@ -145,8 +145,8 @@ export function useReminder(): UseReminderReturn {
       await reminderApplicationService.deleteReminderTemplate(id);
       setState((prev) => ({
         ...prev,
-        templates: prev.templates.filter((t) => t.uuid !== id),
-        selectedTemplate: prev.selectedTemplate?.uuid === id ? null : prev.selectedTemplate,
+        templates: prev.templates.filter((t) => t.id !== id),
+        selectedTemplate: prev.selectedTemplate?.id === id ? null : prev.selectedTemplate,
         loading: false,
       }));
     } catch (e) {
@@ -163,7 +163,7 @@ export function useReminder(): UseReminderReturn {
       const updated = await reminderApplicationService.toggleTemplateEnabled(id);
       setState((prev) => ({
         ...prev,
-        templates: prev.templates.map((t) => (t.uuid === id ? updated : t)),
+        templates: prev.templates.map((t) => (t.id === id ? updated : t)),
         loading: false,
       }));
     } catch (e) {
@@ -175,11 +175,11 @@ export function useReminder(): UseReminderReturn {
 
   // ===== Group Query =====
 
-  const loadGroups = useCallback(async (accountUuid: string) => {
+  const loadGroups = useCallback(async (identityId: string) => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const groups = await reminderApplicationService.getUserReminderGroups(accountUuid);
+      const groups = await reminderApplicationService.getUserReminderGroups(identityId);
       setState((prev) => ({ ...prev, groups, loading: false }));
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '加载提醒分组失败';
@@ -215,10 +215,10 @@ export function useReminder(): UseReminderReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const group = await reminderApplicationService.updateReminderGroup(input.uuid, input.request);
+      const group = await reminderApplicationService.updateReminderGroup(input.id, input.request);
       setState((prev) => ({
         ...prev,
-        groups: prev.groups.map((g) => (g.uuid === input.uuid ? group : g)),
+        groups: prev.groups.map((g) => (g.id === input.id ? group : g)),
         loading: false,
       }));
       return group;
@@ -236,8 +236,8 @@ export function useReminder(): UseReminderReturn {
       await reminderApplicationService.deleteReminderGroup(id);
       setState((prev) => ({
         ...prev,
-        groups: prev.groups.filter((g) => g.uuid !== id),
-        selectedGroup: prev.selectedGroup?.uuid === id ? null : prev.selectedGroup,
+        groups: prev.groups.filter((g) => g.id !== id),
+        selectedGroup: prev.selectedGroup?.id === id ? null : prev.selectedGroup,
         loading: false,
       }));
     } catch (e) {
@@ -264,13 +264,13 @@ export function useReminder(): UseReminderReturn {
   }, []);
 
   const refresh = useCallback(
-    async (accountUuid: string) => {
-      await Promise.all([loadTemplates(accountUuid), loadGroups(accountUuid)]);
+    async (identityId: string) => {
+      await Promise.all([loadTemplates(identityId), loadGroups(identityId)]);
     },
     [loadTemplates, loadGroups],
   );
 
-  // Note: Auto-loading removed - call loadTemplates/loadGroups manually with accountUuid
+  // Note: Auto-loading removed - call loadTemplates/loadGroups manually with identityId
 
   return {
     ...state,

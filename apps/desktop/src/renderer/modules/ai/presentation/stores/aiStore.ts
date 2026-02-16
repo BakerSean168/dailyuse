@@ -66,12 +66,12 @@ export const useAIStore = create<AIStore>()(
 
       updateConversation: (id, conversation) =>
         set((state) => ({
-          conversations: state.conversations.map((c) => (c.uuid === id ? conversation : c)),
+          conversations: state.conversations.map((c) => (c.id === id ? conversation : c)),
         })),
 
       removeConversation: (id) =>
         set((state) => ({
-          conversations: state.conversations.filter((c) => c.uuid !== id),
+          conversations: state.conversations.filter((c) => c.id !== id),
           activeConversationId:
             state.activeConversationId === id ? null : state.activeConversationId,
         })),
@@ -95,7 +95,7 @@ export const useAIStore = create<AIStore>()(
         try {
           // Send message via aiApplicationService
           const response = await aiApplicationService.sendMessage({
-            conversationUuid: conversationId,
+            conversationId: conversationId,
             content,
           });
 
@@ -120,8 +120,8 @@ export const useAIStore = create<AIStore>()(
 
           // Store Entity directly
           get().addConversation(conversation);
-          set({ activeConversationId: conversation.uuid });
-          return conversation.uuid;
+          set({ activeConversationId: conversation.id });
+          return conversation.id;
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to create conversation' });
           throw error;
@@ -143,11 +143,11 @@ export const useAIStore = create<AIStore>()(
       // Selectors
       getActiveConversation: () => {
         const { conversations, activeConversationId } = get();
-        return conversations.find((c) => c.uuid === activeConversationId);
+        return conversations.find((c) => c.id === activeConversationId);
       },
 
       getConversationById: (id) => {
-        return get().conversations.find((c) => c.uuid === id);
+        return get().conversations.find((c) => c.id === id);
       },
     }),
     {

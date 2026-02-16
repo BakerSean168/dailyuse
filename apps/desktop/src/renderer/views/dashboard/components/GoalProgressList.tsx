@@ -102,7 +102,7 @@ export function GoalProgressList({
             const percentage = goal.overallProgress || 0;
             return (
               <div
-                key={goal.uuid}
+                key={goal.id}
                 className="p-2 rounded-md hover:bg-muted/50 cursor-pointer transition-colors"
                 onClick={() => onGoalClick?.(goal)}
               >

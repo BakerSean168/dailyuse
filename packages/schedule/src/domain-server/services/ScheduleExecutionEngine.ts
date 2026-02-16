@@ -22,7 +22,7 @@ import { ScheduleTask } from '../aggregates/schedule-task';
  */
 export interface TaskExecutionContext {
   taskId: string;
-  accountUuid: string;
+  identityId: string;
   sourceModule: string;
   sourceEntityId: string;
   metadata: Record<string, any>;
@@ -57,28 +57,28 @@ export interface IScheduleExecutionEngine {
   /**
    * 移除调度任务
    * 
-   * @param taskId 任务 UUID
+   * @param taskId 任务 ID
    */
   removeTask(taskId: string): Promise<void>;
 
   /**
    * 暂停任务
    * 
-   * @param taskId 任务 UUID
+   * @param taskId 任务 ID
    */
   pauseTask(taskId: string): Promise<void>;
 
   /**
    * 恢复任务
    * 
-   * @param taskId 任务 UUID
+   * @param taskId 任务 ID
    */
   resumeTask(taskId: string): Promise<void>;
 
   /**
    * 立即执行任务（忽略调度时间）
    * 
-   * @param taskId 任务 UUID
+   * @param taskId 任务 ID
    */
   runTask(taskId: string): Promise<void>;
 

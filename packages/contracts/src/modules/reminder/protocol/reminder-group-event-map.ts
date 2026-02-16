@@ -12,9 +12,9 @@ export type ReminderGroupEventMap = {
    * 提醒分组创建事件
    */
   'reminder:group-created': {
-    uuid: string;
+    id: string;
     name: string;
-    accountUuid: string;
+    identityId: string;
     createdAt: number;
   };
 
@@ -22,7 +22,7 @@ export type ReminderGroupEventMap = {
    * 提醒分组更新事件
    */
   'reminder:group-updated': {
-    uuid: string;
+    id: string;
     changes: string[];
     updatedAt: number;
   };
@@ -31,7 +31,7 @@ export type ReminderGroupEventMap = {
    * 提醒分组删除事件
    */
   'reminder:group-deleted': {
-    uuid: string;
+    id: string;
     name: string;
     deletedAt: number;
   };
@@ -40,7 +40,7 @@ export type ReminderGroupEventMap = {
    * 提醒分组控制模式切换事件
    */
   'reminder:group-control-mode-switched': {
-    uuid: string;
+    id: string;
     previousMode: string;
     newMode: string;
     switchedAt: number;
@@ -50,7 +50,7 @@ export type ReminderGroupEventMap = {
    * 提醒分组启用事件
    */
   'reminder:group-enabled': {
-    uuid: string;
+    id: string;
     enabledAt: number;
   };
 
@@ -58,7 +58,7 @@ export type ReminderGroupEventMap = {
    * 提醒分组暂停事件
    */
   'reminder:group-paused': {
-    uuid: string;
+    id: string;
     pausedAt: number;
   };
 };

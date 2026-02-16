@@ -5,9 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 // 集中管理：如果以后想把 UUID 换成 NanoID，只改这一行代码！
 export const IdGenerator = {
   // 生成标准 UUID
-  uuid(): string {
-    return uuidv4();
-  },
+  id(): string { return uuidv4(); },
 
   // 生成短 ID (例如给对外的分享链接用)
 //   nano(length = 21): string {

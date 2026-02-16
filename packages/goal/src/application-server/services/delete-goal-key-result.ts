@@ -15,14 +15,14 @@ export class DeleteGoalKeyResult {
     private readonly goalPolicy: GoalPolicy,
   ) {}
 
-  async execute(goalUuid: string, keyResultUuid: string): Promise<Result<GoalClientDTO>> {
-    const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
+  async execute(goalId: string, keyResultId: string): Promise<Result<GoalClientDTO>> {
+    const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
     if (!goal) {
-      return error('NOT_FOUND', `Goal not found: ${goalUuid}`);
+      return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }
 
     this.goalPolicy.ensureGoalCanBeModified(goal);
-    goal.removeKeyResult(keyResultUuid);
+    goal.removeKeyResult(keyResultId);
     await this.goalRepository.save(goal);
     await GoalEventPublisher.publishGoalEvents(goal);
 

@@ -15,13 +15,13 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
 
     const stmt = this.db.prepare(`
       INSERT INTO knowledge_generation_tasks (
-        uuid, accountUuid, title, description, status, createdAt, updatedAt
+        id, identityId, title, description, status, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.accountUuid,
+      dto.id,
+      dto.identityId,
       dto.title,
       dto.description || null,
       dto.status,
@@ -32,17 +32,17 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
     return task;
   }
 
-  async findByUuid(uuid: string): Promise<KnowledgeGenerationTask | null> {
+  async findById(id: string): Promise<KnowledgeGenerationTask | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM knowledge_generation_tasks WHERE uuid = ? LIMIT 1`
+      `SELECT * FROM knowledge_generation_tasks WHERE id = ? LIMIT 1`
     );
-    const row = stmt.get(uuid) as any;
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return KnowledgeGenerationTask.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
+      id: row.id,
+      identity_id: row.identityId,
       title: row.title,
       description: row.description,
       status: row.status,
@@ -51,16 +51,16 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
     });
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<KnowledgeGenerationTask[]> {
+  async findByAccountId(identityId: string): Promise<KnowledgeGenerationTask[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM knowledge_generation_tasks WHERE accountUuid = ? ORDER BY createdAt DESC`
+      `SELECT * FROM knowledge_generation_tasks WHERE identityId = ? ORDER BY createdAt DESC`
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) =>
       KnowledgeGenerationTask.fromPersistenceDTO({
-        uuid: row.uuid,
-        account_uuid: row.accountUuid,
+        id: row.id,
+        identity_id: row.identityId,
         title: row.title,
         description: row.description,
         status: row.status,
@@ -76,7 +76,7 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
     const stmt = this.db.prepare(`
       UPDATE knowledge_generation_tasks
       SET title = ?, description = ?, status = ?, updatedAt = ?
-      WHERE uuid = ?
+      WHERE id = ?
     `);
 
     stmt.run(
@@ -84,15 +84,15 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
       dto.description || null,
       dto.status,
       dto.updatedAt,
-      dto.uuid,
+      dto.id,
     );
 
     return task;
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM knowledge_generation_tasks WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM knowledge_generation_tasks WHERE id = ?`);
+    stmt.run(id);
   }
 }
 

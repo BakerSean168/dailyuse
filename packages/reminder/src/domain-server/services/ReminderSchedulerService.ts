@@ -43,8 +43,8 @@ export interface IScheduleResult {
  * 调度选项
  */
 export interface IScheduleOptions {
-  /** 账户 UUID（可选，不传则处理所有账户） */
-  accountUuid?: string;
+  /** 账户 ID（可选，不传则处理所有账户） */
+  identityId?: string;
   /** 在此时间之前触发的提醒（默认当前时间） */
   beforeTime?: number;
   /** 最大处理数量（防止一次处理过多） */
@@ -69,12 +69,12 @@ export class ReminderSchedulerService {
    */
   async schedule(options: IScheduleOptions = {}): Promise<IScheduleResult> {
     const startTime = Date.now();
-    const { accountUuid, beforeTime = Date.now(), maxCount = 100, concurrency = 10 } = options;
+    const { identityId, beforeTime = Date.now(), maxCount = 100, concurrency = 10 } = options;
 
-    logger.debug('Starting reminder schedule scan', { accountUuid, beforeTime });
+    logger.debug('Starting reminder schedule scan', { identityId, beforeTime });
 
     // 获取待触发的提醒
-    const pendingReminders = await this.triggerService.getPendingReminders(beforeTime, accountUuid);
+    const pendingReminders = await this.triggerService.getPendingReminders(beforeTime, identityId);
 
     // 限制数量
     const remindersToProcess = pendingReminders.slice(0, maxCount);
@@ -82,7 +82,7 @@ export class ReminderSchedulerService {
 
     if (totalCount > 0) {
       logger.info(`Found ${totalCount} pending reminders to process`, {
-        uuids: remindersToProcess.map(r => r.uuid),
+        ids: remindersToProcess.map(r => r.id),
         titles: remindersToProcess.map(r => r.title)
       });
     } else {
@@ -145,8 +145,8 @@ export class ReminderSchedulerService {
    *
    * 用于修复数据或重新初始化
    */
-  async recalculateAllNextTriggerTimes(accountUuid: string): Promise<number> {
-    const templates = await this.templateRepository.findByAccountUuid(accountUuid, {
+  async recalculateAllNextTriggerTimes(identityId: string): Promise<number> {
+    const templates = await this.templateRepository.findByAccountId(identityId, {
       includeDeleted: false,
     });
 
@@ -167,17 +167,17 @@ export class ReminderSchedulerService {
   /**
    * 获取即将触发的提醒（未来一段时间内）
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 账户 ID
    * @param withinMinutes 未来多少分钟内（默认 60）
    */
   async getUpcomingReminders(
-    accountUuid: string,
+    identityId: string,
     withinMinutes: number = 60,
   ): Promise<ReminderTemplate[]> {
     const now = Date.now();
     const future = now + withinMinutes * 60 * 1000;
 
-    const templates = await this.templateRepository.findByNextTriggerBefore(future, accountUuid);
+    const templates = await this.templateRepository.findByNextTriggerBefore(future, identityId);
 
     // 过滤出真正在未来时间范围内的（排除已过期的）
     return templates.filter((t) => {
@@ -189,31 +189,31 @@ export class ReminderSchedulerService {
   /**
    * 获取过期未触发的提醒
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 账户 ID
    * @param beforeMinutes 多少分钟前（默认 5）
    */
   async getOverdueReminders(
-    accountUuid: string,
+    identityId: string,
     beforeMinutes: number = 5,
   ): Promise<ReminderTemplate[]> {
     const now = Date.now();
     const past = now - beforeMinutes * 60 * 1000;
 
-    return await this.templateRepository.findByNextTriggerBefore(past, accountUuid);
+    return await this.templateRepository.findByNextTriggerBefore(past, identityId);
   }
 
   /**
    * 处理过期未触发的提醒
    *
-   * @param accountUuid 账户 UUID
+   * @param identityId 账户 ID
    * @param action 处理动作：'trigger' 立即触发 | 'skip' 跳过并记录 | 'reschedule' 重新调度
    */
   async handleOverdueReminders(
-    accountUuid: string,
+    identityId: string,
     action: 'trigger' | 'skip' | 'reschedule' = 'skip',
   ): Promise<IScheduleResult> {
     const startTime = Date.now();
-    const overdueReminders = await this.getOverdueReminders(accountUuid);
+    const overdueReminders = await this.getOverdueReminders(identityId);
 
     if (overdueReminders.length === 0) {
       return {

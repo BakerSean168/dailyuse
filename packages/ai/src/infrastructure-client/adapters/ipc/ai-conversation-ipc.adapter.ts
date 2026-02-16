@@ -36,28 +36,28 @@ export class AIConversationIpcAdapter implements IAIConversationApiClient {
     return this.ipcClient.invoke(`${this.channel}:list`, params);
   }
 
-  async getConversationById(uuid: string): Promise<AIConversationClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:get`, uuid);
+  async getConversationById(id: string): Promise<AIConversationClientDTO> {
+    return this.ipcClient.invoke(`${this.channel}:get`, id);
   }
 
   async updateConversation(
-    uuid: string,
+    id: string,
     request: UpdateConversationReq,
   ): Promise<AIConversationClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:update`, { uuid, ...request });
+    return this.ipcClient.invoke(`${this.channel}:update`, { id, ...request });
   }
 
-  async deleteConversation(uuid: string): Promise<void> {
-    return this.ipcClient.invoke(`${this.channel}:delete`, uuid);
+  async deleteConversation(id: string): Promise<void> {
+    return this.ipcClient.invoke(`${this.channel}:delete`, id);
   }
 
   // ===== Conversation Status =====
 
-  async closeConversation(uuid: string): Promise<AIConversationClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:close`, uuid);
+  async closeConversation(id: string): Promise<AIConversationClientDTO> {
+    return this.ipcClient.invoke(`${this.channel}:close`, id);
   }
 
-  async archiveConversation(uuid: string): Promise<AIConversationClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:archive`, uuid);
+  async archiveConversation(id: string): Promise<AIConversationClientDTO> {
+    return this.ipcClient.invoke(`${this.channel}:archive`, id);
   }
 }

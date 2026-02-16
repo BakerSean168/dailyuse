@@ -22,7 +22,7 @@ import type { LoginRequest, RegisterRequest, LoginResponse } from '@dailyuse/con
 // ============ Types ============
 
 export interface AuthUser {
-  uuid: string;
+  id: string;
   email: string;
   username?: string;
   displayName?: string;
@@ -129,7 +129,7 @@ export function useAuth() {
         // Update state - LoginResponse 不包含用户信�?
         // 用户信息需要从另一�?API 获取（如 AccountContainer�?
         const user: AuthUser = {
-          uuid: response.sessionId || '',
+          id: response.sessionId || '',
           email: credentials.identifier,
           username: undefined,
           displayName: undefined,

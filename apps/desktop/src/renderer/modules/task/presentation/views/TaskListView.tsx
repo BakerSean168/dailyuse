@@ -183,7 +183,7 @@ export function TaskListView() {
             >
               <option value="">-- 选择任务 --</option>
               {templates.map((t) => (
-                <option key={t.uuid} value={t.uuid}>
+                <option key={t.id} value={t.id}>
                   {t.title}
                 </option>
               ))}
@@ -192,7 +192,7 @@ export function TaskListView() {
           
           {selectedTemplateId ? (
             <TaskDependencyGraph 
-              tasks={templates.filter(t => t.uuid === selectedTemplateId)} 
+              tasks={templates.filter(t => t.id === selectedTemplateId)} 
             />
           ) : (
             <div className="flex flex-col items-center justify-center h-64 border rounded-lg bg-card">
@@ -299,7 +299,7 @@ export function TaskListView() {
                   onUpdate={handleRefresh}
                 />
               )}
-              getItemKey={(template) => template.uuid}
+              getItemKey={(template) => template.id}
               estimateSize={120}
               threshold={30}
               height="calc(100vh - 320px)"
@@ -311,7 +311,7 @@ export function TaskListView() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredTemplates.map((template) => (
                 <TaskCard
-                  key={template.uuid}
+                  key={template.id}
                   template={template}
                   onUpdate={handleRefresh}
                 />

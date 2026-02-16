@@ -25,11 +25,11 @@ import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
  */
 export interface ITemplateEffectiveStatus {
   /** 模板 UUID */
-  templateUuid: string;
+  templateId: string;
   /** 模板自身状态 */
   templateStatus: ReminderStatus;
-  /** 所属分组 UUID */
-  groupUuid: string | null;
+  /** 所属分组 ID */
+  groupId: string | null;
   /** 分组状态 */
   groupStatus: ReminderStatus | null;
   /** 分组控制模式 */
@@ -66,15 +66,15 @@ export class ReminderTemplateControlService {
     template: ReminderTemplate,
     group?: ReminderGroup | null,
   ): Promise<ITemplateEffectiveStatus> {
-    const groupUuid = template.groupUuid;
+    const groupId = template.groupId;
     const templateStatus = template.status;
 
     // 未分组：模板状态即有效状态
-    if (!groupUuid) {
+    if (!groupId) {
       return {
-        templateUuid: template.uuid,
+        templateId: template.id,
         templateStatus,
-        groupUuid: null,
+        groupId: null,
         groupStatus: null,
         controlMode: null,
         effectiveStatus: templateStatus,
@@ -86,15 +86,15 @@ export class ReminderTemplateControlService {
     // 获取分组信息
     let targetGroup = group;
     if (!targetGroup) {
-      targetGroup = await this.groupRepository.findById(groupUuid);
+      targetGroup = await this.groupRepository.findById(groupId);
     }
 
     if (!targetGroup) {
       // 分组不存在，视为未分组
       return {
-        templateUuid: template.uuid,
+        templateId: template.id,
         templateStatus,
-        groupUuid,
+        groupId,
         groupStatus: null,
         controlMode: null,
         effectiveStatus: templateStatus,
@@ -109,9 +109,9 @@ export class ReminderTemplateControlService {
     // INDIVIDUAL 模式：模板状态即有效状态
     if (controlMode === ControlMode.Individual) {
       return {
-        templateUuid: template.uuid,
+        templateId: template.id,
         templateStatus,
-        groupUuid,
+        groupId,
         groupStatus,
         controlMode,
         effectiveStatus: templateStatus,
@@ -136,9 +136,9 @@ export class ReminderTemplateControlService {
     }
 
     return {
-      templateUuid: template.uuid,
+      templateId: template.id,
       templateStatus,
-      groupUuid,
+      groupId,
       groupStatus,
       controlMode,
       effectiveStatus,
@@ -153,16 +153,16 @@ export class ReminderTemplateControlService {
   async calculateEffectiveStatusBatch(
     templates: ReminderTemplate[],
   ): Promise<ITemplateEffectiveStatus[]> {
-    // 收集所有相关的分组 UUID
-    const groupUuids = new Set<string>();
+    // 收集所有相关的分组 ID
+    const groupIds = new Set<string>();
     for (const template of templates) {
-      if (template.groupUuid) {
-        groupUuids.add(template.groupUuid);
+      if (template.groupId) {
+        groupIds.add(template.groupId);
       }
     }
 
     // 批量加载分组
-    const groups = await this.groupRepository.findByIds(Array.from(groupUuids));
+    const groups = await this.groupRepository.findByIds(Array.from(groupIds));
     const groupMap = new Map<string, ReminderGroup>();
     for (const group of groups) {
       groupMap.set(group.id, group);
@@ -171,14 +171,14 @@ export class ReminderTemplateControlService {
     // 计算每个模板的有效状态
     const results: ITemplateEffectiveStatus[] = [];
     for (const template of templates) {
-      const groupUuid = template.groupUuid;
+      const groupId = template.groupId;
       const templateStatus = template.status;
 
-      if (!groupUuid) {
+      if (!groupId) {
         results.push({
-          templateUuid: template.uuid,
+          templateId: template.id,
           templateStatus,
-          groupUuid: null,
+          groupId: null,
           groupStatus: null,
           controlMode: null,
           effectiveStatus: templateStatus,
@@ -188,12 +188,12 @@ export class ReminderTemplateControlService {
         continue;
       }
 
-      const group = groupMap.get(groupUuid);
+      const group = groupMap.get(groupId);
       if (!group) {
         results.push({
-          templateUuid: template.uuid,
+          templateId: template.id,
           templateStatus,
-          groupUuid,
+          groupId,
           groupStatus: null,
           controlMode: null,
           effectiveStatus: templateStatus,
@@ -208,9 +208,9 @@ export class ReminderTemplateControlService {
 
       if (controlMode === ControlMode.Individual) {
         results.push({
-          templateUuid: template.uuid,
+          templateId: template.id,
           templateStatus,
-          groupUuid,
+          groupId,
           groupStatus,
           controlMode,
           effectiveStatus: templateStatus,
@@ -235,9 +235,9 @@ export class ReminderTemplateControlService {
       }
 
       results.push({
-        templateUuid: template.uuid,
+        templateId: template.id,
         templateStatus,
-        groupUuid,
+        groupId,
         groupStatus,
         controlMode,
         effectiveStatus,
@@ -261,28 +261,28 @@ export class ReminderTemplateControlService {
   /**
    * 获取分组下所有真正启用的模板
    */
-  async getEffectivelyEnabledTemplatesInGroup(groupUuid: string): Promise<ReminderTemplate[]> {
-    const templates = await this.templateRepository.findByGroupUuid(groupUuid);
+  async getEffectivelyEnabledTemplatesInGroup(groupId: string): Promise<ReminderTemplate[]> {
+    const templates = await this.templateRepository.findByGroupId(groupId);
     const statusResults = await this.calculateEffectiveStatusBatch(templates);
 
-    const enabledTemplateUuids = statusResults
+    const enabledTemplateIds = statusResults
       .filter((r) => r.isEffectivelyEnabled)
-      .map((r) => r.templateUuid);
+      .map((r) => r.templateId);
 
-    return templates.filter((t) => enabledTemplateUuids.includes(t.uuid));
+    return templates.filter((t) => enabledTemplateIds.includes(t.id));
   }
 
   /**
    * 获取账户下所有真正启用的模板
    */
   async getEffectivelyEnabledTemplatesByIdentityId(identityId: string): Promise<ReminderTemplate[]> {
-    const templates = await this.templateRepository.findByAccountUuid(identityId);
+    const templates = await this.templateRepository.findByAccountId(identityId);
     const statusResults = await this.calculateEffectiveStatusBatch(templates);
 
-    const enabledTemplateUuids = statusResults
+    const enabledTemplateIds = statusResults
       .filter((r) => r.isEffectivelyEnabled)
-      .map((r) => r.templateUuid);
+      .map((r) => r.templateId);
 
-    return templates.filter((t: ReminderTemplate) => enabledTemplateUuids.includes(t.uuid));
+    return templates.filter((t: ReminderTemplate) => enabledTemplateIds.includes(t.id));
   }
 }

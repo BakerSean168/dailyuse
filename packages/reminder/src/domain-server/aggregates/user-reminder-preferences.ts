@@ -35,7 +35,7 @@ export class UserReminderPreferences
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
   private constructor(params: {
-    uuid?: string;
+    id?: string;
     identityId: string;
     bestTimeSlots: TimeSlotDTO[];
     worstTimeSlots: TimeSlotDTO[];
@@ -43,7 +43,7 @@ export class UserReminderPreferences
     createdAt: number;
     updatedAt: number;
   }) {
-    super(params.uuid || generateUUID());
+    super(params.id || generateUUID());
     this._identityId = params.identityId;
     this._bestTimeSlots = [...params.bestTimeSlots];
     this._worstTimeSlots = [...params.worstTimeSlots];
@@ -53,9 +53,7 @@ export class UserReminderPreferences
   }
 
   // ===== Getter 属性 =====
-  public get uuid(): string {
-    return this.id;
-  }
+
 
   public get identityId(): string {
     return this._identityId;
@@ -64,7 +62,7 @@ export class UserReminderPreferences
   /**
    * Alias for identityId to implement UserReminderPreferencesServer interface
    */
-  public get accountUuid(): string {
+  public get identityId(): string {
     return this._identityId;
   }
 
@@ -116,8 +114,8 @@ export class UserReminderPreferences
    */
   public static fromServerDTO(dto: UserReminderPreferencesServerDTO): UserReminderPreferences {
     return new UserReminderPreferences({
-      uuid: dto.uuid,
-      identityId: dto.accountUuid,
+      id: dto.id,
+      identityId: dto.identityId,
       bestTimeSlots: dto.bestTimeSlots,
       worstTimeSlots: dto.worstTimeSlots,
       globalSmartFrequency: dto.globalSmartFrequency,
@@ -133,8 +131,8 @@ export class UserReminderPreferences
     dto: UserReminderPreferencesPersistenceDTO,
   ): UserReminderPreferences {
     return new UserReminderPreferences({
-      uuid: dto.uuid,
-      identityId: dto.accountUuid,
+      id: dto.id,
+      identityId: dto.identityId,
       bestTimeSlots: JSON.parse(dto.bestTimeSlots) as TimeSlotDTO[],
       worstTimeSlots: JSON.parse(dto.worstTimeSlots) as TimeSlotDTO[],
       globalSmartFrequency: dto.globalSmartFrequency,
@@ -284,8 +282,8 @@ export class UserReminderPreferences
    */
   public toServerDTO(): UserReminderPreferencesServerDTO {
     return {
-      uuid: this.id,
-      accountUuid: this._identityId,
+      id: this.id,
+      identityId: this._identityId,
       bestTimeSlots: [...this._bestTimeSlots],
       worstTimeSlots: [...this._worstTimeSlots],
       globalSmartFrequency: this._globalSmartFrequency,
@@ -315,8 +313,8 @@ export class UserReminderPreferences
       .join(', ');
 
     return {
-      uuid: this.id,
-      accountUuid: this._identityId,
+      id: this.id,
+      identityId: this._identityId,
       bestTimeSlots: [...this._bestTimeSlots],
       worstTimeSlots: [...this._worstTimeSlots],
       globalSmartFrequency: this._globalSmartFrequency,
@@ -332,8 +330,8 @@ export class UserReminderPreferences
    */
   public toPersistenceDTO(): UserReminderPreferencesPersistenceDTO {
     return {
-      uuid: this.id,
-      accountUuid: this._identityId,
+      id: this.id,
+      identityId: this._identityId,
       bestTimeSlots: JSON.stringify(this._bestTimeSlots),
       worstTimeSlots: JSON.stringify(this._worstTimeSlots),
       globalSmartFrequency: this._globalSmartFrequency,

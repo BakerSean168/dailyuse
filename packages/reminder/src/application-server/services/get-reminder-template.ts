@@ -14,8 +14,8 @@ export class GetReminderTemplate {
   
   constructor(private readonly templateRepository: IReminderTemplateRepository) {}
 
-  async execute(uuid: string): Promise<ReminderTemplateClientDTO | null> {
-    const template = await this.templateRepository.findById(uuid);
+  async execute(id: string): Promise<ReminderTemplateClientDTO | null> {
+    const template = await this.templateRepository.findById(id);
     return template ? template.toClientDTO() : null;
   }
 }

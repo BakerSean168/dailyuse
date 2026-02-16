@@ -45,7 +45,7 @@ export interface UpdateEditorWorkspaceRequest {
  */
 export interface ListEditorWorkspacesResponse {
   workspaces: Array<{
-    uuid: string;
+    id: string;
     name: string;
     projectPath: string;
     projectType: ProjectType;
@@ -63,7 +63,7 @@ export interface ListEditorWorkspacesResponse {
  * 创建会话请求
  */
 export interface CreateEditorSessionRequest {
-  workspaceUuid: string;
+  workspaceId: string;
   name: string;
   description?: string | null;
   layout?: Partial<SessionLayoutServerDTO> | null;
@@ -84,8 +84,8 @@ export interface UpdateEditorSessionRequest {
  */
 export interface ListEditorSessionsResponse {
   sessions: Array<{
-    uuid: string;
-    workspaceUuid: string;
+    id: string;
+    workspaceId: string;
     name: string;
     isActive: boolean;
     lastAccessedAt?: number | null;
@@ -101,7 +101,7 @@ export interface ListEditorSessionsResponse {
  * 创建文档请求
  */
 export interface CreateDocumentRequest {
-  workspaceUuid: string;
+  workspaceId: string;
   path: string;
   name: string;
   language: DocumentLanguage;
@@ -122,8 +122,8 @@ export interface UpdateDocumentRequest {
  */
 export interface ListDocumentsResponse {
   documents: Array<{
-    uuid: string;
-    workspaceUuid: string;
+    id: string;
+    workspaceId: string;
     path: string;
     name: string;
     language: DocumentLanguage;
@@ -143,8 +143,8 @@ export interface ListDocumentsResponse {
  */
 export interface ListDocumentVersionsResponse {
   versions: Array<{
-    uuid: string;
-    documentUuid: string;
+    id: string;
+    documentId: string;
     versionNumber: number;
     changeType: string;
     contentHash: string;
@@ -161,7 +161,7 @@ export interface ListDocumentVersionsResponse {
  * 创建编辑器分组请求
  */
 export interface CreateEditorGroupRequest {
-  sessionUuid: string;
+  sessionId: string;
   groupIndex: number;
   name?: string | null;
 }
@@ -179,8 +179,8 @@ export interface UpdateEditorGroupRequest {
  */
 export interface ListEditorGroupsResponse {
   groups: Array<{
-    uuid: string;
-    sessionUuid: string;
+    id: string;
+    sessionId: string;
     groupIndex: number;
     activeTabIndex: number;
     name?: string | null;
@@ -196,9 +196,9 @@ export interface ListEditorGroupsResponse {
  * 创建编辑器标签请求
  */
 export interface CreateEditorTabRequest {
-  groupUuid: string;
-  sessionUuid: string;
-  documentUuid?: string | null;
+  groupId: string;
+  sessionId: string;
+  documentId?: string | null;
   tabIndex: number;
   tabType: TabType;
   title: string;
@@ -220,10 +220,10 @@ export interface UpdateEditorTabRequest {
  */
 export interface ListEditorTabsResponse {
   tabs: Array<{
-    uuid: string;
-    groupUuid: string;
-    sessionUuid: string;
-    documentUuid?: string | null;
+    id: string;
+    groupId: string;
+    sessionId: string;
+    documentId?: string | null;
     tabIndex: number;
     tabType: TabType;
     title: string;
@@ -242,7 +242,7 @@ export interface ListEditorTabsResponse {
  * 创建搜索引擎请求
  */
 export interface CreateSearchEngineRequest {
-  workspaceUuid: string;
+  workspaceId: string;
   name: string;
   description?: string | null;
   indexPath: string;
@@ -261,12 +261,12 @@ export interface UpdateSearchEngineProgressRequest {
  * 搜索请求
  */
 export interface SearchRequest {
-  searchEngineUuid: string;
+  searchEngineId: string;
   query: string;
   limit?: number;
   offset?: number;
   filters?: {
-    documentUuids?: string[];
+    documentIds?: string[];
     languages?: DocumentLanguage[];
     tags?: string[];
   } | null;
@@ -277,7 +277,7 @@ export interface SearchRequest {
  */
 export interface SearchResponse {
   results: Array<{
-    documentUuid: string;
+    documentId: string;
     documentPath: string;
     documentName: string;
     snippet: string;
@@ -296,14 +296,14 @@ export interface SearchResponse {
  * 创建链接资源请求
  */
 export interface CreateLinkedResourceRequest {
-  workspaceUuid: string;
-  sourceDocumentUuid: string;
+  workspaceId: string;
+  sourceDocumentId: string;
   sourceType: LinkedSourceType;
   sourceLine?: number | null;
   sourceColumn?: number | null;
   targetPath: string;
   targetType: LinkedTargetType;
-  targetDocumentUuid?: string | null;
+  targetDocumentId?: string | null;
   targetAnchor?: string | null;
 }
 
@@ -312,7 +312,7 @@ export interface CreateLinkedResourceRequest {
  */
 export interface UpdateLinkedResourceRequest {
   targetPath?: string;
-  targetDocumentUuid?: string | null;
+  targetDocumentId?: string | null;
   targetAnchor?: string | null;
   isValid?: boolean;
 }
@@ -322,8 +322,8 @@ export interface UpdateLinkedResourceRequest {
  */
 export interface ListLinkedResourcesResponse {
   resources: Array<{
-    uuid: string;
-    sourceDocumentUuid: string;
+    id: string;
+    sourceDocumentId: string;
     sourceType: LinkedSourceType;
     targetPath: string;
     targetType: LinkedTargetType;
@@ -339,8 +339,8 @@ export interface ListLinkedResourcesResponse {
  * 验证链接请求
  */
 export interface ValidateLinksRequest {
-  workspaceUuid: string;
-  documentUuids?: string[] | null; // 如果为空，验证所有文档
+  workspaceId: string;
+  documentIds?: string[] | null; // 如果为空，验证所有文档
 }
 
 /**
@@ -350,8 +350,8 @@ export interface ValidateLinksResponse {
   validCount: number;
   invalidCount: number;
   invalidLinks: Array<{
-    resourceUuid: string;
-    sourceDocumentUuid: string;
+    resourceId: string;
+    sourceDocumentId: string;
     targetPath: string;
     reason: string;
   }>;

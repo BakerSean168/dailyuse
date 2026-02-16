@@ -63,20 +63,20 @@ export interface IGoalApiClient {
     page?: number;
     limit?: number;
     status?: string;
-    dirUuid?: string;
+    dirId?: string;
     startDate?: string;
     endDate?: string;
     includeChildren?: boolean;
   }): Promise<Result<QueryGoalsRes>>;
-  getGoalById(uuid: string, includeChildren?: boolean): Promise<Result<GoalClientDTO>>;
-  updateGoal(uuid: string, request: UpdateGoalReq): Promise<Result<GoalClientDTO>>;
-  deleteGoal(uuid: string): Promise<Result<void>>;
+  getGoalById(id: string, includeChildren?: boolean): Promise<Result<GoalClientDTO>>;
+  updateGoal(id: string, request: UpdateGoalReq): Promise<Result<GoalClientDTO>>;
+  deleteGoal(id: string): Promise<Result<void>>;
 
   // Goal Status
-  activateGoal(uuid: string): Promise<Result<GoalClientDTO>>;
-  pauseGoal(uuid: string): Promise<Result<GoalClientDTO>>;
-  completeGoal(uuid: string): Promise<Result<GoalClientDTO>>;
-  archiveGoal(uuid: string): Promise<Result<GoalClientDTO>>;
+  activateGoal(id: string): Promise<Result<GoalClientDTO>>;
+  pauseGoal(id: string): Promise<Result<GoalClientDTO>>;
+  completeGoal(id: string): Promise<Result<GoalClientDTO>>;
+  archiveGoal(id: string): Promise<Result<GoalClientDTO>>;
 
   // Search
   searchGoals(params: {
@@ -84,65 +84,65 @@ export interface IGoalApiClient {
     page?: number;
     limit?: number;
     status?: string;
-    dirUuid?: string;
+    dirId?: string;
   }): Promise<Result<QueryGoalsRes>>;
 
   // KeyResult Management (via Goal Aggregate)
   addKeyResultForGoal(
-    goalUuid: string,
-    request: Omit<AddKeyResultReq, 'goalUuid'>,
+    goalId: string,
+    request: Omit<AddKeyResultReq, 'goalId'>,
   ): Promise<Result<KeyResultClientDTO>>;
-  getKeyResultsByGoal(goalUuid: string): Promise<Result<GetKeyResultsRes>>;
+  getKeyResultsByGoal(goalId: string): Promise<Result<GetKeyResultsRes>>;
   updateKeyResultForGoal(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
     request: UpdateKeyResultReq,
   ): Promise<Result<KeyResultClientDTO>>;
-  deleteKeyResultForGoal(goalUuid: string, keyResultUuid: string): Promise<Result<void>>;
+  deleteKeyResultForGoal(goalId: string, keyResultId: string): Promise<Result<void>>;
   batchUpdateKeyResultWeights(
-    goalUuid: string,
-    request: { updates: Array<{ keyResultUuid: string; weight: number }> },
+    goalId: string,
+    request: { updates: Array<{ keyResultId: string; weight: number }> },
   ): Promise<Result<GetKeyResultsRes>>;
-  getProgressBreakdown(goalUuid: string): Promise<Result<ProgressBreakdown>>;
+  getProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>>;
 
   // GoalReview Management
   createGoalReview(
-    goalUuid: string,
+    goalId: string,
     request: CreateGoalReviewReq,
   ): Promise<Result<GoalReviewClientDTO>>;
-  getGoalReviewsByGoal(goalUuid: string): Promise<Result<GetGoalReviewsRes>>;
+  getGoalReviewsByGoal(goalId: string): Promise<Result<GetGoalReviewsRes>>;
   updateGoalReview(
-    goalUuid: string,
-    reviewUuid: string,
+    goalId: string,
+    reviewId: string,
     request: Partial<GoalReviewClientDTO>,
   ): Promise<Result<GoalReviewClientDTO>>;
-  deleteGoalReview(goalUuid: string, reviewUuid: string): Promise<Result<void>>;
+  deleteGoalReview(goalId: string, reviewId: string): Promise<Result<void>>;
 
   // GoalRecord Management
   createGoalRecord(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
     request: Pick<CreateGoalRecordReq, 'value' | 'note'>,
   ): Promise<Result<GoalRecordClientDTO>>;
   getGoalRecordsByKeyResult(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
     params?: { limit?: number; offset?: number },
   ): Promise<Result<GetGoalRecordsRes>>;
   getGoalRecordsByGoal(
-    goalUuid: string,
+    goalId: string,
     params?: { limit?: number; offset?: number },
   ): Promise<Result<GetGoalRecordsRes>>;
   deleteGoalRecord(
-    goalUuid: string,
-    keyResultUuid: string,
-    recordUuid: string,
+    goalId: string,
+    keyResultId: string,
+    recordId: string,
   ): Promise<Result<void>>;
 
   // Aggregate View
-  getGoalAggregateView(goalUuid: string): Promise<Result<GetGoalAggregateRes>>;
+  getGoalAggregateView(goalId: string): Promise<Result<GetGoalAggregateRes>>;
   cloneGoal(
-    goalUuid: string,
+    goalId: string,
     request: {
       name?: string;
       description?: string;
@@ -180,14 +180,14 @@ export interface IGoalFolderApiClient {
     page?: number;
     limit?: number;
     status?: string;
-    parentUuid?: string | null;
+    parentId?: string | null;
   }): Promise<Result<QueryGoalFoldersRes>>;
-  getGoalFolderById(uuid: string): Promise<Result<GoalFolderClientDTO>>;
+  getGoalFolderById(id: string): Promise<Result<GoalFolderClientDTO>>;
   updateGoalFolder(
-    uuid: string,
+    id: string,
     request: UpdateGoalFolderReq,
   ): Promise<Result<GoalFolderClientDTO>>;
-  deleteGoalFolder(uuid: string): Promise<Result<void>>;
+  deleteGoalFolder(id: string): Promise<Result<void>>;
 }
 
 // ============ Goal Focus API Client ============
@@ -202,10 +202,10 @@ export interface IGoalFocusApiClient {
   // Status & History
   getStatus(): Promise<Result<GetFocusStatusRes>>;
   getHistory(request: GetFocusHistoryReq): Promise<Result<GetFocusHistoryRes>>;
-  getStatistics(goalUuid?: string): Promise<Result<GetFocusStatisticsRes>>;
+  getStatistics(goalId?: string): Promise<Result<GetFocusStatisticsRes>>;
 
   // Convenience
   isActive(): Promise<Result<boolean>>;
-  getTodayHistory(goalUuid?: string): Promise<Result<GetFocusHistoryRes>>;
-  getWeekHistory(goalUuid?: string): Promise<Result<GetFocusHistoryRes>>;
+  getTodayHistory(goalId?: string): Promise<Result<GetFocusHistoryRes>>;
+  getWeekHistory(goalId?: string): Promise<Result<GetFocusHistoryRes>>;
 }

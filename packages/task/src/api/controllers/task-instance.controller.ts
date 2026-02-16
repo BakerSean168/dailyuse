@@ -41,26 +41,26 @@ export class TaskInstanceController {
   /**
    * Get instance by ID
    */
-  async getInstance(uuid: string): Promise<Result<TaskInstanceClientDTO | null>> {
-    return await this.useCases.getTaskInstance.execute(uuid);
+  async getInstance(id: string): Promise<Result<TaskInstanceClientDTO | null>> {
+    return await this.useCases.getTaskInstance.execute(id);
   }
 
   /**
    * List instances for account
    */
   async listInstances(
-    accountUuid: string,
+    identityId: string,
     filters?: {
-      templateUuid?: string;
+      templateId?: string;
       status?: TaskInstanceStatus;
     }
   ): Promise<Result<TaskInstanceClientDTO[]>> {
-    if (filters?.templateUuid) {
-      return await this.useCases.listByTemplate.execute(filters.templateUuid);
+    if (filters?.templateId) {
+      return await this.useCases.listByTemplate.execute(filters.templateId);
     } else if (filters?.status) {
-      return await this.useCases.listByStatus.execute(accountUuid, filters.status);
+      return await this.useCases.listByStatus.execute(identityId, filters.status);
     } else {
-      return await this.useCases.listByAccount.execute(accountUuid);
+      return await this.useCases.listByAccount.execute(identityId);
     }
   }
 
@@ -68,12 +68,12 @@ export class TaskInstanceController {
    * Get instances by date range
    */
   async getInstancesByDateRange(
-    accountUuid: string,
+    identityId: string,
     startDate: number,
     endDate: number
   ): Promise<Result<TaskInstanceClientDTO[]>> {
     const result = await this.useCases.getByDateRange.execute(
-      accountUuid,
+      identityId,
       startDate,
       endDate,
     );
@@ -89,14 +89,14 @@ export class TaskInstanceController {
    * Complete instance
    */
   async completeInstance(
-    uuid: string,
+    id: string,
     params: {
       duration?: number;
       note?: string;
       rating?: number;
     }
   ): Promise<Result<TaskInstanceClientDTO>> {
-    const result = await this.useCases.complete.execute(uuid, params);
+    const result = await this.useCases.complete.execute(id, params);
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO>;
     }
@@ -108,10 +108,10 @@ export class TaskInstanceController {
    * Skip instance
    */
   async skipInstance(
-    uuid: string,
+    id: string,
     reason?: string
   ): Promise<Result<TaskInstanceClientDTO>> {
-    const result = await this.useCases.skip.execute(uuid, { reason });
+    const result = await this.useCases.skip.execute(id, { reason });
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO>;
     }
@@ -122,14 +122,14 @@ export class TaskInstanceController {
   /**
    * Start instance
    */
-  async startInstance(uuid: string): Promise<Result<TaskInstanceClientDTO>> {
-    return await this.useCases.start.execute(uuid);
+  async startInstance(id: string): Promise<Result<TaskInstanceClientDTO>> {
+    return await this.useCases.start.execute(id);
   }
 
   /**
    * Delete instance
    */
-  async deleteInstance(uuid: string): Promise<Result<void>> {
-    return await this.useCases.deleteInstance.execute(uuid);
+  async deleteInstance(id: string): Promise<Result<void>> {
+    return await this.useCases.deleteInstance.execute(id);
   }
 }

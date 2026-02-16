@@ -11,16 +11,16 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
   constructor(private db: Database.Database) {}
 
   async findById(id: string): Promise<EditorGroup | null> {
-    const stmt = this.db.prepare(`SELECT * FROM editor_groups WHERE uuid = ? LIMIT 1`);
+    const stmt = this.db.prepare(`SELECT * FROM editor_groups WHERE id = ? LIMIT 1`);
     const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return EditorGroup.fromPersistenceDTO({
-      id: row.uuid,
-      session_id: row.session_uuid,
-      workspace_id: row.workspace_id ?? row.workspaceUuid ?? row.workspace_uuid,
-      identityId: row.identity_id ?? row.accountUuid ?? row.account_uuid ?? row.identityId,
+      id: row.id,
+      session_id: row.session_id,
+      workspace_id: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
+      identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
       group_index: row.group_index,
       active_tab_index: row.active_tab_index ?? -1,
       name: row.name ?? null,
@@ -32,16 +32,16 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
 
   async findBySessionId(sessionId: string): Promise<EditorGroup[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_groups WHERE session_uuid = ? ORDER BY group_index ASC`
+      `SELECT * FROM editor_groups WHERE session_id = ? ORDER BY group_index ASC`
     );
     const rows = stmt.all(sessionId) as any[];
 
     return rows.map((row) =>
       EditorGroup.fromPersistenceDTO({
-        id: row.uuid,
-        session_id: row.session_uuid,
-        workspace_id: row.workspace_id ?? row.workspaceUuid ?? row.workspace_uuid,
-        identityId: row.identity_id ?? row.accountUuid ?? row.account_uuid ?? row.identityId,
+        id: row.id,
+        session_id: row.session_id,
+        workspace_id: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
+        identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
         group_index: row.group_index,
         active_tab_index: row.active_tab_index ?? -1,
         name: row.name ?? null,
@@ -54,17 +54,17 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
 
   async findBySessionIdAndGroupIndex(sessionId: string, groupIndex: number): Promise<EditorGroup | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_groups WHERE session_uuid = ? AND group_index = ? LIMIT 1`
+      `SELECT * FROM editor_groups WHERE session_id = ? AND group_index = ? LIMIT 1`
     );
     const row = stmt.get(sessionId, groupIndex) as any;
 
     if (!row) return null;
 
     return EditorGroup.fromPersistenceDTO({
-      id: row.uuid,
-      session_id: row.session_uuid,
-      workspace_id: row.workspace_id ?? row.workspaceUuid ?? row.workspace_uuid,
-      identityId: row.identity_id ?? row.accountUuid ?? row.account_uuid ?? row.identityId,
+      id: row.id,
+      session_id: row.session_id,
+      workspace_id: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
+      identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
       group_index: row.group_index,
       active_tab_index: row.active_tab_index ?? -1,
       name: row.name ?? null,
@@ -79,9 +79,9 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO editor_groups (
-        uuid, session_uuid, group_index, createdAt, updatedAt
+        id, session_id, group_index, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         group_index = excluded.group_index,
         updatedAt = excluded.updatedAt
     `);
@@ -96,16 +96,16 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM editor_groups WHERE uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM editor_groups WHERE id = ?`);
     stmt.run(id);
   }
 
   async saveBatch(groups: EditorGroup[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO editor_groups (
-        uuid, session_uuid, group_index, createdAt, updatedAt
+        id, session_id, group_index, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         group_index = excluded.group_index,
         updatedAt = excluded.updatedAt
     `);
@@ -127,13 +127,13 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
   }
 
   async deleteBySessionId(sessionId: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM editor_groups WHERE session_uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM editor_groups WHERE session_id = ?`);
     stmt.run(sessionId);
   }
 
   async countBySessionId(sessionId: string): Promise<number> {
     const stmt = this.db.prepare(
-      `SELECT COUNT(*) as count FROM editor_groups WHERE session_uuid = ?`,
+      `SELECT COUNT(*) as count FROM editor_groups WHERE session_id = ?`,
     );
     const result = stmt.get(sessionId) as { count: number };
     return result.count;
@@ -141,26 +141,26 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
 
   async getMaxGroupIndex(sessionId: string): Promise<number> {
     const stmt = this.db.prepare(
-      `SELECT MAX(group_index) as maxIndex FROM editor_groups WHERE session_uuid = ?`,
+      `SELECT MAX(group_index) as maxIndex FROM editor_groups WHERE session_id = ?`,
     );
     const result = stmt.get(sessionId) as { maxIndex: number | null };
     return result.maxIndex ?? -1;
   }
 
-  async findByUuid(uuid: string): Promise<EditorGroup | null> {
-    return this.findById(uuid);
+  async findById(id: string): Promise<EditorGroup | null> {
+    return this.findById(id);
   }
 
-  async findBySessionUuid(sessionUuid: string): Promise<EditorGroup[]> {
-    return this.findBySessionId(sessionUuid);
+  async findBySessionId(sessionId: string): Promise<EditorGroup[]> {
+    return this.findBySessionId(sessionId);
   }
 
-  async findBySessionUuidAndGroupIndex(sessionUuid: string, groupIndex: number): Promise<EditorGroup | null> {
-    return this.findBySessionIdAndGroupIndex(sessionUuid, groupIndex);
+  async findBySessionIdAndGroupIndex(sessionId: string, groupIndex: number): Promise<EditorGroup | null> {
+    return this.findBySessionIdAndGroupIndex(sessionId, groupIndex);
   }
 
-  async deleteBySessionUuid(sessionUuid: string): Promise<void> {
-    await this.deleteBySessionId(sessionUuid);
+  async deleteBySessionId(sessionId: string): Promise<void> {
+    await this.deleteBySessionId(sessionId);
   }
 }
 

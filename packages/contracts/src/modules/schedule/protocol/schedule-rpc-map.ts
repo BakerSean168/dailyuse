@@ -15,22 +15,22 @@ export type ScheduleRpcMap = {
   'schedule:create': [CreateScheduleRequest, ScheduleJobClientDTO];
   'schedule:update': [UpdateScheduleRequest, ScheduleJobClientDTO];
   'schedule:delete': [{ scheduleId: string }, ScheduleOperationSuccessResponseDTO];
-  'schedule:get-by-range': [{ startTime: number; endTime: number; accountUuid?: string }, ScheduleJobClientDTO[]];
-  'schedule:detect-conflicts': [{ userId: string; startTime: number; endTime: number; excludeUuid?: string }, ConflictDetectionResult];
+  'schedule:get-by-range': [{ startTime: number; endTime: number; identityId?: string }, ScheduleJobClientDTO[]];
+  'schedule:detect-conflicts': [{ userId: string; startTime: number; endTime: number; excludeId?: string }, ConflictDetectionResult];
   'schedule:resolve-conflict': [{ resolution: string; newStartTime?: number; newEndTime?: number; newDuration?: number }, ScheduleJobClientDTO];
   
   // === Schedule Task Operations ===
   'schedule-task:create': [any, ScheduleTaskClientDTO];
   'schedule-task:update': [any, ScheduleTaskClientDTO];
-  'schedule-task:delete': [{ taskUuid: string }, ScheduleOperationSuccessResponseDTO];
+  'schedule-task:delete': [{ taskId: string }, ScheduleOperationSuccessResponseDTO];
   'schedule-task:query': [ScheduleTaskQueryParamsDTO, any];
-  'schedule-task:enable': [{ taskUuid: string }, ScheduleTaskClientDTO];
-  'schedule-task:disable': [{ taskUuid: string }, ScheduleTaskClientDTO];
+  'schedule-task:enable': [{ taskId: string }, ScheduleTaskClientDTO];
+  'schedule-task:disable': [{ taskId: string }, ScheduleTaskClientDTO];
   'schedule-task:update-config': [any, ScheduleTaskClientDTO];
   'schedule-task:update-metadata': [any, ScheduleTaskClientDTO];
   
   // === Schedule Execution Records ===
   'schedule-execution:query': [ScheduleExecutionQueryParamsDTO, { items: ScheduleExecutionClientDTO[]; total: number; page: number; limit: number }];
-  'schedule-execution:get-stats': [{ taskUuid: string }, any];
+  'schedule-execution:get-stats': [{ taskId: string }, any];
 };
 

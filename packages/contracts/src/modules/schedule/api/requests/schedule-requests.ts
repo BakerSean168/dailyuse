@@ -10,7 +10,7 @@ import type { ConflictDetectionResult } from '../../value-objects/conflict-detec
 // ============ Zod Schemas ============
 
 export const CreateScheduleRequestSchema = z.object({
-  accountUuid: z.string().uuid(),
+  identityId: z.string().uuid(),
   name: z.string().min(1).max(200),
   description: z.string().max(2000).optional(),
   startTime: z.number().positive(),
@@ -37,13 +37,13 @@ export const DetectConflictsRequestSchema = z.object({
   userId: z.string().uuid(),
   startTime: z.number().positive(),
   endTime: z.number().positive(),
-  excludeUuid: z.string().uuid().optional(),
+  excludeId: z.string().uuid().optional(),
 });
 
 export const GetSchedulesByTimeRangeRequestSchema = z.object({
   startTime: z.number().positive(),
   endTime: z.number().positive(),
-  accountUuid: z.string().uuid().optional(),
+  identityId: z.string().uuid().optional(),
 });
 
 /**
@@ -69,7 +69,7 @@ export const ResolveConflictRequestSchema = z.object({
  * Request DTO for creating a new schedule with automatic conflict detection
  */
 export interface CreateScheduleRequest {
-  accountUuid: string;
+  identityId: string;
   name: string;
   description?: string;
   startTime: number;
@@ -102,7 +102,7 @@ export interface DetectConflictsRequest {
   userId: string;
   startTime: number;
   endTime: number;
-  excludeUuid?: string;
+  excludeId?: string;
 }
 
 /**
@@ -111,7 +111,7 @@ export interface DetectConflictsRequest {
 export interface GetSchedulesByTimeRangeRequest {
   startTime: number;
   endTime: number;
-  accountUuid?: string;
+  identityId?: string;
 }
 
 /**

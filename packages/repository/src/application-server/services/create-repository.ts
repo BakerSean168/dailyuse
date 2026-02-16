@@ -16,7 +16,7 @@ import { RepositoryType } from '@dailyuse/contracts/repository';
  * Create Repository Input
  */
 export interface CreateRepositoryInput {
-  accountUuid: string;
+  identityId: string;
   name: string;
   type: RepositoryType;
   path: string;
@@ -40,7 +40,7 @@ export class CreateRepository {
 
   async execute(input: CreateRepositoryInput): Promise<CreateRepositoryOutput> {
     const repository = Repository.create({
-      identityId: input.accountUuid,
+      identityId: input.identityId,
       name: input.name,
       type: input.type,
       path: input.path,

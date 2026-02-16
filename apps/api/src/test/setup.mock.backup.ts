@@ -59,7 +59,7 @@ export const ApiTestHelpers = {
   /**
    * 创建测试用的认证 Token
    */
-  createTestToken: async (payload = { accountUuid: 'test-user-123' }) => {
+  createTestToken: async (payload = { identityId: 'test-user-123' }) => {
     const jwt = await import('jsonwebtoken');
     const secret = process.env.JWT_SECRET || 'test-jwt-secret-key';
     return jwt.default.sign(payload, secret, { expiresIn: '1h' });
@@ -233,7 +233,7 @@ export const ApiTestHelpers = {
    */
   createTestData: {
     user: (overrides = {}) => ({
-      uuid: 'test-user-123',
+      id: 'test-user-123',
       email: 'test@example.com',
       name: '测试用户',
       createdAt: new Date(),
@@ -242,8 +242,8 @@ export const ApiTestHelpers = {
     }),
 
     goal: (overrides = {}) => ({
-      uuid: 'test-goal-123',
-      accountUuid: 'test-account-123',
+      id: 'test-goal-123',
+      identityId: 'test-account-123',
       name: '测试目标',
       description: '测试目标描述',
       color: '#FF5733',
@@ -255,8 +255,8 @@ export const ApiTestHelpers = {
     }),
 
     task: (overrides = {}) => ({
-      uuid: 'test-task-123',
-      accountUuid: 'test-account-123',
+      id: 'test-task-123',
+      identityId: 'test-account-123',
       title: '测试任务',
       description: '测试任务描述',
       status: 'pending',
@@ -290,7 +290,7 @@ export const API_TEST_CONSTANTS = {
 
   // 测试账户
   TEST_ACCOUNT: {
-    uuid: 'test-account-123',
+    id: 'test-account-123',
     email: 'test@example.com',
     name: '测试账户',
   },

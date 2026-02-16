@@ -44,13 +44,13 @@ export class RepositoryClientService {
     return mapResult(result, (dtos) => dtos.map((dto) => Repository.fromDTO(dto)));
   }
 
-  async getRepositoryById(uuid: string): Promise<Result<Repository>> {
-    const result = await this.repositoryApi.getRepositoryById(uuid);
+  async getRepositoryById(id: string): Promise<Result<Repository>> {
+    const result = await this.repositoryApi.getRepositoryById(id);
     return mapResult(result, (dto) => Repository.fromDTO(dto));
   }
 
-  async deleteRepository(uuid: string): Promise<Result<void>> {
-    return this.repositoryApi.deleteRepository(uuid);
+  async deleteRepository(id: string): Promise<Result<void>> {
+    return this.repositoryApi.deleteRepository(id);
   }
 
   // ===== Folder Operations =====
@@ -59,29 +59,29 @@ export class RepositoryClientService {
     return this.repositoryApi.createFolder(request);
   }
 
-  async getFolderContents(folderUuid: string): Promise<Result<{
+  async getFolderContents(folderId: string): Promise<Result<{
     folders: FolderClientDTO[];
     resources: ResourceClientDTO[];
   }>> {
-    return this.repositoryApi.getFolderContents(folderUuid);
+    return this.repositoryApi.getFolderContents(folderId);
   }
 
-  async renameFolder(uuid: string, name: string): Promise<Result<FolderClientDTO>> {
-    return this.repositoryApi.renameFolder(uuid, name);
+  async renameFolder(id: string, name: string): Promise<Result<FolderClientDTO>> {
+    return this.repositoryApi.renameFolder(id, name);
   }
 
-  async moveFolder(uuid: string, targetParentUuid: string): Promise<Result<FolderClientDTO>> {
-    return this.repositoryApi.moveFolder(uuid, targetParentUuid);
+  async moveFolder(id: string, targetParentId: string): Promise<Result<FolderClientDTO>> {
+    return this.repositoryApi.moveFolder(id, targetParentId);
   }
 
-  async deleteFolder(uuid: string): Promise<Result<void>> {
-    return this.repositoryApi.deleteFolder(uuid);
+  async deleteFolder(id: string): Promise<Result<void>> {
+    return this.repositoryApi.deleteFolder(id);
   }
 
   // ===== File Tree =====
 
-  async getFileTree(repositoryUuid: string): Promise<Result<FileTreeResponse>> {
-    return this.repositoryApi.getFileTree(repositoryUuid);
+  async getFileTree(repositoryId: string): Promise<Result<FileTreeResponse>> {
+    return this.repositoryApi.getFileTree(repositoryId);
   }
 
   // ===== Search =====
@@ -92,19 +92,19 @@ export class RepositoryClientService {
 
   // ===== Resource Operations =====
 
-  async getResource(uuid: string): Promise<Result<ResourceClientDTO>> {
-    return this.repositoryApi.getResource(uuid);
+  async getResource(id: string): Promise<Result<ResourceClientDTO>> {
+    return this.repositoryApi.getResource(id);
   }
 
-  async renameResource(uuid: string, name: string): Promise<Result<ResourceClientDTO>> {
-    return this.repositoryApi.renameResource(uuid, name);
+  async renameResource(id: string, name: string): Promise<Result<ResourceClientDTO>> {
+    return this.repositoryApi.renameResource(id, name);
   }
 
-  async moveResource(uuid: string, targetFolderUuid: string): Promise<Result<ResourceClientDTO>> {
-    return this.repositoryApi.moveResource(uuid, targetFolderUuid);
+  async moveResource(id: string, targetFolderId: string): Promise<Result<ResourceClientDTO>> {
+    return this.repositoryApi.moveResource(id, targetFolderId);
   }
 
-  async deleteResource(uuid: string): Promise<Result<void>> {
-    return this.repositoryApi.deleteResource(uuid);
+  async deleteResource(id: string): Promise<Result<void>> {
+    return this.repositoryApi.deleteResource(id);
   }
 }

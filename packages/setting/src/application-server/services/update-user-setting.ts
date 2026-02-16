@@ -21,11 +21,11 @@ export class UpdateUserSetting {
   /**
    * 执行用例
    */
-  async execute(accountUuid: string, updates: Omit<UpdateUserSettingRequest, 'uuid'>): Promise<UserSettingClientDTO> {
-    let setting = await this.userSettingRepository.findByAccountUuid(accountUuid);
+  async execute(identityId: string, updates: Omit<UpdateUserSettingRequest, 'id'>): Promise<UserSettingClientDTO> {
+    let setting = await this.userSettingRepository.findByAccountId(identityId);
 
     if (!setting) {
-      setting = UserSetting.create({ accountUuid });
+      setting = UserSetting.create({ identityId });
     }
 
     if (updates.appearance) {

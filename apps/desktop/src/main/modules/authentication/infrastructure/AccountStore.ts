@@ -89,8 +89,8 @@ export class AccountStore {
   /**
    * 根据 UUID 获取账号
    */
-  getAccountByUuid(uuid: string): StoredAccount | undefined {
-    return this.data.accounts.find((a) => a.uuid === uuid);
+  getAccountById(id: string): StoredAccount | undefined {
+    return this.data.accounts.find((a) => a.id === id);
   }
 
   /**
@@ -104,11 +104,11 @@ export class AccountStore {
    * 获取最后活跃的账号
    */
   getLastActiveAccount(): StoredAccount | undefined {
-    if (!this.data.lastActiveAccountUuid) {
+    if (!this.data.lastActiveAccountId) {
       // 返回最近登录的账号
       return this.data.accounts.sort((a, b) => b.lastLoginAt - a.lastLoginAt)[0];
     }
-    return this.getAccountByUuid(this.data.lastActiveAccountUuid);
+    return this.getAccountById(this.data.lastActiveAccountId);
   }
 
   /**
@@ -122,7 +122,7 @@ export class AccountStore {
    * 添加或更新账号
    */
   saveAccount(account: Omit<StoredAccount, 'lastLoginAt'> & { lastLoginAt?: number }): void {
-    const existingIndex = this.data.accounts.findIndex((a) => a.uuid === account.uuid);
+    const existingIndex = this.data.accounts.findIndex((a) => a.id === account.id);
 
     const savedAccount: StoredAccount = {
       ...account,
@@ -132,7 +132,7 @@ export class AccountStore {
     if (existingIndex >= 0) {
       // 更新现有账号
       this.data.accounts[existingIndex] = savedAccount;
-      logger.info('Account updated', { uuid: account.uuid });
+      logger.info('Account updated', { id: account.id });
     } else {
       // 添加新账号
       // 如果启用了自动登录，禁用其他账号的自动登录
@@ -148,17 +148,17 @@ export class AccountStore {
           .sort((a, b) => a.lastLoginAt - b.lastLoginAt)[0];
 
         if (oldestNonAutoLogin) {
-          this.removeAccount(oldestNonAutoLogin.uuid);
-          logger.info('Removed oldest account to make room', { uuid: oldestNonAutoLogin.uuid });
+          this.removeAccount(oldestNonAutoLogin.id);
+          logger.info('Removed oldest account to make room', { id: oldestNonAutoLogin.id });
         }
       }
 
       this.data.accounts.push(savedAccount);
-      logger.info('Account added', { uuid: account.uuid });
+      logger.info('Account added', { id: account.id });
     }
 
     // 更新最后活跃账号
-    this.data.lastActiveAccountUuid = account.uuid;
+    this.data.lastActiveAccountId = account.id;
 
     this.saveToFile();
   }
@@ -166,38 +166,38 @@ export class AccountStore {
   /**
    * 更新账号的最后登录时间
    */
-  updateLastLogin(uuid: string): void {
-    const account = this.getAccountByUuid(uuid);
+  updateLastLogin(id: string): void {
+    const account = this.getAccountById(id);
     if (account) {
       account.lastLoginAt = Date.now();
-      this.data.lastActiveAccountUuid = uuid;
+      this.data.lastActiveAccountId = id;
       this.saveToFile();
-      logger.debug('Updated last login time', { uuid });
+      logger.debug('Updated last login time', { id });
     }
   }
 
   /**
    * 设置自动登录
    */
-  setAutoLogin(uuid: string, enabled: boolean): void {
+  setAutoLogin(id: string, enabled: boolean): void {
     // 如果启用，先禁用其他账号的自动登录
     if (enabled) {
       this.data.accounts.forEach((a) => (a.autoLogin = false));
     }
 
-    const account = this.getAccountByUuid(uuid);
+    const account = this.getAccountById(id);
     if (account) {
       account.autoLogin = enabled;
       this.saveToFile();
-      logger.info('Auto login updated', { uuid, enabled });
+      logger.info('Auto login updated', { id, enabled });
     }
   }
 
   /**
    * 更新账号的 Session 有效性
    */
-  updateSessionValidity(uuid: string, hasValidSession: boolean): void {
-    const account = this.getAccountByUuid(uuid);
+  updateSessionValidity(id: string, hasValidSession: boolean): void {
+    const account = this.getAccountById(id);
     if (account) {
       account.hasValidSession = hasValidSession;
       // 不保存到文件，这是运行时状态
@@ -207,18 +207,18 @@ export class AccountStore {
   /**
    * 移除账号
    */
-  removeAccount(uuid: string): boolean {
-    const index = this.data.accounts.findIndex((a) => a.uuid === uuid);
+  removeAccount(id: string): boolean {
+    const index = this.data.accounts.findIndex((a) => a.id === id);
     if (index >= 0) {
       this.data.accounts.splice(index, 1);
 
       // 如果移除的是最后活跃账号，清除记录
-      if (this.data.lastActiveAccountUuid === uuid) {
-        this.data.lastActiveAccountUuid = undefined;
+      if (this.data.lastActiveAccountId === id) {
+        this.data.lastActiveAccountId = undefined;
       }
 
       this.saveToFile();
-      logger.info('Account removed', { uuid });
+      logger.info('Account removed', { id });
       return true;
     }
     return false;
@@ -229,7 +229,7 @@ export class AccountStore {
    */
   clearAllAccounts(): void {
     this.data.accounts = [];
-    this.data.lastActiveAccountUuid = undefined;
+    this.data.lastActiveAccountId = undefined;
     this.saveToFile();
     logger.info('All accounts cleared');
   }
@@ -327,14 +327,14 @@ export function registerAccountStoreIpcHandlers(): void {
   });
 
   // 更新最后登录时间
-  ipcMain.handle('auth:update-last-login', (_event, uuid: string) => {
-    accountStore.updateLastLogin(uuid);
+  ipcMain.handle('auth:update-last-login', (_event, id: string) => {
+    accountStore.updateLastLogin(id);
     return { success: true };
   });
 
   // 移除保存的账号
-  ipcMain.handle('auth:remove-saved-account', (_event, uuid: string) => {
-    const removed = accountStore.removeAccount(uuid);
+  ipcMain.handle('auth:remove-saved-account', (_event, id: string) => {
+    const removed = accountStore.removeAccount(id);
     return { success: removed };
   });
 

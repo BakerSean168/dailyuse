@@ -183,19 +183,19 @@ export const useRepositoryStore = create<
       setRepositories: (repositories) =>
         set({
           repositories,
-          repositoriesById: Object.fromEntries(repositories.map((r) => [r.uuid, r])),
+          repositoriesById: Object.fromEntries(repositories.map((r) => [r.id, r])),
           lastSyncTime: new Date(),
         }),
 
       addRepository: (repository) =>
         set((state) => ({
           repositories: [...state.repositories, repository],
-          repositoriesById: { ...state.repositoriesById, [repository.uuid]: repository },
+          repositoriesById: { ...state.repositoriesById, [repository.id]: repository },
         })),
 
       updateRepository: (id, updates) =>
         set((state) => {
-          const index = state.repositories.findIndex((r) => r.uuid === id);
+          const index = state.repositories.findIndex((r) => r.id === id);
           if (index === -1) return state;
 
           const updatedRepo = Object.assign(
@@ -217,7 +217,7 @@ export const useRepositoryStore = create<
           const newById = { ...state.repositoriesById };
           delete newById[id];
           return {
-            repositories: state.repositories.filter((r) => r.uuid !== id),
+            repositories: state.repositories.filter((r) => r.id !== id),
             repositoriesById: newById,
             selectedRepositoryId:
               state.selectedRepositoryId === id ? null : state.selectedRepositoryId,
@@ -228,18 +228,18 @@ export const useRepositoryStore = create<
       setResources: (resources) =>
         set({
           resources,
-          resourcesById: Object.fromEntries(resources.map((r) => [r.uuid, r])),
+          resourcesById: Object.fromEntries(resources.map((r) => [r.id, r])),
         }),
 
       addResource: (resource) =>
         set((state) => ({
           resources: [...state.resources, resource],
-          resourcesById: { ...state.resourcesById, [resource.uuid]: resource },
+          resourcesById: { ...state.resourcesById, [resource.id]: resource },
         })),
 
       updateResource: (id, updates) =>
         set((state) => {
-          const index = state.resources.findIndex((r) => r.uuid === id);
+          const index = state.resources.findIndex((r) => r.id === id);
           if (index === -1) return state;
 
           const updatedResource = Object.assign(
@@ -261,7 +261,7 @@ export const useRepositoryStore = create<
           const newById = { ...state.resourcesById };
           delete newById[id];
           return {
-            resources: state.resources.filter((r) => r.uuid !== id),
+            resources: state.resources.filter((r) => r.id !== id),
             resourcesById: newById,
             selectedResourceId: state.selectedResourceId === id ? null : state.selectedResourceId,
           };
@@ -271,18 +271,18 @@ export const useRepositoryStore = create<
       setFolders: (folders) =>
         set({
           folders,
-          foldersById: Object.fromEntries(folders.map((f) => [f.uuid, f])),
+          foldersById: Object.fromEntries(folders.map((f) => [f.id, f])),
         }),
 
       addFolder: (folder) =>
         set((state) => ({
           folders: [...state.folders, folder],
-          foldersById: { ...state.foldersById, [folder.uuid]: folder },
+          foldersById: { ...state.foldersById, [folder.id]: folder },
         })),
 
       updateFolder: (id, updates) =>
         set((state) => {
-          const index = state.folders.findIndex((f) => f.uuid === id);
+          const index = state.folders.findIndex((f) => f.id === id);
           if (index === -1) return state;
 
           const updatedFolder = Object.assign(
@@ -304,7 +304,7 @@ export const useRepositoryStore = create<
           const newById = { ...state.foldersById };
           delete newById[id];
           return {
-            folders: state.folders.filter((f) => f.uuid !== id),
+            folders: state.folders.filter((f) => f.id !== id),
             foldersById: newById,
             selectedFolderId: state.selectedFolderId === id ? null : state.selectedFolderId,
           };
@@ -446,7 +446,7 @@ export const useRepositoryStore = create<
           setError(null);
 
           const response = await repositoryApplicationService.searchResources({
-            repositoryUuid: selectedRepositoryId || '',
+            repositoryId: selectedRepositoryId || '',
             query,
             mode: 'all',
           });
@@ -485,27 +485,27 @@ export const useRepositoryStore = create<
       getResourceById: (id) => get().resourcesById[id],
 
       getResourcesByRepository: (repositoryId) => {
-        return get().resources.filter((r) => r.repositoryUuid === repositoryId);
+        return get().resources.filter((r) => r.repositoryId === repositoryId);
       },
 
       getResourcesByFolder: (folderId) => {
-        // ResourceDTO 没有 folderUuid 字段，暂时返回空数组
-        // TODO: 需要在 ResourceDTO 中添加 folderUuid 字段或使用其他关联方式
+        // ResourceDTO 没有 folderId 字段，暂时返回空数组
+        // TODO: 需要在 ResourceDTO 中添加 folderId 字段或使用其他关联方式
         return [];
       },
 
       getFolderById: (id) => get().foldersById[id],
 
       getFoldersByRepository: (repositoryId) => {
-        return get().folders.filter((f) => f.repositoryUuid === repositoryId);
+        return get().folders.filter((f) => f.repositoryId === repositoryId);
       },
 
       getRootFolders: (repositoryId) => {
-        return get().folders.filter((f) => f.repositoryUuid === repositoryId && !f.parentUuid);
+        return get().folders.filter((f) => f.repositoryId === repositoryId && !f.parentId);
       },
 
       getChildFolders: (parentId) => {
-        return get().folders.filter((f) => f.parentUuid === parentId);
+        return get().folders.filter((f) => f.parentId === parentId);
       },
 
       getRepositoryCount: () => get().repositories.length,

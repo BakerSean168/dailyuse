@@ -12,25 +12,25 @@ import { getJwtConfig } from '../../config/env.js';
  * 扩展的请求接口，包含用户认证信息。
  *
  * @remarks
- * 在通过 authMiddleware 后，req 对象将包含 user, accountUuid 等字段。
+ * 在通过 authMiddleware 后，req 对象将包含 user, identityId 等字段。
  */
 export interface AuthenticatedRequest extends Request {
   user?: {
-    accountUuid: string;
-    sessionUuid?: string;
+    identityId: string;
+    sessionId?: string;
     tokenType?: string;
     exp?: number;
   };
-  accountUuid?: string; // 向后兼容，直接提供accountUuid
-  sessionUuid?: string; // 当前会话UUID
+  identityId?: string; // 向后兼容，直接提供identityId
+  sessionId?: string; // 当前会话UUID
 }
 
 /**
  * JWT 认证中间件。
  *
  * @remarks
- * 从 Authorization header 中提取 JWT token，验证并解析出 accountUuid。
- * 将用户信息添加到 req.user 和 req.accountUuid 中。
+ * 从 Authorization header 中提取 JWT token，验证并解析出 identityId。
+ * 将用户信息添加到 req.user 和 req.identityId 中。
  *
  * @param req - Express 请求对象
  * @param res - Express 响应对象
@@ -64,7 +64,7 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
       const decoded = jwt.verify(token, secret) as any;
 
       // 验证必要字段
-      if (!decoded.accountUuid) {
+      if (!decoded.identityId) {
         return res.status(401).json({
           success: false,
           message: '无效的认证令牌：缺少用户信息',
@@ -81,15 +81,15 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
 
       // 将用户信息添加到请求对象
       req.user = {
-        accountUuid: decoded.accountUuid,
-        sessionUuid: decoded.sessionUuid,
+        identityId: decoded.identityId,
+        sessionId: decoded.sessionId,
         tokenType: decoded.type,
         exp: decoded.exp,
       };
 
-      // 向后兼容：直接提供 accountUuid 和 sessionUuid
-      req.accountUuid = decoded.accountUuid;
-      req.sessionUuid = decoded.sessionUuid;
+      // 向后兼容：直接提供 identityId 和 sessionId
+      req.identityId = decoded.identityId;
+      req.sessionId = decoded.sessionId;
 
       return next();
     } catch (jwtError) {
@@ -139,22 +139,22 @@ export const optionalAuthMiddleware = (
  * 检查用户是否已认证的辅助函数。
  *
  * @param req - AuthenticatedRequest 请求对象
- * @returns accountUuid 如果已认证
+ * @returns identityId 如果已认证
  * @throws Error 如果未认证
  */
 export const requireAuth = (req: AuthenticatedRequest): string => {
-  if (!req.accountUuid || !req.user) {
+  if (!req.identityId || !req.user) {
     throw new Error('用户未认证，请先登录');
   }
-  return req.accountUuid;
+  return req.identityId;
 };
 
 /**
  * 获取当前用户UUID的辅助函数。
  *
  * @param req - AuthenticatedRequest 请求对象
- * @returns accountUuid 或 null
+ * @returns identityId 或 null
  */
-export const getCurrentAccountUuid = (req: AuthenticatedRequest): string | null => {
-  return req.accountUuid || null;
+export const getCurrentAccountId = (req: AuthenticatedRequest): string | null => {
+  return req.identityId || null;
 };

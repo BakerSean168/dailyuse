@@ -15,7 +15,7 @@ import type { KeyResultServerDTO } from '../entities';
  * 添加关键结果 Schema
  */
 export const AddKeyResultSchema = z.object({
-  goalUuid: z.string().uuid('目标 UUID 无效'),
+  goalId: z.string().uuid('目标 UUID 无效'),
   title: z.string().min(1, '关键结果标题不能为空').max(256),
   description: z.string().max(2000).optional(),
   valueType: z.string().min(1, '关键结果类型不能为空'),
@@ -56,7 +56,7 @@ export type UpdateKeyResultRes = KeyResultServerDTO;
  * 获取关键结果列表
  */
 export const GetKeyResultsSchema = z.object({
-  goalUuid: z.string().uuid('目标 UUID 无效'),
+  goalId: z.string().uuid('目标 UUID 无效'),
 });
 
 export type GetKeyResultsReq = z.infer<typeof GetKeyResultsSchema>;
@@ -74,7 +74,7 @@ export interface GetKeyResultsRes {
  * 更新关键结果进度 Schema
  */
 export const UpdateKeyResultProgressSchema = z.object({
-  keyResultUuid: z.string().uuid('关键结果 UUID 无效'),
+  keyResultId: z.string().uuid('关键结果 UUID 无效'),
   newValue: z.number().min(0, '新值不能为负数'),
   note: z.string().max(500).optional(),
 });

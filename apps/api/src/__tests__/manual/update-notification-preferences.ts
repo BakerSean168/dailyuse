@@ -39,20 +39,20 @@ async function main() {
         const updatedTypes = [...enabledTypes, ...missingTypes];
 
         await prisma.notificationPreference.update({
-          where: { uuid: pref.uuid },
+          where: { id: pref.id },
           data: {
             enabledTypes: JSON.stringify(updatedTypes),
             updatedAt: new Date(),
           },
         });
 
-        console.log(`✅ 已更新用户 ${pref.accountUuid} 的通知偏好:`);
+        console.log(`✅ 已更新用户 ${pref.identityId} 的通知偏好:`);
         console.log(`   添加类型: ${missingTypes.join(', ')}`);
         console.log(`   总类型数: ${enabledTypes.length} → ${updatedTypes.length}\n`);
 
         updatedCount++;
       } else {
-        console.log(`⏭️  跳过用户 ${pref.accountUuid} (已包含所有新类型)\n`);
+        console.log(`⏭️  跳过用户 ${pref.identityId} (已包含所有新类型)\n`);
       }
     }
 
@@ -67,7 +67,7 @@ async function main() {
 
     const verifyPrefs = await prisma.notificationPreference.findMany({
       select: {
-        accountUuid: true,
+        identityId: true,
         enabledTypes: true,
       },
     });
@@ -85,9 +85,9 @@ async function main() {
       ].every((type) => types.includes(type));
 
       if (hasAllNewTypes) {
-        console.log(`✅ 用户 ${pref.accountUuid}: 包含所有新类型 (${types.length} 个类型)`);
+        console.log(`✅ 用户 ${pref.identityId}: 包含所有新类型 (${types.length} 个类型)`);
       } else {
-        console.log(`⚠️  用户 ${pref.accountUuid}: 缺少某些新类型`);
+        console.log(`⚠️  用户 ${pref.identityId}: 缺少某些新类型`);
         console.log(`   当前类型: ${types.join(', ')}`);
       }
     }

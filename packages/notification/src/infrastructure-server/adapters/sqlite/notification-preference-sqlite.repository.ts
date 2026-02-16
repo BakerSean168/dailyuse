@@ -15,10 +15,10 @@ export class SqliteNotificationPreferenceRepository implements INotificationPref
 
     const stmt = this.db.prepare(`
       INSERT INTO notification_preferences (
-        uuid, accountUuid, enable_all, enable_email, enable_push,
+        id, identityId, enable_all, enable_email, enable_push,
         quiet_hours_start, quiet_hours_end, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(accountUuid) DO UPDATE SET
+      ON CONFLICT(identityId) DO UPDATE SET
         enable_all = excluded.enable_all,
         enable_email = excluded.enable_email,
         enable_push = excluded.enable_push,
@@ -28,8 +28,8 @@ export class SqliteNotificationPreferenceRepository implements INotificationPref
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.accountUuid,
+      dto.id,
+      dto.identityId,
       dto.enable_all ? 1 : 0,
       dto.enable_email ? 1 : 0,
       dto.enable_push ? 1 : 0,
@@ -40,15 +40,15 @@ export class SqliteNotificationPreferenceRepository implements INotificationPref
     );
   }
 
-  async findById(uuid: string): Promise<NotificationPreference | null> {
-    const stmt = this.db.prepare(`SELECT * FROM notification_preferences WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<NotificationPreference | null> {
+    const stmt = this.db.prepare(`SELECT * FROM notification_preferences WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return NotificationPreference.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
+      id: row.id,
+      identity_id: row.identityId,
       enable_all: row.enable_all === 1,
       enable_email: row.enable_email === 1,
       enable_push: row.enable_push === 1,
@@ -59,17 +59,17 @@ export class SqliteNotificationPreferenceRepository implements INotificationPref
     });
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<NotificationPreference | null> {
+  async findByAccountId(identityId: string): Promise<NotificationPreference | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM notification_preferences WHERE accountUuid = ? LIMIT 1`
+      `SELECT * FROM notification_preferences WHERE identityId = ? LIMIT 1`
     );
-    const row = stmt.get(accountUuid) as any;
+    const row = stmt.get(identityId) as any;
 
     if (!row) return null;
 
     return NotificationPreference.fromPersistenceDTO({
-      uuid: row.uuid,
-      account_uuid: row.accountUuid,
+      id: row.id,
+      identity_id: row.identityId,
       enable_all: row.enable_all === 1,
       enable_email: row.enable_email === 1,
       enable_push: row.enable_push === 1,
@@ -80,21 +80,21 @@ export class SqliteNotificationPreferenceRepository implements INotificationPref
     });
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM notification_preferences WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM notification_preferences WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    const stmt = this.db.prepare(`SELECT 1 FROM notification_preferences WHERE uuid = ? LIMIT 1`);
-    return stmt.get(uuid) !== undefined;
+  async exists(id: string): Promise<boolean> {
+    const stmt = this.db.prepare(`SELECT 1 FROM notification_preferences WHERE id = ? LIMIT 1`);
+    return stmt.get(id) !== undefined;
   }
 
-  async existsByAccountUuid(accountUuid: string): Promise<boolean> {
+  async existsByAccountId(identityId: string): Promise<boolean> {
     const stmt = this.db.prepare(
-      `SELECT 1 FROM notification_preferences WHERE accountUuid = ? LIMIT 1`
+      `SELECT 1 FROM notification_preferences WHERE identityId = ? LIMIT 1`
     );
-    return stmt.get(accountUuid) !== undefined;
+    return stmt.get(identityId) !== undefined;
   }
 }
 

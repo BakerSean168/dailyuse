@@ -48,7 +48,7 @@ export interface ReminderTemplateServer {
   notificationConfig: NotificationConfigServer;
   selfEnabled: boolean;
   status: ReminderStatus;
-  groupUuid?: string | null;
+  groupId?: string | null;
   importanceLevel: ImportanceLevel;
   tags: string[];
   color?: string | null;
@@ -88,7 +88,7 @@ export interface ReminderTemplateServerDTO {
   notificationConfig: NotificationConfigServerDTO;
   selfEnabled: boolean;
   status: ReminderStatus;
-  groupUuid?: string | null;
+  groupId?: string | null;
   importanceLevel: ImportanceLevel;
   tags: string[];
   color?: string | null;
@@ -120,7 +120,7 @@ export interface ReminderTemplatePersistenceDTO {
   notificationConfig: string; // JSON string
   selfEnabled: boolean;
   status: ReminderStatus;
-  groupUuid?: string | null;
+  groupId?: string | null;
   importanceLevel: ImportanceLevel;
   tags: string; // JSON string
   color?: string | null;

@@ -38,24 +38,24 @@ export class NotificationClientService {
     return this.notificationApi.findNotifications(query);
   }
 
-  async findNotificationByUuid(uuid: string): Promise<Result<NotificationClientDTO>> {
-    return this.notificationApi.findNotificationByUuid(uuid);
+  async findNotificationById(id: string): Promise<Result<NotificationClientDTO>> {
+    return this.notificationApi.findNotificationById(id);
   }
 
-  async markAsRead(uuid: string): Promise<Result<NotificationClientDTO>> {
-    return this.notificationApi.markAsRead(uuid);
+  async markAsRead(id: string): Promise<Result<NotificationClientDTO>> {
+    return this.notificationApi.markAsRead(id);
   }
 
   async markAllAsRead(): Promise<Result<CountResult>> {
     return this.notificationApi.markAllAsRead();
   }
 
-  async deleteNotification(uuid: string): Promise<Result<ActionResult>> {
-    return this.notificationApi.deleteNotification(uuid);
+  async deleteNotification(id: string): Promise<Result<ActionResult>> {
+    return this.notificationApi.deleteNotification(id);
   }
 
-  async batchDeleteNotifications(uuids: string[]): Promise<Result<CountResult>> {
-    return this.notificationApi.batchDeleteNotifications(uuids);
+  async batchDeleteNotifications(ids: string[]): Promise<Result<CountResult>> {
+    return this.notificationApi.batchDeleteNotifications(ids);
   }
 
   async getUnreadCount(): Promise<Result<UnreadCountResponse>> {

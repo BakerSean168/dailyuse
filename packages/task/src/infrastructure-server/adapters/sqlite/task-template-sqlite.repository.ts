@@ -16,28 +16,28 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO task_templates (
-        uuid, account_uuid, name, description, status, folder_uuid,
-        goal_uuid, tags, due_date, created_at, updated_at
+        id, identity_id, name, description, status, folder_id,
+        goal_id, tags, due_date, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         description = excluded.description,
         status = excluded.status,
-        folder_uuid = excluded.folder_uuid,
-        goal_uuid = excluded.goal_uuid,
+        folder_id = excluded.folder_id,
+        goal_id = excluded.goal_id,
         tags = excluded.tags,
         due_date = excluded.due_date,
         updated_at = excluded.updated_at
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.accountUuid,
+      dto.id,
+      dto.identityId,
       dto.title,
       dto.description || null,
       dto.status,
-      dto.folderUuid || null,
-      dto.goalUuid || null,
+      dto.folderId || null,
+      dto.goalId || null,
       dto.tags ? JSON.stringify(dto.tags) : null,
       dto.dueDate || null,
       dto.createdAt,
@@ -45,71 +45,71 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
     );
   }
 
-  async findByUuid(uuid: string): Promise<TaskTemplate | null> {
-    const stmt = this.db.prepare(`SELECT * FROM task_templates WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<TaskTemplate | null> {
+    const stmt = this.db.prepare(`SELECT * FROM task_templates WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return this.rowToTemplate(row);
   }
 
-  async findByUuidWithChildren(uuid: string): Promise<TaskTemplate | null> {
+  async findByIdWithChildren(id: string): Promise<TaskTemplate | null> {
     // For SQLite, we handle children through separate queries
-    return this.findByUuid(uuid);
+    return this.findById(id);
   }
 
-  async findByAccount(accountUuid: string): Promise<TaskTemplate[]> {
+  async findByAccount(identityId: string): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE account_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE identity_id = ? ORDER BY created_at DESC`
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) => this.rowToTemplate(row));
   }
 
-  async findByStatus(accountUuid: string, status: TaskTemplateStatus): Promise<TaskTemplate[]> {
+  async findByStatus(identityId: string, status: TaskTemplateStatus): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE account_uuid = ? AND status = ? ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE identity_id = ? AND status = ? ORDER BY created_at DESC`
     );
-    const rows = stmt.all(accountUuid, status) as any[];
+    const rows = stmt.all(identityId, status) as any[];
 
     return rows.map((row) => this.rowToTemplate(row));
   }
 
-  async findActiveTemplates(accountUuid: string): Promise<TaskTemplate[]> {
+  async findActiveTemplates(identityId: string): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE account_uuid = ? AND status IN ('ACTIVE', 'IN_PROGRESS') ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE identity_id = ? AND status IN ('ACTIVE', 'IN_PROGRESS') ORDER BY created_at DESC`
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) => this.rowToTemplate(row));
   }
 
-  async findByFolder(folderUuid: string): Promise<TaskTemplate[]> {
+  async findByFolder(folderId: string): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE folder_uuid = ? ORDER BY createdAt DESC`
+      `SELECT * FROM task_templates WHERE folder_id = ? ORDER BY createdAt DESC`
     );
-    const rows = stmt.all(folderUuid) as any[];
+    const rows = stmt.all(folderId) as any[];
 
     return rows.map((row) => this.rowToTemplate(row));
   }
 
-  async findByGoal(goalUuid: string): Promise<TaskTemplate[]> {
+  async findByGoal(goalId: string): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE goal_uuid = ? ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE goal_id = ? ORDER BY created_at DESC`
     );
-    const rows = stmt.all(goalUuid) as any[];
+    const rows = stmt.all(goalId) as any[];
 
     return rows.map((row) => this.rowToTemplate(row));
   }
 
-  async findByTags(accountUuid: string, tags: string[]): Promise<TaskTemplate[]> {
+  async findByTags(identityId: string, tags: string[]): Promise<TaskTemplate[]> {
     // For simplicity, we search templates that contain any of the tags
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE account_uuid = ? AND tags IS NOT NULL ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE identity_id = ? AND tags IS NOT NULL ORDER BY created_at DESC`
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows
       .map((row) => this.rowToTemplate(row))
@@ -128,37 +128,37 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
     return rows.map((row) => this.rowToTemplate(row));
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM task_templates WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM task_templates WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async softDelete(uuid: string): Promise<void> {
+  async softDelete(id: string): Promise<void> {
     const stmt = this.db.prepare(
-      `UPDATE task_templates SET status = 'DELETED', updated_at = ? WHERE uuid = ?`
+      `UPDATE task_templates SET status = 'DELETED', updated_at = ? WHERE id = ?`
     );
-    stmt.run(Date.now(), uuid);
+    stmt.run(Date.now(), id);
   }
 
-  async restore(uuid: string): Promise<void> {
+  async restore(id: string): Promise<void> {
     const stmt = this.db.prepare(
-      `UPDATE task_templates SET status = 'ACTIVE', updated_at = ? WHERE uuid = ?`
+      `UPDATE task_templates SET status = 'ACTIVE', updated_at = ? WHERE id = ?`
     );
-    stmt.run(Date.now(), uuid);
+    stmt.run(Date.now(), id);
   }
 
   private rowToTemplate(row: any): TaskTemplate {
     // 从蛇形的行对象属性转换为驼峰的 DTO 对象
     return TaskTemplate.fromPersistenceDTO({
-      uuid: row.uuid,
-      accountUuid: row.account_uuid,
+      id: row.id,
+      identityId: row.identity_id,
       name: row.name,
       description: row.description,
       taskType: 'ONE_TIME',
       status: row.status as TaskTemplateStatus,
       importance: row.importance,
-      folderUuid: row.folder_uuid,
-      goalUuid: row.goal_uuid,
+      folderId: row.folder_id,
+      goalId: row.goal_id,
       tags: row.tags ? JSON.parse(row.tags) : [],
       dueDate: row.due_date,
       createdAt: row.created_at,

@@ -93,7 +93,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
       tags: this.generateTags(reminder),
       timeout: null, // 默认无超时限制
       payload: {
-        reminderUuid: reminder.id,
+        reminderId: reminder.id,
         reminderTitle: reminder.name,
         reminderType: reminder.type,
         triggerType: trigger.type,
@@ -296,8 +296,8 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
     }
 
     // 添加分组标签
-    if (reminder.groupUuid) {
-      tags.push(`group:${reminder.groupUuid}`);
+    if (reminder.groupId) {
+      tags.push(`group:${reminder.groupId}`);
     }
 
     return tags;

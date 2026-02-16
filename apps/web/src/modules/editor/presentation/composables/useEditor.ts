@@ -27,7 +27,7 @@ export function useEditor() {
    * 打开文件
    */
   function openFile(file: {
-    uuid?: string;
+    id?: string;
     title: string;
     fileType: 'markdown' | 'image' | 'video' | 'audio';
     filePath: string;
@@ -43,9 +43,9 @@ export function useEditor() {
   /**
    * 关闭文件
    */
-  function closeFile(tabUuid: string) {
+  function closeFile(tabId: string) {
     if (!editorInstanceRef.value) return;
-    editorInstanceRef.value.closeTab(tabUuid);
+    editorInstanceRef.value.closeTab(tabId);
   }
 
   /**

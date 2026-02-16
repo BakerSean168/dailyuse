@@ -14,18 +14,18 @@ export class UpdateGoalFolder {
   constructor(private readonly goalFolderRepository: IGoalFolderRepository) {}
 
   async execute(
-    uuid: string,
-    accountUuid: string,
+    id: string,
+    identityId: string,
     input: UpdateGoalFolderReq,
   ): Promise<UpdateGoalFolderRes> {
-    const folder = await this.goalFolderRepository.findById(uuid);
+    const folder = await this.goalFolderRepository.findById(id);
 
     if (!folder) {
-      throw new Error(`Goal folder not found: ${uuid}`);
+      throw new Error(`Goal folder not found: ${id}`);
     }
 
     // 验证所属账户
-    if (folder.identityId !== accountUuid) {
+    if (folder.identityId !== identityId) {
       throw new Error('Unauthorized access to goal folder');
     }
 

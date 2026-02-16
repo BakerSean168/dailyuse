@@ -210,7 +210,7 @@ export function ReminderTemplateCard({
             <StatusIcon className="h-3 w-3 mr-1" />
             {statusInfo?.text}
           </Badge>
-          {template.groupUuid && (
+          {template.groupId && (
             <Badge variant="outline">
               <Folder className="h-3 w-3 mr-1" />
               分组�?

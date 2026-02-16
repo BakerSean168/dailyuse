@@ -24,7 +24,7 @@ import { DashboardWidget, type WidgetSize } from '../DashboardWidget';
 // ============ Types ============
 
 interface GoalSummary {
-  uuid: string;
+  id: string;
   title: string;
   progress: number;
   status: 'active' | 'completed' | 'paused';
@@ -37,7 +37,7 @@ export interface GoalWidgetProps {
   /** 点击查看更多 */
   onViewMore?: () => void;
   /** 点击目标 */
-  onGoalClick?: (goalUuid: string) => void;
+  onGoalClick?: (goalId: string) => void;
   /** 类名 */
   className?: string;
 }
@@ -45,9 +45,9 @@ export interface GoalWidgetProps {
 // ============ Mock Data ============
 
 const mockGoals: GoalSummary[] = [
-  { uuid: '1', title: '完成项目迁移', progress: 75, status: 'active', updatedAt: new Date() },
-  { uuid: '2', title: '学习新技术栈', progress: 45, status: 'active', updatedAt: new Date(Date.now() - 86400000) },
-  { uuid: '3', title: '健身计划', progress: 30, status: 'active', updatedAt: new Date(Date.now() - 172800000) },
+  { id: '1', title: '完成项目迁移', progress: 75, status: 'active', updatedAt: new Date() },
+  { id: '2', title: '学习新技术栈', progress: 45, status: 'active', updatedAt: new Date(Date.now() - 86400000) },
+  { id: '3', title: '健身计划', progress: 30, status: 'active', updatedAt: new Date(Date.now() - 172800000) },
 ];
 
 // ============ Component ============
@@ -137,9 +137,9 @@ export function GoalWidget({
         <div className="space-y-3">
           {goals.slice(0, 5).map((goal) => (
             <div
-              key={goal.uuid}
+              key={goal.id}
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent cursor-pointer transition-colors"
-              onClick={() => onGoalClick?.(goal.uuid)}
+              onClick={() => onGoalClick?.(goal.id)}
             >
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{goal.title}</p>

@@ -12,8 +12,8 @@ import type { ReminderHistoryClientDTO } from './reminder-history-client';
  * Reminder History Server DTO
  */
 export interface ReminderHistoryServerDTO {
-  uuid: string;
-  templateUuid: string;
+  id: string;
+  templateId: string;
   triggeredAt: number; // epoch ms
   result: TriggerResult;
   error?: string | null;
@@ -26,8 +26,8 @@ export interface ReminderHistoryServerDTO {
  * Reminder History Persistence DTO (数据库映射)
  */
 export interface ReminderHistoryPersistenceDTO {
-  uuid: string;
-  templateUuid: string;
+  id: string;
+  templateId: string;
   triggeredAt: number;
   result: TriggerResult;
   error?: string | null;
@@ -43,8 +43,8 @@ export interface ReminderHistoryPersistenceDTO {
  */
 export interface ReminderHistoryServer {
   // 基础属性
-  uuid: string;
-  templateUuid: string;
+  id: string;
+  templateId: string;
   triggeredAt: number;
   result: TriggerResult;
   error?: string | null;

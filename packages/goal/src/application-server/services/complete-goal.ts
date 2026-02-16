@@ -17,10 +17,10 @@ export class CompleteGoal {
     private readonly goalPolicy: GoalPolicy,
   ) {}
 
-  async execute(uuid: string): Promise<{ goal: GoalServerDTO }> {
-    const goal = await this.goalRepository.findById(uuid);
+  async execute(id: string): Promise<{ goal: GoalServerDTO }> {
+    const goal = await this.goalRepository.findById(id);
     if (!goal) {
-      throw new Error(`Goal not found: ${uuid}`);
+      throw new Error(`Goal not found: ${id}`);
     }
 
     this.goalPolicy.ensureGoalCanBeModified(goal);

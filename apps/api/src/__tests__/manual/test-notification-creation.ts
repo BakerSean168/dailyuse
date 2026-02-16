@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const prisma = new PrismaClient();
 
-const TEST_ACCOUNT_UUID = '9897aef0-7fad-4908-a0d1-31e9b22599c1';
+const TEST_ACCOUNT_ID = '9897aef0-7fad-4908-a0d1-31e9b22599c1';
 
 async function testNotificationCreation() {
   console.log('\n🧪 测试通知创建流程...\n');
@@ -53,8 +53,8 @@ async function testNotificationCreation() {
     // 3. 创建请求对象（完全按照 TaskTriggeredHandler 的方式）
     console.log('3️⃣ 创建请求对象...');
     const request: CreateNotificationRequest = {
-      uuid: uuidv4(),
-      accountUuid: TEST_ACCOUNT_UUID,
+      id: uuidv4(),
+      identityId: TEST_ACCOUNT_ID,
       title,
       content,
       type: 'schedule_reminder' as NotificationType,
@@ -66,14 +66,14 @@ async function testNotificationCreation() {
         sourceType: 'reminder',
         sourceId: 'test-reminder-id',
         additionalData: {
-          taskUuid: 'test-task-uuid',
+          taskId: 'test-task-uuid',
           reminderData,
         },
       },
     };
 
-    console.log('   UUID:', request.uuid);
-    console.log('   Account UUID:', request.accountUuid);
+    console.log('   UUID:', request.id);
+    console.log('   Account UUID:', request.identityId);
     console.log('   Type:', request.type);
     console.log('   Priority:', request.priority);
     console.log('   Channels:', request.channels);
@@ -82,10 +82,10 @@ async function testNotificationCreation() {
 
     // 4. 调用服务创建通知
     console.log('4️⃣ 调用服务创建通知...');
-    const notification = await notificationService.createNotification(TEST_ACCOUNT_UUID, request);
+    const notification = await notificationService.createNotification(TEST_ACCOUNT_ID, request);
 
     console.log('   ✅ 通知创建成功！');
-    console.log('   通知 UUID:', notification.uuid);
+    console.log('   通知 UUID:', notification.id);
     console.log('   标题:', notification.title);
     console.log('   内容:', notification.content);
     console.log('   渠道:', notification.channels);
@@ -95,7 +95,7 @@ async function testNotificationCreation() {
     // 5. 清理测试数据
     console.log('5️⃣ 清理测试数据...');
     await prisma.notification.delete({
-      where: { uuid: notification.uuid },
+      where: { id: notification.id },
     });
     console.log('   ✅ 测试数据已清理\n');
 

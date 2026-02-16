@@ -28,7 +28,7 @@ import { cn } from '@dailyuse/ui-react-shadcn';
 // ============ Types ============
 
 interface UserInfo {
-  uuid: string;
+  id: string;
   username?: string;
   email?: string;
   displayName?: string;

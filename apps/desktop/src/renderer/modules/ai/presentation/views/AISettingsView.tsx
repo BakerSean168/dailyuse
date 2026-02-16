@@ -269,9 +269,9 @@ export function AISettingsView() {
             <div className="grid gap-4">
               {providers.map((provider) => (
                 <div
-                  key={provider.uuid}
+                  key={provider.id}
                   className={`rounded-lg border bg-card p-4 shadow-sm ${
-                    currentProvider?.uuid === provider.uuid ? 'ring-2 ring-primary' : ''
+                    currentProvider?.id === provider.id ? 'ring-2 ring-primary' : ''
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -298,7 +298,7 @@ export function AISettingsView() {
 
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => testConnection(provider.uuid)}
+                        onClick={() => testConnection(provider.id)}
                         disabled={testing}
                         className="py-1 px-3 text-sm border rounded-md hover:bg-muted transition-colors"
                         title="测试连接"
@@ -306,7 +306,7 @@ export function AISettingsView() {
                         {testing ? '⏳' : '🔌'} 测试
                       </button>
                       <button
-                        onClick={() => refreshModels(provider.uuid)}
+                        onClick={() => refreshModels(provider.id)}
                         disabled={loading}
                         className="py-1 px-3 text-sm border rounded-md hover:bg-muted transition-colors"
                         title="刷新模型"
@@ -315,7 +315,7 @@ export function AISettingsView() {
                       </button>
                       {!provider.isDefault && (
                         <button
-                          onClick={() => setDefaultProvider(provider.uuid)}
+                          onClick={() => setDefaultProvider(provider.id)}
                           disabled={loading}
                           className="py-1 px-3 text-sm border rounded-md hover:bg-muted transition-colors"
                           title="设为默认"
@@ -324,7 +324,7 @@ export function AISettingsView() {
                         </button>
                       )}
                       <button
-                        onClick={() => selectProvider(provider.uuid)}
+                        onClick={() => selectProvider(provider.id)}
                         className="py-1 px-3 text-sm border rounded-md hover:bg-muted transition-colors"
                         title="编辑"
                       >
@@ -333,7 +333,7 @@ export function AISettingsView() {
                       <button
                         onClick={() => {
                           if (confirm('确定删除此服务商配置？')) {
-                            deleteProvider(provider.uuid);
+                            deleteProvider(provider.id);
                           }
                         }}
                         className="py-1 px-3 text-sm border border-red-200 text-red-600 rounded-md hover:bg-red-50 transition-colors"
@@ -397,7 +397,7 @@ export function AISettingsView() {
                     <button
                       key={model.id}
                       onClick={() =>
-                        updateProvider(currentProvider.uuid, { defaultModel: model.id })
+                        updateProvider(currentProvider.id, { defaultModel: model.id })
                       }
                       className={`px-3 py-1 text-sm rounded-full border transition-colors ${
                         currentProvider.defaultModel === model.id

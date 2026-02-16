@@ -11,7 +11,7 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
   constructor(private db: Database.Database) {}
 
   async findById(id: string): Promise<EditorSession | null> {
-    const stmt = this.db.prepare(`SELECT * FROM editor_sessions WHERE uuid = ? LIMIT 1`);
+    const stmt = this.db.prepare(`SELECT * FROM editor_sessions WHERE id = ? LIMIT 1`);
     const row = stmt.get(id) as any;
 
     if (!row) return null;
@@ -21,7 +21,7 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
 
   async findByWorkspaceId(workspaceId: string): Promise<EditorSession[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_sessions WHERE workspace_uuid = ? ORDER BY createdAt DESC`
+      `SELECT * FROM editor_sessions WHERE workspace_id = ? ORDER BY createdAt DESC`
     );
     const rows = stmt.all(workspaceId) as any[];
 
@@ -30,7 +30,7 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
 
   async findByWorkspaceIdAndName(workspaceId: string, name: string): Promise<EditorSession | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_sessions WHERE workspace_uuid = ? AND name = ? LIMIT 1`
+      `SELECT * FROM editor_sessions WHERE workspace_id = ? AND name = ? LIMIT 1`
     );
     const row = stmt.get(workspaceId, name) as any;
 
@@ -41,7 +41,7 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
 
   async findActiveByWorkspaceId(workspaceId: string): Promise<EditorSession | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_sessions WHERE workspace_uuid = ? AND is_active = 1 ORDER BY updatedAt DESC LIMIT 1`
+      `SELECT * FROM editor_sessions WHERE workspace_id = ? AND is_active = 1 ORDER BY updatedAt DESC LIMIT 1`
     );
     const row = stmt.get(workspaceId) as any;
 
@@ -55,9 +55,9 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO editor_sessions (
-        uuid, workspace_uuid, name, is_active, createdAt, updatedAt
+        id, workspace_id, name, is_active, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         is_active = excluded.is_active,
         updatedAt = excluded.updatedAt
@@ -74,16 +74,16 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM editor_sessions WHERE uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM editor_sessions WHERE id = ?`);
     stmt.run(id);
   }
 
   async saveBatch(sessions: EditorSession[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO editor_sessions (
-        uuid, workspace_uuid, name, is_active, createdAt, updatedAt
+        id, workspace_id, name, is_active, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         is_active = excluded.is_active,
         updatedAt = excluded.updatedAt
@@ -107,36 +107,36 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
   }
 
   async deleteByWorkspaceId(workspaceId: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM editor_sessions WHERE workspace_uuid = ?`);
+    const stmt = this.db.prepare(`DELETE FROM editor_sessions WHERE workspace_id = ?`);
     stmt.run(workspaceId);
   }
 
   async countByWorkspaceId(workspaceId: string): Promise<number> {
     const stmt = this.db.prepare(
-      `SELECT COUNT(*) as count FROM editor_sessions WHERE workspace_uuid = ?`,
+      `SELECT COUNT(*) as count FROM editor_sessions WHERE workspace_id = ?`,
     );
     const result = stmt.get(workspaceId) as { count: number };
     return result.count;
   }
 
-  async findByUuid(uuid: string): Promise<EditorSession | null> {
-    return this.findById(uuid);
+  async findById(id: string): Promise<EditorSession | null> {
+    return this.findById(id);
   }
 
-  async findByWorkspaceUuid(workspaceUuid: string): Promise<EditorSession[]> {
-    return this.findByWorkspaceId(workspaceUuid);
+  async findByWorkspaceId(workspaceId: string): Promise<EditorSession[]> {
+    return this.findByWorkspaceId(workspaceId);
   }
 
-  async findByWorkspaceUuidAndName(workspaceUuid: string, name: string): Promise<EditorSession | null> {
-    return this.findByWorkspaceIdAndName(workspaceUuid, name);
+  async findByWorkspaceIdAndName(workspaceId: string, name: string): Promise<EditorSession | null> {
+    return this.findByWorkspaceIdAndName(workspaceId, name);
   }
 
-  async findActiveByWorkspaceUuid(workspaceUuid: string): Promise<EditorSession | null> {
-    return this.findActiveByWorkspaceId(workspaceUuid);
+  async findActiveByWorkspaceId(workspaceId: string): Promise<EditorSession | null> {
+    return this.findActiveByWorkspaceId(workspaceId);
   }
 
-  async deleteByWorkspaceUuid(workspaceUuid: string): Promise<void> {
-    await this.deleteByWorkspaceId(workspaceUuid);
+  async deleteByWorkspaceId(workspaceId: string): Promise<void> {
+    await this.deleteByWorkspaceId(workspaceId);
   }
 
   private rowToSession(row: any): EditorSession {
@@ -149,9 +149,9 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
         };
 
     return EditorSession.fromPersistenceDTO({
-      id: row.uuid,
-      workspace_id: row.workspace_uuid,
-      identityId: row.identity_id ?? row.accountUuid ?? row.account_uuid ?? row.identityId,
+      id: row.id,
+      workspace_id: row.workspace_id,
+      identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
       name: row.name,
       description: row.description ?? null,
       groups: [],

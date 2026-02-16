@@ -48,7 +48,7 @@ export class ScheduleTaskExecutorAdapter implements ITaskHandler {
       logger.info(`🚀 执行 Schedule 任务`, { taskId });
 
       // 调用现有的执行器
-      await this.executor.executeTaskByUuid(taskId);
+      await this.executor.executeTaskById(taskId);
 
       logger.info(`✅ Schedule 任务执行完成`, { taskId });
     } catch (error) {

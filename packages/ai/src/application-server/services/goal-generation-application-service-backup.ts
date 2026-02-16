@@ -9,10 +9,10 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('GoalGenerationApplicationService');
 
 export interface GenerateGoalParams {
-  accountUuid: string;
+  identityId: string;
   idea: string;
   context?: string;
-  providerUuid?: string;
+  providerId?: string;
   category?: string;
   timeRange?: string;
   startDate?: number;
@@ -26,13 +26,13 @@ export interface GenerateGoalParams {
 }
 
 export interface GenerateKeyResultsParams {
-  accountUuid: string;
+  identityId: string;
   goalTitle: string;
   goalDescription?: string;
   startDate: number;
   endDate: number;
   goalContext?: string;
-  providerUuid?: string;
+  providerId?: string;
 }
 
 /**
@@ -51,9 +51,9 @@ export class GoalGenerationApplicationService {
    * Generate goal from user idea
    */
   async generateGoal(params: GenerateGoalParams): Promise<any> {
-    logger.info('Generating goal', { accountUuid: params.accountUuid });
+    logger.info('Generating goal', { identityId: params.identityId });
     return {
-      uuid: 'goal-' + Date.now(),
+      id: 'goal-' + Date.now(),
       title: 'Generated Goal',
       description: params.idea,
     };
@@ -63,10 +63,10 @@ export class GoalGenerationApplicationService {
    * Generate goal with key results
    */
   async generateGoalWithKRs(params: GenerateGoalParams): Promise<any> {
-    logger.info('Generating goal with KRs', { accountUuid: params.accountUuid });
+    logger.info('Generating goal with KRs', { identityId: params.identityId });
     return {
       goal: {
-        uuid: 'goal-' + Date.now(),
+        id: 'goal-' + Date.now(),
         title: 'Generated Goal',
         description: params.idea,
       },

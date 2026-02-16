@@ -19,10 +19,10 @@ export class GetUserNotifications {
   ) {}
 
   async execute(
-    accountUuid: string,
+    identityId: string,
     options?: { includeRead?: boolean; limit?: number; offset?: number },
   ): Promise<NotificationClientDTO[]> {
-    const notifications = await this.notificationRepository.findByAccountUuid(accountUuid, {
+    const notifications = await this.notificationRepository.findByAccountId(identityId, {
       includeRead: options?.includeRead ?? true,
       includeDeleted: false,
       limit: options?.limit,

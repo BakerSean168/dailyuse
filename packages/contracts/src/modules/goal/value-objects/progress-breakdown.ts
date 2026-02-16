@@ -17,7 +17,7 @@ export interface ProgressBreakdown {
   /** 各关键结果的贡献度列表 */
   krContributions: Array<{
     /** 关键结果 UUID */
-    keyResultUuid: string;
+    keyResultId: string;
     
     /** 关键结果名称 */
     keyResultName: string;

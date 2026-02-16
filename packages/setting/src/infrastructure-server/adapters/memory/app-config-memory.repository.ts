@@ -13,23 +13,23 @@ import type { IAppConfigRepository } from '../../ports/app-config-repository.por
  */
 export class AppConfigMemoryRepository implements IAppConfigRepository {
   private configs = new Map<string, any>();
-  private currentUuid: string | null = null;
+  private currentId: string | null = null;
 
   async save(config: any): Promise<void> {
-    this.configs.set(config.uuid, config);
+    this.configs.set(config.id, config);
     // Mark as current if it's the newest version
     if (config.isCurrent) {
-      this.currentUuid = config.uuid;
+      this.currentId = config.id;
     }
   }
 
-  async findById(uuid: string): Promise<any | null> {
-    return this.configs.get(uuid) ?? null;
+  async findById(id: string): Promise<any | null> {
+    return this.configs.get(id) ?? null;
   }
 
   async getCurrent(): Promise<any | null> {
-    if (this.currentUuid) {
-      return this.configs.get(this.currentUuid) ?? null;
+    if (this.currentId) {
+      return this.configs.get(this.currentId) ?? null;
     }
     // Return the most recently added if no current is set
     const all = Array.from(this.configs.values());
@@ -44,15 +44,15 @@ export class AppConfigMemoryRepository implements IAppConfigRepository {
     return Array.from(this.configs.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   }
 
-  async delete(uuid: string): Promise<void> {
-    if (this.currentUuid === uuid) {
-      this.currentUuid = null;
+  async delete(id: string): Promise<void> {
+    if (this.currentId === id) {
+      this.currentId = null;
     }
-    this.configs.delete(uuid);
+    this.configs.delete(id);
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    return this.configs.has(uuid);
+  async exists(id: string): Promise<boolean> {
+    return this.configs.has(id);
   }
 
   async existsByVersion(version: string): Promise<boolean> {
@@ -62,10 +62,10 @@ export class AppConfigMemoryRepository implements IAppConfigRepository {
   // Test helpers
   clear(): void {
     this.configs.clear();
-    this.currentUuid = null;
+    this.currentId = null;
   }
 
   seed(configs: any[]): void {
-    configs.forEach((c) => this.configs.set(c.uuid, c));
+    configs.forEach((c) => this.configs.set(c.id, c));
   }
 }

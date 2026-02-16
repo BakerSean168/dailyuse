@@ -39,7 +39,7 @@ export abstract class DomainError extends Error {
 
   /**
    * 操作ID（用于追踪完整的操作流程）
-   * @example 'update-template-uuid-1234567890'
+   * @example 'update-template-id-1234567890'
    */
   public readonly operationId?: string;
 

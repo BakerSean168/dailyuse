@@ -17,40 +17,40 @@ export class AIConversationMemoryRepository implements IAIConversationRepository
   private conversations = new Map<string, AIConversation>();
 
   async save(conversation: AIConversation): Promise<void> {
-    this.conversations.set((conversation as any).uuid, conversation);
+    this.conversations.set((conversation as any).id, conversation);
   }
 
-  async findByUuid(uuid: string, _options?: AIConversationQueryOptions): Promise<AIConversation | null> {
-    return this.conversations.get(uuid) ?? null;
+  async findById(id: string, _options?: AIConversationQueryOptions): Promise<AIConversation | null> {
+    return this.conversations.get(id) ?? null;
   }
 
-  async findByAccountUuid(accountUuid: string, _options?: AIConversationQueryOptions): Promise<AIConversation[]> {
-    return Array.from(this.conversations.values()).filter((c: any) => c.accountUuid === accountUuid);
+  async findByAccountId(identityId: string, _options?: AIConversationQueryOptions): Promise<AIConversation[]> {
+    return Array.from(this.conversations.values()).filter((c: any) => c.identityId === identityId);
   }
 
   async findByStatus(
-    accountUuid: string,
+    identityId: string,
     status: ConversationStatus,
     _options?: AIConversationQueryOptions,
   ): Promise<AIConversation[]> {
     return Array.from(this.conversations.values()).filter(
-      (c: any) => c.accountUuid === accountUuid && c.status === status,
+      (c: any) => c.identityId === identityId && c.status === status,
     );
   }
 
-  async findRecent(accountUuid: string, limit: number, offset?: number): Promise<AIConversation[]> {
+  async findRecent(identityId: string, limit: number, offset?: number): Promise<AIConversation[]> {
     const filtered = Array.from(this.conversations.values())
-      .filter((c: any) => c.accountUuid === accountUuid)
+      .filter((c: any) => c.identityId === identityId)
       .sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0));
     return filtered.slice(offset ?? 0, (offset ?? 0) + limit);
   }
 
-  async delete(uuid: string): Promise<void> {
-    this.conversations.delete(uuid);
+  async delete(id: string): Promise<void> {
+    this.conversations.delete(id);
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    return this.conversations.has(uuid);
+  async exists(id: string): Promise<boolean> {
+    return this.conversations.has(id);
   }
 
   // Test helpers
@@ -59,6 +59,6 @@ export class AIConversationMemoryRepository implements IAIConversationRepository
   }
 
   seed(conversations: AIConversation[]): void {
-    conversations.forEach((c: any) => this.conversations.set(c.uuid, c));
+    conversations.forEach((c: any) => this.conversations.set(c.id, c));
   }
 }

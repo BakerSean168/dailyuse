@@ -43,7 +43,7 @@ export interface IIpcClient {
 // 合约包暂未定义，临时本地声明
 
 export interface TaskStatisticsServerDTO {
-  accountUuid: string;
+  identityId: string;
   totalTemplates: number;
   totalInstances: number;
   completedToday: number;
@@ -61,26 +61,26 @@ export interface ITaskTemplateApiClient {
     page?: number;
     limit?: number;
     status?: string;
-    folderUuid?: string;
-    goalUuid?: string;
+    folderId?: string;
+    goalId?: string;
     importance?: string;
     urgency?: string;
     tags?: string[];
   }): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>>;
-  getTaskTemplateById(uuid: string, includeChildren?: boolean): Promise<Result<TaskTemplateClientDTO>>;
-  updateTaskTemplate(uuid: string, request: UpdateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>>;
-  deleteTaskTemplate(uuid: string): Promise<Result<void>>;
+  getTaskTemplateById(id: string, includeChildren?: boolean): Promise<Result<TaskTemplateClientDTO>>;
+  updateTaskTemplate(id: string, request: UpdateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>>;
+  deleteTaskTemplate(id: string): Promise<Result<void>>;
   create(request: CreateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>>;
-  getByUuid(uuid: string): Promise<Result<TaskTemplateClientDTO>>;
-  update(uuid: string, request: UpdateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>>;
+  getById(id: string): Promise<Result<TaskTemplateClientDTO>>;
+  update(id: string, request: UpdateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>>;
   getTasksWithPrioritySorting(params?: { limit?: number }): Promise<Result<TaskTemplateClientDTO[]>>;
-  activateTaskTemplate(uuid: string): Promise<Result<TaskTemplateClientDTO>>;
-  pauseTaskTemplate(uuid: string): Promise<Result<TaskTemplateClientDTO>>;
-  archiveTaskTemplate(uuid: string): Promise<Result<TaskTemplateClientDTO>>;
-  generateInstances(templateUuid: string, request: GenerateInstancesRequest): Promise<Result<TaskInstanceClientDTO[]>>;
-  getInstancesByDateRange(templateUuid: string, from: number, to: number): Promise<Result<TaskInstanceClientDTO[]>>;
-  bindToGoal(templateUuid: string, request: BindToGoalRequest): Promise<Result<TaskTemplateClientDTO>>;
-  unbindFromGoal(templateUuid: string): Promise<Result<TaskTemplateClientDTO>>;
+  activateTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;
+  pauseTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;
+  archiveTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;
+  generateInstances(templateId: string, request: GenerateInstancesRequest): Promise<Result<TaskInstanceClientDTO[]>>;
+  getInstancesByDateRange(templateId: string, from: number, to: number): Promise<Result<TaskInstanceClientDTO[]>>;
+  bindToGoal(templateId: string, request: BindToGoalRequest): Promise<Result<TaskTemplateClientDTO>>;
+  unbindFromGoal(templateId: string): Promise<Result<TaskTemplateClientDTO>>;
 }
 
 // ============ Task Instance API Client ============
@@ -89,41 +89,41 @@ export interface ITaskInstanceApiClient {
   getTaskInstances(params?: {
     page?: number;
     limit?: number;
-    templateUuid?: string;
+    templateId?: string;
     status?: string;
     startDate?: number;
     endDate?: number;
   }): Promise<Result<TaskInstanceClientDTO[]>>;
-  getTaskInstanceById(uuid: string): Promise<Result<TaskInstanceClientDTO>>;
-  deleteTaskInstance(uuid: string): Promise<Result<void>>;
-  startTaskInstance(uuid: string): Promise<Result<TaskInstanceClientDTO>>;
-  completeTaskInstance(uuid: string, request?: CompleteTaskInstanceRequest): Promise<Result<TaskInstanceClientDTO>>;
-  skipTaskInstance(uuid: string, request?: SkipTaskInstanceRequest): Promise<Result<TaskInstanceClientDTO>>;
+  getTaskInstanceById(id: string): Promise<Result<TaskInstanceClientDTO>>;
+  deleteTaskInstance(id: string): Promise<Result<void>>;
+  startTaskInstance(id: string): Promise<Result<TaskInstanceClientDTO>>;
+  completeTaskInstance(id: string, request?: CompleteTaskInstanceRequest): Promise<Result<TaskInstanceClientDTO>>;
+  skipTaskInstance(id: string, request?: SkipTaskInstanceRequest): Promise<Result<TaskInstanceClientDTO>>;
   checkExpiredInstances(): Promise<Result<{ count: number; instances: TaskInstanceClientDTO[] }>>;
 }
 
 // ============ Task Dependency API Client ============
 
 export interface ITaskDependencyApiClient {
-  createDependency(taskUuid: string, request: CreateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>>;
-  getDependencies(taskUuid: string): Promise<Result<TaskDependencyClientDTO[]>>;
-  getDependents(taskUuid: string): Promise<Result<TaskDependencyClientDTO[]>>;
-  getDependencyChain(taskUuid: string): Promise<Result<DependencyChainClientDTO>>;
+  createDependency(taskId: string, request: CreateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>>;
+  getDependencies(taskId: string): Promise<Result<TaskDependencyClientDTO[]>>;
+  getDependents(taskId: string): Promise<Result<TaskDependencyClientDTO[]>>;
+  getDependencyChain(taskId: string): Promise<Result<DependencyChainClientDTO>>;
   validateDependency(request: ValidateDependencyRequest): Promise<Result<ValidateDependencyResponse>>;
-  deleteDependency(uuid: string): Promise<Result<void>>;
-  updateDependency(uuid: string, request: UpdateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>>;
+  deleteDependency(id: string): Promise<Result<void>>;
+  updateDependency(id: string, request: UpdateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>>;
 }
 
 // ============ Task Statistics API Client ============
 
 export interface ITaskStatisticsApiClient {
-  getTaskStatistics(accountUuid: string, forceRecalculate?: boolean): Promise<Result<TaskStatisticsServerDTO>>;
-  recalculateTaskStatistics(accountUuid: string, force?: boolean): Promise<Result<TaskStatisticsServerDTO>>;
-  deleteTaskStatistics(accountUuid: string): Promise<Result<void>>;
-  updateTemplateStats(accountUuid: string): Promise<Result<void>>;
-  updateInstanceStats(accountUuid: string): Promise<Result<void>>;
-  updateCompletionStats(accountUuid: string): Promise<Result<void>>;
-  getTodayCompletionRate(accountUuid: string): Promise<Result<number>>;
-  getWeekCompletionRate(accountUuid: string): Promise<Result<number>>;
-  getEfficiencyTrend(accountUuid: string): Promise<Result<'UP' | 'DOWN' | 'STABLE'>>;
+  getTaskStatistics(identityId: string, forceRecalculate?: boolean): Promise<Result<TaskStatisticsServerDTO>>;
+  recalculateTaskStatistics(identityId: string, force?: boolean): Promise<Result<TaskStatisticsServerDTO>>;
+  deleteTaskStatistics(identityId: string): Promise<Result<void>>;
+  updateTemplateStats(identityId: string): Promise<Result<void>>;
+  updateInstanceStats(identityId: string): Promise<Result<void>>;
+  updateCompletionStats(identityId: string): Promise<Result<void>>;
+  getTodayCompletionRate(identityId: string): Promise<Result<number>>;
+  getWeekCompletionRate(identityId: string): Promise<Result<number>>;
+  getEfficiencyTrend(identityId: string): Promise<Result<'UP' | 'DOWN' | 'STABLE'>>;
 }

@@ -24,15 +24,15 @@ export interface TaskTimeConfigViewModel {
 }
 
 export interface TaskGoalBindingViewModel {
-  goalUuid?: string;
-  keyResultUuid?: string;
+  goalId?: string;
+  keyResultId?: string;
   incrementValue?: number;
   goalTitle?: string;
   keyResultTitle?: string;
 }
 
 export interface TaskForDAGViewModel {
-  uuid: string;
+  id: string;
   title: string;
   status?: string;
   priority?: string | number;
@@ -59,21 +59,21 @@ export interface GoalBindingProgress {
 }
 
 export interface GoalBindingOption {
-  uuid: string;
+  id: string;
   title: string;
   description?: string;
   status?: string;
 }
 
 export interface KeyResultBindingOption {
-  uuid: string;
+  id: string;
   title: string;
   weight?: number;
   progress: GoalBindingProgress;
 }
 
 export interface TaskTemplateViewModel {
-  uuid: string;
+  id: string;
   title: string;
   description?: string;
   status: string;
@@ -94,8 +94,8 @@ export interface TaskTemplateViewModel {
 }
 
 export interface TaskInstanceViewModel {
-  uuid: string;
-  templateUuid?: string;
+  id: string;
+  templateId?: string;
   templateTitle?: string;
   isCompleted: boolean;
   statusText?: string;

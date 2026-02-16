@@ -44,9 +44,9 @@ export class SettingSyncApiClient {
   /**
    * Restore settings from a specific version
    */
-  async restoreVersion(versionUuid: string) {
+  async restoreVersion(versionId: string) {
     const response = await this.client.post(`${this.baseURL}/restore`, {
-      versionUuid,
+      versionId,
     });
     return response.data;
   }

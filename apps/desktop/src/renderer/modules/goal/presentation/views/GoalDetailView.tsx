@@ -64,7 +64,7 @@ import type {
 import { useKeyResult, useGoalReview } from '../hooks';
 
 interface GoalDetailViewProps {
-  goalUuid: string;
+  goalId: string;
   onBack?: () => void;
   onGoalUpdated?: () => void;
 }
@@ -77,7 +77,7 @@ const STATUS_CONFIG: Record<GoalStatus, { label: string; color: string; icon: ty
   [GoalStatus.ARCHIVED]: { label: '已归', color: 'bg-yellow-100 text-yellow-800', icon: Archive },
 };
 
-export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailViewProps) {
+export function GoalDetailView({ goalId, onBack, onGoalUpdated }: GoalDetailViewProps) {
   // Goal State
   const [goal, setGoal] = useState<Goal | null>(null);
   const [loading, setLoading] = useState(true);
@@ -114,7 +114,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
     try {
       setLoading(true);
       setError(null);
-      const result = await goalApplicationService.getGoal(goalUuid);
+      const result = await goalApplicationService.getGoal(goalId);
       setGoal(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载目标失败');
@@ -122,12 +122,12 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
     } finally {
       setLoading(false);
     }
-  }, [goalUuid]);
+  }, [goalId]);
 
   // Load Reviews when tab changes
   useEffect(() => {
     if (activeTab === 'reviews' && goal) {
-      loadReviews(goal.uuid);
+      loadReviews(goal.id);
     }
   }, [activeTab, goal, loadReviews]);
 
@@ -141,11 +141,11 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
 
     try {
       if (newStatus === 'complete') {
-        await goalApplicationService.completeGoal(goal.uuid);
+        await goalApplicationService.completeGoal(goal.id);
       } else if (newStatus === 'archive') {
-        await goalApplicationService.archiveGoal(goal.uuid);
+        await goalApplicationService.archiveGoal(goal.id);
       } else if (newStatus === 'activate') {
-        await goalApplicationService.activateGoal(goal.uuid);
+        await goalApplicationService.activateGoal(goal.id);
       }
       await loadGoal();
       onGoalUpdated?.();
@@ -160,27 +160,27 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
     setShowKeyResultDialog(true);
   };
 
-  const handleEditKeyResult = (keyResultUuid: string) => {
-    const kr = goal?.keyResults?.find((k) => k.uuid === keyResultUuid);
+  const handleEditKeyResult = (keyResultId: string) => {
+    const kr = goal?.keyResults?.find((k) => k.id === keyResultId);
     if (kr) {
       setSelectedKeyResult(kr);
       setShowKeyResultDialog(true);
     }
   };
 
-  const handleAddRecord = (keyResultUuid: string) => {
-    const kr = goal?.keyResults?.find((k) => k.uuid === keyResultUuid);
+  const handleAddRecord = (keyResultId: string) => {
+    const kr = goal?.keyResults?.find((k) => k.id === keyResultId);
     if (kr) {
       setSelectedKeyResult(kr);
       setShowRecordDialog(true);
     }
   };
 
-  const handleDeleteKeyResult = async (keyResultUuid: string) => {
+  const handleDeleteKeyResult = async (keyResultId: string) => {
     if (!goal || !confirm('确定要删除这个关键结果吗？相关记录也会被删除')) return;
 
     try {
-      await deleteKeyResult(goal.uuid, keyResultUuid);
+      await deleteKeyResult(goal.id, keyResultId);
       await loadGoal();
     } catch (err) {
       console.error('[GoalDetailView] Failed to delete key result:', err);
@@ -193,11 +193,11 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
     if (selectedKeyResult) {
       // Update 模式 - data �?UpdateKeyResultRequest
       const updateData = data as UpdateKeyResultRequest;
-      await updateKeyResult(goal.uuid, selectedKeyResult.uuid, updateData);
+      await updateKeyResult(goal.id, selectedKeyResult.id, updateData);
     } else {
       // Create 模式 - data �?AddKeyResultRequest
       const createData = data as AddKeyResultRequest;
-      await createKeyResult(goal.uuid, createData);
+      await createKeyResult(goal.id, createData);
     }
     await loadGoal();
     setShowKeyResultDialog(false);
@@ -206,7 +206,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
   const handleSaveRecord = async (data: { value: number; note?: string }) => {
     if (!goal || !selectedKeyResult) return;
 
-    await createRecord(goal.uuid, selectedKeyResult.uuid, data);
+    await createRecord(goal.id, selectedKeyResult.id, data);
     await loadGoal();
     setShowRecordDialog(false);
   };
@@ -215,15 +215,15 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
     if (!goal) return;
 
     // 直接传�?contracts 类型
-    await createReview(goal.uuid, data as CreateGoalReviewRequest);
+    await createReview(goal.id, data as CreateGoalReviewRequest);
     setShowReviewDialog(false);
   };
 
-  const handleDeleteReview = async (reviewUuid: string) => {
+  const handleDeleteReview = async (reviewId: string) => {
     if (!goal || !confirm('确定要删除这条复盘记录吗')) return;
 
     try {
-      await deleteReview(goal.uuid, reviewUuid);
+      await deleteReview(goal.id, reviewId);
     } catch (err) {
       console.error('[GoalDetailView] Failed to delete review:', err);
     }
@@ -365,7 +365,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
               </span>
             </div>
           )}
-          {goal.folderUuid && (
+          {goal.folderId && (
             <div className="flex items-center gap-1">
               <Folder className="h-4 w-4" />
               <span>文件</span>
@@ -413,7 +413,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
                 {goal.keyResults && goal.keyResults.length > 0 ? (
                   goal.keyResults.slice(0, 3).map((kr) => (
                     <KeyResultCard
-                      key={kr.uuid}
+                      key={kr.id}
                       keyResult={kr}
                       goal={goal}
                       onClick={handleEditKeyResult}
@@ -491,7 +491,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
               {goal.keyResults && goal.keyResults.length > 0 ? (
                 goal.keyResults.map((kr) => (
                   <KeyResultCard
-                    key={kr.uuid}
+                    key={kr.id}
                     keyResult={kr}
                     goal={goal}
                     onClick={handleEditKeyResult}
@@ -531,7 +531,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
               ) : reviews.length > 0 ? (
                 reviews.map((review) => (
                   <GoalReviewCard
-                    key={review.uuid}
+                    key={review.id}
                     review={review}
                     goalColor={goalColor}
                     onDelete={handleDeleteReview}
@@ -555,7 +555,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
       {/* Dialogs */}
       <KeyResultDialog
         open={showKeyResultDialog}
-        goalUuid={goal.uuid}
+        goalId={goal.id}
         goal={goal}
         keyResult={selectedKeyResult}
         onClose={() => setShowKeyResultDialog(false)}
@@ -564,8 +564,8 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
 
       <GoalRecordDialog
         open={showRecordDialog}
-        goalUuid={goal.uuid}
-        keyResultUuid={selectedKeyResult?.uuid || ''}
+        goalId={goal.id}
+        keyResultId={selectedKeyResult?.id || ''}
         keyResult={selectedKeyResult}
         goalColor={goalColor}
         onClose={() => setShowRecordDialog(false)}
@@ -574,7 +574,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
 
       <GoalReviewDialog
         open={showReviewDialog}
-        goalUuid={goal.uuid}
+        goalId={goal.id}
         goal={goal}
         onClose={() => setShowReviewDialog(false)}
         onSave={handleSaveReview}

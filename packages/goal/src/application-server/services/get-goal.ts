@@ -16,13 +16,13 @@ import { ok, error } from '@dailyuse/contracts/result';
 export class GetGoal {
   constructor(private readonly goalRepository: IGoalRepository) {}
 
-  async execute(uuid: string, includeChildren?: boolean): Promise<Result<GetGoalRes>> {
-    const goal = await this.goalRepository.findById(uuid, {
+  async execute(id: string, includeChildren?: boolean): Promise<Result<GetGoalRes>> {
+    const goal = await this.goalRepository.findById(id, {
       includeChildren,
     });
 
     if (!goal) {
-      return error('NOT_FOUND', `Goal not found: ${uuid}`);
+      return error('NOT_FOUND', `Goal not found: ${id}`);
     }
 
     return ok(goal.toClientDTO(true));

@@ -16,13 +16,13 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
 
     const stmt = this.db.prepare(`
       INSERT INTO reminder_templates (
-        uuid, account_uuid, name, description, type, trigger, recurrence, 
+        id, identity_id, name, description, type, trigger, recurrence, 
         active_time, active_hours, notification_config, self_enabled, status,
-        group_uuid, importance_level, tags, color, icon, next_trigger_at, stats,
+        group_id, importance_level, tags, color, icon, next_trigger_at, stats,
         click_rate, ignore_rate, avg_response_time, snooze_count,
         created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         description = excluded.description,
         trigger = excluded.trigger,
@@ -46,8 +46,8 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.accountUuid,
+      dto.id,
+      dto.identityId,
       dto.name,
       dto.description || null,
       dto.type,
@@ -58,7 +58,7 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
       dto.notificationConfig,
       dto.selfEnabled ? 1 : 0,
       dto.status,
-      dto.groupUuid || null,
+      dto.groupId || null,
       dto.importanceLevel,
       dto.tags,
       dto.color || null,
@@ -74,66 +74,66 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
     );
   }
 
-  async findById(uuid: string, options?: { includeHistory?: boolean }): Promise<ReminderTemplate | null> {
-    const stmt = this.db.prepare(`SELECT * FROM reminder_templates WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string, options?: { includeHistory?: boolean }): Promise<ReminderTemplate | null> {
+    const stmt = this.db.prepare(`SELECT * FROM reminder_templates WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
     return this.rowToTemplate(row);
   }
 
-  async findByAccountUuid(
-    accountUuid: string,
+  async findByAccountId(
+    identityId: string,
     options?: {
       includeHistory?: boolean;
       includeDeleted?: boolean;
     },
   ): Promise<ReminderTemplate[]> {
-    let sql = `SELECT * FROM reminder_templates WHERE account_uuid = ?`;
+    let sql = `SELECT * FROM reminder_templates WHERE identity_id = ?`;
     if (!options?.includeDeleted) {
       sql += ` AND status != 'DELETED'`;
     }
     sql += ` ORDER BY created_at DESC`;
 
     const stmt = this.db.prepare(sql);
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) => this.rowToTemplate(row));
   }
 
-  async findByGroupUuid(groupUuid: string): Promise<ReminderTemplate[]> {
+  async findByGroupId(groupId: string): Promise<ReminderTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM reminder_templates WHERE group_uuid = ? AND status != 'DELETED' ORDER BY created_at DESC`
+      `SELECT * FROM reminder_templates WHERE group_id = ? AND status != 'DELETED' ORDER BY created_at DESC`
     );
-    const rows = stmt.all(groupUuid) as any[];
+    const rows = stmt.all(groupId) as any[];
 
     return rows.map((row) => this.rowToTemplate(row));
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM reminder_templates WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM reminder_templates WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async softDelete(uuid: string): Promise<void> {
+  async softDelete(id: string): Promise<void> {
     const stmt = this.db.prepare(
-      `UPDATE reminder_templates SET status = 'DELETED', updated_at = ? WHERE uuid = ?`
+      `UPDATE reminder_templates SET status = 'DELETED', updated_at = ? WHERE id = ?`
     );
-    stmt.run(Date.now(), uuid);
+    stmt.run(Date.now(), id);
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    const stmt = this.db.prepare(`SELECT 1 FROM reminder_templates WHERE uuid = ? LIMIT 1`);
-    return stmt.get(uuid) !== undefined;
+  async exists(id: string): Promise<boolean> {
+    const stmt = this.db.prepare(`SELECT 1 FROM reminder_templates WHERE id = ? LIMIT 1`);
+    return stmt.get(id) !== undefined;
   }
 
-  async findActive(accountUuid?: string): Promise<ReminderTemplate[]> {
+  async findActive(identityId?: string): Promise<ReminderTemplate[]> {
     let sql = `SELECT * FROM reminder_templates WHERE status = 'ACTIVE'`;
     const params: any[] = [];
 
-    if (accountUuid) {
-      sql += ` AND account_uuid = ?`;
-      params.push(accountUuid);
+    if (identityId) {
+      sql += ` AND identity_id = ?`;
+      params.push(identityId);
     }
 
     sql += ` ORDER BY created_at DESC`;
@@ -144,14 +144,14 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
     return rows.map((row) => this.rowToTemplate(row));
   }
 
-  async findByNextTriggerBefore(beforeTime: number, accountUuid?: string): Promise<ReminderTemplate[]> {
+  async findByNextTriggerBefore(beforeTime: number, identityId?: string): Promise<ReminderTemplate[]> {
     let sql = `SELECT * FROM reminder_templates 
                WHERE status = 'ACTIVE' AND next_trigger_at IS NOT NULL AND next_trigger_at < ?`;
     const params: any[] = [beforeTime];
 
-    if (accountUuid) {
-      sql += ` AND account_uuid = ?`;
-      params.push(accountUuid);
+    if (identityId) {
+      sql += ` AND identity_id = ?`;
+      params.push(identityId);
     }
 
     sql += ` ORDER BY next_trigger_at ASC`;
@@ -162,23 +162,23 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
     return rows.map((row) => this.rowToTemplate(row));
   }
 
-  async findByIds(uuids: string[]): Promise<ReminderTemplate[]> {
-    if (uuids.length === 0) return [];
+  async findByIds(ids: string[]): Promise<ReminderTemplate[]> {
+    if (ids.length === 0) return [];
 
-    const placeholders = uuids.map(() => '?').join(',');
+    const placeholders = ids.map(() => '?').join(',');
     const stmt = this.db.prepare(
-      `SELECT * FROM reminder_templates WHERE uuid IN (${placeholders})`
+      `SELECT * FROM reminder_templates WHERE id IN (${placeholders})`
     );
-    const rows = stmt.all(...uuids) as any[];
+    const rows = stmt.all(...ids) as any[];
 
     // 维持输入的顺序
-    const uuidMap = new Map(rows.map((row) => [row.uuid, this.rowToTemplate(row)]));
-    return uuids.map((uuid) => uuidMap.get(uuid)).filter((t) => t !== undefined) as ReminderTemplate[];
+    const idMap = new Map(rows.map((row) => [row.id, this.rowToTemplate(row)]));
+    return ids.map((id) => idMap.get(id)).filter((t) => t !== undefined) as ReminderTemplate[];
   }
 
-  async count(accountUuid: string, options?: { status?: ReminderStatus; includeDeleted?: boolean }): Promise<number> {
-    let sql = `SELECT COUNT(*) as count FROM reminder_templates WHERE account_uuid = ?`;
-    const params: any[] = [accountUuid];
+  async count(identityId: string, options?: { status?: ReminderStatus; includeDeleted?: boolean }): Promise<number> {
+    let sql = `SELECT COUNT(*) as count FROM reminder_templates WHERE identity_id = ?`;
+    const params: any[] = [identityId];
 
     if (options?.status) {
       sql += ` AND status = ?`;
@@ -194,8 +194,8 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
 
   private rowToTemplate(row: any): ReminderTemplate {
     return ReminderTemplate.fromPersistenceDTO({
-      uuid: row.uuid,
-      accountUuid: row.account_uuid,
+      id: row.id,
+      identityId: row.identity_id,
       name: row.name,
       description: row.description || undefined,
       type: row.type as ReminderType,
@@ -206,7 +206,7 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
       notificationConfig: row.notification_config,
       selfEnabled: row.self_enabled === 1,
       status: row.status as ReminderStatus,
-      groupUuid: row.group_uuid || undefined,
+      groupId: row.group_id || undefined,
       importanceLevel: row.importance_level as ImportanceLevel,
       tags: row.tags,
       color: row.color || undefined,

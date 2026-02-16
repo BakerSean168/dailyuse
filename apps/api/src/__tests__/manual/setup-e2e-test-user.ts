@@ -29,8 +29,8 @@ async function setupTestUser() {
 
     if (existingAccount) {
       console.log(`✅ 测试用户已存在: ${TEST_USER.username}`);
-      console.log(`   Account UUID: ${existingAccount.uuid}`);
-      console.log(`   UserProfile UUID: ${existingAccount.userProfile?.uuid || 'N/A'}\n`);
+      console.log(`   Account UUID: ${existingAccount.id}`);
+      console.log(`   UserProfile UUID: ${existingAccount.userProfile?.id || 'N/A'}\n`);
       return;
     }
 
@@ -47,7 +47,7 @@ async function setupTestUser() {
       },
     });
 
-    console.log(`   ✅ Credential 创建成功: ${credential.uuid}`);
+    console.log(`   ✅ Credential 创建成功: ${credential.id}`);
 
     // 创建 Account
     const account = await prisma.account.create({
@@ -56,17 +56,17 @@ async function setupTestUser() {
         email: TEST_USER.email,
         status: 'active',
         authCredentials: {
-          connect: { uuid: credential.uuid },
+          connect: { id: credential.id },
         },
       },
     });
 
-    console.log(`   ✅ Account 创建成功: ${account.uuid}`);
+    console.log(`   ✅ Account 创建成功: ${account.id}`);
 
     // 创建 UserProfile
     const userProfile = await prisma.userProfile.create({
       data: {
-        accountUuid: account.uuid,
+        identityId: account.id,
         displayName: TEST_USER.displayName,
         firstName: 'Test',
         lastName: 'User',
@@ -74,7 +74,7 @@ async function setupTestUser() {
       },
     });
 
-    console.log(`   ✅ UserProfile 创建成功: ${userProfile.uuid}`);
+    console.log(`   ✅ UserProfile 创建成功: ${userProfile.id}`);
 
     // 创建 NotificationPreference
     const defaultEnabledTypes = JSON.stringify([
@@ -116,7 +116,7 @@ async function setupTestUser() {
 
     await prisma.notificationPreference.create({
       data: {
-        accountUuid: account.uuid,
+        identityId: account.id,
         enabledTypes: defaultEnabledTypes,
         channelPreferences: JSON.stringify(channelPreferences),
       },
@@ -130,8 +130,8 @@ async function setupTestUser() {
     console.log(`║  用户名: ${TEST_USER.username.padEnd(49)} ║`);
     console.log(`║  密码: ${TEST_USER.password.padEnd(51)} ║`);
     console.log(`║  Email: ${TEST_USER.email.padEnd(50)} ║`);
-    console.log(`║  Account UUID: ${account.uuid.padEnd(40)} ║`);
-    console.log(`║  UserProfile UUID: ${userProfile.uuid.padEnd(36)} ║`);
+    console.log(`║  Account UUID: ${account.id.padEnd(40)} ║`);
+    console.log(`║  UserProfile UUID: ${userProfile.id.padEnd(36)} ║`);
     console.log('╚════════════════════════════════════════════════════════════╝\n');
   } catch (error) {
     console.error('❌ 设置失败:', error);

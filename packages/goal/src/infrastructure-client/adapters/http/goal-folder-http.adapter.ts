@@ -28,25 +28,25 @@ export class GoalFolderHttpAdapter implements IGoalFolderApiClient {
     page?: number;
     limit?: number;
     status?: string;
-    parentUuid?: string | null;
+    parentId?: string | null;
   }): Promise<Result<QueryGoalFoldersRes>> {
     return this.httpClient.get(this.baseUrl, { params });
   }
 
   async getGoalFolderById(
-    uuid: string,
+    id: string,
   ): Promise<Result<GoalFolderClientDTO>> {
-    return this.httpClient.get(`${this.baseUrl}/${uuid}`);
+    return this.httpClient.get(`${this.baseUrl}/${id}`);
   }
 
   async updateGoalFolder(
-    uuid: string,
+    id: string,
     request: UpdateGoalFolderReq,
   ): Promise<Result<GoalFolderClientDTO>> {
-    return this.httpClient.put(`${this.baseUrl}/${uuid}`, request);
+    return this.httpClient.put(`${this.baseUrl}/${id}`, request);
   }
 
-  async deleteGoalFolder(uuid: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.baseUrl}/${uuid}`);
+  async deleteGoalFolder(id: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 }

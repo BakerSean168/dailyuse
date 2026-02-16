@@ -166,7 +166,7 @@ export function ReminderGroupDialog({
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const isEditMode = !!group?.uuid;
+  const isEditMode = !!group?.id;
 
   // 初始化表单数�?
   useEffect(() => {

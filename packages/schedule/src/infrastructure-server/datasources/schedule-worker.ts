@@ -95,7 +95,7 @@ async function initializeApplication() {
  * 
  * 娉ㄦ剰锛氬疄闄呯殑 Goal 鏌ヨ鍜岄€氱煡鍙戦€佺敱鐖惰繘绋嬪锟?
  */
-async function executeGoalReminder(data: { goalId: string; accountUuid: string }) {
+async function executeGoalReminder(data: { goalId: string; identityId: string }) {
   console.log(`Executing goal reminder for goal ${data.goalId}`);
   // 瀹為檯鐨勪笟鍔￠€昏緫鐢辩埗杩涚▼涓殑 GoalApplicationService 澶勭悊
   // 杩欓噷鍙褰曟墽琛屼俊锟?
@@ -113,7 +113,7 @@ async function executeGoalReminder(data: { goalId: string; accountUuid: string }
  * 
  * 娉ㄦ剰锛氬疄闄呯殑 Task 鏌ヨ鍜岄€氱煡鍙戦€佺敱鐖惰繘绋嬪锟?
  */
-async function executeTaskReminder(data: { taskId: string; accountUuid: string }) {
+async function executeTaskReminder(data: { taskId: string; identityId: string }) {
   console.log(`Executing task reminder for task ${data.taskId}`);
   // 瀹為檯鐨勪笟鍔￠€昏緫鐢辩埗杩涚▼涓殑 TaskTemplateApplicationService 澶勭悊
   // 杩欓噷鍙褰曟墽琛屼俊锟?
@@ -131,7 +131,7 @@ async function executeTaskReminder(data: { taskId: string; accountUuid: string }
  * 
  * 娉ㄦ剰锛氬疄闄呯殑 Reminder 鏌ヨ鍜岄€氱煡鍙戦€佺敱鐖惰繘绋嬪锟?
  */
-async function executeReminder(data: { reminderId: string; accountUuid: string }) {
+async function executeReminder(data: { reminderId: string; identityId: string }) {
   console.log(`Executing reminder for reminder ${data.reminderId}`);
   // 瀹為檯鐨勪笟鍔￠€昏緫鐢辩埗杩涚▼涓殑 ReminderApplicationService 澶勭悊
   // 杩欓噷鍙褰曟墽琛屼俊锟?

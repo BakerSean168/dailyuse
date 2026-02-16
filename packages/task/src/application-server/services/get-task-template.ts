@@ -15,10 +15,10 @@ import { ok } from '@dailyuse/contracts/result';
 export class GetTaskTemplate {
   constructor(private readonly templateRepository: ITaskTemplateRepository) {}
 
-  async execute(uuid: string, includeChildren = false): Promise<Result<TaskTemplateResponse>> {
+  async execute(id: string, includeChildren = false): Promise<Result<TaskTemplateResponse>> {
     const template = includeChildren
-      ? await this.templateRepository.findByIdWithChildren(uuid)
-      : await this.templateRepository.findById(uuid);
+      ? await this.templateRepository.findByIdWithChildren(id)
+      : await this.templateRepository.findById(id);
 
     return ok({
       template: template ? template.toClientDTO(includeChildren) : (null as unknown as TaskTemplateClientDTO),

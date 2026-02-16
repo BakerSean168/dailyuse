@@ -14,8 +14,8 @@ export function initializeSettingTables(database: Database.Database): void {
   // user_settings 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS user_settings (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT UNIQUE NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT UNIQUE NOT NULL,
       theme TEXT DEFAULT 'light',
       language TEXT DEFAULT 'en',
       timezone TEXT DEFAULT 'UTC',
@@ -28,7 +28,7 @@ export function initializeSettingTables(database: Database.Database): void {
       experimental_features TEXT DEFAULT '{}',
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
     )
   `);
 

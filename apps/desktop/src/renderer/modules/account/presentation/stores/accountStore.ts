@@ -76,7 +76,7 @@ export interface AccountActions {
   // 多账户操作
   setSavedAccounts: (accounts: AccountDTO[]) => void;
   addSavedAccount: (account: AccountDTO) => void;
-  removeSavedAccount: (accountUuid: string) => void;
+  removeSavedAccount: (identityId: string) => void;
   
   // 生命周期
   reset: () => void;
@@ -86,7 +86,7 @@ export interface AccountActions {
 export interface AccountSelectors {
   // 认证状态
   isAuthenticated: () => boolean;
-  getCurrentAccountUuid: () => string | null;
+  getCurrentAccountId: () => string | null;
   
   // 账户状态
   getAccountStatus: () => string | null;
@@ -161,14 +161,14 @@ export const useAccountStore = create<AccountState & AccountActions & AccountSel
         setSavedAccounts: (accounts) => set({ savedAccounts: accounts }),
         
         addSavedAccount: (account) => set((state) => {
-          const exists = state.savedAccounts.find(acc => acc.uuid === account.uuid);
+          const exists = state.savedAccounts.find(acc => acc.id === account.id);
           if (!exists) {
             state.savedAccounts.push(account);
           }
         }),
         
-        removeSavedAccount: (accountUuid) => set((state) => {
-          state.savedAccounts = state.savedAccounts.filter(acc => acc.uuid !== accountUuid);
+        removeSavedAccount: (identityId) => set((state) => {
+          state.savedAccounts = state.savedAccounts.filter(acc => acc.id !== identityId);
         }),
         
         reset: () => set(initialState),
@@ -176,7 +176,7 @@ export const useAccountStore = create<AccountState & AccountActions & AccountSel
         // ========== Selectors ==========
         isAuthenticated: () => get().currentAccount !== null,
         
-        getCurrentAccountUuid: () => get().currentAccount?.uuid ?? null,
+        getCurrentAccountId: () => get().currentAccount?.id ?? null,
         
         getAccountStatus: () => get().currentAccount?.status ?? null,
         

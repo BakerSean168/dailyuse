@@ -87,19 +87,19 @@ export const useScheduleStore = create<ScheduleStore>()(
       ...initialState,
 
       setSchedules: (schedules) => {
-        const byId = Object.fromEntries(schedules.map((s) => [s.uuid, s]));
+        const byId = Object.fromEntries(schedules.map((s) => [s.id, s]));
         set({ schedules, schedulesById: byId });
       },
 
       addSchedule: (schedule) =>
         set((state) => ({
           schedules: [...state.schedules, schedule],
-          schedulesById: { ...state.schedulesById, [schedule.uuid]: schedule },
+          schedulesById: { ...state.schedulesById, [schedule.id]: schedule },
         })),
 
       updateSchedule: (id, updates) =>
         set((state) => {
-          const index = state.schedules.findIndex((s) => s.uuid === id);
+          const index = state.schedules.findIndex((s) => s.id === id);
           if (index === -1) return state;
 
           const updated = { ...state.schedules[index], ...updates };
@@ -116,7 +116,7 @@ export const useScheduleStore = create<ScheduleStore>()(
         set((state) => {
           const { [id]: _, ...rest } = state.schedulesById;
           return {
-            schedules: state.schedules.filter((s) => s.uuid !== id),
+            schedules: state.schedules.filter((s) => s.id !== id),
             schedulesById: rest,
           };
         }),

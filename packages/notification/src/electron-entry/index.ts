@@ -37,14 +37,14 @@ export const NotificationElectronModule: IElectronModule = {
     const templateSvc = mod.notificationTemplateService;
 
     ipcMain.handle(Ch.LIST, (_, params) => svc.listNotifications(params));
-    ipcMain.handle(Ch.GET, (_, uuid) => svc.getNotification(uuid));
+    ipcMain.handle(Ch.GET, (_, id) => svc.getNotification(id));
     ipcMain.handle(Ch.CREATE, (_, dto) => svc.createNotification(dto));
-    ipcMain.handle(Ch.MARK_READ, (_, uuid) => svc.markAsRead(uuid));
-    ipcMain.handle(Ch.MARK_ALL_READ, (_, accountUuid) => svc.markAllAsRead(accountUuid));
-    ipcMain.handle(Ch.DELETE, (_, uuid) => svc.deleteNotification(uuid));
-    ipcMain.handle(Ch.CLEAR_ALL, (_, accountUuid) => svc.clearAll(accountUuid));
-    ipcMain.handle(Ch.GET_UNREAD_COUNT, (_, accountUuid) => svc.getUnreadCount(accountUuid));
-    ipcMain.handle(Ch.SETTINGS_GET, (_, accountUuid) => mod.notificationChannelService.getPreferences(accountUuid));
+    ipcMain.handle(Ch.MARK_READ, (_, id) => svc.markAsRead(id));
+    ipcMain.handle(Ch.MARK_ALL_READ, (_, identityId) => svc.markAllAsRead(identityId));
+    ipcMain.handle(Ch.DELETE, (_, id) => svc.deleteNotification(id));
+    ipcMain.handle(Ch.CLEAR_ALL, (_, identityId) => svc.clearAll(identityId));
+    ipcMain.handle(Ch.GET_UNREAD_COUNT, (_, identityId) => svc.getUnreadCount(identityId));
+    ipcMain.handle(Ch.SETTINGS_GET, (_, identityId) => mod.notificationChannelService.getPreferences(identityId));
     ipcMain.handle(Ch.SETTINGS_UPDATE, (_, dto) => mod.notificationChannelService.updatePreferences(dto));
     ipcMain.handle(Ch.STATISTICS_GET, (_, params) => svc.getStatistics(params));
 

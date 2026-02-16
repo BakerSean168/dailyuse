@@ -10,15 +10,15 @@ import type { IDocumentRepository, IndexStatus } from '../../../domain-server/re
 export class SqliteDocumentRepository implements IDocumentRepository {
   constructor(private db: Database.Database) {}
 
-  async findByUuid(uuid: string): Promise<Document | null> {
-    const stmt = this.db.prepare(`SELECT * FROM documents WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<Document | null> {
+    const stmt = this.db.prepare(`SELECT * FROM documents WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return Document.fromPersistenceDTO({
-      uuid: row.uuid,
-      workspace_uuid: row.workspace_uuid,
+      id: row.id,
+      workspace_id: row.workspace_id,
       path: row.path,
       content_hash: row.content_hash,
       file_size: row.file_size,
@@ -29,26 +29,26 @@ export class SqliteDocumentRepository implements IDocumentRepository {
     });
   }
 
-  async findByWorkspaceUuid(workspaceUuid: string): Promise<Document[]> {
+  async findByWorkspaceId(workspaceId: string): Promise<Document[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM documents WHERE workspace_uuid = ? ORDER BY createdAt DESC`
+      `SELECT * FROM documents WHERE workspace_id = ? ORDER BY createdAt DESC`
     );
-    const rows = stmt.all(workspaceUuid) as any[];
+    const rows = stmt.all(workspaceId) as any[];
 
     return rows.map((row) => this.rowToDocument(row));
   }
 
-  async findByPath(workspaceUuid: string, path: string): Promise<Document | null> {
+  async findByPath(workspaceId: string, path: string): Promise<Document | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM documents WHERE workspace_uuid = ? AND path = ? LIMIT 1`
+      `SELECT * FROM documents WHERE workspace_id = ? AND path = ? LIMIT 1`
     );
-    const row = stmt.get(workspaceUuid, path) as any;
+    const row = stmt.get(workspaceId, path) as any;
 
     if (!row) return null;
 
     return Document.fromPersistenceDTO({
-      uuid: row.uuid,
-      workspace_uuid: row.workspace_uuid,
+      id: row.id,
+      workspace_id: row.workspace_id,
       path: row.path,
       content_hash: row.content_hash,
       file_size: row.file_size,
@@ -68,29 +68,29 @@ export class SqliteDocumentRepository implements IDocumentRepository {
     return rows.map((row) => this.rowToDocument(row));
   }
 
-  async findDocumentsNeedingIndex(workspaceUuid: string): Promise<Document[]> {
+  async findDocumentsNeedingIndex(workspaceId: string): Promise<Document[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM documents WHERE workspace_uuid = ? AND index_status IN ('OUTDATED', 'FAILED') ORDER BY updatedAt ASC`
+      `SELECT * FROM documents WHERE workspace_id = ? AND index_status IN ('OUTDATED', 'FAILED') ORDER BY updatedAt ASC`
     );
-    const rows = stmt.all(workspaceUuid) as any[];
+    const rows = stmt.all(workspaceId) as any[];
 
     return rows.map((row) => this.rowToDocument(row));
   }
 
-  async findByIndexStatus(workspaceUuid: string, status: IndexStatus): Promise<Document[]> {
+  async findByIndexStatus(workspaceId: string, status: IndexStatus): Promise<Document[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM documents WHERE workspace_uuid = ? AND index_status = ? ORDER BY createdAt DESC`
+      `SELECT * FROM documents WHERE workspace_id = ? AND index_status = ? ORDER BY createdAt DESC`
     );
-    const rows = stmt.all(workspaceUuid, status) as any[];
+    const rows = stmt.all(workspaceId, status) as any[];
 
     return rows.map((row) => this.rowToDocument(row));
   }
 
-  async findRecentlyModified(workspaceUuid: string, limit: number): Promise<Document[]> {
+  async findRecentlyModified(workspaceId: string, limit: number): Promise<Document[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM documents WHERE workspace_uuid = ? ORDER BY updatedAt DESC LIMIT ?`
+      `SELECT * FROM documents WHERE workspace_id = ? ORDER BY updatedAt DESC LIMIT ?`
     );
-    const rows = stmt.all(workspaceUuid, limit) as any[];
+    const rows = stmt.all(workspaceId, limit) as any[];
 
     return rows.map((row) => this.rowToDocument(row));
   }
@@ -100,10 +100,10 @@ export class SqliteDocumentRepository implements IDocumentRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO documents (
-        uuid, workspace_uuid, path, content_hash, file_size, index_status,
+        id, workspace_id, path, content_hash, file_size, index_status,
         last_indexed_at, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         content_hash = excluded.content_hash,
         file_size = excluded.file_size,
         index_status = excluded.index_status,
@@ -112,8 +112,8 @@ export class SqliteDocumentRepository implements IDocumentRepository {
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.workspace_uuid,
+      dto.id,
+      dto.workspace_id,
       dto.path,
       dto.content_hash,
       dto.file_size,
@@ -124,15 +124,15 @@ export class SqliteDocumentRepository implements IDocumentRepository {
     );
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM documents WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM documents WHERE id = ?`);
+    stmt.run(id);
   }
 
   private rowToDocument(row: any): Document {
     return Document.fromPersistenceDTO({
-      uuid: row.uuid,
-      workspace_uuid: row.workspace_uuid,
+      id: row.id,
+      workspace_id: row.workspace_id,
       path: row.path,
       content_hash: row.content_hash,
       file_size: row.file_size,

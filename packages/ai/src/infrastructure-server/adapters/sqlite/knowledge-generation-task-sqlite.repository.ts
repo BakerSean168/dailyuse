@@ -36,20 +36,20 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
     return task;
   }
 
-  async findByUuid(uuid: string): Promise<KnowledgeGenerationTask | null> {
+  async findById(id: string): Promise<KnowledgeGenerationTask | null> {
     const stmt = this.db.prepare(
       `SELECT * FROM knowledge_generation_tasks WHERE id = ? LIMIT 1`
     );
-    const row = stmt.get(uuid) as any;
+    const row = stmt.get(id) as any;
     if (!row) return null;
     return this.rowToEntity(row);
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<KnowledgeGenerationTask[]> {
+  async findByAccountId(identityId: string): Promise<KnowledgeGenerationTask[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM knowledge_generation_tasks WHERE identityId = ? ORDER BY createdAt DESC`
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
     return rows.map((row) => this.rowToEntity(row));
   }
 
@@ -74,9 +74,9 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
     return task;
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM knowledge_generation_tasks WHERE id = ?`);
-    stmt.run(uuid);
+    stmt.run(id);
   }
 
   private rowToEntity(row: any): KnowledgeGenerationTask {

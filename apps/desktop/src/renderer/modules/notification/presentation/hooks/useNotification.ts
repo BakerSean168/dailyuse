@@ -39,12 +39,12 @@ export interface UseNotificationReturn extends NotificationState {
   refresh: () => Promise<void>;
 
   // Read operations
-  markAsRead: (uuid: string) => Promise<void>;
+  markAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
 
   // Delete operations
-  deleteNotification: (uuid: string) => Promise<void>;
-  batchDelete: (uuids: string[]) => Promise<void>;
+  deleteNotification: (id: string) => Promise<void>;
+  batchDelete: (ids: string[]) => Promise<void>;
 
   // Filter
   setFilter: (filter: Partial<QueryNotificationsRequest>) => void;
@@ -125,13 +125,13 @@ export function useNotification(): UseNotificationReturn {
   }, [loadNotifications]);
 
   // Mark as read
-  const markAsRead = useCallback(async (uuid: string) => {
+  const markAsRead = useCallback(async (id: string) => {
     try {
-      const updated = await notificationApplicationService.markAsRead(uuid);
+      const updated = await notificationApplicationService.markAsRead(id);
 
       setState((prev) => ({
         ...prev,
-        notifications: prev.notifications.map((n) => (n.uuid === uuid ? updated : n)),
+        notifications: prev.notifications.map((n) => (n.id === id ? updated : n)),
         unreadCount: Math.max(0, prev.unreadCount - 1),
       }));
     } catch (e) {
@@ -167,15 +167,15 @@ export function useNotification(): UseNotificationReturn {
   }, []);
 
   // Delete notification
-  const deleteNotification = useCallback(async (uuid: string) => {
+  const deleteNotification = useCallback(async (id: string) => {
     try {
-      await notificationApplicationService.deleteNotification(uuid);
+      await notificationApplicationService.deleteNotification(id);
 
       setState((prev) => {
-        const deleted = prev.notifications.find((n) => n.uuid === uuid);
+        const deleted = prev.notifications.find((n) => n.id === id);
         return {
           ...prev,
-          notifications: prev.notifications.filter((n) => n.uuid !== uuid),
+          notifications: prev.notifications.filter((n) => n.id !== id),
           total: prev.total - 1,
           unreadCount: deleted && !deleted.isRead ? prev.unreadCount - 1 : prev.unreadCount,
         };
@@ -190,18 +190,18 @@ export function useNotification(): UseNotificationReturn {
   }, []);
 
   // Batch delete
-  const batchDelete = useCallback(async (uuids: string[]) => {
+  const batchDelete = useCallback(async (ids: string[]) => {
     try {
-      await notificationApplicationService.batchDeleteNotifications(uuids);
+      await notificationApplicationService.batchDeleteNotifications(ids);
 
       setState((prev) => {
         const unreadDeleted = prev.notifications.filter(
-          (n) => uuids.includes(n.uuid) && !n.isRead,
+          (n) => ids.includes(n.id) && !n.isRead,
         ).length;
         return {
           ...prev,
-          notifications: prev.notifications.filter((n) => !uuids.includes(n.uuid)),
-          total: prev.total - uuids.length,
+          notifications: prev.notifications.filter((n) => !ids.includes(n.id)),
+          total: prev.total - ids.length,
           unreadCount: prev.unreadCount - unreadDeleted,
         };
       });

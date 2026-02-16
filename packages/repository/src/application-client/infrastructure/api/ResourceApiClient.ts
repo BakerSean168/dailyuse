@@ -7,11 +7,11 @@ import type { RepositoryServerDTO, ResourceServerDTO, ResourceClientDTO } from '
 
 
 export interface CreateResourceDTO {
-  repositoryUuid: string;
+  repositoryId: string;
   name: string;
   type: string;
   path: string;
-  folderUuid?: string;
+  folderId?: string;
   content?: string;
 }
 
@@ -34,16 +34,16 @@ export class ResourceApiClient {
   /**
    * 获取资源详情
    */
-  async getResourceById(uuid: string): Promise<ResourceClientDTO> {
-    return await this.api.get<ResourceClientDTO>(`${this.baseUrl}/resources/${uuid}`);
+  async getResourceById(id: string): Promise<ResourceClientDTO> {
+    return await this.api.get<ResourceClientDTO>(`${this.baseUrl}/resources/${id}`);
   }
 
   /**
    * 获取仓库下的所有资源
    */
-  async getResourcesByRepository(repositoryUuid: string): Promise<ResourceClientDTO[]> {
+  async getResourcesByRepository(repositoryId: string): Promise<ResourceClientDTO[]> {
     return await this.api.get<ResourceClientDTO[]>(
-      `${this.baseUrl}/${repositoryUuid}/resources`
+      `${this.baseUrl}/${repositoryId}/resources`
     );
   }
 
@@ -51,17 +51,17 @@ export class ResourceApiClient {
    * 更新 Markdown 内容 (Story 10-2 核心功能)
    */
   async updateMarkdownContent(
-    uuid: string,
+    id: string,
     content: string
   ): Promise<void> {
-    await this.api.put(`${this.baseUrl}/resources/${uuid}/content`, { content });
+    await this.api.put(`${this.baseUrl}/resources/${id}/content`, { content });
   }
 
   /**
    * 删除资源 (软删除)
    */
-  async deleteResource(uuid: string): Promise<void> {
-    await this.api.delete(`${this.baseUrl}/resources/${uuid}`);
+  async deleteResource(id: string): Promise<void> {
+    await this.api.delete(`${this.baseUrl}/resources/${id}`);
   }
 }
 

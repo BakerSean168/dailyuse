@@ -8,7 +8,7 @@ export function createIdType<T extends string>(prefix: string) {
   return {
     // 自动获得 generate 能力
     generate(): T {
-      return `${prefix}_${IdGenerator.uuid()}` as T;
+      return `${prefix}_${IdGenerator.id()}` as T;
     },
     
     // 自动获得还原能力

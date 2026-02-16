@@ -42,13 +42,13 @@ export type GoalAggregateRefreshReason =
  * - 可能的其他模块（如统计、报告等）
  */
 export interface GoalAggregateRefreshEvent {
-  goalUuid: string;
+  goalId: string;
   reason: GoalAggregateRefreshReason;
   timestamp: number;
   metadata?: {
-    keyResultUuid?: string;
-    goalRecordUuid?: string;
-    reviewUuid?: string;
+    keyResultId?: string;
+    goalRecordId?: string;
+    reviewId?: string;
     changeData?: any;
   };
 }

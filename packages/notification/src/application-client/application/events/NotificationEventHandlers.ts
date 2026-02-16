@@ -175,9 +175,9 @@ export class NotificationEventHandlers {
     eventBus.on('ui:show-popup-reminder', (data: any) => {
       console.log('[NotificationEventHandlers] 🔔 收到弹窗提醒事件！！！', data);
       logger.info('收到弹窗提醒事件', {
-        accountUuid: data?.notification?.accountUuid,
+        identityId: data?.notification?.identityId,
         title: data?.notification?.title,
-        notificationUuid: data?.notification?.uuid,
+        notificationId: data?.notification?.id,
       });
 
       // 显示应用内弹窗通知
@@ -192,7 +192,7 @@ export class NotificationEventHandlers {
     eventBus.on('ui:play-reminder-sound', (data: any) => {
       console.log('[NotificationEventHandlers] 🔊 收到提醒音效播放事件！！！', data);
       logger.info('收到提醒音效播放事件', {
-        accountUuid: data?.notification?.accountUuid,
+        identityId: data?.notification?.identityId,
         sound: data?.sound,
       });
 
@@ -203,7 +203,7 @@ export class NotificationEventHandlers {
         volume: data?.sound?.volume || 0.7,
       };
 
-      const notificationId = `reminder-sound-${data.notification?.uuid || Date.now()}`;
+      const notificationId = `reminder-sound-${data.notification?.id || Date.now()}`;
 
       this.notificationService
         .getAudioService()
@@ -222,9 +222,9 @@ export class NotificationEventHandlers {
     // 📢 监听 SSE 推送的系统通知事件
     eventBus.on('system:show-notification', (data: any) => {
       logger.info('收到系统通知事件', {
-        accountUuid: data?.notification?.accountUuid,
+        identityId: data?.notification?.identityId,
         title: data?.notification?.title,
-        notificationUuid: data?.notification?.uuid,
+        notificationId: data?.notification?.id,
       });
 
       // 检查系统通知权限
@@ -232,13 +232,13 @@ export class NotificationEventHandlers {
         const notification = new Notification(data.notification.title, {
           body: data.notification.content || data.notification.title,
           icon: '/favicon.ico',
-          tag: `notification-${data.notification.uuid}`,
+          tag: `notification-${data.notification.id}`,
           requireInteraction: data.notification.importance === 'high' || data.notification.urgency === 'high',
         });
 
         notification.onclick = () => {
           logger.info('系统通知被点击', {
-            notificationUuid: data.notification.uuid,
+            notificationId: data.notification.id,
           });
           // 可以导航到相关页面
           window.focus();
@@ -246,7 +246,7 @@ export class NotificationEventHandlers {
         };
 
         logger.info('系统通知已显示', {
-          notificationUuid: data.notification.uuid,
+          notificationId: data.notification.id,
         });
       } else {
         logger.warn('系统通知权限未授予，无法显示系统通知', {

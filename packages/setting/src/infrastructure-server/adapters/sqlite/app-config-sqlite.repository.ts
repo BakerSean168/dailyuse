@@ -15,16 +15,16 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO app_configs (
-        uuid, key, value, description, createdAt, updatedAt
+        id, key, value, description, createdAt, updatedAt
       ) VALUES (?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         value = excluded.value,
         description = excluded.description,
         updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
-      dto.uuid,
+      dto.id,
       dto.key,
       JSON.stringify(dto.value),
       dto.description || null,
@@ -33,14 +33,14 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
     );
   }
 
-  async findByUuid(uuid: string): Promise<AppConfig | null> {
-    const stmt = this.db.prepare(`SELECT * FROM app_configs WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<AppConfig | null> {
+    const stmt = this.db.prepare(`SELECT * FROM app_configs WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return AppConfig.fromPersistenceDTO({
-      uuid: row.uuid,
+      id: row.id,
       key: row.key,
       value: JSON.parse(row.value),
       description: row.description,
@@ -56,7 +56,7 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
     if (!row) return null;
 
     return AppConfig.fromPersistenceDTO({
-      uuid: row.uuid,
+      id: row.id,
       key: row.key,
       value: JSON.parse(row.value),
       description: row.description,
@@ -71,7 +71,7 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
 
     return rows.map((row) =>
       AppConfig.fromPersistenceDTO({
-        uuid: row.uuid,
+        id: row.id,
         key: row.key,
         value: JSON.parse(row.value),
         description: row.description,
@@ -81,9 +81,9 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
     );
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM app_configs WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM app_configs WHERE id = ?`);
+    stmt.run(id);
   }
 
   async deleteByKey(key: string): Promise<void> {
@@ -91,9 +91,9 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
     stmt.run(key);
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    const stmt = this.db.prepare(`SELECT 1 FROM app_configs WHERE uuid = ? LIMIT 1`);
-    return stmt.get(uuid) !== undefined;
+  async exists(id: string): Promise<boolean> {
+    const stmt = this.db.prepare(`SELECT 1 FROM app_configs WHERE id = ? LIMIT 1`);
+    return stmt.get(id) !== undefined;
   }
 }
 

@@ -87,8 +87,8 @@ export class TokenManager {
    */
   async saveTokens(request: SaveTokenRequest): Promise<void> {
     this.logger.debug('Saving tokens', {
-      accountUuid: request.accountUuid,
-      sessionUuid: request.sessionUuid,
+      identityId: request.identityId,
+      sessionId: request.sessionId,
       accessExpiresIn: request.accessTokenExpiresIn,
     });
 
@@ -104,8 +104,8 @@ export class TokenManager {
       accessTokenExpiresAt: now + request.accessTokenExpiresIn * 1000,
       refreshTokenExpiresAt:
         now + (request.refreshTokenExpiresIn ?? DEFAULT_REFRESH_TOKEN_EXPIRES_IN) * 1000,
-      accountUuid: request.accountUuid,
-      sessionUuid: request.sessionUuid,
+      identityId: request.identityId,
+      sessionId: request.sessionId,
       createdAt: now,
       updatedAt: now,
     };
@@ -117,7 +117,7 @@ export class TokenManager {
     this.cachedTokenData = tokenData;
 
     this.logger.info('Tokens saved successfully', {
-      accountUuid: request.accountUuid,
+      identityId: request.identityId,
       accessExpiresAt: new Date(tokenData.accessTokenExpiresAt).toISOString(),
     });
   }
@@ -139,7 +139,7 @@ export class TokenManager {
       if (tokenData) {
         this.cachedTokenData = tokenData;
         this.logger.info('Tokens loaded from encrypted storage', {
-          accountUuid: tokenData.accountUuid,
+          identityId: tokenData.identityId,
           accessTokenExpired: Date.now() > tokenData.accessTokenExpiresAt,
           refreshTokenExpired: Date.now() > tokenData.refreshTokenExpiresAt,
         });
@@ -259,8 +259,8 @@ export class TokenManager {
       shouldRefresh: !isAccessTokenExpired && accessTokenRemainingMs < REFRESH_THRESHOLD_MS,
       accessTokenRemainingMs,
       refreshTokenRemainingMs,
-      accountUuid: tokenData.accountUuid,
-      sessionUuid: tokenData.sessionUuid,
+      identityId: tokenData.identityId,
+      sessionId: tokenData.sessionId,
     };
   }
 
@@ -425,8 +425,8 @@ export class TokenManager {
       typeof data.refreshToken === 'string' &&
       typeof data.accessTokenExpiresAt === 'number' &&
       typeof data.refreshTokenExpiresAt === 'number' &&
-      typeof data.accountUuid === 'string' &&
-      typeof data.sessionUuid === 'string'
+      typeof data.identityId === 'string' &&
+      typeof data.sessionId === 'string'
     );
   }
 

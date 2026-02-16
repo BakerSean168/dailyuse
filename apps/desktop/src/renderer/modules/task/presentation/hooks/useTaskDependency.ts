@@ -24,7 +24,7 @@ import { useTaskStore } from '../stores/taskStore';
 // ===================== 接口定义 =====================
 
 interface UseTaskDependencyOptions {
-  accountUuid?: string;
+  identityId?: string;
 }
 
 export interface UseTaskDependencyReturn {
@@ -38,16 +38,16 @@ export interface UseTaskDependencyReturn {
   error: string | null;
   
   // 操作
-  loadDependencies: (taskUuid: string) => Promise<void>;
-  createDependency: (request: Omit<CreateTaskDependencyRequest, 'accountUuid'>) => Promise<TaskDependencyClientDTO | null>;
-  deleteDependency: (dependencyUuid: string) => Promise<boolean>;
+  loadDependencies: (taskId: string) => Promise<void>;
+  createDependency: (request: Omit<CreateTaskDependencyRequest, 'identityId'>) => Promise<TaskDependencyClientDTO | null>;
+  deleteDependency: (dependencyId: string) => Promise<boolean>;
   validateDependency: (request: ValidateDependencyRequest) => Promise<ValidateDependencyResponse>;
-  loadDependencyChain: (taskUuid: string) => Promise<void>;
+  loadDependencyChain: (taskId: string) => Promise<void>;
   
   // 工具
   getDependencyTypeLabel: (type: DependencyType) => string;
   getDependencyTypeDescription: (type: DependencyType) => string;
-  canCreateDependency: (predecessorUuid: string, successorUuid: string) => boolean;
+  canCreateDependency: (predecessorId: string, successorId: string) => boolean;
   getBlockedTasks: () => string[];
   getCriticalPath: () => string[];
 }
@@ -77,25 +77,25 @@ export function useTaskDependency(options: UseTaskDependencyOptions = {}): UseTa
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // accountUuid 从 options 获取（由调用方提供）
-  const accountUuid = options.accountUuid ?? '';
+  // identityId 从 options 获取（由调用方提供）
+  const identityId = options.identityId ?? '';
 
   /**
    * 加载任务的依赖列表
    */
-  const loadDependencies = useCallback(async (taskUuid: string) => {
-    if (!taskUuid) return;
+  const loadDependencies = useCallback(async (taskId: string) => {
+    if (!taskId) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
       // TODO: 实际调用 API
-      // const response = await taskApi.getDependencies(taskUuid);
+      // const response = await taskApi.getDependencies(taskId);
       // setDependencies(response.dependencies);
       
       // Mock 数据 - 实际开发时替换为 API 调用
-      console.log('Loading dependencies for task:', taskUuid);
+      console.log('Loading dependencies for task:', taskId);
       setDependencies([]);
     } catch (err) {
       const message = err instanceof Error ? err.message : '加载依赖失败';
@@ -110,9 +110,9 @@ export function useTaskDependency(options: UseTaskDependencyOptions = {}): UseTa
    * 创建依赖关系
    */
   const createDependency = useCallback(async (
-    request: Omit<CreateTaskDependencyRequest, 'accountUuid'>
+    request: Omit<CreateTaskDependencyRequest, 'identityId'>
   ): Promise<TaskDependencyClientDTO | null> => {
-    if (!accountUuid) {
+    if (!identityId) {
       setError('未设置账户ID');
       return null;
     }
@@ -123,7 +123,7 @@ export function useTaskDependency(options: UseTaskDependencyOptions = {}): UseTa
     try {
       const fullRequest: CreateTaskDependencyRequest = {
         ...request,
-        accountUuid,
+        identityId,
       };
 
       // TODO: 实际调用 API
@@ -135,9 +135,9 @@ export function useTaskDependency(options: UseTaskDependencyOptions = {}): UseTa
       
       // Mock 响应
       const mockDependency: TaskDependencyClientDTO = {
-        uuid: `dep-${Date.now()}`,
-        predecessorTaskUuid: request.predecessorTaskUuid,
-        successorTaskUuid: request.successorTaskUuid,
+        id: `dep-${Date.now()}`,
+        predecessorTaskId: request.predecessorTaskId,
+        successorTaskId: request.successorTaskId,
         dependencyType: request.dependencyType,
         lagDays: request.lagDays,
         createdAt: new Date(),
@@ -154,21 +154,21 @@ export function useTaskDependency(options: UseTaskDependencyOptions = {}): UseTa
     } finally {
       setIsLoading(false);
     }
-  }, [accountUuid]);
+  }, [identityId]);
 
   /**
    * 删除依赖关系
    */
-  const deleteDependency = useCallback(async (dependencyUuid: string): Promise<boolean> => {
+  const deleteDependency = useCallback(async (dependencyId: string): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
 
     try {
       // TODO: 实际调用 API
-      // await taskApi.deleteDependency(dependencyUuid);
+      // await taskApi.deleteDependency(dependencyId);
 
-      console.log('Deleting dependency:', dependencyUuid);
-      setDependencies(prev => prev.filter(d => d.uuid !== dependencyUuid));
+      console.log('Deleting dependency:', dependencyId);
+      setDependencies(prev => prev.filter(d => d.id !== dependencyId));
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : '删除依赖失败';
@@ -196,10 +196,10 @@ export function useTaskDependency(options: UseTaskDependencyOptions = {}): UseTa
       console.log('Validating dependency:', request);
 
       // Mock 验证逻辑
-      const { predecessorTaskUuid, successorTaskUuid } = request;
+      const { predecessorTaskId, successorTaskId } = request;
 
       // 检查是否自依赖
-      if (predecessorTaskUuid === successorTaskUuid) {
+      if (predecessorTaskId === successorTaskId) {
         return {
           isValid: false,
           errors: ['任务不能依赖自己'],
@@ -209,8 +209,8 @@ export function useTaskDependency(options: UseTaskDependencyOptions = {}): UseTa
 
       // 检查是否会形成循环（简化逻辑）
       const existingDependency = dependencies.find(
-        d => d.predecessorTaskUuid === successorTaskUuid && 
-             d.successorTaskUuid === predecessorTaskUuid
+        d => d.predecessorTaskId === successorTaskId && 
+             d.successorTaskId === predecessorTaskId
       );
 
       if (existingDependency) {
@@ -218,7 +218,7 @@ export function useTaskDependency(options: UseTaskDependencyOptions = {}): UseTa
           isValid: false,
           errors: ['会创建循环依赖'],
           wouldCreateCycle: true,
-          cyclePath: [predecessorTaskUuid, successorTaskUuid, predecessorTaskUuid],
+          cyclePath: [predecessorTaskId, successorTaskId, predecessorTaskId],
         };
       }
 
@@ -240,22 +240,22 @@ export function useTaskDependency(options: UseTaskDependencyOptions = {}): UseTa
   /**
    * 加载依赖链信息
    */
-  const loadDependencyChain = useCallback(async (taskUuid: string) => {
-    if (!taskUuid) return;
+  const loadDependencyChain = useCallback(async (taskId: string) => {
+    if (!taskId) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
       // TODO: 实际调用 API
-      // const response = await taskApi.getDependencyChain(taskUuid);
+      // const response = await taskApi.getDependencyChain(taskId);
       // setDependencyChain(response.chain);
 
-      console.log('Loading dependency chain for task:', taskUuid);
+      console.log('Loading dependency chain for task:', taskId);
 
       // Mock 数据
       const mockChain: DependencyChainClientDTO = {
-        taskUuid,
+        taskId,
         allPredecessors: [],
         allSuccessors: [],
         depth: 0,
@@ -290,16 +290,16 @@ export function useTaskDependency(options: UseTaskDependencyOptions = {}): UseTa
    * 检查是否可以创建依赖
    */
   const canCreateDependency = useCallback((
-    predecessorUuid: string,
-    successorUuid: string
+    predecessorId: string,
+    successorId: string
   ): boolean => {
     // 不能自依赖
-    if (predecessorUuid === successorUuid) return false;
+    if (predecessorId === successorId) return false;
 
     // 检查是否已存在相同依赖
     const exists = dependencies.some(
-      d => d.predecessorTaskUuid === predecessorUuid && 
-           d.successorTaskUuid === successorUuid
+      d => d.predecessorTaskId === predecessorId && 
+           d.successorTaskId === successorId
     );
 
     return !exists;

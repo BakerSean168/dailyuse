@@ -42,7 +42,7 @@ export class NotificationDomainService {
    * 创建并发送通知
    */
   public async createAndSendNotification(params: {
-    accountUuid: string;
+    identityId: string;
     title: string;
     content: string;
     type: NotificationType;
@@ -54,7 +54,7 @@ export class NotificationDomainService {
     channels?: NotificationChannelType[]; // 指定发送渠道
   }): Promise<Notification> {
     logger.info('🔔 [领域服务] 开始创建通知', {
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       title: params.title,
       type: params.type,
       category: params.category,
@@ -62,11 +62,11 @@ export class NotificationDomainService {
     });
 
     // 1. 检查用户偏好设置
-    const preference = await this.preferenceRepo.findByAccountUuid(params.accountUuid);
+    const preference = await this.preferenceRepo.findByAccountId(params.identityId);
 
     if (preference) {
       logger.debug('📋 检查用户偏好设置', {
-        accountUuid: params.accountUuid,
+        identityId: params.identityId,
         hasPreference: true,
       });
 
@@ -78,7 +78,7 @@ export class NotificationDomainService {
 
       if (!shouldSend) {
         logger.warn('⛔ 用户偏好阻止发送通知', {
-          accountUuid: params.accountUuid,
+          identityId: params.identityId,
           category: params.category,
           type: params.type,
         });
@@ -93,7 +93,7 @@ export class NotificationDomainService {
     // 2. 创建通知聚合根
     logger.debug('🏗️ 创建通知聚合根');
     const notification = Notification.create({
-      identityId: params.accountUuid as IdentityId,
+      identityId: params.identityId as IdentityId,
       title: params.title,
       content: params.content,
       type: params.type,
@@ -118,7 +118,7 @@ export class NotificationDomainService {
       const channel = NotificationChannel.create({
         notificationId: notification.id,
         channelType,
-        recipient: params.accountUuid,
+        recipient: params.identityId,
       });
       notification.addChannel(channel);
       logger.debug(`  ➕ 已添加渠道: ${channelType}`);
@@ -166,19 +166,19 @@ export class NotificationDomainService {
    * 从模板创建通知
    */
   public async createNotificationFromTemplate(params: {
-    accountUuid: string;
-    templateUuid: string;
+    identityId: string;
+    templateId: string;
     variables: Record<string, any>;
     channels?: NotificationChannelType[];
   }): Promise<Notification> {
     // 1. 获取模板
-    const template = await this.templateRepo.findById(params.templateUuid);
+    const template = await this.templateRepo.findById(params.templateId);
     if (!template) {
-      throw new Error(`Template not found: ${params.templateUuid}`);
+      throw new Error(`Template not found: ${params.templateId}`);
     }
 
     if (!template.isActive) {
-      throw new Error(`Template is not active: ${params.templateUuid}`);
+      throw new Error(`Template is not active: ${params.templateId}`);
     }
 
     // 2. 验证变量
@@ -192,7 +192,7 @@ export class NotificationDomainService {
 
     // 4. 创建并发送通知
     return await this.createAndSendNotification({
-      accountUuid: params.accountUuid,
+      identityId: params.identityId,
       title: rendered.title,
       content: rendered.content,
       type: template.type,
@@ -206,7 +206,7 @@ export class NotificationDomainService {
    */
   public async sendBulkNotifications(
     notifications: Array<{
-      accountUuid: string;
+      identityId: string;
       title: string;
       content: string;
       type: NotificationType;
@@ -223,7 +223,7 @@ export class NotificationDomainService {
         created.push(notification);
       } catch (error) {
         // 记录错误但继续处理其他通知
-        console.error(`Failed to send notification to ${params.accountUuid}:`, error);
+        console.error(`Failed to send notification to ${params.identityId}:`, error);
       }
     }
 
@@ -233,10 +233,10 @@ export class NotificationDomainService {
   /**
    * 标记通知为已读
    */
-  public async markAsRead(uuid: string): Promise<void> {
-    const notification = await this.notificationRepo.findById(uuid);
+  public async markAsRead(id: string): Promise<void> {
+    const notification = await this.notificationRepo.findById(id);
     if (!notification) {
-      throw new Error(`Notification not found: ${uuid}`);
+      throw new Error(`Notification not found: ${id}`);
     }
 
     notification.markAsRead();
@@ -245,48 +245,48 @@ export class NotificationDomainService {
     // 触发已读事件
     // await this.eventBus.publish({
     //   type: 'notification.read',
-    //   aggregateId: uuid,
+    //   aggregateId: id,
     //   timestamp: Date.now(),
-    //   payload: { notificationUuid: uuid },
+    //   payload: { notificationId: id },
     // });
   }
 
   /**
    * 批量标记为已读
    */
-  public async markManyAsRead(uuids: string[]): Promise<void> {
-    await this.notificationRepo.markManyAsRead(uuids);
+  public async markManyAsRead(ids: string[]): Promise<void> {
+    await this.notificationRepo.markManyAsRead(ids);
   }
 
   /**
    * 标记所有通知为已读
    */
-  public async markAllAsRead(accountUuid: string): Promise<void> {
-    await this.notificationRepo.markAllAsRead(accountUuid);
+  public async markAllAsRead(identityId: string): Promise<void> {
+    await this.notificationRepo.markAllAsRead(identityId);
   }
 
   /**
    * 删除通知
    */
-  public async deleteNotification(uuid: string, soft = true): Promise<void> {
+  public async deleteNotification(id: string, soft = true): Promise<void> {
     if (soft) {
-      await this.notificationRepo.softDelete(uuid);
+      await this.notificationRepo.softDelete(id);
     } else {
-      await this.notificationRepo.delete(uuid);
+      await this.notificationRepo.delete(id);
     }
   }
 
   /**
    * 批量删除通知
    */
-  public async deleteManyNotifications(uuids: string[], soft = true): Promise<void> {
+  public async deleteManyNotifications(ids: string[], soft = true): Promise<void> {
     if (soft) {
       // 软删除需要逐个处理
-      for (const uuid of uuids) {
-        await this.notificationRepo.softDelete(uuid);
+      for (const id of ids) {
+        await this.notificationRepo.softDelete(id);
       }
     } else {
-      await this.notificationRepo.deleteMany(uuids);
+      await this.notificationRepo.deleteMany(ids);
     }
   }
 
@@ -294,24 +294,24 @@ export class NotificationDomainService {
    * 获取通知详情
    */
   public async getNotification(
-    uuid: string,
+    id: string,
     options?: { includeChildren?: boolean },
   ): Promise<Notification | null> {
-    return await this.notificationRepo.findById(uuid, options);
+    return await this.notificationRepo.findById(id, options);
   }
 
   /**
    * 获取用户的通知列表
    */
   public async getUserNotifications(
-    accountUuid: string,
+    identityId: string,
     options?: {
       includeRead?: boolean;
       limit?: number;
       offset?: number;
     },
   ): Promise<Notification[]> {
-    return await this.notificationRepo.findByAccountUuid(accountUuid, {
+    return await this.notificationRepo.findByAccountId(identityId, {
       includeRead: options?.includeRead ?? true,
       includeDeleted: false,
       limit: options?.limit,
@@ -323,38 +323,38 @@ export class NotificationDomainService {
    * 获取未读通知
    */
   public async getUnreadNotifications(
-    accountUuid: string,
+    identityId: string,
     options?: { limit?: number },
   ): Promise<Notification[]> {
-    return await this.notificationRepo.findUnread(accountUuid, options);
+    return await this.notificationRepo.findUnread(identityId, options);
   }
 
   /**
    * 获取未读通知数量
    */
-  public async getUnreadCount(accountUuid: string): Promise<number> {
-    return await this.notificationRepo.countUnread(accountUuid);
+  public async getUnreadCount(identityId: string): Promise<number> {
+    return await this.notificationRepo.countUnread(identityId);
   }
 
   /**
    * 获取分类统计
    */
   public async getCategoryStats(
-    accountUuid: string,
+    identityId: string,
   ): Promise<Record<NotificationCategory, number>> {
-    return await this.notificationRepo.countByCategory(accountUuid);
+    return await this.notificationRepo.countByCategory(identityId);
   }
 
   /**
    * 执行通知操作
    */
   public async executeNotificationAction(
-    notificationUuid: string,
+    notificationId: string,
     actionId: string,
   ): Promise<void> {
-    const notification = await this.notificationRepo.findById(notificationUuid);
+    const notification = await this.notificationRepo.findById(notificationId);
     if (!notification) {
-      throw new Error(`Notification not found: ${notificationUuid}`);
+      throw new Error(`Notification not found: ${notificationId}`);
     }
 
     // 检查操作是否存在
@@ -370,10 +370,10 @@ export class NotificationDomainService {
     // 触发操作执行事件
     // await this.eventBus.publish({
     //   type: 'notification.action.executed',
-    //   aggregateId: notificationUuid,
+    //   aggregateId: notificationId,
     //   timestamp: Date.now(),
     //   payload: {
-    //     notificationUuid,
+    //     notificationId,
     //     actionId,
     //   },
     // });
@@ -400,8 +400,8 @@ export class NotificationDomainService {
    */
   public async getNotificationsByRelatedEntity(
     relatedEntityType: string,
-    relatedEntityUuid: string,
+    relatedEntityId: string,
   ): Promise<Notification[]> {
-    return await this.notificationRepo.findByRelatedEntity(relatedEntityType, relatedEntityUuid);
+    return await this.notificationRepo.findByRelatedEntity(relatedEntityType, relatedEntityId);
   }
 }

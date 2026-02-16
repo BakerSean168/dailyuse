@@ -37,7 +37,7 @@ export class ReminderEventPublisher {
       }
 
       logger.info('Publishing reminder template events', {
-        templateUuid: template.uuid,
+        templateId: template.id,
         eventCount: events.length,
       });
 
@@ -55,12 +55,12 @@ export class ReminderEventPublisher {
           await eventBus.publish(enrichedEvent);
           logger.debug('Event published', {
             eventType: event.eventType,
-            templateUuid: template.uuid,
+            templateId: template.id,
           });
         } catch (error) {
           logger.error('Failed to publish event', {
             eventType: event.eventType,
-            templateUuid: template.uuid,
+            templateId: template.id,
             error: error instanceof Error ? error.message : 'Unknown error',
           });
           throw error;
@@ -72,7 +72,7 @@ export class ReminderEventPublisher {
     } catch (error) {
       logger.error('Failed to publish reminder template events', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        templateUuid: template.uuid,
+        templateId: template.id,
       });
       throw error;
     }
@@ -81,34 +81,34 @@ export class ReminderEventPublisher {
   /**
    * 发布提醒删除事件
    *
-   * @param templateUuid - 提醒模板UUID
-   * @param accountUuid - 账户UUID
+   * @param templateId - 提醒模板UUID
+   * @param identityId - 账户 ID
    */
   async publishReminderDeletedEvent(
-    templateUuid: string,
-    accountUuid: string,
+    templateId: string,
+    identityId: string,
   ): Promise<void> {
     try {
       logger.info('Publishing reminder deleted event', {
-        templateUuid,
-        accountUuid,
+        templateId,
+        identityId,
       });
 
       await eventBus.publish({
         eventType: 'reminder.template.deleted',
         payload: {
-          reminderUuid: templateUuid,
-          accountUuid,
+          reminderId: templateId,
+          identityId,
           deletedAt: Date.now(),
         },
         timestamp: Date.now(),
       });
 
-      logger.debug('Reminder deleted event published', { templateUuid });
+      logger.debug('Reminder deleted event published', { templateId });
     } catch (error) {
       logger.error('Failed to publish reminder deleted event', {
-        templateUuid,
-        accountUuid,
+        templateId,
+        identityId,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
       throw error;
@@ -118,45 +118,45 @@ export class ReminderEventPublisher {
   /**
    * 发布响应记录事件
    *
-   * @param responseUuid - 响应记录UUID
-   * @param templateUuid - 提醒模板UUID
+   * @param responseId - 响应记录UUID
+   * @param templateId - 提醒模板UUID
    * @param action - 响应行为
    * @param responseTime - 响应时间（秒）
-   * @param accountUuid - 账户UUID
+   * @param identityId - 账户 ID
    */
   async publishResponseRecordedEvent(
-    responseUuid: string,
-    templateUuid: string,
+    responseId: string,
+    templateId: string,
     action: string,
     responseTime: number | null,
-    accountUuid: string,
+    identityId: string,
   ): Promise<void> {
     try {
       logger.info('Publishing response recorded event', {
-        responseUuid,
-        templateUuid,
+        responseId,
+        templateId,
         action,
-        accountUuid,
+        identityId,
       });
 
       await eventBus.publish({
         eventType: 'reminder.response.recorded',
         payload: {
-          responseUuid,
-          templateUuid,
+          responseId,
+          templateId,
           action,
           responseTime,
-          accountUuid,
+          identityId,
           recordedAt: Date.now(),
         },
         timestamp: Date.now(),
       });
 
-      logger.debug('Response recorded event published', { responseUuid });
+      logger.debug('Response recorded event published', { responseId });
     } catch (error) {
       logger.error('Failed to publish response recorded event', {
-        responseUuid,
-        templateUuid,
+        responseId,
+        templateId,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
       throw error;
@@ -166,42 +166,42 @@ export class ReminderEventPublisher {
   /**
    * 发布频率调整事件
    *
-   * @param templateUuid - 提醒模板UUID
+   * @param templateId - 提醒模板UUID
    * @param adjustment - 调整信息
-   * @param accountUuid - 账户UUID
+   * @param identityId - 账户 ID
    */
   async publishFrequencyAdjustedEvent(
-    templateUuid: string,
+    templateId: string,
     adjustment: {
       originalInterval: number;
       adjustedInterval: number;
       reason: string;
     },
-    accountUuid: string,
+    identityId: string,
   ): Promise<void> {
     try {
       logger.info('Publishing frequency adjusted event', {
-        templateUuid,
-        accountUuid,
+        templateId,
+        identityId,
       });
 
       await eventBus.publish({
         eventType: 'reminder.frequency.adjusted',
         payload: {
-          templateUuid,
+          templateId,
           originalInterval: adjustment.originalInterval,
           adjustedInterval: adjustment.adjustedInterval,
           reason: adjustment.reason,
-          accountUuid,
+          identityId,
           adjustedAt: Date.now(),
         },
         timestamp: Date.now(),
       });
 
-      logger.debug('Frequency adjusted event published', { templateUuid });
+      logger.debug('Frequency adjusted event published', { templateId });
     } catch (error) {
       logger.error('Failed to publish frequency adjusted event', {
-        templateUuid,
+        templateId,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
       throw error;

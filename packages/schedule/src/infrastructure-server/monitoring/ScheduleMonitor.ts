@@ -15,7 +15,7 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('ScheduleMonitor');
 
 interface TaskExecutionMetrics {
-  taskUuid: string;
+  taskId: string;
   executedAt: number;
   duration: number;
   success: boolean;
@@ -51,10 +51,10 @@ export class ScheduleMonitor {
     }
 
     if (metrics.success) {
-      logger.info(`Task ${metrics.taskUuid} executed successfully in ${metrics.duration}ms`);
+      logger.info(`Task ${metrics.taskId} executed successfully in ${metrics.duration}ms`);
     } else {
       logger.error(
-        `Task ${metrics.taskUuid} failed after ${metrics.duration}ms`,
+        `Task ${metrics.taskId} failed after ${metrics.duration}ms`,
         metrics.error,
       );
     }
@@ -63,9 +63,9 @@ export class ScheduleMonitor {
   /**
    * Get浠诲姟鐨勬墽琛屽巻锟?
    */
-  getTaskHistory(taskUuid: string, limit: number = 10): TaskExecutionMetrics[] {
+  getTaskHistory(taskId: string, limit: number = 10): TaskExecutionMetrics[] {
     return this.executionMetrics
-      .filter((m) => m.taskUuid === taskUuid)
+      .filter((m) => m.taskId === taskId)
       .slice(-limit);
   }
 

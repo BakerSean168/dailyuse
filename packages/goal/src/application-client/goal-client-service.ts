@@ -60,8 +60,8 @@ export class GoalClientService {
     return mapResult(result, (dto) => Goal.fromDTO(dto));
   }
 
-  async getGoal(uuid: string): Promise<Result<Goal>> {
-    const result = await this.goalApi.getGoalById(uuid);
+  async getGoal(id: string): Promise<Result<Goal>> {
+    const result = await this.goalApi.getGoalById(id);
     return mapResult(result, (dto) => Goal.fromDTO(dto));
   }
 
@@ -69,7 +69,7 @@ export class GoalClientService {
     page?: number;
     limit?: number;
     status?: string;
-    dirUuid?: string;
+    dirId?: string;
     startDate?: string;
     endDate?: string;
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>> {
@@ -80,32 +80,32 @@ export class GoalClientService {
     }));
   }
 
-  async updateGoal(uuid: string, request: UpdateGoalReq): Promise<Result<Goal>> {
-    const result = await this.goalApi.updateGoal(uuid, request);
+  async updateGoal(id: string, request: UpdateGoalReq): Promise<Result<Goal>> {
+    const result = await this.goalApi.updateGoal(id, request);
     return mapResult(result, (dto) => Goal.fromDTO(dto));
   }
 
-  async deleteGoal(uuid: string): Promise<Result<void>> {
-    return this.goalApi.deleteGoal(uuid);
+  async deleteGoal(id: string): Promise<Result<void>> {
+    return this.goalApi.deleteGoal(id);
   }
 
-  async activateGoal(uuid: string): Promise<Result<Goal>> {
-    const result = await this.goalApi.activateGoal(uuid);
+  async activateGoal(id: string): Promise<Result<Goal>> {
+    const result = await this.goalApi.activateGoal(id);
     return mapResult(result, (dto) => Goal.fromDTO(dto));
   }
 
-  async pauseGoal(uuid: string): Promise<Result<Goal>> {
-    const result = await this.goalApi.pauseGoal(uuid);
+  async pauseGoal(id: string): Promise<Result<Goal>> {
+    const result = await this.goalApi.pauseGoal(id);
     return mapResult(result, (dto) => Goal.fromDTO(dto));
   }
 
-  async completeGoal(uuid: string): Promise<Result<Goal>> {
-    const result = await this.goalApi.completeGoal(uuid);
+  async completeGoal(id: string): Promise<Result<Goal>> {
+    const result = await this.goalApi.completeGoal(id);
     return mapResult(result, (dto) => Goal.fromDTO(dto));
   }
 
-  async archiveGoal(uuid: string): Promise<Result<Goal>> {
-    const result = await this.goalApi.archiveGoal(uuid);
+  async archiveGoal(id: string): Promise<Result<Goal>> {
+    const result = await this.goalApi.archiveGoal(id);
     return mapResult(result, (dto) => Goal.fromDTO(dto));
   }
 
@@ -114,7 +114,7 @@ export class GoalClientService {
     page?: number;
     limit?: number;
     status?: string;
-    dirUuid?: string;
+    dirId?: string;
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>> {
     const result = await this.goalApi.searchGoals(params);
     return mapResult(result, (data: QueryGoalsRes) => ({
@@ -123,57 +123,57 @@ export class GoalClientService {
     }));
   }
 
-  async getGoalAggregateView(uuid: string): Promise<Result<GetGoalAggregateRes>> {
-    return this.goalApi.getGoalAggregateView(uuid);
+  async getGoalAggregateView(id: string): Promise<Result<GetGoalAggregateRes>> {
+    return this.goalApi.getGoalAggregateView(id);
   }
 
-  async cloneGoal(uuid: string): Promise<Result<Goal>> {
-    const result = await this.goalApi.cloneGoal(uuid, {});
+  async cloneGoal(id: string): Promise<Result<Goal>> {
+    const result = await this.goalApi.cloneGoal(id, {});
     return mapResult(result, (dto) => Goal.fromDTO(dto));
   }
 
   // ===== Key Result Use Cases =====
 
   async createKeyResult(
-    goalUuid: string,
-    request: Omit<AddKeyResultReq, 'goalUuid'>,
+    goalId: string,
+    request: Omit<AddKeyResultReq, 'goalId'>,
   ): Promise<Result<KeyResult>> {
-    const result = await this.goalApi.addKeyResultForGoal(goalUuid, request);
+    const result = await this.goalApi.addKeyResultForGoal(goalId, request);
     return mapResult(result, (dto) => KeyResult.fromDTO(dto));
   }
 
-  async getKeyResults(goalUuid: string): Promise<Result<{ keyResults: KeyResult[] }>> {
-    const result = await this.goalApi.getKeyResultsByGoal(goalUuid);
+  async getKeyResults(goalId: string): Promise<Result<{ keyResults: KeyResult[] }>> {
+    const result = await this.goalApi.getKeyResultsByGoal(goalId);
     return mapResult(result, (data: GetKeyResultsRes) => ({
       keyResults: data.data.map((dto) => KeyResult.fromDTO(dto as any)),
     }));
   }
 
   async updateKeyResult(
-    goalUuid: string,
-    krUuid: string,
+    goalId: string,
+    krId: string,
     request: UpdateKeyResultReq,
   ): Promise<Result<KeyResult>> {
-    const result = await this.goalApi.updateKeyResultForGoal(goalUuid, krUuid, request);
+    const result = await this.goalApi.updateKeyResultForGoal(goalId, krId, request);
     return mapResult(result, (dto) => KeyResult.fromDTO(dto));
   }
 
-  async deleteKeyResult(goalUuid: string, krUuid: string): Promise<Result<void>> {
-    return this.goalApi.deleteKeyResultForGoal(goalUuid, krUuid);
+  async deleteKeyResult(goalId: string, krId: string): Promise<Result<void>> {
+    return this.goalApi.deleteKeyResultForGoal(goalId, krId);
   }
 
   async batchUpdateKeyResultWeights(
-    goalUuid: string,
-    updates: Array<{ keyResultUuid: string; weight: number }>,
+    goalId: string,
+    updates: Array<{ keyResultId: string; weight: number }>,
   ): Promise<Result<{ keyResults: KeyResult[] }>> {
-    const result = await this.goalApi.batchUpdateKeyResultWeights(goalUuid, { updates });
+    const result = await this.goalApi.batchUpdateKeyResultWeights(goalId, { updates });
     return mapResult(result, (data: GetKeyResultsRes) => ({
       keyResults: data.data.map((dto) => KeyResult.fromDTO(dto as any)),
     }));
   }
 
-  async getProgressBreakdown(goalUuid: string): Promise<Result<ProgressBreakdown>> {
-    return this.goalApi.getProgressBreakdown(goalUuid);
+  async getProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>> {
+    return this.goalApi.getProgressBreakdown(goalId);
   }
 
   async generateKeyResults(params: {
@@ -200,20 +200,20 @@ export class GoalClientService {
   // ===== Goal Record Use Cases =====
 
   async createGoalRecord(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
     request: Pick<CreateGoalRecordReq, 'value' | 'note'>,
   ): Promise<Result<GoalRecord>> {
-    const result = await this.goalApi.createGoalRecord(goalUuid, keyResultUuid, request);
+    const result = await this.goalApi.createGoalRecord(goalId, keyResultId, request);
     return mapResult(result, (dto) => GoalRecord.fromDTO(dto));
   }
 
   async getGoalRecordsByKeyResult(
-    goalUuid: string,
-    krUuid: string,
+    goalId: string,
+    krId: string,
     params?: { limit?: number; offset?: number },
   ): Promise<Result<{ records: GoalRecord[]; total: number }>> {
-    const result = await this.goalApi.getGoalRecordsByKeyResult(goalUuid, krUuid, params);
+    const result = await this.goalApi.getGoalRecordsByKeyResult(goalId, krId, params);
     return mapResult(result, (data: GetGoalRecordsRes) => ({
       records: data.data.map((dto) => GoalRecord.fromDTO(dto)),
       total: data.total,
@@ -221,10 +221,10 @@ export class GoalClientService {
   }
 
   async getGoalRecordsByGoal(
-    goalUuid: string,
+    goalId: string,
     params?: { limit?: number; offset?: number },
   ): Promise<Result<{ records: GoalRecord[]; total: number }>> {
-    const result = await this.goalApi.getGoalRecordsByGoal(goalUuid, params);
+    const result = await this.goalApi.getGoalRecordsByGoal(goalId, params);
     return mapResult(result, (data: GetGoalRecordsRes) => ({
       records: data.data.map((dto) => GoalRecord.fromDTO(dto)),
       total: data.total,
@@ -232,41 +232,41 @@ export class GoalClientService {
   }
 
   async deleteGoalRecord(
-    goalUuid: string,
-    krUuid: string,
-    recordUuid: string,
+    goalId: string,
+    krId: string,
+    recordId: string,
   ): Promise<Result<void>> {
-    return this.goalApi.deleteGoalRecord(goalUuid, krUuid, recordUuid);
+    return this.goalApi.deleteGoalRecord(goalId, krId, recordId);
   }
 
   // ===== Goal Review Use Cases =====
 
   async createGoalReview(
-    goalUuid: string,
+    goalId: string,
     request: CreateGoalReviewReq,
   ): Promise<Result<GoalReview>> {
-    const result = await this.goalApi.createGoalReview(goalUuid, request);
+    const result = await this.goalApi.createGoalReview(goalId, request);
     return mapResult(result, (dto) => GoalReview.fromDTO(dto));
   }
 
-  async getGoalReviews(goalUuid: string): Promise<Result<{ reviews: GoalReview[] }>> {
-    const result = await this.goalApi.getGoalReviewsByGoal(goalUuid);
+  async getGoalReviews(goalId: string): Promise<Result<{ reviews: GoalReview[] }>> {
+    const result = await this.goalApi.getGoalReviewsByGoal(goalId);
     return mapResult(result, (data: GetGoalReviewsRes) => ({
       reviews: data.data.map((dto) => GoalReview.fromDTO(dto as any)),
     }));
   }
 
   async updateGoalReview(
-    goalUuid: string,
-    reviewUuid: string,
+    goalId: string,
+    reviewId: string,
     request: Partial<GoalReviewClientDTO>,
   ): Promise<Result<GoalReview>> {
-    const result = await this.goalApi.updateGoalReview(goalUuid, reviewUuid, request);
+    const result = await this.goalApi.updateGoalReview(goalId, reviewId, request);
     return mapResult(result, (dto) => GoalReview.fromDTO(dto));
   }
 
-  async deleteGoalReview(goalUuid: string, reviewUuid: string): Promise<Result<void>> {
-    return this.goalApi.deleteGoalReview(goalUuid, reviewUuid);
+  async deleteGoalReview(goalId: string, reviewId: string): Promise<Result<void>> {
+    return this.goalApi.deleteGoalReview(goalId, reviewId);
   }
 
   // ===== Goal Folder Use Cases =====
@@ -281,21 +281,21 @@ export class GoalClientService {
     return mapResult(result, (data) => data.data.map((dto) => GoalFolder.fromDTO(dto)));
   }
 
-  async getGoalFolder(uuid: string): Promise<Result<GoalFolder>> {
-    const result = await this.folderApi.getGoalFolderById(uuid);
+  async getGoalFolder(id: string): Promise<Result<GoalFolder>> {
+    const result = await this.folderApi.getGoalFolderById(id);
     return mapResult(result, (dto) => GoalFolder.fromDTO(dto));
   }
 
   async updateGoalFolder(
-    uuid: string,
+    id: string,
     request: UpdateGoalFolderReq,
   ): Promise<Result<GoalFolder>> {
-    const result = await this.folderApi.updateGoalFolder(uuid, request);
+    const result = await this.folderApi.updateGoalFolder(id, request);
     return mapResult(result, (dto) => GoalFolder.fromDTO(dto));
   }
 
-  async deleteGoalFolder(uuid: string): Promise<Result<void>> {
-    return this.folderApi.deleteGoalFolder(uuid);
+  async deleteGoalFolder(id: string): Promise<Result<void>> {
+    return this.folderApi.deleteGoalFolder(id);
   }
 
   // ===== Focus Session Use Cases =====
@@ -339,17 +339,17 @@ export class GoalClientService {
     const { range, ...params } = request;
 
     if (range === 'today') {
-      return api.getTodayHistory(params.goalUuid);
+      return api.getTodayHistory(params.goalId);
     }
 
     if (range === 'week') {
-      return api.getWeekHistory(params.goalUuid);
+      return api.getWeekHistory(params.goalId);
     }
 
     return api.getHistory(params as GetFocusHistoryReq);
   }
 
-  async getFocusStatistics(goalUuid?: string): Promise<Result<GetFocusStatisticsRes>> {
-    return this.requireFocusApi().getStatistics(goalUuid);
+  async getFocusStatistics(goalId?: string): Promise<Result<GetFocusStatisticsRes>> {
+    return this.requireFocusApi().getStatistics(goalId);
   }
 }

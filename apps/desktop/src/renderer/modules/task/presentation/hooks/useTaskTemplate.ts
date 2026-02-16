@@ -38,7 +38,7 @@ export interface UseTaskTemplateReturn {
 
   // Mutations
   createTemplate: (input: CreateTaskTemplateRequest) => Promise<TaskTemplate>;
-  updateTemplate: (uuid: string, request: UpdateTaskTemplateRequest) => Promise<void>;
+  updateTemplate: (id: string, request: UpdateTaskTemplateRequest) => Promise<void>;
   deleteTemplate: (id: string) => Promise<void>;
 
   // Status changes
@@ -119,17 +119,17 @@ export function useTaskTemplate(): UseTaskTemplateReturn {
   );
 
   const updateTemplate = useCallback(
-    async (uuid: string, request: UpdateTaskTemplateRequest): Promise<void> => {
+    async (id: string, request: UpdateTaskTemplateRequest): Promise<void> => {
       const store = useTaskStore.getState();
       store.setLoading(true);
       store.setError(null);
 
       try {
-        const template = await taskApplicationService.updateTemplate(uuid, request);
-        store.updateTemplate(template.uuid, template);
+        const template = await taskApplicationService.updateTemplate(id, request);
+        store.updateTemplate(template.id, template);
 
         // 如果更新的是当前选中的模板，更新选择状态
-        if (selectedTemplateRef.current?.uuid === uuid) {
+        if (selectedTemplateRef.current?.id === id) {
           setSelectedTemplate(template);
         }
         store.setLoading(false);
@@ -153,7 +153,7 @@ export function useTaskTemplate(): UseTaskTemplateReturn {
       store.removeTemplate(id);
 
       // 如果删除的是当前选中的模板，清除选择
-      if (selectedTemplateRef.current?.uuid === id) {
+      if (selectedTemplateRef.current?.id === id) {
         setSelectedTemplate(null);
       }
       store.setLoading(false);
@@ -184,7 +184,7 @@ export function useTaskTemplate(): UseTaskTemplateReturn {
     const store = useTaskStore.getState();
     try {
       const template = await taskApplicationService.pauseTemplate(id);
-      store.updateTemplate(template.uuid, template);
+      store.updateTemplate(template.id, template);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '暂停任务失败';
       store.setError(errorMessage);
@@ -196,7 +196,7 @@ export function useTaskTemplate(): UseTaskTemplateReturn {
     const store = useTaskStore.getState();
     try {
       const template = await taskApplicationService.archiveTemplate(id);
-      store.updateTemplate(template.uuid, template);
+      store.updateTemplate(template.id, template);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '归档任务失败';
       store.setError(errorMessage);

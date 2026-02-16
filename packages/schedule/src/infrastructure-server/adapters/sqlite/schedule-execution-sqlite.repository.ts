@@ -16,9 +16,9 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
 
     const stmt = this.db.prepare(`
       INSERT INTO schedule_executions (
-        uuid, task_uuid, execution_time, status, duration, result, error, retry_count, created_at
+        id, task_id, execution_time, status, duration, result, error, retry_count, created_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         status = excluded.status,
         duration = excluded.duration,
         result = excluded.result,
@@ -27,8 +27,8 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.taskUuid,
+      dto.id,
+      dto.taskId,
       dto.executionTime,
       dto.status,
       dto.duration || null,
@@ -39,20 +39,20 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
     );
   }
 
-  async findByUuid(uuid: string): Promise<ScheduleExecution | null> {
-    const stmt = this.db.prepare(`SELECT * FROM schedule_executions WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<ScheduleExecution | null> {
+    const stmt = this.db.prepare(`SELECT * FROM schedule_executions WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return ScheduleExecution.fromPersistenceDTO(this.rowToExecution(row));
   }
 
-  async findByTaskUuid(taskUuid: string): Promise<ScheduleExecution[]> {
+  async findByTaskId(taskId: string): Promise<ScheduleExecution[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM schedule_executions WHERE task_uuid = ? ORDER BY execution_time DESC`
+      `SELECT * FROM schedule_executions WHERE task_id = ? ORDER BY execution_time DESC`
     );
-    const rows = stmt.all(taskUuid) as any[];
+    const rows = stmt.all(taskId) as any[];
 
     return rows.map((row) => ScheduleExecution.fromPersistenceDTO(this.rowToExecution(row)));
   }
@@ -64,20 +64,20 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
     return rows.map((row) => ScheduleExecution.fromPersistenceDTO(this.rowToExecution(row)));
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM schedule_executions WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM schedule_executions WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async deleteByTaskUuid(taskUuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM schedule_executions WHERE task_uuid = ?`);
-    stmt.run(taskUuid);
+  async deleteByTaskId(taskId: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM schedule_executions WHERE task_id = ?`);
+    stmt.run(taskId);
   }
 
   private rowToExecution(row: any) {
     return {
-      uuid: row.uuid,
-      taskUuid: row.task_uuid,
+      id: row.id,
+      taskId: row.task_id,
       executionTime: row.execution_time,
       status: row.status as ExecutionStatus,
       duration: row.duration || null,

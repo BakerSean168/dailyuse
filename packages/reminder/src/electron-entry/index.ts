@@ -38,16 +38,16 @@ export const ReminderElectronModule: IElectronModule = {
 
     // Template handlers
     ipcMain.handle(Ch.TEMPLATE_LIST, (_, params) => templateRepo.findAll(params));
-    ipcMain.handle(Ch.TEMPLATE_GET, (_, uuid) => templateRepo.findById(uuid));
+    ipcMain.handle(Ch.TEMPLATE_GET, (_, id) => templateRepo.findById(id));
     ipcMain.handle(Ch.TEMPLATE_CREATE, (_, dto) => templateRepo.save(dto));
     ipcMain.handle(Ch.TEMPLATE_UPDATE, (_, dto) => templateRepo.save(dto));
-    ipcMain.handle(Ch.TEMPLATE_DELETE, (_, uuid) => templateRepo.delete(uuid));
+    ipcMain.handle(Ch.TEMPLATE_DELETE, (_, id) => templateRepo.delete(id));
 
     // Group handlers
     ipcMain.handle(Ch.GROUP_LIST, (_, params) => groupRepo.findAll(params));
     ipcMain.handle(Ch.GROUP_CREATE, (_, dto) => groupRepo.save(dto));
     ipcMain.handle(Ch.GROUP_UPDATE, (_, dto) => groupRepo.save(dto));
-    ipcMain.handle(Ch.GROUP_DELETE, (_, uuid) => groupRepo.delete(uuid));
+    ipcMain.handle(Ch.GROUP_DELETE, (_, id) => groupRepo.delete(id));
 
     logger.info('Reminder module registered');
   },

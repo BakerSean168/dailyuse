@@ -25,8 +25,8 @@ export const CreateGoalSchema = z.object({
   tags: z.array(z.string().max(50)).optional(),
   startDate: z.number().int().optional(),
   targetDate: z.number().int().optional(),
-  folderUuid: z.string().uuid().optional(),
-  parentGoalUuid: z.string().uuid().optional(),
+  folderId: z.string().uuid().optional(),
+  parentGoalId: z.string().uuid().optional(),
 });
 
 export type CreateGoalReq = z.infer<typeof CreateGoalSchema>;
@@ -50,8 +50,8 @@ export const UpdateGoalSchema = z.object({
   tags: z.array(z.string().max(50)).nullable().optional(),
   startDate: z.number().int().nullable().optional(),
   targetDate: z.number().int().nullable().optional(),
-  folderUuid: z.string().uuid().nullable().optional(),
-  parentGoalUuid: z.string().uuid().nullable().optional(),
+  folderId: z.string().uuid().nullable().optional(),
+  parentGoalId: z.string().uuid().nullable().optional(),
 });
 
 export type UpdateGoalReq = z.infer<typeof UpdateGoalSchema>;
@@ -81,12 +81,12 @@ export type DeleteGoalRes = GoalClientDTO;
  * 查询目标列表 Schema
  */
 export const QueryGoalsSchema = z.object({
-  accountUuid: z.string().uuid('账户 UUID 无效'),
+  identityId: z.string().uuid('账户 ID 无效'),
   status: z.array(z.string()).optional(),
   importance: z.array(z.enum(['low', 'medium', 'high', 'critical'] as const)).optional(),
   category: z.string().optional(),
   tags: z.array(z.string()).optional(),
-  folderUuid: z.string().uuid().optional(),
+  folderId: z.string().uuid().optional(),
   keyword: z.string().max(256).optional(),
   startDate: z.number().int().optional(),
   endDate: z.number().int().optional(),
@@ -142,7 +142,7 @@ export interface GetGoalAggregateRes {
  * 批量更新目标状态 Schema
  */
 export const BatchUpdateGoalStatusSchema = z.object({
-  goalUuids: z.array(z.string().uuid()).min(1, '至少需要选择一个目标'),
+  goalIds: z.array(z.string().uuid()).min(1, '至少需要选择一个目标'),
   status: z.string().min(1, '状态不能为空'),
 });
 
@@ -153,8 +153,8 @@ export type BatchUpdateGoalStatusRes = GoalClientDTO[];
  * 批量移动目标 Schema
  */
 export const BatchMoveGoalsSchema = z.object({
-  goalUuids: z.array(z.string().uuid()).min(1),
-  targetFolderUuid: z.string().uuid('目标文件夹 UUID 无效'),
+  goalIds: z.array(z.string().uuid()).min(1),
+  targetFolderId: z.string().uuid('目标文件夹 UUID 无效'),
 });
 
 export type BatchMoveGoalsReq = z.infer<typeof BatchMoveGoalsSchema>;
@@ -164,7 +164,7 @@ export type BatchMoveGoalsRes = GoalClientDTO[];
  * 批量删除目标 Schema
  */
 export const BatchDeleteGoalsSchema = z.object({
-  goalUuids: z.array(z.string().uuid()).min(1),
+  goalIds: z.array(z.string().uuid()).min(1),
   hardDelete: z.boolean().optional().default(false),
 });
 
@@ -179,8 +179,8 @@ export type BatchDeleteGoalsRes = void;
  * 导出目标 Schema
  */
 export const ExportGoalsSchema = z.object({
-  accountUuid: z.string().uuid('账户 UUID 无效'),
-  goalUuids: z.array(z.string().uuid()).optional(),
+  identityId: z.string().uuid('账户 ID 无效'),
+  goalIds: z.array(z.string().uuid()).optional(),
   format: z.enum(['json', 'csv', 'markdown']),
   includeKeyResults: z.boolean().optional().default(true),
   includeReviews: z.boolean().optional().default(true),
@@ -198,10 +198,10 @@ export interface ExportGoalsRes {
  * 导入目标 Schema
  */
 export const ImportGoalsSchema = z.object({
-  accountUuid: z.string().uuid('账户 UUID 无效'),
+  identityId: z.string().uuid('账户 ID 无效'),
   data: z.union([z.string(), z.instanceof(Uint8Array)]),
   format: z.enum(['json', 'csv']),
-  folderUuid: z.string().uuid().optional(),
+  folderId: z.string().uuid().optional(),
   overwriteExisting: z.boolean().optional().default(false),
 });
 

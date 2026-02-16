@@ -7,7 +7,7 @@ async function diagnoseChannelMapping() {
     console.log('\n🔍 诊断通知渠道映射问题...\n');
 
     const pref = await prisma.notificationPreference.findFirst({
-      where: { accountUuid: '9897aef0-7fad-4908-a0d1-31e9b22599c1' },
+      where: { identityId: '9897aef0-7fad-4908-a0d1-31e9b22599c1' },
     });
 
     if (!pref) {

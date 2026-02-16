@@ -13,7 +13,7 @@ import { RepositoryStatus } from '@dailyuse/contracts/repository';
  * List Repositories Input
  */
 export interface ListRepositoriesInput {
-  accountUuid: string;
+  identityId: string;
   status?: RepositoryStatus;
 }
 
@@ -36,11 +36,11 @@ export class ListRepositories {
 
     if (input.status) {
       repositories = await this.repositoryRepository.findByIdentityIdAndStatus(
-        input.accountUuid,
+        input.identityId,
         input.status,
       );
     } else {
-      repositories = await this.repositoryRepository.findByIdentityId(input.accountUuid);
+      repositories = await this.repositoryRepository.findByIdentityId(input.identityId);
     }
 
     return { repositories: repositories.map((r) => r.toClientDTO()) };

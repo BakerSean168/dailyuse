@@ -63,10 +63,10 @@ export interface UnreadCountResponse {
 export interface INotificationApiClient {
   createNotification(request: CreateNotificationRequest): Promise<Result<NotificationClientDTO>>;
   findNotifications(query?: QueryNotificationsRequest): Promise<Result<NotificationListResponse>>;
-  findNotificationByUuid(uuid: string): Promise<Result<NotificationClientDTO>>;
-  markAsRead(uuid: string): Promise<Result<NotificationClientDTO>>;
+  findNotificationById(id: string): Promise<Result<NotificationClientDTO>>;
+  markAsRead(id: string): Promise<Result<NotificationClientDTO>>;
   markAllAsRead(): Promise<Result<CountResult>>;
-  deleteNotification(uuid: string): Promise<Result<ActionResult>>;
-  batchDeleteNotifications(uuids: string[]): Promise<Result<CountResult>>;
+  deleteNotification(id: string): Promise<Result<ActionResult>>;
+  batchDeleteNotifications(ids: string[]): Promise<Result<CountResult>>;
   getUnreadCount(): Promise<Result<UnreadCountResponse>>;
 }

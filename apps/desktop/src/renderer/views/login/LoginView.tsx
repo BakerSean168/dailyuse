@@ -31,7 +31,7 @@ import { RegisterView } from './RegisterView';
 // ============ Types ============
 
 interface QuickLoginAccount {
-  uuid: string;
+  id: string;
   username: string;
   email: string;
   avatarUrl?: string;
@@ -352,10 +352,10 @@ function QuickLoginView({
 }: {
   accounts: QuickLoginAccount[];
   onSelectAccount: (account: QuickLoginAccount) => void;
-  onRemoveAccount: (uuid: string) => void;
+  onRemoveAccount: (id: string) => void;
   onSwitchToLogin: () => void;
 }) {
-  const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   return (
     <div className="space-y-4">
@@ -365,14 +365,14 @@ function QuickLoginView({
         <AnimatePresence>
           {accounts.map((account) => (
             <QuickLoginCard
-              key={account.uuid}
+              key={account.id}
               account={account}
-              isSelected={selectedUuid === account.uuid}
+              isSelected={selectedId === account.id}
               onSelect={() => {
-                setSelectedUuid(account.uuid);
+                setSelectedId(account.id);
                 onSelectAccount(account);
               }}
-              onRemove={() => onRemoveAccount(account.uuid)}
+              onRemove={() => onRemoveAccount(account.id)}
             />
           ))}
         </AnimatePresence>
@@ -436,7 +436,7 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
       // 统一�?IpcResult 格式: { ok: boolean; data?: T; error?: { code, message } }
       const result = await window.electronAPI?.invoke<{
         ok: boolean;
-        data?: { accountUuid: string; sessionUuid: string };
+        data?: { identityId: string; sessionId: string };
         error?: { code: string; message: string };
       }>('auth:login', {
         email,
@@ -467,7 +467,7 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
       setLoading(true);
       try {
         // 更新最后登录时�?
-        await window.electronAPI?.invoke('auth:update-last-login', account.uuid);
+        await window.electronAPI?.invoke('auth:update-last-login', account.id);
         await window.electronAPI?.invoke('window:transition-to-main');
       } finally {
         setLoading(false);
@@ -480,8 +480,8 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
   }, []);
 
   // 移除账号
-  const handleRemoveAccount = useCallback(async (uuid: string) => {
-    await window.electronAPI?.invoke('auth:remove-saved-account', uuid);
+  const handleRemoveAccount = useCallback(async (id: string) => {
+    await window.electronAPI?.invoke('auth:remove-saved-account', id);
     // TODO: 刷新账号列表
   }, []);
 
@@ -491,7 +491,7 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
       // 统一�?IpcResult 格式: { ok: boolean; data?: T; error?: { code, message } }
       const result = await window.electronAPI?.invoke<{
         ok: boolean;
-        data?: { accountUuid: string; mode: string; message: string };
+        data?: { identityId: string; mode: string; message: string };
         error?: { code: string; message: string };
       }>('auth:enter-offline-mode');
       

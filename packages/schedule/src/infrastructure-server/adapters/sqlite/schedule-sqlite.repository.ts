@@ -14,35 +14,35 @@ export class SqliteScheduleRepository implements IScheduleRepository {
     throw new Error('SQLite Schedule Repository not implemented');
   }
 
-  async findById(uuid: string): Promise<Schedule | null> {
+  async findById(id: string): Promise<Schedule | null> {
     throw new Error('SQLite Schedule Repository not implemented');
   }
 
-  async findByUuid(uuid: string): Promise<Schedule | null> {
+  async findById(id: string): Promise<Schedule | null> {
     throw new Error('SQLite Schedule Repository not implemented');
   }
 
-  async delete(uuid: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     throw new Error('SQLite Schedule Repository not implemented');
   }
 
-  async findAll(accountUuid: string): Promise<Schedule[]> {
+  async findAll(identityId: string): Promise<Schedule[]> {
     throw new Error('SQLite Schedule Repository not implemented');
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<Schedule[]> {
+  async findByAccountId(identityId: string): Promise<Schedule[]> {
     throw new Error('SQLite Schedule Repository not implemented');
   }
 
-  async findByDateRange(accountUuid: string, startTime: number, endTime: number): Promise<Schedule[]> {
+  async findByDateRange(identityId: string, startTime: number, endTime: number): Promise<Schedule[]> {
     throw new Error('SQLite Schedule Repository not implemented');
   }
 
-  async deleteByUuid(uuid: string): Promise<void> {
+  async deleteById(id: string): Promise<void> {
     throw new Error('SQLite Schedule Repository not implemented');
   }
 
-  async findByTimeRange(accountUuid: string, startTime: number, endTime: number): Promise<Schedule[]> {
+  async findByTimeRange(identityId: string, startTime: number, endTime: number): Promise<Schedule[]> {
     throw new Error('SQLite Schedule Repository not implemented');
   }
 }

@@ -14,7 +14,7 @@ import type { Folder } from '../../domain-server/entities/folder';
  * Delete Folder Input
  */
 export interface DeleteFolderInput {
-  uuid: string;
+  id: string;
 }
 
 /**
@@ -29,9 +29,9 @@ export class DeleteFolder {
   ) {}
 
   async execute(input: DeleteFolderInput): Promise<void> {
-    const folder = await this.folderRepository.findById(input.uuid);
+    const folder = await this.folderRepository.findById(input.id);
     if (!folder) {
-      throw new Error(`Folder not found: ${input.uuid}`);
+      throw new Error(`Folder not found: ${input.id}`);
     }
 
     const repository = await this.repositoryRepository.findById(folder.repositoryId);

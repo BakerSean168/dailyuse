@@ -32,9 +32,9 @@ import {
 interface KeyResultCardProps {
   keyResult: KeyResult;
   goal?: Goal | null;
-  onAddRecord?: (keyResultUuid: string) => void;
-  onDelete?: (keyResultUuid: string) => void;
-  onClick?: (keyResultUuid: string) => void;
+  onAddRecord?: (keyResultId: string) => void;
+  onDelete?: (keyResultId: string) => void;
+  onClick?: (keyResultId: string) => void;
 }
 
 export function KeyResultCard({
@@ -54,17 +54,17 @@ export function KeyResultCard({
     if ((e.target as HTMLElement).closest('button')) {
       return;
     }
-    onClick?.(keyResult.uuid);
+    onClick?.(keyResult.id);
   };
 
   const handleAddRecord = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onAddRecord?.(keyResult.uuid);
+    onAddRecord?.(keyResult.id);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onDelete?.(keyResult.uuid);
+    onDelete?.(keyResult.id);
   };
 
   return (
@@ -78,7 +78,7 @@ export function KeyResultCard({
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
     >
-      {/* 进度背景�?*/}
+      {/* 进度背景�?*/}
       <div
         className="absolute top-0 left-0 h-full opacity-10 transition-all duration-500"
         style={{
@@ -122,7 +122,7 @@ export function KeyResultCard({
       </CardHeader>
 
       <CardContent className="relative z-10 pt-0">
-        {/* 数值显�?*/}
+        {/* 数值显�?*/}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge

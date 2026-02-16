@@ -158,7 +158,7 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
     win = windowManager.createLoginWindow({
       hasQuickLoginAccounts: accountStore.getAccountCount() > 0,
       quickLoginAccounts: accountStore.getAccounts().map((a) => ({
-        uuid: a.uuid,
+        id: a.id,
         username: a.username,
         email: a.email,
         avatarUrl: a.avatarUrl,

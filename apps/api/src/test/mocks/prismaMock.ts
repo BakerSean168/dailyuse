@@ -58,7 +58,7 @@ async function withLock<T>(key: string, operation: () => Promise<T>): Promise<T>
 }
 
 // 生成测试用的UUID
-function generateTestUuid(prefix = 'test'): string {
+function generateTestId(prefix = 'test'): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
@@ -71,7 +71,7 @@ function includeRelations(tableName: keyof typeof mockDataStore, record: any, in
     // ✅ 支持 keyResults 和 keyResult (单复数都支持)
     if (include.keyResults || include.keyResult) {
       const keyResults = Array.from(mockDataStore.keyResult.values()).filter(
-        (kr: any) => kr.goalUuid === record.uuid,
+        (kr: any) => kr.goalId === record.id,
       );
 
       // 如果 keyResults 也有 include，递归处理
@@ -80,7 +80,7 @@ function includeRelations(tableName: keyof typeof mockDataStore, record: any, in
         result.keyResults = keyResults.map((kr: any) => {
           if (includeConfig.include?.records) {
             const records = Array.from(mockDataStore.progressRecord.values()).filter(
-              (r: any) => r.keyResultUuid === kr.uuid,
+              (r: any) => r.keyResultId === kr.id,
             );
             return { ...kr, records };
           }
@@ -98,7 +98,7 @@ function includeRelations(tableName: keyof typeof mockDataStore, record: any, in
 
     if (include.reviews) {
       const reviews = Array.from(mockDataStore.GoalFolder.values()).filter(
-        (review: any) => review.goalUuid === record.uuid,
+        (review: any) => review.goalId === record.id,
       );
       result.reviews = reviews;
     }
@@ -108,7 +108,7 @@ function includeRelations(tableName: keyof typeof mockDataStore, record: any, in
   if (tableName === 'keyResult') {
     if (include.records) {
       const records = Array.from(mockDataStore.progressRecord.values()).filter(
-        (r: any) => r.keyResultUuid === record.uuid,
+        (r: any) => r.keyResultId === record.id,
       );
       result.records = records;
     }
@@ -212,7 +212,7 @@ function createMockModel(tableName: keyof typeof mockDataStore) {
       const foundRecord =
         allRecords.find((record) => {
           return Object.entries(args.where).every(([key, value]) => {
-            // 处理嵌套关系（例如 goal: { accountUuid: 'xxx' }）
+            // 处理嵌套关系（例如 goal: { identityId: 'xxx' }）
             if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
               // 跳过嵌套关系，仅匹配直接字段
               if (key === 'goal' || key === 'keyResult' || key === 'task' || key === 'reminder') {
@@ -245,17 +245,17 @@ function createMockModel(tableName: keyof typeof mockDataStore) {
     create: vi.fn(async (args?: any) => {
       // 处理 upsert 的情况
       const data = args?.data || args?.create || {};
-      const uuid = data.uuid || generateTestUuid();
+      const id = data.id || generateTestId();
       const now = new Date();
 
       const newRecord = {
-        uuid,
+        id,
         createdAt: now,
         updatedAt: now,
         ...data,
       };
 
-      store.set(uuid, newRecord);
+      store.set(id, newRecord);
       return newRecord;
     }),
 
@@ -277,7 +277,7 @@ function createMockModel(tableName: keyof typeof mockDataStore) {
         updatedAt: new Date(),
       };
 
-      store.set(existingRecord.uuid, updatedRecord);
+      store.set(existingRecord.id, updatedRecord);
       return updatedRecord;
     }),
 
@@ -291,7 +291,7 @@ function createMockModel(tableName: keyof typeof mockDataStore) {
         throw new Error(`Record not found`);
       }
 
-      store.delete(recordToDelete.uuid);
+      store.delete(recordToDelete.id);
       return recordToDelete;
     }),
 
@@ -315,7 +315,7 @@ function createMockModel(tableName: keyof typeof mockDataStore) {
         });
 
         recordsToDelete.forEach((record) => {
-          store.delete(record.uuid);
+          store.delete(record.id);
           deletedCount++;
         });
       }
@@ -393,7 +393,7 @@ function createMockModel(tableName: keyof typeof mockDataStore) {
 
           // 使用记录的主键或唯一键来存储
           const storageKey =
-            existingRecord.uuid || existingRecord.id || existingRecord[key] || value;
+            existingRecord.id || existingRecord.id || existingRecord[key] || value;
           store.set(storageKey, updatedRecord);
           return updatedRecord;
         } else {
@@ -405,8 +405,8 @@ function createMockModel(tableName: keyof typeof mockDataStore) {
             ...create,
           };
 
-          // 如果create中没有uuid或id,但有where条件的key,则使用它作为存储键
-          const storageKey = newRecord.uuid || newRecord.id || newRecord[key] || value;
+          // 如果create中没有id或id,但有where条件的key,则使用它作为存储键
+          const storageKey = newRecord.id || newRecord.id || newRecord[key] || value;
           store.set(storageKey, newRecord);
           return newRecord;
         }
@@ -508,8 +508,8 @@ export function setMockData<T>(tableName: keyof typeof mockDataStore, data: T[])
   store.clear();
 
   data.forEach((item: any) => {
-    const uuid = item.uuid || generateTestUuid();
-    store.set(uuid, { ...item, uuid });
+    const id = item.id || generateTestId();
+    store.set(id, { ...item, id });
   });
 }
 

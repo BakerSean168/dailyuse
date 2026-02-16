@@ -14,22 +14,22 @@ import { eventBus } from '@dailyuse/utils';
 export class DeleteConversation {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
-  async execute(uuid: string, accountUuid: string): Promise<void> {
-    const conversation = await this.conversationRepository.findByUuid(uuid);
+  async execute(id: string, identityId: string): Promise<void> {
+    const conversation = await this.conversationRepository.findById(id);
     
     if (!conversation) {
       return; // 已删除视为成�?
     }
 
-    if (conversation.accountUuid !== accountUuid) {
+    if (conversation.identityId !== identityId) {
       throw new Error('Not authorized to delete this conversation');
     }
 
-    await this.conversationRepository.delete(uuid);
+    await this.conversationRepository.delete(id);
 
     await eventBus.emit('AIConversationDeleted', {
-      conversationUuid: uuid,
-      accountUuid,
+      conversationId: id,
+      identityId,
     });
   }
 }

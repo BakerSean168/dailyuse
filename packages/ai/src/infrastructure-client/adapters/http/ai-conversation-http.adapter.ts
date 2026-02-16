@@ -36,28 +36,28 @@ export class AIConversationHttpAdapter implements IAIConversationApiClient {
     return this.httpClient.get(this.baseUrl, { params });
   }
 
-  async getConversationById(uuid: string): Promise<AIConversationClientDTO> {
-    return this.httpClient.get(`${this.baseUrl}/${uuid}`);
+  async getConversationById(id: string): Promise<AIConversationClientDTO> {
+    return this.httpClient.get(`${this.baseUrl}/${id}`);
   }
 
   async updateConversation(
-    uuid: string,
+    id: string,
     request: UpdateConversationReq,
   ): Promise<AIConversationClientDTO> {
-    return this.httpClient.patch(`${this.baseUrl}/${uuid}`, request);
+    return this.httpClient.patch(`${this.baseUrl}/${id}`, request);
   }
 
-  async deleteConversation(uuid: string): Promise<void> {
-    return this.httpClient.delete(`${this.baseUrl}/${uuid}`);
+  async deleteConversation(id: string): Promise<void> {
+    return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
   // ===== Conversation Status =====
 
-  async closeConversation(uuid: string): Promise<AIConversationClientDTO> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/close`);
+  async closeConversation(id: string): Promise<AIConversationClientDTO> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/close`);
   }
 
-  async archiveConversation(uuid: string): Promise<AIConversationClientDTO> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/archive`);
+  async archiveConversation(id: string): Promise<AIConversationClientDTO> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/archive`);
   }
 }

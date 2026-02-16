@@ -19,7 +19,7 @@ export const CreateGoalFolderSchema = z.object({
   description: z.string().max(2000).optional(),
   icon: z.string().max(100).optional(),
   color: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
-  parentFolderUuid: z.string().uuid().optional(),
+  parentFolderId: z.string().uuid().optional(),
 });
 
 export type CreateGoalFolderReq = z.infer<typeof CreateGoalFolderSchema>;
@@ -37,7 +37,7 @@ export const UpdateGoalFolderSchema = z.object({
   description: z.string().max(2000).nullable().optional(),
   icon: z.string().max(100).nullable().optional(),
   color: z.string().regex(/^#[0-9A-F]{6}$/i).nullable().optional(),
-  parentFolderUuid: z.string().uuid().nullable().optional(),
+  parentFolderId: z.string().uuid().nullable().optional(),
 });
 
 export type UpdateGoalFolderReq = z.infer<typeof UpdateGoalFolderSchema>;
@@ -67,8 +67,8 @@ export type DeleteGoalFolderRes = GoalFolderClientDTO;
  * 查询文件夹列表 Schema
  */
 export const QueryGoalFoldersSchema = z.object({
-  accountUuid: z.string().uuid('账户 UUID 无效'),
-  parentFolderUuid: z.string().uuid().optional(),
+  identityId: z.string().uuid('账户 ID 无效'),
+  parentFolderId: z.string().uuid().optional(),
   includeSystemFolders: z.boolean().optional().default(false),
   sortBy: z.enum(['name', 'createdAt', 'sortOrder']).optional().default('name'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),

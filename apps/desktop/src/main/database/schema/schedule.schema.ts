@@ -14,8 +14,8 @@ export function initializeScheduleTables(database: Database.Database): void {
   // schedule_tasks 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS schedule_tasks (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT NOT NULL,
       name TEXT NOT NULL,
       description TEXT,
       source_module TEXT NOT NULL,
@@ -44,15 +44,15 @@ export function initializeScheduleTables(database: Database.Database): void {
       timeout INTEGER,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
     )
   `);
 
   // schedules 表 (个人日程安排)
   database.exec(`
     CREATE TABLE IF NOT EXISTS schedules (
-      uuid TEXT PRIMARY KEY,
-      account_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      identity_id TEXT NOT NULL,
       title TEXT NOT NULL,
       description TEXT,
       start_time INTEGER NOT NULL,
@@ -65,15 +65,15 @@ export function initializeScheduleTables(database: Database.Database): void {
       attendees TEXT,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
     )
   `);
 
   // schedule_executions 表
   database.exec(`
     CREATE TABLE IF NOT EXISTS schedule_executions (
-      uuid TEXT PRIMARY KEY,
-      task_uuid TEXT NOT NULL,
+      id TEXT PRIMARY KEY,
+      task_id TEXT NOT NULL,
       execution_time INTEGER NOT NULL,
       status TEXT NOT NULL,
       duration INTEGER,
@@ -81,7 +81,7 @@ export function initializeScheduleTables(database: Database.Database): void {
       error TEXT,
       retry_count INTEGER DEFAULT 0,
       created_at INTEGER NOT NULL,
-      FOREIGN KEY (task_uuid) REFERENCES schedule_tasks(uuid) ON DELETE CASCADE
+      FOREIGN KEY (task_id) REFERENCES schedule_tasks(id) ON DELETE CASCADE
     )
   `);
 
@@ -89,7 +89,7 @@ export function initializeScheduleTables(database: Database.Database): void {
   database.exec(`
     CREATE TABLE IF NOT EXISTS schedule_statistics (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      account_uuid TEXT UNIQUE NOT NULL,
+      identity_id TEXT UNIQUE NOT NULL,
       total_tasks INTEGER DEFAULT 0,
       active_tasks INTEGER DEFAULT 0,
       paused_tasks INTEGER DEFAULT 0,
@@ -107,18 +107,18 @@ export function initializeScheduleTables(database: Database.Database): void {
       module_statistics TEXT DEFAULT '{}',
       last_updated_at INTEGER NOT NULL,
       created_at INTEGER NOT NULL,
-      FOREIGN KEY (account_uuid) REFERENCES accounts(uuid) ON DELETE CASCADE
+      FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
     )
   `);
 
   // 创建索引
   database.exec(`
-    CREATE INDEX IF NOT EXISTS idx_schedule_tasks_account ON schedule_tasks(account_uuid);
+    CREATE INDEX IF NOT EXISTS idx_schedule_tasks_account ON schedule_tasks(identity_id);
     CREATE INDEX IF NOT EXISTS idx_schedule_tasks_status ON schedule_tasks(status);
     CREATE INDEX IF NOT EXISTS idx_schedule_tasks_next_run ON schedule_tasks(next_run_at);
-    CREATE INDEX IF NOT EXISTS idx_schedules_account ON schedules(account_uuid);
+    CREATE INDEX IF NOT EXISTS idx_schedules_account ON schedules(identity_id);
     CREATE INDEX IF NOT EXISTS idx_schedules_time ON schedules(start_time, end_time);
-    CREATE INDEX IF NOT EXISTS idx_schedule_executions_task ON schedule_executions(task_uuid);
+    CREATE INDEX IF NOT EXISTS idx_schedule_executions_task ON schedule_executions(task_id);
   `);
 
   console.log('[Database] Schedule tables initialized');

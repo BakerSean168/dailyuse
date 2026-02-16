@@ -16,8 +16,8 @@ export class UpdateGoalKeyResult {
   ) {}
 
   async execute(
-    goalUuid: string,
-    keyResultUuid: string,
+    goalId: string,
+    keyResultId: string,
     updates: {
       title?: string;
       description?: string;
@@ -26,18 +26,18 @@ export class UpdateGoalKeyResult {
       unit?: string;
     },
   ): Promise<Result<GoalClientDTO>> {
-    const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
+    const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
     if (!goal) {
-      return error('NOT_FOUND', `Goal not found: ${goalUuid}`);
+      return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }
 
     this.goalPolicy.ensureGoalCanBeModified(goal);
-    const keyResult = goal.keyResults.find((kr) => kr.id === keyResultUuid);
+    const keyResult = goal.keyResults.find((kr) => kr.id === keyResultId);
     if (!keyResult) {
-      return error('NOT_FOUND', `KeyResult not found: ${keyResultUuid}`);
+      return error('NOT_FOUND', `KeyResult not found: ${keyResultId}`);
     }
 
-    goal.updateKeyResult(keyResultUuid, {
+    goal.updateKeyResult(keyResultId, {
       title: updates.title,
       description: updates.description,
       weight: updates.weight,

@@ -22,8 +22,8 @@ export interface TimeSlotDTO {
  * User Reminder Preferences Server DTO
  */
 export interface UserReminderPreferencesServerDTO {
-  uuid: string;
-  accountUuid: string;
+  id: string;
+  identityId: string;
   bestTimeSlots: TimeSlotDTO[]; // 最佳时间段
   worstTimeSlots: TimeSlotDTO[]; // 最差时间段
   globalSmartFrequency: boolean; // 全局启用智能频率
@@ -35,8 +35,8 @@ export interface UserReminderPreferencesServerDTO {
  * User Reminder Preferences Client DTO
  */
 export interface UserReminderPreferencesClientDTO {
-  uuid: string;
-  accountUuid: string;
+  id: string;
+  identityId: string;
   bestTimeSlots: TimeSlotDTO[];
   worstTimeSlots: TimeSlotDTO[];
   globalSmartFrequency: boolean;
@@ -51,8 +51,8 @@ export interface UserReminderPreferencesClientDTO {
  * User Reminder Preferences Persistence DTO
  */
 export interface UserReminderPreferencesPersistenceDTO {
-  uuid: string;
-  accountUuid: string;
+  id: string;
+  identityId: string;
   bestTimeSlots: string; // JSON string
   worstTimeSlots: string; // JSON string
   globalSmartFrequency: boolean;
@@ -66,8 +66,8 @@ export interface UserReminderPreferencesPersistenceDTO {
  * User Reminder Preferences 聚合根接口
  */
 export interface UserReminderPreferencesServer {
-  uuid: string;
-  accountUuid: string;
+  id: string;
+  identityId: string;
   bestTimeSlots: TimeSlotDTO[];
   worstTimeSlots: TimeSlotDTO[];
   globalSmartFrequency: boolean;

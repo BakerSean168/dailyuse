@@ -17,13 +17,13 @@ import type { TimeEstimate } from '@dailyuse/contracts/goal';
 import { useTaskTemplate } from '../hooks/useTaskTemplate';
 
 interface TaskDetailDialogProps {
-  templateUuid: string;
+  templateId: string;
   open: boolean;
   onClose: () => void;
   onUpdated: () => void;
 }
 
-export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: TaskDetailDialogProps) {
+export function TaskDetailDialog({ templateId, open, onClose, onUpdated }: TaskDetailDialogProps) {
   const [template, setTemplate] = useState<TaskTemplate | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -43,12 +43,12 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
   const { getTemplate, updateTemplate, deleteTemplate } = useTaskTemplate();
 
   const loadTemplate = useCallback(async () => {
-    if (!templateUuid || !open) return;
+    if (!templateId || !open) return;
 
     try {
       setLoading(true);
       setError(null);
-      const result = await getTemplate(templateUuid);
+      const result = await getTemplate(templateId);
       if (result) {
         setTemplate(result);
         // 初始化编辑表单
@@ -62,7 +62,7 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
     } finally {
       setLoading(false);
     }
-  }, [templateUuid, open, getTemplate]);
+  }, [templateId, open, getTemplate]);
 
   useEffect(() => {
     if (open) {
@@ -86,7 +86,7 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
         importance: editImportance,
       };
       
-      await updateTemplate(template.uuid, request);
+      await updateTemplate(template.id, request);
       setIsEditing(false);
       onUpdated();
     } catch (err) {
@@ -105,7 +105,7 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
 
     try {
       setIsSaving(true);
-      await deleteTemplate(template.uuid);
+      await deleteTemplate(template.id);
       onUpdated();
       onClose();
     } catch (err) {
@@ -133,7 +133,7 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
     try {
       // 模拟AI调用 - 在实际应用中，这里会调用TaskTimeEstimationService
       // const estimate = await TimeEstimationService.estimateTaskTime({
-      //   taskId: template.uuid,
+      //   taskId: template.id,
       //   taskTitle: template.title,
       //   taskDescription: template.description || '',
       //   complexity: 'medium'
@@ -143,7 +143,7 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
       // 默认预估时间为 60 分钟
       const defaultEstimatedMinutes = 60;
       const mockEstimate: TimeEstimate = {
-        taskId: template.uuid,
+        taskId: template.id,
         taskTitle: template.title,
         estimatedMinutes: defaultEstimatedMinutes,
         confidenceScore: 0.75,
@@ -166,7 +166,7 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
 
     try {
       setIsSaving(true);
-      await updateTemplate(template.uuid, {
+      await updateTemplate(template.id, {
         title: template.title,
       });
       // 更新本地预估

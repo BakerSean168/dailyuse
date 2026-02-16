@@ -39,16 +39,16 @@ export class AIGenerationTaskHttpAdapter implements IAIGenerationTaskApiClient {
     return this.httpClient.get(this.baseUrl, { params });
   }
 
-  async getGenerationTaskById(uuid: string): Promise<AIGenerationTaskClientDTO> {
-    return this.httpClient.get(`${this.baseUrl}/${uuid}`);
+  async getGenerationTaskById(id: string): Promise<AIGenerationTaskClientDTO> {
+    return this.httpClient.get(`${this.baseUrl}/${id}`);
   }
 
-  async cancelGenerationTask(uuid: string): Promise<void> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/cancel`);
+  async cancelGenerationTask(id: string): Promise<void> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/cancel`);
   }
 
-  async retryGenerationTask(uuid: string): Promise<AIGenerationTaskClientDTO> {
-    return this.httpClient.post(`${this.baseUrl}/${uuid}/retry`);
+  async retryGenerationTask(id: string): Promise<AIGenerationTaskClientDTO> {
+    return this.httpClient.post(`${this.baseUrl}/${id}/retry`);
   }
 
   // ===== Goal Generation =====
@@ -61,7 +61,7 @@ export class AIGenerationTaskHttpAdapter implements IAIGenerationTaskApiClient {
     return this.httpClient.post('/ai/generate/goal-with-key-results', request);
   }
 
-  async generateKeyResults(goalUuid: string): Promise<GenerateKeyResultsRes> {
-    return this.httpClient.post(`/ai/generate/key-results/${goalUuid}`);
+  async generateKeyResults(goalId: string): Promise<GenerateKeyResultsRes> {
+    return this.httpClient.post(`/ai/generate/key-results/${goalId}`);
   }
 }

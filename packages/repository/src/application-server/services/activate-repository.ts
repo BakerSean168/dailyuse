@@ -11,7 +11,7 @@ import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
  * Activate Repository Input
  */
 export interface ActivateRepositoryInput {
-  uuid: string;
+  id: string;
 }
 
 /**
@@ -29,9 +29,9 @@ export class ActivateRepository {
   constructor(private readonly repositoryRepository: IRepositoryRepository) {}
 
   async execute(input: ActivateRepositoryInput): Promise<ActivateRepositoryOutput> {
-    const repository = await this.repositoryRepository.findById(input.uuid);
+    const repository = await this.repositoryRepository.findById(input.id);
     if (!repository) {
-      throw new Error(`Repository not found: ${input.uuid}`);
+      throw new Error(`Repository not found: ${input.id}`);
     }
 
     if (repository.isDeleted()) {

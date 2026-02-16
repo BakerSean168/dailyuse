@@ -20,11 +20,11 @@ describe('Task Events Module', () => {
       const event: TaskInstanceCompletedEvent = {
         eventType: 'task.instance.completed',
         payload: {
-          taskInstanceUuid: 'test-instance-id',
-          taskTemplateUuid: 'test-template-id',
+          taskInstanceId: 'test-instance-id',
+          taskTemplateId: 'test-template-id',
           title: 'Test Task',
           completedAt: Date.now(),
-          accountUuid: 'test-account-id',
+          identityId: 'test-account-id',
         },
       };
       expect(event.eventType).toBe('task.instance.completed');
@@ -34,9 +34,9 @@ describe('Task Events Module', () => {
       const event: TaskTemplateCreatedEvent = {
         eventType: 'task.template.created',
         payload: {
-          taskTemplateUuid: 'test-template-id',
+          taskTemplateId: 'test-template-id',
           title: 'Test Template',
-          accountUuid: 'test-account-id',
+          identityId: 'test-account-id',
           createdAt: Date.now(),
         },
       };
@@ -47,8 +47,8 @@ describe('Task Events Module', () => {
       const event: TaskTemplateDeletedEvent = {
         eventType: 'task.template.deleted',
         payload: {
-          taskTemplateUuid: 'test-template-id',
-          accountUuid: 'test-account-id',
+          taskTemplateId: 'test-template-id',
+          identityId: 'test-account-id',
           deletedAt: Date.now(),
         },
       };
@@ -59,8 +59,8 @@ describe('Task Events Module', () => {
       const event: TaskTemplatePausedEvent = {
         eventType: 'task.template.paused',
         payload: {
-          taskTemplateUuid: 'test-template-id',
-          accountUuid: 'test-account-id',
+          taskTemplateId: 'test-template-id',
+          identityId: 'test-account-id',
           pausedAt: Date.now(),
           reason: 'Maintenance',
         },
@@ -72,9 +72,9 @@ describe('Task Events Module', () => {
       const event: TaskTemplateResumedEvent = {
         eventType: 'task.template.resumed',
         payload: {
-          taskTemplateUuid: 'test-template-id',
+          taskTemplateId: 'test-template-id',
           taskTemplateTitle: 'Test Template',
-          accountUuid: 'test-account-id',
+          identityId: 'test-account-id',
           resumedAt: Date.now(),
         },
       };
@@ -85,9 +85,9 @@ describe('Task Events Module', () => {
       const event: TaskTemplateScheduleChangedEvent = {
         eventType: 'task.template.schedule_changed',
         payload: {
-          taskTemplateUuid: 'test-template-id',
+          taskTemplateId: 'test-template-id',
           taskTemplateTitle: 'Test Template',
-          accountUuid: 'test-account-id',
+          identityId: 'test-account-id',
           changedAt: Date.now(),
         },
       };
@@ -137,19 +137,19 @@ describe('Task Events Module', () => {
       const completedEvent: TaskModuleEvent = {
         eventType: 'task.instance.completed',
         payload: {
-          taskInstanceUuid: 'id',
-          taskTemplateUuid: 'id',
+          taskInstanceId: 'id',
+          taskTemplateId: 'id',
           title: 'Test',
           completedAt: Date.now(),
-          accountUuid: 'id',
+          identityId: 'id',
         },
       };
 
       const pausedEvent: TaskModuleEvent = {
         eventType: 'task.template.paused',
         payload: {
-          taskTemplateUuid: 'id',
-          accountUuid: 'id',
+          taskTemplateId: 'id',
+          identityId: 'id',
           pausedAt: Date.now(),
         },
       };

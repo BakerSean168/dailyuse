@@ -10,8 +10,8 @@ import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
 
 interface RepositoryCardProps {
   repository: RepositoryClientDTO;
-  onSelect: (uuid: string) => void;
-  onDelete: (uuid: string) => void;
+  onSelect: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 export const RepositoryCard = memo(function RepositoryCard({
@@ -33,14 +33,14 @@ export const RepositoryCard = memo(function RepositoryCard({
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm(`确定要删除仓库 "${repository.name}" 吗？此操作不可恢复。`)) {
-      onDelete(repository.uuid);
+      onDelete(repository.id);
     }
   };
 
   return (
     <div
       className="p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-all cursor-pointer group"
-      onClick={() => onSelect(repository.uuid)}
+      onClick={() => onSelect(repository.id)}
     >
       <div className="flex items-start gap-3">
         {/* 图标 */}

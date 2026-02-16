@@ -34,12 +34,12 @@ afterEach(() => {
 declare global {
 
   var testHelpers: {
-    createMockAccountUuid: () => string;
+    createMockAccountId: () => string;
     delay: (ms: number) => Promise<void>;
   };
 }
 
 globalThis.testHelpers = {
-  createMockAccountUuid: () => `account-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  createMockAccountId: () => `account-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   delay: (ms: number) => new Promise(resolve => setTimeout(resolve, ms)),
 };

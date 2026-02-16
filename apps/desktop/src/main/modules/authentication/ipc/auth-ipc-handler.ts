@@ -21,7 +21,7 @@ export class AuthIPCHandler {
   }
 
   private registerHandlers(): void {
-    // 登录 - 返回 IpcResult<{ accountUuid, sessionUuid }>
+    // 登录 - 返回 IpcResult<{ identityId, sessionId }>
     ipcMain.handle('auth:login', async (_event, credentials: LoginCredentials) => {
       return this.authService.login(credentials);
     });
@@ -31,12 +31,12 @@ export class AuthIPCHandler {
       return this.authService.logout();
     });
 
-    // 注册 - 返回 IpcResult<{ accountUuid, message }>
+    // 注册 - 返回 IpcResult<{ identityId, message }>
     ipcMain.handle('auth:register', async (_event, request: RegisterRequest) => {
       return this.authService.register(request);
     });
 
-    // 进入离线模式 - 返回 IpcResult<{ accountUuid, mode, message }>
+    // 进入离线模式 - 返回 IpcResult<{ identityId, mode, message }>
     ipcMain.handle('auth:enter-offline-mode', async () => {
       return this.authService.enterOfflineMode();
     });

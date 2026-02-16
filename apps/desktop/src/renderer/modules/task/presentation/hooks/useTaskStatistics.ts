@@ -21,9 +21,9 @@ export interface TaskStatisticsState {
 
 export interface UseTaskStatisticsReturn extends TaskStatisticsState {
   loadStatistics: (input: GetTaskStatisticsRequest) => Promise<void>;
-  loadTodayRate: (accountUuid: string) => Promise<void>;
-  loadWeekRate: (accountUuid: string) => Promise<void>;
-  loadEfficiencyTrend: (accountUuid: string) => Promise<void>;
+  loadTodayRate: (identityId: string) => Promise<void>;
+  loadWeekRate: (identityId: string) => Promise<void>;
+  loadEfficiencyTrend: (identityId: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -51,27 +51,27 @@ export function useTaskStatistics(): UseTaskStatisticsReturn {
     }
   }, []);
 
-  const loadTodayRate = useCallback(async (accountUuid: string) => {
+  const loadTodayRate = useCallback(async (identityId: string) => {
     try {
-      const todayRate = await taskApplicationService.getTodayCompletionRate(accountUuid);
+      const todayRate = await taskApplicationService.getTodayCompletionRate(identityId);
       setState((prev) => ({ ...prev, todayRate }));
     } catch (e) {
       console.error('Failed to load today rate:', e);
     }
   }, []);
 
-  const loadWeekRate = useCallback(async (accountUuid: string) => {
+  const loadWeekRate = useCallback(async (identityId: string) => {
     try {
-      const weekRate = await taskApplicationService.getWeekCompletionRate(accountUuid);
+      const weekRate = await taskApplicationService.getWeekCompletionRate(identityId);
       setState((prev) => ({ ...prev, weekRate }));
     } catch (e) {
       console.error('Failed to load week rate:', e);
     }
   }, []);
 
-  const loadEfficiencyTrend = useCallback(async (accountUuid: string) => {
+  const loadEfficiencyTrend = useCallback(async (identityId: string) => {
     try {
-      const efficiencyTrend = await taskApplicationService.getEfficiencyTrend(accountUuid);
+      const efficiencyTrend = await taskApplicationService.getEfficiencyTrend(identityId);
       setState((prev) => ({ ...prev, efficiencyTrend }));
     } catch (e) {
       console.error('Failed to load efficiency trend:', e);

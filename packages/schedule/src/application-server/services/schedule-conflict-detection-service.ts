@@ -11,7 +11,7 @@ export class ScheduleConflictDetectionService {
    * - Uses the Domain Schedule aggregate to perform conflict detection
    */
   async detectConflictsForSchedule(scheduleDto: ScheduleServerDTO): Promise<ConflictDetectionResult> {
-    const { accountUuid, startTime, endTime, uuid } = scheduleDto;
+    const { identityId, startTime, endTime, id } = scheduleDto;
 
     // Parse timestamps
     const startTimestamp = new Date(startTime).getTime();
@@ -25,10 +25,10 @@ export class ScheduleConflictDetectionService {
     // Find other schedules overlapping this time window (exclude the current schedule)
     // Repository returns domain Schedule aggregates
     const otherAggregates = await this.scheduleRepository.findByTimeRange(
-      accountUuid,
+      identityId,
       startTimestamp,
       endTimestamp,
-      uuid,
+      id,
     );
 
     // Convert DTO to domain aggregate
@@ -45,16 +45,16 @@ export class ScheduleConflictDetectionService {
    * Queries the schedule from repository and detects conflicts with other schedules
    * in the same time window.
    * 
-   * @param scheduleUuid - UUID of the schedule to check for conflicts
+   * @param scheduleId - UUID of the schedule to check for conflicts
    * @returns ConflictDetectionResult with detected conflicts and suggestions
    * @throws Error if schedule not found
    */
-  async getScheduleConflicts(scheduleUuid: string): Promise<ConflictDetectionResult> {
+  async getScheduleConflicts(scheduleId: string): Promise<ConflictDetectionResult> {
     // Find the schedule (repository returns domain aggregate)
-    const scheduleAggregate = await this.scheduleRepository.findByUuid(scheduleUuid);
+    const scheduleAggregate = await this.scheduleRepository.findById(scheduleId);
     
     if (!scheduleAggregate) {
-      throw new Error(`Schedule not found: ${scheduleUuid}`);
+      throw new Error(`Schedule not found: ${scheduleId}`);
     }
 
     // Convert aggregate to DTO for detectConflictsForSchedule method

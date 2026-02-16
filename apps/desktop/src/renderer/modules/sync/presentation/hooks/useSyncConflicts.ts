@@ -71,7 +71,7 @@ export function useSyncConflicts(): UseSyncConflictsResult {
           resolvedBy: 'user',
         };
         await syncApplicationService.resolve({
-          conflictId: conflict.uuid,
+          conflictId: conflict.id,
           resolution: resolutionDTO,
         });
       }

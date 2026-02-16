@@ -51,9 +51,9 @@ interface ScheduleTaskDetailDialogProps {
   onOpenChange: (open: boolean) => void;
   task: ScheduleTaskClientDTO | null;
   isLoading?: boolean;
-  onPause?: (uuid: string) => void;
-  onResume?: (uuid: string) => void;
-  onDelete?: (uuid: string) => void;
+  onPause?: (id: string) => void;
+  onResume?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 // ===================== 工具函数 =====================
@@ -110,15 +110,15 @@ export function ScheduleTaskDetailDialog({
     : null;
 
   const handlePause = useCallback(() => {
-    if (task) onPause?.(task.uuid);
+    if (task) onPause?.(task.id);
   }, [task, onPause]);
 
   const handleResume = useCallback(() => {
-    if (task) onResume?.(task.uuid);
+    if (task) onResume?.(task.id);
   }, [task, onResume]);
 
   const handleDelete = useCallback(() => {
-    if (task) onDelete?.(task.uuid);
+    if (task) onDelete?.(task.id);
   }, [task, onDelete]);
 
   if (!task) return null;

@@ -16,40 +16,40 @@ export class AIProviderConfigMemoryRepository implements IAIProviderConfigReposi
   private configs = new Map<string, AIProviderConfigServerDTO>();
 
   async save(config: AIProviderConfigServerDTO): Promise<void> {
-    this.configs.set(config.uuid, config);
+    this.configs.set(config.id, config);
   }
 
-  async findByUuid(uuid: string): Promise<AIProviderConfigServerDTO | null> {
-    return this.configs.get(uuid) ?? null;
+  async findById(id: string): Promise<AIProviderConfigServerDTO | null> {
+    return this.configs.get(id) ?? null;
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<AIProviderConfigServerDTO[]> {
-    return Array.from(this.configs.values()).filter((c) => c.accountUuid === accountUuid);
+  async findByAccountId(identityId: string): Promise<AIProviderConfigServerDTO[]> {
+    return Array.from(this.configs.values()).filter((c) => c.identityId === identityId);
   }
 
-  async findDefaultByAccountUuid(accountUuid: string): Promise<AIProviderConfigServerDTO | null> {
+  async findDefaultByAccountId(identityId: string): Promise<AIProviderConfigServerDTO | null> {
     return (
-      Array.from(this.configs.values()).find((c) => c.accountUuid === accountUuid && c.isDefault) ?? null
+      Array.from(this.configs.values()).find((c) => c.identityId === identityId && c.isDefault) ?? null
     );
   }
 
-  async findByAccountUuidAndName(accountUuid: string, name: string): Promise<AIProviderConfigServerDTO | null> {
+  async findByIdentityIdAndName(identityId: string, name: string): Promise<AIProviderConfigServerDTO | null> {
     return (
-      Array.from(this.configs.values()).find((c) => c.accountUuid === accountUuid && c.name === name) ?? null
+      Array.from(this.configs.values()).find((c) => c.identityId === identityId && c.name === name) ?? null
     );
   }
 
-  async delete(uuid: string): Promise<void> {
-    this.configs.delete(uuid);
+  async delete(id: string): Promise<void> {
+    this.configs.delete(id);
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    return this.configs.has(uuid);
+  async exists(id: string): Promise<boolean> {
+    return this.configs.has(id);
   }
 
-  async clearDefaultForAccount(accountUuid: string): Promise<void> {
+  async clearDefaultForAccount(identityId: string): Promise<void> {
     this.configs.forEach((c) => {
-      if (c.accountUuid === accountUuid) {
+      if (c.identityId === identityId) {
         c.isDefault = false;
       }
     });
@@ -61,6 +61,6 @@ export class AIProviderConfigMemoryRepository implements IAIProviderConfigReposi
   }
 
   seed(configs: AIProviderConfigServerDTO[]): void {
-    configs.forEach((c) => this.configs.set(c.uuid, c));
+    configs.forEach((c) => this.configs.set(c.id, c));
   }
 }

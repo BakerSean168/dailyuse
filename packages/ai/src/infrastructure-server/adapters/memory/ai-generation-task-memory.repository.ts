@@ -16,42 +16,42 @@ export class AIGenerationTaskMemoryRepository implements IAIGenerationTaskReposi
   private tasks = new Map<string, AIGenerationTaskServerDTO>();
 
   async save(task: AIGenerationTaskServerDTO): Promise<void> {
-    this.tasks.set(task.uuid, task);
+    this.tasks.set(task.id, task);
   }
 
-  async findByUuid(uuid: string): Promise<AIGenerationTaskServerDTO | null> {
-    return this.tasks.get(uuid) ?? null;
+  async findById(id: string): Promise<AIGenerationTaskServerDTO | null> {
+    return this.tasks.get(id) ?? null;
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<AIGenerationTaskServerDTO[]> {
-    return Array.from(this.tasks.values()).filter((t) => t.accountUuid === accountUuid);
+  async findByAccountId(identityId: string): Promise<AIGenerationTaskServerDTO[]> {
+    return Array.from(this.tasks.values()).filter((t) => t.identityId === identityId);
   }
 
-  async findByTaskType(accountUuid: string, taskType: GenerationTaskType): Promise<AIGenerationTaskServerDTO[]> {
+  async findByTaskType(identityId: string, taskType: GenerationTaskType): Promise<AIGenerationTaskServerDTO[]> {
     return Array.from(this.tasks.values()).filter(
-      (t) => t.accountUuid === accountUuid && t.type === taskType,
+      (t) => t.identityId === identityId && t.type === taskType,
     );
   }
 
-  async findByStatus(accountUuid: string, status: TaskStatus): Promise<AIGenerationTaskServerDTO[]> {
+  async findByStatus(identityId: string, status: TaskStatus): Promise<AIGenerationTaskServerDTO[]> {
     return Array.from(this.tasks.values()).filter(
-      (t) => t.accountUuid === accountUuid && t.status === status,
+      (t) => t.identityId === identityId && t.status === status,
     );
   }
 
-  async findRecent(accountUuid: string, limit: number, offset?: number): Promise<AIGenerationTaskServerDTO[]> {
+  async findRecent(identityId: string, limit: number, offset?: number): Promise<AIGenerationTaskServerDTO[]> {
     const filtered = Array.from(this.tasks.values())
-      .filter((t) => t.accountUuid === accountUuid)
+      .filter((t) => t.identityId === identityId)
       .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
     return filtered.slice(offset ?? 0, (offset ?? 0) + limit);
   }
 
-  async delete(uuid: string): Promise<void> {
-    this.tasks.delete(uuid);
+  async delete(id: string): Promise<void> {
+    this.tasks.delete(id);
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    return this.tasks.has(uuid);
+  async exists(id: string): Promise<boolean> {
+    return this.tasks.has(id);
   }
 
   // Test helpers
@@ -60,6 +60,6 @@ export class AIGenerationTaskMemoryRepository implements IAIGenerationTaskReposi
   }
 
   seed(tasks: AIGenerationTaskServerDTO[]): void {
-    tasks.forEach((t) => this.tasks.set(t.uuid, t));
+    tasks.forEach((t) => this.tasks.set(t.id, t));
   }
 }

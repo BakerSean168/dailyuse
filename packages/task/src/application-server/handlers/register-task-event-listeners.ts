@@ -43,10 +43,10 @@ export function registerTaskEventListeners(taskInstanceRepository: ITaskInstance
       }
 
       logger.info(`📩 接收到 ${SCHEDULE_TASK_EXECUTE_EVENT} 事件 (Task)`, {
-        taskUuid: event.payload?.taskUuid,
-        templateUuid: event.payload?.sourceEntityId,
+        taskId: event.payload?.taskId,
+        templateId: event.payload?.sourceEntityId,
         taskName: event.payload?.taskName,
-        accountUuid: event.accountUuid,
+        identityId: event.identityId,
       });
 
       // 创建事件处理器
@@ -59,9 +59,9 @@ export function registerTaskEventListeners(taskInstanceRepository: ITaskInstance
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         event: {
-          accountUuid: event.accountUuid,
-          taskUuid: event.payload?.taskUuid,
-          templateUuid: event.payload?.sourceEntityId,
+          identityId: event.identityId,
+          taskId: event.payload?.taskId,
+          templateId: event.payload?.sourceEntityId,
         },
       });
     }

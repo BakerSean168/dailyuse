@@ -20,14 +20,14 @@ type TaskType = 'ONE_TIME' | 'RECURRING';
 import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
 
 interface ScheduleTaskTriggeredPayload {
-  taskUuid: string;
+  taskId: string;
   taskName: string;
   sourceModule: string;
-  sourceEntityId: string; // TaskTemplate.uuid
+  sourceEntityId: string; // TaskTemplate.id
   executionTime: number;
   metadata?: {
     payload?: {
-      taskUuid?: string;
+      taskId?: string;
       taskTitle?: string;
       taskType?: TaskType;
       reminderTriggers?: Array<{
@@ -54,22 +54,22 @@ export class TaskReminderScheduleHandler {
       return;
     }
 
-    const templateUuid = sourceEntityId;
-    console.log(`[TaskReminderScheduleHandler] 收到 Task 提醒触发: template=${templateUuid}`);
+    const templateId = sourceEntityId;
+    console.log(`[TaskReminderScheduleHandler] 收到 Task 提醒触发: template=${templateId}`);
 
     try {
       // 1. 获取今天的 TaskInstance
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      const instances = await this.taskInstanceRepository.findByTemplateUuidAndDateRange(
-        templateUuid,
+      const instances = await this.taskInstanceRepository.findByTemplateIdAndDateRange(
+        templateId,
         today,
         today
       );
 
       if (instances.length === 0) {
-        console.warn(`[TaskReminderScheduleHandler] 未找到今天的任务实例: template=${templateUuid}, date=${new Date(today).toISOString()}`);
+        console.warn(`[TaskReminderScheduleHandler] 未找到今天的任务实例: template=${templateId}, date=${new Date(today).toISOString()}`);
         return;
       }
 
@@ -137,13 +137,13 @@ export class TaskReminderScheduleHandler {
 
     // TODO: 调用通知服务
     // await notificationService.send({
-    //   accountUuid: instance.accountUuid,
+    //   identityId: instance.identityId,
     //   title: `任务提醒: ${instance.title}`,
     //   body: `您的任务即将开始`,
     //   type: 'TASK_REMINDER',
     //   metadata: {
-    //     instanceUuid: instance.uuid,
-    //     templateUuid: instance.templateUuid,
+    //     instanceId: instance.id,
+    //     templateId: instance.templateId,
     //   },
     // });
   }

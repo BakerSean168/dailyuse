@@ -42,27 +42,27 @@ export async function initializeEventListeners(): Promise<void> {
 function initializeTaskToGoalProgressListener(): void {
   eventBus.on('task.instance.completed', async (event: DomainEvent) => {
     try {
-      if (!event.accountUuid) {
+      if (!event.identityId) {
         console.error(
-          '❌ [TaskToGoalProgress] Missing accountUuid in task.instance.completed event',
+          '❌ [TaskToGoalProgress] Missing identityId in task.instance.completed event',
         );
         return;
       }
 
-      const { goalBinding, taskInstanceUuid, title } = event.payload as {
+      const { goalBinding, taskInstanceId, title } = event.payload as {
         goalBinding?: {
-          goalUuid: string;
-          keyResultUuid?: string;
+          goalId: string;
+          keyResultId?: string;
           incrementValue: number;
         };
-        taskInstanceUuid: string;
+        taskInstanceId: string;
         title: string;
       };
 
       // If the task is not bound to a goal, ignore
       if (!goalBinding) {
         console.log(
-          `ℹ️ [TaskToGoalProgress] Task ${taskInstanceUuid} completed without goal binding`,
+          `ℹ️ [TaskToGoalProgress] Task ${taskInstanceId} completed without goal binding`,
         );
         return;
       }
@@ -70,36 +70,36 @@ function initializeTaskToGoalProgressListener(): void {
       console.log(
         `🎯 [TaskToGoalProgress] Task "${title}" completed, updating goal progress`,
         {
-          goalUuid: goalBinding.goalUuid,
-          keyResultUuid: goalBinding.keyResultUuid,
+          goalId: goalBinding.goalId,
+          keyResultId: goalBinding.keyResultId,
           incrementValue: goalBinding.incrementValue,
         },
       );
 
       // If a Key Result is specified, add a progress record
-      if (goalBinding.keyResultUuid) {
+      if (goalBinding.keyResultId) {
         const goalRepository = getGoalRepository();
 
         // 1. Fetch goal with children (Key Results)
-        const goal = await goalRepository.findById(goalBinding.goalUuid, { includeChildren: true });
+        const goal = await goalRepository.findById(goalBinding.goalId, { includeChildren: true });
         if (!goal) {
-          console.error(`❌ [TaskToGoalProgress] Goal not found: ${goalBinding.goalUuid}`);
+          console.error(`❌ [TaskToGoalProgress] Goal not found: ${goalBinding.goalId}`);
           return;
         }
 
         // 2. Find the target Key Result
-        const keyResult = goal.keyResults.find((kr: KeyResult) => kr.uuid === goalBinding.keyResultUuid);
+        const keyResult = goal.keyResults.find((kr: KeyResult) => kr.id === goalBinding.keyResultId);
         if (!keyResult) {
           console.error(
-            `❌ [TaskToGoalProgress] KeyResult not found: ${goalBinding.keyResultUuid}`,
+            `❌ [TaskToGoalProgress] KeyResult not found: ${goalBinding.keyResultId}`,
           );
           return;
         }
 
         // 3. Create a new GoalRecord entity
         const record = GoalRecord.create({
-          keyResultUuid: goalBinding.keyResultUuid,
-          goalUuid: goalBinding.goalUuid,
+          keyResultId: goalBinding.keyResultId,
+          goalId: goalBinding.goalId,
           value: goalBinding.incrementValue,
           note: `任务完成: ${title}`,
           recordedAt: Date.now(),
@@ -112,12 +112,12 @@ function initializeTaskToGoalProgressListener(): void {
         await goalRepository.save(goal);
 
         console.log(
-          `✅ [TaskToGoalProgress] Added progress record for key result ${goalBinding.keyResultUuid} with value ${goalBinding.incrementValue}`,
+          `✅ [TaskToGoalProgress] Added progress record for key result ${goalBinding.keyResultId} with value ${goalBinding.incrementValue}`,
         );
       } else {
         // TODO: Handle goal-level progress update if no specific key result is targeted
         console.log(
-          `ℹ️ [TaskToGoalProgress] Task completed for goal ${goalBinding.goalUuid}, but no key result specified`,
+          `ℹ️ [TaskToGoalProgress] Task completed for goal ${goalBinding.goalId}, but no key result specified`,
         );
       }
     } catch (error) {

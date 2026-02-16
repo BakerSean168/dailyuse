@@ -120,7 +120,7 @@ export class ReminderTemplateBusinessService {
    * 批量计算多个模板的实际启用状态
    * 
    * @param templates - 模板列表
-   * @param groupMap - 分组映射表（key: groupUuid, value: ReminderGroup）
+   * @param groupMap - 分组映射表（key: groupId, value: ReminderGroup）
    * @returns 计算结果列表
    */
   public calculateEffectiveEnabledBatch(
@@ -130,9 +130,9 @@ export class ReminderTemplateBusinessService {
     const resultMap = new Map<string, TemplateEffectiveStatus>();
 
     for (const template of templates) {
-      const group = template.groupUuid ? groupMap.get(template.groupUuid) : null;
+      const group = template.groupId ? groupMap.get(template.groupId) : null;
       const status = this.calculateEffectiveEnabled(template, group || null);
-      resultMap.set(template.uuid, status);
+      resultMap.set(template.id, status);
     }
 
     return resultMap;

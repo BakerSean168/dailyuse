@@ -22,9 +22,9 @@ export class ListScheduleTasksByAccountUseCase {
     private readonly scheduleTaskRepository: IScheduleTaskRepository,
   ) {}
 
-  async execute(accountUuid: string): Promise<ScheduleTaskClientDTO[]> {
+  async execute(identityId: string): Promise<ScheduleTaskClientDTO[]> {
     // 1. 查询指定账户的所有任务
-    const tasks = await this.scheduleTaskRepository.findByAccountUuid(accountUuid);
+    const tasks = await this.scheduleTaskRepository.findByAccountId(identityId);
 
     // 2. 转换为 Client DTO 列表
     return tasks.map((t: any) => t.toClientDTO());

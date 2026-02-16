@@ -16,8 +16,8 @@ export class DeleteReminderTemplate {
   
   constructor(private readonly templateRepository: IReminderTemplateRepository) {}
 
-  async execute(uuid: string, accountUuid: string): Promise<void> {
-    const template = await this.templateRepository.findById(uuid);
+  async execute(id: string, identityId: string): Promise<void> {
+    const template = await this.templateRepository.findById(id);
     if (!template) {
       return; // 幂等性
     }
@@ -33,8 +33,8 @@ export class DeleteReminderTemplate {
       await eventBus.publish({
         eventType: 'reminder.template.deleted',
         payload: {
-          reminderUuid: uuid,
-          accountUuid: accountUuid,
+          reminderId: id,
+          identityId: identityId,
           deletedAt: Date.now(),
         },
         timestamp: Date.now(),

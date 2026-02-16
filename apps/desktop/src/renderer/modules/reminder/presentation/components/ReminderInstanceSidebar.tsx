@@ -46,12 +46,12 @@ import { zhCN } from 'date-fns/locale';
 // ============ Types ============
 
 export interface UpcomingReminder {
-  uuid: string;
+  id: string;
   title: string;
   message?: string;
   nextTriggerAt: string | Date;
   priority?: 'urgent' | 'high' | 'normal' | 'low';
-  templateUuid?: string;
+  templateId?: string;
   metadata?: {
     tags?: string[];
   };
@@ -335,7 +335,7 @@ export function ReminderInstanceSidebar({
                 <div className="divide-y divide-dashed">
                   {group.reminders.map((reminder) => (
                     <div
-                      key={reminder.uuid}
+                      key={reminder.id}
                       className={cn(
                         "px-4 py-3 cursor-pointer hover:bg-accent/50 transition-colors",
                         isOverdue(reminder.nextTriggerAt) && "bg-red-50"

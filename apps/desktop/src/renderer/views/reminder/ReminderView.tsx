@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 
 interface ReminderTemplate {
-  uuid: string;
+  id: string;
   displayTitle: string;
   typeText: string;
   importanceLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
@@ -21,7 +21,7 @@ interface ReminderTemplate {
 export default function ReminderView() {
   const [reminders] = useState<ReminderTemplate[]>([
     {
-      uuid: '1',
+      id: '1',
       displayTitle: '每日晨会',
       typeText: 'SCHEDULE',
       importanceLevel: 'HIGH',
@@ -30,7 +30,7 @@ export default function ReminderView() {
       triggerText: '09:00',
     },
     {
-      uuid: '2',
+      id: '2',
       displayTitle: '每周计划总结',
       typeText: 'PERIODIC',
       importanceLevel: 'MEDIUM',
@@ -39,7 +39,7 @@ export default function ReminderView() {
       triggerText: '周一 14:00',
     },
     {
-      uuid: '3',
+      id: '3',
       displayTitle: '重要项目跟进',
       typeText: 'SCHEDULE',
       importanceLevel: 'CRITICAL',
@@ -48,7 +48,7 @@ export default function ReminderView() {
       triggerText: '今天 16:00',
     },
     {
-      uuid: '4',
+      id: '4',
       displayTitle: '生活用品补充',
       typeText: 'PERIODIC',
       importanceLevel: 'LOW',
@@ -154,7 +154,7 @@ export default function ReminderView() {
         <div className="space-y-3">
           {sortedReminders.map((reminder) => (
             <div
-              key={reminder.uuid}
+              key={reminder.id}
               className="p-4 border rounded-lg hover:bg-secondary/50 transition-colors"
             >
               <div className="flex items-start gap-3">

@@ -10,7 +10,7 @@ import type {
   IScheduleEventApiClient,
 } from '../types';
 import type {
-  ScheduleClientDTO,
+  ScheduleJobClientDTO,
   CreateScheduleRequest,
   UpdateScheduleRequest,
   GetSchedulesByTimeRangeRequest,
@@ -30,43 +30,43 @@ export class ScheduleEventHttpAdapter implements IScheduleEventApiClient {
 
   // ===== Schedule Event CRUD =====
 
-  async createSchedule(data: CreateScheduleRequest): Promise<Result<ScheduleClientDTO>> {
+  async createSchedule(data: CreateScheduleRequest): Promise<Result<ScheduleJobClientDTO>> {
     return this.httpClient.post(this.baseUrl, data);
   }
 
-  async getSchedule(uuid: string): Promise<Result<ScheduleClientDTO>> {
-    return this.httpClient.get(`${this.baseUrl}/${uuid}`);
+  async getSchedule(id: string): Promise<Result<ScheduleJobClientDTO>> {
+    return this.httpClient.get(`${this.baseUrl}/${id}`);
   }
 
-  async getSchedulesByAccount(): Promise<Result<ScheduleClientDTO[]>> {
+  async getSchedulesByAccount(): Promise<Result<ScheduleJobClientDTO[]>> {
     return this.httpClient.get(this.baseUrl);
   }
 
   async getSchedulesByTimeRange(
     params: GetSchedulesByTimeRangeRequest,
-  ): Promise<Result<ScheduleClientDTO[]>> {
+  ): Promise<Result<ScheduleJobClientDTO[]>> {
     return this.httpClient.get(this.baseUrl, { params: params as unknown as Record<string, unknown> });
   }
 
-  async updateSchedule(uuid: string, data: UpdateScheduleRequest): Promise<Result<ScheduleClientDTO>> {
-    return this.httpClient.patch(`${this.baseUrl}/${uuid}`, data);
+  async updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<ScheduleJobClientDTO>> {
+    return this.httpClient.patch(`${this.baseUrl}/${id}`, data);
   }
 
-  async deleteSchedule(uuid: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.baseUrl}/${uuid}`);
+  async deleteSchedule(id: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
   // ===== Schedule Conflict Detection =====
 
-  async getScheduleConflicts(uuid: string): Promise<Result<ConflictDetectionResult>> {
-    return this.httpClient.get(`${this.baseUrl}/${uuid}/conflicts`);
+  async getScheduleConflicts(id: string): Promise<Result<ConflictDetectionResult>> {
+    return this.httpClient.get(`${this.baseUrl}/${id}/conflicts`);
   }
 
   async detectConflicts(params: {
     userId: string;
     startTime: number;
     endTime: number;
-    excludeUuid?: string;
+    excludeId?: string;
   }): Promise<Result<ConflictDetectionResult>> {
     return this.httpClient.post(`${this.baseUrl}/conflicts/detect`, params);
   }
@@ -74,17 +74,17 @@ export class ScheduleEventHttpAdapter implements IScheduleEventApiClient {
   async createScheduleWithConflictDetection(
     request: CreateScheduleRequest,
   ): Promise<Result<{
-    schedule: ScheduleClientDTO;
+    schedule: ScheduleJobClientDTO;
     conflicts?: ConflictDetectionResult;
   }>> {
     return this.httpClient.post(`${this.baseUrl}/with-conflict-detection`, request);
   }
 
   async resolveConflict(
-    scheduleUuid: string,
+    scheduleId: string,
     request: ResolveConflictRequest,
   ): Promise<Result<{
-    schedule: ScheduleClientDTO;
+    schedule: ScheduleJobClientDTO;
     conflicts: ConflictDetectionResult;
     applied: {
       strategy: string;
@@ -93,7 +93,7 @@ export class ScheduleEventHttpAdapter implements IScheduleEventApiClient {
       changes: string[];
     };
   }>> {
-    return this.httpClient.post(`${this.baseUrl}/${scheduleUuid}/resolve-conflict`, request);
+    return this.httpClient.post(`${this.baseUrl}/${scheduleId}/resolve-conflict`, request);
   }
 }
 

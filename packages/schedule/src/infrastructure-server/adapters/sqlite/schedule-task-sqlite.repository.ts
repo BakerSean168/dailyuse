@@ -18,13 +18,13 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO schedule_tasks (
-        uuid, account_uuid, name, description, source_module, source_entity_id, status,
+        id, identity_id, name, description, source_module, source_entity_id, status,
         enabled, cron_expression, timezone, start_date, end_date, max_executions,
         next_run_at, last_run_at, execution_count, last_execution_status, last_execution_duration,
         consecutive_failures, max_retries, initial_delay_ms, max_delay_ms, backoff_multiplier,
         retryable_statuses, payload, tags, priority, timeout, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         description = excluded.description,
         status = excluded.status,
@@ -39,8 +39,8 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.accountUuid,
+      dto.id,
+      dto.identityId,
       dto.name,
       dto.description,
       dto.sourceModule,
@@ -72,36 +72,36 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
     );
   }
 
-  async findByUuid(uuid: string): Promise<ScheduleTask | null> {
-    const stmt = this.db.prepare(`SELECT * FROM schedule_tasks WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<ScheduleTask | null> {
+    const stmt = this.db.prepare(`SELECT * FROM schedule_tasks WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return this.rowToTask(row);
   }
 
-  async deleteByUuid(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM schedule_tasks WHERE uuid = ?`);
-    stmt.run(uuid);
+  async deleteById(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM schedule_tasks WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<ScheduleTask[]> {
+  async findByAccountId(identityId: string): Promise<ScheduleTask[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM schedule_tasks WHERE account_uuid = ? ORDER BY next_run_at ASC NULLS LAST`
+      `SELECT * FROM schedule_tasks WHERE identity_id = ? ORDER BY next_run_at ASC NULLS LAST`
     );
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) => this.rowToTask(row));
   }
 
-  async findBySourceModule(module: SourceModule, accountUuid?: string): Promise<ScheduleTask[]> {
+  async findBySourceModule(module: SourceModule, identityId?: string): Promise<ScheduleTask[]> {
     let query = `SELECT * FROM schedule_tasks WHERE source_module = ?`;
     const params: any[] = [module];
 
-    if (accountUuid) {
-      query += ` AND account_uuid = ?`;
-      params.push(accountUuid);
+    if (identityId) {
+      query += ` AND identity_id = ?`;
+      params.push(identityId);
     }
 
     query += ` ORDER BY next_run_at ASC NULLS LAST`;
@@ -115,14 +115,14 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
   async findBySourceEntity(
     module: SourceModule,
     entityId: string,
-    accountUuid?: string,
+    identityId?: string,
   ): Promise<ScheduleTask[]> {
     let query = `SELECT * FROM schedule_tasks WHERE source_module = ? AND source_entity_id = ?`;
     const params: any[] = [module, entityId];
 
-    if (accountUuid) {
-      query += ` AND account_uuid = ?`;
-      params.push(accountUuid);
+    if (identityId) {
+      query += ` AND identity_id = ?`;
+      params.push(identityId);
     }
 
     query += ` ORDER BY next_run_at ASC NULLS LAST`;
@@ -133,13 +133,13 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
     return rows.map((row) => this.rowToTask(row));
   }
 
-  async findByStatus(status: ScheduleTaskStatus, accountUuid?: string): Promise<ScheduleTask[]> {
+  async findByStatus(status: ScheduleTaskStatus, identityId?: string): Promise<ScheduleTask[]> {
     let query = `SELECT * FROM schedule_tasks WHERE status = ?`;
     const params: any[] = [status];
 
-    if (accountUuid) {
-      query += ` AND account_uuid = ?`;
-      params.push(accountUuid);
+    if (identityId) {
+      query += ` AND identity_id = ?`;
+      params.push(identityId);
     }
 
     query += ` ORDER BY next_run_at ASC NULLS LAST`;
@@ -150,13 +150,13 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
     return rows.map((row) => this.rowToTask(row));
   }
 
-  async findEnabled(accountUuid?: string): Promise<ScheduleTask[]> {
+  async findEnabled(identityId?: string): Promise<ScheduleTask[]> {
     let query = `SELECT * FROM schedule_tasks WHERE enabled = 1 AND status = 'ACTIVE'`;
     const params: any[] = [];
 
-    if (accountUuid) {
-      query += ` AND account_uuid = ?`;
-      params.push(accountUuid);
+    if (identityId) {
+      query += ` AND identity_id = ?`;
+      params.push(identityId);
     }
 
     query += ` ORDER BY next_run_at ASC NULLS LAST`;
@@ -186,9 +186,9 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
     let query = `SELECT * FROM schedule_tasks WHERE 1=1`;
     const params: any[] = [];
 
-    if (options.accountUuid) {
-      query += ` AND account_uuid = ?`;
-      params.push(options.accountUuid);
+    if (options.identityId) {
+      query += ` AND identity_id = ?`;
+      params.push(options.identityId);
     }
 
     if (options.sourceModule) {
@@ -233,9 +233,9 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
     let query = `SELECT COUNT(*) as count FROM schedule_tasks WHERE 1=1`;
     const params: any[] = [];
 
-    if (options.accountUuid) {
-      query += ` AND account_uuid = ?`;
-      params.push(options.accountUuid);
+    if (options.identityId) {
+      query += ` AND identity_id = ?`;
+      params.push(options.identityId);
     }
 
     if (options.sourceModule) {
@@ -273,13 +273,13 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
     transaction(tasks);
   }
 
-  async deleteBatch(uuids: string[]): Promise<void> {
+  async deleteBatch(ids: string[]): Promise<void> {
     const transaction = this.db.transaction((ids: string[]) => {
-      for (const uuid of ids) {
-        this.deleteByUuid(uuid);
+      for (const id of ids) {
+        this.deleteById(id);
       }
     });
-    transaction(uuids);
+    transaction(ids);
   }
 
   async withTransaction<T>(fn: (repo: IScheduleTaskRepository) => Promise<T>): Promise<T> {
@@ -290,8 +290,8 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
   private rowToTask(row: any): ScheduleTask {
     // Convert snake_case row properties to camelCase DTO
     return ScheduleTask.fromPersistenceDTO({
-      uuid: row.uuid,
-      accountUuid: row.account_uuid,
+      id: row.id,
+      identityId: row.identity_id,
       name: row.name,
       description: row.description,
       sourceModule: row.source_module as SourceModule,

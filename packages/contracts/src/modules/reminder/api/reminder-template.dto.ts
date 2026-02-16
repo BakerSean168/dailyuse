@@ -71,7 +71,7 @@ export const CreateReminderTemplateSchema = z.object({
   tags: z.array(z.string()).optional(),
   color: z.string().optional(),
   icon: z.string().optional(),
-  groupUuid: z.string().uuid().optional(),
+  groupId: z.string().uuid().optional(),
 });
 
 export type CreateReminderTemplateReq = z.infer<typeof CreateReminderTemplateSchema>;

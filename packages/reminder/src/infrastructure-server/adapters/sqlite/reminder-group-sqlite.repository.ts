@@ -15,9 +15,9 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO reminder_groups (
-        uuid, account_uuid, name, control_mode, is_enabled, status, "order", stats, created_at, updated_at, deleted_at
+        id, identity_id, name, control_mode, is_enabled, status, "order", stats, created_at, updated_at, deleted_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
+      ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         control_mode = excluded.control_mode,
         is_enabled = excluded.is_enabled,
@@ -29,8 +29,8 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
     `);
 
     stmt.run(
-      dto.uuid,
-      dto.accountUuid,
+      dto.id,
+      dto.identityId,
       dto.name,
       dto.controlMode,
       dto.enabled ? 1 : 0,
@@ -43,15 +43,15 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
     );
   }
 
-  async findById(uuid: string): Promise<ReminderGroup | null> {
-    const stmt = this.db.prepare(`SELECT * FROM reminder_groups WHERE uuid = ? LIMIT 1`);
-    const row = stmt.get(uuid) as any;
+  async findById(id: string): Promise<ReminderGroup | null> {
+    const stmt = this.db.prepare(`SELECT * FROM reminder_groups WHERE id = ? LIMIT 1`);
+    const row = stmt.get(id) as any;
 
     if (!row) return null;
 
     return ReminderGroup.fromPersistenceDTO({
-      uuid: row.uuid,
-      accountUuid: row.account_uuid,
+      id: row.id,
+      identityId: row.identity_id,
       name: row.name,
       controlMode: row.control_mode,
       enabled: row.is_enabled === 1,
@@ -64,23 +64,23 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
     });
   }
 
-  async findByAccountUuid(
-    accountUuid: string,
+  async findByAccountId(
+    identityId: string,
     options?: { includeDeleted?: boolean },
   ): Promise<ReminderGroup[]> {
-    let sql = `SELECT * FROM reminder_groups WHERE account_uuid = ?`;
+    let sql = `SELECT * FROM reminder_groups WHERE identity_id = ?`;
     if (!options?.includeDeleted) {
       sql += ` AND deleted_at IS NULL`;
     }
     sql += ` ORDER BY "order" ASC`;
     
     const stmt = this.db.prepare(sql);
-    const rows = stmt.all(accountUuid) as any[];
+    const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) =>
       ReminderGroup.fromPersistenceDTO({
-        uuid: row.uuid,
-        accountUuid: row.account_uuid,
+        id: row.id,
+        identityId: row.identity_id,
         name: row.name,
         controlMode: row.control_mode,
         enabled: row.is_enabled === 1,
@@ -94,40 +94,40 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
     );
   }
 
-  async delete(uuid: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM reminder_groups WHERE uuid = ?`);
-    stmt.run(uuid);
+  async delete(id: string): Promise<void> {
+    const stmt = this.db.prepare(`DELETE FROM reminder_groups WHERE id = ?`);
+    stmt.run(id);
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    const stmt = this.db.prepare(`SELECT 1 FROM reminder_groups WHERE uuid = ? LIMIT 1`);
-    return stmt.get(uuid) !== undefined;
+  async exists(id: string): Promise<boolean> {
+    const stmt = this.db.prepare(`SELECT 1 FROM reminder_groups WHERE id = ? LIMIT 1`);
+    return stmt.get(id) !== undefined;
   }
 
   async findByControlMode(
-    accountUuid: string,
+    identityId: string,
     controlMode: string,
     options?: { includeDeleted?: boolean },
   ): Promise<ReminderGroup[]> {
-    let sql = `SELECT * FROM reminder_groups WHERE account_uuid = ? AND control_mode = ?`;
+    let sql = `SELECT * FROM reminder_groups WHERE identity_id = ? AND control_mode = ?`;
     if (!options?.includeDeleted) {
       sql += ` AND deleted_at IS NULL`;
     }
     sql += ` ORDER BY "order" ASC`;
     
     const stmt = this.db.prepare(sql);
-    const rows = stmt.all(accountUuid, controlMode) as any[];
+    const rows = stmt.all(identityId, controlMode) as any[];
 
     return rows.map((row) => this.rowToGroup(row));
   }
 
-  async findActive(accountUuid?: string): Promise<ReminderGroup[]> {
+  async findActive(identityId?: string): Promise<ReminderGroup[]> {
     let sql = `SELECT * FROM reminder_groups WHERE status = 'ACTIVE' AND deleted_at IS NULL`;
     const params: any[] = [];
 
-    if (accountUuid) {
-      sql += ` AND account_uuid = ?`;
-      params.push(accountUuid);
+    if (identityId) {
+      sql += ` AND identity_id = ?`;
+      params.push(identityId);
     }
 
     sql += ` ORDER BY "order" ASC`;
@@ -138,31 +138,31 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
     return rows.map((row) => this.rowToGroup(row));
   }
 
-  async findByIds(uuids: string[]): Promise<ReminderGroup[]> {
-    if (uuids.length === 0) return [];
+  async findByIds(ids: string[]): Promise<ReminderGroup[]> {
+    if (ids.length === 0) return [];
 
-    const placeholders = uuids.map(() => '?').join(',');
+    const placeholders = ids.map(() => '?').join(',');
     const stmt = this.db.prepare(
-      `SELECT * FROM reminder_groups WHERE uuid IN (${placeholders})`
+      `SELECT * FROM reminder_groups WHERE id IN (${placeholders})`
     );
-    const rows = stmt.all(...uuids) as any[];
+    const rows = stmt.all(...ids) as any[];
 
     // 维持输入的顺序
-    const uuidMap = new Map(rows.map((row) => [row.uuid, this.rowToGroup(row)]));
-    return uuids.map((uuid) => uuidMap.get(uuid)).filter((group) => group !== undefined) as ReminderGroup[];
+    const idMap = new Map(rows.map((row) => [row.id, this.rowToGroup(row)]));
+    return ids.map((id) => idMap.get(id)).filter((group) => group !== undefined) as ReminderGroup[];
   }
 
   async findByName(
-    accountUuid: string,
+    identityId: string,
     name: string,
-    excludeUuid?: string,
+    excludeId?: string,
   ): Promise<ReminderGroup | null> {
-    let sql = `SELECT * FROM reminder_groups WHERE account_uuid = ? AND name = ? AND deleted_at IS NULL`;
-    const params: any[] = [accountUuid, name];
+    let sql = `SELECT * FROM reminder_groups WHERE identity_id = ? AND name = ? AND deleted_at IS NULL`;
+    const params: any[] = [identityId, name];
 
-    if (excludeUuid) {
-      sql += ` AND uuid != ?`;
-      params.push(excludeUuid);
+    if (excludeId) {
+      sql += ` AND id != ?`;
+      params.push(excludeId);
     }
 
     const stmt = this.db.prepare(sql);
@@ -173,11 +173,11 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
   }
 
   async count(
-    accountUuid: string,
+    identityId: string,
     options?: { status?: string; includeDeleted?: boolean },
   ): Promise<number> {
-    let sql = `SELECT COUNT(*) as count FROM reminder_groups WHERE account_uuid = ?`;
-    const params: any[] = [accountUuid];
+    let sql = `SELECT COUNT(*) as count FROM reminder_groups WHERE identity_id = ?`;
+    const params: any[] = [identityId];
 
     if (options?.status) {
       sql += ` AND status = ?`;
@@ -195,8 +195,8 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
 
   private rowToGroup(row: any): ReminderGroup {
     return ReminderGroup.fromPersistenceDTO({
-      uuid: row.uuid,
-      accountUuid: row.account_uuid,
+      id: row.id,
+      identityId: row.identity_id,
       name: row.name,
       controlMode: row.control_mode,
       enabled: row.is_enabled === 1,

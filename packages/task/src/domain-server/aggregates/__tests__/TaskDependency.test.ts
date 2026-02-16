@@ -18,8 +18,8 @@ import { DependencyType } from '@dailyuse/contracts/task';
 
 describe('TaskDependency Aggregate', () => {
   // ==================== 测试数据 ====================
-  const mockPredecessorUuid = 'task-predecessor-uuid-123';
-  const mockSuccessorUuid = 'task-successor-uuid-456';
+  const mockPredecessorId = 'task-predecessor-uuid-123';
+  const mockSuccessorId = 'task-successor-uuid-456';
   const mockDependencyType: DependencyType = 'FINISH_TO_START';
 
   // ==================== 工厂方法测试 ====================
@@ -27,16 +27,16 @@ describe('TaskDependency Aggregate', () => {
     describe('create()', () => {
       it('应该创建有效的 TaskDependency', () => {
         const dependency = TaskDependency.create({
-          predecessorTaskUuid: mockPredecessorUuid,
-          successorTaskUuid: mockSuccessorUuid,
+          predecessorTaskId: mockPredecessorId,
+          successorTaskId: mockSuccessorId,
           dependencyType: mockDependencyType,
         });
 
-        expect(dependency.uuid).toBeDefined();
-        expect(typeof dependency.uuid).toBe('string');
-        expect(dependency.uuid.length).toBeGreaterThan(0);
-        expect(dependency.predecessorTaskUuid).toBe(mockPredecessorUuid);
-        expect(dependency.successorTaskUuid).toBe(mockSuccessorUuid);
+        expect(dependency.id).toBeDefined();
+        expect(typeof dependency.id).toBe('string');
+        expect(dependency.id.length).toBeGreaterThan(0);
+        expect(dependency.predecessorTaskId).toBe(mockPredecessorId);
+        expect(dependency.successorTaskId).toBe(mockSuccessorId);
         expect(dependency.dependencyType).toBe(mockDependencyType);
         expect(dependency.lagDays).toBeUndefined();
         expect(dependency.createdAt).toBeInstanceOf(Date);
@@ -45,24 +45,24 @@ describe('TaskDependency Aggregate', () => {
 
       it('应该为每个依赖生成唯一的 UUID', () => {
         const dependency1 = TaskDependency.create({
-          predecessorTaskUuid: mockPredecessorUuid,
-          successorTaskUuid: mockSuccessorUuid,
+          predecessorTaskId: mockPredecessorId,
+          successorTaskId: mockSuccessorId,
           dependencyType: mockDependencyType,
         });
 
         const dependency2 = TaskDependency.create({
-          predecessorTaskUuid: mockPredecessorUuid,
-          successorTaskUuid: mockSuccessorUuid,
+          predecessorTaskId: mockPredecessorId,
+          successorTaskId: mockSuccessorId,
           dependencyType: mockDependencyType,
         });
 
-        expect(dependency1.uuid).not.toBe(dependency2.uuid);
+        expect(dependency1.id).not.toBe(dependency2.id);
       });
 
       it('应该支持设置延迟天数', () => {
         const dependency = TaskDependency.create({
-          predecessorTaskUuid: mockPredecessorUuid,
-          successorTaskUuid: mockSuccessorUuid,
+          predecessorTaskId: mockPredecessorId,
+          successorTaskId: mockSuccessorId,
           dependencyType: mockDependencyType,
           lagDays: 3,
         });
@@ -73,8 +73,8 @@ describe('TaskDependency Aggregate', () => {
       it('应该拒绝任务自己依赖自己', () => {
         expect(() => {
           TaskDependency.create({
-            predecessorTaskUuid: mockPredecessorUuid,
-            successorTaskUuid: mockPredecessorUuid,
+            predecessorTaskId: mockPredecessorId,
+            successorTaskId: mockPredecessorId,
             dependencyType: mockDependencyType,
           });
         }).toThrow('Task cannot depend on itself');
@@ -83,8 +83,8 @@ describe('TaskDependency Aggregate', () => {
       it('应该拒绝负数的延迟天数', () => {
         expect(() => {
           TaskDependency.create({
-            predecessorTaskUuid: mockPredecessorUuid,
-            successorTaskUuid: mockSuccessorUuid,
+            predecessorTaskId: mockPredecessorId,
+            successorTaskId: mockSuccessorId,
             dependencyType: mockDependencyType,
             lagDays: -1,
           });
@@ -93,8 +93,8 @@ describe('TaskDependency Aggregate', () => {
 
       it('应该发布领域事件', () => {
         const dependency = TaskDependency.create({
-          predecessorTaskUuid: mockPredecessorUuid,
-          successorTaskUuid: mockSuccessorUuid,
+          predecessorTaskId: mockPredecessorId,
+          successorTaskId: mockSuccessorId,
           dependencyType: mockDependencyType,
         });
 
@@ -108,9 +108,9 @@ describe('TaskDependency Aggregate', () => {
       it('应该从 ServerDTO 正确恢复依赖', () => {
         const now = new Date();
         const dto: TaskDependencyServerDTO = {
-          uuid: 'test-uuid',
-          predecessorTaskUuid: mockPredecessorUuid,
-          successorTaskUuid: mockSuccessorUuid,
+          id: 'test-uuid',
+          predecessorTaskId: mockPredecessorId,
+          successorTaskId: mockSuccessorId,
           dependencyType: mockDependencyType,
           lagDays: 5,
           createdAt: now,
@@ -119,9 +119,9 @@ describe('TaskDependency Aggregate', () => {
 
         const dependency = TaskDependency.fromServerDTO(dto);
 
-        expect(dependency.uuid).toBe('test-uuid');
-        expect(dependency.predecessorTaskUuid).toBe(mockPredecessorUuid);
-        expect(dependency.successorTaskUuid).toBe(mockSuccessorUuid);
+        expect(dependency.id).toBe('test-uuid');
+        expect(dependency.predecessorTaskId).toBe(mockPredecessorId);
+        expect(dependency.successorTaskId).toBe(mockSuccessorId);
         expect(dependency.dependencyType).toBe(mockDependencyType);
         expect(dependency.lagDays).toBe(5);
       });
@@ -131,9 +131,9 @@ describe('TaskDependency Aggregate', () => {
       it('应该从 PersistenceDTO 正确恢复依赖', () => {
         const now = Date.now();
         const dto = {
-          uuid: 'test-uuid',
-          predecessorTaskUuid: mockPredecessorUuid,
-          successorTaskUuid: mockSuccessorUuid,
+          id: 'test-uuid',
+          predecessorTaskId: mockPredecessorId,
+          successorTaskId: mockSuccessorId,
           dependencyType: mockDependencyType as DependencyType,
           lagDays: 3,
           createdAt: now,
@@ -142,8 +142,8 @@ describe('TaskDependency Aggregate', () => {
 
         const dependency = TaskDependency.fromPersistenceDTO(dto);
 
-        expect(dependency.uuid).toBe('test-uuid');
-        expect(dependency.predecessorTaskUuid).toBe(mockPredecessorUuid);
+        expect(dependency.id).toBe('test-uuid');
+        expect(dependency.predecessorTaskId).toBe(mockPredecessorId);
         expect(dependency.lagDays).toBe(3);
       });
     });
@@ -155,8 +155,8 @@ describe('TaskDependency Aggregate', () => {
 
     beforeEach(() => {
       dependency = TaskDependency.create({
-        predecessorTaskUuid: mockPredecessorUuid,
-        successorTaskUuid: mockSuccessorUuid,
+        predecessorTaskId: mockPredecessorId,
+        successorTaskId: mockSuccessorId,
         dependencyType: mockDependencyType,
         lagDays: 2,
       });
@@ -210,19 +210,19 @@ describe('TaskDependency Aggregate', () => {
 
     beforeEach(() => {
       dependency = TaskDependency.create({
-        predecessorTaskUuid: mockPredecessorUuid,
-        successorTaskUuid: mockSuccessorUuid,
+        predecessorTaskId: mockPredecessorId,
+        successorTaskId: mockSuccessorId,
         dependencyType: mockDependencyType,
       });
     });
 
     describe('involvesTasks()', () => {
       it('应该识别前置任务', () => {
-        expect(dependency.involvesTasks(mockPredecessorUuid)).toBe(true);
+        expect(dependency.involvesTasks(mockPredecessorId)).toBe(true);
       });
 
       it('应该识别后续任务', () => {
-        expect(dependency.involvesTasks(mockSuccessorUuid)).toBe(true);
+        expect(dependency.involvesTasks(mockSuccessorId)).toBe(true);
       });
 
       it('不相关的任务应该返回 false', () => {
@@ -232,21 +232,21 @@ describe('TaskDependency Aggregate', () => {
 
     describe('isPredecessorOf()', () => {
       it('应该正确识别是某任务的前置依赖', () => {
-        expect(dependency.isPredecessorOf(mockSuccessorUuid)).toBe(true);
+        expect(dependency.isPredecessorOf(mockSuccessorId)).toBe(true);
       });
 
       it('不是某任务的前置依赖应该返回 false', () => {
-        expect(dependency.isPredecessorOf(mockPredecessorUuid)).toBe(false);
+        expect(dependency.isPredecessorOf(mockPredecessorId)).toBe(false);
       });
     });
 
     describe('isSuccessorOf()', () => {
       it('应该正确识别是某任务的后续依赖', () => {
-        expect(dependency.isSuccessorOf(mockPredecessorUuid)).toBe(true);
+        expect(dependency.isSuccessorOf(mockPredecessorId)).toBe(true);
       });
 
       it('不是某任务的后续依赖应该返回 false', () => {
-        expect(dependency.isSuccessorOf(mockSuccessorUuid)).toBe(false);
+        expect(dependency.isSuccessorOf(mockSuccessorId)).toBe(false);
       });
     });
   });
@@ -257,8 +257,8 @@ describe('TaskDependency Aggregate', () => {
 
     beforeEach(() => {
       dependency = TaskDependency.create({
-        predecessorTaskUuid: mockPredecessorUuid,
-        successorTaskUuid: mockSuccessorUuid,
+        predecessorTaskId: mockPredecessorId,
+        successorTaskId: mockSuccessorId,
         dependencyType: mockDependencyType,
         lagDays: 3,
       });
@@ -268,9 +268,9 @@ describe('TaskDependency Aggregate', () => {
       it('应该正确转换为 ServerDTO', () => {
         const dto = dependency.toServerDTO();
 
-        expect(dto.uuid).toBe(dependency.uuid);
-        expect(dto.predecessorTaskUuid).toBe(mockPredecessorUuid);
-        expect(dto.successorTaskUuid).toBe(mockSuccessorUuid);
+        expect(dto.id).toBe(dependency.id);
+        expect(dto.predecessorTaskId).toBe(mockPredecessorId);
+        expect(dto.successorTaskId).toBe(mockSuccessorId);
         expect(dto.lagDays).toBe(3);
       });
     });
@@ -279,8 +279,8 @@ describe('TaskDependency Aggregate', () => {
       it('应该正确转换为 PersistenceDTO', () => {
         const dto = dependency.toPersistenceDTO();
 
-        expect(dto.uuid).toBe(dependency.uuid);
-        expect(dto.predecessorTaskUuid).toBe(mockPredecessorUuid);
+        expect(dto.id).toBe(dependency.id);
+        expect(dto.predecessorTaskId).toBe(mockPredecessorId);
         expect(typeof dto.createdAt).toBe('number');
         expect(typeof dto.updatedAt).toBe('number');
       });
@@ -291,8 +291,8 @@ describe('TaskDependency Aggregate', () => {
   describe('Round-trip Conversion', () => {
     it('应该正确处理 ServerDTO 往返转换', () => {
       const original = TaskDependency.create({
-        predecessorTaskUuid: mockPredecessorUuid,
-        successorTaskUuid: mockSuccessorUuid,
+        predecessorTaskId: mockPredecessorId,
+        successorTaskId: mockSuccessorId,
         dependencyType: 'START_TO_START',
         lagDays: 5,
       });
@@ -300,15 +300,15 @@ describe('TaskDependency Aggregate', () => {
       const dto = original.toServerDTO();
       const restored = TaskDependency.fromServerDTO(dto);
 
-      expect(restored.uuid).toBe(original.uuid);
-      expect(restored.predecessorTaskUuid).toBe(original.predecessorTaskUuid);
+      expect(restored.id).toBe(original.id);
+      expect(restored.predecessorTaskId).toBe(original.predecessorTaskId);
       expect(restored.lagDays).toBe(original.lagDays);
     });
 
     it('应该正确处理 PersistenceDTO 往返转换', () => {
       const original = TaskDependency.create({
-        predecessorTaskUuid: mockPredecessorUuid,
-        successorTaskUuid: mockSuccessorUuid,
+        predecessorTaskId: mockPredecessorId,
+        successorTaskId: mockSuccessorId,
         dependencyType: 'FINISH_TO_FINISH',
         lagDays: 10,
       });
@@ -316,7 +316,7 @@ describe('TaskDependency Aggregate', () => {
       const dto = original.toPersistenceDTO();
       const restored = TaskDependency.fromPersistenceDTO(dto);
 
-      expect(restored.uuid).toBe(original.uuid);
+      expect(restored.id).toBe(original.id);
       expect(restored.lagDays).toBe(original.lagDays);
     });
   });
@@ -333,8 +333,8 @@ describe('TaskDependency Aggregate', () => {
 
       types.forEach((type) => {
         const dependency = TaskDependency.create({
-          predecessorTaskUuid: mockPredecessorUuid,
-          successorTaskUuid: mockSuccessorUuid,
+          predecessorTaskId: mockPredecessorId,
+          successorTaskId: mockSuccessorId,
           dependencyType: type,
         });
 
@@ -344,8 +344,8 @@ describe('TaskDependency Aggregate', () => {
 
     it('应该处理极大的延迟天数', () => {
       const dependency = TaskDependency.create({
-        predecessorTaskUuid: mockPredecessorUuid,
-        successorTaskUuid: mockSuccessorUuid,
+        predecessorTaskId: mockPredecessorId,
+        successorTaskId: mockSuccessorId,
         dependencyType: mockDependencyType,
         lagDays: 9999,
       });

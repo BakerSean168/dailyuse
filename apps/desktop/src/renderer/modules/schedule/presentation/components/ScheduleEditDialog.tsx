@@ -34,9 +34,9 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     try {
       setLoading(true);
       if (enabled) {
-        await scheduleApplicationService.pauseScheduleTask(task.uuid);
+        await scheduleApplicationService.pauseScheduleTask(task.id);
       } else {
-        await scheduleApplicationService.resumeScheduleTask(task.uuid);
+        await scheduleApplicationService.resumeScheduleTask(task.id);
       }
       setEnabled(!enabled);
       onUpdated();
@@ -54,7 +54,7 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     try {
       setLoading(true);
       const newTags = [...tags, newTag.trim()];
-      await scheduleApplicationService.updateTaskMetadata(task.uuid, {
+      await scheduleApplicationService.updateTaskMetadata(task.id, {
         tags: newTags,
       });
       setTags(newTags);
@@ -72,7 +72,7 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     try {
       setLoading(true);
       const newTags = tags.filter((t) => t !== tagToRemove);
-      await scheduleApplicationService.updateTaskMetadata(task.uuid, {
+      await scheduleApplicationService.updateTaskMetadata(task.id, {
         tags: newTags,
       });
       setTags(newTags);
@@ -88,7 +88,7 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     setError(null);
     try {
       setLoading(true);
-      await scheduleApplicationService.completeScheduleTask(task.uuid, '用户手动完成');
+      await scheduleApplicationService.completeScheduleTask(task.id, '用户手动完成');
       onUpdated();
       onClose();
     } catch (err) {
@@ -102,7 +102,7 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     setError(null);
     try {
       setLoading(true);
-      await scheduleApplicationService.cancelScheduleTask(task.uuid, '用户手动取消');
+      await scheduleApplicationService.cancelScheduleTask(task.id, '用户手动取消');
       onUpdated();
       onClose();
     } catch (err) {

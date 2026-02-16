@@ -104,7 +104,7 @@ export function createMockWithHandlers(
 /**
  * 创建 CRUD mock handlers
  */
-export function createCRUDMockHandlers<T extends { uuid: string }>(
+export function createCRUDMockHandlers<T extends { id: string }>(
   channelPrefix: string,
   initialData: T[] = []
 ): {
@@ -120,8 +120,8 @@ export function createCRUDMockHandlers<T extends { uuid: string }>(
 
   // Get
   mock.on(`${channelPrefix}:get`, (payload) => {
-    const p = payload as { uuid: string } | undefined;
-    const item = data.find(d => d.uuid === p?.uuid);
+    const p = payload as { id: string } | undefined;
+    const item = data.find(d => d.id === p?.id);
     if (!item) {
       throw { code: IPCErrorCode.NOT_FOUND, message: 'Not found' };
     }
@@ -130,16 +130,16 @@ export function createCRUDMockHandlers<T extends { uuid: string }>(
 
   // Create
   mock.on(`${channelPrefix}:create`, (payload) => {
-    const p = payload as Omit<T, 'uuid'> | undefined;
-    const newItem = { ...p, uuid: `mock-${Date.now()}` } as T;
+    const p = payload as Omit<T, 'id'> | undefined;
+    const newItem = { ...p, id: `mock-${Date.now()}` } as T;
     data.push(newItem);
     return newItem;
   });
 
   // Update
   mock.on(`${channelPrefix}:update`, (payload) => {
-    const p = payload as (Partial<T> & { uuid: string }) | undefined;
-    const index = data.findIndex(d => d.uuid === p?.uuid);
+    const p = payload as (Partial<T> & { id: string }) | undefined;
+    const index = data.findIndex(d => d.id === p?.id);
     if (index === -1) {
       throw { code: IPCErrorCode.NOT_FOUND, message: 'Not found' };
     }
@@ -149,8 +149,8 @@ export function createCRUDMockHandlers<T extends { uuid: string }>(
 
   // Delete
   mock.on(`${channelPrefix}:delete`, (payload) => {
-    const p = payload as { uuid: string } | undefined;
-    const index = data.findIndex(d => d.uuid === p?.uuid);
+    const p = payload as { id: string } | undefined;
+    const index = data.findIndex(d => d.id === p?.id);
     if (index === -1) {
       throw { code: IPCErrorCode.NOT_FOUND, message: 'Not found' };
     }

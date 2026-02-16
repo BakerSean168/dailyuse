@@ -35,7 +35,7 @@ interface ScheduleEventListProps {
   title?: string;
   showCreateButton?: boolean;
   onScheduleClick?: (schedule: ScheduleClientDTO) => void;
-  onDelete?: (uuid: string) => void;
+  onDelete?: (id: string) => void;
   onCreate?: () => void;
 }
 
@@ -82,9 +82,9 @@ export function ScheduleEventList({
     });
   }, [schedules]);
 
-  const handleDelete = useCallback((e: React.MouseEvent, uuid: string) => {
+  const handleDelete = useCallback((e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    onDelete?.(uuid);
+    onDelete?.(id);
   }, [onDelete]);
 
   return (
@@ -117,7 +117,7 @@ export function ScheduleEventList({
             <div className="p-4 space-y-3">
               {sortedSchedules.map((schedule) => (
                 <div
-                  key={schedule.uuid}
+                  key={schedule.id}
                   className="flex items-start gap-3 p-3 rounded-lg border hover:shadow-md transition-all cursor-pointer group"
                   onClick={() => onScheduleClick?.(schedule)}
                 >
@@ -177,7 +177,7 @@ export function ScheduleEventList({
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                    onClick={(e) => handleDelete(e, schedule.uuid)}
+                    onClick={(e) => handleDelete(e, schedule.id)}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>

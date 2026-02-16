@@ -10,8 +10,8 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
  * Uses Date objects instead of timestamps for easier sorting comparisons
  */
 export interface BenchmarkMockTask {
-  uuid: string;
-  accountUuid: string;
+  id: string;
+  identityId: string;
   title: string;
   description: string;
   importance: ImportanceLevel;
@@ -117,8 +117,8 @@ export function createMockTasks(
     );
 
     tasks.push({
-      uuid: `task-${i}`,
-      accountUuid: 'test-account',
+      id: `task-${i}`,
+      identityId: 'test-account',
       title: `Task ${i}`,
       description: `Description for task ${i}`,
       importance,

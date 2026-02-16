@@ -26,7 +26,7 @@ const logger = createLogger('AuthenticationRoutes');
 interface AuthUser {
   identityId: string;
   sessionId?: string;
-  sessionUuid?: string;
+  sessionId?: string;
   tokenType?: string;
   exp?: number;
 }
@@ -45,7 +45,7 @@ export interface AuthenticationRouteHandlers {
   // revokeAllSessions(identityId: string): Promise<void>;
   // enable2fa(identityId: string, method: string): Promise<any>;
   // disable2fa(identityId: string): Promise<void>;
-  // verify2fa(sessionUuid: string, code: string): Promise<any>;
+  // verify2fa(sessionId: string, code: string): Promise<any>;
   // createApiKey(identityId: string, name: string, expiresInDays?: number): Promise<any>;
   // listApiKeys(identityId: string): Promise<any>;
   // revokeApiKey(keyId: string, identityId: string): Promise<void>;
@@ -70,7 +70,7 @@ export function registerAuthenticationRoutes(
 
   // ======== Login & Registration ========
 
-  // POST /register �?用户注册
+  // POST /register �?用户注册
   router.post('/register', async (req: Request, res: Response) => {
     try {
       const parsed = RegisterByEmailSchema.safeParse(req.body);
@@ -95,7 +95,7 @@ export function registerAuthenticationRoutes(
     }
   });
 
-  // POST /login �?用户登录
+  // POST /login �?用户登录
   router.post('/login', async (req: Request, res: Response) => {
     try {
       const parsed = LoginByEmailSchema.safeParse(req.body);
@@ -120,7 +120,7 @@ export function registerAuthenticationRoutes(
     }
   });
 
-  // POST /logout �?用户登出
+  // POST /logout �?用户登出
   router.post('/logout', auth, async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthenticatedRequest;
@@ -143,7 +143,7 @@ export function registerAuthenticationRoutes(
 
   // ======== Session Management ========
 
-  // POST /refresh �?刷新访问令牌
+  // POST /refresh �?刷新访问令牌
   router.post('/refresh', auth, async (req: Request, res: Response) => {
     try {
       const parsed = RefreshTokenSchema.safeParse(req.body);
@@ -175,7 +175,7 @@ export function registerAuthenticationRoutes(
 
   /* Temporarily commented out - will implement later
   
-  // GET /sessions �?获取活跃会话列表
+  // GET /sessions �?获取活跃会话列表
   router.get('/sessions', auth, async (req: AuthenticatedRequest, res: Response) => {
     try {
       if (!req.user?.identityId) {
@@ -191,14 +191,14 @@ export function registerAuthenticationRoutes(
     }
   });
 
-  // DELETE /sessions/:sessionUuid �?撤销特定会话
-  router.delete('/sessions/:sessionUuid', auth, async (req: AuthenticatedRequest, res: Response) => {
+  // DELETE /sessions/:sessionId �?撤销特定会话
+  router.delete('/sessions/:sessionId', auth, async (req: AuthenticatedRequest, res: Response) => {
     try {
       if (!req.user?.identityId) {
         res.status(401).json({ success: false, message: 'Unauthorized' });
         return;
       }
-      const parsed = RevokeSessionSchema.safeParse({ sessionId: req.params.sessionUuid });
+      const parsed = RevokeSessionSchema.safeParse({ sessionId: req.params.sessionId });
       if (!parsed.success) {
         res.status(400).json({
           success: false,
@@ -216,7 +216,7 @@ export function registerAuthenticationRoutes(
     }
   });
 
-  // POST /logout-all �?全设备登�?
+  // POST /logout-all �?全设备登�?
   router.post('/logout-all', auth, async (req: AuthenticatedRequest, res: Response) => {
     try {
       if (!req.user?.identityId) {
@@ -234,7 +234,7 @@ export function registerAuthenticationRoutes(
 
   // ======== Two-Factor Authentication ========
 
-  // POST /two-factor/enable �?启用双因素认�?
+  // POST /two-factor/enable �?启用双因素认�?
   router.post('/two-factor/enable', auth, async (req: AuthenticatedRequest, res: Response) => {
     try {
       if (!req.user?.identityId) {
@@ -251,7 +251,7 @@ export function registerAuthenticationRoutes(
     }
   });
 
-  // POST /two-factor/disable �?禁用双因素认�?
+  // POST /two-factor/disable �?禁用双因素认�?
   router.post('/two-factor/disable', auth, async (req: AuthenticatedRequest, res: Response) => {
     try {
       if (!req.user?.identityId) {
@@ -267,15 +267,15 @@ export function registerAuthenticationRoutes(
     }
   });
 
-  // POST /two-factor/verify �?验证双因素认证代�?
+  // POST /two-factor/verify �?验证双因素认证代�?
   router.post('/two-factor/verify', async (req: Request, res: Response) => {
     try {
-      const { code, sessionUuid } = req.body;
-      if (!code || !sessionUuid) {
-        res.status(400).json({ success: false, message: 'sessionUuid and code are required' });
+      const { code, sessionId } = req.body;
+      if (!code || !sessionId) {
+        res.status(400).json({ success: false, message: 'sessionId and code are required' });
         return;
       }
-      const result = await handlers.verify2fa(sessionUuid, code);
+      const result = await handlers.verify2fa(sessionId, code);
       res.json({ success: true, data: result, message: 'Two-factor verification successful' });
     } catch (error) {
       logger.error('Verify 2FA failed:', error);
@@ -286,7 +286,7 @@ export function registerAuthenticationRoutes(
 
   // ======== API Keys ========
 
-  // POST /api-keys �?生成�?API 密钥
+  // POST /api-keys �?生成�?API 密钥
   router.post('/api-keys', auth, async (req: AuthenticatedRequest, res: Response) => {
     try {
       if (!req.user?.identityId) {
@@ -307,7 +307,7 @@ export function registerAuthenticationRoutes(
     }
   });
 
-  // GET /api-keys �?列出所�?API 密钥
+  // GET /api-keys �?列出所�?API 密钥
   router.get('/api-keys', auth, async (req: AuthenticatedRequest, res: Response) => {
     try {
       if (!req.user?.identityId) {
@@ -323,7 +323,7 @@ export function registerAuthenticationRoutes(
     }
   });
 
-  // DELETE /api-keys/:keyId �?撤销 API 密钥
+  // DELETE /api-keys/:keyId �?撤销 API 密钥
   router.delete('/api-keys/:keyId', auth, async (req: AuthenticatedRequest, res: Response) => {
     try {
       if (!req.user?.identityId) {
@@ -341,7 +341,7 @@ export function registerAuthenticationRoutes(
 
   // ======== Password Management ========
 
-  // POST /password/change �?修改密码
+  // POST /password/change �?修改密码
   router.post('/password/change', auth, async (req: AuthenticatedRequest, res: Response) => {
     try {
       if (!req.user?.identityId) {
@@ -366,7 +366,7 @@ export function registerAuthenticationRoutes(
     }
   });
 
-  // POST /password/forgot �?申请密码重置
+  // POST /password/forgot �?申请密码重置
   router.post('/password/forgot', async (req: Request, res: Response) => {
     try {
       const parsed = ForgotPasswordSchema.safeParse(req.body);
@@ -387,7 +387,7 @@ export function registerAuthenticationRoutes(
     }
   });
 
-  // POST /password/reset �?重置密码
+  // POST /password/reset �?重置密码
   router.post('/password/reset', async (req: Request, res: Response) => {
     try {
       const parsed = ResetPasswordSchema.safeParse(req.body);

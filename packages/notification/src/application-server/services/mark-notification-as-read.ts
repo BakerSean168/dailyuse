@@ -16,21 +16,21 @@ export class MarkNotificationAsRead {
     private readonly notificationRepository: INotificationRepository,
   ) {}
 
-  async execute(uuid: string): Promise<void> {
-    const notification = await this.notificationRepository.findById(uuid);
+  async execute(id: string): Promise<void> {
+    const notification = await this.notificationRepository.findById(id);
     if (!notification) {
-      throw new Error(`Notification not found: ${uuid}`);
+      throw new Error(`Notification not found: ${id}`);
     }
 
     notification.markAsRead();
     await this.notificationRepository.save(notification);
   }
 
-  async executeMany(uuids: string[]): Promise<void> {
-    await this.notificationRepository.markManyAsRead(uuids);
+  async executeMany(ids: string[]): Promise<void> {
+    await this.notificationRepository.markManyAsRead(ids);
   }
 
-  async executeAll(accountUuid: string): Promise<void> {
-    await this.notificationRepository.markAllAsRead(accountUuid);
+  async executeAll(identityId: string): Promise<void> {
+    await this.notificationRepository.markAllAsRead(identityId);
   }
 }

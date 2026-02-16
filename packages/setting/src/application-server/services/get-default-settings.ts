@@ -16,7 +16,7 @@ export class GetDefaultSettings {
    * 执行用例
    */
   execute(): UserSettingClientDTO {
-    const defaultSetting = UserSetting.create({ accountUuid: 'temp-uuid' });
+    const defaultSetting = UserSetting.create({ identityId: 'temp-id' });
     return defaultSetting.toClientDTO();
   }
 }

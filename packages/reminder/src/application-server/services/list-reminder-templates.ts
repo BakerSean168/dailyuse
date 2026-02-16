@@ -19,19 +19,19 @@ export class ListReminderTemplates {
   constructor(private readonly templateRepository: IReminderTemplateRepository) {}
 
   async execute(
-    accountUuid: string,
+    identityId: string,
     query?: QueryReminderTemplatesRequest,
   ): Promise<ReminderTemplateListDTO> {
     let templates: ReminderTemplate[];
 
-    if (query?.groupUuid) {
-      templates = await this.templateRepository.findByGroupUuid(query.groupUuid, {
+    if (query?.groupId) {
+      templates = await this.templateRepository.findByGroupId(query.groupId, {
         includeHistory: false,
       });
     } else if (query?.effectiveEnabled) {
-      templates = await this.templateRepository.findActive(accountUuid);
+      templates = await this.templateRepository.findActive(identityId);
     } else {
-      templates = await this.templateRepository.findByAccountUuid(accountUuid, {
+      templates = await this.templateRepository.findByAccountId(identityId, {
         includeHistory: false,
       });
     }

@@ -23,25 +23,25 @@ export class UpdateReminderTemplate {
   ) {}
 
   async execute(
-    uuid: string,
+    id: string,
     request: UpdateReminderTemplateRequest,
   ): Promise<ReminderTemplateClientDTO> {
-    const template = await this.templateRepository.findById(uuid);
+    const template = await this.templateRepository.findById(id);
     if (!template) {
-      throw new Error(`Reminder Template ${uuid} not found`);
+      throw new Error(`Reminder Template ${id} not found`);
     }
 
     const policy = new ReminderPolicy();
     const group =
-      request.groupUuid !== undefined && request.groupUuid !== null && this.groupRepository
-        ? await this.groupRepository.findById(request.groupUuid)
+      request.groupId !== undefined && request.groupId !== null && this.groupRepository
+        ? await this.groupRepository.findById(request.groupId)
         : null;
 
-    if (request.groupUuid !== undefined && request.groupUuid !== null && !group) {
-      throw new Error(`Invalid groupUuid: ${request.groupUuid}`);
+    if (request.groupId !== undefined && request.groupId !== null && !group) {
+      throw new Error(`Invalid groupId: ${request.groupId}`);
     }
 
-    if (request.groupUuid !== undefined) {
+    if (request.groupId !== undefined) {
       policy.assertValidGroupAssignment(template, group);
     }
 
@@ -57,10 +57,10 @@ export class UpdateReminderTemplate {
       tags: request.tags,
       color: request.color,
       icon: request.icon,
-      groupUuid: request.groupUuid,
+      groupId: request.groupId,
     });
 
-    if (request.groupUuid !== undefined) {
+    if (request.groupId !== undefined) {
       template.setEffectiveEnabled(policy.calculateEffectiveEnabled(template, group));
     }
 

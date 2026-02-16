@@ -20,7 +20,7 @@ import {
 // ============================================================================
 
 export const CreateNotificationSchema = z.object({
-  accountUuid: z.string().uuid(),
+  identityId: z.string().uuid(),
   title: z.string().min(1).max(200),
   content: z.string().min(1),
   type: z.nativeEnum(NotificationType),
@@ -28,7 +28,7 @@ export const CreateNotificationSchema = z.object({
   importance: z.string().optional(),
   urgency: z.string().optional(),
   relatedEntityType: z.nativeEnum(RelatedEntityType).optional(),
-  relatedEntityUuid: z.string().uuid().optional(),
+  relatedEntityId: z.string().uuid().optional(),
   actions: z.array(z.any()).optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
   expiresAt: z.number().int().optional(),

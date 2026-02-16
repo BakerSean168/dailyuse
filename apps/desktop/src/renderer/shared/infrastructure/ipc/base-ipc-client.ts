@@ -14,18 +14,18 @@
  * @example
  * ```typescript
  * // 基本用法
- * const result = await ipcClient.invoke<TaskTemplateClientDTO>('task:get-template', { uuid });
+ * const result = await ipcClient.invoke<TaskTemplateClientDTO>('task:get-template', { id });
  * 
  * // 带配置
  * const data = await ipcClient.invoke<GoalClientDTO[]>('goal:list', 
- *   { accountUuid },
+ *   { identityId },
  *   { timeout: 5000, retries: 2 }
  * );
  * 
  * // 批量请求
  * const results = await ipcClient.batch([
- *   { channel: 'task:list', payload: { accountUuid } },
- *   { channel: 'goal:list', payload: { accountUuid } },
+ *   { channel: 'task:list', payload: { identityId } },
+ *   { channel: 'goal:list', payload: { identityId } },
  * ]);
  * ```
  */

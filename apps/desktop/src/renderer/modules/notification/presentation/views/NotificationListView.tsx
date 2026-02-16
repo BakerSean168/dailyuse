@@ -122,7 +122,7 @@ export function NotificationListView() {
         ) : (
           notifications.map((notification) => (
             <NotificationItem
-              key={notification.uuid}
+              key={notification.id}
               notification={notification}
               onRead={markAsRead}
               onDelete={deleteNotification}

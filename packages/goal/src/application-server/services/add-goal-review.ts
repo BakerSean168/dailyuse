@@ -16,7 +16,7 @@ export class AddGoalReview {
   ) {}
 
   async execute(
-    goalUuid: string,
+    goalId: string,
     params: {
       title: string;
       content: string;
@@ -27,9 +27,9 @@ export class AddGoalReview {
       nextActions?: string;
     },
   ): Promise<Result<GoalClientDTO>> {
-    const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
+    const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
     if (!goal) {
-      return error('NOT_FOUND', `Goal not found: ${goalUuid}`);
+      return error('NOT_FOUND', `Goal not found: ${goalId}`);
     }
 
     this.goalPolicy.ensureGoalCanBeModified(goal);

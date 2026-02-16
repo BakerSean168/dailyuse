@@ -13,13 +13,13 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { useGoal } from '../hooks';
 
 interface GoalDetailDialogProps {
-  goalUuid: string;
+  goalId: string;
   open: boolean;
   onClose: () => void;
   onUpdated: () => void;
 }
 
-export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDetailDialogProps) {
+export function GoalDetailDialog({ goalId, open, onClose, onUpdated }: GoalDetailDialogProps) {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -30,16 +30,16 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
 
   // 加载目标详情
   useEffect(() => {
-    if (open && goalUuid) {
+    if (open && goalId) {
       loadGoalDetail();
     }
-  }, [open, goalUuid]);
+  }, [open, goalId]);
 
   const loadGoalDetail = async () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await getGoal(goalUuid);
+      const result = await getGoal(goalId);
       setGoal(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载失败');
@@ -53,7 +53,7 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
     if (!goal) return;
     
     try {
-      await completeGoalAction(goal.uuid);
+      await completeGoalAction(goal.id);
       onUpdated();
       onClose();
     } catch (err) {
@@ -66,7 +66,7 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
     if (!goal) return;
     
     try {
-      await archiveGoalAction(goal.uuid);
+      await archiveGoalAction(goal.id);
       onUpdated();
       onClose();
     } catch (err) {
@@ -79,7 +79,7 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
     if (!goal || !confirm('确定要删除这个目标吗？')) return;
     
     try {
-      await deleteGoalAction(goal.uuid);
+      await deleteGoalAction(goal.id);
       onUpdated();
       onClose();
     } catch (err) {

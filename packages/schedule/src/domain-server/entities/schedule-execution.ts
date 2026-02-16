@@ -22,7 +22,7 @@ import { ExecutionStatus } from '@dailyuse/contracts/schedule';
  */
 export class ScheduleExecution extends Entity<string> implements ScheduleExecutionServer {
   // ===== 私有字段 =====
-  private _taskUuid: string;
+  private _taskId: string;
   private _executionTime: Date;
   private _status: ExecutionStatus;
   private _duration: number | null;
@@ -33,8 +33,8 @@ export class ScheduleExecution extends Entity<string> implements ScheduleExecuti
 
   // ===== 构造函数（私有） =====
   private constructor(params: {
-    uuid?: string;
-    taskUuid: string;
+    id?: string;
+    taskId: string;
     executionTime: number;
     status: ExecutionStatus;
     duration?: number | null;
@@ -43,8 +43,8 @@ export class ScheduleExecution extends Entity<string> implements ScheduleExecuti
     retryCount?: number;
     createdAt?: number;
   }) {
-    super(params.uuid ?? generateUUID());
-    this._taskUuid = params.taskUuid;
+    super(params.id ?? generateUUID());
+    this._taskId = params.taskId;
     this._executionTime = new Date(params.executionTime);
     this._status = params.status;
     this._duration = params.duration ?? null;
@@ -55,11 +55,9 @@ export class ScheduleExecution extends Entity<string> implements ScheduleExecuti
   }
 
   // ===== Getter 属性 =====
-  public get uuid(): string {
-    return this.id;
-  }
-  public get taskUuid(): string {
-    return this._taskUuid;
+
+  public get taskId(): string {
+    return this._taskId;
   }
   public get executionTime(): number {
     return this._executionTime.getTime();
@@ -183,8 +181,8 @@ export class ScheduleExecution extends Entity<string> implements ScheduleExecuti
    */
   public toServerDTO(): ScheduleExecutionServerDTO {
     return {
-      uuid: this.id,
-      taskUuid: this._taskUuid,
+      id: this.id,
+      taskId: this._taskId,
       executionTime: this._executionTime.getTime(),
       status: this._status,
       duration: this._duration,
@@ -201,7 +199,7 @@ export class ScheduleExecution extends Entity<string> implements ScheduleExecuti
   public toClientDTO(): ScheduleExecutionClientDTO {
     return {
       id: this.id,
-      scheduleTaskId: this._taskUuid,
+      scheduleTaskId: this._taskId,
       executionTime: this._executionTime.getTime(),
       status: this._status,
       duration: this._duration,
@@ -235,8 +233,8 @@ export class ScheduleExecution extends Entity<string> implements ScheduleExecuti
    */
   public toPersistenceDTO(): ScheduleExecutionPersistenceDTO {
     return {
-      uuid: this.id,
-      taskUuid: this._taskUuid,
+      id: this.id,
+      taskId: this._taskId,
       executionTime: this._executionTime.getTime(),
       status: this._status,
       duration: this._duration,
@@ -301,12 +299,12 @@ export class ScheduleExecution extends Entity<string> implements ScheduleExecuti
    * 创建新的执行记录
    */
   public static create(params: {
-    taskUuid: string;
+    taskId: string;
     executionTime: number;
     status?: ExecutionStatus;
   }): ScheduleExecution {
     return new ScheduleExecution({
-      taskUuid: params.taskUuid,
+      taskId: params.taskId,
       executionTime: params.executionTime,
       status: params.status ?? ExecutionStatus.Success,
       createdAt: Date.now(),
@@ -318,8 +316,8 @@ export class ScheduleExecution extends Entity<string> implements ScheduleExecuti
    */
   public static fromServerDTO(dto: ScheduleExecutionServerDTO): ScheduleExecution {
     return new ScheduleExecution({
-      uuid: dto.uuid,
-      taskUuid: dto.taskUuid,
+      id: dto.id,
+      taskId: dto.taskId,
       executionTime: dto.executionTime,
       status: dto.status,
       duration: dto.duration,
@@ -342,8 +340,8 @@ export class ScheduleExecution extends Entity<string> implements ScheduleExecuti
    */
   public static fromPersistenceDTO(dto: any): ScheduleExecution {
     return new ScheduleExecution({
-      uuid: dto.uuid,
-      taskUuid: dto.taskUuid,
+      id: dto.id,
+      taskId: dto.taskId,
       executionTime: dto.executionTime,
       status: dto.status,
       duration: dto.duration,

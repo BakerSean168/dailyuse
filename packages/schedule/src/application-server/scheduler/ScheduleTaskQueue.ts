@@ -93,9 +93,9 @@ export interface ScheduleTaskQueueConfig {
   /** 监控实现（默认 NoopScheduleMonitor） */
   monitor?: IScheduleMonitor;
   /** 执行任务的回调 */
-  onExecuteTask: (taskUuid: string, item: ScheduledItem) => Promise<void>;
+  onExecuteTask: (taskId: string, item: ScheduledItem) => Promise<void>;
   /** 执行错误回调（可选） */
-  onExecuteError?: (taskUuid: string, error: Error) => void;
+  onExecuteError?: (taskId: string, error: Error) => void;
   /** 最大 timer 延迟（毫秒，默认 24 小时，超过此值会分段设置） */
   maxTimerDelay?: number;
 }
@@ -111,7 +111,7 @@ export interface ScheduleTaskQueueStatus {
   /** 下一个任务的执行时间 */
   nextTaskAt: Date | null;
   /** 下一个任务的 UUID */
-  nextTaskUuid: string | null;
+  nextTaskId: string | null;
 }
 
 /**
@@ -138,10 +138,10 @@ export class ScheduleTaskQueue {
   private readonly logger: IScheduleLogger;
   private readonly monitor: IScheduleMonitor;
   private readonly onExecuteTask: (
-    taskUuid: string,
+    taskId: string,
     item: ScheduledItem
   ) => Promise<void>;
-  private readonly onExecuteError?: (taskUuid: string, error: Error) => void;
+  private readonly onExecuteError?: (taskId: string, error: Error) => void;
   private readonly maxTimerDelay: number;
 
   // 24 小时（毫秒）- setTimeout 的最大安全延迟
@@ -203,20 +203,20 @@ export class ScheduleTaskQueue {
   addTask(item: ScheduledItem): void {
     if (!item.nextRunAt || item.nextRunAt <= 0) {
       this.logger.warn('Task has no valid nextRunAt, skipping', {
-        taskUuid: item.taskUuid,
+        taskId: item.taskId,
         taskName: item.taskName,
       });
       return;
     }
 
     // 如果任务已存在，先移除
-    if (this.queue.has(item.taskUuid)) {
-      this.queue.remove(item.taskUuid);
+    if (this.queue.has(item.taskId)) {
+      this.queue.remove(item.taskId);
     }
 
     this.queue.insert(item);
     this.logger.debug('Task added to queue', {
-      taskUuid: item.taskUuid,
+      taskId: item.taskId,
       taskName: item.taskName,
       nextRunAt: new Date(item.nextRunAt).toISOString(),
     });
@@ -229,13 +229,13 @@ export class ScheduleTaskQueue {
 
   /**
    * 从队列中移除任务
-   * @param taskUuid 任务 UUID
+   * @param taskId 任务 ID
    * @returns 是否成功移除
    */
-  removeTask(taskUuid: string): boolean {
-    const removed = this.queue.remove(taskUuid);
+  removeTask(taskId: string): boolean {
+    const removed = this.queue.remove(taskId);
     if (removed) {
-      this.logger.debug('Task removed from queue', { taskUuid });
+      this.logger.debug('Task removed from queue', { taskId });
       if (this.isRunning) {
         this.reschedule();
       }
@@ -245,15 +245,15 @@ export class ScheduleTaskQueue {
 
   /**
    * 更新任务的执行时间
-   * @param taskUuid 任务 UUID
+   * @param taskId 任务 ID
    * @param newNextRunAt 新的执行时间（毫秒时间戳）
    * @returns 是否成功更新
    */
-  updateTaskSchedule(taskUuid: string, newNextRunAt: number): boolean {
-    const updated = this.queue.update(taskUuid, newNextRunAt);
+  updateTaskSchedule(taskId: string, newNextRunAt: number): boolean {
+    const updated = this.queue.update(taskId, newNextRunAt);
     if (updated) {
       this.logger.debug('Task schedule updated', {
-        taskUuid,
+        taskId,
         newNextRunAt: new Date(newNextRunAt).toISOString(),
       });
       if (this.isRunning) {
@@ -265,11 +265,11 @@ export class ScheduleTaskQueue {
 
   /**
    * 暂停任务（从队列移除但不删除数据）
-   * @param taskUuid 任务 UUID
+   * @param taskId 任务 ID
    * @returns 是否成功暂停
    */
-  pauseTask(taskUuid: string): boolean {
-    return this.removeTask(taskUuid);
+  pauseTask(taskId: string): boolean {
+    return this.removeTask(taskId);
   }
 
   /**
@@ -304,7 +304,7 @@ export class ScheduleTaskQueue {
       } catch (error) {
         results.failed++;
         this.logger.error('Missed task execution failed', {
-          taskUuid: item.taskUuid,
+          taskId: item.taskId,
           taskName: item.taskName,
           error: error instanceof Error ? error.message : String(error),
         });
@@ -330,7 +330,7 @@ export class ScheduleTaskQueue {
       isRunning: this.isRunning,
       queueSize: this.queue.size,
       nextTaskAt: next ? new Date(next.nextRunAt) : null,
-      nextTaskUuid: next?.taskUuid ?? null,
+      nextTaskId: next?.taskId ?? null,
     };
   }
 
@@ -343,10 +343,10 @@ export class ScheduleTaskQueue {
 
   /**
    * 检查任务是否在队列中
-   * @param taskUuid 任务 UUID
+   * @param taskId 任务 ID
    */
-  hasTask(taskUuid: string): boolean {
-    return this.queue.has(taskUuid);
+  hasTask(taskId: string): boolean {
+    return this.queue.has(taskId);
   }
 
   /**
@@ -414,14 +414,14 @@ export class ScheduleTaskQueue {
     if (delay > this.maxTimerDelay) {
       delay = this.maxTimerDelay;
       this.logger.debug('Delay exceeds max, setting intermediate timer', {
-        taskUuid: next.taskUuid,
+        taskId: next.taskId,
         taskName: next.taskName,
         scheduledAt: new Date(next.nextRunAt).toISOString(),
         intermediateDelayMs: delay,
       });
     } else {
       this.logger.debug('Scheduling next task', {
-        taskUuid: next.taskUuid,
+        taskId: next.taskId,
         taskName: next.taskName,
         scheduledAt: new Date(next.nextRunAt).toISOString(),
         delayMs: delay,
@@ -463,7 +463,7 @@ export class ScheduleTaskQueue {
       await this.executeTask(item);
     } catch (error) {
       this.logger.error('Task execution failed', {
-        taskUuid: item.taskUuid,
+        taskId: item.taskId,
         taskName: item.taskName,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -477,21 +477,21 @@ export class ScheduleTaskQueue {
    * 执行单个任务
    */
   private async executeTask(item: ScheduledItem): Promise<void> {
-    const { taskUuid, taskName, cronExpression, timezone } = item;
+    const { taskId, taskName, cronExpression, timezone } = item;
     const startTime = this.timer.now();
 
     this.isExecuting = true;
-    this.monitor.recordExecutionStart(taskUuid, taskName);
+    this.monitor.recordExecutionStart(taskId, taskName);
 
     try {
       // 调用执行回调
-      await this.onExecuteTask(taskUuid, item);
+      await this.onExecuteTask(taskId, item);
 
       const duration = this.timer.now() - startTime;
-      this.monitor.recordExecutionSuccess(taskUuid, taskName, duration);
+      this.monitor.recordExecutionSuccess(taskId, taskName, duration);
 
       this.logger.info('Task executed successfully', {
-        taskUuid,
+        taskId,
         taskName,
         duration,
       });
@@ -506,7 +506,7 @@ export class ScheduleTaskQueue {
           });
 
           this.logger.debug('Recurring task rescheduled', {
-            taskUuid,
+            taskId,
             taskName,
             nextRunAt: nextRunAt.toISOString(),
           });
@@ -514,8 +514,8 @@ export class ScheduleTaskQueue {
       }
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      this.monitor.recordExecutionFailure(taskUuid, taskName, err);
-      this.onExecuteError?.(taskUuid, err);
+      this.monitor.recordExecutionFailure(taskId, taskName, err);
+      this.onExecuteError?.(taskId, err);
       throw error;
     } finally {
       this.isExecuting = false;

@@ -28,39 +28,39 @@ export class TaskDependencyIpcAdapter implements ITaskDependencyApiClient {
   constructor(private readonly ipcClient: IIpcClient) {}
 
   async createDependency(
-    taskUuid: string,
+    taskId: string,
     request: CreateTaskDependencyRequest,
   ): Promise<Result<TaskDependencyClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke('task-dependency:create', { taskUuid, request }));
+    return tryCatch(() => this.ipcClient.invoke('task:dependency:create', { taskId, request }));
   }
 
-  async getDependencies(taskUuid: string): Promise<Result<TaskDependencyClientDTO[]>> {
-    return tryCatch(() => this.ipcClient.invoke('task-dependency:list', { taskUuid }));
+  async getDependencies(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
+    return tryCatch(() => this.ipcClient.invoke('task:dependency:list', { taskId }));
   }
 
-  async getDependents(taskUuid: string): Promise<Result<TaskDependencyClientDTO[]>> {
-    return tryCatch(() => this.ipcClient.invoke('task-dependency:dependents', { taskUuid }));
+  async getDependents(taskId: string): Promise<Result<TaskDependencyClientDTO[]>> {
+    return tryCatch(() => this.ipcClient.invoke('task:dependency:dependents', { taskId }));
   }
 
-  async getDependencyChain(taskUuid: string): Promise<Result<DependencyChainClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke('task-dependency:chain', { taskUuid }));
+  async getDependencyChain(taskId: string): Promise<Result<DependencyChainClientDTO>> {
+    return tryCatch(() => this.ipcClient.invoke('task:dependency:chain', { taskId }));
   }
 
   async validateDependency(
     request: ValidateDependencyRequest,
   ): Promise<Result<ValidateDependencyResponse>> {
-    return tryCatch(() => this.ipcClient.invoke('task-dependency:validate', request));
+    return tryCatch(() => this.ipcClient.invoke('task:dependency:validate', request));
   }
 
-  async deleteDependency(uuid: string): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke('task-dependency:delete', { uuid }));
+  async deleteDependency(id: string): Promise<Result<void>> {
+    return tryCatch(() => this.ipcClient.invoke('task:dependency:delete', { id }));
   }
 
   async updateDependency(
-    uuid: string,
+    id: string,
     request: UpdateTaskDependencyRequest,
   ): Promise<Result<TaskDependencyClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke('task-dependency:update', { uuid, request }));
+    return tryCatch(() => this.ipcClient.invoke('task:dependency:update', { id, request }));
   }
 }
 

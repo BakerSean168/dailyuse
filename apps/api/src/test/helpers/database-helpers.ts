@@ -88,7 +88,7 @@ export function ensureDatabaseSchema(): void {
  * 创建测试账户
  */
 export async function createTestAccount(data: {
-  uuid?: string;
+  id?: string;
   email: string;
   username: string;
   passwordHash?: string;
@@ -96,7 +96,7 @@ export async function createTestAccount(data: {
   const prisma = getTestPrisma();
   return await prisma.account.create({
     data: {
-      uuid: data.uuid || `test-account-${Date.now()}`,
+      id: data.id || `test-account-${Date.now()}`,
       email: data.email,
       username: data.username,
       emailVerified: true,
@@ -120,11 +120,11 @@ export async function createTestAccount(data: {
 export async function createTestAccounts(accountIds: string[], prefix: string = 'test-account-') {
   const accounts = [];
   for (const id of accountIds) {
-    const uuid = `${prefix}${id}`;
+    const id = `${prefix}${id}`;
     const account = await createTestAccount({
-      uuid,
-      email: `${uuid}@test.com`,
-      username: uuid,
+      id,
+      email: `${id}@test.com`,
+      username: id,
     });
     accounts.push(account);
   }
@@ -134,15 +134,15 @@ export async function createTestAccounts(accountIds: string[], prefix: string = 
 /**
  * 批量创建测试目标
  */
-export async function createTestGoals(accountUuid: string, count: number = 3) {
+export async function createTestGoals(identityId: string, count: number = 3) {
   const prisma = getTestPrisma();
   const goals = [];
   
   for (let i = 0; i < count; i++) {
     const goal = await prisma.goal.create({
       data: {
-        uuid: `test-goal-${accountUuid}-${i}-${Date.now()}`,
-        accountUuid,
+        id: `test-goal-${identityId}-${i}-${Date.now()}`,
+        identityId,
         title: `Test Goal ${i + 1}`,
         description: `Test goal description ${i + 1}`,
         importance: 'Important', // String type in schema
@@ -162,7 +162,7 @@ export async function createTestGoals(accountUuid: string, count: number = 3) {
  * 创建测试提醒模板
  */
 export async function createTestReminderTemplate(data: {
-  accountUuid: string;
+  identityId: string;
   title: string;
   message?: string;
   isActive?: boolean;
@@ -170,8 +170,8 @@ export async function createTestReminderTemplate(data: {
   const prisma = getTestPrisma();
   return await prisma.reminderTemplate.create({
     data: {
-      uuid: `test-reminder-${Date.now()}`,
-      accountUuid: data.accountUuid,
+      id: `test-reminder-${Date.now()}`,
+      identityId: data.identityId,
       title: data.title,
       description: data.message || 'Test reminder message',
       type: 'ONE_TIME',

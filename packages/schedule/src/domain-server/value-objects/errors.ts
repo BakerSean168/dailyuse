@@ -61,12 +61,12 @@ export class ScheduleTaskCreationError extends DomainError {
  */
 export class ScheduleTaskUpdateError extends DomainError {
   constructor(
-    public readonly taskUuid: string,
+    public readonly taskId: string,
     public override readonly originalError?: Error,
   ) {
     super(
       'schedule_task_update_error',
-      `调度任务更新失败：${taskUuid}${originalError ? ` - ${originalError.message}` : ''}`,
+      `调度任务更新失败：${taskId}${originalError ? ` - ${originalError.message}` : ''}`,
     );
   }
 }
@@ -75,8 +75,8 @@ export class ScheduleTaskUpdateError extends DomainError {
  * 调度任务未找到错误
  */
 export class ScheduleTaskNotFoundError extends DomainError {
-  constructor(taskUuid: string) {
-    super('schedule_task_not_found', `调度任务未找到：${taskUuid}`);
+  constructor(taskId: string) {
+    super('schedule_task_not_found', `调度任务未找到：${taskId}`);
   }
 }
 
@@ -84,8 +84,8 @@ export class ScheduleTaskNotFoundError extends DomainError {
  * 调度任务已禁用错误
  */
 export class ScheduleTaskDisabledError extends DomainError {
-  constructor(taskUuid: string) {
-    super('schedule_task_disabled', `调度任务已禁用：${taskUuid}`);
+  constructor(taskId: string) {
+    super('schedule_task_disabled', `调度任务已禁用：${taskId}`);
   }
 }
 
@@ -93,10 +93,10 @@ export class ScheduleTaskDisabledError extends DomainError {
  * 调度任务状态无效错误
  */
 export class ScheduleTaskInvalidStatusError extends DomainError {
-  constructor(taskUuid: string, currentStatus: string) {
+  constructor(taskId: string, currentStatus: string) {
     super(
       'schedule_task_invalid_status',
-      `调度任务状态无效：${taskUuid} (当前状态: ${currentStatus})`,
+      `调度任务状态无效：${taskId} (当前状态: ${currentStatus})`,
     );
   }
 }

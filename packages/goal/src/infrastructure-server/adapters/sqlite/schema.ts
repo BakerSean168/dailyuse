@@ -110,7 +110,7 @@ CREATE INDEX IF NOT EXISTS idx_goal_records_recorded_at ON goal_records(recorded
 -- Goal Statistics Table (统计聚合)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS goal_statistics (
-  account_uuid TEXT PRIMARY KEY,
+  identity_id TEXT PRIMARY KEY,
   total_goals INTEGER DEFAULT 0,
   active_goals INTEGER DEFAULT 0,
   completed_goals INTEGER DEFAULT 0,

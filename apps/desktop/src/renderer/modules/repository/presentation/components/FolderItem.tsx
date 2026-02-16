@@ -10,9 +10,9 @@ import type { FolderClientDTO } from '@dailyuse/contracts/repository';
 
 interface FolderItemProps {
   folder: FolderClientDTO;
-  onClick: (uuid: string) => void;
-  onRename: (uuid: string) => void;
-  onDelete: (uuid: string) => void;
+  onClick: (id: string) => void;
+  onRename: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 export const FolderItem = memo(function FolderItem({
@@ -23,20 +23,20 @@ export const FolderItem = memo(function FolderItem({
 }: FolderItemProps) {
   const handleRename = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onRename(folder.uuid);
+    onRename(folder.id);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm(`确定要删除文件夹 "${folder.name}" 及其所有内容吗？`)) {
-      onDelete(folder.uuid);
+      onDelete(folder.id);
     }
   };
 
   return (
     <div
       className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer group transition-colors"
-      onClick={() => onClick(folder.uuid)}
+      onClick={() => onClick(folder.id)}
     >
       {/* 文件夹图标 */}
       <div className="text-xl flex-shrink-0">📁</div>

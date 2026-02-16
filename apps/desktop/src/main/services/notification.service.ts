@@ -204,25 +204,25 @@ export class NotificationService {
   private initEventListeners(): void {
     // Listen for reminder triggers
     eventBus.on('reminder.triggered', (data: {
-      uuid: string;
+      id: string;
       title: string;
       body?: string;
-      templateUuid: string;
+      templateId: string;
     }) => {
       this.showNotification({
         title: data.title,
         body: data.body || '',
         data: {
           type: 'reminder',
-          uuid: data.uuid,
-          templateUuid: data.templateUuid,
+          id: data.id,
+          templateId: data.templateId,
         },
       });
     });
 
     // Listen for schedule triggers
     eventBus.on(ScheduleTaskEventTypes.EXECUTED, (data: {
-      uuid: string;
+      id: string;
       name: string;
       description?: string;
     }) => {
@@ -231,7 +231,7 @@ export class NotificationService {
         body: data.description || '任务已执行',
         data: {
           type: 'schedule',
-          uuid: data.uuid,
+          id: data.id,
         },
       });
     });
@@ -329,7 +329,7 @@ export class NotificationService {
    * @returns {Notification | null} The notification instance.
    */
   showReminderNotification(reminder: {
-    uuid: string;
+    id: string;
     title: string;
     body?: string;
     importance?: string;
@@ -345,7 +345,7 @@ export class NotificationService {
       sound: true,
       data: {
         type: 'reminder',
-        uuid: reminder.uuid,
+        id: reminder.id,
       },
     });
   }
@@ -357,7 +357,7 @@ export class NotificationService {
    * @returns {Notification | null} The notification instance.
    */
   showScheduleNotification(task: {
-    uuid: string;
+    id: string;
     name: string;
     description?: string;
   }): Notification | null {
@@ -367,7 +367,7 @@ export class NotificationService {
       sound: true,
       data: {
         type: 'schedule',
-        uuid: task.uuid,
+        id: task.id,
       },
     });
   }
@@ -379,7 +379,7 @@ export class NotificationService {
    * @returns {Notification | null} The notification instance.
    */
   showGoalProgressNotification(goal: {
-    uuid: string;
+    id: string;
     title: string;
     progress: number;
     targetValue: number;
@@ -390,7 +390,7 @@ export class NotificationService {
       body: `${goal.title}: ${percentage}% (${goal.progress}/${goal.targetValue})`,
       data: {
         type: 'goal',
-        uuid: goal.uuid,
+        id: goal.id,
       },
     });
   }
@@ -402,7 +402,7 @@ export class NotificationService {
    * @returns {Notification | null} The notification instance.
    */
   showTaskCompletedNotification(task: {
-    uuid: string;
+    id: string;
     title: string;
   }): Notification | null {
     return this.showNotification({
@@ -410,7 +410,7 @@ export class NotificationService {
       body: task.title,
       data: {
         type: 'task',
-        uuid: task.uuid,
+        id: task.id,
       },
     });
   }

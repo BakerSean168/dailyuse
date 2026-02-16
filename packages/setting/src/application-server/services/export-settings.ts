@@ -16,8 +16,8 @@ export class ExportSettings {
   /**
    * 执行用例
    */
-  async execute(accountUuid: string): Promise<Record<string, any>> {
-    const setting = await this.userSettingRepository.findByAccountUuid(accountUuid);
+  async execute(identityId: string): Promise<Record<string, any>> {
+    const setting = await this.userSettingRepository.findByAccountId(identityId);
 
     if (!setting) {
       throw new Error('User setting not found');
@@ -28,7 +28,7 @@ export class ExportSettings {
     return {
       version: '1.0.0',
       exportedAt: new Date().toISOString(),
-      accountUuid: accountUuid,
+      identityId: identityId,
       settings: dto,
     };
   }

@@ -13,18 +13,18 @@ const logger = createLogger('RecordReminderResponse');
  * 响应记录DTO
  */
 export interface RecordResponseDTO {
-  templateUuid: string;
+  templateId: string;
   action: ResponseAction;
   responseTime?: number; // 响应时间(秒)
-  accountUuid: string;
+  identityId: string;
 }
 
 /**
  * 响应记录结果
  */
 export interface ResponseRecordResult {
-  uuid: string;
-  templateUuid: string;
+  id: string;
+  templateId: string;
   action: ResponseAction;
   responseTime: number | null;
   recordedAt: number;
@@ -63,17 +63,17 @@ export class RecordReminderResponse {
   async execute(dto: RecordResponseDTO): Promise<ResponseRecordResult> {
     try {
       logger.info('Recording response', {
-        templateUuid: dto.templateUuid,
+        templateId: dto.templateId,
         action: dto.action,
         responseTime: dto.responseTime,
-        accountUuid: dto.accountUuid,
+        identityId: dto.identityId,
       });
 
       // Create response entity and save through repository
       // TODO: Create ReminderResponse entity in domain layer
       // For now, using placeholder object structure
       const response: any = {
-        templateUuid: dto.templateUuid,
+        templateId: dto.templateId,
         action: dto.action,
         responseTime: dto.responseTime || null,
         timestamp: BigInt(Date.now()),
@@ -82,8 +82,8 @@ export class RecordReminderResponse {
       const savedRecord = await this.responseRepository.save(response);
 
       logger.info('Response recorded', {
-        uuid: savedRecord.uuid,
-        templateUuid: dto.templateUuid,
+        id: savedRecord.id,
+        templateId: dto.templateId,
         action: dto.action,
       });
 
@@ -91,19 +91,19 @@ export class RecordReminderResponse {
       await eventBus.publish({
         eventType: 'reminder.response.recorded',
         payload: {
-          responseUuid: savedRecord.uuid,
-          templateUuid: dto.templateUuid,
+          responseId: savedRecord.id,
+          templateId: dto.templateId,
           action: dto.action,
           responseTime: dto.responseTime || null,
-          accountUuid: dto.accountUuid,
+          identityId: dto.identityId,
           recordedAt: Date.now(),
         },
         timestamp: Date.now(),
       });
 
       return {
-        uuid: savedRecord.uuid,
-        templateUuid: savedRecord.reminderTemplateUuid,
+        id: savedRecord.id,
+        templateId: savedRecord.reminderTemplateId,
         action: savedRecord.action as any,
         responseTime: savedRecord.responseTime,
         recordedAt: savedRecord.timestamp,
@@ -120,21 +120,21 @@ export class RecordReminderResponse {
   /**
    * 获取模板的响应记录
    *
-   * @param templateUuid - 模板UUID
+   * @param templateId - 模板UUID
    * @param limit - 返回记录数限制
    * @returns 响应记录列表
    */
   async getResponsesByTemplate(
-    templateUuid: string,
+    templateId: string,
     limit: number = 100,
   ): Promise<any[]> {
     try {
-      const responses = await this.responseRepository.findByTemplateUuid(templateUuid, limit);
+      const responses = await this.responseRepository.findByTemplateId(templateId, limit);
       return responses;
     } catch (error) {
       logger.error('Failed to get responses', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        templateUuid,
+        templateId,
       });
       throw error;
     }
@@ -143,17 +143,17 @@ export class RecordReminderResponse {
   /**
    * 删除模板的所有响应记录
    *
-   * @param templateUuid - 模板UUID
+   * @param templateId - 模板UUID
    * @returns 删除的记录数量
    */
-  async deleteResponsesByTemplate(templateUuid: string): Promise<number> {
+  async deleteResponsesByTemplate(templateId: string): Promise<number> {
     try {
-      logger.info('Deleting responses for template', { templateUuid });
+      logger.info('Deleting responses for template', { templateId });
 
-      const count = await this.responseRepository.deleteByTemplateUuid(templateUuid);
+      const count = await this.responseRepository.deleteByTemplateId(templateId);
 
       logger.info('Responses deleted', {
-        templateUuid,
+        templateId,
         count,
       });
 
@@ -161,7 +161,7 @@ export class RecordReminderResponse {
     } catch (error) {
       logger.error('Failed to delete responses', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        templateUuid,
+        templateId,
       });
       throw error;
     }
@@ -170,21 +170,21 @@ export class RecordReminderResponse {
   /**
    * 获取响应统计
    *
-   * @param templateUuid - 模板UUID
+   * @param templateId - 模板UUID
    * @param lookbackDays - 回溯天数
    * @returns 响应统计信息
    */
   async getResponseStats(
-    templateUuid: string,
+    templateId: string,
     lookbackDays: number = 30,
   ): Promise<ResponseStatsResult> {
     try {
-      const stats = await this.responseRepository.getResponseStats(templateUuid, lookbackDays);
+      const stats = await this.responseRepository.getResponseStats(templateId, lookbackDays);
       return stats as ResponseStatsResult;
     } catch (error) {
       logger.error('Failed to get response stats', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        templateUuid,
+        templateId,
       });
       throw error;
     }

@@ -52,8 +52,8 @@ interface AuthenticatedRequest extends Request {
   traceId?: string;
   startTime?: number;
   user?: {
-    accountUuid: string;
-    sessionUuid?: string;
+    identityId: string;
+    sessionId?: string;
     tokenType?: string;
     exp?: number;
   };
@@ -94,10 +94,10 @@ function parseStringArray(value: unknown): string[] | undefined {
 }
 
 function getExecutionContext(req: AuthenticatedRequest): ExecutionContext | null {
-  if (!req.user?.accountUuid) {
+  if (!req.user?.identityId) {
     return null;
   }
-  return { identityId: req.user.accountUuid } as ExecutionContext;
+  return { identityId: req.user.identityId } as ExecutionContext;
 }
 
 // ============ Route Registration ============

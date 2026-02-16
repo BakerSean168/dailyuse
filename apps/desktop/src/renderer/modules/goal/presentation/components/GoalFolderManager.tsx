@@ -12,14 +12,14 @@ interface GoalFolderManagerProps {
   open: boolean;
   onClose: () => void;
   onFolderSelect?: (folder: GoalFolder | null) => void;
-  selectedFolderUuid?: string | null;
+  selectedFolderId?: string | null;
 }
 
 export function GoalFolderManager({
   open,
   onClose,
   onFolderSelect,
-  selectedFolderUuid,
+  selectedFolderId,
 }: GoalFolderManagerProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [editingFolder, setEditingFolder] = useState<GoalFolder | null>(null);
@@ -85,7 +85,7 @@ export function GoalFolderManager({
 
     try {
       setIsSaving(true);
-      await updateFolder(editingFolder.uuid, {
+      await updateFolder(editingFolder.id, {
         name: newFolderName.trim(),
         description: newFolderDescription.trim() || undefined,
       });
@@ -106,7 +106,7 @@ export function GoalFolderManager({
     if (!confirmed) return;
 
     try {
-      await deleteFolder(folder.uuid);
+      await deleteFolder(folder.id);
       // deleteFolder 已更新 store，无需再调 loadFolders
     } catch (err) {
       console.error('[GoalFolderManager] Failed to delete folder:', err);
@@ -209,7 +209,7 @@ export function GoalFolderManager({
                   onClick={() => handleSelect(null)}
                   className={`
                     p-3 border rounded-md cursor-pointer transition-colors
-                    ${selectedFolderUuid === null ? 'border-primary bg-primary/5' : 'hover:bg-secondary/50'}
+                    ${selectedFolderId === null ? 'border-primary bg-primary/5' : 'hover:bg-secondary/50'}
                   `}
                 >
                   <div className="flex items-center gap-2">
@@ -225,10 +225,10 @@ export function GoalFolderManager({
                 ) : (
                   folders.map((folder) => (
                     <div
-                      key={folder.uuid}
+                      key={folder.id}
                       className={`
                         p-3 border rounded-md transition-colors
-                        ${selectedFolderUuid === folder.uuid ? 'border-primary bg-primary/5' : 'hover:bg-secondary/50'}
+                        ${selectedFolderId === folder.id ? 'border-primary bg-primary/5' : 'hover:bg-secondary/50'}
                       `}
                     >
                       <div className="flex items-center justify-between">

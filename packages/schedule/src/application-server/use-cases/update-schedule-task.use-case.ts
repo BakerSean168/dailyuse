@@ -20,7 +20,7 @@ import type {
  * 更新调度任务的请求参数
  */
 export interface UpdateScheduleTaskReq {
-  uuid: string;
+  id: string;
   scheduleConfig?: ScheduleConfigServerDTO;
   retryPolicy?: RetryPolicyServerDTO;
   enabled?: boolean;
@@ -44,9 +44,9 @@ export class UpdateScheduleTaskUseCase {
 
   async execute(req: UpdateScheduleTaskReq): Promise<ScheduleTaskClientDTO> {
     // 1. 查询现有任务
-    const task = await this.scheduleTaskRepository.findByUuid(req.uuid);
+    const task = await this.scheduleTaskRepository.findById(req.id);
     if (!task) {
-      throw new Error(`Schedule task ${req.uuid} not found`);
+      throw new Error(`Schedule task ${req.id} not found`);
     }
 
     // 2. 调用聚合根方法更新字段

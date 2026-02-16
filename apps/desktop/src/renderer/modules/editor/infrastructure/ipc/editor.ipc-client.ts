@@ -9,13 +9,13 @@ import { EditorChannels } from '@/shared/types/ipc-channels';
 // ============ Types ============
 
 export interface DocumentDTO {
-  uuid: string;
-  accountUuid: string;
+  id: string;
+  identityId: string;
   title: string;
   content: string;
   contentType: ContentType;
   linkedEntityType?: LinkedEntityType;
-  linkedEntityUuid?: string;
+  linkedEntityId?: string;
   metadata: DocumentMetadataDTO;
   version: number;
   createdAt: number;
@@ -48,7 +48,7 @@ export interface VersionDTO {
 }
 
 export interface SearchResultDTO {
-  documentUuid: string;
+  documentId: string;
   matches: SearchMatchDTO[];
   totalMatches: number;
 }
@@ -67,7 +67,7 @@ export interface CreateDocumentRequest {
 }
 
 export interface UpdateDocumentRequest {
-  uuid: string;
+  id: string;
   title?: string;
   content?: string;
 }
@@ -99,10 +99,10 @@ export class EditorIPCClient {
   /**
    * Get single document
    */
-  async getDocument(uuid: string): Promise<DocumentDTO> {
+  async getDocument(id: string): Promise<DocumentDTO> {
     return this.client.invoke<DocumentDTO>(
       EditorChannels.DOCUMENT_GET,
-      { uuid }
+      { id }
     );
   }
 
@@ -129,20 +129,20 @@ export class EditorIPCClient {
   /**
    * Delete document
    */
-  async deleteDocument(uuid: string): Promise<void> {
+  async deleteDocument(id: string): Promise<void> {
     return this.client.invoke<void>(
       EditorChannels.DOCUMENT_DELETE,
-      { uuid }
+      { id }
     );
   }
 
   /**
    * 閫氳繃鍏宠仈瀹炰綋Get鏂囨。
    */
-  async getByLinkedEntity(entityType: LinkedEntityType, entityUuid: string): Promise<DocumentDTO | null> {
+  async getByLinkedEntity(entityType: LinkedEntityType, entityId: string): Promise<DocumentDTO | null> {
     return this.client.invoke<DocumentDTO | null>(
       EditorChannels.DOCUMENT_GET_BY_LINKED_ENTITY,
-      { entityType, entityUuid }
+      { entityType, entityId }
     );
   }
 
@@ -150,7 +150,7 @@ export class EditorIPCClient {
    * Create document for linked entity   */
   async createForLinkedEntity(params: {
     entityType: LinkedEntityType;
-    entityUuid: string;
+    entityId: string;
     title?: string;
     contentType?: ContentType;
   }): Promise<DocumentDTO> {
@@ -163,10 +163,10 @@ export class EditorIPCClient {
   /**
    * Save document
    */
-  async saveDocument(uuid: string, content: string): Promise<DocumentDTO> {
+  async saveDocument(id: string, content: string): Promise<DocumentDTO> {
     return this.client.invoke<DocumentDTO>(
       EditorChannels.DOCUMENT_SAVE,
-      { uuid, content }
+      { id, content }
     );
   }
 
@@ -175,30 +175,30 @@ export class EditorIPCClient {
   /**
    * Get document content
    */
-  async getContent(uuid: string): Promise<string> {
+  async getContent(id: string): Promise<string> {
     return this.client.invoke<string>(
       EditorChannels.GET_CONTENT,
-      { uuid }
+      { id }
     );
   }
 
   /**
    * Save document鍐呭
    */
-  async saveContent(uuid: string, content: string): Promise<DocumentDTO> {
+  async saveContent(id: string, content: string): Promise<DocumentDTO> {
     return this.client.invoke<DocumentDTO>(
       EditorChannels.SAVE_CONTENT,
-      { uuid, content }
+      { id, content }
     );
   }
 
   /**
    * 鑷姩Save
    */
-  async autoSave(uuid: string, content: string): Promise<void> {
+  async autoSave(id: string, content: string): Promise<void> {
     return this.client.invoke<void>(
       EditorChannels.AUTO_SAVE,
-      { uuid, content }
+      { id, content }
     );
   }
 
@@ -207,59 +207,59 @@ export class EditorIPCClient {
   /**
    * Undo
    */
-  async undo(uuid: string): Promise<string> {
+  async undo(id: string): Promise<string> {
     return this.client.invoke<string>(
       EditorChannels.UNDO,
-      { uuid }
+      { id }
     );
   }
 
   /**
    * Redo
    */
-  async redo(uuid: string): Promise<string> {
+  async redo(id: string): Promise<string> {
     return this.client.invoke<string>(
       EditorChannels.REDO,
-      { uuid }
+      { id }
     );
   }
 
   /**
    * Get edit history
    */
-  async getHistory(uuid: string): Promise<VersionDTO[]> {
+  async getHistory(id: string): Promise<VersionDTO[]> {
     return this.client.invoke<VersionDTO[]>(
       EditorChannels.GET_HISTORY,
-      { uuid }
+      { id }
     );
   }
 
   /**
    * Get version list
    */
-  async listVersions(uuid: string): Promise<VersionDTO[]> {
+  async listVersions(id: string): Promise<VersionDTO[]> {
     return this.client.invoke<VersionDTO[]>(
       EditorChannels.VERSION_LIST,
-      { uuid }
+      { id }
     );
   }
 
   /**
    * Get specific version
    */
-  async getVersion(uuid: string, version: number): Promise<VersionDTO> {
+  async getVersion(id: string, version: number): Promise<VersionDTO> {
     return this.client.invoke<VersionDTO>(
       EditorChannels.VERSION_GET,
-      { uuid, version }
+      { id, version }
     );
   }
 
   /**
    * 鎭㈠鍒扮壒瀹氱増鏈?   */
-  async restoreVersion(uuid: string, version: number): Promise<DocumentDTO> {
+  async restoreVersion(id: string, version: number): Promise<DocumentDTO> {
     return this.client.invoke<DocumentDTO>(
       EditorChannels.VERSION_RESTORE,
-      { uuid, version }
+      { id, version }
     );
   }
 
@@ -307,42 +307,42 @@ export class EditorIPCClient {
   /**
    * Export to Markdown
    */
-  async exportMarkdown(uuid: string): Promise<string> {
+  async exportMarkdown(id: string): Promise<string> {
     return this.client.invoke<string>(
       EditorChannels.EXPORT_MARKDOWN,
-      { uuid }
+      { id }
     );
   }
 
   /**
    * Export to HTML
    */
-  async exportHtml(uuid: string): Promise<string> {
+  async exportHtml(id: string): Promise<string> {
     return this.client.invoke<string>(
       EditorChannels.EXPORT_HTML,
-      { uuid }
+      { id }
     );
   }
 
   /**
    * Export to PDF
    */
-  async exportPdf(uuid: string): Promise<Uint8Array> {
+  async exportPdf(id: string): Promise<Uint8Array> {
     return this.client.invoke<Uint8Array>(
       EditorChannels.EXPORT_PDF,
-      { uuid }
+      { id }
     );
   }
 
   /**
    * Create or get document for goal
    */
-  async getOrCreateForGoal(goalUuid: string, title?: string): Promise<DocumentDTO> {
-    const existing = await this.getByLinkedEntity('goal', goalUuid);
+  async getOrCreateForGoal(goalId: string, title?: string): Promise<DocumentDTO> {
+    const existing = await this.getByLinkedEntity('goal', goalId);
     if (existing) return existing;
     return this.createForLinkedEntity({
       entityType: 'goal',
-      entityUuid: goalUuid,
+      entityId: goalId,
       title: title || 'Goal Notes',
       contentType: 'markdown',
     });
@@ -352,7 +352,7 @@ export class EditorIPCClient {
    * 蹇€熷垱寤?Markdown 鏂囨。
    */
   async quickCreateMarkdown(params: {
-    accountUuid: string;
+    identityId: string;
     title: string;
     content?: string;
   }): Promise<DocumentDTO> {
