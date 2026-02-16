@@ -1,14 +1,14 @@
 /**
  * Form Validation Composables
  *
- * Re-exports from @dailyuse/ui-vue with Vuetify-compatible format.
+ * Re-exports from @dailyuse/ui-vue-shadcn with Vuetify-compatible format.
  * Maintained for backward compatibility.
  */
 
 import type { FormRule } from '../types';
 
 // Re-export from ui-vue
-export { useFormValidation } from '@dailyuse/ui-vue';
+export { useFormValidation } from '@dailyuse/ui-vue-shadcn';
 
 /**
  * Get pre-configured form validation rules (Vuetify-compatible)

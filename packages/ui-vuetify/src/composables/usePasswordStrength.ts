@@ -1,7 +1,7 @@
 /**
  * Password Strength Composables
  *
- * Re-exports from @dailyuse/ui-vue with additional Vuetify-specific helpers.
+ * Re-exports from @dailyuse/ui-vue-shadcn with additional Vuetify-specific helpers.
  * Maintained for backward compatibility.
  */
 
@@ -10,4 +10,4 @@ export {
   usePasswordStrength,
   generateStrongPassword,
   generatePassphrase,
-} from '@dailyuse/ui-vue';
+} from '@dailyuse/ui-vue-shadcn';
