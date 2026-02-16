@@ -13,7 +13,7 @@
   "packages/ui-core": "0.1.10",
   "packages/ui-react": "0.1.10",
   "packages/ui-react-shadcn": "0.1.10",
-  "packages/ui-vue": "0.1.10",
+  "packages/ui-vue-shadcn": "0.1.10",
   "packages/ui-vuetify": "0.1.10",
   "packages/utils": "0.1.10",
   "packages/test-utils": "0.1.10",

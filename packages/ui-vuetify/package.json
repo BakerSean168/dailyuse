@@ -17,7 +17,7 @@
     "dist"
   ],
   "dependencies": {
-    "@dailyuse/ui-vue": "workspace:*"
+    "@dailyuse/ui-vue-shadcn": "workspace:*"
   },
   "peerDependencies": {
     "@mdi/font": "^7.0.0",

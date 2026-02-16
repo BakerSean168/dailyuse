@@ -4,7 +4,7 @@ import {
   LinearSidebarItem,
   LinearPageHeader,
   LinearListItem
-} from '@dailyuse/ui-vue';
+} from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import {
   Inbox,

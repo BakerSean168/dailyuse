@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import LinearListItem from './LinearListItem.vue';
-import { Badge, Button } from '@dailyuse/ui-vue-shadcn';
+import { Badge, Button } from '../../ui/badge';
+import { Button as ButtonComp } from '../../ui/button';
 
 const meta = {
   title: 'Business/Linear/LinearListItem',

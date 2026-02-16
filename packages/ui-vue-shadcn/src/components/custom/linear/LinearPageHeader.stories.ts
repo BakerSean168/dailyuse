@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import LinearPageHeader from './LinearPageHeader.vue';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '../../ui/button';
 
 const meta = {
   title: 'Business/Linear/LinearPageHeader',

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { cn } from '@dailyuse/ui-vue-shadcn'
+import { cn } from '../../../lib/utils'
 
 const props = defineProps<{
   label: string

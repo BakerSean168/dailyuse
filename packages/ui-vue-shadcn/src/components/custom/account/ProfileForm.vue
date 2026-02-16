@@ -1,29 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { fromDate, getLocalTimeZone, type DateValue } from '@internationalized/date';
-import {
-  Button,
-  Input,
-  Label,
-  Textarea,
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-  Avatar,
-  AvatarImage,
-  AvatarFallback,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Calendar,
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from '@dailyuse/ui-vue-shadcn';
+import { Button } from '../../ui/button';
+import { Input } from '../../ui/input';
+import { Label } from '../../ui/label';
+import { Textarea } from '../../ui/textarea';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../ui/card';
+import { Avatar, AvatarImage, AvatarFallback } from '../../ui/avatar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
+import { Calendar } from '../../ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
 import type { AccountProfileDTO, GenderType } from '@dailyuse/contracts/account';
 
 interface ProfileFormProps {
