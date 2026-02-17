@@ -129,3 +129,6 @@ export * from './components/custom/linear';
 
 // Task Components
 export * from './components/custom/task';
+
+// Schedule Components
+export * from './components/custom/schedule';
