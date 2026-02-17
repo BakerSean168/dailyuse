@@ -150,3 +150,6 @@ export * from './components/custom/notification';
 
 // Governance Components
 export * from './components/custom/governance';
+
+// Editor Components
+export * from './components/custom/editor';
