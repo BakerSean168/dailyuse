@@ -45,5 +45,6 @@ export {
   PrismaAuthSessionRepository,
   Argon2Hasher,
   AuthenticationContainer,
+  AuthenticationModule,
 } from './infrastructure-server';
 export * from './infrastructure-client';

@@ -1,5 +1,4 @@
-import type { PrismaClient } from '../generated/prisma/client';
-import type Database from 'better-sqlite3';
+import type { PrismaClient } from '@dailyuse/database';
 
 import {
   NotificationApplicationService,
@@ -8,7 +7,7 @@ import {
 } from '../application-server/services/notification-application-services';
 import { NotificationRepositoryFactory } from './di';
 
-type BetterSQLiteDB = Database.Database;
+type BetterSQLiteDB = any;
 
 type NotificationRepositories = ReturnType<
   typeof NotificationRepositoryFactory.createPrismaRepositories

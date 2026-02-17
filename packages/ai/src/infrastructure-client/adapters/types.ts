@@ -19,11 +19,10 @@ import type {
   ChatStreamReq,
   ChatStreamChunk,
   AIGenerationTaskClientDTO,
-  GenerationTaskListRes,
-  CreateGenerationTaskReq,
-  GenerateGoalReq,
-  GenerateGoalRes,
-  GenerateKeyResultsRes,
+  StartGenerationTaskReq,
+  GenerateGoalsReq,
+  GenerateGoalsRes,
+  GenerateTasksRes,
   AIProviderConfigClientDTO,
   AIProviderConfigSummary,
   CreateAIProviderConfigReq,
@@ -34,6 +33,18 @@ import type {
   AIUsageQuotaClientDTO,
   UpdateQuotaLimitReq,
 } from '@dailyuse/contracts/ai';
+
+export interface GenerationTaskListRes {
+  data: AIGenerationTaskClientDTO[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export type CreateGenerationTaskReq = StartGenerationTaskReq;
+export type GenerateGoalReq = GenerateGoalsReq;
+export type GenerateGoalRes = GenerateGoalsRes;
+export type GenerateKeyResultsRes = GenerateTasksRes;
 
 // ============ Transport Client Interfaces ============
 

@@ -22,7 +22,7 @@ export class GetUserNotifications {
     identityId: string,
     options?: { includeRead?: boolean; limit?: number; offset?: number },
   ): Promise<NotificationClientDTO[]> {
-    const notifications = await this.notificationRepository.findByAccountId(identityId, {
+    const notifications = await this.notificationRepository.findByIdentityId(identityId, {
       includeRead: options?.includeRead ?? true,
       includeDeleted: false,
       limit: options?.limit,

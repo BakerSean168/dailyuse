@@ -4,7 +4,7 @@
  * In-memory implementation of IUserSettingRepository for testing.
  */
 
-import type { IUserSettingRepository } from '../../ports/user-setting-repository.port';
+import type { IUserSettingRepository } from '../../domain-server';
 import type { UserSetting } from '@/domain-server/aggregates/user-setting';
 
 /**
@@ -15,7 +15,7 @@ import type { UserSetting } from '@/domain-server/aggregates/user-setting';
 export class UserSettingMemoryRepository implements IUserSettingRepository {
   private settings = new Map<string, UserSetting>(); // keyed by identityId
 
-  async findByAccountId(identityId: string): Promise<UserSetting | null> {
+  async findByIdentityId(identityId: string): Promise<UserSetting | null> {
     return this.settings.get(identityId) ?? null;
   }
 

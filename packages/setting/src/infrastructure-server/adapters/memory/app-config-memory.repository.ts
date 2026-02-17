@@ -4,7 +4,7 @@
  * In-memory implementation of IAppConfigRepository for testing.
  */
 
-import type { IAppConfigRepository } from '../../ports/app-config-repository.port';
+import type { IAppConfigRepository } from '../../domain-server';
 
 /**
  * AppConfig Memory Repository

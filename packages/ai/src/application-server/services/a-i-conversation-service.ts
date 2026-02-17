@@ -89,7 +89,7 @@ export class AIConversationService {
   }> {
     try {
       // 获取所有对话（接口中无findRecent方法�?
-      const allConversations = await this.conversationRepository.findByAccountId(identityId);
+      const allConversations = await this.conversationRepository.findByIdentityId(identityId);
       const total = allConversations.length;
 
       // 手动分页
@@ -198,7 +198,7 @@ export class AIConversationService {
   ): Promise<AIConversationClientDTO[]> {
     try {
       // 获取所有对话（接口中无findByStatus方法�?
-      const allConversations = await this.conversationRepository.findByAccountId(identityId);
+      const allConversations = await this.conversationRepository.findByIdentityId(identityId);
 
       // 手动过滤状�?
       const filteredConversations = allConversations.filter((conv) => {

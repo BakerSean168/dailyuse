@@ -147,7 +147,7 @@ export class QuotaEnforcementService {
    * Private helper method
    */
   private async getOrCreateQuota(identityId: string): Promise<AIUsageQuota> {
-    const quotaDTO = await this.quotaRepository.findByAccountId(identityId);
+    const quotaDTO = await this.quotaRepository.findByIdentityId(identityId);
 
     if (!quotaDTO) {
       // Create default quota: 50 requests per day

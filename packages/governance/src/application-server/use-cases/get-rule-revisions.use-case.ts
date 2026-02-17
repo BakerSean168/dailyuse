@@ -4,11 +4,9 @@
  */
 
 import type { IRuleRevisionRepository } from '../../domain-server/repositories/i-rule-revision-repository';
-import type { RuleRevision } from '../../domain-server/entities/rule-revision';
 import { RuleId } from '../../domain-shared/value-objects/rule-id';
 import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
-import type { RuleRevisionServerDTO } from '@/contracts/entities/rule-revision-server';
+import { ok, error } from '@dailyuse/contracts/result';
 import type { GetRuleRevisionsQuery, GetRuleRevisionsRes } from '@/contracts/api/rule-revisions';
 
 /**
@@ -31,7 +29,7 @@ export class GetRuleRevisionsUseCase {
     // Fetch revisions from repository
     const revisionsResult = await this.revisionRepository.findByRuleId(ruleId);
     if (!revisionsResult.ok) {
-      return revisionsResult as any;
+      return error(revisionsResult.error.code, revisionsResult.error.message, revisionsResult.error.details);
     }
 
     const revisions = revisionsResult.data;

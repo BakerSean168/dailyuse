@@ -9,10 +9,10 @@ import { createLogger } from '@dailyuse/utils';
 import type {
   AIProviderConfigServerDTO,
   AIProviderConfigClientDTO,
-  CreateAIProviderRequest,
-  UpdateAIProviderRequest,
-  TestAIProviderConnectionRequest,
-  TestAIProviderConnectionResponse,
+  CreateAIProviderConfigReq,
+  UpdateAIProviderConfigReq,
+  TestAIProviderReq,
+  TestAIProviderRes,
 } from '@dailyuse/contracts/ai';
 
 const logger = createLogger('AIProviderConfigService');
@@ -31,14 +31,14 @@ export class AIProviderConfigService {
    */
   async createProvider(
     identityId: string,
-    request: CreateAIProviderRequest,
+    request: CreateAIProviderConfigReq,
   ): Promise<AIProviderConfigClientDTO> {
     logger.info('Creating provider', { identityId });
     return {
       id: 'provider-' + Date.now(),
       identityId,
       name: request.name,
-      defaultModel: request.defaultModel || 'default',
+      defaultModel: request.model || 'default',
       isActive: true,
       isDefault: false,
       models: [],
@@ -52,14 +52,14 @@ export class AIProviderConfigService {
    */
   async updateProvider(
     id: string,
-    request: UpdateAIProviderRequest,
+    request: UpdateAIProviderConfigReq,
   ): Promise<AIProviderConfigClientDTO> {
     logger.info('Updating provider', { id });
     return {
       id,
       identityId: 'account-uuid',
       name: request.name || 'Updated Provider',
-      defaultModel: request.defaultModel || 'default',
+      defaultModel: request.model || 'default',
       isActive: true,
       isDefault: false,
       models: [],
@@ -106,8 +106,8 @@ export class AIProviderConfigService {
    * Test AI provider connection
    */
   async testConnection(
-    request: TestAIProviderConnectionRequest,
-  ): Promise<TestAIProviderConnectionResponse> {
+    request: TestAIProviderReq,
+  ): Promise<TestAIProviderRes> {
     logger.info('Testing connection');
     return {
       ok: true,

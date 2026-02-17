@@ -31,7 +31,7 @@ export class GetRuleUseCase {
     }
 
     if (!ruleResult.ok) {
-      return ruleResult as any;
+      return error(ruleResult.error.code, ruleResult.error.message, ruleResult.error.details);
     }
 
     if (ruleResult.data === null) {

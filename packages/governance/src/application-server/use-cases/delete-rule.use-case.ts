@@ -29,7 +29,7 @@ export class DeleteRuleUseCase {
     // Fetch rule
     const ruleResult = await this.ruleRepository.findById(req.id as RuleId);
     if (!ruleResult.ok) {
-      return ruleResult as any;
+      return error(ruleResult.error.code, ruleResult.error.message, ruleResult.error.details);
     }
 
     if (ruleResult.data === null) {
@@ -42,7 +42,7 @@ export class DeleteRuleUseCase {
     if (rule.status === 'Draft') {
       const deleteResult = await this.ruleRepository.delete(rule.id);
       if (!deleteResult.ok) {
-        return deleteResult as any;
+        return error(deleteResult.error.code, deleteResult.error.message, deleteResult.error.details);
       }
 
       return ok({ success: true });
@@ -56,12 +56,12 @@ export class DeleteRuleUseCase {
       if (rule.status === 'Deprecated') {
         return ok({ success: true });
       }
-      return deprecateResult as any;
+      return error(deprecateResult.error.code, deprecateResult.error.message, deprecateResult.error.details);
     }
 
     const saveResult = await this.ruleRepository.save(rule);
     if (!saveResult.ok) {
-      return saveResult as any;
+      return error(saveResult.error.code, saveResult.error.message, saveResult.error.details);
     }
 
     return ok({ success: true });

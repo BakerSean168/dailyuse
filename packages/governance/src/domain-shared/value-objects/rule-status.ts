@@ -11,7 +11,6 @@ export const RuleStatus = {
   Draft: 'Draft' as RuleStatus,
   Active: 'Active' as RuleStatus,
   Deprecated: 'Deprecated' as RuleStatus,
-  Archived: 'Archived' as RuleStatus,
 
   create(value: string): Result<RuleStatus> {
     if (!this.isValid(value)) {
@@ -43,12 +42,8 @@ export const RuleStatus = {
     return status === this.Deprecated;
   },
 
-  isArchived(status: RuleStatus): boolean {
-    return status === this.Archived;
-  },
-
   isTerminal(status: RuleStatus): boolean {
-    return this.isArchived(status);
+    return this.isDeprecated(status);
   },
 
   canTransitionTo(

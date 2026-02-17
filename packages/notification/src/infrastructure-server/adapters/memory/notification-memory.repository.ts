@@ -4,7 +4,7 @@
  * In-memory implementation of INotificationRepository for testing.
  */
 
-import type { INotificationRepository } from '../../ports/notification-repository.port';
+import type { INotificationRepository } from '../../../domain-server';
 import type { Notification } from '../../../domain-server/aggregates/notification';
 import type { NotificationCategory, NotificationStatus } from '@dailyuse/contracts/notification';
 
@@ -28,7 +28,7 @@ export class NotificationMemoryRepository implements INotificationRepository {
     return this.notifications.get(id) ?? null;
   }
 
-  async findByAccountId(
+  async findByIdentityId(
     identityId: string,
     options?: {
       includeChildren?: boolean;

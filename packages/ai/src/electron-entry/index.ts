@@ -40,19 +40,33 @@ export const AIElectronModule: IElectronModule = {
     const configSvc = mod.providerConfigService;
     const genSvc = mod.generationService;
 
-    ipcMain.handle(Ch.CHAT, (_, dto) => chatSvc.sendMessage(dto));
-    ipcMain.handle(Ch.CONVERSATION_LIST, (_, params) => convSvc.listConversations(params));
-    ipcMain.handle(Ch.CONVERSATION_GET, (_, id) => convSvc.getConversation(id));
-    ipcMain.handle(Ch.CONVERSATION_CREATE, (_, dto) => convSvc.createConversation(dto));
+    ipcMain.handle(Ch.CHAT, (_, dto) =>
+      chatSvc.sendMessage(dto.identityId, dto.conversationId, dto.content, dto.provider, dto.model),
+    );
+    ipcMain.handle(Ch.CONVERSATION_LIST, (_, params) =>
+      convSvc.listConversations(params.identityId, params.page, params.limit),
+    );
+    ipcMain.handle(Ch.CONVERSATION_GET, (_, payload) => {
+      if (typeof payload === 'string') {
+        return convSvc.getConversation(payload);
+      }
+      return convSvc.getConversation(payload.conversationId, payload.includeMessages);
+    });
+    ipcMain.handle(Ch.CONVERSATION_CREATE, (_, dto) => convSvc.createConversation(dto.identityId, dto.title));
     ipcMain.handle(Ch.CONVERSATION_DELETE, (_, id) => convSvc.deleteConversation(id));
-    ipcMain.handle(Ch.CONVERSATION_CLEAR, (_, id) => convSvc.clearConversation(id));
-    ipcMain.handle(Ch.ANALYZE_TASK, (_, dto) => genSvc.analyzeTask(dto));
-    ipcMain.handle(Ch.ANALYZE_GOAL, (_, dto) => genSvc.analyzeGoal(dto));
-    ipcMain.handle(Ch.SUGGEST_SCHEDULE, (_, dto) => genSvc.suggestSchedule(dto));
-    ipcMain.handle(Ch.SUGGEST_BREAKDOWN, (_, dto) => genSvc.suggestBreakdown(dto));
-    ipcMain.handle(Ch.DECOMPOSE_TASK, (_, dto) => genSvc.decomposeTask(dto));
-    ipcMain.handle(Ch.GET_CONFIG, () => configSvc.getConfig());
-    ipcMain.handle(Ch.UPDATE_CONFIG, (_, dto) => configSvc.updateConfig(dto));
+    ipcMain.handle(Ch.CONVERSATION_CLEAR, (_, id) => convSvc.deleteConversation(id));
+    ipcMain.handle(Ch.ANALYZE_TASK, (_, dto) => genSvc.summarizeText(dto));
+    ipcMain.handle(Ch.ANALYZE_GOAL, (_, dto) => genSvc.generateGoal(dto));
+    ipcMain.handle(Ch.SUGGEST_SCHEDULE, (_, dto) => genSvc.generateTasks(dto));
+    ipcMain.handle(Ch.SUGGEST_BREAKDOWN, (_, dto) => genSvc.generateKeyResults(dto));
+    ipcMain.handle(Ch.DECOMPOSE_TASK, (_, dto) => genSvc.generateTasks(dto));
+    ipcMain.handle(Ch.GET_CONFIG, (_, identityId) => configSvc.getDefaultProvider(identityId));
+    ipcMain.handle(Ch.UPDATE_CONFIG, (_, dto) => {
+      if (dto?.id) {
+        return configSvc.updateProvider(dto.id, dto);
+      }
+      return configSvc.createProvider(dto.identityId, dto);
+    });
 
     logger.info('AI module registered');
   },

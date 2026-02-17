@@ -1,6 +1,6 @@
 import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
-import { Schedule } from '../../domain-server/aggregates/schedule';
-import type { ScheduleJobClientDTO, ConflictDetectionResult } from '@dailyuse/contracts/schedule';
+import { CalendarEntry } from '../../domain-server/aggregates/calendar-entry';
+import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ScheduleEventApplicationService');
@@ -30,8 +30,8 @@ export class ScheduleEventApplicationService {
     location?: string;
     priority?: number;
     attendees?: string[];
-  }): Promise<ScheduleJobClientDTO> {
-    const schedule = Schedule.create({
+  }): Promise<CalendarEntryClientDTO> {
+    const schedule = CalendarEntry.create({
       identityId: params.identityId,
       title: params.title,
       startTime: params.startTime,
@@ -60,7 +60,7 @@ export class ScheduleEventApplicationService {
       priority?: number;
       attendees?: string[];
     }
-  ): Promise<ScheduleJobClientDTO> {
+  ): Promise<CalendarEntryClientDTO> {
     const schedule = await this.scheduleRepository.findById(id);
     if (!schedule) {
       throw new Error(`Schedule event ${id} not found`);
@@ -94,7 +94,7 @@ export class ScheduleEventApplicationService {
   /**
    * Get Schedule Event
    */
-  async getSchedule(id: string): Promise<ScheduleJobClientDTO | null> {
+  async getSchedule(id: string): Promise<CalendarEntryClientDTO | null> {
     const schedule = await this.scheduleRepository.findById(id);
     return schedule ? schedule.toClientDTO() : null;
   }
@@ -106,7 +106,7 @@ export class ScheduleEventApplicationService {
     identityId: string,
     startTime: number,
     endTime: number
-  ): Promise<ScheduleJobClientDTO[]> {
+  ): Promise<CalendarEntryClientDTO[]> {
     const schedules = await this.scheduleRepository.findByTimeRange(identityId, startTime, endTime);
     return schedules.map((s: any) => s.toClientDTO());
   }

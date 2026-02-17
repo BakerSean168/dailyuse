@@ -24,7 +24,7 @@ export class NotificationPreferenceDomainService {
    * Get preference for a specific account
    */
   async getPreference(identityId: string): Promise<NotificationPreference | null> {
-    return this.preferenceRepo.findByAccountId(identityId);
+    return this.preferenceRepo.findByIdentityId(identityId);
   }
 
   /**

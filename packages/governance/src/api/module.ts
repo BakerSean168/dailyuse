@@ -14,14 +14,12 @@ import { prisma } from '@dailyuse/database';
 import {
   RulePrismaRepository,
   RuleRevisionPrismaRepository,
-  CreateRuleUseCase,
-  UpdateRuleUseCase,
-  DeleteRuleUseCase,
-  GetRuleUseCase,
-  ListRulesUseCase,
-  GetRuleRevisionsUseCase,
-} from '../index';
-import { registerGovernanceCrudRoutes } from './routes';
+  GovernanceModule,
+} from '../infrastructure-server';
+import {
+  registerGovernanceCrudRoutes,
+  type GovernanceCrudHandlers,
+} from './routes';
 import { registerGovernanceInitializationTasks } from './initialization';
 
 /**
@@ -62,20 +60,24 @@ export const GovernanceApiModule: GovernanceApiModuleDef = {
     // 1. Composition Root — 组装依赖（使用共享数据库单例）
     const ruleRepository = new RulePrismaRepository(prisma);
     const revisionRepository = new RuleRevisionPrismaRepository(prisma);
+    const governanceModule = new GovernanceModule({
+      ruleRepository,
+      revisionRepository,
+    });
 
-    const handlers = {
-      createRule: (req: any, cx: any) =>
-        new CreateRuleUseCase(ruleRepository).execute(req, cx),
-      updateRule: (id: string, req: any, cx: any) =>
-        new UpdateRuleUseCase(ruleRepository).execute(id, req, cx),
-      deleteRule: (req: any, cx: any) =>
-        new DeleteRuleUseCase(ruleRepository).execute(req, cx),
-      getRule: (req: any) =>
-        new GetRuleUseCase(ruleRepository).execute(req),
-      listRules: (query: any) =>
-        new ListRulesUseCase(ruleRepository).execute(query),
-      getRevisions: (query: any) =>
-        new GetRuleRevisionsUseCase(revisionRepository).execute(query),
+    const handlers: GovernanceCrudHandlers = {
+      createRule: (req, cx) =>
+        governanceModule.createRule.execute(req, cx),
+      updateRule: (id, req, cx) =>
+        governanceModule.updateRule.execute(id, req, cx),
+      deleteRule: (req, cx) =>
+        governanceModule.deleteRule.execute(req, cx),
+      getRule: (req) =>
+        governanceModule.getRule.execute(req),
+      listRules: (query) =>
+        governanceModule.listRules.execute(query),
+      getRevisions: (query) =>
+        governanceModule.getRevisions.execute(query),
     };
 
     // 2. 创建路由（注入平台中间件）

@@ -4,14 +4,17 @@
  * IPC implementation of IAIGenerationTaskApiClient for Electron desktop app.
  */
 
-import type { IIpcClient, IAIGenerationTaskApiClient } from '../types';
 import type {
-  AIGenerationTaskClientDTO,
+  IIpcClient,
+  IAIGenerationTaskApiClient,
   GenerationTaskListRes,
   CreateGenerationTaskReq,
   GenerateGoalReq,
   GenerateGoalRes,
   GenerateKeyResultsRes,
+} from '../types';
+import type {
+  AIGenerationTaskClientDTO,
 } from '@dailyuse/contracts/ai';
 
 /**

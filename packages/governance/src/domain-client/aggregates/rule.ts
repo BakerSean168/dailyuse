@@ -14,8 +14,6 @@ import type {
 } from '@/contracts/aggregates/rule-client';
 import type { RuleStatus } from '@/contracts/value-objects/rule-status';
 import type { RuleSeverity } from '@/contracts/value-objects/rule-severity';
-import type { Language } from '@/contracts/value-objects/language';
-import type { SnippetType } from '@/contracts/value-objects/snippet-type';
 import { AggregateRoot } from '@dailyuse/utils';
 import type { RuleId } from '@/contracts/primitives/ids';
 import type { IdentityId } from '@dailyuse/contracts/primitives';

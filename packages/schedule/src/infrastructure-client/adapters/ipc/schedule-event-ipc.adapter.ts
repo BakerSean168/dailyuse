@@ -11,7 +11,7 @@ import type {
   IScheduleEventApiClient,
 } from '../types';
 import type {
-  ScheduleJobClientDTO,
+  CalendarEntryClientDTO,
   CreateScheduleRequest,
   UpdateScheduleRequest,
   GetSchedulesByTimeRangeRequest,
@@ -42,25 +42,25 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
 
   // ===== Schedule Event CRUD =====
 
-  async createSchedule(data: CreateScheduleRequest): Promise<Result<ScheduleJobClientDTO>> {
+  async createSchedule(data: CreateScheduleRequest): Promise<Result<CalendarEntryClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.CREATE_SCHEDULE, data));
   }
 
-  async getSchedule(id: string): Promise<Result<ScheduleJobClientDTO>> {
+  async getSchedule(id: string): Promise<Result<CalendarEntryClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULE, id));
   }
 
-  async getSchedulesByAccount(): Promise<Result<ScheduleJobClientDTO[]>> {
+  async getSchedulesByAccount(): Promise<Result<CalendarEntryClientDTO[]>> {
     return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_ACCOUNT));
   }
 
   async getSchedulesByTimeRange(
     params: GetSchedulesByTimeRangeRequest,
-  ): Promise<Result<ScheduleJobClientDTO[]>> {
+  ): Promise<Result<CalendarEntryClientDTO[]>> {
     return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.GET_SCHEDULES_BY_TIME_RANGE, params));
   }
 
-  async updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<ScheduleJobClientDTO>> {
+  async updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<CalendarEntryClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke(SCHEDULE_EVENT_CHANNELS.UPDATE_SCHEDULE, id, data));
   }
 
@@ -86,7 +86,7 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
   async createScheduleWithConflictDetection(
     request: CreateScheduleRequest,
   ): Promise<Result<{
-    schedule: ScheduleJobClientDTO;
+    schedule: CalendarEntryClientDTO;
     conflicts?: ConflictDetectionResult;
   }>> {
     return tryCatch(() => this.ipcClient.invoke(
@@ -99,7 +99,7 @@ export class ScheduleEventIpcAdapter implements IScheduleEventApiClient {
     scheduleId: string,
     request: ResolveConflictRequest,
   ): Promise<Result<{
-    schedule: ScheduleJobClientDTO;
+    schedule: CalendarEntryClientDTO;
     conflicts: ConflictDetectionResult;
     applied: {
       strategy: string;

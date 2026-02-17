@@ -6,7 +6,7 @@
 
 import type { IAIConversationRepository } from '../../domain-server/repositories/IAIConversationRepository';
 import { AIConversation } from '../../domain-server/aggregates/ai-conversation';
-import type { CreateConversationRequest, ConversationResponse } from '@dailyuse/contracts/ai';
+import type { CreateConversationReq, CreateConversationRes } from '@dailyuse/contracts/ai';
 import { eventBus } from '@dailyuse/utils';
 // import { AIContainer } from '@dailyuse/ai/infrastructure-server';
 
@@ -18,11 +18,11 @@ export class CreateConversation {
 
   async execute(
     identityId: string,
-    input: CreateConversationRequest,
-  ): Promise<ConversationResponse> {
+    input: CreateConversationReq,
+  ): Promise<CreateConversationRes> {
     const conversation = AIConversation.create({
       identityId,
-      name: input.title || 'New Conversation',
+      name: input.name || 'New Conversation',
     });
 
     await this.conversationRepository.save(conversation);
@@ -30,8 +30,6 @@ export class CreateConversation {
     // Publish event
     // await eventBus.publish(new ConversationCreatedEvent(conversation));
 
-    return {
-      conversation: conversation.toClientDTO(),
-    };
+    return conversation.toClientDTO();
   }
 }

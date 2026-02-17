@@ -15,7 +15,7 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { map as mapResult } from '@dailyuse/contracts/result';
 import type {
-  ScheduleJobClientDTO,
+  CalendarEntryClientDTO,
   CreateScheduleRequest,
   UpdateScheduleRequest,
   GetSchedulesByTimeRangeRequest,
@@ -41,23 +41,23 @@ export class ScheduleClientService {
 
   // ===== Schedule Event CRUD =====
 
-  async createSchedule(data: CreateScheduleRequest): Promise<Result<ScheduleJobClientDTO>> {
+  async createSchedule(data: CreateScheduleRequest): Promise<Result<CalendarEntryClientDTO>> {
     return this.eventApi.createSchedule(data);
   }
 
-  async getSchedule(id: string): Promise<Result<ScheduleJobClientDTO>> {
+  async getSchedule(id: string): Promise<Result<CalendarEntryClientDTO>> {
     return this.eventApi.getSchedule(id);
   }
 
-  async getSchedulesByAccount(): Promise<Result<ScheduleJobClientDTO[]>> {
+  async getSchedulesByAccount(): Promise<Result<CalendarEntryClientDTO[]>> {
     return this.eventApi.getSchedulesByAccount();
   }
 
-  async getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequest): Promise<Result<ScheduleJobClientDTO[]>> {
+  async getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequest): Promise<Result<CalendarEntryClientDTO[]>> {
     return this.eventApi.getSchedulesByTimeRange(params);
   }
 
-  async updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<ScheduleJobClientDTO>> {
+  async updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<CalendarEntryClientDTO>> {
     return this.eventApi.updateSchedule(id, data);
   }
 
@@ -83,7 +83,7 @@ export class ScheduleClientService {
   async createScheduleWithConflictDetection(
     request: CreateScheduleRequest,
   ): Promise<Result<{
-    schedule: ScheduleJobClientDTO;
+    schedule: CalendarEntryClientDTO;
     conflicts?: ConflictDetectionResult;
   }>> {
     return this.eventApi.createScheduleWithConflictDetection(request);
@@ -93,7 +93,7 @@ export class ScheduleClientService {
     scheduleId: string,
     request: ResolveConflictRequest,
   ): Promise<Result<{
-    schedule: ScheduleJobClientDTO;
+    schedule: CalendarEntryClientDTO;
     conflicts: ConflictDetectionResult;
     applied: {
       strategy: string;

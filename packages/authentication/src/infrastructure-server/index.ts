@@ -17,3 +17,9 @@ export type { JwtStrategyConfig, LocalStrategyConfig } from './strategies';
 
 // DI Container
 export { AuthenticationContainer } from './di/authentication-container';
+
+// Composition Root
+export {
+	AuthenticationModule,
+	type AuthenticationModuleDependencies,
+} from './authentication.module';

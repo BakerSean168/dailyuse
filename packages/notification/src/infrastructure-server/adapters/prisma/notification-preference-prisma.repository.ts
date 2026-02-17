@@ -5,7 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
-import type { INotificationPreferenceRepository } from '../../ports/notification-preference-repository.port';
+import type { INotificationPreferenceRepository } from '../../../domain-server';
 import type { NotificationPreference } from '../../../domain-server/aggregates/notification-preference';
 
 /**

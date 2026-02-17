@@ -15,7 +15,9 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
+import type { CreateRuleReq, UpdateRuleReq } from '@/contracts/api/rules';
 
 export interface FetchRulesOptions {
   status?: string | string[];
@@ -49,7 +51,7 @@ export class RuleClientService {
   async fetchRules(options?: FetchRulesOptions): Promise<Result<RuleClientDTO[]>> {
     // TODO: Implement API call when API layer is ready
     // For now, return empty result
-    return { ok: true, data: [] } as any;
+    return ok([]);
   }
 
   /**
@@ -57,7 +59,7 @@ export class RuleClientService {
    */
   async fetchRuleById(id: string): Promise<Result<RuleClientDTO | null>> {
     // TODO: Implement API call
-    return { ok: true, data: null } as any;
+    return ok(null);
   }
 
   /**
@@ -65,23 +67,26 @@ export class RuleClientService {
    */
   async searchRules(options: SearchRulesOptions): Promise<Result<RuleClientDTO[]>> {
     // TODO: Implement API call
-    return { ok: true, data: [] } as any;
+    return ok([]);
   }
 
   /**
    * Creates new rule (Tech Lead/Architect only)
    */
-  async createRule(data: any): Promise<Result<{ ruleId: string }>> {
+  async createRule(data: CreateRuleReq): Promise<Result<{ ruleId: string }>> {
     // TODO: Implement API call
-    return { ok: false, error: { code: 'NOT_IMPLEMENTED', message: 'Not implemented' } } as any;
+    void data;
+    return error('NOT_IMPLEMENTED', 'Not implemented');
   }
 
   /**
    * Updates existing rule (Tech Lead/Architect only)
    */
-  async updateRule(id: string, data: any): Promise<Result<void>> {
+  async updateRule(id: string, data: UpdateRuleReq): Promise<Result<void>> {
     // TODO: Implement API call
-    return { ok: false, error: { code: 'NOT_IMPLEMENTED', message: 'Not implemented' } } as any;
+    void id;
+    void data;
+    return error('NOT_IMPLEMENTED', 'Not implemented');
   }
 
   /**
@@ -89,6 +94,7 @@ export class RuleClientService {
    */
   async deleteRule(id: string): Promise<Result<void>> {
     // TODO: Implement API call
-    return { ok: false, error: { code: 'NOT_IMPLEMENTED', message: 'Not implemented' } } as any;
+    void id;
+    return error('NOT_IMPLEMENTED', 'Not implemented');
   }
 }

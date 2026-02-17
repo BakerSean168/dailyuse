@@ -269,10 +269,13 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
 
   // ========== 静态工厂方法 ==========
 
-  static create(params: { identityId: IdentityId; initialEntries?: Record<string, unknown> }): UserSetting {
+  static create(params: { identityId: IdentityId | string; initialEntries?: Record<string, unknown> }): UserSetting {
     const id = SettingId.of(SettingId.generate());
+    const identityId = typeof params.identityId === 'string'
+      ? IdentityIdType.of(params.identityId)
+      : params.identityId;
     const setting = new UserSetting(id, {
-      identityId: params.identityId,
+      identityId,
     });
 
     if (params.initialEntries) {

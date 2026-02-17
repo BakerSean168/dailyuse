@@ -6,115 +6,197 @@
 import type Database from 'better-sqlite3';
 import { AIConversation } from '../../../domain-server/aggregates/ai-conversation';
 import type { IAIConversationRepository, AIConversationQueryOptions } from '../../../domain-server/repositories/IAIConversationRepository';
+import type { AIConversationPersistenceDTO, MessagePersistenceDTO, ConversationStatus } from '@dailyuse/contracts/ai';
 
 export class SqliteAIConversationRepository implements IAIConversationRepository {
   constructor(private db: Database.Database) {}
 
   async save(conversation: AIConversation): Promise<void> {
-    const dto = conversation.toPersistenceDTO();
+    const data = conversation.toPersistenceDTO();
 
     const stmt = this.db.prepare(`
       INSERT INTO ai_conversations (
-        id, identityId, title, status, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?)
+        id, identity_id, name, status, message_count, last_message_at, version,
+        created_at, updated_at, deleted_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
-        title = excluded.title,
+        name = excluded.name,
         status = excluded.status,
-        updatedAt = excluded.updatedAt
+        message_count = excluded.message_count,
+        last_message_at = excluded.last_message_at,
+        version = excluded.version,
+        updated_at = excluded.updated_at,
+        deleted_at = excluded.deleted_at
     `);
 
     stmt.run(
-      dto.id,
-      dto.identityId,
-      dto.title,
-      dto.status,
-      dto.createdAt,
-      dto.updatedAt,
+      String(data.id),
+      String(data.identityId),
+      data.name,
+      data.status,
+      data.messageCount,
+      data.lastMessageAt ? data.lastMessageAt.getTime() : null,
+      data.version,
+      data.createdAt.getTime(),
+      data.updatedAt.getTime(),
+      data.deletedAt ? data.deletedAt.getTime() : null,
     );
+
+    if (data.messages) {
+      this.db.prepare(`DELETE FROM ai_messages WHERE conversation_id = ?`).run(String(data.id));
+
+      if (data.messages.length > 0) {
+        const insertMessage = this.db.prepare(`
+          INSERT INTO ai_messages (
+            id, conversation_id, role, content, token_usage, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?)
+        `);
+
+        const transaction = this.db.transaction((messages: MessagePersistenceDTO[]) => {
+          for (const message of messages) {
+            insertMessage.run(
+              String(message.id),
+              String(message.conversationId),
+              message.role,
+              message.content,
+              message.tokenCount != null ? JSON.stringify({ totalTokens: message.tokenCount }) : null,
+              message.createdAt.getTime(),
+            );
+          }
+        });
+
+        transaction(data.messages);
+      }
+    }
   }
 
   async findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {
-    const stmt = this.db.prepare(
-      `SELECT * FROM ai_conversations WHERE id = ? LIMIT 1`
-    );
-    const row = stmt.get(id) as any;
+    const row = this.db
+      .prepare(`
+        SELECT * FROM ai_conversations
+        WHERE id = ? AND deleted_at IS NULL
+        LIMIT 1
+      `)
+      .get(id) as any;
 
-    if (!row) return null;
+    if (!row) {
+      return null;
+    }
 
-    return AIConversation.fromPersistenceDTO({
-      id: row.id,
-      identity_id: row.identityId,
-      title: row.title,
-      status: row.status,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
+    const messages = options?.includeChildren ? this.loadMessages(row.id) : null;
+    return AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, messages));
+  }
+
+  async findByIdentityId(identityId: string, options?: AIConversationQueryOptions): Promise<AIConversation[]> {
+    const rows = this.db
+      .prepare(`
+        SELECT * FROM ai_conversations
+        WHERE identity_id = ? AND deleted_at IS NULL
+        ORDER BY updated_at DESC
+      `)
+      .all(identityId) as any[];
+
+    return rows.map((row) => {
+      const messages = options?.includeChildren ? this.loadMessages(row.id) : null;
+      return AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, messages));
     });
   }
 
-  async findByAccountId(identityId: string, options?: AIConversationQueryOptions): Promise<AIConversation[]> {
-    const stmt = this.db.prepare(
-      `SELECT * FROM ai_conversations WHERE identityId = ? ORDER BY createdAt DESC`
-    );
-    const rows = stmt.all(identityId) as any[];
+  async findByStatus(
+    identityId: string,
+    status: ConversationStatus,
+    options?: AIConversationQueryOptions,
+  ): Promise<AIConversation[]> {
+    const rows = this.db
+      .prepare(`
+        SELECT * FROM ai_conversations
+        WHERE identity_id = ? AND status = ? AND deleted_at IS NULL
+        ORDER BY updated_at DESC
+      `)
+      .all(identityId, status) as any[];
 
-    return rows.map((row) =>
-      AIConversation.fromPersistenceDTO({
-        id: row.id,
-        identity_id: row.identityId,
-        title: row.title,
-        status: row.status,
-        createdAt: new Date(row.createdAt),
-        updatedAt: new Date(row.updatedAt),
-      })
-    );
-  }
-
-  async findByStatus(identityId: string, status: string): Promise<AIConversation[]> {
-    const stmt = this.db.prepare(
-      `SELECT * FROM ai_conversations WHERE identityId = ? AND status = ? ORDER BY createdAt DESC`
-    );
-    const rows = stmt.all(identityId, status) as any[];
-
-    return rows.map((row) =>
-      AIConversation.fromPersistenceDTO({
-        id: row.id,
-        identity_id: row.identityId,
-        title: row.title,
-        status: row.status,
-        createdAt: new Date(row.createdAt),
-        updatedAt: new Date(row.updatedAt),
-      })
-    );
+    return rows.map((row) => {
+      const messages = options?.includeChildren ? this.loadMessages(row.id) : null;
+      return AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, messages));
+    });
   }
 
   async delete(id: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM ai_conversations WHERE id = ?`);
-    stmt.run(id);
+    this.db
+      .prepare(`
+        UPDATE ai_conversations
+        SET status = ?, deleted_at = ?, updated_at = ?
+        WHERE id = ?
+      `)
+      .run('Archived', Date.now(), Date.now(), id);
   }
 
   async findRecent(identityId: string, limit: number, offset?: number): Promise<AIConversation[]> {
-    const limitVal = Math.min(limit, 100);
-    const offsetVal = offset || 0;
-    const stmt = this.db.prepare(
-      `SELECT * FROM ai_conversations WHERE identityId = ? ORDER BY createdAt DESC LIMIT ? OFFSET ?`
-    );
-    const rows = stmt.all(identityId, limitVal, offsetVal) as any[];
+    const rows = this.db
+      .prepare(`
+        SELECT * FROM ai_conversations
+        WHERE identity_id = ? AND deleted_at IS NULL
+        ORDER BY COALESCE(last_message_at, updated_at) DESC
+        LIMIT ? OFFSET ?
+      `)
+      .all(identityId, Math.max(1, limit), Math.max(0, offset ?? 0)) as any[];
 
-    return rows.map((row) =>
-      AIConversation.fromPersistenceDTO({
-        id: row.id,
-        identity_id: row.identityId,
-        title: row.title,
-        status: row.status,
-        createdAt: new Date(row.createdAt),
-        updatedAt: new Date(row.updatedAt),
-      })
-    );
+    return rows.map((row) => AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, null)));
   }
 
   async exists(id: string): Promise<boolean> {
-    const stmt = this.db.prepare(`SELECT 1 FROM ai_conversations WHERE id = ? LIMIT 1`);
-    return stmt.get(id) !== undefined;
+    const row = this.db
+      .prepare(`SELECT 1 FROM ai_conversations WHERE id = ? AND deleted_at IS NULL LIMIT 1`)
+      .get(id);
+
+    return row !== undefined;
+  }
+
+  private loadMessages(conversationId: string): MessagePersistenceDTO[] {
+    const rows = this.db
+      .prepare(`
+        SELECT * FROM ai_messages
+        WHERE conversation_id = ?
+        ORDER BY created_at ASC
+      `)
+      .all(conversationId) as any[];
+
+    return rows.map((row) => {
+      let tokenCount: number | null = null;
+      if (row.token_usage) {
+        try {
+          const parsed = JSON.parse(row.token_usage);
+          tokenCount = typeof parsed?.totalTokens === 'number' ? parsed.totalTokens : null;
+        } catch {
+          tokenCount = null;
+        }
+      }
+
+      return {
+        id: row.id,
+        conversationId: row.conversation_id,
+        role: row.role,
+        content: row.content,
+        tokenCount,
+        createdAt: new Date(row.created_at),
+      };
+    });
+  }
+
+  private toPersistenceDTO(row: any, messages: MessagePersistenceDTO[] | null): AIConversationPersistenceDTO {
+    return {
+      id: row.id,
+      identityId: row.identity_id,
+      name: row.name,
+      status: row.status,
+      messageCount: row.message_count ?? 0,
+      lastMessageAt: row.last_message_at ? new Date(row.last_message_at) : null,
+      version: row.version ?? 1,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
+      messages,
+    };
   }
 }
 

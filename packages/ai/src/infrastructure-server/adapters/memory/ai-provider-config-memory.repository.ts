@@ -4,7 +4,7 @@
  * In-memory implementation of IAIProviderConfigRepository for testing.
  */
 
-import type { IAIProviderConfigRepository } from '../../ports/ai-provider-config-repository.port';
+import type { IAIProviderConfigRepository } from '../../../domain-server';
 import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
 
 /**

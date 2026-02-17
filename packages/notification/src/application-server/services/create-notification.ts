@@ -9,7 +9,6 @@ import { createLogger } from '@dailyuse/utils';
 import type {
   NotificationServerDTO,
   NotificationClientDTO,
-  CreateNotificationRequest,
   NotificationType,
   NotificationCategory,
   RelatedEntityType,
@@ -59,7 +58,7 @@ export class CreateNotification {
       category: params.category,
     });
 
-    const preference = await this.preferenceRepository.findByAccountId(params.identityId);
+    const preference = await this.preferenceRepository.findByIdentityId(params.identityId);
     const channels = params.channels ?? [ChannelTypeEnum.InApp];
 
     this.policy.assertCanSend({

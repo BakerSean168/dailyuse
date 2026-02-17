@@ -8,40 +8,6 @@
 // Client Service
 export { NotificationClientService } from './notification-client-service';
 
-// Re-export events if still needed
-export {
-  NOTIFICATION_EVENTS,
-  SCHEDULE_EVENTS,
-  publishReminderTriggered,
-  publishNotificationCreated,
-  publishNotificationShown,
-  publishNotificationClicked,
-  publishNotificationClosed,
-  publishNotificationFailed,
-  publishPermissionChanged,
-  publishConfigUpdated,
-  publishDndEnabled,
-  publishDndDisabled,
-  publishNotificationError,
-  publishQueueFull,
-  publishServiceInitialized,
-  onReminderTriggered,
-  onScheduleReminderTriggered,
-  removeNotificationEventListeners,
-} from './notificationEvents';
-
-export type {
-  NotificationCreatedPayload,
-  NotificationShownPayload,
-  NotificationInteractionPayload,
-  PermissionChangedPayload,
-  ConfigUpdatedPayload,
-  NotificationErrorPayload,
-} from './notificationEvents';
-
-// Re-export as alias for backward compatibility
-export { NotificationClientService as NotificationApplicationService } from './notification-client-service';
-
 // Singleton placeholder
 let _notificationApplicationService: any = null;
 

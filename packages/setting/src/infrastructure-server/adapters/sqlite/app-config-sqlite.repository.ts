@@ -1,6 +1,6 @@
 /**
  * SQLite AppConfig Repository Implementation
- * 搴旂敤閰嶇疆鐨?SQLite Repository瀹炵幇
+ * AppConfig 的 SQLite 仓储实现
  */
 
 import type Database from 'better-sqlite3';
@@ -15,19 +15,28 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO app_configs (
-        id, key, value, description, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?)
+        id, version, app, features, limits, api, security, notifications, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
-        value = excluded.value,
-        description = excluded.description,
+        version = excluded.version,
+        app = excluded.app,
+        features = excluded.features,
+        limits = excluded.limits,
+        api = excluded.api,
+        security = excluded.security,
+        notifications = excluded.notifications,
         updatedAt = excluded.updatedAt
     `);
 
     stmt.run(
       dto.id,
-      dto.key,
-      JSON.stringify(dto.value),
-      dto.description || null,
+      dto.version,
+      dto.app,
+      dto.features,
+      dto.limits,
+      dto.api,
+      dto.security,
+      dto.notifications,
       dto.createdAt,
       dto.updatedAt,
     );
@@ -41,40 +50,70 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
 
     return AppConfig.fromPersistenceDTO({
       id: row.id,
-      key: row.key,
-      value: JSON.parse(row.value),
-      description: row.description,
+      version: row.version,
+      app: row.app,
+      features: row.features,
+      limits: row.limits,
+      api: row.api,
+      security: row.security,
+      notifications: row.notifications,
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
     });
   }
 
-  async findByKey(key: string): Promise<AppConfig | null> {
-    const stmt = this.db.prepare(`SELECT * FROM app_configs WHERE key = ? LIMIT 1`);
-    const row = stmt.get(key) as any;
-
+  async getCurrent(): Promise<AppConfig | null> {
+    const stmt = this.db.prepare(`SELECT * FROM app_configs ORDER BY updatedAt DESC LIMIT 1`);
+    const row = stmt.get() as any;
     if (!row) return null;
 
     return AppConfig.fromPersistenceDTO({
       id: row.id,
-      key: row.key,
-      value: JSON.parse(row.value),
-      description: row.description,
+      version: row.version,
+      app: row.app,
+      features: row.features,
+      limits: row.limits,
+      api: row.api,
+      security: row.security,
+      notifications: row.notifications,
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
     });
   }
 
-  async findAll(): Promise<AppConfig[]> {
-    const stmt = this.db.prepare(`SELECT * FROM app_configs ORDER BY key ASC`);
+  async findByVersion(version: string): Promise<AppConfig | null> {
+    const stmt = this.db.prepare(`SELECT * FROM app_configs WHERE version = ? LIMIT 1`);
+    const row = stmt.get(version) as any;
+    if (!row) return null;
+
+    return AppConfig.fromPersistenceDTO({
+      id: row.id,
+      version: row.version,
+      app: row.app,
+      features: row.features,
+      limits: row.limits,
+      api: row.api,
+      security: row.security,
+      notifications: row.notifications,
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
+    });
+  }
+
+  async findAllVersions(): Promise<AppConfig[]> {
+    const stmt = this.db.prepare(`SELECT * FROM app_configs ORDER BY createdAt DESC`);
     const rows = stmt.all() as any[];
 
     return rows.map((row) =>
       AppConfig.fromPersistenceDTO({
         id: row.id,
-        key: row.key,
-        value: JSON.parse(row.value),
-        description: row.description,
+        version: row.version,
+        app: row.app,
+        features: row.features,
+        limits: row.limits,
+        api: row.api,
+        security: row.security,
+        notifications: row.notifications,
         createdAt: new Date(row.createdAt),
         updatedAt: new Date(row.updatedAt),
       })
@@ -86,14 +125,14 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
     stmt.run(id);
   }
 
-  async deleteByKey(key: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM app_configs WHERE key = ?`);
-    stmt.run(key);
-  }
-
   async exists(id: string): Promise<boolean> {
     const stmt = this.db.prepare(`SELECT 1 FROM app_configs WHERE id = ? LIMIT 1`);
     return stmt.get(id) !== undefined;
+  }
+
+  async existsByVersion(version: string): Promise<boolean> {
+    const stmt = this.db.prepare(`SELECT 1 FROM app_configs WHERE version = ? LIMIT 1`);
+    return stmt.get(version) !== undefined;
   }
 }
 

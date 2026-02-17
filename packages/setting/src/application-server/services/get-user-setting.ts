@@ -19,7 +19,7 @@ export class GetUserSetting {
    * 执行用例
    */
   async execute(identityId: string): Promise<UserSettingClientDTO> {
-    let setting = await this.userSettingRepository.findByAccountId(identityId);
+    let setting = await this.userSettingRepository.findByIdentityId(identityId);
 
     if (!setting) {
       setting = UserSetting.create({ identityId });

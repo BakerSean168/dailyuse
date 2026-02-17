@@ -9,7 +9,7 @@
  */
 
 import { apiClient } from '@/shared/api';
-import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
+import type { UserSettingClientDTO, UpdateUserSettingReq } from '@dailyuse/contracts/setting';
 
 // 类型别名
 
@@ -21,7 +21,7 @@ export interface SettingUpdateResponse {
   ok: boolean;
   updatedAt: number;
   /** 可选：只包含被更新的字段，用于前端验证 */
-  updated?: Partial<UpdateUserSettingRequest>;
+  updated?: Partial<UpdateUserSettingReq>;
   /** 可选：错误信息 */
   error?: string;
 }
@@ -42,7 +42,7 @@ export async function getCurrentUserSettings(): Promise<UserSettingClientDTO> {
  * - 前端使用乐观更新（先更新 UI，API 成功后更新 updatedAt，失败则回滚）
  */
 export async function updateUserSettings(
-  updates: UpdateUserSettingRequest,
+  updates: UpdateUserSettingReq,
 ): Promise<SettingUpdateResponse> {
   return await apiClient.put<SettingUpdateResponse>('/settings/me', updates);
 }

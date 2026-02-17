@@ -5,14 +5,17 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type { IResultHttpClient, ISettingApiClient } from '../types';
+import type {
+  IResultHttpClient,
+  ISettingApiClient,
+} from '../types';
 import type {
   UserSettingClientDTO,
   AppConfigClientDTO,
-  UpdateAppearanceRequest,
-  UpdateLocaleRequest,
-  UpdateWorkflowRequest,
-  UpdatePrivacyRequest,
+  UpdateAppearanceReq,
+  UpdateLocaleReq,
+  UpdateWorkflowReq,
+  UpdatePrivacyReq,
 } from '@dailyuse/contracts/setting';
 
 /**
@@ -31,19 +34,19 @@ export class SettingHttpAdapter implements ISettingApiClient {
     return this.httpClient.get(`${this.baseUrl}/user`);
   }
 
-  async updateAppearance(request: UpdateAppearanceRequest): Promise<Result<UserSettingClientDTO>> {
+  async updateAppearance(request: UpdateAppearanceReq): Promise<Result<UserSettingClientDTO>> {
     return this.httpClient.patch(`${this.baseUrl}/user/appearance`, request);
   }
 
-  async updateLocale(request: UpdateLocaleRequest): Promise<Result<UserSettingClientDTO>> {
+  async updateLocale(request: UpdateLocaleReq): Promise<Result<UserSettingClientDTO>> {
     return this.httpClient.patch(`${this.baseUrl}/user/locale`, request);
   }
 
-  async updateWorkflow(request: UpdateWorkflowRequest): Promise<Result<UserSettingClientDTO>> {
+  async updateWorkflow(request: UpdateWorkflowReq): Promise<Result<UserSettingClientDTO>> {
     return this.httpClient.patch(`${this.baseUrl}/user/workflow`, request);
   }
 
-  async updatePrivacy(request: UpdatePrivacyRequest): Promise<Result<UserSettingClientDTO>> {
+  async updatePrivacy(request: UpdatePrivacyReq): Promise<Result<UserSettingClientDTO>> {
     return this.httpClient.patch(`${this.baseUrl}/user/privacy`, request);
   }
 

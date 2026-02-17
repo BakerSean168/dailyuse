@@ -6,7 +6,7 @@
 
 import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
 import { UserSetting } from '@/domain-server/aggregates/user-setting';
-import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
+import type { UserSettingClientDTO, UpdateUserSettingReq } from '@dailyuse/contracts/setting';
 import { UpdateUserSetting } from './update-user-setting';
 
 /**
@@ -35,10 +35,10 @@ export class ImportSettings {
     if (merge) {
       return await new UpdateUserSetting(this.userSettingRepository).execute(
         identityId,
-        importedSettings as Omit<UpdateUserSettingRequest, 'id'>,
+        importedSettings as Omit<UpdateUserSettingReq, 'id'>,
       );
     } else {
-      let setting = await this.userSettingRepository.findByAccountId(identityId);
+      let setting = await this.userSettingRepository.findByIdentityId(identityId);
 
       if (!setting) {
         setting = UserSetting.create({ identityId });

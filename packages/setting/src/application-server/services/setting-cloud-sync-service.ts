@@ -36,7 +36,7 @@ export class SettingCloudSyncService {
     deviceName: string,
     settingSnapshot: Record<string, any>,
   ): Promise<SettingVersion> {
-    const setting = await this.userSettingRepository.findByAccountId(identityId);
+    const setting = await this.userSettingRepository.findByIdentityId(identityId);
     if (!setting) {
       throw new Error('Setting not found');
     }

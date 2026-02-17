@@ -5,7 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
-import type { ISettingRepository } from '../../ports/setting-repository.port';
+import type { ISettingRepository } from '@/domain-server';
 import type { Setting } from '@/domain-server/aggregates/setting';
 import type { SettingScope } from '@dailyuse/contracts/setting';
 

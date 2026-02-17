@@ -6,17 +6,6 @@
  */
 
 import { createLogger } from '@dailyuse/utils';
-import type {
-  AIGenerationRequest,
-  IAIAdapter,
-} from '../../domain-server/interfaces/adapter-types';
-import type {
-  AIUsageQuotaClientDTO,
-  GeneratedGoalDraft,
-  GenerateGoalResponse,
-  TokenUsageServerDTO,
-  SummarizationResultDTO,
-} from '@dailyuse/contracts/ai';
 
 const logger = createLogger('AIGenerationApplicationService');
 
@@ -144,7 +133,7 @@ export class AIGenerationApplicationService {
   /**
    * Get quota status
    */
-  async getQuotaStatus(identityId: string): Promise<AIUsageQuotaClientDTO> {
+  async getQuotaStatus(identityId: string): Promise<any> {
     logger.info('Getting quota status', { identityId });
     return {
       id: 'quota-' + identityId,

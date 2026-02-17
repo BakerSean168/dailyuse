@@ -6,8 +6,7 @@
 
 import type { IAIGenerationTaskRepository } from '../../domain-server/repositories/IAIGenerationTaskRepository';
 import type { IAIProviderConfigRepository } from '../../domain-server/repositories/IAIProviderConfigRepository';
-import type { GenerateGoalRequest, GenerateGoalResponse, GoalCategory } from '@dailyuse/contracts/ai';
-import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { GenerateGoalsReq, GenerateGoalsRes } from '@dailyuse/contracts/ai';
 // import { AIContainer } from '@dailyuse/ai/infrastructure-server';
 
 /**
@@ -19,9 +18,9 @@ export class GenerateGoal {
     private readonly providerRepository: IAIProviderConfigRepository,
   ) {}
 
-  async execute(identityId: string, input: GenerateGoalRequest): Promise<GenerateGoalResponse> {
+  async execute(identityId: string, input: GenerateGoalsReq): Promise<GenerateGoalsRes> {
     // 1. 获取 AI Provider（使�?findByAccountId�?
-    const providers = await this.providerRepository.findByAccountId(identityId);
+    const providers = await this.providerRepository.findByIdentityId(identityId);
     const provider = providers.find((p: any) => p.isDefault) || providers[0];
     if (!provider) {
       throw new Error('No AI provider configured');
@@ -37,13 +36,13 @@ export class GenerateGoal {
     // 4. 返回生成结果
     return {
       goal: {
-        title: `Goal: ${input.idea.substring(0, 50)}`,
-        description: `AI generated goal based on: ${input.idea}`,
+        title: `Goal: ${input.description.substring(0, 50)}`,
+        description: `AI generated goal based on: ${input.description}`,
         motivation: 'AI generated motivation',
-        category: input.category || ('OTHER' as GoalCategory),
-        suggestedStartDate: input.timeframe?.startDate || now,
-        suggestedEndDate: input.timeframe?.endDate || oneMonthLater,
-        importance: ImportanceLevel.Important,
+        category: (input.category as any) || 'other',
+        suggestedStartDate: now,
+        suggestedEndDate: oneMonthLater,
+        importance: 'Important',
         // urgency: UrgencyLevel.Medium, // REMOVED - priority is now computed
         tags: [],
       },
@@ -52,9 +51,8 @@ export class GenerateGoal {
         completionTokens: 0,
         totalTokens: 0,
       },
-      generatedAt: now,
-      providerUsed: (provider as any).name || 'default',
-      modelUsed: (provider as any).modelId || 'gpt-4',
+      providerId: (provider as any).id || 'unknown',
+      processingTimeMs: 0,
     };
   }
 }

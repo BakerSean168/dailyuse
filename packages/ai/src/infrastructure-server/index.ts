@@ -14,10 +14,8 @@ export { AIRepositoryFactory } from './di';
 export {
   type IAIConversationRepository,
   type AIConversationQueryOptions,
-} from './ports/ai-conversation-repository.port';
-export { type IAIGenerationTaskRepository } from './ports/ai-generation-task-repository.port';
-export { type IAIProviderConfigRepository } from './ports/ai-provider-config-repository.port';
-export { type IAIUsageQuotaRepository } from './ports/ai-usage-quota-repository.port';
+} from '../domain-server';
+export { type IAIGenerationTaskRepository, type IAIProviderConfigRepository, type IAIUsageQuotaRepository } from '../domain-server';
 
 // Prisma Adapters
 export {
@@ -33,4 +31,8 @@ export {
   SqliteAIGenerationTaskRepository,
   SqliteAIProviderConfigRepository,
   SqliteAIUsageQuotaRepository,
+  SqliteKnowledgeGenerationTaskRepository,
 } from './adapters/sqlite';
+
+// SQLite schema
+export { AI_MODULE_SCHEMA } from './adapters/sqlite/schema';

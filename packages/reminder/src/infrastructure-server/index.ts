@@ -18,3 +18,6 @@ export { SqliteReminderGroupRepository } from './adapters/sqlite/reminder-group-
 export { SqliteReminderResponseRepository } from './adapters/sqlite/reminder-response-sqlite.repository';
 export { SqliteReminderTemplateRepository } from './adapters/sqlite/reminder-template-sqlite.repository';
 
+// SQLite schema
+export { REMINDER_MODULE_SCHEMA } from './adapters/sqlite/schema';
+

@@ -15,3 +15,6 @@ export { TaskDependencyPrismaRepository } from './adapters/prisma/task-dependenc
 // DI Module
 export { TaskModule } from './task.module';
 
+// SQLite schema
+export { TASK_MODULE_SCHEMA } from './adapters/sqlite/schema';
+

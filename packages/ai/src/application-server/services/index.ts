@@ -18,7 +18,6 @@ export { GetQuota } from './get-quota';
 // ============ Generation ============
 export { GenerateGoal } from './generate-goal';
 export { AIGenerationApplicationService } from './a-i-generation-application-service';
-export { GoalGenerationApplicationService } from './goal-generation-application-service';
 
 // ============ Provider ============
 export { ListProviders } from './list-providers';

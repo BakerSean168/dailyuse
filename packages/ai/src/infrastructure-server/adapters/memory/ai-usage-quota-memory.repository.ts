@@ -4,7 +4,7 @@
  * In-memory implementation of IAIUsageQuotaRepository for testing.
  */
 
-import type { IAIUsageQuotaRepository } from '../../ports/ai-usage-quota-repository.port';
+import type { IAIUsageQuotaRepository } from '../../../domain-server';
 import type { AIUsageQuotaServerDTO, QuotaResetPeriod } from '@dailyuse/contracts/ai';
 
 /**
@@ -25,9 +25,13 @@ export class AIUsageQuotaMemoryRepository implements IAIUsageQuotaRepository {
     return this.quotas.get(id) ?? null;
   }
 
-  async findByAccountId(identityId: string): Promise<AIUsageQuotaServerDTO | null> {
+  async findByIdentityId(identityId: string): Promise<AIUsageQuotaServerDTO | null> {
     const id = this.accountIndex.get(identityId);
     return id ? this.quotas.get(id) ?? null : null;
+  }
+
+  async findByAccountId(identityId: string): Promise<AIUsageQuotaServerDTO | null> {
+    return this.findByIdentityId(identityId);
   }
 
   async createDefaultQuota(identityId: string): Promise<AIUsageQuotaServerDTO> {

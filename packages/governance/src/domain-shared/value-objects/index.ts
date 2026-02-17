@@ -11,5 +11,7 @@ export { RuleId } from './rule-id';
 export { RuleRevisionId } from './rule-revision-id';
 export { RuleTag } from './rule-tag';
 export { CodeSnippet } from './code-snippet';
+export { Language } from './language';
+export { SnippetType } from './snippet-type';
 export { RuleStatus } from './rule-status';
 export { RuleSeverity } from './rule-severity';

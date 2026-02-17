@@ -11,39 +11,11 @@
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import {
+  GoalModule,
   SqliteGoalRepository,
   SqliteGoalFolderRepository,
   SqliteGoalRecordRepository,
-  SqliteFocusModeRepository,
-  SqliteFocusSessionRepository,
-  SqliteWeightSnapshotRepository,
 } from '../infrastructure-server';
-import {
-  GoalPolicy,
-  GoalProgressCalculator,
-  FocusSessionPolicy,
-  FocusSessionStatisticsCalculator,
-} from '../domain-server';
-import {
-  CreateGoal,
-  GetGoal,
-  ListGoals,
-  UpdateGoal,
-  DeleteGoal,
-  ArchiveGoal,
-  ActivateGoal,
-  SearchGoals,
-  ListGoalFolders,
-  CreateGoalFolder,
-  GetGoalFolder,
-  UpdateGoalFolder,
-  DeleteGoalFolder,
-  AddGoalKeyResult,
-  UpdateGoalKeyResult,
-  UpdateGoalKeyResultProgress,
-  DeleteGoalKeyResult,
-  AddGoalReview,
-} from '../application-server';
 import { createLogger } from '@dailyuse/utils';
 import type { IGoalRepository } from '../domain-server';
 
@@ -88,64 +60,37 @@ export const GoalElectronModule: IElectronModule = {
 
     // 1. Repositories
     const goalRepository = new SqliteGoalRepository(db);
-    _goalRepository = goalRepository;
     const goalFolderRepository = new SqliteGoalFolderRepository(db);
     const goalRecordRepository = new SqliteGoalRecordRepository(db);
-    const focusModeRepository = new SqliteFocusModeRepository(db);
-    const focusSessionRepository = new SqliteFocusSessionRepository(db);
-    const weightSnapshotRepository = new SqliteWeightSnapshotRepository(db);
-
-    // 2. Domain Services
-    const goalPolicy = new GoalPolicy();
-    const goalProgressCalculator = new GoalProgressCalculator(goalRecordRepository);
-    const focusSessionPolicy = new FocusSessionPolicy();
-    const focusSessionStatisticsCalculator = new FocusSessionStatisticsCalculator();
-
-    // 3. Application Services (Use Cases)
-    const createGoal = new CreateGoal(goalRepository, goalPolicy);
-    const getGoal = new GetGoal(goalRepository);
-    const listGoals = new ListGoals(goalRepository);
-    const updateGoal = new UpdateGoal(goalRepository, goalPolicy);
-    const deleteGoal = new DeleteGoal(goalRepository, goalPolicy);
-    const archiveGoal = new ArchiveGoal(goalRepository, goalPolicy);
-    const activateGoal = new ActivateGoal(goalRepository, goalPolicy);
-    const searchGoals = new SearchGoals(goalRepository);
-
-    const listGoalFolders = new ListGoalFolders(goalFolderRepository);
-    const createGoalFolder = new CreateGoalFolder(goalFolderRepository);
-    const getGoalFolder = new GetGoalFolder(goalFolderRepository);
-    const updateGoalFolder = new UpdateGoalFolder(goalFolderRepository);
-    const deleteGoalFolder = new DeleteGoalFolder(goalFolderRepository);
-
-    const addKeyResult = new AddGoalKeyResult(goalRepository, goalPolicy);
-    const updateKeyResult = new UpdateGoalKeyResult(goalRepository, goalPolicy);
-    const updateKeyResultProgress = new UpdateGoalKeyResultProgress(goalRepository, goalPolicy);
-    const deleteKeyResult = new DeleteGoalKeyResult(goalRepository, goalPolicy);
-
-    const addReview = new AddGoalReview(goalRepository, goalPolicy);
+    const goalModule = new GoalModule({
+      goalRepository,
+      goalFolderRepository,
+      goalRecordRepository,
+    });
+    _goalRepository = goalModule.goalRepository;
 
     // 4. IPC Handlers
-    ipcMain.handle(Ch.LIST, (_, params) => listGoals.execute(params));
-    ipcMain.handle(Ch.GET, (_, id) => getGoal.execute(id));
-    ipcMain.handle(Ch.CREATE, (_, dto) => createGoal.execute(dto, { identityId: dto.identityId }));
-    ipcMain.handle(Ch.UPDATE, (_, dto) => updateGoal.execute(dto.id, dto));
-    ipcMain.handle(Ch.DELETE, (_, id) => deleteGoal.execute(id));
-    ipcMain.handle(Ch.ARCHIVE, (_, id) => archiveGoal.execute(id));
-    ipcMain.handle(Ch.RESTORE, (_, id) => activateGoal.execute(id));
+    ipcMain.handle(Ch.LIST, (_, params) => goalModule.listGoals.execute(params));
+    ipcMain.handle(Ch.GET, (_, id) => goalModule.getGoal.execute(id));
+    ipcMain.handle(Ch.CREATE, (_, dto) => goalModule.createGoal.execute(dto, { identityId: dto.identityId }));
+    ipcMain.handle(Ch.UPDATE, (_, dto) => goalModule.updateGoal.execute(dto.id, dto));
+    ipcMain.handle(Ch.DELETE, (_, id) => goalModule.deleteGoal.execute(id));
+    ipcMain.handle(Ch.ARCHIVE, (_, id) => goalModule.archiveGoal.execute(id));
+    ipcMain.handle(Ch.RESTORE, (_, id) => goalModule.activateGoal.execute(id));
     ipcMain.handle(Ch.UPDATE_PROGRESS, (_, dto) =>
-      updateKeyResultProgress.execute(dto.goalId, dto.keyResultId, dto.currentValue, dto.note),
+      goalModule.updateKeyResultProgress.execute(dto.goalId, dto.keyResultId, dto.currentValue, dto.note),
     );
 
-    ipcMain.handle(Ch.FOLDER_LIST, (_, params) => listGoalFolders.execute(params));
-    ipcMain.handle(Ch.FOLDER_CREATE, (_, dto) => createGoalFolder.execute(dto.identityId, dto));
-    ipcMain.handle(Ch.FOLDER_UPDATE, (_, dto) => updateGoalFolder.execute(dto.id, dto.identityId, dto));
-    ipcMain.handle(Ch.FOLDER_DELETE, (_, dto) => deleteGoalFolder.execute(dto.id, dto.identityId));
+    ipcMain.handle(Ch.FOLDER_LIST, (_, params) => goalModule.listGoalFolders.execute(params));
+    ipcMain.handle(Ch.FOLDER_CREATE, (_, dto) => goalModule.createGoalFolder.execute(dto.identityId, dto));
+    ipcMain.handle(Ch.FOLDER_UPDATE, (_, dto) => goalModule.updateGoalFolder.execute(dto.id, dto.identityId, dto));
+    ipcMain.handle(Ch.FOLDER_DELETE, (_, dto) => goalModule.deleteGoalFolder.execute(dto.id, dto.identityId));
 
     // Statistics: recalculate progress for a given goal
     ipcMain.handle(Ch.STATISTICS_GET, async (_, params) => {
-      const goal = await goalRepository.findById(params.goalId);
+      const goal = await goalModule.goalRepository.findById(params.goalId);
       if (!goal) return null;
-      return goalProgressCalculator.recalculateGoalProgress(goal, params.options);
+      return goalModule.goalProgressCalculator.recalculateGoalProgress(goal, params.options);
     });
 
     logger.info('Goal module registered');

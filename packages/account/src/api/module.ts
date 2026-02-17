@@ -2,7 +2,7 @@
  * Account API Module Definition
  *
  * Implements IApiModule standard interface:
- * 1. Composition Root (PrismaAccountRepository �?UseCases �?Handlers)
+ * 1. Composition Root (PrismaAccountRepository �?UseCases �?Handlers)
  * 2. Route definition and mounting
  *
  * Middleware comes from context.middleware, no dependency on apps/api internals.
@@ -10,13 +10,7 @@
 
 import { Router } from 'express';
 import { prisma } from '@dailyuse/database';
-import { PrismaAccountRepository } from '../infrastructure-server';
-import {
-  GetAccountProfileUseCase,
-  UpdateAccountProfileUseCase,
-  CloseAccountUseCase,
-  CheckAvailabilityUseCase,
-} from '../application-server';
+import { PrismaAccountRepository, AccountModule } from '../infrastructure-server';
 import { registerAccountRoutes } from './routes';
 import type { AccountRouteHandlers } from './routes';
 
@@ -46,26 +40,22 @@ export const AccountApiModule: AccountApiModuleDef = {
   register(context) {
     const { router, middleware } = context;
 
-    // 1. Composition Root �?使用共享数据库单�?
+    // 1. Composition Root �?使用共享数据库单�?
     const accountRepository = new PrismaAccountRepository(prisma);
+    const accountModule = new AccountModule({ accountRepository });
 
-    const getProfile = new GetAccountProfileUseCase(accountRepository);
-    const updateProfile = new UpdateAccountProfileUseCase(accountRepository);
-    const closeAccount = new CloseAccountUseCase(accountRepository);
-    const checkAvailability = new CheckAvailabilityUseCase(accountRepository);
-
-    // 2. 创建路由处理�?
+    // 2. 创建路由处理�?
     const handlers: AccountRouteHandlers = {
-      getProfile: (accountId) => getProfile.execute(accountId),
-      updateProfile: (accountId, data) => updateProfile.execute(accountId, data),
-      checkAvailability: (data) => checkAvailability.execute(data),
-      closeAccount: (accountId, data) => closeAccount.execute(accountId, data),
+      getProfile: (accountId) => accountModule.getProfile.execute(accountId),
+      updateProfile: (accountId, data) => accountModule.updateProfile.execute(accountId, data),
+      checkAvailability: (data) => accountModule.checkAvailability.execute(data),
+      closeAccount: (accountId, data) => accountModule.closeAccount.execute(accountId, data),
     };
 
     // 3. 注册路由
     const accountRoutes = registerAccountRoutes(handlers, middleware);
 
-    // 4. 挂载�?API 路由
+    // 4. 挂载�?API 路由
     router.use('/accounts', accountRoutes);
   },
 };

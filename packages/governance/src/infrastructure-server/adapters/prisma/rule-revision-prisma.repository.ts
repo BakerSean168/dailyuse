@@ -10,6 +10,7 @@ import type { IRuleRevisionRepository } from '../../../domain-server/repositorie
 import { RuleRevision } from '../../../domain-server/entities/rule-revision';
 import { RuleId, RuleRevisionId } from '../../../domain-shared/value-objects';
 import type { Result } from '@dailyuse/contracts/result';
+import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { ok, error } from '@dailyuse/contracts/result';
 
 /**
@@ -19,6 +20,20 @@ import { ok, error } from '@dailyuse/contracts/result';
  */
 export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
   private readonly prisma: PrismaClient;
+
+  private parseStringArray(value: string | null): string[] {
+    if (!value) return [];
+    const parsed: unknown = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is string => typeof item === 'string');
+  }
+
+  private parseRecord(value: string | null): Record<string, unknown> {
+    if (!value) return {};
+    const parsed: unknown = JSON.parse(value);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    return parsed as Record<string, unknown>;
+  }
 
   constructor(prismaClient: PrismaClient) {
     this.prisma = prismaClient;
@@ -66,10 +81,10 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
           id: pr.id as RuleRevisionId,
           ruleId: pr.ruleId as RuleId,
           revisionNumber: pr.revisionNumber,
-          authorId: pr.authorId as any, // Type cast to IdentityId
-          changedFields: JSON.parse(pr.changedFields),
-          previousValues: pr.previousValues ? JSON.parse(pr.previousValues) : {},
-          newValues: pr.newValues ? JSON.parse(pr.newValues) : {},
+          authorId: pr.authorId as IdentityId,
+          changedFields: this.parseStringArray(pr.changedFields),
+          previousValues: this.parseRecord(pr.previousValues),
+          newValues: this.parseRecord(pr.newValues),
           changeType: pr.changeType as 'Created' | 'Updated' | 'Deprecated' | 'Reactivated',
           createdAt: pr.createdAt,
         })
@@ -106,10 +121,10 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
         id: prismaRevision.id as RuleRevisionId,
         ruleId: prismaRevision.ruleId as RuleId,
         revisionNumber: prismaRevision.revisionNumber,
-        authorId: prismaRevision.authorId as any, // Type cast to IdentityId
-        changedFields: JSON.parse(prismaRevision.changedFields),
-        previousValues: prismaRevision.previousValues ? JSON.parse(prismaRevision.previousValues) : {},
-        newValues: prismaRevision.newValues ? JSON.parse(prismaRevision.newValues) : {},
+        authorId: prismaRevision.authorId as IdentityId,
+        changedFields: this.parseStringArray(prismaRevision.changedFields),
+        previousValues: this.parseRecord(prismaRevision.previousValues),
+        newValues: this.parseRecord(prismaRevision.newValues),
         changeType: prismaRevision.changeType as 'Created' | 'Updated' | 'Deprecated' | 'Reactivated',
         createdAt: prismaRevision.createdAt,
       });

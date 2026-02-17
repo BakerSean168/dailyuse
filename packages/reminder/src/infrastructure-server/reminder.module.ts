@@ -6,7 +6,7 @@
  * 支持 Prisma (API) 和 SQLite (Desktop) 数据源
  */
 
-import type { PrismaClient } from '../generated/prisma/client';
+import type { PrismaClient } from '@dailyuse/database';
 import type Database from 'better-sqlite3';
 import type { IReminderTemplateRepository } from '../domain-server/repositories/IReminderTemplateRepository';
 import type { IReminderGroupRepository } from '../domain-server/repositories/IReminderGroupRepository';

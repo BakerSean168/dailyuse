@@ -18,9 +18,9 @@ import type {
   CodeSnippetDTO,
   CodeSnippetPersistenceDTO,
 } from '../../contracts/value-objects/code-snippet';
-import type { Language } from '../../contracts/value-objects/language';
-import type { SnippetType } from '../../contracts/value-objects/snippet-type';
 import type { CodeSnippetId } from '@/contracts/primitives/ids';
+import { Language, type Language as LanguageValue } from './language';
+import { SnippetType, type SnippetType as SnippetTypeValue } from './snippet-type';
 
 const MAX_CONTENT_SIZE = 10 * 1024; // 10KB
 const MAX_CAPTION_LENGTH = 200;
@@ -31,9 +31,9 @@ const MAX_CAPTION_LENGTH = 200;
  */
 interface CodeSnippetProps {
   id: CodeSnippetId;
-  language: Language;
+  language: LanguageValue;
   content: string;
-  type: SnippetType;
+  type: SnippetTypeValue;
   caption: string | null;
 }
 
@@ -62,17 +62,27 @@ export class CodeSnippet extends ValueObject<CodeSnippetProps> implements ICodeS
   public static create(
     props: Omit<CodeSnippetDTO, 'id'> & { id?: CodeSnippetId }
   ): Result<CodeSnippet> {
+    const languageResult = Language.create(props.language);
+    if (!languageResult.ok) {
+      return error(languageResult.error.code, languageResult.error.message, languageResult.error.details);
+    }
+
+    const snippetTypeResult = SnippetType.create(props.type);
+    if (!snippetTypeResult.ok) {
+      return error(snippetTypeResult.error.code, snippetTypeResult.error.message, snippetTypeResult.error.details);
+    }
+
     const fullProps: CodeSnippetProps = {
       id: (props.id || crypto.randomUUID()) as CodeSnippetId,
-      language: props.language,
+      language: languageResult.data,
       content: props.content,
-      type: props.type,
+      type: snippetTypeResult.data,
       caption: props.caption ?? null,
     };
 
     const validationResult = this.validate(fullProps);
     if (!validationResult.ok) {
-      return validationResult as any;
+      return error(validationResult.error.code, validationResult.error.message, validationResult.error.details);
     }
 
     return ok(new CodeSnippet(fullProps));
@@ -84,7 +94,21 @@ export class CodeSnippet extends ValueObject<CodeSnippetProps> implements ICodeS
    * 用于：从 API 响应或客户端数据还原对象
    */
   public static fromDTO(dto: CodeSnippetDTO): CodeSnippet {
-    return new CodeSnippet(dto);
+    const languageResult = Language.create(dto.language);
+    if (!languageResult.ok) {
+      throw new Error(languageResult.error.message);
+    }
+
+    const snippetTypeResult = SnippetType.create(dto.type);
+    if (!snippetTypeResult.ok) {
+      throw new Error(snippetTypeResult.error.message);
+    }
+
+    return new CodeSnippet({
+      ...dto,
+      language: languageResult.data,
+      type: snippetTypeResult.data,
+    });
   }
 
   // ================= 工厂方法 3: 从持久化 DTO 恢复 =================
@@ -92,11 +116,21 @@ export class CodeSnippet extends ValueObject<CodeSnippetProps> implements ICodeS
    * 从数据库持久化 DTO 恢复值对象
    */
   public static fromPersistenceDTO(dto: CodeSnippetPersistenceDTO): CodeSnippet {
+    const languageResult = Language.create(dto.language);
+    if (!languageResult.ok) {
+      throw new Error(languageResult.error.message);
+    }
+
+    const snippetTypeResult = SnippetType.create(dto.type);
+    if (!snippetTypeResult.ok) {
+      throw new Error(snippetTypeResult.error.message);
+    }
+
     return new CodeSnippet({
       id: dto.id as CodeSnippetId,
-      language: dto.language as Language,
+      language: languageResult.data,
       content: dto.content,
-      type: dto.type as SnippetType,
+      type: snippetTypeResult.data,
       caption: dto.caption,
     });
   }
@@ -137,7 +171,7 @@ export class CodeSnippet extends ValueObject<CodeSnippetProps> implements ICodeS
     return this.props.id;
   }
 
-  public get language(): Language {
+  public get language(): LanguageValue {
     return this.props.language;
   }
 
@@ -145,7 +179,7 @@ export class CodeSnippet extends ValueObject<CodeSnippetProps> implements ICodeS
     return this.props.content;
   }
 
-  public get type(): SnippetType {
+  public get type(): SnippetTypeValue {
     return this.props.type;
   }
 
@@ -187,14 +221,14 @@ export class CodeSnippet extends ValueObject<CodeSnippetProps> implements ICodeS
    * 是否为 Good Example
    */
   public get isGoodExample(): boolean {
-    return this.props.type === 'GoodExample';
+    return this.props.type === SnippetType.GoodExample;
   }
 
   /**
    * 是否为 Bad Example
    */
   public get isBadExample(): boolean {
-    return this.props.type === 'BadExample';
+    return this.props.type === SnippetType.BadExample;
   }
 
   /**
@@ -229,7 +263,7 @@ export class CodeSnippet extends ValueObject<CodeSnippetProps> implements ICodeS
   /**
    * 更新语言
    */
-  public updateLanguage(language: Language): Result<CodeSnippet> {
+  public updateLanguage(language: LanguageValue): Result<CodeSnippet> {
     return CodeSnippet.create({
       ...this.props,
       language,

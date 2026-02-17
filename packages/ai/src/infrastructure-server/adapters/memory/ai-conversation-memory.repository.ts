@@ -4,7 +4,7 @@
  * In-memory implementation of IAIConversationRepository for testing.
  */
 
-import type { IAIConversationRepository, AIConversationQueryOptions } from '../../ports/ai-conversation-repository.port';
+import type { IAIConversationRepository, AIConversationQueryOptions } from '../../../domain-server';
 import type { AIConversation } from '../../../domain-server/aggregates/ai-conversation';
 import type { ConversationStatus } from '@dailyuse/contracts/ai';
 

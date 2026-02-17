@@ -6,23 +6,23 @@
  * @since Story 9.2 (EPIC-SCHEDULE-001)
  */
 
-import type { Schedule } from '../aggregates/schedule';
+import type { CalendarEntry } from '../aggregates/calendar-entry';
 
 export interface IScheduleRepository {
   /**
    * Persist a schedule aggregate
    */
-  save(schedule: Schedule): Promise<void>;
+  save(schedule: CalendarEntry): Promise<void>;
 
   /**
    * Find a schedule by its UUID
    */
-  findById(id: string): Promise<Schedule | null>;
+  findById(id: string): Promise<CalendarEntry | null>;
 
   /**
    * Find all schedules for an account
    */
-  findByIdentityId(identityId: string): Promise<Schedule[]>;
+  findByIdentityId(identityId: string): Promise<CalendarEntry[]>;
 
   /**
    * Delete schedule by UUID
@@ -41,7 +41,7 @@ export interface IScheduleRepository {
     startTime: number,
     endTime: number,
     excludeId?: string
-  ): Promise<Schedule[]>;
+  ): Promise<CalendarEntry[]>;
 
   /**
    * Optional transaction wrapper for future use (Story 9.3)

@@ -15,7 +15,7 @@ import type {
 } from '../../domain-server/interfaces/adapter-types';
 import { AIConversation as AIConversationServer } from '../../domain-server/aggregates/ai-conversation';
 import { Message as MessageServer } from '../../domain-server/entities/message';
-import type { MessageClientDTO, MessageResponse } from '@dailyuse/contracts/ai';
+import type { MessageClientDTO, SendMessageRes } from '@dailyuse/contracts/ai';
 import { MessageRole, GenerationTaskType } from '@dailyuse/contracts/ai';
 import { createLogger, eventBus } from '@dailyuse/utils';
 
@@ -39,10 +39,10 @@ export class AIChatApplicationService {
     content: string,
     provider?: string,
     model?: string,
-  ): Promise<MessageResponse> {
+  ): Promise<SendMessageRes> {
     // 1. Validate & Save User Message
     const conversation = await this.validateAndGetConversation(identityId, conversationId);
-    const userMessage = await this.saveMessage(conversation, MessageRole.USER, content);
+    const userMessage = await this.saveMessage(conversation, MessageRole.User, content);
 
     // 2. Prepare Context (History)
     // For simplicity, we just use the current message as prompt or fetch recent history
@@ -52,7 +52,7 @@ export class AIChatApplicationService {
 
     // 3. Call AI
     const request: AIGenerationRequest = {
-      taskType: GenerationTaskType.GENERAL_CHAT,
+      taskType: GenerationTaskType.GeneralChat,
       prompt: prompt,
       systemPrompt: 'You are a helpful assistant.',
       // provider/model handling would go here if adapter supports dynamic config or we swtich adapter
@@ -70,13 +70,11 @@ export class AIChatApplicationService {
     // 4. Save AI Message
     const aiMessage = await this.saveMessage(
       conversation,
-      MessageRole.ASSISTANT,
+      MessageRole.Assistant,
       aiResponseContent,
     );
 
-    return {
-      message: aiMessage, // Return AI message (or User message? Chat UI usually wants AI reply)
-    };
+    return aiMessage;
   }
 
   /**
@@ -91,13 +89,13 @@ export class AIChatApplicationService {
     model?: string,
   ): Promise<void> {
     const conversation = await this.validateAndGetConversation(identityId, conversationId);
-    await this.saveMessage(conversation, MessageRole.USER, content);
+    await this.saveMessage(conversation, MessageRole.User, content);
 
     const history = await this.getConversationHistory(conversationId);
     const prompt = this.formatChatPrompt(history, content);
 
     const request: AIGenerationRequest = {
-      taskType: GenerationTaskType.GENERAL_CHAT,
+      taskType: GenerationTaskType.GeneralChat,
       prompt: prompt,
       systemPrompt: 'You are a helpful assistant.',
     };
@@ -109,12 +107,12 @@ export class AIChatApplicationService {
         fullContent = chunk.fullText;
         onChunk({
           content: chunk.delta,
-          role: MessageRole.ASSISTANT,
+          role: MessageRole.Assistant,
         }); // Stream delta to client
       }
 
       // Save full AI message after stream completes
-      await this.saveMessage(conversation, MessageRole.ASSISTANT, fullContent);
+      await this.saveMessage(conversation, MessageRole.Assistant, fullContent);
     } catch (error) {
       logger.error('AI Stream Failed', error);
       // Should probably notify client of error
@@ -154,11 +152,10 @@ export class AIChatApplicationService {
     await this.conversationRepository.save(conversation);
 
     // Emit events
-    const events = conversation.getUncommittedDomainEvents();
+    const events = conversation.pullDomainEvents();
     for (const event of events) {
-      await eventBus.emit(event.eventType, event);
+      eventBus.send(event.eventType as any, event as any);
     }
-    conversation.clearDomainEvents();
 
     return message.toClientDTO();
   }

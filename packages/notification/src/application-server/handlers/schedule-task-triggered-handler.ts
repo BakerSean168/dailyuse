@@ -12,7 +12,6 @@
  */
 
 import { createLogger, eventBus } from '@dailyuse/utils';
-import type { NotificationServerDTO, NotificationPreferenceServerDTO, CreateNotificationRequest } from '@dailyuse/contracts/notification';
 import { NotificationChannelType, NotificationType, NotificationCategory, RelatedEntityType } from '@dailyuse/contracts/notification';
 import { ScheduleTaskEventTypes } from '@dailyuse/contracts/schedule';
 import { NotificationApplicationService } from '../services/NotificationApplicationService';

@@ -115,6 +115,5 @@ export interface UIConfigClient {
   step: number | null;
 }
 
-// ============ Backward Compatibility ============
 
 

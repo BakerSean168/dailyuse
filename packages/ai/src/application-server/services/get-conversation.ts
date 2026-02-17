@@ -5,7 +5,7 @@
  */
 
 import type { IAIConversationRepository } from '../../domain-server/repositories/IAIConversationRepository';
-import type { ConversationResponse } from '@dailyuse/contracts/ai';
+import type { GetConversationRes } from '@dailyuse/contracts/ai';
 // import { AIContainer } from '@dailyuse/ai/infrastructure-server';
 
 /**
@@ -14,7 +14,7 @@ import type { ConversationResponse } from '@dailyuse/contracts/ai';
 export class GetConversation {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
-  async execute(id: string, identityId: string): Promise<ConversationResponse> {
+  async execute(id: string, identityId: string): Promise<GetConversationRes> {
     const conversation = await this.conversationRepository.findById(id);
 
     if (!conversation) {
@@ -25,8 +25,6 @@ export class GetConversation {
       throw new Error('Not authorized to access this conversation');
     }
 
-    return {
-      conversation: conversation.toClientDTO(),
-    };
+    return conversation.toClientDTO();
   }
 }

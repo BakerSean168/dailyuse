@@ -12,22 +12,11 @@
 import { Router } from 'express';
 import { prisma } from '@dailyuse/database';
 import {
-  CreateGoal,
-  GetGoal,
-  ListGoals,
-  UpdateGoal,
-  DeleteGoal,
-  ArchiveGoal,
-  ActivateGoal,
-  SearchGoals,
-  AddGoalKeyResult,
-  UpdateGoalKeyResult,
-  UpdateGoalKeyResultProgress,
-  DeleteGoalKeyResult,
-  AddGoalReview,
-} from '../application-server';
-import { GoalPolicy } from '../domain-server';
-import { GoalPrismaRepository } from '../infrastructure-server';
+  GoalPrismaRepository,
+  GoalFolderPrismaRepository,
+  GoalRecordPrismaRepository,
+  GoalModule,
+} from '../infrastructure-server';
 import { registerGoalRoutes } from './routes';
 import { registerGoalInitializationTasks } from './initialization';
 
@@ -55,39 +44,31 @@ export const GoalApiModule: GoalApiModuleDef = {
 
     // 1. 创建 Repository
     const goalRepository = new GoalPrismaRepository(prisma);
+    const goalFolderRepository = new GoalFolderPrismaRepository(prisma);
+    const goalRecordRepository = new GoalRecordPrismaRepository(prisma);
 
-    // 2. 创建 Use Cases / Services
-    const goalPolicy = new GoalPolicy();
-
-    const createGoal = new CreateGoal(goalRepository, goalPolicy);
-    const getGoal = new GetGoal(goalRepository);
-    const listGoals = new ListGoals(goalRepository);
-    const updateGoal = new UpdateGoal(goalRepository, goalPolicy);
-    const deleteGoal = new DeleteGoal(goalRepository, goalPolicy);
-    const archiveGoal = new ArchiveGoal(goalRepository, goalPolicy);
-    const activateGoal = new ActivateGoal(goalRepository, goalPolicy);
-    const searchGoals = new SearchGoals(goalRepository);
-    const addKeyResult = new AddGoalKeyResult(goalRepository, goalPolicy);
-    const updateKeyResult = new UpdateGoalKeyResult(goalRepository, goalPolicy);
-    const updateKeyResultProgress = new UpdateGoalKeyResultProgress(goalRepository, goalPolicy);
-    const deleteKeyResult = new DeleteGoalKeyResult(goalRepository, goalPolicy);
-    const addReview = new AddGoalReview(goalRepository, goalPolicy);
+    // 2. 使用共享组合根创建 Use Cases / Services
+    const goalModule = new GoalModule({
+      goalRepository,
+      goalFolderRepository,
+      goalRecordRepository,
+    });
 
     // 3. 创建 Handlers（函数引用）
     const handlers = {
-      createGoal,
-      getGoal,
-      listGoals,
-      updateGoal,
-      deleteGoal,
-      archiveGoal,
-      activateGoal,
-      searchGoals,
-      addKeyResult,
-      updateKeyResult,
-      updateKeyResultProgress,
-      deleteKeyResult,
-      addReview,
+      createGoal: goalModule.createGoal,
+      getGoal: goalModule.getGoal,
+      listGoals: goalModule.listGoals,
+      updateGoal: goalModule.updateGoal,
+      deleteGoal: goalModule.deleteGoal,
+      archiveGoal: goalModule.archiveGoal,
+      activateGoal: goalModule.activateGoal,
+      searchGoals: goalModule.searchGoals,
+      addKeyResult: goalModule.addKeyResult,
+      updateKeyResult: goalModule.updateKeyResult,
+      updateKeyResultProgress: goalModule.updateKeyResultProgress,
+      deleteKeyResult: goalModule.deleteKeyResult,
+      addReview: goalModule.addReview,
     };
 
     // 4. 注册路由

@@ -6,7 +6,7 @@
 import { z } from 'zod';
 import { brandedId } from '@/primitives';
 import type { IdentityId, ScheduleId } from '@/primitives';
-import type { ScheduleJobClientDTO } from '../../aggregates/schedule-job-client';
+import type { CalendarEntryClientDTO } from '../../aggregates/calendar-entry-client';
 import type { ConflictDetectionResult } from '../../value-objects/conflict-detection-result';
 
 // ============ Zod Schemas ============
@@ -132,7 +132,7 @@ export interface ResolveConflictRequest {
  * Response DTO for creating a schedule
  */
 export interface CreateScheduleResponseDTO {
-  schedule: ScheduleJobClientDTO;
+  schedule: CalendarEntryClientDTO;
   conflicts?: ConflictDetectionResult;
 }
 
@@ -157,7 +157,7 @@ export interface AppliedResolution {
  * Response DTO for resolving a schedule conflict
  */
 export interface ResolveConflictResponseDTO {
-  schedule: ScheduleJobClientDTO;
+  schedule: CalendarEntryClientDTO;
   conflicts: ConflictDetectionResult;
   applied: AppliedResolution;
 }

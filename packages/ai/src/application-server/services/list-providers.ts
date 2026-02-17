@@ -15,7 +15,7 @@ export class ListProviders {
   constructor(private readonly providerRepository: IAIProviderConfigRepository) {}
 
   async execute(identityId: string): Promise<{ providers: AIProviderConfigClientDTO[] }> {
-    const providers = await this.providerRepository.findByAccountId(identityId);
+    const providers = await this.providerRepository.findByIdentityId(identityId);
 
     return {
       providers: providers.map((p: any) => (typeof p.toClientDTO === 'function' ? p.toClientDTO() : p)),

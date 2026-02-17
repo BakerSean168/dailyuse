@@ -1,13 +1,13 @@
 import { apiClient } from '@/shared/api/instances';
 import type {
   UserSettingClientDTO,
-  UpdateUserSettingRequest,
-  CreateUserSettingRequest,
-  UpdateAppearanceRequest,
-  UpdateLocaleRequest,
-  UpdateWorkflowRequest,
-  UpdatePrivacyRequest,
-  UpdateExperimentalRequest,
+  UpdateUserSettingReq,
+  CreateUserSettingReq,
+  UpdateAppearanceReq,
+  UpdateLocaleReq,
+  UpdateWorkflowReq,
+  UpdatePrivacyReq,
+  UpdateExperimentalReq,
 } from '@dailyuse/contracts/setting';
 
 /**
@@ -23,7 +23,7 @@ export class UserSettingApiClient {
    * 创建用户设置
    */
   async createUserSetting(
-    request: CreateUserSettingRequest,
+    request: CreateUserSettingReq,
   ): Promise<UserSettingClientDTO> {
     const data = await apiClient.post(this.baseUrl, request);
     return data;
@@ -62,7 +62,7 @@ export class UserSettingApiClient {
    */
   async updateUserSetting(
     id: string,
-    request: UpdateUserSettingRequest,
+    request: UpdateUserSettingReq,
   ): Promise<UserSettingClientDTO> {
     const data = await apiClient.put(`${this.baseUrl}/${id}`, request);
     return data;
@@ -82,7 +82,7 @@ export class UserSettingApiClient {
    */
   async updateAppearance(
     id: string,
-    appearance: UpdateAppearanceRequest,
+    appearance: UpdateAppearanceReq,
   ): Promise<UserSettingClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${id}/appearance`, { appearance });
     return data;
@@ -93,7 +93,7 @@ export class UserSettingApiClient {
    */
   async updateLocale(
     id: string,
-    locale: UpdateLocaleRequest,
+    locale: UpdateLocaleReq,
   ): Promise<UserSettingClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${id}/locale`, { locale });
     return data;
@@ -104,7 +104,7 @@ export class UserSettingApiClient {
    */
   async updateWorkflow(
     id: string,
-    workflow: UpdateWorkflowRequest,
+    workflow: UpdateWorkflowReq,
   ): Promise<UserSettingClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${id}/workflow`, { workflow });
     return data;
@@ -115,7 +115,7 @@ export class UserSettingApiClient {
    */
   async updatePrivacy(
     id: string,
-    privacy: UpdatePrivacyRequest,
+    privacy: UpdatePrivacyReq,
   ): Promise<UserSettingClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${id}/privacy`, { privacy });
     return data;
@@ -126,7 +126,7 @@ export class UserSettingApiClient {
    */
   async updateExperimental(
     id: string,
-    experimental: UpdateExperimentalRequest,
+    experimental: UpdateExperimentalReq,
   ): Promise<UserSettingClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${id}/experimental`, { experimental });
     return data;

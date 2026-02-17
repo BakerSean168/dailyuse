@@ -10,7 +10,7 @@
 import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
-  ScheduleJobClientDTO,
+  CalendarEntryClientDTO,
   CreateScheduleRequest,
   UpdateScheduleRequest,
   GetSchedulesByTimeRangeRequest,
@@ -61,11 +61,11 @@ export interface ModuleStatisticsClientDTO {
  */
 export interface IScheduleEventApiClient {
   // ===== Schedule Event CRUD =====
-  createSchedule(data: CreateScheduleRequest): Promise<Result<ScheduleJobClientDTO>>;
-  getSchedule(id: string): Promise<Result<ScheduleJobClientDTO>>;
-  getSchedulesByAccount(): Promise<Result<ScheduleJobClientDTO[]>>;
-  getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequest): Promise<Result<ScheduleJobClientDTO[]>>;
-  updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<ScheduleJobClientDTO>>;
+  createSchedule(data: CreateScheduleRequest): Promise<Result<CalendarEntryClientDTO>>;
+  getSchedule(id: string): Promise<Result<CalendarEntryClientDTO>>;
+  getSchedulesByAccount(): Promise<Result<CalendarEntryClientDTO[]>>;
+  getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequest): Promise<Result<CalendarEntryClientDTO[]>>;
+  updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<CalendarEntryClientDTO>>;
   deleteSchedule(id: string): Promise<Result<void>>;
 
   // ===== Schedule Conflict Detection =====
@@ -79,14 +79,14 @@ export interface IScheduleEventApiClient {
   createScheduleWithConflictDetection(
     request: CreateScheduleRequest,
   ): Promise<Result<{
-    schedule: ScheduleJobClientDTO;
+    schedule: CalendarEntryClientDTO;
     conflicts?: ConflictDetectionResult;
   }>>;
   resolveConflict(
     scheduleId: string,
     request: ResolveConflictRequest,
   ): Promise<Result<{
-    schedule: ScheduleJobClientDTO;
+    schedule: CalendarEntryClientDTO;
     conflicts: ConflictDetectionResult;
     applied: {
       strategy: string;

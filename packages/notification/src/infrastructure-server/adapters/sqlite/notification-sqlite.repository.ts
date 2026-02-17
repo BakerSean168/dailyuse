@@ -1,126 +1,104 @@
 /**
- * SQLite Notification Repository Implementation
- * 閫氱煡鐨?SQLite Repository瀹炵幇
+ * Notification SQLite Repository
+ *
+ * SQLite implementation of INotificationRepository.
+ * Uses clean interface-aligned skeleton while persistence migration is ongoing.
  */
 
 import type Database from 'better-sqlite3';
-import { Notification } from '../../../domain-server/aggregates/notification';
 import type { INotificationRepository } from '../../../domain-server/repositories/INotificationRepository';
+import type { Notification } from '../../../domain-server/aggregates/notification';
+import type { NotificationCategory, NotificationStatus } from '@dailyuse/contracts/notification';
 
 export class SqliteNotificationRepository implements INotificationRepository {
-  constructor(private db: Database.Database) {}
+  constructor(private readonly db: Database.Database) {}
 
   async save(notification: Notification): Promise<void> {
-    const dto = notification.toPersistenceDTO();
-
-    const stmt = this.db.prepare(`
-      INSERT INTO notifications (
-        id, identityId, title, content, category, status,
-        read_at, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(id) DO UPDATE SET
-        title = excluded.title,
-        content = excluded.content,
-        status = excluded.status,
-        read_at = excluded.read_at,
-        updatedAt = excluded.updatedAt
-    `);
-
-    stmt.run(
-      dto.id,
-      dto.identityId,
-      dto.title,
-      dto.content,
-      dto.category,
-      dto.status,
-      dto.read_at || null,
-      dto.createdAt,
-      dto.updatedAt,
-    );
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
   }
 
   async saveMany(notifications: Notification[]): Promise<void> {
-    const insertStmt = this.db.prepare(`
-      INSERT INTO notifications (
-        id, identityId, title, content, category, status,
-        read_at, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(id) DO UPDATE SET
-        title = excluded.title,
-        content = excluded.content,
-        status = excluded.status,
-        read_at = excluded.read_at,
-        updatedAt = excluded.updatedAt
-    `);
-
-    const transaction = this.db.transaction((items: Notification[]) => {
-      for (const notif of items) {
-        const dto = notif.toPersistenceDTO();
-        insertStmt.run(
-          dto.id,
-          dto.identityId,
-          dto.title,
-          dto.content,
-          dto.category,
-          dto.status,
-          dto.read_at || null,
-          dto.createdAt,
-          dto.updatedAt,
-        );
-      }
-    });
-
-    transaction(notifications);
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
   }
 
   async findById(id: string, options?: { includeChildren?: boolean }): Promise<Notification | null> {
-    const stmt = this.db.prepare(`SELECT * FROM notifications WHERE id = ? LIMIT 1`);
-    const row = stmt.get(id) as any;
-
-    if (!row) return null;
-
-    return Notification.fromPersistenceDTO({
-      id: row.id,
-      identity_id: row.identityId,
-      title: row.title,
-      content: row.content,
-      category: row.category,
-      status: row.status,
-      read_at: row.read_at ? new Date(row.read_at) : null,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
   }
 
-  async findByAccountId(identityId: string): Promise<Notification[]> {
-    const stmt = this.db.prepare(
-      `SELECT * FROM notifications WHERE identityId = ? ORDER BY createdAt DESC`
-    );
-    const rows = stmt.all(identityId) as any[];
+  async findByIdentityId(
+    identityId: string,
+    options?: {
+      includeChildren?: boolean;
+      includeRead?: boolean;
+      includeDeleted?: boolean;
+      limit?: number;
+      offset?: number;
+    },
+  ): Promise<Notification[]> {
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
+  }
 
-    return rows.map((row) =>
-      Notification.fromPersistenceDTO({
-        id: row.id,
-        identity_id: row.identityId,
-        title: row.title,
-        content: row.content,
-        category: row.category,
-        status: row.status,
-        read_at: row.read_at ? new Date(row.read_at) : null,
-        createdAt: new Date(row.createdAt),
-        updatedAt: new Date(row.updatedAt),
-      })
-    );
+  async findByStatus(
+    identityId: string,
+    status: NotificationStatus,
+    options?: { limit?: number; offset?: number },
+  ): Promise<Notification[]> {
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
+  }
+
+  async findByCategory(
+    identityId: string,
+    category: NotificationCategory,
+    options?: { limit?: number; offset?: number },
+  ): Promise<Notification[]> {
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
+  }
+
+  async findUnread(identityId: string, options?: { limit?: number }): Promise<Notification[]> {
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
+  }
+
+  async findByRelatedEntity(relatedEntityType: string, relatedEntityId: string): Promise<Notification[]> {
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
   }
 
   async delete(id: string): Promise<void> {
-    const stmt = this.db.prepare(`DELETE FROM notifications WHERE id = ?`);
-    stmt.run(id);
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
+  }
+
+  async deleteMany(ids: string[]): Promise<void> {
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
+  }
+
+  async softDelete(id: string): Promise<void> {
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
   }
 
   async exists(id: string): Promise<boolean> {
-    const stmt = this.db.prepare(`SELECT 1 FROM notifications WHERE id = ? LIMIT 1`);
-    return stmt.get(id) !== undefined;
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
+  }
+
+  async countUnread(identityId: string): Promise<number> {
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
+  }
+
+  async countByCategory(identityId: string): Promise<Record<NotificationCategory, number>> {
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
+  }
+
+  async markManyAsRead(ids: string[]): Promise<void> {
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
+  }
+
+  async markAllAsRead(identityId: string): Promise<void> {
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
+  }
+
+  async cleanupExpired(beforeTimestamp: number): Promise<number> {
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
+  }
+
+  async cleanupDeleted(beforeTimestamp: number): Promise<number> {
+    throw new Error('Not implemented - refactor sqlite persistence to new notification model');
   }
 }
-

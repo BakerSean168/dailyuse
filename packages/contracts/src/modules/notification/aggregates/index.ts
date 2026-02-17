@@ -28,7 +28,3 @@ export type {
   NotificationPreferenceClient,
   NotificationPreferenceClientDTO,
 } from './notification-preference-client';
-
-export type {
-  ToastWindowClient,
-} from './toast-window-client';

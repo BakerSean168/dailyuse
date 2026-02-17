@@ -26,3 +26,6 @@ export {
   SqliteNotificationPreferenceRepository,
   SqliteNotificationTemplateRepository,
 } from './adapters/sqlite';
+
+// SQLite schema
+export { NOTIFICATION_MODULE_SCHEMA } from './adapters/sqlite/schema';

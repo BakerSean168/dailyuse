@@ -54,7 +54,11 @@ export class RuleTag extends ValueObject<RuleTagProps> implements IRuleTag {
 
     const validationResult = this.validate(props);
     if (!validationResult.ok) {
-      return validationResult as any;
+      return error(
+        validationResult.error.code,
+        validationResult.error.message,
+        validationResult.error.details,
+      );
     }
 
     return ok(new RuleTag(props));

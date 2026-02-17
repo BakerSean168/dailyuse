@@ -5,7 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
-import type { IAppConfigRepository } from '../../ports/app-config-repository.port';
+import type { IAppConfigRepository } from '@/domain-server';
 
 /**
  * AppConfig Prisma Repository

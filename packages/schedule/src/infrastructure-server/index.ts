@@ -25,4 +25,7 @@ export {
 } from './adapters/sqlite';
 export { SchedulerBootstrap } from './scheduler-bootstrap';
 
+// SQLite schema
+export { SCHEDULE_MODULE_SCHEMA } from './adapters/sqlite/schema';
+
 

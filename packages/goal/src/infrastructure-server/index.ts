@@ -26,8 +26,8 @@ export { SqliteWeightSnapshotRepository } from './adapters/sqlite/weight-snapsho
 export { SqliteGoalRecordRepository } from './adapters/sqlite/goal-record-sqlite.repository';
 export { GOAL_MODULE_SCHEMA } from './adapters/sqlite/schema';
 
-// ============ Ports (Interfaces) ============
-export type { IGoalRepository } from './ports/goal-repository.port';
-
 // ============ Mappers ============
 export { PrismaWeightSnapshotMapper } from './mappers/prisma-weight-snapshot-mapper';
+
+// ============ Composition Root ============
+export { GoalModule, type GoalModuleRepositories } from './goal.module';

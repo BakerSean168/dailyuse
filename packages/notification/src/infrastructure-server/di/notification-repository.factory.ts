@@ -3,8 +3,7 @@
  * Provides repository implementations for different data sources
  */
 
-import type { PrismaClient } from '../../generated/prisma/client';
-import type Database from 'better-sqlite3';
+import type { PrismaClient } from '@dailyuse/database';
 
 import {
   NotificationPrismaRepository,
@@ -18,7 +17,7 @@ import {
   SqliteNotificationTemplateRepository,
 } from '../adapters/sqlite';
 
-type BetterSQLiteDB = Database.Database;
+type BetterSQLiteDB = any;
 
 /**
  * Notification Repository Factory

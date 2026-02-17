@@ -5,6 +5,9 @@
 
 import type { IRuleRepository } from '../../domain-server/repositories/i-rule-repository';
 import { Rule } from '../../domain-server/aggregates/rule';
+import { RuleSeverity } from '../../domain-shared/value-objects/rule-severity';
+import { Language } from '../../domain-shared/value-objects/language';
+import type { Language as RuleLanguage } from '../../domain-shared/value-objects/language';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { CreateRuleReq, CreateRuleRes } from '@/contracts/api/rules';
@@ -43,11 +46,44 @@ export class CreateRuleUseCase {
     // Check for duplicate code
     const existingResult = await this.ruleRepository.findByCode(req.code);
     if (!existingResult.ok) {
-      return existingResult as any;
+      return error(existingResult.error.code, existingResult.error.message, existingResult.error.details);
     }
 
     if (existingResult.data !== null) {
       return error('CONFLICT', `Rule with code '${req.code}' already exists`);
+    }
+
+    const severityResult = RuleSeverity.create(req.severity);
+    if (!severityResult.ok) {
+      return error(severityResult.error.code, severityResult.error.message, severityResult.error.details);
+    }
+
+    const goodExamples: Array<{ language: RuleLanguage; content: string; caption?: string }> = [];
+    for (const example of req.goodExamples) {
+      const languageResult = Language.create(example.language);
+      if (!languageResult.ok) {
+        return error(languageResult.error.code, languageResult.error.message, languageResult.error.details);
+      }
+
+      goodExamples.push({
+        language: languageResult.data,
+        content: example.content,
+        caption: example.caption ?? undefined,
+      });
+    }
+
+    const badExamples: Array<{ language: RuleLanguage; content: string; caption?: string }> = [];
+    for (const example of req.badExamples) {
+      const languageResult = Language.create(example.language);
+      if (!languageResult.ok) {
+        return error(languageResult.error.code, languageResult.error.message, languageResult.error.details);
+      }
+
+      badExamples.push({
+        language: languageResult.data,
+        content: example.content,
+        caption: example.caption ?? undefined,
+      });
     }
 
     // Create Rule aggregate
@@ -55,24 +91,16 @@ export class CreateRuleUseCase {
       code: req.code,
       title: req.title,
       description: req.description,
-      severity: req.severity as any,
+      severity: severityResult.data,
       tags: req.tags,
-      goodExamples: req.goodExamples.map((ex: { language: string; content: string; caption?: string }) => ({
-        language: ex.language,
-        content: ex.content,
-        caption: ex.caption ?? undefined,
-      })),
-      badExamples: req.badExamples.map((ex: { language: string; content: string; caption?: string }) => ({
-        language: ex.language,
-        content: ex.content,
-        caption: ex.caption ?? undefined,
-      })),
+      goodExamples,
+      badExamples,
       liveReferenceLocation: req.liveReferenceLocation ?? undefined,
       authorId: cx.identityId,
     });
 
     if (!ruleResult.ok) {
-      return ruleResult as any;
+      return error(ruleResult.error.code, ruleResult.error.message, ruleResult.error.details);
     }
 
     const rule = ruleResult.data;
@@ -80,7 +108,7 @@ export class CreateRuleUseCase {
     // Persist to repository
     const saveResult = await this.ruleRepository.save(rule);
     if (!saveResult.ok) {
-      return saveResult as any;
+      return error(saveResult.error.code, saveResult.error.message, saveResult.error.details);
     }
 
     // Convert to ClientDTO and return

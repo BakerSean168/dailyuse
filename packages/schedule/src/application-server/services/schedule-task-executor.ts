@@ -4,19 +4,17 @@
  * @responsibility
  * - 执行到期的 ScheduleTask
  * - 协调领域层和基础设施层
- * - 发布领域事件到事件总线
  *
  * @architecture
  * - 应用服务层（Application Service）
  * - 使用 Repository 加载聚合根
  * - 调用聚合根的 execute() 方法
- * - 发布领域事件
  */
 
 import { createLogger } from '@dailyuse/utils';
 import { ScheduleTask } from '../../domain-server/aggregates/schedule-task';
 import type { IScheduleTaskRepository } from '../../domain-server/repositories/IScheduleTaskRepository';
-import { eventBus } from '@dailyuse/utils';
+import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 // import { ScheduleMonitor } from '@dailyuse/schedule/infrastructure-server'; // Removed to avoid circular dependency
 
 const logger = createLogger('ScheduleTaskExecutor');
@@ -93,18 +91,6 @@ export class ScheduleTaskExecutor {
 
       // 保存任务状态更新
       await this.repository.save(task);
-
-      // 发布领域事件
-      const events = task.getDomainEvents();
-      for (const event of events) {
-        logger.debug(`发布领域事件: ${event.eventType}`, {
-          taskId: task.id,
-          eventType: event.eventType,
-        });
-
-        // 使用 emit 发布事件
-        eventBus.emit(event.eventType, event);
-      }
 
       // 记录任务执行成功
       this.monitor.recordExecutionSuccess(taskId, taskName);
@@ -192,8 +178,8 @@ export class ScheduleTaskExecutor {
    * 获取任务不能执行的原因
    */
   private getCannotExecuteReason(task: ScheduleTask): string {
-    if (task.status !== 'active') {
-      return `任务状态不是 active: ${task.status}`;
+    if (task.status !== ScheduleTaskStatus.Active) {
+      return `任务状态不是 Active: ${task.status}`;
     }
     if (!task.enabled) {
       return '任务未启用';

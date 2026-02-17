@@ -4,7 +4,7 @@
  * In-memory implementation of IFolderRepository for testing.
  */
 
-import type { IFolderRepository } from '../../ports/folder-repository.port';
+import type { IFolderRepository } from '../../domain-server';
 import type { Folder } from '../../../domain-server/entities/folder';
 
 /**

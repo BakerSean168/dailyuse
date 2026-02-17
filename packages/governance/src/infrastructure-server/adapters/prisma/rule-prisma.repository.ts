@@ -11,7 +11,7 @@
  * - Transaction management (future)
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { Prisma, PrismaClient } from '@dailyuse/database';
 import type { IRuleRepository, RuleFilter } from '../../../domain-server/repositories/i-rule-repository';
 import type { Rule } from '../../../domain-server/aggregates/rule';
 import { RuleId } from '../../../domain-shared/value-objects/rule-id';
@@ -110,7 +110,7 @@ export class RulePrismaRepository implements IRuleRepository {
    */
   async findAll(filter?: RuleFilter): Promise<Result<Rule[]>> {
     try {
-      const where: any = {};
+      const where: Prisma.RuleWhereInput = {};
 
       // Filter by status
       if (filter?.status) {
@@ -131,7 +131,7 @@ export class RulePrismaRepository implements IRuleRepository {
       if (filter?.tags && filter.tags.length > 0) {
         // For each tag, check if it's in the tags JSON array
         // This is a simplified approach; production might need full-text search
-        const tagConditions = filter.tags.map(tag => ({
+        const tagConditions: Prisma.RuleWhereInput[] = filter.tags.map((tag) => ({
           tags: { contains: `"${tag}"` },
         }));
         where.OR = tagConditions;
@@ -162,7 +162,7 @@ export class RulePrismaRepository implements IRuleRepository {
    */
   async search(query: string, filter?: RuleFilter): Promise<Result<Rule[]>> {
     try {
-      const where: any = {
+      const where: Prisma.RuleWhereInput = {
         OR: [
           { code: { contains: query } },
           { title: { contains: query } },
@@ -229,7 +229,7 @@ export class RulePrismaRepository implements IRuleRepository {
       });
 
       return count > 0;
-    } catch (err) {
+    } catch {
       // If query fails, assume doesn't exist
       return false;
     }

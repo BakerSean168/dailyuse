@@ -14,9 +14,7 @@ export { RepositoryRepositoryFactory } from './di/repository-repository.factory'
 export { RepositoryContainer } from './repository.container';
 
 // Ports (Interfaces)
-export { type IFolderRepository } from './ports/folder-repository.port';
-export { type IRepositoryRepository } from './ports/repository-repository.port';
-export { type IResourceRepository } from './ports/resource-repository.port';
+export { type IFolderRepository, type IRepositoryRepository, type IResourceRepository } from '../domain-server';
 
 // Database Provider Factory (鏍稿績鏂板)
 export {
@@ -44,6 +42,7 @@ export { ResourcePrismaRepository } from './adapters/prisma/resource-prisma.repo
 export { SqliteRepositoryRepository } from './adapters/sqlite/repository-sqlite.repository';
 export { SqliteFolderRepository } from './adapters/sqlite/folder-sqlite.repository';
 export { SqliteResourceRepository } from './adapters/sqlite/resource-sqlite.repository';
+export { REPOSITORY_MODULE_SCHEMA } from './adapters/sqlite/schema';
 
 // Memory Adapters
 export { FolderMemoryRepository } from './adapters/memory/folder-memory.repository';

@@ -4,4 +4,5 @@
  */
 
 export { ScheduleTask } from './schedule-task.js';
-export { ScheduleJob } from './schedule-job.js';
+export { CalendarEntry } from './calendar-entry.js';
+export { ScheduleJob } from './schedule-job.js'; // deprecated alias

@@ -4,7 +4,7 @@
  * In-memory implementation of INotificationPreferenceRepository for testing.
  */
 
-import type { INotificationPreferenceRepository } from '../../ports/notification-preference-repository.port';
+import type { INotificationPreferenceRepository } from '../../../domain-server';
 import type { NotificationPreference } from '../../../domain-server/aggregates/notification-preference';
 
 /**
@@ -26,7 +26,7 @@ export class NotificationPreferenceMemoryRepository implements INotificationPref
     return this.preferences.get(id) ?? null;
   }
 
-  async findByAccountId(identityId: string): Promise<NotificationPreference | null> {
+  async findByIdentityId(identityId: string): Promise<NotificationPreference | null> {
     const id = this.accountIndex.get(identityId);
     return id ? this.preferences.get(id) ?? null : null;
   }
@@ -43,12 +43,12 @@ export class NotificationPreferenceMemoryRepository implements INotificationPref
     return this.preferences.has(id);
   }
 
-  async existsForAccount(identityId: string): Promise<boolean> {
+  async existsForIdentity(identityId: string): Promise<boolean> {
     return this.accountIndex.has(identityId);
   }
 
   async getOrCreate(identityId: string): Promise<NotificationPreference> {
-    const existing = await this.findByAccountId(identityId);
+    const existing = await this.findByIdentityId(identityId);
     if (existing) return existing;
 
     // Create default preference - in real implementation, use domain factory

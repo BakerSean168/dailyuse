@@ -24,7 +24,7 @@ export class ListScheduleTasksByAccountUseCase {
 
   async execute(identityId: string): Promise<ScheduleTaskClientDTO[]> {
     // 1. 查询指定账户的所有任务
-    const tasks = await this.scheduleTaskRepository.findByAccountId(identityId);
+    const tasks = await this.scheduleTaskRepository.findByIdentityId(identityId);
 
     // 2. 转换为 Client DTO 列表
     return tasks.map((t: any) => t.toClientDTO());

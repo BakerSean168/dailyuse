@@ -8,7 +8,7 @@ import type { IUserSettingRepository } from '@/domain-server/repositories/IUserS
 import { UserSetting } from '@/domain-server/aggregates/user-setting';
 import type {
   UserSettingClientDTO,
-  UpdateUserSettingRequest,
+  UpdateUserSettingReq,
 } from '@dailyuse/contracts/setting';
 
 /**
@@ -21,34 +21,30 @@ export class UpdateUserSetting {
   /**
    * 执行用例
    */
-  async execute(identityId: string, updates: Omit<UpdateUserSettingRequest, 'id'>): Promise<UserSettingClientDTO> {
-    let setting = await this.userSettingRepository.findByAccountId(identityId);
+  async execute(identityId: string, updates: Omit<UpdateUserSettingReq, 'id'>): Promise<UserSettingClientDTO> {
+    let setting = await this.userSettingRepository.findByIdentityId(identityId);
 
     if (!setting) {
       setting = UserSetting.create({ identityId });
     }
 
     if (updates.appearance) {
-      setting.updateAppearance(updates.appearance);
+      setting.setValue('appearance', updates.appearance);
     }
     if (updates.locale) {
-      setting.updateLocale(updates.locale);
+      setting.setValue('locale', updates.locale);
     }
     if (updates.workflow) {
-      setting.updateWorkflow(updates.workflow);
+      setting.setValue('workflow', updates.workflow);
     }
     if (updates.privacy) {
-      setting.updatePrivacy(updates.privacy);
+      setting.setValue('privacy', updates.privacy);
     }
-    if (updates.shortcuts?.custom) {
-      for (const [action, shortcut] of Object.entries(updates.shortcuts.custom)) {
-        setting.updateShortcut(action, shortcut as string);
-      }
+    if (updates.experimental) {
+      setting.setValue('experimental', updates.experimental);
     }
-    if (updates.experimental?.features) {
-      for (const feature of updates.experimental.features) {
-        setting.enableExperimentalFeature(feature);
-      }
+    if (updates.entries) {
+      setting.setValues(updates.entries);
     }
 
     await this.userSettingRepository.save(setting);

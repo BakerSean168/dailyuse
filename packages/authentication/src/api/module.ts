@@ -11,13 +11,7 @@
 
 import { Router } from 'express';
 import { prisma } from '@dailyuse/database';
-import { AuthenticationContainer } from '../infrastructure-server';
-import {
-  Login,
-  Logout,
-  Register,
-  RefreshToken,
-} from '../application-server';
+import { AuthenticationContainer, AuthenticationModule } from '../infrastructure-server';
 // Commented out temporarily:
 // import {
 //   ChangePassword,
@@ -79,11 +73,13 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
       7 * 24 * 60 * 60 * 1000 // 7 days for refresh token
     );
 
-    // 2. Create use-case service instances
-    const loginService = new Login(identityRepo, sessionRepo, passwordHasher, tokenProvider);
-    const logoutService = new Logout(sessionRepo);
-    const registerService = new Register(identityRepo, sessionRepo, passwordHasher, tokenProvider);
-    const refreshTokenService = new RefreshToken(sessionRepo, identityRepo, tokenProvider);
+    // 2. Create use-case service instances via composition root
+    const authenticationModule = new AuthenticationModule({
+      identityRepository: identityRepo,
+      sessionRepository: sessionRepo,
+      passwordHasher,
+      tokenProvider,
+    });
     
     // Commented out temporarily:
     // const changePasswordService = new ChangePassword(identityRepo, passwordHasher);
@@ -101,10 +97,10 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
 
     // 3. Build handler map
     const handlers: AuthenticationRouteHandlers = {
-      register: (data, cx) => registerService.execute(data, cx),
-      login: (data, cx) => loginService.execute(data, cx),
-      logout: (data, cx) => logoutService.execute(data, cx),
-      refreshToken: (data, cx) => refreshTokenService.execute(data, cx),
+      register: (data, cx) => authenticationModule.register.execute(data, cx),
+      login: (data, cx) => authenticationModule.login.execute(data, cx),
+      logout: (data, cx) => authenticationModule.logout.execute(data, cx),
+      refreshToken: (data, cx) => authenticationModule.refreshToken.execute(data, cx),
       // getActiveSessions: (identityId) => getActiveSessionsService.execute(identityId),
       // revokeSession: (sessionId, identityId) => revokeSessionService.execute(sessionId, identityId),
       // revokeAllSessions: (identityId) => revokeAllSessionsService.executeForWeb(identityId),

@@ -21,4 +21,5 @@
  */
 
 export * from './schedule-task';
-export * from './schedule'; // Story 9.1 - User-facing schedules with conflict detection
+export * from './calendar-entry';
+export * from './schedule'; // deprecated alias

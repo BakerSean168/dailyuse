@@ -12,10 +12,10 @@ import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   UserSettingClientDTO,
   AppConfigClientDTO,
-  UpdateAppearanceRequest,
-  UpdateLocaleRequest,
-  UpdateWorkflowRequest,
-  UpdatePrivacyRequest,
+  UpdateAppearanceReq,
+  UpdateLocaleReq,
+  UpdateWorkflowReq,
+  UpdatePrivacyReq,
 } from '@dailyuse/contracts/setting';
 
 // ============ Transport Client Interfaces ============
@@ -36,10 +36,10 @@ export interface IIpcClient {
 export interface ISettingApiClient {
   // ===== User Settings =====
   getUserSettings(): Promise<Result<UserSettingClientDTO>>;
-  updateAppearance(request: UpdateAppearanceRequest): Promise<Result<UserSettingClientDTO>>;
-  updateLocale(request: UpdateLocaleRequest): Promise<Result<UserSettingClientDTO>>;
-  updateWorkflow(request: UpdateWorkflowRequest): Promise<Result<UserSettingClientDTO>>;
-  updatePrivacy(request: UpdatePrivacyRequest): Promise<Result<UserSettingClientDTO>>;
+  updateAppearance(request: UpdateAppearanceReq): Promise<Result<UserSettingClientDTO>>;
+  updateLocale(request: UpdateLocaleReq): Promise<Result<UserSettingClientDTO>>;
+  updateWorkflow(request: UpdateWorkflowReq): Promise<Result<UserSettingClientDTO>>;
+  updatePrivacy(request: UpdatePrivacyReq): Promise<Result<UserSettingClientDTO>>;
   resetUserSettings(): Promise<Result<UserSettingClientDTO>>;
 
   // ===== App Config =====

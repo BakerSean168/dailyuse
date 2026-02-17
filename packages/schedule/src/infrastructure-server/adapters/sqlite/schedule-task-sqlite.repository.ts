@@ -95,6 +95,10 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
     return rows.map((row) => this.rowToTask(row));
   }
 
+  async findByIdentityId(identityId: string): Promise<ScheduleTask[]> {
+    return this.findByAccountId(identityId);
+  }
+
   async findBySourceModule(module: SourceModule, identityId?: string): Promise<ScheduleTask[]> {
     let query = `SELECT * FROM schedule_tasks WHERE source_module = ?`;
     const params: any[] = [module];

@@ -5,19 +5,19 @@ import type {
   ScheduleExecutionQueryParamsDTO,
   ScheduleOperationSuccessResponseDTO,
 } from '../api';
-import type { ScheduleJobClientDTO, ScheduleTaskClientDTO } from '../aggregates';
+import type { CalendarEntryClientDTO, ScheduleTaskClientDTO } from '../aggregates';
 import type { ScheduleExecutionClientDTO } from '../entities';
 import type { ConflictDetectionResult } from '../value-objects';
 
 // === Schedule Module RPC Map ===
 export type ScheduleRpcMap = {
   // === Schedule (Calendar Events) Operations ===
-  'schedule:create': [CreateScheduleRequest, ScheduleJobClientDTO];
-  'schedule:update': [UpdateScheduleRequest, ScheduleJobClientDTO];
+  'schedule:create': [CreateScheduleRequest, CalendarEntryClientDTO];
+  'schedule:update': [UpdateScheduleRequest, CalendarEntryClientDTO];
   'schedule:delete': [{ scheduleId: string }, ScheduleOperationSuccessResponseDTO];
-  'schedule:get-by-range': [{ startTime: number; endTime: number; identityId?: string }, ScheduleJobClientDTO[]];
+  'schedule:get-by-range': [{ startTime: number; endTime: number; identityId?: string }, CalendarEntryClientDTO[]];
   'schedule:detect-conflicts': [{ userId: string; startTime: number; endTime: number; excludeId?: string }, ConflictDetectionResult];
-  'schedule:resolve-conflict': [{ resolution: string; newStartTime?: number; newEndTime?: number; newDuration?: number }, ScheduleJobClientDTO];
+  'schedule:resolve-conflict': [{ resolution: string; newStartTime?: number; newEndTime?: number; newDuration?: number }, CalendarEntryClientDTO];
   
   // === Schedule Task Operations ===
   'schedule-task:create': [any, ScheduleTaskClientDTO];

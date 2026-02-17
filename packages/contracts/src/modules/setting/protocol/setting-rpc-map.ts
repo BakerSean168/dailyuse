@@ -1,35 +1,62 @@
-/**
- * Setting Module RPC Protocol Map
- * 设置模块的 RPC 接口定义
- */
-
 import type {
-  GetUserSettingRequest,
-  UpdateSettingEntryRequest,
-  BatchUpdateSettingEntriesRequest,
-  DeleteSettingEntryRequest,
-  QuerySettingEntriesRequest,
-  ResetSettingRequest,
-  UserSettingResponse,
-  SettingEntryResponse,
-  BatchUpdateResponse,
-  SettingListResponse,
-  SettingOperationResponse,
+  GetUserSettingReq,
+  GetUserSettingRes,
+  CreateUserSettingReq,
+  CreateUserSettingRes,
+  UpdateUserSettingReq,
+  UpdateUserSettingRes,
+  UpdateAppearanceReq,
+  UpdateAppearanceRes,
+  UpdateLocaleReq,
+  UpdateLocaleRes,
+  UpdateWorkflowReq,
+  UpdateWorkflowRes,
+  UpdatePrivacyReq,
+  UpdatePrivacyRes,
+  UpdateExperimentalReq,
+  UpdateExperimentalRes,
+  ResetUserSettingReq,
+  ResetUserSettingRes,
+  GetAppConfigReq,
+  GetAppConfigRes,
+  UpdateAppConfigReq,
+  UpdateAppConfigRes,
+  UpdateSettingEntryReq,
+  UpdateSettingEntryRes,
+  BatchUpdateSettingEntriesReq,
+  BatchUpdateSettingEntriesRes,
+  DeleteSettingEntryReq,
+  DeleteSettingEntryRes,
+  QuerySettingEntriesQuery,
+  QuerySettingEntriesRes,
+  SyncSettingsReq,
+  SyncSettingsRes,
+  ExportSettingsReq,
+  ExportSettingsRes,
+  ImportSettingsReq,
+  ImportSettingsRes,
 } from '../api';
 
-// === Setting Module RPC Map ===
 export type SettingRpcMap = {
-  // === User Settings ===
-  'setting:get-user-setting': [GetUserSettingRequest, UserSettingResponse];
-  
-  // === Setting Entry Operations ===
-  'setting:update-entry': [UpdateSettingEntryRequest, SettingEntryResponse];
-  'setting:batch-update-entries': [BatchUpdateSettingEntriesRequest, BatchUpdateResponse];
-  'setting:delete-entry': [DeleteSettingEntryRequest, SettingOperationResponse];
-  'setting:query-entries': [QuerySettingEntriesRequest, SettingListResponse];
-  
-  // === Settings Management ===
-  'setting:reset': [ResetSettingRequest, SettingOperationResponse];
-  'setting:export': [{}, { data: string; fileName: string }];
-  'setting:import': [{ data: string; overwrite?: boolean }, { imported: number; skipped: number }];
+  'setting:get-user-setting': [GetUserSettingReq, GetUserSettingRes];
+  'setting:create-user-setting': [CreateUserSettingReq, CreateUserSettingRes];
+  'setting:update-user-setting': [UpdateUserSettingReq, UpdateUserSettingRes];
+  'setting:update-appearance': [UpdateAppearanceReq, UpdateAppearanceRes];
+  'setting:update-locale': [UpdateLocaleReq, UpdateLocaleRes];
+  'setting:update-workflow': [UpdateWorkflowReq, UpdateWorkflowRes];
+  'setting:update-privacy': [UpdatePrivacyReq, UpdatePrivacyRes];
+  'setting:update-experimental': [UpdateExperimentalReq, UpdateExperimentalRes];
+  'setting:reset-user-setting': [ResetUserSettingReq, ResetUserSettingRes];
+
+  'setting:get-app-config': [GetAppConfigReq, GetAppConfigRes];
+  'setting:update-app-config': [UpdateAppConfigReq, UpdateAppConfigRes];
+
+  'setting:update-entry': [UpdateSettingEntryReq, UpdateSettingEntryRes];
+  'setting:batch-update-entries': [BatchUpdateSettingEntriesReq, BatchUpdateSettingEntriesRes];
+  'setting:delete-entry': [DeleteSettingEntryReq, DeleteSettingEntryRes];
+  'setting:query-entries': [QuerySettingEntriesQuery, QuerySettingEntriesRes];
+
+  'setting:sync': [SyncSettingsReq, SyncSettingsRes];
+  'setting:export': [ExportSettingsReq, ExportSettingsRes];
+  'setting:import': [ImportSettingsReq, ImportSettingsRes];
 };

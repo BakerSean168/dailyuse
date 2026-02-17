@@ -62,7 +62,7 @@ export class NotificationDomainService {
     });
 
     // 1. 检查用户偏好设置
-    const preference = await this.preferenceRepo.findByAccountId(params.identityId);
+    const preference = await this.preferenceRepo.findByIdentityId(params.identityId);
 
     if (preference) {
       logger.debug('📋 检查用户偏好设置', {
@@ -311,7 +311,7 @@ export class NotificationDomainService {
       offset?: number;
     },
   ): Promise<Notification[]> {
-    return await this.notificationRepo.findByAccountId(identityId, {
+    return await this.notificationRepo.findByIdentityId(identityId, {
       includeRead: options?.includeRead ?? true,
       includeDeleted: false,
       limit: options?.limit,

@@ -4,9 +4,10 @@
  */
 
 import type { IRuleRepository } from '../../domain-server/repositories/i-rule-repository';
+import type { RuleFilter } from '../../domain-server/repositories/i-rule-repository';
 import type { Rule } from '../../domain-server/aggregates/rule';
 import type { Result } from '@dailyuse/contracts/result';
-import { ok } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 import type { ListRulesQuery, ListRulesRes } from '@/contracts/api/rules';
 import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
 
@@ -21,7 +22,7 @@ export class ListRulesUseCase {
    */
   async execute(req: ListRulesQuery): Promise<Result<ListRulesRes>> {
     // Build filter
-    const filter: any = {};
+    const filter: RuleFilter = {};
     
     if (req.status) {
       filter.status = req.status;
@@ -38,7 +39,7 @@ export class ListRulesUseCase {
     // Query repository
     const rulesResult = await this.ruleRepository.findAll(filter);
     if (!rulesResult.ok) {
-      return rulesResult as any;
+      return error(rulesResult.error.code, rulesResult.error.message, rulesResult.error.details);
     }
 
     const rules = rulesResult.data;

@@ -5,8 +5,8 @@
  */
 
 import type { PrismaClient } from '@dailyuse/database';
-import type { IUserSettingRepository } from '../../../../domain-server/repositories/IUserSettingRepository';
-import { UserSetting } from '../../../domain-server/aggregates/user-setting';
+import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
+import { UserSetting } from '@/domain-server/aggregates/user-setting';
 
 export class UserSettingPrismaRepository implements IUserSettingRepository {
   constructor(private readonly prisma: PrismaClient) {}

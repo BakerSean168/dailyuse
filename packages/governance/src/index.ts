@@ -96,7 +96,8 @@ export * from './application-client';
 // Infrastructure-Client: Local storage, caching (client-side)
 export { 
   RulePrismaRepository,
-  RuleRevisionPrismaRepository 
+  RuleRevisionPrismaRepository,
+  GovernanceModule,
 } from './infrastructure-server';
 
 export * from './infrastructure-client';

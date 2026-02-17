@@ -4,7 +4,6 @@
  */
 
 import { apiClient } from '@/shared/api/instances';
-import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 
 // 导出 contracts 中的类型
 // Note: 这些类型在 contracts 中不存在，使用 any 作为临时方案

@@ -1,6 +1,6 @@
 /**
  * PrismaScheduleRepository
- * Prisma implementation of IScheduleRepository for Schedule aggregate
+ * Prisma implementation of IScheduleRepository for CalendarEntry aggregate
  *
  * @module Schedule/Infrastructure
  * @since Story 9.3 (EPIC-SCHEDULE-001)
@@ -8,7 +8,7 @@
 
 import type {  PrismaClient  } from '@dailyuse/database';
 import type { IScheduleRepository } from '../../../domain-server/repositories/IScheduleRepository';
-import { Schedule } from '../../../domain-server/aggregates/schedule';
+import { CalendarEntry } from '../../../domain-server/aggregates/calendar-entry';
 
 export class SchedulePrismaRepository implements IScheduleRepository {
   constructor(private prisma: PrismaClient) {}
@@ -16,58 +16,58 @@ export class SchedulePrismaRepository implements IScheduleRepository {
   /**
    * Convert Prisma data to Domain Schedule entity
    */
-  private mapToEntity(data: any): Schedule {
+  private mapToEntity(data: any): CalendarEntry {
     // Convert Prisma data to ScheduleServerDTO format first
-    return Schedule.fromPersistenceDTO({
+    return CalendarEntry.fromPersistenceDTO({
       id: data.id,
       identityId: data.identityId,
-      name: data.name,
+      title: data.title,
       description: data.description,
-      startTime: Number(data.startTime), // BigInt 锟?number (milliseconds)
-      endTime: Number(data.endTime), // BigInt 锟?number (milliseconds)
+      startTime: data.startTime.getTime(),
+      endTime: data.endTime.getTime(),
       duration: data.duration,
       hasConflict: data.hasConflict,
-      conflictingSchedules: data.conflictingSchedules
+      conflictingEntries: data.conflictingSchedules
         ? JSON.parse(data.conflictingSchedules)
-        : [],
+        : null,
       priority: data.priority,
       location: data.location,
-      attendees: data.attendees ? JSON.parse(data.attendees) : undefined,
-      createdAt: data.createdAt.getTime(), // Date 锟?number (milliseconds)
-      updatedAt: data.updatedAt.getTime(), // Date 锟?number (milliseconds)
+      attendees: data.attendees ? JSON.parse(data.attendees) : null,
+      createdAt: data.createdAt.getTime(),
+      updatedAt: data.updatedAt.getTime(),
     });
   }
 
   /**
    * Convert Domain Schedule entity to Prisma data
    */
-  private mapToPrisma(schedule: Schedule): any {
+  private mapToPrisma(schedule: CalendarEntry): any {
     const dto = schedule.toPersistenceDTO();
 
     return {
       id: dto.id,
       identityId: dto.identityId,
-      name: dto.name,
+      title: dto.title,
       description: dto.description ?? null,
-      startTime: BigInt(dto.startTime), // number 鈫?BigInt (milliseconds)
-      endTime: BigInt(dto.endTime), // number 鈫?BigInt (milliseconds)
+      startTime: new Date(dto.startTime),
+      endTime: new Date(dto.endTime),
       duration: dto.duration,
       hasConflict: dto.hasConflict,
-      conflictingSchedules: dto.conflictingSchedules && dto.conflictingSchedules.length > 0
-        ? JSON.stringify(dto.conflictingSchedules)
+      conflictingSchedules: dto.conflictingEntries && dto.conflictingEntries.length > 0
+        ? JSON.stringify(dto.conflictingEntries)
         : null,
       priority: dto.priority ?? null,
       location: dto.location ?? null,
       attendees: dto.attendees ? JSON.stringify(dto.attendees) : null,
-      createdAt: new Date(dto.createdAt), // number 锟?Date
-      updatedAt: new Date(dto.updatedAt), // number 锟?Date
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     };
   }
 
   /**
    * Save (create or update) a schedule
    */
-  async save(schedule: Schedule): Promise<void> {
+  async save(schedule: CalendarEntry): Promise<void> {
     const data = this.mapToPrisma(schedule);
 
     await this.prisma.schedule.upsert({
@@ -80,7 +80,7 @@ export class SchedulePrismaRepository implements IScheduleRepository {
   /**
    * Find schedule by UUID
    */
-  async findById(id: string): Promise<Schedule | null> {
+  async findById(id: string): Promise<CalendarEntry | null> {
     const data = await this.prisma.schedule.findUnique({
       where: { id },
     });
@@ -91,7 +91,7 @@ export class SchedulePrismaRepository implements IScheduleRepository {
   /**
    * Find all schedules for an account
    */
-  async findByIdentityId(identityId: string): Promise<Schedule[]> {
+  async findByIdentityId(identityId: string): Promise<CalendarEntry[]> {
     const schedules = await this.prisma.schedule.findMany({
       where: { identityId },
       orderBy: { startTime: 'asc' },
@@ -111,14 +111,14 @@ export class SchedulePrismaRepository implements IScheduleRepository {
     startTime: number,
     endTime: number,
     excludeId?: string
-  ): Promise<Schedule[]> {
+  ): Promise<CalendarEntry[]> {
     const schedules = await this.prisma.schedule.findMany({
       where: {
         identityId,
         // Time overlap: schedule starts before query end
-        startTime: { lt: BigInt(endTime) },
+        startTime: { lt: new Date(endTime) },
         // AND schedule ends after query start
-        endTime: { gt: BigInt(startTime) },
+        endTime: { gt: new Date(startTime) },
         // Exclude current schedule (for editing scenarios)
         ...(excludeId && { id: { not: excludeId } }),
       },

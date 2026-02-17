@@ -58,12 +58,12 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
       // ScheduleConfig 閹典礁閽╅崠鏍х摟濞?
       cronExpression: data.cronExpression,
       timezone: data.timezone,
-      startDate: data.startDate ? data.startDate.getTime() : null,
-      endDate: data.endDate ? data.endDate.getTime() : null,
+      startDate: data.startDate ?? null,
+      endDate: data.endDate ?? null,
       maxExecutions: data.maxExecutions,
       // ExecutionInfo 閹典礁閽╅崠鏍х摟濞?
-      nextRunAt: data.nextRunAt ? data.nextRunAt.getTime() : null,
-      lastRunAt: data.lastRunAt ? data.lastRunAt.getTime() : null,
+      nextRunAt: data.nextRunAt ?? null,
+      lastRunAt: data.lastRunAt ?? null,
       executionCount: data.executionCount,
       lastExecutionStatus: data.lastExecutionStatus,
       lastExecutionDuration: data.lastExecutionDuration,
@@ -80,16 +80,18 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
       priority: data.priority,
       timeout: data.timeout,
       // 閺冨爼妫块幋?
-      createdAt: data.createdAt.getTime(),
-      updatedAt: data.updatedAt.getTime(),
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+      version: data.version ?? 1,
+      deletedAt: data.deletedAt ?? null,
     };
 
     // 娴ｈ法鏁ら懕姘値閺嶅湱娈?fromPersistenceDTO 閺傝纭禖reate鐎圭偘绶?
     const task = ScheduleTask.fromPersistenceDTO(persistenceDTO);
 
     // 閹垹顦查幍褑顢慠ecord鐎涙劕鐤勬担?
-    if (data.scheduleExecution && data.scheduleExecution.length > 0) {
-      for (const execData of data.scheduleExecution) {
+    if (data.executions && data.executions.length > 0) {
+      for (const execData of data.executions) {
         const execution = ScheduleExecution.fromPersistenceDTO({
           id: execData.id,
           taskId: execData.taskId,
@@ -198,7 +200,7 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
     const data = await this.prisma.scheduleTask.findUnique({
       where: { id },
       include: {
-        scheduleExecution: {
+        executions: {
           orderBy: { createdAt: 'desc' },
           take: 10, // 閺堚偓鏉?10 閺夆剝澧界悰宀冾唶瑜?
         },
@@ -220,7 +222,7 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
     const tasks = await this.prisma.scheduleTask.findMany({
       where: { identityId },
       include: {
-        scheduleExecution: {
+        executions: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
@@ -237,7 +239,7 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
         ...(identityId && { identityId }),
       },
       include: {
-        scheduleExecution: {
+        executions: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
@@ -259,7 +261,7 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
         ...(identityId && { identityId }),
       },
       include: {
-        scheduleExecution: {
+        executions: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
@@ -276,7 +278,7 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
         ...(identityId && { identityId }),
       },
       include: {
-        scheduleExecution: {
+        executions: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
@@ -293,7 +295,7 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
         ...(identityId && { identityId }),
       },
       include: {
-        scheduleExecution: {
+        executions: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
@@ -308,7 +310,7 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
     const tasks = await this.prisma.scheduleTask.findMany({
       where: {
         enabled: true,
-        status: ScheduleTaskStatus.ACTIVE,
+        status: ScheduleTaskStatus.Active,
         nextRunAt: {
           lte: beforeTime, // 鐚?閻╁瓨甯?SQL 閺屻儴顕楅敍?
         },
@@ -318,7 +320,7 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
       },
       take: limit,
       include: {
-        scheduleExecution: {
+        executions: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
@@ -340,7 +342,7 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
     const tasks = await this.prisma.scheduleTask.findMany({
       where,
       include: {
-        scheduleExecution: {
+        executions: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },

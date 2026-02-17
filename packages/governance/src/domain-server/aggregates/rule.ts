@@ -47,6 +47,7 @@ import type { RuleServer, RulePersistenceDTO } from '../../contracts/aggregates/
 import type { RuleClientDTO } from '../../contracts/aggregates/rule-client';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import type { GovernanceEventMap } from '../../contracts/protocol/governance-event-map';
+import type { Language } from '../../domain-shared/value-objects/language';
 
 // ================= Props Objects（参数对象模式） =================
 
@@ -75,16 +76,16 @@ export interface CreateRuleProps {
   tags: string[];
   
   /** Good Example 代码示例列表（至少 1 个） */
-  goodExamples: Array<{ language: string; content: string; caption?: string }>;
+  goodExamples: Array<{ language: Language; content: string; caption?: string }>;
   
   /** Bad Example 代码示例列表（至少 1 个） */
-  badExamples: Array<{ language: string; content: string; caption?: string }>;
+  badExamples: Array<{ language: Language; content: string; caption?: string }>;
   
   /** 实际应用位置（可选），例如：'packages/domain-server/src/account/aggregates/account.ts' */
   liveReferenceLocation?: string;
   
   /** 创建人 ID */
-  authorId: string;
+  authorId: IdentityId;
 }
 
 /**
@@ -239,50 +240,56 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
     }
 
     // Normalize tags
-    const tagResults = props.tags.map(RuleTag.create);
-    const failedTag = tagResults.find(r => !r.ok);
-    if (failedTag) {
-      return failedTag as any;
+    const tags: RuleTag[] = [];
+    for (const rawTag of props.tags) {
+      const tagResult = RuleTag.create(rawTag);
+      if (!tagResult.ok) {
+        return error(tagResult.error.code, tagResult.error.message, tagResult.error.details);
+      }
+      tags.push(tagResult.data);
     }
-    const tags = tagResults.filter(r => r.ok).map(r => (r as any).data);
 
     // Validate and create Good examples (min 1)
     if (props.goodExamples.length === 0) {
       return error('VALIDATION_ERROR', 'At least one Good Example is required');
     }
-    const goodSnippetResults = props.goodExamples.map(ex => 
-      CodeSnippet.create({ 
-        ...ex, 
-        type: 'GoodExample' as any, 
-        language: ex.language as any,
-        caption: ex.caption ?? null
-      })
-    );
-    const failedGood = goodSnippetResults.find(r => !r.ok);
-    if (failedGood) {
-      return failedGood as any;
+    const goodSnippets: CodeSnippet[] = [];
+    for (const example of props.goodExamples) {
+      const snippetResult = CodeSnippet.create({
+        ...example,
+        type: 'GoodExample',
+        caption: example.caption ?? null,
+      });
+
+      if (!snippetResult.ok) {
+        return error(snippetResult.error.code, snippetResult.error.message, snippetResult.error.details);
+      }
+
+      goodSnippets.push(snippetResult.data);
     }
 
     // Validate and create Bad examples (min 1)
     if (props.badExamples.length === 0) {
       return error('VALIDATION_ERROR', 'At least one Bad Example is required');
     }
-    const badSnippetResults = props.badExamples.map(ex => 
-      CodeSnippet.create({ 
-        ...ex, 
-        type: 'BadExample' as any, 
-        language: ex.language as any,
-        caption: ex.caption ?? null
-      })
-    );
-    const failedBad = badSnippetResults.find(r => !r.ok);
-    if (failedBad) {
-      return failedBad as any;
+    const badSnippets: CodeSnippet[] = [];
+    for (const example of props.badExamples) {
+      const snippetResult = CodeSnippet.create({
+        ...example,
+        type: 'BadExample',
+        caption: example.caption ?? null,
+      });
+
+      if (!snippetResult.ok) {
+        return error(snippetResult.error.code, snippetResult.error.message, snippetResult.error.details);
+      }
+
+      badSnippets.push(snippetResult.data);
     }
 
     const codeSnippets = [
-      ...goodSnippetResults.filter(r => r.ok).map(r => (r as any).data),
-      ...badSnippetResults.filter(r => r.ok).map(r => (r as any).data),
+      ...goodSnippets,
+      ...badSnippets,
     ];
 
     const rule = new Rule({
@@ -295,7 +302,7 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
       liveReferenceLocation: props.liveReferenceLocation,
       tags,
       codeSnippets,
-      authorId: props.authorId as IdentityId,
+      authorId: props.authorId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -332,7 +339,7 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
     );
 
     if (!transitionResult.ok) {
-      return transitionResult as any;
+      return error(transitionResult.error.code, transitionResult.error.message, transitionResult.error.details);
     }
 
     const oldStatus = this._status;
@@ -360,7 +367,7 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
     );
 
     if (!transitionResult.ok) {
-      return transitionResult as any;
+      return error(transitionResult.error.code, transitionResult.error.message, transitionResult.error.details);
     }
 
     if (!reason || reason.trim().length === 0) {
@@ -397,7 +404,7 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
     );
 
     if (!transitionResult.ok) {
-      return transitionResult as any;
+      return error(transitionResult.error.code, transitionResult.error.message, transitionResult.error.details);
     }
 
     this._status = RuleStatus.Active;
@@ -445,11 +452,19 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
         return error('VALIDATION_ERROR', 'At least one tag is required');
       }
       const tagResults =props.tags.map(RuleTag.create);
-      const failedTag = tagResults.find(r => !r.ok);
-      if (failedTag) {
-        return failedTag as any;
+      const failedTag = tagResults.find((result) => !result.ok);
+      if (failedTag && !failedTag.ok) {
+        return error(failedTag.error.code, failedTag.error.message, failedTag.error.details);
       }
-      this._tags = tagResults.filter(r => r.ok).map(r => (r as any).data);
+
+      const nextTags: RuleTag[] = [];
+      for (const tagResult of tagResults) {
+        if (tagResult.ok) {
+          nextTags.push(tagResult.data);
+        }
+      }
+
+      this._tags = nextTags;
       changedFields.push('tags');
     }
 
@@ -502,10 +517,10 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
   addTag(rawTag: string): Result<void> {
     const tagResult = RuleTag.create(rawTag);
     if (!tagResult.ok) {
-      return tagResult as any;
+      return error(tagResult.error.code, tagResult.error.message, tagResult.error.details);
     }
 
-    const tag = (tagResult as any).data;
+    const tag = tagResult.data;
     
     // Check for duplicates
     const exists = this._tags.some(t => t.equals(tag));
@@ -525,14 +540,14 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
   removeTag(rawTag: string): Result<void> {
     const tagResult = RuleTag.create(rawTag);
     if (!tagResult.ok) {
-      return tagResult as any;
+      return error(tagResult.error.code, tagResult.error.message, tagResult.error.details);
     }
 
     if (this._tags.length <= 1) {
       return error('BUSINESS_ERROR', 'Cannot remove last tag - at least one tag is required');
     }
 
-    const tag = (tagResult as any).data;
+    const tag = tagResult.data;
     this._tags = this._tags.filter(t => !t.equals(tag));
     this._updatedAt = new Date();
 

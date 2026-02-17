@@ -6,14 +6,17 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import { tryCatch } from '@dailyuse/contracts/result';
-import type { IIpcClient, ISettingApiClient } from '../types';
+import type {
+  IIpcClient,
+  ISettingApiClient,
+} from '../types';
 import type {
   UserSettingClientDTO,
   AppConfigClientDTO,
-  UpdateAppearanceRequest,
-  UpdateLocaleRequest,
-  UpdateWorkflowRequest,
-  UpdatePrivacyRequest,
+  UpdateAppearanceReq,
+  UpdateLocaleReq,
+  UpdateWorkflowReq,
+  UpdatePrivacyReq,
 } from '@dailyuse/contracts/setting';
 
 /**
@@ -32,19 +35,19 @@ export class SettingIpcAdapter implements ISettingApiClient {
     return tryCatch(() => this.ipcClient.invoke(`${this.channel}:all`));
   }
 
-  async updateAppearance(request: UpdateAppearanceRequest): Promise<Result<UserSettingClientDTO>> {
+  async updateAppearance(request: UpdateAppearanceReq): Promise<Result<UserSettingClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke(`${this.channel}:update`, { section: 'appearance', ...request }));
   }
 
-  async updateLocale(request: UpdateLocaleRequest): Promise<Result<UserSettingClientDTO>> {
+  async updateLocale(request: UpdateLocaleReq): Promise<Result<UserSettingClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke(`${this.channel}:update`, { section: 'locale', ...request }));
   }
 
-  async updateWorkflow(request: UpdateWorkflowRequest): Promise<Result<UserSettingClientDTO>> {
+  async updateWorkflow(request: UpdateWorkflowReq): Promise<Result<UserSettingClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke(`${this.channel}:update`, { section: 'workflow', ...request }));
   }
 
-  async updatePrivacy(request: UpdatePrivacyRequest): Promise<Result<UserSettingClientDTO>> {
+  async updatePrivacy(request: UpdatePrivacyReq): Promise<Result<UserSettingClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke(`${this.channel}:update`, { section: 'privacy', ...request }));
   }
 

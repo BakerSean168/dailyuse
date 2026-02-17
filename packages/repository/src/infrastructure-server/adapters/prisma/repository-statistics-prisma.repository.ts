@@ -1,4 +1,4 @@
-import type { PrismaClient } from '../../../generated/prisma/client';
+import type { PrismaClient } from '@dailyuse/database';
 import type { IRepositoryStatisticsRepository } from '../../../domain-server/repositories/IRepositoryStatisticsRepository';
 
 /**

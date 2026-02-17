@@ -4,14 +4,17 @@
  * HTTP implementation of IAIGenerationTaskApiClient.
  */
 
-import type { IHttpClient, IAIGenerationTaskApiClient } from '../types';
 import type {
-  AIGenerationTaskClientDTO,
+  IHttpClient,
+  IAIGenerationTaskApiClient,
   GenerationTaskListRes,
   CreateGenerationTaskReq,
   GenerateGoalReq,
   GenerateGoalRes,
   GenerateKeyResultsRes,
+} from '../types';
+import type {
+  AIGenerationTaskClientDTO,
 } from '@dailyuse/contracts/ai';
 
 /**

@@ -5,7 +5,7 @@
  */
 
 import type { IAIConversationRepository } from '../../domain-server/repositories/IAIConversationRepository';
-import type { ConversationListResponse } from '@dailyuse/contracts/ai';
+import type { ConversationListRes } from '@dailyuse/contracts/ai';
 // import { AIContainer } from '@dailyuse/ai/infrastructure-server';
 
 /**
@@ -14,16 +14,20 @@ import type { ConversationListResponse } from '@dailyuse/contracts/ai';
 export class ListConversations {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
-  async execute(identityId: string, limit = 20, offset = 0): Promise<ConversationListResponse> {
+  async execute(identityId: string, limit = 20, offset = 0): Promise<ConversationListRes> {
     const conversations = await this.conversationRepository.findRecent(
       identityId,
       limit,
       offset,
     );
 
+    const page = Math.floor(offset / limit) + 1;
+
     return {
-      conversations: conversations.map((c) => c.toClientDTO()),
+      data: conversations.map((c) => c.toClientDTO()),
       total: conversations.length,
+      page,
+      pageSize: limit,
     };
   }
 }

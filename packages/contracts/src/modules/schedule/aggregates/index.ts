@@ -3,7 +3,19 @@
  * 调度模块 - 聚合根统一导出
  */
 
-// ============ Schedule Aggregate ============
+// ============ CalendarEntry Aggregate ============
+export type {
+  CalendarEntryServer,
+  CalendarEntryServerDTO,
+  CalendarEntryPersistenceDTO,
+} from './calendar-entry-server';
+
+export type {
+  CalendarEntryClientDTO,
+  CalendarEntryClient,
+} from './calendar-entry-client';
+
+// ============ Backward Compatibility (Deprecated) ============
 export type {
   ScheduleJobServer,
   ScheduleJobServerDTO,

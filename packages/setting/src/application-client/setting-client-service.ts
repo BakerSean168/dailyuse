@@ -14,10 +14,10 @@ import type { Result } from '@dailyuse/contracts/result';
 import type {
   UserSettingClientDTO,
   AppConfigClientDTO,
-  UpdateAppearanceRequest,
-  UpdateLocaleRequest,
-  UpdateWorkflowRequest,
-  UpdatePrivacyRequest,
+  UpdateAppearanceReq,
+  UpdateLocaleReq,
+  UpdateWorkflowReq,
+  UpdatePrivacyReq,
 } from '@dailyuse/contracts/setting';
 import type { ISettingApiClient } from '../infrastructure-client/adapters/types';
 
@@ -30,19 +30,19 @@ export class SettingClientService {
     return this.settingApi.getUserSettings();
   }
 
-  async updateAppearance(request: UpdateAppearanceRequest): Promise<Result<UserSettingClientDTO>> {
+  async updateAppearance(request: UpdateAppearanceReq): Promise<Result<UserSettingClientDTO>> {
     return this.settingApi.updateAppearance(request);
   }
 
-  async updateLocale(request: UpdateLocaleRequest): Promise<Result<UserSettingClientDTO>> {
+  async updateLocale(request: UpdateLocaleReq): Promise<Result<UserSettingClientDTO>> {
     return this.settingApi.updateLocale(request);
   }
 
-  async updateWorkflow(request: UpdateWorkflowRequest): Promise<Result<UserSettingClientDTO>> {
+  async updateWorkflow(request: UpdateWorkflowReq): Promise<Result<UserSettingClientDTO>> {
     return this.settingApi.updateWorkflow(request);
   }
 
-  async updatePrivacy(request: UpdatePrivacyRequest): Promise<Result<UserSettingClientDTO>> {
+  async updatePrivacy(request: UpdatePrivacyReq): Promise<Result<UserSettingClientDTO>> {
     return this.settingApi.updatePrivacy(request);
   }
 

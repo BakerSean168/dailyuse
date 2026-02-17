@@ -1,6 +1,6 @@
 import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
-import { Schedule as DomainSchedule } from '../../domain-server/aggregates/schedule';
-import type { ConflictDetectionResult, ScheduleServerDTO } from '@dailyuse/contracts/schedule';
+import { CalendarEntry as DomainCalendarEntry } from '../../domain-server/aggregates/calendar-entry';
+import type { ConflictDetectionResult, CalendarEntryServerDTO } from '@dailyuse/contracts/schedule';
 
 export class ScheduleConflictDetectionService {
   constructor(private readonly scheduleRepository: IScheduleRepository) {}
@@ -10,7 +10,7 @@ export class ScheduleConflictDetectionService {
    * - Loads other schedules in the same account that overlap the time window
    * - Uses the Domain Schedule aggregate to perform conflict detection
    */
-  async detectConflictsForSchedule(scheduleDto: ScheduleServerDTO): Promise<ConflictDetectionResult> {
+  async detectConflictsForSchedule(scheduleDto: CalendarEntryServerDTO): Promise<ConflictDetectionResult> {
     const { identityId, startTime, endTime, id } = scheduleDto;
 
     // Parse timestamps
@@ -32,7 +32,7 @@ export class ScheduleConflictDetectionService {
     );
 
     // Convert DTO to domain aggregate
-    const target = DomainSchedule.fromServerDTO(scheduleDto);
+    const target = DomainCalendarEntry.fromServerDTO(scheduleDto);
 
     // Perform conflict detection using domain logic
     const result = target.detectConflicts(otherAggregates);

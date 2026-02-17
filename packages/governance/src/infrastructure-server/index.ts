@@ -14,3 +14,6 @@ export { RuleRevisionPrismaRepository } from './adapters/prisma/rule-revision-pr
 
 // ============ Mappers ============
 export * from './mappers';
+
+// ============ Composition Root ============
+export { GovernanceModule, type GovernanceModuleRepositories } from './governance.module';

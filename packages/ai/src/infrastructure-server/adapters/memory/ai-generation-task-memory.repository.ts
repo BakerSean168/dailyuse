@@ -4,7 +4,7 @@
  * In-memory implementation of IAIGenerationTaskRepository for testing.
  */
 
-import type { IAIGenerationTaskRepository } from '../../ports/ai-generation-task-repository.port';
+import type { IAIGenerationTaskRepository } from '../../../domain-server';
 import type { AIGenerationTaskServerDTO, TaskStatus, GenerationTaskType } from '@dailyuse/contracts/ai';
 
 /**

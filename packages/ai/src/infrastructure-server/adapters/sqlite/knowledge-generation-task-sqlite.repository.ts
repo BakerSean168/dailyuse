@@ -12,9 +12,9 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
   async create(task: KnowledgeGenerationTask): Promise<KnowledgeGenerationTask> {
     const stmt = this.db.prepare(`
       INSERT INTO knowledge_generation_tasks (
-        id, identityId, topic, documentCount, targetAudience,
-        folderPath, status, progress, generatedDocumentIds, error,
-        createdAt, completedAt
+        id, identity_id, topic, document_count, target_audience,
+        folder_path, status, progress, generated_document_ids, error,
+        created_at, completed_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
@@ -45,9 +45,9 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
     return this.rowToEntity(row);
   }
 
-  async findByAccountId(identityId: string): Promise<KnowledgeGenerationTask[]> {
+  async findByIdentityId(identityId: string): Promise<KnowledgeGenerationTask[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM knowledge_generation_tasks WHERE identityId = ? ORDER BY createdAt DESC`
+      `SELECT * FROM knowledge_generation_tasks WHERE identity_id = ? ORDER BY created_at DESC`
     );
     const rows = stmt.all(identityId) as any[];
     return rows.map((row) => this.rowToEntity(row));
@@ -57,7 +57,7 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
     const stmt = this.db.prepare(`
       UPDATE knowledge_generation_tasks
       SET topic = ?, status = ?, progress = ?,
-          generatedDocumentIds = ?, error = ?, completedAt = ?
+          generated_document_ids = ?, error = ?, completed_at = ?
       WHERE id = ?
     `);
 
@@ -82,17 +82,17 @@ export class SqliteKnowledgeGenerationTaskRepository implements IKnowledgeGenera
   private rowToEntity(row: any): KnowledgeGenerationTask {
     return {
       id: row.id,
-      identityId: row.identityId,
+      identityId: row.identity_id,
       topic: row.topic,
-      documentCount: row.documentCount,
-      targetAudience: row.targetAudience || undefined,
-      folderPath: row.folderPath,
+      documentCount: row.document_count,
+      targetAudience: row.target_audience || undefined,
+      folderPath: row.folder_path,
       status: row.status,
       progress: row.progress,
-      generatedDocumentIds: JSON.parse(row.generatedDocumentIds || '[]'),
+      generatedDocumentIds: JSON.parse(row.generated_document_ids || '[]'),
       error: row.error || undefined,
-      createdAt: row.createdAt,
-      completedAt: row.completedAt || undefined,
+      createdAt: row.created_at,
+      completedAt: row.completed_at || undefined,
     };
   }
 }

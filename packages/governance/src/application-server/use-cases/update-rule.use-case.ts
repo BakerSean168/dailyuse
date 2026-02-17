@@ -35,7 +35,7 @@ export class UpdateRuleUseCase {
     // Fetch rule
     const ruleResult = await this.ruleRepository.findById(ruleId as RuleId);
     if (!ruleResult.ok) {
-      return ruleResult as any;
+      return error(ruleResult.error.code, ruleResult.error.message, ruleResult.error.details);
     }
 
     if (ruleResult.data === null) {
@@ -54,14 +54,14 @@ export class UpdateRuleUseCase {
       });
 
       if (!updateResult.ok) {
-        return updateResult as any;
+        return error(updateResult.error.code, updateResult.error.message, updateResult.error.details);
       }
     }
 
     // Persist changes
     const saveResult = await this.ruleRepository.save(rule);
     if (!saveResult.ok) {
-      return saveResult as any;
+      return error(saveResult.error.code, saveResult.error.message, saveResult.error.details);
     }
 
     // Convert to ClientDTO and return

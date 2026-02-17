@@ -11,9 +11,7 @@ export { SettingModule } from './setting.module';
 export { SettingRepositoryFactory } from './di';
 
 // Ports (Interfaces)
-export { type IAppConfigRepository } from './ports/app-config-repository.port';
-export { type ISettingRepository } from './ports/setting-repository.port';
-export { type IUserSettingRepository } from './ports/user-setting-repository.port';
+export { type IAppConfigRepository, type ISettingRepository, type IUserSettingRepository } from '../domain-server';
 
 // Prisma Adapters
 export {
@@ -28,3 +26,6 @@ export {
   SqliteSettingRepository,
   SqliteUserSettingRepository,
 } from './adapters/sqlite';
+
+// SQLite schema
+export { SETTING_MODULE_SCHEMA } from './adapters/sqlite/schema';

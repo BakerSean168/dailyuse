@@ -5,7 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
-import type { IRepositoryRepository } from '../../ports/repository-repository.port';
+import type { IRepositoryRepository } from '../../domain-server';
 import type { Repository } from '../../../domain-server/aggregates/repository';
 import type { RepositoryStatus } from '@dailyuse/contracts/repository';
 

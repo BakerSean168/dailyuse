@@ -54,7 +54,7 @@ export class AIMessageIpcAdapter implements IAIMessageApiClient {
       // 使用 IPC 事件监听流数据
       while (true) {
         const chunk = await this.ipcClient.invoke<ChatStreamChunk>(`${this.channel}:stream:next`, streamId);
-        if (chunk.isDone) {
+        if (chunk.type === 'done') {
           yield chunk;
           break;
         }

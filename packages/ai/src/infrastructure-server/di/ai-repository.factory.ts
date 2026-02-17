@@ -3,7 +3,7 @@
  * Provides repository implementations for different data sources
  */
 
-import type { PrismaClient } from '../../generated/prisma/client';
+import type { PrismaClient } from '@dailyuse/database';
 import type Database from 'better-sqlite3';
 
 import {
@@ -12,7 +12,6 @@ import {
   AIProviderConfigPrismaRepository,
   AIUsageQuotaPrismaRepository,
 } from '../adapters/prisma';
-
 import {
   SqliteAIConversationRepository,
   SqliteAIGenerationTaskRepository,

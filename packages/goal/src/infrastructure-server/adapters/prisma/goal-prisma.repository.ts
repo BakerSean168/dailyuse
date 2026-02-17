@@ -12,7 +12,7 @@
  */
 
 import type { PrismaClient } from '@dailyuse/database';
-import type { IGoalRepository } from '../../ports/goal-repository.port';
+import type { IGoalRepository } from '@/domain-server';
 import { Goal } from '@/domain-server';
 import type { GoalPersistenceDTO, KeyResultPersistenceDTO, GoalReviewPersistenceDTO, KeyResultWeightSnapshotDTO } from '@dailyuse/contracts/goal';
 

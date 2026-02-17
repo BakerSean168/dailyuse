@@ -10,7 +10,7 @@ import type {
   IScheduleEventApiClient,
 } from '../types';
 import type {
-  ScheduleJobClientDTO,
+  CalendarEntryClientDTO,
   CreateScheduleRequest,
   UpdateScheduleRequest,
   GetSchedulesByTimeRangeRequest,
@@ -30,25 +30,25 @@ export class ScheduleEventHttpAdapter implements IScheduleEventApiClient {
 
   // ===== Schedule Event CRUD =====
 
-  async createSchedule(data: CreateScheduleRequest): Promise<Result<ScheduleJobClientDTO>> {
+  async createSchedule(data: CreateScheduleRequest): Promise<Result<CalendarEntryClientDTO>> {
     return this.httpClient.post(this.baseUrl, data);
   }
 
-  async getSchedule(id: string): Promise<Result<ScheduleJobClientDTO>> {
+  async getSchedule(id: string): Promise<Result<CalendarEntryClientDTO>> {
     return this.httpClient.get(`${this.baseUrl}/${id}`);
   }
 
-  async getSchedulesByAccount(): Promise<Result<ScheduleJobClientDTO[]>> {
+  async getSchedulesByAccount(): Promise<Result<CalendarEntryClientDTO[]>> {
     return this.httpClient.get(this.baseUrl);
   }
 
   async getSchedulesByTimeRange(
     params: GetSchedulesByTimeRangeRequest,
-  ): Promise<Result<ScheduleJobClientDTO[]>> {
+  ): Promise<Result<CalendarEntryClientDTO[]>> {
     return this.httpClient.get(this.baseUrl, { params: params as unknown as Record<string, unknown> });
   }
 
-  async updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<ScheduleJobClientDTO>> {
+  async updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<CalendarEntryClientDTO>> {
     return this.httpClient.patch(`${this.baseUrl}/${id}`, data);
   }
 
@@ -74,7 +74,7 @@ export class ScheduleEventHttpAdapter implements IScheduleEventApiClient {
   async createScheduleWithConflictDetection(
     request: CreateScheduleRequest,
   ): Promise<Result<{
-    schedule: ScheduleJobClientDTO;
+    schedule: CalendarEntryClientDTO;
     conflicts?: ConflictDetectionResult;
   }>> {
     return this.httpClient.post(`${this.baseUrl}/with-conflict-detection`, request);
@@ -84,7 +84,7 @@ export class ScheduleEventHttpAdapter implements IScheduleEventApiClient {
     scheduleId: string,
     request: ResolveConflictRequest,
   ): Promise<Result<{
-    schedule: ScheduleJobClientDTO;
+    schedule: CalendarEntryClientDTO;
     conflicts: ConflictDetectionResult;
     applied: {
       strategy: string;

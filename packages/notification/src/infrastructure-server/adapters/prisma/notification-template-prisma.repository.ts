@@ -5,7 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
-import type { INotificationTemplateRepository } from '../../ports/notification-template-repository.port';
+import type { INotificationTemplateRepository } from '../../../domain-server';
 import type { NotificationTemplate } from '../../../domain-server/aggregates/notification-template';
 import type { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
 

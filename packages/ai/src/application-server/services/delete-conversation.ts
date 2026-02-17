@@ -27,7 +27,7 @@ export class DeleteConversation {
 
     await this.conversationRepository.delete(id);
 
-    await eventBus.emit('AIConversationDeleted', {
+    eventBus.send('AIConversationDeleted' as any, {
       conversationId: id,
       identityId,
     });

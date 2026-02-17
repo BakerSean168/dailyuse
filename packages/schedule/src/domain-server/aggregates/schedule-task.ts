@@ -100,10 +100,6 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
   public get identityId(): string {
     return this._props.identityId;
   }
-  // Alias for interface compatibility
-  public get identityId(): string {
-    return this._props.identityId;
-  }
   public get name(): string {
     return this._props.name;
   }

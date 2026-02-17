@@ -9,7 +9,7 @@
  */
 
 import { createLogger } from '@dailyuse/utils';
-import type { PrismaClient } from '../generated/prisma/client';
+import type { PrismaClient } from '@dailyuse/database';
 
 const logger = createLogger('SchedulerBootstrap');
 

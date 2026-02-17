@@ -14,12 +14,13 @@
  */
 
 import type { Rule as PrismaRule } from '@dailyuse/database';
+import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { Rule } from '../../domain-server/aggregates/rule';
 import { RuleId } from '../../domain-shared/value-objects/rule-id';
 import { RuleTag } from '../../domain-shared/value-objects/rule-tag';
 import { CodeSnippet } from '../../domain-shared/value-objects/code-snippet';
-import { RuleStatus } from '../../contracts/value-objects/rule-status';
-import { RuleSeverity } from '../../contracts/value-objects/rule-severity';
+import type { RuleStatus } from '../../domain-shared/value-objects/rule-status';
+import type { RuleSeverity } from '../../domain-shared/value-objects/rule-severity';
 import type { CodeSnippetPersistenceDTO } from '../../contracts/value-objects/code-snippet';
 
 /**
@@ -64,14 +65,14 @@ export class RulePersistenceMapper {
       code: prismaRule.code,
       title: prismaRule.title,
       description: prismaRule.description,
-      severity: prismaRule.severity as any, // Type cast from contracts to domain
-      status: prismaRule.status as any, // Type cast from contracts to domain
+      severity: prismaRule.severity as RuleSeverity,
+      status: prismaRule.status as RuleStatus,
       deprecationReason: prismaRule.deprecationReason ?? undefined,
       replacementRuleId: prismaRule.replacementRuleId as RuleId | undefined,
       liveReferenceLocation: prismaRule.liveReferenceLocation ?? undefined,
       tags: tagObjects,
       codeSnippets,
-      authorId: prismaRule.authorId as any, // Type cast to IdentityId
+      authorId: prismaRule.authorId as IdentityId,
       createdAt: prismaRule.createdAt,
       updatedAt: prismaRule.updatedAt,
     });

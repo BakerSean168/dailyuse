@@ -6,7 +6,7 @@
 
 import type { IAIConversationRepository } from '../../domain-server/repositories/IAIConversationRepository';
 import { Message } from '../../domain-server/entities/message';
-import type { SendMessageRequest, MessageResponse } from '@dailyuse/contracts/ai';
+import type { SendMessageReq, SendMessageRes } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
 import { eventBus } from '@dailyuse/utils';
 // import { AIContainer } from '@dailyuse/ai/infrastructure-server';
@@ -17,7 +17,7 @@ import { eventBus } from '@dailyuse/utils';
 export class SendMessage {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
-  async execute(identityId: string, input: SendMessageRequest): Promise<MessageResponse> {
+  async execute(identityId: string, input: SendMessageReq): Promise<SendMessageRes> {
     // 1. 获取对话
     const conversation = await this.conversationRepository.findById(input.conversationId);
     if (!conversation) {
@@ -31,7 +31,7 @@ export class SendMessage {
     // 2. 创建消息实体
     const message = Message.create({
       conversationId: input.conversationId,
-      role: MessageRole.USER,
+      role: MessageRole.User,
       content: input.content,
     });
 
@@ -42,13 +42,11 @@ export class SendMessage {
     await this.conversationRepository.save(conversation);
 
     // 5. 发布事件
-    const events = conversation.getUncommittedDomainEvents();
+    const events = conversation.pullDomainEvents();
     for (const event of events) {
-      await eventBus.emit(event.eventType, event);
+      eventBus.send(event.eventType as any, event as any);
     }
 
-    return {
-      message: message.toClientDTO(),
-    };
+    return message.toClientDTO();
   }
 }
