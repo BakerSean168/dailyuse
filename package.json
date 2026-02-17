@@ -187,7 +187,7 @@
     "tslib": "^2.3.0",
     "tsup": "^8.5.0",
     "tsx": "^4.20.6",
-    "typescript": "~5.9.2",
+    "typescript": "~5.9.3",
     "typescript-eslint": "^8.39.1",
     "verdaccio": "^6.0.5",
     "vite": "7.1.3",

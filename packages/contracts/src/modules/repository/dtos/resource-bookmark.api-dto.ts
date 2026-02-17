@@ -3,12 +3,13 @@
  * 资源书签 API 数据传输对象
  */
 import type { ResourceBookmarkClientDTO } from '../entities';
+import type { ResourceId } from '@/primitives';
 
 /**
  * 创建书签请求 DTO
  */
 export interface CreateResourceBookmarkRequestDTO {
-  resourceId: string;
+  resourceId: ResourceId;
   aliasName?: string;
   icon?: string;
   color?: string;

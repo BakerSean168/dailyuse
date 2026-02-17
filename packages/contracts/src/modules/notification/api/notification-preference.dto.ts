@@ -6,6 +6,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { NotificationId, NotificationChannelId } from '@/primitives';
 import type { NotificationPreferenceServerDTO } from '../aggregates/notification-preference-server';
 import type { NotificationStatsDTO, SendNotificationResultDTO, ListNotificationChannelsResultDTO } from '../dtos';
 import type { NotificationChannelServerDTO } from '../entities/notification-channel-server';
@@ -71,7 +73,7 @@ export type GetNotificationStatsRes = NotificationStatsDTO;
  * 执行通知操作 Schema
  */
 export const ExecuteNotificationActionSchema = z.object({
-  notificationId: z.string().uuid(),
+  notificationId: brandedId<NotificationId>(),
   actionId: z.string(),
 });
 
@@ -82,7 +84,7 @@ export type ExecuteNotificationActionRes = NotificationServerDTO;
  * 发送通知 Schema
  */
 export const SendNotificationSchema = z.object({
-  notificationId: z.string().uuid(),
+  notificationId: brandedId<NotificationId>(),
   channels: z.array(z.nativeEnum(NotificationChannelType)).optional(),
 });
 
@@ -93,7 +95,7 @@ export type SendNotificationRes = SendNotificationResultDTO;
  * 重试渠道 Schema
  */
 export const RetryChannelSchema = z.object({
-  channelId: z.string().uuid(),
+  channelId: brandedId<NotificationChannelId>(),
 });
 
 export type RetryChannelReq = z.infer<typeof RetryChannelSchema>;

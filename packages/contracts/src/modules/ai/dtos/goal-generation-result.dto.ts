@@ -2,6 +2,7 @@
  * Generated Goal Draft DTO
  */
 
+import type { AiProviderConfigId } from '@/primitives';
 import type { ImportanceLevel } from '../../../shared/value-objects/importance';
 
 export enum GoalCategory {
@@ -42,7 +43,7 @@ export interface GenerateGoalResultDTO {
     completionTokens: number;
     totalTokens: number;
   };
-  providerId: string;
+  providerId: AiProviderConfigId;
   processingTimeMs: number;
 }
 
@@ -53,6 +54,6 @@ export interface GenerateKeyResultsResultDTO {
     completionTokens: number;
     totalTokens: number;
   };
-  providerId: string;
+  providerId: AiProviderConfigId;
   processingTimeMs: number;
 }

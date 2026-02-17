@@ -1,6 +1,6 @@
 /**
  * UserSetting Aggregate Root - Client Interface
- * 用户设置聚合�?- 客户端接�?
+ * 用户设置聚合?- 客户端接?
  */
 
 import type { SettingId, IdentityId, TransferDate, DomainDate } from '@/primitives';
@@ -27,8 +27,8 @@ export interface UserSettingClient {
  * UserSetting Client DTO
  */
 export interface UserSettingClientDTO {
-  id: string;
-  identityId: string;
+  id: SettingId;
+  identityId: IdentityId;
 
   entries: string; // JSON stringified entries
   
@@ -37,5 +37,3 @@ export interface UserSettingClientDTO {
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
 }
-
-

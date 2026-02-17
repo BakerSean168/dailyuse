@@ -1,62 +1,40 @@
 /**
- * AI Generation Task CRUD Operations
+ * AI Generation Task Operations
  *
- * Request/Response types for generation task management (CRUD).
- * Separate from ai-task-generation.dto.ts which defines AI-powered task generation schemas.
+ * This file contains DTOs for managing long-running AI generation tasks.
+ * Includes starting, checking status, and canceling generation tasks.
  */
 
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { AiProviderConfigId } from '@/primitives';
 import type { AIGenerationTaskClientDTO } from '../aggregates/ai-generation-task-client';
 
 // ============================================================================
-// Create Generation Task
+// GENERATION TASK Operations
 // ============================================================================
 
-export const CreateGenerationTaskSchema = z.object({
-  type: z.enum([
-    'GoalKeyResults',
-    'TaskTemplates',
-    'DocumentSummary',
-    'KnowledgeDocuments',
-    'GeneralChat',
-    'GoalGeneration',
-  ]),
-  input: z.record(z.string(), z.unknown()),
-  providerId: z.string().uuid().optional(),
+/**
+ * 启动生成任务 Schema
+ */
+export const StartGenerationTaskSchema = z.object({
+  taskType: z.enum(['TEXT_GENERATION', 'IMAGE_GENERATION', 'CODE_GENERATION', 'DATA_ANALYSIS']),
+  prompt: z.string().min(1),
+  parameters: z.record(z.string(), z.any()).optional(),
+  providerId: brandedId<AiProviderConfigId>().optional(),
 });
 
-export type CreateGenerationTaskReq = z.infer<typeof CreateGenerationTaskSchema>;
-export type CreateGenerationTaskRes = AIGenerationTaskClientDTO;
+export type StartGenerationTaskReq = z.infer<typeof StartGenerationTaskSchema>;
+export type StartGenerationTaskRes = AIGenerationTaskClientDTO;
 
-// ============================================================================
-// List Generation Tasks
-// ============================================================================
+/**
+ * 获取任务状态
+ */
+export type GetGenerationTaskStatusReq = void;
+export type GetGenerationTaskStatusRes = AIGenerationTaskClientDTO;
 
-export const ListGenerationTasksSchema = z.object({
-  page: z.number().int().min(1).optional().default(1),
-  pageSize: z.number().int().min(1).max(100).optional().default(20),
-  type: z.string().optional(),
-  status: z.string().optional(),
-});
-
-export type ListGenerationTasksQuery = z.infer<typeof ListGenerationTasksSchema>;
-
-export interface GenerationTaskListRes {
-  data: AIGenerationTaskClientDTO[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
-// ============================================================================
-// Get / Cancel / Retry Generation Task (simple ID-based)
-// ============================================================================
-
-export type GetGenerationTaskReq = void;
-export type GetGenerationTaskRes = AIGenerationTaskClientDTO;
-
+/**
+ * 取消任务
+ */
 export type CancelGenerationTaskReq = void;
-export type CancelGenerationTaskRes = void;
-
-export type RetryGenerationTaskReq = void;
-export type RetryGenerationTaskRes = AIGenerationTaskClientDTO;
+export type CancelGenerationTaskRes = AIGenerationTaskClientDTO;

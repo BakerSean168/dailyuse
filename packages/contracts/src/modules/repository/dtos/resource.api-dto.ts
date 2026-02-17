@@ -1,6 +1,12 @@
+/**
+ * Resource DTOs
+ */
+
+import type { ResourceId, RepositoryId } from '@/primitives';
+
 export interface ResourceDTO {
-  id: string;
-  repositoryId: string;
+  id: ResourceId;
+  repositoryId: RepositoryId;
   name: string;
   type: 'FILE' | 'FOLDER'; // 逻辑上区分，方便前端渲染文件夹图标
   mimeType: string;
@@ -20,7 +26,7 @@ export interface ResourceDTO {
  * 前端文件树专用结构
  */
 export interface FileNodeDTO {
-  id: string;
+  id: ResourceId;
   name: string;
   type: 'FILE' | 'FOLDER';
   children?: FileNodeDTO[]; // 递归结构

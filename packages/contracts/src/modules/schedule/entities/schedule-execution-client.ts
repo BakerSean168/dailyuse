@@ -1,6 +1,6 @@
 /**
  * ScheduleExecution Entity - Client Interface
- * 调度执行记录实体 - 客户端接�?
+ * 调度执行记录实体 - 客户端接?
  */
 
 import type { ScheduleExecutionId, ScheduleTaskId, DomainDate, TransferDate } from '@/primitives';
@@ -13,8 +13,8 @@ import type { ScheduleExecutionServerDTO } from './schedule-execution-server';
  * ScheduleExecution Client DTO
  */
 export interface ScheduleExecutionClientDTO {
-  id: string;
-  scheduleTaskId: string;
+  id: ScheduleExecutionId;
+  scheduleTaskId: ScheduleTaskId;
   executionTime: TransferDate;
   status: ExecutionStatus;
   duration: number | null;
@@ -26,7 +26,7 @@ export interface ScheduleExecutionClientDTO {
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
 
-  // UI 辅助属�?
+  // UI 辅助属?
   executionTimeFormatted: string;
   statusDisplay: string;
   statusColor: string;
@@ -42,7 +42,7 @@ export interface ScheduleExecutionClientDTO {
  * ScheduleExecution 实体 - Client 接口
  */
 export interface ScheduleExecutionClient {
-  // 基础属�?
+  // 基础属?
   id: ScheduleExecutionId;
   scheduleTaskId: ScheduleTaskId;
   executionTime: DomainDate;
@@ -56,7 +56,7 @@ export interface ScheduleExecutionClient {
   updatedAt: DomainDate;
   deletedAt: DomainDate | null;
 
-  // UI 辅助属�?
+  // UI 辅助属?
   executionTimeFormatted: string;
   statusDisplay: string;
   statusColor: string;
@@ -68,27 +68,27 @@ export interface ScheduleExecutionClient {
   // ===== 业务方法 =====
 
   /**
-   * 检查是否成�?
+   * 检查是否成?
    */
 
   /**
-   * 检查是否失�?
+   * 检查是否失?
    */
 
   /**
-   * 检查是否超�?
+   * 检查是否超?
    */
 
   /**
-   * 检查是否跳�?
+   * 检查是否跳?
    */
 
   /**
-   * 检查是否正在重�?
+   * 检查是否正在重?
    */
 
 }
 
 /**
- * ScheduleExecution 静态工厂方法接�?
+ * ScheduleExecution 静态工厂方法接?
  */

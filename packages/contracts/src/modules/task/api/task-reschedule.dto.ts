@@ -6,6 +6,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { TaskInstanceId } from '@/primitives';
 import { TaskTimeConfigSchema } from './task-crud.dto';
 import type { TaskInstanceClientDTO } from '../aggregates';
 
@@ -17,7 +19,7 @@ import type { TaskInstanceClientDTO } from '../aggregates';
  * 重新调度任务 Schema
  */
 export const RescheduleTaskSchema = z.object({
-  instanceId: z.string().uuid(),
+  instanceId: brandedId<TaskInstanceId>(),
   newTime: TaskTimeConfigSchema,
 });
 
@@ -32,7 +34,7 @@ export type RescheduleTaskRes = TaskInstanceClientDTO;
  * 切换任务完成状态 Schema
  */
 export const ToggleTaskCompletionSchema = z.object({
-  instanceId: z.string().uuid(),
+  instanceId: brandedId<TaskInstanceId>(),
   note: z.string().optional(),
 });
 

@@ -6,6 +6,7 @@
 import type { UserSettingServerDTO } from '../aggregates';
 import type { SettingEntryClientDTO } from '../entities';
 import type { SettingCategory } from '../value-objects';
+import type { IdentityId } from '@/primitives';
 
 // ============ Request Types ============
 
@@ -13,7 +14,7 @@ import type { SettingCategory } from '../value-objects';
  * 获取用户设置请求
  */
 export interface GetUserSettingRequest {
-  readonly identityId?: string;
+  readonly identityId?: IdentityId;
 }
 
 /**

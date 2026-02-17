@@ -1,18 +1,15 @@
 /**
- * Setting Aggregate Root - Client
- * 设置聚合根 - 客户端
- * 
- * 客户端设置包含：
- * 1. 云端同步的用户偏好设置 (User Settings)
- * 2. 本地设备配置 (Device Settings)
+ * Setting Entry Entity - Client
  */
-import type { TransferDate, SettingEntryId, DomainDate } from '@/primitives';
-import { SettingCategory } from '../value-objects';
+
+import type { SettingEntryId, DomainDate, TransferDate } from '@/primitives';
+import type { SettingCategory } from '../value-objects';
 
 export interface SettingEntryClient {
   id: SettingEntryId;
   key: string;
   value: any;
+  category: SettingCategory;
   version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;
@@ -20,7 +17,7 @@ export interface SettingEntryClient {
 }
 
 export interface SettingEntryClientDTO {
-  id: string;
+  id: SettingEntryId;
   key: string;
   value: any;
   category: SettingCategory;

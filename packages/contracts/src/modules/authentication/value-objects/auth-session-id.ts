@@ -1,1 +1,1 @@
-export type AuthSessionId = string & { readonly __brand: unique symbol };
+export type { AuthSessionId } from '@/primitives';

@@ -14,8 +14,8 @@ import type { MessageClient, MessageClientDTO } from '../entities/message-client
  * 使用 TransferDate (number) 时间戳
  */
 export interface AIConversationClientDTO {
-  id: string;
-  identityId: string;
+  id: AiConversationId;
+  identityId: IdentityId;
   name: string;
   status: ConversationStatus;
   messageCount: number;

@@ -37,7 +37,7 @@ export interface AccountClient {
  * Account Client DTO
  */
 export interface AccountClientDTO {
-  id: string;
+  id: IdentityId;
   status: AccountStatus;
   profile: AccountProfileDTO;
   settings: AccountSettingsDTO;

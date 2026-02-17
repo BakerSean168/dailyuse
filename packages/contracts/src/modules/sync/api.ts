@@ -3,6 +3,7 @@
  * 同步模块 - API 契约定义
  */
 
+import type { IdentityId } from '@/primitives';
 import type {
   PullSyncRequest,
   PullSyncResponse,
@@ -52,7 +53,7 @@ export interface SyncRpcMap {
    * 获取当前用户的同步状态信息
    */
   'sync:getStatus': {
-    request: { identityId: string };
+    request: { identityId: IdentityId };
     response: SyncStatusInfo;
   };
 }

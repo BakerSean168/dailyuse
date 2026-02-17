@@ -10,6 +10,10 @@ export type {
   GenerateKeyResultsResultDTO,
 } from './goal-generation-result.dto';
 
+export type {
+  RefineGoalResultDTO
+} from './goal-refinement-result.dto'; // Wait, I haven't created this file yet.
+
 export type { 
   GeneratedTaskPreview,
   GenerateTasksResultDTO,

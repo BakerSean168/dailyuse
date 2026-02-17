@@ -6,6 +6,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { AiConversationId, AiProviderConfigId } from '@/primitives';
 import type { MessageClientDTO } from '../entities/message-client';
 import type { MessageRole } from '../value-objects/message-role';
 
@@ -14,7 +16,7 @@ import type { MessageRole } from '../value-objects/message-role';
 // ============================================================================
 
 export const SendMessageSchema = z.object({
-  conversationId: z.string().uuid(),
+  conversationId: brandedId<AiConversationId>(),
   content: z.string().min(1),
   role: z.enum(['User', 'Assistant', 'System']).optional().default('User'),
 });
@@ -27,7 +29,7 @@ export type SendMessageRes = MessageClientDTO;
 // ============================================================================
 
 export const ListMessagesSchema = z.object({
-  conversationId: z.string().uuid(),
+  conversationId: brandedId<AiConversationId>(),
   page: z.number().int().min(1).optional().default(1),
   pageSize: z.number().int().min(1).max(100).optional().default(50),
 });
@@ -46,9 +48,9 @@ export interface MessageListRes {
 // ============================================================================
 
 export const ChatStreamSchema = z.object({
-  conversationId: z.string().uuid(),
+  conversationId: brandedId<AiConversationId>(),
   content: z.string().min(1),
-  providerId: z.string().uuid().optional(),
+  providerId: brandedId<AiProviderConfigId>().optional(),
 });
 
 export type ChatStreamReq = z.infer<typeof ChatStreamSchema>;

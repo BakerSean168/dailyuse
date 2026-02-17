@@ -1,6 +1,6 @@
 /**
  * Repository Aggregate Root - Client Interface
- * 仓储聚合�?- 客户端接�?
+ * 仓储聚合?- 客户端接?
  */
 import type { RepositoryId, IdentityId, DomainDate, TransferDate } from '@/primitives';
 import type { RepositoryType } from '../value-objects/repository-type';
@@ -40,8 +40,8 @@ export interface RepositoryClient {
  * Repository Client DTO
  */
 export interface RepositoryClientDTO {
-  id: string;
-  identityId: string;
+  id: RepositoryId;
+  identityId: IdentityId;
   name: string;
   type: RepositoryType;
   path: string | null;
@@ -67,5 +67,3 @@ export interface RepositoryClientDTO {
   createdAtText: string;
   updatedAtText: string;
 }
-
-

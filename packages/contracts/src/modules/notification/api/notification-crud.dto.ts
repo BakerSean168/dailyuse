@@ -6,6 +6,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { IdentityId } from '@/primitives';
 import type { NotificationServerDTO } from '../aggregates/notification-server';
 import {
   NotificationType,
@@ -20,7 +22,7 @@ import {
 // ============================================================================
 
 export const CreateNotificationSchema = z.object({
-  identityId: z.string().uuid(),
+  identityId: brandedId<IdentityId>(),
   title: z.string().min(1).max(200),
   content: z.string().min(1),
   type: z.nativeEnum(NotificationType),

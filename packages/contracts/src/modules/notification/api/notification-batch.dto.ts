@@ -6,6 +6,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { NotificationId, IdentityId } from '@/primitives';
 import type { BatchOperationResultDTO } from '../dtos';
 import { NotificationCategory } from '../value-objects';
 
@@ -14,21 +16,21 @@ import { NotificationCategory } from '../value-objects';
 // ============================================================================
 
 export const MarkAsReadBatchSchema = z.object({
-  notificationIds: z.array(z.string().uuid()).min(1),
+  notificationIds: z.array(brandedId<NotificationId>()).min(1),
 });
 
 export type MarkAsReadBatchReq = z.infer<typeof MarkAsReadBatchSchema>;
 export type MarkAsReadBatchRes = BatchOperationResultDTO;
 
 export const DeleteNotificationsBatchSchema = z.object({
-  notificationIds: z.array(z.string().uuid()).min(1),
+  notificationIds: z.array(brandedId<NotificationId>()).min(1),
 });
 
 export type DeleteNotificationsBatchReq = z.infer<typeof DeleteNotificationsBatchSchema>;
 export type DeleteNotificationsBatchRes = BatchOperationResultDTO;
 
 export const CleanupOldNotificationsSchema = z.object({
-  identityId: z.string().uuid(),
+  identityId: brandedId<IdentityId>(),
   beforeDays: z.number().int().min(1),
   category: z.nativeEnum(NotificationCategory).optional(),
 });

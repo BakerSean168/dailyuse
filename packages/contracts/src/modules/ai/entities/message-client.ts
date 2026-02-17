@@ -13,8 +13,8 @@ import type { MessageRole } from '../value-objects/message-role';
  * 使用 TransferDate (number) 时间戳
  */
 export interface MessageClientDTO {
-  id: string;
-  conversationId: string;
+  id: AiMessageId;
+  conversationId: AiConversationId;
   role: MessageRole;
   content: string;
   tokenCount: number | null;

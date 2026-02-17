@@ -37,7 +37,7 @@ export interface AccountServer {
  * Account Server DTO
  */
 export interface AccountServerDTO {
-  id: string;
+  id: IdentityId;
   status: AccountStatus;
   profile: AccountProfileDTO;
   settings: AccountSettingsDTO;
@@ -53,7 +53,7 @@ export interface AccountServerDTO {
  * Account Persistence DTO
  */
 export interface AccountPersistenceDTO {
-  id: string;
+  id: IdentityId;
   status: AccountStatus;
   profile: AccountProfilePersistenceDTO;
   settings: AccountSettingsPersistenceDTO;

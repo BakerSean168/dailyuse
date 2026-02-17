@@ -1,6 +1,6 @@
 /**
  * Reminder Group Aggregate Root - Client Interface
- * 提醒分组聚合�?- 客户端接�?
+ * 提醒分组聚合?- 客户端接?
  */
 
 import type {
@@ -19,8 +19,8 @@ import type { GroupStatsClientDTO } from '../value-objects';
  * Reminder Group Client DTO
  */
 export interface ReminderGroupClientDTO {
-  id: string;
-  identityId: string;
+  id: ReminderGroupId;
+  identityId: IdentityId;
   name: string;
   description: string | null;
   color: string | null;
@@ -37,20 +37,20 @@ export interface ReminderGroupClientDTO {
 
   // UI 扩展
   displayName: string;
-  controlModeText: string; // "组控�? | "个体控制"
+  controlModeText: string; // "组控? | "个体控制"
   statusText: string;
-  templateCountText: string; // "5 个提�?
-  activeStatusText: string; // "3 个活�?
+  templateCountText: string; // "5 个提?
+  activeStatusText: string; // "3 个活?
   controlDescription: string; // "所有提醒统一启用" | "提醒独立控制"
 }
 
 // ============ 实体接口 ============
 
 /**
- * Reminder Group 聚合�?- Client 接口
+ * Reminder Group 聚合?- Client 接口
  */
 export interface ReminderGroupClient {
-  // 基础属�?
+  // 基础属?
   id: ReminderGroupId;
   identityId: IdentityId;
   name: string;
@@ -77,12 +77,12 @@ export interface ReminderGroupClient {
 
   // ===== UI 业务方法 =====
 
-  // 格式化展�?
+  // 格式化展?
 
   // 操作判断
 
 }
 
 /**
- * Reminder Group Client 静态工厂方法接�?
+ * Reminder Group Client 静态工厂方法接?
  */

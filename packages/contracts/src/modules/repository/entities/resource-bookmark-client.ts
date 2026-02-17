@@ -3,6 +3,7 @@
  * 资源书签实体 - 客户端接口
  */
 import type { TransferDate } from '@/primitives';
+import type { ResourceId, IdentityId } from '@/primitives';
 
 // ============ DTO 定义 ============
 
@@ -12,8 +13,8 @@ import type { TransferDate } from '@/primitives';
  */
 export interface ResourceBookmarkClientDTO {
   id: string;
-  resourceId: string;
-  identityId: string;
+  resourceId: ResourceId;
+  identityId: IdentityId;
   
   aliasName: string | null;
   icon: string | null;
@@ -38,8 +39,8 @@ export interface ResourceBookmarkClientDTO {
 export interface ResourceBookmarkClient {
   // 基础属性
   id: string;
-  resourceId: string;
-  identityId: string;
+  resourceId: ResourceId;
+  identityId: IdentityId;
   
   aliasName: string | null;
   icon: string | null;
