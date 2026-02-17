@@ -129,3 +129,27 @@ export * from './components/custom/linear';
 
 // Task Components
 export * from './components/custom/task';
+
+// Schedule Components
+export * from './components/custom/schedule';
+
+// Goal Components
+export * from './components/custom/goal';
+
+// Repository Components
+export * from './components/custom/repository';
+
+// Reminder Components
+export * from './components/custom/reminder';
+
+// Setting Components
+export * from './components/custom/setting';
+
+// Notification Components
+export * from './components/custom/notification';
+
+// Governance Components
+export * from './components/custom/governance';
+
+// Editor Components
+export * from './components/custom/editor';

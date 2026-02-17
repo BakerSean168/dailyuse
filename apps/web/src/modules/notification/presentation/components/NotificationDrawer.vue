@@ -1,20 +1,11 @@
 <template>
-  <v-navigation-drawer
-    v-model="isOpen"
-    location="right"
-    temporary
-    width="400"
+  <NotificationDrawer
+    :model-value="modelValue"
+    :unread-count="unreadCount"
+    @update:model-value="$emit('update:modelValue', $event)"
+    @mark-all-read="$emit('mark-all-read')"
+    @view-all="handleViewAll"
   >
-    <v-toolbar density="compact">
-      <v-toolbar-title>通知中心</v-toolbar-title>
-      <v-btn
-        icon="mdi-check-all"
-        @click="$emit('mark-all-read')"
-        :disabled="unreadCount === 0"
-      />
-      <v-btn icon="mdi-close" @click="close" />
-    </v-toolbar>
-
     <NotificationList
       :notifications="notifications"
       :loading="loading"
@@ -22,25 +13,14 @@
       @mark-read="$emit('mark-read', $event)"
       @delete="$emit('delete', $event)"
     />
-
-    <template #append>
-      <v-btn
-        block
-        variant="text"
-        to="/notifications"
-        @click="close"
-      >
-        查看全部通知
-      </v-btn>
-    </template>
-  </v-navigation-drawer>
+  </NotificationDrawer>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { NotificationDrawer } from '@dailyuse/ui-vue-shadcn';
 import NotificationList from './NotificationList.vue';
-import type { NotificationClientDTO, NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
-
+import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 
 interface Props {
   modelValue: boolean;
@@ -49,7 +29,7 @@ interface Props {
   unreadCount?: number;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   loading: false,
   unreadCount: 0,
 });
@@ -62,18 +42,14 @@ const emit = defineEmits<{
   'mark-all-read': [];
 }>();
 
-const isOpen = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
-});
+const router = useRouter();
 
-const close = () => {
-  isOpen.value = false;
+const handleViewAll = () => {
+  router.push('/notifications');
 };
 
 const handleNotificationClick = (notification: NotificationClientDTO) => {
   emit('notification-click', notification);
-  close();
+  emit('update:modelValue', false);
 };
 </script>
-

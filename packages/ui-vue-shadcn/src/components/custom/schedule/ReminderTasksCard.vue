@@ -1,0 +1,199 @@
+<template>
+  <Card class="h-full flex flex-col">
+    <CardHeader class="flex flex-row items-center justify-between space-y-0 p-4">
+      <div class="flex items-center">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 mr-3">
+          <Bell class="h-5 w-5" />
+        </div>
+        <div>
+          <CardTitle class="text-lg font-bold">提醒模块任务</CardTitle>
+          <p class="text-xs text-muted-foreground">Reminder Module Tasks</p>
+        </div>
+      </div>
+      <Badge :variant="getStatusVariant()" class="font-medium">
+        {{ tasks.length }} 个任务
+      </Badge>
+    </CardHeader>
+
+    <Separator />
+
+    <CardContent class="p-4 flex-1">
+      <!-- Loading state -->
+      <div v-if="isLoading" class="flex justify-center items-center py-8">
+        <Loader2 class="h-12 w-12 animate-spin text-blue-600" />
+      </div>
+
+      <!-- Error state -->
+      <div v-else-if="error" class="py-4">
+        <Alert variant="destructive">
+          <AlertCircle class="h-4 w-4" />
+          <AlertDescription>{{ error }}</AlertDescription>
+        </Alert>
+      </div>
+
+      <!-- Task list -->
+      <div v-else-if="tasks.length > 0" class="task-list max-h-[400px] overflow-y-auto">
+        <div 
+          v-for="task in tasks" 
+          :key="task.uuid"
+          class="flex items-center gap-3 py-3 border-b last:border-b-0"
+          :class="{ 'opacity-70': task.status === 'paused' }"
+        >
+          <component 
+            :is="getTaskStatusIcon(task.status)" 
+            :class="getTaskStatusColorClass(task.status)"
+            class="h-5 w-5 shrink-0" 
+          />
+
+          <div class="flex-1 min-w-0">
+            <div class="font-medium text-sm">{{ task.name }}</div>
+            <div class="text-xs text-muted-foreground truncate">
+              {{ task.description || '暂无描述' }}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <Badge :variant="getBadgeVariant(task.status)" class="text-[10px] h-5">
+              {{ getTaskStatusText(task.status) }}
+            </Badge>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-7 w-7"
+              @click="$emit('view-detail', task.uuid)"
+            >
+              <Eye class="h-4 w-4" />
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button variant="ghost" size="icon" class="h-7 w-7">
+                  <MoreVertical class="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  v-if="task.status === 'active'"
+                  @click="$emit('pause-task', task.uuid)"
+                >
+                  <Pause class="mr-2 h-4 w-4" />
+                  暂停
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  v-if="task.status === 'paused'"
+                  @click="$emit('resume-task', task.uuid)"
+                >
+                  <Play class="mr-2 h-4 w-4" />
+                  恢复
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  class="text-destructive focus:text-destructive"
+                  @click="$emit('delete-task', task.uuid)"
+                >
+                  <Trash2 class="mr-2 h-4 w-4" />
+                  删除
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div v-else class="text-center py-8">
+        <Bell class="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
+        <p class="text-sm text-muted-foreground">暂无提醒模块任务</p>
+      </div>
+    </CardContent>
+  </Card>
+</template>
+
+<script setup lang="ts">
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
+import { Badge, type BadgeVariants } from '../../ui/badge';
+import { Button } from '../../ui/button';
+import { Alert, AlertDescription } from '../../ui/alert';
+import { Separator } from '../../ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../../ui/dropdown-menu';
+import {
+  Bell,
+  Loader2,
+  AlertCircle,
+  Eye,
+  MoreVertical,
+  Pause,
+  Play,
+  Trash2,
+  PlayCircle,
+  PauseCircle,
+  CheckCircle,
+  XCircle,
+  HelpCircle,
+} from 'lucide-vue-next';
+import type { ScheduleTaskClient } from '@dailyuse/contracts/schedule';
+
+interface Props {
+  tasks: ScheduleTaskClient[];
+  isLoading?: boolean;
+  error?: string | null;
+}
+
+const props = defineProps<Props>();
+
+defineEmits<{
+  'pause-task': [taskUuid: string];
+  'resume-task': [taskUuid: string];
+  'delete-task': [taskUuid: string];
+  'view-detail': [taskUuid: string];
+}>();
+
+function getStatusVariant(): BadgeVariants['variant'] {
+  const activeCount = props.tasks.filter((t) => t.status === 'active').length;
+  return activeCount === 0 ? 'secondary' : 'default';
+}
+
+function getTaskStatusColorClass(status: string): string {
+  const colorMap: Record<string, string> = {
+    active: 'text-green-600',
+    paused: 'text-yellow-600',
+    completed: 'text-blue-600',
+    failed: 'text-red-600',
+    cancelled: 'text-gray-400',
+  };
+  return colorMap[status] || 'text-gray-400';
+}
+
+function getBadgeVariant(status: string): BadgeVariants['variant'] {
+  if (status === 'active') return 'default';
+  if (status === 'failed') return 'destructive';
+  return 'secondary';
+}
+
+function getTaskStatusIcon(status: string) {
+  const iconMap: Record<string, any> = {
+    active: PlayCircle,
+    paused: PauseCircle,
+    completed: CheckCircle,
+    failed: AlertCircle,
+    cancelled: XCircle,
+  };
+  return iconMap[status] || HelpCircle;
+}
+
+function getTaskStatusText(status: string): string {
+  const textMap: Record<string, string> = {
+    active: '活跃',
+    paused: '暂停',
+    completed: '完成',
+    failed: '失败',
+    cancelled: '取消',
+  };
+  return textMap[status] || status;
+}
+</script>
