@@ -1,2 +1,4 @@
 export { default as ConflictAlert } from './ConflictAlert.vue';
 export { default as GoalTasksCard } from './GoalTasksCard.vue';
+export { default as TaskModuleTasksCard } from './TaskModuleTasksCard.vue';
+export { default as ReminderTasksCard } from './ReminderTasksCard.vue';
