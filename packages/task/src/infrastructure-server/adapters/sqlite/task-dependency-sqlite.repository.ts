@@ -24,7 +24,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const id = data.id || this.generateUuid();
+    const id = data.id || this.generateId();
     const now = Date.now();
 
     stmt.run(
@@ -219,7 +219,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
     };
   }
 
-  private generateUuid(): string {
+  private generateId(): string {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 }

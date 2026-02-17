@@ -1,16 +1,15 @@
-﻿/**
+/**
  * Complete Task Instance Service
  *
- * 瀹屾垚浠诲姟瀹炰緥
+ * 完成任务实例
  */
 
 import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
 import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
 import type {
-  TaskInstanceClientDTO,
   TaskInstanceCompletedEvent,
-  CompleteTaskInstanceRequest,
-  TaskInstanceResponse,
+  CompleteTaskInstanceReq,
+  TaskInstanceOperationRes,
 } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
@@ -25,7 +24,7 @@ export class CompleteTaskInstance {
     private readonly templateRepository: ITaskTemplateRepository,
   ) {}
 
-  async execute(id: string, request?: CompleteTaskInstanceRequest): Promise<Result<TaskInstanceResponse>> {
+  async execute(id: string, request?: CompleteTaskInstanceReq): Promise<Result<TaskInstanceOperationRes>> {
     const instance = await this.instanceRepository.findById(id);
     if (!instance) {
       return error('NOT_FOUND', `TaskInstance ${id} not found`);
@@ -35,11 +34,11 @@ export class CompleteTaskInstance {
       return error('VALIDATION_ERROR', 'Cannot complete this task instance');
     }
 
-    // 鏍囪涓哄畬锟?
+    // 标记为完�?
     instance.complete(request?.duration, request?.note, request?.rating);
     await this.instanceRepository.save(instance);
 
-    // 鍙戝竷浜嬩欢
+    // 发布事件
     await this.publishTaskCompletedEvent(instance);
 
     return ok({
@@ -48,7 +47,7 @@ export class CompleteTaskInstance {
   }
 
   /**
-   * 鍙戝竷浠诲姟瀹屾垚浜嬩欢
+   * 发布任务完成事件
    */
   private async publishTaskCompletedEvent(instance: any): Promise<void> {
     try {
@@ -72,15 +71,15 @@ export class CompleteTaskInstance {
             ? {
                 goalId: template.goalBinding.goalId,
                 keyResultId: template.goalBinding.keyResultId,
-                incrementValue: template.goalBinding.incrementValue,
+                incrementValue: template.goalBinding.goalRecordValue,
               }
             : undefined,
         },
       };
 
-      await eventBus.publish(event);
+      eventBus.send('task.instance.completed' as any, event.payload as any);
     } catch (error) {
-      console.error('锟?[CompleteTaskInstance] Failed to publish event', error);
+      console.error('�?[CompleteTaskInstance] Failed to publish event', error);
     }
   }
 }

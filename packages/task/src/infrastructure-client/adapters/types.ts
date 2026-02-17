@@ -14,12 +14,12 @@ import type {
   TaskInstanceClientDTO,
   TaskDependencyClientDTO,
   DependencyChainClientDTO,
-  CreateTaskTemplateRequest,
-  UpdateTaskTemplateRequest,
-  GenerateInstancesRequest,
-  BindToGoalRequest,
-  CompleteTaskInstanceRequest,
-  SkipTaskInstanceRequest,
+  CreateTaskTemplateReq,
+  UpdateTaskTemplateReq,
+  GenerateInstancesReq,
+  BindToGoalReq,
+  CompleteTaskInstanceReq,
+  SkipTaskInstanceReq,
   CreateTaskDependencyRequest,
   UpdateTaskDependencyRequest,
   ValidateDependencyRequest,
@@ -27,7 +27,7 @@ import type {
 } from '@dailyuse/contracts/task';
 
 // ============ Transport Client Interfaces ============
-// Module only defines what it needs — concrete implementations injected from App layer.
+// Module only defines what it needs �?concrete implementations injected from App layer.
 
 // IResultHttpClient imported from @dailyuse/http-client
 
@@ -56,7 +56,7 @@ export interface TaskStatisticsServerDTO {
 // ============ Task Template API Client ============
 
 export interface ITaskTemplateApiClient {
-  createTaskTemplate(request: CreateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>>;
+  createTaskTemplate(request: CreateTaskTemplateReq): Promise<Result<TaskTemplateClientDTO>>;
   getTaskTemplates(params?: {
     page?: number;
     limit?: number;
@@ -68,18 +68,15 @@ export interface ITaskTemplateApiClient {
     tags?: string[];
   }): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>>;
   getTaskTemplateById(id: string, includeChildren?: boolean): Promise<Result<TaskTemplateClientDTO>>;
-  updateTaskTemplate(id: string, request: UpdateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>>;
+  updateTaskTemplate(id: string, request: UpdateTaskTemplateReq): Promise<Result<TaskTemplateClientDTO>>;
   deleteTaskTemplate(id: string): Promise<Result<void>>;
-  create(request: CreateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>>;
-  getById(id: string): Promise<Result<TaskTemplateClientDTO>>;
-  update(id: string, request: UpdateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>>;
   getTasksWithPrioritySorting(params?: { limit?: number }): Promise<Result<TaskTemplateClientDTO[]>>;
   activateTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;
   pauseTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;
   archiveTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;
-  generateInstances(templateId: string, request: GenerateInstancesRequest): Promise<Result<TaskInstanceClientDTO[]>>;
+  generateInstances(templateId: string, request: GenerateInstancesReq): Promise<Result<TaskInstanceClientDTO[]>>;
   getInstancesByDateRange(templateId: string, from: number, to: number): Promise<Result<TaskInstanceClientDTO[]>>;
-  bindToGoal(templateId: string, request: BindToGoalRequest): Promise<Result<TaskTemplateClientDTO>>;
+  bindToGoal(templateId: string, request: BindToGoalReq): Promise<Result<TaskTemplateClientDTO>>;
   unbindFromGoal(templateId: string): Promise<Result<TaskTemplateClientDTO>>;
 }
 
@@ -97,8 +94,8 @@ export interface ITaskInstanceApiClient {
   getTaskInstanceById(id: string): Promise<Result<TaskInstanceClientDTO>>;
   deleteTaskInstance(id: string): Promise<Result<void>>;
   startTaskInstance(id: string): Promise<Result<TaskInstanceClientDTO>>;
-  completeTaskInstance(id: string, request?: CompleteTaskInstanceRequest): Promise<Result<TaskInstanceClientDTO>>;
-  skipTaskInstance(id: string, request?: SkipTaskInstanceRequest): Promise<Result<TaskInstanceClientDTO>>;
+  completeTaskInstance(id: string, request?: CompleteTaskInstanceReq): Promise<Result<TaskInstanceClientDTO>>;
+  skipTaskInstance(id: string, request?: SkipTaskInstanceReq): Promise<Result<TaskInstanceClientDTO>>;
   checkExpiredInstances(): Promise<Result<{ count: number; instances: TaskInstanceClientDTO[] }>>;
 }
 

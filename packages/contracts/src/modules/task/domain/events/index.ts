@@ -8,6 +8,7 @@ export type { TaskCreatedEvent } from './task-created.event';
 export type { TaskUpdatedEvent } from './task-updated.event';
 export type { TaskDeletedEvent } from './task-deleted.event';
 export type { TaskCompletedEvent } from './task-completed.event';
+export type { TaskInstanceCompletedEvent } from './task-instance-completed.event';
 export type { TaskUncompletedEvent } from './task-uncompleted.event';
 export type { TaskRescheduledEvent } from './task-rescheduled.event';
 

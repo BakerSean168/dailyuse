@@ -13,16 +13,16 @@ import type {
 import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
-  CreateTaskTemplateRequest,
-  UpdateTaskTemplateRequest,
-  GenerateInstancesRequest,
-  BindToGoalRequest,
+  CreateTaskTemplateReq,
+  UpdateTaskTemplateReq,
+  GenerateInstancesReq,
+  BindToGoalReq,
 } from '@dailyuse/contracts/task';
 
 /**
  * TaskTemplateHttpAdapter
  *
- * HTTP 实现的任务模板 API 客户端
+ * HTTP 实现的任务模�?API 客户�?
  */
 export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
   private readonly baseUrl = '/tasks/templates';
@@ -31,7 +31,7 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
 
   // ===== Task Template CRUD =====
 
-  async createTaskTemplate(request: CreateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>> {
+  async createTaskTemplate(request: CreateTaskTemplateReq): Promise<Result<TaskTemplateClientDTO>> {
     return this.httpClient.post(this.baseUrl, request);
   }
 
@@ -59,30 +59,13 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
 
   async updateTaskTemplate(
     id: string,
-    request: UpdateTaskTemplateRequest,
+    request: UpdateTaskTemplateReq,
   ): Promise<Result<TaskTemplateClientDTO>> {
     return this.httpClient.put(`${this.baseUrl}/${id}`, request);
   }
 
   async deleteTaskTemplate(id: string): Promise<Result<void>> {
     return this.httpClient.delete(`${this.baseUrl}/${id}`);
-  }
-
-  // ===== 方法别名（为了兼容 View 层调用）=====
-
-  async create(request: CreateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>> {
-    return this.createTaskTemplate(request);
-  }
-
-  async getById(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    return this.getTaskTemplateById(id);
-  }
-
-  async update(
-    id: string,
-    request: UpdateTaskTemplateRequest,
-  ): Promise<Result<TaskTemplateClientDTO>> {
-    return this.updateTaskTemplate(id, request);
   }
 
   // ===== 特殊查询方法 =====
@@ -93,7 +76,7 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     return this.httpClient.get(`${this.baseUrl}/by-priority`, { params });
   }
 
-  // ===== Task Template 状态管理 =====
+  // ===== Task Template 状态管�?=====
 
   async activateTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${id}/activate`);
@@ -111,7 +94,7 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
 
   async generateInstances(
     templateId: string,
-    request: GenerateInstancesRequest,
+    request: GenerateInstancesReq,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
     return this.httpClient.post(`${this.baseUrl}/${templateId}/generate-instances`, request);
   }
@@ -130,7 +113,7 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
 
   async bindToGoal(
     templateId: string,
-    request: BindToGoalRequest,
+    request: BindToGoalReq,
   ): Promise<Result<TaskTemplateClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${templateId}/bind-goal`, request);
   }

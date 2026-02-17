@@ -1,8 +1,8 @@
-﻿/**
+/**
  * List Task Templates Service
  *
- * 鑾峰彇浠诲姟妯℃澘鍒楄〃锛堟寜璐︽埛锟?
- * 鑾峰彇鏃惰嚜鍔ㄦ鏌ュ苟琛ュ厖瀹炰緥
+ * 获取任务模板列表（按账户�?
+ * 获取时自动检查并补充实例
  */
 
 import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
@@ -10,9 +10,9 @@ import type { ITaskInstanceRepository } from '../../domain-server/repositories/I
 import type { TaskTemplate } from '../../domain-server/aggregates/task-template';
 import { TaskInstanceGenerationService } from '../../domain-server/services/TaskInstanceGenerationService';
 import type {
-  TaskTemplateClientDTO,
-  QueryTaskTemplatesRequest,
-  TaskTemplatesResponse,
+  QueryTaskTemplatesReq,
+  QueryTaskTemplatesRes,
+  TaskTemplateStatus as TaskTemplateStatusType,
 } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
@@ -32,12 +32,15 @@ export class ListTaskTemplates {
     this.generationService = new TaskInstanceGenerationService();
   }
 
-  async execute(request: QueryTaskTemplatesRequest): Promise<Result<TaskTemplatesResponse>> {
+  async execute(request: QueryTaskTemplatesReq): Promise<Result<QueryTaskTemplatesRes>> {
     let templates: TaskTemplate[];
 
-    // 鏍规嵁涓嶅悓鏉′欢鏌ヨ
+    // 根据不同条件查询
     if (request.status && request.status.length > 0) {
-      templates = await this.templateRepository.findByStatus(request.identityId, request.status[0]);
+      templates = await this.templateRepository.findByStatus(
+        request.identityId,
+        request.status[0] as TaskTemplateStatusType,
+      );
     } else if (request.folderId) {
       templates = await this.templateRepository.findByFolderId(request.folderId);
     } else if (request.goalId) {
@@ -48,11 +51,11 @@ export class ListTaskTemplates {
       templates = await this.templateRepository.findByIdentityId(request.identityId);
     }
 
-    // 鑷姩妫€鏌ュ苟琛ュ厖姣忎釜 ACTIVE 妯℃澘鐨勫疄渚嬶紙寮傛鎵ц锛屼笉闃诲锟?
+    // 自动检查并补充每个 ACTIVE 模板的实例（异步执行，不阻塞�?
     for (const template of templates) {
-      if (template.status === TaskTemplateStatus.ACTIVE) {
+      if (template.status === TaskTemplateStatus.Active) {
         this.checkAndRefillInstances(template).catch((error) => {
-          console.error(`锟?琛ュ厖妯℃澘 "${template.title}" 瀹炰緥澶辫触:`, error);
+          console.error(`�?补充模板 "${template.title}" 实例失败:`, error);
         });
       }
     }
@@ -64,7 +67,7 @@ export class ListTaskTemplates {
   }
 
   /**
-   * 妫€鏌ュ苟琛ュ厖妯℃澘瀹炰緥
+   * 检查并补充模板实例
    */
   private async checkAndRefillInstances(template: TaskTemplate): Promise<void> {
     try {
@@ -75,7 +78,7 @@ export class ListTaskTemplates {
           await this.instanceRepository.saveMany(instances);
           await this.templateRepository.save(template);
 
-          eventBus.emit('task.instances.generated', {
+          eventBus.send('task.instances.generated' as any, {
             eventType: 'task_template.instances_generated',
             aggregateId: template.id,
             identityId: template.identityId,
@@ -88,7 +91,7 @@ export class ListTaskTemplates {
         }
       }
     } catch (error) {
-      console.error(`锟?[ListTaskTemplates] 琛ュ厖瀹炰緥澶辫触:`, error);
+      console.error(`�?[ListTaskTemplates] 补充实例失败:`, error);
     }
   }
 }

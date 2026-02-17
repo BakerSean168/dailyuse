@@ -30,14 +30,10 @@ export class DeleteTaskTemplate {
 
     // 鍙戝竷鍒犻櫎浜嬩欢
     try {
-      await eventBus.publish({
-        eventType: 'task.template.deleted',
-        payload: {
-          taskTemplateId: id,
-          identityId: template.identityId,
-          deletedAt: Date.now(),
-        },
-        timestamp: Date.now(),
+      eventBus.send('task.template.deleted' as any, {
+        taskTemplateId: id,
+        identityId: template.identityId,
+        deletedAt: Date.now(),
       });
     } catch (error) {
       console.error(`锟?[DeleteTaskTemplate] 鍙戝竷鍒犻櫎浜嬩欢澶辫触:`, error);

@@ -12,14 +12,14 @@ import type {
 } from '../types';
 import type {
   TaskInstanceClientDTO,
-  CompleteTaskInstanceRequest,
-  SkipTaskInstanceRequest,
+  CompleteTaskInstanceReq,
+  SkipTaskInstanceReq,
 } from '@dailyuse/contracts/task';
 
 /**
  * TaskInstanceIpcAdapter
  *
- * IPC 实现的任务实例 API 客户端（用于 Electron 桌面应用）
+ * IPC 实现的任务实�?API 客户端（用于 Electron 桌面应用�?
  */
 export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
   constructor(private readonly ipcClient: IIpcClient) {}
@@ -45,7 +45,7 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
     return tryCatch(() => this.ipcClient.invoke('task:instance:delete', { id }));
   }
 
-  // ===== Task Instance 状态管理 =====
+  // ===== Task Instance 状态管�?=====
 
   async startTaskInstance(id: string): Promise<Result<TaskInstanceClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke('task:instance:start', { id }));
@@ -53,14 +53,14 @@ export class TaskInstanceIpcAdapter implements ITaskInstanceApiClient {
 
   async completeTaskInstance(
     id: string,
-    request?: CompleteTaskInstanceRequest,
+    request?: CompleteTaskInstanceReq,
   ): Promise<Result<TaskInstanceClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke('task:instance:complete', { id, request }));
   }
 
   async skipTaskInstance(
     id: string,
-    request?: SkipTaskInstanceRequest,
+    request?: SkipTaskInstanceReq,
   ): Promise<Result<TaskInstanceClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke('task:instance:skip', { id, request }));
   }

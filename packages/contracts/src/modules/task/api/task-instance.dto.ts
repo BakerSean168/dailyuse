@@ -15,15 +15,35 @@ import type { TaskInstanceClientDTO } from '../aggregates';
 /**
  * 获取任务实例列表 Schema
  */
-export const GetInstancesByRangeSchema = z.object({
+export const GetTaskInstancesByRangeSchema = z.object({
   startDate: z.string().datetime(),
   endDate: z.string().datetime(),
   includeArchived: z.boolean().optional().default(false),
 });
 
-export type GetInstancesByRangeReq = z.infer<typeof GetInstancesByRangeSchema>;
-
-export interface GetInstancesByRangeRes {
+export type GetTaskInstancesByRangeReq = z.infer<typeof GetTaskInstancesByRangeSchema>;
+export interface GetTaskInstancesByRangeRes {
   data: TaskInstanceClientDTO[];
   total: number;
 }
+
+export const CompleteTaskInstanceSchema = z.object({
+  duration: z.number().optional(),
+  note: z.string().optional(),
+  rating: z.number().int().min(1).max(5).optional(),
+});
+
+export type CompleteTaskInstanceReq = z.infer<typeof CompleteTaskInstanceSchema>;
+
+export const SkipTaskInstanceSchema = z.object({
+  reason: z.string().optional(),
+});
+
+export type SkipTaskInstanceReq = z.infer<typeof SkipTaskInstanceSchema>;
+
+export interface TaskInstanceOperationRes {
+  instance: TaskInstanceClientDTO;
+}
+
+export type CompleteTaskInstanceRes = TaskInstanceOperationRes;
+export type SkipTaskInstanceRes = TaskInstanceOperationRes;

@@ -1,5 +1,5 @@
-// 定义 Repository 模块发出的事件
+import type { RepositoryStatisticsUpdatedEvent } from '../domain/events';
+
 export type RepositoryEventMap = {
-  // RepositoryStatistics 事件
-  'repository-statistics:updated': { identityId: string; totalRepositories: number; totalResources: number; updatedAt: number };
+  'repository:RepositoryStatisticsUpdatedEvent': RepositoryStatisticsUpdatedEvent;
 };

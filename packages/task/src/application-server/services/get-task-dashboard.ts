@@ -5,10 +5,25 @@
  */
 
 import type { ITaskTemplateRepository, TaskFilters } from '../../domain-server/repositories/ITaskTemplateRepository';
-import type { TaskTemplateClientDTO, TaskDashboardResponse } from '@dailyuse/contracts/task';
-import { TaskType } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
+
+interface TaskDashboardResponse {
+  todayTasks: TaskTemplateClientDTO[];
+  overdueTasks: TaskTemplateClientDTO[];
+  upcomingTasks: TaskTemplateClientDTO[];
+  highPriorityTasks: TaskTemplateClientDTO[];
+  blockedTasks: TaskTemplateClientDTO[];
+  summary: {
+    totalTasks: number;
+    completedToday: number;
+    overdue: number;
+    upcoming: number;
+    highPriority: number;
+  };
+}
 
 /**
  * Get Task Dashboard Service
@@ -35,8 +50,8 @@ export class GetTaskDashboard {
       this.getUpcomingTasks(identityId, 7),
       this.getHighPriorityTasks(identityId, 5),
       this.getRecentCompletedTasks(identityId, 10),
-      this.countTasks(identityId, { taskType: TaskType.ONE_TIME, status: 'TODO' as any }),
-      this.countTasks(identityId, { taskType: TaskType.ONE_TIME, status: 'COMPLETED' as any }),
+      this.countTasks(identityId, { status: TaskTemplateStatus.Active }),
+      this.countTasks(identityId, { status: TaskTemplateStatus.Archived }),
     ]);
 
     const completionRate =
@@ -88,13 +103,12 @@ export class GetTaskDashboard {
   private async getRecentCompletedTasks(identityId: string, limit: number): Promise<TaskTemplateClientDTO[]> {
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const tasks = await this.templateRepository.findOneTimeTasks(identityId, {
-      taskType: TaskType.ONE_TIME,
-      status: 'COMPLETED' as any,
+      status: TaskTemplateStatus.Archived,
     });
 
     return tasks
-      .filter((t) => t.updatedAt && t.updatedAt >= sevenDaysAgo)
-      .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
+      .filter((t) => t.updatedAt && t.updatedAt.getTime() >= sevenDaysAgo)
+      .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
       .slice(0, limit)
       .map((t) => t.toClientDTO());
   }

@@ -11,7 +11,7 @@
 import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
 import { TaskInstanceGenerationService } from '../../domain-server/services/TaskInstanceGenerationService';
-import type { TaskTemplateClientDTO, TaskTemplateResponse } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
@@ -51,16 +51,12 @@ export class ActivateTaskTemplate {
 
     // 3. 鍙戝竷鎭㈠浜嬩欢
     try {
-      await eventBus.publish({
-        eventType: 'task.template.resumed',
-        payload: {
-          taskTemplateId: template.id,
-          taskTemplateTitle: template.title,
-          identityId: template.identityId,
-          resumedAt: Date.now(),
-          taskTemplateData: template.toServerDTO(),
-        },
-        timestamp: Date.now(),
+      eventBus.send('task.template.resumed' as any, {
+        taskTemplateId: template.id,
+        taskTemplateTitle: template.title,
+        identityId: template.identityId,
+        resumedAt: Date.now(),
+        taskTemplateData: template.toServerDTO(),
       });
     } catch (error) {
       console.error(`锟?[ActivateTaskTemplate] 鍙戝竷鎭㈠浜嬩欢澶辫触:`, error);

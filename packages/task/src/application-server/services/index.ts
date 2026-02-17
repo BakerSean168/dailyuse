@@ -13,6 +13,8 @@ export { GetTaskTemplate } from './get-task-template';
 export { ListTaskTemplates } from './list-task-templates';
 export { ActivateTaskTemplate } from './activate-task-template';
 export { PauseTaskTemplate } from './pause-task-template';
+export { UpdateTaskTemplate } from './update-task-template';
+export { ArchiveTaskTemplate } from './archive-task-template';
 export { DeleteTaskTemplate } from './delete-task-template';
 export { CompleteTaskInstance } from './complete-task-instance';
 export { SkipTaskInstance } from './skip-task-instance';
@@ -24,6 +26,3 @@ export { ListTaskInstancesByStatus } from './list-task-instances-by-status';
 export { StartTaskInstance } from './start-task-instance';
 export { DeleteTaskInstance } from './delete-task-instance';
 export { GetTaskDashboard } from './get-task-dashboard';
-
-// ===== Application Services (Complex Orchestration) =====
-export { TaskTemplateApplicationService } from './task-template-application-service';

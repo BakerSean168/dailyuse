@@ -55,7 +55,16 @@ export const TaskApiModule: TaskApiModuleDef = {
 
     // 2. Create controllers with application services
     const templateController = new TaskTemplateController(
-      taskModule.taskTemplateService,
+      {
+        createTemplate: taskModule.createTaskTemplate,
+        getTemplate: taskModule.getTaskTemplate,
+        listTemplates: taskModule.listTaskTemplates,
+        updateTemplate: taskModule.updateTaskTemplate,
+        deleteTemplate: taskModule.deleteTaskTemplate,
+        activateTemplate: taskModule.activateTaskTemplate,
+        pauseTemplate: taskModule.pauseTaskTemplate,
+        archiveTemplate: taskModule.archiveTaskTemplate,
+      },
     );
     const instanceController = new TaskInstanceController({
       getTaskInstance: taskModule.getTaskInstance,

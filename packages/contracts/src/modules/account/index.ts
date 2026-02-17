@@ -8,6 +8,9 @@
 // ============ Aggregates ============
 export * from './aggregates';
 
+// ============ Entities ============
+export * from './entities';
+
 // ============ Value Objects ============
 export * from './value-objects';
 

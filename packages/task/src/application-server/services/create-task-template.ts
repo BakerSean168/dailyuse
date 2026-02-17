@@ -1,8 +1,8 @@
-﻿/**
+/**
  * Create Task Template Service
  *
- * 鍒涘缓浠诲姟妯℃澘锛堝惊鐜换鍔★級
- * 鍒涘缓鍚庤嚜鍔ㄧ敓鎴愬垵濮嬪疄渚嬶紙100锟?鏈€锟?00涓級
+ * 创建任务模板（循环任务）
+ * 创建后自动生成初始实例（100�?最�?00个）
  */
 
 import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
@@ -10,7 +10,7 @@ import type { ITaskTemplateRepository } from '../../domain-server/repositories/I
 import { TaskTemplate } from '../../domain-server/aggregates/task-template';
 import { TaskTimeConfig, RecurrenceRule, TaskReminderConfig } from '../../domain-server/value-objects';
 import { TaskInstanceGenerationService } from '../../domain-server/services/TaskInstanceGenerationService';
-import type { TaskTemplateClientDTO, CreateTaskTemplateRequest } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, CreateTaskTemplateReq } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
@@ -30,38 +30,38 @@ export class CreateTaskTemplate {
   }
 
   async execute(
-    request: CreateTaskTemplateRequest,
+    request: CreateTaskTemplateReq,
   ): Promise<Result<{ template: TaskTemplateClientDTO; instanceCount: number }>> {
 
-    const timeConfig = TaskTimeConfig.fromServerDTO(request.timeConfig);
+    const timeConfig = TaskTimeConfig.fromDTO(request.timeConfig);
     const recurrenceRule = request.recurrenceRule
-      ? RecurrenceRule.fromServerDTO(request.recurrenceRule)
+      ? RecurrenceRule.fromDTO(request.recurrenceRule)
       : undefined;
     const reminderConfig = request.reminderConfig
-      ? TaskReminderConfig.fromServerDTO(request.reminderConfig)
+      ? TaskReminderConfig.fromDTO(request.reminderConfig)
       : undefined;
 
     const template = TaskTemplate.create({
       identityId: request.identityId,
       title: request.name,
-      description: request.description,
+      description: request.description ?? undefined,
       taskType: request.taskType,
       timeConfig,
       recurrenceRule,
       reminderConfig,
       importance: request.importance,
-      folderId: request.folderId,
+      folderId: request.folderId ?? undefined,
       tags: request.tags,
-      color: request.color,
+      color: request.color ?? undefined,
     });
 
-    // 淇濆瓨鍒颁粨鍌?
+    // 保存到仓�?
     await this.templateRepository.save(template);
 
     let instanceCount = 0;
 
-    // 濡傛灉鐘舵€佹槸 ACTIVE锛岀珛鍗崇敓鎴愬垵濮嬪疄渚?
-    if (template.status === TaskTemplateStatus.ACTIVE) {
+    // 如果状态是 ACTIVE，立即生成初始实�?
+    if (template.status === TaskTemplateStatus.Active) {
       instanceCount = await this.generateInitialInstances(template);
     }
 
@@ -72,7 +72,7 @@ export class CreateTaskTemplate {
   }
 
   /**
-   * 鐢熸垚鍒濆瀹炰緥
+   * 生成初始实例
    */
   private async generateInitialInstances(template: TaskTemplate): Promise<number> {
     try {
@@ -82,8 +82,8 @@ export class CreateTaskTemplate {
         await this.instanceRepository.saveMany(instances);
         await this.templateRepository.save(template);
 
-        // 鍙戝竷浜嬩欢
-        eventBus.emit('task.instances.generated', {
+        // 发布事件
+        eventBus.send('task.instances.generated' as any, {
           eventType: 'task_template.instances_generated',
           version: '1.0',
           aggregateId: template.id,
@@ -100,7 +100,7 @@ export class CreateTaskTemplate {
 
       return instances.length;
     } catch (error) {
-      console.error(`[CreateTaskTemplate] 鐢熸垚鍒濆瀹炰緥澶辫触:`, error);
+      console.error(`[CreateTaskTemplate] 生成初始实例失败:`, error);
       return 0;
     }
   }

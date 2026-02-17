@@ -14,7 +14,8 @@ import { ImportanceLevel, PriorityLevel } from '@dailyuse/contracts/shared';
 import { TaskTemplateStatus } from '../../domain-shared/value-objects/task-template-status';
 import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
 import { TaskFolderId } from '../../domain-shared/value-objects/task-folder-id';
-import { IdentityId, GoalId, KeyResultId } from '@dailyuse/domain-shared';
+import { IdentityId } from '@dailyuse/domain-shared';
+import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
 
 // TaskType is a simple string literal type, not exported from domain-shared
 type TaskType = 'ONE_TIME' | 'RECURRING';
@@ -918,8 +919,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
         attemptedAction: 'linkToGoal',
       });
     }
-    this._props.goalId = GoalId.of(goalId);
-    this._props.keyResultId = keyResultId ? KeyResultId.of(keyResultId) : null;
+    this._props.goalId = goalId as GoalId;
+    this._props.keyResultId = keyResultId ? (keyResultId as KeyResultId) : null;
     this._props.updatedAt = new Date();
     this.addHistory('linked_to_goal', { goalId, keyResultId });
   }

@@ -6,8 +6,7 @@
 
 import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
 import type {
-  TaskInstanceClientDTO,
-  TaskInstancesResponse,
+  GetTaskInstancesByRangeRes,
 } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
@@ -18,7 +17,7 @@ import { ok } from '@dailyuse/contracts/result';
 export class GetTaskInstancesByDateRange {
   constructor(private readonly instanceRepository: ITaskInstanceRepository) {}
 
-  async execute(identityId: string, startDate: number, endDate: number): Promise<Result<TaskInstancesResponse>> {
+  async execute(identityId: string, startDate: number, endDate: number): Promise<Result<GetTaskInstancesByRangeRes>> {
     const instances = await this.instanceRepository.findByDateRange(
       identityId,
       startDate,
@@ -26,7 +25,7 @@ export class GetTaskInstancesByDateRange {
     );
 
     return ok({
-      instances: instances.map((i) => i.toClientDTO()),
+      data: instances.map((i) => i.toClientDTO()),
       total: instances.length,
     });
   }

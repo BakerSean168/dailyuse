@@ -8,10 +8,10 @@
 import { Router, type Request, type Response, type RequestHandler } from 'express';
 import type { TaskTemplateController } from '../controllers/task-template.controller';
 import {
-  CreateTaskSchema,
-  UpdateTaskSchema,
-  type CreateTaskTemplateRequest,
-  type UpdateTaskTemplateRequest,
+  CreateTaskTemplateSchema,
+  UpdateTaskTemplateSchema,
+  type CreateTaskTemplateReq,
+  type UpdateTaskTemplateReq,
 } from '@dailyuse/contracts/task';
 import {
   createResponseBuilder,
@@ -68,12 +68,12 @@ export function registerTaskTemplateRoutes(
   const router = Router();
   const { auth } = middleware;
 
-  // POST / — Create template
+  // POST / �?Create template
   router.post(
     '/',
     auth,
     async (req: AuthenticatedRequest, res: Response) => {
-      const parsed = CreateTaskSchema.safeParse(req.body);
+      const parsed = CreateTaskTemplateSchema.safeParse(req.body);
       if (!parsed.success) {
         const details = parsed.error.issues.map((issue) => ({
           field: issue.path.join('.'),
@@ -95,7 +95,7 @@ export function registerTaskTemplateRoutes(
     },
   );
 
-  // GET / — List templates
+  // GET / �?List templates
   router.get(
     '/',
     auth,
@@ -117,7 +117,7 @@ export function registerTaskTemplateRoutes(
     },
   );
 
-  // GET /:id — Get template by ID
+  // GET /:id �?Get template by ID
   router.get(
     '/:id',
     auth,
@@ -128,12 +128,12 @@ export function registerTaskTemplateRoutes(
     },
   );
 
-  // PUT /:id — Update template
+  // PUT /:id �?Update template
   router.put(
     '/:id',
     auth,
     async (req: AuthenticatedRequest, res: Response) => {
-      const parsed = UpdateTaskSchema.safeParse(req.body);
+      const parsed = UpdateTaskTemplateSchema.safeParse(req.body);
       if (!parsed.success) {
         const details = parsed.error.issues.map((issue) => ({
           field: issue.path.join('.'),
@@ -150,7 +150,7 @@ export function registerTaskTemplateRoutes(
     },
   );
 
-  // DELETE /:id — Delete template
+  // DELETE /:id �?Delete template
   router.delete(
     '/:id',
     auth,
@@ -160,7 +160,7 @@ export function registerTaskTemplateRoutes(
     },
   );
 
-  // POST /:id/activate — Activate template
+  // POST /:id/activate �?Activate template
   router.post(
     '/:id/activate',
     auth,
@@ -170,7 +170,7 @@ export function registerTaskTemplateRoutes(
     },
   );
 
-  // POST /:id/pause — Pause template
+  // POST /:id/pause �?Pause template
   router.post(
     '/:id/pause',
     auth,
@@ -180,7 +180,7 @@ export function registerTaskTemplateRoutes(
     },
   );
 
-  // POST /:id/archive — Archive template
+  // POST /:id/archive �?Archive template
   router.post(
     '/:id/archive',
     auth,

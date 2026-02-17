@@ -16,6 +16,8 @@ export {
   ListTaskTemplates,
   ActivateTaskTemplate,
   PauseTaskTemplate,
+  UpdateTaskTemplate,
+  ArchiveTaskTemplate,
   DeleteTaskTemplate,
   CompleteTaskInstance,
   SkipTaskInstance,
@@ -26,8 +28,7 @@ export {
   ListTaskInstancesByStatus,
   StartTaskInstance,
   DeleteTaskInstance,
-  GetTaskDashboard,
-  TaskTemplateApplicationService
+  GetTaskDashboard
 } from './services';
 
 // ===== Query Services (Advanced Querying) =====

@@ -12,14 +12,14 @@ import type {
 } from '../types';
 import type {
   TaskInstanceClientDTO,
-  CompleteTaskInstanceRequest,
-  SkipTaskInstanceRequest,
+  CompleteTaskInstanceReq,
+  SkipTaskInstanceReq,
 } from '@dailyuse/contracts/task';
 
 /**
  * TaskInstanceHttpAdapter
  *
- * HTTP 实现的任务实例 API 客户端
+ * HTTP 实现的任务实�?API 客户�?
  */
 export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
   private readonly baseUrl = '/tasks/templates/instances';
@@ -47,7 +47,7 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
     return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
-  // ===== Task Instance 状态管理 =====
+  // ===== Task Instance 状态管�?=====
 
   async startTaskInstance(id: string): Promise<Result<TaskInstanceClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${id}/start`);
@@ -55,14 +55,14 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
 
   async completeTaskInstance(
     id: string,
-    request?: CompleteTaskInstanceRequest,
+    request?: CompleteTaskInstanceReq,
   ): Promise<Result<TaskInstanceClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${id}/complete`, request);
   }
 
   async skipTaskInstance(
     id: string,
-    request?: SkipTaskInstanceRequest,
+    request?: SkipTaskInstanceReq,
   ): Promise<Result<TaskInstanceClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${id}/skip`, request);
   }

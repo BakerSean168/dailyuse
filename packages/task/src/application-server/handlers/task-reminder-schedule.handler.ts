@@ -61,11 +61,13 @@ export class TaskReminderScheduleHandler {
       // 1. 获取今天的 TaskInstance
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+      const dayStart = today.getTime();
+      const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
       
       const instances = await this.taskInstanceRepository.findByTemplateIdAndDateRange(
         templateId,
-        today,
-        today
+        dayStart,
+        dayEnd,
       );
 
       if (instances.length === 0) {

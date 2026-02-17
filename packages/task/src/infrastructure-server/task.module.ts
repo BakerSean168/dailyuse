@@ -13,7 +13,14 @@ import type { ITaskInstanceRepository } from '../domain-server/repositories/ITas
 import type { ITaskDependencyRepository } from '../domain-server/repositories/ITaskDependencyRepository';
 import type { ITaskFolderRepository } from '../domain-server/repositories/ITaskFolderRepository';
 import { TaskRepositoryFactory } from './di/task-repository.factory';
-import { TaskTemplateApplicationService } from '../application-server/services/task-template-application-service';
+import { CreateTaskTemplate } from '../application-server/services/create-task-template';
+import { GetTaskTemplate } from '../application-server/services/get-task-template';
+import { ListTaskTemplates } from '../application-server/services/list-task-templates';
+import { UpdateTaskTemplate } from '../application-server/services/update-task-template';
+import { ActivateTaskTemplate } from '../application-server/services/activate-task-template';
+import { PauseTaskTemplate } from '../application-server/services/pause-task-template';
+import { ArchiveTaskTemplate } from '../application-server/services/archive-task-template';
+import { DeleteTaskTemplate } from '../application-server/services/delete-task-template';
 import { CompleteTaskInstance } from '../application-server/services/complete-task-instance';
 import { SkipTaskInstance } from '../application-server/services/skip-task-instance';
 import { GetTaskInstancesByDateRange } from '../application-server/services/get-task-instances-by-date-range';
@@ -36,7 +43,14 @@ export class TaskModule {
   public readonly taskDependencyRepository: ITaskDependencyRepository;
   public readonly taskFolderRepository?: ITaskFolderRepository;
 
-  public readonly taskTemplateService: TaskTemplateApplicationService;
+  public readonly createTaskTemplate: CreateTaskTemplate;
+  public readonly getTaskTemplate: GetTaskTemplate;
+  public readonly listTaskTemplates: ListTaskTemplates;
+  public readonly updateTaskTemplate: UpdateTaskTemplate;
+  public readonly activateTaskTemplate: ActivateTaskTemplate;
+  public readonly pauseTaskTemplate: PauseTaskTemplate;
+  public readonly archiveTaskTemplate: ArchiveTaskTemplate;
+  public readonly deleteTaskTemplate: DeleteTaskTemplate;
   public readonly getTaskInstance: GetTaskInstance;
   public readonly listTaskInstancesByAccount: ListTaskInstancesByAccount;
   public readonly listTaskInstancesByTemplate: ListTaskInstancesByTemplate;
@@ -73,10 +87,26 @@ export class TaskModule {
     }
 
     // 2. Initialize Application Services (Pure DI)
-    this.taskTemplateService = new TaskTemplateApplicationService(
+    this.createTaskTemplate = new CreateTaskTemplate(
       this.taskTemplateRepository,
       this.taskInstanceRepository,
     );
+    this.getTaskTemplate = new GetTaskTemplate(this.taskTemplateRepository);
+    this.listTaskTemplates = new ListTaskTemplates(
+      this.taskTemplateRepository,
+      this.taskInstanceRepository,
+    );
+    this.updateTaskTemplate = new UpdateTaskTemplate(this.taskTemplateRepository);
+    this.activateTaskTemplate = new ActivateTaskTemplate(
+      this.taskTemplateRepository,
+      this.taskInstanceRepository,
+    );
+    this.pauseTaskTemplate = new PauseTaskTemplate(
+      this.taskTemplateRepository,
+      this.taskInstanceRepository,
+    );
+    this.archiveTaskTemplate = new ArchiveTaskTemplate(this.taskTemplateRepository);
+    this.deleteTaskTemplate = new DeleteTaskTemplate(this.taskTemplateRepository);
 
     this.getTaskInstance = new GetTaskInstance(this.taskInstanceRepository);
     this.listTaskInstancesByAccount = new ListTaskInstancesByAccount(this.taskInstanceRepository);

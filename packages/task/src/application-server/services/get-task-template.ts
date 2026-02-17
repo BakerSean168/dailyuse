@@ -5,7 +5,7 @@
  */
 
 import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
-import type { TaskTemplateClientDTO, TaskTemplateResponse } from '@dailyuse/contracts/task';
+import type { GetTaskTemplateRes } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 
@@ -15,14 +15,12 @@ import { ok } from '@dailyuse/contracts/result';
 export class GetTaskTemplate {
   constructor(private readonly templateRepository: ITaskTemplateRepository) {}
 
-  async execute(id: string, includeChildren = false): Promise<Result<TaskTemplateResponse>> {
+  async execute(id: string, includeChildren = false): Promise<Result<GetTaskTemplateRes>> {
     const template = includeChildren
       ? await this.templateRepository.findByIdWithChildren(id)
       : await this.templateRepository.findById(id);
 
-    return ok({
-      template: template ? template.toClientDTO(includeChildren) : (null as unknown as TaskTemplateClientDTO),
-    });
+    return ok(template ? template.toClientDTO(includeChildren) : null);
   }
 }
 

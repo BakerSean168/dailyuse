@@ -14,23 +14,23 @@ import type {
 import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
-  CreateTaskTemplateRequest,
-  UpdateTaskTemplateRequest,
-  GenerateInstancesRequest,
-  BindToGoalRequest,
+  CreateTaskTemplateReq,
+  UpdateTaskTemplateReq,
+  GenerateInstancesReq,
+  BindToGoalReq,
 } from '@dailyuse/contracts/task';
 
 /**
  * TaskTemplateIpcAdapter
  *
- * IPC 实现的任务模板 API 客户端（用于 Electron 桌面应用）
+ * IPC 实现的任务模�?API 客户端（用于 Electron 桌面应用�?
  */
 export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
   constructor(private readonly ipcClient: IIpcClient) {}
 
   // ===== Task Template CRUD =====
 
-  async createTaskTemplate(request: CreateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>> {
+  async createTaskTemplate(request: CreateTaskTemplateReq): Promise<Result<TaskTemplateClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke('task:template:create', request));
   }
 
@@ -53,7 +53,7 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
 
   async updateTaskTemplate(
     id: string,
-    request: UpdateTaskTemplateRequest,
+    request: UpdateTaskTemplateReq,
   ): Promise<Result<TaskTemplateClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke('task:template:update', { id, ...request }));
   }
@@ -62,27 +62,13 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     return tryCatch(() => this.ipcClient.invoke('task:template:delete', { id }));
   }
 
-  // ===== 方法别名（为了兼容 View 层调用）=====
-
-  async create(request: CreateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>> {
-    return this.createTaskTemplate(request);
-  }
-
-  async getById(id: string): Promise<Result<TaskTemplateClientDTO>> {
-    return this.getTaskTemplateById(id);
-  }
-
-  async update(id: string, request: UpdateTaskTemplateRequest): Promise<Result<TaskTemplateClientDTO>> {
-    return this.updateTaskTemplate(id, request);
-  }
-
   // ===== 特殊查询方法 =====
 
   async getTasksWithPrioritySorting(params?: { limit?: number }): Promise<Result<TaskTemplateClientDTO[]>> {
     return tryCatch(() => this.ipcClient.invoke('task:template:get-by-priority', { params }));
   }
 
-  // ===== Task Template 状态管理 =====
+  // ===== Task Template 状态管�?=====
 
   async activateTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke('task:template:activate', { id }));
@@ -100,7 +86,7 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
 
   async generateInstances(
     templateId: string,
-    request: GenerateInstancesRequest,
+    request: GenerateInstancesReq,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
     return tryCatch(() => this.ipcClient.invoke('task:template:generate-instances', {
       templateId,
@@ -124,7 +110,7 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
 
   async bindToGoal(
     templateId: string,
-    request: BindToGoalRequest,
+    request: BindToGoalReq,
   ): Promise<Result<TaskTemplateClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke('task:template:bind-goal', {
       templateId,

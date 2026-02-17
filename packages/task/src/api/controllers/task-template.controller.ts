@@ -6,20 +6,39 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type { TaskTemplateServerDTO } from '@dailyuse/contracts/task';
-import type { TaskTemplateApplicationService } from '../../application-server/services/task-template-application-service';
+import { isOk, ok } from '@dailyuse/contracts/result';
 import type { 
+  TaskTemplateClientDTO,
   CreateTaskTemplateRequest,
   UpdateTaskTemplateRequest,
   TaskTemplateStatus 
 } from '@dailyuse/contracts/task';
+import type { CreateTaskTemplate } from '../../application-server/services/create-task-template';
+import type { GetTaskTemplate } from '../../application-server/services/get-task-template';
+import type { ListTaskTemplates } from '../../application-server/services/list-task-templates';
+import type { UpdateTaskTemplate } from '../../application-server/services/update-task-template';
+import type { DeleteTaskTemplate } from '../../application-server/services/delete-task-template';
+import type { ActivateTaskTemplate } from '../../application-server/services/activate-task-template';
+import type { PauseTaskTemplate } from '../../application-server/services/pause-task-template';
+import type { ArchiveTaskTemplate } from '../../application-server/services/archive-task-template';
+
+interface TaskTemplateUseCases {
+  createTemplate: CreateTaskTemplate;
+  getTemplate: GetTaskTemplate;
+  listTemplates: ListTaskTemplates;
+  updateTemplate: UpdateTaskTemplate;
+  deleteTemplate: DeleteTaskTemplate;
+  activateTemplate: ActivateTaskTemplate;
+  pauseTemplate: PauseTaskTemplate;
+  archiveTemplate: ArchiveTaskTemplate;
+}
 
 /**
  * TaskTemplate Controller
  */
 export class TaskTemplateController {
   constructor(
-    private readonly taskTemplateService: TaskTemplateApplicationService
+    private readonly useCases: TaskTemplateUseCases,
   ) {}
 
   /**
@@ -28,10 +47,10 @@ export class TaskTemplateController {
   async createTemplate(
     data: CreateTaskTemplateRequest,
     identityId: string
-  ): Promise<Result<TaskTemplateServerDTO>> {
-    return await this.taskTemplateService.createTaskTemplate({
+  ): Promise<Result<TaskTemplateClientDTO>> {
+    const result = await this.useCases.createTemplate.execute({
       identityId,
-      title: data.name,
+      name: data.name,
       description: data.description,
       taskType: data.taskType,
       timeConfig: data.timeConfig,
@@ -42,6 +61,12 @@ export class TaskTemplateController {
       tags: data.tags,
       color: data.color,
     });
+
+    if (!isOk(result)) {
+      return result as Result<TaskTemplateClientDTO>;
+    }
+
+    return ok(result.data.template);
   }
 
   /**
@@ -50,8 +75,14 @@ export class TaskTemplateController {
   async getTemplate(
     id: string,
     includeChildren = false
-  ): Promise<Result<TaskTemplateServerDTO | null>> {
-    return await this.taskTemplateService.getTaskTemplate(id, includeChildren);
+  ): Promise<Result<TaskTemplateClientDTO | null>> {
+    const result = await this.useCases.getTemplate.execute(id, includeChildren);
+
+    if (!isOk(result)) {
+      return result as Result<TaskTemplateClientDTO | null>;
+    }
+
+    return ok(result.data.template ?? null);
   }
 
   /**
@@ -65,18 +96,20 @@ export class TaskTemplateController {
       goalId?: string;
       tags?: string[];
     }
-  ): Promise<Result<TaskTemplateServerDTO[]>> {
-    if (filters?.status) {
-      return await this.taskTemplateService.getTaskTemplatesByStatus(identityId, filters.status);
-    } else if (filters?.folderId) {
-      return await this.taskTemplateService.getTaskTemplatesByFolder(filters.folderId);
-    } else if (filters?.goalId) {
-      return await this.taskTemplateService.getTaskTemplatesByGoal(filters.goalId);
-    } else if (filters?.tags) {
-      return await this.taskTemplateService.getTaskTemplatesByTags(identityId, filters.tags);
-    } else {
-      return await this.taskTemplateService.getTaskTemplatesByAccount(identityId);
+  ): Promise<Result<TaskTemplateClientDTO[]>> {
+    const result = await this.useCases.listTemplates.execute({
+      identityId,
+      status: filters?.status ? [filters.status] : undefined,
+      folderId: filters?.folderId,
+      goalId: filters?.goalId,
+      tags: filters?.tags,
+    } as any);
+
+    if (!isOk(result)) {
+      return result as Result<TaskTemplateClientDTO[]>;
     }
+
+    return ok(result.data.templates);
   }
 
   /**
@@ -85,13 +118,11 @@ export class TaskTemplateController {
   async updateTemplate(
     id: string,
     data: Partial<UpdateTaskTemplateRequest>
-  ): Promise<Result<TaskTemplateServerDTO>> {
-    return await this.taskTemplateService.updateTaskTemplate(id, {
-      title: data.name,
+  ): Promise<Result<TaskTemplateClientDTO>> {
+    return await this.useCases.updateTemplate.execute(id, {
+      name: data.name,
       description: data.description,
-      timeConfig: data.timeConfig,
       recurrenceRule: data.recurrenceRule,
-      reminderConfig: data.reminderConfig,
       importance: data.importance,
       folderId: data.folderId,
       tags: data.tags,
@@ -103,27 +134,39 @@ export class TaskTemplateController {
    * Delete template
    */
   async deleteTemplate(id: string): Promise<Result<void>> {
-    return await this.taskTemplateService.deleteTaskTemplate(id);
+    return await this.useCases.deleteTemplate.execute(id);
   }
 
   /**
    * Activate template
    */
-  async activateTemplate(id: string): Promise<Result<TaskTemplateServerDTO>> {
-    return await this.taskTemplateService.activateTaskTemplate(id);
+  async activateTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
+    const result = await this.useCases.activateTemplate.execute(id);
+
+    if (!isOk(result)) {
+      return result as Result<TaskTemplateClientDTO>;
+    }
+
+    return ok(result.data.template);
   }
 
   /**
    * Pause template
    */
-  async pauseTemplate(id: string): Promise<Result<TaskTemplateServerDTO>> {
-    return await this.taskTemplateService.pauseTaskTemplate(id);
+  async pauseTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
+    const result = await this.useCases.pauseTemplate.execute(id);
+
+    if (!isOk(result)) {
+      return result as Result<TaskTemplateClientDTO>;
+    }
+
+    return ok(result.data.template);
   }
 
   /**
    * Archive template
    */
-  async archiveTemplate(id: string): Promise<Result<TaskTemplateServerDTO>> {
-    return await this.taskTemplateService.archiveTaskTemplate(id);
+  async archiveTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
+    return await this.useCases.archiveTemplate.execute(id);
   }
 }

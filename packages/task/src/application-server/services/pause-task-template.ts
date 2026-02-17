@@ -11,7 +11,8 @@
 
 import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
-import type { TaskTemplateClientDTO, TaskTemplateResponse } from '@dailyuse/contracts/task';
+import { TaskInstanceStatus } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
@@ -43,15 +44,11 @@ export class PauseTaskTemplate {
 
     // 3. 鍙戝竷鏆傚仠浜嬩欢
     try {
-      await eventBus.publish({
-        eventType: 'task.template.paused',
-        payload: {
-          taskTemplateId: template.id,
-          identityId: template.identityId,
-          pausedAt: Date.now(),
-          reason: reason || '鐢ㄦ埛鎵嬪姩鏆傚仠',
-        },
-        timestamp: Date.now(),
+      eventBus.send('task.template.paused' as any, {
+        taskTemplateId: template.id,
+        identityId: template.identityId,
+        pausedAt: Date.now(),
+        reason: reason || '鐢ㄦ埛鎵嬪姩鏆傚仠',
       });
     } catch (error) {
       console.error(`锟?[PauseTaskTemplate] 鍙戝竷鏆傚仠浜嬩欢澶辫触:`, error);
@@ -70,7 +67,9 @@ export class PauseTaskTemplate {
     try {
       const instances = await this.instanceRepository.findByTemplateId(templateId);
       const pendingInstances = instances.filter(
-        (inst) => inst.status === 'PENDING' || inst.status === 'IN_PROGRESS',
+        (inst) =>
+          inst.status === TaskInstanceStatus.Pending ||
+          inst.status === TaskInstanceStatus.InProgress,
       );
 
       if (pendingInstances.length === 0) {

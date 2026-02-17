@@ -14,3 +14,12 @@ export * from './value-objects';
 
 // ============ API ============
 export * from './api';
+
+// ============ Protocol ============
+export * from './protocol';
+
+// ============ Domain ============
+export * from './domain';
+
+// ============ DTOs ============
+export * from './dtos';

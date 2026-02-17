@@ -42,25 +42,35 @@ export const TaskElectronModule: IElectronModule = {
     // 1. Composition Root — TaskModule wires repos + use cases internally
     const taskModule = new TaskModule('sqlite', ctx.db);
 
-    // 2. IPC Handlers — delegate to TaskModule's application services
-    const svc = taskModule.taskTemplateService;
+    // 2. IPC Handlers — delegate to TaskModule use cases
+    ipcMain.handle(Ch.TEMPLATE_LIST, (_, params) => taskModule.listTaskTemplates.execute(params));
+    ipcMain.handle(Ch.TEMPLATE_GET, (_, payload) =>
+      taskModule.getTaskTemplate.execute(payload?.id ?? payload, payload?.includeChildren ?? false),
+    );
+    ipcMain.handle(Ch.TEMPLATE_CREATE, (_, dto) => taskModule.createTaskTemplate.execute(dto));
+    ipcMain.handle(Ch.TEMPLATE_UPDATE, (_, payload) =>
+      taskModule.updateTaskTemplate.execute(payload?.id, payload),
+    );
+    ipcMain.handle(Ch.TEMPLATE_DELETE, (_, payload) =>
+      taskModule.deleteTaskTemplate.execute(payload?.id ?? payload),
+    );
+    ipcMain.handle(Ch.TEMPLATE_ARCHIVE, (_, payload) =>
+      taskModule.archiveTaskTemplate.execute(payload?.id ?? payload),
+    );
+    ipcMain.handle(Ch.TEMPLATE_RESTORE, (_, payload) =>
+      taskModule.activateTaskTemplate.execute(payload?.id ?? payload),
+    );
 
-    ipcMain.handle(Ch.TEMPLATE_LIST, (_, params) => svc.listTemplates(params));
-    ipcMain.handle(Ch.TEMPLATE_GET, (_, id) => svc.getTemplate(id));
-    ipcMain.handle(Ch.TEMPLATE_CREATE, (_, dto) => svc.createTemplate(dto));
-    ipcMain.handle(Ch.TEMPLATE_UPDATE, (_, dto) => svc.updateTemplate(dto));
-    ipcMain.handle(Ch.TEMPLATE_DELETE, (_, id) => svc.deleteTemplate(id));
-    ipcMain.handle(Ch.TEMPLATE_ARCHIVE, (_, id) => svc.archiveTemplate(id));
-    ipcMain.handle(Ch.TEMPLATE_RESTORE, (_, id) => svc.restoreTemplate(id));
-
-    ipcMain.handle(Ch.INSTANCE_LIST, (_, params) => taskModule.listInstancesByAccount.execute(params));
+    ipcMain.handle(Ch.INSTANCE_LIST, (_, params) => taskModule.listTaskInstancesByAccount.execute(params));
     ipcMain.handle(Ch.INSTANCE_GET, (_, id) => taskModule.getTaskInstance.execute(id));
     ipcMain.handle(Ch.INSTANCE_CREATE, (_, dto) => taskModule.startTaskInstance.execute(dto));
     ipcMain.handle(Ch.INSTANCE_DELETE, (_, id) => taskModule.deleteTaskInstance.execute(id));
     ipcMain.handle(Ch.INSTANCE_COMPLETE, (_, dto) => taskModule.completeTaskInstance.execute(dto));
     ipcMain.handle(Ch.INSTANCE_SKIP, (_, dto) => taskModule.skipTaskInstance.execute(dto));
 
-    ipcMain.handle(Ch.STATISTICS_GET, (_, params) => taskModule.getInstancesByDateRange.execute(params));
+    ipcMain.handle(Ch.STATISTICS_GET, (_, params) =>
+      taskModule.getTaskInstancesByDateRange.execute(params.identityId, params.startDate, params.endDate),
+    );
 
     logger.info('Task module registered');
   },

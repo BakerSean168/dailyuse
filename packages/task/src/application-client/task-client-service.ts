@@ -1,10 +1,4 @@
 /**
- * @deprecated Extract operations to individual service files following governance pattern.
- * Each API operation should have its own service file for better maintainability.
- * Example: create-task-template.ts, update-task-template.ts, delete-task-template.ts
- */
-
-/**
  * Task Client Service
  *
  * Constructor-injected application service for task management.
@@ -16,12 +10,12 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { map as mapResult } from '@dailyuse/contracts/result';
 import type {
-  CreateTaskTemplateRequest,
-  UpdateTaskTemplateRequest,
-  GenerateInstancesRequest,
-  BindToGoalRequest,
-  CompleteTaskInstanceRequest,
-  SkipTaskInstanceRequest,
+  CreateTaskTemplateReq,
+  UpdateTaskTemplateReq,
+  GenerateInstancesReq,
+  BindToGoalReq,
+  CompleteTaskInstanceReq,
+  SkipTaskInstanceReq,
   CreateTaskDependencyRequest,
   UpdateTaskDependencyRequest,
   ValidateDependencyRequest,
@@ -50,7 +44,7 @@ export class TaskClientService {
 
   // ===== Task Template Operations =====
 
-  async createTemplate(request: CreateTaskTemplateRequest): Promise<Result<TaskTemplate>> {
+  async createTemplate(request: CreateTaskTemplateReq): Promise<Result<TaskTemplate>> {
     const result = await this.templateApi.createTaskTemplate(request);
     return mapResult(result, (dto) => TaskTemplate.fromDTO(dto));
   }
@@ -77,7 +71,7 @@ export class TaskClientService {
     return mapResult(result, (dto) => TaskTemplate.fromDTO(dto));
   }
 
-  async updateTemplate(id: string, request: UpdateTaskTemplateRequest): Promise<Result<TaskTemplate>> {
+  async updateTemplate(id: string, request: UpdateTaskTemplateReq): Promise<Result<TaskTemplate>> {
     const result = await this.templateApi.updateTaskTemplate(id, request);
     return mapResult(result, (dto) => TaskTemplate.fromDTO(dto));
   }
@@ -106,7 +100,7 @@ export class TaskClientService {
     return mapResult(result, (dto) => TaskTemplate.fromDTO(dto));
   }
 
-  async generateInstances(templateId: string, request: GenerateInstancesRequest): Promise<Result<TaskInstance[]>> {
+  async generateInstances(templateId: string, request: GenerateInstancesReq): Promise<Result<TaskInstance[]>> {
     const result = await this.templateApi.generateInstances(templateId, request);
     return mapResult(result, (dtos) => dtos.map((dto) => TaskInstance.fromDTO(dto)));
   }
@@ -116,7 +110,7 @@ export class TaskClientService {
     return mapResult(result, (dtos) => dtos.map((dto) => TaskInstance.fromDTO(dto)));
   }
 
-  async bindToGoal(templateId: string, request: BindToGoalRequest): Promise<Result<TaskTemplate>> {
+  async bindToGoal(templateId: string, request: BindToGoalReq): Promise<Result<TaskTemplate>> {
     const result = await this.templateApi.bindToGoal(templateId, request);
     return mapResult(result, (dto) => TaskTemplate.fromDTO(dto));
   }
@@ -154,12 +148,12 @@ export class TaskClientService {
     return mapResult(result, (dto) => TaskInstance.fromDTO(dto));
   }
 
-  async completeInstance(id: string, request?: CompleteTaskInstanceRequest): Promise<Result<TaskInstance>> {
+  async completeInstance(id: string, request?: CompleteTaskInstanceReq): Promise<Result<TaskInstance>> {
     const result = await this.instanceApi.completeTaskInstance(id, request);
     return mapResult(result, (dto) => TaskInstance.fromDTO(dto));
   }
 
-  async skipInstance(id: string, request?: SkipTaskInstanceRequest): Promise<Result<TaskInstance>> {
+  async skipInstance(id: string, request?: SkipTaskInstanceReq): Promise<Result<TaskInstance>> {
     const result = await this.instanceApi.skipTaskInstance(id, request);
     return mapResult(result, (dto) => TaskInstance.fromDTO(dto));
   }
