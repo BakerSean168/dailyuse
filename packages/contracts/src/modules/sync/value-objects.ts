@@ -9,6 +9,8 @@
  * - 冲突检测：基于 version 乐观锁
  */
 
+import type { IdentityId } from '@/primitives';
+
 // ============ 枚举类型 ============
 
 /**
@@ -154,7 +156,7 @@ export interface ConflictResolution {
  */
 export interface PullSyncRequest {
   /** 用户 ID */
-  identityId: string;
+  identityId: IdentityId;
   /** 要同步的实体类型列表（为空则同步所有） */
   entityTypes?: SyncableEntityType[];
   /** 上次同步时间（毫秒时间戳），获取此时间之后的变更 */
@@ -185,7 +187,7 @@ export interface PullSyncResponse {
  */
 export interface PushSyncRequest {
   /** 用户 ID */
-  identityId: string;
+  identityId: IdentityId;
   /** 要推送的变更列表 */
   changes: SyncChange[];
 }
@@ -207,7 +209,7 @@ export interface PushSyncResponse {
  */
 export interface ResolveConflictsRequest {
   /** 用户 ID */
-  identityId: string;
+  identityId: IdentityId;
   /** 冲突解决列表 */
   resolutions: ConflictResolution[];
 }

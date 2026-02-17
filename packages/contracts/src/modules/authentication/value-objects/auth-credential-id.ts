@@ -1,1 +1,1 @@
-export type AuthCredentialId = string & { readonly __brand: unique symbol };
+export type { AuthCredentialId } from '@/primitives';

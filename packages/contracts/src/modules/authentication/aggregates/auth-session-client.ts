@@ -7,7 +7,7 @@
  * - 显示用户友好的会话列表 (当前设备、其他设备)
  */
 
-import type { AuthSessionId, DeviceInfo } from '../value-objects';
+import type { AuthSessionId, DeviceInfo, IdentityId } from '../value-objects';
 import type { TransferDate, DomainDate } from '@/primitives';
 
 // ============ 聚合根接口 ============
@@ -25,7 +25,7 @@ export interface AuthSessionClient {
   /**
    * 关联的身份 ID
    */
-  identityId: string;
+  identityId: IdentityId;
 
   /**
    * ✅ 设备信息 (用户可以看到的信息)
@@ -61,7 +61,7 @@ export interface AuthSessionClient {
  */
 export interface AuthSessionClientDTO {
   id: AuthSessionId;
-  identityId: string;
+  identityId: IdentityId;
   deviceInfo: DeviceInfo;
   isCurrentSession: boolean;
   version: number;

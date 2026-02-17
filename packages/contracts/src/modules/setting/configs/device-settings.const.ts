@@ -4,6 +4,8 @@
  * ✅ 每个配置项嵌入 Zod Schema
  */
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { RepositoryId } from '@/primitives';
 import type { SettingDefinition } from '../value-objects';
 import { SettingCategory, SettingValueType, UIInputType } from '../value-objects';
 
@@ -68,7 +70,7 @@ export const DEVICE_SETTINGS = {
     type: SettingValueType.String,
     uiInputType: UIInputType.Text,
     defaultValue: null,
-    schema: z.string().uuid().nullable(),
+    schema: brandedId<RepositoryId>().nullable(),
     isSyncable: false,
     scope: 'DEVICE',
   },

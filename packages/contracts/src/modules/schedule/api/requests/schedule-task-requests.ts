@@ -4,6 +4,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { ScheduleTaskId } from '@/primitives';
 import type { ScheduleTaskClientDTO } from '../../aggregates/schedule-task-client';
 import type { ScheduleConfigServerDTO, RetryPolicyServerDTO, TaskMetadataServerDTO } from '../../value-objects';
 import type { SourceModule } from '../../value-objects/source-module';
@@ -83,7 +85,7 @@ export const ScheduleTaskQueryParamsSchema = z.object({
 });
 
 export const BatchScheduleTaskOperationRequestSchema = z.object({
-  taskIds: z.array(z.string().uuid()).min(1),
+  taskIds: z.array(brandedId<ScheduleTaskId>()).min(1),
   operation: z.enum(['pause', 'resume', 'cancel', 'enable', 'disable']),
   reason: z.string().max(500).optional(),
 });
@@ -156,7 +158,7 @@ export interface ScheduleTaskQueryParamsDTO {
  * 批量操作请求
  */
 export interface BatchScheduleTaskOperationRequest {
-  readonly taskIds: readonly string[];
+  readonly taskIds: readonly ScheduleTaskId[];
   readonly operation: 'pause' | 'resume' | 'cancel' | 'enable' | 'disable';
   readonly reason?: string;
 }
@@ -184,7 +186,7 @@ export interface ScheduleTaskListResponseDTO {
 export interface BatchOperationResponseDTO {
   readonly success: readonly string[];
   readonly failed: readonly {
-    taskId: string;
+    taskId: ScheduleTaskId;
     error: string;
   }[];
   readonly total: number;

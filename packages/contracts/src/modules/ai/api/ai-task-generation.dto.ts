@@ -6,6 +6,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { GoalId, KeyResultId, AiProviderConfigId } from '@/primitives';
 import type { GenerateTasksResultDTO } from '../dtos';
 
 // ============================================================================
@@ -16,12 +18,12 @@ import type { GenerateTasksResultDTO } from '../dtos';
  * 生成任务 Schema
  */
 export const GenerateTasksSchema = z.object({
-  goalId: z.string().uuid().optional(),
-  keyResultId: z.string().uuid().optional(),
+  goalId: brandedId<GoalId>().optional(),
+  keyResultId: brandedId<KeyResultId>().optional(),
   description: z.string().min(10),
   context: z.string().optional(),
   taskCount: z.number().int().min(1).max(10).optional().default(5),
-  providerId: z.string().uuid().optional(),
+  providerId: brandedId<AiProviderConfigId>().optional(),
 });
 
 export type GenerateTasksReq = z.infer<typeof GenerateTasksSchema>;

@@ -5,6 +5,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { AuthSessionId, IdentityId } from '../value-objects';
 import type { AuthResponseDTO } from '../dtos';
 
 // ============================================================================
@@ -42,7 +44,7 @@ export type ValidateTokenReq = void;
 
 export interface ValidateTokenRes {
   valid: boolean;
-  identityId?: string;
+  identityId?: IdentityId;
   expiresAt?: number;
 }
 
@@ -61,7 +63,7 @@ export type ListSessionsReq = void;
 
 export interface ListSessionsRes {
   sessions: Array<{
-    sessionId: string;
+    sessionId: AuthSessionId;
     deviceInfo?: string;
     createdAt: number;
     lastActiveAt: number;
@@ -70,7 +72,7 @@ export interface ListSessionsRes {
 }
 
 export const RevokeSessionSchema = z.object({
-  sessionId: z.string(),
+  sessionId: brandedId<AuthSessionId>(),
 });
 
 export type RevokeSessionReq = z.infer<typeof RevokeSessionSchema>;

@@ -3,3 +3,4 @@ export type { DomainDate } from './domain-date';
 export type { PersistenceDate } from './persistence-date';
 
 export * from './ids';
+export * from './zod-extensions';

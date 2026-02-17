@@ -1,24 +1,36 @@
 /**
  * Schedule API Requests
- * 调度（日历事件）API 请求定义
+ * 调度模块 API 请求定义
  */
 
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { IdentityId, ScheduleId } from '@/primitives';
 import type { ScheduleJobClientDTO } from '../../aggregates/schedule-job-client';
 import type { ConflictDetectionResult } from '../../value-objects/conflict-detection-result';
 
 // ============ Zod Schemas ============
 
+export const ResolutionStrategySchema = z.enum([
+  'AUTO',
+  'REJECT',
+  'ADJUST_START_TIME',
+  'ADJUST_END_TIME',
+  'ADJUST_DURATION',
+]);
+
+export type ResolutionStrategy = z.infer<typeof ResolutionStrategySchema>;
+
 export const CreateScheduleRequestSchema = z.object({
-  identityId: z.string().uuid(),
+  identityId: brandedId<IdentityId>(),
   name: z.string().min(1).max(200),
   description: z.string().max(2000).optional(),
   startTime: z.number().positive(),
   endTime: z.number().positive(),
   duration: z.number().positive(),
-  priority: z.number().min(0).max(10).optional(),
+  priority: z.number().int().min(0).max(10).optional(),
   location: z.string().max(500).optional(),
-  attendees: z.array(z.string()).optional(),
+  attendees: z.array(z.string().email()).optional(),
   autoDetectConflicts: z.boolean().optional(),
 });
 
@@ -28,36 +40,26 @@ export const UpdateScheduleRequestSchema = z.object({
   startTime: z.number().positive().optional(),
   endTime: z.number().positive().optional(),
   duration: z.number().positive().optional(),
-  priority: z.number().min(0).max(10).optional(),
+  priority: z.number().int().min(0).max(10).optional(),
   location: z.string().max(500).optional(),
-  attendees: z.array(z.string()).optional(),
+  attendees: z.array(z.string().email()).optional(),
 });
 
 export const DetectConflictsRequestSchema = z.object({
-  userId: z.string().uuid(),
+  userId: brandedId<IdentityId>(),
   startTime: z.number().positive(),
   endTime: z.number().positive(),
-  excludeId: z.string().uuid().optional(),
+  excludeId: brandedId<ScheduleId>().optional(),
 });
 
 export const GetSchedulesByTimeRangeRequestSchema = z.object({
   startTime: z.number().positive(),
   endTime: z.number().positive(),
-  identityId: z.string().uuid().optional(),
+  identityId: brandedId<IdentityId>().optional(),
 });
 
-/**
- * Resolution strategies for schedule conflicts
- */
-export enum ResolutionStrategy {
-  RESCHEDULE = 'RESCHEDULE',
-  CANCEL = 'CANCEL',
-  ADJUST_DURATION = 'ADJUST_DURATION',
-  IGNORE = 'IGNORE',
-}
-
 export const ResolveConflictRequestSchema = z.object({
-  resolution: z.nativeEnum(ResolutionStrategy),
+  resolution: ResolutionStrategySchema,
   newStartTime: z.number().positive().optional(),
   newEndTime: z.number().positive().optional(),
   newDuration: z.number().positive().optional(),
@@ -69,7 +71,7 @@ export const ResolveConflictRequestSchema = z.object({
  * Request DTO for creating a new schedule with automatic conflict detection
  */
 export interface CreateScheduleRequest {
-  identityId: string;
+  identityId: IdentityId;
   name: string;
   description?: string;
   startTime: number;
@@ -99,10 +101,10 @@ export interface UpdateScheduleRequest {
  * Request DTO for detecting schedule conflicts for a given time range
  */
 export interface DetectConflictsRequest {
-  userId: string;
+  userId: IdentityId;
   startTime: number;
   endTime: number;
-  excludeId?: string;
+  excludeId?: ScheduleId;
 }
 
 /**
@@ -111,7 +113,7 @@ export interface DetectConflictsRequest {
 export interface GetSchedulesByTimeRangeRequest {
   startTime: number;
   endTime: number;
-  identityId?: string;
+  identityId?: IdentityId;
 }
 
 /**

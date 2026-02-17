@@ -2,6 +2,8 @@
  * AI Knowledge Generation DTO
  */
 
+import type { AiProviderConfigId } from '@/primitives';
+
 export interface KnowledgeGenerationResultDTO {
   content: string;
   metadata: Record<string, unknown>;
@@ -10,7 +12,7 @@ export interface KnowledgeGenerationResultDTO {
     completionTokens: number;
     totalTokens: number;
   };
-  providerId: string;
+  providerId: AiProviderConfigId;
   processingTimeMs: number;
 }
 
@@ -22,6 +24,6 @@ export interface SummarizationResultDTO {
     completionTokens: number;
     totalTokens: number;
   };
-  providerId: string;
+  providerId: AiProviderConfigId;
   processingTimeMs: number;
 }

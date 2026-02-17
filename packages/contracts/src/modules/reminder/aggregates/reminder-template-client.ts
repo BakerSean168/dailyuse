@@ -1,6 +1,6 @@
 /**
  * Reminder Template Aggregate Root - Client Interface
- * 提醒模板聚合�?- 客户端接�?
+ * 提醒模板聚合?- 客户端接?
  */
 
 import type {
@@ -43,8 +43,8 @@ import type { ReminderHistoryClientDTO, ReminderHistoryClient } from '../entitie
  * Reminder Template Client DTO
  */
 export interface ReminderTemplateClientDTO {
-  id: string;
-  identityId: string;
+  id: ReminderTemplateId;
+  identityId: IdentityId;
   name: string;
   description: string | null;
   type: ReminderType;
@@ -55,8 +55,8 @@ export interface ReminderTemplateClientDTO {
   notificationConfig: NotificationConfigClientDTO;
   selfEnabled: boolean;
   status: ReminderStatus;
-  effectiveEnabled: boolean; // 实际启用状态（计算得出�?
-  groupId: string | null;
+  effectiveEnabled: boolean; // 实际启用状态（计算得出?
+  groupId: ReminderGroupId | null;
   importanceLevel: ImportanceLevel;
   tags: string[];
   color: string | null;
@@ -68,30 +68,30 @@ export interface ReminderTemplateClientDTO {
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
 
-  // ===== 子实�?DTO =====
+  // ===== 子实?DTO =====
   history: ReminderHistoryClientDTO[] | null; // 提醒历史列表（可选加载）
 
   // UI 扩展
   displayTitle: string;
-  typeText: string; // "一次�? | "循环"
+  typeText: string; // "一次? | "循环"
   triggerText: string; // "每天 09:00" | "每隔 30 分钟"
   recurrenceText: string | null; // "每周一、三、五" | "每天"
   statusText: string;
   importanceText: string;
-  nextTriggerText: string | null; // "明天 09:00" | "10 分钟�?
+  nextTriggerText: string | null; // "明天 09:00" | "10 分钟?
   isActive: boolean;
   isPaused: boolean;
-  lastTriggeredText: string | null; // "3 小时�?
+  lastTriggeredText: string | null; // "3 小时?
   controlledByGroup: boolean; // 是否受组控制
 }
 
 // ============ 实体接口 ============
 
 /**
- * Reminder Template 聚合�?- Client 接口
+ * Reminder Template 聚合?- Client 接口
  */
 export interface ReminderTemplateClient {
-  // 基础属�?
+  // 基础属?
   id: ReminderTemplateId;
   identityId: IdentityId;
   name: string;

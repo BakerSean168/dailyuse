@@ -8,7 +8,7 @@
  */
 
 import type { AuthCredentialClient, AuthCredentialClientDTO } from '../entities/auth-credential-client';
-import type { TransferDate, DomainDate } from '@/primitives';
+import type { TransferDate, DomainDate, IdentityId } from '@/primitives';
 import type { AuthIdentityStatus } from '../value-objects';
 
 // ============ 聚合根接口 ============
@@ -20,7 +20,7 @@ export interface AuthIdentityClient {
   /**
    * 身份 ID
    */
-  id: string;
+  id: IdentityId;
 
   /**
    * 身份状态 (ACTIVE, LOCKED, DISABLED)
@@ -69,7 +69,7 @@ export interface AuthIdentityClient {
  * 这就是返回给前端的数据结构
  */
 export interface AuthIdentityClientDTO {
-  id: string;
+  id: IdentityId;
   status: AuthIdentityStatus;
   failedLoginAttempts: number;
   lastFailedAttempt: TransferDate | null;

@@ -3,6 +3,7 @@
  * 用户自定义 AI 服务提供商配置（客户端视图）
  */
 
+import type { AiProviderConfigId, IdentityId } from '@/primitives';
 import type { AIProviderType } from '../value-objects/ai-provider-type';
 
 /**
@@ -11,9 +12,9 @@ import type { AIProviderType } from '../value-objects/ai-provider-type';
  */
 export interface AIProviderConfigClientDTO {
   /** 唯一标识符 */
-  id: string;
+  id: AiProviderConfigId;
   /** 所属身份 ID */
-  identityId: string;
+  identityId: IdentityId;
   /** 配置名称（用户自定义，如 "我的七牛云"） */
   name: string;
   /** 提供商类型 */
@@ -65,7 +66,7 @@ export interface AIModelInfo {
  * 用于列表展示和选择器
  */
 export interface AIProviderConfigSummary {
-  id: string;
+  id: AiProviderConfigId;
   name: string;
   providerType: AIProviderType;
   defaultModel: string | null;

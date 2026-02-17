@@ -6,6 +6,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { AiProviderConfigId } from '@/primitives';
 import type { AIProviderConfigServerDTO } from '../aggregates/ai-provider-config-server';
 import type { TestAIProviderResultDTO } from '../dtos';
 
@@ -73,7 +75,7 @@ export type DeleteAIProviderConfigRes = void;
  * 测试 AI Provider Schema
  */
 export const TestAIProviderSchema = z.object({
-  providerId: z.string().uuid(),
+  providerId: brandedId<AiProviderConfigId>(),
   testPrompt: z.string().optional().default('Hello, this is a test.'),
 });
 

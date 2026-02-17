@@ -2,6 +2,8 @@
  * Generated Task Preview DTO
  */
 
+import type { AiProviderConfigId } from '@/primitives';
+
 export interface GeneratedTaskPreview {
   title: string;
   description?: string;
@@ -17,6 +19,6 @@ export interface GenerateTasksResultDTO {
     completionTokens: number;
     totalTokens: number;
   };
-  providerId: string;
+  providerId: AiProviderConfigId;
   processingTimeMs: number;
 }

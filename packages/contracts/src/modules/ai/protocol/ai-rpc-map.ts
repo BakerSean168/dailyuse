@@ -4,8 +4,7 @@
  * Defines RPC operations for AI module
  */
 import type {
-  GenerateGoalReq, GenerateGoalRes,
-  GenerateKeyResultsReq, GenerateKeyResultsRes,
+  GenerateGoalsReq, GenerateGoalsRes,
   GenerateTasksReq, GenerateTasksRes,
   KnowledgeGenerationReq, KnowledgeGenerationRes,
   SummarizationReq, SummarizationRes,
@@ -16,8 +15,7 @@ import type {
 
 export type AIRpcMap = {
   // Goal Generation
-  'ai:generate-goal': [GenerateGoalReq, GenerateGoalRes];
-  'ai:generate-key-results': [GenerateKeyResultsReq, GenerateKeyResultsRes];
+  'ai:generate-goal': [GenerateGoalsReq, GenerateGoalsRes];
   
   // Task Generation
   'ai:generate-tasks': [GenerateTasksReq, GenerateTasksRes];

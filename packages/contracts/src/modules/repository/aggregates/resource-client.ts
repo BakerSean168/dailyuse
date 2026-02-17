@@ -1,6 +1,6 @@
 /**
  * Resource Entity - Client Interface
- * 资源实体 - 客户端接�?
+ * 资源实体 - 客户端接?
  */
 import type { ResourceId, RepositoryId, FolderId, DomainDate, TransferDate } from '@/primitives';
 import type { ResourceType } from '../value-objects/resource-type';
@@ -19,9 +19,9 @@ import type {
  * Resource Client DTO
  */
 export interface ResourceClientDTO {
-  id: string;
-  repositoryId: string;
-  folderId: string | null;
+  id: ResourceId;
+  repositoryId: RepositoryId;
+  folderId: FolderId | null;
 
   name: string;
   type: ResourceType;
@@ -76,7 +76,7 @@ export interface ResourceClient {
   deletedAt: DomainDate | null;
   version: number;
 
-  // UI 计算属�?
+  // UI 计算属?
   isDeleted: boolean;
   isArchived: boolean;
   isActive: boolean;

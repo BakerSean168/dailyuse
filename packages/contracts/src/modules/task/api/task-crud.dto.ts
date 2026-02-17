@@ -8,6 +8,8 @@
 import { z } from 'zod';
 import { TaskTimeType } from '../value-objects';
 import type { TaskTemplateClientDTO } from '../aggregates';
+import { brandedId } from '@/primitives';
+import type { TaskTemplateId, TaskFolderId, KeyResultId } from '@/primitives';
 
 // ============================================================================
 // Shared Schema (Reusable Components)
@@ -56,8 +58,8 @@ export type ChecklistItemReq = z.infer<typeof ChecklistItemSchema>;
 export const CreateTaskSchema = z.object({
   title: z.string().min(1, "标题不能为空"),
   description: z.string().optional(),
-  folderId: z.string().uuid().optional(), // 属于哪个清单
-  linkedKeyResultId: z.string().uuid().optional(), // 关联哪个 OKR
+  folderId: brandedId<TaskFolderId>().optional(), // 属于哪个清单
+  linkedKeyResultId: brandedId<KeyResultId>().optional(), // 关联哪个 OKR
   timeConfig: TaskTimeConfigSchema.optional(),
   recurrence: RecurrenceConfigSchema.optional(),
   checklist: z.array(ChecklistItemSchema).optional(),
@@ -74,10 +76,10 @@ export type CreateTaskRes = TaskTemplateClientDTO;
  * 更新任务 Schema
  */
 export const UpdateTaskSchema = z.object({
-  templateId: z.string().uuid(),
+  templateId: brandedId<TaskTemplateId>(),
   title: z.string().min(1).optional(),
   description: z.string().optional().nullable(),
-  folderId: z.string().uuid().optional().nullable(),
+  folderId: brandedId<TaskFolderId>().optional().nullable(),
 });
 
 export type UpdateTaskReq = z.infer<typeof UpdateTaskSchema>;

@@ -6,6 +6,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { AiProviderConfigId } from '@/primitives';
 import type { KnowledgeGenerationResultDTO, SummarizationResultDTO } from '../dtos';
 
 // ============================================================================
@@ -22,7 +24,7 @@ export const KnowledgeGenerationSchema = z.object({
     metadata: z.record(z.string(), z.unknown()).optional(),
   })).min(1),
   extractionType: z.enum(['summary', 'keypoints', 'qa', 'full']),
-  providerId: z.string().uuid().optional(),
+  providerId: brandedId<AiProviderConfigId>().optional(),
 });
 
 export type KnowledgeGenerationReq = z.infer<typeof KnowledgeGenerationSchema>;
@@ -35,7 +37,7 @@ export const SummarizationSchema = z.object({
   text: z.string().min(100, '文本至少需要 100 个字符'),
   maxLength: z.number().int().min(50).max(1000).optional(),
   language: z.enum(['zh-CN', 'en-US']).optional().default('zh-CN'),
-  providerId: z.string().uuid().optional(),
+  providerId: brandedId<AiProviderConfigId>().optional(),
 });
 
 export type SummarizationReq = z.infer<typeof SummarizationSchema>;

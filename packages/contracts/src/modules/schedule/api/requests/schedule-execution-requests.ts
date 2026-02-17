@@ -4,13 +4,15 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { ScheduleTaskId } from '@/primitives';
 import type { ScheduleExecutionClientDTO } from '../../entities/schedule-execution-client';
 import type { ExecutionStatus } from '../../value-objects/execution-status';
 
 // ============ Zod Schemas ============
 
 export const ScheduleExecutionQueryParamsSchema = z.object({
-  taskId: z.string().uuid().optional(),
+  taskId: brandedId<ScheduleTaskId>().optional(),
   status: z.enum(['SUCCESS', 'FAILED', 'SKIPPED', 'TIMEOUT', 'RETRYING']).optional(),
   startTime: z.number().positive().optional(),
   endTime: z.number().positive().optional(),
@@ -26,7 +28,7 @@ export const ScheduleExecutionQueryParamsSchema = z.object({
  * 执行记录查询参数
  */
 export interface ScheduleExecutionQueryParamsDTO {
-  readonly taskId?: string;
+  readonly taskId?: ScheduleTaskId;
   readonly status?: ExecutionStatus;
   readonly startTime?: number;
   readonly endTime?: number;
@@ -57,7 +59,7 @@ export interface ScheduleExecutionListResponseDTO {
  * 执行历史统计响应
  */
 export interface ExecutionHistoryStatsDTO {
-  readonly taskId: string;
+  readonly taskId: ScheduleTaskId;
   readonly totalExecutions: number;
   readonly successfulExecutions: number;
   readonly failedExecutions: number;

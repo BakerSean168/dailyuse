@@ -1,6 +1,6 @@
 /**
  * AIGenerationTask Aggregate Root - Client Interface
- * AI生成任务聚合�?- 客户端接�?
+ * AI生成任务聚合?- 客户端接?
  */
 
 import type { AiGenerationTaskId, IdentityId, TransferDate, DomainDate } from '@/primitives';
@@ -12,8 +12,8 @@ import type { GenerationInputClientDTO, GenerationResultClientDTO } from '../val
 // ============ DTO 定义 ============
 
 export interface AIGenerationTaskClientDTO {
-  id: string;
-  identityId: string;
+  id: AiGenerationTaskId;
+  identityId: IdentityId;
   type: GenerationTaskType;
   status: TaskStatus;
   input: GenerationInputClientDTO;

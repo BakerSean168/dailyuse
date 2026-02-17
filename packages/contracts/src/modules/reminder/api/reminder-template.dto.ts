@@ -6,6 +6,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '@/primitives';
+import type { ReminderGroupId } from '@/primitives';
 import type { ReminderTemplateClientDTO } from '../aggregates';
 
 // ============================================================================
@@ -71,7 +73,7 @@ export const CreateReminderTemplateSchema = z.object({
   tags: z.array(z.string()).optional(),
   color: z.string().optional(),
   icon: z.string().optional(),
-  groupId: z.string().uuid().optional(),
+  groupId: brandedId<ReminderGroupId>().optional(),
 });
 
 export type CreateReminderTemplateReq = z.infer<typeof CreateReminderTemplateSchema>;
