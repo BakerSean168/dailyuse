@@ -1,22 +1,65 @@
 /**
  * @dailyuse/ui-vue-shadcn
  * 
- * shadcn-vue 样式的 Vue 3 组件库
+ * Vue 3 UI 组件库（合并 ui-vue）
  * 
- * 此包包含两类组件：
+ * 此包包含：
  * 1. `components/ui/*` - 通过 shadcn-vue CLI 生成的官方组件（不可修改）
  * 2. `components/custom/*` - 自定义业务组件
+ * 3. `composables/*` - Vue Composables（封装 ui-core 逻辑）
  * 
  * 使用方式：
- *   建议从 @dailyuse/ui-vue 统一导入（聚合层）
- *   直接导入：import { Button } from '@dailyuse/ui-vue-shadcn'
+ *   import { Button, useFormValidation } from '@dailyuse/ui-vue-shadcn'
  * 
  * 添加新组件：
  *   pnpm dlx shadcn-vue@latest add button
  *   pnpm dlx shadcn-vue@latest add card
  */
 
-// Re-export utility functions
+// ==========================================
+// 1. Core Types & Utilities (from ui-core)
+// ==========================================
+export type {
+  ValidationRule,
+  ValidationRules,
+  PasswordStrengthLevel,
+  PasswordStrengthResult,
+  LoadingState,
+  LoadingStore,
+  MessageType,
+  MessageOptions,
+  MessageState,
+  MessageStore,
+  DialogState,
+  DialogStore,
+  ColorPickerState,
+  ColorPickerStore,
+  UseColorPickerOptions,
+} from '@dailyuse/ui-core';
+
+export {
+  VALIDATION_RULES,
+  generatePassword,
+  generateStrongPassword,
+  generatePassphrase,
+  isLightColor,
+  hexToRgb,
+  rgbToHex,
+} from '@dailyuse/ui-core';
+
+// ==========================================
+// 2. Vue Composables
+// ==========================================
+export { useFormValidation, type UseFormValidationReturn } from './composables/useFormValidation';
+export { usePasswordStrength, type UsePasswordStrengthReturn } from './composables/usePasswordStrength';
+export { useLoading, type UseLoadingReturn } from './composables/useLoading';
+export { useMessage, type UseMessageReturn } from './composables/useMessage';
+export { useDialog, type UseDialogReturn } from './composables/useDialog';
+export { useColorPicker, type UseColorPickerReturn } from './composables/useColorPicker';
+
+// ==========================================
+// 3. Utility Functions
+// ==========================================
 export * from './lib/utils';
 
 // ==========================================
@@ -73,8 +116,16 @@ export * from './components/ui/tooltip';
 // export * from './components/ui/toast';
 
 // ==========================================
-// Custom components
+// 4. Custom Components
 // ==========================================
-// 自定义组件在此处导出：
-// export * from './components/custom/ColorPicker';
-// export * from './components/custom/DataTable';
+// Account Components
+export * from './components/custom/account';
+
+// Authentication Components
+export * from './components/custom/authentication';
+
+// Linear Components
+export * from './components/custom/linear';
+
+// Task Components
+export * from './components/custom/task';

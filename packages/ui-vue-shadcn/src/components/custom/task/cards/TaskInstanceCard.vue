@@ -40,15 +40,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { format } from 'date-fns';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '../../../ui/button';
 import { CheckCircle2, Circle, Clock, Check } from 'lucide-vue-next';
-import type { TaskInstanceViewModel } from './types';
+import type { TaskInstanceViewModel } from '../types';
 
 // Props
 interface Props {
   task: TaskInstanceViewModel;
   showBorder?: boolean;
-  taskTitle?: string;
+  goalStore?: any;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -58,7 +58,6 @@ const props = withDefaults(defineProps<Props>(), {
 // Emits
 const emit = defineEmits<{
   complete: [uuid: string];
-  undo: [uuid: string];
 }>();
 
 // Store - TODO: Connect to new domain model
@@ -68,7 +67,10 @@ const emit = defineEmits<{
 const isCompleted = computed(() => props.task.isCompleted);
 
 const taskTitle = computed(() => {
-  return props.taskTitle || props.task.templateTitle || '任务';
+  // TODO: Fetch from actual template via ID using new domain service
+  // const template = taskStore.getTaskTemplateByUuid(props.task.templateUuid);
+  // return template?.title || 'Unknown Task';
+  return 'Refactored Task Title (Linear Style)';
 });
 
 const formatCompletionTime = computed(() => {
@@ -101,10 +103,6 @@ const timeLabel = computed(() => {
 });
 
 const toggleComplete = () => {
-  if (isCompleted.value) {
-    emit('undo', props.task.uuid);
-    return;
-  }
   emit('complete', props.task.uuid);
 };
 </script>

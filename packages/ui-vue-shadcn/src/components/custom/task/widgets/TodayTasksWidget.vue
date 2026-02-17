@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Card, CardHeader, CardTitle, CardContent } from '@dailyuse/ui-vue-shadcn';
+import { Card, CardHeader, CardTitle, CardContent } from '../../../ui/card';
 import { Calendar } from 'lucide-vue-next';
 import type { TaskInstanceViewModel } from '../types';
 

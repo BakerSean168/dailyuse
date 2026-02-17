@@ -4,7 +4,7 @@
  * @description Vuetify-specific loading state management with global overlay support.
  *
  * Note: For framework-agnostic loading logic, see @dailyuse/ui-core.
- * For Vue composables, see @dailyuse/ui-vue.
+ * For Vue composables, see @dailyuse/ui-vue-shadcn.
  * This file provides Vuetify-specific implementations with backward compatibility.
  */
 
@@ -12,7 +12,7 @@ import { ref, computed, type Ref } from 'vue';
 import { createLoadingWrapper } from '@dailyuse/utils';
 
 // Re-export core loading composables from ui-vue for convenience
-export { useLoading as useCoreLoading } from '@dailyuse/ui-vue';
+export { useLoading as useCoreLoading } from '@dailyuse/ui-vue-shadcn';
 
 /**
  * Loading 覆盖层选项

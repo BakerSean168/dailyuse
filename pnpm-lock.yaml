@@ -647,9 +647,6 @@ importers:
       '@dailyuse/task':
         specifier: workspace:*
         version: link:../../packages/task
-      '@dailyuse/ui-vue':
-        specifier: workspace:*
-        version: link:../../packages/ui-vue
       '@dailyuse/ui-vue-shadcn':
         specifier: workspace:*
         version: link:../../packages/ui-vue-shadcn
@@ -1458,51 +1455,14 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/ui-vue:
-    dependencies:
-      '@dailyuse/ui-core':
-        specifier: workspace:*
-        version: link:../ui-core
-      '@dailyuse/ui-vue-shadcn':
-        specifier: workspace:*
-        version: link:../ui-vue-shadcn
-      '@internationalized/date':
-        specifier: ^3.11.0
-        version: 3.11.0
-    devDependencies:
-      '@dailyuse/contracts':
-        specifier: workspace:*
-        version: link:../contracts
-      '@vitejs/plugin-vue':
-        specifier: 6.0.4
-        version: 6.0.4(vite@7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.25(typescript@5.9.3))
-      date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
-      lucide-vue-next:
-        specifier: 0.564.0
-        version: 0.564.0(vue@3.5.25(typescript@5.9.3))
-      rimraf:
-        specifier: ^6.0.1
-        version: 6.1.2
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-      vite:
-        specifier: ^7.1.7
-        version: 7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)
-      vite-plugin-dts:
-        specifier: ^4.5.4
-        version: 4.5.4(@types/node@22.13.14)(rollup@4.57.1)(typescript@5.9.3)(vite@7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2))
-      vue:
-        specifier: ^3.4.0
-        version: 3.5.25(typescript@5.9.3)
-
   packages/ui-vue-shadcn:
     dependencies:
       '@dailyuse/ui-core':
         specifier: workspace:*
         version: link:../ui-core
+      '@internationalized/date':
+        specifier: ^3.11.0
+        version: 3.11.0
       '@radix-icons/vue':
         specifier: 1.0.0
         version: 1.0.0(vue@3.5.25(typescript@5.9.3))
@@ -1549,12 +1509,18 @@ importers:
         specifier: 3.24.0
         version: 3.24.0
     devDependencies:
+      '@dailyuse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       '@vitejs/plugin-vue':
-        specifier: ^5.2.1
-        version: 5.2.4(vite@7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.25(typescript@5.9.3))
+        specifier: 6.0.4
+        version: 6.0.4(vite@7.2.7(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.25(typescript@5.9.3))
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
       rimraf:
         specifier: ^6.0.1
         version: 6.1.2
@@ -1582,9 +1548,9 @@ importers:
 
   packages/ui-vuetify:
     dependencies:
-      '@dailyuse/ui-vue':
+      '@dailyuse/ui-vue-shadcn':
         specifier: workspace:*
-        version: link:../ui-vue
+        version: link:../ui-vue-shadcn
       '@mdi/font':
         specifier: ^7.0.0
         version: 7.4.47
@@ -9635,11 +9601,6 @@ packages:
 
   lucide-vue-next@0.511.0:
     resolution: {integrity: sha512-VSv0F3pHniGN7JMMzDcLFNMQbl8381+shNnHwV8hi+El7xl2ZL8qdNuzPoiBViKk8mTKK5K3ZDfmE/wEcTZVIQ==}
-    peerDependencies:
-      vue: '>=3.0.1'
-
-  lucide-vue-next@0.564.0:
-    resolution: {integrity: sha512-Zf51QMPVsRPpAmlVdzzp3vUofPMgxxRd/33O+7YsTCC2Aw9J5bSnJg2ZToMZ7SHkXkeDfvpWRZuRSU0+nK2okQ==}
     peerDependencies:
       vue: '>=3.0.1'
 
@@ -22491,10 +22452,6 @@ snapshots:
       vue: 3.5.25(typescript@5.9.3)
 
   lucide-vue-next@0.511.0(vue@3.5.25(typescript@5.9.3)):
-    dependencies:
-      vue: 3.5.25(typescript@5.9.3)
-
-  lucide-vue-next@0.564.0(vue@3.5.25(typescript@5.9.3)):
     dependencies:
       vue: 3.5.25(typescript@5.9.3)
 

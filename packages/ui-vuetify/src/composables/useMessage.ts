@@ -4,14 +4,14 @@
  * @description Vuetify-specific message, snackbar, and dialog implementations.
  *
  * Note: For framework-agnostic message logic, see @dailyuse/ui-core.
- * For Vue composables, see @dailyuse/ui-vue.
+ * For Vue composables, see @dailyuse/ui-vue-shadcn.
  * This file provides Vuetify-specific implementations with backward compatibility.
  */
 
 import { ref } from 'vue';
 
 // Re-export core composables from ui-vue for convenience
-export { useMessage as useCoreMessage } from '@dailyuse/ui-vue';
+export { useMessage as useCoreMessage } from '@dailyuse/ui-vue-shadcn';
 
 /**
  * 消息类型

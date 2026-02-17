@@ -29,5 +29,5 @@
       }
     }
   },
-  "implicitDependencies": ["ui-vue", "contracts"]
+  "implicitDependencies": ["ui-vue-shadcn", "contracts"]
 }

@@ -1,15 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  Avatar,
-  AvatarImage,
-  AvatarFallback,
-  Badge,
-  Button
-} from '@dailyuse/ui-vue-shadcn';
+import { Card, CardHeader, CardContent } from '../../ui/card';
+import { Avatar, AvatarImage, AvatarFallback } from '../../ui/avatar';
+import { Badge } from '../../ui/badge';
+import { Button } from '../../ui/button';
 import type { AccountProfileDTO } from '@dailyuse/contracts/account';
 
 interface ProfileCardProps {

@@ -18,7 +18,6 @@
     "@dailyuse/schedule": "workspace:*",
     "@dailyuse/setting": "workspace:*",
     "@dailyuse/task": "workspace:*",
-    "@dailyuse/ui-vue": "workspace:*",
     "@dailyuse/ui-vue-shadcn": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "@vueuse/core": "14.1.0",

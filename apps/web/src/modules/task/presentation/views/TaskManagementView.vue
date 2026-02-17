@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { TaskTemplateManagement, TaskInstanceManagement } from '@dailyuse/ui-vue';
+import { TaskTemplateManagement, TaskInstanceManagement } from '@dailyuse/ui-vue-shadcn';
 
 const activeTab = ref('daily');
 const tabs = [

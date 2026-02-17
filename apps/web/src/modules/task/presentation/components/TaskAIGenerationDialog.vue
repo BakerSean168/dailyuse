@@ -21,7 +21,7 @@ import { getTaskTemplateApiClient } from '@dailyuse/task/infrastructure-client';
 import { useMessage } from '@dailyuse/ui-vuetify';
 import { TaskType, TimeType } from '@dailyuse/contracts/task';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
-import { TaskAIGenerationDialog as TaskAIGenerationDialogView, type EditableTaskUI } from '@dailyuse/ui-vue';
+import { TaskAIGenerationDialog as TaskAIGenerationDialogView, type EditableTaskUI } from '@dailyuse/ui-vue-shadcn';
 
 const taskTemplateApiClient = getTaskTemplateApiClient();
 
