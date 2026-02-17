@@ -147,3 +147,6 @@ export * from './components/custom/setting';
 
 // Notification Components
 export * from './components/custom/notification';
+
+// Governance Components
+export * from './components/custom/governance';
