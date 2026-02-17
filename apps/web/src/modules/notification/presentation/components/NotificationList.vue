@@ -1,32 +1,16 @@
 <template>
-  <div class="notification-list">
-    <div v-if="loading" class="pa-4 text-center">
-      <v-progress-circular indeterminate color="primary" />
-    </div>
-
-    <v-empty-state
-      v-else-if="!notifications.length"
-      icon="mdi-bell-outline"
-      title="暂无通知"
-    />
-
-    <v-list v-else>
-      <NotificationItem
-        v-for="notification in notifications"
-        :key="notification.uuid"
-        :notification="notification"
-        @click="$emit('notification-click', $event)"
-        @mark-read="$emit('mark-read', $event)"
-        @delete="$emit('delete', $event)"
-      />
-    </v-list>
-  </div>
+  <NotificationList
+    :notifications="notifications"
+    :loading="loading"
+    @notification-click="$emit('notification-click', $event)"
+    @mark-read="$emit('mark-read', $event)"
+    @delete="$emit('delete', $event)"
+  />
 </template>
 
 <script setup lang="ts">
-import NotificationItem from './NotificationItem.vue';
-import type { NotificationClientDTO, NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
-
+import { NotificationList } from '@dailyuse/ui-vue-shadcn';
+import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 
 interface Props {
   notifications: NotificationClientDTO[];
@@ -43,4 +27,3 @@ defineEmits<{
   delete: [uuid: string];
 }>();
 </script>
-

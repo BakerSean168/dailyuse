@@ -1,19 +1,15 @@
 <template>
-  <v-container>
-    <v-card>
-      <v-card-title>通知中心</v-card-title>
-      <v-card-text>
-        <NotificationList
-          :notifications="notifications"
-          :loading="loading"
-        />
-      </v-card-text>
-    </v-card>
-  </v-container>
+  <NotificationPage>
+    <NotificationList
+      :notifications="notifications"
+      :loading="loading"
+    />
+  </NotificationPage>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
+import { NotificationPage } from '@dailyuse/ui-vue-shadcn';
 import NotificationList from './NotificationList.vue';
 import { useNotification } from '../composables/useNotification';
 

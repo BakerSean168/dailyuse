@@ -138,13 +138,15 @@
 import { ref, computed, watch } from 'vue';
 import { useTheme } from 'vuetify';
 import { useRouter } from 'vue-router';
-import MarkdownEditor from '../components/MarkdownEditor.vue';
-import EditorToolbar from '../components/EditorToolbar.vue';
-import EditorPreview from '../components/EditorPreview.vue';
-import EditorSplitView from '../components/EditorSplitView.vue';
-import LinkSuggestion from '../components/LinkSuggestion.vue';
-import BacklinkPanel from '../components/BacklinkPanel.vue';
-import LinkGraphView from '../components/LinkGraphView.vue';
+import {
+  MarkdownEditor,
+  EditorToolbar,
+  EditorPreview,
+  EditorSplitView,
+  LinkSuggestion,
+  BacklinkPanel,
+  LinkGraphView
+} from '@dailyuse/ui-vue-shadcn';
 import { useMarkdownEditor } from '../composables/useMarkdownEditor';
 import { useAutoSave } from '../composables/useAutoSave';
 // TODO: Document API 已移除，双向链接功能待迁移到 repository 模块

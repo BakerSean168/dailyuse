@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import MarkdownEditor from '../components/MarkdownEditor.vue';
+import { Button, MarkdownEditor } from '@dailyuse/ui-vue-shadcn';
 import {
   ChevronLeft,
   MoreHorizontal,
