@@ -27,7 +27,7 @@
       "@dailyuse/utils": ["packages/utils/src/index.ts"],
       "@dailyuse/utils/*": ["packages/utils/src/*/index.ts"],
       "@dailyuse/contracts": ["packages/contracts/src/index.ts"],
-      "@dailyuse/contracts/*": ["packages/contracts/src/*/index.ts"],
+      "@dailyuse/contracts/*": ["packages/contracts/src/modules/*/index.ts", "packages/contracts/src/*/index.ts"],
       "@dailyuse/assets": ["packages/assets/src/index.ts"],
       
       // ✅ 领域层包（分层架构）
