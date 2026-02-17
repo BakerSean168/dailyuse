@@ -90,6 +90,15 @@
 - **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
 - **FR-005**: System MUST [behavior, e.g., "log all security events"]
 
+### Architecture & Boundary Requirements *(mandatory for domain/business changes)*
+
+- **AR-001**: Domain events MUST be created only within aggregate root business methods after invariant checks and state mutation.
+- **AR-002**: Aggregates MUST queue domain events internally; external layers MUST NOT append or mutate aggregate event queues directly.
+- **AR-003**: Repository persistence workflows MUST dispatch queued domain events automatically and clear queues only after successful coordination.
+- **AR-004**: Application services MUST NOT publish or dispatch domain events directly; they MAY only trigger events indirectly through aggregate behavior + repository save.
+- **AR-005**: Feature specs MUST define how event dispatch consistency is handled (transactional dispatch and/or outbox strategy) when domain events are present.
+- **AR-006**: Domain event payload types MUST come from `packages/contracts/src/modules/{domain}/protocol/{domain}-event-map.ts`; local ad-hoc payload interfaces/types are FORBIDDEN.
+
 *Example of marking unclear requirements:*
 
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]

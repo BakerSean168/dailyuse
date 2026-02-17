@@ -24,6 +24,7 @@ export default defineConfig({
     '@dailyuse/database',
     '@dailyuse/domain-shared',
     '@dailyuse/domain-shared/shared',
+    '@dailyuse/patterns',
     '@dailyuse/goal/domain-server',
     '@dailyuse/goal/application-server',
     '@dailyuse/goal/infrastructure-server',

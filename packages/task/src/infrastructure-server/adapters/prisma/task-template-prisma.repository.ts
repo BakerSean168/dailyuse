@@ -3,6 +3,8 @@
  * 任务模板仓储 - Prisma 实现
  *
  * 聚合根：TaskTemplate
+ * 
+ * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
 import type { PrismaClient } from '@dailyuse/database';
@@ -12,9 +14,28 @@ import type {
   TaskFilters,
 } from '../../../domain-server/repositories/ITaskTemplateRepository';
 import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
 
-export class TaskTemplatePrismaRepository implements ITaskTemplateRepository {
-  constructor(private prisma: PrismaClient) {}
+/**
+ * 全局 EventBus 适配器
+ */
+const eventBusAdapter: IEventBus = {
+  async publish(event) {
+    eventBus.send(event.eventType as any, event.payload);
+  },
+  async send(eventType, payload) {
+    eventBus.send(eventType as any, payload);
+  },
+};
+
+export class TaskTemplatePrismaRepository
+  extends AggregateRepositoryBase<TaskTemplate>
+  implements ITaskTemplateRepository
+{
+  constructor(private prisma: PrismaClient) {
+    super(eventBusAdapter);
+  }
 
   /**
    * Prisma record  TaskTemplate 聚合根
@@ -106,7 +127,10 @@ export class TaskTemplatePrismaRepository implements ITaskTemplateRepository {
     };
   }
 
-  async save(template: TaskTemplate): Promise<void> {
+  /**
+   * Protected persistence method - called by base class before event publishing
+   */
+  protected async persist(template: TaskTemplate): Promise<void> {
     const dto = template.toPersistenceDTO();
     const data = this.toWriteData(dto);
 

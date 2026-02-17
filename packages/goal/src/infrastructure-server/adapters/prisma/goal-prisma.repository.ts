@@ -15,6 +15,20 @@ import type { PrismaClient } from '@dailyuse/database';
 import type { IGoalRepository } from '@/domain-server';
 import { Goal } from '@/domain-server';
 import type { GoalPersistenceDTO, KeyResultPersistenceDTO, GoalReviewPersistenceDTO, KeyResultWeightSnapshotDTO } from '@dailyuse/contracts/goal';
+import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
+
+/**
+ * Global EventBus adapter
+ */
+const eventBusAdapter: IEventBus = {
+  async publish(event) {
+    eventBus.send(event.eventType as any, event.payload);
+  },
+  async send(eventType, payload) {
+    eventBus.send(eventType as any, payload);
+  },
+};
 
 // ============================================================
 // Prisma ↔ Domain Mappers
@@ -160,8 +174,13 @@ const GOAL_INCLUDE_KEY_RESULTS = {
 /**
  * Goal Prisma Repository
  */
-export class GoalPrismaRepository implements IGoalRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+export class GoalPrismaRepository
+  extends AggregateRepositoryBase<Goal>
+  implements IGoalRepository
+{
+  constructor(private readonly prisma: PrismaClient) {
+    super(eventBusAdapter);
+  }
 
   // ================= Read Operations =================
 
@@ -210,7 +229,10 @@ export class GoalPrismaRepository implements IGoalRepository {
 
   // ================= Write Operations =================
 
-  async save(goal: Goal): Promise<void> {
+  /**
+   * Protected persistence method - called by base class before event publishing
+   */
+  protected async persist(goal: Goal): Promise<void> {
     const dto = goal.toPersistenceDTO();
 
     // Run in a transaction for consistency

@@ -108,6 +108,7 @@ export abstract class AggregateRoot<TId> extends Entity<TId> {
 
 1. 事件名必须是**过去式** (Created, Changed, Deleted)。
 2. 不要在构造函数之外的地方随便 `new` 事件，使用 `addDomainEvent`。
+3. 事件 payload 类型必须来自 `packages/contracts/src/modules/{model-name}/protocol/{model-name}-event-map.ts`，禁止本地自定义 payload 类型。
 
 **文件**: `packages/domain-server/src/modules/auth/aggregates/auth-identity.ts`
 
@@ -131,7 +132,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
 
     // 2. ✅ 记录事件 (隐式暂存)
     // 注意：这里没有调用 EventBus，只是记录！
-    identity.addDomainEvent('auth:identity-created', {
+    identity.addDomainEvent<AuthEventMap['auth:identity-created']>('auth:identity-created', {
       identityId: id.toString(),
       email: params.email,
       registerMethod: 'EMAIL',
@@ -146,13 +147,15 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
     this.credentials[0].hashedPassword = newHash;
     
     // 2. ✅ 记录事件
-    this.addDomainEvent('auth:password-changed', {
+    this.addDomainEvent<AuthEventMap['auth:password-changed']>('auth:password-changed', {
       identityId: this.id.toString(),
       changedAt: new Date()
     });
   }
 }
 ```
+
+> 推荐导入方式：`import type { AuthEventMap } from '@dailyuse/contracts/authentication';`
 
 ---
 

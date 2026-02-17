@@ -2,14 +2,33 @@
 import type { IGoalFolderRepository } from '@/domain-server';
 import { GoalFolder } from '@/domain-server';
 import type { GoalFolderPersistenceDTO } from '@dailyuse/contracts/goal';
+import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
+
+/**
+ * Global EventBus adapter
+ */
+const eventBusAdapter: IEventBus = {
+  async publish(event) {
+    eventBus.send(event.eventType as any, event.payload);
+  },
+  async send(eventType, payload) {
+    eventBus.send(eventType as any, payload);
+  },
+};
 
 /**
  * GoalFolder Prisma Repository
  *
  * Prisma implementation of IGoalFolderRepository.
  */
-export class GoalFolderPrismaRepository implements IGoalFolderRepository {
-  constructor(private prisma: PrismaClient) {}
+export class GoalFolderPrismaRepository
+  extends AggregateRepositoryBase<GoalFolder>
+  implements IGoalFolderRepository
+{
+  constructor(private prisma: PrismaClient) {
+    super(eventBusAdapter);
+  }
 
   /**
    * Map Prisma row to domain entity
@@ -36,9 +55,9 @@ export class GoalFolderPrismaRepository implements IGoalFolderRepository {
   }
 
   /**
-   * Save folder (upsert)
+   * Protected persistence method - called by base class before event publishing
    */
-  async save(folder: GoalFolder): Promise<void> {
+  protected async persist(folder: GoalFolder): Promise<void> {
     const dto = folder.toPersistenceDTO();
 
     await (this.prisma as any).goalFolder.upsert({

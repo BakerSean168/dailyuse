@@ -9,9 +9,28 @@ import type { PrismaClient } from '@dailyuse/database';
 import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
 import type { ITaskInstanceRepository } from '../../../domain-server/repositories/ITaskInstanceRepository';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
+import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
 
-export class TaskInstancePrismaRepository implements ITaskInstanceRepository {
-  constructor(private prisma: PrismaClient) {}
+/**
+ * Global EventBus adapter
+ */
+const eventBusAdapter: IEventBus = {
+  async publish(event) {
+    eventBus.send(event.eventType as any, event.payload);
+  },
+  async send(eventType, payload) {
+    eventBus.send(eventType as any, payload);
+  },
+};
+
+export class TaskInstancePrismaRepository
+  extends AggregateRepositoryBase<TaskInstance>
+  implements ITaskInstanceRepository
+{
+  constructor(private prisma: PrismaClient) {
+    super(eventBusAdapter);
+  }
 
   /**
    * Prisma record  TaskInstance 聚合根
@@ -59,7 +78,10 @@ export class TaskInstancePrismaRepository implements ITaskInstanceRepository {
     };
   }
 
-  async save(instance: TaskInstance): Promise<void> {
+  /**
+   * Protected persistence method - called by base class before event publishing
+   */
+  protected async persist(instance: TaskInstance): Promise<void> {
     const dto = instance.toPersistenceDTO();
     const data = this.toWriteData(dto);
 

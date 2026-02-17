@@ -4,6 +4,8 @@
  *
  * 鑱氬悎鏍癸細ReminderTemplate
  * 瀛愬疄浣擄細ReminderHistory
+ * 
+ * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
 import type { PrismaClient } from '@dailyuse/database';
@@ -11,9 +13,28 @@ import type { IReminderTemplateRepository } from '../../../domain-server/reposit
 import type { ReminderStatus } from '@dailyuse/contracts/reminder';
 import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';
 import { ReminderHistory } from '../../../domain-server/entities/reminder-history';
+import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
 
-export class ReminderTemplatePrismaRepository implements IReminderTemplateRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+/**
+ * 全局 EventBus 适配器
+ */
+const eventBusAdapter: IEventBus = {
+  async publish(event) {
+    eventBus.send(event.eventType as any, event.payload);
+  },
+  async send(eventType, payload) {
+    eventBus.send(eventType as any, payload);
+  },
+};
+
+export class ReminderTemplatePrismaRepository
+  extends AggregateRepositoryBase<ReminderTemplate>
+  implements IReminderTemplateRepository
+{
+  constructor(private readonly prisma: PrismaClient) {
+    super(eventBusAdapter);
+  }
 
   /**
    * Prisma record 鈫?ReminderTemplate 鑱氬悎鏍?
@@ -132,7 +153,10 @@ export class ReminderTemplatePrismaRepository implements IReminderTemplateReposi
     };
   }
 
-  async save(template: ReminderTemplate): Promise<void> {
+  /**
+   * Protected persistence method - called by base class before event publishing
+   */
+  protected async persist(template: ReminderTemplate): Promise<void> {
     const dto = template.toPersistenceDTO();
     const writeData = this.toWriteData(template);
 

@@ -7,6 +7,8 @@
  * Maps between:
  * - Prisma models (AuthIdentity, AuthCredential) from the database
  * - Domain AuthIdentityPersistenceDTO / AuthCredentialServer discriminated unions
+ * 
+ * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
 import type { PrismaClient } from '@dailyuse/database';
@@ -22,16 +24,33 @@ import type {
 import { CredentialType } from '../../domain-shared';
 import type { OAuthProvider } from '../../domain-shared';
 import { createLogger } from '@dailyuse/utils';
+import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
 
 const logger = createLogger('PrismaAuthIdentityRepository');
 
 /**
  * Prisma-based AuthIdentity Repository
+ * 
+ * 自动发送领域事件：
+ * - 聚合根内的业务函数创建事件（通过 addDomainEvent）
+ * - save() 方法先持久化，再自动发布所有领域事件
+ * - 事件发布失败不会回滚事务，但会记录错误
  */
-export class PrismaAuthIdentityRepository implements IAuthIdentityRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+export class PrismaAuthIdentityRepository
+  extends AggregateRepositoryBase<AuthIdentity>
+  implements IAuthIdentityRepository
+{
+  constructor(
+    private readonly prisma: PrismaClient,
+    eventBus: IEventBus
+  ) {
+    super(eventBus);
+  }
 
-  async save(identity: AuthIdentity): Promise<void> {
+  /**
+   * Protected persistence method - called by base class before event publishing
+   */
+  protected async persist(identity: AuthIdentity): Promise<void> {
     try {
       const dto = identity.toPersistenceDTO();
 

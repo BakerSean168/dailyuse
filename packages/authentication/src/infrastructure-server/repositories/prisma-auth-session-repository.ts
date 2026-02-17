@@ -9,6 +9,8 @@
  * - Prisma AuthSession has no `token` column; JWTs are issued at runtime, not persisted
  * - DeviceInfo value object is decomposed into individual Prisma columns
  * - `isRevoked` maps to `deletedAt` (soft-delete pattern)
+ * 
+ * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
 import type { PrismaClient } from '@dailyuse/database';
@@ -16,16 +18,33 @@ import type { AuthSessionPersistenceDTO, DeviceInfo } from '@dailyuse/contracts/
 import type { IAuthSessionRepository } from '../../domain-server';
 import { AuthSession } from '../../domain-server';
 import { createLogger } from '@dailyuse/utils';
+import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
 
 const logger = createLogger('PrismaAuthSessionRepository');
 
 /**
  * Prisma-based AuthSession Repository
+ * 
+ * 自动发送领域事件：
+ * - 聚合根内的业务函数创建事件（通过 addDomainEvent）
+ * - save() 方法先持久化，再自动发布所有领域事件
+ * - 事件发布失败不会回滚事务，但会记录错误
  */
-export class PrismaAuthSessionRepository implements IAuthSessionRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+export class PrismaAuthSessionRepository
+  extends AggregateRepositoryBase<AuthSession>
+  implements IAuthSessionRepository
+{
+  constructor(
+    private readonly prisma: PrismaClient,
+    eventBus: IEventBus
+  ) {
+    super(eventBus);
+  }
 
-  async save(session: AuthSession): Promise<void> {
+  /**
+   * Protected persistence method - called by base class before event publishing
+   */
+  protected async persist(session: AuthSession): Promise<void> {
     try {
       const dto = session.toPersistenceDTO();
       const deviceInfo = dto.deviceInfo;

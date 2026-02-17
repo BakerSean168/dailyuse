@@ -21,3 +21,6 @@ export interface IQuery {
   where?: Record<string, any>;
   orderBy?: Record<string, 'asc' | 'desc'>;
 }
+
+// DDD Aggregate Repository Base
+export { AggregateRepositoryBase, type IAggregateRepository } from './aggregate-repository.base';

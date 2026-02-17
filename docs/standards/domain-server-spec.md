@@ -67,7 +67,7 @@ Domain Server 处于架构的核心层，依赖必须极其严格：
 * **流程**:
 1. **Check**: 检查业务规则（如果不满足，抛出 Error）。
 2. **Act**: 修改内部私有状态。
-3. **Event**: 调用 `this.addDomainEvent(...)`。
+3. **Event**: 调用 `this.addDomainEvent(...)`，且 payload 类型必须来自 `@dailyuse/contracts` 中的 `protocol/*-event-map.ts`。
 
 
 
@@ -186,6 +186,6 @@ export class User extends AggregateRoot<UserId> {
 * [ ] **是否实现了 `toClientDTO`？** (如果有，请删除。Server 模型不负责 API 格式化)
 * [ ] **是否使用了 `public` 属性？** (除了 `readonly` 的 getter，属性必须为 private)
 * [ ] **是否在 `fromPersistenceDTO` 里做了业务校验？** (恢复工厂不应抛出业务错误，相信数据库的数据是合法的)
-* [ ] **事件 Key 是否匹配 Contracts？** (确保 `addDomainEvent` 使用了 `Contracts` 中的类型，而不是硬编码字符串)
+* [ ] **事件 Key 与 Payload 类型是否匹配 Contracts？** (确保 `addDomainEvent<EventMap['domain:event']>(...)` 使用 `protocol/*-event-map.ts` 中定义的类型，而不是本地 payload 类型)
 * [ ] **是否引用了具体的 Repository 实现？** (Entity/Aggregate 不应该知道 Repository 的存在)
 * [ ] **时间更新是否自动化？** (修改状态的方法里，记得更新 `updatedAt`)

@@ -31,7 +31,16 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- DDD layering is explicit: business logic in domain layer, orchestration in application layer, I/O in infrastructure
+- Contracts-first design is defined: API/request/response/event contracts sourced from `packages/contracts`
+- Application service signatures follow `(input, cx)` and avoid infrastructure coupling
+- Domain event lifecycle is compliant:
+  - events are raised only inside aggregate business methods
+  - repositories auto-dispatch queued aggregate events during persistence
+  - application services contain no direct event bus publish/dispatch code
+  - event payload typings are imported from `packages/contracts/src/modules/{domain}/protocol/{domain}-event-map.ts` (no local payload types)
+- Testing plan includes unit tests for aggregates and repository-level event dispatch behavior
+- Nx execution path is defined for validation (`nx build`, `nx test`, `nx affected:*`)
 
 ## Project Structure
 

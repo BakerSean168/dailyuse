@@ -581,8 +581,8 @@ Closes #123
 fix(task): 修复任务状态更新不生效的问题
 
 问题：任务状态更新后，前端状态未同步
-原因：缺少事件发布逻辑
-解决：在状态更新后发布TaskUpdated事件
+原因：聚合根未记录领域事件或仓储层未自动分发
+解决：在聚合根业务方法中记录TaskUpdated事件，并由仓储save自动分发
 
 Fixes #456
 
@@ -591,7 +591,7 @@ refactor(goal): 重构目标实体为DDD模式
 
 - 将GoalEntity改为聚合根
 - 提取GoalTitle为值对象
-- 实现领域事件发布
+- 在聚合根业务方法中记录领域事件并由仓储层自动分发
 
 # Documentation
 docs(architecture): 更新架构决策记录

@@ -3,17 +3,44 @@
  *
  * Prisma implementation of IAccountRepository.
  * Receives PrismaClient via constructor injection from @dailyuse/database.
+ * 
+ * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
 import type { PrismaClient } from '@dailyuse/database';
 import type { IAccountRepository } from '../../../domain-server';
 import { Account } from '../../../domain-server';
 import type { AccountPersistenceDTO } from '@dailyuse/contracts/account';
+import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { createLogger } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils';
 
-export class PrismaAccountRepository implements IAccountRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+const logger = createLogger('PrismaAccountRepository');
 
-  async save(account: Account, tx?: unknown): Promise<void> {
+/**
+ * 全局 EventBus 适配器
+ */
+const eventBusAdapter: IEventBus = {
+  async publish(event) {
+    eventBus.send(event.eventType as any, event.payload);
+  },
+  async send(eventType, payload) {
+    eventBus.send(eventType as any, payload);
+  },
+};
+
+export class PrismaAccountRepository
+  extends AggregateRepositoryBase<Account>
+  implements IAccountRepository
+{
+  constructor(private readonly prisma: PrismaClient) {
+    super(eventBusAdapter);
+  }
+
+  /**
+   * Protected persistence method - called by base class before event publishing
+   */
+  protected async persist(account: Account, tx?: unknown): Promise<void> {
     const client = (tx || this.prisma) as PrismaClient;
     const raw = account.toPersistenceDTO();
 
@@ -54,6 +81,14 @@ export class PrismaAccountRepository implements IAccountRepository {
         updatedAt: raw.updatedAt,
       },
     });
+  }
+
+  /**
+   * save 方法由基类提供，支持事务参数
+   */
+  override async save(account: Account, tx?: unknown): Promise<void> {
+    await this.persist(account, tx);
+    await this['publishDomainEvents'](account);
   }
 
   async findById(id: string, tx?: unknown): Promise<Account | null> {

@@ -9,9 +9,28 @@ import type { PrismaClient } from '@dailyuse/database';
 import type { IGoalRecordRepository, GoalRecordQueryOptions } from '@/domain-server';
 import { GoalRecord } from '@/domain-server';
 import type { GoalRecordPersistenceDTO } from '@dailyuse/contracts/goal';
+import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
 
-export class GoalRecordPrismaRepository implements IGoalRecordRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+/**
+ * Global EventBus adapter
+ */
+const eventBusAdapter: IEventBus = {
+  async publish(event) {
+    eventBus.send(event.eventType as any, event.payload);
+  },
+  async send(eventType, payload) {
+    eventBus.send(eventType as any, payload);
+  },
+};
+
+export class GoalRecordPrismaRepository
+  extends AggregateRepositoryBase<GoalRecord>
+  implements IGoalRecordRepository
+{
+  constructor(private readonly prisma: PrismaClient) {
+    super(eventBusAdapter);
+  }
 
   /**
    * Map Prisma row to domain aggregate
@@ -125,9 +144,9 @@ export class GoalRecordPrismaRepository implements IGoalRecordRepository {
   }
 
   /**
-   * Save a record (upsert)
+   * Protected persistence method - called by base class before event publishing
    */
-  async save(record: GoalRecord): Promise<void> {
+  protected async persist(record: GoalRecord): Promise<void> {
     const dto = record.toPersistenceDTO();
 
     await (this.prisma as any).goalRecord.upsert({

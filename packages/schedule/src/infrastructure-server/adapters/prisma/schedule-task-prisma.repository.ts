@@ -17,6 +17,20 @@ import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
 import { ScheduleExecution } from '../../../domain-server/entities/schedule-execution';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import type { SourceModule, ScheduleTaskPersistenceDTO } from '@dailyuse/contracts/schedule';
+import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
+
+/**
+ * Global EventBus adapter
+ */
+const eventBusAdapter: IEventBus = {
+  async publish(event) {
+    eventBus.send(event.eventType as any, event.payload);
+  },
+  async send(eventType, payload) {
+    eventBus.send(eventType as any, payload);
+  },
+};
 
 /**
  * ScheduleTask 閺屻儴顕楅柅澶愩€?
@@ -35,8 +49,13 @@ interface IScheduleTaskQueryOptions {
  * ScheduleTaskRepository
  * 鐎瑰本鏆ｉ惃?DDD Repository鐎圭偟骞囬敍灞炬￥娑撳瓨妞傞柅鍌炲帳娴狅絿鐖?
  */
-export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
-  constructor(private prisma: PrismaClient) {}
+export class ScheduleTaskPrismaRepository
+  extends AggregateRepositoryBase<ScheduleTask>
+  implements IScheduleTaskRepository
+{
+  constructor(private prisma: PrismaClient) {
+    super(eventBusAdapter);
+  }
 
   // ===== 閺佺増宓佹潪顒佸床閺傝纭?=====
 
@@ -158,7 +177,10 @@ export class ScheduleTaskPrismaRepository implements IScheduleTaskRepository {
 
   // ===== 閸╃儤婀?CRUD =====
 
-  async save(task: ScheduleTask): Promise<void> {
+  /**
+   * Protected persistence method - called by base class before event publishing
+   */
+  protected async persist(task: ScheduleTask): Promise<void> {
     const data = this.toPrisma(task);
 
     await this.prisma.scheduleTask.upsert({

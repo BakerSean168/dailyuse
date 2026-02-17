@@ -9,9 +9,28 @@ import type { PrismaClient } from '@dailyuse/database';
 import type { IReminderGroupRepository } from '../../../domain-server/repositories/IReminderGroupRepository';
 import type { ControlMode, ReminderStatus, GroupStatsServerDTO } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '../../../domain-server/aggregates/reminder-group';
+import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
 
-export class ReminderGroupPrismaRepository implements IReminderGroupRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+/**
+ * Global EventBus adapter
+ */
+const eventBusAdapter: IEventBus = {
+  async publish(event) {
+    eventBus.send(event.eventType as any, event.payload);
+  },
+  async send(eventType, payload) {
+    eventBus.send(eventType as any, payload);
+  },
+};
+
+export class ReminderGroupPrismaRepository
+  extends AggregateRepositoryBase<ReminderGroup>
+  implements IReminderGroupRepository
+{
+  constructor(private readonly prisma: PrismaClient) {
+    super(eventBusAdapter);
+  }
 
   /**
    * Prisma record → ReminderGroup 聚合根
@@ -57,7 +76,10 @@ export class ReminderGroupPrismaRepository implements IReminderGroupRepository {
     };
   }
 
-  async save(group: ReminderGroup): Promise<void> {
+  /**
+   * Protected persistence method - called by base class before event publishing
+   */
+  protected async persist(group: ReminderGroup): Promise<void> {
     const dto = group.toPersistenceDTO();
     const writeData = this.toWriteData(group);
 

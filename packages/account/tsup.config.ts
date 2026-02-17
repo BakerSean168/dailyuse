@@ -19,5 +19,15 @@ export default defineConfig({
   sourcemap: true,
   external: [
     'better-sqlite3',
-    'electron','@dailyuse/utils', '@dailyuse/contracts', '@dailyuse/http-client', '@dailyuse/database', '@dailyuse/domain-shared', '@dailyuse/domain-shared/shared', 'express', 'zod'],
+    'electron',
+    '@dailyuse/utils',
+    '@dailyuse/contracts',
+    '@dailyuse/http-client',
+    '@dailyuse/database',
+    '@dailyuse/domain-shared',
+    '@dailyuse/domain-shared/shared',
+    '@dailyuse/patterns',
+    'express',
+    'zod',
+  ],
 });

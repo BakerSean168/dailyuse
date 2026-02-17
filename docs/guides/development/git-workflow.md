@@ -150,10 +150,10 @@ git commit -m "fix(task): 修复任务状态更新不生效的问题
 任务状态更新后，前端状态未同步更新
 
 问题原因：
-缺少TaskUpdated事件发布逻辑
+聚合根未记录领域事件或仓储层未自动分发
 
 解决方案：
-在任务状态更新后发布TaskUpdated事件
+在聚合根业务方法中记录TaskUpdated事件，并由仓储save自动分发
 
 Fixes #456"
 ```
@@ -165,7 +165,7 @@ git commit -m "refactor(goal): 重构目标实体为DDD模式
 
 将GoalEntity重构为DDD聚合根：
 - 提取GoalTitle为值对象
-- 实现领域事件发布
+- 在聚合根业务方法中记录领域事件并由仓储层自动分发
 - 添加业务规则验证
 - 提升代码可测试性
 

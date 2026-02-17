@@ -1,11 +1,22 @@
-<!-- SYNC IMPACT REPORT (2026-02-11)
-Version: 1.2.0 → 1.3.0 (Application Layer Service Conventions & Enhanced Contract Specifications)
-Added Principle VIII: Application Layer Service Parameter Conventions (input and cx)
-Enhanced Principle VI: Detailed contracts package architecture and domain events specifications
-Reference Implementation: packages/contracts/src/modules/authentication/ (authoritative architecture standard)
-Templates Updated: ✅ None required (constitution-only changes)
-Breaking Changes: None (additive guidance only)
-Follow-up Action: Audit existing services for compliance with input/cx parameter conventions
+<!-- SYNC IMPACT REPORT (2026-02-17)
+Version: 1.4.0 → 1.5.0 (MINOR: Added mandatory domain-event payload typing source constraints)
+Modified Principles:
+- VI. Contract Standardization & Domain Architecture (Package Structure Specification) → VI. Contract Standardization & Domain Architecture (Package Structure Specification) (event payload type source made explicit)
+- IX. Domain Event Lifecycle Ownership → IX. Domain Event Lifecycle Ownership (enforced event-map payload typing)
+Added Sections:
+- None
+Removed Sections:
+- None
+Templates Requiring Updates:
+- ✅ .specify/templates/plan-template.md
+- ✅ .specify/templates/spec-template.md
+- ✅ .specify/templates/tasks-template.md
+- ⚠ pending: .specify/templates/commands/*.md (directory not found in repository)
+Runtime Guidance Updates:
+- ✅ docs/standards/domain-event-spec.md
+- ✅ docs/standards/domain-server-spec.md
+Follow-up TODOs:
+- TODO(COMMAND_TEMPLATES): Add .specify/templates/commands/ if Speckit command templates are introduced later, then mirror Principle IX checks there.
 -->
 
 # DailyUse Constitution
@@ -109,6 +120,7 @@ All inter-module communication contracts MUST follow the standardized `packages/
 **Protocol Layer** (`protocol/`):
 - MUST contain `{domain}-rpc-map.ts` defining all RPC operations as a discriminated union type: `'domain:operation': [RequestType, ResponseType]`
 - MUST contain `{domain}-event-map.ts` defining all domain events with strict event naming: `'domain:EventName': EventPayloadType`
+- Domain, application, and infrastructure code that raises or dispatches domain events MUST use payload types sourced from `protocol/{domain}-event-map.ts`
 - RPC map signature format MUST be: `'domain:kebab-case-operation': [RequestType, ResponseType]` (e.g., `'auth:login-email'`, `'goal:create'`)
 - Event naming format MUST be: `'domain:PascalCaseEvent': EventType` (e.g., `'auth:login': UserLoggedInEvent`)
 - ALL types MUST be imported from API, domain, or aggregates layers—inline custom object definitions are FORBIDDEN
@@ -170,10 +182,12 @@ Domain/Events → (imports nothing, pure domain)
 - ❌ DTOs importing from Protocol or API layers (breaks unidirectional dependency)
 - ❌ Domain events importing application layer concerns (domain must be pure)
 - ❌ Client/Server DTOs mixed in same file (MUST separate for security/clarity)
+- ❌ Defining local payload interfaces/types for domain event publish calls when `protocol/{domain}-event-map.ts` already defines the event payload type
 
 **Verification Commands:**
 - `pnpm nx build contracts` MUST pass with zero TypeScript errors
 - Type exports in `api/index.ts` MUST match all types used in `protocol/{domain}-rpc-map.ts`
+- Event payload generics in aggregate `addDomainEvent<...>` calls MUST resolve to keys of `protocol/{domain}-event-map.ts`
 - Import graph analysis: `nx graph` MUST show no circular dependencies in contracts package
 
 **Rationale:** This comprehensive structure ensures type safety across all architectural layers, enables proper separation of concerns between client/server boundaries, and provides a clear place for every type of contract. The authentication module serves as the living standard, eliminating architectural ambiguity and ensuring consistency as the codebase scales. Strict dependency flows prevent circular imports and maintain clear boundaries between domain concerns and application concerns.
@@ -310,6 +324,7 @@ export class GetGoalUseCase {
 - ❌ Context passed as optional parameter: `(input: CreateGoalReq, identityId?: string)`
 - ❌ Services accessing request/session data directly instead of via `cx` parameter
 - ❌ Embedding infrastructure concerns in `input` parameter (tokens, session IDs)
+- ❌ Application services calling `eventBus.publish(...)`, `dispatch(...)`, or manipulating aggregate event queues directly
 
 **Domain Layer Considerations**:
 - Domain services MAY accept context when needed for domain logic (e.g., audit trails, multi-tenancy)  
@@ -327,6 +342,28 @@ export class GetGoalUseCase {
 - Service signatures MUST be auditable via static analysis for compliance
 
 **Rationale:** The standardized `input` and `cx` parameter pattern creates clear separation between API contract data and infrastructure context. This improves testability (easy to mock contexts), enhances security (context data extracted by trusted middleware), and provides consistency across all application services. The pattern scales from simple operations to complex multi-tenant scenarios while maintaining the same interface contract. This supports both Principle I (DDD Architecture) and Principle IV (Code Consistency) by creating predictable service signatures across all domains.
+
+### IX. Domain Event Lifecycle Ownership
+
+Domain events MUST be created inside aggregate root business methods, queued on the aggregate, and dispatched automatically by repository implementations during persistence workflows. Application services MUST remain free of domain-event orchestration code.
+
+**Non-negotiable rules:**
+- Domain events MUST be recorded via aggregate methods (e.g., `addDomainEvent(...)`) inside domain business behaviors after state mutation and invariant checks
+- Domain event payload generic/type arguments MUST reference `contracts` protocol event-map entries (e.g., `DomainEventMap['domain:EventName']`) instead of local ad-hoc payload types
+- Aggregate roots MUST own their internal event queue; external layers MUST NOT append or mutate aggregate event queues directly
+- Repository `save`/`upsert` methods MUST extract pending aggregate events and dispatch them automatically as part of the persistence workflow
+- Event dispatch in repository layer MUST be coordinated with data consistency strategy (transactional dispatch and/or outbox pattern)
+- Repository layer MUST clear aggregate event queues only after successful persistence + dispatch coordination to prevent duplicate emission
+- Application services (use cases, command handlers, query handlers) MUST NOT call event bus publish APIs or dispatch domain events directly
+- Application services MAY trigger domain events only indirectly by invoking aggregate behavior and repository persistence
+
+**Verification checklist:**
+- PR review MUST reject any application-layer code that imports event bus abstractions for domain event publication
+- Static analysis or grep checks SHOULD verify no `publish`/`dispatch` calls exist in application layer directories
+- PR review MUST reject aggregate/repository code that introduces local event payload interfaces duplicating types already defined in `protocol/{domain}-event-map.ts`
+- Repository tests MUST include assertions that aggregate pending events are dispatched and cleared during save operations
+
+**Rationale:** This ownership model keeps domain intent in aggregates, keeps delivery mechanics in repositories, and keeps application services focused on orchestration of use cases rather than messaging details. It prevents duplicated publish logic, improves transactional consistency options, and enforces clean DDD boundaries.
 
 ## Technology Stack Requirements
 
@@ -370,6 +407,8 @@ All code changes MUST follow these review and quality gates:
 - Are types fully specified? (No `any` without justification)
 - Are tests included for new business logic?
 - Does the change maintain or improve code consistency (naming, structure, linting)?
+- If domain events are involved: are events raised only in aggregate methods and dispatched only by repository layer?
+- If domain events are involved: do payload typings come from `contracts` `protocol/*-event-map.ts` instead of local event payload interfaces?
 
 **Complexity Justification:**
 - Any change adding complexity to existing modules MUST include a comment explaining why simpler alternatives were insufficient
@@ -397,6 +436,7 @@ Constitution versions follow **Semantic Versioning**:
 - Constitution compliance MUST be verified in PR reviews before merge
 - Nx graph violations (circular dependencies) MUST be resolved before CI passes
 - Failing linting or tests MUST block merge
+- Application layer code MUST be periodically audited to confirm absence of direct domain event dispatch logic
 - Monthly (or as-needed) compliance audits via `nx affected:lint` and `nx affected:test` to catch drift
 
 ### Guidelines for Developers
@@ -408,4 +448,4 @@ Constitution versions follow **Semantic Versioning**:
 
 ---
 
-**Version**: 1.3.0 | **Ratified**: 2026-02-02 | **Last Amended**: 2026-02-11
+**Version**: 1.5.0 | **Ratified**: 2026-02-02 | **Last Amended**: 2026-02-17
