@@ -4,3 +4,8 @@ export { default as TaskModuleTasksCard } from './TaskModuleTasksCard.vue';
 export { default as ReminderTasksCard } from './ReminderTasksCard.vue';
 export { default as StatisticsCard } from './StatisticsCard.vue';
 export { default as ScheduleConflictAlert } from './ScheduleConflictAlert.vue';
+export { default as CreateScheduleDialog } from './CreateScheduleDialog.vue';
+export { default as ScheduleEventList } from './ScheduleEventList.vue';
+export { default as ScheduleFormDemo } from './ScheduleFormDemo.vue';
+export { default as ScheduleTaskDetailDialog } from './ScheduleTaskDetailDialog.vue';
+export { default as WeekViewCalendar } from './WeekViewCalendar.vue';
