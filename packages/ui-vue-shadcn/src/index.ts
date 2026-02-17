@@ -132,3 +132,6 @@ export * from './components/custom/task';
 
 // Schedule Components
 export * from './components/custom/schedule';
+
+// Goal Components
+export * from './components/custom/goal';
