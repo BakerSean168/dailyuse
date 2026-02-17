@@ -135,3 +135,6 @@ export * from './components/custom/schedule';
 
 // Goal Components
 export * from './components/custom/goal';
+
+// Repository Components
+export * from './components/custom/repository';
