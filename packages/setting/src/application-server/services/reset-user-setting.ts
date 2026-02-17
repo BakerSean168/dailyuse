@@ -26,7 +26,6 @@ export class ResetUserSetting {
     }
 
     const newSetting = UserSetting.create({ identityId });
-    (newSetting as any)._id = setting.id;
 
     await this.userSettingRepository.save(newSetting);
     return newSetting.toClientDTO();
