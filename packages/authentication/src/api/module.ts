@@ -10,7 +10,7 @@
  */
 
 import { Router } from 'express';
-import { prisma } from '@dailyuse/database';
+import type { PrismaClient } from '@dailyuse/database';
 import { AuthenticationContainer, AuthenticationModule } from '../infrastructure-server';
 // Commented out temporarily:
 // import {
@@ -56,10 +56,10 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
   name: 'Authentication',
 
   register(context) {
-    const { router, middleware } = context;
+    const { router, middleware, db } = context;
 
     // 1. Composition Root �?create container with shared database client
-    const container = new AuthenticationContainer(prisma);
+    const container = new AuthenticationContainer(db as PrismaClient);
     const identityRepo = container.getIdentityRepository();
     const sessionRepo = container.getSessionRepository();
     const passwordHasher = container.getPasswordHasher();

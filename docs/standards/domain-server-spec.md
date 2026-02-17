@@ -48,6 +48,8 @@ Domain Server 处于架构的核心层，依赖必须极其严格：
 
 * 必须继承自 `AggregateRoot<TId>` 或 `Entity<TId>`。
 * 必须实现 `contracts` 中定义的 Server 接口（如 `AccountServer`）。
+* 聚合根标识类型必须使用强类型 `xxId`；禁止 `xxUuid` 类型和字段命名。
+* 当前项目中 `Account` 与 `Identity` 聚合根的主标识字段统一为 `identityId`。
 
 ### 3.2 状态管理 (State)
 
@@ -187,5 +189,6 @@ export class User extends AggregateRoot<UserId> {
 * [ ] **是否使用了 `public` 属性？** (除了 `readonly` 的 getter，属性必须为 private)
 * [ ] **是否在 `fromPersistenceDTO` 里做了业务校验？** (恢复工厂不应抛出业务错误，相信数据库的数据是合法的)
 * [ ] **事件 Key 与 Payload 类型是否匹配 Contracts？** (确保 `addDomainEvent<EventMap['domain:event']>(...)` 使用 `protocol/*-event-map.ts` 中定义的类型，而不是本地 payload 类型)
+* [ ] **标识字段是否全部为 `*Id` 命名？** (禁止 `*Uuid`，`Account/Identity` 聚合根统一 `identityId`)
 * [ ] **是否引用了具体的 Repository 实现？** (Entity/Aggregate 不应该知道 Repository 的存在)
 * [ ] **时间更新是否自动化？** (修改状态的方法里，记得更新 `updatedAt`)

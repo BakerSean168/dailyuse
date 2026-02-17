@@ -6,6 +6,7 @@
 
 // DI Module
 export { ReminderModule } from './reminder.module';
+export { ReminderContainer } from './di/reminder-container';
 
 // Prisma Adapters
 export { ReminderGroupPrismaRepository } from './adapters/prisma/reminder-group-prisma.repository';

@@ -6,7 +6,8 @@
 import type Database from 'better-sqlite3';
 import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';
 import type { IReminderTemplateRepository } from '../../../domain-server/repositories/IReminderTemplateRepository';
-import type { ReminderStatus, ReminderType, ImportanceLevel } from '@dailyuse/contracts/reminder';
+import type { ReminderStatus, ReminderType } from '@dailyuse/contracts/reminder';
+import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 export class SqliteReminderTemplateRepository implements IReminderTemplateRepository {
   constructor(private db: Database.Database) {}
@@ -82,7 +83,7 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
     return this.rowToTemplate(row);
   }
 
-  async findByAccountId(
+  async findByIdentityId(
     identityId: string,
     options?: {
       includeHistory?: boolean;
@@ -101,11 +102,28 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
     return rows.map((row) => this.rowToTemplate(row));
   }
 
-  async findByGroupId(groupId: string): Promise<ReminderTemplate[]> {
-    const stmt = this.db.prepare(
-      `SELECT * FROM reminder_templates WHERE group_id = ? AND status != 'DELETED' ORDER BY created_at DESC`
-    );
-    const rows = stmt.all(groupId) as any[];
+  async findByGroupId(
+    groupId: string | null,
+    options?: { includeHistory?: boolean; includeDeleted?: boolean },
+  ): Promise<ReminderTemplate[]> {
+    let sql = `SELECT * FROM reminder_templates WHERE `;
+    const params: any[] = [];
+
+    if (groupId === null) {
+      sql += `group_id IS NULL`;
+    } else {
+      sql += `group_id = ?`;
+      params.push(groupId);
+    }
+
+    if (!options?.includeDeleted) {
+      sql += ` AND status != 'DELETED'`;
+    }
+
+    sql += ` ORDER BY created_at DESC`;
+
+    const stmt = this.db.prepare(sql);
+    const rows = stmt.all(...params) as any[];
 
     return rows.map((row) => this.rowToTemplate(row));
   }
@@ -213,6 +231,7 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
       icon: row.icon || undefined,
       nextTriggerAt: row.next_trigger_at || undefined,
       stats: row.stats,
+      version: row.version ?? 1,
       clickRate: row.click_rate || undefined,
       ignoreRate: row.ignore_rate || undefined,
       avgResponseTime: row.avg_response_time || undefined,

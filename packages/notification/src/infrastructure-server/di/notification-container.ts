@@ -1,13 +1,8 @@
-// @ts-nocheck
 import type {
-  NotificationRepository as INotificationRepository,
-  NotificationRepository as INotificationTemplateRepository,
+  INotificationRepository,
+  INotificationTemplateRepository,
   INotificationPreferenceRepository,
 } from '../../domain-server/repositories';
-import { PrismaNotificationRepository } from '../repositories/PrismaNotificationRepository';
-import { PrismaNotificationTemplateRepository } from '../repositories/PrismaNotificationTemplateRepository';
-import { PrismaNotificationPreferenceRepository } from '../repositories/PrismaNotificationPreferenceRepository';
-import { prisma } from '../../shared/config/prisma';
 
 /**
  * Notification 渚濊禆娉ㄥ叆瀹瑰櫒
@@ -29,21 +24,21 @@ export class NotificationContainer {
 
   getNotificationRepository(): INotificationRepository {
     if (!this.notificationRepository) {
-      this.notificationRepository = new PrismaNotificationRepository(prisma);
+      throw new Error('NotificationRepository not registered in NotificationContainer');
     }
     return this.notificationRepository;
   }
 
   getNotificationTemplateRepository(): INotificationTemplateRepository {
     if (!this.templateRepository) {
-      this.templateRepository = new PrismaNotificationTemplateRepository(prisma);
+      throw new Error('NotificationTemplateRepository not registered in NotificationContainer');
     }
     return this.templateRepository;
   }
 
   getNotificationPreferenceRepository(): INotificationPreferenceRepository {
     if (!this.preferenceRepository) {
-      this.preferenceRepository = new PrismaNotificationPreferenceRepository(prisma);
+      throw new Error('NotificationPreferenceRepository not registered in NotificationContainer');
     }
     return this.preferenceRepository;
   }

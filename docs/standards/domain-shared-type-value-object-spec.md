@@ -19,6 +19,12 @@ tags: [standard, domain/shared]
 * **Compile-time**: 具有严格的类型区分（`UserId` 不能赋值给 `AccountId`）。
 * **Behavior**: 通过同名对象提供类似 Class 的静态方法和行为。
 
+**ID 命名与语义约束**:
+
+* 标识符类型命名必须使用 `xxId`（如 `IdentityId`, `GoalId`），禁止 `xxUuid` 命名。
+* DTO 与实体中的标识符字段命名必须使用 `*Id` 后缀，禁止 `*Uuid` 字段。
+* 当前项目中 `account` 与 `identity` 聚合根的主标识均应为 `identityId`。
+
 ---
 
 ## 2. 代码结构规范
@@ -147,3 +153,4 @@ export const ThemeMode = {
 * [ ] **是否实现了 `isValid` 类型守卫？** (用于 API 输入验证)。
 * [ ] **行为方法的第一个参数是否是实例？** (不能用 `this` 访问数据)。
 * [ ] **是否硬编码了字符串？** (应尽量复用 Contract 或内部常量)。
+* [ ] **ID 是否全部采用 `xxId` 命名？** (禁止出现 `xxUuid` 类型或字段命名)。

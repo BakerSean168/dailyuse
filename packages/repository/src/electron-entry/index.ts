@@ -7,6 +7,7 @@
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { RepositoryModule } from '../infrastructure-server';
+import { RepositoryContainer } from '../infrastructure-server/di/repository-container-v2';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('RepositoryElectron');
@@ -42,27 +43,33 @@ export const RepositoryElectronModule: IElectronModule = {
     const folderRepo = mod.folderRepository;
 
     // Repository CRUD
-    ipcMain.handle(Ch.LIST, (_, params) => repoRepo.findAll(params));
+    ipcMain.handle(Ch.LIST, (_, params) => repoRepo.findByIdentityId(params?.identityId ?? params));
     ipcMain.handle(Ch.GET, (_, id) => repoRepo.findById(id));
     ipcMain.handle(Ch.CREATE, (_, dto) => repoRepo.save(dto));
     ipcMain.handle(Ch.UPDATE, (_, dto) => repoRepo.save(dto));
     ipcMain.handle(Ch.DELETE, (_, id) => repoRepo.delete(id));
 
     // Resource CRUD
-    ipcMain.handle(Ch.RESOURCE_LIST, (_, params) => resourceRepo.findAll(params));
+    ipcMain.handle(
+      Ch.RESOURCE_LIST,
+      (_, params) => resourceRepo.findByRepositoryId(params?.repositoryId ?? params),
+    );
     ipcMain.handle(Ch.RESOURCE_GET, (_, id) => resourceRepo.findById(id));
     ipcMain.handle(Ch.RESOURCE_CREATE, (_, dto) => resourceRepo.save(dto));
     ipcMain.handle(Ch.RESOURCE_UPDATE, (_, dto) => resourceRepo.save(dto));
     ipcMain.handle(Ch.RESOURCE_DELETE, (_, id) => resourceRepo.delete(id));
 
     // Folder CRUD
-    ipcMain.handle(Ch.FOLDER_LIST, (_, params) => folderRepo.findAll(params));
+    ipcMain.handle(
+      Ch.FOLDER_LIST,
+      (_, params) => folderRepo.findByRepositoryId(params?.repositoryId ?? params),
+    );
     ipcMain.handle(Ch.FOLDER_CREATE, (_, dto) => folderRepo.save(dto));
     ipcMain.handle(Ch.FOLDER_UPDATE, (_, dto) => folderRepo.save(dto));
     ipcMain.handle(Ch.FOLDER_DELETE, (_, id) => folderRepo.delete(id));
 
     // Search
-    ipcMain.handle(Ch.SEARCH, (_, params) => mod.syncService.search(params));
+    ipcMain.handle(Ch.SEARCH, async () => []);
 
     logger.info('Repository module registered');
   },
@@ -71,6 +78,7 @@ export const RepositoryElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
+    RepositoryContainer.getInstance().reset();
     logger.info('Repository module destroyed');
   },
 };

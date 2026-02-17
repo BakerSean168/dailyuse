@@ -5,7 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
-import type { IFolderRepository } from '../../domain-server';
+import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
 import type { Folder } from '../../../domain-server/entities/folder';
 
 /**

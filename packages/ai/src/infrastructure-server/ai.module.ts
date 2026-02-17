@@ -1,9 +1,16 @@
 import type { PrismaClient } from '@dailyuse/database';
 import type Database from 'better-sqlite3';
+import type {
+  IAIConversationRepository,
+  IAIGenerationTaskRepository,
+  IAIProviderConfigRepository,
+  IAIUsageQuotaRepository,
+} from '../domain-server';
 
 import { AIGenerationValidationService } from '../domain-server/services/AIGenerationValidationService';
 import { AIAdapterFactory } from './adapters/a-i-adapter-factory';
 import { AIRepositoryFactory } from './di';
+import { AIContainer } from './di/ai-container';
 
 import {
   CreateConversation,
@@ -18,17 +25,15 @@ import {
   AIProviderConfigService,
   AIGenerationApplicationService,
   AIChatApplicationService,
-} from '../application-server/services';
+} from '../application-server/use-cases';
 
 type BetterSQLiteDB = Database.Database;
 
-type AIRepositories = ReturnType<typeof AIRepositoryFactory.createPrismaRepositories>;
-
 export class AIModule {
-  public readonly conversationRepository: AIRepositories['conversationRepository'];
-  public readonly generationTaskRepository: AIRepositories['generationTaskRepository'];
-  public readonly providerConfigRepository: AIRepositories['providerConfigRepository'];
-  public readonly usageQuotaRepository: AIRepositories['usageQuotaRepository'];
+  public readonly conversationRepository: IAIConversationRepository;
+  public readonly generationTaskRepository: IAIGenerationTaskRepository;
+  public readonly providerConfigRepository: IAIProviderConfigRepository;
+  public readonly usageQuotaRepository: IAIUsageQuotaRepository;
 
   public readonly createConversation: CreateConversation;
   public readonly deleteConversation: DeleteConversation;
@@ -49,10 +54,17 @@ export class AIModule {
   ) {
     // 1. Initialize Repositories using Factory
     const repositories = AIRepositoryFactory.create(dataSourceType, dbConnection);
-    this.conversationRepository = repositories.conversationRepository;
-    this.generationTaskRepository = repositories.generationTaskRepository;
-    this.providerConfigRepository = repositories.providerConfigRepository;
-    this.usageQuotaRepository = repositories.usageQuotaRepository;
+    const container = AIContainer.getInstance();
+    container.reset();
+    container.setConversationRepository(repositories.conversationRepository);
+    container.setGenerationTaskRepository(repositories.generationTaskRepository);
+    container.setProviderConfigRepository(repositories.providerConfigRepository);
+    container.setUsageQuotaRepository(repositories.usageQuotaRepository);
+
+    this.conversationRepository = container.getConversationRepository();
+    this.generationTaskRepository = container.getGenerationTaskRepository();
+    this.providerConfigRepository = container.getProviderConfigRepository();
+    this.usageQuotaRepository = container.getUsageQuotaRepository();
 
     // 2. Initialize Services
     this.createConversation = new CreateConversation(this.conversationRepository);

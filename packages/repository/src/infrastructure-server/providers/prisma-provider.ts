@@ -12,7 +12,7 @@ import { RepositoryPrismaRepository } from '../adapters/prisma/repository-prisma
 import { ResourcePrismaRepository } from '../adapters/prisma/resource-prisma.repository';
 import { FolderPrismaRepository } from '../adapters/prisma/folder-prisma.repository';
 
-import type { RepositoryContainer } from '../repository.container';
+import type { RepositoryContainer } from '../di/repository-container-v2';
 import type {
   IProviderInitContext,
   IProviderInitializer,

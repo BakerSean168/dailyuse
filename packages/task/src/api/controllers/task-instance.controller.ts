@@ -8,15 +8,15 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { isOk, ok } from '@dailyuse/contracts/result';
 import type { TaskInstanceClientDTO, TaskInstanceStatus } from '@dailyuse/contracts/task';
-import type { CompleteTaskInstance } from '../../application-server/services/complete-task-instance';
-import type { DeleteTaskInstance } from '../../application-server/services/delete-task-instance';
-import type { GetTaskInstance } from '../../application-server/services/get-task-instance';
-import type { GetTaskInstancesByDateRange } from '../../application-server/services/get-task-instances-by-date-range';
-import type { ListTaskInstancesByAccount } from '../../application-server/services/list-task-instances-by-account';
-import type { ListTaskInstancesByStatus } from '../../application-server/services/list-task-instances-by-status';
-import type { ListTaskInstancesByTemplate } from '../../application-server/services/list-task-instances-by-template';
-import type { SkipTaskInstance } from '../../application-server/services/skip-task-instance';
-import type { StartTaskInstance } from '../../application-server/services/start-task-instance';
+import type { CompleteTaskInstance } from '../../application-server/use-cases/commands/complete-task-instance';
+import type { DeleteTaskInstance } from '../../application-server/use-cases/commands/delete-task-instance';
+import type { GetTaskInstance } from '../../application-server/use-cases/queries/get-task-instance';
+import type { GetTaskInstancesByDateRange } from '../../application-server/use-cases/queries/get-task-instances-by-date-range';
+import type { ListTaskInstancesByAccount } from '../../application-server/use-cases/queries/list-task-instances-by-account';
+import type { ListTaskInstancesByStatus } from '../../application-server/use-cases/queries/list-task-instances-by-status';
+import type { ListTaskInstancesByTemplate } from '../../application-server/use-cases/queries/list-task-instances-by-template';
+import type { SkipTaskInstance } from '../../application-server/use-cases/commands/skip-task-instance';
+import type { StartTaskInstance } from '../../application-server/use-cases/commands/start-task-instance';
 
 interface TaskInstanceUseCases {
   getTaskInstance: GetTaskInstance;

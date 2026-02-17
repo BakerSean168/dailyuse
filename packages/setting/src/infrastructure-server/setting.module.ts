@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@dailyuse/database';
 import type Database from 'better-sqlite3';
+import type { IUserSettingRepository } from '../domain-server/repositories/IUserSettingRepository';
 
 import {
   GetUserSetting,
@@ -10,15 +11,12 @@ import {
   GetDefaultSettings,
 } from '../application-server';
 import { SettingRepositoryFactory } from './di';
+import { SettingContainer } from './di/setting-container';
 
 type BetterSQLiteDB = Database.Database;
 
-type SettingRepositories = ReturnType<
-  typeof SettingRepositoryFactory.createPrismaRepositories
->;
-
 export class SettingModule {
-  public readonly userSettingRepository: SettingRepositories['userSettingRepository'];
+  public readonly userSettingRepository: IUserSettingRepository;
   public readonly getUserSetting: GetUserSetting;
   public readonly updateUserSetting: UpdateUserSetting;
   public readonly resetUserSetting: ResetUserSetting;
@@ -32,9 +30,15 @@ export class SettingModule {
   ) {
     // 1. Initialize Repositories using Factory
     const repositories = SettingRepositoryFactory.create(dataSourceType, dbConnection);
-    this.userSettingRepository = repositories.userSettingRepository;
 
-    // 2. Initialize Services
+    // 2. Register repositories in DI container
+    const container = SettingContainer.getInstance();
+    container.reset();
+    container.setUserSettingRepository(repositories.userSettingRepository);
+
+    this.userSettingRepository = container.getUserSettingRepository();
+
+    // 3. Initialize Services
     this.getUserSetting = new GetUserSetting(this.userSettingRepository);
     this.updateUserSetting = new UpdateUserSetting(this.userSettingRepository);
     this.resetUserSetting = new ResetUserSetting(this.userSettingRepository);

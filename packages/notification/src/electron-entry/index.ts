@@ -7,6 +7,7 @@
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { NotificationModule } from '../infrastructure-server';
+import { NotificationContainer } from '../infrastructure-server/di/notification-container';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('NotificationElectron');
@@ -55,6 +56,7 @@ export const NotificationElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
+    NotificationContainer.getInstance().reset();
     logger.info('Notification module destroyed');
   },
 };

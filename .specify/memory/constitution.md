@@ -1,8 +1,8 @@
 <!-- SYNC IMPACT REPORT (2026-02-17)
-Version: 1.4.0 → 1.5.0 (MINOR: Added mandatory domain-event payload typing source constraints)
+Version: 1.5.0 → 1.6.0 (MINOR: Added mandatory strong-typed ID and aggregate identifier naming constraints)
 Modified Principles:
-- VI. Contract Standardization & Domain Architecture (Package Structure Specification) → VI. Contract Standardization & Domain Architecture (Package Structure Specification) (event payload type source made explicit)
-- IX. Domain Event Lifecycle Ownership → IX. Domain Event Lifecycle Ownership (enforced event-map payload typing)
+- VI. Contract Standardization & Domain Architecture (Package Structure Specification) → VI. Contract Standardization & Domain Architecture (Package Structure Specification) (strong-typed ID + naming contract made explicit)
+- IX. Domain Event Lifecycle Ownership → IX. Domain Event Lifecycle Ownership (identifier typing consistency added to verification)
 Added Sections:
 - None
 Removed Sections:
@@ -13,10 +13,10 @@ Templates Requiring Updates:
 - ✅ .specify/templates/tasks-template.md
 - ⚠ pending: .specify/templates/commands/*.md (directory not found in repository)
 Runtime Guidance Updates:
-- ✅ docs/standards/domain-event-spec.md
+- ✅ docs/standards/domain-shared-type-value-object-spec.md
 - ✅ docs/standards/domain-server-spec.md
 Follow-up TODOs:
-- TODO(COMMAND_TEMPLATES): Add .specify/templates/commands/ if Speckit command templates are introduced later, then mirror Principle IX checks there.
+- TODO(COMMAND_TEMPLATES): Add .specify/templates/commands/ if Speckit command templates are introduced later, then mirror Principle VI/IX identifier checks there.
 -->
 
 # DailyUse Constitution
@@ -141,6 +141,13 @@ All inter-module communication contracts MUST follow the standardized `packages/
 - Domain events MUST extend base event interface with proper typing
 - Domain events are FORBIDDEN from importing API or DTOs; they are pure domain concepts
 
+**Identifier Typing & Naming Rules** (MANDATORY for entities, aggregates, and DTOs):
+- Entity identifiers and corresponding transfer DTO identifiers MUST use strong typed IDs (`xxId` branded/type-safe forms), not untyped `string` aliases
+- Identifier field names MUST use `*Id` suffix only; `*Uuid` suffix is FORBIDDEN in domain entities, DTOs, contracts, and service signatures
+- For current account and identity aggregate roots, canonical primary identifier field MUST be `identityId` (user authentication identity key)
+- `accountUuid` and equivalent `*Uuid` identifier fields are FORBIDDEN and MUST be migrated to canonical `*Id` naming
+- Aggregate root identifier naming MUST be consistent across domain entity, contract DTO, persistence DTO, repository mapping, and API boundary
+
 **Aggregates Layer** (`aggregates/`):
 - MUST separate client and server DTOs: `{aggregate}-client.ts` and `{aggregate}-server.ts`
 - Client DTOs (`*ClientDTO`) contain presentation-safe data for frontend consumption
@@ -183,11 +190,14 @@ Domain/Events → (imports nothing, pure domain)
 - ❌ Domain events importing application layer concerns (domain must be pure)
 - ❌ Client/Server DTOs mixed in same file (MUST separate for security/clarity)
 - ❌ Defining local payload interfaces/types for domain event publish calls when `protocol/{domain}-event-map.ts` already defines the event payload type
+- ❌ Using `accountUuid`, `identityUuid`, or any `*Uuid` field name for entity/aggregate/DTO identifiers
+- ❌ Defining aggregate/entity/DTO identifiers as untyped raw strings when corresponding strong `xxId` types exist
 
 **Verification Commands:**
 - `pnpm nx build contracts` MUST pass with zero TypeScript errors
 - Type exports in `api/index.ts` MUST match all types used in `protocol/{domain}-rpc-map.ts`
 - Event payload generics in aggregate `addDomainEvent<...>` calls MUST resolve to keys of `protocol/{domain}-event-map.ts`
+- Contract and module reviews MUST verify identifier fields follow `*Id` naming and do not include `*Uuid`
 - Import graph analysis: `nx graph` MUST show no circular dependencies in contracts package
 
 **Rationale:** This comprehensive structure ensures type safety across all architectural layers, enables proper separation of concerns between client/server boundaries, and provides a clear place for every type of contract. The authentication module serves as the living standard, eliminating architectural ambiguity and ensuring consistency as the codebase scales. Strict dependency flows prevent circular imports and maintain clear boundaries between domain concerns and application concerns.
@@ -362,6 +372,7 @@ Domain events MUST be created inside aggregate root business methods, queued on 
 - Static analysis or grep checks SHOULD verify no `publish`/`dispatch` calls exist in application layer directories
 - PR review MUST reject aggregate/repository code that introduces local event payload interfaces duplicating types already defined in `protocol/{domain}-event-map.ts`
 - Repository tests MUST include assertions that aggregate pending events are dispatched and cleared during save operations
+- PR review MUST verify aggregate identifiers are strong `xxId` types and never `*Uuid` fields
 
 **Rationale:** This ownership model keeps domain intent in aggregates, keeps delivery mechanics in repositories, and keeps application services focused on orchestration of use cases rather than messaging details. It prevents duplicated publish logic, improves transactional consistency options, and enforces clean DDD boundaries.
 
@@ -409,6 +420,7 @@ All code changes MUST follow these review and quality gates:
 - Does the change maintain or improve code consistency (naming, structure, linting)?
 - If domain events are involved: are events raised only in aggregate methods and dispatched only by repository layer?
 - If domain events are involved: do payload typings come from `contracts` `protocol/*-event-map.ts` instead of local event payload interfaces?
+- If identifiers are involved: are entity + DTO identifiers strong typed `xxId` values with canonical `*Id` naming and no `*Uuid` remnants?
 
 **Complexity Justification:**
 - Any change adding complexity to existing modules MUST include a comment explaining why simpler alternatives were insufficient
@@ -448,4 +460,4 @@ Constitution versions follow **Semantic Versioning**:
 
 ---
 
-**Version**: 1.5.0 | **Ratified**: 2026-02-02 | **Last Amended**: 2026-02-17
+**Version**: 1.6.0 | **Ratified**: 2026-02-02 | **Last Amended**: 2026-02-17

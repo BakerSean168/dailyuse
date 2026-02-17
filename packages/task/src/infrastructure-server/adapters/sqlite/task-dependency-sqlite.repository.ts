@@ -10,43 +10,58 @@ import type {
 import type {
   CreateTaskDependencyRequest,
   TaskDependencyServerDTO,
-  CircularDependencyValidationResult,
+  DependencyType,
 } from '@dailyuse/contracts/task';
 
 export class SqliteTaskDependencyRepository implements ITaskDependencyRepository {
   constructor(private db: Database.Database) {}
 
-  async create(data: CreateTaskDependencyRequest): Promise<TaskDependencyServerDTO> {
+  private rowToDTO(row: any): TaskDependencyServerDTO {
+    return {
+      id: row.id,
+      predecessorTaskId: row.predecessor_id,
+      successorTaskId: row.successor_id,
+      dependencyType: row.dependency_type,
+      lagDays: row.lag_days ?? undefined,
+      createdAt: Number(row.created_at ?? row.createdAt),
+      updatedAt: Number(row.updated_at ?? row.updatedAt),
+    };
+  }
+
+  async create(data: {
+    predecessorTaskId: string;
+    successorTaskId: string;
+    dependencyType?: DependencyType;
+    lagDays?: number;
+  }): Promise<TaskDependencyServerDTO> {
     const stmt = this.db.prepare(`
       INSERT INTO task_dependencies (
-        id, identityId, predecessor_id, successor_id,
-        dependency_type, lag_days, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        id, identity_id, predecessor_id, successor_id,
+        dependency_type, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const id = data.id || this.generateId();
+    const id = this.generateId();
     const now = Date.now();
 
     stmt.run(
       id,
-      data.identityId,
-      data.predecessor_id,
-      data.successor_id,
-      data.dependency_type || 'FINISH_TO_START',
-      data.lag_days || 0,
+      'system',
+      data.predecessorTaskId,
+      data.successorTaskId,
+      data.dependencyType || 'FinishToStart',
       now,
       now,
     );
 
     return {
       id,
-      identity_id: data.identityId,
-      predecessor_id: data.predecessor_id,
-      successor_id: data.successor_id,
-      dependency_type: data.dependency_type || 'FINISH_TO_START',
-      lag_days: data.lag_days || 0,
-      createdAt: new Date(now),
-      updatedAt: new Date(now),
+      predecessorTaskId: data.predecessorTaskId,
+      successorTaskId: data.successorTaskId,
+      dependencyType: data.dependencyType || 'FinishToStart',
+      lagDays: data.lagDays,
+      createdAt: now,
+      updatedAt: now,
     };
   }
 
@@ -59,25 +74,25 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
     return this.rowToDTO(row);
   }
 
-  async findBySuccessor(taskId: string): Promise<TaskDependencyServerDTO[]> {
+  async findBySuccessorId(taskId: string): Promise<TaskDependencyServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_dependencies WHERE successor_id = ? ORDER BY createdAt ASC`
+      `SELECT * FROM task_dependencies WHERE successor_id = ? ORDER BY created_at ASC`
     );
     const rows = stmt.all(taskId) as any[];
 
     return rows.map((row) => this.rowToDTO(row));
   }
 
-  async findByPredecessor(taskId: string): Promise<TaskDependencyServerDTO[]> {
+  async findByPredecessorId(taskId: string): Promise<TaskDependencyServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_dependencies WHERE predecessor_id = ? ORDER BY createdAt ASC`
+      `SELECT * FROM task_dependencies WHERE predecessor_id = ? ORDER BY created_at ASC`
     );
     const rows = stmt.all(taskId) as any[];
 
     return rows.map((row) => this.rowToDTO(row));
   }
 
-  async findByPredecessorAndSuccessor(
+  async findByPredecessorAndSuccessorId(
     predecessorId: string,
     successorId: string,
   ): Promise<TaskDependencyServerDTO | null> {
@@ -91,7 +106,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
     return this.rowToDTO(row);
   }
 
-  async findAllPredecessors(taskId: string): Promise<string[]> {
+  async findAllPredecessorIds(taskId: string): Promise<string[]> {
     const result: Set<string> = new Set();
     const queue: string[] = [taskId];
     const visited: Set<string> = new Set();
@@ -117,7 +132,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
     return Array.from(result);
   }
 
-  async findAllSuccessors(taskId: string): Promise<string[]> {
+  async findAllSuccessorIds(taskId: string): Promise<string[]> {
     const result: Set<string> = new Set();
     const queue: string[] = [taskId];
     const visited: Set<string> = new Set();
@@ -148,7 +163,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
     stmt.run(id);
   }
 
-  async deleteByTask(taskId: string): Promise<void> {
+  async deleteByTaskId(taskId: string): Promise<void> {
     const stmt = this.db.prepare(
       `DELETE FROM task_dependencies WHERE predecessor_id = ? OR successor_id = ?`
     );
@@ -157,7 +172,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
 
   async update(
     id: string,
-    data: { dependencyType?: string; lagDays?: number },
+    data: { dependencyType?: DependencyType; lagDays?: number },
   ): Promise<TaskDependencyServerDTO> {
     const updates: string[] = [];
     const values: any[] = [];
@@ -167,19 +182,14 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
       values.push(data.dependencyType);
     }
 
-    if (data.lagDays !== undefined) {
-      updates.push('lag_days = ?');
-      values.push(data.lagDays);
-    }
-
-    updates.push('updatedAt = ?');
+    updates.push('updated_at = ?');
     values.push(Date.now());
     values.push(id);
 
     if (updates.length === 1) {
       // Only updatedAt, just update it
       const stmt = this.db.prepare(
-        `UPDATE task_dependencies SET updatedAt = ? WHERE id = ?`
+        `UPDATE task_dependencies SET updated_at = ? WHERE id = ?`
       );
       stmt.run(Date.now(), id);
     } else {
@@ -197,26 +207,13 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
     return dependency;
   }
 
-  async findAllByAccount(identityId: string): Promise<TaskDependencyServerDTO[]> {
+  async findAllByIdentityId(identityId: string): Promise<TaskDependencyServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_dependencies WHERE identityId = ? ORDER BY createdAt ASC`
+      `SELECT * FROM task_dependencies WHERE identity_id = ? ORDER BY created_at ASC`
     );
     const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) => this.rowToDTO(row));
-  }
-
-  private rowToDTO(row: any): TaskDependencyServerDTO {
-    return {
-      id: row.id,
-      identity_id: row.identityId,
-      predecessor_id: row.predecessor_id,
-      successor_id: row.successor_id,
-      dependency_type: row.dependency_type,
-      lag_days: row.lag_days,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    };
   }
 
   private generateId(): string {

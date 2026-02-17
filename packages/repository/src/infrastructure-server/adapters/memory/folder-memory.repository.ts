@@ -4,7 +4,7 @@
  * In-memory implementation of IFolderRepository for testing.
  */
 
-import type { IFolderRepository } from '../../domain-server';
+import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
 import type { Folder } from '../../../domain-server/entities/folder';
 
 /**
@@ -51,22 +51,6 @@ export class FolderMemoryRepository implements IFolderRepository {
 
   async exists(id: string): Promise<boolean> {
     return this.folders.has(id);
-  }
-
-  async findById(id: string): Promise<Folder | null> {
-    return this.findById(id);
-  }
-
-  async findByRepositoryId(repositoryId: string): Promise<Folder[]> {
-    return this.findByRepositoryId(repositoryId);
-  }
-
-  async findByParentId(parentId: string): Promise<Folder[]> {
-    return this.findByParentId(parentId);
-  }
-
-  async deleteByRepositoryId(repositoryId: string): Promise<void> {
-    await this.deleteByRepositoryId(repositoryId);
   }
 
   // Test helpers

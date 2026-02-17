@@ -39,6 +39,10 @@
   - repositories auto-dispatch queued aggregate events during persistence
   - application services contain no direct event bus publish/dispatch code
   - event payload typings are imported from `packages/contracts/src/modules/{domain}/protocol/{domain}-event-map.ts` (no local payload types)
+- Identifier model is compliant:
+  - entity + DTO identifiers use strong typed `xxId` types (not raw string aliases)
+  - aggregate identifier fields use `*Id` naming only (no `*Uuid`)
+  - account and identity aggregates use canonical `identityId`
 - Testing plan includes unit tests for aggregates and repository-level event dispatch behavior
 - Nx execution path is defined for validation (`nx build`, `nx test`, `nx affected:*`)
 

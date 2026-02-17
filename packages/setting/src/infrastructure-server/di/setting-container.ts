@@ -1,6 +1,4 @@
-import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
-import { PrismaUserSettingRepository } from '../repositories/PrismaUserSettingRepository';
-import { prisma } from '../../shared/config/prisma';
+import type { IUserSettingRepository } from '../../domain-server/repositories/IUserSettingRepository';
 
 /**
  * Setting 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒
@@ -26,26 +24,17 @@ export class SettingContainer {
     return SettingContainer.instance;
   }
 
-  /**
-   * Get鐢ㄦ埛璁剧疆Repository瀹炰緥锛堟噿鍔犺浇锟?
-   */
   getUserSettingRepository(): IUserSettingRepository {
     if (!this.userSettingRepository) {
-      this.userSettingRepository = new PrismaUserSettingRepository(prisma);
+      throw new Error('UserSettingRepository not registered in SettingContainer');
     }
     return this.userSettingRepository;
   }
 
-  /**
-   * 璁剧疆鐢ㄦ埛璁剧疆Repository瀹炰緥锛堢敤浜庢祴璇曪級
-   */
   setUserSettingRepository(repository: IUserSettingRepository): void {
     this.userSettingRepository = repository;
   }
 
-  /**
-   * 閲嶇疆瀹瑰櫒锛堢敤浜庢祴璇曪級
-   */
   reset(): void {
     this.userSettingRepository = undefined;
   }

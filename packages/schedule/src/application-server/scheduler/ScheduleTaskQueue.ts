@@ -20,7 +20,7 @@ import type { IScheduleTimer } from '@dailyuse/patterns/scheduler';
 import { NodeTimer } from '@dailyuse/patterns/scheduler';
 import type { IScheduleMonitor } from '@dailyuse/patterns/scheduler';
 import { NoopScheduleMonitor } from '@dailyuse/patterns/scheduler';
-import { calculateNextRun } from '../services/calculate-next-run';
+import { calculateNextRun } from '../use-cases/calculate-next-run';
 
 /**
  * 调度队列中的任务项

@@ -16,6 +16,7 @@ import {
   SqliteGoalFolderRepository,
   SqliteGoalRecordRepository,
 } from '../infrastructure-server';
+import { GoalContainer } from '../infrastructure-server/di/goal-container';
 import { createLogger } from '@dailyuse/utils';
 import type { IGoalRepository } from '../domain-server';
 
@@ -100,6 +101,7 @@ export const GoalElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
+    GoalContainer.getInstance().reset();
     _goalRepository = null;
     logger.info('Goal module destroyed');
   },

@@ -10,13 +10,14 @@
  */
 
 import { Router } from 'express';
-import { prisma } from '@dailyuse/database';
+import type { PrismaClient } from '@dailyuse/database';
 import {
   GoalPrismaRepository,
   GoalFolderPrismaRepository,
   GoalRecordPrismaRepository,
   GoalModule,
 } from '../infrastructure-server';
+import { GoalContainer } from '../infrastructure-server/di/goal-container';
 import { registerGoalRoutes } from './routes';
 import { registerGoalInitializationTasks } from './initialization';
 
@@ -40,12 +41,13 @@ export const GoalApiModule: GoalApiModuleDef = {
   name: 'Goal',
 
   register(context) {
-    const { router, middleware } = context;
+    const { router, middleware, db } = context;
 
     // 1. 创建 Repository
-    const goalRepository = new GoalPrismaRepository(prisma);
-    const goalFolderRepository = new GoalFolderPrismaRepository(prisma);
-    const goalRecordRepository = new GoalRecordPrismaRepository(prisma);
+    const prismaClient = db as PrismaClient;
+    const goalRepository = new GoalPrismaRepository(prismaClient);
+    const goalFolderRepository = new GoalFolderPrismaRepository(prismaClient);
+    const goalRecordRepository = new GoalRecordPrismaRepository(prismaClient);
 
     // 2. 使用共享组合根创建 Use Cases / Services
     const goalModule = new GoalModule({
@@ -77,5 +79,9 @@ export const GoalApiModule: GoalApiModuleDef = {
 
     // 5. 注册初始化任务
     registerGoalInitializationTasks();
+  },
+
+  destroy() {
+    GoalContainer.getInstance().reset();
   },
 };

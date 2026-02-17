@@ -47,7 +47,15 @@ export class ReminderGroupPrismaRepository
       enabled: data.enabled,
       status: data.status as ReminderStatus,
       order: data.order,
-      stats: data.stats ? JSON.parse(data.stats) as GroupStatsServerDTO : { totalTemplates: 0, activeTemplates: 0 },
+      stats: data.stats
+        ? (JSON.parse(data.stats) as GroupStatsServerDTO)
+        : {
+            totalTemplates: 0,
+            activeTemplates: 0,
+            pausedTemplates: 0,
+            selfEnabledTemplates: 0,
+            selfPausedTemplates: 0,
+          },
       version: data.version,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,

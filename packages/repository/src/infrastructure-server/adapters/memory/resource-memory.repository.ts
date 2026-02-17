@@ -4,7 +4,7 @@
  * In-memory implementation of IResourceRepository for testing.
  */
 
-import type { IResourceRepository } from '../../domain-server';
+import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
 import type { Resource } from '../../../domain-server/entities/resource';
 
 /**
@@ -21,10 +21,6 @@ export class ResourceMemoryRepository implements IResourceRepository {
 
   async findById(id: string): Promise<Resource | null> {
     return this.resources.get(id) ?? null;
-  }
-
-  async findById(id: string): Promise<Resource | null> {
-    return this.findById(id);
   }
 
   async findByRepositoryId(repositoryId: string): Promise<Resource[]> {
@@ -47,14 +43,6 @@ export class ResourceMemoryRepository implements IResourceRepository {
 
   async delete(id: string): Promise<void> {
     this.resources.delete(id);
-  }
-
-  async findByRepositoryId(repositoryId: string): Promise<Resource[]> {
-    return this.findByRepositoryId(repositoryId);
-  }
-
-  async findByFolderId(folderId: string): Promise<Resource[]> {
-    return this.findByFolderId(folderId);
   }
 
   async findByAccountId(identityId: string): Promise<Resource[]> {

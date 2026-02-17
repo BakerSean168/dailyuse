@@ -6,6 +6,7 @@
 
 // DI Module
 export { NotificationModule } from './notification.module';
+export { NotificationContainer } from './di/notification-container';
 
 // DI Factory
 export { NotificationRepositoryFactory } from './di';

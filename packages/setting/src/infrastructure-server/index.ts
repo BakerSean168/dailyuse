@@ -6,6 +6,7 @@
 
 // DI Module
 export { SettingModule } from './setting.module';
+export { SettingContainer } from './di/setting-container';
 
 // DI Factory
 export { SettingRepositoryFactory } from './di';

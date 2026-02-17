@@ -7,6 +7,7 @@
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { ScheduleModule } from '../infrastructure-server';
+import { ScheduleContainer } from '../infrastructure-server/di/schedule-container';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ScheduleElectron');
@@ -51,6 +52,7 @@ export const ScheduleElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
+    ScheduleContainer.getInstance().reset();
     logger.info('Schedule module destroyed');
   },
 };

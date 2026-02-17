@@ -9,6 +9,7 @@ export { AIModule } from './ai.module';
 
 // DI Factory
 export { AIRepositoryFactory } from './di';
+export * from './di/ai-container';
 
 // Ports (Interfaces)
 export {

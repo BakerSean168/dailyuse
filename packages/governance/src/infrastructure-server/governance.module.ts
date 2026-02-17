@@ -7,6 +7,7 @@ import {
   ListRulesUseCase,
   GetRuleRevisionsUseCase,
 } from '../application-server';
+import { GovernanceContainer } from './di/governance-container';
 
 export interface GovernanceModuleRepositories {
   readonly ruleRepository: IRuleRepository;
@@ -25,8 +26,13 @@ export class GovernanceModule {
   public readonly getRevisions: GetRuleRevisionsUseCase;
 
   constructor(repositories: GovernanceModuleRepositories) {
-    this.ruleRepository = repositories.ruleRepository;
-    this.revisionRepository = repositories.revisionRepository;
+    const container = GovernanceContainer.getInstance();
+    container.reset();
+    container.setRuleRepository(repositories.ruleRepository);
+    container.setRevisionRepository(repositories.revisionRepository);
+
+    this.ruleRepository = container.getRuleRepository();
+    this.revisionRepository = container.getRevisionRepository();
 
     this.createRule = new CreateRuleUseCase(this.ruleRepository);
     this.updateRule = new UpdateRuleUseCase(this.ruleRepository);

@@ -13,14 +13,14 @@ import type {
   UpdateTaskTemplateRequest,
   TaskTemplateStatus 
 } from '@dailyuse/contracts/task';
-import type { CreateTaskTemplate } from '../../application-server/services/create-task-template';
-import type { GetTaskTemplate } from '../../application-server/services/get-task-template';
-import type { ListTaskTemplates } from '../../application-server/services/list-task-templates';
-import type { UpdateTaskTemplate } from '../../application-server/services/update-task-template';
-import type { DeleteTaskTemplate } from '../../application-server/services/delete-task-template';
-import type { ActivateTaskTemplate } from '../../application-server/services/activate-task-template';
-import type { PauseTaskTemplate } from '../../application-server/services/pause-task-template';
-import type { ArchiveTaskTemplate } from '../../application-server/services/archive-task-template';
+import type { CreateTaskTemplate } from '../../application-server/use-cases/commands/create-task-template';
+import type { GetTaskTemplate } from '../../application-server/use-cases/queries/get-task-template';
+import type { ListTaskTemplates } from '../../application-server/use-cases/queries/list-task-templates';
+import type { UpdateTaskTemplate } from '../../application-server/use-cases/commands/update-task-template';
+import type { DeleteTaskTemplate } from '../../application-server/use-cases/commands/delete-task-template';
+import type { ActivateTaskTemplate } from '../../application-server/use-cases/commands/activate-task-template';
+import type { PauseTaskTemplate } from '../../application-server/use-cases/commands/pause-task-template';
+import type { ArchiveTaskTemplate } from '../../application-server/use-cases/commands/archive-task-template';
 
 interface TaskTemplateUseCases {
   createTemplate: CreateTaskTemplate;

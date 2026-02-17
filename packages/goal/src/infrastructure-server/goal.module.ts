@@ -24,6 +24,7 @@ import {
   DeleteGoalKeyResult,
   AddGoalReview,
 } from '../application-server';
+import { GoalContainer } from './di/goal-container';
 
 export interface GoalModuleRepositories {
   readonly goalRepository: IGoalRepository;
@@ -61,9 +62,15 @@ export class GoalModule {
   public readonly addReview: AddGoalReview;
 
   constructor(repositories: GoalModuleRepositories) {
-    this.goalRepository = repositories.goalRepository;
-    this.goalFolderRepository = repositories.goalFolderRepository;
-    this.goalRecordRepository = repositories.goalRecordRepository;
+    const container = GoalContainer.getInstance();
+    container.reset();
+    container.setGoalRepository(repositories.goalRepository);
+    container.setGoalFolderRepository(repositories.goalFolderRepository);
+    container.setGoalRecordRepository(repositories.goalRecordRepository);
+
+    this.goalRepository = container.getGoalRepository();
+    this.goalFolderRepository = container.getGoalFolderRepository();
+    this.goalRecordRepository = container.getGoalRecordRepository();
 
     this.goalPolicy = new GoalPolicy();
     this.goalProgressCalculator = new GoalProgressCalculator(this.goalRecordRepository);

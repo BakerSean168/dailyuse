@@ -17,3 +17,4 @@ export * from './mappers';
 
 // ============ Composition Root ============
 export { GovernanceModule, type GovernanceModuleRepositories } from './governance.module';
+export { GovernanceContainer } from './di/governance-container';

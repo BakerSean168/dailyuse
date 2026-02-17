@@ -4,5 +4,5 @@
  * AI 模块应用服务
  */
 
-// Services
-export * from './services';
+// Use Cases
+export * from './use-cases';

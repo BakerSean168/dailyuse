@@ -276,7 +276,7 @@ export class ReminderTemplateControlService {
    * 获取账户下所有真正启用的模板
    */
   async getEffectivelyEnabledTemplatesByIdentityId(identityId: string): Promise<ReminderTemplate[]> {
-    const templates = await this.templateRepository.findByAccountId(identityId);
+    const templates = await this.templateRepository.findByIdentityId(identityId);
     const statusResults = await this.calculateEffectiveStatusBatch(templates);
 
     const enabledTemplateIds = statusResults

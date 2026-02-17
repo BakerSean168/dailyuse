@@ -285,7 +285,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     const stats = ReminderStats.createEmpty();
 
     const template = new ReminderTemplate({
-      id,
+      id: newId,
       identityId: params.identityId,
       title: params.title,
       description: params.description,
@@ -313,7 +313,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
 
     // 发布创建事件
     template.addDomainEvent('reminder.template.created', {
-      templateId: id,
+      templateId: newId,
       identityId: params.identityId,
       title: params.title,
       type: params.type,

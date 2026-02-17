@@ -126,7 +126,7 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
     const now = Date.now();
     const stats = GroupStats.createEmpty();
     const group = new ReminderGroup({
-      id,
+      id: newId,
       identityId: params.identityId,
       name: params.name,
       description: params.description,

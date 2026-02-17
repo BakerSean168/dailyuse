@@ -10,6 +10,7 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import { AccountContainer } from '../infrastructure-server/di/account-container';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AccountElectron');
@@ -42,6 +43,7 @@ export const AccountElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
+    AccountContainer.getInstance().reset();
     logger.info('Account module destroyed');
   },
 };

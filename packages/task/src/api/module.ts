@@ -10,8 +10,9 @@
  */
 
 import { Router } from 'express';
-import { prisma } from '@dailyuse/database';
+import type { PrismaClient } from '@dailyuse/database';
 import { TaskModule } from '../infrastructure-server/task.module';
+import { TaskContainer } from '../infrastructure-server/di/task-container';
 import { TaskTemplateController } from './controllers/task-template.controller';
 import { TaskInstanceController } from './controllers/task-instance.controller';
 import { registerTaskRoutes } from './routes';
@@ -48,10 +49,10 @@ export const TaskApiModule: TaskApiModuleDef = {
   name: 'Task',
 
   register(context) {
-    const { router, middleware } = context;
+    const { router, middleware, db } = context;
 
-    // 1. Composition Root — Assemble dependencies using TaskModule DI container
-    const taskModule = new TaskModule('prisma', prisma);
+    // 1. Composition Root — TaskModule assembles repositories and configures TaskContainer
+    const taskModule = new TaskModule('prisma', db as PrismaClient);
 
     // 2. Create controllers with application services
     const templateController = new TaskTemplateController(
@@ -90,5 +91,9 @@ export const TaskApiModule: TaskApiModuleDef = {
 
     // 4. Register initialization tasks (event handlers, background jobs)
     registerTaskInitializationTasks();
+  },
+
+  destroy() {
+    TaskContainer.getInstance().reset();
   },
 };

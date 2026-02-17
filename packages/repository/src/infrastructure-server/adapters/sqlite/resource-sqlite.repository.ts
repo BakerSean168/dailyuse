@@ -80,10 +80,6 @@ export class SqliteResourceRepository implements IResourceRepository {
     });
   }
 
-  async findById(id: string): Promise<Resource | null> {
-    return this.findById(id);
-  }
-
   async findByRepositoryId(repositoryId: string): Promise<Resource[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM resources WHERE repository_id = ? ORDER BY created_at DESC`,
@@ -115,10 +111,6 @@ export class SqliteResourceRepository implements IResourceRepository {
     });
   }
 
-  async findByRepositoryId(repositoryId: string): Promise<Resource[]> {
-    return this.findByRepositoryId(repositoryId);
-  }
-
   async findByFolderId(folderId: string): Promise<Resource[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM resources WHERE folder_id = ? ORDER BY name ASC`,
@@ -148,10 +140,6 @@ export class SqliteResourceRepository implements IResourceRepository {
         deletedAt: row.deleted_at ?? null,
       });
     });
-  }
-
-  async findByFolderId(folderId: string): Promise<Resource[]> {
-    return this.findByFolderId(folderId);
   }
 
   async findByIdentityId(identityId: string): Promise<Resource[]> {

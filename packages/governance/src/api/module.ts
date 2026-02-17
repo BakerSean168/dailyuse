@@ -10,12 +10,13 @@
  */
 
 import { Router } from 'express';
-import { prisma } from '@dailyuse/database';
+import type { PrismaClient } from '@dailyuse/database';
 import {
   RulePrismaRepository,
   RuleRevisionPrismaRepository,
   GovernanceModule,
 } from '../infrastructure-server';
+import { GovernanceContainer } from '../infrastructure-server/di/governance-container';
 import {
   registerGovernanceCrudRoutes,
   type GovernanceCrudHandlers,
@@ -55,11 +56,12 @@ export const GovernanceApiModule: GovernanceApiModuleDef = {
   name: 'Governance',
 
   register(context) {
-    const { router, middleware } = context;
+    const { router, middleware, db } = context;
 
     // 1. Composition Root — 组装依赖（使用共享数据库单例）
-    const ruleRepository = new RulePrismaRepository(prisma);
-    const revisionRepository = new RuleRevisionPrismaRepository(prisma);
+    const prismaClient = db as PrismaClient;
+    const ruleRepository = new RulePrismaRepository(prismaClient);
+    const revisionRepository = new RuleRevisionPrismaRepository(prismaClient);
     const governanceModule = new GovernanceModule({
       ruleRepository,
       revisionRepository,
@@ -89,5 +91,9 @@ export const GovernanceApiModule: GovernanceApiModuleDef = {
 
     // 4. 注册初始化任务（事件处理器等）
     registerGovernanceInitializationTasks();
+  },
+
+  destroy() {
+    GovernanceContainer.getInstance().reset();
   },
 };

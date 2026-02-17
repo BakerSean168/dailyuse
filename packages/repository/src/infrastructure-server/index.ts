@@ -6,12 +6,10 @@
  */
 // Module (Composition Pattern - ADR-025)
 export { RepositoryModule } from './repository.module';
+export { RepositoryContainer } from './di/repository-container-v2';
 
 // Repository Factory
 export { RepositoryRepositoryFactory } from './di/repository-repository.factory';
-
-// Legacy Container (for backward compatibility)
-export { RepositoryContainer } from './repository.container';
 
 // Ports (Interfaces)
 export { type IFolderRepository, type IRepositoryRepository, type IResourceRepository } from '../domain-server';
@@ -31,7 +29,6 @@ export {
 export { PrismaProviderInitializer } from './providers/prisma-provider';
 export { MemoryProviderInitializer } from './providers/memory-provider';
 // SQLite provider has been moved to @dailyuse/infrastructure-desktop
-// export { SqliteProviderInitializer } from './providers/sqlite-provider';
 
 // Prisma Adapters
 export { FolderPrismaRepository } from './adapters/prisma/folder-prisma.repository';

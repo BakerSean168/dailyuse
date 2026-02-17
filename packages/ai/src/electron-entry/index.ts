@@ -7,6 +7,7 @@
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { AIModule } from '../infrastructure-server';
+import { AIContainer } from '../infrastructure-server/di/ai-container';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AIElectron');
@@ -72,6 +73,7 @@ export const AIElectronModule: IElectronModule = {
   },
 
   destroy(): void {
+    AIContainer.getInstance().reset();
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }

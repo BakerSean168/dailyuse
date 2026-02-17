@@ -7,6 +7,7 @@
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { SettingModule } from '../infrastructure-server';
+import { SettingContainer } from '../infrastructure-server/di/setting-container';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('SettingElectron');
@@ -66,6 +67,7 @@ export const SettingElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
+    SettingContainer.getInstance().reset();
     logger.info('Setting module destroyed');
   },
 };

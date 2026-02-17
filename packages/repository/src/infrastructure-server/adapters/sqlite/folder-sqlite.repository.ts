@@ -59,10 +59,6 @@ export class SqliteFolderRepository implements IFolderRepository {
     });
   }
 
-  async findById(id: string): Promise<Folder | null> {
-    return this.findById(id);
-  }
-
   async findByRepositoryId(repositoryId: string): Promise<Folder[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM folders WHERE repository_id = ? ORDER BY path ASC`,
@@ -87,10 +83,6 @@ export class SqliteFolderRepository implements IFolderRepository {
     });
   }
 
-  async findByRepositoryId(repositoryId: string): Promise<Folder[]> {
-    return this.findByRepositoryId(repositoryId);
-  }
-
   async findByParentId(parentId: string): Promise<Folder[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM folders WHERE parent_id = ? ORDER BY name ASC`,
@@ -113,10 +105,6 @@ export class SqliteFolderRepository implements IFolderRepository {
         updatedAt: new Date(row.updated_at),
       });
     });
-  }
-
-  async findByParentId(parentId: string): Promise<Folder[]> {
-    return this.findByParentId(parentId);
   }
 
   async findByAccountId(identityId: string): Promise<Folder[]> {
@@ -185,10 +173,6 @@ export class SqliteFolderRepository implements IFolderRepository {
   async deleteByRepositoryId(repositoryId: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM folders WHERE repository_id = ?`);
     stmt.run(repositoryId);
-  }
-
-  async deleteByRepositoryId(repositoryId: string): Promise<void> {
-    await this.deleteByRepositoryId(repositoryId);
   }
 
   async exists(id: string): Promise<boolean> {

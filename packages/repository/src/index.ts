@@ -29,7 +29,6 @@
  */
 
 // ================= Contracts Layer =================
-export * from '@dailyuse/contracts/repository';
 
 // ================= Domain Layer =================
 export * from './domain-server';

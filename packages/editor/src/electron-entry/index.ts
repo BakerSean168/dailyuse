@@ -55,7 +55,10 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
       const workspaceRepo = container.getEditorWorkspaceRepository();
 
       // IPC Handlers
-      ipcMain.handle(Ch.DOCUMENT_LIST, (_, params) => workspaceRepo.findAll(params));
+      ipcMain.handle(
+        Ch.DOCUMENT_LIST,
+        (_, params) => workspaceRepo.findByIdentityId(params?.identityId ?? params),
+      );
       ipcMain.handle(Ch.DOCUMENT_GET, (_, id) => workspaceRepo.findById(id));
       ipcMain.handle(Ch.GET_CONTENT, (_, resourceId) => contentPort.getContent(resourceId));
       ipcMain.handle(Ch.SAVE_CONTENT, (_, dto) => contentPort.saveContent(dto));

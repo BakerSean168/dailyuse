@@ -6,6 +6,7 @@
 
 // DI Module
 export { ScheduleModule } from './schedule.module';
+export { ScheduleContainer } from './di/schedule-container';
 
 // DI Factory
 export { ScheduleRepositoryFactory } from './di';

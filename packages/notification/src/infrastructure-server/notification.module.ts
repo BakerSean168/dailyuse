@@ -1,22 +1,24 @@
 import type { PrismaClient } from '@dailyuse/database';
+import type {
+  INotificationPreferenceRepository,
+  INotificationRepository,
+  INotificationTemplateRepository,
+} from '../domain-server/repositories';
 
 import {
   NotificationApplicationService,
   NotificationTemplateApplicationService,
   NotificationChannelApplicationService,
-} from '../application-server/services/notification-application-services';
+} from '../application-server/use-cases/commands/notification-application-services';
 import { NotificationRepositoryFactory } from './di';
+import { NotificationContainer } from './di/notification-container';
 
 type BetterSQLiteDB = any;
 
-type NotificationRepositories = ReturnType<
-  typeof NotificationRepositoryFactory.createPrismaRepositories
->;
-
 export class NotificationModule {
-  public readonly notificationRepository: NotificationRepositories['notificationRepository'];
-  public readonly notificationPreferenceRepository: NotificationRepositories['notificationPreferenceRepository'];
-  public readonly notificationTemplateRepository: NotificationRepositories['notificationTemplateRepository'];
+  public readonly notificationRepository: INotificationRepository;
+  public readonly notificationPreferenceRepository: INotificationPreferenceRepository;
+  public readonly notificationTemplateRepository: INotificationTemplateRepository;
 
   public readonly notificationService: NotificationApplicationService;
   public readonly notificationTemplateService: NotificationTemplateApplicationService;
@@ -28,11 +30,19 @@ export class NotificationModule {
   ) {
     // 1. Initialize Repositories using Factory
     const repositories = NotificationRepositoryFactory.create(dataSourceType, dbConnection);
-    this.notificationRepository = repositories.notificationRepository;
-    this.notificationPreferenceRepository = repositories.notificationPreferenceRepository;
-    this.notificationTemplateRepository = repositories.notificationTemplateRepository;
 
-    // 2. Initialize Services
+    // 2. Register repositories in DI container
+    const container = NotificationContainer.getInstance();
+    container.reset();
+    container.setNotificationRepository(repositories.notificationRepository);
+    container.setNotificationPreferenceRepository(repositories.notificationPreferenceRepository);
+    container.setNotificationTemplateRepository(repositories.notificationTemplateRepository);
+
+    this.notificationRepository = container.getNotificationRepository();
+    this.notificationPreferenceRepository = container.getNotificationPreferenceRepository();
+    this.notificationTemplateRepository = container.getNotificationTemplateRepository();
+
+    // 3. Initialize Services
     this.notificationService = new NotificationApplicationService();
     this.notificationTemplateService = new NotificationTemplateApplicationService();
     this.notificationChannelService = new NotificationChannelApplicationService();

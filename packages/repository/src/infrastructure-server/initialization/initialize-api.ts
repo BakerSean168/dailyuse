@@ -6,11 +6,10 @@
  */
 
 import {
-  DatabaseProviderFactory,
   initializePrismaProvider,
-  RepositoryContainer,
   type IProviderInitializer,
-} from '../index';
+} from '../database-provider-factory';
+import { RepositoryContainer } from '../di/repository-container-v2';
 
 /**
  * Initialize API Repository layer

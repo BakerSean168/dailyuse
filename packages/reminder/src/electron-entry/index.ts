@@ -7,6 +7,7 @@
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { ReminderModule } from '../infrastructure-server';
+import { ReminderContainer } from '../infrastructure-server/di/reminder-container';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ReminderElectron');
@@ -37,14 +38,20 @@ export const ReminderElectronModule: IElectronModule = {
     const groupRepo = mod.reminderGroupRepository;
 
     // Template handlers
-    ipcMain.handle(Ch.TEMPLATE_LIST, (_, params) => templateRepo.findAll(params));
+    ipcMain.handle(
+      Ch.TEMPLATE_LIST,
+      (_, params) => templateRepo.findByIdentityId(params?.identityId ?? params),
+    );
     ipcMain.handle(Ch.TEMPLATE_GET, (_, id) => templateRepo.findById(id));
     ipcMain.handle(Ch.TEMPLATE_CREATE, (_, dto) => templateRepo.save(dto));
     ipcMain.handle(Ch.TEMPLATE_UPDATE, (_, dto) => templateRepo.save(dto));
     ipcMain.handle(Ch.TEMPLATE_DELETE, (_, id) => templateRepo.delete(id));
 
     // Group handlers
-    ipcMain.handle(Ch.GROUP_LIST, (_, params) => groupRepo.findAll(params));
+    ipcMain.handle(
+      Ch.GROUP_LIST,
+      (_, params) => groupRepo.findByIdentityId(params?.identityId ?? params),
+    );
     ipcMain.handle(Ch.GROUP_CREATE, (_, dto) => groupRepo.save(dto));
     ipcMain.handle(Ch.GROUP_UPDATE, (_, dto) => groupRepo.save(dto));
     ipcMain.handle(Ch.GROUP_DELETE, (_, id) => groupRepo.delete(id));
@@ -56,6 +63,7 @@ export const ReminderElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
+    ReminderContainer.getInstance().reset();
     logger.info('Reminder module destroyed');
   },
 };

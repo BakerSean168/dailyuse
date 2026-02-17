@@ -12,24 +12,25 @@ import type { ITaskTemplateRepository } from '../domain-server/repositories/ITas
 import type { ITaskInstanceRepository } from '../domain-server/repositories/ITaskInstanceRepository';
 import type { ITaskDependencyRepository } from '../domain-server/repositories/ITaskDependencyRepository';
 import type { ITaskFolderRepository } from '../domain-server/repositories/ITaskFolderRepository';
+import { TaskContainer } from './di/task-container';
 import { TaskRepositoryFactory } from './di/task-repository.factory';
-import { CreateTaskTemplate } from '../application-server/services/create-task-template';
-import { GetTaskTemplate } from '../application-server/services/get-task-template';
-import { ListTaskTemplates } from '../application-server/services/list-task-templates';
-import { UpdateTaskTemplate } from '../application-server/services/update-task-template';
-import { ActivateTaskTemplate } from '../application-server/services/activate-task-template';
-import { PauseTaskTemplate } from '../application-server/services/pause-task-template';
-import { ArchiveTaskTemplate } from '../application-server/services/archive-task-template';
-import { DeleteTaskTemplate } from '../application-server/services/delete-task-template';
-import { CompleteTaskInstance } from '../application-server/services/complete-task-instance';
-import { SkipTaskInstance } from '../application-server/services/skip-task-instance';
-import { GetTaskInstancesByDateRange } from '../application-server/services/get-task-instances-by-date-range';
-import { GetTaskInstance } from '../application-server/services/get-task-instance';
-import { ListTaskInstancesByAccount } from '../application-server/services/list-task-instances-by-account';
-import { ListTaskInstancesByTemplate } from '../application-server/services/list-task-instances-by-template';
-import { ListTaskInstancesByStatus } from '../application-server/services/list-task-instances-by-status';
-import { StartTaskInstance } from '../application-server/services/start-task-instance';
-import { DeleteTaskInstance } from '../application-server/services/delete-task-instance';
+import { CreateTaskTemplate } from '../application-server/use-cases/commands/create-task-template';
+import { GetTaskTemplate } from '../application-server/use-cases/queries/get-task-template';
+import { ListTaskTemplates } from '../application-server/use-cases/queries/list-task-templates';
+import { UpdateTaskTemplate } from '../application-server/use-cases/commands/update-task-template';
+import { ActivateTaskTemplate } from '../application-server/use-cases/commands/activate-task-template';
+import { PauseTaskTemplate } from '../application-server/use-cases/commands/pause-task-template';
+import { ArchiveTaskTemplate } from '../application-server/use-cases/commands/archive-task-template';
+import { DeleteTaskTemplate } from '../application-server/use-cases/commands/delete-task-template';
+import { CompleteTaskInstance } from '../application-server/use-cases/commands/complete-task-instance';
+import { SkipTaskInstance } from '../application-server/use-cases/commands/skip-task-instance';
+import { GetTaskInstancesByDateRange } from '../application-server/use-cases/queries/get-task-instances-by-date-range';
+import { GetTaskInstance } from '../application-server/use-cases/queries/get-task-instance';
+import { ListTaskInstancesByAccount } from '../application-server/use-cases/queries/list-task-instances-by-account';
+import { ListTaskInstancesByTemplate } from '../application-server/use-cases/queries/list-task-instances-by-template';
+import { ListTaskInstancesByStatus } from '../application-server/use-cases/queries/list-task-instances-by-status';
+import { StartTaskInstance } from '../application-server/use-cases/commands/start-task-instance';
+import { DeleteTaskInstance } from '../application-server/use-cases/commands/delete-task-instance';
 
 type BetterSQLiteDB = Database.Database;
 
@@ -66,27 +67,40 @@ export class TaskModule {
     dbConnection: PrismaClient | BetterSQLiteDB,
   ) {
     // 1. Initialize Repositories
-    this.taskTemplateRepository = TaskRepositoryFactory.createTaskTemplateRepository(
+    const taskTemplateRepository = TaskRepositoryFactory.createTaskTemplateRepository(
       dataSourceType,
       dbConnection,
     );
-    this.taskInstanceRepository = TaskRepositoryFactory.createTaskInstanceRepository(
+    const taskInstanceRepository = TaskRepositoryFactory.createTaskInstanceRepository(
       dataSourceType,
       dbConnection,
     );
-    this.taskDependencyRepository = TaskRepositoryFactory.createTaskDependencyRepository(
+    const taskDependencyRepository = TaskRepositoryFactory.createTaskDependencyRepository(
       dataSourceType,
       dbConnection,
     );
 
-    if (dataSourceType === 'prisma') {
-      this.taskFolderRepository = TaskRepositoryFactory.createTaskFolderRepository(
-        dataSourceType,
-        dbConnection,
-      );
+    const taskFolderRepository =
+      dataSourceType === 'prisma'
+        ? TaskRepositoryFactory.createTaskFolderRepository(dataSourceType, dbConnection)
+        : undefined;
+
+    // 2. Register repositories in DI container
+    const container = TaskContainer.getInstance();
+    container.reset();
+    container.setTaskTemplateRepository(taskTemplateRepository);
+    container.setTaskInstanceRepository(taskInstanceRepository);
+    container.setTaskDependencyRepository(taskDependencyRepository);
+    if (taskFolderRepository) {
+      container.setTaskFolderRepository(taskFolderRepository);
     }
 
-    // 2. Initialize Application Services (Pure DI)
+    this.taskTemplateRepository = container.getTaskTemplateRepository();
+    this.taskInstanceRepository = container.getTaskInstanceRepository();
+    this.taskDependencyRepository = container.getTaskDependencyRepository();
+    this.taskFolderRepository = taskFolderRepository;
+
+    // 3. Initialize Application Services
     this.createTaskTemplate = new CreateTaskTemplate(
       this.taskTemplateRepository,
       this.taskInstanceRepository,

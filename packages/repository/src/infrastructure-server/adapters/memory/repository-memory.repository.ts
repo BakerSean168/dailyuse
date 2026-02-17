@@ -4,7 +4,7 @@
  * In-memory implementation of IRepositoryRepository for testing.
  */
 
-import type { IRepositoryRepository } from '../../domain-server';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
 import type { Repository } from '../../../domain-server/aggregates/repository';
 import type { RepositoryStatus } from '@dailyuse/contracts/repository';
 
@@ -42,16 +42,8 @@ export class RepositoryMemoryRepository implements IRepositoryRepository {
     return this.repositories.has(id);
   }
 
-  async findById(id: string): Promise<Repository | null> {
-    return this.findById(id);
-  }
-
   async findByAccountId(identityId: string): Promise<Repository[]> {
     return this.findByIdentityId(identityId);
-  }
-
-  async findByIdentityIdAndStatus(identityId: string, status: RepositoryStatus): Promise<Repository[]> {
-    return this.findByIdentityIdAndStatus(identityId, status);
   }
 
   // Test helpers

@@ -71,10 +71,6 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     });
   }
 
-  async findById(id: string): Promise<Repository | null> {
-    return this.findById(id);
-  }
-
   async findByIdentityId(identityId: string): Promise<Repository[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM repositories WHERE identityId = ? ORDER BY createdAt DESC`,
@@ -130,13 +126,6 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
         deletedAt: row.deletedAt ?? null,
       }),
     );
-  }
-
-  async findByIdentityIdAndStatus(
-    identityId: string,
-    status: RepositoryStatus,
-  ): Promise<Repository[]> {
-    return this.findByIdentityIdAndStatus(identityId, status);
   }
 
   async delete(id: string): Promise<void> {

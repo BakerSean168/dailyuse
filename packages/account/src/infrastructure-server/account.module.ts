@@ -5,6 +5,7 @@ import {
   CloseAccountUseCase,
   CheckAvailabilityUseCase,
 } from '../application-server';
+import { AccountContainer } from './di/account-container';
 
 export interface AccountModuleRepositories {
   readonly accountRepository: IAccountRepository;
@@ -19,7 +20,11 @@ export class AccountModule {
   public readonly checkAvailability: CheckAvailabilityUseCase;
 
   constructor(repositories: AccountModuleRepositories) {
-    this.accountRepository = repositories.accountRepository;
+    const container = AccountContainer.getInstance();
+    container.reset();
+    container.setAccountRepository(repositories.accountRepository);
+
+    this.accountRepository = container.getAccountRepository();
 
     this.getProfile = new GetAccountProfileUseCase(this.accountRepository);
     this.updateProfile = new UpdateAccountProfileUseCase(this.accountRepository);

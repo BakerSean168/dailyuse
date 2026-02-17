@@ -146,7 +146,7 @@ export class ReminderSchedulerService {
    * 用于修复数据或重新初始化
    */
   async recalculateAllNextTriggerTimes(identityId: string): Promise<number> {
-    const templates = await this.templateRepository.findByAccountId(identityId, {
+    const templates = await this.templateRepository.findByIdentityId(identityId, {
       includeDeleted: false,
     });
 

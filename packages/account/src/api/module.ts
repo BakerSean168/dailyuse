@@ -9,8 +9,9 @@
  */
 
 import { Router } from 'express';
-import { prisma } from '@dailyuse/database';
+import type { PrismaClient } from '@dailyuse/database';
 import { PrismaAccountRepository, AccountModule } from '../infrastructure-server';
+import { AccountContainer } from '../infrastructure-server/di/account-container';
 import { registerAccountRoutes } from './routes';
 import type { AccountRouteHandlers } from './routes';
 
@@ -38,10 +39,10 @@ export const AccountApiModule: AccountApiModuleDef = {
   name: 'Account',
 
   register(context) {
-    const { router, middleware } = context;
+    const { router, middleware, db } = context;
 
     // 1. Composition Root �?使用共享数据库单�?
-    const accountRepository = new PrismaAccountRepository(prisma);
+    const accountRepository = new PrismaAccountRepository(db as PrismaClient);
     const accountModule = new AccountModule({ accountRepository });
 
     // 2. 创建路由处理�?
@@ -57,5 +58,9 @@ export const AccountApiModule: AccountApiModuleDef = {
 
     // 4. 挂载�?API 路由
     router.use('/accounts', accountRoutes);
+  },
+
+  destroy() {
+    AccountContainer.getInstance().reset();
   },
 };

@@ -11,6 +11,7 @@
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { TaskModule } from '../infrastructure-server';
+import { TaskContainer } from '../infrastructure-server/di/task-container';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('TaskElectron');
@@ -79,6 +80,7 @@ export const TaskElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
+    TaskContainer.getInstance().reset();
     logger.info('Task module destroyed');
   },
 };

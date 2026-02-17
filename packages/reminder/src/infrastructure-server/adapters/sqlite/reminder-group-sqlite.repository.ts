@@ -15,8 +15,8 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO reminder_groups (
-        id, identity_id, name, control_mode, is_enabled, status, "order", stats, created_at, updated_at, deleted_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, identity_id, name, control_mode, is_enabled, status, "order", stats, version, created_at, updated_at, deleted_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         control_mode = excluded.control_mode,
@@ -24,6 +24,7 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
         status = excluded.status,
         "order" = excluded."order",
         stats = excluded.stats,
+        version = excluded.version,
         updated_at = excluded.updated_at,
         deleted_at = excluded.deleted_at
     `);
@@ -37,6 +38,7 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
       dto.status,
       dto.order,
       dto.stats,
+      dto.version,
       dto.createdAt,
       dto.updatedAt,
       dto.deletedAt || null,
@@ -58,10 +60,18 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
       status: row.status,
       order: row.order,
       stats: row.stats,
+      version: row.version ?? 1,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       deletedAt: row.deleted_at || undefined,
     });
+  }
+
+  async findByIdentityId(
+    identityId: string,
+    options?: { includeDeleted?: boolean },
+  ): Promise<ReminderGroup[]> {
+    return this.findByAccountId(identityId, options);
   }
 
   async findByAccountId(
@@ -87,6 +97,7 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
         status: row.status,
         order: row.order,
         stats: row.stats,
+        version: row.version ?? 1,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         deletedAt: row.deleted_at || undefined,
@@ -203,6 +214,7 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
       status: row.status,
       order: row.order,
       stats: row.stats,
+      version: row.version ?? 1,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       deletedAt: row.deleted_at || undefined,

@@ -59,13 +59,6 @@ export class UserReminderPreferences
     return this._identityId;
   }
 
-  /**
-   * Alias for identityId to implement UserReminderPreferencesServer interface
-   */
-  public get identityId(): string {
-    return this._identityId;
-  }
-
   public get bestTimeSlots(): TimeSlotDTO[] {
     return [...this._bestTimeSlots];
   }

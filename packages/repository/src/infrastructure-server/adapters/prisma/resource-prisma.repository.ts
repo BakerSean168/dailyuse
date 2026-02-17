@@ -5,7 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
-import type { IResourceRepository } from '../../domain-server';
+import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
 import type { Resource } from '../../../domain-server/entities/resource';
 
 /**

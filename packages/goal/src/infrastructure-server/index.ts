@@ -31,3 +31,4 @@ export { PrismaWeightSnapshotMapper } from './mappers/prisma-weight-snapshot-map
 
 // ============ Composition Root ============
 export { GoalModule, type GoalModuleRepositories } from './goal.module';
+export { GoalContainer } from './di/goal-container';

@@ -13,6 +13,7 @@ import type { IReminderGroupRepository } from '../domain-server/repositories/IRe
 import type { IReminderResponseRepository } from '../domain-server/repositories/IReminderResponseRepository';
 import type { IUserReminderPreferenceRepository } from '../domain-server/repositories/IUserReminderPreferenceRepository';
 import { ReminderRepositoryFactory } from './di';
+import { ReminderContainer } from './di/reminder-container';
 
 type BetterSQLiteDB = Database.Database;
 
@@ -31,24 +32,40 @@ export class ReminderModule {
     dbConnection: PrismaClient | BetterSQLiteDB,
   ) {
     // Initialize Repositories using Factory
-    this.reminderTemplateRepository = ReminderRepositoryFactory.createReminderTemplateRepository(
+    const reminderTemplateRepository = ReminderRepositoryFactory.createReminderTemplateRepository(
       dataSourceType,
       dbConnection,
     );
-    this.reminderGroupRepository = ReminderRepositoryFactory.createReminderGroupRepository(
+    const reminderGroupRepository = ReminderRepositoryFactory.createReminderGroupRepository(
       dataSourceType,
       dbConnection,
     );
-    this.reminderResponseRepository = ReminderRepositoryFactory.createReminderResponseRepository(
+    const reminderResponseRepository = ReminderRepositoryFactory.createReminderResponseRepository(
       dataSourceType,
       dbConnection,
     );
 
-    if (dataSourceType === 'prisma') {
-      this.userReminderPreferenceRepository = ReminderRepositoryFactory.createUserReminderPreferenceRepository(
-        dataSourceType,
-        dbConnection,
-      );
+    const userReminderPreferenceRepository =
+      dataSourceType === 'prisma'
+        ? ReminderRepositoryFactory.createUserReminderPreferenceRepository(
+            dataSourceType,
+            dbConnection,
+          )
+        : undefined;
+
+    const container = ReminderContainer.getInstance();
+    container.reset();
+    container.setReminderTemplateRepository(reminderTemplateRepository);
+    container.setReminderGroupRepository(reminderGroupRepository);
+    container.setReminderResponseRepository(reminderResponseRepository);
+    if (userReminderPreferenceRepository) {
+      container.setUserReminderPreferenceRepository(userReminderPreferenceRepository);
     }
+
+    this.reminderTemplateRepository = container.getReminderTemplateRepository();
+    this.reminderGroupRepository = container.getReminderGroupRepository();
+    this.reminderResponseRepository = container.getReminderResponseRepository();
+
+    this.userReminderPreferenceRepository = userReminderPreferenceRepository;
   }
 }

@@ -1,5 +1,11 @@
 import type { PrismaClient } from '@dailyuse/database';
 import type Database from 'better-sqlite3';
+import type {
+  IScheduleExecutionRepository,
+  IScheduleRepository,
+  IScheduleStatisticsRepository,
+  IScheduleTaskRepository,
+} from '../domain-server';
 
 import {
   CreateScheduleTaskUseCase,
@@ -13,22 +19,19 @@ import {
   TriggerScheduleTaskUseCase,
   UpdateScheduleTaskUseCase,
 } from '../application-server/use-cases';
-import { ScheduleStatisticsApplicationService } from '../application-server/services/schedule-statistics-application-service';
-import { ScheduleEventApplicationService } from '../application-server/services/schedule-event-application-service';
-import { ScheduleEventPublisher } from '../application-server/services/schedule-event-publisher';
+import { ScheduleStatisticsApplicationService } from '../application-server/use-cases/schedule-statistics-application-service';
+import { ScheduleEventApplicationService } from '../application-server/use-cases/schedule-event-application-service';
+import { ScheduleEventPublisher } from '../application-server/use-cases/schedule-event-publisher';
 import { ScheduleRepositoryFactory } from './di';
+import { ScheduleContainer } from './di/schedule-container';
 
 type BetterSQLiteDB = Database.Database;
 
-type ScheduleRepositories = ReturnType<
-  typeof ScheduleRepositoryFactory.createPrismaRepositories
->;
-
 export class ScheduleModule {
-  public readonly scheduleRepository: ScheduleRepositories['scheduleRepository'];
-  public readonly scheduleExecutionRepository: ScheduleRepositories['scheduleExecutionRepository'];
-  public readonly scheduleStatisticsRepository: ScheduleRepositories['scheduleStatisticsRepository'];
-  public readonly scheduleTaskRepository: ScheduleRepositories['scheduleTaskRepository'];
+  public readonly scheduleRepository: IScheduleRepository;
+  public readonly scheduleExecutionRepository: IScheduleExecutionRepository;
+  public readonly scheduleStatisticsRepository: IScheduleStatisticsRepository;
+  public readonly scheduleTaskRepository: IScheduleTaskRepository;
 
   public readonly createScheduleTask: CreateScheduleTaskUseCase;
   public readonly updateScheduleTask: UpdateScheduleTaskUseCase;
@@ -49,10 +52,17 @@ export class ScheduleModule {
   ) {
     // 1. Initialize Repositories using Factory
     const repositories = ScheduleRepositoryFactory.create(dataSourceType, dbConnection);
-    this.scheduleRepository = repositories.scheduleRepository;
-    this.scheduleExecutionRepository = repositories.scheduleExecutionRepository;
-    this.scheduleStatisticsRepository = repositories.scheduleStatisticsRepository;
-    this.scheduleTaskRepository = repositories.scheduleTaskRepository;
+    const container = ScheduleContainer.getInstance();
+    container.reset();
+    container.setScheduleRepository(repositories.scheduleRepository);
+    container.setScheduleExecutionRepository(repositories.scheduleExecutionRepository);
+    container.setScheduleStatisticsRepository(repositories.scheduleStatisticsRepository);
+    container.setScheduleTaskRepository(repositories.scheduleTaskRepository);
+
+    this.scheduleRepository = container.getScheduleRepository();
+    this.scheduleExecutionRepository = container.getScheduleExecutionRepository();
+    this.scheduleStatisticsRepository = container.getScheduleStatisticsRepository();
+    this.scheduleTaskRepository = container.getScheduleTaskRepository();
 
     // 2. Initialize Services
     this.createScheduleTask = new CreateScheduleTaskUseCase(

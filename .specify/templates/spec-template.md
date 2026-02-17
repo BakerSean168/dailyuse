@@ -98,6 +98,9 @@
 - **AR-004**: Application services MUST NOT publish or dispatch domain events directly; they MAY only trigger events indirectly through aggregate behavior + repository save.
 - **AR-005**: Feature specs MUST define how event dispatch consistency is handled (transactional dispatch and/or outbox strategy) when domain events are present.
 - **AR-006**: Domain event payload types MUST come from `packages/contracts/src/modules/{domain}/protocol/{domain}-event-map.ts`; local ad-hoc payload interfaces/types are FORBIDDEN.
+- **AR-007**: Entity and DTO identifiers MUST use strong typed `xxId` types; raw-string identifier aliases are FORBIDDEN where typed IDs exist.
+- **AR-008**: Identifier field names MUST use `*Id` suffix; any `*Uuid` identifier field is FORBIDDEN.
+- **AR-009**: For account and identity aggregates, canonical primary identifier field MUST be `identityId` across entity, DTO, repository mapping, and API boundaries.
 
 *Example of marking unclear requirements:*
 

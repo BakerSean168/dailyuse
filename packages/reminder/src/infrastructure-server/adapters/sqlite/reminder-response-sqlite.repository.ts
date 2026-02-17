@@ -10,7 +10,7 @@ import type { IReminderResponseRepository } from '../../../domain-server/reposit
 export class SqliteReminderResponseRepository implements IReminderResponseRepository {
   constructor(private db: Database.Database) {}
 
-  async save(response: ReminderResponse): Promise<ReminderResponse> {
+  async save(response: ReminderResponse): Promise<void> {
     const dto = response.toPersistenceDTO();
 
     const stmt = this.db.prepare(`
@@ -31,7 +31,6 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
       dto.timestamp,
     );
 
-    return response;
   }
 
   async findById(id: string): Promise<ReminderResponse | null> {
