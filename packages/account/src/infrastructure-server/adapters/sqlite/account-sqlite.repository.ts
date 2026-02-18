@@ -4,7 +4,7 @@ import { Account } from '../../../domain-server';
 import type { AccountPersistenceDTO } from '@dailyuse/contracts/account';
 import { createLogger, eventBus } from '@dailyuse/utils';
 
-const logger = createLogger('ElectronAccountRepository');
+const logger = createLogger('SqliteAccountRepository');
 
 type AccountRow = {
   id: string;
@@ -19,7 +19,7 @@ type AccountRow = {
   updated_at: number;
 };
 
-export class ElectronAccountRepository implements IAccountRepository {
+export class SqliteAccountRepository implements IAccountRepository {
   constructor(private readonly db: Database.Database) {}
 
   async save(account: Account, _tx?: unknown): Promise<void> {
@@ -236,3 +236,5 @@ export class ElectronAccountRepository implements IAccountRepository {
     return 'ACTIVE';
   }
 }
+
+export { SqliteAccountRepository as ElectronAccountRepository };
