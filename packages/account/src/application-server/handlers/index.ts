@@ -5,3 +5,4 @@
  */
 
 export { IdentityCreatedHandler } from './identity-created.handler';
+export { registerAccountEventListeners } from './register-account-event-listeners';

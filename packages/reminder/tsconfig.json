@@ -31,6 +31,12 @@
       "@dailyuse/utils": [
         "../utils/src/index.ts"
       ],
+      "@dailyuse/schedule": [
+        "../schedule/src/index.ts"
+      ],
+      "@dailyuse/schedule/*": [
+        "../schedule/src/*/index.ts"
+      ],
       "@dailyuse/patterns": [
         "../patterns/src/index.ts"
       ]

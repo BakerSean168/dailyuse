@@ -4,7 +4,7 @@
  * 调整提醒频率
  */
 
-import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderTemplateRepository } from '@/domain-server/repositories/IReminderTemplateRepository';
 import { eventBus } from '@dailyuse/utils';
 
 /**

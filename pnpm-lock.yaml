@@ -315,9 +315,30 @@ importers:
       '@dailyuse/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@dailyuse/domain-shared':
+        specifier: workspace:*
+        version: link:../../packages/domain-shared
+      '@dailyuse/goal':
+        specifier: workspace:*
+        version: link:../../packages/goal
       '@dailyuse/governance':
         specifier: workspace:*
         version: link:../../packages/governance
+      '@dailyuse/http-client':
+        specifier: workspace:*
+        version: link:../../packages/http-client
+      '@dailyuse/patterns':
+        specifier: workspace:*
+        version: link:../../packages/patterns
+      '@dailyuse/reminder':
+        specifier: workspace:*
+        version: link:../../packages/reminder
+      '@dailyuse/schedule':
+        specifier: workspace:*
+        version: link:../../packages/schedule
+      '@dailyuse/task':
+        specifier: workspace:*
+        version: link:../../packages/task
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../../packages/utils
@@ -705,6 +726,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/patterns':
+        specifier: workspace:*
+        version: link:../patterns
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -788,6 +812,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/patterns':
+        specifier: workspace:*
+        version: link:../patterns
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -946,6 +973,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/patterns':
+        specifier: workspace:*
+        version: link:../patterns
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1074,6 +1104,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/patterns':
+        specifier: workspace:*
+        version: link:../patterns
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1136,6 +1169,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/patterns':
+        specifier: workspace:*
+        version: link:../patterns
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1245,6 +1281,9 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/patterns':
+        specifier: workspace:*
+        version: link:../patterns
       '@dailyuse/schedule':
         specifier: workspace:*
         version: link:../schedule

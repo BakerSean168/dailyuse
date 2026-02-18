@@ -4,8 +4,8 @@
  * 更新提醒模板
  */
 
-import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
-import type { IReminderGroupRepository } from '../../domain-server/repositories/IReminderGroupRepository';
+import type { IReminderTemplateRepository } from '@/domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderGroupRepository } from '@/domain-server/repositories/IReminderGroupRepository';
 import type {
   ReminderTemplateClientDTO,
   UpdateReminderTemplateReq,
@@ -17,7 +17,7 @@ import {
   NotificationAction,
 } from '@dailyuse/contracts/reminder';
 import { eventBus } from '@dailyuse/utils';
-import { ReminderPolicy } from '../../domain-server/services/ReminderPolicy';
+import { ReminderPolicy } from '@/domain-server/services/ReminderPolicy';
 
 /**
  * Update Reminder Template Service

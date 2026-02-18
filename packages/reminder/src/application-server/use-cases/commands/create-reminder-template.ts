@@ -4,10 +4,10 @@
  * 创建提醒模板
  */
 
-import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
-import type { IReminderGroupRepository } from '../../domain-server/repositories/IReminderGroupRepository';
-import { ReminderPolicy } from '../../domain-server/services/ReminderPolicy';
-import { ReminderTemplate } from '../../domain-server/aggregates/reminder-template';
+import type { IReminderTemplateRepository } from '@/domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderGroupRepository } from '@/domain-server/repositories/IReminderGroupRepository';
+import { ReminderPolicy } from '@/domain-server/services/ReminderPolicy';
+import { ReminderTemplate } from '@/domain-server/aggregates/reminder-template';
 import type {
   ReminderTemplateClientDTO,
   CreateReminderTemplateReq,

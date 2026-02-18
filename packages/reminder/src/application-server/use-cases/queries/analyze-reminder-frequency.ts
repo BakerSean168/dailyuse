@@ -4,9 +4,9 @@
  * 分析提醒频率效果
  */
 
-import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
-import type { IReminderResponseRepository } from '../../domain-server/repositories/IReminderResponseRepository';
-import { ResponseMetrics } from '../../domain-server/value-objects';
+import type { IReminderTemplateRepository } from '@/domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderResponseRepository } from '@/domain-server/repositories/IReminderResponseRepository';
+import { ResponseMetrics } from '@/domain-server/value-objects';
 
 /**
  * 响应行为类型

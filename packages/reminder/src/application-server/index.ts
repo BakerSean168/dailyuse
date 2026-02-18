@@ -1,4 +1,5 @@
 /**
  * Reminder Application Services
  */
-export * from './services';
+export * from './use-cases';
+export * from './handlers';

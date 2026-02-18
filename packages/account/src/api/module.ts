@@ -14,6 +14,7 @@ import { PrismaAccountRepository, AccountModule } from '../infrastructure-server
 import { AccountContainer } from '../infrastructure-server/di/account-container';
 import { registerAccountRoutes } from './routes';
 import type { AccountRouteHandlers } from './routes';
+import { registerAccountInitializationTasks } from './initialization';
 
 /**
  * Module context (structurally compatible with IApiModuleContext from apps/api).
@@ -58,6 +59,9 @@ export const AccountApiModule: AccountApiModuleDef = {
 
     // 4. 挂载�?API 路由
     router.use('/accounts', accountRoutes);
+
+    // 5. 注册初始化任务（事件监听等）
+    registerAccountInitializationTasks();
   },
 
   destroy() {

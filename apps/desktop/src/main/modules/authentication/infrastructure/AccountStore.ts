@@ -1,5 +1,14 @@
 /**
- * AccountStore - 多账号存储管理
+ * @deprecated 此类将在后续版本中移除。
+ * 账号持久化已由 `@dailyuse/account` 包的 `ElectronAccountRepository`（SQLite）承担，
+ * 通过 `AccountElectronModule` 在 bootstrap 阶段自动注册。
+ *
+ * 自动登录、快速登录列表等功能应迁移至 Authentication 模块，
+ * 账号查询应使用 `AccountContainer.getAccountRepository()` 替代。
+ *
+ * TODO: 将 app-lifecycle.ts 中的 AccountStore 引用迁移到 Authentication 模块后删除此文件。
+ *
+ * AccountStore - 多账号存储管理（已过时）
  *
  * 管理多个登录账号信息：
  * - 保存账号列表（用于快速登录）

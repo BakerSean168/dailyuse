@@ -1,5 +1,13 @@
 /**
- * LocalAccountManager - 本地账户管理器
+ * @deprecated 此类将在后续版本中移除。
+ * 账号创建和管理已由 `@dailyuse/account` 包的 `AccountElectronModule` 承担，
+ * 使用 SQLite 仓储（`ElectronAccountRepository`）+ Account 域模型。
+ *
+ * 首次启动本地账号创建应通过 `Account.create()` + `accountRepository.save()` 实现。
+ *
+ * TODO: 将 authentication/index.ts 中的 LocalAccountManager 引用迁移后删除此文件。
+ *
+ * LocalAccountManager - 本地账户管理器（已过时）
  *
  * 负责管理本地（离线）账户的创建和管理
  *

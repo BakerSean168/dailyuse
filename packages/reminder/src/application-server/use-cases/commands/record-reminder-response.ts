@@ -4,10 +4,10 @@
  * 记录提醒响应
  */
 
-import type { IReminderResponseRepository } from '../../domain-server/repositories/IReminderResponseRepository';
+import type { IReminderResponseRepository } from '@/domain-server/repositories/IReminderResponseRepository';
 import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
 import { createLogger, eventBus } from '@dailyuse/utils';
-import { ReminderResponse } from '../../domain-server/entities/reminder-response';
+import { ReminderResponse } from '@/domain-server/entities/reminder-response';
 
 const logger = createLogger('RecordReminderResponse');
 

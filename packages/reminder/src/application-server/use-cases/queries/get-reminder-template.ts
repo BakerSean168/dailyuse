@@ -4,7 +4,7 @@
  * 获取提醒模板详情
  */
 
-import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderTemplateRepository } from '@/domain-server/repositories/IReminderTemplateRepository';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 
 /**

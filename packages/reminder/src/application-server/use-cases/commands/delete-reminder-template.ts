@@ -4,9 +4,9 @@
  * 删除提醒模板
  */
 
-import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderTemplateRepository } from '@/domain-server/repositories/IReminderTemplateRepository';
 import { eventBus } from '@dailyuse/utils';
-import { ReminderPolicy } from '../../domain-server/services/ReminderPolicy';
+import { ReminderPolicy } from '@/domain-server/services/ReminderPolicy';
 // import { ReminderContainer } from '@dailyuse/reminder/infrastructure-server';
 
 /**

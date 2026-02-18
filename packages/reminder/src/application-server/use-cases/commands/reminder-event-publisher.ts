@@ -4,7 +4,7 @@
  * 提醒事件发布器 - 应用层事件发布的中央协调器
  */
 
-import type { ReminderTemplate } from '../../domain-server/aggregates/reminder-template';
+import type { ReminderTemplate } from '@/domain-server/aggregates/reminder-template';
 import { createLogger, eventBus } from '@dailyuse/utils';
 
 const logger = createLogger('ReminderEventPublisher');
