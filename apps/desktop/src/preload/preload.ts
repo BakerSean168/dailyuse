@@ -237,10 +237,6 @@ const ALLOWED_CHANNELS = [
   'auth:device:trust',
   'auth:device:revoke',
   'auth:device:rename',
-  // Account storage helpers
-  'auth:update-last-login',
-  'auth:remove-saved-account',
-  'auth:get-quick-login-accounts',
 
   // ═══════════ Notification (electron-entry: 11 handlers) ═══════════
   'notification:list',

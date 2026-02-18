@@ -32,11 +32,7 @@ export type {
 export { TokenManager, getTokenManager } from './TokenManager';
 export { SessionManager, createSessionManager } from './SessionManager';
 export { NetworkStateManager, getNetworkStateManager } from './NetworkStateManager';
-export { LocalAccountManager, getLocalAccountManager } from './LocalAccountManager';
-export { AccountStore, getAccountStore, registerAccountStoreIpcHandlers } from './AccountStore';
 export type { NetworkStatus, NetworkStateChangeEvent, NetworkStateManagerConfig } from './NetworkStateManager';
-export type { LocalAccount } from './LocalAccountManager';
-export type { StoredAccount } from './AccountStore';
 
 // Export local types
 export type { TokenData } from './TokenManager';

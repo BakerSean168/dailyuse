@@ -25,7 +25,7 @@ import { initNotificationService } from '../services';
 import { stopMemoryCleanup, closeDatabase } from '../database';
 import { getBootstrapper } from '../main';
 import { getWindowManager } from './WindowManager';
-import { getAccountStore, getTokenManager, registerAccountStoreIpcHandlers } from '../modules/authentication/infrastructure';
+import { getTokenManager } from '../modules/authentication/infrastructure';
 
 // ESM compatibility for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -112,38 +112,20 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
   registerSystemIpcHandlers(null, null, null);
   console.log('[Lifecycle] System IPC handlers registered (initial)');
 
-  // Register AccountStore IPC handlers
-  registerAccountStoreIpcHandlers();
-  console.log('[Lifecycle] AccountStore IPC handlers registered');
-
   // 决定显示哪个窗口
   const windowManager = getWindowManager();
-  const accountStore = getAccountStore();
   const tokenManager = getTokenManager();
 
-  // 检查是否有启用自动登录的账号
-  const autoLoginAccount = accountStore.getAutoLoginAccount();
+  // 检查是否存在可用会话
+  const tokenStatus = await tokenManager.getStatus();
   let shouldShowMainWindow = false;
 
-  if (autoLoginAccount) {
-    console.log('[Lifecycle] Found auto-login account:', autoLoginAccount.email);
-    
-    // 检查该账号的 Session 是否有效
-    const tokenStatus = await tokenManager.getStatus();
-    if (tokenStatus.hasValidToken && !tokenStatus.isAccessTokenExpired) {
-      console.log('[Lifecycle] Valid session found, going to main window');
-      shouldShowMainWindow = true;
-    } else if (tokenStatus.hasValidToken && tokenStatus.shouldRefresh) {
-      // 尝试刷新 Token
-      console.log('[Lifecycle] Token needs refresh, attempting...');
-      try {
-        // Token 刷新逻辑由 AuthDesktopApplicationService 处理
-        // 这里简单检查是否有 refresh token
-        shouldShowMainWindow = true; // 先进入主窗口，后台刷新
-      } catch (error) {
-        console.log('[Lifecycle] Token refresh failed, showing login window');
-      }
-    }
+  if (tokenStatus.hasValidToken && !tokenStatus.isAccessTokenExpired) {
+    console.log('[Lifecycle] Valid session found, going to main window');
+    shouldShowMainWindow = true;
+  } else if (tokenStatus.hasValidToken && tokenStatus.shouldRefresh) {
+    console.log('[Lifecycle] Token needs refresh, entering main window and refreshing in background');
+    shouldShowMainWindow = true;
   }
 
   let win: BrowserWindow;
@@ -156,14 +138,8 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
   } else {
     // 显示登录窗口
     win = windowManager.createLoginWindow({
-      hasQuickLoginAccounts: accountStore.getAccountCount() > 0,
-      quickLoginAccounts: accountStore.getAccounts().map((a) => ({
-        id: a.id,
-        username: a.username,
-        email: a.email,
-        avatarUrl: a.avatarUrl,
-        lastLoginAt: a.lastLoginAt,
-      })),
+      hasQuickLoginAccounts: false,
+      quickLoginAccounts: [],
     });
     console.log('[Lifecycle] Created login window');
   }
@@ -184,16 +160,10 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
   // macOS: Re-create window when dock icon is clicked
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      // 重新检查是否应该显示主窗口或登录窗口
-      const wm = getWindowManager();
-      const as = getAccountStore();
-      const autoLogin = as.getAutoLoginAccount();
-      
-      if (autoLogin && autoLogin.hasValidSession) {
-        wm.createMainWindow();
-      } else {
-        wm.createLoginWindow();
-      }
+      getWindowManager().createLoginWindow({
+        hasQuickLoginAccounts: false,
+        quickLoginAccounts: [],
+      });
     }
   });
 }

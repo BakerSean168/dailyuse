@@ -466,8 +466,6 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
       // 有有�?Session，直接进�?
       setLoading(true);
       try {
-        // 更新最后登录时�?
-        await window.electronAPI?.invoke('auth:update-last-login', account.id);
         await window.electronAPI?.invoke('window:transition-to-main');
       } finally {
         setLoading(false);
@@ -480,8 +478,7 @@ export function LoginView({ quickLoginAccounts = [], initialView = 'login' }: Lo
   }, []);
 
   // 移除账号
-  const handleRemoveAccount = useCallback(async (id: string) => {
-    await window.electronAPI?.invoke('auth:remove-saved-account', id);
+  const handleRemoveAccount = useCallback(async (_id: string) => {
     // TODO: 刷新账号列表
   }, []);
 

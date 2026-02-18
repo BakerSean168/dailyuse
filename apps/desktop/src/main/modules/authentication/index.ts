@@ -15,7 +15,7 @@
  */
 
 import { InitializationManager, InitializationPhase, createLogger } from '@dailyuse/utils';
-import { getNetworkStateManager, getLocalAccountManager } from './infrastructure';
+import { getNetworkStateManager } from './infrastructure';
 import { getAuthService } from './ipc/auth.ipc-handlers';
 
 const logger = createLogger('AuthenticationModule');
@@ -45,22 +45,14 @@ export function registerAuthenticationModule(): void {
       logger.info('Initializing Authentication module...');
 
       try {
-        // 1. 初始化本地账户管理器（确保首次启动有本地账户）
-        const localAccountManager = getLocalAccountManager(logger);
-        const localAccount = await localAccountManager.initialize();
-        logger.info('LocalAccountManager initialized', {
-          id: localAccount.id,
-          username: localAccount.username,
-        });
-
-        // 2. 初始化网络状态管理器
+        // 1. 初始化网络状态管理器
         const networkManager = getNetworkStateManager({}, logger);
         await networkManager.initialize();
         logger.info('NetworkStateManager initialized', {
           isOnline: networkManager.isOnline(),
         });
 
-        // 3. 获取认证服务并初始化
+        // 2. 获取认证服务并初始化
         const authService = getAuthService();
         const result = await authService.initialize();
 
@@ -69,8 +61,6 @@ export function registerAuthenticationModule(): void {
             identityId: result.identityId,
             sessionId: result.sessionId,
           });
-          // 更新本地账户在线状态
-          await localAccountManager.setOnlineStatus(true);
         } else if (result.needsReLogin) {
           logger.info('No valid session, user needs to login');
         } else if (result.needsRefresh) {
@@ -79,18 +69,15 @@ export function registerAuthenticationModule(): void {
           const refreshResult = await authService.refreshToken();
           if (refreshResult.ok) {
             logger.info('Token refreshed successfully');
-            await localAccountManager.setOnlineStatus(true);
           }
         }
 
-        // 4. 设置网络状态回调
+        // 3. 设置网络状态回调
         networkManager.setOnOnline(async () => {
           logger.info('Network online - attempting token refresh');
           try {
             const refreshResult = await authService.refreshToken();
-            if (refreshResult.ok) {
-              await localAccountManager.setOnlineStatus(true);
-            }
+            if (refreshResult.ok) logger.info('Token refreshed after network recovery');
           } catch (error) {
             logger.warn('Failed to refresh token on network restore', { error });
           }
@@ -98,7 +85,6 @@ export function registerAuthenticationModule(): void {
 
         networkManager.setOnOffline(async () => {
           logger.info('Network offline - switching to offline mode');
-          await localAccountManager.setOnlineStatus(false);
         });
 
         logger.info('Authentication module initialized successfully', {
@@ -162,8 +148,5 @@ export {
   createSessionManager,
   NetworkStateManager,
   getNetworkStateManager,
-  LocalAccountManager,
-  getLocalAccountManager,
   type NetworkStatus,
-  type LocalAccount,
 } from './infrastructure';

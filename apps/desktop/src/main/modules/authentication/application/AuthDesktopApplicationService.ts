@@ -322,18 +322,14 @@ export class AuthDesktopApplicationService {
     this.logger.info('Entering offline mode');
 
     try {
-      // 获取或创建本地账户
-      const { getLocalAccountManager } = require('../infrastructure/LocalAccountManager');
-      const localAccountManager = getLocalAccountManager();
-      
-      const localAccount = await localAccountManager.initialize();
+      const identityId = `local-${crypto.randomUUID()}`;
       
       this.authMode = 'LOCAL';
       
-      this.logger.info('Offline mode activated', { identityId: localAccount.id });
+      this.logger.info('Offline mode activated', { identityId });
       
       return toIpcResult(ok({
-        identityId: localAccount.id,
+        identityId,
         mode: 'LOCAL',
         message: '已进入离线模式',
       }));
