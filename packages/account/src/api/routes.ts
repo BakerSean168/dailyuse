@@ -1,8 +1,16 @@
 /**
  * Account API Routes
  *
- * Route definitions for the Account module.
- * Middleware is injected via parameters (from ApiBootstrapper context).
+ * 路由定义与请求处理。
+ * 中间件通过参数注入（来自 ApiBootstrapper 上下文），
+ * 不直接依赖 apps/api 内部实现。
+ *
+ * Routes:
+ *   GET    /me             — 获取当前用户资料
+ *   PUT    /me             — 更新当前用户资料 (UpdateAccountSchema)
+ *   POST   /availability   — 检查可用性 (CheckAvailabilitySchema)
+ *   POST   /me/close       — 注销账户 (CloseAccountSchema)
+ *   DELETE /me             — 注销账户（别名）
  */
 
 import { Router } from 'express';
@@ -12,10 +20,14 @@ import {
   CheckAvailabilitySchema,
   CloseAccountSchema,
 } from '@dailyuse/contracts/account';
+import { createExpressHelper } from '@dailyuse/utils/result';
 
 // ============ Types ============
 
 interface AuthenticatedRequest extends Request {
+  id?: string;
+  traceId?: string;
+  startTime?: number;
   user?: {
     identityId: string;
     sessionId?: string;
@@ -45,108 +57,106 @@ export function registerAccountRoutes(
   const router = Router();
   const { auth } = middleware;
 
-  // GET /me �?获取当前用户资料
+  // GET /me — 获取当前用户资料
   router.get('/me', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       if (!req.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+        return helper.unauthorized();
       }
 
       const profile = await handlers.getProfile(req.user.identityId);
-      res.json({ success: true, data: profile });
+      return helper.success(profile);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Internal Server Error';
-      res.status(500).json({ success: false, message });
+      return helper.internalError(message);
     }
   });
 
-  // PUT /me �?更新当前用户资料
+  // PUT /me — 更新当前用户资料 (UpdateAccountSchema)
   router.put('/me', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       if (!req.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+        return helper.unauthorized();
       }
 
       const parsed = UpdateAccountSchema.safeParse(req.body);
       if (!parsed.success) {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: parsed.error.issues,
-        });
-        return;
+        const details = parsed.error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        }));
+        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
       }
 
       const result = await handlers.updateProfile(req.user.identityId, parsed.data);
-      res.json({ success: true, data: result });
+      return helper.success(result);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Update failed';
-      res.status(400).json({ success: false, message });
+      return helper.badRequest(message);
     }
   });
 
-  // POST /availability �?检查可用�?
+  // POST /availability — 检查可用性 (CheckAvailabilitySchema)
   router.post('/availability', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       const parsed = CheckAvailabilitySchema.safeParse(req.body);
       if (!parsed.success) {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: parsed.error.issues,
-        });
-        return;
+        const details = parsed.error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        }));
+        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
       }
 
       const result = await handlers.checkAvailability(parsed.data);
-      res.json({ success: true, data: result });
+      return helper.success(result);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Check failed';
-      res.status(500).json({ success: false, message });
+      return helper.internalError(message);
     }
   });
 
-  // POST /me/close �?注销账户
+  // POST /me/close — 注销账户 (CloseAccountSchema)
   router.post('/me/close', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       if (!req.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+        return helper.unauthorized();
       }
 
       const parsed = CloseAccountSchema.safeParse(req.body);
       if (!parsed.success) {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: parsed.error.issues,
-        });
-        return;
+        const details = parsed.error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        }));
+        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
       }
 
       await handlers.closeAccount(req.user.identityId, parsed.data);
-      res.json({ success: true, message: 'Account closed' });
+      return helper.success(null, 'Account closed');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Close failed';
-      res.status(400).json({ success: false, message });
+      return helper.badRequest(message);
     }
   });
 
-  // DELETE /me �?注销账户（别名）
+  // DELETE /me — 注销账户（别名）
   router.delete('/me', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       if (!req.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+        return helper.unauthorized();
       }
 
       await handlers.closeAccount(req.user.identityId, req.body);
-      res.json({ success: true, message: 'Account closed' });
+      return helper.success(null, 'Account closed');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Close failed';
-      res.status(400).json({ success: false, message });
+      return helper.badRequest(message);
     }
   });
 
