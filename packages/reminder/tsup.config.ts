@@ -10,6 +10,7 @@ export default defineConfig({
     'src/infrastructure-server/index.ts',
     'src/application-client/index.ts',
     'src/infrastructure-client/index.ts',
+    'src/api/index.ts',
     'src/electron-entry/index.ts',
   ],
   format: ['esm'],

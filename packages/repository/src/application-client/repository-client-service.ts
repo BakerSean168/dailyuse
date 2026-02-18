@@ -27,7 +27,7 @@ import type {
   CreateRepositoryRequest,
   CreateFolderRequest,
 } from '@/infrastructure-client/adapters/types';
-import { Repository } from '@/domain-client/aggregates/Repository';
+import { Repository } from '@/domain-client/aggregates/repository';
 
 export class RepositoryClientService {
   constructor(private readonly repositoryApi: IRepositoryApiClient) {}

@@ -4,11 +4,11 @@
  * Update Markdown 鍐呭
  */
 
-import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
-import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
+import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { StoragePolicy } from '../../domain-server/services/StoragePolicy';
-import type { IStoragePort } from '../ports/IStoragePort';
+import { StoragePolicy } from '../../../domain-server/services/StoragePolicy';
+import type { IStoragePort } from '../../ports/IStoragePort';
 
 /**
  * Update Resource Content Input

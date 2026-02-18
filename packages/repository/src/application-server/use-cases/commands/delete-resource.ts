@@ -4,9 +4,9 @@
  * Delete asset
  */
 
-import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
-import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
-import type { IStoragePort } from '../ports/IStoragePort';
+import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
+import type { IStoragePort } from '../../ports/IStoragePort';
 
 /**
  * Delete Resource Input

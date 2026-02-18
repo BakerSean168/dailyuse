@@ -4,7 +4,7 @@
  * GetResource璇︽儏
  */
 
-import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
+import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 /**

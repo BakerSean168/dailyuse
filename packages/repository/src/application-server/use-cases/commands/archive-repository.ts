@@ -4,7 +4,7 @@
  * 褰掓。Repository
  */
 
-import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
 import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
 
 /**

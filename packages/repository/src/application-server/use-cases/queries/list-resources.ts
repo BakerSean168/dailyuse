@@ -4,7 +4,7 @@
  * GetRepository鐨勬墍鏈夎祫婧?
  */
 
-import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
+import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 /**

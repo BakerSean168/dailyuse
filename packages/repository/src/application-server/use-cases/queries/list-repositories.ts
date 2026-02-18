@@ -4,8 +4,8 @@
  * Get all repositories of the user?
  */
 
-import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
-import { Repository } from '../../domain-server/aggregates/repository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
+import { Repository } from '../../../domain-server/aggregates/repository';
 import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
 import { RepositoryStatus } from '@dailyuse/contracts/repository';
 

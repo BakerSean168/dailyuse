@@ -4,15 +4,15 @@
  * Create resource
  */
 
-import { Resource } from '../../domain-server/entities/resource';
-import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
-import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
+import { Resource } from '../../../domain-server/entities/resource';
+import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import { ResourceType } from '@dailyuse/contracts/repository';
-import { RepositoryId } from '../../domain-shared/value-objects/repository-id';
-import { FolderId } from '../../domain-shared/value-objects/folder-id';
-import { StoragePolicy } from '../../domain-server/services/StoragePolicy';
-import type { IStoragePort } from '../ports/IStoragePort';
+import { RepositoryId } from '../../../domain-shared/value-objects/repository-id';
+import { FolderId } from '../../../domain-shared/value-objects/folder-id';
+import { StoragePolicy } from '../../../domain-server/services/StoragePolicy';
+import type { IStoragePort } from '../../ports/IStoragePort';
 
 /**
  * Create Resource Input

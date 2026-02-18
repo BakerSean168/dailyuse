@@ -1,10 +1,10 @@
-import type { IEditorWorkspaceRepository } from '../../domain-server/repositories/IEditorWorkspaceRepository';
-import type { IEditorSessionRepository } from '../../domain-server/repositories/IEditorSessionRepository';
-import type { IEditorGroupRepository } from '../../domain-server/repositories/IEditorGroupRepository';
-import type { IEditorTabRepository } from '../../domain-server/repositories/IEditorTabRepository';
-import { EditorSession } from '../../domain-server/entities/editor-session';
-import { EditorWorkspace } from '../../domain-server/aggregates/editor-workspace';
-import { SessionRestorer } from '../../domain-server/services/SessionRestorer';
+import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
+import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
+import type { IEditorGroupRepository } from '../../../domain-server/repositories/IEditorGroupRepository';
+import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
+import { EditorSession } from '../../../domain-server/entities/editor-session';
+import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
+import { SessionRestorer } from '../../../domain-server/services/SessionRestorer';
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 import type { 
   EditorWorkspaceServerDTO,

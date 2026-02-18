@@ -5,7 +5,7 @@
  */
 
 // ===== Services =====
-export * from './services';
+export * from './use-cases';
 
 // ===== Ports =====
 export * from './ports/IStoragePort';

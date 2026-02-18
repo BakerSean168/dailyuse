@@ -7,8 +7,8 @@
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import type {
   INotificationRepository,
-} from '../../domain-server/repositories';
-import { toNotificationClientDTO } from './notification-dto-converters';
+} from '../../../domain-server/repositories';
+import { toNotificationClientDTO } from '../commands/notification-dto-converters';
 
 /**
  * Get Unread Notifications Service

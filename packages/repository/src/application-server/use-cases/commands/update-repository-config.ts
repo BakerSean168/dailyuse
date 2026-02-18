@@ -4,7 +4,7 @@
  * UpdateRepository閰嶇疆
  */
 
-import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
 import type {
   RepositoryClientDTO,
   RepositoryConfigDTO,

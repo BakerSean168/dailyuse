@@ -3,15 +3,15 @@
  * 编辑器会话应用服务
  */
 
-import type { IEditorSessionRepository } from '../../domain-server/repositories/IEditorSessionRepository';
-import type { IEditorWorkspaceRepository } from '../../domain-server/repositories/IEditorWorkspaceRepository';
-import type { IEditorGroupRepository } from '../../domain-server/repositories/IEditorGroupRepository';
-import type { IEditorTabRepository } from '../../domain-server/repositories/IEditorTabRepository';
+import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
+import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
+import type { IEditorGroupRepository } from '../../../domain-server/repositories/IEditorGroupRepository';
+import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
 import type { CreateEditorSessionRequest, EditorSessionClientDTO, UpdateEditorSessionRequest } from '@dailyuse/contracts/editor';
-import { EditorSession } from '../../domain-server/entities/editor-session';
-import { EditorPolicy } from '../../domain-server/services/EditorPolicy';
-import { SessionRestorer } from '../../domain-server/services/SessionRestorer';
-import type { IRepositoryContentPort } from '../ports/IRepositoryContentPort';
+import { EditorSession } from '../../../domain-server/entities/editor-session';
+import { EditorPolicy } from '../../../domain-server/services/EditorPolicy';
+import { SessionRestorer } from '../../../domain-server/services/SessionRestorer';
+import type { IRepositoryContentPort } from '../../ports/IRepositoryContentPort';
 import type { TabViewStateServerDTO, TabType } from '@dailyuse/contracts/editor';
 
 /**

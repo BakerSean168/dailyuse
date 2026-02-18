@@ -23,7 +23,13 @@ import { ApiBootstrapper } from './bootstrap';
 import { GovernanceApiModule } from '@dailyuse/governance/api';
 import { AccountApiModule } from '@dailyuse/account/api';
 import { AuthenticationApiModule } from '@dailyuse/authentication/api';
+import { EditorApiModule } from '@dailyuse/editor/api';
 import { GoalApiModule } from '@dailyuse/goal/api';
+import { NotificationApiModule } from '@dailyuse/notification/api';
+import { ReminderApiModule } from '@dailyuse/reminder/api';
+import { RepositoryApiModule } from '@dailyuse/repository/api';
+import { ScheduleApiModule } from '@dailyuse/schedule/api';
+import { SettingApiModule } from '@dailyuse/setting/api';
 import { TaskApiModule } from '@dailyuse/task/api';
 
 // 初始化日志系统
@@ -56,10 +62,14 @@ async function bootstrap(): Promise<void> {
     .register(GovernanceApiModule)         // ✅ 治理模块
     .register(AccountApiModule)            // ✅ 账户模块
     .register(AuthenticationApiModule)     // ✅ 认证模块
+    .register(EditorApiModule)             // ✅ 编辑器模块
+    .register(NotificationApiModule)       // ✅ 通知模块
+    .register(ReminderApiModule)           // ✅ 提醒模块
+    .register(RepositoryApiModule)         // ✅ 仓库模块
+    .register(ScheduleApiModule)           // ✅ 日程模块
+    .register(SettingApiModule)            // ✅ 设置模块
     .register(TaskApiModule)              // ✅ 任务模块
     .register(GoalApiModule)              // ✅ 目标模块
-    // .register(LegacyGoalModule)         // ❌ 暂不加载
-    // .register(LegacyTaskModule)         // ❌ 暂不加载
     .init();
 
   // 3. 执行 InitializationManager 中的启动任务（各模块在 register 阶段注册的初始化任务）

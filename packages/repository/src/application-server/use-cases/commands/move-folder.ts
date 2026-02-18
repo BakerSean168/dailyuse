@@ -4,13 +4,13 @@
  * 绉诲姩鏂囦欢澶?
  */
 
-import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
-import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
-import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
-import { FolderHierarchyService } from '../../domain-server/services/FolderHierarchyService';
-import { PathCalculator } from '../../domain-server/services/PathCalculator';
+import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
+import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
+import { FolderHierarchyService } from '../../../domain-server/services/FolderHierarchyService';
+import { PathCalculator } from '../../../domain-server/services/PathCalculator';
 import type { FolderClientDTO } from '@dailyuse/contracts/repository';
-import type { IStoragePort } from '../ports/IStoragePort';
+import type { IStoragePort } from '../../ports/IStoragePort';
 
 /**
  * Move Folder Input

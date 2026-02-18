@@ -8,6 +8,7 @@ export default defineConfig({
     'src/domain-client/index.ts',
     'src/application-server/index.ts',
     'src/infrastructure-server/index.ts',
+    'src/api/index.ts',
     'src/electron-entry/index.ts',
   ],
   format: ['esm'],

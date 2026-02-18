@@ -318,6 +318,9 @@ importers:
       '@dailyuse/domain-shared':
         specifier: workspace:*
         version: link:../../packages/domain-shared
+      '@dailyuse/editor':
+        specifier: workspace:*
+        version: link:../../packages/editor
       '@dailyuse/goal':
         specifier: workspace:*
         version: link:../../packages/goal
@@ -327,15 +330,24 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../../packages/http-client
+      '@dailyuse/notification':
+        specifier: workspace:*
+        version: link:../../packages/notification
       '@dailyuse/patterns':
         specifier: workspace:*
         version: link:../../packages/patterns
       '@dailyuse/reminder':
         specifier: workspace:*
         version: link:../../packages/reminder
+      '@dailyuse/repository':
+        specifier: workspace:*
+        version: link:../../packages/repository
       '@dailyuse/schedule':
         specifier: workspace:*
         version: link:../../packages/schedule
+      '@dailyuse/setting':
+        specifier: workspace:*
+        version: link:../../packages/setting
       '@dailyuse/task':
         specifier: workspace:*
         version: link:../../packages/task
@@ -1107,6 +1119,9 @@ importers:
       '@dailyuse/patterns':
         specifier: workspace:*
         version: link:../patterns
+      '@dailyuse/schedule':
+        specifier: workspace:*
+        version: link:../schedule
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils

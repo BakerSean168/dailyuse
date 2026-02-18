@@ -4,11 +4,11 @@
  * Delete鏂囦欢澶癸紙绾ц仈锛?
  */
 
-import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
-import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
-import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
-import type { IStoragePort } from '../ports/IStoragePort';
-import type { Folder } from '../../domain-server/entities/folder';
+import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
+import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
+import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
+import type { IStoragePort } from '../../ports/IStoragePort';
+import type { Folder } from '../../../domain-server/entities/folder';
 
 /**
  * Delete Folder Input

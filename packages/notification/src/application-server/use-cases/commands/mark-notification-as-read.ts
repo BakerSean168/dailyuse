@@ -6,7 +6,7 @@
 
 import type {
   INotificationRepository,
-} from '../../domain-server/repositories';
+} from '../../../domain-server/repositories';
 
 /**
  * Mark Notification As Read Service
