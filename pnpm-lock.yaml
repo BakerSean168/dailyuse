@@ -1107,9 +1107,6 @@ importers:
       '@dailyuse/patterns':
         specifier: workspace:*
         version: link:../patterns
-      '@dailyuse/schedule':
-        specifier: workspace:*
-        version: link:../schedule
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
