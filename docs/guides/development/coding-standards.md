@@ -5,9 +5,9 @@ tags:
   - coding-standards
   - typescript
   - vue
-  - nestjs
+  - express
   - architecture
-description: DailyUse项目代码规范 - TypeScript、Vue 3、NestJS编码规范与架构最佳实践
+description: DailyUse项目代码规范 - TypeScript、Vue 3、Express编码规范与架构最佳实践
 created: 2025-11-23T16:00:00
 updated: 2025-01-22T00:00:00
 ---
@@ -24,7 +24,7 @@ updated: 2025-01-22T00:00:00
 - [通用规范](#通用规范)
 - [TypeScript规范](#typescript规范)
 - [Vue 3规范](#vue-3规范)
-- [NestJS规范](#nestjs规范)
+- [Express规范](#express规范)
 - [命名约定](#命名约定)
 - [架构与分层](#架构与分层)
 - [注释规范](#注释规范)
@@ -348,7 +348,7 @@ export function goalStore() {
 
 ---
 
-## 🏗 NestJS规范
+## 🏗 Express规范
 
 ### 模块结构
 
@@ -396,7 +396,7 @@ export class GoalService {
 
 ### 异常处理
 
-#### ✅ 使用NestJS内置异常
+#### ✅ 使用 Express 统一错误处理（HTTP 错误语义清晰）
 
 ```typescript
 // ✅ Good
@@ -686,7 +686,7 @@ trim_trailing_whitespace = false
 
 - [TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html)
 - [Vue Style Guide](https://vuejs.org/style-guide/)
-- [NestJS Best Practices](https://docs.nestjs.com/)
+- [Express Best Practices](https://expressjs.com/en/advanced/best-practice-security.html)
 
 ### 代码质量工具
 

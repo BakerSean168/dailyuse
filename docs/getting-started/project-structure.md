@@ -22,8 +22,9 @@ DailyUse/
 │   └── desktop/            # Desktop 应用
 ├── packages/               # 共享包
 │   ├── contracts/          # 类型契约
-│   ├── domain-client/      # 客户端领域层
-│   ├── domain-server/      # 服务端领域层
+│   ├── domain-shared/      # 共享领域基础类型
+│   ├── governance/         # 规约治理与可执行检查
+│   ├── {domain}/           # 垂直业务模块包
 │   ├── utils/              # 工具库
 │   ├── ui/                 # UI 组件
 │   └── assets/             # 静态资源
@@ -39,7 +40,7 @@ DailyUse/
 
 ### API 服务 (apps/api/)
 
-后端 API 服务，使用 NestJS 框架。
+后端 API 服务，使用 Express 框架。
 
 ```
 apps/api/
@@ -138,34 +139,32 @@ apps/desktop/
 
 **用途**: 确保前后端类型一致，避免类型不匹配。
 
-### domain-client (packages/domain-client/)
+### domain-shared (packages/domain-shared/)
 
-客户端领域层，定义仓储接口和领域服务。
+共享领域基础类型，定义跨端复用的值对象、ID 类型、枚举等。
 
 ```
-packages/domain-client/
+packages/domain-shared/
 ├── src/
-│   ├── goal/
-│   │   ├── repositories/    # 仓储接口
-│   │   ├── services/        # 领域服务
-│   │   └── models/          # 领域模型
+│   ├── {domain}/
+│   │   ├── ids/
+│   │   ├── value-objects/
+│   │   └── enums/
 │   └── ...
 └── package.json
 ```
 
-### domain-server (packages/domain-server/)
+### 垂直业务模块包 (packages/{domain}/)
 
-服务端领域层，定义领域实体和业务逻辑。
+每个业务域独立成包，包内再按 DDD 横向分层。
 
 ```
-packages/domain-server/
+packages/{domain}/
 ├── src/
-│   ├── goal/
-│   │   ├── entities/        # 领域实体
-│   │   ├── value-objects/   # 值对象
-│   │   ├── services/        # 领域服务
-│   │   └── events/          # 领域事件
-│   └── ...
+│   ├── domain/
+│   ├── application/
+│   ├── infrastructure/
+│   └── presentation/
 └── package.json
 ```
 

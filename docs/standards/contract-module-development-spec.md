@@ -16,7 +16,7 @@ tags: [standard, contract]
 
 1. **Pure Types (纯类型)**: 仅包含 `interface`, `type`, `const` (用于枚举)。**严禁包含业务逻辑、类方法或运行时代码**。
 2. **Layer Separation (分层)**: 明确区分 Client (前端/API消费者) 和 Server (后端/持久层) 的数据形态。
-3. **Single Source of Truth (唯一真值)**: 所有的 DTO、API 接口定义、实体形状定义都必须在此处，供 `domain-client`, `domain-server`, `domain-shared` 引用。
+3. **Single Source of Truth (唯一真值)**: 所有的 DTO、API 接口定义、实体形状定义都必须在此处，供 `apps/{web,desktop}/src/modules/*`、`packages/{domain}`、`domain-shared` 引用。
 
 ---
 
@@ -57,14 +57,14 @@ export interface AccountProfile {
   birthday?: DomainDate; // ✅ 使用 Date 对象
 }
 
-// 2. Transfer DTO (给前端 API / domain-client 用)
+// 2. Transfer DTO (给前端 API / 客户端模块用)
 export interface AccountProfileDTO {
   nickname: string;
   gender: GenderType;
   birthday?: TransferDate; // ✅ 使用 number 时间戳
 }
 
-// 3. Persistence DTO (给 domain-server / Repository 用)
+// 3. Persistence DTO (给服务端模块 / Repository 用)
 export interface AccountProfilePersistenceDTO {
   nickname: string;
   gender: GenderType;
@@ -87,7 +87,7 @@ export interface AccountProfilePersistenceDTO {
 
 ### 4.2 Client 端定义 (`EntityClient`)
 
-* **用途**: 定义 `domain-client` 中聚合根 Class 必须实现的接口。
+* **用途**: 定义客户端模块中聚合根 Class 必须实现的接口。
 * **DTO**: `EntityClientDTO` (对应 API 返回的 JSON)。
 
 ```typescript
@@ -119,7 +119,7 @@ export interface AccountClientStatic {
 
 ### 4.3 Server 端定义 (`EntityServer`)
 
-* **用途**: 定义 `domain-server` 中聚合根 Class 必须实现的接口。
+* **用途**: 定义服务端模块中聚合根 Class 必须实现的接口。
 * **DTO**:
 * `EntityServerDTO`: 用于构造函数的内部 DTO。
 * `EntityPersistenceDTO`: 用于 Repository 的数据库行数据。

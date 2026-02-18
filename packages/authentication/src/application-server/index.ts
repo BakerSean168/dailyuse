@@ -4,8 +4,8 @@
  * 认证模块应用服务
  */
 
-// Services
-export * from './services';
+// usecases
+export * from './use-cases';
 
 // Handlers
 // export * from './handlers';

@@ -10,7 +10,6 @@ import { GoalPolicy } from '@/domain-server';
 import type { DeleteGoalRes } from '@dailyuse/contracts/goal';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import { GoalEventPublisher } from './goal-event-publisher';
 
 /**
  * Delete Goal Use Case
@@ -78,7 +77,6 @@ export class DeleteGoal {
     const dto = goal.toClientDTO(true);
     goal.softDelete();
     await this.goalRepository.save(goal);
-    await GoalEventPublisher.publishGoalEvents(goal);
     return ok(dto);
   }
 }

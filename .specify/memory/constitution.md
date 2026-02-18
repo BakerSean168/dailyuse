@@ -1,8 +1,11 @@
-<!-- SYNC IMPACT REPORT (2026-02-17)
-Version: 1.5.0 → 1.6.0 (MINOR: Added mandatory strong-typed ID and aggregate identifier naming constraints)
+<!-- SYNC IMPACT REPORT (2026-02-18)
+Version: 1.6.0 → 2.0.0 (MAJOR: Re-defined architecture baseline from domain-client/domain-server split to vertical module packages; replaced Principle VII reference model)
 Modified Principles:
-- VI. Contract Standardization & Domain Architecture (Package Structure Specification) → VI. Contract Standardization & Domain Architecture (Package Structure Specification) (strong-typed ID + naming contract made explicit)
-- IX. Domain Event Lifecycle Ownership → IX. Domain Event Lifecycle Ownership (identifier typing consistency added to verification)
+- I. Monorepo-First DDD Architecture → I. Monorepo-First DDD Architecture (Vertical Slice Module Packages)
+- III. Multi-Platform Support (Web & Desktop Consistency) → III. Multi-Platform Support (Web & Desktop Consistency)
+- IV. Code Consistency & Maintainability → IV. Code Consistency & Maintainability (kebab-case enforcement + symbol naming clarification)
+- VII. Example Modules as Executable Code Standards (Living Documentation) → VII. Governance Module as Executable Code Standard (Living Documentation)
+- Technology Stack Requirements (backend framework and baseline versions updated)
 Added Sections:
 - None
 Removed Sections:
@@ -13,91 +16,112 @@ Templates Requiring Updates:
 - ✅ .specify/templates/tasks-template.md
 - ⚠ pending: .specify/templates/commands/*.md (directory not found in repository)
 Runtime Guidance Updates:
-- ✅ docs/standards/domain-shared-type-value-object-spec.md
+- ✅ README.md
 - ✅ docs/standards/domain-server-spec.md
+- ✅ docs/standards/domain-client-spec.md
 Follow-up TODOs:
-- TODO(COMMAND_TEMPLATES): Add .specify/templates/commands/ if Speckit command templates are introduced later, then mirror Principle VI/IX identifier checks there.
+- TODO(COMMAND_TEMPLATES): Add .specify/templates/commands/ if Speckit command templates are introduced later, then mirror Principle IV/VII naming and governance checks there.
 -->
 
 # DailyUse Constitution
 
-A multi-platform intelligent personal productivity management platform unifying goal management, task tracking, knowledge curation, and habit building into a seamless user workflow.
+A multi-platform intelligent personal productivity management platform unifying goal management,
+task tracking, knowledge curation, and habit building into a seamless user workflow.
 
 ## Core Principles
 
-### I. Monorepo-First DDD Architecture
+### I. Monorepo-First DDD Architecture (Vertical Slice Module Packages)
 
-Domain-driven design with strict separation of concerns across frontend, backend, and shared packages.
+Domain-driven design with strict separation of concerns and vertical domain slicing at package level.
 
 **Non-negotiable rules:**
-- Every business domain MUST be organized following DDD principles: domain layer (entities, repositories, services), application layer (use cases, DTOs), infrastructure layer (implementations), and presentation layer (UI components)
-- Core business logic MUST reside in `packages/domain-server/` (backend) and `packages/domain-client/` (frontend), NOT scattered across app directories
-- Each module `apps/{api,web,desktop}/src/modules/{domain}/` must mirror DDD structure with clear folder hierarchy
-- Circular dependencies between modules are FORBIDDEN; dependency graph must remain acyclic (verified via `nx graph`)
-- Shared contracts (interfaces, types) MUST be defined in `packages/contracts/` for frontend-backend alignment
+- Every business domain MUST be organized by vertical module package first (for example,
+  `packages/{domain}/`), then split internally by layers (domain/application/infrastructure/presentation)
+- Shared foundations MUST be limited to `packages/contracts/` and `packages/domain-shared/`; domain
+  behavior MUST NOT be centralized in removed `domain-server`/`domain-client` mega-packages
+- Each module in `apps/{api,web,desktop}/src/modules/{domain}/` MUST mirror DDD boundaries with clear
+  folder hierarchy
+- Circular dependencies between modules or packages are FORBIDDEN; dependency graph MUST remain acyclic
+  (verified via `nx graph`)
+- Shared contracts (interfaces, types) MUST be defined in `packages/contracts/` for frontend-backend
+  alignment
 
-**Rationale:** DDD ensures code remains maintainable and understandable as the codebase grows. Clear layering prevents business logic leakage into presentation, making code testable and portable across platforms.
+**Rationale:** Vertical slicing isolates change impact and reduces the blast radius of build failures.
+Layered structure inside each package preserves DDD boundaries without creating over-centralized,
+high-coupling core packages.
 
 ### II. Type-Safe Full Stack (TypeScript Mandatory)
 
-All code MUST be written in TypeScript with strict mode enabled. No JavaScript files permitted in source.
+All code MUST be written in TypeScript with strict mode enabled. No JavaScript files are permitted in source.
 
 **Non-negotiable rules:**
 - `tsconfig.json` MUST include `"strict": true` at all levels (root, `tsconfig.base.json`, and per-project)
 - Every function signature MUST have explicit parameter and return type annotations
 - No use of `any` type except when explicitly justified in code comments
-- Shared types MUST flow from `packages/contracts/` to both backend and frontend; client must never re-invent types
-- Prisma schema MUST be the single source of truth for database types; generated types MUST be used in application code
+- Shared types MUST flow from `packages/contracts/` to both backend and frontend; clients MUST NOT
+  re-invent types
+- Prisma schema MUST be the single source of truth for database types; generated types MUST be used in
+  application code
 
-**Rationale:** TypeScript prevents entire categories of runtime errors at compile time, accelerating development and reducing production incidents. Strict mode ensures consistency across the monorepo.
+**Rationale:** TypeScript prevents entire categories of runtime errors at compile time, accelerating
+development and reducing production incidents.
 
 ### III. Multi-Platform Support (Web & Desktop Consistency)
 
-Code MUST be platform-agnostic where possible; platform-specific concerns isolated in presentation layers.
+Code MUST be platform-agnostic where possible; platform-specific concerns are isolated in presentation layers.
 
 **Non-negotiable rules:**
-- Business logic (domain + application layers) MUST NOT depend on platform-specific APIs (Vue, React, Electron)
-- `packages/domain-client/` MUST contain platform-agnostic client-side business logic (used by both web and desktop)
-- Presentation layer (`presentation/components/`, `presentation/views/`) is the ONLY place where framework-specific code (Vue, React) is permitted
-- Electron main process (IPC, native APIs) MUST NOT contain business logic; delegate to backend API or shared domain services
-- Shared UI components (`packages/ui/`) MUST be framework-agnostic when possible, or provide adapter implementations for both Vue and React
+- Business logic (domain + application layers) MUST NOT depend on platform-specific APIs (Vue, React,
+  Electron)
+- Platform-agnostic client-side business logic MUST be placed in domain module packages and/or
+  `packages/domain-shared/`, not in framework view layers
+- Presentation layer (`presentation/components/`, `presentation/views/`) is the ONLY place where
+  framework-specific code (Vue, React) is permitted
+- Electron main process (IPC, native APIs) MUST NOT contain business logic; it delegates to backend API or
+  domain services in module packages
+- Shared UI packages (`packages/ui-*`) MUST be framework-specific by adapter and MUST NOT embed domain
+  business rules
 
-**Rationale:** Separating business logic from presentation enables code reuse across web and desktop, reduces duplication, and makes the codebase more resilient to framework changes.
+**Rationale:** Separating business logic from presentation enables reuse across web and desktop, reduces
+duplication, and makes the codebase resilient to framework changes.
 
 ### IV. Code Consistency & Maintainability
 
-Naming conventions, folder structures, and shared packages MUST be applied uniformly across all apps and modules.
+Naming conventions, folder structures, and shared package contracts MUST be applied uniformly.
 
 **Non-negotiable rules:**
-- All Files & Folders: MUST use `kebab-case` (lowercase with hyphens). No PascalCase or camelCase allowed for filenames.
-- Components: MUST use `kebab-case` (e.g., `user-profile.vue`, `submit-button.tsx`)
-- Classes/Services: File name MUST be `kebab-case`, even if the class inside is `PascalCase` (e.g., `user-service.ts` containing `UserService` class)
-- Repositories: MUST use `kebab-case` (e.g., `goal.repository.ts`)
-- Utilities: MUST use `kebab-case` (e.g., `date.utils.ts`, `validation.utils.ts`)
-- Data Transfer Objects: MUST use `kebab-case` (e.g., `create-goal.dto.ts`)
-- Test files: MUST use `*.spec.ts` naming convention in kebab-case (e.g., `user-service.spec.ts`)
-- All code MUST pass linting: `pnpm lint` (ESLint) and formatting: `pnpm format` (Prettier) with no errors
-- Breaking changes to shared APIs (contracts, domain services) MUST be communicated in PR descriptions and documented in CHANGELOG
+- All file names and folder names in the repository MUST use `kebab-case` (lowercase with hyphens)
+- Uppercase/lowercase mixed filenames are FORBIDDEN to prevent cross-platform path mismatch bugs
+- Symbol-level naming MAY use language/framework idioms: Vue/React component exports, class names,
+  interface/type names, and enum names MAY be `PascalCase`
+- File naming MUST remain `kebab-case` even when the exported symbol is `PascalCase`
+  (for example, `user-service.ts` exports `UserService`)
+- Test files MUST use `*.spec.ts` (or framework-equivalent) in `kebab-case`
+- All code MUST pass linting (`pnpm lint`) and formatting (`pnpm format`) with zero errors
+- Breaking changes to shared APIs (contracts, domain services) MUST be documented in PR description and
+  CHANGELOG
 
-**Rationale:** Strict kebab-case enforcement reduces cognitive load, eliminates naming ambiguity, speeds up onboarding, and makes refactoring safer. Enforced linting prevents code quality drift. Consistent file naming follows Unix/Linux conventions and improves filesystem consistency across Windows, macOS, and Linux.
+**Rationale:** Strict filename normalization removes case-sensitivity defects between Windows/macOS/Linux while
+keeping symbol naming expressive and idiomatic inside code.
 
 ### V. Test-Driven Quality Assurance
 
 Unit tests and integration tests MUST be written for all business logic. Coverage MUST exceed 70% for new features.
 
 **Non-negotiable rules:**
-- Domain layer code MUST have unit tests (>80% coverage); test files MUST be colocated in same folder as source
-- Application service (use case) tests MUST verify business logic in isolation
-- Cross-module contracts (e.g., API endpoints, repository interfaces) MUST have integration tests
+- Domain layer code MUST have unit tests (>80% coverage); test files SHOULD be colocated with source
+- Application service tests MUST verify business logic in isolation
+- Cross-module contracts (API endpoints, repository interfaces, protocol contracts) MUST have integration tests
 - E2E tests MUST cover critical user journeys (goal creation, task management, note saving)
 - All tests MUST use Vitest framework (configured in `vitest.workspace.ts`)
 - Tests MUST be executable via `nx test {project}` and `nx affected:test` for CI/CD
 
-**Rationale:** Tests serve as executable specifications, prevent regressions, and give confidence during refactoring. High coverage ensures reliability across platforms.
+**Rationale:** Tests are executable specifications that prevent regressions and provide confidence during refactoring.
 
 ### VI. Contract Standardization & Domain Architecture (Package Structure Specification)
 
-All inter-module communication contracts MUST follow the standardized `packages/contracts/src/modules/{domain}/` architecture as exemplified by the `authentication` module. The authentication module structure IS the authoritative reference implementation for all domain modules.
+All inter-module communication contracts MUST follow the standardized
+`packages/contracts/src/modules/{domain}/` architecture as exemplified by the `authentication` module.
 
 **Non-negotiable rules:**
 
@@ -105,299 +129,165 @@ All inter-module communication contracts MUST follow the standardized `packages/
 ```
 {domain}/
 ├── aggregates/           # Domain aggregate contracts (client/server separated)
-├── api/                 # Request/Response types with Zod validation schemas  
-├── domain/              # Domain layer contracts
-│   └── events/          # Domain event definitions
-├── dtos/                # Complex composed/presentation DTOs
-├── entities/            # Entity contracts and interfaces
-├── protocol/            # Type-safe RPC and Event maps
+├── api/                  # Request/Response types with Zod validation schemas
+├── domain/               # Domain layer contracts
+│   └── events/           # Domain event definitions
+├── dtos/                 # Complex composed/presentation DTOs
+├── entities/             # Entity contracts and interfaces
+├── protocol/             # Type-safe RPC and Event maps
 │   ├── {domain}-event-map.ts
 │   └── {domain}-rpc-map.ts
-├── value-objects/       # Value object contracts
-└── index.ts             # Public API exports
+├── value-objects/        # Value object contracts
+└── index.ts              # Public API exports
 ```
 
 **Protocol Layer** (`protocol/`):
-- MUST contain `{domain}-rpc-map.ts` defining all RPC operations as a discriminated union type: `'domain:operation': [RequestType, ResponseType]`
-- MUST contain `{domain}-event-map.ts` defining all domain events with strict event naming: `'domain:EventName': EventPayloadType`
-- Domain, application, and infrastructure code that raises or dispatches domain events MUST use payload types sourced from `protocol/{domain}-event-map.ts`
-- RPC map signature format MUST be: `'domain:kebab-case-operation': [RequestType, ResponseType]` (e.g., `'auth:login-email'`, `'goal:create'`)
-- Event naming format MUST be: `'domain:PascalCaseEvent': EventType` (e.g., `'auth:login': UserLoggedInEvent`)
-- ALL types MUST be imported from API, domain, or aggregates layers—inline custom object definitions are FORBIDDEN
+- MUST contain `{domain}-rpc-map.ts` with signatures: `'domain:kebab-case-operation': [RequestType, ResponseType]`
+- MUST contain `{domain}-event-map.ts` with signatures: `'domain:PascalCaseEvent': EventPayloadType`
+- Domain/application/infrastructure code that raises or dispatches events MUST use payload types from
+  `protocol/{domain}-event-map.ts`
+- ALL types MUST be imported from API, domain, aggregates, DTOs, entities, or value-objects layers; inline
+  custom object definitions are FORBIDDEN in protocol maps
 
-**API Layer** (`api/`):
-- MUST organize by feature area (e.g., `login.dto.ts`, `registration.dto.ts`, `password.dto.ts`)
-- MUST export Request types (`*Req`), Response types (`*Res`), and Query types (`*Query`) used by Protocol layer  
-- MUST use Zod schemas for ALL complex request/query types with validation rules (e.g., `LoginByEmailSchema`, `CreateGoalSchema`)
-- Request/Response type generation pattern: `export type LoginByEmailReq = z.infer<typeof LoginByEmailSchema>;`
-- Response types MUST reference aggregates layer types: `export type LoginByEmailRes = AuthResponseDTO;`
-- MUST have an `index.ts` that exports ALL types used by protocol and application consumers
-- Simple types (like `void`) MAY be used directly; complex responses MUST import from aggregates or dtos layers
+**Identifier Typing & Naming Rules** (MANDATORY):
+- Entity identifiers and transfer DTO identifiers MUST use strong typed IDs (`xxId` branded/type-safe forms),
+  not raw `string` aliases
+- Identifier field names MUST use `*Id` suffix only; `*Uuid` suffix is FORBIDDEN in entities, DTOs,
+  contracts, and service signatures
+- For account and identity aggregate roots, canonical primary identifier field MUST be `identityId`
+- Aggregate identifier naming MUST remain consistent across entity, contract DTO, persistence DTO,
+  repository mapping, and API boundaries
 
-**Domain Layer** (`domain/`):
-- MUST contain `events/` subdirectory with all domain event definitions
-- Domain events MUST follow naming: `{AggregateAction}Event` (e.g., `UserLoggedInEvent`, `GoalCreatedEvent`, `TaskCompletedEvent`)
-- Domain events MUST include: `aggregateId`, `timestamp`, and event-specific payload properties
-- Domain events MUST extend base event interface with proper typing
-- Domain events are FORBIDDEN from importing API or DTOs; they are pure domain concepts
-
-**Identifier Typing & Naming Rules** (MANDATORY for entities, aggregates, and DTOs):
-- Entity identifiers and corresponding transfer DTO identifiers MUST use strong typed IDs (`xxId` branded/type-safe forms), not untyped `string` aliases
-- Identifier field names MUST use `*Id` suffix only; `*Uuid` suffix is FORBIDDEN in domain entities, DTOs, contracts, and service signatures
-- For current account and identity aggregate roots, canonical primary identifier field MUST be `identityId` (user authentication identity key)
-- `accountUuid` and equivalent `*Uuid` identifier fields are FORBIDDEN and MUST be migrated to canonical `*Id` naming
-- Aggregate root identifier naming MUST be consistent across domain entity, contract DTO, persistence DTO, repository mapping, and API boundary
-
-**Aggregates Layer** (`aggregates/`):
-- MUST separate client and server DTOs: `{aggregate}-client.ts` and `{aggregate}-server.ts`
-- Client DTOs (`*ClientDTO`) contain presentation-safe data for frontend consumption
-- Server DTOs (`*ServerDTO`) contain complete aggregate data including sensitive fields
-- Aggregates MUST have `index.ts` exporting all client/server contracts
-- Aggregates represent complete domain object contracts, not just entity data
-
-**DTOs Layer** (`dtos/`):
-- MUST contain composed/complex types that combine multiple aggregates or add presentation concerns
-- DTOs are INTERMEDIATE types for complex view/presentation requirements
-- DTOs MUST import from aggregates; MUST NOT be imported by API or Protocol layers (unidirectional dependency)
-- Use case: When API response needs data from multiple entities, compose in DTOs (e.g., `UserWithSessionsDTO`)
-
-**Entities Layer** (`entities/`):
-- MUST contain simple entity contracts and base interfaces
-- Entity contracts are building blocks used by aggregates
-- Entities MUST NOT contain business logic; they are pure data contracts
-
-**Value Objects Layer** (`value-objects/`):
-- MUST contain domain value object contracts (shared primitive concepts) 
-- Value objects are immutable data types representing domain concepts (e.g., `EmailAddress`, `PhoneNumber`)
-- Value objects MUST be used consistently across aggregates and APIs in the same domain
-
-**Dependency Flow** (unidirectional, enforced by TypeScript imports):
+**Dependency Flow** (unidirectional, enforced by imports):
 ```
 Protocol → API → Aggregates → Entities
        ↘ DTOs → Aggregates → Value Objects
 Domain/Events → (imports nothing, pure domain)
 ```
 
-**Authentication Module as Reference** (AUTHORITATIVE STANDARD):
-- ALL new domain modules MUST replicate `packages/contracts/src/modules/authentication/` structure exactly
-- File naming, folder organization, import patterns, and export conventions established in authentication module are MANDATORY
-- When in doubt about contracts architecture, authentication module patterns take precedence over other interpretations
+**Authentication Module as Reference**:
+- New domain modules MUST replicate `packages/contracts/src/modules/authentication/` structure
+- If ambiguity exists, authentication module patterns take precedence
 
 **Prohibited Patterns:**
-- ❌ Defining request/response types inline in RPC map (MUST move to API layer)  
-- ❌ API layer defining types not exported in `api/index.ts` (MUST be re-exportable)
-- ❌ DTOs importing from Protocol or API layers (breaks unidirectional dependency)
-- ❌ Domain events importing application layer concerns (domain must be pure)
-- ❌ Client/Server DTOs mixed in same file (MUST separate for security/clarity)
-- ❌ Defining local payload interfaces/types for domain event publish calls when `protocol/{domain}-event-map.ts` already defines the event payload type
-- ❌ Using `accountUuid`, `identityUuid`, or any `*Uuid` field name for entity/aggregate/DTO identifiers
-- ❌ Defining aggregate/entity/DTO identifiers as untyped raw strings when corresponding strong `xxId` types exist
+- ❌ Request/response types inline in RPC maps
+- ❌ API types not exported from `api/index.ts`
+- ❌ DTOs importing from Protocol or API layers
+- ❌ Domain events importing application-layer concerns
+- ❌ Mixed client/server DTOs in one file
+- ❌ Local event payload interfaces where event-map payload type exists
+- ❌ Any `*Uuid` identifier names or untyped raw string identifiers where `xxId` exists
 
 **Verification Commands:**
 - `pnpm nx build contracts` MUST pass with zero TypeScript errors
-- Type exports in `api/index.ts` MUST match all types used in `protocol/{domain}-rpc-map.ts`
-- Event payload generics in aggregate `addDomainEvent<...>` calls MUST resolve to keys of `protocol/{domain}-event-map.ts`
-- Contract and module reviews MUST verify identifier fields follow `*Id` naming and do not include `*Uuid`
-- Import graph analysis: `nx graph` MUST show no circular dependencies in contracts package
+- Type exports in `api/index.ts` MUST match all protocol usage
+- Aggregate `addDomainEvent<...>` payload generics MUST resolve to
+  `protocol/{domain}-event-map.ts`
+- Contract/module reviews MUST verify identifier fields use `*Id` and exclude `*Uuid`
+- `nx graph` MUST show no circular dependencies in contracts package
 
-**Rationale:** This comprehensive structure ensures type safety across all architectural layers, enables proper separation of concerns between client/server boundaries, and provides a clear place for every type of contract. The authentication module serves as the living standard, eliminating architectural ambiguity and ensuring consistency as the codebase scales. Strict dependency flows prevent circular imports and maintain clear boundaries between domain concerns and application concerns.
+**Rationale:** A strict contracts architecture creates a predictable place for every contract type, enforces
+clean boundaries, and scales with module growth.
 
-### VII. Example Modules as Executable Code Standards (Living Documentation)
+### VII. Governance Module as Executable Code Standard (Living Documentation)
 
-Every package and app containing business modules MUST include an `example` module that serves as the reference implementation, demonstrating correct patterns for all code standards and architectural principles.
+Every business domain package MUST include a `governance` module that acts as executable policy baseline,
+replacing the old `example` module pattern.
 
 **Non-negotiable rules:**
 
 **Creation & Maintenance**:
-- Each module-bearing package (`packages/*`, `apps/*/src/`) MUST include an `example/` or `{package}-example/` directory
-- The example module MUST be fully functional and buildable; it cannot be a stub or placeholder
-- The example module structure MUST mirror the real modules in the same package exactly (same layering, same file organization, same patterns)
-- Example modules MUST be updated whenever code standards change (e.g., when new Principle is added to Constitution)
-- Example modules are FORBIDDEN from being feature-specific; they MUST be generic/reusable patterns that apply to all modules in that context
+- Each business package (`packages/*` containing domain modules) MUST include a `governance/` directory or
+  `{domain}/governance/` subtree
+- Governance module MUST be buildable and testable; stubs/placeholders are FORBIDDEN
+- Governance module MUST define and keep updated: naming policy checks, architectural boundary checks,
+  required type constraints, and module conventions
+- Governance module content MUST be updated whenever Constitution principles change
 
 **Reference Authority**:
-- When code reviews identify a pattern question, the example module IS the source of truth
-- All new developers MUST study the example module before writing code in that package
-- PR descriptions MUST explicitly reference the example module when introducing patterns (e.g., "Following `packages/contracts/src/modules/example/` pattern")
-- Refactoring efforts MUST ensure example modules remain compliant with changes
+- During review, governance module policies are the source of truth for module compliance
+- New modules MUST explicitly align to governance module rules in PR descriptions
+- Refactors MUST update governance rules and tests in the same change set
 
-**Scope by Package**:
-
-| Package | Example Module | Demonstrates |
-|---------|---|---|
-| `packages/contracts/` | `src/modules/example/` | Protocol/API/DTOs layering, RPC maps, event maps, Zod schemas, type organization |
-| `packages/domain-server/` | `src/modules/example/` | Backend DDD structure: domain layer, application services, repositories, DTOs, use cases |
-| `packages/domain-client/` | `src/modules/example/` | Frontend-agnostic client logic: state management, services, models, validation, composition |
-| `packages/ui/` | `components/example/` | Component patterns: props, slots, styling, accessibility, testing, storybook |
-| `apps/api/src/` | `modules/example/` | API server module: NestJS controller, service, guards, decorators, DTOs, API routes |
-| `apps/web/src/` | `modules/example/` | Vue 3 module: views, composables, components, state (Pinia), API integration, patterns |
-| `apps/desktop/src/` | `modules/example/` | Electron renderer module: React components, IPC patterns, main-process communication, state |
-
-**Code Quality**:
-- Example modules MUST have >80% test coverage (unit + integration)
-- Example modules MUST pass all linting, formatting, and type checking (`pnpm lint`, `pnpm format`, `pnpm tsc`)
-- Example modules MUST build successfully with zero warnings: `nx build {package}` or equivalent
-- Comments in example modules MUST explain WHY patterns are used, not just WHAT they do
-- Example modules SHOULD include edge cases and error handling (to guide developers on completeness)
+**Minimum Governance Contents**:
+- Policy docs (`README`/rules) describing mandatory structure and boundaries
+- Executable checks (lint/type/test assertions or scripted checks) for key principles
+- Identifier policy checks (`xxId`, no `*Uuid`) and event lifecycle policy checks
+- Filename policy checks for repository-wide `kebab-case`
 
 **CI/CD Integration**:
-- All example modules MUST be built and tested in CI (not excluded)
-- Failing example module builds/tests MUST block PR merge (treated as production code)
-- Example module compliance SHOULD be verified via linting rule or pre-commit hook (tooling optional)
+- Governance module checks MUST run in CI and MUST block merge on failure
+- Governance checks MUST be runnable through Nx targets (`nx test`, `nx lint`, or dedicated governance targets)
 
-**Governance**:
-- Changes to example modules MUST undergo same code review rigor as production code
-- Example modules MAY receive separate CHANGELOG entries: `docs(example): update {module} pattern`
-- Example module refactors MUST be documented in `docs/guides/` for developer awareness
-
-**Rationale:** Making example modules mandatory and authoritative ensures every developer learns from a single, tested source of truth. This prevents pattern drift where different modules solve the same problem differently, reduces code review friction ("does this match the pattern?"), accelerates onboarding, and creates living documentation that evolves with the codebase. By treating examples as production-quality code, they stay relevant and trustworthy. This principle directly supports Principle IV (Code Consistency & Maintainability) by anchoring all patterns to an executable reference.
+**Rationale:** Governance modules keep standards executable and local to each vertical domain package,
+preventing drift while avoiding centralized coupling.
 
 ### VIII. Application Layer Service Parameter Conventions
 
-All application layer services (use cases, command handlers, query handlers) MUST follow standardized parameter conventions for consistency and clarity across the entire codebase.
+Application layer services (use cases/handlers) MUST follow standardized parameter conventions.
 
 **Non-negotiable rules:**
+- Service methods MUST accept exactly two parameters: `input` and `cx`
+- `input` MUST represent API contract data (from `packages/contracts/src/modules/{domain}/api/`)
+- `cx` MUST carry contextual metadata (identity/session/device/trace), separated from request payload
+- Context identity field MUST use canonical `identityId`
+- Application services MUST NOT access request/session globals directly
+- Application services MUST NOT call `publish`/`dispatch` APIs for domain events directly
 
-**Dual Parameter Pattern** (MANDATORY for all application services):
-- Application services MUST accept exactly two parameters: `input` and `cx`
-- `input` parameter: Contains API interface data directly from frontend/client requests
-- `cx` parameter: Contains contextual information extracted by middleware or infrastructure layers
+**Prohibited Patterns:**
+- ❌ Mixed input+context DTO as a single payload
+- ❌ Multiple primitive context arguments instead of `cx`
+- ❌ Optional/partial context for authenticated flows
+- ❌ Infrastructure concerns embedded into `input`
 
-**Input Parameter Requirements**:
-- MUST be typed using contracts from `packages/contracts/src/modules/{domain}/api/`
-- MUST represent the complete API request payload as defined in Zod schemas
-- MUST NOT contain infrastructure concerns (tokens, device info, session data)
-- Examples: `CreateGoalReq`, `UpdateTaskReq`, `LoginByEmailReq`
-- Simple operations MAY use primitive types: `string`, `number`, but complex operations MUST use contract types
-
-**Context Parameter Requirements** (`cx`):
-- MUST contain contextual/meta information NOT available in the API request
-- MUST include identity information: `identityId` (extracted from JWT/authentication middleware)
-- MUST include device/session information: `deviceInfo`, `sessionId`, `ipAddress` when relevant
-- MAY include tenant/organization context: `tenantId`, `workspaceId` for multi-tenant scenarios
-- MAY include request metadata: `requestId`, `correlationId`, `timestamp` for observability
-- MUST be typed using a context interface specific to the application layer (e.g., `AuthenticatedContext`, `SystemContext`)
-
-**Standard Context Interface Pattern**:
-```typescript
-// Application layer context interface
-interface AuthenticatedContext {
-  identityId: string;               // From JWT/auth middleware
-  sessionId?: string;               // From session middleware  
-  deviceInfo?: DeviceInfo;          // From device detection middleware
-  requestId: string;                // For tracing/observability
-  timestamp: Date;                  // Request timestamp
-  ipAddress?: string;               // For security auditing
-}
-
-interface SystemContext {
-  correlationId: string;            // For system-initiated operations
-  systemUserId: string;             // System actor identifier
-  requestId: string;                // For tracing
-  timestamp: Date;                  // Operation timestamp
-}
-```
-
-**Service Method Signatures** (REQUIRED PATTERN):
-```typescript
-// Correct: Dual parameter pattern
-export class CreateGoalUseCase {
-  async execute(input: CreateGoalReq, cx: AuthenticatedContext): Promise<CreateGoalRes> {
-    // Implementation uses input for business data, cx for identity/context
-  }
-}
-
-// Correct: Query with context  
-export class ListGoalsUseCase {
-  async execute(input: ListGoalsQuery, cx: AuthenticatedContext): Promise<ListGoalsRes> {
-    // Filter goals by cx.identityId, use input for pagination/filtering
-  }
-}
-
-// Correct: Simple operations
-export class GetGoalUseCase {
-  async execute(input: string, cx: AuthenticatedContext): Promise<GoalDTO> {
-    // input is goalId, cx provides identity context
-  }
-}
-```
-
-**Context Source Mapping**:
-- **Express/NestJS middleware**: JWT token → `identityId`, device headers → `deviceInfo`, session data → `sessionId`
-- **GraphQL context**: Resolver context → `cx` parameter passed to application services  
-- **Background jobs**: System context → `SystemContext` with job/correlation IDs
-- **Direct API calls**: Service layer constructs appropriate context from available information
-
-**Prohibited Patterns**:
-- ❌ Single parameter containing mixed API data and context: `(inputWithContext: {...})`
-- ❌ Multiple discrete parameters: `(goalTitle: string, identityId: string, deviceInfo: DeviceInfo)`
-- ❌ Context passed as optional parameter: `(input: CreateGoalReq, identityId?: string)`
-- ❌ Services accessing request/session data directly instead of via `cx` parameter
-- ❌ Embedding infrastructure concerns in `input` parameter (tokens, session IDs)
-- ❌ Application services calling `eventBus.publish(...)`, `dispatch(...)`, or manipulating aggregate event queues directly
-
-**Domain Layer Considerations**:
-- Domain services MAY accept context when needed for domain logic (e.g., audit trails, multi-tenancy)  
-- Domain entities MUST NOT depend on application context directly
-- Repository implementations MAY use context for filtering/security (e.g., tenant isolation)
-
-**Testing Implications**:
-- Unit tests MUST provide both `input` and `cx` parameters with appropriate test data
-- Integration tests MUST verify context is correctly extracted from middleware and passed through
-- Mock contexts SHOULD be provided as test utilities: `createTestContext()`, `createSystemContext()`
-
-**Verification**:
-- Code review MUST verify all application services follow the `(input, cx)` pattern
-- Linting rules SHOULD enforce parameter naming consistency where possible
-- Service signatures MUST be auditable via static analysis for compliance
-
-**Rationale:** The standardized `input` and `cx` parameter pattern creates clear separation between API contract data and infrastructure context. This improves testability (easy to mock contexts), enhances security (context data extracted by trusted middleware), and provides consistency across all application services. The pattern scales from simple operations to complex multi-tenant scenarios while maintaining the same interface contract. This supports both Principle I (DDD Architecture) and Principle IV (Code Consistency) by creating predictable service signatures across all domains.
+**Rationale:** `input` + `cx` creates clear API/context separation, improves testability, and preserves layer
+boundaries.
 
 ### IX. Domain Event Lifecycle Ownership
 
-Domain events MUST be created inside aggregate root business methods, queued on the aggregate, and dispatched automatically by repository implementations during persistence workflows. Application services MUST remain free of domain-event orchestration code.
+Domain events MUST be created inside aggregate business methods, queued on aggregate roots, and dispatched by
+repository workflows.
 
 **Non-negotiable rules:**
-- Domain events MUST be recorded via aggregate methods (e.g., `addDomainEvent(...)`) inside domain business behaviors after state mutation and invariant checks
-- Domain event payload generic/type arguments MUST reference `contracts` protocol event-map entries (e.g., `DomainEventMap['domain:EventName']`) instead of local ad-hoc payload types
-- Aggregate roots MUST own their internal event queue; external layers MUST NOT append or mutate aggregate event queues directly
-- Repository `save`/`upsert` methods MUST extract pending aggregate events and dispatch them automatically as part of the persistence workflow
-- Event dispatch in repository layer MUST be coordinated with data consistency strategy (transactional dispatch and/or outbox pattern)
-- Repository layer MUST clear aggregate event queues only after successful persistence + dispatch coordination to prevent duplicate emission
-- Application services (use cases, command handlers, query handlers) MUST NOT call event bus publish APIs or dispatch domain events directly
-- Application services MAY trigger domain events only indirectly by invoking aggregate behavior and repository persistence
+- Domain events MUST be recorded inside aggregate business behavior (after invariant checks + state mutation)
+- Event payload generic/type arguments MUST reference contracts event-map entries
+- Aggregate event queues MUST be aggregate-owned and not mutable from external layers
+- Repository `save`/`upsert` MUST extract queued events and dispatch them automatically in persistence workflow
+- Queue clear MUST happen only after successful persistence + dispatch coordination
+- Application services MUST NOT publish/dispatch domain events directly
 
 **Verification checklist:**
-- PR review MUST reject any application-layer code that imports event bus abstractions for domain event publication
-- Static analysis or grep checks SHOULD verify no `publish`/`dispatch` calls exist in application layer directories
-- PR review MUST reject aggregate/repository code that introduces local event payload interfaces duplicating types already defined in `protocol/{domain}-event-map.ts`
-- Repository tests MUST include assertions that aggregate pending events are dispatched and cleared during save operations
-- PR review MUST verify aggregate identifiers are strong `xxId` types and never `*Uuid` fields
+- PR review MUST reject application-layer imports of event bus abstractions for domain publication
+- Static checks SHOULD verify no `publish`/`dispatch` in application layer
+- PR review MUST reject local payload interfaces duplicating protocol event-map definitions
+- Repository tests MUST assert queued events are dispatched and cleared on save
+- PR review MUST verify identifiers are strong `xxId` and never `*Uuid`
 
-**Rationale:** This ownership model keeps domain intent in aggregates, keeps delivery mechanics in repositories, and keeps application services focused on orchestration of use cases rather than messaging details. It prevents duplicated publish logic, improves transactional consistency options, and enforces clean DDD boundaries.
+**Rationale:** This keeps domain intent in aggregates, delivery mechanics in repositories, and orchestration in
+application services.
 
 ## Technology Stack Requirements
 
 The following technology versions and tools are standardized across the project:
 
 | Component | Technology | Version | Notes |
-|-----------|-----------|---------|-------|
-| **Runtime** | Node.js | 18+ | All services and build tools |
-| **Package Manager** | pnpm | 8+ | Workspace monorepo management |
-| **Build System** | Nx | 21.4.1+ | Task orchestration and caching |
-| **Language** | TypeScript | 5.8.3+ | Strict mode mandatory |
-| **Backend Framework** | NestJS | Latest LTS | API service architecture |
+|-----------|------------|---------|-------|
+| **Runtime** | Node.js | 22+ | All services and build tools |
+| **Package Manager** | pnpm | 10+ | Workspace monorepo management |
+| **Build System** | Nx | 22+ | Task orchestration and caching |
+| **Language** | TypeScript | 5.9+ | Strict mode mandatory |
+| **Backend Framework** | Express | Latest stable | API service architecture |
 | **Frontend (Web)** | Vue 3 + Vuetify | Latest stable | Web application UI framework |
-| **Frontend (Desktop Renderer)** | React + shadcn/ui | Latest stable | Desktop application renderer process |
-| **Desktop Framework** | Electron | 30.x+ | Cross-platform desktop shell |
-| **Database** | Prisma + SQLite | Latest | ORM and local persistence |
-| **Testing** | Vitest | Latest | Fast unit testing framework |
+| **Frontend (Desktop Renderer)** | React + shadcn/ui | Latest stable | Desktop renderer process |
+| **Desktop Framework** | Electron | 39.x+ | Cross-platform desktop shell |
+| **Database** | Prisma + PostgreSQL | Latest stable | ORM and persistence |
+| **Testing** | Vitest | Latest stable | Unit/integration testing |
 | **Linting** | ESLint | Latest (flat config) | Code quality enforcement |
-| **Formatting** | Prettier | Latest | Code style consistency |
+| **Formatting** | Prettier | Latest stable | Code style consistency |
 
 **Constraints:**
-- All packages MUST be pinned to exact versions in pnpm-lock.yaml
-- Breaking changes to Nx, TypeScript, or framework versions MUST trigger a patch bump in constitution (PATCH)
+- All packages MUST be pinned in `pnpm-lock.yaml`
+- Breaking changes to Nx/TypeScript/framework versions MUST be reviewed in architecture review
 - New major dependencies MUST be approved via architectural review
 
 ## Code Quality & Review Standards
@@ -406,58 +296,56 @@ All code changes MUST follow these review and quality gates:
 
 **Before Merge:**
 - `pnpm lint` MUST pass with zero errors
-- `pnpm format --check` MUST pass (no reformatting needed)
-- `pnpm nx affected:test` MUST pass for all changed projects
-- Git history MUST be clean (squashed/rebased commits, descriptive messages)
-- Type checking: `pnpm tsc` MUST show zero errors
-- No console.log() statements in production code (except in services that explicitly manage logging)
+- `pnpm format --check` MUST pass
+- `pnpm nx affected:test` MUST pass for changed projects
+- Type checking (`pnpm tsc`) MUST pass with zero errors
+- No `console.log()` in production code except explicit logging services
 
 **Code Review Checklist:**
-- Does the change align with DDD principles? (Is business logic in the right layer?)
-- Is the change platform-agnostic where applicable?
-- Are types fully specified? (No `any` without justification)
-- Are tests included for new business logic?
-- Does the change maintain or improve code consistency (naming, structure, linting)?
-- If domain events are involved: are events raised only in aggregate methods and dispatched only by repository layer?
-- If domain events are involved: do payload typings come from `contracts` `protocol/*-event-map.ts` instead of local event payload interfaces?
-- If identifiers are involved: are entity + DTO identifiers strong typed `xxId` values with canonical `*Id` naming and no `*Uuid` remnants?
+- Change follows DDD boundaries and vertical package slicing
+- File/folder names are strict `kebab-case`; symbol names use idiomatic `PascalCase` only at symbol level
+- Types are explicit and do not use unjustified `any`
+- Tests are included for new business logic
+- If domain events are involved, event ownership and dispatch rules are respected
+- If identifiers are involved, `xxId` + `*Id` naming is enforced with no `*Uuid`
+- Governance module checks and docs are updated with the same PR when standards are touched
 
 **Complexity Justification:**
-- Any change adding complexity to existing modules MUST include a comment explaining why simpler alternatives were insufficient
-- Large refactors MUST be preceded by architectural design review in PRs or ADRs (docs/architecture/adr/)
+- Complexity additions MUST explain why simpler alternatives are insufficient
+- Large refactors MUST include architectural review in PRs or ADRs (`docs/architecture/adr/`)
 
 ## Governance
 
 ### Amendment Procedure
 
-1. **Proposal**: Open a discussion in a GitHub issue or PR, referencing this constitution
-2. **Rationale**: Clearly document why the change is needed and impact on existing code
-3. **Approval**: Changes require agreement from core maintainers (@BakerSean168 and project leads)
-4. **Migration**: If changes conflict with existing code, a migration plan MUST be documented
-5. **Documentation**: Update this file and notify team via project communication channels
+1. **Proposal**: Open a GitHub issue or PR referencing this constitution
+2. **Rationale**: Explain why the change is needed and impact scope
+3. **Approval**: Changes require agreement from core maintainers and project leads
+4. **Migration**: Breaking updates MUST include migration plan and rollout checkpoints
+5. **Documentation**: Update this file and any dependent templates/docs in the same change set
 
 ### Versioning Policy
 
 Constitution versions follow **Semantic Versioning**:
-- **MAJOR**: Backward-incompatible principle changes, removal of principles, or fundamental governance restructure
-- **MINOR**: New principle added, major clarification, or section expansion that requires code adjustments
-- **PATCH**: Wording clarifications, typo fixes, or non-semantic refinements; does not require code changes
+- **MAJOR**: Backward-incompatible principle changes, principle removals, or governance restructuring
+- **MINOR**: New principle/section or substantial expansion requiring process/code updates
+- **PATCH**: Clarifications/typos/non-semantic wording changes
 
 ### Compliance Review
 
-- Constitution compliance MUST be verified in PR reviews before merge
-- Nx graph violations (circular dependencies) MUST be resolved before CI passes
-- Failing linting or tests MUST block merge
-- Application layer code MUST be periodically audited to confirm absence of direct domain event dispatch logic
-- Monthly (or as-needed) compliance audits via `nx affected:lint` and `nx affected:test` to catch drift
+- Constitution compliance MUST be verified in PR review before merge
+- Circular dependency violations MUST be resolved before CI passes
+- Failing lint/test/governance checks MUST block merge
+- Application layers MUST be periodically audited for direct event dispatch violations
+- Regular compliance audits SHOULD run via `nx affected:lint` and `nx affected:test`
 
 ### Guidelines for Developers
 
-- Consult this constitution when unsure about architecture, naming, or code organization
-- Use [docs/guides/development/coding-standards](docs/guides/development/coding-standards) for runtime development guidance
-- Report violations or ambiguities as GitHub issues (tag with `constitution`)
-- Update CHANGELOG.md when Constitution changes to track history
+- Consult this constitution when uncertain about architecture, naming, or organization
+- Use `docs/standards/` and package governance modules for implementation standards
+- Report violations or ambiguities as GitHub issues labeled `constitution`
+- Update CHANGELOG when constitution changes to preserve governance history
 
 ---
 
-**Version**: 1.6.0 | **Ratified**: 2026-02-02 | **Last Amended**: 2026-02-17
+**Version**: 2.0.0 | **Ratified**: 2026-02-02 | **Last Amended**: 2026-02-18

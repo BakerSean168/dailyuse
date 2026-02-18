@@ -5,11 +5,11 @@
  * 创建后自动生成初始实例（100�?最�?00个）
  */
 
-import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
-import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
-import { TaskTemplate } from '../../domain-server/aggregates/task-template';
-import { TaskTimeConfig, RecurrenceRule, TaskReminderConfig } from '../../domain-server/value-objects';
-import { TaskInstanceGenerationService } from '../../domain-server/services/TaskInstanceGenerationService';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
+import { TaskTemplate } from '@/domain-server/aggregates/task-template';
+import { TaskTimeConfig, RecurrenceRule, TaskReminderConfig } from '@/domain-server/value-objects';
+import { TaskInstanceGenerationService } from '@/domain-server/services/TaskInstanceGenerationService';
 import type { TaskTemplateClientDTO, CreateTaskTemplateReq } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';

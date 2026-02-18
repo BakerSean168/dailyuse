@@ -110,7 +110,7 @@ export abstract class AggregateRoot<TId> extends Entity<TId> {
 2. 不要在构造函数之外的地方随便 `new` 事件，使用 `addDomainEvent`。
 3. 事件 payload 类型必须来自 `packages/contracts/src/modules/{model-name}/protocol/{model-name}-event-map.ts`，禁止本地自定义 payload 类型。
 
-**文件**: `packages/domain-server/src/modules/auth/aggregates/auth-identity.ts`
+**文件**: `packages/authentication/src/domain/aggregates/auth-identity.ts`
 
 TypeScript
 
@@ -163,7 +163,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
 
 这是“隐式发送”发生的地方。仓储层的 `save` 方法充当了拦截器。
 
-**文件**: `packages/infrastructure/src/persistence/repositories/prisma-auth-identity.repo.ts`
+**文件**: `packages/authentication/src/infrastructure/repositories/prisma-auth-identity.repo.ts`
 
 TypeScript
 
@@ -220,7 +220,7 @@ export class PrismaAuthIdentityRepository implements AuthIdentityRepository {
 
 现在你的领域服务变得非常干净，完全不需要处理 EventBus。
 
-**文件**: `packages/domain-server/.../registration.service.ts`
+**文件**: `packages/authentication/src/application/registration.service.ts`
 
 TypeScript
 

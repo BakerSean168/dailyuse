@@ -14,7 +14,7 @@
 
 - **前端**: Vue 3 + Vuetify + TypeScript (Web), React + shadcn/ui + TypeScript (Desktop Renderer)
 - **桌面**: Electron 30.x
-- **后端**: Node.js + Prisma + SQLite
+- **后端**: Express + Prisma + PostgreSQL
 - **构建**: Nx + Vite + pnpm
 
 ### 开发工具
@@ -34,9 +34,9 @@ DailyUse/                    # 根目录
 │   └── api/                # Node.js API 服务
 ├── packages/               # 共享包
 │   ├── contracts/          # 类型定义和接口
-│   ├── domain-client/      # 客户端业务逻辑
-│   ├── domain-core/        # 核心业务逻辑
-│   ├── domain-server/      # 服务端业务逻辑
+│   ├── domain-shared/      # 跨端值对象与共享领域类型
+│   ├── governance/         # 规约检查与可执行治理规则
+│   ├── {domain}/           # 垂直业务模块包（包内再分层）
 │   ├── ui/                 # 共享 UI 组件
 │   └── utils/              # 工具函数
 ├── common/                 # 共享业务模块
@@ -49,8 +49,8 @@ DailyUse/                    # 根目录
 
 ### 环境要求
 
-- Node.js 18+
-- pnpm 8+ (推荐使用 pnpm 而非 npm)
+- Node.js 22+
+- pnpm 10+ (推荐使用 pnpm 而非 npm)
 - VS Code (推荐，已配置 AI 辅助开发)
 
 ### 安装与运行
@@ -203,8 +203,8 @@ pnpm build:desktop    # 构建桌面应用
 
 - **[包文档总索引](docs/packages-index.md)** - 📑 从这里开始，查看所有包文档
 - [@dailyuse/contracts](docs/packages-contracts.md) - TypeScript 类型契约层
-- [@dailyuse/domain-client](docs/packages-domain-client.md) - 客户端领域层 (Pinia)
-- [@dailyuse/domain-server](docs/packages-domain-server.md) - 服务端领域层 (DDD)
+- [@dailyuse/domain-shared](docs/packages-domain-shared.md) - 共享值对象与领域基础类型
+- [@dailyuse/governance](packages/governance/README.md) - 规约治理与可执行标准
 - [@dailyuse/utils](docs/packages-utils.md) - 通用工具库 (Logger, 验证, 事件总线)
 - [@dailyuse/ui](docs/packages-ui.md) - Vue 3 UI 组件库 (Vuetify)
 - [@dailyuse/assets](docs/packages-assets.md) - 静态资源 (图片, 音频)
@@ -310,7 +310,7 @@ pnpm nx reset              # 清除 Nx 缓存
 ### 领域驱动设计 (DDD)
 
 ```
-Domain Layer (domain-core)     # 业务规则和实体
+Domain Package ({domain})       # 业务模块包（垂直切分）
 ├── Application Layer          # 应用服务和用例
 ├── Infrastructure Layer       # 数据访问和外部服务
 └── Presentation Layer         # UI 组件和控制器
@@ -322,8 +322,11 @@ Domain Layer (domain-core)     # 业务规则和实体
 // 类型共享
 import { Task, User } from '@dailyuse/contracts';
 
-// 业务逻辑共享
-import { TaskService } from '@dailyuse/domain-client';
+// 共享领域类型
+import { TaskId } from '@dailyuse/domain-shared/task';
+
+// 垂直模块包中的业务逻辑
+import { TaskService } from '@dailyuse/task';
 
 // UI 组件共享
 import { Button, Dialog } from '@dailyuse/ui';

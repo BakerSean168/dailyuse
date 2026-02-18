@@ -34,8 +34,8 @@ tags: [standard, domain/shared]
 
 
 * ❌ **禁止依赖**:
-* `@dailyuse/domain-server` (禁止！防止引入具体的 Entity 类或 ORM 逻辑)
-* `@dailyuse/domain-client` (禁止！防止循环依赖)
+* 具体业务域包中的运行时实现代码（禁止！防止引入 Entity/ORM/框架耦合）
+* 任何客户端 UI 模块实现（禁止！防止循环依赖）
 * Node.js 原生模块 (`fs`, `crypto`, `path`)
 * 浏览器特有 API (`window`, `document`, `localStorage`)
 * **包含运行时逻辑**的后端库 (如 `typeorm`, `prisma` Client 实例) —— 仅允许引用纯 Type/Interface。

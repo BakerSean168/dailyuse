@@ -2,7 +2,7 @@
  * Archive Task Template Service
  */
 
-import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';

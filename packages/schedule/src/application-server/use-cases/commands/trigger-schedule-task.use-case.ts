@@ -8,7 +8,7 @@
  * - 重新计算下次运行时间
  */
 
-import type { IScheduleTaskRepository } from '../../domain-server/repositories/IScheduleTaskRepository';
+import type { IScheduleTaskRepository } from '@/domain-server/repositories/IScheduleTaskRepository';
 
 /**
  * Trigger Schedule Task Use Case

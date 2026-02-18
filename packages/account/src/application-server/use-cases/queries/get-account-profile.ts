@@ -2,7 +2,7 @@
  * Get Account Profile Use Case
  */
 
-import type { IAccountRepository } from '../../domain-server';
+import type { IAccountRepository } from '@/domain-server';
 import type { AccountClientDTO } from '@dailyuse/contracts/account';
 
 export class GetAccountProfileUseCase {

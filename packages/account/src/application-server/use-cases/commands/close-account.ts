@@ -2,7 +2,7 @@
  * Close Account Use Case
  */
 
-import type { IAccountRepository } from '../../domain-server';
+import type { IAccountRepository } from '@/domain-server';
 import type { CloseAccountReq } from '@dailyuse/contracts/account';
 
 export interface CloseAccountResult {

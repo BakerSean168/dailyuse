@@ -3,8 +3,8 @@
  * 获取规则修订记录用例
  */
 
-import type { IRuleRevisionRepository } from '../../domain-server/repositories/i-rule-revision-repository';
-import { RuleId } from '../../domain-shared/value-objects/rule-id';
+import type { IRuleRevisionRepository } from '@/domain-server/repositories/i-rule-revision-repository';
+import { RuleId } from '@/domain-shared/value-objects/rule-id';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { GetRuleRevisionsQuery, GetRuleRevisionsRes } from '@/contracts/api/rule-revisions';

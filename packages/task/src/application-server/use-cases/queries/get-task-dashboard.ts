@@ -4,7 +4,7 @@
  * 鑾峰彇浠诲姟浠〃鏉挎暟锟?
  */
 
-import type { ITaskTemplateRepository, TaskFilters } from '../../domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskTemplateRepository, TaskFilters } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';

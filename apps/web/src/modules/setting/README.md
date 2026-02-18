@@ -34,12 +34,12 @@ apps/web/src/modules/setting/
 ## 🔗 依赖关系
 
 ```
-packages/domain-client/    # 领域层（实体）
-└── src/setting/
-    ├── aggregates/
-    │   └── UserSetting.ts        # ⭐ 核心实体
-    └── interfaces/
-        └── UserSettingClient.ts  # 接口定义
+packages/setting/          # 领域模块包（实体）
+└── src/domain/
+  ├── aggregates/
+  │   └── user-setting.ts       # ⭐ 核心实体
+  └── interfaces/
+    └── user-setting-client.ts # 接口定义
 
 packages/contracts/        # 契约层（DTO）
 └── src/modules/setting/
@@ -290,10 +290,10 @@ export interface UpdateNewFeatureRequest {
 }
 ```
 
-2. **更新 Domain Client**（如果需要新属性）
+2. **更新领域模块实体**（如果需要新属性）
 
 ```typescript
-// packages/domain-client/src/setting/aggregates/UserSetting.ts
+// packages/setting/src/domain/aggregates/user-setting.ts
 export class UserSetting extends AggregateRoot {
   private _newFeature: { newProperty: string };
 

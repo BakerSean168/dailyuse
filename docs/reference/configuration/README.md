@@ -453,8 +453,8 @@ RATE_LIMIT_ENABLED=true
     "baseUrl": ".",
     "paths": {
       "@dailyuse/contracts": ["packages/contracts/src/index.ts"],
-      "@dailyuse/domain-client": ["packages/domain-client/src/index.ts"],
-      "@dailyuse/domain-server": ["packages/domain-server/src/index.ts"],
+      "@dailyuse/domain-shared": ["packages/domain-shared/src/index.ts"],
+      "@dailyuse/governance": ["packages/governance/src/index.ts"],
       "@dailyuse/utils": ["packages/utils/src/index.ts"],
       "@dailyuse/ui": ["packages/ui/src/index.ts"],
       "@dailyuse/assets": ["packages/assets/src/index.ts"]
@@ -608,43 +608,21 @@ enum GoalStatus {
 ### 连接池配置
 
 ```typescript
-// apps/api/src/prisma/prisma.service.ts
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+// apps/api/src/config/prisma-client.ts
 import { PrismaClient } from '@prisma/client';
-import { ConfigService } from '@nestjs/config';
-
-@Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  constructor(private configService: ConfigService) {
-    super({
-      datasources: {
-        db: {
-          url: configService.get('DATABASE_URL'),
-        },
+export function createPrismaClient(): PrismaClient {
+  return new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
       },
-      log: [
-        { level: 'query', emit: 'event' },
-        { level: 'error', emit: 'stdout' },
-        { level: 'warn', emit: 'stdout' },
-      ],
-    });
-  }
-
-  async onModuleInit() {
-    await this.$connect();
-    
-    // 日志查询（开发环境）
-    if (this.configService.get('NODE_ENV') === 'development') {
-      this.$on('query' as never, (e: any) => {
-        console.log('Query: ' + e.query);
-        console.log('Duration: ' + e.duration + 'ms');
-      });
-    }
-  }
-
-  async onModuleDestroy() {
-    await this.$disconnect();
-  }
+    },
+    log: [
+      { level: 'query', emit: 'event' },
+      { level: 'error', emit: 'stdout' },
+      { level: 'warn', emit: 'stdout' },
+    ],
+  });
 }
 ```
 
@@ -652,7 +630,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
 ## 🎛️ 应用配置
 
-### NestJS配置模块
+### Express配置模块
 
 **apps/api/src/config/configuration.ts**:
 

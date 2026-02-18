@@ -14,9 +14,9 @@
 │       └── tsconfig.node.json   # Vite 配置文件
 └── packages/
     ├── contracts/tsconfig.json
-    ├── domain-core/tsconfig.json
-    ├── domain-client/tsconfig.json
-    ├── domain-server/tsconfig.json
+  ├── domain-shared/tsconfig.json
+  ├── governance/tsconfig.json
+  ├── {domain}/tsconfig.json
     ├── ui/tsconfig.json
     ├── utils/tsconfig.json
     └── assets/tsconfig.json
@@ -91,7 +91,7 @@
 ```typescript
 // ✅ 推荐：使用包名导入
 import { ResponseCode } from '@dailyuse/contracts';
-import { Goal } from '@dailyuse/domain-core';
+import { GoalId } from '@dailyuse/domain-shared/goal';
 import { createLogger } from '@dailyuse/utils';
 
 // ✅ 子路径导入
@@ -181,7 +181,7 @@ pnpm tsc --build
 
 # 检查单个项目
 pnpm tsc --build apps/api
-pnpm tsc --build packages/domain-core
+pnpm tsc --build packages/domain-shared
 
 # 清除构建缓存
 pnpm tsc --build --clean
@@ -217,14 +217,14 @@ pnpm nx graph
 ```
 1. packages/contracts      (无依赖)
 2. packages/utils          (无依赖)
-3. packages/domain-core    (依赖: contracts, utils)
-4. packages/domain-server  (依赖: contracts, domain-core, utils)
-   packages/domain-client  (依赖: contracts, domain-core, utils)
-   packages/ui             (依赖: utils)
-5. apps/api               (依赖: contracts, domain-core, domain-server, utils)
-   apps/web               (依赖: contracts, domain-core, domain-client, utils, ui)
-   apps/desktop           (依赖: contracts, domain-core, domain-client, utils, ui)
-6. packages/assets        (无依赖)
+3. packages/domain-shared  (依赖: contracts, utils)
+4. packages/{domain}       (依赖: contracts, domain-shared, utils)
+  packages/ui             (依赖: utils)
+5. apps/api               (依赖: contracts, domain-shared, {domain}, utils)
+  apps/web               (依赖: contracts, domain-shared, {domain}, utils, ui)
+  apps/desktop           (依赖: contracts, domain-shared, {domain}, utils, ui)
+6. packages/governance    (依赖: contracts, domain-shared, utils)
+7. packages/assets        (无依赖)
 ```
 
 ## ⚡ 性能优化技巧

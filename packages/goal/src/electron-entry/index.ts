@@ -19,7 +19,7 @@ import {
 import { GoalContainer } from '../infrastructure-server/di/goal-container';
 import { createLogger } from '@dailyuse/utils';
 import type { IGoalRepository } from '../domain-server';
-
+import type { Context } from '@dailyuse/contracts/shared';
 const logger = createLogger('GoalElectron');
 
 /**
@@ -73,7 +73,7 @@ export const GoalElectronModule: IElectronModule = {
     // 4. IPC Handlers
     ipcMain.handle(Ch.LIST, (_, params) => goalModule.listGoals.execute(params));
     ipcMain.handle(Ch.GET, (_, id) => goalModule.getGoal.execute(id));
-    ipcMain.handle(Ch.CREATE, (_, dto) => goalModule.createGoal.execute(dto, { identityId: dto.identityId }));
+    ipcMain.handle(Ch.CREATE, (_, dto) => goalModule.createGoal.execute(dto, { identityId: dto.identityId, deviceId: 'electron-app' } as Context));
     ipcMain.handle(Ch.UPDATE, (_, dto) => goalModule.updateGoal.execute(dto.id, dto));
     ipcMain.handle(Ch.DELETE, (_, id) => goalModule.deleteGoal.execute(id));
     ipcMain.handle(Ch.ARCHIVE, (_, id) => goalModule.archiveGoal.execute(id));

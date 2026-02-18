@@ -2,7 +2,7 @@
  * Delete Task Instance Service
  */
 
-import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 

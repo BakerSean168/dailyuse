@@ -9,8 +9,8 @@
  * 4. 鍙戝竷鏆傚仠浜嬩欢锛岃Е鍙戞彁閱掕皟搴︽殏锟?
  */
 
-import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
-import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';

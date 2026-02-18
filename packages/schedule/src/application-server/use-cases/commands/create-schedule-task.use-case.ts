@@ -12,12 +12,12 @@
  * - 持久化细节（由仓储处理）
  */
 
-import type { IScheduleTaskRepository } from '../../domain-server/repositories/IScheduleTaskRepository';
-import type { IScheduleStatisticsRepository } from '../../domain-server/repositories/IScheduleStatisticsRepository';
-import { ScheduleTask } from '../../domain-server/aggregates/schedule-task';
-import { ScheduleConfig } from '../../domain-server/value-objects/ScheduleConfig';
-import { RetryPolicy } from '../../domain-server/value-objects/RetryPolicy';
-import { TaskMetadata } from '../../domain-server/value-objects/TaskMetadata';
+import type { IScheduleTaskRepository } from '@/domain-server/repositories/IScheduleTaskRepository';
+import type { IScheduleStatisticsRepository } from '@/domain-server/repositories/IScheduleStatisticsRepository';
+import { ScheduleTask } from '@/domain-server/aggregates/schedule-task';
+import { ScheduleConfig } from '@/domain-server/value-objects/ScheduleConfig';
+import { RetryPolicy } from '@/domain-server/value-objects/RetryPolicy';
+import { TaskMetadata } from '@/domain-server/value-objects/TaskMetadata';
 import type {
   ScheduleTaskClientDTO,
   ScheduleConfigServerDTO,

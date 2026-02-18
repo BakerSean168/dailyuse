@@ -4,7 +4,7 @@
  * 跳过任务实例
  */
 
-import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import type {
   TaskInstanceClientDTO,
   SkipTaskInstanceReq,

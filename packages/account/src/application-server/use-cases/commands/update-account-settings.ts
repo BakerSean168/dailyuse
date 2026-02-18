@@ -2,7 +2,7 @@
  * Update Account Settings Use Case
  */
 
-import type { IAccountRepository } from '../../domain-server';
+import type { IAccountRepository } from '@/domain-server';
 import type { UpdateAccountSettingsReq, AccountSettingsDTO } from '@dailyuse/contracts/account';
 
 export interface UpdateSettingsResult {

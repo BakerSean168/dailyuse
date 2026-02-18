@@ -7,10 +7,9 @@
 
 import type { IGoalRepository } from '@/domain-server';
 import { Goal } from '@/domain-server';
-import type { QueryGoalsReq } from '@dailyuse/contracts/goal';
+import type { QueryGoalsReq, QueryGoalsRes } from '@dailyuse/contracts/goal';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
-import type { GoalsResponse } from '../types';
 
 /**
  * List Goals Use Case
@@ -18,18 +17,26 @@ import type { GoalsResponse } from '../types';
 export class ListGoals {
   constructor(private readonly goalRepository: IGoalRepository) {}
 
-  async execute(input: QueryGoalsReq): Promise<Result<GoalsResponse>> {
+  async execute(input: QueryGoalsReq): Promise<Result<QueryGoalsRes>> {
     const goals = await this.goalRepository.findByIdentityId(input.identityId, {
       includeChildren: input.includeKeyResults,
       status: input.status?.[0],
       folderId: input.folderId,
     });
 
+    const page = input.page ?? 1;
+    const pageSize = input.pageSize ?? goals.length;
+    const total = goals.length;
+
     return ok({
-      goals: goals.map((g: Goal) => g.toClientDTO(true)),
-      total: goals.length,
-      page: input.page ?? 1,
-      pageSize: input.pageSize ?? goals.length,
+      data: goals.map((g: Goal) => g.toClientDTO(true)),
+      pagination: {
+        page,
+        pageSize,
+        total,
+        hasMore: page * pageSize < total,
+        totalPages: pageSize > 0 ? Math.ceil(total / pageSize) : 0,
+      },
     });
   }
 }

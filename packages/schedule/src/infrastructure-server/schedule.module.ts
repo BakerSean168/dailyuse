@@ -5,7 +5,7 @@ import type {
   IScheduleRepository,
   IScheduleStatisticsRepository,
   IScheduleTaskRepository,
-} from '../domain-server';
+} from '@/domain-server';
 
 import {
   CreateScheduleTaskUseCase,
@@ -18,12 +18,12 @@ import {
   ListScheduleTasksByStatusUseCase,
   TriggerScheduleTaskUseCase,
   UpdateScheduleTaskUseCase,
-} from '../application-server/use-cases';
-import { ScheduleStatisticsApplicationService } from '../application-server/use-cases/schedule-statistics-application-service';
-import { ScheduleEventApplicationService } from '../application-server/use-cases/schedule-event-application-service';
-import { ScheduleEventPublisher } from '../application-server/use-cases/schedule-event-publisher';
-import { ScheduleRepositoryFactory } from './di';
-import { ScheduleContainer } from './di/schedule-container';
+} from '@/application-server/use-cases';
+import { ScheduleStatisticsApplicationService } from '@/application-server/services/schedule-statistics-application-service';
+import { ScheduleEventApplicationService } from '@/application-server/services/schedule-event-application-service';
+import { ScheduleEventPublisher } from '@/application-server/use-cases/schedule-event-publisher';
+import { ScheduleRepositoryFactory } from '@/infrastructure-server/di';
+import { ScheduleContainer } from '@/infrastructure-server/di/schedule-container';
 
 type BetterSQLiteDB = Database.Database;
 

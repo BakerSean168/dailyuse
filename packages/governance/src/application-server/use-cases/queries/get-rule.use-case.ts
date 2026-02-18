@@ -3,7 +3,7 @@
  * 获取规则用例
  */
 
-import type { IRuleRepository } from '../../domain-server/repositories/i-rule-repository';
+import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { GetRuleReq, GetRuleRes } from '@/contracts/api/rules';

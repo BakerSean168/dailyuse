@@ -28,8 +28,6 @@
  * ```
  */
 
-// ================= Contracts Layer =================
-export * from '@dailyuse/contracts/goal';
 
 // ================= Domain Layer =================
 export * from './domain-server';

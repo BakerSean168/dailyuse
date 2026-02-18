@@ -11,7 +11,6 @@ import type { UpdateGoalReq, UpdateGoalRes } from '@dailyuse/contracts/goal';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import { GoalEventPublisher } from './goal-event-publisher';
 
 /**
  * Update Goal Use Case
@@ -68,10 +67,7 @@ export class UpdateGoal {
     // 7. 持久化
     await this.goalRepository.save(goal);
 
-    // 8. 发布领域事件
-    await GoalEventPublisher.publishGoalEvents(goal);
-
-    // 9. 返回 Result
+    // 8. 返回 Result
     return ok(goal.toClientDTO(true));
   }
 }

@@ -2,8 +2,8 @@
  * Update Task Template Service
  */
 
-import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
-import { RecurrenceRule } from '../../domain-server/value-objects';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
+import { RecurrenceRule } from '@/domain-server/value-objects';
 import type { UpdateTaskTemplateReq, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';

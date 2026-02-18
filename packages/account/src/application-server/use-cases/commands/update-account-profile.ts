@@ -2,7 +2,7 @@
  * Update Account Profile Use Case
  */
 
-import type { IAccountRepository } from '../../domain-server';
+import type { IAccountRepository } from '@/domain-server';
 import type { AccountClientDTO, UpdateAccountReq } from '@dailyuse/contracts/account';
 
 export interface UpdateProfileResult {

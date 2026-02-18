@@ -7,6 +7,5 @@ export * from './delete-task-template';
 export * from './pause-task-template';
 export * from './skip-task-instance';
 export * from './start-task-instance';
-export * from './task-event-handler';
 export * from './update-task-template';
 

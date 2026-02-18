@@ -4,7 +4,7 @@
  * 用户登出应用服务
  */
 
-import type { IAuthSessionRepository } from '../../domain-server';
+import type { IAuthSessionRepository } from '@/domain-server';
 import type { LogoutReq, LogoutRes } from '@dailyuse/contracts/authentication';
 import type { Context } from '@dailyuse/contracts/shared';
 import { IdentityId } from '@dailyuse/domain-shared/shared';

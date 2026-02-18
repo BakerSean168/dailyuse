@@ -3,7 +3,7 @@
 **Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
 **Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
-**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
+**Note**: This template is filled in by the `/speckit.plan` command. If command templates exist in this repository, consult them for the execution workflow.
 
 ## Summary
 
@@ -31,8 +31,10 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
+- Vertical package slicing is explicit: feature is implemented in `packages/{domain}` (or domain module package) and split internally by DDD layers
 - DDD layering is explicit: business logic in domain layer, orchestration in application layer, I/O in infrastructure
 - Contracts-first design is defined: API/request/response/event contracts sourced from `packages/contracts`
+- Shared core scope is compliant: shared logic is in `packages/contracts` and `packages/domain-shared`; no new `domain-server/domain-client` central package dependency is introduced
 - Application service signatures follow `(input, cx)` and avoid infrastructure coupling
 - Domain event lifecycle is compliant:
   - events are raised only inside aggregate business methods
@@ -43,6 +45,8 @@
   - entity + DTO identifiers use strong typed `xxId` types (not raw string aliases)
   - aggregate identifier fields use `*Id` naming only (no `*Uuid`)
   - account and identity aggregates use canonical `identityId`
+- File and folder naming is compliant: all repository paths use `kebab-case` (symbol names may remain `PascalCase` in code)
+- Governance module updates are planned: domain package governance checks/docs are updated when standards are changed
 - Testing plan includes unit tests for aggregates and repository-level event dispatch behavior
 - Nx execution path is defined for validation (`nx build`, `nx test`, `nx affected:*`)
 

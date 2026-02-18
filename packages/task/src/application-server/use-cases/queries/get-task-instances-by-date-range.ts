@@ -4,7 +4,7 @@
  * 鏍规嵁鏃ユ湡鑼冨洿鑾峰彇浠诲姟瀹炰緥
  */
 
-import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import type {
   GetTaskInstancesByRangeRes,
 } from '@dailyuse/contracts/task';

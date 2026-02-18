@@ -6,4 +6,3 @@
 
 export { TaskQueryService } from './task-query.service-api';
 export { TaskQueryValidator } from './task-query.validator';
-export { TaskQueryService as TaskQueryServiceInternal } from './task-query.service';

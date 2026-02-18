@@ -25,9 +25,9 @@ import type {
   TaskTemplateStatus,
 } from '@dailyuse/contracts/task';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { GoalFolderId } from '@dailyuse/contracts/primitives';
 import { AggregateRoot } from '@dailyuse/utils';
 import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
-import { GoalFolderId } from '@dailyuse/goal/domain-shared';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 // 内部状态接口
@@ -248,7 +248,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
       importance: dto.importance,
       priority: dto.priority,
       goalBinding: dto.goalBinding ? TaskTemplate.parseGoalBinding(dto.goalBinding) : null,
-      folderId: dto.folderId ? GoalFolderId.of(dto.folderId) : null,
+      folderId: dto.folderId ? (dto.folderId as GoalFolderId) : null,
       tags: dto.tags ?? [],
       color: dto.color,
       status: dto.status,

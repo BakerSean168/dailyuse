@@ -17,7 +17,7 @@ import type { IDomainEvent } from '@dailyuse/contracts/shared';
 import type { TaskReminderType, ReminderTimeUnit } from '@dailyuse/contracts/task';
 
 type TaskType = 'ONE_TIME' | 'RECURRING';
-import type { ITaskInstanceRepository } from '../../domain-server/repositories/ITaskInstanceRepository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 
 interface ScheduleTaskTriggeredPayload {
   taskId: string;

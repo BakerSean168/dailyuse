@@ -34,7 +34,7 @@ export {
   DeleteGoalKeyResult,
   // Review Services
   AddGoalReview,
-} from './services';
+} from './use-cases';
 
 // ============================================================
 // Mappers

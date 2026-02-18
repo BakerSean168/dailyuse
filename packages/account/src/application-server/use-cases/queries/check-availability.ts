@@ -2,7 +2,7 @@
  * Check Availability Use Case
  */
 
-import type { IAccountRepository } from '../../domain-server';
+import type { IAccountRepository } from '@/domain-server';
 import type { CheckAvailabilityReq, CheckAvailabilityRes } from '@dailyuse/contracts/account';
 
 export class CheckAvailabilityUseCase {
@@ -15,7 +15,7 @@ export class CheckAvailabilityUseCase {
     }
 
     if (request.type === 'NICKNAME') {
-      // Nickname uniqueness check â€?use findByUsername as proxy
+      // Nickname uniqueness check ï¿½?use findByUsername as proxy
       const exists = await this.accountRepository.existsByUsername(request.value);
       return { available: !exists };
     }

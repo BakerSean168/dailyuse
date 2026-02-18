@@ -121,7 +121,7 @@ User Action (Web)
     ↓
 Vue Component
     ↓
-Pinia Store (domain-client)
+Pinia Store (web module layer)
     ↓
 API Client
     ↓
@@ -129,7 +129,7 @@ HTTP Request
     ↓
 Express Controller (API)
     ↓
-Application Service (domain-server)
+Application Service (domain package)
     ↓
 Domain Entity
     ↓
@@ -137,7 +137,7 @@ Repository (Infrastructure)
     ↓
 Prisma ORM
     ↓
-SQLite Database
+PostgreSQL Database
 ```
 
 详细了解：[[data-flow|数据流设计]]
@@ -164,8 +164,9 @@ DailyUse 包含以下业务模块：
 | 包 | 职责 | 文档 |
 |------|------|------|
 | @dailyuse/contracts | 类型契约 | [[../packages/packages-contracts|Contracts]] |
-| @dailyuse/domain-client | 客户端领域层 | [[../packages/packages-domain-client|Domain Client]] |
-| @dailyuse/domain-server | 服务端领域层 | [[../packages/packages-domain-server|Domain Server]] |
+| @dailyuse/domain-shared | 共享领域基础类型 | [[../packages/packages-domain-shared|Domain Shared]] |
+| @dailyuse/{domain} | 垂直业务模块包 | - |
+| @dailyuse/governance | 规约治理与可执行检查 | - |
 | @dailyuse/utils | 工具库 | [[../packages/packages-utils|Utils]] |
 | @dailyuse/ui | UI 组件 | [[../packages/packages-ui|UI]] |
 

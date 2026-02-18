@@ -52,7 +52,7 @@ updated: 2025-01-22T00:00:00
 
 遵循规范的具体操作步骤 - 查看 [📖 guides/development/](../guides/development/)
 
-- [📝 Coding Standards](../guides/development/coding-standards.md) - TypeScript、Vue 3、NestJS 编码示例
+- [📝 Coding Standards](../guides/development/coding-standards.md) - TypeScript、Vue 3、Express 编码示例
 - [🌿 Git Workflow](../guides/development/git-workflow.md) - 分支策略、提交规范
 - [🧪 Testing Guide](../guides/development/testing.md) - 测试方法与实践
 - [🐛 Debugging Guide](../guides/development/debugging.md) - 调试技巧

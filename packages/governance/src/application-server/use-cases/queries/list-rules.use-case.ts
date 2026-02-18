@@ -3,9 +3,9 @@
  * 列出规则用例
  */
 
-import type { IRuleRepository } from '../../domain-server/repositories/i-rule-repository';
-import type { RuleFilter } from '../../domain-server/repositories/i-rule-repository';
-import type { Rule } from '../../domain-server/aggregates/rule';
+import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
+import type { RuleFilter } from '@/domain-server/repositories/i-rule-repository';
+import type { Rule } from '@/domain-server/aggregates/rule';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { ListRulesQuery, ListRulesRes } from '@/contracts/api/rules';

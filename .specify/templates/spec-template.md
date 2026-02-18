@@ -101,6 +101,9 @@
 - **AR-007**: Entity and DTO identifiers MUST use strong typed `xxId` types; raw-string identifier aliases are FORBIDDEN where typed IDs exist.
 - **AR-008**: Identifier field names MUST use `*Id` suffix; any `*Uuid` identifier field is FORBIDDEN.
 - **AR-009**: For account and identity aggregates, canonical primary identifier field MUST be `identityId` across entity, DTO, repository mapping, and API boundaries.
+- **AR-010**: Feature implementation MUST follow vertical package slicing (`packages/{domain}` or module package first), then internal DDD layering; introducing centralized `domain-server/domain-client` package coupling is FORBIDDEN.
+- **AR-011**: All new files and folders MUST use `kebab-case`; symbol exports (Vue/React components, classes, interfaces/types) MAY use idiomatic `PascalCase`.
+- **AR-012**: When feature standards/patterns change, the corresponding domain `governance` module docs/checks MUST be updated in the same change set.
 
 *Example of marking unclear requirements:*
 

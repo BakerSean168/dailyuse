@@ -3,7 +3,7 @@
  * 删除规则用例
  */
 
-import type { IRuleRepository } from '../../domain-server/repositories/i-rule-repository';
+import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { DeleteRuleReq, DeleteRuleRes } from '@/contracts/api/rules';

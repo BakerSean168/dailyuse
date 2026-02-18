@@ -2,10 +2,10 @@
 tags: [standard, domain/server]
 ---
 
-# Domain Server 开发规范：聚合根与实体
+# 服务端领域开发规范：聚合根与实体（垂直模块包）
 
 **版本**: 1.0
-**适用范围**: `packages/domain-server`
+**适用范围**: `packages/{domain}/` 内的服务端领域层代码（原 `packages/domain-server` 已收敛为按业务域垂直切分）
 **读者**: 开发人员, AI 助手
 
 ## 1. 核心设计理念
@@ -24,7 +24,7 @@ Server 端的领域模型是业务逻辑的核心心脏。它是 **"Rich Domain 
 
 ## 2. 依赖规则
 
-Domain Server 处于架构的核心层，依赖必须极其严格：
+服务端领域层处于架构核心，依赖必须极其严格：
 
 * ✅ **允许依赖**:
 * `@dailyuse/utils` (AggregateRoot 基类, Entity 基类)
@@ -33,7 +33,7 @@ Domain Server 处于架构的核心层，依赖必须极其严格：
 
 
 * ❌ **禁止依赖**:
-* `@dailyuse/domain-client` (禁止！防止循环依赖和逻辑泄漏)
+* 其他业务域包中的具体基础设施实现（禁止跨域耦合）
 * `@dailyuse/infrastructure` (禁止！Repository 的实现不应出现在这里)
 * API 层代码 (Controller, Resolver)
 * 外部 I/O 库 (fs, axios, prisma, typeorm)

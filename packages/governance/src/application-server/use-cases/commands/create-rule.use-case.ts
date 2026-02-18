@@ -3,16 +3,17 @@
  * 创建规则用例
  */
 
-import type { IRuleRepository } from '../../domain-server/repositories/i-rule-repository';
-import { Rule } from '../../domain-server/aggregates/rule';
-import { RuleSeverity } from '../../domain-shared/value-objects/rule-severity';
-import { Language } from '../../domain-shared/value-objects/language';
-import type { Language as RuleLanguage } from '../../domain-shared/value-objects/language';
+import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
+import { Rule } from '@/domain-server/aggregates/rule';
+import { RuleSeverity } from '@/domain-shared/value-objects/rule-severity';
+import { Language } from '@/domain-shared/value-objects/language';
+import type { Language as RuleLanguage } from '@/domain-shared/value-objects/language';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { CreateRuleReq, CreateRuleRes } from '@/contracts/api/rules';
 import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
+import type { Context} from '@dailyuse/contracts/shared';
 
 /**
  * Execution Context

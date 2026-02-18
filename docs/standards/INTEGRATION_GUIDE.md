@@ -70,7 +70,7 @@ updated: 2025-01-22T00:00:00
 | 文件                    | 内容         | 用途                                |
 | ----------------------- | ------------ | ----------------------------------- |
 | **setup.md**            | 🛠 开发环境  | 配置IDE和开发工具                   |
-| **coding-standards.md** | 📝 编码规范  | TypeScript、Vue 3、NestJS 代码示例  |
+| **coding-standards.md** | 📝 编码规范  | TypeScript、Vue 3、Express 代码示例 |
 | **git-workflow.md**     | 🌿 Git工作流 | 分支策略、提交规范、PR流程          |
 | **testing.md**          | 🧪 测试指南  | 如何编写单元测试、集成测试、E2E测试 |
 | **debugging.md**        | 🐛 调试指南  | 调试技巧、工具使用、常见问题排查    |

@@ -13,8 +13,8 @@
  * - Story 2.2: API 集成
  */
 
-import type { ITaskTemplateRepository } from '../../domain-server/repositories/ITaskTemplateRepository';
-import type { TaskTemplate } from '../../domain-server/aggregates/task-template';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
+import type { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import {
   TaskTemplateStatus,
   type TaskTemplateServerDTO,

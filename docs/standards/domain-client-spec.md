@@ -2,10 +2,10 @@
 tags: [standard, domain/client]
 ---
 
-# Domain Client 开发规范：聚合根与实体
+# 客户端领域开发规范：聚合根与实体（垂直模块包）
 
 **版本**: 1.0
-**适用范围**: `libs/domain-client`
+**适用范围**: `apps/{web,desktop}/src/modules/{domain}` 与 `packages/{domain}/` 中客户端领域代码（原 `domain-client` 集中包已取消）
 **读者**: 开发人员, AI 助手
 
 ## 1. 核心设计理念
@@ -30,7 +30,7 @@ Client 端领域对象应当遵守以下依赖限制：
 
 
 * ❌ **禁止依赖**:
-* `@dailyuse/domain-server` (绝对禁止，避免引入 Node.js 依赖)
+* 服务端运行时依赖（Node-only APIs、Express middleware、数据库驱动等）
 * 数据库相关库 (Prisma, TypeORM 等)
 * UI 框架组件 (React, Vue 组件) —— 领域对象应保持框架无关。
 
@@ -200,7 +200,7 @@ export class User extends AggregateRoot<UserId> {
 
 在提交代码或生成代码前，请检查：
 
-* [ ] **是否引用了 Server 代码？** (检查 import 路径是否包含 `domain-server`)
+* [ ] **是否引用了服务端运行时代码？** (客户端领域层不得依赖 Node-only/Express/数据库实现)
 * [ ] **是否包含了 `create` 方法？** (Client 端不应该负责生成 ID 和初始状态)
 * [ ] **是否包含了 `update` / `save` 方法？** (Client 模型应该是纯内存对象，不负责 I/O)
 * [ ] **是否使用了 `addDomainEvent`？** (Client 模型不产生领域事件)

@@ -12,9 +12,7 @@ import type { CreateGoalReq, CreateGoalRes } from '@dailyuse/contracts/goal';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import { GoalEventPublisher } from './goal-event-publisher';
-import type { ExecutionContext } from '../types';
-
+import type { Context } from '@dailyuse/contracts/shared';
 /**
  * Create Goal Use Case
  */
@@ -24,7 +22,7 @@ export class CreateGoal {
     private readonly goalPolicy: GoalPolicy,
   ) {}
 
-  async execute(input: CreateGoalReq, context: ExecutionContext): Promise<Result<CreateGoalRes>> {
+  async execute(input: CreateGoalReq, context: Context): Promise<Result<CreateGoalRes>> {
     // 1. 验证输入
     if (!input.title?.trim()) {
       return error('VALIDATION_ERROR', 'Title is required');
@@ -70,10 +68,7 @@ export class CreateGoal {
     // 5. 持久化
     await this.goalRepository.save(goal);
 
-    // 6. 发布领域事件
-    await GoalEventPublisher.publishGoalEvents(goal);
-
-    // 7. 返回 Result
+    // 6. 返回 Result
     return ok(goal.toClientDTO(true));
   }
 }
