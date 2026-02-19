@@ -764,6 +764,842 @@ registry.registerPath({
 });
 
 // ============================================================================
+// Reminder Module Schemas
+// ============================================================================
+
+const ReminderTemplateOpenApiSchema = z.object({
+  id: z.string().uuid().describe('提醒模板 ID'),
+  name: z.string().describe('模板名称'),
+  description: z.string().nullable().optional().describe('模板描述'),
+  triggerType: z.string().describe('触发类型'),
+  status: z.string().describe('模板状态'),
+  createdAt: z.number().describe('创建时间'),
+  updatedAt: z.number().describe('更新时间'),
+});
+
+const CreateReminderTemplateOpenApiSchema = z.object({
+  name: z.string().min(1).describe('模板名称'),
+  description: z.string().optional().nullable().describe('模板描述'),
+  triggerType: z.string().describe('触发类型'),
+  triggerConfig: z.object({}).passthrough().describe('触发配置'),
+  notificationConfig: z.object({}).passthrough().optional().describe('通知配置'),
+  recurrenceRule: z.object({}).passthrough().optional().nullable().describe('重复规则'),
+});
+
+const UpdateReminderTemplateOpenApiSchema = z.object({
+  name: z.string().min(1).optional().describe('模板名称'),
+  description: z.string().optional().nullable().describe('模板描述'),
+  triggerConfig: z.object({}).passthrough().optional().describe('触发配置'),
+  notificationConfig: z.object({}).passthrough().optional().describe('通知配置'),
+  recurrenceRule: z.object({}).passthrough().optional().nullable().describe('重复规则'),
+});
+
+const ReminderGroupOpenApiSchema = z.object({
+  id: z.string().uuid().describe('提醒组 ID'),
+  name: z.string().describe('组名称'),
+  description: z.string().nullable().optional().describe('组描述'),
+  controlMode: z.string().describe('控制模式'),
+  createdAt: z.number().describe('创建时间'),
+  updatedAt: z.number().describe('更新时间'),
+});
+
+const CreateReminderGroupOpenApiSchema = z.object({
+  name: z.string().min(1).describe('组名称'),
+  description: z.string().optional().nullable().describe('组描述'),
+  controlMode: z.string().optional().describe('控制模式'),
+});
+
+const UpdateReminderGroupOpenApiSchema = z.object({
+  name: z.string().min(1).optional().describe('组名称'),
+  description: z.string().optional().nullable().describe('组描述'),
+});
+
+registry.register('ReminderTemplate', ReminderTemplateOpenApiSchema);
+registry.register('CreateReminderTemplate', CreateReminderTemplateOpenApiSchema);
+registry.register('UpdateReminderTemplate', UpdateReminderTemplateOpenApiSchema);
+registry.register('ReminderGroup', ReminderGroupOpenApiSchema);
+registry.register('CreateReminderGroup', CreateReminderGroupOpenApiSchema);
+registry.register('UpdateReminderGroup', UpdateReminderGroupOpenApiSchema);
+
+// ============================================================================
+// Reminder Template API Paths
+// ============================================================================
+
+// POST /reminders/templates
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/reminders/templates',
+  summary: '创建提醒模板',
+  tags: ['Reminder Templates'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: CreateReminderTemplateOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: successResponse(ReminderTemplateOpenApiSchema, '创建成功'),
+    400: errorResponse('参数验证失败'),
+    401: errorResponse('未授权'),
+  },
+});
+
+// GET /reminders/templates
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/reminders/templates',
+  summary: '查询提醒模板列表',
+  tags: ['Reminder Templates'],
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: successResponse(z.array(ReminderTemplateOpenApiSchema), '查询成功'),
+    401: errorResponse('未授权'),
+  },
+});
+
+// GET /reminders/templates/upcoming
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/reminders/templates/upcoming',
+  summary: '获取即将触发的提醒',
+  tags: ['Reminder Templates'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    query: z.object({
+      limit: z.string().optional().describe('返回数量限制'),
+      beforeTime: z.string().optional().describe('截止时间'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.array(ReminderTemplateOpenApiSchema), '查询成功'),
+    401: errorResponse('未授权'),
+  },
+});
+
+// GET /reminders/templates/:id
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/reminders/templates/{id}',
+  summary: '获取提醒模板详情',
+  tags: ['Reminder Templates'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('模板 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(ReminderTemplateOpenApiSchema, '获取成功'),
+    404: errorResponse('模板不存在'),
+  },
+});
+
+// PUT /reminders/templates/:id
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/reminders/templates/{id}',
+  summary: '更新提醒模板',
+  tags: ['Reminder Templates'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('模板 ID'),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: UpdateReminderTemplateOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: successResponse(ReminderTemplateOpenApiSchema, '更新成功'),
+    400: errorResponse('参数验证失败'),
+    404: errorResponse('模板不存在'),
+  },
+});
+
+// DELETE /reminders/templates/:id
+registry.registerPath({
+  method: 'delete',
+  path: '/api/v1/reminders/templates/{id}',
+  summary: '删除提醒模板',
+  tags: ['Reminder Templates'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('模板 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.null(), '删除成功'),
+    404: errorResponse('模板不存在'),
+  },
+});
+
+// ============================================================================
+// Reminder Group API Paths
+// ============================================================================
+
+// POST /reminders/groups
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/reminders/groups',
+  summary: '创建提醒组',
+  tags: ['Reminder Groups'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: CreateReminderGroupOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: successResponse(ReminderGroupOpenApiSchema, '创建成功'),
+    400: errorResponse('参数验证失败'),
+    401: errorResponse('未授权'),
+  },
+});
+
+// GET /reminders/groups
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/reminders/groups',
+  summary: '查询提醒组列表',
+  tags: ['Reminder Groups'],
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: successResponse(z.array(ReminderGroupOpenApiSchema), '查询成功'),
+    401: errorResponse('未授权'),
+  },
+});
+
+// GET /reminders/groups/:id
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/reminders/groups/{id}',
+  summary: '获取提醒组详情',
+  tags: ['Reminder Groups'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('提醒组 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(ReminderGroupOpenApiSchema, '获取成功'),
+    404: errorResponse('提醒组不存在'),
+  },
+});
+
+// PUT /reminders/groups/:id
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/reminders/groups/{id}',
+  summary: '更新提醒组',
+  tags: ['Reminder Groups'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('提醒组 ID'),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: UpdateReminderGroupOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: successResponse(ReminderGroupOpenApiSchema, '更新成功'),
+    400: errorResponse('参数验证失败'),
+    404: errorResponse('提醒组不存在'),
+  },
+});
+
+// DELETE /reminders/groups/:id
+registry.registerPath({
+  method: 'delete',
+  path: '/api/v1/reminders/groups/{id}',
+  summary: '删除提醒组',
+  tags: ['Reminder Groups'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('提醒组 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.null(), '删除成功'),
+    404: errorResponse('提醒组不存在'),
+  },
+});
+
+// POST /reminders/groups/:id/control-mode
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/reminders/groups/{id}/control-mode',
+  summary: '切换提醒组控制模式',
+  tags: ['Reminder Groups'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('提醒组 ID'),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            controlMode: z.string().describe('控制模式'),
+          }),
+        },
+      },
+    },
+  },
+  responses: {
+    200: successResponse(ReminderGroupOpenApiSchema, '切换成功'),
+    400: errorResponse('参数验证失败'),
+  },
+});
+
+// POST /reminders/groups/:id/batch
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/reminders/groups/{id}/batch',
+  summary: '批量操作提醒组模板',
+  tags: ['Reminder Groups'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('提醒组 ID'),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: z.object({}).passthrough().describe('批量操作参数'),
+        },
+      },
+    },
+  },
+  responses: {
+    200: successResponse(z.array(ReminderTemplateOpenApiSchema), '操作成功'),
+    400: errorResponse('参数验证失败'),
+  },
+});
+
+// ============================================================================
+// Schedule Module Schemas
+// ============================================================================
+
+const ScheduleTaskOpenApiSchema = z.object({
+  id: z.string().uuid().describe('调度任务 ID'),
+  name: z.string().describe('任务名称'),
+  description: z.string().nullable().optional().describe('任务描述'),
+  sourceModule: z.string().describe('来源模块'),
+  status: z.string().describe('任务状态'),
+  enabled: z.boolean().describe('是否启用'),
+  createdAt: z.number().describe('创建时间'),
+  updatedAt: z.number().describe('更新时间'),
+});
+
+const CreateScheduleTaskOpenApiSchema = z.object({
+  name: z.string().min(1).describe('任务名称'),
+  sourceModule: z.string().describe('来源模块'),
+  sourceEntityId: z.string().describe('来源实体 ID'),
+  description: z.string().optional().describe('任务描述'),
+  schedule: z.object({}).passthrough().describe('调度配置 (cron)'),
+  retryPolicy: z.object({}).passthrough().optional().describe('重试策略'),
+  enabled: z.boolean().optional().describe('是否启用'),
+});
+
+const UpdateScheduleTaskOpenApiSchema = z.object({
+  schedule: z.object({}).passthrough().optional().describe('调度配置'),
+  retryPolicy: z.object({}).passthrough().optional().describe('重试策略'),
+  enabled: z.boolean().optional().describe('是否启用'),
+  description: z.string().optional().describe('任务描述'),
+});
+
+const BatchScheduleOperationOpenApiSchema = z.object({
+  taskIds: z.array(z.string().uuid()).describe('任务 ID 列表'),
+  operation: z.enum(['pause', 'resume']).describe('批量操作类型'),
+});
+
+const BatchResultOpenApiSchema = z.object({
+  success: z.array(z.string()).describe('成功的任务 ID'),
+  failed: z.array(z.object({
+    taskId: z.string(),
+    error: z.string(),
+  })).describe('失败的任务'),
+  total: z.number().describe('总数'),
+  successCount: z.number().describe('成功数'),
+  failedCount: z.number().describe('失败数'),
+});
+
+registry.register('ScheduleTask', ScheduleTaskOpenApiSchema);
+registry.register('CreateScheduleTask', CreateScheduleTaskOpenApiSchema);
+registry.register('UpdateScheduleTask', UpdateScheduleTaskOpenApiSchema);
+registry.register('BatchScheduleOperation', BatchScheduleOperationOpenApiSchema);
+registry.register('BatchResult', BatchResultOpenApiSchema);
+
+// ============================================================================
+// Schedule API Paths
+// ============================================================================
+
+// POST /schedules/tasks/batch
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/schedules/tasks/batch',
+  summary: '批量操作调度任务',
+  tags: ['Schedule Tasks'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: BatchScheduleOperationOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: successResponse(BatchResultOpenApiSchema, '批量操作完成'),
+    400: errorResponse('参数验证失败'),
+    401: errorResponse('未授权'),
+  },
+});
+
+// POST /schedules/tasks
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/schedules/tasks',
+  summary: '创建调度任务',
+  tags: ['Schedule Tasks'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: CreateScheduleTaskOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: successResponse(ScheduleTaskOpenApiSchema, '创建成功'),
+    400: errorResponse('参数验证失败'),
+    401: errorResponse('未授权'),
+  },
+});
+
+// GET /schedules/tasks
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/schedules/tasks',
+  summary: '查询调度任务列表',
+  tags: ['Schedule Tasks'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    query: z.object({
+      sourceModule: z.string().optional().describe('来源模块过滤'),
+      sourceEntityId: z.string().optional().describe('来源实体 ID 过滤'),
+      status: z.string().optional().describe('状态过滤'),
+      enabled: z.string().optional().describe('启用状态过滤'),
+      search: z.string().optional().describe('搜索关键字'),
+      page: z.string().optional().describe('页码'),
+      limit: z.string().optional().describe('每页数量'),
+      sortBy: z.string().optional().describe('排序字段'),
+      sortOrder: z.string().optional().describe('排序方向'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.array(ScheduleTaskOpenApiSchema), '查询成功'),
+    401: errorResponse('未授权'),
+  },
+});
+
+// GET /schedules/tasks/:id
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/schedules/tasks/{id}',
+  summary: '获取调度任务详情',
+  tags: ['Schedule Tasks'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('任务 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(ScheduleTaskOpenApiSchema, '获取成功'),
+    404: errorResponse('任务不存在'),
+  },
+});
+
+// PUT /schedules/tasks/:id
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/schedules/tasks/{id}',
+  summary: '更新调度任务',
+  tags: ['Schedule Tasks'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('任务 ID'),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: UpdateScheduleTaskOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: successResponse(ScheduleTaskOpenApiSchema, '更新成功'),
+    400: errorResponse('参数验证失败'),
+    404: errorResponse('任务不存在'),
+  },
+});
+
+// DELETE /schedules/tasks/:id
+registry.registerPath({
+  method: 'delete',
+  path: '/api/v1/schedules/tasks/{id}',
+  summary: '删除调度任务',
+  tags: ['Schedule Tasks'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('任务 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.null(), '删除成功'),
+    404: errorResponse('任务不存在'),
+  },
+});
+
+// POST /schedules/tasks/:id/pause
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/schedules/tasks/{id}/pause',
+  summary: '暂停调度任务',
+  tags: ['Schedule Tasks'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('任务 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(ScheduleTaskOpenApiSchema, '暂停成功'),
+    404: errorResponse('任务不存在'),
+  },
+});
+
+// POST /schedules/tasks/:id/resume
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/schedules/tasks/{id}/resume',
+  summary: '恢复调度任务',
+  tags: ['Schedule Tasks'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('任务 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(ScheduleTaskOpenApiSchema, '恢复成功'),
+    404: errorResponse('任务不存在'),
+  },
+});
+
+// POST /schedules/tasks/:id/trigger
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/schedules/tasks/{id}/trigger',
+  summary: '手动触发调度任务',
+  tags: ['Schedule Tasks'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('任务 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.null(), '触发成功'),
+    404: errorResponse('任务不存在'),
+  },
+});
+
+// ============================================================================
+// Notification Module Schemas
+// ============================================================================
+
+const NotificationOpenApiSchema = z.object({
+  id: z.string().uuid().describe('通知 ID'),
+  type: z.string().describe('通知类型'),
+  category: z.string().optional().describe('通知分类'),
+  title: z.string().describe('通知标题'),
+  content: z.string().describe('通知内容'),
+  status: z.string().describe('通知状态'),
+  isRead: z.boolean().describe('是否已读'),
+  createdAt: z.number().describe('创建时间'),
+  updatedAt: z.number().describe('更新时间'),
+});
+
+const CreateNotificationOpenApiSchema = z.object({
+  type: z.string().describe('通知类型'),
+  category: z.string().optional().describe('通知分类'),
+  title: z.string().min(1).describe('通知标题'),
+  content: z.string().describe('通知内容'),
+  identityId: z.string().describe('目标用户 ID'),
+  channels: z.array(z.string()).optional().describe('通知渠道'),
+  metadata: z.object({}).passthrough().optional().describe('附加元数据'),
+});
+
+const UpdateNotificationOpenApiSchema = z.object({
+  title: z.string().optional().describe('通知标题'),
+  content: z.string().optional().describe('通知内容'),
+  status: z.string().optional().describe('通知状态'),
+});
+
+const MarkAsReadBatchOpenApiSchema = z.object({
+  notificationIds: z.array(z.string().uuid()).describe('通知 ID 列表'),
+});
+
+const DeleteNotificationsBatchOpenApiSchema = z.object({
+  notificationIds: z.array(z.string().uuid()).describe('通知 ID 列表'),
+});
+
+const CleanupOldNotificationsOpenApiSchema = z.object({
+  identityId: z.string().describe('用户 ID'),
+  beforeDate: z.number().optional().describe('截止日期 (timestamp)'),
+});
+
+const BatchOperationResultOpenApiSchema = z.object({
+  success: z.boolean().describe('操作是否成功'),
+  affected: z.number().describe('影响的记录数'),
+});
+
+registry.register('Notification', NotificationOpenApiSchema);
+registry.register('CreateNotification', CreateNotificationOpenApiSchema);
+registry.register('UpdateNotification', UpdateNotificationOpenApiSchema);
+registry.register('MarkAsReadBatch', MarkAsReadBatchOpenApiSchema);
+registry.register('DeleteNotificationsBatch', DeleteNotificationsBatchOpenApiSchema);
+registry.register('CleanupOldNotifications', CleanupOldNotificationsOpenApiSchema);
+
+// ============================================================================
+// Notification API Paths
+// ============================================================================
+
+// POST /notifications
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/notifications',
+  summary: '创建通知',
+  tags: ['Notifications'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: CreateNotificationOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: successResponse(NotificationOpenApiSchema, '创建成功'),
+    400: errorResponse('参数验证失败'),
+    401: errorResponse('未授权'),
+  },
+});
+
+// GET /notifications
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/notifications',
+  summary: '查询通知列表',
+  tags: ['Notifications'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    query: z.object({
+      identityId: z.string().optional().describe('用户 ID'),
+      type: z.string().optional().describe('通知类型过滤'),
+      category: z.string().optional().describe('分类过滤'),
+      status: z.string().optional().describe('状态过滤'),
+      isRead: z.string().optional().describe('是否已读过滤'),
+      keyword: z.string().optional().describe('关键字搜索'),
+      page: z.string().optional().describe('页码'),
+      limit: z.string().optional().describe('每页数量'),
+      sortBy: z.string().optional().describe('排序字段'),
+      sortOrder: z.string().optional().describe('排序方向'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.array(NotificationOpenApiSchema), '查询成功'),
+    401: errorResponse('未授权'),
+  },
+});
+
+// GET /notifications/:id
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/notifications/{id}',
+  summary: '获取通知详情',
+  tags: ['Notifications'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('通知 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(NotificationOpenApiSchema, '获取成功'),
+    404: errorResponse('通知不存在'),
+  },
+});
+
+// PUT /notifications/:id
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/notifications/{id}',
+  summary: '更新通知',
+  tags: ['Notifications'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('通知 ID'),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: UpdateNotificationOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: successResponse(NotificationOpenApiSchema, '更新成功'),
+    400: errorResponse('参数验证失败'),
+    404: errorResponse('通知不存在'),
+  },
+});
+
+// DELETE /notifications/:id
+registry.registerPath({
+  method: 'delete',
+  path: '/api/v1/notifications/{id}',
+  summary: '删除通知',
+  tags: ['Notifications'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('通知 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.null(), '删除成功'),
+    404: errorResponse('通知不存在'),
+  },
+});
+
+// POST /notifications/:id/read
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/notifications/{id}/read',
+  summary: '标记通知为已读',
+  tags: ['Notifications'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('通知 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.null(), '标记成功'),
+    404: errorResponse('通知不存在'),
+  },
+});
+
+// POST /notifications/batch/read
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/notifications/batch/read',
+  summary: '批量标记通知为已读',
+  tags: ['Notifications - Batch'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: MarkAsReadBatchOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: successResponse(BatchOperationResultOpenApiSchema, '批量标记成功'),
+    400: errorResponse('参数验证失败'),
+  },
+});
+
+// POST /notifications/batch/delete
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/notifications/batch/delete',
+  summary: '批量删除通知',
+  tags: ['Notifications - Batch'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: DeleteNotificationsBatchOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: successResponse(BatchOperationResultOpenApiSchema, '批量删除成功'),
+    400: errorResponse('参数验证失败'),
+  },
+});
+
+// POST /notifications/cleanup
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/notifications/cleanup',
+  summary: '清理过期通知',
+  tags: ['Notifications - Batch'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: CleanupOldNotificationsOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: successResponse(BatchOperationResultOpenApiSchema, '清理成功'),
+    400: errorResponse('参数验证失败'),
+  },
+});
+
+// ============================================================================
 // Authentication API Paths
 // ============================================================================
 

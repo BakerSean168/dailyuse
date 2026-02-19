@@ -5,6 +5,11 @@
  * Middleware is injected via parameters (from ApiBootstrapper context),
  * no direct dependency on apps/api internals.
  *
+ * Uses expressAdapter to eliminate boilerplate code:
+ * - Zod validation is handled by the ScheduleController
+ * - Error handling is unified via the adapter
+ * - Context extraction is automatic
+ *
  * Routes:
  *   POST   /tasks            — Create schedule task
  *   GET    /tasks            — List tasks with query params
@@ -18,31 +23,11 @@
  */
 
 import { Router } from 'express';
-import type { Request, Response, RequestHandler } from 'express';
-import {
-  CreateScheduleTaskRequestSchema,
-  UpdateScheduleTaskRequestSchema,
-  ScheduleTaskQueryParamsSchema,
-  BatchScheduleTaskOperationRequestSchema,
-} from '@dailyuse/contracts/schedule';
-import { createLogger } from '@dailyuse/utils';
-import { createExpressHelper } from '@dailyuse/utils/result';
-
-const logger = createLogger('ScheduleRoutes');
+import type { RequestHandler } from 'express';
+import { expressAdapter } from '@dailyuse/utils/result';
+import { ScheduleController } from './controller';
 
 // ============ Types ============
-
-interface AuthUser {
-  identityId: string;
-  sessionId?: string;
-}
-
-interface AuthenticatedRequest extends Request {
-  id?: string;
-  traceId?: string;
-  startTime?: number;
-  user?: AuthUser;
-}
 
 export interface ScheduleRouteHandlers {
   createTask(data: any): Promise<any>;
@@ -90,247 +75,63 @@ export function registerScheduleRoutes(
 ): Router {
   const router = Router();
   const { auth } = middleware;
+  const controller = new ScheduleController(handlers);
 
   // POST /tasks/batch — Batch operations (must be before /tasks/:id)
-  router.post('/tasks/batch', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) {
-        return helper.unauthorized();
-      }
-      const parsed = BatchScheduleTaskOperationRequestSchema.safeParse(req.body);
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`Validation failed: ${details.map(d => d.message).join(', ')}`);
-      }
-      const { taskIds, operation } = parsed.data;
-      const results = { success: [] as string[], failed: [] as { taskId: string; error: string }[] };
-      for (const taskId of taskIds) {
-        try {
-          switch (operation) {
-            case 'pause':
-              await handlers.pauseTask(taskId);
-              break;
-            case 'resume':
-              await handlers.resumeTask(taskId);
-              break;
-            default:
-              throw new Error(`Unsupported batch operation: ${operation}`);
-          }
-          results.success.push(taskId);
-        } catch (err) {
-          results.failed.push({
-            taskId,
-            error: err instanceof Error ? err.message : 'Unknown error',
-          });
-        }
-      }
-      return helper.success({
-        ...results,
-        total: taskIds.length,
-        successCount: results.success.length,
-        failedCount: results.failed.length,
-      }, 'Batch operation completed');
-    } catch (error) {
-      logger.error('Batch operation failed:', error);
-      const message = error instanceof Error ? error.message : 'Batch operation failed';
-      return helper.internalError(message);
-    }
-  });
+  router.post('/tasks/batch', auth, expressAdapter(
+    (req) => controller.batchOperation(req.body),
+  ));
 
   // POST /tasks — Create schedule task
-  router.post('/tasks', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) {
-        return helper.unauthorized();
-      }
-      const parsed = CreateScheduleTaskRequestSchema.safeParse(req.body);
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`Validation failed: ${details.map(d => d.message).join(', ')}`);
-      }
-      const result = await handlers.createTask({
-        name: parsed.data.name,
-        sourceModule: parsed.data.sourceModule,
-        sourceId: parsed.data.sourceEntityId,
-        scheduleConfig: parsed.data.schedule,
-        handlerType: parsed.data.sourceModule,
-        description: parsed.data.description,
-        retryPolicy: parsed.data.retryPolicy,
-        enabled: parsed.data.enabled,
-        identityId: req.user.identityId,
-      });
-      return helper.created(result, 'Schedule task created');
-    } catch (error) {
-      logger.error('Create schedule task failed:', error);
-      const message = error instanceof Error ? error.message : 'Failed to create schedule task';
-      return helper.badRequest(message);
-    }
-  });
+  router.post('/tasks', auth, expressAdapter(
+    (req, ctx) => controller.createTask(req.body, ctx.identityId),
+    { successStatus: 201 },
+  ));
 
   // GET /tasks — List tasks with query params
-  router.get('/tasks', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) {
-        return helper.unauthorized();
-      }
-      const queryParams = {
-        sourceModule: parseString(req.query.sourceModule),
-        sourceEntityId: parseString(req.query.sourceEntityId),
-        status: parseString(req.query.status),
-        enabled: parseBoolean(req.query.enabled),
-        search: parseString(req.query.search),
-        page: parseNumber(req.query.page),
-        limit: parseNumber(req.query.limit),
-        sortBy: parseString(req.query.sortBy),
-        sortOrder: parseString(req.query.sortOrder),
-      };
-      const parsed = ScheduleTaskQueryParamsSchema.safeParse(queryParams);
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`Validation failed: ${details.map(d => d.message).join(', ')}`);
-      }
-
-      // Route to specific list use case based on query params
-      let result: any;
-      if (parsed.data.status) {
-        result = await handlers.listTasksByStatus(parsed.data.status);
-      } else if (parsed.data.sourceModule && parsed.data.sourceEntityId) {
-        result = await handlers.listTasksBySource(parsed.data.sourceModule, parsed.data.sourceEntityId);
-      } else {
-        result = await handlers.listTasksByAccount(req.user.identityId);
-      }
-      return helper.success(result, 'Schedule tasks retrieved');
-    } catch (error) {
-      logger.error('List schedule tasks failed:', error);
-      const message = error instanceof Error ? error.message : 'Failed to list schedule tasks';
-      return helper.internalError(message);
-    }
-  });
+  router.get('/tasks', auth, expressAdapter(
+    (req, ctx) => controller.listTasks(ctx.identityId, {
+      sourceModule: parseString(req.query?.sourceModule),
+      sourceEntityId: parseString(req.query?.sourceEntityId),
+      status: parseString(req.query?.status),
+      enabled: parseBoolean(req.query?.enabled),
+      search: parseString(req.query?.search),
+      page: parseNumber(req.query?.page),
+      limit: parseNumber(req.query?.limit),
+      sortBy: parseString(req.query?.sortBy),
+      sortOrder: parseString(req.query?.sortOrder),
+    }),
+  ));
 
   // GET /tasks/:id — Get task by ID
-  router.get('/tasks/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) {
-        return helper.unauthorized();
-      }
-      const result = await handlers.getTask(req.params.id);
-      if (!result) {
-        return helper.notFound('Schedule task not found');
-      }
-      return helper.success(result, 'Schedule task retrieved');
-    } catch (error) {
-      logger.error('Get schedule task failed:', error);
-      const message = error instanceof Error ? error.message : 'Failed to get schedule task';
-      return helper.internalError(message);
-    }
-  });
+  router.get('/tasks/:id', auth, expressAdapter(
+    (req) => controller.getTask(req.params!.id),
+  ));
 
   // PUT /tasks/:id — Update task
-  router.put('/tasks/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) {
-        return helper.unauthorized();
-      }
-      const parsed = UpdateScheduleTaskRequestSchema.safeParse(req.body);
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`Validation failed: ${details.map(d => d.message).join(', ')}`);
-      }
-      const result = await handlers.updateTask({
-        id: req.params.id,
-        scheduleConfig: parsed.data.schedule,
-        retryPolicy: parsed.data.retryPolicy,
-        enabled: parsed.data.enabled,
-        description: parsed.data.description,
-      });
-      return helper.success(result, 'Schedule task updated');
-    } catch (error) {
-      logger.error('Update schedule task failed:', error);
-      const message = error instanceof Error ? error.message : 'Failed to update schedule task';
-      return helper.badRequest(message);
-    }
-  });
+  router.put('/tasks/:id', auth, expressAdapter(
+    (req) => controller.updateTask(req.params!.id, req.body),
+  ));
 
   // DELETE /tasks/:id — Delete task
-  router.delete('/tasks/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) {
-        return helper.unauthorized();
-      }
-      await handlers.deleteTask(req.params.id);
-      return helper.success(null, 'Schedule task deleted');
-    } catch (error) {
-      logger.error('Delete schedule task failed:', error);
-      const message = error instanceof Error ? error.message : 'Failed to delete schedule task';
-      return helper.badRequest(message);
-    }
-  });
+  router.delete('/tasks/:id', auth, expressAdapter(
+    (req) => controller.deleteTask(req.params!.id),
+  ));
 
   // POST /tasks/:id/pause — Pause task
-  router.post('/tasks/:id/pause', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) {
-        return helper.unauthorized();
-      }
-      const result = await handlers.pauseTask(req.params.id);
-      return helper.success(result, 'Schedule task paused');
-    } catch (error) {
-      logger.error('Pause schedule task failed:', error);
-      const message = error instanceof Error ? error.message : 'Failed to pause schedule task';
-      return helper.badRequest(message);
-    }
-  });
+  router.post('/tasks/:id/pause', auth, expressAdapter(
+    (req) => controller.pauseTask(req.params!.id),
+  ));
 
   // POST /tasks/:id/resume — Resume task
-  router.post('/tasks/:id/resume', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) {
-        return helper.unauthorized();
-      }
-      const result = await handlers.resumeTask(req.params.id);
-      return helper.success(result, 'Schedule task resumed');
-    } catch (error) {
-      logger.error('Resume schedule task failed:', error);
-      const message = error instanceof Error ? error.message : 'Failed to resume schedule task';
-      return helper.badRequest(message);
-    }
-  });
+  router.post('/tasks/:id/resume', auth, expressAdapter(
+    (req) => controller.resumeTask(req.params!.id),
+  ));
 
   // POST /tasks/:id/trigger — Trigger task
-  router.post('/tasks/:id/trigger', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) {
-        return helper.unauthorized();
-      }
-      await handlers.triggerTask(req.params.id);
-      return helper.success(null, 'Schedule task triggered');
-    } catch (error) {
-      logger.error('Trigger schedule task failed:', error);
-      const message = error instanceof Error ? error.message : 'Failed to trigger schedule task';
-      return helper.badRequest(message);
-    }
-  });
+  router.post('/tasks/:id/trigger', auth, expressAdapter(
+    (req) => controller.triggerTask(req.params!.id),
+  ));
 
   return router;
 }
