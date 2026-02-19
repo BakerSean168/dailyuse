@@ -84,6 +84,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "2.0.80",
+    "@asteasolutions/zod-to-openapi": "^8.4.1",
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/ui-vuetify": "workspace:*",
     "@dailyuse/utils": "workspace:*",

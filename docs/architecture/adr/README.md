@@ -44,6 +44,8 @@ ADR (Architecture Decision Record) 是一种记录软件架构决策的轻量级
 | [ADR-013](./ADR-013-standard-testing-strategy.md) | **Testing Strategy (Standard)** | 2026-01-15 | ✅ 已采纳 |
 | [ADR-014](./ADR-014-standard-typescript-guidelines.md) | **TypeScript Guidelines (Standard)** | 2026-01-15 | ✅ 已采纳 |
 | [ADR-015](./ADR-015-dev-phase-simplicity-preference.md) | **Dev Phase Simplicity Preference** | 2026-01-16 | ✅ 已采纳 |
+| [ADR-026](./ADR-026-server-side-adapter-pattern.md) | **Server-Side Adapter Pattern** | 2026-02-19 | ✅ 已采纳 |
+| [ADR-027](./ADR-027-zod-to-openapi-documentation.md) | **API Documentation with Zod-to-OpenAPI** | 2026-02-19 | ✅ 已采纳 |
 
 ### 提议中 (Proposed)
 

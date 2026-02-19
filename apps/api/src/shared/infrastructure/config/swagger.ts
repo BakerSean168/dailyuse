@@ -1,12 +1,18 @@
 /**
  * @file swagger.ts
  * @description Swagger API 文档配置。
+ *
+ * 支持两种文档源：
+ * 1. swagger-jsdoc (JSDoc 注释) → /api-docs
+ * 2. zod-to-openapi (Zod Schema) → /api/docs
+ *
  * @date 2025-01-22
  */
 
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import type { Express } from 'express';
+import { generateOpenApiDocument } from '../openapi/generator';
 
 const options = {
   definition: {
@@ -376,7 +382,7 @@ const specs = swaggerJsdoc(options);
  * @param app - Express 应用实例
  */
 export function setupSwagger(app: Express): void {
-  // Swagger UI 路径
+  // Legacy: swagger-jsdoc based docs
   app.use(
     '/api-docs',
     swaggerUi.serve,
@@ -389,14 +395,35 @@ export function setupSwagger(app: Express): void {
     }),
   );
 
-  // 提供 OpenAPI JSON
+  // Provide OpenAPI JSON (legacy)
   app.get('/api-docs.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.send(specs);
   });
 
-  console.log('📚 Swagger UI 已启用: http://localhost:3888/api-docs');
-  console.log('📄 OpenAPI JSON: http://localhost:3888/api-docs.json');
+  // New: Zod-to-OpenAPI generated docs
+  const openApiDocument = generateOpenApiDocument();
+
+  app.use(
+    '/api/docs',
+    swaggerUi.serve,
+    swaggerUi.setup(openApiDocument, {
+      explorer: true,
+      swaggerOptions: {
+        filter: true,
+        showRequestHeaders: true,
+      },
+    }),
+  );
+
+  app.get('/api/docs.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.json(openApiDocument);
+  });
+
+  console.log('📚 Swagger UI (legacy): http://localhost:3888/api-docs');
+  console.log('📚 Swagger UI (Zod):    http://localhost:3888/api/docs');
+  console.log('📄 OpenAPI JSON:        http://localhost:3888/api/docs.json');
 }
 
 export { specs as swaggerSpecs };
