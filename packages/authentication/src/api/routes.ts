@@ -1,8 +1,15 @@
 /**
  * Authentication API Routes
  *
- * Route definitions for the Authentication module.
- * Middleware is injected via parameters (from ApiBootstrapper context).
+ * 路由定义与请求处理。
+ * 中间件通过参数注入（来自 ApiBootstrapper 上下文），
+ * 不直接依赖 apps/api 内部实现。
+ *
+ * Routes:
+ *   POST   /register   — 用户注册 (RegisterByEmailSchema)
+ *   POST   /login      — 用户登录 (LoginByEmailSchema)
+ *   POST   /logout     — 用户登出
+ *   POST   /refresh    — 刷新访问令牌 (RefreshTokenSchema)
  */
 
 import { Router } from 'express';
@@ -18,6 +25,7 @@ import {
 } from '@dailyuse/contracts/authentication';
 import type { Context } from '@dailyuse/contracts/shared';
 import { createLogger } from '@dailyuse/utils';
+import { createExpressHelper } from '@dailyuse/utils/result';
 
 const logger = createLogger('AuthenticationRoutes');
 
@@ -31,6 +39,9 @@ interface AuthUser {
 }
 
 interface AuthenticatedRequest extends Request {
+  id?: string;
+  traceId?: string;
+  startTime?: number;
   user?: AuthUser;
 }
 
@@ -69,341 +80,335 @@ export function registerAuthenticationRoutes(
 
   // ======== Login & Registration ========
 
-  // POST /register �?用户注册
-  router.post('/register', async (req: Request, res: Response) => {
+  // POST /register — 用户注册 (RegisterByEmailSchema)
+  router.post('/register', async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       const parsed = RegisterByEmailSchema.safeParse(req.body);
       if (!parsed.success) {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: parsed.error.issues,
-        });
-        return;
+        const details = parsed.error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        }));
+        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
       }
       const cx: Context = {
         identityId: '', // 注册时还没有身份
         deviceId: (req.headers['x-device-id'] as string) || 'unknown'
       };
       const result = await handlers.register(parsed.data, cx);
-      res.status(201).json({ success: true, data: result, message: 'Registration successful' });
+      return helper.created(result, 'Registration successful');
     } catch (error) {
       logger.error('Register failed:', error);
       const message = error instanceof Error ? error.message : 'Registration failed';
-      res.status(400).json({ success: false, message });
+      return helper.badRequest(message);
     }
   });
 
-  // POST /login �?用户登录
-  router.post('/login', async (req: Request, res: Response) => {
+  // POST /login — 用户登录 (LoginByEmailSchema)
+  router.post('/login', async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       const parsed = LoginByEmailSchema.safeParse(req.body);
       if (!parsed.success) {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: parsed.error.issues,
-        });
-        return;
+        const details = parsed.error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        }));
+        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
       }
       const cx: Context = {
         identityId: '', // 登录时还没有身份
         deviceId: (req.headers['x-device-id'] as string) || 'unknown'
       };
       const result = await handlers.login(parsed.data, cx);
-      res.json({ success: true, data: result, message: 'Login successful' });
+      return helper.success(result, 'Login successful');
     } catch (error) {
       logger.error('Login failed:', error);
       const message = error instanceof Error ? error.message : 'Login failed';
-      res.status(401).json({ success: false, message });
+      return helper.unauthorized(message);
     }
   });
 
-  // POST /logout �?用户登出
-  router.post('/logout', auth, async (req: Request, res: Response) => {
+  // POST /logout — 用户登出
+  router.post('/logout', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
-      const authReq = req as AuthenticatedRequest;
-      if (!authReq.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+      if (!req.user?.identityId) {
+        return helper.unauthorized();
       }
       const cx: Context = {
-        identityId: authReq.user.identityId,
+        identityId: req.user.identityId,
         deviceId: (req.headers['x-device-id'] as string) || 'unknown'
       };
       await handlers.logout({}, cx);
-      res.json({ success: true, message: 'Logout successful' });
+      return helper.success(null, 'Logout successful');
     } catch (error) {
       logger.error('Logout failed:', error);
       const message = error instanceof Error ? error.message : 'Logout failed';
-      res.status(500).json({ success: false, message });
+      return helper.internalError(message);
     }
   });
 
   // ======== Session Management ========
 
-  // POST /refresh �?刷新访问令牌
-  router.post('/refresh', auth, async (req: Request, res: Response) => {
+  // POST /refresh — 刷新访问令牌 (RefreshTokenSchema)
+  router.post('/refresh', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       const parsed = RefreshTokenSchema.safeParse(req.body);
       if (!parsed.success) {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: parsed.error.issues,
-        });
-        return;
+        const details = parsed.error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        }));
+        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
       }
-      const authReq = req as AuthenticatedRequest;
-      if (!authReq.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+      if (!req.user?.identityId) {
+        return helper.unauthorized();
       }
       const cx: Context = {
-        identityId: authReq.user.identityId,
+        identityId: req.user.identityId,
         deviceId: (req.headers['x-device-id'] as string) || 'unknown'
       };
       const result = await handlers.refreshToken(parsed.data, cx);
-      res.json({ success: true, data: result, message: 'Session refreshed successfully' });
+      return helper.success(result, 'Session refreshed successfully');
     } catch (error) {
       logger.error('Refresh token failed:', error);
       const message = error instanceof Error ? error.message : 'Token refresh failed';
-      res.status(401).json({ success: false, message });
+      return helper.unauthorized(message);
     }
   });
 
   /* Temporarily commented out - will implement later
   
-  // GET /sessions �?获取活跃会话列表
+  // GET /sessions — 获取活跃会话列表
   router.get('/sessions', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       if (!req.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+        return helper.unauthorized();
       }
       const sessions = await handlers.getActiveSessions(req.user.identityId);
-      res.json({ success: true, data: sessions, message: 'Active sessions retrieved' });
+      return helper.success(sessions, 'Active sessions retrieved');
     } catch (error) {
       logger.error('Get active sessions failed:', error);
       const message = error instanceof Error ? error.message : 'Failed to get sessions';
-      res.status(500).json({ success: false, message });
+      return helper.internalError(message);
     }
   });
 
-  // DELETE /sessions/:sessionId �?撤销特定会话
+  // DELETE /sessions/:sessionId — 撤销特定会话
   router.delete('/sessions/:sessionId', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       if (!req.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+        return helper.unauthorized();
       }
       const parsed = RevokeSessionSchema.safeParse({ sessionId: req.params.sessionId });
       if (!parsed.success) {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: parsed.error.issues,
-        });
-        return;
+        const details = parsed.error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        }));
+        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
       }
       await handlers.revokeSession(parsed.data.sessionId, req.user.identityId);
-      res.json({ success: true, message: 'Session revoked' });
+      return helper.success(null, 'Session revoked');
     } catch (error) {
       logger.error('Revoke session failed:', error);
       const message = error instanceof Error ? error.message : 'Failed to revoke session';
-      res.status(400).json({ success: false, message });
+      return helper.badRequest(message);
     }
   });
 
-  // POST /logout-all �?全设备登�?
+  // POST /logout-all — 全设备登出
   router.post('/logout-all', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       if (!req.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+        return helper.unauthorized();
       }
       await handlers.revokeAllSessions(req.user.identityId);
-      res.json({ success: true, message: 'Logout all devices successful' });
+      return helper.success(null, 'Logout all devices successful');
     } catch (error) {
       logger.error('Logout all failed:', error);
       const message = error instanceof Error ? error.message : 'Failed to logout all';
-      res.status(500).json({ success: false, message });
+      return helper.internalError(message);
     }
   });
 
   // ======== Two-Factor Authentication ========
 
-  // POST /two-factor/enable �?启用双因素认�?
+  // POST /two-factor/enable — 启用双因素认证
   router.post('/two-factor/enable', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       if (!req.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+        return helper.unauthorized();
       }
       const { method } = req.body;
       const result = await handlers.enable2fa(req.user.identityId, method);
-      res.json({ success: true, data: result, message: 'Two-factor authentication enabled' });
+      return helper.success(result, 'Two-factor authentication enabled');
     } catch (error) {
       logger.error('Enable 2FA failed:', error);
       const message = error instanceof Error ? error.message : 'Failed to enable 2FA';
-      res.status(400).json({ success: false, message });
+      return helper.badRequest(message);
     }
   });
 
-  // POST /two-factor/disable �?禁用双因素认�?
+  // POST /two-factor/disable — 禁用双因素认证
   router.post('/two-factor/disable', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       if (!req.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+        return helper.unauthorized();
       }
       await handlers.disable2fa(req.user.identityId);
-      res.json({ success: true, message: 'Two-factor authentication disabled' });
+      return helper.success(null, 'Two-factor authentication disabled');
     } catch (error) {
       logger.error('Disable 2FA failed:', error);
       const message = error instanceof Error ? error.message : 'Failed to disable 2FA';
-      res.status(400).json({ success: false, message });
+      return helper.badRequest(message);
     }
   });
 
-  // POST /two-factor/verify �?验证双因素认证代�?
-  router.post('/two-factor/verify', async (req: Request, res: Response) => {
+  // POST /two-factor/verify — 验证双因素认证代码
+  router.post('/two-factor/verify', async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       const { code, sessionId } = req.body;
       if (!code || !sessionId) {
-        res.status(400).json({ success: false, message: 'sessionId and code are required' });
-        return;
+        return helper.badRequest('sessionId and code are required');
       }
       const result = await handlers.verify2fa(sessionId, code);
-      res.json({ success: true, data: result, message: 'Two-factor verification successful' });
+      return helper.success(result, 'Two-factor verification successful');
     } catch (error) {
       logger.error('Verify 2FA failed:', error);
       const message = error instanceof Error ? error.message : 'Verification failed';
-      res.status(401).json({ success: false, message });
+      return helper.unauthorized(message);
     }
   });
 
   // ======== API Keys ========
 
-  // POST /api-keys �?生成�?API 密钥
+  // POST /api-keys — 生成新 API 密钥
   router.post('/api-keys', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       if (!req.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+        return helper.unauthorized();
       }
       const { name, expiresInDays } = req.body;
       if (!name) {
-        res.status(400).json({ success: false, message: 'API key name is required' });
-        return;
+        return helper.badRequest('API key name is required');
       }
       const result = await handlers.createApiKey(req.user.identityId, name, expiresInDays);
-      res.status(201).json({ success: true, data: result, message: 'API key generated' });
+      return helper.created(result, 'API key generated');
     } catch (error) {
       logger.error('Generate API key failed:', error);
       const message = error instanceof Error ? error.message : 'Failed to generate API key';
-      res.status(400).json({ success: false, message });
+      return helper.badRequest(message);
     }
   });
 
-  // GET /api-keys �?列出所�?API 密钥
+  // GET /api-keys — 列出所有 API 密钥
   router.get('/api-keys', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       if (!req.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+        return helper.unauthorized();
       }
       const keys = await handlers.listApiKeys(req.user.identityId);
-      res.json({ success: true, data: keys, message: 'API keys retrieved' });
+      return helper.success(keys, 'API keys retrieved');
     } catch (error) {
       logger.error('List API keys failed:', error);
       const message = error instanceof Error ? error.message : 'Failed to list API keys';
-      res.status(500).json({ success: false, message });
+      return helper.internalError(message);
     }
   });
 
-  // DELETE /api-keys/:keyId �?撤销 API 密钥
+  // DELETE /api-keys/:keyId — 撤销 API 密钥
   router.delete('/api-keys/:keyId', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       if (!req.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+        return helper.unauthorized();
       }
       await handlers.revokeApiKey(req.params.keyId, req.user.identityId);
-      res.json({ success: true, message: 'API key revoked' });
+      return helper.success(null, 'API key revoked');
     } catch (error) {
       logger.error('Revoke API key failed:', error);
       const message = error instanceof Error ? error.message : 'Failed to revoke API key';
-      res.status(400).json({ success: false, message });
+      return helper.badRequest(message);
     }
   });
 
   // ======== Password Management ========
 
-  // POST /password/change �?修改密码
+  // POST /password/change — 修改密码
   router.post('/password/change', auth, async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       if (!req.user?.identityId) {
-        res.status(401).json({ success: false, message: 'Unauthorized' });
-        return;
+        return helper.unauthorized();
       }
       const parsed = ChangePasswordSchema.safeParse(req.body);
       if (!parsed.success) {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: parsed.error.issues,
-        });
-        return;
+        const details = parsed.error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        }));
+        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
       }
       await handlers.changePassword(req.user.identityId, parsed.data.currentPassword, parsed.data.newPassword);
-      res.json({ success: true, message: 'Password changed successfully' });
+      return helper.success(null, 'Password changed successfully');
     } catch (error) {
       logger.error('Change password failed:', error);
       const message = error instanceof Error ? error.message : 'Failed to change password';
-      res.status(400).json({ success: false, message });
+      return helper.badRequest(message);
     }
   });
 
-  // POST /password/forgot �?申请密码重置
-  router.post('/password/forgot', async (req: Request, res: Response) => {
+  // POST /password/forgot — 申请密码重置
+  router.post('/password/forgot', async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       const parsed = ForgotPasswordSchema.safeParse(req.body);
       if (!parsed.success) {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: parsed.error.issues,
-        });
-        return;
+        const details = parsed.error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        }));
+        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
       }
       await handlers.forgotPassword(parsed.data.email);
-      res.json({ success: true, message: 'Password reset email sent' });
+      return helper.success(null, 'Password reset email sent');
     } catch (error) {
       logger.error('Forgot password failed:', error);
       // Always return success to prevent email enumeration attacks
-      res.json({ success: true, message: 'Password reset email sent' });
+      return helper.success(null, 'Password reset email sent');
     }
   });
 
-  // POST /password/reset �?重置密码
-  router.post('/password/reset', async (req: Request, res: Response) => {
+  // POST /password/reset — 重置密码
+  router.post('/password/reset', async (req: AuthenticatedRequest, res: Response) => {
+    const helper = createExpressHelper(res, req);
     try {
       const parsed = ResetPasswordSchema.safeParse(req.body);
       if (!parsed.success) {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: parsed.error.issues,
-        });
-        return;
+        const details = parsed.error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        }));
+        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
       }
       await handlers.resetPassword(parsed.data.token, parsed.data.newPassword);
-      res.json({ success: true, message: 'Password reset successfully' });
+      return helper.success(null, 'Password reset successfully');
     } catch (error) {
       logger.error('Reset password failed:', error);
       const message = error instanceof Error ? error.message : 'Failed to reset password';
-      res.status(400).json({ success: false, message });
+      return helper.badRequest(message);
     }
   });
   
