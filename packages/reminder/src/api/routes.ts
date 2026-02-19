@@ -4,6 +4,11 @@
  * Route definitions and request handling for Reminder domain.
  * Middleware injected via parameters from ApiBootstrapper context.
  *
+ * Uses expressAdapter to eliminate boilerplate code:
+ * - Zod validation is handled by the ReminderController
+ * - Error handling is unified via the adapter
+ * - Context extraction is automatic
+ *
  * Routes:
  *   POST   /templates              — Create reminder template
  *   GET    /templates              — List templates for current user
@@ -21,31 +26,11 @@
  */
 
 import { Router } from 'express';
-import type { Request, Response, RequestHandler } from 'express';
-import {
-  CreateReminderTemplateSchema,
-  UpdateReminderTemplateSchema,
-  GetUpcomingRemindersSchema,
-  CreateReminderGroupSchema,
-  UpdateReminderGroupSchema,
-  SwitchGroupControlModeSchema,
-  BatchGroupTemplatesSchema,
-} from '@dailyuse/contracts/reminder';
-import { createExpressHelper } from '@dailyuse/utils/result';
+import type { RequestHandler } from 'express';
+import { expressAdapter } from '@dailyuse/utils/result';
+import { ReminderController } from './controller';
 
 // ============ Types ============
-
-interface AuthenticatedRequest extends Request {
-  id?: string;
-  traceId?: string;
-  startTime?: number;
-  user?: {
-    identityId: string;
-    sessionId?: string;
-    tokenType?: string;
-    exp?: number;
-  };
-}
 
 export interface ReminderRouteHandlers {
   // Template CRUD
@@ -91,262 +76,81 @@ export function registerReminderRoutes(
 ): Router {
   const router = Router();
   const { auth } = middleware;
+  const controller = new ReminderController(handlers);
 
   // ────────── Template Routes ──────────
 
   // POST /templates — Create reminder template
-  router.post('/templates', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const parsed = CreateReminderTemplateSchema.safeParse(req.body);
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`Validation failed: ${details.map(d => d.message).join(', ')}`);
-      }
-
-      const result = await handlers.createTemplate(req.user.identityId, parsed.data);
-      return helper.created(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Create template failed';
-      return helper.internalError(message);
-    }
-  });
+  router.post('/templates', auth, expressAdapter(
+    (req, ctx) => controller.createTemplate(req.body, ctx.identityId),
+    { successStatus: 201 },
+  ));
 
   // GET /templates — List templates for current user
-  router.get('/templates', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const result = await handlers.listTemplates(req.user.identityId);
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'List templates failed';
-      return helper.internalError(message);
-    }
-  });
+  router.get('/templates', auth, expressAdapter(
+    (_req, ctx) => controller.listTemplates(ctx.identityId),
+  ));
 
   // GET /templates/upcoming — Get upcoming reminders
-  router.get('/templates/upcoming', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const params = {
-        limit: parseNumber(req.query.limit),
-        beforeTime: parseString(req.query.beforeTime),
-      };
-
-      const parsed = GetUpcomingRemindersSchema.safeParse(params);
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`Validation failed: ${details.map(d => d.message).join(', ')}`);
-      }
-
-      const result = await handlers.getUpcomingReminders(req.user.identityId, parsed.data);
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Get upcoming reminders failed';
-      return helper.internalError(message);
-    }
-  });
+  router.get('/templates/upcoming', auth, expressAdapter(
+    (req, ctx) => controller.getUpcomingReminders(ctx.identityId, {
+      limit: parseNumber(req.query?.limit),
+      beforeTime: parseString(req.query?.beforeTime),
+    }),
+  ));
 
   // GET /templates/:id — Get template by ID
-  router.get('/templates/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const result = await handlers.getTemplate(req.params.id);
-      if (!result) return helper.notFound('Template not found');
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Get template failed';
-      return helper.internalError(message);
-    }
-  });
+  router.get('/templates/:id', auth, expressAdapter(
+    (req) => controller.getTemplate(req.params!.id),
+  ));
 
   // PUT /templates/:id — Update template
-  router.put('/templates/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const parsed = UpdateReminderTemplateSchema.safeParse(req.body);
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`Validation failed: ${details.map(d => d.message).join(', ')}`);
-      }
-
-      const result = await handlers.updateTemplate(req.params.id, parsed.data);
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Update template failed';
-      return helper.badRequest(message);
-    }
-  });
+  router.put('/templates/:id', auth, expressAdapter(
+    (req) => controller.updateTemplate(req.params!.id, req.body),
+  ));
 
   // DELETE /templates/:id — Delete template
-  router.delete('/templates/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      await handlers.deleteTemplate(req.params.id);
-      return helper.success(null, 'Template deleted');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Delete template failed';
-      return helper.internalError(message);
-    }
-  });
+  router.delete('/templates/:id', auth, expressAdapter(
+    (req) => controller.deleteTemplate(req.params!.id),
+  ));
 
   // ────────── Group Routes ──────────
 
   // POST /groups — Create reminder group
-  router.post('/groups', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const parsed = CreateReminderGroupSchema.safeParse(req.body);
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`Validation failed: ${details.map(d => d.message).join(', ')}`);
-      }
-
-      const result = await handlers.createGroup(req.user.identityId, parsed.data);
-      return helper.created(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Create group failed';
-      return helper.internalError(message);
-    }
-  });
+  router.post('/groups', auth, expressAdapter(
+    (req, ctx) => controller.createGroup(req.body, ctx.identityId),
+    { successStatus: 201 },
+  ));
 
   // GET /groups — List groups for current user
-  router.get('/groups', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const result = await handlers.listGroups(req.user.identityId);
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'List groups failed';
-      return helper.internalError(message);
-    }
-  });
+  router.get('/groups', auth, expressAdapter(
+    (_req, ctx) => controller.listGroups(ctx.identityId),
+  ));
 
   // GET /groups/:id — Get group by ID
-  router.get('/groups/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const result = await handlers.getGroup(req.params.id);
-      if (!result) return helper.notFound('Group not found');
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Get group failed';
-      return helper.internalError(message);
-    }
-  });
+  router.get('/groups/:id', auth, expressAdapter(
+    (req) => controller.getGroup(req.params!.id),
+  ));
 
   // PUT /groups/:id — Update group
-  router.put('/groups/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const parsed = UpdateReminderGroupSchema.safeParse(req.body);
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`Validation failed: ${details.map(d => d.message).join(', ')}`);
-      }
-
-      const result = await handlers.updateGroup(req.params.id, parsed.data);
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Update group failed';
-      return helper.badRequest(message);
-    }
-  });
+  router.put('/groups/:id', auth, expressAdapter(
+    (req) => controller.updateGroup(req.params!.id, req.body),
+  ));
 
   // DELETE /groups/:id — Delete group
-  router.delete('/groups/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      await handlers.deleteGroup(req.params.id);
-      return helper.success(null, 'Group deleted');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Delete group failed';
-      return helper.internalError(message);
-    }
-  });
+  router.delete('/groups/:id', auth, expressAdapter(
+    (req) => controller.deleteGroup(req.params!.id),
+  ));
 
   // POST /groups/:id/control-mode — Switch group control mode
-  router.post('/groups/:id/control-mode', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const parsed = SwitchGroupControlModeSchema.safeParse(req.body);
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`Validation failed: ${details.map(d => d.message).join(', ')}`);
-      }
-
-      const result = await handlers.switchGroupControlMode(req.params.id, parsed.data);
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Switch control mode failed';
-      return helper.badRequest(message);
-    }
-  });
+  router.post('/groups/:id/control-mode', auth, expressAdapter(
+    (req) => controller.switchGroupControlMode(req.params!.id, req.body),
+  ));
 
   // POST /groups/:id/batch — Batch group template operations
-  router.post('/groups/:id/batch', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const parsed = BatchGroupTemplatesSchema.safeParse(req.body);
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`Validation failed: ${details.map(d => d.message).join(', ')}`);
-      }
-
-      const result = await handlers.batchGroupTemplates(req.params.id, parsed.data);
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Batch operation failed';
-      return helper.internalError(message);
-    }
-  });
+  router.post('/groups/:id/batch', auth, expressAdapter(
+    (req) => controller.batchGroupTemplates(req.params!.id, req.body),
+  ));
 
   return router;
 }

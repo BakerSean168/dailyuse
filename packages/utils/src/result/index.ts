@@ -282,3 +282,24 @@ export type {
   HttpResponse,
   HttpResponseOptions,
 } from '@dailyuse/contracts/result';
+
+// ============================================================================
+// Express Adapter
+// ============================================================================
+
+export {
+  expressAdapter,
+  expressAdapterWithValidation,
+  formatZodErrors,
+  type ExpressAdapterOptions,
+} from './express-adapter';
+
+// ============================================================================
+// IPC Adapter
+// ============================================================================
+
+export {
+  ipcAdapter,
+  ipcAdapterWithValidation,
+  type IpcAdapterOptions,
+} from './ipc-adapter';
