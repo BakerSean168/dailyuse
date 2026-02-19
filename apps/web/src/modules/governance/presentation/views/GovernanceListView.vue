@@ -153,9 +153,7 @@ import { useRouter } from 'vue-router';
 import { Plus, Shield } from 'lucide-vue-next';
 import { useGovernance } from '../composables/useGovernance';
 import type { RuleClientDTO, RuleStatus, RuleSeverity } from '../../types';
-import RuleCard from '../components/RuleCard.vue';
-import SearchBar from '../components/SearchBar.vue';
-import TagFilterChips from '../components/TagFilterChips.vue';
+import { RuleCard, SearchBar, TagFilterChips } from '@dailyuse/ui-vue-shadcn';
 
 const router = useRouter();
 const {

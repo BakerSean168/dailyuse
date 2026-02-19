@@ -1,136 +1,143 @@
 <template>
-  <div id="task-management">
-    <!-- 头部区域 -->
-    <header class="task-header">
-      <div class="header-content">
-        <!-- 标签页导航 -->
-        <v-btn-toggle v-model="activeTab" mandatory variant="outlined" divided class="tab-group">
-          <v-btn
-            v-for="tab in tabs"
-            :key="tab.value"
-            :value="tab.value"
-            class="tab-button"
-            size="large"
+  <div class="flex h-full flex-col">
+    <!-- 标签切换 -->
+    <div class="flex items-center gap-2 border-b px-6 py-3">
+      <Button
+        :variant="activeTab === 'templates' ? 'default' : 'ghost'"
+        size="sm"
+        @click="activeTab = 'templates'"
+      >
+        <LayoutTemplate class="mr-1 h-4 w-4" /> 任务模板
+      </Button>
+      <Button
+        :variant="activeTab === 'instances' ? 'default' : 'ghost'"
+        size="sm"
+        @click="activeTab = 'instances'"
+      >
+        <ListTodo class="mr-1 h-4 w-4" /> 任务实例
+      </Button>
+    </div>
+
+    <!-- 内容区域 -->
+    <div class="flex-1 overflow-y-auto p-6">
+      <!-- 模板管理 -->
+      <div v-if="activeTab === 'templates'" class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold">任务模板</h2>
+          <Button size="sm" @click="handleCreateTemplate">
+            <Plus class="mr-1 h-4 w-4" /> 新建模板
+          </Button>
+        </div>
+
+        <div class="space-y-2">
+          <Card
+            v-for="template in templates"
+            :key="template.id"
+            class="cursor-pointer hover:bg-accent/50"
+            @click="$router.push(`/task/${template.id}`)"
           >
-            <v-icon :icon="tab.icon" start />
-            {{ tab.label }}
-          </v-btn>
-        </v-btn-toggle>
+            <CardContent class="flex items-center justify-between p-4">
+              <div class="flex items-center gap-3">
+                <div
+                  class="h-3 w-3 rounded-full"
+                  :class="template.color ? '' : 'bg-primary'"
+                  :style="template.color ? { backgroundColor: template.color } : {}"
+                />
+                <div>
+                  <p class="font-medium">{{ template.title }}</p>
+                  <p class="text-xs text-muted-foreground">{{ template.taskType }} · {{ template.importance }}</p>
+                </div>
+              </div>
+              <Badge :variant="getStatusVariant(template.status?.value)">
+                {{ template.status?.value || '未知' }}
+              </Badge>
+            </CardContent>
+          </Card>
+
+          <p v-if="templates.length === 0" class="py-8 text-center text-sm text-muted-foreground">
+            暂无任务模板
+          </p>
+        </div>
       </div>
-    </header>
 
-    <!-- 主要内容区域 -->
-    <main class="task-main">
-      <v-fade-transition mode="out-in">
-        <!-- 每日任务页面 -->
-        <div v-if="activeTab === 'daily'" class="task-content" key="daily">
-          <TaskInstanceManagement />
+      <!-- 实例管理 -->
+      <div v-else class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold">任务实例</h2>
+          <Button variant="outline" size="sm" @click="fetchInstances()">
+            <RefreshCw class="mr-1 h-4 w-4" /> 刷新
+          </Button>
         </div>
 
-        <!-- 任务管理页面 -->
-        <div v-else class="task-content" key="management">
-          <TaskTemplateManagement />
+        <div class="space-y-2">
+          <Card
+            v-for="instance in instances"
+            :key="instance.id"
+            class="hover:bg-accent/50"
+          >
+            <CardContent class="flex items-center justify-between p-4">
+              <div>
+                <p class="font-medium">{{ instance.templateId }}</p>
+                <p class="text-xs text-muted-foreground">{{ new Date(instance.instanceDate).toLocaleDateString() }}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <Badge :variant="instance.status === 'COMPLETED' ? 'default' : 'outline'">
+                  {{ instance.status }}
+                </Badge>
+                <Button
+                  v-if="instance.status === 'PENDING'"
+                  size="sm"
+                  variant="outline"
+                  @click="startInstance(instance.id)"
+                >
+                  开始
+                </Button>
+                <Button
+                  v-if="instance.status === 'IN_PROGRESS'"
+                  size="sm"
+                  @click="completeInstance(instance.id)"
+                >
+                  完成
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <p v-if="instances.length === 0" class="py-8 text-center text-sm text-muted-foreground">
+            暂无任务实例
+          </p>
         </div>
-      </v-fade-transition>
-    </main>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { TaskTemplateManagement, TaskInstanceManagement } from '@dailyuse/ui-vue-shadcn';
+import { ref, onMounted } from 'vue';
+import { toast } from 'vue-sonner';
+import { LayoutTemplate, ListTodo, Plus, RefreshCw } from 'lucide-vue-next';
+import { Button, Card, CardContent, Badge } from '@dailyuse/ui-vue-shadcn';
+import { useTask } from '../composables/useTask';
 
-const activeTab = ref('daily');
-const tabs = [
-  {
-    label: '每日任务',
-    value: 'daily',
-    icon: 'mdi-calendar-today',
-  },
-  {
-    label: '任务管理',
-    value: 'management',
-    icon: 'mdi-format-list-checks',
-  },
-];
+const {
+  templates, instances,
+  fetchTemplates, fetchInstances,
+  startInstance, completeInstance,
+} = useTask();
+
+const activeTab = ref<'templates' | 'instances'>('templates');
+
+function getStatusVariant(status?: string) {
+  if (status === 'ACTIVE') return 'default' as const;
+  if (status === 'PAUSED') return 'secondary' as const;
+  if (status === 'ARCHIVED') return 'outline' as const;
+  return 'secondary' as const;
+}
+
+function handleCreateTemplate() { toast.info('创建任务模板功能开发中'); }
+
+onMounted(() => {
+  fetchTemplates();
+  fetchInstances();
+});
 </script>
-
-<style scoped>
-#task-management {
-  height: 100vh;
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-surface), 0.8),
-    rgba(var(--v-theme-background), 0.95)
-  );
-  padding: 1.5rem 2rem;
-  display: flex;
-  flex-direction: column;
-}
-
-/* 头部样式 */
-.task-header {
-  flex-shrink: 0;
-}
-
-.header-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* 标签页样式 */
-.tab-group {
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.tab-button {
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-}
-
-.tab-button:hover {
-  transform: translateY(-1px);
-}
-
-/* 主要内容区域 */
-.task-main {
-  flex: 1;
-  min-height: 0;
-}
-
-.task-content {
-  height: 100%;
-}
-
-/* 响应式设计 */
-@media (max-width: 1024px) {
-  #task-management {
-    padding: 1rem 1.5rem;
-  }
-}
-
-@media (max-width: 768px) {
-  #task-management {
-    padding: 1rem;
-  }
-
-  .tab-group {
-    width: 100%;
-  }
-
-  .tab-button {
-    flex: 1;
-    font-size: 0.875rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .tab-button {
-    font-size: 0.75rem;
-    padding: 0.5rem;
-  }
-}
-</style>

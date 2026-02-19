@@ -3,8 +3,11 @@
  *
  * Imports the Design System source of truth from @dailyuse/ui-core.
  */
+@import "tailwindcss";
+@import "@dailyuse/ui-core/styles/theme.css";
+@source "../../../../packages/ui-core/src";
 
-@import "@dailyuse/ui-core/theme.css";
+
 
 @layer base {
   body {

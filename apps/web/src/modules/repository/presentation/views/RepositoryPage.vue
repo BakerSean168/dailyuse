@@ -1,87 +1,75 @@
 <template>
-  <div class="repository-page">
-    <!-- 仓库管理 Dialog -->
-    <RepositoryManagementDialog
-      v-model="managementDialogOpen"
-      @repository-selected="handleRepositorySelected"
-    />
-
-    <div class="repo-container">
+  <div class="flex h-screen flex-col">
+    <div class="flex flex-1 overflow-hidden">
       <!-- 左侧边栏 -->
-      <div class="repo-sidebar">
+      <div class="flex w-72 flex-col border-r bg-muted/30">
         <!-- 顶部：搜索 -->
-        <div class="sidebar-search">
-          <v-text-field
-            v-model="sidebarSearch"
-            density="compact"
-            placeholder="搜索文件..."
-            prepend-inner-icon="mdi-magnify"
-            variant="outlined"
-            hide-details
-            clearable
-          />
+        <div class="border-b p-3">
+          <div class="relative">
+            <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input v-model="sidebarSearch" placeholder="搜索文件..." class="pl-9" />
+          </div>
         </div>
 
         <!-- 文件树列表 -->
-        <div class="sidebar-content">
-          <v-list density="compact">
-            <v-list-item
+        <ScrollArea class="flex-1">
+          <div class="p-2">
+            <button
               v-for="folder in folders"
               :key="folder.id"
-              :prepend-icon="folder.icon"
-              :title="folder.name"
+              class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
+              :class="{ 'bg-accent': currentFolderId === folder.id }"
               @click="selectFolder(folder.id)"
-            />
-          </v-list>
+            >
+              <component :is="folder.icon" class="h-4 w-4" />
+              <span>{{ folder.name }}</span>
+            </button>
+          </div>
 
-          <v-divider class="my-2" />
+          <Separator class="my-2" />
 
-          <div class="px-2 text-caption text-medium-emphasis">
+          <div class="px-4 py-1 text-xs text-muted-foreground">
             文件 ({{ filteredResources.length }})
           </div>
 
-          <v-list density="compact">
-            <v-list-item
+          <div class="p-2">
+            <button
               v-for="resource in filteredResources"
-              :key="resource.uuid"
-              :title="resource.name"
-              :subtitle="resource.path"
-              @click="selectResource(resource.uuid)"
+              :key="resource.id"
+              class="flex w-full flex-col items-start rounded-md px-3 py-2 text-sm hover:bg-accent"
+              @click="selectResource(resource.id)"
             >
-              <template #prepend>
-                <v-icon size="small">mdi-file-document</v-icon>
-              </template>
-            </v-list-item>
+              <div class="flex items-center gap-2">
+                <FileText class="h-4 w-4 text-muted-foreground" />
+                <span>{{ resource.name }}</span>
+              </div>
+              <span class="ml-6 text-xs text-muted-foreground">{{ resource.path }}</span>
+            </button>
 
-            <v-list-item v-if="filteredResources.length === 0">
-              <v-list-item-title class="text-center text-caption text-medium-emphasis">
-                暂无文件
-              </v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </div>
+            <p v-if="filteredResources.length === 0" class="py-4 text-center text-xs text-muted-foreground">
+              暂无文件
+            </p>
+          </div>
+        </ScrollArea>
 
         <!-- 底部：切换仓库 -->
-        <div class="sidebar-footer">
-          <v-divider />
-          <v-list-item
-            :title="currentRepositoryName"
-            :subtitle="currentRepositoryPath"
-            density="compact"
-            @click="openRepositoryManagement"
+        <div class="mt-auto border-t">
+          <button
+            class="flex w-full items-center gap-3 px-3 py-3 text-sm hover:bg-accent"
+            @click="managementDialogOpen = true"
           >
-            <template #prepend>
-              <v-icon>mdi-folder</v-icon>
-            </template>
-            <template #append>
-              <v-icon size="small">mdi-cog</v-icon>
-            </template>
-          </v-list-item>
+            <Folder class="h-4 w-4" />
+            <div class="flex-1 text-left">
+              <div class="font-medium">{{ currentRepositoryName }}</div>
+              <div class="text-xs text-muted-foreground">{{ currentRepositoryPath }}</div>
+            </div>
+            <Settings class="h-4 w-4 text-muted-foreground" />
+          </button>
         </div>
       </div>
 
       <!-- 右侧内容区 -->
-      <div class="repo-main">
+      <div class="flex flex-1 flex-col overflow-hidden">
         <!-- 顶部工具栏 -->
         <RepoHeader
           v-model="currentView"
@@ -93,82 +81,62 @@
         />
 
         <!-- 内容区域 -->
-        <div class="main-content">
+        <div class="flex-1 overflow-y-auto p-4">
           <!-- 预览编辑视图 -->
-          <div v-if="currentView === 'preview'" class="preview-view">
-            <div class="empty-state">
-              <v-icon size="64" color="grey-lighten-1">mdi-file-document-edit-outline</v-icon>
-              <p class="text-h6 mt-4 text-medium-emphasis">编辑器预览</p>
-              <p class="text-caption text-medium-emphasis">此功能将在 Editor 模块中实现</p>
-            </div>
+          <div v-if="currentView === 'preview'" class="flex h-full flex-col items-center justify-center">
+            <FileEdit class="h-16 w-16 text-muted-foreground/50" />
+            <p class="mt-4 text-lg text-muted-foreground">编辑器预览</p>
+            <p class="text-sm text-muted-foreground">此功能将在 Editor 模块中实现</p>
           </div>
 
           <!-- 管理视图 -->
-          <div v-else class="manage-view">
-            <div class="manage-header">
-              <h3 class="text-h6">{{ currentFolderName }}</h3>
-              <div class="manage-actions">
-                <v-btn prepend-icon="mdi-plus" size="small" @click="handleCreateResource">
-                  新建
-                </v-btn>
-                <v-btn
-                  prepend-icon="mdi-upload"
-                  size="small"
-                  variant="outlined"
-                  @click="handleImport"
-                >
-                  导入
-                </v-btn>
+          <div v-else class="flex h-full flex-col">
+            <div class="mb-4 flex items-center justify-between">
+              <h3 class="text-lg font-semibold">{{ currentFolderName }}</h3>
+              <div class="flex gap-2">
+                <Button size="sm" @click="handleCreateResource">
+                  <Plus class="mr-1 h-4 w-4" /> 新建
+                </Button>
+                <Button size="sm" variant="outline" @click="handleImport">
+                  <Upload class="mr-1 h-4 w-4" /> 导入
+                </Button>
               </div>
             </div>
 
             <!-- 卡片网格 -->
-            <div class="resource-grid">
-              <v-card
+            <div class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+              <Card
                 v-for="resource in filteredResources"
-                :key="resource.uuid"
-                class="resource-card"
-                @click="selectResource(resource.uuid)"
+                :key="resource.id"
+                class="cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md"
+                @click="selectResource(resource.id)"
               >
-                <v-card-text>
-                  <div class="d-flex align-center justify-space-between mb-2">
-                    <v-icon size="32" color="primary">mdi-file-document</v-icon>
-                    <v-menu>
-                      <template #activator="{ props }">
-                        <v-btn
-                          icon="mdi-dots-vertical"
-                          variant="text"
-                          size="x-small"
-                          v-bind="props"
-                        />
-                      </template>
-                      <v-list density="compact">
-                        <v-list-item @click="editResource(resource.uuid)">
-                          <v-list-item-title>编辑</v-list-item-title>
-                        </v-list-item>
-                        <v-list-item @click="deleteResource(resource.uuid)">
-                          <v-list-item-title>删除</v-list-item-title>
-                        </v-list-item>
-                      </v-list>
-                    </v-menu>
+                <CardContent class="p-4">
+                  <div class="mb-2 flex items-center justify-between">
+                    <FileText class="h-8 w-8 text-primary" />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger as-child>
+                        <Button variant="ghost" size="icon" class="h-6 w-6" @click.stop>
+                          <MoreVertical class="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem @click.stop="editResource(resource.id)">编辑</DropdownMenuItem>
+                        <DropdownMenuItem @click.stop="handleDeleteResource(resource.id)">删除</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
+                  <div class="mb-1 text-sm font-bold">{{ resource.name }}</div>
+                  <div class="text-xs text-muted-foreground">{{ resource.path }}</div>
+                </CardContent>
+              </Card>
 
-                  <div class="text-subtitle-2 font-weight-bold mb-1">
-                    {{ resource.name }}
-                  </div>
-                  <div class="text-caption text-medium-emphasis">
-                    {{ resource.path }}
-                  </div>
-                </v-card-text>
-              </v-card>
-
-              <!-- 空状态 -->
-              <div v-if="filteredResources.length === 0" class="empty-state">
-                <v-icon size="64" color="grey-lighten-1">mdi-folder-open</v-icon>
-                <p class="text-body-1 mt-4 text-medium-emphasis">暂无文件</p>
-                <v-btn prepend-icon="mdi-plus" class="mt-2" @click="handleCreateResource">
-                  创建第一个文件
-                </v-btn>
+              <div v-if="filteredResources.length === 0" class="col-span-full flex flex-col items-center justify-center py-16">
+                <FolderOpen class="h-16 w-16 text-muted-foreground/50" />
+                <p class="mt-4 text-muted-foreground">暂无文件</p>
+                <Button class="mt-2" @click="handleCreateResource">
+                  <Plus class="mr-1 h-4 w-4" /> 创建第一个文件
+                </Button>
               </div>
             </div>
           </div>
@@ -179,270 +147,94 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useRepositoryStore } from '../stores/repositoryStore';
-import { useMessage, useGlobalLoading } from '@dailyuse/ui-vuetify';
-import { REPOSITORY_SERVICE_KEY } from '@/shared/di';
+import { ref, computed, onMounted } from 'vue';
+import { toast } from 'vue-sonner';
+import {
+  Search, FileText, Folder, FolderOpen, Settings, FileEdit,
+  Plus, Upload, MoreVertical, FolderClosed, Clock, Star,
+} from 'lucide-vue-next';
+import {
+  Input, Button, Card, CardContent, ScrollArea, Separator,
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+  RepoHeader,
+} from '@dailyuse/ui-vue-shadcn';
+import { useRepository } from '../composables/useRepository';
 
-const service = inject(REPOSITORY_SERVICE_KEY)!;
-import RepositoryManagementDialog from '../components/dialogs/RepositoryManagementDialog.vue';
-import RepoHeader from '../components/RepoHeader.vue';
+const {
+  repositories, resources, isLoading,
+  fetchRepositories, fetchResources, deleteResource,
+} = useRepository();
 
-const message = useMessage();
-const globalLoading = useGlobalLoading();
-const repositoryStore = useRepositoryStore();
-
-const { repositories, resources } = storeToRefs(repositoryStore);
-
-// 对话框状态
 const managementDialogOpen = ref(false);
-
-// 视图状态
 const currentView = ref<'preview' | 'manage'>('preview');
 const sidebarSearch = ref('');
 const currentFolderId = ref<string | null>(null);
+const selectedRepositoryId = ref<string | null>(null);
 
-// 模拟文件夹数据
 const folders = ref([
-  { id: 'all', name: '全部文件', icon: 'mdi-folder-multiple' },
-  { id: 'recent', name: '最近使用', icon: 'mdi-clock-outline' },
-  { id: 'favorites', name: '收藏夹', icon: 'mdi-star' },
+  { id: 'all', name: '全部文件', icon: FolderClosed },
+  { id: 'recent', name: '最近使用', icon: Clock },
+  { id: 'favorites', name: '收藏夹', icon: Star },
 ]);
 
-// 当前仓库信息
-const currentRepository = computed(() => {
-  return repositories.value.find((r) => r.uuid === repositoryStore.selectedRepository);
-});
-
-const currentRepositoryName = computed(() => {
-  return currentRepository.value?.name || '选择仓库';
-});
-
-const currentRepositoryPath = computed(() => {
-  return currentRepository.value?.path || '未选择';
-});
-
+const currentRepository = computed(() =>
+  repositories.value.find((r) => r.id === selectedRepositoryId.value),
+);
+const currentRepositoryName = computed(() => currentRepository.value?.name || '选择仓库');
+const currentRepositoryPath = computed(() => currentRepository.value?.path || '未选择');
 const currentFolderName = computed(() => {
   const folder = folders.value.find((f) => f.id === currentFolderId.value);
   return folder?.name || '全部文件';
 });
 
-// 过滤后的资源
 const filteredResources = computed(() => {
-  if (!repositoryStore.selectedRepository) return [];
-
-  let filtered = resources.value.filter(
-    (r) => r.repositoryUuid === repositoryStore.selectedRepository,
-  );
-
+  if (!selectedRepositoryId.value) return [];
+  let filtered = resources.value.filter((r) => r.repositoryId === selectedRepositoryId.value);
   if (sidebarSearch.value) {
     const query = sidebarSearch.value.toLowerCase();
     filtered = filtered.filter(
       (r) => r.name?.toLowerCase().includes(query) || r.path?.toLowerCase().includes(query),
     );
   }
-
   return filtered;
 });
 
-// 打开仓库管理
-function openRepositoryManagement() {
-  managementDialogOpen.value = true;
+async function loadRepositoryResources(repoId: string) {
+  selectedRepositoryId.value = repoId;
+  await fetchResources(repoId);
 }
 
-// 仓库选中
-async function handleRepositorySelected(uuid: string) {
-  await loadRepositoryResources(uuid);
-}
+function selectFolder(folderId: string) { currentFolderId.value = folderId; }
 
-// 加载仓库资源
-async function loadRepositoryResources(repositoryUuid: string) {
-  await globalLoading.withLoading(async () => {
-    const result = await service.getFileTree(repositoryUuid);
-    if (result.ok) {
-      message.success('资源加载成功');
-    } else {
-      message.error(result.error.message || '加载失败');
-    }
-  }, '正在加载资源...');
-}
-
-// 选择文件夹
-function selectFolder(folderId: string) {
-  currentFolderId.value = folderId;
-}
-
-// 选择资源
-function selectResource(uuid: string) {
-  repositoryStore.setSelectedResource(uuid);
+function selectResource(id: string) {
   if (currentView.value === 'preview') {
-    message.info('预览功能在 Editor 模块中实现');
+    toast.info('预览功能在 Editor 模块中实现');
   }
 }
 
-// 搜索
-function handleSearch(query: string) {
-  sidebarSearch.value = query;
-}
+function handleSearch(query: string) { sidebarSearch.value = query; }
 
-// 刷新
 async function handleRefresh() {
-  if (!repositoryStore.selectedRepository) {
-    message.warning('请先选择一个仓库');
-    return;
-  }
-  await loadRepositoryResources(repositoryStore.selectedRepository);
+  if (!selectedRepositoryId.value) { toast.warning('请先选择一个仓库'); return; }
+  await loadRepositoryResources(selectedRepositoryId.value);
 }
 
-// 同步
-function handleSync() {
-  message.info('同步功能开发中');
+function handleSync() { toast.info('同步功能开发中'); }
+function handleExport() { toast.info('导出功能开发中'); }
+function handleImport() { toast.info('导入功能开发中'); }
+function handleCreateResource() { toast.info('创建资源功能开发中'); }
+function editResource(id: string) { toast.info('编辑功能开发中'); }
+
+async function handleDeleteResource(id: string) {
+  if (!window.confirm('确定要删除此文件吗？')) return;
+  const success = await deleteResource(selectedRepositoryId.value!, id);
+  if (success) toast.success('删除成功');
 }
 
-// 导出
-function handleExport() {
-  message.info('导出功能开发中');
-}
-
-// 导入
-function handleImport() {
-  message.info('导入功能开发中');
-}
-
-// 创建资源
-function handleCreateResource() {
-  message.info('创建资源功能开发中');
-}
-
-// 编辑资源
-function editResource(uuid: string) {
-  message.error('编辑功能开发中');
-}
-
-// 删除资源
-async function deleteResource(uuid: string) {
-  try {
-    await message.delConfirm('确定要删除此文件吗？');
-    const result = await service.deleteResource(uuid);
-    if (result.ok) {
-      message.success('删除成功');
-    } else {
-      message.error(result.error.message || '删除失败');
-    }
-  } catch {
-    // 用户取消
-  }
-}
-
-// 初始化
 onMounted(async () => {
-  await globalLoading.withLoading(async () => {
-    const result = await service.getRepositories();
-    if (result.ok) {
-      // 如果有仓库，自动选择第一个
-      if (repositories.value.length > 0 && !repositoryStore.selectedRepository) {
-        const firstRepo = repositories.value[0];
-        repositoryStore.setSelectedRepository(firstRepo.uuid);
-        await loadRepositoryResources(firstRepo.uuid);
-      }
-    } else {
-      message.error(result.error.message || '初始化失败');
-    }
-  }, '正在初始化...');
+  await fetchRepositories();
+  if (repositories.value.length > 0) {
+    await loadRepositoryResources(repositories.value[0].id);
+  }
 });
 </script>
-
-<style scoped>
-.repository-page {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.repo-container {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-}
-
-.repo-sidebar {
-  width: 300px;
-  border-right: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  display: flex;
-  flex-direction: column;
-  background-color: rgb(var(--v-theme-surface));
-}
-
-.sidebar-search {
-  padding: 12px;
-  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-}
-
-.sidebar-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 0;
-}
-
-.sidebar-footer {
-  margin-top: auto;
-}
-
-.repo-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.main-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-}
-
-.preview-view,
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  text-align: center;
-}
-
-.manage-view {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.manage-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.manage-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.resource-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
-}
-
-.resource-card {
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.resource-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-</style>

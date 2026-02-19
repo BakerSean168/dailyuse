@@ -240,8 +240,7 @@ import {
   History,
 } from 'lucide-vue-next';
 import { useGovernance } from '../composables/useGovernance';
-import RuleStatusBadge from '../components/RuleStatusBadge.vue';
-import CodeSnippetView from '../components/CodeSnippetView.vue';
+import { RuleStatusBadge, CodeSnippetView } from '@dailyuse/ui-vue-shadcn';
 
 const props = defineProps<{
   id: string;

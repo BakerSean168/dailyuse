@@ -1,300 +1,111 @@
 <template>
-  <v-container fluid class="pa-0 h-100">
-    <!-- 页面头部 -->
-    <v-card class="repo-header flex-shrink-0" elevation="1" rounded="0">
-      <v-card-text class="pa-4">
-        <div class="d-flex align-center justify-space-between">
-          <div class="d-flex align-center">
-            <v-avatar size="48" color="primary" variant="tonal" class="mr-4">
-              <v-icon size="24">mdi-folder-multiple</v-icon>
-            </v-avatar>
-            <div>
-              <h1 class="text-h4 font-weight-bold text-primary mb-1">仓库管理</h1>
-              <p class="text-subtitle-1 text-medium-emphasis mb-0">管理您的知识库和项目文档</p>
-            </div>
-          </div>
-
-          <v-btn
-            color="primary"
-            size="large"
-            prepend-icon="mdi-plus"
-            variant="elevated"
-            @click="repoDialogRef?.openDialog()"
-          >
-            新建仓库
-          </v-btn>
+  <div class="flex h-full flex-col">
+    <!-- 顶部 -->
+    <div class="flex items-center justify-between border-b px-6 py-4">
+      <h2 class="text-xl font-semibold">仓库</h2>
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input v-model="searchQuery" placeholder="搜索仓库..." class="w-64 pl-9" />
         </div>
-      </v-card-text>
-    </v-card>
-
-    <!-- 主体内容 -->
-    <div class="main-content flex-grow-1 pa-6 overflow-hidden">
-      <div class="content-wrapper h-100">
-        <v-row no-gutters class="h-100">
-          <!-- 仓库列表区域 -->
-          <v-col cols="12" class="h-100">
-            <v-card class="repo-main h-100 d-flex flex-column" elevation="2">
-              <!-- 状态过滤器 -->
-              <v-card-title class="pa-4 flex-shrink-0">
-                <div class="d-flex align-center justify-space-between w-100">
-                  <h2 class="text-h6 font-weight-medium">仓库列表</h2>
-
-                  <!-- 状态标签 -->
-                  <v-chip-group
-                    v-model="selectedStatusIndex"
-                    selected-class="text-primary"
-                    mandatory
-                    class="status-tabs"
-                  >
-                    <v-chip
-                      v-for="(tab, index) in statusTabs"
-                      :key="tab.value"
-                      :value="index"
-                      variant="outlined"
-                      filter
-                      class="status-chip"
-                    >
-                      {{ tab.label }}
-                      <v-badge
-                        :content="getRepoCountByStatus(tab.value)"
-                        :color="selectedStatusIndex === index ? 'primary' : 'surface-bright'"
-                        inline
-                        class="ml-2"
-                      />
-                    </v-chip>
-                  </v-chip-group>
-                </div>
-              </v-card-title>
-
-              <v-divider class="flex-shrink-0" />
-
-              <!-- 仓库列表内容 -->
-              <v-card-text class="repo-list-content pa-4 flex-grow-1 overflow-y-auto">
-                <!-- 加载状态 -->
-                <div v-if="isLoading" class="d-flex justify-center align-center h-100">
-                  <v-progress-circular indeterminate color="primary" size="64" />
-                </div>
-
-                <!-- 错误状态 -->
-                <div v-else-if="error" class="d-flex justify-center align-center h-100">
-                  <v-alert type="error" variant="tonal" class="ma-4">
-                    {{ error }}
-                    <template v-slot:append>
-                      <v-btn variant="text" color="error" @click="refresh"> 重试 </v-btn>
-                    </template>
-                  </v-alert>
-                </div>
-
-                <!-- 有仓库时显示 -->
-                <div v-else-if="filteredRepositories?.length">
-                  <v-row>
-                    <v-col
-                      v-for="repo in filteredRepositories"
-                      :key="repo.uuid"
-                      cols="12"
-                      lg="6"
-                      xl="4"
-                    >
-                      <RepoCard :repository="repo as Repository" />
-                    </v-col>
-                  </v-row>
-                </div>
-
-                <!-- 空状态 -->
-                <div v-else class="d-flex align-center justify-center h-100">
-                  <v-empty-state
-                    icon="mdi-folder-multiple-outline"
-                    title="暂无仓库"
-                    text="创建您的第一个仓库，开始知识管理之旅"
-                  >
-                    <template v-slot:actions>
-                      <v-btn
-                        color="primary"
-                        variant="elevated"
-                        prepend-icon="mdi-plus"
-                        @click="repoDialogRef?.openDialog()"
-                      >
-                        创建第一个仓库
-                      </v-btn>
-                    </template>
-                  </v-empty-state>
-                </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
+        <Button @click="handleCreateRepository">
+          <Plus class="mr-1 h-4 w-4" /> 新建仓库
+        </Button>
       </div>
     </div>
-    <repo-dialog ref="repoDialogRef" />
-  </v-container>
+
+    <!-- 过滤标签 -->
+    <div class="flex items-center gap-2 border-b px-6 py-2">
+      <Button
+        v-for="type in repositoryTypes"
+        :key="type.value"
+        :variant="filterType === type.value ? 'default' : 'ghost'"
+        size="sm"
+        @click="filterType = type.value"
+      >
+        {{ type.label }}
+      </Button>
+    </div>
+
+    <!-- 仓库卡片网格 -->
+    <ScrollArea class="flex-1 p-6">
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+        <Card
+          v-for="repo in filteredRepositories"
+          :key="repo.id"
+          class="cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md"
+          @click="$router.push(`/repository/${repo.id}`)"
+        >
+          <CardHeader class="pb-3">
+            <div class="flex items-center justify-between">
+              <CardTitle class="text-base">{{ repo.name }}</CardTitle>
+              <Badge :variant="repo.status === 'Active' ? 'default' : 'secondary'" class="text-xs">
+                {{ repo.status }}
+              </Badge>
+            </div>
+            <CardDescription class="line-clamp-2">
+              {{ repo.description || '暂无描述' }}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div class="flex items-center gap-4 text-xs text-muted-foreground">
+              <span class="flex items-center gap-1">
+                <Badge variant="outline" class="text-xs">{{ repo.type }}</Badge>
+              </span>
+              <span v-if="repo.stats" class="flex items-center gap-1">
+                <FileText class="h-3 w-3" /> {{ repo.stats.resourceCount }} 文件
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div v-if="filteredRepositories.length === 0" class="col-span-full flex flex-col items-center justify-center py-16">
+          <Database class="h-16 w-16 text-muted-foreground/50" />
+          <p class="mt-4 text-muted-foreground">暂无仓库</p>
+          <Button class="mt-2" @click="handleCreateRepository">
+            <Plus class="mr-1 h-4 w-4" /> 创建第一个仓库
+          </Button>
+        </div>
+      </div>
+    </ScrollArea>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue';
-// utils
-import { format } from 'date-fns';
-// components
-import RepoCard from '../components/cards/RepoCard.vue';
-import RepoDialog from '../components/dialogs/RepoDialog.vue';
-// composables
+import { ref, computed, onMounted } from 'vue';
+import { toast } from 'vue-sonner';
+import { Search, Plus, FileText, Database } from 'lucide-vue-next';
+import {
+  Input, Button, Card, CardHeader, CardTitle, CardDescription, CardContent,
+  Badge, ScrollArea,
+} from '@dailyuse/ui-vue-shadcn';
 import { useRepository } from '../composables/useRepository';
-// types
-import { Repository } from '@dailyuse/repository/domain-client';
-import { RepositoryStatus, RepositoryType, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO } from '@dailyuse/contracts/repository';
 
-// component refs
-const repoDialogRef = ref<InstanceType<typeof RepoDialog> | null>(null);
+const { repositories, fetchRepositories } = useRepository();
 
-// ===== Repository 服务 =====
-const { repositories, isLoading, error, fetchRepositories, initialize, clearError } =
-  useRepository();
+const searchQuery = ref('');
+const filterType = ref<string | null>(null);
 
-// ===== 本地状态 =====
-
-// 过滤状态
-const selectedStatusIndex = ref(0);
-
-// 状态标签配置
-const statusTabs = [
-  { label: '全部', value: 'all' },
-  { label: '活跃', value: RepositoryStatus.ACTIVE },
-  { label: '归档', value: RepositoryStatus.ARCHIVED },
-  { label: '已删除', value: RepositoryStatus.DELETED },
+const repositoryTypes = [
+  { value: null, label: '全部' },
+  { value: 'Markdown', label: 'Markdown' },
+  { value: 'Code', label: '代码' },
+  { value: 'Mixed', label: '混合' },
 ];
 
-// ===== 计算属性 =====
-
-/**
- * 过滤后的仓库列表
- */
 const filteredRepositories = computed(() => {
-  let result = repositories.value || [];
-
-  // 按状态过滤
-  const currentStatus = statusTabs[selectedStatusIndex.value]?.value;
-  if (currentStatus && currentStatus !== 'all') {
-    result = result.filter((repo) => repo.status === currentStatus);
+  let list = repositories.value;
+  if (filterType.value) {
+    list = list.filter((r) => r.type === filterType.value);
   }
-
-  return result;
-});
-
-/**
- * 根据状态获取仓库数量的计算属性
- */
-const repoCountByStatus = computed(() => {
-  const repos = repositories.value || [];
-  return {
-    all: repos.length,
-    active: repos.filter((repo) => repo.status === RepositoryStatus.ACTIVE)
-      .length,
-    archived: repos.filter((repo) => repo.status === RepositoryStatus.ARCHIVED)
-      .length,
-    deleted: repos.filter((repo) => repo.status === RepositoryStatus.DELETED)
-      .length,
-  };
-});
-
-/**
- * 根据状态获取仓库数量
- */
-const getRepoCountByStatus = (status: string) => {
-  return repoCountByStatus.value[status as keyof typeof repoCountByStatus.value] || 0;
-};
-
-// ===== 方法 =====
-
-/**
- * 加载仓库数据
- */
-const loadRepositories = async () => {
-  try {
-    console.log('开始加载仓库数据...');
-    await fetchRepositories({ limit: 100 });
-    console.log('✅ 仓库数据加载完成，总数:', repositories.value?.length || 0);
-  } catch (err) {
-    console.error('❌ 加载仓库数据失败:', err);
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase();
+    list = list.filter((r) => r.name?.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q));
   }
-};
-
-/**
- * 刷新数据
- */
-const refresh = async () => {
-  await loadRepositories();
-};
-
-/**
- * 处理对话框成功创建/更新
- */
-const handleRepoDialogSuccess = async () => {
-  console.log('🔄 仓库对话框操作成功，刷新数据...');
-  await refresh();
-};
-
-/**
- * 获取目标标题
- */
-const getGoalTitle = (goalUuid: string) => {
-  // TODO: 根据goalUuid获取目标标题
-  return `目标-${goalUuid.slice(0, 8)}`;
-};
-
-// ===== 生命周期 =====
-
-onMounted(() => {
-  loadRepositories();
+  return list;
 });
+
+function handleCreateRepository() { toast.info('创建仓库功能开发中'); }
+
+onMounted(() => { fetchRepositories(); });
 </script>
-
-<style scoped>
-.main-content {
-  height: calc(100vh - 120px);
-}
-
-.content-wrapper {
-  max-height: 100%;
-}
-
-.repo-header {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-primary), 0.05),
-    rgba(var(--v-theme-surface), 1)
-  );
-}
-
-.repo-main {
-  border-radius: 12px;
-}
-
-.repo-list-content {
-  min-height: 400px;
-}
-
-.status-tabs {
-  gap: 8px;
-}
-
-.status-chip {
-  transition: all 0.2s ease;
-}
-
-.status-chip:hover {
-  transform: translateY(-1px);
-}
-
-/* 响应式设计 */
-@media (max-width: 1024px) {
-  .main-content {
-    padding: 1.5rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .main-content {
-    padding: 1rem;
-  }
-}
-</style>
-

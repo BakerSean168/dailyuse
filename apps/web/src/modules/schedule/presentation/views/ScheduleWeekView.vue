@@ -1,162 +1,113 @@
 <template>
-  <div class="schedule-week-view">
-    <WeekViewCalendar
-      :schedules="weekSchedules"
-      :is-loading="isLoading"
-      @week-change="handleWeekChange"
-      @create="scheduleDialogRef?.openForCreate()"
-      @event-click="handleEventClick"
+  <div class="flex h-full flex-col p-6">
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-semibold">周视图</h2>
+        <p class="text-sm text-muted-foreground">以周为单位查看调度任务安排</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <Button variant="outline" size="sm" @click="showCreateDialog = true">
+          <Plus class="mr-1 h-4 w-4" /> 新建任务
+        </Button>
+      </div>
+    </div>
+
+    <!-- 周日历 -->
+    <div class="flex-1">
+      <WeekViewCalendar
+        :events="calendarEvents"
+        @event-click="handleEventClick"
+      />
+    </div>
+
+    <!-- 任务详情dialog -->
+    <ScheduleTaskDetailDialog
+      v-model:open="showDetailDialog"
+      :task="selectedTask"
+      @pause="handlePause"
+      @resume="handleResume"
+      @delete="handleDelete"
     />
 
-    <!-- 创建/编辑日程对话框 -->
-    <CreateScheduleDialog ref="scheduleDialogRef" />
-
-    <!-- 事件详情对话框 （简化版）-->
-    <v-dialog v-model="showEventDetails" max-width="500">
-      <v-card v-if="selectedEvent">
-        <v-card-title>
-          {{ selectedEvent.title }}
-          <v-chip
-            v-if="selectedEvent.hasConflict"
-            size="small"
-            color="warning"
-            prepend-icon="mdi-alert"
-            class="ml-2"
-          >
-            冲突
-          </v-chip>
-        </v-card-title>
-
-        <v-card-text>
-          <div class="mb-2">
-            <v-icon size="small">mdi-clock-outline</v-icon>
-            {{ formatEventTime(selectedEvent) }}
-          </div>
-
-          <div v-if="selectedEvent.location" class="mb-2">
-            <v-icon size="small">mdi-map-marker</v-icon>
-            {{ selectedEvent.location }}
-          </div>
-
-          <div v-if="selectedEvent.description" class="mb-2">
-            <v-icon size="small">mdi-text</v-icon>
-            {{ selectedEvent.description }}
-          </div>
-
-          <div v-if="selectedEvent.priority" class="mb-2">
-            <v-icon size="small">mdi-flag</v-icon>
-            优先级: {{ selectedEvent.priority }}
-          </div>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="primary" variant="text" @click="handleEdit">
-            <v-icon left>mdi-pencil</v-icon>
-            编辑
-          </v-btn>
-          <v-btn color="error" variant="text" @click="handleDelete">
-            <v-icon left>mdi-delete</v-icon>
-            删除
-          </v-btn>
-          <v-btn variant="text" @click="showEventDetails = false">
-            关闭
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <!-- 创建dialog -->
+    <CreateScheduleDialog
+      v-model:open="showCreateDialog"
+      @created="handleCreated"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { SourceModule } from '@dailyuse/contracts/schedule';
-import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
-import WeekViewCalendar from '../components/WeekViewCalendar.vue';
-import CreateScheduleDialog from '../components/CreateScheduleDialog.vue';
-import { useScheduleEvent } from '../composables/useScheduleEvent';
+import { computed, onMounted, ref } from 'vue';
+import { toast } from 'vue-sonner';
+import { Plus } from 'lucide-vue-next';
+import {
+  Button,
+  WeekViewCalendar, ScheduleTaskDetailDialog, CreateScheduleDialog,
+} from '@dailyuse/ui-vue-shadcn';
+import { useSchedule } from '../composables/useSchedule';
+import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 
 const {
-  schedules,
-  isLoading,
-  error,
-  loadSchedulesByTimeRange,
-  deleteSchedule,
-} = useScheduleEvent();
+  tasks, fetchTasks, pauseTask, resumeTask, deleteTask,
+} = useSchedule();
 
-const scheduleDialogRef = ref<InstanceType<typeof CreateScheduleDialog> | null>(null);
-const showEventDetails = ref(false);
-const selectedEvent = ref<ScheduleClientDTO | null>(null);
-const currentWeekStart = ref<Date>(new Date());
-const currentWeekEnd = ref<Date>(new Date());
+const showCreateDialog = ref(false);
+const showDetailDialog = ref(false);
+const selectedTask = ref<ScheduleTaskClientDTO | null>(null);
 
-// Computed
-const weekSchedules = computed(() => {
-  return schedules.value;
+const calendarEvents = computed(() =>
+  tasks.value.map((t) => ({
+    id: t.id,
+    title: t.name,
+    status: t.status,
+    enabled: t.enabled,
+    sourceModule: t.sourceModule,
+    nextRunAt: t.nextRunAtFormatted,
+    healthStatus: t.healthStatus,
+  })),
+);
+
+function handleEventClick(event: { id: string }) {
+  const task = tasks.value.find((t) => t.id === event.id);
+  if (task) {
+    selectedTask.value = task;
+    showDetailDialog.value = true;
+  }
+}
+
+async function handlePause(id: string) {
+  const result = await pauseTask(id);
+  if (result) {
+    toast.success('任务已暂停');
+    showDetailDialog.value = false;
+  }
+}
+
+async function handleResume(id: string) {
+  const result = await resumeTask(id);
+  if (result) {
+    toast.success('任务已恢复');
+    showDetailDialog.value = false;
+  }
+}
+
+async function handleDelete(id: string) {
+  if (!window.confirm('确认删除此调度任务？')) return;
+  const ok = await deleteTask(id);
+  if (ok) {
+    toast.success('任务已删除');
+    showDetailDialog.value = false;
+  }
+}
+
+function handleCreated() {
+  showCreateDialog.value = false;
+  fetchTasks();
+  toast.success('调度任务创建成功');
+}
+
+onMounted(() => {
+  fetchTasks();
 });
-
-// Methods
-async function handleWeekChange(startDate: Date, endDate: Date) {
-  currentWeekStart.value = startDate;
-  currentWeekEnd.value = endDate;
-  
-  await loadSchedulesByTimeRange(
-    startDate.getTime(),
-    endDate.getTime()
-  );
-}
-
-function handleEventClick(event: ScheduleClientDTO) {
-  selectedEvent.value = event;
-  showEventDetails.value = true;
-}
-
-/**
- * 处理编辑日程
- */
-function handleEdit() {
-  if (!selectedEvent.value) return;
-  
-  showEventDetails.value = false;
-  scheduleDialogRef.value?.openForEdit(selectedEvent.value);
-}
-
-async function handleDelete() {
-  if (!selectedEvent.value) return;
-
-  const confirmed = confirm(`确定要删除日程"${selectedEvent.value.title}"吗？`);
-  if (!confirmed) return;
-
-  await deleteSchedule(selectedEvent.value.uuid);
-  showEventDetails.value = false;
-  selectedEvent.value = null;
-
-  // 重新加载
-  await loadSchedulesByTimeRange(
-    currentWeekStart.value.getTime(),
-    currentWeekEnd.value.getTime()
-  );
-}
-
-function formatEventTime(event: ScheduleClientDTO): string {
-  const start = new Date(event.startTime);
-  const end = new Date(event.endTime);
-  const formatDateTime = (date: Date) => {
-    return date.toLocaleString('zh-CN', {
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-  return `${formatDateTime(start)} - ${formatDateTime(end)}`;
-}
 </script>
-
-<style scoped>
-.schedule-week-view {
-  height: 100%;
-  width: 100%;
-}
-</style>
-

@@ -1,333 +1,192 @@
 <template>
-  <v-container fluid class="pa-0 h-100">
-    <!-- 页面头部 -->
-    <v-card class="schedule-header flex-shrink-0" elevation="1" rounded="0">
-      <v-card-text class="pa-4">
-        <div class="d-flex align-center justify-space-between">
-          <div class="d-flex align-center">
-            <v-avatar size="48" color="primary" variant="tonal" class="mr-4">
-              <v-icon size="24">mdi-calendar-clock</v-icon>
-            </v-avatar>
-            <div>
-              <h1 class="text-h4 font-weight-bold text-primary mb-1">调度控制台</h1>
-              <p class="text-subtitle-1 text-medium-emphasis mb-0">管理和监控您的自动化任务调度</p>
-            </div>
-          </div>
-
-          <div class="d-flex gap-2">
-            <v-btn
-              color="info"
-              variant="tonal"
-              prepend-icon="mdi-refresh"
-              @click="handleRefresh"
-              :loading="isLoading || isLoadingStats"
-            >
-              刷新数据
-            </v-btn>
-          </div>
-        </div>
-      </v-card-text>
-    </v-card>
-
-    <!-- 主体内容 -->
-    <div class="main-content flex-grow-1 pa-6 overflow-hidden">
-      <div class="content-wrapper h-100">
-        <!-- 错误提示 -->
-        <v-alert v-if="error" type="error" variant="tonal" class="mb-4" closable>
-          {{ error }}
-        </v-alert>
-
-        <v-row class="h-100">
-          <!-- 左侧：任务队列 -->
-          <v-col cols="12" lg="8" class="d-flex flex-column gap-4">
-            <!-- 提醒模块任务 -->
-            <reminder-tasks-card
-              :tasks="reminderTasks"
-              :is-loading="isLoading"
-              :error="error"
-              @pause-task="handlePauseTask"
-              @resume-task="handleResumeTask"
-              @delete-task="handleDeleteTask"
-              @view-detail="handleViewDetail"
-            />
-
-            <!-- 任务模块任务 -->
-            <task-module-tasks-card
-              :tasks="taskModuleTasks"
-              :is-loading="isLoading"
-              :error="error"
-              @pause-task="handlePauseTask"
-              @resume-task="handleResumeTask"
-              @delete-task="handleDeleteTask"
-              @view-detail="handleViewDetail"
-            />
-
-            <!-- 目标模块任务 -->
-            <goal-tasks-card
-              :tasks="goalTasks"
-              :is-loading="isLoading"
-              :error="error"
-              @pause-task="handlePauseTask"
-              @resume-task="handleResumeTask"
-              @delete-task="handleDeleteTask"
-              @view-detail="handleViewDetail"
-            />
-          </v-col>
-
-          <!-- 右侧：统计信息 -->
-          <v-col cols="12" lg="4">
-            <statistics-card
-              :statistics="statistics"
-              :module-statistics="moduleStatistics"
-              :is-loading="isLoadingStats"
-              :error="error"
-              @refresh="handleRefresh"
-            />
-          </v-col>
-        </v-row>
+  <div class="flex h-full flex-col p-6">
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-semibold">调度中心</h2>
+        <p class="text-sm text-muted-foreground">管理所有定时任务和调度计划</p>
       </div>
+      <Button @click="showCreateDialog = true">
+        <Plus class="mr-1 h-4 w-4" /> 创建调度任务
+      </Button>
     </div>
 
-    <!-- 确认对话框 -->
-    <v-dialog v-model="confirmDialog.show" max-width="400">
-      <v-card>
-        <v-card-title class="text-h6">{{ confirmDialog.title }}</v-card-title>
-        <v-card-text>{{ confirmDialog.message }}</v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="confirmDialog.show = false">取消</v-btn>
-          <v-btn
-            color="primary"
-            variant="flat"
-            @click="confirmDialog.onConfirm"
-            :loading="confirmDialog.loading"
+    <!-- 统计卡片 -->
+    <div class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <StatisticsCard
+        title="总任务数"
+        :value="tasks.length"
+        :icon="Calendar"
+      />
+      <StatisticsCard
+        title="活跃任务"
+        :value="activeTasks.length"
+        :icon="Play"
+      />
+      <StatisticsCard
+        title="已暂停"
+        :value="pausedTasks.length"
+        :icon="Pause"
+      />
+      <StatisticsCard
+        title="异常任务"
+        :value="failedTasks.length"
+        :icon="AlertCircle"
+      />
+    </div>
+
+    <!-- 任务列表 -->
+    <Card class="flex-1">
+      <CardHeader>
+        <div class="flex items-center justify-between">
+          <CardTitle>调度任务</CardTitle>
+          <div class="flex items-center gap-2">
+            <Input
+              v-model="searchQuery"
+              placeholder="搜索任务..."
+              class="w-64"
+            >
+              <template #prefix>
+                <Search class="h-4 w-4 text-muted-foreground" />
+              </template>
+            </Input>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div v-if="isLoading" class="py-8 text-center text-sm text-muted-foreground">
+          加载中...
+        </div>
+        <div v-else-if="filteredTasks.length === 0" class="py-8 text-center text-sm text-muted-foreground">
+          暂无调度任务
+        </div>
+        <div v-else class="space-y-3">
+          <div
+            v-for="task in filteredTasks"
+            :key="task.id"
+            class="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
           >
-            确认
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+            <div class="flex items-center gap-3">
+              <div
+                class="h-2 w-2 rounded-full"
+                :class="{
+                  'bg-green-500': task.healthStatus === 'healthy',
+                  'bg-yellow-500': task.healthStatus === 'warning',
+                  'bg-red-500': task.healthStatus === 'critical',
+                  'bg-gray-400': task.status === 'Paused',
+                }"
+              />
+              <div>
+                <p class="font-medium">{{ task.name }}</p>
+                <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Badge variant="secondary" class="text-xs">{{ task.sourceModuleDisplay }}</Badge>
+                  <span>{{ task.executionSummary }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <Badge :variant="task.enabled ? 'default' : 'outline'">
+                {{ task.enabledDisplay }}
+              </Badge>
+              <span class="text-xs text-muted-foreground">
+                下次: {{ task.nextRunAtFormatted }}
+              </span>
+              <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                  <Button variant="ghost" size="icon" class="h-8 w-8">
+                    <MoreHorizontal class="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    v-if="task.status !== 'Paused'"
+                    @click="handlePause(task.id)"
+                  >
+                    <Pause class="mr-2 h-4 w-4" /> 暂停
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    v-if="task.status === 'Paused'"
+                    @click="handleResume(task.id)"
+                  >
+                    <Play class="mr-2 h-4 w-4" /> 恢复
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    class="text-destructive"
+                    @click="handleDelete(task.id)"
+                  >
+                    <Trash2 class="mr-2 h-4 w-4" /> 删除
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
 
-    <!-- 任务详情对话框 -->
-    <schedule-task-detail-dialog
-      v-model:show="detailDialog.show"
-      :task-uuid="detailDialog.taskUuid"
+    <!-- 创建调度dialog -->
+    <CreateScheduleDialog
+      v-model:open="showCreateDialog"
+      @created="handleCreated"
     />
-
-    <!-- Snackbar 通知 -->
-    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
-      {{ snackbar.message }}
-      <template v-slot:actions>
-        <v-btn variant="text" @click="snackbar.show = false">关闭</v-btn>
-      </template>
-    </v-snackbar>
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue';
-import { SourceModule } from '@dailyuse/contracts/schedule';
-import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
-import { createLogger } from '@dailyuse/utils';
-
-// 组件
-import ReminderTasksCard from '../components/cards/ReminderTasksCard.vue';
-import TaskModuleTasksCard from '../components/cards/TaskModuleTasksCard.vue';
-import GoalTasksCard from '../components/cards/GoalTasksCard.vue';
-import StatisticsCard from '../components/cards/StatisticsCard.vue';
-import ScheduleTaskDetailDialog from '../components/ScheduleTaskDetailDialog.vue';
-
-// Composables
+import { computed, onMounted, ref } from 'vue';
+import { toast } from 'vue-sonner';
+import {
+  Calendar, Play, Pause, AlertCircle, Plus, Search,
+  MoreHorizontal, Trash2,
+} from 'lucide-vue-next';
+import {
+  Button, Badge, Card, CardHeader, CardTitle, CardContent, Input,
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
+  DropdownMenuItem, DropdownMenuSeparator,
+  StatisticsCard, CreateScheduleDialog,
+} from '@dailyuse/ui-vue-shadcn';
 import { useSchedule } from '../composables/useSchedule';
 
-const logger = createLogger('ScheduleDashboardView');
-
-// ===== 使用 composable =====
 const {
-  tasks,
-  statistics,
-  moduleStatistics,
-  isLoading,
-  isLoadingStats,
-  error,
-  fetchTasks,
-  fetchStatistics,
-  fetchAllModuleStatistics,
-  pauseTask,
-  resumeTask,
-  deleteTask,
-  initialize,
-  clearError,
+  tasks, isLoading, fetchTasks, pauseTask, resumeTask, deleteTask, createTask,
 } = useSchedule();
 
-// ===== 本地状态 =====
-const snackbar = reactive({
-  show: false,
-  message: '',
-  color: 'success',
+const searchQuery = ref('');
+const showCreateDialog = ref(false);
+
+const activeTasks = computed(() => tasks.value.filter((t) => t.status === 'Active'));
+const pausedTasks = computed(() => tasks.value.filter((t) => t.status === 'Paused'));
+const failedTasks = computed(() => tasks.value.filter((t) => t.healthStatus === 'critical'));
+
+const filteredTasks = computed(() => {
+  if (!searchQuery.value) return tasks.value;
+  const q = searchQuery.value.toLowerCase();
+  return tasks.value.filter((t) => t.name.toLowerCase().includes(q));
 });
 
-const confirmDialog = reactive({
-  show: false,
-  title: '',
-  message: '',
-  onConfirm: () => {},
-  loading: false,
-});
-
-const detailDialog = reactive({
-  show: false,
-  taskUuid: null as string | null,
-});
-
-// ===== 计算属性 - 按模块分组任务 =====
-const reminderTasks = computed(() => {
-  return tasks.value.filter((task) => task.sourceModule === 'reminder');
-});
-
-const taskModuleTasks = computed(() => {
-  return tasks.value.filter((task) => task.sourceModule === 'task');
-});
-
-const goalTasks = computed(() => {
-  return tasks.value.filter((task) => task.sourceModule === 'goal');
-});
-
-// ===== 方法 =====
-
-/**
- * 刷新所有数据
- */
-async function handleRefresh() {
-  try {
-    logger.info('Refreshing schedule dashboard data');
-    clearError();
-    await Promise.all([fetchTasks(), fetchStatistics(), fetchAllModuleStatistics()]);
-    showSnackbar('数据已刷新', 'success');
-    logger.info('Schedule dashboard data refreshed successfully');
-  } catch (err) {
-    logger.error('Failed to refresh schedule dashboard data', { error: err });
-    showSnackbar('刷新失败，请重试', 'error');
-  }
+async function handlePause(id: string) {
+  const result = await pauseTask(id);
+  if (result) toast.success('任务已暂停');
 }
 
-/**
- * 暂停任务
- */
-async function handlePauseTask(taskUuid: string) {
-  confirmDialog.show = true;
-  confirmDialog.title = '暂停任务';
-  confirmDialog.message = '确定要暂停这个任务吗？';
-  confirmDialog.onConfirm = async () => {
-    confirmDialog.loading = true;
-    try {
-      logger.info('Pausing task', { taskUuid });
-      await pauseTask(taskUuid);
-      showSnackbar('任务已暂停', 'success');
-      logger.info('Task paused successfully', { taskUuid });
-      confirmDialog.show = false;
-    } catch (err) {
-      logger.error('Failed to pause task', { error: err, taskUuid });
-      showSnackbar('暂停任务失败', 'error');
-    } finally {
-      confirmDialog.loading = false;
-    }
-  };
+async function handleResume(id: string) {
+  const result = await resumeTask(id);
+  if (result) toast.success('任务已恢复');
 }
 
-/**
- * 恢复任务
- */
-async function handleResumeTask(taskUuid: string) {
-  confirmDialog.show = true;
-  confirmDialog.title = '恢复任务';
-  confirmDialog.message = '确定要恢复这个任务吗？';
-  confirmDialog.onConfirm = async () => {
-    confirmDialog.loading = true;
-    try {
-      logger.info('Resuming task', { taskUuid });
-      await resumeTask(taskUuid);
-      showSnackbar('任务已恢复', 'success');
-      logger.info('Task resumed successfully', { taskUuid });
-      confirmDialog.show = false;
-    } catch (err) {
-      logger.error('Failed to resume task', { error: err, taskUuid });
-      showSnackbar('恢复任务失败', 'error');
-    } finally {
-      confirmDialog.loading = false;
-    }
-  };
+async function handleDelete(id: string) {
+  if (!window.confirm('确认删除此调度任务？')) return;
+  const ok = await deleteTask(id);
+  if (ok) toast.success('任务已删除');
 }
 
-/**
- * 删除任务
- */
-async function handleDeleteTask(taskUuid: string) {
-  confirmDialog.show = true;
-  confirmDialog.title = '删除任务';
-  confirmDialog.message = '确定要删除这个任务吗？此操作不可撤销。';
-  confirmDialog.onConfirm = async () => {
-    confirmDialog.loading = true;
-    try {
-      logger.info('Deleting task', { taskUuid });
-      await deleteTask(taskUuid);
-      showSnackbar('任务已删除', 'success');
-      logger.info('Task deleted successfully', { taskUuid });
-      confirmDialog.show = false;
-      // 删除后刷新统计信息
-      await fetchStatistics();
-      await fetchAllModuleStatistics();
-    } catch (err) {
-      logger.error('Failed to delete task', { error: err, taskUuid });
-      showSnackbar('删除任务失败', 'error');
-    } finally {
-      confirmDialog.loading = false;
-    }
-  };
+function handleCreated() {
+  showCreateDialog.value = false;
+  fetchTasks();
+  toast.success('调度任务创建成功');
 }
 
-/**
- * 查看任务详情
- */
-function handleViewDetail(taskUuid: string) {
-  logger.info('Opening task detail', { taskUuid });
-  detailDialog.taskUuid = taskUuid;
-  detailDialog.show = true;
-}
-
-/**
- * 显示 Snackbar 通知
- */
-function showSnackbar(message: string, color: 'success' | 'error' | 'info' = 'success') {
-  snackbar.message = message;
-  snackbar.color = color;
-  snackbar.show = true;
-}
-
-// ===== 生命周期 =====
-onMounted(async () => {
-  logger.info('Schedule Dashboard mounted, initializing data');
-  await initialize();
+onMounted(() => {
+  fetchTasks();
 });
 </script>
-
-<style scoped>
-.schedule-header {
-  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.05);
-}
-
-.main-content {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-surface), 1),
-    rgba(var(--v-theme-background), 1)
-  );
-  overflow-y: auto;
-}
-
-.content-wrapper {
-  max-width: 1600px;
-  margin: 0 auto;
-}
-</style>
-

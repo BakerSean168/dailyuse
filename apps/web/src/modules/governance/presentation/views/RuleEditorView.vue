@@ -284,7 +284,7 @@ import {
   Trash2,
 } from 'lucide-vue-next';
 import { useGovernance } from '../composables/useGovernance';
-import TagInput from '../components/TagInput.vue';
+import { TagInput } from '@dailyuse/ui-vue-shadcn';
 import type { CreateRuleReq, UpdateRuleReq, RuleSeverity } from '../../types';
 
 const props = defineProps<{
