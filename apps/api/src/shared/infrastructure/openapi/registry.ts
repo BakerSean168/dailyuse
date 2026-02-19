@@ -385,6 +385,385 @@ registry.registerPath({
 });
 
 // ============================================================================
+// Task Module Schemas (Simplified for OpenAPI - avoid brandedId complexity)
+// ============================================================================
+
+const CreateTaskTemplateOpenApiSchema = z.object({
+  name: z.string().min(1).describe('任务模板名称'),
+  description: z.string().optional().nullable().describe('模板描述'),
+  taskType: z.enum(['ONE_TIME', 'RECURRING']).describe('任务类型'),
+  timeConfig: z.object({}).passthrough().describe('时间配置'),
+  recurrenceRule: z.object({}).passthrough().optional().nullable().describe('重复规则'),
+  reminderConfig: z.object({}).passthrough().optional().nullable().describe('提醒配置'),
+  importance: z.string().describe('重要程度'),
+  folderId: z.string().uuid().optional().nullable().describe('文件夹 ID'),
+  tags: z.array(z.string()).optional().describe('标签列表'),
+  color: z.string().optional().nullable().describe('颜色'),
+});
+
+const UpdateTaskTemplateOpenApiSchema = z.object({
+  name: z.string().min(1).optional().describe('任务模板名称'),
+  description: z.string().optional().nullable().describe('模板描述'),
+  recurrenceRule: z.object({}).passthrough().optional().nullable().describe('重复规则'),
+  importance: z.string().optional().describe('重要程度'),
+  folderId: z.string().uuid().optional().nullable().describe('文件夹 ID'),
+  tags: z.array(z.string()).optional().describe('标签列表'),
+  color: z.string().optional().nullable().describe('颜色'),
+});
+
+const TaskTemplateOpenApiSchema = z.object({
+  id: z.string().uuid().describe('任务模板 ID'),
+  name: z.string().describe('模板名称'),
+  description: z.string().nullable().optional().describe('模板描述'),
+  taskType: z.string().describe('任务类型'),
+  status: z.string().describe('模板状态'),
+  importance: z.string().describe('重要程度'),
+  createdAt: z.number().describe('创建时间'),
+  updatedAt: z.number().describe('更新时间'),
+});
+
+const TaskInstanceOpenApiSchema = z.object({
+  id: z.string().uuid().describe('任务实例 ID'),
+  templateId: z.string().uuid().describe('所属模板 ID'),
+  status: z.string().describe('实例状态'),
+  scheduledDate: z.number().describe('计划日期'),
+  completedAt: z.number().optional().nullable().describe('完成时间'),
+  createdAt: z.number().describe('创建时间'),
+  updatedAt: z.number().describe('更新时间'),
+});
+
+const CompleteTaskInstanceOpenApiSchema = z.object({
+  duration: z.number().optional().describe('持续时间 (分钟)'),
+  note: z.string().optional().describe('完成备注'),
+  rating: z.number().int().min(1).max(5).optional().describe('评分 (1-5)'),
+});
+
+const SkipTaskInstanceOpenApiSchema = z.object({
+  reason: z.string().optional().describe('跳过原因'),
+});
+
+// Register Task schemas
+registry.register('CreateTaskTemplate', CreateTaskTemplateOpenApiSchema);
+registry.register('UpdateTaskTemplate', UpdateTaskTemplateOpenApiSchema);
+registry.register('TaskTemplate', TaskTemplateOpenApiSchema);
+registry.register('TaskInstance', TaskInstanceOpenApiSchema);
+registry.register('CompleteTaskInstance', CompleteTaskInstanceOpenApiSchema);
+registry.register('SkipTaskInstance', SkipTaskInstanceOpenApiSchema);
+
+// ============================================================================
+// Task Template API Paths
+// ============================================================================
+
+// POST /task-templates
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/task-templates',
+  summary: '创建任务模板',
+  tags: ['Task Templates'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: CreateTaskTemplateOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: successResponse(TaskTemplateOpenApiSchema, '创建成功'),
+    400: errorResponse('参数验证失败'),
+    401: errorResponse('未授权'),
+  },
+});
+
+// GET /task-templates
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/task-templates',
+  summary: '查询任务模板列表',
+  tags: ['Task Templates'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    query: z.object({
+      status: z.string().optional().describe('状态过滤'),
+      folderId: z.string().optional().describe('文件夹 ID 过滤'),
+      goalId: z.string().optional().describe('关联目标 ID 过滤'),
+      tags: z.string().optional().describe('标签过滤 (逗号分隔)'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.array(TaskTemplateOpenApiSchema), '查询成功'),
+    401: errorResponse('未授权'),
+  },
+});
+
+// GET /task-templates/:id
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/task-templates/{id}',
+  summary: '获取任务模板详情',
+  tags: ['Task Templates'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('模板 ID'),
+    }),
+    query: z.object({
+      includeChildren: z.string().optional().describe('是否包含子项 (默认: false)'),
+    }),
+  },
+  responses: {
+    200: successResponse(TaskTemplateOpenApiSchema, '获取成功'),
+    404: errorResponse('模板不存在'),
+  },
+});
+
+// PUT /task-templates/:id
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/task-templates/{id}',
+  summary: '更新任务模板',
+  tags: ['Task Templates'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('模板 ID'),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: UpdateTaskTemplateOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: successResponse(TaskTemplateOpenApiSchema, '更新成功'),
+    400: errorResponse('参数验证失败'),
+    404: errorResponse('模板不存在'),
+  },
+});
+
+// DELETE /task-templates/:id
+registry.registerPath({
+  method: 'delete',
+  path: '/api/v1/task-templates/{id}',
+  summary: '删除任务模板',
+  tags: ['Task Templates'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('模板 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.null(), '删除成功'),
+    404: errorResponse('模板不存在'),
+  },
+});
+
+// POST /task-templates/:id/activate
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/task-templates/{id}/activate',
+  summary: '激活任务模板',
+  tags: ['Task Templates'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('模板 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(TaskTemplateOpenApiSchema, '激活成功'),
+    404: errorResponse('模板不存在'),
+  },
+});
+
+// POST /task-templates/:id/pause
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/task-templates/{id}/pause',
+  summary: '暂停任务模板',
+  tags: ['Task Templates'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('模板 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(TaskTemplateOpenApiSchema, '暂停成功'),
+    404: errorResponse('模板不存在'),
+  },
+});
+
+// POST /task-templates/:id/archive
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/task-templates/{id}/archive',
+  summary: '归档任务模板',
+  tags: ['Task Templates'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('模板 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(TaskTemplateOpenApiSchema, '归档成功'),
+    404: errorResponse('模板不存在'),
+  },
+});
+
+// ============================================================================
+// Task Instance API Paths
+// ============================================================================
+
+// GET /task-instances
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/task-instances',
+  summary: '查询任务实例列表',
+  tags: ['Task Instances'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    query: z.object({
+      templateId: z.string().optional().describe('模板 ID 过滤'),
+      status: z.string().optional().describe('状态过滤'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.array(TaskInstanceOpenApiSchema), '查询成功'),
+    401: errorResponse('未授权'),
+  },
+});
+
+// GET /task-instances/by-date-range
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/task-instances/by-date-range',
+  summary: '按日期范围查询任务实例',
+  tags: ['Task Instances'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    query: z.object({
+      startDate: z.string().optional().describe('开始日期 (timestamp)'),
+      endDate: z.string().optional().describe('结束日期 (timestamp)'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.array(TaskInstanceOpenApiSchema), '查询成功'),
+    401: errorResponse('未授权'),
+  },
+});
+
+// GET /task-instances/:id
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/task-instances/{id}',
+  summary: '获取任务实例详情',
+  tags: ['Task Instances'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('实例 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(TaskInstanceOpenApiSchema, '获取成功'),
+    404: errorResponse('实例不存在'),
+  },
+});
+
+// POST /task-instances/:id/complete
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/task-instances/{id}/complete',
+  summary: '完成任务实例',
+  tags: ['Task Instances'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('实例 ID'),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: CompleteTaskInstanceOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: successResponse(TaskInstanceOpenApiSchema, '完成成功'),
+    404: errorResponse('实例不存在'),
+  },
+});
+
+// POST /task-instances/:id/skip
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/task-instances/{id}/skip',
+  summary: '跳过任务实例',
+  tags: ['Task Instances'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('实例 ID'),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: SkipTaskInstanceOpenApiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: successResponse(TaskInstanceOpenApiSchema, '跳过成功'),
+    404: errorResponse('实例不存在'),
+  },
+});
+
+// POST /task-instances/:id/start
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/task-instances/{id}/start',
+  summary: '开始任务实例',
+  tags: ['Task Instances'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('实例 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(TaskInstanceOpenApiSchema, '开始成功'),
+    404: errorResponse('实例不存在'),
+  },
+});
+
+// DELETE /task-instances/:id
+registry.registerPath({
+  method: 'delete',
+  path: '/api/v1/task-instances/{id}',
+  summary: '删除任务实例',
+  tags: ['Task Instances'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().describe('实例 ID'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.null(), '删除成功'),
+    404: errorResponse('实例不存在'),
+  },
+});
+
+// ============================================================================
 // Authentication API Paths
 // ============================================================================
 

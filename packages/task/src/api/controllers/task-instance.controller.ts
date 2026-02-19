@@ -1,13 +1,23 @@
 /**
  * TaskInstance Controller
- * 
- * Handles HTTP request logic for task instance operations.
- * All methods call application services that return Result<T>.
+ *
+ * Encapsulates Zod validation and use case orchestration for task instances.
+ * Shared by both Express (HTTP) and IPC transport layers.
+ *
+ * Each method:
+ * 1. Validates input via Zod schema (where applicable)
+ * 2. Delegates to the corresponding use case
+ * 3. Returns a Result<T> (transport-agnostic)
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { isOk, ok } from '@dailyuse/contracts/result';
+import { fail, isOk, ok } from '@dailyuse/contracts/result';
+import {
+  CompleteTaskInstanceSchema,
+  SkipTaskInstanceSchema,
+} from '@dailyuse/contracts/task';
 import type { TaskInstanceClientDTO, TaskInstanceStatus } from '@dailyuse/contracts/task';
+import { formatZodErrors } from '@dailyuse/utils/result';
 import type { CompleteTaskInstance } from '../../application-server/use-cases/commands/complete-task-instance';
 import type { DeleteTaskInstance } from '../../application-server/use-cases/commands/delete-task-instance';
 import type { GetTaskInstance } from '../../application-server/use-cases/queries/get-task-instance';
@@ -18,7 +28,7 @@ import type { ListTaskInstancesByTemplate } from '../../application-server/use-c
 import type { SkipTaskInstance } from '../../application-server/use-cases/commands/skip-task-instance';
 import type { StartTaskInstance } from '../../application-server/use-cases/commands/start-task-instance';
 
-interface TaskInstanceUseCases {
+export interface TaskInstanceUseCases {
   getTaskInstance: GetTaskInstance;
   listByAccount: ListTaskInstancesByAccount;
   listByTemplate: ListTaskInstancesByTemplate;
@@ -32,10 +42,13 @@ interface TaskInstanceUseCases {
 
 /**
  * TaskInstance Controller
+ *
+ * Provides validated use-case calls for the TaskInstance module.
+ * Used by both expressAdapter (HTTP) and ipcAdapter (IPC).
  */
 export class TaskInstanceController {
   constructor(
-    private readonly useCases: TaskInstanceUseCases
+    private readonly useCases: TaskInstanceUseCases,
   ) {}
 
   /**
@@ -53,7 +66,7 @@ export class TaskInstanceController {
     filters?: {
       templateId?: string;
       status?: TaskInstanceStatus;
-    }
+    },
   ): Promise<Result<TaskInstanceClientDTO[]>> {
     if (filters?.templateId) {
       return await this.useCases.listByTemplate.execute(filters.templateId);
@@ -70,7 +83,7 @@ export class TaskInstanceController {
   async getInstancesByDateRange(
     identityId: string,
     startDate: number,
-    endDate: number
+    endDate: number,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
     const result = await this.useCases.getByDateRange.execute(
       identityId,
@@ -86,17 +99,22 @@ export class TaskInstanceController {
   }
 
   /**
-   * Complete instance
+   * Complete instance (with Zod validation)
    */
   async completeInstance(
     id: string,
-    params: {
-      duration?: number;
-      note?: string;
-      rating?: number;
-    }
+    input: unknown,
   ): Promise<Result<TaskInstanceClientDTO>> {
-    const result = await this.useCases.complete.execute(id, params);
+    const parsed = CompleteTaskInstanceSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+
+    const result = await this.useCases.complete.execute(id, parsed.data);
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO>;
     }
@@ -105,13 +123,22 @@ export class TaskInstanceController {
   }
 
   /**
-   * Skip instance
+   * Skip instance (with Zod validation)
    */
   async skipInstance(
     id: string,
-    reason?: string
+    input: unknown,
   ): Promise<Result<TaskInstanceClientDTO>> {
-    const result = await this.useCases.skip.execute(id, { reason });
+    const parsed = SkipTaskInstanceSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+
+    const result = await this.useCases.skip.execute(id, parsed.data);
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO>;
     }
