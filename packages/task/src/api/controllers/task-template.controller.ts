@@ -1,18 +1,26 @@
 /**
  * TaskTemplate Controller
- * 
- * Handles HTTP request logic for task template operations.
- * All methods call application services that return Result<T>.
+ *
+ * Encapsulates Zod validation and use case orchestration for task templates.
+ * Shared by both Express (HTTP) and IPC transport layers.
+ *
+ * Each method:
+ * 1. Validates input via Zod schema (where applicable)
+ * 2. Delegates to the corresponding use case
+ * 3. Returns a Result<T> (transport-agnostic)
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { isOk, ok } from '@dailyuse/contracts/result';
-import type { 
-  TaskTemplateClientDTO,
-  CreateTaskTemplateRequest,
-  UpdateTaskTemplateRequest,
-  TaskTemplateStatus 
+import { fail, isOk, ok } from '@dailyuse/contracts/result';
+import {
+  CreateTaskTemplateSchema,
+  UpdateTaskTemplateSchema,
 } from '@dailyuse/contracts/task';
+import type {
+  TaskTemplateClientDTO,
+  TaskTemplateStatus,
+} from '@dailyuse/contracts/task';
+import { formatZodErrors } from '@dailyuse/utils/result';
 import type { CreateTaskTemplate } from '../../application-server/use-cases/commands/create-task-template';
 import type { GetTaskTemplate } from '../../application-server/use-cases/queries/get-task-template';
 import type { ListTaskTemplates } from '../../application-server/use-cases/queries/list-task-templates';
@@ -22,7 +30,7 @@ import type { ActivateTaskTemplate } from '../../application-server/use-cases/co
 import type { PauseTaskTemplate } from '../../application-server/use-cases/commands/pause-task-template';
 import type { ArchiveTaskTemplate } from '../../application-server/use-cases/commands/archive-task-template';
 
-interface TaskTemplateUseCases {
+export interface TaskTemplateUseCases {
   createTemplate: CreateTaskTemplate;
   getTemplate: GetTaskTemplate;
   listTemplates: ListTaskTemplates;
@@ -35,6 +43,9 @@ interface TaskTemplateUseCases {
 
 /**
  * TaskTemplate Controller
+ *
+ * Provides validated use-case calls for the TaskTemplate module.
+ * Used by both expressAdapter (HTTP) and ipcAdapter (IPC).
  */
 export class TaskTemplateController {
   constructor(
@@ -42,24 +53,33 @@ export class TaskTemplateController {
   ) {}
 
   /**
-   * Create new task template
+   * Create new task template (with Zod validation)
    */
   async createTemplate(
-    data: CreateTaskTemplateRequest,
-    identityId: string
+    input: unknown,
+    identityId: string,
   ): Promise<Result<TaskTemplateClientDTO>> {
+    const parsed = CreateTaskTemplateSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+
     const result = await this.useCases.createTemplate.execute({
       identityId,
-      name: data.name,
-      description: data.description,
-      taskType: data.taskType,
-      timeConfig: data.timeConfig,
-      recurrenceRule: data.recurrenceRule,
-      reminderConfig: data.reminderConfig,
-      importance: data.importance,
-      folderId: data.folderId,
-      tags: data.tags,
-      color: data.color,
+      name: parsed.data.name,
+      description: parsed.data.description,
+      taskType: parsed.data.taskType,
+      timeConfig: parsed.data.timeConfig,
+      recurrenceRule: parsed.data.recurrenceRule,
+      reminderConfig: parsed.data.reminderConfig,
+      importance: parsed.data.importance,
+      folderId: parsed.data.folderId,
+      tags: parsed.data.tags,
+      color: parsed.data.color,
     });
 
     if (!isOk(result)) {
@@ -74,7 +94,7 @@ export class TaskTemplateController {
    */
   async getTemplate(
     id: string,
-    includeChildren = false
+    includeChildren = false,
   ): Promise<Result<TaskTemplateClientDTO | null>> {
     const result = await this.useCases.getTemplate.execute(id, includeChildren);
 
@@ -95,7 +115,7 @@ export class TaskTemplateController {
       folderId?: string;
       goalId?: string;
       tags?: string[];
-    }
+    },
   ): Promise<Result<TaskTemplateClientDTO[]>> {
     const result = await this.useCases.listTemplates.execute({
       identityId,
@@ -113,20 +133,29 @@ export class TaskTemplateController {
   }
 
   /**
-   * Update template
+   * Update template (with Zod validation)
    */
   async updateTemplate(
     id: string,
-    data: Partial<UpdateTaskTemplateRequest>
+    input: unknown,
   ): Promise<Result<TaskTemplateClientDTO>> {
+    const parsed = UpdateTaskTemplateSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+
     return await this.useCases.updateTemplate.execute(id, {
-      name: data.name,
-      description: data.description,
-      recurrenceRule: data.recurrenceRule,
-      importance: data.importance,
-      folderId: data.folderId,
-      tags: data.tags,
-      color: data.color,
+      name: parsed.data.name,
+      description: parsed.data.description,
+      recurrenceRule: parsed.data.recurrenceRule,
+      importance: parsed.data.importance,
+      folderId: parsed.data.folderId,
+      tags: parsed.data.tags,
+      color: parsed.data.color,
     });
   }
 

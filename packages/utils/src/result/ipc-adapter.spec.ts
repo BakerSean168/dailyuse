@@ -1,0 +1,152 @@
+/**
+ * IPC Adapter Tests
+ */
+import { describe, it, expect, vi } from 'vitest';
+import { ipcAdapter, ipcAdapterWithValidation } from './ipc-adapter';
+import { ok, fail } from '@dailyuse/contracts/result';
+
+// ============================================================================
+// Mock helpers
+// ============================================================================
+
+function createMockEvent() {
+  return { sender: {}, senderFrame: {} };
+}
+
+function createMockSchema(data: unknown, shouldFail = false) {
+  return {
+    safeParse: (input: unknown) => {
+      if (shouldFail) {
+        return {
+          success: false as const,
+          error: {
+            issues: [
+              { path: ['title'], message: 'Required' },
+            ],
+          },
+        };
+      }
+      return { success: true as const, data };
+    },
+  };
+}
+
+// ============================================================================
+// Tests
+// ============================================================================
+
+describe('ipcAdapter', () => {
+  it('should call controller and return IpcResult on success', async () => {
+    const controllerFn = vi.fn().mockResolvedValue(ok({ id: '1', name: 'Test' }));
+    const handler = ipcAdapter(controllerFn);
+
+    const event = createMockEvent();
+    const result = await handler(event, { id: '1' });
+
+    expect(controllerFn).toHaveBeenCalledWith(
+      { id: '1' },
+      { identityId: '', deviceId: 'desktop' },
+    );
+    expect(result.ok).toBe(true);
+    expect(result.data).toEqual({ id: '1', name: 'Test' });
+  });
+
+  it('should return IpcResult on controller failure', async () => {
+    const controllerFn = vi.fn().mockResolvedValue(
+      fail({ code: 'NOT_FOUND', message: 'Not found' }),
+    );
+    const handler = ipcAdapter(controllerFn);
+
+    const result = await handler(createMockEvent(), { id: '999' });
+
+    expect(result.ok).toBe(false);
+    expect(result.error?.code).toBe('NOT_FOUND');
+    expect(result.error?.message).toBe('Not found');
+  });
+
+  it('should handle thrown errors', async () => {
+    const controllerFn = vi.fn().mockRejectedValue(new Error('DB connection lost'));
+    const handler = ipcAdapter(controllerFn);
+
+    const result = await handler(createMockEvent(), {});
+
+    expect(result.ok).toBe(false);
+    expect(result.error?.code).toBe('INTERNAL_ERROR');
+    expect(result.error?.message).toBe('DB connection lost');
+  });
+
+  it('should use custom context extractor', async () => {
+    const controllerFn = vi.fn().mockResolvedValue(ok('ok'));
+    const handler = ipcAdapter(controllerFn, {
+      extractContext: () => ({ identityId: 'desktop-user', deviceId: 'desktop-mac' }),
+    });
+
+    await handler(createMockEvent(), {});
+
+    expect(controllerFn).toHaveBeenCalledWith(
+      {},
+      { identityId: 'desktop-user', deviceId: 'desktop-mac' },
+    );
+  });
+});
+
+describe('ipcAdapterWithValidation', () => {
+  it('should validate args and call controller on success', async () => {
+    const inputData = { title: 'New Goal' };
+    const schema = createMockSchema(inputData);
+    const controllerFn = vi.fn().mockResolvedValue(ok({ id: '1', title: 'New Goal' }));
+
+    const handler = ipcAdapterWithValidation(schema, controllerFn);
+    const result = await handler(createMockEvent(), inputData);
+
+    expect(controllerFn).toHaveBeenCalledWith(
+      inputData,
+      { identityId: '', deviceId: 'desktop' },
+    );
+    expect(result.ok).toBe(true);
+    expect(result.data).toEqual({ id: '1', title: 'New Goal' });
+  });
+
+  it('should return validation error when schema fails', async () => {
+    const schema = createMockSchema(null, true);
+    const controllerFn = vi.fn();
+
+    const handler = ipcAdapterWithValidation(schema, controllerFn);
+    const result = await handler(createMockEvent(), {});
+
+    expect(controllerFn).not.toHaveBeenCalled();
+    expect(result.ok).toBe(false);
+    expect(result.error?.code).toBe('VALIDATION_ERROR');
+    expect(result.error?.details).toHaveLength(1);
+    expect(result.error?.details?.[0]).toEqual({
+      field: 'title',
+      code: 'INVALID_FIELD',
+      message: 'Required',
+    });
+  });
+
+  it('should handle controller failure result', async () => {
+    const schema = createMockSchema({ title: 'Test' });
+    const controllerFn = vi.fn().mockResolvedValue(
+      fail({ code: 'CONFLICT', message: 'Already exists' }),
+    );
+
+    const handler = ipcAdapterWithValidation(schema, controllerFn);
+    const result = await handler(createMockEvent(), { title: 'Test' });
+
+    expect(result.ok).toBe(false);
+    expect(result.error?.code).toBe('CONFLICT');
+  });
+
+  it('should handle thrown errors gracefully', async () => {
+    const schema = createMockSchema({ title: 'Test' });
+    const controllerFn = vi.fn().mockRejectedValue(new Error('Crash'));
+
+    const handler = ipcAdapterWithValidation(schema, controllerFn);
+    const result = await handler(createMockEvent(), { title: 'Test' });
+
+    expect(result.ok).toBe(false);
+    expect(result.error?.code).toBe('INTERNAL_ERROR');
+    expect(result.error?.message).toBe('Crash');
+  });
+});

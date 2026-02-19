@@ -103,6 +103,11 @@ export default defineConfig({
       },
       {
         extends: true,
+        resolve: {
+          alias: {
+            '@dailyuse/contracts': path.resolve(__dirname, './packages/contracts/src'),
+          },
+        },
         test: {
           name: 'utils',
           root: './packages/utils',

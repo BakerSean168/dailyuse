@@ -1,45 +1,24 @@
 /**
  * Task Instance Routes
- * 
+ *
  * Route registration for task instance operations.
  * Follows ADR-021/022 split-route pattern.
+ *
+ * Uses expressAdapter to eliminate boilerplate code:
+ * - Zod validation is handled by the TaskInstanceController
+ * - Error handling is unified via the adapter
+ * - Context extraction is automatic
  */
 
-import { Router, type Request, type Response, type RequestHandler } from 'express';
+import { Router, type RequestHandler } from 'express';
+import { expressAdapter } from '@dailyuse/utils/result';
 import type { TaskInstanceController } from '../controllers/task-instance.controller';
-import {
-  createResponseBuilder,
-  errorCodeToHttpStatus,
-  isOk,
-  type Result,
-} from '@dailyuse/contracts/result';
 
 // ============ Types ============
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole?(roles: string[]): RequestHandler;
-}
-
-interface AuthenticatedRequest extends Request {
-  user?: {
-    identityId: string;
-    sessionId?: string;
-  };
-}
-
-// ============ Helpers ============
-
-const responseBuilder = createResponseBuilder();
-
-function respondWithResult<T>(res: Response, result: Result<T>, okStatus = 200) {
-  if (isOk(result as any)) {
-    res.status(okStatus).json(responseBuilder.success(result.data as T));
-    return;
-  }
-
-  const status = errorCodeToHttpStatus(result.error?.code ?? 'INTERNAL_ERROR');
-  res.status(status).json(responseBuilder.fromResult(result as any));
 }
 
 // ============ Route Registration ============
@@ -52,102 +31,47 @@ export function registerTaskInstanceRoutes(
   const { auth } = middleware;
 
   // GET / — List instances
-  router.get(
-    '/',
-    auth,
-    async (req: AuthenticatedRequest, res: Response) => {
-      if (!req.user?.identityId) {
-        res.status(401).json(responseBuilder.unauthorized());
-        return;
-      }
-
-      const filters = {
-        templateId: req.query.templateId as string,
-        status: req.query.status as any,
-      };
-
-      const result = await controller.listInstances(req.user.identityId, filters);
-      respondWithResult(res, result);
-    },
-  );
+  router.get('/', auth, expressAdapter(
+    (req, ctx) => controller.listInstances(ctx.identityId, {
+      templateId: req.query?.templateId as string,
+      status: req.query?.status as any,
+    }),
+  ));
 
   // GET /by-date-range — Get instances by date range
-  router.get(
-    '/by-date-range',
-    auth,
-    async (req: AuthenticatedRequest, res: Response) => {
-      if (!req.user?.identityId) {
-        res.status(401).json(responseBuilder.unauthorized());
-        return;
-      }
-
-      const startDate = req.query.startDate ? Number(req.query.startDate) : Date.now();
-      const endDate = req.query.endDate ? Number(req.query.endDate) : Date.now() + 86400000 * 7;
-
-      const result = await controller.getInstancesByDateRange(
-        req.user.identityId,
-        startDate,
-        endDate
-      );
-      respondWithResult(res, result);
-    },
-  );
+  router.get('/by-date-range', auth, expressAdapter(
+    (req, ctx) => controller.getInstancesByDateRange(
+      ctx.identityId,
+      req.query?.startDate ? Number(req.query.startDate) : Date.now(),
+      req.query?.endDate ? Number(req.query.endDate) : Date.now() + 86400000 * 7,
+    ),
+  ));
 
   // GET /:id — Get instance by ID
-  router.get(
-    '/:id',
-    auth,
-    async (req: AuthenticatedRequest, res: Response) => {
-      const result = await controller.getInstance(req.params.id);
-      respondWithResult(res, result);
-    },
-  );
+  router.get('/:id', auth, expressAdapter(
+    (req) => controller.getInstance(req.params!.id),
+    { requireAuth: false },
+  ));
 
   // POST /:id/complete — Complete instance
-  router.post(
-    '/:id/complete',
-    auth,
-    async (req: AuthenticatedRequest, res: Response) => {
-      const params = {
-        duration: req.body.duration,
-        note: req.body.note,
-        rating: req.body.rating,
-      };
-
-      const result = await controller.completeInstance(req.params.id, params);
-      respondWithResult(res, result);
-    },
-  );
+  router.post('/:id/complete', auth, expressAdapter(
+    (req) => controller.completeInstance(req.params!.id, req.body),
+  ));
 
   // POST /:id/skip — Skip instance
-  router.post(
-    '/:id/skip',
-    auth,
-    async (req: AuthenticatedRequest, res: Response) => {
-      const result = await controller.skipInstance(req.params.id, req.body.reason);
-      respondWithResult(res, result);
-    },
-  );
+  router.post('/:id/skip', auth, expressAdapter(
+    (req) => controller.skipInstance(req.params!.id, req.body),
+  ));
 
   // POST /:id/start — Start instance
-  router.post(
-    '/:id/start',
-    auth,
-    async (req: AuthenticatedRequest, res: Response) => {
-      const result = await controller.startInstance(req.params.id);
-      respondWithResult(res, result);
-    },
-  );
+  router.post('/:id/start', auth, expressAdapter(
+    (req) => controller.startInstance(req.params!.id),
+  ));
 
   // DELETE /:id — Delete instance
-  router.delete(
-    '/:id',
-    auth,
-    async (req: AuthenticatedRequest, res: Response) => {
-      const result = await controller.deleteInstance(req.params.id);
-      respondWithResult(res, result);
-    },
-  );
+  router.delete('/:id', auth, expressAdapter(
+    (req) => controller.deleteInstance(req.params!.id),
+  ));
 
   return router;
 }
