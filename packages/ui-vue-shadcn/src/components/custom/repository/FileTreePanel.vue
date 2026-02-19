@@ -53,7 +53,7 @@
       <div v-else class="space-y-0.5">
         <TreeNodeItem
           v-for="node in nodes"
-          :key="node.uuid"
+          :key="node.id"
           :node="node"
           :show-file-info="showFileInfo"
           @select="$emit('select-node', $event)"

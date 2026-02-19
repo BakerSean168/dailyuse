@@ -62,12 +62,12 @@ const emit = defineEmits<Emits>();
 const tabs = ref<EditorTab[]>([...props.initialTabs]);
 
 const activeTabUuid = ref<string | undefined>(
-  tabs.value.length > 0 ? tabs.value[0].uuid : undefined,
+  tabs.value.length > 0 ? tabs.value[0].id : undefined,
 );
 
 const activeTab = computed(() => {
   if (!activeTabUuid.value) return null;
-  return tabs.value.find((tab) => tab.uuid === activeTabUuid.value) || null;
+  return tabs.value.find((tab) => tab.id === activeTabUuid.value) || null;
 });
 
 function openFile(file: {
@@ -79,12 +79,12 @@ function openFile(file: {
 }) {
   const existingTab = tabs.value.find((tab) => tab.filePath === file.filePath);
   if (existingTab) {
-    activeTabUuid.value = existingTab.uuid;
+    activeTabUuid.value = existingTab.id;
     return existingTab;
   }
 
   const newTab: EditorTab = {
-    uuid: file.uuid || `tab-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: file.uuid || `tab-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     title: file.title,
     fileType: file.fileType,
     filePath: file.filePath,
@@ -94,13 +94,13 @@ function openFile(file: {
   };
 
   tabs.value.push(newTab);
-  activeTabUuid.value = newTab.uuid;
+  activeTabUuid.value = newTab.id;
 
   return newTab;
 }
 
 function closeTab(tabUuid: string) {
-  const index = tabs.value.findIndex((tab) => tab.uuid === tabUuid);
+  const index = tabs.value.findIndex((tab) => tab.id === tabUuid);
   if (index === -1) return;
 
   const tab = tabs.value[index];
@@ -116,7 +116,7 @@ function closeTab(tabUuid: string) {
   if (activeTabUuid.value === tabUuid) {
     if (tabs.value.length > 0) {
       const newIndex = Math.min(index, tabs.value.length - 1);
-      activeTabUuid.value = tabs.value[newIndex].uuid;
+      activeTabUuid.value = tabs.value[newIndex].id;
     } else {
       activeTabUuid.value = undefined;
     }
@@ -135,11 +135,11 @@ function closeAllTabs() {
 }
 
 function handleTabClick(tab: EditorTab) {
-  activeTabUuid.value = tab.uuid;
+  activeTabUuid.value = tab.id;
 }
 
 function handleTabClose(tab: EditorTab) {
-  closeTab(tab.uuid);
+  closeTab(tab.id);
 }
 
 function handleContentChange(newContent: string) {

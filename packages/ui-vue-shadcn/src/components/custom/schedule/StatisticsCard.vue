@@ -180,11 +180,30 @@ import {
   HelpCircle,
 } from 'lucide-vue-next';
 import { SourceModule } from '@dailyuse/contracts/schedule';
-import type { ScheduleStatisticsClientDTO, ModuleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
+
+interface ScheduleStatisticsData {
+  totalTasks: number;
+  activeTasks: number;
+  pausedTasks: number;
+  completedTasks: number;
+  failedTasks: number;
+  successRate: number;
+  totalExecutions: number;
+  successfulExecutions: number;
+  failedExecutions: number;
+}
+
+interface ModuleStatisticsData {
+  totalTasks: number;
+  activeTasks: number;
+  totalExecutions: number;
+  successRate: number;
+  successRateFormatted: string;
+}
 
 const props = defineProps<{
-  statistics: ScheduleStatisticsClientDTO | null;
-  moduleStatistics?: Record<SourceModule, ModuleStatisticsClientDTO> | null;
+  statistics: ScheduleStatisticsData | null;
+  moduleStatistics?: Record<SourceModule, ModuleStatisticsData> | null;
   isLoading?: boolean;
   error?: string | null;
 }>();

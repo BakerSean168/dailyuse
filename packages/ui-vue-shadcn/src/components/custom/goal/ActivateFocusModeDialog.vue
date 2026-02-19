@@ -21,8 +21,7 @@
         <div class="space-y-2">
           <Label for="goals">选择专注目标</Label>
           <Select
-            v-model="formData.focusedGoalUuids"
-            multiple
+            v-model="(formData.focusedGoalIds as any)"
           >
             <SelectTrigger id="goals">
               <SelectValue placeholder="请选择 1-3 个目标" />
@@ -30,8 +29,8 @@
             <SelectContent>
               <SelectItem
                 v-for="goal in availableGoals"
-                :key="goal.uuid"
-                :value="goal.uuid"
+                :key="goal.id"
+                :value="goal.id"
               >
                 {{ goal.title }}
               </SelectItem>
@@ -117,6 +116,7 @@
 import { ref, computed, watch } from 'vue';
 import { Target, EyeOff, FolderX, Eye, Loader2 } from 'lucide-vue-next';
 import type { FocusModeClientDTO, ActivateFocusModeRequest, HiddenGoalsMode } from '@dailyuse/contracts/goal';
+import type { GoalId } from '@dailyuse/contracts/primitives';
 import { Button } from '../../ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../ui/dialog';
 import { Input } from '../../ui/input';
@@ -125,7 +125,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 
 interface Props {
   modelValue?: boolean;
-  goals?: Array<{ uuid: string; title: string }>;
+  goals?: Array<{ id: string; title: string }>;
   onActivate?: (request: ActivateFocusModeRequest) => Promise<FocusModeClientDTO>;
 }
 
@@ -141,10 +141,10 @@ const emit = defineEmits<{
 
 const isLoading = ref(false);
 const formData = ref({
-  focusedGoalUuids: [] as string[],
+  focusedGoalIds: [] as string[],
   startTime: new Date().toISOString().slice(0, 16),
   endTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-  hiddenGoalsMode: 'hide_all' as HiddenGoalsMode,
+  hiddenGoalsMode: 'hide' as HiddenGoalsMode,
 });
 
 const isOpen = computed({
@@ -155,10 +155,10 @@ const isOpen = computed({
 const availableGoals = computed(() => props.goals);
 
 const isFormValid = computed(() => {
-  const { focusedGoalUuids, startTime, endTime } = formData.value;
+  const { focusedGoalIds, startTime, endTime } = formData.value;
   return (
-    focusedGoalUuids.length > 0 &&
-    focusedGoalUuids.length <= 3 &&
+    focusedGoalIds.length > 0 &&
+    focusedGoalIds.length <= 3 &&
     !!startTime &&
     !!endTime &&
     new Date(endTime).getTime() > new Date(startTime).getTime()
@@ -167,21 +167,21 @@ const isFormValid = computed(() => {
 
 const hiddenModeOptions = [
   {
-    value: 'hide_all',
-    label: '隐藏所有',
+    value: 'hide' as const,
+    label: '隐藏',
     description: '隐藏所有非专注目标',
     icon: EyeOff,
   },
   {
-    value: 'hide_folder',
-    label: '隐藏文件夹',
-    description: '只隐藏非专注目标的文件夹层级',
+    value: 'dim' as const,
+    label: '变暗',
+    description: '只降低非专注目标的可见度',
     icon: FolderX,
   },
   {
-    value: 'hide_none',
-    label: '不隐藏',
-    description: '仅标记专注目标，不隐藏其他目标',
+    value: 'collapse' as const,
+    label: '折叠',
+    description: '仅折叠非专注目标，不完全隐藏',
     icon: Eye,
   },
 ];
@@ -192,9 +192,9 @@ const handleSubmit = async () => {
   try {
     isLoading.value = true;
     const request: ActivateFocusModeRequest = {
-      focusedGoalUuids: formData.value.focusedGoalUuids,
+      focusedGoalIds: formData.value.focusedGoalIds as GoalId[],
       endTime: new Date(formData.value.endTime).getTime(),
-      hiddenGoalsMode: formData.value.hiddenGoalsMode as any,
+      hiddenGoalsMode: formData.value.hiddenGoalsMode,
     };
 
     if (props.onActivate) {
@@ -219,10 +219,10 @@ const handleClose = () => {
 
 const resetForm = () => {
   formData.value = {
-    focusedGoalUuids: [],
+    focusedGoalIds: [],
     startTime: new Date().toISOString().slice(0, 16),
     endTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-    hiddenGoalsMode: 'hide_all',
+    hiddenGoalsMode: 'hide',
   };
 };
 

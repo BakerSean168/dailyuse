@@ -47,6 +47,10 @@
   - account and identity aggregates use canonical `identityId`
 - File and folder naming is compliant: all repository paths use `kebab-case` (symbol names may remain `PascalCase` in code)
 - Governance module updates are planned: domain package governance checks/docs are updated when standards are changed
+- `packages/ui-vue-shadcn/src/components/custom/` boundary is explicit when touched:
+  - each component is classified as `pure-ui` or `domain-business`
+  - components remain presentational (props/emits only)
+  - no Pinia/global state/API call/routing side effects inside `custom/`
 - Testing plan includes unit tests for aggregates and repository-level event dispatch behavior
 - Nx execution path is defined for validation (`nx build`, `nx test`, `nx affected:*`)
 

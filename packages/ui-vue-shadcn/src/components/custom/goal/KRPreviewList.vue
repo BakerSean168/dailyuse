@@ -260,7 +260,7 @@ import { Label } from '../../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
 import { Textarea } from '../../ui/textarea';
 
-interface KeyResultPreview {
+export interface KeyResultPreview {
   uuid?: string;
   title: string;
   description?: string;
@@ -271,13 +271,11 @@ interface KeyResultPreview {
   selected: boolean;
 }
 
-interface Props {
+const props = defineProps<{
   results?: any[];
   onSuccess?: (message: string) => void;
   onWarning?: (message: string) => void;
-}
-
-const props = defineProps<Props>();
+}>();
 
 const emit = defineEmits<{
   accept: [results: KeyResultPreview[]];

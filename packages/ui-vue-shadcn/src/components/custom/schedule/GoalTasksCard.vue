@@ -35,9 +35,9 @@
       <div v-else-if="tasks.length > 0" class="task-list max-h-[400px] overflow-y-auto">
         <div 
           v-for="task in tasks" 
-          :key="task.uuid"
+          :key="task.id"
           class="flex items-center gap-3 py-3 border-b last:border-b-0"
-          :class="{ 'opacity-70': task.status === 'paused' }"
+          :class="{ 'opacity-70': task.status === 'Paused' }"
         >
           <component 
             :is="getTaskStatusIcon(task.status)" 
@@ -61,7 +61,7 @@
               variant="ghost"
               size="icon"
               class="h-7 w-7"
-              @click="$emit('view-detail', task.uuid)"
+              @click="$emit('view-detail', task.id)"
             >
               <Eye class="h-4 w-4" />
             </Button>
@@ -74,22 +74,22 @@
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
-                  v-if="task.status === 'active'"
-                  @click="$emit('pause-task', task.uuid)"
+                  v-if="task.status === 'Active'"
+                  @click="$emit('pause-task', task.id)"
                 >
                   <Pause class="mr-2 h-4 w-4" />
                   暂停
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  v-if="task.status === 'paused'"
-                  @click="$emit('resume-task', task.uuid)"
+                  v-if="task.status === 'Paused'"
+                  @click="$emit('resume-task', task.id)"
                 >
                   <Play class="mr-2 h-4 w-4" />
                   恢复
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   class="text-destructive focus:text-destructive"
-                  @click="$emit('delete-task', task.uuid)"
+                  @click="$emit('delete-task', task.id)"
                 >
                   <Trash2 class="mr-2 h-4 w-4" />
                   删除
@@ -154,45 +154,45 @@ defineEmits<{
 }>();
 
 function getStatusVariant(): BadgeVariants['variant'] {
-  const activeCount = props.tasks.filter((t) => t.status === 'active').length;
+  const activeCount = props.tasks.filter((t) => t.status === 'Active').length;
   return activeCount === 0 ? 'secondary' : 'default';
 }
 
 function getTaskStatusColorClass(status: string): string {
   const colorMap: Record<string, string> = {
-    active: 'text-green-600',
-    paused: 'text-yellow-600',
-    completed: 'text-blue-600',
-    failed: 'text-red-600',
-    cancelled: 'text-gray-400',
+    Active: 'text-green-600',
+    Paused: 'text-yellow-600',
+    Completed: 'text-blue-600',
+    Failed: 'text-red-600',
+    Cancelled: 'text-gray-400',
   };
   return colorMap[status] || 'text-gray-400';
 }
 
 function getBadgeVariant(status: string): BadgeVariants['variant'] {
-  if (status === 'active') return 'default';
-  if (status === 'failed') return 'destructive';
+  if (status === 'Active') return 'default';
+  if (status === 'Failed') return 'destructive';
   return 'secondary';
 }
 
 function getTaskStatusIcon(status: string) {
   const iconMap: Record<string, any> = {
-    active: PlayCircle,
-    paused: PauseCircle,
-    completed: CheckCircle,
-    failed: AlertCircle,
-    cancelled: XCircle,
+    Active: PlayCircle,
+    Paused: PauseCircle,
+    Completed: CheckCircle,
+    Failed: AlertCircle,
+    Cancelled: XCircle,
   };
   return iconMap[status] || HelpCircle;
 }
 
 function getTaskStatusText(status: string): string {
   const textMap: Record<string, string> = {
-    active: '活跃',
-    paused: '暂停',
-    completed: '完成',
-    failed: '失败',
-    cancelled: '取消',
+    Active: '活跃',
+    Paused: '暂停',
+    Completed: '完成',
+    Failed: '失败',
+    Cancelled: '取消',
   };
   return textMap[status] || status;
 }

@@ -86,7 +86,7 @@
                 :max="100"
                 :step="5"
                 class="flex-1"
-                @update:model-value="(value) => emit('update:modelValue', { ...modelValue, compressionQuality: value[0] })"
+                @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, compressionQuality: value?.[0] ?? 80 })"
               />
               <span class="text-sm w-12 text-right">{{ modelValue.compressionQuality }}%</span>
             </div>
@@ -157,7 +157,7 @@
           <ToggleGroup
             type="single"
             :model-value="modelValue.defaultViewMode"
-            @update:model-value="(value) => emit('update:modelValue', { ...modelValue, defaultViewMode: value })"
+            @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, defaultViewMode: value as string })"
             class="ml-4"
           >
             <ToggleGroupItem value="notes" aria-label="笔记视图">

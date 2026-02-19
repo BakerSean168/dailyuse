@@ -73,19 +73,12 @@
 </template>
 
 <script setup lang="ts">
-import {
-  Card,
-  CardContent,
-  Badge,
-  Button,
-  Progress,
-  Avatar,
-  AvatarFallback,
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem
-} from '@dailyuse/ui-vue-shadcn';
+import { Card, CardContent } from '../../../ui/card';
+import { Badge } from '../../../ui/badge';
+import { Button } from '../../../ui/button';
+import { Progress } from '../../../ui/progress';
+import { Avatar, AvatarFallback } from '../../../ui/avatar';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../../../ui/dropdown-menu';
 import {
   MoreHorizontal,
   Target,
@@ -96,7 +89,7 @@ import {
   Archive,
   Users
 } from 'lucide-vue-next';
-import { cn } from '@dailyuse/ui-vue-shadcn';
+import { cn } from '../../../../lib/utils';
 
 interface Props {
   goal: any;

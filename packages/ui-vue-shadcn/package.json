@@ -18,6 +18,8 @@
     "src/styles"
   ],
   "dependencies": {
+    "@codemirror/state": "6.5.4",
+    "@codemirror/view": "6.39.14",
     "@dailyuse/ui-core": "workspace:*",
     "@internationalized/date": "^3.11.0",
     "@radix-icons/vue": "1.0.0",
@@ -28,7 +30,10 @@
     "class-variance-authority": "^0.7.1",
     "embla-carousel": "8.6.0",
     "embla-carousel-vue": "8.6.0",
+    "highlight.js": "11.11.1",
     "lucide-vue-next": "^0.460.0",
+    "markdown-it": "14.1.1",
+    "marked": "17.0.3",
     "radix-vue": "1.9.17",
     "reka-ui": "^2.8.0",
     "vaul-vue": "0.4.1",

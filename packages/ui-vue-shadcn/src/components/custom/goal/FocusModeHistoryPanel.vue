@@ -33,18 +33,18 @@
           <tbody>
             <tr
               v-for="item in focusModeHistory"
-              :key="item.uuid"
+              :key="item.id"
               class="border-b hover:bg-muted/50"
             >
               <td class="p-2">
                 <div class="flex flex-wrap gap-1">
                   <Badge
-                    v-for="goalUuid in item.focusedGoalUuids"
-                    :key="goalUuid"
+                    v-for="goalId in item.focusedGoalIds"
+                    :key="goalId"
                     variant="outline"
                     class="text-xs"
                   >
-                    {{ getGoalTitle(goalUuid) }}
+                    {{ getGoalTitle(goalId) }}
                   </Badge>
                 </div>
               </td>
@@ -118,7 +118,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 interface Props {
   focusModeHistory?: FocusModeClientDTO[];
   isLoading?: boolean;
-  goals?: Array<{ uuid: string; title: string }>;
+  goals?: Array<{ id: string; title: string }>;
   onRefresh?: () => Promise<void>;
   onExtend?: (item: FocusModeClientDTO, newEndTime: number) => Promise<void>;
   onDeactivate?: (uuid: string) => Promise<void>;
@@ -144,10 +144,10 @@ onMounted(async () => {
   }
 });
 
-const getStatusVariant = (item: FocusModeClientDTO): 'default' | 'success' | 'destructive' | 'secondary' => {
+const getStatusVariant = (item: FocusModeClientDTO): 'default' | 'outline' | 'destructive' | 'secondary' => {
   if (item.isActive) {
     if (isExpiredItem(item)) return 'destructive';
-    return 'success';
+    return 'default';
   }
   if (isExpiredItem(item)) return 'secondary';
   return 'secondary';
@@ -203,9 +203,9 @@ const getHiddenModeLabel = (mode: HiddenGoalsMode): string => {
   return labels[mode] || mode;
 };
 
-const getGoalTitle = (uuid: string): string => {
-  const goal = props.goals.find(g => g.uuid === uuid);
-  return goal?.title ?? uuid.slice(0, 8);
+const getGoalTitle = (id: string): string => {
+  const goal = props.goals.find(g => g.id === id);
+  return goal?.title ?? id.slice(0, 8);
 };
 
 const handleRefresh = async () => {
@@ -232,9 +232,9 @@ const handleDeactivate = (item: FocusModeClientDTO) => {
   }
 
   if (props.onDeactivate) {
-    props.onDeactivate(item.uuid);
+    props.onDeactivate(item.id);
   } else {
-    emit('deactivate', item.uuid);
+    emit('deactivate', item.id);
   }
 };
 </script>

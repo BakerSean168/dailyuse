@@ -48,7 +48,7 @@
             variant="ghost"
             size="icon"
             class="h-8 w-8"
-            @click.stop="$emit('mark-read', notification.uuid)"
+            @click.stop="$emit('mark-read', notification.id)"
           >
             <Check class="h-4 w-4" />
           </Button>
@@ -62,7 +62,7 @@
             variant="ghost"
             size="icon"
             class="h-8 w-8 text-destructive hover:text-destructive"
-            @click.stop="$emit('delete', notification.uuid)"
+            @click.stop="$emit('delete', notification.id)"
           >
             <Trash2 class="h-4 w-4" />
           </Button>

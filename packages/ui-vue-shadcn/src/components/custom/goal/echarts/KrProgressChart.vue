@@ -1,5 +1,5 @@
 <template>
-  <v-chart class="chart" :option="krBarOption" autoresize />
+  <v-chart class="mb-6 h-55 min-h-45 w-full overflow-hidden rounded-2xl" :option="krBarOption" autoresize />
 </template>
 
 <script setup lang="ts">
@@ -11,26 +11,28 @@ import { BarChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 
 use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer]);
-import { Goal } from '@dailyuse/goal/domain-client';
-import { useTheme } from 'vuetify';
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 
 const props = defineProps<{
-  goal: Goal | null;
+  goal: GoalClientDTO | null;
 }>();
-const theme = useTheme();
-const surfaceColor = theme.current.value.colors.surface;
-const fontColor = theme.current.value.colors.font; // 获取主题主色
+const surfaceColor = 'transparent';
+const fontColor = '#64748b';
 
 const keyResults = computed(() => props.goal?.keyResults || []);
 
+const getProgressPercentage = (target: number, current: number) => {
+  if (!target || target <= 0) return 0;
+  return Math.min(100, Math.max(0, (current / target) * 100));
+};
+
 const krNames = computed(() => props.goal?.keyResults?.map((kr) => kr.title) ?? []);
 const krProgress = computed(() =>
-  props.goal?.keyResults?.map((kr) => kr.progress.progressPercentage) ?? [],
+  props.goal?.keyResults?.map((kr) => getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue)) ?? [],
 );
 
 const krBarOption = computed(() => {
-  const data = keyResults.value.map((kr) => kr.progress.progressPercentage);
-  console.log('KR 进度数据:', data);
+  const data = keyResults.value.map((kr) => getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue));
   const max = data.length ? Math.max(...data) : 0;
   const min = data.length ? Math.min(...data) : 0;
   const maxIdx = data.indexOf(max);
@@ -109,15 +111,3 @@ const krBarOption = computed(() => {
   };
 });
 </script>
-
-<style scoped>
-.chart {
-  width: 100%;
-  height: 220px;
-  min-height: 180px;
-  margin-bottom: 24px;
-
-  border-radius: 16px;
-  overflow: hidden;
-}
-</style>

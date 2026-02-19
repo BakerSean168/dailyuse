@@ -160,8 +160,8 @@ const emit = defineEmits<{
 }>();
 
 const { getGoalAggregateView } = useGoal();
-const chartRef = ref();
-const exportDialog = ref();
+const chartRef = ref<any>(null);
+const exportDialog = ref<any>(null);
 const containerRef = ref<HTMLElement>();
 const layoutType = ref<'force' | 'hierarchical'>('force');
 const hasCustomLayout = ref(false);
@@ -537,10 +537,9 @@ const handleExport = async (options: ExportOptions) => {
         blob = await dagExportService.exportSVG(chartInstance, options);
         break;
       case 'pdf':
-        blob = await dagExportService.exportPDF(chartInstance, options, {
-          title: localGoal.value?.title || 'Goal DAG',
-          author: 'DailyUse User',
-          date: new Date().toLocaleString('zh-CN'),
+        blob = await dagExportService.exportPDF(chartInstance, {
+          ...options,
+          scale: options.resolution ?? options.scale,
         });
         break;
     }
@@ -621,9 +620,10 @@ const loadGoalData = async () => {
   loadError.value = null;
   isLoading.value = true;
   try {
-    const { goal } = await getGoalAggregateView(props.goalUuid);
+    const result = await getGoalAggregateView(props.goalUuid);
     // 将 Goal 实体转换为可用的数据格式
-    localGoal.value = goal.toClientDTO ? goal.toClientDTO(true) : goal;
+    const data = result as any;
+    localGoal.value = data?.goal ? (data.goal.toClientDTO ? data.goal.toClientDTO(true) : data.goal) : data;
   } catch (error) {
     console.error('Failed to load goal aggregate view:', error);
     loadError.value = error instanceof Error ? error.message : '加载目标数据失败，请重试';

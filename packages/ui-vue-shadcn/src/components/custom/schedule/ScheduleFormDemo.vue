@@ -67,11 +67,11 @@
               <SelectValue placeholder="选择优先级" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem :value="5">最高</SelectItem>
-              <SelectItem :value="4">高</SelectItem>
-              <SelectItem :value="3">中</SelectItem>
-              <SelectItem :value="2">低</SelectItem>
-              <SelectItem :value="1">最低</SelectItem>
+              <SelectItem value="5">最高</SelectItem>
+              <SelectItem value="4">高</SelectItem>
+              <SelectItem value="3">中</SelectItem>
+              <SelectItem value="2">低</SelectItem>
+              <SelectItem value="1">最低</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -141,7 +141,7 @@ const form = reactive({
   startTime: null as number | null,
   endTime: null as number | null,
   duration: 0,
-  priority: 3,
+  priority: '3',
   location: '',
 });
 
@@ -197,7 +197,7 @@ function handleReset() {
     startTime: null,
     endTime: null,
     duration: 0,
-    priority: 3,
+    priority: '3',
     location: '',
   });
   startTimeFormatted.value = '';

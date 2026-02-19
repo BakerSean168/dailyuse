@@ -26,6 +26,10 @@ export default defineConfig({
         'src/components/ui/carousel/**',
         'src/components/ui/drawer/**',
         'src/components/ui/stepper/**',
+        // vue-tsc leaks private names (Props, EChartsElement) from child component types
+        'src/components/custom/goal/AIKeyResultsSection.vue',
+        'src/components/custom/goal/KRPreviewList.vue',
+        'src/components/custom/goal/dag/GoalDAGVisualization.vue',
         'src/**/*.stories.ts', 
         'src/**/*.stories.vue',
         'src/**/*.test.ts',

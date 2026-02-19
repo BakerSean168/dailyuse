@@ -61,7 +61,7 @@
           <div class="kr-list">
             <div
               v-for="(kr, index) in review.keyResultSnapshots"
-              :key="kr.keyResultUuid"
+              :key="kr.keyResultId"
               class="kr-item mb-4"
             >
               <div class="d-flex justify-space-between align-center mb-2">
@@ -109,13 +109,13 @@ import { BarChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 
 use([GridComponent, TooltipComponent, TitleComponent, BarChart, CanvasRenderer]);
-import type { GoalReview, Goal, KeyResult } from '@dailyuse/goal/domain-client';
+import type { GoalReviewClientDTO, GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 
 defineOptions({ name: 'ReviewProgressChart' });
 
 const props = defineProps<{
-  review: GoalReview;
-  goal: Goal;
+  review: GoalReviewClientDTO;
+  goal: GoalClientDTO;
 }>();
 
 const periodChartContainer = ref<HTMLElement>();
@@ -124,19 +124,19 @@ const handleResize = () => {
   periodChart?.resize();
 };
 
-const goalKeyResults = computed<KeyResult[]>(() => props.goal.keyResults ?? []);
+const goalKeyResults = computed<KeyResultClientDTO[]>(() => props.goal.keyResults ?? []);
 
 const weightsByKrUuid = computed(() => {
   const map = new Map<string, number>();
-  goalKeyResults.value.forEach((kr: any) => {
-    map.set(kr.uuid, kr.weight ?? 1);
+  goalKeyResults.value.forEach((kr) => {
+    map.set(kr.id, kr.weight ?? 1);
   });
   return map;
 });
 
 const totalWeight = computed(() => {
   const sum = goalKeyResults.value.reduce(
-    (acc: number, kr: any) => acc + (kr.weight ?? 1),
+    (acc, kr) => acc + (kr.weight ?? 1),
     0,
   );
   if (sum > 0) return sum;
@@ -175,7 +175,7 @@ const goalProgress = computed(() => {
   const fallbackWeight = total / snapshots.length;
 
   const weightedSum = snapshots.reduce((sum, snapshot) => {
-    const weight = weights.get(snapshot.keyResultUuid) ?? fallbackWeight;
+    const weight = weights.get(snapshot.keyResultId) ?? fallbackWeight;
     return sum + snapshot.progressPercentage * weight;
   }, 0);
 
@@ -183,7 +183,8 @@ const goalProgress = computed(() => {
 });
 
 // 获取进度颜色
-const getProgressColor = (progress: number): string => {
+const getProgressColor = (progress: number | undefined): string => {
+  if (progress == null) return 'grey';
   if (progress >= 80) return 'success';
   if (progress >= 60) return 'info';
   if (progress >= 40) return 'warning';

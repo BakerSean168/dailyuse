@@ -21,16 +21,16 @@
       <div v-if="bookmarks.length > 0" class="p-2 space-y-1">
         <div
           v-for="bookmark in bookmarks"
-          :key="bookmark.uuid"
+          :key="bookmark.id"
           class="group flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer"
           @click="$emit('select', bookmark)"
         >
           <component :is="getBookmarkIcon(bookmark)" class="w-4 h-4 shrink-0" />
           
           <div class="flex-1 min-w-0">
-            <div class="text-sm truncate">{{ bookmark.name }}</div>
+            <div class="text-sm truncate">{{ bookmark.displayName }}</div>
             <div class="text-xs text-muted-foreground">
-              {{ bookmark.targetType === 'folder' ? '文件夹' : '文件' }}
+              {{ bookmark.icon?.includes('folder') ? '文件夹' : '文件' }}
             </div>
           </div>
 
@@ -99,7 +99,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Bookmark as BookmarkType } from '@dailyuse/contracts/repository';
+import type { ResourceBookmarkClientDTO as BookmarkType } from '@dailyuse/contracts/repository';
 
 interface Props {
   bookmarks: BookmarkType[];
@@ -121,15 +121,15 @@ function getBookmarkIcon(bookmark: BookmarkType) {
     if (bookmark.icon.includes('folder')) return Folder;
     if (bookmark.icon.includes('file')) return FileText;
   }
-  return bookmark.targetType === 'folder' ? Folder : FileText;
+  return FileText;
 }
 
 function isFirst(bookmark: BookmarkType): boolean {
-  return props.bookmarks[0]?.uuid === bookmark.uuid;
+  return props.bookmarks[0]?.id === bookmark.id;
 }
 
 function isLast(bookmark: BookmarkType): boolean {
   const bookmarks = props.bookmarks;
-  return bookmarks[bookmarks.length - 1]?.uuid === bookmark.uuid;
+  return bookmarks[bookmarks.length - 1]?.id === bookmark.id;
 }
 </script>

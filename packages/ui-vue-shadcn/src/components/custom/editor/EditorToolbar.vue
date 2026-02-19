@@ -82,7 +82,7 @@
     <div class="flex-1" />
 
     <!-- View Mode Toggle -->
-    <ToggleGroup v-model="viewMode" type="single" @update:model-value="$emit('view-mode-change', $event)">
+    <ToggleGroup v-model="viewMode" type="single" @update:model-value="(val: any) => $emit('view-mode-change', val)">
       <ToggleGroupItem value="edit" aria-label="Edit mode" class="h-8 w-8">
         <Pencil class="h-4 w-4" />
       </ToggleGroupItem>

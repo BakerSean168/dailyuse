@@ -57,7 +57,7 @@
                     placeholder="按下快捷键..."
                     readonly
                     class="w-[200px] h-8 text-sm"
-                    @keydown="(e) => emit('captureKey', e)"
+                    @keydown="(e: KeyboardEvent) => emit('captureKey', e)"
                   />
                   <Button
                     v-if="editingShortcut?.id === shortcut.id"

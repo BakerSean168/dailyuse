@@ -104,6 +104,8 @@
 - **AR-010**: Feature implementation MUST follow vertical package slicing (`packages/{domain}` or module package first), then internal DDD layering; introducing centralized `domain-server/domain-client` package coupling is FORBIDDEN.
 - **AR-011**: All new files and folders MUST use `kebab-case`; symbol exports (Vue/React components, classes, interfaces/types) MAY use idiomatic `PascalCase`.
 - **AR-012**: When feature standards/patterns change, the corresponding domain `governance` module docs/checks MUST be updated in the same change set.
+- **AR-013**: Any component created or modified under `packages/ui-vue-shadcn/src/components/custom/` MUST declare category (`pure-ui` or `domain-business`) and remain presentational (props/emits driven).
+- **AR-014**: Components under `packages/ui-vue-shadcn/src/components/custom/` MUST NOT use Pinia/global state tools, MUST NOT call APIs directly, and MUST NOT execute routing side effects; such logic belongs to container/app layers.
 
 *Example of marking unclear requirements:*
 

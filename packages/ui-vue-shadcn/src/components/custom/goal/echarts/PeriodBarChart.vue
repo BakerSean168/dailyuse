@@ -1,25 +1,27 @@
 <template>
-  <v-chart class="chart" :option="periodBarOption" autoresize />
+  <v-chart class="mb-6 h-55 min-h-45 w-full overflow-hidden rounded-2xl" :option="periodBarOption" autoresize />
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import VChart from 'vue-echarts';
-import type { Goal } from '@dailyuse/goal/domain-client';
-import type { GoalRecord } from '@dailyuse/goal/domain-client';
-import { useTheme } from 'vuetify';
+import type { GoalClientDTO, GoalRecordClientDTO } from '@dailyuse/contracts/goal';
+
+type GoalWithRecords = GoalClientDTO & {
+  records?: GoalRecordClientDTO[] | null;
+};
+
 const props = defineProps<{
-  goal: Goal | null;
+  goal: GoalWithRecords | null;
 }>();
 
-const theme = useTheme();
-const surfaceColor = theme.current.value.colors.surface;
-const fontColor = theme.current.value.colors.font;
+const surfaceColor = 'transparent';
+const fontColor = '#64748b';
 
 type TimePeriod = '早晨' | '下午' | '晚上' | '凌晨';
 const timePeriods: TimePeriod[] = ['早晨', '下午', '晚上', '凌晨'];
 
-function classifyGoalRecordsByPeriod(records: GoalRecord[]): Record<TimePeriod, number> {
+function classifyGoalRecordsByPeriod(records: GoalRecordClientDTO[]): Record<TimePeriod, number> {
   const stat: Record<TimePeriod, number> = {
     早晨: 0,
     下午: 0,
@@ -27,27 +29,21 @@ function classifyGoalRecordsByPeriod(records: GoalRecord[]): Record<TimePeriod, 
     凌晨: 0,
   };
   for (const rec of records) {
-    // 安全检查：确保记录和创建时间存在
     if (!rec || !rec.createdAt) {
-      console.warn('跳过无效的记录数据:', rec);
       continue;
     }
 
     try {
-      // 处理 createdAt 可能是 number（时间戳）或 Date 的情况
       const date =
         typeof rec.createdAt === 'number' ? new Date(rec.createdAt) : new Date(rec.createdAt);
 
-      // 检查日期是否有效
       if (isNaN(date.getTime())) {
-        console.warn('跳过无效的日期:', rec.createdAt);
         continue;
       }
 
       const period = getTimePeriod(date);
       stat[period]++;
-    } catch (error) {
-      console.warn('处理记录时出错:', error, rec);
+    } catch {
       continue;
     }
   }
@@ -63,11 +59,10 @@ function getTimePeriod(date: Date): TimePeriod {
 }
 
 const periodBarOption = computed(() => {
-  const records = (props.goal?.records as GoalRecord[]) || [];
+  const records = props.goal?.records ?? [];
   const stat = classifyGoalRecordsByPeriod(records);
   const dataArr = timePeriods.map((period) => stat[period]);
 
-  // 找最大最小值的索引
   const max = Math.max(...dataArr);
   const min = Math.min(...dataArr);
   const maxIdx = dataArr.indexOf(max);
@@ -133,15 +128,3 @@ const periodBarOption = computed(() => {
   };
 });
 </script>
-
-<style scoped>
-.chart {
-  width: 100%;
-  height: 220px;
-  min-height: 180px;
-  margin-bottom: 24px;
-
-  border-radius: 16px;
-  overflow: hidden;
-}
-</style>

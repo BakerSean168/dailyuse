@@ -17,17 +17,17 @@
         <div class="flex items-center flex-1">
           <Clock class="h-4 w-4 text-muted-foreground mr-2" />
           <div class="text-sm">
-            {{ record.formattedRecordedAt || formatDate(record.recordedAt) }}
+            {{ formatDate(record.createdAt) }}
           </div>
         </div>
       </div>
 
       <!-- Note -->
-      <div v-if="record.note" class="mt-3 pt-3 border-t">
+      <div v-if="record.comment" class="mt-3 pt-3 border-t">
         <div class="flex items-start gap-2">
           <FileText class="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
           <div class="text-sm text-muted-foreground">
-            {{ record.note }}
+            {{ record.comment }}
           </div>
         </div>
       </div>

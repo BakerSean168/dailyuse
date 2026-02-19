@@ -128,7 +128,7 @@
               label="规则名称 *"
               variant="outlined"
               density="comfortable"
-              :rules="[(v) => !!v || '请输入规则名称']"
+              :rules="[(v: any) => !!v || '请输入规则名称']"
               class="mb-4"
             />
 
@@ -150,7 +150,7 @@
                   density="comfortable"
                   type="number"
                   hint="数值越大优先级越高"
-                  :rules="[(v) => v > 0 || '优先级必须大于 0']"
+                  :rules="[(v: any) => v > 0 || '优先级必须大于 0']"
                 />
               </v-col>
               <v-col cols="6">
@@ -360,10 +360,9 @@ const scopeOptions = [
 ];
 
 const statusOptions = [
-  { title: '草稿', value: GoalStatus.DRAFT },
-  { title: '进行中', value: GoalStatus.ACTIVE },
-  { title: '已完成', value: GoalStatus.COMPLETED },
-  { title: '已归档', value: GoalStatus.ARCHIVED },
+  { title: '进行中', value: GoalStatus.Active },
+  { title: '已完成', value: GoalStatus.Completed },
+  { title: '已归档', value: GoalStatus.Archived },
 ];
 
 // 计算属性

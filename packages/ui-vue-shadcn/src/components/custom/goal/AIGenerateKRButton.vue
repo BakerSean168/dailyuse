@@ -119,21 +119,13 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import {
-  Button,
-  Badge,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  Input,
-  Label,
-  Textarea,
-  Alert,
-  AlertTitle,
-  AlertDescription
-} from '@dailyuse/ui-vue-shadcn';
+import { Button } from '../../ui/button';
+import { Badge } from '../../ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../ui/dialog';
+import { Input } from '../../ui/input';
+import { Label } from '../../ui/label';
+import { Textarea } from '../../ui/textarea';
+import { Alert, AlertTitle, AlertDescription } from '../../ui/alert';
 import { Sparkles, Info, AlertCircle } from 'lucide-vue-next';
 
 interface Props {

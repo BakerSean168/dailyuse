@@ -67,26 +67,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineExpose } from 'vue';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  Button,
-  Input,
-  Label,
-  Textarea,
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-  Avatar,
-  AvatarFallback
-} from '@dailyuse/ui-vue-shadcn';
+import { ref } from 'vue';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../ui/dialog';
+import { Button } from '../../../ui/button';
+import { Input } from '../../../ui/input';
+import { Label } from '../../../ui/label';
+import { Textarea } from '../../../ui/textarea';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../../../ui/select';
+import { Avatar, AvatarFallback } from '../../../ui/avatar';
 import { Calendar } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 

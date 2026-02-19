@@ -6,8 +6,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
+import { EditorState, type Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
-import { createEditorExtensions, createEditorState } from '../../../../../apps/web/src/modules/editor/infrastructure/codemirror/extensions';
 
 interface Props {
   modelValue: string;
@@ -84,8 +84,23 @@ function handleKeyDown(event: KeyboardEvent) {
 function initializeEditor() {
   if (!editorRef.value) return;
 
-  const extensions = createEditorExtensions(handleUpdate, props.darkMode);
-  const state = createEditorState(props.modelValue, extensions);
+  const extensions: Extension[] = [
+    EditorView.updateListener.of((update) => {
+      if (update.docChanged) {
+        handleUpdate(update.state.doc.toString());
+      }
+    }),
+    EditorView.lineWrapping,
+  ];
+
+  if (props.readonly) {
+    extensions.push(EditorView.editable.of(false));
+  }
+
+  const state = EditorState.create({
+    doc: props.modelValue,
+    extensions,
+  });
 
   editorView = new EditorView({
     state,

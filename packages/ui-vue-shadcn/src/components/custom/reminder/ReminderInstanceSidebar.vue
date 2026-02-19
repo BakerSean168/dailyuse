@@ -37,10 +37,10 @@
           <SelectValue placeholder="Select time range" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem :value="1">Today</SelectItem>
-          <SelectItem :value="3">Next 3 Days</SelectItem>
-          <SelectItem :value="7">Next Week</SelectItem>
-          <SelectItem :value="30">Next Month</SelectItem>
+          <SelectItem value="1">Today</SelectItem>
+          <SelectItem value="3">Next 3 Days</SelectItem>
+          <SelectItem value="7">Next Week</SelectItem>
+          <SelectItem value="30">Next Month</SelectItem>
         </SelectContent>
       </Select>
     </div>
@@ -189,7 +189,7 @@ interface Stats {
 }
 
 interface Filters {
-  days: number;
+  days: string;
   priorities?: string[];
 }
 
@@ -210,7 +210,7 @@ const props = withDefaults(defineProps<Props>(), {
   error: null,
   groupedReminders: () => [],
   stats: null,
-  filters: () => ({ days: 1 }),
+  filters: () => ({ days: '1' }),
 });
 
 const emit = defineEmits<{

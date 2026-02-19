@@ -96,8 +96,9 @@ The following conversions were applied:
 ### Removed Dependencies
 
 1. **Store Access**: All direct store calls removed
-   - Replace with props and events
-   - Components now emit events instead of calling store actions
+  - Replace with props and events
+  - Components now emit events instead of calling store actions
+  - `custom/goal` components MUST NOT use Pinia/global state tools directly
 
 2. **Router Access**: Router navigation removed
    - Replace with `@navigate` events
@@ -109,12 +110,22 @@ The following conversions were applied:
 
 ### Type Imports
 
+`custom/goal` 属于 `domain-business` 组件分类，但仍保持 presentational 边界。
+
 All components now import types from `@dailyuse/contracts/goal`:
 - `GoalClientDTO`
 - `KeyResultClientDTO`
 - `FocusModeClientDTO`
 - `ActivateFocusModeRequest`
 - etc.
+
+### Boundary Rules (Mandatory)
+
+- All components in this directory MUST be props-driven and emits-driven
+- Components MUST NOT call APIs directly
+- Components MUST NOT perform routing side effects
+- Components MUST NOT own app-level/global state
+- Container/page layers are responsible for orchestration, store interaction, and side effects
 
 ## Usage Example
 

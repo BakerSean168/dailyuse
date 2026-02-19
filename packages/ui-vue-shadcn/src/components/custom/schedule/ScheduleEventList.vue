@@ -34,7 +34,7 @@
       <div v-else class="space-y-2">
         <div
           v-for="schedule in schedules"
-          :key="schedule.uuid"
+          :key="schedule.id"
           class="flex items-start gap-4 p-4 rounded-lg border hover:bg-accent cursor-pointer transition-colors"
           @click="$emit('schedule-click', schedule)"
         >
@@ -75,7 +75,7 @@
           <Button
             variant="ghost"
             size="sm"
-            @click.stop="$emit('delete', schedule.uuid)"
+            @click.stop="$emit('delete', schedule.id)"
             class="flex-shrink-0"
           >
             <Trash2 class="h-4 w-4 text-destructive" />
@@ -92,17 +92,17 @@ import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '../../ui/alert';
 import { Plus, Calendar, Clock, MapPin, Trash2, Loader2, AlertCircle, CalendarOff } from 'lucide-vue-next';
-import type { ScheduleClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
 
 interface Props {
-  schedules: ScheduleClientDTO[];
+  schedules: ScheduleJobClientDTO[];
   loading?: boolean;
   error?: string | null;
 }
 
 interface Emits {
   (e: 'create'): void;
-  (e: 'schedule-click', schedule: ScheduleClientDTO): void;
+  (e: 'schedule-click', schedule: ScheduleJobClientDTO): void;
   (e: 'delete', uuid: string): void;
 }
 

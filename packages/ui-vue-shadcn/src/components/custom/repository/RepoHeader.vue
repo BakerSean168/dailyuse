@@ -32,7 +32,7 @@
           v-model="searchQuery"
           placeholder="搜索..."
           class="pl-8"
-          @update:model-value="handleSearch"
+          @update:model-value="(val: any) => handleSearch(String(val))"
         />
       </div>
 

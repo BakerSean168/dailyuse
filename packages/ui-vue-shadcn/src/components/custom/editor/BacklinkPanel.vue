@@ -22,7 +22,7 @@
 
     <!-- Empty State -->
     <div v-else-if="backlinks.length === 0" class="flex-1 flex flex-col items-center justify-center p-6 text-center">
-      <LinkOff class="h-16 w-16 text-muted-foreground/50 mb-3" />
+      <Link2Off class="h-16 w-16 text-muted-foreground/50 mb-3" />
       <p class="text-sm font-medium text-muted-foreground">暂无反向引用</p>
       <p class="text-xs text-muted-foreground mt-1">其他文档引用此文档时会显示在这里</p>
     </div>
@@ -88,7 +88,7 @@ import { Avatar, AvatarFallback } from '../../ui/avatar';
 import { ScrollArea } from '../../ui/scroll-area';
 import { Separator } from '../../ui/separator';
 import { Alert, AlertDescription } from '../../ui/alert';
-import { Link2, LinkOff, RotateCw, FileText, Clock, ExternalLink, AlertCircle } from 'lucide-vue-next';
+import { Link2, Link2Off, RotateCw, FileText, Clock, ExternalLink, AlertCircle } from 'lucide-vue-next';
 
 interface BacklinkDTO {
   link: { uuid: string; isBroken: boolean };

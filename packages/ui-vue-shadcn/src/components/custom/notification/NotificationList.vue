@@ -15,7 +15,7 @@
     <div v-else class="divide-y">
       <slot
         v-for="notification in notifications"
-        :key="notification.uuid"
+        :key="notification.id"
         :notification="notification"
       >
         <!-- Default notification item rendering -->

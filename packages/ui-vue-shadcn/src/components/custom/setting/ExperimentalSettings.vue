@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <div>
       <h3 class="text-lg font-medium flex items-center">
-        <Flask class="h-5 w-5 mr-2" />
+        <FlaskConical class="h-5 w-5 mr-2" />
         实验性功能
       </h3>
     </div>
@@ -103,7 +103,7 @@ import { Switch } from '../../ui/switch';
 import { Button } from '../../ui/button';
 import { Alert, AlertTitle, AlertDescription } from '../../ui/alert';
 import { Badge } from '../../ui/badge';
-import { Flask, AlertCircle, Info } from 'lucide-vue-next';
+import { FlaskConical, AlertCircle, Info } from 'lucide-vue-next';
 
 interface ExperimentalFeature {
   key: string;

@@ -174,7 +174,7 @@ const emit = defineEmits<{
 }>();
 
 const visible = ref(false);
-const selectedGroupUuid = ref<string | null>(null);
+const selectedGroupUuid = ref<string | undefined>(undefined);
 const moveToRoot = ref(false);
 const isMoving = ref(false);
 
@@ -220,7 +220,7 @@ const getGroupIcon = (icon?: string) => {
 
 const handleMoveToRootChange = (value: boolean) => {
   if (value) {
-    selectedGroupUuid.value = null;
+    selectedGroupUuid.value = undefined;
   }
 };
 
@@ -244,7 +244,7 @@ const handleVisibleChange = (value: boolean) => {
 };
 
 const resetForm = () => {
-  selectedGroupUuid.value = props.template?.groupUuid || null;
+  selectedGroupUuid.value = props.template?.groupUuid || undefined;
   moveToRoot.value = false;
 };
 
@@ -253,7 +253,7 @@ const handleMove = async () => {
 
   isMoving.value = true;
   try {
-    const targetGroupUuid = moveToRoot.value ? null : selectedGroupUuid.value;
+    const targetGroupUuid = moveToRoot.value ? null : (selectedGroupUuid.value ?? null);
     emit('moved', props.template.uuid, targetGroupUuid);
     close();
   } finally {
@@ -263,7 +263,7 @@ const handleMove = async () => {
 
 watch(() => props.template, (newTemplate) => {
   if (newTemplate) {
-    selectedGroupUuid.value = newTemplate.groupUuid || null;
+    selectedGroupUuid.value = newTemplate.groupUuid || undefined;
   }
 }, { immediate: true });
 

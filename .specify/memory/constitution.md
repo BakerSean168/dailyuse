@@ -1,13 +1,11 @@
-<!-- SYNC IMPACT REPORT (2026-02-18)
-Version: 1.6.0 → 2.0.0 (MAJOR: Re-defined architecture baseline from domain-client/domain-server split to vertical module packages; replaced Principle VII reference model)
+<!-- SYNC IMPACT REPORT (2026-02-19)
+Version: 2.0.0 → 2.1.0 (MINOR: Added mandatory UI component boundary governance for ui-vue-shadcn custom components)
 Modified Principles:
-- I. Monorepo-First DDD Architecture → I. Monorepo-First DDD Architecture (Vertical Slice Module Packages)
 - III. Multi-Platform Support (Web & Desktop Consistency) → III. Multi-Platform Support (Web & Desktop Consistency)
-- IV. Code Consistency & Maintainability → IV. Code Consistency & Maintainability (kebab-case enforcement + symbol naming clarification)
-- VII. Example Modules as Executable Code Standards (Living Documentation) → VII. Governance Module as Executable Code Standard (Living Documentation)
-- Technology Stack Requirements (backend framework and baseline versions updated)
+- X. Presentational Component Boundary (ui-vue-shadcn/custom) (new)
+- Code Quality & Review Standards (review checklist expanded)
 Added Sections:
-- None
+- X. Presentational Component Boundary (ui-vue-shadcn/custom)
 Removed Sections:
 - None
 Templates Requiring Updates:
@@ -16,11 +14,10 @@ Templates Requiring Updates:
 - ✅ .specify/templates/tasks-template.md
 - ⚠ pending: .specify/templates/commands/*.md (directory not found in repository)
 Runtime Guidance Updates:
-- ✅ README.md
-- ✅ docs/standards/domain-server-spec.md
-- ✅ docs/standards/domain-client-spec.md
+- ✅ packages/ui-vue-shadcn/src/components/custom/README.md
+- ✅ packages/ui-vue-shadcn/src/components/custom/goal/README.md
 Follow-up TODOs:
-- TODO(COMMAND_TEMPLATES): Add .specify/templates/commands/ if Speckit command templates are introduced later, then mirror Principle IV/VII naming and governance checks there.
+- TODO(COMMAND_TEMPLATES): Add .specify/templates/commands/ if Speckit command templates are introduced later, then mirror Principle X checks there.
 -->
 
 # DailyUse Constitution
@@ -81,6 +78,8 @@ Code MUST be platform-agnostic where possible; platform-specific concerns are is
   domain services in module packages
 - Shared UI packages (`packages/ui-*`) MUST be framework-specific by adapter and MUST NOT embed domain
   business rules
+- Components in `packages/ui-vue-shadcn/src/components/custom/` MUST follow presentational boundaries:
+  they accept props, emit events, and MUST NOT own state-management concerns
 
 **Rationale:** Separating business logic from presentation enables reuse across web and desktop, reduces
 duplication, and makes the codebase resilient to framework changes.
@@ -266,6 +265,25 @@ repository workflows.
 **Rationale:** This keeps domain intent in aggregates, delivery mechanics in repositories, and orchestration in
 application services.
 
+### X. Presentational Component Boundary (ui-vue-shadcn/custom)
+
+Components in `packages/ui-vue-shadcn/src/components/custom/` MUST remain presentational and container-free,
+regardless of whether they are generic UI or domain-oriented UI assemblies.
+
+**Non-negotiable rules:**
+- Each custom component MUST declare category as either `pure-ui` or `domain-business` in local docs and PR
+  description
+- `pure-ui` components MUST be domain-agnostic and driven only by props/emits; props MUST use primitives or
+  local UI interfaces
+- `domain-business` components MAY import domain DTO/entity types from `@dailyuse/contracts` for typed props,
+  but MUST still remain presentational (props/emits only)
+- Components in `custom/` MUST NOT use Pinia stores, global state containers, or framework store composables
+- Components in `custom/` MUST NOT perform API calls, persistence operations, or routing side effects
+- All interaction outcomes MUST be exposed via emitted events or callback props for parent/container handling
+
+**Rationale:** Keeping `custom/` components stateless and declarative enforces Presentational vs. Container
+separation, improves reusability, and makes components testable without app-level runtime dependencies.
+
 ## Technology Stack Requirements
 
 The following technology versions and tools are standardized across the project:
@@ -309,6 +327,8 @@ All code changes MUST follow these review and quality gates:
 - If domain events are involved, event ownership and dispatch rules are respected
 - If identifiers are involved, `xxId` + `*Id` naming is enforced with no `*Uuid`
 - Governance module checks and docs are updated with the same PR when standards are touched
+- `packages/ui-vue-shadcn/src/components/custom/` changes are presentational only (props/emits), with no
+  Pinia/global store/API-side effects
 
 **Complexity Justification:**
 - Complexity additions MUST explain why simpler alternatives are insufficient
@@ -348,4 +368,4 @@ Constitution versions follow **Semantic Versioning**:
 
 ---
 
-**Version**: 2.0.0 | **Ratified**: 2026-02-02 | **Last Amended**: 2026-02-18
+**Version**: 2.1.0 | **Ratified**: 2026-02-02 | **Last Amended**: 2026-02-19

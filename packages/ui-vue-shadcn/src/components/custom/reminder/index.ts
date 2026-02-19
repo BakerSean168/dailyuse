@@ -14,4 +14,4 @@ export { default as TemplateMoveDialog } from './TemplateMoveDialog.vue';
 
 // Sidebar & Menu Components
 export { default as ReminderInstanceSidebar } from './ReminderInstanceSidebar.vue';
-export { default as ContextMenu } from './ContextMenu.vue';
+export { default as ReminderContextMenu } from './ContextMenu.vue';

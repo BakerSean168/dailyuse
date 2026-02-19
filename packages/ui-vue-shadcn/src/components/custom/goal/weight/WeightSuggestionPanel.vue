@@ -100,7 +100,7 @@
           <v-list density="compact">
             <v-list-item
               v-for="(kr, index) in keyResults"
-              :key="kr.uuid"
+              :key="kr.id"
               :title="`${index + 1}. ${kr.title}`"
               :subtitle="getKeywordHighlight(kr.title)"
             >
@@ -135,15 +135,14 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { KeyResult } from '@dailyuse/goal/domain-client';
-import type { KeyResultClient } from '@dailyuse/contracts/goal';
+import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
 import {
   weightRecommendationService,
   type WeightStrategy,
 } from '../../../application/services/WeightRecommendationService';
 
 const props = defineProps<{
-  keyResults: KeyResultClient[];
+  keyResults: KeyResultClientDTO[];
 }>();
 
 const emit = defineEmits<{

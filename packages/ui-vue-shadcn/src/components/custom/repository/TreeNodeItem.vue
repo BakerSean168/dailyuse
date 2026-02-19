@@ -41,7 +41,7 @@
     <div v-if="node.type === 'folder' && isExpanded && node.children" class="ml-4">
       <TreeNodeItem
         v-for="child in node.children"
-        :key="child.uuid"
+        :key="child.id"
         :node="child"
         :level="level + 1"
         :show-file-info="showFileInfo"
@@ -93,8 +93,8 @@ const emit = defineEmits<{
   'context-menu': [event: { node: TreeNode; mouseEvent: MouseEvent }];
 }>();
 
-const isSelected = computed(() => props.selectedUuid === props.node.uuid);
-const isExpanded = computed(() => props.node.type === 'folder' && props.expandedUuids.includes(props.node.uuid));
+const isSelected = computed(() => props.selectedUuid === props.node.id);
+const isExpanded = computed(() => props.node.type === 'folder' && props.expandedUuids.includes(props.node.id));
 
 function getNodeIcon() {
   if (props.node.type === 'folder') {

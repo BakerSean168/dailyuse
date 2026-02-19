@@ -77,14 +77,14 @@
             <v-card
               :class="{ 'border-primary': selectedTemplate?.id === result.template.id }"
               :elevation="selectedTemplate?.id === result.template.id ? 8 : 2"
-              @click="selectTemplate(result.template)"
+              @click="selectTemplate(result.template as GoalTemplate)"
               style="cursor: pointer; height: 100%"
               hover
             >
               <!-- 卡片头部 -->
               <v-card-title class="text-subtitle-1">
-                <v-icon :color="getCategoryColor(result.template.category)" class="mr-2">
-                  {{ getCategoryIcon(result.template.category) }}
+                <v-icon :color="getCategoryColor(result.template.category as GoalTemplate['category'])" class="mr-2">
+                  {{ getCategoryIcon(result.template.category as GoalTemplate['category']) }}
                 </v-icon>
                 {{ result.template.title }}
               </v-card-title>
@@ -142,7 +142,7 @@
                 <v-btn
                   variant="text"
                   prepend-icon="mdi-eye"
-                  @click.stop="previewTemplate(result.template)"
+                  @click.stop="previewTemplate(result.template as GoalTemplate)"
                 >
                   预览
                 </v-btn>

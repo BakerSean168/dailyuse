@@ -5,10 +5,10 @@
       <CardTitle class="text-lg">链接图谱</CardTitle>
       <div class="flex-1" />
       
-      <ToggleGroup v-model="currentDepth" type="single" class="mr-2">
-        <ToggleGroupItem :value="1" aria-label="1 层" class="h-8 px-3 text-xs">1 层</ToggleGroupItem>
-        <ToggleGroupItem :value="2" aria-label="2 层" class="h-8 px-3 text-xs">2 层</ToggleGroupItem>
-        <ToggleGroupItem :value="3" aria-label="3 层" class="h-8 px-3 text-xs">3 层</ToggleGroupItem>
+      <ToggleGroup v-model="currentDepthStr" type="single" class="mr-2">
+        <ToggleGroupItem value="1" aria-label="1 层" class="h-8 px-3 text-xs">1 层</ToggleGroupItem>
+        <ToggleGroupItem value="2" aria-label="2 层" class="h-8 px-3 text-xs">2 层</ToggleGroupItem>
+        <ToggleGroupItem value="3" aria-label="3 层" class="h-8 px-3 text-xs">3 层</ToggleGroupItem>
       </ToggleGroup>
 
       <Button variant="ghost" size="icon" class="h-8 w-8" @click="refresh" :disabled="loading">
@@ -63,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { Card, CardHeader, CardTitle, CardContent } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
@@ -115,6 +115,10 @@ const emit = defineEmits<{
 const loading = ref(false);
 const error = ref<string | null>(null);
 const currentDepth = ref(props.initialDepth);
+const currentDepthStr = computed({
+  get: () => String(currentDepth.value),
+  set: (val: string) => { currentDepth.value = Number(val); },
+});
 const chartRef = ref<HTMLElement | null>(null);
 let chartInstance: echarts.ECharts | null = null;
 

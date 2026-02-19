@@ -57,10 +57,10 @@
       </div>
 
       <!-- Results -->
-      <div v-else-if="results.length > 0">
+      <div v-else-if="results?.length ?? 0 > 0">
         <div
           v-for="result in results"
-          :key="result.resourceUuid"
+          :key="result.resourceId"
           class="border-b border-border last:border-0 hover:bg-accent cursor-pointer p-3"
           @click="$emit('select', result)"
         >
@@ -98,8 +98,8 @@
     </CardContent>
 
     <!-- Footer stats -->
-    <Separator v-if="results.length > 0" />
-    <CardFooter v-if="results.length > 0" class="text-xs text-muted-foreground px-4 py-2 justify-between">
+    <Separator v-if="(results?.length ?? 0) > 0" />
+    <CardFooter v-if="(results?.length ?? 0) > 0" class="text-xs text-muted-foreground px-4 py-2 justify-between">
       <span>找到 {{ totalResults }} 个文件，共 {{ totalMatches }} 处匹配</span>
       <span>{{ searchTime }}ms</span>
     </CardFooter>

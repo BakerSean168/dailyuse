@@ -128,8 +128,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue';
-import type { TimelineSnapshot } from '@/modules/goal/application/services/GoalTimelineService';
-import { formatTimelineTimestamp } from '@/modules/goal/application/services/GoalTimelineService';
+import type { TimelineSnapshot } from '../../../application/services/GoalTimelineService';
+import { formatTimelineTimestamp } from '../../../application/services/GoalTimelineService';
 
 // ==================== Props ====================
 

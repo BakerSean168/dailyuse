@@ -47,7 +47,7 @@
       <template v-else>
         <FileTreeNode
           v-for="node in nodes"
-          :key="node.uuid"
+          :key="node.id"
           :node="node"
           :level="0"
           :selected-uuid="selectedUuid"
@@ -63,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { FilePlus, FolderPlus, Bot, RefreshCw, FolderOff, Loader2, FolderOpen, Plus } from 'lucide-vue-next';
+import { FilePlus, FolderPlus, Bot, RefreshCw, FolderX, Loader2, FolderOpen, Plus } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { TreeNode } from '@dailyuse/contracts/repository';

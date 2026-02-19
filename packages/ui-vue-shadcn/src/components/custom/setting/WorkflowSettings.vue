@@ -32,7 +32,7 @@
             :max="60"
             :step="5"
             class="flex-1"
-            @update:model-value="(value) => emit('update:modelValue', { ...modelValue, autoSaveInterval: value[0] * 1000 })"
+            @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, autoSaveInterval: (value?.[0] ?? 10) * 1000 })"
           />
           <span class="text-sm w-12 text-right">{{ Math.floor((modelValue.autoSaveInterval || 10000) / 1000) }}s</span>
         </div>

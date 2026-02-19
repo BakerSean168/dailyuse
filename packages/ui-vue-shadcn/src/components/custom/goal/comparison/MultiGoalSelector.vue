@@ -1,268 +1,196 @@
-<!--
-  MultiGoalSelector.vue
-  多目标选择器组件 - 用于选择 2-4 个目标进行对比分析
--->
-
 <template>
-  <v-card>
-    <v-card-title class="d-flex align-center">
-      <v-icon class="mr-2">mdi-compare</v-icon>
-      选择对比目标 ({{ selectedGoals.length }}/{{ maxGoals }})
-    </v-card-title>
+  <Card class="w-full">
+    <CardHeader class="space-y-2">
+      <CardTitle class="flex items-center gap-2 text-base">
+        <GitCompare class="h-4 w-4" />
+        选择对比目标
+        <Badge variant="secondary">{{ selectedGoals.length }}/{{ maxGoals }}</Badge>
+      </CardTitle>
+      <CardDescription>选择 {{ minGoals }}-{{ maxGoals }} 个目标进行对比分析</CardDescription>
+    </CardHeader>
 
-    <v-card-text>
-      <!-- 已选目标列表 -->
-      <div v-if="selectedGoals.length > 0" class="mb-4">
-        <v-chip
+    <CardContent class="space-y-4">
+      <div v-if="selectedGoals.length > 0" class="flex flex-wrap gap-2">
+        <Badge
           v-for="goal in selectedGoals"
-          :key="goal.uuid"
-          class="mr-2 mb-2"
-          closable
-          :color="getGoalColor(goal)"
-          @click:close="removeGoal(goal.uuid)"
+          :key="String(goal.id)"
+          variant="outline"
+          class="flex items-center gap-1 px-2 py-1"
         >
-          <v-icon start>mdi-target</v-icon>
-          {{ goal.title }}
-        </v-chip>
+          <Target class="h-3 w-3" />
+          {{ goal.name }}
+          <button
+            type="button"
+            class="ml-1 rounded-sm hover:bg-muted"
+            @click="removeGoal(goal.id)"
+          >
+            <X class="h-3 w-3" />
+          </button>
+        </Badge>
       </div>
 
-      <!-- 提示信息 -->
-      <v-alert
-        v-if="selectedGoals.length < minGoals"
-        type="info"
-        variant="tonal"
-        density="compact"
-        class="mb-4"
-      >
-        请至少选择 {{ minGoals }} 个目标开始对比
-      </v-alert>
+      <Alert v-if="selectedGoals.length < minGoals">
+        <Info class="h-4 w-4" />
+        <AlertTitle>还不能开始对比</AlertTitle>
+        <AlertDescription>请至少选择 {{ minGoals }} 个目标。</AlertDescription>
+      </Alert>
 
-      <v-alert
-        v-else-if="selectedGoals.length >= maxGoals"
-        type="warning"
-        variant="tonal"
-        density="compact"
-        class="mb-4"
-      >
-        已达到最大对比数量 ({{ maxGoals }} 个)
-      </v-alert>
+      <Alert v-else-if="selectedGoals.length >= maxGoals" variant="destructive">
+        <AlertCircle class="h-4 w-4" />
+        <AlertTitle>已达上限</AlertTitle>
+        <AlertDescription>最多只能选择 {{ maxGoals }} 个目标。</AlertDescription>
+      </Alert>
 
-      <!-- 目标选择列表 -->
-      <v-autocomplete
-        v-model="searchQuery"
-        :items="availableGoals"
-        item-title="title"
-        item-value="uuid"
-        label="搜索并添加目标"
-        prepend-inner-icon="mdi-magnify"
-        clearable
-        hide-details
-        :disabled="selectedGoals.length >= maxGoals"
-        @update:model-value="addGoal"
-      >
-        <template #item="{ props, item }">
-          <v-list-item
-            v-bind="props"
-            :disabled="isGoalSelected(item.raw.uuid)"
-            :prepend-icon="getStatusIcon(item.raw)"
-          >
-            <template #append>
-              <v-chip size="small" :color="getStatusColor(item.raw)">
-                {{ getStatusText(item.raw) }}
-              </v-chip>
-            </template>
-          </v-list-item>
-        </template>
-      </v-autocomplete>
+      <div class="space-y-2">
+        <Input
+          v-model="searchQuery"
+          placeholder="搜索目标名称..."
+          :disabled="selectedGoals.length >= maxGoals"
+        />
 
-      <!-- 快速筛选 -->
-      <div class="mt-4">
-        <v-chip-group v-model="selectedFilter" column>
-          <v-chip
-            filter
-            variant="outlined"
-            prepend-icon="mdi-clock-outline"
-            @click="filterByActive"
+        <div class="max-h-56 space-y-2 overflow-y-auto rounded-md border p-2">
+          <button
+            v-for="goal in availableGoals"
+            :key="String(goal.id)"
+            type="button"
+            class="flex w-full items-center justify-between rounded-md border px-3 py-2 text-left hover:bg-muted/50"
+            :disabled="isGoalSelected(goal.id) || selectedGoals.length >= maxGoals"
+            @click="addGoal(goal.id)"
           >
-            进行中
-          </v-chip>
-          <v-chip
-            filter
-            variant="outlined"
-            prepend-icon="mdi-check-circle"
-            @click="filterByCompleted"
-          >
-            已完成
-          </v-chip>
-          <v-chip filter variant="outlined" prepend-icon="mdi-star" @click="filterByImportant">
-            重要目标
-          </v-chip>
-        </v-chip-group>
+            <div class="min-w-0">
+              <p class="truncate text-sm font-medium">{{ goal.name }}</p>
+              <p class="text-xs text-muted-foreground">{{ getStatusText(goal.status) }}</p>
+            </div>
+            <Badge :class="getStatusBadgeClass(goal.status)">{{ getStatusText(goal.status) }}</Badge>
+          </button>
+
+          <p v-if="availableGoals.length === 0" class="py-4 text-center text-sm text-muted-foreground">
+            没有可选择的目标
+          </p>
+        </div>
       </div>
-    </v-card-text>
 
-    <v-card-actions>
-      <v-spacer />
-      <v-btn variant="text" @click="clearSelection"> 清空选择 </v-btn>
-      <v-btn color="primary" :disabled="!canStartComparison" @click="startComparison">
-        <v-icon start>mdi-eye</v-icon>
+      <div class="flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" @click="toggleFilter('IN_PROGRESS')">进行中</Button>
+        <Button variant="outline" size="sm" @click="toggleFilter('COMPLETED')">已完成</Button>
+        <Button variant="outline" size="sm" @click="toggleFilter('IMPORTANT')">重要目标</Button>
+      </div>
+    </CardContent>
+
+    <CardFooter class="justify-end gap-2">
+      <Button variant="ghost" @click="clearSelection">清空选择</Button>
+      <Button :disabled="!canStartComparison" @click="startComparison">
+        <Eye class="mr-1 h-4 w-4" />
         开始对比
-      </v-btn>
-    </v-card-actions>
-  </v-card>
+      </Button>
+    </CardFooter>
+  </Card>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useGoalStore } from '../../stores/goalStore';
+import { computed, ref } from 'vue';
+import { AlertCircle, Eye, GitCompare, Info, Target, X } from 'lucide-vue-next';
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import { Alert, AlertDescription, AlertTitle } from '../../../ui/alert';
+import { Badge } from '../../../ui/badge';
+import { Button } from '../../../ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../ui/card';
+import { Input } from '../../../ui/input';
 
-// Props
 interface Props {
+  goals?: GoalClientDTO[];
   minGoals?: number;
   maxGoals?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  goals: () => [],
   minGoals: 2,
   maxGoals: 4,
 });
 
-// Emits
 const emit = defineEmits<{
-  compare: [goals: any[]];
-  'update:selection': [goals: any[]];
+  compare: [goals: GoalClientDTO[]];
+  'update:selection': [goals: GoalClientDTO[]];
 }>();
 
-// Store
-const goalStore = useGoalStore();
+const selectedGoals = ref<GoalClientDTO[]>([]);
+const searchQuery = ref('');
+const selectedFilter = ref<'IN_PROGRESS' | 'COMPLETED' | 'IMPORTANT' | null>(null);
 
-// State
-const selectedGoals = ref<any[]>([]);
-const searchQuery = ref<string | null>(null);
-const selectedFilter = ref<number | null>(null);
-
-// Computed
 const availableGoals = computed(() => {
-  return goalStore.getAllGoals.filter((goal: any) => {
-    // 过滤掉已删除的目标
+  const normalizedQuery = searchQuery.value.trim().toLowerCase();
+
+  return (props.goals ?? []).filter((goal) => {
     if (goal.deletedAt) return false;
 
-    // 应用筛选条件
-    if (selectedFilter.value === 0) {
-      // 进行中
-      return goal.status === 'IN_PROGRESS';
-    } else if (selectedFilter.value === 1) {
-      // 已完成
-      return goal.status === 'COMPLETED';
-    } else if (selectedFilter.value === 2) {
-      // 重要目标
-      return goal.importance === 'HIGH' || goal.importance === 'CRITICAL';
+    if (selectedFilter.value === 'IN_PROGRESS' && goal.status !== 'Active') return false;
+    if (selectedFilter.value === 'COMPLETED' && goal.status !== 'Completed') return false;
+    if (
+      selectedFilter.value === 'IMPORTANT' &&
+      goal.importance !== 'Vital' &&
+      goal.importance !== 'Important'
+    ) {
+      return false;
     }
 
-    return true;
+    if (!normalizedQuery) return true;
+    return goal.name.toLowerCase().includes(normalizedQuery);
   });
 });
 
-const canStartComparison = computed(() => {
-  return selectedGoals.value.length >= props.minGoals;
-});
+const canStartComparison = computed(() => selectedGoals.value.length >= props.minGoals);
 
-// Methods
-const addGoal = (goalUuid: string | null) => {
-  if (!goalUuid) return;
+const isGoalSelected = (goalId: GoalClientDTO['id']) => {
+  return selectedGoals.value.some((goal) => goal.id === goalId);
+};
 
-  const goal = goalStore.getGoalByUuid(goalUuid);
-  if (!goal || isGoalSelected(goalUuid)) return;
+const addGoal = (goalId: GoalClientDTO['id']) => {
+  const goal = (props.goals ?? []).find((item) => item.id === goalId);
+  if (!goal || isGoalSelected(goalId) || selectedGoals.value.length >= props.maxGoals) return;
 
-  if (selectedGoals.value.length >= props.maxGoals) {
-    return;
-  }
-
-  selectedGoals.value.push(goal);
-  searchQuery.value = null;
-
+  selectedGoals.value = [...selectedGoals.value, goal];
+  searchQuery.value = '';
   emit('update:selection', selectedGoals.value);
 };
 
-const removeGoal = (goalUuid: string) => {
-  const index = selectedGoals.value.findIndex((g) => g.uuid === goalUuid);
-  if (index !== -1) {
-    selectedGoals.value.splice(index, 1);
-    emit('update:selection', selectedGoals.value);
-  }
-};
-
-const isGoalSelected = (goalUuid: string): boolean => {
-  return selectedGoals.value.some((g) => g.uuid === goalUuid);
+const removeGoal = (goalId: GoalClientDTO['id']) => {
+  selectedGoals.value = selectedGoals.value.filter((goal) => goal.id !== goalId);
+  emit('update:selection', selectedGoals.value);
 };
 
 const clearSelection = () => {
   selectedGoals.value = [];
-  emit('update:selection', selectedGoals.value);
+  emit('update:selection', []);
 };
 
 const startComparison = () => {
-  if (canStartComparison.value) {
-    emit('compare', selectedGoals.value);
-  }
+  if (!canStartComparison.value) return;
+  emit('compare', selectedGoals.value);
 };
 
-const filterByActive = () => {
-  selectedFilter.value = selectedFilter.value === 0 ? null : 0;
+const toggleFilter = (filter: 'IN_PROGRESS' | 'COMPLETED' | 'IMPORTANT') => {
+  selectedFilter.value = selectedFilter.value === filter ? null : filter;
 };
 
-const filterByCompleted = () => {
-  selectedFilter.value = selectedFilter.value === 1 ? null : 1;
-};
-
-const filterByImportant = () => {
-  selectedFilter.value = selectedFilter.value === 2 ? null : 2;
-};
-
-// UI Helpers
-const getGoalColor = (goal: any): string => {
-  return goal.color || 'primary';
-};
-
-const getStatusIcon = (goal: any): string => {
-  const iconMap: Record<string, string> = {
-    NOT_STARTED: 'mdi-circle-outline',
-    IN_PROGRESS: 'mdi-clock-outline',
-    COMPLETED: 'mdi-check-circle',
-    ARCHIVED: 'mdi-archive',
+const getStatusText = (status: GoalClientDTO['status']) => {
+  const map: Record<string, string> = {
+    Active: '进行中',
+    Completed: '已完成',
+    Archived: '已归档',
   };
-  return iconMap[goal.status] || 'mdi-target';
+  return map[status] ?? String(status);
 };
 
-const getStatusColor = (goal: any): string => {
-  const colorMap: Record<string, string> = {
-    NOT_STARTED: 'grey',
-    IN_PROGRESS: 'primary',
-    COMPLETED: 'success',
-    ARCHIVED: 'warning',
-  };
-  return colorMap[goal.status] || 'default';
+const getStatusBadgeClass = (status: GoalClientDTO['status']) => {
+  if (status === 'Completed') return 'bg-green-100 text-green-700 border-green-200';
+  if (status === 'Active') return 'bg-blue-100 text-blue-700 border-blue-200';
+  if (status === 'Archived') return 'bg-amber-100 text-amber-700 border-amber-200';
+  return 'bg-muted text-muted-foreground';
 };
 
-const getStatusText = (goal: any): string => {
-  const textMap: Record<string, string> = {
-    NOT_STARTED: '未开始',
-    IN_PROGRESS: '进行中',
-    COMPLETED: '已完成',
-    ARCHIVED: '已归档',
-  };
-  return textMap[goal.status] || goal.status;
-};
-
-// Expose methods for parent components
 defineExpose({
   selectedGoals,
   clearSelection,
 });
 </script>
-
-<style scoped>
-.v-chip {
-  font-size: 0.875rem;
-}
-</style>

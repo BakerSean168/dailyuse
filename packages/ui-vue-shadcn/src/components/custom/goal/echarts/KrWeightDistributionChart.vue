@@ -1,27 +1,25 @@
 <template>
-  <v-chart class="chart" :option="weightOption" autoresize />
+  <v-chart class="mb-6 h-75 min-h-62.5 w-full overflow-hidden rounded-2xl" :option="weightOption" autoresize />
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import VChart from 'vue-echarts';
-import { Goal } from '@dailyuse/goal/domain-client';
-import { useTheme } from 'vuetify';
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 
 const props = defineProps<{
-  goal: Goal | null;
+  goal: GoalClientDTO | null;
 }>();
 
-const theme = useTheme();
-const surfaceColor = theme.current.value.colors.surface;
-const fontColor = theme.current.value.colors.font;
+const surfaceColor = 'transparent';
+const fontColor = '#64748b';
 
 const keyResults = computed(() => props.goal?.keyResults || []);
 
 // 计算权重分布
 const weightData = computed(() => {
   const totalWeight = keyResults.value.reduce((sum, kr) => sum + (kr.weight || 0), 0);
-  
+
   return keyResults.value.map(kr => {
     const weight = kr.weight || 0;
     const percentage = totalWeight > 0 ? ((weight / totalWeight) * 100).toFixed(1) : '0';
@@ -37,7 +35,7 @@ const weightData = computed(() => {
 const weightOption = computed(() => {
   const data = weightData.value;
   const totalWeight = data.length > 0 ? data[0].totalWeight : 0;
-  
+
   return {
     backgroundColor: surfaceColor,
     title: {
@@ -123,14 +121,3 @@ const weightOption = computed(() => {
   };
 });
 </script>
-
-<style scoped>
-.chart {
-  width: 100%;
-  height: 300px;
-  min-height: 250px;
-  margin-bottom: 24px;
-  border-radius: 16px;
-  overflow: hidden;
-}
-</style>

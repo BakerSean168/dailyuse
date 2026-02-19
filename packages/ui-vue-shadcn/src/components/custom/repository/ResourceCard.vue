@@ -93,18 +93,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Resource } from '@dailyuse/contracts/repository';
+import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 interface Props {
-  resource: Resource;
+  resource: ResourceClientDTO;
 }
 
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  view: [resource: Resource];
-  edit: [resource: Resource];
-  delete: [resource: Resource];
+  view: [resource: ResourceClientDTO];
+  edit: [resource: ResourceClientDTO];
+  delete: [resource: ResourceClientDTO];
 }>();
 
 function getResourceIcon() {

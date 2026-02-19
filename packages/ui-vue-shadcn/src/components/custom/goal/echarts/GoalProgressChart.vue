@@ -1,5 +1,5 @@
 <template>
-  <v-chart class="chart" :option="progressOption" autoresize />
+  <v-chart class="mb-6 h-55 min-h-45 w-full overflow-hidden rounded-2xl" :option="progressOption" autoresize />
 </template>
 
 <script setup lang="ts">
@@ -23,13 +23,24 @@ type EChartsOption = ComposeOption<
 >;
 
 import { computed } from 'vue';
-import type { Goal, KeyResult } from '@dailyuse/goal/domain-client';
-import { useTheme } from 'vuetify';
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { format } from 'date-fns';
-const theme = useTheme();
+
+type GoalWithDerivedMetrics = GoalClientDTO & {
+  timeRangeSummary?: {
+    startDate: number | string | Date | null;
+    targetDate: number | string | Date | null;
+    actualStartDate: number | string | Date | null;
+    actualEndDate: number | string | Date | null;
+    remainingDays?: number | null;
+  } | null;
+  weightedProgress?: number;
+  timeProgressPercentage?: number;
+  timeProgressRatio?: number;
+};
 
 const props = defineProps<{
-  goal: Goal | null;
+  goal: GoalWithDerivedMetrics | null;
 }>();
 
 const danger_threshold = 20;
@@ -38,8 +49,8 @@ const danger_color = '#ff4d4f';
 const warning_color = '#faad14';
 const safe_color = '#52c41a';
 
-const surfaceColor = theme.current.value.colors.surface;
-const fontColor = theme.current.value.colors.font; // 获取主题主色
+const surfaceColor = 'transparent';
+const fontColor = '#64748b';
 
 const DAY_MS = 1000 * 60 * 60 * 24;
 const DEFAULT_DURATION = 30 * DAY_MS;
@@ -52,10 +63,10 @@ const toTimestamp = (value: number | string | Date | null | undefined): number |
   return Number.isNaN(time) ? null : time;
 };
 
-const resolveTimeRange = (goal: Goal | null) => {
+const resolveTimeRange = (goal: GoalWithDerivedMetrics | null) => {
   if (!goal) return { start: null, end: null };
 
-  const legacyGoal = goal as Goal & { startTime?: number | string; endTime?: number | string };
+  const legacyGoal = goal as GoalWithDerivedMetrics & { startTime?: number | string; endTime?: number | string };
   const startCandidates = [goal.startDate, legacyGoal.startTime, goal.createdAt];
   const endCandidates = [goal.targetDate, legacyGoal.endTime, goal.completedAt, goal.updatedAt];
 
@@ -69,11 +80,16 @@ const resolveTimeRange = (goal: Goal | null) => {
   return { start, end };
 };
 
-const computeGoalProgress = (goal: Goal | null): number => {
-  const keyResults = (goal?.keyResults ?? []) as KeyResult[];
+const getProgressPercentage = (target: number, current: number) => {
+  if (!target || target <= 0) return 0;
+  return Math.min(100, Math.max(0, (current / target) * 100));
+};
+
+const computeGoalProgress = (goal: GoalWithDerivedMetrics | null): number => {
+  const keyResults = goal?.keyResults ?? [];
   if (!keyResults.length) return 0;
 
-  const progressValues = keyResults.map((kr) => kr.progressPercentage ?? 0);
+  const progressValues = keyResults.map((kr) => getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue));
   const weights = keyResults.map((kr) => kr.weight ?? 0);
   const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
 
@@ -93,9 +109,11 @@ const fallbackTimeRange = computed(() => resolveTimeRange(props.goal ?? null));
 const timeRange = computed(() => {
   const summary = timeRangeSummary.value;
   if (summary) {
+    const start = toTimestamp(summary.actualStartDate ?? summary.startDate ?? null);
+    const end = toTimestamp(summary.actualEndDate ?? summary.targetDate ?? null);
     return {
-      start: summary.actualStartDate ?? summary.startDate ?? null,
-      end: summary.actualEndDate ?? summary.targetDate ?? null,
+      start,
+      end,
     };
   }
   return fallbackTimeRange.value;
@@ -242,15 +260,3 @@ const progressOption = computed<EChartsOption>(() => {
   };
 });
 </script>
-
-<style scoped>
-.chart {
-  width: 100%;
-  height: 220px;
-  min-height: 180px;
-  margin-bottom: 24px;
-
-  border-radius: 15px;
-  overflow: hidden;
-}
-</style>

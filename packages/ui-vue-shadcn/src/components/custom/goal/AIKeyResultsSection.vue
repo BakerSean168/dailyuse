@@ -61,7 +61,7 @@
           <CheckCircle class="w-5 h-5 text-success" />
           已采纳的关键结果
         </h3>
-        <Badge variant="success" class="ml-2">
+        <Badge class="ml-2 bg-green-100 text-green-700 hover:bg-green-100">
           {{ acceptedResults.length }} 个
         </Badge>
       </div>
@@ -69,12 +69,12 @@
       <div class="space-y-2" data-testid="accepted-results-list">
         <Card
           v-for="(kr, index) in acceptedResults"
-          :key="kr.uuid || index"
+          :key="String(kr.id ?? index)"
           class="p-4"
           data-testid="accepted-kr-item"
         >
           <div class="flex items-start gap-3">
-            <CheckCircle class="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+            <CheckCircle class="w-5 h-5 text-success shrink-0 mt-0.5" />
             
             <div class="flex-1">
               <div class="font-semibold mb-2">{{ kr.title }}</div>
@@ -119,6 +119,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { Target, Lightbulb, CheckCircle, X, Plus } from 'lucide-vue-next';
+import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
 import { Alert, AlertTitle, AlertDescription } from '../../ui/alert';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
@@ -128,7 +129,7 @@ import AIGenerateKRButton from './AIGenerateKRButton.vue';
 import KRPreviewList from './KRPreviewList.vue';
 
 interface KeyResultData {
-  uuid?: string;
+  id?: KeyResultClientDTO['id'];
   title: string;
   description?: string;
   targetValue: number;
@@ -138,14 +139,12 @@ interface KeyResultData {
   selected?: boolean;
 }
 
-interface Props {
+const props = defineProps<{
   goalTitle?: string;
   goalDescription?: string;
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
-}
-
-const props = defineProps<Props>();
+}>();
 
 const emit = defineEmits<{
   resultsUpdated: [results: KeyResultData[]];
@@ -162,8 +161,6 @@ const selectedResults = ref<KeyResultData[]>([]);
 const hasGeneratedResults = computed(() => generatedResults.value.length > 0);
 
 function handleGenerated(result: any) {
-  console.log('✅ AI 生成成功:', result);
-  
   if (result.keyResults && Array.isArray(result.keyResults)) {
     generatedResults.value = result.keyResults;
     props.onSuccess?.(`成功生成 ${result.keyResults.length} 个关键结果！`);
@@ -171,13 +168,10 @@ function handleGenerated(result: any) {
 }
 
 function handleError(error: string) {
-  console.error('❌ AI 生成失败:', error);
   props.onError?.(error);
 }
 
 function handleAccept(results: KeyResultData[]) {
-  console.log('✅ 采纳关键结果:', results);
-  
   acceptedResults.value.push(...results);
   generatedResults.value = [];
   
@@ -186,24 +180,22 @@ function handleAccept(results: KeyResultData[]) {
 }
 
 function handleEdit(index: number, kr: KeyResultData) {
-  console.log('✏️ 编辑关键结果:', index, kr);
+  void index;
+  void kr;
 }
 
 function handleRemove(index: number) {
-  console.log('🗑️ 移除关键结果:', index);
+  void index;
 }
 
 function handleSelectionChange(selected: KeyResultData[]) {
   selectedResults.value = selected;
-  console.log('📋 选择变更:', selected.length);
 }
 
 function handleRemoveAccepted(index: number) {
-  if (confirm('确定要移除这个已采纳的关键结果吗？')) {
-    acceptedResults.value.splice(index, 1);
-    emit('resultsUpdated', acceptedResults.value);
-    props.onSuccess?.('已移除');
-  }
+  acceptedResults.value.splice(index, 1);
+  emit('resultsUpdated', acceptedResults.value);
+  props.onSuccess?.('已移除');
 }
 
 function handleManualAdd() {
@@ -230,10 +222,7 @@ function setAcceptedResults(results: KeyResultData[]) {
 }
 
 watch([() => props.goalTitle, () => props.goalDescription], () => {
-  console.log('📝 目标信息更新:', {
-    title: props.goalTitle,
-    description: props.goalDescription,
-  });
+  return;
 });
 
 defineExpose({

@@ -97,10 +97,7 @@
 
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
-// utils
-import { format } from 'date-fns';
-// domains
-import { GoalRecord } from '@dailyuse/goal/domain-client';
+import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
 // composables
 import { useGoal } from '../../composables/useGoal';
 
@@ -109,7 +106,7 @@ const { createGoalRecord, goals } = useGoal();
 const visible = ref(false);
 const propKeyResultUuid = ref<string>('');
 const propGoalUuid = ref<string>('');
-const propRecord = ref<GoalRecord | null>(null);
+const propRecord = ref<GoalRecordClientDTO | null>(null);
 
 const quickValues = [1, 2, 5, 10];
 
@@ -170,7 +167,7 @@ const handleCancel = () => {
   closeDialog();
 };
 
-const openDialog = (goalUuid: string, keyResultUuid: string, record?: GoalRecord) => {
+const openDialog = (goalUuid: string, keyResultUuid: string, record?: GoalRecordClientDTO) => {
   propGoalUuid.value = goalUuid;
   propKeyResultUuid.value = keyResultUuid;
   propRecord.value = record || null;
@@ -190,7 +187,7 @@ watch(
         // 编辑模式：显示已有记录
         localRecord.value = {
           changeAmount: propRecord.value.value,  // 使用 value 属性
-          note: propRecord.value.note || '',
+          note: propRecord.value.comment || '',
         };
       } else {
         // 创建模式：重置表单

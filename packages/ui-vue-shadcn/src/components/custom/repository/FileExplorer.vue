@@ -16,7 +16,7 @@
 
     <!-- Empty State -->
     <div v-if="!selectedRepository" class="flex flex-col items-center justify-center flex-1 px-4 py-12 text-center">
-      <FolderOff class="w-12 h-12 mb-2 text-muted-foreground/50" />
+      <FolderX class="w-12 h-12 mb-2 text-muted-foreground/50" />
       <p class="text-sm text-muted-foreground">请先选择一个仓储</p>
     </div>
 
@@ -37,7 +37,7 @@
       <div v-if="treeItems.length > 0" class="space-y-0.5">
         <TreeItem
           v-for="item in treeItems"
-          :key="item.uuid"
+          :key="item.id"
           :item="item"
           :opened-folders="openedFolders"
           :selected-uuid="selectedFolderUuid"
@@ -51,7 +51,7 @@
       </div>
 
       <div v-else class="flex flex-col items-center justify-center py-12 text-center">
-        <FolderOff class="w-12 h-12 mb-2 text-muted-foreground/50" />
+        <FolderX class="w-12 h-12 mb-2 text-muted-foreground/50" />
         <p class="text-sm text-muted-foreground mb-3">暂无文件夹</p>
         <Button size="sm" variant="outline" @click="$emit('create-folder')">
           <Plus class="mr-2 h-4 w-4" />
@@ -64,21 +64,21 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { FolderPlus, FilePlus, FolderOff, AlertCircle, Loader2, Plus } from 'lucide-vue-next';
+import { FolderPlus, FilePlus, FolderX, AlertCircle, Loader2, Plus } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import TreeItem from './FileTreeItem.vue';
-import type { FolderClient } from '@dailyuse/contracts/repository';
+import type { FolderClientDTO } from '@dailyuse/contracts/repository';
 
 interface TreeItemData {
-  uuid: string;
+  id: string;
   title: string;
   children: TreeItemData[];
-  raw: FolderClient;
+  raw: FolderClientDTO;
 }
 
 interface Props {
   selectedRepository?: string | null;
-  folders: FolderClient[];
+  folders: FolderClientDTO[];
   isLoading?: boolean;
   error?: string | null;
   selectedFolderUuid?: string | null;
@@ -94,10 +94,10 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   'create-folder': [parentUuid?: string];
   'create-resource': [];
-  'rename-folder': [folder: FolderClient];
-  'delete-folder': [folder: FolderClient];
-  'select-folder': [folder: FolderClient | null];
-  'add-bookmark': [folder: FolderClient];
+  'rename-folder': [folder: FolderClientDTO];
+  'delete-folder': [folder: FolderClientDTO];
+  'select-folder': [folder: FolderClientDTO | null];
+  'add-bookmark': [folder: FolderClientDTO];
   refresh: [];
 }>();
 
@@ -107,13 +107,13 @@ const treeItems = computed(() => {
   return buildTreeItems(props.folders);
 });
 
-function buildTreeItems(folders: FolderClient[]): TreeItemData[] {
+function buildTreeItems(folders: FolderClientDTO[]): TreeItemData[] {
   const folderMap = new Map<string, TreeItemData>();
   const roots: TreeItemData[] = [];
 
   folders.forEach((folder) => {
-    folderMap.set(folder.uuid, {
-      uuid: folder.uuid,
+    folderMap.set(folder.id, {
+      id: folder.id,
       title: folder.name,
       children: [],
       raw: folder,
@@ -121,13 +121,13 @@ function buildTreeItems(folders: FolderClient[]): TreeItemData[] {
   });
 
   folders.forEach((folder) => {
-    const node = folderMap.get(folder.uuid);
+    const node = folderMap.get(folder.id);
     if (!node) return;
 
-    if (!folder.parentUuid) {
+    if (!folder.parentId) {
       roots.push(node);
     } else {
-      const parent = folderMap.get(folder.parentUuid);
+      const parent = folderMap.get(folder.parentId);
       if (parent) {
         parent.children.push(node);
       }
@@ -137,7 +137,7 @@ function buildTreeItems(folders: FolderClient[]): TreeItemData[] {
   return roots;
 }
 
-function handleSelect(folder: FolderClient) {
+function handleSelect(folder: FolderClientDTO) {
   emit('select-folder', folder);
 }
 

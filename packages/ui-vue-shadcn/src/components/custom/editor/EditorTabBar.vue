@@ -4,7 +4,7 @@
       <TabsList class="h-10 w-full justify-start rounded-none bg-transparent p-0">
         <TabsTrigger
           v-for="(tab, index) in tabs"
-          :key="tab.uuid"
+          :key="tab.id"
           :value="String(index)"
           @click="handleTabClick(tab)"
           class="relative h-10 rounded-none border-b-2 border-b-transparent data-[state=active]:border-b-primary px-3"
@@ -60,12 +60,12 @@ const emit = defineEmits<Emits>();
 const activeTabIndex = computed({
   get: () => {
     if (!props.activeTab) return 0;
-    return props.tabs.findIndex((tab) => tab.uuid === props.activeTab);
+    return props.tabs.findIndex((tab) => tab.id === props.activeTab);
   },
   set: (index: number) => {
     const tab = props.tabs[index];
     if (tab) {
-      emit('update:activeTab', tab.uuid);
+      emit('update:activeTab', tab.id);
     }
   },
 });

@@ -20,8 +20,8 @@
           <CommandGroup heading="文档">
             <CommandItem
               v-for="(doc, index) in filteredDocuments"
-              :key="doc.uuid"
-              :value="doc.uuid"
+              :key="doc.id"
+              :value="doc.id"
               :data-selected="selectedIndex === index"
               @mouseenter="selectedIndex = index"
               @select="selectDocument(doc)"

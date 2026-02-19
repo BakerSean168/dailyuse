@@ -26,7 +26,6 @@ const logger = createLogger('AuthenticationRoutes');
 interface AuthUser {
   identityId: string;
   sessionId?: string;
-  sessionId?: string;
   tokenType?: string;
   exp?: number;
 }

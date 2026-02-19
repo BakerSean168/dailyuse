@@ -69,7 +69,7 @@
             <!-- Events for this day -->
             <div
               v-for="event in getEventsForDay(day.date)"
-              :key="event.uuid"
+              :key="event.id"
               class="event-card absolute left-0.5 right-0.5 rounded px-2 py-1 cursor-pointer transition-transform hover:scale-105 z-20"
               :style="getEventStyle(event)"
               :class="{
@@ -94,17 +94,17 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { Card, CardContent, CardHeader } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { ChevronLeft, ChevronRight, Plus, Loader2, AlertCircle } from 'lucide-vue-next';
-import type { ScheduleClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
 
 interface Props {
-  schedules: ScheduleClientDTO[];
+  schedules: ScheduleJobClientDTO[];
   loading?: boolean;
 }
 
 interface Emits {
   (e: 'week-change', startDate: Date, endDate: Date): void;
   (e: 'create'): void;
-  (e: 'event-click', event: ScheduleClientDTO): void;
+  (e: 'event-click', event: ScheduleJobClientDTO): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -165,21 +165,21 @@ function formatHour(hour: number): string {
   return `${hour.toString().padStart(2, '0')}:00`;
 }
 
-function formatEventTime(event: ScheduleClientDTO): string {
+function formatEventTime(event: ScheduleJobClientDTO): string {
   const start = new Date(event.startTime);
   const end = new Date(event.endTime);
   const format = (date: Date) => `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
   return `${format(start)}-${format(end)}`;
 }
 
-function getEventsForDay(dateStr: string): ScheduleClientDTO[] {
+function getEventsForDay(dateStr: string): ScheduleJobClientDTO[] {
   return props.schedules.filter((event) => {
     const eventDate = new Date(event.startTime).toISOString().split('T')[0];
     return eventDate === dateStr;
   });
 }
 
-function getEventStyle(event: ScheduleClientDTO) {
+function getEventStyle(event: ScheduleJobClientDTO) {
   const start = new Date(event.startTime);
   const end = new Date(event.endTime);
 

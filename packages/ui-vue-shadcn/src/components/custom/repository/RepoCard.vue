@@ -82,19 +82,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Repository } from '@dailyuse/contracts/repository';
+import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
 
 interface Props {
-  repository: Repository;
+  repository: RepositoryClientDTO;
 }
 
-defineProps<Props>();
-
 const emit = defineEmits<{
-  'view-details': [repository: Repository];
-  settings: [repository: Repository];
-  edit: [repository: Repository];
-  delete: [repository: Repository];
+  'view-details': [repository: RepositoryClientDTO];
+  settings: [repository: RepositoryClientDTO];
+  edit: [repository: RepositoryClientDTO];
+  delete: [repository: RepositoryClientDTO];
 }>();
 
 function getStatusVariant(): 'default' | 'secondary' | 'destructive' | 'outline' {

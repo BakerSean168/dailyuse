@@ -60,7 +60,7 @@
         <div class="space-y-3">
           <div
             v-for="(kr, index) in breakdown.krContributions"
-            :key="kr.keyResultUuid"
+            :key="kr.keyResultId"
             class="border-b pb-3 last:border-b-0"
           >
             <div class="flex items-start gap-3">
@@ -96,7 +96,7 @@
         <Calculator class="h-4 w-4" />
         <AlertTitle class="text-sm">计算公式</AlertTitle>
         <AlertDescription class="text-xs font-mono break-words">
-          {{ getFormulaText() }}
+          {{ getFormulaText }}
         </AlertDescription>
       </Alert>
     </CardContent>

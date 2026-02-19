@@ -54,9 +54,10 @@
 </template>
 
 <script setup lang="ts">
-import { Button, Badge } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '../../ui/button';
+import { Badge } from '../../ui/badge';
 import { Plus, LayoutGrid, Folder, Archive } from 'lucide-vue-next';
-import { cn } from '@dailyuse/ui-vue-shadcn';
+import { cn } from '../../../lib/utils';
 
 interface Props {
   goalFolders: any[];

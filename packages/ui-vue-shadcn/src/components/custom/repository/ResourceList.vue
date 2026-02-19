@@ -4,9 +4,9 @@
     <div class="flex-1 overflow-y-auto">
       <div
         v-for="resource in resources"
-        :key="resource.uuid"
+        :key="resource.id"
         class="flex items-center gap-3 px-4 py-2 border-b border-border hover:bg-accent cursor-pointer transition-colors"
-        :class="{ 'bg-accent': resource.uuid === selectedUuid }"
+        :class="{ 'bg-accent': resource.id === selectedUuid }"
         @click="$emit('select', resource)"
         @dblclick="$emit('open', resource)"
         @contextmenu.prevent="$emit('contextmenu', $event, resource)"
@@ -45,7 +45,7 @@
             <DropdownMenuSeparator />
             <DropdownMenuItem @select="$emit('bookmark', resource)">
               <Bookmark class="mr-2 h-4 w-4" />
-              {{ hasBookmark(resource.uuid) ? '已添加书签' : '添加到书签' }}
+              {{ hasBookmark(resource.id) ? '已添加书签' : '添加到书签' }}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem class="text-destructive" @select="$emit('delete', resource)">

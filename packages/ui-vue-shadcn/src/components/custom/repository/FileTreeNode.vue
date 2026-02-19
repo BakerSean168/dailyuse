@@ -35,7 +35,7 @@
     <div v-if="node.type === 'folder' && isExpanded && node.children?.length">
       <FileTreeNode
         v-for="child in sortedChildren"
-        :key="child.uuid"
+        :key="child.id"
         :node="child"
         :level="level + 1"
         :selected-uuid="selectedUuid"
@@ -43,7 +43,7 @@
         @select="$emit('select', $event)"
         @toggle="$emit('toggle', $event)"
         @dblclick="$emit('dblclick', $event)"
-        @contextmenu="$emit('contextmenu', $event, $event)"
+        @contextmenu="(e: MouseEvent) => $emit('contextmenu', e, props.node)"
       />
     </div>
   </div>
@@ -79,8 +79,8 @@ const emit = defineEmits<{
   contextmenu: [event: MouseEvent, node: TreeNode];
 }>();
 
-const isSelected = computed(() => props.selectedUuid === props.node.uuid);
-const isExpanded = computed(() => props.expandedUuids.includes(props.node.uuid));
+const isSelected = computed(() => props.selectedUuid === props.node.id);
+const isExpanded = computed(() => props.expandedUuids.includes(props.node.id));
 
 const nodeIcon = computed(() => {
   if (props.node.type === 'folder') {

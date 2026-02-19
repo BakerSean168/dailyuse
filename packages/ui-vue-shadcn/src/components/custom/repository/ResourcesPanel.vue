@@ -154,7 +154,7 @@ import {
   RefreshCw,
   Grid3x3,
   List,
-  FolderOff,
+  FolderX,
   Loader2,
   ImageOff,
   ImageIcon,

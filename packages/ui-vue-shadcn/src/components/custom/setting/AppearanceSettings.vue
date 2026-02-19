@@ -10,7 +10,7 @@
           <Label for="theme-select">主题</Label>
           <Select
             :model-value="modelValue.themeStyle"
-            @update:model-value="(value) => emit('update:modelValue', { ...modelValue, themeStyle: value })"
+            @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, themeStyle: value as string })"
           >
             <SelectTrigger id="theme-select">
               <SelectValue placeholder="选择主题" />
@@ -33,7 +33,7 @@
           <Label for="font-size-select">字体大小</Label>
           <Select
             :model-value="modelValue.fontSize"
-            @update:model-value="(value) => emit('update:modelValue', { ...modelValue, fontSize: value })"
+            @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, fontSize: value as string })"
           >
             <SelectTrigger id="font-size-select">
               <SelectValue placeholder="选择字体大小" />
@@ -57,7 +57,7 @@
             id="accent-color"
             type="color"
             :model-value="modelValue.accentColor"
-            @update:model-value="(value) => emit('update:modelValue', { ...modelValue, accentColor: value })"
+            @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, accentColor: String(value) })"
           />
           <p class="text-sm text-muted-foreground">自定义主题的强调颜色</p>
         </div>
@@ -80,8 +80,8 @@
       <div class="space-y-2">
         <Label for="font-family-select">字体</Label>
         <Select
-          :model-value="modelValue.fontFamily"
-          @update:model-value="(value) => emit('update:modelValue', { ...modelValue, fontFamily: value })"
+          :model-value="modelValue.fontFamily ?? undefined"
+          @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, fontFamily: value as string })"
         >
           <SelectTrigger id="font-family-select">
             <SelectValue placeholder="选择字体" />
@@ -143,7 +143,7 @@ const fontSizeOptions = [
 ];
 
 const fontFamilyOptions = [
-  { label: '系统默认', value: null },
+  { label: '系统默认', value: '' },
   { label: 'Inter', value: 'Inter' },
   { label: 'Arial', value: 'Arial' },
   { label: 'Roboto', value: 'Roboto' },

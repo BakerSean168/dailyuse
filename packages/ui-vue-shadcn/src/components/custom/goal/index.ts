@@ -24,10 +24,6 @@ export { default as MultiGoalSelector } from './comparison/MultiGoalSelector.vue
 export { default as ExportDialog } from './dag/ExportDialog.vue';
 export { default as GoalDAGVisualization } from './dag/GoalDAGVisualization.vue';
 
-// Demos
-export { default as GoalCardDemo } from './demos/GoalCardDemo.vue';
-export { default as GoalReviewCardDemo } from './demos/GoalReviewCardDemo.vue';
-
 // Dialogs
 export { default as GoalDialog } from './dialogs/GoalDialog.vue';
 export { default as GoalFolderDialog } from './dialogs/GoalFolderDialog.vue';

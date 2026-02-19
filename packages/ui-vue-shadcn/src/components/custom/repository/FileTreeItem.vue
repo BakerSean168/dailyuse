@@ -13,7 +13,7 @@
         variant="ghost"
         size="icon"
         class="h-5 w-5 shrink-0"
-        @click.stop="$emit('toggle', item.uuid)"
+        @click.stop="$emit('toggle', item.id)"
       >
         <ChevronRight class="h-4 w-4 transition-transform" :class="{ 'rotate-90': isOpen }" />
       </Button>
@@ -37,7 +37,7 @@
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem @click.stop="$emit('create-subfolder', item.raw.uuid)">
+          <DropdownMenuItem @click.stop="$emit('create-subfolder', item.raw.id)">
             <FolderPlus class="mr-2 h-4 w-4" />
             新建子文件夹
           </DropdownMenuItem>
@@ -62,7 +62,7 @@
     <div v-if="isOpen && item.children.length > 0" class="ml-4">
       <TreeItem
         v-for="child in item.children"
-        :key="child.uuid"
+        :key="child.id"
         :item="child"
         :opened-folders="openedFolders"
         :selected-uuid="selectedUuid"
@@ -97,13 +97,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { FolderClient } from '@dailyuse/contracts/repository';
+import type { FolderClientDTO } from '@dailyuse/contracts/repository';
 
 interface TreeItemData {
-  uuid: string;
+  id: string;
   title: string;
   children: TreeItemData[];
-  raw: FolderClient;
+  raw: FolderClientDTO;
 }
 
 interface Props {
@@ -117,16 +117,16 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  select: [folder: FolderClient];
+  select: [folder: FolderClientDTO];
   toggle: [uuid: string];
   'create-subfolder': [parentUuid: string];
-  rename: [folder: FolderClient];
-  delete: [folder: FolderClient];
-  'add-bookmark': [folder: FolderClient];
+  rename: [folder: FolderClientDTO];
+  delete: [folder: FolderClientDTO];
+  'add-bookmark': [folder: FolderClientDTO];
 }>();
 
-const isOpen = computed(() => props.openedFolders.includes(props.item.uuid));
-const isSelected = computed(() => props.selectedUuid === props.item.uuid);
+const isOpen = computed(() => props.openedFolders.includes(props.item.id));
+const isSelected = computed(() => props.selectedUuid === props.item.id);
 
 function handleClick() {
   emit('select', props.item.raw);

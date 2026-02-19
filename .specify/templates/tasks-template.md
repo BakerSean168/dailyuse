@@ -73,6 +73,7 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T012 Define identifier governance rules (strong typed `xxId`, no `*Uuid`, account/identity use `identityId`)
 - [ ] T013 Define repository file/folder naming checks (strict `kebab-case`, no case-mismatch paths)
 - [ ] T014 Establish/update domain `governance` module checks and documentation for this feature scope
+- [ ] T015 Define/verify `ui-vue-shadcn/custom` presentational boundary checks (`pure-ui`/`domain-business` classification, props/emits-only, no Pinia/global state/API side effects)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -88,24 +89,25 @@ Examples of foundational tasks (adjust based on your project):
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T015 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T016 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
-- [ ] T017 [P] [US1] Repository test for aggregate queued-event auto-dispatch in [path/to/repository].spec.ts
-- [ ] T018 [P] [US1] Type-level/compile-time check for event payload generics sourced from [path/to/contracts/module/protocol/*-event-map.ts]
-- [ ] T019 [P] [US1] Type-level check for entity/DTO identifier fields using strong `xxId` types with no `*Uuid` names
-- [ ] T020 [P] [US1] Governance module check for file/folder `kebab-case` and policy compliance
+- [ ] T016 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T017 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T018 [P] [US1] Repository test for aggregate queued-event auto-dispatch in [path/to/repository].spec.ts
+- [ ] T019 [P] [US1] Type-level/compile-time check for event payload generics sourced from [path/to/contracts/module/protocol/*-event-map.ts]
+- [ ] T020 [P] [US1] Type-level check for entity/DTO identifier fields using strong `xxId` types with no `*Uuid` names
+- [ ] T021 [P] [US1] Governance module check for file/folder `kebab-case` and policy compliance
+- [ ] T022 [P] [US1] UI boundary check for `packages/ui-vue-shadcn/src/components/custom/` (category declared, props/emits-only, no Pinia/global state/API side effects)
 
 ### Implementation for User Story 1
 
-- [ ] T021 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T022 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T023 [US1] Implement aggregate identifiers and DTO fields with strong `xxId` types (`*Id` only, no `*Uuid`)
-- [ ] T024 [US1] Implement aggregate business method(s) that queue domain events internally using payload types from contracts protocol event-map
-- [ ] T025 [US1] Implement repository save flow that auto-dispatches and clears queued aggregate events
-- [ ] T026 [US1] Implement [Service] in src/services/[service].py (depends on T021, T022, no direct publish/dispatch)
-- [ ] T027 [US1] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T028 [US1] Add validation and error handling
-- [ ] T029 [US1] Add logging for user story 1 operations
+- [ ] T023 [P] [US1] Create [Entity1] model in src/models/[entity1].py
+- [ ] T024 [P] [US1] Create [Entity2] model in src/models/[entity2].py
+- [ ] T025 [US1] Implement aggregate identifiers and DTO fields with strong `xxId` types (`*Id` only, no `*Uuid`)
+- [ ] T026 [US1] Implement aggregate business method(s) that queue domain events internally using payload types from contracts protocol event-map
+- [ ] T027 [US1] Implement repository save flow that auto-dispatches and clears queued aggregate events
+- [ ] T028 [US1] Implement [Service] in src/services/[service].py (depends on T023, T024, no direct publish/dispatch)
+- [ ] T029 [US1] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T030 [US1] Add validation and error handling
+- [ ] T031 [US1] Add logging for user story 1 operations
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -119,15 +121,15 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
 
-- [ ] T030 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T031 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T032 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T033 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
 
 ### Implementation for User Story 2
 
-- [ ] T032 [P] [US2] Create [Entity] model in src/models/[entity].py
-- [ ] T033 [US2] Implement [Service] in src/services/[service].py (no direct publish/dispatch)
-- [ ] T034 [US2] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T035 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T034 [P] [US2] Create [Entity] model in src/models/[entity].py
+- [ ] T035 [US2] Implement [Service] in src/services/[service].py (no direct publish/dispatch)
+- [ ] T036 [US2] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T037 [US2] Integrate with User Story 1 components (if needed)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -141,14 +143,14 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
 
-- [ ] T036 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T037 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T038 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T039 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
 
 ### Implementation for User Story 3
 
-- [ ] T038 [P] [US3] Create [Entity] model in src/models/[entity].py
-- [ ] T039 [US3] Implement [Service] in src/services/[service].py (no direct publish/dispatch)
-- [ ] T040 [US3] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T040 [P] [US3] Create [Entity] model in src/models/[entity].py
+- [ ] T041 [US3] Implement [Service] in src/services/[service].py (no direct publish/dispatch)
+- [ ] T042 [US3] Implement [endpoint/feature] in src/[location]/[file].py
 
 **Checkpoint**: All user stories should now be independently functional
 

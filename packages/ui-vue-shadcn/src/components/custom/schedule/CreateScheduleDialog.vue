@@ -85,11 +85,11 @@
                 <SelectValue placeholder="选择优先级" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem :value="1">最低 (1)</SelectItem>
-                <SelectItem :value="2">低 (2)</SelectItem>
-                <SelectItem :value="3">中 (3)</SelectItem>
-                <SelectItem :value="4">高 (4)</SelectItem>
-                <SelectItem :value="5">最高 (5)</SelectItem>
+                <SelectItem value="1">最低 (1)</SelectItem>
+                <SelectItem value="2">低 (2)</SelectItem>
+                <SelectItem value="3">中 (3)</SelectItem>
+                <SelectItem value="4">高 (4)</SelectItem>
+                <SelectItem value="5">最高 (5)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -167,11 +167,11 @@ import { Label } from '../../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
 import { Badge } from '../../ui/badge';
 import { MapPin, X, Loader2 } from 'lucide-vue-next';
-import type { ScheduleClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
 
 interface Props {
   modelValue: boolean;
-  schedule?: ScheduleClientDTO | null;
+  schedule?: ScheduleJobClientDTO | null;
   loading?: boolean;
 }
 
@@ -197,7 +197,7 @@ const formData = reactive({
   startTime: '',
   endDate: '',
   endTime: '',
-  priority: null as number | null,
+  priority: '' as string,
   location: '',
   attendees: [] as string[],
 });
@@ -209,7 +209,7 @@ function resetForm() {
   formData.startTime = '';
   formData.endDate = '';
   formData.endTime = '';
-  formData.priority = null;
+  formData.priority = '';
   formData.location = '';
   formData.attendees = [];
   newAttendee.value = '';
@@ -257,7 +257,7 @@ watch(() => props.schedule, (schedule) => {
     isEditing.value = true;
     formData.title = schedule.title;
     formData.description = schedule.description || '';
-    formData.priority = schedule.priority || null;
+    formData.priority = String(schedule.priority || '');
     formData.location = schedule.location || '';
     formData.attendees = schedule.attendees ? [...schedule.attendees] : [];
 

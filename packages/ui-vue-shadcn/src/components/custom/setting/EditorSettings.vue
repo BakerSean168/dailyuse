@@ -18,7 +18,7 @@
             <ToggleGroup
               type="single"
               :model-value="modelValue.defaultMode"
-              @update:model-value="(value) => emit('update:modelValue', { ...modelValue, defaultMode: value })"
+              @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, defaultMode: value as 'reading' | 'editing' })"
               class="ml-4"
             >
               <ToggleGroupItem value="reading" aria-label="阅读模式">
@@ -134,7 +134,7 @@
                 :max="24"
                 :step="1"
                 class="flex-1"
-                @update:model-value="(value) => emit('update:modelValue', { ...modelValue, fontSize: value[0] })"
+                @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, fontSize: value?.[0] ?? 16 })"
               />
               <span class="text-sm w-12 text-right">{{ modelValue.fontSize }}px</span>
             </div>

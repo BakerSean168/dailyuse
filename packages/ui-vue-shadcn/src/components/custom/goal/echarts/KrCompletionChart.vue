@@ -1,29 +1,35 @@
 <template>
-  <v-chart class="chart" :option="completionOption" autoresize />
+  <v-chart class="mb-6 h-75 min-h-62.5 w-full overflow-hidden rounded-2xl" :option="completionOption" autoresize />
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import VChart from 'vue-echarts';
-import { Goal } from '@dailyuse/goal/domain-client';
-import { useTheme } from 'vuetify';
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 
 const props = defineProps<{
-  goal: Goal | null;
+  goal: GoalClientDTO | null;
 }>();
 
-const theme = useTheme();
-const surfaceColor = theme.current.value.colors.surface;
-const fontColor = theme.current.value.colors.font;
+const surfaceColor = 'transparent';
+const fontColor = '#64748b';
 
 const keyResults = computed(() => props.goal?.keyResults || []);
+
+const getProgressPercentage = (target: number, current: number) => {
+  if (!target || target <= 0) return 0;
+  return Math.min(100, Math.max(0, (current / target) * 100));
+};
 
 // 计算完成情况统计
 const completionStats = computed(() => {
   const total = keyResults.value.length;
-  const completed = keyResults.value.filter(kr => kr.progress.progressPercentage >= 100).length;
-  const inProgress = keyResults.value.filter(kr => kr.progress.progressPercentage > 0 && kr.progress.progressPercentage < 100).length;
-  const notStarted = keyResults.value.filter(kr => kr.progress.progressPercentage === 0).length;
+  const completed = keyResults.value.filter((kr) => getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue) >= 100).length;
+  const inProgress = keyResults.value.filter((kr) => {
+    const percentage = getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue);
+    return percentage > 0 && percentage < 100;
+  }).length;
+  const notStarted = keyResults.value.filter((kr) => getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue) === 0).length;
   
   return {
     completed,
@@ -115,14 +121,3 @@ const completionOption = computed(() => {
   };
 });
 </script>
-
-<style scoped>
-.chart {
-  width: 100%;
-  height: 300px;
-  min-height: 250px;
-  margin-bottom: 24px;
-  border-radius: 16px;
-  overflow: hidden;
-}
-</style>
