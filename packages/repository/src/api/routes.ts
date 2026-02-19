@@ -1,25 +1,29 @@
 /**
  * Repository API Routes
  *
- * Inline validation (no Zod schemas — contracts are plain interfaces).
- * All routes require auth middleware.
+ * Uses expressAdapter to eliminate boilerplate code.
+ *
+ * Routes (Repositories):
+ *   POST   /                   — Create repository
+ *   GET    /                   — List repositories
+ *   GET    /:id                — Get repository by ID
+ *   PUT    /:id                — Update repository
+ *   DELETE /:id                — Delete repository
+ *   POST   /:id/archive        — Archive repository
+ *   POST   /:id/activate       — Activate repository
+ *   POST   /:repoId/resources  — Create resource
+ *   GET    /:repoId/resources  — List resources
+ *
+ * Routes (Resources - standalone):
+ *   GET    /:id                — Get resource by ID
+ *   PUT    /:id                — Update resource
+ *   DELETE /:id                — Delete resource
  */
 
 import { Router } from 'express';
-import type { Request, Response, RequestHandler } from 'express';
-import { createExpressHelper } from '@dailyuse/utils/result';
-
-interface AuthenticatedRequest extends Request {
-  id?: string;
-  traceId?: string;
-  startTime?: number;
-  user?: {
-    identityId: string;
-    sessionId?: string;
-    tokenType?: string;
-    exp?: number;
-  };
-}
+import type { RequestHandler } from 'express';
+import { expressAdapter } from '@dailyuse/utils/result';
+import { RepositoryController } from './controller';
 
 export interface RepositoryRouteHandlers {
   // Repository CRUD
@@ -50,154 +54,55 @@ export function registerRepositoryRoutes(
 ): Router {
   const router = Router();
   const { auth } = middleware;
+  const controller = new RepositoryController(handlers);
 
   // ── Repository CRUD ──────────────────────────────────────────────
 
-  // POST /repositories — Create repository
-  router.post('/', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
+  router.post('/', auth, expressAdapter(
+    (req, ctx) => controller.createRepository(ctx.identityId, req.body),
+    { successStatus: 201 },
+  ));
 
-      const { name, type } = req.body;
-      if (!name || typeof name !== 'string') return helper.validationError('name is required');
-      if (!type || typeof type !== 'string') return helper.validationError('type is required');
+  router.get('/', auth, expressAdapter(
+    (req, ctx) => controller.listRepositories(ctx.identityId, {
+      status: typeof req.query?.status === 'string' ? req.query.status : undefined,
+      type: typeof req.query?.type === 'string' ? req.query.type : undefined,
+    }),
+  ));
 
-      const result = await handlers.createRepository(req.user.identityId, req.body);
-      return helper.created(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Create repository failed';
-      return helper.internalError(message);
-    }
-  });
+  router.get('/:id', auth, expressAdapter(
+    (req) => controller.getRepository(req.params!.id),
+  ));
 
-  // GET /repositories — List repositories
-  router.get('/', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
+  router.put('/:id', auth, expressAdapter(
+    (req) => controller.updateRepository(req.params!.id, req.body),
+  ));
 
-      const status = typeof req.query.status === 'string' ? req.query.status : undefined;
-      const type = typeof req.query.type === 'string' ? req.query.type : undefined;
+  router.delete('/:id', auth, expressAdapter(
+    (req) => controller.deleteRepository(req.params!.id),
+  ));
 
-      const result = await handlers.listRepositories(req.user.identityId, { status, type });
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'List repositories failed';
-      return helper.internalError(message);
-    }
-  });
+  router.post('/:id/archive', auth, expressAdapter(
+    (req) => controller.archiveRepository(req.params!.id),
+  ));
 
-  // GET /repositories/:id — Get repository by ID
-  router.get('/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
+  router.post('/:id/activate', auth, expressAdapter(
+    (req) => controller.activateRepository(req.params!.id),
+  ));
 
-      const result = await handlers.getRepository(req.params.id);
-      if (!result) return helper.notFound('Repository not found');
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Get repository failed';
-      return helper.internalError(message);
-    }
-  });
+  // ── Nested Resource Routes ───────────────────────────────────────
 
-  // PUT /repositories/:id — Update repository
-  router.put('/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
+  router.post('/:repoId/resources', auth, expressAdapter(
+    (req) => controller.createResource(req.params!.repoId, req.body),
+    { successStatus: 201 },
+  ));
 
-      const result = await handlers.updateRepository(req.params.id, req.body);
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Update repository failed';
-      return helper.internalError(message);
-    }
-  });
-
-  // DELETE /repositories/:id — Delete repository
-  router.delete('/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      await handlers.deleteRepository(req.params.id);
-      return helper.success(null);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Delete repository failed';
-      return helper.internalError(message);
-    }
-  });
-
-  // POST /repositories/:id/archive — Archive repository
-  router.post('/:id/archive', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const result = await handlers.archiveRepository(req.params.id);
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Archive repository failed';
-      return helper.internalError(message);
-    }
-  });
-
-  // POST /repositories/:id/activate — Activate repository
-  router.post('/:id/activate', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const result = await handlers.activateRepository(req.params.id);
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Activate repository failed';
-      return helper.internalError(message);
-    }
-  });
-
-  // ── Resource CRUD ────────────────────────────────────────────────
-
-  // POST /repositories/:repoId/resources — Create resource
-  router.post('/:repoId/resources', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const { name, type } = req.body;
-      if (!name || typeof name !== 'string') return helper.validationError('name is required');
-      if (!type || typeof type !== 'string') return helper.validationError('type is required');
-
-      const result = await handlers.createResource({
-        ...req.body,
-        repositoryId: req.params.repoId,
-      });
-      return helper.created(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Create resource failed';
-      return helper.internalError(message);
-    }
-  });
-
-  // GET /repositories/:repoId/resources — List resources
-  router.get('/:repoId/resources', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const folderId = typeof req.query.folderId === 'string' ? req.query.folderId : undefined;
-      const status = typeof req.query.status === 'string' ? req.query.status : undefined;
-
-      const result = await handlers.listResources(req.params.repoId, { folderId, status });
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'List resources failed';
-      return helper.internalError(message);
-    }
-  });
+  router.get('/:repoId/resources', auth, expressAdapter(
+    (req) => controller.listResources(req.params!.repoId, {
+      folderId: typeof req.query?.folderId === 'string' ? req.query.folderId : undefined,
+      status: typeof req.query?.status === 'string' ? req.query.status : undefined,
+    }),
+  ));
 
   return router;
 }
@@ -212,49 +117,19 @@ export function registerResourceRoutes(
 ): Router {
   const router = Router();
   const { auth } = middleware;
+  const controller = new RepositoryController(handlers);
 
-  // GET /resources/:id — Get resource by ID
-  router.get('/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
+  router.get('/:id', auth, expressAdapter(
+    (req) => controller.getResource(req.params!.id),
+  ));
 
-      const result = await handlers.getResource(req.params.id);
-      if (!result) return helper.notFound('Resource not found');
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Get resource failed';
-      return helper.internalError(message);
-    }
-  });
+  router.put('/:id', auth, expressAdapter(
+    (req) => controller.updateResource(req.params!.id, req.body),
+  ));
 
-  // PUT /resources/:id — Update resource
-  router.put('/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      const result = await handlers.updateResource(req.params.id, req.body);
-      return helper.success(result);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Update resource failed';
-      return helper.internalError(message);
-    }
-  });
-
-  // DELETE /resources/:id — Delete resource
-  router.delete('/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    try {
-      if (!req.user?.identityId) return helper.unauthorized();
-
-      await handlers.deleteResource(req.params.id);
-      return helper.success(null);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Delete resource failed';
-      return helper.internalError(message);
-    }
-  });
+  router.delete('/:id', auth, expressAdapter(
+    (req) => controller.deleteResource(req.params!.id),
+  ));
 
   return router;
 }

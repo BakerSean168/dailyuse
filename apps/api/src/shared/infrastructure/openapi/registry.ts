@@ -1699,3 +1699,807 @@ registry.registerPath({
     401: errorResponse('令牌无效或已过期'),
   },
 });
+
+// ============================================================================
+// Editor Module Schemas
+// ============================================================================
+
+const EditorWorkspaceOpenApiSchema = z.object({
+  id: z.string().uuid().describe('工作区 ID'),
+  name: z.string().describe('工作区名称'),
+  projectPath: z.string().describe('项目路径'),
+  projectType: z.string().describe('项目类型'),
+  createdAt: z.number().describe('创建时间'),
+  updatedAt: z.number().describe('更新时间'),
+});
+
+const CreateEditorWorkspaceOpenApiSchema = z.object({
+  name: z.string().min(1).describe('工作区名称'),
+  projectPath: z.string().min(1).describe('项目路径'),
+  projectType: z.string().min(1).describe('项目类型'),
+});
+
+const UpdateEditorWorkspaceOpenApiSchema = z.object({
+  name: z.string().optional().describe('工作区名称'),
+  projectPath: z.string().optional().describe('项目路径'),
+  projectType: z.string().optional().describe('项目类型'),
+});
+
+const EditorDocumentOpenApiSchema = z.object({
+  id: z.string().uuid().describe('文档 ID'),
+  workspaceId: z.string().uuid().describe('所属工作区 ID'),
+  name: z.string().describe('文档名称'),
+  content: z.string().optional().describe('文档内容'),
+  createdAt: z.number().describe('创建时间'),
+  updatedAt: z.number().describe('更新时间'),
+});
+
+const CreateDocumentOpenApiSchema = z.object({
+  workspaceId: z.string().uuid().describe('所属工作区 ID'),
+  name: z.string().min(1).describe('文档名称'),
+  content: z.string().optional().describe('文档内容'),
+  folderId: z.string().uuid().optional().describe('文件夹 ID'),
+});
+
+const UpdateDocumentOpenApiSchema = z.object({
+  name: z.string().optional().describe('文档名称'),
+  content: z.string().optional().describe('文档内容'),
+});
+
+registry.register('EditorWorkspace', EditorWorkspaceOpenApiSchema);
+registry.register('CreateEditorWorkspace', CreateEditorWorkspaceOpenApiSchema);
+registry.register('UpdateEditorWorkspace', UpdateEditorWorkspaceOpenApiSchema);
+registry.register('EditorDocument', EditorDocumentOpenApiSchema);
+registry.register('CreateDocument', CreateDocumentOpenApiSchema);
+registry.register('UpdateDocument', UpdateDocumentOpenApiSchema);
+
+// ============================================================================
+// Editor Workspace API Paths
+// ============================================================================
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/editor/workspaces',
+  summary: '创建工作区',
+  tags: ['Editor Workspaces'],
+  security: [{ bearerAuth: [] }],
+  request: { body: { content: { 'application/json': { schema: CreateEditorWorkspaceOpenApiSchema } } } },
+  responses: {
+    201: successResponse(EditorWorkspaceOpenApiSchema, '创建成功'),
+    400: errorResponse('参数验证失败'),
+    401: errorResponse('未授权'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/editor/workspaces',
+  summary: '查询工作区列表',
+  tags: ['Editor Workspaces'],
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: successResponse(z.array(EditorWorkspaceOpenApiSchema), '查询成功'),
+    401: errorResponse('未授权'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/editor/workspaces/{id}',
+  summary: '获取工作区详情',
+  tags: ['Editor Workspaces'],
+  security: [{ bearerAuth: [] }],
+  request: { params: z.object({ id: z.string().uuid().describe('工作区 ID') }) },
+  responses: {
+    200: successResponse(EditorWorkspaceOpenApiSchema, '获取成功'),
+    404: errorResponse('工作区不存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/editor/workspaces/{id}',
+  summary: '更新工作区',
+  tags: ['Editor Workspaces'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ id: z.string().uuid().describe('工作区 ID') }),
+    body: { content: { 'application/json': { schema: UpdateEditorWorkspaceOpenApiSchema } } },
+  },
+  responses: {
+    200: successResponse(EditorWorkspaceOpenApiSchema, '更新成功'),
+    404: errorResponse('工作区不存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'delete',
+  path: '/api/v1/editor/workspaces/{id}',
+  summary: '删除工作区',
+  tags: ['Editor Workspaces'],
+  security: [{ bearerAuth: [] }],
+  request: { params: z.object({ id: z.string().uuid().describe('工作区 ID') }) },
+  responses: {
+    200: successResponse(z.null(), '删除成功'),
+    404: errorResponse('工作区不存在'),
+  },
+});
+
+// ============================================================================
+// Editor Document API Paths
+// ============================================================================
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/editor/documents',
+  summary: '创建文档',
+  tags: ['Editor Documents'],
+  security: [{ bearerAuth: [] }],
+  request: { body: { content: { 'application/json': { schema: CreateDocumentOpenApiSchema } } } },
+  responses: {
+    201: successResponse(EditorDocumentOpenApiSchema, '创建成功'),
+    400: errorResponse('参数验证失败'),
+    401: errorResponse('未授权'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/editor/documents',
+  summary: '查询文档列表',
+  tags: ['Editor Documents'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    query: z.object({
+      workspaceId: z.string().optional().describe('工作区 ID 过滤'),
+      folderId: z.string().optional().describe('文件夹 ID 过滤'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.array(EditorDocumentOpenApiSchema), '查询成功'),
+    401: errorResponse('未授权'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/editor/documents/{id}',
+  summary: '获取文档详情',
+  tags: ['Editor Documents'],
+  security: [{ bearerAuth: [] }],
+  request: { params: z.object({ id: z.string().uuid().describe('文档 ID') }) },
+  responses: {
+    200: successResponse(EditorDocumentOpenApiSchema, '获取成功'),
+    404: errorResponse('文档不存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/editor/documents/{id}',
+  summary: '更新文档',
+  tags: ['Editor Documents'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ id: z.string().uuid().describe('文档 ID') }),
+    body: { content: { 'application/json': { schema: UpdateDocumentOpenApiSchema } } },
+  },
+  responses: {
+    200: successResponse(EditorDocumentOpenApiSchema, '更新成功'),
+    404: errorResponse('文档不存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'delete',
+  path: '/api/v1/editor/documents/{id}',
+  summary: '删除文档',
+  tags: ['Editor Documents'],
+  security: [{ bearerAuth: [] }],
+  request: { params: z.object({ id: z.string().uuid().describe('文档 ID') }) },
+  responses: {
+    200: successResponse(z.null(), '删除成功'),
+    404: errorResponse('文档不存在'),
+  },
+});
+
+// ============================================================================
+// Setting Module Schemas
+// ============================================================================
+
+const UserSettingOpenApiSchema = z.object({
+  identityId: z.string().describe('用户 ID'),
+  settings: z.object({}).passthrough().describe('用户设置数据'),
+  updatedAt: z.number().describe('更新时间'),
+});
+
+const UpdateUserSettingOpenApiSchema = z.object({
+  settings: z.object({}).passthrough().describe('要更新的设置项'),
+});
+
+const ImportSettingsOpenApiSchema = z.object({
+  data: z.string().describe('JSON 格式的设置数据'),
+  overwrite: z.boolean().optional().describe('是否覆盖现有设置'),
+});
+
+registry.register('UserSetting', UserSettingOpenApiSchema);
+registry.register('UpdateUserSetting', UpdateUserSettingOpenApiSchema);
+registry.register('ImportSettings', ImportSettingsOpenApiSchema);
+
+// ============================================================================
+// Setting API Paths
+// ============================================================================
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/settings',
+  summary: '获取用户设置',
+  tags: ['Settings'],
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: successResponse(UserSettingOpenApiSchema, '获取成功'),
+    401: errorResponse('未授权'),
+  },
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/settings',
+  summary: '更新用户设置',
+  tags: ['Settings'],
+  security: [{ bearerAuth: [] }],
+  request: { body: { content: { 'application/json': { schema: UpdateUserSettingOpenApiSchema } } } },
+  responses: {
+    200: successResponse(UserSettingOpenApiSchema, '更新成功'),
+    400: errorResponse('参数验证失败'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/settings/reset',
+  summary: '重置用户设置',
+  tags: ['Settings'],
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: successResponse(UserSettingOpenApiSchema, '重置成功'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/settings/export',
+  summary: '导出设置',
+  tags: ['Settings'],
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: successResponse(z.object({}).passthrough(), '导出成功'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/settings/import',
+  summary: '导入设置',
+  tags: ['Settings'],
+  security: [{ bearerAuth: [] }],
+  request: { body: { content: { 'application/json': { schema: ImportSettingsOpenApiSchema } } } },
+  responses: {
+    201: successResponse(UserSettingOpenApiSchema, '导入成功'),
+    400: errorResponse('参数验证失败'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/settings/defaults',
+  summary: '获取默认设置',
+  tags: ['Settings'],
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: successResponse(z.object({}).passthrough(), '获取成功'),
+  },
+});
+
+// ============================================================================
+// Governance Module Schemas
+// ============================================================================
+
+const GovernanceRuleOpenApiSchema = z.object({
+  id: z.string().uuid().describe('规则 ID'),
+  code: z.string().describe('规则代码'),
+  name: z.string().describe('规则名称'),
+  description: z.string().optional().describe('规则描述'),
+  severity: z.string().describe('严重级别'),
+  status: z.string().describe('规则状态'),
+  tags: z.array(z.string()).optional().describe('标签'),
+  createdAt: z.number().describe('创建时间'),
+  updatedAt: z.number().describe('更新时间'),
+});
+
+const CreateGovernanceRuleOpenApiSchema = z.object({
+  code: z.string().min(1).describe('规则代码'),
+  name: z.string().min(1).describe('规则名称'),
+  description: z.string().optional().describe('规则描述'),
+  severity: z.string().describe('严重级别'),
+  tags: z.array(z.string()).optional().describe('标签'),
+  content: z.string().describe('规则内容'),
+});
+
+const UpdateGovernanceRuleOpenApiSchema = z.object({
+  name: z.string().optional().describe('规则名称'),
+  description: z.string().optional().describe('规则描述'),
+  severity: z.string().optional().describe('严重级别'),
+  tags: z.array(z.string()).optional().describe('标签'),
+  content: z.string().optional().describe('规则内容'),
+});
+
+const RuleRevisionOpenApiSchema = z.object({
+  id: z.string().uuid().describe('修订 ID'),
+  ruleId: z.string().uuid().describe('规则 ID'),
+  version: z.number().describe('版本号'),
+  content: z.string().describe('修订内容'),
+  createdAt: z.number().describe('创建时间'),
+});
+
+registry.register('GovernanceRule', GovernanceRuleOpenApiSchema);
+registry.register('CreateGovernanceRule', CreateGovernanceRuleOpenApiSchema);
+registry.register('UpdateGovernanceRule', UpdateGovernanceRuleOpenApiSchema);
+registry.register('RuleRevision', RuleRevisionOpenApiSchema);
+
+// ============================================================================
+// Governance API Paths
+// ============================================================================
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/governance/rules',
+  summary: '创建治理规则',
+  tags: ['Governance Rules'],
+  security: [{ bearerAuth: [] }],
+  request: { body: { content: { 'application/json': { schema: CreateGovernanceRuleOpenApiSchema } } } },
+  responses: {
+    201: successResponse(GovernanceRuleOpenApiSchema, '创建成功'),
+    400: errorResponse('参数验证失败'),
+    401: errorResponse('未授权'),
+    403: errorResponse('权限不足'),
+  },
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/governance/rules/{id}',
+  summary: '更新治理规则',
+  tags: ['Governance Rules'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ id: z.string().uuid().describe('规则 ID') }),
+    body: { content: { 'application/json': { schema: UpdateGovernanceRuleOpenApiSchema } } },
+  },
+  responses: {
+    200: successResponse(GovernanceRuleOpenApiSchema, '更新成功'),
+    400: errorResponse('参数验证失败'),
+    403: errorResponse('权限不足'),
+    404: errorResponse('规则不存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'delete',
+  path: '/api/v1/governance/rules/{id}',
+  summary: '删除治理规则',
+  tags: ['Governance Rules'],
+  security: [{ bearerAuth: [] }],
+  request: { params: z.object({ id: z.string().uuid().describe('规则 ID') }) },
+  responses: {
+    200: successResponse(z.null(), '删除成功'),
+    403: errorResponse('权限不足'),
+    404: errorResponse('规则不存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/governance/rules/by-code/{code}',
+  summary: '按代码获取规则',
+  tags: ['Governance Rules'],
+  security: [{ bearerAuth: [] }],
+  request: { params: z.object({ code: z.string().describe('规则代码') }) },
+  responses: {
+    200: successResponse(GovernanceRuleOpenApiSchema, '获取成功'),
+    404: errorResponse('规则不存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/governance/rules/{id}',
+  summary: '按 ID 获取规则',
+  tags: ['Governance Rules'],
+  security: [{ bearerAuth: [] }],
+  request: { params: z.object({ id: z.string().uuid().describe('规则 ID') }) },
+  responses: {
+    200: successResponse(GovernanceRuleOpenApiSchema, '获取成功'),
+    404: errorResponse('规则不存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/governance/rules',
+  summary: '查询治理规则列表',
+  tags: ['Governance Rules'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    query: z.object({
+      status: z.string().optional().describe('状态过滤'),
+      severity: z.string().optional().describe('严重级别过滤'),
+      tags: z.string().optional().describe('标签过滤 (逗号分隔)'),
+      page: z.string().optional().describe('页码'),
+      pageSize: z.string().optional().describe('每页数量'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.array(GovernanceRuleOpenApiSchema), '查询成功'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/governance/rules/{id}/revisions',
+  summary: '获取规则修订历史',
+  tags: ['Governance Rules'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ id: z.string().uuid().describe('规则 ID') }),
+    query: z.object({
+      page: z.string().optional().describe('页码'),
+      pageSize: z.string().optional().describe('每页数量'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.array(RuleRevisionOpenApiSchema), '查询成功'),
+  },
+});
+
+// ============================================================================
+// Account Module Schemas
+// ============================================================================
+
+const AccountProfileOpenApiSchema = z.object({
+  id: z.string().uuid().describe('账户 ID'),
+  email: z.string().email().describe('邮箱'),
+  displayName: z.string().optional().describe('显示名称'),
+  avatar: z.string().optional().describe('头像 URL'),
+  createdAt: z.number().describe('创建时间'),
+  updatedAt: z.number().describe('更新时间'),
+});
+
+const UpdateAccountOpenApiSchema = z.object({
+  displayName: z.string().optional().describe('显示名称'),
+  avatar: z.string().optional().describe('头像 URL'),
+});
+
+const CheckAvailabilityOpenApiSchema = z.object({
+  field: z.string().describe('要检查的字段名'),
+  value: z.string().describe('要检查的值'),
+});
+
+const CloseAccountOpenApiSchema = z.object({
+  reason: z.string().optional().describe('注销原因'),
+  confirmation: z.string().describe('确认字符串'),
+});
+
+registry.register('AccountProfile', AccountProfileOpenApiSchema);
+registry.register('UpdateAccount', UpdateAccountOpenApiSchema);
+registry.register('CheckAvailability', CheckAvailabilityOpenApiSchema);
+registry.register('CloseAccount', CloseAccountOpenApiSchema);
+
+// ============================================================================
+// Account API Paths
+// ============================================================================
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/account/me',
+  summary: '获取当前用户资料',
+  tags: ['Account'],
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: successResponse(AccountProfileOpenApiSchema, '获取成功'),
+    401: errorResponse('未授权'),
+  },
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/account/me',
+  summary: '更新当前用户资料',
+  tags: ['Account'],
+  security: [{ bearerAuth: [] }],
+  request: { body: { content: { 'application/json': { schema: UpdateAccountOpenApiSchema } } } },
+  responses: {
+    200: successResponse(AccountProfileOpenApiSchema, '更新成功'),
+    400: errorResponse('参数验证失败'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/account/availability',
+  summary: '检查可用性',
+  tags: ['Account'],
+  security: [{ bearerAuth: [] }],
+  request: { body: { content: { 'application/json': { schema: CheckAvailabilityOpenApiSchema } } } },
+  responses: {
+    200: successResponse(z.object({ available: z.boolean() }), '检查完成'),
+    400: errorResponse('参数验证失败'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/account/me/close',
+  summary: '注销账户',
+  tags: ['Account'],
+  security: [{ bearerAuth: [] }],
+  request: { body: { content: { 'application/json': { schema: CloseAccountOpenApiSchema } } } },
+  responses: {
+    200: successResponse(z.null(), '账户已注销'),
+    400: errorResponse('参数验证失败'),
+  },
+});
+
+registry.registerPath({
+  method: 'delete',
+  path: '/api/v1/account/me',
+  summary: '注销账户（别名）',
+  tags: ['Account'],
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: successResponse(z.null(), '账户已注销'),
+  },
+});
+
+// ============================================================================
+// Repository Module Schemas
+// ============================================================================
+
+const RepositoryOpenApiSchema = z.object({
+  id: z.string().uuid().describe('仓库 ID'),
+  name: z.string().describe('仓库名称'),
+  type: z.string().describe('仓库类型'),
+  description: z.string().optional().describe('仓库描述'),
+  status: z.string().describe('仓库状态'),
+  createdAt: z.number().describe('创建时间'),
+  updatedAt: z.number().describe('更新时间'),
+});
+
+const CreateRepositoryOpenApiSchema = z.object({
+  name: z.string().min(1).describe('仓库名称'),
+  type: z.string().min(1).describe('仓库类型'),
+  path: z.string().optional().describe('仓库路径'),
+  description: z.string().optional().describe('仓库描述'),
+  config: z.object({}).passthrough().optional().describe('仓库配置'),
+});
+
+const UpdateRepositoryOpenApiSchema = z.object({
+  name: z.string().optional().describe('仓库名称'),
+  description: z.string().optional().describe('仓库描述'),
+  config: z.object({}).passthrough().optional().describe('仓库配置'),
+});
+
+const ResourceOpenApiSchema = z.object({
+  id: z.string().uuid().describe('资源 ID'),
+  repositoryId: z.string().uuid().describe('所属仓库 ID'),
+  name: z.string().describe('资源名称'),
+  type: z.string().describe('资源类型'),
+  mimeType: z.string().optional().describe('MIME 类型'),
+  createdAt: z.number().describe('创建时间'),
+  updatedAt: z.number().describe('更新时间'),
+});
+
+const CreateResourceOpenApiSchema = z.object({
+  name: z.string().min(1).describe('资源名称'),
+  type: z.string().min(1).describe('资源类型'),
+  mimeType: z.string().optional().describe('MIME 类型'),
+  content: z.string().optional().describe('资源内容'),
+  folderId: z.string().uuid().optional().describe('文件夹 ID'),
+});
+
+const UpdateResourceOpenApiSchema = z.object({
+  name: z.string().optional().describe('资源名称'),
+  content: z.string().optional().describe('资源内容'),
+  metadata: z.object({}).passthrough().optional().describe('元数据'),
+});
+
+registry.register('Repository', RepositoryOpenApiSchema);
+registry.register('CreateRepository', CreateRepositoryOpenApiSchema);
+registry.register('UpdateRepository', UpdateRepositoryOpenApiSchema);
+registry.register('Resource', ResourceOpenApiSchema);
+registry.register('CreateResource', CreateResourceOpenApiSchema);
+registry.register('UpdateResource', UpdateResourceOpenApiSchema);
+
+// ============================================================================
+// Repository API Paths
+// ============================================================================
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/repositories',
+  summary: '创建仓库',
+  tags: ['Repositories'],
+  security: [{ bearerAuth: [] }],
+  request: { body: { content: { 'application/json': { schema: CreateRepositoryOpenApiSchema } } } },
+  responses: {
+    201: successResponse(RepositoryOpenApiSchema, '创建成功'),
+    400: errorResponse('参数验证失败'),
+    401: errorResponse('未授权'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/repositories',
+  summary: '查询仓库列表',
+  tags: ['Repositories'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    query: z.object({
+      status: z.string().optional().describe('状态过滤'),
+      type: z.string().optional().describe('类型过滤'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.array(RepositoryOpenApiSchema), '查询成功'),
+    401: errorResponse('未授权'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/repositories/{id}',
+  summary: '获取仓库详情',
+  tags: ['Repositories'],
+  security: [{ bearerAuth: [] }],
+  request: { params: z.object({ id: z.string().uuid().describe('仓库 ID') }) },
+  responses: {
+    200: successResponse(RepositoryOpenApiSchema, '获取成功'),
+    404: errorResponse('仓库不存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/repositories/{id}',
+  summary: '更新仓库',
+  tags: ['Repositories'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ id: z.string().uuid().describe('仓库 ID') }),
+    body: { content: { 'application/json': { schema: UpdateRepositoryOpenApiSchema } } },
+  },
+  responses: {
+    200: successResponse(RepositoryOpenApiSchema, '更新成功'),
+    404: errorResponse('仓库不存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'delete',
+  path: '/api/v1/repositories/{id}',
+  summary: '删除仓库',
+  tags: ['Repositories'],
+  security: [{ bearerAuth: [] }],
+  request: { params: z.object({ id: z.string().uuid().describe('仓库 ID') }) },
+  responses: {
+    200: successResponse(z.null(), '删除成功'),
+    404: errorResponse('仓库不存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/repositories/{id}/archive',
+  summary: '归档仓库',
+  tags: ['Repositories'],
+  security: [{ bearerAuth: [] }],
+  request: { params: z.object({ id: z.string().uuid().describe('仓库 ID') }) },
+  responses: {
+    200: successResponse(RepositoryOpenApiSchema, '归档成功'),
+    404: errorResponse('仓库不存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/repositories/{id}/activate',
+  summary: '激活仓库',
+  tags: ['Repositories'],
+  security: [{ bearerAuth: [] }],
+  request: { params: z.object({ id: z.string().uuid().describe('仓库 ID') }) },
+  responses: {
+    200: successResponse(RepositoryOpenApiSchema, '激活成功'),
+    404: errorResponse('仓库不存在'),
+  },
+});
+
+// ============================================================================
+// Repository Resource API Paths
+// ============================================================================
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/repositories/{repoId}/resources',
+  summary: '创建资源',
+  tags: ['Resources'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ repoId: z.string().uuid().describe('仓库 ID') }),
+    body: { content: { 'application/json': { schema: CreateResourceOpenApiSchema } } },
+  },
+  responses: {
+    201: successResponse(ResourceOpenApiSchema, '创建成功'),
+    400: errorResponse('参数验证失败'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/repositories/{repoId}/resources',
+  summary: '查询仓库资源列表',
+  tags: ['Resources'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ repoId: z.string().uuid().describe('仓库 ID') }),
+    query: z.object({
+      folderId: z.string().optional().describe('文件夹 ID 过滤'),
+      status: z.string().optional().describe('状态过滤'),
+    }),
+  },
+  responses: {
+    200: successResponse(z.array(ResourceOpenApiSchema), '查询成功'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/resources/{id}',
+  summary: '获取资源详情',
+  tags: ['Resources'],
+  security: [{ bearerAuth: [] }],
+  request: { params: z.object({ id: z.string().uuid().describe('资源 ID') }) },
+  responses: {
+    200: successResponse(ResourceOpenApiSchema, '获取成功'),
+    404: errorResponse('资源不存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/resources/{id}',
+  summary: '更新资源',
+  tags: ['Resources'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({ id: z.string().uuid().describe('资源 ID') }),
+    body: { content: { 'application/json': { schema: UpdateResourceOpenApiSchema } } },
+  },
+  responses: {
+    200: successResponse(ResourceOpenApiSchema, '更新成功'),
+    404: errorResponse('资源不存在'),
+  },
+});
+
+registry.registerPath({
+  method: 'delete',
+  path: '/api/v1/resources/{id}',
+  summary: '删除资源',
+  tags: ['Resources'],
+  security: [{ bearerAuth: [] }],
+  request: { params: z.object({ id: z.string().uuid().describe('资源 ID') }) },
+  responses: {
+    200: successResponse(z.null(), '删除成功'),
+    404: errorResponse('资源不存在'),
+  },
+});

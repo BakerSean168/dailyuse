@@ -1,35 +1,40 @@
 /**
  * Governance CRUD Routes
  *
- * 路由定义与请求处理。
- * 中间件通过参数注入（来自 ApiBootstrapper 上下文），
- * 不直接依赖 apps/api 内部实现。
+ * Uses expressAdapter to eliminate boilerplate code.
+ * Governance handlers return Result<T> directly.
+ *
+ * Routes:
+ *   POST   /              — 创建规则 (CreateRuleSchema)
+ *   PUT    /:id           — 更新规则 (UpdateRuleSchema)
+ *   PATCH  /:id           — 更新规则 (UpdateRuleSchema)
+ *   DELETE /:id           — 删除规则 (DeleteRuleSchema)
+ *   GET    /by-code/:code — 按代码获取规则
+ *   GET    /:id           — 按 ID 获取规则
+ *   GET    /              — 列表查询规则
+ *   GET    /:id/revisions — 获取修订历史
  */
 
 import { Router } from 'express';
-import type { Request, Response, RequestHandler } from 'express';
-import {
-  type CreateRuleReq,
-  type CreateRuleRes,
-  type DeleteRuleReq,
-  type DeleteRuleRes,
-  type GetRuleReq,
-  type GetRuleRes,
-  type GetRuleRevisionsQuery,
-  type GetRuleRevisionsRes,
-  type ListRulesQuery,
-  type ListRulesRes,
-  type UpdateRuleReq,
-  type UpdateRuleRes,
-  GetRuleSchema,
-  DeleteRuleSchema,
-  ListRulesQuerySchema,
-  GetRuleRevisionsQuerySchema,
-  CreateRuleSchema,
-  UpdateRuleSchema,
-} from '../contracts';
-import { createExpressHelper, isOk, type Result } from '@dailyuse/utils/result';
+import type { RequestHandler } from 'express';
+import { expressAdapter } from '@dailyuse/utils/result';
+import { GovernanceController } from './controller';
+import type { Result } from '@dailyuse/utils/result';
 import type { ExecutionContext } from '../application-server';
+import type {
+  CreateRuleReq,
+  CreateRuleRes,
+  DeleteRuleReq,
+  DeleteRuleRes,
+  GetRuleReq,
+  GetRuleRes,
+  GetRuleRevisionsQuery,
+  GetRuleRevisionsRes,
+  ListRulesQuery,
+  ListRulesRes,
+  UpdateRuleReq,
+  UpdateRuleRes,
+} from '../contracts';
 
 // ============ Types ============
 
@@ -45,18 +50,6 @@ export interface GovernanceCrudHandlers {
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole(roles: string[]): RequestHandler;
-}
-
-interface AuthenticatedRequest extends Request {
-  id?: string;
-  traceId?: string;
-  startTime?: number;
-  user?: {
-    identityId: string;
-    sessionId?: string;
-    tokenType?: string;
-    exp?: number;
-  };
 }
 
 // ============ Helpers ============
@@ -93,13 +86,6 @@ function parseStringArray(value: unknown): string[] | undefined {
   return undefined;
 }
 
-function getExecutionContext(req: AuthenticatedRequest): ExecutionContext | null {
-  if (!req.user?.identityId) {
-    return null;
-  }
-  return { identityId: req.user.identityId } as ExecutionContext;
-}
-
 // ============ Route Registration ============
 
 export function registerGovernanceCrudRoutes(
@@ -108,169 +94,54 @@ export function registerGovernanceCrudRoutes(
 ): Router {
   const router = Router();
   const { auth, requireRole } = middleware;
+  const controller = new GovernanceController(handlers);
 
   // POST / — 创建规则
-  router.post(
-    '/',
-    auth,
-    requireRole(['TechLead', 'Architect']),
-    async (req: AuthenticatedRequest, res: Response) => {
-      const helper = createExpressHelper(res, req);
-      const parsed = CreateRuleSchema.safeParse(req.body);
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
-      }
-
-      const cx = getExecutionContext(req);
-      if (!cx) {
-        return helper.unauthorized();
-      }
-
-      const result = await handlers.createRule(parsed.data, cx);
-      if (isOk(result)) {
-        return helper.created(result.data, '规则创建成功');
-      }
-      return helper.send(result);
-    },
-  );
+  router.post('/', auth, requireRole(['TechLead', 'Architect']), expressAdapter(
+    (req, ctx) => controller.createRule(req.body, { identityId: ctx.identityId }),
+    { successStatus: 201 },
+  ));
 
   // PUT/PATCH /:id — 更新规则
-  const updateHandler = async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    const parsed = UpdateRuleSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const details = parsed.error.issues.map((issue) => ({
-        field: issue.path.join('.'),
-        message: issue.message,
-      }));
-      return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
-    }
-
-    const cx = getExecutionContext(req);
-    if (!cx) {
-      return helper.unauthorized();
-    }
-
-    const result = await handlers.updateRule(req.params.id, parsed.data, cx);
-    return helper.send(result);
-  };
-
+  const updateHandler = expressAdapter(
+    (req, ctx) => controller.updateRule(req.params!.id, req.body, { identityId: ctx.identityId }),
+  );
   router.put('/:id', auth, requireRole(['TechLead', 'Architect']), updateHandler);
   router.patch('/:id', auth, requireRole(['TechLead', 'Architect']), updateHandler);
 
   // DELETE /:id — 删除规则
-  router.delete(
-    '/:id',
-    auth,
-    requireRole(['TechLead', 'Architect']),
-    async (req: AuthenticatedRequest, res: Response) => {
-      const helper = createExpressHelper(res, req);
-      const parsed = DeleteRuleSchema.safeParse({ id: req.params.id });
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
-      }
-
-      const cx = getExecutionContext(req);
-      if (!cx) {
-        return helper.unauthorized();
-      }
-
-      const result = await handlers.deleteRule(parsed.data, cx);
-      return helper.send(result);
-    },
-  );
+  router.delete('/:id', auth, requireRole(['TechLead', 'Architect']), expressAdapter(
+    (req, ctx) => controller.deleteRule(req.params!.id, { identityId: ctx.identityId }),
+  ));
 
   // GET /by-code/:code — 按代码获取规则
-  router.get(
-    '/by-code/:code',
-    auth,
-    async (req: AuthenticatedRequest, res: Response) => {
-      const helper = createExpressHelper(res, req);
-      const parsed = GetRuleSchema.safeParse({ code: req.params.code });
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
-      }
+  router.get('/by-code/:code', auth, expressAdapter(
+    (req) => controller.getRuleByCode(req.params!.code),
+  ));
 
-      const result = await handlers.getRule(parsed.data);
-      return helper.send(result);
-    },
-  );
+  // GET /:id/revisions — 获取修订历史 (must be before /:id)
+  router.get('/:id/revisions', auth, expressAdapter(
+    (req) => controller.getRevisions(req.params!.id, {
+      page: parseNumber(req.query?.page),
+      pageSize: parseNumber(req.query?.pageSize),
+    }),
+  ));
 
   // GET /:id — 按 ID 获取规则
-  router.get('/:id', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    const parsed = GetRuleSchema.safeParse({ id: req.params.id });
-    if (!parsed.success) {
-      const details = parsed.error.issues.map((issue) => ({
-        field: issue.path.join('.'),
-        message: issue.message,
-      }));
-      return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
-    }
-
-    const result = await handlers.getRule(parsed.data);
-    return helper.send(result);
-  });
+  router.get('/:id', auth, expressAdapter(
+    (req) => controller.getRuleById(req.params!.id),
+  ));
 
   // GET / — 列表查询规则
-  router.get('/', auth, async (req: AuthenticatedRequest, res: Response) => {
-    const helper = createExpressHelper(res, req);
-    const parsed = ListRulesQuerySchema.safeParse({
-      status: parseString(req.query.status),
-      severity: parseString(req.query.severity),
-      tags: parseStringArray(req.query.tags),
-      page: parseNumber(req.query.page),
-      pageSize: parseNumber(req.query.pageSize),
-    });
-
-    if (!parsed.success) {
-      const details = parsed.error.issues.map((issue) => ({
-        field: issue.path.join('.'),
-        message: issue.message,
-      }));
-      return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
-    }
-
-    const result = await handlers.listRules(parsed.data);
-    return helper.send(result);
-  });
-
-  // GET /:id/revisions — 获取修订历史
-  router.get(
-    '/:id/revisions',
-    auth,
-    async (req: AuthenticatedRequest, res: Response) => {
-      const helper = createExpressHelper(res, req);
-      const parsed = GetRuleRevisionsQuerySchema.safeParse({
-        ruleId: req.params.id,
-        page: parseNumber(req.query.page),
-        pageSize: parseNumber(req.query.pageSize),
-      });
-
-      if (!parsed.success) {
-        const details = parsed.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }));
-        return helper.validationError(`参数验证失败: ${details.map(d => d.message).join(', ')}`);
-      }
-
-      const result = await handlers.getRevisions(parsed.data);
-      return helper.send(result);
-    },
-  );
+  router.get('/', auth, expressAdapter(
+    (req) => controller.listRules({
+      status: parseString(req.query?.status),
+      severity: parseString(req.query?.severity),
+      tags: parseStringArray(req.query?.tags),
+      page: parseNumber(req.query?.page),
+      pageSize: parseNumber(req.query?.pageSize),
+    }),
+  ));
 
   return router;
 }
