@@ -75,7 +75,7 @@
 
       <DraggableTaskCard
         v-for="template in filteredTemplates"
-        :key="template.uuid"
+        :key="template.id"
         :template="template"
         :enable-drag="true"
         :on-create-dependency="handleCreateDependency"
@@ -156,7 +156,7 @@ interface Props {
   templates: TaskTemplateViewModel[];
   dependencies: TaskDependencyClientDTO[];
   statusFilters?: StatusFilter[];
-  onCreateDependency?: (sourceUuid: string, targetUuid: string) => Promise<boolean> | boolean;
+  onCreateDependency?: (sourceId: string, targetId: string) => Promise<boolean> | boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -169,11 +169,11 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: 'create-template'): void;
-  (e: 'edit-template', templateUuid: string): void;
+  (e: 'edit-template', templateId: string): void;
   (e: 'delete-template', template: TaskTemplateViewModel): void;
   (e: 'resume-template', template: TaskTemplateViewModel): void;
   (e: 'delete-all-templates'): void;
-  (e: 'dependency-created', sourceUuid: string, targetUuid: string): void;
+  (e: 'dependency-created', sourceId: string, targetId: string): void;
 }>();
 
 const currentStatus = ref('ACTIVE');
@@ -213,9 +213,9 @@ const getEmptyStateIcon = () => {
 };
 
 const handleCreateDependency = async (source: TaskTemplateViewModel, target: TaskTemplateViewModel) => {
-  const created = await props.onCreateDependency?.(source.uuid, target.uuid);
+  const created = await props.onCreateDependency?.(source.id, target.id);
   if (created !== false) {
-    emit('dependency-created', source.uuid, target.uuid);
+    emit('dependency-created', source.id, target.id);
     return true;
   }
   return false;

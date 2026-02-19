@@ -72,7 +72,7 @@
       <div class="flex-1 overflow-y-auto space-y-1">
         <div
           v-for="resource in filteredResources"
-          :key="resource.uuid"
+          :key="resource.id"
           class="flex items-start gap-2 p-2 rounded hover:bg-accent cursor-pointer text-sm"
           @click="$emit('open-resource', resource)"
         >
@@ -105,7 +105,7 @@ interface TagStatistic {
 }
 
 interface TaggedResource {
-  uuid: string;
+  id: string;
   title: string;
   path: string;
   updatedAt: string;

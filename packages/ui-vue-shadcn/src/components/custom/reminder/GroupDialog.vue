@@ -198,11 +198,11 @@ import {
 } from '@/components/ui/popover';
 
 interface ReminderGroup {
-  uuid?: string;
+  id?: string;
   name: string;
-  description?: string;
-  icon?: string;
-  color?: string;
+  description?: string | null;
+  icon?: string | null;
+  color?: string | null;
   controlMode: 'INDIVIDUAL' | 'GROUP';
   order?: number;
 }
@@ -214,8 +214,8 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  'save': [data: Omit<ReminderGroup, 'uuid'>];
-  'update': [uuid: string, data: Omit<ReminderGroup, 'uuid'>];
+  'save': [data: Omit<ReminderGroup, 'id'>];
+  'update': [id: string, data: Omit<ReminderGroup, 'id'>];
 }>();
 
 const visible = ref(false);
@@ -249,7 +249,7 @@ const iconOptions = [
   { value: 'mdi-account-group', icon: Users },
 ];
 
-const isEditMode = computed(() => !!props.group?.uuid);
+const isEditMode = computed(() => !!props.group?.id);
 const formValid = computed(() => formData.name.trim().length >= 2);
 
 const getIcon = (iconValue: string) => {
@@ -302,7 +302,7 @@ const handleSave = async () => {
 
   isSaving.value = true;
   try {
-    const data: Omit<ReminderGroup, 'uuid'> = {
+    const data: Omit<ReminderGroup, 'id'> = {
       name: formData.name.trim(),
       description: formData.description?.trim() || undefined,
       color: formData.color,
@@ -311,8 +311,8 @@ const handleSave = async () => {
       order: formData.order,
     };
 
-    if (isEditMode.value && props.group?.uuid) {
-      emit('update', props.group.uuid, data);
+    if (isEditMode.value && props.group?.id) {
+      emit('update', props.group.id, data);
     } else {
       emit('save', data);
     }

@@ -33,7 +33,7 @@
       <v-list v-if="todayTasks.length > 0" class="py-0">
         <v-list-item
           v-for="(task, index) in todayTasks"
-          :key="task.uuid"
+          :key="task.id"
           :class="{ 'task-completed': task.isCompleted }"
           class="task-item pa-4"
           :style="{ '--task-index': index }"

@@ -5,7 +5,7 @@ export interface TimelineSnapshot {
     totalWeight: number;
     totalProgress: number;
     keyResults: Array<{
-      uuid: string;
+      id: string;
       title: string;
       weight: number;
       progress: number;

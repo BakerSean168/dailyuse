@@ -38,8 +38,8 @@
         :key="child.id"
         :node="child"
         :level="level + 1"
-        :selected-uuid="selectedUuid"
-        :expanded-uuids="expandedUuids"
+        :selected-id="selectedId"
+        :expanded-ids="expandedIds"
         @select="$emit('select', $event)"
         @toggle="$emit('toggle', $event)"
         @dblclick="$emit('dblclick', $event)"
@@ -66,8 +66,8 @@ import type { TreeNode } from '@dailyuse/contracts/repository';
 interface Props {
   node: TreeNode;
   level: number;
-  selectedUuid: string | null;
-  expandedUuids: string[];
+  selectedId: string | null;
+  expandedIds: string[];
 }
 
 const props = defineProps<Props>();
@@ -79,8 +79,8 @@ const emit = defineEmits<{
   contextmenu: [event: MouseEvent, node: TreeNode];
 }>();
 
-const isSelected = computed(() => props.selectedUuid === props.node.id);
-const isExpanded = computed(() => props.expandedUuids.includes(props.node.id));
+const isSelected = computed(() => props.selectedId === props.node.id);
+const isExpanded = computed(() => props.expandedIds.includes(props.node.id));
 
 const nodeIcon = computed(() => {
   if (props.node.type === 'folder') {

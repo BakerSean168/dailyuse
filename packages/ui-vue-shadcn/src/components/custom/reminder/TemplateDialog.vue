@@ -47,12 +47,12 @@
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <Label>Group</Label>
-                <Select v-model="formData.groupUuid">
+                <Select v-model="formData.groupId">
                   <SelectTrigger class="mt-1.5">
                     <SelectValue placeholder="Select group (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem v-for="group in groupOptions" :key="group.uuid" :value="group.uuid">
+                    <SelectItem v-for="group in groupOptions" :key="group.id" :value="group.id">
                       {{ group.name }}
                     </SelectItem>
                   </SelectContent>
@@ -186,24 +186,24 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 interface ReminderTemplate {
-  uuid?: string;
-  title: string;
-  description?: string;
-  importanceLevel: string;
-  triggerType: string;
+  id?: string;
+  name: string;
+  description?: string | null;
+  importanceLevel?: string;
+  triggerType?: string;
   fixedTime?: string;
   intervalMinutes?: number;
   notificationTitle?: string;
   notificationBody?: string;
-  color?: string;
-  icon?: string;
+  color?: string | null;
+  icon?: string | null;
   tags?: string[];
-  groupUuid?: string;
+  groupId?: string | null;
   trigger?: any;
 }
 
 interface ReminderGroup {
-  uuid: string;
+  id: string;
   name: string;
 }
 
@@ -219,7 +219,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   'save': [data: any];
-  'update': [uuid: string, data: any];
+  'update': [id: string, data: any];
 }>();
 
 const visible = ref(false);
@@ -239,12 +239,12 @@ const formData = reactive({
   color: '#2196F3',
   icon: 'mdi-bell',
   tags: [] as string[],
-  groupUuid: undefined as string | undefined,
+  groupId: undefined as string | undefined,
 });
 
 const colorOptions = ['#2196F3', '#4CAF50', '#FF9800', '#F44336', '#9C27B0', '#E91E63', '#00BCD4', '#9E9E9E'];
 
-const isEditMode = computed(() => !!props.template?.uuid);
+const isEditMode = computed(() => !!props.template?.id);
 const formValid = computed(() => formData.title.trim().length > 0);
 
 const updateTags = () => {
@@ -256,16 +256,16 @@ const resetForm = () => {
     title: '', description: '', importanceLevel: 'MODERATE',
     triggerType: 'FIXED_TIME', fixedTime: '09:00', intervalMinutes: 60,
     notificationTitle: '', notificationBody: '', color: '#2196F3',
-    icon: 'mdi-bell', tags: [], groupUuid: undefined,
+    icon: 'mdi-bell', tags: [], groupId: undefined,
   });
   tagsInput.value = '';
 };
 
 const loadTemplateData = (template: ReminderTemplate) => {
   Object.assign(formData, {
-    title: template.title,
+    title: template.name,
     description: template.description || '',
-    importanceLevel: template.importanceLevel,
+    importanceLevel: template.importanceLevel || 'MODERATE',
     triggerType: template.trigger?.type || 'FIXED_TIME',
     fixedTime: template.trigger?.fixedTime?.time || '09:00',
     intervalMinutes: template.trigger?.interval?.minutes || 60,
@@ -274,7 +274,7 @@ const loadTemplateData = (template: ReminderTemplate) => {
     color: template.color || '#2196F3',
     icon: template.icon || 'mdi-bell',
     tags: template.tags || [],
-    groupUuid: template.groupUuid,
+    groupId: template.groupId,
   });
   tagsInput.value = (template.tags || []).join(', ');
 };
@@ -310,7 +310,7 @@ const handleSave = async () => {
   saving.value = true;
   try {
     const data = {
-      title: formData.title,
+      name: formData.title,
       description: formData.description || undefined,
       importanceLevel: formData.importanceLevel,
       trigger: formData.triggerType === 'FIXED_TIME' 
@@ -327,11 +327,11 @@ const handleSave = async () => {
       tags: formData.tags.length > 0 ? formData.tags : undefined,
       color: formData.color || undefined,
       icon: formData.icon || undefined,
-      groupUuid: formData.groupUuid,
+      groupId: formData.groupId,
     };
 
-    if (isEditMode.value && props.template?.uuid) {
-      emit('update', props.template.uuid, data);
+    if (isEditMode.value && props.template?.id) {
+      emit('update', props.template.id, data);
     } else {
       emit('save', { ...data, type: 'RECURRING', activeTime: { activatedAt: Date.now() } });
     }

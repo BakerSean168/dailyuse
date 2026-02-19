@@ -31,8 +31,8 @@
         <div v-if="hasTrendData" class="legend-section mt-4">
           <v-chip
             v-for="kr in trendData?.keyResults"
-            :key="kr.uuid"
-            :color="getKRColor(kr.uuid)"
+            :key="kr.id"
+            :color="getKRColor(kr.id)"
             size="small"
             class="mr-2"
           >
@@ -72,7 +72,7 @@ use([
 ]);
 
 const props = defineProps<{
-  goalUuid: string;
+  goalId: string;
 }>();
 
 const {
@@ -105,8 +105,8 @@ const krColors = [
   '#ea7ccc',
 ];
 
-const getKRColor = (krUuid: string) => {
-  const index = trendData.value?.keyResults.findIndex((kr) => kr.uuid === krUuid) || 0;
+const getKRColor = (krId: string) => {
+  const index = trendData.value?.keyResults.findIndex((kr) => kr.id === krId) || 0;
   return krColors[index % krColors.length];
 };
 
@@ -233,7 +233,7 @@ const loadTrendData = async () => {
           : 180;
   const startTime = now - days * 24 * 60 * 60 * 1000;
 
-  await fetchWeightTrend(props.goalUuid, startTime, now);
+  await fetchWeightTrend(props.goalId, startTime, now);
 };
 
 // 初始加载

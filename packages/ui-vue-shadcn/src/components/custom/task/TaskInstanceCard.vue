@@ -57,8 +57,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 // Emits
 const emit = defineEmits<{
-  complete: [uuid: string];
-  undo: [uuid: string];
+  complete: [id: string];
+  undo: [id: string];
 }>();
 
 // Store - TODO: Connect to new domain model
@@ -102,9 +102,9 @@ const timeLabel = computed(() => {
 
 const toggleComplete = () => {
   if (isCompleted.value) {
-    emit('undo', props.task.uuid);
+    emit('undo', props.task.id);
     return;
   }
-  emit('complete', props.task.uuid);
+  emit('complete', props.task.id);
 };
 </script>

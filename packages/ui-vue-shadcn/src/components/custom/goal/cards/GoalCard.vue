@@ -30,7 +30,7 @@
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" class="w-40">
             <DropdownMenuItem @click="emit('edit', goal)">Edit</DropdownMenuItem>
-            <DropdownMenuItem @click="emit('delete', goal.uuid)" class="text-destructive focus:text-destructive">Delete</DropdownMenuItem>
+            <DropdownMenuItem @click="emit('delete', goal.id)" class="text-destructive focus:text-destructive">Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -99,7 +99,7 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   (e: 'edit', goal: any): void;
-  (e: 'delete', uuid: string): void;
+  (e: 'delete', id: string): void;
 }>();
 
 // Helper functions for Linear-like styling

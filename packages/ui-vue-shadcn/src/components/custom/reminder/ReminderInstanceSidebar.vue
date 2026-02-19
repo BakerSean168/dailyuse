@@ -93,7 +93,7 @@
           <div class="space-y-2">
             <Card
               v-for="reminder in group.reminders"
-              :key="reminder.uuid"
+              :key="reminder.id"
               :class="[
                 'p-3 cursor-pointer transition-colors hover:bg-accent',
                 { 'border-destructive bg-destructive/5': reminder.isOverdue }
@@ -166,7 +166,7 @@ import {
 } from '@/components/ui/select';
 
 interface ReminderItem {
-  uuid: string;
+  id: string;
   title?: string;
   message: string;
   priority: string;

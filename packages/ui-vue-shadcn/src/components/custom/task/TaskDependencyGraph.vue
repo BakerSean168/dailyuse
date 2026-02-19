@@ -122,11 +122,11 @@ const props = withDefaults(defineProps<Props>(), {
 const adjacency = computed(() => {
   const map = new Map<string, string[]>();
   props.tasks.forEach((task) => {
-    map.set(task.uuid, []);
+    map.set(task.id, []);
   });
   props.dependencies.forEach((dep) => {
-    const predecessor = dep.predecessorTaskUuid;
-    const successor = dep.successorTaskUuid;
+    const predecessor = dep.predecessorTaskId;
+    const successor = dep.successorTaskId;
     if (!map.has(predecessor)) {
       map.set(predecessor, []);
     }
@@ -153,7 +153,7 @@ const hasCycleInternal = () => {
   };
 
   for (const task of props.tasks) {
-    if (dfs(task.uuid)) return true;
+    if (dfs(task.id)) return true;
   }
   return false;
 };
@@ -164,22 +164,22 @@ const calculateCriticalPath = () => {
   const predecessor = new Map<string, string | null>();
 
   props.tasks.forEach((task) => {
-    indegree.set(task.uuid, 0);
-    duration.set(task.uuid, task.estimatedMinutes || 0);
-    predecessor.set(task.uuid, null);
+    indegree.set(task.id, 0);
+    duration.set(task.id, task.estimatedMinutes || 0);
+    predecessor.set(task.id, null);
   });
 
   props.dependencies.forEach((dep) => {
-    indegree.set(dep.successorTaskUuid, (indegree.get(dep.successorTaskUuid) || 0) + 1);
+    indegree.set(dep.successorTaskId, (indegree.get(dep.successorTaskId) || 0) + 1);
   });
 
   const queue: string[] = [];
-  indegree.forEach((degree, uuid) => {
-    if (degree === 0) queue.push(uuid);
+  indegree.forEach((degree, id) => {
+    if (degree === 0) queue.push(id);
   });
 
   const longest = new Map<string, number>();
-  props.tasks.forEach((task) => longest.set(task.uuid, task.estimatedMinutes || 0));
+  props.tasks.forEach((task) => longest.set(task.id, task.estimatedMinutes || 0));
 
   while (queue.length) {
     const current = queue.shift()!;
@@ -199,10 +199,10 @@ const calculateCriticalPath = () => {
 
   let endTask: string | null = null;
   let maxDuration = 0;
-  longest.forEach((value, uuid) => {
+  longest.forEach((value, id) => {
     if (value > maxDuration) {
       maxDuration = value;
-      endTask = uuid;
+      endTask = id;
     }
   });
 
@@ -262,29 +262,29 @@ function updateChart() {
     const criticalPathSet = new Set(criticalPathInfo.value?.path || []);
 
     const nodes = props.tasks.map((task) => ({
-      id: task.uuid,
+      id: task.id,
       name: task.title,
       itemStyle: {
-        color: showCriticalPath.value && criticalPathSet.has(task.uuid) ? '#E53935' : getTaskColor(task),
+        color: showCriticalPath.value && criticalPathSet.has(task.id) ? '#E53935' : getTaskColor(task),
       },
-      symbolSize: showCriticalPath.value && criticalPathSet.has(task.uuid) ? 48 : 38,
+      symbolSize: showCriticalPath.value && criticalPathSet.has(task.id) ? 48 : 38,
     }));
 
     const edges = props.dependencies.map((dep) => ({
-      source: dep.predecessorTaskUuid,
-      target: dep.successorTaskUuid,
+      source: dep.predecessorTaskId,
+      target: dep.successorTaskId,
       value: dep.dependencyType,
       lineStyle: {
         color:
           showCriticalPath.value &&
-          criticalPathSet.has(dep.predecessorTaskUuid) &&
-          criticalPathSet.has(dep.successorTaskUuid)
+          criticalPathSet.has(dep.predecessorTaskId) &&
+          criticalPathSet.has(dep.successorTaskId)
             ? '#E53935'
             : '#9E9E9E',
         width:
           showCriticalPath.value &&
-          criticalPathSet.has(dep.predecessorTaskUuid) &&
-          criticalPathSet.has(dep.successorTaskUuid)
+          criticalPathSet.has(dep.predecessorTaskId) &&
+          criticalPathSet.has(dep.successorTaskId)
             ? 3
             : 1.5,
       },
@@ -295,7 +295,7 @@ function updateChart() {
         trigger: 'item',
         formatter: (params: any) => {
           if (params.dataType === 'node') {
-            const task = props.tasks.find(t => t.uuid === params.data.id);
+            const task = props.tasks.find(t => t.id === params.data.id);
             if (!task) return '';
             return `<div style="padding: 8px;">
               <div style="font-weight: bold;">${task.title}</div>

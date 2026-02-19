@@ -73,7 +73,7 @@
           <Label for="folder">目标文件夹（可选）</Label>
           <Input
             id="folder"
-            v-model="localFolderUuid"
+            v-model="localFolderId"
             placeholder="选择目标文件夹..."
             readonly
           />
@@ -119,7 +119,7 @@ interface Props {
   open: boolean;
   name?: string;
   type?: string;
-  folderUuid?: string;
+  folderId?: string;
   loading?: boolean;
   showFolderSelection?: boolean;
 }
@@ -127,25 +127,25 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   name: '',
   type: 'MARKDOWN',
-  folderUuid: '',
+  folderId: '',
   loading: false,
   showFolderSelection: false,
 });
 
 const emit = defineEmits<{
   'update:open': [value: boolean];
-  create: [data: { name: string; type: string; folderUuid?: string }];
+  create: [data: { name: string; type: string; folderId?: string }];
 }>();
 
 const localName = ref('');
 const localType = ref('MARKDOWN');
-const localFolderUuid = ref('');
+const localFolderId = ref('');
 
 watch(() => props.open, (isOpen) => {
   if (isOpen) {
     localName.value = props.name || '';
     localType.value = props.type || 'MARKDOWN';
-    localFolderUuid.value = props.folderUuid || '';
+    localFolderId.value = props.folderId || '';
   }
 });
 
@@ -155,7 +155,7 @@ function handleSubmit() {
   emit('create', {
     name: localName.value.trim(),
     type: localType.value,
-    folderUuid: localFolderUuid.value || undefined,
+    folderId: localFolderId.value || undefined,
   });
 }
 </script>

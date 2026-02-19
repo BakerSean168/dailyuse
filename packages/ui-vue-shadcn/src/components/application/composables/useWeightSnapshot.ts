@@ -2,21 +2,21 @@ import { computed, ref } from 'vue';
 
 type WeightTrendData = {
   keyResults: Array<{
-    uuid: string;
+    id: string;
     title: string;
     data: Array<{ time: number; weight: number }>;
   }>;
 };
 
 type WeightComparisonData = {
-  keyResults: Array<{ uuid: string; title: string }>;
+  keyResults: Array<{ id: string; title: string }>;
   timePoints: number[];
   comparisons: Record<string, number[]>;
 };
 
 type GoalSnapshotItem = {
-  uuid: string;
-  keyResultUuid: string;
+  id: string;
+  keyResultId: string;
   trigger: string;
   snapshotTime: number;
   oldWeight: number;
@@ -24,7 +24,7 @@ type GoalSnapshotItem = {
   delta: number;
   weightDelta: number;
   reason?: string;
-  operatorUuid?: string;
+  operatorId?: string;
 };
 
 type SnapshotPagination = {

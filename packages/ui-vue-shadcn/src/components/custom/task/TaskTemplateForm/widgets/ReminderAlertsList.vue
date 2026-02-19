@@ -9,7 +9,7 @@
       </v-btn>
     </div>
 
-    <v-card v-for="(alert, index) in localAlerts" :key="alert.uuid" class="mb-2" variant="outlined">
+    <v-card v-for="(alert, index) in localAlerts" :key="alert.id" class="mb-2" variant="outlined">
       <v-card-text class="py-2">
         <v-row align="center">
           <v-col cols="12" md="3">
@@ -116,7 +116,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 // 本地类型定义
 interface ReminderAlert {
-  uuid: string;
+  id: string;
   timing: {
     type: 'relative' | 'absolute';
     minutesBefore?: number;
@@ -230,7 +230,7 @@ const handleAbsoluteTimeChange = (timeValue: string, alertIndex: number) => {
 
 const addAlert = () => {
   const newAlert: ReminderAlert = {
-    uuid: uuidv4(),
+    id: uuidv4(),
     timing: {
       type: 'relative' as const,
       minutesBefore: 15,

@@ -32,7 +32,7 @@
       <div class="p-2 space-y-2">
         <div
           v-for="backlink in backlinks"
-          :key="backlink.link.uuid"
+          :key="backlink.link.id"
           @click="navigateToSource(backlink)"
           class="p-3 rounded-md border hover:bg-accent cursor-pointer transition-colors"
         >
@@ -91,13 +91,13 @@ import { Alert, AlertDescription } from '../../ui/alert';
 import { Link2, Link2Off, RotateCw, FileText, Clock, ExternalLink, AlertCircle } from 'lucide-vue-next';
 
 interface BacklinkDTO {
-  link: { uuid: string; isBroken: boolean };
-  sourceDocument: { uuid: string; title: string; updatedAt: number };
+  link: { id: string; isBroken: boolean };
+  sourceDocument: { id: string; title: string; updatedAt: number };
   context: string;
 }
 
 interface Props {
-  documentUuid: string;
+  documentId: string;
   autoLoad?: boolean;
 }
 
@@ -106,7 +106,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  navigate: [sourceDocumentUuid: string];
+  navigate: [sourceDocumentId: string];
 }>();
 
 const loading = ref(false);
@@ -114,7 +114,7 @@ const backlinks = ref<BacklinkDTO[]>([]);
 const error = ref<string | null>(null);
 
 async function loadBacklinks() {
-  if (!props.documentUuid) return;
+  if (!props.documentId) return;
 
   loading.value = true;
   error.value = null;
@@ -136,8 +136,8 @@ function refresh() {
 }
 
 function navigateToSource(backlink: BacklinkDTO) {
-  const sourceUuid = backlink.sourceDocument.uuid;
-  emit('navigate', sourceUuid);
+  const sourceId = backlink.sourceDocument.id;
+  emit('navigate', sourceId);
 }
 
 function formatDate(timestamp: number): string {
@@ -153,14 +153,14 @@ function formatDate(timestamp: number): string {
   return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
 }
 
-watch(() => props.documentUuid, (newUuid) => {
-  if (newUuid && props.autoLoad) {
+watch(() => props.documentId, (newId) => {
+  if (newId && props.autoLoad) {
     loadBacklinks();
   }
 });
 
 onMounted(() => {
-  if (props.documentUuid && props.autoLoad) {
+  if (props.documentId && props.autoLoad) {
     loadBacklinks();
   }
 });

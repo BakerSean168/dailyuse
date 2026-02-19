@@ -96,24 +96,24 @@ export interface ResourceTab {
 
 interface Props {
   tabs: ResourceTab[];
-  activeTabUuid?: string | null;
+  activeTabId?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  activeTabUuid: null,
+  activeTabId: null,
 });
 
 const emit = defineEmits<{
-  'switch-tab': [uuid: string];
-  'close-tab': [uuid: string];
-  'toggle-pin': [uuid: string];
-  'close-others': [uuid: string];
-  'close-right': [uuid: string];
+  'switch-tab': [id: string];
+  'close-tab': [id: string];
+  'toggle-pin': [id: string];
+  'close-others': [id: string];
+  'close-right': [id: string];
   'close-all': [];
 }>();
 
 const localActiveTab = computed({
-  get: () => props.activeTabUuid || '',
+  get: () => props.activeTabId || '',
   set: (value) => {
     if (value) emit('switch-tab', value);
   },

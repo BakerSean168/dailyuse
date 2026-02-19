@@ -103,7 +103,7 @@ interface Props {
 interface Emits {
   (e: 'create'): void;
   (e: 'schedule-click', schedule: ScheduleJobClientDTO): void;
-  (e: 'delete', uuid: string): void;
+  (e: 'delete', id: string): void;
 }
 
 withDefaults(defineProps<Props>(), {

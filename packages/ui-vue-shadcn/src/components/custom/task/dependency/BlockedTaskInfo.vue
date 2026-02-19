@@ -9,7 +9,7 @@
       <p class="text-body-2 mb-3">此任务正在等待以下 {{ blockingTasks.length }} 个前置任务完成：</p>
 
       <v-list dense>
-        <v-list-item v-for="task in blockingTasks" :key="task.uuid" class="px-0">
+        <v-list-item v-for="task in blockingTasks" :key="task.id" class="px-0">
           <template #prepend>
             <v-icon :color="getStatusColor(task.status)" size="small">
               {{ getStatusIcon(task.status) }}
@@ -62,7 +62,7 @@
 import { computed } from 'vue';
 
 interface BlockingTask {
-  uuid: string;
+  id: string;
   title: string;
   status: string;
   estimatedMinutes?: number | null;

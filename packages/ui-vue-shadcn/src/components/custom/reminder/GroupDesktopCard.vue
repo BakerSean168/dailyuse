@@ -74,11 +74,11 @@ import {
 } from '@/components/ui/tooltip';
 
 interface ReminderGroup {
-  uuid: string;
+  id: string;
   name: string;
-  description?: string;
-  icon?: string;
-  color?: string;
+  description?: string | null;
+  icon?: string | null;
+  color?: string | null;
   enabled: boolean;
   controlMode: 'GROUP' | 'INDIVIDUAL';
 }

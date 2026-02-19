@@ -45,8 +45,8 @@
         :node="child"
         :level="level + 1"
         :show-file-info="showFileInfo"
-        :selected-uuid="selectedUuid"
-        :expanded-uuids="expandedUuids"
+        :selected-id="selectedId"
+        :expanded-ids="expandedIds"
         @select="$emit('select', $event)"
         @toggle="$emit('toggle', $event)"
         @open="$emit('open', $event)"
@@ -75,15 +75,15 @@ interface Props {
   node: TreeNode;
   level?: number;
   showFileInfo?: boolean;
-  selectedUuid?: string | null;
-  expandedUuids?: string[];
+  selectedId?: string | null;
+  expandedIds?: string[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   level: 0,
   showFileInfo: false,
-  selectedUuid: null,
-  expandedUuids: () => [],
+  selectedId: null,
+  expandedIds: () => [],
 });
 
 const emit = defineEmits<{
@@ -93,8 +93,8 @@ const emit = defineEmits<{
   'context-menu': [event: { node: TreeNode; mouseEvent: MouseEvent }];
 }>();
 
-const isSelected = computed(() => props.selectedUuid === props.node.id);
-const isExpanded = computed(() => props.node.type === 'folder' && props.expandedUuids.includes(props.node.id));
+const isSelected = computed(() => props.selectedId === props.node.id);
+const isExpanded = computed(() => props.node.type === 'folder' && props.expandedIds.includes(props.node.id));
 
 function getNodeIcon() {
   if (props.node.type === 'folder') {

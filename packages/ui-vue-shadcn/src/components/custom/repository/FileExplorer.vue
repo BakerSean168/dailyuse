@@ -40,7 +40,7 @@
           :key="item.id"
           :item="item"
           :opened-folders="openedFolders"
-          :selected-uuid="selectedFolderUuid"
+          :selected-id="selectedFolderId"
           @select="handleSelect"
           @toggle="handleToggle"
           @create-subfolder="$emit('create-folder', $event)"
@@ -81,18 +81,18 @@ interface Props {
   folders: FolderClientDTO[];
   isLoading?: boolean;
   error?: string | null;
-  selectedFolderUuid?: string | null;
+  selectedFolderId?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   selectedRepository: null,
   isLoading: false,
   error: null,
-  selectedFolderUuid: null,
+  selectedFolderId: null,
 });
 
 const emit = defineEmits<{
-  'create-folder': [parentUuid?: string];
+  'create-folder': [parentId?: string];
   'create-resource': [];
   'rename-folder': [folder: FolderClientDTO];
   'delete-folder': [folder: FolderClientDTO];
@@ -141,12 +141,12 @@ function handleSelect(folder: FolderClientDTO) {
   emit('select-folder', folder);
 }
 
-function handleToggle(uuid: string) {
-  const index = openedFolders.value.indexOf(uuid);
+function handleToggle(id: string) {
+  const index = openedFolders.value.indexOf(id);
   if (index > -1) {
     openedFolders.value.splice(index, 1);
   } else {
-    openedFolders.value.push(uuid);
+    openedFolders.value.push(id);
   }
 }
 </script>

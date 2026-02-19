@@ -40,15 +40,15 @@ withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   refresh: [];
   'toggle-expand-all': [];
-  'create-folder': [parentUuid?: string];
-  'create-resource': [folderUuid?: string];
+  'create-folder': [parentId?: string];
+  'create-resource': [folderId?: string];
   'rename-folder': [node: TreeNode];
   'delete-folder': [node: TreeNode];
   'rename-resource': [node: TreeNode];
   'delete-resource': [node: TreeNode];
   'select-folder': [node: TreeNode | null];
   'open-resource': [node: TreeNode];
-  'ai-generate-knowledge': [parentFolderUuid?: string];
+  'ai-generate-knowledge': [parentFolderId?: string];
 }>();
 
 function handleSelectNode(node: TreeNode) {

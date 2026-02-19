@@ -230,9 +230,9 @@ import { AggregationMethod, type GoalClientDTO, type KeyResultClientDTO } from '
 // ===================== 接口定义 =====================
 
 interface GoalBinding {
-  goalUuid: string;
+  goalId: string;
   goalTitle: string;
-  keyResultUuid: string;
+  keyResultId: string;
   keyResultTitle: string;
   aggregationMethod: AggregationMethod;
   currentValue: number;
@@ -241,7 +241,7 @@ interface GoalBinding {
 }
 
 interface Props {
-  taskUuid: string;
+  taskId: string;
   taskTitle: string;
   instanceDate: number | Date;
   goalBinding?: GoalBinding;

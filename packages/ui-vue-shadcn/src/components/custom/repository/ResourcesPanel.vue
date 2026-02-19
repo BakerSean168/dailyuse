@@ -58,7 +58,7 @@
     <!-- Content -->
     <div class="flex-1 overflow-y-auto p-2">
       <!-- Empty State -->
-      <div v-if="!repositoryUuid" class="flex flex-col items-center justify-center h-full text-center px-4">
+      <div v-if="!repositoryId" class="flex flex-col items-center justify-center h-full text-center px-4">
         <FolderOff class="w-12 h-12 mb-2 text-muted-foreground/50" />
         <span class="text-sm text-muted-foreground">请先选择仓储</span>
       </div>
@@ -83,7 +83,7 @@
       <div v-else-if="displayMode === 'grid'" class="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-2">
         <div
           v-for="resource in filteredResources"
-          :key="resource.uuid"
+          :key="resource.id"
           class="flex flex-col items-center p-2 rounded-lg hover:bg-accent cursor-pointer transition-colors group"
           @click="$emit('preview', resource)"
           @contextmenu.prevent="handleContextMenu($event, resource)"
@@ -112,7 +112,7 @@
       <div v-else class="space-y-1">
         <div
           v-for="resource in filteredResources"
-          :key="resource.uuid"
+          :key="resource.id"
           class="flex items-center gap-2 p-2 rounded-md hover:bg-accent cursor-pointer"
           @click="$emit('preview', resource)"
           @contextmenu.prevent="handleContextMenu($event, resource)"
@@ -178,7 +178,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface Resource {
-  uuid: string;
+  id: string;
   name: string;
   type: string;
   size: number;
@@ -187,7 +187,7 @@ interface Resource {
 }
 
 interface Props {
-  repositoryUuid: string | null;
+  repositoryId: string | null;
   resources: Resource[];
   isLoading?: boolean;
 }
@@ -293,7 +293,7 @@ function isImageType(type: string): boolean {
 }
 
 function getResourceUrl(resource: Resource): string {
-  return resource.path || `/api/resources/${resource.uuid}/content`;
+  return resource.path || `/api/resources/${resource.id}/content`;
 }
 
 function formatFileSize(bytes: number): string {

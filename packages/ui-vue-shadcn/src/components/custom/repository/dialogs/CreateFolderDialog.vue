@@ -63,7 +63,7 @@ interface Props {
   open: boolean;
   name?: string;
   icon?: string;
-  parentUuid?: string;
+  parentId?: string;
   parentName?: string;
   loading?: boolean;
 }
@@ -71,14 +71,14 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   name: '',
   icon: '',
-  parentUuid: '',
+  parentId: '',
   parentName: '',
   loading: false,
 });
 
 const emit = defineEmits<{
   'update:open': [value: boolean];
-  create: [data: { name: string; icon?: string; parentUuid?: string }];
+  create: [data: { name: string; icon?: string; parentId?: string }];
 }>();
 
 const localName = ref('');
@@ -97,7 +97,7 @@ function handleSubmit() {
   emit('create', {
     name: localName.value.trim(),
     icon: localIcon.value || undefined,
-    parentUuid: props.parentUuid || undefined,
+    parentId: props.parentId || undefined,
   });
 }
 </script>

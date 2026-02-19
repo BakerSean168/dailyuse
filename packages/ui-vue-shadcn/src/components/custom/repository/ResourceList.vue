@@ -6,7 +6,7 @@
         v-for="resource in resources"
         :key="resource.id"
         class="flex items-center gap-3 px-4 py-2 border-b border-border hover:bg-accent cursor-pointer transition-colors"
-        :class="{ 'bg-accent': resource.id === selectedUuid }"
+        :class="{ 'bg-accent': resource.id === selectedId }"
         @click="$emit('select', resource)"
         @dblclick="$emit('open', resource)"
         @contextmenu.prevent="$emit('contextmenu', $event, resource)"
@@ -93,8 +93,8 @@ import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 interface Props {
   resources: ResourceClientDTO[];
-  selectedUuid?: string;
-  bookmarkedUuids?: string[];
+  selectedId?: string;
+  bookmarkedIds?: string[];
 }
 
 defineProps<Props>();
@@ -123,7 +123,7 @@ function getResourceIcon(type: string) {
   return iconMap[type] || File;
 }
 
-function hasBookmark(uuid: string): boolean {
+function hasBookmark(id: string): boolean {
   return false; // Implement via props
 }
 </script>

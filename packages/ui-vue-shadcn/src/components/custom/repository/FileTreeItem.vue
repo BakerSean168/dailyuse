@@ -65,7 +65,7 @@
         :key="child.id"
         :item="child"
         :opened-folders="openedFolders"
-        :selected-uuid="selectedUuid"
+        :selected-id="selectedId"
         @select="$emit('select', $event)"
         @toggle="$emit('toggle', $event)"
         @create-subfolder="$emit('create-subfolder', $event)"
@@ -109,24 +109,24 @@ interface TreeItemData {
 interface Props {
   item: TreeItemData;
   openedFolders: string[];
-  selectedUuid?: string | null;
+  selectedId?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  selectedUuid: null,
+  selectedId: null,
 });
 
 const emit = defineEmits<{
   select: [folder: FolderClientDTO];
-  toggle: [uuid: string];
-  'create-subfolder': [parentUuid: string];
+  toggle: [id: string];
+  'create-subfolder': [parentId: string];
   rename: [folder: FolderClientDTO];
   delete: [folder: FolderClientDTO];
   'add-bookmark': [folder: FolderClientDTO];
 }>();
 
 const isOpen = computed(() => props.openedFolders.includes(props.item.id));
-const isSelected = computed(() => props.selectedUuid === props.item.id);
+const isSelected = computed(() => props.selectedId === props.item.id);
 
 function handleClick() {
   emit('select', props.item.raw);

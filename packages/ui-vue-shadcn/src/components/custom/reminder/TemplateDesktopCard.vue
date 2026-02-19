@@ -4,13 +4,13 @@
       <DialogHeader>
         <div class="flex items-center gap-2">
           <component :is="getTemplateIcon()" class="h-6 w-6 text-primary" />
-          <DialogTitle>{{ template?.title || 'Template Details' }}</DialogTitle>
+          <DialogTitle>{{ template?.name || 'Template Details' }}</DialogTitle>
         </div>
         <div class="flex items-center gap-2 mt-2">
           <Badge :variant="template?.effectiveEnabled ? 'default' : 'secondary'">
             {{ template?.effectiveEnabled ? 'Running' : 'Paused' }}
           </Badge>
-          <Badge v-if="template?.groupUuid" variant="outline">
+          <Badge v-if="template?.groupId" variant="outline">
             <Folder class="h-3 w-3 mr-1" />
             In Group
           </Badge>
@@ -32,7 +32,7 @@
                 <FileText class="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div class="flex-1">
                   <p class="text-sm font-medium">Title</p>
-                  <p class="text-sm text-muted-foreground">{{ template.title }}</p>
+                  <p class="text-sm text-muted-foreground">{{ template.name }}</p>
                 </div>
               </div>
 
@@ -192,13 +192,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
 interface ReminderTemplate {
-  uuid: string;
-  title: string;
-  description?: string;
-  icon?: string;
-  color?: string;
+  id: string;
+  name: string;
+  description?: string | null;
+  icon?: string | null;
+  color?: string | null;
   effectiveEnabled: boolean;
-  groupUuid?: string;
+  groupId?: string | null;
   triggerText?: string;
   trigger?: {
     type: string;
@@ -217,7 +217,7 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   'edit-template': [template: ReminderTemplate];
-  'view-instances': [templateUuid: string];
+  'view-instances': [templateId: string];
   'status-changed': [template: ReminderTemplate, enabled: boolean];
 }>();
 
@@ -263,7 +263,7 @@ const handleEdit = () => {
 
 const handleViewInstances = () => {
   if (props.template) {
-    emit('view-instances', props.template.uuid);
+    emit('view-instances', props.template.id);
     close();
   }
 };

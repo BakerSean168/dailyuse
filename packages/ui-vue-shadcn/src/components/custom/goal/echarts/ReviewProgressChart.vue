@@ -126,7 +126,7 @@ const handleResize = () => {
 
 const goalKeyResults = computed<KeyResultClientDTO[]>(() => props.goal.keyResults ?? []);
 
-const weightsByKrUuid = computed(() => {
+const weightsByKrId = computed(() => {
   const map = new Map<string, number>();
   goalKeyResults.value.forEach((kr) => {
     map.set(kr.id, kr.weight ?? 1);
@@ -170,7 +170,7 @@ const goalProgress = computed(() => {
   const snapshots = props.review.keyResultSnapshots ?? [];
   if (snapshots.length === 0) return 0;
 
-  const weights = weightsByKrUuid.value;
+  const weights = weightsByKrId.value;
   const total = totalWeight.value || snapshots.length;
   const fallbackWeight = total / snapshots.length;
 

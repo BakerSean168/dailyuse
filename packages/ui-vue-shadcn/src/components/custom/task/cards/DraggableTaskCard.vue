@@ -3,16 +3,16 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
 <template>
   <div
     data-testid="draggable-task-card"
-    :data-task-uuid="template.uuid"
-    :data-dragging="isDragging && draggedTaskUuid === template.uuid"
-    :data-valid-drop="isValidDrop && dropTargetUuid === template.uuid"
-    :data-invalid-drop="!isValidDrop && dropTargetUuid === template.uuid && isDragging"
+    :data-task-id="template.id"
+    :data-dragging="isDragging && draggedTaskId === template.id"
+    :data-valid-drop="isValidDrop && dropTargetId === template.id"
+    :data-invalid-drop="!isValidDrop && dropTargetId === template.id && isDragging"
     :class="{
       'draggable-task-card': true,
-      'draggable-task-card--dragging': isDragging && draggedTaskUuid === template.uuid,
-      'draggable-task-card--drag-over': isValidDrop && dropTargetUuid === template.uuid,
+      'draggable-task-card--dragging': isDragging && draggedTaskId === template.id,
+      'draggable-task-card--drag-over': isValidDrop && dropTargetId === template.id,
       'draggable-task-card--invalid-drop':
-        !isValidDrop && dropTargetUuid === template.uuid && isDragging,
+        !isValidDrop && dropTargetId === template.id && isDragging,
     }"
     :draggable="enableDrag"
     @dragstart="onDragStart"
@@ -28,7 +28,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
 
     <!-- Drop Zone Indicator (when valid drop target) -->
     <div
-      v-if="isValidDrop && dropTargetUuid === template.uuid"
+      v-if="isValidDrop && dropTargetId === template.id"
       class="drop-zone-indicator"
       data-testid="drop-zone-valid"
     >
@@ -38,7 +38,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
 
     <!-- Invalid Drop Indicator -->
     <div
-      v-else-if="!isValidDrop && dropTargetUuid === template.uuid && isDragging"
+      v-else-if="!isValidDrop && dropTargetId === template.id && isDragging"
       class="drop-zone-indicator invalid"
       data-testid="drop-zone-invalid"
     >
@@ -74,16 +74,16 @@ const props = withDefaults(defineProps<Props>(), {
 
 // Emits
 const emit = defineEmits<{
-  edit: [templateUuid: string]; // Changed: TaskTemplateCard emits uuid string, not full DTO
+  edit: [templateId: string]; // Changed: TaskTemplateCard emits id string, not full DTO
   delete: [template: TaskTemplateViewModel];
   resume: [template: TaskTemplateViewModel];
-  dependencyCreated: [sourceUuid: string, targetUuid: string];
+  dependencyCreated: [sourceId: string, targetId: string];
 }>();
 
 // Event handlers for TaskTemplateCard
-const handleEdit = (templateUuid: string) => {
+const handleEdit = (templateId: string) => {
   // Changed: accepts string, not DTO
-  emit('edit', templateUuid);
+  emit('edit', templateId);
 };
 
 const handleDelete = (template: TaskTemplateViewModel) => {
@@ -95,12 +95,12 @@ const handleResume = (template: TaskTemplateViewModel) => {
 };
 
 const isDragging = ref(false);
-const draggedTaskUuid = ref<string | null>(null);
-const dropTargetUuid = ref<string | null>(null);
+const draggedTaskId = ref<string | null>(null);
+const dropTargetId = ref<string | null>(null);
 const isValidDrop = ref(false);
 
 const validateDrop = (source: TaskTemplateViewModel, target: TaskTemplateViewModel): boolean => {
-  if (source.uuid === target.uuid) return false;
+  if (source.id === target.id) return false;
   if (props.canDrop) {
     return props.canDrop(source, target);
   }
@@ -111,7 +111,7 @@ const validateDrop = (source: TaskTemplateViewModel, target: TaskTemplateViewMod
 const onDragStart = (event: DragEvent) => {
   if (!props.enableDrag) return;
   isDragging.value = true;
-  draggedTaskUuid.value = props.template.uuid;
+  draggedTaskId.value = props.template.id;
 
   // Set drag data for native drag-and-drop
   if (event.dataTransfer) {
@@ -120,7 +120,7 @@ const onDragStart = (event: DragEvent) => {
       'application/json',
       JSON.stringify({
         type: 'task-template',
-        uuid: props.template.uuid,
+        id: props.template.id,
         title: props.template.title,
       }),
     );
@@ -129,20 +129,20 @@ const onDragStart = (event: DragEvent) => {
 
 const onDragEnd = (event: DragEvent) => {
   isDragging.value = false;
-  draggedTaskUuid.value = null;
-  dropTargetUuid.value = null;
+  draggedTaskId.value = null;
+  dropTargetId.value = null;
   isValidDrop.value = false;
 };
 
 const onDragOver = (event: DragEvent) => {
   if (!isDragging.value) return;
-  if (draggedTaskUuid.value === props.template.uuid) return;
+  if (draggedTaskId.value === props.template.id) return;
 
   const source: TaskTemplateViewModel = {
     ...props.template,
-    uuid: draggedTaskUuid.value || props.template.uuid,
+    id: draggedTaskId.value || props.template.id,
   };
-  dropTargetUuid.value = props.template.uuid;
+  dropTargetId.value = props.template.id;
   isValidDrop.value = validateDrop(source, props.template);
 
   // Set drop effect based on validation
@@ -152,17 +152,17 @@ const onDragOver = (event: DragEvent) => {
 };
 
 const onDragLeave = (event: DragEvent) => {
-  dropTargetUuid.value = null;
+  dropTargetId.value = null;
   isValidDrop.value = false;
 };
 
 const onDrop = async (event: DragEvent) => {
-  if (!isDragging.value || !draggedTaskUuid.value) return;
-  if (draggedTaskUuid.value === props.template.uuid) return;
+  if (!isDragging.value || !draggedTaskId.value) return;
+  if (draggedTaskId.value === props.template.id) return;
 
   const source: TaskTemplateViewModel = {
     ...props.template,
-    uuid: draggedTaskUuid.value,
+    id: draggedTaskId.value,
   };
 
   if (!validateDrop(source, props.template)) {
@@ -175,12 +175,12 @@ const onDrop = async (event: DragEvent) => {
   }
 
   if (created) {
-    emit('dependencyCreated', source.uuid, props.template.uuid);
+    emit('dependencyCreated', source.id, props.template.id);
   }
 
   isDragging.value = false;
-  draggedTaskUuid.value = null;
-  dropTargetUuid.value = null;
+  draggedTaskId.value = null;
+  dropTargetId.value = null;
   isValidDrop.value = false;
 };
 </script>

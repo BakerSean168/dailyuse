@@ -212,7 +212,7 @@ const createDraftKeyResult = (): EditableKeyResult => ({
 
 const visible = ref(false);
 const propKeyResult = ref<KeyResultClientDTO | null>(null);
-const propGoalUuid = ref<string | null>(null);
+const propGoalId = ref<string | null>(null);
 const propGoal = ref<GoalClientDTO | null>(null);
 const isInGoalEditing = computed(() => !!propGoal.value);
 
@@ -308,7 +308,7 @@ const handleSave = async () => {
   loading.value = true;
   try {
     emit('save', {
-      goalId: propGoalUuid.value,
+      goalId: propGoalId.value,
       keyResult: { ...localKeyResult.value },
       isEditing: isEditing.value,
       isInGoalEditing: isInGoalEditing.value,
@@ -327,15 +327,15 @@ const closeDialog = () => {
   visible.value = false;
 };
 const openDialog = ({
-  goalUuid,
+  goalId,
   keyResult,
   goal,
 }: {
-  goalUuid?: string;
+  goalId?: string;
   keyResult?: KeyResultClientDTO;
   goal?: GoalClientDTO;
 }) => {
-  propGoalUuid.value = goalUuid || null;
+  propGoalId.value = goalId || null;
   propKeyResult.value = keyResult || null;
   propGoal.value = goal || null;
   visible.value = true;
@@ -349,12 +349,12 @@ const openForUpdateKeyResultInGoalEditing = (goal: GoalClientDTO, keyResult: Key
   openDialog({ goal, keyResult });
 };
 
-const openForCreateKeyResult = (goalUuid: string) => {
-  openDialog({ goalUuid });
+const openForCreateKeyResult = (goalId: string) => {
+  openDialog({ goalId });
 };
 
-const openForUpdateKeyResult = (goalUuid: string, keyResult: KeyResultClientDTO) => {
-  openDialog({ goalUuid, keyResult });
+const openForUpdateKeyResult = (goalId: string, keyResult: KeyResultClientDTO) => {
+  openDialog({ goalId, keyResult });
 };
 
 watch([() => visible.value, () => propKeyResult.value], ([newValue]) => {

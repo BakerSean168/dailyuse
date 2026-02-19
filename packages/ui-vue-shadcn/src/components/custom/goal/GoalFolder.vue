@@ -24,10 +24,10 @@
     <!-- Dynamic Folders -->
     <Button
       v-for="folder in goalFolders"
-      :key="folder.uuid"
+      :key="folder.id"
       variant="ghost"
-      :class="cn('w-full justify-start gap-2 px-2 h-9 font-normal', selectedFolderId === folder.uuid && 'bg-secondary text-foreground font-medium')"
-      @click="selectFolder(folder.uuid)"
+      :class="cn('w-full justify-start gap-2 px-2 h-9 font-normal', selectedFolderId === folder.id && 'bg-secondary text-foreground font-medium')"
+      @click="selectFolder(folder.id)"
       @contextmenu.prevent="emit('edit', folder)"
     >
       <Folder class="h-4 w-4 text-muted-foreground" />

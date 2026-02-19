@@ -101,8 +101,8 @@ const props = defineProps<Props>();
 
 defineEmits<{
   click: [notification: NotificationClientDTO];
-  'mark-read': [uuid: string];
-  delete: [uuid: string];
+  'mark-read': [id: string];
+  delete: [id: string];
 }>();
 
 const typeIconMap: Record<string, any> = {

@@ -74,7 +74,7 @@ import { Network, RotateCw, X, AlertCircle } from 'lucide-vue-next';
 import * as echarts from 'echarts';
 
 interface LinkGraphNodeDTO {
-  uuid: string;
+  id: string;
   title: string;
   isCenter: boolean;
   isCurrent: boolean;
@@ -84,8 +84,8 @@ interface LinkGraphNodeDTO {
 }
 
 interface LinkGraphEdgeDTO {
-  sourceUuid: string;
-  targetUuid: string;
+  sourceId: string;
+  targetId: string;
   source: string;
   target: string;
   linkText?: string;
@@ -94,12 +94,12 @@ interface LinkGraphEdgeDTO {
 interface LinkGraphResponseDTO {
   nodes: LinkGraphNodeDTO[];
   edges: LinkGraphEdgeDTO[];
-  centerUuid: string;
+  centerId: string;
   depth: number;
 }
 
 interface Props {
-  documentUuid: string;
+  documentId: string;
   initialDepth?: number;
 }
 
@@ -109,7 +109,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   close: [];
-  nodeClick: [nodeUuid: string];
+  nodeClick: [nodeId: string];
 }>();
 
 const loading = ref(false);
@@ -125,18 +125,18 @@ let chartInstance: echarts.ECharts | null = null;
 const graphData = ref<LinkGraphResponseDTO>({
   nodes: [],
   edges: [],
-  centerUuid: props.documentUuid,
+  centerId: props.documentId,
   depth: currentDepth.value,
 });
 
 async function loadLinkGraph() {
-  if (!props.documentUuid) return;
+  if (!props.documentId) return;
 
   loading.value = true;
   error.value = null;
 
   try {
-    graphData.value = { nodes: [], edges: [], centerUuid: props.documentUuid, depth: currentDepth.value };
+    graphData.value = { nodes: [], edges: [], centerId: props.documentId, depth: currentDepth.value };
     error.value = '链接图谱功能正在开发中';
     
     await nextTick();
@@ -144,7 +144,7 @@ async function loadLinkGraph() {
   } catch (err: any) {
     console.error('Load link graph failed:', err);
     error.value = err.message || '加载链接图谱失败';
-    graphData.value = { nodes: [], edges: [], centerUuid: props.documentUuid, depth: currentDepth.value };
+    graphData.value = { nodes: [], edges: [], centerId: props.documentId, depth: currentDepth.value };
   } finally {
     loading.value = false;
   }
@@ -158,7 +158,7 @@ function renderGraph() {
   }
 
   const nodes = graphData.value.nodes.map((node: LinkGraphNodeDTO) => ({
-    id: node.uuid,
+    id: node.id,
     name: node.title,
     symbolSize: node.isCurrent ? 60 : 40 + Math.min(node.linkCount + node.backlinkCount, 20) * 2,
     value: node.linkCount + node.backlinkCount,
@@ -239,7 +239,7 @@ function resizeChart() {
   }
 }
 
-watch(() => props.documentUuid, () => {
+watch(() => props.documentId, () => {
   loadLinkGraph();
 });
 

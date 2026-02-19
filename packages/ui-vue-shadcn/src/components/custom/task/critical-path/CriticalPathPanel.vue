@@ -43,7 +43,7 @@
 
         <v-card-text class="pa-0">
           <v-list density="compact">
-            <v-list-item v-for="(task, index) in result.criticalTasks" :key="task.uuid" class="border-b">
+            <v-list-item v-for="(task, index) in result.criticalTasks" :key="task.id" class="border-b">
               <template #prepend>
                 <v-avatar color="error" size="32"><span class="text-subtitle-2">{{ index + 1 }}</span></v-avatar>
               </template>

@@ -168,7 +168,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   'update:open': [value: boolean];
   generate: [options: GenerateOptions];
-  'open-document': [uuid: string];
+  'open-document': [id: string];
 }>();
 
 interface GenerateOptions {
@@ -184,7 +184,7 @@ const generatedContent = ref('');
 const isGenerating = ref(false);
 const isComplete = ref(false);
 const error = ref('');
-const generatedResourceUuid = ref<string | null>(null);
+const generatedResourceId = ref<string | null>(null);
 const generatedFileName = ref('');
 const resultPath = ref('');
 
@@ -215,7 +215,7 @@ watch(() => props.open, (isOpen) => {
     isGenerating.value = false;
     isComplete.value = false;
     error.value = '';
-    generatedResourceUuid.value = null;
+    generatedResourceId.value = null;
     generatedFileName.value = '';
     resultPath.value = '';
   }
@@ -246,8 +246,8 @@ function handleGenerate() {
 }
 
 function handleOpenDocument() {
-  if (generatedResourceUuid.value) {
-    emit('open-document', generatedResourceUuid.value);
+  if (generatedResourceId.value) {
+    emit('open-document', generatedResourceId.value);
   }
   emit('update:open', false);
 }
@@ -256,10 +256,10 @@ function handleOpenDocument() {
 defineExpose({
   setGenerating: (value: boolean) => { isGenerating.value = value; },
   appendContent: (chunk: string) => { generatedContent.value += chunk; },
-  setComplete: (options: { fileName: string; filePath: string; resourceUuid: string }) => {
+  setComplete: (options: { fileName: string; filePath: string; resourceId: string }) => {
     generatedFileName.value = options.fileName;
     resultPath.value = options.filePath;
-    generatedResourceUuid.value = options.resourceUuid;
+    generatedResourceId.value = options.resourceId;
     isComplete.value = true;
     isGenerating.value = false;
   },

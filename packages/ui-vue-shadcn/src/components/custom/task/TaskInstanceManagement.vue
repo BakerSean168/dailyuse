@@ -68,7 +68,7 @@
             <v-list class="task-list">
               <TaskInstanceCard
                 v-for="(task, index) in incompleteTasks"
-                :key="task.uuid"
+                :key="task.id"
                 :task="task"
                 :task-title="task.templateTitle"
                 :show-border="index < incompleteTasks.length - 1"
@@ -87,11 +87,11 @@
             <v-list class="task-list">
               <TaskInstanceCard
                 v-for="(task, index) in completedTasks"
-                :key="task.uuid"
+                :key="task.id"
                 :task="task"
                 :task-title="task.templateTitle"
                 :show-border="index < completedTasks.length - 1"
-                @undo="(uuid) => emit('undo-task', uuid)"
+                @undo="(id) => emit('undo-task', id)"
               />
             </v-list>
           </v-card-text>
@@ -102,7 +102,7 @@
     <TaskCompleteDialog
       v-if="dialogVisible && selectedTask"
       v-model="dialogVisible"
-      :task-uuid="selectedTask.uuid"
+      :task-id="selectedTask.id"
       :task-title="selectedTask.templateTitle || selectedTask.statusText || '任务'"
       :instance-date="selectedTask.instanceDate"
       :goal-binding="undefined"
@@ -131,8 +131,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: 'refresh'): void;
-  (e: 'complete-task', payload: { taskUuid: string; recordValue?: number; note?: string; duration?: number }): void;
-  (e: 'undo-task', taskUuid: string): void;
+  (e: 'complete-task', payload: { taskId: string; recordValue?: number; note?: string; duration?: number }): void;
+  (e: 'undo-task', taskId: string): void;
 }>();
 
 const selectedDate = ref(new Date().toISOString().split('T')[0]);
@@ -194,8 +194,8 @@ const shiftWeek = (days: number) => {
   currentWeekStart.value = updated;
 };
 
-const openCompleteDialog = (uuid: string) => {
-  const task = props.taskInstances.find((item) => item.uuid === uuid);
+const openCompleteDialog = (id: string) => {
+  const task = props.taskInstances.find((item) => item.id === id);
   if (!task) return;
   selectedTask.value = task;
   dialogVisible.value = true;
@@ -204,7 +204,7 @@ const openCompleteDialog = (uuid: string) => {
 const handleCompleteConfirm = (payload: { recordValue?: number; note?: string; duration?: number }) => {
   if (!selectedTask.value) return;
   emit('complete-task', {
-    taskUuid: selectedTask.value.uuid,
+    taskId: selectedTask.value.id,
     ...payload,
   });
   dialogVisible.value = false;

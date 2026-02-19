@@ -9,20 +9,20 @@
       <div v-if="currentDependencies.length > 0" class="mb-4">
         <div class="text-subtitle-2 mb-2">当前依赖 ({{ currentDependencies.length }})</div>
         <v-list density="compact">
-          <v-list-item v-for="dep in currentDependencies" :key="dep.uuid" class="px-0">
+          <v-list-item v-for="dep in currentDependencies" :key="dep.id" class="px-0">
             <template #prepend>
               <v-icon :color="getDependencyTypeColor(dep.dependencyType)" size="small">
                 {{ getDependencyTypeIcon(dep.dependencyType) }}
               </v-icon>
             </template>
             <v-list-item-title>
-              {{ getTaskTitle(dep.predecessorTaskUuid) }}
+              {{ getTaskTitle(dep.predecessorTaskId) }}
               <v-icon size="x-small" class="mx-1">mdi-arrow-right</v-icon>
-              {{ getTaskTitle(dep.successorTaskUuid) }}
+              {{ getTaskTitle(dep.successorTaskId) }}
             </v-list-item-title>
             <v-list-item-subtitle>{{ getDependencyTypeName(dep.dependencyType) }}</v-list-item-subtitle>
             <template #append>
-              <v-btn icon="mdi-delete" size="x-small" variant="text" @click="emit('dependency-deleted', dep.uuid)" />
+              <v-btn icon="mdi-delete" size="x-small" variant="text" @click="emit('dependency-deleted', dep.id)" />
             </template>
           </v-list-item>
         </v-list>
@@ -34,13 +34,13 @@
       <v-row>
         <v-col cols="12" md="5">
           <v-select
-            v-model="newDependency.predecessorUuid"
+            v-model="newDependency.predecessorId"
             :items="availablePredecessors"
             item-title="title"
-            item-value="uuid"
+            item-value="id"
             label="前置任务"
             density="compact"
-            :disabled="!currentTaskUuid"
+            :disabled="!currentTaskId"
           />
         </v-col>
 
@@ -70,7 +70,7 @@
       </v-alert>
 
       <BlockedTaskInfo
-        v-if="currentTaskUuid && blockingInfo"
+        v-if="currentTaskId && blockingInfo"
         :blocking-tasks="blockingInfo.blockingTasks"
         :total-predecessors="blockingInfo.totalPredecessors"
         class="mt-4"
@@ -93,7 +93,7 @@ import type {
 } from '../types';
 
 interface Props {
-  currentTaskUuid?: string;
+  currentTaskId?: string;
   allTasks: TaskForDAGViewModel[];
   dependencies: TaskDependencyClientDTO[];
 }
@@ -101,13 +101,13 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'dependency-added', dependency: { predecessorTaskUuid: string; successorTaskUuid: string; dependencyType: string }): void;
-  (e: 'dependency-deleted', dependencyUuid: string): void;
+  (e: 'dependency-added', dependency: { predecessorTaskId: string; successorTaskId: string; dependencyType: string }): void;
+  (e: 'dependency-deleted', dependencyId: string): void;
   (e: 'view-graph'): void;
 }>();
 
 const newDependency = ref({
-  predecessorUuid: '',
+  predecessorId: '',
   dependencyType: DependencyType.FINISH_TO_START,
 });
 
@@ -116,31 +116,31 @@ const validationWarnings = ref<TaskDependencyValidationWarning[]>([]);
 const showValidationDialog = ref(false);
 
 const currentDependencies = computed(() => {
-  if (!props.currentTaskUuid) return [];
-  return props.dependencies.filter((dep) => dep.successorTaskUuid === props.currentTaskUuid);
+  if (!props.currentTaskId) return [];
+  return props.dependencies.filter((dep) => dep.successorTaskId === props.currentTaskId);
 });
 
 const availablePredecessors = computed(() => {
-  if (!props.currentTaskUuid) return [];
-  return props.allTasks.filter((task) => task.uuid !== props.currentTaskUuid);
+  if (!props.currentTaskId) return [];
+  return props.allTasks.filter((task) => task.id !== props.currentTaskId);
 });
 
 const canAddDependency = computed(() => {
-  return !!props.currentTaskUuid && !!newDependency.value.predecessorUuid && !!newDependency.value.dependencyType;
+  return !!props.currentTaskId && !!newDependency.value.predecessorId && !!newDependency.value.dependencyType;
 });
 
 const blockingInfo = computed(() => {
-  if (!props.currentTaskUuid) return null;
+  if (!props.currentTaskId) return null;
   const predecessors = props.dependencies
-    .filter((dep) => dep.successorTaskUuid === props.currentTaskUuid)
-    .map((dep) => dep.predecessorTaskUuid);
+    .filter((dep) => dep.successorTaskId === props.currentTaskId)
+    .map((dep) => dep.predecessorTaskId);
 
   const blockingTasks = predecessors
-    .map((uuid) => props.allTasks.find((task) => task.uuid === uuid))
+    .map((id) => props.allTasks.find((task) => task.id === id))
     .filter((task): task is TaskForDAGViewModel => !!task)
     .filter((task) => task.status !== 'COMPLETED')
     .map((task) => ({
-      uuid: task.uuid,
+      id: task.id,
       title: task.title,
       status: task.status || 'PENDING',
       estimatedMinutes: task.estimatedMinutes || 0,
@@ -165,10 +165,10 @@ const pathExists = (start: string, target: string): boolean => {
   const adjacency = new Map<string, string[]>();
 
   props.dependencies.forEach((dep) => {
-    if (!adjacency.has(dep.predecessorTaskUuid)) {
-      adjacency.set(dep.predecessorTaskUuid, []);
+    if (!adjacency.has(dep.predecessorTaskId)) {
+      adjacency.set(dep.predecessorTaskId, []);
     }
-    adjacency.get(dep.predecessorTaskUuid)?.push(dep.successorTaskUuid);
+    adjacency.get(dep.predecessorTaskId)?.push(dep.successorTaskId);
   });
 
   const dfs = (node: string): boolean => {
@@ -186,25 +186,25 @@ const handleAddDependency = () => {
   validationError.value = null;
   validationWarnings.value = [];
 
-  if (!props.currentTaskUuid || !newDependency.value.predecessorUuid) return;
+  if (!props.currentTaskId || !newDependency.value.predecessorId) return;
 
   const duplicate = props.dependencies.some(
     (dep) =>
-      dep.predecessorTaskUuid === newDependency.value.predecessorUuid &&
-      dep.successorTaskUuid === props.currentTaskUuid,
+      dep.predecessorTaskId === newDependency.value.predecessorId &&
+      dep.successorTaskId === props.currentTaskId,
   );
   if (duplicate) {
     validationWarnings.value = [{ code: 'DUPLICATE', message: '该依赖关系已存在' }];
     return;
   }
 
-  const hasCycle = pathExists(props.currentTaskUuid, newDependency.value.predecessorUuid);
+  const hasCycle = pathExists(props.currentTaskId, newDependency.value.predecessorId);
   if (hasCycle) {
     validationError.value = {
       code: 'CIRCULAR_DEPENDENCY',
       message: '创建此依赖会形成循环依赖',
       details: {
-        cyclePath: [newDependency.value.predecessorUuid, props.currentTaskUuid],
+        cyclePath: [newDependency.value.predecessorId, props.currentTaskId],
       },
     };
     showValidationDialog.value = true;
@@ -212,17 +212,17 @@ const handleAddDependency = () => {
   }
 
   emit('dependency-added', {
-    predecessorTaskUuid: newDependency.value.predecessorUuid,
-    successorTaskUuid: props.currentTaskUuid,
+    predecessorTaskId: newDependency.value.predecessorId,
+    successorTaskId: props.currentTaskId,
     dependencyType: newDependency.value.dependencyType,
   });
 
-  newDependency.value.predecessorUuid = '';
+  newDependency.value.predecessorId = '';
   newDependency.value.dependencyType = DependencyType.FINISH_TO_START;
 };
 
-const getTaskTitle = (uuid: string): string => {
-  return props.allTasks.find((task) => task.uuid === uuid)?.title || `${uuid.slice(0, 8)}...`;
+const getTaskTitle = (id: string): string => {
+  return props.allTasks.find((task) => task.id === id)?.title || `${id.slice(0, 8)}...`;
 };
 
 const getDependencyTypeColor = (type: string): string => {

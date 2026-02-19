@@ -14,17 +14,17 @@
           <v-card outlined class="pa-3 mb-3" color="error lighten-5">
             <div class="dependency-path">
               <div
-                v-for="(taskUuid, index) in cyclePath"
-                :key="`${taskUuid}-${index}`"
+                v-for="(taskId, index) in cyclePath"
+                :key="`${taskId}-${index}`"
                 class="path-item"
               >
                 <div class="d-flex align-center">
                   <v-icon color="primary" class="mr-2">mdi-checkbox-marked-circle</v-icon>
                   <div>
                     <div class="font-weight-medium">
-                      {{ getTaskTitle(taskUuid) }}
+                      {{ getTaskTitle(taskId) }}
                     </div>
-                    <div class="text-caption text--secondary">{{ taskUuid.slice(0, 8) }}...</div>
+                    <div class="text-caption text--secondary">{{ taskId.slice(0, 8) }}...</div>
                   </div>
                 </div>
 
@@ -120,11 +120,11 @@ const showViewGraphButton = computed(() => {
   return props.error?.code === 'CIRCULAR_DEPENDENCY';
 });
 
-const getTaskTitle = (taskUuid: string): string => {
-  if (!props.tasks) return taskUuid.slice(0, 8) + '...';
+const getTaskTitle = (taskId: string): string => {
+  if (!props.tasks) return taskId.slice(0, 8) + '...';
 
-  const task = props.tasks.find((t) => t.uuid === taskUuid);
-  return task?.title || taskUuid.slice(0, 8) + '...';
+  const task = props.tasks.find((t) => t.id === taskId);
+  return task?.title || taskId.slice(0, 8) + '...';
 };
 
 const handleClose = () => {

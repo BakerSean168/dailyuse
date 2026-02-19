@@ -57,7 +57,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 // Emits
 const emit = defineEmits<{
-  complete: [uuid: string];
+  complete: [id: string];
 }>();
 
 // Store - TODO: Connect to new domain model
@@ -68,7 +68,7 @@ const isCompleted = computed(() => props.task.isCompleted);
 
 const taskTitle = computed(() => {
   // TODO: Fetch from actual template via ID using new domain service
-  // const template = taskStore.getTaskTemplateByUuid(props.task.templateUuid);
+  // const template = taskStore.getTaskTemplateById(props.task.templateId);
   // return template?.title || 'Unknown Task';
   return 'Refactored Task Title (Linear Style)';
 });
@@ -103,6 +103,6 @@ const timeLabel = computed(() => {
 });
 
 const toggleComplete = () => {
-  emit('complete', props.task.uuid);
+  emit('complete', props.task.id);
 };
 </script>

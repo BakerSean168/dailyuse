@@ -77,7 +77,7 @@ interface PreviewContent {
   url?: string;
   excerpt?: string;
   size?: number;
-  uuid?: string;
+  id?: string;
 }
 
 interface Props {

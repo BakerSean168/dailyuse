@@ -58,7 +58,7 @@
         <div class="weight-list">
           <h3>关键结果详情</h3>
           <div v-if="currentSnapshot" class="kr-items">
-            <div v-for="kr in currentSnapshot.data.keyResults" :key="kr.uuid" class="kr-item">
+            <div v-for="kr in currentSnapshot.data.keyResults" :key="kr.id" class="kr-item">
               <div class="kr-header">
                 <span class="kr-title">{{ kr.title }}</span>
                 <span class="kr-weight">{{ kr.weight.toFixed(1) }}%</span>

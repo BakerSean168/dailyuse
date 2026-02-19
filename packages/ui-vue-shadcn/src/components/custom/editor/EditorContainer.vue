@@ -3,10 +3,10 @@
     <EditorTabBar
       v-if="tabs.length > 0"
       :tabs="tabs"
-      :active-tab="activeTabUuid"
+      :active-tab="activeTabId"
       @tab-click="handleTabClick"
       @tab-close="handleTabClose"
-      @update:active-tab="activeTabUuid = $event"
+      @update:active-tab="activeTabId = $event"
     />
 
     <div class="flex-1 overflow-hidden">
@@ -61,17 +61,17 @@ const emit = defineEmits<Emits>();
 
 const tabs = ref<EditorTab[]>([...props.initialTabs]);
 
-const activeTabUuid = ref<string | undefined>(
+const activeTabId = ref<string | undefined>(
   tabs.value.length > 0 ? tabs.value[0].id : undefined,
 );
 
 const activeTab = computed(() => {
-  if (!activeTabUuid.value) return null;
-  return tabs.value.find((tab) => tab.id === activeTabUuid.value) || null;
+  if (!activeTabId.value) return null;
+  return tabs.value.find((tab) => tab.id === activeTabId.value) || null;
 });
 
 function openFile(file: {
-  uuid?: string;
+  id?: string;
   title: string;
   fileType: 'markdown' | 'image' | 'video' | 'audio';
   filePath: string;
@@ -79,12 +79,12 @@ function openFile(file: {
 }) {
   const existingTab = tabs.value.find((tab) => tab.filePath === file.filePath);
   if (existingTab) {
-    activeTabUuid.value = existingTab.id;
+    activeTabId.value = existingTab.id;
     return existingTab;
   }
 
   const newTab: EditorTab = {
-    id: file.uuid || `tab-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: file.id || `tab-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     title: file.title,
     fileType: file.fileType,
     filePath: file.filePath,
@@ -94,13 +94,13 @@ function openFile(file: {
   };
 
   tabs.value.push(newTab);
-  activeTabUuid.value = newTab.id;
+  activeTabId.value = newTab.id;
 
   return newTab;
 }
 
-function closeTab(tabUuid: string) {
-  const index = tabs.value.findIndex((tab) => tab.id === tabUuid);
+function closeTab(tabId: string) {
+  const index = tabs.value.findIndex((tab) => tab.id === tabId);
   if (index === -1) return;
 
   const tab = tabs.value[index];
@@ -113,12 +113,12 @@ function closeTab(tabUuid: string) {
   tabs.value.splice(index, 1);
   emit('tab-close', tab);
 
-  if (activeTabUuid.value === tabUuid) {
+  if (activeTabId.value === tabId) {
     if (tabs.value.length > 0) {
       const newIndex = Math.min(index, tabs.value.length - 1);
-      activeTabUuid.value = tabs.value[newIndex].id;
+      activeTabId.value = tabs.value[newIndex].id;
     } else {
-      activeTabUuid.value = undefined;
+      activeTabId.value = undefined;
     }
   }
 }
@@ -131,11 +131,11 @@ function closeAllTabs() {
   }
 
   tabs.value = [];
-  activeTabUuid.value = undefined;
+  activeTabId.value = undefined;
 }
 
 function handleTabClick(tab: EditorTab) {
-  activeTabUuid.value = tab.id;
+  activeTabId.value = tab.id;
 }
 
 function handleTabClose(tab: EditorTab) {

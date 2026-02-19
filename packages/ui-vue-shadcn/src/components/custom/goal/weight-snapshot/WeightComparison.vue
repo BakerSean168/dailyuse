@@ -80,16 +80,16 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="kr in comparisonData?.keyResults" :key="kr.uuid">
+              <tr v-for="kr in comparisonData?.keyResults" :key="kr.id">
                 <td class="font-weight-medium">{{ kr.title }}</td>
-                <td v-for="(weight, index) in getKRWeights(kr.uuid)" :key="index">
+                <td v-for="(weight, index) in getKRWeights(kr.id)" :key="index">
                   <v-chip size="small" :color="getWeightChangeColor(weight, index)">
                     {{ weight }}%
                   </v-chip>
                 </td>
                 <td>
-                  <v-chip size="small" :color="getTotalChangeColor(getTotalChange(kr.uuid))">
-                    {{ getTotalChange(kr.uuid) > 0 ? '+' : '' }}{{ getTotalChange(kr.uuid) }}%
+                  <v-chip size="small" :color="getTotalChangeColor(getTotalChange(kr.id))">
+                    {{ getTotalChange(kr.id) > 0 ? '+' : '' }}{{ getTotalChange(kr.id) }}%
                   </v-chip>
                 </td>
               </tr>
@@ -130,7 +130,7 @@ use([
 ]);
 
 const props = defineProps<{
-  goalUuid: string;
+  goalId: string;
 }>();
 
 const {
@@ -188,13 +188,13 @@ const handleTimePointChange = (index: number, event: any) => {
 };
 
 // 获取 KR 权重
-const getKRWeights = (krUuid: string) => {
-  return comparisonData.value?.comparisons[krUuid] || [];
+const getKRWeights = (krId: string) => {
+  return comparisonData.value?.comparisons[krId] || [];
 };
 
 // 获取总变化
-const getTotalChange = (krUuid: string) => {
-  const weights = getKRWeights(krUuid);
+const getTotalChange = (krId: string) => {
+  const weights = getKRWeights(krId);
   if (weights.length < 2) return 0;
   return weights[weights.length - 1] - weights[0];
 };
@@ -202,7 +202,7 @@ const getTotalChange = (krUuid: string) => {
 // 获取权重变化颜色
 const getWeightChangeColor = (weight: number, index: number) => {
   if (index === 0) return 'grey';
-  const prev = getKRWeights(comparisonData.value!.keyResults[0].uuid)[index - 1];
+  const prev = getKRWeights(comparisonData.value!.keyResults[0].id)[index - 1];
   if (weight > prev) return 'success';
   if (weight < prev) return 'error';
   return 'grey';
@@ -224,7 +224,7 @@ const barChartOption = computed(() => {
   const series = timePoints.map((tp, tpIndex) => ({
     name: format(new Date(tp), 'MM-dd HH:mm', { locale: zhCN }),
     type: 'bar',
-    data: keyResults.map((kr) => comparisons[kr.uuid][tpIndex]),
+    data: keyResults.map((kr) => comparisons[kr.id][tpIndex]),
   }));
 
   return {
@@ -294,7 +294,7 @@ const radarChartOption = computed(() => {
   }));
 
   const series = timePoints.map((tp, tpIndex) => ({
-    value: keyResults.map((kr) => comparisons[kr.uuid][tpIndex]),
+    value: keyResults.map((kr) => comparisons[kr.id][tpIndex]),
     name: format(new Date(tp), 'MM-dd HH:mm', { locale: zhCN }),
   }));
 
@@ -327,7 +327,7 @@ const radarChartOption = computed(() => {
 // 加载对比数据
 const loadComparison = async () => {
   const timestamps = selectedTimePoints.value.map((tp) => tp.timestamp);
-  await fetchWeightComparison(props.goalUuid, timestamps);
+  await fetchWeightComparison(props.goalId, timestamps);
 };
 
 // 初始化时间点标签

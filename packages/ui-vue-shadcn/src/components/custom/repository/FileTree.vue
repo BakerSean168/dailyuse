@@ -21,7 +21,7 @@
     </div>
 
     <!-- Empty state -->
-    <div v-if="!repositoryUuid" class="flex flex-col items-center justify-center flex-1 p-8 text-center">
+    <div v-if="!repositoryId" class="flex flex-col items-center justify-center flex-1 p-8 text-center">
       <FolderOff class="h-8 w-8 mb-2 text-muted-foreground" />
       <span class="text-sm text-muted-foreground">请先选择仓储</span>
     </div>
@@ -50,8 +50,8 @@
           :key="node.id"
           :node="node"
           :level="0"
-          :selected-uuid="selectedUuid"
-          :expanded-uuids="expandedUuids"
+          :selected-id="selectedId"
+          :expanded-ids="expandedIds"
           @select="$emit('select-node', $event)"
           @toggle="$emit('toggle-node', $event)"
           @dblclick="$emit('open-resource', $event)"
@@ -70,24 +70,24 @@ import type { TreeNode } from '@dailyuse/contracts/repository';
 import FileTreeNode from './FileTreeNode.vue';
 
 interface Props {
-  repositoryUuid: string | null;
+  repositoryId: string | null;
   nodes: TreeNode[];
-  selectedUuid: string | null;
-  expandedUuids: string[];
+  selectedId: string | null;
+  expandedIds: string[];
   loading?: boolean;
 }
 
 defineProps<Props>();
 
 const emit = defineEmits<{
-  'create-folder': [parentUuid?: string];
-  'create-resource': [folderUuid?: string];
+  'create-folder': [parentId?: string];
+  'create-resource': [folderId?: string];
   'rename-node': [node: TreeNode];
   'delete-node': [node: TreeNode];
   'open-resource': [node: TreeNode];
   'select-node': [node: TreeNode];
   'toggle-node': [node: TreeNode];
-  'ai-generate-knowledge': [parentFolderUuid?: string];
+  'ai-generate-knowledge': [parentFolderId?: string];
   refresh: [];
 }>();
 

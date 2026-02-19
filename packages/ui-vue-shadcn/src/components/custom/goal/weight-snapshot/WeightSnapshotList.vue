@@ -22,7 +22,7 @@
         <v-row class="mb-4">
           <v-col cols="12" md="4">
             <v-select
-              v-model="selectedKRUuid"
+              v-model="selectedKRId"
               :items="krOptions"
               item-title="text"
               item-value="value"
@@ -54,9 +54,9 @@
         <v-list v-else>
           <v-list-item
             v-for="snapshot in filteredSnapshots"
-            :key="snapshot.uuid"
+            :key="snapshot.id"
             class="snapshot-item"
-            @click="toggleDetail(snapshot.uuid)"
+            @click="toggleDetail(snapshot.id)"
           >
             <template #prepend>
               <v-avatar :color="getWeightChangeColor(snapshot.weightDelta)" size="40">
@@ -65,7 +65,7 @@
             </template>
 
             <v-list-item-title>
-              <span class="font-weight-medium">{{ getKRTitle(snapshot.keyResultUuid) }}</span>
+              <span class="font-weight-medium">{{ getKRTitle(snapshot.keyResultId) }}</span>
               <v-chip size="x-small" :color="getTriggerColor(snapshot.trigger)" class="ml-2">
                 {{ getTriggerLabel(snapshot.trigger) }}
               </v-chip>
@@ -95,7 +95,7 @@
 
             <template #append>
               <v-btn
-                :icon="expandedItems.has(snapshot.uuid) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                :icon="expandedItems.has(snapshot.id) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
                 variant="text"
                 size="small"
               />
@@ -103,7 +103,7 @@
 
             <!-- 展开详情 -->
             <v-expand-transition>
-              <div v-if="expandedItems.has(snapshot.uuid)" class="detail-panel mt-3 pa-3">
+              <div v-if="expandedItems.has(snapshot.id)" class="detail-panel mt-3 pa-3">
                 <v-row>
                   <v-col cols="6">
                     <div class="text-caption text-medium-emphasis">调整前权重</div>
@@ -115,7 +115,7 @@
                   </v-col>
                   <v-col cols="12">
                     <div class="text-caption text-medium-emphasis">操作人</div>
-                    <div>{{ snapshot.operatorUuid }}</div>
+                    <div>{{ snapshot.operatorId }}</div>
                   </v-col>
                   <v-col v-if="snapshot.reason" cols="12">
                     <div class="text-caption text-medium-emphasis">调整原因</div>
@@ -149,7 +149,7 @@ import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 
 const props = defineProps<{
-  goalUuid: string;
+  goalId: string;
 }>();
 
 const {
@@ -162,7 +162,7 @@ const {
 const { goals } = useGoal();
 
 // 筛选状态
-const selectedKRUuid = ref<string | null>(null);
+const selectedKRId = ref<string | null>(null);
 const selectedTriggers = ref<string[]>([]);
 const selectedRange = ref<'all' | '7d' | '30d' | '90d'>('all');
 const currentPage = ref(1);
@@ -186,14 +186,14 @@ const triggerOptions = [
 
 // KeyResult 选项
 const krOptions = computed(() => {
-  const goal = goals.value.find((g: any) => g.uuid === props.goalUuid);
+  const goal = goals.value.find((g: any) => g.id === props.goalId);
   if (!goal || !goal.keyResults) return [{ text: '全部', value: null }];
 
   return [
     { text: '全部', value: null },
     ...goal.keyResults.map((kr: any) => ({
       text: kr.title,
-      value: kr.uuid,
+      value: kr.id,
     })),
   ];
 });
@@ -203,8 +203,8 @@ const filteredSnapshots = computed(() => {
   let filtered = goalSnapshots.value;
 
   // 按 KR 筛选
-  if (selectedKRUuid.value) {
-    filtered = filtered.filter((s: any) => s.keyResultUuid === selectedKRUuid.value);
+  if (selectedKRId.value) {
+    filtered = filtered.filter((s: any) => s.keyResultId === selectedKRId.value);
   }
 
   // 按触发方式筛选
@@ -224,9 +224,9 @@ const filteredSnapshots = computed(() => {
 });
 
 // 获取 KR 标题
-const getKRTitle = (krUuid: string) => {
-  const goal = goals.value.find((g: any) => g.uuid === props.goalUuid);
-  const kr = goal?.keyResults?.find((k: any) => k.uuid === krUuid);
+const getKRTitle = (krId: string) => {
+  const goal = goals.value.find((g: any) => g.id === props.goalId);
+  const kr = goal?.keyResults?.find((k: any) => k.id === krId);
   return kr?.title || 'Unknown KR';
 };
 
@@ -272,17 +272,17 @@ const getTriggerColor = (trigger: string) => {
 };
 
 // 切换详情展开/收起
-const toggleDetail = (uuid: string) => {
-  if (expandedItems.value.has(uuid)) {
-    expandedItems.value.delete(uuid);
+const toggleDetail = (id: string) => {
+  if (expandedItems.value.has(id)) {
+    expandedItems.value.delete(id);
   } else {
-    expandedItems.value.add(uuid);
+    expandedItems.value.add(id);
   }
 };
 
 // 加载快照
 const loadSnapshots = async () => {
-  await fetchGoalSnapshots(props.goalUuid, currentPage.value, 20);
+  await fetchGoalSnapshots(props.goalId, currentPage.value, 20);
 };
 
 // 监听分页变化

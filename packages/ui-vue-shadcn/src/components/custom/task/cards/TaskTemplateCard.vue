@@ -393,7 +393,7 @@ const timeLabel = computed(() => {
 
 // 事件处理方法
 const handleEdit = () => {
-  emit('edit', props.template.uuid);
+  emit('edit', props.template.id);
 };
 
 const handleDelete = async () => {

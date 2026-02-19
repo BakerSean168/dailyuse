@@ -34,7 +34,7 @@
         <div v-if="linkEnabled">
           <!-- 目标选择 -->
           <v-select
-            v-model="selectedGoalUuid"
+            v-model="selectedGoalId"
             :items="goalItems"
             label="选择目标"
             placeholder="请选择要关联的目标"
@@ -61,14 +61,14 @@
 
           <!-- 关键结果选择 -->
           <v-select
-            v-model="selectedKeyResultUuid"
+            v-model="selectedKeyResultId"
             :items="keyResultItems"
             label="选择关键结果"
             placeholder="请先选择目标"
             variant="outlined"
             density="comfortable"
             prepend-inner-icon="mdi-target-variant"
-            :disabled="!selectedGoalUuid || loadingKeyResults"
+            :disabled="!selectedGoalId || loadingKeyResults"
             :loading="loadingKeyResults"
             :rules="[rules.required]"
             class="mb-3"
@@ -146,13 +146,13 @@ interface Props {
   modelValue: TaskTemplateViewModel;
   goals?: GoalBindingOption[];
   keyResultsByGoal?: Record<string, KeyResultBindingOption[]>;
-  onRequestKeyResults?: (goalUuid: string) => Promise<KeyResultBindingOption[] | void> | void;
+  onRequestKeyResults?: (goalId: string) => Promise<KeyResultBindingOption[] | void> | void;
 }
 
 interface Emits {
   (e: 'update:modelValue', value: TaskTemplateViewModel): void;
   (e: 'update:validation', isValid: boolean): void;
-  (e: 'request-key-results', goalUuid: string): void;
+  (e: 'request-key-results', goalId: string): void;
 }
 
 const props = defineProps<Props>();
@@ -160,8 +160,8 @@ const emit = defineEmits<Emits>();
 
 // ===== 响应式数据 =====
 const linkEnabled = ref(false);
-const selectedGoalUuid = ref<string | null>(null);
-const selectedKeyResultUuid = ref<string | null>(null);
+const selectedGoalId = ref<string | null>(null);
+const selectedKeyResultId = ref<string | null>(null);
 const incrementValue = ref<number>(1);
 const loadingGoals = ref(false);
 const loadingKeyResults = ref(false);
@@ -184,15 +184,15 @@ const hasGoalBinding = computed(() => {
 const hasCompleteBinding = computed(() => {
   return (
     linkEnabled.value &&
-    selectedGoalUuid.value &&
-    selectedKeyResultUuid.value &&
+    selectedGoalId.value &&
+    selectedKeyResultId.value &&
     incrementValue.value > 0
   );
 });
 
 const goalItems = computed(() => {
   return (props.goals || []).map((g) => ({
-    value: g.uuid,
+    value: g.id,
     title: g.title,
     raw: g,
   }));
@@ -200,7 +200,7 @@ const goalItems = computed(() => {
 
 const keyResultItems = computed(() => {
   return keyResults.value.map((kr) => ({
-    value: kr.uuid,
+    value: kr.id,
     title: kr.title,
     raw: {
       ...kr,
@@ -211,14 +211,14 @@ const keyResultItems = computed(() => {
 });
 
 const selectedGoalTitle = computed(() => {
-  if (!selectedGoalUuid.value) return '';
-  const goal = (props.goals || []).find((g) => g.uuid === selectedGoalUuid.value);
+  if (!selectedGoalId.value) return '';
+  const goal = (props.goals || []).find((g) => g.id === selectedGoalId.value);
   return goal?.title || '';
 });
 
 const selectedKeyResultTitle = computed(() => {
-  if (!selectedKeyResultUuid.value) return '';
-  const kr = keyResults.value.find((k) => k.uuid === selectedKeyResultUuid.value);
+  if (!selectedKeyResultId.value) return '';
+  const kr = keyResults.value.find((k) => k.id === selectedKeyResultId.value);
   return kr?.title || '';
 });
 
@@ -242,16 +242,16 @@ const getProgressColor = (percentage: number): string => {
 };
 
 // ===== 事件处理 =====
-const loadKeyResults = async (goalUuid: string) => {
+const loadKeyResults = async (goalId: string) => {
   try {
     loadingKeyResults.value = true;
-    const fromProps = props.keyResultsByGoal?.[goalUuid];
+    const fromProps = props.keyResultsByGoal?.[goalId];
     if (fromProps) {
       keyResults.value = fromProps;
       return;
     }
-    emit('request-key-results', goalUuid);
-    const loaded = await props.onRequestKeyResults?.(goalUuid);
+    emit('request-key-results', goalId);
+    const loaded = await props.onRequestKeyResults?.(goalId);
     if (loaded && Array.isArray(loaded)) {
       keyResults.value = loaded;
     }
@@ -273,22 +273,22 @@ const handleLinkToggle = (enabled: boolean | null) => {
     emit('update:modelValue', updated);
 
     // 重置选择
-    selectedGoalUuid.value = null;
-    selectedKeyResultUuid.value = null;
+    selectedGoalId.value = null;
+    selectedKeyResultId.value = null;
     incrementValue.value = 1;
   }
 
   validateAndEmit();
 };
 
-const handleGoalChange = async (goalUuid: string | null) => {
+const handleGoalChange = async (goalId: string | null) => {
   // 重置关键结果选择
-  selectedKeyResultUuid.value = null;
+  selectedKeyResultId.value = null;
   keyResults.value = [];
 
-  if (goalUuid) {
+  if (goalId) {
     // 加载选中目标的关键结果
-    await loadKeyResults(goalUuid);
+    await loadKeyResults(goalId);
     updateBinding();
   }
 
@@ -308,8 +308,8 @@ const handleIncrementChange = () => {
 const updateBinding = () => {
   if (
     !linkEnabled.value ||
-    !selectedGoalUuid.value ||
-    !selectedKeyResultUuid.value ||
+    !selectedGoalId.value ||
+    !selectedKeyResultId.value ||
     incrementValue.value <= 0
   ) {
     return;
@@ -318,8 +318,8 @@ const updateBinding = () => {
   const updated: TaskTemplateViewModel = {
     ...props.modelValue,
     goalBinding: {
-      goalUuid: selectedGoalUuid.value,
-      keyResultUuid: selectedKeyResultUuid.value,
+      goalId: selectedGoalId.value,
+      keyResultId: selectedKeyResultId.value,
       incrementValue: incrementValue.value,
       goalTitle: selectedGoalTitle.value,
       keyResultTitle: selectedKeyResultTitle.value,
@@ -332,8 +332,8 @@ const validateAndEmit = () => {
   // 如果启用了关联，必须完整填写所有字段
   const isValid =
     !linkEnabled.value ||
-    (!!selectedGoalUuid.value &&
-      !!selectedKeyResultUuid.value &&
+    (!!selectedGoalId.value &&
+      !!selectedKeyResultId.value &&
       incrementValue.value > 0 &&
       incrementValue.value <= 1000);
 
@@ -345,13 +345,13 @@ const initializeFromModel = () => {
   const binding = props.modelValue.goalBinding;
   if (binding) {
     linkEnabled.value = true;
-    selectedGoalUuid.value = binding.goalUuid;
-    selectedKeyResultUuid.value = binding.keyResultUuid;
+    selectedGoalId.value = binding.goalId;
+    selectedKeyResultId.value = binding.keyResultId;
     incrementValue.value = binding.incrementValue;
   } else {
     linkEnabled.value = false;
-    selectedGoalUuid.value = null;
-    selectedKeyResultUuid.value = null;
+    selectedGoalId.value = null;
+    selectedKeyResultId.value = null;
     incrementValue.value = 1;
   }
 };
@@ -362,8 +362,8 @@ onMounted(async () => {
   initializeFromModel();
 
   // 如果有已选择的目标，加载其关键结果
-  if (selectedGoalUuid.value) {
-    await loadKeyResults(selectedGoalUuid.value);
+  if (selectedGoalId.value) {
+    await loadKeyResults(selectedGoalId.value);
   }
 
   // 初始验证

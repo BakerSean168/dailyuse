@@ -104,8 +104,8 @@ import { useGoal } from '../../composables/useGoal';
 const { createGoalRecord, goals } = useGoal();
 
 const visible = ref(false);
-const propKeyResultUuid = ref<string>('');
-const propGoalUuid = ref<string>('');
+const propKeyResultId = ref<string>('');
+const propGoalId = ref<string>('');
 const propRecord = ref<GoalRecordClientDTO | null>(null);
 
 const quickValues = [1, 2, 5, 10];
@@ -131,13 +131,13 @@ const isValid = computed(() => formValid.value && localRecord.value.changeAmount
 
 const handleCreateKeyResult = async () => {
   // 获取当前 KeyResult
-  const currentGoal = goals.value.find((g: any) => g.uuid === propGoalUuid.value);
+  const currentGoal = goals.value.find((g: any) => g.id === propGoalId.value);
   if (!currentGoal) {
     console.error('未找到目标');
     return;
   }
   
-  const currentKeyResult = currentGoal.keyResults.find((kr: any) => kr.uuid === propKeyResultUuid.value);
+  const currentKeyResult = currentGoal.keyResults.find((kr: any) => kr.id === propKeyResultId.value);
   if (!currentKeyResult) {
     console.error('未找到关键结果');
     return;
@@ -145,7 +145,7 @@ const handleCreateKeyResult = async () => {
 
   // ✅ 新的数据模型：value 就是本次记录的独立值
   // 不需要再加上 previousValue
-  await createGoalRecord(propGoalUuid.value, propKeyResultUuid.value, {
+  await createGoalRecord(propGoalId.value, propKeyResultId.value, {
     value: localRecord.value.changeAmount,  // ✅ 直接传递用户输入的值
     note: localRecord.value.note,
     recordedAt: Date.now(),
@@ -167,9 +167,9 @@ const handleCancel = () => {
   closeDialog();
 };
 
-const openDialog = (goalUuid: string, keyResultUuid: string, record?: GoalRecordClientDTO) => {
-  propGoalUuid.value = goalUuid;
-  propKeyResultUuid.value = keyResultUuid;
+const openDialog = (goalId: string, keyResultId: string, record?: GoalRecordClientDTO) => {
+  propGoalId.value = goalId;
+  propKeyResultId.value = keyResultId;
   propRecord.value = record || null;
   visible.value = true;
 };

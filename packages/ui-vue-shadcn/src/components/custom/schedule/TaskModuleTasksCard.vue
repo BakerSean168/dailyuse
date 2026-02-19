@@ -147,10 +147,10 @@ interface Props {
 const props = defineProps<Props>();
 
 defineEmits<{
-  'pause-task': [taskUuid: string];
-  'resume-task': [taskUuid: string];
-  'delete-task': [taskUuid: string];
-  'view-detail': [taskUuid: string];
+  'pause-task': [taskId: string];
+  'resume-task': [taskId: string];
+  'delete-task': [taskId: string];
+  'view-detail': [taskId: string];
 }>();
 
 function getStatusVariant(): BadgeVariants['variant'] {

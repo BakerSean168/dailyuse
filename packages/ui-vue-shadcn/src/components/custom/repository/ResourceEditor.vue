@@ -45,7 +45,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 interface Props {
-  resourceUuid: string;
+  resourceId: string;
   resourceName?: string;
   content?: string;
   isSaving?: boolean;

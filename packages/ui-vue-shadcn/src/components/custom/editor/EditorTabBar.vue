@@ -52,7 +52,7 @@ const props = withDefaults(defineProps<Props>(), {
 interface Emits {
   (e: 'tab-click', tab: EditorTab): void;
   (e: 'tab-close', tab: EditorTab): void;
-  (e: 'update:activeTab', uuid: string): void;
+  (e: 'update:activeTab', id: string): void;
 }
 
 const emit = defineEmits<Emits>();

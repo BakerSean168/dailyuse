@@ -147,7 +147,7 @@
             <div v-else class="space-y-2">
               <div
                 v-for="execution in executions"
-                :key="execution.uuid"
+                :key="execution.id"
                 class="flex items-center justify-between p-3 border rounded-lg"
               >
                 <div class="flex items-center gap-3">
@@ -203,7 +203,7 @@ import {
 } from 'lucide-vue-next';
 
 interface ScheduleTask {
-  uuid: string;
+  id: string;
   name: string;
   description?: string;
   sourceModule: string;
@@ -225,7 +225,7 @@ interface ScheduleTask {
 }
 
 interface Execution {
-  uuid: string;
+  id: string;
   executionTime: number;
   status: string;
   duration?: number;

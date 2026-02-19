@@ -16,9 +16,9 @@
           <AlertDescription>
             <div class="flex items-center gap-2 mt-1">
               <Bell class="h-4 w-4" />
-              <span class="font-medium">{{ template.title }}</span>
+              <span class="font-medium">{{ template.name }}</span>
             </div>
-            <div v-if="template.groupUuid" class="flex items-center gap-2 mt-1 text-xs">
+            <div v-if="template.groupId" class="flex items-center gap-2 mt-1 text-xs">
               <Folder class="h-3 w-3" />
               <span>Current group: {{ getCurrentGroupName() }}</span>
             </div>
@@ -28,21 +28,21 @@
         <!-- Target Group Selection -->
         <div class="space-y-2">
           <Label>Target Group *</Label>
-          <Select v-model="selectedGroupUuid" :disabled="moveToRoot">
+          <Select v-model="selectedGroupId" :disabled="moveToRoot">
             <SelectTrigger>
               <SelectValue placeholder="Select target group" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
                 v-for="group in groupOptions"
-                :key="group.uuid"
-                :value="group.uuid"
-                :disabled="group.uuid === template?.groupUuid"
+                :key="group.id"
+                :value="group.id"
+                :disabled="group.id === template?.groupId"
               >
                 <div class="flex items-center gap-2">
                   <component :is="getGroupIcon(group.icon)" class="h-4 w-4" />
                   <span>{{ group.name }}</span>
-                  <Badge v-if="group.uuid === template?.groupUuid" variant="outline" class="ml-auto">
+                  <Badge v-if="group.id === template?.groupId" variant="outline" class="ml-auto">>
                     Current
                   </Badge>
                 </div>
@@ -76,20 +76,20 @@
         </Alert>
 
         <!-- Target Group Info -->
-        <Card v-if="selectedGroupUuid && !moveToRoot" class="p-4">
+        <Card v-if="selectedGroupId && !moveToRoot" class="p-4">
           <h4 class="text-sm font-semibold mb-2">Target Group Info</h4>
           <div class="space-y-2 text-sm">
             <div class="flex items-center gap-2">
               <Info class="h-4 w-4 text-muted-foreground" />
-              <span>Name: {{ getGroupName(selectedGroupUuid) }}</span>
+              <span>Name: {{ getGroupName(selectedGroupId) }}</span>
             </div>
             <div class="flex items-center gap-2">
               <Hash class="h-4 w-4 text-muted-foreground" />
-              <span>Templates: {{ getGroupTemplateCount(selectedGroupUuid) }}</span>
+              <span>Templates: {{ getGroupTemplateCount(selectedGroupId) }}</span>
             </div>
             <div class="flex items-center gap-2">
               <CheckCircle2 class="h-4 w-4 text-muted-foreground" />
-              <span>Status: {{ getGroupStatus(selectedGroupUuid) }}</span>
+              <span>Status: {{ getGroupStatus(selectedGroupId) }}</span>
             </div>
           </div>
         </Card>
@@ -143,16 +143,16 @@ import {
 } from '@/components/ui/select';
 
 interface ReminderTemplate {
-  uuid: string;
-  title: string;
-  groupUuid?: string;
+  id: string;
+  name: string;
+  groupId?: string | null;
 }
 
 interface ReminderGroup {
-  uuid: string;
+  id: string;
   name: string;
-  description?: string;
-  icon?: string;
+  description?: string | null;
+  icon?: string | null;
   enabled: boolean;
 }
 
@@ -169,18 +169,18 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  'moved': [templateUuid: string, targetGroupUuid: string | null];
+  'moved': [templateId: string, targetGroupId: string | null];
   'closed': [];
 }>();
 
 const visible = ref(false);
-const selectedGroupUuid = ref<string | undefined>(undefined);
+const selectedGroupId = ref<string | undefined>(undefined);
 const moveToRoot = ref(false);
 const isMoving = ref(false);
 
 const groupOptions = computed(() => {
   return props.groups.map(group => ({
-    uuid: group.uuid,
+    id: group.id,
     name: group.name,
     icon: group.icon || 'mdi-folder',
     enabled: group.enabled,
@@ -190,28 +190,28 @@ const groupOptions = computed(() => {
 const canMove = computed(() => {
   if (!props.template) return false;
   if (moveToRoot.value) return true;
-  if (!selectedGroupUuid.value) return false;
-  return selectedGroupUuid.value !== props.template.groupUuid;
+  if (!selectedGroupId.value) return false;
+  return selectedGroupId.value !== props.template.groupId;
 });
 
 const getCurrentGroupName = (): string => {
-  if (!props.template?.groupUuid) return 'None';
-  const group = props.groups.find(g => g.uuid === props.template!.groupUuid);
+  if (!props.template?.groupId) return 'None';
+  const group = props.groups.find(g => g.id === props.template!.groupId);
   return group?.name || 'Unknown Group';
 };
 
-const getGroupName = (groupUuid: string): string => {
-  const group = props.groups.find(g => g.uuid === groupUuid);
+const getGroupName = (groupId: string): string => {
+  const group = props.groups.find(g => g.id === groupId);
   return group?.name || 'Unknown';
 };
 
-const getGroupStatus = (groupUuid: string): string => {
-  const group = props.groups.find(g => g.uuid === groupUuid);
+const getGroupStatus = (groupId: string): string => {
+  const group = props.groups.find(g => g.id === groupId);
   return group?.enabled ? 'Enabled' : 'Disabled';
 };
 
-const getGroupTemplateCount = (groupUuid: string): number => {
-  return props.templates.filter(t => t.groupUuid === groupUuid).length;
+const getGroupTemplateCount = (groupId: string): number => {
+  return props.templates.filter(t => t.groupId === groupId).length;
 };
 
 const getGroupIcon = (icon?: string) => {
@@ -220,7 +220,7 @@ const getGroupIcon = (icon?: string) => {
 
 const handleMoveToRootChange = (value: boolean) => {
   if (value) {
-    selectedGroupUuid.value = undefined;
+    selectedGroupId.value = undefined;
   }
 };
 
@@ -244,7 +244,7 @@ const handleVisibleChange = (value: boolean) => {
 };
 
 const resetForm = () => {
-  selectedGroupUuid.value = props.template?.groupUuid || undefined;
+  selectedGroupId.value = props.template?.groupId || undefined;
   moveToRoot.value = false;
 };
 
@@ -253,8 +253,8 @@ const handleMove = async () => {
 
   isMoving.value = true;
   try {
-    const targetGroupUuid = moveToRoot.value ? null : (selectedGroupUuid.value ?? null);
-    emit('moved', props.template.uuid, targetGroupUuid);
+    const targetGroupId = moveToRoot.value ? null : (selectedGroupId.value ?? null);
+    emit('moved', props.template.id, targetGroupId);
     close();
   } finally {
     isMoving.value = false;
@@ -263,11 +263,11 @@ const handleMove = async () => {
 
 watch(() => props.template, (newTemplate) => {
   if (newTemplate) {
-    selectedGroupUuid.value = newTemplate.groupUuid || undefined;
+    selectedGroupId.value = newTemplate.groupId || undefined;
   }
 }, { immediate: true });
 
-watch(selectedGroupUuid, (newVal) => {
+watch(selectedGroupId, (newVal) => {
   if (newVal) {
     moveToRoot.value = false;
   }

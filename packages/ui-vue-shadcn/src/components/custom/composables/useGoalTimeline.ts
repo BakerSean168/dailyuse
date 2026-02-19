@@ -29,7 +29,7 @@ export const useGoalTimeline = (goalRef: Ref<any>) => {
                 0,
               ) / keyResults.length,
         keyResults: keyResults.map((kr: any) => ({
-          uuid: String(kr.id ?? kr.uuid ?? ''),
+          id: String(kr.id ?? ''),
           title: kr.title ?? 'KR',
           weight: kr.weight ?? 0,
           progress:

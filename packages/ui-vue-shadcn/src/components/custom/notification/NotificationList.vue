@@ -46,7 +46,7 @@ withDefaults(defineProps<Props>(), {
 
 defineEmits<{
   'notification-click': [notification: NotificationClientDTO];
-  'mark-read': [uuid: string];
-  delete: [uuid: string];
+  'mark-read': [id: string];
+  delete: [id: string];
 }>();
 </script>

@@ -116,7 +116,7 @@ import { Separator } from '@/components/ui/separator';
 import type { SearchMode, SearchResultItem, SearchMatch } from '@dailyuse/contracts/repository';
 
 interface Props {
-  repositoryUuid: string;
+  repositoryId: string;
   results?: SearchResultItem[];
   searching?: boolean;
   hasSearched?: boolean;

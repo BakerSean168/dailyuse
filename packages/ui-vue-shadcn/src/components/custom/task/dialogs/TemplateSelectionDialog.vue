@@ -20,12 +20,12 @@
         <v-card
           v-else
           v-for="template in templates"
-          :key="template.uuid"
+          :key="template.id"
           class="template-type-card"
-          :class="{ selected: selectedUuid === template.uuid }"
+          :class="{ selected: selectedId === template.id }"
           elevation="2"
           hover
-          @click="selectedUuid = template.uuid"
+          @click="selectedId = template.id"
         >
           <v-card-text class="text-center pa-4">
             <v-avatar color="primary" size="64" class="mb-3">
@@ -40,7 +40,7 @@
       <v-card-actions class="dialog-actions">
         <v-spacer />
         <v-btn variant="text" @click="emit('cancel')">取消</v-btn>
-        <v-btn color="primary" variant="elevated" :disabled="!selectedUuid" @click="confirmSelection">
+        <v-btn color="primary" variant="elevated" :disabled="!selectedId" @click="confirmSelection">
           使用模板
         </v-btn>
       </v-card-actions>
@@ -64,24 +64,24 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
-  (e: 'confirm', templateUuid: string): void;
+  (e: 'confirm', templateId: string): void;
   (e: 'cancel'): void;
 }>();
 
-const selectedUuid = ref('');
+const selectedId = ref('');
 
 watch(
   () => props.modelValue,
   (open) => {
     if (!open) {
-      selectedUuid.value = '';
+      selectedId.value = '';
     }
   },
 );
 
 const confirmSelection = () => {
-  if (!selectedUuid.value) return;
-  emit('confirm', selectedUuid.value);
+  if (!selectedId.value) return;
+  emit('confirm', selectedId.value);
 };
 </script>
 

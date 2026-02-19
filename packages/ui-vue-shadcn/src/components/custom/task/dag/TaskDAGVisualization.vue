@@ -66,10 +66,10 @@ const showCriticalPath = ref(false);
 
 const adjacency = computed(() => {
   const map = new Map<string, string[]>();
-  props.tasks.forEach((task) => map.set(task.uuid, []));
+  props.tasks.forEach((task) => map.set(task.id, []));
   props.dependencies.forEach((dep) => {
-    const predecessor = dep.predecessorTaskUuid;
-    const successor = dep.successorTaskUuid;
+    const predecessor = dep.predecessorTaskId;
+    const successor = dep.successorTaskId;
     if (!map.has(predecessor)) map.set(predecessor, []);
     map.get(predecessor)?.push(successor);
   });
@@ -82,13 +82,13 @@ const criticalPath = computed(() => {
   const longest = new Map<string, number>();
 
   props.tasks.forEach((task) => {
-    indegree.set(task.uuid, 0);
-    predecessor.set(task.uuid, null);
-    longest.set(task.uuid, task.estimatedMinutes || 0);
+    indegree.set(task.id, 0);
+    predecessor.set(task.id, null);
+    longest.set(task.id, task.estimatedMinutes || 0);
   });
 
   props.dependencies.forEach((dep) => {
-    indegree.set(dep.successorTaskUuid, (indegree.get(dep.successorTaskUuid) || 0) + 1);
+    indegree.set(dep.successorTaskId, (indegree.get(dep.successorTaskId) || 0) + 1);
   });
 
   const queue: string[] = [];
@@ -99,7 +99,7 @@ const criticalPath = computed(() => {
   while (queue.length) {
     const current = queue.shift()!;
     for (const next of adjacency.value.get(current) || []) {
-      const nextTask = props.tasks.find((task) => task.uuid === next);
+      const nextTask = props.tasks.find((task) => task.id === next);
       const candidate = (longest.get(current) || 0) + (nextTask?.estimatedMinutes || 0);
       if (candidate > (longest.get(next) || 0)) {
         longest.set(next, candidate);
@@ -138,28 +138,28 @@ const dagOption = computed<EChartsOption>(() => {
   const criticalSet = new Set(showCriticalPath.value ? criticalPath.value.path : []);
 
   const nodes = props.tasks.map((task) => ({
-    id: task.uuid,
+    id: task.id,
     name: task.title,
     value: task.estimatedMinutes || 0,
-    symbolSize: criticalSet.has(task.uuid) ? 52 : 42,
+    symbolSize: criticalSet.has(task.id) ? 52 : 42,
     itemStyle: {
-      color: criticalSet.has(task.uuid) ? '#E53935' : task.status === 'COMPLETED' ? '#4CAF50' : '#2196F3',
+      color: criticalSet.has(task.id) ? '#E53935' : task.status === 'COMPLETED' ? '#4CAF50' : '#2196F3',
     },
     label: { show: true },
     task,
   }));
 
   const links = props.dependencies.map((dep) => ({
-    source: dep.predecessorTaskUuid,
-    target: dep.successorTaskUuid,
+    source: dep.predecessorTaskId,
+    target: dep.successorTaskId,
     value: dep.dependencyType,
     lineStyle: {
       color:
-        criticalSet.has(dep.predecessorTaskUuid) && criticalSet.has(dep.successorTaskUuid)
+        criticalSet.has(dep.predecessorTaskId) && criticalSet.has(dep.successorTaskId)
           ? '#E53935'
           : '#9E9E9E',
       width:
-        criticalSet.has(dep.predecessorTaskUuid) && criticalSet.has(dep.successorTaskUuid)
+        criticalSet.has(dep.predecessorTaskId) && criticalSet.has(dep.successorTaskId)
           ? 3
           : 1.5,
     },

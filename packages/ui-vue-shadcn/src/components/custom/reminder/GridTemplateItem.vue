@@ -25,7 +25,7 @@
       'text-xs text-center line-clamp-2 font-medium',
       isTemplateEnabled ? 'text-foreground' : 'text-muted-foreground'
     ]">
-      {{ item.title }}
+      {{ item.name }}
     </p>
 
     <!-- Status Indicator -->
@@ -81,8 +81,8 @@ import { ref, computed, inject } from 'vue';
 import { Bell, FolderInput, Pencil, Trash2 } from 'lucide-vue-next';
 
 interface ReminderTemplate {
-  uuid: string;
-  title: string;
+  id: string;
+  name: string;
   effectiveEnabled: boolean;
 }
 

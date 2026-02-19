@@ -121,7 +121,7 @@ interface Props {
   goals?: Array<{ id: string; title: string }>;
   onRefresh?: () => Promise<void>;
   onExtend?: (item: FocusModeClientDTO, newEndTime: number) => Promise<void>;
-  onDeactivate?: (uuid: string) => Promise<void>;
+  onDeactivate?: (id: string) => Promise<void>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -133,7 +133,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   refresh: [];
   extend: [item: FocusModeClientDTO, newEndTime: number];
-  deactivate: [uuid: string];
+  deactivate: [id: string];
 }>();
 
 onMounted(async () => {

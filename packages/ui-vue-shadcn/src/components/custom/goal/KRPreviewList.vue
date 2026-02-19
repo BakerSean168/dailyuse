@@ -24,7 +24,7 @@
     <div v-else class="space-y-3" data-testid="kr-preview-list">
       <Card
         v-for="(kr, index) in keyResults"
-        :key="kr.uuid || index"
+        :key="kr.id || index"
         :class="[
           'p-4 transition-all',
           kr.selected ? 'border-primary bg-primary/5' : 'opacity-60'
@@ -261,7 +261,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from '../../ui/textarea';
 
 export interface KeyResultPreview {
-  uuid?: string;
+  id?: string;
   title: string;
   description?: string;
   targetValue: number;
@@ -306,7 +306,7 @@ const isEditFormValid = computed(() => {
 
 function loadResults(results: any[]) {
   keyResults.value = results.map((kr: any) => ({
-    uuid: kr.uuid || crypto.randomUUID(),
+    id: kr.id || crypto.randomUUID(),
     title: kr.title || kr.name || '',
     description: kr.description || '',
     targetValue: kr.targetValue || kr.target || 0,

@@ -33,7 +33,7 @@
           <thead>
             <tr class="table-header">
               <th class="text-left font-weight-bold text-subtitle-1" style="min-width: 150px;">指标</th>
-              <th v-for="goal in goals" :key="goal.uuid" class="text-left" style="min-width: 200px;">
+              <th v-for="goal in goals" :key="goal.id" class="text-left" style="min-width: 200px;">
                 <div class="d-flex align-center pa-2">
                   <div class="goal-color-dot mr-3" :style="{ backgroundColor: goal.color || '#2196F3' }" />
                   <div>
@@ -51,7 +51,7 @@
                   <v-icon size="small" class="mr-2" color="primary">mdi-target</v-icon>
                   关键结果数量
                 </td>
-                <td v-for="goal in goals" :key="`kr-count-${goal.uuid}`">
+                <td v-for="goal in goals" :key="`kr-count-${goal.id}`">
                   <v-chip size="default" color="primary" variant="tonal" class="px-4">
                     <v-icon left size="small">mdi-numeric</v-icon>
                     {{ getKRCount(goal) }} 个
@@ -65,7 +65,7 @@
                   <v-icon size="small" class="mr-2" color="success">mdi-chart-line</v-icon>
                   整体进度
                 </td>
-                <td v-for="goal in goals" :key="`progress-${goal.uuid}`">
+                <td v-for="goal in goals" :key="`progress-${goal.id}`">
                   <div class="progress-cell">
                     <v-progress-linear
                       :model-value="getProgress(goal)"
@@ -90,7 +90,7 @@
                   <v-icon size="small" class="mr-2" color="warning">mdi-weight</v-icon>
                   权重总和
                 </td>
-                <td v-for="goal in goals" :key="`weight-${goal.uuid}`">
+                <td v-for="goal in goals" :key="`weight-${goal.id}`">
                   <v-chip
                     size="default"
                     :color="getTotalWeight(goal) === 100 ? 'success' : 'error'"
@@ -109,7 +109,7 @@
                   <v-icon size="small" class="mr-2" color="info">mdi-chart-pie</v-icon>
                   平均权重
                 </td>
-                <td v-for="goal in goals" :key="`avg-weight-${goal.uuid}`">
+                <td v-for="goal in goals" :key="`avg-weight-${goal.id}`">
                   <span class="text-body-1 font-weight-medium"> {{ getAverageWeight(goal) }}% </span>
                 </td>
               </tr>
@@ -120,7 +120,7 @@
                   <v-icon size="small" class="mr-2" color="secondary">mdi-flag</v-icon>
                   状态
                 </td>
-                <td v-for="goal in goals" :key="`status-${goal.uuid}`">
+                <td v-for="goal in goals" :key="`status-${goal.id}`">
                   <v-chip size="default" :color="getStatusColor(goal)" variant="tonal" class="px-4">
                     {{ getStatusText(goal) }}
                   </v-chip>
@@ -133,7 +133,7 @@
                   <v-icon size="small" class="mr-2">mdi-calendar-plus</v-icon>
                   创建时间
                 </td>
-                <td v-for="goal in goals" :key="`created-${goal.uuid}`" class="text-body-2">
+                <td v-for="goal in goals" :key="`created-${goal.id}`" class="text-body-2">
                   {{ formatDate(goal.createdAt) }}
                 </td>
               </tr>
@@ -144,7 +144,7 @@
                   <v-icon size="small" class="mr-2">mdi-calendar-edit</v-icon>
                   最后更新
                 </td>
-                <td v-for="goal in goals" :key="`updated-${goal.uuid}`" class="text-body-2">
+                <td v-for="goal in goals" :key="`updated-${goal.id}`" class="text-body-2">
                   {{ formatDate(goal.updatedAt) }}
                 </td>
               </tr>
@@ -155,7 +155,7 @@
                   <v-icon size="small" class="mr-2">mdi-clock-outline</v-icon>
                   活跃天数
                 </td>
-                <td v-for="goal in goals" :key="`days-${goal.uuid}`">
+                <td v-for="goal in goals" :key="`days-${goal.id}`">
                   <v-chip size="default" color="orange" variant="tonal" class="px-4">
                     <v-icon left size="small">mdi-calendar-range</v-icon>
                     {{ getActiveDays(goal) }} 天
@@ -174,7 +174,7 @@
             <div class="chart-card pa-4">
               <div class="text-subtitle-2 mb-3 font-weight-bold">关键结果数量对比</div>
               <div class="d-flex align-center justify-space-around">
-                <div v-for="goal in goals" :key="`kr-chart-${goal.uuid}`" class="text-center">
+                <div v-for="goal in goals" :key="`kr-chart-${goal.id}`" class="text-center">
                   <div
                     class="stat-circle"
                     :style="{
@@ -195,7 +195,7 @@
           <v-col cols="12" md="6">
             <div class="chart-card pa-4">
               <div class="text-subtitle-2 mb-3 font-weight-bold">进度对比</div>
-              <div v-for="goal in goals" :key="`progress-chart-${goal.uuid}`" class="mb-3">
+              <div v-for="goal in goals" :key="`progress-chart-${goal.id}`" class="mb-3">
                 <div class="d-flex align-center mb-1">
                   <v-chip size="x-small" :color="goal.color || 'primary'" class="mr-2" />
                   <span class="text-caption">{{ goal.title }}</span>
@@ -219,7 +219,7 @@
               <v-row>
                 <v-col
                   v-for="goal in goals"
-                  :key="`weight-dist-${goal.uuid}`"
+                  :key="`weight-dist-${goal.id}`"
                   :cols="12 / goals.length"
                 >
                   <div class="text-center mb-2">

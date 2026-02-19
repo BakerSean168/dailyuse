@@ -149,7 +149,7 @@ import {
 use([TitleComponent, TooltipComponent, LegendComponent, GraphChart, CanvasRenderer]);
 
 const props = defineProps<{
-  goalUuid: string;
+  goalId: string;
   syncViewport?: boolean; // 是否启用视口同步
   compact?: boolean; // 紧凑模式（用于对比视图）
 }>();
@@ -210,7 +210,7 @@ const calculateHierarchicalLayout = () => {
 
   // Goal 节点居中
   nodes.push({
-    id: localGoal.value.uuid,
+    id: localGoal.value.id,
     name: localGoal.value.title,
     x: containerWidth / 2,
     y: goalY,
@@ -224,7 +224,7 @@ const calculateHierarchicalLayout = () => {
   const krSpacing = krs.length > 1 ? containerWidth / (krs.length + 1) : containerWidth / 2;
   krs.forEach((kr: any, index: number) => {
     nodes.push({
-      id: kr.uuid,
+      id: kr.id,
       name: kr.title,
       value: kr.weight,
       x: krSpacing * (index + 1),
@@ -237,8 +237,8 @@ const calculateHierarchicalLayout = () => {
   });
 
   const links = krs.map((kr: any) => ({
-    source: localGoal.value!.uuid,
-    target: kr.uuid,
+    source: localGoal.value!.id,
+    target: kr.id,
     lineStyle: {
       width: Math.max(1, kr.weight / 2),
       color: '#999',
@@ -256,14 +256,14 @@ const calculateForceLayout = () => {
 
   const nodes = [
     {
-      id: localGoal.value.uuid,
+      id: localGoal.value.id,
       name: localGoal.value.title,
       symbolSize: 80,
       itemStyle: { color: '#2196F3' },
       category: 0,
     },
     ...krs.map((kr: any) => ({
-      id: kr.uuid,
+      id: kr.id,
       name: kr.title,
       value: kr.weight,
       symbolSize: 40 + kr.weight * 0.4,
@@ -273,8 +273,8 @@ const calculateForceLayout = () => {
   ];
 
   const links = krs.map((kr: any) => ({
-    source: localGoal.value!.uuid,
-    target: kr.uuid,
+    source: localGoal.value!.id,
+    target: kr.id,
     lineStyle: {
       width: Math.max(1, kr.weight / 2),
       color: '#999',
@@ -289,7 +289,7 @@ const dagOption = computed<EChartsOption>(() => {
   if (!localGoal.value || !hasKeyResults.value) return {};
 
   // 从 localStorage 加载保存的布局
-  const savedLayout = loadLayout(props.goalUuid);
+  const savedLayout = loadLayout(props.goalId);
 
   let graphData;
   if (layoutType.value === 'hierarchical') {
@@ -400,9 +400,9 @@ const dagOption = computed<EChartsOption>(() => {
 });
 
 // 保存布局到 localStorage
-const saveLayout = (goalUuid: string, positions: any[]) => {
+const saveLayout = (goalId: string, positions: any[]) => {
   try {
-    localStorage.setItem(`dag-layout-${goalUuid}`, JSON.stringify(positions));
+    localStorage.setItem(`dag-layout-${goalId}`, JSON.stringify(positions));
     hasCustomLayout.value = true;
   } catch (error) {
     console.error('Failed to save layout:', error);
@@ -410,9 +410,9 @@ const saveLayout = (goalUuid: string, positions: any[]) => {
 };
 
 // 从 localStorage 加载布局
-const loadLayout = (goalUuid: string) => {
+const loadLayout = (goalId: string) => {
   try {
-    const saved = localStorage.getItem(`dag-layout-${goalUuid}`);
+    const saved = localStorage.getItem(`dag-layout-${goalId}`);
     return saved ? JSON.parse(saved) : null;
   } catch (error) {
     console.error('Failed to load layout:', error);
@@ -423,7 +423,7 @@ const loadLayout = (goalUuid: string) => {
 // 重置布局
 const resetLayout = () => {
   try {
-    localStorage.removeItem(`dag-layout-${props.goalUuid}`);
+    localStorage.removeItem(`dag-layout-${props.goalId}`);
     hasCustomLayout.value = false;
     // 强制重新渲染图表
     nextTick(() => {
@@ -463,7 +463,7 @@ watch(chartRef, (chart) => {
               x: node.x,
               y: node.y,
             }));
-            saveLayout(props.goalUuid, positions);
+            saveLayout(props.goalId, positions);
           }
         }, 500);
 
@@ -615,12 +615,12 @@ const updateViewport = (viewport: { zoom: number; center: [number, number] }) =>
 
 // 加载目标数据
 const loadGoalData = async () => {
-  if (!props.goalUuid) return;
+  if (!props.goalId) return;
   
   loadError.value = null;
   isLoading.value = true;
   try {
-    const result = await getGoalAggregateView(props.goalUuid);
+    const result = await getGoalAggregateView(props.goalId);
     // 将 Goal 实体转换为可用的数据格式
     const data = result as any;
     localGoal.value = data?.goal ? (data.goal.toClientDTO ? data.goal.toClientDTO(true) : data.goal) : data;
@@ -663,7 +663,7 @@ onMounted(async () => {
   }
 
   // 加载 Goal 数据
-  if (props.goalUuid) {
+  if (props.goalId) {
     await loadGoalData();
   }
 });
