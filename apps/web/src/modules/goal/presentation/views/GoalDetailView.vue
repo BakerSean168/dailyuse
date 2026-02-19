@@ -19,7 +19,7 @@
                 <CardDescription>{{ goal.description || '暂无描述' }}</CardDescription>
               </div>
               <div class="flex gap-2">
-                <Badge :variant="goal.status === 'ACTIVE' ? 'default' : 'secondary'">{{ goal.status }}</Badge>
+                <Badge :variant="goal.status === 'Active' ? 'default' : 'secondary'">{{ goal.status }}</Badge>
                 <Badge variant="outline">{{ goal.importance }}</Badge>
               </div>
             </div>
@@ -94,9 +94,9 @@
             >
               <div>
                 <p class="text-sm font-medium">记录值: {{ record.value }}</p>
-                <p class="text-xs text-muted-foreground">{{ record.note || '无备注' }}</p>
+                <p class="text-xs text-muted-foreground">{{ record.comment || '无备注' }}</p>
               </div>
-              <span class="text-xs text-muted-foreground">{{ new Date(record.recordedAt).toLocaleDateString() }}</span>
+              <span class="text-xs text-muted-foreground">{{ new Date(record.createdAt).toLocaleDateString() }}</span>
             </div>
             <p v-if="goalRecords.length === 0" class="py-4 text-center text-sm text-muted-foreground">暂无记录</p>
           </TabsContent>

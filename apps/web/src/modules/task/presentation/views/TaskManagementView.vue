@@ -44,12 +44,12 @@
                   :style="template.color ? { backgroundColor: template.color } : {}"
                 />
                 <div>
-                  <p class="font-medium">{{ template.title }}</p>
-                  <p class="text-xs text-muted-foreground">{{ template.taskType }} · {{ template.importance }}</p>
+                  <p class="font-medium">{{ template.name }}</p>
+                  <p class="text-xs text-muted-foreground">{{ template.importance }}</p>
                 </div>
               </div>
-              <Badge :variant="getStatusVariant(template.status?.value)">
-                {{ template.status?.value || '未知' }}
+              <Badge :variant="getStatusVariant(template.status)">
+                {{ template.status || '未知' }}
               </Badge>
             </CardContent>
           </Card>
@@ -81,11 +81,11 @@
                 <p class="text-xs text-muted-foreground">{{ new Date(instance.instanceDate).toLocaleDateString() }}</p>
               </div>
               <div class="flex items-center gap-2">
-                <Badge :variant="instance.status === 'COMPLETED' ? 'default' : 'outline'">
+                <Badge :variant="instance.status === 'Completed' ? 'default' : 'outline'">
                   {{ instance.status }}
                 </Badge>
                 <Button
-                  v-if="instance.status === 'PENDING'"
+                  v-if="instance.status === 'Pending'"
                   size="sm"
                   variant="outline"
                   @click="startInstance(instance.id)"
@@ -93,7 +93,7 @@
                   开始
                 </Button>
                 <Button
-                  v-if="instance.status === 'IN_PROGRESS'"
+                  v-if="instance.status === 'InProgress'"
                   size="sm"
                   @click="completeInstance(instance.id)"
                 >
@@ -128,9 +128,9 @@ const {
 const activeTab = ref<'templates' | 'instances'>('templates');
 
 function getStatusVariant(status?: string) {
-  if (status === 'ACTIVE') return 'default' as const;
-  if (status === 'PAUSED') return 'secondary' as const;
-  if (status === 'ARCHIVED') return 'outline' as const;
+  if (status === 'Active') return 'default' as const;
+  if (status === 'Paused') return 'secondary' as const;
+  if (status === 'Archived') return 'outline' as const;
   return 'secondary' as const;
 }
 

@@ -18,7 +18,7 @@
     <div class="flex items-center gap-2 border-b px-6 py-2">
       <Button
         v-for="type in repositoryTypes"
-        :key="type.value"
+        :key="type.value ?? 'all'"
         :variant="filterType === type.value ? 'default' : 'ghost'"
         size="sm"
         @click="filterType = type.value"

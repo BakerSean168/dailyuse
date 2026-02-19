@@ -33,7 +33,7 @@
               <div class="flex items-center justify-between text-sm">
                 <span class="text-muted-foreground">当前进度</span>
                 <span class="font-medium">
-                  {{ keyResult.progress.current }} / {{ keyResult.progress.target }}
+                  {{ keyResult.progress.currentValue }} / {{ keyResult.progress.targetValue }}
                   {{ keyResult.progress.unit }}
                 </span>
               </div>
@@ -137,9 +137,9 @@ const keyResult = computed(() => keyResults.value.find((kr) => kr.id === krId) ?
 
 const progressPercent = computed(() => {
   if (!keyResult.value) return 0;
-  const { current, target } = keyResult.value.progress;
-  if (!target) return 0;
-  return Math.min(100, Math.round((current / target) * 100));
+  const { currentValue, targetValue } = keyResult.value.progress;
+  if (!targetValue) return 0;
+  return Math.min(100, Math.round((currentValue / targetValue) * 100));
 });
 
 const sortedRecords = computed(() =>
@@ -151,7 +151,7 @@ const sortedRecords = computed(() =>
 const showAddRecord = ref(false);
 const newRecord = reactive({ value: 0, comment: '' });
 
-function formatDate(d: string | null | undefined): string {
+function formatDate(d: string | number | null | undefined): string {
   if (!d) return '-';
   return new Date(d).toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' });
 }
@@ -164,7 +164,7 @@ async function handleAddRecord() {
   const result = await createRecord(goalId, {
     keyResultId: krId,
     value: newRecord.value,
-    comment: newRecord.comment || null,
+    note: newRecord.comment || undefined,
   });
   if (result) {
     toast.success('记录添加成功');

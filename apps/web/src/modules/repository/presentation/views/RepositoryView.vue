@@ -13,6 +13,7 @@
         <ScrollArea class="flex-1">
           <FileTreePanel
             v-if="currentRepository"
+            :nodes="[]"
             :repository-id="currentRepository.id"
           />
           <p v-else class="p-4 text-center text-xs text-muted-foreground">请选择仓库</p>
@@ -23,7 +24,7 @@
       <div class="flex flex-1 flex-col">
         <!-- 标签栏 -->
         <div class="flex items-center border-b bg-muted/20 px-2">
-          <TabManager />
+          <TabManager :tabs="[]" />
         </div>
 
         <!-- 编辑器内容 -->

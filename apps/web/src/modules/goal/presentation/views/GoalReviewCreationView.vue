@@ -13,15 +13,15 @@
         <!-- 复盘类型 -->
         <div class="space-y-2">
           <Label>复盘类型</Label>
-          <Select v-model="form.type">
+          <Select v-model="form.reviewType">
             <SelectTrigger>
               <SelectValue placeholder="选择复盘类型" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="WEEKLY">每周复盘</SelectItem>
-              <SelectItem value="MONTHLY">每月复盘</SelectItem>
-              <SelectItem value="QUARTERLY">季度复盘</SelectItem>
-              <SelectItem value="FINAL">最终复盘</SelectItem>
+              <SelectItem value="Weekly">每周复盘</SelectItem>
+              <SelectItem value="Monthly">每月复盘</SelectItem>
+              <SelectItem value="Quarterly">季度复盘</SelectItem>
+              <SelectItem value="Final">最终复盘</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -35,10 +35,16 @@
           </div>
         </div>
 
-        <!-- 摘要 -->
+        <!-- 标题 -->
         <div class="space-y-2">
-          <Label>复盘摘要</Label>
-          <Textarea v-model="form.summary" placeholder="总结本阶段的进展..." rows="3" />
+          <Label>复盘标题</Label>
+          <Input v-model="form.title" placeholder="复盘标题..." />
+        </div>
+
+        <!-- 内容 -->
+        <div class="space-y-2">
+          <Label>复盘内容</Label>
+          <Textarea v-model="form.content" placeholder="总结本阶段的进展..." rows="3" />
         </div>
 
         <!-- 成就 -->
@@ -56,7 +62,7 @@
         <!-- 改进方向 -->
         <div class="space-y-2">
           <Label>改进方向</Label>
-          <Textarea v-model="form.improvements" placeholder="下一阶段如何改进..." rows="3" />
+          <Textarea v-model="form.nextActions" placeholder="下一阶段如何改进..." rows="3" />
         </div>
 
         <!-- 操作按钮 -->
@@ -89,26 +95,28 @@ const goalId = route.params.goalId as string || route.params.id as string;
 const { createReview, isSaving } = useGoal();
 
 const form = reactive({
-  type: 'WEEKLY' as string,
+  reviewType: 'Weekly' as string,
   rating: 7,
-  summary: '',
+  title: '',
+  content: '',
   achievements: '',
   challenges: '',
-  improvements: '',
+  nextActions: '',
 });
 
 async function handleSubmit() {
-  if (!form.summary) {
-    toast.warning('请填写复盘摘要');
+  if (!form.content) {
+    toast.warning('请填写复盘内容');
     return;
   }
   const result = await createReview(goalId, {
-    type: form.type as any,
+    reviewType: form.reviewType,
     rating: form.rating,
-    summary: form.summary,
+    title: form.title || `${form.reviewType} 复盘`,
+    content: form.content,
     achievements: form.achievements,
     challenges: form.challenges,
-    improvements: form.improvements,
+    nextActions: form.nextActions,
   });
   if (result) {
     toast.success('复盘创建成功');

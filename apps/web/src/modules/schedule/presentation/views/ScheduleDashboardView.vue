@@ -11,26 +11,10 @@
     </div>
 
     <!-- 统计卡片 -->
-    <div class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div class="mb-6">
       <StatisticsCard
-        title="总任务数"
-        :value="tasks.length"
-        :icon="Calendar"
-      />
-      <StatisticsCard
-        title="活跃任务"
-        :value="activeTasks.length"
-        :icon="Play"
-      />
-      <StatisticsCard
-        title="已暂停"
-        :value="pausedTasks.length"
-        :icon="Pause"
-      />
-      <StatisticsCard
-        title="异常任务"
-        :value="failedTasks.length"
-        :icon="AlertCircle"
+        :statistics="scheduleStatistics"
+        :is-loading="isLoading"
       />
     </div>
 
@@ -126,8 +110,8 @@
 
     <!-- 创建调度dialog -->
     <CreateScheduleDialog
-      v-model:open="showCreateDialog"
-      @created="handleCreated"
+      v-model="showCreateDialog"
+      @submit="handleCreated"
     />
   </div>
 </template>
@@ -136,8 +120,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import {
-  Calendar, Play, Pause, AlertCircle, Plus, Search,
-  MoreHorizontal, Trash2,
+  Plus, Search, MoreHorizontal, Trash2, Play, Pause,
 } from 'lucide-vue-next';
 import {
   Button, Badge, Card, CardHeader, CardTitle, CardContent, Input,
@@ -153,6 +136,18 @@ const {
 
 const searchQuery = ref('');
 const showCreateDialog = ref(false);
+
+const scheduleStatistics = computed(() => ({
+  totalTasks: tasks.value.length,
+  activeTasks: activeTasks.value.length,
+  pausedTasks: pausedTasks.value.length,
+  completedTasks: 0,
+  failedTasks: failedTasks.value.length,
+  successRate: 0,
+  totalExecutions: 0,
+  successfulExecutions: 0,
+  failedExecutions: 0,
+}));
 
 const activeTasks = computed(() => tasks.value.filter((t) => t.status === 'Active'));
 const pausedTasks = computed(() => tasks.value.filter((t) => t.status === 'Paused'));

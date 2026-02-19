@@ -205,7 +205,7 @@ import {
 interface ScheduleTask {
   id: string;
   name: string;
-  description?: string;
+  description?: string | null;
   sourceModule: string;
   status: string;
   enabled: boolean;
@@ -222,6 +222,7 @@ interface ScheduleTask {
     startDate?: number;
     endDate?: number;
   };
+  [key: string]: unknown;
 }
 
 interface Execution {

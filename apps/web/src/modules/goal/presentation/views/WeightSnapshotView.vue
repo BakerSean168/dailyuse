@@ -22,7 +22,7 @@
           <CardContent>
             <WeightComparison
               v-if="keyResults.length > 0"
-              :key-results="keyResults"
+              :goal-id="goalId"
             />
             <p v-else class="py-8 text-center text-sm text-muted-foreground">
               暂无关键结果数据
@@ -40,7 +40,7 @@
           <CardContent>
             <WeightSnapshotList
               v-if="keyResults.length > 0"
-              :key-results="keyResults"
+              :goal-id="goalId"
             />
             <p v-else class="py-8 text-center text-sm text-muted-foreground">
               暂无快照数据
@@ -58,7 +58,7 @@
           <CardContent>
             <WeightTrendChart
               v-if="keyResults.length > 0"
-              :key-results="keyResults"
+              :goal-id="goalId"
             />
             <p v-else class="py-8 text-center text-sm text-muted-foreground">
               暂无趋势数据

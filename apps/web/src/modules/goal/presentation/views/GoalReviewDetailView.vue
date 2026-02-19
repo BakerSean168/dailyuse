@@ -129,7 +129,7 @@ const { goalReviews, isLoading, fetchReviews } = useGoal();
 
 const review = computed(() => goalReviews.value.find((r) => r.id === reviewId) ?? null);
 
-function formatDate(d: string | null | undefined): string {
+function formatDate(d: string | number | null | undefined): string {
   if (!d) return '-';
   return new Date(d).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
 }

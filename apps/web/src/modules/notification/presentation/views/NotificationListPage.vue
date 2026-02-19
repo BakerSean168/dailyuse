@@ -43,10 +43,10 @@
               <p class="text-sm font-medium">{{ n.title }}</p>
               <span class="text-xs text-muted-foreground">{{ formatDate(n.createdAt) }}</span>
             </div>
-            <p v-if="n.body" class="text-sm text-muted-foreground">{{ n.body }}</p>
+            <p v-if="n.content" class="text-sm text-muted-foreground">{{ n.content }}</p>
             <div class="flex items-center gap-2">
               <Badge variant="outline" class="text-xs">{{ n.type }}</Badge>
-              <Badge v-if="n.priority" variant="secondary" class="text-xs">{{ n.priority }}</Badge>
+              <Badge v-if="n.importance" variant="secondary" class="text-xs">{{ n.importance }}</Badge>
             </div>
           </div>
           <div class="flex items-center gap-1">

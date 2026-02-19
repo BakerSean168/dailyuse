@@ -105,7 +105,7 @@ function statusVariant(status: string) {
   return 'outline' as const;
 }
 
-function formatDate(d: string | null | undefined): string {
+function formatDate(d: string | number | null | undefined): string {
   if (!d) return '-';
   return new Date(d).toLocaleDateString('zh-CN');
 }

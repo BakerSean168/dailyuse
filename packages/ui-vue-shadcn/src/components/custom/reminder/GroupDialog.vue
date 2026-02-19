@@ -141,14 +141,14 @@
 
             <RadioGroup v-model="formData.controlMode">
               <div class="flex items-start space-x-3 space-y-0 p-4 border rounded-lg">
-                <RadioGroupItem value="INDIVIDUAL" id="individual" />
+                <RadioGroupItem value="Individual" id="individual" />
                 <Label for="individual" class="flex-1 cursor-pointer">
                   <div class="font-medium">Individual Control</div>
                   <div class="text-xs text-muted-foreground">Each reminder template can be enabled/paused independently</div>
                 </Label>
               </div>
               <div class="flex items-start space-x-3 space-y-0 p-4 border rounded-lg">
-                <RadioGroupItem value="GROUP" id="group" />
+                <RadioGroupItem value="Group" id="group" />
                 <Label for="group" class="flex-1 cursor-pointer">
                   <div class="font-medium">Group Control</div>
                   <div class="text-xs text-muted-foreground">All reminder templates are enabled/paused together</div>
@@ -203,7 +203,7 @@ interface ReminderGroup {
   description?: string | null;
   icon?: string | null;
   color?: string | null;
-  controlMode: 'INDIVIDUAL' | 'GROUP';
+  controlMode: string;
   order?: number;
 }
 
@@ -227,7 +227,7 @@ const formData = reactive({
   description: '',
   icon: 'mdi-folder',
   color: '#2196F3',
-  controlMode: 'INDIVIDUAL' as 'INDIVIDUAL' | 'GROUP',
+  controlMode: 'Individual' as string,
   order: 0,
 });
 
@@ -262,7 +262,7 @@ const resetForm = () => {
   formData.description = '';
   formData.icon = 'mdi-folder';
   formData.color = '#2196F3';
-  formData.controlMode = 'INDIVIDUAL';
+  formData.controlMode = 'Individual';
   formData.order = 0;
 };
 

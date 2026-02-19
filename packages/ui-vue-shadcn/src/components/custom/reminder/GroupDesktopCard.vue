@@ -39,12 +39,12 @@
         <Tooltip>
           <TooltipTrigger as-child>
             <Badge variant="outline" class="text-xs">
-              <component :is="group.controlMode === 'GROUP' ? Users : User" class="h-3 w-3 mr-1" />
-              {{ group.controlMode === 'GROUP' ? 'Group' : 'Individual' }}
+              <component :is="group.controlMode === 'Group' ? Users : User" class="h-3 w-3 mr-1" />
+              {{ group.controlMode === 'Group' ? 'Group' : 'Individual' }}
             </Badge>
           </TooltipTrigger>
           <TooltipContent>
-            {{ group.controlMode === 'GROUP' ? 'All templates controlled together' : 'Templates controlled individually' }}
+            {{ group.controlMode === 'Group' ? 'All templates controlled together' : 'Templates controlled individually' }}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -80,7 +80,7 @@ interface ReminderGroup {
   icon?: string | null;
   color?: string | null;
   enabled: boolean;
-  controlMode: 'GROUP' | 'INDIVIDUAL';
+  controlMode: string;
 }
 
 interface Props {

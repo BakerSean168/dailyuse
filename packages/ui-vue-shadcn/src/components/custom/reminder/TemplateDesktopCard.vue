@@ -202,8 +202,8 @@ interface ReminderTemplate {
   triggerText?: string;
   trigger?: {
     type: string;
-    interval?: { minutes: number };
-    fixedTime?: { time: string };
+    interval?: { minutes: number; [key: string]: unknown } | null;
+    fixedTime?: { time: string; [key: string]: unknown } | null;
   };
   createdAt?: number;
   updatedAt?: number;

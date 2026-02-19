@@ -15,15 +15,15 @@
     <!-- 周日历 -->
     <div class="flex-1">
       <WeekViewCalendar
-        :events="calendarEvents"
+        :schedules="(calendarEvents as any)"
         @event-click="handleEventClick"
       />
     </div>
 
     <!-- 任务详情dialog -->
     <ScheduleTaskDetailDialog
-      v-model:open="showDetailDialog"
-      :task="selectedTask"
+      v-model:show="showDetailDialog"
+      :task="selectedTask as any"
       @pause="handlePause"
       @resume="handleResume"
       @delete="handleDelete"
@@ -31,8 +31,8 @@
 
     <!-- 创建dialog -->
     <CreateScheduleDialog
-      v-model:open="showCreateDialog"
-      @created="handleCreated"
+      v-model="showCreateDialog"
+      @submit="handleCreated"
     />
   </div>
 </template>
