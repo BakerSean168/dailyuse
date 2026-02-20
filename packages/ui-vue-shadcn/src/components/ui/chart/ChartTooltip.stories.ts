@@ -12,6 +12,15 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => ({
-    template: '<div class="text-sm text-muted-foreground">ChartTooltip story scaffold.</div>',
+    template: `
+      <div class="rounded-md border p-6">
+        <p class="text-sm font-medium">Chart Components</p>
+        <p class="mt-2 text-sm text-muted-foreground">
+          ChartTooltip, ChartCrosshair, ChartLegend, and ChartSingleTooltip are
+          utility components designed to work within a chart context (e.g., unovis).
+          They require a parent chart provider to render correctly.
+        </p>
+      </div>
+    `,
   }),
 };
