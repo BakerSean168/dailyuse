@@ -5,9 +5,12 @@
  * their side-effects (registering schemas and paths on the shared registry).
  *
  * This file must be imported before calling generateOpenApiDocument().
+ *
+ * NOTE: Goal module uses unified RouteRegistrar — its OpenAPI paths
+ * are registered in packages/goal/src/api/routes.ts alongside Express routes.
  */
 
-import './goal.openapi';
+// import './goal.openapi'; // ← migrated to unified RouteRegistrar in @dailyuse/goal
 import './task.openapi';
 import './reminder.openapi';
 import './schedule.openapi';

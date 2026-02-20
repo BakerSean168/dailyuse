@@ -20,6 +20,10 @@
       "types": "./dist/application-server/index.d.ts",
       "import": "./dist/application-server/index.js"
     },
+    "./application-client": {
+      "types": "./dist/application-client/index.d.ts",
+      "import": "./dist/application-client/index.js"
+    },
     "./infrastructure-server": {
       "types": "./dist/infrastructure-server/index.d.ts",
       "import": "./dist/infrastructure-server/index.js"

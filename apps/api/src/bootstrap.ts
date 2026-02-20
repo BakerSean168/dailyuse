@@ -21,6 +21,7 @@ import { applyGlobalMiddleware, applyErrorHandlers } from './shared/infrastructu
 import { authMiddleware, requireRole } from './shared/infrastructure/http/middlewares';
 import { setupSwagger } from './shared/infrastructure/config/swagger';
 import infrastructureRouter from './shared/infrastructure/http/routes/infrastructureRoutes';
+import { registry } from './shared/infrastructure/openapi/registry';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('Bootstrapper');
@@ -77,6 +78,7 @@ export class ApiBootstrapper {
       router: this.rootRouter,
       db: this.db,
       middleware: platformMiddleware,
+      openApiRegistry: registry,
     };
 
     logger.info('🚀 Starting Module Registration...');

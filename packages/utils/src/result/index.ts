@@ -80,3 +80,25 @@ export {
   ipcAdapter,
   type IpcAdapterOptions,
 } from './ipc-adapter';
+
+// ============================================================================
+// Route Registrar (unified Express + OpenAPI registration)
+// ============================================================================
+
+export {
+  RouteRegistrar,
+  type OpenApiRegistryLike,
+  type HttpMethod,
+  type ApiRouteDefinition,
+  type RouteRegistrarConfig,
+} from './route-registrar';
+
+// ============================================================================
+// OpenAPI Response Helpers
+// ============================================================================
+
+export {
+  successResponse,
+  errorResponse,
+  OpenApiErrorResponseSchema,
+} from './openapi-helpers';

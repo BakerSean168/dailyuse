@@ -13,17 +13,28 @@
 import type { App, InjectionKey } from 'vue';
 
 // ── Package-level Services & Factories ──
-import { AccountClientService, createAccountHttpAdapter } from '@dailyuse/account';
-import { AuthClientService, createAuthHttpAdapter } from '@dailyuse/authentication';
-import { createRuleHttpAdapter } from '@dailyuse/governance';
-import type { IRuleApiClient } from '@dailyuse/governance';
-import { GoalClientService, createGoalHttpAdapters } from '@dailyuse/goal';
-import { NotificationClientService, createNotificationHttpAdapters } from '@dailyuse/notification';
-import { ReminderClientService, createReminderHttpAdapters } from '@dailyuse/reminder';
-import { RepositoryClientService, createRepositoryHttpAdapters } from '@dailyuse/repository';
-import { ScheduleClientService, createScheduleHttpAdapters } from '@dailyuse/schedule';
-import { SettingClientService, createSettingHttpAdapters } from '@dailyuse/setting';
-import { TaskClientService, createTaskHttpAdapters } from '@dailyuse/task';
+// Use explicit subpath imports to avoid bundling server-side code (Node.js-only
+// modules like argon2, prisma, etc.) into the browser bundle.
+import { AccountClientService } from '@dailyuse/account/application-client';
+import { createAccountHttpAdapter } from '@dailyuse/account/infrastructure-client';
+import { AuthClientService } from '@dailyuse/authentication/application-client';
+import { createAuthHttpAdapter } from '@dailyuse/authentication/infrastructure-client';
+import type { IRuleApiClient } from '@dailyuse/governance/infrastructure-client';
+import { createRuleHttpAdapter } from '@dailyuse/governance/infrastructure-client';
+import { GoalClientService } from '@dailyuse/goal/application-client';
+import { createGoalHttpAdapters } from '@dailyuse/goal/infrastructure-client';
+import { NotificationClientService } from '@dailyuse/notification/application-client';
+import { createNotificationHttpAdapters } from '@dailyuse/notification/infrastructure-client';
+import { ReminderClientService } from '@dailyuse/reminder/application-client';
+import { createReminderHttpAdapters } from '@dailyuse/reminder/infrastructure-client';
+import { RepositoryClientService } from '@dailyuse/repository/application-client';
+import { createRepositoryHttpAdapters } from '@dailyuse/repository/infrastructure-client';
+import { ScheduleClientService } from '@dailyuse/schedule/application-client';
+import { createScheduleHttpAdapters } from '@dailyuse/schedule/infrastructure-client';
+import { SettingClientService } from '@dailyuse/setting/application-client';
+import { createSettingHttpAdapters } from '@dailyuse/setting/infrastructure-client';
+import { TaskClientService } from '@dailyuse/task/application-client';
+import { createTaskHttpAdapters } from '@dailyuse/task/infrastructure-client';
 
 // ── Web App HTTP Client ──
 import { resultHttpClient } from '@/shared/http';

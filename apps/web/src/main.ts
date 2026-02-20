@@ -10,7 +10,7 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import App from './App.vue';
 import router from './router';
 import { installModuleServices } from './shared/di';
-import './assets/index.css';
+import './styles/index.css';
 
 // Polyfill crypto.randomUUID for non-secure contexts or older browsers
 if (typeof crypto !== 'undefined' && !crypto.randomUUID) {

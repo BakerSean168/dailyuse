@@ -61,6 +61,8 @@ export interface IApiModuleContext {
   readonly db: DatabaseClient;
   /** 平台中间件（auth, rbac 等） */
   readonly middleware: IApiMiddleware;
+  /** OpenAPI registry for unified route + doc registration (optional) */
+  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
 }
 
 /**

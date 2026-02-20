@@ -51,6 +51,14 @@
     "winston": "3.19.0",
     "winston-daily-rotate-file": "5.0.0"
   },
+  "peerDependencies": {
+    "zod": "^3.24.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "concurrently": "^9.2.1",
     "rimraf": "^6.0.1",

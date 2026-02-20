@@ -32,6 +32,7 @@ export default {
     'winston',
     'winston-daily-rotate-file',
     '@dailyuse/contracts',
+    'zod',
   ],
   dts: true, // ✅ 启用 DTS 生成，让 @dailyuse/contracts 作为外部依赖
 };

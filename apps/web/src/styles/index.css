@@ -4,7 +4,7 @@
  * Imports the Design System source of truth from @dailyuse/ui-core.
  */
 @import "tailwindcss";
-@import "@dailyuse/ui-core/styles/theme.css";
+@import "../../../../packages/ui-core/src/styles/globals.css";
 @source "../../../../packages/ui-core/src";
 
 
